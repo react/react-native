@@ -7,21 +7,47 @@
 
 package com.facebook.react.bridge;
 
+import static android.app.Activity.RESULT_CANCELED;
+import static androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions.ACTION_REQUEST_PERMISSIONS;
+import static androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions.EXTRA_PERMISSIONS;
+import static androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult.EXTRA_ACTIVITY_OPTIONS_BUNDLE;
+import static androidx.activity.result.contract.ActivityResultContracts.StartIntentSenderForResult.ACTION_INTENT_SENDER_REQUEST;
+import static androidx.activity.result.contract.ActivityResultContracts.StartIntentSenderForResult.EXTRA_INTENT_SENDER_REQUEST;
+import static androidx.activity.result.contract.ActivityResultContracts.StartIntentSenderForResult.EXTRA_SEND_INTENT_EXCEPTION;
 import static com.facebook.infer.annotation.ThreadConfined.UI;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Window;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultCaller;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.ActivityResultRegistry;
+import androidx.activity.result.ActivityResultRegistryOwner;
+import androidx.activity.result.IntentSenderRequest;
+import androidx.activity.result.contract.ActivityResultContract;
+import androidx.annotation.MainThread;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.ActivityOptionsCompat;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.LifecycleRegistry;
+
 import com.facebook.common.logging.FLog;
 import com.facebook.infer.annotation.Assertions;
 import com.facebook.infer.annotation.ThreadConfined;
 import com.facebook.proguard.annotations.DoNotStrip;
+import com.facebook.react.ReactActivity;
 import com.facebook.react.bridge.interop.InteropModuleRegistry;
 import com.facebook.react.bridge.queue.MessageQueueThread;
 import com.facebook.react.bridge.queue.ReactQueueConfiguration;
@@ -32,12 +58,16 @@ import com.facebook.react.turbomodule.core.interfaces.CallInvokerHolder;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Abstract ContextWrapper for Android application or activity {@link Context} and {@link
  * CatalystInstance}
  */
-public abstract class ReactContext extends ContextWrapper {
+public abstract class ReactContext extends ContextWrapper implements
+  LifecycleOwner,
+  ActivityResultRegistryOwner,
+  ActivityResultCaller {
 
   @DoNotStrip
   public interface RCTDeviceEventEmitter extends JavaScriptModule {
@@ -48,7 +78,7 @@ public abstract class ReactContext extends ContextWrapper {
   private static final String TAG = "ReactContext";
 
   private final CopyOnWriteArraySet<LifecycleEventListener> mLifecycleEventListeners =
-      new CopyOnWriteArraySet<>();
+    new CopyOnWriteArraySet<>();
   private final CopyOnWriteArraySet<ActivityEventListener> mActivityEventListeners =
       new CopyOnWriteArraySet<>();
   private final CopyOnWriteArraySet<ExtraWindowEventListener> mExtraWindowEventListeners =
@@ -59,6 +89,8 @@ public abstract class ReactContext extends ContextWrapper {
 
   private LifecycleState mLifecycleState = LifecycleState.BEFORE_CREATE;
 
+  private final AtomicInteger mNextLocalRequestCode = new AtomicInteger();
+
   private @Nullable LayoutInflater mInflater;
   private @Nullable ReactQueueConfiguration mQueueConfig;
   private @Nullable MessageQueueThread mUiMessageQueueThread;
@@ -68,6 +100,8 @@ public abstract class ReactContext extends ContextWrapper {
   private @Nullable JSExceptionHandler mExceptionHandlerWrapper;
   private @Nullable WeakReference<Activity> mCurrentActivity;
 
+  private final LifecycleRegistry mLifecycleRegistry = new LifecycleRegistry(this);
+
   // NOTE: When converted to Kotlin, this field should be made internal due to
   // visibility restriction on InteropModuleRegistry otherwise it will be exposed to the public API.
   protected @Nullable InteropModuleRegistry mInteropModuleRegistry;
@@ -76,6 +110,79 @@ public abstract class ReactContext extends ContextWrapper {
   public ReactContext(Context base) {
     super(base);
   }
+
+  private final ActivityResultRegistry mActivityResultRegistry = new ActivityResultRegistry() {
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public <I, O> void onLaunch(
+      final int requestCode,
+      @NonNull ActivityResultContract<I, O> contract,
+      I input,
+      @Nullable ActivityOptionsCompat options) {
+      Activity activity = mCurrentActivity.get();
+
+      // Immediate result path
+      final ActivityResultContract.SynchronousResult<O> synchronousResult =
+        contract.getSynchronousResult(activity, input);
+      if (synchronousResult != null) {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+          @Override
+          public void run() {
+            dispatchResult(requestCode, synchronousResult.getValue());
+          }
+        });
+        return;
+      }
+
+      // Start activity path
+      Intent intent = contract.createIntent(activity, input);
+      Bundle optionsBundle = null;
+      // If there are any extras, we should defensively set the classLoader
+      if (intent.getExtras() != null && intent.getExtras().getClassLoader() == null) {
+        intent.setExtrasClassLoader(activity.getClassLoader());
+      }
+      if (intent.hasExtra(EXTRA_ACTIVITY_OPTIONS_BUNDLE)) {
+        optionsBundle = intent.getBundleExtra(EXTRA_ACTIVITY_OPTIONS_BUNDLE);
+        intent.removeExtra(EXTRA_ACTIVITY_OPTIONS_BUNDLE);
+      } else if (options != null) {
+        optionsBundle = options.toBundle();
+      }
+      if (ACTION_REQUEST_PERMISSIONS.equals(intent.getAction())) {
+
+        // requestPermissions path
+        String[] permissions = intent.getStringArrayExtra(EXTRA_PERMISSIONS);
+
+        if (permissions == null) {
+          permissions = new String[0];
+        }
+
+
+        ActivityCompat.requestPermissions(activity, permissions, requestCode);
+      } else if (ACTION_INTENT_SENDER_REQUEST.equals(intent.getAction())) {
+        IntentSenderRequest request =
+          intent.getParcelableExtra(EXTRA_INTENT_SENDER_REQUEST);
+        try {
+          // startIntentSenderForResult path
+          ActivityCompat.startIntentSenderForResult(activity, request.getIntentSender(),
+            requestCode, request.getFillInIntent(), request.getFlagsMask(),
+            request.getFlagsValues(), 0, optionsBundle);
+        } catch (final IntentSender.SendIntentException e) {
+          new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+              dispatchResult(requestCode, RESULT_CANCELED,
+                new Intent().setAction(ACTION_INTENT_SENDER_REQUEST)
+                  .putExtra(EXTRA_SEND_INTENT_EXCEPTION, e));
+            }
+          });
+        }
+      } else {
+        // startActivityForResult path
+        ActivityCompat.startActivityForResult(activity, intent, requestCode, optionsBundle);
+      }
+    }
+  };
 
   protected void initializeFromOther(ReactContext other) {
     if (other.hasReactInstance()) {
@@ -88,8 +195,8 @@ public abstract class ReactContext extends ContextWrapper {
   public synchronized void initializeMessageQueueThreads(ReactQueueConfiguration queueConfig) {
     FLog.d(TAG, "initializeMessageQueueThreads() is called.");
     if (mUiMessageQueueThread != null
-        || mNativeModulesMessageQueueThread != null
-        || mJSMessageQueueThread != null) {
+      || mNativeModulesMessageQueueThread != null
+      || mJSMessageQueueThread != null) {
       throw new IllegalStateException("Message queue threads already initialized");
     }
     mQueueConfig = queueConfig;
@@ -228,19 +335,19 @@ public abstract class ReactContext extends ContextWrapper {
           break;
         case RESUMED:
           runOnUiQueueThread(
-              new Runnable() {
-                @Override
-                public void run() {
-                  if (!mLifecycleEventListeners.contains(listener)) {
-                    return;
-                  }
-                  try {
-                    listener.onHostResume();
-                  } catch (RuntimeException e) {
-                    handleException(e);
-                  }
+            new Runnable() {
+              @Override
+              public void run() {
+                if (!mLifecycleEventListeners.contains(listener)) {
+                  return;
                 }
-              });
+                try {
+                  listener.onHostResume();
+                } catch (RuntimeException e) {
+                  handleException(e);
+                }
+              }
+            });
           break;
         default:
           throw new IllegalStateException("Unhandled lifecycle state.");
@@ -368,12 +475,14 @@ public abstract class ReactContext extends ContextWrapper {
 
   /** Should be called by the hosting Fragment in {@link Fragment#onActivityResult} */
   public void onActivityResult(
-      Activity activity, int requestCode, int resultCode, @Nullable Intent data) {
-    for (ActivityEventListener listener : mActivityEventListeners) {
-      try {
-        listener.onActivityResult(activity, requestCode, resultCode, data);
-      } catch (RuntimeException e) {
-        handleException(e);
+    Activity activity, int requestCode, int resultCode, @Nullable Intent data) {
+    if (!mActivityResultRegistry.dispatchResult(requestCode, resultCode, data)) {
+      for (ActivityEventListener listener : mActivityEventListeners) {
+        try {
+          listener.onActivityResult(activity, requestCode, resultCode, data);
+        } catch (RuntimeException e) {
+          handleException(e);
+        }
       }
     }
   }
@@ -430,7 +539,7 @@ public abstract class ReactContext extends ContextWrapper {
     /** TODO(T85807990): Fail fast if the ReactContext isn't initialized */
     if (!mIsInitialized) {
       throw new IllegalStateException(
-          "Tried to call assertOnNativeModulesQueueThread() on an uninitialized ReactContext");
+        "Tried to call assertOnNativeModulesQueueThread() on an uninitialized ReactContext");
     }
     Assertions.assertNotNull(mNativeModulesMessageQueueThread).assertIsOnThread();
   }
@@ -439,8 +548,8 @@ public abstract class ReactContext extends ContextWrapper {
     /** TODO(T85807990): Fail fast if the ReactContext isn't initialized */
     if (!mIsInitialized) {
       throw new IllegalStateException(
-          "Tried to call assertOnNativeModulesQueueThread(message) on an uninitialized"
-              + " ReactContext");
+        "Tried to call assertOnNativeModulesQueueThread(message) on an uninitialized"
+          + " ReactContext");
     }
     Assertions.assertNotNull(mNativeModulesMessageQueueThread).assertIsOnThread(message);
   }
@@ -518,6 +627,41 @@ public abstract class ReactContext extends ContextWrapper {
       return true;
     }
     return false;
+  }
+
+  @NonNull
+  @Override
+  public final <I, O> ActivityResultLauncher<I> registerForActivityResult(
+    @NonNull final ActivityResultContract<I, O> contract,
+    @NonNull final ActivityResultRegistry registry,
+    @NonNull final ActivityResultCallback<O> callback) {
+    return registry.register(
+      "activity_rq#" + mNextLocalRequestCode.getAndIncrement(), this, contract, callback);
+  }
+
+  @NonNull
+  @Override
+  public final <I, O> ActivityResultLauncher<I> registerForActivityResult(
+    @NonNull ActivityResultContract<I, O> contract,
+    @NonNull ActivityResultCallback<O> callback) {
+    return registerForActivityResult(contract, mActivityResultRegistry, callback);
+  }
+
+  /**
+   * Get the {@link ActivityResultRegistry} associated with this activity.
+   *
+   * @return the {@link ActivityResultRegistry}
+   */
+  @NonNull
+  @Override
+  public ActivityResultRegistry getActivityResultRegistry() {
+    return mActivityResultRegistry;
+  }
+
+  @NonNull
+  @Override
+  public Lifecycle getLifecycle() {
+    return mLifecycleRegistry;
   }
 
   /**
