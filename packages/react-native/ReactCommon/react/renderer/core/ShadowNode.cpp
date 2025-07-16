@@ -136,6 +136,7 @@ ShadowNode::ShadowNode(
 std::shared_ptr<ShadowNode> ShadowNode::clone(
     const ShadowNodeFragment& fragment) const {
   const auto& family = *family_;
+  std::lock_guard<std::recursive_mutex> npGuard(family.nativePropsMutex);
   const auto& componentDescriptor = family.componentDescriptor_;
   if (family.nativeProps_DEPRECATED != nullptr) {
     auto propsParserContext = PropsParserContext{family_->getSurfaceId(), {}};

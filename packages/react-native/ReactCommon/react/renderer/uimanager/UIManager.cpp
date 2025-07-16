@@ -121,6 +121,7 @@ std::shared_ptr<ShadowNode> UIManager::cloneNode(
   auto props = ShadowNodeFragment::propsPlaceholder();
 
   if (!rawProps.isEmpty()) {
+    std::lock_guard<std::recursive_mutex> npGuard(family.nativePropsMutex);
     if (family.nativeProps_DEPRECATED != nullptr) {
       // 1. update the nativeProps_DEPRECATED props.
       //
@@ -448,6 +449,7 @@ void UIManager::setNativeProps_DEPRECATED(
     const std::shared_ptr<const ShadowNode>& shadowNode,
     RawProps rawProps) const {
   auto& family = shadowNode->getFamily();
+  family.nativePropsMutex.lock();
   if (family.nativeProps_DEPRECATED) {
     // Values in `rawProps` patch (take precedence over)
     // `nativeProps_DEPRECATED`. For example, if both `nativeProps_DEPRECATED`
@@ -462,6 +464,7 @@ void UIManager::setNativeProps_DEPRECATED(
     family.nativeProps_DEPRECATED =
         std::make_unique<folly::dynamic>((folly::dynamic)rawProps);
   }
+  family.nativePropsMutex.unlock();
 
   shadowTreeRegistry_.visit(
       family.getSurfaceId(), [&](const ShadowTree& shadowTree) {
