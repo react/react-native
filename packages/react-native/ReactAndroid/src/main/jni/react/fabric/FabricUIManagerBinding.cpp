@@ -820,6 +820,17 @@ void FabricUIManagerBinding::schedulerDidClearPendingSnapshots() {
   }
 }
 
+void FabricUIManagerBinding::schedulerMeasureAsyncOnUI(
+    const facebook::react::ShadowView& shadowView,
+    const std::function<void(folly::dynamic)>& callback) {
+  auto mountingManager = getMountingManager("schedulerMeasureAsyncOnUI");
+  if (!mountingManager) {
+    return;
+  }
+
+  mountingManager->measureAsyncOnUI(shadowView, callback);
+}
+
 void FabricUIManagerBinding::onAnimationStarted() {
   auto mountingManager = getMountingManager("onAnimationStarted");
   if (!mountingManager) {

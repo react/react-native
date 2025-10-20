@@ -197,6 +197,18 @@ class ReactNativeElement extends ReadOnlyElement {
   }
 
   /**
+   * Same as `measure()`, but instead of using the shadow nodes layout
+   * information, it uses the native layout hierarchy to measure the view on the
+   * UI thread.
+   */
+  measureAsyncOnUI(callback: MeasureOnSuccessCallback) {
+    const node = getNativeElementReference(this);
+    if (node != null) {
+      NativeDOM.measureAsyncOnUI(node, callback);
+    }
+  }
+
+  /**
    * Determines the location of the given view in the window and returns the
    * values via an async callback. If the React root view is embedded in
    * another native view, this will give you the absolute coordinates. If

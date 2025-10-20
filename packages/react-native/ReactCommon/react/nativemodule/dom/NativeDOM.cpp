@@ -466,6 +466,30 @@ void NativeDOM::measureLayout(
   onSuccess(rect.x, rect.y, rect.width, rect.height);
 }
 
+void NativeDOM::measureAsyncOnUI(
+    jsi::Runtime& rt,
+    std::shared_ptr<const ShadowNode> shadowNode,
+    const MeasureAsyncOnUICallback& callback) {
+  UIManager& uiManager = getUIManagerFromRuntime(rt);
+  UIManagerDelegate* uiManagerDelegate = uiManager.getDelegate();
+  if (uiManagerDelegate == nullptr) {
+    return;
+  }
+
+  std::function<void(folly::dynamic)> jsCallback = [callback](const folly::dynamic& args) {
+    // TODO: can we make the rest accept an AsyncFunction directly?
+    callback.call(
+        args.at(0).getDouble(),
+        args.at(1).getDouble(),
+        args.at(2).getDouble(),
+        args.at(3).getDouble(),
+        args.at(4).getDouble(),
+        args.at(5).getDouble());
+  };
+
+  uiManagerDelegate->uiManagerMeasureAsyncOnUI(shadowNode, jsCallback);
+}
+
 #pragma mark - Legacy direct manipulation APIs (for `ReactNativeElement`).
 
 void NativeDOM::setNativeProps(

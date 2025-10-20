@@ -71,6 +71,10 @@ class SchedulerDelegate {
   virtual void schedulerDidSetViewSnapshot(Tag sourceTag, Tag targetTag, SurfaceId surfaceId) = 0;
   virtual void schedulerDidClearPendingSnapshots() = 0;
 
+  virtual void schedulerMeasureAsyncOnUI(
+      const ShadowView& shadowView,
+      const std::function<void(folly::dynamic)>& callback) = 0;
+
   virtual ~SchedulerDelegate() noexcept = default;
 };
 

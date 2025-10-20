@@ -103,6 +103,9 @@ class Scheduler final : public UIManagerDelegate {
   void uiManagerDidFinishReactCommit(const ShadowTree &shadowTree) override;
   void uiManagerDidPromoteReactRevision(const ShadowTree &shadowTree) override;
   void uiManagerDidStartSurface(const ShadowTree &shadowTree) override;
+  void uiManagerMeasureAsyncOnUI(
+      const std::shared_ptr<const ShadowNode> &shadowNode,
+      const std::function<void(folly::dynamic)> &callback) override;
 
 #pragma mark - ContextContainer
   std::shared_ptr<const ContextContainer> getContextContainer() const;

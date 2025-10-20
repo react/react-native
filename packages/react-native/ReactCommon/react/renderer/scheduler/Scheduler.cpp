@@ -462,6 +462,15 @@ void Scheduler::uiManagerDidStartSurface(const ShadowTree& shadowTree) {
   }
 }
 
+void Scheduler::uiManagerMeasureAsyncOnUI(
+    const std::shared_ptr<const ShadowNode>& shadowNode,
+    const std::function<void(folly::dynamic)>& callback) {
+  if (delegate_ != nullptr) {
+    auto shadowView = ShadowView(*shadowNode);
+    delegate_->schedulerMeasureAsyncOnUI(shadowView, callback);
+  }
+}
+
 void Scheduler::reportMount(SurfaceId surfaceId) const {
   uiManager_->reportMount(surfaceId);
 }
