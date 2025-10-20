@@ -123,6 +123,10 @@ class FabricUIManagerBinding : public jni::HybridClass<FabricUIManagerBinding>,
 
   void schedulerDidClearPendingSnapshots() override;
 
+  void schedulerMeasureAsyncOnUI(
+      const ShadowView& shadowView,
+      const std::function<void(folly::dynamic)>& callback) override;
+
   void setPixelDensity(float pointScaleFactor);
 
   void driveCxxAnimations();

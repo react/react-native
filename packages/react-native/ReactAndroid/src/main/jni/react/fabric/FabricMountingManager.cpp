@@ -14,6 +14,7 @@
 #include <cxxreact/TraceSection.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/jni/ReadableNativeMap.h>
+#include <react/jni/JCallback.h>
 #include <react/renderer/components/scrollview/ScrollViewProps.h>
 #include <react/renderer/core/DynamicPropsUtilities.h>
 #include <react/renderer/core/conversions.h>
@@ -1258,6 +1259,18 @@ void FabricMountingManager::scheduleReactRevisionMerge(SurfaceId surfaceId) {
       JFabricUIManager::javaClassStatic()->getMethod<void(int32_t)>(
           "scheduleReactRevisionMerge");
   scheduleReactRevisionMerge(javaUIManager_, surfaceId);
+}
+
+void FabricMountingManager::measureAsyncOnUI(
+    const ShadowView& shadowView,
+    const std::function<void(folly::dynamic)>& callback) {
+  static auto measureJNI =
+      JFabricUIManager::javaClassStatic()->getMethod<void(jint, jint, jni::alias_ref<JCallback>)>(
+          "measureAsyncOnUI");
+
+  auto javaCallback = JCxxCallbackImpl::newObjectCxxArgs(callback);
+
+  measureJNI(javaUIManager_, shadowView.surfaceId, shadowView.tag, javaCallback);
 }
 
 } // namespace facebook::react

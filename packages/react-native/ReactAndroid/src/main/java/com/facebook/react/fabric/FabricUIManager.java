@@ -25,6 +25,7 @@ import android.os.SystemClock;
 import android.view.View;
 import android.view.accessibility.AccessibilityEvent;
 import androidx.annotation.AnyThread;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.core.view.ViewCompat.FocusDirection;
@@ -33,6 +34,7 @@ import com.facebook.infer.annotation.Assertions;
 import com.facebook.infer.annotation.Nullsafe;
 import com.facebook.infer.annotation.ThreadConfined;
 import com.facebook.proguard.annotations.DoNotStripAny;
+import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ColorPropConverter;
 import com.facebook.react.bridge.GuardedRunnable;
 import com.facebook.react.bridge.LifecycleEventListener;
@@ -1396,6 +1398,44 @@ public class FabricUIManager
             return "CLEAR_JS_RESPONDER";
           }
         });
+  }
+
+  public void measureAsyncOnUI(int surfaceId, int reactTag, final Callback callback) {
+    mMountItemDispatcher.addMountItem(
+      new MountItem() {
+        @Override
+        public void execute(@NonNull MountingManager mountingManager) {
+          int[] mMeasureBuffer = new int[4];
+          boolean result = mountingManager.measureAsyncOnUI(
+            surfaceId,
+            reactTag,
+            mMeasureBuffer
+          );
+
+          if (!result) {
+            // TODO: add error handling callback
+            return;
+          }
+
+          double x = PixelUtil.toDIPFromPixel(mMeasureBuffer[0]);
+          double y = PixelUtil.toDIPFromPixel(mMeasureBuffer[1]);
+          double width = PixelUtil.toDIPFromPixel(mMeasureBuffer[2]);
+          double height = PixelUtil.toDIPFromPixel(mMeasureBuffer[3]);
+
+          callback.invoke(0, 0, width, height, x, y);
+        }
+
+        @Override
+        public int getSurfaceId() {
+          return surfaceId;
+        }
+
+        @NonNull
+        @Override
+        public String toString() {
+          return "MEASURE_VIEW";
+        }
+      });
   }
 
   @Override
