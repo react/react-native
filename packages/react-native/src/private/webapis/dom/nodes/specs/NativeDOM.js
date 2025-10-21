@@ -440,7 +440,7 @@ export interface RefinedSpec {
 
   +measureAsyncOnUI: (
     nativeElementReference: NativeElementReference,
-    callback: MeasureInWindowOnSuccessCallback,
+    callback: MeasureOnSuccessCallback,
   ) => void;
 
   /**
