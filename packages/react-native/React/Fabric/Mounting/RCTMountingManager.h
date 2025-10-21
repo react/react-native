@@ -9,6 +9,7 @@
 
 #import <React/RCTMountingManagerDelegate.h>
 #import <React/RCTPrimitives.h>
+#import <React/RCTFabricSurface.h>
 #import <react/renderer/core/ComponentDescriptor.h>
 #import <react/renderer/core/RawProps.h>
 #import <react/renderer/core/ReactPrimitives.h>
@@ -69,6 +70,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)synchronouslyUpdateViewOnUIThread:(ReactTag)reactTag
                              changedProps:(folly::dynamic)props
                       componentDescriptor:(const facebook::react::ComponentDescriptor &)componentDescriptor;
+
+- (void)measureAsyncOnUI:(ReactTag)reactTag rootView:(UIView*)rootView callback:(const std::function<void (folly::dynamic)> &)callback;
 @end
 
 NS_ASSUME_NONNULL_END
