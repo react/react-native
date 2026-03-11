@@ -27,15 +27,20 @@ class ModalHostViewState final {
 
   ModalHostViewState();
   ModalHostViewState(Size screenSize_) : screenSize(screenSize_) {};
+  ModalHostViewState(Size screenSize_, Point viewportOffset_)
+      : screenSize(screenSize_), viewportOffset(viewportOffset_) {};
 
 #ifdef RN_SERIALIZABLE_STATE
   ModalHostViewState(const ModalHostViewState &previousState, folly::dynamic data)
       : screenSize(
-            Size{.width = (Float)data["screenWidth"].getDouble(), .height = (Float)data["screenHeight"].getDouble()}) {
+            Size{.width = (Float)data["screenWidth"].getDouble(), .height = (Float)data["screenHeight"].getDouble()}),
+        viewportOffset(
+            Point{.x = (Float)data["viewportOffsetX"].getDouble(), .y = (Float)data["viewportOffsetY"].getDouble()}) {
         };
 #endif
 
   const Size screenSize{};
+  const Point viewportOffset{};
 
 #ifdef RN_SERIALIZABLE_STATE
   folly::dynamic getDynamic() const;
