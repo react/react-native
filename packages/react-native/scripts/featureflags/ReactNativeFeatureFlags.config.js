@@ -1076,16 +1076,6 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
-    fixImageSrcDimensionPropagation: {
-      defaultValue: true,
-      metadata: {
-        description:
-          'Fix image dimensions not being passed through when src is used',
-        expectedReleaseValue: true,
-        purpose: 'release',
-      },
-      ossReleaseStage: 'none',
-    },
     fixVirtualizeListCollapseWindowSize: {
       defaultValue: false,
       metadata: {

@@ -12,10 +12,8 @@ import type {HostInstance} from '../../src/private/types/HostInstance';
 import type {ImageStyleProp} from '../StyleSheet/StyleSheet';
 import type {RootTag} from '../Types/RootTagTypes';
 import type {ImageProps} from './ImageProps';
-import type {ImageSourceHeaders} from './ImageSourceUtils';
 import type {AbstractImageAndroid, ImageAndroid} from './ImageTypes.flow';
 
-import * as ReactNativeFeatureFlags from '../../src/private/featureflags/ReactNativeFeatureFlags';
 import flattenStyle from '../StyleSheet/flattenStyle';
 import StyleSheet from '../StyleSheet/StyleSheet';
 import ImageAnalyticsTagContext from './ImageAnalyticsTagContext';
@@ -196,55 +194,37 @@ let BaseImage: AbstractImageAndroid = ({
     );
   }
 
-  let style_: ImageStyleProp;
-  let sources_;
-  let headers_: ?ImageSourceHeaders;
+  const nativeProps = restProps as {
+    ...React.PropsOf<ImageViewNativeComponent>,
+  };
+
   if (Array.isArray(source_)) {
     const {
       headers: sourceHeaders,
       width: sourceWidth,
       height: sourceHeight,
     } = source_[0];
-    headers_ = sourceHeaders;
-    // Default to the first source's width and height if only one is provided
-    if (ReactNativeFeatureFlags.fixImageSrcDimensionPropagation()) {
-      style_ = [
-        source_.length === 1 && {width: sourceWidth, height: sourceHeight},
-        styles.base,
-        style,
-      ];
-    } else {
-      style_ = [styles.base, style];
+    if (sourceHeaders != null) {
+      nativeProps.headers = sourceHeaders;
     }
-    sources_ = source_;
+    // Default to the first source's width and height if only one is provided
+    nativeProps.style = [
+      source_.length === 1 && {width: sourceWidth, height: sourceHeight},
+      styles.base,
+      style,
+    ];
+    nativeProps.source = source_;
   } else {
     const {uri, width: sourceWidth, height: sourceHeight} = source_;
     if (uri === '') {
       console.warn('source.uri should not be an empty string');
     }
-    style_ = [
+    nativeProps.style = [
       {width: sourceWidth ?? width, height: sourceHeight ?? height},
       styles.base,
       style,
     ];
-    sources_ = [source_];
-  }
-
-  const nativeProps = restProps as {
-    ...React.PropsOf<ImageViewNativeComponent>,
-  };
-
-  // Both iOS and C++ sides expect to have "source" prop, whereas on Android it's "src"
-  // (for historical reasons). So in the latter case we populate both "src" and "source",
-  // in order to have a better alignment between platforms in the future.
-  // TODO: `src` should be eventually removed from the API on Android.
-  nativeProps.src = sources_;
-  nativeProps.source = sources_;
-
-  nativeProps.style = style_;
-
-  if (headers_ != null) {
-    nativeProps.headers = headers_;
+    nativeProps.source = [source_];
   }
 
   if (onLoadStart != null) {
