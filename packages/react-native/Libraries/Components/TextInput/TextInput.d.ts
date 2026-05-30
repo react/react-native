@@ -979,9 +979,9 @@ export interface TextInputProps
   style?: StyleProp<TextStyle> | undefined;
 
   /**
-   * Align the input text to the left, center, or right sides of the input field.
+   * Align the input text to the left, center, right, start, or end side of the input field.
    */
-  textAlign?: 'left' | 'center' | 'right' | undefined;
+  textAlign?: 'left' | 'center' | 'right' | 'start' | 'end' | undefined;
 
   /**
    * Used to locate this view in end-to-end tests

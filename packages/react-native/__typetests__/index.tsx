@@ -232,6 +232,10 @@ const viewStyle: StyleProp<ViewStyle> = {
 };
 const textStyle: StyleProp<TextStyle> = {
   fontSize: 20,
+  textAlign: 'start',
+};
+const endAlignedTextStyle: StyleProp<TextStyle> = {
+  textAlign: 'end',
 };
 const imageStyle: StyleProp<ImageStyle> = {
   resizeMode: 'contain',

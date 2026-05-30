@@ -211,7 +211,7 @@ internal object TextLayoutManager {
 
     if (alignmentAttr == "center") {
       alignment = Layout.Alignment.ALIGN_CENTER
-    } else if (alignmentAttr == "right") {
+    } else if (alignmentAttr == "right" || alignmentAttr == "end") {
       alignment =
           if (swapNormalAndOpposite) Layout.Alignment.ALIGN_NORMAL
           else Layout.Alignment.ALIGN_OPPOSITE

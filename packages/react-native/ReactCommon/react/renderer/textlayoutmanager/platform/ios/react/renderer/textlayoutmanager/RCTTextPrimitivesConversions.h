@@ -24,6 +24,10 @@ inline static NSTextAlignment RCTNSTextAlignmentFromTextAlignment(facebook::reac
       return NSTextAlignmentCenter;
     case facebook::react::TextAlignment::Justified:
       return NSTextAlignmentJustified;
+    case facebook::react::TextAlignment::Start:
+      return NSTextAlignmentNatural;
+    case facebook::react::TextAlignment::End:
+      return NSTextAlignmentRight;
   }
 }
 

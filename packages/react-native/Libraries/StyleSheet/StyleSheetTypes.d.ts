@@ -634,7 +634,15 @@ export interface TextStyle extends TextStyleIOS, TextStyleAndroid, ViewStyle {
     | undefined;
   letterSpacing?: number | undefined;
   lineHeight?: number | undefined;
-  textAlign?: 'auto' | 'left' | 'right' | 'center' | 'justify' | undefined;
+  textAlign?:
+    | 'auto'
+    | 'left'
+    | 'right'
+    | 'center'
+    | 'justify'
+    | 'start'
+    | 'end'
+    | undefined;
   textDecorationLine?:
     | 'none'
     | 'underline'

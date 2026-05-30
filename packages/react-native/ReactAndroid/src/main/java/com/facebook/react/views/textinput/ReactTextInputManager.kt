@@ -558,6 +558,8 @@ public open class ReactTextInputManager public constructor() :
       when (textAlign) {
         null,
         "auto" -> view.gravityHorizontal = Gravity.NO_GRAVITY
+        "start" -> view.gravityHorizontal = Gravity.START
+        "end" -> view.gravityHorizontal = Gravity.END
         "left" -> view.gravityHorizontal = Gravity.LEFT
         "right" -> view.gravityHorizontal = Gravity.RIGHT
         "center" -> view.gravityHorizontal = Gravity.CENTER_HORIZONTAL

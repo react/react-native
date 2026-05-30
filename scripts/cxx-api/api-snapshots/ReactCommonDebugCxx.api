@@ -4855,10 +4855,12 @@ enum facebook::react::SubmitBehavior {
 
 enum facebook::react::TextAlignment {
   Center,
+  End,
   Justified,
   Left,
   Natural,
   Right,
+  Start,
 }
 
 enum facebook::react::TextAlignmentVertical {

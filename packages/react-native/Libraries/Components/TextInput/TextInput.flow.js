@@ -1051,9 +1051,9 @@ type TextInputBaseProps = Readonly<{
   value?: ?Stringish,
 
   /**
-   * Align the input text to the left, center, or right sides of the input field.
+   * Align the input text to the left, center, right, start, or end side of the input field.
    */
-  textAlign?: ?('left' | 'center' | 'right'),
+  textAlign?: ?('left' | 'center' | 'right' | 'start' | 'end'),
 }>;
 
 /** @build-types emit-as-interface Uniwind compatibility */

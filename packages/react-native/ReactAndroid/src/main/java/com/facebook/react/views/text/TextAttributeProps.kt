@@ -527,6 +527,8 @@ public class TextAttributeProps private constructor() {
         "justify" -> Gravity.LEFT
         null,
         "auto" -> Gravity.NO_GRAVITY
+        "start" -> if (isRTL) Gravity.RIGHT else Gravity.LEFT
+        "end" -> if (isRTL) Gravity.LEFT else Gravity.RIGHT
         "left" -> if (isRTL) Gravity.RIGHT else Gravity.LEFT
         "right" -> if (isRTL) Gravity.LEFT else Gravity.RIGHT
         "center" -> Gravity.CENTER_HORIZONTAL
