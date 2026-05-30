@@ -1,0 +1,61 @@
+# Test FlatList maintainVisibleContentPosition in inverted mode
+# Delta is +44 (same as non-inverted) — frame-based delta measures actual frame shift,
+# not logical order. Prepending shifts anchor view frame downward in both modes.
+appId: ${APP_ID}
+---
+- launchApp
+# Change to portrait
+- setOrientation: portrait
+- waitForAnimationToEnd:
+    timeout: 3000
+# Find test
+- assertVisible: "Components"
+- scrollUntilVisible:
+    element:
+      id: "FlatList"
+    direction: DOWN
+    speed: 40
+- tapOn:
+    id: "FlatList"
+- scrollUntilVisible:
+    element:
+      id: "maintainVisibleContentPosition"
+    direction: DOWN
+    speed: 40
+- tapOn:
+    id: "maintainVisibleContentPosition"
+- waitForAnimationToEnd:
+    timeout: 2000
+# Enable inverted mode
+- tapOn:
+    text: "Inverted: OFF"
+- waitForAnimationToEnd:
+    timeout: 1000
+# Scroll to offset 100 (safe offset within scrollable range)
+- tapOn:
+    text: "ScrollToOffset 100"
+- waitForAnimationToEnd:
+    timeout: 2000
+# Prepend in inverted mode (delta will be +44 since inverted not supported by Fabric MVCP)
+- copyTextFrom:
+    id: "scroll-offset-display"
+- evalScript: ${output.offsetBefore = parseInt(maestro.copiedText.split(":")[1].trim())}
+- tapOn:
+    text: "Add 1 item at top"
+- waitForAnimationToEnd:
+    timeout: 2000
+- copyTextFrom:
+    id: "scroll-offset-display"
+- evalScript: ${output.offsetAfter = parseInt(maestro.copiedText.split(":")[1].trim())}
+- assertTrue: ${output.offsetAfter - output.offsetBefore >= 40 && output.offsetAfter - output.offsetBefore <= 48}
+- copyTextFrom:
+    id: "scroll-offset-display"
+- evalScript: ${output.offsetBefore = parseInt(maestro.copiedText.split(":")[1].trim())}
+- tapOn:
+    text: "Reset"
+- waitForAnimationToEnd:
+    timeout: 2000
+- copyTextFrom:
+    id: "scroll-offset-display"
+- evalScript: ${output.offsetAfter = parseInt(maestro.copiedText.split(":")[1].trim())}
+- assertTrue: ${output.offsetAfter >= 0 && output.offsetAfter <= 50}

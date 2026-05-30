@@ -1,0 +1,69 @@
+# Test empty list nil frame handling
+# Issue: Empty list nil frame — when list is empty and MVCP prop is set,
+# _firstVisibleView.frame on nil returns {0,0}, causing incorrect scroll
+# correction.
+appId: ${APP_ID}
+---
+- launchApp
+# Change to portrait
+- setOrientation: portrait
+- waitForAnimationToEnd:
+    timeout: 3000
+# Find test
+- assertVisible: "Components"
+- scrollUntilVisible:
+    element:
+      id: "FlatList"
+    direction: DOWN
+    speed: 40
+- tapOn:
+    id: "FlatList"
+- scrollUntilVisible:
+    element:
+      id: "maintainVisibleContentPosition"
+    direction: DOWN
+    speed: 40
+- tapOn:
+    id: "maintainVisibleContentPosition"
+# Scroll to item 10
+- tapOn:
+    text: "ScrollToOffset 500"
+- waitForAnimationToEnd:
+    timeout: 2000
+# Clear the list (empty list)
+- tapOn:
+    text: "Clear (empty list)"
+- waitForAnimationToEnd:
+    timeout: 2000
+# Reset data (repopulate)
+- tapOn:
+    text: "Reset"
+- waitForAnimationToEnd:
+    timeout: 2000
+# Scroll to item 10 again and prepend — verify MVCP still works after empty
+- tapOn:
+    text: "ScrollToOffset 500"
+- waitForAnimationToEnd:
+    timeout: 2000
+- copyTextFrom:
+    id: "scroll-offset-display"
+- evalScript: ${output.offsetBefore = parseInt(maestro.copiedText.split(":")[1].trim())}
+- tapOn:
+    text: "Add 1 item at top"
+- waitForAnimationToEnd:
+    timeout: 2000
+- copyTextFrom:
+    id: "scroll-offset-display"
+- evalScript: ${output.offsetAfter = parseInt(maestro.copiedText.split(":")[1].trim())}
+- assertTrue: ${output.offsetAfter - output.offsetBefore >= 42 && output.offsetAfter - output.offsetBefore <= 46}
+- copyTextFrom:
+    id: "scroll-offset-display"
+- evalScript: ${output.offsetBefore = parseInt(maestro.copiedText.split(":")[1].trim())}
+- tapOn:
+    text: "Reset"
+- waitForAnimationToEnd:
+    timeout: 2000
+- copyTextFrom:
+    id: "scroll-offset-display"
+- evalScript: ${output.offsetAfter = parseInt(maestro.copiedText.split(":")[1].trim())}
+- assertTrue: ${output.offsetAfter >= 0 && output.offsetAfter <= 50}

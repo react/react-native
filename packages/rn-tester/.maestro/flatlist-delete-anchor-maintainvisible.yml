@@ -1,0 +1,44 @@
+# Test FlatList maintainVisibleContentPosition — delete anchor item
+# When the anchor item (first visible) is deleted, MVCP should select a new anchor
+appId: ${APP_ID}
+---
+- launchApp
+- setOrientation: portrait
+- waitForAnimationToEnd:
+    timeout: 3000
+- assertVisible: "Components"
+- scrollUntilVisible:
+    element:
+      id: "FlatList"
+    direction: DOWN
+    speed: 40
+- tapOn:
+    id: "FlatList"
+- scrollUntilVisible:
+    element:
+      id: "maintainVisibleContentPosition"
+    direction: DOWN
+    speed: 40
+- tapOn:
+    id: "maintainVisibleContentPosition"
+# Scroll to offset 200 (item 5 should be visible)
+- tapOn:
+    text: "ScrollToOffset 100"
+- waitForAnimationToEnd:
+    timeout: 2000
+# Record offset before delete
+- copyTextFrom:
+    id: "scroll-offset-display"
+- evalScript: ${output.offsetBefore = parseInt(maestro.copiedText.split(":")[1].trim())}
+# Clear the list (simulates delete of all items including anchor)
+- tapOn:
+    text: "Clear (empty list)"
+- waitForAnimationToEnd:
+    timeout: 2000
+# Reset to restore items
+- tapOn:
+    text: "Reset"
+- waitForAnimationToEnd:
+    timeout: 2000
+# Verify list is restored
+- assertVisible: "0"

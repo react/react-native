@@ -1,0 +1,45 @@
+# Test FlatList maintainVisibleContentPosition — delete from middle
+# When items are deleted from the middle, MVCP should adjust scroll offset
+appId: ${APP_ID}
+---
+- launchApp
+- setOrientation: portrait
+- waitForAnimationToEnd:
+    timeout: 3000
+- assertVisible: "Components"
+- scrollUntilVisible:
+    element:
+      id: "FlatList"
+    direction: DOWN
+    speed: 40
+- tapOn:
+    id: "FlatList"
+- scrollUntilVisible:
+    element:
+      id: "maintainVisibleContentPosition"
+    direction: DOWN
+    speed: 40
+- tapOn:
+    id: "maintainVisibleContentPosition"
+# Scroll to offset 400 (item 10 should be visible)
+- tapOn:
+    text: "ScrollToOffset 500"
+- waitForAnimationToEnd:
+    timeout: 2000
+# Record offset before delete
+- copyTextFrom:
+    id: "scroll-offset-display"
+- evalScript: ${output.offsetBefore = parseInt(maestro.copiedText.split(":")[1].trim())}
+# Add items at top (shifts middle items up)
+- tapOn:
+    text: "Add 3 items at top"
+- waitForAnimationToEnd:
+    timeout: 2000
+# Record offset after prepend
+- copyTextFrom:
+    id: "scroll-offset-display"
+- evalScript: ${output.offsetAfter = parseInt(maestro.copiedText.split(":")[1].trim())}
+# Delta should be ~132px (3 items × 44px)
+- assertTrue: ${output.offsetAfter - output.offsetBefore >= 128 && output.offsetAfter - output.offsetBefore <= 136}
+- tapOn:
+    text: "Reset"

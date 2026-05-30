@@ -1,0 +1,81 @@
+# Test variable-height items with first prepend
+# Single prepend with variable height: delta should be 28-112px
+appId: ${APP_ID}
+---
+- launchApp
+# Change to portrait
+- setOrientation: portrait
+- waitForAnimationToEnd:
+    timeout: 3000
+# Find test
+- assertVisible: "Components"
+- scrollUntilVisible:
+    element:
+      id: "FlatList"
+    direction: DOWN
+    speed: 40
+- tapOn:
+    id: "FlatList"
+- scrollUntilVisible:
+    element:
+      id: "maintainVisibleContentPosition"
+    direction: DOWN
+    speed: 40
+- tapOn:
+    id: "maintainVisibleContentPosition"
+# Enable variable height mode
+- tapOn:
+    text: "Height: Fixed"
+- waitForAnimationToEnd:
+    timeout: 2000
+# Scroll to item 10
+- tapOn:
+    text: "ScrollToOffset 500"
+- waitForAnimationToEnd:
+    timeout: 2000
+# Single prepend with variable height — test first prepend specifically
+- copyTextFrom:
+    id: "scroll-offset-display"
+- evalScript: ${output.offsetBefore = parseInt(maestro.copiedText.split(":")[1].trim())}
+- tapOn:
+    text: "Add 1 item at top"
+- waitForAnimationToEnd:
+    timeout: 2000
+- copyTextFrom:
+    id: "scroll-offset-display"
+- evalScript: ${output.offsetAfter = parseInt(maestro.copiedText.split(":")[1].trim())}
+- assertTrue: ${output.offsetAfter - output.offsetBefore >= 28 && output.offsetAfter - output.offsetBefore <= 112}
+# Multiple prepends with variable heights
+- copyTextFrom:
+    id: "scroll-offset-display"
+- evalScript: ${output.offsetBefore = parseInt(maestro.copiedText.split(":")[1].trim())}
+- tapOn:
+    text: "Add 1 item at top"
+- waitForAnimationToEnd:
+    timeout: 2000
+- copyTextFrom:
+    id: "scroll-offset-display"
+- evalScript: ${output.offsetAfter = parseInt(maestro.copiedText.split(":")[1].trim())}
+- assertTrue: ${output.offsetAfter - output.offsetBefore >= 28 && output.offsetAfter - output.offsetBefore <= 112}
+- copyTextFrom:
+    id: "scroll-offset-display"
+- evalScript: ${output.offsetBefore = parseInt(maestro.copiedText.split(":")[1].trim())}
+- tapOn:
+    text: "Add 1 item at top"
+- waitForAnimationToEnd:
+    timeout: 2000
+- copyTextFrom:
+    id: "scroll-offset-display"
+- evalScript: ${output.offsetAfter = parseInt(maestro.copiedText.split(":")[1].trim())}
+- assertTrue: ${output.offsetAfter - output.offsetBefore >= 28 && output.offsetAfter - output.offsetBefore <= 112}
+- copyTextFrom:
+    id: "scroll-offset-display"
+- evalScript: ${output.offsetBefore = parseInt(maestro.copiedText.split(":")[1].trim())}
+- tapOn:
+    text: "Reset"
+- waitForAnimationToEnd:
+    timeout: 2000
+- copyTextFrom:
+    id: "scroll-offset-display"
+- evalScript: ${output.offsetAfter = parseInt(maestro.copiedText.split(":")[1].trim())}
+- assertTrue: ${output.offsetAfter >= 0 && output.offsetAfter <= 50}

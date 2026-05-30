@@ -3925,6 +3925,369 @@ exports[`handles maintainVisibleContentPosition when anchor moves before minInde
 </RCTScrollView>
 `;
 
+exports[`handles multiple rapid prepends with maintainVisibleContentPosition 1`] = `
+<RCTScrollView
+  data={
+    Array [
+      Object {
+        "key": 20,
+      },
+      Object {
+        "key": 21,
+      },
+      Object {
+        "key": 22,
+      },
+      Object {
+        "key": 23,
+      },
+      Object {
+        "key": 24,
+      },
+      Object {
+        "key": 0,
+      },
+      Object {
+        "key": 1,
+      },
+      Object {
+        "key": 2,
+      },
+      Object {
+        "key": 3,
+      },
+      Object {
+        "key": 4,
+      },
+      Object {
+        "key": 5,
+      },
+      Object {
+        "key": 6,
+      },
+      Object {
+        "key": 7,
+      },
+      Object {
+        "key": 8,
+      },
+      Object {
+        "key": 9,
+      },
+      Object {
+        "key": 10,
+      },
+      Object {
+        "key": 11,
+      },
+      Object {
+        "key": 12,
+      },
+      Object {
+        "key": 13,
+      },
+      Object {
+        "key": 14,
+      },
+      Object {
+        "key": 15,
+      },
+      Object {
+        "key": 16,
+      },
+      Object {
+        "key": 17,
+      },
+      Object {
+        "key": 18,
+      },
+      Object {
+        "key": 19,
+      },
+    ]
+  }
+  getItem={[Function]}
+  getItemCount={[Function]}
+  getItemLayout={[Function]}
+  initialNumToRender={1}
+  maintainVisibleContentPosition={
+    Object {
+      "minIndexForVisible": 0,
+    }
+  }
+  onContentSizeChange={[Function]}
+  onLayout={[Function]}
+  onMomentumScrollBegin={[Function]}
+  onMomentumScrollEnd={[Function]}
+  onScroll={[Function]}
+  onScrollBeginDrag={[Function]}
+  onScrollEndDrag={[Function]}
+  renderItem={[Function]}
+  scrollEventThrottle={0.0001}
+  stickyHeaderIndices={Array []}
+  windowSize={1}
+>
+  <View>
+    <View
+      onFocusCapture={[Function]}
+      style={null}
+    >
+      <MockCellItem
+        value={20}
+      />
+    </View>
+    <View
+      style={
+        Object {
+          "height": 80,
+        }
+      }
+    />
+    <View
+      onFocusCapture={[Function]}
+      style={null}
+    >
+      <MockCellItem
+        value={4}
+      />
+    </View>
+    <View
+      onFocusCapture={[Function]}
+      style={null}
+    >
+      <MockCellItem
+        value={5}
+      />
+    </View>
+    <View
+      onFocusCapture={[Function]}
+      style={null}
+    >
+      <MockCellItem
+        value={6}
+      />
+    </View>
+    <View
+      onFocusCapture={[Function]}
+      style={null}
+    >
+      <MockCellItem
+        value={7}
+      />
+    </View>
+    <View
+      onFocusCapture={[Function]}
+      style={null}
+    >
+      <MockCellItem
+        value={8}
+      />
+    </View>
+    <View
+      onFocusCapture={[Function]}
+      style={null}
+    >
+      <MockCellItem
+        value={9}
+      />
+    </View>
+    <View
+      style={
+        Object {
+          "height": 100,
+        }
+      }
+    />
+  </View>
+</RCTScrollView>
+`;
+
+exports[`handles multiple rapid prepends with maintainVisibleContentPosition 2`] = `
+<RCTScrollView
+  data={
+    Array [
+      Object {
+        "key": 25,
+      },
+      Object {
+        "key": 26,
+      },
+      Object {
+        "key": 27,
+      },
+      Object {
+        "key": 20,
+      },
+      Object {
+        "key": 21,
+      },
+      Object {
+        "key": 22,
+      },
+      Object {
+        "key": 23,
+      },
+      Object {
+        "key": 24,
+      },
+      Object {
+        "key": 0,
+      },
+      Object {
+        "key": 1,
+      },
+      Object {
+        "key": 2,
+      },
+      Object {
+        "key": 3,
+      },
+      Object {
+        "key": 4,
+      },
+      Object {
+        "key": 5,
+      },
+      Object {
+        "key": 6,
+      },
+      Object {
+        "key": 7,
+      },
+      Object {
+        "key": 8,
+      },
+      Object {
+        "key": 9,
+      },
+      Object {
+        "key": 10,
+      },
+      Object {
+        "key": 11,
+      },
+      Object {
+        "key": 12,
+      },
+      Object {
+        "key": 13,
+      },
+      Object {
+        "key": 14,
+      },
+      Object {
+        "key": 15,
+      },
+      Object {
+        "key": 16,
+      },
+      Object {
+        "key": 17,
+      },
+      Object {
+        "key": 18,
+      },
+      Object {
+        "key": 19,
+      },
+    ]
+  }
+  getItem={[Function]}
+  getItemCount={[Function]}
+  getItemLayout={[Function]}
+  initialNumToRender={1}
+  maintainVisibleContentPosition={
+    Object {
+      "minIndexForVisible": 0,
+    }
+  }
+  onContentSizeChange={[Function]}
+  onLayout={[Function]}
+  onMomentumScrollBegin={[Function]}
+  onMomentumScrollEnd={[Function]}
+  onScroll={[Function]}
+  onScrollBeginDrag={[Function]}
+  onScrollEndDrag={[Function]}
+  renderItem={[Function]}
+  scrollEventThrottle={0.0001}
+  stickyHeaderIndices={Array []}
+  windowSize={1}
+>
+  <View>
+    <View
+      onFocusCapture={[Function]}
+      style={null}
+    >
+      <MockCellItem
+        value={25}
+      />
+    </View>
+    <View
+      style={
+        Object {
+          "height": 110,
+        }
+      }
+    />
+    <View
+      onFocusCapture={[Function]}
+      style={null}
+    >
+      <MockCellItem
+        value={4}
+      />
+    </View>
+    <View
+      onFocusCapture={[Function]}
+      style={null}
+    >
+      <MockCellItem
+        value={5}
+      />
+    </View>
+    <View
+      onFocusCapture={[Function]}
+      style={null}
+    >
+      <MockCellItem
+        value={6}
+      />
+    </View>
+    <View
+      onFocusCapture={[Function]}
+      style={null}
+    >
+      <MockCellItem
+        value={7}
+      />
+    </View>
+    <View
+      onFocusCapture={[Function]}
+      style={null}
+    >
+      <MockCellItem
+        value={8}
+      />
+    </View>
+    <View
+      onFocusCapture={[Function]}
+      style={null}
+    >
+      <MockCellItem
+        value={9}
+      />
+    </View>
+    <View
+      style={
+        Object {
+          "height": 100,
+        }
+      }
+    />
+  </View>
+</RCTScrollView>
+`;
+
 exports[`initially renders nothing when initialNumToRender is 0 1`] = `
 <RCTScrollView
   data={

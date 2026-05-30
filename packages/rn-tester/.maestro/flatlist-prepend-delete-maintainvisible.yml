@@ -1,0 +1,66 @@
+# Test FlatList maintainVisibleContentPosition — prepend with delete in same batch
+# Verifies MVCP when items are prepended and deleted in the same setData call.
+# Net effect: -2 items (prepend 1, remove 3 from bottom).
+# The native side is unaffected by bottom deletes since MVCP only looks at
+# the first visible view, but re-ordering edge case is untested.
+appId: ${APP_ID}
+---
+- launchApp
+# Change to portrait
+- setOrientation: portrait
+- waitForAnimationToEnd:
+    timeout: 3000
+# Find test
+- assertVisible: "Components"
+- scrollUntilVisible:
+    element:
+      id: "FlatList"
+    direction: DOWN
+    speed: 40
+- tapOn:
+    id: "FlatList"
+- scrollUntilVisible:
+    element:
+      id: "maintainVisibleContentPosition"
+    direction: DOWN
+    speed: 40
+- tapOn:
+    id: "maintainVisibleContentPosition"
+# Scroll to offset 100
+- tapOn:
+    text: "ScrollToOffset 100"
+- waitForAnimationToEnd:
+    timeout: 2000
+# Record offset before prepend+delete
+- copyTextFrom:
+    id: "scroll-offset-display"
+- evalScript: ${output.offsetBefore = parseInt(maestro.copiedText.split(":")[1].trim())}
+# Prepend 1 item and remove 3 from bottom in same batch (net -2 items)
+- tapOn:
+    text: "Add + Remove (net -2)"
+# Wait for layout + MVCP correction to complete
+- waitForAnimationToEnd:
+    timeout: 3000
+# Read offset multiple times to ensure we get the settled value
+- copyTextFrom:
+    id: "scroll-offset-display"
+- evalScript: ${output.offsetAfter = parseInt(maestro.copiedText.split(":")[1].trim())}
+- waitForAnimationToEnd:
+    timeout: 2000
+- copyTextFrom:
+    id: "scroll-offset-display"
+- evalScript: ${output.offsetAfter2 = parseInt(maestro.copiedText.split(":")[1].trim())}
+# Use the later value if it's different (indicates settling)
+- evalScript: ${output.offsetAfter = output.offsetAfter2 || output.offsetAfter}
+# Delta should be approximately 44px (one prepended item with margin)
+# Bottom deletes don't affect MVCP since anchor is at top of viewport
+- assertTrue: ${output.offsetAfter - output.offsetBefore >= 40 && output.offsetAfter - output.offsetBefore <= 50}
+# Reset
+- tapOn:
+    text: "Reset"
+- waitForAnimationToEnd:
+    timeout: 2000
+- copyTextFrom:
+    id: "scroll-offset-display"
+- evalScript: ${output.offsetAfter = parseInt(maestro.copiedText.split(":")[1].trim())}
+- assertTrue: ${output.offsetAfter >= 0 && output.offsetAfter <= 50}
