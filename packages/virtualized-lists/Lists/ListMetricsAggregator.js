@@ -103,8 +103,10 @@ export default class ListMetricsAggregator {
         this._measuredCellsCount += 1;
       }
 
-      this._averageCellLength =
-        this._measuredCellsLength / this._measuredCellsCount;
+      if (this._measuredCellsCount > 0) {
+        this._averageCellLength =
+          this._measuredCellsLength / this._measuredCellsCount;
+      }
       this._cellMetrics.set(cellKey, next);
       this._highestMeasuredCellIndex = Math.max(
         this._highestMeasuredCellIndex,
@@ -308,6 +310,7 @@ export default class ListMetricsAggregator {
     }
 
     if (orientation.horizontal !== this._orientation.horizontal) {
+      this._cellMetrics.clear();
       this._averageCellLength = 0;
       this._highestMeasuredCellIndex = 0;
       this._measuredCellsLength = 0;
