@@ -932,7 +932,18 @@ internal object TextLayoutManager {
           widthYogaMeasureMode == YogaMeasureMode.AT_MOST && boring != null ->
               floorPixelWidth(width)
           else -> {
-            val desiredWidth = ceil(Layout.getDesiredWidth(text, paint)).toInt()
+            val desiredWidth =
+                getDesiredWidth(
+                    text,
+                    includeFontPadding,
+                    textBreakStrategy,
+                    hyphenationFrequency,
+                    lineBreakStyle,
+                    lineBreakWordStyle,
+                    alignment,
+                    justificationMode,
+                    paint,
+                )
             if (widthYogaMeasureMode == YogaMeasureMode.AT_MOST) {
               min(desiredWidth, floorPixelWidth(width))
             } else {
@@ -1054,6 +1065,52 @@ internal object TextLayoutManager {
     val drawingBounds = computeDrawingBoundingBox(layout) ?: return 0
 
     return ceil(drawingBounds.right - layout.width).toInt().coerceAtLeast(0)
+  }
+
+  private fun getDesiredWidth(
+      text: Spannable,
+      includeFontPadding: Boolean,
+      textBreakStrategy: Int,
+      hyphenationFrequency: Int,
+      lineBreakStyle: Int,
+      lineBreakWordStyle: Int,
+      alignment: Layout.Alignment,
+      justificationMode: Int,
+      paint: TextPaint,
+  ): Int {
+    val advanceWidth = ceil(Layout.getDesiredWidth(text, paint)).toInt()
+
+    if (
+        Build.VERSION.SDK_INT < VERSION_CODE_VANILLA_ICE_CREAM ||
+            setUseBoundsForWidthMethod == null
+    ) {
+      return advanceWidth
+    }
+
+    val visualBoundsLayout =
+        buildLayout(
+            text,
+            Int.MAX_VALUE / 2,
+            includeFontPadding,
+            textBreakStrategy,
+            hyphenationFrequency,
+            lineBreakStyle,
+            lineBreakWordStyle,
+            alignment,
+            justificationMode,
+            null,
+            ReactConstants.UNSET,
+            paint,
+            enableStartOverhang = true,
+            shiftDrawingOffsetForStartOverhang = false,
+        )
+
+    var visualBoundsWidth = 0f
+    for (i in 0 until visualBoundsLayout.lineCount) {
+      visualBoundsWidth = max(visualBoundsWidth, visualBoundsLayout.getLineMax(i))
+    }
+
+    return max(advanceWidth, ceil(visualBoundsWidth).toInt())
   }
 
   private fun buildLayout(
