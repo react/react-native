@@ -15,9 +15,11 @@ import android.text.SpannableString
 import android.text.TextPaint
 import com.facebook.yoga.YogaMeasureMode
 import kotlin.math.ceil
+import kotlin.math.floor
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.annotation.Config
 import org.robolectric.RobolectricTestRunner
 
 /**
@@ -77,6 +79,42 @@ class TextLayoutManagerAbsoluteLayoutWithFractionalPixelTest {
         .isGreaterThanOrEqualTo(renderedLineWidth)
   }
 
+  @Test
+  @Config(sdk = [35])
+  fun `Android 15 EXACTLY mode keeps the width provided by Yoga`() {
+    val text = SpannableString("First line\nSecond line")
+    val paint = TextPaint(TextPaint.ANTI_ALIAS_FLAG).apply { textSize = 16f }
+    val exactWidth = 48.5f
+
+    val layout = invokeCreateLayout(text, exactWidth, paint)
+
+    assertThat(layout.width).isEqualTo(ceil(exactWidth).toInt())
+  }
+
+  @Test
+  @Config(sdk = [35])
+  fun `Android 15 AT_MOST mode does not exceed the width provided by Yoga`() {
+    val text = SpannableString("Prison Break")
+    val paint = TextPaint(TextPaint.ANTI_ALIAS_FLAG).apply { textSize = 16f }
+    val maxWidth = 8.5f
+
+    val layout = invokeCreateLayout(text, maxWidth, paint, YogaMeasureMode.AT_MOST)
+
+    assertThat(layout.width).isLessThanOrEqualTo(floor(maxWidth).toInt())
+  }
+
+  @Test
+  @Config(sdk = [35])
+  fun `Android 15 UNDEFINED mode does not shrink below advance width`() {
+    val text = SpannableString("Prison Break")
+    val paint = TextPaint(TextPaint.ANTI_ALIAS_FLAG).apply { textSize = 16f }
+    val advanceWidth = ceil(Layout.getDesiredWidth(text, paint)).toInt()
+
+    val layout = invokeCreateLayout(text, 0f, paint, YogaMeasureMode.UNDEFINED)
+
+    assertThat(layout.width).isGreaterThanOrEqualTo(advanceWidth)
+  }
+
   /**
    * Default values mirror what measureText() passes in the production path for a plain
    * single-paragraph label.
@@ -89,12 +127,13 @@ class TextLayoutManagerAbsoluteLayoutWithFractionalPixelTest {
       text: SpannableString,
       width: Float,
       paint: TextPaint,
+      widthYogaMeasureMode: YogaMeasureMode = YogaMeasureMode.EXACTLY,
   ): Layout =
       TextLayoutManager.createLayout(
           text,
           BoringLayout.isBoring(text, paint),
           width,
-          YogaMeasureMode.EXACTLY,
+          widthYogaMeasureMode,
           /* includeFontPadding = */ false,
           /* textBreakStrategy = */ Layout.BREAK_STRATEGY_HIGH_QUALITY,
           /* hyphenationFrequency = */ Layout.HYPHENATION_FREQUENCY_NONE,
