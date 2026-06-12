@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<e066fb9f428dbc0d26fda892404316a8>>
+ * @generated SignedSource<<c983b7bba4ca0e68668f6ad85518b03f>>
  */
 
 /**
@@ -42,7 +42,6 @@ class ReactNativeFeatureFlagsProvider {
   virtual bool enableCppPropsIteratorSetter() = 0;
   virtual bool enableCustomFocusSearchOnClippedElementsAndroid() = 0;
   virtual bool enableDestroyShadowTreeRevisionAsync() = 0;
-  virtual bool enableDifferentiatorMutationVectorPreallocation() = 0;
   virtual bool enableDoubleMeasurementFixAndroid() = 0;
   virtual bool enableEagerRootViewAttachment() = 0;
   virtual bool enableExclusivePropsUpdateAndroid() = 0;

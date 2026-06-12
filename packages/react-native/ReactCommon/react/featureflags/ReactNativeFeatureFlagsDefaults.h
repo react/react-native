@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<8dfc52502bd539e5e43d547f895a6d33>>
+ * @generated SignedSource<<68ea672b9d4f861b8b181907763709de>>
  */
 
 /**
@@ -92,10 +92,6 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool enableDestroyShadowTreeRevisionAsync() override {
-    return false;
-  }
-
-  bool enableDifferentiatorMutationVectorPreallocation() override {
     return false;
   }
 

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<7e91da9df64ce42424101d7d72356c4a>>
+ * @generated SignedSource<<5307fff9429956a3f3f2f54f2b6b00e7>>
  */
 
 /**
@@ -131,12 +131,6 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun enableDestroyShadowTreeRevisionAsync(): Boolean = accessor.enableDestroyShadowTreeRevisionAsync()
-
-  /**
-   * Pre-allocate mutation vectors in the Differentiator to reduce reallocation overhead during shadow view diffing.
-   */
-  @JvmStatic
-  public fun enableDifferentiatorMutationVectorPreallocation(): Boolean = accessor.enableDifferentiatorMutationVectorPreallocation()
 
   /**
    * When enabled a subset of components will avoid double measurement on Android.

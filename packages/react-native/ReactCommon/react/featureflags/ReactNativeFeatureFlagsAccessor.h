@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<1974d5797f43e8f73b521ebfd46ce492>>
+ * @generated SignedSource<<05c5b9db2533ee81fb2f10149d2d6bd5>>
  */
 
 /**
@@ -49,7 +49,6 @@ class ReactNativeFeatureFlagsAccessor {
   bool enableCppPropsIteratorSetter();
   bool enableCustomFocusSearchOnClippedElementsAndroid();
   bool enableDestroyShadowTreeRevisionAsync();
-  bool enableDifferentiatorMutationVectorPreallocation();
   bool enableDoubleMeasurementFixAndroid();
   bool enableEagerRootViewAttachment();
   bool enableExclusivePropsUpdateAndroid();
@@ -131,7 +130,7 @@ class ReactNativeFeatureFlagsAccessor {
   std::unique_ptr<ReactNativeFeatureFlagsProvider> currentProvider_;
   bool wasOverridden_;
 
-  std::array<std::atomic<const char*>, 88> accessedFeatureFlags_;
+  std::array<std::atomic<const char*>, 87> accessedFeatureFlags_;
 
   std::atomic<std::optional<bool>> commonTestFlag_;
   std::atomic<std::optional<bool>> cdpInteractionMetricsEnabled_;
@@ -150,7 +149,6 @@ class ReactNativeFeatureFlagsAccessor {
   std::atomic<std::optional<bool>> enableCppPropsIteratorSetter_;
   std::atomic<std::optional<bool>> enableCustomFocusSearchOnClippedElementsAndroid_;
   std::atomic<std::optional<bool>> enableDestroyShadowTreeRevisionAsync_;
-  std::atomic<std::optional<bool>> enableDifferentiatorMutationVectorPreallocation_;
   std::atomic<std::optional<bool>> enableDoubleMeasurementFixAndroid_;
   std::atomic<std::optional<bool>> enableEagerRootViewAttachment_;
   std::atomic<std::optional<bool>> enableExclusivePropsUpdateAndroid_;

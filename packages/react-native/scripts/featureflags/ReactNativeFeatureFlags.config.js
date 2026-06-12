@@ -232,17 +232,6 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
-    enableDifferentiatorMutationVectorPreallocation: {
-      defaultValue: false,
-      metadata: {
-        dateAdded: '2026-02-28',
-        description:
-          'Pre-allocate mutation vectors in the Differentiator to reduce reallocation overhead during shadow view diffing.',
-        expectedReleaseValue: true,
-        purpose: 'experimentation',
-      },
-      ossReleaseStage: 'none',
-    },
     enableDoubleMeasurementFixAndroid: {
       defaultValue: false,
       metadata: {
