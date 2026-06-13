@@ -68,7 +68,17 @@ public object ReactScrollViewHelper {
   @JvmStatic
   public fun <T> emitScrollEvent(scrollView: T, xVelocity: Float, yVelocity: Float)
       where T : HasScrollEventThrottle?, T : ViewGroup {
-    emitScrollEvent(scrollView, ScrollEventType.SCROLL, xVelocity, yVelocity)
+    emitScrollEvent(scrollView, ScrollEventType.SCROLL, xVelocity, yVelocity, false)
+  }
+
+  /**
+   * Emits a scroll event without throttling. Used by MVCP to ensure scroll position updates reach
+   * JS immediately when the scroll position is adjusted programmatically.
+   */
+  @JvmStatic
+  public fun <T> emitScrollEventNoThrottle(scrollView: T, xVelocity: Float, yVelocity: Float)
+      where T : HasScrollEventThrottle?, T : ViewGroup {
+    emitScrollEvent(scrollView, ScrollEventType.SCROLL, xVelocity, yVelocity, true)
   }
 
   @JvmStatic
@@ -102,7 +112,7 @@ public object ReactScrollViewHelper {
 
   private fun <T> emitScrollEvent(scrollView: T, scrollEventType: ScrollEventType)
       where T : HasScrollEventThrottle?, T : ViewGroup {
-    emitScrollEvent(scrollView, scrollEventType, 0f, 0f)
+    emitScrollEvent(scrollView, scrollEventType, 0f, 0f, false)
   }
 
   private fun <T> emitScrollEvent(
@@ -110,12 +120,14 @@ public object ReactScrollViewHelper {
       scrollEventType: ScrollEventType,
       xVelocity: Float,
       yVelocity: Float,
+      skipThrottle: Boolean = false,
   ) where T : HasScrollEventThrottle?, T : ViewGroup {
     val now = System.currentTimeMillis()
     // Throttle the scroll event if scrollEventThrottle is set to be equal or more than 17 ms.
     // We limit the delta to 17ms so that small throttles intended to enable 60fps updates will not
     // inadvertently filter out any scroll events.
     if (
+        !skipThrottle &&
         scrollEventType == ScrollEventType.SCROLL &&
             scrollView.scrollEventThrottle >= max(17, now - scrollView.lastScrollDispatchTime)
     ) {
@@ -274,9 +286,9 @@ public object ReactScrollViewHelper {
    * by calculate the "would be" initial velocity with internal friction to move to the point (x,
    * y), then apply that to the animator.
    */
-  @JvmStatic
-  public fun <T> smoothScrollTo(scrollView: T, x: Int, y: Int)
-      where T : HasFlingAnimator?, T : HasScrollState?, T : HasStateWrapper?, T : ViewGroup {
+@JvmStatic
+   public fun <T> smoothScrollTo(scrollView: T, x: Int, y: Int)
+       where T : HasFlingAnimator?, T : HasScrollEventThrottle?, T : HasScrollState?, T : HasStateWrapper?, T : ViewGroup {
     if (DEBUG_MODE) {
       FLog.i(TAG, "smoothScrollTo[%d] x %d y %d", scrollView.id, x, y)
     }
@@ -444,7 +456,7 @@ public object ReactScrollViewHelper {
   }
 
   public fun <T> registerFlingAnimator(scrollView: T)
-      where T : HasFlingAnimator?, T : HasScrollState?, T : HasStateWrapper?, T : ViewGroup {
+      where T : HasFlingAnimator?, T : HasScrollState?, T : HasStateWrapper?, T : HasScrollEventThrottle?, T : ViewGroup {
     scrollView
         .getFlingAnimator()
         .addListener(
@@ -459,6 +471,8 @@ public object ReactScrollViewHelper {
                 scrollView.reactScrollViewScrollState.isFinished = true
                 notifyUserDrivenScrollEnded(scrollView)
                 updateFabricScrollState(scrollView)
+                // Dispatch an unthrottled scroll event to ensure JS state is updated after animation
+                emitScrollEventNoThrottle(scrollView, 0f, 0f)
               }
 
               override fun onAnimationCancel(animator: Animator) {

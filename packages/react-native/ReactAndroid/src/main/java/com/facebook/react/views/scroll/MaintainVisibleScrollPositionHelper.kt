@@ -18,7 +18,9 @@ import com.facebook.react.bridge.UiThreadUtil.runOnUiThread
 import com.facebook.react.common.annotations.UnstableReactNativeAPI
 import com.facebook.react.uimanager.UIManagerHelper
 import com.facebook.react.uimanager.common.UIManagerType
+import com.facebook.react.views.scroll.ReactScrollViewHelper.HasScrollEventThrottle
 import com.facebook.react.views.scroll.ReactScrollViewHelper.HasSmoothScroll
+import com.facebook.react.views.scroll.ReactScrollViewHelper.emitScrollEventNoThrottle
 import com.facebook.react.views.view.ReactViewGroup
 import java.lang.ref.WeakReference
 
@@ -31,7 +33,7 @@ import java.lang.ref.WeakReference
 internal class MaintainVisibleScrollPositionHelper<ScrollViewT>(
     private val scrollView: ScrollViewT,
     private val horizontal: Boolean,
-) : UIManagerListener where ScrollViewT : HasSmoothScroll?, ScrollViewT : ViewGroup? {
+) : UIManagerListener where ScrollViewT : HasScrollEventThrottle?, ScrollViewT : HasSmoothScroll?, ScrollViewT : ViewGroup? {
 
   var config: Config? = null
   private var firstVisibleViewRef: WeakReference<View>? = null
@@ -98,6 +100,7 @@ internal class MaintainVisibleScrollPositionHelper<ScrollViewT>(
         val scrollX = scrollView.scrollX
         scrollView.scrollToPreservingMomentum(scrollX + deltaX, scrollView.scrollY)
         this.prevFirstVisibleFrame = newFrame
+        emitScrollEventNoThrottle(scrollView, 0f, 0f)
         if (config.autoScrollToTopThreshold != null && scrollX <= config.autoScrollToTopThreshold) {
           scrollView.reactSmoothScrollTo(0, scrollView.scrollY)
         }
@@ -108,6 +111,7 @@ internal class MaintainVisibleScrollPositionHelper<ScrollViewT>(
         val scrollY = scrollView.scrollY
         scrollView.scrollToPreservingMomentum(scrollView.scrollX, scrollY + deltaY)
         this.prevFirstVisibleFrame = newFrame
+        emitScrollEventNoThrottle(scrollView, 0f, 0f)
         if (config.autoScrollToTopThreshold != null && scrollY <= config.autoScrollToTopThreshold) {
           scrollView.reactSmoothScrollTo(scrollView.scrollX, 0)
         }
