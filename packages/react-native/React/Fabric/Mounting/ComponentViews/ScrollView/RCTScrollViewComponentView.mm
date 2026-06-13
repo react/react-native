@@ -1091,11 +1091,27 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
     return;
   }
 
-  if (ReactNativeFeatureFlags::enableViewCulling()) {
-    // Abort if the first visible view has changed (different tag)
-    if (_firstVisibleView && _firstVisibleView.tag != _firstVisibleViewTag) {
-      return;
-    }
+  // Abort if no first visible view (e.g., list was empty during mount)
+  if (!_firstVisibleView) {
+    return;
+  }
+
+  // Abort if the first visible view has been recycled for a different item.
+  // The tag was captured in _prepareForMaintainVisibleScrollPosition (before
+  // mounting), and RCTComponentViewRegistry assigns new tags during dequeue
+  // (mounting) and resets them to 0 during enqueue (unmounting). When items
+  // are removed and re-added, recycled views get new tags based on their
+  // position, so the view at position 0 may have a different tag than before.
+  // If the tag changed, we bail out to avoid applying the MVCP delta to the
+  // wrong view, which would produce incorrect scroll offsets.
+  if (_firstVisibleView.tag != _firstVisibleViewTag) {
+    return;
+  }
+
+  // Abort if the first visible view was deleted during mount (not recycled)
+  // This prevents MVCP from applying a delta after scrollToOffset(0) during reset/clear
+  if (_firstVisibleView.superview != _contentView) {
+    return;
   }
 
   std::optional<int> autoscrollThreshold = props.maintainVisibleContentPosition.value().autoscrollToTopThreshold;
