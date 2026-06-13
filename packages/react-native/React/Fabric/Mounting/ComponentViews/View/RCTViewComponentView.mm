@@ -781,6 +781,13 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
   _removeClippedSubviews = NO;
   _reactSubviews = [NSMutableArray new];
   _layoutMetrics = EmptyLayoutMetrics;
+
+  // Reset accessibilityViewIsModal so it does not leak across recycled views.
+  // updateProps only writes this property when (oldProps != newProps); after a
+  // view is recycled _props resets to the default (NO), so a recycled view that
+  // is reused without the prop keeps the stale YES and traps VoiceOver / UI
+  // automation against a now-unrelated subtree (empty accessibility tree).
+  self.accessibilityElement.accessibilityViewIsModal = NO;
 }
 
 - (void)setPropKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN:(NSSet<NSString *> *_Nullable)props
