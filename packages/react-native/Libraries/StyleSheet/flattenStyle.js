@@ -20,6 +20,31 @@ type NonAnimatedNodeObject<TStyleProp> = TStyleProp extends AnimatedNode
   ? empty
   : TStyleProp;
 
+function flattenStyleArrayInto<
+  TStyleProp extends ____DangerouslyImpreciseAnimatedStyleProp_Internal,
+>(result: {[string]: $FlowFixMe}, styles: ReadonlyArray<?TStyleProp>) {
+  for (let i = 0, styleLength = styles.length; i < styleLength; ++i) {
+    const style = styles[i];
+    if (style === null || typeof style !== 'object') {
+      continue;
+    }
+
+    if (Array.isArray(style)) {
+      // $FlowFixMe[underconstrained-implicit-instantiation]
+      flattenStyleArrayInto(result, style);
+      continue;
+    }
+
+    // $FlowFixMe[invalid-in-rhs]
+    for (const key in style) {
+      // $FlowFixMe[incompatible-use]
+      // $FlowFixMe[invalid-computed-prop]
+      // $FlowFixMe[prop-missing]
+      result[key] = style[key];
+    }
+  }
+}
+
 function flattenStyle<
   TStyleProp extends ____DangerouslyImpreciseAnimatedStyleProp_Internal,
 >(
@@ -36,19 +61,9 @@ function flattenStyle<
   }
 
   const result: {[string]: $FlowFixMe} = {};
-  for (let i = 0, styleLength = style.length; i < styleLength; ++i) {
-    // $FlowFixMe[underconstrained-implicit-instantiation]
-    const computedStyle = flattenStyle(style[i]);
-    if (computedStyle) {
-      // $FlowFixMe[invalid-in-rhs]
-      for (const key in computedStyle) {
-        // $FlowFixMe[incompatible-use]
-        // $FlowFixMe[invalid-computed-prop]
-        // $FlowFixMe[prop-missing]
-        result[key] = computedStyle[key];
-      }
-    }
-  }
+  // $FlowFixMe[underconstrained-implicit-instantiation]
+  flattenStyleArrayInto(result, style);
+
   // $FlowFixMe[incompatible-type]
   return result;
 }
