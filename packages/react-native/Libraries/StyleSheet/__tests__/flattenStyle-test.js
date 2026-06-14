@@ -94,6 +94,37 @@ describe('flattenStyle', () => {
     });
   });
 
+  it('should allocate an object when an array contains one style', () => {
+    const style = {a: 'b'};
+    const singleStyle = flattenStyle([style]);
+
+    expect(singleStyle).not.toBe(style);
+    expect(singleStyle).toEqual(style);
+  });
+
+  it('should allocate an object when an array contains one effective style', () => {
+    const style = {a: 'b'};
+    const singleStyle = flattenStyle([null, false, undefined, style]);
+    const singleStyleAgain = flattenStyle([null, [undefined, style], false]);
+
+    expect(singleStyle).not.toBe(style);
+    expect(singleStyleAgain).not.toBe(style);
+    expect(singleStyle).toEqual(style);
+    expect(singleStyleAgain).toEqual(style);
+  });
+
+  it('should allocate an object when merging multiple styles', () => {
+    const style1 = {width: 10};
+    const style2 = {height: 20};
+    const flatStyle = flattenStyle([style1, style2]);
+
+    expect(flatStyle).not.toBe(style1);
+    expect(flatStyle).not.toBe(style2);
+    expect(style1).toEqual({width: 10});
+    expect(style2).toEqual({height: 20});
+    expect(flatStyle).toEqual({width: 10, height: 20});
+  });
+
   it('should merge single class and style properly', () => {
     const fixture = getFixture();
     const style = {styleA: 'overrideA', styleC: 'overrideC'};
