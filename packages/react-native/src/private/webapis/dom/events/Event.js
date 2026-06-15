@@ -50,10 +50,10 @@ export default class Event {
   static readonly AT_TARGET: 2;
   static readonly BUBBLING_PHASE: 3;
 
-  NONE: 0;
-  CAPTURING_PHASE: 1;
-  AT_TARGET: 2;
-  BUBBLING_PHASE: 3;
+  readonly NONE: 0;
+  readonly CAPTURING_PHASE: 1;
+  readonly AT_TARGET: 2;
+  readonly BUBBLING_PHASE: 3;
 
   _bubbles: boolean;
   _cancelable: boolean;
