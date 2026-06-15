@@ -33,9 +33,24 @@ Pod::Spec.new do |s|
   s.source                 = source
   s.source_files           = podspec_sources("**/*.{cpp,h}", "**/*.h")
   s.header_dir             = "react/renderer/runtimescheduler"
-  s.exclude_files          = "tests"
+  # The umbrella is vended top-level as <React/RuntimeScheduler.h> via the
+  # "Umbrella" subspec below, so exclude it from the main (react/...) mapping.
+  s.exclude_files          = ["tests", "React"]
+  # POC (public C++ API surface reduction): RuntimeScheduler exposes a single
+  # public umbrella header, vended top-level as <React/RuntimeScheduler.h>.
+  # Including any other module header directly is gated by an opt-in guard that is inert unless
+  # REACT_RUNTIMESCHEDULER_ENFORCE_UMBRELLA is defined. CocoaPods exposes the
+  # whole header_dir, so the individual headers remain includable here; the guard
+  # macro is the only way to enforce "umbrella only" in the pods build.
+  #
+  # To enable enforcement: add REACT_RUNTIMESCHEDULER_BUILDING=1 to this pod's own
+  # compilation via the GCC_PREPROCESSOR_DEFINITIONS line below, and propagate
+  # REACT_RUNTIMESCHEDULER_ENFORCE_UMBRELLA to consumers. NOTE: enforcing on
+  # consumers needs `user_target_xcconfig`, which CocoaPods discourages (xcconfig
+  # collisions), and it breaks consumers that still include the headers directly.
   s.pod_target_xcconfig    = {
     "CLANG_CXX_LANGUAGE_STANDARD" => rct_cxx_language_standard(),
+    # "GCC_PREPROCESSOR_DEFINITIONS" => "$(inherited) REACT_RUNTIMESCHEDULER_BUILDING=1",
     "HEADER_SEARCH_PATHS" => header_search_paths.join(' ')}
 
   resolve_use_frameworks(s, header_mappings_dir: "../../..", module_name: "React_runtimescheduler")
@@ -56,4 +71,22 @@ Pod::Spec.new do |s|
   depend_on_js_engine(s)
   add_rn_third_party_dependencies(s)
   add_rncore_dependency(s)
+
+  # POC: vend the umbrella under the shared top-level `React/` prefix, i.e.
+  # `#include <React/RuntimeScheduler.h>`. header_mappings_dir = "React" maps the
+  # physical react/renderer/runtimescheduler/React/RuntimeScheduler.h to a
+  # leaf-level RuntimeScheduler.h, and header_dir = "React" places it under React/.
+  #
+  # NOTE (untested): CocoaPods cannot be run in the internal build, so the exact
+  # header_dir / header_mappings_dir interaction needs validation with `pod install`.
+  # NOTE (macOS): under use_frameworks!, this pod's Headers would contain both
+  # `React/` (umbrella) and `react/...` (interface headers); on a case-insensitive
+  # filesystem those fold to one directory. They do not overwrite (different
+  # depths), but this is a known fragility tracked in
+  # __docs__/RuntimeSchedulerUmbrellaPOC.fb.md.
+  s.subspec "Umbrella" do |ss|
+    ss.source_files        = "React/*.h"
+    ss.header_dir          = "React"
+    ss.header_mappings_dir = "React"
+  end
 end

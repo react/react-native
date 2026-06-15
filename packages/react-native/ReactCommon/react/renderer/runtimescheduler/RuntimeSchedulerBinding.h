@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/renderer/runtimescheduler/RuntimeSchedulerUmbrellaGuard.h>
+
 #include <jsi/jsi.h>
 
 namespace facebook::react {

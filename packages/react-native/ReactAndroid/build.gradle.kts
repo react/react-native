@@ -238,6 +238,10 @@ val preparePrefab by
                           "../ReactCommon/react/renderer/runtimescheduler/",
                           "react/renderer/runtimescheduler/",
                       ),
+                      Pair(
+                          "../ReactCommon/react/renderer/runtimescheduler/React/",
+                          "React/",
+                      ),
                       Pair("../ReactCommon/react/renderer/scheduler/", "react/renderer/scheduler/"),
                       Pair("../ReactCommon/react/renderer/telemetry/", "react/renderer/telemetry/"),
                       Pair("../ReactCommon/react/renderer/uimanager/", "react/renderer/uimanager/"),

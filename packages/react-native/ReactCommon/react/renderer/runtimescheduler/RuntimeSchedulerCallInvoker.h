@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/renderer/runtimescheduler/RuntimeSchedulerUmbrellaGuard.h>
+
 #include <ReactCommon/CallInvoker.h>
 #include <memory>
 

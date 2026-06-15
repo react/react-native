@@ -5,13 +5,13 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#include <React/RuntimeScheduler.h>
 #include <gtest/gtest.h>
 #include <hermes/hermes.h>
 #include <jsi/jsi.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/featureflags/ReactNativeFeatureFlagsDefaults.h>
 #include <react/performance/timeline/PerformanceEntryReporter.h>
-#include <react/renderer/runtimescheduler/RuntimeScheduler.h>
 #include <chrono>
 #include <memory>
 #include <semaphore>

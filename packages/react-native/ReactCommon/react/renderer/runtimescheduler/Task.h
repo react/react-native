@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/renderer/runtimescheduler/RuntimeSchedulerUmbrellaGuard.h>
+
 #include <ReactCommon/SchedulerPriority.h>
 #include <jsi/jsi.h>
 #include <react/timing/primitives.h>
