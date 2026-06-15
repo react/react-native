@@ -988,6 +988,52 @@ describe('VirtualizedList', () => {
     // scrolled-past in layout space.
     expect(component).toMatchSnapshot();
   });
+
+  it('does not add a sticky header to the render mask when no sticky headers are configured', () => {
+    const expectedRegions = [
+      {first: 0, last: 9, isSpacer: true},
+      {first: 10, last: 12, isSpacer: false},
+      {first: 13, last: 19, isSpacer: true},
+    ];
+
+    expect(createRenderMaskForStickyHeaderTest().enumerateRegions()).toEqual(
+      expectedRegions,
+    );
+    expect(
+      createRenderMaskForStickyHeaderTest({
+        stickyHeaderIndices: [],
+      }).enumerateRegions(),
+    ).toEqual(expectedRegions);
+  });
+
+  it('adds the closest sticky header above the viewport from unsorted stickyHeaderIndices', () => {
+    expect(
+      createRenderMaskForStickyHeaderTest({
+        stickyHeaderIndices: [12, 0, 8.5, 7, 7, -1],
+      }).enumerateRegions(),
+    ).toEqual([
+      {first: 0, last: 6, isSpacer: true},
+      {first: 7, last: 7, isSpacer: false},
+      {first: 8, last: 9, isSpacer: true},
+      {first: 10, last: 12, isSpacer: false},
+      {first: 13, last: 19, isSpacer: true},
+    ]);
+  });
+
+  it('accounts for ListHeaderComponent offset when adding the closest sticky header', () => {
+    expect(
+      createRenderMaskForStickyHeaderTest({
+        ListHeaderComponent: () => createElement('Header'),
+        stickyHeaderIndices: [3],
+      }).enumerateRegions(),
+    ).toEqual([
+      {first: 0, last: 1, isSpacer: true},
+      {first: 2, last: 2, isSpacer: false},
+      {first: 3, last: 9, isSpacer: true},
+      {first: 10, last: 12, isSpacer: false},
+      {first: 13, last: 19, isSpacer: true},
+    ]);
+  });
 });
 
 it('unmounts sticky headers moved below viewport', async () => {
@@ -2567,6 +2613,26 @@ function fixedHeightItemLayoutProps(height) {
       index,
     }),
   };
+}
+
+function createRenderMaskForStickyHeaderTest({
+  ListHeaderComponent,
+  stickyHeaderIndices: stickyHeaderIndicesForTest,
+} = {}) {
+  return VirtualizedList._createRenderMask(
+    {
+      data: {length: 20},
+      getItem: (data, index) => index,
+      getItemCount: data => data.length,
+      initialScrollIndex: 1,
+      ListHeaderComponent,
+      stickyHeaderIndices: stickyHeaderIndicesForTest,
+    },
+    {
+      first: 10,
+      last: 12,
+    },
+  );
 }
 
 let lastViewportLayout;

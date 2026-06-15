@@ -535,16 +535,18 @@ class VirtualizedList extends StateSafePureComponent<
         renderMask.addCells(initialRegion);
       }
 
-      // The layout coordinates of sticker headers may be off-screen while the
+      // The layout coordinates of sticky headers may be off-screen while the
       // actual header is on-screen. Keep the most recent before the viewport
       // rendered, even if its layout coordinates are not in viewport.
-      const stickyIndicesSet = new Set(props.stickyHeaderIndices);
-      VirtualizedList._ensureClosestStickyHeader(
-        props,
-        stickyIndicesSet,
-        renderMask,
-        cellsAroundViewport.first,
-      );
+      const stickyHeaderIndices = props.stickyHeaderIndices;
+      if (stickyHeaderIndices != null && stickyHeaderIndices.length > 0) {
+        VirtualizedList._ensureClosestStickyHeader(
+          props,
+          stickyHeaderIndices,
+          renderMask,
+          cellsAroundViewport.first,
+        );
+      }
     }
 
     return renderMask;
@@ -575,17 +577,29 @@ class VirtualizedList extends StateSafePureComponent<
 
   static _ensureClosestStickyHeader(
     props: VirtualizedListProps,
-    stickyIndicesSet: Set<number>,
+    stickyHeaderIndices: ReadonlyArray<number>,
     renderMask: CellRenderMask,
     cellIdx: number,
   ) {
     const stickyOffset = props.ListHeaderComponent ? 1 : 0;
+    const targetStickyIndex = cellIdx + stickyOffset;
+    let closestStickyIndex = null;
 
-    for (let itemIdx = cellIdx - 1; itemIdx >= 0; itemIdx--) {
-      if (stickyIndicesSet.has(itemIdx + stickyOffset)) {
-        renderMask.addCells({first: itemIdx, last: itemIdx});
-        break;
+    for (let itemIdx = 0; itemIdx < stickyHeaderIndices.length; itemIdx++) {
+      const stickyIndex = stickyHeaderIndices[itemIdx];
+      if (
+        Number.isInteger(stickyIndex) &&
+        stickyIndex < targetStickyIndex &&
+        stickyIndex >= stickyOffset &&
+        (closestStickyIndex == null || stickyIndex > closestStickyIndex)
+      ) {
+        closestStickyIndex = stickyIndex;
       }
+    }
+
+    if (closestStickyIndex != null) {
+      const itemIdx = closestStickyIndex - stickyOffset;
+      renderMask.addCells({first: itemIdx, last: itemIdx});
     }
   }
 
