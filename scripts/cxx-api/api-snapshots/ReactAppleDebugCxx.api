@@ -5710,6 +5710,7 @@ class facebook::react::NativeAnimatedNodesManager : public std::enable_shared_fr
   public bool commitProps();
   public bool hasManagedProps() const noexcept;
   public bool isOnRenderThread() const noexcept;
+  public bool useSharedAnimatedBackend() const noexcept;
   public facebook::react::AnimationMutations onAnimationFrameForBackend(facebook::react::AnimatedPropsBuilder& propsBuilder, facebook::react::AnimationTimestamp timestamp);
   public facebook::react::AnimationMutations pullAnimationMutations(facebook::react::AnimationTimestamp timestamp);
   public facebook::react::NativeAnimatedNodesManager& operator=(const facebook::react::NativeAnimatedNodesManager&) = delete;
