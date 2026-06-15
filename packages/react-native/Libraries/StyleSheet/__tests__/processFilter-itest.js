@@ -8,15 +8,13 @@
  * @format
  */
 
-'use strict';
+import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
 import type {FilterFunction} from '../StyleSheetTypes';
 
 import processColor from '../processColor';
+import processFilter from '../processFilter';
 
-const processFilter = require('../processFilter').default;
-
-// js1 test processFilter
 describe('processFilter', () => {
   testStandardFilter('brightness');
   testStandardFilter('opacity');
@@ -26,18 +24,10 @@ describe('processFilter', () => {
   testStandardFilter('sepia');
   testStandardFilter('invert');
 
-  testNumericFilter('blur', 5, [
-    {
-      blur: 5,
-    },
-  ]);
+  testNumericFilter('blur', 5, [{blur: 5}]);
   testNumericFilter('blur', -5, []);
   testUnitFilter('blur', 5, '%', []);
-  testUnitFilter('blur', 5, 'px', [
-    {
-      blur: 5,
-    },
-  ]);
+  testUnitFilter('blur', 5, 'px', [{blur: 5}]);
 
   testNumericFilter('hue-rotate', 0, [{hueRotate: 0}]);
   testUnitFilter('hue-rotate', 90, 'deg', [{hueRotate: 90}]);
