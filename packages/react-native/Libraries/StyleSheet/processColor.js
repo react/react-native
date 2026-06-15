@@ -17,14 +17,30 @@ const normalizeColor = require('./normalizeColor').default;
 
 export type ProcessedColorValue = number | NativeColorValue;
 
+type CacheableColorValue = number | string;
+
+const MAX_PRIMITIVE_COLOR_CACHE_SIZE = 1024;
+const primitiveColorCache: Map<CacheableColorValue, ?ProcessedColorValue> =
+  new Map();
+
 /* eslint no-bitwise: 0 */
 function processColor(color?: ?(number | ColorValue)): ?ProcessedColorValue {
   if (color === undefined || color === null) {
     return color;
   }
 
+  if (typeof color === 'string' || typeof color === 'number') {
+    const cachedColor = primitiveColorCache.get(color);
+    if (cachedColor !== undefined || primitiveColorCache.has(color)) {
+      return cachedColor;
+    }
+  }
+
   let normalizedColor = normalizeColor(color);
   if (normalizedColor === null || normalizedColor === undefined) {
+    if (typeof color === 'string' || typeof color === 'number') {
+      cachePrimitiveColor(color, undefined);
+    }
     return undefined;
   }
 
@@ -53,7 +69,19 @@ function processColor(color?: ?(number | ColorValue)): ?ProcessedColorValue {
     // *unsigned* to *signed* 32bit int that way.
     normalizedColor = normalizedColor | 0x0;
   }
+  if (typeof color === 'string' || typeof color === 'number') {
+    cachePrimitiveColor(color, normalizedColor);
+  }
   return normalizedColor;
+}
+
+function cachePrimitiveColor(
+  color: CacheableColorValue,
+  processedColor: ?ProcessedColorValue,
+): void {
+  if (primitiveColorCache.size < MAX_PRIMITIVE_COLOR_CACHE_SIZE) {
+    primitiveColorCache.set(color, processedColor);
+  }
 }
 
 export default processColor;

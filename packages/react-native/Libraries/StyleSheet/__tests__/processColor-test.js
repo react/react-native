@@ -10,6 +10,39 @@
 
 'use strict';
 
+jest.mock('../../Utilities/NativePlatformConstantsAndroid', () => ({
+  __esModule: true,
+  default: {
+    getConstants: () => ({
+      reactNativeVersion: {
+        major: 1000,
+        minor: 0,
+        patch: 0,
+        prerelease: undefined,
+      },
+    }),
+  },
+}));
+
+jest.mock('../../Utilities/NativePlatformConstantsIOS', () => ({
+  __esModule: true,
+  default: {
+    getConstants: () => ({
+      forceTouchAvailable: false,
+      interfaceIdiom: 'phone',
+      isTesting: true,
+      osVersion: '1.0',
+      reactNativeVersion: {
+        major: 1000,
+        minor: 0,
+        patch: 0,
+        prerelease: undefined,
+      },
+      systemName: 'iOS',
+    }),
+  },
+}));
+
 const {OS} = require('../../Utilities/Platform').default;
 const PlatformColorAndroid =
   // $FlowFixMe[missing-platform-support]
@@ -121,5 +154,68 @@ describe('processColor', () => {
         expect(processedColor).toEqual(expectedColor);
       });
     }
+  });
+
+  describe('primitive color cache', () => {
+    afterEach(() => {
+      jest.dontMock('@react-native/normalize-colors');
+      jest.resetModules();
+    });
+
+    it('should cache processed primitive colors', () => {
+      jest.resetModules();
+
+      const normalizeColorMock = jest.fn(() => 0xff0000ff);
+      jest.doMock('@react-native/normalize-colors', () => normalizeColorMock);
+
+      const cachedProcessColor = require('../processColor').default;
+
+      expect(cachedProcessColor('cached-red')).toEqual(
+        platformSpecific(0xffff0000),
+      );
+      expect(cachedProcessColor('cached-red')).toEqual(
+        platformSpecific(0xffff0000),
+      );
+      expect(normalizeColorMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('should cache invalid primitive colors', () => {
+      jest.resetModules();
+
+      const normalizeColorMock = jest.fn(() => undefined);
+      jest.doMock('@react-native/normalize-colors', () => normalizeColorMock);
+
+      const cachedProcessColor = require('../processColor').default;
+
+      expect(cachedProcessColor('not-a-color')).toBeUndefined();
+      expect(cachedProcessColor('not-a-color')).toBeUndefined();
+      expect(normalizeColorMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('should stop admitting primitive colors after reaching the cache bound', () => {
+      jest.resetModules();
+
+      const normalizeColorMock = jest.fn(() => 0xff0000ff);
+      jest.doMock('@react-native/normalize-colors', () => normalizeColorMock);
+
+      const cachedProcessColor = require('../processColor').default;
+
+      for (let i = 0; i < 1024; i++) {
+        cachedProcessColor(`cached-color-${i.toString()}`);
+      }
+      expect(normalizeColorMock).toHaveBeenCalledTimes(1024);
+
+      cachedProcessColor('cached-color-0');
+      expect(normalizeColorMock).toHaveBeenCalledTimes(1024);
+
+      cachedProcessColor('cached-color-1024');
+      expect(normalizeColorMock).toHaveBeenCalledTimes(1025);
+
+      cachedProcessColor('cached-color-1024');
+      expect(normalizeColorMock).toHaveBeenCalledTimes(1026);
+
+      cachedProcessColor('cached-color-0');
+      expect(normalizeColorMock).toHaveBeenCalledTimes(1026);
+    });
   });
 });
