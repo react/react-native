@@ -354,185 +354,225 @@ static folly::dynamic toDynamic(const Size& size) {
   return sizeResult;
 }
 
+// Behavior-preserving helpers extracted from appendTextAttributesProps below to
+// keep its cyclomatic complexity low. Each mirrors one of the recurring
+// compare-and-assign shapes used per text attribute, so the serialized output
+// (keys, values, and insertion order) is identical to the open-coded version.
+template <typename T>
+static void appendIfChanged(
+    folly::dynamic& result,
+    const char* propName,
+    const T& newValue,
+    const T& oldValue) {
+  if (newValue != oldValue) {
+    result[propName] = newValue;
+  }
+}
+
+template <typename T>
+static void appendDerefIfChanged(
+    folly::dynamic& result,
+    const char* propName,
+    const T& newValue,
+    const T& oldValue) {
+  if (newValue != oldValue) {
+    result[propName] = *newValue;
+  }
+}
+
+static void appendFloatIfChanged(
+    folly::dynamic& result,
+    const char* propName,
+    Float newValue,
+    Float oldValue) {
+  if (!floatEquality(newValue, oldValue)) {
+    result[propName] = newValue;
+  }
+}
+
+template <typename T, typename Convert>
+static void appendOptionalIfChanged(
+    folly::dynamic& result,
+    const char* propName,
+    const std::optional<T>& newValue,
+    const std::optional<T>& oldValue,
+    Convert&& convert) {
+  if (newValue != oldValue) {
+    result[propName] = newValue.has_value()
+        ? folly::dynamic(convert(newValue.value()))
+        : folly::dynamic(nullptr);
+  }
+}
+
 void BaseTextProps::appendTextAttributesProps(
     folly::dynamic& result,
     const BaseTextProps* oldProps) const {
-  if (textAttributes.foregroundColor !=
-      oldProps->textAttributes.foregroundColor) {
-    result["color"] = *textAttributes.foregroundColor;
-  }
+  auto asString = [](const auto& value) { return toString(value); };
+  auto asIs = [](const auto& value) { return value; };
+  auto asDynamic = [](const auto& value) { return toDynamic(value); };
 
-  if (textAttributes.fontFamily != oldProps->textAttributes.fontFamily) {
-    result["fontFamily"] = textAttributes.fontFamily;
-  }
-
-  if (!floatEquality(
-          textAttributes.fontSize, oldProps->textAttributes.fontSize)) {
-    result["fontSize"] = textAttributes.fontSize;
-  }
-
-  if (!floatEquality(
-          textAttributes.fontSizeMultiplier,
-          oldProps->textAttributes.fontSizeMultiplier)) {
-    result["fontSizeMultiplier"] = textAttributes.fontSizeMultiplier;
-  }
-
-  if (textAttributes.fontWeight != oldProps->textAttributes.fontWeight) {
-    result["fontWeight"] = textAttributes.fontWeight.has_value()
-        ? toString(textAttributes.fontWeight.value())
-        : folly::dynamic(nullptr);
-  }
-
-  if (textAttributes.fontStyle != oldProps->textAttributes.fontStyle) {
-    result["fontStyle"] = textAttributes.fontStyle.has_value()
-        ? toString(textAttributes.fontStyle.value())
-        : folly::dynamic(nullptr);
-  }
-
-  if (textAttributes.fontVariant != oldProps->textAttributes.fontVariant) {
-    result["fontVariant"] = textAttributes.fontVariant.has_value()
-        ? toString(textAttributes.fontVariant.value())
-        : folly::dynamic(nullptr);
-  }
-
-  if (textAttributes.allowFontScaling !=
-      oldProps->textAttributes.allowFontScaling) {
-    result["allowFontScaling"] = textAttributes.allowFontScaling.has_value()
-        ? textAttributes.allowFontScaling.value()
-        : folly::dynamic(nullptr);
-  }
-
-  if (!floatEquality(
-          textAttributes.maxFontSizeMultiplier,
-          oldProps->textAttributes.maxFontSizeMultiplier)) {
-    result["maxFontSizeMultiplier"] = textAttributes.maxFontSizeMultiplier;
-  }
-
-  if (textAttributes.dynamicTypeRamp !=
-      oldProps->textAttributes.dynamicTypeRamp) {
-    result["dynamicTypeRamp"] = textAttributes.dynamicTypeRamp.has_value()
-        ? toString(textAttributes.dynamicTypeRamp.value())
-        : folly::dynamic(nullptr);
-  }
-
-  if (!floatEquality(
-          textAttributes.letterSpacing,
-          oldProps->textAttributes.letterSpacing)) {
-    result["letterSpacing"] = textAttributes.letterSpacing;
-  }
-
-  if (textAttributes.textTransform != oldProps->textAttributes.textTransform) {
-    result["textTransform"] = textAttributes.textTransform.has_value()
-        ? toString(textAttributes.textTransform.value())
-        : folly::dynamic(nullptr);
-  }
-
-  if (!floatEquality(
-          textAttributes.lineHeight, oldProps->textAttributes.lineHeight)) {
-    result["lineHeight"] = textAttributes.lineHeight;
-  }
-
-  if (textAttributes.alignment != oldProps->textAttributes.alignment) {
-    result["textAlign"] = textAttributes.alignment.has_value()
-        ? toString(textAttributes.alignment.value())
-        : folly::dynamic(nullptr);
-  }
-
-  if (textAttributes.baseWritingDirection !=
-      oldProps->textAttributes.baseWritingDirection) {
-    result["baseWritingDirection"] =
-        textAttributes.baseWritingDirection.has_value()
-        ? toString(textAttributes.baseWritingDirection.value())
-        : folly::dynamic(nullptr);
-  }
-
-  if (textAttributes.lineBreakStrategy !=
-      oldProps->textAttributes.lineBreakStrategy) {
-    result["lineBreakStrategyIOS"] =
-        textAttributes.lineBreakStrategy.has_value()
-        ? toString(textAttributes.lineBreakStrategy.value())
-        : folly::dynamic(nullptr);
-  }
-
-  if (textAttributes.lineBreakMode != oldProps->textAttributes.lineBreakMode) {
-    result["lineBreakModeIOS"] = textAttributes.lineBreakMode.has_value()
-        ? toString(textAttributes.lineBreakMode.value())
-        : folly::dynamic(nullptr);
-  }
-
-  if (textAttributes.textDecorationColor !=
-      oldProps->textAttributes.textDecorationColor) {
-    result["textDecorationColor"] = *textAttributes.textDecorationColor;
-  }
-
-  if (textAttributes.textDecorationLineType !=
-      oldProps->textAttributes.textDecorationLineType) {
-    result["textDecorationLine"] =
-        textAttributes.textDecorationLineType.has_value()
-        ? toString(textAttributes.textDecorationLineType.value())
-        : folly::dynamic(nullptr);
-  }
-
-  if (textAttributes.textDecorationStyle !=
-      oldProps->textAttributes.textDecorationStyle) {
-    result["textDecorationStyle"] =
-        textAttributes.textDecorationStyle.has_value()
-        ? toString(textAttributes.textDecorationStyle.value())
-        : folly::dynamic(nullptr);
-  }
-
-  if (textAttributes.textShadowOffset !=
-      oldProps->textAttributes.textShadowOffset) {
-    result["textShadowOffset"] = textAttributes.textShadowOffset.has_value()
-        ? toDynamic(textAttributes.textShadowOffset.value())
-        : folly::dynamic(nullptr);
-  }
-
-  if (!floatEquality(
-          textAttributes.textShadowRadius,
-          oldProps->textAttributes.textShadowRadius)) {
-    result["textShadowRadius"] = textAttributes.textShadowRadius;
-  }
-
-  if (textAttributes.textShadowColor !=
-      oldProps->textAttributes.textShadowColor) {
-    result["textShadowColor"] = *textAttributes.textShadowColor;
-  }
-
-  if (textAttributes.isHighlighted != oldProps->textAttributes.isHighlighted) {
-    result["isHighlighted"] = textAttributes.isHighlighted.has_value()
-        ? textAttributes.isHighlighted.value()
-        : folly::dynamic(nullptr);
-  }
-
-  if (textAttributes.isPressable != oldProps->textAttributes.isPressable) {
-    result["isPressable"] = textAttributes.isPressable.has_value()
-        ? textAttributes.isPressable.value()
-        : folly::dynamic(nullptr);
-  }
-
-  if (textAttributes.accessibilityRole !=
-      oldProps->textAttributes.accessibilityRole) {
-    result["accessibilityRole"] = textAttributes.accessibilityRole.has_value()
-        ? toString(textAttributes.accessibilityRole.value())
-        : folly::dynamic(nullptr);
-  }
-
-  if (textAttributes.role != oldProps->textAttributes.role) {
-    result["role"] = textAttributes.role.has_value()
-        ? toString(textAttributes.role.value())
-        : folly::dynamic(nullptr);
-  }
-
-  if (!floatEquality(
-          textAttributes.opacity, oldProps->textAttributes.opacity)) {
-    result["opacity"] = textAttributes.opacity;
-  }
-
-  if (textAttributes.backgroundColor !=
-      oldProps->textAttributes.backgroundColor) {
-    result["backgroundColor"] = *textAttributes.backgroundColor;
-  }
+  appendDerefIfChanged(
+      result,
+      "color",
+      textAttributes.foregroundColor,
+      oldProps->textAttributes.foregroundColor);
+  appendIfChanged(
+      result,
+      "fontFamily",
+      textAttributes.fontFamily,
+      oldProps->textAttributes.fontFamily);
+  appendFloatIfChanged(
+      result,
+      "fontSize",
+      textAttributes.fontSize,
+      oldProps->textAttributes.fontSize);
+  appendFloatIfChanged(
+      result,
+      "fontSizeMultiplier",
+      textAttributes.fontSizeMultiplier,
+      oldProps->textAttributes.fontSizeMultiplier);
+  appendOptionalIfChanged(
+      result,
+      "fontWeight",
+      textAttributes.fontWeight,
+      oldProps->textAttributes.fontWeight,
+      asString);
+  appendOptionalIfChanged(
+      result,
+      "fontStyle",
+      textAttributes.fontStyle,
+      oldProps->textAttributes.fontStyle,
+      asString);
+  appendOptionalIfChanged(
+      result,
+      "fontVariant",
+      textAttributes.fontVariant,
+      oldProps->textAttributes.fontVariant,
+      asString);
+  appendOptionalIfChanged(
+      result,
+      "allowFontScaling",
+      textAttributes.allowFontScaling,
+      oldProps->textAttributes.allowFontScaling,
+      asIs);
+  appendFloatIfChanged(
+      result,
+      "maxFontSizeMultiplier",
+      textAttributes.maxFontSizeMultiplier,
+      oldProps->textAttributes.maxFontSizeMultiplier);
+  appendOptionalIfChanged(
+      result,
+      "dynamicTypeRamp",
+      textAttributes.dynamicTypeRamp,
+      oldProps->textAttributes.dynamicTypeRamp,
+      asString);
+  appendFloatIfChanged(
+      result,
+      "letterSpacing",
+      textAttributes.letterSpacing,
+      oldProps->textAttributes.letterSpacing);
+  appendOptionalIfChanged(
+      result,
+      "textTransform",
+      textAttributes.textTransform,
+      oldProps->textAttributes.textTransform,
+      asString);
+  appendFloatIfChanged(
+      result,
+      "lineHeight",
+      textAttributes.lineHeight,
+      oldProps->textAttributes.lineHeight);
+  appendOptionalIfChanged(
+      result,
+      "textAlign",
+      textAttributes.alignment,
+      oldProps->textAttributes.alignment,
+      asString);
+  appendOptionalIfChanged(
+      result,
+      "baseWritingDirection",
+      textAttributes.baseWritingDirection,
+      oldProps->textAttributes.baseWritingDirection,
+      asString);
+  appendOptionalIfChanged(
+      result,
+      "lineBreakStrategyIOS",
+      textAttributes.lineBreakStrategy,
+      oldProps->textAttributes.lineBreakStrategy,
+      asString);
+  appendOptionalIfChanged(
+      result,
+      "lineBreakModeIOS",
+      textAttributes.lineBreakMode,
+      oldProps->textAttributes.lineBreakMode,
+      asString);
+  appendDerefIfChanged(
+      result,
+      "textDecorationColor",
+      textAttributes.textDecorationColor,
+      oldProps->textAttributes.textDecorationColor);
+  appendOptionalIfChanged(
+      result,
+      "textDecorationLine",
+      textAttributes.textDecorationLineType,
+      oldProps->textAttributes.textDecorationLineType,
+      asString);
+  appendOptionalIfChanged(
+      result,
+      "textDecorationStyle",
+      textAttributes.textDecorationStyle,
+      oldProps->textAttributes.textDecorationStyle,
+      asString);
+  appendOptionalIfChanged(
+      result,
+      "textShadowOffset",
+      textAttributes.textShadowOffset,
+      oldProps->textAttributes.textShadowOffset,
+      asDynamic);
+  appendFloatIfChanged(
+      result,
+      "textShadowRadius",
+      textAttributes.textShadowRadius,
+      oldProps->textAttributes.textShadowRadius);
+  appendDerefIfChanged(
+      result,
+      "textShadowColor",
+      textAttributes.textShadowColor,
+      oldProps->textAttributes.textShadowColor);
+  appendOptionalIfChanged(
+      result,
+      "isHighlighted",
+      textAttributes.isHighlighted,
+      oldProps->textAttributes.isHighlighted,
+      asIs);
+  appendOptionalIfChanged(
+      result,
+      "isPressable",
+      textAttributes.isPressable,
+      oldProps->textAttributes.isPressable,
+      asIs);
+  appendOptionalIfChanged(
+      result,
+      "accessibilityRole",
+      textAttributes.accessibilityRole,
+      oldProps->textAttributes.accessibilityRole,
+      asString);
+  appendOptionalIfChanged(
+      result,
+      "role",
+      textAttributes.role,
+      oldProps->textAttributes.role,
+      asString);
+  appendFloatIfChanged(
+      result,
+      "opacity",
+      textAttributes.opacity,
+      oldProps->textAttributes.opacity);
+  appendDerefIfChanged(
+      result,
+      "backgroundColor",
+      textAttributes.backgroundColor,
+      oldProps->textAttributes.backgroundColor);
 }
 
 #endif
