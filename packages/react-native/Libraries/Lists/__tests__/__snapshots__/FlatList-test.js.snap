@@ -2,6 +2,12 @@
 
 exports[`FlatList ignores invalid data 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 0,
+    }
+  }
   alwaysBounceVertical={true}
   data={123456}
   getItem={[Function]}
@@ -65,6 +71,12 @@ exports[`FlatList renders all the bells and whistles 1`] = `
   ListEmptyComponent={[Function]}
   ListFooterComponent={[Function]}
   ListHeaderComponent={[Function]}
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 3,
+    }
+  }
   data={
     Array [
       Object {
@@ -118,6 +130,15 @@ exports[`FlatList renders all the bells and whistles 1`] = `
       <header />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -138,6 +159,15 @@ exports[`FlatList renders all the bells and whistles 1`] = `
       <separator />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 1,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -158,6 +188,15 @@ exports[`FlatList renders all the bells and whistles 1`] = `
       <separator />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 2,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -184,6 +223,12 @@ exports[`FlatList renders all the bells and whistles 1`] = `
 
 exports[`FlatList renders array-like data 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 3,
+    }
+  }
   alwaysBounceVertical={true}
   data={
     Object {
@@ -252,6 +297,15 @@ exports[`FlatList renders array-like data 1`] = `
     }
   >
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -261,6 +315,15 @@ exports[`FlatList renders array-like data 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 1,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -270,6 +333,15 @@ exports[`FlatList renders array-like data 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 2,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -284,6 +356,12 @@ exports[`FlatList renders array-like data 1`] = `
 
 exports[`FlatList renders empty list 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 0,
+    }
+  }
   data={Array []}
   getItem={[Function]}
   getItemCount={[Function]}
@@ -307,6 +385,12 @@ exports[`FlatList renders empty list 1`] = `
 
 exports[`FlatList renders null list 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 0,
+    }
+  }
   getItem={[Function]}
   getItemCount={[Function]}
   keyExtractor={[Function]}
@@ -329,6 +413,12 @@ exports[`FlatList renders null list 1`] = `
 
 exports[`FlatList renders simple list (multiple columns) 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 2,
+    }
+  }
   data={
     Array [
       Object {
@@ -360,6 +450,15 @@ exports[`FlatList renders simple list (multiple columns) 1`] = `
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -380,6 +479,15 @@ exports[`FlatList renders simple list (multiple columns) 1`] = `
       </View>
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 1,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -402,6 +510,12 @@ exports[`FlatList renders simple list (multiple columns) 1`] = `
 
 exports[`FlatList renders simple list 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 3,
+    }
+  }
   data={
     Array [
       Object {
@@ -433,6 +547,15 @@ exports[`FlatList renders simple list 1`] = `
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -442,6 +565,15 @@ exports[`FlatList renders simple list 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 1,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -451,6 +583,15 @@ exports[`FlatList renders simple list 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 2,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -466,6 +607,12 @@ exports[`FlatList renders simple list 1`] = `
 exports[`FlatList renders simple list using ListItemComponent (multiple columns) 1`] = `
 <RCTScrollView
   ListItemComponent={[Function]}
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 2,
+    }
+  }
   data={
     Array [
       Object {
@@ -496,6 +643,15 @@ exports[`FlatList renders simple list using ListItemComponent (multiple columns)
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -516,6 +672,15 @@ exports[`FlatList renders simple list using ListItemComponent (multiple columns)
       </View>
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 1,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -539,6 +704,12 @@ exports[`FlatList renders simple list using ListItemComponent (multiple columns)
 exports[`FlatList renders simple list using ListItemComponent 1`] = `
 <RCTScrollView
   ListItemComponent={[Function]}
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 3,
+    }
+  }
   data={
     Array [
       Object {
@@ -569,6 +740,15 @@ exports[`FlatList renders simple list using ListItemComponent 1`] = `
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -578,6 +758,15 @@ exports[`FlatList renders simple list using ListItemComponent 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 1,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -587,6 +776,15 @@ exports[`FlatList renders simple list using ListItemComponent 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 2,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}

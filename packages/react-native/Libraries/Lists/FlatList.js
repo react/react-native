@@ -643,11 +643,21 @@ class FlatList<ItemT = any> extends React.PureComponent<FlatListProps<ItemT>> {
         return (
           <View style={StyleSheet.compose(styles.row, columnWrapperStyle)}>
             {item.map((it, kk) => {
+              // Compute accessibility collection item info for grid layouts
+              // rowIndex is the row index, columnIndex is position within the row
+              const accessibilityCollectionItem = {
+                rowIndex: index,
+                columnIndex: kk,
+                rowSpan: 1,
+                columnSpan: 1,
+                heading: false,
+              };
               const element = render({
                 // $FlowFixMe[incompatible-type]
                 item: it,
                 index: index * cols + kk,
                 separators: info.separators,
+                accessibilityCollectionItem,
               });
               return element != null ? (
                 <React.Fragment key={kk}>{element}</React.Fragment>

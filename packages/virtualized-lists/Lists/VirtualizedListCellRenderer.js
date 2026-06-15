@@ -8,7 +8,11 @@
  * @format
  */
 
-import type {CellRendererProps, ListRenderItem} from './VirtualizedListProps';
+import type {
+  AccessibilityCollectionItem,
+  CellRendererProps,
+  ListRenderItem,
+} from './VirtualizedListProps';
 import type {
   FocusEvent,
   LayoutChangeEvent,
@@ -29,11 +33,15 @@ export type Props<ItemT> = {
     | React.MixedElement
   ),
   ListItemComponent?: ?(React.ComponentType<any> | React.MixedElement),
+  // Accessibility info for screen readers to announce position in collection
+  accessibilityCollectionItem: AccessibilityCollectionItem,
   cellKey: string,
   horizontal: ?boolean,
   index: number,
   inversionStyle: StyleProp<ViewStyle>,
   item: ItemT,
+  // Total number of items in the list for accessibility announcements
+  itemCount: number,
   onCellLayout?: (
     event: LayoutChangeEvent,
     cellKey: string,
@@ -149,12 +157,16 @@ export default class CellRenderer<ItemT> extends React.PureComponent<
       );
     }
 
+    // Get accessibility collection item info for screen reader announcements
+    const {accessibilityCollectionItem} = this.props;
+
     if (ListItemComponent) {
       return (
         <ListItemComponent
           item={item}
           index={index}
           separators={this._separators}
+          accessibilityCollectionItem={accessibilityCollectionItem}
         />
       );
     }
@@ -164,6 +176,7 @@ export default class CellRenderer<ItemT> extends React.PureComponent<
         item,
         index,
         separators: this._separators,
+        accessibilityCollectionItem,
       });
     }
 
@@ -178,6 +191,7 @@ export default class CellRenderer<ItemT> extends React.PureComponent<
       CellRendererComponent,
       ItemSeparatorComponent,
       ListItemComponent,
+      accessibilityCollectionItem,
       cellKey,
       horizontal,
       item,
@@ -211,9 +225,12 @@ export default class CellRenderer<ItemT> extends React.PureComponent<
       : horizontal
         ? [styles.row, inversionStyle]
         : inversionStyle;
+    // Apply accessibility collection item info on the cell wrapper View
+    // This enables Android TalkBack to announce "item X of Y" when navigating
     const result = !CellRendererComponent ? (
       <View
         style={cellStyle}
+        accessibilityCollectionItem={accessibilityCollectionItem}
         onFocusCapture={this._onCellFocusCapture}
         {...(onCellLayout && {onLayout: this._onLayout})}>
         {element}

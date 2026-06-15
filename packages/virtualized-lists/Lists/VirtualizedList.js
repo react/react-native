@@ -794,6 +794,9 @@ class VirtualizedList extends StateSafePureComponent<
     let prevCellKey;
     last = Math.min(end, last);
 
+    // Total item count for accessibility announcements
+    const itemCount = getItemCount(data);
+
     for (let ii = first; ii <= last; ii++) {
       const item = getItem(data, ii);
       const key = VirtualizedList._keyExtractor(item, ii, this.props);
@@ -806,16 +809,28 @@ class VirtualizedList extends StateSafePureComponent<
       const shouldListenForLayout =
         getItemLayout == null || debug || this._fillRateHelper.enabled();
 
+      // Compute accessibility collection item info for screen readers
+      // This enables TalkBack to announce "item X of Y" when navigating
+      const accessibilityCollectionItem = {
+        rowIndex: horizontal ? 0 : ii,
+        columnIndex: horizontal ? ii : 0,
+        rowSpan: 1,
+        columnSpan: 1,
+        heading: false,
+      };
+
       cells.push(
         <CellRenderer
           CellRendererComponent={CellRendererComponent}
           ItemSeparatorComponent={ii < end ? ItemSeparatorComponent : undefined}
           ListItemComponent={ListItemComponent}
+          accessibilityCollectionItem={accessibilityCollectionItem}
           cellKey={key}
           horizontal={horizontal}
           index={ii}
           inversionStyle={inversionStyle}
           item={item}
+          itemCount={itemCount}
           key={key}
           prevCellKey={prevCellKey}
           onUpdateSeparators={this._onUpdateSeparators}
@@ -1088,8 +1103,18 @@ class VirtualizedList extends StateSafePureComponent<
     }
 
     // 4. Render the ScrollView
+    // Compute accessibility collection info for screen readers
+    // This enables Android TalkBack to understand the total collection size
+    const isHorizontal = horizontalOrDefault(horizontal);
+    const accessibilityCollection = {
+      rowCount: isHorizontal ? 1 : itemCount,
+      columnCount: isHorizontal ? itemCount : 1,
+    };
+
     const scrollProps = {
       ...this.props,
+      // Pass accessibility collection info to the ScrollView for screen readers
+      accessibilityCollection,
       onContentSizeChange: this._onContentSizeChange,
       onLayout: this._onLayout,
       onScroll: this._onScroll,

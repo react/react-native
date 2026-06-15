@@ -3,6 +3,12 @@
 exports[`VirtualizedList forwards correct stickyHeaderIndices when ListHeaderComponent present 1`] = `
 <RCTScrollView
   ListHeaderComponent={[Function]}
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 10,
+    }
+  }
   data={
     Array [
       Object {
@@ -71,6 +77,15 @@ exports[`VirtualizedList forwards correct stickyHeaderIndices when ListHeaderCom
       <Header />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -80,6 +95,15 @@ exports[`VirtualizedList forwards correct stickyHeaderIndices when ListHeaderCom
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 1,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -88,6 +112,15 @@ exports[`VirtualizedList forwards correct stickyHeaderIndices when ListHeaderCom
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 2,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -96,6 +129,15 @@ exports[`VirtualizedList forwards correct stickyHeaderIndices when ListHeaderCom
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 3,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -105,6 +147,15 @@ exports[`VirtualizedList forwards correct stickyHeaderIndices when ListHeaderCom
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 4,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -113,6 +164,15 @@ exports[`VirtualizedList forwards correct stickyHeaderIndices when ListHeaderCom
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 5,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -121,6 +181,15 @@ exports[`VirtualizedList forwards correct stickyHeaderIndices when ListHeaderCom
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 6,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -130,6 +199,15 @@ exports[`VirtualizedList forwards correct stickyHeaderIndices when ListHeaderCom
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 7,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -138,6 +216,15 @@ exports[`VirtualizedList forwards correct stickyHeaderIndices when ListHeaderCom
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 8,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -146,6 +233,15 @@ exports[`VirtualizedList forwards correct stickyHeaderIndices when ListHeaderCom
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 9,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -160,6 +256,12 @@ exports[`VirtualizedList forwards correct stickyHeaderIndices when ListHeaderCom
 
 exports[`VirtualizedList forwards correct stickyHeaderIndices when all in initial render window 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 10,
+    }
+  }
   data={
     Array [
       Object {
@@ -222,6 +324,15 @@ exports[`VirtualizedList forwards correct stickyHeaderIndices when all in initia
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -231,6 +342,15 @@ exports[`VirtualizedList forwards correct stickyHeaderIndices when all in initia
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 1,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -239,6 +359,15 @@ exports[`VirtualizedList forwards correct stickyHeaderIndices when all in initia
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 2,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -247,6 +376,15 @@ exports[`VirtualizedList forwards correct stickyHeaderIndices when all in initia
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 3,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -256,6 +394,15 @@ exports[`VirtualizedList forwards correct stickyHeaderIndices when all in initia
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 4,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -264,6 +411,15 @@ exports[`VirtualizedList forwards correct stickyHeaderIndices when all in initia
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 5,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -272,6 +428,15 @@ exports[`VirtualizedList forwards correct stickyHeaderIndices when all in initia
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 6,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -281,6 +446,15 @@ exports[`VirtualizedList forwards correct stickyHeaderIndices when all in initia
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 7,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -289,6 +463,15 @@ exports[`VirtualizedList forwards correct stickyHeaderIndices when all in initia
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 8,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -297,6 +480,15 @@ exports[`VirtualizedList forwards correct stickyHeaderIndices when all in initia
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 9,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -311,6 +503,12 @@ exports[`VirtualizedList forwards correct stickyHeaderIndices when all in initia
 
 exports[`VirtualizedList forwards correct stickyHeaderIndices when partially in initial render window 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 10,
+    }
+  }
   data={
     Array [
       Object {
@@ -371,6 +569,15 @@ exports[`VirtualizedList forwards correct stickyHeaderIndices when partially in 
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -380,6 +587,15 @@ exports[`VirtualizedList forwards correct stickyHeaderIndices when partially in 
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 1,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -388,6 +604,15 @@ exports[`VirtualizedList forwards correct stickyHeaderIndices when partially in 
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 2,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -396,6 +621,15 @@ exports[`VirtualizedList forwards correct stickyHeaderIndices when partially in 
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 3,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -405,6 +639,15 @@ exports[`VirtualizedList forwards correct stickyHeaderIndices when partially in 
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 4,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -425,6 +668,12 @@ exports[`VirtualizedList forwards correct stickyHeaderIndices when partially in 
 
 exports[`VirtualizedList handles nested lists 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 2,
+    }
+  }
   data={
     Array [
       Object {
@@ -450,11 +699,26 @@ exports[`VirtualizedList handles nested lists 1`] = `
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
     >
       <View
+        accessibilityCollection={
+          Object {
+            "columnCount": 1,
+            "rowCount": 2,
+          }
+        }
         data={
           Array [
             Object {
@@ -479,6 +743,15 @@ exports[`VirtualizedList handles nested lists 1`] = `
         stickyHeaderIndices={Array []}
       >
         <View
+          accessibilityCollectionItem={
+            Object {
+              "columnIndex": 0,
+              "columnSpan": 1,
+              "heading": false,
+              "rowIndex": 0,
+              "rowSpan": 1,
+            }
+          }
           onFocusCapture={[Function]}
           onLayout={[Function]}
           style={null}
@@ -488,6 +761,15 @@ exports[`VirtualizedList handles nested lists 1`] = `
           />
         </View>
         <View
+          accessibilityCollectionItem={
+            Object {
+              "columnIndex": 0,
+              "columnSpan": 1,
+              "heading": false,
+              "rowIndex": 1,
+              "rowSpan": 1,
+            }
+          }
           onFocusCapture={[Function]}
           onLayout={[Function]}
           style={null}
@@ -499,11 +781,26 @@ exports[`VirtualizedList handles nested lists 1`] = `
       </View>
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 1,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
     >
       <RCTScrollView
+        accessibilityCollection={
+          Object {
+            "columnCount": 2,
+            "rowCount": 1,
+          }
+        }
         data={
           Array [
             Object {
@@ -530,6 +827,15 @@ exports[`VirtualizedList handles nested lists 1`] = `
       >
         <View>
           <View
+            accessibilityCollectionItem={
+              Object {
+                "columnIndex": 0,
+                "columnSpan": 1,
+                "heading": false,
+                "rowIndex": 0,
+                "rowSpan": 1,
+              }
+            }
             onFocusCapture={[Function]}
             onLayout={[Function]}
             style={
@@ -546,6 +852,15 @@ exports[`VirtualizedList handles nested lists 1`] = `
             />
           </View>
           <View
+            accessibilityCollectionItem={
+              Object {
+                "columnIndex": 1,
+                "columnSpan": 1,
+                "heading": false,
+                "rowIndex": 0,
+                "rowSpan": 1,
+              }
+            }
             onFocusCapture={[Function]}
             onLayout={[Function]}
             style={
@@ -571,6 +886,12 @@ exports[`VirtualizedList handles nested lists 1`] = `
 exports[`VirtualizedList handles separators correctly 1`] = `
 <RCTScrollView
   ItemSeparatorComponent={[Function]}
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 3,
+    }
+  }
   data={
     Array [
       Object {
@@ -599,6 +920,15 @@ exports[`VirtualizedList handles separators correctly 1`] = `
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -616,6 +946,15 @@ exports[`VirtualizedList handles separators correctly 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 1,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -633,6 +972,15 @@ exports[`VirtualizedList handles separators correctly 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 2,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -648,6 +996,12 @@ exports[`VirtualizedList handles separators correctly 1`] = `
 exports[`VirtualizedList handles separators correctly 2`] = `
 <RCTScrollView
   ItemSeparatorComponent={[Function]}
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 3,
+    }
+  }
   data={
     Array [
       Object {
@@ -676,6 +1030,15 @@ exports[`VirtualizedList handles separators correctly 2`] = `
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -693,6 +1056,15 @@ exports[`VirtualizedList handles separators correctly 2`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 1,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -710,6 +1082,15 @@ exports[`VirtualizedList handles separators correctly 2`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 2,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -725,6 +1106,12 @@ exports[`VirtualizedList handles separators correctly 2`] = `
 exports[`VirtualizedList handles separators correctly 3`] = `
 <RCTScrollView
   ItemSeparatorComponent={[Function]}
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 3,
+    }
+  }
   data={
     Array [
       Object {
@@ -753,6 +1140,15 @@ exports[`VirtualizedList handles separators correctly 3`] = `
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -770,6 +1166,15 @@ exports[`VirtualizedList handles separators correctly 3`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 1,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -788,6 +1193,15 @@ exports[`VirtualizedList handles separators correctly 3`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 2,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -802,6 +1216,12 @@ exports[`VirtualizedList handles separators correctly 3`] = `
 
 exports[`VirtualizedList keeps sticky headers above viewport visualized 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 20,
+    }
+  }
   data={
     Array [
       Object {
@@ -898,6 +1318,15 @@ exports[`VirtualizedList keeps sticky headers above viewport visualized 1`] = `
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -914,6 +1343,15 @@ exports[`VirtualizedList keeps sticky headers above viewport visualized 1`] = `
       }
     />
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 12,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -930,6 +1368,15 @@ exports[`VirtualizedList keeps sticky headers above viewport visualized 1`] = `
       }
     />
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 14,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -938,6 +1385,15 @@ exports[`VirtualizedList keeps sticky headers above viewport visualized 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 15,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -947,6 +1403,15 @@ exports[`VirtualizedList keeps sticky headers above viewport visualized 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 16,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -955,6 +1420,15 @@ exports[`VirtualizedList keeps sticky headers above viewport visualized 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 17,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -963,6 +1437,15 @@ exports[`VirtualizedList keeps sticky headers above viewport visualized 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 18,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -972,6 +1455,15 @@ exports[`VirtualizedList keeps sticky headers above viewport visualized 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 19,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -989,6 +1481,12 @@ exports[`VirtualizedList renders all the bells and whistles 1`] = `
   ListEmptyComponent={[Function]}
   ListFooterComponent={[Function]}
   ListHeaderComponent={[Function]}
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 5,
+    }
+  }
   data={
     Array [
       Object {
@@ -1064,6 +1562,15 @@ exports[`VirtualizedList renders all the bells and whistles 1`] = `
       <header />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={
         Array [
@@ -1086,6 +1593,15 @@ exports[`VirtualizedList renders all the bells and whistles 1`] = `
       <separator />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 1,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={
         Array [
@@ -1108,6 +1624,15 @@ exports[`VirtualizedList renders all the bells and whistles 1`] = `
       <separator />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 2,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={
         Array [
@@ -1130,6 +1655,15 @@ exports[`VirtualizedList renders all the bells and whistles 1`] = `
       <separator />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 3,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={
         Array [
@@ -1152,6 +1686,15 @@ exports[`VirtualizedList renders all the bells and whistles 1`] = `
       <separator />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 4,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={
         Array [
@@ -1192,6 +1735,12 @@ exports[`VirtualizedList renders all the bells and whistles 1`] = `
 
 exports[`VirtualizedList renders empty list 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 0,
+    }
+  }
   data={Array []}
   getItem={[Function]}
   getItemCount={[Function]}
@@ -1212,6 +1761,12 @@ exports[`VirtualizedList renders empty list 1`] = `
 
 exports[`VirtualizedList renders empty list after batch 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 0,
+    }
+  }
   data={Array []}
   getItem={[Function]}
   getItemCount={[Function]}
@@ -1235,6 +1790,12 @@ exports[`VirtualizedList renders empty list with empty component 1`] = `
   ListEmptyComponent={[Function]}
   ListFooterComponent={[Function]}
   ListHeaderComponent={[Function]}
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 0,
+    }
+  }
   data={Array []}
   getItem={[Function]}
   getItemCount={[Function]}
@@ -1269,6 +1830,12 @@ exports[`VirtualizedList renders empty list with empty component 1`] = `
 exports[`VirtualizedList renders list with empty component 1`] = `
 <RCTScrollView
   ListEmptyComponent={[Function]}
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 1,
+    }
+  }
   data={
     Array [
       Object {
@@ -1291,6 +1858,15 @@ exports[`VirtualizedList renders list with empty component 1`] = `
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -1305,6 +1881,12 @@ exports[`VirtualizedList renders list with empty component 1`] = `
 
 exports[`VirtualizedList renders null list 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 0,
+    }
+  }
   getItem={[Function]}
   getItemCount={[Function]}
   onContentSizeChange={[Function]}
@@ -1324,6 +1906,12 @@ exports[`VirtualizedList renders null list 1`] = `
 
 exports[`VirtualizedList renders simple list 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 3,
+    }
+  }
   data={
     Array [
       Object {
@@ -1352,6 +1940,15 @@ exports[`VirtualizedList renders simple list 1`] = `
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -1361,6 +1958,15 @@ exports[`VirtualizedList renders simple list 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 1,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -1370,6 +1976,15 @@ exports[`VirtualizedList renders simple list 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 2,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -1385,6 +2000,12 @@ exports[`VirtualizedList renders simple list 1`] = `
 exports[`VirtualizedList renders simple list using ListItemComponent 1`] = `
 <RCTScrollView
   ListItemComponent={[Function]}
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 3,
+    }
+  }
   data={
     Array [
       Object {
@@ -1412,6 +2033,15 @@ exports[`VirtualizedList renders simple list using ListItemComponent 1`] = `
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -1421,6 +2051,15 @@ exports[`VirtualizedList renders simple list using ListItemComponent 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 1,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -1430,6 +2069,15 @@ exports[`VirtualizedList renders simple list using ListItemComponent 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 2,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -1444,6 +2092,12 @@ exports[`VirtualizedList renders simple list using ListItemComponent 1`] = `
 
 exports[`VirtualizedList renders sticky headers in viewport on batched render 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 10,
+    }
+  }
   data={
     Array [
       Object {
@@ -1505,6 +2159,15 @@ exports[`VirtualizedList renders sticky headers in viewport on batched render 1`
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -1514,6 +2177,15 @@ exports[`VirtualizedList renders sticky headers in viewport on batched render 1`
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 1,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -1522,6 +2194,15 @@ exports[`VirtualizedList renders sticky headers in viewport on batched render 1`
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 2,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -1530,6 +2211,15 @@ exports[`VirtualizedList renders sticky headers in viewport on batched render 1`
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 3,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -1539,6 +2229,15 @@ exports[`VirtualizedList renders sticky headers in viewport on batched render 1`
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 4,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -1559,6 +2258,12 @@ exports[`VirtualizedList renders sticky headers in viewport on batched render 1`
 
 exports[`VirtualizedList test getItem functionality where data is not an Array 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 1,
+    }
+  }
   data={
     Map {
       "id_0" => Object {
@@ -1581,6 +2286,15 @@ exports[`VirtualizedList test getItem functionality where data is not an Array 1
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -1596,6 +2310,12 @@ exports[`VirtualizedList test getItem functionality where data is not an Array 1
 exports[`VirtualizedList warns if both renderItem or ListItemComponent are specified. Uses ListItemComponent 1`] = `
 <RCTScrollView
   ListItemComponent={[Function]}
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 1,
+    }
+  }
   data={
     Array [
       Object {
@@ -1618,6 +2338,15 @@ exports[`VirtualizedList warns if both renderItem or ListItemComponent are speci
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -1633,6 +2362,12 @@ exports[`VirtualizedList warns if both renderItem or ListItemComponent are speci
 
 exports[`adjusts render area with non-zero initialScrollIndex 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 20,
+    }
+  }
   data={
     Array [
       Object {
@@ -1717,6 +2452,15 @@ exports[`adjusts render area with non-zero initialScrollIndex 1`] = `
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -1725,6 +2469,15 @@ exports[`adjusts render area with non-zero initialScrollIndex 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 1,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -1733,6 +2486,15 @@ exports[`adjusts render area with non-zero initialScrollIndex 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 2,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -1741,6 +2503,15 @@ exports[`adjusts render area with non-zero initialScrollIndex 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 3,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -1749,6 +2520,15 @@ exports[`adjusts render area with non-zero initialScrollIndex 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 4,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -1757,6 +2537,15 @@ exports[`adjusts render area with non-zero initialScrollIndex 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 5,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -1765,6 +2554,15 @@ exports[`adjusts render area with non-zero initialScrollIndex 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 6,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -1773,6 +2571,15 @@ exports[`adjusts render area with non-zero initialScrollIndex 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 7,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -1781,6 +2588,15 @@ exports[`adjusts render area with non-zero initialScrollIndex 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 8,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -1789,6 +2605,15 @@ exports[`adjusts render area with non-zero initialScrollIndex 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 9,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -1797,6 +2622,15 @@ exports[`adjusts render area with non-zero initialScrollIndex 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 10,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -1805,6 +2639,15 @@ exports[`adjusts render area with non-zero initialScrollIndex 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 11,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -1813,6 +2656,15 @@ exports[`adjusts render area with non-zero initialScrollIndex 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 12,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -1821,6 +2673,15 @@ exports[`adjusts render area with non-zero initialScrollIndex 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 13,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -1829,6 +2690,15 @@ exports[`adjusts render area with non-zero initialScrollIndex 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 14,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -1849,6 +2719,12 @@ exports[`adjusts render area with non-zero initialScrollIndex 1`] = `
 
 exports[`clamps render area when items removed for initialScrollIndex > 0 and scroller position not yet known 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 15,
+    }
+  }
   data={
     Array [
       Object {
@@ -1924,6 +2800,15 @@ exports[`clamps render area when items removed for initialScrollIndex > 0 and sc
       }
     />
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 4,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -1932,6 +2817,15 @@ exports[`clamps render area when items removed for initialScrollIndex > 0 and sc
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 5,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -1940,6 +2834,15 @@ exports[`clamps render area when items removed for initialScrollIndex > 0 and sc
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 6,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -1948,6 +2851,15 @@ exports[`clamps render area when items removed for initialScrollIndex > 0 and sc
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 7,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -1956,6 +2868,15 @@ exports[`clamps render area when items removed for initialScrollIndex > 0 and sc
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 8,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -1964,6 +2885,15 @@ exports[`clamps render area when items removed for initialScrollIndex > 0 and sc
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 9,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -1972,6 +2902,15 @@ exports[`clamps render area when items removed for initialScrollIndex > 0 and sc
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 10,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -1980,6 +2919,15 @@ exports[`clamps render area when items removed for initialScrollIndex > 0 and sc
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 11,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -1988,6 +2936,15 @@ exports[`clamps render area when items removed for initialScrollIndex > 0 and sc
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 12,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -1996,6 +2953,15 @@ exports[`clamps render area when items removed for initialScrollIndex > 0 and sc
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 13,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2004,6 +2970,15 @@ exports[`clamps render area when items removed for initialScrollIndex > 0 and sc
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 14,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2017,6 +2992,12 @@ exports[`clamps render area when items removed for initialScrollIndex > 0 and sc
 
 exports[`constrains batch render region when an item is removed 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 5,
+    }
+  }
   data={
     Array [
       Object {
@@ -2054,6 +3035,15 @@ exports[`constrains batch render region when an item is removed 1`] = `
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2062,6 +3052,15 @@ exports[`constrains batch render region when an item is removed 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 1,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2070,6 +3069,15 @@ exports[`constrains batch render region when an item is removed 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 2,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2078,6 +3086,15 @@ exports[`constrains batch render region when an item is removed 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 3,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2086,6 +3103,15 @@ exports[`constrains batch render region when an item is removed 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 4,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2099,6 +3125,12 @@ exports[`constrains batch render region when an item is removed 1`] = `
 
 exports[`discards initial render if initialScrollIndex != 0 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 20,
+    }
+  }
   data={
     Array [
       Object {
@@ -2189,6 +3221,15 @@ exports[`discards initial render if initialScrollIndex != 0 1`] = `
       }
     />
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 14,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2197,6 +3238,15 @@ exports[`discards initial render if initialScrollIndex != 0 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 15,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2205,6 +3255,15 @@ exports[`discards initial render if initialScrollIndex != 0 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 16,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2213,6 +3272,15 @@ exports[`discards initial render if initialScrollIndex != 0 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 17,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2221,6 +3289,15 @@ exports[`discards initial render if initialScrollIndex != 0 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 18,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2229,6 +3306,15 @@ exports[`discards initial render if initialScrollIndex != 0 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 19,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2242,6 +3328,12 @@ exports[`discards initial render if initialScrollIndex != 0 1`] = `
 
 exports[`does not adjust render area until content area layed out 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 20,
+    }
+  }
   data={
     Array [
       Object {
@@ -2324,6 +3416,15 @@ exports[`does not adjust render area until content area layed out 1`] = `
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2332,6 +3433,15 @@ exports[`does not adjust render area until content area layed out 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 1,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2340,6 +3450,15 @@ exports[`does not adjust render area until content area layed out 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 2,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2348,6 +3467,15 @@ exports[`does not adjust render area until content area layed out 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 3,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2356,6 +3484,15 @@ exports[`does not adjust render area until content area layed out 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 4,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2376,6 +3513,12 @@ exports[`does not adjust render area until content area layed out 1`] = `
 
 exports[`does not move render area when initialScrollIndex is > 0 and offset not yet known 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 20,
+    }
+  }
   data={
     Array [
       Object {
@@ -2466,6 +3609,15 @@ exports[`does not move render area when initialScrollIndex is > 0 and offset not
       }
     />
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 1,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2474,6 +3626,15 @@ exports[`does not move render area when initialScrollIndex is > 0 and offset not
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 2,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2482,6 +3643,15 @@ exports[`does not move render area when initialScrollIndex is > 0 and offset not
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 3,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2490,6 +3660,15 @@ exports[`does not move render area when initialScrollIndex is > 0 and offset not
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 4,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2498,6 +3677,15 @@ exports[`does not move render area when initialScrollIndex is > 0 and offset not
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 5,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2518,6 +3706,12 @@ exports[`does not move render area when initialScrollIndex is > 0 and offset not
 
 exports[`does not over-render when there is less than initialNumToRender cells 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 10,
+    }
+  }
   data={
     Array [
       Object {
@@ -2577,6 +3771,15 @@ exports[`does not over-render when there is less than initialNumToRender cells 1
       }
     />
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 4,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2585,6 +3788,15 @@ exports[`does not over-render when there is less than initialNumToRender cells 1
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 5,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2593,6 +3805,15 @@ exports[`does not over-render when there is less than initialNumToRender cells 1
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 6,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2601,6 +3822,15 @@ exports[`does not over-render when there is less than initialNumToRender cells 1
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 7,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2609,6 +3839,15 @@ exports[`does not over-render when there is less than initialNumToRender cells 1
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 8,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2617,6 +3856,15 @@ exports[`does not over-render when there is less than initialNumToRender cells 1
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 9,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2630,6 +3878,12 @@ exports[`does not over-render when there is less than initialNumToRender cells 1
 
 exports[`eventually renders all items when virtualization disabled 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 10,
+    }
+  }
   data={
     Array [
       Object {
@@ -2685,6 +3939,15 @@ exports[`eventually renders all items when virtualization disabled 1`] = `
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2693,6 +3956,15 @@ exports[`eventually renders all items when virtualization disabled 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 1,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2701,6 +3973,15 @@ exports[`eventually renders all items when virtualization disabled 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 2,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2709,6 +3990,15 @@ exports[`eventually renders all items when virtualization disabled 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 3,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2717,6 +4007,15 @@ exports[`eventually renders all items when virtualization disabled 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 4,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2725,6 +4024,15 @@ exports[`eventually renders all items when virtualization disabled 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 5,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2733,6 +4041,15 @@ exports[`eventually renders all items when virtualization disabled 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 6,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2741,6 +4058,15 @@ exports[`eventually renders all items when virtualization disabled 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 7,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2749,6 +4075,15 @@ exports[`eventually renders all items when virtualization disabled 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 8,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2757,6 +4092,15 @@ exports[`eventually renders all items when virtualization disabled 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 9,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2770,6 +4114,12 @@ exports[`eventually renders all items when virtualization disabled 1`] = `
 
 exports[`expands first in viewport to render up to maxToRenderPerBatch on initial render 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 10,
+    }
+  }
   data={
     Array [
       Object {
@@ -2830,6 +4180,15 @@ exports[`expands first in viewport to render up to maxToRenderPerBatch on initia
       }
     />
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 4,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2838,6 +4197,15 @@ exports[`expands first in viewport to render up to maxToRenderPerBatch on initia
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 5,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2858,6 +4226,12 @@ exports[`expands first in viewport to render up to maxToRenderPerBatch on initia
 
 exports[`expands render area by maxToRenderPerBatch on tick 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 20,
+    }
+  }
   data={
     Array [
       Object {
@@ -2940,6 +4314,15 @@ exports[`expands render area by maxToRenderPerBatch on tick 1`] = `
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2948,6 +4331,15 @@ exports[`expands render area by maxToRenderPerBatch on tick 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 1,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2956,6 +4348,15 @@ exports[`expands render area by maxToRenderPerBatch on tick 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 2,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2964,6 +4365,15 @@ exports[`expands render area by maxToRenderPerBatch on tick 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 3,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2972,6 +4382,15 @@ exports[`expands render area by maxToRenderPerBatch on tick 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 4,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2980,6 +4399,15 @@ exports[`expands render area by maxToRenderPerBatch on tick 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 5,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -2988,6 +4416,15 @@ exports[`expands render area by maxToRenderPerBatch on tick 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 6,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -3008,6 +4445,12 @@ exports[`expands render area by maxToRenderPerBatch on tick 1`] = `
 
 exports[`gracefully handles negative initialScrollIndex 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 10,
+    }
+  }
   data={
     Array [
       Object {
@@ -3060,6 +4503,15 @@ exports[`gracefully handles negative initialScrollIndex 1`] = `
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -3068,6 +4520,15 @@ exports[`gracefully handles negative initialScrollIndex 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 1,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -3076,6 +4537,15 @@ exports[`gracefully handles negative initialScrollIndex 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 2,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -3084,6 +4554,15 @@ exports[`gracefully handles negative initialScrollIndex 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 3,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -3092,6 +4571,15 @@ exports[`gracefully handles negative initialScrollIndex 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 4,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -3100,6 +4588,15 @@ exports[`gracefully handles negative initialScrollIndex 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 5,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -3108,6 +4605,15 @@ exports[`gracefully handles negative initialScrollIndex 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 6,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -3116,6 +4622,15 @@ exports[`gracefully handles negative initialScrollIndex 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 7,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -3124,6 +4639,15 @@ exports[`gracefully handles negative initialScrollIndex 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 8,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -3132,6 +4656,15 @@ exports[`gracefully handles negative initialScrollIndex 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 9,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -3145,6 +4678,12 @@ exports[`gracefully handles negative initialScrollIndex 1`] = `
 
 exports[`handles maintainVisibleContentPosition 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 20,
+    }
+  }
   data={
     Array [
       Object {
@@ -3232,6 +4771,15 @@ exports[`handles maintainVisibleContentPosition 1`] = `
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -3240,6 +4788,15 @@ exports[`handles maintainVisibleContentPosition 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 1,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -3248,6 +4805,15 @@ exports[`handles maintainVisibleContentPosition 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 2,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -3256,6 +4822,15 @@ exports[`handles maintainVisibleContentPosition 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 3,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -3264,6 +4839,15 @@ exports[`handles maintainVisibleContentPosition 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 4,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -3284,6 +4868,12 @@ exports[`handles maintainVisibleContentPosition 1`] = `
 
 exports[`handles maintainVisibleContentPosition 2`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 30,
+    }
+  }
   data={
     Array [
       Object {
@@ -3401,6 +4991,15 @@ exports[`handles maintainVisibleContentPosition 2`] = `
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -3416,6 +5015,15 @@ exports[`handles maintainVisibleContentPosition 2`] = `
       }
     />
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 10,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -3424,6 +5032,15 @@ exports[`handles maintainVisibleContentPosition 2`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 11,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -3432,6 +5049,15 @@ exports[`handles maintainVisibleContentPosition 2`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 12,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -3440,6 +5066,15 @@ exports[`handles maintainVisibleContentPosition 2`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 13,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -3448,6 +5083,15 @@ exports[`handles maintainVisibleContentPosition 2`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 14,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -3468,6 +5112,12 @@ exports[`handles maintainVisibleContentPosition 2`] = `
 
 exports[`handles maintainVisibleContentPosition 3`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 30,
+    }
+  }
   data={
     Array [
       Object {
@@ -3585,6 +5235,15 @@ exports[`handles maintainVisibleContentPosition 3`] = `
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -3600,6 +5259,15 @@ exports[`handles maintainVisibleContentPosition 3`] = `
       }
     />
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 9,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -3608,6 +5276,15 @@ exports[`handles maintainVisibleContentPosition 3`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 10,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -3616,6 +5293,15 @@ exports[`handles maintainVisibleContentPosition 3`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 11,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -3624,6 +5310,15 @@ exports[`handles maintainVisibleContentPosition 3`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 12,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -3632,6 +5327,15 @@ exports[`handles maintainVisibleContentPosition 3`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 13,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -3640,6 +5344,15 @@ exports[`handles maintainVisibleContentPosition 3`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 14,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -3660,6 +5373,12 @@ exports[`handles maintainVisibleContentPosition 3`] = `
 
 exports[`handles maintainVisibleContentPosition when anchor moves before minIndexForVisible 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 20,
+    }
+  }
   data={
     Array [
       Object {
@@ -3747,6 +5466,15 @@ exports[`handles maintainVisibleContentPosition when anchor moves before minInde
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -3755,6 +5483,15 @@ exports[`handles maintainVisibleContentPosition when anchor moves before minInde
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 1,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -3763,6 +5500,15 @@ exports[`handles maintainVisibleContentPosition when anchor moves before minInde
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 2,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -3771,6 +5517,15 @@ exports[`handles maintainVisibleContentPosition when anchor moves before minInde
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 3,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -3779,6 +5534,15 @@ exports[`handles maintainVisibleContentPosition when anchor moves before minInde
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 4,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -3799,6 +5563,12 @@ exports[`handles maintainVisibleContentPosition when anchor moves before minInde
 
 exports[`handles maintainVisibleContentPosition when anchor moves before minIndexForVisible 2`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 19,
+    }
+  }
   data={
     Array [
       Object {
@@ -3883,6 +5653,15 @@ exports[`handles maintainVisibleContentPosition when anchor moves before minInde
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -3891,6 +5670,15 @@ exports[`handles maintainVisibleContentPosition when anchor moves before minInde
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 1,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -3899,6 +5687,15 @@ exports[`handles maintainVisibleContentPosition when anchor moves before minInde
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 2,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -3907,6 +5704,15 @@ exports[`handles maintainVisibleContentPosition when anchor moves before minInde
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 3,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -3927,6 +5733,12 @@ exports[`handles maintainVisibleContentPosition when anchor moves before minInde
 
 exports[`initially renders nothing when initialNumToRender is 0 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 10,
+    }
+  }
   data={
     Array [
       Object {
@@ -3990,6 +5802,12 @@ exports[`initially renders nothing when initialNumToRender is 0 1`] = `
 
 exports[`keeps viewport above last focused rendered 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 20,
+    }
+  }
   data={
     Array [
       Object {
@@ -4072,6 +5890,15 @@ exports[`keeps viewport above last focused rendered 1`] = `
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -4080,6 +5907,15 @@ exports[`keeps viewport above last focused rendered 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 1,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -4088,6 +5924,15 @@ exports[`keeps viewport above last focused rendered 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 2,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -4096,6 +5941,15 @@ exports[`keeps viewport above last focused rendered 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 3,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -4104,6 +5958,15 @@ exports[`keeps viewport above last focused rendered 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 4,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -4119,6 +5982,15 @@ exports[`keeps viewport above last focused rendered 1`] = `
       }
     />
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 12,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -4127,6 +5999,15 @@ exports[`keeps viewport above last focused rendered 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 13,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -4135,6 +6016,15 @@ exports[`keeps viewport above last focused rendered 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 14,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -4143,6 +6033,15 @@ exports[`keeps viewport above last focused rendered 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 15,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -4151,6 +6050,15 @@ exports[`keeps viewport above last focused rendered 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 16,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -4159,6 +6067,15 @@ exports[`keeps viewport above last focused rendered 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 17,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -4167,6 +6084,15 @@ exports[`keeps viewport above last focused rendered 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 18,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -4175,6 +6101,15 @@ exports[`keeps viewport above last focused rendered 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 19,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -4188,6 +6123,12 @@ exports[`keeps viewport above last focused rendered 1`] = `
 
 exports[`keeps viewport below last focused rendered 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 20,
+    }
+  }
   data={
     Array [
       Object {
@@ -4270,6 +6211,15 @@ exports[`keeps viewport below last focused rendered 1`] = `
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -4278,6 +6228,15 @@ exports[`keeps viewport below last focused rendered 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 1,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -4286,6 +6245,15 @@ exports[`keeps viewport below last focused rendered 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 2,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -4294,6 +6262,15 @@ exports[`keeps viewport below last focused rendered 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 3,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -4302,6 +6279,15 @@ exports[`keeps viewport below last focused rendered 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 4,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -4310,6 +6296,15 @@ exports[`keeps viewport below last focused rendered 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 5,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -4318,6 +6313,15 @@ exports[`keeps viewport below last focused rendered 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 6,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -4326,6 +6330,15 @@ exports[`keeps viewport below last focused rendered 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 7,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -4334,6 +6347,15 @@ exports[`keeps viewport below last focused rendered 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 8,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -4349,6 +6371,15 @@ exports[`keeps viewport below last focused rendered 1`] = `
       }
     />
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 14,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -4357,6 +6388,15 @@ exports[`keeps viewport below last focused rendered 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 15,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -4365,6 +6405,15 @@ exports[`keeps viewport below last focused rendered 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 16,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -4373,6 +6422,15 @@ exports[`keeps viewport below last focused rendered 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 17,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -4381,6 +6439,15 @@ exports[`keeps viewport below last focused rendered 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 18,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -4389,6 +6456,15 @@ exports[`keeps viewport below last focused rendered 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 19,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -4402,6 +6478,12 @@ exports[`keeps viewport below last focused rendered 1`] = `
 
 exports[`renders a zero-height tail spacer on initial render if getItemLayout not defined 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 10,
+    }
+  }
   data={
     Array [
       Object {
@@ -4452,6 +6534,15 @@ exports[`renders a zero-height tail spacer on initial render if getItemLayout no
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -4461,6 +6552,15 @@ exports[`renders a zero-height tail spacer on initial render if getItemLayout no
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 1,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -4470,6 +6570,15 @@ exports[`renders a zero-height tail spacer on initial render if getItemLayout no
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 2,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -4491,6 +6600,12 @@ exports[`renders a zero-height tail spacer on initial render if getItemLayout no
 
 exports[`renders full tail spacer if all cells measured 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 10,
+    }
+  }
   data={
     Array [
       Object {
@@ -4543,6 +6658,15 @@ exports[`renders full tail spacer if all cells measured 1`] = `
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -4552,6 +6676,15 @@ exports[`renders full tail spacer if all cells measured 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 1,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -4561,6 +6694,15 @@ exports[`renders full tail spacer if all cells measured 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 2,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -4570,6 +6712,15 @@ exports[`renders full tail spacer if all cells measured 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 3,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -4579,6 +6730,15 @@ exports[`renders full tail spacer if all cells measured 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 4,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -4600,6 +6760,12 @@ exports[`renders full tail spacer if all cells measured 1`] = `
 
 exports[`renders initialNumToRender cells when virtualization disabled 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 10,
+    }
+  }
   data={
     Array [
       Object {
@@ -4653,6 +6819,15 @@ exports[`renders initialNumToRender cells when virtualization disabled 1`] = `
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 1,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -4661,6 +6836,15 @@ exports[`renders initialNumToRender cells when virtualization disabled 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 2,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -4669,6 +6853,15 @@ exports[`renders initialNumToRender cells when virtualization disabled 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 3,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -4677,6 +6870,15 @@ exports[`renders initialNumToRender cells when virtualization disabled 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 4,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -4685,6 +6887,15 @@ exports[`renders initialNumToRender cells when virtualization disabled 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 5,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -4698,6 +6909,12 @@ exports[`renders initialNumToRender cells when virtualization disabled 1`] = `
 
 exports[`renders items before initialScrollIndex on first batch tick when virtualization disabled 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 10,
+    }
+  }
   data={
     Array [
       Object {
@@ -4752,6 +6969,15 @@ exports[`renders items before initialScrollIndex on first batch tick when virtua
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -4760,6 +6986,15 @@ exports[`renders items before initialScrollIndex on first batch tick when virtua
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 1,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -4768,6 +7003,15 @@ exports[`renders items before initialScrollIndex on first batch tick when virtua
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 2,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -4776,6 +7020,15 @@ exports[`renders items before initialScrollIndex on first batch tick when virtua
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 3,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -4784,6 +7037,15 @@ exports[`renders items before initialScrollIndex on first batch tick when virtua
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 4,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -4792,6 +7054,15 @@ exports[`renders items before initialScrollIndex on first batch tick when virtua
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 5,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -4800,6 +7071,15 @@ exports[`renders items before initialScrollIndex on first batch tick when virtua
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 6,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -4813,6 +7093,12 @@ exports[`renders items before initialScrollIndex on first batch tick when virtua
 
 exports[`renders new items when data is updated with non-zero initialScrollIndex 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 4,
+    }
+  }
   data={
     Array [
       Object {
@@ -4849,6 +7135,15 @@ exports[`renders new items when data is updated with non-zero initialScrollIndex
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -4857,6 +7152,15 @@ exports[`renders new items when data is updated with non-zero initialScrollIndex
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 1,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -4877,6 +7181,12 @@ exports[`renders new items when data is updated with non-zero initialScrollIndex
 
 exports[`renders no spacers up to initialScrollIndex on first render when virtualization disabled 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 10,
+    }
+  }
   data={
     Array [
       Object {
@@ -4931,6 +7241,15 @@ exports[`renders no spacers up to initialScrollIndex on first render when virtua
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 4,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -4939,6 +7258,15 @@ exports[`renders no spacers up to initialScrollIndex on first render when virtua
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 5,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -4952,6 +7280,12 @@ exports[`renders no spacers up to initialScrollIndex on first render when virtua
 
 exports[`renders offset cells in initial render when initialScrollIndex set 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 10,
+    }
+  }
   data={
     Array [
       Object {
@@ -5011,6 +7345,15 @@ exports[`renders offset cells in initial render when initialScrollIndex set 1`] 
       }
     />
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 4,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -5019,6 +7362,15 @@ exports[`renders offset cells in initial render when initialScrollIndex set 1`] 
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 5,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -5027,6 +7379,15 @@ exports[`renders offset cells in initial render when initialScrollIndex set 1`] 
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 6,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -5035,6 +7396,15 @@ exports[`renders offset cells in initial render when initialScrollIndex set 1`] 
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 7,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -5055,6 +7425,12 @@ exports[`renders offset cells in initial render when initialScrollIndex set 1`] 
 
 exports[`renders tail spacer up to last measured index if getItemLayout not defined 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 10,
+    }
+  }
   data={
     Array [
       Object {
@@ -5107,6 +7483,15 @@ exports[`renders tail spacer up to last measured index if getItemLayout not defi
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -5116,6 +7501,15 @@ exports[`renders tail spacer up to last measured index if getItemLayout not defi
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 1,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -5125,6 +7519,15 @@ exports[`renders tail spacer up to last measured index if getItemLayout not defi
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 2,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -5134,6 +7537,15 @@ exports[`renders tail spacer up to last measured index if getItemLayout not defi
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 3,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -5143,6 +7555,15 @@ exports[`renders tail spacer up to last measured index if getItemLayout not defi
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 4,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -5164,6 +7585,12 @@ exports[`renders tail spacer up to last measured index if getItemLayout not defi
 
 exports[`renders tail spacer up to last measured with irregular layout when getItemLayout undefined 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 10,
+    }
+  }
   data={
     Array [
       Object {
@@ -5216,6 +7643,15 @@ exports[`renders tail spacer up to last measured with irregular layout when getI
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -5225,6 +7661,15 @@ exports[`renders tail spacer up to last measured with irregular layout when getI
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 1,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -5234,6 +7679,15 @@ exports[`renders tail spacer up to last measured with irregular layout when getI
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 2,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -5243,6 +7697,15 @@ exports[`renders tail spacer up to last measured with irregular layout when getI
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 3,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -5264,6 +7727,12 @@ exports[`renders tail spacer up to last measured with irregular layout when getI
 
 exports[`renders windowSize derived region at bottom 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 10,
+    }
+  }
   data={
     Array [
       Object {
@@ -5317,6 +7786,15 @@ exports[`renders windowSize derived region at bottom 1`] = `
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -5332,6 +7810,15 @@ exports[`renders windowSize derived region at bottom 1`] = `
       }
     />
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 5,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -5340,6 +7827,15 @@ exports[`renders windowSize derived region at bottom 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 6,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -5348,6 +7844,15 @@ exports[`renders windowSize derived region at bottom 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 7,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -5356,6 +7861,15 @@ exports[`renders windowSize derived region at bottom 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 8,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -5364,6 +7878,15 @@ exports[`renders windowSize derived region at bottom 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 9,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -5377,6 +7900,12 @@ exports[`renders windowSize derived region at bottom 1`] = `
 
 exports[`renders windowSize derived region at top 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 10,
+    }
+  }
   data={
     Array [
       Object {
@@ -5430,6 +7959,15 @@ exports[`renders windowSize derived region at top 1`] = `
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -5438,6 +7976,15 @@ exports[`renders windowSize derived region at top 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 1,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -5446,6 +7993,15 @@ exports[`renders windowSize derived region at top 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 2,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -5454,6 +8010,15 @@ exports[`renders windowSize derived region at top 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 3,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -5474,6 +8039,12 @@ exports[`renders windowSize derived region at top 1`] = `
 
 exports[`renders windowSize derived region in middle 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 10,
+    }
+  }
   data={
     Array [
       Object {
@@ -5527,6 +8098,15 @@ exports[`renders windowSize derived region in middle 1`] = `
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -5542,6 +8122,15 @@ exports[`renders windowSize derived region in middle 1`] = `
       }
     />
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 2,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -5550,6 +8139,15 @@ exports[`renders windowSize derived region in middle 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 3,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -5558,6 +8156,15 @@ exports[`renders windowSize derived region in middle 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 4,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -5566,6 +8173,15 @@ exports[`renders windowSize derived region in middle 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 5,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -5574,6 +8190,15 @@ exports[`renders windowSize derived region in middle 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 6,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -5582,6 +8207,15 @@ exports[`renders windowSize derived region in middle 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 7,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -5590,6 +8224,15 @@ exports[`renders windowSize derived region in middle 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 8,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -5610,6 +8253,12 @@ exports[`renders windowSize derived region in middle 1`] = `
 
 exports[`renders zero-height tail spacer on batch render if cells not yet measured and getItemLayout not defined 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 10,
+    }
+  }
   data={
     Array [
       Object {
@@ -5662,6 +8311,15 @@ exports[`renders zero-height tail spacer on batch render if cells not yet measur
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -5671,6 +8329,15 @@ exports[`renders zero-height tail spacer on batch render if cells not yet measur
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 1,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -5680,6 +8347,15 @@ exports[`renders zero-height tail spacer on batch render if cells not yet measur
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 2,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
@@ -5846,8 +8522,137 @@ exports[`retains batch render region when an item is appended 1`] = `
 </RCTScrollView>
 `;
 
-exports[`retains initial render if initialScrollIndex == 0 1`] = `
+exports[`retains initial render region when an item is appended 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 11,
+    }
+  }
+  data={
+    Array [
+      Object {
+        "key": 0,
+      },
+      Object {
+        "key": 1,
+      },
+      Object {
+        "key": 2,
+      },
+      Object {
+        "key": 3,
+      },
+      Object {
+        "key": 4,
+      },
+      Object {
+        "key": 5,
+      },
+      Object {
+        "key": 6,
+      },
+      Object {
+        "key": 7,
+      },
+      Object {
+        "key": 8,
+      },
+      Object {
+        "key": 9,
+      },
+      Object {
+        "key": 10,
+      },
+    ]
+  }
+  getItem={[Function]}
+  getItemCount={[Function]}
+  getItemLayout={[Function]}
+  initialNumToRender={3}
+  onContentSizeChange={[Function]}
+  onLayout={[Function]}
+  onMomentumScrollBegin={[Function]}
+  onMomentumScrollEnd={[Function]}
+  onScroll={[Function]}
+  onScrollBeginDrag={[Function]}
+  onScrollEndDrag={[Function]}
+  renderItem={[Function]}
+  scrollEventThrottle={0.0001}
+  stickyHeaderIndices={Array []}
+>
+  <View>
+    <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
+      onFocusCapture={[Function]}
+      style={null}
+    >
+      <MockCellItem
+        value={0}
+      />
+    </View>
+    <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 1,
+          "rowSpan": 1,
+        }
+      }
+      onFocusCapture={[Function]}
+      style={null}
+    >
+      <MockCellItem
+        value={1}
+      />
+    </View>
+    <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 2,
+          "rowSpan": 1,
+        }
+      }
+      onFocusCapture={[Function]}
+      style={null}
+    >
+      <MockCellItem
+        value={2}
+      />
+    </View>
+    <View
+      style={
+        Object {
+          "height": 80,
+        }
+      }
+    />
+  </View>
+</RCTScrollView>
+`;
+
+exports[`retains intitial render if initialScrollIndex == 0 1`] = `
+<RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 20,
+    }
+  }
   data={
     Array [
       Object {
@@ -5931,6 +8736,15 @@ exports[`retains initial render if initialScrollIndex == 0 1`] = `
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -5939,6 +8753,15 @@ exports[`retains initial render if initialScrollIndex == 0 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 1,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -5947,6 +8770,15 @@ exports[`retains initial render if initialScrollIndex == 0 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 2,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -5955,6 +8787,15 @@ exports[`retains initial render if initialScrollIndex == 0 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 3,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -5963,6 +8804,15 @@ exports[`retains initial render if initialScrollIndex == 0 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 4,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -5978,6 +8828,15 @@ exports[`retains initial render if initialScrollIndex == 0 1`] = `
       }
     />
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 14,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -5986,6 +8845,15 @@ exports[`retains initial render if initialScrollIndex == 0 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 15,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -5994,6 +8862,15 @@ exports[`retains initial render if initialScrollIndex == 0 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 16,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -6002,6 +8879,15 @@ exports[`retains initial render if initialScrollIndex == 0 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 17,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -6010,6 +8896,15 @@ exports[`retains initial render if initialScrollIndex == 0 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 18,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -6018,6 +8913,15 @@ exports[`retains initial render if initialScrollIndex == 0 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 19,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -6121,6 +9025,12 @@ exports[`retains initial render region when an item is appended 1`] = `
 
 exports[`unmounts sticky headers moved below viewport 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 20,
+    }
+  }
   data={
     Array [
       Object {
@@ -6215,6 +9125,15 @@ exports[`unmounts sticky headers moved below viewport 1`] = `
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -6224,6 +9143,15 @@ exports[`unmounts sticky headers moved below viewport 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 1,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -6232,6 +9160,15 @@ exports[`unmounts sticky headers moved below viewport 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 2,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -6240,6 +9177,15 @@ exports[`unmounts sticky headers moved below viewport 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 3,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -6249,6 +9195,15 @@ exports[`unmounts sticky headers moved below viewport 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 4,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -6269,6 +9224,12 @@ exports[`unmounts sticky headers moved below viewport 1`] = `
 
 exports[`virtualizes away last focused index if item removed 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 19,
+    }
+  }
   data={
     Array [
       Object {
@@ -6348,6 +9309,15 @@ exports[`virtualizes away last focused index if item removed 1`] = `
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -6363,6 +9333,15 @@ exports[`virtualizes away last focused index if item removed 1`] = `
       }
     />
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 8,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -6371,6 +9350,15 @@ exports[`virtualizes away last focused index if item removed 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 9,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -6379,6 +9367,15 @@ exports[`virtualizes away last focused index if item removed 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 10,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -6387,6 +9384,15 @@ exports[`virtualizes away last focused index if item removed 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 11,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -6395,6 +9401,15 @@ exports[`virtualizes away last focused index if item removed 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 12,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -6403,6 +9418,15 @@ exports[`virtualizes away last focused index if item removed 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 13,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -6411,6 +9435,15 @@ exports[`virtualizes away last focused index if item removed 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 14,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -6419,6 +9452,15 @@ exports[`virtualizes away last focused index if item removed 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 15,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -6427,6 +9469,15 @@ exports[`virtualizes away last focused index if item removed 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 16,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -6435,6 +9486,15 @@ exports[`virtualizes away last focused index if item removed 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 17,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -6443,6 +9503,15 @@ exports[`virtualizes away last focused index if item removed 1`] = `
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 18,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -6456,6 +9525,12 @@ exports[`virtualizes away last focused index if item removed 1`] = `
 
 exports[`virtualizes away last focused item if focus changes to a new cell 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "rowCount": 20,
+    }
+  }
   data={
     Array [
       Object {
@@ -6538,6 +9613,15 @@ exports[`virtualizes away last focused item if focus changes to a new cell 1`] =
 >
   <View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 0,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -6553,6 +9637,15 @@ exports[`virtualizes away last focused item if focus changes to a new cell 1`] =
       }
     />
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 12,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -6561,6 +9654,15 @@ exports[`virtualizes away last focused item if focus changes to a new cell 1`] =
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 13,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -6569,6 +9671,15 @@ exports[`virtualizes away last focused item if focus changes to a new cell 1`] =
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 14,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -6577,6 +9688,15 @@ exports[`virtualizes away last focused item if focus changes to a new cell 1`] =
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 15,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -6585,6 +9705,15 @@ exports[`virtualizes away last focused item if focus changes to a new cell 1`] =
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 16,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -6593,6 +9722,15 @@ exports[`virtualizes away last focused item if focus changes to a new cell 1`] =
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 17,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -6601,6 +9739,15 @@ exports[`virtualizes away last focused item if focus changes to a new cell 1`] =
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 18,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >
@@ -6609,6 +9756,15 @@ exports[`virtualizes away last focused item if focus changes to a new cell 1`] =
       />
     </View>
     <View
+      accessibilityCollectionItem={
+        Object {
+          "columnIndex": 0,
+          "columnSpan": 1,
+          "heading": false,
+          "rowIndex": 19,
+          "rowSpan": 1,
+        }
+      }
       onFocusCapture={[Function]}
       style={null}
     >

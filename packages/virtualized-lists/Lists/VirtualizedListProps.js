@@ -32,10 +32,29 @@ export type Separators = {
   ...
 };
 
+/**
+ * Accessibility collection item info for screen readers.
+ * Used to announce position in collection (e.g., "item 3 of 10").
+ */
+export type AccessibilityCollectionItem = $ReadOnly<{
+  // The row index of this item in the collection
+  rowIndex: number,
+  // The column index of this item in the collection
+  columnIndex: number,
+  // The number of rows this item spans
+  rowSpan: number,
+  // The number of columns this item spans
+  columnSpan: number,
+  // Whether this item is a heading
+  heading: boolean,
+}>;
+
 export type ListRenderItemInfo<ItemT> = {
   item: ItemT,
   index: number,
   separators: Separators,
+  // Accessibility info for screen readers to announce position in collection
+  accessibilityCollectionItem: AccessibilityCollectionItem,
   ...
 };
 
