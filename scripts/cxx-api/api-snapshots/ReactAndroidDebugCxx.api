@@ -7933,7 +7933,6 @@ struct facebook::react::Size {
 struct facebook::react::StateData {
   public StateData() = default;
   public StateData(const facebook::react::StateData& previousState, folly::dynamic data);
-  public facebook::react::MapBuffer getMapBuffer() const;
   public folly::dynamic getDynamic() const;
   public using Shared = std::shared_ptr<const void>;
 }
