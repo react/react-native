@@ -142,11 +142,13 @@ const fetchCopy: WindowOrWorkerGlobalScope['fetch'] = fetch;
 const myHeaders = new Headers();
 myHeaders.append('Content-Type', 'image/jpeg');
 
+const controller = new AbortController();
+
 const myInit: RequestInit = {
     method: 'GET',
     headers: myHeaders,
     mode: 'cors',
-    signal: new AbortSignal(),
+  signal: AbortSignal.any([controller.signal, AbortSignal.timeout(5000)]),
 };
 
 const myRequest = new Request('flowers.jpg');

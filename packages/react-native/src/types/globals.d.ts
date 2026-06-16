@@ -600,6 +600,12 @@ declare global {
      * Returns `true` if this `AbortSignal`'s `AbortController` has signaled to abort, and `false` otherwise.
      */
     readonly aborted: boolean;
+    /**
+     * The **`reason`** read-only property returns a JavaScript value that indicates the abort reason.
+     *
+     * [MDN Reference](https://developer.mozilla.org/docs/Web/API/AbortSignal/reason)
+     */
+    readonly reason: any;
 
     onabort: (event: AbortEvent) => void;
 
@@ -626,6 +632,32 @@ declare global {
             capture?: boolean | undefined;
           },
     ) => void;
+
+    /**
+     * Throws the abort reason if the signal has been aborted.
+     * Otherwise, does nothing.
+     *
+     * [MDN Reference](https://developer.mozilla.org/docs/Web/API/AbortSignal/throwIfAborted)
+     */
+    throwIfAborted(): void;
+    /**
+     * The **`AbortSignal.abort(reason)`** static method returns an AbortSignal that is already set as aborted (and which does not trigger an abort event).
+     *
+     * [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal/abort_static)
+     */
+    static abort(reason: any): AbortSignal;
+    /**
+     * The **`AbortSignal.any()`** static method takes an iterable of abort signals and returns an AbortSignal.
+     *
+     * [MDN Reference](https://developer.mozilla.org/docs/Web/API/AbortSignal/any_static)
+     */
+    static any(signals: AbortSignal[]): AbortSignal;
+    /**
+     * The **`AbortSignal.timeout()`** static method returns an AbortSignal that will automatically abort after a specified time.
+     *
+     * [MDN Reference](https://developer.mozilla.org/docs/Web/API/AbortSignal/timeout_static)
+     */
+    static timeout(milliseconds: number): AbortSignal;
   }
 
   class AbortController {
@@ -640,7 +672,7 @@ declare global {
     /**
      * Abort and signal to any observers that the associated activity is to be aborted.
      */
-    abort(): void;
+    abort(reason?: any): void;
   }
 
   interface FileReaderEventMap {
