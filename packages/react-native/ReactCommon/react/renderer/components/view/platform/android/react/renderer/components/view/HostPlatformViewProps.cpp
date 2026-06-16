@@ -914,7 +914,7 @@ folly::dynamic HostPlatformViewProps::getDiffProps(
     for (const auto& accessibilityChildId : accessibilityOrder) {
       accessibilityChildrenIds.push_back(accessibilityChildId);
     }
-    result["experimental_accessibilityOrder"] = accessibilityChildrenIds;
+    result["accessibilityOrder"] = accessibilityChildrenIds;
   }
 
   if (accessibilityLiveRegion != oldProps->accessibilityLiveRegion) {

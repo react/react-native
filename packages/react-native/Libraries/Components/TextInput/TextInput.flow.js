@@ -1058,7 +1058,10 @@ type TextInputBaseProps = Readonly<{
 
 /** @build-types emit-as-interface Uniwind compatibility */
 export type TextInputProps = Readonly<{
-  ...Omit<ViewProps, 'style' | 'experimental_accessibilityOrder'>,
+  ...Omit<
+    ViewProps,
+    'style' | 'accessibilityOrder' | 'experimental_accessibilityOrder',
+  >,
   ...TextInputIOSProps,
   ...TextInputAndroidProps,
   ...TextInputBaseProps,

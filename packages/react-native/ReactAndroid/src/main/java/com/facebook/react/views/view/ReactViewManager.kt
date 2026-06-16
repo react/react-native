@@ -99,6 +99,15 @@ public open class ReactViewManager : ReactClippingViewManager<ReactViewGroup>() 
 
   @ReactProp(name = ViewProps.ACCESSIBILITY_ORDER)
   public open fun setAccessibilityOrder(view: ReactViewGroup, nativeIds: ReadableArray?) {
+    updateAccessibilityOrder(view, nativeIds)
+  }
+
+  @ReactProp(name = ViewProps.EXPERIMENTAL_ACCESSIBILITY_ORDER)
+  public open fun setExperimentalAccessibilityOrder(view: ReactViewGroup, nativeIds: ReadableArray?) {
+    updateAccessibilityOrder(view, nativeIds)
+  }
+
+  private fun updateAccessibilityOrder(view: ReactViewGroup, nativeIds: ReadableArray?) {
     if (!ReactNativeFeatureFlags.enableAccessibilityOrder()) {
       return
     }

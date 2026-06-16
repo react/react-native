@@ -507,6 +507,11 @@ type ViewBaseProps = Readonly<{
    * The elements in the array represent nativeID values for the respective
    * descendant elements.
    */
+  accessibilityOrder?: ?Array<string>,
+
+  /**
+   * Deprecated. Use accessibilityOrder instead.
+   */
   experimental_accessibilityOrder?: ?Array<string>,
 }>;
 

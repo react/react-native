@@ -200,6 +200,7 @@ const validAttributesForNonEventProps = {
   accessibilityIgnoresInvertColors: true,
   accessibilityShowsLargeContentViewer: true,
   accessibilityLargeContentTitle: true,
+  accessibilityOrder: true,
   experimental_accessibilityOrder: true,
   accessibilityRespondsToUserInteraction: true,
   testID: true,

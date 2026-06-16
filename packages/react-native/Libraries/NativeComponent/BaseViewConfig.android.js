@@ -224,6 +224,7 @@ const validAttributesForNonEventProps = {
   accessibilityState: true,
   accessibilityActions: true,
   accessibilityValue: true,
+  accessibilityOrder: true,
   experimental_accessibilityOrder: true,
   importantForAccessibility: true,
   screenReaderFocusable: true,

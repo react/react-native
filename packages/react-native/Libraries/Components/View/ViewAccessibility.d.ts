@@ -48,6 +48,13 @@ export interface AccessibilityProps
   accessibilityState?: AccessibilityState | undefined;
 
   /**
+   * Defines the order in which descendant elements receive accessibility focus.
+   * The elements in the array represent nativeID values for the respective
+   * descendant elements.
+   */
+  accessibilityOrder?: ReadonlyArray<string> | undefined;
+
+  /**
    * alias for accessibilityState
    *
    * see https://reactnative.dev/docs/accessibility#accessibilitystate

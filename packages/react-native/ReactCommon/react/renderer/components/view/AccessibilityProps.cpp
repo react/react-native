@@ -52,8 +52,13 @@ AccessibilityProps::AccessibilityProps(
               : convertRawProp(
                     context,
                     rawProps,
-                    "experimental_accessibilityOrder",
-                    sourceProps.accessibilityOrder,
+                    "accessibilityOrder",
+                    convertRawProp(
+                        context,
+                        rawProps,
+                        "experimental_accessibilityOrder",
+                        sourceProps.accessibilityOrder,
+                        {}),
                     {})),
       accessibilityLabelledBy(
           ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
@@ -269,6 +274,7 @@ void AccessibilityProps::setProp(
     RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityState);
     RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityLabel);
     RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityOrder);
+    RAW_SET_PROP_SWITCH_CASE(accessibilityOrder, "experimental_accessibilityOrder");
     RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityLabelledBy);
     RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityLiveRegion);
     RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityHint);

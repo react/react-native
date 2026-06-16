@@ -1715,7 +1715,7 @@ function AccessibilityOrderExample(): React.Node {
       </RNTesterText>
       <View
         style={{flexDirection: 'row', gap: 10, marginBottom: 8}}
-        experimental_accessibilityOrder={['b', 'c', 'a']}>
+        accessibilityOrder={['b', 'c', 'a']}>
         <View
           accessible={true}
           nativeID="a"
@@ -1741,7 +1741,7 @@ function AccessibilityOrderExample(): React.Node {
       </RNTesterText>
       <View
         style={{flexDirection: 'row', gap: 10, marginBottom: 8}}
-        experimental_accessibilityOrder={['b', 'c', 'a']}>
+        accessibilityOrder={['b', 'c', 'a']}>
         <View
           accessible={true}
           nativeID="a"
@@ -1775,7 +1775,7 @@ function AccessibilityOrderExample(): React.Node {
       </RNTesterText>
       <View
         style={{flexDirection: 'row', gap: 10, marginBottom: 8}}
-        experimental_accessibilityOrder={['b', 'c', 'a']}>
+        accessibilityOrder={['b', 'c', 'a']}>
         <View
           accessible={true}
           nativeID="a"
@@ -1799,7 +1799,7 @@ function AccessibilityOrderExample(): React.Node {
       </RNTesterText>
       <View
         style={{flexDirection: 'row', gap: 10, marginBottom: 8}}
-        experimental_accessibilityOrder={['b', 'c', 'a']}>
+        accessibilityOrder={['b', 'c', 'a']}>
         <View
           nativeID="a"
           style={[
@@ -1846,11 +1846,11 @@ function AccessibilityOrderExample(): React.Node {
       </RNTesterText>
       <View
         style={{flexDirection: 'row', gap: 10, marginBottom: 8}}
-        experimental_accessibilityOrder={['b', 'c', 'a']}>
+        accessibilityOrder={['b', 'c', 'a']}>
         <View
           nativeID="a"
           accessibilityLabel="a"
-          experimental_accessibilityOrder={['4', '2', '1', '3']}
+          accessibilityOrder={['4', '2', '1', '3']}
           style={[
             {backgroundColor: 'red', flexWrap: 'wrap', flexDirection: 'row'},
             styles.boxSize,
@@ -1902,7 +1902,7 @@ function AccessibilityOrderExample(): React.Node {
         nativeID="root"
         accessibilityLabel="root"
         style={{flexDirection: 'row', gap: 10, marginBottom: 8}}
-        experimental_accessibilityOrder={['b', 'c', 'root', 'a']}>
+        accessibilityOrder={['b', 'c', 'root', 'a']}>
         <View
           accessible={true}
           nativeID="a"
@@ -1929,7 +1929,7 @@ function AccessibilityOrderExample(): React.Node {
       </RNTesterText>
       <View
         style={{flexDirection: 'row', gap: 10, marginBottom: 8}}
-        experimental_accessibilityOrder={[
+        accessibilityOrder={[
           'child2',
           'child1',
           'child2.3',
@@ -2029,7 +2029,7 @@ function AccessibilityOrderExample(): React.Node {
       </RNTesterText>
       <View
         style={{flexDirection: 'row', gap: 10, marginBottom: 8}}
-        experimental_accessibilityOrder={['b', 'c', 'a']}>
+        accessibilityOrder={['b', 'c', 'a']}>
         <View
           accessible={true}
           nativeID="a"
@@ -2066,7 +2066,7 @@ function AccessibilityOrderExample(): React.Node {
       </RNTesterText>
       <View
         style={{flexDirection: 'row', gap: 10, marginBottom: 8}}
-        experimental_accessibilityOrder={['c', 'a', 'b', 'text']}>
+        accessibilityOrder={['c', 'a', 'b', 'text']}>
         <View
           accessible={true}
           nativeID="a"
@@ -2137,9 +2137,7 @@ function TextLinkExample(): React.Node {
 
 function LabelCooptingExample(): React.Node {
   return (
-    <View
-      style={{gap: 10}}
-      experimental_accessibilityOrder={['a', 'a.5', 'b', 'c']}>
+    <View style={{gap: 10}} accessibilityOrder={['a', 'a.5', 'b', 'c']}>
       <View
         accessible={true}
         nativeID="a"

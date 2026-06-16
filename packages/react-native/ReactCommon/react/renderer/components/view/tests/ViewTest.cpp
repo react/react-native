@@ -14,7 +14,9 @@
 #include <react/renderer/components/root/RootComponentDescriptor.h>
 #include <react/renderer/components/scrollview/ScrollViewComponentDescriptor.h>
 #include <react/renderer/components/view/ViewComponentDescriptor.h>
+#include <react/renderer/components/view/ViewShadowNode.h>
 #include <react/renderer/core/PropsParserContext.h>
+#include <react/renderer/core/RawPropsParser.h>
 #include <react/renderer/element/ComponentBuilder.h>
 
 #include <react/renderer/components/view/YogaLayoutableShadowNode.h>
@@ -128,6 +130,44 @@ TEST_F(YogaDirtyFlagTest, changingNonLayoutSubPropsMustNotDirtyYogaNode) {
 
   EXPECT_FALSE(
       static_cast<RootShadowNode&>(*newRootShadowNode).layoutIfNeeded());
+}
+
+TEST(ViewPropsTest, accessibilityOrderCanBeParsedFromStablePropName) {
+  ContextContainer contextContainer{};
+  PropsParserContext parserContext{-1, contextContainer};
+
+  auto rawProps = RawProps(folly::dynamic::object(
+      "accessibilityOrder",
+      folly::dynamic::array("second", "first", "third")));
+  auto parser = RawPropsParser();
+  parser.prepare<ViewShadowNodeProps>();
+  rawProps.parse(parser);
+
+  auto props =
+      ViewShadowNodeProps(parserContext, ViewShadowNodeProps(), rawProps);
+
+  EXPECT_EQ(
+      props.accessibilityOrder,
+      (std::vector<std::string>{"second", "first", "third"}));
+}
+
+TEST(ViewPropsTest, accessibilityOrderCanBeParsedFromExperimentalPropName) {
+  ContextContainer contextContainer{};
+  PropsParserContext parserContext{-1, contextContainer};
+
+  auto rawProps = RawProps(folly::dynamic::object(
+      "experimental_accessibilityOrder",
+      folly::dynamic::array("second", "first", "third")));
+  auto parser = RawPropsParser();
+  parser.prepare<ViewShadowNodeProps>();
+  rawProps.parse(parser);
+
+  auto props =
+      ViewShadowNodeProps(parserContext, ViewShadowNodeProps(), rawProps);
+
+  EXPECT_EQ(
+      props.accessibilityOrder,
+      (std::vector<std::string>{"second", "first", "third"}));
 }
 
 TEST_F(YogaDirtyFlagTest, changingLayoutSubPropsMustDirtyYogaNode) {

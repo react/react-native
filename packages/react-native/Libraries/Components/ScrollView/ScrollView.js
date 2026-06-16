@@ -685,7 +685,7 @@ type ScrollViewBaseProps = Readonly<{
 
 /** @build-types emit-as-interface Nativewind compatibility */
 export type ScrollViewProps = Readonly<{
-  ...Omit<ViewProps, 'experimental_accessibilityOrder'>,
+  ...Omit<ViewProps, 'accessibilityOrder' | 'experimental_accessibilityOrder'>,
   ...ScrollViewPropsIOS,
   ...ScrollViewPropsAndroid,
   ...ScrollViewBaseProps,
