@@ -35,6 +35,7 @@ struct FrameData {
   jsinspector_modern::tracing::ThreadId threadId;
   HighResTimeStamp beginTimestamp;
   HighResTimeStamp endTimestamp;
+  HighResDuration vsyncInterval;
 };
 
 } // namespace
@@ -84,9 +85,12 @@ struct FrameData {
     _lastFrameData.reset();
   }
 
-  // Emit initial frame event
+  // Emit initial render frame
   auto now = HighResTimeStamp::now();
-  [self _emitFrameTimingWithBeginTimestamp:now endTimestamp:now];
+  auto vsyncDuration = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::seconds(1)) /
+      UIScreen.mainScreen.maximumFramesPerSecond;
+  auto initialFrameEnd = now + HighResDuration::fromNanoseconds(vsyncDuration.count());
+  [self _emitFrameTimingWithBeginTimestamp:now endTimestamp:initialFrameEnd vsyncInterval:HighResDuration::zero()];
 
   _displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(_displayLinkTick:)];
   [_displayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
@@ -115,11 +119,14 @@ struct FrameData {
       std::chrono::steady_clock::time_point(std::chrono::nanoseconds(beginNanos)));
   auto endTimestamp = HighResTimeStamp::fromChronoSteadyClockTimePoint(
       std::chrono::steady_clock::time_point(std::chrono::nanoseconds(endNanos)));
+  auto vsyncInterval = HighResDuration::fromNanoseconds(static_cast<int64_t>(sender.duration * 1e9));
 
-  [self _emitFrameTimingWithBeginTimestamp:beginTimestamp endTimestamp:endTimestamp];
+  [self _emitFrameTimingWithBeginTimestamp:beginTimestamp endTimestamp:endTimestamp vsyncInterval:vsyncInterval];
 }
 
-- (void)_emitFrameTimingWithBeginTimestamp:(HighResTimeStamp)beginTimestamp endTimestamp:(HighResTimeStamp)endTimestamp
+- (void)_emitFrameTimingWithBeginTimestamp:(HighResTimeStamp)beginTimestamp
+                              endTimestamp:(HighResTimeStamp)endTimestamp
+                             vsyncInterval:(HighResDuration)vsyncInterval
 {
   uint64_t frameId = _frameCounter++;
   auto threadId = static_cast<jsinspector_modern::tracing::ThreadId>(pthread_mach_thread_np(pthread_self()));
@@ -130,22 +137,21 @@ struct FrameData {
                             threadId:threadId
                       beginTimestamp:beginTimestamp
                         endTimestamp:endTimestamp
-                          screenshot:std::nullopt];
+                          screenshot:std::nullopt
+                       vsyncInterval:vsyncInterval];
     return;
   }
 
   UIImage *image = [self _captureScreenshot];
   if (image == nil) {
-    // Failed to capture (e.g. no window, duplicate hash) - emit without screenshot
-    [self _emitFrameEventWithFrameId:frameId
-                            threadId:threadId
-                      beginTimestamp:beginTimestamp
-                        endTimestamp:endTimestamp
-                          screenshot:std::nullopt];
+    // Screenshot unchanged (duplicate hash) or capture failed — don't emit
+    // a frame event. The serializer will fill the resulting gap with an idle
+    // frame, matching Chrome's native behavior where idle = vsync with no
+    // new rendering.
     return;
   }
 
-  FrameData frameData{image, frameId, threadId, beginTimestamp, endTimestamp};
+  FrameData frameData{image, frameId, threadId, beginTimestamp, endTimestamp, vsyncInterval};
 
   bool expected = false;
   if (_encodingInProgress.compare_exchange_strong(expected, true)) {
@@ -165,7 +171,8 @@ struct FrameData {
                               threadId:oldFrame->threadId
                         beginTimestamp:oldFrame->beginTimestamp
                           endTimestamp:oldFrame->endTimestamp
-                            screenshot:std::nullopt];
+                            screenshot:std::nullopt
+                         vsyncInterval:oldFrame->vsyncInterval];
     }
   }
 }
@@ -175,13 +182,14 @@ struct FrameData {
                     beginTimestamp:(HighResTimeStamp)beginTimestamp
                       endTimestamp:(HighResTimeStamp)endTimestamp
                         screenshot:(std::optional<std::vector<uint8_t>>)screenshot
+                     vsyncInterval:(HighResDuration)vsyncInterval
 {
   dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
     if (!self->_running.load(std::memory_order_relaxed)) {
       return;
     }
     jsinspector_modern::tracing::FrameTimingSequence sequence{
-        frameId, threadId, beginTimestamp, endTimestamp, std::move(screenshot)};
+        frameId, threadId, beginTimestamp, endTimestamp, std::move(screenshot), vsyncInterval};
     self->_callback(std::move(sequence));
   });
 }
@@ -198,7 +206,8 @@ struct FrameData {
                             threadId:frameData.threadId
                       beginTimestamp:frameData.beginTimestamp
                         endTimestamp:frameData.endTimestamp
-                          screenshot:std::move(screenshot)];
+                          screenshot:std::move(screenshot)
+                       vsyncInterval:frameData.vsyncInterval];
 
     // Clear encoding flag early, allowing new frames to start fresh encoding
     // sessions
@@ -221,7 +230,8 @@ struct FrameData {
                               threadId:tailFrame->threadId
                         beginTimestamp:tailFrame->beginTimestamp
                           endTimestamp:tailFrame->endTimestamp
-                            screenshot:std::move(tailScreenshot)];
+                            screenshot:std::move(tailScreenshot)
+                         vsyncInterval:tailFrame->vsyncInterval];
     }
   });
 }

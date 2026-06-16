@@ -18,6 +18,7 @@ import android.view.Window
 import com.facebook.proguard.annotations.DoNotStripAny
 import java.io.ByteArrayOutputStream
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import kotlinx.coroutines.CoroutineDispatcher
@@ -54,6 +55,7 @@ internal class FrameTimingsObserver(
       val threadId: Int,
       val beginTimestamp: Long,
       val endTimestamp: Long,
+      val vsyncIntervalNanos: Long,
   )
 
   fun start() {
@@ -66,9 +68,11 @@ internal class FrameTimingsObserver(
     lastFrameBuffer.set(null)
     isTracing = true
 
-    // Emit initial frame event
+    // Emit initial render frame
     val timestamp = System.nanoTime()
-    emitFrameTiming(timestamp, timestamp)
+    val fps = currentWindow?.decorView?.display?.refreshRate ?: 60f
+    val vsyncNanos = (TimeUnit.SECONDS.toNanos(1) / fps).toLong()
+    emitFrameTiming(timestamp, timestamp + vsyncNanos, vsyncIntervalNanos = 0)
 
     currentWindow?.addOnFrameMetricsAvailableListener(frameMetricsListener, mainHandler)
   }
@@ -97,27 +101,35 @@ internal class FrameTimingsObserver(
     }
   }
 
-  private val frameMetricsListener = Window.OnFrameMetricsAvailableListener { _, frameMetrics, _ ->
-    // Guard against calls after stop()
-    if (!isTracing) {
-      return@OnFrameMetricsAvailableListener
-    }
-    val beginTimestamp = frameMetrics.getMetric(FrameMetrics.VSYNC_TIMESTAMP)
-    val endTimestamp = beginTimestamp + frameMetrics.getMetric(FrameMetrics.TOTAL_DURATION)
-    emitFrameTiming(beginTimestamp, endTimestamp)
-  }
+  private val frameMetricsListener =
+      Window.OnFrameMetricsAvailableListener { window, frameMetrics, _ ->
+        // Guard against calls after stop()
+        if (!isTracing) {
+          return@OnFrameMetricsAvailableListener
+        }
+        val beginTimestamp = frameMetrics.getMetric(FrameMetrics.VSYNC_TIMESTAMP)
+        val endTimestamp = beginTimestamp + frameMetrics.getMetric(FrameMetrics.TOTAL_DURATION)
+        val refreshRate = window.decorView.display?.refreshRate ?: 60f
+        val vsyncIntervalNanos = (1_000_000_000L / refreshRate).toLong()
+        emitFrameTiming(beginTimestamp, endTimestamp, vsyncIntervalNanos)
+      }
 
-  private fun emitFrameTiming(beginTimestamp: Long, endTimestamp: Long) {
+  private fun emitFrameTiming(
+      beginTimestamp: Long,
+      endTimestamp: Long,
+      vsyncIntervalNanos: Long = 0,
+  ) {
     val frameId = frameCounter++
     val threadId = Process.myTid()
 
     if (!screenshotsEnabled) {
       // Screenshots disabled - emit without screenshot
-      emitFrameEvent(frameId, threadId, beginTimestamp, endTimestamp, null)
+      emitFrameEvent(frameId, threadId, beginTimestamp, endTimestamp, null, vsyncIntervalNanos)
       return
     }
 
-    captureScreenshot(frameId, threadId, beginTimestamp, endTimestamp) { frameData ->
+    captureScreenshot(frameId, threadId, beginTimestamp, endTimestamp, vsyncIntervalNanos) {
+        frameData ->
       if (frameData != null) {
         if (encodingInProgress.compareAndSet(false, true)) {
           // Not encoding - encode this frame immediately
@@ -133,13 +145,14 @@ internal class FrameTimingsObserver(
                 oldFrameData.beginTimestamp,
                 oldFrameData.endTimestamp,
                 null,
+                oldFrameData.vsyncIntervalNanos,
             )
             oldFrameData.bitmap.recycle()
           }
         }
       } else {
         // Failed to capture (e.g. timeout) - emit without screenshot
-        emitFrameEvent(frameId, threadId, beginTimestamp, endTimestamp, null)
+        emitFrameEvent(frameId, threadId, beginTimestamp, endTimestamp, null, vsyncIntervalNanos)
       }
     }
   }
@@ -150,10 +163,18 @@ internal class FrameTimingsObserver(
       beginTimestamp: Long,
       endTimestamp: Long,
       screenshot: ByteArray?,
+      vsyncIntervalNanos: Long = 0,
   ) {
     CoroutineScope(Dispatchers.Default).launch {
       onFrameTimingSequence(
-          FrameTimingSequence(frameId, threadId, beginTimestamp, endTimestamp, screenshot)
+          FrameTimingSequence(
+              frameId,
+              threadId,
+              beginTimestamp,
+              endTimestamp,
+              screenshot,
+              vsyncIntervalNanos,
+          )
       )
     }
   }
@@ -168,6 +189,7 @@ internal class FrameTimingsObserver(
             frameData.beginTimestamp,
             frameData.endTimestamp,
             screenshot,
+            frameData.vsyncIntervalNanos,
         )
       } finally {
         frameData.bitmap.recycle()
@@ -187,6 +209,7 @@ internal class FrameTimingsObserver(
               tailFrame.beginTimestamp,
               tailFrame.endTimestamp,
               screenshot,
+              tailFrame.vsyncIntervalNanos,
           )
         } finally {
           tailFrame.bitmap.recycle()
@@ -201,6 +224,7 @@ internal class FrameTimingsObserver(
       threadId: Int,
       beginTimestamp: Long,
       endTimestamp: Long,
+      vsyncIntervalNanos: Long,
       callback: (FrameData?) -> Unit,
   ) {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
@@ -226,7 +250,16 @@ internal class FrameTimingsObserver(
         bitmap,
         { copyResult ->
           if (copyResult == PixelCopy.SUCCESS) {
-            callback(FrameData(bitmap, frameId, threadId, beginTimestamp, endTimestamp))
+            callback(
+                FrameData(
+                    bitmap,
+                    frameId,
+                    threadId,
+                    beginTimestamp,
+                    endTimestamp,
+                    vsyncIntervalNanos,
+                )
+            )
           } else {
             bitmap.recycle()
             callback(null)

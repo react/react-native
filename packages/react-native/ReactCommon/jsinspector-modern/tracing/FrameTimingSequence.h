@@ -30,12 +30,14 @@ struct FrameTimingSequence {
       ThreadId threadId,
       HighResTimeStamp beginTimestamp,
       HighResTimeStamp endTimestamp,
-      std::optional<std::vector<uint8_t>> screenshot = std::nullopt)
+      std::optional<std::vector<uint8_t>> screenshot = std::nullopt,
+      HighResDuration vsyncInterval = HighResDuration::zero())
       : id(id),
         threadId(threadId),
         beginTimestamp(beginTimestamp),
         endTimestamp(endTimestamp),
-        screenshot(std::move(screenshot))
+        screenshot(std::move(screenshot)),
+        vsyncInterval(vsyncInterval)
   {
   }
 
@@ -56,6 +58,12 @@ struct FrameTimingSequence {
    * Optional screenshot data captured during the frame.
    */
   std::optional<std::vector<uint8_t>> screenshot;
+
+  /**
+   * Duration of one vsync interval from the device's display refresh rate.
+   * Zero when unknown (e.g. the initial synthetic frame).
+   */
+  HighResDuration vsyncInterval = HighResDuration::zero();
 };
 
 } // namespace facebook::react::jsinspector_modern::tracing

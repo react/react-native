@@ -10,6 +10,8 @@
 #include "TraceEventGenerator.h"
 #include "TraceEventSerializer.h"
 
+#include <algorithm>
+
 namespace facebook::react::jsinspector_modern::tracing {
 
 namespace {
@@ -19,6 +21,11 @@ namespace {
  * https://chromedevtools.github.io/devtools-protocol/tot/LayerTree/
  */
 constexpr int FALLBACK_LAYER_TREE_ID = 1;
+
+// Default vsync interval (60 Hz), used as a fallback when the device's
+// actual refresh rate is unknown (e.g. the initial synthetic frame).
+const auto DEFAULT_VSYNC_INTERVAL =
+    HighResDuration::fromNanoseconds(16'667'000);
 
 } // namespace
 
@@ -104,10 +111,86 @@ constexpr int FALLBACK_LAYER_TREE_ID = 1;
       TraceEventSerializer::estimateJsonSize(serializedSetLayerTreeId);
   chunk.push_back(std::move(serializedSetLayerTreeId));
 
+  // Filter out frames that started before recording began. On Android,
+  // FrameMetrics may deliver frames from app startup that predate the recording
+  // session; on iOS the first CADisplayLink callback reports sender.timestamp
+  // (the previous vsync) which can be before the recording start. These would
+  // otherwise appear as large pre-recording render frames in the timeline.
+  frameTimings.erase(
+      std::remove_if(
+          frameTimings.begin(),
+          frameTimings.end(),
+          [&recordingStartTimestamp](const FrameTimingSequence& ft) {
+            return ft.beginTimestamp < recordingStartTimestamp;
+          }),
+      frameTimings.end());
+
+  if (frameTimings.empty()) {
+    chunkCallback(std::move(chunk));
+    return;
+  }
+
+  // Sort frames by beginTimestamp to handle out-of-order arrivals caused by
+  // async screenshot encoding. The initial synthetic frame may arrive in the
+  // buffer after real frames because its screenshot encoding takes longer than
+  // one vsync (~16ms). Sorting ensures the idle-gap detection loop below sees
+  // frames in chronological order.
+  std::sort(
+      frameTimings.begin(),
+      frameTimings.end(),
+      [](const FrameTimingSequence& a, const FrameTimingSequence& b) {
+        return a.beginTimestamp < b.beginTimestamp;
+      });
+
+  // Compute the next available sequence ID for synthetic frames (idle frames
+  // and dropped frames).
+  FrameSequenceId nextSyntheticSeqId = 0;
+  for (const auto& ft : frameTimings) {
+    nextSyntheticSeqId = std::max(nextSyntheticSeqId, ft.id + 1);
+  }
+
+  std::optional<HighResTimeStamp> prevEndTimestamp;
+
   for (auto&& frameTimingSequence : frameTimings) {
     // Serialize all events for this frame.
     folly::dynamic frameEvents = folly::dynamic::array();
     size_t totalFrameBytes = 0;
+
+    // Detect idle period: gap between previous frame's end and this frame's
+    // begin exceeding one vsync interval. Emit NeedsBeginFrameChanged +
+    // BeginFrame to fill the gap. Chrome DevTools renders a BeginFrame
+    // without a corresponding DrawFrame as an "Idle frame".
+    auto minIdleGap =
+        frameTimingSequence.vsyncInterval > HighResDuration::zero()
+        ? frameTimingSequence.vsyncInterval
+        : DEFAULT_VSYNC_INTERVAL;
+    if (prevEndTimestamp.has_value() &&
+        (frameTimingSequence.beginTimestamp - *prevEndTimestamp) > minIdleGap) {
+      auto needsBeginFrameEvent =
+          TraceEventGenerator::createNeedsBeginFrameChangedEvent(
+              FALLBACK_LAYER_TREE_ID,
+              *prevEndTimestamp,
+              processId,
+              frameTimingSequence.threadId);
+      auto serializedNeedsBeginFrame =
+          TraceEventSerializer::serialize(std::move(needsBeginFrameEvent));
+      totalFrameBytes +=
+          TraceEventSerializer::estimateJsonSize(serializedNeedsBeginFrame);
+      frameEvents.push_back(std::move(serializedNeedsBeginFrame));
+
+      auto idleBeginEvent = TraceEventGenerator::createIdleBeginFrameEvent(
+          nextSyntheticSeqId++,
+          FALLBACK_LAYER_TREE_ID,
+          *prevEndTimestamp,
+          processId,
+          frameTimingSequence.threadId);
+
+      auto serializedIdleBegin =
+          TraceEventSerializer::serialize(std::move(idleBeginEvent));
+      totalFrameBytes +=
+          TraceEventSerializer::estimateJsonSize(serializedIdleBegin);
+      frameEvents.push_back(std::move(serializedIdleBegin));
+    }
 
     auto [beginDrawingEvent, endDrawingEvent] =
         TraceEventGenerator::createFrameTimingsEvents(
@@ -155,6 +238,8 @@ constexpr int FALLBACK_LAYER_TREE_ID = 1;
       chunk.push_back(std::move(frameEvent));
     }
     currentChunkBytes += totalFrameBytes;
+
+    prevEndTimestamp = frameTimingSequence.endTimestamp;
   }
 
   if (!chunk.empty()) {
