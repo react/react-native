@@ -117,7 +117,7 @@
     "tinybench": "^4.1.0",
     "tinyglobby": "^0.2.15",
     "typescript": "^6.0.3",
-    "ws": "^7.5.10"
+    "ws": "^7.5.11"
   },
   "resolutions": {
     "react-is": "19.2.3",

@@ -42,7 +42,7 @@
     "nullthrows": "^1.1.1",
     "open": "^7.0.3",
     "serve-static": "^1.16.2",
-    "ws": "^7.5.10"
+    "ws": "^7.5.11"
   },
   "devDependencies": {
     "@react-native/debugger-shell": "0.87.0-main",
