@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<5bf52aa57fc011858db9f632930bb8fb>>
+ * @generated SignedSource<<731e92ecac8dbdf0a4b204b763a2c8c7>>
  */
 
 /**
@@ -47,7 +47,6 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
   private var enableIOSTextBaselineOffsetPerLineCache: Boolean? = null
   private var enableIOSViewClipToPaddingBoxCache: Boolean? = null
   private var enableImagePrefetchingAndroidCache: Boolean? = null
-  private var enableImageRequestDowngradingForNonVisibleImagesCache: Boolean? = null
   private var enableImmediateUpdateModeForContentOffsetChangesCache: Boolean? = null
   private var enableImperativeFocusCache: Boolean? = null
   private var enableInteropViewManagerClassLookUpOptimizationIOSCache: Boolean? = null
@@ -345,15 +344,6 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
     if (cached == null) {
       cached = ReactNativeFeatureFlagsCxxInterop.enableImagePrefetchingAndroid()
       enableImagePrefetchingAndroidCache = cached
-    }
-    return cached
-  }
-
-  override fun enableImageRequestDowngradingForNonVisibleImages(): Boolean {
-    var cached = enableImageRequestDowngradingForNonVisibleImagesCache
-    if (cached == null) {
-      cached = ReactNativeFeatureFlagsCxxInterop.enableImageRequestDowngradingForNonVisibleImages()
-      enableImageRequestDowngradingForNonVisibleImagesCache = cached
     }
     return cached
   }

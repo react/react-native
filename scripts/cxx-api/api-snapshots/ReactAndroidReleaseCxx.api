@@ -2608,7 +2608,6 @@ class facebook::react::ImageRequestParams {
   public facebook::react::Float blurRadius;
   public facebook::react::Float fadeDuration;
   public facebook::react::Float resizeMultiplier;
-  public facebook::react::ImageRequestPriority priority;
   public facebook::react::ImageResizeMode resizeMode;
   public facebook::react::ImageSource defaultSource;
   public facebook::react::ImageSource loadingIndicatorSource;
@@ -6216,11 +6215,6 @@ enum facebook::react::HyphenationFrequency {
   Full,
   None,
   Normal,
-}
-
-enum facebook::react::ImageRequestPriority : int8_t {
-  Immediate,
-  Prefetch,
 }
 
 enum facebook::react::ImageResizeMode : int8_t {

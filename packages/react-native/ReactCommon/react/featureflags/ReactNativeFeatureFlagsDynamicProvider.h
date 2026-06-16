@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<215e8b28994854f31f249a5e51623c87>>
+ * @generated SignedSource<<d5f36861c60295a0203f939bae3b0b02>>
  */
 
 /**
@@ -286,15 +286,6 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::enableImagePrefetchingAndroid();
-  }
-
-  bool enableImageRequestDowngradingForNonVisibleImages() override {
-    auto value = values_["enableImageRequestDowngradingForNonVisibleImages"];
-    if (!value.isNull()) {
-      return value.getBool();
-    }
-
-    return ReactNativeFeatureFlagsDefaults::enableImageRequestDowngradingForNonVisibleImages();
   }
 
   bool enableImmediateUpdateModeForContentOffsetChanges() override {

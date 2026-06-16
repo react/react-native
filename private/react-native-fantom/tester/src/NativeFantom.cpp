@@ -317,22 +317,4 @@ void NativeFantom::clearAllImages(jsi::Runtime& /*rt*/) {
   appDelegate_.mountingManager_->imageLoader_->clearAllImages();
 }
 
-double NativeFantom::getImageRequestCount(
-    jsi::Runtime& /*rt*/,
-    const std::string& uri) {
-  return static_cast<double>(
-      appDelegate_.mountingManager_->imageManager_->getRequestCount(uri));
-}
-
-std::string NativeFantom::getImageRequestPriority(
-    jsi::Runtime& /*rt*/,
-    const std::string& uri) {
-  return appDelegate_.mountingManager_->imageManager_->getLatestRequestPriority(
-      uri);
-}
-
-void NativeFantom::clearImageRequests(jsi::Runtime& /*rt*/) {
-  appDelegate_.mountingManager_->imageManager_->clearRequests();
-}
-
 } // namespace facebook::react

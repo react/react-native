@@ -4443,11 +4443,6 @@ enum facebook::react::HyphenationFrequency {
   Normal,
 }
 
-enum facebook::react::ImageRequestPriority : int8_t {
-  Immediate,
-  Prefetch,
-}
-
 enum facebook::react::ImageResizeMode : int8_t {
   Center,
   Contain,

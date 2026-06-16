@@ -24,7 +24,6 @@
 #include <react/nativemodule/cputime/NativeCPUTime.h>
 #include <react/nativemodule/fantomtestspecificmethods/NativeFantomTestSpecificMethods.h>
 #include <react/renderer/animated/NativeAnimatedNodesManagerProvider.h>
-#include <react/renderer/components/image/ImageComponentDescriptor.h>
 #include <react/renderer/core/LayoutConstraints.h>
 #include <react/renderer/mounting/stubs/stubs.h>
 #include <react/renderer/runtimescheduler/RuntimeSchedulerBinding.h>
@@ -87,7 +86,6 @@ TesterAppDelegate::TesterAppDelegate(
       DevToolsHttpClientFactoryKey, getHttpClientFactory());
   contextContainer->insert(
       DevToolsWebSocketClientFactoryKey, getWebSocketClientFactory());
-  contextContainer->insert(ImageManagerKey, mountingManager_->imageManager_);
 
   runLoopObserverManager_ = std::make_shared<RunLoopObserverManager>();
 
@@ -193,7 +191,6 @@ void TesterAppDelegate::startSurface(
   LayoutContext layoutContext{
       .pointScaleFactor = pointScaleFactor,
       .viewportOffset = {.x = offsetX, .y = offsetY},
-      .viewportSize = extentsDp,
   };
 
   reactHost_->startSurface(
@@ -229,7 +226,6 @@ void TesterAppDelegate::updateSurfaceConstraints(
 
   LayoutContext layoutContext{
       .pointScaleFactor = pointScaleFactor,
-      .viewportSize = extentsDp,
   };
 
   reactHost_->setSurfaceConstraints(

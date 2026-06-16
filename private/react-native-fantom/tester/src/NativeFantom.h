@@ -140,9 +140,6 @@ class NativeFantom : public NativeFantomCxxSpec<NativeFantom> {
       const NativeFantomSetImageResponseImageResponse &imageResponse);
   void clearImage(jsi::Runtime &rt, const std::string &uri);
   void clearAllImages(jsi::Runtime &rt);
-  double getImageRequestCount(jsi::Runtime &rt, const std::string &uri);
-  std::string getImageRequestPriority(jsi::Runtime &rt, const std::string &uri);
-  void clearImageRequests(jsi::Runtime &rt);
 
  private:
   TesterAppDelegate &appDelegate_;

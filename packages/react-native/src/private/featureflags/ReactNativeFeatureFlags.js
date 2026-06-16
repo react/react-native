@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<b3888619bcbd9d40b0e1740a864a07cf>>
+ * @generated SignedSource<<fd1e1a6b136fface33110eaa3c3fe903>>
  * @flow strict
  * @noformat
  */
@@ -76,7 +76,6 @@ export type ReactNativeFeatureFlags = Readonly<{
   enableIOSTextBaselineOffsetPerLine: Getter<boolean>,
   enableIOSViewClipToPaddingBox: Getter<boolean>,
   enableImagePrefetchingAndroid: Getter<boolean>,
-  enableImageRequestDowngradingForNonVisibleImages: Getter<boolean>,
   enableImmediateUpdateModeForContentOffsetChanges: Getter<boolean>,
   enableImperativeFocus: Getter<boolean>,
   enableInteropViewManagerClassLookUpOptimizationIOS: Getter<boolean>,
@@ -318,10 +317,6 @@ export const enableIOSViewClipToPaddingBox: Getter<boolean> = createNativeFlagGe
  * When enabled, Android will build and initiate image prefetch requests on ImageShadowNode::layout
  */
 export const enableImagePrefetchingAndroid: Getter<boolean> = createNativeFlagGetter('enableImagePrefetchingAndroid', false);
-/**
- * When enabled, ImageShadowNode downgrades image requests to prefetch priority when layout determines that the image does not intersect the viewport.
- */
-export const enableImageRequestDowngradingForNonVisibleImages: Getter<boolean> = createNativeFlagGetter('enableImageRequestDowngradingForNonVisibleImages', false);
 /**
  * Dispatches state updates for content offset changes synchronously on the main thread.
  */

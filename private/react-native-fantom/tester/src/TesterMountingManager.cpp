@@ -21,7 +21,6 @@ TesterMountingManager::TesterMountingManager(
     std::function<void(SurfaceId)>&& onAfterMount)
     : onAfterMount_(onAfterMount), renderer_(std::make_unique<RenderOutput>()) {
   imageLoader_ = std::make_shared<FantomImageLoader>();
-  imageManager_ = std::make_shared<FantomImageManager>();
 }
 
 void TesterMountingManager::executeMount(

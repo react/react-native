@@ -129,9 +129,6 @@ interface Spec extends TurboModule {
   setImageResponse(uri: string, imageResponse: ImageResponse): void;
   clearImage(uri: string): void;
   clearAllImages(): void;
-  getImageRequestCount(uri: string): number;
-  getImageRequestPriority(uri: string): string;
-  clearImageRequests(): void;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>(

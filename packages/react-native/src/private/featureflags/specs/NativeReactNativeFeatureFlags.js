@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<6bbb0c4532c0762c4ae2dd1d7bc43fb9>>
+ * @generated SignedSource<<39fb311e84bbff2ff76c8710d493d9d9>>
  * @flow strict
  * @noformat
  */
@@ -52,7 +52,6 @@ export interface Spec extends TurboModule {
   readonly enableIOSTextBaselineOffsetPerLine?: () => boolean;
   readonly enableIOSViewClipToPaddingBox?: () => boolean;
   readonly enableImagePrefetchingAndroid?: () => boolean;
-  readonly enableImageRequestDowngradingForNonVisibleImages?: () => boolean;
   readonly enableImmediateUpdateModeForContentOffsetChanges?: () => boolean;
   readonly enableImperativeFocus?: () => boolean;
   readonly enableInteropViewManagerClassLookUpOptimizationIOS?: () => boolean;
