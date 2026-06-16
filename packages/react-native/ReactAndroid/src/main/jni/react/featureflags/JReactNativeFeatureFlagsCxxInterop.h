@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<746da63dcbec1bb165731e7380993659>>
+ * @generated SignedSource<<19ab9f9ec4e3470290f69e0803ade5d4>>
  */
 
 /**
@@ -79,9 +79,6 @@ class JReactNativeFeatureFlagsCxxInterop
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool enableDestroyShadowTreeRevisionAsync(
-    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
-
-  static bool enableDifferentiatorMutationVectorPreallocation(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool enableDoubleMeasurementFixAndroid(

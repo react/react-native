@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<ea8284ad906ae89281a3fbd849e88c19>>
+ * @generated SignedSource<<70e4f4b4bb3aa28a644ede80ceeb4fc3>>
  */
 
 /**
@@ -138,12 +138,6 @@ class ReactNativeFeatureFlagsJavaProvider
   bool enableDestroyShadowTreeRevisionAsync() override {
     static const auto method =
         getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enableDestroyShadowTreeRevisionAsync");
-    return method(javaProvider_);
-  }
-
-  bool enableDifferentiatorMutationVectorPreallocation() override {
-    static const auto method =
-        getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enableDifferentiatorMutationVectorPreallocation");
     return method(javaProvider_);
   }
 
@@ -656,11 +650,6 @@ bool JReactNativeFeatureFlagsCxxInterop::enableDestroyShadowTreeRevisionAsync(
   return ReactNativeFeatureFlags::enableDestroyShadowTreeRevisionAsync();
 }
 
-bool JReactNativeFeatureFlagsCxxInterop::enableDifferentiatorMutationVectorPreallocation(
-    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
-  return ReactNativeFeatureFlags::enableDifferentiatorMutationVectorPreallocation();
-}
-
 bool JReactNativeFeatureFlagsCxxInterop::enableDoubleMeasurementFixAndroid(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
   return ReactNativeFeatureFlags::enableDoubleMeasurementFixAndroid();
@@ -1093,9 +1082,6 @@ void JReactNativeFeatureFlagsCxxInterop::registerNatives() {
       makeNativeMethod(
         "enableDestroyShadowTreeRevisionAsync",
         JReactNativeFeatureFlagsCxxInterop::enableDestroyShadowTreeRevisionAsync),
-      makeNativeMethod(
-        "enableDifferentiatorMutationVectorPreallocation",
-        JReactNativeFeatureFlagsCxxInterop::enableDifferentiatorMutationVectorPreallocation),
       makeNativeMethod(
         "enableDoubleMeasurementFixAndroid",
         JReactNativeFeatureFlagsCxxInterop::enableDoubleMeasurementFixAndroid),

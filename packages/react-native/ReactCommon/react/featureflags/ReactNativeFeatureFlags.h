@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<6958847f0d788c06cf64478ee2c36386>>
+ * @generated SignedSource<<9180537aa2031cfcbab5ffbdf1dc32d1>>
  */
 
 /**
@@ -123,11 +123,6 @@ class ReactNativeFeatureFlags {
    * Enables destructor calls for ShadowTreeRevision in the background to reduce UI thread work.
    */
   RN_EXPORT static bool enableDestroyShadowTreeRevisionAsync();
-
-  /**
-   * Pre-allocate mutation vectors in the Differentiator to reduce reallocation overhead during shadow view diffing.
-   */
-  RN_EXPORT static bool enableDifferentiatorMutationVectorPreallocation();
 
   /**
    * When enabled a subset of components will avoid double measurement on Android.
