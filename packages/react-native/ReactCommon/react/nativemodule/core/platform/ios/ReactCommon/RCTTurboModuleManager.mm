@@ -333,7 +333,6 @@ Class getFallbackClassFromName(const char *name)
    * Use respondsToSelector: below to infer conformance to @protocol(RCTTurboModule). Using conformsToProtocol: is
    * expensive.
    */
-  Class moduleClass = [module class];
   if ([module respondsToSelector:@selector(getTurboModule:)]) {
     ObjCTurboModule::InitParams params = {
         .moduleName = moduleName,
@@ -345,7 +344,7 @@ Class getFallbackClassFromName(const char *name)
 
     auto turboModule = [(id<RCTTurboModule>)module getTurboModule:params];
     if (turboModule == nullptr) {
-      RCTLogError(@"TurboModule \"%@\"'s getTurboModule: method returned nil.", moduleClass);
+      RCTLogError(@"TurboModule \"%@\"'s getTurboModule: method returned nil.", [module class]);
     }
     _turboModuleCache.insert({moduleName, turboModule});
 
