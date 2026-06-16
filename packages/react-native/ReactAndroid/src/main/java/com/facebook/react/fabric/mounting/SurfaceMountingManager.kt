@@ -1124,7 +1124,7 @@ internal constructor(
               "Unable to find viewState for tag $reactTag. Surface stopped: $isStopped"
           )
 
-  private inline fun getNullableViewState(reactTag: Int): ViewState? = registryLock.read {
+  private fun getNullableViewState(reactTag: Int): ViewState? = registryLock.read {
     tagToViewState[reactTag]
   }
 
