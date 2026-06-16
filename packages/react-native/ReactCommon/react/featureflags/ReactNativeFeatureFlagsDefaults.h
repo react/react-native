@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<8dfc52502bd539e5e43d547f895a6d33>>
+ * @generated SignedSource<<f1921c6321439d8354f90ff261c15cd5>>
  */
 
 /**
@@ -236,7 +236,7 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool fixDifferentiatorParentTagForUnflattenCase() override {
-    return false;
+    return true;
   }
 
   bool fixMappingOfEventPrioritiesBetweenFabricAndReact() override {
