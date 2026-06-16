@@ -27,5 +27,8 @@
     "!**/__fixtures__/**",
     "!**/__mocks__/**",
     "!**/__tests__/**"
-  ]
+  ],
+  "peerDependencies": {
+    "react-native": "*"
+  }
 }

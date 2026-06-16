@@ -10,6 +10,9 @@ Most apps never import this directly — assets are handled through `<Image>`.
 
 ### `@react-native/assets-registry/registry`
 
+> [!Note]
+> Aliases to [`AssetRegistry`](https://reactnative.dev/docs/assetregistry) (since 0.87). Prefer importing directly from the `'react-native'` package in libraries.
+
 | Export | Signature | Notes |
 |---|---|---|
 | `registerAsset` | `(asset: PackagerAsset) => number` | Stores the asset; returns a numeric ID |
