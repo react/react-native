@@ -78,7 +78,7 @@ using namespace facebook::react;
     observerCoordinator->nativeImageResponseProgress((float)progress / (float)total, progress, total);
   };
 
-  RCTImageURLLoaderRequest *loaderRequest =
+  RCTImageURLLoaderRequest *__unused loaderRequest =
       [self->_imageLoader loadImageWithURLRequest:request
                                              size:CGSizeMake(imageSource.size.width, imageSource.size.height)
                                             scale:imageSource.scale
