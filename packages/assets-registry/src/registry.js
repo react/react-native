@@ -40,5 +40,7 @@ function getAssetByID(assetId /*: number */) /*: PackagerAsset */ {
   return assets[assetId - 1];
 }
 
-// eslint-disable-next-line @react-native/monorepo/no-commonjs-exports
-module.exports = {registerAsset, getAssetByID};
+module.exports = {
+  registerAsset,
+  getAssetByID,
+};
