@@ -14,7 +14,6 @@ import android.app.Activity
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
-import android.os.Build
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
@@ -27,8 +26,6 @@ import android.widget.FrameLayout
 import androidx.activity.ComponentDialog
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.UiThread
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.WindowInsetsControllerCompat
 import com.facebook.common.logging.FLog
 import com.facebook.react.R
 import com.facebook.react.bridge.GuardedRunnable
@@ -344,7 +341,6 @@ public class ReactModalHostView(context: ThemedReactContext) :
     }
     if (currentActivity?.isFinishing == false) {
       newDialog.show()
-      updateSystemAppearance()
       window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
       (context as ThemedReactContext).onExtraWindowCreate(window)
     }
@@ -414,62 +410,6 @@ public class ReactModalHostView(context: ThemedReactContext) :
       // java.lang.IllegalArgumentException: View=DecorView@c94931b[XxxActivity] not attached to
       // window manager
       FLog.e(TAG, "ReactModalHostView: error while setting window flags: ", e.message)
-    }
-  }
-
-  /**
-   * Updates the system appearance of the dialog to match the activity that it is being displayed
-   * on.
-   */
-  private fun updateSystemAppearance() {
-    val currentActivity = getCurrentActivity() ?: return
-    val dialog = checkNotNull(dialog) { "dialog must exist when we call updateProperties" }
-    val dialogWindow =
-        checkNotNull(dialog.window) { "dialog must have window when we call updateProperties" }
-    val activityWindow = currentActivity.window
-    // Modeled after the version check in StatusBarModule.setStyle
-    if (Build.VERSION.SDK_INT > Build.VERSION_CODES.R) {
-      val activityWindowInsetsController =
-          WindowInsetsControllerCompat(activityWindow, activityWindow.decorView)
-      val dialogWindowInsetsController =
-          WindowInsetsControllerCompat(dialogWindow, dialogWindow.decorView)
-
-      if (isEdgeToEdgeFeatureFlagOn) {
-        activityWindowInsetsController.systemBarsBehavior =
-            WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-        dialogWindowInsetsController.systemBarsBehavior =
-            WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-      }
-
-      dialogWindowInsetsController.isAppearanceLightStatusBars =
-          activityWindowInsetsController.isAppearanceLightStatusBars
-
-      activityWindow.decorView.rootWindowInsets?.let { insets ->
-        val activityRootWindowInsets = WindowInsetsCompat.toWindowInsetsCompat(insets)
-        syncSystemBarsVisibility(activityRootWindowInsets, dialogWindowInsetsController)
-      }
-    } else {
-      dialogWindow.decorView.systemUiVisibility = activityWindow.decorView.systemUiVisibility
-    }
-  }
-
-  /**
-   * Syncs the visibility of the system bars based on their visibility in the root window insets.
-   * This ensures consistency between the system bars visibility in the activity and the dialog.
-   */
-  private fun syncSystemBarsVisibility(
-      activityRootWindowInsets: WindowInsetsCompat,
-      dialogWindowInsetsController: WindowInsetsControllerCompat?,
-      types: List<Int> =
-          listOf(WindowInsetsCompat.Type.statusBars(), WindowInsetsCompat.Type.navigationBars()),
-  ) {
-    types.forEach { type ->
-      val isVisible = activityRootWindowInsets.isVisible(type)
-      if (isVisible) {
-        dialogWindowInsetsController?.show(type)
-      } else {
-        dialogWindowInsetsController?.hide(type)
-      }
     }
   }
 
