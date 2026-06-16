@@ -88,6 +88,7 @@ Diff: ${styleText(['dim', 'underline'], newVersion?.diffUrl ?? 'none')}
   }
 }
 
+// $FlowFixMe[incompatible-type-guard]
 function isDiffPurgeEntry(data: Partial<DiffPurge>): data is DiffPurge {
   return (
     // $FlowFixMe[incompatible-type-guard]
