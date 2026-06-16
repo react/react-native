@@ -24,7 +24,7 @@
     "./flat": "./flat.js"
   },
   "dependencies": {
-    "@babel/core": "^7.25.2",
+    "@babel/core": "^7.29.6",
     "@babel/eslint-parser": "^7.25.1",
     "@react-native/eslint-plugin": "0.87.0-main",
     "@typescript-eslint/eslint-plugin": "^8.59.2",

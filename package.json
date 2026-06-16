@@ -46,7 +46,7 @@
     "!private/helloworld"
   ],
   "devDependencies": {
-    "@babel/core": "^7.25.2",
+    "@babel/core": "^7.29.6",
     "@babel/eslint-parser": "^7.25.1",
     "@babel/generator": "^7.29.1",
     "@babel/plugin-syntax-typescript": "^7.25.4",

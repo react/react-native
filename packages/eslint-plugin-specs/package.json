@@ -24,7 +24,7 @@
     "postpack": "node postpack.js"
   },
   "dependencies": {
-    "@babel/core": "^7.25.2",
+    "@babel/core": "^7.29.6",
     "@babel/plugin-transform-flow-strip-types": "^7.25.2",
     "@react-native/codegen": "0.87.0-main",
     "make-dir": "^2.1.0",

@@ -26,7 +26,7 @@
     "!**/__tests__/**"
   ],
   "dependencies": {
-    "@babel/core": "^7.25.2",
+    "@babel/core": "^7.29.6",
     "@react-native/babel-preset": "0.87.0-main",
     "hermes-parser": "0.36.1",
     "nullthrows": "^1.1.1"
