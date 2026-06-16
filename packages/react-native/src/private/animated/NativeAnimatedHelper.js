@@ -71,6 +71,21 @@ let globalEventEmitterAnimationFinishedListener: ?EventSubscription = null;
 const shouldSignalBatch: boolean =
   ReactNativeFeatureFlags.cxxNativeAnimatedEnabled();
 
+// Schedules `API.flushQueue` after the current batch, replacing any pending
+// flush. On device `setImmediate` is a microtask; under jest's fake timers it's
+// a fake-timer entry that only `runAllTimers` drains — not `await` or
+// `advanceTimersByTime` — so the deferred flush wouldn't run before a test's
+// assertions. Flush synchronously in tests instead.
+function scheduleQueueFlush(): void {
+  clearImmediate(flushQueueImmediate);
+  if (process.env.NODE_ENV === 'test') {
+    // TODO: T275950736 - remove this path
+    API.flushQueue();
+  } else {
+    flushQueueImmediate = setImmediate(API.flushQueue);
+  }
+}
+
 function createNativeOperations(): NonNullable<typeof NativeAnimatedModule> {
   const methodNames = [
     'createAnimatedNode', // 1
@@ -116,8 +131,7 @@ function createNativeOperations(): NonNullable<typeof NativeAnimatedModule> {
         // details, see `NativeAnimatedModule.queueAndExecuteBatchedOperations`.
         singleOpQueue.push(operationID, ...args);
         if (shouldSignalBatch) {
-          clearImmediate(flushQueueImmediate);
-          flushQueueImmediate = setImmediate(API.flushQueue);
+          scheduleQueueFlush();
         }
       };
     }
@@ -137,8 +151,7 @@ function createNativeOperations(): NonNullable<typeof NativeAnimatedModule> {
         } else if (shouldSignalBatch) {
           // $FlowExpectedError[incompatible-call] - Dynamism.
           queue.push(() => method(...args));
-          clearImmediate(flushQueueImmediate);
-          flushQueueImmediate = setImmediate(API.flushQueue);
+          scheduleQueueFlush();
         } else {
           // $FlowExpectedError[incompatible-call] - Dynamism.
           method(...args);
@@ -190,9 +203,7 @@ const API = {
     invariant(NativeAnimatedModule, 'Native animated module is not available');
 
     if (ReactNativeFeatureFlags.animatedShouldDebounceQueueFlush()) {
-      const prevImmediate = flushQueueImmediate;
-      clearImmediate(prevImmediate);
-      flushQueueImmediate = setImmediate(API.flushQueue);
+      scheduleQueueFlush();
     } else {
       API.flushQueue();
     }
