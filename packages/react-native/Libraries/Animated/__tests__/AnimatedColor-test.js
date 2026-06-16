@@ -72,8 +72,8 @@ describe('AnimatedColor', () => {
       //   2. __detach()   → calls removeAllListeners() on r/g/b/a
       //                     → r/g/b/a _listenerCount = 0
       //   3. removeListener(id) → calls r.removeListener() etc.
-      //                     → WITHOUT fix: r/g/b/a _listenerCount = -1 ❌
-      //                     → WITH fix:    early return, stays at 0   ✅
+      //                     → WITHOUT fix: r/g/b/a _listenerCount = -1 
+      //                     → WITH fix:    early return, stays at 0   
       const color = new AnimatedColor({r: 0, g: 0, b: 0, a: 1});
       color.__attach();
 
