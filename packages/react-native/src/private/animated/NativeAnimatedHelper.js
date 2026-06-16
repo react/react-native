@@ -23,6 +23,7 @@ import type {EventSubscription} from '../../../Libraries/vendor/emitter/EventEmi
 
 import NativeAnimatedNonTurboModule from '../../../Libraries/Animated/NativeAnimatedModule';
 import NativeAnimatedTurboModule from '../../../Libraries/Animated/NativeAnimatedTurboModule';
+import queueMicrotask from '../../../Libraries/Core/Timers/queueMicrotask';
 import NativeEventEmitter from '../../../Libraries/EventEmitter/NativeEventEmitter';
 import RCTDeviceEventEmitter from '../../../Libraries/EventEmitter/RCTDeviceEventEmitter';
 import Platform from '../../../Libraries/Utilities/Platform';
@@ -57,7 +58,6 @@ const isSingleOpBatching =
   Platform.OS === 'android' &&
   NativeAnimatedModule?.queueAndExecuteBatchedOperations != null &&
   ReactNativeFeatureFlags.animatedShouldUseSingleOp();
-let flushQueueImmediate = null;
 
 const eventListenerGetValueCallbacks: {
   [number]: (value: number) => void,
@@ -71,19 +71,18 @@ let globalEventEmitterAnimationFinishedListener: ?EventSubscription = null;
 const shouldSignalBatch: boolean =
   ReactNativeFeatureFlags.cxxNativeAnimatedEnabled();
 
-// Schedules `API.flushQueue` after the current batch, replacing any pending
-// flush. On device `setImmediate` is a microtask; under jest's fake timers it's
-// a fake-timer entry that only `runAllTimers` drains — not `await` or
-// `advanceTimersByTime` — so the deferred flush wouldn't run before a test's
-// assertions. Flush synchronously in tests instead.
+let flushQueueGeneration = 1;
 function scheduleQueueFlush(): void {
-  clearImmediate(flushQueueImmediate);
-  if (process.env.NODE_ENV === 'test') {
-    // TODO: T275950736 - remove this path
+  const generation = ++flushQueueGeneration;
+  queueMicrotask(() => {
+    if (generation !== flushQueueGeneration) {
+      return;
+    }
     API.flushQueue();
-  } else {
-    flushQueueImmediate = setImmediate(API.flushQueue);
-  }
+  });
+}
+function cancelQueueFlush(): void {
+  flushQueueGeneration++;
 }
 
 function createNativeOperations(): NonNullable<typeof NativeAnimatedModule> {
@@ -229,7 +228,6 @@ const API = {
           NativeAnimatedModule,
           'Native animated module is not available',
         );
-        flushQueueImmediate = null;
 
         if (singleOpQueue.length === 0) {
           return;
@@ -250,7 +248,6 @@ const API = {
           NativeAnimatedModule,
           'Native animated module is not available',
         );
-        flushQueueImmediate = null;
 
         if (queue.length === 0) {
           return;
@@ -310,11 +307,10 @@ const API = {
 
     waitingForQueuedOperations.add(id);
     queueOperations = true;
-    if (
-      ReactNativeFeatureFlags.animatedShouldDebounceQueueFlush() &&
-      flushQueueImmediate
-    ) {
-      clearImmediate(flushQueueImmediate);
+    // Entering explicit queue mode: drop any flush already scheduled so ops
+    // accumulate until `disableQueue`.
+    if (ReactNativeFeatureFlags.animatedShouldDebounceQueueFlush()) {
+      cancelQueueFlush();
     }
   },
   startAnimatingNode: (isSingleOpBatching
