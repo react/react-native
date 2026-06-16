@@ -129,6 +129,7 @@ export default class TimingAnimation extends Animation {
       this._startTime = Date.now();
 
       const useNativeDriver = this.__startAnimationIfNative(animatedValue);
+      // TODO: T274006331 - Remove js-only animation once shared backend is fully rolled out
       if (!useNativeDriver) {
         // Animations that sometimes have 0 duration and sometimes do not
         // still need to use the native driver when duration is 0 so as to

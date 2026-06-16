@@ -85,6 +85,7 @@ export default class DecayAnimation extends Animation {
     this._startTime = Date.now();
 
     const useNativeDriver = this.__startAnimationIfNative(animatedValue);
+    // TODO: T274006331 - Remove js-only animation once shared backend is fully rolled out
     if (!useNativeDriver) {
       this._animationFrame = requestAnimationFrame(() => this.onUpdate());
     }
