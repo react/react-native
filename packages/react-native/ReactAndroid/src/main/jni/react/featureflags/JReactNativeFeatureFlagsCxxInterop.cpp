@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<70e4f4b4bb3aa28a644ede80ceeb4fc3>>
+ * @generated SignedSource<<ff63bb537a04e29fdb97e9d87fb7570c>>
  */
 
 /**
@@ -390,12 +390,6 @@ class ReactNativeFeatureFlagsJavaProvider
   bool fuseboxScreenshotCaptureEnabled() override {
     static const auto method =
         getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("fuseboxScreenshotCaptureEnabled");
-    return method(javaProvider_);
-  }
-
-  bool hideOffscreenVirtualViewsOnIOS() override {
-    static const auto method =
-        getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("hideOffscreenVirtualViewsOnIOS");
     return method(javaProvider_);
   }
 
@@ -860,11 +854,6 @@ bool JReactNativeFeatureFlagsCxxInterop::fuseboxScreenshotCaptureEnabled(
   return ReactNativeFeatureFlags::fuseboxScreenshotCaptureEnabled();
 }
 
-bool JReactNativeFeatureFlagsCxxInterop::hideOffscreenVirtualViewsOnIOS(
-    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
-  return ReactNativeFeatureFlags::hideOffscreenVirtualViewsOnIOS();
-}
-
 bool JReactNativeFeatureFlagsCxxInterop::optimizedAnimatedPropUpdates(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
   return ReactNativeFeatureFlags::optimizedAnimatedPropUpdates();
@@ -1208,9 +1197,6 @@ void JReactNativeFeatureFlagsCxxInterop::registerNatives() {
       makeNativeMethod(
         "fuseboxScreenshotCaptureEnabled",
         JReactNativeFeatureFlagsCxxInterop::fuseboxScreenshotCaptureEnabled),
-      makeNativeMethod(
-        "hideOffscreenVirtualViewsOnIOS",
-        JReactNativeFeatureFlagsCxxInterop::hideOffscreenVirtualViewsOnIOS),
       makeNativeMethod(
         "optimizedAnimatedPropUpdates",
         JReactNativeFeatureFlagsCxxInterop::optimizedAnimatedPropUpdates),

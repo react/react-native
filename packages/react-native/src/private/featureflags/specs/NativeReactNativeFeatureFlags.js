@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<7b1756a74caa546933eebb934d27de12>>
+ * @generated SignedSource<<4f1cda704a4ec31a005ded7ee8df3cbf>>
  * @flow strict
  * @noformat
  */
@@ -84,7 +84,6 @@ export interface Spec extends TurboModule {
   readonly fuseboxFrameRecordingEnabled?: () => boolean;
   readonly fuseboxNetworkInspectionEnabled?: () => boolean;
   readonly fuseboxScreenshotCaptureEnabled?: () => boolean;
-  readonly hideOffscreenVirtualViewsOnIOS?: () => boolean;
   readonly optimizedAnimatedPropUpdates?: () => boolean;
   readonly overrideBySynchronousMountPropsAtMountingAndroid?: () => boolean;
   readonly perfIssuesEnabled?: () => boolean;

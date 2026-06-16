@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<5307fff9429956a3f3f2f54f2b6b00e7>>
+ * @generated SignedSource<<17567d3adfba54ec2f888b50dae9efb8>>
  */
 
 /**
@@ -383,12 +383,6 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun fuseboxScreenshotCaptureEnabled(): Boolean = accessor.fuseboxScreenshotCaptureEnabled()
-
-  /**
-   * Hides offscreen VirtualViews on iOS by setting hidden = YES to avoid extra cost of views
-   */
-  @JvmStatic
-  public fun hideOffscreenVirtualViewsOnIOS(): Boolean = accessor.hideOffscreenVirtualViewsOnIOS()
 
   /**
    * When enabled, uses optimized platform-specific paths to apply animated props synchronously. On Android, this uses a batched int/double buffer protocol with a single JNI call. On iOS, this passes AnimatedProps directly through the delegate chain and applies them via cloneProps, avoiding the folly::dynamic round-trip.

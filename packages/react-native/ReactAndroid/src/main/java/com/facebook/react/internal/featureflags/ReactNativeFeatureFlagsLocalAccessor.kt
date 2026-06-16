@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<8ba7f19e8afe329937b1b36d3b83dbc5>>
+ * @generated SignedSource<<164c9c2751f660ee098c12b8cf2c8b66>>
  */
 
 /**
@@ -83,7 +83,6 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
   private var fuseboxFrameRecordingEnabledCache: Boolean? = null
   private var fuseboxNetworkInspectionEnabledCache: Boolean? = null
   private var fuseboxScreenshotCaptureEnabledCache: Boolean? = null
-  private var hideOffscreenVirtualViewsOnIOSCache: Boolean? = null
   private var optimizedAnimatedPropUpdatesCache: Boolean? = null
   private var overrideBySynchronousMountPropsAtMountingAndroidCache: Boolean? = null
   private var perfIssuesEnabledCache: Boolean? = null
@@ -698,16 +697,6 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
       cached = currentProvider.fuseboxScreenshotCaptureEnabled()
       accessedFeatureFlags.add("fuseboxScreenshotCaptureEnabled")
       fuseboxScreenshotCaptureEnabledCache = cached
-    }
-    return cached
-  }
-
-  override fun hideOffscreenVirtualViewsOnIOS(): Boolean {
-    var cached = hideOffscreenVirtualViewsOnIOSCache
-    if (cached == null) {
-      cached = currentProvider.hideOffscreenVirtualViewsOnIOS()
-      accessedFeatureFlags.add("hideOffscreenVirtualViewsOnIOS")
-      hideOffscreenVirtualViewsOnIOSCache = cached
     }
     return cached
   }
