@@ -8,13 +8,14 @@
  * @format
  */
 
+import {configureAppMenu} from './AppMenu.js';
 import SettingsStore from './SettingsStore.js';
 
 const path = require('path');
 const util = require('util');
 
 // $FlowFixMe[unclear-type] We have no Flow types for the Electron API.
-const {BrowserWindow, Menu, app, shell, ipcMain} = require('electron') as any;
+const {BrowserWindow, app, shell, ipcMain} = require('electron') as any;
 
 const appSettings = new SettingsStore();
 const windowMetadata = new WeakMap<
@@ -100,34 +101,6 @@ function handleLaunchArgs(argv: string[]) {
     });
   }
   frontendWindow.focus();
-}
-
-function configureAppMenu() {
-  const template = [
-    ...(process.platform === 'darwin' ? [{role: 'appMenu'}] : []),
-    {role: 'fileMenu'},
-    {role: 'editMenu'},
-    {role: 'viewMenu'},
-    {role: 'windowMenu'},
-    {
-      role: 'help',
-      submenu: [
-        {
-          label: 'React Native Website',
-          click: () => shell.openExternal('https://reactnative.dev'),
-        },
-        {
-          label: 'Release Notes',
-          click: () =>
-            shell.openExternal(
-              'https://github.com/facebook/react-native/releases',
-            ),
-        },
-      ],
-    },
-  ];
-  const menu = Menu.buildFromTemplate(template);
-  Menu.setApplicationMenu(menu);
 }
 
 function getSavedWindowPosition(
