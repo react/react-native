@@ -384,12 +384,7 @@ class MessageQueue {
   // The parameter DebuggerInternal.shouldPauseOnThrow is used to check before catching all exceptions and
   // can be configured by the VM or any Inspector
   __shouldPauseOnThrow(): boolean {
-    return (
-      // $FlowFixMe[cannot-resolve-name]
-      typeof DebuggerInternal !== 'undefined' &&
-      // $FlowFixMe[cannot-resolve-name]
-      DebuggerInternal.shouldPauseOnThrow === true
-    );
+    return global.DebuggerInternal?.shouldPauseOnThrow === true;
   }
 
   __callReactNativeMicrotasks() {

@@ -42,6 +42,7 @@ const assertQueue = (
 describe('MessageQueue', () => {
   beforeEach(() => {
     jest.resetModules();
+    delete global.DebuggerInternal;
     MessageQueue = require('../MessageQueue').default;
     MessageQueueTestModule = require('../__mocks__/MessageQueueTestModule');
     queue = new MessageQueue();
@@ -161,6 +162,18 @@ describe('MessageQueue', () => {
     queue.registerLazyCallableModule(name, factory);
     queue.callFunctionReturnFlushedQueue(name, 'dummy', []);
     expect(queue.__shouldPauseOnThrow).toHaveBeenCalledTimes(2);
+  });
+
+  it('should not pause on throw when DebuggerInternal is unavailable', () => {
+    expect(queue.__shouldPauseOnThrow()).toBe(false);
+  });
+
+  it('should pause on throw when DebuggerInternal enables it', () => {
+    global.DebuggerInternal = {
+      shouldPauseOnThrow: true,
+    };
+
+    expect(queue.__shouldPauseOnThrow()).toBe(true);
   });
 
   it('should check if the global error handler is overridden by the DebuggerInternal object', () => {
