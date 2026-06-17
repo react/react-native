@@ -23,6 +23,7 @@
     UIWindowScene *scene = RCTKeyWindow().windowScene;
     if (scene != nil) {
       _alertWindow = [[UIWindow alloc] initWithWindowScene:scene];
+      _alertWindow.frame = scene.coordinateSpace.bounds;
     } else {
       _alertWindow = [[UIWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
     }
