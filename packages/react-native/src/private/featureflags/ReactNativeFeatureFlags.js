@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<9665e3af57529f1b50d02c79e7a869eb>>
+ * @generated SignedSource<<68e9dbd18bfcb5e7d5cad27d8663ce66>>
  * @flow strict
  * @noformat
  */
@@ -30,6 +30,7 @@ import {
 export type ReactNativeFeatureFlagsJsOnly = Readonly<{
   jsOnlyTestFlag: Getter<boolean>,
   animatedDeferStartOfTimingAnimations: Getter<boolean>,
+  animatedForceNativeDriver: Getter<boolean>,
   animatedShouldDebounceQueueFlush: Getter<boolean>,
   animatedShouldSyncValueBeforeStartCallback: Getter<boolean>,
   animatedShouldUseSingleOp: Getter<boolean>,
@@ -144,6 +145,11 @@ export const jsOnlyTestFlag: Getter<boolean> = createJavaScriptFlagGetter('jsOnl
  * When enabled, the JS Animated layer defers the start of native-driven timing animations to the first rendered frame and re-anchors timing to prevent skipping initial frames when the UI thread is busy with layout work.
  */
 export const animatedDeferStartOfTimingAnimations: Getter<boolean> = createJavaScriptFlagGetter('animatedDeferStartOfTimingAnimations', false);
+
+/**
+ * When enabled, forces `useNativeDriver` to `true` for all Animated animations and events, overriding the config (including an explicit `false`). Has no effect unless the shared animated backend is enabled, which is required to support native driver for all props.
+ */
+export const animatedForceNativeDriver: Getter<boolean> = createJavaScriptFlagGetter('animatedForceNativeDriver', false);
 
 /**
  * Enables an experimental flush-queue debouncing in Animated.js.
