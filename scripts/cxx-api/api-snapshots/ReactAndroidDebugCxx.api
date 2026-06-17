@@ -10866,6 +10866,7 @@ class facebook::react::jsinspector_modern::RuntimeTargetController {
   public void emitTracingStateChange(bool isTracing);
   public void enableSamplingProfiler();
   public void installBindingHandler(const std::string& bindingName);
+  public void installScriptToEvaluateOnNewDocument(const std::string& source);
   public void notifyDomainStateChanged(facebook::react::jsinspector_modern::RuntimeTargetController::Domain domain, bool enabled, const facebook::react::jsinspector_modern::RuntimeAgent& notifyingAgent);
 }
 
@@ -11040,7 +11041,14 @@ struct facebook::react::jsinspector_modern::SessionState {
   public bool isRuntimeDomainEnabled;
   public facebook::react::jsinspector_modern::RuntimeAgent::ExportedState lastRuntimeAgentExportedState;
   public std::unordered_map<std::string, facebook::react::jsinspector_modern::ExecutionContextSelectorSet> subscribedBindings;
+  public std::vector<facebook::react::jsinspector_modern::SessionState::ScriptToEvaluateOnNewDocument> scriptsToEvaluateOnNewDocument;
   public std::vector<facebook::react::jsinspector_modern::SimpleConsoleMessage> pendingSimpleConsoleMessages;
+  public unsigned int nextScriptToEvaluateOnNewDocumentId;
+}
+
+struct facebook::react::jsinspector_modern::SessionState::ScriptToEvaluateOnNewDocument {
+  public std::string identifier;
+  public std::string source;
 }
 
 struct facebook::react::jsinspector_modern::SimpleConsoleMessage {

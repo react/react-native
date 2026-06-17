@@ -217,6 +217,59 @@ TEST_F(HostTargetProtocolTest, PageReloadMethod) {
                          })");
 }
 
+TEST_F(HostTargetProtocolTest, PageAddAndRemoveScriptToEvaluateOnNewDocument) {
+  InSequence s;
+
+  // The first registered script gets identifier "1".
+  EXPECT_CALL(fromPage(), onMessage(JsonEq(R"({
+                                               "id": 1,
+                                               "result": {"identifier": "1"}
+                                             })")))
+      .RetiresOnSaturation();
+  toPage_->sendMessage(R"({
+                           "id": 1,
+                           "method": "Page.addScriptToEvaluateOnNewDocument",
+                           "params": {"source": "globalThis.__a = 1;"}
+                         })");
+
+  // The second registration gets a distinct, monotonically increasing id "2".
+  EXPECT_CALL(fromPage(), onMessage(JsonEq(R"({
+                                               "id": 2,
+                                               "result": {"identifier": "2"}
+                                             })")))
+      .RetiresOnSaturation();
+  toPage_->sendMessage(R"({
+                           "id": 2,
+                           "method": "Page.addScriptToEvaluateOnNewDocument",
+                           "params": {"source": "globalThis.__b = 2;"}
+                         })");
+
+  // Removing a registered script succeeds with an empty result.
+  EXPECT_CALL(fromPage(), onMessage(JsonEq(R"({
+                                               "id": 3,
+                                               "result": {}
+                                             })")))
+      .RetiresOnSaturation();
+  toPage_->sendMessage(R"({
+                           "id": 3,
+                           "method": "Page.removeScriptToEvaluateOnNewDocument",
+                           "params": {"identifier": "1"}
+                         })");
+
+  // Removing an unknown identifier is a lenient no-op that still succeeds
+  // (matching Chrome's behaviour).
+  EXPECT_CALL(fromPage(), onMessage(JsonEq(R"({
+                                               "id": 4,
+                                               "result": {}
+                                             })")))
+      .RetiresOnSaturation();
+  toPage_->sendMessage(R"({
+                           "id": 4,
+                           "method": "Page.removeScriptToEvaluateOnNewDocument",
+                           "params": {"identifier": "999"}
+                         })");
+}
+
 TEST_F(HostTargetProtocolTest, OverlaySetPausedInDebuggerMessageMethod) {
   InSequence s;
 
