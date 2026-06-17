@@ -18,7 +18,7 @@ end
 
 is_new_arch_enabled = ENV["RCT_NEW_ARCH_ENABLED"] != "0"
 new_arch_enabled_flag = (is_new_arch_enabled ? " -DRCT_NEW_ARCH_ENABLED=1" : "")
-other_cflags = "$(inherited) " + new_arch_enabled_flag + js_engine_flags()
+other_cflags = "$(inherited) " + new_arch_enabled_flag + " " + js_engine_flags()
 
 header_search_paths = [
   "$(PODS_TARGET_SRCROOT)/../../ReactCommon",
