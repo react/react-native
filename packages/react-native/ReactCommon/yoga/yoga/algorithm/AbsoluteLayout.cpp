@@ -553,6 +553,8 @@ bool layoutAbsoluteDescendants(
                          containingNodeAvailableInnerHeight) ||
           hasNewLayout;
 
+      cleanupContentsNodesRecursively(
+          child, /* didPerformLayout */ hasNewLayout);
       if (hasNewLayout) {
         child->setHasNewLayout(hasNewLayout);
       }

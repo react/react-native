@@ -392,7 +392,12 @@ void Node::cloneChildrenIfNeeded() {
       child = resolveRef(config_->cloneNode(child, this, i));
       child->setOwner(this);
 
-      if (child->hasContentsChildren()) [[unlikely]] {
+      if (child->style().display() == Display::Contents) [[unlikely]] {
+        // The contents node's children are treated as children of the
+        // contents node's parent for layout purposes, so they need
+        // to be cloned as well.
+        child->cloneChildrenIfNeeded();
+      } else if (child->hasContentsChildren()) [[unlikely]] {
         child->cloneContentsChildrenIfNeeded();
       }
     }
