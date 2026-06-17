@@ -10,10 +10,7 @@
   },
   "homepage": "https://github.com/facebook/react-native/tree/HEAD/packages/assets-registry#readme",
   "keywords": [
-    "assets",
-    "registry",
-    "react-native",
-    "support"
+    "react-native"
   ],
   "bugs": "https://github.com/facebook/react-native/issues",
   "engines": {
@@ -21,7 +18,9 @@
   },
   "files": [
     "path-support.js",
+    "path-support.d.ts",
     "registry.js",
+    "registry.d.ts",
     "README.md",
     "!**/__docs__/**",
     "!**/__fixtures__/**",
