@@ -23,6 +23,7 @@ other_cflags = "$(inherited) " + new_arch_enabled_flag + " " + js_engine_flags()
 header_search_paths = [
   "$(PODS_TARGET_SRCROOT)/../../ReactCommon",
   "$(PODS_ROOT)/Headers/Private/React-Core",
+  "$(PODS_ROOT)/Headers/Private/Yoga",
   "$(PODS_ROOT)/Headers/Public/ReactCommon",
 ]
 
@@ -52,6 +53,7 @@ Pod::Spec.new do |s|
   s.dependency "React-Core"
   s.dependency "React-featureflags"
   s.dependency "React-Fabric/animated"
+  s.dependency "Yoga"
 
   add_dependency(s, "ReactCommon", :subspec => "turbomodule/core", :additional_framework_paths => ["react/nativemodule/core"])
 
