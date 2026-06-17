@@ -67,6 +67,9 @@ react.runtime=automatic
 
 experimental.deprecated_utilities.excludes=<PROJECT_ROOT>/packages/react-native/Libraries/Renderer/shims/ReactNativeTypes.js
 experimental.deprecated_utilities.excludes=<PROJECT_ROOT>/packages/react-native/Libraries/Renderer/shims/ReactNativeViewConfigRegistry.js
+experimental.deprecated_colon_extends.excludes=<PROJECT_ROOT>/packages/react-native/Libraries/Renderer/shims/ReactNativeTypes.js
+experimental.deprecated_variance_sigils.excludes=<PROJECT_ROOT>/packages/react-native/Libraries/Renderer/shims/ReactNativeTypes.js
+
 ban_spread_key_props=true
 
 [lints]
@@ -90,4 +93,4 @@ untyped-import
 untyped-type-import
 
 [version]
-^0.318.0
+^0.319.0
