@@ -202,7 +202,7 @@ const springImpl = function (
 
       _isUsingNativeDriver: function (): boolean {
         return (
-          NativeAnimatedHelper.isNativeDriverForced?.() ||
+          NativeAnimatedHelper.isNativeDriverForced() ||
           config.useNativeDriver ||
           false
         );
@@ -260,7 +260,7 @@ const timingImpl = function (
 
       _isUsingNativeDriver: function (): boolean {
         return (
-          NativeAnimatedHelper.isNativeDriverForced?.() ||
+          NativeAnimatedHelper.isNativeDriverForced() ||
           config.useNativeDriver ||
           false
         );
@@ -306,7 +306,7 @@ const decayImpl = function (
 
       _isUsingNativeDriver: function (): boolean {
         return (
-          NativeAnimatedHelper.isNativeDriverForced?.() ||
+          NativeAnimatedHelper.isNativeDriverForced() ||
           config.useNativeDriver ||
           false
         );
