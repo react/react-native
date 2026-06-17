@@ -55,6 +55,6 @@ float calculateAvailableInnerDimension(
 
 void zeroOutLayoutRecursively(yoga::Node* const node);
 
-void cleanupContentsNodesRecursively(yoga::Node* const node);
+void cleanupContentsNodesRecursively(yoga::Node* node, bool didPerformLayout);
 
 } // namespace facebook::yoga

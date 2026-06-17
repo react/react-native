@@ -558,7 +558,6 @@ bool layoutAbsoluteDescendants(
       // we need to mutate these descendents. Make sure the path of
       // nodes to them is mutable before positioning.
       child->cloneChildrenIfNeeded();
-      cleanupContentsNodesRecursively(child);
       const Direction childDirection =
           child->resolveDirection(currentNodeDirection);
       // By now all descendants of the containing block that are not absolute
@@ -584,6 +583,8 @@ bool layoutAbsoluteDescendants(
                          containingNodeAvailableInnerHeight) ||
           hasNewLayout;
 
+      cleanupContentsNodesRecursively(
+          child, /* didPerformLayout */ hasNewLayout);
       if (hasNewLayout) {
         child->setHasNewLayout(hasNewLayout);
       }
