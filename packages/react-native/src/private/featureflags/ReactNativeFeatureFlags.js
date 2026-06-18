@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<68e9dbd18bfcb5e7d5cad27d8663ce66>>
+ * @generated SignedSource<<11f1e51c94c3e1db36cd46623b2f785a>>
  * @flow strict
  * @noformat
  */
@@ -40,6 +40,7 @@ export type ReactNativeFeatureFlagsJsOnly = Readonly<{
   externalElementInspectionEnabled: Getter<boolean>,
   fixVirtualizeListCollapseWindowSize: Getter<boolean>,
   isLayoutAnimationEnabled: Getter<boolean>,
+  shouldPressabilityUseNativeViewHierarchyForMeasurement: Getter<boolean>,
   shouldUseAnimatedObjectForTransform: Getter<boolean>,
   shouldUseRemoveClippedSubviewsAsDefaultOnIOS: Getter<boolean>,
   shouldUseSetNativePropsInFabric: Getter<boolean>,
@@ -195,6 +196,11 @@ export const fixVirtualizeListCollapseWindowSize: Getter<boolean> = createJavaSc
  * Function used to enable / disabled Layout Animations in React Native.
  */
 export const isLayoutAnimationEnabled: Getter<boolean> = createJavaScriptFlagGetter('isLayoutAnimationEnabled', true);
+
+/**
+ * When enabled, Pressability measures host instances from the native view hierarchy on the UI thread instead of using shadow tree layout metrics.
+ */
+export const shouldPressabilityUseNativeViewHierarchyForMeasurement: Getter<boolean> = createJavaScriptFlagGetter('shouldPressabilityUseNativeViewHierarchyForMeasurement', false);
 
 /**
  * Enables use of AnimatedObject for animating transform values.
