@@ -7,7 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-#import <React/RCTFabricSurface.h>
 #import <React/RCTMountingManagerDelegate.h>
 #import <React/RCTPrimitives.h>
 #import <react/renderer/core/ComponentDescriptor.h>
