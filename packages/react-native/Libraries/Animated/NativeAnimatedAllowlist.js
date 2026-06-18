@@ -142,6 +142,7 @@ const SUPPORTED_INTERPOLATION_PARAMS: {[string]: true} = {
   extrapolate: true,
   extrapolateRight: true,
   extrapolateLeft: true,
+  easing: true,
 };
 
 /**

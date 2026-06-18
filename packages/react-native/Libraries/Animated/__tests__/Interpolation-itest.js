@@ -418,3 +418,184 @@ describe('Interpolation', () => {
     });
   }
 });
+
+describe('Interpolation easingStops (native easing baking)', () => {
+  // Returns the non-uniform [position, value] easing stops emitted in the native
+  // config for an eased numeric interpolation (or undefined when no easing).
+  function getEasingStops(
+    config: InterpolationConfigType<number>,
+  ): ?Array<[number, number]> {
+    return new AnimatedInterpolation(
+      // $FlowFixMe[incompatible-type]
+      {},
+      config,
+    ).__getNativeConfig().easingStops;
+  }
+
+  // Mirrors the native easeRatio(): binary-search the bracketing stops and
+  // linearly interpolate. Out-of-[0,1] ratios pass through (extrapolation).
+  function reconstructEaseRatio(
+    stops: Array<[number, number]>,
+  ): (ratio: number) => number {
+    return ratio => {
+      if (stops.length < 2 || ratio < 0 || ratio > 1) {
+        return ratio;
+      }
+      const upper = stops.findIndex(stop => stop[0] > ratio);
+      if (upper === -1) {
+        return stops[stops.length - 1][1];
+      }
+      if (upper === 0) {
+        return stops[0][1];
+      }
+      const [xLo, yLo] = stops[upper - 1];
+      const [xHi, yHi] = stops[upper];
+      if (xHi === xLo) {
+        return yHi;
+      }
+      return yLo + (yHi - yLo) * ((ratio - xLo) / (xHi - xLo));
+    };
+  }
+
+  // Max error, in OUTPUT units, between the baked stops and the true easing
+  // curve across the [0, 1] domain (sampled finely). This is what actually
+  // shows up on screen, e.g. pixels for a translate.
+  function maxOutputError(
+    easing: (input: number) => number,
+    span: number,
+  ): number {
+    const stops = getEasingStops({
+      inputRange: [0, 1],
+      outputRange: [0, span],
+      easing,
+    });
+    if (stops == null) {
+      throw new Error('expected easingStops to be emitted');
+    }
+    const approx = reconstructEaseRatio(stops);
+    let maxErr = 0;
+    for (let i = 0; i <= 1000; i++) {
+      const t = i / 1000;
+      const err = Math.abs(approx(t) - easing(t)) * span;
+      if (err > maxErr) {
+        maxErr = err;
+      }
+    }
+    return maxErr;
+  }
+
+  // Computed once; reused for both the exact-output and the stop-count assertions.
+  const customLinear = getEasingStops({
+    inputRange: [0, 1],
+    outputRange: [0, 100],
+    easing: (t: number) => t,
+  });
+  const quad = getEasingStops({
+    inputRange: [0, 1],
+    outputRange: [0, 100],
+    easing: Easing.quad,
+  });
+  const bounce = getEasingStops({
+    inputRange: [0, 1],
+    outputRange: [0, 100],
+    easing: Easing.bounce,
+  });
+  const sine = getEasingStops({
+    inputRange: [0, 1],
+    outputRange: [0, 10],
+    easing: Easing.inOut(Easing.sin),
+  });
+
+  it('omits easingStops when easing is linear by identity or absent', () => {
+    const base = {inputRange: [0, 1], outputRange: [0, 100]};
+    expect(getEasingStops(base)).toBe(undefined);
+    expect(getEasingStops({...base, easing: Easing.linear})).toBe(undefined);
+  });
+
+  it('bakes the curve into exact stops whose count adapts to curvature', () => {
+    // A custom linear fn (not the Easing.linear reference, so not short-circuited)
+    // collapses to the two endpoints: every interior sample lies on the chord.
+    expect(customLinear).toEqual([
+      [0, 0],
+      [1, 1],
+    ]);
+
+    // Constant-curvature quad -> RDP's midpoint splitting yields uniform 1/16
+    // spacing; each value is the eased ratio (k/16)^2, independent of span.
+    expect(quad).toEqual([
+      [0, 0],
+      [0.0625, 0.00390625],
+      [0.125, 0.015625],
+      [0.1875, 0.03515625],
+      [0.25, 0.0625],
+      [0.3125, 0.09765625],
+      [0.375, 0.140625],
+      [0.4375, 0.19140625],
+      [0.5, 0.25],
+      [0.5625, 0.31640625],
+      [0.625, 0.390625],
+      [0.6875, 0.47265625],
+      [0.75, 0.5625],
+      [0.8125, 0.66015625],
+      [0.875, 0.765625],
+      [0.9375, 0.87890625],
+      [1, 1],
+    ]);
+
+    // A sine S-curve is placed non-uniformly: stops cluster at the two bends and
+    // leave a large gap across the near-linear middle (0.35 -> 0.62).
+    expect(sine).toEqual([
+      [0, 0],
+      [0.10546875, 0.02719633730973936],
+      [0.21875, 0.1134947733186315],
+      [0.34765625, 0.26973064452088],
+      [0.62109375, 0.6856585969759188],
+      [0.7421875, 0.8447702723685335],
+      [0.875, 0.9619397662556434],
+      [1, 1],
+    ]);
+
+    // Stop count rises with curvature — 2 (flat) -> 17 (quad) -> 45 (bounce) —
+    // and is always bounded by the dense-sample budget (256 + 1 = 257).
+    expect(bounce?.length).toBe(45);
+    expect(bounce?.length).toBeLessThanOrEqual(257);
+  });
+
+  it('grows the stop count with output span, capped by the tolerance floor', () => {
+    // Bigger span -> smaller tolerance -> more stops for the same curve...
+    expect(
+      getEasingStops({
+        inputRange: [0, 1],
+        outputRange: [0, 10],
+        easing: Easing.quad,
+      })?.length,
+    ).toBe(9);
+    expect(quad?.length).toBe(17); // span 100, computed once above
+    expect(
+      getEasingStops({
+        inputRange: [0, 1],
+        outputRange: [0, 1000],
+        easing: Easing.quad,
+      })?.length,
+    ).toBe(33);
+    // ...until epsilon hits its floor: a smooth curve caps out (65) rather than
+    // densifying toward the dense-sample budget.
+    expect(
+      getEasingStops({
+        inputRange: [0, 1],
+        outputRange: [0, 100000],
+        easing: Easing.quad,
+      })?.length,
+    ).toBe(65);
+  });
+
+  it('keeps on-screen error ~sub-pixel until the tolerance floor', () => {
+    // Below the floor (span up to ~2500) error stays sub-pixel as span grows.
+    for (const span of [1, 10, 100, 1000]) {
+      expect(maxOutputError(Easing.quad, span)).toBeLessThan(0.3);
+    }
+    // Past the floor the error grows only with the floor tolerance (1e-4): ~1px
+    // at span 10000, not the tens a fixed-resolution LUT would accumulate.
+    expect(maxOutputError(Easing.quad, 10000)).toBeLessThan(1.5);
+  });
+});
