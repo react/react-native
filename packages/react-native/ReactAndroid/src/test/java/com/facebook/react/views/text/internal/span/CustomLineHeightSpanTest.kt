@@ -8,6 +8,11 @@
 package com.facebook.react.views.text.internal.span
 
 import android.graphics.Paint
+import android.text.Layout
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.StaticLayout
+import android.text.TextPaint
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -31,8 +36,8 @@ class CustomLineHeightSpanTest {
 
     assertThat(fm.ascent).isEqualTo(-12)
     assertThat(fm.descent).isEqualTo(4)
-    assertThat(fm.top).isEqualTo(-18)
-    assertThat(fm.bottom).isEqualTo(8)
+    assertThat(fm.top).isEqualTo(-12)
+    assertThat(fm.bottom).isEqualTo(4)
   }
 
   @Test
@@ -50,7 +55,36 @@ class CustomLineHeightSpanTest {
 
     assertThat(fm.ascent).isEqualTo(-16)
     assertThat(fm.descent).isEqualTo(8)
-    assertThat(fm.top).isEqualTo(-18)
+    assertThat(fm.top).isEqualTo(-16)
     assertThat(fm.bottom).isEqualTo(8)
+  }
+
+  @Test
+  fun tightLineHeightDoesNotExpandStaticLayoutHeightWithFontPadding() {
+    val layout = buildStaticLayout("gjpqy\ngjpqy\ngjpqy", lineHeight = 24)
+
+    assertThat(layout.lineCount).isEqualTo(3)
+    assertThat(layout.height).isEqualTo(72)
+  }
+
+  @Test
+  fun tightLineHeightDoesNotExpandSingleLineStaticLayoutHeightWithFontPadding() {
+    val layout = buildStaticLayout("gjpqy", lineHeight = 24)
+
+    assertThat(layout.lineCount).isEqualTo(1)
+    assertThat(layout.height).isEqualTo(24)
+  }
+
+  private fun buildStaticLayout(text: String, lineHeight: Int): StaticLayout {
+    val spannable = SpannableString(text)
+    spannable.setSpan(
+        CustomLineHeightSpan(lineHeight.toFloat()), 0, text.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+    return StaticLayout.Builder.obtain(
+            spannable, 0, spannable.length, TextPaint().apply { textSize = 24f }, 400)
+        .setAlignment(Layout.Alignment.ALIGN_NORMAL)
+        .setIncludePad(true)
+        .setLineSpacing(0f, 1f)
+        .build()
   }
 }

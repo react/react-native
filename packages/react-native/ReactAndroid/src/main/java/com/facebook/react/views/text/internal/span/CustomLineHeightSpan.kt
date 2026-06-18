@@ -11,8 +11,6 @@ import android.graphics.Paint.FontMetricsInt
 import android.text.style.LineHeightSpan
 import kotlin.math.ceil
 import kotlin.math.floor
-import kotlin.math.max
-import kotlin.math.min
 
 /**
  * Implements a [LineHeightSpan] which follows web-like behavior for line height, unlike
@@ -30,9 +28,6 @@ internal class CustomLineHeightSpan(height: Float) : LineHeightSpan, ReactSpan {
       v: Int,
       fm: FontMetricsInt,
   ) {
-    val originalTop = fm.top
-    val originalBottom = fm.bottom
-
     // https://www.w3.org/TR/css-inline-3/#inline-height
     // When its computed line-height is not normal, its layout bounds are derived solely from
     // metrics of its first available font (ignoring glyphs from other fonts), and leading is used
@@ -52,10 +47,10 @@ internal class CustomLineHeightSpan(height: Float) : LineHeightSpan, ReactSpan {
     // line boxes to overlap (to allow too large glyphs to be drawn outside them), so we do not
     // adjust the top/bottom of interior line-boxes.
     if (start == 0) {
-      fm.top = min(originalTop, fm.ascent)
+      fm.top = fm.ascent
     }
     if (end == text.length) {
-      fm.bottom = max(originalBottom, fm.descent)
+      fm.bottom = fm.descent
     }
   }
 }
