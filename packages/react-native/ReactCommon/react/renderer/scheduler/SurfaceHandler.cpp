@@ -324,6 +324,7 @@ void SurfaceHandler::constraintLayout(
               layoutContext.fontSizeMultiplier !=
                   oldRootShadowNode.getConcreteProps()
                       .layoutContext.fontSizeMultiplier) {
+            newRoot->dirtyLayout();
             dirtyMeasurableNodes(*newRoot);
           }
 
