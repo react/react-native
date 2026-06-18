@@ -1,6 +1,9 @@
 # @react-native/new-app-screen
 
-![npm package](https://img.shields.io/npm/v/@react-native/new-app-screen?color=brightgreen&label=npm%20package)
+[![npm]](https://www.npmjs.com/package/@react-native/new-app-screen) [![npm downloads]](https://www.npmjs.com/package/@react-native/new-app-screen)
+
+[npm]: https://img.shields.io/npm/v/@react-native/new-app-screen.svg?color=blue
+[npm downloads]: https://img.shields.io/npm/dm/@react-native/new-app-screen.svg
 
 `NewAppScreen` component for React Native.
 

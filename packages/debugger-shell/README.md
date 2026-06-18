@@ -1,8 +1,11 @@
 # @react-native/debugger-shell
 
-![npm package](https://img.shields.io/npm/v/@react-native/debugger-shell?color=brightgreen&label=npm%20package)
+[![npm]](https://www.npmjs.com/package/@react-native/debugger-shell) [![npm downloads]](https://www.npmjs.com/package/@react-native/debugger-shell)
 
-Experimental Electron-based shell for React Native DevTools. This package is not part of React Native's public API.
+[npm]: https://img.shields.io/npm/v/@react-native/debugger-shell.svg?color=blue
+[npm downloads]: https://img.shields.io/npm/dm/@react-native/debugger-shell.svg
+
+Experimental Electron-based shell for React Native DevTools.
 
 ## Why Electron?
 

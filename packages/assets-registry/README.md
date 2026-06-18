@@ -1,6 +1,9 @@
 # @react-native/assets-registry
 
-![npm package](https://img.shields.io/npm/v/@react-native/assets-registry?color=brightgreen&label=npm%20package)
+[![npm]](https://www.npmjs.com/package/@react-native/assets-registry) [![npm downloads]](https://www.npmjs.com/package/@react-native/assets-registry)
+
+[npm]: https://img.shields.io/npm/v/@react-native/assets-registry.svg?color=blue
+[npm downloads]: https://img.shields.io/npm/dm/@react-native/assets-registry.svg
 
 Runtime registry that maps asset IDs generated in a Metro bundle to asset metadata. It backs `<Image>`, `Image.resolveAssetSource()`, and any code that resolves `require('./img.png')` on native.
 
