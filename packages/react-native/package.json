@@ -34,14 +34,14 @@
       "types": "./types/index.d.ts",
       "default": "./index.js"
     },
-    "./*": {
+    "./Libraries/*": {
       "react-native-strict-api": null,
-      "types": "./*.d.ts",
-      "default": "./*.js"
+      "types": "./Libraries/*.d.ts",
+      "default": "./Libraries/*.js"
     },
-    "./*.js": {
+    "./Libraries/*.js": {
       "react-native-strict-api": null,
-      "default": "./*.js"
+      "default": "./Libraries/*.js"
     },
     "./Libraries/*.d.ts": {
       "react-native-strict-api": null,
@@ -56,16 +56,9 @@
       "react-native-strict-api": null,
       "default": "./types/*.d.ts"
     },
-    "./gradle/*": null,
-    "./React/*": null,
-    "./ReactAndroid/*": null,
-    "./ReactApple/*": null,
-    "./ReactCommon/*": null,
-    "./sdks/*": null,
+    "./jest-preset": "./jest-preset.js",
+    "./rn-get-polyfills": "./rn-get-polyfills.js",
     "./src/fb_internal/*": "./src/fb_internal/*",
-    "./third-party-podspecs/*": null,
-    "./types/*": null,
-    "./types_generated/*": null,
     "./package.json": "./package.json"
   },
   "jest-junit": {
