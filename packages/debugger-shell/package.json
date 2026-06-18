@@ -46,7 +46,7 @@
     "fb-dotslash": "0.5.8"
   },
   "devDependencies": {
-    "electron": "39.0.0",
+    "electron": "39.8.5",
     "semver": "^7.1.3"
   },
   "files": [
