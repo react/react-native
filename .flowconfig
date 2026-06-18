@@ -39,7 +39,6 @@
 
 [libs]
 flow-typed/
-packages/react-native/interface.js
 packages/react-native/flow/
 
 [options]
