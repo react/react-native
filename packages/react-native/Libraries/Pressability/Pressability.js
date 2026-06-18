@@ -798,18 +798,19 @@ export default class Pressability {
   }
 
   _measureResponderRegion(): void {
-    if (this._responderID == null) {
+    const responderID = this._responderID;
+    if (responderID == null) {
       return;
     }
 
-    if (typeof this._responderID === 'number') {
-      UIManager.measure(this._responderID, this._measureCallback);
+    if (typeof responderID === 'number') {
+      UIManager.measure(responderID, this._measureCallback);
     } else if (
       ReactNativeFeatureFlags.shouldPressabilityUseNativeViewHierarchyForMeasurement()
     ) {
-      this._responderID.measureAsyncOnUI(this._measureCallback);
+      responderID.measureAsyncOnUI(this._measureCallback);
     } else {
-      this._responderID.measure(this._measureCallback);
+      responderID.measure(this._measureCallback);
     }
   }
 

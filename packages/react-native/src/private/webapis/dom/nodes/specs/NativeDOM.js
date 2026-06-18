@@ -159,9 +159,9 @@ export interface Spec extends TurboModule {
     onSuccess: MeasureLayoutOnSuccessCallback,
   ) => void;
 
-  +measureAsyncOnUI: (
-    nativeElementReference: mixed,
-    callback: MeasureInWindowOnSuccessCallback,
+  readonly measureAsyncOnUI: (
+    nativeElementReference: unknown,
+    callback: MeasureOnSuccessCallback,
   ) => void;
 
   /**
@@ -438,7 +438,7 @@ export interface RefinedSpec {
     onSuccess: MeasureLayoutOnSuccessCallback,
   ) => void;
 
-  +measureAsyncOnUI: (
+  readonly measureAsyncOnUI: (
     nativeElementReference: NativeElementReference,
     callback: MeasureOnSuccessCallback,
   ) => void;
