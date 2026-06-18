@@ -49,7 +49,7 @@
     },
     "./scripts/*": "./scripts/*",
     "./src/*": {
-      "react-native-strict-api": null,
+      "types": null,
       "default": "./src/*.js"
     },
     "./types/*.d.ts": {
