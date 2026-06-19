@@ -85,6 +85,11 @@ class SchedulerDelegateProxy : public SchedulerDelegate {
     // This delegate method is not currently used on iOS.
   }
 
+  void schedulerMeasureAsyncOnUI(const ShadowView& shadowView, const std::function<void(folly::dynamic)> &callback) override {
+    RCTScheduler *scheduler = (__bridge RCTScheduler *)scheduler_;
+    [scheduler.delegate schedulerMeasureAsyncOnUI:shadowView callback:callback];
+  }
+
   void schedulerDidCaptureViewSnapshot(Tag tag, SurfaceId surfaceId) override
   {
     // Does nothing.

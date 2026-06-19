@@ -22,6 +22,7 @@ import com.facebook.react.bridge.WritableMap
 import com.facebook.react.fabric.events.EventEmitterWrapper
 import com.facebook.react.fabric.mounting.mountitems.MountItem
 import com.facebook.react.touch.JSResponderHandler
+import com.facebook.react.uimanager.IllegalViewOperationException
 import com.facebook.react.uimanager.RootViewManager
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.ViewManagerRegistry
@@ -326,6 +327,32 @@ internal class MountingManager(
               heightMode,
               attachmentsPositions,
           )
+
+  @UiThread
+  @ThreadConfined(ThreadConfined.UI)
+  fun measureAsyncOnUI(
+      surfaceId: Int,
+      reactTag: Int,
+      outputBuffer: IntArray,
+  ): Boolean {
+    val smm = getSurfaceManagerEnforced(surfaceId, "measure")
+    val view = try {
+      smm.getView(reactTag);
+    } catch (ex: IllegalViewOperationException) {
+      FLog.e(TAG, "Failed to find view for tag: %d. Error: %s", reactTag, ex.message);
+      return false
+    }
+
+    val rootView = try {
+      smm.getView(surfaceId)
+    } catch (ex: IllegalViewOperationException) {
+      FLog.e(TAG, "Failed to find root view for surfaceId: %d. Error: %s", surfaceId, ex.message);
+      return false
+    }
+
+    MeasureAsyncUtil.measure(rootView, view, outputBuffer)
+    return true;
+  }
 
   fun dispatchEvent(
       surfaceId: Int,

@@ -159,6 +159,11 @@ export interface Spec extends TurboModule {
     onSuccess: MeasureLayoutOnSuccessCallback,
   ) => void;
 
+  readonly measureAsyncOnUI: (
+    nativeElementReference: unknown,
+    callback: MeasureOnSuccessCallback,
+  ) => void;
+
   /**
    * Legacy direct manipulation APIs (for `ReactNativeElement`).
    */
@@ -431,6 +436,11 @@ export interface RefinedSpec {
     relativeNode: NativeElementReference,
     onFail: () => void,
     onSuccess: MeasureLayoutOnSuccessCallback,
+  ) => void;
+
+  readonly measureAsyncOnUI: (
+    nativeElementReference: NativeElementReference,
+    callback: MeasureOnSuccessCallback,
   ) => void;
 
   /**

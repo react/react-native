@@ -57,6 +57,10 @@ class SchedulerDelegateImpl : public SchedulerDelegate {
 
   void schedulerDidClearPendingSnapshots() override;
 
+  void schedulerMeasureAsyncOnUI(
+      const ShadowView& shadowView,
+      const std::function<void(folly::dynamic)>& callback) override;
+
   std::shared_ptr<IMountingManager> mountingManager_;
   std::shared_ptr<UIManager> uiManager_;
 };

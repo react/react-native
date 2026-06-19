@@ -424,6 +424,19 @@ class ReactRevisionMergeRunLoopObserverDelegate final : public RunLoopObserver::
   [_mountingManager setIsJSResponder:isJSResponder blockNativeResponder:blockNativeResponder forShadowView:shadowView];
 }
 
+- (void)schedulerMeasureAsyncOnUI:(const facebook::react::ShadowView &)shadowView callback:(const std::function<void (folly::dynamic)> &)callback {
+  ReactTag tag = shadowView.tag;
+  SurfaceId surfaceId = shadowView.surfaceId;
+  RCTFabricSurface *surface = [self surfaceForRootTag:surfaceId];
+
+  std::function<void (folly::dynamic)> callbackCopy = callback;
+  RCTExecuteOnMainQueue(^{
+    UIView *rootView = surface.view;
+    [self->_mountingManager measureAsyncOnUI:tag rootView:rootView callback:callbackCopy];
+  });
+}
+
+
 - (void)addObserver:(id<RCTSurfacePresenterObserver>)observer
 {
   std::unique_lock lock(_observerListMutex);

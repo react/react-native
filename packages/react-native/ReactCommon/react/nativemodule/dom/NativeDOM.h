@@ -27,6 +27,9 @@ using MeasureInWindowOnSuccessCallback = SyncCallback<void(double, double, doubl
 
 using MeasureLayoutOnSuccessCallback = SyncCallback<void(double, double, double, double)>;
 
+using MeasureAsyncOnUICallback =
+    AsyncCallback<double, double, double, double, double, double>;
+
 class NativeDOM : public NativeDOMCxxSpec<NativeDOM> {
  public:
   NativeDOM(std::shared_ptr<CallInvoker> jsInvoker);
@@ -107,6 +110,11 @@ class NativeDOM : public NativeDOMCxxSpec<NativeDOM> {
       std::shared_ptr<const ShadowNode> relativeToShadowNode,
       jsi::Function onFail,
       const MeasureLayoutOnSuccessCallback &onSuccess);
+
+  void measureAsyncOnUI(
+      jsi::Runtime& rt,
+      std::shared_ptr<const ShadowNode> shadowNode,
+      const MeasureAsyncOnUICallback& callback);
 
 #pragma mark - Legacy direct manipulation APIs (for `ReactNativeElement`).
 

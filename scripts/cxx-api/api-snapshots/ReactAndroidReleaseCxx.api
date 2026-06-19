@@ -644,6 +644,7 @@ using facebook::react::LegacyViewManagerInteropShadowNode = facebook::react::Con
 using facebook::react::LineMeasureCache = facebook::react::SimpleThreadSafeCache<facebook::react::LineMeasureCacheKey, facebook::react::LinesMeasurements, facebook::react::kSimpleThreadSafeCacheSizeCap>;
 using facebook::react::LinesMeasurements = std::vector<facebook::react::LineMeasurement>;
 using facebook::react::Logger = std::function<void(const std::string& message, unsigned int logLevel)>;
+using facebook::react::MeasureAsyncOnUICallback = facebook::react::AsyncCallback<double, double, double, double, double, double>;
 using facebook::react::MeasureInWindowOnSuccessCallback = facebook::react::SyncCallback<void(double, double, double, double)>;
 using facebook::react::MeasureLayoutOnSuccessCallback = facebook::react::SyncCallback<void(double, double, double, double)>;
 using facebook::react::MeasureOnSuccessCallback = facebook::react::SyncCallback<void(double, double, double, double, double, double)>;
@@ -2359,6 +2360,7 @@ class facebook::react::FabricMountingManager {
   public void drainPreallocateViewsQueue();
   public void executeMount(const facebook::react::MountingTransaction& transaction);
   public void maybePreallocateShadowNode(const facebook::react::ShadowNode& shadowNode);
+  public void measureAsyncOnUI(const facebook::react::ShadowView& shadowView, const std::function<void(folly::dynamic)>& callback);
   public void onAllAnimationsComplete();
   public void onAnimationStarted();
   public void onSurfaceStart(facebook::react::SurfaceId surfaceId);
@@ -3601,6 +3603,7 @@ class facebook::react::NativeDOM : public facebook::react::NativeDOMCxxSpec<face
   public std::tuple<int, int> getScrollSize(facebook::jsi::Runtime& rt, std::shared_ptr<const facebook::react::ShadowNode> shadowNode);
   public std::vector<facebook::jsi::Value> getChildNodes(facebook::jsi::Runtime& rt, facebook::jsi::Value nativeNodeReference);
   public void measure(facebook::jsi::Runtime& rt, std::shared_ptr<const facebook::react::ShadowNode> shadowNode, const facebook::react::MeasureOnSuccessCallback& callback);
+  public void measureAsyncOnUI(facebook::jsi::Runtime& rt, std::shared_ptr<const facebook::react::ShadowNode> shadowNode, const facebook::react::MeasureAsyncOnUICallback& callback);
   public void measureInWindow(facebook::jsi::Runtime& rt, std::shared_ptr<const facebook::react::ShadowNode> shadowNode, const facebook::react::MeasureInWindowOnSuccessCallback& callback);
   public void measureLayout(facebook::jsi::Runtime& rt, std::shared_ptr<const facebook::react::ShadowNode> shadowNode, std::shared_ptr<const facebook::react::ShadowNode> relativeToShadowNode, facebook::jsi::Function onFail, const facebook::react::MeasureLayoutOnSuccessCallback& onSuccess);
   public void releasePointerCapture(facebook::jsi::Runtime& rt, std::shared_ptr<const facebook::react::ShadowNode> shadowNode, double pointerId);
@@ -4506,6 +4509,7 @@ class facebook::react::Scheduler : public facebook::react::UIManagerDelegate {
   public virtual void uiManagerDidSetViewSnapshot(facebook::react::Tag sourceTag, facebook::react::Tag targetTag, facebook::react::SurfaceId surfaceId) override;
   public virtual void uiManagerDidStartSurface(const facebook::react::ShadowTree& shadowTree) override;
   public virtual void uiManagerDidUpdateShadowTree(const std::unordered_map<facebook::react::Tag, folly::dynamic>& tagToProps) override;
+  public virtual void uiManagerMeasureAsyncOnUI(const std::shared_ptr<const facebook::react::ShadowNode>& shadowNode, const std::function<void(folly::dynamic)>& callback) override;
   public virtual void uiManagerShouldAddEventListener(std::shared_ptr<const facebook::react::EventListener> listener) final;
   public virtual void uiManagerShouldRemoveEventListener(const std::shared_ptr<const facebook::react::EventListener>& listener) final;
   public virtual void uiManagerShouldSetOnSurfaceStartCallback(facebook::react::UIManagerDelegate::OnSurfaceStartCallback&& callback) override;
@@ -4530,6 +4534,7 @@ class facebook::react::SchedulerDelegate {
   public virtual void schedulerDidSetIsJSResponder(const facebook::react::ShadowView& shadowView, bool isJSResponder, bool blockNativeResponder) = 0;
   public virtual void schedulerDidSetViewSnapshot(facebook::react::Tag sourceTag, facebook::react::Tag targetTag, facebook::react::SurfaceId surfaceId) = 0;
   public virtual void schedulerDidUpdateShadowTree(const std::unordered_map<facebook::react::Tag, folly::dynamic>& tagToProps) = 0;
+  public virtual void schedulerMeasureAsyncOnUI(const facebook::react::ShadowView& shadowView, const std::function<void(folly::dynamic)>& callback) = 0;
   public virtual void schedulerShouldMergeReactRevision(facebook::react::SurfaceId surfaceId) = 0;
   public virtual void schedulerShouldRenderTransactions(const std::shared_ptr<const facebook::react::MountingCoordinator>& mountingCoordinator) = 0;
   public virtual void schedulerShouldSynchronouslyUpdateViewOnUIThread(facebook::react::Tag tag, const folly::dynamic& props) = 0;
@@ -5318,6 +5323,7 @@ class facebook::react::UIManagerDelegate {
   public virtual void uiManagerDidSetViewSnapshot(facebook::react::Tag sourceTag, facebook::react::Tag targetTag, facebook::react::SurfaceId surfaceId) = 0;
   public virtual void uiManagerDidStartSurface(const facebook::react::ShadowTree& shadowTree) = 0;
   public virtual void uiManagerDidUpdateShadowTree(const std::unordered_map<facebook::react::Tag, folly::dynamic>& tagToProps) = 0;
+  public virtual void uiManagerMeasureAsyncOnUI(const std::shared_ptr<const facebook::react::ShadowNode>& shadowNode, const std::function<void(folly::dynamic)>& callback) = 0;
   public virtual void uiManagerShouldAddEventListener(std::shared_ptr<const facebook::react::EventListener> listener) = 0;
   public virtual void uiManagerShouldRemoveEventListener(const std::shared_ptr<const facebook::react::EventListener>& listener) = 0;
   public virtual void uiManagerShouldSetOnSurfaceStartCallback(facebook::react::UIManagerDelegate::OnSurfaceStartCallback&& callback) = 0;

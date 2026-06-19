@@ -80,6 +80,14 @@ class UIManagerDelegate {
   virtual void uiManagerShouldRemoveEventListener(const std::shared_ptr<const EventListener> &listener) = 0;
 
   /*
+   * Measures the layout of the shadow node async on the UI thread using the native layout hierarchy.
+   * As this has to schedule a call on the UI thread its async.
+   */
+  virtual void uiManagerMeasureAsyncOnUI(
+      const std::shared_ptr<const ShadowNode>& shadowNode,
+      const std::function<void(folly::dynamic)>& callback) = 0;
+
+  /*
    * Start surface.
    */
   virtual void uiManagerDidStartSurface(const ShadowTree &shadowTree) = 0;

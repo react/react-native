@@ -1067,6 +1067,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    shouldPressabilityUseNativeViewHierarchyForMeasurement: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-06-18',
+        description:
+          'When enabled, Pressability measures host instances from the native view hierarchy on the UI thread instead of using shadow tree layout metrics.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
     shouldUseAnimatedObjectForTransform: {
       defaultValue: false,
       metadata: {
