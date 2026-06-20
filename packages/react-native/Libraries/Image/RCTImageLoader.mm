@@ -73,7 +73,9 @@ static NSError *addResponseHeadersToError(NSError *originalError, NSHTTPURLRespo
   NSArray<id<RCTImageURLLoader>> * (^_loadersProvider)(RCTModuleRegistry *);
   NSArray<id<RCTImageDataDecoder>> * (^_decodersProvider)(RCTModuleRegistry *);
   NSArray<id<RCTImageURLLoader>> *_loaders;
+  std::atomic<BOOL> _loadersReady;
   NSArray<id<RCTImageDataDecoder>> *_decoders;
+  std::atomic<BOOL> _decodersReady;
   NSOperationQueue *_imageDecodeQueue;
   dispatch_queue_t _URLRequestQueue;
   id<RCTImageCache> _imageCache;
@@ -167,9 +169,9 @@ RCT_EXPORT_MODULE()
     [self setUp];
   }
 
-  if (!_loaders) {
-    std::unique_lock<std::mutex> guard(_loadersMutex);
-    if (!_loaders) {
+  if (!_loadersReady.load(std::memory_order_acquire)) {
+    std::lock_guard<std::mutex> guard(_loadersMutex);
+    if (!_loadersReady.load(std::memory_order_relaxed)) {
       // Get loaders, sorted in reverse priority order (highest priority first)
       if (_loadersProvider) {
         _loaders = _loadersProvider(self.moduleRegistry);
@@ -190,14 +192,16 @@ RCT_EXPORT_MODULE()
               return NSOrderedSame;
             }
           }];
+      _loadersReady.store(YES, std::memory_order_release);
     }
   }
+  NSArray<id<RCTImageURLLoader>> *loaders = _loaders;
 
   if (RCT_DEBUG) {
     // Check for handler conflicts
     float previousPriority = 0;
     id<RCTImageURLLoader> previousLoader = nil;
-    for (id<RCTImageURLLoader> loader in _loaders) {
+    for (id<RCTImageURLLoader> loader in loaders) {
       float priority = [loader respondsToSelector:@selector(loaderPriority)] ? [loader loaderPriority] : 0;
       if (previousLoader && priority < previousPriority) {
         return previousLoader;
@@ -224,7 +228,7 @@ RCT_EXPORT_MODULE()
   }
 
   // Normal code path
-  for (id<RCTImageURLLoader> loader in _loaders) {
+  for (id<RCTImageURLLoader> loader in loaders) {
     if ([loader canLoadImageURL:URL]) {
       return loader;
     }
@@ -240,35 +244,40 @@ RCT_EXPORT_MODULE()
     [self setUp];
   }
 
-  if (!_decoders) {
-    // Get decoders, sorted in reverse priority order (highest priority first)
+  if (!_decodersReady.load(std::memory_order_acquire)) {
+    std::lock_guard<std::mutex> guard(_loadersMutex);
+    if (!_decodersReady.load(std::memory_order_relaxed)) {
+      // Get decoders, sorted in reverse priority order (highest priority first)
 
-    if (_decodersProvider) {
-      _decoders = _decodersProvider(self.moduleRegistry);
-    } else {
-      RCTAssert(_bridge, @"Trying to find RCTImageDataDecoders and bridge not set.");
-      _decoders = [_bridge modulesConformingToProtocol:@protocol(RCTImageDataDecoder)];
+      if (_decodersProvider) {
+        _decoders = _decodersProvider(self.moduleRegistry);
+      } else {
+        RCTAssert(_bridge, @"Trying to find RCTImageDataDecoders and bridge not set.");
+        _decoders = [_bridge modulesConformingToProtocol:@protocol(RCTImageDataDecoder)];
+      }
+
+      _decoders = [_decoders
+          sortedArrayUsingComparator:^NSComparisonResult(id<RCTImageDataDecoder> a, id<RCTImageDataDecoder> b) {
+            float priorityA = [a respondsToSelector:@selector(decoderPriority)] ? [a decoderPriority] : 0;
+            float priorityB = [b respondsToSelector:@selector(decoderPriority)] ? [b decoderPriority] : 0;
+            if (priorityA > priorityB) {
+              return NSOrderedAscending;
+            } else if (priorityA < priorityB) {
+              return NSOrderedDescending;
+            } else {
+              return NSOrderedSame;
+            }
+          }];
+      _decodersReady.store(YES, std::memory_order_release);
     }
-
-    _decoders = [_decoders
-        sortedArrayUsingComparator:^NSComparisonResult(id<RCTImageDataDecoder> a, id<RCTImageDataDecoder> b) {
-          float priorityA = [a respondsToSelector:@selector(decoderPriority)] ? [a decoderPriority] : 0;
-          float priorityB = [b respondsToSelector:@selector(decoderPriority)] ? [b decoderPriority] : 0;
-          if (priorityA > priorityB) {
-            return NSOrderedAscending;
-          } else if (priorityA < priorityB) {
-            return NSOrderedDescending;
-          } else {
-            return NSOrderedSame;
-          }
-        }];
   }
+  NSArray<id<RCTImageDataDecoder>> *decoders = _decoders;
 
   if (RCT_DEBUG) {
     // Check for handler conflicts
     float previousPriority = 0;
     id<RCTImageDataDecoder> previousDecoder = nil;
-    for (id<RCTImageDataDecoder> decoder in _decoders) {
+    for (id<RCTImageDataDecoder> decoder in decoders) {
       float priority = [decoder respondsToSelector:@selector(decoderPriority)] ? [decoder decoderPriority] : 0;
       if (previousDecoder && priority < previousPriority) {
         return previousDecoder;
@@ -297,7 +306,7 @@ RCT_EXPORT_MODULE()
   }
 
   // Normal code path
-  for (id<RCTImageDataDecoder> decoder in _decoders) {
+  for (id<RCTImageDataDecoder> decoder in decoders) {
     if ([decoder canDecodeImageData:data]) {
       return decoder;
     }
