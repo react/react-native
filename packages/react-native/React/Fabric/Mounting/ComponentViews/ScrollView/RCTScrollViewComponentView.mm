@@ -436,7 +436,13 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 
   if ((oldScrollViewProps.contentInsetAdjustmentBehavior != newScrollViewProps.contentInsetAdjustmentBehavior) ||
       _shouldUpdateContentInsetAdjustmentBehavior) {
-    const auto contentInsetAdjustmentBehavior = newScrollViewProps.contentInsetAdjustmentBehavior;
+    auto contentInsetAdjustmentBehavior = newScrollViewProps.contentInsetAdjustmentBehavior;
+    if (@available(iOS 26, *)) {
+      NSNumber *compat = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"UIDesignRequiresCompatibility"];
+      if (!compat.boolValue && contentInsetAdjustmentBehavior == ContentInsetAdjustmentBehavior::Never) {
+        contentInsetAdjustmentBehavior = ContentInsetAdjustmentBehavior::ScrollableAxes;
+      }
+    }
     if (contentInsetAdjustmentBehavior == ContentInsetAdjustmentBehavior::Never) {
       scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
     } else if (contentInsetAdjustmentBehavior == ContentInsetAdjustmentBehavior::Automatic) {
@@ -698,10 +704,16 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   _contentSize = CGSizeZero;
   // Reset contentInset to prevent stale insets leaking into recycled scroll views.
   _scrollView.contentInset = UIEdgeInsetsZero;
-  // We set the default behavior to "never" so that iOS
-  // doesn't do weird things to UIScrollView insets automatically
-  // and keeps it as an opt-in behavior.
-  _scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+  if (@available(iOS 26, *)) {
+    NSNumber *compat = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"UIDesignRequiresCompatibility"];
+    if (!compat.boolValue) {
+      _scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentScrollableAxes;
+    } else {
+      _scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+    }
+  } else {
+    _scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+  }
   _shouldUpdateContentInsetAdjustmentBehavior = YES;
   _isUserTriggeredScrolling = NO;
   CGRect oldFrame = self.frame;

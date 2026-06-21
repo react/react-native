@@ -31,10 +31,16 @@
 - (instancetype)initWithFrame:(CGRect)frame
 {
   if (self = [super initWithFrame:frame]) {
-    // We set the default behavior to "never" so that iOS
-    // doesn't do weird things to UIScrollView insets automatically
-    // and keeps it as an opt-in behavior.
-    self.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+    if (@available(iOS 26, *)) {
+      NSNumber *compat = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"UIDesignRequiresCompatibility"];
+      if (!compat.boolValue) {
+        self.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentScrollableAxes;
+      } else {
+        self.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+      }
+    } else {
+      self.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+    }
 
     // We intentionally force `UIScrollView`s `semanticContentAttribute` to `LTR` here
     // because this attribute affects a position of vertical scrollbar; we don't want this
