@@ -75,7 +75,15 @@ internal class PropsAnimatedNode(
     }
     for ((key, value) in propNodeMapping) {
       val node = nativeAnimatedNodesManager.getNodeById(value)
-      requireNotNull(node) { "Mapped property node does not exist" }
+      // A mapped child node can be dropped (e.g. its component unmounted during
+      // navigation) between animation frames while this prop node is still
+      // queued for an update. Skip the stale node instead of throwing: the
+      // connected view is being torn down, so there is no meaningful value to
+      // write for this prop on this frame. Mirrors the connectedViewTag == -1
+      // early-return above. Fixes #37267.
+      if (node == null) {
+        continue
+      }
       if (node is StyleAnimatedNode) {
         node.collectViewUpdates(propMap)
       } else if (node is ValueAnimatedNode) {
