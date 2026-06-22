@@ -7,12 +7,16 @@
 
 #pragma once
 
+#include <unordered_map>
+
 #include <react/renderer/core/ReactPrimitives.h>
 #include <react/renderer/core/ShadowNode.h>
 #include <react/renderer/mounting/MountingCoordinator.h>
 #include <react/renderer/mounting/ShadowTree.h>
 
 namespace facebook::react {
+
+struct AnimatedProps;
 
 /*
  * Abstract class for UIManager's delegate.
@@ -63,6 +67,13 @@ class UIManagerDelegate {
    * Synchronous view update.
    */
   virtual void uiManagerShouldSynchronouslyUpdateViewOnUIThread(Tag tag, const folly::dynamic &props) = 0;
+
+  /*
+   * Synchronously update animated properties on the UI thread.
+   */
+  virtual void uiManagerShouldSynchronouslyUpdateAnimatedPropsOnUIThread(
+      SurfaceId surfaceId,
+      const std::unordered_map<Tag, AnimatedProps> &updates) = 0;
 
   /*
    * Called after updateShadowTree is invoked.

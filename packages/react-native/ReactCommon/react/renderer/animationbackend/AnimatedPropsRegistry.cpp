@@ -6,6 +6,7 @@
  */
 
 #include "AnimatedPropsRegistry.h"
+#include <cxxreact/TraceSection.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include "AnimatedProps.h"
 
@@ -13,6 +14,8 @@ namespace facebook::react {
 
 void AnimatedPropsRegistry::update(
     const std::unordered_map<SurfaceId, SurfaceUpdates>& surfaceUpdates) {
+  TraceSection s(
+      "AnimatedPropsRegistry::update", "surfaceCount", surfaceUpdates.size());
   auto lock = std::lock_guard(mutex_);
   for (const auto& [surfaceId, updates] : surfaceUpdates) {
     auto& surfaceContext = surfaceContexts_[surfaceId];
@@ -59,6 +62,7 @@ std::pair<
     std::unordered_set<std::shared_ptr<const ShadowNodeFamily>>&,
     SnapshotMap&>
 AnimatedPropsRegistry::getMap(SurfaceId surfaceId) {
+  TraceSection s("AnimatedPropsRegistry::getMap", "surfaceId", surfaceId);
   auto lock = std::lock_guard(mutex_);
   auto& [pendingMap, map, pendingFamilies, families] =
       surfaceContexts_[surfaceId];

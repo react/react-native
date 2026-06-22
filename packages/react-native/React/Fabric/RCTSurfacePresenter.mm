@@ -28,8 +28,10 @@
 #import <react/utils/FollyConvert.h>
 
 #import <react/featureflags/ReactNativeFeatureFlags.h>
+#import <react/renderer/animationbackend/AnimatedProps.h>
 #import <react/renderer/componentregistry/ComponentDescriptorFactory.h>
 #import <react/renderer/components/text/BaseTextProps.h>
+#import <react/renderer/components/view/BaseViewProps.h>
 #import <react/renderer/runtimescheduler/RuntimeScheduler.h>
 #import <react/renderer/scheduler/SchedulerToolbox.h>
 #import <react/utils/ContextContainer.h>
@@ -422,6 +424,44 @@ class ReactRevisionMergeRunLoopObserverDelegate final : public RunLoopObserver::
                        forShadowView:(const facebook::react::ShadowView &)shadowView;
 {
   [_mountingManager setIsJSResponder:isJSResponder blockNativeResponder:blockNativeResponder forShadowView:shadowView];
+}
+
+- (void)schedulerDidSynchronouslyUpdateViewWithAnimatedPropsOnUIThread:(Tag)tag
+                                                             surfaceId:(SurfaceId)surfaceId
+                                                         animatedProps:(const AnimatedProps &)animatedProps
+{
+  RCTScheduler *scheduler = [self scheduler];
+  if (!scheduler) {
+    return;
+  }
+
+  UIView<RCTComponentViewProtocol> *componentView =
+      [_mountingManager.componentViewRegistry findComponentViewWithTag:tag];
+  if (componentView == nil) {
+    return;
+  }
+  ComponentHandle handle = [[componentView class] componentDescriptorProvider].handle;
+  auto *componentDescriptor = [scheduler findComponentDescriptorByHandle_DO_NOT_USE_THIS_IS_BROKEN:handle];
+  if (!componentDescriptor) {
+    return;
+  }
+
+  Props::Shared oldProps = [componentView props];
+  PropsParserContext propsParserContext{surfaceId, *[self contextContainer]};
+
+  Props::Shared newProps;
+  if (animatedProps.rawProps) {
+    newProps = componentDescriptor->cloneProps(propsParserContext, oldProps, RawProps(*animatedProps.rawProps));
+  } else {
+    newProps = componentDescriptor->cloneProps(propsParserContext, oldProps, RawProps{});
+  }
+
+  auto viewProps = std::const_pointer_cast<BaseViewProps>(std::static_pointer_cast<const BaseViewProps>(newProps));
+  for (auto &animatedProp : animatedProps.props) {
+    cloneProp(*viewProps, *animatedProp);
+  }
+
+  [_mountingManager synchronouslyUpdateViewOnUIThread:tag withProps:newProps];
 }
 
 - (void)addObserver:(id<RCTSurfacePresenterObserver>)observer

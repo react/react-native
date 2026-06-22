@@ -330,6 +330,41 @@ static void RCTPerformMountInstructions(
   [componentView finalizeUpdates:RNComponentViewUpdateMaskProps];
 }
 
+- (void)synchronouslyUpdateViewOnUIThread:(ReactTag)reactTag withProps:(Props::Shared)newProps
+{
+  RCTAssertMainQueue();
+
+  UIView<RCTComponentViewProtocol> *componentView = [_componentViewRegistry findComponentViewWithTag:reactTag];
+  if (!componentView) {
+    RCTLogWarn(@"Attempted to update view with tag %ld, but it no longer exists", (long)reactTag);
+    return;
+  }
+
+  NSSet<NSString *> *propKeys = componentView.propKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN ?: [NSSet new];
+
+  Props::Shared oldProps = [componentView props];
+
+  componentView.propKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN = nil;
+  [componentView updateProps:newProps oldProps:oldProps];
+  componentView.propKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN = propKeys;
+
+  const auto &newViewProps = static_cast<const ViewProps &>(*newProps);
+
+  if (componentView.layer.opacity != (float)newViewProps.opacity) {
+    componentView.layer.opacity = newViewProps.opacity;
+  }
+
+  auto layoutMetrics = LayoutMetrics();
+  layoutMetrics.frame.size.width = componentView.layer.bounds.size.width;
+  layoutMetrics.frame.size.height = componentView.layer.bounds.size.height;
+  CATransform3D newTransform = RCTCATransform3DFromTransformMatrix(newViewProps.resolveTransform(layoutMetrics));
+  if (!CATransform3DEqualToTransform(newTransform, componentView.layer.transform)) {
+    componentView.layer.transform = newTransform;
+  }
+
+  [componentView finalizeUpdates:RNComponentViewUpdateMaskProps];
+}
+
 - (void)synchronouslyDispatchCommandOnUIThread:(ReactTag)reactTag
                                    commandName:(NSString *)commandName
                                           args:(NSArray *)args

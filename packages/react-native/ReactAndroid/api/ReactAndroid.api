@@ -2270,6 +2270,7 @@ public class com/facebook/react/fabric/FabricUIManager : com/facebook/react/brid
 	public fun stopSurface (I)V
 	public fun stopSurface (Lcom/facebook/react/fabric/SurfaceHandlerBinding;)V
 	public fun sweepActiveTouchForTag (II)V
+	public fun synchronouslyUpdateViewBatch ([I[D)V
 	public fun synchronouslyUpdateViewOnUIThread (ILcom/facebook/react/bridge/ReadableMap;)V
 	public fun updateRootLayoutSpecs (IIIII)V
 }

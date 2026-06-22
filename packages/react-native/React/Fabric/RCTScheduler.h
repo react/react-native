@@ -19,6 +19,10 @@
 #import <react/renderer/uimanager/UIManager.h>
 #import <react/utils/ContextContainer.h>
 
+namespace facebook::react {
+struct AnimatedProps;
+} // namespace facebook::react
+
 NS_ASSUME_NONNULL_BEGIN
 
 /**
@@ -45,6 +49,11 @@ NS_ASSUME_NONNULL_BEGIN
                        forShadowView:(const facebook::react::ShadowView &)shadowView;
 
 - (void)schedulerDidSynchronouslyUpdateViewOnUIThread:(facebook::react::Tag)reactTag props:(folly::dynamic)props;
+
+- (void)schedulerDidSynchronouslyUpdateViewWithAnimatedPropsOnUIThread:(facebook::react::Tag)reactTag
+                                                             surfaceId:(facebook::react::SurfaceId)surfaceId
+                                                         animatedProps:
+                                                             (const facebook::react::AnimatedProps &)animatedProps;
 @end
 
 /**

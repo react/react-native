@@ -61,6 +61,7 @@ import com.facebook.react.fabric.mounting.MountItemDispatcher;
 import com.facebook.react.fabric.mounting.MountingManager;
 import com.facebook.react.fabric.mounting.SurfaceMountingManager;
 import com.facebook.react.fabric.mounting.mountitems.BatchMountItem;
+import com.facebook.react.fabric.mounting.mountitems.BatchedAnimatedPropsMountItem;
 import com.facebook.react.fabric.mounting.mountitems.DispatchCommandMountItem;
 import com.facebook.react.fabric.mounting.mountitems.MountItem;
 import com.facebook.react.fabric.mounting.mountitems.MountItemFactory;
@@ -859,6 +860,16 @@ public class FabricUIManager
       mViewTransitionSnapshotManager = new ViewTransitionSnapshotManager(this, mMountingManager);
     }
     return mViewTransitionSnapshotManager;
+  }
+
+  @SuppressWarnings("unused")
+  @UiThread
+  @ThreadConfined(UI)
+  public void synchronouslyUpdateViewBatch(final int[] intBuffer, final double[] doubleBuffer) {
+    UiThreadUtil.assertOnUiThread();
+
+    MountItem mountItem = new BatchedAnimatedPropsMountItem(intBuffer, doubleBuffer);
+    mountItem.execute(mMountingManager);
   }
 
   @SuppressLint("NotInvokedPrivateMethod")

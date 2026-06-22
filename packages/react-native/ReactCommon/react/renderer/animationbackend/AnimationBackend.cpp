@@ -8,10 +8,10 @@
 #include "AnimationBackend.h"
 #include "AnimatedPropsRegistry.h"
 
+#include <cxxreact/TraceSection.h>
 #include <react/debug/react_native_assert.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/renderer/animationbackend/AnimatedPropsSerializer.h>
-#include <react/renderer/graphics/Color.h>
 #include <chrono>
 #include <utility>
 
@@ -79,13 +79,17 @@ void AnimationBackend::unpackMutations(
 void AnimationBackend::applySurfaceUpdates(
     std::unordered_map<SurfaceId, SurfaceUpdates>& surfaceUpdates,
     const std::set<SurfaceId>& asyncFlushSurfaces) {
+  TraceSection s(
+      "AnimationBackend::applySurfaceUpdates",
+      "surfaceCount",
+      surfaceUpdates.size());
   animatedPropsRegistry_->update(surfaceUpdates);
 
   for (auto& [surfaceId, updates] : surfaceUpdates) {
     if (updates.hasLayoutUpdates) {
       commitUpdates(surfaceId, updates);
     } else {
-      synchronouslyUpdateProps(updates.propsMap);
+      synchronouslyUpdateProps(surfaceId, updates.propsMap);
     }
   }
 
@@ -100,6 +104,7 @@ void AnimationBackend::applyMutations(AnimationMutations mutations) {
 }
 
 void AnimationBackend::onAnimationFrame(AnimationTimestamp timestamp) {
+  TraceSection s("AnimationBackend::onAnimationFrame");
   std::vector<CallbackWithId> callbacksCopy;
 
   {
@@ -159,6 +164,12 @@ void AnimationBackend::pushAnimationMutations(const Callback& callback) {
 void AnimationBackend::commitUpdates(
     SurfaceId surfaceId,
     SurfaceUpdates& surfaceUpdates) {
+  TraceSection s(
+      "AnimationBackend::commitUpdates",
+      "surfaceId",
+      surfaceId,
+      "updateCount",
+      surfaceUpdates.propsMap.size());
   auto uiManager = uiManager_.lock();
   if (!uiManager) {
     return;
@@ -194,11 +205,13 @@ void AnimationBackend::commitUpdates(
       });
 }
 
-void AnimationBackend::synchronouslyUpdateProps(
+void AnimationBackend::synchronouslyUpdatePropsUnbuffered(
     const std::unordered_map<Tag, AnimatedProps>& updates) {
+  TraceSection s(
+      "AnimationBackend::synchronouslyUpdatePropsUnbuffered",
+      "updateCount",
+      updates.size());
   for (auto& [tag, animatedProps] : updates) {
-    // TODO: We shouldn't repack it into dynamic, but for that a rewrite
-    // of synchronouslyUpdateViewOnUIThread is needed
     auto dyn = animationbackend::packAnimatedProps(animatedProps);
     if (auto uiManager = uiManager_.lock()) {
       uiManager->synchronouslyUpdateViewOnUIThread(tag, dyn);
@@ -206,8 +219,30 @@ void AnimationBackend::synchronouslyUpdateProps(
   }
 }
 
+void AnimationBackend::synchronouslyUpdateProps(
+    SurfaceId surfaceId,
+    const std::unordered_map<Tag, AnimatedProps>& updates) {
+  TraceSection s(
+      "AnimationBackend::synchronouslyUpdateProps",
+      "surfaceId",
+      surfaceId,
+      "updateCount",
+      updates.size());
+  if (ReactNativeFeatureFlags::optimizedAnimatedPropUpdates()) {
+    if (auto uiManager = uiManager_.lock()) {
+      uiManager->synchronouslyUpdateAnimatedPropsOnUIThread(surfaceId, updates);
+    }
+    return;
+  }
+  synchronouslyUpdatePropsUnbuffered(updates);
+}
+
 void AnimationBackend::requestAsyncFlushForSurfaces(
     const std::set<SurfaceId>& surfaces) {
+  TraceSection s(
+      "AnimationBackend::requestAsyncFlushForSurfaces",
+      "surfaceCount",
+      surfaces.size());
   react_native_assert(
       jsInvoker_ != nullptr ||
       surfaces.empty() && "jsInvoker_ was not provided");

@@ -559,7 +559,6 @@ void packBackfaceVisibility(
   }
   dyn.insert("backfaceVisibility", visibilityStr);
 }
-
 void packAnimatedProp(
     folly::dynamic& dyn,
     const std::unique_ptr<AnimatedPropBase>& animatedProp) {

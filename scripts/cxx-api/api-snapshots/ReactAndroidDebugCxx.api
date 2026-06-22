@@ -1575,7 +1575,8 @@ class facebook::react::AnimationBackend : public facebook::react::UIManagerAnima
   public virtual void trigger() override;
   public void commitUpdates(facebook::react::SurfaceId surfaceId, facebook::react::SurfaceUpdates& surfaceUpdates);
   public void requestAsyncFlushForSurfaces(const std::set<facebook::react::SurfaceId>& surfaces);
-  public void synchronouslyUpdateProps(const std::unordered_map<facebook::react::Tag, facebook::react::AnimatedProps>& updates);
+  public void synchronouslyUpdateProps(facebook::react::SurfaceId surfaceId, const std::unordered_map<facebook::react::Tag, facebook::react::AnimatedProps>& updates);
+  public void synchronouslyUpdatePropsUnbuffered(const std::unordered_map<facebook::react::Tag, facebook::react::AnimatedProps>& updates);
 }
 
 class facebook::react::AnimationBackendCommitHook : public facebook::react::UIManagerCommitHook {
@@ -2370,6 +2371,7 @@ class facebook::react::FabricMountingManager {
   public void sendAccessibilityEvent(const facebook::react::ShadowView& shadowView, const std::string& eventType);
   public void setIsJSResponder(const facebook::react::ShadowView& shadowView, bool isJSResponder, bool blockNativeResponder);
   public void setViewSnapshot(facebook::react::Tag sourceTag, facebook::react::Tag targetTag, facebook::react::SurfaceId surfaceId);
+  public void synchronouslyUpdateAnimatedPropsOnUIThread(facebook::react::SurfaceId surfaceId, const std::unordered_map<facebook::react::Tag, facebook::react::AnimatedProps>& updates);
   public void synchronouslyUpdateViewOnUIThread(facebook::react::Tag viewTag, const folly::dynamic& props);
   public ~FabricMountingManager();
 }
@@ -4512,6 +4514,7 @@ class facebook::react::Scheduler : public facebook::react::UIManagerDelegate {
   public virtual void uiManagerShouldAddEventListener(std::shared_ptr<const facebook::react::EventListener> listener) final;
   public virtual void uiManagerShouldRemoveEventListener(const std::shared_ptr<const facebook::react::EventListener>& listener) final;
   public virtual void uiManagerShouldSetOnSurfaceStartCallback(facebook::react::UIManagerDelegate::OnSurfaceStartCallback&& callback) override;
+  public virtual void uiManagerShouldSynchronouslyUpdateAnimatedPropsOnUIThread(facebook::react::SurfaceId surfaceId, const std::unordered_map<facebook::react::Tag, facebook::react::AnimatedProps>& updates) override;
   public virtual void uiManagerShouldSynchronouslyUpdateViewOnUIThread(facebook::react::Tag tag, const folly::dynamic& props) override;
   public void addEventListener(std::shared_ptr<const facebook::react::EventListener> listener);
   public void animationTick() const;
@@ -4535,6 +4538,7 @@ class facebook::react::SchedulerDelegate {
   public virtual void schedulerDidUpdateShadowTree(const std::unordered_map<facebook::react::Tag, folly::dynamic>& tagToProps) = 0;
   public virtual void schedulerShouldMergeReactRevision(facebook::react::SurfaceId surfaceId) = 0;
   public virtual void schedulerShouldRenderTransactions(const std::shared_ptr<const facebook::react::MountingCoordinator>& mountingCoordinator) = 0;
+  public virtual void schedulerShouldSynchronouslyUpdateAnimatedPropsOnUIThread(facebook::react::SurfaceId surfaceId, const std::unordered_map<facebook::react::Tag, facebook::react::AnimatedProps>& updates) = 0;
   public virtual void schedulerShouldSynchronouslyUpdateViewOnUIThread(facebook::react::Tag tag, const folly::dynamic& props) = 0;
   public virtual ~SchedulerDelegate() noexcept = default;
 }
@@ -5263,6 +5267,7 @@ class facebook::react::UIManager : public facebook::react::ShadowTreeDelegate {
   public void startEmptySurface(facebook::react::ShadowTree::Unique&& shadowTree) const noexcept;
   public void startSurface(facebook::react::ShadowTree::Unique&& shadowTree, const std::string& moduleName, const folly::dynamic& props, facebook::react::DisplayMode displayMode) const noexcept;
   public void stopSurfaceForAnimationDelegate(facebook::react::SurfaceId surfaceId) const;
+  public void synchronouslyUpdateAnimatedPropsOnUIThread(facebook::react::SurfaceId surfaceId, const std::unordered_map<facebook::react::Tag, facebook::react::AnimatedProps>& updates);
   public void synchronouslyUpdateViewOnUIThread(facebook::react::Tag tag, const folly::dynamic& props);
   public void unregisterCommitHook(facebook::react::UIManagerCommitHook& commitHook);
   public void unregisterMountHook(facebook::react::UIManagerMountHook& mountHook);
@@ -5330,6 +5335,7 @@ class facebook::react::UIManagerDelegate {
   public virtual void uiManagerShouldAddEventListener(std::shared_ptr<const facebook::react::EventListener> listener) = 0;
   public virtual void uiManagerShouldRemoveEventListener(const std::shared_ptr<const facebook::react::EventListener>& listener) = 0;
   public virtual void uiManagerShouldSetOnSurfaceStartCallback(facebook::react::UIManagerDelegate::OnSurfaceStartCallback&& callback) = 0;
+  public virtual void uiManagerShouldSynchronouslyUpdateAnimatedPropsOnUIThread(facebook::react::SurfaceId surfaceId, const std::unordered_map<facebook::react::Tag, facebook::react::AnimatedProps>& updates) = 0;
   public virtual void uiManagerShouldSynchronouslyUpdateViewOnUIThread(facebook::react::Tag tag, const folly::dynamic& props) = 0;
   public virtual ~UIManagerDelegate() noexcept = default;
 }
@@ -11556,6 +11562,58 @@ struct facebook::react::dom::RNMeasureRect {
 
 
 static constexpr facebook::react::Tag facebook::react::animated::undefinedAnimatedNodeIdentifier;
+
+
+static constexpr int facebook::react::animationbackend::CMD_BACKGROUND_COLOR;
+static constexpr int facebook::react::animationbackend::CMD_BORDER_BOTTOM_COLOR;
+static constexpr int facebook::react::animationbackend::CMD_BORDER_BOTTOM_END_RADIUS;
+static constexpr int facebook::react::animationbackend::CMD_BORDER_BOTTOM_LEFT_RADIUS;
+static constexpr int facebook::react::animationbackend::CMD_BORDER_BOTTOM_RIGHT_RADIUS;
+static constexpr int facebook::react::animationbackend::CMD_BORDER_BOTTOM_START_RADIUS;
+static constexpr int facebook::react::animationbackend::CMD_BORDER_COLOR;
+static constexpr int facebook::react::animationbackend::CMD_BORDER_END_COLOR;
+static constexpr int facebook::react::animationbackend::CMD_BORDER_END_END_RADIUS;
+static constexpr int facebook::react::animationbackend::CMD_BORDER_END_START_RADIUS;
+static constexpr int facebook::react::animationbackend::CMD_BORDER_LEFT_COLOR;
+static constexpr int facebook::react::animationbackend::CMD_BORDER_RADIUS;
+static constexpr int facebook::react::animationbackend::CMD_BORDER_RIGHT_COLOR;
+static constexpr int facebook::react::animationbackend::CMD_BORDER_START_COLOR;
+static constexpr int facebook::react::animationbackend::CMD_BORDER_START_END_RADIUS;
+static constexpr int facebook::react::animationbackend::CMD_BORDER_START_START_RADIUS;
+static constexpr int facebook::react::animationbackend::CMD_BORDER_TOP_COLOR;
+static constexpr int facebook::react::animationbackend::CMD_BORDER_TOP_END_RADIUS;
+static constexpr int facebook::react::animationbackend::CMD_BORDER_TOP_LEFT_RADIUS;
+static constexpr int facebook::react::animationbackend::CMD_BORDER_TOP_RIGHT_RADIUS;
+static constexpr int facebook::react::animationbackend::CMD_BORDER_TOP_START_RADIUS;
+static constexpr int facebook::react::animationbackend::CMD_COLOR;
+static constexpr int facebook::react::animationbackend::CMD_ELEVATION;
+static constexpr int facebook::react::animationbackend::CMD_END_OF_TRANSFORM;
+static constexpr int facebook::react::animationbackend::CMD_END_OF_VIEW;
+static constexpr int facebook::react::animationbackend::CMD_OPACITY;
+static constexpr int facebook::react::animationbackend::CMD_SHADOW_OPACITY;
+static constexpr int facebook::react::animationbackend::CMD_SHADOW_RADIUS;
+static constexpr int facebook::react::animationbackend::CMD_START_OF_TRANSFORM;
+static constexpr int facebook::react::animationbackend::CMD_START_OF_VIEW;
+static constexpr int facebook::react::animationbackend::CMD_TINT_COLOR;
+static constexpr int facebook::react::animationbackend::CMD_TRANSFORM_MATRIX;
+static constexpr int facebook::react::animationbackend::CMD_TRANSFORM_PERSPECTIVE;
+static constexpr int facebook::react::animationbackend::CMD_TRANSFORM_ROTATE;
+static constexpr int facebook::react::animationbackend::CMD_TRANSFORM_ROTATE_X;
+static constexpr int facebook::react::animationbackend::CMD_TRANSFORM_ROTATE_Y;
+static constexpr int facebook::react::animationbackend::CMD_TRANSFORM_ROTATE_Z;
+static constexpr int facebook::react::animationbackend::CMD_TRANSFORM_SCALE;
+static constexpr int facebook::react::animationbackend::CMD_TRANSFORM_SCALE_X;
+static constexpr int facebook::react::animationbackend::CMD_TRANSFORM_SCALE_Y;
+static constexpr int facebook::react::animationbackend::CMD_TRANSFORM_SKEW_X;
+static constexpr int facebook::react::animationbackend::CMD_TRANSFORM_SKEW_Y;
+static constexpr int facebook::react::animationbackend::CMD_TRANSFORM_TRANSLATE_X;
+static constexpr int facebook::react::animationbackend::CMD_TRANSFORM_TRANSLATE_Y;
+static constexpr int facebook::react::animationbackend::CMD_UNIT_DEG;
+static constexpr int facebook::react::animationbackend::CMD_UNIT_PERCENT;
+static constexpr int facebook::react::animationbackend::CMD_UNIT_PX;
+static constexpr int facebook::react::animationbackend::CMD_UNIT_RAD;
+static constexpr int facebook::react::animationbackend::CMD_Z_INDEX;
+void facebook::react::animationbackend::packDynamicPropsToBuffers(facebook::react::Tag tag, const facebook::react::AnimatedProps& animatedProps, std::vector<int>& intBuffer, std::vector<double>& doubleBuffer);
 
 
 std::shared_ptr<const facebook::react::ComponentDescriptorProviderRegistry> facebook::react::CoreComponentsRegistry::sharedProviderRegistry();

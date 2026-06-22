@@ -7,6 +7,7 @@
 
 #include "FabricMountingManager.h"
 
+#include "AnimatedPropBufferEncoder.h"
 #include "EventEmitterWrapper.h"
 #include "MountItem.h"
 #include "StateWrapperImpl.h"
@@ -1253,6 +1254,44 @@ void FabricMountingManager::clearPendingSnapshots() {
   clearPendingSnapshotsJNI(javaUIManager_);
 }
 
+void FabricMountingManager::synchronouslyUpdateAnimatedPropsOnUIThread(
+    SurfaceId /*surfaceId*/,
+    const std::unordered_map<Tag, AnimatedProps>& updates) {
+  std::vector<int> intBuffer;
+  std::vector<double> doubleBuffer;
+
+  for (const auto& [tag, animatedProps] : updates) {
+    animationbackend::packDynamicPropsToBuffers(
+        tag, animatedProps, intBuffer, doubleBuffer);
+  }
+
+  if (intBuffer.empty()) {
+    return;
+  }
+
+  auto env = jni::Environment::current();
+
+  auto jIntArray = env->NewIntArray(static_cast<jsize>(intBuffer.size()));
+  env->SetIntArrayRegion(
+      jIntArray, 0, static_cast<jsize>(intBuffer.size()), intBuffer.data());
+
+  auto jDoubleArray =
+      env->NewDoubleArray(static_cast<jsize>(doubleBuffer.size()));
+  env->SetDoubleArrayRegion(
+      jDoubleArray,
+      0,
+      static_cast<jsize>(doubleBuffer.size()),
+      doubleBuffer.data());
+
+  static auto synchronouslyUpdateViewBatchJNI =
+      JFabricUIManager::javaClassStatic()
+          ->getMethod<void(jintArray, jdoubleArray)>(
+              "synchronouslyUpdateViewBatch");
+  synchronouslyUpdateViewBatchJNI(javaUIManager_, jIntArray, jDoubleArray);
+
+  env->DeleteLocalRef(jIntArray);
+  env->DeleteLocalRef(jDoubleArray);
+}
 void FabricMountingManager::scheduleReactRevisionMerge(SurfaceId surfaceId) {
   static const auto scheduleReactRevisionMerge =
       JFabricUIManager::javaClassStatic()->getMethod<void(int32_t)>(

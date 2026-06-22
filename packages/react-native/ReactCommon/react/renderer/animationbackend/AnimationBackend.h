@@ -52,7 +52,8 @@ class AnimationBackend : public UIManagerAnimationBackend {
       std::shared_ptr<AnimationChoreographer> animationChoreographer,
       std::shared_ptr<UIManager> uiManager);
   void commitUpdates(SurfaceId surfaceId, SurfaceUpdates &surfaceUpdates);
-  void synchronouslyUpdateProps(const std::unordered_map<Tag, AnimatedProps> &updates);
+  void synchronouslyUpdateProps(SurfaceId surfaceId, const std::unordered_map<Tag, AnimatedProps> &updates);
+  void synchronouslyUpdatePropsUnbuffered(const std::unordered_map<Tag, AnimatedProps> &updates);
   void requestAsyncFlushForSurfaces(const std::set<SurfaceId> &surfaces);
   void clearRegistry(SurfaceId surfaceId) override;
   void clearRegistryOnSurfaceStop(SurfaceId surfaceId) override;

@@ -49,6 +49,10 @@ class SchedulerDelegateImpl : public SchedulerDelegate {
 
   void schedulerShouldSynchronouslyUpdateViewOnUIThread(Tag tag, const folly::dynamic &props) override;
 
+  void schedulerShouldSynchronouslyUpdateAnimatedPropsOnUIThread(
+      SurfaceId surfaceId,
+      const std::unordered_map<Tag, AnimatedProps> &updates) override;
+
   void schedulerDidUpdateShadowTree(const std::unordered_map<Tag, folly::dynamic> &tagToProps) override;
 
   void schedulerDidCaptureViewSnapshot(Tag tag, SurfaceId surfaceId) override;

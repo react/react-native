@@ -7,6 +7,7 @@
 
 #include <react/renderer/animationbackend/AnimationBackendCommitHook.h>
 
+#include <cxxreact/TraceSection.h>
 #include <utility>
 
 namespace facebook::react {
@@ -23,6 +24,10 @@ RootShadowNode::Unshared AnimationBackendCommitHook::shadowTreeWillCommit(
     const RootShadowNode::Shared& oldRootShadowNode,
     const RootShadowNode::Unshared& newRootShadowNode,
     const ShadowTreeCommitOptions& commitOptions) noexcept {
+  TraceSection s(
+      "AnimationBackendCommitHook::shadowTreeWillCommit",
+      "surfaceId",
+      shadowTree.getSurfaceId());
   if (commitOptions.source != ShadowTreeCommitSource::React &&
       commitOptions.source != ShadowTreeCommitSource::AnimationEndSync) {
     return newRootShadowNode;
