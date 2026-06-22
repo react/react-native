@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<00bb39539f4fc2dc0ad85a346bdee22b>>
+ * @generated SignedSource<<6e5d11227a493c56e2e132b4bc5ed4aa>>
  */
 
 /**
@@ -341,12 +341,6 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun fixMappingOfEventPrioritiesBetweenFabricAndReact(): Boolean = accessor.fixMappingOfEventPrioritiesBetweenFabricAndReact()
-
-  /**
-   * Fix flex basis computation to not apply FitContent constraint in the main axis for non-measure container nodes, preventing unnecessary re-measurement in scroll containers.
-   */
-  @JvmStatic
-  public fun fixYogaFlexBasisFitContentInMainAxis(): Boolean = accessor.fixYogaFlexBasisFitContentInMainAxis()
 
   /**
    * Enable system assertion validating that Fusebox is configured with a single host. When set, the CDP backend will dynamically disable features (Perf and Network) in the event that multiple hosts are registered (undefined behaviour), and broadcast this over `ReactNativeApplication.systemStateChanged`.

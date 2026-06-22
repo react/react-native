@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<731e92ecac8dbdf0a4b204b763a2c8c7>>
+ * @generated SignedSource<<73a3842f757634b1efebd4cc6c868604>>
  */
 
 /**
@@ -72,7 +72,6 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
   private var enableVirtualViewContainerStateExperimentalCache: Boolean? = null
   private var fixDifferentiatorParentTagForUnflattenCaseCache: Boolean? = null
   private var fixMappingOfEventPrioritiesBetweenFabricAndReactCache: Boolean? = null
-  private var fixYogaFlexBasisFitContentInMainAxisCache: Boolean? = null
   private var fuseboxAssertSingleHostStateCache: Boolean? = null
   private var fuseboxEnabledReleaseCache: Boolean? = null
   private var fuseboxFrameRecordingEnabledCache: Boolean? = null
@@ -569,15 +568,6 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
     if (cached == null) {
       cached = ReactNativeFeatureFlagsCxxInterop.fixMappingOfEventPrioritiesBetweenFabricAndReact()
       fixMappingOfEventPrioritiesBetweenFabricAndReactCache = cached
-    }
-    return cached
-  }
-
-  override fun fixYogaFlexBasisFitContentInMainAxis(): Boolean {
-    var cached = fixYogaFlexBasisFitContentInMainAxisCache
-    if (cached == null) {
-      cached = ReactNativeFeatureFlagsCxxInterop.fixYogaFlexBasisFitContentInMainAxis()
-      fixYogaFlexBasisFitContentInMainAxisCache = cached
     }
     return cached
   }

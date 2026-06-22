@@ -946,11 +946,6 @@ yoga::Config& YogaLayoutableShadowNode::initializeYogaConfig(
     YGConfigSetErrata(&config, YGConfigGetErrata(previousConfig));
   }
 
-  if (ReactNativeFeatureFlags::fixYogaFlexBasisFitContentInMainAxis()) {
-    YGConfigSetExperimentalFeatureEnabled(
-        &config, YGExperimentalFeatureFixFlexBasisFitContent, true);
-  }
-
   return config;
 }
 

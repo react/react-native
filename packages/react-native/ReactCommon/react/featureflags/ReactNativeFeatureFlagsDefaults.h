@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<6451b9c50b78b3b00fc74b137f5ca541>>
+ * @generated SignedSource<<bd023d9784325b0e122d324a2590e105>>
  */
 
 /**
@@ -232,10 +232,6 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool fixMappingOfEventPrioritiesBetweenFabricAndReact() override {
-    return false;
-  }
-
-  bool fixYogaFlexBasisFitContentInMainAxis() override {
     return false;
   }
 

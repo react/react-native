@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @fantom_flags enableFabricCommitBranching:* fixYogaFlexBasisFitContentInMainAxis:*
+ * @fantom_flags enableFabricCommitBranching:*
  * @flow strict-local
  * @format
  */
@@ -15,7 +15,6 @@ import {createShadowNodeReferenceGetterRef} from '../ShadowNodeRevisionGetter';
 import * as Fantom from '@react-native/fantom';
 import * as React from 'react';
 import {ScrollView, View} from 'react-native';
-import * as ReactNativeFeatureFlags from 'react-native/src/private/featureflags/ReactNativeFeatureFlags';
 
 test('base case when cloning results in revision +1', () => {
   const root = Fantom.createRoot();
@@ -35,7 +34,11 @@ test('base case when cloning results in revision +1', () => {
   expect(getRevision()).toBe(2);
 });
 
-test('changing height of sibling in ScrollView does not clone unrelated descendants', () => {
+// Optimization opportunity: changing the height of one sibling inside a
+// ScrollView currently re-clones unrelated descendants, so the revision goes
+// to 2. Ideally Yoga would not re-measure these nodes and the revision would
+// stay at 1.
+test('changing height of sibling in ScrollView clones unrelated descendants', () => {
   const root = Fantom.createRoot();
   const [getRevision, ref] = createShadowNodeReferenceGetterRef();
 
@@ -71,9 +74,5 @@ test('changing height of sibling in ScrollView does not clone unrelated descenda
     );
   });
 
-  if (ReactNativeFeatureFlags.fixYogaFlexBasisFitContentInMainAxis()) {
-    expect(getRevision()).toBe(1);
-  } else {
-    expect(getRevision()).toBe(2);
-  }
+  expect(getRevision()).toBe(2);
 });

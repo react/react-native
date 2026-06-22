@@ -74,8 +74,7 @@ YG_DEFINE_ENUM_FLAG_OPERATORS(YGErrata)
 
 YG_ENUM_DECL(
     YGExperimentalFeature,
-    YGExperimentalFeatureWebFlexBasis,
-    YGExperimentalFeatureFixFlexBasisFitContent)
+    YGExperimentalFeatureWebFlexBasis)
 
 YG_ENUM_DECL(
     YGFlexDirection,
