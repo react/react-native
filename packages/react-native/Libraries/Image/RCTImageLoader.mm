@@ -163,23 +163,17 @@ RCT_EXPORT_MODULE()
   _imageCache = cache;
 }
 
-- (id<RCTImageURLLoader>)imageURLLoaderForURL:(NSURL *)URL
+- (NSArray<id<RCTImageURLLoader>> *)loaders
 {
-  if (!_isLoaderSetup) {
-    [self setUp];
-  }
-
   if (!_loadersReady.load(std::memory_order_acquire)) {
     std::lock_guard<std::mutex> guard(_loadersMutex);
     if (!_loadersReady.load(std::memory_order_relaxed)) {
-      // Get loaders, sorted in reverse priority order (highest priority first)
       if (_loadersProvider) {
         _loaders = _loadersProvider(self.moduleRegistry);
       } else {
         RCTAssert(_bridge, @"Trying to find RCTImageURLLoaders and bridge not set.");
         _loaders = [_bridge modulesConformingToProtocol:@protocol(RCTImageURLLoader)];
       }
-
       _loaders =
           [_loaders sortedArrayUsingComparator:^NSComparisonResult(id<RCTImageURLLoader> a, id<RCTImageURLLoader> b) {
             float priorityA = [a respondsToSelector:@selector(loaderPriority)] ? [a loaderPriority] : 0;
@@ -195,7 +189,45 @@ RCT_EXPORT_MODULE()
       _loadersReady.store(YES, std::memory_order_release);
     }
   }
-  NSArray<id<RCTImageURLLoader>> *loaders = _loaders;
+  return _loaders;
+}
+
+- (NSArray<id<RCTImageDataDecoder>> *)decoders
+{
+  if (!_decodersReady.load(std::memory_order_acquire)) {
+    std::lock_guard<std::mutex> guard(_loadersMutex);
+    if (!_decodersReady.load(std::memory_order_relaxed)) {
+      if (_decodersProvider) {
+        _decoders = _decodersProvider(self.moduleRegistry);
+      } else {
+        RCTAssert(_bridge, @"Trying to find RCTImageDataDecoders and bridge not set.");
+        _decoders = [_bridge modulesConformingToProtocol:@protocol(RCTImageDataDecoder)];
+      }
+      _decoders = [_decoders
+          sortedArrayUsingComparator:^NSComparisonResult(id<RCTImageDataDecoder> a, id<RCTImageDataDecoder> b) {
+            float priorityA = [a respondsToSelector:@selector(decoderPriority)] ? [a decoderPriority] : 0;
+            float priorityB = [b respondsToSelector:@selector(decoderPriority)] ? [b decoderPriority] : 0;
+            if (priorityA > priorityB) {
+              return NSOrderedAscending;
+            } else if (priorityA < priorityB) {
+              return NSOrderedDescending;
+            } else {
+              return NSOrderedSame;
+            }
+          }];
+      _decodersReady.store(YES, std::memory_order_release);
+    }
+  }
+  return _decoders;
+}
+
+- (id<RCTImageURLLoader>)imageURLLoaderForURL:(NSURL *)URL
+{
+  if (!_isLoaderSetup) {
+    [self setUp];
+  }
+
+  NSArray<id<RCTImageURLLoader>> *loaders = [self loaders];
 
   if (RCT_DEBUG) {
     // Check for handler conflicts
@@ -244,34 +276,7 @@ RCT_EXPORT_MODULE()
     [self setUp];
   }
 
-  if (!_decodersReady.load(std::memory_order_acquire)) {
-    std::lock_guard<std::mutex> guard(_loadersMutex);
-    if (!_decodersReady.load(std::memory_order_relaxed)) {
-      // Get decoders, sorted in reverse priority order (highest priority first)
-
-      if (_decodersProvider) {
-        _decoders = _decodersProvider(self.moduleRegistry);
-      } else {
-        RCTAssert(_bridge, @"Trying to find RCTImageDataDecoders and bridge not set.");
-        _decoders = [_bridge modulesConformingToProtocol:@protocol(RCTImageDataDecoder)];
-      }
-
-      _decoders = [_decoders
-          sortedArrayUsingComparator:^NSComparisonResult(id<RCTImageDataDecoder> a, id<RCTImageDataDecoder> b) {
-            float priorityA = [a respondsToSelector:@selector(decoderPriority)] ? [a decoderPriority] : 0;
-            float priorityB = [b respondsToSelector:@selector(decoderPriority)] ? [b decoderPriority] : 0;
-            if (priorityA > priorityB) {
-              return NSOrderedAscending;
-            } else if (priorityA < priorityB) {
-              return NSOrderedDescending;
-            } else {
-              return NSOrderedSame;
-            }
-          }];
-      _decodersReady.store(YES, std::memory_order_release);
-    }
-  }
-  NSArray<id<RCTImageDataDecoder>> *decoders = _decoders;
+  NSArray<id<RCTImageDataDecoder>> *decoders = [self decoders];
 
   if (RCT_DEBUG) {
     // Check for handler conflicts
@@ -1182,7 +1187,10 @@ static RCTImageLoaderCancellationBlock RCTLoadImageURLFromLoader(
     return NO;
   }
 
-  for (id<RCTImageURLLoader> loader in _loaders) {
+  if (!_isLoaderSetup) {
+    [self setUp];
+  }
+  for (id<RCTImageURLLoader> loader in [self loaders]) {
     // Don't use RCTImageURLLoader protocol for modules that already conform to
     // RCTURLRequestHandler as it's inefficient to decode an image and then
     // convert it back into data
