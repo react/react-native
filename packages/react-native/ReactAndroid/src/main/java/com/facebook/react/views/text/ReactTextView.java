@@ -287,11 +287,16 @@ public class ReactTextView extends AppCompatTextView implements ReactCompoundVie
   }
 
   private int getVerticalGravityOffset(Layout layout) {
+    int availableVerticalSpace = getAvailableVerticalSpace();
+    if (layout.getHeight() >= availableVerticalSpace) {
+      return 0;
+    }
+
     int verticalGravity = getGravity() & Gravity.VERTICAL_GRAVITY_MASK;
     if (verticalGravity == Gravity.BOTTOM) {
-      return getAvailableVerticalSpace() - layout.getHeight();
+      return availableVerticalSpace - layout.getHeight();
     } else if (verticalGravity == Gravity.CENTER_VERTICAL) {
-      return (getAvailableVerticalSpace() - layout.getHeight()) / 2;
+      return (availableVerticalSpace - layout.getHeight()) / 2;
     }
 
     return 0;

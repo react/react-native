@@ -16,6 +16,7 @@ import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.ReplacementSpan
 import android.util.TypedValue
+import android.view.Gravity
 import android.view.View
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
@@ -33,10 +34,27 @@ class ReactTextViewTest {
     assertThat(hasVisiblePixelBelowViewBounds(bitmap)).isTrue()
   }
 
+  @Test
+  fun bottomGravityDoesNotShiftLayoutUpWhenTextIsTallerThanView() {
+    val lineHeight = 48
+    val viewHeight = 24
+    val bitmap = drawReactTextViewWithOverflow(null, lineHeight, viewHeight, Gravity.BOTTOM)
+
+    assertThat(firstVisiblePixelY(bitmap)).isGreaterThanOrEqualTo(lineHeight)
+  }
+
   private fun drawReactTextViewWithOverflow(overflow: String?): Bitmap {
-    val lineHeight = 24
+    return drawReactTextViewWithOverflow(overflow, lineHeight = 24, viewHeight = 24, gravity = null)
+  }
+
+  private fun drawReactTextViewWithOverflow(
+      overflow: String?,
+      lineHeight: Int,
+      viewHeight: Int,
+      gravity: Int?,
+  ): Bitmap {
     val width = 200
-    val bitmapHeight = 64
+    val bitmapHeight = 80
     val text = SpannableString("x")
     text.setSpan(
         OverflowingInkSpan(lineHeight), 0, text.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
@@ -48,11 +66,14 @@ class ReactTextViewTest {
     view.setSpanned(text)
     view.text = text
     view.setOverflow(overflow)
+    if (gravity != null) {
+      view.setGravityVertical(gravity)
+    }
     view.measure(
         View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
-        View.MeasureSpec.makeMeasureSpec(lineHeight, View.MeasureSpec.EXACTLY),
+        View.MeasureSpec.makeMeasureSpec(viewHeight, View.MeasureSpec.EXACTLY),
     )
-    view.layout(0, 0, width, lineHeight)
+    view.layout(0, 0, width, viewHeight)
 
     return Bitmap.createBitmap(width, bitmapHeight, Bitmap.Config.ARGB_8888).also {
       view.drawTextForTest(Canvas(it))
@@ -69,6 +90,18 @@ class ReactTextViewTest {
     }
 
     return false
+  }
+
+  private fun firstVisiblePixelY(bitmap: Bitmap): Int {
+    for (y in 0 until bitmap.height) {
+      for (x in 0 until bitmap.width) {
+        if (Color.alpha(bitmap.getPixel(x, y)) != 0) {
+          return y
+        }
+      }
+    }
+
+    return bitmap.height
   }
 
   private class TestReactTextView(context: Context) : ReactTextView(context) {
