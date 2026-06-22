@@ -15,6 +15,7 @@
 
 namespace facebook::react {
 
+struct AnimatedProps;
 struct AnimationMutations;
 
 using AnimationTimestamp = std::chrono::duration<double, std::milli>;

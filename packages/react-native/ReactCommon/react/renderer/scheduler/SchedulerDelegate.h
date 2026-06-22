@@ -8,12 +8,15 @@
 #pragma once
 
 #include <memory>
+#include <unordered_map>
 
 #include <react/renderer/core/ReactPrimitives.h>
 #include <react/renderer/mounting/MountingCoordinator.h>
 #include <react/renderer/mounting/ShadowView.h>
 
 namespace facebook::react {
+
+struct AnimatedProps;
 
 /*
  * Abstract class for Scheduler's delegate.
@@ -63,6 +66,17 @@ class SchedulerDelegate {
   schedulerDidSetIsJSResponder(const ShadowView &shadowView, bool isJSResponder, bool blockNativeResponder) = 0;
 
   virtual void schedulerShouldSynchronouslyUpdateViewOnUIThread(Tag tag, const folly::dynamic &props) = 0;
+
+  /**
+   * Synchronously update animated properties for multiple views on the UI
+   * thread. Each entry maps a Tag to the AnimatedProps that should be applied
+   * to that view. Platform implementations translate AnimatedProps into the
+   * native update mechanism (e.g. buffer protocol on Android, typed props on
+   * iOS).
+   */
+  virtual void schedulerShouldSynchronouslyUpdateAnimatedPropsOnUIThread(
+      SurfaceId surfaceId,
+      const std::unordered_map<Tag, AnimatedProps> &updates) = 0;
 
   virtual void schedulerDidUpdateShadowTree(const std::unordered_map<Tag, folly::dynamic> &tagToProps) = 0;
 
