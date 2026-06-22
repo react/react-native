@@ -298,7 +298,7 @@ public class ReactTextView extends AppCompatTextView implements ReactCompoundVie
   }
 
   private int getAvailableVerticalSpace() {
-    return getHeight() - getCompoundPaddingTop() - getCompoundPaddingBottom();
+    return getHeight() - getExtendedPaddingTop() - getExtendedPaddingBottom();
   }
 
   @Override
