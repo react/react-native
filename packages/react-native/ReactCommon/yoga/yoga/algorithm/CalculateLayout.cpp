@@ -729,7 +729,14 @@ static float computeMinContentMainSize(
               wantRow ? MeasureMode::AtMost : MeasureMode::Undefined,
               wantRow ? YGUndefined : 0.0f,
               wantRow ? MeasureMode::Undefined : MeasureMode::AtMost);
-    return wantRow ? size.width : size.height;
+    // Add the leaf's own padding and border, like the container branch below.
+    const Direction leafDirection = node->resolveDirection(ownerDirection);
+    const float paddingAndBorder =
+        node->style().computeFlexStartPaddingAndBorder(
+            requestedAxis, leafDirection, ownerWidth) +
+        node->style().computeFlexEndPaddingAndBorder(
+            requestedAxis, leafDirection, ownerWidth);
+    return (wantRow ? size.width : size.height) + paddingAndBorder;
   }
 
   if (node->getChildCount() == 0) {
