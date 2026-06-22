@@ -32,7 +32,7 @@ runs:
   steps:
     - name: Installing Maestro
       shell: bash
-      run: export MAESTRO_VERSION=1.40.0; curl -Ls "https://get.maestro.mobile.dev" | bash
+      run: export MAESTRO_VERSION=2.6.1; curl -Ls "https://get.maestro.mobile.dev" | bash
     - name: Set up JDK 17
       if: ${{ inputs.install-java == 'true' }}
       uses: actions/setup-java@v5
