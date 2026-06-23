@@ -11,29 +11,25 @@
 declare module '@electron/packager' {
   declare export type AsarOptions = $FlowFixMe;
 
-  declare export type ElectronDownloadRequestOptions = $FlowFixMe;
-
   declare export type TargetDefinition = {
     arch: TargetArch,
     platform: TargetPlatform,
   };
 
-  declare export type FinalizePackageTargetsHookFunction = (
-    targets: TargetDefinition[],
-    callback: HookFunctionErrorCallback,
-  ) => void;
-
-  declare export type HookFunction = (
+  declare export type HookFunctionArgs = {
     buildPath: string,
     electronVersion: string,
     platform: TargetPlatform,
     arch: TargetArch,
-    callback: HookFunctionErrorCallback,
-  ) => void;
+  };
+
+  declare export type HookFunction = (args: HookFunctionArgs) => Promise<void>;
+
+  declare export type FinalizePackageTargetsHookFunction = (args: {
+    targets: TargetDefinition[],
+  }) => Promise<void>;
 
   declare export type IgnoreFunction = (path: string) => boolean;
-
-  declare export type HookFunctionErrorCallback = (err?: Error | null) => void;
 
   declare export interface MacOSProtocol {
     name: string;
@@ -102,7 +98,6 @@ declare module '@electron/packager' {
     buildVersion?: string;
     darwinDarkModeSupport?: boolean;
     derefSymlinks?: boolean;
-    download?: ElectronDownloadRequestOptions;
     electronVersion?: string;
     electronZipDir?: string;
     executableName?: string;
@@ -118,7 +113,7 @@ declare module '@electron/packager' {
         };
     extraResource?: string | string[];
     helperBundleId?: string;
-    icon?: string;
+    icon?: string | string[];
     ignore?: RegExp | (string | RegExp)[] | IgnoreFunction;
     junk?: boolean;
     name?: string;
@@ -132,7 +127,7 @@ declare module '@electron/packager' {
     protocols?: MacOSProtocol[];
     prune?: boolean;
     quiet?: boolean;
-    tmpdir?: string | false;
+    tmpdir?: string;
     usageDescription?: {
       [property: string]: string,
     };

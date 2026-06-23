@@ -53,7 +53,7 @@
     "@babel/plugin-transform-regenerator": "^7.24.7",
     "@babel/preset-env": "^7.25.3",
     "@babel/preset-flow": "^7.24.7",
-    "@electron/packager": "^18.3.6",
+    "@electron/packager": "^20.0.0",
     "@expo/spawn-async": "^1.7.2",
     "@jest/create-cache-key-function": "^29.7.0",
     "@microsoft/api-extractor": "^7.52.2",

@@ -510,7 +510,7 @@ jobs:
         run: yarn test-generated-typescript
 
   build_debugger_shell:
-    runs-on: ubuntu-latest
+    runs-on: macos-26
     needs: check_code_changes
     if: needs.check_code_changes.outputs.debugger_shell == 'true'
     steps:
