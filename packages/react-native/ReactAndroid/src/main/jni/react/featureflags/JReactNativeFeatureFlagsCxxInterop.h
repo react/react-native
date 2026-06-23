@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<ee7368466ea9e4ede93a0c1b0df005c5>>
+ * @generated SignedSource<<d953aeeb78265715e27d567bc4e28716>>
  */
 
 /**
@@ -184,9 +184,6 @@ class JReactNativeFeatureFlagsCxxInterop
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool fixMappingOfEventPrioritiesBetweenFabricAndReact(
-    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
-
-  static bool fixYogaFlexBasisFitContentInMainAxis(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool fuseboxAssertSingleHostState(

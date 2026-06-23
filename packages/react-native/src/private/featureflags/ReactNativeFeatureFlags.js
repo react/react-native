@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<68e9dbd18bfcb5e7d5cad27d8663ce66>>
+ * @generated SignedSource<<98fcccecb67f4f9e6fa242ebbd6eea95>>
  * @flow strict
  * @noformat
  */
@@ -102,7 +102,6 @@ export type ReactNativeFeatureFlags = Readonly<{
   enableVirtualViewContainerStateExperimental: Getter<boolean>,
   fixDifferentiatorParentTagForUnflattenCase: Getter<boolean>,
   fixMappingOfEventPrioritiesBetweenFabricAndReact: Getter<boolean>,
-  fixYogaFlexBasisFitContentInMainAxis: Getter<boolean>,
   fuseboxAssertSingleHostState: Getter<boolean>,
   fuseboxEnabledRelease: Getter<boolean>,
   fuseboxFrameRecordingEnabled: Getter<boolean>,
@@ -423,10 +422,6 @@ export const fixDifferentiatorParentTagForUnflattenCase: Getter<boolean> = creat
  * Uses the default event priority instead of the discreet event priority by default when dispatching events from Fabric to React.
  */
 export const fixMappingOfEventPrioritiesBetweenFabricAndReact: Getter<boolean> = createNativeFlagGetter('fixMappingOfEventPrioritiesBetweenFabricAndReact', false);
-/**
- * Fix flex basis computation to not apply FitContent constraint in the main axis for non-measure container nodes, preventing unnecessary re-measurement in scroll containers.
- */
-export const fixYogaFlexBasisFitContentInMainAxis: Getter<boolean> = createNativeFlagGetter('fixYogaFlexBasisFitContentInMainAxis', false);
 /**
  * Enable system assertion validating that Fusebox is configured with a single host. When set, the CDP backend will dynamically disable features (Perf and Network) in the event that multiple hosts are registered (undefined behaviour), and broadcast this over `ReactNativeApplication.systemStateChanged`.
  */

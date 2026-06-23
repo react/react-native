@@ -94,16 +94,8 @@ static void computeFlexBasisForChild(
   const bool isColumnStyleDimDefined =
       child->hasDefiniteLength(Dimension::Height, ownerHeight);
 
-  const bool fixFlexBasisFitContent =
-      node->getConfig()->isExperimentalFeatureEnabled(
-          ExperimentalFeature::FixFlexBasisFitContent);
-
   bool useResolvedFlexBasis =
       resolvedFlexBasis.isDefined() && yoga::isDefined(mainAxisSize);
-  if (fixFlexBasisFitContent && resolvedFlexBasis.isDefined() &&
-      resolvedFlexBasis.unwrap() > 0) {
-    useResolvedFlexBasis = true;
-  }
 
   if (useResolvedFlexBasis) {
     if (child->getLayout().computedFlexBasis.isUndefined() ||
@@ -175,35 +167,8 @@ static void computeFlexBasisForChild(
       }
     }
 
-    // For height in the main axis (column direction): when the
-    // FixFlexBasisFitContent feature is enabled, skip FitContent for
-    // non-measure container children inside scroll subtrees. This makes the
-    // flex basis independent of content-determined heights, preventing
-    // unnecessary re-measurement cascades when a sibling changes size in a
-    // ScrollView, while preserving viewport bounds for wrappers outside the
-    // scroll subtree.
-    //
-    // We only optimize the height (column) axis because text wrapping depends
-    // on width constraints propagating through container nodes. Removing
-    // FitContent from the width axis would cause text inside nested
-    // containers to stop wrapping.
-    bool applyHeightFitContent =
-        isMainAxisRow || node->style().overflow() != Overflow::Scroll;
-    if (fixFlexBasisFitContent) {
-      bool nodeHasScrollAncestor = false;
-      for (auto owner = node->getOwner(); owner != nullptr;
-           owner = owner->getOwner()) {
-        if (owner->style().overflow() == Overflow::Scroll) {
-          nodeHasScrollAncestor = true;
-          break;
-        }
-      }
-      applyHeightFitContent = isMainAxisRow ||
-          ((child->hasMeasureFunc() || !nodeHasScrollAncestor) &&
-           node->style().overflow() != Overflow::Scroll);
-    }
-    if (applyHeightFitContent && yoga::isUndefined(childHeight) &&
-        yoga::isDefined(height)) {
+    if ((isMainAxisRow || node->style().overflow() != Overflow::Scroll) &&
+        yoga::isUndefined(childHeight) && yoga::isDefined(height)) {
       childHeight = height;
       childHeightSizingMode = SizingMode::FitContent;
     }
@@ -1741,53 +1706,14 @@ static void calculateLayoutImpl(
 
   // STEP 3: DETERMINE FLEX BASIS FOR EACH ITEM
 
-  // When this node is measured with MaxContent (FixFlexBasisFitContent
-  // behavior), availableInnerHeight is NaN.
-  // To preserve percentage resolution for descendants, derive a definite
-  // owner-size from the parent-provided ownerHeight.
-  float ownerWidthForChildren = availableInnerWidth;
-  float ownerHeightForChildren = availableInnerHeight;
-
-  if (node->getConfig()->isExperimentalFeatureEnabled(
-          ExperimentalFeature::FixFlexBasisFitContent)) {
-    const auto* owner = node->getOwner();
-    const bool isChildOfScrollContainer =
-        owner != nullptr && owner->style().overflow() == Overflow::Scroll;
-
-    if (!isChildOfScrollContainer) {
-      if (yoga::isUndefined(ownerWidthForChildren) &&
-          yoga::isDefined(ownerWidth)) {
-        ownerWidthForChildren = calculateAvailableInnerDimension(
-            node,
-            direction,
-            Dimension::Width,
-            ownerWidth - marginAxisRow,
-            paddingAndBorderAxisRow,
-            ownerWidth,
-            ownerWidth);
-      }
-      if (yoga::isUndefined(ownerHeightForChildren) &&
-          yoga::isDefined(ownerHeight)) {
-        ownerHeightForChildren = calculateAvailableInnerDimension(
-            node,
-            direction,
-            Dimension::Height,
-            ownerHeight - marginAxisColumn,
-            paddingAndBorderAxisColumn,
-            ownerHeight,
-            ownerWidth);
-      }
-    }
-  }
-
   // Computed basis + margins + gap
   float totalMainDim = 0;
   totalMainDim += computeFlexBasisForChildren(
       node,
       availableInnerWidth,
       availableInnerHeight,
-      ownerWidthForChildren,
-      ownerHeightForChildren,
+      availableInnerWidth,
+      availableInnerHeight,
       widthSizingMode,
       heightSizingMode,
       direction,

@@ -604,17 +604,6 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
-    fixYogaFlexBasisFitContentInMainAxis: {
-      defaultValue: false,
-      metadata: {
-        dateAdded: '2026-03-09',
-        description:
-          'Fix flex basis computation to not apply FitContent constraint in the main axis for non-measure container nodes, preventing unnecessary re-measurement in scroll containers.',
-        expectedReleaseValue: true,
-        purpose: 'experimentation',
-      },
-      ossReleaseStage: 'none',
-    },
     fuseboxAssertSingleHostState: {
       defaultValue: true,
       metadata: {

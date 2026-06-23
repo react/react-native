@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<84ae8c7745f319878c329e07551bcc11>>
+ * @generated SignedSource<<97f025be7907a0e37e2b828d4306d8bf>>
  */
 
 /**
@@ -302,11 +302,6 @@ bool NativeReactNativeFeatureFlags::fixDifferentiatorParentTagForUnflattenCase(
 bool NativeReactNativeFeatureFlags::fixMappingOfEventPrioritiesBetweenFabricAndReact(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::fixMappingOfEventPrioritiesBetweenFabricAndReact();
-}
-
-bool NativeReactNativeFeatureFlags::fixYogaFlexBasisFitContentInMainAxis(
-    jsi::Runtime& /*runtime*/) {
-  return ReactNativeFeatureFlags::fixYogaFlexBasisFitContentInMainAxis();
 }
 
 bool NativeReactNativeFeatureFlags::fuseboxAssertSingleHostState(

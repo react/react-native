@@ -10,8 +10,7 @@
 package com.facebook.yoga
 
 public enum class YogaExperimentalFeature(public val intValue: Int) {
-  WEB_FLEX_BASIS(0),
-  FIX_FLEX_BASIS_FIT_CONTENT(1);
+  WEB_FLEX_BASIS(0);
 
   public fun intValue(): Int = intValue
 
@@ -20,7 +19,6 @@ public enum class YogaExperimentalFeature(public val intValue: Int) {
     public fun fromInt(value: Int): YogaExperimentalFeature =
         when (value) {
           0 -> WEB_FLEX_BASIS
-          1 -> FIX_FLEX_BASIS_FIT_CONTENT
           else -> throw IllegalArgumentException("Unknown enum value: $value")
         }
   }

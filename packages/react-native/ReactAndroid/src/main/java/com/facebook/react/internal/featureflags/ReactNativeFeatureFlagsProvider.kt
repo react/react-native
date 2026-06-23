@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<b1dd783c9075c9a35cbd06aa812e56c9>>
+ * @generated SignedSource<<0f69f2d1b8b7ea6b7b07a57cfd969bdc>>
  */
 
 /**
@@ -126,8 +126,6 @@ public interface ReactNativeFeatureFlagsProvider {
   @DoNotStrip public fun fixDifferentiatorParentTagForUnflattenCase(): Boolean
 
   @DoNotStrip public fun fixMappingOfEventPrioritiesBetweenFabricAndReact(): Boolean
-
-  @DoNotStrip public fun fixYogaFlexBasisFitContentInMainAxis(): Boolean
 
   @DoNotStrip public fun fuseboxAssertSingleHostState(): Boolean
 
