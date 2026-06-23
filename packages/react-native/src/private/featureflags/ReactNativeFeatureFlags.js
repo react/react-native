@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<68e9dbd18bfcb5e7d5cad27d8663ce66>>
+ * @generated SignedSource<<c9804d0743d9a9d905193cb02816da46>>
  * @flow strict
  * @noformat
  */
@@ -154,7 +154,7 @@ export const animatedForceNativeDriver: Getter<boolean> = createJavaScriptFlagGe
 /**
  * Enables an experimental flush-queue debouncing in Animated.js.
  */
-export const animatedShouldDebounceQueueFlush: Getter<boolean> = createJavaScriptFlagGetter('animatedShouldDebounceQueueFlush', false);
+export const animatedShouldDebounceQueueFlush: Getter<boolean> = createJavaScriptFlagGetter('animatedShouldDebounceQueueFlush', true);
 
 /**
  * When a useNativeDriver animation completes, syncs the JS-side AnimatedValue with the post-animation value BEFORE invoking the user-supplied start({finished}) callback. Without the flag, the callback observes the pre-animation value, which can cause downstream re-renders to read stale interpolation outputs.

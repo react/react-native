@@ -971,7 +971,7 @@ const definitions: FeatureFlagDefinitions = {
       ossReleaseStage: 'none',
     },
     animatedShouldDebounceQueueFlush: {
-      defaultValue: false,
+      defaultValue: true,
       metadata: {
         dateAdded: '2024-02-05',
         description:
