@@ -13,16 +13,8 @@ namespace facebook::react {
 
 Size ModalHostViewScreenSize(void)
 {
-  __block CGSize viewportSize;
-
-  RCTUnsafeExecuteOnMainQueueSync(^{
-    viewportSize = RCTViewportSize();
-  });
-
-  return {
-    .width = viewportSize.width,
-    .height = viewportSize.height,
-  };
+  CGSize screenSize = RCTScreenSize();
+  return {.width = screenSize.width, .height = screenSize.height};
 }
 
 } // namespace facebook::react

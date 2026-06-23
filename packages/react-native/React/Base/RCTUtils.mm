@@ -384,13 +384,13 @@ UIDeviceOrientation RCTDeviceOrientation(void)
 CGSize RCTScreenSize(void)
 {
   static CGSize portraitSize;
-  static dispatch_once_t onceToken;
-  dispatch_once(&onceToken, ^{
+
+  if (CGSizeEqualToSize(portraitSize, CGSizeZero)) {
     RCTUnsafeExecuteOnMainQueueSync(^{
       CGSize screenSize = [UIScreen mainScreen].bounds.size;
       portraitSize = CGSizeMake(MIN(screenSize.width, screenSize.height), MAX(screenSize.width, screenSize.height));
     });
-  });
+  }
 
 #if !TARGET_OS_TV
   if (UIDeviceOrientationIsLandscape(RCTDeviceOrientation())) {
