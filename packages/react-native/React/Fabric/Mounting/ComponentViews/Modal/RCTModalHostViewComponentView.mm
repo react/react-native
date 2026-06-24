@@ -158,7 +158,7 @@ static ModalHostViewEventEmitter::OnOrientationChange onOrientationChangeStruct(
                      animated:(BOOL)animated
                    completion:(void (^)(void))completion
 {
-  [modalViewController dismissViewControllerAnimated:animated completion:completion];
+  [modalViewController.presentingViewController dismissViewControllerAnimated:animated completion:completion];
 }
 
 - (void)ensurePresentedOnlyIfNeeded
