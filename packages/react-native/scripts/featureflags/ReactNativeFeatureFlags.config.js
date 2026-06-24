@@ -993,7 +993,7 @@ const definitions: FeatureFlagDefinitions = {
       ossReleaseStage: 'none',
     },
     animatedShouldUseSingleOp: {
-      defaultValue: false,
+      defaultValue: true,
       metadata: {
         dateAdded: '2024-02-05',
         description:

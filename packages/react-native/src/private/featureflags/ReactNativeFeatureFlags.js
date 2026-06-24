@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<c9804d0743d9a9d905193cb02816da46>>
+ * @generated SignedSource<<f44477b5f5a4f7030798a61694d0332a>>
  * @flow strict
  * @noformat
  */
@@ -164,7 +164,7 @@ export const animatedShouldSyncValueBeforeStartCallback: Getter<boolean> = creat
 /**
  * Enables an experimental mega-operation for Animated.js that replaces many calls to native with a single call into native, to reduce JSI/JNI traffic.
  */
-export const animatedShouldUseSingleOp: Getter<boolean> = createJavaScriptFlagGetter('animatedShouldUseSingleOp', false);
+export const animatedShouldUseSingleOp: Getter<boolean> = createJavaScriptFlagGetter('animatedShouldUseSingleOp', true);
 
 /**
  * Use the deferred cell render update mechanism for focus change in FlatList.
