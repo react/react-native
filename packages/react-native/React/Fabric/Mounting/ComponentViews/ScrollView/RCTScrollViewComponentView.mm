@@ -436,21 +436,26 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 
   if ((oldScrollViewProps.contentInsetAdjustmentBehavior != newScrollViewProps.contentInsetAdjustmentBehavior) ||
       _shouldUpdateContentInsetAdjustmentBehavior) {
-    auto contentInsetAdjustmentBehavior = newScrollViewProps.contentInsetAdjustmentBehavior;
-    if (@available(iOS 26, *)) {
-      NSNumber *compat = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"UIDesignRequiresCompatibility"];
-      if (!compat.boolValue && contentInsetAdjustmentBehavior == ContentInsetAdjustmentBehavior::Never) {
-        contentInsetAdjustmentBehavior = ContentInsetAdjustmentBehavior::ScrollableAxes;
+    // `nullopt` means the prop was not set from JS, so fall back to the host
+    // platform default (which adapts to iOS 26 liquid glass). An explicit value
+    // from JS - including `never` - is always honored.
+    if (newScrollViewProps.contentInsetAdjustmentBehavior.has_value()) {
+      switch (*newScrollViewProps.contentInsetAdjustmentBehavior) {
+        case ContentInsetAdjustmentBehavior::Never:
+          scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+          break;
+        case ContentInsetAdjustmentBehavior::Automatic:
+          scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentAutomatic;
+          break;
+        case ContentInsetAdjustmentBehavior::ScrollableAxes:
+          scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentScrollableAxes;
+          break;
+        case ContentInsetAdjustmentBehavior::Always:
+          scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentAlways;
+          break;
       }
-    }
-    if (contentInsetAdjustmentBehavior == ContentInsetAdjustmentBehavior::Never) {
-      scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-    } else if (contentInsetAdjustmentBehavior == ContentInsetAdjustmentBehavior::Automatic) {
-      scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentAutomatic;
-    } else if (contentInsetAdjustmentBehavior == ContentInsetAdjustmentBehavior::ScrollableAxes) {
-      scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentScrollableAxes;
-    } else if (contentInsetAdjustmentBehavior == ContentInsetAdjustmentBehavior::Always) {
-      scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentAlways;
+    } else {
+      scrollView.contentInsetAdjustmentBehavior = RCTDefaultContentInsetAdjustmentBehavior();
     }
     _shouldUpdateContentInsetAdjustmentBehavior = NO;
   }
@@ -704,16 +709,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   _contentSize = CGSizeZero;
   // Reset contentInset to prevent stale insets leaking into recycled scroll views.
   _scrollView.contentInset = UIEdgeInsetsZero;
-  if (@available(iOS 26, *)) {
-    NSNumber *compat = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"UIDesignRequiresCompatibility"];
-    if (!compat.boolValue) {
-      _scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentScrollableAxes;
-    } else {
-      _scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-    }
-  } else {
-    _scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-  }
+  _scrollView.contentInsetAdjustmentBehavior = RCTDefaultContentInsetAdjustmentBehavior();
   _shouldUpdateContentInsetAdjustmentBehavior = YES;
   _isUserTriggeredScrolling = NO;
   CGRect oldFrame = self.frame;

@@ -65,7 +65,10 @@ class BaseScrollViewProps : public ViewProps {
   std::vector<Float> snapToOffsets{};
   bool snapToStart{true};
   bool snapToEnd{true};
-  ContentInsetAdjustmentBehavior contentInsetAdjustmentBehavior{ContentInsetAdjustmentBehavior::Never};
+  // `nullopt` means the prop was not set from JS, in which case the host
+  // platform decides the default (e.g. on iOS 26+ liquid glass defaults to
+  // `scrollableAxes`). An explicit JS value (including `never`) is preserved.
+  std::optional<ContentInsetAdjustmentBehavior> contentInsetAdjustmentBehavior{};
   bool scrollToOverflowEnabled{false};
   bool isInvertedVirtualizedList{false};
 

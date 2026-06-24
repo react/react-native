@@ -13,6 +13,14 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /*
+ * Returns the default `contentInsetAdjustmentBehavior` to apply when the JS
+ * prop is not set. On iOS 26+ (liquid glass) it defaults to `scrollableAxes` so
+ * scroll views adjust their content for translucent system chrome, unless the
+ * app opts into `UIDesignRequiresCompatibility`. Otherwise it stays `never`.
+ */
+UIScrollViewContentInsetAdjustmentBehavior RCTDefaultContentInsetAdjustmentBehavior(void);
+
+/*
  * Many `UIScrollView` customizations normally require creating a subclass which is not always convenient.
  * `RCTEnhancedScrollView` has a delegate (conforming to this protocol) that allows customizing such behaviors without
  * creating a subclass.

@@ -354,7 +354,7 @@ BaseScrollViewProps::BaseScrollViewProps(
                     rawProps,
                     "contentInsetAdjustmentBehavior",
                     sourceProps.contentInsetAdjustmentBehavior,
-                    {ContentInsetAdjustmentBehavior::Never})),
+                    {})),
       scrollToOverflowEnabled(
           ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
               ? sourceProps.scrollToOverflowEnabled

@@ -9,6 +9,23 @@
 #import <React/RCTUtils.h>
 #import <react/utils/FloatComparison.h>
 
+UIScrollViewContentInsetAdjustmentBehavior RCTDefaultContentInsetAdjustmentBehavior(void)
+{
+  // On iOS 26+, Apple's liquid glass design uses translucent system chrome
+  // (tab bars, toolbars), so scroll views should adjust their content insets
+  // for it unless the app opted into compatibility mode.
+  if (@available(iOS 26, *)) {
+    NSNumber *requiresCompatibility =
+        [[NSBundle mainBundle] objectForInfoDictionaryKey:@"UIDesignRequiresCompatibility"];
+    if (!requiresCompatibility.boolValue) {
+      return UIScrollViewContentInsetAdjustmentScrollableAxes;
+    }
+  }
+  // Pre-iOS 26 (or compatibility mode): keep the historical opt-in behavior so
+  // iOS doesn't do weird things to UIScrollView insets automatically.
+  return UIScrollViewContentInsetAdjustmentNever;
+}
+
 @interface RCTEnhancedScrollView () <UIScrollViewDelegate>
 @end
 
@@ -31,16 +48,7 @@
 - (instancetype)initWithFrame:(CGRect)frame
 {
   if (self = [super initWithFrame:frame]) {
-    if (@available(iOS 26, *)) {
-      NSNumber *compat = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"UIDesignRequiresCompatibility"];
-      if (!compat.boolValue) {
-        self.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentScrollableAxes;
-      } else {
-        self.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-      }
-    } else {
-      self.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-    }
+    self.contentInsetAdjustmentBehavior = RCTDefaultContentInsetAdjustmentBehavior();
 
     // We intentionally force `UIScrollView`s `semanticContentAttribute` to `LTR` here
     // because this attribute affects a position of vertical scrollbar; we don't want this

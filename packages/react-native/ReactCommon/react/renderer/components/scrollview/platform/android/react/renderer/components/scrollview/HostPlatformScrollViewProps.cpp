@@ -352,19 +352,21 @@ folly::dynamic HostPlatformScrollViewProps::getDiffProps(
 
   if (contentInsetAdjustmentBehavior !=
       oldProps->contentInsetAdjustmentBehavior) {
-    switch (contentInsetAdjustmentBehavior) {
-      case ContentInsetAdjustmentBehavior::Never:
-        result["contentInsetAdjustmentBehavior"] = "never";
-        break;
-      case ContentInsetAdjustmentBehavior::Automatic:
-        result["contentInsetAdjustmentBehavior"] = "automatic";
-        break;
-      case ContentInsetAdjustmentBehavior::ScrollableAxes:
-        result["contentInsetAdjustmentBehavior"] = "scrollableAxes";
-        break;
-      case ContentInsetAdjustmentBehavior::Always:
-        result["contentInsetAdjustmentBehavior"] = "always";
-        break;
+    if (contentInsetAdjustmentBehavior.has_value()) {
+      switch (*contentInsetAdjustmentBehavior) {
+        case ContentInsetAdjustmentBehavior::Never:
+          result["contentInsetAdjustmentBehavior"] = "never";
+          break;
+        case ContentInsetAdjustmentBehavior::Automatic:
+          result["contentInsetAdjustmentBehavior"] = "automatic";
+          break;
+        case ContentInsetAdjustmentBehavior::ScrollableAxes:
+          result["contentInsetAdjustmentBehavior"] = "scrollableAxes";
+          break;
+        case ContentInsetAdjustmentBehavior::Always:
+          result["contentInsetAdjustmentBehavior"] = "always";
+          break;
+      }
     }
   }
 
