@@ -1726,7 +1726,6 @@ class facebook::react::BaseScrollViewProps : public facebook::react::HostPlatfor
   public bool showsVerticalScrollIndicator;
   public bool snapToEnd;
   public bool snapToStart;
-  public facebook::react::ContentInsetAdjustmentBehavior contentInsetAdjustmentBehavior;
   public facebook::react::EdgeInsets contentInset;
   public facebook::react::EdgeInsets scrollIndicatorInsets;
   public facebook::react::Float decelerationRate;
@@ -1740,6 +1739,7 @@ class facebook::react::BaseScrollViewProps : public facebook::react::HostPlatfor
   public facebook::react::ScrollViewIndicatorStyle indicatorStyle;
   public facebook::react::ScrollViewKeyboardDismissMode keyboardDismissMode;
   public facebook::react::ScrollViewSnapToAlignment snapToAlignment;
+  public std::optional<facebook::react::ContentInsetAdjustmentBehavior> contentInsetAdjustmentBehavior;
   public std::optional<facebook::react::ScrollViewMaintainVisibleContentPosition> maintainVisibleContentPosition;
   public std::vector<facebook::react::Float> snapToOffsets;
   public void setProp(const facebook::react::PropsParserContext& context, facebook::react::RawPropsPropNameHash hash, const char* propName, const facebook::react::RawValue& value);
