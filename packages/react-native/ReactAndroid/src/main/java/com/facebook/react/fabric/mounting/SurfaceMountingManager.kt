@@ -308,13 +308,16 @@ internal constructor(
       )
       return
     }
-    if (parentViewState.view !is ViewGroup) {
+
+    val parentView = parentViewState.view
+    checkNotNull(parentView) { "Unable to find parentView for tag $parentTag" }
+    if (parentView !is ViewGroup) {
       val message =
-          "Unable to add a view into a view that is not a ViewGroup. ParentTag: $parentTag - Tag: $tag - Index: $index"
+          "Unable to add a view into a non-ViewGroup ${parentView.javaClass.simpleName} when inserting [$tag] into parent [$parentTag]"
       FLog.e(TAG, message)
       throw IllegalStateException(message)
     }
-    val parentView = parentViewState.view as ViewGroup
+
     val viewState = getNullableViewState(tag)
     if (viewState == null) {
       ReactSoftExceptionLogger.logSoftException(
@@ -332,13 +335,13 @@ internal constructor(
       logViewHierarchy(parentView, false)
     }
 
-    val viewParent = view.parent
-    if (viewParent != null) {
-      val actualParentId = if (viewParent is ViewGroup) viewParent.id else View.NO_ID
+    val currParentView = view.parent
+    if (currParentView != null) {
+      val actualParentId = if (currParentView is ViewGroup) currParentView.id else View.NO_ID
       ReactSoftExceptionLogger.logSoftException(
           TAG,
           IllegalStateException(
-              "addViewAt: cannot insert view [$tag] into parent [$parentTag]: View already has a parent: [$actualParentId]  Parent: ${viewParent.javaClass.simpleName} View: ${view.javaClass.simpleName}"
+              "addViewAt: cannot insert view [$tag] into parent [$parentTag]: View already has a parent: [$actualParentId] Parent: ${currParentView.javaClass.simpleName} View: ${view.javaClass.simpleName}"
           ),
       )
 
@@ -356,8 +359,8 @@ internal constructor(
       // should be impossible - we mark this as a "readded" View and
       // thus prevent the RemoveDeleteTree worker from deleting this
       // View in the future.
-      if (viewParent is ViewGroup) {
-        viewParent.removeView(view)
+      if (currParentView is ViewGroup) {
+        currParentView.removeView(view)
       }
       erroneouslyReaddedReactTags.add(tag)
     }
@@ -394,6 +397,7 @@ internal constructor(
 
   @UiThread
   public fun removeViewAt(tag: Int, parentTag: Int, index: Int): Unit {
+    UiThreadUtil.assertOnUiThread()
     if (isStopped) {
       return
     }
@@ -409,22 +413,22 @@ internal constructor(
       return
     }
 
-    UiThreadUtil.assertOnUiThread()
     val parentViewState = getNullableViewState(parentTag)
-
-    // TODO: throw exception here?
     if (parentViewState == null) {
       ReactSoftExceptionLogger.logSoftException(
           ReactSoftExceptionLogger.Categories.SURFACE_MOUNTING_MANAGER_MISSING_VIEWSTATE,
-          IllegalStateException("Unable to find viewState for tag: [$parentTag] for removeViewAt"),
+          ReactNoCrashSoftException(
+              "Unable to find viewState for tag: [$parentTag] for removeViewAt"
+          ),
       )
       return
     }
 
     val parentView = parentViewState.view
+    checkNotNull(parentView) { "Unable to find parentView for tag $parentTag" }
     if (parentView !is ViewGroup) {
       val message =
-          "Unable to remove a view from a view that is not a ViewGroup. ParentTag: $parentTag - Tag: $tag - Index: $index"
+          "Unable to remove a view from a a non-ViewGroup ${parentView.javaClass.simpleName} when removing [$tag] from parent [$parentTag]"
       FLog.e(TAG, message)
       throw IllegalStateException(message)
     }
@@ -478,7 +482,7 @@ internal constructor(
       logViewHierarchy(parentView, true)
       ReactSoftExceptionLogger.logSoftException(
           TAG,
-          IllegalStateException(
+          ReactNoCrashSoftException(
               "Tried to remove view [$tag] of parent [$parentTag] at index $index, but got view tag $actualTag - actual index of view: $tagActualIndex"
           ),
       )
