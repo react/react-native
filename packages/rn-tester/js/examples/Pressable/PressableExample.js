@@ -297,11 +297,15 @@ function PressableBlockNativeResponderExample() {
 
   return (
     <View>
-      <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 12}}>
+      <View
+        style={{flexDirection: 'row', alignItems: 'center', marginBottom: 12}}>
         <Text style={{flex: 1, fontSize: 13, color: '#444'}}>
           blockNativeResponder
         </Text>
-        <Switch value={blockNativeResponder} onValueChange={setBlockNativeResponder} />
+        <Switch
+          value={blockNativeResponder}
+          onValueChange={setBlockNativeResponder}
+        />
       </View>
       <RNTNativeTouchReceiver
         style={scenarioReceiverStyle}
