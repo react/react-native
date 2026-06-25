@@ -372,6 +372,42 @@ BaseScrollViewProps::BaseScrollViewProps(
                     rawProps,
                     "isInvertedVirtualizedList",
                     sourceProps.isInvertedVirtualizedList,
+                    {})),
+      topEdgeEffect(
+          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
+              ? sourceProps.topEdgeEffect
+              : convertRawProp(
+                    context,
+                    rawProps,
+                    "topEdgeEffect",
+                    sourceProps.topEdgeEffect,
+                    {})),
+      bottomEdgeEffect(
+          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
+              ? sourceProps.bottomEdgeEffect
+              : convertRawProp(
+                    context,
+                    rawProps,
+                    "bottomEdgeEffect",
+                    sourceProps.bottomEdgeEffect,
+                    {})),
+      leftEdgeEffect(
+          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
+              ? sourceProps.leftEdgeEffect
+              : convertRawProp(
+                    context,
+                    rawProps,
+                    "leftEdgeEffect",
+                    sourceProps.leftEdgeEffect,
+                    {})),
+      rightEdgeEffect(
+          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
+              ? sourceProps.rightEdgeEffect
+              : convertRawProp(
+                    context,
+                    rawProps,
+                    "rightEdgeEffect",
+                    sourceProps.rightEdgeEffect,
                     {})) {}
 
 void BaseScrollViewProps::setProp(
@@ -425,6 +461,10 @@ void BaseScrollViewProps::setProp(
     RAW_SET_PROP_SWITCH_CASE_BASIC(contentInsetAdjustmentBehavior);
     RAW_SET_PROP_SWITCH_CASE_BASIC(scrollToOverflowEnabled);
     RAW_SET_PROP_SWITCH_CASE_BASIC(isInvertedVirtualizedList);
+    RAW_SET_PROP_SWITCH_CASE_BASIC(topEdgeEffect);
+    RAW_SET_PROP_SWITCH_CASE_BASIC(bottomEdgeEffect);
+    RAW_SET_PROP_SWITCH_CASE_BASIC(leftEdgeEffect);
+    RAW_SET_PROP_SWITCH_CASE_BASIC(rightEdgeEffect);
   }
 }
 
@@ -559,7 +599,23 @@ SharedDebugStringConvertibleList BaseScrollViewProps::getDebugProps() const {
           debugStringConvertibleItem(
               "isInvertedVirtualizedList",
               isInvertedVirtualizedList,
-              defaultScrollViewProps.isInvertedVirtualizedList)};
+              defaultScrollViewProps.isInvertedVirtualizedList),
+          debugStringConvertibleItem(
+              "topEdgeEffect",
+              topEdgeEffect,
+              defaultScrollViewProps.topEdgeEffect),
+          debugStringConvertibleItem(
+              "bottomEdgeEffect",
+              bottomEdgeEffect,
+              defaultScrollViewProps.bottomEdgeEffect),
+          debugStringConvertibleItem(
+              "leftEdgeEffect",
+              leftEdgeEffect,
+              defaultScrollViewProps.leftEdgeEffect),
+          debugStringConvertibleItem(
+              "rightEdgeEffect",
+              rightEdgeEffect,
+              defaultScrollViewProps.rightEdgeEffect)};
 }
 #endif
 

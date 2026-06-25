@@ -146,6 +146,10 @@ export const __INTERNAL_VIEW_CONFIG: PartialViewConfig =
           snapToInterval: true,
           snapToOffsets: true,
           snapToStart: true,
+          topEdgeEffect: true,
+          bottomEdgeEffect: true,
+          leftEdgeEffect: true,
+          rightEdgeEffect: true,
           verticalScrollIndicatorInsets: {
             diff: require('../../Utilities/differ/insetsDiffer').default,
           },

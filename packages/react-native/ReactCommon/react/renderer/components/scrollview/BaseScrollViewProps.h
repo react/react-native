@@ -68,6 +68,10 @@ class BaseScrollViewProps : public ViewProps {
   ContentInsetAdjustmentBehavior contentInsetAdjustmentBehavior{ContentInsetAdjustmentBehavior::Never};
   bool scrollToOverflowEnabled{false};
   bool isInvertedVirtualizedList{false};
+  std::optional<ScrollViewEdgeEffect> topEdgeEffect{};
+  std::optional<ScrollViewEdgeEffect> bottomEdgeEffect{};
+  std::optional<ScrollViewEdgeEffect> leftEdgeEffect{};
+  std::optional<ScrollViewEdgeEffect> rightEdgeEffect{};
 
 #pragma mark - DebugStringConvertible
 

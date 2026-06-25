@@ -58,6 +58,21 @@ static UIScrollViewIndicatorStyle RCTUIScrollViewIndicatorStyleFromProps(const S
   }
 }
 
+#if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 260000
+API_AVAILABLE(ios(26.0))
+static UIScrollEdgeEffectStyle *RCTUIScrollEdgeEffectStyleFromProps(ScrollViewEdgeEffectStyle style)
+{
+  switch (style) {
+    case ScrollViewEdgeEffectStyle::Automatic:
+      return UIScrollEdgeEffectStyle.automaticStyle;
+    case ScrollViewEdgeEffectStyle::Soft:
+      return UIScrollEdgeEffectStyle.softStyle;
+    case ScrollViewEdgeEffectStyle::Hard:
+      return UIScrollEdgeEffectStyle.hardStyle;
+  }
+}
+#endif
+
 // Once Fabric implements proper NativeAnimationDriver, this should be removed.
 // This is just a workaround to allow animations based on onScroll event.
 // This is only used to animate sticky headers in ScrollViews, and only the contentOffset and tag is used.
@@ -455,6 +470,43 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   if (oldScrollViewProps.keyboardDismissMode != newScrollViewProps.keyboardDismissMode) {
     scrollView.keyboardDismissMode = RCTUIKeyboardDismissModeFromProps(newScrollViewProps);
   }
+
+#if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 260000
+  if (@available(iOS 26.0, *)) {
+    if (oldScrollViewProps.topEdgeEffect != newScrollViewProps.topEdgeEffect) {
+      if (newScrollViewProps.topEdgeEffect.has_value()) {
+        if (newScrollViewProps.topEdgeEffect->style.has_value()) {
+          _scrollView.topEdgeEffect.style = RCTUIScrollEdgeEffectStyleFromProps(newScrollViewProps.topEdgeEffect->style.value());
+        }
+        _scrollView.topEdgeEffect.hidden = newScrollViewProps.topEdgeEffect->hidden;
+      }
+    }
+    if (oldScrollViewProps.bottomEdgeEffect != newScrollViewProps.bottomEdgeEffect) {
+      if (newScrollViewProps.bottomEdgeEffect.has_value()) {
+        if (newScrollViewProps.bottomEdgeEffect->style.has_value()) {
+          _scrollView.bottomEdgeEffect.style = RCTUIScrollEdgeEffectStyleFromProps(newScrollViewProps.bottomEdgeEffect->style.value());
+        }
+        _scrollView.bottomEdgeEffect.hidden = newScrollViewProps.bottomEdgeEffect->hidden;
+      }
+    }
+    if (oldScrollViewProps.leftEdgeEffect != newScrollViewProps.leftEdgeEffect) {
+      if (newScrollViewProps.leftEdgeEffect.has_value()) {
+        if (newScrollViewProps.leftEdgeEffect->style.has_value()) {
+          _scrollView.leftEdgeEffect.style = RCTUIScrollEdgeEffectStyleFromProps(newScrollViewProps.leftEdgeEffect->style.value());
+        }
+        _scrollView.leftEdgeEffect.hidden = newScrollViewProps.leftEdgeEffect->hidden;
+      }
+    }
+    if (oldScrollViewProps.rightEdgeEffect != newScrollViewProps.rightEdgeEffect) {
+      if (newScrollViewProps.rightEdgeEffect.has_value()) {
+        if (newScrollViewProps.rightEdgeEffect->style.has_value()) {
+          _scrollView.rightEdgeEffect.style = RCTUIScrollEdgeEffectStyleFromProps(newScrollViewProps.rightEdgeEffect->style.value());
+        }
+        _scrollView.rightEdgeEffect.hidden = newScrollViewProps.rightEdgeEffect->hidden;
+      }
+    }
+  }
+#endif
 
   [super updateProps:props oldProps:oldProps];
 }

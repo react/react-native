@@ -3914,6 +3914,8 @@ void facebook::react::fromRawValue(const facebook::react::PropsParserContext& co
 void facebook::react::fromRawValue(const facebook::react::PropsParserContext& context, const facebook::react::RawValue& value, facebook::react::PointerEventsMode& result);
 void facebook::react::fromRawValue(const facebook::react::PropsParserContext& context, const facebook::react::RawValue& value, facebook::react::ReturnKeyType& result);
 void facebook::react::fromRawValue(const facebook::react::PropsParserContext& context, const facebook::react::RawValue& value, facebook::react::Role& result);
+void facebook::react::fromRawValue(const facebook::react::PropsParserContext& context, const facebook::react::RawValue& value, facebook::react::ScrollViewEdgeEffect& result);
+void facebook::react::fromRawValue(const facebook::react::PropsParserContext& context, const facebook::react::RawValue& value, facebook::react::ScrollViewEdgeEffectStyle& result);
 void facebook::react::fromRawValue(const facebook::react::PropsParserContext& context, const facebook::react::RawValue& value, facebook::react::ScrollViewIndicatorStyle& result);
 void facebook::react::fromRawValue(const facebook::react::PropsParserContext& context, const facebook::react::RawValue& value, facebook::react::ScrollViewKeyboardDismissMode& result);
 void facebook::react::fromRawValue(const facebook::react::PropsParserContext& context, const facebook::react::RawValue& value, facebook::react::ScrollViewMaintainVisibleContentPosition& result);
@@ -4330,6 +4332,10 @@ class facebook::react::BaseScrollViewProps : public facebook::react::HostPlatfor
   public facebook::react::ScrollViewIndicatorStyle indicatorStyle;
   public facebook::react::ScrollViewKeyboardDismissMode keyboardDismissMode;
   public facebook::react::ScrollViewSnapToAlignment snapToAlignment;
+  public std::optional<facebook::react::ScrollViewEdgeEffect> bottomEdgeEffect;
+  public std::optional<facebook::react::ScrollViewEdgeEffect> leftEdgeEffect;
+  public std::optional<facebook::react::ScrollViewEdgeEffect> rightEdgeEffect;
+  public std::optional<facebook::react::ScrollViewEdgeEffect> topEdgeEffect;
   public std::optional<facebook::react::ScrollViewMaintainVisibleContentPosition> maintainVisibleContentPosition;
   public std::vector<facebook::react::Float> snapToOffsets;
   public void setProp(const facebook::react::PropsParserContext& context, facebook::react::RawPropsPropNameHash hash, const char* propName, const facebook::react::RawValue& value);
@@ -6737,6 +6743,13 @@ class facebook::react::ScopedShadowTreeRevisionLock {
   public ~ScopedShadowTreeRevisionLock() noexcept;
 }
 
+class facebook::react::ScrollViewEdgeEffect {
+  public bool hidden;
+  public bool operator!=(const facebook::react::ScrollViewEdgeEffect& rhs) const;
+  public bool operator==(const facebook::react::ScrollViewEdgeEffect& rhs) const;
+  public std::optional<facebook::react::ScrollViewEdgeEffectStyle> style;
+}
+
 class facebook::react::ScrollViewEventEmitter : public facebook::react::BaseViewEventEmitter {
   public using EndDragMetrics = facebook::react::ScrollEndDragEvent;
   public using Metrics = facebook::react::ScrollEvent;
@@ -8654,6 +8667,12 @@ enum facebook::react::SchedulerPriority : int {
 enum facebook::react::ScriptTag {
   RAMBundle,
   String,
+}
+
+enum facebook::react::ScrollViewEdgeEffectStyle {
+  Automatic,
+  Hard,
+  Soft,
 }
 
 enum facebook::react::ScrollViewIndicatorStyle {

@@ -78,6 +78,22 @@ export type ScrollViewNativeProps = Readonly<{
   snapToInterval?: ?number,
   snapToOffsets?: ?ReadonlyArray<number>,
   snapToStart?: ?boolean,
+  topEdgeEffect?: ?$ReadOnly<{
+    style?: ?('automatic' | 'soft' | 'hard'),
+    hidden?: ?boolean,
+  }>,
+  bottomEdgeEffect?: ?$ReadOnly<{
+    style?: ?('automatic' | 'soft' | 'hard'),
+    hidden?: ?boolean,
+  }>,
+  leftEdgeEffect?: ?$ReadOnly<{
+    style?: ?('automatic' | 'soft' | 'hard'),
+    hidden?: ?boolean,
+  }>,
+  rightEdgeEffect?: ?$ReadOnly<{
+    style?: ?('automatic' | 'soft' | 'hard'),
+    hidden?: ?boolean,
+  }>,
   zoomScale?: ?number,
   // Overrides
   onResponderGrant?: ?(e: GestureResponderEvent) => void | boolean,

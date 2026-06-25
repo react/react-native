@@ -20,6 +20,25 @@ enum class ScrollViewKeyboardDismissMode { None, OnDrag, Interactive };
 
 enum class ContentInsetAdjustmentBehavior { Never, Automatic, ScrollableAxes, Always };
 
+enum class ScrollViewEdgeEffectStyle { Automatic, Soft, Hard };
+
+class ScrollViewEdgeEffect final {
+ public:
+  std::optional<ScrollViewEdgeEffectStyle> style{};
+  bool hidden{false};
+
+  bool operator==(const ScrollViewEdgeEffect &rhs) const
+  {
+    return std::tie(this->style, this->hidden) ==
+        std::tie(rhs.style, rhs.hidden);
+  }
+
+  bool operator!=(const ScrollViewEdgeEffect &rhs) const
+  {
+    return !(*this == rhs);
+  }
+};
+
 class ScrollViewMaintainVisibleContentPosition final {
  public:
   int minIndexForVisible{0};
