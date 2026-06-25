@@ -278,7 +278,7 @@ static void RCTPerformMountInstructions(
   ReactTag reactTag = shadowView.tag;
   RCTExecuteOnMainQueue(^{
     UIView<RCTComponentViewProtocol> *componentView = [self->_componentViewRegistry findComponentViewWithTag:reactTag];
-    [componentView setIsJSResponder:isJSResponder blockNativeResponder:blockNativeResponder];
+    [componentView setIsJSResponder:isJSResponder];
   });
 }
 

@@ -672,15 +672,9 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
   _isJSResponder = isJSResponder;
 }
 
-- (void)setIsJSResponder:(BOOL)isJSResponder blockNativeResponder:(BOOL)blockNativeResponder
-{
-  _isJSResponder = isJSResponder;
-}
-
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
 {
   const auto &viewProps = static_cast<const ViewProps &>(*_props);
-  NSLog(@"[BNR] touchesBegan %p [%@] blockNative=%d", self, NSStringFromClass([self class]), viewProps.blockNativeResponder);
   if (viewProps.blockNativeResponder) {
     return;
   }
