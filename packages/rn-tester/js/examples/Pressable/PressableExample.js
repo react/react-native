@@ -21,6 +21,7 @@ import {
   PlatformColor,
   Pressable,
   StyleSheet,
+  Switch,
   Text,
   View,
 } from 'react-native';
@@ -286,31 +287,22 @@ const scenarioReceiverStyle = {
   alignItems: 'flex-start' as const,
 };
 
-function Scenario({
-  label,
-  blockNativeResponder,
-  onNativeTouch,
-  onPressIn,
-  onPress,
-}: {
-  label: string,
-  blockNativeResponder?: boolean,
-  onNativeTouch: () => void,
-  onPressIn: () => void,
-  onPress: () => void,
-}) {
+function PressableBlockNativeResponderExample() {
+  const [blockNativeResponder, setBlockNativeResponder] = useState(false);
+  const [log, setLog] = useState<Array<string>>([]);
+  const onNativeTouch = () =>
+    setLog(prev => [...prev, 'NativeTouchReceiver.onNativeTouch']);
+  const onPressIn = () => setLog([]);
+  const onPress = () => setLog(prev => [...prev, 'Pressable.onPress']);
+
   return (
-    <>
-      <Text
-        style={{
-          fontSize: 13,
-          fontWeight: '600',
-          color: '#444',
-          marginTop: 10,
-          marginBottom: 4,
-        }}>
-        {label}
-      </Text>
+    <View>
+      <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 12}}>
+        <Text style={{flex: 1, fontSize: 13, color: '#444'}}>
+          blockNativeResponder
+        </Text>
+        <Switch value={blockNativeResponder} onValueChange={setBlockNativeResponder} />
+      </View>
       <RNTNativeTouchReceiver
         style={scenarioReceiverStyle}
         onNativeTouch={onNativeTouch}>
@@ -325,36 +317,10 @@ function Scenario({
           onPressIn={onPressIn}
           onPress={onPress}>
           <Text style={{color: '#fff', fontWeight: '600', fontSize: 15}}>
-            Tap me
+            Press Me
           </Text>
         </Pressable>
       </RNTNativeTouchReceiver>
-    </>
-  );
-}
-
-function PressablePreventNativePropagationExample() {
-  const [log, setLog] = useState<Array<string>>([]);
-  const onNativeTouch = () =>
-    setLog(prev => [...prev, 'NativeTouchReceiver.onNativeTouch']);
-  const onPressIn = () => setLog([]);
-  const onPress = () => setLog(prev => [...prev, 'Pressable.onPress']);
-
-  return (
-    <View>
-      <Scenario
-        label="blockNativeResponder={false} (default)"
-        onNativeTouch={onNativeTouch}
-        onPressIn={onPressIn}
-        onPress={onPress}
-      />
-      <Scenario
-        label="blockNativeResponder={true}"
-        blockNativeResponder={true}
-        onNativeTouch={onNativeTouch}
-        onPressIn={onPressIn}
-        onPress={onPress}
-      />
       <LogBox lines={log} />
     </View>
   );
@@ -364,28 +330,16 @@ const monoFont = Platform.OS === 'ios' ? 'Menlo' : 'monospace';
 
 function LogBox({lines}: {lines: Array<string>}) {
   return (
-    <View
-      style={{
-        backgroundColor: '#1a1a1a',
-        borderRadius: 6,
-        padding: 10,
-        minHeight: 100,
-        marginBottom: 12,
-      }}>
+    <View style={styles.eventLogBox}>
       {lines.length === 0 ? (
-        <Text style={{color: '#555', fontSize: 12, fontStyle: 'italic'}}>
+        <Text style={{color: '#999', fontSize: 12, fontStyle: 'italic'}}>
           tap to see events
         </Text>
       ) : (
         lines.map((line, i) => (
           <Text
             key={i}
-            style={{
-              color: '#b5f5a0',
-              fontSize: 12,
-              fontFamily: monoFont,
-              lineHeight: 17,
-            }}>
+            style={{fontSize: 12, fontFamily: monoFont, lineHeight: 17}}>
             {line}
           </Text>
         ))
@@ -787,7 +741,7 @@ const examples = [
       'Pressable inside a native UIView parent. Without blockNativeResponder the touch leaks up the UIKit responder chain to the parent.' as string,
     platform: 'ios',
     render: function (): React.Node {
-      return <PressablePreventNativePropagationExample />;
+      return <PressableBlockNativeResponderExample />;
     },
   },
   ...PressableExampleFbInternal.examples,
