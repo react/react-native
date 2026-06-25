@@ -8,10 +8,12 @@
 package com.facebook.react.uimanager
 
 import android.graphics.Point
-import android.graphics.Rect
 import android.view.View
 import androidx.annotation.UiThread
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import com.facebook.infer.annotation.Assertions
+import com.facebook.react.views.view.isEdgeToEdgeFeatureFlagOn
 
 public object RootViewUtil {
   /** Returns the root view of a given view in a react application. */
@@ -34,12 +36,20 @@ public object RootViewUtil {
     val locationInWindow = IntArray(2)
     v.getLocationInWindow(locationInWindow)
 
-    // we need to subtract visibleWindowCoords - to subtract possible window insets, split
-    // screen or multi window
-    val visibleWindowFrame = Rect()
-    v.getWindowVisibleDisplayFrame(visibleWindowFrame)
-    locationInWindow[0] -= visibleWindowFrame.left
-    locationInWindow[1] -= visibleWindowFrame.top
+    if (!isEdgeToEdgeFeatureFlagOn) {
+      // When not in edge-to-edge mode, subtract the top system bar insets so the offset is
+      // relative to the content area (below the status bar / cutout).
+      ViewCompat.getRootWindowInsets(v)?.apply {
+        val insets =
+            getInsets(
+                WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.displayCutout()
+            )
+
+        locationInWindow[0] -= insets.left
+        locationInWindow[1] -= insets.top
+      }
+    }
+
     return Point(locationInWindow[0], locationInWindow[1])
   }
 }

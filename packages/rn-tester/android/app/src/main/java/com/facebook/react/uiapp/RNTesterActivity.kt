@@ -17,7 +17,6 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.facebook.react.FBRNTesterEndToEndHelper
 import com.facebook.react.ReactActivity
-import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
 import com.facebook.react.defaults.DefaultReactActivityDelegate
 import com.facebook.react.devsupport.DevMenuConfiguration
 import java.io.FileDescriptor
@@ -25,7 +24,7 @@ import java.io.PrintWriter
 
 internal class RNTesterActivity : ReactActivity() {
   class RNTesterActivityDelegate(val activity: ReactActivity, mainComponentName: String) :
-      DefaultReactActivityDelegate(activity, mainComponentName, fabricEnabled) {
+      DefaultReactActivityDelegate(activity, mainComponentName) {
     private val PARAM_ROUTE = "route"
     private lateinit var initialProps: Bundle
 

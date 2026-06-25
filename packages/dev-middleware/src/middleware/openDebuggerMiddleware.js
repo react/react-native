@@ -11,26 +11,26 @@
 import type {InspectorProxyQueries} from '../inspector-proxy/InspectorProxy';
 import type {PageDescription} from '../inspector-proxy/types';
 import type {
-  BrowserLauncher,
   DebuggerShellPreparationResult,
-} from '../types/BrowserLauncher';
+  DevToolLauncher,
+} from '../types/DevToolLauncher';
 import type {EventReporter} from '../types/EventReporter';
 import type {Experiments} from '../types/Experiments';
 import type {Logger} from '../types/Logger';
+import type {ReadonlyURL} from '../types/ReadonlyURL';
 import type {NextHandleFunction} from 'connect';
 import type {IncomingMessage, ServerResponse} from 'http';
 
 import getDevToolsFrontendUrl from '../utils/getDevToolsFrontendUrl';
 import {createHash} from 'crypto';
-import url from 'url';
 
 const LEGACY_SYNTHETIC_PAGE_TITLE =
   'React Native Experimental (Improved Chrome Reloads)';
 
-type Options = $ReadOnly<{
-  serverBaseUrl: string,
+type Options = Readonly<{
+  serverBaseUrl: ReadonlyURL,
   logger?: Logger,
-  browserLauncher: BrowserLauncher,
+  toolLauncher: DevToolLauncher,
   eventReporter?: EventReporter,
   experiments: Experiments,
   inspectorProxy: InspectorProxyQueries,
@@ -39,15 +39,12 @@ type Options = $ReadOnly<{
 /**
  * Open the debugger frontend for a given CDP target.
  *
- * Currently supports React Native DevTools (rn_fusebox.html) and legacy Hermes
- * (rn_inspector.html) targets.
- *
  * @see https://chromedevtools.github.io/devtools-protocol/
  */
 export default function openDebuggerMiddleware({
   serverBaseUrl,
   logger,
-  browserLauncher,
+  toolLauncher,
   eventReporter,
   experiments,
   inspectorProxy,
@@ -55,7 +52,7 @@ export default function openDebuggerMiddleware({
   let shellPreparationPromise: Promise<DebuggerShellPreparationResult>;
   if (experiments.enableStandaloneFuseboxShell) {
     shellPreparationPromise =
-      browserLauncher?.unstable_prepareFuseboxShell?.() ??
+      toolLauncher?.prepareDebuggerShell?.() ??
       Promise.resolve({code: 'not_implemented'});
     shellPreparationPromise = shellPreparationPromise.then(result => {
       eventReporter?.logEvent({
@@ -65,6 +62,7 @@ export default function openDebuggerMiddleware({
       return result;
     });
   }
+
   return async (
     req: IncomingMessage,
     res: ServerResponse,
@@ -74,7 +72,7 @@ export default function openDebuggerMiddleware({
       req.method === 'POST' ||
       (experiments.enableOpenDebuggerRedirect && req.method === 'GET')
     ) {
-      const parsedUrl = url.parse(req.url, true);
+      const {searchParams} = new URL(req.url, 'http://example.com');
 
       const query: {
         /** @deprecated Will only match legacy Hermes targets */
@@ -86,10 +84,12 @@ export default function openDebuggerMiddleware({
         target?: string,
         panel?: string,
         ...
-      } = parsedUrl.query;
+      } = Object.fromEntries(searchParams);
 
       const targets = inspectorProxy
-        .getPageDescriptions({requestorRelativeBaseUrl: new URL(serverBaseUrl)})
+        .getPageDescriptions({
+          requestorRelativeBaseUrl: serverBaseUrl,
+        })
         .filter(app => {
           const betterReloadingSupport =
             app.title === LEGACY_SYNTHETIC_PAGE_TITLE ||
@@ -154,26 +154,22 @@ export default function openDebuggerMiddleware({
         return;
       }
 
-      const useFuseboxEntryPoint =
-        target.reactNative.capabilities?.prefersFuseboxFrontend ?? false;
-
       try {
         switch (launchType) {
           case 'launch': {
             const frontendUrl = getDevToolsFrontendUrl(
               experiments,
               target.webSocketDebuggerUrl,
-              serverBaseUrl,
+              new URL(serverBaseUrl),
               {
                 launchId: query.launchId,
                 telemetryInfo: query.telemetryInfo,
                 appId: target.appId,
-                useFuseboxEntryPoint,
                 panel: query.panel,
               },
             );
             let shouldUseStandaloneFuseboxShell =
-              useFuseboxEntryPoint && experiments.enableStandaloneFuseboxShell;
+              experiments.enableStandaloneFuseboxShell;
             if (shouldUseStandaloneFuseboxShell) {
               const shellPreparationResult = await shellPreparationPromise;
               switch (shellPreparationResult.code) {
@@ -187,7 +183,7 @@ export default function openDebuggerMiddleware({
                   shouldUseStandaloneFuseboxShell = false;
                   break;
                 default:
-                  (shellPreparationResult.code: empty);
+                  shellPreparationResult.code as empty;
               }
             }
             if (shouldUseStandaloneFuseboxShell) {
@@ -200,17 +196,14 @@ export default function openDebuggerMiddleware({
                   ].join('-'),
                 )
                 .digest('hex');
-              if (!browserLauncher.unstable_showFuseboxShell) {
+              if (!toolLauncher.launchDebuggerShell) {
                 throw new Error(
-                  'Fusebox shell is not supported by the current browser launcher',
+                  'Fusebox shell is not supported by the current app launcher',
                 );
               }
-              await browserLauncher.unstable_showFuseboxShell(
-                frontendUrl,
-                windowKey,
-              );
+              await toolLauncher.launchDebuggerShell(frontendUrl, windowKey);
             } else {
-              await browserLauncher.launchDebuggerAppWindow(frontendUrl);
+              await toolLauncher.launchDebuggerAppWindow(frontendUrl);
             }
             res.writeHead(200);
             res.end();
@@ -221,20 +214,19 @@ export default function openDebuggerMiddleware({
               Location: getDevToolsFrontendUrl(
                 experiments,
                 target.webSocketDebuggerUrl,
-                serverBaseUrl,
+                new URL(serverBaseUrl),
                 {
                   relative: true,
                   launchId: query.launchId,
                   telemetryInfo: query.telemetryInfo,
                   appId: target.appId,
-                  useFuseboxEntryPoint,
                 },
               ),
             });
             res.end();
             break;
           default:
-            (launchType: empty);
+            launchType as empty;
         }
         eventReporter?.logEvent({
           type: 'launch_debugger_frontend',
@@ -245,7 +237,6 @@ export default function openDebuggerMiddleware({
           pageId: target.id,
           deviceName: target.deviceName,
           targetDescription: target.description,
-          prefersFuseboxFrontend: useFuseboxEntryPoint,
         });
         return;
       } catch (e) {
@@ -259,7 +250,6 @@ export default function openDebuggerMiddleware({
           launchType,
           status: 'error',
           error: e,
-          prefersFuseboxFrontend: useFuseboxEntryPoint,
         });
         return;
       }

@@ -40,6 +40,24 @@ internal class SpringAnimation(config: ReadableMap) : AnimationDriver() {
   private var currentLoop = 0
   private var originalValue = 0.0
 
+  private val isAtRest: Boolean
+    /**
+     * check if the current state is at rest
+     *
+     * @return is the spring at rest
+     */
+    get() =
+        (abs(currentState.velocity) <= restSpeedThreshold &&
+            (getDisplacementDistanceForState(currentState) <= displacementFromRestThreshold ||
+                springStiffness == 0.0))
+
+  /* Check if the spring is overshooting beyond its target. */
+  private val isOvershooting: Boolean
+    get() =
+        (springStiffness > 0 &&
+            ((startValue < endValue && currentState.position > endValue) ||
+                (startValue > endValue && currentState.position < endValue)))
+
   init {
     currentState.velocity = config.getDouble("initialVelocity")
     resetConfig(config)
@@ -98,24 +116,6 @@ internal class SpringAnimation(config: ReadableMap) : AnimationDriver() {
   private fun getDisplacementDistanceForState(state: PhysicsState): Double =
       abs(endValue - state.position)
 
-  private val isAtRest: Boolean
-    /**
-     * check if the current state is at rest
-     *
-     * @return is the spring at rest
-     */
-    get() =
-        (abs(currentState.velocity) <= restSpeedThreshold &&
-            (getDisplacementDistanceForState(currentState) <= displacementFromRestThreshold ||
-                springStiffness == 0.0))
-
-  /* Check if the spring is overshooting beyond its target. */
-  private val isOvershooting: Boolean
-    get() =
-        (springStiffness > 0 &&
-            (startValue < endValue && currentState.position > endValue ||
-                startValue > endValue && currentState.position < endValue))
-
   private fun advance(realDeltaTime: Double) {
     if (isAtRest) {
       return
@@ -167,7 +167,7 @@ internal class SpringAnimation(config: ReadableMap) : AnimationDriver() {
     // End the spring immediately if it is overshooting and overshoot clamping is enabled.
     // Also make sure that if the spring was considered within a resting threshold that it's now
     // snapped to its end value.
-    if (isAtRest || overshootClampingEnabled && isOvershooting) {
+    if (isAtRest || (overshootClampingEnabled && isOvershooting)) {
       // Don't call setCurrentValue because that forces a call to onSpringUpdate
       if (springStiffness > 0) {
         startValue = endValue

@@ -22,7 +22,10 @@ target_link_libraries(react_nativemodule_defaults
         react_nativemodule_microtasks
         react_nativemodule_idlecallbacks
         react_nativemodule_intersectionobserver
+        react_nativemodule_mutationobserver
+        react_nativemodule_viewtransition
         react_nativemodule_webperformance
+        react_renderer_animated
 )
 target_compile_reactnative_options(react_nativemodule_defaults PRIVATE)
 target_compile_options(react_nativemodule_defaults PRIVATE -Wpedantic)

@@ -9,6 +9,7 @@
 
 #include <react/bridging/AString.h>
 #include <react/bridging/Array.h>
+#include <react/bridging/ArrayBuffer.h>
 #include <react/bridging/Bool.h>
 #include <react/bridging/Class.h>
 #include <react/bridging/Dynamic.h>

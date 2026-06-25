@@ -25,7 +25,7 @@ const RNTesterExampleFilter = require('./RNTesterExampleFilter');
 type Props = {
   module: RNTesterModule,
   example?: ?RNTesterModuleExample,
-  onExampleCardPress?: ?(exampleName: string) => mixed,
+  onExampleCardPress?: ?(exampleName: string) => unknown,
 };
 
 function getExampleTitle(title: $FlowFixMe, platform: $FlowFixMe) {

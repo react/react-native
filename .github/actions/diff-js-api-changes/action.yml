@@ -1,31 +1,94 @@
 name: diff-js-api-changes
 description: Check for breaking changes in the public React Native JS API
+outputs:
+  message:
+    description: Formatted markdown message describing API changes, or empty if no changes
+    value: ${{ steps.format_output.outputs.message }}
 runs:
   using: composite
   steps:
-    - name: Compute merge base with main
-      id: merge_base
-      shell: bash
-      run: |
-        git fetch origin main
-        git fetch --deepen=500
-        echo "merge_base=$(git merge-base HEAD origin/main)" >> $GITHUB_OUTPUT
+    - name: Resolve API diff inputs
+      id: api_diff
+      uses: actions/github-script@v8
+      with:
+        script: |
+          // Check if we are targeting main or a stable branch
+          const baseRef = context.payload.pull_request.base.ref;
+          if (baseRef !== 'main' && !baseRef.endsWith('-stable')) {
+            core.setOutput('changed', false);
+            return;
+          }
 
-    - name: Output snapshot before state for comparison
+          // Check if the diff touches ReactNativeApi.d.ts
+          const files = await github.paginate(github.rest.pulls.listFiles, {
+            ...context.repo,
+            pull_number: context.payload.pull_request.number,
+          });
+          const changed = files.some(f => f.filename === 'packages/react-native/ReactNativeApi.d.ts');
+          core.setOutput('changed', changed);
+          if (!changed) return;
+
+          // Calculate merge base
+          const {data} = await github.rest.repos.compareCommits({
+            ...context.repo,
+            base: context.payload.pull_request.base.ref,
+            head: context.payload.pull_request.head.sha,
+          });
+          core.setOutput('merge_base', data.merge_base_commit.sha);
+
+    - name: Fetch commits and extract API snapshots
+      if: steps.api_diff.outputs.changed == 'true'
       shell: bash
       env:
         SCRATCH_DIR: ${{ runner.temp }}/diff-js-api-changes
       run: |
         mkdir -p $SCRATCH_DIR
-        git show ${{ steps.merge_base.outputs.merge_base }}:packages/react-native/ReactNativeApi.d.ts > $SCRATCH_DIR/ReactNativeApi-before.d.ts \
+        git fetch origin "${{ steps.api_diff.outputs.merge_base }}" --depth=1
+        git fetch origin "${{ github.event.pull_request.head.sha }}" --depth=1
+        git show "${{ steps.api_diff.outputs.merge_base }}":packages/react-native/ReactNativeApi.d.ts > $SCRATCH_DIR/ReactNativeApi-before.d.ts \
           || echo "" > $SCRATCH_DIR/ReactNativeApi-before.d.ts
+        git show "${{ github.event.pull_request.head.sha }}":packages/react-native/ReactNativeApi.d.ts > $SCRATCH_DIR/ReactNativeApi-after.d.ts \
+          || echo "" > $SCRATCH_DIR/ReactNativeApi-after.d.ts
 
     - name: Run breaking change detection
+      if: steps.api_diff.outputs.changed == 'true'
       shell: bash
       env:
         SCRATCH_DIR: ${{ runner.temp }}/diff-js-api-changes
       run: |
         node ./scripts/js-api/diff-api-snapshot \
           $SCRATCH_DIR/ReactNativeApi-before.d.ts \
-          ./packages/react-native/ReactNativeApi.d.ts \
+          $SCRATCH_DIR/ReactNativeApi-after.d.ts \
           > $SCRATCH_DIR/output.json
+
+    - name: Format output message
+      id: format_output
+      shell: bash
+      env:
+        SCRATCH_DIR: ${{ runner.temp }}/diff-js-api-changes
+      run: |
+        if [ ! -f "$SCRATCH_DIR/output.json" ]; then
+          echo "message=" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+
+        RESULT=$(cat $SCRATCH_DIR/output.json | jq -r '.result // empty')
+        if [ -z "$RESULT" ] || [ "$RESULT" = "NON_BREAKING" ]; then
+          echo "message=" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+
+        # Use delimiter for multiline output
+        {
+          echo "message<<EOF"
+          echo "> [!WARNING]"
+          echo "> **JavaScript API change detected**"
+          echo ">"
+          echo "> This PR commits an update to \`ReactNativeApi.d.ts\`, indicating a change to React Native's public JavaScript API."
+          echo ">"
+          echo "> - Please include a **clear changelog message**."
+          echo "> - This change will be subject to additional review."
+          echo ">"
+          echo "> This change was flagged as: \`${RESULT}\`"
+          echo "EOF"
+        } >> $GITHUB_OUTPUT

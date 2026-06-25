@@ -13,7 +13,7 @@
 
 // MODIFIED: Added ESLint suppression comment - no-unused-vars doesn't understand declaration files
 
-type JestMockFn<TArguments: $ReadOnlyArray<mixed>, TReturn> = {
+type JestMockFn<TArguments extends ReadonlyArray<unknown>, TReturn> = {
   (...args: TArguments): TReturn,
   /**
    * An object for introspecting mock calls
@@ -39,7 +39,7 @@ type JestMockFn<TArguments: $ReadOnlyArray<mixed>, TReturn> = {
     /**
      * An array that contains the contexts for all calls of the mock function.
      */
-    contexts: Array<mixed>,
+    contexts: Array<unknown>,
     /**
      * An array that contains all the object results that have been
      * returned by this mock function call
@@ -129,17 +129,17 @@ type JestAsymmetricEqualityType = {
   /**
    * A custom Jasmine equality tester
    */
-  asymmetricMatch(value: mixed): boolean,
+  asymmetricMatch(value: unknown): boolean,
   ...
 };
 
 type JestCallsType = {
-  allArgs(): mixed,
-  all(): mixed,
+  allArgs(): unknown,
+  all(): unknown,
   any(): boolean,
   count(): number,
-  first(): mixed,
-  mostRecent(): mixed,
+  first(): unknown,
+  mostRecent(): unknown,
   reset(): void,
   ...
 };
@@ -768,7 +768,7 @@ interface JestExpectType {
   /**
    *
    */
-  toHaveProperty(propPath: string | $ReadOnlyArray<string>, value?: any): void;
+  toHaveProperty(propPath: string | ReadonlyArray<string>, value?: any): void;
   /**
    * Use .toMatch to check that a string matches a regular expression or string.
    */
@@ -881,7 +881,10 @@ type JestObjectType = {
    * implementation.
    */
   // MODIFIED: Added defaults to type arguments.
-  fn<TArguments: $ReadOnlyArray<mixed> = $ReadOnlyArray<any>, TReturn = any>(
+  fn<
+    TArguments extends ReadonlyArray<unknown> = ReadonlyArray<any>,
+    TReturn = any,
+  >(
     implementation?: (...args: TArguments) => TReturn,
   ): JestMockFn<TArguments, TReturn>,
   /**
@@ -1005,22 +1008,22 @@ type JestDoneFn = {
 
 /** Runs this function after every test inside this context */
 declare function afterEach(
-  fn: (done: JestDoneFn) => ?Promise<mixed>,
+  fn: (done: JestDoneFn) => ?Promise<unknown>,
   timeout?: number,
 ): void;
 /** Runs this function before every test inside this context */
 declare function beforeEach(
-  fn: (done: JestDoneFn) => ?Promise<mixed>,
+  fn: (done: JestDoneFn) => ?Promise<unknown>,
   timeout?: number,
 ): void;
 /** Runs this function after all tests have finished inside this context */
 declare function afterAll(
-  fn: (done: JestDoneFn) => ?Promise<mixed>,
+  fn: (done: JestDoneFn) => ?Promise<unknown>,
   timeout?: number,
 ): void;
 /** Runs this function before any tests have started inside this context */
 declare function beforeAll(
-  fn: (done: JestDoneFn) => ?Promise<mixed>,
+  fn: (done: JestDoneFn) => ?Promise<unknown>,
   timeout?: number,
 ): void;
 
@@ -1045,11 +1048,11 @@ declare var describe: {
    */
   each(
     ...table:
-      | $ReadOnlyArray<$ReadOnlyArray<mixed> | mixed>
-      | [$ReadOnlyArray<string>, string]
+      | ReadonlyArray<ReadonlyArray<unknown> | unknown>
+      | [ReadonlyArray<string>, string]
   ): (
     name: JestTestName,
-    fn?: (...args: $ReadOnlyArray<any>) => ?Promise<mixed>,
+    fn?: (...args: ReadonlyArray<any>) => ?Promise<unknown>,
     timeout?: number,
   ) => void,
   ...
@@ -1066,7 +1069,7 @@ declare var it: {
    */
   (
     name: JestTestName,
-    fn?: (done: JestDoneFn) => ?Promise<mixed>,
+    fn?: (done: JestDoneFn) => ?Promise<unknown>,
     timeout?: number,
   ): void,
   /**
@@ -1079,14 +1082,14 @@ declare var it: {
   only: {
     (
       name: JestTestName,
-      fn?: (done: JestDoneFn) => ?Promise<mixed>,
+      fn?: (done: JestDoneFn) => ?Promise<unknown>,
       timeout?: number,
     ): void,
     each(
-      ...table: Array<Array<mixed> | mixed> | [Array<string>, string]
+      ...table: Array<Array<unknown> | unknown> | [Array<string>, string]
     ): (
       name: JestTestName,
-      fn?: (...args: Array<any>) => ?Promise<mixed>,
+      fn?: (...args: Array<any>) => ?Promise<unknown>,
       timeout?: number,
     ) => void,
   },
@@ -1100,14 +1103,14 @@ declare var it: {
   skip: {
     (
       name: JestTestName,
-      fn?: (done: JestDoneFn) => ?Promise<mixed>,
+      fn?: (done: JestDoneFn) => ?Promise<unknown>,
       timeout?: number,
     ): void,
     each(
-      ...table: Array<Array<mixed> | mixed> | [Array<string>, string]
+      ...table: Array<Array<unknown> | unknown> | [Array<string>, string]
     ): (
       name: JestTestName,
-      fn?: (...args: Array<any>) => ?Promise<mixed>,
+      fn?: (...args: Array<any>) => ?Promise<unknown>,
       timeout?: number,
     ) => void,
   },
@@ -1126,7 +1129,7 @@ declare var it: {
    */
   concurrent(
     name: JestTestName,
-    fn?: (done: JestDoneFn) => ?Promise<mixed>,
+    fn?: (done: JestDoneFn) => ?Promise<unknown>,
     timeout?: number,
   ): void,
   /**
@@ -1136,11 +1139,11 @@ declare var it: {
    */
   each(
     ...table:
-      | $ReadOnlyArray<$ReadOnlyArray<mixed> | mixed>
-      | [$ReadOnlyArray<string>, string]
+      | ReadonlyArray<ReadonlyArray<unknown> | unknown>
+      | [ReadonlyArray<string>, string]
   ): (
     name: JestTestName,
-    fn?: (...args: Array<any>) => ?Promise<mixed>,
+    fn?: (...args: Array<any>) => ?Promise<unknown>,
     timeout?: number,
   ) => void,
   ...
@@ -1148,7 +1151,7 @@ declare var it: {
 
 declare function fit(
   name: JestTestName,
-  fn: (done: JestDoneFn) => ?Promise<mixed>,
+  fn: (done: JestDoneFn) => ?Promise<unknown>,
   timeout?: number,
 ): void;
 /** An individual test unit */
@@ -1249,16 +1252,16 @@ declare var expect: {
   addSnapshotSerializer(pluginModule: JestPrettyFormatPlugin): void,
   assertions(expectedAssertions: number): void,
   hasAssertions(): void,
-  any(value: mixed): JestAsymmetricEqualityType,
+  any(value: unknown): JestAsymmetricEqualityType,
   anything(): any,
   // MODIFIED: Array -> $ReadOnlyArray
-  arrayContaining(value: $ReadOnlyArray<mixed>): Array<mixed>,
+  arrayContaining(value: ReadonlyArray<unknown>): Array<unknown>,
   objectContaining(value: Object): Object,
   /** Matches any received string that contains the exact expected string. */
   stringContaining(value: string): string,
   stringMatching(value: string | RegExp): string,
   not: {
-    arrayContaining: (value: $ReadOnlyArray<mixed>) => Array<mixed>,
+    arrayContaining: (value: ReadonlyArray<unknown>) => Array<unknown>,
     objectContaining: (value: {...}) => Object,
     stringContaining: (value: string) => string,
     stringMatching: (value: string | RegExp) => string,
@@ -1269,7 +1272,7 @@ declare var expect: {
 
 // TODO handle return type
 // http://jasmine.github.io/2.4/introduction.html#section-Spies
-declare function spyOn(value: mixed, method: string): Object;
+declare function spyOn(value: unknown, method: string): Object;
 
 /** Holds all functions related to manipulating test runner */
 declare var jest: JestObjectType;
@@ -1280,9 +1283,9 @@ declare var jest: JestObjectType;
  */
 declare var jasmine: {
   DEFAULT_TIMEOUT_INTERVAL: number,
-  any(value: mixed): JestAsymmetricEqualityType,
+  any(value: unknown): JestAsymmetricEqualityType,
   anything(): any,
-  arrayContaining(value: Array<mixed>): Array<mixed>,
+  arrayContaining(value: Array<unknown>): Array<unknown>,
   clock(): JestClockType,
   createSpy(name: string): JestSpyType,
   createSpyObj(

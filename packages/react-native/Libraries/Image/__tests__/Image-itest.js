@@ -6,18 +6,17 @@
  *
  * @flow strict-local
  * @format
- * @fantom_flags reduceDefaultPropsInImage:*
  */
 
 import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
 import type {AccessibilityProps, HostInstance} from 'react-native';
 
-import * as ReactNativeFeatureFlags from '../../../src/private/featureflags/ReactNativeFeatureFlags';
 import * as Fantom from '@react-native/fantom';
 import * as React from 'react';
 import {createRef} from 'react';
 import {Image} from 'react-native';
+import * as ImageInjection from 'react-native/Libraries/Image/ImageInjection';
 import accessibilityPropsSuite from 'react-native/src/private/__tests__/utilities/accessibilityPropsSuite';
 import {testIDPropSuite} from 'react-native/src/private/__tests__/utilities/commonPropsSuite';
 import ensureInstance from 'react-native/src/private/__tests__/utilities/ensureInstance';
@@ -37,51 +36,27 @@ describe('<Image>', () => {
           root.render(<Image />);
         });
 
-        if (ReactNativeFeatureFlags.reduceDefaultPropsInImage()) {
-          expect(root.getRenderedOutput().toJSX()).toEqual(
-            <rn-image
-              overflow="hidden"
-              resizeMode="cover"
-              source-scale="1"
-              source-type="remote"
-            />,
-          );
-        } else {
-          expect(root.getRenderedOutput().toJSX()).toEqual(
-            <rn-image
-              accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
-              overflow="hidden"
-              resizeMode="cover"
-              source-scale="1"
-              source-type="remote"
-            />,
-          );
-        }
+        expect(root.getRenderedOutput().toJSX()).toEqual(
+          <rn-image
+            overflow="hidden"
+            resizeMode="cover"
+            source-scale="1"
+            source-type="remote"
+          />,
+        );
 
         Fantom.runTask(() => {
           root.render(<Image src="" />);
         });
 
-        if (ReactNativeFeatureFlags.reduceDefaultPropsInImage()) {
-          expect(root.getRenderedOutput().toJSX()).toEqual(
-            <rn-image
-              overflow="hidden"
-              resizeMode="cover"
-              source-scale="1"
-              source-type="remote"
-            />,
-          );
-        } else {
-          expect(root.getRenderedOutput().toJSX()).toEqual(
-            <rn-image
-              accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
-              overflow="hidden"
-              resizeMode="cover"
-              source-scale="1"
-              source-type="remote"
-            />,
-          );
-        }
+        expect(root.getRenderedOutput().toJSX()).toEqual(
+          <rn-image
+            overflow="hidden"
+            resizeMode="cover"
+            source-scale="1"
+            source-type="remote"
+          />,
+        );
       });
     });
 
@@ -178,7 +153,7 @@ describe('<Image>', () => {
         });
 
         expect(root.getRenderedOutput({props: ['height']}).toJSX()).toEqual(
-          <rn-image height="100.000000" />,
+          <rn-image height="100" />,
         );
       });
     });
@@ -192,7 +167,7 @@ describe('<Image>', () => {
         });
 
         expect(root.getRenderedOutput({props: ['width']}).toJSX()).toEqual(
-          <rn-image width="100.000000" />,
+          <rn-image width="100" />,
         );
       });
     });
@@ -265,14 +240,26 @@ describe('<Image>', () => {
 
           Fantom.runTask(() => {
             root.render(
-              <Image referrerPolicy={referrerPolicy} src={LOGO_SOURCE.uri} />,
+              <>
+                <Image referrerPolicy={referrerPolicy} src={LOGO_SOURCE.uri} />
+                <Image referrerPolicy={referrerPolicy} source={LOGO_SOURCE} />
+              </>,
             );
           });
 
           expect(
             root.getRenderedOutput({props: ['source-header']}).toJSX(),
           ).toEqual(
-            <rn-image source-header-Referrer-Policy={referrerPolicy} />,
+            <>
+              <rn-image
+                key="0"
+                source-header-Referrer-Policy={referrerPolicy}
+              />
+              <rn-image
+                key="1"
+                source-header-Referrer-Policy={referrerPolicy}
+              />
+            </>,
           );
         });
       });
@@ -470,6 +457,35 @@ describe('<Image>', () => {
           />,
         );
       });
+
+      it('merges dimension information into source', () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(
+            <Image
+              src="https://reactnative.dev/img/tiny_logo.png"
+              width={40}
+              height={40}
+            />,
+          );
+        });
+
+        expect(
+          root
+            .getRenderedOutput({props: ['source', 'width', 'height']})
+            .toJSX(),
+        ).toEqual(
+          <rn-image
+            source-scale="1"
+            source-type="remote"
+            source-size="{40, 40}"
+            source-uri="https://reactnative.dev/img/tiny_logo.png"
+            width="40"
+            height="40"
+          />,
+        );
+      });
     });
 
     describe('srcSet', () => {
@@ -573,13 +589,7 @@ describe('<Image>', () => {
           root
             .getRenderedOutput({props: ['width', 'height', 'resizeMode']})
             .toJSX(),
-        ).toEqual(
-          <rn-image
-            height="100.000000"
-            resizeMode="contain"
-            width="100.000000"
-          />,
-        );
+        ).toEqual(<rn-image height="100" resizeMode="contain" width="100" />);
       });
     });
 
@@ -648,6 +658,275 @@ describe('<Image>', () => {
     });
   });
 
+  describe('resolveAssetSource', () => {
+    it('resolves a plain source object to itself', () => {
+      expect(Image.resolveAssetSource({uri: 'foo-bar.jpg'})).toEqual({
+        uri: 'foo-bar.jpg',
+      });
+    });
+  });
+
+  describe('image attached callbacks', () => {
+    it('invokes original ref callbacks correctly when using image attached callbacks', () => {
+      let imageInstanceFromCallback = null;
+      let imageInstanceFromRef1 = null;
+      let imageInstanceFromRef2 = null;
+
+      const callback = jest.fn((instance: HostInstance) => {
+        imageInstanceFromCallback = instance;
+
+        return () => {
+          imageInstanceFromCallback = null;
+        };
+      });
+
+      ImageInjection.unstable_registerImageAttachedCallback(callback);
+
+      expect(imageInstanceFromCallback).toBe(null);
+
+      const root = Fantom.createRoot();
+
+      const ref1 = jest.fn();
+      const ref1Setter = (instance: HostInstance | null): void => {
+        imageInstanceFromRef1 = instance;
+        ref1(instance);
+      };
+
+      Fantom.runTask(() => {
+        root.render(<Image source={LOGO_SOURCE} ref={ref1Setter} />);
+      });
+
+      expect(imageInstanceFromCallback).not.toBe(null);
+      expect(imageInstanceFromRef1).not.toBe(null);
+      expect(imageInstanceFromCallback).toBe(imageInstanceFromRef1);
+      expect(callback).toHaveBeenCalledTimes(1);
+      expect(ref1).toHaveBeenCalledTimes(1);
+
+      const ref2 = jest.fn();
+      const ref2Setter = (instance: HostInstance | null): void => {
+        imageInstanceFromRef2 = instance;
+        ref2(instance);
+      };
+
+      Fantom.runTask(() => {
+        root.render(<Image source={LOGO_SOURCE} ref={ref2Setter} />);
+      });
+
+      expect(imageInstanceFromCallback).not.toBe(null);
+      expect(imageInstanceFromRef1).toBe(null);
+      expect(imageInstanceFromRef2).not.toBe(null);
+      expect(imageInstanceFromCallback).toBe(imageInstanceFromRef2);
+      expect(callback).toHaveBeenCalledTimes(2);
+      expect(ref1).toHaveBeenCalledTimes(2);
+      expect(ref2).toHaveBeenCalledTimes(1);
+
+      Fantom.runTask(() => {
+        root.render(<Image source={LOGO_SOURCE} ref={ref2Setter} />);
+      });
+
+      expect(callback).toHaveBeenCalledTimes(2);
+      expect(ref2).toHaveBeenCalledTimes(1);
+
+      ImageInjection.unstable_unregisterImageAttachedCallback(callback);
+      Fantom.runTask(() => {
+        root.render(<></>);
+      });
+    });
+
+    it('calls image attached callbacks (basic)', () => {
+      let imageInstanceFromCallback = null;
+      let imageInstanceFromRef = null;
+
+      const callback = (instance: HostInstance) => {
+        imageInstanceFromCallback = instance;
+
+        return () => {
+          imageInstanceFromCallback = null;
+        };
+      };
+
+      ImageInjection.unstable_registerImageAttachedCallback(callback);
+
+      expect(imageInstanceFromCallback).toBe(null);
+
+      const root = Fantom.createRoot();
+
+      Fantom.runTask(() => {
+        root.render(
+          <Image
+            source={LOGO_SOURCE}
+            ref={instance => {
+              imageInstanceFromRef = instance;
+            }}
+          />,
+        );
+      });
+
+      expect(imageInstanceFromCallback).not.toBe(null);
+      expect(imageInstanceFromRef).not.toBe(null);
+      expect(imageInstanceFromCallback).toBe(imageInstanceFromRef);
+
+      Fantom.runTask(() => {
+        root.render(<></>);
+      });
+
+      expect(imageInstanceFromCallback).toBe(null);
+      expect(imageInstanceFromRef).toBe(null);
+
+      ImageInjection.unstable_unregisterImageAttachedCallback(callback);
+
+      Fantom.runTask(() => {
+        root.render(
+          <Image
+            source={LOGO_SOURCE}
+            ref={instance => {
+              imageInstanceFromRef = instance;
+            }}
+          />,
+        );
+      });
+
+      expect(imageInstanceFromRef).not.toBe(null);
+      expect(imageInstanceFromCallback).toBe(null);
+
+      Fantom.runTask(() => {
+        root.render(<></>);
+      });
+    });
+
+    it('calls image attached callbacks (multiple callbacks)', () => {
+      let imageInstanceFromCallback1 = null;
+      let imageInstanceFromCallback2 = null;
+      let imageInstanceFromRef = null;
+
+      const callback1 = (instance: HostInstance) => {
+        imageInstanceFromCallback1 = instance;
+
+        return () => {
+          imageInstanceFromCallback1 = null;
+        };
+      };
+      const callback2 = (instance: HostInstance) => {
+        imageInstanceFromCallback2 = instance;
+
+        return () => {
+          imageInstanceFromCallback2 = null;
+        };
+      };
+
+      ImageInjection.unstable_registerImageAttachedCallback(callback1);
+      ImageInjection.unstable_registerImageAttachedCallback(callback2);
+
+      expect(imageInstanceFromCallback1).toBe(null);
+      expect(imageInstanceFromCallback2).toBe(null);
+
+      const root = Fantom.createRoot();
+
+      Fantom.runTask(() => {
+        root.render(
+          <Image
+            source={LOGO_SOURCE}
+            ref={instance => {
+              imageInstanceFromRef = instance;
+            }}
+          />,
+        );
+      });
+
+      expect(imageInstanceFromRef).not.toBe(null);
+      expect(imageInstanceFromCallback1).not.toBe(null);
+      expect(imageInstanceFromCallback2).not.toBe(null);
+      expect(imageInstanceFromCallback1).toBe(imageInstanceFromRef);
+      expect(imageInstanceFromCallback2).toBe(imageInstanceFromRef);
+
+      Fantom.runTask(() => {
+        root.render(<></>);
+      });
+
+      expect(imageInstanceFromRef).toBe(null);
+      expect(imageInstanceFromCallback1).toBe(null);
+      expect(imageInstanceFromCallback2).toBe(null);
+
+      ImageInjection.unstable_unregisterImageAttachedCallback(callback1);
+      ImageInjection.unstable_unregisterImageAttachedCallback(callback2);
+    });
+
+    it('calls image attached callbacks (multiple images)', () => {
+      let imageInstancesFromCallback = new Set<HostInstance>();
+
+      const callback = (instance: HostInstance) => {
+        imageInstancesFromCallback.add(instance);
+
+        return () => {
+          imageInstancesFromCallback.delete(instance);
+        };
+      };
+
+      ImageInjection.unstable_registerImageAttachedCallback(callback);
+
+      expect(imageInstancesFromCallback.size).toBe(0);
+
+      const root = Fantom.createRoot();
+
+      let firstInstance;
+      let secondInstance;
+
+      const firstImageElement = (
+        <Image
+          key="first-image"
+          source={LOGO_SOURCE}
+          ref={instance => {
+            firstInstance = instance;
+          }}
+        />
+      );
+
+      const secondImageElement = (
+        <Image
+          key="second-image"
+          source={LOGO_SOURCE}
+          ref={instance => {
+            secondInstance = instance;
+          }}
+        />
+      );
+
+      Fantom.runTask(() => {
+        root.render(
+          <>
+            {firstImageElement}
+            {secondImageElement}
+          </>,
+        );
+      });
+
+      expect(firstInstance).not.toBe(null);
+      expect(secondInstance).not.toBe(null);
+      expect(imageInstancesFromCallback.size).toBe(2);
+      expect([...imageInstancesFromCallback][0]).toBe(firstInstance);
+      expect([...imageInstancesFromCallback][1]).toBe(secondInstance);
+
+      Fantom.runTask(() => {
+        root.render(<>{secondImageElement}</>);
+      });
+
+      expect(firstInstance).toBe(null);
+      expect(secondInstance).not.toBe(null);
+      expect(imageInstancesFromCallback.size).toBe(1);
+      expect([...imageInstancesFromCallback][0]).toBe(secondInstance);
+
+      Fantom.runTask(() => {
+        root.render(<></>);
+      });
+
+      expect(firstInstance).toBe(null);
+      expect(secondInstance).toBe(null);
+      expect(imageInstancesFromCallback.size).toBe(0);
+
+      ImageInjection.unstable_unregisterImageAttachedCallback(callback);
+    });
+  });
+
   describe('static methods', () => {
     afterEach(() => {
       NativeFantom.clearAllImages();
@@ -683,7 +962,7 @@ describe('<Image>', () => {
             (width, height) => {
               size = {width, height};
             },
-            (e: mixed) => {
+            (e: unknown) => {
               if (e instanceof Error) {
                 err = e;
               }

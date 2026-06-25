@@ -27,7 +27,7 @@ import ReactNativeElement from '../../../src/private/webapis/dom/nodes/ReactNati
 import ReadOnlyText from '../../../src/private/webapis/dom/nodes/ReadOnlyText';
 import * as RendererProxy from '../../ReactNative/RendererProxy';
 
-export opaque type PublicRootInstance = mixed;
+export opaque type PublicRootInstance = unknown;
 
 export function createPublicRootInstance(rootTag: RootTag): PublicRootInstance {
   // $FlowExpectedError[incompatible-return]

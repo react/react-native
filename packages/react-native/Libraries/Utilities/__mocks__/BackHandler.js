@@ -9,15 +9,20 @@
  */
 
 import type {BackPressEventName} from '../BackHandler';
+import type {HardwareBackPressEvent} from '../HardwareBackPressEvent';
 
-const _backPressSubscriptions = new Set<() => ?boolean>();
+import {HardwareBackPressEvent as HardwareBackPressEventClass} from '../HardwareBackPressEvent';
+
+const _backPressSubscriptions = new Set<
+  (event: HardwareBackPressEvent) => ?boolean,
+>();
 
 const BackHandler = {
   exitApp: jest.fn() as () => void,
 
   addEventListener: function (
     eventName: BackPressEventName,
-    handler: () => ?boolean,
+    handler: (event: HardwareBackPressEvent) => ?boolean,
   ): {remove: () => void, ...} {
     _backPressSubscriptions.add(handler);
     return {
@@ -28,10 +33,11 @@ const BackHandler = {
   },
 
   mockPressBack: function () {
+    const event = new HardwareBackPressEventClass();
     let invokeDefault = true;
     const subscriptions = [..._backPressSubscriptions].reverse();
     for (let i = 0; i < subscriptions.length; ++i) {
-      if (subscriptions[i]()) {
+      if (subscriptions[i](event)) {
         invokeDefault = false;
         break;
       }

@@ -7,7 +7,7 @@
 
 package com.facebook.react.bridge
 
-import androidx.core.util.Pools
+import androidx.core.util.Pools.SimplePool
 
 /** Implementation of Dynamic wrapping a ReadableArray. */
 internal class DynamicFromArray private constructor() : Dynamic {
@@ -17,7 +17,7 @@ internal class DynamicFromArray private constructor() : Dynamic {
   override fun recycle() {
     array = null
     index = -1
-    pool.release(this)
+    pool.get()?.release(this)
   }
 
   override val type: ReadableType
@@ -48,11 +48,16 @@ internal class DynamicFromArray private constructor() : Dynamic {
       array?.getString(index) ?: throw IllegalStateException("This dynamic value has been recycled")
 
   companion object {
-    private val pool = Pools.SimplePool<DynamicFromArray>(10)
+    private val pool: ThreadLocal<SimplePool<DynamicFromArray>> =
+        object : ThreadLocal<SimplePool<DynamicFromArray>>() {
+          override fun initialValue(): SimplePool<DynamicFromArray> {
+            return SimplePool(10)
+          }
+        }
 
     @JvmStatic
     fun create(array: ReadableArray, index: Int): DynamicFromArray {
-      val dynamic = pool.acquire() ?: DynamicFromArray()
+      val dynamic = pool.get()?.acquire() ?: DynamicFromArray()
       dynamic.array = array
       dynamic.index = index
       return dynamic

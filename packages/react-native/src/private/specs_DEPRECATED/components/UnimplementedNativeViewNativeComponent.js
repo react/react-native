@@ -14,13 +14,13 @@ import type {HostComponent} from '../../types/HostComponent';
 
 import codegenNativeComponent from '../../../../Libraries/Utilities/codegenNativeComponent';
 
-type UnimplementedNativeViewNativeProps = $ReadOnly<{
+type UnimplementedNativeViewNativeProps = Readonly<{
   ...ViewProps,
   name?: WithDefault<string, ''>,
 }>;
 
 // NOTE: This component is not implemented in paper
 // Do not require this file in paper builds
-export default (codegenNativeComponent<UnimplementedNativeViewNativeProps>(
+export default codegenNativeComponent<UnimplementedNativeViewNativeProps>(
   'UnimplementedNativeView',
-): HostComponent<UnimplementedNativeViewNativeProps>);
+) as HostComponent<UnimplementedNativeViewNativeProps>;

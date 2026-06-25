@@ -12,94 +12,17 @@
 #include <jsinspector-modern/InspectorFlags.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
 
-#ifdef HERMES_ENABLE_DEBUGGER
-#include <hermes/inspector-modern/chrome/Registration.h>
-
-#ifndef HERMES_V1_ENABLED
-#include <hermes/inspector/RuntimeAdapter.h>
-#endif
-
-#include <jsi/decorator.h>
-#endif
-
 using namespace facebook::hermes;
 using namespace facebook::jsi;
 
 namespace facebook::react {
 
-#if defined(HERMES_ENABLE_DEBUGGER) && !defined(HERMES_V1_ENABLED)
-
-// Wrapper that strongly retains the HermesRuntime for on device debugging.
-//
-// HermesInstanceRuntimeAdapter needs to strongly retain the HermesRuntime. Why:
-//   - facebook::hermes::inspector_modern::chrome::Connection::Impl owns the
-//   Adapter
-//   - facebook::hermes::inspector_modern::chrome::Connection::Impl also owns
-//   jsi:: objects
-//   - jsi:: objects need to be deleted before the Runtime.
-//
-// If Adapter doesn't share ownership over jsi::Runtime, the runtime can be
-// deleted before Connection::Impl cleans up all its jsi:: Objects. This will
-// lead to a runtime crash.
-class HermesInstanceRuntimeAdapter : public inspector_modern::RuntimeAdapter {
- public:
-  HermesInstanceRuntimeAdapter(
-      std::shared_ptr<HermesRuntime> hermesRuntime,
-      std::shared_ptr<MessageQueueThread> msgQueueThread)
-      : hermesRuntime_(std::move(hermesRuntime)),
-        messageQueueThread_(std::move(msgQueueThread)) {}
-  virtual ~HermesInstanceRuntimeAdapter() = default;
-
-  HermesRuntime& getRuntime() override {
-    return *hermesRuntime_;
-  }
-
-  void tickleJs() override {
-    std::weak_ptr<HermesRuntime> weakRuntime(hermesRuntime_);
-    messageQueueThread_->runOnQueue([weakRuntime]() {
-      auto runtime = weakRuntime.lock();
-      if (!runtime) {
-        return;
-      }
-      jsi::Function func =
-          runtime->global().getPropertyAsFunction(*runtime, "__tickleJs");
-      func.call(*runtime);
-    });
-  }
-
- private:
-  std::shared_ptr<HermesRuntime> hermesRuntime_;
-  std::shared_ptr<MessageQueueThread> messageQueueThread_;
-};
-
-class DecoratedRuntime : public jsi::RuntimeDecorator<jsi::Runtime> {
- public:
-  DecoratedRuntime(
-      std::unique_ptr<HermesRuntime> runtime,
-      std::shared_ptr<MessageQueueThread> msgQueueThread)
-      : RuntimeDecorator<jsi::Runtime>(*runtime), runtime_(std::move(runtime)) {
-    auto adapter = std::make_unique<HermesInstanceRuntimeAdapter>(
-        runtime_, msgQueueThread);
-
-    debugToken_ = inspector_modern::chrome::enableDebugging(
-        std::move(adapter), "Hermes Bridgeless React Native");
-  }
-
-  ~DecoratedRuntime() {
-    inspector_modern::chrome::disableDebugging(debugToken_);
-  }
-
- private:
-  std::shared_ptr<HermesRuntime> runtime_;
-  inspector_modern::chrome::DebugSessionToken debugToken_;
-};
-
-#endif // defined(HERMES_ENABLE_DEBUGGER) && !defined(HERMES_V1_ENABLED)
-
 class HermesJSRuntime : public JSRuntime {
  public:
-  HermesJSRuntime(std::unique_ptr<HermesRuntime> runtime)
-      : runtime_(std::move(runtime)) {}
+  HermesJSRuntime(
+      std::shared_ptr<jsi::Runtime> runtime,
+      HermesRuntime& hermesRuntime)
+      : runtime_(std::move(runtime)), hermesRuntime_(hermesRuntime) {}
 
   jsi::Runtime& getRuntime() noexcept override {
     return *runtime_;
@@ -108,17 +31,18 @@ class HermesJSRuntime : public JSRuntime {
   jsinspector_modern::RuntimeTargetDelegate& getRuntimeTargetDelegate()
       override {
     if (!targetDelegate_) {
-      targetDelegate_.emplace(runtime_);
+      targetDelegate_.emplace(runtime_, hermesRuntime_);
     }
     return *targetDelegate_;
   }
 
   void unstable_initializeOnJsThread() override {
-    runtime_->registerForProfiling();
+    hermesRuntime_.registerForProfiling();
   }
 
  private:
-  std::shared_ptr<HermesRuntime> runtime_;
+  std::shared_ptr<jsi::Runtime> runtime_;
+  HermesRuntime& hermesRuntime_;
   std::optional<jsinspector_modern::HermesRuntimeTargetDelegate>
       targetDelegate_;
 };
@@ -161,19 +85,11 @@ std::unique_ptr<JSRuntime> HermesInstance::createJSRuntime(
                             .getPropertyAsObject(*hermesRuntime, "prototype");
   errorPrototype.setProperty(*hermesRuntime, "jsEngine", "hermes");
 
-#if defined(HERMES_ENABLE_DEBUGGER) && !defined(HERMES_V1_ENABLED)
-  auto& inspectorFlags = jsinspector_modern::InspectorFlags::getInstance();
-  if (!inspectorFlags.getFuseboxEnabled()) {
-    std::unique_ptr<DecoratedRuntime> decoratedRuntime =
-        std::make_unique<DecoratedRuntime>(
-            std::move(hermesRuntime), msgQueueThread);
-    return std::make_unique<JSIRuntimeHolder>(std::move(decoratedRuntime));
-  }
-#else
   (void)msgQueueThread;
-#endif
 
-  return std::make_unique<HermesJSRuntime>(std::move(hermesRuntime));
+  HermesRuntime& hermesRuntimeRef = *hermesRuntime;
+  return std::make_unique<HermesJSRuntime>(
+      std::move(hermesRuntime), hermesRuntimeRef);
 }
 
 } // namespace facebook::react

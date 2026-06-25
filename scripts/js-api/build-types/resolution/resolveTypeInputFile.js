@@ -13,7 +13,7 @@ const debug = require('debug')('build-types:resolution');
 const fs = require('fs');
 const path = require('path');
 
-const TYPEDEF_MAPPING: Record<string, $ReadOnlyArray<string>> = {
+const TYPEDEF_MAPPING: Record<string, ReadonlyArray<string>> = {
   '.android.js': ['.js.flow', '.js'],
   '.ios.js': ['.js.flow', '.js'],
   '.js': ['.js.flow'],

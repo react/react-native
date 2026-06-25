@@ -17,6 +17,8 @@ internal class ReactTextChangedEvent(
     viewId: Int,
     private val text: String,
     private val eventCount: Int,
+    private val selectionStart: Int,
+    private val selectionEnd: Int,
 ) : Event<ReactTextChangedEvent>(surfaceId, viewId) {
   override fun getEventName(): String = EVENT_NAME
 
@@ -25,6 +27,12 @@ internal class ReactTextChangedEvent(
       putString("text", text)
       putInt("eventCount", eventCount)
       putInt("target", viewTag)
+      val selectionData =
+          Arguments.createMap().apply {
+            putInt("start", selectionStart)
+            putInt("end", selectionEnd)
+          }
+      putMap("selection", selectionData)
     }
   }
 

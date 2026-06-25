@@ -15,12 +15,12 @@ import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboMo
 type testUnion = 'a' | 'b' | 'c' | 'd';
 
 export interface Spec extends TurboModule {
-  +exampleFunction: (a: testUnion, b: number) => void;
-  +getConstants: () => {
-    +exampleConstant: number,
+  readonly exampleFunction: (a: testUnion, b: number) => void;
+  readonly getConstants: () => {
+    readonly exampleConstant: number,
   };
 }
 
-export default (TurboModuleRegistry.getEnforcing<Spec>(
+export default TurboModuleRegistry.getEnforcing<Spec>(
   'NativeModuleTest',
-): Spec);
+) as Spec;

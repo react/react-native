@@ -1,0 +1,6 @@
+template <typename... ArgumentT>
+class test::Clss {
+  public void test1(std::function<void(ArgumentT...)>&& function);
+  public void test2(int val) const;
+  public void test3(void(*)(int) val) const;
+}

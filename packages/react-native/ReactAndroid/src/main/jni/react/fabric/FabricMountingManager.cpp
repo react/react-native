@@ -52,6 +52,15 @@ void FabricMountingManager::onSurfaceStop(SurfaceId surfaceId) {
   allocatedViewRegistry_.erase(surfaceId);
 }
 
+bool FabricMountingManager::isViewAllocated(SurfaceId surfaceId, Tag tag) {
+  std::lock_guard lock(allocatedViewsMutex_);
+  auto it = allocatedViewRegistry_.find(surfaceId);
+  if (it == allocatedViewRegistry_.end()) {
+    return false;
+  }
+  return it->second.count(tag) > 0;
+}
+
 namespace {
 
 #ifdef REACT_NATIVE_DEBUG
@@ -1026,6 +1035,20 @@ void FabricMountingManager::destroyUnmountedShadowNode(
   auto tag = family.getTag();
   auto surfaceId = family.getSurfaceId();
 
+  // Remove from allocatedViewRegistry so that executeMount does not skip
+  // the Create mount item for this tag. Without this, if the view was
+  // preallocated and then destroyed (e.g. due to a superseded concurrent
+  // render), executeMount would skip the Create because allocatedViewTags
+  // still contains the tag, but the Java side no longer has the view in
+  // tagToViewState (it was deleted by destroyUnmountedView below).
+  {
+    std::lock_guard allocatedViewsLock(allocatedViewsMutex_);
+    auto allocatedViewsIterator = allocatedViewRegistry_.find(surfaceId);
+    if (allocatedViewsIterator != allocatedViewRegistry_.end()) {
+      allocatedViewsIterator->second.erase(tag);
+    }
+  }
+
   // ThreadScope::WithClassLoader is necessary because
   // destroyUnmountedShadowNode is being called from a destructor thread
   jni::ThreadScope::WithClassLoader([&]() {
@@ -1204,6 +1227,37 @@ void FabricMountingManager::synchronouslyUpdateViewOnUIThread(
   auto propsMap = reinterpret_cast<ReadableMap::javaobject>(
       ReadableNativeMap::newObjectCxxArgs(props).release());
   synchronouslyUpdateViewOnUIThreadJNI(javaUIManager_, viewTag, propsMap);
+}
+
+void FabricMountingManager::captureViewSnapshot(Tag tag, SurfaceId surfaceId) {
+  static auto captureViewSnapshotJNI =
+      JFabricUIManager::javaClassStatic()->getMethod<void(jint, jint)>(
+          "captureViewSnapshot");
+  captureViewSnapshotJNI(javaUIManager_, tag, surfaceId);
+}
+
+void FabricMountingManager::setViewSnapshot(
+    Tag sourceTag,
+    Tag targetTag,
+    SurfaceId surfaceId) {
+  static auto setViewSnapshotJNI =
+      JFabricUIManager::javaClassStatic()->getMethod<void(jint, jint, jint)>(
+          "setViewSnapshot");
+  setViewSnapshotJNI(javaUIManager_, sourceTag, targetTag, surfaceId);
+}
+
+void FabricMountingManager::clearPendingSnapshots() {
+  static auto clearPendingSnapshotsJNI =
+      JFabricUIManager::javaClassStatic()->getMethod<void()>(
+          "clearPendingSnapshots");
+  clearPendingSnapshotsJNI(javaUIManager_);
+}
+
+void FabricMountingManager::scheduleReactRevisionMerge(SurfaceId surfaceId) {
+  static const auto scheduleReactRevisionMerge =
+      JFabricUIManager::javaClassStatic()->getMethod<void(int32_t)>(
+          "scheduleReactRevisionMerge");
+  scheduleReactRevisionMerge(javaUIManager_, surfaceId);
 }
 
 } // namespace facebook::react

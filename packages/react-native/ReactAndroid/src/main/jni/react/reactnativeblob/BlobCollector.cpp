@@ -40,38 +40,45 @@ size_t BlobCollector::getBlobLength() {
   return static_cast<size_t>(length);
 }
 
-void BlobCollector::nativeInstall(
-    jni::alias_ref<jclass> /*unused*/,
-    jni::alias_ref<jobject> blobModule,
-    jlong jsContextNativePointer) {
-  auto& runtime = *((jsi::Runtime*)jsContextNativePointer);
-  auto blobModuleRef = jni::make_global(blobModule);
-  runtime.global().setProperty(
-      runtime,
-      "__blobCollectorProvider",
-      jsi::Function::createFromHostFunction(
-          runtime,
-          jsi::PropNameID::forAscii(runtime, "__blobCollectorProvider"),
-          1,
-          [blobModuleRef](
-              jsi::Runtime& rt,
-              const jsi::Value& /*thisVal*/,
-              const jsi::Value* args,
-              size_t /*count*/) {
-            auto blobId = args[0].asString(rt).utf8(rt);
-            auto blobCollector =
-                std::make_shared<BlobCollector>(blobModuleRef, blobId);
-            auto blobCollectorJsObject =
-                jsi::Object::createFromHostObject(rt, blobCollector);
-            blobCollectorJsObject.setExternalMemoryPressure(
-                rt, blobCollector->getBlobLength());
-            return blobCollectorJsObject;
-          }));
+// static
+void BlobModuleJSIBindings::registerNatives() {
+  javaClassLocal()->registerNatives({
+      makeNativeMethod(
+          "getBindingsInstaller", BlobModuleJSIBindings::getBindingsInstaller),
+  });
 }
 
-void BlobCollector::registerNatives() {
-  registerHybrid(
-      {makeNativeMethod("nativeInstall", BlobCollector::nativeInstall)});
+// static
+jni::local_ref<BindingsInstallerHolder::javaobject>
+BlobModuleJSIBindings::getBindingsInstaller(
+    jni::alias_ref<BlobModuleJSIBindings> jobj) {
+  auto blobModuleRef = jni::make_global(jobj);
+  return BindingsInstallerHolder::newObjectCxxArgs(
+      [blobModuleRef = std::move(blobModuleRef)](
+          jsi::Runtime& runtime, const std::shared_ptr<CallInvoker>&) {
+        runtime.global().setProperty(
+            runtime,
+            "__blobCollectorProvider",
+            jsi::Function::createFromHostFunction(
+                runtime,
+                jsi::PropNameID::forAscii(runtime, "__blobCollectorProvider"),
+                1,
+                [blobModuleRef](
+                    jsi::Runtime& rt,
+                    const jsi::Value& /*thisVal*/,
+                    const jsi::Value* args,
+                    size_t /*count*/) {
+                  // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                  auto blobId = args[0].asString(rt).utf8(rt);
+                  auto blobCollector =
+                      std::make_shared<BlobCollector>(blobModuleRef, blobId);
+                  auto blobCollectorJsObject =
+                      jsi::Object::createFromHostObject(rt, blobCollector);
+                  blobCollectorJsObject.setExternalMemoryPressure(
+                      rt, blobCollector->getBlobLength());
+                  return blobCollectorJsObject;
+                }));
+      });
 }
 
 } // namespace facebook::react

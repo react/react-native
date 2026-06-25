@@ -7,6 +7,7 @@
 
 #include "EventEmitterWrapper.h"
 #include <fbjni/fbjni.h>
+#include <react/timing/primitives.h>
 
 #include <utility>
 
@@ -14,10 +15,24 @@ using namespace facebook::jni;
 
 namespace facebook::react {
 
+namespace {
+
+/*
+ * Converts a Java timestamp (milliseconds since boot from
+ * SystemClock.uptimeMillis()) to a HighResTimeStamp.
+ */
+HighResTimeStamp highResTimeStampFromMillis(jlong millis) {
+  return HighResTimeStamp::fromChronoSteadyClockTimePoint(
+      std::chrono::steady_clock::time_point(std::chrono::milliseconds(millis)));
+}
+
+} // namespace
+
 void EventEmitterWrapper::dispatchEvent(
     std::string eventName,
     NativeMap* payload,
-    int category) {
+    int category,
+    jlong eventTimestamp) {
   // It is marginal, but possible for this to be constructed without a valid
   // EventEmitter. In those cases, make sure we noop/blackhole events instead of
   // crashing.
@@ -25,13 +40,15 @@ void EventEmitterWrapper::dispatchEvent(
     eventEmitter->dispatchEvent(
         std::move(eventName),
         (payload != nullptr) ? payload->consume() : folly::dynamic::object(),
-        static_cast<RawEvent::Category>(category));
+        static_cast<RawEvent::Category>(category),
+        highResTimeStampFromMillis(eventTimestamp));
   }
 }
 
 void EventEmitterWrapper::dispatchEventSynchronously(
     std::string eventName,
-    NativeMap* params) {
+    NativeMap* params,
+    jlong eventTimestamp) {
   // It is marginal, but possible for this to be constructed without a valid
   // EventEmitter. In those cases, make sure we noop/blackhole events instead of
   // crashing.
@@ -40,21 +57,24 @@ void EventEmitterWrapper::dispatchEventSynchronously(
       eventEmitter->dispatchEvent(
           std::move(eventName),
           (params != nullptr) ? params->consume() : folly::dynamic::object(),
-          RawEvent::Category::Discrete);
+          RawEvent::Category::Discrete,
+          highResTimeStampFromMillis(eventTimestamp));
     });
   }
 }
 
 void EventEmitterWrapper::dispatchUniqueEvent(
     std::string eventName,
-    NativeMap* payload) {
+    NativeMap* payload,
+    jlong eventTimestamp) {
   // It is marginal, but possible for this to be constructed without a valid
   // EventEmitter. In those cases, make sure we noop/blackhole events instead of
   // crashing.
   if (eventEmitter != nullptr) {
     eventEmitter->dispatchUniqueEvent(
         std::move(eventName),
-        (payload != nullptr) ? payload->consume() : folly::dynamic::object());
+        (payload != nullptr) ? payload->consume() : folly::dynamic::object(),
+        highResTimeStampFromMillis(eventTimestamp));
   }
 }
 

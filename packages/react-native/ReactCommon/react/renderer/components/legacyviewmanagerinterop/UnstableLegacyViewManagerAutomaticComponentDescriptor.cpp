@@ -6,6 +6,9 @@
  */
 
 #include "UnstableLegacyViewManagerAutomaticComponentDescriptor.h"
+
+#ifndef RCT_REMOVE_LEGACY_COMPONENT_INTEROP
+
 #include <react/renderer/components/legacyviewmanagerinterop/UnstableLegacyViewManagerAutomaticShadowNode.h>
 #include <react/renderer/core/ConcreteComponentDescriptor.h>
 #include <react/renderer/core/ReactPrimitives.h>
@@ -24,3 +27,5 @@ UnstableLegacyViewManagerAutomaticComponentDescriptor::getComponentHandle()
   return reinterpret_cast<ComponentHandle>(getComponentName());
 }
 } // namespace facebook::react
+
+#endif // RCT_REMOVE_LEGACY_COMPONENT_INTEROP

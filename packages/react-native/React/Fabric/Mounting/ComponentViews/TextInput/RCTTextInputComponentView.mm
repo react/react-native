@@ -32,8 +32,12 @@ using namespace facebook::react;
 
 @interface RCTTextInputComponentView () <
     RCTBackedTextInputDelegate,
-    RCTTextInputViewProtocol,
-    UIDropInteractionDelegate>
+    RCTTextInputViewProtocol
+#if !TARGET_OS_TV
+    ,
+    UIDropInteractionDelegate
+#endif
+    >
 @end
 
 static NSSet<NSNumber *> *returnKeyTypesSet;
@@ -211,11 +215,13 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     _backedTextInputView.editable = newTextInputProps.traits.editable;
   }
 
+#if !TARGET_OS_TV
   if (newTextInputProps.multiline &&
       newTextInputProps.traits.dataDetectorTypes != oldTextInputProps.traits.dataDetectorTypes) {
     _backedTextInputView.dataDetectorTypes =
         RCTUITextViewDataDetectorTypesFromStringVector(newTextInputProps.traits.dataDetectorTypes);
   }
+#endif
 
   if (newTextInputProps.traits.enablesReturnKeyAutomatically !=
       oldTextInputProps.traits.enablesReturnKeyAutomatically) {
@@ -665,6 +671,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 
   _hasInputAccessoryView = shouldHaveInputAccessoryView;
 
+#if !TARGET_OS_TV
   if (shouldHaveInputAccessoryView) {
     NSString *buttonLabel = inputAccessoryViewButtonLabel != nil ? inputAccessoryViewButtonLabel
                                                                  : [self returnKeyTypeToString:returnKeyType];
@@ -682,6 +689,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   } else {
     _backedTextInputView.inputAccessoryView = nil;
   }
+#endif
 
   if (_backedTextInputView.isFirstResponder) {
     [_backedTextInputView reloadInputViews];
@@ -704,10 +712,10 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   return {
       .text = RCTStringFromNSString(_backedTextInputView.attributedText.string),
       .selectionRange = [self _selectionRange],
-      .eventCount = static_cast<int>(_mostRecentEventCount),
+      .contentSize = RCTSizeFromCGSize(_backedTextInputView.contentSize),
       .contentOffset = RCTPointFromCGPoint(_backedTextInputView.contentOffset),
       .contentInset = RCTEdgeInsetsFromUIEdgeInsets(_backedTextInputView.contentInset),
-      .contentSize = RCTSizeFromCGSize(_backedTextInputView.contentSize),
+      .eventCount = static_cast<int>(_mostRecentEventCount),
       .layoutMeasurement = RCTSizeFromCGSize(_backedTextInputView.bounds.size),
       .zoomScale = _backedTextInputView.zoomScale,
   };

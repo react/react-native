@@ -16,9 +16,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 // Whether the New Architecture is enabled or not
 RCT_EXTERN BOOL RCTIsNewArchEnabled(void);
-RCT_EXTERN void RCTSetNewArchEnabled(BOOL enabled) __attribute__((deprecated(
-    "This function is now no-op. You need to modify the Info.plist adding a RCTNewArchEnabled bool property to control whether the New Arch is enabled or not")));
-;
 
 // Whether React native should output logs for modules and components used
 // through the interop layers
@@ -104,7 +101,9 @@ RCT_EXTERN BOOL RCTIsSceneDelegateApp(void);
 RCT_EXTERN UIViewController *__nullable RCTPresentedViewController(void);
 
 // Retrieve current window UIStatusBarManager
+#if !TARGET_OS_TV
 RCT_EXTERN UIStatusBarManager *__nullable RCTUIStatusBarManager(void) API_AVAILABLE(ios(13));
+#endif
 
 // Does this device support force touch (aka 3D Touch)?
 RCT_EXTERN BOOL RCTForceTouchAvailable(void);
@@ -134,6 +133,10 @@ RCT_EXTERN NSURL *RCTDataURL(NSString *mimeType, NSData *data);
 
 // Gzip functionality - compression level in range 0 - 1 (-1 for default)
 RCT_EXTERN NSData *__nullable RCTGzipData(NSData *__nullable data, float level);
+
+// Gzip decompression - maxDecompressedSize of 0 means no limit, returns nil if
+// limit exceeded or decompression fails
+RCT_EXTERN NSData *__nullable RCTDecompressGzipData(NSData *__nullable data, NSUInteger maxDecompressedSize);
 
 // Returns the relative path within the main bundle for an absolute URL
 // (or nil, if the URL does not specify a path within the main bundle)

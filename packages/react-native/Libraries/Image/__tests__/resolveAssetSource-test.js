@@ -8,7 +8,7 @@
  * @format
  */
 
-import type {PackagerAsset} from '../../../../assets/registry';
+import type {PackagerAsset} from '../../../../assets-registry/registry';
 import type {ResolvedAssetSource} from '../AssetSourceResolver';
 
 describe('resolveAssetSource', () => {

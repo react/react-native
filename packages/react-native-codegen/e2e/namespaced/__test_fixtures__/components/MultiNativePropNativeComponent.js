@@ -18,7 +18,7 @@ import type {
 
 import {codegenNativeComponent} from 'react-native';
 
-type NativeProps = $ReadOnly<{
+type NativeProps = Readonly<{
   ...ViewProps,
 
   // Props
@@ -28,6 +28,6 @@ type NativeProps = $ReadOnly<{
   point?: PointValue,
 }>;
 
-export default (codegenNativeComponent<NativeProps>(
+export default codegenNativeComponent<NativeProps>(
   'MultiNativePropNativeComponentView',
-): HostComponent<NativeProps>);
+) as HostComponent<NativeProps>;

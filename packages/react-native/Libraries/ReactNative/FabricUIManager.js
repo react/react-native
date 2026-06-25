@@ -28,62 +28,65 @@ import defineLazyObjectProperty from '../Utilities/defineLazyObjectProperty';
 export type NodeSet = Array<Node>;
 export type NodeProps = {...};
 export interface Spec {
-  +createNode: (
+  readonly createNode: (
     reactTag: number,
     viewName: string,
     rootTag: RootTag,
     props: NodeProps,
     instanceHandle: InternalInstanceHandle,
   ) => Node;
-  +cloneNode: (node: Node) => Node;
-  +cloneNodeWithNewChildren: (node: Node) => Node;
-  +cloneNodeWithNewProps: (node: Node, newProps: NodeProps) => Node;
-  +cloneNodeWithNewChildrenAndProps: (node: Node, newProps: NodeProps) => Node;
-  +createChildSet: (rootTag: RootTag) => NodeSet;
-  +appendChild: (parentNode: Node, child: Node) => Node;
-  +appendChildToSet: (childSet: NodeSet, child: Node) => void;
-  +completeRoot: (rootTag: RootTag, childSet: NodeSet) => void;
-  +measure: (
+  readonly cloneNode: (node: Node) => Node;
+  readonly cloneNodeWithNewChildren: (node: Node) => Node;
+  readonly cloneNodeWithNewProps: (node: Node, newProps: NodeProps) => Node;
+  readonly cloneNodeWithNewChildrenAndProps: (
+    node: Node,
+    newProps: NodeProps,
+  ) => Node;
+  readonly createChildSet: (rootTag: RootTag) => NodeSet;
+  readonly appendChild: (parentNode: Node, child: Node) => Node;
+  readonly appendChildToSet: (childSet: NodeSet, child: Node) => void;
+  readonly completeRoot: (rootTag: RootTag, childSet: NodeSet) => void;
+  readonly measure: (
     node: Node | NativeElementReference,
     callback: MeasureOnSuccessCallback,
   ) => void;
-  +measureInWindow: (
+  readonly measureInWindow: (
     node: Node | NativeElementReference,
     callback: MeasureInWindowOnSuccessCallback,
   ) => void;
-  +measureLayout: (
+  readonly measureLayout: (
     node: Node | NativeElementReference,
     relativeNode: Node | NativeElementReference,
     onFail: () => void,
     onSuccess: MeasureLayoutOnSuccessCallback,
   ) => void;
-  +configureNextLayoutAnimation: (
+  readonly configureNextLayoutAnimation: (
     config: LayoutAnimationConfig,
     callback: () => void, // check what is returned here
     errorCallback: () => void,
   ) => void;
-  +sendAccessibilityEvent: (node: Node, eventType: string) => void;
-  +findShadowNodeByTag_DEPRECATED: (reactTag: number) => ?Node;
-  +setNativeProps: (
+  readonly sendAccessibilityEvent: (node: Node, eventType: string) => void;
+  readonly findShadowNodeByTag_DEPRECATED: (reactTag: number) => ?Node;
+  readonly setNativeProps: (
     node: Node | NativeElementReference,
     newProps: NodeProps,
   ) => void;
-  +dispatchCommand: (
+  readonly dispatchCommand: (
     node: Node,
     commandName: string,
-    args: Array<mixed>,
+    args: Array<unknown>,
   ) => void;
-  +findNodeAtPoint: (
+  readonly findNodeAtPoint: (
     node: Node,
     locationX: number,
     locationY: number,
     callback: (instanceHandle: ?InternalInstanceHandle) => void,
   ) => void;
-  +compareDocumentPosition: (
+  readonly compareDocumentPosition: (
     node: Node | NativeElementReference,
     otherNode: Node | NativeElementReference,
   ) => number;
-  +getBoundingClientRect: (
+  readonly getBoundingClientRect: (
     node: Node | NativeElementReference,
     includeTransform: boolean,
   ) => ?[
@@ -92,11 +95,16 @@ export interface Spec {
     /* width: */ number,
     /* height: */ number,
   ];
-  +unstable_DefaultEventPriority: number;
-  +unstable_DiscreteEventPriority: number;
-  +unstable_ContinuousEventPriority: number;
-  +unstable_IdleEventPriority: number;
-  +unstable_getCurrentEventPriority: () => number;
+  readonly setIsJSResponder: (
+    node: Node | NativeElementReference,
+    isJSResponder: boolean,
+    blockNativeResponder: boolean,
+  ) => void;
+  readonly unstable_DefaultEventPriority: number;
+  readonly unstable_DiscreteEventPriority: number;
+  readonly unstable_ContinuousEventPriority: number;
+  readonly unstable_IdleEventPriority: number;
+  readonly unstable_getCurrentEventPriority: () => number;
 }
 
 let nativeFabricUIManagerProxy: ?Spec;
@@ -124,6 +132,7 @@ const CACHED_PROPERTIES = [
   'dispatchCommand',
   'compareDocumentPosition',
   'getBoundingClientRect',
+  'setIsJSResponder',
   'unstable_DefaultEventPriority',
   'unstable_DiscreteEventPriority',
   'unstable_ContinuousEventPriority',
@@ -154,7 +163,7 @@ export function getFabricUIManager(): ?Spec {
  */
 function createProxyWithCachedProperties(
   implementation: Spec,
-  propertiesToCache: $ReadOnlyArray<string>,
+  propertiesToCache: ReadonlyArray<string>,
 ): Spec {
   const proxy = Object.create(implementation);
   for (const propertyName of propertiesToCache) {

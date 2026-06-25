@@ -11,5 +11,5 @@
 
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* /*unused*/) {
   return facebook::jni::initialize(
-      vm, [] { facebook::react::BlobCollector::registerNatives(); });
+      vm, [] { facebook::react::BlobModuleJSIBindings::registerNatives(); });
 }

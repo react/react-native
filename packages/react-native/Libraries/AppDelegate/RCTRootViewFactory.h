@@ -148,7 +148,7 @@ typedef void (^RCTLoadSourceForBridgeBlock)(RCTBridge *bridge, RCTSourceLoadBloc
 @property (nonatomic, nullable) RCTExtraLazyModuleClassesForBridge extraLazyModuleClassesForBridge;
 
 /**
- * The bridge will call this block when a module been called from JS
+ * The bridge will call this block when a module has been called from JS
  * cannot be found among registered modules.
  * It should return YES if the module with name 'moduleName' was registered
  * in the implementation, and the system must attempt to look for it again among registered.
@@ -173,20 +173,23 @@ typedef void (^RCTLoadSourceForBridgeBlock)(RCTBridge *bridge, RCTSourceLoadBloc
 
 #pragma mark - RCTRootViewFactory
 /**
- * The RCTRootViewFactory is an utility class that encapsulates the logic of creating a new RCTRootView based on the
+ * The RCTRootViewFactory is a utility class that encapsulates the logic of creating a new RCTRootView based on the
  * current state of the environment. It allows you to initialize your app root view for old architecture, new
- * architecture and bridgless mode.
+ * architecture and bridgeless mode.
  *
- * This class is used to initalize rootView in RCTAppDelegate, but you can also use it separately.
+ * This class is used to initialize rootView in RCTAppDelegate, but you can also use it separately.
  *
  * Create a new instance of this class (make sure to retain it) and call the
  * `viewWithModuleName:initialProperties:launchOptions` method to create new RCTRootView.
  */
 @interface RCTRootViewFactory : NSObject
 
+#if !defined(RCT_REMOVE_LEGACY_ARCH)
 @property (nonatomic, strong, nullable) RCTBridge *bridge;
-@property (nonatomic, strong, nullable) RCTHost *reactHost;
 @property (nonatomic, strong, nullable) RCTSurfacePresenterBridgeAdapter *bridgeAdapter;
+#endif
+
+@property (nonatomic, strong, nullable) RCTHost *reactHost;
 
 - (instancetype)initWithConfiguration:(RCTRootViewFactoryConfiguration *)configuration
         andTurboModuleManagerDelegate:(id<RCTTurboModuleManagerDelegate> _Nullable)turboModuleManagerDelegate;
@@ -194,7 +197,7 @@ typedef void (^RCTLoadSourceForBridgeBlock)(RCTBridge *bridge, RCTSourceLoadBloc
 - (instancetype)initWithConfiguration:(RCTRootViewFactoryConfiguration *)configuration;
 
 - (instancetype)initWithTurboModuleDelegate:(id<RCTTurboModuleManagerDelegate>)turboModuleManagerDelegate
-                               hostDelegate:(id<RCTHostDelegate>)hostdelegate
+                               hostDelegate:(id<RCTHostDelegate>)hostDelegate
                               configuration:(RCTRootViewFactoryConfiguration *)configuration;
 
 /**

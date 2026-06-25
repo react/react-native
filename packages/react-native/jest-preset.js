@@ -10,21 +10,17 @@
 
 'use strict';
 
-module.exports = {
-  haste: {
-    defaultPlatform: 'ios',
-    platforms: ['android', 'ios', 'native'],
-  },
-  resolver: require.resolve('./jest/resolver.js'),
-  transform: {
-    '^.+\\.(js|ts|tsx)$': 'babel-jest',
-    '^.+\\.(bmp|gif|jpg|jpeg|mp4|png|psd|svg|webp)$': require.resolve(
-      './jest/assetFileTransformer.js',
-    ),
-  },
-  transformIgnorePatterns: [
-    'node_modules/(?!((jest-)?react-native|@react-native(-community)?)/)',
-  ],
-  setupFiles: [require.resolve('./jest/setup.js')],
-  testEnvironment: require.resolve('./jest/react-native-env.js'),
-};
+try {
+  module.exports = require('@react-native/jest-preset');
+} catch (error) {
+  if (error.code === 'MODULE_NOT_FOUND') {
+    throw new Error(
+      `The React Native Jest preset has moved to a separate package.
+To migrate, please install "@react-native/jest-preset" and update your
+jest.config.js to reference:
+  preset: '@react-native/jest-preset'`,
+    );
+  } else {
+    throw error;
+  }
+}

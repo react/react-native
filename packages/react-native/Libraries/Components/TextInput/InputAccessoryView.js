@@ -76,8 +76,9 @@ import * as React from 'react';
  * For an example, look at InputAccessoryViewExample.js in RNTester.
  */
 
-export type InputAccessoryViewProps = $ReadOnly<{
-  +children: React.Node,
+/** @build-types emit-as-interface Expo compatibility */
+export type InputAccessoryViewProps = Readonly<{
+  readonly children: React.Node,
   /**
    * An ID which is used to associate this `InputAccessoryView` to
    * specified TextInput(s).

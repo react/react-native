@@ -1,0 +1,3 @@
+class test::Clss {
+  protected typedef int32_t MyInt32;
+}

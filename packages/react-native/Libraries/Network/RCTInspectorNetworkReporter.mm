@@ -10,6 +10,7 @@
 #import "RCTNetworkConversions.h"
 
 #import <React/RCTLog.h>
+#import <React/RCTUtils.h>
 #import <react/networking/NetworkReporter.h>
 
 using namespace facebook::react;
@@ -28,11 +29,33 @@ Headers convertNSDictionaryToHeaders(const NSDictionary<NSString *, NSString *> 
 
 std::string convertRequestBodyToStringTruncated(NSURLRequest *request)
 {
-  const NSUInteger maxBodySize = 1024 * 1024; // 1MB
-  auto bodyLength = request.HTTPBody.length;
-  auto bytesToRead = std::min(bodyLength, maxBodySize);
+  const NSUInteger maxBodySize = 512 * 1024; // 512KB
+  NSData *bodyData = request.HTTPBody;
 
-  auto body = std::string((const char *)request.HTTPBody.bytes, bytesToRead);
+  if (bodyData == nil || bodyData.length == 0) {
+    return "";
+  }
+
+  // Decompress if gzip-encoded (up to maxBodySize)
+  NSString *contentEncoding = [request valueForHTTPHeaderField:@"Content-Encoding"];
+  if ([contentEncoding isEqualToString:@"gzip"]) {
+    NSData *decompressedData = RCTDecompressGzipData(bodyData, maxBodySize);
+    if (decompressedData != nil) {
+      bodyData = decompressedData;
+    }
+  }
+
+  auto bodyLength = bodyData.length;
+  auto bytesToRead = std::min(bodyLength, maxBodySize);
+  NSData *truncatedData = [bodyData subdataWithRange:NSMakeRange(0, bytesToRead)];
+
+  // Attempt UTF-8 decoding
+  NSString *bodyString = [[NSString alloc] initWithData:truncatedData encoding:NSUTF8StringEncoding];
+  if (bodyString == nil) {
+    return "[Preview unavailable]";
+  }
+
+  auto body = std::string([bodyString UTF8String]);
 
   if (bytesToRead < bodyLength) {
     body +=

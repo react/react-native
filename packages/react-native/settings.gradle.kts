@@ -38,26 +38,3 @@ project(":packages:react-native:ReactAndroid:hermes-engine").projectDir =
 project(":packages").projectDir = file("/tmp")
 
 project(":packages:react-native").projectDir = file("/tmp")
-
-// Gradle properties defined in `gradle.properties` are not inherited by
-// included builds, see https://github.com/gradle/gradle/issues/2534.
-// This is a workaround to read the configuration from the consuming project,
-// and apply relevant properties to the :react-native project.
-buildscript {
-  val properties = java.util.Properties()
-  val propertiesToInherit = listOf("hermesV1Enabled", "react.hermesV1Enabled")
-
-  try {
-    file("../../android/gradle.properties").inputStream().use { properties.load(it) }
-
-    gradle.rootProject {
-      propertiesToInherit.forEach { property ->
-        if (properties.containsKey(property)) {
-          gradle.rootProject.extra.set(property, properties.getProperty(property))
-        }
-      }
-    }
-  } catch (e: Exception) {
-    // fail silently
-  }
-}

@@ -17,7 +17,7 @@ const nativeImageSource =
 
 const {Image, StyleSheet, Text, View} = ReactNative;
 
-type Props = $ReadOnly<{}>;
+type Props = Readonly<{}>;
 class ImageCapInsetsExample extends React.Component<Props> {
   render(): React.Node {
     return (

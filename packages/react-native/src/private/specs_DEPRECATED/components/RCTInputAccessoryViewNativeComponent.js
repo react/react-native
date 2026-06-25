@@ -14,16 +14,16 @@ import type {HostComponent} from '../../types/HostComponent';
 
 import codegenNativeComponent from '../../../../Libraries/Utilities/codegenNativeComponent';
 
-type InputAccessoryNativeProps = $ReadOnly<{
+type InputAccessoryNativeProps = Readonly<{
   ...ViewProps,
   backgroundColor?: ?ColorValue,
 }>;
 
-export default (codegenNativeComponent<InputAccessoryNativeProps>(
+export default codegenNativeComponent<InputAccessoryNativeProps>(
   'InputAccessory',
   {
     interfaceOnly: true,
     paperComponentName: 'RCTInputAccessoryView',
     excludedPlatforms: ['android'],
   },
-): HostComponent<InputAccessoryNativeProps>);
+) as HostComponent<InputAccessoryNativeProps>;

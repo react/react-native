@@ -49,16 +49,6 @@ const RN_TESTER_DIR /*: string */ = path.join(
   'rn-tester',
 );
 
-/**
- * The absolute path to the RN integration tests runner directory.
- */
-const RN_INTEGRATION_TESTS_RUNNER_DIR /*: string */ = path.join(
-  REPO_ROOT,
-  'jest',
-  'integration',
-  'runner',
-);
-
 module.exports = {
   PACKAGES_DIR,
   PRIVATE_DIR,
@@ -66,5 +56,4 @@ module.exports = {
   REPO_ROOT,
   RN_TESTER_DIR,
   SCRIPTS_DIR,
-  RN_INTEGRATION_TESTS_RUNNER_DIR,
 };

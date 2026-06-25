@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include <folly/dynamic.h>
 #include <glog/logging.h>
 #include <react/debug/react_native_assert.h>
 #include <react/debug/react_native_expect.h>

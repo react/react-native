@@ -29,7 +29,7 @@ class HermesRuntimeTargetDelegate : public RuntimeTargetDelegate {
   /**
    * Creates a HermesRuntimeTargetDelegate for the given runtime.
    */
-  explicit HermesRuntimeTargetDelegate(std::shared_ptr<hermes::HermesRuntime> hermesRuntime);
+  explicit HermesRuntimeTargetDelegate(std::shared_ptr<jsi::Runtime> runtime, hermes::HermesRuntime &hermesRuntime);
 
   ~HermesRuntimeTargetDelegate() override;
 

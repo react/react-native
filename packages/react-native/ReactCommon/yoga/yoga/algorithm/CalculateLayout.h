@@ -35,4 +35,26 @@ bool calculateLayoutInternal(
     uint32_t depth,
     uint32_t generationCount);
 
+void constrainMaxSizeForMode(
+    const yoga::Node* node,
+    Direction direction,
+    FlexDirection axis,
+    float ownerAxisSize,
+    float ownerWidth,
+    /*in_out*/ SizingMode* mode,
+    /*in_out*/ float* size);
+
+float calculateAvailableInnerDimension(
+    const yoga::Node* const node,
+    const Direction direction,
+    const Dimension dimension,
+    const float availableDim,
+    float paddingAndBorder,
+    const float ownerDim,
+    const float ownerWidth);
+
+void zeroOutLayoutRecursively(yoga::Node* const node);
+
+void cleanupContentsNodesRecursively(yoga::Node* node, bool didPerformLayout);
+
 } // namespace facebook::yoga

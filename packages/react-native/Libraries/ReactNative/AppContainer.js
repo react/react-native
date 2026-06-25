@@ -13,9 +13,8 @@ import type {RootTag} from './RootTag';
 
 import * as React from 'react';
 
-export type Props = $ReadOnly<{
+export type Props = Readonly<{
   children?: React.Node,
-  fabric?: boolean,
   rootTag: number | RootTag,
   initialProps?: {...},
   WrapperComponent?: ?React.ComponentType<any>,

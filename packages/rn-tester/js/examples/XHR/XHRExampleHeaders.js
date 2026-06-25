@@ -11,7 +11,7 @@
 'use strict';
 
 import RNTesterText from '../../components/RNTesterText';
-import React from 'react';
+import * as React from 'react';
 import {StyleSheet, Text, TouchableHighlight, View} from 'react-native';
 
 class XHRExampleHeaders extends React.Component {

@@ -50,7 +50,7 @@ module.exports = {
       files: [
         './packages/react-native/Libraries/**/*.{js,flow}',
         './packages/react-native/src/**/*.{js,flow}',
-        './packages/assets/registry.js',
+        './packages/assets-registry/registry.js',
       ],
       parser: 'hermes-eslint',
       rules: {
@@ -98,7 +98,7 @@ module.exports = {
         '**/__fixtures__/**/*.js',
         '**/__mocks__/**/*.js',
         '**/__tests__/**/*.js',
-        'packages/react-native/jest/**/*.js',
+        'packages/jest-preset/jest/**/*.js',
         'packages/rn-tester/**/*.js',
       ],
       globals: {

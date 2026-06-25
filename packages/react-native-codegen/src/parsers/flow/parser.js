@@ -152,7 +152,7 @@ class FlowParser implements Parser {
 
   getFunctionTypeAnnotationParameters(
     functionTypeAnnotation: $FlowFixMe,
-  ): $ReadOnlyArray<$FlowFixMe> {
+  ): ReadonlyArray<$FlowFixMe> {
     return functionTypeAnnotation.params;
   }
 
@@ -227,7 +227,7 @@ class FlowParser implements Parser {
 
   parseEnumMembers(
     typeAnnotation: $FlowFixMe,
-  ): $ReadOnlyArray<NativeModuleEnumMember> {
+  ): ReadonlyArray<NativeModuleEnumMember> {
     return typeAnnotation.members.map(member => {
       const value =
         typeof member.init?.value === 'number'
@@ -272,15 +272,7 @@ class FlowParser implements Parser {
     return types[typeAnnotation.typeParameters.params[0].id.name];
   }
 
-  /**
-   * This FlowFixMe is supposed to refer to an InterfaceDeclaration or TypeAlias
-   * declaration type. Unfortunately, we don't have those types, because flow-parser
-   * generates them, and flow-parser is not type-safe. In the future, we should find
-   * a way to get these types from our flow parser library.
-   *
-   * TODO(T71778680): Flow type AST Nodes
-   */
-
+  // TODO(T71778680): Flow type AST Nodes
   getTypes(ast: $FlowFixMe): TypeDeclarationMap {
     return ast.body.reduce((types, node) => {
       if (
@@ -371,7 +363,7 @@ class FlowParser implements Parser {
     return annotatedElement.right.properties;
   }
 
-  bodyProperties(typeAlias: $FlowFixMe): $ReadOnlyArray<$FlowFixMe> {
+  bodyProperties(typeAlias: $FlowFixMe): ReadonlyArray<$FlowFixMe> {
     return typeAlias.body.properties;
   }
 
@@ -489,9 +481,9 @@ class FlowParser implements Parser {
   }
 
   removeKnownExtends(
-    typeDefinition: $ReadOnlyArray<PropAST>,
+    typeDefinition: ReadonlyArray<PropAST>,
     types: TypeDeclarationMap,
-  ): $ReadOnlyArray<PropAST> {
+  ): ReadonlyArray<PropAST> {
     return typeDefinition.filter(
       prop =>
         prop.type !== 'ObjectTypeSpreadProperty' ||
@@ -500,9 +492,9 @@ class FlowParser implements Parser {
   }
 
   getExtendsProps(
-    typeDefinition: $ReadOnlyArray<PropAST>,
+    typeDefinition: ReadonlyArray<PropAST>,
     types: TypeDeclarationMap,
-  ): $ReadOnlyArray<ExtendsPropsShape> {
+  ): ReadonlyArray<ExtendsPropsShape> {
     return typeDefinition
       .filter(prop => prop.type === 'ObjectTypeSpreadProperty')
       .map(prop => this.extendsForProp(prop, types, this))
@@ -510,11 +502,11 @@ class FlowParser implements Parser {
   }
 
   getProps(
-    typeDefinition: $ReadOnlyArray<PropAST>,
+    typeDefinition: ReadonlyArray<PropAST>,
     types: TypeDeclarationMap,
   ): {
-    props: $ReadOnlyArray<NamedShape<PropTypeAnnotation>>,
-    extendsProps: $ReadOnlyArray<ExtendsPropsShape>,
+    props: ReadonlyArray<NamedShape<PropTypeAnnotation>>,
+    extendsProps: ReadonlyArray<ExtendsPropsShape>,
   } {
     const nonExtendsProps = this.removeKnownExtends(typeDefinition, types);
     const props = flattenProperties(nonExtendsProps, types, this)

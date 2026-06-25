@@ -11,7 +11,7 @@
 declare module 'open' {
   import type {ChildProcess} from 'child_process';
 
-  declare export type Options = $ReadOnly<{
+  declare export type Options = Readonly<{
     wait?: boolean,
     background?: boolean,
     newInstance?: boolean,

@@ -144,7 +144,7 @@ void ParagraphShadowNode::setTextLayoutManager(
 template <typename ParagraphStateT>
 void ParagraphShadowNode::updateStateIfNeeded(
     const Content& content,
-    const MeasuredPreparedLayout& layout) {
+    const MeasuredPreparedTextLayout& layout) {
   ensureUnsealed();
 
   auto& state = static_cast<const ParagraphStateT&>(getStateData());
@@ -182,10 +182,10 @@ void ParagraphShadowNode::updateStateIfNeeded(const Content& content) {
           textLayoutManager_});
 }
 
-MeasuredPreparedLayout* ParagraphShadowNode::findUsableLayout() {
-  MeasuredPreparedLayout* ret = nullptr;
+MeasuredPreparedTextLayout* ParagraphShadowNode::findUsableLayout() {
+  MeasuredPreparedTextLayout* ret = nullptr;
 
-  if constexpr (TextLayoutManagerExtended::supportsPreparedLayout()) {
+  if constexpr (TextLayoutManagerExtended::supportsPreparedTextLayout()) {
     // We consider the layout to be reusable, if our content measurement,
     // combined with padding/border (not snapped) exactly corresponds to the
     // measurement of the node, before layout rounding. We may not find a
@@ -222,7 +222,7 @@ Size ParagraphShadowNode::rawContentSize() {
 Size ParagraphShadowNode::measureContent(
     const LayoutContext& layoutContext,
     const LayoutConstraints& layoutConstraints) const {
-  if constexpr (TextLayoutManagerExtended::supportsPreparedLayout()) {
+  if constexpr (TextLayoutManagerExtended::supportsPreparedTextLayout()) {
     for (const auto& layout : measuredLayouts_) {
       if (layout.layoutConstraints == layoutConstraints) {
         return layout.measurement.size;
@@ -238,7 +238,7 @@ Size ParagraphShadowNode::measureContent(
       .surfaceId = getSurfaceId(),
   };
 
-  if constexpr (TextLayoutManagerExtended::supportsPreparedLayout()) {
+  if constexpr (TextLayoutManagerExtended::supportsPreparedTextLayout()) {
     if (ReactNativeFeatureFlags::enablePreparedTextLayout()) {
       TextLayoutManagerExtended tme(*textLayoutManager_);
 
@@ -251,12 +251,12 @@ Size ParagraphShadowNode::measureContent(
           preparedLayout, textLayoutContext, layoutConstraints);
 
       measuredLayouts_.push_back(
-          MeasuredPreparedLayout{
+          MeasuredPreparedTextLayout{
               .layoutConstraints = layoutConstraints,
               .measurement = measurement,
-              // PreparedLayout is not trivially copyable on all platforms
+              // PreparedTextLayout is not trivially copyable on all platforms
               // NOLINTNEXTLINE(performance-move-const-arg)
-              .preparedLayout = std::move(preparedLayout)});
+              .preparedTextLayout = std::move(preparedLayout)});
       assert_valid_size(measurement.size, layoutConstraints);
       return measurement.size;
     }
@@ -316,7 +316,7 @@ void ParagraphShadowNode::layout(LayoutContext layoutContext) {
   auto measuredLayout = findUsableLayout();
 
   if constexpr (
-      TextLayoutManagerExtended::supportsPreparedLayout() &&
+      TextLayoutManagerExtended::supportsPreparedTextLayout() &&
       std::is_constructible_v<
           ParagraphState,
           decltype(content.attributedString),

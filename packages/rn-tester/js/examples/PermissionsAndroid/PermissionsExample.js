@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
   },
 });
 
-exports.displayName = (undefined: ?string);
+exports.displayName = undefined as ?string;
 exports.framework = 'React';
 exports.title = 'PermissionsAndroid';
 exports.category = 'Android';

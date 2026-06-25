@@ -24,10 +24,10 @@ export type ExtendedError = Error &
       name: string,
       message: string,
       // $FlowFixMe[unclear-type]
-      stackElements?: $ReadOnlyArray<Object>,
+      stackElements?: ReadonlyArray<Object>,
       // $FlowFixMe[unclear-type]
-      stackSymbols?: $ReadOnlyArray<Object>,
+      stackSymbols?: ReadonlyArray<Object>,
       // $FlowFixMe[unclear-type]
-      stackReturnAddresses?: $ReadOnlyArray<Object>,
+      stackReturnAddresses?: ReadonlyArray<Object>,
     },
   };

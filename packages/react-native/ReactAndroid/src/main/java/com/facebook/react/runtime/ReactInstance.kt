@@ -7,6 +7,7 @@
 
 package com.facebook.react.runtime
 
+import android.annotation.SuppressLint
 import android.content.res.AssetManager
 import android.view.View
 import com.facebook.common.logging.FLog
@@ -43,6 +44,7 @@ import com.facebook.react.common.annotations.UnstableReactNativeAPI
 import com.facebook.react.devsupport.InspectorFlags.getIsProfilingBuild
 import com.facebook.react.devsupport.StackTraceHelper
 import com.facebook.react.devsupport.interfaces.DevSupportManager
+import com.facebook.react.fabric.AnimationBackendChoreographer
 import com.facebook.react.fabric.ComponentFactory
 import com.facebook.react.fabric.FabricUIManager
 import com.facebook.react.fabric.FabricUIManagerBinding
@@ -103,6 +105,13 @@ internal class ReactInstance(
   val reactQueueConfiguration: ReactQueueConfiguration
   val fabricUIManager: FabricUIManager
   val javaScriptContextHolder: JavaScriptContextHolder
+
+  val nativeModules: Collection<NativeModule>
+    get() = turboModuleManager.modules
+
+  val eventDispatcher: EventDispatcher
+    /** @return The [EventDispatcher] used by [FabricUIManager] to emit UI events to JS. */
+    get() = fabricUIManager.eventDispatcher
 
   init {
     Systrace.beginSection(Systrace.TRACE_TAG_REACT, "ReactInstance.initialize")
@@ -250,6 +259,8 @@ internal class ReactInstance(
     // Misc initialization that needs to be done before Fabric init
     DisplayMetricsHolder.initDisplayMetricsIfNotInitialized(context)
 
+    val animationBackendChoreographer = AnimationBackendChoreographer(context)
+
     val binding = FabricUIManagerBinding()
     binding.register(
         getBufferedRuntimeExecutor(),
@@ -257,6 +268,7 @@ internal class ReactInstance(
         fabricUIManager,
         eventBeatManager,
         componentFactory,
+        animationBackendChoreographer,
     )
 
     // Initialize the FabricUIManager
@@ -340,9 +352,6 @@ internal class ReactInstance(
     return false
   }
 
-  val nativeModules: Collection<NativeModule>
-    get() = turboModuleManager.modules
-
   fun <T : NativeModule> getNativeModule(nativeModuleInterface: Class<T>): T? {
     val annotation = nativeModuleInterface.getAnnotation(ReactModule::class.java)
     if (annotation != null) {
@@ -351,6 +360,7 @@ internal class ReactInstance(
     return null
   }
 
+  @SuppressLint("KotlinGenericsCast")
   fun <T : NativeModule> getNativeModule(nativeModuleName: String): T? {
     synchronized(turboModuleManager) {
       @Suppress("UNCHECKED_CAST")
@@ -452,7 +462,7 @@ internal class ReactInstance(
 
   private external fun getJavaScriptContext(): Long
 
-  external fun callFunctionOnModule(moduleName: String, methodName: String, args: NativeArray)
+  external fun callFunctionOnModule(moduleName: String, methodName: String, args: NativeArray?)
 
   private external fun registerSegmentNative(segmentId: Int, segmentPath: String)
 
@@ -472,10 +482,6 @@ internal class ReactInstance(
       )
     }
   }
-
-  val eventDispatcher: EventDispatcher
-    /** @return The [EventDispatcher] used by [FabricUIManager] to emit UI events to JS. */
-    get() = fabricUIManager.eventDispatcher
 
   fun registerSegment(segmentId: Int, path: String) {
     registerSegmentNative(segmentId, path)

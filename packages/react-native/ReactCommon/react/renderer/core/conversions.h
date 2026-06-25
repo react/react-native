@@ -44,6 +44,8 @@ inline int toInt(const DisplayType &displayType)
       return 1;
     case DisplayType::Contents:
       return 2;
+    case DisplayType::Grid:
+      return 3;
   }
 }
 
@@ -56,6 +58,8 @@ inline std::string toString(const DisplayType &displayType)
       return "flex";
     case DisplayType::Contents:
       return "contents";
+    case DisplayType::Grid:
+      return "grid";
   }
 }
 

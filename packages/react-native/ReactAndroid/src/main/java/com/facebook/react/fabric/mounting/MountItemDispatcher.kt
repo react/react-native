@@ -21,6 +21,7 @@ import com.facebook.react.fabric.FabricUIManager
 import com.facebook.react.fabric.mounting.mountitems.DispatchCommandMountItem
 import com.facebook.react.fabric.mounting.mountitems.MountItem
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
+import com.facebook.react.internal.tracing.PerformanceTracer
 import com.facebook.systrace.Systrace
 import java.util.Queue
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -120,7 +121,7 @@ internal class MountItemDispatcher(
             // items
             addViewCommandMountItem(mountItem)
           }
-        } else {
+        } else if (ReactNativeFeatureFlags.enableFabricLogs()) {
           printMountItem(item, "dispatchExternalMountItems: mounting failed with ${e.message}")
         }
       }
@@ -201,9 +202,16 @@ internal class MountItemDispatcher(
           "MountItemDispatcher::mountViews viewCommandMountItems",
       )
 
-      for (command in commands) {
-        dispatchViewCommand(command)
-      }
+      PerformanceTracer.trace(
+          "view commands",
+          "Renderer",
+          "\u269b Native",
+          { ->
+            for (command in commands) {
+              dispatchViewCommand(command)
+            }
+          },
+      )
 
       Systrace.endSection(Systrace.TRACE_TAG_REACT)
     }
@@ -215,12 +223,21 @@ internal class MountItemDispatcher(
           Systrace.TRACE_TAG_REACT,
           "MountItemDispatcher::mountViews preMountItems",
       )
-      for (preMountItem in preMountItems) {
-        if (ReactNativeFeatureFlags.enableFabricLogs()) {
-          printMountItem(preMountItem, "dispatchMountItems: Executing preMountItem")
-        }
-        executeOrEnqueue(preMountItem)
-      }
+
+      PerformanceTracer.trace(
+          "premount",
+          "Renderer",
+          "\u269b Native",
+          { ->
+            for (preMountItem in preMountItems) {
+              if (ReactNativeFeatureFlags.enableFabricLogs()) {
+                printMountItem(preMountItem, "dispatchMountItems: Executing preMountItem")
+              }
+              executeOrEnqueue(preMountItem)
+            }
+          },
+      )
+
       Systrace.endSection(Systrace.TRACE_TAG_REACT)
     }
 
@@ -229,44 +246,58 @@ internal class MountItemDispatcher(
           Systrace.TRACE_TAG_REACT,
           "MountItemDispatcher::mountViews mountItems to execute",
       )
-      val batchedExecutionStartTime = SystemClock.uptimeMillis()
 
-      for (mountItem in items) {
-        if (ReactNativeFeatureFlags.enableFabricLogs()) {
-          printMountItem(mountItem, "dispatchMountItems: Executing mountItem")
-        }
+      PerformanceTracer.trace(
+          "mount",
+          "Renderer",
+          "\u269b Native",
+          { ->
+            val batchedExecutionStartTime = SystemClock.uptimeMillis()
 
-        val command = mountItem as? DispatchCommandMountItem
-        if (command != null) {
-          dispatchViewCommand(command)
-          continue
-        }
+            for (mountItem in items) {
+              if (ReactNativeFeatureFlags.enableFabricLogs()) {
+                printMountItem(mountItem, "dispatchMountItems: Executing mountItem")
+              }
 
-        try {
-          executeOrEnqueue(mountItem)
-        } catch (e: Throwable) {
-          // If there's an exception, we want to log diagnostics in prod and rethrow.
-          FLog.e(TAG, "dispatchMountItems: caught exception, displaying mount state", e)
-          for (m in items) {
-            if (m === mountItem) {
-              // We want to mark the mount item that caused exception
-              FLog.e(TAG, "dispatchMountItems: mountItem: next mountItem triggered exception!")
+              val command = mountItem as? DispatchCommandMountItem
+              if (command != null) {
+                dispatchViewCommand(command)
+                continue
+              }
+
+              try {
+                executeOrEnqueue(mountItem)
+              } catch (e: Throwable) {
+                // If there's an exception, we want to log diagnostics in prod and rethrow.
+                FLog.e(TAG, "dispatchMountItems: caught exception, displaying mount state", e)
+                if (ReactNativeFeatureFlags.enableFabricLogs()) {
+                  for (m in items) {
+                    if (m === mountItem) {
+                      // We want to mark the mount item that caused exception
+                      FLog.e(
+                          TAG,
+                          "dispatchMountItems: mountItem: next mountItem triggered exception!",
+                      )
+                    }
+                    printMountItem(m, "dispatchMountItems: mountItem")
+                  }
+                }
+
+                if (mountItem.getSurfaceId() != View.NO_ID) {
+                  mountingManager.getSurfaceManager(mountItem.getSurfaceId())?.printSurfaceState()
+                }
+
+                if (ReactIgnorableMountingException.isIgnorable(e)) {
+                  ReactSoftExceptionLogger.logSoftException(TAG, e)
+                } else {
+                  throw e
+                }
+              }
             }
-            printMountItem(m, "dispatchMountItems: mountItem")
-          }
+            batchedExecutionTime += SystemClock.uptimeMillis() - batchedExecutionStartTime
+          },
+      )
 
-          if (mountItem.getSurfaceId() != View.NO_ID) {
-            mountingManager.getSurfaceManager(mountItem.getSurfaceId())?.printSurfaceState()
-          }
-
-          if (ReactIgnorableMountingException.isIgnorable(e)) {
-            ReactSoftExceptionLogger.logSoftException(TAG, e)
-          } else {
-            throw e
-          }
-        }
-      }
-      batchedExecutionTime += SystemClock.uptimeMillis() - batchedExecutionStartTime
       Systrace.endSection(Systrace.TRACE_TAG_REACT)
     }
 
@@ -297,26 +328,34 @@ internal class MountItemDispatcher(
   private fun dispatchPreMountItemsImpl(deadline: Long) {
     Systrace.beginSection(Systrace.TRACE_TAG_REACT, "MountItemDispatcher::premountViews")
 
-    // dispatchPreMountItems cannot be reentrant, but we want to prevent dispatchMountItems from
-    // reentering during dispatchPreMountItems
-    inDispatch = true
+    PerformanceTracer.trace(
+        "premount",
+        "Renderer",
+        "\u269b Native",
+        { ->
+          // dispatchPreMountItems cannot be reentrant, but we want to prevent dispatchMountItems
+          // from
+          // reentering during dispatchPreMountItems
+          inDispatch = true
 
-    try {
-      while (true) {
-        if (System.nanoTime() > deadline) {
-          break
-        }
+          try {
+            while (true) {
+              if (System.nanoTime() > deadline) {
+                break
+              }
 
-        // If list is empty, `poll` will return null, or var will never be set
-        val preMountItemToDispatch = preMountItems.poll() ?: break
-        if (ReactNativeFeatureFlags.enableFabricLogs()) {
-          printMountItem(preMountItemToDispatch, "dispatchPreMountItems")
-        }
-        executeOrEnqueue(preMountItemToDispatch)
-      }
-    } finally {
-      inDispatch = false
-    }
+              // If list is empty, `poll` will return null, or var will never be set
+              val preMountItemToDispatch = preMountItems.poll() ?: break
+              if (ReactNativeFeatureFlags.enableFabricLogs()) {
+                printMountItem(preMountItemToDispatch, "dispatchPreMountItems")
+              }
+              executeOrEnqueue(preMountItemToDispatch)
+            }
+          } finally {
+            inDispatch = false
+          }
+        },
+    )
 
     Systrace.endSection(Systrace.TRACE_TAG_REACT)
   }
@@ -373,10 +412,10 @@ internal class MountItemDispatcher(
       }
 
       return buildList {
-            do {
-              queue.poll()?.let { add(it) }
-            } while (queue.isNotEmpty())
-          }
+        do {
+          queue.poll()?.let { add(it) }
+        } while (queue.isNotEmpty())
+      }
           .takeIf { it.isNotEmpty() }
     }
 

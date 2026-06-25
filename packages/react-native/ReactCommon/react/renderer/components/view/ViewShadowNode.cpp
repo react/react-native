@@ -48,6 +48,7 @@ void ViewShadowNode::initialize() noexcept {
   };
 
   bool formsStackingContext = !viewProps.collapsable ||
+      viewProps.pointerEvents == PointerEventsMode::BoxOnly ||
       viewProps.pointerEvents == PointerEventsMode::None ||
       !viewProps.nativeId.empty() || viewProps.accessible ||
       viewProps.opacity != 1.0 || viewProps.transform != Transform{} ||

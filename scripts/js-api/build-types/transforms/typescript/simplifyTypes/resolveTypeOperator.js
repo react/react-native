@@ -18,7 +18,7 @@ const t = require('@babel/types');
 const debug = require('debug')('build-types:transforms:inlineTypes');
 
 const typeOperatorResolvers: {
-  +[K: string]: (
+  readonly [K: string]: (
     path: NodePath<t.TSTypeOperator>,
     state: BaseVisitorState,
   ) => void,
@@ -75,9 +75,9 @@ export function resolveTypeOperator(
   state: BaseVisitorState,
 ): void {
   const name = path.node.operator;
-  if (canResolveTypeOperator(name)) {
+  if (name != null && canResolveTypeOperator(name)) {
     typeOperatorResolvers[name](path, state);
   } else {
-    debug(`Unsupported type operator: ${name}`);
+    debug(`Unsupported type operator: ${name ?? '(null)'}`);
   }
 }

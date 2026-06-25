@@ -8,7 +8,7 @@
  * @format
  */
 
-export type Rect = $ReadOnly<{
+export type Rect = Readonly<{
   bottom?: ?number,
   left?: ?number,
   right?: ?number,

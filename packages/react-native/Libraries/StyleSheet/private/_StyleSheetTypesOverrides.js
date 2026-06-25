@@ -8,8 +8,8 @@
  * @format
  */
 
-export type ____DangerouslyImpreciseStyle_InternalOverrides = $ReadOnly<{}>;
-export type ____ImageStyle_InternalOverrides = $ReadOnly<{}>;
-export type ____ShadowStyle_InternalOverrides = $ReadOnly<{}>;
-export type ____TextStyle_InternalOverrides = $ReadOnly<{}>;
-export type ____ViewStyle_InternalOverrides = $ReadOnly<{}>;
+export type ____DangerouslyImpreciseStyle_InternalOverrides = Readonly<{}>;
+export type ____ImageStyle_InternalOverrides = Readonly<{}>;
+export type ____ShadowStyle_InternalOverrides = Readonly<{}>;
+export type ____TextStyle_InternalOverrides = Readonly<{}>;
+export type ____ViewStyle_InternalOverrides = Readonly<{}>;

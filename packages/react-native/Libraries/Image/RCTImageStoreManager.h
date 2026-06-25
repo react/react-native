@@ -11,8 +11,6 @@
 #import <React/RCTBridgeProxy.h>
 #import <React/RCTURLRequestHandler.h>
 
-RCT_EXTERN void RCTEnableImageStoreManagerStorageQueue(BOOL enabled);
-
 @interface RCTImageStoreManager : NSObject <RCTURLRequestHandler>
 
 /**

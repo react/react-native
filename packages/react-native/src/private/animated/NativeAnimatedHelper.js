@@ -32,7 +32,7 @@ import nullthrows from 'nullthrows';
 
 interface NativeAnimatedModuleSpec extends NativeAnimatedTurboModuleSpec {
   // connectAnimatedNodeToShadowNodeFamily is available only in NativeAnimatedNonTurboModule
-  +connectAnimatedNodeToShadowNodeFamily?: (
+  readonly connectAnimatedNodeToShadowNodeFamily?: (
     nodeTag: number,
     // $FlowExpectedError[unclear-type].
     shadowNode: Object,
@@ -48,15 +48,16 @@ let __nativeAnimationIdCount = 1; /* used for started animations */
 
 let nativeEventEmitter;
 
-let waitingForQueuedOperations = new Set<string>();
+const waitingForQueuedOperations = new Set<string>();
 let queueOperations = false;
-let queue: Array<() => void> = [];
-let singleOpQueue: Array<mixed> = [];
+const queue: Array<() => void> = [];
+const singleOpQueue: Array<unknown> = [];
 
 const isSingleOpBatching =
   Platform.OS === 'android' &&
   NativeAnimatedModule?.queueAndExecuteBatchedOperations != null &&
-  ReactNativeFeatureFlags.animatedShouldUseSingleOp();
+  ReactNativeFeatureFlags.animatedShouldUseSingleOp() &&
+  !ReactNativeFeatureFlags.cxxNativeAnimatedEnabled();
 let flushQueueImmediate = null;
 
 const eventListenerGetValueCallbacks: {
@@ -71,7 +72,22 @@ let globalEventEmitterAnimationFinishedListener: ?EventSubscription = null;
 const shouldSignalBatch: boolean =
   ReactNativeFeatureFlags.cxxNativeAnimatedEnabled();
 
-function createNativeOperations(): $NonMaybeType<typeof NativeAnimatedModule> {
+// Schedules `API.flushQueue` after the current batch, replacing any pending
+// flush. On device `setImmediate` is a microtask; under jest's fake timers it's
+// a fake-timer entry that only `runAllTimers` drains — not `await` or
+// `advanceTimersByTime` — so the deferred flush wouldn't run before a test's
+// assertions. Flush synchronously in tests instead.
+function scheduleQueueFlush(): void {
+  clearImmediate(flushQueueImmediate);
+  if (process.env.NODE_ENV === 'test') {
+    // TODO: T275950736 - remove this path
+    API.flushQueue();
+  } else {
+    flushQueueImmediate = setImmediate(API.flushQueue);
+  }
+}
+
+function createNativeOperations(): NonNullable<typeof NativeAnimatedModule> {
   const methodNames = [
     'createAnimatedNode', // 1
     'updateAnimatedNodeConfig', // 2
@@ -98,12 +114,13 @@ function createNativeOperations(): $NonMaybeType<typeof NativeAnimatedModule> {
   if (
     ReactNativeFeatureFlags.cxxNativeAnimatedEnabled() &&
     //eslint-disable-next-line
-    ReactNativeFeatureFlags.useSharedAnimatedBackend()
+    ReactNativeFeatureFlags.useSharedAnimatedBackend() &&
+    NativeAnimatedModule?.connectAnimatedNodeToShadowNodeFamily != null
   ) {
     methodNames.push('connectAnimatedNodeToShadowNodeFamily');
   }
   const nativeOperations: {
-    [$Values<typeof methodNames>]: (...$ReadOnlyArray<mixed>) => void,
+    [Values<typeof methodNames>]: (...ReadonlyArray<unknown>) => void,
   } = {};
   if (isSingleOpBatching) {
     for (let ii = 0, length = methodNames.length; ii < length; ii++) {
@@ -115,8 +132,7 @@ function createNativeOperations(): $NonMaybeType<typeof NativeAnimatedModule> {
         // details, see `NativeAnimatedModule.queueAndExecuteBatchedOperations`.
         singleOpQueue.push(operationID, ...args);
         if (shouldSignalBatch) {
-          clearImmediate(flushQueueImmediate);
-          flushQueueImmediate = setImmediate(API.flushQueue);
+          scheduleQueueFlush();
         }
       };
     }
@@ -136,8 +152,7 @@ function createNativeOperations(): $NonMaybeType<typeof NativeAnimatedModule> {
         } else if (shouldSignalBatch) {
           // $FlowExpectedError[incompatible-call] - Dynamism.
           queue.push(() => method(...args));
-          clearImmediate(flushQueueImmediate);
-          flushQueueImmediate = setImmediate(API.flushQueue);
+          scheduleQueueFlush();
         } else {
           // $FlowExpectedError[incompatible-call] - Dynamism.
           method(...args);
@@ -156,61 +171,59 @@ const NativeOperations = createNativeOperations();
  * the native module methods, and automatic queue management on Android
  */
 const API = {
-  getValue: (isSingleOpBatching
-    ? (tag, saveValueCallback) => {
-        /* $FlowFixMe[constant-condition] Error discovered during Constant
-         * Condition roll out. See https://fburl.com/workplace/1v97vimq. */
-        if (saveValueCallback) {
-          eventListenerGetValueCallbacks[tag] = saveValueCallback;
-        }
-        /* $FlowExpectedError[incompatible-type] - `saveValueCallback` is handled
-            differently when `isSingleOpBatching` is enabled. */
-        NativeOperations.getValue(tag);
-      }
-    : (tag, saveValueCallback) => {
-        NativeOperations.getValue(tag, saveValueCallback);
-      }) as $NonMaybeType<typeof NativeAnimatedModule>['getValue'],
-
-  setWaitingForIdentifier(id: string): void {
-    if (shouldSignalBatch) {
-      return;
-    }
-
-    waitingForQueuedOperations.add(id);
-    queueOperations = true;
-    if (
-      ReactNativeFeatureFlags.animatedShouldDebounceQueueFlush() &&
-      flushQueueImmediate
-    ) {
-      clearImmediate(flushQueueImmediate);
+  addAnimatedEventToView(
+    viewTag: number,
+    eventName: string,
+    eventMapping: EventMapping,
+  ) {
+    NativeOperations.addAnimatedEventToView(viewTag, eventName, eventMapping);
+  },
+  connectAnimatedNodes(parentTag: number, childTag: number): void {
+    NativeOperations.connectAnimatedNodes(parentTag, childTag);
+  },
+  connectAnimatedNodeToShadowNodeFamily(
+    nodeTag: number,
+    shadowNode: Node,
+  ): void {
+    NativeOperations.connectAnimatedNodeToShadowNodeFamily?.(
+      nodeTag,
+      shadowNode,
+    );
+  },
+  connectAnimatedNodeToView(nodeTag: number, viewTag: number): void {
+    NativeOperations.connectAnimatedNodeToView(nodeTag, viewTag);
+  },
+  createAnimatedNode(tag: number, config: AnimatedNodeConfig): void {
+    if (config.disableBatchingForNativeCreate) {
+      NativeAnimatedModule?.createAnimatedNode(tag, config);
+    } else {
+      NativeOperations.createAnimatedNode(tag, config);
     }
   },
-
-  unsetWaitingForIdentifier(id: string): void {
-    if (shouldSignalBatch) {
-      return;
-    }
-
-    waitingForQueuedOperations.delete(id);
-
-    if (waitingForQueuedOperations.size === 0) {
-      queueOperations = false;
-      API.disableQueue();
-    }
-  },
-
   disableQueue(): void {
     invariant(NativeAnimatedModule, 'Native animated module is not available');
 
     if (ReactNativeFeatureFlags.animatedShouldDebounceQueueFlush()) {
-      const prevImmediate = flushQueueImmediate;
-      clearImmediate(prevImmediate);
-      flushQueueImmediate = setImmediate(API.flushQueue);
+      scheduleQueueFlush();
     } else {
       API.flushQueue();
     }
   },
-
+  disconnectAnimatedNodeFromView(nodeTag: number, viewTag: number): void {
+    NativeOperations.disconnectAnimatedNodeFromView(nodeTag, viewTag);
+  },
+  disconnectAnimatedNodes(parentTag: number, childTag: number): void {
+    NativeOperations.disconnectAnimatedNodes(parentTag, childTag);
+  },
+  dropAnimatedNode(tag: number): void {
+    NativeOperations.dropAnimatedNode(tag);
+  },
+  extractAnimatedNodeOffset(nodeTag: number): void {
+    NativeOperations.extractAnimatedNodeOffset(nodeTag);
+  },
+  flattenAnimatedNodeOffset(nodeTag: number): void {
+    NativeOperations.flattenAnimatedNodeOffset(nodeTag);
+  },
   flushQueue: (isSingleOpBatching
     ? (): void => {
         invariant(
@@ -257,35 +270,54 @@ const API = {
           NativeAnimatedModule?.finishOperationBatch?.();
         }
       }) as () => void,
+  getValue: (isSingleOpBatching
+    ? (tag, saveValueCallback) => {
+        /* $FlowFixMe[constant-condition] Error discovered during Constant
+         * Condition roll out. See https://fburl.com/workplace/1v97vimq. */
+        if (saveValueCallback) {
+          eventListenerGetValueCallbacks[tag] = saveValueCallback;
+        }
+        /* $FlowExpectedError[incompatible-type] - `saveValueCallback` is handled
+            differently when `isSingleOpBatching` is enabled. */
+        NativeOperations.getValue(tag);
+      }
+    : (tag, saveValueCallback) => {
+        NativeOperations.getValue(tag, saveValueCallback);
+      }) as NonNullable<typeof NativeAnimatedModule>['getValue'],
+  removeAnimatedEventFromView(
+    viewTag: number,
+    eventName: string,
+    animatedNodeTag: number,
+  ) {
+    NativeOperations.removeAnimatedEventFromView(
+      viewTag,
+      eventName,
+      animatedNodeTag,
+    );
+  },
+  restoreDefaultValues(nodeTag: number): void {
+    NativeOperations.restoreDefaultValues?.(nodeTag);
+  },
+  setAnimatedNodeOffset(nodeTag: number, offset: number): void {
+    NativeOperations.setAnimatedNodeOffset(nodeTag, offset);
+  },
+  setAnimatedNodeValue(nodeTag: number, value: number): void {
+    NativeOperations.setAnimatedNodeValue(nodeTag, value);
+  },
+  setWaitingForIdentifier(id: string): void {
+    if (shouldSignalBatch) {
+      return;
+    }
 
-  createAnimatedNode(tag: number, config: AnimatedNodeConfig): void {
-    if (config.disableBatchingForNativeCreate) {
-      NativeAnimatedModule?.createAnimatedNode(tag, config);
-    } else {
-      NativeOperations.createAnimatedNode(tag, config);
+    waitingForQueuedOperations.add(id);
+    queueOperations = true;
+    if (
+      ReactNativeFeatureFlags.animatedShouldDebounceQueueFlush() &&
+      flushQueueImmediate
+    ) {
+      clearImmediate(flushQueueImmediate);
     }
   },
-
-  updateAnimatedNodeConfig(tag: number, config: AnimatedNodeConfig): void {
-    NativeOperations.updateAnimatedNodeConfig?.(tag, config);
-  },
-
-  startListeningToAnimatedNodeValue(tag: number): void {
-    NativeOperations.startListeningToAnimatedNodeValue(tag);
-  },
-
-  stopListeningToAnimatedNodeValue(tag: number): void {
-    NativeOperations.stopListeningToAnimatedNodeValue(tag);
-  },
-
-  connectAnimatedNodes(parentTag: number, childTag: number): void {
-    NativeOperations.connectAnimatedNodes(parentTag, childTag);
-  },
-
-  disconnectAnimatedNodes(parentTag: number, childTag: number): void {
-    NativeOperations.disconnectAnimatedNodes(parentTag, childTag);
-  },
-
   startAnimatingNode: (isSingleOpBatching
     ? (animationId, nodeTag, config, endCallback) => {
         /* $FlowFixMe[constant-condition] Error discovered during Constant
@@ -304,72 +336,30 @@ const API = {
           config,
           endCallback,
         );
-      }) as $NonMaybeType<typeof NativeAnimatedModule>['startAnimatingNode'],
-
+      }) as NonNullable<typeof NativeAnimatedModule>['startAnimatingNode'],
+  startListeningToAnimatedNodeValue(tag: number): void {
+    NativeOperations.startListeningToAnimatedNodeValue(tag);
+  },
   stopAnimation(animationId: number) {
     NativeOperations.stopAnimation(animationId);
   },
-
-  setAnimatedNodeValue(nodeTag: number, value: number): void {
-    NativeOperations.setAnimatedNodeValue(nodeTag, value);
+  stopListeningToAnimatedNodeValue(tag: number): void {
+    NativeOperations.stopListeningToAnimatedNodeValue(tag);
   },
+  unsetWaitingForIdentifier(id: string): void {
+    if (shouldSignalBatch) {
+      return;
+    }
 
-  setAnimatedNodeOffset(nodeTag: number, offset: number): void {
-    NativeOperations.setAnimatedNodeOffset(nodeTag, offset);
+    waitingForQueuedOperations.delete(id);
+
+    if (waitingForQueuedOperations.size === 0) {
+      queueOperations = false;
+      API.disableQueue();
+    }
   },
-
-  flattenAnimatedNodeOffset(nodeTag: number): void {
-    NativeOperations.flattenAnimatedNodeOffset(nodeTag);
-  },
-
-  extractAnimatedNodeOffset(nodeTag: number): void {
-    NativeOperations.extractAnimatedNodeOffset(nodeTag);
-  },
-
-  connectAnimatedNodeToView(nodeTag: number, viewTag: number): void {
-    NativeOperations.connectAnimatedNodeToView(nodeTag, viewTag);
-  },
-
-  connectAnimatedNodeToShadowNodeFamily(
-    nodeTag: number,
-    shadowNode: Node,
-  ): void {
-    NativeOperations.connectAnimatedNodeToShadowNodeFamily?.(
-      nodeTag,
-      shadowNode,
-    );
-  },
-
-  disconnectAnimatedNodeFromView(nodeTag: number, viewTag: number): void {
-    NativeOperations.disconnectAnimatedNodeFromView(nodeTag, viewTag);
-  },
-
-  restoreDefaultValues(nodeTag: number): void {
-    NativeOperations.restoreDefaultValues?.(nodeTag);
-  },
-
-  dropAnimatedNode(tag: number): void {
-    NativeOperations.dropAnimatedNode(tag);
-  },
-
-  addAnimatedEventToView(
-    viewTag: number,
-    eventName: string,
-    eventMapping: EventMapping,
-  ) {
-    NativeOperations.addAnimatedEventToView(viewTag, eventName, eventMapping);
-  },
-
-  removeAnimatedEventFromView(
-    viewTag: number,
-    eventName: string,
-    animatedNodeTag: number,
-  ) {
-    NativeOperations.removeAnimatedEventFromView(
-      viewTag,
-      eventName,
-      animatedNodeTag,
-    );
+  updateAnimatedNodeConfig(tag: number, config: AnimatedNodeConfig): void {
+    NativeOperations.updateAnimatedNodeConfig?.(tag, config);
   },
 };
 
@@ -428,17 +418,35 @@ function assertNativeAnimatedModule(): void {
 
 let _warnedMissingNativeAnimated = false;
 
+// Whether the native driver should be forced on for every animation, overriding
+// the config (including an explicit `useNativeDriver: false`). This is only safe
+// when the shared animated backend is enabled — that backend is what makes every
+// prop drivable natively. Forcing native without it would break animations of
+// props the legacy native driver doesn't support.
+function isNativeDriverForced(): boolean {
+  return (
+    ReactNativeFeatureFlags.animatedForceNativeDriver() &&
+    ReactNativeFeatureFlags.cxxNativeAnimatedEnabled() &&
+    // eslint-disable-next-line
+    ReactNativeFeatureFlags.useSharedAnimatedBackend()
+  );
+}
+
 function shouldUseNativeDriver(
-  config: $ReadOnly<{...AnimationConfig, ...}> | EventConfig<mixed>,
+  config: Readonly<{...AnimationConfig, ...}> | EventConfig<unknown>,
 ): boolean {
-  if (config.useNativeDriver == null) {
+  const forceNativeDriver = isNativeDriverForced();
+
+  if (config.useNativeDriver == null && !forceNativeDriver) {
     console.warn(
       'Animated: `useNativeDriver` was not specified. This is a required ' +
         'option and must be explicitly set to `true` or `false`',
     );
   }
 
-  if (config.useNativeDriver === true && !NativeAnimatedModule) {
+  const useNativeDriver = forceNativeDriver || config.useNativeDriver === true;
+
+  if (useNativeDriver === true && !NativeAnimatedModule) {
     if (process.env.NODE_ENV !== 'test') {
       if (!_warnedMissingNativeAnimated) {
         console.warn(
@@ -454,7 +462,7 @@ function shouldUseNativeDriver(
     return false;
   }
 
-  return config.useNativeDriver || false;
+  return useNativeDriver;
 }
 
 function transformDataType(value: number | string): number | string {
@@ -477,12 +485,10 @@ function transformDataType(value: number | string): number | string {
 
 export default {
   API,
-  generateNewNodeTag,
-  generateNewAnimationId,
   assertNativeAnimatedModule,
-  shouldUseNativeDriver,
-  shouldSignalBatch,
-  transformDataType,
+  generateNewAnimationId,
+  generateNewNodeTag,
+  isNativeDriverForced,
   // $FlowExpectedError[unsafe-getters-setters] - unsafe getter lint suppression
   // $FlowExpectedError[missing-type-arg] - unsafe getter lint suppression
   get nativeEventEmitter(): NativeEventEmitter {
@@ -496,4 +502,7 @@ export default {
     }
     return nativeEventEmitter;
   },
+  shouldSignalBatch,
+  shouldUseNativeDriver,
+  transformDataType,
 };

@@ -9,9 +9,7 @@
 
 #import <ReactCommon/RuntimeExecutorSyncUIThreadUtils.h>
 #import <react/debug/react_native_assert.h>
-#import <react/featureflags/ReactNativeFeatureFlags.h>
 #import <react/utils/OnScopeExit.h>
-#import <algorithm>
 #import <functional>
 #import <future>
 #import <mutex>
@@ -111,8 +109,8 @@ void runUITask(UITask &uiTask)
 }
 
 /**
- * This method is resilient to multiple javascript threads.
- * This can happen when multiple react instances interleave.
+ * Coordinator-style implementation that is resilient to multiple javascript
+ * threads. This can happen when multiple react instances interleave.
  *
  * The extension from 1 js thread to n: All js threads race to
  * get a ticket to post a ui task. The first one to get the ticket
@@ -122,10 +120,13 @@ void runUITask(UITask &uiTask)
  *
  * For simplicity, we will just use this algorithm for all bg threads.
  * Not just the js thread.
+ *
+ * Requires the caller to be on the main thread, because the wait loop pumps
+ * UI tasks that are dispatched to the main queue.
  */
-void saferExecuteSynchronouslyOnSameThread_CAN_DEADLOCK(
+void coordinatedExecuteSynchronouslyOnSameThread_CAN_DEADLOCK(
     const RuntimeExecutor &runtimeExecutor,
-    std::function<void(jsi::Runtime &runtime)> &&runtimeWork)
+    std::function<void(jsi::Runtime &)> &&runtimeWork)
 {
   react_native_assert([[NSThread currentThread] isMainThread] && !g_isRunningUITask);
 
@@ -159,52 +160,34 @@ void saferExecuteSynchronouslyOnSameThread_CAN_DEADLOCK(
   runtimeWork(*runtime);
 }
 
-/*
+/**
  * Schedules `runtimeWork` to be executed on the same thread using the
- * `RuntimeExecutor`, and blocks on its completion.
- *
- * Example:
- * - [UI thread] Schedule `runtimeCaptureBlock` on js thread
- * - [UI thread] Wait for runtime capture: await(runtime)
- * - [JS thread] Capture runtime for ui thread: resolve(runtime, &rt);
- * - [JS thread] Wait until runtimeWork done: await(runtimeWorkDone)
- * - [UI thread] Call runtimeWork: runtimeWork(*runtimePrt);
- * - [UI thread] Signal runtimeWork done: resolve(runtimeWorkDone)
- * - [UI thread] Wait until runtime capture block finished:
- *               await(runtimeCaptureBlockDone);
- * - [JS thread] Signal runtime capture block is finished:
- *               resolve(runtimeCaptureBlockDone);
+ * `RuntimeExecutor`, and blocks on its completion. Used when the caller is
+ * not on the main thread (the coordinator implementation requires main).
  */
-void legacyExecuteSynchronouslyOnSameThread_CAN_DEADLOCK(
+void simpleExecuteSynchronouslyOnSameThread_CAN_DEADLOCK(
     const RuntimeExecutor &runtimeExecutor,
     std::function<void(jsi::Runtime &)> &&runtimeWork)
 {
   std::promise<jsi::Runtime *> runtime;
-  std::promise<void> runtimeCaptureBlockDone;
   std::promise<void> runtimeWorkDone;
 
   auto callingThread = std::this_thread::get_id();
 
-  auto runtimeCaptureBlock = [&](jsi::Runtime &rt) {
+  runtimeExecutor([&](jsi::Runtime &rt) {
     runtime.set_value(&rt);
 
-    auto runtimeThread = std::this_thread::get_id();
-    if (callingThread != runtimeThread) {
-      // Block `runtimeThread` on execution of `runtimeWork` on `callingThread`.
+    if (callingThread != std::this_thread::get_id()) {
+      // Block the runtime thread on execution of `runtimeWork` on the calling thread.
       runtimeWorkDone.get_future().wait();
     }
-
-    // TODO(T225331233): This is likely unnecessary. Remove it.
-    runtimeCaptureBlockDone.set_value();
-  };
-  runtimeExecutor(std::move(runtimeCaptureBlock));
+  });
 
   jsi::Runtime *runtimePtr = runtime.get_future().get();
-  runtimeWork(*runtimePtr);
-  runtimeWorkDone.set_value();
 
-  // TODO(T225331233): This is likely unnecessary. Remove it.
-  runtimeCaptureBlockDone.get_future().wait();
+  OnScopeExit onScopeExit([&]() { runtimeWorkDone.set_value(); });
+  // Calls into runtime scheduler, which takes care of error handling
+  runtimeWork(*runtimePtr);
 }
 
 } // namespace
@@ -213,10 +196,10 @@ void executeSynchronouslyOnSameThread_CAN_DEADLOCK(
     const RuntimeExecutor &runtimeExecutor,
     std::function<void(jsi::Runtime &)> &&runtimeWork)
 {
-  if (ReactNativeFeatureFlags::enableMainQueueCoordinatorOnIOS()) {
-    saferExecuteSynchronouslyOnSameThread_CAN_DEADLOCK(runtimeExecutor, std::move(runtimeWork));
+  if ([[NSThread currentThread] isMainThread] && !g_isRunningUITask) {
+    coordinatedExecuteSynchronouslyOnSameThread_CAN_DEADLOCK(runtimeExecutor, std::move(runtimeWork));
   } else {
-    legacyExecuteSynchronouslyOnSameThread_CAN_DEADLOCK(runtimeExecutor, std::move(runtimeWork));
+    simpleExecuteSynchronouslyOnSameThread_CAN_DEADLOCK(runtimeExecutor, std::move(runtimeWork));
   }
 }
 

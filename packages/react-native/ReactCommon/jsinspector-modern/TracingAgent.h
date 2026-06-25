@@ -41,11 +41,6 @@ class TracingAgent {
    */
   bool handleRequest(const cdp::PreparsedRequest &req);
 
-  /**
-   * Emits the HostTracingProfile that was stashed externally by the HostTarget.
-   */
-  void emitExternalHostTracingProfile(tracing::HostTracingProfile tracingProfile) const;
-
  private:
   /**
    * A channel used to send responses and events to the frontend.
@@ -55,12 +50,6 @@ class TracingAgent {
   SessionState &sessionState_;
 
   HostTargetController &hostTargetController_;
-
-  /**
-   * Emits captured HostTracingProfile in a series of
-   * Tracing.dataCollected events, followed by a Tracing.tracingComplete event.
-   */
-  void emitHostTracingProfile(tracing::HostTracingProfile tracingProfile) const;
 };
 
 } // namespace facebook::react::jsinspector_modern

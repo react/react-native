@@ -89,7 +89,7 @@ class AnimatedModule : public NativeAnimatedModuleCxxSpec<AnimatedModule>, publi
 
   struct ConnectAnimatedNodeToShadowNodeFamilyOp {
     Tag nodeTag{};
-    std::shared_ptr<const ShadowNodeFamily> shadowNodeFamily{};
+    std::shared_ptr<ShadowNodeFamily> shadowNodeFamily{};
   };
 
   struct DisconnectAnimatedNodeFromViewOp {

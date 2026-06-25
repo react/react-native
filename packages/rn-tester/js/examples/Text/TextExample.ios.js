@@ -145,7 +145,7 @@ class AttributeToggler extends React.Component<{...}, $FlowFixMe> {
   }
 }
 
-type AdjustingFontSizeProps = $ReadOnly<{}>;
+type AdjustingFontSizeProps = Readonly<{}>;
 
 type AdjustingFontSizeState = {
   dynamicText: string,
@@ -269,7 +269,7 @@ class AdjustingFontSize extends React.Component<
   }
 }
 
-class TextBaseLineLayoutExample extends React.Component<{}, mixed> {
+class TextBaseLineLayoutExample extends React.Component<{}, unknown> {
   render(): React.Node {
     const texts = [];
     for (let i = 9; i >= 0; i--) {
@@ -393,7 +393,7 @@ class TextRenderInfoExample extends React.Component<
   {
     fontSize: number,
     numberOfTextBlocks: number,
-    textMetrics: $ReadOnly<{
+    textMetrics: Readonly<{
       ascender: number,
       capHeight: number,
       descender: number,
@@ -409,7 +409,7 @@ class TextRenderInfoExample extends React.Component<
   state: {
     fontSize: number,
     numberOfTextBlocks: number,
-    textMetrics: $ReadOnly<{
+    textMetrics: Readonly<{
       ascender: number,
       capHeight: number,
       descender: number,
@@ -506,7 +506,7 @@ class TextRenderInfoExample extends React.Component<
 class TextWithCapBaseBox extends React.Component<
   {children: string, style?: any},
   {
-    textMetrics: $ReadOnly<{
+    textMetrics: Readonly<{
       ascender: number,
       capHeight: number,
       descender: number,
@@ -520,7 +520,7 @@ class TextWithCapBaseBox extends React.Component<
   },
 > {
   state: {
-    textMetrics: $ReadOnly<{
+    textMetrics: Readonly<{
       ascender: number,
       capHeight: number,
       descender: number,
@@ -575,7 +575,7 @@ const examples = [
     title: 'iOS System Font Families (iOS only)',
     name: 'iOSSystemFontFamilies',
     description:
-      ('Shows system font families including system-ui/ui-sans-serif, ui-serif, ui-monospace, and ui-rounded': string),
+      'Shows system font families including system-ui/ui-sans-serif, ui-serif, ui-monospace, and ui-rounded' as string,
     render: function (): React.Node {
       const baseTextStyle = {fontSize: 20};
       return (
@@ -601,9 +601,10 @@ const examples = [
   },
   {
     title: 'Wrap',
+    name: 'wrap',
     render: function (): React.Node {
       return (
-        <Text>
+        <Text testID="text-wrap">
           The text should wrap if it goes on multiple lines. See, this is going
           to the next line.
         </Text>
@@ -612,15 +613,21 @@ const examples = [
   },
   {
     title: "Substring Emoji (should only see 'test')",
+    name: 'substringEmoji',
     render: function (): React.Node {
-      return <Text>{'test🙃'.substring(0, 5)}</Text>;
+      return (
+        <Text testID="text-substring-emoji">{'test🙃'.substring(0, 5)}</Text>
+      );
     },
   },
   {
     title: 'Transparent Background Color',
+    name: 'transparentBackgroundColor',
     render: function (): React.Node {
       return (
-        <Text style={{backgroundColor: '#00000020', padding: 10}}>
+        <Text
+          testID="text-transparent-bg"
+          style={{backgroundColor: '#00000020', padding: 10}}>
           Text in a gray box!
           <Text style={{backgroundColor: 'red'}}>
             Another text in a (inline) red box (which is inside the gray box).
@@ -711,9 +718,10 @@ const examples = [
   },
   {
     title: 'Padding',
+    name: 'padding',
     render: function (): React.Node {
       return (
-        <Text style={{padding: 10}}>
+        <Text testID="text-padding" style={{padding: 10}}>
           This text is indented by 10px padding on all sides.
         </Text>
       );
@@ -721,9 +729,10 @@ const examples = [
   },
   {
     title: 'Font Family',
+    name: 'fontFamily',
     render: function (): React.Node {
       return (
-        <View>
+        <View testID="text-font-family">
           <Text style={{fontFamily: Platform.isTV ? 'Times' : 'Cochin'}}>
             Cochin
           </Text>
@@ -758,9 +767,10 @@ const examples = [
   },
   {
     title: 'Font Size',
+    name: 'fontSize',
     render: function (): React.Node {
       return (
-        <View>
+        <View testID="text-font-size">
           <Text style={{fontSize: 23}}>Size 23</Text>
           <Text style={{fontSize: 8}}>Size 8</Text>
         </View>
@@ -769,9 +779,10 @@ const examples = [
   },
   {
     title: 'Color',
+    name: 'color',
     render: function (): React.Node {
       return (
-        <View>
+        <View testID="text-test-color">
           <Text style={{color: 'red'}}>Red color</Text>
           <Text style={{color: 'blue'}}>Blue color</Text>
         </View>
@@ -780,9 +791,10 @@ const examples = [
   },
   {
     title: 'Font Weight',
+    name: 'fontWeight',
     render: function (): React.Node {
       return (
-        <View>
+        <View testID="text-font-weight">
           <Text style={{fontWeight: 'bold'}}>Move fast and be bold</Text>
           <Text style={{fontWeight: 'normal'}}>Move fast and be normal</Text>
           <Text style={{fontWeight: '900'}}>FONT WEIGHT 900</Text>
@@ -809,9 +821,10 @@ const examples = [
   },
   {
     title: 'Font Style',
+    name: 'fontStyle',
     render: function (): React.Node {
       return (
-        <View>
+        <View testID="text-font-style">
           <Text style={{fontStyle: 'normal'}}>Normal text</Text>
           <Text style={{fontStyle: 'italic'}}>Italic text</Text>
         </View>
@@ -833,9 +846,10 @@ const examples = [
   },
   {
     title: 'Text Decoration',
+    name: 'textDecoration',
     render: function (): React.Node {
       return (
-        <View>
+        <View testID="text-text-decoration">
           <Text
             style={{
               textDecorationLine: 'underline',
@@ -866,6 +880,14 @@ const examples = [
               textDecorationColor: 'blue',
             }}>
             Dotted underline with custom color
+          </Text>
+          <Text
+            style={{
+              textDecorationLine: 'underline',
+              textDecorationStyle: 'wavy',
+              textDecorationColor: 'red',
+            }}>
+            Wavy underline (red)
           </Text>
           <Text style={{textDecorationLine: 'none'}}>None textDecoration</Text>
           <Text
@@ -899,8 +921,41 @@ const examples = [
             }}>
             Dotted line-through with custom color
           </Text>
-          <Text style={{textDecorationLine: 'underline line-through'}}>
-            Both underline and line-through
+          <Text
+            style={{
+              textDecorationLine: 'line-through',
+              textDecorationStyle: 'wavy',
+              textDecorationColor: 'red',
+            }}>
+            Wavy line-through (red)
+          </Text>
+          <Text
+            style={{
+              textDecorationLine: 'underline line-through',
+              textDecorationStyle: 'wavy',
+            }}>
+            Both underline and line-through (wavy)
+          </Text>
+          <Text>
+            Mixed text with{' '}
+            <Text style={{textDecorationLine: 'underline'}}>underline</Text> and{' '}
+            <Text style={{textDecorationLine: 'line-through'}}>
+              line-through
+            </Text>{' '}
+            text nodes
+          </Text>
+          <Text>
+            Unstyled text{' '}
+            <Text
+              style={{
+                textDecorationLine: 'line-through',
+                textDecorationStyle: 'wavy',
+                textDecorationColor: 'red',
+              }}>
+              with wavy strike-through that wraps across multiple lines to
+              verify continuity
+            </Text>{' '}
+            normal text
           </Text>
         </View>
       );
@@ -908,12 +963,13 @@ const examples = [
   },
   {
     title: 'Nested',
+    name: 'nested',
     description: ('Nested text components will inherit the styles of their ' +
       'parents (only backgroundColor is inherited from non-Text parents).  ' +
-      '<Text> only supports other <Text> and raw text (strings) as children.': string),
+      '<Text> only supports other <Text> and raw text (strings) as children.') as string,
     render: function (): React.Node {
       return (
-        <View>
+        <View testID="text-test-nested">
           <Text>
             (Normal text,
             <Text style={{fontWeight: 'bold'}}>
@@ -981,9 +1037,10 @@ const examples = [
   },
   {
     title: 'Letter Spacing',
+    name: 'letterSpacing',
     render: function (): React.Node {
       return (
-        <View>
+        <View testID="text-letter-spacing">
           <Text style={{letterSpacing: 0}}>letterSpacing = 0</Text>
           <Text style={{letterSpacing: 2, marginTop: 5}}>
             letterSpacing = 2
@@ -1025,9 +1082,10 @@ const examples = [
   },
   {
     title: 'Spaces',
+    name: 'spaces',
     render: function (): React.Node {
       return (
-        <Text>
+        <Text testID="text-spaces">
           A {'generated'} {'string'} and some &nbsp;&nbsp;&nbsp; spaces
         </Text>
       );
@@ -1035,9 +1093,10 @@ const examples = [
   },
   {
     title: 'Line Height',
+    name: 'lineHeightIOS',
     render: function (): React.Node {
       return (
-        <Text>
+        <Text testID="text-line-height-ios">
           <Text style={{lineHeight: 35}}>
             A lot of space between the lines of this long passage that should
             wrap once.
@@ -1053,10 +1112,11 @@ const examples = [
   },
   {
     title: 'backgroundColor attribute',
+    name: 'backgroundColorAttr',
     description: 'backgroundColor is inherited from all types of views.',
     render: function (): React.Node {
       return (
-        <Text style={{backgroundColor: 'yellow'}}>
+        <Text testID="text-bg-color-attr" style={{backgroundColor: 'yellow'}}>
           Yellow container background,
           <Text style={{backgroundColor: '#ffaaaa'}}>
             {' '}
@@ -1240,9 +1300,10 @@ const examples = [
   },
   {
     title: 'Text shadow',
+    name: 'textShadow',
     render: function (): React.Node {
       return (
-        <View>
+        <View testID="text-text-shadow">
           <Text
             style={{
               fontSize: 20,
@@ -1258,9 +1319,10 @@ const examples = [
   },
   {
     title: 'Ellipsize mode',
+    name: 'ellipsizeMode',
     render: function (): React.Node {
       return (
-        <View>
+        <View testID="text-ellipsize-mode">
           <Text numberOfLines={1}>
             This very long text should be truncated with dots in the end.
           </Text>
@@ -1279,9 +1341,10 @@ const examples = [
   },
   {
     title: 'Font variants',
+    name: 'fontVariants',
     render: function (): React.Node {
       return (
-        <View>
+        <View testID="text-font-variants">
           <Text style={{fontVariant: ['small-caps']}}>Small Caps{'\n'}</Text>
           <Text
             style={{
@@ -1360,9 +1423,10 @@ const examples = [
   },
   {
     title: 'Transform',
+    name: 'textTransform',
     render: function (): React.Node {
       return (
-        <View>
+        <View testID="text-transform">
           <Text style={{textTransform: 'uppercase'}}>
             This text should be uppercased.
           </Text>
@@ -1419,6 +1483,7 @@ const examples = [
   },
   {
     title: 'Line Break Strategy',
+    name: 'lineBreakStrategy',
     render: function (): React.Node {
       const lineBreakStrategy = [
         'none',
@@ -1434,7 +1499,7 @@ const examples = [
       };
 
       return (
-        <View>
+        <View testID="text-line-break-strategy">
           {lineBreakStrategy.map(strategy => {
             return (
               <View key={strategy} style={{marginBottom: 12}}>
@@ -1577,11 +1642,11 @@ const examples = [
   ...TextSharedExamples,
 ];
 
-module.exports = ({
+module.exports = {
   title: 'Text',
   documentationURL: 'https://reactnative.dev/docs/text',
   category: 'Basic',
   description: 'Base component for rendering styled text.',
   displayName: 'TextExample',
   examples,
-}: RNTesterModule);
+} as RNTesterModule;

@@ -1,0 +1,3 @@
+class test::Base {
+  public static void hello();
+}

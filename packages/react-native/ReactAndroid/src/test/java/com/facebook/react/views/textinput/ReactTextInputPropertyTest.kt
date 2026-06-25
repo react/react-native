@@ -17,9 +17,13 @@ import android.text.InputFilter
 import android.text.InputFilter.AllCaps
 import android.text.InputType
 import android.text.Layout
+import android.text.SpannableString
+import android.text.Spanned
 import android.util.DisplayMetrics
 import android.view.Gravity
+import android.view.View
 import android.view.inputmethod.EditorInfo
+import androidx.autofill.HintConstants
 import androidx.core.content.res.ResourcesCompat.ID_NULL
 import com.facebook.react.bridge.BridgeReactContext
 import com.facebook.react.bridge.CatalystInstance
@@ -30,6 +34,7 @@ import com.facebook.react.uimanager.DisplayMetricsHolder
 import com.facebook.react.uimanager.ReactStylesDiffMap
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.views.text.DefaultStyleValuesUtil.getDefaultTextColorHint
+import com.facebook.react.views.text.ReactTextUpdate
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -126,6 +131,65 @@ class ReactTextInputPropertyTest {
   }
 
   @Test
+  fun testAutoCapitalizeDoesNotStripNumericFlags() {
+    val numericTypeFlags =
+        (InputType.TYPE_CLASS_NUMBER or
+            InputType.TYPE_NUMBER_FLAG_DECIMAL or
+            InputType.TYPE_NUMBER_FLAG_SIGNED)
+
+    manager.updateProperties(view, buildStyles("keyboardType", "numeric"))
+    assertThat(view.inputType and numericTypeFlags).isEqualTo(numericTypeFlags)
+
+    manager.updateProperties(
+        view,
+        buildStyles("autoCapitalize", InputType.TYPE_TEXT_FLAG_CAP_SENTENCES),
+    )
+    assertThat(view.inputType and InputType.TYPE_NUMBER_FLAG_SIGNED).isNotZero
+    assertThat(view.inputType and InputType.TYPE_NUMBER_FLAG_DECIMAL).isNotZero
+  }
+
+  @Test
+  fun testAutoCapitalizeAndNumericKeyboardInSameTransaction() {
+    val numericTypeFlags =
+        (InputType.TYPE_CLASS_NUMBER or
+            InputType.TYPE_NUMBER_FLAG_DECIMAL or
+            InputType.TYPE_NUMBER_FLAG_SIGNED)
+
+    manager.updateProperties(
+        view,
+        buildStyles(
+            "autoCapitalize",
+            InputType.TYPE_TEXT_FLAG_CAP_SENTENCES,
+            "keyboardType",
+            "numeric",
+        ),
+    )
+    assertThat(view.inputType and numericTypeFlags).isEqualTo(numericTypeFlags)
+    assertThat(view.inputType and InputType.TYPE_TEXT_FLAG_CAP_SENTENCES).isZero
+  }
+
+  @Test
+  fun testAutoCapitalizeReappliesWhenKeyboardTypeChangesFromNumericToText() {
+    // CAP_SENTENCES (0x4000) doesn't share a bit position with any numeric flag,
+    // unlike CAP_WORDS (0x2000) / CAP_CHARACTERS (0x1000).
+    manager.updateProperties(
+        view,
+        buildStyles(
+            "autoCapitalize",
+            InputType.TYPE_TEXT_FLAG_CAP_SENTENCES,
+            "keyboardType",
+            "numeric",
+        ),
+    )
+    assertThat(view.inputType and InputType.TYPE_MASK_CLASS).isEqualTo(InputType.TYPE_CLASS_NUMBER)
+    assertThat(view.inputType and InputType.TYPE_TEXT_FLAG_CAP_SENTENCES).isZero
+
+    manager.updateProperties(view, buildStyles("keyboardType", "default"))
+    assertThat(view.inputType and InputType.TYPE_MASK_CLASS).isEqualTo(InputType.TYPE_CLASS_TEXT)
+    assertThat(view.inputType and InputType.TYPE_TEXT_FLAG_CAP_SENTENCES).isNotZero
+  }
+
+  @Test
   fun testPlaceholder() {
     manager.updateProperties(view, buildStyles())
     assertThat(view.hint).isNull()
@@ -153,6 +217,37 @@ class ReactTextInputPropertyTest {
 
     manager.updateProperties(view, buildStyles("editable", true))
     assertThat(view.isEnabled).isTrue
+  }
+
+  @Test
+  fun testAutoCompleteExtendedHints() {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+      return
+    }
+
+    val expectedHints =
+        listOf(
+            "2fa-app-otp" to HintConstants.AUTOFILL_HINT_2FA_APP_OTP,
+            "email-otp" to HintConstants.AUTOFILL_HINT_EMAIL_OTP,
+            "flight-confirmation-code" to HintConstants.AUTOFILL_HINT_FLIGHT_CONFIRMATION_CODE,
+            "flight-number" to HintConstants.AUTOFILL_HINT_FLIGHT_NUMBER,
+            "gift-card-number" to HintConstants.AUTOFILL_HINT_GIFT_CARD_NUMBER,
+            "gift-card-pin" to HintConstants.AUTOFILL_HINT_GIFT_CARD_PIN,
+            "loyalty-account-number" to HintConstants.AUTOFILL_HINT_LOYALTY_ACCOUNT_NUMBER,
+            "postal-address-dependent-locality" to
+                HintConstants.AUTOFILL_HINT_POSTAL_ADDRESS_DEPENDENT_LOCALITY,
+            "postal-address-unit" to HintConstants.AUTOFILL_HINT_POSTAL_ADDRESS_APT_NUMBER,
+            "promo-code" to HintConstants.AUTOFILL_HINT_PROMO_CODE,
+            "upi-vpa" to HintConstants.AUTOFILL_HINT_UPI_VPA,
+            "wifi-password" to HintConstants.AUTOFILL_HINT_WIFI_PASSWORD,
+        )
+
+    expectedHints.forEach { (autoComplete, expectedHint) ->
+      manager.updateProperties(view, buildStyles("autoComplete", autoComplete))
+
+      assertThat(view.importantForAutofill).isEqualTo(View.IMPORTANT_FOR_AUTOFILL_YES)
+      assertThat(view.autofillHints?.toList()).containsExactly(expectedHint)
+    }
   }
 
   @Test
@@ -389,7 +484,33 @@ class ReactTextInputPropertyTest {
     assertThat(view.filters).isEqualTo(filters)
   }
 
+  @Test
+  fun testSecureTextDoesNotReplaceSameTextFromJS() {
+    val markerSpan = MarkerSpan()
+    val textUpdate =
+        SpannableString("secret").apply {
+          setSpan(markerSpan, 0, length, Spanned.SPAN_INCLUSIVE_INCLUSIVE)
+        }
+
+    manager.updateProperties(view, buildStyles("secureTextEntry", true))
+    view.setText("secret")
+
+    view.maybeSetTextFromJS(
+        ReactTextUpdate(
+            textUpdate,
+            0,
+            view.gravity and Gravity.HORIZONTAL_GRAVITY_MASK,
+            Layout.BREAK_STRATEGY_HIGH_QUALITY,
+            0,
+        )
+    )
+
+    assertThat(checkNotNull(view.text).getSpans(0, view.length(), MarkerSpan::class.java)).isEmpty()
+  }
+
   private fun buildStyles(vararg keysAndValues: Any?): ReactStylesDiffMap {
     return ReactStylesDiffMap(JavaOnlyMap.of(*keysAndValues))
   }
+
+  private class MarkerSpan
 }

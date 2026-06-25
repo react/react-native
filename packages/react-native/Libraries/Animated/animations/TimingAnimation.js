@@ -15,15 +15,16 @@ import type AnimatedValue from '../nodes/AnimatedValue';
 import type AnimatedValueXY from '../nodes/AnimatedValueXY';
 import type {AnimationConfig, EndCallback} from './Animation';
 
+import * as ReactNativeFeatureFlags from '../../../src/private/featureflags/ReactNativeFeatureFlags';
 import AnimatedColor from '../nodes/AnimatedColor';
 import Animation from './Animation';
 
-export type TimingAnimationConfig = $ReadOnly<{
+export type TimingAnimationConfig = Readonly<{
   ...AnimationConfig,
   toValue:
     | number
     | AnimatedValue
-    | $ReadOnly<{
+    | Readonly<{
         x: number,
         y: number,
         ...
@@ -38,7 +39,7 @@ export type TimingAnimationConfig = $ReadOnly<{
   ...
 }>;
 
-export type TimingAnimationConfigSingle = $ReadOnly<{
+export type TimingAnimationConfigSingle = Readonly<{
   ...AnimationConfig,
   toValue: number,
   easing?: (value: number) => number,
@@ -69,6 +70,7 @@ export default class TimingAnimation extends Animation {
   _animationFrame: ?AnimationFrameID;
   _timeout: ?TimeoutID;
   _platformConfig: ?PlatformConfig;
+  _deferredStart: boolean;
 
   constructor(config: TimingAnimationConfigSingle) {
     super(config);
@@ -78,11 +80,12 @@ export default class TimingAnimation extends Animation {
     this._duration = config.duration ?? 500;
     this._delay = config.delay ?? 0;
     this._platformConfig = config.platformConfig;
+    this._deferredStart = false;
   }
 
-  __getNativeAnimationConfig(): $ReadOnly<{
+  __getNativeAnimationConfig(): Readonly<{
     type: 'frames',
-    frames: $ReadOnlyArray<number>,
+    frames: ReadonlyArray<number>,
     toValue: number,
     iterations: number,
     platformConfig: ?PlatformConfig,
@@ -102,6 +105,7 @@ export default class TimingAnimation extends Animation {
       iterations: this.__iterations,
       platformConfig: this._platformConfig,
       debugID: this.__getDebugID(),
+      deferredStart: this._deferredStart,
     };
   }
 
@@ -116,11 +120,16 @@ export default class TimingAnimation extends Animation {
 
     this._fromValue = fromValue;
     this._onUpdate = onUpdate;
+    if (ReactNativeFeatureFlags.animatedDeferStartOfTimingAnimations()) {
+      this._deferredStart = animatedValue.__deferAnimationStart;
+      animatedValue.__deferAnimationStart = false;
+    }
 
     const start = () => {
       this._startTime = Date.now();
 
       const useNativeDriver = this.__startAnimationIfNative(animatedValue);
+      // TODO: T274006331 - Remove js-only animation once shared backend is fully rolled out
       if (!useNativeDriver) {
         // Animations that sometimes have 0 duration and sometimes do not
         // still need to use the native driver when duration is 0 so as to

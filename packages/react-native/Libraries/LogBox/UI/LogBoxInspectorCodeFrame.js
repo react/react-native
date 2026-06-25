@@ -23,12 +23,7 @@ import LogBoxInspectorSection from './LogBoxInspectorSection';
 import * as LogBoxStyle from './LogBoxStyle';
 import * as React from 'react';
 
-type Props = $ReadOnly<{
-  componentCodeFrame: ?CodeFrame,
-  codeFrame: ?CodeFrame,
-}>;
-
-function CodeFrameDisplay({codeFrame}: {codeFrame: CodeFrame}): React.Node {
+component CodeFrameDisplay(codeFrame: CodeFrame) {
   function getFileName() {
     // $FlowFixMe[incompatible-use]
     const matches = /[^/]*$/.exec(codeFrame.fileName);
@@ -77,8 +72,10 @@ function CodeFrameDisplay({codeFrame}: {codeFrame: CodeFrame}): React.Node {
   );
 }
 
-function LogBoxInspectorCodeFrame(props: Props): React.Node {
-  const {codeFrame, componentCodeFrame} = props;
+component LogBoxInspectorCodeFrame(
+  componentCodeFrame: ?CodeFrame,
+  codeFrame: ?CodeFrame,
+) {
   let sources = [];
   if (codeFrame != null) {
     sources.push(codeFrame);
@@ -103,7 +100,7 @@ function LogBoxInspectorCodeFrame(props: Props): React.Node {
   );
 }
 
-function AppInfo() {
+component AppInfo() {
   const appInfo = LogBoxData.getAppInfo();
   if (appInfo == null) {
     return null;

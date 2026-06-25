@@ -187,7 +187,7 @@ type ActiveCallback = (
 type PassiveCallback = (
   event: GestureResponderEvent,
   gestureState: PanResponderGestureState,
-) => mixed;
+) => unknown;
 
 export type GestureResponderHandlerMethods = {
   onMoveShouldSetResponder: (event: GestureResponderEvent) => boolean,
@@ -204,7 +204,7 @@ export type GestureResponderHandlerMethods = {
   onStartShouldSetResponderCapture: (event: GestureResponderEvent) => boolean,
 };
 
-export type PanResponderCallbacks = $ReadOnly<{
+export type PanResponderCallbacks = Readonly<{
   onMoveShouldSetPanResponder?: ?ActiveCallback,
   onMoveShouldSetPanResponderCapture?: ?ActiveCallback,
   onStartShouldSetPanResponder?: ?ActiveCallback,

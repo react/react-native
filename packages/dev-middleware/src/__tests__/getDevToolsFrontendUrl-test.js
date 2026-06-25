@@ -13,7 +13,7 @@ import getDevToolsFrontendUrl from '../utils/getDevToolsFrontendUrl';
 describe('getDevToolsFrontendUrl', () => {
   const webSocketDebuggerUrl =
     'ws://localhost:8081/inspector/debug?device=1a9372c&page=-1';
-  const devServerUrl = 'http://localhost:8081';
+  const devServerUrl = new URL('http://localhost:8081');
 
   const experiments = {
     enableNetworkInspector: false,
@@ -30,7 +30,7 @@ describe('getDevToolsFrontendUrl', () => {
       );
       const url = new URL(actual);
       expect(url.host).toBe('localhost:8081');
-      expect(url.pathname).toBe('/debugger-frontend/rn_inspector.html');
+      expect(url.pathname).toBe('/debugger-frontend/rn_fusebox.html');
       expect(url.searchParams.get('ws')).toBe(
         '/inspector/debug?device=1a9372c&page=-1',
       );
@@ -44,7 +44,7 @@ describe('getDevToolsFrontendUrl', () => {
       );
       const url = new URL(actual);
       expect(url.host).toBe('localhost:8081');
-      expect(url.pathname).toBe('/debugger-frontend/rn_inspector.html');
+      expect(url.pathname).toBe('/debugger-frontend/rn_fusebox.html');
       expect(url.searchParams.get('unstable_enableNetworkPanel')).toBe('true');
       expect(url.searchParams.get('ws')).toBe(
         '/inspector/debug?device=1a9372c&page=-1',
@@ -87,7 +87,7 @@ describe('getDevToolsFrontendUrl', () => {
         },
       );
       const url = assertValidRelativeURL(actual);
-      expect(url.pathname).toBe('/debugger-frontend/rn_inspector.html');
+      expect(url.pathname).toBe('/debugger-frontend/rn_fusebox.html');
       expect(url.searchParams.get('ws')).toBe(
         '/inspector/debug?device=1a9372c&page=-1',
       );
@@ -103,7 +103,7 @@ describe('getDevToolsFrontendUrl', () => {
         },
       );
       const url = assertValidRelativeURL(actual);
-      expect(url.pathname).toBe('/debugger-frontend/rn_inspector.html');
+      expect(url.pathname).toBe('/debugger-frontend/rn_fusebox.html');
       expect(url.searchParams.get('unstable_enableNetworkPanel')).toBe('true');
       expect(url.searchParams.get('ws')).toBe(
         '/inspector/debug?device=1a9372c&page=-1',
@@ -147,7 +147,7 @@ describe('getDevToolsFrontendUrl', () => {
         },
       );
       const url = new URL(actual);
-      expect(url.pathname).toBe('/debugger-frontend/rn_inspector.html');
+      expect(url.pathname).toBe('/debugger-frontend/rn_fusebox.html');
       expect(url.searchParams.get('ws')).toBe(
         '/inspector/debug?device=1a9372c&page=-1',
       );
@@ -168,7 +168,7 @@ describe('getDevToolsFrontendUrl', () => {
         },
       );
       const url = new URL(actual);
-      expect(url.pathname).toBe('/debugger-frontend/rn_inspector.html');
+      expect(url.pathname).toBe('/debugger-frontend/rn_fusebox.html');
       expect(url.searchParams.get('unstable_enableNetworkPanel')).toBe('true');
       expect(url.searchParams.get('ws')).toBe(
         '/inspector/debug?device=1a9372c&page=-1',
@@ -199,22 +199,6 @@ describe('getDevToolsFrontendUrl', () => {
       expect(JSON.parse(url.searchParams.get('telemetryInfo') || '{}')).toEqual(
         JSON.parse(telemetryInfo),
       );
-    });
-  });
-
-  describe('useFuseboxEntryPoint: true', () => {
-    test('should return rn_fusebox.html entry point', async () => {
-      const result = getDevToolsFrontendUrl(
-        experiments,
-        webSocketDebuggerUrl,
-        devServerUrl,
-        {
-          useFuseboxEntryPoint: true,
-        },
-      );
-      const url = new URL(result);
-
-      expect(url.pathname).toBe('/debugger-frontend/rn_fusebox.html');
     });
   });
 });

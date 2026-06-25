@@ -84,7 +84,7 @@ constructor(private val fpsListener: FpsListener? = null) :
       props: ReactStylesDiffMap,
       stateWrapper: StateWrapper,
   ): Any? {
-    view.setStateWrapper(stateWrapper)
+    view.stateWrapper = stateWrapper
     if (
         ReactNativeFeatureFlags.enableViewCulling() ||
             ReactNativeFeatureFlags.useTraitHiddenOnAndroid()
@@ -96,7 +96,7 @@ constructor(private val fpsListener: FpsListener? = null) :
 
   @ReactProp(name = "scrollEnabled", defaultBoolean = true)
   public fun setScrollEnabled(view: ReactHorizontalScrollView, value: Boolean) {
-    view.setScrollEnabled(value)
+    view.scrollEnabled = value
   }
 
   @ReactProp(name = "showsHorizontalScrollIndicator", defaultBoolean = true)
@@ -115,6 +115,11 @@ constructor(private val fpsListener: FpsListener? = null) :
       disableIntervalMomentum: Boolean,
   ) {
     view.setDisableIntervalMomentum(disableIntervalMomentum)
+  }
+
+  @ReactProp(name = "scrollsChildToFocus", defaultBoolean = true)
+  public fun setScrollsChildToFocus(view: ReactHorizontalScrollView, scrollsChildToFocus: Boolean) {
+    view.setScrollsChildToFocus(scrollsChildToFocus)
   }
 
   @ReactProp(name = "snapToInterval")
@@ -346,8 +351,8 @@ constructor(private val fpsListener: FpsListener? = null) :
   public fun setFadingEdgeLength(view: ReactHorizontalScrollView, value: Dynamic) {
     when (value.type) {
       ReadableType.Number -> {
-        view.setFadingEdgeLengthStart(value.asInt())
-        view.setFadingEdgeLengthEnd(value.asInt())
+        view.fadingEdgeLengthStart = value.asInt()
+        view.fadingEdgeLengthEnd = value.asInt()
       }
       ReadableType.Map -> {
         value.asMap()?.let { map ->
@@ -359,8 +364,8 @@ constructor(private val fpsListener: FpsListener? = null) :
           if (map.hasKey("end") && map.getInt("end") > 0) {
             end = map.getInt("end")
           }
-          view.setFadingEdgeLengthStart(start)
-          view.setFadingEdgeLengthEnd(end)
+          view.fadingEdgeLengthStart = start
+          view.fadingEdgeLengthEnd = end
         }
       }
       else -> {

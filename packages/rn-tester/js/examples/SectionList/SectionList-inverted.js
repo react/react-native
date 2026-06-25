@@ -14,7 +14,7 @@ import SectionListBaseExample from './SectionListBaseExample';
 import * as React from 'react';
 import {useState} from 'react';
 
-export function SectionList_inverted(): React.Node {
+export component SectionList_inverted() {
   const [output, setOutput] = useState('inverted false');
   const [exampleProps, setExampleProps] = useState({
     inverted: false,

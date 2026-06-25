@@ -16,7 +16,7 @@ import LogBoxButton from './LogBoxButton';
 import * as LogBoxStyle from './LogBoxStyle';
 import * as React from 'react';
 
-type ButtonProps = $ReadOnly<{
+type ButtonProps = Readonly<{
   id: string,
   onPress: () => void,
   text: string,

@@ -20,8 +20,21 @@ import com.facebook.react.bridge.WritableMap
  */
 @Suppress("DEPRECATION")
 public interface RCTModernEventEmitter : RCTEventEmitter {
-  public fun receiveEvent(surfaceId: Int, targetTag: Int, eventName: String, params: WritableMap?)
+  @Deprecated(
+      "Use RCTModernEventEmitter",
+      ReplaceWith("RCTModernEventEmitter.receiveEvent(surfaceId, targetTag, eventName, params)"),
+  )
+  override fun receiveEvent(targetTag: Int, eventName: String, params: WritableMap?) {
+    receiveEvent(-1, targetTag, eventName, params)
+  }
 
+  @Deprecated("Use the overload with eventTimestamp parameter instead.")
+  public fun receiveEvent(surfaceId: Int, targetTag: Int, eventName: String, params: WritableMap?) {
+    // We assume this event can't be coalesced. `customCoalesceKey` has no meaning in Fabric.
+    receiveEvent(surfaceId, targetTag, eventName, false, 0, params, EventCategoryDef.UNSPECIFIED)
+  }
+
+  @Deprecated("Use the overload with eventTimestamp parameter instead.")
   public fun receiveEvent(
       surfaceId: Int,
       targetTag: Int,
@@ -31,4 +44,32 @@ public interface RCTModernEventEmitter : RCTEventEmitter {
       params: WritableMap?,
       @EventCategoryDef category: Int,
   )
+
+  /**
+   * Receives an event with a specific timestamp. The default implementation delegates to the
+   * non-timestamped version for backward compatibility with existing implementations.
+   *
+   * @param eventTimestamp The timestamp when the event was triggered (in milliseconds since boot,
+   *   from SystemClock.uptimeMillis())
+   */
+  public fun receiveEvent(
+      surfaceId: Int,
+      targetTag: Int,
+      eventName: String,
+      canCoalesceEvent: Boolean,
+      customCoalesceKey: Int,
+      params: WritableMap?,
+      @EventCategoryDef category: Int,
+      eventTimestamp: Long,
+  ) {
+    receiveEvent(
+        surfaceId,
+        targetTag,
+        eventName,
+        canCoalesceEvent,
+        customCoalesceKey,
+        params,
+        category,
+    )
+  }
 }

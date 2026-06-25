@@ -118,7 +118,7 @@ internal class MyNativeView(context: ThemedReactContext) : View(context) {
 
     val reactContext = context as ReactContext
     val surfaceId = UIManagerHelper.getSurfaceId(reactContext)
-    val eventDispatcher = UIManagerHelper.getEventDispatcherForReactTag(reactContext, id)
+    val eventDispatcher = UIManagerHelper.getEventDispatcher(reactContext)
     val event = OnIntArrayChangedEvent(surfaceId, id, payload)
 
     eventDispatcher?.dispatchEvent(event)
@@ -127,7 +127,7 @@ internal class MyNativeView(context: ThemedReactContext) : View(context) {
   fun emitLegacyStyleEvent() {
     val reactContext = context as ReactContext
     val surfaceId = UIManagerHelper.getSurfaceId(reactContext)
-    val eventDispatcher = UIManagerHelper.getEventDispatcherForReactTag(reactContext, id)
+    val eventDispatcher = UIManagerHelper.getEventDispatcher(reactContext)
     val payload = Arguments.createMap().apply { putString("string", "Legacy Style Event Fired.") }
     val event = OnLegacyStyleEvent(surfaceId, id, payload)
     eventDispatcher?.dispatchEvent(event)

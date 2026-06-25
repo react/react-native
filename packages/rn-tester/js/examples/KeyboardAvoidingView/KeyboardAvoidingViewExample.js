@@ -12,7 +12,8 @@
 
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 
-import React, {useState} from 'react';
+import * as React from 'react';
+import {useState} from 'react';
 import {
   Alert,
   Button,
@@ -252,7 +253,7 @@ exports.examples = [
     title: 'Keyboard Avoiding View with different behaviors',
     description:
       ('Specify how to react to the presence of the keyboard. Android and iOS both interact' +
-        'with this prop differently. On both iOS and Android, setting behavior is recommended.': string),
+        'with this prop differently. On both iOS and Android, setting behavior is recommended.') as string,
     render(): React.Node {
       return <KeyboardAvoidingViewBehaviour />;
     },
@@ -261,7 +262,7 @@ exports.examples = [
     title: 'Keyboard Avoiding View with keyboardVerticalOffset={distance}',
     description:
       ('This is the distance between the top of the user screen and the react native' +
-        'view, may be non-zero in some use cases. Defaults to 0.': string),
+        'view, may be non-zero in some use cases. Defaults to 0.') as string,
     render(): React.Node {
       return <KeyboardAvoidingVerticalOffset />;
     },

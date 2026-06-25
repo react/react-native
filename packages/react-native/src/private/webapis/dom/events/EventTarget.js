@@ -15,6 +15,7 @@
 
 import type {EventPhase} from './Event';
 
+import * as ReactNativeFeatureFlags from '../../../featureflags/ReactNativeFeatureFlags';
 import {setPlatformObject} from '../../webidl/PlatformObjects';
 import Event from './Event';
 import {
@@ -30,8 +31,10 @@ import {
   setTarget,
 } from './internals/EventInternals';
 import {
+  EVENT_TARGET_GET_DECLARATIVE_LISTENER_KEY,
   EVENT_TARGET_GET_THE_PARENT_KEY,
   INTERNAL_DISPATCH_METHOD_KEY,
+  getEventTargetParent,
 } from './internals/EventTargetInternals';
 
 export type EventCallback = (event: Event) => void;
@@ -40,11 +43,11 @@ export type EventHandler = interface {
 };
 export type EventListener = EventCallback | EventHandler;
 
-export type EventListenerOptions = $ReadOnly<{
+export type EventListenerOptions = Readonly<{
   capture?: boolean,
 }>;
 
-export type AddEventListenerOptions = $ReadOnly<{
+export type AddEventListenerOptions = Readonly<{
   ...EventListenerOptions,
   passive?: boolean,
   once?: boolean,
@@ -52,9 +55,9 @@ export type AddEventListenerOptions = $ReadOnly<{
 }>;
 
 type EventListenerRegistration = {
-  +callback: EventListener,
-  +passive: boolean,
-  +once: boolean,
+  readonly callback: EventListener,
+  readonly passive: boolean,
+  readonly once: boolean,
   removed: boolean,
 };
 
@@ -204,9 +207,28 @@ export default class EventTarget {
 
     setIsTrusted(event, false);
 
-    dispatch(this, event);
+    dispatch(this, event, false);
 
     return !event.defaultPrevented;
+  }
+
+  /**
+   * This a "protected" method to be overridden by a subclass to provide
+   * an additional event listener extracted from props.
+   *
+   * Called during event dispatch before explicitly registered listeners.
+   * Return a callback to be invoked as an event listener, or null.
+   *
+   * `event.type` is the event type. `isCapture` distinguishes the capture pass
+   * from the bubble pass — it cannot be derived from `event.eventPhase`,
+   * which is `AT_TARGET` during both passes through the target node.
+   */
+  // $FlowExpectedError[unsupported-syntax]
+  [EVENT_TARGET_GET_DECLARATIVE_LISTENER_KEY](
+    event: Event,
+    isCapture: boolean,
+  ): EventCallback | null {
+    return null;
   }
 
   /**
@@ -222,13 +244,26 @@ export default class EventTarget {
   }
 
   /**
-   * This is "protected" method to dispatch trusted events.
+   * This is "protected" method to dispatch trusted events. Mirrors the
+   * `dispatchEvent` return contract: returns `false` if the event was
+   * canceled (i.e. `event.defaultPrevented`), otherwise `true`.
    */
   // $FlowExpectedError[unsupported-syntax]
-  [INTERNAL_DISPATCH_METHOD_KEY](event: Event): void {
-    dispatch(this, event);
+  [INTERNAL_DISPATCH_METHOD_KEY](
+    event: Event,
+    rethrowListenerErrors?: boolean,
+  ): boolean {
+    dispatch(this, event, rethrowListenerErrors === true);
+    return !event.defaultPrevented;
   }
 }
+
+// $FlowFixMe[cannot-write]
+Object.defineProperties(EventTarget.prototype, {
+  addEventListener: {enumerable: true},
+  removeEventListener: {enumerable: true},
+  dispatchEvent: {enumerable: true},
+});
 
 setPlatformObject(EventTarget);
 
@@ -255,12 +290,25 @@ function getDefaultPassiveValue(
  * Implements the "event dispatch" concept
  * (see https://dom.spec.whatwg.org/#concept-event-dispatch).
  */
-function dispatch(eventTarget: EventTarget, event: Event): void {
+function dispatch(
+  eventTarget: EventTarget,
+  event: Event,
+  rethrowErrors: boolean,
+): void {
   setEventDispatchFlag(event, true);
 
   const eventPath = getEventPath(eventTarget, event);
   setComposedPath(event, eventPath);
   setTarget(event, eventTarget);
+
+  // When `rethrowErrors` is set (trusted dispatch of native UI events), collect
+  // the first listener error and rethrow it synchronously once the dispatch
+  // completes, matching the legacy plugin system's `rethrowCaughtError`
+  // behavior. Otherwise (the public `dispatchEvent` API, XHR, etc.) listener
+  // errors are reported to the global error handler per the DOM spec.
+  const errorState: ListenerErrorState | null = rethrowErrors
+    ? {hasError: false, error: undefined}
+    : null;
 
   for (let i = eventPath.length - 1; i >= 0; i--) {
     if (getStopPropagationFlag(event)) {
@@ -272,7 +320,7 @@ function dispatch(eventTarget: EventTarget, event: Event): void {
       event,
       target === eventTarget ? Event.AT_TARGET : Event.CAPTURING_PHASE,
     );
-    invoke(target, event, Event.CAPTURING_PHASE);
+    invoke(target, event, Event.CAPTURING_PHASE, errorState);
   }
 
   for (const target of eventPath) {
@@ -290,7 +338,7 @@ function dispatch(eventTarget: EventTarget, event: Event): void {
       event,
       target === eventTarget ? Event.AT_TARGET : Event.BUBBLING_PHASE,
     );
-    invoke(target, event, Event.BUBBLING_PHASE);
+    invoke(target, event, Event.BUBBLING_PHASE, errorState);
   }
 
   setEventPhase(event, Event.NONE);
@@ -300,6 +348,12 @@ function dispatch(eventTarget: EventTarget, event: Event): void {
   setEventDispatchFlag(event, false);
   setStopImmediatePropagationFlag(event, false);
   setStopPropagationFlag(event, false);
+
+  // Trusted dispatch: surface the first listener error synchronously, after the
+  // event has been fully cleaned up.
+  if (errorState != null && errorState.hasError) {
+    throw errorState.error;
+  }
 }
 
 /**
@@ -311,14 +365,13 @@ function dispatch(eventTarget: EventTarget, event: Event): void {
 function getEventPath(
   eventTarget: EventTarget,
   event: Event,
-): $ReadOnlyArray<EventTarget> {
+): ReadonlyArray<EventTarget> {
   const path = [];
   let target: EventTarget | null = eventTarget;
 
   while (target != null) {
     path.push(target);
-    // $FlowExpectedError[prop-missing]
-    target = target[EVENT_TARGET_GET_THE_PARENT_KEY]();
+    target = getEventTargetParent(target);
   }
 
   return path;
@@ -332,37 +385,88 @@ function invoke(
   eventTarget: EventTarget,
   event: Event,
   eventPhase: EventPhase,
+  errorState: ListenerErrorState | null,
 ) {
-  const listenersByType = getListenersForPhase(
-    eventTarget,
-    eventPhase === Event.CAPTURING_PHASE,
-  );
+  const isCapture = eventPhase === Event.CAPTURING_PHASE;
 
   setCurrentTarget(event, eventTarget);
 
+  if (ReactNativeFeatureFlags.enableNativeEventTargetEventDispatching()) {
+    // Resolve the prop-based listener. Pass the event so subclasses can read
+    // its `type` and any pre-resolved internal slots; pass `isCapture`
+    // separately because it can't be derived from `event.eventPhase` (which
+    // is `AT_TARGET` during both passes through the target node).
+    // $FlowExpectedError[prop-missing]
+    const propListener: EventCallback | null = eventTarget[
+      EVENT_TARGET_GET_DECLARATIVE_LISTENER_KEY
+    ](event, isCapture);
+
+    const listenersByType = getListenersForPhase(eventTarget, isCapture);
+    const maybeListeners = listenersByType?.get(event.type);
+
+    // Fast path: only a prop listener (no `addEventListener` listeners).
+    // This is the overwhelmingly common case for React-driven dispatch.
+    if (maybeListeners == null) {
+      if (propListener == null) {
+        return;
+      }
+      const currentEvent = global.event;
+      global.event = event;
+      try {
+        propListener.call(eventTarget, event);
+      } catch (error) {
+        handleListenerError(error, errorState);
+      }
+      global.event = currentEvent;
+      return;
+    }
+
+    // Slow path: combine prop listener + addEventListener listeners.
+    const listeners: Array<EventListenerRegistration> = [];
+    if (propListener != null) {
+      listeners.push({
+        callback: propListener,
+        passive: false,
+        once: false,
+        removed: false,
+      });
+    }
+    for (const registration of maybeListeners.values()) {
+      listeners.push(registration);
+    }
+    invokeListeners(eventTarget, event, listeners, isCapture, errorState);
+    return;
+  }
+
+  // Legacy path (flag OFF): only `addEventListener` listeners.
+  const listenersByType = getListenersForPhase(eventTarget, isCapture);
   const maybeListeners = listenersByType?.get(event.type);
   if (maybeListeners == null) {
     return;
   }
+  invokeListeners(
+    eventTarget,
+    event,
+    Array.from(maybeListeners.values()),
+    isCapture,
+    errorState,
+  );
+}
 
-  // This is a copy so listeners added during dispatch are NOT executed.
-  // Note that `maybeListeners.values()` is a live view of the map instead of an
-  // immutable copy.
-  const listeners = Array.from(maybeListeners.values());
-
-  setCurrentTarget(event, eventTarget);
-
+function invokeListeners(
+  eventTarget: EventTarget,
+  event: Event,
+  listeners: Array<EventListenerRegistration>,
+  isCapture: boolean,
+  errorState: ListenerErrorState | null,
+): void {
   for (const listener of listeners) {
     if (listener.removed) {
       continue;
     }
 
     if (listener.once) {
-      eventTarget.removeEventListener(
-        event.type,
-        listener.callback,
-        eventPhase === Event.CAPTURING_PHASE,
-      );
+      eventTarget.removeEventListener(event.type, listener.callback, isCapture);
     }
 
     if (listener.passive) {
@@ -382,8 +486,7 @@ function invoke(
         callback.handleEvent(event);
       }
     } catch (error) {
-      // TODO: replace with `reportError` when it's available.
-      console.error(error);
+      handleListenerError(error, errorState);
     }
 
     if (listener.passive) {
@@ -436,4 +539,52 @@ function getEventDispatchFlag(event: Event): boolean {
 function setEventDispatchFlag(event: Event, value: boolean): void {
   // $FlowExpectedError[prop-missing]
   event[EVENT_DISPATCH_FLAG] = value;
+}
+
+type ListenerErrorState = {hasError: boolean, error: unknown};
+
+/**
+ * Handle an error thrown by an event listener without aborting the rest of the
+ * dispatch.
+ *
+ * For trusted dispatch of native UI events (`errorState` is non-null), the
+ * first error is recorded so `dispatch` can rethrow it synchronously once the
+ * dispatch completes, matching the legacy plugin path (React's
+ * runEventsInBatch + `rethrowCaughtError`). This keeps listener errors
+ * catchable by React error boundaries and the native event call, instead of
+ * escaping as deferred uncaught exceptions.
+ *
+ * Otherwise (`errorState` is null: the public `dispatchEvent` API, XHR, etc.)
+ * the DOM spec requires reporting the exception to the global error handler
+ * without throwing, so it is deferred via `reportListenerError`.
+ */
+function handleListenerError(
+  error: unknown,
+  errorState: ListenerErrorState | null,
+): void {
+  if (errorState != null) {
+    if (!errorState.hasError) {
+      errorState.hasError = true;
+      errorState.error = error;
+    }
+    return;
+  }
+
+  reportListenerError(error);
+}
+
+/**
+ * Surface a listener error to the global error handler without aborting the
+ * rest of the dispatch. Throws in a new task so the error becomes an uncaught
+ * exception. Used for dispatches that follow the DOM `dispatchEvent` contract
+ * (the public API, XHR, etc.), where errors are reported rather than thrown
+ * synchronously.
+ *
+ * `setTimeout(0)` schedules a new macrotask; the throw inside it has no
+ * catcher above, so it bubbles up to the host's unhandled-error reporter.
+ */
+function reportListenerError(error: unknown): void {
+  setTimeout(() => {
+    throw error;
+  }, 0);
 }

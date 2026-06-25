@@ -4,6 +4,9 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
+ * @fantom_flags enableFabricCommitBranching:*
+ * @fantom_flags enableNativeEventTargetEventDispatching:true
+ * @fantom_flags enableImperativeEvents:*
  * @flow strict-local
  * @format
  */
@@ -17,20 +20,36 @@ import TextInputState from '../../../../../../Libraries/Components/TextInput/Tex
 import * as Fantom from '@react-native/fantom';
 import * as React from 'react';
 import {createRef} from 'react';
-import {ScrollView, TextInput, View} from 'react-native';
+import {ScrollView, Text, TextInput, View} from 'react-native';
 import {
   NativeText,
   NativeVirtualText,
 } from 'react-native/Libraries/Text/TextNativeComponent';
+import * as ReactNativeFeatureFlags from 'react-native/src/private/featureflags/ReactNativeFeatureFlags';
+import Event from 'react-native/src/private/webapis/dom/events/Event';
 import ReactNativeElement from 'react-native/src/private/webapis/dom/nodes/ReactNativeElement';
 import ReadOnlyElement from 'react-native/src/private/webapis/dom/nodes/ReadOnlyElement';
 import ReadOnlyNode from 'react-native/src/private/webapis/dom/nodes/ReadOnlyNode';
 import HTMLCollection from 'react-native/src/private/webapis/dom/oldstylecollections/HTMLCollection';
 import NodeList from 'react-native/src/private/webapis/dom/oldstylecollections/NodeList';
 
-function ensureReactNativeElement(value: mixed): ReactNativeElement {
+function ensureReactNativeElement(value: unknown): ReactNativeElement {
   return ensureInstance(value, ReactNativeElement);
 }
+
+// The public imperative EventTarget API is not part of the static type of this
+// final class (it is only present at runtime, gated by feature flags), so we
+// cast to an interface with optional members to inspect/use it without Flow
+// errors. Optional members make this a valid upcast and let us assert both
+// presence (`'function'`) and absence (`'undefined'`).
+type MaybeEventTarget = interface {
+  addEventListener?: (type: string, callback: (event: Event) => void) => void,
+  removeEventListener?: (
+    type: string,
+    callback: (event: Event) => void,
+  ) => void,
+  dispatchEvent?: (event: Event) => boolean,
+};
 
 /* eslint-disable no-bitwise */
 
@@ -868,6 +887,123 @@ describe('ReactNativeElement', () => {
         expect(boundingClientRect.width).toBeCloseTo(50.33);
         expect(boundingClientRect.height).toBeCloseTo(100.33);
       });
+
+      it('returns a DOMRect for Text elements', () => {
+        const textRef = createRef<HostInstance>();
+
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(
+            <View
+              style={{
+                position: 'absolute',
+                left: 10,
+                top: 20,
+              }}>
+              <Text
+                style={{
+                  width: 100,
+                  height: 50,
+                }}
+                ref={textRef}>
+                Hello World
+              </Text>
+            </View>,
+          );
+        });
+
+        const textElement = ensureReactNativeElement(textRef.current);
+
+        // Text element should have a valid bounding rect
+        const textBoundingRect = textElement.getBoundingClientRect();
+        expect(textBoundingRect).toBeInstanceOf(DOMRect);
+        expect(textBoundingRect.width).toBe(100);
+        expect(textBoundingRect.height).toBe(50);
+
+        // After unmounting, should return empty DOMRect
+        Fantom.runTask(() => {
+          root.render(<View key="otherParent" />);
+        });
+
+        const textBoundingRectAfterUnmount =
+          textElement.getBoundingClientRect();
+        expect(textBoundingRectAfterUnmount).toBeInstanceOf(DOMRect);
+        expect(textBoundingRectAfterUnmount.x).toBe(0);
+        expect(textBoundingRectAfterUnmount.y).toBe(0);
+        expect(textBoundingRectAfterUnmount.width).toBe(0);
+        expect(textBoundingRectAfterUnmount.height).toBe(0);
+      });
+
+      it('returns a DOMRect for nested Text elements', () => {
+        const outerTextRef = createRef<HostInstance>();
+        const nestedTextRef = createRef<HostInstance>();
+
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(
+            <View
+              style={{
+                position: 'absolute',
+                left: 10,
+                top: 20,
+              }}>
+              <Text
+                style={{
+                  width: 100,
+                  height: 50,
+                }}
+                ref={outerTextRef}>
+                Hello
+                <Text ref={nestedTextRef}> World</Text>
+              </Text>
+            </View>,
+          );
+        });
+
+        const outerTextElement = ensureReactNativeElement(outerTextRef.current);
+        const nestedTextElement = ensureReactNativeElement(
+          nestedTextRef.current,
+        );
+
+        // Outer text element should have a valid bounding rect
+        const outerTextBoundingRect = outerTextElement.getBoundingClientRect();
+        expect(outerTextBoundingRect).toBeInstanceOf(DOMRect);
+        expect(outerTextBoundingRect.width).toBe(100);
+        expect(outerTextBoundingRect.height).toBe(50);
+
+        // Nested text (virtual text) returns a DOMRect with zero values
+        // since it doesn't have its own independent layout
+        const nestedTextBoundingRect =
+          nestedTextElement.getBoundingClientRect();
+        expect(nestedTextBoundingRect).toBeInstanceOf(DOMRect);
+        expect(nestedTextBoundingRect.x).toBe(0);
+        expect(nestedTextBoundingRect.y).toBe(0);
+        expect(nestedTextBoundingRect.width).toBe(0);
+        expect(nestedTextBoundingRect.height).toBe(0);
+
+        // After unmounting, both should return empty DOMRects
+        Fantom.runTask(() => {
+          root.render(<View key="otherParent" />);
+        });
+
+        const outerTextBoundingRectAfterUnmount =
+          outerTextElement.getBoundingClientRect();
+        expect(outerTextBoundingRectAfterUnmount).toBeInstanceOf(DOMRect);
+        expect(outerTextBoundingRectAfterUnmount.x).toBe(0);
+        expect(outerTextBoundingRectAfterUnmount.y).toBe(0);
+        expect(outerTextBoundingRectAfterUnmount.width).toBe(0);
+        expect(outerTextBoundingRectAfterUnmount.height).toBe(0);
+
+        const nestedTextBoundingRectAfterUnmount =
+          nestedTextElement.getBoundingClientRect();
+        expect(nestedTextBoundingRectAfterUnmount).toBeInstanceOf(DOMRect);
+        expect(nestedTextBoundingRectAfterUnmount.x).toBe(0);
+        expect(nestedTextBoundingRectAfterUnmount.y).toBe(0);
+        expect(nestedTextBoundingRectAfterUnmount.width).toBe(0);
+        expect(nestedTextBoundingRectAfterUnmount.height).toBe(0);
+      });
     });
 
     describe('scrollLeft / scrollTop', () => {
@@ -1511,6 +1647,122 @@ describe('ReactNativeElement', () => {
             .toJSX(),
         ).toEqual(<rn-view testID={'second test id'} />);
       });
+    });
+  });
+
+  describe('imperative EventTarget API', () => {
+    // These tests run with `enableNativeEventTargetEventDispatching:true` and
+    // `enableImperativeEvents:*` (see the `@fantom_flags` pragmas). The public
+    // EventTarget API is gated behind `enableImperativeEvents`: when it is off
+    // the methods are removed from this final class, when it is on they are
+    // available.
+    const {isOSS} = Fantom.getConstants();
+
+    if (!ReactNativeFeatureFlags.enableImperativeEvents()) {
+      describe('when `enableImperativeEvents` is off (default)', () => {
+        it('removes the public EventTarget methods', () => {
+          const ref = createRef<HostInstance>();
+          const root = Fantom.createRoot();
+
+          Fantom.runTask(() => {
+            root.render(<View ref={ref} />);
+          });
+
+          const element = ensureReactNativeElement(
+            ref.current,
+          ) as MaybeEventTarget;
+          expect(typeof element.addEventListener).toBe('undefined');
+          expect(typeof element.removeEventListener).toBe('undefined');
+          expect(typeof element.dispatchEvent).toBe('undefined');
+        });
+
+        // Removing the public API must not affect native/prop event delivery,
+        // which goes through the internal (symbol-keyed) dispatch path.
+        (isOSS ? it.skip : it)(
+          'still delivers native events to prop handlers',
+          () => {
+            const ref = createRef<HostInstance>();
+            const onPointerUp = jest.fn();
+            const root = Fantom.createRoot();
+
+            Fantom.runTask(() => {
+              root.render(<View ref={ref} onPointerUp={onPointerUp} />);
+            });
+
+            expect(onPointerUp).toHaveBeenCalledTimes(0);
+
+            Fantom.dispatchNativeEvent(
+              ref,
+              'onPointerUp',
+              {x: 0, y: 0},
+              {
+                category: Fantom.NativeEventCategory.Discrete,
+              },
+            );
+
+            expect(onPointerUp).toHaveBeenCalledTimes(1);
+          },
+        );
+      });
+    }
+
+    if (ReactNativeFeatureFlags.enableImperativeEvents()) {
+      describe('when `enableImperativeEvents` is on', () => {
+        it('exposes the public EventTarget methods', () => {
+          const ref = createRef<HostInstance>();
+          const root = Fantom.createRoot();
+
+          Fantom.runTask(() => {
+            root.render(<View ref={ref} />);
+          });
+
+          const element = ensureReactNativeElement(
+            ref.current,
+          ) as MaybeEventTarget;
+          expect(typeof element.addEventListener).toBe('function');
+          expect(typeof element.removeEventListener).toBe('function');
+          expect(typeof element.dispatchEvent).toBe('function');
+        });
+
+        it('round-trips a listener via `addEventListener` + `dispatchEvent`', () => {
+          const ref = createRef<HostInstance>();
+          const root = Fantom.createRoot();
+
+          Fantom.runTask(() => {
+            root.render(<View ref={ref} />);
+          });
+
+          const element = ensureReactNativeElement(
+            ref.current,
+          ) as MaybeEventTarget;
+          const listener = jest.fn();
+
+          element.addEventListener?.('custom', listener);
+          const result = element.dispatchEvent?.(new Event('custom'));
+
+          expect(listener).toHaveBeenCalledTimes(1);
+          expect(result).toBe(true);
+
+          element.removeEventListener?.('custom', listener);
+          element.dispatchEvent?.(new Event('custom'));
+
+          expect(listener).toHaveBeenCalledTimes(1);
+        });
+      });
+    }
+  });
+
+  describe('global constructors', () => {
+    it('throws when constructing HTMLElement', () => {
+      expect(() => new HTMLElement()).toThrow(
+        "Failed to construct 'HTMLElement': Nodes cannot be imperatively created in React Native",
+      );
+    });
+
+    it('throws when constructing Element', () => {
+      expect(() => new Element()).toThrow(
+        "Failed to construct 'Element': Illegal constructor",
+      );
     });
   });
 });

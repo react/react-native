@@ -18,11 +18,11 @@ import type {HostComponent} from '../../types/HostComponent';
 
 import codegenNativeComponent from '../../../../Libraries/Utilities/codegenNativeComponent';
 
-type OrientationChangeEvent = $ReadOnly<{
+type OrientationChangeEvent = Readonly<{
   orientation: 'portrait' | 'landscape',
 }>;
 
-type RCTModalHostViewNativeProps = $ReadOnly<{
+type RCTModalHostViewNativeProps = Readonly<{
   ...ViewProps,
 
   /**
@@ -124,7 +124,7 @@ type RCTModalHostViewNativeProps = $ReadOnly<{
    * See https://reactnative.dev/docs/modal#supportedorientations
    */
   supportedOrientations?: WithDefault<
-    $ReadOnlyArray<
+    ReadonlyArray<
       | 'portrait'
       | 'portrait-upside-down'
       | 'landscape'
@@ -147,10 +147,10 @@ type RCTModalHostViewNativeProps = $ReadOnly<{
   identifier?: WithDefault<Int32, 0>,
 }>;
 
-export default (codegenNativeComponent<RCTModalHostViewNativeProps>(
+export default codegenNativeComponent<RCTModalHostViewNativeProps>(
   'ModalHostView',
   {
     interfaceOnly: true,
     paperComponentName: 'RCTModalHostView',
   },
-): HostComponent<RCTModalHostViewNativeProps>);
+) as HostComponent<RCTModalHostViewNativeProps>;

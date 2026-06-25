@@ -9,9 +9,10 @@
 
 #if RCT_DEV || RCT_REMOTE_PROFILE
 
+#import <React/RCTAssert.h>
+#import <React/RCTDevSupportHttpHeaders.h>
 #import <React/RCTInspector.h>
 #import <React/RCTInspectorPackagerConnection.h>
-#import <React/RCTLog.h>
 #import <React/RCTUtils.h>
 #import <SocketRocket/SRWebSocket.h>
 #import <jsinspector-modern/InspectorPackagerConnection.h>
@@ -22,7 +23,11 @@ using namespace facebook::react::jsinspector_modern;
 namespace {
 NSString *NSStringFromUTF8StringView(std::string_view view)
 {
-  return [[NSString alloc] initWithBytes:(const char *)view.data() length:view.size() encoding:NSUTF8StringEncoding];
+  NSString *result = [[NSString alloc] initWithBytes:(const char *)view.data()
+                                              length:view.size()
+                                            encoding:NSUTF8StringEncoding];
+  RCTAssert(result != nil, @"string_view contains invalid UTF-8 bytes");
+  return result;
 }
 } // namespace
 @interface RCTCxxInspectorWebSocketAdapter () <SRWebSocketDelegate> {
@@ -36,7 +41,10 @@ NSString *NSStringFromUTF8StringView(std::string_view view)
 {
   if ((self = [super init]) != nullptr) {
     _delegate = delegate;
-    _webSocket = [[SRWebSocket alloc] initWithURL:[NSURL URLWithString:NSStringFromUTF8StringView(url)]];
+    NSURL *requestURL = [NSURL URLWithString:NSStringFromUTF8StringView(url)];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestURL];
+    [[RCTDevSupportHttpHeaders sharedInstance] applyHeadersToRequest:request];
+    _webSocket = [[SRWebSocket alloc] initWithURLRequest:request];
     _webSocket.delegate = self;
     [_webSocket open];
   }

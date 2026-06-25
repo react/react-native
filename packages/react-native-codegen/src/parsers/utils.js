@@ -16,12 +16,12 @@ const path = require('path');
 export type TypeDeclarationMap = {[declarationName: string]: $FlowFixMe};
 
 export type TypeResolutionStatus =
-  | $ReadOnly<{
+  | Readonly<{
       type: 'alias' | 'enum',
       successful: true,
       name: string,
     }>
-  | $ReadOnly<{
+  | Readonly<{
       successful: false,
     }>;
 
@@ -66,7 +66,7 @@ function createParserErrorCapturer(): [
 function verifyPlatforms(
   hasteModuleName: string,
   moduleName: string,
-): $ReadOnly<{
+): Readonly<{
   cxxOnly: boolean,
   excludedPlatforms: Array<'iOS' | 'android'>,
 }> {

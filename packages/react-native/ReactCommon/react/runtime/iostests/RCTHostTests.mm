@@ -163,6 +163,17 @@ static ShimRCTInstance *shimmedRCTInstance;
 
 - (void)testDidInitializeRuntime
 {
+  auto hermesRuntime = facebook::hermes::makeHermesRuntime();
+  facebook::jsi::Runtime *rt = hermesRuntime.get();
+
+  id<RCTInstanceDelegate> instanceDelegate = (id<RCTInstanceDelegate>)_subject;
+  [instanceDelegate instance:[OCMArg any] didInitializeRuntime:*rt];
+
+  OCMVerify(OCMTimes(1), [_mockHostDelegate host:_subject didInitializeRuntime:*rt]);
+}
+
+- (void)testDidInitializeRuntime_DEPRECATED
+{
   id<RCTHostRuntimeDelegate> mockRuntimeDelegate = OCMProtocolMock(@protocol(RCTHostRuntimeDelegate));
   _subject.runtimeDelegate = mockRuntimeDelegate;
 

@@ -11,7 +11,6 @@ import android.view.View
 import android.view.ViewGroup
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.UiThreadUtil
-import java.util.WeakHashMap
 
 @Suppress("DEPRECATION")
 public abstract class ViewGroupManager<T : ViewGroup>
@@ -76,13 +75,4 @@ constructor(reactContext: ReactApplicationContext? = null) :
    * that case, onLayout for this View type must *not* call layout on its children.
    */
   public override fun needsCustomLayoutForChildren(): Boolean = false
-
-  public companion object {
-    private val zIndexHash: WeakHashMap<View, Int> = WeakHashMap()
-
-    @JvmStatic
-    public fun setViewZIndex(view: View, zIndex: Int): Unit = zIndexHash.set(view, zIndex)
-
-    @JvmStatic public fun getViewZIndex(view: View?): Int? = zIndexHash[view]
-  }
 }

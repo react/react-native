@@ -8,17 +8,17 @@
  * @format
  */
 
-type BasePlatformTestAssertionResult = $ReadOnly<{
+type BasePlatformTestAssertionResult = Readonly<{
   name: string,
   description: string,
 }>;
 
-export type PassingPlatformTestAssertionResult = $ReadOnly<{
+export type PassingPlatformTestAssertionResult = Readonly<{
   ...BasePlatformTestAssertionResult,
   passing: true,
 }>;
 
-export type FailingPlatformTestAssertionResult = $ReadOnly<{
+export type FailingPlatformTestAssertionResult = Readonly<{
   ...BasePlatformTestAssertionResult,
   passing: false,
   failureMessage: string,
@@ -30,14 +30,14 @@ export type PlatformTestAssertionResult =
 
 export type PlatformTestResultStatus = 'PASS' | 'FAIL' | 'ERROR' | 'SKIPPED';
 
-export type PlatformTestResult = $ReadOnly<{
+export type PlatformTestResult = Readonly<{
   name: string,
   status: PlatformTestResultStatus,
-  assertions: $ReadOnlyArray<PlatformTestAssertionResult>,
-  error: mixed | null, // null is technically unnecessary but is kept to ensure the error is described as nullable
+  assertions: ReadonlyArray<PlatformTestAssertionResult>,
+  error: unknown | null, // null is technically unnecessary but is kept to ensure the error is described as nullable
 }>;
 
-export type PlatformTestContext = $ReadOnly<{
+export type PlatformTestContext = Readonly<{
   assert_true(a: boolean, description: string): void,
   assert_equals(a: any, b: any, description: string): void,
   assert_not_equals(a: any, b: any, description: string): void,
@@ -47,16 +47,16 @@ export type PlatformTestContext = $ReadOnly<{
 
 export type PlatformTestCase = (context: PlatformTestContext) => void;
 
-export type AsyncPlatformTest = $ReadOnly<{
+export type AsyncPlatformTest = Readonly<{
   done(): void,
   step(testcase: PlatformTestCase): void,
 }>;
 
-export type SyncTestOptions = $ReadOnly<{
+export type SyncTestOptions = Readonly<{
   skip?: boolean,
 }>;
 
-export type PlatformTestHarness = $ReadOnly<{
+export type PlatformTestHarness = Readonly<{
   test(
     testcase: PlatformTestCase,
     name: string,
@@ -66,6 +66,6 @@ export type PlatformTestHarness = $ReadOnly<{
 }>;
 
 export type PlatformTestComponentBaseProps = {
-  +harness: PlatformTestHarness,
+  readonly harness: PlatformTestHarness,
   ...
 };

@@ -1,0 +1,15 @@
+interface RCTTestMacros {
+  public @property (strong, readonly) dispatch_queue_t methodQueue;
+  public @property (weak, readonly) id bridge;
+  public virtual instancetype initWithDelegate:options:(id delegate, NSDictionary* options);
+  public virtual instancetype initWithName:(NSString* name);
+  public virtual static UIUserInterfaceStyle userInterfaceStyle();
+  public virtual void deprecatedMethod();
+  public virtual void start();
+}
+
+protocol RCTTestProtocol {
+  public @property (assign, readonly) NSString* name;
+  public virtual void normalMethod();
+  public virtual void requiredMethod();
+}

@@ -44,7 +44,7 @@ export default class AnimatedDiffClamp extends AnimatedWithChildren {
     super.__makeNative(platformConfig);
   }
 
-  interpolate<OutputT: number | string>(
+  interpolate<OutputT extends number | string>(
     config: InterpolationConfigType<OutputT>,
   ): AnimatedInterpolation<OutputT> {
     return new AnimatedInterpolation(this, config);

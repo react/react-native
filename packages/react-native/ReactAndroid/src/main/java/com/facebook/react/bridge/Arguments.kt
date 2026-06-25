@@ -139,6 +139,7 @@ public object Arguments {
   public fun fromJavaArgs(args: Any?): WritableNativeArray = fromJavaArgs(args as Array<Any?>)
 
   @JvmStatic
+  @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
   public fun fromJavaArgs(args: Array<Any?>): WritableNativeArray {
     val arguments = WritableNativeArray()
     for (i in args.indices) {

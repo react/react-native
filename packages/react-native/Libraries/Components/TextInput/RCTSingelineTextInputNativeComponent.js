@@ -36,6 +36,6 @@ const SinglelineTextInputNativeComponent: HostComponent<{...}> =
   );
 
 // flowlint-next-line unclear-type:off
-export default ((SinglelineTextInputNativeComponent: any): HostComponent<{
+export default SinglelineTextInputNativeComponent as any as HostComponent<{
   ...
-}>);
+}>;

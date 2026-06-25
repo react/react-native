@@ -12,7 +12,7 @@ import SectionListBaseExample from './SectionListBaseExample';
 import * as React from 'react';
 import {useRef, useState} from 'react';
 
-export function SectionList_onEndReached(): React.Node {
+export component SectionList_onEndReached() {
   const [output, setOutput] = useState('');
   const exampleProps = {
     onEndReached: (info: {distanceFromEnd: number, ...}) =>

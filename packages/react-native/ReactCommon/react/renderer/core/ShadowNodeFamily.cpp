@@ -33,7 +33,7 @@ ShadowNodeFamily::ShadowNodeFamily(
       componentHandle_(componentDescriptor.getComponentHandle()),
       componentName_(componentDescriptor.getComponentName()) {}
 
-void ShadowNodeFamily::setParent(const ShadowNodeFamily::Shared& parent) const {
+void ShadowNodeFamily::setParent(const ShadowNodeFamily::Shared& parent) {
   react_native_assert(parent_.lock() == nullptr || parent_.lock() == parent);
   if (hasParent_) {
     return;
@@ -59,7 +59,7 @@ ComponentName ShadowNodeFamily::getComponentName() const {
   return componentName_;
 }
 
-void ShadowNodeFamily::setMounted() const {
+void ShadowNodeFamily::setMounted() {
   hasBeenMounted_ = true;
 }
 
@@ -68,7 +68,7 @@ const ComponentDescriptor& ShadowNodeFamily::getComponentDescriptor() const {
 }
 
 void ShadowNodeFamily::onUnmountedFamilyDestroyed(
-    std::function<void(const ShadowNodeFamily& family)> callback) const {
+    std::function<void(const ShadowNodeFamily& family)> callback) {
   onUnmountedFamilyDestroyedCallback_ = std::move(callback);
 }
 
@@ -89,7 +89,7 @@ InstanceHandle::Shared ShadowNodeFamily::getInstanceHandle() const {
 }
 
 void ShadowNodeFamily::setInstanceHandle(
-    InstanceHandle::Shared& instanceHandle) const {
+    InstanceHandle::Shared& instanceHandle) {
   instanceHandle_ = instanceHandle;
 }
 
@@ -144,7 +144,7 @@ State::Shared ShadowNodeFamily::getMostRecentState() const {
   return mostRecentState_;
 }
 
-void ShadowNodeFamily::setMostRecentState(const State::Shared& state) const {
+void ShadowNodeFamily::setMostRecentState(const State::Shared& state) {
   std::unique_lock lock(mutex_);
 
   /*
@@ -175,7 +175,7 @@ std::shared_ptr<const State> ShadowNodeFamily::getMostRecentStateIfObsolete(
 
 void ShadowNodeFamily::dispatchRawState(
     StateUpdate&& stateUpdate,
-    EventQueue::UpdateMode updateMode) const {
+    EventQueue::UpdateMode updateMode) {
   auto eventDispatcher = eventDispatcher_.lock();
   if (!eventDispatcher) {
     return;

@@ -13,10 +13,10 @@ import type {TurboModule} from '../../../../Libraries/TurboModule/RCTExport';
 import * as TurboModuleRegistry from '../../../../Libraries/TurboModule/TurboModuleRegistry';
 
 export interface Spec extends TurboModule {
-  +readAsDataURL: (data: Object) => Promise<string>;
-  +readAsText: (data: Object, encoding: string) => Promise<string>;
+  readonly readAsDataURL: (data: Object) => Promise<string>;
+  readonly readAsText: (data: Object, encoding: string) => Promise<string>;
 }
 
-export default (TurboModuleRegistry.getEnforcing<Spec>(
+export default TurboModuleRegistry.getEnforcing<Spec>(
   'FileReaderModule',
-): Spec);
+) as Spec;

@@ -77,6 +77,13 @@ export namespace Animated {
     readonly useNativeDriver: boolean;
   };
 
+  type AnimatedColorInputValue =
+    | RgbaValue
+    | RgbaAnimatedValue
+    | ColorValue
+    | null
+    | undefined;
+
   class AnimatedColor extends AnimatedWithChildren {
     r: AnimatedValue;
     g: AnimatedValue;
@@ -84,7 +91,7 @@ export namespace Animated {
     a: AnimatedValue;
 
     constructor(
-      valueIn?: RgbaValue | RgbaAnimatedValue | ColorValue | null,
+      valueIn?: AnimatedColorInputValue,
       config?: AnimatedConfig | null,
     );
     nativeColor: unknown; // Unsure what to do here

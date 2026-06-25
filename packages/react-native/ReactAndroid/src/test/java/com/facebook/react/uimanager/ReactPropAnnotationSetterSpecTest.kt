@@ -22,12 +22,11 @@ class ReactPropAnnotationSetterSpecTest {
   private abstract inner class BaseViewManager : ViewManager<View, ReactShadowNode<*>>() {
     override fun getName(): String = "IgnoredName"
 
-    override fun createShadowNodeInstance(): ReactShadowNode<*> = createShadowNodeInstance()
+    override fun createShadowNodeInstance(): ReactShadowNode<*> = ReactShadowNodeImpl()
 
     override fun getShadowNodeClass(): Class<out ReactShadowNode<*>> = ReactShadowNode::class.java
 
-    override fun createViewInstance(reactContext: ThemedReactContext): View =
-        createViewInstance(reactContext)
+    override fun createViewInstance(reactContext: ThemedReactContext): View = View(reactContext)
 
     override fun prepareToRecycleView(reactContext: ThemedReactContext, view: View): View? = null
 

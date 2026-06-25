@@ -127,9 +127,4 @@ export namespace StyleSheet {
    * styles.
    */
   export const absoluteFill: AbsoluteFillStyle;
-
-  /**
-   * @deprecated Use `StyleSheet.absoluteFill`.
-   */
-  export const absoluteFillObject: AbsoluteFillStyle;
 }

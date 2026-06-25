@@ -17,19 +17,17 @@ import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactSoftExceptionLogger
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
+import com.facebook.react.bridge.ScrollEndedListener
 import com.facebook.react.bridge.UIManager
 import com.facebook.react.bridge.UIManagerListener
 import com.facebook.react.bridge.buildReadableMap
 import com.facebook.react.common.annotations.UnstableReactNativeAPI
 import com.facebook.react.common.annotations.VisibleForTesting
-import com.facebook.react.common.build.ReactBuildConfig
 import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.modules.core.ReactChoreographer
 import com.facebook.react.uimanager.GuardedFrameCallback
-import com.facebook.react.uimanager.UIBlock
 import com.facebook.react.uimanager.UIManagerHelper
 import com.facebook.react.uimanager.common.UIManagerType
-import com.facebook.react.uimanager.common.ViewUtil
 import java.util.ArrayList
 import java.util.Queue
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -80,7 +78,10 @@ import kotlin.concurrent.Volatile
 @OptIn(UnstableReactNativeAPI::class)
 @ReactModule(name = NativeAnimatedModuleSpec.NAME)
 public class NativeAnimatedModule(reactContext: ReactApplicationContext) :
-    NativeAnimatedModuleSpec(reactContext), LifecycleEventListener, UIManagerListener {
+    NativeAnimatedModuleSpec(reactContext),
+    LifecycleEventListener,
+    UIManagerListener,
+    ScrollEndedListener {
 
   // For `queueAndExecuteBatchedOperations`
   private enum class BatchExecutionOpCodes(value: Int) {
@@ -203,11 +204,6 @@ public class NativeAnimatedModule(reactContext: ReactApplicationContext) :
   @Volatile private var currentBatchNumber: Long = 0
 
   private var initializedForFabric = false
-  private var initializedForNonFabric = false
-
-  @UIManagerType private var uiManagerType = UIManagerType.LEGACY
-  private var numFabricAnimations = 0
-  private var numNonFabricAnimations = 0
 
   /**
    * This method is used to notify the JS side that the user has stopped scrolling. With natively
@@ -239,6 +235,11 @@ public class NativeAnimatedModule(reactContext: ReactApplicationContext) :
     super.initialize()
 
     reactApplicationContext.addLifecycleEventListener(this)
+    reactApplicationContext.scrollEndedListeners.addListener(this)
+  }
+
+  override fun onScrollEnded(scrollView: android.view.ViewGroup) {
+    userDrivenScrollEnded(scrollView.id)
   }
 
   override fun onHostResume() {
@@ -276,10 +277,6 @@ public class NativeAnimatedModule(reactContext: ReactApplicationContext) :
   // For FabricUIManager only
   @UiThread
   override fun didDispatchMountItems(uiManager: UIManager) {
-    if (uiManagerType != UIManagerType.FABRIC) {
-      return
-    }
-
     var batchNumber = currentBatchNumber - 1
 
     // TODO T71377544: delete this when the JS method is confirmed safe
@@ -304,33 +301,10 @@ public class NativeAnimatedModule(reactContext: ReactApplicationContext) :
     operations.executeBatch(batchNumber, nodesManager)
   }
 
-  // For non-FabricUIManager only
-  @Suppress("DEPRECATION")
+  // For non-FabricUIManager only (no-op since Fabric is the only supported UIManager)
   @UiThread
   override fun willDispatchViewUpdates(uiManager: UIManager) {
-    if (operations.isEmpty && preOperations.isEmpty) {
-      return
-    }
-    if (
-        uiManagerType == UIManagerType.FABRIC ||
-            ReactBuildConfig.UNSTABLE_ENABLE_MINIFY_LEGACY_ARCHITECTURE
-    ) {
-      return
-    }
-
-    // The following code ONLY executes for non-fabric
-    // When ReactBuildConfig.UNSTABLE_ENABLE_MINIFY_LEGACY_ARCHITECTURE is true, the folowing code
-    // might be stripped out.
-    val frameNo = currentBatchNumber++
-
-    val preOperationsUIBlock = UIBlock { preOperations.executeBatch(frameNo, nodesManager) }
-
-    val operationsUIBlock = UIBlock { operations.executeBatch(frameNo, nodesManager) }
-
-    assert(uiManager is com.facebook.react.uimanager.UIManagerModule)
-    val uiManagerModule = uiManager as com.facebook.react.uimanager.UIManagerModule
-    uiManagerModule.prependUIBlock(preOperationsUIBlock)
-    uiManagerModule.addUIBlock(operationsUIBlock)
+    // No-op: Fabric is the only supported UIManager
   }
 
   override fun onHostPause() {
@@ -402,23 +376,15 @@ public class NativeAnimatedModule(reactContext: ReactApplicationContext) :
   }
 
   /**
-   * Given a viewTag, detect if we're running in Fabric or non-Fabric and attach an event listener
-   * to the correct UIManager, if necessary. This is expected to only be called from the native
-   * module thread, and not concurrently.
+   * Given a viewTag, attach an event listener to the Fabric UIManager if necessary. This is
+   * expected to only be called from the native module thread, and not concurrently.
    *
    * @param viewTag
    */
   private fun initializeLifecycleEventListenersForViewTag(viewTag: Int) {
-    uiManagerType = ViewUtil.getUIManagerType(viewTag)
-    if (uiManagerType == UIManagerType.FABRIC) {
-      numFabricAnimations++
-    } else {
-      numNonFabricAnimations++
-    }
-
     val nodesManager = this.nodesManager
     if (nodesManager != null) {
-      nodesManager.initializeEventListenerForUIManagerType(uiManagerType)
+      nodesManager.initializeEventListenerForUIManagerType(UIManagerType.FABRIC)
     } else {
       ReactSoftExceptionLogger.logSoftException(
           NAME,
@@ -428,59 +394,18 @@ public class NativeAnimatedModule(reactContext: ReactApplicationContext) :
       )
     }
 
-    // Subscribe to UIManager (Fabric or non-Fabric) lifecycle events if we haven't yet
-    val initialized =
-        if (uiManagerType == UIManagerType.FABRIC) initializedForFabric else initializedForNonFabric
-    if (initialized) {
+    // Subscribe to Fabric UIManager lifecycle events if we haven't yet
+    if (initializedForFabric) {
       return
     }
 
     val reactApplicationContext = reactApplicationContextIfActiveOrWarn
     if (reactApplicationContext != null) {
-      val uiManager = UIManagerHelper.getUIManager(reactApplicationContext, uiManagerType)
+      val uiManager = UIManagerHelper.getUIManager(reactApplicationContext, UIManagerType.FABRIC)
       if (uiManager != null) {
         uiManager.addUIManagerEventListener(this)
-        if (uiManagerType == UIManagerType.FABRIC) {
-          initializedForFabric = true
-        } else {
-          initializedForNonFabric = true
-        }
+        initializedForFabric = true
       }
-    }
-  }
-
-  /**
-   * Given a viewTag and the knowledge that a "disconnect" or "stop"-type imperative command is
-   * being executed, decrement the number of inflight animations and possibly switch UIManager
-   * modes.
-   *
-   * @param viewTag
-   */
-  private fun decrementInFlightAnimationsForViewTag(viewTag: Int) {
-    @UIManagerType val animationManagerType = ViewUtil.getUIManagerType(viewTag)
-    if (animationManagerType == UIManagerType.FABRIC) {
-      numFabricAnimations--
-    } else {
-      numNonFabricAnimations--
-    }
-
-    // Should we switch to a different animation mode?
-    // This can be useful when navigating between Fabric and non-Fabric screens:
-    // If there are ongoing Fabric animations from a previous screen,
-    // and we tear down the current non-Fabric screen, we should expect
-    // the animation mode to switch back - and vice-versa.
-    if (
-        numNonFabricAnimations == 0 &&
-            numFabricAnimations > 0 &&
-            uiManagerType != UIManagerType.FABRIC
-    ) {
-      uiManagerType = UIManagerType.FABRIC
-    } else if (
-        numFabricAnimations == 0 &&
-            numNonFabricAnimations > 0 &&
-            uiManagerType != UIManagerType.LEGACY
-    ) {
-      uiManagerType = UIManagerType.LEGACY
     }
   }
 
@@ -795,8 +720,6 @@ public class NativeAnimatedModule(reactContext: ReactApplicationContext) :
       FLog.d(NAME, "queue disconnectAnimatedNodeFromView: $animatedNodeTag viewTag: $viewTag")
     }
 
-    decrementInFlightAnimationsForViewTag(viewTag)
-
     addOperation(
         object : UIThreadOperation() {
           override fun execute(animatedNodesManager: NativeAnimatedNodesManager) {
@@ -874,8 +797,6 @@ public class NativeAnimatedModule(reactContext: ReactApplicationContext) :
       )
     }
 
-    decrementInFlightAnimationsForViewTag(viewTag)
-
     addOperation(
         object : UIThreadOperation() {
           override fun execute(animatedNodesManager: NativeAnimatedNodesManager) {
@@ -913,6 +834,7 @@ public class NativeAnimatedModule(reactContext: ReactApplicationContext) :
   override fun invalidate() {
     super.invalidate()
 
+    reactApplicationContext.scrollEndedListeners.removeListener(this)
     reactApplicationContext.removeLifecycleEventListener(this)
   }
 
@@ -1075,7 +997,6 @@ public class NativeAnimatedModule(reactContext: ReactApplicationContext) :
                 BatchExecutionOpCodes.OP_CODE_DISCONNECT_ANIMATED_NODE_FROM_VIEW -> {
                   val animatedNodeTag = opsAndArgs.getInt(i++)
                   viewTag = opsAndArgs.getInt(i++)
-                  decrementInFlightAnimationsForViewTag(viewTag)
                   animatedNodesManager.disconnectAnimatedNodeFromView(animatedNodeTag, viewTag)
                 }
 
@@ -1094,7 +1015,6 @@ public class NativeAnimatedModule(reactContext: ReactApplicationContext) :
 
                 BatchExecutionOpCodes.OP_CODE_REMOVE_ANIMATED_EVENT_FROM_VIEW -> {
                   viewTag = opsAndArgs.getInt(i++)
-                  decrementInFlightAnimationsForViewTag(viewTag)
                   animatedNodesManager.removeAnimatedEventFromView(
                       viewTag,
                       checkNotNull(opsAndArgs.getString(i++)),

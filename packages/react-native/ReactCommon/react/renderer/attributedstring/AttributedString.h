@@ -9,7 +9,6 @@
 
 #include <react/renderer/attributedstring/TextAttributes.h>
 #include <react/renderer/core/Sealable.h>
-#include <react/renderer/core/ShadowNode.h>
 #include <react/renderer/debug/DebugStringConvertible.h>
 #include <react/renderer/mounting/ShadowView.h>
 #include <react/utils/hash_combine.h>

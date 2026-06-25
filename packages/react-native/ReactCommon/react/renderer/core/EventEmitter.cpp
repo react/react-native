@@ -63,11 +63,33 @@ void EventEmitter::dispatchEvent(
       category);
 }
 
+void EventEmitter::dispatchEvent(
+    std::string type,
+    folly::dynamic&& payload,
+    RawEvent::Category category,
+    HighResTimeStamp eventTimestamp) const {
+  dispatchEvent(
+      std::move(type),
+      DynamicEventPayload::create(std::move(payload)),
+      category,
+      eventTimestamp);
+}
+
 void EventEmitter::dispatchUniqueEvent(
     std::string type,
     folly::dynamic&& payload) const {
   dispatchUniqueEvent(
       std::move(type), DynamicEventPayload::create(std::move(payload)));
+}
+
+void EventEmitter::dispatchUniqueEvent(
+    std::string type,
+    folly::dynamic&& payload,
+    HighResTimeStamp eventTimestamp) const {
+  dispatchUniqueEvent(
+      std::move(type),
+      DynamicEventPayload::create(std::move(payload)),
+      eventTimestamp);
 }
 
 void EventEmitter::dispatchEvent(
@@ -82,8 +104,29 @@ void EventEmitter::dispatchEvent(
 
 void EventEmitter::dispatchEvent(
     std::string type,
+    const ValueFactory& payloadFactory,
+    RawEvent::Category category,
+    HighResTimeStamp eventTimestamp) const {
+  dispatchEvent(
+      std::move(type),
+      std::make_shared<ValueFactoryEventPayload>(payloadFactory),
+      category,
+      eventTimestamp);
+}
+
+void EventEmitter::dispatchEvent(
+    std::string type,
     SharedEventPayload payload,
     RawEvent::Category category) const {
+  dispatchEvent(
+      std::move(type), std::move(payload), category, HighResTimeStamp::now());
+}
+
+void EventEmitter::dispatchEvent(
+    std::string type,
+    SharedEventPayload payload,
+    RawEvent::Category category,
+    HighResTimeStamp eventTimestamp) const {
   TraceSection s("EventEmitter::dispatchEvent", "type", type);
 
   auto eventDispatcher = eventDispatcher_.lock();
@@ -91,12 +134,22 @@ void EventEmitter::dispatchEvent(
     return;
   }
 
+  SharedEventTarget eventTarget;
+  std::weak_ptr<const ShadowNodeFamily> shadowNodeFamily;
+  {
+    std::scoped_lock lock(DispatchMutex());
+    eventTarget = eventTarget_;
+    shadowNodeFamily = shadowNodeFamily_;
+  }
+
   eventDispatcher->dispatchEvent(RawEvent(
       normalizeEventType(std::move(type)),
       std::move(payload),
-      eventTarget_,
-      shadowNodeFamily_,
-      category));
+      std::move(eventTarget),
+      std::move(shadowNodeFamily),
+      category,
+      false,
+      eventTimestamp));
 }
 
 void EventEmitter::dispatchUniqueEvent(
@@ -109,7 +162,25 @@ void EventEmitter::dispatchUniqueEvent(
 
 void EventEmitter::dispatchUniqueEvent(
     std::string type,
+    const ValueFactory& payloadFactory,
+    HighResTimeStamp eventTimestamp) const {
+  dispatchUniqueEvent(
+      std::move(type),
+      std::make_shared<ValueFactoryEventPayload>(payloadFactory),
+      eventTimestamp);
+}
+
+void EventEmitter::dispatchUniqueEvent(
+    std::string type,
     SharedEventPayload payload) const {
+  dispatchUniqueEvent(
+      std::move(type), std::move(payload), HighResTimeStamp::now());
+}
+
+void EventEmitter::dispatchUniqueEvent(
+    std::string type,
+    SharedEventPayload payload,
+    HighResTimeStamp eventTimestamp) const {
   TraceSection s("EventEmitter::dispatchUniqueEvent");
 
   auto eventDispatcher = eventDispatcher_.lock();
@@ -117,15 +188,25 @@ void EventEmitter::dispatchUniqueEvent(
     return;
   }
 
+  SharedEventTarget eventTarget;
+  std::weak_ptr<const ShadowNodeFamily> shadowNodeFamily;
+  {
+    std::scoped_lock lock(DispatchMutex());
+    eventTarget = eventTarget_;
+    shadowNodeFamily = shadowNodeFamily_;
+  }
+
   eventDispatcher->dispatchUniqueEvent(RawEvent(
       normalizeEventType(std::move(type)),
       std::move(payload),
-      eventTarget_,
-      shadowNodeFamily_,
-      RawEvent::Category::Continuous));
+      std::move(eventTarget),
+      std::move(shadowNodeFamily),
+      RawEvent::Category::Continuous,
+      true,
+      eventTimestamp));
 }
 
-void EventEmitter::setEnabled(bool enabled) const {
+void EventEmitter::setEnabled(bool enabled) {
   enableCounter_ += enabled ? 1 : -1;
 
   bool shouldBeEnabled = enableCounter_ > 0;
@@ -149,7 +230,7 @@ void EventEmitter::setEnabled(bool enabled) const {
 }
 
 void EventEmitter::setShadowNodeFamily(
-    std::weak_ptr<const ShadowNodeFamily> shadowNodeFamily) const {
+    std::weak_ptr<const ShadowNodeFamily> shadowNodeFamily) {
   shadowNodeFamily_ = std::move(shadowNodeFamily);
 }
 

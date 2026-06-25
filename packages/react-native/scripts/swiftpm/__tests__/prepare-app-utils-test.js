@@ -1093,7 +1093,7 @@ describe('runIosPrebuild', () => {
     process.env = originalProcessEnv;
   });
 
-  it('should run iOS prebuild successfully with nightly versions', async () => {
+  it('should run iOS prebuild successfully with prebuilt versions', async () => {
     // Setup
     const reactNativePath = '/path/to/react-native';
 
@@ -1108,13 +1108,13 @@ describe('runIosPrebuild', () => {
       env: {
         ...originalProcessEnv,
         RN_DEP_VERSION: 'nightly',
-        HERMES_VERSION: 'nightly',
+        HERMES_VERSION: 'latest-v1',
       },
       stdio: 'inherit',
     });
     expect(mockExecSync).toHaveBeenCalledTimes(1);
     expect(mockConsoleLog).toHaveBeenCalledWith(
-      'Running iOS prebuild with nightly versions...',
+      'Running iOS prebuild with prebuilt versions...',
     );
     expect(mockConsoleLog).toHaveBeenCalledWith('✓ iOS prebuild completed');
     expect(mockConsoleLog).toHaveBeenCalledTimes(2);
@@ -1135,7 +1135,7 @@ describe('runIosPrebuild', () => {
       env: {
         ...originalProcessEnv,
         RN_DEP_VERSION: 'nightly',
-        HERMES_VERSION: 'nightly',
+        HERMES_VERSION: 'latest-v1',
       },
       stdio: 'inherit',
     });
@@ -1156,7 +1156,7 @@ describe('runIosPrebuild', () => {
       env: {
         ...originalProcessEnv,
         RN_DEP_VERSION: 'nightly',
-        HERMES_VERSION: 'nightly',
+        HERMES_VERSION: 'latest-v1',
       },
       stdio: 'inherit',
     });
@@ -1181,12 +1181,12 @@ describe('runIosPrebuild', () => {
       env: {
         ...originalProcessEnv,
         RN_DEP_VERSION: 'nightly',
-        HERMES_VERSION: 'nightly',
+        HERMES_VERSION: 'latest-v1',
       },
       stdio: 'inherit',
     });
     expect(mockConsoleLog).toHaveBeenCalledWith(
-      'Running iOS prebuild with nightly versions...',
+      'Running iOS prebuild with prebuilt versions...',
     );
     expect(mockConsoleLog).not.toHaveBeenCalledWith('✓ iOS prebuild completed');
   });
@@ -1221,7 +1221,7 @@ describe('runIosPrebuild', () => {
       env: {
         ...originalProcessEnv,
         RN_DEP_VERSION: 'nightly',
-        HERMES_VERSION: 'nightly',
+        HERMES_VERSION: 'latest-v1',
       },
       stdio: 'inherit',
     });

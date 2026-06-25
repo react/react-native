@@ -35,7 +35,7 @@ import com.facebook.react.bridge.ReadableType
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.uimanager.UIManagerHelper.getSurfaceId
 import com.facebook.react.uimanager.UIManagerHelper.getUIManager
-import com.facebook.react.uimanager.common.ViewUtil.getUIManagerType
+import com.facebook.react.uimanager.common.UIManagerType
 import com.facebook.react.uimanager.events.Event
 import com.facebook.react.uimanager.util.ReactFindViewUtil.findView
 
@@ -231,7 +231,7 @@ public open class ReactAccessibilityDelegate( // The View this delegate is attac
       if (reactContext.hasActiveReactInstance()) {
         val reactTag = host.id
         val surfaceId = getSurfaceId(reactContext)
-        val uiManager = getUIManager(reactContext, getUIManagerType(reactTag))
+        val uiManager = getUIManager(reactContext, UIManagerType.FABRIC)
         if (uiManager != null) {
           uiManager.eventDispatcher.dispatchEvent(
               AccessibilityActionEvent(eventData, surfaceId, reactTag)

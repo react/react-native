@@ -22,7 +22,7 @@ import * as React from 'react';
  */
 export default class StateSafePureComponent<
   Props,
-  State: interface {},
+  State extends interface {},
 > extends React.PureComponent<Props, State> {
   _inAsyncStateUpdate = false;
 
@@ -32,9 +32,9 @@ export default class StateSafePureComponent<
   }
 
   // $FlowFixMe[incompatible-type]
-  setState<K: $Keys<State>>(
+  setState<K extends keyof State>(
     partialState: ?(Pick<State, K> | ((State, Props) => ?Pick<State, K>)),
-    callback?: () => mixed,
+    callback?: () => unknown,
   ): void {
     if (typeof partialState === 'function') {
       super.setState((state, props) => {

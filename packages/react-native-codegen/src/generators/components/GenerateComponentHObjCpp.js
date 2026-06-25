@@ -158,7 +158,7 @@ function getObjCParamType(param: Param): string {
         case 'RootTag':
           return 'double';
         default:
-          (typeAnnotation.name: empty);
+          typeAnnotation.name as empty;
           throw new Error(`Receieved invalid type: ${typeAnnotation.name}`);
       }
     case 'BooleanTypeAnnotation':
@@ -174,7 +174,7 @@ function getObjCParamType(param: Param): string {
     case 'ArrayTypeAnnotation':
       return 'const NSArray *';
     default:
-      (typeAnnotation.type: empty);
+      typeAnnotation.type as empty;
       throw new Error('Received invalid param type annotation');
   }
 }
@@ -188,7 +188,7 @@ function getObjCExpectedKindParamType(param: Param): string {
         case 'RootTag':
           return '[NSNumber class]';
         default:
-          (typeAnnotation.name: empty);
+          typeAnnotation.name as empty;
           throw new Error(`Receieved invalid type: ${typeAnnotation.name}`);
       }
     case 'BooleanTypeAnnotation':
@@ -204,7 +204,7 @@ function getObjCExpectedKindParamType(param: Param): string {
     case 'ArrayTypeAnnotation':
       return '[NSArray class]';
     default:
-      (typeAnnotation.type: empty);
+      typeAnnotation.type as empty;
       throw new Error('Received invalid param type annotation');
   }
 }
@@ -218,7 +218,7 @@ function getReadableExpectedKindParamType(param: Param): string {
         case 'RootTag':
           return 'double';
         default:
-          (typeAnnotation.name: empty);
+          typeAnnotation.name as empty;
           throw new Error(`Receieved invalid type: ${typeAnnotation.name}`);
       }
     case 'BooleanTypeAnnotation':
@@ -234,7 +234,7 @@ function getReadableExpectedKindParamType(param: Param): string {
     case 'ArrayTypeAnnotation':
       return 'array';
     default:
-      (typeAnnotation.type: empty);
+      typeAnnotation.type as empty;
       throw new Error('Received invalid param type annotation');
   }
 }
@@ -251,7 +251,7 @@ function getObjCRightHandAssignmentParamType(
         case 'RootTag':
           return `[(NSNumber *)arg${index} doubleValue]`;
         default:
-          (typeAnnotation.name: empty);
+          typeAnnotation.name as empty;
           throw new Error(`Receieved invalid type: ${typeAnnotation.name}`);
       }
     case 'BooleanTypeAnnotation':
@@ -267,7 +267,7 @@ function getObjCRightHandAssignmentParamType(
     case 'ArrayTypeAnnotation':
       return `(NSArray *)arg${index}`;
     default:
-      (typeAnnotation.type: empty);
+      typeAnnotation.type as empty;
       throw new Error('Received invalid param type annotation');
   }
 }

@@ -22,11 +22,10 @@ import type {
   WrapperComponentProvider,
 } from './AppRegistry.flow';
 
-import createPerformanceLogger from '../Utilities/createPerformanceLogger';
 import SceneTracker from '../Utilities/SceneTracker';
+import DeprecatedPerformanceLoggerStub from './DeprecatedPerformanceLoggerStub';
 import {coerceDisplayMode} from './DisplayMode';
 import HeadlessJsTaskError from './HeadlessJsTaskError';
-import {unmountComponentAtNodeAndRemoveContainer} from './RendererProxy';
 import invariant from 'invariant';
 
 type TaskCanceller = () => void;
@@ -82,24 +81,23 @@ export function registerComponent(
   componentProvider: ComponentProvider,
   section?: boolean,
 ): string {
-  const scopedPerformanceLogger = createPerformanceLogger();
   runnables[appKey] = (appParameters, displayMode) => {
     const renderApplication = require('./renderApplication').default;
-    renderApplication(
-      componentProviderInstrumentationHook(
+    renderApplication({
+      RootComponent: componentProviderInstrumentationHook(
         componentProvider,
-        scopedPerformanceLogger,
+        DeprecatedPerformanceLoggerStub,
       ),
-      appParameters.initialProps,
-      appParameters.rootTag,
-      wrapperComponentProvider && wrapperComponentProvider(appParameters),
-      rootViewStyleProvider && rootViewStyleProvider(appParameters),
-      appParameters.fabric,
-      scopedPerformanceLogger,
-      appKey === 'LogBox', // is logbox
-      appKey,
+      initialProps: appParameters.initialProps,
+      rootTag: appParameters.rootTag,
+      WrapperComponent:
+        wrapperComponentProvider && wrapperComponentProvider(appParameters),
+      rootViewStyle:
+        rootViewStyleProvider && rootViewStyleProvider(appParameters),
+      isLogBox: appKey === 'LogBox',
+      debugName: appKey,
       displayMode,
-    );
+    });
   };
   if (section) {
     sections[appKey] = runnables[appKey];
@@ -119,11 +117,11 @@ export function registerSection(
   registerComponent(appKey, component, true);
 }
 
-export function getAppKeys(): $ReadOnlyArray<string> {
+export function getAppKeys(): ReadonlyArray<string> {
   return Object.keys(runnables);
 }
 
-export function getSectionKeys(): $ReadOnlyArray<string> {
+export function getSectionKeys(): ReadonlyArray<string> {
   return Object.keys(sections);
 }
 
@@ -210,7 +208,9 @@ export function setSurfaceProps(
  * See https://reactnative.dev/docs/appregistry#unmountapplicationcomponentatroottag
  */
 export function unmountApplicationComponentAtRootTag(rootTag: RootTag): void {
-  unmountComponentAtNodeAndRemoveContainer(rootTag);
+  console.error(
+    'Unexpected call to unmountApplicationComponentAtRootTag in Fabric.',
+  );
 }
 
 /**

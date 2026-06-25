@@ -8,10 +8,11 @@
 #import <UIKit/UIKit.h>
 
 #import <React/RCTViewComponentView.h>
+#import <React/RCTVirtualViewProtocol.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface RCTVirtualViewComponentView : RCTViewComponentView
+@interface RCTVirtualViewComponentView : RCTViewComponentView <RCTVirtualViewProtocol>
 
 + (instancetype)new NS_UNAVAILABLE;
 - (instancetype)init NS_UNAVAILABLE;

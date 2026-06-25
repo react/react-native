@@ -36,8 +36,9 @@ const uint16_t HERMES_SAMPLING_FREQUENCY_HZ = 10000;
 class HermesRuntimeSamplingProfileDelegate {
  public:
   explicit HermesRuntimeSamplingProfileDelegate(
-      std::shared_ptr<HermesRuntime> hermesRuntime)
-      : hermesRuntime_(std::move(hermesRuntime)) {}
+      std::shared_ptr<jsi::Runtime> runtime,
+      hermes::HermesRuntime& hermesRuntime)
+      : runtime_(std::move(runtime)), hermesRuntime_(hermesRuntime) {}
 
   void startSampling() {
     auto* hermesAPI = jsi::castInterface<IHermesRootAPI>(makeHermesRootAPI());
@@ -52,11 +53,12 @@ class HermesRuntimeSamplingProfileDelegate {
   tracing::RuntimeSamplingProfile collectSamplingProfile() {
     return tracing::HermesRuntimeSamplingProfileSerializer::
         serializeToTracingSamplingProfile(
-            hermesRuntime_->dumpSampledTraceToProfile());
+            hermesRuntime_.dumpSampledTraceToProfile());
   }
 
  private:
-  std::shared_ptr<HermesRuntime> hermesRuntime_;
+  std::shared_ptr<jsi::Runtime> runtime_;
+  HermesRuntime& hermesRuntime_;
 };
 
 } // namespace
@@ -93,13 +95,16 @@ class HermesRuntimeTargetDelegate::Impl final : public RuntimeTargetDelegate {
  public:
   explicit Impl(
       HermesRuntimeTargetDelegate& delegate,
-      std::shared_ptr<HermesRuntime> hermesRuntime)
+      std::shared_ptr<jsi::Runtime> runtime,
+      HermesRuntime& hermesRuntime)
       : delegate_(delegate),
-        runtime_(hermesRuntime),
-        cdpDebugAPI_(CDPDebugAPI::create(*runtime_)),
+        runtime_(runtime),
+        hermesRuntime_(hermesRuntime),
+        cdpDebugAPI_(CDPDebugAPI::create(hermesRuntime_)),
         samplingProfileDelegate_(
             std::make_unique<HermesRuntimeSamplingProfileDelegate>(
-                std::move(hermesRuntime))) {}
+                std::move(runtime),
+                hermesRuntime_)) {}
 
   CDPDebugAPI& getCDPDebugAPI() {
     return *cdpDebugAPI_;
@@ -119,7 +124,7 @@ class HermesRuntimeTargetDelegate::Impl final : public RuntimeTargetDelegate {
         sessionState,
         std::move(previouslyExportedState),
         executionContextDescription,
-        *runtime_,
+        hermesRuntime_,
         delegate_,
         std::move(runtimeExecutor)));
   }
@@ -209,7 +214,7 @@ class HermesRuntimeTargetDelegate::Impl final : public RuntimeTargetDelegate {
     // properly representing the stack trace in other use cases, where native
     // frames aren't stripped on serialisation.
     return std::make_unique<HermesStackTraceWrapper>(
-        runtime_->getDebugger().captureStackTrace());
+        hermesRuntime_.getDebugger().captureStackTrace());
   }
 
   void enableSamplingProfiler() override {
@@ -267,7 +272,8 @@ class HermesRuntimeTargetDelegate::Impl final : public RuntimeTargetDelegate {
 
  private:
   HermesRuntimeTargetDelegate& delegate_;
-  std::shared_ptr<HermesRuntime> runtime_;
+  std::shared_ptr<jsi::Runtime> runtime_;
+  HermesRuntime& hermesRuntime_;
   const std::unique_ptr<CDPDebugAPI> cdpDebugAPI_;
   std::unique_ptr<HermesRuntimeSamplingProfileDelegate>
       samplingProfileDelegate_;
@@ -284,11 +290,13 @@ class HermesRuntimeTargetDelegate::Impl final
  public:
   explicit Impl(
       HermesRuntimeTargetDelegate&,
-      std::shared_ptr<HermesRuntime> hermesRuntime)
-      : FallbackRuntimeTargetDelegate{hermesRuntime->description()},
+      std::shared_ptr<jsi::Runtime> runtime,
+      HermesRuntime& hermesRuntime)
+      : FallbackRuntimeTargetDelegate{hermesRuntime.description()},
         samplingProfileDelegate_(
             std::make_unique<HermesRuntimeSamplingProfileDelegate>(
-                std::move(hermesRuntime))) {}
+                std::move(runtime),
+                hermesRuntime)) {}
 
   void enableSamplingProfiler() override {
     samplingProfileDelegate_->startSampling();
@@ -310,8 +318,9 @@ class HermesRuntimeTargetDelegate::Impl final
 #endif // HERMES_ENABLE_DEBUGGER
 
 HermesRuntimeTargetDelegate::HermesRuntimeTargetDelegate(
-    std::shared_ptr<HermesRuntime> hermesRuntime)
-    : impl_(std::make_unique<Impl>(*this, std::move(hermesRuntime))) {}
+    std::shared_ptr<jsi::Runtime> runtime,
+    HermesRuntime& hermesRuntime)
+    : impl_(std::make_unique<Impl>(*this, std::move(runtime), hermesRuntime)) {}
 
 HermesRuntimeTargetDelegate::~HermesRuntimeTargetDelegate() = default;
 

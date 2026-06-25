@@ -98,10 +98,8 @@ public class JSTouchDispatcher(private val viewGroup: ViewGroup) {
         FLog.e(ReactConstants.TAG, "Got DOWN touch before receiving UP or CANCEL from last gesture")
       }
 
-      // First event for this gesture. We expect tag to be set to -1, and we use helper method
-      // [com.facebook.react.uimanager.NativeViewHierarchyManager.findTargetTagForTouch] to find
-      // react view ID that will be responsible for handling
-      // this gesture
+      // First event for this gesture. We expect tag to be set to -1, and we use
+      // findTargetTagAndSetCoordinates to find the react view ID that will handle this gesture
       childIsHandlingNativeGesture = false
       gestureStartTime = ev.eventTime
       targetTag = findTargetTagAndSetCoordinates(ev)

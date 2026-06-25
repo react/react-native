@@ -30,26 +30,19 @@ struct ShadowNodeWrapper;
 
 class ShadowNode : public Sealable, public DebugStringConvertible, public jsi::NativeState {
  public:
-  // TODO(T223558094): delete this in the next version.
-  using Shared [[deprecated("Use std::shared_ptr<const ShadowNode> instead")]] = std::shared_ptr<const ShadowNode>;
-  // TODO(T223558094): delete this in the next version.
-  using Weak [[deprecated("Use std::weak_ptr<const ShadowNode> instead")]] = std::weak_ptr<const ShadowNode>;
-  // TODO(T223558094): delete this in the next version.
-  using Unshared [[deprecated("Use std::shared_ptr<ShadowNode> instead")]] = std::shared_ptr<ShadowNode>;
-  // TODO(T223558094): delete this in the next version.
-  using ListOfShared [[deprecated("Use std::vector<std::shared_ptr<const ShadowNode>> instead")]] =
-      std::vector<std::shared_ptr<const ShadowNode>>;
-  // TODO(T223558094): delete this in the next version.
-  using ListOfWeak [[deprecated("Use std::vector<std::weak_ptr<const ShadowNode>> instead")]] =
-      std::vector<std::weak_ptr<const ShadowNode>>;
-  using SharedListOfShared = std::shared_ptr<const std::vector<std::shared_ptr<const ShadowNode>>>;
-  using UnsharedListOfShared = std::shared_ptr<std::vector<std::shared_ptr<const ShadowNode>>>;
-  using UnsharedListOfWeak = std::shared_ptr<std::vector<std::weak_ptr<const ShadowNode>>>;
+  using SharedListOfShared
+      [[deprecated("Use std::shared_ptr<const std::vector<std::shared_ptr<const ShadowNode>>> instead")]] =
+          std::shared_ptr<const std::vector<std::shared_ptr<const ShadowNode>>>;
+  using UnsharedListOfShared
+      [[deprecated("Use std::shared_ptr<std::vector<std::shared_ptr<const ShadowNode>>> instead")]] =
+          std::shared_ptr<std::vector<std::shared_ptr<const ShadowNode>>>;
+  using UnsharedListOfWeak [[deprecated("Use std::shared_ptr<std::vector<std::weak_ptr<const ShadowNode>>> instead")]] =
+      std::shared_ptr<std::vector<std::weak_ptr<const ShadowNode>>>;
 
   using AncestorList =
       std::vector<std::pair<std::reference_wrapper<const ShadowNode> /* parentNode */, int /* childIndex */>>;
 
-  static SharedListOfShared emptySharedShadowNodeSharedList();
+  static std::shared_ptr<const std::vector<std::shared_ptr<const ShadowNode>>> emptySharedShadowNodeSharedList();
 
   /*
    * Returns `true` if nodes belong to the same family (they were cloned one
@@ -67,6 +60,8 @@ class ShadowNode : public Sealable, public DebugStringConvertible, public jsi::N
   }
 
   static void setUseRuntimeShadowNodeReferenceUpdateOnThread(bool isEnabled);
+
+  static bool getUseRuntimeShadowNodeReferenceUpdateOnThread();
 
 #pragma mark - Constructors
 
@@ -88,7 +83,7 @@ class ShadowNode : public Sealable, public DebugStringConvertible, public jsi::N
   ShadowNode(const ShadowNode &shadowNode) noexcept = delete;
   ShadowNode &operator=(const ShadowNode &other) noexcept = delete;
 
-  virtual ~ShadowNode() override = default;
+  ~ShadowNode() override = default;
 
   /*
    * Clones the shadow node using the ShadowNode's ComponentDescriptor.
@@ -114,7 +109,7 @@ class ShadowNode : public Sealable, public DebugStringConvertible, public jsi::N
    * Returns `nullptr` if the operation cannot be performed successfully.
    */
   std::shared_ptr<ShadowNode> cloneMultiple(
-      const std::unordered_set<const ShadowNodeFamily *> &familiesToUpdate,
+      const std::unordered_set<std::shared_ptr<const ShadowNodeFamily>> &familiesToUpdate,
       const std::function<
           std::shared_ptr<ShadowNode>(const ShadowNode &oldShadowNode, const ShadowNodeFragment &fragment)> &callback)
       const;
@@ -123,7 +118,7 @@ class ShadowNode : public Sealable, public DebugStringConvertible, public jsi::N
    * Called, once a fully derived ShadowNode clone has been created via
    * ComponentDescriptor::cloneShadowNode.
    */
-  virtual void completeClone(const ShadowNode &sourceShadowNode, const ShadowNodeFragment &fragment) {}
+  virtual void completeClone(const ShadowNode & /* sourceShadowNode */, const ShadowNodeFragment & /* fragment */) {}
 
 #pragma mark - Getters
 
@@ -236,7 +231,7 @@ class ShadowNode : public Sealable, public DebugStringConvertible, public jsi::N
 
  protected:
   Props::Shared props_;
-  SharedListOfShared children_;
+  std::shared_ptr<const std::vector<std::shared_ptr<const ShadowNode>>> children_;
   State::Shared state_;
   int orderIndex_;
 
@@ -250,13 +245,13 @@ class ShadowNode : public Sealable, public DebugStringConvertible, public jsi::N
   void cloneChildrenIfShared();
 
   /*
-   * Updates the node's traits based on its children's traits.
-   * Specifically, if view culling is enabled and any child has the
-   * Unstable_uncullableView or Unstable_uncullableTrace trait, this node will
-   * also be marked as uncullable. This ensures that if a child needs to be
-   * rendered, its parent will be too.
+   * Propagates uncullable traits from children to this node.
+   * If view culling is enabled and any child has the Unstable_uncullableView
+   * or Unstable_uncullableTrace trait, this node will also be marked as
+   * uncullable. This ensures that if a child needs to be rendered, its parent
+   * will be too.
    */
-  void updateTraitsIfNeccessary();
+  void propagateUncullableTraitsFromChildren();
 
   /*
    * Transfer the runtime reference to this `ShadowNode` to a new instance,
@@ -274,11 +269,6 @@ class ShadowNode : public Sealable, public DebugStringConvertible, public jsi::N
    * intents and purposes it should be treated as mounted.
    */
   mutable std::atomic<bool> hasBeenMounted_{false};
-
-  /*
-   * True if shadow node has been promoted to be the next mounted tree.
-   */
-  mutable bool hasBeenPromoted_{false};
 
   static Props::Shared propsForClonedShadowNode(const ShadowNode &sourceShadowNode, const Props::Shared &props);
 

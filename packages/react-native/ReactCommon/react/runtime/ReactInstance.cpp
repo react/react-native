@@ -235,62 +235,63 @@ void ReactInstance::loadScript(
   std::shared_ptr<const jsi::Buffer> buffer(std::move(script));
   std::string scriptName = simpleBasename(sourceURL);
 
-  runtimeScheduler_->scheduleWork([this,
-                                   scriptName,
-                                   sourceURL,
-                                   buffer = std::move(buffer),
-                                   weakBufferedRuntimeExecuter =
-                                       std::weak_ptr<BufferedRuntimeExecutor>(
-                                           bufferedRuntimeExecutor_),
-                                   beforeLoad,
-                                   afterLoad](jsi::Runtime& runtime) mutable {
-    if (beforeLoad) {
-      beforeLoad(runtime);
-    }
-    TraceSection s("ReactInstance::loadScript");
-    bool hasLogger(ReactMarker::logTaggedMarkerBridgelessImpl != nullptr);
-    if (hasLogger) {
-      ReactMarker::logTaggedMarkerBridgeless(
-          ReactMarker::RUN_JS_BUNDLE_START, scriptName.c_str());
-      ReactMarker::logMarkerBridgeless(ReactMarker::INIT_REACT_RUNTIME_START);
-      ReactMarker::logMarkerBridgeless(ReactMarker::APP_STARTUP_START);
-    }
+  runtimeScheduler_->scheduleWork(
+      [jsErrorHandler = jsErrorHandler_,
+       scriptName,
+       sourceURL = sourceURL,
+       buffer = std::move(buffer),
+       weakBufferedRuntimeExecuter =
+           std::weak_ptr<BufferedRuntimeExecutor>(bufferedRuntimeExecutor_),
+       beforeLoad,
+       afterLoad](jsi::Runtime& runtime) mutable {
+        if (beforeLoad) {
+          beforeLoad(runtime);
+        }
+        TraceSection s("ReactInstance::loadScript");
+        bool hasLogger(ReactMarker::logTaggedMarkerImpl);
+        if (hasLogger) {
+          ReactMarker::logTaggedMarker(
+              ReactMarker::RUN_JS_BUNDLE_START, scriptName.c_str());
+          ReactMarker::logMarker(ReactMarker::INIT_REACT_RUNTIME_START);
+          ReactMarker::logMarker(ReactMarker::APP_STARTUP_START);
+        }
 
-    // Check if the shermes unit is avaliable.
-    auto* shUnitAPI = jsi::castInterface<hermes::IHermesSHUnit>(&runtime);
-    auto* shUnitCreator = shUnitAPI ? shUnitAPI->getSHUnitCreator() : nullptr;
-    if (shUnitCreator) {
-      LOG(WARNING) << "ReactInstance: evaluateSHUnit";
-      auto* hermesAPI = jsi::castInterface<hermes::IHermes>(&runtime);
-      hermesAPI->evaluateSHUnit(shUnitCreator);
-    } else {
-      LOG(WARNING) << "ReactInstance: evaluateJavaScript() with JS bundle";
-      runtime.evaluateJavaScript(buffer, sourceURL);
-    }
+        // Check if the shermes unit is avaliable.
+        auto* shUnitAPI = jsi::castInterface<hermes::IHermesSHUnit>(&runtime);
+        auto* shUnitCreator =
+            shUnitAPI ? shUnitAPI->getSHUnitCreator() : nullptr;
+        if (shUnitCreator) {
+          LOG(WARNING) << "ReactInstance: evaluateSHUnit";
+          auto* hermesAPI = jsi::castInterface<hermes::IHermes>(&runtime);
+          hermesAPI->evaluateSHUnit(shUnitCreator);
+        } else {
+          LOG(WARNING) << "ReactInstance: evaluateJavaScript() with JS bundle";
+          runtime.evaluateJavaScript(buffer, sourceURL);
+        }
 
-    /**
-     * TODO(T183610671): We need a safe/reliable way to enable the js
-     * pipeline from javascript. Remove this after we figure that out, or
-     * after we just remove the js pipeline.
-     */
-    if (!jsErrorHandler_->hasHandledFatalError()) {
-      jsErrorHandler_->setRuntimeReady();
-    }
+        /**
+         * TODO(T183610671): We need a safe/reliable way to enable the js
+         * pipeline from javascript. Remove this after we figure that out, or
+         * after we just remove the js pipeline.
+         */
+        if (!jsErrorHandler->hasHandledFatalError()) {
+          jsErrorHandler->setRuntimeReady();
+        }
 
-    if (hasLogger) {
-      ReactMarker::logTaggedMarkerBridgeless(
-          ReactMarker::RUN_JS_BUNDLE_STOP, scriptName.c_str());
-      ReactMarker::logMarkerBridgeless(ReactMarker::INIT_REACT_RUNTIME_STOP);
-      ReactMarker::logMarkerBridgeless(ReactMarker::APP_STARTUP_STOP);
-    }
-    if (auto strongBufferedRuntimeExecuter =
-            weakBufferedRuntimeExecuter.lock()) {
-      strongBufferedRuntimeExecuter->flush();
-    }
-    if (afterLoad) {
-      afterLoad(runtime);
-    }
-  });
+        if (hasLogger) {
+          ReactMarker::logTaggedMarker(
+              ReactMarker::RUN_JS_BUNDLE_STOP, scriptName.c_str());
+          ReactMarker::logMarker(ReactMarker::INIT_REACT_RUNTIME_STOP);
+          ReactMarker::logMarker(ReactMarker::APP_STARTUP_STOP);
+        }
+        if (auto strongBufferedRuntimeExecuter =
+                weakBufferedRuntimeExecuter.lock()) {
+          strongBufferedRuntimeExecuter->flush();
+        }
+        if (afterLoad) {
+          afterLoad(runtime);
+        }
+      });
 }
 
 /*
@@ -369,21 +370,16 @@ void ReactInstance::registerSegment(
           "Empty segment registered with ID " + tag + " from " + segmentPath);
     }
 
-    bool hasLogger(ReactMarker::logTaggedMarkerBridgelessImpl != nullptr);
-    if (hasLogger) {
-      ReactMarker::logTaggedMarkerBridgeless(
-          ReactMarker::REGISTER_JS_SEGMENT_START, tag.c_str());
-    }
+    ReactMarker::logTaggedMarker(
+        ReactMarker::REGISTER_JS_SEGMENT_START, tag.c_str());
     LOG(WARNING) << "Starting to evaluate segment " << segmentId
                  << " in ReactInstance::registerSegment";
     runtime.evaluateJavaScript(
         std::move(script), getSyntheticBundlePath(segmentId));
     LOG(WARNING) << "Finished evaluating segment " << segmentId
                  << " in ReactInstance::registerSegment";
-    if (hasLogger) {
-      ReactMarker::logTaggedMarkerBridgeless(
-          ReactMarker::REGISTER_JS_SEGMENT_STOP, tag.c_str());
-    }
+    ReactMarker::logTaggedMarker(
+        ReactMarker::REGISTER_JS_SEGMENT_STOP, tag.c_str());
   });
 }
 

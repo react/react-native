@@ -24,7 +24,7 @@ function PointerEventPointerMoveTestCase(
 ) {
   const {harness} = props;
 
-  const detectedPointerTypesRef = useRef(({}: {[string]: boolean}));
+  const detectedPointerTypesRef = useRef({} as {[string]: boolean});
   const testPointerMove = harness.useAsyncTest('pointermove event received');
 
   const handlers = useTestEventHandler(
@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
   },
 });
 
-type Props = $ReadOnly<{}>;
+type Props = Readonly<{}>;
 export default function PointerEventPointerMove(
   props: Props,
 ): React.MixedElement {

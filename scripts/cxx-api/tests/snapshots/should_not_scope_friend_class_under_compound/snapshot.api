@@ -1,0 +1,7 @@
+class test::ProviderRegistry {
+}
+
+class test::Registry {
+  public Registry(const test::ProviderRegistry& provider);
+  public bool hasItem(int handle) const;
+}

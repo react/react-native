@@ -9,6 +9,7 @@
 
 #import <mutex>
 #import <shared_mutex>
+#import <unordered_set>
 
 #import <React/RCTAssert.h>
 #import <React/RCTBridge+Private.h>
@@ -42,7 +43,27 @@ using namespace facebook;
 using namespace facebook::react;
 
 @interface RCTSurfacePresenter () <RCTSchedulerDelegate, RCTMountingManagerDelegate>
+- (void)_drainPendingReactRevisionMerges;
 @end
+
+namespace {
+class ReactRevisionMergeRunLoopObserverDelegate final : public RunLoopObserver::Delegate {
+ public:
+  explicit ReactRevisionMergeRunLoopObserverDelegate(RCTSurfacePresenter *surfacePresenter)
+      : surfacePresenter_(surfacePresenter)
+  {
+  }
+
+  void activityDidChange(const RunLoopObserver::Delegate * /*delegate*/, RunLoopObserver::Activity /*activity*/)
+      const noexcept override
+  {
+    [surfacePresenter_ _drainPendingReactRevisionMerges];
+  }
+
+ private:
+  __weak RCTSurfacePresenter *surfacePresenter_;
+};
+} // namespace
 
 @implementation RCTSurfacePresenter {
   RCTMountingManager *_mountingManager; // Thread-safe.
@@ -57,6 +78,12 @@ using namespace facebook::react;
 
   std::shared_mutex _observerListMutex;
   std::vector<__weak id<RCTSurfacePresenterObserver>> _observers; // Protected by `_observerListMutex`.
+
+  std::mutex _pendingReactRevisionMergesMutex;
+  // Pending React revision merges, drained on the main run loop just before it sleeps.
+  std::unordered_set<SurfaceId> _pendingReactRevisionMerges; // Protected by `_pendingReactRevisionMergesMutex`.
+  std::shared_ptr<ReactRevisionMergeRunLoopObserverDelegate> _mergeRunLoopObserverDelegate;
+  std::unique_ptr<const MainRunLoopObserver> _mergeRunLoopObserver;
 }
 
 - (instancetype)initWithContextContainer:(std::shared_ptr<const ContextContainer>)contextContainer
@@ -73,6 +100,14 @@ using namespace facebook::react;
     _mountingManager = [RCTMountingManager new];
     _mountingManager.contextContainer = contextContainer;
     _mountingManager.delegate = self;
+
+    if (ReactNativeFeatureFlags::enableFabricCommitBranching()) {
+      _mergeRunLoopObserverDelegate = std::make_shared<ReactRevisionMergeRunLoopObserverDelegate>(self);
+      _mergeRunLoopObserver = std::make_unique<const MainRunLoopObserver>(
+          RunLoopObserver::Activity::BeforeWaiting, _mergeRunLoopObserverDelegate);
+      _mergeRunLoopObserver->setDelegate(_mergeRunLoopObserverDelegate.get());
+      _mergeRunLoopObserver->enable();
+    }
 
     _scheduler = [self _createScheduler];
 
@@ -305,6 +340,61 @@ using namespace facebook::react;
 - (void)schedulerShouldRenderTransactions:(std::shared_ptr<const MountingCoordinator>)mountingCoordinator
 {
   [_mountingManager scheduleTransaction:mountingCoordinator];
+}
+
+- (void)schedulerShouldMergeReactRevision:(SurfaceId)surfaceId
+{
+  if (RCTIsMainQueue()) {
+    [self _mergeReactRevisionForSurfaceId:surfaceId];
+    return;
+  }
+
+  bool needsWake = false;
+  {
+    std::lock_guard<std::mutex> lock(_pendingReactRevisionMergesMutex);
+    needsWake = _pendingReactRevisionMerges.empty();
+    _pendingReactRevisionMerges.insert(surfaceId);
+  }
+
+  if (needsWake) {
+    CFRunLoopWakeUp(CFRunLoopGetMain());
+  }
+}
+
+- (void)_mergeReactRevisionForSurfaceId:(SurfaceId)surfaceId
+{
+  RCTAssertMainQueue();
+  RCTScheduler *scheduler = [self scheduler];
+  if (!scheduler) {
+    return;
+  }
+
+  auto uiManager = scheduler.uiManager;
+  if (!uiManager) {
+    return;
+  }
+
+  uiManager->getShadowTreeRegistry().visit(
+      surfaceId, [](const ShadowTree &shadowTree) { shadowTree.mergeReactRevision(); });
+}
+
+- (void)_drainPendingReactRevisionMerges
+{
+  RCTAssertMainQueue();
+
+  std::unordered_set<SurfaceId> pending;
+  {
+    std::lock_guard<std::mutex> lock(_pendingReactRevisionMergesMutex);
+    if (_pendingReactRevisionMerges.empty()) {
+      return;
+    }
+
+    pending.swap(_pendingReactRevisionMerges);
+  }
+
+  for (auto surfaceId : pending) {
+    [self _mergeReactRevisionForSurfaceId:surfaceId];
+  }
 }
 
 - (void)schedulerDidDispatchCommand:(const ShadowView &)shadowView

@@ -11,6 +11,7 @@
 import type {PartialViewConfig} from '../../Renderer/shims/ReactNativeTypes';
 
 import {ConditionallyIgnoredEventHandlers} from '../../NativeComponent/ViewConfigIgnore';
+import {colorAttribute} from '../View/ReactNativeStyleAttributes';
 
 type PartialViewConfigWithoutName = Omit<PartialViewConfig, 'uiViewClassName'>;
 
@@ -111,22 +112,16 @@ const RCTTextInputViewConfig: PartialViewConfigWithoutName = {
     textShadowRadius: true,
     letterSpacing: true,
     textDecorationStyle: true,
-    textDecorationColor: {
-      process: require('../../StyleSheet/processColor').default,
-    },
-    color: {process: require('../../StyleSheet/processColor').default},
+    textDecorationColor: colorAttribute,
+    color: colorAttribute,
     maxFontSizeMultiplier: true,
-    textShadowColor: {
-      process: require('../../StyleSheet/processColor').default,
-    },
+    textShadowColor: colorAttribute,
     editable: true,
     inputAccessoryViewID: true,
     inputAccessoryViewButtonLabel: true,
     caretHidden: true,
     enablesReturnKeyAutomatically: true,
-    placeholderTextColor: {
-      process: require('../../StyleSheet/processColor').default,
-    },
+    placeholderTextColor: colorAttribute,
     clearButtonMode: true,
     keyboardType: true,
     selection: true,
@@ -134,7 +129,7 @@ const RCTTextInputViewConfig: PartialViewConfigWithoutName = {
     submitBehavior: true,
     mostRecentEventCount: true,
     scrollEnabled: true,
-    selectionColor: {process: require('../../StyleSheet/processColor').default},
+    selectionColor: colorAttribute,
     contextMenuHidden: true,
     secureTextEntry: true,
     placeholder: true,

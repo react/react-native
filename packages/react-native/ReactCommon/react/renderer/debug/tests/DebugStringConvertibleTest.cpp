@@ -5,13 +5,43 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#include <limits>
+
+#include <gtest/gtest.h>
+#include <react/renderer/debug/DebugStringConvertible.h>
+
+using namespace facebook::react;
+
+TEST(DebugStringConvertibleTest, toStringDoubleWithSuffix) {
+  EXPECT_EQ(toString(3.14, '%'), "3.14%");
+  EXPECT_EQ(toString(100.0, 'x'), "100x");
+}
+
+TEST(DebugStringConvertibleTest, toStringDoubleWithNullSuffix) {
+  auto result = toString(42.0, '\0');
+  EXPECT_EQ(result, "42");
+}
+
+TEST(DebugStringConvertibleTest, toStringDoubleWithSuffixZeroValue) {
+  EXPECT_EQ(toString(0.0, '%'), "0%");
+}
+
+TEST(DebugStringConvertibleTest, toStringDoubleWithSuffixNegativeValue) {
+  EXPECT_EQ(toString(-2.75, '%'), "-2.75%");
+}
+
+TEST(DebugStringConvertibleTest, toStringDoubleWithSuffixSpecialValues) {
+  EXPECT_EQ(
+      toString(std::numeric_limits<double>::infinity(), '%'), "Infinity%");
+  EXPECT_EQ(
+      toString(-std::numeric_limits<double>::infinity(), '%'), "-Infinity%");
+  EXPECT_EQ(toString(std::numeric_limits<double>::quiet_NaN(), 'x'), "NaNx");
+}
+
 #if RN_DEBUG_STRING_CONVERTIBLE
 #include <memory>
 
-#include <gtest/gtest.h>
 #include <react/renderer/debug/DebugStringConvertibleItem.h>
-
-using namespace facebook::react;
 
 TEST(DebugStringConvertibleTest, handleSimpleNode) {
   SharedDebugStringConvertibleList empty;
@@ -83,4 +113,5 @@ TEST(DebugStringConvertibleTest, handleNodeWithComplexProps) {
       item->getDebugDescription().c_str(),
       "<View=hello x=1(height=100 width=200)/>");
 }
+
 #endif

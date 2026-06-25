@@ -21,6 +21,14 @@ bool InspectorFlags::getAssertSingleHostState() const {
   return loadFlagsAndAssertUnchanged().assertSingleHostState;
 }
 
+bool InspectorFlags::getScreenshotCaptureEnabled() const {
+  return loadFlagsAndAssertUnchanged().screenshotCaptureEnabled;
+}
+
+bool InspectorFlags::getFrameRecordingEnabled() const {
+  return loadFlagsAndAssertUnchanged().frameRecordingEnabled;
+}
+
 bool InspectorFlags::getFuseboxEnabled() const {
   if (fuseboxDisabledForTest_) {
     return false;
@@ -42,7 +50,10 @@ bool InspectorFlags::getPerfIssuesEnabled() const {
 }
 
 void InspectorFlags::dangerouslyResetFlags() {
-  *this = InspectorFlags{};
+  std::lock_guard<std::mutex> lock(mutex_);
+  cachedValues_.reset();
+  inconsistentFlagsStateLogged_ = false;
+  fuseboxDisabledForTest_ = false;
 }
 
 void InspectorFlags::dangerouslyDisableFuseboxForTest() {
@@ -54,6 +65,10 @@ const InspectorFlags::Values& InspectorFlags::loadFlagsAndAssertUnchanged()
   InspectorFlags::Values newValues = {
       .assertSingleHostState =
           ReactNativeFeatureFlags::fuseboxAssertSingleHostState(),
+      .screenshotCaptureEnabled =
+          ReactNativeFeatureFlags::fuseboxScreenshotCaptureEnabled(),
+      .frameRecordingEnabled =
+          ReactNativeFeatureFlags::fuseboxFrameRecordingEnabled(),
       .fuseboxEnabled =
 #if defined(REACT_NATIVE_DEBUGGER_ENABLED)
           true,
@@ -72,6 +87,8 @@ const InspectorFlags::Values& InspectorFlags::loadFlagsAndAssertUnchanged()
       .perfIssuesEnabled = ReactNativeFeatureFlags::perfIssuesEnabled(),
   };
 
+  // Protect against concurrent calls
+  std::lock_guard<std::mutex> lock(mutex_);
   if (cachedValues_.has_value() && !inconsistentFlagsStateLogged_) {
     if (cachedValues_ != newValues) {
       LOG(ERROR)
@@ -81,7 +98,6 @@ const InspectorFlags::Values& InspectorFlags::loadFlagsAndAssertUnchanged()
       inconsistentFlagsStateLogged_ = true;
     }
   }
-
   cachedValues_ = newValues;
 
   return cachedValues_.value();

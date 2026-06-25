@@ -18,7 +18,6 @@ plugins {
   id("com.facebook.react")
   alias(libs.plugins.android.library)
   alias(libs.plugins.download)
-  alias(libs.plugins.kotlin.android)
   alias(libs.plugins.ktfmt)
 }
 
@@ -38,9 +37,6 @@ val downloadsDir =
     }
 val thirdPartyNdkDir = File("$buildDir/third-party-ndk")
 val reactNativeRootDir = projectDir.parent
-
-val hermesV1Enabled =
-    rootProject.extensions.getByType(PrivateReactExtension::class.java).hermesV1Enabled.get()
 
 // We put the publishing version from gradle.properties inside ext. so other
 // subprojects can access it as well.
@@ -100,6 +96,8 @@ val preparePrefab by
                       Pair("../ReactCommon/hermes/inspector-modern/", "hermes/inspector-modern/"),
                       // fabricjni
                       Pair("src/main/jni/react/fabric", "react/fabric/"),
+                      // uimanagerjni
+                      Pair("src/main/jni/react/uimanager", "react/uimanager/"),
                       // glog
                       Pair(File(buildDir, "third-party-ndk/glog/exported/").absolutePath, ""),
                       // jsiinpsector
@@ -268,6 +266,18 @@ val preparePrefab by
                       // yoga
                       Pair("../ReactCommon/yoga/", ""),
                       Pair("src/main/jni/first-party/yogajni/jni", ""),
+                      // oscompat
+                      Pair("../ReactCommon/oscompat/", "oscompat/"),
+                      // react_renderer_animationbackend
+                      Pair(
+                          "../ReactCommon/react/renderer/animationbackend/",
+                          "react/renderer/animationbackend/",
+                      ),
+                      // react_renderer_viewtransition
+                      Pair(
+                          "../ReactCommon/react/renderer/viewtransition/",
+                          "react/renderer/viewtransition/",
+                      ),
                   ),
               ),
               PrefabPreprocessingEntry(
@@ -280,11 +290,10 @@ val preparePrefab by
       outputDir.set(prefabHeadersDir)
     }
 
-val createNativeDepsDirectories by
-    tasks.registering {
-      downloadsDir.mkdirs()
-      thirdPartyNdkDir.mkdirs()
-    }
+val createNativeDepsDirectories by tasks.registering {
+  downloadsDir.mkdirs()
+  thirdPartyNdkDir.mkdirs()
+}
 
 val downloadBoostDest = File(downloadsDir, "boost_${BOOST_VERSION}.tar.gz")
 val downloadBoost by
@@ -425,23 +434,21 @@ val prepareGlog by
     }
 
 // Tasks used by Fantom to download the Native 3p dependencies used.
-val prepareNative3pDependencies by
-    tasks.registering {
-      dependsOn(
-          prepareBoost,
-          prepareDoubleConversion,
-          prepareFastFloat,
-          prepareFmt,
-          prepareFolly,
-          prepareGlog,
-      )
-    }
+val prepareNative3pDependencies by tasks.registering {
+  dependsOn(
+      prepareBoost,
+      prepareDoubleConversion,
+      prepareFastFloat,
+      prepareFmt,
+      prepareFolly,
+      prepareGlog,
+  )
+}
 
-val prepareKotlinBuildScriptModel by
-    tasks.registering {
-      // This task is run when Gradle Sync is running.
-      // We create it here so we can let it depend on preBuild inside the android{}
-    }
+val prepareKotlinBuildScriptModel by tasks.registering {
+  // This task is run when Gradle Sync is running.
+  // We create it here so we can let it depend on preBuild inside the android{}
+}
 
 // As ReactAndroid builds from source, the codegen needs to be built before it can be invoked.
 // This is not the case for users of React Native, as we ship a compiled version of the codegen.
@@ -546,6 +553,15 @@ android {
   defaultConfig {
     minSdk = libs.versions.minSdk.get().toInt()
 
+    aarMetadata {
+      // RN's public ABI exposes no android API newer than 34, and the source is written to
+      // compile against SDK 34 (see util/AndroidVersion.kt). compileSdk is 36 only to build
+      // against the latest platform — it is not an API requirement. Without this, AGP 9
+      // defaults minCompileSdk to compileSdk (36), needlessly forcing every consuming
+      // library/app to compileSdk 36.
+      minCompileSdk = 34
+    }
+
     consumerProguardFiles("proguard-rules.pro")
 
     buildConfigField("boolean", "IS_INTERNAL_BUILD", "false")
@@ -553,6 +569,7 @@ android {
     buildConfigField("boolean", "UNSTABLE_ENABLE_FUSEBOX_RELEASE", "false")
     buildConfigField("boolean", "ENABLE_PERFETTO", "false")
     buildConfigField("boolean", "UNSTABLE_ENABLE_MINIFY_LEGACY_ARCHITECTURE", "false")
+    buildConfigField("boolean", "UNSTABLE_REMOVE_LEGACY_COMPONENT_INTEROP", "false")
 
     resValue("integer", "react_native_dev_server_port", reactNativeDevServerPort())
     resValue("string", "react_native_dev_server_ip", "localhost")
@@ -571,10 +588,6 @@ android {
             "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON",
             "-DCMAKE_POLICY_DEFAULT_CMP0069=NEW",
         )
-
-        if (hermesV1Enabled) {
-          arguments("-DHERMES_V1_ENABLED=1")
-        }
 
         targets(
             "reactnative",
@@ -607,19 +620,19 @@ android {
       ":packages:react-native:ReactAndroid:hermes-engine:preBuild"
   )
 
-  sourceSets.getByName("main") {
-    res.setSrcDirs(
-        listOf(
-            "src/main/res/devsupport",
-            "src/main/res/shell",
-            "src/main/res/views/alert",
-            "src/main/res/views/modal",
-            "src/main/res/views/uimanager",
-            "src/main/res/views/view",
-        )
-    )
-    java.exclude("com/facebook/react/processing")
-    java.exclude("com/facebook/react/module/processing")
+  sourceSets {
+    named("main") {
+      res.directories.addAll(
+          listOf(
+              "src/main/res/devsupport",
+              "src/main/res/shell",
+              "src/main/res/views/alert",
+              "src/main/res/views/modal",
+              "src/main/res/views/uimanager",
+              "src/main/res/views/view",
+          )
+      )
+    }
   }
 
   lint {
@@ -676,6 +689,10 @@ tasks.withType<KotlinCompile>().configureEach {
   exclude("com/facebook/annotationprocessors/**")
   exclude("com/facebook/react/processing/**")
   exclude("com/facebook/react/module/processing/**")
+  // These are instrumentation tests that require a device/emulator and native test
+  // libraries not available in the OSS Gradle build (Buck-only).
+  exclude("com/facebook/react/fabric/FabricMountingManagerInstrumentationTest.kt")
+  exclude("com/facebook/react/fabric/FabricMountingManagerTestHelper.kt")
 }
 
 dependencies {
@@ -684,6 +701,7 @@ dependencies {
   api(libs.androidx.autofill)
   api(libs.androidx.swiperefreshlayout)
   api(libs.androidx.tracing)
+  api(libs.androidx.window)
 
   api(libs.fbjni)
   api(libs.fresco)
@@ -704,6 +722,8 @@ dependencies {
   // It's up to the consumer to decide if hermes or other engines should be included or not.
   // Therefore hermes-engine is a compileOnly dependencies.
   compileOnly(project(":packages:react-native:ReactAndroid:hermes-engine"))
+
+  implementation(libs.androidx.collection)
 
   testImplementation(libs.junit)
   testImplementation(libs.assertj)

@@ -40,4 +40,6 @@ Pod::Spec.new do |s|
   resolve_use_frameworks(s, header_mappings_dir: "./", module_name: "React_timing")
 
   add_dependency(s, "React-debug")
+
+  s.resource_bundles = {'React-timing_privacy' => 'PrivacyInfo.xcprivacy'}
 end

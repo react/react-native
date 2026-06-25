@@ -1,0 +1,10 @@
+interface NullabilityTest : public NSObject {
+  public @property (assign) NSString* nonnullProperty;
+  public @property (assign) NSString* nullableProperty;
+  public virtual NSString* _Nonnull legacyNonnullMethod();
+  public virtual NSString* _Nonnull modernNonnullMethod();
+  public virtual NSString* _Nullable legacyNullableMethod();
+  public virtual NSString* _Nullable modernNullableMethod();
+  public virtual _Nonnull NSString* nonnullMethod();
+  public virtual _Nullable NSString* nullableMethod();
+}

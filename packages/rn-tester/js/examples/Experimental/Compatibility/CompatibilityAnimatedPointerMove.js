@@ -12,8 +12,8 @@ import type {RNTesterModuleExample} from '../../../types/RNTesterTypes';
 
 import ToggleNativeDriver from '../../Animated/utils/ToggleNativeDriver';
 import * as React from 'react';
-import {useRef, useState} from 'react';
-import {Animated, StyleSheet, Text} from 'react-native';
+import {useState} from 'react';
+import {Animated, StyleSheet, Text, useAnimatedValue} from 'react-native';
 
 const WIDTH = 200;
 const HEIGHT = 250;
@@ -39,8 +39,8 @@ const styles = StyleSheet.create({
 });
 
 function CompatibilityAnimatedPointerMove(): React.Node {
-  const xCoord = useRef(new Animated.Value(0)).current;
-  const yCoord = useRef(new Animated.Value(0)).current;
+  const xCoord = useAnimatedValue(0);
+  const yCoord = useAnimatedValue(0);
   const [useNativeDriver, setUseNativeDriver] = useState(true);
 
   return (
@@ -67,25 +67,25 @@ function CompatibilityAnimatedPointerMove(): React.Node {
               {
                 translateX: xCoord.interpolate({
                   inputRange: [0, WIDTH],
-                  outputRange: ([0, WIDTH / 2]: number[]),
+                  outputRange: [0, WIDTH / 2] as number[],
                 }),
               },
               {
                 translateY: yCoord.interpolate({
                   inputRange: [0, HEIGHT],
-                  outputRange: ([0, HEIGHT / 2]: number[]),
+                  outputRange: [0, HEIGHT / 2] as number[],
                 }),
               },
               {
                 scaleX: xCoord.interpolate({
                   inputRange: [0, WIDTH],
-                  outputRange: ([0, WIDTH]: number[]),
+                  outputRange: [0, WIDTH] as number[],
                 }),
               },
               {
                 scaleY: yCoord.interpolate({
                   inputRange: [0, HEIGHT],
-                  outputRange: ([0, HEIGHT]: number[]),
+                  outputRange: [0, HEIGHT] as number[],
                 }),
               },
             ],
@@ -96,7 +96,7 @@ function CompatibilityAnimatedPointerMove(): React.Node {
   );
 }
 
-export default ({
+export default {
   name: 'compatibility_animatedevent_pointer_move',
   description:
     'An AnimatedEvent example on onPointerMove. The blue box should scale to pointer event offset values within black box',
@@ -104,4 +104,4 @@ export default ({
   render(): React.Node {
     return <CompatibilityAnimatedPointerMove />;
   },
-}: RNTesterModuleExample);
+} as RNTesterModuleExample;

@@ -7,6 +7,7 @@
 
 #include "FabricUIManagerBinding.h"
 
+#include "AndroidAnimationChoreographer.h"
 #include "AndroidEventBeat.h"
 #include "ComponentFactory.h"
 #include "EventBeatManager.h"
@@ -51,7 +52,17 @@ void FabricUIManagerBinding::setPixelDensity(float pointScaleFactor) {
 }
 
 void FabricUIManagerBinding::driveCxxAnimations() {
-  getScheduler()->animationTick();
+  auto scheduler = getScheduler();
+  if (!scheduler) {
+    LOG(ERROR)
+        << "FabricUIManagerBinding::driveCxxAnimations: scheduler disappeared";
+    return;
+  }
+  scheduler->animationTick();
+}
+
+void FabricUIManagerBinding::driveAnimationBackend(jdouble frameTimeMs) {
+  animationChoreographer_->onAnimationFrame(AnimationTimestamp{frameTimeMs});
 }
 
 void FabricUIManagerBinding::drainPreallocateViewsQueue() {
@@ -572,6 +583,11 @@ void FabricUIManagerBinding::installFabricUIManager(
 
   toolbox.eventBeatFactory = eventBeatFactory;
 
+  react_native_assert(
+      animationChoreographer_ != nullptr &&
+      "AnimationChoreographer is nullptr");
+  toolbox.animationChoreographer = animationChoreographer_;
+
   animationDriver_ = std::make_shared<LayoutAnimationDriver>(
       runtimeExecutor, contextContainer, this);
   scheduler_ =
@@ -643,7 +659,7 @@ void FabricUIManagerBinding::schedulerShouldRenderTransactions(
     return;
   }
 
-  if (ReactNativeFeatureFlags::enableImagePrefetchingJNIBatchingAndroid()) {
+  if (ReactNativeFeatureFlags::enableImagePrefetchingAndroid()) {
     auto weakImageFetcher =
         scheduler_->getContextContainer()->find<std::weak_ptr<ImageFetcher>>(
             ImageFetcherKey);
@@ -685,6 +701,23 @@ void FabricUIManagerBinding::schedulerShouldRenderTransactions(
   }
 }
 
+void FabricUIManagerBinding::schedulerShouldMergeReactRevision(
+    SurfaceId surfaceId) {
+  std::shared_lock lock(installMutex_);
+  auto mountingManager =
+      getMountingManager("schedulerShouldMergeReactRevision");
+  if (mountingManager) {
+    mountingManager->scheduleReactRevisionMerge(surfaceId);
+  }
+}
+
+void FabricUIManagerBinding::mergeReactRevision(SurfaceId surfaceId) {
+  std::shared_lock lock(installMutex_);
+  scheduler_->getUIManager()->getShadowTreeRegistry().visit(
+      surfaceId,
+      [](const ShadowTree& shadowTree) { shadowTree.mergeReactRevision(); });
+}
+
 void FabricUIManagerBinding::schedulerDidRequestPreliminaryViewAllocation(
     const ShadowNode& shadowNode) {
   using namespace std::literals::string_view_literals;
@@ -707,7 +740,7 @@ void FabricUIManagerBinding::schedulerDidRequestPreliminaryViewAllocation(
   // to be destroyed if the ShadowNode is destroyed but it was never mounted
   // on the screen.
   if (shadowNode.getTraits().check(ShadowNodeTraits::Trait::FormsView)) {
-    shadowNode.getFamily().onUnmountedFamilyDestroyed(
+    shadowNode.getFamilyShared()->onUnmountedFamilyDestroyed(
         [weakMountingManager =
              std::weak_ptr(mountingManager)](const ShadowNodeFamily& family) {
           if (auto mountingManager = weakMountingManager.lock()) {
@@ -764,6 +797,29 @@ void FabricUIManagerBinding::schedulerDidUpdateShadowTree(
   // no-op
 }
 
+void FabricUIManagerBinding::schedulerDidCaptureViewSnapshot(
+    Tag tag,
+    SurfaceId surfaceId) {
+  if (mountingManager_) {
+    mountingManager_->captureViewSnapshot(tag, surfaceId);
+  }
+}
+
+void FabricUIManagerBinding::schedulerDidSetViewSnapshot(
+    Tag sourceTag,
+    Tag targetTag,
+    SurfaceId surfaceId) {
+  if (mountingManager_) {
+    mountingManager_->setViewSnapshot(sourceTag, targetTag, surfaceId);
+  }
+}
+
+void FabricUIManagerBinding::schedulerDidClearPendingSnapshots() {
+  if (mountingManager_) {
+    mountingManager_->clearPendingSnapshots();
+  }
+}
+
 void FabricUIManagerBinding::onAnimationStarted() {
   auto mountingManager = getMountingManager("onAnimationStarted");
   if (!mountingManager) {
@@ -798,6 +854,9 @@ void FabricUIManagerBinding::registerNatives() {
       makeNativeMethod(
           "driveCxxAnimations", FabricUIManagerBinding::driveCxxAnimations),
       makeNativeMethod(
+          "driveAnimationBackend",
+          FabricUIManagerBinding::driveAnimationBackend),
+      makeNativeMethod(
           "drainPreallocateViewsQueue",
           FabricUIManagerBinding::drainPreallocateViewsQueue),
       makeNativeMethod("reportMount", FabricUIManagerBinding::reportMount),
@@ -816,7 +875,19 @@ void FabricUIManagerBinding::registerNatives() {
       makeNativeMethod(
           "getRelativeAncestorList",
           FabricUIManagerBinding::getRelativeAncestorList),
+      makeNativeMethod(
+          "setAnimationBackendChoreographer",
+          FabricUIManagerBinding::setAnimationBackendChoreographer),
+      makeNativeMethod(
+          "mergeReactRevision", FabricUIManagerBinding::mergeReactRevision),
   });
+}
+
+void FabricUIManagerBinding::setAnimationBackendChoreographer(
+    jni::alias_ref<JAnimationBackendChoreographer::javaobject>
+        animationBackendChoreographer) {
+  animationChoreographer_ = std::make_shared<AndroidAnimationChoreographer>(
+      animationBackendChoreographer);
 }
 
 } // namespace facebook::react

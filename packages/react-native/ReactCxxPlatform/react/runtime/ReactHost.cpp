@@ -18,6 +18,7 @@
 #include <react/devsupport/IDevUIDelegate.h>
 #include <react/devsupport/PackagerConnection.h>
 #include <react/devsupport/inspector/Inspector.h>
+#include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/http/IHttpClient.h>
 #include <react/http/IWebSocketClient.h>
 #include <react/io/ResourceLoader.h>
@@ -34,7 +35,7 @@
 #include <react/runtime/hermes/HermesInstance.h>
 #include <react/threading/MessageQueueThreadImpl.h>
 
-#include "TurboModuleManager.h"
+#include "ReactCxxTurboModuleProvider.h"
 
 namespace facebook::react {
 
@@ -52,6 +53,7 @@ struct ReactInstanceData {
   std::shared_ptr<NativeAnimatedNodesManagerProvider>
       animatedNodesManagerProvider;
   ReactInstance::BindingsInstallFunc bindingsInstallFunc;
+  std::shared_ptr<AnimationChoreographer> animationChoreographer;
 };
 
 ReactHost::ReactHost(
@@ -66,7 +68,8 @@ ReactHost::ReactHost(
     std::shared_ptr<SurfaceDelegate> logBoxSurfaceDelegate,
     std::shared_ptr<NativeAnimatedNodesManagerProvider>
         animatedNodesManagerProvider,
-    ReactInstance::BindingsInstallFunc bindingsInstallFunc)
+    ReactInstance::BindingsInstallFunc bindingsInstallFunc,
+    std::shared_ptr<AnimationChoreographer> animationChoreographer)
     : reactInstanceConfig_(std::move(reactInstanceConfig)) {
   auto componentRegistryFactory =
       mountingManager->getComponentRegistryFactory();
@@ -82,7 +85,8 @@ ReactHost::ReactHost(
       .turboModuleProviders = std::move(turboModuleProviders),
       .logBoxSurfaceDelegate = logBoxSurfaceDelegate,
       .animatedNodesManagerProvider = animatedNodesManagerProvider,
-      .bindingsInstallFunc = std::move(bindingsInstallFunc)});
+      .bindingsInstallFunc = std::move(bindingsInstallFunc),
+      .animationChoreographer = std::move(animationChoreographer)});
   if (!reactInstanceData_->contextContainer
            ->find<MessageQueueThreadFactory>(MessageQueueThreadFactoryKey)
            .has_value()) {
@@ -110,7 +114,12 @@ ReactHost::~ReactHost() noexcept {
 
 void ReactHost::createReactInstance() {
   // Set up timers
-  auto platformTimers = std::make_unique<PlatformTimerRegistryImpl>();
+  std::unique_ptr<PlatformTimerRegistry> platformTimers;
+  if (reactInstanceConfig_.platformTimerRegistryFactory) {
+    platformTimers = reactInstanceConfig_.platformTimerRegistryFactory();
+  } else {
+    platformTimers = std::make_unique<PlatformTimerRegistryImpl>();
+  }
   auto* platformTimersPtr = platformTimers.get();
   auto timerManager = std::make_shared<TimerManager>(std::move(platformTimers));
   platformTimersPtr->setTimerManager(timerManager);
@@ -223,12 +232,16 @@ void ReactHost::createReactInstance() {
         return runLoopObserverManager->createEventBeat(
             ownerBox, *runtimeScheduler);
       };
+  toolbox.animationChoreographer = reactInstanceData_->animationChoreographer;
 
-  schedulerDelegate_ = std::make_unique<SchedulerDelegateImpl>(
+  auto schedulerDelegate = std::make_unique<SchedulerDelegateImpl>(
       reactInstanceData_->mountingManager);
   scheduler_ =
-      std::make_unique<Scheduler>(toolbox, nullptr, schedulerDelegate_.get());
+      std::make_unique<Scheduler>(toolbox, nullptr, schedulerDelegate.get());
+
   surfaceManager_ = std::make_unique<SurfaceManager>(*scheduler_);
+  schedulerDelegate->setUIManager(scheduler_->getUIManager());
+  schedulerDelegate_ = std::move(schedulerDelegate);
 
   reactInstanceData_->mountingManager->setSchedulerTaskExecutor(
       [this](SchedulerTask&& task) { runOnScheduler(std::move(task)); });
@@ -243,7 +256,7 @@ void ReactHost::createReactInstance() {
   }
 
   auto liveReloadCallback = [this]() { reloadReactInstance(); };
-  TurboModuleManager turboModuleManager(
+  ReactCxxTurboModuleProvider turboModuleManager(
       reactInstanceData_->turboModuleProviders,
       jsInvoker,
       reactInstanceData_->onJsError,
@@ -253,7 +266,8 @@ void ReactHost::createReactInstance() {
       reactInstanceData_->logBoxSurfaceDelegate,
       httpClientFactory,
       webSocketClientFactory,
-      std::move(liveReloadCallback));
+      std::move(liveReloadCallback),
+      sourceURL_);
 
   reactInstance_->initializeRuntime(
       {
@@ -381,11 +395,11 @@ bool ReactHost::loadScriptFromDevServer() {
                 })
             .get();
     auto script = std::make_unique<JSBigStdString>(std::move(response));
+    *sourceURL_ = bundleUrl;
     reactInstance_->loadScript(std::move(script), bundleUrl);
     devServerHelper_->setupHMRClient();
     return true;
   } catch (...) {
-    devServerHelper_->setSourcePath("");
     LOG(WARNING)
         << "Unable to download JS bundle from Metro, falling back to prebuilt JS bundle. "
         << "To start Metro, run in command line: 'cd ~/fbsource/xplat/js && js1 run'";
@@ -397,6 +411,7 @@ bool ReactHost::loadScriptFromBundlePath(const std::string& bundlePath) {
   try {
     LOG(INFO) << "Loading JS bundle from bundle path: " << bundlePath;
     auto script = ResourceLoader::getFileContents(bundlePath);
+    *sourceURL_ = "";
     reactInstance_->loadScript(std::move(script), bundlePath);
     LOG(INFO) << "Loaded JS bundle from bundle path: " << bundlePath;
     return true;

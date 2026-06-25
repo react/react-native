@@ -89,10 +89,10 @@ async function prepareDebuggerShellFromDotSlashFile(
   return {
     code: 'unexpected_error',
     humanReadableMessage:
-      'An unexpected error occured while installing the latest version of React Native DevTools. ' +
+      'An unexpected error occurred while installing the latest version of React Native DevTools. ' +
       'Using a fallback version instead.',
     verboseInfo: stderr,
   };
 }
 
-export {spawnAndGetStderr, prepareDebuggerShellFromDotSlashFile};
+export {prepareDebuggerShellFromDotSlashFile};

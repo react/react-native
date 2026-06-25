@@ -12,7 +12,7 @@
 
 import RNTesterText from '../../components/RNTesterText';
 import RNTOption from '../../components/RNTOption';
-import React from 'react';
+import * as React from 'react';
 import {Alert, StyleSheet, Text, TouchableHighlight, View} from 'react-native';
 
 const BINARY_TYPES = {

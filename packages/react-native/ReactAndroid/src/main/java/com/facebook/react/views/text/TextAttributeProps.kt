@@ -9,7 +9,6 @@ package com.facebook.react.views.text
 
 import android.os.Build
 import android.text.Layout
-import android.text.TextUtils
 import android.text.TextUtils.TruncateAt
 import android.util.LayoutDirection
 import android.view.Gravity
@@ -93,12 +92,32 @@ public class TextAttributeProps private constructor() {
   public var isLineThroughTextDecorationSet: Boolean = false
     private set
 
+  /**
+   * Decoration color for underlines and strikethroughs. `Color.TRANSPARENT` (the default) means
+   * "fall back to the text color" so existing call sites that don't pass a value retain the prior
+   * behavior. Honored by `ReactUnderlineSpan` and `ReactStrikethroughSpan`.
+   */
+  internal var textDecorationColor: Int = android.graphics.Color.TRANSPARENT
+    private set
+
+  /**
+   * CSS `text-decoration-style`. Defaults to `SOLID` so existing call sites retain the prior visual
+   * behavior. Honored by `ReactUnderlineSpan` and `ReactStrikethroughSpan`.
+   */
+  internal var textDecorationStyle: TextDecorationStyle = TextDecorationStyle.SOLID
+    private set
+
   private var includeFontPadding: Boolean = true
 
   public var accessibilityRole: AccessibilityRole? = null
     private set
 
   public var role: ReactAccessibilityDelegate.Role? = null
+    private set
+
+  internal data class TextEffectEntry(val name: String, val props: String?)
+
+  internal var textEffects: List<TextEffectEntry> = emptyList()
     private set
 
   public var fontStyle: Int = ReactConstants.UNSET
@@ -238,7 +257,7 @@ public class TextAttributeProps private constructor() {
         }
       }
     }
-    fontFeatureSettings = TextUtils.join(", ", features)
+    fontFeatureSettings = features.joinToString(", ")
   }
 
   private fun setFontWeight(fontWeightString: String?) {
@@ -376,6 +395,9 @@ public class TextAttributeProps private constructor() {
     public const val TA_KEY_ROLE: Int = 26
     public const val TA_KEY_TEXT_TRANSFORM: Int = 27
     public const val TA_KEY_MAX_FONT_SIZE_MULTIPLIER: Int = 29
+    public const val TA_KEY_TEXT_EFFECTS: Int = 30
+    private const val TE_KEY_NAME: Int = 0
+    private const val TE_KEY_PROPS: Int = 1
 
     public const val UNSET: Int = -1
 
@@ -416,9 +438,10 @@ public class TextAttributeProps private constructor() {
           TA_KEY_LINE_HEIGHT -> result.lineHeight = entry.doubleValue.toFloat()
           TA_KEY_ALIGNMENT -> {}
           TA_KEY_BEST_WRITING_DIRECTION -> {}
-          TA_KEY_TEXT_DECORATION_COLOR -> {}
+          TA_KEY_TEXT_DECORATION_COLOR -> result.textDecorationColor = entry.intValue
           TA_KEY_TEXT_DECORATION_LINE -> result.setTextDecorationLine(entry.stringValue)
-          TA_KEY_TEXT_DECORATION_STYLE -> {}
+          TA_KEY_TEXT_DECORATION_STYLE ->
+              result.textDecorationStyle = TextDecorationStyle.fromString(entry.stringValue)
           TA_KEY_TEXT_SHADOW_RADIUS -> result.textShadowRadius = entry.doubleValue.toFloat()
           TA_KEY_TEXT_SHADOW_COLOR -> result.textShadowColor = entry.intValue
           TA_KEY_TEXT_SHADOW_OFFSET_DX -> result.textShadowOffsetDx = entry.doubleValue.toFloat()
@@ -430,6 +453,22 @@ public class TextAttributeProps private constructor() {
           TA_KEY_TEXT_TRANSFORM -> result.setTextTransform(entry.stringValue)
           TA_KEY_MAX_FONT_SIZE_MULTIPLIER ->
               result.maxFontSizeMultiplier = entry.doubleValue.toFloat()
+          TA_KEY_TEXT_EFFECTS -> {
+            val effectsMap = entry.mapBufferValue
+            val list = mutableListOf<TextEffectEntry>()
+            for (j in 0 until effectsMap.count) {
+              val effectMap = effectsMap.getMapBuffer(j)
+              list.add(
+                  TextEffectEntry(
+                      name = effectMap.getString(TE_KEY_NAME),
+                      props =
+                          if (effectMap.contains(TE_KEY_PROPS)) effectMap.getString(TE_KEY_PROPS)
+                          else null,
+                  )
+              )
+            }
+            result.textEffects = list
+          }
         }
       }
 
@@ -463,6 +502,10 @@ public class TextAttributeProps private constructor() {
       result.setFontVariant(getArrayProp(props, ViewProps.FONT_VARIANT))
       result.includeFontPadding = getBooleanProp(props, ViewProps.INCLUDE_FONT_PADDING, true)
       result.setTextDecorationLine(getStringProp(props, ViewProps.TEXT_DECORATION_LINE))
+      result.textDecorationColor =
+          getIntProp(props, "textDecorationColor", android.graphics.Color.TRANSPARENT)
+      result.textDecorationStyle =
+          TextDecorationStyle.fromString(getStringProp(props, "textDecorationStyle"))
       result.setTextShadowOffset(
           if (props.hasKey(PROP_SHADOW_OFFSET)) props.getMap(PROP_SHADOW_OFFSET) else null
       )

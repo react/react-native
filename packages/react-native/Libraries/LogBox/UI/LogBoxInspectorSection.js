@@ -14,20 +14,18 @@ import Text from '../../Text/Text';
 import * as LogBoxStyle from './LogBoxStyle';
 import * as React from 'react';
 
-type Props = $ReadOnly<{
+component LogBoxInspectorSection(
   heading: string,
   children: React.Node,
   action?: ?React.Node,
-}>;
-
-function LogBoxInspectorSection(props: Props): React.Node {
+) {
   return (
     <View style={styles.section}>
       <View style={styles.heading}>
-        <Text style={styles.headingText}>{props.heading}</Text>
-        {props.action}
+        <Text style={styles.headingText}>{heading}</Text>
+        {action}
       </View>
-      <View style={styles.body}>{props.children}</View>
+      <View style={styles.body}>{children}</View>
     </View>
   );
 }

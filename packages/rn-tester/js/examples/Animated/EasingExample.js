@@ -23,9 +23,8 @@ import {
   StyleSheet,
   Text,
   View,
+  useAnimatedValue,
 } from 'react-native';
-
-type Props = $ReadOnly<{}>;
 
 type EasingListItem = {
   title: string,
@@ -80,16 +79,10 @@ const easingSections = [
   },
 ];
 
-function EasingItem({
-  item,
-  useNativeDriver,
-}: {
-  item: EasingListItem,
-  useNativeDriver: boolean,
-}): React.Node {
-  const opacityAndScale = useRef(new Animated.Value(1));
+component EasingItem(item: EasingListItem, useNativeDriver: boolean) {
+  const opacityAndScale = useAnimatedValue(1);
   const animation = useRef(
-    Animated.timing(opacityAndScale.current, {
+    Animated.timing(opacityAndScale, {
       toValue: 1,
       duration: 1200,
       easing: item.easing,
@@ -100,8 +93,8 @@ function EasingItem({
   const animatedStyles = [
     styles.box,
     {
-      opacity: opacityAndScale.current,
-      transform: [{scale: opacityAndScale.current}],
+      opacity: opacityAndScale,
+      transform: [{scale: opacityAndScale}],
     },
   ];
 
@@ -115,7 +108,7 @@ function EasingItem({
         </Text>
         <RNTesterButton
           onPress={() => {
-            opacityAndScale.current.setValue(0);
+            opacityAndScale.setValue(0);
             animation.current.start();
           }}>
           Animate
@@ -128,7 +121,7 @@ function EasingItem({
   );
 }
 
-function EasingExample(props: Props): React.Node {
+component EasingExample() {
   const [useNativeDriver, setUseNativeDriver] = useState(false);
 
   return (
@@ -196,10 +189,10 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ({
+export default {
   title: 'Easing',
   name: 'easing',
   description:
     'The Easing module implements common easing functions. This module is used by Animated.timing() to convey physically believable motion in animations.',
   render: () => <EasingExample />,
-}: RNTesterModuleExample);
+} as RNTesterModuleExample;

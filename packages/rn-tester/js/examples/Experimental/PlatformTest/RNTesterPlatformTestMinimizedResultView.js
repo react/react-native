@@ -14,7 +14,7 @@ import RNTesterPlatformTestResultsText from './RNTesterPlatformTestResultsText';
 import * as React from 'react';
 import {StyleSheet, Text, TouchableHighlight, View} from 'react-native';
 
-type Props = $ReadOnly<{
+type Props = Readonly<{
   numFail: number,
   numError: number,
   numPass: number,
@@ -33,9 +33,12 @@ export default function RNTesterPlatformTestMinimizedResultView({
   style,
 }: Props): React.MixedElement {
   return (
-    <TouchableHighlight onPress={onPress} style={[styles.root, style]}>
+    <TouchableHighlight
+      testID="platform-test-results"
+      onPress={onPress}
+      style={[styles.root, style]}>
       <View style={styles.innerContainer}>
-        <Text style={styles.statsContainer}>
+        <View style={styles.statsContainer}>
           <RNTesterPlatformTestResultsText
             numError={numError}
             numFail={numFail}
@@ -43,7 +46,7 @@ export default function RNTesterPlatformTestMinimizedResultView({
             numPending={numPending}
             numSkipped={numSkipped}
           />
-        </Text>
+        </View>
         <Text style={styles.caret}>⌃</Text>
       </View>
     </TouchableHighlight>

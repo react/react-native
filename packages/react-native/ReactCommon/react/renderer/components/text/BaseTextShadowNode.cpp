@@ -9,6 +9,7 @@
 
 #include <react/renderer/components/text/RawTextProps.h>
 #include <react/renderer/components/text/RawTextShadowNode.h>
+#include <react/renderer/components/text/TextEffectShadowNode.h>
 #include <react/renderer/components/text/TextProps.h>
 #include <react/renderer/components/text/TextShadowNode.h>
 #include <react/renderer/mounting/ShadowView.h>
@@ -65,6 +66,24 @@ void BaseTextShadowNode::buildAttributedString(
       buildAttributedString(
           localTextAttributes,
           *textShadowNode,
+          outAttributedString,
+          outAttachments);
+      continue;
+    }
+
+    // TextEffectShadowNode
+    auto textEffectNode =
+        dynamic_cast<const TextEffectShadowNode*>(childNode.get());
+    if (textEffectNode != nullptr) {
+      auto localTextAttributes = baseTextAttributes;
+      const auto& effectProps = textEffectNode->getConcreteProps();
+      localTextAttributes.textEffects.push_back(
+          TextEffectInfo{
+              .name = effectProps.effectName,
+              .props = effectProps.effectProps});
+      buildAttributedString(
+          localTextAttributes,
+          *textEffectNode,
           outAttributedString,
           outAttachments);
       continue;

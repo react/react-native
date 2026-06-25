@@ -16,7 +16,7 @@ const hermesParser = require('hermes-parser');
 
 function parseFlowAndThrowErrors(
   code: string,
-  options: $ReadOnly<{filename?: ?string}> = {},
+  options: Readonly<{filename?: ?string}> = {},
 ): ESTreeProgram {
   let ast;
   try {

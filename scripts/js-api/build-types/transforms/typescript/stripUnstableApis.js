@@ -18,7 +18,7 @@ function isUnstableSymbol(name: ?string): boolean {
   );
 }
 
-const stripUnstableProperties: PluginObj<mixed> = {
+const stripUnstableProperties: PluginObj<unknown> = {
   visitor: {
     TSPropertySignature(path) {
       if (isUnstableSymbol(path.node.key.name)) {

@@ -11,6 +11,12 @@
 
 namespace facebook::react::jsinspector_modern {
 
+bool JInspectorFlags::getScreenshotCaptureEnabled(
+    jni::alias_ref<jclass> /*unused*/) {
+  auto& inspectorFlags = InspectorFlags::getInstance();
+  return inspectorFlags.getScreenshotCaptureEnabled();
+}
+
 bool JInspectorFlags::getFuseboxEnabled(jni::alias_ref<jclass> /*unused*/) {
   auto& inspectorFlags = InspectorFlags::getInstance();
   return inspectorFlags.getFuseboxEnabled();
@@ -21,13 +27,29 @@ bool JInspectorFlags::getIsProfilingBuild(jni::alias_ref<jclass> /*unused*/) {
   return inspectorFlags.getIsProfilingBuild();
 }
 
+bool JInspectorFlags::getFrameRecordingEnabled(
+    jni::alias_ref<jclass> /*unused*/) {
+  auto& inspectorFlags = InspectorFlags::getInstance();
+  return inspectorFlags.getFrameRecordingEnabled();
+}
+
 void JInspectorFlags::registerNatives() {
+  javaClassLocal()->registerNatives({
+      makeNativeMethod(
+          "getScreenshotCaptureEnabled",
+          JInspectorFlags::getScreenshotCaptureEnabled),
+  });
   javaClassLocal()->registerNatives({
       makeNativeMethod("getFuseboxEnabled", JInspectorFlags::getFuseboxEnabled),
   });
   javaClassLocal()->registerNatives({
       makeNativeMethod(
           "getIsProfilingBuild", JInspectorFlags::getIsProfilingBuild),
+  });
+  javaClassLocal()->registerNatives({
+      makeNativeMethod(
+          "getFrameRecordingEnabled",
+          JInspectorFlags::getFrameRecordingEnabled),
   });
 }
 

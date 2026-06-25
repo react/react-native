@@ -1,0 +1,5 @@
+interface RCTMapper<KeyT, ValueT> : public NSObject {
+  public @property (strong) KeyT key;
+  public @property (strong) ValueT value;
+  public virtual void setKey:value:(KeyT key, ValueT value);
+}

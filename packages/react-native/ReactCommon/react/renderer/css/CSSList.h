@@ -17,22 +17,22 @@
 
 namespace facebook::react {
 
-template <CSSMaybeCompoundDataType T, CSSDelimiter Delim>
+template <CSSMaybeCompoundDataType T, CSSDelimiter Delimeter>
 struct CSSList;
 
-template <CSSDataType AllowedTypeT, CSSDelimiter Delim>
-struct CSSList<AllowedTypeT, Delim> : public std::vector<AllowedTypeT> {};
+template <CSSDataType AllowedTypeT, CSSDelimiter Delimeter>
+struct CSSList<AllowedTypeT, Delimeter> : public std::vector<AllowedTypeT> {};
 
-template <CSSValidCompoundDataType AllowedTypesT, CSSDelimiter Delim>
-struct CSSList<AllowedTypesT, Delim> : public std::vector<CSSVariantWithTypes<AllowedTypesT>> {};
+template <CSSValidCompoundDataType AllowedTypesT, CSSDelimiter Delimeter>
+struct CSSList<AllowedTypesT, Delimeter> : public std::vector<AllowedTypesT> {};
 
-template <CSSMaybeCompoundDataType AllowedTypeT, CSSDelimiter Delim>
-struct CSSDataTypeParser<CSSList<AllowedTypeT, Delim>> {
-  static inline auto consume(CSSSyntaxParser &parser) -> std::optional<CSSList<AllowedTypeT, Delim>>
+template <CSSMaybeCompoundDataType AllowedTypeT, CSSDelimiter Delimeter>
+struct CSSDataTypeParser<CSSList<AllowedTypeT, Delimeter>> {
+  static inline auto consume(CSSValueParser &parser) -> std::optional<CSSList<AllowedTypeT, Delimeter>>
   {
-    CSSList<AllowedTypeT, Delim> result;
-    for (auto nextValue = parseNextCSSValue<AllowedTypeT>(parser); !std::holds_alternative<std::monostate>(nextValue);
-         nextValue = parseNextCSSValue<AllowedTypeT>(parser, Delim)) {
+    CSSList<AllowedTypeT, Delimeter> result;
+    for (auto nextValue = parser.parseNextValue<AllowedTypeT>(); !std::holds_alternative<std::monostate>(nextValue);
+         nextValue = parser.parseNextValue<AllowedTypeT>(Delimeter)) {
       // Copy from the variant of possible values to the element (either the
       // concrete type, or a variant of compound types which exlcudes the
       // possibility of std::monostate for parse error)

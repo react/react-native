@@ -22,21 +22,26 @@
 
 // #region Components
 
-export type {ActivityIndicatorProps} from './Libraries/Components/ActivityIndicator/ActivityIndicator';
+export type {
+  ActivityIndicatorInstance,
+  ActivityIndicatorProps,
+} from './Libraries/Components/ActivityIndicator/ActivityIndicator';
 export {default as ActivityIndicator} from './Libraries/Components/ActivityIndicator/ActivityIndicator';
 
-export type {ButtonProps} from './Libraries/Components/Button';
+export type {ButtonInstance, ButtonProps} from './Libraries/Components/Button';
 export {default as Button} from './Libraries/Components/Button';
 
 export type {
+  DrawerLayoutAndroidInstance,
   DrawerLayoutAndroidProps,
   DrawerSlideEvent,
-} from './Libraries/Components/DrawerAndroid/DrawerLayoutAndroid';
+} from './Libraries/Components/DrawerAndroid/DrawerLayoutAndroidTypes';
 export {default as DrawerLayoutAndroid} from './Libraries/Components/DrawerAndroid/DrawerLayoutAndroid';
 
-export type {FlatListProps} from './Libraries/Lists/FlatList';
+export type {FlatListInstance, FlatListProps} from './Libraries/Lists/FlatList';
 export {default as FlatList} from './Libraries/Lists/FlatList';
 
+export type {ImageInstance} from './Libraries/Image/ImageTypes.flow';
 export type {
   ImageBackgroundProps,
   ImageErrorEvent,
@@ -56,12 +61,17 @@ export type {
   ImageURISource,
 } from './Libraries/Image/ImageSource';
 export {default as Image} from './Libraries/Image/Image';
+export type {ImageBackgroundInstance} from './Libraries/Image/ImageBackground';
 export {default as ImageBackground} from './Libraries/Image/ImageBackground';
+export type {ImageResizeMode} from './Libraries/Image/ImageResizeMode';
 
 export type {InputAccessoryViewProps} from './Libraries/Components/TextInput/InputAccessoryView';
 export {default as InputAccessoryView} from './Libraries/Components/TextInput/InputAccessoryView';
 
-export type {KeyboardAvoidingViewProps} from './Libraries/Components/Keyboard/KeyboardAvoidingView';
+export type {
+  KeyboardAvoidingViewInstance,
+  KeyboardAvoidingViewProps,
+} from './Libraries/Components/Keyboard/KeyboardAvoidingView';
 export {default as KeyboardAvoidingView} from './Libraries/Components/Keyboard/KeyboardAvoidingView';
 
 export type {LayoutConformanceProps} from './Libraries/Components/LayoutConformance/LayoutConformance';
@@ -69,6 +79,7 @@ export {default as experimental_LayoutConformance} from './Libraries/Components/
 
 export type {
   ModalBaseProps,
+  ModalInstance,
   ModalProps,
   ModalPropsAndroid,
   ModalPropsIOS,
@@ -77,25 +88,32 @@ export {default as Modal} from './Libraries/Modal/Modal';
 
 export type {
   PressableAndroidRippleConfig,
+  PressableInstance,
   PressableProps,
   PressableStateCallbackType,
 } from './Libraries/Components/Pressable/Pressable';
 export {default as Pressable} from './Libraries/Components/Pressable/Pressable';
 
-export type {ProgressBarAndroidProps} from './Libraries/Components/ProgressBarAndroid/ProgressBarAndroid';
+export type {
+  ProgressBarAndroidInstance,
+  ProgressBarAndroidProps,
+} from './Libraries/Components/ProgressBarAndroid/ProgressBarAndroid';
 export {default as ProgressBarAndroid} from './Libraries/Components/ProgressBarAndroid/ProgressBarAndroid';
 
 export type {
+  RefreshControlInstance,
   RefreshControlProps,
   RefreshControlPropsAndroid,
   RefreshControlPropsIOS,
 } from './Libraries/Components/RefreshControl/RefreshControl';
 export {default as RefreshControl} from './Libraries/Components/RefreshControl/RefreshControl';
 
+export type {SafeAreaViewInstance} from './Libraries/Components/SafeAreaView/SafeAreaView';
 export {default as SafeAreaView} from './Libraries/Components/SafeAreaView/SafeAreaView';
 
 export type {
   ScrollViewImperativeMethods,
+  ScrollViewInstance,
   ScrollViewScrollToOptions,
   ScrollResponderType,
   ScrollViewProps,
@@ -105,6 +123,7 @@ export type {
 export {default as ScrollView} from './Libraries/Components/ScrollView/ScrollView';
 
 export type {
+  SectionListInstance,
   SectionListProps,
   SectionListRenderItem,
   SectionListRenderItemInfo,
@@ -114,6 +133,7 @@ export {default as SectionList} from './Libraries/Lists/SectionList';
 
 export type {
   StatusBarAnimation,
+  StatusBarInstance,
   StatusBarProps,
   StatusBarStyle,
 } from './Libraries/Components/StatusBar/StatusBar';
@@ -121,11 +141,12 @@ export {default as StatusBar} from './Libraries/Components/StatusBar/StatusBar';
 
 export type {
   SwitchChangeEvent,
+  SwitchInstance,
   SwitchProps,
 } from './Libraries/Components/Switch/Switch';
 export {default as Switch} from './Libraries/Components/Switch/Switch';
 
-export type {TextProps} from './Libraries/Text/Text';
+export type {TextInstance, TextProps} from './Libraries/Text/Text';
 export {default as Text} from './Libraries/Text/Text';
 export type {NativeTextProps as unstable_NativeTextProps} from './Libraries/Text/TextNativeComponent';
 export {NativeText as unstable_NativeText} from './Libraries/Text/TextNativeComponent';
@@ -138,8 +159,10 @@ export type {
   InputModeOptions,
   TextContentType,
   TextInputAndroidProps,
+  TextInputInstance,
   TextInputIOSProps,
   TextInputProps,
+  TextInputBlurEvent,
   TextInputChangeEvent,
   TextInputContentSizeChangeEvent,
   TextInputEndEditingEvent,
@@ -154,13 +177,22 @@ export {default as TextInput} from './Libraries/Components/TextInput/TextInput';
 
 export {default as Touchable} from './Libraries/Components/Touchable/Touchable';
 
-export type {TouchableHighlightProps} from './Libraries/Components/Touchable/TouchableHighlight';
+export type {
+  TouchableHighlightInstance,
+  TouchableHighlightProps,
+} from './Libraries/Components/Touchable/TouchableHighlight';
 export {default as TouchableHighlight} from './Libraries/Components/Touchable/TouchableHighlight';
 
-export type {TouchableNativeFeedbackProps} from './Libraries/Components/Touchable/TouchableNativeFeedback';
+export type {
+  TouchableNativeFeedbackInstance,
+  TouchableNativeFeedbackProps,
+} from './Libraries/Components/Touchable/TouchableNativeFeedback';
 export {default as TouchableNativeFeedback} from './Libraries/Components/Touchable/TouchableNativeFeedback';
 
-export type {TouchableOpacityProps} from './Libraries/Components/Touchable/TouchableOpacity';
+export type {
+  TouchableOpacityInstance,
+  TouchableOpacityProps,
+} from './Libraries/Components/Touchable/TouchableOpacity';
 export {default as TouchableOpacity} from './Libraries/Components/Touchable/TouchableOpacity';
 
 export type {TouchableWithoutFeedbackProps} from './Libraries/Components/Touchable/TouchableWithoutFeedback';
@@ -168,6 +200,7 @@ export {default as TouchableWithoutFeedback} from './Libraries/Components/Toucha
 
 export type {
   AccessibilityActionEvent,
+  AccessibilityActionInfo,
   AccessibilityProps,
   AccessibilityRole,
   AccessibilityState,
@@ -181,6 +214,7 @@ export type {
   ViewPropsAndroid,
   ViewPropsIOS,
 } from './Libraries/Components/View/ViewPropTypes';
+export type {ViewInstance} from './Libraries/Components/View/View';
 export {default as View} from './Libraries/Components/View/View';
 export {default as unstable_NativeView} from './Libraries/Components/View/ViewNativeComponent';
 
@@ -191,6 +225,7 @@ export type {
   Separators,
   VirtualizedListProps,
 } from './Libraries/Lists/VirtualizedList';
+export type {VirtualizedListInstance} from './Libraries/Lists/VirtualizedList';
 export {default as VirtualizedList} from './Libraries/Lists/VirtualizedList';
 
 export type {
@@ -198,6 +233,7 @@ export type {
   SectionBase,
   VirtualizedSectionListProps,
 } from './Libraries/Lists/VirtualizedSectionList';
+export type {VirtualizedSectionListInstance} from './Libraries/Lists/VirtualizedSectionList';
 export {default as VirtualizedSectionList} from './Libraries/Lists/VirtualizedSectionList';
 
 // #endregion
@@ -278,13 +314,6 @@ export {findNodeHandle} from './Libraries/ReactNative/RendererProxy';
 export {default as I18nManager} from './Libraries/ReactNative/I18nManager';
 
 export type {
-  Handle,
-  PromiseTask,
-  SimpleTask,
-} from './Libraries/Interaction/InteractionManager';
-export {default as InteractionManager} from './Libraries/Interaction/InteractionManager';
-
-export type {
   AndroidKeyboardEvent,
   IOSKeyboardEvent,
   KeyboardEvent,
@@ -317,10 +346,7 @@ export {default as NativeAppEventEmitter} from './Libraries/EventEmitter/RCTNati
 
 export * as NativeComponentRegistry from './Libraries/NativeComponent/NativeComponentRegistry';
 
-export {default as NativeDialogManagerAndroid} from './Libraries/NativeModules/specs/NativeDialogManagerAndroid';
-
 export type {
-  EventSubscription,
   EmitterSubscription,
   NativeEventSubscription,
 } from './Libraries/EventEmitter/NativeEventEmitter';
@@ -399,6 +425,7 @@ export type {
   EdgeInsetsValue,
   PointValue,
 } from './Libraries/StyleSheet/StyleSheetTypes';
+export type {EdgeInsetsProp} from './Libraries/StyleSheet/EdgeInsetsPropType';
 export type {Insets} from './Libraries/StyleSheet/Rect';
 export {default as StyleSheet} from './Libraries/StyleSheet/StyleSheet';
 
@@ -406,8 +433,15 @@ export * as Systrace from './Libraries/Performance/Systrace';
 export {default as ToastAndroid} from './Libraries/Components/ToastAndroid/ToastAndroid';
 export * as TurboModuleRegistry from './Libraries/TurboModule/TurboModuleRegistry';
 export {default as UIManager} from './Libraries/ReactNative/UIManager';
-export {unstable_batchedUpdates} from './Libraries/ReactNative/RendererProxy';
+export function unstable_batchedUpdates<T>(
+  fn: (bookkeeping: T) => void,
+  bookkeeping: T,
+): void {
+  fn(bookkeeping);
+}
 export {default as useAnimatedValue} from './Libraries/Animated/useAnimatedValue';
+export {default as useAnimatedValueXY} from './Libraries/Animated/useAnimatedValueXY';
+export {default as useAnimatedColor} from './Libraries/Animated/useAnimatedColor';
 export type {
   PressabilityConfig,
   EventHandlers as PressabilityEventHandlers,
@@ -449,8 +483,6 @@ export type * from './Libraries/Types/CodegenTypesNamespace';
 
 export type {
   HostInstance,
-  NativeMethods,
-  NativeMethodsMixin,
   MeasureInWindowOnSuccessCallback,
   MeasureLayoutOnSuccessCallback,
   MeasureOnSuccessCallback,
@@ -463,10 +495,33 @@ export type {
   PublicTextInstance,
 } from './Libraries/ReactPrivate/ReactNativePrivateInterface';
 
+export type {
+  EventSubscription,
+  IEventEmitter,
+} from './Libraries/vendor/emitter/EventEmitter';
+export {default as EventEmitter} from './Libraries/vendor/emitter/EventEmitter';
+
 export {
   default as unstable_VirtualView,
   VirtualViewMode,
 } from './src/private/components/virtualview/VirtualView';
 export type {ModeChangeEvent} from './src/private/components/virtualview/VirtualView';
+
+export {VirtualArray as unstable_VirtualArray} from './src/private/components/virtualcollection/Virtual';
+export type {
+  Item as unstable_VirtualItem,
+  VirtualCollection as unstable_VirtualCollection,
+} from './src/private/components/virtualcollection/Virtual';
+export {createVirtualCollectionView as unstable_createVirtualCollectionView} from './src/private/components/virtualcollection/VirtualCollectionView';
+export type {
+  VirtualCollectionGenerator as unstable_VirtualCollectionGenerator,
+  VirtualCollectionLayoutComponent as unstable_VirtualCollectionLayoutComponent,
+  VirtualCollectionViewComponent as unstable_VirtualCollectionViewComponent,
+} from './src/private/components/virtualcollection/VirtualCollectionView';
+export {default as unstable_VirtualColumn} from './src/private/components/virtualcollection/column/VirtualColumn';
+export {default as unstable_VirtualColumnGenerator} from './src/private/components/virtualcollection/column/VirtualColumnGenerator';
+export {default as unstable_VirtualRow} from './src/private/components/virtualcollection/row/VirtualRow';
+export {default as unstable_getScrollParent} from './src/private/components/virtualcollection/dom/getScrollParent';
+export {DEFAULT_INITIAL_NUM_TO_RENDER as unstable_DEFAULT_INITIAL_NUM_TO_RENDER} from './src/private/components/virtualcollection/FlingConstants';
 
 // #endregion

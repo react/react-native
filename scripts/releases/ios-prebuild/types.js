@@ -11,10 +11,10 @@
 /*::
 export type Folder = RegExp;
 
-export type Files = $ReadOnly<{
-  headers: $ReadOnlyArray<string>,
-  sources: $ReadOnlyArray<string>,
-  resources?: $ReadOnlyArray<string>,
+export type Files = Readonly<{
+  headers: ReadonlyArray<string>,
+  sources: ReadonlyArray<string>,
+  resources?: ReadonlyArray<string>,
   // Relative path from target root to where the header files should be copied.
   // Can be used to ensure header search paths like <double-conversion/double-conversion.h>
   // are correctly resolved.
@@ -22,22 +22,22 @@ export type Files = $ReadOnly<{
   headerSkipFolderNames?: string,
 }>;
 
-export type Define = $ReadOnly<{
+export type Define = Readonly<{
   name: string,
   value?: string,
 }>;
 
-export type Settings = $ReadOnly<{
-  headerSearchPaths?: $ReadOnlyArray<string>,
-  defines?: $ReadOnlyArray<Define>,
-  cCompilerFlags?: $ReadOnlyArray<string>,
-  cxxCompilerFlags?: $ReadOnlyArray<string>,
-  linkedLibraries?: $ReadOnlyArray<string>,
+export type Settings = Readonly<{
+  headerSearchPaths?: ReadonlyArray<string>,
+  defines?: ReadonlyArray<Define>,
+  cCompilerFlags?: ReadonlyArray<string>,
+  cxxCompilerFlags?: ReadonlyArray<string>,
+  linkedLibraries?: ReadonlyArray<string>,
   publicHeaderFiles: string,
-  linkerSettings?: $ReadOnlyArray<string>
+  linkerSettings?: ReadonlyArray<string>
 }>;
 
-export type Dependency = $ReadOnly<{
+export type Dependency = Readonly<{
   name: string,
   version: string,
   url: URL,
@@ -45,7 +45,7 @@ export type Dependency = $ReadOnly<{
   files: Files,
   settings: Settings,
   disabled?: boolean,
-  dependencies?: $ReadOnlyArray<string>,
+  dependencies?: ReadonlyArray<string>,
 }>;
 
 export type Platform =

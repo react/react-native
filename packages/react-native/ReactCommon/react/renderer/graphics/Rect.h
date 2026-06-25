@@ -24,15 +24,7 @@ struct Rect {
   Point origin{.x = 0, .y = 0};
   Size size{.width = 0, .height = 0};
 
-  bool operator==(const Rect &rhs) const noexcept
-  {
-    return std::tie(this->origin, this->size) == std::tie(rhs.origin, rhs.size);
-  }
-
-  bool operator!=(const Rect &rhs) const noexcept
-  {
-    return !(*this == rhs);
-  }
+  bool operator==(const Rect &rhs) const noexcept = default;
 
   Float getMaxX() const noexcept
   {

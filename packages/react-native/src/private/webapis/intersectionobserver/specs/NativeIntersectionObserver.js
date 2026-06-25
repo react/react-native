@@ -14,39 +14,39 @@ import * as TurboModuleRegistry from '../../../../../Libraries/TurboModule/Turbo
 
 export type NativeIntersectionObserverEntry = {
   intersectionObserverId: number,
-  targetInstanceHandle: mixed,
-  targetRect: $ReadOnlyArray<number>, // It's actually a tuple with x, y, width and height
-  rootRect: $ReadOnlyArray<number>, // It's actually a tuple with x, y, width and height
+  targetInstanceHandle: unknown,
+  targetRect: ReadonlyArray<number>, // It's actually a tuple with x, y, width and height
+  rootRect: ReadonlyArray<number>, // It's actually a tuple with x, y, width and height
   // TODO(T209328432) - Remove optionality of intersectionRect when native changes are released
-  intersectionRect: ?$ReadOnlyArray<number>, // It's actually a tuple with x, y, width and height
+  intersectionRect: ?ReadonlyArray<number>, // It's actually a tuple with x, y, width and height
   isIntersectingAboveThresholds: boolean,
   time: number,
 };
 
 export type NativeIntersectionObserverObserveOptions = {
   intersectionObserverId: number,
-  rootShadowNode?: ?mixed,
-  targetShadowNode: mixed,
-  thresholds: $ReadOnlyArray<number>,
-  rootThresholds?: ?$ReadOnlyArray<number>,
+  rootShadowNode?: ?unknown,
+  targetShadowNode: unknown,
+  thresholds: ReadonlyArray<number>,
+  rootThresholds?: ?ReadonlyArray<number>,
   rootMargin?: ?string,
 };
 
-export opaque type NativeIntersectionObserverToken = mixed;
+export opaque type NativeIntersectionObserverToken = unknown;
 
 export interface Spec extends TurboModule {
-  +observeV2?: (
+  readonly observeV2?: (
     options: NativeIntersectionObserverObserveOptions,
   ) => NativeIntersectionObserverToken;
-  +unobserveV2?: (
+  readonly unobserveV2?: (
     intersectionObserverId: number,
     token: NativeIntersectionObserverToken,
   ) => void;
-  +connect: (notifyIntersectionObserversCallback: () => void) => void;
-  +disconnect: () => void;
-  +takeRecords: () => $ReadOnlyArray<NativeIntersectionObserverEntry>;
+  readonly connect: (notifyIntersectionObserversCallback: () => void) => void;
+  readonly disconnect: () => void;
+  readonly takeRecords: () => ReadonlyArray<NativeIntersectionObserverEntry>;
 }
 
-export default (TurboModuleRegistry.get<Spec>(
+export default TurboModuleRegistry.get<Spec>(
   'NativeIntersectionObserverCxx',
-): ?Spec);
+) as ?Spec;

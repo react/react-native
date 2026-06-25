@@ -16,9 +16,9 @@ import * as React from 'react';
 
 const View = require('../../../../../Libraries/Components/View/View').default;
 
-type Props = $ReadOnly<{
+type Props = Readonly<{
   children: React.Node,
-  box?: ?$ReadOnly<{
+  box?: ?Readonly<{
     top: number,
     right: number,
     bottom: number,

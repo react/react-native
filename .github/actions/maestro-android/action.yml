@@ -20,7 +20,7 @@ inputs:
     default: release
   working-directory:
     required: false
-    default: "."
+    default: '.'
     description: The directory from which metro should be started
   emulator-arch:
     required: false
@@ -32,7 +32,7 @@ runs:
   steps:
     - name: Installing Maestro
       shell: bash
-      run: export MAESTRO_VERSION=1.40.0; curl -Ls "https://get.maestro.mobile.dev" | bash
+      run: export MAESTRO_VERSION=2.6.1; curl -Ls "https://get.maestro.mobile.dev" | bash
     - name: Set up JDK 17
       if: ${{ inputs.install-java == 'true' }}
       uses: actions/setup-java@v5
@@ -77,6 +77,7 @@ runs:
       if: always()
       with:
         name: e2e_android_${{ steps.normalize-app-id.outputs.app-id }}_report_${{ inputs.flavor }}_${{ inputs.emulator-arch }}_NewArch
+        overwrite: true
         path: |
           report.xml
           screen.mp4
@@ -85,4 +86,5 @@ runs:
       uses: actions/upload-artifact@v6
       with:
         name: maestro-logs-android-${{ steps.normalize-app-id.outputs.app-id }}-${{ inputs.flavor }}-${{ inputs.emulator-arch }}-NewArch
+        overwrite: true
         path: /tmp/MaestroLogs

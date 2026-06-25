@@ -14,12 +14,119 @@ import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 import * as Fantom from '@react-native/fantom';
 import nullthrows from 'nullthrows';
 import * as React from 'react';
-import {View} from 'react-native';
+import {type PointerEvent, View} from 'react-native';
 import * as FabricUIManager from 'react-native/Libraries/ReactNative/FabricUIManager';
 
 const UIManager = nullthrows(FabricUIManager.getFabricUIManager());
 
 describe('Event Dispatching', () => {
+  // The OSS renderer hasn't been synced yet to have these changes
+  // TODO(next-major) Remove this condition
+  if (!Fantom.getConstants().isOSS) {
+    it('provides the native event timeStamp (camel case) when available', () => {
+      const root = Fantom.createRoot();
+
+      const ref = React.createRef<React.ElementRef<typeof View>>();
+
+      const onPointerUp = jest.fn((e: PointerEvent) => {
+        e.persist();
+      });
+
+      Fantom.runTask(() => {
+        root.render(<View ref={ref} onPointerUp={onPointerUp} />);
+      });
+
+      expect(onPointerUp).toHaveBeenCalledTimes(0);
+
+      const NATIVE_EVENT_TIMESTAMP = 1234;
+
+      Fantom.dispatchNativeEvent(
+        ref,
+        'onPointerUp',
+        {x: 0, y: 0, timeStamp: NATIVE_EVENT_TIMESTAMP},
+        {
+          category: Fantom.NativeEventCategory.Discrete,
+        },
+      );
+
+      expect(onPointerUp).toHaveBeenCalledTimes(1);
+      expect(onPointerUp.mock.calls[0][0].timeStamp).toBe(
+        NATIVE_EVENT_TIMESTAMP,
+      );
+    });
+
+    it('provides a default timeStamp when the native event timeStamp is NOT available', () => {
+      const root = Fantom.createRoot();
+
+      const ref = React.createRef<React.ElementRef<typeof View>>();
+
+      const onPointerUp = jest.fn((e: PointerEvent) => {
+        e.persist();
+      });
+
+      Fantom.runTask(() => {
+        root.render(<View ref={ref} onPointerUp={onPointerUp} />);
+      });
+
+      expect(onPointerUp).toHaveBeenCalledTimes(0);
+
+      const lowerBound = performance.now();
+
+      Fantom.dispatchNativeEvent(
+        ref,
+        'onPointerUp',
+        {x: 0, y: 0},
+        {
+          category: Fantom.NativeEventCategory.Discrete,
+        },
+      );
+
+      const upperBound = performance.now();
+
+      expect(onPointerUp).toHaveBeenCalledTimes(1);
+      expect(onPointerUp.mock.calls[0][0].timeStamp).toBeGreaterThanOrEqual(
+        lowerBound,
+      );
+      expect(onPointerUp.mock.calls[0][0].timeStamp).toBeLessThanOrEqual(
+        upperBound,
+      );
+    });
+
+    it('exposes dispatched events in the global scope', () => {
+      const root = Fantom.createRoot();
+
+      const ref = React.createRef<React.ElementRef<typeof View>>();
+
+      let globalEventIsDispatchedEvent: boolean = false;
+
+      const onPointerUp = jest.fn((e: PointerEvent) => {
+        globalEventIsDispatchedEvent = global.event === e;
+      });
+
+      Fantom.runTask(() => {
+        root.render(<View ref={ref} onPointerUp={onPointerUp} />);
+      });
+
+      const globalEventValueBeforeDispatch = {type: 'some-event'};
+      global.event = globalEventValueBeforeDispatch;
+
+      expect(onPointerUp).toHaveBeenCalledTimes(0);
+
+      Fantom.dispatchNativeEvent(
+        ref,
+        'onPointerUp',
+        {x: 0, y: 0},
+        {
+          category: Fantom.NativeEventCategory.Discrete,
+        },
+      );
+
+      expect(onPointerUp).toHaveBeenCalledTimes(1);
+      expect(globalEventIsDispatchedEvent).toBe(true);
+      expect(global.event).toBe(globalEventValueBeforeDispatch);
+    });
+  }
+
   it('dispatches events with discrete priority', () => {
     const root = Fantom.createRoot();
 
@@ -27,7 +134,7 @@ describe('Event Dispatching', () => {
 
     let onPointerUpPriority;
 
-    const onPointerUp = jest.fn((event: mixed) => {
+    const onPointerUp = jest.fn((event: unknown) => {
       onPointerUpPriority = UIManager.unstable_getCurrentEventPriority();
     });
 
@@ -50,6 +157,58 @@ describe('Event Dispatching', () => {
     expect(onPointerUpPriority).toBe(UIManager.unstable_DiscreteEventPriority);
   });
 
+  it('dispatches pointer capture events', () => {
+    const root = Fantom.createRoot();
+
+    const ref = React.createRef<React.ElementRef<typeof View>>();
+    const order: Array<string> = [];
+
+    Fantom.runTask(() => {
+      root.render(
+        <View
+          ref={ref}
+          onGotPointerCaptureCapture={() => {
+            order.push('got-capture');
+          }}
+          onGotPointerCapture={() => {
+            order.push('got-bubble');
+          }}
+          onLostPointerCaptureCapture={() => {
+            order.push('lost-capture');
+          }}
+          onLostPointerCapture={() => {
+            order.push('lost-bubble');
+          }}
+        />,
+      );
+    });
+
+    Fantom.dispatchNativeEvent(
+      ref,
+      'onGotPointerCapture',
+      {pointerId: 1},
+      {
+        category: Fantom.NativeEventCategory.Discrete,
+      },
+    );
+
+    Fantom.dispatchNativeEvent(
+      ref,
+      'onLostPointerCapture',
+      {pointerId: 1},
+      {
+        category: Fantom.NativeEventCategory.Discrete,
+      },
+    );
+
+    expect(order).toEqual([
+      'got-capture',
+      'got-bubble',
+      'lost-capture',
+      'lost-bubble',
+    ]);
+  });
+
   it('dispatches events with continuous priority', () => {
     const root = Fantom.createRoot();
 
@@ -57,7 +216,7 @@ describe('Event Dispatching', () => {
 
     let onPointerMovePriority;
 
-    const onPointerMove = jest.fn((event: mixed) => {
+    const onPointerMove = jest.fn((event: unknown) => {
       onPointerMovePriority = UIManager.unstable_getCurrentEventPriority();
     });
 
@@ -89,7 +248,7 @@ describe('Event Dispatching', () => {
 
     let onPointerMovePriority;
 
-    const onPointerMove = jest.fn((event: mixed) => {
+    const onPointerMove = jest.fn((event: unknown) => {
       onPointerMovePriority = UIManager.unstable_getCurrentEventPriority();
     });
 
@@ -123,10 +282,10 @@ describe('Event Dispatching', () => {
       let onPointerEnterPriority;
       let onPointerLeavePriority;
 
-      const onPointerEnter = jest.fn((event: mixed) => {
+      const onPointerEnter = jest.fn((event: unknown) => {
         onPointerEnterPriority = UIManager.unstable_getCurrentEventPriority();
       });
-      const onPointerLeave = jest.fn((event: mixed) => {
+      const onPointerLeave = jest.fn((event: unknown) => {
         onPointerLeavePriority = UIManager.unstable_getCurrentEventPriority();
       });
 
@@ -180,7 +339,7 @@ describe('Event Dispatching', () => {
       const ref = React.createRef<React.ElementRef<typeof View>>();
 
       let onPointerMovePriority;
-      const onPointerMove = jest.fn((event: mixed) => {
+      const onPointerMove = jest.fn((event: unknown) => {
         onPointerMovePriority = UIManager.unstable_getCurrentEventPriority();
       });
 
@@ -261,7 +420,7 @@ describe('Event Dispatching', () => {
       const ref = React.createRef<React.ElementRef<typeof View>>();
 
       let onPointerMovePriority;
-      const onPointerMove = jest.fn((event: mixed) => {
+      const onPointerMove = jest.fn((event: unknown) => {
         onPointerMovePriority = UIManager.unstable_getCurrentEventPriority();
       });
 

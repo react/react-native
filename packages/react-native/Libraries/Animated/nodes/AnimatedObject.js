@@ -20,10 +20,10 @@ import {isValidElement} from 'react';
 const MAX_DEPTH = 5;
 
 export function isPlainObject(
-  value: mixed,
+  value: unknown,
   /* $FlowFixMe[incompatible-type-guard] - Flow does not know that the prototype
      and ReactElement checks preserve the type refinement of `value`. */
-): value is $ReadOnly<{[string]: mixed}> {
+): value is Readonly<{[string]: unknown}> {
   const proto =
     value !== null && typeof value === 'object'
       ? Object.getPrototypeOf(value)
@@ -39,7 +39,7 @@ export function isPlainObject(
 }
 
 function flatAnimatedNodes(
-  value: mixed,
+  value: unknown,
   nodes: Array<AnimatedNode> = [],
   depth: number = 0,
 ): Array<AnimatedNode> {
@@ -87,14 +87,14 @@ function mapAnimatedNodes(value: any, fn: any => any, depth: number = 0): any {
 }
 
 export default class AnimatedObject extends AnimatedWithChildren {
-  _nodes: $ReadOnlyArray<AnimatedNode>;
-  _value: mixed;
+  _nodes: ReadonlyArray<AnimatedNode>;
+  _value: unknown;
 
   /**
    * Creates an `AnimatedObject` if `value` contains `AnimatedNode` instances.
    * Otherwise, returns `null`.
    */
-  static from(value: mixed): ?AnimatedObject {
+  static from(value: unknown): ?AnimatedObject {
     const nodes = flatAnimatedNodes(value);
     if (nodes.length === 0) {
       return null;
@@ -106,8 +106,8 @@ export default class AnimatedObject extends AnimatedWithChildren {
    * Should only be called by `AnimatedObject.from`.
    */
   constructor(
-    nodes: $ReadOnlyArray<AnimatedNode>,
-    value: mixed,
+    nodes: ReadonlyArray<AnimatedNode>,
+    value: unknown,
     config?: ?AnimatedNodeConfig,
   ) {
     super(config);
@@ -121,7 +121,7 @@ export default class AnimatedObject extends AnimatedWithChildren {
     });
   }
 
-  __getValueWithStaticObject(staticObject: mixed): any {
+  __getValueWithStaticObject(staticObject: unknown): any {
     const nodes = this._nodes;
     let index = 0;
     // NOTE: We can depend on `this._value` and `staticObject` sharing a

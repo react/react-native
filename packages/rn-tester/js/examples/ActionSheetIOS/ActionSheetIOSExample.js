@@ -32,7 +32,7 @@ const DESTRUCTIVE_INDEX = 3;
 const CANCEL_INDEX = 4;
 const DISABLED_BUTTON_INDICES = [1, 2];
 
-type Props = $ReadOnly<{}>;
+type Props = Readonly<{}>;
 type State = {clicked: string};
 class ActionSheetExample extends React.Component<Props, State> {
   state: State = {

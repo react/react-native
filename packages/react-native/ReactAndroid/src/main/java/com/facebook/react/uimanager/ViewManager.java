@@ -442,9 +442,9 @@ public abstract class ViewManager<T extends View, C extends ReactShadowNode>
    */
   public long measure(
       Context context,
-      ReadableMap localData,
-      ReadableMap props,
-      ReadableMap state,
+      @Nullable ReadableMap localData,
+      @Nullable ReadableMap props,
+      @Nullable ReadableMap state,
       float width,
       YogaMeasureMode widthMode,
       float height,

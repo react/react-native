@@ -81,13 +81,15 @@ class DebugStringConvertible {};
 
 #endif
 
-#if RN_DEBUG_STRING_CONVERTIBLE
-
 /*
  * Set of particular-format-opinionated functions that convert base types to
  * `std::string`
  */
 std::string toString(const double &value);
+std::string toString(double doubleValue, char suffix);
+
+#if RN_DEBUG_STRING_CONVERTIBLE
+
 std::string toString(const void *value);
 
 inline std::string toString(const std::string &value)

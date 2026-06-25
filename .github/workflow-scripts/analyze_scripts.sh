@@ -16,6 +16,7 @@ if [ -x "$(command -v shellcheck)" ]; then
     -type f \
     -not -path "*node_modules*" \
     -not -path "*third-party*" \
+    -not -path "*vendor*" \
     -name '*.sh' \
     -exec sh -c 'shellcheck "$1"' -- {} \;
 

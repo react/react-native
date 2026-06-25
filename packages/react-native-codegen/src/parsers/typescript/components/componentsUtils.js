@@ -51,7 +51,7 @@ function getUnionOfLiterals(
   ) {
     return {
       type: 'StringEnumTypeAnnotation',
-      default: (defaultValue: string),
+      default: defaultValue as string,
       options: elementTypes.map(option => option.literal.value),
     };
   } else if (
@@ -63,7 +63,7 @@ function getUnionOfLiterals(
     } else {
       return {
         type: 'Int32EnumTypeAnnotation',
-        default: (defaultValue: number),
+        default: defaultValue as number,
         options: elementTypes.map(option => option.literal.value),
       };
     }
@@ -335,7 +335,7 @@ function getTypeAnnotationForArray<T>(
         type: 'FloatTypeAnnotation',
       };
     default:
-      (type: mixed);
+      (type) as unknown;
       throw new Error(`Unknown prop type for "${name}": ${type}`);
   }
 }
@@ -347,16 +347,15 @@ function setDefaultValue(
   switch (common.type) {
     case 'Int32TypeAnnotation':
     case 'DoubleTypeAnnotation':
-      common.default = ((defaultValue ? defaultValue : 0): number);
+      common.default = (defaultValue ? defaultValue : 0) as number;
       break;
     case 'FloatTypeAnnotation':
-      /* $FlowFixMe[invalid-compare] Error discovered during Constant Condition
-       * roll out. See https://fburl.com/workplace/5whu3i34. */
-      common.default = ((defaultValue === null
-        ? null
-        : defaultValue
-          ? defaultValue
-          : 0): number | null);
+      common.default =
+        /* $FlowFixMe[invalid-compare] Error discovered during Constant Condition
+         * roll out. See https://fburl.com/workplace/5whu3i34. */
+        (defaultValue === null ? null : defaultValue ? defaultValue : 0) as
+          | number
+          | null;
       break;
     case 'BooleanTypeAnnotation':
       /* $FlowFixMe[invalid-compare] Error discovered during Constant Condition
@@ -364,9 +363,9 @@ function setDefaultValue(
       common.default = defaultValue === null ? null : !!defaultValue;
       break;
     case 'StringTypeAnnotation':
-      common.default = ((defaultValue === undefined ? null : defaultValue):
+      common.default = (defaultValue === undefined ? null : defaultValue) as
         | string
-        | null);
+        | null;
       break;
   }
 }
@@ -476,10 +475,10 @@ function getSchemaInfo(
 }
 
 function flattenProperties(
-  typeDefinition: $ReadOnlyArray<PropAST>,
+  typeDefinition: ReadonlyArray<PropAST>,
   types: TypeDeclarationMap,
   parser: Parser,
-): $ReadOnlyArray<PropAST> {
+): ReadonlyArray<PropAST> {
   return typeDefinition
     .map(property => {
       if (property.type === 'TSPropertySignature') {

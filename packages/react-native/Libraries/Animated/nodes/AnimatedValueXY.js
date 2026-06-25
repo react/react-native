@@ -17,11 +17,11 @@ import AnimatedValue from './AnimatedValue';
 import AnimatedWithChildren from './AnimatedWithChildren';
 import invariant from 'invariant';
 
-export type AnimatedValueXYConfig = $ReadOnly<{
+export type AnimatedValueXYConfig = Readonly<{
   ...AnimatedNodeConfig,
   useNativeDriver: boolean,
 }>;
-type ValueXYListenerCallback = (value: {x: number, y: number, ...}) => mixed;
+type ValueXYListenerCallback = (value: {x: number, y: number, ...}) => unknown;
 
 let _uniqueId = 1;
 
@@ -45,8 +45,8 @@ export default class AnimatedValueXY extends AnimatedWithChildren {
 
   constructor(
     valueIn?: ?{
-      +x: number | AnimatedValue,
-      +y: number | AnimatedValue,
+      readonly x: number | AnimatedValue,
+      readonly y: number | AnimatedValue,
       ...
     },
     config?: ?AnimatedValueXYConfig,

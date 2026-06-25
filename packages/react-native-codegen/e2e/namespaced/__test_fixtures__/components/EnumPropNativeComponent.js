@@ -12,7 +12,7 @@ import type {CodegenTypes, HostComponent, ViewProps} from 'react-native';
 
 import {codegenNativeComponent} from 'react-native';
 
-type NativeProps = $ReadOnly<{
+type NativeProps = Readonly<{
   ...ViewProps,
 
   // Props
@@ -23,6 +23,6 @@ type NativeProps = $ReadOnly<{
   intervals?: CodegenTypes.WithDefault<0 | 15 | 30 | 60, 0>,
 }>;
 
-export default (codegenNativeComponent<NativeProps>(
+export default codegenNativeComponent<NativeProps>(
   'EnumPropNativeComponentView',
-): HostComponent<NativeProps>);
+) as HostComponent<NativeProps>;

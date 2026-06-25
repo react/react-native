@@ -1,0 +1,14 @@
+struct test::AccessibilityState {
+  public bool busy;
+  public bool disabled;
+  public bool selected;
+  public std::optional<bool> expanded;
+  public test::AccessibilityState::CheckedState checked;
+}
+
+enum test::AccessibilityState::CheckedState {
+  Checked,
+  Mixed,
+  None,
+  Unchecked,
+}

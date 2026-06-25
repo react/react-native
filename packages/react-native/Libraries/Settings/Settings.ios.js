@@ -20,9 +20,9 @@ const subscriptions: Array<{
 
 const Settings = {
   _settings: (NativeSettingsManager &&
-    NativeSettingsManager.getConstants().settings: any),
+    NativeSettingsManager.getConstants().settings) as any,
 
-  get(key: string): mixed {
+  get(key: string): unknown {
     // $FlowFixMe[object-this-reference]
     return this._settings[key];
   },

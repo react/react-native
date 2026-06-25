@@ -29,7 +29,7 @@ const {capitalize} = require('../../Utils');
 export type Pojo = {
   name: string,
   namespace: string,
-  properties: $ReadOnlyArray<PojoProperty>,
+  properties: ReadonlyArray<PojoProperty>,
 };
 
 export type PojoProperty = NamedShape<PojoTypeAnnotation>;
@@ -40,39 +40,39 @@ export type PojoTypeAliasAnnotation = {
 };
 
 export type PojoTypeAnnotation =
-  | $ReadOnly<{
+  | Readonly<{
       type: 'BooleanTypeAnnotation',
       default: boolean | null,
     }>
-  | $ReadOnly<{
+  | Readonly<{
       type: 'StringTypeAnnotation',
       default: string | null,
     }>
-  | $ReadOnly<{
+  | Readonly<{
       type: 'DoubleTypeAnnotation',
       default: number,
     }>
-  | $ReadOnly<{
+  | Readonly<{
       type: 'FloatTypeAnnotation',
       default: number | null,
     }>
-  | $ReadOnly<{
+  | Readonly<{
       type: 'Int32TypeAnnotation',
       default: number,
     }>
-  | $ReadOnly<{
+  | Readonly<{
       type: 'StringEnumTypeAnnotation',
       default: string,
-      options: $ReadOnlyArray<string>,
+      options: ReadonlyArray<string>,
     }>
-  | $ReadOnly<{
+  | Readonly<{
       type: 'Int32EnumTypeAnnotation',
       default: number,
-      options: $ReadOnlyArray<number>,
+      options: ReadonlyArray<number>,
     }>
   | ReservedPropTypeAnnotation
   | PojoTypeAliasAnnotation
-  | $ReadOnly<{
+  | Readonly<{
       type: 'ArrayTypeAnnotation',
       elementType:
         | BooleanTypeAnnotation
@@ -81,14 +81,14 @@ export type PojoTypeAnnotation =
         | FloatTypeAnnotation
         | Int32TypeAnnotation
         | MixedTypeAnnotation
-        | $ReadOnly<{
+        | Readonly<{
             type: 'StringEnumTypeAnnotation',
             default: string,
-            options: $ReadOnlyArray<string>,
+            options: ReadonlyArray<string>,
           }>
         | PojoTypeAliasAnnotation
         | ReservedPropTypeAnnotation
-        | $ReadOnly<{
+        | Readonly<{
             type: 'ArrayTypeAnnotation',
             elementType: PojoTypeAliasAnnotation,
           }>,
@@ -182,7 +182,7 @@ class PojoCollector {
     });
   }
 
-  getAllPojos(): $ReadOnlyArray<Pojo> {
+  getAllPojos(): ReadonlyArray<Pojo> {
     return [...this._pojos.values()];
   }
 }

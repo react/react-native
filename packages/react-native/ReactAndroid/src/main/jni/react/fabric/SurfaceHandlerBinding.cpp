@@ -60,6 +60,7 @@ void SurfaceHandlerBinding::setLayoutConstraints(
   context.swapLeftAndRightInRTL = (doLeftAndRightSwapInRTL != 0u);
   context.pointScaleFactor = pixelDensity;
   context.viewportOffset = {.x = offsetX, .y = offsetY};
+  context.viewportSize = {.width = maxWidth, .height = maxHeight};
   context.fontSizeMultiplier = fontScale;
 
   surfaceHandler_.constraintLayout(constraints, context);

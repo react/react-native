@@ -24,7 +24,7 @@ namespace facebook::react {
  */
 struct ShadowNodeFragment {
   const Props::Shared &props = propsPlaceholder();
-  const ShadowNode::SharedListOfShared &children = childrenPlaceholder();
+  const std::shared_ptr<const std::vector<std::shared_ptr<const ShadowNode>>> &children = childrenPlaceholder();
   const State::Shared &state = statePlaceholder();
   const bool runtimeShadowNodeReference = true;
 
@@ -34,7 +34,7 @@ struct ShadowNodeFragment {
    * be changed.
    */
   static const Props::Shared &propsPlaceholder();
-  static const ShadowNode::SharedListOfShared &childrenPlaceholder();
+  static const std::shared_ptr<const std::vector<std::shared_ptr<const ShadowNode>>> &childrenPlaceholder();
   static const State::Shared &statePlaceholder();
 };
 

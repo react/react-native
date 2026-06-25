@@ -1,0 +1,4 @@
+struct test::Config {
+  public std::optional<bool> expanded;
+  public std::optional<std::string> label;
+}

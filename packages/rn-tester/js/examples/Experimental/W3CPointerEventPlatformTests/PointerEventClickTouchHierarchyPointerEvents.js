@@ -21,7 +21,7 @@ import {StyleSheet, View} from 'react-native';
 function PointerEventBoxParentChild(props: {
   eventsToTrack: EventTrackerProps['eventsToTrack'],
   eventsRef: EventTrackerProps['eventsRef'],
-  pointerEvents: $NonMaybeType<ViewProps['pointerEvents']>,
+  pointerEvents: NonNullable<ViewProps['pointerEvents']>,
   childStyle: ViewProps['style'],
   parentStyleOverride?: ViewProps['style'],
 }) {
@@ -140,21 +140,26 @@ function PointerEventClickTouchHierarchyPointerEventsTestCase(
 }
 
 const styles = StyleSheet.create({
+  checkResults: {
+    backgroundColor: 'green',
+    height: 50,
+    width: '80%',
+  },
+  parent: {
+    alignItems: 'center',
+    backgroundColor: 'black',
+    display: 'flex',
+    height: 80,
+    justifyContent: 'center',
+    width: '20%',
+  },
   parentContainer: {
     display: 'flex',
     flexDirection: 'row',
     gap: 10,
   },
-  parent: {
-    display: 'flex',
-    backgroundColor: 'black',
-    height: 80,
-    width: '20%',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  targetBoxOnly: {
-    backgroundColor: 'blue',
+  targetAuto: {
+    backgroundColor: 'yellow',
     height: 50,
     width: 50,
   },
@@ -163,8 +168,8 @@ const styles = StyleSheet.create({
     height: 50,
     width: 50,
   },
-  targetAuto: {
-    backgroundColor: 'yellow',
+  targetBoxOnly: {
+    backgroundColor: 'blue',
     height: 50,
     width: 50,
   },
@@ -173,14 +178,9 @@ const styles = StyleSheet.create({
     height: 50,
     width: 50,
   },
-  checkResults: {
-    backgroundColor: 'green',
-    height: 50,
-    width: '80%',
-  },
 });
 
-type Props = $ReadOnly<{}>;
+type Props = Readonly<{}>;
 export default function PointerEventClickTouchHierarchyPointerEvents(
   props: Props,
 ): React.MixedElement {

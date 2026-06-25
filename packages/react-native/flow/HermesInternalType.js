@@ -59,7 +59,7 @@ declare type $HermesInternalType = {
   +getRuntimeProperties?: () => {
     'OSS Release Version': string,
     Build: string,
-    [string]: mixed,
+    [string]: unknown,
   },
 
   /**
@@ -93,10 +93,10 @@ declare type $HermesInternalType = {
    */
   +enablePromiseRejectionTracker?: (
     options: ?{
-      whitelist?: ?Array<mixed>,
+      whitelist?: ?Array<unknown>,
       allRejections?: ?boolean,
-      onUnhandled?: ?(number, mixed) => void,
-      onHandled?: ?(number, mixed) => void,
+      onUnhandled?: ?(number, unknown) => void,
+      onHandled?: ?(number, unknown) => void,
     },
   ) => void,
 
@@ -108,7 +108,7 @@ declare type $HermesInternalType = {
   /**
    * Enqueue a JavaScript callback function as a Job into the engine Job queue.
    */
-  +enqueueJob?: <TArguments: Array<mixed>>(
-    jobCallback: (...args: TArguments) => mixed,
+  +enqueueJob?: <TArguments extends Array<unknown>>(
+    jobCallback: (...args: TArguments) => unknown,
   ) => void,
 };

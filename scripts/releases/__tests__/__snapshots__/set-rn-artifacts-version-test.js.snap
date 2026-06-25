@@ -138,12 +138,14 @@ exports[`updateReactNativeArtifacts should set nightly version: packages/react-n
 
 namespace facebook::react {
 
-constexpr struct {
+struct ReactNativeVersionType {
   int32_t Major = 0;
   int32_t Minor = 81;
   int32_t Patch = 0;
   std::string_view Prerelease = \\"nightly-29282302-abcd1234\\";
-} ReactNativeVersion;
+};
+
+constexpr ReactNativeVersionType ReactNativeVersion;
 
 } // namespace facebook::react
 "
@@ -293,12 +295,14 @@ exports[`updateReactNativeArtifacts should set release version: packages/react-n
 
 namespace facebook::react {
 
-constexpr struct {
+struct ReactNativeVersionType {
   int32_t Major = 0;
   int32_t Minor = 81;
   int32_t Patch = 0;
   std::string_view Prerelease = \\"\\";
-} ReactNativeVersion;
+};
+
+constexpr ReactNativeVersionType ReactNativeVersion;
 
 } // namespace facebook::react
 "

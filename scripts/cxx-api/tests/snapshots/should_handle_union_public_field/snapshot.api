@@ -1,0 +1,4 @@
+union test::DataUnion {
+  public float floatValue;
+  public int32_t intValue;
+}

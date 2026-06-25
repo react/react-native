@@ -30,7 +30,7 @@ const {createAliasResolver, getModules} = require('./Utils');
 type FilesOutput = Map<string, string>;
 
 function FileTemplate(
-  config: $ReadOnly<{
+  config: Readonly<{
     packageName: string,
     className: string,
     jsName: string,
@@ -92,7 +92,7 @@ function EventEmitterTemplate(
 }
 
 function MethodTemplate(
-  config: $ReadOnly<{
+  config: Readonly<{
     abstract: boolean,
     methodBody: ?string,
     methodJavaAnnotation: string,
@@ -146,7 +146,7 @@ function translateEventEmitterTypeToJavaType(
         case 'string':
           return 'String';
         default:
-          (validUnionType: empty);
+          validUnionType as empty;
           throw new Error(`Unsupported union member type`);
       }
     case 'NumberTypeAnnotation':
@@ -175,7 +175,7 @@ function translateEventEmitterTypeToJavaType(
         `Unsupported eventType for ${eventEmitter.name}. Found: ${eventEmitter.typeAnnotation.typeAnnotation.type}`,
       );
     default:
-      (typeAnnotation.type: empty);
+      typeAnnotation.type as empty;
       throw new Error(
         `Unsupported eventType for ${eventEmitter.name}. Found: ${eventEmitter.typeAnnotation.typeAnnotation.type}`,
       );
@@ -208,7 +208,7 @@ function translateFunctionParamToJavaType(
         case 'RootTag':
           return wrapOptional('double', isRequired);
         default:
-          (realTypeAnnotation.name: empty);
+          realTypeAnnotation.name as empty;
           throw new Error(createErrorMessage(realTypeAnnotation.name));
       }
     case 'StringTypeAnnotation':
@@ -251,7 +251,7 @@ function translateFunctionParamToJavaType(
         case 'string':
           return wrapOptional('String', isRequired);
         default:
-          (validUnionType: empty);
+          validUnionType as empty;
           throw new Error(`Unsupported union member type`);
       }
     case 'ObjectTypeAnnotation':
@@ -267,8 +267,12 @@ function translateFunctionParamToJavaType(
     case 'FunctionTypeAnnotation':
       imports.add('com.facebook.react.bridge.Callback');
       return wrapOptional('Callback', isRequired);
+    case 'ArrayBufferTypeAnnotation':
+      throw new Error(
+        `${createErrorMessage(realTypeAnnotation.type)} ArrayBuffer is only supported for C++ TurboModules.`,
+      );
     default:
-      (realTypeAnnotation.type: 'MixedTypeAnnotation');
+      realTypeAnnotation.type as 'MixedTypeAnnotation';
       throw new Error(createErrorMessage(realTypeAnnotation.type));
   }
 }
@@ -302,7 +306,7 @@ function translateFunctionReturnTypeToJavaType(
         case 'RootTag':
           return wrapOptional('double', isRequired);
         default:
-          (realTypeAnnotation.name: empty);
+          realTypeAnnotation.name as empty;
           throw new Error(createErrorMessage(realTypeAnnotation.name));
       }
     case 'VoidTypeAnnotation':
@@ -349,7 +353,7 @@ function translateFunctionReturnTypeToJavaType(
         case 'string':
           return wrapOptional('String', isRequired);
         default:
-          (validUnionType: empty);
+          validUnionType as empty;
           throw new Error(`Unsupported union member type`);
       }
     case 'ObjectTypeAnnotation':
@@ -361,8 +365,12 @@ function translateFunctionReturnTypeToJavaType(
     case 'ArrayTypeAnnotation':
       imports.add('com.facebook.react.bridge.WritableArray');
       return wrapOptional('WritableArray', isRequired);
+    case 'ArrayBufferTypeAnnotation':
+      throw new Error(
+        `${createErrorMessage(realTypeAnnotation.type)} ArrayBuffer is only supported for C++ TurboModules.`,
+      );
     default:
-      (realTypeAnnotation.type: 'MixedTypeAnnotation');
+      realTypeAnnotation.type as 'MixedTypeAnnotation';
       throw new Error(createErrorMessage(realTypeAnnotation.type));
   }
 }
@@ -388,7 +396,7 @@ function getFalsyReturnStatementFromReturnType(
         case 'RootTag':
           return 'return 0.0;';
         default:
-          (realTypeAnnotation.name: empty);
+          realTypeAnnotation.name as empty;
           throw new Error(createErrorMessage(realTypeAnnotation.name));
       }
     case 'VoidTypeAnnotation':
@@ -430,7 +438,7 @@ function getFalsyReturnStatementFromReturnType(
         case 'string':
           return nullable ? 'return null;' : 'return "";';
         default:
-          (validUnionType: empty);
+          validUnionType as empty;
           throw new Error(`Unsupported union member type`);
       }
     case 'StringTypeAnnotation':
@@ -443,8 +451,12 @@ function getFalsyReturnStatementFromReturnType(
       return 'return null;';
     case 'ArrayTypeAnnotation':
       return 'return null;';
+    case 'ArrayBufferTypeAnnotation':
+      throw new Error(
+        `${createErrorMessage(realTypeAnnotation.type)} ArrayBuffer is only supported for C++ TurboModules.`,
+      );
     default:
-      (realTypeAnnotation.type: 'MixedTypeAnnotation');
+      realTypeAnnotation.type as 'MixedTypeAnnotation';
       throw new Error(createErrorMessage(realTypeAnnotation.type));
   }
 }

@@ -41,6 +41,8 @@ using namespace facebook;
   void *_runtime;
 }
 
+@synthesize performanceLogger = _performanceLogger;
+
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wobjc-designated-initializers"
 - (instancetype)initWithViewRegistry:(RCTViewRegistry *)viewRegistry
@@ -213,12 +215,6 @@ using namespace facebook;
   return NO;
 }
 
-- (RCTPerformanceLogger *)performanceLogger
-{
-  [self logWarning:@"This method is not supported. Returning nil." cmd:_cmd];
-  return nil;
-}
-
 - (void)reload
 {
   [self logError:@"Please use RCTReloadCommand instead. Nooping." cmd:_cmd];
@@ -308,19 +304,6 @@ using namespace facebook;
            cmd:_cmd];
 }
 
-#ifndef RCT_REMOVE_LEGACY_ARCH
-- (void)registerModuleForFrameUpdates:(id<RCTBridgeModule>)module withModuleData:(RCTModuleData *)moduleData
-{
-  [self logError:@"This method is not supported. Nooping" cmd:_cmd];
-}
-
-- (RCTModuleData *)moduleDataForName:(NSString *)moduleName
-{
-  [self logError:@"This method is not supported. Returning nil." cmd:_cmd];
-  return nil;
-}
-#endif // RCT_REMOVE_LEGACY_ARCH
-
 - (void)registerAdditionalModuleClasses:(NSArray<Class> *)newModules
 {
   [self
@@ -387,7 +370,7 @@ using namespace facebook;
  */
 - (NSMethodSignature *)methodSignatureForSelector:(SEL)sel;
 {
-  return [RCTCxxBridge instanceMethodSignatureForSelector:sel];
+  return [RCTBridge instanceMethodSignatureForSelector:sel];
 }
 
 - (void)forwardInvocation:(NSInvocation *)invocation

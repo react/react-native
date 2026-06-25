@@ -8,8 +8,8 @@
  */
 
 import type * as React from 'react';
-import type {IPerformanceLogger} from '../Utilities/IPerformanceLogger';
 import type {ViewStyle} from '../StyleSheet/StyleSheetTypes';
+import type {IPerformanceLogger} from './IPerformanceLogger';
 
 type Task = (taskData: any) => Promise<void>;
 type TaskProvider = () => Task;

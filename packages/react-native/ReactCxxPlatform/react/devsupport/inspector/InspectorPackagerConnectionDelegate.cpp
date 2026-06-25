@@ -60,7 +60,8 @@ InspectorPackagerConnectionDelegate::WebSocket::WebSocket(
                 if (success) {
                   strongDelegate->didOpen();
                 } else {
-                  strongDelegate->didFailWithError(std::nullopt, message);
+                  // Assume the server is not running, and suppress an error log
+                  strongDelegate->didFailWithError(ECONNREFUSED, message);
                 }
               }
             });

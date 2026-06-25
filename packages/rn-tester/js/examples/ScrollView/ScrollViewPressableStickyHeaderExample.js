@@ -51,7 +51,7 @@ function renderComponent1(i: number) {
   );
 }
 
-export default function ScrollViewPressableStickyHeaderExample(): React.Node {
+export default component ScrollViewPressableStickyHeaderExample() {
   const scrollRef = useRef<$FlowFixMe>(null);
   const components = [];
   for (var i = 1; i < 10; i++) {

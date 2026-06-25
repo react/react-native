@@ -99,7 +99,7 @@ async function writeReleaseAssetUrlsToDotSlashFile(
 
 async function updateAndVerifyProviders(
   {providers: providersArg, suggestedFilename, artifactInfo, releaseTag} /*:
-  {providers: $ReadOnlyArray<DotSlashProvider>,
+  {providers: ReadonlyArray<DotSlashProvider>,
   suggestedFilename: string,
   artifactInfo: DotSlashArtifactInfo,
   releaseTag: string,}
@@ -151,8 +151,8 @@ function createReleaseAssetProvider(
 }
 
 function diffProviderArrays(
-  original /*: $ReadOnlyArray<DotSlashProvider> */,
-  updated /*: $ReadOnlyArray<DotSlashProvider> */,
+  original /*: ReadonlyArray<DotSlashProvider> */,
+  updated /*: ReadonlyArray<DotSlashProvider> */,
 ) {
   return jestDiff(original, updated, {
     aAnnotation: 'Original',

@@ -34,19 +34,21 @@ static UNNotification *kInitialNotification = nil;
 + (UNNotificationContent *)UNNotificationContent:(id)json
 {
   NSDictionary<NSString *, id> *details = [self NSDictionary:json];
-  BOOL isSilent = [RCTConvert BOOL:details[@"isSilent"]];
   UNMutableNotificationContent *content = [UNMutableNotificationContent new];
+#if !TARGET_OS_TV
+  BOOL isSilent = [RCTConvert BOOL:details[@"isSilent"]];
   content.title = [RCTConvert NSString:details[@"alertTitle"]];
   content.body = [RCTConvert NSString:details[@"alertBody"]];
   content.userInfo = [RCTConvert NSDictionary:details[@"userInfo"]];
   content.categoryIdentifier = [RCTConvert NSString:details[@"category"]];
-  if (details[@"applicationIconBadgeNumber"]) {
-    content.badge = [RCTConvert NSNumber:details[@"applicationIconBadgeNumber"]];
-  }
   if (!isSilent) {
     NSString *soundName = [RCTConvert NSString:details[@"soundName"]];
     content.sound =
         soundName ? [UNNotificationSound soundNamed:details[@"soundName"]] : [UNNotificationSound defaultSound];
+  }
+#endif
+  if (details[@"applicationIconBadgeNumber"]) {
+    content.badge = [RCTConvert NSNumber:details[@"applicationIconBadgeNumber"]];
   }
 
   return content;
@@ -133,10 +135,12 @@ static NSDictionary<NSString *, id> *RCTFormatUNNotificationContent(UNNotificati
   // Note: soundName is not set because this can't be read from UNNotificationSound.
   // Note: alertAction is no longer relevant with UNNotification
   NSMutableDictionary *formattedLocalNotification = [NSMutableDictionary dictionary];
+#if !TARGET_OS_TV
   formattedLocalNotification[@"alertTitle"] = RCTNullIfNil(content.title);
   formattedLocalNotification[@"alertBody"] = RCTNullIfNil(content.body);
   formattedLocalNotification[@"userInfo"] = RCTNullIfNil(RCTJSONClean(content.userInfo));
   formattedLocalNotification[@"category"] = content.categoryIdentifier;
+#endif
   formattedLocalNotification[@"applicationIconBadgeNumber"] = content.badge;
   formattedLocalNotification[@"remote"] = @NO;
   return formattedLocalNotification;
@@ -220,10 +224,12 @@ RCT_EXPORT_MODULE()
 {
   BOOL const isRemoteNotification = IsNotificationRemote(notification);
   if (isRemoteNotification) {
+#if !TARGET_OS_TV
     NSDictionary *userInfo = @{@"notification" : notification.request.content.userInfo};
     [[NSNotificationCenter defaultCenter] postNotificationName:RCTRemoteNotificationReceived
                                                         object:self
                                                       userInfo:userInfo];
+#endif
   } else {
     [[NSNotificationCenter defaultCenter] postNotificationName:kLocalNotificationReceived
                                                         object:self
@@ -392,6 +398,10 @@ RCT_EXPORT_METHOD(checkPermissions : (RCTResponseSenderBlock)callback)
 
 static inline NSDictionary *RCTPromiseResolveValueForUNNotificationSettings(UNNotificationSettings *_Nonnull settings)
 {
+#if TARGET_OS_TV
+  return RCTSettingsDictForUNNotificationSettings(
+      NO, settings.badgeSetting == UNNotificationSettingEnabled, NO, NO, NO, NO, settings.authorizationStatus);
+#else
   return RCTSettingsDictForUNNotificationSettings(
       settings.alertSetting == UNNotificationSettingEnabled,
       settings.badgeSetting == UNNotificationSettingEnabled,
@@ -400,6 +410,7 @@ static inline NSDictionary *RCTPromiseResolveValueForUNNotificationSettings(UNNo
       settings.lockScreenSetting == UNNotificationSettingEnabled,
       settings.notificationCenterSetting == UNNotificationSettingEnabled,
       settings.authorizationStatus);
+#endif
 }
 
 static inline NSDictionary *RCTSettingsDictForUNNotificationSettings(
@@ -479,6 +490,7 @@ RCT_EXPORT_METHOD(cancelAllLocalNotifications)
 
 RCT_EXPORT_METHOD(cancelLocalNotifications : (NSDictionary<NSString *, id> *)userInfo)
 {
+#if !TARGET_OS_TV
   UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
   [center getPendingNotificationRequestsWithCompletionHandler:^(NSArray<UNNotificationRequest *> *_Nonnull requests) {
     NSMutableArray<NSString *> *notificationIdentifiersToCancel = [NSMutableArray new];
@@ -503,6 +515,7 @@ RCT_EXPORT_METHOD(cancelLocalNotifications : (NSDictionary<NSString *, id> *)use
 
     [center removePendingNotificationRequestsWithIdentifiers:notificationIdentifiersToCancel];
   }];
+#endif
 }
 
 RCT_EXPORT_METHOD(
@@ -543,18 +556,23 @@ RCT_EXPORT_METHOD(getScheduledLocalNotifications : (RCTResponseSenderBlock)callb
 
 RCT_EXPORT_METHOD(removeAllDeliveredNotifications)
 {
+#if !TARGET_OS_TV
   UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
   [center removeAllDeliveredNotifications];
+#endif
 }
 
 RCT_EXPORT_METHOD(removeDeliveredNotifications : (NSArray<NSString *> *)identifiers)
 {
+#if !TARGET_OS_TV
   UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
   [center removeDeliveredNotificationsWithIdentifiers:identifiers];
+#endif
 }
 
 RCT_EXPORT_METHOD(getDeliveredNotifications : (RCTResponseSenderBlock)callback)
 {
+#if !TARGET_OS_TV
   UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
   [center getDeliveredNotificationsWithCompletionHandler:^(NSArray<UNNotification *> *_Nonnull notifications) {
     NSMutableArray<NSDictionary *> *formattedNotifications = [NSMutableArray new];
@@ -564,6 +582,9 @@ RCT_EXPORT_METHOD(getDeliveredNotifications : (RCTResponseSenderBlock)callback)
     }
     callback(@[ formattedNotifications ]);
   }];
+#else
+  callback(@[ @[] ]);
+#endif
 }
 
 RCT_EXPORT_METHOD(getAuthorizationStatus : (RCTResponseSenderBlock)callback)

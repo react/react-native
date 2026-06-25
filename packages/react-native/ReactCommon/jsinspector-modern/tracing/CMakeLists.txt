@@ -22,6 +22,7 @@ target_link_libraries(jsinspector_tracing
         jsinspector_network
         oscompat
         react_timing
+        react_utils
 )
 target_compile_reactnative_options(jsinspector_tracing PRIVATE)
 target_compile_options(jsinspector_tracing PRIVATE -Wpedantic)

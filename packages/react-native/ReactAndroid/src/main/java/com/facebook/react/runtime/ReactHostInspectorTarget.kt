@@ -41,7 +41,7 @@ internal class ReactHostInspectorTarget(reactHostImpl: ReactHostImpl) :
 
   external fun stopAndMaybeEmitBackgroundTrace(): Boolean
 
-  external fun stopAndDiscardBackgroundTrace()
+  external fun stopTracing()
 
   external override fun getTracingState(): TracingState
 
@@ -65,7 +65,7 @@ internal class ReactHostInspectorTarget(reactHostImpl: ReactHostImpl) :
   }
 
   override fun stopBackgroundTrace() {
-    stopAndDiscardBackgroundTrace()
+    stopTracing()
   }
 
   fun handleNativePerfIssueAdded(

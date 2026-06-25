@@ -42,6 +42,12 @@ class StyleSizeLength {
         : StyleSizeLength{FloatOptional{value}, Unit::Percent};
   }
 
+  constexpr static StyleSizeLength stretch(float fraction) {
+    return yoga::isUndefined(fraction) || yoga::isinf(fraction)
+        ? undefined()
+        : StyleSizeLength{FloatOptional{fraction}, Unit::Stretch};
+  }
+
   constexpr static StyleSizeLength ofAuto() {
     return StyleSizeLength{{}, Unit::Auto};
   }
@@ -98,7 +104,7 @@ class StyleSizeLength {
     return value_;
   }
 
-  constexpr FloatOptional resolve(float referenceLength) {
+  constexpr FloatOptional resolve(float referenceLength) const {
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wswitch-enum"

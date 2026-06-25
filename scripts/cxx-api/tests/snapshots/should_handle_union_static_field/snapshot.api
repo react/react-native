@@ -1,0 +1,4 @@
+union test::StaticUnion {
+  public int intValue;
+  public static int count;
+}

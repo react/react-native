@@ -1,0 +1,2 @@
+template <typename T>
+using test::MyT = T;

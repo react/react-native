@@ -14,7 +14,8 @@ import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 import type {Node} from 'react';
 
 import {RNTesterThemeContext} from '../../components/RNTesterTheme';
-import React, {useContext, useRef, useState} from 'react';
+import * as React from 'react';
+import {useContext, useRef, useState} from 'react';
 import {
   Button,
   DrawerLayoutAndroid,

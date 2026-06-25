@@ -10,7 +10,7 @@
 
 import * as Fantom from '@react-native/fantom';
 
-export default function isUnreachable<T: interface {}>(
+export default function isUnreachable<T extends interface {}>(
   weakRef: WeakRef<T>,
 ): boolean {
   let unreachable = true;

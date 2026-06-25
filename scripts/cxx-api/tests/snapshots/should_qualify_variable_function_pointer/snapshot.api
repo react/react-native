@@ -1,0 +1,6 @@
+struct test::Container {
+  public void(*handler)(test::Param, int);
+}
+
+struct test::Param {
+}

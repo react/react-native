@@ -21,7 +21,8 @@ void setTouchPayloadOnObject(
   object.setProperty(runtime, "screenY", touch.screenPoint.y);
   object.setProperty(runtime, "identifier", touch.identifier);
   object.setProperty(runtime, "target", touch.target);
-  object.setProperty(runtime, "timestamp", touch.timestamp * 1000);
+  object.setProperty(
+      runtime, "timestamp", touch.timeStamp.toDOMHighResTimeStamp());
   object.setProperty(runtime, "force", touch.force);
 }
 
@@ -41,7 +42,7 @@ std::vector<DebugStringConvertibleObject> getDebugProps(
       {"identifier", getDebugDescription(touch.identifier, options)},
       {"target", getDebugDescription(touch.target, options)},
       {"force", getDebugDescription(touch.force, options)},
-      {"timestamp", getDebugDescription(touch.timestamp, options)},
+      {"timeStamp", getDebugDescription(touch.timeStamp, options)},
   };
 }
 

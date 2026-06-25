@@ -17,7 +17,7 @@ import * as React from 'react';
 import {useRef, useState} from 'react';
 import {FlatList} from 'react-native';
 
-export function FlatList_onStartReached(): React.Node {
+export component FlatList_onStartReached() {
   const [output, setOutput] = useState('');
   const exampleProps = {
     onStartReached: (info: {distanceFromStart: number, ...}) =>
@@ -46,7 +46,7 @@ export function FlatList_onStartReached(): React.Node {
   );
 }
 
-export default ({
+export default {
   title: 'onStartReached',
   name: 'onStartReached',
   description:
@@ -54,4 +54,4 @@ export default ({
   render: function () {
     return <FlatList_onStartReached />;
   },
-}: RNTesterModuleExample);
+} as RNTesterModuleExample;

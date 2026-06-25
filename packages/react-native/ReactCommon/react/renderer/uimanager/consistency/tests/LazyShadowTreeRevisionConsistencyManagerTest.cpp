@@ -27,6 +27,12 @@ class FakeShadowTreeDelegate : public ShadowTreeDelegate {
   void shadowTreeDidFinishTransaction(
       std::shared_ptr<const MountingCoordinator> mountingCoordinator,
       bool /*mountSynchronously*/) const override {}
+
+  void shadowTreeDidFinishReactCommit(
+      const ShadowTree& /*shadowTree*/) const override {}
+
+  void shadowTreeDidPromoteReactRevision(
+      const ShadowTree& /*shadowTree*/) const override {}
 };
 
 class LazyShadowTreeRevisionConsistencyManagerTest : public ::testing::Test {
@@ -141,7 +147,7 @@ TEST_F(
 
   EXPECT_EQ(consistencyManager_.getCurrentRevision(0), nullptr);
 
-  consistencyManager_.updateCurrentRevision(0, newRootShadowNode);
+  consistencyManager_.updateCurrentRevision(0);
 
   EXPECT_NE(consistencyManager_.getCurrentRevision(0), nullptr);
   EXPECT_EQ(
@@ -176,7 +182,7 @@ TEST_F(
 
   EXPECT_EQ(consistencyManager_.getCurrentRevision(0), nullptr);
 
-  consistencyManager_.updateCurrentRevision(0, newRootShadowNode);
+  consistencyManager_.updateCurrentRevision(0);
 
   EXPECT_EQ(
       consistencyManager_.getCurrentRevision(0).get(), newRootShadowNode.get());
@@ -192,7 +198,7 @@ TEST_F(
             {});
       });
 
-  consistencyManager_.updateCurrentRevision(0, newRootShadowNode2);
+  consistencyManager_.updateCurrentRevision(0);
 
   EXPECT_EQ(
       consistencyManager_.getCurrentRevision(0).get(),
@@ -265,7 +271,7 @@ TEST_F(
   EXPECT_EQ(
       consistencyManager_.getCurrentRevision(0).get(), newRootShadowNode.get());
 
-  consistencyManager_.updateCurrentRevision(0, newRootShadowNode2);
+  consistencyManager_.updateCurrentRevision(0);
 
   // Updated
   EXPECT_EQ(
@@ -344,7 +350,9 @@ TEST_F(LazyShadowTreeRevisionConsistencyManagerTest, testUpdateToUnmounted) {
   EXPECT_EQ(
       consistencyManager_.getCurrentRevision(0).get(), newRootShadowNode.get());
 
-  consistencyManager_.updateCurrentRevision(0, nullptr);
+  shadowTreeRegistry_.remove(0);
+
+  consistencyManager_.updateCurrentRevision(0);
 
   // Updated
   EXPECT_EQ(consistencyManager_.getCurrentRevision(0).get(), nullptr);

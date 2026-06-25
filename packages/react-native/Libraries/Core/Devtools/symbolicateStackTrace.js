@@ -14,7 +14,7 @@ import type {StackFrame} from '../NativeExceptionsManager';
 
 const getDevServer = require('./getDevServer').default;
 
-export type CodeFrame = $ReadOnly<{
+export type CodeFrame = Readonly<{
   content: string,
   location: ?{
     row: number,
@@ -24,14 +24,14 @@ export type CodeFrame = $ReadOnly<{
   fileName: string,
 }>;
 
-export type SymbolicatedStackTrace = $ReadOnly<{
+export type SymbolicatedStackTrace = Readonly<{
   stack: Array<StackFrame>,
   codeFrame: ?CodeFrame,
 }>;
 
 export default async function symbolicateStackTrace(
   stack: Array<StackFrame>,
-  extraData?: mixed,
+  extraData?: unknown,
 ): Promise<SymbolicatedStackTrace> {
   const devServer = getDevServer();
   if (!devServer.bundleLoadedFromServer) {

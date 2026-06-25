@@ -49,9 +49,7 @@ public open class ReactDelegate {
    *
    * @return true if Fabric is enabled for this Activity, false otherwise.
    */
-  protected var isFabricEnabled: Boolean =
-      ReactNativeNewArchitectureFeatureFlags.enableFabricRenderer()
-    private set
+  protected val isFabricEnabled: Boolean = true
 
   /**
    * Do not use this constructor as it's not accounting for New Architecture at all. You should use
@@ -95,7 +93,6 @@ public open class ReactDelegate {
       launchOptions: Bundle?,
       fabricEnabled: Boolean,
   ) {
-    this.isFabricEnabled = fabricEnabled
     this.activity = activity
     this.mainComponentName = appKey
     this.launchOptions = launchOptions
@@ -252,7 +249,7 @@ public open class ReactDelegate {
             ((ReactNativeNewArchitectureFeatureFlags.enableBridgelessArchitecture() &&
                 reactHost?.devSupportManager != null) ||
                 (reactNativeHost?.hasInstance() == true &&
-                    reactNativeHost?.useDeveloperSupport == true))
+                    reactNativeHost?.getUseDeveloperSupport() == true))
     ) {
       event.startTracking()
       return true
@@ -273,7 +270,8 @@ public open class ReactDelegate {
         }
       } else {
         if (
-            reactNativeHost?.hasInstance() == true && reactNativeHost?.useDeveloperSupport == true
+            reactNativeHost?.hasInstance() == true &&
+                reactNativeHost?.getUseDeveloperSupport() == true
         ) {
           reactNativeHost?.reactInstanceManager?.showDevOptionsDialog()
           return true

@@ -22,12 +22,12 @@ import * as React from 'react';
 export type DrawerStates = 'Idle' | 'Dragging' | 'Settling';
 
 export type DrawerSlideEvent = NativeSyntheticEvent<
-  $ReadOnly<{
+  Readonly<{
     offset: number,
   }>,
 >;
 
-export type DrawerLayoutAndroidProps = $ReadOnly<{
+export type DrawerLayoutAndroidProps = Readonly<{
   ...ViewProps,
 
   /**
@@ -73,7 +73,7 @@ export type DrawerLayoutAndroidProps = $ReadOnly<{
   /**
    * Function called whenever there is an interaction with the navigation view.
    */
-  onDrawerSlide?: ?(event: DrawerSlideEvent) => mixed,
+  onDrawerSlide?: ?(event: DrawerSlideEvent) => unknown,
 
   /**
    * Function called when the drawer state has changed. The drawer can be in 3 states:
@@ -82,17 +82,17 @@ export type DrawerLayoutAndroidProps = $ReadOnly<{
    * - Settling, meaning that there was an interaction with the navigation view, and the
    * navigation view is now finishing its closing or opening animation
    */
-  onDrawerStateChanged?: ?(state: DrawerStates) => mixed,
+  onDrawerStateChanged?: ?(state: DrawerStates) => unknown,
 
   /**
    * Function called whenever the navigation view has been opened.
    */
-  onDrawerOpen?: ?() => mixed,
+  onDrawerOpen?: ?() => unknown,
 
   /**
    * Function called whenever the navigation view has been closed.
    */
-  onDrawerClose?: ?() => mixed,
+  onDrawerClose?: ?() => unknown,
 
   /**
    * The navigation view that will be rendered to the side of the screen and can be pulled in.
@@ -136,3 +136,5 @@ export interface DrawerLayoutAndroidMethods {
   ): void;
   setNativeProps(nativeProps: Object): void;
 }
+
+export type DrawerLayoutAndroidInstance = DrawerLayoutAndroidMethods;

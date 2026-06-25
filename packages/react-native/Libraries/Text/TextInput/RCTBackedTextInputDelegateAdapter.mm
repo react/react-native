@@ -11,7 +11,13 @@
 
 static void *TextFieldSelectionObservingContext = &TextFieldSelectionObservingContext;
 
-@interface RCTBackedTextFieldDelegateAdapter () <UITextFieldDelegate, UITextDropDelegate>
+@interface RCTBackedTextFieldDelegateAdapter () <
+    UITextFieldDelegate
+#if !TARGET_OS_TV
+    ,
+    UITextDropDelegate
+#endif
+    >
 @end
 
 @implementation RCTBackedTextFieldDelegateAdapter {
@@ -25,7 +31,9 @@ static void *TextFieldSelectionObservingContext = &TextFieldSelectionObservingCo
   if (self = [super init]) {
     _backedTextInputView = backedTextInputView;
     backedTextInputView.delegate = self;
+#if !TARGET_OS_TV
     backedTextInputView.textDropDelegate = self;
+#endif
 
     [_backedTextInputView addTarget:self
                              action:@selector(textFieldDidChange)
@@ -86,6 +94,15 @@ static void *TextFieldSelectionObservingContext = &TextFieldSelectionObservingCo
   if ([newText isEqualToString:string]) {
     _textDidChangeIsComing = YES;
     return YES;
+  }
+
+  // Clamp the range to the current text length to avoid NSRangeException.
+  NSUInteger textLength = _backedTextInputView.attributedText.length;
+  if (range.location > textLength) {
+    return NO;
+  }
+  if (range.location + range.length > textLength) {
+    range = NSMakeRange(range.location, textLength - range.location);
   }
 
   NSMutableAttributedString *attributedString = [_backedTextInputView.attributedText mutableCopy];
@@ -160,6 +177,8 @@ static void *TextFieldSelectionObservingContext = &TextFieldSelectionObservingCo
   [_backedTextInputView.textInputDelegate textInputDidChangeSelection];
 }
 
+#if !TARGET_OS_TV
+
 #pragma mark - UITextDropDelegate
 
 - (UITextDropEditability)textDroppableView:(UIView<UITextDroppable> *)textDroppableView
@@ -196,11 +215,19 @@ static void *TextFieldSelectionObservingContext = &TextFieldSelectionObservingCo
   }
 }
 
+#endif
+
 @end
 
 #pragma mark - RCTBackedTextViewDelegateAdapter (for UITextView)
 
-@interface RCTBackedTextViewDelegateAdapter () <UITextViewDelegate, UITextDropDelegate>
+@interface RCTBackedTextViewDelegateAdapter () <
+    UITextViewDelegate
+#if !TARGET_OS_TV
+    ,
+    UITextDropDelegate
+#endif
+    >
 @end
 
 @implementation RCTBackedTextViewDelegateAdapter {
@@ -216,7 +243,9 @@ static void *TextFieldSelectionObservingContext = &TextFieldSelectionObservingCo
   if (self = [super init]) {
     _backedTextInputView = backedTextInputView;
     backedTextInputView.delegate = self;
+#if !TARGET_OS_TV
     backedTextInputView.textDropDelegate = self;
+#endif
   }
 
   return self;
@@ -272,8 +301,13 @@ static void *TextFieldSelectionObservingContext = &TextFieldSelectionObservingCo
     return NO;
   }
 
-  if (range.location + range.length > _backedTextInputView.text.length) {
-    range = NSMakeRange(range.location, _backedTextInputView.text.length - range.location);
+  // Clamp the range to the current text length to avoid NSRangeException.
+  NSUInteger textLength = _backedTextInputView.attributedText.length;
+  if (range.location > textLength) {
+    return NO;
+  }
+  if (range.location + range.length > textLength) {
+    range = NSMakeRange(range.location, textLength - range.location);
   } else if ([newText isEqualToString:text]) {
     _textDidChangeIsComing = YES;
     return YES;
@@ -342,6 +376,8 @@ static void *TextFieldSelectionObservingContext = &TextFieldSelectionObservingCo
   [_backedTextInputView.textInputDelegate textInputDidChangeSelection];
 }
 
+#if !TARGET_OS_TV
+
 #pragma mark - UITextDropDelegate
 
 - (UITextDropEditability)textDroppableView:(UIView<UITextDroppable> *)textDroppableView
@@ -377,5 +413,7 @@ static void *TextFieldSelectionObservingContext = &TextFieldSelectionObservingCo
     return true;
   }
 }
+
+#endif
 
 @end

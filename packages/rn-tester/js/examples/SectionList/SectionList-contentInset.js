@@ -17,7 +17,7 @@ import * as React from 'react';
 import {useState} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 
-export function SectionList_contentInset(): React.Node {
+export component SectionList_contentInset() {
   const [initialContentInset, toggledContentInset] = [44, 88];
 
   const [output, setOutput] = useState(

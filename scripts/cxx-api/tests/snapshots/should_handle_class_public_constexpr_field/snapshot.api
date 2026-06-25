@@ -1,0 +1,4 @@
+class test::Clss {
+  public constexpr int value1;
+  public constexpr int value2;
+}

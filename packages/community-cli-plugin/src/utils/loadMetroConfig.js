@@ -20,7 +20,7 @@ const debug = require('debug')('ReactNative:CommunityCliPlugin');
 
 export type {Config};
 
-export type ConfigLoadingContext = $ReadOnly<{
+export type ConfigLoadingContext = Readonly<{
   root: Config['root'],
   reactNativePath: Config['reactNativePath'],
   platforms: Config['platforms'],

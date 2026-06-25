@@ -31,7 +31,7 @@ type ImageSet = {
 export function getImageSet(
   catalogDir: string,
   asset: AssetData,
-  scales: $ReadOnlyArray<number>,
+  scales: ReadonlyArray<number>,
 ): ImageSet {
   const fileName = assetPathUtils.getResourceIdentifier(asset);
   return {

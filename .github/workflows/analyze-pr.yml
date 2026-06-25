@@ -1,0 +1,58 @@
+name: Analyze Pull Request
+
+on:
+  pull_request_target:
+    types: [opened, edited, reopened, synchronize]
+
+permissions:
+  pull-requests: write
+  issues: write
+
+jobs:
+  analyze_pr:
+    runs-on: ubuntu-latest
+    if: github.repository == 'react/react-native'
+    steps:
+      - name: Check out main branch
+        uses: actions/checkout@v6
+      - name: Setup Node.js
+        uses: ./.github/actions/setup-node
+      - name: Run yarn install
+        uses: ./.github/actions/yarn-install
+      - name: Check PR body
+        id: check-pr-body
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const validatePRBody = require('./.github/workflow-scripts/validatePRBody.js');
+            const {message, status} = validatePRBody(context.payload.pull_request.body);
+            core.setOutput('message', message);
+            core.setOutput('status', status);
+      - name: Check branch target
+        id: check-branch-target
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const checkBranchTarget = require('./.github/workflow-scripts/checkBranchTarget.js');
+            const baseRef = context.payload.pull_request.base.ref;
+            const {message, status, shouldAddPickLabel} = checkBranchTarget(baseRef);
+
+            if (shouldAddPickLabel) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels: ['Pick Request'],
+              });
+            }
+
+            core.setOutput('message', message);
+            core.setOutput('status', status);
+      - name: Post PR comment
+        uses: ./.github/actions/post-pr-comment
+        with:
+          marker: '<!-- analyze-pr -->'
+          sections: '[${{ toJSON(steps.check-pr-body.outputs.message) }}, ${{ toJSON(steps.check-branch-target.outputs.message) }}]'
+      - name: Fail if validation errors
+        if: steps.check-pr-body.outputs.status == 'FAIL' || steps.check-branch-target.outputs.status == 'FAIL'
+        run: exit 1

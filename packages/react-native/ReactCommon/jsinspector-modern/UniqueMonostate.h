@@ -22,10 +22,6 @@ struct UniqueMonostate {
   {
     return true;
   }
-  constexpr bool operator!=(const UniqueMonostate<key> & /*unused*/) const noexcept
-  {
-    return false;
-  }
   constexpr bool operator<(const UniqueMonostate<key> & /*unused*/) const noexcept
   {
     return false;

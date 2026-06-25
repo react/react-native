@@ -124,8 +124,8 @@ type ReactNativeDependenciesEngineSourceType =
 */
 
 const ReactNativeDependenciesEngineSourceTypes /*: {
-  +DOWNLOAD_PREBUILD_TARBALL: "download_prebuild_tarball",
-  +DOWNLOAD_PREBUILT_NIGHTLY_TARBALL: "download_prebuilt_nightly_tarball"
+  readonly DOWNLOAD_PREBUILD_TARBALL: "download_prebuild_tarball",
+  readonly DOWNLOAD_PREBUILT_NIGHTLY_TARBALL: "download_prebuilt_nightly_tarball"
 } */ = {
   DOWNLOAD_PREBUILD_TARBALL: 'download_prebuild_tarball',
   DOWNLOAD_PREBUILT_NIGHTLY_TARBALL: 'download_prebuilt_nightly_tarball',

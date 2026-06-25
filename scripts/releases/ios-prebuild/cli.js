@@ -17,7 +17,7 @@ import type {Dependency, Destination, Platform} from './types';
 
 // CI can't use commas in cache keys, so 'macOS,variant=Mac Catalyst' was creating troubles
 // This map that converts from platforms to valid Xcodebuild destinations.
-const platformToDestination /*: $ReadOnly<{|[Platform]: Destination|}> */ = {
+const platformToDestination /*: Readonly<{|[Platform]: Destination|}> */ = {
   ios: 'iOS',
   'ios-simulator': 'iOS Simulator',
   macos: 'macOS',
@@ -92,8 +92,8 @@ async function getCLIConfiguration() /*: Promise<?{|
     build: boolean,
     compose: boolean,
   |},
-  destinations: $ReadOnlyArray<Destination>,
-  dependencies: $ReadOnlyArray<Dependency>,
+  destinations: ReadonlyArray<Destination>,
+  dependencies: ReadonlyArray<Dependency>,
   configuration: string,
   identity: ?string,
 |}> */ {

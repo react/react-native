@@ -18,6 +18,16 @@ import kotlin.math.atan
 import kotlin.math.sqrt
 import kotlin.math.tan
 
+/**
+ * Represents a CSS linear gradient for background rendering.
+ *
+ * This class implements the CSS linear-gradient specification, supporting angle-based and
+ * keyword-based directions along with color stops. It generates an Android Shader for rendering.
+ *
+ * @property direction The direction of the gradient (angle or keyword)
+ * @property colorStops The list of color stops defining the gradient colors
+ * @see <a href="https://www.w3.org/TR/css-images-3/#linear-gradients">CSS Linear Gradients</a>
+ */
 internal class LinearGradient(val direction: Direction, val colorStops: List<ColorStop>) :
     Gradient {
   companion object {
@@ -76,15 +86,39 @@ internal class LinearGradient(val direction: Direction, val colorStops: List<Col
     }
   }
 
+  /**
+   * Sealed class representing the direction of a linear gradient.
+   *
+   * Directions can be specified using explicit angles or CSS keywords.
+   */
   sealed class Direction {
+    /**
+     * Represents a direction specified as an angle in degrees.
+     *
+     * @property angle The angle in degrees (0 = to top, 90 = to right, etc.)
+     */
     class Angle(val angle: Double) : Direction()
 
+    /**
+     * Represents a direction specified using a CSS keyword.
+     *
+     * @property keyword The direction keyword
+     */
     class Keyword(val keyword: KeywordType) : Direction()
 
+    /**
+     * Enum of CSS linear gradient direction keywords.
+     *
+     * @property value The CSS string value
+     */
     enum class KeywordType(val value: String) {
+      /** Gradient runs toward the top-right corner. */
       TO_TOP_RIGHT("to top right"),
+      /** Gradient runs toward the bottom-right corner. */
       TO_BOTTOM_RIGHT("to bottom right"),
+      /** Gradient runs toward the top-left corner. */
       TO_TOP_LEFT("to top left"),
+      /** Gradient runs toward the bottom-left corner. */
       TO_BOTTOM_LEFT("to bottom left");
 
       companion object {

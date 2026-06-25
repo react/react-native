@@ -15,7 +15,7 @@ import type {PerformanceObserverCallbackOptions} from '../PerformanceObserver';
 import * as Fantom from '@react-native/fantom';
 
 function ensurePerformanceLongTaskTiming(
-  value: mixed,
+  value: unknown,
 ): PerformanceLongTaskTiming {
   if (!(value instanceof PerformanceLongTaskTiming)) {
     throw new Error(

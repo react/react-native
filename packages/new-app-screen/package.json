@@ -1,15 +1,15 @@
 {
   "name": "@react-native/new-app-screen",
-  "version": "0.84.0-main",
+  "version": "0.87.0-main",
   "description": "NewAppScreen component for React Native",
   "keywords": [
     "react-native"
   ],
-  "homepage": "https://github.com/facebook/react-native/tree/HEAD/packages/new-app-screen#readme",
-  "bugs": "https://github.com/facebook/react-native/issues",
+  "homepage": "https://github.com/react/react-native/tree/HEAD/packages/new-app-screen#readme",
+  "bugs": "https://github.com/react/react-native/issues",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/facebook/react-native.git",
+    "url": "git+https://github.com/react/react-native.git",
     "directory": "packages/new-app-screen"
   },
   "license": "MIT",
@@ -22,7 +22,7 @@
   "peerDependencies": {
     "@types/react": "^19.1.0",
     "react": "*",
-    "react-native": "*"
+    "react-native": "1000.0.0"
   },
   "peerDependenciesMeta": {
     "@types/react": {
@@ -30,6 +30,6 @@
     }
   },
   "engines": {
-    "node": ">= 20.19.4"
+    "node": "^22.13.0 || ^24.3.0 || >= 26.0.0"
   }
 }

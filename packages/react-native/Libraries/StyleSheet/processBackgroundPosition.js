@@ -12,9 +12,9 @@
 import type {BackgroundPositionValue} from './StyleSheetTypes';
 
 export default function processBackgroundPosition(
-  backgroundPosition: ?($ReadOnlyArray<BackgroundPositionValue> | string),
-): $ReadOnlyArray<BackgroundPositionValue> {
-  let result: $ReadOnlyArray<BackgroundPositionValue> = [];
+  backgroundPosition: ?(ReadonlyArray<BackgroundPositionValue> | string),
+): ReadonlyArray<BackgroundPositionValue> {
+  let result: ReadonlyArray<BackgroundPositionValue> = [];
 
   if (backgroundPosition == null) {
     return [];
@@ -33,7 +33,7 @@ export default function processBackgroundPosition(
 // https://www.w3.org/TR/css-backgrounds-3/#typedef-bg-position
 const parseBackgroundPositionCSSString = (
   backgroundPosition: string,
-): $ReadOnlyArray<BackgroundPositionValue> => {
+): ReadonlyArray<BackgroundPositionValue> => {
   const result: Array<BackgroundPositionValue> = [];
   const positions = backgroundPosition.split(',').map(s => s.trim());
 

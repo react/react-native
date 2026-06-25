@@ -8,6 +8,10 @@
 #include "RuntimeAgent.h"
 #include "SessionState.h"
 
+#include <folly/dynamic.h>
+#include <jsinspector-modern/cdp/CdpJson.h>
+
+#include <chrono>
 #include <utility>
 
 namespace facebook::react::jsinspector_modern {
@@ -27,6 +31,13 @@ RuntimeAgent::RuntimeAgent(
     if (matchesAny(executionContextDescription_, contextSelectors)) {
       targetController_.installBindingHandler(name);
     }
+  }
+
+  // Replay any scripts registered via @cdp
+  // Page.addScriptToEvaluateOnNewDocument onto this newly created runtime, in
+  // registration order, so they evaluate before the app's main bundle.
+  for (const auto& script : sessionState_.scriptsToEvaluateOnNewDocument) {
+    targetController_.installScriptToEvaluateOnNewDocument(script.source);
   }
 
   if (sessionState_.isRuntimeDomainEnabled) {
@@ -119,6 +130,21 @@ void RuntimeAgent::notifyBindingCalled(
               "name", bindingName)("payload", payload)));
 }
 
+void RuntimeAgent::notifyFastRefreshComplete() {
+  if (!sessionState_.isReactNativeApplicationDomainEnabled) {
+    return;
+  }
+  folly::dynamic params = folly::dynamic::object(
+      "timestamp",
+      std::chrono::duration_cast<std::chrono::milliseconds>(
+          std::chrono::system_clock::now().time_since_epoch())
+          .count());
+  frontendChannel_(
+      cdp::jsonNotification(
+          "ReactNativeApplication.unstable_fastRefreshComplete",
+          std::move(params)));
+}
+
 RuntimeAgent::ExportedState RuntimeAgent::getExportedState() {
   return {
       .delegateState = delegate_ ? delegate_->getExportedState() : nullptr,
@@ -155,9 +181,15 @@ RuntimeTracingAgent::RuntimeTracingAgent(
   if (state.enabledCategories.contains(tracing::Category::JavaScriptSampling)) {
     targetController_.enableSamplingProfiler();
   }
+  if (state.mode == tracing::Mode::CDP) {
+    targetController_.emitTracingStateChange(true);
+  }
 }
 
 RuntimeTracingAgent::~RuntimeTracingAgent() {
+  if (state_.mode == tracing::Mode::CDP) {
+    targetController_.emitTracingStateChange(false);
+  }
   if (state_.enabledCategories.contains(
           tracing::Category::JavaScriptSampling)) {
     targetController_.disableSamplingProfiler();

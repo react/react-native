@@ -13,22 +13,22 @@ import type {TurboModule} from '../../../../Libraries/TurboModule/RCTExport';
 import * as TurboModuleRegistry from '../../../../Libraries/TurboModule/TurboModuleRegistry';
 
 export interface Spec extends TurboModule {
-  +connect: (
+  readonly connect: (
     url: string,
     protocols: ?Array<string>,
     options: {headers?: Object},
     socketID: number,
   ) => void;
-  +send: (message: string, forSocketID: number) => void;
-  +sendBinary: (base64String: string, forSocketID: number) => void;
-  +ping: (socketID: number) => void;
-  +close: (code: number, reason: string, socketID: number) => void;
+  readonly send: (message: string, forSocketID: number) => void;
+  readonly sendBinary: (base64String: string, forSocketID: number) => void;
+  readonly ping: (socketID: number) => void;
+  readonly close: (code: number, reason: string, socketID: number) => void;
 
   // RCTEventEmitter
-  +addListener: (eventName: string) => void;
-  +removeListeners: (count: number) => void;
+  readonly addListener: (eventName: string) => void;
+  readonly removeListeners: (count: number) => void;
 }
 
-export default (TurboModuleRegistry.getEnforcing<Spec>(
+export default TurboModuleRegistry.getEnforcing<Spec>(
   'WebSocketModule',
-): Spec);
+) as Spec;

@@ -20,6 +20,7 @@ enum class DisplayType {
   None = 0,
   Flex = 1,
   Contents = 2,
+  Grid = 3,
 };
 
 enum class PositionType {

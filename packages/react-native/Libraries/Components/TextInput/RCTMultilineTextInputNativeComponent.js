@@ -40,4 +40,4 @@ const MultilineTextInputNativeComponent: HostComponent<{...}> =
   );
 
 // flowlint-next-line unclear-type:off
-export default ((MultilineTextInputNativeComponent: any): HostComponent<{...}>);
+export default MultilineTextInputNativeComponent as any as HostComponent<{...}>;

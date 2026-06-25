@@ -54,7 +54,7 @@ function CompatibilityNativeGestureHandling(): React.Node {
   );
 }
 
-export default ({
+export default {
   name: 'compatibility_native_gesture',
   title: 'Native Gesture Handling Example',
   description:
@@ -62,4 +62,4 @@ export default ({
   render(): React.Node {
     return <CompatibilityNativeGestureHandling />;
   },
-}: RNTesterModuleExample);
+} as RNTesterModuleExample;

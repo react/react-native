@@ -11,18 +11,18 @@
 'use strict';
 
 export type ResolvedAssetSource = {
-  +__packager_asset: boolean,
-  +width: ?number,
-  +height: ?number,
-  +uri: string,
-  +scale: number,
+  readonly __packager_asset: boolean,
+  readonly width: ?number,
+  readonly height: ?number,
+  readonly uri: string,
+  readonly scale: number,
 };
 
 // From @react-native/assets-registry
 type AssetDestPathResolver = 'android' | 'generic';
 
 // From @react-native/assets-registry
-type PackagerAsset = $ReadOnly<{
+type PackagerAsset = Readonly<{
   __packager_asset: boolean,
   fileSystemLocation: string,
   httpServerLocation: string,

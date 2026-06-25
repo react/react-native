@@ -18,7 +18,8 @@ import RNTesterText from '../../components/RNTesterText';
 import checkImageSource from './check.png';
 import mixedCheckboxImageSource from './mixed.png';
 import uncheckImageSource from './uncheck.png';
-import React, {createRef, useEffect, useRef, useState} from 'react';
+import * as React from 'react';
+import {createRef, useEffect, useRef, useState} from 'react';
 import {
   AccessibilityInfo,
   Alert,
@@ -1508,7 +1509,7 @@ class EnabledExample extends React.Component<
     isEnabled: false,
   };
   _subscription: EventSubscription;
-  componentDidMount(): null | Promise<mixed> {
+  componentDidMount(): null | Promise<unknown> {
     this._subscription = AccessibilityInfo.addEventListener(
       this.props.eventListener,
       this._handleToggled,

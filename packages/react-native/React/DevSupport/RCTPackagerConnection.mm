@@ -64,22 +64,24 @@ struct Registration {
 
 static RCTReconnectingWebSocket *socketForLocation(NSString *const serverHostPort, NSString *scheme)
 {
-  NSString *serverHost;
-  NSString *serverPort;
-  NSArray *locationComponents = [serverHostPort componentsSeparatedByString:@":"];
-  if ([locationComponents count] > 0) {
-    serverHost = locationComponents[0];
-  }
-  if ([locationComponents count] > 1) {
-    serverPort = locationComponents[1];
-  }
   if (![scheme length]) {
     scheme = @"http";
   }
+
+  NSString *location = serverHostPort;
+  if (![location length]) {
+    location = @"localhost";
+  }
+
+  NSString *locationURLString = [location rangeOfString:@"://"].location == NSNotFound
+      ? [NSString stringWithFormat:@"%@://%@/", scheme, location]
+      : location;
+  NSURLComponents *locationURL = [NSURLComponents componentsWithString:locationURLString];
+
   NSURLComponents *const components = [NSURLComponents new];
-  components.host = serverHost ?: @"localhost";
+  components.host = locationURL.host ?: @"localhost";
   components.scheme = scheme;
-  components.port = serverPort ? @(serverPort.integerValue) : @(kRCTBundleURLProviderDefaultPort);
+  components.port = locationURL.port ?: @(kRCTBundleURLProviderDefaultPort);
   components.path = @"/message";
   components.queryItems = @[ [NSURLQueryItem queryItemWithName:@"role" value:RCTPlatformName] ];
   static dispatch_queue_t queue;

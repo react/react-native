@@ -34,9 +34,9 @@ type ReducedProps<TProps> = {
   collapsable: boolean,
   ...
 };
-type CallbackRef<T> = T => mixed;
+type CallbackRef<T> = T => unknown;
 
-export type AnimatedPropsHook = <TProps: {...}, TInstance>(
+export type AnimatedPropsHook = <TProps extends {...}, TInstance>(
   props: TProps,
 ) => [ReducedProps<TProps>, CallbackRef<TInstance | null>];
 
@@ -55,7 +55,7 @@ export default function createAnimatedPropsHook(
   const useNativePropsInFabric =
     ReactNativeFeatureFlags.shouldUseSetNativePropsInFabric();
 
-  return function useAnimatedProps<TProps: {...}, TInstance>(
+  return function useAnimatedProps<TProps extends {...}, TInstance>(
     props: TProps,
   ): [ReducedProps<TProps>, CallbackRef<TInstance | null>] {
     const [, scheduleUpdate] = useReducer<number, void>(count => count + 1, 0);

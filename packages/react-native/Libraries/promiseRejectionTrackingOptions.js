@@ -12,8 +12,15 @@ import typeof {enable} from 'promise/setimmediate/rejection-tracking';
 
 import ExceptionsManager from './Core/ExceptionsManager';
 
-let rejectionTrackingOptions: $NonMaybeType<Parameters<enable>[0]> = {
+const rejectionTrackingOptions: NonNullable<Parameters<enable>[0]> = {
   allRejections: true,
+  onHandled: id => {
+    const warning =
+      `Promise rejection handled (id: ${id})\n` +
+      'This means you can ignore any previous messages of the form ' +
+      `"Uncaught (in promise, id: ${id})"`;
+    console.warn(warning);
+  },
   onUnhandled: (id, rejection) => {
     let message: string;
 
@@ -32,7 +39,7 @@ let rejectionTrackingOptions: $NonMaybeType<Parameters<enable>[0]> = {
         message =
           typeof rejection === 'string'
             ? rejection
-            : JSON.stringify((rejection: $FlowFixMe));
+            : JSON.stringify(rejection as $FlowFixMe);
       }
     }
 
@@ -45,13 +52,6 @@ let rejectionTrackingOptions: $NonMaybeType<Parameters<enable>[0]> = {
       ),
       false /* isFatal */,
     );
-  },
-  onHandled: id => {
-    const warning =
-      `Promise rejection handled (id: ${id})\n` +
-      'This means you can ignore any previous messages of the form ' +
-      `"Uncaught (in promise, id: ${id})"`;
-    console.warn(warning);
   },
 };
 

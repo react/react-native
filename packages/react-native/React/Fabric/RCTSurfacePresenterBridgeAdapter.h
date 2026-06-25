@@ -15,6 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class RCTSurfacePresenter;
 @class RCTBridge;
 
+#ifndef RCT_REMOVE_LEGACY_ARCH
 facebook::react::RuntimeExecutor RCTRuntimeExecutorFromBridge(RCTBridge *bridge);
 
 /*
@@ -39,5 +40,6 @@ facebook::react::RuntimeExecutor RCTRuntimeExecutorFromBridge(RCTBridge *bridge)
 @property (nonatomic, weak) RCTBridge *bridge;
 
 @end
+#endif
 
 NS_ASSUME_NONNULL_END

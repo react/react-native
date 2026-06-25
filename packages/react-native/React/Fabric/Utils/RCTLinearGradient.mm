@@ -24,18 +24,13 @@ using namespace facebook::react;
   CGPoint startPoint;
   CGPoint endPoint;
 
-  if (direction.type == GradientDirectionType::Angle) {
-    CGFloat angle = std::get<Float>(direction.value);
-    std::tie(startPoint, endPoint) = getPointsFromAngle(angle, size);
-  } else if (direction.type == GradientDirectionType::Keyword) {
-    auto keyword = std::get<GradientKeyword>(direction.value);
-    CGFloat angle = getAngleForKeyword(keyword, size);
+  if (std::holds_alternative<Float>(direction)) {
+    CGFloat angle = std::get<Float>(direction);
     std::tie(startPoint, endPoint) = getPointsFromAngle(angle, size);
   } else {
-    // Default to top-to-bottom gradient
-    CGFloat centerX = size.width / 2;
-    startPoint = CGPointMake(centerX, 0.0);
-    endPoint = CGPointMake(centerX, size.height);
+    auto keyword = std::get<GradientKeyword>(direction);
+    CGFloat angle = getAngleForKeyword(keyword, size);
+    std::tie(startPoint, endPoint) = getPointsFromAngle(angle, size);
   }
 
   CGFloat dx = endPoint.x - startPoint.x;

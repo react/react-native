@@ -30,15 +30,15 @@ import type {DotSlashProvider, DotSlashHttpProvider, DotSlashArtifactInfo} from 
 import type {IOctokit} from './utils/octokit-utils';
 
 type GitHubReleaseAsset = {id: string, ...};
-type ReleaseAssetMap = $ReadOnlyMap<string, GitHubReleaseAsset>;
+type ReleaseAssetMap = ReadonlyMap<string, GitHubReleaseAsset>;
 
-type ReleaseInfo = $ReadOnly<{
+type ReleaseInfo = Readonly<{
   releaseId: string,
   releaseTag: string,
   existingAssetsByName: ReleaseAssetMap,
 }>;
 
-type ExecutionOptions = $ReadOnly<{
+type ExecutionOptions = Readonly<{
   force: boolean,
   dryRun: boolean,
 }>;
@@ -180,7 +180,7 @@ async function uploadReleaseAssetsForDotSlashFile(
  * Given a description of a DotSlash artifact for a particular platform,
  * infers the upstream URL ( = where the binary is currently available) and
  * release asset URL ( = where the binary will be hosted after the release),
- * then downloads the asset from the the upstream URL and uploads it to GitHub
+ * then downloads the asset from the upstream URL and uploads it to GitHub
  * at the desired URL.
  */
 async function fetchUpstreamAssetAndUploadToRelease(
@@ -191,7 +191,7 @@ async function fetchUpstreamAssetAndUploadToRelease(
     artifactInfo,
     dotslashFilename,
   } /*: {
-  providers: $ReadOnlyArray<DotSlashProvider>,
+  providers: ReadonlyArray<DotSlashProvider>,
   suggestedFilename: string,
   artifactInfo: DotSlashArtifactInfo,
   dotslashFilename: string,

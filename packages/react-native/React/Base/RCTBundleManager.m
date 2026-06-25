@@ -102,9 +102,6 @@
 @end
 
 @implementation RCTBundleManager {
-#ifndef RCT_REMOVE_LEGACY_ARCH
-  __weak RCTBridge *_bridge;
-#endif // RCT_REMOVE_LEGACY_ARCH
   RCTBridgelessBundleURLGetter _bridgelessBundleURLGetter;
   RCTBridgelessBundleURLSetter _bridgelessBundleURLSetter;
   RCTBridgelessBundleURLGetter _bridgelessBundleURLDefaultGetter;
@@ -124,13 +121,6 @@
   return [self initWithBundleConfig:[RCTBundleConfiguration defaultConfiguration]];
 }
 
-#ifndef RCT_REMOVE_LEGACY_ARCH
-- (void)setBridge:(RCTBridge *)bridge
-{
-  _bridge = bridge;
-}
-#endif // RCT_REMOVE_LEGACY_ARCH
-
 - (void)setBridgelessBundleURLGetter:(RCTBridgelessBundleURLGetter)getter
                            andSetter:(RCTBridgelessBundleURLSetter)setter
                     andDefaultGetter:(RCTBridgelessBundleURLGetter)defaultGetter
@@ -142,13 +132,6 @@
 
 - (void)setBundleURL:(NSURL *)bundleURL
 {
-#ifndef RCT_REMOVE_LEGACY_ARCH
-  if (_bridge) {
-    _bridge.bundleURL = bundleURL;
-    return;
-  }
-#endif // RCT_REMOVE_LEGACY_ARCH
-
   RCTAssert(
       _bridgelessBundleURLSetter != nil,
       @"RCTBundleManager: In bridgeless mode, RCTBridgelessBundleURLSetter must not be nil.");
@@ -157,12 +140,6 @@
 
 - (NSURL *)bundleURL
 {
-#ifndef RCT_REMOVE_LEGACY_ARCH
-  if (_bridge) {
-    return _bridge.bundleURL;
-  }
-#endif // RCT_REMOVE_LEGACY_ARCH
-
   RCTAssert(
       _bridgelessBundleURLGetter != nil,
       @"RCTBundleManager: In bridgeless mode, RCTBridgelessBundleURLGetter must not be nil.");
@@ -178,14 +155,6 @@
 
 - (void)resetBundleURL
 {
-#ifndef RCT_REMOVE_LEGACY_ARCH
-  RCTBridge *strongBridge = _bridge;
-  if (strongBridge) {
-    strongBridge.bundleURL = [strongBridge.delegate sourceURLForBridge:strongBridge];
-    return;
-  }
-#endif // RCT_REMOVE_LEGACY_ARCH
-
   RCTAssert(
       _bridgelessBundleURLDefaultGetter != nil,
       @"RCTBundleManager: In bridgeless mode, default RCTBridgelessBundleURLGetter must not be nil.");

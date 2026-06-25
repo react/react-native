@@ -8,7 +8,7 @@
 declare module 'listr2' {
   declare export type TaskResult<
     ContextT = {__proto__: null},
-    ReturnT = mixed,
+    ReturnT = unknown,
   > =
     | ReturnT
     | Promise<ReturnT>
@@ -35,7 +35,7 @@ declare module 'listr2' {
 
   declare export type TaskSpec<
     ContextT = {__proto__: null},
-    ReturnT = mixed,
+    ReturnT = unknown,
   > = {
     title: string,
     task: TaskFn<ContextT, ReturnT>,
@@ -55,7 +55,7 @@ declare module 'listr2' {
       options?: Options,
     ): void;
     add<ReturnT>(task: TaskSpec<ContextT, ReturnT>): this;
-    add<ReturnT>(tasks: $ReadOnlyArray<TaskSpec<ContextT, ReturnT>>): this;
+    add<ReturnT>(tasks: ReadonlyArray<TaskSpec<ContextT, ReturnT>>): this;
     run(ctx?: ContextT): Promise<ContextT>;
   }
 }

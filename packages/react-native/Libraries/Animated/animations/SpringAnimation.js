@@ -19,7 +19,7 @@ import * as SpringConfig from '../SpringConfig';
 import Animation from './Animation';
 import invariant from 'invariant';
 
-export type SpringAnimationConfig = $ReadOnly<{
+export type SpringAnimationConfig = Readonly<{
   ...AnimationConfig,
   toValue:
     | number
@@ -44,7 +44,7 @@ export type SpringAnimationConfig = $ReadOnly<{
   restSpeedThreshold?: number,
   velocity?:
     | number
-    | $ReadOnly<{
+    | Readonly<{
         x: number,
         y: number,
         ...
@@ -60,7 +60,7 @@ export type SpringAnimationConfig = $ReadOnly<{
   ...
 }>;
 
-export type SpringAnimationConfigSingle = $ReadOnly<{
+export type SpringAnimationConfigSingle = Readonly<{
   ...AnimationConfig,
   toValue: number,
   overshootClamping?: boolean,
@@ -78,7 +78,7 @@ export type SpringAnimationConfigSingle = $ReadOnly<{
   ...
 }>;
 
-opaque type SpringAnimationInternalState = $ReadOnly<{
+opaque type SpringAnimationInternalState = Readonly<{
   lastPosition: number,
   lastVelocity: number,
   lastTime: number,
@@ -168,7 +168,7 @@ export default class SpringAnimation extends Animation {
     invariant(this._mass > 0, 'Mass value must be greater than 0');
   }
 
-  __getNativeAnimationConfig(): $ReadOnly<{
+  __getNativeAnimationConfig(): Readonly<{
     damping: number,
     initialVelocity: number,
     iterations: number,
@@ -225,6 +225,7 @@ export default class SpringAnimation extends Animation {
 
     const start = () => {
       const useNativeDriver = this.__startAnimationIfNative(animatedValue);
+      // TODO: T274006331 - Remove js-only animation once shared backend is fully rolled out
       if (!useNativeDriver) {
         this.onUpdate();
       }

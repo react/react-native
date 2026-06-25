@@ -22,24 +22,28 @@ import com.facebook.react.ReactActivityDelegate
 public open class DefaultReactActivityDelegate(
     activity: ReactActivity,
     mainComponentName: String,
-    private val fabricEnabled: Boolean = false,
 ) : ReactActivityDelegate(activity, mainComponentName) {
 
   @Deprecated(
-      message =
-          "Creating DefaultReactActivityDelegate with both fabricEnabled and " +
-              "concurrentReactEnabled is deprecated. Please pass only one boolean value that will" +
-              " be used for both flags",
+      message = "Creating DefaultReactActivityDelegate with flags is deprecated.",
       level = DeprecationLevel.WARNING,
-      replaceWith =
-          ReplaceWith("DefaultReactActivityDelegate(activity, mainComponentName, fabricEnabled)"),
+      replaceWith = ReplaceWith("DefaultReactActivityDelegate(activity, mainComponentName)"),
   )
   public constructor(
       activity: ReactActivity,
       mainComponentName: String,
-      fabricEnabled: Boolean,
+      @Suppress("UNUSED_PARAMETER") fabricEnabled: Boolean,
       @Suppress("UNUSED_PARAMETER") concurrentReactEnabled: Boolean,
-  ) : this(activity, mainComponentName, fabricEnabled)
+  ) : this(activity, mainComponentName)
 
-  override fun isFabricEnabled(): Boolean = fabricEnabled
+  @Deprecated(
+      message = "Creating DefaultReactActivityDelegate with flags is deprecated.",
+      level = DeprecationLevel.WARNING,
+      replaceWith = ReplaceWith("DefaultReactActivityDelegate(activity, mainComponentName)"),
+  )
+  public constructor(
+      activity: ReactActivity,
+      mainComponentName: String,
+      @Suppress("UNUSED_PARAMETER") fabricEnabled: Boolean,
+  ) : this(activity, mainComponentName)
 }

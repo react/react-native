@@ -8,8 +8,7 @@
  * @flow strict-local
  */
 
-import type {HostInstance} from 'react-native';
-import type {PublicScrollViewInstance} from 'react-native/Libraries/Components/ScrollView/ScrollView';
+import type {HostInstance, ScrollViewInstance} from 'react-native';
 import type {ViewStyleProp} from 'react-native/Libraries/StyleSheet/StyleSheet';
 import type IntersectionObserverType from 'react-native/src/private/webapis/intersectionobserver/IntersectionObserver';
 
@@ -37,13 +36,13 @@ export function render(): React.Node {
 /**
  * Showcase threshold of two overlapping elements
  */
-function IntersectionObserverExplicitRootScrollExample(): React.Node {
+component IntersectionObserverExplicitRootScrollExample() {
   const theme = useContext(RNTesterThemeContext);
   const [observationRoot, setObservationRoot] = useState<?HostInstance>(null);
 
   const [showMargin, setShowMargin] = useState(true);
-  const roofRef: React.RefSetter<PublicScrollViewInstance> = useCallback(
-    (rootNode: ?PublicScrollViewInstance) => {
+  const roofRef: React.RefSetter<ScrollViewInstance> = useCallback(
+    (rootNode: ?ScrollViewInstance) => {
       if (rootNode != null) {
         setObservationRoot(rootNode);
       }
@@ -65,6 +64,7 @@ function IntersectionObserverExplicitRootScrollExample(): React.Node {
       }}
       ref={roofRef}>
       <Button
+        testID="toggle_margin"
         title={`Click to ${showMargin ? 'remove' : 'add'} margin`}
         onPress={() => {
           setShowMargin(show => !show);
@@ -148,6 +148,12 @@ function ListItem(props: {
         props.style,
       ]}
       ref={itemRef}>
+      {intersectionRatio >= props.threshold ? (
+        <Text>Intersecting by threshold</Text>
+      ) : null}
+      {intersectionRootRatio >= (props.rootThreshold ?? 1) ? (
+        <Text>Intersecting by rootThreshold</Text>
+      ) : null}
       <Text style={styles.description}>{props.description}</Text>
       {props.rootThreshold != null && (
         <Text>rootThreshold: {props.rootThreshold}</Text>

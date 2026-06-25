@@ -8,7 +8,9 @@
 package com.facebook.react.defaults
 
 import com.facebook.soloader.SoLoader
+import com.facebook.soloader.annotation.SoLoaderLibrary
 
+@SoLoaderLibrary("react_newarchdefaults")
 internal object DefaultSoLoader {
   @Synchronized
   @JvmStatic

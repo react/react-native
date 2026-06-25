@@ -38,7 +38,7 @@ export type ViewabilityConfigCallbackPair = {
 export type ViewabilityConfigCallbackPairs =
   Array<ViewabilityConfigCallbackPair>;
 
-export type ViewabilityConfig = $ReadOnly<{
+export type ViewabilityConfig = Readonly<{
   /**
    * Minimum amount of time (in milliseconds) that an item must be physically viewable before the
    * viewability callback will be fired. A high number means that scrolling through content without

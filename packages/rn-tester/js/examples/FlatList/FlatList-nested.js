@@ -76,7 +76,7 @@ function reducer(state: ItemsState, action: ItemsAction): ItemsState {
   return state;
 }
 
-function NestedListExample(): React.Node {
+component NestedListExample() {
   const [outer, dispatchOuter] = useReducer(reducer, initialItemsState);
   const [inner, dispatchInner] = useReducer(reducer, initialItemsState);
   const sortedInnerViewableItems = useMemo(
@@ -152,18 +152,12 @@ function NestedListExample(): React.Node {
   );
 }
 
-function OuterItemRenderer({
-  index,
-  item,
-  dispatchOuter,
-  dispatchInner,
-}: {
+component OuterItemRenderer(
   index: number,
   item: OuterItem,
   dispatchOuter: ItemsAction => void,
   dispatchInner: ItemsAction => void,
-  ...
-}) {
+) {
   useEffect(() => {
     dispatchOuter({
       type: 'add-rendered',
@@ -262,14 +256,7 @@ function OuterItemRenderer({
   }
 }
 
-function InnerItemRenderer({
-  item,
-  dispatchInner,
-}: {
-  item: number,
-  dispatchInner: ItemsAction => void,
-  ...
-}) {
+component InnerItemRenderer(item: number, dispatchInner: ItemsAction => void) {
   useEffect(() => {
     dispatchInner({
       type: 'add-rendered',
@@ -342,9 +329,9 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ({
+export default {
   title: 'Nested',
   description: 'Nested FlatLists of same and opposite orientation',
   name: 'nested',
   render: NestedListExample,
-}: RNTesterModuleExample);
+} as RNTesterModuleExample;

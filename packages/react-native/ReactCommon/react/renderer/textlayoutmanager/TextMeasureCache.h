@@ -66,6 +66,10 @@ class TextMeasureCacheKey final {
   AttributedString attributedString{};
   ParagraphAttributes paragraphAttributes{};
   LayoutConstraints layoutConstraints{};
+  // The measured size depends on the pixel scale factor because layout metrics
+  // are rounded to the pixel grid. Two otherwise-identical measures at different
+  // densities are not interchangeable, so the scale factor is part of the key.
+  Float pointScaleFactor{};
 };
 
 // The Key type that is used for Line Measure Cache.
@@ -87,6 +91,9 @@ class PreparedTextCacheKey final {
   AttributedString attributedString{};
   ParagraphAttributes paragraphAttributes{};
   LayoutConstraints layoutConstraints{};
+  // A prepared layout is rounded to the pixel grid, so it is only reusable at
+  // the pixel scale factor it was laid out at.
+  Float pointScaleFactor{};
 };
 
 /*
@@ -130,7 +137,8 @@ inline bool areTextAttributesEquivalentLayoutWise(const TextAttributes &lhs, con
              rhs.dynamicTypeRamp,
              rhs.alignment) &&
       floatEquality(lhs.fontSize, rhs.fontSize) && floatEquality(lhs.fontSizeMultiplier, rhs.fontSizeMultiplier) &&
-      floatEquality(lhs.letterSpacing, rhs.letterSpacing) && floatEquality(lhs.lineHeight, rhs.lineHeight);
+      floatEquality(lhs.letterSpacing, rhs.letterSpacing) && floatEquality(lhs.lineHeight, rhs.lineHeight) &&
+      floatEquality(lhs.maxFontSizeMultiplier, rhs.maxFontSizeMultiplier);
 }
 
 inline size_t textAttributesHashLayoutWise(const TextAttributes &textAttributes)
@@ -145,6 +153,7 @@ inline size_t textAttributesHashLayoutWise(const TextAttributes &textAttributes)
       textAttributes.fontStyle,
       textAttributes.fontVariant,
       textAttributes.allowFontScaling,
+      textAttributes.maxFontSizeMultiplier,
       textAttributes.dynamicTypeRamp,
       textAttributes.letterSpacing,
       textAttributes.lineHeight,
@@ -250,7 +259,8 @@ inline size_t attributedStringHashDisplayWise(const AttributedString &attributed
 inline bool operator==(const TextMeasureCacheKey &lhs, const TextMeasureCacheKey &rhs)
 {
   return areAttributedStringsEquivalentLayoutWise(lhs.attributedString, rhs.attributedString) &&
-      lhs.paragraphAttributes == rhs.paragraphAttributes && lhs.layoutConstraints == rhs.layoutConstraints;
+      lhs.paragraphAttributes == rhs.paragraphAttributes && lhs.layoutConstraints == rhs.layoutConstraints &&
+      floatEquality(lhs.pointScaleFactor, rhs.pointScaleFactor);
 }
 
 inline bool operator==(const LineMeasureCacheKey &lhs, const LineMeasureCacheKey &rhs)
@@ -262,7 +272,8 @@ inline bool operator==(const LineMeasureCacheKey &lhs, const LineMeasureCacheKey
 inline bool operator==(const PreparedTextCacheKey &lhs, const PreparedTextCacheKey &rhs)
 {
   return areAttributedStringsEquivalentDisplayWise(lhs.attributedString, rhs.attributedString) &&
-      lhs.paragraphAttributes == rhs.paragraphAttributes && lhs.layoutConstraints == rhs.layoutConstraints;
+      lhs.paragraphAttributes == rhs.paragraphAttributes && lhs.layoutConstraints == rhs.layoutConstraints &&
+      floatEquality(lhs.pointScaleFactor, rhs.pointScaleFactor);
 }
 
 } // namespace facebook::react
@@ -274,7 +285,10 @@ struct hash<facebook::react::TextMeasureCacheKey> {
   size_t operator()(const facebook::react::TextMeasureCacheKey &key) const
   {
     return facebook::react::hash_combine(
-        attributedStringHashLayoutWise(key.attributedString), key.paragraphAttributes, key.layoutConstraints);
+        attributedStringHashLayoutWise(key.attributedString),
+        key.paragraphAttributes,
+        key.layoutConstraints,
+        key.pointScaleFactor);
   }
 };
 
@@ -292,7 +306,10 @@ struct hash<facebook::react::PreparedTextCacheKey> {
   size_t operator()(const facebook::react::PreparedTextCacheKey &key) const
   {
     return facebook::react::hash_combine(
-        attributedStringHashDisplayWise(key.attributedString), key.paragraphAttributes, key.layoutConstraints);
+        attributedStringHashDisplayWise(key.attributedString),
+        key.paragraphAttributes,
+        key.layoutConstraints,
+        key.pointScaleFactor);
   }
 };
 

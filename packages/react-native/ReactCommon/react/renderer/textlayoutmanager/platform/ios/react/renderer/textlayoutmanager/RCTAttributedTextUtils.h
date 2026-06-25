@@ -19,6 +19,17 @@ NSString *const RCTAttributedStringEventEmitterKey = @"EventEmitter";
 // String representation of either `role` or `accessibilityRole`
 NSString *const RCTTextAttributesAccessibilityRoleAttributeName = @"AccessibilityRole";
 
+// Custom attribute key for ranges whose decoration line cannot be rendered
+// faithfully via UIKit's `NSUnderlineStyle` pattern bits (wavy has no native
+// equivalent; dotted/dashed don't match the geometry browsers use). These
+// ranges are painted by `RCTTextLayoutManager`'s drawing pass.
+//
+// Stored as an NSDictionary:
+//   @"lines": NSArray of @"underline" / @"line-through"
+//   @"color": UIColor stroke color
+//   @"style": NSString — @"wavy" | @"dotted" | @"dashed"
+NSString *const RCTCustomDecorationAttributeName = @"RCTCustomDecoration";
+
 /*
  * Creates `NSTextAttributes` from given `facebook::react::TextAttributes`
  */
@@ -52,17 +63,17 @@ BOOL RCTIsAttributedStringEffectivelySame(
     NSDictionary<NSAttributedStringKey, id> *insensitiveAttributes,
     const facebook::react::TextAttributes &baseTextAttributes);
 
-static inline NSData *RCTWrapEventEmitter(const facebook::react::SharedEventEmitter &eventEmitter)
+static inline NSData *RCTWrapEventEmitter(const std::shared_ptr<const facebook::react::EventEmitter> &eventEmitter)
 {
   auto eventEmitterPtr = new std::weak_ptr<const facebook::react::EventEmitter>(eventEmitter);
   return [[NSData alloc] initWithBytesNoCopy:eventEmitterPtr
                                       length:sizeof(eventEmitterPtr)
                                  deallocator:^(void *ptrToDelete, NSUInteger) {
-                                   delete (std::weak_ptr<facebook::react::EventEmitter> *)ptrToDelete;
+                                   delete (std::weak_ptr<const facebook::react::EventEmitter> *)ptrToDelete;
                                  }];
 }
 
-static inline facebook::react::SharedEventEmitter RCTUnwrapEventEmitter(NSData *data)
+static inline std::shared_ptr<const facebook::react::EventEmitter> RCTUnwrapEventEmitter(NSData *data)
 {
   if (data.length == 0) {
     return nullptr;

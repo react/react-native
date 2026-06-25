@@ -12,46 +12,20 @@ import StyleSheet from '../../StyleSheet/StyleSheet';
 import LayoutConformanceNativeComponent from './LayoutConformanceNativeComponent';
 import * as React from 'react';
 
-export type LayoutConformanceProps = $ReadOnly<{
+export type LayoutConformanceProps = Readonly<{
   /**
    * strict: Layout in accordance with W3C spec, even when breaking
    * compatibility: Layout with the same behavior as previous versions of React Native
    */
   mode: 'strict' | 'compatibility',
-
   children: React.Node,
 }>;
 
-// We want a graceful fallback for apps using legacy arch, but need to know
-// ahead of time whether the component is available, so we test for global.
-// This does not correctly handle mixed arch apps (which is okay, since we just
-// degrade the error experience).
-const isFabricUIManagerInstalled = global?.nativeFabricUIManager != null;
-
-function LayoutConformance(props: LayoutConformanceProps): React.Node {
+export default component LayoutConformance(...props: LayoutConformanceProps) {
   return (
     <LayoutConformanceNativeComponent {...props} style={styles.container} />
   );
 }
-
-function UnimplementedLayoutConformance(
-  props: LayoutConformanceProps,
-): React.Node {
-  if (__DEV__) {
-    const warnOnce = require('../../Utilities/warnOnce').default;
-
-    warnOnce(
-      'layoutconformance-unsupported',
-      '"LayoutConformance" is only supported in the New Architecture',
-    );
-  }
-
-  return props.children;
-}
-
-export default (isFabricUIManagerInstalled
-  ? LayoutConformance
-  : UnimplementedLayoutConformance) as component(...LayoutConformanceProps);
 
 const styles = StyleSheet.create({
   container: {

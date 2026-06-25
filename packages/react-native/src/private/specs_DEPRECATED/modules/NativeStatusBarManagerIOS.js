@@ -13,16 +13,16 @@ import type {TurboModule} from '../../../../Libraries/TurboModule/RCTExport';
 import * as TurboModuleRegistry from '../../../../Libraries/TurboModule/TurboModuleRegistry';
 
 export interface Spec extends TurboModule {
-  +getConstants: () => {
-    +HEIGHT: number,
-    +DEFAULT_BACKGROUND_COLOR?: number,
+  readonly getConstants: () => {
+    readonly HEIGHT: number,
+    readonly DEFAULT_BACKGROUND_COLOR?: number,
   };
 
   // TODO(T47754272) Can we remove this method?
-  +getHeight: (callback: (result: {height: number}) => void) => void;
-  +setNetworkActivityIndicatorVisible: (visible: boolean) => void;
-  +addListener: (eventType: string) => void;
-  +removeListeners: (count: number) => void;
+  readonly getHeight: (callback: (result: {height: number}) => void) => void;
+  readonly setNetworkActivityIndicatorVisible: (visible: boolean) => void;
+  readonly addListener: (eventType: string) => void;
+  readonly removeListeners: (count: number) => void;
 
   /**
    *  - statusBarStyles can be:
@@ -30,11 +30,11 @@ export interface Spec extends TurboModule {
    *    - 'dark-content'
    *    - 'light-content'
    */
-  +setStyle: (statusBarStyle?: ?string, animated: boolean) => void;
+  readonly setStyle: (statusBarStyle?: ?string, animated: boolean) => void;
   /**
    *  - withAnimation can be: 'none' | 'fade' | 'slide'
    */
-  +setHidden: (hidden: boolean, withAnimation: string) => void;
+  readonly setHidden: (hidden: boolean, withAnimation: string) => void;
 }
 
 const NativeModule = TurboModuleRegistry.getEnforcing<Spec>('StatusBarManager');
@@ -42,8 +42,8 @@ let constants = null;
 
 const NativeStatusBarManager = {
   getConstants(): {
-    +HEIGHT: number,
-    +DEFAULT_BACKGROUND_COLOR?: number,
+    readonly HEIGHT: number,
+    readonly DEFAULT_BACKGROUND_COLOR?: number,
   } {
     if (constants == null) {
       constants = NativeModule.getConstants();

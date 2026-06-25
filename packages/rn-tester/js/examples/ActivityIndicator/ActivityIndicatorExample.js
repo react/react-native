@@ -11,7 +11,8 @@
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 import type {Node} from 'react';
 
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import * as React from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import {ActivityIndicator, StyleSheet, View} from 'react-native';
 
 function ToggleAnimatingActivityIndicator() {
@@ -59,7 +60,7 @@ const styles = StyleSheet.create({
   },
 });
 
-exports.displayName = (undefined: ?string);
+exports.displayName = undefined as ?string;
 exports.category = 'UI';
 exports.framework = 'React';
 exports.title = 'ActivityIndicator';
@@ -69,6 +70,7 @@ exports.description = 'Animated loading indicators.';
 exports.examples = [
   {
     title: 'Default (small, white)',
+    name: 'default',
     render(): Node {
       return (
         <ActivityIndicator
@@ -93,6 +95,7 @@ exports.examples = [
   },
   {
     title: 'Custom colors',
+    name: 'custom-colors',
     render(): Node {
       return (
         <View style={styles.horizontal}>

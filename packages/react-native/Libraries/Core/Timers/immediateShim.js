@@ -55,7 +55,7 @@ export function setImmediate(callback: Function, ...args: any): number {
 }
 
 /**
- * @param {number} immediateID The ID of the immediate to be clearred.
+ * @param {number} immediateID The ID of the immediate to be cleared.
  */
 export function clearImmediate(immediateID: number) {
   clearedImmediates.add(immediateID);

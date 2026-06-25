@@ -1,0 +1,28 @@
+name: Analyze API Changes
+
+on:
+  pull_request_target:
+    types: [opened, edited, reopened, synchronize]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  api_changes:
+    runs-on: ubuntu-latest
+    if: github.repository == 'react/react-native'
+    steps:
+      - name: Check out main branch
+        uses: actions/checkout@v6
+      - name: Setup Node.js
+        uses: ./.github/actions/setup-node
+      - name: Run yarn install
+        uses: ./.github/actions/yarn-install
+      - name: Run diff-js-api-changes
+        id: diff-js-api-changes
+        uses: ./.github/actions/diff-js-api-changes
+      - name: Post PR comment
+        uses: ./.github/actions/post-pr-comment
+        with:
+          marker: '<!-- api-changes -->'
+          sections: '[${{ toJSON(steps.diff-js-api-changes.outputs.message) }}]'

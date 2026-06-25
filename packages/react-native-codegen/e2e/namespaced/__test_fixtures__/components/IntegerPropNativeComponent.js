@@ -12,7 +12,7 @@ import type {CodegenTypes, HostComponent, ViewProps} from 'react-native';
 
 import {codegenNativeComponent} from 'react-native';
 
-type NativeProps = $ReadOnly<{
+type NativeProps = Readonly<{
   ...ViewProps,
 
   // Props
@@ -21,6 +21,6 @@ type NativeProps = $ReadOnly<{
   progress3?: CodegenTypes.WithDefault<CodegenTypes.Int32, 10>,
 }>;
 
-export default (codegenNativeComponent<NativeProps>(
+export default codegenNativeComponent<NativeProps>(
   'IntegerPropNativeComponentView',
-): HostComponent<NativeProps>);
+) as HostComponent<NativeProps>;

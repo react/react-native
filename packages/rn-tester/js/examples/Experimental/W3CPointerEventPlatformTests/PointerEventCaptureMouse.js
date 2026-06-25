@@ -46,7 +46,7 @@ function PointerEventCaptureMouseTestCase(
       try {
         // $FlowFixMe[prop-missing]
         target0.setPointerCapture(evt.nativeEvent.pointerId);
-      } catch (e) {}
+      } catch {}
     }
   }, []);
 
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
   },
 });
 
-type Props = $ReadOnly<{}>;
+type Props = Readonly<{}>;
 export default function PointerEventCaptureMouse(
   props: Props,
 ): React.MixedElement {

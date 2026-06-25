@@ -51,11 +51,6 @@ struct ShadowViewNodePair final {
     return this->shadowNode == rhs.shadowNode;
   }
 
-  bool operator!=(const ShadowViewNodePair &rhs) const
-  {
-    return !(*this == rhs);
-  }
-
   bool inOtherTree() const
   {
     return this->otherTreePair != nullptr;

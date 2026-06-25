@@ -32,8 +32,8 @@ declare module 'jest-diff' {
   };
 
   declare export function diff(
-    a: mixed,
-    b: mixed,
+    a: unknown,
+    b: unknown,
     options?: DiffOptions,
   ): string | null;
 }

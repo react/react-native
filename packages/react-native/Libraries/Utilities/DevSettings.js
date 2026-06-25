@@ -24,7 +24,7 @@ let DevSettings: {
    * @param title - The title of the menu item. Is internally used as id and should therefore be unique.
    * @param handler - The callback invoked when pressing the menu item.
    */
-  addMenuItem(title: string, handler: () => mixed): void,
+  addMenuItem(title: string, handler: () => unknown): void,
   /**
    * Reload the application.
    *
@@ -33,7 +33,7 @@ let DevSettings: {
   reload(reason?: string): void,
   onFastRefresh(): void,
 } = {
-  addMenuItem(title: string, handler: () => mixed): void {},
+  addMenuItem(title: string, handler: () => unknown): void {},
   reload(reason?: string): void {},
   onFastRefresh(): void {},
 };
@@ -51,7 +51,7 @@ if (__DEV__) {
   const subscriptions = new Map<string, EventSubscription>();
 
   DevSettings = {
-    addMenuItem(title: string, handler: () => mixed): void {
+    addMenuItem(title: string, handler: () => unknown): void {
       // Make sure items are not added multiple times. This can
       // happen when hot reloading the module that registers the
       // menu items. The title is used as the id which means we

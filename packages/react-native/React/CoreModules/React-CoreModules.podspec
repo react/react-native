@@ -51,6 +51,7 @@ Pod::Spec.new do |s|
   s.dependency "React-Core/CoreModulesHeaders", version
   s.dependency "React-RCTImage", version
   s.dependency "React-jsi", version
+  add_dependency(s, "React-featureflags")
   s.dependency 'React-RCTBlob'
   add_dependency(s, "React-debug")
   add_dependency(s, "React-runtimeexecutor", :additional_framework_paths => ["platform/ios"])

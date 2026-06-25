@@ -11,7 +11,7 @@
 'use strict';
 
 const {TEMPLATES_FOLDER_PATH} = require('./constants');
-const {parseiOSAnnotations} = require('./utils');
+const {parseiOSAnnotations, writeFileSyncIfChanged} = require('./utils');
 const fs = require('fs');
 const path = require('path');
 
@@ -28,7 +28,7 @@ const UNSTABLE_MODULES_REQUIRING_MAIN_QUEUE_SETUP_PROVIDER_MM_TEMPLATE_PATH =
   );
 
 function generateUnstableModulesRequiringMainQueueSetupProvider(
-  libraries /*: $ReadOnlyArray<$FlowFixMe> */,
+  libraries /*: ReadonlyArray<$FlowFixMe> */,
   outputDir /*: string */,
 ) {
   const iosAnnotations = parseiOSAnnotations(libraries);
@@ -70,7 +70,7 @@ function generateUnstableModulesRequiringMainQueueSetupProvider(
 
   fs.mkdirSync(outputDir, {recursive: true});
 
-  fs.writeFileSync(
+  writeFileSyncIfChanged(
     path.join(
       outputDir,
       'RCTUnstableModulesRequiringMainQueueSetupProvider.mm',
@@ -82,7 +82,7 @@ function generateUnstableModulesRequiringMainQueueSetupProvider(
     UNSTABLE_MODULES_REQUIRING_MAIN_QUEUE_SETUP_PROVIDER_H_TEMPLATE_PATH,
     'utf8',
   );
-  fs.writeFileSync(
+  writeFileSyncIfChanged(
     path.join(outputDir, 'RCTUnstableModulesRequiringMainQueueSetupProvider.h'),
     templateH,
   );

@@ -26,6 +26,59 @@ namespace debugger {
 class Debugger;
 }
 
+/// IEventLoopControl is defined by the integrator to allow the Runtime to
+/// schedule some task to be run when convenient, and to keep track of "Task
+/// sources". After it is set to a Runtime, the integrator must ensure that the
+/// `IEventLoopControl` instance outlives the Runtime. The IEventLoopControl
+/// methods may be called by the Runtime from any thread, so they must be
+/// thread-safe and cannot perform any VM operations.
+struct IEventLoopControl {
+  /// `scheduleTask` is a function used by the caller (the Runtime) to schedule
+  /// some \p task. The scheduled task may perform VM operations. Thus, the
+  /// integrator must only run the tasks when it had exclusive access to the
+  /// Runtime.
+  virtual void scheduleTask(const std::function<void()>& task) = 0;
+  /// Used by the caller (the Runtime) to register a new source that can
+  /// schedule new work via `scheduleTask`. This method return an uint64
+  /// identifying the source registered. As an example, a WebWorker instance may
+  /// schedule a message-processing task via `scheduleTask`, and thus is
+  /// considered as a "task queue source". The Runtime may register each Worker
+  /// using this method. This is useful for the integrator to keep track of
+  /// active "sources".
+  virtual uint64_t registerTaskQueueSource() = 0;
+  /// Used by the caller to unregister a source when it is not allowed to invoke
+  /// `scheduleTasks` anymore. The source is identified by \p sourceId, which is
+  /// provided when the source was originally register in
+  /// `registerTaskQueueSource`. As an example, after WebWorker instance is
+  /// terminated, it will not schedule more tasks. The Runtime may unregister
+  /// the Worker instance, and the integrator may exit the event-loop if there
+  /// are no more active sources.
+  virtual void unregisterTaskQueueSource(uint64_t sourceId) = 0;
+
+ protected:
+  ~IEventLoopControl() = default;
+};
+
+/// Interface for setting the IEventLoopControl in the Runtime.
+struct JSI_EXPORT ISetEventLoopControl : public jsi::ICast {
+ public:
+  static constexpr jsi::UUID uuid{
+      0x7b6902e6,
+      0xfd38,
+      0x11f0,
+      0x8de9,
+      0x0242ac120002};
+
+  /// Configures the eventloop control mechanism using \p eventLoopControl.
+  virtual void setEventLoopControl(IEventLoopControl* eventLoopControl) = 0;
+  /// Retrieves the IEventLoopControl if it was set previously. Otherwise,
+  /// return nullptr.
+  virtual IEventLoopControl* getEventLoopControl() = 0;
+
+ protected:
+  ~ISetEventLoopControl() = default;
+};
+
 /// Interface for Hermes-specific runtime methods.The actual implementations of
 /// the pure virtual methods are provided by Hermes API.
 class JSI_EXPORT IHermes : public jsi::ICast {

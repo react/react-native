@@ -32,14 +32,14 @@ export type ReactDevToolsAgentEvents = {
 };
 
 export type ReactDevToolsAgent = {
-  selectNode(node: mixed): void,
+  selectNode(node: unknown): void,
   stopInspectingNative(value: boolean): void,
-  addListener<Event: $Keys<ReactDevToolsAgentEvents>>(
+  addListener<Event extends keyof ReactDevToolsAgentEvents>(
     event: Event,
     listener: (...ReactDevToolsAgentEvents[Event]) => void,
   ): void,
   removeListener(
-    event: $Keys<ReactDevToolsAgentEvents>,
+    event: keyof ReactDevToolsAgentEvents,
     listener: () => void,
   ): void,
 };
@@ -48,6 +48,6 @@ export type ReactDevToolsGlobalHook = {
   on: (eventName: string, (agent: ReactDevToolsAgent) => void) => void,
   off: (eventName: string, (agent: ReactDevToolsAgent) => void) => void,
   reactDevtoolsAgent?: ReactDevToolsAgent,
-  resolveRNStyle?: mixed,
+  resolveRNStyle?: unknown,
   nativeStyleEditorValidAttributes?: Array<string>,
 };

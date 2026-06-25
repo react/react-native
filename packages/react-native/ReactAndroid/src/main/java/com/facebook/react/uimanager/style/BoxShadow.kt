@@ -14,7 +14,19 @@ import com.facebook.react.bridge.JSApplicationCausedNativeException
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.ReadableType
 
-/** Represents all logical properties and shorthands for border radius. */
+/**
+ * Represents a box shadow effect that can be applied to a React Native view.
+ *
+ * This data class models the CSS box-shadow property, including offset, blur, spread, color, and
+ * inset options.
+ *
+ * @property offsetX The horizontal offset of the shadow in pixels
+ * @property offsetY The vertical offset of the shadow in pixels
+ * @property color The color of the shadow, or null for default
+ * @property blurRadius The blur radius of the shadow, or null for no blur
+ * @property spreadDistance The spread distance of the shadow, or null for no spread
+ * @property inset Whether the shadow is inset (inner shadow), or null for outer shadow
+ */
 public data class BoxShadow(
     val offsetX: Float,
     val offsetY: Float,
@@ -24,6 +36,16 @@ public data class BoxShadow(
     val inset: Boolean? = null,
 ) {
   public companion object {
+    /**
+     * Parses a ReadableMap into a BoxShadow.
+     *
+     * The map must contain "offsetX" and "offsetY" keys. Optional keys include "color",
+     * "blurRadius", "spreadDistance", and "inset".
+     *
+     * @param boxShadow The map containing box shadow configuration
+     * @param context Android context for color resolution
+     * @return A BoxShadow instance, or null if required fields are missing
+     */
     @JvmStatic
     public fun parse(boxShadow: ReadableMap?, context: Context): BoxShadow? {
       if (boxShadow == null || !(boxShadow.hasKey("offsetX") && boxShadow.hasKey("offsetY"))) {

@@ -5,9 +5,13 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#ifndef RCT_REMOVE_LEGACY_COMPONENT_INTEROP
+
 namespace facebook::react {
 
 extern const char LegacyViewManagerAndroidInteropComponentName[] =
     "LegacyViewManagerInterop";
 
 } // namespace facebook::react
+
+#endif // RCT_REMOVE_LEGACY_COMPONENT_INTEROP

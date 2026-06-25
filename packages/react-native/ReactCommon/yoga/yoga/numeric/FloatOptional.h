@@ -44,22 +44,13 @@ constexpr bool operator==(FloatOptional lhs, FloatOptional rhs) {
   return lhs.unwrap() == rhs.unwrap() ||
       (lhs.isUndefined() && rhs.isUndefined());
 }
-constexpr bool operator!=(FloatOptional lhs, FloatOptional rhs) {
-  return !(lhs == rhs);
-}
 
 constexpr bool operator==(FloatOptional lhs, float rhs) {
   return lhs == FloatOptional{rhs};
 }
-constexpr bool operator!=(FloatOptional lhs, float rhs) {
-  return !(lhs == rhs);
-}
 
 constexpr bool operator==(float lhs, FloatOptional rhs) {
   return rhs == lhs;
-}
-constexpr bool operator!=(float lhs, FloatOptional rhs) {
-  return !(lhs == rhs);
 }
 
 constexpr FloatOptional operator+(FloatOptional lhs, FloatOptional rhs) {

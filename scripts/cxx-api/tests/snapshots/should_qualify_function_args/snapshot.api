@@ -1,0 +1,8 @@
+struct test::Container {
+  public void doConst(const test::Param& p);
+  public void doMultiple(test::Param a, test::Param b, int x);
+  public void doSomething(test::Param p);
+}
+
+struct test::Param {
+}

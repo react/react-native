@@ -57,9 +57,9 @@ function translateObjectTypeAnnotation(
    */
   typeScriptTypeAnnotation: $FlowFixMe,
   nullable: boolean,
-  objectMembers: $ReadOnlyArray<$FlowFixMe>,
+  objectMembers: ReadonlyArray<$FlowFixMe>,
   typeResolutionStatus: TypeResolutionStatus,
-  baseTypes: $ReadOnlyArray<string>,
+  baseTypes: ReadonlyArray<string>,
   types: TypeDeclarationMap,
   aliasMap: {...NativeModuleAliasMap},
   enumMap: {...NativeModuleEnumMap},

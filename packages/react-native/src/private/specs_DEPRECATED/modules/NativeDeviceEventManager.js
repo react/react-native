@@ -13,7 +13,7 @@ import type {TurboModule} from '../../../../Libraries/TurboModule/RCTExport';
 import * as TurboModuleRegistry from '../../../../Libraries/TurboModule/TurboModuleRegistry';
 
 export interface Spec extends TurboModule {
-  +invokeDefaultBackPressHandler: () => void;
+  readonly invokeDefaultBackPressHandler: () => void;
 }
 
-export default (TurboModuleRegistry.get<Spec>('DeviceEventManager'): ?Spec);
+export default TurboModuleRegistry.get<Spec>('DeviceEventManager') as ?Spec;

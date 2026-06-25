@@ -26,12 +26,18 @@ const visitors: TransformVisitor = context => ({
     }
   },
   PropertyDefinition(node): void {
-    if (node.key.type === 'Identifier' && node.key.name.startsWith('_')) {
+    if (
+      node.computed === true ||
+      (node.key.type === 'Identifier' && node.key.name.startsWith('_'))
+    ) {
       context.removeNode(node);
     }
   },
   MethodDefinition(node): void {
-    if (node.key.type === 'Identifier' && node.key.name.startsWith('_')) {
+    if (
+      node.computed === true ||
+      (node.key.type === 'Identifier' && node.key.name.startsWith('_'))
+    ) {
       context.removeNode(node);
     }
   },

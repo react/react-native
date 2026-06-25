@@ -18,7 +18,7 @@ public interface DevLoadingViewManager {
       dismissButton: Boolean?,
   )
 
-  public fun updateProgress(status: String?, done: Int?, total: Int?)
+  public fun updateProgress(status: String?, done: Int?, total: Int?, percent: Int?)
 
   public fun hide()
 }

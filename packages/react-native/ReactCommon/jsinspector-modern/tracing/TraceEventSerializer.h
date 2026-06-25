@@ -84,6 +84,13 @@ class TraceEventSerializer {
    */
   static folly::dynamic serializeProfileChunkCPUProfileNodeCallFrame(
       TraceEventProfileChunk::CPUProfile::Node::CallFrame &&callFrame);
+
+  /**
+   * Estimates the JSON-serialized byte size of a folly::dynamic value.
+   * This is a rough but conservative estimate to avoid the cost of
+   * double-serialization (once to measure, once to emit).
+   */
+  static size_t estimateJsonSize(const folly::dynamic &value);
 };
 
 } // namespace facebook::react::jsinspector_modern::tracing

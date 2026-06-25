@@ -13,7 +13,7 @@ import {RNTesterThemeContext} from './RNTesterTheme';
 const React = require('react');
 const {StyleSheet, Text} = require('react-native');
 
-type Props = $ReadOnly<{
+type Props = Readonly<{
   children: string,
 }>;
 

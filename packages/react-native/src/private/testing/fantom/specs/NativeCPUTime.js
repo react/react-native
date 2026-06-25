@@ -17,8 +17,8 @@ import * as TurboModuleRegistry from '../../../../../Libraries/TurboModule/Turbo
  * measurements and benchmarks. It is not meant to be used in production.
  */
 export interface Spec extends TurboModule {
-  +getCPUTimeNanos: () => number;
-  +hasAccurateCPUTimeNanosForBenchmarks: () => boolean;
+  readonly getCPUTimeNanos: () => number;
+  readonly hasAccurateCPUTimeNanosForBenchmarks: () => boolean;
 }
 
-export default (TurboModuleRegistry.getEnforcing<Spec>('CPUTimeCxx'): Spec);
+export default TurboModuleRegistry.getEnforcing<Spec>('CPUTimeCxx') as Spec;

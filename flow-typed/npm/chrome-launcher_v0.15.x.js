@@ -16,7 +16,7 @@ declare module 'chrome-launcher' {
   declare export type Options = {
     startingUrl?: string,
     chromeFlags?: Array<string>,
-    prefs?: mixed,
+    prefs?: unknown,
     port?: number,
     handleSIGINT?: boolean,
     chromePath?: string,

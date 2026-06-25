@@ -14,7 +14,6 @@
 #import <React/RCTRootView.h>
 #import <yoga/Yoga.h>
 
-@class RCTRootShadowView;
 @class RCTSparseArray;
 
 typedef void (^RCTApplierBlock)(NSDictionary<NSNumber *, UIView *> *viewRegistry);
@@ -46,7 +45,6 @@ typedef void (^RCTApplierBlock)(NSDictionary<NSNumber *, UIView *> *viewRegistry
 - (void)insertReactSubview:(RCTShadowView *)subview atIndex:(NSInteger)atIndex NS_REQUIRES_SUPER;
 - (void)removeReactSubview:(RCTShadowView *)subview NS_REQUIRES_SUPER;
 
-@property (nonatomic, weak, readonly) RCTRootShadowView *rootView;
 @property (nonatomic, weak, readonly) RCTShadowView *superview;
 @property (nonatomic, assign, readonly) YGNodeRef yogaNode;
 @property (nonatomic, copy) NSString *viewName;

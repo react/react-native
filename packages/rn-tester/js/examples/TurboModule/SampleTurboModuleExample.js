@@ -21,7 +21,7 @@ type State = {
   testResults: {
     [string]: {
       type: string,
-      value: mixed,
+      value: unknown,
       ...
     },
     ...
@@ -169,7 +169,7 @@ class SampleTurboModuleExample extends React.Component<{}, State> {
       | $FlowFixMe
       | void
       | RootTag
-      | Promise<mixed>
+      | Promise<unknown>
       | number
       | string
       | boolean

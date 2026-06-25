@@ -19,6 +19,8 @@
 #import "RCTBlobCollector.h"
 #import "RCTBlobPlugins.h"
 
+#import <ReactCommon/RCTTurboModuleWithJSIBindings.h>
+
 RCT_MOCK_DEF(RCTBlobManager, dispatch_async);
 #define dispatch_async RCT_MOCK_USE(RCTBlobManager, dispatch_async)
 
@@ -28,7 +30,8 @@ static NSString *const kBlobURIScheme = @"blob";
     RCTNetworkingRequestHandler,
     RCTNetworkingResponseHandler,
     RCTWebSocketContentHandler,
-    NativeBlobModuleSpec>
+    NativeBlobModuleSpec,
+    RCTTurboModuleWithJSIBindings>
 
 @end
 
@@ -39,7 +42,6 @@ static NSString *const kBlobURIScheme = @"blob";
   std::mutex _blobsMutex;
 
   NSOperationQueue *_queue;
-  dispatch_queue_t _processingQueue;
 }
 
 RCT_EXPORT_MODULE(BlobModule)
@@ -52,7 +54,6 @@ RCT_EXPORT_MODULE(BlobModule)
 {
   std::lock_guard<std::mutex> lock(_blobsMutex);
   _blobs = [NSMutableDictionary new];
-  facebook::react::RCTBlobCollector::install(self);
 }
 
 + (BOOL)requiresMainQueueSetup
@@ -333,6 +334,13 @@ RCT_EXPORT_METHOD(release : (NSString *)blobId)
   return std::make_shared<facebook::react::NativeBlobModuleSpecJSI>(params);
 }
 
+#pragma mark - RCTTurboModuleWithJSIBindings
+
+- (void)installJSIBindingsWithRuntime:(facebook::jsi::Runtime &)runtime
+                          callInvoker:(const std::shared_ptr<facebook::react::CallInvoker> &)callInvoker
+{
+  facebook::react::RCTBlobCollector::install(runtime, self);
+}
 @end
 
 Class RCTBlobManagerCls(void)

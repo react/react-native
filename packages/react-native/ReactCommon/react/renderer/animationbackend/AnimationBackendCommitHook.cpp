@@ -7,13 +7,15 @@
 
 #include <react/renderer/animationbackend/AnimationBackendCommitHook.h>
 
+#include <utility>
+
 namespace facebook::react {
 
 AnimationBackendCommitHook::AnimationBackendCommitHook(
-    UIManager* uiManager,
+    UIManager& uiManager,
     std::shared_ptr<AnimatedPropsRegistry> animatedPropsRegistry)
     : animatedPropsRegistry_(std::move(animatedPropsRegistry)) {
-  uiManager->registerCommitHook(*this);
+  uiManager.registerCommitHook(*this);
 }
 
 RootShadowNode::Unshared AnimationBackendCommitHook::shadowTreeWillCommit(
@@ -21,7 +23,8 @@ RootShadowNode::Unshared AnimationBackendCommitHook::shadowTreeWillCommit(
     const RootShadowNode::Shared& oldRootShadowNode,
     const RootShadowNode::Unshared& newRootShadowNode,
     const ShadowTreeCommitOptions& commitOptions) noexcept {
-  if (commitOptions.source != ShadowTreeCommitSource::React) {
+  if (commitOptions.source != ShadowTreeCommitSource::React &&
+      commitOptions.source != ShadowTreeCommitSource::AnimationEndSync) {
     return newRootShadowNode;
   }
 
@@ -32,24 +35,31 @@ RootShadowNode::Unshared AnimationBackendCommitHook::shadowTreeWillCommit(
   if (surfaceFamilies.empty()) {
     return newRootShadowNode;
   }
-  return std::static_pointer_cast<RootShadowNode>(
-      newRootShadowNode->cloneMultiple(
+  auto clonedRootShadowNode =
+      std::static_pointer_cast<RootShadowNode>(newRootShadowNode->cloneMultiple(
           surfaceFamilies,
           [&surfaceFamilies, &updates](
               const ShadowNode& shadowNode,
               const ShadowNodeFragment& fragment) {
             auto newProps = ShadowNodeFragment::propsPlaceholder();
             std::shared_ptr<BaseViewProps> viewProps = nullptr;
-            if (surfaceFamilies.contains(&shadowNode.getFamily()) &&
-                updates.contains(shadowNode.getTag())) {
-              auto& snapshot = updates.at(shadowNode.getTag());
-              if (!snapshot->propNames.empty()) {
+            if (auto updatesIter = updates.find(shadowNode.getTag());
+                updatesIter != updates.end() &&
+                surfaceFamilies.contains(shadowNode.getFamilyShared())) {
+              auto& snapshot = updatesIter->second;
+              if (!snapshot->propNames.empty() || snapshot->rawProps) {
                 PropsParserContext propsParserContext{
                     shadowNode.getSurfaceId(),
                     *shadowNode.getContextContainer()};
-
-                newProps = shadowNode.getComponentDescriptor().cloneProps(
-                    propsParserContext, shadowNode.getProps(), {});
+                if (snapshot->rawProps) {
+                  newProps = shadowNode.getComponentDescriptor().cloneProps(
+                      propsParserContext,
+                      shadowNode.getProps(),
+                      RawProps(*snapshot->rawProps));
+                } else {
+                  newProps = shadowNode.getComponentDescriptor().cloneProps(
+                      propsParserContext, shadowNode.getProps(), {});
+                }
                 viewProps = std::const_pointer_cast<BaseViewProps>(
                     std::static_pointer_cast<const BaseViewProps>(newProps));
               }
@@ -64,6 +74,12 @@ RootShadowNode::Unshared AnimationBackendCommitHook::shadowTreeWillCommit(
                  .state = shadowNode.getState(),
                  .runtimeShadowNodeReference = true});
           }));
+
+  if (clonedRootShadowNode == nullptr) {
+    return newRootShadowNode;
+  }
+
+  return clonedRootShadowNode;
 }
 
 } // namespace facebook::react

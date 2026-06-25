@@ -9,6 +9,9 @@
  */
 
 const {setVersion} = require('../releases/set-version');
+const {
+  setStableHermesForReleaseBranch,
+} = require('../releases/utils/hermes-utils');
 const {getBranchName} = require('../releases/utils/scm-utils');
 const {
   writeReleaseAssetUrlsToDotSlashFiles,
@@ -51,6 +54,9 @@ async function main() {
 
   console.info('Setting version for monorepo packages and react-native');
   await setVersion(version, false); // version, skip-react-native
+
+  console.info('Set stable Hermes for release branch');
+  await setStableHermesForReleaseBranch();
 
   console.info('Writing release asset URLs to DotSlash files');
   await writeReleaseAssetUrlsToDotSlashFiles(version);

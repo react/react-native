@@ -1,14 +1,14 @@
 {
   "name": "@react-native/compatibility-check",
-  "version": "0.84.0-main",
+  "version": "0.87.0-main",
   "description": "Check a React Native app's boundary between JS and Native for incompatibilities",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/facebook/react-native.git",
+    "url": "git+https://github.com/react/react-native.git",
     "directory": "packages/react-native-compatibility-check"
   },
-  "homepage": "https://github.com/facebook/react-native/tree/HEAD/packages/react-native-compatibility-check#readme",
+  "homepage": "https://github.com/react/react-native/tree/HEAD/packages/react-native-compatibility-check#readme",
   "keywords": [
     "boundary",
     "crashes",
@@ -17,9 +17,9 @@
     "tools",
     "react-native"
   ],
-  "bugs": "https://github.com/facebook/react-native/issues",
+  "bugs": "https://github.com/react/react-native/issues",
   "engines": {
-    "node": ">= 20.19.4"
+    "node": "^22.13.0 || ^24.3.0 || >= 26.0.0"
   },
   "exports": {
     ".": "./src/index.js",
@@ -38,7 +38,7 @@
     "prepack": "node ../../scripts/build/prepack.js"
   },
   "dependencies": {
-    "@react-native/codegen": "0.84.0-main"
+    "@react-native/codegen": "0.87.0-main"
   },
   "devDependencies": {
     "flow-remove-types": "^2.237.2",

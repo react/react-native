@@ -10,6 +10,7 @@
 #include <memory>
 
 #include <ReactCommon/RuntimeExecutor.h>
+#include <react/renderer/animationbackend/AnimationChoreographer.h>
 #include <react/renderer/componentregistry/ComponentDescriptorFactory.h>
 #include <react/renderer/core/EventBeat.h>
 #include <react/renderer/leakchecker/LeakChecker.h>
@@ -58,6 +59,12 @@ struct SchedulerToolbox final {
    * A list of `UIManagerCommitHook`s that should be registered in `UIManager`.
    */
   std::vector<std::shared_ptr<UIManagerCommitHook>> commitHooks;
+
+  /*
+   * Platform-specific choreographer for scheduling animation frame
+   * callbacks. Required when useSharedAnimatedBackend() is enabled.
+   */
+  std::shared_ptr<AnimationChoreographer> animationChoreographer;
 };
 
 } // namespace facebook::react

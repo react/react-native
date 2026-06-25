@@ -1,0 +1,9 @@
+class test::Derived : public test::Base<int> {
+  public Derived(int value);
+  public using BaseAlias = test::Base<int>;
+}
+
+template <typename T>
+class test::Base {
+  public Base(int value);
+}

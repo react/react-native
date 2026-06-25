@@ -28,12 +28,12 @@ const BASIC_CONSTRUCTORS = [Number, String, Boolean, Date];
 
 const ObjectPrototype = Object.prototype;
 
-// Technicall the memory value should be a parameter in
+// Technically the memory value should be a parameter in
 // `structuredCloneInternal` but as an optimization we can reuse the same map
 // and avoid allocating a new one in every call to `structuredClone`.
 // This is safe because we don't invoke user code in `structuredClone`, so at
 // any given point we only have one memory object alive anyway.
-const memory: Map<mixed, mixed> = new Map();
+const memory: Map<unknown, unknown> = new Map();
 
 function structuredCloneInternal<T>(value: T): T {
   // Handles `null` and `undefined`.
@@ -105,7 +105,7 @@ function structuredCloneInternal<T>(value: T): T {
   }
 
   if (value instanceof Map) {
-    const result = new Map<mixed, mixed>();
+    const result = new Map<unknown, unknown>();
     memory.set(value, result);
 
     for (const [innerKey, innerValue] of value) {
@@ -120,7 +120,7 @@ function structuredCloneInternal<T>(value: T): T {
   }
 
   if (value instanceof Set) {
-    const result = new Set<mixed>();
+    const result = new Set<unknown>();
     memory.set(value, result);
 
     for (const innerValue of value) {
@@ -205,7 +205,7 @@ function structuredCloneInternal<T>(value: T): T {
  *   but implements the cloning in a single step.
  *
  * Known limitations:
- * - It does not support transfering values.
+ * - It does not support transferring values.
  */
 export default function structuredClone<T>(value: T): T {
   try {
@@ -217,7 +217,7 @@ export default function structuredClone<T>(value: T): T {
 
 const NON_SERIALIZABLE_OBJECT_KEY = Symbol('nonSerializableObject');
 
-function isNonSerializableObject<T: interface {}>(obj: T): boolean {
+function isNonSerializableObject<T extends interface {}>(obj: T): boolean {
   // $FlowExpectedError[invalid-in-lhs]
   return NON_SERIALIZABLE_OBJECT_KEY in obj;
 }

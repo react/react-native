@@ -9,6 +9,7 @@
  */
 
 import type {Experiments} from '../types/Experiments';
+import type {ReadonlyURL} from '../types/ReadonlyURL';
 
 /**
  * Get the DevTools frontend URL to debug a given React Native CDP target.
@@ -16,13 +17,11 @@ import type {Experiments} from '../types/Experiments';
 export default function getDevToolsFrontendUrl(
   experiments: Experiments,
   webSocketDebuggerUrl: string,
-  devServerUrl: string,
-  options?: $ReadOnly<{
+  devServerUrl: ReadonlyURL,
+  options?: Readonly<{
     relative?: boolean,
     launchId?: string,
     telemetryInfo?: string,
-    /** Whether to use the modern `rn_fusebox.html` entry point. */
-    useFuseboxEntryPoint?: boolean,
     appId?: string,
     panel?: string,
   }>,
@@ -33,11 +32,8 @@ export default function getDevToolsFrontendUrl(
   });
 
   const appUrl =
-    (options?.relative === true ? '' : devServerUrl) +
-    '/debugger-frontend/' +
-    (options?.useFuseboxEntryPoint === true
-      ? 'rn_fusebox.html'
-      : 'rn_inspector.html');
+    (options?.relative === true ? '' : devServerUrl.origin) +
+    '/debugger-frontend/rn_fusebox.html';
 
   const searchParams = new URLSearchParams([
     [wsParam.key, wsParam.value],
@@ -65,15 +61,15 @@ export default function getDevToolsFrontendUrl(
 function getWsParam({
   webSocketDebuggerUrl,
   devServerUrl,
-}: $ReadOnly<{
+}: Readonly<{
   webSocketDebuggerUrl: string,
-  devServerUrl: string,
+  devServerUrl: ReadonlyURL,
 }>): {
   key: string,
   value: string,
 } {
   const wsUrl = new URL(webSocketDebuggerUrl);
-  const serverHost = new URL(devServerUrl).host;
+  const serverHost = devServerUrl.host;
   let value;
   if (wsUrl.host === serverHost) {
     // Use a path-absolute (host-relative) URL if the WS server and frontend

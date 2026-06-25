@@ -13,9 +13,9 @@ import type {TurboModule} from '../../../../../Libraries/TurboModule/RCTExport';
 import * as TurboModuleRegistry from '../../../../../Libraries/TurboModule/TurboModuleRegistry';
 
 export interface Spec extends TurboModule {
-  +queueMicrotask: (callback: () => mixed) => void;
+  readonly queueMicrotask: (callback: () => unknown) => void;
 }
 
-export default (TurboModuleRegistry.getEnforcing<Spec>(
+export default TurboModuleRegistry.getEnforcing<Spec>(
   'NativeMicrotasksCxx',
-): Spec);
+) as Spec;

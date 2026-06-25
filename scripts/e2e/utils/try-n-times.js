@@ -15,7 +15,7 @@
 function tryExecNTimes(
   funcToRetry /*: () => number */,
   retriesLeft /*: number */,
-  onEveryError /*: ?(() => mixed) */,
+  onEveryError /*: ?(() => unknown) */,
 ) /*: number */ {
   const exitCode = funcToRetry();
   if (exitCode === 0) {

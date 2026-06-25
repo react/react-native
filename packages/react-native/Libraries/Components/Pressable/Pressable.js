@@ -8,6 +8,7 @@
  * @format
  */
 
+import type {HostInstance} from '../../../src/private/types/HostInstance';
 import type {ViewStyleProp} from '../../StyleSheet/StyleSheet';
 import type {
   GestureResponderEvent,
@@ -27,13 +28,15 @@ import useAndroidRippleForView, {
 import * as React from 'react';
 import {memo, useMemo, useRef, useState} from 'react';
 
+export type PressableInstance = HostInstance;
+
 export type {PressableAndroidRippleConfig};
 
-export type PressableStateCallbackType = $ReadOnly<{
+export type PressableStateCallbackType = Readonly<{
   pressed: boolean,
 }>;
 
-type PressableBaseProps = $ReadOnly<{
+type PressableBaseProps = Readonly<{
   /**
    * Whether a press gesture can be interrupted by a parent gesture such as a
    * scroll event. Defaults to true.
@@ -80,41 +83,41 @@ type PressableBaseProps = $ReadOnly<{
   /**
    * Called when this view's layout changes.
    */
-  onLayout?: ?(event: LayoutChangeEvent) => mixed,
+  onLayout?: ?(event: LayoutChangeEvent) => unknown,
 
   /**
    * Called when the hover is activated to provide visual feedback.
    */
-  onHoverIn?: ?(event: MouseEvent) => mixed,
+  onHoverIn?: ?(event: MouseEvent) => unknown,
 
   /**
    * Called when the hover is deactivated to undo visual feedback.
    */
-  onHoverOut?: ?(event: MouseEvent) => mixed,
+  onHoverOut?: ?(event: MouseEvent) => unknown,
 
   /**
    * Called when a long-tap gesture is detected.
    */
-  onLongPress?: ?(event: GestureResponderEvent) => mixed,
+  onLongPress?: ?(event: GestureResponderEvent) => unknown,
 
   /**
    * Called when a single tap gesture is detected.
    */
-  onPress?: ?(event: GestureResponderEvent) => mixed,
+  onPress?: ?(event: GestureResponderEvent) => unknown,
 
   /**
    * Called when a touch is engaged before `onPress`.
    */
-  onPressIn?: ?(event: GestureResponderEvent) => mixed,
+  onPressIn?: ?(event: GestureResponderEvent) => unknown,
   /**
    * Called when the press location moves.
    */
-  onPressMove?: ?(event: GestureResponderEvent) => mixed,
+  onPressMove?: ?(event: GestureResponderEvent) => unknown,
 
   /**
    * Called when a touch is released before `onPress`.
    */
-  onPressOut?: ?(event: GestureResponderEvent) => mixed,
+  onPressOut?: ?(event: GestureResponderEvent) => unknown,
 
   /**
    * Whether to prevent any other native components from becoming responder
@@ -156,15 +159,14 @@ type PressableBaseProps = $ReadOnly<{
   unstable_pressDelay?: ?number,
 }>;
 
-export type PressableProps = $ReadOnly<{
+/** @build-types emit-as-interface Uniwind compatibility */
+export type PressableProps = Readonly<{
   // Pressability may override `onMouseEnter` and `onMouseLeave` to
   // implement `onHoverIn` and `onHoverOut` in a platform-agnostic way.
   // Hover events should be used instead of mouse events.
   ...Omit<ViewProps, 'onMouseEnter' | 'onMouseLeave'>,
   ...PressableBaseProps,
 }>;
-
-type Instance = React.ElementRef<typeof View>;
 
 /**
  * Component used to build display components that should respond to whether the
@@ -174,7 +176,7 @@ function Pressable({
   ref: forwardedRef,
   ...props
 }: {
-  ref?: React.RefSetter<Instance>,
+  ref?: React.RefSetter<PressableInstance>,
   ...PressableProps,
 }): React.Node {
   const {
@@ -214,7 +216,7 @@ function Pressable({
     ...restProps
   } = props;
 
-  const viewRef = useRef<Instance | null>(null);
+  const viewRef = useRef<PressableInstance | null>(null);
   const mergedRef = useMergeRefs(forwardedRef, viewRef);
 
   const android_rippleConfig = useAndroidRippleForView(android_ripple, viewRef);
@@ -352,7 +354,7 @@ function usePressState(forcePressed: boolean): [boolean, (boolean) => void] {
 const MemoedPressable = memo(Pressable);
 MemoedPressable.displayName = 'Pressable';
 
-export default (MemoedPressable: component(
-  ref?: React.RefSetter<React.ElementRef<typeof View>>,
+export default MemoedPressable as component(
+  ref?: React.RefSetter<PressableInstance>,
   ...props: PressableProps
-));
+);

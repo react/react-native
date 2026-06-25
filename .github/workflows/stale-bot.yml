@@ -1,11 +1,11 @@
 name: Stale bot
 on:
   schedule:
-    - cron: "*/10 5 * * *"
+    - cron: '*/10 5 * * *'
 jobs:
   stale:
     runs-on: ubuntu-latest
-    if: github.repository == 'facebook/react-native'
+    if: github.repository == 'react/react-native'
     permissions:
       issues: write
       pull-requests: write
@@ -22,7 +22,7 @@ jobs:
           exempt-pr-labels: 'Help Wanted :octocat:, Never gets stale'
   stale-asc:
     runs-on: ubuntu-latest
-    if: github.repository == 'facebook/react-native'
+    if: github.repository == 'react/react-native'
     permissions:
       issues: write
       pull-requests: write
@@ -40,7 +40,7 @@ jobs:
           exempt-pr-labels: 'Help Wanted :octocat:, Never gets stale'
   stale-needs-author-feedback:
     runs-on: ubuntu-latest
-    if: github.repository == 'facebook/react-native'
+    if: github.repository == 'react/react-native'
     permissions:
       issues: write
       pull-requests: write
@@ -54,11 +54,11 @@ jobs:
           stale-pr-message: "This PR is waiting for author's feedback since 24 days. Please provide the requested feedback or this will be closed in 7 days"
           close-issue-message: "This issue was closed because the author hasn't provided the requested feedback after 7 days."
           close-pr-message: "This PR was closed because the author hasn't provided the requested feedback after 7 days."
-          exempt-issue-labels: "Help Wanted :octocat:, Good first issue, Never gets stale, Issue: Author Provided Repro"
-          exempt-pr-labels: "Help Wanted :octocat:, Never gets stale"
+          exempt-issue-labels: 'Help Wanted :octocat:, Good first issue, Never gets stale, Issue: Author Provided Repro'
+          exempt-pr-labels: 'Help Wanted :octocat:, Never gets stale'
   stale-needs-author-feedback-asc:
     runs-on: ubuntu-latest
-    if: github.repository == 'facebook/react-native'
+    if: github.repository == 'react/react-native'
     permissions:
       issues: write
       pull-requests: write
@@ -73,5 +73,5 @@ jobs:
           stale-pr-message: "This PR is waiting for author's feedback since 24 days. Please provide the requested feedback or this will be closed in 7 days"
           close-issue-message: "This issue was closed because the author hasn't provided the requested feedback after 7 days."
           close-pr-message: "This PR was closed because the author hasn't provided the requested feedback after 7 days."
-          exempt-issue-labels: "Help Wanted :octocat:, Good first issue, Never gets stale, Issue: Author Provided Repro"
-          exempt-pr-labels: "Help Wanted :octocat:, Never gets stale"
+          exempt-issue-labels: 'Help Wanted :octocat:, Good first issue, Never gets stale, Issue: Author Provided Repro'
+          exempt-pr-labels: 'Help Wanted :octocat:, Never gets stale'

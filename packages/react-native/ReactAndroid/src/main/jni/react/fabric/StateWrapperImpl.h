@@ -11,12 +11,13 @@
 #include <react/common/mapbuffer/JReadableMapBuffer.h>
 #include <react/jni/ReadableNativeMap.h>
 #include <react/renderer/core/State.h>
+#include <react/uimanager/StateWrapper.h>
 
 namespace facebook::react {
 
 class Instance;
 
-class StateWrapperImpl : public jni::HybridClass<StateWrapperImpl> {
+class StateWrapperImpl : public jni::HybridClass<StateWrapperImpl, StateWrapper> {
  public:
   constexpr static const char *const kJavaDescriptor = "Lcom/facebook/react/fabric/StateWrapperImpl;";
   constexpr static auto StateWrapperImplJavaDescriptor = "com/facebook/react/fabric/StateWrapperImpl";

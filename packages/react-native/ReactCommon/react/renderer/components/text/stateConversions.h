@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include <folly/dynamic.h>
 #include <react/renderer/attributedstring/conversions.h>
 #include <react/renderer/components/text/ParagraphState.h>
 #ifdef RN_SERIALIZABLE_STATE

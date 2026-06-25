@@ -20,9 +20,11 @@ const Props::Shared& ShadowNodeFragment::propsPlaceholder() {
   return instance;
 }
 
-const ShadowNode::SharedListOfShared&
+const std::shared_ptr<const std::vector<std::shared_ptr<const ShadowNode>>>&
 ShadowNodeFragment::childrenPlaceholder() {
-  NO_DESTROY static ShadowNode::SharedListOfShared instance;
+  NO_DESTROY static std::shared_ptr<
+      const std::vector<std::shared_ptr<const ShadowNode>>>
+      instance;
   return instance;
 }
 

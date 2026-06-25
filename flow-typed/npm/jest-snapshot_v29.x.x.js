@@ -33,7 +33,7 @@ declare module 'jest-snapshot' {
 
   declare export function isSnapshotPath(path: string): boolean;
 
-  type LocalRequire = (module: string) => mixed;
+  type LocalRequire = (module: string) => unknown;
 
   declare export function buildSnapshotResolver(
     config: ProjectConfig,

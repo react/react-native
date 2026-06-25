@@ -9,30 +9,30 @@
  */
 
 // From @react-native/js-polyfills
-type ErrorHandler = (error: mixed, isFatal: boolean) => void;
-type Fn<Args: $ReadOnlyArray<mixed>, Return> = (...Args) => Return;
+type ErrorHandler = (error: unknown, isFatal: boolean) => void;
+type Fn<Args extends ReadonlyArray<unknown>, Return> = (...Args) => Return;
 export type ErrorUtils = {
-  applyWithGuard<TArgs: $ReadOnlyArray<mixed>, TOut>(
+  applyWithGuard<TArgs extends ReadonlyArray<unknown>, TOut>(
     fun: Fn<TArgs, TOut>,
-    context?: mixed,
+    context?: unknown,
     args?: ?TArgs,
     unused_onError?: null,
     unused_name?: ?string,
   ): ?TOut,
-  applyWithGuardIfNeeded<TArgs: $ReadOnlyArray<mixed>, TOut>(
+  applyWithGuardIfNeeded<TArgs extends ReadonlyArray<unknown>, TOut>(
     fun: Fn<TArgs, TOut>,
-    context?: mixed,
+    context?: unknown,
     args?: ?TArgs,
   ): ?TOut,
   getGlobalHandler(): ErrorHandler,
-  guard<TArgs: $ReadOnlyArray<mixed>, TOut>(
+  guard<TArgs extends ReadonlyArray<unknown>, TOut>(
     fun: Fn<TArgs, TOut>,
     name?: ?string,
-    context?: mixed,
+    context?: unknown,
   ): ?(...TArgs) => ?TOut,
   inGuard(): boolean,
-  reportError(error: mixed): void,
-  reportFatalError(error: mixed): void,
+  reportError(error: unknown): void,
+  reportFatalError(error: unknown): void,
   setGlobalHandler(fun: ErrorHandler): void,
 };
 

@@ -39,7 +39,7 @@ public object YogaNative {
 
   @JvmStatic public external fun jni_YGConfigGetErrataJNI(nativePointer: Long): Int
 
-  @JvmStatic public external fun jni_YGConfigSetLoggerJNI(nativePointer: Long, logger: YogaLogger)
+  @JvmStatic public external fun jni_YGConfigSetLoggerJNI(nativePointer: Long, logger: YogaLogger?)
 
   // YGNode related
   @JvmStatic public external fun jni_YGNodeNewJNI(): Long
@@ -310,6 +310,22 @@ public object YogaNative {
 
   @JvmStatic
   public external fun jni_YGNodeSetHasMeasureFuncJNI(nativePointer: Long, hasMeasureFunc: Boolean)
+
+  @JvmStatic
+  public external fun jni_YGNodeSetHasMinContentMeasureFuncJNI(
+      nativePointer: Long,
+      hasMinContentMeasureFunc: Boolean,
+  )
+
+  @JvmStatic
+  public external fun jni_YGNodeSetMinContentWidthJNI(nativePointer: Long, minContentWidth: Float)
+
+  @JvmStatic
+  public external fun jni_YGNodeSetMinContentHeightJNI(nativePointer: Long, minContentHeight: Float)
+
+  @JvmStatic public external fun jni_YGNodeGetMinContentWidthJNI(nativePointer: Long): Float
+
+  @JvmStatic public external fun jni_YGNodeGetMinContentHeightJNI(nativePointer: Long): Float
 
   @JvmStatic
   public external fun jni_YGNodeSetHasBaselineFuncJNI(nativePointer: Long, hasMeasureFunc: Boolean)

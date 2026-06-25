@@ -17,14 +17,6 @@ class ReactNativeFeatureFlagsOverridesOSSStable : public ReactNativeFeatureFlags
   {
     return true;
   }
-  bool enableFabricRenderer() override
-  {
-    return true;
-  }
-  bool useTurboModules() override
-  {
-    return true;
-  }
   bool useNativeViewConfigsInBridgelessMode() override
   {
     return true;

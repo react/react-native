@@ -41,7 +41,7 @@ export class CellRenderMask {
     }
   }
 
-  enumerateRegions(): $ReadOnlyArray<CellRegion> {
+  enumerateRegions(): ReadonlyArray<CellRegion> {
     return this._regions;
   }
 

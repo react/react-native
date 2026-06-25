@@ -40,29 +40,32 @@ class IMountingManager {
   virtual void
   dispatchCommand(const ShadowView &shadowView, const std::string &commandName, const folly::dynamic &args) = 0;
 
-  virtual void setIsJSResponder(const ShadowView &shadowView, bool isJSResponder, bool blockNativeResponder) {};
+  virtual void
+  setIsJSResponder(const ShadowView & /* shadowView */, bool /* isJSResponder */, bool /* blockNativeResponder */)
+  {
+  }
 
-  virtual void synchronouslyUpdateViewOnUIThread(Tag reactTag, const folly::dynamic &changedProps) {};
+  virtual void synchronouslyUpdateViewOnUIThread(Tag /* reactTag */, const folly::dynamic & /* changedProps */) {}
 
-  virtual void onUpdateShadowTree(const std::unordered_map<Tag, folly::dynamic> &tagToProps) {};
+  virtual void onUpdateShadowTree(const std::unordered_map<Tag, folly::dynamic> & /* tagToProps */) {}
 
-  virtual void initializeAccessibilityManager() {};
+  virtual void initializeAccessibilityManager() {}
 
-  virtual void setAccessibilityFocusedView(Tag viewTag) {};
+  virtual void setAccessibilityFocusedView(Tag /* viewTag */) {}
 
-  virtual void setFocusedView(Tag viewTag) {};
+  virtual void setFocusedView(Tag /* viewTag */) {}
 
-  virtual void clearAccessibilityFocusedView(Tag viewTag) {};
+  virtual void clearAccessibilityFocusedView(Tag /* viewTag */) {}
 
-  virtual void accessibleClickAction(Tag viewTag) {};
+  virtual void accessibleClickAction(Tag /* viewTag */) {}
 
-  virtual void accessibleScrollInDirection(Tag viewTag, int direction) {};
+  virtual void accessibleScrollInDirection(Tag /* viewTag */, int /* direction */) {}
 
-  virtual void accessibleSetText(Tag viewTag, const std::string &text) {};
+  virtual void accessibleSetText(Tag /* viewTag */, const std::string & /* text */) {}
 
-  virtual void clearFocusedView(Tag viewTag) {};
+  virtual void clearFocusedView(Tag /* viewTag */) {}
 
-  virtual void setAfterMountCallback(std::function<void(SurfaceId)> &&onAfterMount) {};
+  virtual void setAfterMountCallback(std::function<void(SurfaceId)> && /* onAfterMount */) {}
 
   virtual ComponentRegistryFactory getComponentRegistryFactory()
   {
@@ -74,11 +77,11 @@ class IMountingManager {
     return false;
   }
 
-  virtual void setSchedulerTaskExecutor(SchedulerTaskExecutor &&schedulerTaskExecutor) noexcept {};
+  virtual void setSchedulerTaskExecutor(SchedulerTaskExecutor && /* schedulerTaskExecutor */) noexcept {}
 
-  virtual void setEventEmitterListener(std::shared_ptr<EventEmitterListener> listener) noexcept {};
+  virtual void setEventEmitterListener(std::shared_ptr<EventEmitterListener> /* listener */) noexcept {}
 
-  virtual void setUIManager(std::weak_ptr<UIManager> uiManager) noexcept {};
+  virtual void setUIManager(std::weak_ptr<UIManager> /* uiManager */) noexcept {}
 
   virtual std::shared_ptr<IImageLoader> getImageLoader() noexcept
   {

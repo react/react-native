@@ -13,7 +13,15 @@ import DevLoadingView from '../../Utilities/DevLoadingView';
 import HMRClient from '../../Utilities/HMRClient';
 import getDevServer from './getDevServer';
 
-declare var global: {globalEvalWithSourceUrl?: (string, string) => mixed, ...};
+declare var global: {
+  globalEvalWithSourceUrl?: (string, string) => unknown,
+  __BUNDLE_LOADER_REPORTER__?: {
+    onStart: (url: string | URL) => void,
+    onSuccess: (url: string | URL) => void,
+    onError: (url: string | URL, error: Error) => void,
+  },
+  ...
+};
 
 let pendingRequests = 0;
 
@@ -26,7 +34,7 @@ export class LoadBundleFromServerError extends Error {
     message: string,
     url: string,
     isTimeout: boolean,
-    options?: {cause: mixed, ...},
+    options?: {cause: unknown, ...},
   ): void {
     super(message, options);
     this.url = url;
@@ -40,7 +48,7 @@ export class LoadBundleFromServerRequestError extends LoadBundleFromServerError 
     message: string,
     url: string,
     isTimeout: boolean,
-    options?: {cause: mixed, ...},
+    options?: {cause: unknown, ...},
   ): void {
     super(message, url, isTimeout, options);
     this.name = 'LoadBundleFromServerRequestError';
@@ -150,6 +158,7 @@ export default function loadBundleFromServer(
   }
   DevLoadingView.showMessage('Downloading...', 'load');
   ++pendingRequests;
+  global.__BUNDLE_LOADER_REPORTER__?.onStart(requestUrl);
 
   loadPromise = asyncRequest(requestUrl)
     .then<void>(({body, headers}) => {
@@ -180,9 +189,11 @@ export default function loadBundleFromServer(
         // eslint-disable-next-line no-eval
         eval(body);
       }
+      global.__BUNDLE_LOADER_REPORTER__?.onSuccess(requestUrl);
     })
     .catch<void>(e => {
       cachedPromisesByUrl.delete(requestUrl);
+      global.__BUNDLE_LOADER_REPORTER__?.onError(requestUrl, e);
       throw e;
     })
     .finally(() => {

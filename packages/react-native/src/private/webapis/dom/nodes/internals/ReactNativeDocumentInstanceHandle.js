@@ -36,7 +36,7 @@ export function getPublicInstanceFromReactNativeDocumentInstanceHandle(
 }
 
 export function isReactNativeDocumentInstanceHandle(
-  instanceHandle: mixed,
+  instanceHandle: unknown,
   // $FlowExpectedError[incompatible-type-guard]
 ): instanceHandle is ReactNativeDocumentInstanceHandle {
   // $FlowFixMe[incompatible-type-guard]

@@ -9,9 +9,9 @@
  */
 
 export type {
-  BrowserLauncher,
+  DevToolLauncher,
   DebuggerShellPreparationResult,
-} from './types/BrowserLauncher';
+} from './types/DevToolLauncher';
 export type {EventReporter, ReportableEvent} from './types/EventReporter';
 export type {
   CustomMessageHandler,
@@ -19,6 +19,7 @@ export type {
   CreateCustomMessageHandlerFn,
 } from './inspector-proxy/CustomMessageHandler';
 export type {Logger} from './types/Logger';
+export type {ReadonlyURL} from './types/ReadonlyURL';
 
-export {default as unstable_DefaultBrowserLauncher} from './utils/DefaultBrowserLauncher';
+export {default as unstable_DefaultToolLauncher} from './utils/DefaultToolLauncher';
 export {default as createDevMiddleware} from './createDevMiddleware';

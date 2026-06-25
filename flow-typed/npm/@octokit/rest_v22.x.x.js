@@ -13,9 +13,9 @@ declare module '@octokit/rest' {
   declare class Octokit {
     constructor(options?: {auth?: string, ...}): this;
 
-    repos: $ReadOnly<{
+    repos: Readonly<{
       listReleaseAssets: (
-        params: $ReadOnly<{
+        params: Readonly<{
           owner: string,
           repo: string,
           release_id: string,
@@ -29,13 +29,13 @@ declare module '@octokit/rest' {
         ...
       }>,
       uploadReleaseAsset: (
-        params: $ReadOnly<{
+        params: Readonly<{
           owner: string,
           repo: string,
           release_id: string,
           name: string,
           data: Buffer,
-          headers: $ReadOnly<{
+          headers: Readonly<{
             'content-type': string,
             ...
           }>,
@@ -53,7 +53,7 @@ declare module '@octokit/rest' {
         repo: string,
         asset_id: string,
         ...
-      }) => Promise<mixed>,
+      }) => Promise<unknown>,
     }>;
   }
 

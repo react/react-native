@@ -10,15 +10,10 @@
 
 'use strict';
 
-const createPerformanceLogger =
-  require('../../Utilities/createPerformanceLogger').default;
-const GlobalPerformanceLogger =
-  require('../../Utilities/GlobalPerformanceLogger').default;
 const Platform = require('../../Utilities/Platform').default;
 const XMLHttpRequest = require('../XMLHttpRequest').default;
 
 jest.unmock('../../Utilities/Platform');
-jest.mock('../../Utilities/GlobalPerformanceLogger');
 let requestId = 1;
 function setRequestId(id: number) {
   if (Platform.OS === 'ios') {
@@ -246,30 +241,11 @@ describe('XMLHttpRequest', function () {
     );
   });
 
-  it('should log to GlobalPerformanceLogger if a custom performance logger is not set', () => {
-    xhr.open('GET', 'blabla');
-    xhr.send();
-
-    expect(GlobalPerformanceLogger.startTimespan).toHaveBeenCalledWith(
-      'network_XMLHttpRequest_blabla',
-    );
-    expect(GlobalPerformanceLogger.stopTimespan).not.toHaveBeenCalled();
-
-    setRequestId(8);
-    xhr.__didReceiveResponse(requestId, 200, {
-      'Content-Type': 'text/plain; charset=utf-8',
-      'Content-Length': '32',
-    });
-
-    expect(GlobalPerformanceLogger.stopTimespan).toHaveBeenCalledWith(
-      'network_XMLHttpRequest_blabla',
-    );
-  });
-
   it('should log to a custom performance logger if set', () => {
-    const performanceLogger = createPerformanceLogger();
-    jest.spyOn(performanceLogger, 'startTimespan');
-    jest.spyOn(performanceLogger, 'stopTimespan');
+    const performanceLogger = {
+      startTimespan: jest.fn(),
+      stopTimespan: jest.fn(),
+    };
 
     xhr.setPerformanceLogger(performanceLogger);
 
@@ -279,7 +255,6 @@ describe('XMLHttpRequest', function () {
     expect(performanceLogger.startTimespan).toHaveBeenCalledWith(
       'network_XMLHttpRequest_blabla',
     );
-    expect(GlobalPerformanceLogger.startTimespan).not.toHaveBeenCalled();
     expect(performanceLogger.stopTimespan).not.toHaveBeenCalled();
 
     setRequestId(9);
@@ -291,7 +266,6 @@ describe('XMLHttpRequest', function () {
     expect(performanceLogger.stopTimespan).toHaveBeenCalledWith(
       'network_XMLHttpRequest_blabla',
     );
-    expect(GlobalPerformanceLogger.stopTimespan).not.toHaveBeenCalled();
   });
 
   it('should sort and lowercase response headers', function () {

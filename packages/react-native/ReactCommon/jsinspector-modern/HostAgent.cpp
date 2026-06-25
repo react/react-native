@@ -9,6 +9,7 @@
 #include "InstanceAgent.h"
 
 #ifdef REACT_NATIVE_DEBUGGER_ENABLED
+#include "EmulationAgent.h"
 #include "InspectorFlags.h"
 #include "InspectorInterfaces.h"
 #include "NetworkIOAgent.h"
@@ -20,8 +21,10 @@
 #include <folly/json.h>
 #include <jsinspector-modern/cdp/CdpJson.h>
 
+#include <algorithm>
 #include <chrono>
 #include <functional>
+#include <string>
 #include <string_view>
 
 using namespace std::chrono;
@@ -50,7 +53,8 @@ class HostAgent::Impl final {
         sessionState_(sessionState),
         networkIOAgent_(NetworkIOAgent(frontendChannel, std::move(executor))),
         tracingAgent_(
-            TracingAgent(frontendChannel, sessionState, targetController)) {}
+            TracingAgent(frontendChannel, sessionState, targetController)),
+        emulationAgent_(EmulationAgent(frontendChannel, targetController)) {}
 
   ~Impl() {
     if (isPausedInDebuggerOverlayVisible_) {
@@ -198,6 +202,89 @@ class HostAgent::Impl final {
           .shouldSendOKResponse = true,
       };
     }
+    if (InspectorFlags::getInstance().getScreenshotCaptureEnabled()) {
+      if (req.method == "Page.captureScreenshot") {
+        std::optional<std::string> format;
+        std::optional<int> quality;
+
+        if (req.params.isObject()) {
+          if (req.params.count("format") != 0u) {
+            format = req.params.at("format").asString();
+          }
+          if (req.params.count("quality") != 0u) {
+            quality = static_cast<int>(req.params.at("quality").asInt());
+          }
+        }
+
+        auto base64Data = targetController_.getDelegate().captureScreenshot(
+            {.format = format, .quality = quality});
+
+        if (base64Data.has_value()) {
+          frontendChannel_(
+              cdp::jsonResult(
+                  req.id,
+                  folly::dynamic::object("data", std::move(*base64Data))));
+        } else {
+          frontendChannel_(
+              cdp::jsonError(
+                  req.id,
+                  cdp::ErrorCode::InternalError,
+                  "Failed to capture screenshot"));
+        }
+
+        return {
+            .isFinishedHandlingRequest = true,
+            .shouldSendOKResponse = false,
+        };
+      }
+    }
+    if (req.method == "Page.addScriptToEvaluateOnNewDocument") {
+      // @cdp Page.addScriptToEvaluateOnNewDocument registers a script that
+      // will be evaluated in every new JS runtime created for this Host
+      // (e.g. after a reload), BEFORE the app's main bundle runs. We store
+      // it as session state and let each new RuntimeAgent replay it onto its
+      // runtime, mirroring the handling of @cdp Runtime.addBinding. Per CDP
+      // semantics the script does NOT run in the runtime that is current
+      // when it is registered; the client must reload to apply it.
+      std::string source =
+          req.params.isObject() && (req.params.count("source") != 0u)
+          ? req.params.at("source").asString()
+          : std::string();
+      std::string identifier =
+          std::to_string(sessionState_.nextScriptToEvaluateOnNewDocumentId++);
+      sessionState_.scriptsToEvaluateOnNewDocument.push_back(
+          {.identifier = identifier, .source = std::move(source)});
+
+      frontendChannel_(
+          cdp::jsonResult(
+              req.id, folly::dynamic::object("identifier", identifier)));
+
+      return {
+          .isFinishedHandlingRequest = true,
+          .shouldSendOKResponse = false,
+      };
+    }
+    if (req.method == "Page.removeScriptToEvaluateOnNewDocument") {
+      std::string identifier =
+          req.params.isObject() && (req.params.count("identifier") != 0u)
+          ? req.params.at("identifier").asString()
+          : std::string();
+      auto& scripts = sessionState_.scriptsToEvaluateOnNewDocument;
+      scripts.erase(
+          std::remove_if(
+              scripts.begin(),
+              scripts.end(),
+              [&identifier](
+                  const SessionState::ScriptToEvaluateOnNewDocument& script) {
+                return script.identifier == identifier;
+              }),
+          scripts.end());
+
+      return {
+          .isFinishedHandlingRequest = true,
+          .shouldSendOKResponse = true,
+      };
+    }
     if (req.method == "Overlay.setPausedInDebuggerMessage") {
       auto message =
           req.params.isObject() && (req.params.count("message") != 0u)
@@ -236,13 +323,11 @@ class HostAgent::Impl final {
         emitSystemStateChanged(isSingleHost);
       }
 
-      auto stashedTraceRecording =
-          targetController_.getDelegate()
-              .unstable_getHostTracingProfileThatWillBeEmittedOnInitialization();
-      if (stashedTraceRecording.has_value()) {
-        tracingAgent_.emitExternalHostTracingProfile(
-            std::move(stashedTraceRecording.value()));
-      }
+      auto emitted = targetController_.maybeEmitStashedBackgroundTrace();
+      assert(
+          emitted &&
+          "Expected to find at least one session eligible to receive a background trace after ReactNativeApplication.enable");
+      (void)emitted;
 
       return {
           .isFinishedHandlingRequest = true,
@@ -346,6 +431,11 @@ class HostAgent::Impl final {
       return;
     }
 
+    if (!requestState.isFinishedHandlingRequest &&
+        emulationAgent_.handleRequest(req)) {
+      return;
+    }
+
     if (!requestState.isFinishedHandlingRequest && instanceAgent_ &&
         instanceAgent_->handleRequest(req)) {
       return;
@@ -353,6 +443,11 @@ class HostAgent::Impl final {
 
     if (requestState.shouldSendOKResponse) {
       frontendChannel_(cdp::jsonResult(req.id));
+      return;
+    }
+
+    if (requestState.isFinishedHandlingRequest) {
+      // The handler already sent its own response via frontendChannel_.
       return;
     }
 
@@ -381,16 +476,8 @@ class HostAgent::Impl final {
     }
   }
 
-  bool hasFuseboxClientConnected() const {
-    return fuseboxClientType_ == FuseboxClientType::Fusebox;
-  }
-
-  void emitExternalTracingProfile(
-      tracing::HostTracingProfile tracingProfile) const {
-    assert(
-        hasFuseboxClientConnected() &&
-        "Attempted to emit a trace recording to a non-Fusebox client");
-    tracingAgent_.emitExternalHostTracingProfile(std::move(tracingProfile));
+  bool isEligibleForBackgroundTrace() const {
+    return sessionState_.isReactNativeApplicationDomainEnabled;
   }
 
   void emitSystemStateChanged(bool isSingleHost) {
@@ -483,6 +570,8 @@ class HostAgent::Impl final {
   NetworkIOAgent networkIOAgent_;
 
   TracingAgent tracingAgent_;
+
+  EmulationAgent emulationAgent_;
 };
 
 #else
@@ -503,10 +592,9 @@ class HostAgent::Impl final {
 
   void handleRequest(const cdp::PreparsedRequest& req) {}
   void setCurrentInstanceAgent(std::shared_ptr<InstanceAgent> agent) {}
-  bool hasFuseboxClientConnected() const {
+  bool isEligibleForBackgroundTrace() const {
     return false;
   }
-  void emitExternalTracingProfile(tracing::HostTracingProfile tracingProfile) {}
   void emitSystemStateChanged(bool isSingleHost) {}
 };
 
@@ -538,17 +626,8 @@ void HostAgent::setCurrentInstanceAgent(
   impl_->setCurrentInstanceAgent(std::move(instanceAgent));
 }
 
-bool HostAgent::hasFuseboxClientConnected() const {
-  return impl_->hasFuseboxClientConnected();
-}
-
-void HostAgent::emitExternalTracingProfile(
-    tracing::HostTracingProfile tracingProfile) const {
-  impl_->emitExternalTracingProfile(std::move(tracingProfile));
-}
-
-void HostAgent::emitSystemStateChanged(bool isSingleHost) const {
-  impl_->emitSystemStateChanged(isSingleHost);
+bool HostAgent::isEligibleForBackgroundTrace() const {
+  return impl_->isEligibleForBackgroundTrace();
 }
 
 #pragma mark - Tracing

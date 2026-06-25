@@ -11,7 +11,7 @@
 'use strict';
 
 import RNTesterText from '../components/RNTesterText';
-import React from 'react';
+import * as React from 'react';
 import {useState} from 'react';
 import {Image, TouchableHighlight, View} from 'react-native';
 

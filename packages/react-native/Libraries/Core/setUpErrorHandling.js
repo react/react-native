@@ -16,15 +16,17 @@ if (global.RN$useAlwaysAvailableJSErrorHandling !== true) {
    * You can use this module directly, or just require InitializeCore.
    */
   const ExceptionsManager = require('./ExceptionsManager').default;
+  const toError = require('../../src/private/utilities/toError').default;
   ExceptionsManager.installConsoleErrorReporter();
 
   // Set up error handler
   if (!global.__fbDisableExceptionsManager) {
-    const handleError = (e: mixed, isFatal: boolean) => {
+    const handleError = (e: unknown, isFatal: boolean) => {
       try {
         ExceptionsManager.handleException(e, isFatal);
-      } catch (ee) {
-        console.log('Failed to print error: ', ee.message);
+      } catch (ee: unknown) {
+        const error = toError(ee);
+        console.log('Failed to print error: ', error.message);
         throw e;
       }
     };

@@ -35,10 +35,10 @@ export type PlatformConstantsAndroid = {
 };
 
 export interface Spec extends TurboModule {
-  +getConstants: () => PlatformConstantsAndroid;
-  +getAndroidID: () => string;
+  readonly getConstants: () => PlatformConstantsAndroid;
+  readonly getAndroidID: () => string;
 }
 
-export default (TurboModuleRegistry.getEnforcing<Spec>(
+export default TurboModuleRegistry.getEnforcing<Spec>(
   'PlatformConstants',
-): Spec);
+) as Spec;

@@ -37,4 +37,8 @@ public object ReactBuildConfig {
   @JvmField
   public val UNSTABLE_ENABLE_MINIFY_LEGACY_ARCHITECTURE: Boolean =
       BuildConfig.UNSTABLE_ENABLE_MINIFY_LEGACY_ARCHITECTURE
+
+  @JvmField
+  public val UNSTABLE_REMOVE_LEGACY_COMPONENT_INTEROP: Boolean =
+      BuildConfig.UNSTABLE_REMOVE_LEGACY_COMPONENT_INTEROP
 }

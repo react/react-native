@@ -26,7 +26,7 @@
  * accessed. Once UIManager property accesses for view managers has been fully
  * deprecated, this file will also be removed.
  */
-const UIManagerProperties: $ReadOnlyArray<string> = [
+const UIManagerProperties: ReadonlyArray<string> = [
   'clearJSResponder',
   'configureNextLayoutAnimation',
   'createView',

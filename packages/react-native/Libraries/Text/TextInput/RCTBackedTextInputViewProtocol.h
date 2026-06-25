@@ -8,7 +8,6 @@
 #import <UIKit/UIKit.h>
 
 @protocol RCTBackedTextInputDelegate;
-@class RCTTextAttributes;
 
 NS_ASSUME_NONNULL_BEGIN
 

@@ -12,14 +12,38 @@ import android.graphics.RectF
 import android.util.LayoutDirection
 import com.facebook.react.modules.i18nmanager.I18nUtil
 
-/** Represents the insets from border pox to padding box (i.e. border widths) */
+/**
+ * Represents the insets from border box to padding box (i.e., border widths).
+ *
+ * This class stores border widths using logical edge properties and resolves them to physical edges
+ * based on layout direction. It supports all logical edges defined in [LogicalEdge].
+ *
+ * @see LogicalEdge
+ */
 internal class BorderInsets {
   private val edgeInsets = arrayOfNulls<Float?>(LogicalEdge.values().size)
 
+  /**
+   * Sets the border width for a specific logical edge.
+   *
+   * @param edge The logical edge to set
+   * @param width The border width in pixels, or null to clear
+   */
   fun setBorderWidth(edge: LogicalEdge, width: Float?) {
     edgeInsets[edge.ordinal] = width
   }
 
+  /**
+   * Resolves logical edge insets to physical edge insets based on layout direction.
+   *
+   * This method handles LTR/RTL layout direction and the doLeftAndRightSwapInRTL setting to
+   * correctly map logical properties to physical edges.
+   *
+   * @param layoutDirection The resolved layout direction (LTR or RTL)
+   * @param context Android context for RTL swap preference
+   * @return RectF with left, top, right, bottom insets
+   * @throws IllegalArgumentException if layoutDirection is not LTR or RTL
+   */
   fun resolve(
       layoutDirection: Int,
       context: Context,

@@ -1,0 +1,3 @@
+template <typename>
+struct test::is_optional : public std::false_type {
+}

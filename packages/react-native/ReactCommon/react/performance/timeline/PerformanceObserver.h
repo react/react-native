@@ -14,6 +14,7 @@
 
 #include <functional>
 #include <memory>
+#include <mutex>
 #include <unordered_set>
 #include <vector>
 
@@ -126,6 +127,7 @@ class PerformanceObserver : public std::enable_shared_from_this<PerformanceObser
 
   /// https://www.w3.org/TR/event-timing/#sec-modifications-perf-timeline
   HighResDuration durationThreshold_ = DEFAULT_DURATION_THRESHOLD;
+  std::mutex bufferMutex_;
   std::vector<PerformanceEntry> buffer_;
   bool didScheduleFlushBuffer_ = false;
   bool requiresDroppedEntries_ = false;

@@ -25,7 +25,7 @@ export type Mapping =
   | AnimatedValue
   | AnimatedValueXY;
 export type EventConfig<T> = {
-  listener?: ?(NativeSyntheticEvent<T>) => mixed,
+  listener?: ?(NativeSyntheticEvent<T>) => unknown,
   useNativeDriver: boolean,
   platformConfig?: PlatformConfig,
 };
@@ -33,14 +33,14 @@ export type EventConfig<T> = {
 export function attachNativeEventImpl(
   viewRef: any,
   eventName: string,
-  argMapping: $ReadOnlyArray<?Mapping>,
+  argMapping: ReadonlyArray<?Mapping>,
   platformConfig: ?PlatformConfig,
 ): {detach: () => void} {
   // Find animated values in `argMapping` and create an array representing their
   // key path inside the `nativeEvent` object. Ex.: ['contentOffset', 'x'].
   const eventMappings: Array<EventMapping> = [];
 
-  const traverse = (value: mixed, path: Array<string>) => {
+  const traverse = (value: unknown, path: Array<string>) => {
     if (value instanceof AnimatedValue) {
       value.__makeNative(platformConfig);
 
@@ -93,7 +93,7 @@ export function attachNativeEventImpl(
   };
 }
 
-function validateMapping(argMapping: $ReadOnlyArray<?Mapping>, args: any) {
+function validateMapping(argMapping: ReadonlyArray<?Mapping>, args: any) {
   const validate = (recMapping: ?Mapping, recEvt: any, key: string) => {
     if (recMapping instanceof AnimatedValue) {
       invariant(
@@ -146,13 +146,13 @@ function validateMapping(argMapping: $ReadOnlyArray<?Mapping>, args: any) {
 }
 
 export class AnimatedEvent {
-  _argMapping: $ReadOnlyArray<?Mapping>;
+  _argMapping: ReadonlyArray<?Mapping>;
   _listeners: Array<Function> = [];
   _attachedEvent: ?{detach: () => void, ...};
   __isNative: boolean;
   __platformConfig: ?PlatformConfig;
 
-  constructor(argMapping: $ReadOnlyArray<?Mapping>, config: EventConfig<any>) {
+  constructor(argMapping: ReadonlyArray<?Mapping>, config: EventConfig<any>) {
     this._argMapping = argMapping;
 
     if (config == null) {

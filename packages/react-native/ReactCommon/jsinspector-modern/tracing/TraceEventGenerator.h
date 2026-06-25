@@ -12,7 +12,9 @@
 #include <jsinspector-modern/tracing/FrameTimingSequence.h>
 #include <react/timing/primitives.h>
 
-#include <tuple>
+#include <cstdint>
+#include <utility>
+#include <vector>
 
 namespace facebook::react::jsinspector_modern::tracing {
 
@@ -35,12 +37,11 @@ class TraceEventGenerator {
   /**
    * Creates canonical "BeginFrame", "Commit", "DrawFrame" trace events.
    */
-  static std::tuple<TraceEvent, TraceEvent, TraceEvent> createFrameTimingsEvents(
+  static std::pair<TraceEvent, TraceEvent> createFrameTimingsEvents(
       FrameSequenceId sequenceId,
       int layerTreeId,
-      HighResTimeStamp beginDrawingTimestamp,
-      HighResTimeStamp commitTimestamp,
-      HighResTimeStamp endDrawingTimestamp,
+      HighResTimeStamp beginTimestamp,
+      HighResTimeStamp endTimestamp,
       ProcessId processId,
       ThreadId threadId);
 
@@ -50,7 +51,7 @@ class TraceEventGenerator {
   static TraceEvent createScreenshotEvent(
       FrameSequenceId frameSequenceId,
       int sourceId,
-      std::string &&snapshot,
+      std::vector<uint8_t> &&snapshot,
       HighResTimeStamp expectedDisplayTime,
       ProcessId processId,
       ThreadId threadId);

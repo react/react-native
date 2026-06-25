@@ -118,7 +118,7 @@ export type DangerouslyImpreciseStyleProp =
  * This will correctly give you the type 'absolute' | 'relative'
  */
 export type TypeForStyleKey<
-  +key: $Keys<____DangerouslyImpreciseStyle_Internal>,
+  out key extends keyof ____DangerouslyImpreciseStyle_Internal,
 > = ____DangerouslyImpreciseStyle_Internal[key];
 
 /**

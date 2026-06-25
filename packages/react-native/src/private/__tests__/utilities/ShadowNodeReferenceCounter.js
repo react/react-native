@@ -34,7 +34,7 @@ function createExpirationChecker(
 
 export function createShadowNodeReferenceCountingRef(): [
   () => number,
-  React.RefSetter<mixed>,
+  React.RefSetter<unknown>,
 ] {
   let getReferenceCount: ?() => number;
 
@@ -45,7 +45,7 @@ export function createShadowNodeReferenceCountingRef(): [
     return getReferenceCount();
   }
 
-  function ref(instance: mixed | null) {
+  function ref(instance: unknown | null) {
     if (instance == null) {
       return;
     }

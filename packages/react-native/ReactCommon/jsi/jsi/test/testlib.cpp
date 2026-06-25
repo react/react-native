@@ -98,6 +98,46 @@ TEST_P(JSITest, StringTest) {
   EXPECT_EQ(movedQuux.utf8(rt), "quux2");
 }
 
+TEST_P(JSITest, StringLengthTest) {
+  // Test ASCII string length
+  String ascii = String::createFromAscii(rt, "hello");
+  EXPECT_EQ(ascii.length(rt), 5);
+
+  // Test empty string
+  String empty = String::createFromAscii(rt, "");
+  EXPECT_EQ(empty.length(rt), 0);
+
+  // Test euro sign '€' (U+20AC) - BMP character, 1 code unit
+  String euro = eval("'\\u20AC'").getString(rt);
+  EXPECT_EQ(euro.length(rt), 1);
+
+  // Test codepoint requiring 2 code units (surrogate pair)
+  // U+1F408 (🐈) is encoded as \uD83D\uDC08 in UTF-16
+  String emoji = eval("'\\uD83D\\uDC08'").getString(rt);
+  EXPECT_EQ(emoji.length(rt), 2);
+
+  // Test another surrogate pair: U+10000 (first supplementary character)
+  String supplementary = eval("'\\uD800\\uDC00'").getString(rt);
+  EXPECT_EQ(supplementary.length(rt), 2);
+
+  // Test lone high surrogate (U+D800)
+  String loneHighSurrogate = eval("'\\uD800'").getString(rt);
+  EXPECT_EQ(loneHighSurrogate.length(rt), 1);
+
+  // Test lone low surrogate (U+DC00)
+  String loneLowSurrogate = eval("'\\uDC00'").getString(rt);
+  EXPECT_EQ(loneLowSurrogate.length(rt), 1);
+
+  // Test lone surrogate in the middle of a string
+  String mixedWithLoneSurrogate = eval("'a\\uD800b'").getString(rt);
+  EXPECT_EQ(mixedWithLoneSurrogate.length(rt), 3);
+
+  // Unicode Max Value is U+10FFFF, U+11FFFF is invalid
+  // But it could be theoretically encoded as \uDBFF\uDFFF
+  String invalid = eval("'\\uDBFF\\uDFFF'").getString(rt);
+  EXPECT_EQ(invalid.length(rt), 2);
+}
+
 TEST_P(JSITest, ObjectTest) {
   eval("x = {1:2, '3':4, 5:'six', 'seven':['eight', 'nine']}");
   Object x = rt.global().getPropertyAsObject(rt, "x");
@@ -934,6 +974,42 @@ TEST_P(JSITest, ValueTest) {
   EXPECT_EQ(eval("['zero',1,2,3]").toString(rt).utf8(rt), "zero,1,2,3");
 }
 
+TEST_P(JSITest, IsIntegerTest) {
+  // Non-number values should return false
+  EXPECT_FALSE(Value::undefined().isInteger());
+  EXPECT_FALSE(Value::null().isInteger());
+  EXPECT_FALSE(Value(true).isInteger());
+  EXPECT_FALSE(Value(false).isInteger());
+  EXPECT_FALSE(Value(rt, String::createFromAscii(rt, "42")).isInteger());
+  EXPECT_FALSE(Value(rt, Object(rt)).isInteger());
+
+  // NaN should return false
+  EXPECT_FALSE(Value(std::numeric_limits<double>::quiet_NaN()).isInteger());
+
+  // Infinity should return false
+  EXPECT_FALSE(Value(std::numeric_limits<double>::infinity()).isInteger());
+  EXPECT_FALSE(Value(-std::numeric_limits<double>::infinity()).isInteger());
+
+  // Non-integer numbers should return false
+  EXPECT_FALSE(Value(1.5).isInteger());
+  EXPECT_FALSE(Value(-2.3).isInteger());
+  EXPECT_FALSE(Value(0.1).isInteger());
+
+  // Integer numbers should return true
+  EXPECT_TRUE(Value(0).isInteger());
+  EXPECT_TRUE(Value(0.0).isInteger());
+  EXPECT_TRUE(Value(-0.0).isInteger());
+  EXPECT_TRUE(Value(1).isInteger());
+  EXPECT_TRUE(Value(-1).isInteger());
+  EXPECT_TRUE(Value(42).isInteger());
+  EXPECT_TRUE(Value(1000000).isInteger());
+  EXPECT_TRUE(Value(-999999).isInteger());
+
+  // Large integers that can be exactly represented as doubles
+  EXPECT_TRUE(Value(static_cast<double>(1LL << 52)).isInteger());
+  EXPECT_TRUE(Value(static_cast<double>(-(1LL << 52))).isInteger());
+}
+
 TEST_P(JSITest, EqualsTest) {
   EXPECT_TRUE(Object::strictEquals(rt, rt.global(), rt.global()));
   EXPECT_TRUE(Value::strictEquals(rt, 1, 1));
@@ -1426,6 +1502,101 @@ TEST_P(JSITest, JSErrorTest) {
           "var e = {toString() { throw new Error('errstr'); }};"
           "throw e;"),
       JSIException);
+}
+
+TEST_P(JSITest, CreateErrorTest) {
+  // Test JSError::createEvalError
+  {
+    try {
+      throw JSError::createEvalError(rt, "eval error");
+    } catch (const JSError& e) {
+      // getMessage() checks the C++ JSError's cached message.
+      // The "message" property check verifies the JS object was constructed
+      // correctly, since they are populated independently.
+      EXPECT_EQ(e.getMessage(), "eval error");
+      Object caughtObj = e.value().getObject(rt);
+      EXPECT_EQ(
+          caughtObj.getProperty(rt, "message").getString(rt).utf8(rt),
+          "eval error");
+      EXPECT_TRUE(rt.instanceOf(
+          caughtObj, rt.global().getPropertyAsFunction(rt, "EvalError")));
+    }
+  }
+
+  // Test JSError::createRangeError
+  {
+    try {
+      throw JSError::createRangeError(rt, "range error");
+    } catch (const JSError& e) {
+      EXPECT_EQ(e.getMessage(), "range error");
+      Object caughtObj = e.value().getObject(rt);
+      EXPECT_EQ(
+          caughtObj.getProperty(rt, "message").getString(rt).utf8(rt),
+          "range error");
+      EXPECT_TRUE(rt.instanceOf(
+          caughtObj, rt.global().getPropertyAsFunction(rt, "RangeError")));
+    }
+  }
+
+  // Test JSError::createReferenceError
+  {
+    try {
+      throw JSError::createReferenceError(rt, "reference error");
+    } catch (const JSError& e) {
+      EXPECT_EQ(e.getMessage(), "reference error");
+      Object caughtObj = e.value().getObject(rt);
+      EXPECT_EQ(
+          caughtObj.getProperty(rt, "message").getString(rt).utf8(rt),
+          "reference error");
+      EXPECT_TRUE(rt.instanceOf(
+          caughtObj, rt.global().getPropertyAsFunction(rt, "ReferenceError")));
+    }
+  }
+
+  // Test JSError::createSyntaxError
+  {
+    try {
+      throw JSError::createSyntaxError(rt, "syntax error");
+    } catch (const JSError& e) {
+      EXPECT_EQ(e.getMessage(), "syntax error");
+      Object caughtObj = e.value().getObject(rt);
+      EXPECT_EQ(
+          caughtObj.getProperty(rt, "message").getString(rt).utf8(rt),
+          "syntax error");
+      EXPECT_TRUE(rt.instanceOf(
+          caughtObj, rt.global().getPropertyAsFunction(rt, "SyntaxError")));
+    }
+  }
+
+  // Test JSError::createTypeError
+  {
+    try {
+      throw JSError::createTypeError(rt, "type error");
+    } catch (const JSError& e) {
+      EXPECT_EQ(e.getMessage(), "type error");
+      Object caughtObj = e.value().getObject(rt);
+      EXPECT_EQ(
+          caughtObj.getProperty(rt, "message").getString(rt).utf8(rt),
+          "type error");
+      EXPECT_TRUE(rt.instanceOf(
+          caughtObj, rt.global().getPropertyAsFunction(rt, "TypeError")));
+    }
+  }
+
+  // Test JSError::createURIError
+  {
+    try {
+      throw JSError::createURIError(rt, "uri error");
+    } catch (const JSError& e) {
+      EXPECT_EQ(e.getMessage(), "uri error");
+      Object caughtObj = e.value().getObject(rt);
+      EXPECT_EQ(
+          caughtObj.getProperty(rt, "message").getString(rt).utf8(rt),
+          "uri error");
+      EXPECT_TRUE(rt.instanceOf(
+          caughtObj, rt.global().getPropertyAsFunction(rt, "URIError")));
+    }
+  }
 }
 
 TEST_P(JSITest, MicrotasksTest) {
@@ -2009,6 +2180,288 @@ TEST_P(JSITest, DeleteProperty) {
   EXPECT_THROW(obj.deleteProperty(rd, "prop"), JSError);
   hasRes = obj.hasProperty(rd, "prop");
   EXPECT_TRUE(hasRes);
+}
+
+TEST_P(JSITest, ArrayPush) {
+  // This Runtime Decorator is used to test the default implementation of
+  // Runtime::push
+  class RD : public RuntimeDecorator<Runtime, Runtime> {
+   public:
+    explicit RD(Runtime& rt) : RuntimeDecorator(rt) {}
+
+    size_t push(const Array& arr, const Value* elements, size_t count)
+        override {
+      return Runtime::push(arr, elements, count);
+    }
+  };
+  RD rd = RD(rt);
+
+  // Push to an empty array
+  Array arr(rd, 0);
+  size_t newLength = arr.push(rd, 1, 2, 3);
+  EXPECT_EQ(newLength, 3);
+  EXPECT_EQ(arr.length(rd), 3);
+
+  EXPECT_EQ(arr.getValueAtIndex(rd, 0).getNumber(), 1);
+  EXPECT_EQ(arr.getValueAtIndex(rd, 1).getNumber(), 2);
+  EXPECT_EQ(arr.getValueAtIndex(rd, 2).getNumber(), 3);
+
+  // Push to an array already containing elements
+  arr = Array::createWithElements(rd, 1, true);
+  Object obj(rd);
+  newLength = arr.push(rd, "foobar", obj);
+  EXPECT_EQ(newLength, 4);
+  EXPECT_EQ(arr.length(rd), 4);
+
+  EXPECT_EQ(arr.getValueAtIndex(rd, 0).getNumber(), 1);
+  EXPECT_TRUE(arr.getValueAtIndex(rd, 1).getBool());
+  EXPECT_EQ(arr.getValueAtIndex(rd, 2).getString(rd).utf8(rd), "foobar");
+  EXPECT_TRUE(
+      Object::strictEquals(rd, arr.getValueAtIndex(rd, 3).getObject(rd), obj));
+
+  // Push to a Proxy of a JS Array
+  arr = eval("new Proxy([1], {})").getObject(rd).getArray(rd);
+  EXPECT_EQ(arr.length(rd), 1);
+
+  newLength = arr.push(rd, true, "foobar");
+  EXPECT_EQ(newLength, 3);
+  EXPECT_EQ(arr.length(rd), 3);
+
+  EXPECT_EQ(arr.getValueAtIndex(rd, 0).getNumber(), 1);
+  EXPECT_TRUE(arr.getValueAtIndex(rd, 1).getBool());
+  EXPECT_EQ(arr.getValueAtIndex(rd, 2).getString(rd).utf8(rd), "foobar");
+
+  // Push to a Proxy of a JS Array, where getting the length returns a custom
+  // value
+  arr = eval(
+            "var arr = [1];"
+            "var handler = {"
+            "    get(target, property) {"
+            "        if (property == 'length') {"
+            "            return target.length + 1;"
+            "        }"
+            "        return Reflect.get(target, property);"
+            "    }"
+            "};"
+            "var proxy = new Proxy(arr, handler);"
+            "proxy;")
+            .getObject(rd)
+            .getArray(rd);
+  // The handler returns the underlying array's length plus 1
+  EXPECT_EQ(arr.length(rd), 2);
+
+  // The elements will be adding starting at element 2
+  newLength = arr.push(rd, 3, 4);
+  EXPECT_EQ(newLength, 4);
+
+  EXPECT_EQ(arr.length(rd), 5);
+  EXPECT_EQ(arr.getValueAtIndex(rd, 0).getNumber(), 1);
+  EXPECT_TRUE(arr.getValueAtIndex(rd, 1).isUndefined());
+  EXPECT_EQ(arr.getValueAtIndex(rd, 2).getNumber(), 3);
+  EXPECT_EQ(arr.getValueAtIndex(rd, 3).getNumber(), 4);
+
+  // Push to a Proxy of a JS Array, where setting the 'length' property is
+  // customized
+  arr = eval(
+            "var arr = [1];"
+            "var handler = {"
+            "    set(target, property, value) {"
+            "        if (property == 'length') {"
+            "            return Reflect.set(target, property, value + 1);"
+            "        }"
+            "        return Reflect.set(target, property, value);"
+            "    }"
+            "};"
+            "var proxy = new Proxy(arr, handler);"
+            "proxy;")
+            .getObject(rd)
+            .getArray(rd);
+
+  EXPECT_EQ(arr.length(rd), 1);
+  EXPECT_EQ(arr.getValueAtIndex(rd, 0).getNumber(), 1);
+
+  newLength = arr.push(rd, 2, 3);
+  EXPECT_EQ(newLength, 3);
+
+  // When setting the 'length' property, the handler will actually set it to 3 +
+  // 1
+  EXPECT_EQ(arr.length(rd), 4);
+  EXPECT_EQ(arr.getValueAtIndex(rd, 0).getNumber(), 1);
+  EXPECT_EQ(arr.getValueAtIndex(rd, 1).getNumber(), 2);
+  EXPECT_EQ(arr.getValueAtIndex(rd, 2).getNumber(), 3);
+  EXPECT_TRUE(arr.getValueAtIndex(rd, 3).isUndefined());
+}
+
+TEST_P(JSITest, UInt8ArrayTest) {
+  // This Runtime Decorator is used to test the default implementation of
+  // Runtime::createUint8Array and TypedArray APIs
+  class RD : public RuntimeDecorator<Runtime, Runtime> {
+   public:
+    explicit RD(Runtime& rt) : RuntimeDecorator(rt) {}
+
+    Uint8Array createUint8Array(size_t length) override {
+      return Runtime::createUint8Array(length);
+    }
+
+    Uint8Array createUint8Array(
+        const ArrayBuffer& buffer,
+        size_t offset,
+        size_t length) override {
+      return Runtime::createUint8Array(buffer, offset, length);
+    }
+
+    ArrayBuffer buffer(const TypedArray& typedArray) override {
+      return Runtime::buffer(typedArray);
+    }
+
+    size_t byteOffset(const TypedArray& typedArray) override {
+      return Runtime::byteOffset(typedArray);
+    }
+
+    size_t byteLength(const TypedArray& typedArray) override {
+      return Runtime::byteLength(typedArray);
+    }
+
+    size_t length(const TypedArray& typedArray) override {
+      return Runtime::length(typedArray);
+    }
+  };
+  RD rd = RD(rt);
+
+  // Test creating a UInt8Array with a specific length
+  {
+    auto uint8Array = rd.createUint8Array(10);
+
+    EXPECT_EQ(rd.length(uint8Array), 10);
+    EXPECT_EQ(rd.byteLength(uint8Array), 10);
+    EXPECT_EQ(rd.byteOffset(uint8Array), 0);
+  }
+
+  // Test creating a UInt8Array from an ArrayBuffer with offset
+  {
+    auto ab = eval("var buf = new ArrayBuffer(20); buf")
+                  .getObject(rd)
+                  .getArrayBuffer(rd);
+
+    // Create a Uint8Array starting at offset 5 with length 10
+    auto uint8Array = rd.createUint8Array(ab, 5, 10);
+
+    EXPECT_EQ(rd.length(uint8Array), 10);
+    EXPECT_EQ(rd.byteLength(uint8Array), 10);
+    EXPECT_EQ(rd.byteOffset(uint8Array), 5);
+
+    // Test buffer returns the correct underlying ArrayBuffer
+    auto buffer = rd.buffer(uint8Array);
+    EXPECT_EQ(buffer.size(rd), 20);
+  }
+}
+
+TEST_P(JSITest, IsTypedArrayTest) {
+  // Test that isTypedArray returns false for a regular object
+  {
+    auto obj = Object(rt);
+    EXPECT_FALSE(rt.isTypedArray(obj));
+    EXPECT_THROW(obj.asTypedArray(rt), JSIException);
+  }
+
+  // Test that isTypedArray returns true for a Uint8Array
+  {
+    Uint8Array uint8Array(rt, 10);
+    EXPECT_TRUE(rt.isTypedArray(uint8Array));
+
+    auto typedArray = uint8Array.getTypedArray(rt);
+    EXPECT_EQ(typedArray.length(rt), 10);
+  }
+
+  // Test that isTypedArray returns true for other TypedArray types
+  {
+    auto int32ArrayObj = eval("new Int32Array(5)").getObject(rt);
+    EXPECT_TRUE(rt.isTypedArray(int32ArrayObj));
+    EXPECT_FALSE(rt.isUint8Array(int32ArrayObj));
+
+    auto typedArray = int32ArrayObj.getTypedArray(rt);
+    EXPECT_EQ(typedArray.length(rt), 5);
+  }
+
+  // Test that isTypedArray returns true for Float64Array
+  {
+    auto float64ArrayObj = eval("new Float64Array(3)").getObject(rt);
+    EXPECT_TRUE(rt.isTypedArray(float64ArrayObj));
+
+    auto typedArray = float64ArrayObj.asTypedArray(rt);
+    EXPECT_EQ(typedArray.length(rt), 3);
+  }
+
+  // Test that isTypedArray returns false for ArrayBuffer
+  {
+    auto arrayBufferObj = eval("new ArrayBuffer(10)").getObject(rt);
+    EXPECT_FALSE(rt.isTypedArray(arrayBufferObj));
+  }
+
+  // Test that isTypedArray returns false for a regular array
+  {
+    auto arrayObj = eval("[1, 2, 3]").getObject(rt);
+    EXPECT_FALSE(rt.isTypedArray(arrayObj));
+  }
+}
+
+TEST_P(JSITest, IsUint8ArrayTest) {
+  // Test that isUint8Array returns false for a regular object
+  {
+    auto obj = Object(rt);
+    EXPECT_FALSE(rt.isUint8Array(obj));
+    EXPECT_THROW(obj.asUint8Array(rt), JSIException);
+  }
+
+  // Test that isUint8Array returns true for a Uint8Array created via JS
+  {
+    auto uint8ArrayObj = eval("new Uint8Array(10)").getObject(rt);
+    EXPECT_TRUE(rt.isUint8Array(uint8ArrayObj));
+
+    // Get uInt8Array should succeed.
+    auto uint8Array = uint8ArrayObj.getUint8Array(rt);
+    EXPECT_EQ(uint8Array.length(rt), 10);
+  }
+}
+
+TEST_P(JSITest, ArrayBufferDetachedTest) {
+  // This Runtime Decorator is used to test the default implementation of
+  // Runtime::detached
+  class RD : public RuntimeDecorator<Runtime, Runtime> {
+   public:
+    explicit RD(Runtime& rt) : RuntimeDecorator(rt) {}
+
+    bool detached(const ArrayBuffer& ab) override {
+      return Runtime::detached(ab);
+    }
+  };
+  RD rd = RD(rt);
+
+  // Test that a normal ArrayBuffer is not detached.
+  auto ab = eval("var buf = new ArrayBuffer(10); buf")
+                .getObject(rd)
+                .getArrayBuffer(rd);
+
+  // The default Runtime::detached reads the JS "detached" property. If the
+  // runtime doesn't support ArrayBuffer.prototype.detached, it will throw
+  // JSINativeException.
+  try {
+    EXPECT_FALSE(ab.detached(rd));
+  } catch (const JSINativeException&) {
+    // Runtime doesn't support ArrayBuffer.prototype.detached, skip the rest.
+    return;
+  }
+
+  // Detach the ArrayBuffer. Use transfer() if available, otherwise fall back
+  // to HermesInternal.detach for Hermes runtime.
+  eval(
+      "if (typeof buf.transfer === 'function') {"
+      "  buf.transfer();"
+      "} else if (typeof HermesInternal !== 'undefined' && "
+      "           typeof HermesInternal.detachArrayBuffer === 'function') {"
+      "  HermesInternal.detachArrayBuffer(buf);"
+      "}");
+  EXPECT_TRUE(ab.detached(rd));
 }
 
 INSTANTIATE_TEST_CASE_P(

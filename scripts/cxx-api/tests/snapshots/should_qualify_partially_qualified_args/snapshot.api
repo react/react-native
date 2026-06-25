@@ -1,0 +1,9 @@
+facebook::yoga::Result facebook::react::getResult(facebook::yoga::Node node, int flags);
+void facebook::react::processNode(facebook::yoga::Node node);
+
+
+struct facebook::yoga::Node {
+}
+
+struct facebook::yoga::Result {
+}

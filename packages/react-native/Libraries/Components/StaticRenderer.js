@@ -12,7 +12,7 @@
 
 import * as React from 'react';
 
-type Props = $ReadOnly<{
+type Props = Readonly<{
   /**
    * Indicates whether the render function needs to be called again
    */

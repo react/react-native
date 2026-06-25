@@ -112,4 +112,46 @@ TraceEventSerializer::serializeProfileChunkCPUProfileNodeCallFrame(
   return dynamicCallFrame;
 }
 
+/* static */ size_t TraceEventSerializer::estimateJsonSize(
+    const folly::dynamic& value) {
+  switch (value.type()) {
+    case folly::dynamic::Type::NULLT:
+      return 4; // null
+    case folly::dynamic::Type::BOOL:
+      return 5; // false
+    case folly::dynamic::Type::INT64:
+    case folly::dynamic::Type::DOUBLE:
+      return 20; // conservative max for numeric values
+    case folly::dynamic::Type::STRING:
+      return value.stringPiece().size() + 2; // quotes
+    case folly::dynamic::Type::ARRAY: {
+      size_t size = 2; // []
+      bool first = true;
+      for (const auto& element : value) {
+        if (!first) {
+          size += 1; // comma
+        }
+        first = false;
+        size += estimateJsonSize(element);
+      }
+      return size;
+    }
+    case folly::dynamic::Type::OBJECT: {
+      size_t size = 2; // {}
+      bool first = true;
+      for (const auto& [key, val] : value.items()) {
+        if (!first) {
+          size += 1; // comma
+        }
+        first = false;
+        // key size + quotes + colon
+        size += key.stringPiece().size() + 3;
+        size += estimateJsonSize(val);
+      }
+      return size;
+    }
+  }
+  return 0;
+}
+
 } // namespace facebook::react::jsinspector_modern::tracing

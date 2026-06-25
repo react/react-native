@@ -145,6 +145,115 @@ describe('inspector-proxy device socket handoff', () => {
     }
   });
 
+  test('device ID collision with multiple debuggers connected restores all connections', async () => {
+    let device1, device2, debugger1, debugger2, webSocketDebuggerUrl;
+    try {
+      // Connect device with a page that supports multiple debuggers
+      ({
+        device: device1,
+        pageList: [{webSocketDebuggerUrl}],
+      } = await connectDevice(
+        '/inspector/device?device=device&name=foo&app=bar',
+        [
+          {
+            ...PAGE_DEFAULTS,
+            vm: 'bar-vm',
+            capabilities: {
+              supportsMultipleDebuggers: true,
+            },
+          },
+        ],
+      ));
+
+      // Connect two debuggers to the same page
+      debugger1 = await createDebuggerMock(
+        webSocketDebuggerUrl,
+        autoCleanup.signal,
+      );
+      await until(() => expect(device1.connect).toBeCalledTimes(1));
+
+      debugger2 = await createDebuggerMock(
+        webSocketDebuggerUrl,
+        autoCleanup.signal,
+      );
+      await until(() => expect(device1.connect).toBeCalledTimes(2));
+
+      // Both debuggers should be open
+      expect(debugger1.socket.readyState).toBe(1); // OPEN
+      expect(debugger2.socket.readyState).toBe(1); // OPEN
+
+      // Now simulate device ID collision (device reconnects with same ID)
+      ({device: device2} = await connectDevice(
+        '/inspector/device?device=device&name=foo&app=bar',
+        [
+          {
+            ...PAGE_DEFAULTS,
+            vm: 'bar-vm-updated',
+            capabilities: {
+              supportsMultipleDebuggers: true,
+            },
+          },
+        ],
+      ));
+
+      // Device1 socket should be closed
+      expect([3, 4]).toContain(device1.socket.readyState);
+
+      // Both debugger sockets should still be open (handed off to device2)
+      expect(debugger1.socket.readyState).toBe(1); // OPEN
+      expect(debugger2.socket.readyState).toBe(1); // OPEN
+
+      // Device2 should have received connect events for both debuggers
+      await until(() => expect(device2.connect).toBeCalledTimes(2));
+
+      // Both debuggers should be able to send messages to device2
+      device1.wrappedEventParsed.mockClear();
+
+      const receivedByDevice2FromDebugger1 = await sendFromDebuggerToTarget(
+        debugger1,
+        device2,
+        'page1',
+        {
+          method: 'Runtime.enable',
+          id: 1,
+        },
+      );
+      expect(receivedByDevice2FromDebugger1).toEqual({
+        method: 'Runtime.enable',
+        id: 1,
+      });
+
+      const receivedByDevice2FromDebugger2 = await sendFromDebuggerToTarget(
+        debugger2,
+        device2,
+        'page1',
+        {
+          method: 'Debugger.enable',
+          id: 2,
+        },
+      );
+      expect(receivedByDevice2FromDebugger2).toEqual({
+        method: 'Debugger.enable',
+        id: 2,
+      });
+
+      // Messages should not have been received by device1
+      expect(device1.wrappedEventParsed).not.toBeCalled();
+
+      // Verify the two messages to device2 have different session IDs
+      const wrappedCalls = device2.wrappedEventParsed.mock.calls;
+      expect(wrappedCalls).toHaveLength(2);
+      expect(wrappedCalls[0][0].sessionId).not.toEqual(
+        wrappedCalls[1][0].sessionId,
+      );
+    } finally {
+      device1?.close();
+      device2?.close();
+      debugger1?.close();
+      debugger2?.close();
+    }
+  });
+
   test.each([
     ['app', 'name'],
     ['name', 'app'],
@@ -314,7 +423,7 @@ describe('inspector-proxy device socket handoff', () => {
         pageList = (await fetchJson(
           `${serverRef.serverBaseUrl}/json`,
           // $FlowFixMe[unclear-type]
-        ): any);
+        )) as any;
         expect(pageList).toEqual(
           expect.arrayContaining(
             pageListSpec.map(pageSpec =>

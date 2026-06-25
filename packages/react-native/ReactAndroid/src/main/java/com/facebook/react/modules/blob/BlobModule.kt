@@ -23,6 +23,9 @@ import com.facebook.react.bridge.buildReadableMap
 import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.modules.network.NetworkingModule
 import com.facebook.react.modules.websocket.WebSocketModule
+import com.facebook.react.turbomodule.core.interfaces.BindingsInstallerHolder
+import com.facebook.react.turbomodule.core.interfaces.TurboModuleWithJSIBindings
+import com.facebook.soloader.SoLoader
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileNotFoundException
@@ -39,7 +42,7 @@ import okio.ByteString
 
 @ReactModule(name = NativeBlobModuleSpec.NAME)
 public class BlobModule(reactContext: ReactApplicationContext) :
-    NativeBlobModuleSpec(reactContext) {
+    NativeBlobModuleSpec(reactContext), TurboModuleWithJSIBindings {
 
   private val blobs = HashMap<String, ByteArray>()
 
@@ -63,7 +66,7 @@ public class BlobModule(reactContext: ReactApplicationContext) :
         }
       }
 
-  private val networkingUriHandler =
+  internal val networkingUriHandler =
       object : NetworkingModule.UriHandler {
         override fun supports(uri: Uri, responseType: String): Boolean {
           val scheme = uri.scheme
@@ -127,10 +130,6 @@ public class BlobModule(reactContext: ReactApplicationContext) :
           return blob
         }
       }
-
-  public override fun initialize() {
-    BlobCollector.install(reactApplicationContext, this)
-  }
 
   public override fun getTypedExportedConstants(): Map<String, Any> {
     val resources = reactApplicationContext.resources
@@ -331,7 +330,13 @@ public class BlobModule(reactContext: ReactApplicationContext) :
     remove(blobId)
   }
 
+  @DoNotStrip external override fun getBindingsInstaller(): BindingsInstallerHolder
+
   public companion object {
+    init {
+      SoLoader.loadLibrary("reactnativeblob")
+    }
+
     public const val NAME: String = NativeBlobModuleSpec.NAME
   }
 }

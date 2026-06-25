@@ -14,7 +14,7 @@ void DevToolsRuntimeSettings::setReloadAndProfileConfig(
   if (config.shouldReloadAndProfile.has_value()) {
     _config.shouldReloadAndProfile = config.shouldReloadAndProfile.value();
   }
-  if (config.shouldReloadAndProfile.has_value()) {
+  if (config.recordChangeDescriptions.has_value()) {
     _config.recordChangeDescriptions = config.recordChangeDescriptions.value();
   }
 };

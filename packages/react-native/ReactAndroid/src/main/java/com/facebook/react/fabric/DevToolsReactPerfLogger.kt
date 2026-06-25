@@ -134,7 +134,10 @@ public class DevToolsReactPerfLogger : FabricMarkerListener {
       }
       commitPoint.addPoint(name, FabricCommitPointData(timestamp, counter))
 
-      if (name == ReactMarkerConstants.FABRIC_BATCH_EXECUTION_END && timestamp > 0) {
+      if (
+          (name == ReactMarkerConstants.FABRIC_BATCH_EXECUTION_END ||
+              name == ReactMarkerConstants.FABRIC_UPDATE_UI_MAIN_THREAD_END) && timestamp > 0
+      ) {
         onFabricCommitEnd(commitPoint)
         fabricCommitMarkers.remove(instanceKey)
       }

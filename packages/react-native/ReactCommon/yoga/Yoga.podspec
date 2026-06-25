@@ -61,6 +61,6 @@ Pod::Spec.new do |spec|
   # Fabric must be able to access private headers (which should not be included in the umbrella header)
   all_header_files = 'yoga/**/*.h'
   all_header_files = File.join('ReactCommon/yoga', all_header_files) if ENV['INSTALL_YOGA_WITHOUT_PATH_OPTION']
-  spec.private_header_files = Dir.glob(all_header_files) - Dir.glob(public_header_files)
+  spec.private_header_files = Dir.glob(all_header_files).sort - Dir.glob(public_header_files).sort
   spec.preserve_paths = [all_header_files]
 end

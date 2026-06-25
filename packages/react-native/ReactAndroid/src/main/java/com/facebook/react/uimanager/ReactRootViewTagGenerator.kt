@@ -17,6 +17,7 @@ internal object ReactRootViewTagGenerator {
 
   @JvmStatic
   @Synchronized
-  fun getNextRootViewTag(): Int =
-      nextRootViewTag.also { nextRootViewTag += ROOT_VIEW_TAG_INCREMENT }
+  fun getNextRootViewTag(): Int = nextRootViewTag.also {
+    nextRootViewTag += ROOT_VIEW_TAG_INCREMENT
+  }
 }

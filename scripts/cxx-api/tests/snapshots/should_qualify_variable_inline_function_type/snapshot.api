@@ -1,0 +1,13 @@
+struct test::Container {
+  public std::function<test::Result(test::Param, int)> processor;
+  public std::function<void(const test::Param&, test::Result)> multiRef;
+  public std::function<void(test::Param)> simpleCallback;
+  public test::Result(*fnPtrReturn)(const test::Param&);
+  public void(*fnPtr)(test::Param, int);
+}
+
+struct test::Param {
+}
+
+struct test::Result {
+}

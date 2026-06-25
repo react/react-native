@@ -11,7 +11,7 @@
 'use strict';
 
 import RNTesterText from './RNTesterText';
-import React from 'react';
+import * as React from 'react';
 import {memo} from 'react';
 import {
   ActivityIndicator,

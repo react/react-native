@@ -18,26 +18,21 @@ import LogBoxMessage from './LogBoxMessage';
 import * as LogBoxStyle from './LogBoxStyle';
 import * as React from 'react';
 
-type Props = $ReadOnly<{
+const SHOW_MORE_MESSAGE_LENGTH = 300;
+
+component LogBoxInspectorMessageHeader(
   collapsed: boolean,
   message: Message,
   level: LogLevel,
   title: string,
   onPress: () => void,
-}>;
-
-const SHOW_MORE_MESSAGE_LENGTH = 300;
-
-function LogBoxInspectorMessageHeader(props: Props): React.Node {
+) {
   function renderShowMore() {
-    if (
-      props.message.content.length < SHOW_MORE_MESSAGE_LENGTH ||
-      !props.collapsed
-    ) {
+    if (message.content.length < SHOW_MORE_MESSAGE_LENGTH || !collapsed) {
       return null;
     }
     return (
-      <Text style={messageStyles.collapse} onPress={() => props.onPress()}>
+      <Text style={messageStyles.collapse} onPress={() => onPress()}>
         ... See More
       </Text>
     );
@@ -47,15 +42,15 @@ function LogBoxInspectorMessageHeader(props: Props): React.Node {
     <View style={messageStyles.body}>
       <View style={messageStyles.heading}>
         <Text
-          style={[messageStyles.headingText, messageStyles[props.level]]}
+          style={[messageStyles.headingText, messageStyles[level]]}
           id="logbox_message_title_text">
-          {props.title}
+          {title}
         </Text>
       </View>
       <Text style={messageStyles.bodyText} id="logbox_message_contents_text">
         <LogBoxMessage
-          maxLength={props.collapsed ? SHOW_MORE_MESSAGE_LENGTH : Infinity}
-          message={props.message}
+          maxLength={collapsed ? SHOW_MORE_MESSAGE_LENGTH : Infinity}
+          message={message}
           style={messageStyles.messageText}
         />
         {renderShowMore()}

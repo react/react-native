@@ -47,9 +47,7 @@ using PointerHoverTrackerRegistry = std::unordered_map<PointerIdentifier, Pointe
 
 class PointerEventsProcessor final {
  public:
-  static std::shared_ptr<const ShadowNode> getShadowNodeFromEventTarget(
-      jsi::Runtime &runtime,
-      const EventTarget *target);
+  static std::shared_ptr<const ShadowNode> getShadowNodeFromEventTarget(jsi::Runtime &runtime, EventTarget *target);
 
   void interceptPointerEvent(
       const std::shared_ptr<const ShadowNode> &target,

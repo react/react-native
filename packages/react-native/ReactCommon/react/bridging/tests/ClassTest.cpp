@@ -42,6 +42,14 @@ struct TestClass {
     callback();
   }
 
+  size_t byteLength(jsi::Runtime& rt, jsi::ArrayBuffer buffer) {
+    return buffer.size(rt);
+  }
+
+  jsi::ArrayBuffer echo(jsi::Runtime& /*unused*/, jsi::ArrayBuffer buffer) {
+    return buffer;
+  }
+
  private:
   std::shared_ptr<CallInvoker> invoker_;
 };
@@ -97,6 +105,20 @@ TEST_F(BridgingTest, callFromJsTest) {
 
   flushQueue();
   EXPECT_TRUE(called);
+}
+
+TEST_F(BridgingTest, arrayBufferCallFromJsTest) {
+  auto instance = TestClass(invoker);
+  auto buf = eval("new ArrayBuffer(5)").asObject(rt).getArrayBuffer(rt);
+  EXPECT_EQ(
+      5,
+      bridging::callFromJs<size_t>(
+          rt, &TestClass::byteLength, invoker, &instance, std::move(buf)));
+
+  auto buf2 = eval("new ArrayBuffer(9)").asObject(rt).getArrayBuffer(rt);
+  auto out = bridging::callFromJs<jsi::ArrayBuffer>(
+      rt, &TestClass::echo, invoker, &instance, std::move(buf2));
+  EXPECT_EQ(9, out.size(rt));
 }
 
 struct MethodReturnTypeCastingTestObject {

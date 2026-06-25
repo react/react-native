@@ -59,6 +59,63 @@ const SUPPORTED_STYLES: {[string]: true} = {
   scaleY: true,
   translateX: true,
   translateY: true,
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  ...(ReactNativeFeatureFlags.useSharedAnimatedBackend()
+    ? {
+        /* dimension */
+        height: true,
+        maxHeight: true,
+        maxWidth: true,
+        minHeight: true,
+        minWidth: true,
+        width: true,
+        /* position */
+        bottom: true,
+        end: true,
+        left: true,
+        right: true,
+        start: true,
+        top: true,
+        /* flex */
+        flex: true,
+        flexGrow: true,
+        flexShrink: true,
+        flexBasis: true,
+        aspectRatio: true,
+        /* margin */
+        margin: true,
+        marginLeft: true,
+        marginRight: true,
+        marginTop: true,
+        marginBottom: true,
+        marginStart: true,
+        marginEnd: true,
+        marginHorizontal: true,
+        marginVertical: true,
+        /* padding */
+        padding: true,
+        paddingLeft: true,
+        paddingRight: true,
+        paddingTop: true,
+        paddingBottom: true,
+        paddingStart: true,
+        paddingEnd: true,
+        paddingHorizontal: true,
+        paddingVertical: true,
+        /* border width */
+        borderWidth: true,
+        borderLeftWidth: true,
+        borderRightWidth: true,
+        borderTopWidth: true,
+        borderBottomWidth: true,
+        borderStartWidth: true,
+        borderEndWidth: true,
+        /* gap */
+        gap: true,
+        rowGap: true,
+        columnGap: true,
+      }
+    : {}),
 };
 
 const SUPPORTED_TRANSFORMS: {[string]: true} = {
@@ -85,6 +142,7 @@ const SUPPORTED_INTERPOLATION_PARAMS: {[string]: true} = {
   extrapolate: true,
   extrapolateRight: true,
   extrapolateLeft: true,
+  easing: true,
 };
 
 /**

@@ -16,7 +16,7 @@ import RCTActionSheetManager from './NativeActionSheetManager';
 const processColor = require('../StyleSheet/processColor').default;
 const invariant = require('invariant');
 
-export type ActionSheetIOSOptions = $ReadOnly<{
+export type ActionSheetIOSOptions = Readonly<{
   title?: ?string,
   message?: ?string,
   options: Array<string>,
@@ -30,7 +30,7 @@ export type ActionSheetIOSOptions = $ReadOnly<{
   disabledButtonIndices?: Array<number>,
 }>;
 
-export type ShareActionSheetIOSOptions = $ReadOnly<{
+export type ShareActionSheetIOSOptions = Readonly<{
   message?: ?string,
   url?: ?string,
   subject?: ?string,
@@ -42,7 +42,7 @@ export type ShareActionSheetIOSOptions = $ReadOnly<{
   userInterfaceStyle?: ?string,
 }>;
 
-export type ShareActionSheetError = $ReadOnly<{
+export type ShareActionSheetError = Readonly<{
   domain: string,
   code: string,
   userInfo?: ?Object,

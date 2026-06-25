@@ -7,6 +7,8 @@
 
 #pragma once
 
+#ifndef RCT_REMOVE_LEGACY_MODULE_INTEROP
+
 #import <string>
 #import <vector>
 
@@ -34,9 +36,7 @@ class JSI_EXPORT ObjCInteropTurboModule : public ObjCTurboModule {
   jsi::Value create(jsi::Runtime &runtime, const jsi::PropNameID &propName) override;
 
   /**
-   * Why is this overriden?
-   *
-   * Purpose: Converts native module method returns from Objective C values to JavaScript values.
+   * Converts native module method returns from Objective C values to JavaScript values.
    *
    * ObjCTurboModule converts returns by returnType. But, Legacy native modules convert returns by the Objective C type:
    * React Native cannot infer a method's returnType from the RCT_EXPORT_METHOD annotations.
@@ -48,9 +48,7 @@ class JSI_EXPORT ObjCInteropTurboModule : public ObjCTurboModule {
       id result) override;
 
   /**
-   * Why is this overriden?
-   *
-   * Purpose: Get a native module method's argument's type, given the method name, and argument index.
+   * Get a native module method's argument's type, given the method name, and argument index.
    *
    * This override is meant to serve as a performance optimization.
    *
@@ -63,9 +61,7 @@ class JSI_EXPORT ObjCInteropTurboModule : public ObjCTurboModule {
   NSString *getArgumentTypeName(jsi::Runtime &runtime, NSString *methodName, int argIndex) override;
 
   /**
-   * Why is this overriden?
-   *
-   * Purpose: Convert arguments from JavaScript values to Objective C values. Assign the Objective C argument to the
+   * Convert arguments from JavaScript values to Objective C values. Assign the Objective C argument to the
    * method invocation.
    *
    * ObjCTurboModule tries to minimize reliance on RCTConvert for argument conversion. Why: RCTConvert relies on the
@@ -94,3 +90,5 @@ class JSI_EXPORT ObjCInteropTurboModule : public ObjCTurboModule {
 };
 
 } // namespace facebook::react
+
+#endif // RCT_REMOVE_LEGACY_MODULE_INTEROP

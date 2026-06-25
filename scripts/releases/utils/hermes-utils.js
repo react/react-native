@@ -25,28 +25,37 @@ const MAVEN_VERSIONS_FILE_PATH = path.join(
   'version.properties',
 );
 
-async function getLatestHermesNightlyVersion() /*: Promise<{
-  compilerVersion: string,
-  runtimeVersion: string,
-  runtimeV1Version: string,
-}> */ {
-  // fetch the latest commitly version of hermes v0
-  const compilerVersion = await getPackageVersionStrByTag(
-    'hermes-compiler',
-    'nightly',
+const GRADLE_PROPERTIES_PATH = path.join(
+  REACT_NATIVE_PACKAGE_DIR,
+  '..',
+  '..',
+  'gradle.properties',
+);
+
+// TODO: rename 'latest-v1' to 'latest' once V1 is the only Hermes on npm
+async function getLatestHermesVersion() /*: Promise<string> */ {
+  return getPackageVersionStrByTag('hermes-compiler', 'latest-v1');
+}
+
+/**
+ * Updates gradle.properties to use stable Hermes instead of nightly.
+ * This is needed because main uses nightly Hermes, but release branches
+ * should use stable Hermes from Maven Central.
+ */
+async function setStableHermesForReleaseBranch() {
+  let content = await fs.readFile(GRADLE_PROPERTIES_PATH, 'utf8');
+
+  content = content.replace(
+    'react.internal.useHermesStable=false',
+    'react.internal.useHermesStable=true',
   );
-  // fetch the latest version of hermes v1
-  const compilerV1Version = await getPackageVersionStrByTag(
-    'hermes-compiler',
-    'latest-v1',
+  content = content.replace(
+    'react.internal.useHermesNightly=true',
+    'react.internal.useHermesNightly=false',
   );
 
-  return {
-    compilerVersion,
-    // runtime version should match the compiler version
-    runtimeVersion: compilerVersion,
-    runtimeV1Version: compilerV1Version,
-  };
+  await fs.writeFile(GRADLE_PROPERTIES_PATH, content, 'utf8');
+  console.info('Switched gradle.properties to use stable Hermes');
 }
 
 async function updateHermesCompilerVersionInDependencies(
@@ -72,28 +81,21 @@ async function updateHermesCompilerVersionInDependencies(
 
 async function updateHermesRuntimeDependenciesVersions(
   hermesVersion /*: string */,
-  hermesV1Version /*: string */,
 ) /*: Promise<void> */ {
-  const newVersionsFile =
-    `HERMES_VERSION_NAME=${hermesVersion}\n` +
-    `HERMES_V1_VERSION_NAME=${hermesV1Version}`;
+  const newVersionsFile = `HERMES_VERSION_NAME=${hermesVersion}`;
 
   await fs.writeFile(MAVEN_VERSIONS_FILE_PATH, newVersionsFile.trim() + '\n');
 }
 
-async function updateHermesVersionsToNightly() {
-  const hermesVersions = await getLatestHermesNightlyVersion();
-  await updateHermesCompilerVersionInDependencies(
-    hermesVersions.compilerVersion,
-  );
-  await updateHermesRuntimeDependenciesVersions(
-    hermesVersions.runtimeVersion,
-    hermesVersions.runtimeV1Version,
-  );
+async function updateHermesVersionsToPrebuilt() {
+  const hermesVersion = await getLatestHermesVersion();
+  await updateHermesCompilerVersionInDependencies(hermesVersion);
+  await updateHermesRuntimeDependenciesVersions(hermesVersion);
 }
 
 module.exports = {
-  updateHermesVersionsToNightly,
+  setStableHermesForReleaseBranch,
+  updateHermesVersionsToPrebuilt,
   updateHermesCompilerVersionInDependencies,
   updateHermesRuntimeDependenciesVersions,
 };

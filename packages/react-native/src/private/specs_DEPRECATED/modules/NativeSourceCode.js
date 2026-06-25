@@ -17,7 +17,7 @@ export type SourceCodeConstants = {
 };
 
 export interface Spec extends TurboModule {
-  +getConstants: () => SourceCodeConstants;
+  readonly getConstants: () => SourceCodeConstants;
 }
 
 const NativeModule = TurboModuleRegistry.getEnforcing<Spec>('SourceCode');

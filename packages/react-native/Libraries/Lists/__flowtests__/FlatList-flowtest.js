@@ -72,7 +72,7 @@ export function testGoodDataWithBadCustomRenderItemFunction(): React.Node {
   );
 }
 
-export function testBadRenderItemFunction(): $ReadOnlyArray<React.Node> {
+export function testBadRenderItemFunction(): ReadonlyArray<React.Node> {
   const data = [
     {
       title: 'foo',
@@ -106,7 +106,7 @@ export function testBadRenderItemFunction(): $ReadOnlyArray<React.Node> {
   ];
 }
 
-export function testOtherBadProps(): $ReadOnlyArray<React.Node> {
+export function testOtherBadProps(): ReadonlyArray<React.Node> {
   return [
     // $FlowExpectedError[incompatible-type] - bad numColumns type "lots"
     <FlatList renderItem={renderMyListItem} data={[]} numColumns="lots" />,

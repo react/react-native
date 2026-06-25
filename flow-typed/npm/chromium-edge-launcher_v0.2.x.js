@@ -16,7 +16,7 @@ declare module 'chromium-edge-launcher' {
   declare export type Options = {
     startingUrl?: string,
     edgeFlags?: Array<string>,
-    prefs?: mixed,
+    prefs?: unknown,
     port?: number,
     handleSIGINT?: boolean,
     edgePath?: string,

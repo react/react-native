@@ -8,11 +8,10 @@
  * @format
  */
 
-const {isTaggedLatest, revertFiles, saveFiles} = require('../scm-utils');
+const {isTaggedLatest} = require('../scm-utils');
 
 let execResult = null;
-const cpMock = jest.fn();
-const mkdirSyncMock = jest.fn();
+
 jest
   .mock('shelljs', () => ({
     exec: () => {
@@ -26,11 +25,9 @@ jest
     exit: exitCode => {
       process.exit(exitCode);
     },
-    cp: cpMock,
   }))
   .mock('fs', () => ({
     existsSync: jest.fn().mockImplementation(_ => true),
-    mkdirSync: mkdirSyncMock,
   }))
   .mock('path', () => ({
     dirname: jest
@@ -56,43 +53,6 @@ describe('scm-utils', () => {
     it('it should not identify commit as tagged `latest`', () => {
       execResult = '6c19dc3266b84f47a076b647a1c93b3c3b69d2c5\n';
       expect(isTaggedLatest('6c19dc3266b8')).toBe(false);
-    });
-  });
-
-  describe('saveFiles', () => {
-    it('it should save files in the temp folder', () => {
-      const tmpFolder = '/tmp';
-      saveFiles(['package.json', 'android/package.json'], tmpFolder);
-      expect(mkdirSyncMock).toHaveBeenCalledWith(`${tmpFolder}/android`, {
-        recursive: true,
-      });
-      expect(cpMock).toHaveBeenNthCalledWith(
-        1,
-        'package.json',
-        '/tmp/package.json',
-      );
-      expect(cpMock).toHaveBeenNthCalledWith(
-        2,
-        'android/package.json',
-        `${tmpFolder}/android/package.json`,
-      );
-    });
-  });
-
-  describe('revertFiles', () => {
-    it('it should revert files from the temp folder', () => {
-      const tmpFolder = '/tmp';
-      revertFiles(['package.json', 'android/package.json'], tmpFolder);
-      expect(cpMock).toHaveBeenNthCalledWith(
-        1,
-        `${tmpFolder}/package.json`,
-        'package.json',
-      );
-      expect(cpMock).toHaveBeenNthCalledWith(
-        2,
-        `${tmpFolder}/android/package.json`,
-        'android/package.json',
-      );
     });
   });
 });

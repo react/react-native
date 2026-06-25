@@ -88,7 +88,7 @@ void TextAttributes::apply(TextAttributes textAttributes) {
 
   // Shadow
   textShadowOffset = textAttributes.textShadowOffset.has_value()
-      ? textAttributes.textShadowOffset.value()
+      ? textAttributes.textShadowOffset
       : textShadowOffset;
   textShadowRadius = !std::isnan(textAttributes.textShadowRadius)
       ? textAttributes.textShadowRadius
@@ -114,6 +114,8 @@ void TextAttributes::apply(TextAttributes textAttributes) {
       ? textAttributes.accessibilityRole
       : accessibilityRole;
   role = textAttributes.role.has_value() ? textAttributes.role : role;
+  textEffects = !textAttributes.textEffects.empty() ? textAttributes.textEffects
+                                                    : textEffects;
 }
 
 #pragma mark - Operators
@@ -141,7 +143,8 @@ bool TextAttributes::operator==(const TextAttributes& rhs) const {
              layoutDirection,
              accessibilityRole,
              role,
-             textTransform) ==
+             textTransform,
+             textEffects) ==
       std::tie(
              rhs.foregroundColor,
              rhs.backgroundColor,
@@ -164,7 +167,8 @@ bool TextAttributes::operator==(const TextAttributes& rhs) const {
              rhs.layoutDirection,
              rhs.accessibilityRole,
              rhs.role,
-             rhs.textTransform) &&
+             rhs.textTransform,
+             rhs.textEffects) &&
       floatEquality(maxFontSizeMultiplier, rhs.maxFontSizeMultiplier) &&
       floatEquality(opacity, rhs.opacity) &&
       floatEquality(fontSize, rhs.fontSize) &&

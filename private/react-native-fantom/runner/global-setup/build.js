@@ -8,6 +8,8 @@
  * @format
  */
 
+import type {EnvironmentOverrides} from '../utils';
+
 import {createBundle} from '../bundling';
 import {isCI} from '../EnvironmentOptions';
 import {build as buildHermesCompiler} from '../executables/hermesc';
@@ -37,7 +39,10 @@ async function tryOrLog(
   }
 }
 
-export default async function build(): Promise<void> {
+export default async function build(
+  enableCoverage: boolean,
+  env: EnvironmentOverrides,
+): Promise<void> {
   try {
     fs.rmSync(NATIVE_BUILD_OUTPUT_PATH, {recursive: true});
   } catch {}
@@ -45,10 +50,26 @@ export default async function build(): Promise<void> {
   fs.mkdirSync(NATIVE_BUILD_OUTPUT_PATH, {recursive: true});
 
   if (isCI) {
-    for (const isOptimizedMode of [false, true]) {
+    // When `enableCoverage` is true (CI coverage runs), we still need the
+    // non-coverage tester binaries because some tests opt out of coverage
+    // (benchmarks via filename, or tests with the `@fantom_disable_coverage`
+    // pragma — see `runner/coverageUtils.js`). Without these, those tests
+    // would fail to spawn with ENOENT.
+    const coverageVariants = enableCoverage ? [false, true] : [false];
+
+    for (const enableOptimized of [false, true]) {
       for (const hermesVariant of HermesVariant.members()) {
-        buildFantomTester({isOptimizedMode, hermesVariant});
-        buildHermesCompiler({isOptimizedMode, hermesVariant});
+        for (const variantEnableCoverage of coverageVariants) {
+          buildFantomTester(
+            {
+              enableOptimized,
+              hermesVariant,
+              enableCoverage: variantEnableCoverage,
+            },
+            env,
+          );
+        }
+        buildHermesCompiler({enableOptimized, hermesVariant, enableCoverage});
       }
     }
 

@@ -22,26 +22,26 @@ import {processColorObject} from '../../StyleSheet/PlatformColorValueTypes';
 import AnimatedValue, {flushValue} from './AnimatedValue';
 import AnimatedWithChildren from './AnimatedWithChildren';
 
-export type AnimatedColorConfig = $ReadOnly<{
+export type AnimatedColorConfig = Readonly<{
   ...AnimatedNodeConfig,
   useNativeDriver: boolean,
 }>;
 
-type ColorListenerCallback = (value: ColorValue) => mixed;
+type ColorListenerCallback = (value: ColorValue) => unknown;
 
 export type RgbaValue = {
-  +r: number,
-  +g: number,
-  +b: number,
-  +a: number,
+  readonly r: number,
+  readonly g: number,
+  readonly b: number,
+  readonly a: number,
   ...
 };
 
 type RgbaAnimatedValue = {
-  +r: AnimatedValue,
-  +g: AnimatedValue,
-  +b: AnimatedValue,
-  +a: AnimatedValue,
+  readonly r: AnimatedValue,
+  readonly g: AnimatedValue,
+  readonly b: AnimatedValue,
+  readonly a: AnimatedValue,
   ...
 };
 
@@ -61,12 +61,12 @@ function processColor(
 
   if (isRgbaValue(color)) {
     // $FlowFixMe[incompatible-type] - Type is verified above
-    return (color: RgbaValue);
+    return color as RgbaValue;
   }
 
   let normalizedColor: ?ProcessedColorValue = normalizeColor(
     // $FlowFixMe[incompatible-type] - Type is verified above
-    (color: ColorValue),
+    color as ColorValue,
   );
   if (normalizedColor === undefined || normalizedColor === null) {
     return null;
@@ -112,20 +112,20 @@ function isRgbaAnimatedValue(value: any): boolean {
 
 export function getRgbaValueAndNativeColor(
   value: RgbaValue | ColorValue,
-): $ReadOnly<{
+): Readonly<{
   rgbaValue: RgbaValue,
   nativeColor?: NativeColorValue,
 }> {
   const processedColor: RgbaValue | NativeColorValue =
     // $FlowFixMe[incompatible-type] - Type is verified above
-    processColor((value: ColorValue | RgbaValue)) ?? defaultColor;
+    processColor(value as ColorValue | RgbaValue) ?? defaultColor;
   if (isRgbaValue(processedColor)) {
     // $FlowFixMe[incompatible-type] - Type is verified above
-    return {rgbaValue: (processedColor: RgbaValue)};
+    return {rgbaValue: processedColor as RgbaValue};
   } else {
     return {
       // $FlowFixMe[incompatible-type] - Type is verified above
-      nativeColor: (processedColor: NativeColorValue),
+      nativeColor: processedColor as NativeColorValue,
       rgbaValue: defaultColor,
     };
   }
@@ -147,7 +147,7 @@ export default class AnimatedColor extends AnimatedWithChildren {
       valueIn ?? defaultColor;
     if (isRgbaAnimatedValue(value)) {
       // $FlowFixMe[incompatible-type] - Type is verified above
-      const rgbaAnimatedValue: RgbaAnimatedValue = (value: RgbaAnimatedValue);
+      const rgbaAnimatedValue: RgbaAnimatedValue = value as RgbaAnimatedValue;
       this.r = rgbaAnimatedValue.r;
       this.g = rgbaAnimatedValue.g;
       this.b = rgbaAnimatedValue.b;
@@ -155,7 +155,7 @@ export default class AnimatedColor extends AnimatedWithChildren {
     } else {
       const {rgbaValue: initColor, nativeColor} = getRgbaValueAndNativeColor(
         // $FlowFixMe[incompatible-type] - Type is verified above
-        (value: ColorValue | RgbaValue),
+        value as ColorValue | RgbaValue,
       );
       if (nativeColor) {
         this.nativeColor = nativeColor;

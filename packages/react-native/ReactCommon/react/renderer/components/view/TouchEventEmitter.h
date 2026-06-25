@@ -13,6 +13,7 @@
 #include <react/renderer/core/LayoutMetrics.h>
 #include <react/renderer/core/ReactPrimitives.h>
 #include <react/renderer/debug/DebugStringConvertible.h>
+#include <react/timing/primitives.h>
 
 namespace facebook::react {
 

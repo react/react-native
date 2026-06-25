@@ -8,15 +8,14 @@
 package com.facebook.react.uimanager;
 
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.os.Build;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.View.OnFocusChangeListener;
 import android.view.ViewGroup;
-import android.view.ViewParent;
 import android.view.accessibility.AccessibilityEvent;
-import android.widget.TextView;
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -31,12 +30,9 @@ import com.facebook.react.bridge.ReadableMapKeySetIterator;
 import com.facebook.react.bridge.ReadableType;
 import com.facebook.react.common.MapBuilder;
 import com.facebook.react.common.ReactConstants;
-import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags;
 import com.facebook.react.uimanager.ReactAccessibilityDelegate.AccessibilityRole;
 import com.facebook.react.uimanager.ReactAccessibilityDelegate.Role;
 import com.facebook.react.uimanager.annotations.ReactProp;
-import com.facebook.react.uimanager.common.UIManagerType;
-import com.facebook.react.uimanager.common.ViewUtil;
 import com.facebook.react.uimanager.events.BlurEvent;
 import com.facebook.react.uimanager.events.EventDispatcher;
 import com.facebook.react.uimanager.events.FocusEvent;
@@ -81,6 +77,7 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
     // Reset tags
     view.setTag(null);
     view.setTag(R.id.pointer_events, null);
+    view.setTag(R.id.important_for_interaction, null);
     view.setTag(R.id.react_test_id, null);
     view.setTag(R.id.view_tag_native_id, null);
     view.setTag(R.id.labelled_by, null);
@@ -152,13 +149,8 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
 
     // NOTE: setClickable MUST be called AFTER setOnClickListener because
     // the latter has the side effect of setting isClickable=true on some views!
-    if (ReactNativeFeatureFlags.shouldResetOnClickListenerWhenRecyclingView()) {
-      view.setOnClickListener(null);
-    }
-    if (ReactNativeFeatureFlags.shouldResetClickableWhenRecyclingView()) {
-      view.setClickable(
-          ReactNativeFeatureFlags.shouldSetIsClickableByDefault() && !(view instanceof TextView));
-    }
+    view.setOnClickListener(null);
+    view.setClickable(false);
     view.setFocusable(false);
     view.setFocusableInTouchMode(false);
 
@@ -241,20 +233,16 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
 
   @ReactProp(name = ViewProps.FILTER, customType = "Filter")
   public void setFilter(@NonNull T view, @Nullable ReadableArray filter) {
-    if (ViewUtil.getUIManagerType(view) == UIManagerType.FABRIC) {
-      view.setTag(R.id.filter, filter);
-    }
+    view.setTag(R.id.filter, filter);
   }
 
   @ReactProp(name = ViewProps.MIX_BLEND_MODE)
   public void setMixBlendMode(@NonNull T view, @Nullable String mixBlendMode) {
-    if (ViewUtil.getUIManagerType(view) == UIManagerType.FABRIC) {
-      view.setTag(R.id.mix_blend_mode, BlendModeHelper.parseMixBlendMode(mixBlendMode));
-      // We need to trigger drawChild for the parent ViewGroup which will set the
-      // mixBlendMode compositing on the child
-      if (view.getParent() instanceof View) {
-        ((View) view.getParent()).invalidate();
-      }
+    view.setTag(R.id.mix_blend_mode, BlendModeHelper.parseMixBlendMode(mixBlendMode));
+    // We need to trigger drawChild for the parent ViewGroup which will set the
+    // mixBlendMode compositing on the child
+    if (view.getParent() instanceof View) {
+      ((View) view.getParent()).invalidate();
     }
   }
 
@@ -297,12 +285,7 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
 
   @ReactProp(name = ViewProps.Z_INDEX)
   public void setZIndex(@NonNull T view, float zIndex) {
-    int integerZIndex = Math.round(zIndex);
-    ViewGroupManager.setViewZIndex(view, integerZIndex);
-    ViewParent parent = view.getParent();
-    if (parent instanceof ReactZIndexedViewGroup) {
-      ((ReactZIndexedViewGroup) parent).updateDrawingOrder();
-    }
+    // No-op: Z-order is managed at the C++ layer in Fabric
   }
 
   @ReactProp(name = ViewProps.RENDER_TO_HARDWARE_TEXTURE)
@@ -327,7 +310,8 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
 
   @ReactProp(name = ViewProps.ACCESSIBILITY_LABELLED_BY)
   public void setAccessibilityLabelledBy(@NonNull T view, @Nullable Dynamic nativeId) {
-    if (nativeId.isNull()) {
+    if (nativeId == null || nativeId.isNull()) {
+      view.setTag(R.id.labelled_by, null);
       return;
     }
     if (nativeId.getType() == ReadableType.String) {
@@ -335,7 +319,8 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
     } else if (nativeId.getType() == ReadableType.Array) {
       // On Android, this takes a single View as labeledBy. If an array is specified, set the first
       // element in the tag.
-      view.setTag(R.id.labelled_by, nativeId.asArray().getString(0));
+      ReadableArray array = nativeId.asArray();
+      view.setTag(R.id.labelled_by, array.size() > 0 ? array.getString(0) : null);
     }
   }
 
@@ -397,15 +382,7 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
     }
     view.setTag(R.id.accessibility_state, accessibilityState);
     if (accessibilityState.hasKey("disabled")) {
-      if (ReactNativeFeatureFlags.shouldSetEnabledBasedOnAccessibilityState()) {
-        // New behavior: properly set enabled state for both true and false
-        view.setEnabled(!accessibilityState.getBoolean("disabled"));
-      } else {
-        // Old behavior: only set enabled(true) when disabled=false
-        if (!accessibilityState.getBoolean("disabled")) {
-          view.setEnabled(true);
-        }
-      }
+      view.setEnabled(!accessibilityState.getBoolean("disabled"));
     }
 
     // For states which don't have corresponding methods in
@@ -603,10 +580,33 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
       view.setScaleX(1);
       view.setScaleY(1);
       view.setCameraDistance(0);
+      clearSkewAnimationMatrixIfActive(view);
       return;
     }
 
-    boolean allowPercentageResolution = ViewUtil.getUIManagerType(view) == UIManagerType.FABRIC;
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+        && SkewMatrixHelper.isAffine2DTransformWithSkew(transforms)) {
+      Matrix affine =
+          SkewMatrixHelper.buildAffine2DMatrix(
+              transforms,
+              PixelUtil.toDIPFromPixel(view.getWidth()),
+              PixelUtil.toDIPFromPixel(view.getHeight()),
+              transformOrigin);
+      view.setTranslationX(0);
+      view.setTranslationY(0);
+      view.setRotation(0);
+      view.setRotationX(0);
+      view.setRotationY(0);
+      view.setScaleX(1);
+      view.setScaleY(1);
+      view.setCameraDistance(0);
+      view.setAnimationMatrix(affine);
+      // Tag value is the matrix itself so TouchTargetHelper can use it for hit testing -- View's
+      // own getMatrix() does not compose mAnimationMatrix, so without this fallback the React
+      // hit-test path would still see the original rectangular bounds.
+      view.setTag(R.id.skew_animation_matrix, affine);
+      return;
+    }
 
     sMatrixDecompositionContext.reset();
     TransformHelper.processTransform(
@@ -614,8 +614,7 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
         sTransformDecompositionArray,
         PixelUtil.toDIPFromPixel(view.getWidth()),
         PixelUtil.toDIPFromPixel(view.getHeight()),
-        transformOrigin,
-        allowPercentageResolution);
+        transformOrigin);
     MatrixMathHelper.decomposeMatrix(sTransformDecompositionArray, sMatrixDecompositionContext);
     view.setTranslationX(
         PixelUtil.toPixelFromDIP(
@@ -655,6 +654,21 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
               scale * scale * cameraDistance * CAMERA_DISTANCE_NORMALIZATION_MULTIPLIER);
       view.setCameraDistance(normalizedCameraDistance);
     }
+
+    clearSkewAnimationMatrixIfActive(view);
+  }
+
+  // setAnimationMatrix is called only on the transition out of a skew matrix; calling it
+  // unconditionally would invalidate the View's RenderNode every frame for any non-skew animation.
+  private static <T extends View> void clearSkewAnimationMatrixIfActive(@NonNull T view) {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+      return;
+    }
+    if (view.getTag(R.id.skew_animation_matrix) == null) {
+      return;
+    }
+    view.setAnimationMatrix(null);
+    view.setTag(R.id.skew_animation_matrix, null);
   }
 
   /**
@@ -688,7 +702,6 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
   @Override
   protected void onAfterUpdateTransaction(@NonNull T view) {
     super.onAfterUpdateTransaction(view);
-    configureClickableState(view);
     updateViewAccessibility(view);
 
     Boolean invalidateTransform = (Boolean) view.getTag(R.id.invalidate_transform);
@@ -1022,48 +1035,23 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
 
   // Please add new props to BaseViewManagerDelegate as well!
 
-  private static <T extends View> void configureClickableState(@NonNull T view) {
-    if (!ReactNativeFeatureFlags.shouldSetIsClickableByDefault()) {
-      return;
-    }
-
-    boolean shouldBeClickable;
-    if (view instanceof ReactPointerEventsView) {
-      shouldBeClickable =
-          PointerEvents.canBeTouchTarget(((ReactPointerEventsView) view).getPointerEvents());
-    } else if (view instanceof TextView) {
-      shouldBeClickable = view.hasOnClickListeners();
-    } else {
-      shouldBeClickable = true;
-    }
-
-    // NOTE: In Android O+, setClickable(true) has the side effect of setting focusable=true.
-    // We need to preserve the original focusable state to respect the focusable prop.
-    boolean wasFocusable = view.isFocusable();
-    boolean wasFocusableInTouchMode = view.isFocusableInTouchMode();
-
-    view.setClickable(shouldBeClickable);
-    view.setFocusable(wasFocusable);
-    view.setFocusableInTouchMode(wasFocusableInTouchMode);
-  }
-
   /**
    * A helper class to keep track of the original focus change listener if one is set. This is
    * especially helpful for views that are recycled so we can retain and restore the original
    * listener upon recycling (onDropViewInstance).
    */
-  private class BaseVMFocusChangeListener<V extends View> implements OnFocusChangeListener {
+  private static class BaseVMFocusChangeListener implements OnFocusChangeListener {
     private @Nullable OnFocusChangeListener mOriginalFocusChangeListener;
 
     public BaseVMFocusChangeListener(@Nullable OnFocusChangeListener originalFocusChangeListener) {
       mOriginalFocusChangeListener = originalFocusChangeListener;
     }
 
-    public void attach(T view) {
+    public void attach(View view) {
       view.setOnFocusChangeListener(this);
     }
 
-    public void detach(T view) {
+    public void detach(View view) {
       view.setOnFocusChangeListener(mOriginalFocusChangeListener);
     }
 
@@ -1079,8 +1067,7 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
       if (view.getContext() instanceof ThemedReactContext) {
         ThemedReactContext themedReactContext = (ThemedReactContext) view.getContext();
         @Nullable
-        EventDispatcher eventDispatcher =
-            UIManagerHelper.getEventDispatcherForReactTag(themedReactContext, view.getId());
+        EventDispatcher eventDispatcher = UIManagerHelper.getEventDispatcher(themedReactContext);
         if (eventDispatcher != null) {
           if (hasFocus) {
             eventDispatcher.dispatchEvent(new FocusEvent(surfaceId, view.getId()));

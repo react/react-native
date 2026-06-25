@@ -33,6 +33,7 @@ Pod::Spec.new do |spec|
   spec.exclude_files       = "src/windows/**/*"
   spec.compiler_flags      = '-Wno-shorten-64-to-32'
   spec.resource_bundles = {'glog_privacy' => 'glog/PrivacyInfo.xcprivacy'}
+  spec.module_map = 'src/glog/module.modulemap'
 
   spec.pod_target_xcconfig = {
     "USE_HEADERMAP" => "NO",

@@ -8,6 +8,7 @@
 #include "ShadowTree.h"
 
 #include <cxxreact/TraceSection.h>
+#include <jsinspector-modern/tracing/PerformanceTracerSection.h>
 #include <react/debug/react_native_assert.h>
 #include <react/renderer/components/root/RootComponentDescriptor.h>
 #include <react/renderer/components/view/ViewShadowNode.h>
@@ -24,6 +25,27 @@ namespace facebook::react {
 
 namespace {
 const int MAX_COMMIT_ATTEMPTS_BEFORE_LOCKING = 3;
+
+std::string getShadowTreeCommitSourceName(ShadowTreeCommitSource source) {
+  switch (source) {
+    case ShadowTreeCommitSource::Unknown:
+      return "Unknown";
+    case ShadowTreeCommitSource::React:
+      return "React";
+    case ShadowTreeCommitSource::AnimationEndSync:
+      return "AnimationEndSync";
+    case ShadowTreeCommitSource::ReactRevisionMerge:
+      return "ReactRevisionMerge";
+  }
+}
+
+inline bool isPropsUpdatesAccumulationGuaranteed() {
+#ifdef __ANDROID__
+  return ReactNativeFeatureFlags::enableAccumulatedUpdatesInRawPropsAndroid();
+#else
+  return true;
+#endif
+}
 } // namespace
 
 using CommitStatus = ShadowTree::CommitStatus;
@@ -170,6 +192,37 @@ static std::shared_ptr<ShadowNode> progressState(
   });
 }
 
+/*
+ * Updates the layout context and layout metrics on the RootNode for commits
+ * coming from React. The RootNode is managed outside of it, and may have been
+ * modified concurrently with the React revision.
+ */
+static std::shared_ptr<RootShadowNode> progressRootLayoutInfo(
+    const std::shared_ptr<RootShadowNode>& shadowNode,
+    const RootShadowNode& baseShadowNode,
+    const ShadowTreeCommitOptions& commitOptions) {
+  if (commitOptions.source == ShadowTreeCommitSource::React ||
+      commitOptions.source == ShadowTreeCommitSource::ReactRevisionMerge) {
+    const auto& mainBranchRootProps = baseShadowNode.getConcreteProps();
+    const auto& jsBranchRootProps = shadowNode->getConcreteProps();
+
+    if (mainBranchRootProps.layoutConstraints ==
+            jsBranchRootProps.layoutConstraints &&
+        mainBranchRootProps.layoutContext == jsBranchRootProps.layoutContext) {
+      // The layout information kept in the JS branch is up to date.
+      return shadowNode;
+    }
+
+    const auto clonedNode = baseShadowNode.ShadowNode::clone(
+        {.children = std::make_shared<
+             const std::vector<std::shared_ptr<const ShadowNode>>>(
+             shadowNode->getChildren())});
+    return std::static_pointer_cast<RootShadowNode>(clonedNode);
+  }
+
+  return shadowNode;
+}
+
 ShadowTree::ShadowTree(
     SurfaceId surfaceId,
     const LayoutConstraints& layoutConstraints,
@@ -220,7 +273,7 @@ void ShadowTree::setCommitMode(CommitMode commitMode) const {
   auto revision = ShadowTreeRevision{};
 
   {
-    ShadowTree::UniqueLock lock = uniqueCommitLock();
+    ShadowTree::UniqueLock lock = uniqueRevisionLock();
 
     if (commitMode_ == commitMode) {
       return;
@@ -238,7 +291,7 @@ void ShadowTree::setCommitMode(CommitMode commitMode) const {
 }
 
 CommitMode ShadowTree::getCommitMode() const {
-  SharedLock lock = sharedCommitLock();
+  SharedLock lock = sharedRevisionLock();
   return commitMode_;
 }
 
@@ -262,7 +315,7 @@ CommitStatus ShadowTree::commit(
     }
 
     {
-      std::unique_lock lock(commitMutexRecursive_);
+      std::unique_lock lock(revisionMutexRecursive_);
       return tryCommit(transaction, commitOptions);
     }
   } else {
@@ -285,19 +338,40 @@ CommitStatus ShadowTree::tryCommit(
     const ShadowTreeCommitTransaction& transaction,
     const CommitOptions& commitOptions) const {
   TraceSection s("ShadowTree::commit");
+  jsinspector_modern::tracing::PerformanceTracerSection s1(
+      "commit",
+      "Renderer",
+      "\u269b Native",
+      nullptr,
+      "source",
+      getShadowTreeCommitSourceName(commitOptions.source));
+
+  auto isReactBranch = ReactNativeFeatureFlags::enableFabricCommitBranching() &&
+      commitOptions.source == CommitSource::React;
+
+  // Commits on the JS branch are never synchronous.
+  react_native_assert(!isReactBranch || !commitOptions.mountSynchronously);
 
   auto telemetry = TransactionTelemetry{};
   telemetry.willCommit();
 
   CommitMode commitMode;
   auto oldRevision = ShadowTreeRevision{};
+  auto oldRevisionForStateProgression = ShadowTreeRevision{};
   auto newRevision = ShadowTreeRevision{};
 
   {
     // Reading `currentRevision_` in shared manner.
-    SharedLock lock = sharedCommitLock();
+    SharedLock lock = sharedRevisionLock();
     commitMode = commitMode_;
-    oldRevision = currentRevision_;
+
+    if (isReactBranch && currentReactRevision_.has_value()) {
+      oldRevision = currentReactRevision_.value();
+    } else {
+      oldRevision = currentRevision_;
+    }
+
+    oldRevisionForStateProgression = currentRevision_;
   }
 
   const auto& oldRootShadowNode = oldRevision.rootShadowNode;
@@ -308,12 +382,19 @@ CommitStatus ShadowTree::tryCommit(
   }
 
   if (commitOptions.enableStateReconciliation) {
-    auto updatedNewRootShadowNode =
-        progressState(*newRootShadowNode, *oldRootShadowNode);
+    auto updatedNewRootShadowNode = progressState(
+        *newRootShadowNode, *oldRevisionForStateProgression.rootShadowNode);
     if (updatedNewRootShadowNode) {
       newRootShadowNode =
           std::static_pointer_cast<RootShadowNode>(updatedNewRootShadowNode);
     }
+  }
+
+  if (ReactNativeFeatureFlags::enableFabricCommitBranching()) {
+    newRootShadowNode = progressRootLayoutInfo(
+        newRootShadowNode,
+        *oldRevisionForStateProgression.rootShadowNode,
+        commitOptions);
   }
 
   // Run commit hooks.
@@ -330,15 +411,20 @@ CommitStatus ShadowTree::tryCommit(
 
   telemetry.willLayout();
   telemetry.setAsThreadLocal();
-  newRootShadowNode->layoutIfNeeded(&affectedLayoutableNodes);
+  {
+    jsinspector_modern::tracing::PerformanceTracerSection s2(
+        "layout", "Renderer", "\u269b Native");
+    newRootShadowNode->layoutIfNeeded(&affectedLayoutableNodes);
+  }
   telemetry.unsetAsThreadLocal();
   telemetry.didLayout(static_cast<int>(affectedLayoutableNodes.size()));
 
   {
     // Updating `currentRevision_` in unique manner if it hasn't changed.
-    UniqueLock lock = uniqueCommitLock();
+    UniqueLock lock = uniqueRevisionLock(
+        /*defer*/ isReactBranch);
 
-    if (currentRevision_.number != oldRevision.number) {
+    if (!isReactBranch && currentRevision_.number != oldRevision.number) {
       return CommitStatus::Failed;
     }
 
@@ -347,7 +433,7 @@ CommitStatus ShadowTree::tryCommit(
     {
       std::scoped_lock dispatchLock(EventEmitter::DispatchMutex());
       updateMountedFlag(
-          currentRevision_.rootShadowNode->getChildren(),
+          oldRevision.rootShadowNode->getChildren(),
           newRootShadowNode->getChildren(),
           commitOptions.source);
     }
@@ -364,12 +450,21 @@ CommitStatus ShadowTree::tryCommit(
         .number = newRevisionNumber,
         .telemetry = telemetry};
 
-    currentRevision_ = newRevision;
+    if (isReactBranch) {
+      // Lock the deferred lock to ensure that the new React revision is not
+      // reset during a scheduled merge.
+      std::visit([](auto& concreteLock) { concreteLock.lock(); }, lock);
+      currentReactRevision_ = newRevision;
+    } else {
+      currentRevision_ = newRevision;
+    }
   }
 
   emitLayoutEvents(affectedLayoutableNodes);
 
-  if (commitMode == CommitMode::Normal) {
+  if (isReactBranch) {
+    scheduleReactRevisionPromotion();
+  } else if (commitMode == CommitMode::Normal) {
     mount(std::move(newRevision), commitOptions.mountSynchronously);
   }
 
@@ -377,8 +472,13 @@ CommitStatus ShadowTree::tryCommit(
 }
 
 ShadowTreeRevision ShadowTree::getCurrentRevision() const {
-  SharedLock lock = sharedCommitLock();
+  SharedLock lock = sharedRevisionLock();
   return currentRevision_;
+}
+
+std::optional<ShadowTreeRevision> ShadowTree::getCurrentReactRevision() const {
+  SharedLock lock = sharedRevisionLock();
+  return currentReactRevision_;
 }
 
 void ShadowTree::mount(ShadowTreeRevision revision, bool mountSynchronously)
@@ -386,6 +486,130 @@ void ShadowTree::mount(ShadowTreeRevision revision, bool mountSynchronously)
   mountingCoordinator_->push(std::move(revision));
   delegate_.shadowTreeDidFinishTransaction(
       mountingCoordinator_, mountSynchronously);
+}
+
+void ShadowTree::mergeReactRevision() const {
+  ShadowTreeRevision promotedRevision;
+  std::vector<ShadowTreeRevision> promotedRevisions;
+  // If props updates accumulation is guaranteed, we can merge the promoted
+  // react revision, otherwise we need to merge all queued revisions.
+
+  {
+    UniqueLock lock = uniqueRevisionLock(false);
+
+    if (isPropsUpdatesAccumulationGuaranteed()) {
+      if (!reactRevisionToBePromoted_.has_value()) {
+        return;
+      }
+
+      promotedRevision =
+          std::exchange(reactRevisionToBePromoted_, std::nullopt).value();
+    } else {
+      if (promotedReactRevisions_.empty()) {
+        return;
+      }
+
+      promotedReactRevisions_.swap(promotedRevisions);
+    }
+  }
+
+  ShadowTreeRevision::Number lastMergedRevisionNumber;
+
+  if (isPropsUpdatesAccumulationGuaranteed()) {
+    lastMergedRevisionNumber = promotedRevision.number;
+    this->commit(
+        [revision = std::move(promotedRevision)](
+            const RootShadowNode& /*oldRootShadowNode*/) {
+          return std::make_shared<RootShadowNode>(
+              *revision.rootShadowNode, ShadowNodeFragment{});
+        },
+        {
+            .enableStateReconciliation = true,
+            .mountSynchronously = true,
+            .source = CommitSource::ReactRevisionMerge,
+        });
+  } else {
+    for (size_t i = 0; i < promotedRevisions.size(); ++i) {
+      auto& revision = promotedRevisions[i];
+      bool isLast = i == promotedRevisions.size() - 1;
+      lastMergedRevisionNumber = revision.number;
+
+      this->commit(
+          [revision = std::move(revision)](
+              const RootShadowNode& /*oldRootShadowNode*/) {
+            return std::make_shared<RootShadowNode>(
+                *revision.rootShadowNode, ShadowNodeFragment{});
+          },
+          {
+              .enableStateReconciliation = isLast,
+              .mountSynchronously = true,
+              .source = CommitSource::ReactRevisionMerge,
+          });
+    }
+  }
+
+  {
+    UniqueLock commitLock = uniqueRevisionLock(
+        /*defer*/ false);
+
+    // If the current react revision is the same as the one that was just
+    // merged, clear it.
+    if (currentReactRevision_.has_value() &&
+        lastMergedRevisionNumber == currentReactRevision_.value().number) {
+      currentReactRevision_.reset();
+    }
+  }
+}
+
+void ShadowTree::promoteReactRevision() const {
+  // Promote only when props updates accumulation is guaranteed. Otherwise,
+  // queuedReactRevisions_ will be used instead.
+  if (isPropsUpdatesAccumulationGuaranteed()) {
+    ShadowTreeRevision currentReactRevision;
+    {
+      SharedLock lock = sharedRevisionLock();
+      // Promotion happens at the end of the event loop tick, it's possible to
+      // have more than one promotion in a row. In this case, all but the first
+      // one should no-op.
+      if (!currentReactRevision_.has_value()) {
+        return;
+      }
+      currentReactRevision = currentReactRevision_.value();
+    }
+
+    {
+      UniqueLock lock = uniqueRevisionLock(false);
+      reactRevisionToBePromoted_ = std::move(currentReactRevision);
+    }
+  } else {
+    UniqueLock lock = uniqueRevisionLock(false);
+
+    if (queuedReactRevisions_.empty()) {
+      return;
+    }
+
+    // Move all queued revisions to the promoted revisions.
+    promotedReactRevisions_.insert(
+        promotedReactRevisions_.end(),
+        std::make_move_iterator(queuedReactRevisions_.begin()),
+        std::make_move_iterator(queuedReactRevisions_.end()));
+    queuedReactRevisions_.clear();
+  }
+
+  delegate_.shadowTreeDidPromoteReactRevision(*this);
+}
+
+void ShadowTree::scheduleReactRevisionPromotion() const {
+  if (!isPropsUpdatesAccumulationGuaranteed()) {
+    // If props updates accumulation is not guaranteed, we need to store each
+    // revision to be merged separately.
+    UniqueLock lock = uniqueRevisionLock(false);
+    if (currentReactRevision_.has_value()) {
+      queuedReactRevisions_.push_back(currentReactRevision_.value());
+    }
+  }
+
+  delegate_.shadowTreeDidFinishReactCommit(*this);
 }
 
 void ShadowTree::commitEmptyTree() const {
@@ -426,19 +650,21 @@ void ShadowTree::notifyDelegatesOfUpdates() const {
   delegate_.shadowTreeDidFinishTransaction(mountingCoordinator_, true);
 }
 
-inline ShadowTree::UniqueLock ShadowTree::uniqueCommitLock() const {
+inline ShadowTree::UniqueLock ShadowTree::uniqueRevisionLock(bool defer) const {
   if (ReactNativeFeatureFlags::preventShadowTreeCommitExhaustion()) {
-    return std::unique_lock{commitMutexRecursive_};
+    return defer ? std::unique_lock{revisionMutexRecursive_, std::defer_lock}
+                 : std::unique_lock{revisionMutexRecursive_};
   } else {
-    return std::unique_lock{commitMutex_};
+    return defer ? std::unique_lock{revisionMutex_, std::defer_lock}
+                 : std::unique_lock{revisionMutex_};
   }
 }
 
-inline ShadowTree::SharedLock ShadowTree::sharedCommitLock() const {
+inline ShadowTree::SharedLock ShadowTree::sharedRevisionLock() const {
   if (ReactNativeFeatureFlags::preventShadowTreeCommitExhaustion()) {
-    return std::unique_lock{commitMutexRecursive_};
+    return std::unique_lock{revisionMutexRecursive_};
   } else {
-    return std::shared_lock{commitMutex_};
+    return std::shared_lock{revisionMutex_};
   }
 }
 

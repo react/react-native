@@ -78,6 +78,8 @@ internal class BridgelessAtomicRef<T>(
         try {
           (this as Object).wait()
         } catch (ex: InterruptedException) {
+          // Record the interrupt to restore it after the wait loop completes.
+          // We continue waiting because we need the object to be created.
           wasInterrupted = true
         }
       }

@@ -10,6 +10,7 @@
 #include <glog/logging.h>
 #include <react/bridging/Bridging.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
+#include <ostream>
 #include <string>
 #include "StackTraceParser.h"
 

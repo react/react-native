@@ -20,7 +20,7 @@ const publishPackageMock = jest.fn();
 const getNpmInfoMock = jest.fn();
 const generateAndroidArtifactsMock = jest.fn();
 const getPackagesMock = jest.fn();
-const updateHermesVersionsToNightlyMock = jest.fn();
+const updateHermesVersionsToPrebuiltMock = jest.fn();
 const getBranchName = jest.fn();
 
 const {REPO_ROOT} = require('../../shared/consts');
@@ -58,7 +58,7 @@ describe('publish-npm', () => {
         getNpmInfo: getNpmInfoMock,
       }))
       .mock('../../releases/utils/hermes-utils', () => ({
-        updateHermesVersionsToNightly: updateHermesVersionsToNightlyMock,
+        updateHermesVersionsToPrebuilt: updateHermesVersionsToPrebuiltMock,
       }));
   });
 
@@ -112,7 +112,7 @@ describe('publish-npm', () => {
 
       await publishNpm('dry-run');
 
-      expect(updateHermesVersionsToNightlyMock).toHaveBeenCalled();
+      expect(updateHermesVersionsToPrebuiltMock).toHaveBeenCalled();
       expect(setVersionMock).not.toBeCalled();
       expect(updateReactNativeArtifactsMock).toBeCalledWith(version, 'dry-run');
 
@@ -140,7 +140,7 @@ describe('publish-npm', () => {
 
         await publishNpm('dry-run');
 
-        expect(updateHermesVersionsToNightlyMock).not.toHaveBeenCalled();
+        expect(updateHermesVersionsToPrebuiltMock).not.toHaveBeenCalled();
         expect(setVersionMock).not.toBeCalled();
         expect(updateReactNativeArtifactsMock).toBeCalledWith(
           version,
@@ -176,7 +176,7 @@ describe('publish-npm', () => {
 
         await publishNpm('dry-run');
 
-        expect(updateHermesVersionsToNightlyMock).not.toHaveBeenCalled();
+        expect(updateHermesVersionsToPrebuiltMock).not.toHaveBeenCalled();
         expect(setVersionMock).not.toBeCalled();
         expect(updateReactNativeArtifactsMock).not.toBeCalled();
 
@@ -235,7 +235,7 @@ describe('publish-npm', () => {
       // Generate Android artifacts is now delegate to build_android entirely
       expect(generateAndroidArtifactsMock).not.toHaveBeenCalled();
 
-      expect(updateHermesVersionsToNightlyMock).toHaveBeenCalled();
+      expect(updateHermesVersionsToPrebuiltMock).toHaveBeenCalled();
 
       expect(publishPackageMock.mock.calls).toEqual([
         [

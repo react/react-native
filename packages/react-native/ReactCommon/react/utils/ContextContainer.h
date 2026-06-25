@@ -25,8 +25,6 @@ namespace facebook::react {
  */
 class ContextContainer final {
  public:
-  using Shared [[deprecated("Use std::shared_ptr<const ContextContainer> instead.")]] =
-      std::shared_ptr<const ContextContainer>;
   /*
    * Registers an instance of the particular type `T` in the container
    * using the provided `key`. Only one instance can be registered per key.

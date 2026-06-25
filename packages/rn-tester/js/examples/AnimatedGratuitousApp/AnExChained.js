@@ -15,7 +15,7 @@ import type {
   PanResponderGestureState,
 } from 'react-native';
 
-import React from 'react';
+import * as React from 'react';
 import {Animated, PanResponder, StyleSheet, View} from 'react-native';
 
 class AnExChained extends React.Component<Object, any> {

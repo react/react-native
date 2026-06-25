@@ -7,8 +7,9 @@
 
 #import <Foundation/Foundation.h>
 
+#import <React/RCTDefines.h>
+
 #import "RCTBundleManager.h"
-#import "RCTDefines.h"
 
 RCT_EXTERN NSString *_Nonnull const RCTBundleURLProviderUpdatedNotification;
 RCT_EXTERN const NSUInteger kRCTBundleURLProviderDefaultPort;
@@ -56,6 +57,23 @@ NS_ASSUME_NONNULL_BEGIN
  * The scheme is also optional, if not specified, a default http protocol will be used
  */
 + (BOOL)isPackagerRunning:(NSString *)hostPort scheme:(NSString *__nullable)scheme;
+
+/**
+ * Asynchronously checks if there's a packager running at the given host:port.
+ * The port is optional, if not specified, kRCTBundleURLProviderDefaultPort will be used
+ * The completion handler is called on an arbitrary queue.
+ */
++ (void)isPackagerRunningAsync:(NSString *)hostPort completion:(void (^)(BOOL isRunning))completion;
+
+/**
+ * Asynchronously checks if there's a packager running at the given scheme://host:port.
+ * The port is optional, if not specified, kRCTBundleURLProviderDefaultPort will be used
+ * The scheme is also optional, if not specified, a default http protocol will be used
+ * The completion handler is called on an arbitrary queue.
+ */
++ (void)isPackagerRunningAsync:(NSString *)hostPort
+                        scheme:(NSString *__nullable)scheme
+                    completion:(void (^)(BOOL isRunning))completion;
 
 /**
  * Returns the jsBundleURL for a given bundle entrypoint and

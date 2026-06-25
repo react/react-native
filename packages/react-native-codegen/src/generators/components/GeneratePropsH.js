@@ -331,11 +331,11 @@ function getClassExtendString(component: ComponentShape): string {
               case 'ReactNativeCoreViewProps':
                 return 'public ViewProps';
               default:
-                (extendProps.knownTypeName: empty);
+                extendProps.knownTypeName as empty;
                 throw new Error('Invalid knownTypeName');
             }
           default:
-            (extendProps.type: empty);
+            extendProps.type as empty;
             throw new Error('Invalid extended type');
         }
       })
@@ -351,7 +351,7 @@ function convertValueToEnumOption(value: string): string {
 function generateArrayEnumString(
   componentName: string,
   name: string,
-  options: $ReadOnlyArray<string>,
+  options: ReadonlyArray<string>,
 ): string {
   const enumName = getEnumName(componentName, name);
 
@@ -393,7 +393,7 @@ function generateStringEnum(
 ) {
   const typeAnnotation = prop.typeAnnotation;
   if (typeAnnotation.type === 'StringEnumTypeAnnotation') {
-    const values: $ReadOnlyArray<string> = typeAnnotation.options;
+    const values: ReadonlyArray<string> = typeAnnotation.options;
     const enumName = getEnumName(componentName, prop.name);
 
     const fromCases = values
@@ -431,7 +431,7 @@ function generateIntEnum(
 ) {
   const typeAnnotation = prop.typeAnnotation;
   if (typeAnnotation.type === 'Int32EnumTypeAnnotation') {
-    const values: $ReadOnlyArray<number> = typeAnnotation.options;
+    const values: ReadonlyArray<number> = typeAnnotation.options;
     const enumName = getEnumName(componentName, prop.name);
 
     const fromCases = values
@@ -527,8 +527,8 @@ function generateEnumString(
 
 function generatePropsString(
   componentName: string,
-  props: $ReadOnlyArray<NamedShape<PropTypeAnnotation>>,
-  nameParts: $ReadOnlyArray<string>,
+  props: ReadonlyArray<NamedShape<PropTypeAnnotation>>,
+  nameParts: ReadonlyArray<string>,
   generateOptionalProperties?: boolean = false,
 ) {
   return props
@@ -557,7 +557,7 @@ function generatePropsString(
 }
 
 function getExtendsImports(
-  extendsProps: $ReadOnlyArray<ExtendsPropsShape>,
+  extendsProps: ReadonlyArray<ExtendsPropsShape>,
 ): Set<string> {
   const imports: Set<string> = new Set();
 
@@ -574,11 +574,11 @@ function getExtendsImports(
             );
             return;
           default:
-            (extendProps.knownTypeName: empty);
+            extendProps.knownTypeName as empty;
             throw new Error('Invalid knownTypeName');
         }
       default:
-        (extendProps.type: empty);
+        extendProps.type as empty;
         throw new Error('Invalid extended type');
     }
   });
@@ -605,7 +605,7 @@ function generateStructsForComponent(
 
 function generateStructs(
   componentName: string,
-  properties: $ReadOnlyArray<NamedShape<PropTypeAnnotation>>,
+  properties: ReadonlyArray<NamedShape<PropTypeAnnotation>>,
   nameParts: Array<string>,
   generateOptionalObjectProperties?: boolean = false,
 ): StructsMap {
@@ -726,8 +726,8 @@ function generateStructs(
 function generateStruct(
   structs: StructsMap,
   componentName: string,
-  nameParts: $ReadOnlyArray<string>,
-  properties: $ReadOnlyArray<NamedShape<PropTypeAnnotation>>,
+  nameParts: ReadonlyArray<string>,
+  properties: ReadonlyArray<NamedShape<PropTypeAnnotation>>,
   generateOptionalObjectProperties?: boolean = false,
 ): void {
   const structNameParts = nameParts;
@@ -778,7 +778,7 @@ function generateStruct(
       case 'MixedTypeAnnotation':
         return;
       default:
-        (property.typeAnnotation.type: empty);
+        property.typeAnnotation.type as empty;
         throw new Error(
           `Received invalid component property type ${property.typeAnnotation.type}`,
         );

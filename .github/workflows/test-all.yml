@@ -6,12 +6,15 @@ on:
   push:
     branches:
       - main
-      - "*-stable"
+      - '*-stable'
+
+permissions:
+  contents: read
 
 jobs:
   set_release_type:
     runs-on: ubuntu-latest
-    if: github.repository == 'facebook/react-native'
+    if: github.repository == 'react/react-native'
     outputs:
       RELEASE_TYPE: ${{ steps.set_release_type.outputs.RELEASE_TYPE }}
     env:
@@ -33,33 +36,94 @@ jobs:
 
           echo "Should I run E2E tests? ${{ inputs.run-e2e-tests }}"
 
+  check_code_changes:
+    runs-on: ubuntu-latest
+    if: github.repository == 'react/react-native'
+    outputs:
+      any_code_change: ${{ steps.filter_exclusions.outputs.any_code_change == 'true' || github.event_name != 'pull_request' }}
+      should_test_android: ${{ steps.filter_exclusions.outputs.should_test_android == 'true' || github.event_name != 'pull_request' }}
+      should_test_ios: ${{ steps.filter_exclusions.outputs.should_test_ios == 'true' || github.event_name != 'pull_request' }}
+      debugger_shell: ${{ steps.filter_inclusions.outputs.debugger_shell }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Check for code changes (exclusion patterns)
+        uses: dorny/paths-filter@209e61402dbca8aa44f967535da6666b284025ed
+        id: filter_exclusions
+        with:
+          predicate-quantifier: every
+          filters: |
+            any_code_change:
+              - '**'
+              - '!**/__docs__/**'
+              - '!**/*.md'
+            should_test_android:
+              # Not an isolated iOS change
+              - '**'
+              - '!packages/react-native/React/**'
+              - '!packages/react-native/ReactApple/**'
+              - '!packages/react-native/**/*.m'
+              - '!packages/react-native/**/*.mm'
+              - '!packages/react-native/**/*.podspec'
+              - '!packages/rn-tester/RNTester/**'
+              - '!packages/rn-tester/RNTesterPods*/**'
+              - '!packages/rn-tester/Podfile*'
+            should_test_ios:
+              # Not an isolated Android change
+              - '**'
+              - '!gradle/**'
+              - '!gradle*'
+              - '!packages/gradle-plugin/**'
+              - '!packages/react-native/ReactAndroid/**'
+              - '!packages/react-native/**/*.java'
+              - '!packages/react-native/**/*.kt'
+              - '!packages/react-native/**/*.gradle*'
+              - '!packages/react-native-popup-menu-android/**'
+              - '!packages/rn-tester/android/**'
+      - name: Check for code changes (inclusion patterns)
+        uses: dorny/paths-filter@209e61402dbca8aa44f967535da6666b284025ed
+        id: filter_inclusions
+        with:
+          filters: |
+            debugger_shell:
+              - 'packages/debugger-shell/**'
+              - 'scripts/debugger-shell/**'
+
   prebuild_apple_dependencies:
-    if: github.repository == 'facebook/react-native'
+    needs: check_code_changes
+    if: |
+      needs.check_code_changes.outputs.any_code_change == 'true' &&
+      needs.check_code_changes.outputs.should_test_ios == 'true'
     uses: ./.github/workflows/prebuild-ios-dependencies.yml
     secrets: inherit
 
   prebuild_react_native_core:
     uses: ./.github/workflows/prebuild-ios-core.yml
+    if: ${{ needs.prebuild_apple_dependencies.result == 'success' }}
     with:
-      use-hermes-nightly: ${{ !endsWith(github.ref_name, '-stable') }}
+      use-hermes-prebuilt: ${{ !endsWith(github.ref_name, '-stable') }}
     secrets: inherit
     needs: [prebuild_apple_dependencies]
 
   test_ios_rntester_ruby_3_2_0:
     runs-on: macos-15
-    needs:
-      [prebuild_apple_dependencies, prebuild_react_native_core]
+    needs: [prebuild_apple_dependencies, prebuild_react_native_core]
+    if: ${{ needs.prebuild_react_native_core.result == 'success' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
       - name: Run it
         uses: ./.github/actions/test-ios-rntester
         with:
-          ruby-version: "3.2.0"
+          ruby-version: '3.2.0'
           flavor: Debug
 
   test_ios_rntester_dynamic_frameworks:
     runs-on: macos-15-large
+    needs: check_code_changes
+    if: |
+      needs.check_code_changes.outputs.any_code_change == 'true' &&
+      needs.check_code_changes.outputs.should_test_ios == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -76,8 +140,8 @@ jobs:
 
   test_ios_rntester:
     runs-on: macos-15-large
-    needs:
-      [prebuild_apple_dependencies, prebuild_react_native_core]
+    needs: [prebuild_apple_dependencies, prebuild_react_native_core]
+    if: ${{ needs.prebuild_react_native_core.result == 'success' }}
     continue-on-error: true
     strategy:
       fail-fast: false
@@ -94,223 +158,125 @@ jobs:
           flavor: ${{ matrix.flavor }}
 
   test_e2e_ios_rntester:
-    runs-on: macos-15-large
-    needs:
-      [test_ios_rntester]
-    strategy:
-      fail-fast: false
-      matrix:
-        flavor: [Debug, Release]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-      - name: Setup Node.js
-        uses: ./.github/actions/setup-node
-      - name: Download App
-        uses: actions/download-artifact@v7
-        with:
-          name: RNTesterApp-NewArch-${{ matrix.flavor }}
-          path: /tmp/RNTesterBuild/RNTester.app
-      - name: Check downloaded folder content
-        run: ls -lR /tmp/RNTesterBuild
-      - name: Setup xcode
-        uses: ./.github/actions/setup-xcode
-        with:
-          platform: ios
-      - name: Run E2E Tests
-        uses: ./.github/actions/maestro-ios
-        with:
-          app-path: "/tmp/RNTesterBuild/RNTester.app"
-          app-id: com.meta.RNTester.localDevelopment
-          maestro-flow: ./packages/rn-tester/.maestro/
-          flavor: ${{ matrix.flavor }}
+    needs: test_ios_rntester
+    if: ${{ needs.test_ios_rntester.result == 'success' }}
+    uses: ./.github/workflows/e2e-ios-rntester.yml
+    secrets: inherit
+
+  test_e2e_ios_rntester_retry_1:
+    needs: test_e2e_ios_rntester
+    if: ${{ always() && needs.test_e2e_ios_rntester.outputs.status == 'failure' }}
+    uses: ./.github/workflows/e2e-ios-rntester.yml
+    secrets: inherit
+
+  test_e2e_ios_rntester_retry_2:
+    needs: test_e2e_ios_rntester_retry_1
+    if: ${{ always() && needs.test_e2e_ios_rntester_retry_1.outputs.status == 'failure' }}
+    uses: ./.github/workflows/e2e-ios-rntester.yml
+    with:
+      fail-on-error: true
+    secrets: inherit
 
   test_e2e_ios_templateapp:
-    runs-on: macos-15-large
-    needs: [build_npm_package, prebuild_apple_dependencies]
-    strategy:
-      fail-fast: false
-      matrix:
-        flavor: [Debug, Release]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-      - name: Setup xcode
-        uses: ./.github/actions/setup-xcode
-        with:
-          platform: ios
-      - name: Setup node.js
-        uses: ./.github/actions/setup-node
-      - name: Run yarn
-        uses: ./.github/actions/yarn-install
-      - name: Setup ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: 2.6.10
-      - name: Download React Native Package
-        uses: actions/download-artifact@v7
-        with:
-          name: react-native-package
-          path: /tmp/react-native-tmp
-      - name: Print /tmp folder
-        run: ls -lR /tmp/react-native-tmp
-      - name: Download ReactNativeDependencies
-        uses: actions/download-artifact@v7
-        with:
-          name: ReactNativeDependencies${{ matrix.flavor }}.xcframework.tar.gz
-          path: /tmp/third-party
-      - name: Print third-party folder
-        shell: bash
-        run: ls -lR /tmp/third-party
-      - name: Download React Native Prebuilds
-        uses: actions/download-artifact@v7
-        with:
-          name: ReactCore${{ matrix.flavor }}.xcframework.tar.gz
-          path: /tmp/ReactCore
-      - name: Print ReactCore folder
-        shell: bash
-        run: ls -lR /tmp/ReactCore
-      - name: Configure git
-        shell: bash
-        run: |
-            git config --global user.email "react-native-bot@meta.com"
-            git config --global user.name "React Native Bot"
-      - name: Prepare artifacts
-        run: |
-          REACT_NATIVE_PKG=$(find /tmp/react-native-tmp -type f -name "*.tgz")
-          echo "React Native tgs is $REACT_NATIVE_PKG"
+    needs: [build_npm_package, prebuild_apple_dependencies, check_code_changes]
+    if: needs.check_code_changes.outputs.should_test_ios == 'true'
+    uses: ./.github/workflows/e2e-ios-templateapp.yml
+    secrets: inherit
 
-          # For stable branches, we want to use the stable branch of the template
-          # In all the other cases, we want to use "main"
-          BRANCH=${{ github.ref_name }}
-          if ! [[ $BRANCH == *-stable* ]]; then
-            BRANCH=main
-          fi
+  test_e2e_ios_templateapp_retry_1:
+    needs: test_e2e_ios_templateapp
+    if: ${{ always() && needs.test_e2e_ios_templateapp.outputs.status == 'failure' }}
+    uses: ./.github/workflows/e2e-ios-templateapp.yml
+    secrets: inherit
 
-          node ./scripts/e2e/init-project-e2e.js --projectName RNTestProject --currentBranch $BRANCH --directory /tmp/RNTestProject --pathToLocalReactNative $REACT_NATIVE_PKG
-
-          cd /tmp/RNTestProject/ios
-          bundle install
-          NEW_ARCH_ENABLED=1
-
-          export RCT_USE_LOCAL_RN_DEP=/tmp/third-party/ReactNativeDependencies${{ matrix.flavor }}.xcframework.tar.gz
-          # Disable prebuilds for now, as they are causing issues with E2E tests for 0.82-stable branch
-          # export RCT_TESTONLY_RNCORE_TARBALL_PATH="/tmp/ReactCore/ReactCore${{ matrix.flavor }}.xcframework.tar.gz"
-          RCT_NEW_ARCH_ENABLED=$NEW_ARCH_ENABLED bundle exec pod install
-
-          xcodebuild \
-            -scheme "RNTestProject" \
-            -workspace RNTestProject.xcworkspace \
-            -configuration "${{ matrix.flavor }}" \
-            -sdk "iphonesimulator" \
-            -destination "generic/platform=iOS Simulator" \
-            -derivedDataPath "/tmp/RNTestProject"
-      - name: Run E2E Tests
-        uses: ./.github/actions/maestro-ios
-        with:
-          app-path: "/tmp/RNTestProject/Build/Products/${{ matrix.flavor }}-iphonesimulator/RNTestProject.app"
-          app-id: org.reactjs.native.example.RNTestProject
-          maestro-flow: ./scripts/e2e/.maestro/
-          flavor: ${{ matrix.flavor }}
-          working-directory: /tmp/RNTestProject
+  test_e2e_ios_templateapp_retry_2:
+    needs: test_e2e_ios_templateapp_retry_1
+    if: ${{ always() && needs.test_e2e_ios_templateapp_retry_1.outputs.status == 'failure' }}
+    uses: ./.github/workflows/e2e-ios-templateapp.yml
+    with:
+      fail-on-error: true
+    secrets: inherit
 
   test_e2e_android_templateapp:
-    runs-on: 4-core-ubuntu
-    needs: build_npm_package
-    strategy:
-      fail-fast: false
-      matrix:
-        flavor: [debug, release]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-      - name: Setup node.js
-        uses: ./.github/actions/setup-node
-      - name: Run yarn
-        uses: ./.github/actions/yarn-install
-      - name: Set up JDK 17
-        uses: actions/setup-java@v5
-        with:
-          java-version: '17'
-          distribution: 'zulu'
-      - name: Download Maven Local
-        uses: actions/download-artifact@v7
-        with:
-          name: maven-local
-          path: /tmp/react-native-tmp/maven-local
-      - name: Download React Native Package
-        uses: actions/download-artifact@v7
-        with:
-          name: react-native-package
-          path: /tmp/react-native-tmp
-      - name: Print /tmp folder
-        run: ls -lR /tmp/react-native-tmp
-      - name: Prepare artifacts
-        id: prepare-artifacts
-        run: |
-          REACT_NATIVE_PKG=$(find /tmp/react-native-tmp -type f -name "*.tgz")
-          echo "React Native tgs is $REACT_NATIVE_PKG"
+    needs: [build_npm_package, build_android]
+    if: ${{ always() && needs.build_android.result == 'success' && needs.build_npm_package.result == 'success' }}
+    uses: ./.github/workflows/e2e-android-templateapp.yml
+    secrets: inherit
 
-          MAVEN_LOCAL=/tmp/react-native-tmp/maven-local
-          echo "Maven local path is $MAVEN_LOCAL"
+  test_e2e_android_templateapp_retry_1:
+    needs: test_e2e_android_templateapp
+    if: ${{ always() && needs.test_e2e_android_templateapp.outputs.status == 'failure' }}
+    uses: ./.github/workflows/e2e-android-templateapp.yml
+    secrets: inherit
 
-          # For stable branches, we want to use the stable branch of the template
-          # In all the other cases, we want to use "main"
-          BRANCH=${{ github.ref_name }}
-          if ! [[ $BRANCH == *-stable* ]]; then
-            BRANCH=main
-          fi
-          node ./scripts/e2e/init-project-e2e.js --projectName RNTestProject --currentBranch $BRANCH  --directory /tmp/RNTestProject --pathToLocalReactNative $REACT_NATIVE_PKG
+  test_e2e_android_templateapp_retry_2:
+    needs: test_e2e_android_templateapp_retry_1
+    if: ${{ always() && needs.test_e2e_android_templateapp_retry_1.outputs.status == 'failure' }}
+    uses: ./.github/workflows/e2e-android-templateapp.yml
+    with:
+      fail-on-error: true
+    secrets: inherit
 
-          echo "Feed maven local to gradle.properties"
-          cd /tmp/RNTestProject
-          echo "react.internal.mavenLocalRepo=$MAVEN_LOCAL" >> android/gradle.properties
-
-          # Build
-          cd android
-          CAPITALIZED_FLAVOR=$(echo "${{ matrix.flavor }}" | awk '{print toupper(substr($0, 1, 1)) substr($0, 2)}')
-          ./gradlew assemble$CAPITALIZED_FLAVOR --no-daemon -PreactNativeArchitectures=x86
-
-      - name: Run E2E Tests
-        uses: ./.github/actions/maestro-android
-        timeout-minutes: 60
-        with:
-          app-path: /tmp/RNTestProject/android/app/build/outputs/apk/${{ matrix.flavor }}/app-${{ matrix.flavor }}.apk
-          app-id: com.rntestproject
-          maestro-flow: ./scripts/e2e/.maestro/
-          install-java: 'false'
-          flavor: ${{ matrix.flavor }}
-          working-directory: /tmp/RNTestProject
-
-  run_fantom_tests:
-    runs-on: 8-core-ubuntu
-    needs: [set_release_type]
+  build_fantom_runner:
+    runs-on: ubuntu-latest
+    needs: [set_release_type, check_code_changes, lint]
+    if: needs.check_code_changes.outputs.any_code_change == 'true'
     container:
       image: reactnativecommunity/react-native-android:latest
       env:
-        TERM: "dumb"
-        GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+        # Set the encoding to resolve a known character encoding issue with decompressing tar.gz files in containers
+        # via Gradle: https://github.com/gradle/gradle/issues/23391#issuecomment-1878979127
+        LC_ALL: C.UTF8
+        TERM: 'dumb'
+        GRADLE_OPTS: '-Dorg.gradle.daemon=false'
         ORG_GRADLE_PROJECT_SIGNING_PWD: ${{ secrets.ORG_GRADLE_PROJECT_SIGNING_PWD }}
         ORG_GRADLE_PROJECT_SIGNING_KEY: ${{ secrets.ORG_GRADLE_PROJECT_SIGNING_KEY }}
+        REACT_NATIVE_DOWNLOADS_DIR: /opt/react-native-downloads
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-      - name: Build and Test Fantom
-        uses: ./.github/actions/run-fantom-tests
+      - name: Build Fantom Runner
+        uses: ./.github/actions/build-fantom-runner
         with:
           release-type: ${{ needs.set_release_type.outputs.RELEASE_TYPE }}
           gradle-cache-encryption-key: ${{ secrets.GRADLE_CACHE_ENCRYPTION_KEY }}
 
+  run_fantom_tests:
+    needs: build_fantom_runner
+    uses: ./.github/workflows/fantom-tests.yml
+    secrets: inherit
+
+  run_fantom_tests_retry_1:
+    needs: run_fantom_tests
+    if: ${{ always() && needs.run_fantom_tests.outputs.status == 'failure' }}
+    uses: ./.github/workflows/fantom-tests.yml
+    secrets: inherit
+
+  run_fantom_tests_retry_2:
+    needs: run_fantom_tests_retry_1
+    if: ${{ always() && needs.run_fantom_tests_retry_1.outputs.status == 'failure' }}
+    uses: ./.github/workflows/fantom-tests.yml
+    with:
+      fail-on-error: true
+    secrets: inherit
+
   build_android:
-    runs-on: 8-core-ubuntu
-    needs: [set_release_type]
+    runs-on: ubuntu-latest
+    needs: [set_release_type, check_code_changes]
+    if: |
+      needs.check_code_changes.outputs.any_code_change == 'true' &&
+      needs.check_code_changes.outputs.should_test_android == 'true'
     container:
       image: reactnativecommunity/react-native-android:latest
       env:
-        TERM: "dumb"
-        GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+        # Set the encoding to resolve a known character encoding issue with decompressing tar.gz files in containers
+        # via Gradle: https://github.com/gradle/gradle/issues/23391#issuecomment-1878979127
+        LC_ALL: C.UTF8
+        TERM: 'dumb'
+        GRADLE_OPTS: '-Dorg.gradle.daemon=false'
         ORG_GRADLE_PROJECT_SIGNING_PWD: ${{ secrets.ORG_GRADLE_PROJECT_SIGNING_PWD }}
         ORG_GRADLE_PROJECT_SIGNING_KEY: ${{ secrets.ORG_GRADLE_PROJECT_SIGNING_KEY }}
+        REACT_NATIVE_DOWNLOADS_DIR: /opt/react-native-downloads
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -321,49 +287,48 @@ jobs:
           gradle-cache-encryption-key: ${{ secrets.GRADLE_CACHE_ENCRYPTION_KEY }}
 
   test_e2e_android_rntester:
-    runs-on: 4-core-ubuntu
-    needs: [build_android]
-    strategy:
-      fail-fast: false
-      matrix:
-        flavor: [debug, release]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-      - name: Setup node.js
-        uses: ./.github/actions/setup-node
-      - name: Install node dependencies
-        uses: ./.github/actions/yarn-install
-      - name: Download APK
-        uses: actions/download-artifact@v7
-        with:
-          name: rntester-${{ matrix.flavor }}
-          path: ./packages/rn-tester/android/app/build/outputs/apk/${{ matrix.flavor }}/
-      - name: Print folder structure
-        run: ls -lR ./packages/rn-tester/android/app/build/outputs/apk/${{ matrix.flavor }}/
-      - name: Run E2E Tests
-        uses: ./.github/actions/maestro-android
-        timeout-minutes: 60
-        with:
-          app-path: ./packages/rn-tester/android/app/build/outputs/apk/${{ matrix.flavor }}/app-x86-${{ matrix.flavor }}.apk
-          app-id: com.facebook.react.uiapp
-          maestro-flow: ./packages/rn-tester/.maestro
-          flavor: ${{ matrix.flavor }}
+    needs: build_android
+    if: ${{ needs.build_android.result == 'success' }}
+    uses: ./.github/workflows/e2e-android-rntester.yml
+    secrets: inherit
+
+  test_e2e_android_rntester_retry_1:
+    needs: test_e2e_android_rntester
+    if: ${{ always() && needs.test_e2e_android_rntester.outputs.status == 'failure' }}
+    uses: ./.github/workflows/e2e-android-rntester.yml
+    secrets: inherit
+
+  test_e2e_android_rntester_retry_2:
+    needs: test_e2e_android_rntester_retry_1
+    if: ${{ always() && needs.test_e2e_android_rntester_retry_1.outputs.status == 'failure' }}
+    uses: ./.github/workflows/e2e-android-rntester.yml
+    with:
+      fail-on-error: true
+    secrets: inherit
 
   build_npm_package:
-    runs-on: 8-core-ubuntu
+    runs-on: ubuntu-latest
     needs:
       [
         set_release_type,
+        check_code_changes,
         build_android,
         prebuild_apple_dependencies,
         prebuild_react_native_core,
       ]
+    if: |
+      always() &&
+      !contains(needs.*.result, 'failure') &&
+      !contains(needs.*.result, 'cancelled')
     container:
       image: reactnativecommunity/react-native-android:latest
       env:
-        TERM: "dumb"
-        GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+        TERM: 'dumb'
+        # Set the encoding to resolve a known character encoding issue with decompressing tar.gz files in containers
+        # via Gradle: https://github.com/gradle/gradle/issues/23391#issuecomment-1878979127
+        LC_ALL: C.UTF8
+        GRADLE_OPTS: '-Dorg.gradle.daemon=false'
+        REACT_NATIVE_DOWNLOADS_DIR: /opt/react-native-downloads
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -372,10 +337,12 @@ jobs:
         with:
           release-type: ${{ needs.set_release_type.outputs.RELEASE_TYPE }}
           gradle-cache-encryption-key: ${{ secrets.GRADLE_CACHE_ENCRYPTION_KEY }}
+          skip-apple-prebuilts: ${{ needs.check_code_changes.outputs.should_test_ios == 'false' }}
 
   test_android_helloworld:
-    runs-on: 4-core-ubuntu
-    needs: build_npm_package
+    runs-on: ubuntu-latest
+    needs: [build_npm_package, build_android]
+    if: ${{ always() && needs.build_android.result == 'success' && needs.build_npm_package.result == 'success' }}
     container:
       image: reactnativecommunity/react-native-android:latest
     env:
@@ -383,9 +350,10 @@ jobs:
       # via Gradle: https://github.com/gradle/gradle/issues/23391#issuecomment-1878979127
       LC_ALL: C.UTF8
       YARN_ENABLE_IMMUTABLE_INSTALLS: false
-      TERM: "dumb"
-      GRADLE_OPTS: "-Dorg.gradle.daemon=false"
-      TARGET_ARCHITECTURE: "arm64-v8a"
+      TERM: 'dumb'
+      GRADLE_OPTS: '-Dorg.gradle.daemon=false'
+      TARGET_ARCHITECTURE: 'arm64-v8a'
+      REACT_NATIVE_DOWNLOADS_DIR: /opt/react-native-downloads
     continue-on-error: true
     strategy:
       fail-fast: false
@@ -412,10 +380,10 @@ jobs:
           cache-encryption-key: ${{ secrets.GRADLE_CACHE_ENCRYPTION_KEY }}
       - name: Run yarn install
         uses: ./.github/actions/yarn-install
-      - name: Set nightly Hermes versions
+      - name: Set Hermes prebuilt version
         shell: bash
         run: |
-          node ./scripts/releases/use-hermes-nightly.js
+          node ./scripts/releases/use-hermes-prebuilt.js
       - name: Run yarn install again, with the correct hermes version
         uses: ./.github/actions/yarn-install
       - name: Prepare the Helloworld application
@@ -440,6 +408,7 @@ jobs:
   test_ios_helloworld_with_ruby_3_2_0:
     runs-on: macos-15
     needs: [prebuild_apple_dependencies, prebuild_react_native_core]
+    if: ${{ needs.prebuild_react_native_core.result == 'success' }}
     env:
       PROJECT_NAME: iOSTemplateProject
       YARN_ENABLE_IMMUTABLE_INSTALLS: false
@@ -454,6 +423,7 @@ jobs:
   test_ios_helloworld:
     runs-on: macos-15
     needs: [prebuild_apple_dependencies, prebuild_react_native_core]
+    if: ${{ needs.prebuild_react_native_core.result == 'success' }}
     strategy:
       matrix:
         flavor: [Debug, Release]
@@ -473,13 +443,46 @@ jobs:
           flavor: ${{ matrix.flavor }}
           use-frameworks: ${{ matrix.use_frameworks }}
 
+  lint:
+    runs-on: ubuntu-latest
+    if: github.repository == 'react/react-native'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup Node.js
+        uses: ./.github/actions/setup-node
+      - name: Install dependencies
+        uses: ./.github/actions/yarn-install
+      - name: Lint file structure
+        shell: bash
+        run: ./.github/workflow-scripts/lint_files.sh
+      - name: Run shellcheck
+        shell: bash
+        run: ./.github/workflow-scripts/analyze_scripts.sh
+      - name: Prettier
+        shell: bash
+        run: yarn run format-check
+      - name: markdownlint
+        shell: bash
+        run: yarn run lint-markdown
+      - name: ESLint
+        shell: bash
+        run: ./.github/workflow-scripts/exec_swallow_error.sh yarn lint --format junit -o ./reports/junit/eslint/results.xml
+      - name: Flow
+        shell: bash
+        run: yarn flow-check
+      - name: TypeScript
+        shell: bash
+        run: yarn test-typescript
+
   test_js:
     runs-on: ubuntu-latest
-    if: github.repository == 'facebook/react-native'
+    needs: [check_code_changes, lint]
+    if: needs.check_code_changes.outputs.any_code_change == 'true'
     strategy:
       fail-fast: false
       matrix:
-        node-version: ["24", "22", "20.19.4"]
+        node-version: ['24', '22.13.0']
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -488,55 +491,38 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-  lint:
+  build_js_types:
     runs-on: ubuntu-latest
-    if: github.repository == 'facebook/react-native'
-    env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    needs: [check_code_changes, lint]
+    if: needs.check_code_changes.outputs.any_code_change == 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-      - name: Run all the linters
-        uses: ./.github/actions/lint
-        with:
-          github-token: ${{ env.GH_TOKEN }}
+      - name: Setup Node.js
+        uses: ./.github/actions/setup-node
+      - name: Install dependencies
+        uses: ./.github/actions/yarn-install
+      - name: Build react-native package types
+        shell: bash
+        run: yarn build-types --skip-snapshot
+      - name: Validate generated types
+        shell: bash
+        run: yarn test-generated-typescript
 
-  # This job should help with the E2E flakyness.
-  # In case E2E tests fails, it launches a new retry-workflow workflow, passing the current run_id as input.
-  # The retry-workflow reruns only the failed jobs of the current test-all workflow using
-  # ```
-  # gh run rerun ${{ inputs.run_id }} --failed
-  # ```
-  # From https://stackoverflow.com/a/78314483 it seems like that adding the extra workflow
-  # rather then calling directly this command should improve stability of this solution.
-  # This is exactly the same as rerunning failed tests from the GH UI, but automated.
-  rerun-failed-jobs:
+  build_debugger_shell:
     runs-on: ubuntu-latest
-    needs: [test_e2e_ios_rntester, test_e2e_android_rntester, test_e2e_ios_templateapp, test_e2e_android_templateapp]
-    if: ${{ github.ref == 'refs/heads/main' && always() }}
+    needs: check_code_changes
+    if: needs.check_code_changes.outputs.debugger_shell == 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-      - name: Rerun failed jobs in the current workflow
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          SHOULD_RETRY=${{fromJSON(github.run_attempt) < 3}}
-          if [[ $SHOULD_RETRY == "false" ]]; then
-            exit 0
-          fi
-
-          RNTESTER_ANDROID_FAILED=${{ needs.test_e2e_android_rntester.result == 'failure' }}
-          TEMPLATE_ANDROID_FAILED=${{ needs.test_e2e_android_templateapp.result == 'failure' }}
-          RNTESTER_IOS_FAILED=${{ needs.test_e2e_ios_rntester.result == 'failure' }}
-          TEMPLATE_IOS_FAILED=${{ needs.test_e2e_ios_templateapp.result == 'failure' }}
-
-          echo "RNTESTER_ANDROID_FAILED: $RNTESTER_ANDROID_FAILED"
-          echo "TEMPLATE_ANDROID_FAILED: $TEMPLATE_ANDROID_FAILED"
-          echo "RNTESTER_IOS_FAILED: $RNTESTER_IOS_FAILED"
-          echo "TEMPLATE_IOS_FAILED: $TEMPLATE_IOS_FAILED"
-
-          if [[ $RNTESTER_ANDROID_FAILED == "true" || $TEMPLATE_ANDROID_FAILED == "true" || $RNTESTER_IOS_FAILED == "true" || $TEMPLATE_IOS_FAILED == "true" ]]; then
-            echo "Rerunning failed jobs in the current workflow"
-            gh workflow run retry-workflow.yml -F run_id=${{ github.run_id }}
-          fi
+      - name: Setup Node.js
+        uses: ./.github/actions/setup-node
+      - name: Install dependencies
+        uses: ./.github/actions/yarn-install
+      - name: Build packages
+        shell: bash
+        run: yarn build --prepack
+      - name: Verify debugger-shell build
+        shell: bash
+        run: node scripts/debugger-shell/build-binary.js

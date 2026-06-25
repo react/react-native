@@ -18,7 +18,7 @@ const {getImports} = require('./CppHelpers');
 type FilesOutput = Map<string, string>;
 type PropValueType = string | number | boolean;
 
-type TestCase = $ReadOnly<{
+type TestCase = Readonly<{
   propName: string,
   propValue: ?PropValueType,
   testName?: string,

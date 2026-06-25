@@ -11,7 +11,8 @@
 
 - (void)setBackgroundColorWithColorString:(NSString *)colorString
 {
-  UIColor *color = [UIView UIColorFromHexString:std::string([colorString UTF8String])];
+  const char *colorUTF8 = [colorString UTF8String];
+  UIColor *color = [UIView UIColorFromHexString:std::string(colorUTF8 != nullptr ? colorUTF8 : "")];
   self.backgroundColor = color;
 }
 
@@ -23,7 +24,8 @@
     id colorString = [overlayColors objectAtIndex:i];
     CGRect rect = CGRectMake(viewBounds.origin.x + width * i, viewBounds.origin.y, width, viewBounds.size.height);
     UIView *overlayView = [[UIView alloc] initWithFrame:rect];
-    UIColor *color = [UIView UIColorFromHexString:std::string([colorString UTF8String])];
+    const char *colorUTF8 = [colorString UTF8String];
+    UIColor *color = [UIView UIColorFromHexString:std::string(colorUTF8 != nullptr ? colorUTF8 : "")];
     overlayView.backgroundColor = color;
     [self addSubview:overlayView];
   }

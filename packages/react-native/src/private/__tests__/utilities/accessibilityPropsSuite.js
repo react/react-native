@@ -15,7 +15,7 @@ import type {AccessibilityProps} from 'react-native';
 import * as Fantom from '@react-native/fantom';
 import * as React from 'react';
 
-const ACCESIBILITY_ROLE_VALUES: $ReadOnlyArray<AccessibilityRole> = [
+const ACCESIBILITY_ROLE_VALUES: ReadonlyArray<AccessibilityRole> = [
   'none',
   'button',
   'link',
@@ -45,7 +45,7 @@ const ACCESIBILITY_ROLE_VALUES: $ReadOnlyArray<AccessibilityRole> = [
   'toolbar',
 ];
 
-const ROLE_VALUES: $ReadOnlyArray<Role> = [
+const ROLE_VALUES: ReadonlyArray<Role> = [
   'alert',
   'alertdialog',
   'application',
@@ -118,7 +118,7 @@ let root: Root;
 
 function getAccessibilityProp(
   content: React.MixedElement,
-  name: $Keys<AccessibilityProps>,
+  name: keyof AccessibilityProps,
 ) {
   Fantom.runTask(() => {
     root.render(content);
@@ -128,7 +128,7 @@ function getAccessibilityProp(
 
 function getAccessibilityProps(
   content: React.MixedElement,
-  names: $ReadOnlyArray<$Keys<AccessibilityProps>>,
+  names: ReadonlyArray<keyof AccessibilityProps>,
 ) {
   Fantom.runTask(() => {
     root.render(content);

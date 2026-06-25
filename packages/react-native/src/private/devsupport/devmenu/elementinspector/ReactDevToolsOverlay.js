@@ -52,10 +52,12 @@ export default function ReactDevToolsOverlay({
 
     function onStartInspectingNative() {
       setIsInspecting(true);
+      setInspected(null);
     }
 
     function onStopInspectingNative() {
       setIsInspecting(false);
+      setInspected(null);
     }
 
     reactDevToolsAgent.addListener('shutdown', cleanup);
@@ -93,12 +95,6 @@ export default function ReactDevToolsOverlay({
     [inspectedViewRef, reactDevToolsAgent],
   );
 
-  const stopInspecting = useCallback(() => {
-    reactDevToolsAgent.stopInspectingNative(true);
-    setIsInspecting(false);
-    setInspected(null);
-  }, [reactDevToolsAgent]);
-
   const onPointerMove = useCallback(
     (e: PointerEvent) => {
       findViewForLocation(e.nativeEvent.x, e.nativeEvent.y);
@@ -133,12 +129,10 @@ export default function ReactDevToolsOverlay({
         ? {
             onPointerMove,
             onPointerDown: onPointerMove,
-            onPointerUp: stopInspecting,
           }
         : {
             onStartShouldSetResponder: shouldSetResponder,
             onResponderMove: onResponderMove,
-            onResponderRelease: stopInspecting,
           };
 
     return (

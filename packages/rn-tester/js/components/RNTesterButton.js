@@ -12,14 +12,14 @@
 
 import type {GestureResponderEvent} from 'react-native';
 
-import React from 'react';
+import * as React from 'react';
 import {Pressable, StyleSheet, Text} from 'react-native';
 
-type Props = $ReadOnly<{
+type Props = Readonly<{
   testID?: string,
   textTestID?: string,
   children?: React.Node,
-  onPress?: ?(event: GestureResponderEvent) => mixed,
+  onPress?: ?(event: GestureResponderEvent) => unknown,
 }>;
 
 function RNTesterButton(props: Props): React.Node {

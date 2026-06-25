@@ -47,7 +47,7 @@ function isMissingCliDependency(error /*: Error */) {
   );
 }
 
-let cli /*: $ReadOnly<{
+let cli /*: Readonly<{
   bin: string,
   loadConfig: $FlowFixMe,
   run: () => void

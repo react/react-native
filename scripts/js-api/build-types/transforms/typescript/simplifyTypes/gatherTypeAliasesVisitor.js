@@ -14,16 +14,20 @@ import type {NodePath, Visitor} from '@babel/traverse';
 const t = require('@babel/types');
 
 export type GatherTypeAliasesVisitorState = {
-  +aliasToPathMap: Map<string, NodePath<t.TSTypeAliasDeclaration>>,
+  readonly aliasToPathMap: Map<string, NodePath<t.TSTypeAliasDeclaration>>,
+  readonly interfaceToPathMap?: Map<string, NodePath<t.TSInterfaceDeclaration>>,
 };
 
 /**
- * Gather all type aliases in the file into a map
+ * Gather all type aliases and interface declarations in the file into maps
  */
 const gatherTypeAliasesVisitor: Visitor<GatherTypeAliasesVisitorState> = {
   TSTypeAliasDeclaration(path, state) {
     const alias = path.node.id.name;
     state.aliasToPathMap.set(alias, path);
+  },
+  TSInterfaceDeclaration(path, state) {
+    state.interfaceToPathMap?.set(path.node.id.name, path);
   },
 };
 

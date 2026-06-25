@@ -12,7 +12,7 @@ import type {CodegenTypes, HostComponent, ViewProps} from 'react-native';
 
 import {codegenNativeComponent} from 'react-native';
 
-type NativeProps = $ReadOnly<{
+type NativeProps = Readonly<{
   ...ViewProps,
 
   // Props
@@ -20,6 +20,6 @@ type NativeProps = $ReadOnly<{
   defaultValue?: string,
 }>;
 
-export default (codegenNativeComponent<NativeProps>(
+export default codegenNativeComponent<NativeProps>(
   'StringPropNativeComponentView',
-): HostComponent<NativeProps>);
+) as HostComponent<NativeProps>;

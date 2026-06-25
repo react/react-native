@@ -25,7 +25,7 @@ MapBuffer ParagraphState::getMapBuffer() const {
 }
 
 jni::local_ref<jobject> ParagraphState::getJNIReference() const {
-  return jni::make_local(measuredLayout.preparedLayout.get());
+  return jni::make_local(measuredLayout.preparedTextLayout.get());
 }
 
 } // namespace facebook::react

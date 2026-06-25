@@ -52,7 +52,7 @@ Pod::Spec.new do |s|
   # If we are passing a local tarball, we don't want to switch between Debug and Release
   if !ENV["RCT_TESTONLY_RNCORE_TARBALL_PATH"]
     script_phase = {
-      :name => "[RNDeps] Replace React Native Core for the right configuration, if needed",
+      :name => "[RNCore] Replace React Native Core for the right configuration, if needed",
       :execution_position => :before_compile,
       :script => <<-EOS
       . "$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh"

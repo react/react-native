@@ -10,78 +10,38 @@ package com.facebook.react.views.virtual.view
 import android.content.Context
 import android.graphics.Rect
 import android.view.View
-import android.view.ViewGroup
 import android.view.ViewParent
-import android.view.ViewTreeObserver
 import androidx.annotation.VisibleForTesting
 import com.facebook.common.logging.FLog
 import com.facebook.react.R
 import com.facebook.react.common.build.ReactBuildConfig
-import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import com.facebook.react.uimanager.ReactClippingViewGroup
 import com.facebook.react.uimanager.ReactRoot
-import com.facebook.react.views.scroll.ReactHorizontalScrollView
-import com.facebook.react.views.scroll.ReactScrollView
-import com.facebook.react.views.scroll.ReactScrollViewHelper
-import com.facebook.react.views.scroll.ScrollEventType
+import com.facebook.react.views.scroll.VirtualView
+import com.facebook.react.views.scroll.VirtualViewContainer
 import com.facebook.react.views.view.ReactViewGroup
 import com.facebook.react.views.virtual.VirtualViewMode
 import com.facebook.react.views.virtual.VirtualViewModeChangeEmitter
 import com.facebook.react.views.virtual.VirtualViewRenderState
-import com.facebook.systrace.Systrace
 
 public class ReactVirtualView(context: Context) :
-    ReactViewGroup(context),
-    ReactScrollViewHelper.ScrollListener,
-    ReactScrollViewHelper.LayoutChangeListener,
-    View.OnLayoutChangeListener {
+    ReactViewGroup(context), VirtualView, View.OnLayoutChangeListener {
 
   internal var mode: VirtualViewMode? = null
-  internal var renderState: VirtualViewRenderState = VirtualViewRenderState.Unknown
   internal var modeChangeEmitter: VirtualViewModeChangeEmitter? = null
-  internal var prerenderRatio: Double = ReactNativeFeatureFlags.virtualViewPrerenderRatio()
-  internal val debugLogEnabled: Boolean = ReactNativeFeatureFlags.enableVirtualViewDebugFeatures()
-  private val hysteresisRatio: Double = ReactNativeFeatureFlags.virtualViewHysteresisRatio()
+  internal var renderState: VirtualViewRenderState = VirtualViewRenderState.Unknown
 
-  private val onWindowFocusChangeListener =
-      if (ReactNativeFeatureFlags.enableVirtualViewWindowFocusDetection()) {
-        ViewTreeObserver.OnWindowFocusChangeListener {
-          dispatchOnModeChangeIfNeeded(checkRectChange = false)
-        }
-      } else {
-        null
-      }
+  private var scrollView: VirtualViewContainer? = null
 
-  private var parentScrollView: View? = null
-
-  // preallocate Rects to avoid allocation during layout
-  private val lastRect: Rect = Rect()
-  private val targetRect: Rect = Rect()
-  private val thresholdRect: Rect = Rect()
+  private val lastContainerRelativeRect: Rect = Rect()
   private val lastClippingRect: Rect = Rect()
-
-  /** Cumulative offset of parents' `left` values within the scroll view */
+  override val containerRelativeRect: Rect = Rect()
   private var offsetX: Int = 0
-  /** Cumulative offset of parents' `top` values within the scroll view */
   private var offsetY: Int = 0
-  private var offsetChanged: Boolean = false
+  private var hadLayout: Boolean = false
 
   internal val nativeId: String?
     get() = getTag(R.id.view_tag_native_id) as? String
-
-  override internal fun recycleView() {
-    ReactScrollViewHelper.removeScrollListener(this)
-    ReactScrollViewHelper.removeLayoutChangeListener(this)
-    cleanupLayoutListeners()
-    mode = null
-    modeChangeEmitter = null
-    lastRect.setEmpty()
-    parentScrollView = null
-    offsetX = 0
-    offsetY = 0
-    offsetChanged = false
-    lastClippingRect.setEmpty()
-  }
 
   override fun onAttachedToWindow() {
     super.onAttachedToWindow()
@@ -90,38 +50,34 @@ public class ReactVirtualView(context: Context) :
 
   @VisibleForTesting
   internal fun doAttachedToWindow() {
-    parentScrollView =
-        getParentScrollView()?.also {
-          offsetChanged = true
-          ReactScrollViewHelper.addScrollListener(this)
-          ReactScrollViewHelper.addLayoutChangeListener(this)
-        }
-    debugLog("onAttachedToWindow")
-    if (onWindowFocusChangeListener != null) {
-      viewTreeObserver.addOnWindowFocusChangeListener(onWindowFocusChangeListener)
+    scrollView = getScrollView()
+    // onAttachedToWindow is usually called before layout but there are cases where it's called
+    // after. If called after, we need to report the updated layout to the VirtualViewContainer
+    if (hadLayout) {
+      updateParentOffset()
+      reportRectChangeToContainer()
     }
-    dispatchOnModeChangeIfNeeded(checkRectChange = false)
-  }
-
-  override fun onDetachedFromWindow() {
-    super.onDetachedFromWindow()
-    ReactScrollViewHelper.removeScrollListener(this)
-    ReactScrollViewHelper.removeLayoutChangeListener(this)
-    if (onWindowFocusChangeListener != null) {
-      viewTreeObserver.removeOnWindowFocusChangeListener(onWindowFocusChangeListener)
-    }
-    cleanupLayoutListeners()
+    debugLog("doAttachedToWindow")
   }
 
   /** From [View#onLayout] */
+  // This is when the view itself has layout changes
   override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
     super.onLayout(changed, left, top, right, bottom)
+    hadLayout = true
     if (changed) {
-      offsetChanged = true
-      dispatchOnModeChangeIfNeeded(checkRectChange = false)
+      containerRelativeRect.set(
+          left + offsetX,
+          top + offsetY,
+          right + offsetX,
+          bottom + offsetY,
+      )
+      debugLog("onLayout") { "containerRelativeRect=$containerRelativeRect" }
+      reportRectChangeToContainer()
     }
   }
 
+  // Here we're subscribing to all parent views up to scrollView and when their layout changes
   override fun onLayoutChange(
       v: View?,
       left: Int,
@@ -133,49 +89,107 @@ public class ReactVirtualView(context: Context) :
       oldRight: Int,
       oldBottom: Int,
   ) {
-    offsetChanged = offsetChanged || oldLeft != left || oldTop != top
-    dispatchOnModeChangeIfNeeded(true)
-  }
-
-  /**
-   * From ReactScrollViewHelper#onScroll, triggered by [ReactScrollView] and
-   * [ReactHorizontalScrollView]
-   */
-  override fun onScroll(
-      scrollView: ViewGroup?,
-      scrollEventType: ScrollEventType?,
-      xVelocity: Float,
-      yVelocity: Float,
-  ) {
-    if (scrollView == parentScrollView) {
-      dispatchOnModeChangeIfNeeded(checkRectChange = false)
-    }
-  }
-
-  /**
-   * From ReactScrollViewHelper#onLayout, triggered by [ReactScrollView] and
-   * [ReactHorizontalScrollView]
-   */
-  override fun onLayout(scrollView: ViewGroup?) {
-    if (scrollView == parentScrollView) {
-      dispatchOnModeChangeIfNeeded(checkRectChange = false)
-    }
-  }
-
-  /**
-   * From ReactScrollViewHelper#onLayoutChange, triggered by [ReactScrollView] and
-   * [ReactHorizontalScrollView]
-   */
-  override fun onLayoutChange(scrollView: ViewGroup) {
-    if (scrollView == parentScrollView) {
-      offsetChanged = true
-      dispatchOnModeChangeIfNeeded(false)
+    if (oldLeft != left || oldTop != top) {
+      updateParentOffset()
+      debugLog("onLayoutChange") { "containerRelativeRect=$containerRelativeRect" }
+      reportRectChangeToContainer()
     }
   }
 
   override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
     super.onSizeChanged(w, h, oldw, oldh)
-    dispatchOnModeChangeIfNeeded(true)
+    containerRelativeRect.set(
+        left + offsetX,
+        top + offsetY,
+        right + offsetX,
+        bottom + offsetY,
+    )
+    debugLog("onSizeChanged") { "container=$containerRelativeRect" }
+    reportRectChangeToContainer()
+  }
+
+  override fun onDetachedFromWindow() {
+    super.onDetachedFromWindow()
+    recycleView()
+  }
+
+  override internal fun recycleView() {
+    cleanupLayoutListeners()
+    scrollView?.virtualViewContainerState?.remove(this)
+    scrollView = null
+    mode = null
+    modeChangeEmitter = null
+    hadLayout = false
+    lastContainerRelativeRect.setEmpty()
+    lastClippingRect.setEmpty()
+    containerRelativeRect.setEmpty()
+  }
+
+  override val virtualViewID: String
+    get() {
+      return "${nativeId ?: "unknown"}:::${id}"
+    }
+
+  override fun onModeChange(newMode: VirtualViewMode, thresholdRect: Rect) {
+    modeChangeEmitter ?: return
+    scrollView ?: return
+
+    if (newMode == VirtualViewMode.Visible) {
+      updateClippingRect(null)
+    }
+
+    if (newMode == mode) {
+      debugLog("onModeChange") { "no change $newMode" }
+      return
+    }
+
+    val oldMode = mode
+    mode = newMode
+
+    debugLog("onModeChange") { "$oldMode->$newMode" }
+
+    if (oldMode == VirtualViewMode.Visible) {
+      updateClippingRect(null)
+    }
+
+    when (newMode) {
+      VirtualViewMode.Visible -> {
+        // If the previous mode was hidden, emit a mode change even if `renderState` is rendered,
+        // because the hidden mode change is still pending and will eventually be committed. Only
+        // skip emitting a mode change if the previous mode was prerender and the result of that
+        // event has already been committed.
+        if (
+            oldMode == null ||
+                oldMode == VirtualViewMode.Hidden ||
+                renderState != VirtualViewRenderState.Rendered
+        ) {
+          modeChangeEmitter?.emitModeChange(
+              VirtualViewMode.Visible,
+              containerRelativeRect,
+              thresholdRect,
+              synchronous = true,
+          )
+        }
+      }
+      VirtualViewMode.Prerender -> {
+        if (oldMode != VirtualViewMode.Visible) {
+          modeChangeEmitter?.emitModeChange(
+              VirtualViewMode.Prerender,
+              containerRelativeRect,
+              thresholdRect,
+              synchronous = false,
+          )
+        }
+      }
+      VirtualViewMode.Hidden -> {
+        modeChangeEmitter?.emitModeChange(
+            VirtualViewMode.Hidden,
+            containerRelativeRect,
+            thresholdRect,
+            synchronous = false,
+        )
+      }
+    }
   }
 
   // Note: We co-opt subview clipping on ReactVirtualView by returning the
@@ -187,22 +201,22 @@ public class ReactVirtualView(context: Context) :
     }
 
     // If no ScrollView, or ScrollView has disabled removeClippedSubviews, use default behavior
-    if (parentScrollView == null) {
+    if (scrollView == null) {
       super.updateClippingRect(excludedViews)
       return
     }
 
     val clippingRect = checkNotNull(clippingRect)
-    val parentScrollView = checkNotNull(parentScrollView) as ReactClippingViewGroup
+    val scrollView = checkNotNull(scrollView) as ReactClippingViewGroup
 
-    if (parentScrollView.removeClippedSubviews) {
-      parentScrollView.getClippingRect(clippingRect)
+    if (scrollView.removeClippedSubviews) {
+      scrollView.getClippingRect(clippingRect)
     } else {
-      (parentScrollView as View).getDrawingRect(clippingRect)
+      (scrollView as View).getDrawingRect(clippingRect)
     }
 
-    clippingRect.intersect(targetRect)
-    clippingRect.offset(-targetRect.left, -targetRect.top)
+    clippingRect.intersect(containerRelativeRect)
+    clippingRect.offset(-containerRelativeRect.left, -containerRelativeRect.top)
 
     if (lastClippingRect == clippingRect) {
       return
@@ -212,187 +226,48 @@ public class ReactVirtualView(context: Context) :
     lastClippingRect.set(clippingRect)
   }
 
-  private fun dispatchOnModeChangeIfNeeded(checkRectChange: Boolean) {
-    modeChangeEmitter ?: return
-    val scrollView = parentScrollView ?: return
-
-    if (offsetChanged) {
-      updateParentOffset()
+  private fun updateParentOffset() {
+    val virtualViewScrollView = scrollView ?: return
+    offsetX = 0
+    offsetY = 0
+    var parent: ViewParent? = parent
+    while (parent != null && parent != virtualViewScrollView) {
+      if (parent is View) {
+        offsetX += parent.left
+        offsetY += parent.top
+      }
+      parent = parent.parent
     }
-    targetRect.set(
+    containerRelativeRect.set(
         left + offsetX,
         top + offsetY,
         right + offsetX,
         bottom + offsetY,
     )
-    scrollView.getDrawingRect(thresholdRect)
-    val visibleHeight = thresholdRect.height()
-    val visibleWidth = thresholdRect.width()
+  }
 
-    // TODO: Validate whether this is still the case and whether these checks are still needed.
-    // updateRects will initially get called before the targetRect has any dimensions set, so if
-    // it's both zero width and height, we need to skip dispatching an incorrect mode change.
-    // The correct mode change will be dispatched later. We can't use targetRect.isEmpty because it
-    // will return true if either there's a zero width or height, but that case is valid.
-    if ((targetRect.width() == 0 && targetRect.height() == 0) || thresholdRect.isEmpty) {
-      debugLog("dispatchOnModeChangeIfNeeded") {
-        "empty rects target=${targetRect.toShortString()} threshold=${thresholdRect.toShortString()}"
-      }
+  private fun reportRectChangeToContainer() {
+    if (lastContainerRelativeRect == containerRelativeRect) {
+      debugLog("reportRectChangeToContainer") { "no rect change $containerRelativeRect" }
       return
     }
 
-    updateClippingRect()
-
-    if (checkRectChange) {
-      if (!lastRect.isEmpty && lastRect == targetRect) {
-        debugLog("dispatchOnModeChangeIfNeeded") { "no rect change" }
-        return
-      }
-      lastRect.set(targetRect)
+    if (scrollView != null) {
+      scrollView?.virtualViewContainerState?.onChange(this)
+      lastContainerRelativeRect.set(containerRelativeRect)
     }
-
-    val newMode: VirtualViewMode
-    if (rectsOverlap(targetRect, thresholdRect)) {
-      if (onWindowFocusChangeListener != null) {
-        if (hasWindowFocus()) {
-          newMode = VirtualViewMode.Visible
-        } else {
-          newMode = VirtualViewMode.Prerender
-        }
-      } else {
-        newMode = VirtualViewMode.Visible
-      }
-    } else {
-      var prerender = false
-      if (prerenderRatio > 0.0) {
-        thresholdRect.inset(
-            (-visibleWidth * prerenderRatio).toInt(),
-            (-visibleHeight * prerenderRatio).toInt(),
-        )
-        prerender = rectsOverlap(targetRect, thresholdRect)
-      }
-      if (prerender) {
-        newMode = VirtualViewMode.Prerender
-      } else {
-        val _mode = mode // local variable so Kotlin knows its not nullable
-        if (_mode != null && hysteresisRatio > 0.0) {
-          thresholdRect.inset(
-              (-visibleWidth * hysteresisRatio).toInt(),
-              (-visibleHeight * hysteresisRatio).toInt(),
-          )
-          if (rectsOverlap(targetRect, thresholdRect)) {
-            // In hysteresis window, no change to mode
-            newMode = _mode
-            debugLog("dispatchOnModeChangeIfNeeded") { "hysteresis, mode=$newMode" }
-          } else {
-            newMode = VirtualViewMode.Hidden
-            thresholdRect.setEmpty()
-          }
-        } else {
-          newMode = VirtualViewMode.Hidden
-          thresholdRect.setEmpty()
-        }
-      }
-    }
-    debugLog("dispatchOnModeChangeIfNeeded") {
-      "mode=$mode target=${targetRect.toShortString()} threshold=${thresholdRect.toShortString()}"
-    }
-
-    if (newMode == mode) {
-      return
-    }
-    val oldMode = mode
-    mode = newMode
-    maybeEmitModeChanges(oldMode, newMode)
   }
 
-  /**
-   * Checks whether one Rect overlaps with another Rect.
-   *
-   * This is different from [Rect.intersects] because a Rect representing a line or a point is
-   * considered to overlap with another Rect if the line or point is within the rect bounds.
-   * However, two Rects are not considered to overlap if they only share a boundary.
-   */
-  private fun rectsOverlap(rect1: Rect, rect2: Rect): Boolean {
-    if (rect1.top >= rect2.bottom || rect2.top >= rect1.bottom) {
-      // No overlap on the y-axis.
-      return false
-    }
-    if (rect1.left >= rect2.right || rect2.left >= rect1.right) {
-      // No overlap on the x-axis.
-      return false
-    }
-    return true
-  }
-
-  /**
-   * Evaluate the mode change and emit 0, 1, or 2 mode change events depending on the type of
-   * transition, [noActivity], and [asyncPrerender]
-   */
-  private fun maybeEmitModeChanges(
-      oldMode: VirtualViewMode?,
-      newMode: VirtualViewMode,
-  ) {
-    debugLog("Mode change") { "$oldMode->$newMode" }
-    Systrace.beginSection(
-        Systrace.TRACE_TAG_REACT,
-        "VirtualView::mode change $oldMode -> $newMode, nativeID=$nativeId",
-    )
-    when (newMode) {
-      VirtualViewMode.Visible -> {
-        if (renderState == VirtualViewRenderState.Unknown) {
-          // Feature flag is disabled, so use the former logic.
-          emitSyncModeChange(VirtualViewMode.Visible)
-        } else {
-          // If the previous mode was prerender and the result of dispatching that event was
-          // committed, we do not need to dispatch an event for visible.
-          val wasPrerenderCommitted =
-              oldMode == VirtualViewMode.Prerender && renderState == VirtualViewRenderState.Rendered
-          if (!wasPrerenderCommitted) {
-            emitSyncModeChange(VirtualViewMode.Visible)
-          }
-        }
-      }
-      VirtualViewMode.Prerender -> {
-        if (oldMode != VirtualViewMode.Visible) {
-          emitAsyncModeChange(VirtualViewMode.Prerender)
-        }
-      }
-      VirtualViewMode.Hidden -> {
-        emitAsyncModeChange(VirtualViewMode.Hidden)
-      }
-    }
-    Systrace.endSection(Systrace.TRACE_TAG_REACT)
-  }
-
-  private fun emitAsyncModeChange(mode: VirtualViewMode) {
-    modeChangeEmitter?.emitModeChange(mode, targetRect, thresholdRect, synchronous = false)
-  }
-
-  private fun emitSyncModeChange(mode: VirtualViewMode) {
-    modeChangeEmitter?.emitModeChange(mode, targetRect, thresholdRect, synchronous = true)
-  }
-
-  private fun getParentScrollView(): ViewGroup? = traverseParentStack(true)
+  private fun getScrollView(): VirtualViewContainer? = traverseParentStack(true)
 
   private fun cleanupLayoutListeners() {
     traverseParentStack(false)
   }
 
-  /**
-   * Navigate up through the view hierarchy until we reach the scroll view or root view, and
-   * maintain layout change listeners on any intermediate views.
-   *
-   * @param addListeners Whether to call [View.addOnLayoutChangeListener] to views in the hierarchy.
-   *   If false, existing listeners will be removed.
-   */
-  private fun traverseParentStack(addListeners: Boolean): ViewGroup? {
+  private fun traverseParentStack(addListeners: Boolean): VirtualViewContainer? {
     var parent: ViewParent? = parent
     while (parent != null) {
-      if (parent is ReactScrollView) {
-        return parent
-      }
-      if (parent is ReactHorizontalScrollView) {
+      if (parent is VirtualViewContainer) {
         return parent
       }
       if (parent is ReactRoot) {
@@ -411,35 +286,13 @@ public class ReactVirtualView(context: Context) :
     return null
   }
 
-  /** Navigate up the view hierarchy to record parents' offsets within the scroll view */
-  private fun updateParentOffset() {
-    val scrollView = parentScrollView ?: return
-    offsetX = 0
-    offsetY = 0
-    offsetChanged = false
-    var parent: ViewParent? = parent
-    while (parent != null && parent != scrollView) {
-      if (parent is View) {
-        offsetX += parent.left
-        offsetY += parent.top
-      }
-      parent = parent.parent
-    }
+  private companion object {
+    private val ENABLE_DEBUG_LOGS: Boolean = ReactBuildConfig.DEBUG && false
   }
 
-  internal inline fun debugLog(subtag: String, block: () -> String = { "" }) {
-    if (debugLogEnabled) {
-      if (IS_DEBUG_BUILD) {
-        FLog.d("$DEBUG_TAG:$subtag", "${block()} [$id][$nativeId]")
-      } else {
-        // production builds only log warnings/errors
-        FLog.w("$DEBUG_TAG:$subtag", "${block()} [$id][$nativeId]")
-      }
+  private inline fun debugLog(subtag: String, block: () -> String = { "" }) {
+    if (ENABLE_DEBUG_LOGS) {
+      FLog.d("ReactVirtualView:[$virtualViewID]:$subtag", block())
     }
   }
 }
-
-private const val DEBUG_TAG: String = "ReactVirtualView"
-
-private val IS_DEBUG_BUILD =
-    ReactBuildConfig.DEBUG || ReactBuildConfig.IS_INTERNAL_BUILD || ReactBuildConfig.ENABLE_PERFETTO

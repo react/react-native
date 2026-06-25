@@ -12,12 +12,12 @@
 
 const ToastAndroid = {
   // Dummy fallback toast duration constants
-  SHORT: (0: number),
-  LONG: (0: number),
+  SHORT: 0 as number,
+  LONG: 0 as number,
   // Dummy fallback toast gravity constants
-  TOP: (0: number),
-  BOTTOM: (0: number),
-  CENTER: (0: number),
+  TOP: 0 as number,
+  BOTTOM: 0 as number,
+  CENTER: 0 as number,
 
   show: function (message: string, duration: number): void {
     console.warn('ToastAndroid is not supported on this platform.');

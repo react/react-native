@@ -17,7 +17,7 @@ JsiIntegrationTestHermesEngineAdapter::JsiIntegrationTestHermesEngineAdapter(
                   ::hermes::vm::CompilationMode::ForceLazyCompilation)
               .build())},
       jsExecutor_{jsExecutor},
-      runtimeTargetDelegate_{runtime_} {
+      runtimeTargetDelegate_{runtime_, *runtime_} {
   // NOTE: In React Native, registerForProfiling is called by
   // HermesInstance::unstable_initializeOnJsThread, called from
   // ReactInstance::initializeRuntime. Ideally, we should figure out how to

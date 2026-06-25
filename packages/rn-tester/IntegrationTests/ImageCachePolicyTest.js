@@ -32,14 +32,14 @@ const TESTS = ['only-if-cached', 'default', 'reload', 'force-cache'] as const;
 
 function ImageCachePolicyTest(): React.Node {
   const [state, setState] = useState<{[string]: ?boolean}>({
-    'only-if-cached': undefined,
     default: undefined,
-    reload: undefined,
     'force-cache': undefined,
+    'only-if-cached': undefined,
+    reload: undefined,
   });
 
   const testComplete = (
-    name: $NonMaybeType<ImageURISource['cache']>,
+    name: NonNullable<ImageURISource['cache']>,
     pass: boolean,
   ) => {
     setState(prevState => ({
@@ -89,19 +89,19 @@ function ImageCachePolicyTest(): React.Node {
 }
 
 const getImageSource = (cache: ImageURISource['cache']) => ({
+  cache,
   uri:
     'https://raw.githubusercontent.com/facebook/react-native/HEAD/Libraries/NewAppScreen/components/logo.png?cacheBust=notinCache' +
     Date.now(),
-  cache,
 });
 
 const styles = StyleSheet.create({
+  base: {
+    height: 100,
+    width: 100,
+  },
   container: {
     flex: 1,
-  },
-  base: {
-    width: 100,
-    height: 100,
   },
 });
 

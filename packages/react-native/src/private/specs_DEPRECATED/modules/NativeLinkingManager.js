@@ -14,14 +14,14 @@ import * as TurboModuleRegistry from '../../../../Libraries/TurboModule/TurboMod
 
 export interface Spec extends TurboModule {
   // Common interface
-  +getInitialURL: () => Promise<?string>;
-  +canOpenURL: (url: string) => Promise<boolean>;
-  +openURL: (url: string) => Promise<void>;
-  +openSettings: () => Promise<void>;
+  readonly getInitialURL: () => Promise<?string>;
+  readonly canOpenURL: (url: string) => Promise<boolean>;
+  readonly openURL: (url: string) => Promise<void>;
+  readonly openSettings: () => Promise<void>;
 
   // Events
-  +addListener: (eventName: string) => void;
-  +removeListeners: (count: number) => void;
+  readonly addListener: (eventName: string) => void;
+  readonly removeListeners: (count: number) => void;
 }
 
-export default (TurboModuleRegistry.get<Spec>('LinkingManager'): ?Spec);
+export default TurboModuleRegistry.get<Spec>('LinkingManager') as ?Spec;

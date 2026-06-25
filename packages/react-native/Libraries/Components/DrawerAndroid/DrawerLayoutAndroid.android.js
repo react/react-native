@@ -67,7 +67,7 @@ class DrawerLayoutAndroid
   extends React.Component<DrawerLayoutAndroidProps, DrawerLayoutAndroidState>
   implements DrawerLayoutAndroidMethods
 {
-  static get positions(): mixed {
+  static get positions(): unknown {
     console.warn(
       'Setting DrawerLayoutAndroid drawerPosition using `DrawerLayoutAndroid.positions` is deprecated. Instead pass the string value "left" or "right"',
     );
@@ -301,5 +301,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.251)',
   },
 });
+
+export type DrawerLayoutAndroidInstance = DrawerLayoutAndroid;
 
 export default DrawerLayoutAndroid as $FlowFixMe;

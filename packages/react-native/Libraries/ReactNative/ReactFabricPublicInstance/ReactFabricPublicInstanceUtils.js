@@ -16,7 +16,7 @@
  * In that case `nativeFabricUIManager` isn't defined and `ReactFabric` throws.
  */
 
-export function isPublicInstance(maybeInstance: mixed): boolean {
+export function isPublicInstance(maybeInstance: unknown): boolean {
   return (
     maybeInstance != null &&
     // TODO: implement a better check when the instance is defined in the React Native repository.
@@ -26,7 +26,7 @@ export function isPublicInstance(maybeInstance: mixed): boolean {
   );
 }
 
-function isLegacyFabricInstance(maybeInstance: mixed): boolean {
+function isLegacyFabricInstance(maybeInstance: unknown): boolean {
   /* eslint-disable dot-notation */
   return (
     maybeInstance != null &&

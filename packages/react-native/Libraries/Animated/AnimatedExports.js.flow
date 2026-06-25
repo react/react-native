@@ -10,7 +10,7 @@
 
 import AnimatedImplementation from './AnimatedImplementation';
 
-export type {CompositeAnimation} from './AnimatedImplementation';
+export type {CompositeAnimation, Numeric} from './AnimatedImplementation';
 export type {DecayAnimationConfig} from './animations/DecayAnimation';
 export type {SpringAnimationConfig} from './animations/SpringAnimation';
 export type {TimingAnimationConfig} from './animations/TimingAnimation';

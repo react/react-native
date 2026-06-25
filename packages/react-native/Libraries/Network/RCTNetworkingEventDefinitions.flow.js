@@ -10,7 +10,7 @@
 
 'use strict';
 
-export type RCTNetworkingEventDefinitions = $ReadOnly<{
+export type RCTNetworkingEventDefinitions = Readonly<{
   didSendNetworkData: [
     [
       number, // requestId

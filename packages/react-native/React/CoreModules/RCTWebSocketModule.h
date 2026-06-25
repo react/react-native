@@ -18,6 +18,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+@class SRWebSocket;
+
+typedef SRWebSocket * (^SRWebSocketProvider)(NSURLRequest *request);
+
+RCT_EXTERN void RCTSetCustomSRWebSocketProvider(SRWebSocketProvider provider);
+
 @interface RCTWebSocketModule : RCTEventEmitter
 
 // Register a custom handler for a specific websocket. The handler will be strongly held by the WebSocketModule.

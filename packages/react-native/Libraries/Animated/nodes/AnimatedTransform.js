@@ -23,12 +23,12 @@ type Transform<T = AnimatedNode> = {
     | number
     | string
     | T
-    | $ReadOnlyArray<number | string | T>
+    | ReadonlyArray<number | string | T>
     | {[string]: number | string | T},
 };
 
 function flatAnimatedNodes(
-  transforms: $ReadOnlyArray<Transform<>>,
+  transforms: ReadonlyArray<Transform<>>,
 ): Array<AnimatedNode> {
   const nodes = [];
   for (let ii = 0, length = transforms.length; ii < length; ii++) {
@@ -47,15 +47,15 @@ function flatAnimatedNodes(
 export default class AnimatedTransform extends AnimatedWithChildren {
   // NOTE: For potentially historical reasons, some operations only operate on
   // the first level of AnimatedNode instances. This optimizes that bevavior.
-  _nodes: $ReadOnlyArray<AnimatedNode>;
+  _nodes: ReadonlyArray<AnimatedNode>;
 
-  _transforms: $ReadOnlyArray<Transform<>>;
+  _transforms: ReadonlyArray<Transform<>>;
 
   /**
    * Creates an `AnimatedTransform` if `transforms` contains `AnimatedNode`
    * instances. Otherwise, returns `null`.
    */
-  static from(transforms: $ReadOnlyArray<Transform<>>): ?AnimatedTransform {
+  static from(transforms: ReadonlyArray<Transform<>>): ?AnimatedTransform {
     const nodes = flatAnimatedNodes(
       // NOTE: This check should not be necessary, but the types are not
       // enforced as of this writing. This check should be hoisted to
@@ -69,8 +69,8 @@ export default class AnimatedTransform extends AnimatedWithChildren {
   }
 
   constructor(
-    nodes: $ReadOnlyArray<AnimatedNode>,
-    transforms: $ReadOnlyArray<Transform<>>,
+    nodes: ReadonlyArray<AnimatedNode>,
+    transforms: ReadonlyArray<Transform<>>,
     config?: ?AnimatedNodeConfig,
   ) {
     super(config);
@@ -87,15 +87,15 @@ export default class AnimatedTransform extends AnimatedWithChildren {
     super.__makeNative(platformConfig);
   }
 
-  __getValue(): $ReadOnlyArray<Transform<any>> {
+  __getValue(): ReadonlyArray<Transform<any>> {
     return mapTransforms(this._transforms, animatedNode =>
       animatedNode.__getValue(),
     );
   }
 
   __getValueWithStaticTransforms(
-    staticTransforms: $ReadOnlyArray<Object>,
-  ): $ReadOnlyArray<Object> {
+    staticTransforms: ReadonlyArray<Object>,
+  ): ReadonlyArray<Object> {
     const values = [];
     mapTransforms(this._transforms, node => {
       values.push(node.__getValue());
@@ -105,7 +105,7 @@ export default class AnimatedTransform extends AnimatedWithChildren {
     return mapTransforms(staticTransforms, () => values.shift());
   }
 
-  __getAnimatedValue(): $ReadOnlyArray<Transform<any>> {
+  __getAnimatedValue(): ReadonlyArray<Transform<any>> {
     return mapTransforms(this._transforms, animatedNode =>
       animatedNode.__getAnimatedValue(),
     );
@@ -169,9 +169,9 @@ export default class AnimatedTransform extends AnimatedWithChildren {
 }
 
 function mapTransforms<T>(
-  transforms: $ReadOnlyArray<Transform<>>,
+  transforms: ReadonlyArray<Transform<>>,
   mapFunction: AnimatedNode => T,
-): $ReadOnlyArray<Transform<T>> {
+): ReadonlyArray<Transform<T>> {
   return transforms.map(transform => {
     const result: Transform<T> = {};
     // There should be exactly one property in `transform`.

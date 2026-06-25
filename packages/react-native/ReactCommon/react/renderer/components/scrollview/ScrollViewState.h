@@ -28,7 +28,7 @@ class ScrollViewState final {
 
   Point contentOffset;
   Rect contentBoundingRect;
-  int scrollAwayPaddingTop;
+  int scrollAwayPaddingTop{0};
 
   /*
    * View Culling has to be disabled when accessibility features are used.

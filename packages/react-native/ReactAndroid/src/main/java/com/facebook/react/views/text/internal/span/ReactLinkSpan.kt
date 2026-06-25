@@ -11,8 +11,10 @@ import android.text.TextPaint
 import android.text.style.ClickableSpan
 import android.view.View
 import com.facebook.react.bridge.ReactContext
+import com.facebook.react.common.annotations.UnstableReactNativeAPI
 import com.facebook.react.uimanager.UIManagerHelper
 import com.facebook.react.views.text.PreparedLayoutTextView
+import com.facebook.react.views.text.ReactTextView
 import com.facebook.react.views.text.TextLayoutManager
 import com.facebook.react.views.view.ViewGroupClickEvent
 
@@ -29,13 +31,18 @@ import com.facebook.react.views.view.ViewGroupClickEvent
  * </Text>
  * ```
  */
+@OptIn(UnstableReactNativeAPI::class)
 internal class ReactLinkSpan(val fragmentIndex: Int) : ClickableSpan(), ReactSpan {
   override fun onClick(view: View) {
     val context = view.context as ReactContext
-    val textView = view as? PreparedLayoutTextView ?: return
-    val preparedLayout = textView.preparedLayout ?: return
+    val preparedLayout =
+        when (view) {
+          is PreparedLayoutTextView -> view.preparedLayout
+          is ReactTextView -> view.preparedLayout
+          else -> null
+        } ?: return
     val reactTag = preparedLayout.reactTags[fragmentIndex]
-    val eventDispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, reactTag)
+    val eventDispatcher = UIManagerHelper.getEventDispatcher(context)
     eventDispatcher?.dispatchEvent(
         ViewGroupClickEvent(UIManagerHelper.getSurfaceId(context), reactTag)
     )

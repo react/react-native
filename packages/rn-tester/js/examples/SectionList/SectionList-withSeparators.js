@@ -33,7 +33,7 @@ const Separator =
     );
   };
 
-export function SectionList_withSeparators(): React.Node {
+export component SectionList_withSeparators() {
   const exampleProps = {
     ItemSeparatorComponent: Separator('lightgreen', 'green', false),
     SectionSeparatorComponent: Separator('lightblue', 'blue', true),

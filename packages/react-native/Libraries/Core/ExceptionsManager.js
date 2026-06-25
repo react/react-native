@@ -135,9 +135,9 @@ function reportException(
 }
 
 declare var console: {
-  error: (...data: $ReadOnlyArray<mixed>) => void,
-  _errorOriginal: (...data: $ReadOnlyArray<mixed>) => void,
-  reportErrorsAsExceptions: boolean,
+  error: (...data: ReadonlyArray<unknown>) => void,
+  _errorOriginal: (...data: ReadonlyArray<unknown>) => void,
+  reportErrorsAsExceptions?: boolean,
   ...
 };
 
@@ -148,7 +148,7 @@ let inExceptionHandler = false;
 /**
  * Logs exceptions to the (native) console and displays them
  */
-function handleException(e: mixed, isFatal: boolean) {
+function handleException(e: unknown, isFatal: boolean) {
   // TODO(T196834299): We should really use a c++ turbomodule for this
   const reportToConsole = true;
   if (
@@ -182,7 +182,7 @@ function handleException(e: mixed, isFatal: boolean) {
 function reactConsoleErrorHandler(...args) {
   // bubble up to any original handlers
   console._errorOriginal(...args);
-  if (!console.reportErrorsAsExceptions) {
+  if (console.reportErrorsAsExceptions === false) {
     return;
   }
   if (inExceptionHandler || global.RN$inExceptionHandler?.()) {
@@ -272,18 +272,12 @@ function reactConsoleErrorHandler(...args) {
  * setting `console.reportErrorsAsExceptions = false;` in your app.
  */
 function installConsoleErrorReporter() {
-  // Enable reportErrorsAsExceptions
   if (console._errorOriginal) {
     return; // already installed
   }
   // Flow doesn't like it when you set arbitrary values on a global object
   console._errorOriginal = console.error.bind(console);
   console.error = reactConsoleErrorHandler;
-  if (console.reportErrorsAsExceptions === undefined) {
-    // Individual apps can disable this
-    // Flow doesn't like it when you set arbitrary values on a global object
-    console.reportErrorsAsExceptions = true;
-  }
 }
 
 const ExceptionsManager = {

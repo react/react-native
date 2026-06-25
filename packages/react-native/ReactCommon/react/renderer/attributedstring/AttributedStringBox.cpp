@@ -79,10 +79,4 @@ bool operator==(
   }
 }
 
-bool operator!=(
-    const AttributedStringBox& lhs,
-    const AttributedStringBox& rhs) {
-  return !(lhs == rhs);
-}
-
 } // namespace facebook::react

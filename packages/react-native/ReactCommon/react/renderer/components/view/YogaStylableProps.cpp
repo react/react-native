@@ -147,35 +147,40 @@ void YogaStylableProps::setProp(
     REBUILD_FIELD_SWITCH_CASE_YSP(flexBasis, setFlexBasis);
     REBUILD_FIELD_SWITCH_CASE2(positionType, setPositionType, "position");
     REBUILD_FIELD_YG_GUTTER(gap, setGap, "rowGap", "columnGap", "gap");
-    REBUILD_FIELD_SWITCH_CASE_YSP(aspectRatio, setAspectRatio);
-    REBUILD_FIELD_SWITCH_CASE_YSP(boxSizing, setBoxSizing);
-    REBUILD_FIELD_YG_DIMENSION(dimension, setDimension, "width", "height");
-    REBUILD_FIELD_YG_DIMENSION(
-        minDimension, setMinDimension, "minWidth", "minHeight");
-    REBUILD_FIELD_YG_DIMENSION(
-        maxDimension, setMaxDimension, "maxWidth", "maxHeight");
-    REBUILD_FIELD_YG_EDGES_POSITION();
-    REBUILD_FIELD_YG_EDGES(margin, setMargin, "margin", "");
-    REBUILD_FIELD_YG_EDGES(padding, setPadding, "padding", "");
-    REBUILD_FIELD_YG_EDGES(border, setBorder, "border", "Width");
+    case CONSTEXPR_RAW_PROPS_KEY_HASH("aspectRatio"): {
+      yogaStyle.setAspectRatio(
+          value.hasValue() ? convertAspectRatio(context, value)
+                           : ygDefaults.aspectRatio());
+      return;
+    }
+      REBUILD_FIELD_SWITCH_CASE_YSP(boxSizing, setBoxSizing);
+      REBUILD_FIELD_YG_DIMENSION(dimension, setDimension, "width", "height");
+      REBUILD_FIELD_YG_DIMENSION(
+          minDimension, setMinDimension, "minWidth", "minHeight");
+      REBUILD_FIELD_YG_DIMENSION(
+          maxDimension, setMaxDimension, "maxWidth", "maxHeight");
+      REBUILD_FIELD_YG_EDGES_POSITION();
+      REBUILD_FIELD_YG_EDGES(margin, setMargin, "margin", "");
+      REBUILD_FIELD_YG_EDGES(padding, setPadding, "padding", "");
+      REBUILD_FIELD_YG_EDGES(border, setBorder, "border", "Width");
 
-    // Aliases
-    RAW_SET_PROP_SWITCH_CASE(insetBlockEnd, "insetBlockEnd");
-    RAW_SET_PROP_SWITCH_CASE(insetBlockStart, "insetBlockStart");
-    RAW_SET_PROP_SWITCH_CASE(insetInlineEnd, "insetInlineEnd");
-    RAW_SET_PROP_SWITCH_CASE(insetInlineStart, "insetInlineStart");
-    RAW_SET_PROP_SWITCH_CASE(marginInline, "marginInline");
-    RAW_SET_PROP_SWITCH_CASE(marginInlineStart, "marginInlineStart");
-    RAW_SET_PROP_SWITCH_CASE(marginInlineEnd, "marginInlineEnd");
-    RAW_SET_PROP_SWITCH_CASE(marginBlock, "marginBlock");
-    RAW_SET_PROP_SWITCH_CASE(marginBlockStart, "marginBlockStart");
-    RAW_SET_PROP_SWITCH_CASE(marginBlockEnd, "marginBlockEnd");
-    RAW_SET_PROP_SWITCH_CASE(paddingInline, "paddingInline");
-    RAW_SET_PROP_SWITCH_CASE(paddingInlineStart, "paddingInlineStart");
-    RAW_SET_PROP_SWITCH_CASE(paddingInlineEnd, "paddingInlineEnd");
-    RAW_SET_PROP_SWITCH_CASE(paddingBlock, "paddingBlock");
-    RAW_SET_PROP_SWITCH_CASE(paddingBlockStart, "paddingBlockStart");
-    RAW_SET_PROP_SWITCH_CASE(paddingBlockEnd, "paddingBlockEnd");
+      // Aliases
+      RAW_SET_PROP_SWITCH_CASE(insetBlockEnd, "insetBlockEnd");
+      RAW_SET_PROP_SWITCH_CASE(insetBlockStart, "insetBlockStart");
+      RAW_SET_PROP_SWITCH_CASE(insetInlineEnd, "insetInlineEnd");
+      RAW_SET_PROP_SWITCH_CASE(insetInlineStart, "insetInlineStart");
+      RAW_SET_PROP_SWITCH_CASE(marginInline, "marginInline");
+      RAW_SET_PROP_SWITCH_CASE(marginInlineStart, "marginInlineStart");
+      RAW_SET_PROP_SWITCH_CASE(marginInlineEnd, "marginInlineEnd");
+      RAW_SET_PROP_SWITCH_CASE(marginBlock, "marginBlock");
+      RAW_SET_PROP_SWITCH_CASE(marginBlockStart, "marginBlockStart");
+      RAW_SET_PROP_SWITCH_CASE(marginBlockEnd, "marginBlockEnd");
+      RAW_SET_PROP_SWITCH_CASE(paddingInline, "paddingInline");
+      RAW_SET_PROP_SWITCH_CASE(paddingInlineStart, "paddingInlineStart");
+      RAW_SET_PROP_SWITCH_CASE(paddingInlineEnd, "paddingInlineEnd");
+      RAW_SET_PROP_SWITCH_CASE(paddingBlock, "paddingBlock");
+      RAW_SET_PROP_SWITCH_CASE(paddingBlockStart, "paddingBlockStart");
+      RAW_SET_PROP_SWITCH_CASE(paddingBlockEnd, "paddingBlockEnd");
   }
 }
 

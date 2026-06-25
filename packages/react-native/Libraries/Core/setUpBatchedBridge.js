@@ -27,7 +27,7 @@ registerModule(
 );
 registerModule(
   'GlobalPerformanceLogger',
-  () => require('../Utilities/GlobalPerformanceLogger').default,
+  () => require('../ReactNative/DeprecatedPerformanceLoggerStub').default,
 );
 
 if (__DEV__) {

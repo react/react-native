@@ -30,7 +30,7 @@ export type OverridesFor<T> = Partial<{
   [key in keyof T]: Getter<?ReturnType<T[key]>>,
 }>;
 
-function createGetter<T: boolean | number | string>(
+function createGetter<T extends boolean | number | string>(
   configName: string,
   customValueGetter: Getter<?T>,
   defaultValue: T,
@@ -52,7 +52,7 @@ function createGetter<T: boolean | number | string>(
 }
 
 export function createJavaScriptFlagGetter<
-  K: $Keys<ReactNativeFeatureFlagsJsOnly>,
+  K extends keyof ReactNativeFeatureFlagsJsOnly,
 >(
   configName: K,
   defaultValue: ReturnType<ReactNativeFeatureFlagsJsOnly[K]>,
@@ -67,13 +67,13 @@ export function createJavaScriptFlagGetter<
   );
 }
 
-type NativeFeatureFlags = $NonMaybeType<typeof NativeReactNativeFeatureFlags>;
+type NativeFeatureFlags = NonNullable<typeof NativeReactNativeFeatureFlags>;
 
-export function createNativeFlagGetter<K: $Keys<NativeFeatureFlags>>(
+export function createNativeFlagGetter<K extends keyof NativeFeatureFlags>(
   configName: K,
-  defaultValue: ReturnType<$NonMaybeType<NativeFeatureFlags[K]>>,
+  defaultValue: ReturnType<NonNullable<NativeFeatureFlags[K]>>,
   skipUnavailableNativeModuleError: boolean = false,
-): Getter<ReturnType<$NonMaybeType<NativeFeatureFlags[K]>>> {
+): Getter<ReturnType<NonNullable<NativeFeatureFlags[K]>>> {
   return createGetter(
     configName,
     () => {

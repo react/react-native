@@ -14,8 +14,8 @@ import * as TurboModuleRegistry from '../../../../Libraries/TurboModule/TurboMod
 
 export interface Spec extends TurboModule {
   // RCTEventEmitter
-  +addListener: (eventName: string) => void;
-  +removeListeners: (count: number) => void;
+  readonly addListener: (eventName: string) => void;
+  readonly removeListeners: (count: number) => void;
 }
 
-export default (TurboModuleRegistry.get<Spec>('ModalManager'): ?Spec);
+export default TurboModuleRegistry.get<Spec>('ModalManager') as ?Spec;

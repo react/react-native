@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<4f6913d92515fd817a167ef2a505c777>>
+ * @generated SignedSource<<f14bb4f5e859587a468b1f2a320577c0>>
  */
 
 /**
@@ -55,6 +55,11 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool cxxNativeAnimatedEnabled();
 
   /**
+   * When enabled, sets the default overflow style for Text components to hidden instead of visible.
+   */
+  RN_EXPORT static bool defaultTextToOverflowHidden();
+
+  /**
    * Dispatch view commands in mount item order.
    */
   RN_EXPORT static bool disableEarlyViewCommandExecution();
@@ -68,11 +73,6 @@ class ReactNativeFeatureFlags {
    * Prevent FabricMountingManager from reordering mountItems, which may lead to invalid state on the UI thread
    */
   RN_EXPORT static bool disableMountItemReorderingAndroid();
-
-  /**
-   * Disable some workarounds for old Android versions in TextLayoutManager logic for retrieving attachment metrics
-   */
-  RN_EXPORT static bool disableOldAndroidAttachmentMetricsWorkarounds();
 
   /**
    * Force disable subview clipping for ReactViewGroup on Android
@@ -100,22 +100,12 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool enableAccumulatedUpdatesInRawPropsAndroid();
 
   /**
-   * Enable antialiased border radius clipping for Android API 28 and below using manual masking with Porter-Duff compositing
-   */
-  RN_EXPORT static bool enableAndroidAntialiasedBorderRadiusClipping();
-
-  /**
-   * Enables linear text rendering on Android wherever subpixel text rendering is enabled
-   */
-  RN_EXPORT static bool enableAndroidLinearText();
-
-  /**
    * Enables various optimizations throughout the path of measuring text on Android.
    */
   RN_EXPORT static bool enableAndroidTextMeasurementOptimizations();
 
   /**
-   * Feature flag to enable the new bridgeless architecture. Note: Enabling this will force enable the following flags: `useTurboModules` & `enableFabricRenderer`.
+   * Feature flag to enable the new bridgeless architecture.
    */
   RN_EXPORT static bool enableBridgelessArchitecture();
 
@@ -140,11 +130,6 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool enableDoubleMeasurementFixAndroid();
 
   /**
-   * This infra allows native modules to initialize on the main thread, during React Native init.
-   */
-  RN_EXPORT static bool enableEagerMainQueueModulesOnIOS();
-
-  /**
    * Feature flag to configure eager attachment of the root view/initialisation of the JS code.
    */
   RN_EXPORT static bool enableEagerRootViewAttachment();
@@ -155,14 +140,19 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool enableExclusivePropsUpdateAndroid();
 
   /**
+   * Enables Fabric commit branching to fix starvation problems and atomic JS updates.
+   */
+  RN_EXPORT static bool enableFabricCommitBranching();
+
+  /**
    * This feature flag enables logs for Fabric.
    */
   RN_EXPORT static bool enableFabricLogs();
 
   /**
-   * Enables the use of the Fabric renderer in the whole app.
+   * Enables CSS Flexbox §4.5 automatic minimum sizing under strict layout conformance. When enabled, a flex item with an undefined main-axis `min-width`/`min-height` under strict conformance receives a content-derived minimum size (per spec) instead of an undefined (0) minimum. Defaults off so the behaviour can be ramped independently of strict conformance.
    */
-  RN_EXPORT static bool enableFabricRenderer();
+  RN_EXPORT static bool enableFlexboxAutoMinSizeInStrictMode();
 
   /**
    * Enables font scale changes updating layout for measurable nodes.
@@ -183,16 +173,6 @@ class ReactNativeFeatureFlags {
    * When enabled, Android will build and initiate image prefetch requests on ImageShadowNode::layout
    */
   RN_EXPORT static bool enableImagePrefetchingAndroid();
-
-  /**
-   * When enabled, Android will build and initiate image prefetch requests on ImageShadowNode::layout and batch them together in a single JNI call
-   */
-  RN_EXPORT static bool enableImagePrefetchingJNIBatchingAndroid();
-
-  /**
-   * When enabled, Android will initiate image prefetch requested on ImageShadowNode::layout on the UI thread
-   */
-  RN_EXPORT static bool enableImagePrefetchingOnUiThreadAndroid();
 
   /**
    * Dispatches state updates for content offset changes synchronously on the main thread.
@@ -230,14 +210,14 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool enableLayoutAnimationsOnIOS();
 
   /**
-   * Make RCTUnsafeExecuteOnMainQueueSync less likely to deadlock, when used in conjuction with sync rendering/events.
-   */
-  RN_EXPORT static bool enableMainQueueCoordinatorOnIOS();
-
-  /**
    * Enable NSNull conversion when handling module arguments on iOS
    */
   RN_EXPORT static bool enableModuleArgumentNSNullConversionIOS();
+
+  /**
+   * Enables the MutationObserver Web API in React Native.
+   */
+  RN_EXPORT static bool enableMutationObserverByDefault();
 
   /**
    * Parse CSS strings using the Fabric CSS parser instead of ViewConfig processing
@@ -258,6 +238,16 @@ class ReactNativeFeatureFlags {
    * When enabled, Android will receive prop updates based on the differences between the last rendered shadow node and the last committed shadow node.
    */
   RN_EXPORT static bool enablePropsUpdateReconciliationAndroid();
+
+  /**
+   * When enabled, RuntimeScheduler_Modern clears pending tasks and rendering updates before handling an error.
+   */
+  RN_EXPORT static bool enableRuntimeSchedulerQueueClearingOnError();
+
+  /**
+   * Gates a defensive guard around Scheduler::uiManagerDidDispatchCommand and uiManagerDidFinishTransaction that prevents queued rendering-update lambdas from dereferencing the SchedulerDelegate after it has been destroyed (use-after-free).
+   */
+  RN_EXPORT static bool enableSchedulerDelegateInvalidation();
 
   /**
    * When enabled, it will use SwiftUI for filter effects like blur on iOS.
@@ -300,24 +290,9 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool enableVirtualViewContainerStateExperimental();
 
   /**
-   * Enables VirtualView debug features such as logging and overlays.
+   * Fix incorrect parentTag passed as parentTagForUpdate in the unflatten-unflatten branch of calculateShadowViewMutationsFlattener, which causes UPDATE mutations to reference a parent being created in the same batch.
    */
-  RN_EXPORT static bool enableVirtualViewDebugFeatures();
-
-  /**
-   * Enables reading render state when dispatching VirtualView events.
-   */
-  RN_EXPORT static bool enableVirtualViewRenderState();
-
-  /**
-   * Enables window focus detection for prioritizing VirtualView events.
-   */
-  RN_EXPORT static bool enableVirtualViewWindowFocusDetection();
-
-  /**
-   * Enable Web Performance APIs (Performance Timeline, User Timings, etc.) by default.
-   */
-  RN_EXPORT static bool enableWebPerformanceAPIsByDefault();
+  RN_EXPORT static bool fixDifferentiatorParentTagForUnflattenCase();
 
   /**
    * Uses the default event priority instead of the discreet event priority by default when dispatching events from Fabric to React.
@@ -325,9 +300,9 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool fixMappingOfEventPrioritiesBetweenFabricAndReact();
 
   /**
-   * Fix text clipping starting in Android 15 due to usage of useBoundsForWidth
+   * Fix flex basis computation to not apply FitContent constraint in the main axis for non-measure container nodes, preventing unnecessary re-measurement in scroll containers.
    */
-  RN_EXPORT static bool fixTextClippingAndroid15useBoundsForWidth();
+  RN_EXPORT static bool fixYogaFlexBasisFitContentInMainAxis();
 
   /**
    * Enable system assertion validating that Fusebox is configured with a single host. When set, the CDP backend will dynamically disable features (Perf and Network) in the event that multiple hosts are registered (undefined behaviour), and broadcast this over `ReactNativeApplication.systemStateChanged`.
@@ -340,14 +315,24 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool fuseboxEnabledRelease();
 
   /**
+   * Enable frame timings and screenshots support in the React Native DevTools CDP backend. This flag is global and should not be changed across React Host lifetimes.
+   */
+  RN_EXPORT static bool fuseboxFrameRecordingEnabled();
+
+  /**
    * Enable network inspection support in the React Native DevTools CDP backend. Requires `enableBridgelessArchitecture`. This flag is global and should not be changed across React Host lifetimes.
    */
   RN_EXPORT static bool fuseboxNetworkInspectionEnabled();
 
   /**
-   * Hides offscreen VirtualViews on iOS by setting hidden = YES to avoid extra cost of views
+   * Enable Page.captureScreenshot CDP method support in the React Native DevTools CDP backend. This flag is global and should not be changed across React Host lifetimes.
    */
-  RN_EXPORT static bool hideOffscreenVirtualViewsOnIOS();
+  RN_EXPORT static bool fuseboxScreenshotCaptureEnabled();
+
+  /**
+   * When enabled, uses optimized platform-specific paths to apply animated props synchronously. On Android, this uses a batched int/double buffer protocol with a single JNI call. On iOS, this passes AnimatedProps directly through the delegate chain and applies them via cloneProps, avoiding the folly::dynamic round-trip.
+   */
+  RN_EXPORT static bool optimizedAnimatedPropUpdates();
 
   /**
    * Override props at mounting with synchronously mounted (i.e. direct manipulation) props from Native Animated.
@@ -375,29 +360,19 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool preventShadowTreeCommitExhaustion();
 
   /**
+   * Use the redesigned RedBox error overlay on Android, styled to match the LogBox visual language.
+   */
+  RN_EXPORT static bool redBoxV2Android();
+
+  /**
+   * Use the redesigned RedBox error overlay on iOS, styled to match the LogBox visual language.
+   */
+  RN_EXPORT static bool redBoxV2IOS();
+
+  /**
    * Function used to enable / disable Pressibility from using W3C Pointer Events for its hover callbacks
    */
   RN_EXPORT static bool shouldPressibilityUseW3CPointerEventsForHover();
-
-  /**
-   * Reset isClickable to false when recycling views on Android to avoid accessibility tools finding views with incorrect state after recycling.
-   */
-  RN_EXPORT static bool shouldResetClickableWhenRecyclingView();
-
-  /**
-   * Reset OnClickListener to null when recycling views on Android to avoid accessibility tools finding views with incorrect state after recycling.
-   */
-  RN_EXPORT static bool shouldResetOnClickListenerWhenRecyclingView();
-
-  /**
-   * Fix BaseViewManager to properly set view.setEnabled() based on accessibilityState.disabled.
-   */
-  RN_EXPORT static bool shouldSetEnabledBasedOnAccessibilityState();
-
-  /**
-   * Sets isClickable=true by default on all React Native views on Android to improve UI harvesting detection while maintaining focusable=false to preserve expected behavior.
-   */
-  RN_EXPORT static bool shouldSetIsClickableByDefault();
 
   /**
    * Do not emit touchcancel from Android ScrollView, instead native topScroll event will trigger responder transfer and terminate in RN renderer.
@@ -410,6 +385,11 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool skipActivityIdentityAssertionOnHostPause();
 
   /**
+   * Override getClipBounds on Android views to return the padding box when overflow is hidden
+   */
+  RN_EXPORT static bool syncAndroidClipBoundsWithOverflow();
+
+  /**
    * Enables storing js caller stack when creating promise in native module. This is useful in case of Promise rejection and tracing the cause.
    */
   RN_EXPORT static bool traceTurboModulePromiseRejectionsOnAndroid();
@@ -418,6 +398,11 @@ class ReactNativeFeatureFlags {
    * When enabled, runtime shadow node references will be updated during the commit. This allows running RSNRU from any thread without corrupting the renderer state.
    */
   RN_EXPORT static bool updateRuntimeShadowNodeReferencesOnCommit();
+
+  /**
+   * When enabled, runtime shadow node references will be updated during the commit only on the allowed thread.
+   */
+  RN_EXPORT static bool updateRuntimeShadowNodeReferencesOnCommitThread();
 
   /**
    * In Bridgeless mode, use the always available javascript error reporting pipeline.
@@ -430,29 +415,14 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool useFabricInterop();
 
   /**
-   * Use a native implementation of equals in NativeReadableArray.
-   */
-  RN_EXPORT static bool useNativeEqualsInNativeReadableArrayAndroid();
-
-  /**
-   * Use a native implementation of TransformHelper
-   */
-  RN_EXPORT static bool useNativeTransformHelperAndroid();
-
-  /**
    * When enabled, the native view configs are used in bridgeless mode.
    */
   RN_EXPORT static bool useNativeViewConfigsInBridgelessMode();
 
   /**
-   * Instead of using folly::dynamic as internal representation in RawProps and RawValue, use jsi::Value
+   * When enabled, ReactScrollView will extend NestedScrollView instead of ScrollView on Android for improved nested scrolling support.
    */
-  RN_EXPORT static bool useRawPropsJsiValue();
-
-  /**
-   * Use the state stored on the source shadow node when cloning it instead of reading in the most recent state on the shadow node family.
-   */
-  RN_EXPORT static bool useShadowNodeStateOnClone();
+  RN_EXPORT static bool useNestedScrollViewAndroid();
 
   /**
    * Use shared animation backend in C++ Animated
@@ -470,19 +440,19 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool useTurboModuleInterop();
 
   /**
-   * When enabled, NativeModules will be executed by using the TurboModule system
-   */
-  RN_EXPORT static bool useTurboModules();
-
-  /**
    * Outset the culling context frame with the provided ratio. The culling context frame size will be outset by width * ratio on the left and right, and height * ratio on the top and bottom.
    */
   RN_EXPORT static double viewCullingOutsetRatio();
 
   /**
-   * Sets a hysteresis window for transition between prerender and hidden modes.
+   * Enable the View Transition API for animating transitions between views.
    */
-  RN_EXPORT static double virtualViewHysteresisRatio();
+  RN_EXPORT static bool viewTransitionEnabled();
+
+  /**
+   * Use hardware bitmaps for view transition snapshots on Android.
+   */
+  RN_EXPORT static bool viewTransitionUseHardwareBitmapAndroid();
 
   /**
    * Initial prerender ratio for VirtualView.

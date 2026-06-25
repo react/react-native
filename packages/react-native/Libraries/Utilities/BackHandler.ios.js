@@ -8,8 +8,10 @@
  * @format
  */
 
+import type {HardwareBackPressEvent} from './HardwareBackPressEvent';
+
 type BackPressEventName = 'backPress' | 'hardwareBackPress';
-type BackPressHandler = () => ?boolean;
+type BackPressHandler = (event: HardwareBackPressEvent) => ?boolean;
 
 function emptyFunction(): void {}
 

@@ -15,7 +15,7 @@ namespace facebook::react {
 std::shared_ptr<const ShadowNode>
 PointerEventsProcessor::getShadowNodeFromEventTarget(
     jsi::Runtime& runtime,
-    const EventTarget* target) {
+    EventTarget* target) {
   if (target != nullptr) {
     target->retain(runtime);
     auto instanceHandle = target->getInstanceHandle(runtime);

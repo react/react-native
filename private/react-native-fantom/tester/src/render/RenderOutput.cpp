@@ -9,7 +9,6 @@
 #include <react/debug/react_native_assert.h>
 #include <react/renderer/components/text/ParagraphState.h>
 #include <react/renderer/core/ConcreteState.h>
-#include <react/renderer/core/DynamicPropsUtilities.h>
 
 namespace facebook::react {
 
@@ -35,15 +34,6 @@ std::string RenderOutput::render(
     result.push_back(renderView(*child, options));
   }
 
-  // Remove any views from renderedViews_ that are no longer in the tree.
-  for (auto it = renderedViews_.begin(); it != renderedViews_.end();) {
-    if (!tree.hasTag(it->first)) {
-      it = renderedViews_.erase(it);
-    } else {
-      ++it;
-    }
-  }
-
   treesMutated_.erase(tree.getRootStubView().surfaceId);
   return folly::toJson(result);
 }
@@ -51,25 +41,11 @@ std::string RenderOutput::render(
 folly::dynamic RenderOutput::renderView(
     const StubView& view,
     const RenderFormatOptions& options) {
-  if (!treesMutated_.contains(view.surfaceId)) {
-    if (auto it = renderedViews_.find(view.tag); it != renderedViews_.end()) {
-      return it->second;
-    }
-  }
-
   folly::dynamic element = folly::dynamic::object;
   element["type"] = view.componentName;
 
 #if RN_DEBUG_STRING_CONVERTIBLE
-  folly::dynamic props = nullptr;
-  if (auto it = renderedViews_.find(view.tag); it != renderedViews_.end()) {
-    props = mergeDynamicProps(
-        it->second["props"],
-        renderProps(view.props->getDebugProps()),
-        NullValueStrategy::Override);
-  } else {
-    props = renderProps(view.props->getDebugProps());
-  }
+  folly::dynamic props = renderProps(view.props->getDebugProps());
 #else
   folly::dynamic props = folly::dynamic::object;
 #endif
@@ -95,8 +71,6 @@ folly::dynamic RenderOutput::renderView(
   }
 #endif
   element["props"] = props;
-
-  renderedViews_.insert({view.tag, element});
 
   return element;
 }

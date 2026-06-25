@@ -9,13 +9,15 @@
  */
 
 'use strict';
-import type {HostComponent} from '../../../src/private/types/HostComponent';
+import type {HostInstance} from '../../../src/private/types/HostInstance';
 import type {ViewProps} from '../View/ViewPropTypes';
 
 import StyleSheet, {type ColorValue} from '../../StyleSheet/StyleSheet';
 import Platform from '../../Utilities/Platform';
 import View from '../View/View';
 import * as React from 'react';
+
+export type ActivityIndicatorInstance = HostInstance;
 
 const PlatformActivityIndicator =
   Platform.OS === 'android'
@@ -26,7 +28,7 @@ const GRAY = '#999999';
 
 type IndicatorSize = number | 'small' | 'large';
 
-type ActivityIndicatorIOSProps = $ReadOnly<{
+type ActivityIndicatorIOSProps = Readonly<{
   /**
     Whether the indicator should hide when not animating.
 
@@ -34,7 +36,8 @@ type ActivityIndicatorIOSProps = $ReadOnly<{
   */
   hidesWhenStopped?: ?boolean,
 }>;
-export type ActivityIndicatorProps = $ReadOnly<{
+/** @build-types emit-as-interface Uniwind compatibility */
+export type ActivityIndicatorProps = Readonly<{
   ...ViewProps,
   ...ActivityIndicatorIOSProps,
 
@@ -61,7 +64,7 @@ export type ActivityIndicatorProps = $ReadOnly<{
 }>;
 
 const ActivityIndicator: component(
-  ref?: React.RefSetter<HostComponent<empty>>,
+  ref?: React.RefSetter<ActivityIndicatorInstance>,
   ...props: ActivityIndicatorProps
 ) = ({
   ref: forwardedRef,

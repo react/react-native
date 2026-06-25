@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "RCTNativeSampleTurboModuleSpec.h"
+#import <FBReactNativeSpec/FBReactNativeSpec.h>
 
 /**
  * Sample iOS-specific impl of a TurboModule, conforming to the spec protocol.

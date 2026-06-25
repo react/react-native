@@ -96,7 +96,18 @@ static inline bool shouldFirstComeBeforeSecondMutation(
     }
   }
 
-  return &lhs < &rhs;
+  // Deterministic fallback: when no type-specific rule applies, order by
+  // mutation properties to satisfy strict weak ordering.
+  if (lhs.parentTag != rhs.parentTag) {
+    return lhs.parentTag < rhs.parentTag;
+  }
+  if (lhs.newChildShadowView.tag != rhs.newChildShadowView.tag) {
+    return lhs.newChildShadowView.tag < rhs.newChildShadowView.tag;
+  }
+  if (lhs.oldChildShadowView.tag != rhs.oldChildShadowView.tag) {
+    return lhs.oldChildShadowView.tag < rhs.oldChildShadowView.tag;
+  }
+  return false;
 }
 
 std::pair<Float, Float>

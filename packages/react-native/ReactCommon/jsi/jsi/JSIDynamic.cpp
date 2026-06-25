@@ -169,6 +169,7 @@ folly::dynamic dynamicFromValue(
       // the stack.
       Array array = top.obj.getArray(runtime);
       size_t arraySize = array.size(runtime);
+      top.dyn->reserve(arraySize);
       for (size_t i = 0; i < arraySize; ++i) {
         top.dyn->push_back(nullptr);
       }

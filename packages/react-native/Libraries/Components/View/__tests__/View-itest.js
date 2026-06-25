@@ -21,6 +21,10 @@ import {View} from 'react-native';
 import ReactNativeElement from 'react-native/src/private/webapis/dom/nodes/ReactNativeElement';
 
 describe('<View>', () => {
+  it('has displayName', () => {
+    expect(View.displayName ?? View.name).toBe('View');
+  });
+
   describe('props', () => {
     describe('style', () => {
       describe('width and height style', () => {
@@ -43,14 +47,14 @@ describe('<View>', () => {
           ).toEqual(
             <rn-view
               layoutMetrics-frame="{x:0,y:0,width:20,height:50}"
-              height="50.000000%"
+              height="50%"
               layoutMetrics-borderWidth="{top:0,right:0,bottom:0,left:0}"
               layoutMetrics-contentInsets="{top:0,right:0,bottom:0,left:0}"
               layoutMetrics-displayType="Flex"
               layoutMetrics-layoutDirection="LeftToRight"
               layoutMetrics-overflowInset="{top:0,right:-0,bottom:-0,left:0}"
               layoutMetrics-pointScaleFactor="3"
-              width="20.000000%"
+              width="20%"
             />,
           );
         });
@@ -69,14 +73,14 @@ describe('<View>', () => {
           ).toEqual(
             <rn-view
               layoutMetrics-frame="{x:0,y:0,width:5,height:10}"
-              height="10.000000"
+              height="10"
               layoutMetrics-borderWidth="{top:0,right:0,bottom:0,left:0}"
               layoutMetrics-contentInsets="{top:0,right:0,bottom:0,left:0}"
               layoutMetrics-displayType="Flex"
               layoutMetrics-layoutDirection="LeftToRight"
               layoutMetrics-overflowInset="{top:0,right:-0,bottom:-0,left:0}"
               layoutMetrics-pointScaleFactor="3"
-              width="5.000000"
+              width="5"
             />,
           );
         });
@@ -134,15 +138,15 @@ describe('<View>', () => {
           ).toEqual(
             <rn-view
               layoutMetrics-frame="{x:50,y:50,width:5,height:10}"
-              height="10.000000"
+              height="10"
               layoutMetrics-borderWidth="{top:0,right:0,bottom:0,left:0}"
               layoutMetrics-contentInsets="{top:0,right:0,bottom:0,left:0}"
               layoutMetrics-displayType="Flex"
               layoutMetrics-layoutDirection="LeftToRight"
               layoutMetrics-overflowInset="{top:0,right:-0,bottom:-0,left:0}"
               layoutMetrics-pointScaleFactor="3"
-              margin="50.000000%"
-              width="5.000000"
+              margin="50%"
+              width="5"
             />,
           );
         });
@@ -166,15 +170,15 @@ describe('<View>', () => {
           ).toEqual(
             <rn-view
               layoutMetrics-frame="{x:5,y:5,width:5,height:10}"
-              height="10.000000"
+              height="10"
               layoutMetrics-borderWidth="{top:0,right:0,bottom:0,left:0}"
               layoutMetrics-contentInsets="{top:0,right:0,bottom:0,left:0}"
               layoutMetrics-displayType="Flex"
               layoutMetrics-layoutDirection="LeftToRight"
               layoutMetrics-overflowInset="{top:0,right:-0,bottom:-0,left:0}"
               layoutMetrics-pointScaleFactor="3"
-              margin="5.000000"
-              width="5.000000"
+              margin="5"
+              width="5"
             />,
           );
         });
@@ -190,7 +194,7 @@ describe('<View>', () => {
 
           expect(
             root.getRenderedOutput({props: ['transform']}).toJSX(),
-          ).toEqual(<rn-view transform='[{"translateX": 10.000000}]' />);
+          ).toEqual(<rn-view transform='[{"translateX": 10}]' />);
         });
 
         [
@@ -231,6 +235,101 @@ describe('<View>', () => {
         });
       });
 
+      describe('aspectRatio', () => {
+        it('is preserved when updating an unrelated prop', () => {
+          const root = Fantom.createRoot();
+
+          Fantom.runTask(() => {
+            root.render(
+              <View
+                style={{width: 100, aspectRatio: 2}}
+                nativeID="first"
+                collapsable={false}
+              />,
+            );
+          });
+
+          // width=100, aspectRatio=2 → height = 100 / 2 = 50
+          expect(
+            root
+              .getRenderedOutput({
+                includeLayoutMetrics: true,
+                props: ['layoutMetrics-frame'],
+              })
+              .toJSX(),
+          ).toEqual(
+            <rn-view layoutMetrics-frame="{x:0,y:0,width:100,height:50}" />,
+          );
+
+          // Update only nativeID, not aspectRatio
+          Fantom.runTask(() => {
+            root.render(
+              <View
+                style={{width: 100, aspectRatio: 2}}
+                nativeID="second"
+                collapsable={false}
+              />,
+            );
+          });
+
+          // aspectRatio must still be preserved → same layout
+          expect(
+            root
+              .getRenderedOutput({
+                includeLayoutMetrics: true,
+                props: ['layoutMetrics-frame'],
+              })
+              .toJSX(),
+          ).toEqual(
+            <rn-view layoutMetrics-frame="{x:0,y:0,width:100,height:50}" />,
+          );
+        });
+
+        it('can be changed to undefined after initially having a value', () => {
+          const root = Fantom.createRoot();
+
+          Fantom.runTask(() => {
+            root.render(
+              <View style={{width: 100, aspectRatio: 2}} collapsable={false} />,
+            );
+          });
+
+          // width=100, aspectRatio=2 → height = 100 / 2 = 50
+          expect(
+            root
+              .getRenderedOutput({
+                includeLayoutMetrics: true,
+                props: ['layoutMetrics-frame'],
+              })
+              .toJSX(),
+          ).toEqual(
+            <rn-view layoutMetrics-frame="{x:0,y:0,width:100,height:50}" />,
+          );
+
+          // Update aspectRatio to undefined
+          Fantom.runTask(() => {
+            root.render(
+              <View
+                style={{width: 100, aspectRatio: undefined}}
+                collapsable={false}
+              />,
+            );
+          });
+
+          // aspectRatio is now undefined → height collapses to 0
+          expect(
+            root
+              .getRenderedOutput({
+                includeLayoutMetrics: true,
+                props: ['layoutMetrics-frame'],
+              })
+              .toJSX(),
+          ).toEqual(
+            <rn-view layoutMetrics-frame="{x:0,y:0,width:100,height:0}" />,
+          );
+        });
+      });
+
       describe('background-image', () => {
         it('it parses CSS and object syntax', () => {
           const root = Fantom.createRoot();
@@ -240,13 +339,12 @@ describe('<View>', () => {
               <>
                 <View
                   style={{
-                    experimental_backgroundImage:
-                      'radial-gradient(#e66465, #9198e5)',
+                    backgroundImage: 'radial-gradient(#e66465, #9198e5)',
                   }}
                 />
                 <View
                   style={{
-                    experimental_backgroundImage: [
+                    backgroundImage: [
                       {
                         type: 'radial-gradient',
                         shape: 'ellipse',
@@ -313,16 +411,8 @@ describe('<View>', () => {
           root.getRenderedOutput({props: ['pointerEvents']}).toJSX(),
         ).toEqual(null);
       });
-      it('box-only propagates to the mounting layer, does not unflatten', () => {
+      it('box-only propagates to the mounting layer, unflattens', () => {
         const root = Fantom.createRoot();
-
-        Fantom.runTask(() => {
-          root.render(<View collapsable={false} pointerEvents="box-only" />);
-        });
-
-        expect(
-          root.getRenderedOutput({props: ['pointerEvents']}).toJSX(),
-        ).toEqual(<rn-view pointerEvents="box-only" />);
 
         Fantom.runTask(() => {
           root.render(<View pointerEvents="box-only" />);
@@ -330,7 +420,7 @@ describe('<View>', () => {
 
         expect(
           root.getRenderedOutput({props: ['pointerEvents']}).toJSX(),
-        ).toEqual(null);
+        ).toEqual(<rn-view pointerEvents="box-only" />);
       });
       it('none propagates to the mounting layer, unflattens', () => {
         const root = Fantom.createRoot();
@@ -411,9 +501,35 @@ describe('<View>', () => {
             root.render(<View aria-hidden={true} collapsable={false} />);
           });
 
-          expect(root.getRenderedOutput().toJSX()).toEqual(
+          expect(
+            root
+              .getRenderedOutput({props: ['importantForAccessibility']})
+              .toJSX(),
+          ).toEqual(
             <rn-view importantForAccessibility="no-hide-descendants" />,
           );
+        });
+
+        it('resets importantForAccessibility when set to undefined', () => {
+          const root = Fantom.createRoot();
+          Fantom.runTask(() => {
+            root.render(<View aria-hidden={true} collapsable={false} />);
+          });
+          expect(
+            root
+              .getRenderedOutput({props: ['importantForAccessibility']})
+              .toJSX(),
+          ).toEqual(
+            <rn-view importantForAccessibility="no-hide-descendants" />,
+          );
+          Fantom.runTask(() => {
+            root.render(<View collapsable={false} />);
+          });
+          expect(
+            root
+              .getRenderedOutput({props: ['importantForAccessibility']})
+              .toJSX(),
+          ).toEqual(<rn-view />);
         });
       });
 
@@ -530,6 +646,375 @@ describe('<View>', () => {
           ).toEqual(null);
         });
       });
+      describe('aria-label', () => {
+        it('is mapped to accessibilityLabel', () => {
+          const root = Fantom.createRoot();
+
+          Fantom.runTask(() => {
+            root.render(<View aria-label="custom label" accessible={true} />);
+          });
+
+          expect(
+            root.getRenderedOutput({props: ['accessibilityLabel']}).toJSX(),
+          ).toEqual(<rn-view accessibilityLabel="custom label" />);
+        });
+
+        it('resets accessibilityLabel when set to undefined', () => {
+          const root = Fantom.createRoot();
+          Fantom.runTask(() => {
+            root.render(<View aria-label="custom label" accessible={true} />);
+          });
+          expect(
+            root.getRenderedOutput({props: ['accessibilityLabel']}).toJSX(),
+          ).toEqual(<rn-view accessibilityLabel="custom label" />);
+          Fantom.runTask(() => {
+            root.render(<View accessible={true} />);
+          });
+          expect(
+            root.getRenderedOutput({props: ['accessibilityLabel']}).toJSX(),
+          ).toEqual(<rn-view />);
+        });
+      });
+
+      describe('overlapping aria-label and accessibilityLabel', () => {
+        it('preserves accessibilityLabel when aria-label is removed', () => {
+          const root = Fantom.createRoot();
+
+          // Set both aria-label and accessibilityLabel
+          Fantom.runTask(() => {
+            root.render(
+              <View
+                aria-label="aria value"
+                accessibilityLabel="native value"
+                accessible={true}
+              />,
+            );
+          });
+
+          // aria-label should take precedence
+          expect(
+            root.getRenderedOutput({props: ['accessibilityLabel']}).toJSX(),
+          ).toEqual(<rn-view accessibilityLabel="aria value" />);
+
+          // Remove aria-label but keep accessibilityLabel
+          Fantom.runTask(() => {
+            root.render(
+              <View accessibilityLabel="native value" accessible={true} />,
+            );
+          });
+
+          // accessibilityLabel should still be "native value"
+          expect(
+            root.getRenderedOutput({props: ['accessibilityLabel']}).toJSX(),
+          ).toEqual(<rn-view accessibilityLabel="native value" />);
+        });
+      });
+
+      describe('overlapping aria-hidden and importantForAccessibility', () => {
+        it('preserves importantForAccessibility when aria-hidden is removed', () => {
+          const root = Fantom.createRoot();
+
+          // Set both aria-hidden and importantForAccessibility
+          Fantom.runTask(() => {
+            root.render(
+              <View
+                aria-hidden={true}
+                importantForAccessibility="no-hide-descendants"
+                accessible={true}
+              />,
+            );
+          });
+
+          expect(
+            root
+              .getRenderedOutput({props: ['importantForAccessibility']})
+              .toJSX(),
+          ).toEqual(
+            <rn-view importantForAccessibility="no-hide-descendants" />,
+          );
+
+          // Remove aria-hidden but keep importantForAccessibility
+          Fantom.runTask(() => {
+            root.render(
+              <View
+                importantForAccessibility="no-hide-descendants"
+                accessible={true}
+              />,
+            );
+          });
+
+          // importantForAccessibility should still be "no-hide-descendants"
+          expect(
+            root
+              .getRenderedOutput({props: ['importantForAccessibility']})
+              .toJSX(),
+          ).toEqual(
+            <rn-view importantForAccessibility="no-hide-descendants" />,
+          );
+        });
+      });
+
+      describe('aria-hidden={false} with importantForAccessibility', () => {
+        it('does not overwrite explicit importantForAccessibility', () => {
+          const root = Fantom.createRoot();
+
+          // Set importantForAccessibility="yes" and aria-hidden={false}.
+          // aria-hidden={false} should NOT reset importantForAccessibility
+          // to Auto, it should preserve the explicit "yes" value.
+          Fantom.runTask(() => {
+            root.render(
+              <View
+                importantForAccessibility="yes"
+                aria-hidden={false}
+                collapsable={false}
+              />,
+            );
+          });
+
+          expect(
+            root
+              .getRenderedOutput({props: ['importantForAccessibility']})
+              .toJSX(),
+          ).toEqual(<rn-view importantForAccessibility="yes" />);
+        });
+      });
+
+      describe('overlapping aria-live and accessibilityLiveRegion', () => {
+        it('preserves accessibilityLiveRegion when aria-live is removed', () => {
+          const root = Fantom.createRoot();
+
+          // Set both aria-live and accessibilityLiveRegion
+          Fantom.runTask(() => {
+            root.render(
+              <View
+                aria-live="polite"
+                accessibilityLiveRegion="assertive"
+                accessible={true}
+              />,
+            );
+          });
+
+          // Remove aria-live but keep accessibilityLiveRegion
+          Fantom.runTask(() => {
+            root.render(
+              <View accessibilityLiveRegion="assertive" accessible={true} />,
+            );
+          });
+
+          // accessibilityLiveRegion should still be "assertive"
+          expect(
+            root
+              .getRenderedOutput({props: ['accessibilityLiveRegion']})
+              .toJSX(),
+          ).toEqual(<rn-view accessibilityLiveRegion="assertive" />);
+        });
+      });
+
+      describe('aria-live', () => {
+        it('is mapped to accessibilityLiveRegion', () => {
+          const root = Fantom.createRoot();
+
+          Fantom.runTask(() => {
+            root.render(<View aria-live="polite" accessible={true} />);
+          });
+
+          expect(
+            root
+              .getRenderedOutput({props: ['accessibilityLiveRegion']})
+              .toJSX(),
+          ).toEqual(<rn-view accessibilityLiveRegion="polite" />);
+        });
+
+        it('resets accessibilityLiveRegion when set to undefined', () => {
+          const root = Fantom.createRoot();
+          Fantom.runTask(() => {
+            root.render(<View aria-live="polite" accessible={true} />);
+          });
+          expect(
+            root
+              .getRenderedOutput({props: ['accessibilityLiveRegion']})
+              .toJSX(),
+          ).toEqual(<rn-view accessibilityLiveRegion="polite" />);
+          Fantom.runTask(() => {
+            root.render(<View accessible={true} />);
+          });
+          expect(
+            root
+              .getRenderedOutput({props: ['accessibilityLiveRegion']})
+              .toJSX(),
+          ).toEqual(<rn-view />);
+        });
+      });
+
+      describe('aria-busy', () => {
+        it('is mapped to accessibilityState', () => {
+          const root = Fantom.createRoot();
+
+          Fantom.runTask(() => {
+            root.render(<View aria-busy={true} accessible={true} />);
+          });
+
+          expect(
+            root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+          ).toEqual(
+            <rn-view accessibilityState="{disabled:false,selected:false,checked:None,busy:true,expanded:null}" />,
+          );
+        });
+
+        it('resets accessibilityState when set to undefined', () => {
+          const root = Fantom.createRoot();
+          Fantom.runTask(() => {
+            root.render(<View aria-busy={true} accessible={true} />);
+          });
+          expect(
+            root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+          ).toEqual(
+            <rn-view accessibilityState="{disabled:false,selected:false,checked:None,busy:true,expanded:null}" />,
+          );
+          Fantom.runTask(() => {
+            root.render(<View accessible={true} />);
+          });
+          expect(
+            root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+          ).toEqual(<rn-view />);
+        });
+      });
+
+      describe('aria-disabled', () => {
+        it('is mapped to accessibilityState', () => {
+          const root = Fantom.createRoot();
+
+          Fantom.runTask(() => {
+            root.render(<View aria-disabled={true} accessible={true} />);
+          });
+
+          expect(
+            root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+          ).toEqual(
+            <rn-view accessibilityState="{disabled:true,selected:false,checked:None,busy:false,expanded:null}" />,
+          );
+        });
+
+        it('resets accessibilityState when set to undefined', () => {
+          const root = Fantom.createRoot();
+          Fantom.runTask(() => {
+            root.render(<View aria-disabled={true} accessible={true} />);
+          });
+          expect(
+            root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+          ).toEqual(
+            <rn-view accessibilityState="{disabled:true,selected:false,checked:None,busy:false,expanded:null}" />,
+          );
+          Fantom.runTask(() => {
+            root.render(<View accessible={true} />);
+          });
+          expect(
+            root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+          ).toEqual(<rn-view />);
+        });
+      });
+
+      describe('aria-expanded', () => {
+        it('is mapped to accessibilityState', () => {
+          const root = Fantom.createRoot();
+
+          Fantom.runTask(() => {
+            root.render(<View aria-expanded={true} accessible={true} />);
+          });
+
+          expect(
+            root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+          ).toEqual(
+            <rn-view accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:true}" />,
+          );
+        });
+
+        it('resets accessibilityState when set to undefined', () => {
+          const root = Fantom.createRoot();
+          Fantom.runTask(() => {
+            root.render(<View aria-expanded={true} accessible={true} />);
+          });
+          expect(
+            root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+          ).toEqual(
+            <rn-view accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:true}" />,
+          );
+          Fantom.runTask(() => {
+            root.render(<View accessible={true} />);
+          });
+          expect(
+            root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+          ).toEqual(<rn-view />);
+        });
+      });
+
+      describe('aria-selected', () => {
+        it('is mapped to accessibilityState', () => {
+          const root = Fantom.createRoot();
+
+          Fantom.runTask(() => {
+            root.render(<View aria-selected={true} accessible={true} />);
+          });
+
+          expect(
+            root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+          ).toEqual(
+            <rn-view accessibilityState="{disabled:false,selected:true,checked:None,busy:false,expanded:null}" />,
+          );
+        });
+
+        it('resets accessibilityState when set to undefined', () => {
+          const root = Fantom.createRoot();
+          Fantom.runTask(() => {
+            root.render(<View aria-selected={true} accessible={true} />);
+          });
+          expect(
+            root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+          ).toEqual(
+            <rn-view accessibilityState="{disabled:false,selected:true,checked:None,busy:false,expanded:null}" />,
+          );
+          Fantom.runTask(() => {
+            root.render(<View accessible={true} />);
+          });
+          expect(
+            root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+          ).toEqual(<rn-view />);
+        });
+      });
+
+      describe('aria-checked', () => {
+        it('is mapped to accessibilityState', () => {
+          const root = Fantom.createRoot();
+
+          Fantom.runTask(() => {
+            root.render(<View aria-checked={true} accessible={true} />);
+          });
+
+          expect(
+            root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+          ).toEqual(
+            <rn-view accessibilityState="{disabled:false,selected:false,checked:Checked,busy:false,expanded:null}" />,
+          );
+        });
+
+        it('resets accessibilityState when set to undefined', () => {
+          const root = Fantom.createRoot();
+          Fantom.runTask(() => {
+            root.render(<View aria-checked={true} accessible={true} />);
+          });
+          expect(
+            root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+          ).toEqual(
+            <rn-view accessibilityState="{disabled:false,selected:false,checked:Checked,busy:false,expanded:null}" />,
+          );
+          Fantom.runTask(() => {
+            root.render(<View accessible={true} />);
+          });
+          expect(
+            root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+          ).toEqual(<rn-view />);
+        });
+      });
     });
 
     describe('accessible', () => {
@@ -552,6 +1037,74 @@ describe('<View>', () => {
           <rn-view accessible="true" />,
         );
       });
+    });
+  });
+
+  describe('web compat props', () => {
+    describe('id', () => {
+      it('is mapped to nativeID', () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(<View id="my-id" collapsable={false} />);
+        });
+
+        expect(root.getRenderedOutput({props: ['nativeID']}).toJSX()).toEqual(
+          <rn-view nativeID="my-id" />,
+        );
+      });
+
+      it('resets nativeID when set to undefined', () => {
+        const root = Fantom.createRoot();
+        Fantom.runTask(() => {
+          root.render(<View id="my-id" collapsable={false} />);
+        });
+        expect(root.getRenderedOutput({props: ['nativeID']}).toJSX()).toEqual(
+          <rn-view nativeID="my-id" />,
+        );
+        Fantom.runTask(() => {
+          root.render(<View collapsable={false} />);
+        });
+        expect(root.getRenderedOutput({props: ['nativeID']}).toJSX()).toEqual(
+          <rn-view />,
+        );
+      });
+    });
+
+    describe('nativeID', () => {
+      it('resets nativeID when removed', () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(<View nativeID="my-id" collapsable={false} />);
+        });
+
+        expect(root.getRenderedOutput({props: ['nativeID']}).toJSX()).toEqual(
+          <rn-view nativeID="my-id" />,
+        );
+
+        Fantom.runTask(() => {
+          root.render(<View collapsable={false} />);
+        });
+
+        expect(root.getRenderedOutput({props: ['nativeID']}).toJSX()).toEqual(
+          <rn-view />,
+        );
+      });
+    });
+  });
+
+  describe('testID', () => {
+    it('is propagated to the mounting layer', () => {
+      const root = Fantom.createRoot();
+
+      Fantom.runTask(() => {
+        root.render(<View testID="testID" collapsable={false} />);
+      });
+
+      expect(root.getRenderedOutput({props: ['testID']}).toJSX()).toEqual(
+        <rn-view testID="testID" />,
+      );
     });
   });
 

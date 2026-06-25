@@ -1,33 +1,24 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`LogBoxNotificationContainer should render both an error and warning notification 1`] = `
-<RCTSafeAreaView
+exports[`LogBoxInspectorContainer should render inspector with logs, even when disabled 1`] = `
+<View
   style={
     Object {
-      "bottom": 20,
-      "left": 10,
+      "bottom": 0,
+      "left": 0,
       "position": "absolute",
-      "right": 10,
+      "right": 0,
+      "top": 0,
     }
   }
 >
-  <View
-    style={
-      Object {
-        "borderRadius": 8,
-        "marginBottom": 5,
-        "overflow": "hidden",
-      }
-    }
-  >
-    <LogBoxLogNotification
-      level="warn"
-      log={
+  <LogBoxInspector
+    logs={
+      Array [
         LogBoxLog {
           "category": "Some kind of message",
           "codeFrame": undefined,
           "componentStack": Array [],
-          "componentStackType": "legacy",
           "count": 1,
           "extraData": undefined,
           "isComponentError": false,
@@ -44,35 +35,16 @@ exports[`LogBoxNotificationContainer should render both an error and warning not
             "status": "NONE",
           },
           "symbolicatedComponentStack": Object {
-            "componentStack": null,
             "error": null,
+            "stack": null,
             "status": "NONE",
           },
           "type": undefined,
-        }
-      }
-      onPressDismiss={[Function]}
-      onPressOpen={[Function]}
-      totalLogCount={1}
-    />
-  </View>
-  <View
-    style={
-      Object {
-        "borderRadius": 8,
-        "marginBottom": 5,
-        "overflow": "hidden",
-      }
-    }
-  >
-    <LogBoxLogNotification
-      level="error"
-      log={
+        },
         LogBoxLog {
           "category": "Some kind of message (latest)",
           "codeFrame": undefined,
           "componentStack": Array [],
-          "componentStackType": "legacy",
           "count": 1,
           "extraData": undefined,
           "isComponentError": false,
@@ -89,143 +61,18 @@ exports[`LogBoxNotificationContainer should render both an error and warning not
             "status": "NONE",
           },
           "symbolicatedComponentStack": Object {
-            "componentStack": null,
-            "error": null,
-            "status": "NONE",
-          },
-          "type": undefined,
-        }
-      }
-      onPressDismiss={[Function]}
-      onPressOpen={[Function]}
-      totalLogCount={1}
-    />
-  </View>
-</RCTSafeAreaView>
-`;
-
-exports[`LogBoxNotificationContainer should render null with no logs 1`] = `null`;
-
-exports[`LogBoxNotificationContainer should render null with no selected log and disabled 1`] = `null`;
-
-exports[`LogBoxNotificationContainer should render selected fatal error even when disabled 1`] = `null`;
-
-exports[`LogBoxNotificationContainer should render selected syntax error even when disabled 1`] = `null`;
-
-exports[`LogBoxNotificationContainer should render the latest error notification 1`] = `
-<RCTSafeAreaView
-  style={
-    Object {
-      "bottom": 20,
-      "left": 10,
-      "position": "absolute",
-      "right": 10,
-    }
-  }
->
-  <View
-    style={
-      Object {
-        "borderRadius": 8,
-        "marginBottom": 5,
-        "overflow": "hidden",
-      }
-    }
-  >
-    <LogBoxLogNotification
-      level="error"
-      log={
-        LogBoxLog {
-          "category": "Some kind of message (latest)",
-          "codeFrame": undefined,
-          "componentStack": Array [],
-          "componentStackType": "legacy",
-          "count": 1,
-          "extraData": undefined,
-          "isComponentError": false,
-          "level": "error",
-          "message": Object {
-            "content": "Some kind of message (latest)",
-            "substitutions": Array [],
-          },
-          "onNotificationPress": undefined,
-          "stack": Array [],
-          "symbolicated": Object {
             "error": null,
             "stack": null,
             "status": "NONE",
           },
-          "symbolicatedComponentStack": Object {
-            "componentStack": null,
-            "error": null,
-            "status": "NONE",
-          },
           "type": undefined,
-        }
-      }
-      onPressDismiss={[Function]}
-      onPressOpen={[Function]}
-      totalLogCount={2}
-    />
-  </View>
-</RCTSafeAreaView>
-`;
-
-exports[`LogBoxNotificationContainer should render the latest warning notification 1`] = `
-<RCTSafeAreaView
-  style={
-    Object {
-      "bottom": 20,
-      "left": 10,
-      "position": "absolute",
-      "right": 10,
+        },
+      ]
     }
-  }
->
-  <View
-    style={
-      Object {
-        "borderRadius": 8,
-        "marginBottom": 5,
-        "overflow": "hidden",
-      }
-    }
-  >
-    <LogBoxLogNotification
-      level="warn"
-      log={
-        LogBoxLog {
-          "category": "Some kind of message (latest)",
-          "codeFrame": undefined,
-          "componentStack": Array [],
-          "componentStackType": "legacy",
-          "count": 1,
-          "extraData": undefined,
-          "isComponentError": false,
-          "level": "warn",
-          "message": Object {
-            "content": "Some kind of message (latest)",
-            "substitutions": Array [],
-          },
-          "onNotificationPress": undefined,
-          "stack": Array [],
-          "symbolicated": Object {
-            "error": null,
-            "stack": null,
-            "status": "NONE",
-          },
-          "symbolicatedComponentStack": Object {
-            "componentStack": null,
-            "error": null,
-            "status": "NONE",
-          },
-          "type": undefined,
-        }
-      }
-      onPressDismiss={[Function]}
-      onPressOpen={[Function]}
-      totalLogCount={2}
-    />
-  </View>
-</RCTSafeAreaView>
+    onChangeSelectedIndex={[Function]}
+    onDismiss={[Function]}
+    onMinimize={[Function]}
+    selectedIndex={-1}
+  />
+</View>
 `;

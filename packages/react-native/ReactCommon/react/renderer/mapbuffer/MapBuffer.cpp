@@ -6,6 +6,7 @@
  */
 
 #include "MapBuffer.h"
+#include <react/renderer/mapbuffer/MapBufferBuilder.h>
 
 namespace facebook::react {
 
@@ -51,17 +52,27 @@ int32_t MapBuffer::getKeyBucket(Key key) const {
   return -1;
 }
 
+inline int32_t MapBuffer::getIntAtBucket(int32_t bucketIndex) const {
+  return *reinterpret_cast<const int32_t*>(
+      bytes_.data() + valueOffset(bucketIndex));
+}
+
 int32_t MapBuffer::getInt(Key key) const {
   auto bucketIndex = getKeyBucket(key);
   react_native_assert(bucketIndex != -1 && "Key not found in MapBuffer");
+  if (bucketIndex == -1) {
+    return 0;
+  }
 
-  return *reinterpret_cast<const int32_t*>(
-      bytes_.data() + valueOffset(bucketIndex));
+  return getIntAtBucket(bucketIndex);
 }
 
 int64_t MapBuffer::getLong(Key key) const {
   auto bucketIndex = getKeyBucket(key);
   react_native_assert(bucketIndex != -1 && "Key not found in MapBuffer");
+  if (bucketIndex == -1) {
+    return 0;
+  }
 
   return *reinterpret_cast<const int64_t*>(
       bytes_.data() + valueOffset(bucketIndex));
@@ -74,6 +85,9 @@ bool MapBuffer::getBool(Key key) const {
 double MapBuffer::getDouble(Key key) const {
   auto bucketIndex = getKeyBucket(key);
   react_native_assert(bucketIndex != -1 && "Key not found in MapBuffer");
+  if (bucketIndex == -1) {
+    return 0;
+  }
 
   return *reinterpret_cast<const double*>(
       bytes_.data() + valueOffset(bucketIndex));
@@ -86,56 +100,63 @@ int32_t MapBuffer::getDynamicDataOffset() const {
 }
 
 std::string MapBuffer::getString(Key key) const {
-  // TODO T83483191:Add checks to verify that offsets are under the boundaries
-  // of the map buffer
-  int32_t dynamicDataOffset = getDynamicDataOffset();
-  int32_t offset = getInt(key);
-  int32_t stringLength = *reinterpret_cast<const int32_t*>(
-      bytes_.data() + dynamicDataOffset + offset);
-  const uint8_t* stringPtr =
-      bytes_.data() + dynamicDataOffset + offset + sizeof(int);
+  auto bucketIndex = getKeyBucket(key);
+  react_native_assert(bucketIndex != -1 && "Key not found in MapBuffer");
+  if (bucketIndex == -1) {
+    return "";
+  }
+
+  int32_t offset = getDynamicDataOffset() + getIntAtBucket(bucketIndex);
+  int32_t stringLength =
+      *reinterpret_cast<const int32_t*>(bytes_.data() + offset);
+  const uint8_t* stringPtr = bytes_.data() + offset + sizeof(int);
 
   return {stringPtr, stringPtr + stringLength};
 }
 
 MapBuffer MapBuffer::getMapBuffer(Key key) const {
-  // TODO T83483191: Add checks to verify that offsets are under the boundaries
-  // of the map buffer
-  int32_t dynamicDataOffset = getDynamicDataOffset();
+  auto bucketIndex = getKeyBucket(key);
+  react_native_assert(bucketIndex != -1 && "Key not found in MapBuffer");
+  if (bucketIndex == -1) {
+    return MapBufferBuilder::EMPTY();
+  }
 
-  int32_t offset = getInt(key);
-  int32_t mapBufferLength = *reinterpret_cast<const int32_t*>(
-      bytes_.data() + dynamicDataOffset + offset);
+  int32_t offset = getDynamicDataOffset() + getIntAtBucket(bucketIndex);
+  int32_t mapBufferLength =
+      *reinterpret_cast<const int32_t*>(bytes_.data() + offset);
+  size_t maxLength = bytes_.size() - offset - sizeof(int32_t);
+  if (mapBufferLength > maxLength) {
+    mapBufferLength = maxLength;
+  }
 
   std::vector<uint8_t> value(mapBufferLength);
 
   memcpy(
-      value.data(),
-      bytes_.data() + dynamicDataOffset + offset + sizeof(int32_t),
-      mapBufferLength);
+      value.data(), bytes_.data() + offset + sizeof(int32_t), mapBufferLength);
 
   return MapBuffer(std::move(value));
 }
 
 std::vector<MapBuffer> MapBuffer::getMapBufferList(MapBuffer::Key key) const {
-  std::vector<MapBuffer> mapBufferList;
+  auto bucketIndex = getKeyBucket(key);
+  react_native_assert(bucketIndex != -1 && "Key not found in MapBuffer");
+  if (bucketIndex == -1) {
+    return {};
+  }
 
-  int32_t dynamicDataOffset = getDynamicDataOffset();
-  int32_t offset = getInt(key);
-  int32_t mapBufferListLength = *reinterpret_cast<const int32_t*>(
-      bytes_.data() + dynamicDataOffset + offset);
+  std::vector<MapBuffer> mapBufferList;
+  int32_t offset = getDynamicDataOffset() + getIntAtBucket(bucketIndex);
+  int32_t mapBufferListLength =
+      *reinterpret_cast<const int32_t*>(bytes_.data() + offset);
   offset = offset + sizeof(uint32_t);
 
   int32_t curLen = 0;
   while (curLen < mapBufferListLength) {
-    int32_t mapBufferLength = *reinterpret_cast<const int32_t*>(
-        bytes_.data() + dynamicDataOffset + offset + curLen);
+    int32_t mapBufferLength =
+        *reinterpret_cast<const int32_t*>(bytes_.data() + offset + curLen);
     curLen = curLen + sizeof(uint32_t);
     std::vector<uint8_t> value(mapBufferLength);
-    memcpy(
-        value.data(),
-        bytes_.data() + dynamicDataOffset + offset + curLen,
-        mapBufferLength);
+    memcpy(value.data(), bytes_.data() + offset + curLen, mapBufferLength);
     mapBufferList.emplace_back(std::move(value));
     curLen = curLen + mapBufferLength;
   }

@@ -23,7 +23,7 @@ export type SpyData = {
   type: number,
   module: ?string,
   method: string | number,
-  args: mixed[],
+  args: unknown[],
   ...
 };
 
@@ -42,9 +42,9 @@ const DEBUG_INFO_LIMIT = 32;
 
 class MessageQueue {
   _lazyCallableModules: {[key: string]: (void) => {...}, ...};
-  _queue: [number[], number[], mixed[], number];
-  _successCallbacks: Map<number, ?(...mixed[]) => void>;
-  _failureCallbacks: Map<number, ?(...mixed[]) => void>;
+  _queue: [number[], number[], unknown[], number];
+  _successCallbacks: Map<number, ?(...unknown[]) => void>;
+  _failureCallbacks: Map<number, ?(...unknown[]) => void>;
   _callID: number;
   _lastFlush: number;
   _eventLoopStartTime: number;
@@ -52,7 +52,7 @@ class MessageQueue {
 
   _debugInfo: {[number]: [number, number], ...};
   _remoteModuleTable: {[number]: string, ...};
-  _remoteMethodTable: {[number]: $ReadOnlyArray<string>, ...};
+  _remoteMethodTable: {[number]: ReadonlyArray<string>, ...};
 
   __spy: ?(data: SpyData) => void;
 
@@ -109,8 +109,8 @@ class MessageQueue {
   callFunctionReturnFlushedQueue(
     module: string,
     method: string,
-    args: mixed[],
-  ): null | [Array<number>, Array<number>, Array<mixed>, number] {
+    args: unknown[],
+  ): null | [Array<number>, Array<number>, Array<unknown>, number] {
     this.__guard(() => {
       this.__callFunction(module, method, args);
     });
@@ -120,8 +120,8 @@ class MessageQueue {
 
   invokeCallbackAndReturnFlushedQueue(
     cbID: number,
-    args: mixed[],
-  ): null | [Array<number>, Array<number>, Array<mixed>, number] {
+    args: unknown[],
+  ): null | [Array<number>, Array<number>, Array<unknown>, number] {
     this.__guard(() => {
       this.__invokeCallback(cbID, args);
     });
@@ -129,7 +129,9 @@ class MessageQueue {
     return this.flushedQueue();
   }
 
-  flushedQueue(): null | [Array<number>, Array<number>, Array<mixed>, number] {
+  flushedQueue():
+    | null
+    | [Array<number>, Array<number>, Array<unknown>, number] {
     this.__guard(() => {
       this.__callReactNativeMicrotasks();
     });
@@ -171,10 +173,10 @@ class MessageQueue {
   callNativeSyncHook(
     moduleID: number,
     methodID: number,
-    params: mixed[],
-    onFail: ?(...mixed[]) => void,
-    onSucc: ?(...mixed[]) => void,
-  ): mixed {
+    params: unknown[],
+    onFail: ?(...unknown[]) => void,
+    onSucc: ?(...unknown[]) => void,
+  ): unknown {
     if (__DEV__) {
       invariant(
         global.nativeCallSyncHook,
@@ -191,9 +193,9 @@ class MessageQueue {
   processCallbacks(
     moduleID: number,
     methodID: number,
-    params: mixed[],
-    onFail: ?(...mixed[]) => void,
-    onSucc: ?(...mixed[]) => void,
+    params: unknown[],
+    onFail: ?(...unknown[]) => void,
+    onSucc: ?(...unknown[]) => void,
   ): void {
     if (onFail || onSucc) {
       if (__DEV__) {
@@ -242,9 +244,9 @@ class MessageQueue {
   enqueueNativeCall(
     moduleID: number,
     methodID: number,
-    params: mixed[],
-    onFail: ?(...mixed[]) => void,
-    onSucc: ?(...mixed[]) => void,
+    params: unknown[],
+    onFail: ?(...unknown[]) => void,
+    onSucc: ?(...unknown[]) => void,
   ): void {
     this.processCallbacks(moduleID, methodID, params, onFail, onSucc);
 
@@ -256,7 +258,7 @@ class MessageQueue {
       // folly-convertible.  As a special case, if a prop value is a
       // function it is permitted here, and special-cased in the
       // conversion.
-      const isValidArgument = (val: mixed): boolean => {
+      const isValidArgument = (val: unknown): boolean => {
         switch (typeof val) {
           case 'undefined':
           case 'boolean':
@@ -345,7 +347,7 @@ class MessageQueue {
   createDebugLookup(
     moduleID: number,
     name: string,
-    methods: ?$ReadOnlyArray<string>,
+    methods: ?ReadonlyArray<string>,
   ) {
     if (__DEV__) {
       this._remoteModuleTable[moduleID] = name;
@@ -370,7 +372,7 @@ class MessageQueue {
     } else {
       try {
         fn();
-      } catch (error) {
+      } catch (error: unknown) {
         ErrorUtils.reportFatalError(error);
       }
     }
@@ -391,57 +393,52 @@ class MessageQueue {
   }
 
   __callReactNativeMicrotasks() {
-    Systrace.beginEvent('JSTimers.callReactNativeMicrotasks()');
-    try {
+    Systrace.trace('JSTimers.callReactNativeMicrotasks()', () => {
       if (this._reactNativeMicrotasksCallback != null) {
         this._reactNativeMicrotasksCallback();
       }
-    } finally {
-      Systrace.endEvent();
-    }
+    });
   }
 
-  __callFunction(module: string, method: string, args: mixed[]): void {
+  __callFunction(module: string, method: string, args: unknown[]): void {
     this._lastFlush = Date.now();
     this._eventLoopStartTime = this._lastFlush;
-    if (__DEV__ || this.__spy) {
-      Systrace.beginEvent(`${module}.${method}(${stringifySafe(args)})`);
-    } else {
-      Systrace.beginEvent(`${module}.${method}(...)`);
-    }
-    try {
-      if (this.__spy) {
-        this.__spy({type: TO_JS, module, method, args});
-      }
-      const moduleMethods = this.getCallableModule(module);
-      if (!moduleMethods) {
-        const callableModuleNames = Object.keys(this._lazyCallableModules);
-        const n = callableModuleNames.length;
-        const callableModuleNameList = callableModuleNames.join(', ');
+    Systrace.trace(
+      __DEV__ || this.__spy
+        ? `${module}.${method}(${stringifySafe(args)})`
+        : `${module}.${method}(...)`,
+      () => {
+        if (this.__spy) {
+          this.__spy({type: TO_JS, module, method, args});
+        }
+        const moduleMethods = this.getCallableModule(module);
+        if (!moduleMethods) {
+          const callableModuleNames = Object.keys(this._lazyCallableModules);
+          const n = callableModuleNames.length;
+          const callableModuleNameList = callableModuleNames.join(', ');
 
-        // TODO(T122225939): Remove after investigation: Why are we getting to this line in bridgeless mode?
-        const isBridgelessMode =
-          global.RN$Bridgeless === true ? 'true' : 'false';
-        invariant(
-          false,
-          `Failed to call into JavaScript module method ${module}.${method}(). Module has not been registered as callable. Bridgeless Mode: ${isBridgelessMode}. Registered callable JavaScript modules (n = ${n}): ${callableModuleNameList}.
+          // TODO(T122225939): Remove after investigation: Why are we getting to this line in bridgeless mode?
+          const isBridgelessMode =
+            global.RN$Bridgeless === true ? 'true' : 'false';
+          invariant(
+            false,
+            `Failed to call into JavaScript module method ${module}.${method}(). Module has not been registered as callable. Bridgeless Mode: ${isBridgelessMode}. Registered callable JavaScript modules (n = ${n}): ${callableModuleNameList}.
           A frequent cause of the error is that the application entry file path is incorrect. This can also happen when the JS bundle is corrupt or there is an early initialization error when loading React Native.`,
-        );
-      }
-      // $FlowFixMe[invalid-computed-prop]
-      if (!moduleMethods[method]) {
-        invariant(
-          false,
-          `Failed to call into JavaScript module method ${module}.${method}(). Module exists, but the method is undefined.`,
-        );
-      }
-      moduleMethods[method].apply(moduleMethods, args);
-    } finally {
-      Systrace.endEvent();
-    }
+          );
+        }
+        // $FlowFixMe[invalid-computed-prop]
+        if (!moduleMethods[method]) {
+          invariant(
+            false,
+            `Failed to call into JavaScript module method ${module}.${method}(). Module exists, but the method is undefined.`,
+          );
+        }
+        moduleMethods[method].apply(moduleMethods, args);
+      },
+    );
   }
 
-  __invokeCallback(cbID: number, args: mixed[]): void {
+  __invokeCallback(cbID: number, args: unknown[]): void {
     this._lastFlush = Date.now();
     this._eventLoopStartTime = this._lastFlush;
 
@@ -469,28 +466,24 @@ class MessageQueue {
       const profileName = debug
         ? '<callback for ' + module + '.' + method + '>'
         : cbID;
-      /* $FlowFixMe[constant-condition] Error discovered during Constant
-       * Condition roll out. See https://fburl.com/workplace/1v97vimq. */
-      if (callback && this.__spy) {
+      if (this.__spy) {
         this.__spy({type: TO_JS, module: null, method: profileName, args});
       }
-      Systrace.beginEvent(
+      Systrace.trace(
         `MessageQueue.invokeCallback(${profileName}, ${stringifySafe(args)})`,
+        () => {
+          this._successCallbacks.delete(callID);
+          this._failureCallbacks.delete(callID);
+          callback(...args);
+        },
       );
-    }
-
-    try {
+    } else {
       if (!callback) {
         return;
       }
-
       this._successCallbacks.delete(callID);
       this._failureCallbacks.delete(callID);
       callback(...args);
-    } finally {
-      if (__DEV__) {
-        Systrace.endEvent();
-      }
     }
   }
 }

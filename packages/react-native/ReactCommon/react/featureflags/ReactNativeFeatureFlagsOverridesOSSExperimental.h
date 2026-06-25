@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<6a047fa1d33ea17ebd7ba8d0680ee1cc>>
+ * @generated SignedSource<<e4a9f907d9bcfa0e84f8dbcf5b1dc2be>>
  */
 
 /**
@@ -27,19 +27,27 @@ class ReactNativeFeatureFlagsOverridesOSSExperimental : public ReactNativeFeatur
  public:
     ReactNativeFeatureFlagsOverridesOSSExperimental() = default;
 
-  bool enableAccessibilityOrder() override {
+  bool cxxNativeAnimatedEnabled() override {
     return true;
   }
 
-  bool enableSwiftUIBasedFilters() override {
+  bool enableFlexboxAutoMinSizeInStrictMode() override {
     return true;
   }
 
-  bool fixTextClippingAndroid15useBoundsForWidth() override {
+  bool enableRuntimeSchedulerQueueClearingOnError() override {
+    return true;
+  }
+
+  bool enableSchedulerDelegateInvalidation() override {
     return true;
   }
 
   bool preventShadowTreeCommitExhaustion() override {
+    return true;
+  }
+
+  bool useSharedAnimatedBackend() override {
     return true;
   }
 };

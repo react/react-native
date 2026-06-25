@@ -22,11 +22,17 @@ export class DebuggerAgent {
   #ws: ?WebSocket;
   #readyPromise: Promise<void>;
 
-  constructor(url: string, signal?: AbortSignal, hostHeader?: ?string) {
+  constructor(
+    url: string,
+    signal?: AbortSignal,
+    headers?: ?{[string]: unknown},
+  ) {
     const ws = new WebSocket(url, {
       // The mock server uses a self-signed certificate.
       rejectUnauthorized: false,
-      ...(hostHeader != null ? {headers: {Host: hostHeader}} : {}),
+      ...(headers != null
+        ? {headers}
+        : {headers: {Origin: 'http://localhost:8081'}}),
     });
     this.#ws = ws;
     ws.on('message', data => {
@@ -78,7 +84,7 @@ export class DebuggerAgent {
 
 export class DebuggerMock extends DebuggerAgent {
   // Empty handlers
-  +handle: JestMockFn<[message: JSONSerializable], void> = jest.fn();
+  readonly handle: JestMockFn<[message: JSONSerializable], void> = jest.fn();
 
   __handle(message: JSONSerializable): void {
     this.handle(message);
@@ -116,9 +122,9 @@ export class DebuggerMock extends DebuggerAgent {
 export async function createDebuggerMock(
   url: string,
   signal: AbortSignal,
-  hostHeader?: ?string,
+  headers?: ?{[string]: unknown},
 ): Promise<DebuggerMock> {
-  const debuggerMock = new DebuggerMock(url, signal, hostHeader);
+  const debuggerMock = new DebuggerMock(url, signal, headers);
   await debuggerMock.ready();
   return debuggerMock;
 }

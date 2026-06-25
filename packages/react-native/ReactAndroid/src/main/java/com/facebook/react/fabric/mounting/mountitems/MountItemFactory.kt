@@ -47,7 +47,7 @@ internal object MountItemFactory {
       surfaceId: Int,
       reactTag: Int,
       component: String,
-      props: ReadableMap?,
+      props: ReadableMap,
       stateWrapper: StateWrapper?,
       isLayoutable: Boolean,
   ): MountItem =

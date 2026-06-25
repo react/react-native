@@ -38,7 +38,7 @@ describe('checkVersion', () => {
   });
 });
 
-function setDevelopmentModeForTests(dev: mixed) {
+function setDevelopmentModeForTests(dev: unknown) {
   let originalDev;
 
   beforeAll(() => {
@@ -1076,7 +1076,7 @@ function runExceptionsManagerTests() {
     });
   });
 }
-const linesByFile = new Map<string, $ReadOnlyArray<string>>();
+const linesByFile = new Map<string, ReadonlyArray<string>>();
 
 function getLineFromFrame({lineNumber /* 1-based */, file}: $FlowFixMe) {
   if (file == null) {

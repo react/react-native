@@ -19,7 +19,7 @@ import * as t from '@babel/types';
  * - Sorts declarations alphabetically.
  * - Moves all exports into a single block at the end of the file.
  */
-const visitor: PluginObj<mixed> = {
+const visitor: PluginObj<unknown> = {
   visitor: {
     Program(path) {
       const exportedIdentifiers: Set<string> = new Set();

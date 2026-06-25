@@ -110,7 +110,7 @@ using TraceSectionUnwrapped = DummyTraceSection;
  * In the case of WITH_LOOM_TRACE we don't use the signposts APIs because of the
  * templated type for TraceSection.
  */
-#if defined(__APPLE__) && OS_LOG_TARGET_HAS_10_15_FEATURES && !defined(WITH_LOOM_TRACE)
+#if defined(__APPLE__) && OS_LOG_TARGET_HAS_10_15_FEATURES && !defined(WITH_LOOM_TRACE) && !defined(WITH_PERFETTO)
 
 namespace systrace {
 

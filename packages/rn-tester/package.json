@@ -1,16 +1,16 @@
 {
   "name": "@react-native/tester",
-  "version": "0.84.0-main",
+  "version": "0.87.0-main",
   "private": true,
   "description": "React Native tester app.",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/facebook/react-native.git",
+    "url": "git+https://github.com/react/react-native.git",
     "directory": "packages/rn-tester"
   },
   "engines": {
-    "node": ">= 20.19.4"
+    "node": "^22.13.0 || ^24.3.0 || >= 26.0.0"
   },
   "scripts": {
     "start": "react-native start",
@@ -19,21 +19,22 @@
     "clean-android": "rm -rf android/app/build",
     "prepare-ios": "node ./cli.js bootstrap ios",
     "clean-ios": "rm -rf build/generated/ios Pods Podfile.lock RNTesterPods.xcworkspace/ ../react-native-codegen/lib/",
+    "ios:clear-prebuild-caches": "rm -rf $HOME/Library/Caches/ReactNative",
     "e2e-build-android": "../../gradlew :packages:rn-tester:android:app:installRelease -PreactNativeArchitectures=arm64-v8a",
     "e2e-build-ios": "./scripts/maestro-build-ios.sh",
     "e2e-test-android": "maestro test .maestro/ -e APP_ID=com.facebook.react.uiapp",
     "e2e-test-ios": "./scripts/maestro-test-ios.sh"
   },
   "dependencies": {
-    "@react-native/new-app-screen": "0.84.0-main",
-    "@react-native/popup-menu-android": "0.84.0-main",
+    "@react-native/new-app-screen": "0.87.0-main",
+    "@react-native/popup-menu-android": "0.87.0-main",
     "flow-enums-runtime": "^0.0.6",
     "invariant": "^2.2.4",
     "nullthrows": "^1.1.1"
   },
   "peerDependencies": {
-    "react": "19.2.0",
-    "react-native": "*"
+    "react": "19.2.3",
+    "react-native": "1000.0.0"
   },
   "codegenConfig": {
     "name": "AppSpecs",
@@ -43,11 +44,6 @@
       "javaPackageName": "com.facebook.fbreact.specs"
     },
     "ios": {
-      "modules": {
-        "SampleTurboModule": {
-          "unstableRequiresMainQueueSetup": true
-        }
-      },
       "components": {
         "RNTMyNativeView": {
           "className": "RNTMyNativeViewComponentView"
@@ -59,6 +55,7 @@
     "@react-native-community/cli": "20.0.0",
     "@react-native-community/cli-platform-android": "20.0.0",
     "@react-native-community/cli-platform-ios": "20.0.0",
+    "@react-native/core-cli-utils": "*",
     "commander": "^12.0.0",
     "listr2": "^6.4.1",
     "rxjs": "npm:@react-native-community/rxjs@6.5.4-custom"

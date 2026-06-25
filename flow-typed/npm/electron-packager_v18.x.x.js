@@ -46,7 +46,7 @@ declare module '@electron/packager' {
 
   declare export type OsxUniversalOptions = $FlowFixMe;
 
-  declare export type Win32MetadataOptions = $ReadOnly<{
+  declare export type Win32MetadataOptions = Readonly<{
     CompanyName?: string,
     FileDescription?: string,
     OriginalFilename?: string,

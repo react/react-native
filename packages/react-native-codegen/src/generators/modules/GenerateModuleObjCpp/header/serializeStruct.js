@@ -15,7 +15,7 @@ import type {Struct} from '../StructCollector';
 const {serializeConstantsStruct} = require('./serializeConstantsStruct');
 const {serializeRegularStruct} = require('./serializeRegularStruct');
 
-export type StructSerilizationOutput = $ReadOnly<{
+export type StructSerilizationOutput = Readonly<{
   methods: string,
   declaration: string,
 }>;

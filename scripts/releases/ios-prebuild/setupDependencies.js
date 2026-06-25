@@ -32,7 +32,7 @@ const exec = util.promisify(require('child_process').exec);
  * according to the configuration provided.
  */
 async function setupDependencies(
-  dependencies /*: $ReadOnlyArray<Dependency> */,
+  dependencies /*: ReadonlyArray<Dependency> */,
   rootFolder /*: string */,
 ) {
   console.log('✅ Setting up dependencies...');

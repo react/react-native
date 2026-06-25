@@ -15,7 +15,7 @@ import path from 'path';
 
 const logWatchman = debug('helloworld:cli:watchman');
 
-export async function pauseWatchman(command: () => Promise<mixed | void>) {
+export async function pauseWatchman(command: () => Promise<unknown | void>) {
   let p: ReturnType<typeof spawn> | null = null;
   try {
     const raw: string = execSync('watchman watch-project .', {
@@ -52,7 +52,7 @@ export async function pauseWatchman(command: () => Promise<mixed | void>) {
 
 export function getExistingPath(
   folder: string,
-  paths: $ReadOnlyArray<string>,
+  paths: ReadonlyArray<string>,
 ): string | null {
   for (const p of paths) {
     if (existsSync(path.join(folder, p))) {

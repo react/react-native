@@ -12,17 +12,39 @@ import type LogBoxLog from './Data/LogBoxLog';
 
 import View from '../Components/View/View';
 import StyleSheet from '../StyleSheet/StyleSheet';
+import BackHandler from '../Utilities/BackHandler';
 import * as LogBoxData from './Data/LogBoxData';
 import LogBoxInspector from './UI/LogBoxInspector';
 import * as React from 'react';
 
-type Props = $ReadOnly<{
-  logs: $ReadOnlyArray<LogBoxLog>,
+type Props = Readonly<{
+  logs: ReadonlyArray<LogBoxLog>,
   selectedLogIndex: number,
   isDisabled?: ?boolean,
 }>;
 
 export class _LogBoxInspectorContainer extends React.Component<Props> {
+  _backHandler: ?{remove: () => void, ...} = null;
+
+  componentDidMount() {
+    this._backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      () => {
+        if (this.props.selectedLogIndex < 0) {
+          return false;
+        }
+        this._handleMinimize();
+        return true;
+      },
+    );
+  }
+
+  componentWillUnmount() {
+    if (this._backHandler) {
+      this._backHandler.remove();
+    }
+  }
+
   render(): React.Node {
     return (
       <View style={StyleSheet.absoluteFill}>
@@ -63,6 +85,6 @@ export class _LogBoxInspectorContainer extends React.Component<Props> {
   };
 }
 
-export default (LogBoxData.withSubscription(
+export default LogBoxData.withSubscription(
   _LogBoxInspectorContainer,
-): React.ComponentType<{}>);
+) as React.ComponentType<{}>;

@@ -20,19 +20,19 @@ import * as React from 'react';
 import {useCallback, useImperativeHandle, useRef} from 'react';
 
 type PopupMenuSelectionEvent = NativeSyntheticEvent<
-  $ReadOnly<{
+  Readonly<{
     item: number,
   }>,
 >;
 
-type PopupMenuDismissEvent = NativeSyntheticEvent<$ReadOnly<{}>>;
+type PopupMenuDismissEvent = NativeSyntheticEvent<Readonly<{}>>;
 
 export type PopupMenuAndroidInstance = {
-  +show: () => void,
+  readonly show: () => void,
 };
 
 type Props = {
-  menuItems: $ReadOnlyArray<string>,
+  menuItems: ReadonlyArray<string>,
   onSelectionChange: number => void,
   onDismiss?: () => void,
   children: React.Node,

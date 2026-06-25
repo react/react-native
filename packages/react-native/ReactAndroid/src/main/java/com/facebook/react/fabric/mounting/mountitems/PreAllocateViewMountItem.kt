@@ -19,7 +19,7 @@ internal class PreAllocateViewMountItem(
     private val surfaceId: Int,
     private val reactTag: Int,
     component: String,
-    private val props: ReadableMap?,
+    private val props: ReadableMap,
     private val stateWrapper: StateWrapper?,
     private val isLayoutable: Boolean,
 ) : MountItem {
@@ -59,7 +59,7 @@ internal class PreAllocateViewMountItem(
     if (FabricUIManager.IS_DEVELOPMENT_ENVIRONMENT) {
       result
           .append(" props: ")
-          .append(props?.toString() ?: "<null>")
+          .append(props.toString() ?: "<null>")
           .append(" state: ")
           .append(stateWrapper?.toString() ?: "<null>")
     }

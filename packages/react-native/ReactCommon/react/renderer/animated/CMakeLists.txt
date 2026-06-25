@@ -32,4 +32,3 @@ target_link_libraries(react_renderer_animated
 )
 target_compile_reactnative_options(react_renderer_animated PRIVATE)
 target_compile_options(react_renderer_animated PRIVATE -Wpedantic)
-target_compile_definitions(react_renderer_animated PRIVATE RN_USE_ANIMATION_BACKEND)

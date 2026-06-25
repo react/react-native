@@ -20,15 +20,15 @@ class StubWebSocketClient : public IWebSocketClient {
   StubWebSocketClient(StubWebSocketClient &&other) = delete;
   StubWebSocketClient &operator=(StubWebSocketClient &&other) = delete;
 
-  void setOnClosedCallback(OnClosedCallback &&callback) noexcept override {}
+  void setOnClosedCallback(OnClosedCallback && /*callback*/) noexcept override {}
 
-  void setOnMessageCallback(OnMessageCallback &&callback) noexcept override {}
+  void setOnMessageCallback(OnMessageCallback && /*callback*/) noexcept override {}
 
-  void connect(const std::string &url, OnConnectCallback &&onConnectCallback = nullptr) override {}
+  void connect(const std::string & /*url*/, OnConnectCallback && /*onConnectCallback*/ = nullptr) override {}
 
-  void close(const std::string &reason) override {}
+  void close(const std::string & /*reason*/) override {}
 
-  void send(const std::string &message) override {}
+  void send(const std::string & /*message*/) override {}
 
   void ping() override {}
 };

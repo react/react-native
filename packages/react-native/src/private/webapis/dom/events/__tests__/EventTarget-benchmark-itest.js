@@ -4,6 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
+ * @fantom_flags enableNativeEventTargetEventDispatching:*
  * @flow strict-local
  * @format
  */
@@ -14,10 +15,28 @@ import createEventTargetHierarchyWithDepth from './createEventTargetHierarchyWit
 import {unstable_benchmark} from '@react-native/fantom';
 import Event from 'react-native/src/private/webapis/dom/events/Event';
 import EventTarget from 'react-native/src/private/webapis/dom/events/EventTarget';
+import {EVENT_TARGET_GET_DECLARATIVE_LISTENER_KEY} from 'react-native/src/private/webapis/dom/events/internals/EventTargetInternals';
 
 let event: Event;
 let eventTarget: EventTarget;
-let eventTargets: $ReadOnlyArray<EventTarget>;
+let eventTargets: ReadonlyArray<EventTarget>;
+
+// Simulates the prop-listener pattern from `ReactNativeElement` without
+// requiring React or any `parentNode` TurboModule traversal: each target
+// returns a no-op callback from `EVENT_TARGET_GET_DECLARATIVE_LISTENER_KEY`.
+// Used to isolate the per-target cost of `invoke()` when only declarative
+// (prop) listeners are present, which is the common path on real components.
+function createPropListenerOnlyHierarchy(
+  depth: number,
+): ReadonlyArray<EventTarget> {
+  const targets = createEventTargetHierarchyWithDepth(depth);
+  const noop = () => {};
+  for (const target of targets) {
+    // $FlowExpectedError[prop-missing] $FlowExpectedError[invalid-computed-prop]
+    target[EVENT_TARGET_GET_DECLARATIVE_LISTENER_KEY] = () => noop;
+  }
+  return targets;
+}
 
 unstable_benchmark
   .suite('EventTarget', {
@@ -172,6 +191,19 @@ unstable_benchmark
     {
       beforeEach: () => {
         eventTargets = createEventTargetHierarchyWithDepth(100);
+      },
+    },
+  )
+  .test(
+    'dispatchEvent, bubbling (100), prop listener per target only',
+    () => {
+      eventTarget.dispatchEvent(event);
+    },
+    {
+      beforeAll: () => {
+        event = new Event('custom', {bubbles: true});
+        const targets = createPropListenerOnlyHierarchy(100);
+        eventTarget = targets[targets.length - 1];
       },
     },
   );

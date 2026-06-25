@@ -25,15 +25,9 @@ import java.lang.reflect.Method
 @DoNotStrip
 @InteropLegacyArchitecture
 internal class JavaModuleWrapper(
-    @Suppress("DEPRECATION") private val jsInstance: JSInstance,
+    @Suppress("DEPRECATION", "unused") private val jsInstance: JSInstance,
     private val moduleHolder: ModuleHolder,
 ) {
-  interface NativeMethod {
-    @Suppress("DEPRECATION") fun invoke(jsInstance: JSInstance, parameters: ReadableArray)
-
-    val type: String
-  }
-
   @DoNotStrip
   class MethodDescriptor {
     @DoNotStrip var method: Method? = null
@@ -45,7 +39,6 @@ internal class JavaModuleWrapper(
     @DoNotStrip var type: String? = null
   }
 
-  private val methods = ArrayList<NativeMethod>()
   private val descs = ArrayList<MethodDescriptor>()
 
   @get:DoNotStrip
@@ -63,26 +56,26 @@ internal class JavaModuleWrapper(
     var classForMethods: Class<*> = moduleHolder.module.javaClass
     val superClass = classForMethods.superclass
     if (superClass != null && TurboModule::class.java.isAssignableFrom(superClass)) {
-      // For java module that is based on generated flow-type spec, inspect the
-      // spec abstract class instead, which is the super class of the given Java
-      // module.
       classForMethods = superClass
     }
 
     val targetMethods = classForMethods.declaredMethods
     for (targetMethod in targetMethods) {
       targetMethod.getAnnotation(ReactMethod::class.java)?.let { annotation ->
-        val methodName = targetMethod.name
         val md = MethodDescriptor()
-        @Suppress("DEPRECATION")
-        val method = JavaMethodWrapper(this, targetMethod, annotation.isBlockingSynchronousMethod)
-        md.name = methodName
-        md.type = method.type
+        md.name = targetMethod.name
+        md.type =
+            when {
+              annotation.isBlockingSynchronousMethod -> BaseJavaModule.METHOD_TYPE_SYNC
+              targetMethod.parameterTypes.let { params ->
+                params.isNotEmpty() && params.last() == Promise::class.java
+              } -> BaseJavaModule.METHOD_TYPE_PROMISE
+              else -> BaseJavaModule.METHOD_TYPE_ASYNC
+            }
         if (BaseJavaModule.METHOD_TYPE_SYNC == md.type) {
-          md.signature = method.signature
+          md.signature = ""
           md.method = targetMethod
         }
-        methods.add(method)
         descs.add(md)
       }
     }
@@ -128,11 +121,10 @@ internal class JavaModuleWrapper(
 
   @DoNotStrip
   fun invoke(methodId: Int, parameters: ReadableNativeArray) {
-    if (methodId >= methods.size) {
-      return
-    }
-
-    methods[methodId].invoke(jsInstance, parameters)
+    throw UnsupportedOperationException(
+        "JavaModuleWrapper.invoke() is no longer supported. " +
+            "Use TurboModule interop instead (ReactNativeFeatureFlags.useTurboModuleInterop)."
+    )
   }
 
   private companion object {

@@ -34,7 +34,7 @@ void HermesSamplingProfiler::dumpSampledTraceToFile(
 void HermesSamplingProfiler::registerNatives() {
   javaClassLocal()->registerNatives({
       makeNativeMethod("enable", HermesSamplingProfiler::enable),
-      makeNativeMethod("disable", HermesSamplingProfiler::enable),
+      makeNativeMethod("disable", HermesSamplingProfiler::disable),
       makeNativeMethod(
           "dumpSampledTraceToFile",
           HermesSamplingProfiler::dumpSampledTraceToFile),

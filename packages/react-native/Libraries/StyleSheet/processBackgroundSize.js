@@ -13,9 +13,9 @@
 import type {BackgroundSizeValue} from './StyleSheetTypes';
 
 export default function processBackgroundSize(
-  backgroundSize: ?($ReadOnlyArray<BackgroundSizeValue> | string),
-): $ReadOnlyArray<BackgroundSizeValue> {
-  let result: $ReadOnlyArray<BackgroundSizeValue> = [];
+  backgroundSize: ?(ReadonlyArray<BackgroundSizeValue> | string),
+): ReadonlyArray<BackgroundSizeValue> {
+  let result: ReadonlyArray<BackgroundSizeValue> = [];
 
   if (backgroundSize == null) {
     // If the size is invalid, return an empty array and do not apply any background size. Same as web.
@@ -34,7 +34,7 @@ export default function processBackgroundSize(
 // <bg-size> = [ <length-percentage [0,∞]> | auto ]{1,2} | cover | contain
 function parseBackgroundSizeCSSString(
   backgroundSize: string,
-): $ReadOnlyArray<BackgroundSizeValue> {
+): ReadonlyArray<BackgroundSizeValue> {
   const result: Array<BackgroundSizeValue> = [];
   const sizes = backgroundSize.split(',').map(s => s.trim());
 
@@ -57,19 +57,14 @@ function parseBackgroundSizeCSSString(
         return [];
       }
     } else if (parts.length === 1) {
-      const part = parts[0].toLowerCase();
-      if (part === 'cover' || part === 'contain') {
-        result.push(part);
+      const x = getValidLengthPercentageSizeOrNull(parts[0].toLowerCase());
+      if (x != null) {
+        result.push({
+          x,
+          y: 'auto',
+        });
       } else {
-        const x = getValidLengthPercentageSizeOrNull(parts[0].toLowerCase());
-        if (x != null) {
-          result.push({
-            x,
-            y: 'auto',
-          });
-        } else {
-          return [];
-        }
+        return [];
       }
     }
   }

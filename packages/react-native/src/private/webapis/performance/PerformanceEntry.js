@@ -29,9 +29,9 @@ export type PerformanceEntryJSON = {
 };
 
 export interface PerformanceEntryInit {
-  +name: string;
-  +startTime: DOMHighResTimeStamp;
-  +duration: DOMHighResTimeStamp;
+  readonly name: string;
+  readonly startTime: DOMHighResTimeStamp;
+  readonly duration: DOMHighResTimeStamp;
 }
 
 export class PerformanceEntry {
@@ -91,4 +91,4 @@ PerformanceEntry_public.prototype = PerformanceEntry.prototype;
 
 setPlatformObject(PerformanceEntry);
 
-export type PerformanceEntryList = $ReadOnlyArray<PerformanceEntry>;
+export type PerformanceEntryList = ReadonlyArray<PerformanceEntry>;

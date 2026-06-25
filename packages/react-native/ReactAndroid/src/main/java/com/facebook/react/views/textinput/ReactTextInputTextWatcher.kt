@@ -19,8 +19,7 @@ internal class ReactTextInputTextWatcher(
     reactContext: ReactContext,
     private val editText: ReactEditText,
 ) : TextWatcher {
-  private val eventDispatcher: EventDispatcher? =
-      UIManagerHelper.getEventDispatcherForReactTag(reactContext, editText.id)
+  private val eventDispatcher: EventDispatcher? = UIManagerHelper.getEventDispatcher(reactContext)
   private val surfaceId = UIManagerHelper.getSurfaceId(reactContext)
   private var previousText: String? = null
 
@@ -63,6 +62,8 @@ internal class ReactTextInputTextWatcher(
             editText.id,
             s.toString(),
             editText.incrementAndGetEventCounter(),
+            editText.selectionStart,
+            editText.selectionEnd,
         )
     )
   }

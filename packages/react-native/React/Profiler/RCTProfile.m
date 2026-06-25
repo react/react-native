@@ -13,13 +13,13 @@
 #import <objc/runtime.h>
 #import <stdatomic.h>
 
+#import <React/RCTDefines.h>
 #import <UIKit/UIKit.h>
 
 #import "RCTAssert.h"
 #import "RCTBridge+Private.h"
 #import "RCTBridge.h"
 #import "RCTComponentData.h"
-#import "RCTDefines.h"
 #import "RCTLog.h"
 #import "RCTModuleData.h"
 #import "RCTReloadCommand.h"
@@ -315,6 +315,7 @@ void RCTProfileHookModules(RCTBridge *bridge)
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wtautological-pointer-compare"
+#pragma clang diagnostic ignored "-Wunreachable-code-return"
   if (RCTProfileTrampoline == NULL) {
     return;
   }
@@ -393,6 +394,7 @@ void RCTProfileUnhookModules(RCTBridge *bridge)
     RCTProfileEnd(RCTProfilingBridge(), ^(NSString *result) {
       NSString *outFile = [NSTemporaryDirectory() stringByAppendingString:@"tmp_trace.json"];
       [result writeToFile:outFile atomically:YES encoding:NSUTF8StringEncoding error:nil];
+#if !TARGET_OS_TV
       UIActivityViewController *activityViewController =
           [[UIActivityViewController alloc] initWithActivityItems:@[ [NSURL fileURLWithPath:outFile] ]
                                             applicationActivities:nil];
@@ -409,6 +411,9 @@ void RCTProfileUnhookModules(RCTBridge *bridge)
                                                                                       animated:YES
                                                                                     completion:nil];
       });
+#else
+      RCTProfileControlsWindow.hidden = NO;
+#endif
     });
   } else {
     RCTProfileInit(RCTProfilingBridge());

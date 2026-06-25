@@ -24,9 +24,9 @@ import {
 } from 'react-native';
 import openURLInBrowser from 'react-native/Libraries/Core/Devtools/openURLInBrowser';
 
-export type NewAppScreenProps = $ReadOnly<{
+export type NewAppScreenProps = Readonly<{
   templateFileName?: string,
-  safeAreaInsets?: $ReadOnly<{
+  safeAreaInsets?: Readonly<{
     top: number,
     bottom: number,
     left: number,

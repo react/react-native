@@ -25,7 +25,7 @@ export interface DOMRectInit {
   height?: ?number;
 }
 
-function castToNumber(value: mixed): number {
+function castToNumber(value: unknown): number {
   return value ? Number(value) : 0;
 }
 

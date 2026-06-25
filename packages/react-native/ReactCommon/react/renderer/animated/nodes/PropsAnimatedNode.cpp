@@ -55,6 +55,15 @@ PropsAnimatedNode::PropsAnimatedNode(
   }
 }
 
+void PropsAnimatedNode::connectToShadowNodeFamily(
+    ShadowNodeFamily::Weak shadowNodeFamily) {
+  shadowNodeFamily_ = std::move(shadowNodeFamily);
+}
+
+void PropsAnimatedNode::disconnectFromShadowNodeFamily() {
+  shadowNodeFamily_.reset();
+}
+
 void PropsAnimatedNode::connectToView(Tag viewTag) {
   react_native_assert(
       connectedViewTag_ == animated::undefinedAnimatedNodeIdentifier &&
@@ -74,8 +83,17 @@ void PropsAnimatedNode::disconnectFromView(Tag viewTag) {
 void PropsAnimatedNode::restoreDefaultValues() {
   // If node is already disconnected from View, we cannot restore default values
   if (connectedViewTag_ != animated::undefinedAnimatedNodeIdentifier) {
-    manager_->schedulePropsCommit(
-        connectedViewTag_, folly::dynamic::object(), false, false);
+    if (manager_->useSharedAnimatedBackend()) {
+      manager_->schedulePropsCommit(
+          connectedViewTag_,
+          folly::dynamic::object(),
+          false,
+          false,
+          shadowNodeFamily_);
+    } else {
+      manager_->schedulePropsCommit(
+          connectedViewTag_, folly::dynamic::object(), false, false);
+    }
   }
 }
 
@@ -147,8 +165,17 @@ void PropsAnimatedNode::update(bool forceFabricCommit) {
 
   layoutStyleUpdated_ = isLayoutStyleUpdated(getConfig()["props"], *manager_);
 
-  manager_->schedulePropsCommit(
-      connectedViewTag_, props_, layoutStyleUpdated_, forceFabricCommit);
+  if (manager_->useSharedAnimatedBackend()) {
+    manager_->schedulePropsCommit(
+        connectedViewTag_,
+        props_,
+        layoutStyleUpdated_,
+        forceFabricCommit,
+        shadowNodeFamily_);
+  } else {
+    manager_->schedulePropsCommit(
+        connectedViewTag_, props_, layoutStyleUpdated_, forceFabricCommit);
+  }
 }
 
 } // namespace facebook::react

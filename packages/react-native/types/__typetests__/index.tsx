@@ -46,6 +46,7 @@ import {
   FocusEvent,
   GestureResponderEvent,
   HostComponent,
+  HostInstance,
   I18nManager,
   Image,
   ImageBackground,
@@ -56,7 +57,6 @@ import {
   ImageResolvedAssetSource,
   ImageStyle,
   InputAccessoryView,
-  InteractionManager,
   Keyboard,
   KeyboardAvoidingView,
   LayoutChangeEvent,
@@ -338,6 +338,18 @@ const lists = StyleSheet.create({
 
 const container = StyleSheet.compose(page.container, lists.listContainer);
 <View style={container} />;
+
+// Pointer events (W3C): all variants should be accepted on View.
+<View
+  onPointerOver={e => e.nativeEvent.pointerId}
+  onPointerOverCapture={e => e.nativeEvent.pointerId}
+  onPointerOut={e => e.nativeEvent.pointerId}
+  onPointerOutCapture={e => e.nativeEvent.pointerId}
+  onGotPointerCapture={e => e.nativeEvent.pointerId}
+  onGotPointerCaptureCapture={e => e.nativeEvent.pointerId}
+  onLostPointerCapture={e => e.nativeEvent.pointerId}
+  onLostPointerCaptureCapture={e => e.nativeEvent.pointerId}
+/>;
 const text = StyleSheet.compose(page.text, lists.listItem) as TextStyle;
 <Text style={text} />;
 
@@ -409,8 +421,7 @@ type ElementProps<C> = C extends React.Component<infer P, any> ? P : never;
 class CustomView extends React.Component {
   render() {
     return (
-      <Text
-        style={[StyleSheet.absoluteFill, {...StyleSheet.absoluteFillObject}]}>
+      <Text style={[StyleSheet.absoluteFill, {...StyleSheet.absoluteFill}]}>
         Custom View
       </Text>
     );
@@ -544,6 +555,8 @@ export class TouchableOpacityTest extends React.Component {
           accessibilityLabelledBy="my-label-text"
           aria-labelledby="my-label-text"
         />
+        <TouchableOpacity accessibilityRole="grid" />
+        <TouchableOpacity accessibilityRole="pager" />
         <TouchableOpacity
           // @ts-expect-error - expected boolean value
           focusable={1}
@@ -779,10 +792,6 @@ if (Systrace.isEnabled()) {
 
   Systrace.counterEvent('counter', 123);
 }
-
-InteractionManager.runAfterInteractions(() => {
-  // ...
-}).then(() => 'done');
 
 export class FlatListTest extends React.Component<FlatListProps<number>, {}> {
   list: FlatList<any> | null = null;
@@ -1494,6 +1503,9 @@ AccessibilityInfo.getRecommendedTimeoutMillis(5000).then(timeoutMiles =>
   ),
 );
 
+AccessibilityInfo.addEventListener('accessibilityServiceChanged', isEnabled =>
+  console.log(`AccessibilityInfo.accessibilityServiceChanged => ${isEnabled}`),
+);
 AccessibilityInfo.addEventListener(
   'announcementFinished',
   ({announcement, success}) =>
@@ -1504,8 +1516,17 @@ AccessibilityInfo.addEventListener(
 AccessibilityInfo.addEventListener('boldTextChanged', isEnabled =>
   console.log(`AccessibilityInfo.isBoldTextEnabled => ${isEnabled}`),
 );
+AccessibilityInfo.addEventListener('change', isEnabled =>
+  console.log(`AccessibilityInfo.change => ${isEnabled}`),
+);
+AccessibilityInfo.addEventListener('darkerSystemColorsChanged', isEnabled =>
+  console.log(`AccessibilityInfo.darkerSystemColorsChanged => ${isEnabled}`),
+);
 AccessibilityInfo.addEventListener('grayscaleChanged', isEnabled =>
   console.log(`AccessibilityInfo.isGrayscaleEnabled => ${isEnabled}`),
+);
+AccessibilityInfo.addEventListener('highTextContrastChanged', isEnabled =>
+  console.log(`AccessibilityInfo.highTextContrastChanged => ${isEnabled}`),
 );
 AccessibilityInfo.addEventListener('invertColorsChanged', isEnabled =>
   console.log(`AccessibilityInfo.isInvertColorsEnabled => ${isEnabled}`),
@@ -1527,6 +1548,10 @@ const KeyboardAvoidingViewTest = () => <KeyboardAvoidingView enabled />;
 
 const ModalTest = () => <Modal hardwareAccelerated />;
 const ModalTest2 = () => <Modal hardwareAccelerated testID="modal-test-2" />;
+const ModalRefTest = () => {
+  const modalRef = React.useRef<Modal & HostInstance>(null);
+  return <Modal modalRef={modalRef} />;
+};
 
 // $ExpectType HostComponent<{ nativeProp: string; }>
 const NativeBridgedComponent = requireNativeComponent<{nativeProp: string}>(

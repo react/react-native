@@ -14,11 +14,11 @@ import type {WithDefault} from 'react-native/Libraries/Types/CodegenTypes';
 
 import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
 
-export type Props = $ReadOnly<{
+export type Props = Readonly<{
   ...ViewProps,
   size?: WithDefault<'small' | 'huge' | 'large', 'small'>,
 }>;
 
-export default (codegenNativeComponent<Props>(
+export default codegenNativeComponent<Props>(
   'NativeComponent',
-): HostComponent<Props>);
+) as HostComponent<Props>;

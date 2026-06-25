@@ -31,8 +31,6 @@ class RenderOutput {
 
   folly::dynamic renderAttributedString(const Tag &selfTag, const AttributedString &string);
 
-  std::unordered_map<Tag, folly::dynamic> renderedViews_{};
-
   // If true, the next call to render() will re-render the entire tree.
   std::unordered_set<SurfaceId> treesMutated_{};
 };

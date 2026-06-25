@@ -1,0 +1,4 @@
+interface RCTSurface {
+  protected  __pad0__;
+  public @property (assign, readonly) CGSize minimumSize;
+}

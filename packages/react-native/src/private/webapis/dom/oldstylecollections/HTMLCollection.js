@@ -18,7 +18,7 @@ import {setPlatformObject} from '../../webidl/PlatformObjects';
 // IMPORTANT: The type definition for this module is defined in `HTMLCollection.js.flow`
 // because Flow only supports indexers in classes in declaration files.
 
-const REUSABLE_PROPERTY_DESCRIPTOR: {...PropertyDescriptor<mixed>, ...} = {
+const REUSABLE_PROPERTY_DESCRIPTOR: {...PropertyDescriptor<unknown>, ...} = {
   value: {},
   enumerable: true,
   configurable: false,
@@ -35,7 +35,7 @@ export default class HTMLCollection<T> implements Iterable<T>, ArrayLike<T> {
    * @private This is not defined in the declaration file, so users will not see
    *          the signature of the constructor.
    */
-  constructor(elements: $ReadOnlyArray<T>) {
+  constructor(elements: ReadonlyArray<T>) {
     for (let i = 0; i < elements.length; i++) {
       REUSABLE_PROPERTY_DESCRIPTOR.value = elements[i];
       Object.defineProperty(this, i, REUSABLE_PROPERTY_DESCRIPTOR);
@@ -82,7 +82,19 @@ setPlatformObject(HTMLCollection);
  * `HTMLCollection.js.flow`, not here.
  */
 export function createHTMLCollection<T>(
-  elements: $ReadOnlyArray<T>,
+  elements: ReadonlyArray<T>,
 ): HTMLCollection<T> {
   return new HTMLCollection(elements);
 }
+
+export const HTMLCollection_public: typeof HTMLCollection =
+  /* eslint-disable no-shadow */
+  // $FlowExpectedError[incompatible-type]
+  function HTMLCollection() {
+    throw new TypeError(
+      "Failed to construct 'HTMLCollection': Illegal constructor",
+    );
+  };
+
+// $FlowExpectedError[prop-missing]
+HTMLCollection_public.prototype = HTMLCollection.prototype;

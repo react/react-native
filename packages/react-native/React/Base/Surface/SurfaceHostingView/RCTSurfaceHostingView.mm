@@ -6,8 +6,10 @@
  */
 
 #import "RCTSurfaceHostingView.h"
+
+#import <React/RCTDefines.h>
+
 #import "RCTConstants.h"
-#import "RCTDefines.h"
 #import "RCTSurface.h"
 #import "RCTSurfaceDelegate.h"
 #import "RCTSurfaceView.h"

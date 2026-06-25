@@ -75,7 +75,7 @@ export function observe(result: ExecaPromiseMetaized): TaskResult<{}, string> {
 
 type MixedTasks = Task<ExecaPromise> | Task<void>;
 type Tasks = {
-  +[label: string]: MixedTasks,
+  readonly [label: string]: MixedTasks,
 };
 
 export function run(

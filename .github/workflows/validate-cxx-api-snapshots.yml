@@ -1,0 +1,85 @@
+name: Validate C++ API Snapshots
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'packages/react-native/ReactCommon/**'
+      - 'packages/react-native/ReactAndroid/**'
+      - 'packages/react-native/React/**'
+      - 'packages/react-native/ReactApple/**'
+      - 'packages/react-native/Libraries/**'
+      - 'scripts/cxx-api/**'
+  push:
+    branches:
+      - main
+      - '*-stable'
+    paths:
+      - 'packages/react-native/ReactCommon/**'
+      - 'packages/react-native/ReactAndroid/**'
+      - 'packages/react-native/React/**'
+      - 'packages/react-native/ReactApple/**'
+      - 'packages/react-native/Libraries/**'
+      - 'scripts/cxx-api/**'
+
+env:
+  DOXYGEN_VERSION: '1.16.1'
+
+permissions:
+  contents: read
+
+jobs:
+  validate_cxx_api_snapshots:
+    runs-on: ubuntu-latest
+    if: github.repository == 'react/react-native'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup node.js
+        uses: ./.github/actions/setup-node
+      - name: Run yarn
+        uses: ./.github/actions/yarn-install
+      - name: Restore Doxygen cache
+        id: cache-doxygen
+        uses: actions/cache@v4
+        with:
+          path: /tmp/doxygen-${{ env.DOXYGEN_VERSION }}
+          key: doxygen-${{ env.DOXYGEN_VERSION }}
+      - name: Install Doxygen
+        if: steps.cache-doxygen.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          DOXYGEN_URL="https://github.com/doxygen/doxygen/releases/download/Release_${DOXYGEN_VERSION//./_}/doxygen-${DOXYGEN_VERSION}.linux.bin.tar.gz"
+          MAX_RETRIES=3
+          for i in $(seq 1 $MAX_RETRIES); do
+            echo "Attempt $i of $MAX_RETRIES: Installing Doxygen ${DOXYGEN_VERSION}..."
+            curl -fsSL "$DOXYGEN_URL" -o /tmp/doxygen.tar.gz && \
+              tar -xzf /tmp/doxygen.tar.gz -C /tmp && \
+              echo "Doxygen installed successfully." && \
+              break
+            echo "Attempt $i failed."
+            if [ $i -eq $MAX_RETRIES ]; then
+              echo "All $MAX_RETRIES attempts failed."
+              exit 1
+            fi
+            sleep 5
+          done
+      - name: Set DOXYGEN_BIN
+        shell: bash
+        run: echo "DOXYGEN_BIN=/tmp/doxygen-${DOXYGEN_VERSION}/bin/doxygen" >> "$GITHUB_ENV"
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Python dependencies
+        shell: bash
+        run: pip install doxmlparser natsort pyyaml
+      - name: Validate C++ API snapshots
+        shell: bash
+        run: yarn cxx-api-validate --output-dir /tmp/cxx-api-snapshots
+      - name: Upload C++ API snapshots
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: cxx-api-snapshots
+          path: /tmp/cxx-api-snapshots/

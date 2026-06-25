@@ -17,7 +17,7 @@ import type {
 
 import ExampleTextInput from './ExampleTextInput';
 import TextInputSharedExamples from './TextInputSharedExamples';
-import React from 'react';
+import * as React from 'react';
 import {useState} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 
@@ -375,7 +375,49 @@ const examples: Array<RNTesterModuleExample> = [
             autoComplete="one-time-code"
             placeholder="one-time-code"
           />
+          <ExampleTextInput
+            autoComplete="2fa-app-otp"
+            placeholder="2fa-app-otp"
+          />
+          <ExampleTextInput autoComplete="email-otp" placeholder="email-otp" />
+          <ExampleTextInput
+            autoComplete="flight-number"
+            placeholder="flight-number"
+          />
+          <ExampleTextInput
+            autoComplete="flight-confirmation-code"
+            placeholder="flight-confirmation-code"
+          />
+          <ExampleTextInput
+            autoComplete="gift-card-number"
+            placeholder="gift-card-number"
+          />
+          <ExampleTextInput
+            autoComplete="gift-card-pin"
+            placeholder="gift-card-pin"
+          />
+          <ExampleTextInput
+            autoComplete="loyalty-account-number"
+            placeholder="loyalty-account-number"
+          />
+          <ExampleTextInput
+            autoComplete="postal-address-unit"
+            placeholder="postal-address-unit"
+          />
+          <ExampleTextInput
+            autoComplete="postal-address-dependent-locality"
+            placeholder="postal-address-dependent-locality"
+          />
+          <ExampleTextInput
+            autoComplete="promo-code"
+            placeholder="promo-code"
+          />
           <ExampleTextInput autoComplete="sms-otp" placeholder="sms-otp" />
+          <ExampleTextInput autoComplete="upi-vpa" placeholder="upi-vpa" />
+          <ExampleTextInput
+            autoComplete="wifi-password"
+            placeholder="wifi-password"
+          />
         </View>
       );
     },
@@ -466,11 +508,11 @@ const examples: Array<RNTesterModuleExample> = [
   },
 ];
 
-module.exports = ({
-  displayName: (undefined: ?string),
+module.exports = {
+  displayName: undefined as ?string,
   title: 'TextInput',
   documentationURL: 'https://reactnative.dev/docs/textinput',
   category: 'Basic',
   description: 'Single and multi-line text inputs.',
   examples,
-}: RNTesterModule);
+} as RNTesterModule;

@@ -28,7 +28,7 @@ function Item(props: {data: ItemDataType}): React.Node {
   );
 }
 
-type ItemListProps = $ReadOnly<{
+type ItemListProps = Readonly<{
   data: ItemDataType[],
   useFlatList?: boolean,
   onScroll?: (evt: ScrollEvent) => void,

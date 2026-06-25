@@ -488,9 +488,13 @@ Pod::Spec.new do |s|
     'show_env_vars_in_log' => true,
     'output_files' => [\\"\${DERIVED_FILE_DIR}/react-codegen.log\\"],
     'script': <<-SCRIPT
-pushd \\"$PODS_ROOT/../\\" > /dev/null
-RCT_SCRIPT_POD_INSTALLATION_ROOT=$(pwd)
-popd >/dev/null
+if [ -n \\"$PODFILE_DIR\\" ]; then
+  RCT_SCRIPT_POD_INSTALLATION_ROOT=\\"$PODFILE_DIR\\"
+else
+  pushd \\"$PODS_ROOT/../\\" > /dev/null
+  RCT_SCRIPT_POD_INSTALLATION_ROOT=$(pwd)
+  popd >/dev/null
+fi
 
 export RCT_SCRIPT_RN_DIR=\\"$RCT_SCRIPT_POD_INSTALLATION_ROOT/../../../../..\\"
 export RCT_SCRIPT_APP_PATH=\\"$RCT_SCRIPT_POD_INSTALLATION_ROOT/..\\"
@@ -967,9 +971,13 @@ Pod::Spec.new do |s|
     'show_env_vars_in_log' => true,
     'output_files' => [\\"\${DERIVED_FILE_DIR}/react-codegen.log\\"],
     'script': <<-SCRIPT
-pushd \\"$PODS_ROOT/../\\" > /dev/null
-RCT_SCRIPT_POD_INSTALLATION_ROOT=$(pwd)
-popd >/dev/null
+if [ -n \\"$PODFILE_DIR\\" ]; then
+  RCT_SCRIPT_POD_INSTALLATION_ROOT=\\"$PODFILE_DIR\\"
+else
+  pushd \\"$PODS_ROOT/../\\" > /dev/null
+  RCT_SCRIPT_POD_INSTALLATION_ROOT=$(pwd)
+  popd >/dev/null
+fi
 
 export RCT_SCRIPT_RN_DIR=\\"$RCT_SCRIPT_POD_INSTALLATION_ROOT/../../../../..\\"
 export RCT_SCRIPT_APP_PATH=\\"$RCT_SCRIPT_POD_INSTALLATION_ROOT/..\\"

@@ -18,7 +18,7 @@ import {PerformanceEntry} from './PerformanceEntry';
 
 export type PerformanceLongTaskTimingJSON = {
   ...PerformanceEntryJSON,
-  attribution: $ReadOnlyArray<TaskAttributionTiming>,
+  attribution: ReadonlyArray<TaskAttributionTiming>,
   ...
 };
 
@@ -36,7 +36,7 @@ export const TaskAttributionTiming_public: typeof TaskAttributionTiming =
 // $FlowExpectedError[prop-missing]
 TaskAttributionTiming_public.prototype = TaskAttributionTiming.prototype;
 
-const EMPTY_ATTRIBUTION: $ReadOnlyArray<TaskAttributionTiming> =
+const EMPTY_ATTRIBUTION: ReadonlyArray<TaskAttributionTiming> =
   Object.preventExtensions([]);
 
 export interface PerformanceLongTaskTimingInit extends PerformanceEntryInit {}
@@ -46,7 +46,7 @@ export class PerformanceLongTaskTiming extends PerformanceEntry {
     super('longtask', init);
   }
 
-  get attribution(): $ReadOnlyArray<TaskAttributionTiming> {
+  get attribution(): ReadonlyArray<TaskAttributionTiming> {
     return EMPTY_ATTRIBUTION;
   }
 

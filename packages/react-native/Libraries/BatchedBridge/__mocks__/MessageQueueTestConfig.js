@@ -12,7 +12,7 @@
 
 import type {ModuleConfig} from '../NativeModules';
 
-const remoteModulesConfig: $ReadOnlyArray<ModuleConfig> = [
+const remoteModulesConfig: ReadonlyArray<ModuleConfig> = [
   [
     'RemoteModule1',
     null,

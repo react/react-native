@@ -1,0 +1,7 @@
+struct test::ComponentDescriptor {
+  public friend ShadowNode;
+  public virtual void adopt(test::ShadowNode& shadowNode) const = 0;
+}
+
+struct test::ShadowNode {
+}

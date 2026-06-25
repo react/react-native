@@ -89,9 +89,10 @@ static ShadowTreeEdge findRandomShadowNode(
   return findShadowNodeWithIndex(rootShadowNode, entropy.random<int>(1 /* Excluding a root node */, count - 1));
 }
 
-static ShadowNode::ListOfShared cloneSharedShadowNodeList(const ShadowNode::ListOfShared &list)
+static std::vector<std::shared_ptr<const ShadowNode>> cloneSharedShadowNodeList(
+    const std::vector<std::shared_ptr<const ShadowNode>> &list)
 {
-  auto result = ShadowNode::ListOfShared{};
+  auto result = std::vector<std::shared_ptr<const ShadowNode>>{};
   result.reserve(list.size());
   for (const auto &shadowNode : list) {
     result.push_back(shadowNode->clone({}));
@@ -105,7 +106,8 @@ static inline std::shared_ptr<ShadowNode> messWithChildren(const Entropy &entrop
   children = cloneSharedShadowNodeList(children);
   entropy.shuffle(children);
   return shadowNode.clone(
-      {ShadowNodeFragment::propsPlaceholder(), std::make_shared<const ShadowNode::ListOfShared>(children)});
+      {ShadowNodeFragment::propsPlaceholder(),
+       std::make_shared<const std::vector<std::shared_ptr<const ShadowNode>>>(children)});
 }
 
 static inline std::shared_ptr<ShadowNode> messWithLayoutableOnlyFlag(
@@ -280,7 +282,7 @@ static inline std::shared_ptr<const ShadowNode> generateShadowNodeTree(
   auto items = std::vector<int>(size);
   std::fill(items.begin(), items.end(), 1);
   auto chunks = entropy.distribute(items, deviation);
-  auto children = ShadowNode::ListOfShared{};
+  auto children = std::vector<std::shared_ptr<const ShadowNode>>{};
 
   for (const auto &chunk : chunks) {
     children.push_back(generateShadowNodeTree(entropy, componentDescriptor, chunk.size()));
@@ -289,7 +291,8 @@ static inline std::shared_ptr<const ShadowNode> generateShadowNodeTree(
   auto family = componentDescriptor.createFamily({generateReactTag(), SurfaceId(1), nullptr});
   return componentDescriptor.createShadowNode(
       ShadowNodeFragment{
-          generateDefaultProps(componentDescriptor), std::make_shared<const ShadowNode::ListOfShared>(children)},
+          generateDefaultProps(componentDescriptor),
+          std::make_shared<const std::vector<std::shared_ptr<const ShadowNode>>>(children)},
       family);
 }
 

@@ -13,6 +13,7 @@ import type {PartialViewConfig} from '../../Renderer/shims/ReactNativeTypes';
 import type {ScrollViewNativeProps as Props} from './ScrollViewNativeComponentType';
 
 import * as NativeComponentRegistry from '../../NativeComponent/NativeComponentRegistry';
+import {colorAttribute} from '../View/ReactNativeStyleAttributes';
 
 export const __INTERNAL_VIEW_CONFIG: PartialViewConfig = {
   uiViewClassName: 'AndroidHorizontalScrollView',
@@ -22,7 +23,7 @@ export const __INTERNAL_VIEW_CONFIG: PartialViewConfig = {
     decelerationRate: true,
     disableIntervalMomentum: true,
     maintainVisibleContentPosition: true,
-    endFillColor: {process: require('../../StyleSheet/processColor').default},
+    endFillColor: colorAttribute,
     fadingEdgeLength: true,
     nestedScrollEnabled: true,
     overScrollMode: true,
@@ -44,21 +45,16 @@ export const __INTERNAL_VIEW_CONFIG: PartialViewConfig = {
     borderBottomRightRadius: true,
     borderRadius: true,
     borderStyle: true,
-    borderRightColor: {
-      process: require('../../StyleSheet/processColor').default,
-    },
-    borderColor: {process: require('../../StyleSheet/processColor').default},
-    borderBottomColor: {
-      process: require('../../StyleSheet/processColor').default,
-    },
+    borderRightColor: colorAttribute,
+    borderColor: colorAttribute,
+    borderBottomColor: colorAttribute,
     borderTopLeftRadius: true,
-    borderTopColor: {process: require('../../StyleSheet/processColor').default},
+    borderTopColor: colorAttribute,
     removeClippedSubviews: true,
     borderTopRightRadius: true,
-    borderLeftColor: {
-      process: require('../../StyleSheet/processColor').default,
-    },
+    borderLeftColor: colorAttribute,
     pointerEvents: true,
+    scrollsChildToFocus: true,
   },
 };
 

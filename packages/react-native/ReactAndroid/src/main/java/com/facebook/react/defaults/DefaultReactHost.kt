@@ -71,43 +71,45 @@ public object DefaultReactHost {
       exceptionHandler: (Exception) -> Unit = { throw it },
       bindingsInstaller: BindingsInstaller? = null,
   ): ReactHost {
-    if (reactHost == null) {
-
-      val bundleLoader =
-          if (jsBundleFilePath != null) {
-            if (jsBundleFilePath.startsWith("assets://")) {
-              JSBundleLoader.createAssetLoader(context, jsBundleFilePath, true)
-            } else {
-              JSBundleLoader.createFileLoader(jsBundleFilePath)
-            }
-          } else {
-            JSBundleLoader.createAssetLoader(context, "assets://$jsBundleAssetPath", true)
-          }
-      val defaultTmmDelegateBuilder = DefaultTurboModuleManagerDelegate.Builder()
-      cxxReactPackageProviders.forEach { defaultTmmDelegateBuilder.addCxxReactPackage(it) }
-      val defaultReactHostDelegate =
-          DefaultReactHostDelegate(
-              jsMainModulePath = jsMainModulePath,
-              jsBundleLoader = bundleLoader,
-              reactPackages = packageList,
-              jsRuntimeFactory = jsRuntimeFactory ?: HermesInstance(),
-              bindingsInstaller = bindingsInstaller,
-              turboModuleManagerDelegateBuilder = defaultTmmDelegateBuilder,
-              exceptionHandler = exceptionHandler,
-          )
-      val componentFactory = ComponentFactory()
-      DefaultComponentsRegistry.register(componentFactory)
-      // TODO: T164788699 find alternative of accessing ReactHostImpl for initialising reactHost
-      reactHost =
-          ReactHostImpl(
-              context,
-              defaultReactHostDelegate,
-              componentFactory,
-              true /* allowPackagerServerAccess */,
-              useDevSupport,
-          )
+    reactHost?.let {
+      return it
     }
-    return reactHost as ReactHost
+
+    val bundleLoader =
+        if (jsBundleFilePath != null) {
+          if (jsBundleFilePath.startsWith("assets://")) {
+            JSBundleLoader.createAssetLoader(context, jsBundleFilePath, true)
+          } else {
+            JSBundleLoader.createFileLoader(jsBundleFilePath)
+          }
+        } else {
+          JSBundleLoader.createAssetLoader(context, "assets://$jsBundleAssetPath", true)
+        }
+    val defaultTmmDelegateBuilder = DefaultTurboModuleManagerDelegate.Builder()
+    cxxReactPackageProviders.forEach { defaultTmmDelegateBuilder.addCxxReactPackage(it) }
+    val defaultReactHostDelegate =
+        DefaultReactHostDelegate(
+            jsMainModulePath = jsMainModulePath,
+            jsBundleLoader = bundleLoader,
+            reactPackages = packageList,
+            jsRuntimeFactory = jsRuntimeFactory ?: HermesInstance(),
+            bindingsInstaller = bindingsInstaller,
+            turboModuleManagerDelegateBuilder = defaultTmmDelegateBuilder,
+            exceptionHandler = exceptionHandler,
+        )
+    val componentFactory = ComponentFactory()
+    DefaultComponentsRegistry.register(componentFactory)
+    // TODO: T164788699 find alternative of accessing ReactHostImpl for initialising reactHost
+    val newReactHost =
+        ReactHostImpl(
+            context,
+            defaultReactHostDelegate,
+            componentFactory,
+            true /* allowPackagerServerAccess */,
+            useDevSupport,
+        )
+    reactHost = newReactHost
+    return newReactHost
   }
 
   /**

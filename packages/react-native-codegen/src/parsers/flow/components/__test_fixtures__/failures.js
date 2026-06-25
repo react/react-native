@@ -43,9 +43,9 @@ export const Commands = codegenNativeCommands<{
   supportedCommands: ['hotspotUpdate'],
 });
 
-export default (codegenNativeComponent<ModuleProps>(
+export default codegenNativeComponent<ModuleProps>(
   'Module',
-): HostComponent<ModuleProps>);
+) as HostComponent<ModuleProps>;
 `;
 
 const COMMANDS_DEFINED_MULTIPLE_TIMES = `
@@ -84,9 +84,9 @@ export const Commands2 = codegenNativeCommands<NativeCommands>({
   supportedCommands: ['hotspotUpdate'],
 });
 
-export default (codegenNativeComponent<ModuleProps>(
+export default codegenNativeComponent<ModuleProps>(
   'Module',
-): HostComponent<ModuleProps>);
+) as HostComponent<ModuleProps>;
 `;
 
 const COMMANDS_DEFINED_WITHOUT_REF = `
@@ -122,9 +122,9 @@ export const Commands = codegenNativeCommands<NativeCommands>({
   supportedCommands: ['hotspotUpdate'],
 });
 
-export default (codegenNativeComponent<ModuleProps>(
+export default codegenNativeComponent<ModuleProps>(
   'Module',
-): HostComponent<ModuleProps>);
+) as HostComponent<ModuleProps>;
 `;
 
 const COMMANDS_DEFINED_WITH_NULLABLE_REF = `
@@ -160,9 +160,9 @@ export const Commands = codegenNativeCommands<NativeCommands>({
   supportedCommands: ['hotspotUpdate'],
 });
 
-export default (codegenNativeComponent<ModuleProps>(
+export default codegenNativeComponent<ModuleProps>(
   'Module',
-): HostComponent<ModuleProps>);
+) as HostComponent<ModuleProps>;
 `;
 
 const COMMANDS_DEFINED_WITH_MISMATCHED_METHOD_NAMES = `
@@ -203,9 +203,9 @@ export const Commands = codegenNativeCommands<NativeCommands>({
   supportedCommands: ['scrollTo'],
 });
 
-export default (codegenNativeComponent<ModuleProps>(
+export default codegenNativeComponent<ModuleProps>(
   'Module',
-): HostComponent<ModuleProps>);
+) as HostComponent<ModuleProps>;
 `;
 
 const COMMANDS_DEFINED_WITHOUT_METHOD_NAMES = `
@@ -244,9 +244,9 @@ export type ModuleProps = $ReadOnly<{|
 
 export const Commands = codegenNativeCommands<NativeCommands>();
 
-export default (codegenNativeComponent<ModuleProps>(
+export default codegenNativeComponent<ModuleProps>(
   'Module',
-): HostComponent<ModuleProps>);
+) as HostComponent<ModuleProps>;
 `;
 
 const NULLABLE_WITH_DEFAULT = `
@@ -273,9 +273,9 @@ export type ModuleProps = $ReadOnly<{|
   nullable_with_default: ?WithDefault<Float, 1.0>,
 |}>;
 
-export default (codegenNativeComponent<ModuleProps>(
+export default codegenNativeComponent<ModuleProps>(
   'Module',
-): HostComponent<ModuleProps>);
+) as HostComponent<ModuleProps>;
 `;
 
 const NON_OPTIONAL_KEY_WITH_DEFAULT_VALUE = `
@@ -302,9 +302,9 @@ export type ModuleProps = $ReadOnly<{|
   required_key_with_default: WithDefault<Float, 1.0>,
 |}>;
 
-export default (codegenNativeComponent<ModuleProps>(
+export default codegenNativeComponent<ModuleProps>(
   'Module',
-): HostComponent<ModuleProps>);
+) as HostComponent<ModuleProps>;
 `;
 
 const PROPS_CONFLICT_NAMES = `
@@ -332,9 +332,9 @@ export type ModuleProps = $ReadOnly<{|
   isEnabled: boolean,
 |}>;
 
-export default (codegenNativeComponent<ModuleProps>(
+export default codegenNativeComponent<ModuleProps>(
   'Module',
-): HostComponent<ModuleProps>);
+) as HostComponent<ModuleProps>;
 `;
 
 const PROPS_CONFLICT_WITH_SPREAD_PROPS = `
@@ -366,9 +366,9 @@ export type ModuleProps = $ReadOnly<{|
   isEnabled: boolean,
 |}>;
 
-export default (codegenNativeComponent<ModuleProps>(
+export default codegenNativeComponent<ModuleProps>(
   'Module',
-): HostComponent<ModuleProps>);
+) as HostComponent<ModuleProps>;
 `;
 
 const PROPS_SPREAD_CONFLICTS_WITH_PROPS = `
@@ -400,9 +400,9 @@ export type ModuleProps = $ReadOnly<{|
   ...PropsInFile,
 |}>;
 
-export default (codegenNativeComponent<ModuleProps>(
+export default codegenNativeComponent<ModuleProps>(
   'Module',
-): HostComponent<ModuleProps>);
+) as HostComponent<ModuleProps>;
 `;
 
 const PROP_NUMBER_TYPE = `
@@ -429,9 +429,9 @@ export type ModuleProps = $ReadOnly<{|
   someProp: number
 |}>;
 
-export default (codegenNativeComponent<ModuleProps>(
+export default codegenNativeComponent<ModuleProps>(
   'Module',
-): HostComponent<ModuleProps>);
+) as HostComponent<ModuleProps>;
 `;
 
 const PROP_MIXED_ENUM = `
@@ -458,9 +458,9 @@ export type ModuleProps = $ReadOnly<{|
   someProp?: WithDefault<'foo' | 1, 1>
 |}>;
 
-export default (codegenNativeComponent<ModuleProps>(
+export default codegenNativeComponent<ModuleProps>(
   'Module',
-): HostComponent<ModuleProps>);
+) as HostComponent<ModuleProps>;
 `;
 
 const PROP_ENUM_BOOLEAN = `
@@ -487,9 +487,9 @@ export type ModuleProps = $ReadOnly<{|
   someProp?: WithDefault<false | true, false>
 |}>;
 
-export default (codegenNativeComponent<ModuleProps>(
+export default codegenNativeComponent<ModuleProps>(
   'Module',
-): HostComponent<ModuleProps>);
+) as HostComponent<ModuleProps>;
 `;
 
 const PROP_ARRAY_MIXED_ENUM = `
@@ -516,9 +516,9 @@ export type ModuleProps = $ReadOnly<{|
   someProp?: WithDefault<$ReadOnlyArray<'foo' | 1>, 1>
 |}>;
 
-export default (codegenNativeComponent<ModuleProps>(
+export default codegenNativeComponent<ModuleProps>(
   'Module',
-): HostComponent<ModuleProps>);
+) as HostComponent<ModuleProps>;
 `;
 
 const PROP_ARRAY_ENUM_BOOLEAN = `
@@ -545,9 +545,9 @@ export type ModuleProps = $ReadOnly<{|
   someProp?: WithDefault<$ReadOnlyArray<false | true>, false>
 |}>;
 
-export default (codegenNativeComponent<ModuleProps>(
+export default codegenNativeComponent<ModuleProps>(
   'Module',
-): HostComponent<ModuleProps>);
+) as HostComponent<ModuleProps>;
 `;
 
 const PROP_ARRAY_ENUM_INT = `
@@ -574,9 +574,9 @@ export type ModuleProps = $ReadOnly<{|
   someProp?: WithDefault<$ReadOnlyArray<0 | 1>, 0>
 |}>;
 
-export default (codegenNativeComponent<ModuleProps>(
+export default codegenNativeComponent<ModuleProps>(
   'Module',
-): HostComponent<ModuleProps>);
+) as HostComponent<ModuleProps>;
 `;
 
 module.exports = {

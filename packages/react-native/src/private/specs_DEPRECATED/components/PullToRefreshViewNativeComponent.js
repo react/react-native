@@ -21,7 +21,7 @@ import codegenNativeCommands from '../../../../Libraries/Utilities/codegenNative
 import codegenNativeComponent from '../../../../Libraries/Utilities/codegenNativeComponent';
 import * as React from 'react';
 
-type PullToRefreshNativeProps = $ReadOnly<{
+type PullToRefreshNativeProps = Readonly<{
   ...ViewProps,
 
   /**
@@ -55,7 +55,7 @@ type PullToRefreshNativeProps = $ReadOnly<{
 type ComponentType = HostComponent<PullToRefreshNativeProps>;
 
 interface NativeCommands {
-  +setNativeRefreshing: (
+  readonly setNativeRefreshing: (
     viewRef: React.ElementRef<ComponentType>,
     refreshing: boolean,
   ) => void;
@@ -65,10 +65,10 @@ export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
   supportedCommands: ['setNativeRefreshing'],
 });
 
-export default (codegenNativeComponent<PullToRefreshNativeProps>(
+export default codegenNativeComponent<PullToRefreshNativeProps>(
   'PullToRefreshView',
   {
     paperComponentName: 'RCTRefreshControl',
     excludedPlatforms: ['android'],
   },
-): HostComponent<PullToRefreshNativeProps>);
+) as HostComponent<PullToRefreshNativeProps>;

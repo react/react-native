@@ -108,7 +108,9 @@
   _tableView.delegate = self;
   _tableView.dataSource = self;
   _tableView.backgroundColor = [UIColor colorWithRed:0.8 green:0 blue:0 alpha:1];
+#if !TARGET_OS_TV
   _tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+#endif
   _tableView.indicatorStyle = UIScrollViewIndicatorStyleWhite;
   _tableView.allowsSelection = NO;
   [self.view addSubview:_tableView];

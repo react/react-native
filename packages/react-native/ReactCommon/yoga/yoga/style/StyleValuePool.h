@@ -121,6 +121,16 @@ class StyleValuePool {
     }
   }
 
+  float getStoredValue(StyleValueHandle handle) const {
+    assert(
+        handle.type() == StyleValueHandle::Type::Point ||
+        handle.type() == StyleValueHandle::Type::Percent ||
+        handle.type() == StyleValueHandle::Type::Number);
+    return handle.isValueIndexed()
+        ? std::bit_cast<float>(buffer_.get32(handle.value()))
+        : unpackInlineInteger(handle.value());
+  }
+
  private:
   void storeValue(
       StyleValueHandle& handle,

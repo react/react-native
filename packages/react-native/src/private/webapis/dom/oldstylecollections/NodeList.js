@@ -22,7 +22,7 @@ import {setPlatformObject} from '../../webidl/PlatformObjects';
 // IMPORTANT: The Flow type definition for this module is defined in `NodeList.js.flow`
 // because Flow only supports indexers in classes in declaration files.
 
-const REUSABLE_PROPERTY_DESCRIPTOR: {...PropertyDescriptor<mixed>, ...} = {
+const REUSABLE_PROPERTY_DESCRIPTOR: {...PropertyDescriptor<unknown>, ...} = {
   value: {},
   writable: false,
 };
@@ -37,7 +37,7 @@ export default class NodeList<T> implements Iterable<T>, ArrayLike<T> {
    * @private This is not defined in the declaration file, so users will not see
    *          the signature of the constructor.
    */
-  constructor(elements: $ReadOnlyArray<T>) {
+  constructor(elements: ReadonlyArray<T>) {
     for (let i = 0; i < elements.length; i++) {
       REUSABLE_PROPERTY_DESCRIPTOR.value = elements[i];
       Object.defineProperty(this, i, REUSABLE_PROPERTY_DESCRIPTOR);
@@ -66,7 +66,7 @@ export default class NodeList<T> implements Iterable<T>, ArrayLike<T> {
   }
 
   forEach<ThisType>(
-    callbackFn: (value: T, index: number, array: NodeList<T>) => mixed,
+    callbackFn: (value: T, index: number, array: NodeList<T>) => unknown,
     thisArg?: ThisType,
   ): void {
     // assigning to the interface allows us to access the indexer property in a
@@ -105,6 +105,16 @@ setPlatformObject(NodeList);
  * We can do that because the external definition of `NodeList` lives in
  * `NodeList.js.flow`, not here.
  */
-export function createNodeList<T>(elements: $ReadOnlyArray<T>): NodeList<T> {
+export function createNodeList<T>(elements: ReadonlyArray<T>): NodeList<T> {
   return new NodeList(elements);
 }
+
+export const NodeList_public: typeof NodeList =
+  /* eslint-disable no-shadow */
+  // $FlowExpectedError[incompatible-type]
+  function NodeList() {
+    throw new TypeError("Failed to construct 'NodeList': Illegal constructor");
+  };
+
+// $FlowExpectedError[prop-missing]
+NodeList_public.prototype = NodeList.prototype;

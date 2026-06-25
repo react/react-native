@@ -1,0 +1,8 @@
+template <typename T = int>
+class test::Derived : public test::Base<T> {
+}
+
+template <typename T>
+class test::Base {
+  public T value;
+}

@@ -146,6 +146,8 @@ internal object RequestBodyUtil {
         }
       }
 
+      override fun isOneShot(): Boolean = true
+
       @Throws(IOException::class)
       override fun writeTo(sink: BufferedSink) {
         var source: Source? = null

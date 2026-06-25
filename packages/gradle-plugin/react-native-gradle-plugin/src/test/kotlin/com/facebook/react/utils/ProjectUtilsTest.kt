@@ -14,7 +14,6 @@ import com.facebook.react.tests.createProject
 import com.facebook.react.utils.ProjectUtils.getReactNativeArchitectures
 import com.facebook.react.utils.ProjectUtils.isEdgeToEdgeEnabled
 import com.facebook.react.utils.ProjectUtils.isHermesEnabled
-import com.facebook.react.utils.ProjectUtils.isHermesV1Enabled
 import com.facebook.react.utils.ProjectUtils.isNewArchEnabled
 import com.facebook.react.utils.ProjectUtils.needsCodegenFromPackageJson
 import java.io.File
@@ -114,32 +113,6 @@ class ProjectUtilsTest {
     val project = createProject()
     project.extensions.extraProperties.set("edgeToEdgeEnabled", "¯\\_(ツ)_/¯")
     assertThat(project.isEdgeToEdgeEnabled).isFalse()
-  }
-
-  @Test
-  fun isHermesV1Enabled_returnsFalseByDefault() {
-    assertThat(createProject().isHermesV1Enabled).isFalse()
-  }
-
-  @Test
-  fun isHermesV1Enabled_withDisabledViaProperty_returnsFalse() {
-    val project = createProject()
-    project.extensions.extraProperties.set("hermesV1Enabled", "false")
-    assertThat(project.isHermesV1Enabled).isFalse()
-  }
-
-  @Test
-  fun isHermesV1Enabled_withEnabledViaProperty_returnsTrue() {
-    val project = createProject()
-    project.extensions.extraProperties.set("hermesV1Enabled", "true")
-    assertThat(project.isHermesV1Enabled).isTrue()
-  }
-
-  @Test
-  fun isHermesV1Enabled_withInvalidViaProperty_returnsFalse() {
-    val project = createProject()
-    project.extensions.extraProperties.set("hermesV1Enabled", "¯\\_(ツ)_/¯")
-    assertThat(project.isHermesV1Enabled).isFalse()
   }
 
   @Test

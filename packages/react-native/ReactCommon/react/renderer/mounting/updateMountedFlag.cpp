@@ -29,6 +29,25 @@ void updateMountedFlag(
     return;
   }
 
+  // Mounted flags shouldn't be updated during the React revision merge
+  // because they were already set during the React branch commit. Setting them
+  // again would double-increment the EventEmitter's additive enable counter.
+  bool shouldUpdateMountedFlag =
+      commitSource != ShadowTreeCommitSource::ReactRevisionMerge;
+
+  // Runtime shadow node references are updated during the React revision
+  // commits so that JS can access layout data from the merged tree.
+  bool shouldUpdateRuntimeReference =
+      (commitSource == ShadowTreeCommitSource::React &&
+       ReactNativeFeatureFlags::updateRuntimeShadowNodeReferencesOnCommit()) ||
+      (ReactNativeFeatureFlags::
+           updateRuntimeShadowNodeReferencesOnCommitThread() &&
+       ShadowNode::getUseRuntimeShadowNodeReferenceUpdateOnThread());
+
+  if (!shouldUpdateMountedFlag && !shouldUpdateRuntimeReference) {
+    return;
+  }
+
   size_t index = 0;
 
   // Stage 1: Mount and unmount "updated" children.
@@ -47,11 +66,12 @@ void updateMountedFlag(
       break;
     }
 
-    newChild->setMounted(true);
-    oldChild->setMounted(false);
+    if (shouldUpdateMountedFlag) {
+      newChild->setMounted(true);
+      oldChild->setMounted(false);
+    }
 
-    if (commitSource == ShadowTreeCommitSource::React &&
-        ReactNativeFeatureFlags::updateRuntimeShadowNodeReferencesOnCommit()) {
+    if (shouldUpdateRuntimeReference) {
       newChild->updateRuntimeShadowNodeReference(newChild);
     }
 
@@ -64,10 +84,12 @@ void updateMountedFlag(
   // State 2: Mount new children.
   for (index = lastIndexAfterFirstStage; index < newChildren.size(); index++) {
     const auto& newChild = newChildren[index];
-    newChild->setMounted(true);
 
-    if (commitSource == ShadowTreeCommitSource::React &&
-        ReactNativeFeatureFlags::updateRuntimeShadowNodeReferencesOnCommit()) {
+    if (shouldUpdateMountedFlag) {
+      newChild->setMounted(true);
+    }
+
+    if (shouldUpdateRuntimeReference) {
       newChild->updateRuntimeShadowNodeReference(newChild);
     }
 
@@ -75,10 +97,14 @@ void updateMountedFlag(
   }
 
   // State 3: Unmount old children.
-  for (index = lastIndexAfterFirstStage; index < oldChildren.size(); index++) {
-    const auto& oldChild = oldChildren[index];
-    oldChild->setMounted(false);
-    updateMountedFlag(oldChild->getChildren(), {}, commitSource);
+  if (shouldUpdateMountedFlag) {
+    for (index = lastIndexAfterFirstStage; index < oldChildren.size();
+         index++) {
+      const auto& oldChild = oldChildren[index];
+      oldChild->setMounted(false);
+
+      updateMountedFlag(oldChild->getChildren(), {}, commitSource);
+    }
   }
 }
 } // namespace facebook::react

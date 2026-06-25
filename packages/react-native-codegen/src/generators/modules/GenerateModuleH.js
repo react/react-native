@@ -68,7 +68,6 @@ function serializeArg(
 
     // param?: T
     if (optional && !nullable) {
-      // throw new Error('are we hitting this case? ' + moduleName);
       return `count <= ${index} || ${val}.isUndefined() ? std::nullopt : std::make_optional(${expression})`;
     }
 
@@ -88,7 +87,7 @@ function serializeArg(
         case 'RootTag':
           return wrap(val => `${val}.asNumber()`);
         default:
-          (realTypeAnnotation.name: empty);
+          realTypeAnnotation.name as empty;
           throw new Error(
             `Unknown prop type for "${arg.name}, found: ${realTypeAnnotation.name}"`,
           );
@@ -140,15 +139,17 @@ function serializeArg(
         case 'string':
           return wrap(val => `${val}.asString(rt)`);
         default:
-          (validUnionType: empty);
+          validUnionType as empty;
           throw new Error(`Unsupported union member type`);
       }
     case 'ObjectTypeAnnotation':
       return wrap(val => `${val}.asObject(rt)`);
     case 'MixedTypeAnnotation':
       return wrap(val => `jsi::Value(rt, ${val})`);
+    case 'ArrayBufferTypeAnnotation':
+      return wrap(val => `${val}.asObject(rt).getArrayBuffer(rt)`);
     default:
-      (realTypeAnnotation.type: empty);
+      realTypeAnnotation.type as empty;
       throw new Error(
         `Unknown prop type for "${arg.name}, found: ${realTypeAnnotation.type}"`,
       );
@@ -163,14 +164,14 @@ const ModuleSpecClassDeclarationTemplate = ({
   moduleEventEmitters,
   moduleFunctions,
   methods,
-}: $ReadOnly<{
+}: Readonly<{
   hasteModuleName: string,
   moduleName: string,
   structs: string,
   enums: string,
   moduleEventEmitters: EventEmitterCpp[],
   moduleFunctions: string[],
-  methods: $ReadOnlyArray<$ReadOnly<{methodName: string, paramCount: number}>>,
+  methods: ReadonlyArray<Readonly<{methodName: string, paramCount: number}>>,
 }>) => {
   return `${enums}${structs}
 template <typename T>
@@ -196,7 +197,7 @@ ${moduleFunctions.join('\n\n')}
 
 const FileTemplate = ({
   modules,
-}: $ReadOnly<{
+}: Readonly<{
   modules: string[],
 }>) => {
   return `/**
@@ -249,7 +250,7 @@ function translatePrimitiveJSTypeToCpp(
         case 'RootTag':
           return wrapOptional('double', isRequired);
         default:
-          (realTypeAnnotation.name: empty);
+          realTypeAnnotation.name as empty;
           throw new Error(createErrorMessage(realTypeAnnotation.name));
       }
     case 'VoidTypeAnnotation':
@@ -295,7 +296,7 @@ function translatePrimitiveJSTypeToCpp(
         case 'string':
           return wrapOptional('jsi::String', isRequired);
         default:
-          (validUnionType: empty);
+          validUnionType as empty;
           throw new Error(`Unsupported union member type`);
       }
     case 'ObjectTypeAnnotation':
@@ -308,8 +309,10 @@ function translatePrimitiveJSTypeToCpp(
       return wrapOptional('jsi::Value', isRequired);
     case 'MixedTypeAnnotation':
       return wrapOptional('jsi::Value', isRequired);
+    case 'ArrayBufferTypeAnnotation':
+      return wrapOptional('jsi::ArrayBuffer', isRequired);
     default:
-      (realTypeAnnotation.type: empty);
+      realTypeAnnotation.type as empty;
       throw new Error(createErrorMessage(realTypeAnnotation.type));
   }
 }
@@ -504,7 +507,7 @@ function getMemberValueAppearance(member: NativeModuleEnumMember['value']) {
 function generateEnum(
   hasteModuleName: string,
   origEnumName: string,
-  members: $ReadOnlyArray<NativeModuleEnumMember>,
+  members: ReadonlyArray<NativeModuleEnumMember>,
   memberType: NativeModuleEnumMemberType,
 ): string {
   const enumName = getEnumName(hasteModuleName, origEnumName);
@@ -538,7 +541,15 @@ function generateEnum(
 
   return EnumTemplate({
     enumName,
-    values: members.map(member => toSafeCppString(member.name)).join(', '),
+    values: members
+      .map(member => {
+        const name = toSafeCppString(member.name);
+        if (Number.isInteger(member.value.value)) {
+          return `${name} = ${member.value.value}`;
+        }
+        return name;
+      })
+      .join(', '),
     fromCases,
     toCases,
     nativeEnumMemberType,

@@ -23,7 +23,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 
-function ScrollViewIndicatorInsetsExample(): React.Node {
+component ScrollViewIndicatorInsetsExample() {
   const [
     automaticallyAdjustsScrollIndicatorInsets,
     setAutomaticallyAdjustsScrollIndicatorInsets,

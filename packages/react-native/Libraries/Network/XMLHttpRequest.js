@@ -14,7 +14,6 @@ import type {
   EventCallback,
   EventListener,
 } from '../../src/private/webapis/dom/events/EventTarget';
-import type {IPerformanceLogger} from '../Utilities/createPerformanceLogger';
 
 import Event from '../../src/private/webapis/dom/events/Event';
 import {
@@ -27,8 +26,6 @@ import ProgressEvent from '../../src/private/webapis/xhr/events/ProgressEvent';
 import {type EventSubscription} from '../vendor/emitter/EventEmitter';
 
 const BlobManager = require('../Blob/BlobManager').default;
-const GlobalPerformanceLogger =
-  require('../Utilities/GlobalPerformanceLogger').default;
 const RCTNetworking = require('./RCTNetworking').default;
 const base64 = require('base64-js');
 const invariant = require('invariant');
@@ -56,6 +53,17 @@ type XHRInterceptor = interface {
   dataReceived(id: number, data: string): void,
   loadingFinished(id: number, encodedDataLength: number): void,
   loadingFailed(id: number, error: string): void,
+};
+
+/**
+ * Minimal contract for the optional performance logger that callers may attach
+ * via `setPerformanceLogger(...)`. Defined locally so this module stays
+ * self-contained and does not depend on any specific logger implementation.
+ * Any object satisfying these two methods structurally is accepted.
+ */
+type XHRPerformanceLogger = interface {
+  startTimespan(key: string): void,
+  stopTimespan(key: string): void,
 };
 
 // The native blob module is optional so inject it here if available.
@@ -167,8 +175,7 @@ class XMLHttpRequest extends EventTarget {
   _timedOut: boolean = false;
   _trackingName: ?string;
   _incrementalEvents: boolean = false;
-  _startTime: ?number = null;
-  _performanceLogger: IPerformanceLogger = GlobalPerformanceLogger;
+  _performanceLogger: ?XHRPerformanceLogger = null;
 
   static __setInterceptor_DO_NOT_USE(interceptor: ?XHRInterceptor) {
     XMLHttpRequest._interceptor = interceptor;
@@ -284,7 +291,7 @@ class XMLHttpRequest extends EventTarget {
       case 'json':
         try {
           this._cachedResponse = JSON.parse(this._response);
-        } catch (_) {
+        } catch {
           this._cachedResponse = null;
         }
         break;
@@ -334,8 +341,10 @@ class XMLHttpRequest extends EventTarget {
     responseURL: ?string,
   ): void {
     if (requestId === this._requestId) {
-      this._perfKey != null &&
-        this._performanceLogger.stopTimespan(this._perfKey);
+      const performanceLogger = this._performanceLogger;
+      if (this._perfKey != null && performanceLogger != null) {
+        performanceLogger.stopTimespan(this._perfKey);
+      }
       this.status = status;
       this.setResponseHeaders(responseHeaders);
       this.setReadyState(this.HEADERS_RECEIVED);
@@ -521,9 +530,15 @@ class XMLHttpRequest extends EventTarget {
   }
 
   /**
-   * Custom extension for setting a custom performance logger
+   * Custom extension that lets callers attach a performance logger receiving
+   * a `network_XMLHttpRequest_<friendlyName>` start/stop timespan around each
+   * dispatched request. The logger only needs to implement
+   * `startTimespan(key)` / `stopTimespan(key)` (see the `XHRPerformanceLogger`
+   * interface above). When no logger is set the timespan is not emitted.
    */
-  setPerformanceLogger(performanceLogger: IPerformanceLogger): XMLHttpRequest {
+  setPerformanceLogger(
+    performanceLogger: XHRPerformanceLogger,
+  ): XMLHttpRequest {
     this._performanceLogger = performanceLogger;
     return this;
   }
@@ -598,9 +613,11 @@ class XMLHttpRequest extends EventTarget {
 
     const doSend = () => {
       const friendlyName = this._trackingName ?? this._url;
-      this._perfKey = 'network_XMLHttpRequest_' + String(friendlyName);
-      this._performanceLogger.startTimespan(this._perfKey);
-      this._startTime = performance.now();
+      const performanceLogger = this._performanceLogger;
+      if (performanceLogger != null) {
+        this._perfKey = 'network_XMLHttpRequest_' + String(friendlyName);
+        performanceLogger.startTimespan(this._perfKey);
+      }
       invariant(
         this._method,
         'XMLHttpRequest method needs to be defined (%s).',

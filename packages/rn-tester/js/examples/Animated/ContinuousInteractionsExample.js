@@ -15,7 +15,7 @@ import * as React from 'react';
 import {useContext} from 'react';
 import {Text} from 'react-native';
 
-function AnimatedContinuousInteractionsExample(): React.Node {
+component AnimatedContinuousInteractionsExample() {
   const theme = useContext(RNTesterThemeContext);
   return (
     <Text style={{color: theme.SecondaryLabelColor}}>
@@ -24,13 +24,13 @@ function AnimatedContinuousInteractionsExample(): React.Node {
   );
 }
 
-export default ({
+export default {
   title: 'Continuous Interactions',
   name: 'continuousInteractions',
   description: ('Gesture events, chaining, 2D ' +
     'values, interrupting and transitioning ' +
-    'animations, etc.': string),
+    'animations, etc.') as string,
   render() {
     return <AnimatedContinuousInteractionsExample />;
   },
-}: RNTesterModuleExample);
+} as RNTesterModuleExample;

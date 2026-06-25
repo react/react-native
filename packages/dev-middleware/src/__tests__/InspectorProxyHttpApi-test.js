@@ -12,8 +12,8 @@ import type {
   JsonPagesListResponse,
   JsonVersionResponse,
 } from '../inspector-proxy/types';
+import type {DevToolLauncher} from '../types/DevToolLauncher';
 
-import DefaultBrowserLauncher from '../utils/DefaultBrowserLauncher';
 import {fetchJson, requestLocal} from './FetchUtils';
 import {createDeviceMock} from './InspectorDeviceUtils';
 import {withAbortSignalForEachTest} from './ResourceUtils';
@@ -24,9 +24,19 @@ const PAGES_POLLING_DELAY = 2100;
 
 jest.useFakeTimers();
 
+const mockDevToolLauncher: DevToolLauncher = {
+  launchDebuggerAppWindow: jest
+    .fn<[string], Promise<void>>()
+    .mockImplementation(() => Promise.resolve()),
+};
+
 describe('inspector proxy HTTP API', () => {
   const serverRef = withServerForEachTest({
     logger: undefined,
+    unstable_experiments: {
+      enableStandaloneFuseboxShell: false,
+    },
+    unstable_toolLauncher: mockDevToolLauncher,
   });
   const autoCleanup = withAbortSignalForEachTest();
   afterEach(() => {
@@ -189,7 +199,9 @@ describe('inspector proxy HTTP API', () => {
             devtoolsFrontendUrl: expect.any(String),
             id: 'device1-page1',
             reactNative: {
-              capabilities: {},
+              capabilities: {
+                supportsMultipleDebuggers: false,
+              },
               logicalDeviceId: 'device1',
             },
             title: 'bar-title',
@@ -204,7 +216,9 @@ describe('inspector proxy HTTP API', () => {
             devtoolsFrontendUrl: expect.any(String),
             id: 'device2-page1',
             reactNative: {
-              capabilities: {},
+              capabilities: {
+                supportsMultipleDebuggers: false,
+              },
               logicalDeviceId: 'device2',
             },
             title: 'bar-title',
@@ -390,11 +404,6 @@ describe('inspector proxy HTTP API', () => {
       ]);
       jest.advanceTimersByTime(PAGES_POLLING_DELAY);
 
-      // Hook into `DefaultBrowserLauncher.launchDebuggerAppWindow` to ensure debugger was launched
-      const launchDebuggerSpy = jest
-        .spyOn(DefaultBrowserLauncher, 'launchDebuggerAppWindow')
-        .mockResolvedValueOnce();
-
       try {
         // Fetch the target information for the device
         const pageListResponse = await fetchJson<JsonPagesListResponse>(
@@ -419,7 +428,9 @@ describe('inspector proxy HTTP API', () => {
         // Ensure the request was handled properly
         expect(response.statusCode).toBe(200);
         // Ensure the debugger was launched
-        expect(launchDebuggerSpy).toHaveBeenCalledWith(expect.any(String));
+        expect(
+          mockDevToolLauncher.launchDebuggerAppWindow,
+        ).toHaveBeenCalledWith(expect.any(String));
       } finally {
         device.close();
       }

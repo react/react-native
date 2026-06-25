@@ -7,6 +7,8 @@
 
 #pragma once
 
+#ifndef RCT_REMOVE_LEGACY_COMPONENT_INTEROP
+
 #include <react/renderer/components/legacyviewmanagerinterop/LegacyViewManagerInteropViewProps.h>
 #include <react/renderer/components/view/ConcreteViewShadowNode.h>
 
@@ -18,3 +20,5 @@ using LegacyViewManagerAndroidInteropShadowNode =
     ConcreteViewShadowNode<LegacyViewManagerAndroidInteropComponentName, LegacyViewManagerInteropViewProps>;
 
 } // namespace facebook::react
+
+#endif // RCT_REMOVE_LEGACY_COMPONENT_INTEROP

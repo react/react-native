@@ -83,7 +83,6 @@ class ParagraphAttributes : public DebugStringConvertible {
   std::optional<TextAlignmentVertical> textAlignVertical{};
 
   bool operator==(const ParagraphAttributes &rhs) const;
-  bool operator!=(const ParagraphAttributes &rhs) const;
 
 #pragma mark - DebugStringConvertible
 

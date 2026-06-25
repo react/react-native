@@ -117,12 +117,6 @@ LazyIterator<T, U> operator+(typename LazyIterator<T, U>::difference_type n, con
 }
 
 template <typename T, typename U>
-bool operator!=(const LazyIterator<T, U> &a, const LazyIterator<T, U> &b)
-{
-  return !(a == b);
-}
-
-template <typename T, typename U>
 bool operator<=(const LazyIterator<T, U> &a, const LazyIterator<T, U> &b)
 {
   return a < b || a == b;

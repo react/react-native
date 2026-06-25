@@ -20,7 +20,7 @@ const Result = {
 } as const;
 
 type Output = {
-  result: $Values<typeof Result>,
+  result: Values<typeof Result>,
   changedApis: Array<string>,
 };
 

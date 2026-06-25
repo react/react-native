@@ -12,7 +12,10 @@
 #include <react/nativemodule/idlecallbacks/NativeIdleCallbacks.h>
 #include <react/nativemodule/intersectionobserver/NativeIntersectionObserver.h>
 #include <react/nativemodule/microtasks/NativeMicrotasks.h>
+#include <react/nativemodule/mutationobserver/NativeMutationObserver.h>
+#include <react/nativemodule/viewtransition/NativeViewTransition.h>
 #include <react/nativemodule/webperformance/NativePerformance.h>
+#include <react/renderer/animated/AnimatedModule.h>
 
 #ifdef REACT_NATIVE_DEBUGGER_ENABLED_DEVONLY
 #include <react/nativemodule/devtoolsruntimesettings/DevToolsRuntimeSettingsModule.h>
@@ -39,16 +42,39 @@ namespace facebook::react {
     return std::make_shared<NativeDOM>(jsInvoker);
   }
 
-  if (ReactNativeFeatureFlags::enableWebPerformanceAPIsByDefault()) {
-    if (name == NativePerformance::kModuleName) {
-      return std::make_shared<NativePerformance>(jsInvoker);
-    }
+  if (name == NativePerformance::kModuleName) {
+    return std::make_shared<NativePerformance>(jsInvoker);
   }
 
   if (ReactNativeFeatureFlags::enableIntersectionObserverByDefault()) {
     if (name == NativeIntersectionObserver::kModuleName) {
       return std::make_shared<NativeIntersectionObserver>(jsInvoker);
     }
+  }
+
+  if (ReactNativeFeatureFlags::enableMutationObserverByDefault()) {
+    if (name == NativeMutationObserver::kModuleName) {
+      return std::make_shared<NativeMutationObserver>(jsInvoker);
+    }
+  }
+
+  if (ReactNativeFeatureFlags::viewTransitionEnabled()) {
+    if (name == NativeViewTransition::kModuleName) {
+      return std::make_shared<NativeViewTransition>(jsInvoker);
+    }
+  }
+
+  if (ReactNativeFeatureFlags::cxxNativeAnimatedEnabled() &&
+  // on Android, the render loop for AnimatedModule is driven
+  // internally whether or not shared backend is enabled; ios uses
+  // RCTAnimatedModuleProvider.mm to drive the render loop when shared backend
+  // is off
+#ifndef __ANDROID__
+      ReactNativeFeatureFlags::useSharedAnimatedBackend() &&
+#endif
+      name == AnimatedModule::kModuleName) {
+    return std::make_shared<AnimatedModule>(
+        jsInvoker, std::make_shared<NativeAnimatedNodesManagerProvider>());
   }
 
 #ifdef REACT_NATIVE_DEBUGGER_ENABLED_DEVONLY

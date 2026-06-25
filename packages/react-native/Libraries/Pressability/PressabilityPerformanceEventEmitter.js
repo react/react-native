@@ -10,7 +10,7 @@
 
 import {type PressabilityTouchSignal as TouchSignal} from './PressabilityTypes.js';
 
-export type PressabilityPerformanceEvent = $ReadOnly<{
+export type PressabilityPerformanceEvent = Readonly<{
   signal: TouchSignal,
   nativeTimestamp: number,
 }>;

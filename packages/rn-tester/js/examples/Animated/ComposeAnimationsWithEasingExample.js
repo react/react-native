@@ -29,7 +29,7 @@ const styles = StyleSheet.create({
   },
 });
 
-function CompositeAnimationsWithEasingExample(): React.Node {
+component CompositeAnimationsWithEasingExample() {
   const anims = [1, 2, 3].map(() => new Animated.Value(0));
   const theme = useContext(RNTesterThemeContext);
 
@@ -127,12 +127,12 @@ function CompositeAnimationsWithEasingExample(): React.Node {
   );
 }
 
-export default ({
+export default {
   title: 'Composite Animations with Easing',
   name: 'compositeAnimationsWithEasing',
   description: ('Sequence, parallel, delay, and ' +
-    'stagger with different easing functions.': string),
+    'stagger with different easing functions.') as string,
   expect:
     'The 3 views will animate their `left` position based on their animation configurations.',
   render: () => <CompositeAnimationsWithEasingExample />,
-}: RNTesterModuleExample);
+} as RNTesterModuleExample;

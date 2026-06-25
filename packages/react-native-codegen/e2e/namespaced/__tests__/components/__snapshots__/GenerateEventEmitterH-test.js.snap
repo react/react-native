@@ -269,6 +269,7 @@ class EventPropsNativeComponentViewEventEmitter : public ViewEventEmitter {
     switch (value) {
       case OnOrientationChangeOrientation::Landscape: return \\"landscape\\";
       case OnOrientationChangeOrientation::Portrait: return \\"portrait\\";
+      default: return \\"\\";
     }
   }
 

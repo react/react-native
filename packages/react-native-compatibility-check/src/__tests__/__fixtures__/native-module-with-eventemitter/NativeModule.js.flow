@@ -26,6 +26,6 @@ export interface Spec extends TurboModule {
   onSubmit: EventEmitter<ObjectStruct[]>;
 }
 
-export default (TurboModuleRegistry.getEnforcing<Spec>(
+export default TurboModuleRegistry.getEnforcing<Spec>(
   'NativeModuleTest',
-): Spec);
+) as Spec;

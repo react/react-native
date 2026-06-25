@@ -14,7 +14,7 @@ import BaseFlatListExample from './BaseFlatListExample';
 import * as React from 'react';
 import {useState} from 'react';
 
-export function FlatList_inverted(): React.Node {
+export component FlatList_inverted() {
   const [output, setOutput] = useState('inverted false');
   const [exampleProps, setExampleProps] = useState({
     inverted: false,
@@ -37,9 +37,9 @@ export function FlatList_inverted(): React.Node {
   );
 }
 
-export default ({
+export default {
   title: 'Inverted',
   name: 'inverted',
   description: 'Test inverted prop on FlatList',
   render: () => <FlatList_inverted />,
-}: RNTesterModuleExample);
+} as RNTesterModuleExample;

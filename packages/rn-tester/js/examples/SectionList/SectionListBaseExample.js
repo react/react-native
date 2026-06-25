@@ -64,7 +64,7 @@ const Item = ({item, section, separators}) => {
   );
 };
 
-type Props = $ReadOnly<{
+type Props = Readonly<{
   // $FlowFixMe[unclear-type]
   exampleProps: Partial<React.ElementConfig<typeof SectionList<any>>>,
   onTest?: ?() => void,

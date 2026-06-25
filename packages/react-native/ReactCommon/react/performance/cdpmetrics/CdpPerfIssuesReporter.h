@@ -8,7 +8,6 @@
 #pragma once
 
 #include <ReactCommon/RuntimeExecutor.h>
-#include <folly/dynamic.h>
 #include <jsi/jsi.h>
 #include <react/performance/timeline/PerformanceEntry.h>
 #include <react/performance/timeline/PerformanceEntryReporterListeners.h>

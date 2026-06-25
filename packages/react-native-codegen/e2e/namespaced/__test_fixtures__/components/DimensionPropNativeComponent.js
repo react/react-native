@@ -12,13 +12,13 @@ import type {DimensionValue, HostComponent, ViewProps} from 'react-native';
 
 import {codegenNativeComponent} from 'react-native';
 
-type NativeProps = $ReadOnly<{
+type NativeProps = Readonly<{
   ...ViewProps,
 
   // Props
   marginBack?: DimensionValue,
 }>;
 
-export default (codegenNativeComponent<NativeProps>(
+export default codegenNativeComponent<NativeProps>(
   'DimensionPropNativeComponentView',
-): HostComponent<NativeProps>);
+) as HostComponent<NativeProps>;

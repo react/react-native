@@ -13,7 +13,7 @@ declare module 'connect' {
 
   declare export type ServerHandle = HandleFunction | http.Server;
 
-  declare type NextFunction = (err?: mixed) => void;
+  declare type NextFunction = (err?: unknown) => void;
 
   declare export type NextHandleFunction = (
     req: IncomingMessage,

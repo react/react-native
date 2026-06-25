@@ -25,7 +25,7 @@ Pod::Spec.new do |spec|
   spec.dependency "DoubleConversion"
   spec.dependency "glog"
   spec.dependency "fast_float", "8.0.0"
-  spec.dependency "fmt", "11.0.2"
+  spec.dependency "fmt", "12.1.0"
   spec.compiler_flags = '-Wno-documentation -faligned-new'
   spec.source_files = 'folly/String.cpp',
                       'folly/Conv.cpp',

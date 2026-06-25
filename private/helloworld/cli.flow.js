@@ -305,7 +305,7 @@ installAndRun
     await new Listr([
       {
         title: 'Booting simulator',
-        task: (_: mixed, task) => {
+        task: (_: unknown, task) => {
           if (device.state === 'Booted') {
             task.skip('Simulator currently Booted');
           } else {

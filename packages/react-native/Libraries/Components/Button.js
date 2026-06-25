@@ -27,7 +27,8 @@ import View from './View/View';
 import invariant from 'invariant';
 import * as React from 'react';
 
-export type ButtonProps = $ReadOnly<{
+/** @build-types emit-as-interface Uniwind compatibility */
+export type ButtonProps = Readonly<{
   /**
     Text to display inside the button. On Android the given title will be
     converted to the uppercased form.
@@ -38,7 +39,7 @@ export type ButtonProps = $ReadOnly<{
     Handler to be called when the user taps the button. The first function
     argument is an event in form of [GestureResponderEvent](pressevent).
    */
-  onPress?: (event?: GestureResponderEvent) => mixed,
+  onPress?: (event?: GestureResponderEvent) => unknown,
 
   /**
     If `true`, doesn't play system sound on touch.
@@ -147,8 +148,8 @@ export type ButtonProps = $ReadOnly<{
    * Accessibility props.
    */
   accessible?: ?boolean,
-  accessibilityActions?: ?$ReadOnlyArray<AccessibilityActionInfo>,
-  onAccessibilityAction?: ?(event: AccessibilityActionEvent) => mixed,
+  accessibilityActions?: ?ReadonlyArray<AccessibilityActionInfo>,
+  onAccessibilityAction?: ?(event: AccessibilityActionEvent) => unknown,
   accessibilityState?: ?AccessibilityState,
 
   /**
@@ -283,12 +284,18 @@ const NativeTouchable:
   | typeof TouchableOpacity =
   Platform.OS === 'android' ? TouchableNativeFeedback : TouchableOpacity;
 
-type ButtonRef = React.ElementRef<typeof NativeTouchable>;
+export type ButtonInstance = React.ElementRef<typeof NativeTouchable>;
 
 const Button: component(
-  ref?: React.RefSetter<ButtonRef>,
+  ref?: React.RefSetter<ButtonInstance>,
   ...props: ButtonProps
-) = ({ref, ...props}: {ref?: React.RefSetter<ButtonRef>, ...ButtonProps}) => {
+) = ({
+  ref,
+  ...props
+}: {
+  ref?: React.RefSetter<ButtonInstance>,
+  ...ButtonProps,
+}) => {
   const {
     accessibilityLabel,
     accessibilityState,

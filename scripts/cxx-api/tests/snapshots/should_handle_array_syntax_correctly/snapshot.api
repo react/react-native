@@ -1,0 +1,3 @@
+void test::arrayParam(const char name[]);
+void test::arrayParamSized(int values[10]);
+void test::arrayParamUnnamed(const char[]);

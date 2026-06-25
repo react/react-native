@@ -25,6 +25,37 @@
 
 namespace facebook::react {
 
+enum class CSSGradientToKeyword : std::underlying_type_t<CSSKeyword> {
+  To = to_underlying(CSSKeyword::To),
+};
+
+static_assert(CSSDataType<CSSGradientToKeyword>);
+
+enum class CSSGradientDirectionKeyword : std::underlying_type_t<CSSKeyword> {
+  Top = to_underlying(CSSKeyword::Top),
+  Bottom = to_underlying(CSSKeyword::Bottom),
+  Left = to_underlying(CSSKeyword::Left),
+  Right = to_underlying(CSSKeyword::Right),
+};
+
+static_assert(CSSDataType<CSSGradientDirectionKeyword>);
+
+enum class CSSGradientAtKeyword : std::underlying_type_t<CSSKeyword> {
+  At = to_underlying(CSSKeyword::At),
+};
+
+static_assert(CSSDataType<CSSGradientAtKeyword>);
+
+enum class CSSGradientPositionKeyword : std::underlying_type_t<CSSKeyword> {
+  Top = to_underlying(CSSKeyword::Top),
+  Bottom = to_underlying(CSSKeyword::Bottom),
+  Left = to_underlying(CSSKeyword::Left),
+  Right = to_underlying(CSSKeyword::Right),
+  Center = to_underlying(CSSKeyword::Center),
+};
+
+static_assert(CSSDataType<CSSGradientPositionKeyword>);
+
 enum class CSSLinearGradientDirectionKeyword : uint8_t {
   ToTopLeft,
   ToTopRight,
@@ -41,115 +72,81 @@ struct CSSLinearGradientDirection {
 
 template <>
 struct CSSDataTypeParser<CSSLinearGradientDirection> {
-  static constexpr auto consume(CSSSyntaxParser &parser) -> std::optional<CSSLinearGradientDirection>
+  static constexpr auto consume(CSSValueParser &parser) -> std::optional<CSSLinearGradientDirection>
   {
     return parseLinearGradientDirection(parser);
   }
 
  private:
-  static constexpr std::optional<CSSLinearGradientDirection> parseLinearGradientDirection(CSSSyntaxParser &parser)
+  static constexpr std::optional<CSSLinearGradientDirection> parseLinearGradientDirection(CSSValueParser &parser)
   {
-    auto angle = parseNextCSSValue<CSSAngle>(parser);
+    auto angle = parser.parseNextValue<CSSAngle>();
     if (std::holds_alternative<CSSAngle>(angle)) {
       return CSSLinearGradientDirection{std::get<CSSAngle>(angle)};
     }
-    auto toResult = parser.consumeComponentValue<bool>([](const CSSPreservedToken &token) -> bool {
-      return token.type() == CSSTokenType::Ident && fnv1aLowercase(token.stringValue()) == fnv1a("to");
-    });
-
-    if (!toResult) {
+    auto toResult = parser.parseNextValue<CSSGradientToKeyword>();
+    if (!std::holds_alternative<CSSGradientToKeyword>(toResult)) {
       // no direction found, default to 180 degrees (to bottom)
       return CSSLinearGradientDirection{CSSAngle{180.0f}};
     }
 
-    parser.consumeWhitespace();
+    parser.syntaxParser().consumeWhitespace();
 
-    std::optional<CSSKeyword> primaryDir;
-    auto primaryResult = parser.consumeComponentValue<std::optional<CSSKeyword>>(
-        [](const CSSPreservedToken &token) -> std::optional<CSSKeyword> {
-          if (token.type() == CSSTokenType::Ident) {
-            switch (fnv1aLowercase(token.stringValue())) {
-              case fnv1a("top"):
-                return CSSKeyword::Top;
-              case fnv1a("bottom"):
-                return CSSKeyword::Bottom;
-              case fnv1a("left"):
-                return CSSKeyword::Left;
-              case fnv1a("right"):
-                return CSSKeyword::Right;
-            }
-          }
-          return {};
-        });
-
-    if (!primaryResult) {
+    auto primaryResult = parser.parseNextValue<CSSGradientDirectionKeyword>();
+    if (std::holds_alternative<std::monostate>(primaryResult)) {
       return {};
     }
+    auto primaryDir = std::get<CSSGradientDirectionKeyword>(primaryResult);
 
-    primaryDir = primaryResult;
-    parser.consumeWhitespace();
+    parser.syntaxParser().consumeWhitespace();
 
-    std::optional<CSSKeyword> secondaryDir;
-    auto secondaryResult = parser.consumeComponentValue<std::optional<CSSKeyword>>(
-        [&](const CSSPreservedToken &token) -> std::optional<CSSKeyword> {
-          if (token.type() == CSSTokenType::Ident) {
-            auto hash = fnv1aLowercase(token.stringValue());
-            // validate compatible combinations
-            if (primaryDir == CSSKeyword::Top || primaryDir == CSSKeyword::Bottom) {
-              if (hash == fnv1a("left")) {
-                return CSSKeyword::Left;
-              }
-              if (hash == fnv1a("right")) {
-                return CSSKeyword::Right;
-              }
-            }
-            if (primaryDir == CSSKeyword::Left || primaryDir == CSSKeyword::Right) {
-              if (hash == fnv1a("top")) {
-                return CSSKeyword::Top;
-              }
-              if (hash == fnv1a("bottom")) {
-                return CSSKeyword::Bottom;
-              }
-            }
-          }
-          return {};
-        });
-
-    if (secondaryResult) {
-      secondaryDir = secondaryResult;
+    auto secondaryPeek = parser.peekNextValue<CSSGradientDirectionKeyword>();
+    std::optional<CSSGradientDirectionKeyword> secondaryDir;
+    if (std::holds_alternative<CSSGradientDirectionKeyword>(secondaryPeek)) {
+      auto kw = std::get<CSSGradientDirectionKeyword>(secondaryPeek);
+      bool isCompatible = false;
+      if (primaryDir == CSSGradientDirectionKeyword::Top || primaryDir == CSSGradientDirectionKeyword::Bottom) {
+        isCompatible = (kw == CSSGradientDirectionKeyword::Left || kw == CSSGradientDirectionKeyword::Right);
+      } else if (primaryDir == CSSGradientDirectionKeyword::Left || primaryDir == CSSGradientDirectionKeyword::Right) {
+        isCompatible = (kw == CSSGradientDirectionKeyword::Top || kw == CSSGradientDirectionKeyword::Bottom);
+      }
+      if (isCompatible) {
+        parser.parseNextValue<CSSGradientDirectionKeyword>();
+        secondaryDir = kw;
+      }
     }
 
-    if (primaryDir == CSSKeyword::Top) {
-      if (secondaryDir == CSSKeyword::Left) {
+    if (primaryDir == CSSGradientDirectionKeyword::Top) {
+      if (secondaryDir == CSSGradientDirectionKeyword::Left) {
         return CSSLinearGradientDirection{CSSLinearGradientDirectionKeyword::ToTopLeft};
-      } else if (secondaryDir == CSSKeyword::Right) {
+      } else if (secondaryDir == CSSGradientDirectionKeyword::Right) {
         return CSSLinearGradientDirection{CSSLinearGradientDirectionKeyword::ToTopRight};
       } else {
         // "to top" = 0 degrees
         return CSSLinearGradientDirection{CSSAngle{0.0f}};
       }
-    } else if (primaryDir == CSSKeyword::Bottom) {
-      if (secondaryDir == CSSKeyword::Left) {
+    } else if (primaryDir == CSSGradientDirectionKeyword::Bottom) {
+      if (secondaryDir == CSSGradientDirectionKeyword::Left) {
         return CSSLinearGradientDirection{CSSLinearGradientDirectionKeyword::ToBottomLeft};
-      } else if (secondaryDir == CSSKeyword::Right) {
+      } else if (secondaryDir == CSSGradientDirectionKeyword::Right) {
         return CSSLinearGradientDirection{CSSLinearGradientDirectionKeyword::ToBottomRight};
       } else {
         // "to bottom" = 180 degrees
         return CSSLinearGradientDirection{CSSAngle{180.0f}};
       }
-    } else if (primaryDir == CSSKeyword::Left) {
-      if (secondaryDir == CSSKeyword::Top) {
+    } else if (primaryDir == CSSGradientDirectionKeyword::Left) {
+      if (secondaryDir == CSSGradientDirectionKeyword::Top) {
         return CSSLinearGradientDirection{CSSLinearGradientDirectionKeyword::ToTopLeft};
-      } else if (secondaryDir == CSSKeyword::Bottom) {
+      } else if (secondaryDir == CSSGradientDirectionKeyword::Bottom) {
         return CSSLinearGradientDirection{CSSLinearGradientDirectionKeyword::ToBottomLeft};
       } else {
         // "to left" = 270 degrees
         return CSSLinearGradientDirection{CSSAngle{270.0f}};
       }
-    } else if (primaryDir == CSSKeyword::Right) {
-      if (secondaryDir == CSSKeyword::Top) {
+    } else if (primaryDir == CSSGradientDirectionKeyword::Right) {
+      if (secondaryDir == CSSGradientDirectionKeyword::Top) {
         return CSSLinearGradientDirection{CSSLinearGradientDirectionKeyword::ToTopRight};
-      } else if (secondaryDir == CSSKeyword::Bottom) {
+      } else if (secondaryDir == CSSGradientDirectionKeyword::Bottom) {
         return CSSLinearGradientDirection{CSSLinearGradientDirectionKeyword::ToBottomRight};
       } else {
         // "to right" = 90 degrees
@@ -169,23 +166,20 @@ static_assert(CSSDataType<CSSLinearGradientDirection>);
 struct CSSColorHint {
   std::variant<CSSLength, CSSPercentage> position{}; // Support both lengths and percentages
 
-  bool operator==(const CSSColorHint &rhs) const
-  {
-    return position == rhs.position;
-  }
+  bool operator==(const CSSColorHint &rhs) const = default;
 };
 
 template <>
 struct CSSDataTypeParser<CSSColorHint> {
-  static auto consume(CSSSyntaxParser &parser) -> std::optional<CSSColorHint>
+  static auto consume(CSSValueParser &parser) -> std::optional<CSSColorHint>
   {
     return parseCSSColorHint(parser);
   }
 
  private:
-  static std::optional<CSSColorHint> parseCSSColorHint(CSSSyntaxParser &parser)
+  static std::optional<CSSColorHint> parseCSSColorHint(CSSValueParser &parser)
   {
-    auto position = parseNextCSSValue<CSSLengthPercentage>(parser);
+    auto position = parser.parseNextValue<CSSLengthPercentage>();
     if (std::holds_alternative<CSSLength>(position)) {
       return CSSColorHint{std::get<CSSLength>(position)};
     } else if (std::holds_alternative<CSSPercentage>(position)) {
@@ -238,15 +232,15 @@ struct CSSColorStop {
 
 template <>
 struct CSSDataTypeParser<CSSColorStop> {
-  static constexpr auto consume(CSSSyntaxParser &parser) -> std::optional<CSSColorStop>
+  static constexpr auto consume(CSSValueParser &parser) -> std::optional<CSSColorStop>
   {
     return parseCSSColorStop(parser);
   }
 
  private:
-  static constexpr std::optional<CSSColorStop> parseCSSColorStop(CSSSyntaxParser &parser)
+  static constexpr std::optional<CSSColorStop> parseCSSColorStop(CSSValueParser &parser)
   {
-    auto color = parseNextCSSValue<CSSColor>(parser);
+    auto color = parser.parseNextValue<CSSColor>();
     if (!std::holds_alternative<CSSColor>(color)) {
       return {};
     }
@@ -254,7 +248,7 @@ struct CSSDataTypeParser<CSSColorStop> {
     CSSColorStop colorStop;
     colorStop.color = std::get<CSSColor>(color);
 
-    auto startPosition = parseNextCSSValue<CSSLengthPercentage>(parser, CSSDelimiter::Whitespace);
+    auto startPosition = parser.parseNextValue<CSSLengthPercentage>(CSSDelimiter::Whitespace);
     if (std::holds_alternative<CSSLength>(startPosition)) {
       colorStop.startPosition = std::get<CSSLength>(startPosition);
     } else if (std::holds_alternative<CSSPercentage>(startPosition)) {
@@ -264,7 +258,7 @@ struct CSSDataTypeParser<CSSColorStop> {
     if (colorStop.startPosition) {
       // Try to parse second optional position (supports both lengths and
       // percentages)
-      auto endPosition = parseNextCSSValue<CSSLengthPercentage>(parser, CSSDelimiter::Whitespace);
+      auto endPosition = parser.parseNextValue<CSSLengthPercentage>(CSSDelimiter::Whitespace);
       if (std::holds_alternative<CSSLength>(endPosition)) {
         colorStop.endPosition = std::get<CSSLength>(endPosition);
       } else if (std::holds_alternative<CSSPercentage>(endPosition)) {
@@ -284,27 +278,27 @@ struct CSSLinearGradientFunction {
   bool operator==(const CSSLinearGradientFunction &rhs) const = default;
 
   static std::pair<std::vector<std::variant<CSSColorStop, CSSColorHint>>, int> parseGradientColorStopsAndHints(
-      CSSSyntaxParser &parser)
+      CSSValueParser &parser)
   {
     std::vector<std::variant<CSSColorStop, CSSColorHint>> items;
     int colorStopCount = 0;
 
     std::optional<CSSColorStop> prevColorStop = std::nullopt;
     do {
-      auto colorStop = parseNextCSSValue<CSSColorStop>(parser);
+      auto colorStop = parser.parseNextValue<CSSColorStop>();
       if (std::holds_alternative<CSSColorStop>(colorStop)) {
         auto parsedColorStop = std::get<CSSColorStop>(colorStop);
         items.emplace_back(parsedColorStop);
         prevColorStop = parsedColorStop;
         colorStopCount++;
       } else {
-        auto colorHint = parseNextCSSValue<CSSColorHint>(parser);
+        auto colorHint = parser.parseNextValue<CSSColorHint>();
         if (std::holds_alternative<CSSColorHint>(colorHint)) {
           // color hint must be between two color stops
           if (!prevColorStop) {
             return {};
           }
-          auto nextColorStop = peekNextCSSValue<CSSColorStop>(parser, CSSDelimiter::Comma);
+          auto nextColorStop = parser.peekNextValue<CSSColorStop>(CSSDelimiter::Comma);
           if (!std::holds_alternative<CSSColorStop>(nextColorStop)) {
             return {};
           }
@@ -313,7 +307,7 @@ struct CSSLinearGradientFunction {
           break; // No more valid items
         }
       }
-    } while (parser.consumeDelimiter(CSSDelimiter::Comma));
+    } while (parser.syntaxParser().consumeDelimiter(CSSDelimiter::Comma));
 
     return {items, colorStopCount};
   }
@@ -381,16 +375,16 @@ struct CSSRadialGradientExplicitSize {
 
 template <>
 struct CSSDataTypeParser<CSSRadialGradientExplicitSize> {
-  static auto consume(CSSSyntaxParser &syntaxParser) -> std::optional<CSSRadialGradientExplicitSize>
+  static auto consume(CSSValueParser &syntaxParser) -> std::optional<CSSRadialGradientExplicitSize>
   {
-    auto sizeX = parseNextCSSValue<CSSLengthPercentage>(syntaxParser);
+    auto sizeX = syntaxParser.parseNextValue<CSSLengthPercentage>();
     if (std::holds_alternative<std::monostate>(sizeX)) {
       return {};
     }
 
-    syntaxParser.consumeWhitespace();
+    syntaxParser.syntaxParser().consumeWhitespace();
 
-    auto sizeY = parseNextCSSValue<CSSLengthPercentage>(syntaxParser);
+    auto sizeY = syntaxParser.parseNextValue<CSSLengthPercentage>();
 
     CSSRadialGradientExplicitSize result;
     if (std::holds_alternative<CSSLength>(sizeX)) {
@@ -423,10 +417,7 @@ struct CSSRadialGradientPosition {
   std::optional<std::variant<CSSLength, CSSPercentage>> left{};
   std::optional<std::variant<CSSLength, CSSPercentage>> right{};
 
-  bool operator==(const CSSRadialGradientPosition &rhs) const
-  {
-    return top == rhs.top && bottom == rhs.bottom && left == rhs.left && right == rhs.right;
-  }
+  bool operator==(const CSSRadialGradientPosition &rhs) const = default;
 };
 
 struct CSSRadialGradientFunction {
@@ -440,7 +431,7 @@ struct CSSRadialGradientFunction {
 
 template <>
 struct CSSDataTypeParser<CSSRadialGradientFunction> {
-  static auto consumeFunctionBlock(const CSSFunctionBlock &func, CSSSyntaxParser &parser)
+  static auto consumeFunctionBlock(const CSSFunctionBlock &func, CSSValueParser &parser)
       -> std::optional<CSSRadialGradientFunction>
   {
     if (!iequals(func.name, "radial-gradient")) {
@@ -451,20 +442,20 @@ struct CSSDataTypeParser<CSSRadialGradientFunction> {
 
     auto hasExplicitShape = false;
     auto hasExplicitSingleSize = false;
-    auto shapeResult = parseNextCSSValue<CSSRadialGradientShape>(parser);
+    auto shapeResult = parser.parseNextValue<CSSRadialGradientShape>();
     if (std::holds_alternative<CSSRadialGradientShape>(shapeResult)) {
-      parser.consumeWhitespace();
+      parser.syntaxParser().consumeWhitespace();
     }
 
     std::optional<CSSRadialGradientSize> sizeResult;
 
-    auto sizeKeywordResult = parseNextCSSValue<CSSRadialGradientSizeKeyword>(parser);
+    auto sizeKeywordResult = parser.parseNextValue<CSSRadialGradientSizeKeyword>();
 
     if (std::holds_alternative<CSSRadialGradientSizeKeyword>(sizeKeywordResult)) {
       sizeResult = CSSRadialGradientSize{std::get<CSSRadialGradientSizeKeyword>(sizeKeywordResult)};
-      parser.consumeWhitespace();
+      parser.syntaxParser().consumeWhitespace();
     } else {
-      auto explicitSizeResult = parseNextCSSValue<CSSRadialGradientExplicitSize>(parser);
+      auto explicitSizeResult = parser.parseNextValue<CSSRadialGradientExplicitSize>();
       if (std::holds_alternative<CSSRadialGradientExplicitSize>(explicitSizeResult)) {
         auto explicitSize = std::get<CSSRadialGradientExplicitSize>(explicitSizeResult);
         // negative value validation
@@ -498,7 +489,7 @@ struct CSSDataTypeParser<CSSRadialGradientFunction> {
         }
 
         sizeResult = CSSRadialGradientSize{explicitSize};
-        parser.consumeWhitespace();
+        parser.syntaxParser().consumeWhitespace();
       }
     }
 
@@ -527,38 +518,24 @@ struct CSSDataTypeParser<CSSRadialGradientFunction> {
       return {};
     }
 
-    auto atResult = parser.consumeComponentValue<bool>([](const CSSPreservedToken &token) -> bool {
-      return token.type() == CSSTokenType::Ident && fnv1aLowercase(token.stringValue()) == fnv1a("at");
-    });
+    auto atResult = parser.parseNextValue<CSSGradientAtKeyword>();
+    bool hasAtKeyword = std::holds_alternative<CSSGradientAtKeyword>(atResult);
 
     CSSRadialGradientPosition position;
 
-    if (atResult) {
-      parser.consumeWhitespace();
+    if (hasAtKeyword) {
+      parser.syntaxParser().consumeWhitespace();
       std::vector<std::variant<CSSLength, CSSPercentage, CSSKeyword>> positionKeywordValues;
       for (int i = 0; i < 2; i++) {
         auto keywordFound = false;
         auto valueFound = false;
 
-        auto positionKeyword = parser.consumeComponentValue<std::optional<CSSKeyword>>(
-            [](const CSSPreservedToken &token) -> std::optional<CSSKeyword> {
-              if (token.type() == CSSTokenType::Ident) {
-                auto keyword = std::string(token.stringValue());
-                auto hash = fnv1aLowercase(keyword);
-                if (hash == fnv1a("top")) {
-                  return CSSKeyword::Top;
-                } else if (hash == fnv1a("bottom")) {
-                  return CSSKeyword::Bottom;
-                } else if (hash == fnv1a("left")) {
-                  return CSSKeyword::Left;
-                } else if (hash == fnv1a("right")) {
-                  return CSSKeyword::Right;
-                } else if (hash == fnv1a("center")) {
-                  return CSSKeyword::Center;
-                }
-              }
-              return {};
-            });
+        auto positionKeywordResult = parser.parseNextValue<CSSGradientPositionKeyword>();
+        std::optional<CSSKeyword> positionKeyword;
+        if (std::holds_alternative<CSSGradientPositionKeyword>(positionKeywordResult)) {
+          positionKeyword =
+              static_cast<CSSKeyword>(to_underlying(std::get<CSSGradientPositionKeyword>(positionKeywordResult)));
+        }
 
         if (positionKeyword) {
           // invalid position declaration of same keyword "at top 10% top 20%"
@@ -573,9 +550,9 @@ struct CSSDataTypeParser<CSSRadialGradientFunction> {
           keywordFound = true;
         }
 
-        parser.consumeWhitespace();
+        parser.syntaxParser().consumeWhitespace();
 
-        auto lengthPercentageValue = parseNextCSSValue<CSSLengthPercentage>(parser);
+        auto lengthPercentageValue = parser.parseNextValue<CSSLengthPercentage>();
 
         std::optional<decltype(positionKeywordValues)::value_type> value;
         if (std::holds_alternative<CSSLength>(lengthPercentageValue)) {
@@ -588,7 +565,7 @@ struct CSSDataTypeParser<CSSRadialGradientFunction> {
           valueFound = true;
         }
 
-        parser.consumeWhitespace();
+        parser.syntaxParser().consumeWhitespace();
 
         if (!keywordFound && !valueFound) {
           break;
@@ -797,7 +774,7 @@ struct CSSDataTypeParser<CSSRadialGradientFunction> {
       gradient.position = position;
     }
 
-    parser.consumeDelimiter(CSSDelimiter::Comma);
+    parser.syntaxParser().consumeDelimiter(CSSDelimiter::Comma);
     auto [items, colorStopCount] = CSSLinearGradientFunction::parseGradientColorStopsAndHints(parser);
 
     if (items.empty() || colorStopCount < 2) {
@@ -813,7 +790,7 @@ static_assert(CSSDataType<CSSRadialGradientFunction>);
 
 template <>
 struct CSSDataTypeParser<CSSLinearGradientFunction> {
-  static auto consumeFunctionBlock(const CSSFunctionBlock &func, CSSSyntaxParser &parser)
+  static auto consumeFunctionBlock(const CSSFunctionBlock &func, CSSValueParser &parser)
       -> std::optional<CSSLinearGradientFunction>
   {
     if (!iequals(func.name, "linear-gradient")) {
@@ -822,12 +799,12 @@ struct CSSDataTypeParser<CSSLinearGradientFunction> {
 
     CSSLinearGradientFunction gradient;
 
-    auto parsedDirection = parseNextCSSValue<CSSLinearGradientDirection>(parser);
+    auto parsedDirection = parser.parseNextValue<CSSLinearGradientDirection>();
     if (!std::holds_alternative<CSSLinearGradientDirection>(parsedDirection)) {
       return {};
     }
 
-    parser.consumeDelimiter(CSSDelimiter::Comma);
+    parser.syntaxParser().consumeDelimiter(CSSDelimiter::Comma);
 
     gradient.direction = std::get<CSSLinearGradientDirection>(parsedDirection);
 
@@ -850,11 +827,6 @@ static_assert(CSSDataType<CSSLinearGradientFunction>);
  * https://www.w3.org/TR/css-backgrounds-3/#background-image
  */
 using CSSBackgroundImage = CSSCompoundDataType<CSSLinearGradientFunction, CSSRadialGradientFunction>;
-
-/**
- * Variant of possible CSS background image types
- */
-using CSSBackgroundImageVariant = CSSVariantWithTypes<CSSBackgroundImage>;
 
 /**
  * Representation of <background-image-list>

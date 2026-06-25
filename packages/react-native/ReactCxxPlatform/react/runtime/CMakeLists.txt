@@ -8,13 +8,12 @@ set(CMAKE_VERBOSE_MAKEFILE on)
 
 include(${REACT_COMMON_DIR}/cmake-utils/react-native-flags.cmake)
 
-file(GLOB react_cxx_platform_react_runtime_SRC CONFIGURE_DEPENDS *.cpp platform/cxx/react/runtime/*.cpp)
+file(GLOB react_cxx_platform_react_runtime_SRC CONFIGURE_DEPENDS *.cpp)
 add_library(react_cxx_platform_react_runtime OBJECT ${react_cxx_platform_react_runtime_SRC})
 
 target_include_directories(react_cxx_platform_react_runtime
     PUBLIC
-      ${REACT_CXX_PLATFORM_DIR}
-      ${CMAKE_CURRENT_SOURCE_DIR}/platform/cxx/)
+      ${REACT_CXX_PLATFORM_DIR})
 
 target_link_libraries(react_cxx_platform_react_runtime
       bridgeless

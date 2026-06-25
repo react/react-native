@@ -25,7 +25,7 @@ import {
   useState,
 } from 'react';
 
-export type ScrollViewStickyHeaderProps = $ReadOnly<{
+export type ScrollViewStickyHeaderProps = Readonly<{
   children?: React.Node,
   nextHeaderLayoutY: ?number,
   onLayout: (event: LayoutChangeEvent) => void,
@@ -40,7 +40,7 @@ export type ScrollViewStickyHeaderProps = $ReadOnly<{
 }>;
 
 interface Instance extends React.ElementRef<typeof Animated.View> {
-  +setNextHeaderY: number => void;
+  readonly setNextHeaderY: number => void;
 }
 
 const ScrollViewStickyHeader: component(
@@ -89,11 +89,11 @@ const ScrollViewStickyHeader: component(
               .interpolate({
                 extrapolateLeft: 'clamp',
                 inputRange: [layoutY, layoutY + 1],
-                outputRange: ([0, 1]: Array<number>),
+                outputRange: [0, 1] as Array<number>,
               })
               .interpolate({
                 inputRange: [0, 1],
-                outputRange: ([0, -1]: Array<number>),
+                outputRange: [0, -1] as Array<number>,
               }),
             -layoutHeight,
             0,

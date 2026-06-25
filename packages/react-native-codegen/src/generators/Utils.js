@@ -23,7 +23,7 @@ function indent(nice: string, spaces: number): string {
       if (line.length === 0 || index === 0) {
         return line;
       }
-      const emptySpaces = new Array<mixed>(spaces + 1).join(' ');
+      const emptySpaces = new Array<unknown>(spaces + 1).join(' ');
       return emptySpaces + line;
     })
     .join('\n');
@@ -34,11 +34,19 @@ function toPascalCase(inString: string): string {
     return inString;
   }
 
-  return inString[0].toUpperCase() + inString.slice(1);
+  return capitalize(inString);
+}
+
+function toSafeIdentifier(input: string, shouldCapitalize: boolean): string {
+  const parts = input.split('-');
+  if (!shouldCapitalize) {
+    return parts.join('');
+  }
+  return parts.map(toPascalCase).join('');
 }
 
 function toSafeCppString(input: string): string {
-  return input.split('-').map(toPascalCase).join('');
+  return toSafeIdentifier(input, true);
 }
 
 function getEnumName(moduleName: string, origEnumName: string): string {
@@ -67,7 +75,7 @@ class HeterogeneousUnionError extends Error {
 function parseValidUnionType(
   annotation: NativeModuleUnionTypeAnnotation,
 ): ValidUnionType {
-  const isUnionOfType = (types: $ReadOnlyArray<string>): boolean => {
+  const isUnionOfType = (types: ReadonlyArray<string>): boolean => {
     return annotation.types.every(memberTypeAnnotation =>
       types.includes(memberTypeAnnotation.type),
     );
@@ -105,6 +113,7 @@ module.exports = {
   indent,
   parseValidUnionType,
   toPascalCase,
+  toSafeIdentifier,
   toSafeCppString,
   getEnumName,
   HeterogeneousUnionError,

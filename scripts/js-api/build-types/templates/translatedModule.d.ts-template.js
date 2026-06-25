@@ -17,7 +17,7 @@ function translatedModuleTemplate({
 }: {
   source: string,
   originalFileName: string,
-  tripleSlashDirectives: $ReadOnlyArray<string>,
+  tripleSlashDirectives: ReadonlyArray<string>,
 }): string {
   return signedsource.signFile(
     `/**

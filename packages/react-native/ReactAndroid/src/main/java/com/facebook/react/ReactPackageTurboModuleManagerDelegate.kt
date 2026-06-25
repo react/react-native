@@ -105,8 +105,6 @@ public abstract class ReactPackageTurboModuleManagerDelegate : TurboModuleManage
     }
   }
 
-  override fun unstable_shouldEnableLegacyModuleInterop(): Boolean = shouldEnableLegacyModuleInterop
-
   override fun getModule(moduleName: String): TurboModule? {
     var resolvedModule: NativeModule? = null
 
@@ -153,7 +151,7 @@ public abstract class ReactPackageTurboModuleManagerDelegate : TurboModuleManage
   }
 
   override fun getLegacyModule(moduleName: String): NativeModule? {
-    if (!unstable_shouldEnableLegacyModuleInterop()) {
+    if (!shouldEnableLegacyModuleInterop) {
       return null
     }
 
@@ -191,7 +189,7 @@ public abstract class ReactPackageTurboModuleManagerDelegate : TurboModuleManage
     }
   }
 
-  private fun shouldSupportLegacyPackages(): Boolean = unstable_shouldEnableLegacyModuleInterop()
+  private fun shouldSupportLegacyPackages(): Boolean = shouldEnableLegacyModuleInterop
 
   public abstract class Builder {
     private var packages: List<ReactPackage>? = null

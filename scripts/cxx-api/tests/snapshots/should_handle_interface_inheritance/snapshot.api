@@ -1,0 +1,7 @@
+interface RCTBaseInterface {
+  public virtual void baseMethod();
+}
+
+interface RCTChildInterface : public RCTBaseInterface {
+  public virtual void childMethod();
+}

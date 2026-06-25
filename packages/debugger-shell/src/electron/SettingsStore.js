@@ -14,7 +14,7 @@ const {app} = require('electron') as any;
 const fs = require('fs');
 const path = require('path');
 
-type Options = $ReadOnly<{
+type Options = Readonly<{
   name?: string,
   defaults?: Object,
 }>;
@@ -91,12 +91,12 @@ export default class SettingsStore {
     }
   }
 
-  get store(): {[string]: mixed} {
+  get store(): {[string]: unknown} {
     try {
       const data = fs.readFileSync(this.path, 'utf8');
       const deserializedData = this._deserialize(data);
       return {
-        ...((deserializedData: any): {[string]: mixed}),
+        ...(deserializedData as any as {[string]: unknown}),
       };
     } catch (error) {
       if (error?.code === 'ENOENT') {
@@ -107,20 +107,20 @@ export default class SettingsStore {
     }
   }
 
-  set store(value: mixed): void {
+  set store(value: unknown): void {
     this._ensureDirectory();
     this._write(value);
   }
 
-  _deserialize = (value: string): mixed => JSON.parse(value);
-  _serialize = (value: mixed): string =>
+  _deserialize = (value: string): unknown => JSON.parse(value);
+  _serialize = (value: unknown): string =>
     JSON.stringify(value, undefined, '\t') ?? '';
 
   _ensureDirectory(): void {
     fs.mkdirSync(path.dirname(this.path), {recursive: true});
   }
 
-  _write(value: mixed): void {
+  _write(value: unknown): void {
     const data = this._serialize(value);
 
     fs.writeFileSync(this.path, data, {mode: 0o666});

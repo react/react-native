@@ -12,7 +12,7 @@
 import type { Dependency, Platform } from './types';
 */
 
-const platforms /*: $ReadOnlyArray<Platform> */ = [
+const platforms /*: ReadonlyArray<Platform> */ = [
   'ios',
   'ios-simulator',
   'macos',
@@ -25,7 +25,7 @@ const platforms /*: $ReadOnlyArray<Platform> */ = [
 
 const CPP_STANDARD = 'c++20';
 
-const dependencies /*: $ReadOnlyArray<Dependency> */ = [
+const dependencies /*: ReadonlyArray<Dependency> */ = [
   {
     name: 'glog',
     version: '0.3.5',
@@ -80,9 +80,9 @@ const dependencies /*: $ReadOnlyArray<Dependency> */ = [
   },
   {
     name: 'fmt',
-    version: '11.0.2',
+    version: '12.1.0',
     url: new URL(
-      'https://github.com/fmtlib/fmt/archive/refs/tags/11.0.2.tar.gz',
+      'https://github.com/fmtlib/fmt/archive/refs/tags/12.1.0.tar.gz',
     ),
     files: {
       sources: ['src/format.cc', 'include/fmt/*.h'],

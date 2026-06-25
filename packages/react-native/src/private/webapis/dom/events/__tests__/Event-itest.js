@@ -11,7 +11,10 @@
 import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
 import Event from 'react-native/src/private/webapis/dom/events/Event';
-import {setInPassiveListenerFlag} from 'react-native/src/private/webapis/dom/events/internals/EventInternals';
+import {
+  setEventInitTimeStamp,
+  setInPassiveListenerFlag,
+} from 'react-native/src/private/webapis/dom/events/internals/EventInternals';
 
 describe('Event', () => {
   it('provides read-only constants for event phases', () => {
@@ -231,6 +234,23 @@ describe('Event', () => {
 
     expect(event.timeStamp).toBeGreaterThanOrEqual(lowerBoundTimestamp);
     expect(event.timeStamp).toBeLessThanOrEqual(upperBoundTimestamp);
+  });
+
+  it('should use a custom timestamp when set via setEventInitTimeStamp', () => {
+    const customTimestamp = 12345.678;
+    const options = {};
+    setEventInitTimeStamp(options, customTimestamp);
+    const event = new Event('custom', options);
+
+    expect(event.timeStamp).toBe(customTimestamp);
+  });
+
+  it('should accept zero as a valid custom timestamp', () => {
+    const options = {};
+    setEventInitTimeStamp(options, 0);
+    const event = new Event('custom', options);
+
+    expect(event.timeStamp).toBe(0);
   });
 
   describe('preventDefault', () => {

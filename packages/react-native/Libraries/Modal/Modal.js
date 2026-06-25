@@ -36,7 +36,7 @@ type ModalEventDefinitions = {
   modalDismissed: [{modalID: number}],
 };
 
-export type PublicModalInstance = HostInstance;
+export type ModalInstance = HostInstance;
 
 const ModalEventEmitter =
   Platform.OS === 'ios' && NativeModalManager != null
@@ -59,10 +59,11 @@ const ModalEventEmitter =
 // destroyed before the callback is fired.
 let uniqueModalIdentifier = 0;
 
-type OrientationChangeEvent = $ReadOnly<{
+type OrientationChangeEvent = Readonly<{
   orientation: 'portrait' | 'landscape',
 }>;
 
+/** @build-types emit-as-interface Uniwind compatibility */
 export type ModalBaseProps = {
   /**
    * @deprecated Use animationType instead
@@ -107,7 +108,7 @@ export type ModalBaseProps = {
   /**
    * A ref to the native Modal component.
    */
-  modalRef?: React.RefSetter<PublicModalInstance>,
+  modalRef?: React.RefSetter<ModalInstance>,
 };
 
 export type ModalPropsIOS = {
@@ -125,7 +126,7 @@ export type ModalPropsIOS = {
    * The `supportedOrientations` prop allows the modal to be rotated to any of the specified orientations.
    * On iOS, the modal is still restricted by what's specified in your app's Info.plist's UISupportedInterfaceOrientations field.
    */
-  supportedOrientations?: ?$ReadOnlyArray<
+  supportedOrientations?: ?ReadonlyArray<
     | 'portrait'
     | 'portrait-upside-down'
     | 'landscape'
@@ -288,12 +289,16 @@ class Modal extends React.Component<ModalProps, ModalState> {
       return null;
     }
 
-    const containerStyles = {
-      backgroundColor:
-        this.props.transparent === true
-          ? 'transparent'
-          : (this.props.backdropColor ?? 'white'),
-    };
+    // Only override backgroundColor when transparent or backdropColor are
+    // explicitly set, so that these Modal-specific props take precedence
+    // over the generic style prop. The default backgroundColor ('white')
+    // is defined in styles.container below.
+    const containerStyles: {backgroundColor?: ColorValue} = {};
+    if (this.props.transparent === true) {
+      containerStyles.backgroundColor = 'transparent';
+    } else if (this.props.backdropColor != null) {
+      containerStyles.backgroundColor = this.props.backdropColor;
+    }
 
     let animationType = this.props.animationType || 'none';
 
@@ -349,7 +354,7 @@ class Modal extends React.Component<ModalProps, ModalState> {
           <ScrollView.Context.Provider value={null}>
             <View
               // $FlowFixMe[incompatible-type]
-              style={[styles.container, containerStyles]}
+              style={[styles.container, this.props.style, containerStyles]}
               collapsable={false}>
               {innerChildren}
             </View>
@@ -380,11 +385,12 @@ const styles = StyleSheet.create({
     [side]: 0,
     top: 0,
     flex: 1,
+    backgroundColor: 'white',
   },
 });
 
-type ModalRefProps = $ReadOnly<{
-  ref?: React.RefSetter<PublicModalInstance>,
+type ModalRefProps = Readonly<{
+  ref?: React.RefSetter<ModalInstance>,
 }>;
 
 // NOTE: This wrapper component is necessary because `Modal` is a class

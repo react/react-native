@@ -18,7 +18,7 @@ import type {HostComponent} from '../../types/HostComponent';
 
 import codegenNativeComponent from '../../../../Libraries/Utilities/codegenNativeComponent';
 
-type AndroidProgressBarNativeProps = $ReadOnly<{
+type AndroidProgressBarNativeProps = Readonly<{
   ...ViewProps,
 
   //Props
@@ -31,9 +31,9 @@ type AndroidProgressBarNativeProps = $ReadOnly<{
   testID?: WithDefault<string, ''>,
 }>;
 
-export default (codegenNativeComponent<AndroidProgressBarNativeProps>(
+export default codegenNativeComponent<AndroidProgressBarNativeProps>(
   'AndroidProgressBar',
   {
     interfaceOnly: true,
   },
-): HostComponent<AndroidProgressBarNativeProps>);
+) as HostComponent<AndroidProgressBarNativeProps>;

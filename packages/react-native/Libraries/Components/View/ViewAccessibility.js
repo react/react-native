@@ -154,7 +154,7 @@ export type AccessibilityActionName =
   | 'escape';
 
 // the info associated with an accessibility action
-export type AccessibilityActionInfo = $ReadOnly<{
+export type AccessibilityActionInfo = Readonly<{
   name: AccessibilityActionName | string,
   label?: string,
   ...
@@ -162,7 +162,7 @@ export type AccessibilityActionInfo = $ReadOnly<{
 
 // The info included in the event sent to onAccessibilityAction
 export type AccessibilityActionEvent = NativeSyntheticEvent<
-  $ReadOnly<{actionName: string, ...}>,
+  Readonly<{actionName: string, ...}>,
 >;
 
 export type AccessibilityState = {
@@ -189,7 +189,7 @@ export type AccessibilityState = {
   ...
 };
 
-export type AccessibilityValue = $ReadOnly<{
+export type AccessibilityValue = Readonly<{
   /**
    * The minimum value of this component's range. (should be an integer)
    */
@@ -211,7 +211,7 @@ export type AccessibilityValue = $ReadOnly<{
   text?: Stringish,
 }>;
 
-export type AccessibilityPropsAndroid = $ReadOnly<{
+export type AccessibilityPropsAndroid = Readonly<{
   /**
    * Identifies the element that labels the element it is applied to. When the assistive technology focuses on the component with this props,
    * the text is read aloud. The value should should match the nativeID of the related element.
@@ -268,7 +268,7 @@ export type AccessibilityPropsAndroid = $ReadOnly<{
   screenReaderFocusable?: boolean,
 }>;
 
-export type AccessibilityPropsIOS = $ReadOnly<{
+export type AccessibilityPropsIOS = Readonly<{
   /**
    * Prevents view from being inverted if set to true and color inversion is turned on.
    *
@@ -338,7 +338,7 @@ export type AccessibilityPropsIOS = $ReadOnly<{
   accessibilityRespondsToUserInteraction?: ?boolean,
 }>;
 
-export type AccessibilityProps = $ReadOnly<{
+export type AccessibilityProps = Readonly<{
   ...AccessibilityPropsAndroid,
   ...AccessibilityPropsIOS,
   /**
@@ -403,7 +403,7 @@ export type AccessibilityProps = $ReadOnly<{
    * Provides an array of custom actions available for accessibility.
    *
    */
-  accessibilityActions?: ?$ReadOnlyArray<AccessibilityActionInfo>,
+  accessibilityActions?: ?ReadonlyArray<AccessibilityActionInfo>,
 
   /**
    * alias for accessibilityState

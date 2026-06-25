@@ -23,7 +23,7 @@ function sleep(ms: number) {
   while (performance.now() < end) {}
 }
 
-function ensurePerformanceEventTiming(value: mixed): PerformanceEventTiming {
+function ensurePerformanceEventTiming(value: unknown): PerformanceEventTiming {
   if (!(value instanceof PerformanceEventTiming)) {
     throw new Error(
       `Expected instance of PerformanceEventTiming but got ${String(value)}`,
@@ -38,7 +38,7 @@ describe('Event Timing API', () => {
     const callback = jest.fn();
 
     const observer = new PerformanceObserver(callback);
-    observer.observe({entryTypes: ['event']});
+    observer.observe({type: 'event', durationThreshold: 0});
 
     const root = Fantom.createRoot();
     Fantom.runTask(() => {
@@ -79,7 +79,7 @@ describe('Event Timing API', () => {
     const callback = jest.fn();
 
     const observer = new PerformanceObserver(callback);
-    observer.observe({entryTypes: ['event']});
+    observer.observe({type: 'event', durationThreshold: 0});
 
     const SIMULATED_PROCESSING_DELAY = 50;
 
@@ -132,7 +132,7 @@ describe('Event Timing API', () => {
     const callback = jest.fn();
 
     const observer = new PerformanceObserver(callback);
-    observer.observe({entryTypes: ['event']});
+    observer.observe({type: 'event', durationThreshold: 0});
 
     function MyComponent() {
       const [count, setCount] = useState(0);
@@ -182,6 +182,44 @@ describe('Event Timing API', () => {
     // TODO: When Fantom provides structured data from mounting manager, add timestamp to operations and verify that the duration includes that.
 
     expect(entry.interactionId).toBeGreaterThanOrEqual(0);
+  });
+
+  it('provides the event timeStamp as startTime', () => {
+    const callback = jest.fn();
+
+    const observer = new PerformanceObserver(callback);
+    observer.observe({type: 'event', durationThreshold: 0});
+
+    let eventTimeStamp;
+
+    const root = Fantom.createRoot();
+    Fantom.runTask(() => {
+      root.render(
+        <View
+          onClick={event => {
+            eventTimeStamp = event.timeStamp;
+          }}
+        />,
+      );
+    });
+
+    const element = nullthrows(root.document.documentElement.firstElementChild);
+
+    expect(callback).not.toHaveBeenCalled();
+
+    Fantom.dispatchNativeEvent(element, 'click');
+
+    expect(callback).toHaveBeenCalledTimes(1);
+
+    const entryList = callback.mock.lastCall[0] as PerformanceObserverEntryList;
+    const entries = entryList.getEntries();
+
+    expect(entries.length).toBe(1);
+
+    const entry = ensurePerformanceEventTiming(entries[0]);
+
+    expect(eventTimeStamp).not.toBeUndefined();
+    expect(entry.startTime).toBe(eventTimeStamp);
   });
 
   it('reports number of dispatched events via performance.eventCounts', () => {
@@ -273,6 +311,52 @@ describe('Event Timing API', () => {
             onClick={event => {
               if (forceDelay) {
                 sleep(50);
+              }
+              setCount(count + 1);
+            }}>
+            <Text>{count}</Text>
+          </View>
+        );
+      }
+
+      const root = Fantom.createRoot();
+      Fantom.runTask(() => {
+        root.render(<MyComponent />);
+      });
+
+      const element = nullthrows(
+        root.document.documentElement.firstElementChild,
+      );
+
+      expect(callback).not.toHaveBeenCalled();
+
+      Fantom.dispatchNativeEvent(element, 'click');
+
+      expect(callback).toHaveBeenCalledTimes(0);
+
+      forceDelay = true;
+
+      Fantom.dispatchNativeEvent(element, 'click');
+
+      expect(callback).toHaveBeenCalledTimes(1);
+    });
+
+    it('defaults to 104ms for event entries per W3C spec', () => {
+      const callback = jest.fn();
+
+      const observer = new PerformanceObserver(callback);
+      observer.observe({type: 'event'});
+
+      let forceDelay = false;
+
+      function MyComponent() {
+        const [count, setCount] = useState(0);
+
+        return (
+          <View
+            onClick={event => {
+              if (forceDelay) {
+                sleep(104);
               }
               setCount(count + 1);
             }}>

@@ -20,22 +20,22 @@ import type {
 
 import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
 
-type OnChangeEvent = $ReadOnly<{
+type OnChangeEvent = Readonly<{
   value: boolean,
   source?: string,
   progress: ?Int32,
   scale?: ?Float,
 }>;
 
-type OnEventDirect = $ReadOnly<{
+type OnEventDirect = Readonly<{
   value: boolean,
 }>;
 
-type OnOrientationChangeEvent = $ReadOnly<{
+type OnOrientationChangeEvent = Readonly<{
   orientation: 'landscape' | 'portrait',
 }>;
 
-type NativeProps = $ReadOnly<{
+type NativeProps = Readonly<{
   ...ViewProps,
 
   // Props
@@ -59,6 +59,6 @@ type NativeProps = $ReadOnly<{
   >,
 }>;
 
-export default (codegenNativeComponent<NativeProps>(
+export default codegenNativeComponent<NativeProps>(
   'EventPropsNativeComponentView',
-): HostComponent<NativeProps>);
+) as HostComponent<NativeProps>;

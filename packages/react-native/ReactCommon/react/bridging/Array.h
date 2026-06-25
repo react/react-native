@@ -76,7 +76,7 @@ struct Bridging<std::array<T, N>> : array_detail::BridgingStatic<std::array<T, N
 
 template <typename T1, typename T2>
 struct Bridging<std::pair<T1, T2>> : array_detail::BridgingStatic<std::pair<T1, T2>, 2> {
-  static std::pair<T1, T1>
+  static std::pair<T1, T2>
   fromJs(facebook::jsi::Runtime &rt, const jsi::Array &array, const std::shared_ptr<CallInvoker> &jsInvoker)
   {
     return std::make_pair(

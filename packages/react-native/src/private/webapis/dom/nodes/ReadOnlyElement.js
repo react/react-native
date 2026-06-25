@@ -15,7 +15,7 @@ import type HTMLCollection from '../oldstylecollections/HTMLCollection';
 import DOMRect from '../../geometry/DOMRect';
 import {createHTMLCollection} from '../oldstylecollections/HTMLCollection';
 import {
-  getInstanceHandle,
+  getCurrentProps,
   getNativeElementReference,
 } from './internals/NodeInternals';
 import {getElementSibling} from './internals/Traversal';
@@ -86,11 +86,9 @@ export default class ReadOnlyElement extends ReadOnlyNode {
   }
 
   get id(): string {
-    const instanceHandle = getInstanceHandle(this);
-    // TODO: migrate off this private React API
-    // $FlowExpectedError[incompatible-use]
-    const props = instanceHandle?.stateNode?.canonical?.currentProps;
-    return props?.id ?? props?.nativeID ?? '';
+    const props = getCurrentProps(this);
+    const id = props.id ?? props.nativeID;
+    return typeof id === 'string' ? id : '';
   }
 
   get lastElementChild(): ReadOnlyElement | null {
@@ -219,7 +217,7 @@ export default class ReadOnlyElement extends ReadOnlyNode {
   }
 }
 
-function getChildElements(node: ReadOnlyNode): $ReadOnlyArray<ReadOnlyElement> {
+function getChildElements(node: ReadOnlyNode): ReadonlyArray<ReadOnlyElement> {
   // $FlowFixMe[incompatible-type]
   return getChildNodes(
     node,
@@ -247,3 +245,12 @@ export function getBoundingClientRect(
   // Empty rect if any of the above failed
   return new DOMRect(0, 0, 0, 0);
 }
+
+export const ReadOnlyElement_public: typeof ReadOnlyElement =
+  // $FlowExpectedError[incompatible-type]
+  function Element() {
+    throw new TypeError("Failed to construct 'Element': Illegal constructor");
+  };
+
+// $FlowExpectedError[prop-missing]
+ReadOnlyElement_public.prototype = ReadOnlyElement.prototype;

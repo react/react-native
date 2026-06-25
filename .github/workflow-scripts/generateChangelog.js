@@ -45,8 +45,8 @@ function _generateChangelog(previousVersion, version, token) {
   run('git checkout main');
   run('git fetch');
   run('git pull origin main');
-  const generateChangelogComand = `npx @rnx-kit/rn-changelog-generator --base v${previousVersion} --compare v${version} --repo . --changelog ./CHANGELOG.md --token ${token}`;
-  run(generateChangelogComand);
+  const generateChangelogCommand = `npx @rnx-kit/rn-changelog-generator --base v${previousVersion} --compare v${version} --repo . --changelog ./CHANGELOG.md --token ${token}`;
+  run(generateChangelogCommand);
 }
 
 function _pushCommit(version) {

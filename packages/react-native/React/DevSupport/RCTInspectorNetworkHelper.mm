@@ -6,6 +6,7 @@
  */
 
 #import "RCTInspectorNetworkHelper.h"
+#import <React/RCTDevSupportHttpHeaders.h>
 #import <React/RCTLog.h>
 
 using ListenerBlock = void (^)(RCTInspectorNetworkListener *);
@@ -47,6 +48,7 @@ using ListenerBlock = void (^)(RCTInspectorNetworkListener *);
 
   NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:url];
   [urlRequest setHTTPMethod:@"GET"];
+  [[RCTDevSupportHttpHeaders sharedInstance] applyHeadersToRequest:urlRequest];
   NSURLSessionDataTask *dataTask = [self.session dataTaskWithRequest:urlRequest];
   __weak NSURLSessionDataTask *weakDataTask = dataTask;
 

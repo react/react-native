@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include <folly/dynamic.h>
 #include <react/renderer/components/scrollview/primitives.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/core/propsConversions.h>

@@ -361,7 +361,7 @@ void RuntimeScheduler_Modern::updateRendering(HighResTimeStamp taskEndTime) {
 void RuntimeScheduler_Modern::executeTask(
     jsi::Runtime& runtime,
     Task& task,
-    bool didUserCallbackTimeout) const {
+    bool didUserCallbackTimeout) {
   TraceSection s(
       "RuntimeScheduler::executeTask",
       "id",
@@ -380,10 +380,10 @@ void RuntimeScheduler_Modern::executeTask(
       task.callback = result.getObject(runtime).getFunction(runtime);
     }
   } catch (jsi::JSError& error) {
-    onTaskError_(runtime, error);
+    handleTaskError(runtime, error);
   } catch (std::exception& ex) {
     jsi::JSError error(runtime, std::string("Non-js exception: ") + ex.what());
-    onTaskError_(runtime, error);
+    handleTaskError(runtime, error);
   }
 }
 
@@ -419,11 +419,11 @@ void RuntimeScheduler_Modern::performMicrotaskCheckpoint(
         break;
       }
     } catch (jsi::JSError& error) {
-      onTaskError_(runtime, error);
+      handleTaskError(runtime, error);
     } catch (std::exception& ex) {
       jsi::JSError error(
           runtime, std::string("Non-js exception: ") + ex.what());
-      onTaskError_(runtime, error);
+      handleTaskError(runtime, error);
     }
     retries++;
   }
@@ -447,6 +447,27 @@ void RuntimeScheduler_Modern::reportLongTasks(
     auto duration = endTime - startTime;
     reporter->reportLongTask(startTime, duration);
   }
+}
+
+void RuntimeScheduler_Modern::handleTaskError(
+    jsi::Runtime& runtime,
+    jsi::JSError& error) {
+  if (ReactNativeFeatureFlags::enableRuntimeSchedulerQueueClearingOnError()) {
+    clearQueues();
+  }
+
+  onTaskError_(runtime, error);
+}
+
+void RuntimeScheduler_Modern::clearQueues() {
+  {
+    std::unique_lock lock(schedulingMutex_);
+    taskQueue_ = {};
+    isEventLoopScheduled_ = false;
+  }
+
+  pendingRenderingUpdates_ = {};
+  surfaceIdsWithPendingRenderingUpdates_.clear();
 }
 
 void RuntimeScheduler_Modern::markYieldingOpportunity(

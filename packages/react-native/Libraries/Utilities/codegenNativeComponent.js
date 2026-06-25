@@ -16,14 +16,14 @@ import requireNativeComponent from '../../Libraries/ReactNative/requireNativeCom
 import UIManager from '../ReactNative/UIManager';
 
 // TODO: import from CodegenSchema once workspaces are enabled
-type NativeComponentOptions = $ReadOnly<{
+type NativeComponentOptions = Readonly<{
   interfaceOnly?: boolean,
   paperComponentName?: string,
   paperComponentNameDeprecated?: string,
-  excludedPlatforms?: $ReadOnlyArray<'iOS' | 'android'>,
+  excludedPlatforms?: ReadonlyArray<'iOS' | 'android'>,
 }>;
 
-export type NativeComponentType<T: {...}> = HostComponent<T>;
+export type NativeComponentType<T extends {...}> = HostComponent<T>;
 
 // If this function runs then that means the view configs were not
 // generated at build time using `GenerateViewConfigJs.js`. Thus
@@ -31,7 +31,7 @@ export type NativeComponentType<T: {...}> = HostComponent<T>;
 // `requireNativeComponent` is not available in Bridgeless mode.
 // e.g. This function runs at runtime if `codegenNativeComponent` was not called
 // from a file suffixed with NativeComponent.js.
-function codegenNativeComponent<Props: {...}>(
+function codegenNativeComponent<Props extends {...}>(
   componentName: string,
   options?: NativeComponentOptions,
 ): NativeComponentType<Props> {
@@ -64,10 +64,10 @@ function codegenNativeComponent<Props: {...}>(
     }
   }
 
-  return (requireNativeComponent<Props>(
+  return requireNativeComponent<Props>(
     // $FlowFixMe[incompatible-type]
     componentNameInUse,
-  ): HostComponent<Props>);
+  ) as HostComponent<Props>;
 }
 
 export default codegenNativeComponent;

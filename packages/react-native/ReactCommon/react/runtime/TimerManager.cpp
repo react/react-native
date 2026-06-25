@@ -132,9 +132,19 @@ TimerHandle TimerManager::createRecurringTimer(
   return timerID;
 }
 
-void TimerManager::deleteTimer(jsi::Runtime& runtime, TimerHandle timerHandle) {
+void TimerManager::deleteTimer(
+    jsi::Runtime& /* runtime */,
+    TimerHandle timerHandle) {
   if (timerHandle < 0) {
-    throw jsi::JSError(runtime, "clearTimeout called with an invalid handle");
+    /**
+     * Do nothing for negative values to match web spec.
+     *
+     * cancelAnimationFrame:
+     * https://www.w3.org/TR/animation-timing/#Window-interface-extensions
+     * clearTimeout:
+     * https://developer.mozilla.org/en-US/docs/Web/API/Window/clearTimeout#notes
+     */
+    return;
   }
 
   platformTimerRegistry_->deleteTimer(timerHandle);
@@ -142,10 +152,16 @@ void TimerManager::deleteTimer(jsi::Runtime& runtime, TimerHandle timerHandle) {
 }
 
 void TimerManager::deleteRecurringTimer(
-    jsi::Runtime& runtime,
+    jsi::Runtime& /* runtime */,
     TimerHandle timerHandle) {
   if (timerHandle < 0) {
-    throw jsi::JSError(runtime, "clearInterval called with an invalid handle");
+    /**
+     * Do nothing for negative values to match web spec.
+     *
+     * clearInterval:
+     * https://developer.mozilla.org/en-US/docs/Web/API/Window/clearInterval
+     */
+    return;
   }
 
   platformTimerRegistry_->deleteTimer(timerHandle);

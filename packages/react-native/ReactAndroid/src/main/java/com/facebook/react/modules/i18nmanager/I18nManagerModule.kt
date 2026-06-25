@@ -7,9 +7,11 @@
 
 package com.facebook.react.modules.i18nmanager
 
+import androidx.core.os.ConfigurationCompat
 import com.facebook.fbreact.specs.NativeI18nManagerSpec
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.module.annotations.ReactModule
+import java.util.Locale
 
 /** [com.facebook.react.bridge.NativeModule] that allows JS to set allowRTL and get isRTL status. */
 @ReactModule(name = NativeI18nManagerSpec.NAME)
@@ -17,7 +19,8 @@ internal class I18nManagerModule(context: ReactApplicationContext?) :
     NativeI18nManagerSpec(context) {
   override fun getTypedExportedConstants(): Map<String, Any> {
     val context = reactApplicationContext
-    val locale = context.resources.configuration.locales[0]
+    val locale =
+        ConfigurationCompat.getLocales(context.resources.configuration)[0] ?: Locale.getDefault()
 
     return mapOf(
         "isRTL" to I18nUtil.instance.isRTL(context),

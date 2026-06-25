@@ -26,7 +26,7 @@ export type {____TransformStyle_Internal};
 
 declare export opaque type NativeColorValue;
 export type ____ColorValue_Internal = null | string | number | NativeColorValue;
-export type ColorArrayValue = null | $ReadOnlyArray<____ColorValue_Internal>;
+export type ColorArrayValue = null | ReadonlyArray<____ColorValue_Internal>;
 export type PointValue = {
   x: number,
   y: number,
@@ -55,7 +55,7 @@ export type CursorValue = 'auto' | 'pointer';
  * These properties are a subset of our styles that are consumed by the layout
  * algorithm and affect the positioning and sizing of views.
  */
-type ____LayoutStyle_Internal = $ReadOnly<{
+type ____LayoutStyle_Internal = Readonly<{
   /** `display` sets the display type of this component.
    *
    *  It works similarly to `display` in CSS, but only support 'flex' and 'none'.
@@ -675,7 +675,7 @@ type ____LayoutStyle_Internal = $ReadOnly<{
  * To add a drop shadow to a view use the [`elevation` property](docs/viewstyleproptypes.html#elevation) (Android 5.0+).
  * To customize the color use the [`shadowColor` property](docs/shadow-props.html#shadowColor) (Android 9.0+).
  */
-export type ____ShadowStyle_InternalCore = $ReadOnly<{
+export type ____ShadowStyle_InternalCore = Readonly<{
   /**
    * Sets the drop shadow color
    * @platform ios
@@ -685,7 +685,7 @@ export type ____ShadowStyle_InternalCore = $ReadOnly<{
    * Sets the drop shadow offset
    * @platform ios
    */
-  shadowOffset?: $ReadOnly<{
+  shadowOffset?: Readonly<{
     width?: number,
     height?: number,
   }>,
@@ -701,7 +701,7 @@ export type ____ShadowStyle_InternalCore = $ReadOnly<{
   shadowRadius?: number,
 }>;
 
-export type ____ShadowStyle_Internal = $ReadOnly<{
+export type ____ShadowStyle_Internal = Readonly<{
   ...____ShadowStyle_InternalCore,
   ...____ShadowStyle_InternalOverrides,
 }>;
@@ -729,9 +729,9 @@ type LinearGradientValue = {
   type: 'linear-gradient',
   // Angle or direction enums
   direction?: string,
-  colorStops: $ReadOnlyArray<{
+  colorStops: ReadonlyArray<{
     color: ____ColorValue_Internal,
-    positions?: $ReadOnlyArray<string>,
+    positions?: ReadonlyArray<string>,
   }>,
 };
 
@@ -771,21 +771,18 @@ type RadialGradientValue = {
   shape: RadialGradientShape,
   size: RadialGradientSize,
   position: RadialGradientPosition,
-  colorStops: $ReadOnlyArray<{
+  colorStops: ReadonlyArray<{
     color: ____ColorValue_Internal,
-    positions?: $ReadOnlyArray<string>,
+    positions?: ReadonlyArray<string>,
   }>,
 };
 
 export type BackgroundImageValue = LinearGradientValue | RadialGradientValue;
 
-export type BackgroundSizeValue =
-  | {
-      x: string | number,
-      y: string | number,
-    }
-  | 'cover'
-  | 'contain';
+export type BackgroundSizeValue = {
+  x: string | number,
+  y: string | number,
+};
 
 export type BackgroundRepeatKeyword =
   | 'repeat'
@@ -841,9 +838,10 @@ type ____BlendMode_Internal =
   | 'hue'
   | 'saturation'
   | 'color'
-  | 'luminosity';
+  | 'luminosity'
+  | 'plus-lighter';
 
-export type ____ViewStyle_InternalBase = $ReadOnly<{
+export type ____ViewStyle_InternalBase = Readonly<{
   backfaceVisibility?: 'visible' | 'hidden',
   backgroundColor?: ____ColorValue_Internal,
   borderColor?: ____ColorValue_Internal,
@@ -886,28 +884,27 @@ export type ____ViewStyle_InternalBase = $ReadOnly<{
   elevation?: number,
   pointerEvents?: 'auto' | 'none' | 'box-none' | 'box-only',
   cursor?: CursorValue,
-  boxShadow?: $ReadOnlyArray<BoxShadowValue> | string,
-  filter?: $ReadOnlyArray<FilterFunction> | string,
+  boxShadow?: ReadonlyArray<BoxShadowValue> | string,
+  filter?: ReadonlyArray<FilterFunction> | string,
   mixBlendMode?: ____BlendMode_Internal,
-  experimental_backgroundImage?: $ReadOnlyArray<BackgroundImageValue> | string,
-  experimental_backgroundSize?: $ReadOnlyArray<BackgroundSizeValue> | string,
+  backgroundImage?: ReadonlyArray<BackgroundImageValue> | string,
+  experimental_backgroundImage?: ReadonlyArray<BackgroundImageValue> | string,
+  experimental_backgroundSize?: ReadonlyArray<BackgroundSizeValue> | string,
   experimental_backgroundPosition?:
-    | $ReadOnlyArray<BackgroundPositionValue>
+    | ReadonlyArray<BackgroundPositionValue>
     | string,
-  experimental_backgroundRepeat?:
-    | $ReadOnlyArray<BackgroundRepeatValue>
-    | string,
+  experimental_backgroundRepeat?: ReadonlyArray<BackgroundRepeatValue> | string,
   isolation?: 'auto' | 'isolate',
 }>;
 
-export type ____ViewStyle_InternalCore = $ReadOnly<{
+export type ____ViewStyle_InternalCore = Readonly<{
   ...$Exact<____LayoutStyle_Internal>,
   ...$Exact<____ShadowStyle_Internal>,
   ...$Exact<____TransformStyle_Internal>,
   ...____ViewStyle_InternalBase,
 }>;
 
-export type ____ViewStyle_Internal = $ReadOnly<{
+export type ____ViewStyle_Internal = Readonly<{
   ...____ViewStyle_InternalCore,
   ...____ViewStyle_InternalOverrides,
 }>;
@@ -997,16 +994,16 @@ export type ____FontVariant_Internal =
   | 'stylistic-twenty';
 
 export type ____FontVariantArray_Internal =
-  $ReadOnlyArray<____FontVariant_Internal>;
+  ReadonlyArray<____FontVariant_Internal>;
 
-type ____TextStyle_InternalBase = $ReadOnly<{
+type ____TextStyle_InternalBase = Readonly<{
   color?: ____ColorValue_Internal,
   fontFamily?: string,
   fontSize?: number,
   fontStyle?: 'normal' | 'italic',
   fontWeight?: ____FontWeight_Internal,
   fontVariant?: ____FontVariantArray_Internal | string,
-  textShadowOffset?: $ReadOnly<{
+  textShadowOffset?: Readonly<{
     width: number,
     height: number,
   }>,
@@ -1022,7 +1019,7 @@ type ____TextStyle_InternalBase = $ReadOnly<{
     | 'underline'
     | 'line-through'
     | 'underline line-through',
-  textDecorationStyle?: 'solid' | 'double' | 'dotted' | 'dashed',
+  textDecorationStyle?: 'solid' | 'double' | 'dotted' | 'dashed' | 'wavy',
   textDecorationColor?: ____ColorValue_Internal,
   textTransform?: 'none' | 'capitalize' | 'uppercase' | 'lowercase',
   userSelect?: 'auto' | 'text' | 'none' | 'contain' | 'all',
@@ -1030,17 +1027,17 @@ type ____TextStyle_InternalBase = $ReadOnly<{
   writingDirection?: 'auto' | 'ltr' | 'rtl',
 }>;
 
-export type ____TextStyle_InternalCore = $ReadOnly<{
+export type ____TextStyle_InternalCore = Readonly<{
   ...$Exact<____ViewStyle_Internal>,
   ...____TextStyle_InternalBase,
 }>;
 
-export type ____TextStyle_Internal = $ReadOnly<{
+export type ____TextStyle_Internal = Readonly<{
   ...____TextStyle_InternalCore,
   ...____TextStyle_InternalOverrides,
 }>;
 
-export type ____ImageStyle_InternalCore = $ReadOnly<{
+export type ____ImageStyle_InternalCore = Readonly<{
   ...$Exact<____ViewStyle_Internal>,
   resizeMode?: ImageResizeMode,
   objectFit?: 'cover' | 'contain' | 'fill' | 'scale-down' | 'none',
@@ -1049,12 +1046,12 @@ export type ____ImageStyle_InternalCore = $ReadOnly<{
   overflow?: 'visible' | 'hidden',
 }>;
 
-export type ____ImageStyle_Internal = $ReadOnly<{
+export type ____ImageStyle_Internal = Readonly<{
   ...____ImageStyle_InternalCore,
   ...____ImageStyle_InternalOverrides,
 }>;
 
-export type ____DangerouslyImpreciseStyle_InternalCore = $ReadOnly<{
+export type ____DangerouslyImpreciseStyle_InternalCore = Readonly<{
   ...$Exact<____TextStyle_Internal>,
   resizeMode?: ImageResizeMode,
   objectFit?: 'cover' | 'contain' | 'fill' | 'scale-down' | 'none',
@@ -1062,19 +1059,19 @@ export type ____DangerouslyImpreciseStyle_InternalCore = $ReadOnly<{
   overlayColor?: ColorValue,
 }>;
 
-export type ____DangerouslyImpreciseStyle_Internal = $ReadOnly<{
+export type ____DangerouslyImpreciseStyle_Internal = Readonly<{
   ...____DangerouslyImpreciseStyle_InternalCore,
   ...____DangerouslyImpreciseStyle_InternalOverrides,
   ...
 }>;
 
-export type StyleProp<+T> =
+export type StyleProp<out T> =
   | null
   | void
   | T
   | false
   | ''
-  | $ReadOnlyArray<StyleProp<T>>;
+  | ReadonlyArray<StyleProp<T>>;
 
 export type ____DangerouslyImpreciseStyleProp_Internal = StyleProp<
   Partial<____DangerouslyImpreciseStyle_Internal>,
@@ -1084,19 +1081,19 @@ export type ____DangerouslyImpreciseAnimatedStyleProp_Internal =
   WithAnimatedValue<StyleProp<Partial<____DangerouslyImpreciseStyle_Internal>>>;
 
 export type ____ViewStyleProp_Internal = StyleProp<
-  $ReadOnly<Partial<____ViewStyle_Internal>>,
+  Readonly<Partial<____ViewStyle_Internal>>,
 >;
 export type ____TextStyleProp_Internal = StyleProp<
-  $ReadOnly<Partial<____TextStyle_Internal>>,
+  Readonly<Partial<____TextStyle_Internal>>,
 >;
 export type ____ImageStyleProp_Internal = StyleProp<
-  $ReadOnly<Partial<____ImageStyle_Internal>>,
+  Readonly<Partial<____ImageStyle_Internal>>,
 >;
 
 export type ____Styles_Internal = {
   // $FlowFixMe[incompatible-exact]
   // $FlowFixMe[incompatible-type]
-  +[key: string]: Partial<____DangerouslyImpreciseStyle_Internal>,
+  readonly [key: string]: Partial<____DangerouslyImpreciseStyle_Internal>,
   ...
 };
 
@@ -1104,22 +1101,22 @@ export type ____Styles_Internal = {
 // ____FlattenStyleProp_Helper should be considered internal.
 type FlattenDepthLimiter = [void, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 type ____FlattenStyleProp_Helper<
-  +TStyleProp: StyleProp<mixed>,
-  Depth: $Values<FlattenDepthLimiter> = 9,
+  out TStyleProp extends StyleProp<unknown>,
+  Depth extends Values<FlattenDepthLimiter> = 9,
 > = Depth extends 0
   ? empty
   : TStyleProp extends null | void | false | ''
-    ? empty
-    : // When TStyleProp is an array, recurse with decremented Depth
-      TStyleProp extends $ReadOnlyArray<infer V>
+    ? empty // When TStyleProp is an array, recurse with decremented Depth
+    : TStyleProp extends ReadonlyArray<infer V>
       ? ____FlattenStyleProp_Helper<
           V,
           Depth extends number ? FlattenDepthLimiter[Depth] : 0,
         >
       : TStyleProp;
 
-export type ____FlattenStyleProp_Internal<+TStyleProp: StyleProp<mixed>> =
-  ____FlattenStyleProp_Helper<TStyleProp> extends empty
-    ? // $FlowFixMe[unclear-type]
-      any
+export type ____FlattenStyleProp_Internal<
+  out TStyleProp extends StyleProp<unknown>,
+> =
+  ____FlattenStyleProp_Helper<TStyleProp> extends empty // $FlowFixMe[unclear-type]
+    ? any
     : ____FlattenStyleProp_Helper<TStyleProp>;

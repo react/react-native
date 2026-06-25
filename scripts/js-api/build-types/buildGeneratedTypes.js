@@ -13,7 +13,7 @@ const {ENTRY_POINT, IGNORE_PATTERNS, TYPES_OUTPUT_DIR} = require('../config');
 const getRequireStack = require('./resolution/getRequireStack');
 const translatedModuleTemplate = require('./templates/translatedModule.d.ts-template');
 const translateSourceFile = require('./translateSourceFile');
-const {promises: fs} = require('fs');
+const {promises: fs, watch: fsWatch} = require('fs');
 const micromatch = require('micromatch');
 const path = require('path');
 const {styleText} = require('util');
@@ -28,7 +28,7 @@ const {styleText} = require('util');
  * [flow-api-translator](https://www.npmjs.com/package/flow-api-translator)
  * along with our own pre and post-processing.
  */
-async function buildGeneratedTypes(): Promise<void> {
+async function buildGeneratedTypes(): Promise<Set<string>> {
   const files = new Set<string>([path.join(REPO_ROOT, ENTRY_POINT)]);
   const translatedFiles = new Set<string>();
   const dependencyEdges: DependencyEdges = [];
@@ -83,7 +83,7 @@ async function buildGeneratedTypes(): Promise<void> {
         ' API translation encountered errors.\n',
     );
     process.exitCode = 1;
-    return;
+    return translatedFiles;
   }
 
   const touchedPackages = new Set<string>(
@@ -100,6 +100,7 @@ async function buildGeneratedTypes(): Promise<void> {
     );
   }
   console.log('');
+  return translatedFiles;
 }
 
 type DependencyEdges = Array<[string, string]>;
@@ -208,4 +209,69 @@ class ModuleTranslationError extends Error {
   }
 }
 
-module.exports = buildGeneratedTypes;
+async function translateFile(file: string): Promise<void> {
+  const buildPath = getBuildPath(file);
+  const source = await fs.readFile(file, 'utf-8');
+  const {result: typescriptDef} = await translateSourceFile(source, file);
+  await fs.mkdir(path.dirname(buildPath), {recursive: true});
+  await fs.writeFile(
+    buildPath,
+    translatedModuleTemplate({
+      originalFileName: path.relative(REPO_ROOT, file),
+      source: stripDocblock(typescriptDef),
+      tripleSlashDirectives: extractTripleSlashDirectives(source),
+    }),
+  );
+}
+
+function watchGeneratedTypes(translatedFiles: Set<string>): void {
+  console.log(
+    styleText(['bold', 'inverse'], ' Watching for changes... ') + '\n',
+  );
+
+  const packageDirs = new Set(
+    Array.from(translatedFiles).map(file =>
+      path.join(
+        PACKAGES_DIR,
+        path.relative(PACKAGES_DIR, file).split(path.sep)[0],
+      ),
+    ),
+  );
+
+  for (const packageDir of packageDirs) {
+    fsWatch(packageDir, {recursive: true}, (eventType, filename) => {
+      if (filename == null) {
+        return;
+      }
+      const filePath = path.join(packageDir, filename);
+      if (!translatedFiles.has(filePath)) {
+        return;
+      }
+      process.stdout.write(
+        styleText('dim', 'File changed: ') +
+          path.relative(REPO_ROOT, filePath) +
+          '\n',
+      );
+      translateFile(filePath).then(
+        () => {
+          process.stdout.write(
+            styleText('green', '  ✔') +
+              ' Rebuilt ' +
+              path.relative(REPO_ROOT, filePath) +
+              '\n',
+          );
+        },
+        (err: Error) => {
+          process.stderr.write(
+            styleText('red', '  ✖ Build error: ') + err.message + '\n',
+          );
+        },
+      );
+    });
+  }
+}
+
+module.exports = {
+  buildGeneratedTypes,
+  watchGeneratedTypes,
+};

@@ -17,11 +17,13 @@ declare export default class DOMRectList
   // This property should've been read-only as well, but Flow doesn't handle
   // read-only indexers correctly (thinks reads are writes and fails).
   [index: number]: DOMRectReadOnly;
-  +length: number;
+  readonly length: number;
   item(index: number): DOMRectReadOnly | null;
   @@iterator(): Iterator<DOMRectReadOnly>;
 }
 
 declare export function createDOMRectList(
-  domRects: $ReadOnlyArray<DOMRectReadOnly>,
+  domRects: ReadonlyArray<DOMRectReadOnly>,
 ): DOMRectList;
+
+declare export var DOMRectList_public: typeof DOMRectList;

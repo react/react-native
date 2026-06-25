@@ -10,15 +10,12 @@
 
 import type {ExtendedError} from '../../Core/ExtendedError';
 import type {LogLevel} from './LogBoxLog';
-import type {
-  Category,
-  ComponentStack,
-  ComponentStackType,
-  ExtendedExceptionData,
-  Message,
-} from './parseLogBoxLog';
+import type {Stack} from './LogBoxSymbolication';
+import type {Category, ExtendedExceptionData, Message} from './parseLogBoxLog';
 
 import DebuggerSessionObserver from '../../../src/private/devsupport/rndevtools/FuseboxSessionObserver';
+import TracingStateObserver from '../../../src/private/devsupport/rndevtools/TracingStateObserver';
+import toExtendedError from '../../../src/private/utilities/toExtendedError';
 import parseErrorStack from '../../Core/Devtools/parseErrorStack';
 import NativeLogBox from '../../NativeModules/specs/NativeLogBox';
 import LogBoxLog from './LogBoxLog';
@@ -26,17 +23,16 @@ import {parseLogBoxException} from './parseLogBoxLog';
 import * as React from 'react';
 
 export type LogBoxLogs = Set<LogBoxLog>;
-export type LogData = $ReadOnly<{
+export type LogData = Readonly<{
   level: LogLevel,
   message: Message,
   category: Category,
-  componentStack: ComponentStack,
-  componentStackType: ComponentStackType | null,
+  componentStack: Stack,
   stack?: string,
 }>;
 
 export type Observer = (
-  $ReadOnly<{
+  Readonly<{
     logs: LogBoxLogs,
     isDisabled: boolean,
     selectedLogIndex: number,
@@ -45,7 +41,7 @@ export type Observer = (
 
 export type IgnorePattern = string | RegExp;
 
-export type Subscription = $ReadOnly<{
+export type Subscription = Readonly<{
   unsubscribe: () => void,
 }>;
 
@@ -61,7 +57,7 @@ export type WarningInfo = {
 
 export type WarningFilter = (format: string) => WarningInfo;
 
-type AppInfo = $ReadOnly<{
+type AppInfo = Readonly<{
   appVersion: string,
   engine: string,
   onPress?: ?() => void,
@@ -76,6 +72,7 @@ let _isDisabled = false;
 let _selectedIndex = -1;
 let hasShownFuseboxWarningsMigrationMessage = false;
 let hostTargetSessionObserverSubscription = null;
+let tracingStateObserverSubscription = null;
 
 let warningFilter: WarningFilter = function (format) {
   return {
@@ -210,6 +207,20 @@ export function addLog(log: LogData): void {
     );
   }
 
+  if (tracingStateObserverSubscription == null) {
+    tracingStateObserverSubscription = TracingStateObserver.subscribe(
+      isTracing => {
+        if (isTracing) {
+          clear();
+        }
+      },
+    );
+  }
+
+  if (TracingStateObserver.isTracing()) {
+    return;
+  }
+
   // If Host has Fusebox support
   if (log.level === 'warn' && global.__FUSEBOX_HAS_FULL_CONSOLE_SUPPORT__) {
     // And there is no active debugging session
@@ -237,23 +248,26 @@ export function addLog(log: LogData): void {
           stack,
           category: log.category,
           componentStack: log.componentStack,
-          componentStackType: log.componentStackType || 'legacy',
         }),
       );
-    } catch (error) {
-      reportLogBoxError(error);
+    } catch (error: unknown) {
+      reportLogBoxError(toExtendedError(error));
     }
   });
 }
 
 export function addException(error: ExtendedExceptionData): void {
+  if (TracingStateObserver.isTracing()) {
+    return;
+  }
+
   // Parsing logs are expensive so we schedule this
   // otherwise spammy logs would pause rendering.
   setImmediate(() => {
     try {
       appendNewLog(new LogBoxLog(parseLogBoxException(error)));
-    } catch (loggingError) {
-      reportLogBoxError(loggingError);
+    } catch (loggingError: unknown) {
+      reportLogBoxError(toExtendedError(loggingError));
     }
   });
 }
@@ -350,12 +364,12 @@ export function checkWarningFilter(format: string): WarningInfo {
   return warningFilter(format);
 }
 
-export function getIgnorePatterns(): $ReadOnlyArray<IgnorePattern> {
+export function getIgnorePatterns(): ReadonlyArray<IgnorePattern> {
   return Array.from(ignorePatterns);
 }
 
 export function addIgnorePatterns(
-  patterns: $ReadOnlyArray<IgnorePattern>,
+  patterns: ReadonlyArray<IgnorePattern>,
 ): void {
   const existingSize = ignorePatterns.size;
   // The same pattern may be added multiple times, but adding a new pattern
@@ -427,8 +441,8 @@ function observeNext(observer: Observer): Subscription {
   };
 }
 
-type LogBoxStateSubscriptionProps = $ReadOnly<{}>;
-type LogBoxStateSubscriptionState = $ReadOnly<{
+type LogBoxStateSubscriptionProps = Readonly<{}>;
+type LogBoxStateSubscriptionState = Readonly<{
   logs: LogBoxLogs,
   isDisabled: boolean,
   hasError: boolean,
@@ -436,8 +450,8 @@ type LogBoxStateSubscriptionState = $ReadOnly<{
 }>;
 
 type SubscribedComponent = React.ComponentType<
-  $ReadOnly<{
-    logs: $ReadOnlyArray<LogBoxLog>,
+  Readonly<{
+    logs: ReadonlyArray<LogBoxLog>,
     isDisabled: boolean,
     selectedLogIndex: number,
   }>,

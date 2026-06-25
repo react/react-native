@@ -31,39 +31,39 @@ export type ObjectStruct = {
 };
 
 export interface Spec extends TurboModule {
-  +onPress: EventEmitter<void>;
-  +onClick: EventEmitter<string>;
-  +onChange: EventEmitter<ObjectStruct>;
-  +onSubmit: EventEmitter<ObjectStruct[]>;
+  readonly onPress: EventEmitter<void>;
+  readonly onClick: EventEmitter<string>;
+  readonly onChange: EventEmitter<ObjectStruct>;
+  readonly onSubmit: EventEmitter<ObjectStruct[]>;
   // Exported methods.
-  +getConstants: () => {
+  readonly getConstants: () => {
     const1: boolean,
     const2: number,
     const3: string,
   };
-  +voidFunc: () => void;
-  +getBool: (arg: boolean) => boolean;
-  +getEnum?: (arg: EnumInt) => EnumInt;
-  +getNumber: (arg: number) => number;
-  +getString: (arg: string) => string;
-  +getArray: (arg: Array<any>) => Array<any>;
-  +getObject: (arg: Object) => Object;
-  +getUnsafeObject: (arg: UnsafeObject) => UnsafeObject;
-  +getRootTag: (arg: RootTag) => RootTag;
-  +getValue: (x: number, y: string, z: Object) => Object;
-  +getValueWithCallback: (callback: (value: string) => void) => void;
-  +getValueWithPromise: (error: boolean) => Promise<string>;
-  +voidFuncThrows?: () => void;
-  +getObjectThrows?: (arg: Object) => Object;
-  +promiseThrows?: () => Promise<void>;
-  +voidFuncAssert?: () => void;
-  +getObjectAssert?: (arg: Object) => Object;
-  +promiseAssert?: () => Promise<void>;
+  readonly voidFunc: () => void;
+  readonly getBool: (arg: boolean) => boolean;
+  readonly getEnum?: (arg: EnumInt) => EnumInt;
+  readonly getNumber: (arg: number) => number;
+  readonly getString: (arg: string) => string;
+  readonly getArray: (arg: Array<any>) => Array<any>;
+  readonly getObject: (arg: Object) => Object;
+  readonly getUnsafeObject: (arg: UnsafeObject) => UnsafeObject;
+  readonly getRootTag: (arg: RootTag) => RootTag;
+  readonly getValue: (x: number, y: string, z: Object) => Object;
+  readonly getValueWithCallback: (callback: (value: string) => void) => void;
+  readonly getValueWithPromise: (error: boolean) => Promise<string>;
+  readonly voidFuncThrows?: () => void;
+  readonly getObjectThrows?: (arg: Object) => Object;
+  readonly promiseThrows?: () => Promise<void>;
+  readonly voidFuncAssert?: () => void;
+  readonly getObjectAssert?: (arg: Object) => Object;
+  readonly promiseAssert?: () => Promise<void>;
 
   // Android-only
-  +getImageUrl?: () => Promise<string | null>;
+  readonly getImageUrl?: () => Promise<string | null>;
 }
 
-export default (TurboModuleRegistry.getEnforcing<Spec>(
+export default TurboModuleRegistry.getEnforcing<Spec>(
   'SampleTurboModule',
-): Spec);
+) as Spec;

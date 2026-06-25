@@ -12,7 +12,7 @@
  * A capability flag disables a specific feature/hack in the InspectorProxy
  * layer by indicating that the target supports one or more modern CDP features.
  */
-export type TargetCapabilityFlags = $ReadOnly<{
+export type TargetCapabilityFlags = Readonly<{
   /**
    * The target supports a stable page representation across reloads.
    *
@@ -32,18 +32,21 @@ export type TargetCapabilityFlags = $ReadOnly<{
   nativeSourceCodeFetching?: boolean,
 
   /**
-   * The target supports the modern `rn_fusebox.html` entry point.
+   * The target supports multiple concurrent debugger connections.
    *
-   * In the launch flow, this controls the Chrome DevTools entrypoint that is used.
+   * When true, the proxy allows multiple debuggers to connect to the same
+   * page simultaneously, each identified by a unique session ID.
+   * When false (default/legacy), connecting a new debugger disconnects
+   * any existing debugger connection to that page.
    */
-  prefersFuseboxFrontend?: boolean,
+  supportsMultipleDebuggers?: boolean,
 }>;
 
 // Page information received from the device. New page is created for
 // each new instance of VM and can appear when user reloads React Native
 // application.
 
-export type PageFromDevice = $ReadOnly<{
+export type PageFromDevice = Readonly<{
   id: string,
   title: string,
   /** Sent from modern targets only */
@@ -54,32 +57,43 @@ export type PageFromDevice = $ReadOnly<{
   capabilities?: TargetCapabilityFlags,
 }>;
 
-export type Page = $ReadOnly<{
+export type Page = Readonly<{
   ...PageFromDevice,
-  capabilities: $NonMaybeType<PageFromDevice['capabilities']>,
+  capabilities: NonNullable<PageFromDevice['capabilities']>,
 }>;
 
-// Chrome Debugger Protocol message/event passed between device and debugger.
-export type WrappedEvent = $ReadOnly<{
+// Chrome Debugger Protocol message/event passed from device to proxy.
+export type WrappedEventFromDevice = Readonly<{
   event: 'wrappedEvent',
-  payload: $ReadOnly<{
+  payload: Readonly<{
     pageId: string,
     wrappedEvent: string,
+    sessionId?: string,
+  }>,
+}>;
+
+// Chrome Debugger Protocol message/event passed from proxy to device.
+export type WrappedEventToDevice = Readonly<{
+  event: 'wrappedEvent',
+  payload: Readonly<{
+    pageId: string,
+    wrappedEvent: string,
+    sessionId: string,
   }>,
 }>;
 
 // Request sent from Inspector Proxy to Device when new debugger is connected
 // to particular page.
-export type ConnectRequest = $ReadOnly<{
+export type ConnectRequest = Readonly<{
   event: 'connect',
-  payload: $ReadOnly<{pageId: string}>,
+  payload: Readonly<{pageId: string, sessionId: string}>,
 }>;
 
 // Request sent from Inspector Proxy to Device to notify that debugger is
 // disconnected.
-export type DisconnectRequest = $ReadOnly<{
+export type DisconnectRequest = Readonly<{
   event: 'disconnect',
-  payload: $ReadOnly<{pageId: string}>,
+  payload: Readonly<{pageId: string, sessionId: string}>,
 }>;
 
 // Request sent from Inspector Proxy to Device to get a list of pages.
@@ -88,24 +102,24 @@ export type GetPagesRequest = {event: 'getPages'};
 // Response to GetPagesRequest containing a list of page infos.
 export type GetPagesResponse = {
   event: 'getPages',
-  payload: $ReadOnlyArray<PageFromDevice>,
+  payload: ReadonlyArray<PageFromDevice>,
 };
 
 // Union type for all possible messages sent from device to Inspector Proxy.
 export type MessageFromDevice =
   | GetPagesResponse
-  | WrappedEvent
+  | WrappedEventFromDevice
   | DisconnectRequest;
 
 // Union type for all possible messages sent from Inspector Proxy to device.
 export type MessageToDevice =
   | GetPagesRequest
-  | WrappedEvent
+  | WrappedEventToDevice
   | ConnectRequest
   | DisconnectRequest;
 
 // Page description object that is sent in response to /json HTTP request from debugger.
-export type PageDescription = $ReadOnly<{
+export type PageDescription = Readonly<{
   id: string,
   title: string,
   appId: string,
@@ -121,7 +135,7 @@ export type PageDescription = $ReadOnly<{
   vm?: string,
 
   // React Native specific metadata
-  reactNative: $ReadOnly<{
+  reactNative: Readonly<{
     logicalDeviceId: string,
     capabilities: Page['capabilities'],
   }>,
@@ -131,7 +145,7 @@ export type JsonPagesListResponse = Array<PageDescription>;
 
 // Response to /json/version HTTP request from the debugger specifying browser type and
 // Chrome protocol version.
-export type JsonVersionResponse = $ReadOnly<{
+export type JsonVersionResponse = Readonly<{
   Browser: string,
   'Protocol-Version': string,
 }>;
@@ -141,12 +155,12 @@ export type JSONSerializable =
   | number
   | string
   | null
-  | $ReadOnlyArray<JSONSerializable>
-  | {+[string]: JSONSerializable};
+  | ReadonlyArray<JSONSerializable>
+  | {readonly [string]: JSONSerializable};
 
 export type DeepReadOnly<T> =
-  T extends $ReadOnlyArray<infer V>
-    ? $ReadOnlyArray<DeepReadOnly<V>>
+  T extends ReadonlyArray<infer V>
+    ? ReadonlyArray<DeepReadOnly<V>>
     : T extends {...}
-      ? {+[K in keyof T]: DeepReadOnly<T[K]>}
+      ? {readonly [K in keyof T]: DeepReadOnly<T[K]>}
       : T;

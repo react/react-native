@@ -1,0 +1,6 @@
+class test::Clss {
+  public constexpr Clss() = default;
+  public constexpr Clss(const test::Clss&) = default;
+  public constexpr Clss(int value);
+  public constexpr Clss(test::Clss&&) = default;
+}

@@ -24,7 +24,7 @@ const styles = StyleSheet.create({
   },
 });
 
-function RotatingImagesView({useNativeDriver}: {useNativeDriver: boolean}) {
+component RotatingImagesView(useNativeDriver: boolean) {
   const anim = new Animated.Value(0);
   const rotatingAnimation = Animated.spring(anim, {
     // Returns to the start
@@ -84,7 +84,7 @@ function RotatingImagesView({useNativeDriver}: {useNativeDriver: boolean}) {
   );
 }
 
-function RotatingImagesExample(): React.Node {
+component RotatingImagesExample() {
   const [useNativeDriver, setUseNativeDriver] = useState(false);
 
   return (
@@ -103,11 +103,11 @@ function RotatingImagesExample(): React.Node {
   );
 }
 
-export default ({
+export default {
   title: 'Rotating Images',
   name: 'rotatingImages',
   description: 'Simple Animated.Image rotation.',
   expect:
     'Transform animation on image in scale, rotation, and translation. JS driver will ignore any calls to `start` on running animation. Native driver will re-start the animation.',
   render: RotatingImagesExample,
-}: RNTesterModuleExample);
+} as RNTesterModuleExample;

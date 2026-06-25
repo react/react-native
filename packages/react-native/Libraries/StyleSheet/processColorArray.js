@@ -17,8 +17,8 @@ import processColor, {type ProcessedColorValue} from './processColor';
 const TRANSPARENT = 0; // rgba(0, 0, 0, 0)
 
 function processColorArray(
-  colors: ?$ReadOnlyArray<ColorValue>,
-): ?$ReadOnlyArray<ProcessedColorValue> {
+  colors: ?ReadonlyArray<ColorValue>,
+): ?ReadonlyArray<ProcessedColorValue> {
   return colors == null ? null : colors.map(processColorElement);
 }
 

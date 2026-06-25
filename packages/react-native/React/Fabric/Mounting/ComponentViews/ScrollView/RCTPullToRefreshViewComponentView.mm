@@ -23,6 +23,22 @@ using namespace facebook::react;
 @interface RCTPullToRefreshViewComponentView () <RCTPullToRefreshViewViewProtocol, RCTRefreshableProtocol>
 @end
 
+#if TARGET_OS_TV
+
+@implementation RCTPullToRefreshViewComponentView
+
+- (void)setNativeRefreshing:(BOOL)refreshing
+{
+}
+
+- (void)setRefreshing:(BOOL)refreshing
+{
+}
+
+@end
+
+#else
+
 @implementation RCTPullToRefreshViewComponentView {
   UIRefreshControl *_refreshControl;
   RCTScrollViewComponentView *__weak _scrollViewComponentView;
@@ -258,6 +274,8 @@ using namespace facebook::react;
 }
 
 @end
+
+#endif
 
 Class<RCTComponentViewProtocol> RCTPullToRefreshViewCls(void)
 {

@@ -32,8 +32,13 @@ function requireModuleParser() {
     // If using this externally, we leverage @react-native/codegen as published form
     if (!PACKAGE_USAGE) {
       const config = {
+        babelrc: false,
+        configFile: false,
         only: [/react-native-codegen\/src\//],
-        plugins: [require('@babel/plugin-transform-flow-strip-types').default],
+        plugins: [
+          require('babel-plugin-syntax-hermes-parser'),
+          require('@babel/plugin-transform-flow-strip-types').default,
+        ],
       };
 
       withBabelRegister(config, () => {
@@ -45,8 +50,13 @@ function requireModuleParser() {
       });
     } else {
       const config = {
+        babelrc: false,
+        configFile: false,
         only: [/@react-native\/codegen\/lib\//],
-        plugins: [require('@babel/plugin-transform-flow-strip-types').default],
+        plugins: [
+          require('babel-plugin-syntax-hermes-parser'),
+          require('@babel/plugin-transform-flow-strip-types').default,
+        ],
       };
 
       withBabelRegister(config, () => {

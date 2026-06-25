@@ -27,6 +27,14 @@ struct LayoutResults {
   uint32_t computedFlexBasisGeneration = 0;
   FloatOptional computedFlexBasis = {};
 
+  // Per-flex-item floor along the main axis derived from CSS Flexbox §4.5
+  // automatic minimum sizing. Set by `resolveFlexibleLength` when the parent's
+  // config does NOT carry the `MinSizeUndefinedInsteadOfAuto` errata and the
+  // item has no explicit main-axis `min-{width,height}`. Read by the
+  // shrink/bound machinery to keep items at least this large. `Undefined`
+  // means "no auto-min applies."
+  FloatOptional computedAutoMinMainSize = {};
+
   // Instead of recomputing the entire layout every single time, we cache some
   // information to break early when nothing changed
   uint32_t generationCount = 0;
@@ -111,9 +119,6 @@ struct LayoutResults {
   }
 
   bool operator==(LayoutResults layout) const;
-  bool operator!=(LayoutResults layout) const {
-    return !(*this == layout);
-  }
 
  private:
   Direction direction_ : bitCount<Direction>() = Direction::Inherit;

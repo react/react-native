@@ -24,11 +24,6 @@ import * as LogBoxStyle from './LogBoxStyle';
 import * as React from 'react';
 import {useState} from 'react';
 
-type Props = $ReadOnly<{
-  log: LogBoxLog,
-  onRetry: () => void,
-}>;
-
 export function getCollapseMessage(
   stackFrames: Stack,
   collapsed: boolean,
@@ -65,21 +60,21 @@ export function getCollapseMessage(
   }
 }
 
-function LogBoxInspectorStackFrames(props: Props): React.Node {
+component LogBoxInspectorStackFrames(log: LogBoxLog, onRetry: () => void) {
   const [collapsed, setCollapsed] = useState(() => {
     // Only collapse frames initially if some frames are not collapsed.
-    return props.log.getAvailableStack().some(({collapse}) => !collapse);
+    return log.getAvailableStack().some(({collapse}) => !collapse);
   });
 
   function getStackList() {
     if (collapsed === true) {
-      return props.log.getAvailableStack().filter(({collapse}) => !collapse);
+      return log.getAvailableStack().filter(({collapse}) => !collapse);
     } else {
-      return props.log.getAvailableStack();
+      return log.getAvailableStack();
     }
   }
 
-  if (props.log.getAvailableStack().length === 0) {
+  if (log.getAvailableStack().length === 0) {
     return null;
   }
 
@@ -88,13 +83,11 @@ function LogBoxInspectorStackFrames(props: Props): React.Node {
       heading="Call Stack"
       action={
         <LogBoxInspectorSourceMapStatus
-          onPress={
-            props.log.symbolicated.status === 'FAILED' ? props.onRetry : null
-          }
-          status={props.log.symbolicated.status}
+          onPress={log.symbolicated.status === 'FAILED' ? onRetry : null}
+          status={log.symbolicated.status}
         />
       }>
-      {props.log.symbolicated.status !== 'COMPLETE' && (
+      {log.symbolicated.status !== 'COMPLETE' && (
         <View style={stackStyles.hintBox}>
           <Text style={stackStyles.hintText}>
             This call stack is not symbolicated. Some features are unavailable
@@ -102,32 +95,29 @@ function LogBoxInspectorStackFrames(props: Props): React.Node {
           </Text>
         </View>
       )}
-      <StackFrameList
-        list={getStackList()}
-        status={props.log.symbolicated.status}
-      />
+      <StackFrameList list={getStackList()} status={log.symbolicated.status} />
       <StackFrameFooter
         onPress={() => setCollapsed(!collapsed)}
-        message={getCollapseMessage(props.log.getAvailableStack(), collapsed)}
+        message={getCollapseMessage(log.getAvailableStack(), collapsed)}
       />
     </LogBoxInspectorSection>
   );
 }
 
-function StackFrameList(props: {
+component StackFrameList(
   list: Stack | Array<StackFrame>,
   status: string | 'COMPLETE' | 'FAILED' | 'NONE' | 'PENDING',
-}) {
+) {
   return (
     <>
-      {props.list.map((frame, index) => {
+      {list.map((frame, index) => {
         const {file, lineNumber} = frame;
         return (
           <LogBoxInspectorStackFrame
             key={index}
             frame={frame}
             onPress={
-              props.status === 'COMPLETE' && file != null && lineNumber != null
+              status === 'COMPLETE' && file != null && lineNumber != null
                 ? () => openFileInEditor(file, lineNumber)
                 : null
             }
@@ -138,9 +128,7 @@ function StackFrameList(props: {
   );
 }
 
-function StackFrameFooter(
-  props: $ReadOnly<{message: string, onPress: () => void}>,
-) {
+component StackFrameFooter(message: string, onPress: () => void) {
   return (
     <View style={stackStyles.collapseContainer}>
       <LogBoxButton
@@ -148,9 +136,9 @@ function StackFrameFooter(
           default: 'transparent',
           pressed: LogBoxStyle.getBackgroundColor(1),
         }}
-        onPress={props.onPress}
+        onPress={onPress}
         style={stackStyles.collapseButton}>
-        <Text style={stackStyles.collapse}>{props.message}</Text>
+        <Text style={stackStyles.collapse}>{message}</Text>
       </LogBoxButton>
     </View>
   );

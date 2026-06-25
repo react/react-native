@@ -10,7 +10,7 @@
 
 'use strict';
 
-import React from 'react';
+import * as React from 'react';
 import {Animated, PanResponder, StyleSheet, View} from 'react-native';
 
 const NUM_BOBBLES = 5;

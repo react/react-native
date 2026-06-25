@@ -22,10 +22,11 @@ const PODS_LOCATIONS = [
 module.exports = {
   transform: {
     '^.+\\.(bmp|gif|jpg|jpeg|mp4|png|psd|svg|webp)$':
-      '<rootDir>/packages/react-native/jest/assetFileTransformer.js',
+      '<rootDir>/packages/jest-preset/jest/assetFileTransformer.js',
     '.*': './jest/preprocessor.js',
   },
-  setupFiles: ['./packages/react-native/jest/local-setup.js'],
+  resolver: './packages/jest-preset/jest/resolver.js',
+  setupFiles: ['./packages/jest-preset/jest/local-setup.js'],
   fakeTimers: {
     enableGlobally: true,
     legacyFakeTimers: false,
@@ -42,7 +43,7 @@ module.exports = {
     '<rootDir>/packages/react-native/Libraries/Renderer',
     '<rootDir>/packages/react-native/sdks/hermes/',
     ...PODS_LOCATIONS,
-  ] /*:: as $ReadOnlyArray<string> */,
+  ] /*:: as ReadonlyArray<string> */,
   transformIgnorePatterns: ['node_modules/(?!@react-native/)'],
   haste: {
     defaultPlatform: 'ios',
@@ -51,12 +52,12 @@ module.exports = {
   moduleFileExtensions: [
     'fb.js',
     ...defaults.moduleFileExtensions,
-  ] /*:: as $ReadOnlyArray<string> */,
+  ] /*:: as ReadonlyArray<string> */,
   modulePathIgnorePatterns: [
     'scripts/.*/__fixtures__/',
     '<rootDir>/packages/react-native/sdks/hermes/',
     ...PODS_LOCATIONS,
-  ] /*:: as $ReadOnlyArray<string> */,
+  ] /*:: as ReadonlyArray<string> */,
   unmockedModulePathPatterns: [
     'node_modules/react/',
     'packages/react-native/Libraries/Renderer',

@@ -29,7 +29,7 @@ type CopiedFiles = {
 };
 
 async function saveAssets(
-  assets: $ReadOnlyArray<AssetData>,
+  assets: ReadonlyArray<AssetData>,
   platform: string,
   assetsDest?: string,
   assetCatalogDest?: string,

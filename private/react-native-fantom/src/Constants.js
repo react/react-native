@@ -8,24 +8,28 @@
  * @format
  */
 
-export type FantomRuntimeConstants = $ReadOnly<{
+export type HostPlatform = 'android' | 'windows' | 'macos' | 'linux';
+
+export type FantomRuntimeConstants = Readonly<{
   isOSS: boolean,
   isRunningFromCI: boolean,
-  forceTestModeForBenchmarks: boolean,
+  runBenchmarks: boolean,
   fantomConfigSummary: string,
   jsHeapSnapshotOutputPathTemplate: string,
   jsHeapSnapshotOutputPathTemplateToken: string,
   jsTraceOutputPath: ?string,
+  hostPlatform: HostPlatform,
 }>;
 
 let constants: FantomRuntimeConstants = {
   isOSS: false,
   isRunningFromCI: false,
-  forceTestModeForBenchmarks: false,
+  runBenchmarks: false,
   fantomConfigSummary: '',
   jsHeapSnapshotOutputPathTemplate: '',
   jsHeapSnapshotOutputPathTemplateToken: '',
   jsTraceOutputPath: null,
+  hostPlatform: 'linux',
 };
 
 export function getConstants(): FantomRuntimeConstants {

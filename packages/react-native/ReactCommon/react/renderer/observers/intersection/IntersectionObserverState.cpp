@@ -55,9 +55,4 @@ bool IntersectionObserverState::operator==(
   return threshold_ == other.threshold_ &&
       rootThreshold_ == other.rootThreshold_;
 }
-
-bool IntersectionObserverState::operator!=(
-    const IntersectionObserverState& other) const {
-  return !(*this == other);
-}
 } // namespace facebook::react

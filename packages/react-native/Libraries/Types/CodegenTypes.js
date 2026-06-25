@@ -18,11 +18,11 @@ import type {NativeSyntheticEvent} from './CoreEventTypes';
 
 export type BubblingEventHandler<
   T,
-  PaperName: string | empty = empty, // eslint-disable-line no-unused-vars
+  PaperName extends string | empty = empty, // eslint-disable-line no-unused-vars
 > = (event: NativeSyntheticEvent<T>) => void | Promise<void>;
 export type DirectEventHandler<
   T,
-  PaperName: string | empty = empty, // eslint-disable-line no-unused-vars
+  PaperName extends string | empty = empty, // eslint-disable-line no-unused-vars
 > = (event: NativeSyntheticEvent<T>) => void | Promise<void>;
 
 // Prop types
@@ -31,17 +31,20 @@ export type Float = number;
 export type Int32 = number;
 /* $FlowFixMe[unclear-type] Object is forbidden in strict mode */
 export type UnsafeObject = Object;
-export type UnsafeMixed = mixed;
+export type UnsafeMixed = unknown;
 
-type DefaultTypes = number | boolean | string | $ReadOnlyArray<string>;
+type DefaultTypes = number | boolean | string | ReadonlyArray<string>;
 // Default handling, ignore the unused value
 // we're only using it for type checking
 //
 // TODO: (rickhanlonii) T44881457 If a default is provided, it should always be optional
 //  but that is currently not supported in the codegen since we require a default
 //
-// eslint-disable-next-line no-unused-vars
-export type WithDefault<Type: DefaultTypes, Value: ?Type | string> = ?Type;
+export type WithDefault<
+  Type extends DefaultTypes,
+  // eslint-disable-next-line no-unused-vars
+  Value extends ?Type | string,
+> = ?Type;
 
 export type EventEmitter<T> = (
   handler: (T) => void | Promise<void>,

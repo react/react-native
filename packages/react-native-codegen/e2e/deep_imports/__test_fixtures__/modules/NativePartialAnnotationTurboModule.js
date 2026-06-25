@@ -22,15 +22,15 @@ export type SomeObj = {
 export type PartialSomeObj = Partial<SomeObj>;
 
 export interface Spec extends TurboModule {
-  +getSomeObj: () => SomeObj;
-  +getPartialSomeObj: () => Partial<SomeObj>;
-  +getSomeObjFromPartialSomeObj: (value: Partial<SomeObj>) => SomeObj;
-  +getPartialPartial: (
+  readonly getSomeObj: () => SomeObj;
+  readonly getPartialSomeObj: () => Partial<SomeObj>;
+  readonly getSomeObjFromPartialSomeObj: (value: Partial<SomeObj>) => SomeObj;
+  readonly getPartialPartial: (
     value1: Partial<SomeObj>,
     value2: PartialSomeObj,
   ) => SomeObj;
 }
 
-export default (TurboModuleRegistry.getEnforcing<Spec>(
+export default TurboModuleRegistry.getEnforcing<Spec>(
   'NativePartialAnnotationTurboModule',
-): Spec);
+) as Spec;

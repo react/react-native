@@ -32,9 +32,9 @@ class LinkingImpl extends NativeEventEmitter<LinkingEventDefinitions> {
    *
    * See https://reactnative.dev/docs/linking#addeventlistener
    */
-  addEventListener<K: $Keys<LinkingEventDefinitions>>(
+  addEventListener<K extends keyof LinkingEventDefinitions>(
     eventType: K,
-    listener: (...LinkingEventDefinitions[K]) => mixed,
+    listener: (...LinkingEventDefinitions[K]) => unknown,
   ): EventSubscription {
     return this.addListener(eventType, listener);
   }

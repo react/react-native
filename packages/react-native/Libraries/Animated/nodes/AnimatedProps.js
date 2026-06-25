@@ -15,6 +15,7 @@ import type {AnimatedStyleAllowlist} from './AnimatedStyle';
 
 import NativeAnimatedHelper from '../../../src/private/animated/NativeAnimatedHelper';
 import * as ReactNativeFeatureFlags from '../../../src/private/featureflags/ReactNativeFeatureFlags';
+import {getFabricUIManager} from '../../ReactNative/FabricUIManager';
 import {findNodeHandle} from '../../ReactNative/RendererProxy';
 import {getNodeFromPublicInstance} from '../../ReactPrivate/ReactNativePrivateInterface';
 import flattenStyle from '../../StyleSheet/flattenStyle';
@@ -24,24 +25,24 @@ import AnimatedObject from './AnimatedObject';
 import AnimatedStyle from './AnimatedStyle';
 import invariant from 'invariant';
 
-export type AnimatedPropsAllowlist = $ReadOnly<{
+export type AnimatedPropsAllowlist = Readonly<{
   style?: ?AnimatedStyleAllowlist,
   [key: string]: true | AnimatedStyleAllowlist,
 }>;
 
 type TargetView = {
-  +instance: TargetViewInstance,
+  readonly instance: TargetViewInstance,
   connectedViewTag: ?number,
 };
 type TargetViewInstance = React.ElementRef<React.ElementType>;
 
 function createAnimatedProps(
-  inputProps: {[string]: mixed},
+  inputProps: {[string]: unknown},
   allowlist: ?AnimatedPropsAllowlist,
-): [$ReadOnlyArray<string>, $ReadOnlyArray<AnimatedNode>, {[string]: mixed}] {
+): [ReadonlyArray<string>, ReadonlyArray<AnimatedNode>, {[string]: unknown}] {
   const nodeKeys: Array<string> = [];
   const nodes: Array<AnimatedNode> = [];
-  const props: {[string]: mixed} = {};
+  const props: {[string]: unknown} = {};
 
   const keys = Object.keys(inputProps);
   for (let ii = 0, length = keys.length; ii < length; ii++) {
@@ -96,14 +97,14 @@ function createAnimatedProps(
 
 export default class AnimatedProps extends AnimatedNode {
   _callback: () => void;
-  _nodeKeys: $ReadOnlyArray<string>;
-  _nodes: $ReadOnlyArray<AnimatedNode>;
-  _props: {[string]: mixed};
+  _nodeKeys: ReadonlyArray<string>;
+  _nodes: ReadonlyArray<AnimatedNode>;
+  _props: {[string]: unknown};
   _target: ?TargetView = null;
   _rootTag: ?RootTag = undefined;
 
   constructor(
-    inputProps: {[string]: mixed},
+    inputProps: {[string]: unknown},
     callback: () => void,
     allowlist?: ?AnimatedPropsAllowlist,
     rootTag?: RootTag,
@@ -119,7 +120,7 @@ export default class AnimatedProps extends AnimatedNode {
   }
 
   __getValue(): Object {
-    const props: {[string]: mixed} = {};
+    const props: {[string]: unknown} = {};
 
     const keys = Object.keys(this._props);
     for (let ii = 0, length = keys.length; ii < length; ii++) {
@@ -144,7 +145,7 @@ export default class AnimatedProps extends AnimatedNode {
    * created by this `AnimatedProps` instance.
    */
   __getValueWithStaticProps(staticProps: Object): Object {
-    const props: {[string]: mixed} = {...staticProps};
+    const props: {[string]: unknown} = {...staticProps};
 
     const keys = Object.keys(staticProps);
     for (let ii = 0, length = keys.length; ii < length; ii++) {
@@ -155,7 +156,7 @@ export default class AnimatedProps extends AnimatedNode {
         const staticStyle = staticProps.style;
         const flatStaticStyle = flattenStyle(staticStyle);
         if (maybeNode instanceof AnimatedStyle) {
-          const mutableStyle: {[string]: mixed} =
+          const mutableStyle: {[string]: unknown} =
             flatStaticStyle == null
               ? {}
               : flatStaticStyle === staticStyle
@@ -179,7 +180,7 @@ export default class AnimatedProps extends AnimatedNode {
     return props;
   }
 
-  __getNativeAnimatedEventTuples(): $ReadOnlyArray<[string, AnimatedEvent]> {
+  __getNativeAnimatedEventTuples(): ReadonlyArray<[string, AnimatedEvent]> {
     const tuples = [];
 
     const keys = Object.keys(this._props);
@@ -196,7 +197,7 @@ export default class AnimatedProps extends AnimatedNode {
   }
 
   __getAnimatedValue(): Object {
-    const props: {[string]: mixed} = {};
+    const props: {[string]: unknown} = {};
 
     const nodeKeys = this._nodeKeys;
     const nodes = this._nodes;
@@ -298,8 +299,31 @@ export default class AnimatedProps extends AnimatedNode {
     }
 
     invariant(this.__isNative, 'Expected node to be marked as "native"');
-    // $FlowExpectedError[incompatible-type] - target.instance may be an HTMLElement but we need ReactNativeElement for Fabric
-    const shadowNode = getNodeFromPublicInstance(target.instance);
+    // Host components and ScrollView (whose ref is the host instance) resolve a
+    // shadow node directly; FlatList/SectionList are class composites that expose
+    // the host via getNativeScrollRef().
+    // $FlowFixMe[unclear-type] - Legacy instance assumptions.
+    const instance: any = target.instance;
+    const candidates = [instance, instance?.getNativeScrollRef?.()];
+    let shadowNode = null;
+    for (const candidate of candidates) {
+      if (candidate == null) {
+        continue;
+      }
+      shadowNode = getNodeFromPublicInstance(candidate);
+      if (shadowNode != null) {
+        break;
+      }
+    }
+    // Any other class composite: resolve from the host tag #connectAnimatedView
+    // already found via findNodeHandle (the lookup runs on the native side).
+    const connectedViewTag = target.connectedViewTag;
+    if (shadowNode == null && connectedViewTag != null) {
+      shadowNode =
+        getFabricUIManager()?.findShadowNodeByTag_DEPRECATED?.(
+          connectedViewTag,
+        );
+    }
     if (shadowNode == null) {
       return;
     }
@@ -358,6 +382,6 @@ export default class AnimatedProps extends AnimatedNode {
 // this shim when they do.
 // $FlowFixMe[method-unbinding]
 const _hasOwnProp = Object.prototype.hasOwnProperty;
-const hasOwn: (obj: $ReadOnly<{...}>, prop: string) => boolean =
+const hasOwn: (obj: Readonly<{...}>, prop: string) => boolean =
   // $FlowFixMe[method-unbinding]
   Object.hasOwn ?? ((obj, prop) => _hasOwnProp.call(obj, prop));

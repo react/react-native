@@ -10,9 +10,6 @@
 
 'use strict';
 
-// TODO(legacy-fake-timers): Fix these tests to work with modern timers.
-jest.useFakeTimers({legacyFakeTimers: true});
-
 jest.mock('../../../Core/Devtools/parseErrorStack', () => {
   return {__esModule: true, default: jest.fn(() => [])};
 });
@@ -65,7 +62,6 @@ const addLogs = (logs: Array<string>, options: void | {flush: boolean}) => {
       },
       category: message,
       componentStack: [],
-      componentStackType: null,
     });
     if (options == null || options.flush !== false) {
       jest.runOnlyPendingTimers();
@@ -145,16 +141,17 @@ const addSyntaxError = (options: $FlowFixMe) => {
   );
 };
 
-beforeEach(() => {
-  jest.resetModules();
-});
-
 const flushToObservers = () => {
   // Observer updates are debounced and need to advance timers to flush.
   jest.runOnlyPendingTimers();
 };
 
 describe('LogBoxData', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.resetModules();
+  });
+
   it('adds and dismisses logs', () => {
     addLogs(['A']);
     addSoftErrors(['B']);
@@ -591,9 +588,13 @@ describe('LogBoxData', () => {
     expect(observer.mock.calls.length).toBe(1);
 
     addLogs(['A']);
+    flushToObservers();
     addSoftErrors(['B']);
+    flushToObservers();
     addFatalErrors(['C']);
+    flushToObservers();
     addSyntaxError();
+    flushToObservers();
     expect(observer.mock.calls.length).toBe(5);
 
     LogBoxData.clearWarnings();
@@ -611,9 +612,13 @@ describe('LogBoxData', () => {
     expect(observer.mock.calls.length).toBe(1);
 
     addLogs(['A']);
+    flushToObservers();
     addSoftErrors(['B']);
+    flushToObservers();
     addFatalErrors(['C']);
+    flushToObservers();
     addSyntaxError();
+    flushToObservers();
     expect(observer.mock.calls.length).toBe(5);
 
     LogBoxData.clearErrors();
@@ -721,5 +726,142 @@ describe('LogBoxData', () => {
 
     LogBoxData.setAppInfo(() => info);
     expect(LogBoxData.getAppInfo()).toBe(info);
+  });
+
+  describe('Performance tracing suppression', () => {
+    let mockIsTracing: () => boolean;
+    let mockSubscribeCallback: ((isTracing: boolean) => void) | null = null;
+
+    beforeEach(() => {
+      mockIsTracing = jest.fn(() => false);
+      mockSubscribeCallback = null;
+
+      jest.doMock(
+        '../../../../src/private/devsupport/rndevtools/TracingStateObserver',
+        () => ({
+          __esModule: true,
+          default: {
+            isTracing: () => mockIsTracing(),
+            subscribe: (callback: (isTracing: boolean) => void) => {
+              mockSubscribeCallback = callback;
+              return () => {
+                mockSubscribeCallback = null;
+              };
+            },
+          },
+        }),
+      );
+
+      jest.resetModules();
+    });
+
+    afterEach(() => {
+      jest.unmock(
+        '../../../../src/private/devsupport/rndevtools/TracingStateObserver',
+      );
+    });
+
+    it('suppresses logs when performance tracing is active', () => {
+      const LogBoxDataWithMock = require('../LogBoxData');
+
+      LogBoxDataWithMock.addLog({
+        level: 'warn',
+        message: {content: 'Before tracing', substitutions: []},
+        category: 'before-tracing',
+        componentStack: [],
+      });
+      jest.runOnlyPendingTimers();
+
+      const observerBefore = jest.fn();
+      LogBoxDataWithMock.observe(observerBefore).unsubscribe();
+      expect(Array.from(observerBefore.mock.calls[0][0].logs).length).toBe(1);
+
+      mockIsTracing = jest.fn(() => true);
+
+      LogBoxDataWithMock.addLog({
+        level: 'warn',
+        message: {content: 'During tracing', substitutions: []},
+        category: 'during-tracing',
+        componentStack: [],
+      });
+      jest.runOnlyPendingTimers();
+
+      const observerDuring = jest.fn();
+      LogBoxDataWithMock.observe(observerDuring).unsubscribe();
+      expect(Array.from(observerDuring.mock.calls[0][0].logs).length).toBe(1);
+    });
+
+    it('suppresses exceptions when performance tracing is active', () => {
+      const LogBoxDataWithMock = require('../LogBoxData');
+
+      LogBoxDataWithMock.addException({
+        message: 'Before tracing exception',
+        isComponentError: false,
+        originalMessage: 'Before tracing exception',
+        name: 'console.error',
+        componentStack: '',
+        stack: [],
+        id: 0,
+        isFatal: false,
+      });
+      jest.runOnlyPendingTimers();
+
+      const observerBefore = jest.fn();
+      LogBoxDataWithMock.observe(observerBefore).unsubscribe();
+      expect(Array.from(observerBefore.mock.calls[0][0].logs).length).toBe(1);
+
+      mockIsTracing = jest.fn(() => true);
+
+      LogBoxDataWithMock.addException({
+        message: 'During tracing exception',
+        isComponentError: false,
+        originalMessage: 'During tracing exception',
+        name: 'console.error',
+        componentStack: '',
+        stack: [],
+        id: 1,
+        isFatal: false,
+      });
+      jest.runOnlyPendingTimers();
+
+      const observerDuring = jest.fn();
+      LogBoxDataWithMock.observe(observerDuring).unsubscribe();
+      expect(Array.from(observerDuring.mock.calls[0][0].logs).length).toBe(1);
+    });
+
+    it('clears logs when tracing starts', () => {
+      const LogBoxDataWithMock = require('../LogBoxData');
+
+      LogBoxDataWithMock.addLog({
+        level: 'warn',
+        message: {content: 'Log 1', substitutions: []},
+        category: 'log-1',
+        componentStack: [],
+      });
+      LogBoxDataWithMock.addLog({
+        level: 'warn',
+        message: {content: 'Log 2', substitutions: []},
+        category: 'log-2',
+        componentStack: [],
+      });
+      jest.runOnlyPendingTimers();
+
+      const observerBefore = jest.fn();
+      LogBoxDataWithMock.observe(observerBefore).unsubscribe();
+      expect(Array.from(observerBefore.mock.calls[0][0].logs).length).toBe(2);
+
+      if (mockSubscribeCallback) {
+        mockSubscribeCallback(true);
+      }
+      jest.runOnlyPendingTimers();
+
+      const observerAfter = jest.fn();
+      LogBoxDataWithMock.observe(observerAfter).unsubscribe();
+      expect(Array.from(observerAfter.mock.calls[0][0].logs).length).toBe(0);
+    });
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
   });
 });

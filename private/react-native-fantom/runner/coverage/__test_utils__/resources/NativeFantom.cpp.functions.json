@@ -1,0 +1,980 @@
+[{
+  "branches": [],
+  "count": 1,
+  "filenames": [
+    "private/react-native-fantom/tester/src/NativeFantom.cpp"
+  ],
+  "name": "_ZN8facebook5react12NativeFantomC2ERNS0_17TesterAppDelegateESt10shared_ptrINS0_11CallInvokerEE",
+  "regions": [
+    [
+      32,
+      33,
+      32,
+      35,
+      1,
+      0,
+      0,
+      0
+    ]
+  ]
+},
+{
+  "branches": [],
+  "count": 30,
+  "filenames": [
+    "private/react-native-fantom/tester/src/NativeFantom.cpp"
+  ],
+  "name": "_ZN8facebook5react12NativeFantom12startSurfaceERNS_3jsi7RuntimeEddddd",
+  "regions": [
+    [
+      40,
+      29,
+      52,
+      2,
+      30,
+      0,
+      0,
+      0
+    ]
+  ]
+},
+{
+  "branches": [],
+  "count": 0,
+  "filenames": [
+    "private/react-native-fantom/tester/src/NativeFantom.cpp"
+  ],
+  "name": "_ZN8facebook5react12NativeFantom11stopSurfaceERNS_3jsi7RuntimeEi",
+  "regions": [
+    [
+      54,
+      80,
+      56,
+      2,
+      0,
+      0,
+      0,
+      0
+    ]
+  ]
+},
+{
+  "branches": [],
+  "count": 0,
+  "filenames": [
+    "private/react-native-fantom/tester/src/NativeFantom.cpp"
+  ],
+  "name": "_ZN8facebook5react12NativeFantom24produceFramesForDurationERNS_3jsi7RuntimeEd",
+  "regions": [
+    [
+      60,
+      26,
+      62,
+      2,
+      0,
+      0,
+      0,
+      0
+    ]
+  ]
+},
+{
+  "branches": [],
+  "count": 33,
+  "filenames": [
+    "private/react-native-fantom/tester/src/NativeFantom.cpp"
+  ],
+  "name": "_ZN8facebook5react12NativeFantom17flushMessageQueueERNS_3jsi7RuntimeE",
+  "regions": [
+    [
+      64,
+      65,
+      66,
+      2,
+      33,
+      0,
+      0,
+      0
+    ]
+  ]
+},
+{
+  "branches": [],
+  "count": 0,
+  "filenames": [
+    "private/react-native-fantom/tester/src/NativeFantom.cpp"
+  ],
+  "name": "_ZN8facebook5react12NativeFantom15flushEventQueueERNS_3jsi7RuntimeE",
+  "regions": [
+    [
+      68,
+      63,
+      70,
+      2,
+      0,
+      0,
+      0,
+      0
+    ]
+  ]
+},
+{
+  "branches": [
+    [
+      73,
+      7,
+      73,
+      51,
+      0,
+      30,
+      0,
+      0,
+      4
+    ]
+  ],
+  "count": 30,
+  "filenames": [
+    "private/react-native-fantom/tester/src/NativeFantom.cpp"
+  ],
+  "name": "_ZN8facebook5react12NativeFantom25validateEmptyMessageQueueERNS_3jsi7RuntimeE",
+  "regions": [
+    [
+      72,
+      73,
+      76,
+      2,
+      30,
+      0,
+      0,
+      0
+    ],
+    [
+      73,
+      7,
+      73,
+      51,
+      30,
+      0,
+      0,
+      0
+    ],
+    [
+      73,
+      52,
+      73,
+      53,
+      0,
+      0,
+      0,
+      3
+    ],
+    [
+      73,
+      53,
+      75,
+      4,
+      0,
+      0,
+      0,
+      0
+    ]
+  ]
+},
+{
+  "branches": [],
+  "count": 0,
+  "filenames": [
+    "private/react-native-fantom/tester/src/NativeFantom.cpp"
+  ],
+  "name": "_ZN8facebook5react12NativeFantom23takeMountingManagerLogsB5cxx11ERNS_3jsi7RuntimeEi",
+  "regions": [
+    [
+      80,
+      26,
+      82,
+      2,
+      0,
+      0,
+      0,
+      0
+    ]
+  ]
+},
+{
+  "branches": [],
+  "count": 27,
+  "filenames": [
+    "private/react-native-fantom/tester/src/NativeFantom.cpp"
+  ],
+  "name": "_ZN8facebook5react12NativeFantom17getRenderedOutputB5cxx11ERNS_3jsi7RuntimeEiNS0_31NativeFantomRenderFormatOptionsIbbEE",
+  "regions": [
+    [
+      87,
+      63,
+      94,
+      2,
+      27,
+      0,
+      0,
+      0
+    ],
+    [
+      90,
+      1,
+      90,
+      1,
+      0,
+      0,
+      0,
+      2
+    ]
+  ]
+},
+{
+  "branches": [],
+  "count": 1,
+  "filenames": [
+    "private/react-native-fantom/tester/src/NativeFantom.cpp"
+  ],
+  "name": "_ZN8facebook5react12NativeFantom26reportTestSuiteResultsJSONERNS_3jsi7RuntimeERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE",
+  "regions": [
+    [
+      98,
+      46,
+      100,
+      2,
+      1,
+      0,
+      0,
+      0
+    ]
+  ]
+},
+{
+  "branches": [],
+  "count": 0,
+  "filenames": [
+    "private/react-native-fantom/tester/src/NativeFantom.cpp"
+  ],
+  "name": "_ZN8facebook5react12NativeFantom26getDirectManipulationPropsERNS_3jsi7RuntimeERKSt10shared_ptrIKNS0_10ShadowNodeEE",
+  "regions": [
+    [
+      104,
+      58,
+      108,
+      2,
+      0,
+      0,
+      0,
+      0
+    ]
+  ]
+},
+{
+  "branches": [],
+  "count": 0,
+  "filenames": [
+    "private/react-native-fantom/tester/src/NativeFantom.cpp"
+  ],
+  "name": "_ZN8facebook5react12NativeFantom20getFabricUpdatePropsERNS_3jsi7RuntimeERKSt10shared_ptrIKNS0_10ShadowNodeEE",
+  "regions": [
+    [
+      112,
+      58,
+      116,
+      2,
+      0,
+      0,
+      0,
+      0
+    ]
+  ]
+},
+{
+  "branches": [
+    [
+      125,
+      7,
+      125,
+      31,
+      0,
+      0,
+      0,
+      0,
+      4
+    ]
+  ],
+  "count": 0,
+  "filenames": [
+    "private/react-native-fantom/tester/src/NativeFantom.cpp"
+  ],
+  "name": "_ZN8facebook5react12NativeFantom18enqueueNativeEventERNS_3jsi7RuntimeESt10shared_ptrIKNS0_10ShadowNodeEERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt8optionalIN5folly7dynamicEESH_INS0_8RawEvent8CategoryEESH_IbE",
+  "regions": [
+    [
+      124,
+      35,
+      134,
+      2,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      125,
+      7,
+      125,
+      31,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      125,
+      32,
+      125,
+      33,
+      0,
+      0,
+      0,
+      3
+    ],
+    [
+      125,
+      33,
+      128,
+      4,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      128,
+      4,
+      128,
+      10,
+      0,
+      0,
+      0,
+      3
+    ],
+    [
+      128,
+      10,
+      133,
+      4,
+      0,
+      0,
+      0,
+      0
+    ]
+  ]
+},
+{
+  "branches": [
+    [
+      143,
+      7,
+      143,
+      38,
+      0,
+      0,
+      0,
+      0,
+      4
+    ]
+  ],
+  "count": 0,
+  "filenames": [
+    "private/react-native-fantom/tester/src/NativeFantom.cpp"
+  ],
+  "name": "_ZN8facebook5react12NativeFantom18enqueueScrollEventERNS_3jsi7RuntimeESt10shared_ptrIKNS0_10ShadowNodeEENS0_25NativeFantomScrollOptionsIffSt8optionalIfEEE",
+  "regions": [
+    [
+      139,
+      28,
+      177,
+      2,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      142,
+      1,
+      142,
+      1,
+      0,
+      0,
+      0,
+      2
+    ],
+    [
+      143,
+      7,
+      143,
+      38,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      143,
+      39,
+      143,
+      40,
+      0,
+      0,
+      0,
+      3
+    ],
+    [
+      143,
+      40,
+      146,
+      4,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      146,
+      4,
+      148,
+      3,
+      0,
+      0,
+      0,
+      3
+    ],
+    [
+      147,
+      1,
+      147,
+      1,
+      0,
+      0,
+      0,
+      2
+    ],
+    [
+      148,
+      3,
+      177,
+      2,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      152,
+      1,
+      152,
+      1,
+      0,
+      0,
+      0,
+      2
+    ],
+    [
+      154,
+      1,
+      154,
+      1,
+      0,
+      0,
+      0,
+      2
+    ],
+    [
+      163,
+      1,
+      163,
+      1,
+      0,
+      0,
+      0,
+      2
+    ],
+    [
+      165,
+      1,
+      165,
+      1,
+      0,
+      0,
+      0,
+      2
+    ]
+  ]
+},
+{
+  "branches": [
+    [
+      187,
+      7,
+      187,
+      41,
+      0,
+      0,
+      0,
+      0,
+      4
+    ]
+  ],
+  "count": 0,
+  "filenames": [
+    "private/react-native-fantom/tester/src/NativeFantom.cpp"
+  ],
+  "name": "_ZN8facebook5react12NativeFantom22enqueueModalSizeUpdateERNS_3jsi7RuntimeESt10shared_ptrIKNS0_10ShadowNodeEEdd",
+  "regions": [
+    [
+      183,
+      20,
+      199,
+      2,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      186,
+      1,
+      186,
+      1,
+      0,
+      0,
+      0,
+      2
+    ],
+    [
+      187,
+      7,
+      187,
+      41,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      187,
+      42,
+      187,
+      43,
+      0,
+      0,
+      0,
+      3
+    ],
+    [
+      187,
+      43,
+      190,
+      4,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      190,
+      4,
+      192,
+      3,
+      0,
+      0,
+      0,
+      3
+    ],
+    [
+      191,
+      1,
+      191,
+      1,
+      0,
+      0,
+      0,
+      2
+    ],
+    [
+      192,
+      3,
+      199,
+      2,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      195,
+      1,
+      195,
+      1,
+      0,
+      0,
+      0,
+      2
+    ]
+  ]
+},
+{
+  "branches": [],
+  "count": 0,
+  "filenames": [
+    "private/react-native-fantom/tester/src/NativeFantom.cpp"
+  ],
+  "name": "_ZN8facebook5react12NativeFantom32createShadowNodeReferenceCounterERNS_3jsi7RuntimeESt10shared_ptrIKNS0_10ShadowNodeEE",
+  "regions": [
+    [
+      203,
+      51,
+      213,
+      2,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      205,
+      1,
+      205,
+      1,
+      0,
+      0,
+      0,
+      2
+    ]
+  ]
+},
+{
+  "branches": [],
+  "count": 0,
+  "filenames": [
+    "private/react-native-fantom/tester/src/NativeFantom.cpp"
+  ],
+  "name": "_ZN8facebook5react12NativeFantom30createShadowNodeRevisionGetterERNS_3jsi7RuntimeESt10shared_ptrIKNS0_10ShadowNodeEE",
+  "regions": [
+    [
+      217,
+      51,
+      245,
+      2,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      220,
+      1,
+      220,
+      1,
+      0,
+      0,
+      0,
+      2
+    ],
+    [
+      231,
+      1,
+      231,
+      1,
+      0,
+      0,
+      0,
+      2
+    ],
+    [
+      239,
+      1,
+      244,
+      7,
+      0,
+      0,
+      0,
+      2
+    ]
+  ]
+},
+{
+  "branches": [],
+  "count": 0,
+  "filenames": [
+    "private/react-native-fantom/tester/src/NativeFantom.cpp"
+  ],
+  "name": "_ZN8facebook5react12NativeFantom24saveJSMemoryHeapSnapshotERNS_3jsi7RuntimeERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE",
+  "regions": [
+    [
+      249,
+      34,
+      252,
+      2,
+      0,
+      0,
+      0,
+      0
+    ]
+  ]
+},
+{
+  "branches": [],
+  "count": 0,
+  "filenames": [
+    "private/react-native-fantom/tester/src/NativeFantom.cpp"
+  ],
+  "name": "_ZN8facebook5react12NativeFantom21forceHighResTimeStampERNS_3jsi7RuntimeESt8optionalINS0_16HighResTimeStampEE",
+  "regions": [
+    [
+      271,
+      46,
+      274,
+      2,
+      0,
+      0,
+      0,
+      0
+    ]
+  ]
+},
+{
+  "branches": [],
+  "count": 0,
+  "filenames": [
+    "private/react-native-fantom/tester/src/NativeFantom.cpp"
+  ],
+  "name": "_ZN8facebook5react12NativeFantom23startJSSamplingProfilerERNS_3jsi7RuntimeE",
+  "regions": [
+    [
+      280,
+      71,
+      284,
+      2,
+      0,
+      0,
+      0,
+      0
+    ]
+  ]
+},
+{
+  "branches": [],
+  "count": 0,
+  "filenames": [
+    "private/react-native-fantom/tester/src/NativeFantom.cpp"
+  ],
+  "name": "_ZN8facebook5react12NativeFantom35stopJSSamplingProfilerAndSaveToFileERNS_3jsi7RuntimeERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE",
+  "regions": [
+    [
+      288,
+      34,
+      295,
+      2,
+      0,
+      0,
+      0,
+      0
+    ]
+  ]
+},
+{
+  "branches": [],
+  "count": 0,
+  "filenames": [
+    "private/react-native-fantom/tester/src/NativeFantom.cpp"
+  ],
+  "name": "_ZN8facebook5react12NativeFantom16setImageResponseERNS_3jsi7RuntimeERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKNS0_25NativeFantomImageResponseIffSt8optionalISA_ESF_EE",
+  "regions": [
+    [
+      300,
+      69,
+      309,
+      2,
+      0,
+      0,
+      0,
+      0
+    ]
+  ]
+},
+{
+  "branches": [],
+  "count": 0,
+  "filenames": [
+    "private/react-native-fantom/tester/src/NativeFantom.cpp"
+  ],
+  "name": "_ZN8facebook5react12NativeFantom10clearImageERNS_3jsi7RuntimeERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE",
+  "regions": [
+    [
+      311,
+      77,
+      313,
+      2,
+      0,
+      0,
+      0,
+      0
+    ]
+  ]
+},
+{
+  "branches": [],
+  "count": 0,
+  "filenames": [
+    "private/react-native-fantom/tester/src/NativeFantom.cpp"
+  ],
+  "name": "_ZN8facebook5react12NativeFantom14clearAllImagesERNS_3jsi7RuntimeE",
+  "regions": [
+    [
+      315,
+      57,
+      317,
+      2,
+      0,
+      0,
+      0,
+      0
+    ]
+  ]
+},
+{
+  "branches": [],
+  "count": 0,
+  "filenames": [
+    "private/react-native-fantom/tester/src/NativeFantom.cpp"
+  ],
+  "name": "NativeFantom.cpp:_ZZN8facebook5react12NativeFantom18enqueueScrollEventERNS_3jsi7RuntimeESt10shared_ptrIKNS0_10ShadowNodeEENS0_25NativeFantomScrollOptionsIffSt8optionalIfEEEENK3$_0clERKNS0_15ScrollViewStateE",
+  "regions": [
+    [
+      171,
+      62,
+      176,
+      8,
+      0,
+      0,
+      0,
+      0
+    ]
+  ]
+},
+{
+  "branches": [],
+  "count": 0,
+  "filenames": [
+    "private/react-native-fantom/tester/src/NativeFantom.cpp"
+  ],
+  "name": "NativeFantom.cpp:_ZZN8facebook5react12NativeFantom32createShadowNodeReferenceCounterERNS_3jsi7RuntimeESt10shared_ptrIKNS0_10ShadowNodeEEENK3$_1clES4_RKNS2_5ValueEPSB_m",
+  "regions": [
+    [
+      212,
+      25,
+      212,
+      70,
+      0,
+      0,
+      0,
+      0
+    ]
+  ]
+},
+{
+  "branches": [
+    [
+      228,
+      18,
+      228,
+      34,
+      0,
+      0,
+      0,
+      0,
+      4
+    ]
+  ],
+  "count": 0,
+  "filenames": [
+    "private/react-native-fantom/tester/src/NativeFantom.cpp"
+  ],
+  "name": "NativeFantom.cpp:_ZZN8facebook5react12NativeFantom30createShadowNodeRevisionGetterERNS_3jsi7RuntimeESt10shared_ptrIKNS0_10ShadowNodeEEENK3$_2clES4_RKNS2_5ValueEPSB_m",
+  "regions": [
+    [
+      227,
+      25,
+      238,
+      8,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      228,
+      18,
+      228,
+      34,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      228,
+      59,
+      228,
+      60,
+      0,
+      0,
+      0,
+      3
+    ],
+    [
+      228,
+      60,
+      235,
+      10,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      231,
+      1,
+      231,
+      1,
+      0,
+      0,
+      0,
+      2
+    ],
+    [
+      235,
+      10,
+      235,
+      16,
+      0,
+      0,
+      0,
+      3
+    ],
+    [
+      235,
+      16,
+      237,
+      10,
+      0,
+      0,
+      0,
+      0
+    ]
+  ]
+}]

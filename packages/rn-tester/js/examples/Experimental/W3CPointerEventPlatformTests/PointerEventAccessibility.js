@@ -18,7 +18,7 @@ import {Pressable, ScrollView, StyleSheet, Text, View} from 'react-native';
 
 const eventsToTrack = ['onClick'];
 
-export default function PointerEventAccessibility(props: {}): React.MixedElement {
+export default component PointerEventAccessibility() {
   const [eventsSeen, setEventsSeen] = useState<Array<EventOccurrence>>([]);
 
   const onAnyEvent = (occurrence: EventOccurrence, event: PointerEvent) =>

@@ -10,7 +10,6 @@
 #include <FBReactNativeSpec.h>
 #include <NativeCxxModuleExample.h>
 #include <ReactCommon/SampleTurboModuleJSIBindings.h>
-#include <ReactCommon/SampleTurboModuleSpec.h>
 #include <fbjni/fbjni.h>
 #include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
 
@@ -42,18 +41,13 @@ std::shared_ptr<TurboModule> cxxModuleProvider(
 std::shared_ptr<TurboModule> javaModuleProvider(
     const std::string& name,
     const JavaTurboModule::InitParams& params) {
-  auto module = SampleTurboModuleSpec_ModuleProvider(name, params);
-  if (module != nullptr) {
-    return module;
-  };
 #ifdef REACT_NATIVE_APP_MODULE_PROVIDER
-  module = REACT_NATIVE_APP_MODULE_PROVIDER(name, params);
+  auto module = REACT_NATIVE_APP_MODULE_PROVIDER(name, params);
   if (module != nullptr) {
     return module;
   }
 #endif
 
-  // We first try to look up core modules
   if (auto module = FBReactNativeSpec_ModuleProvider(name, params)) {
     return module;
   }

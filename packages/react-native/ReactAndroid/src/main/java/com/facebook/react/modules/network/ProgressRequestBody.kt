@@ -50,6 +50,8 @@ internal class ProgressRequestBody(
     sinkWrapper.flush()
   }
 
+  fun innerBody(): RequestBody = requestBody
+
   private fun outputStreamSink(sink: BufferedSink): Sink {
     return Okio.sink(
         object : FilterOutputStream(sink.outputStream()) {
@@ -77,10 +79,5 @@ internal class ProgressRequestBody(
           }
         }
     )
-  }
-
-  fun getBodyPreview(): String {
-    // TODO: Safely implement request body previews
-    return "[Preview unavailable]"
   }
 }

@@ -21,28 +21,30 @@ import {createDebuggerMock} from './InspectorDebuggerUtils';
 import {createDeviceMock} from './InspectorDeviceUtils';
 import until from 'wait-for-expect';
 
-export type CdpMessageFromTarget = $ReadOnly<{
+export type CdpMessageFromTarget = Readonly<{
   method: string,
   id?: number,
   params?: JSONSerializable,
 }>;
 
-export type CdpResponseFromTarget = $ReadOnly<{
+export type CdpResponseFromTarget = Readonly<{
   id: number,
   result: JSONSerializable,
 }>;
 
-export type CdpMessageToTarget = $ReadOnly<{
+export type CdpMessageToTarget = Readonly<{
   method: string,
   id: number,
   params?: JSONSerializable,
 }>;
 
 /**
- * Send a CDP message from from the target with the given pageId to the debugger.
+ * Send a CDP message from the target with the given pageId to the debugger.
  * Returns the message as received by the debugger.
  */
-export async function sendFromTargetToDebugger<Message: CdpMessageFromTarget>(
+export async function sendFromTargetToDebugger<
+  Message extends CdpMessageFromTarget,
+>(
   device: DeviceMock,
   debugger_: DebuggerMock,
   pageId: string,
@@ -76,11 +78,14 @@ export async function sendFromTargetToDebugger<Message: CdpMessageFromTarget>(
  * Send a CDP message from the debugger to the target with the given pageId.
  * Returns the message as received by the target.
  */
-export async function sendFromDebuggerToTarget<Message: CdpMessageToTarget>(
+export async function sendFromDebuggerToTarget<
+  Message extends CdpMessageToTarget,
+>(
   debugger_: DebuggerMock,
   device: DeviceMock,
   pageId: string,
   message: Message,
+  {sessionId}: {sessionId?: string} = {},
 ): Promise<Message> {
   const originalEventCallsArray = device.wrappedEventParsed.mock.calls;
   const originalEventCallCount = originalEventCallsArray.length;
@@ -88,6 +93,7 @@ export async function sendFromDebuggerToTarget<Message: CdpMessageToTarget>(
   await until(() =>
     expect(device.wrappedEventParsed).toBeCalledWith({
       pageId,
+      sessionId: sessionId ?? expect.any(String),
       wrappedEvent: expect.objectContaining({id: message.id}),
     }),
   );
@@ -108,7 +114,7 @@ export async function sendFromDebuggerToTarget<Message: CdpMessageToTarget>(
 }
 
 export async function createAndConnectTarget(
-  serverRef: $ReadOnly<{
+  serverRef: Readonly<{
     serverBaseUrl: string,
     serverBaseWsUrl: string,
     ...
@@ -116,17 +122,19 @@ export async function createAndConnectTarget(
   signal: AbortSignal,
   page: PageFromDevice,
   {
-    debuggerHostHeader = null,
+    debuggerHeaders = null,
     deviceId = null,
     deviceHostHeader = null,
-  }: $ReadOnly<{
-    debuggerHostHeader?: ?string,
+  }: Readonly<{
+    debuggerHeaders?: ?{[string]: unknown},
+    debuggerOriginHeader?: ?string,
     deviceId?: ?string,
     deviceHostHeader?: ?string,
   }> = {},
-): Promise<{device: DeviceMock, debugger_: DebuggerMock}> {
+): Promise<{device: DeviceMock, debugger_: DebuggerMock, sessionId: string}> {
   let device;
   let debugger_;
+  let sessionId;
   try {
     device = await createDeviceMock(
       `${serverRef.serverBaseWsUrl}/inspector/device?device=${
@@ -142,22 +150,32 @@ export async function createAndConnectTarget(
       pageList = (await fetchJson(
         `${serverRef.serverBaseUrl}/json`,
         // $FlowFixMe[unclear-type]
-      ): any);
+      )) as any;
       expect(pageList).toHaveLength(1);
     });
     const [{webSocketDebuggerUrl}] = pageList;
     expect(webSocketDebuggerUrl).toBeDefined();
 
+    const originalConnectCallsArray = device.connect.mock.calls;
+    const originalConnectCallCount = originalConnectCallsArray.length;
     debugger_ = await createDebuggerMock(
       webSocketDebuggerUrl,
       signal,
-      debuggerHostHeader,
+      debuggerHeaders,
     );
     await until(() => expect(device.connect).toBeCalled());
+    // Find the first connect call that wasn't already in the mock calls array
+    // before we connected the debugger.
+    const newConnectCalls =
+      originalConnectCallsArray === device.connect.mock.calls
+        ? device.connect.mock.calls.slice(originalConnectCallCount)
+        : device.connect.mock.calls;
+    const [[{payload}]] = newConnectCalls;
+    sessionId = payload.sessionId;
   } catch (e) {
     device?.close();
     debugger_?.close();
     throw e;
   }
-  return {device, debugger_};
+  return {device, debugger_, sessionId};
 }

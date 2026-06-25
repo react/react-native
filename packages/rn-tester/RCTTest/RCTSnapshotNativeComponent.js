@@ -19,12 +19,12 @@ import type {
 const {requireNativeComponent} = require('react-native');
 
 type SnapshotReadyEvent = NativeSyntheticEvent<
-  $ReadOnly<{testIdentifier: string, ...}>,
+  Readonly<{testIdentifier: string, ...}>,
 >;
 
-type NativeProps = $ReadOnly<{
+type NativeProps = Readonly<{
   ...ViewProps,
-  onSnapshotReady?: ?(event: SnapshotReadyEvent) => mixed,
+  onSnapshotReady?: ?(event: SnapshotReadyEvent) => unknown,
   testIdentifier?: ?string,
 }>;
 

@@ -8,7 +8,6 @@
 #import <XCTest/XCTest.h>
 
 #import <RCTTest/RCTTestRunner.h>
-#import <React/RCTRootShadowView.h>
 #import <React/RCTShadowView.h>
 #import <React/RCTUIManager.h>
 #import <React/RCTView.h>
@@ -90,7 +89,7 @@ RCT_CUSTOM_VIEW_PROPERTY(customProp, NSString, RCTPropsTestView)
   RCTUIManager *uiManager = _bridge.uiManager;
 
   dispatch_async(uiManager.methodQueue, ^{
-    RCTRootShadowView *rootShadowView = [RCTRootShadowView new];
+    RCTShadowView *rootShadowView = [RCTShadowView new];
     rootShadowView.reactTag = self->_rootViewReactTag;
     uiManager.shadowViewRegistry[rootShadowView.reactTag] = rootShadowView;
   });

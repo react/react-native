@@ -14,14 +14,14 @@ import type {TurboModule} from '../../../../Libraries/TurboModule/RCTExport';
 import * as TurboModuleRegistry from '../../../../Libraries/TurboModule/TurboModuleRegistry';
 
 export interface Spec extends TurboModule {
-  +createTimer: (
+  readonly createTimer: (
     callbackID: number,
     duration: number,
     jsSchedulingTime: number,
     repeats: boolean,
   ) => void;
-  +deleteTimer: (timerID: number) => void;
-  +setSendIdleEvents: (sendIdleEvents: boolean) => void;
+  readonly deleteTimer: (timerID: number) => void;
+  readonly setSendIdleEvents: (sendIdleEvents: boolean) => void;
 }
 
-export default (TurboModuleRegistry.get<Spec>('Timing'): ?Spec);
+export default TurboModuleRegistry.get<Spec>('Timing') as ?Spec;

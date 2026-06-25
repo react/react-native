@@ -59,7 +59,7 @@ const Item = ({item, separators}: ListRenderItemInfo<string>) => {
   );
 };
 
-type Props = $ReadOnly<{
+type Props = Readonly<{
   exampleProps: Partial<React.ElementConfig<typeof FlatList>>,
   onTest?: ?() => void,
   testLabel?: ?string,

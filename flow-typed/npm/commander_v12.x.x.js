@@ -670,11 +670,10 @@ declare module 'commander' {
      * or store separately (specify false). In both cases the option values can be accessed using .opts().
      * @returns `this` command for chaining
      */
-    storeOptionsAsProperties<T: OptionValues>(): {...this, ...T};
-    storeOptionsAsProperties<T: OptionValues>(storeAsProperties: true): {
-      ...this,
-      ...T,
-    };
+    storeOptionsAsProperties<T: OptionValues>(): this & T;
+    storeOptionsAsProperties<T: OptionValues>(
+      storeAsProperties: true,
+    ): this & T;
     storeOptionsAsProperties(storeAsProperties?: boolean): this;
 
     /**

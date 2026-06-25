@@ -8,8 +8,10 @@
 package com.facebook.hermes.instrumentation
 
 import com.facebook.soloader.SoLoader
+import com.facebook.soloader.annotation.SoLoaderLibrary
 
 /** Hermes sampling profiler static JSI API. */
+@SoLoaderLibrary("jsijniprofiler")
 public object HermesSamplingProfiler {
   init {
     SoLoader.loadLibrary("jsijniprofiler")

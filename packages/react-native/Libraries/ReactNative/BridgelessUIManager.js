@@ -265,7 +265,7 @@ const UIManagerJS: UIManagerJSInterface & {[string]: any} = {
   ...UIManagerJSDeprecatedPlatformAPIs,
   ...UIManagerJSPlatformAPIs,
   ...UIManagerJSUnusedInNewArchAPIs,
-  getViewManagerConfig: (viewManagerName: string): mixed => {
+  getViewManagerConfig: (viewManagerName: string): unknown => {
     if (getUIManagerConstants) {
       const constants = getUIManagerConstantsCached();
       if (

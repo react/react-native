@@ -18,10 +18,10 @@ struct ShadowViewNodePair;
 /**
  * During differ, we need to keep some `ShadowViewNodePair`s in memory.
  * Some `ShadowViewNodePair`s are referenced from std::vectors returned
- * by `sliceChildShadowNodeViewPairs`; some are referenced in TinyMaps
+ * by `sliceChildShadowNodeViewPairs`; some are referenced in maps
  * for view (un)flattening especially; and it is not always clear which
- * std::vectors will outlive which TinyMaps, and vice-versa, so it doesn't
- * make sense for the std::vector or TinyMap to own any `ShadowViewNodePair`s.
+ * std::vectors will outlive which maps, and vice-versa, so it doesn't
+ * make sense for the std::vector or map to own any `ShadowViewNodePair`s.
  *
  * Thus, we introduce the concept of a scope.
  *

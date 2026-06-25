@@ -33,6 +33,14 @@ static UIViewAnimationOptions UIViewAnimationOptionsFromRCTAnimationType(RCTAnim
   }
 }
 
+#if TARGET_OS_TV
+
+// No-op on tvOS
++ (void)initializeStatics
+{
+}
+
+#else
 // Use a custom initialization function rather than implementing `+initialize` so that we can control
 // when the initialization code runs. `+initialize` runs immediately before the first message is sent
 // to the class which may be too late for us. By this time, we may have missed some
@@ -53,6 +61,8 @@ static UIViewAnimationOptions UIViewAnimationOptionsFromRCTAnimationType(RCTAnim
   NSDictionary *userInfo = notification.userInfo;
   _currentKeyboardAnimationCurve = [userInfo[UIKeyboardAnimationCurveUserInfoKey] integerValue];
 }
+
+#endif
 
 - (instancetype)initWithDuration:(NSTimeInterval)duration
                            delay:(NSTimeInterval)delay

@@ -17,7 +17,7 @@ const path = require('path');
 const {globSync} = require('tinyglobby');
 
 function generateSchemaInfos(
-  libraries /*: $ReadOnlyArray<$FlowFixMe> */,
+  libraries /*: ReadonlyArray<$FlowFixMe> */,
 ) /*: Array<$FlowFixMe> */ {
   // $FlowFixMe[incompatible-type]
   return libraries.map(generateSchemaInfo);
@@ -45,7 +45,6 @@ function generateSchemaInfo(
     schema: CodegenUtils.getCombineJSToSchema().combineSchemasInFileList(
       [pathToJavaScriptSources],
       platform,
-      /NativeSampleTurboModule/,
     ),
   };
 }

@@ -6,6 +6,9 @@
  */
 
 #include "LegacyViewManagerInteropViewProps.h"
+
+#ifndef RCT_REMOVE_LEGACY_COMPONENT_INTEROP
+
 #include <react/renderer/core/DynamicPropsUtilities.h>
 
 namespace facebook::react {
@@ -21,3 +24,5 @@ LegacyViewManagerInteropViewProps::LegacyViewManagerInteropViewProps(
           NullValueStrategy::Override)) {}
 
 } // namespace facebook::react
+
+#endif // RCT_REMOVE_LEGACY_COMPONENT_INTEROP

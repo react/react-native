@@ -11,7 +11,6 @@
 #import <mach/mach_time.h>
 #import <objc/message.h>
 #import <objc/runtime.h>
-#import <react/featureflags/ReactNativeFeatureFlags.h>
 #import <zlib.h>
 
 #import <UIKit/UIKit.h>
@@ -38,18 +37,14 @@ NSString *__nullable RCTHomePathForURL(NSURL *__nullable URL);
 BOOL RCTIsHomeAssetURL(NSURL *__nullable imageURL);
 
 // Returns the current device's orientation
+#if !TARGET_OS_TV
 UIDeviceOrientation RCTDeviceOrientation(void);
+#endif
 
 // Whether the New Architecture is enabled or not
 BOOL RCTIsNewArchEnabled(void)
 {
   return YES;
-}
-void RCTSetNewArchEnabled(BOOL enabled)
-{
-  // This function is now deprecated and will be removed in the future.
-  // This function is now no-op. You need to modify the Info.plist adding a `RCTNewArchEnabled` bool property to control
-  // whether the New Arch is enabled or not.
 }
 
 BOOL RCTAreLegacyLogsEnabled(void)
@@ -309,14 +304,13 @@ void RCTUnsafeExecuteOnMainQueueSync(dispatch_block_t block)
     return;
   }
 
-  if (ReactNativeFeatureFlags::enableMainQueueCoordinatorOnIOS()) {
-    unsafeExecuteOnMainThreadSync(block);
-    return;
-  }
-
+#if !TARGET_OS_TV
+  unsafeExecuteOnMainThreadSync(block);
+#else
   dispatch_sync(dispatch_get_main_queue(), ^{
     block();
   });
+#endif
 }
 
 static void RCTUnsafeExecuteOnMainQueueOnceSync(dispatch_once_t *onceToken, dispatch_block_t block)
@@ -337,12 +331,11 @@ static void RCTUnsafeExecuteOnMainQueueOnceSync(dispatch_once_t *onceToken, disp
     return;
   }
 
-  if (ReactNativeFeatureFlags::enableMainQueueCoordinatorOnIOS()) {
-    unsafeExecuteOnMainThreadSync(block);
-    return;
-  }
-
+#if !TARGET_OS_TV
+  unsafeExecuteOnMainThreadSync(block);
+#else
   dispatch_sync(dispatch_get_main_queue(), executeOnce);
+#endif
 }
 
 CGFloat RCTScreenScale(void)
@@ -381,10 +374,12 @@ CGFloat RCTFontSizeMultiplier(void)
   return mapping[RCTSharedApplication().preferredContentSizeCategory].floatValue;
 }
 
+#if !TARGET_OS_TV
 UIDeviceOrientation RCTDeviceOrientation(void)
 {
   return [[UIDevice currentDevice] orientation];
 }
+#endif
 
 CGSize RCTScreenSize(void)
 {
@@ -397,11 +392,16 @@ CGSize RCTScreenSize(void)
     });
   });
 
+#if !TARGET_OS_TV
   if (UIDeviceOrientationIsLandscape(RCTDeviceOrientation())) {
     return CGSizeMake(portraitSize.height, portraitSize.width);
   } else {
     return CGSizeMake(portraitSize.width, portraitSize.height);
   }
+#else
+  // tvOS doesn't have device orientation, always return landscape size
+  return CGSizeMake(portraitSize.height, portraitSize.width);
+#endif
 }
 
 CGSize RCTViewportSize(void)
@@ -412,6 +412,9 @@ CGSize RCTViewportSize(void)
 
 CGSize RCTSwitchSize(void)
 {
+#if TARGET_OS_TV
+  return CGSizeMake(0, 0);
+#else
   static CGSize rctSwitchSize;
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
@@ -420,6 +423,7 @@ CGSize RCTSwitchSize(void)
     });
   });
   return rctSwitchSize;
+#endif
 }
 
 CGFloat RCTRoundPixelValue(CGFloat value)
@@ -629,7 +633,9 @@ UIWindow *__nullable RCTKeyWindow(void)
     // We have apps internally that might use UIScenes which are not window scenes.
     // Calling keyWindow on a UIScene which is not a UIWindowScene can cause a crash
     UIWindowScene *windowScene = (UIWindowScene *)sceneToUse;
-    return windowScene.keyWindow;
+    if (@available(iOS 15.0, tvOS 15.0, *)) {
+      return windowScene.keyWindow;
+    }
   }
 
   return nil;
@@ -653,10 +659,12 @@ BOOL RCTIsSceneDelegateApp(void)
   return NO;
 }
 
+#if !TARGET_OS_TV
 UIStatusBarManager *__nullable RCTUIStatusBarManager(void)
 {
   return RCTKeyWindow().windowScene.statusBarManager;
 }
+#endif
 
 UIViewController *__nullable RCTPresentedViewController(void)
 {
@@ -731,6 +739,8 @@ BOOL RCTIsGzippedData(NSData *__nullable data)
   return (data.length >= 2 && bytes[0] == 0x1f && bytes[1] == 0x8b);
 }
 
+static const NSUInteger RCTGZipChunkSize = 16384;
+
 NSData *__nullable RCTGzipData(NSData *__nullable input, float level)
 {
   if (input.length == 0 || RCTIsGzippedData(input)) {
@@ -757,8 +767,6 @@ NSData *__nullable RCTGzipData(NSData *__nullable input, float level)
   stream.total_out = 0;
   stream.avail_out = 0;
 
-  static const NSUInteger RCTGZipChunkSize = 16384;
-
   NSMutableData *output = nil;
   int compression = (level < 0.0f) ? Z_DEFAULT_COMPRESSION : (int)(roundf(level * 9));
   if (deflateInit2(&stream, compression, Z_DEFLATED, 31, 8, Z_DEFAULT_STRATEGY) == Z_OK) {
@@ -772,6 +780,63 @@ NSData *__nullable RCTGzipData(NSData *__nullable input, float level)
       deflate(&stream, Z_FINISH);
     }
     deflateEnd(&stream);
+    output.length = stream.total_out;
+  }
+
+  dlclose(libz);
+
+  return output;
+}
+
+NSData *__nullable RCTDecompressGzipData(NSData *__nullable data, NSUInteger maxDecompressedSize)
+{
+  if (data.length == 0 || !RCTIsGzippedData(data)) {
+    return data;
+  }
+
+  void *libz = dlopen("/usr/lib/libz.dylib", RTLD_LAZY);
+
+  using InflateInit2_ = int (*)(z_streamp, int, const char *, int);
+  InflateInit2_ inflateInit2_ = (InflateInit2_)dlsym(libz, "inflateInit2_");
+
+  using Inflate = int (*)(z_streamp, int);
+  Inflate inflate = (Inflate)dlsym(libz, "inflate");
+
+  using InflateEnd = int (*)(z_streamp);
+  InflateEnd inflateEnd = (InflateEnd)dlsym(libz, "inflateEnd");
+
+  z_stream stream;
+  stream.zalloc = Z_NULL;
+  stream.zfree = Z_NULL;
+  stream.opaque = Z_NULL;
+  stream.avail_in = (uint)data.length;
+  stream.next_in = (Bytef *)data.bytes;
+  stream.total_out = 0;
+  stream.avail_out = 0;
+
+  NSMutableData *output = nil;
+  // Use 31 for windowBits to enable gzip decoding (15 + 16)
+  if (inflateInit2(&stream, 31) == Z_OK) {
+    output = [NSMutableData dataWithLength:RCTGZipChunkSize];
+    int status = Z_OK;
+    while (status == Z_OK) {
+      if (stream.total_out >= output.length) {
+        output.length += RCTGZipChunkSize;
+      }
+      if (maxDecompressedSize > 0 && stream.total_out >= maxDecompressedSize) {
+        inflateEnd(&stream);
+        dlclose(libz);
+        return nil;
+      }
+      stream.next_out = (uint8_t *)output.mutableBytes + stream.total_out;
+      stream.avail_out = (uInt)(output.length - stream.total_out);
+      status = inflate(&stream, Z_SYNC_FLUSH);
+    }
+    inflateEnd(&stream);
+    if (status != Z_STREAM_END) {
+      dlclose(libz);
+      return nil;
+    }
     output.length = stream.total_out;
   }
 

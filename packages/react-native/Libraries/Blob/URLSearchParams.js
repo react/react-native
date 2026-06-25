@@ -131,6 +131,7 @@ export class URLSearchParams {
       }
     }
 
+    // $FlowFixMe[incompatible-use]
     return entries[Symbol.iterator]();
   }
 

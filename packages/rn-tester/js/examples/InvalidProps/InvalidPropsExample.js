@@ -123,7 +123,7 @@ export const examples: Array<RNTesterModuleExample> = [
     render(): React.Node {
       return (
         <Comparison
-          actual={{resource_paths: ([]: Array<string>)}}
+          actual={{resource_paths: [] as Array<string>}}
           expected={undefined}>
           {backgroundColor => (
             <View style={{backgroundColor: 'lightgreen'}}>

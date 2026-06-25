@@ -117,4 +117,52 @@ TEST_F(AnimationDriverTests, framesAnimationReconfigurationClearsFrames) {
   EXPECT_EQ(round(nodesManager_->getValue(valueNodeTag).value()), toValue2);
 }
 
+TEST_F(AnimationDriverTests, framesAnimationDeferredStart) {
+  // Deferred start outputs frame 0 on the first update and re-anchors
+  // startFrameTimeMs_ so the second update also sees timeDelta=0.
+  // Without the defer the second frame would already be at value 25.
+  initNodesManager();
+
+  auto rootTag = getNextRootViewTag();
+
+  auto valueNodeTag = ++rootTag;
+  nodesManager_->createAnimatedNode(
+      valueNodeTag,
+      folly::dynamic::object("type", "value")("value", 0)("offset", 0));
+
+  const auto animationId = 1;
+  const auto frames = folly::dynamic::array(0.0f, 0.25f, 0.5f, 0.75f, 1.0f);
+  const auto toValue = 100;
+  nodesManager_->startAnimatingNode(
+      animationId,
+      valueNodeTag,
+      folly::dynamic::object("type", "frames")("frames", frames)(
+          "toValue", toValue)("deferredStart", true),
+      std::nullopt);
+
+  const double t = 12345;
+
+  // Frame 1: both with and without deferredStart, timeDelta=0 → value=0
+  runAnimationFrame(t);
+  EXPECT_EQ(nodesManager_->getValue(valueNodeTag).value(), 0);
+
+  // Frame 2: WITHOUT deferredStart timeDelta=SI → value≈25.
+  // WITH deferredStart the deferred start re-anchored startFrameTimeMs_, so
+  // timeDelta=0 → value=0. This assertion fails without deferredStart.
+  runAnimationFrame(t + SingleFrameIntervalMs);
+  EXPECT_EQ(nodesManager_->getValue(valueNodeTag).value(), 0);
+
+  // Frame 3: now timeDelta=SI from the re-anchored start
+  runAnimationFrame(t + SingleFrameIntervalMs * 2);
+  EXPECT_NEAR(nodesManager_->getValue(valueNodeTag).value(), 25, 0.01);
+
+  // Frame 4
+  runAnimationFrame(t + SingleFrameIntervalMs * 3);
+  EXPECT_NEAR(nodesManager_->getValue(valueNodeTag).value(), 50, 0.01);
+
+  // Complete
+  runAnimationFrame(t + SingleFrameIntervalMs * 5);
+  EXPECT_EQ(nodesManager_->getValue(valueNodeTag).value(), toValue);
+}
+
 } // namespace facebook::react

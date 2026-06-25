@@ -42,7 +42,7 @@ const Separator =
     );
   };
 
-export function FlatList_withSeparators(): React.Node {
+export component FlatList_withSeparators() {
   const exampleProps = {
     ItemSeparatorComponent: Separator('lightgreen', 'green'),
   };
@@ -60,9 +60,9 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ({
+export default {
   title: 'FlatList with Separators',
   name: 'separators',
   description: 'Tap to see pressed states for separator components.',
   render: () => <FlatList_withSeparators />,
-}: RNTesterModuleExample);
+} as RNTesterModuleExample;

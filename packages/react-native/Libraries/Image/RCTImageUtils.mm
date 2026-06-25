@@ -55,6 +55,30 @@ static CGImagePropertyOrientation CGImagePropertyOrientationFromUIImageOrientati
   }
 }
 
+static UIImageOrientation UIImageOrientationFromCGImagePropertyOrientation(CGImagePropertyOrientation imageOrientation)
+{
+  switch (imageOrientation) {
+    case kCGImagePropertyOrientationUp:
+      return UIImageOrientationUp;
+    case kCGImagePropertyOrientationDown:
+      return UIImageOrientationDown;
+    case kCGImagePropertyOrientationLeft:
+      return UIImageOrientationLeft;
+    case kCGImagePropertyOrientationRight:
+      return UIImageOrientationRight;
+    case kCGImagePropertyOrientationUpMirrored:
+      return UIImageOrientationUpMirrored;
+    case kCGImagePropertyOrientationDownMirrored:
+      return UIImageOrientationDownMirrored;
+    case kCGImagePropertyOrientationLeftMirrored:
+      return UIImageOrientationLeftMirrored;
+    case kCGImagePropertyOrientationRightMirrored:
+      return UIImageOrientationRightMirrored;
+    default:
+      return UIImageOrientationUp;
+  }
+}
+
 CGRect RCTTargetRect(CGSize sourceSize, CGSize destSize, CGFloat destScale, RCTResizeMode resizeMode)
 {
   if (CGSizeEqualToSize(destSize, CGSizeZero)) {
@@ -269,6 +293,7 @@ UIImage *__nullable RCTDecodeImageWithData(NSData *data, CGSize destSize, CGFloa
   }
   NSNumber *width = (NSNumber *)CFDictionaryGetValue(imageProperties, kCGImagePropertyPixelWidth);
   NSNumber *height = (NSNumber *)CFDictionaryGetValue(imageProperties, kCGImagePropertyPixelHeight);
+  NSNumber *orientationNum = (NSNumber *)CFDictionaryGetValue(imageProperties, kCGImagePropertyOrientation);
   CGSize sourceSize = {width.doubleValue, height.doubleValue};
   CFRelease(imageProperties);
 
@@ -293,12 +318,15 @@ UIImage *__nullable RCTDecodeImageWithData(NSData *data, CGSize destSize, CGFloa
   CGImageRef imageRef;
   BOOL createThumbnail = targetPixelSize.width != 0 && targetPixelSize.height != 0 &&
       (sourceSize.width > targetPixelSize.width || sourceSize.height > targetPixelSize.height);
+  UIImageOrientation orientation = UIImageOrientationUp;
 
   if (createThumbnail) {
     CGFloat maxPixelSize = fmax(targetPixelSize.width, targetPixelSize.height);
 
     // Get a thumbnail of the source image. This is usually slower than creating a full-sized image,
     // but takes up less memory once it's done.
+    // It rotates the image according to the orientation from metadata, so we'll pass `UIImageOrientationUp`
+    // to the `UIImage` initializer
     imageRef = CGImageSourceCreateThumbnailAtIndex(
         sourceRef, 0, (__bridge CFDictionaryRef) @{
           (id)kCGImageSourceShouldAllowFloat : @YES,
@@ -313,6 +341,14 @@ UIImage *__nullable RCTDecodeImageWithData(NSData *data, CGSize destSize, CGFloa
         sourceRef, 0, (__bridge CFDictionaryRef) @{
           (id)kCGImageSourceShouldAllowFloat : @YES,
         });
+
+    // Unlike `CGImageSourceCreateThumbnailAtIndex` (with `kCGImageSourceCreateThumbnailWithTransform` set to YES),
+    // `CGImageSourceCreateImageAtIndex` doesn't rotate the image to keep the orientation, so we'll need to pass
+    // the actual orientation (if present) to the `UIImage` initializer
+    if (orientationNum) {
+      orientation = UIImageOrientationFromCGImagePropertyOrientation(
+          (CGImagePropertyOrientation)[orientationNum unsignedIntValue]);
+    }
   }
 
   CFRelease(sourceRef);
@@ -321,7 +357,7 @@ UIImage *__nullable RCTDecodeImageWithData(NSData *data, CGSize destSize, CGFloa
   }
 
   // Return image
-  UIImage *image = [UIImage imageWithCGImage:imageRef scale:destScale orientation:UIImageOrientationUp];
+  UIImage *image = [UIImage imageWithCGImage:imageRef scale:destScale orientation:orientation];
   CGImageRelease(imageRef);
   return image;
 }

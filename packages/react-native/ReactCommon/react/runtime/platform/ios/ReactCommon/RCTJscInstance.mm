@@ -10,9 +10,10 @@
 
 namespace facebook::react {
 
-RCTJscInstance::RCTJscInstance() {}
+RCTJscInstance::RCTJscInstance() = default;
 
-std::unique_ptr<JSRuntime> RCTJscInstance::createJSRuntime(std::shared_ptr<MessageQueueThread> msgQueueThread) noexcept
+std::unique_ptr<JSRuntime> RCTJscInstance::createJSRuntime(
+    std::shared_ptr<MessageQueueThread> /*msgQueueThread*/) noexcept
 {
   return std::make_unique<JSIRuntimeHolder>(jsc::makeJSCRuntime());
 }

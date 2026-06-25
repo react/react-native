@@ -20,7 +20,7 @@ import LogBoxInspectorHeaderButton from './LogBoxInspectorHeaderButton';
 import * as LogBoxStyle from './LogBoxStyle';
 import * as React from 'react';
 
-type Props = $ReadOnly<{
+type Props = Readonly<{
   onSelectIndex: (selectedIndex: number) => void,
   selectedIndex: number,
   total: number,

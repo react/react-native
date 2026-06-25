@@ -26,20 +26,27 @@ namespace facebook::react {
 
 using namespace std::chrono_literals;
 
-static bool forcedBatchRenderingUpdatesInEventLoop = false;
-
 class RuntimeSchedulerTestFeatureFlags
     : public ReactNativeFeatureFlagsDefaults {
  public:
-  explicit RuntimeSchedulerTestFeatureFlags(bool enableEventLoop)
-      : enableEventLoop_(enableEventLoop) {}
+  explicit RuntimeSchedulerTestFeatureFlags(
+      bool enableEventLoop,
+      bool enableRuntimeSchedulerQueueClearingOnError = false)
+      : enableEventLoop_(enableEventLoop),
+        enableRuntimeSchedulerQueueClearingOnError_(
+            enableRuntimeSchedulerQueueClearingOnError) {}
 
   bool enableBridgelessArchitecture() override {
     return enableEventLoop_;
   }
 
+  bool enableRuntimeSchedulerQueueClearingOnError() override {
+    return enableRuntimeSchedulerQueueClearingOnError_;
+  }
+
  private:
   bool enableEventLoop_;
+  bool enableRuntimeSchedulerQueueClearingOnError_;
 };
 
 class RuntimeSchedulerTest : public testing::TestWithParam<bool> {
@@ -47,8 +54,7 @@ class RuntimeSchedulerTest : public testing::TestWithParam<bool> {
   void SetUp() override {
     hostFunctionCallCount_ = 0;
 
-    ReactNativeFeatureFlags::override(
-        std::make_unique<RuntimeSchedulerTestFeatureFlags>(GetParam()));
+    setUpFeatureFlags();
 
     // Configuration that enables microtasks
     ::hermes::vm::RuntimeConfig::Builder runtimeConfigBuilder =
@@ -84,6 +90,14 @@ class RuntimeSchedulerTest : public testing::TestWithParam<bool> {
 
   void TearDown() override {
     ReactNativeFeatureFlags::dangerouslyReset();
+  }
+
+  void setUpFeatureFlags(
+      bool enableRuntimeSchedulerQueueClearingOnError = false) {
+    ReactNativeFeatureFlags::dangerouslyReset();
+    ReactNativeFeatureFlags::override(
+        std::make_unique<RuntimeSchedulerTestFeatureFlags>(
+            GetParam(), enableRuntimeSchedulerQueueClearingOnError));
   }
 
   jsi::Function createHostFunctionFromLambda(
@@ -163,8 +177,6 @@ TEST_P(
   if (!GetParam()) {
     return;
   }
-
-  forcedBatchRenderingUpdatesInEventLoop = true;
 
   uint nextOperationPosition = 1;
 
@@ -728,7 +740,7 @@ TEST_P(RuntimeSchedulerTest, normalTaskYieldsToSynchronousAccessAndResumes) {
   // the test would be flaky in a multithreaded environment.
   stubQueue_->waitForTasks(2);
 
-  // Normal priority task immediatelly yield in favour of the sync task.
+  // Normal priority task immediately yield in favour of the sync task.
   stubQueue_->tick();
 
   EXPECT_EQ(stubQueue_->size(), 1);
@@ -858,11 +870,10 @@ TEST_P(RuntimeSchedulerTest, scheduleTaskFromTask) {
 
 TEST_P(RuntimeSchedulerTest, handlingError) {
   bool didRunTask = false;
-  auto firstCallback =
-      createHostFunctionFromLambda([this, &didRunTask](bool /*unused*/) {
+  auto firstCallback = createHostFunctionFromLambda(
+      [this, &didRunTask](bool /*unused*/) -> jsi::Value {
         didRunTask = true;
         throw jsi::JSError(*runtime_, "Test error");
-        return jsi::Value::undefined();
       });
 
   runtimeScheduler_->scheduleTask(
@@ -874,6 +885,46 @@ TEST_P(RuntimeSchedulerTest, handlingError) {
   stubQueue_->tick();
 
   EXPECT_TRUE(didRunTask);
+  EXPECT_EQ(stubQueue_->size(), 0);
+  EXPECT_EQ(stubErrorUtils_->getReportFatalCallCount(), 1);
+}
+
+TEST_P(RuntimeSchedulerTest, clearsQueuesOnError) {
+  // Only for event loop
+  if (!GetParam()) {
+    return;
+  }
+
+  setUpFeatureFlags(/*enableRuntimeSchedulerQueueClearingOnError=*/true);
+
+  bool didRunThrowingTask = false;
+  bool didRunQueuedTask = false;
+  bool didRunRenderingUpdate = false;
+
+  auto throwingCallback =
+      createHostFunctionFromLambda([&](bool /*unused*/) -> jsi::Value {
+        didRunThrowingTask = true;
+        runtimeScheduler_->scheduleRenderingUpdate(
+            0, [&]() { didRunRenderingUpdate = true; });
+        throw jsi::JSError(*runtime_, "Test error");
+      });
+
+  runtimeScheduler_->scheduleTask(
+      SchedulerPriority::ImmediatePriority, std::move(throwingCallback));
+  runtimeScheduler_->scheduleTask(
+      SchedulerPriority::LowPriority,
+      [&](jsi::Runtime& /*runtime*/) { didRunQueuedTask = true; });
+
+  EXPECT_FALSE(didRunThrowingTask);
+  EXPECT_FALSE(didRunQueuedTask);
+  EXPECT_FALSE(didRunRenderingUpdate);
+  EXPECT_EQ(stubQueue_->size(), 1);
+
+  stubQueue_->tick();
+
+  EXPECT_TRUE(didRunThrowingTask);
+  EXPECT_FALSE(didRunQueuedTask);
+  EXPECT_FALSE(didRunRenderingUpdate);
   EXPECT_EQ(stubQueue_->size(), 0);
   EXPECT_EQ(stubErrorUtils_->getReportFatalCallCount(), 1);
 }
@@ -896,6 +947,29 @@ TEST_P(RuntimeSchedulerTest, basicSameThreadExecution) {
   stubQueue_->tick();
 
   t1.join();
+
+  EXPECT_TRUE(didRunSynchronousTask);
+}
+
+// Mirror of `basicSameThreadExecution` for the production call pattern: the
+// caller is the UI thread (XCTest test methods run on the main NSThread on
+// Apple), so `executeNowOnTheSameThread` routes through the coordinator path
+// in `executeSynchronouslyOnSameThread_CAN_DEADLOCK`. The off-main `driver`
+// thread drives the stub queue ("JS thread") so the main thread can wake up.
+TEST_P(RuntimeSchedulerTest, basicUIThreadExecution) {
+  bool didRunSynchronousTask = false;
+
+  std::thread driver([this]() {
+    stubQueue_->waitForTask();
+    stubQueue_->tick();
+  });
+
+  runtimeScheduler_->executeNowOnTheSameThread(
+      [&didRunSynchronousTask](jsi::Runtime& /*rt*/) {
+        didRunSynchronousTask = true;
+      });
+
+  driver.join();
 
   EXPECT_TRUE(didRunSynchronousTask);
 }
@@ -1169,27 +1243,26 @@ TEST_P(RuntimeSchedulerTest, errorInTaskShouldNotStopMicrotasks) {
   auto microtaskRan = false;
   auto taskRan = false;
 
-  auto callback = createHostFunctionFromLambda([&](bool /* unused */) {
-    taskRan = true;
+  auto callback =
+      createHostFunctionFromLambda([&](bool /* unused */) -> jsi::Value {
+        taskRan = true;
 
-    auto microtaskCallback = jsi::Function::createFromHostFunction(
-        *runtime_,
-        jsi::PropNameID::forUtf8(*runtime_, "microtask1"),
-        3,
-        [&](jsi::Runtime& /*unused*/,
-            const jsi::Value& /*unused*/,
-            const jsi::Value* /*arguments*/,
-            size_t /*unused*/) -> jsi::Value {
-          microtaskRan = true;
-          return jsi::Value::undefined();
-        });
+        auto microtaskCallback = jsi::Function::createFromHostFunction(
+            *runtime_,
+            jsi::PropNameID::forUtf8(*runtime_, "microtask1"),
+            3,
+            [&](jsi::Runtime& /*unused*/,
+                const jsi::Value& /*unused*/,
+                const jsi::Value* /*arguments*/,
+                size_t /*unused*/) -> jsi::Value {
+              microtaskRan = true;
+              return jsi::Value::undefined();
+            });
 
-    runtime_->queueMicrotask(microtaskCallback);
+        runtime_->queueMicrotask(microtaskCallback);
 
-    throw jsi::JSError(*runtime_, "Test error");
-
-    return jsi::Value::undefined();
-  });
+        throw jsi::JSError(*runtime_, "Test error");
+      });
 
   runtimeScheduler_->scheduleTask(
       SchedulerPriority::NormalPriority, std::move(callback));
@@ -1358,6 +1431,10 @@ TEST_P(RuntimeSchedulerTest, reportsLongTasksWithYielding) {
 INSTANTIATE_TEST_SUITE_P(
     UseModernRuntimeScheduler,
     RuntimeSchedulerTest,
+#ifdef RCT_REMOVE_LEGACY_ARCH
+    testing::Values(true));
+#else
     testing::Values(false, true));
+#endif
 
 } // namespace facebook::react

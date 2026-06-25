@@ -356,10 +356,6 @@ bool Transform::operator==(const Transform& rhs) const noexcept {
   return true;
 }
 
-bool Transform::operator!=(const Transform& rhs) const noexcept {
-  return !(*this == rhs);
-}
-
 Transform Transform::operator*(const Transform& rhs) const {
   if (*this == Transform::Identity()) {
     return rhs;

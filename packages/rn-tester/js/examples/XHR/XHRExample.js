@@ -24,7 +24,7 @@ exports.framework = 'React';
 exports.title = 'XMLHttpRequest';
 exports.category = 'Basic';
 exports.description = ('Example that demonstrates upload and download ' +
-  'requests using XMLHttpRequest.': string);
+  'requests using XMLHttpRequest.') as string;
 exports.examples = [
   {
     title: 'File Download',

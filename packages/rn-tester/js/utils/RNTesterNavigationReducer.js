@@ -55,7 +55,7 @@ const getUpdatedRecentlyUsed = ({
 
 export const RNTesterNavigationReducer = (
   state: RNTesterNavigationState,
-  action: {type: $Keys<typeof RNTesterNavigationActionsType>, data?: any},
+  action: {type: keyof typeof RNTesterNavigationActionsType, data?: any},
 ): RNTesterNavigationState => {
   const {
     data: {

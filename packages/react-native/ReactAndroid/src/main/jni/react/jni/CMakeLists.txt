@@ -51,7 +51,6 @@ include(${REACT_ANDROID_DIR}/src/main/jni/first-party/jni-lib-merge/SoMerging-ut
 add_library(
         reactnativejni
         OBJECT
-          CatalystInstanceImpl.cpp
           InspectorNetworkRequestListener.cpp
           JExecutor.cpp
           JMessageQueueThread.cpp

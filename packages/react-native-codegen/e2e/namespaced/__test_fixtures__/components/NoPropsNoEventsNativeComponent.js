@@ -12,12 +12,12 @@ import type {HostComponent, ViewProps} from 'react-native';
 
 import {codegenNativeComponent} from 'react-native';
 
-type NativeProps = $ReadOnly<{
+type NativeProps = Readonly<{
   ...ViewProps,
 
   // No Props or events
 }>;
 
-export default (codegenNativeComponent<NativeProps>(
+export default codegenNativeComponent<NativeProps>(
   'NoPropsNoEventsNativeComponentView',
-): HostComponent<NativeProps>);
+) as HostComponent<NativeProps>;

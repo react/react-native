@@ -1,14 +1,14 @@
 {
   "name": "@react-native/js-polyfills",
-  "version": "0.84.0-main",
+  "version": "0.87.0-main",
   "description": "Polyfills for React Native.",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/facebook/react-native.git",
+    "url": "git+https://github.com/react/react-native.git",
     "directory": "packages/polyfills"
   },
-  "homepage": "https://github.com/facebook/react-native/tree/HEAD/packages/polyfills#readme",
+  "homepage": "https://github.com/react/react-native/tree/HEAD/packages/polyfills#readme",
   "keywords": [
     "polyfill",
     "polyfills",
@@ -16,9 +16,9 @@
     "js-polyfills",
     "react-native"
   ],
-  "bugs": "https://github.com/facebook/react-native/issues",
+  "bugs": "https://github.com/react/react-native/issues",
   "engines": {
-    "node": ">= 20.19.4"
+    "node": "^22.13.0 || ^24.3.0 || >= 26.0.0"
   },
   "files": [
     "console.js",

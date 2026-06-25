@@ -20,6 +20,9 @@ const {app} = require('electron') as any;
 app.setName(pkg.productName ?? pkg.name);
 app.setVersion(pkg.version + '-' + buildInfo.revision);
 
+// Enable automatic tab support (macOS 10.12+)
+app.commandLine.appendSwitch('enable-features', 'TabStrip');
+
 // Handle global command line arguments which don't require a window
 // or the single instance lock to be held.
 const {

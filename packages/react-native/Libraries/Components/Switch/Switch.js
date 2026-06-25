@@ -8,6 +8,7 @@
  * @format
  */
 
+import type {HostInstance} from '../../../src/private/types/HostInstance';
 import type {ColorValue} from '../../StyleSheet/StyleSheet';
 import type {NativeSyntheticEvent} from '../../Types/CoreEventTypes';
 import type {AccessibilityState} from '../View/ViewAccessibility';
@@ -24,6 +25,8 @@ import SwitchNativeComponent, {
 } from './SwitchNativeComponent';
 import * as React from 'react';
 import {useLayoutEffect, useRef, useState} from 'react';
+
+export type SwitchInstance = HostInstance;
 
 export type SwitchPropsIOS = {
   /**
@@ -48,7 +51,7 @@ export type SwitchPropsIOS = {
   tintColor?: ?ColorValue,
 };
 
-type SwitchChangeEventData = $ReadOnly<{
+type SwitchChangeEventData = Readonly<{
   target: number,
   value: boolean,
 }>;
@@ -82,7 +85,7 @@ type SwitchPropsBase = {
       color of the background exposed by the shrunken track, use
        [`ios_backgroundColor`](https://reactnative.dev/docs/switch#ios_backgroundColor).
      */
-  trackColor?: ?$ReadOnly<{
+  trackColor?: ?Readonly<{
     false?: ?ColorValue,
     true?: ?ColorValue,
   }>,
@@ -109,7 +112,8 @@ type SwitchPropsBase = {
   onValueChange?: ?(value: boolean) => Promise<void> | void,
 };
 
-export type SwitchProps = $ReadOnly<{
+/** @build-types emit-as-interface Expo compatibility */
+export type SwitchProps = Readonly<{
   ...ViewProps,
   ...SwitchPropsIOS,
   ...SwitchPropsBase,
@@ -117,10 +121,6 @@ export type SwitchProps = $ReadOnly<{
 
 const returnsFalse = () => false;
 const returnsTrue = () => true;
-
-type SwitchRef = React.ElementRef<
-  typeof SwitchNativeComponent | typeof AndroidSwitchNativeComponent,
->;
 
 /**
   Renders a boolean input.
@@ -164,13 +164,13 @@ type SwitchRef = React.ElementRef<
   ```
  */
 const Switch: component(
-  ref?: React.RefSetter<SwitchRef>,
+  ref?: React.RefSetter<SwitchInstance>,
   ...props: SwitchProps
 ) = function Switch({
   ref: forwardedRef,
   ...props
 }: {
-  ref?: React.RefSetter<SwitchRef>,
+  ref?: React.RefSetter<SwitchInstance>,
   ...SwitchProps,
 }): React.Node {
   const {
@@ -187,16 +187,14 @@ const Switch: component(
   const trackColorForFalse = trackColor?.false;
   const trackColorForTrue = trackColor?.true;
 
-  const nativeSwitchRef = useRef<React.ElementRef<
-    typeof SwitchNativeComponent | typeof AndroidSwitchNativeComponent,
-  > | null>(null);
+  const nativeSwitchRef = useRef<SwitchInstance | null>(null);
 
   const ref = useMergeRefs(nativeSwitchRef, forwardedRef);
 
   // We wrap the native state in an object to force the layout-effect
   // below to re-run whenever we get an update from native, even if it's
   // not different from the previous native state.
-  const [native, setNative] = useState({value: (null: ?boolean)});
+  const [native, setNative] = useState({value: null as ?boolean});
 
   const handleChange = (event: SwitchChangeEvent) => {
     // $FlowFixMe[unused-promise]

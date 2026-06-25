@@ -15,11 +15,12 @@ const VALID_ENVIRONMENT_VARIABLES = [
   'FANTOM_ENABLE_CPP_DEBUGGING',
   'FANTOM_FORCE_CI_MODE',
   'FANTOM_FORCE_OSS_BUILD',
-  'FANTOM_FORCE_TEST_MODE',
+  'FANTOM_RUN_BENCHMARKS',
   'FANTOM_LOG_COMMANDS',
   'FANTOM_PRINT_OUTPUT',
   'FANTOM_DEBUG_JS',
   'FANTOM_PROFILE_JS',
+  'FANTOM_PROFILE_CPP',
   'FANTOM_ENABLE_JS_MEMORY_INSTRUMENTATION',
 ];
 
@@ -58,16 +59,23 @@ export const isCI: boolean =
   Boolean(process.env.GITHUB_ACTIONS);
 
 /**
- * Forces benchmarks to run in test mode (running a single time to ensure
- * correctness instead of multiples times to measure performance).
+ * Runs benchmarks in benchmark mode (measuring performance with multiple
+ * iterations). When false, benchmarks run in test mode (single iteration
+ * for correctness only).
  */
-export const forceTestModeForBenchmarks: boolean = Boolean(
-  process.env.FANTOM_FORCE_TEST_MODE,
+export const runBenchmarks: boolean = Boolean(
+  process.env.FANTOM_RUN_BENCHMARKS,
 );
 
 export const debugJS: boolean = Boolean(process.env.FANTOM_DEBUG_JS);
 
 export const profileJS: boolean = Boolean(process.env.FANTOM_PROFILE_JS);
+
+/**
+ * Enables C++ sampling profiler using Linux perf.
+ * Saves perf.data files to .out/cpp-traces/ for analysis.
+ */
+export const profileCpp: boolean = Boolean(process.env.FANTOM_PROFILE_CPP);
 
 /**
  * Enables address sanitizer (ASAN) build mode for the C++ side.
@@ -97,6 +105,14 @@ export function validateEnvironmentVariables(): void {
         `Unexpected Fantom environment variable: ${key}=${String(process.env[key])}. Accepted variables are: ${VALID_ENVIRONMENT_VARIABLES.join(', ')}`,
       );
     }
+  }
+
+  if (isCI && debugCpp) {
+    throw new Error('Cannot run Fantom with C++ debugging on CI');
+  }
+
+  if (isCI && profileCpp) {
+    throw new Error('Cannot run Fantom with C++ profiling on CI');
   }
 
   // Enabling memory instrumentation is only necessary when taking JS heap

@@ -10,8 +10,11 @@
 
 'use strict';
 
-// TODO(legacy-fake-timers): Fix these tests to work with modern timers.
-jest.useFakeTimers({legacyFakeTimers: true});
+import {
+  LoadBundleFromServerError,
+  LoadBundleFromServerRequestError,
+} from '../loadBundleFromServer';
+import invariant from 'invariant';
 
 jest.mock('../../../Utilities/HMRClient');
 
@@ -36,6 +39,8 @@ jest.mock('../../../Utilities/DevLoadingView', () => ({
   default: loadingViewMock,
 }));
 
+const REQUEST_ID = 1;
+
 const sendRequest = jest.fn(
   (
     method,
@@ -49,32 +54,31 @@ const sendRequest = jest.fn(
     callback,
     withCredentials,
   ) => {
-    callback(1);
+    callback(REQUEST_ID);
   },
 );
+
+const removeListener = jest.fn();
+const addListener = jest.fn((name, fn) => {
+  if (name === 'didReceiveNetworkData') {
+    void Promise.resolve().then(() => fn([REQUEST_ID, mockDataResponse]));
+  } else if (name === 'didCompleteNetworkResponse') {
+    void Promise.resolve().then(() => fn([REQUEST_ID, mockRequestError]));
+  } else if (name === 'didReceiveNetworkResponse') {
+    void Promise.resolve().then(() => fn([REQUEST_ID, null, mockHeaders]));
+  }
+  return {remove: removeListener};
+});
 
 jest.mock('../../../Network/RCTNetworking', () => ({
   __esModule: true,
   default: {
     sendRequest,
-    addListener: jest.fn((name, fn) => {
-      if (name === 'didReceiveNetworkData') {
-        setImmediate(() => fn([1, mockDataResponse]));
-      } else if (name === 'didCompleteNetworkResponse') {
-        setImmediate(() => fn([1, mockRequestError]));
-      } else if (name === 'didReceiveNetworkResponse') {
-        setImmediate(() => fn([1, null, mockHeaders]));
-      }
-      return {remove: () => {}};
-    }),
+    addListener,
   },
 }));
 
 let loadBundleFromServer: (bundlePathAndQuery: string) => Promise<void>;
-const {
-  LoadBundleFromServerError,
-  LoadBundleFromServerRequestError,
-} = require('../loadBundleFromServer');
 
 let mockHeaders: {'Content-Type': string};
 let mockDataResponse;
@@ -91,13 +95,16 @@ test('loadBundleFromServer will throw for JSON responses', async () => {
   mockDataResponse = JSON.stringify({message: 'Error thrown from Metro'});
   mockRequestError = null;
 
-  try {
-    await loadBundleFromServer('/Fail.bundle?platform=ios');
-  } catch (e) {
-    expect(e).toBeInstanceOf(LoadBundleFromServerError);
-    expect(e.message).toBe('Could not load bundle');
-    expect(e.cause).toBe('Error thrown from Metro');
-  }
+  const error: unknown = await loadBundleFromServer(
+    '/Fail.bundle?platform=ios',
+  ).catch(e => e);
+
+  invariant(
+    error instanceof LoadBundleFromServerError,
+    'Expected a LoadBundleFromServerError',
+  );
+  expect(error.message).toBe('Could not load bundle');
+  expect(error.cause).toBe('Error thrown from Metro');
 });
 
 test('loadBundleFromServer will throw LoadBundleFromServerError for request errors', async () => {
@@ -105,16 +112,19 @@ test('loadBundleFromServer will throw LoadBundleFromServerError for request erro
   mockDataResponse = '';
   mockRequestError = 'Some error';
 
-  try {
-    await loadBundleFromServer('/Fail.bundle?platform=ios');
-  } catch (e) {
-    expect(e).toBeInstanceOf(LoadBundleFromServerRequestError);
-    expect(e.message).toBe('Could not load bundle');
-    expect(e.cause).toBe('Some error');
-  }
+  const error: unknown = await loadBundleFromServer(
+    '/Fail.bundle?platform=ios',
+  ).catch(e => e);
+
+  invariant(
+    error instanceof LoadBundleFromServerRequestError,
+    'Expected a LoadBundleFromServerRequestError',
+  );
+  expect(error.message).toBe('Could not load bundle');
+  expect(error.cause).toBe('Some error');
 });
 
-test('loadBundleFromServer will request a bundle if import bundles are available', async () => {
+test('loadBundleFromServer successfully requests a bundle (root bundle)', async () => {
   mockDataResponse = '"code";';
   mockHeaders = {'Content-Type': 'application/javascript'};
   mockRequestError = null;
@@ -126,19 +136,27 @@ test('loadBundleFromServer will request a bundle if import bundles are available
   expect(sendRequest.mock.calls).toEqual([
     [
       'GET',
-      expect.anything(),
+      'asyncRequest',
       'localhost:8042/Banana.bundle?platform=ios&dev=true&minify=false&unusedExtraParam=42&modulesOnly=true&runModule=false',
-      expect.anything(),
-      expect.anything(),
-      expect.anything(),
-      expect.anything(),
-      expect.anything(),
-      expect.anything(),
-      expect.anything(),
+      {},
+      '',
+      'text',
+      true,
+      0,
+      expect.any(Function),
+      true,
     ],
   ]);
 
-  sendRequest.mockClear();
+  expect(addListener).toHaveBeenCalledTimes(4);
+  expect(removeListener).toHaveBeenCalledTimes(addListener.mock.calls.length);
+});
+
+test('loadBundleFromServer successfully requests a bundle (subdir bundle)', async () => {
+  mockDataResponse = '"code";';
+  mockHeaders = {'Content-Type': 'application/javascript'};
+  mockRequestError = null;
+
   await loadBundleFromServer(
     '/Tiny/Apple.bundle?platform=ios&dev=true&minify=false&unusedExtraParam=42&modulesOnly=true&runModule=false',
   );
@@ -146,17 +164,20 @@ test('loadBundleFromServer will request a bundle if import bundles are available
   expect(sendRequest.mock.calls).toEqual([
     [
       'GET',
-      expect.anything(),
+      'asyncRequest',
       'localhost:8042/Tiny/Apple.bundle?platform=ios&dev=true&minify=false&unusedExtraParam=42&modulesOnly=true&runModule=false',
-      expect.anything(),
-      expect.anything(),
-      expect.anything(),
-      expect.anything(),
-      expect.anything(),
-      expect.anything(),
-      expect.anything(),
+      {},
+      '',
+      'text',
+      true,
+      0,
+      expect.any(Function),
+      true,
     ],
   ]);
+
+  expect(addListener).toHaveBeenCalledTimes(4);
+  expect(removeListener).toHaveBeenCalledTimes(addListener.mock.calls.length);
 });
 
 test('shows and hides the loading view around a request', async () => {

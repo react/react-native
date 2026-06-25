@@ -19,10 +19,10 @@ declare module 'promise/setimmediate/rejection-tracking' {
   declare module.exports: {
     enable: (
       options?: ?{
-        whitelist?: ?Array<mixed>,
+        whitelist?: ?Array<unknown>,
         allRejections?: ?boolean,
-        onUnhandled?: ?(number, mixed) => void,
-        onHandled?: ?(number, mixed) => void,
+        onUnhandled?: ?(number, unknown) => void,
+        onHandled?: ?(number, unknown) => void,
       },
     ) => void,
     disable: () => void,

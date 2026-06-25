@@ -18,19 +18,19 @@ const emitter = new EventEmitter<{
 }>();
 
 const subscription = emitter.addListener('void', unknown => {
-  (unknown: void);
+  unknown as void;
 });
 subscription.remove();
 
 emitter.addListener('string', foo => {
-  (foo: string);
+  foo as string;
 });
 emitter.addListener('strings', (foo, bar) => {
-  (foo: string);
-  (bar: string);
+  foo as string;
+  bar as string;
 });
 emitter.addListener('error', error => {
-  (error: Error);
+  error as Error;
 });
 
 emitter.emit('void');

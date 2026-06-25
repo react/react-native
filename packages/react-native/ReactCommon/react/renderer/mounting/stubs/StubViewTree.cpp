@@ -302,10 +302,6 @@ bool operator==(const StubViewTree& lhs, const StubViewTree& rhs) {
   return true;
 }
 
-bool operator!=(const StubViewTree& lhs, const StubViewTree& rhs) {
-  return !(lhs == rhs);
-}
-
 void StubViewTree::recordMutation(const ShadowViewMutation& mutation) {
   switch (mutation.type) {
     case ShadowViewMutation::Create: {

@@ -14,13 +14,13 @@ import type {PointValue} from 'react-native/Libraries/StyleSheet/StyleSheetTypes
 
 import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
 
-type NativeProps = $ReadOnly<{
+type NativeProps = Readonly<{
   ...ViewProps,
 
   // Props
   startPoint?: PointValue,
 }>;
 
-export default (codegenNativeComponent<NativeProps>(
+export default codegenNativeComponent<NativeProps>(
   'PointPropNativeComponentView',
-): HostComponent<NativeProps>);
+) as HostComponent<NativeProps>;

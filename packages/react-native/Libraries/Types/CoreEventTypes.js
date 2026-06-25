@@ -10,12 +10,12 @@
 
 import type {HostInstance} from '../../src/private/types/HostInstance';
 
-export type NativeSyntheticEvent<+T> = $ReadOnly<{
+export type NativeSyntheticEvent<out T> = Readonly<{
   bubbles: ?boolean,
   cancelable: ?boolean,
   currentTarget: number | HostInstance,
   defaultPrevented: ?boolean,
-  dispatchConfig: $ReadOnly<{
+  dispatchConfig: Readonly<{
     registrationName: string,
   }>,
   eventPhase: ?number,
@@ -31,14 +31,14 @@ export type NativeSyntheticEvent<+T> = $ReadOnly<{
   type: ?string,
 }>;
 
-export type ResponderSyntheticEvent<T> = $ReadOnly<{
+export type ResponderSyntheticEvent<T> = Readonly<{
   ...NativeSyntheticEvent<T>,
-  touchHistory: $ReadOnly<{
+  touchHistory: Readonly<{
     indexOfSingleActiveTouch: number,
     mostRecentTimeStamp: number,
     numberActiveTouches: number,
-    touchBank: $ReadOnlyArray<
-      $ReadOnly<{
+    touchBank: ReadonlyArray<
+      Readonly<{
         touchActive: boolean,
         startPageX: number,
         startPageY: number,
@@ -54,14 +54,14 @@ export type ResponderSyntheticEvent<T> = $ReadOnly<{
   }>,
 }>;
 
-export type LayoutRectangle = $ReadOnly<{
+export type LayoutRectangle = Readonly<{
   x: number,
   y: number,
   width: number,
   height: number,
 }>;
 
-export type TextLayoutLine = $ReadOnly<{
+export type TextLayoutLine = Readonly<{
   ...LayoutRectangle,
   ascender: number,
   capHeight: number,
@@ -71,12 +71,12 @@ export type TextLayoutLine = $ReadOnly<{
 }>;
 
 export type LayoutChangeEvent = NativeSyntheticEvent<
-  $ReadOnly<{
+  Readonly<{
     layout: LayoutRectangle,
   }>,
 >;
 
-type TextLayoutEventData = $ReadOnly<{
+type TextLayoutEventData = Readonly<{
   lines: Array<TextLayoutLine>,
 }>;
 
@@ -89,7 +89,7 @@ export interface NativeUIEvent {
   /**
    * Returns a long with details about the event, depending on the event type.
    */
-  +detail: number;
+  readonly detail: number;
 }
 
 /**
@@ -99,72 +99,72 @@ export interface NativeMouseEvent extends NativeUIEvent {
   /**
    * The X coordinate of the mouse pointer in global (screen) coordinates.
    */
-  +screenX: number;
+  readonly screenX: number;
   /**
    * The Y coordinate of the mouse pointer in global (screen) coordinates.
    */
-  +screenY: number;
+  readonly screenY: number;
   /**
    * The X coordinate of the mouse pointer relative to the whole document.
    */
-  +pageX: number;
+  readonly pageX: number;
   /**
    * The Y coordinate of the mouse pointer relative to the whole document.
    */
-  +pageY: number;
+  readonly pageY: number;
   /**
    * The X coordinate of the mouse pointer in local (DOM content) coordinates.
    */
-  +clientX: number;
+  readonly clientX: number;
   /**
    * The Y coordinate of the mouse pointer in local (DOM content) coordinates.
    */
-  +clientY: number;
+  readonly clientY: number;
   /**
    * Alias for NativeMouseEvent.clientX
    */
-  +x: number;
+  readonly x: number;
   /**
    * Alias for NativeMouseEvent.clientY
    */
-  +y: number;
+  readonly y: number;
   /**
    * Returns true if the control key was down when the mouse event was fired.
    */
-  +ctrlKey: boolean;
+  readonly ctrlKey: boolean;
   /**
    * Returns true if the shift key was down when the mouse event was fired.
    */
-  +shiftKey: boolean;
+  readonly shiftKey: boolean;
   /**
    * Returns true if the alt key was down when the mouse event was fired.
    */
-  +altKey: boolean;
+  readonly altKey: boolean;
   /**
    * Returns true if the meta key was down when the mouse event was fired.
    */
-  +metaKey: boolean;
+  readonly metaKey: boolean;
   /**
    * The button number that was pressed (if applicable) when the mouse event was fired.
    */
-  +button: number;
+  readonly button: number;
   /**
    * The buttons being depressed (if any) when the mouse event was fired.
    */
-  +buttons: number;
+  readonly buttons: number;
   /**
    * The secondary target for the event, if there is one.
    */
-  +relatedTarget: null | number | HostInstance;
+  readonly relatedTarget: null | number | HostInstance;
   // offset is proposed: https://drafts.csswg.org/cssom-view/#extensions-to-the-mouseevent-interface
   /**
    * The X coordinate of the mouse pointer between that event and the padding edge of the target node
    */
-  +offsetX: number;
+  readonly offsetX: number;
   /**
    * The Y coordinate of the mouse pointer between that event and the padding edge of the target node
    */
-  +offsetY: number;
+  readonly offsetY: number;
 }
 
 /**
@@ -174,57 +174,57 @@ export interface NativePointerEvent extends NativeMouseEvent {
   /**
    * A unique identifier for the pointer causing the event.
    */
-  +pointerId: number;
+  readonly pointerId: number;
   /**
    * The width (magnitude on the X axis), in CSS pixels, of the contact geometry of the pointer
    */
-  +width: number;
+  readonly width: number;
   /**
    * The height (magnitude on the Y axis), in CSS pixels, of the contact geometry of the pointer.
    */
-  +height: number;
+  readonly height: number;
   /**
    * The normalized pressure of the pointer input in the range 0 to 1, where 0 and 1 represent
    * the minimum and maximum pressure the hardware is capable of detecting, respectively.
    */
-  +pressure: number;
+  readonly pressure: number;
   /**
    * The normalized tangential pressure of the pointer input (also known as barrel pressure or
    * cylinder stress) in the range -1 to 1, where 0 is the neutral position of the control.
    */
-  +tangentialPressure: number;
+  readonly tangentialPressure: number;
   /**
    * The plane angle (in degrees, in the range of -90 to 90) between the Y–Z plane and the plane
    * containing both the pointer (e.g. pen stylus) axis and the Y axis.
    */
-  +tiltX: number;
+  readonly tiltX: number;
   /**
    * The plane angle (in degrees, in the range of -90 to 90) between the X–Z plane and the plane
    * containing both the pointer (e.g. pen stylus) axis and the X axis.
    */
-  +tiltY: number;
+  readonly tiltY: number;
   /**
    * The clockwise rotation of the pointer (e.g. pen stylus) around its major axis in degrees,
    * with a value in the range 0 to 359.
    */
-  +twist: number;
+  readonly twist: number;
   /**
    * Indicates the device type that caused the event (mouse, pen, touch, etc.)
    */
-  +pointerType: string;
+  readonly pointerType: string;
   /**
    * Indicates if the pointer represents the primary pointer of this pointer type.
    */
-  +isPrimary: boolean;
+  readonly isPrimary: boolean;
 }
 
 export type PointerEvent = NativeSyntheticEvent<NativePointerEvent>;
 
-export type NativeTouchEvent = $ReadOnly<{
+export type NativeTouchEvent = Readonly<{
   /**
    * Array of all touch events that have changed since the last event
    */
-  changedTouches: $ReadOnlyArray<NativeTouchEvent>,
+  changedTouches: ReadonlyArray<NativeTouchEvent>,
   /**
    * 3D Touch reported force
    * @platform ios
@@ -261,34 +261,34 @@ export type NativeTouchEvent = $ReadOnly<{
   /**
    * Array of all current touches on the screen
    */
-  touches: $ReadOnlyArray<NativeTouchEvent>,
+  touches: ReadonlyArray<NativeTouchEvent>,
 }>;
 
 export type GestureResponderEvent = ResponderSyntheticEvent<NativeTouchEvent>;
 
-export type NativeScrollRectangle = $ReadOnly<{
+export type NativeScrollRectangle = Readonly<{
   bottom: number,
   left: number,
   right: number,
   top: number,
 }>;
 
-export type NativeScrollPoint = $ReadOnly<{
+export type NativeScrollPoint = Readonly<{
   y: number,
   x: number,
 }>;
 
-export type NativeScrollVelocity = $ReadOnly<{
+export type NativeScrollVelocity = Readonly<{
   y: number,
   x: number,
 }>;
 
-export type NativeScrollSize = $ReadOnly<{
+export type NativeScrollSize = Readonly<{
   height: number,
   width: number,
 }>;
 
-export type NativeScrollEvent = $ReadOnly<{
+export type NativeScrollEvent = Readonly<{
   contentInset: NativeScrollRectangle,
   contentOffset: NativeScrollPoint,
   contentSize: NativeScrollSize,
@@ -304,7 +304,7 @@ export type NativeScrollEvent = $ReadOnly<{
 
 export type ScrollEvent = NativeSyntheticEvent<NativeScrollEvent>;
 
-export type TargetedEvent = $ReadOnly<{
+export type TargetedEvent = Readonly<{
   target: number,
   ...
 }>;
@@ -314,7 +314,7 @@ export type BlurEvent = NativeSyntheticEvent<TargetedEvent>;
 export type FocusEvent = NativeSyntheticEvent<TargetedEvent>;
 
 export type MouseEvent = NativeSyntheticEvent<
-  $ReadOnly<{
+  Readonly<{
     clientX: number,
     clientY: number,
     pageX: number,
@@ -323,7 +323,7 @@ export type MouseEvent = NativeSyntheticEvent<
   }>,
 >;
 
-export type KeyEvent = $ReadOnly<{
+export type KeyEvent = Readonly<{
   /**
    * The actual key that was pressed. For example, F would be "f" or "F" depending on the shift key.
    * @see https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key

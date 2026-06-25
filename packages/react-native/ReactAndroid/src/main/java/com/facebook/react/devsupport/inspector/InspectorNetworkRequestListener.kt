@@ -11,11 +11,13 @@ import com.facebook.jni.HybridData
 import com.facebook.proguard.annotations.DoNotStrip
 import com.facebook.proguard.annotations.DoNotStripAny
 import com.facebook.soloader.SoLoader
+import com.facebook.soloader.annotation.SoLoaderLibrary
 
 /**
  * JNI wrapper for `jsinspectormodern::NetworkRequestListener`. Handles the `ScopedExecutor`
  * callback use on the C++ side.
  */
+@SoLoaderLibrary("reactnativejni")
 @DoNotStripAny
 internal class InspectorNetworkRequestListener(
     @field:DoNotStrip private val mHybridData: HybridData

@@ -11,7 +11,6 @@ package com.facebook.react.utils
 
 import com.facebook.react.ReactExtension
 import com.facebook.react.model.ModelPackageJson
-import com.facebook.react.utils.KotlinStdlibCompatUtils.capitalizeCompat
 import com.facebook.react.utils.Os.cliPath
 import java.io.File
 import org.gradle.api.Project
@@ -123,11 +122,9 @@ private fun detectCliFile(
  * 1. The path provided by the `hermesCommand` config in the `react` Gradle extension
  * 2. The file located in `node_modules/react-native/sdks/hermes/build/bin/hermesc`. This will be
  *    used if the user is building Hermes from source.
- * 3. The file located in `node_modules/react-native/sdks/hermesc/%OS-BIN%/hermesc` where `%OS-BIN%`
- *    is substituted with the correct OS arch. This will be used if the user is using a precompiled
- *    hermes-engine package. Or, if the user has opted in to use Hermes V1, the used file will be
- *    located in `node_modules/hermes-compiler/%OS-BIN%/hermesc` where `%OS-BIN%` is substituted
- *    with the correct OS arch.
+ * 3. The file located in `node_modules/hermes-compiler/%OS-BIN%/hermesc` where `%OS-BIN%` is
+ *    substituted with the correct OS arch. This is used when Hermes V1 is consumed as a prebuilt
+ *    package via the `hermes-compiler` npm package.
  * 4. Fails otherwise
  */
 internal fun detectOSAwareHermesCommand(
@@ -202,7 +199,7 @@ internal fun getHermesOSBin(): String {
 internal fun projectPathToLibraryName(projectPath: String): String =
     projectPath
         .split(':', '-', '_', '.')
-        .joinToString("") { token -> token.capitalizeCompat() }
+        .joinToString("") { token -> token.replaceFirstChar { it.titlecase() } }
         .plus("Spec")
 
 /**

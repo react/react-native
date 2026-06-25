@@ -52,6 +52,23 @@ C++'s type system and the performance characteristics of native code. The
 implementation uses `std::chrono` internally but provides a more specialized
 interface tailored to React Native's needs.
 
+### Platform-Specific Clock Sources
+
+On different platforms, `HighResTimeStamp` uses different underlying clock
+sources to ensure compatibility with platform-specific timing APIs:
+
+- **iOS/macOS**: Uses `mach_absolute_time()`, which measures time since device
+  boot and **excludes sleep time**. This ensures compatibility with iOS system
+  APIs (like `UITouch.timestamp` and `NSProcessInfo.processInfo.systemUptime`)
+  and native performance logging systems that use the same clock source.
+
+- **Other platforms**: Uses `std::chrono::steady_clock`, which provides a
+  monotonic clock that may include or exclude sleep time depending on the
+  platform.
+
+This design ensures that timestamps recorded in JavaScript and passed to native
+systems will have correct timing on all platforms.
+
 ### HighResTimeStamp
 
 This class represents a specific point in time with high precision. It

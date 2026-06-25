@@ -79,44 +79,65 @@ exports.description =
 exports.examples = [
   {
     title: 'Basic shadow',
+    name: 'basic-shadow',
     description: 'shadowOpacity: 0.5, shadowOffset: {2, 2}',
     render(): React.Node {
-      return <View style={[styles.box, styles.shadow1]} />;
+      return (
+        <View testID="box-shadow-basic" style={[styles.box, styles.shadow1]} />
+      );
     },
   },
   {
     title: 'Colored shadow',
+    name: 'colored-shadow',
     description: "shadowColor: 'red', shadowRadius: 0",
     render(): React.Node {
-      return <View style={[styles.box, styles.shadow2]} />;
-    },
-  },
-  {
-    title: 'Shaped shadow',
-    description: 'borderRadius: 50',
-    render(): React.Node {
-      return <View style={[styles.box, styles.shadow1, styles.shadowShaped]} />;
-    },
-  },
-  {
-    title: 'Image shadow',
-    description: 'Image shadows are derived exactly from the pixels.',
-    render(): React.Node {
       return (
-        <Image
-          source={require('../../assets/hawk.png')}
-          style={[styles.box, styles.shadow1, styles.shadowImage]}
+        <View
+          testID="box-shadow-colored"
+          style={[styles.box, styles.shadow2]}
         />
       );
     },
   },
   {
+    title: 'Shaped shadow',
+    name: 'shaped-shadow',
+    description: 'borderRadius: 50',
+    render(): React.Node {
+      return (
+        <View
+          testID="box-shadow-shaped"
+          style={[styles.box, styles.shadow1, styles.shadowShaped]}
+        />
+      );
+    },
+  },
+  {
+    title: 'Image shadow',
+    name: 'image-shadow',
+    description: 'Image shadows are derived exactly from the pixels.',
+    render(): React.Node {
+      return (
+        <View testID="box-shadow-image">
+          <Image
+            source={require('../../assets/hawk.png')}
+            style={[styles.box, styles.shadow1, styles.shadowImage]}
+          />
+        </View>
+      );
+    },
+  },
+  {
     title: 'Child shadow',
+    name: 'child-shadow',
     description:
       'For views without an opaque background color, shadow will be derived from the subviews.',
     render(): React.Node {
       return (
-        <View style={[styles.box, styles.shadow1, styles.shadowChild]}>
+        <View
+          testID="box-shadow-child"
+          style={[styles.box, styles.shadow1, styles.shadowChild]}>
           <View style={[styles.box, styles.shadowChildBox]} />
         </View>
       );

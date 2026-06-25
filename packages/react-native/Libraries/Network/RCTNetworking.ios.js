@@ -18,10 +18,10 @@ import {type RCTNetworkingEventDefinitions} from './RCTNetworkingEventDefinition
 import {type NativeResponseType} from './XMLHttpRequest';
 
 const RCTNetworking = {
-  addListener<K: $Keys<RCTNetworkingEventDefinitions>>(
+  addListener<K extends keyof RCTNetworkingEventDefinitions>(
     eventType: K,
-    listener: (...RCTNetworkingEventDefinitions[K]) => mixed,
-    context?: mixed,
+    listener: (...RCTNetworkingEventDefinitions[K]) => unknown,
+    context?: unknown,
   ): EventSubscription {
     // $FlowFixMe[incompatible-type]
     return RCTDeviceEventEmitter.addListener(eventType, listener, context);

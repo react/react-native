@@ -19,7 +19,8 @@ import NativeAppState from './NativeAppState';
  * background - The app is running in the background. The user is either:
  *   - in another app
  *   - on the home screen
- *   - @platform android - on another Activity (even if it was launched by your app)
+ *   - [Android only] on another Activity, including temporary system activities such
+ *     as autofill credential pickers (even if launched by your app or the system)
  * @platform ios - inactive - This is a state that occurs when transitioning between foreground & background, and during periods of inactivity such as entering the multitasking view, opening the Notification Center or in the event of an incoming call.
  */
 export type AppStateStatus =
@@ -42,7 +43,7 @@ type AppStateEventDefinitions = {
   focus: [],
 };
 
-export type AppStateEvent = $Keys<AppStateEventDefinitions>;
+export type AppStateEvent = keyof AppStateEventDefinitions;
 
 type NativeAppStateEventDefinitions = {
   appStateDidChange: [{app_state: AppStateStatus}],
@@ -110,7 +111,7 @@ class AppStateImpl {
    *
    * See https://reactnative.dev/docs/appstate#addeventlistener
    */
-  addEventListener<K: AppStateEvent>(
+  addEventListener<K extends AppStateEvent>(
     type: K,
     handler: (...AppStateEventDefinitions[K]) => void,
   ): EventSubscription {

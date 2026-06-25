@@ -18,7 +18,7 @@ import type {HostComponent} from '../../types/HostComponent';
 
 import codegenNativeComponent from '../../../../Libraries/Utilities/codegenNativeComponent';
 
-export type NativeModeChangeEvent = $ReadOnly<{
+export type NativeModeChangeEvent = Readonly<{
   /**
    * Virtualization mode of the target view.
    *
@@ -34,7 +34,7 @@ export type NativeModeChangeEvent = $ReadOnly<{
   /**
    * Rect of the target view, relative to the nearest ancestor scroll container.
    */
-  targetRect: $ReadOnly<{
+  targetRect: Readonly<{
     x: Double,
     y: Double,
     width: Double,
@@ -51,7 +51,7 @@ export type NativeModeChangeEvent = $ReadOnly<{
    *
    * This can be used to determine whether and how much new content to render.
    */
-  thresholdRect: $ReadOnly<{
+  thresholdRect: Readonly<{
     x: Double,
     y: Double,
     width: Double,
@@ -59,7 +59,7 @@ export type NativeModeChangeEvent = $ReadOnly<{
   }>,
 }>;
 
-type VirtualViewNativeProps = $ReadOnly<{
+type VirtualViewNativeProps = Readonly<{
   ...ViewProps,
 
   /**

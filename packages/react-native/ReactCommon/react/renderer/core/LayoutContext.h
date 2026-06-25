@@ -59,6 +59,11 @@ struct LayoutContext {
    * If React Native takes up entire screen, it will be {0, 0}.
    */
   Point viewportOffset{};
+
+  /*
+   * Viewport size is size of the React Native's root view.
+   */
+  Size viewportSize{};
 };
 
 inline bool operator==(const LayoutContext &lhs, const LayoutContext &rhs)
@@ -68,18 +73,15 @@ inline bool operator==(const LayoutContext &lhs, const LayoutContext &rhs)
              lhs.affectedNodes,
              lhs.swapLeftAndRightInRTL,
              lhs.fontSizeMultiplier,
-             lhs.viewportOffset) ==
+             lhs.viewportOffset,
+             lhs.viewportSize) ==
       std::tie(
              rhs.pointScaleFactor,
              rhs.affectedNodes,
              rhs.swapLeftAndRightInRTL,
              rhs.fontSizeMultiplier,
-             rhs.viewportOffset);
-}
-
-inline bool operator!=(const LayoutContext &lhs, const LayoutContext &rhs)
-{
-  return !(lhs == rhs);
+             rhs.viewportOffset,
+             rhs.viewportSize);
 }
 
 } // namespace facebook::react

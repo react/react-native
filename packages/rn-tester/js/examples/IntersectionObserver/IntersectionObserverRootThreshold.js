@@ -36,7 +36,7 @@ export function render(): React.Node {
 /**
  * Similar to the example in MDN: https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API
  */
-function IntersectionObserverRootThreshold(): React.Node {
+component IntersectionObserverRootThreshold() {
   const theme = useContext(RNTesterThemeContext);
   const [showMargin, setShowMargin] = useState(true);
 

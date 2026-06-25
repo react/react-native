@@ -38,6 +38,17 @@ class ShadowTreeDelegate {
       std::shared_ptr<const MountingCoordinator> mountingCoordinator,
       bool mountSynchronously) const = 0;
 
+  /*
+   * Called right after Shadow Tree commits a new React revision of the tree.
+   */
+  virtual void shadowTreeDidFinishReactCommit(const ShadowTree &shadowTree) const = 0;
+
+  /*
+   * Called right after Shadow Tree promotes a React revision of the tree to
+   * be merged.
+   */
+  virtual void shadowTreeDidPromoteReactRevision(const ShadowTree &shadowTree) const = 0;
+
   virtual ~ShadowTreeDelegate() noexcept = default;
 };
 

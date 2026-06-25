@@ -10,32 +10,39 @@
 
 'use strict';
 
-const render = require('../../../jest/renderer');
+const BackHandler: $FlowFixMe = require('../../Utilities/BackHandler').default;
+const LogBoxData = require('../Data/LogBoxData');
 const LogBoxLog = require('../Data/LogBoxLog').default;
 const {
-  _LogBoxNotificationContainer: LogBoxNotificationContainer,
-} = require('../LogBoxNotificationContainer');
+  _LogBoxInspectorContainer: LogBoxInspectorContainer,
+} = require('../LogBoxInspectorContainer');
+const render = require('@react-native/jest-preset/jest/renderer');
 const React = require('react');
 
-// Mock `LogBoxLogNotification` because we are interested in snapshotting the
-// behavior of `LogBoxNotificationContainer`, not `LogBoxLogNotification`.
-jest.mock('../UI/LogBoxNotification', () => ({
+// Mock `LogBoxInspector` because we are interested in snapshotting the behavior
+// of `LogBoxInspectorContainer`, not `LogBoxInspector`.
+jest.mock('../UI/LogBoxInspector', () => ({
   __esModule: true,
-  default: 'LogBoxLogNotification',
+  default: 'LogBoxInspector',
 }));
 
-describe('LogBoxNotificationContainer', () => {
-  it('should render null with no logs', async () => {
-    const output = await render.create(
-      <LogBoxNotificationContainer selectedLogIndex={-1} logs={[]} />,
-    );
+jest.mock('../../Utilities/BackHandler', () =>
+  require('../../Utilities/__mocks__/BackHandler'),
+);
 
-    expect(output).toMatchSnapshot();
+describe('LogBoxInspectorContainer', () => {
+  let output;
+
+  afterEach(async () => {
+    if (output) {
+      await render.unmount(output);
+      output = null;
+    }
   });
 
-  it('should render null with no selected log and disabled', async () => {
-    const output = await render.create(
-      <LogBoxNotificationContainer
+  it('should render inspector with logs, even when disabled', async () => {
+    output = await render.create(
+      <LogBoxInspectorContainer
         isDisabled
         selectedLogIndex={-1}
         logs={[
@@ -50,63 +57,6 @@ describe('LogBoxNotificationContainer', () => {
             category: 'Some kind of message',
             componentStack: [],
           }),
-        ]}
-      />,
-    );
-
-    expect(output).toMatchSnapshot();
-  });
-
-  it('should render the latest warning notification', async () => {
-    const output = await render.create(
-      <LogBoxNotificationContainer
-        selectedLogIndex={-1}
-        logs={[
-          new LogBoxLog({
-            level: 'warn',
-            isComponentError: false,
-            message: {
-              content: 'Some kind of message',
-              substitutions: [],
-            },
-            stack: [],
-            category: 'Some kind of message',
-            componentStack: [],
-          }),
-          new LogBoxLog({
-            level: 'warn',
-            isComponentError: false,
-            message: {
-              content: 'Some kind of message (latest)',
-              substitutions: [],
-            },
-            stack: [],
-            category: 'Some kind of message (latest)',
-            componentStack: [],
-          }),
-        ]}
-      />,
-    );
-
-    expect(output).toMatchSnapshot();
-  });
-
-  it('should render the latest error notification', async () => {
-    const output = await render.create(
-      <LogBoxNotificationContainer
-        selectedLogIndex={-1}
-        logs={[
-          new LogBoxLog({
-            level: 'error',
-            isComponentError: false,
-            message: {
-              content: 'Some kind of message',
-              substitutions: [],
-            },
-            stack: [],
-            category: 'Some kind of message',
-            componentStack: [],
-          }),
           new LogBoxLog({
             level: 'error',
             isComponentError: false,
@@ -125,51 +75,18 @@ describe('LogBoxNotificationContainer', () => {
     expect(output).toMatchSnapshot();
   });
 
-  it('should render both an error and warning notification', async () => {
-    const output = await render.create(
-      <LogBoxNotificationContainer
-        selectedLogIndex={-1}
-        logs={[
-          new LogBoxLog({
-            level: 'warn',
-            isComponentError: false,
-            message: {
-              content: 'Some kind of message',
-              substitutions: [],
-            },
-            stack: [],
-            category: 'Some kind of message',
-            componentStack: [],
-          }),
-          new LogBoxLog({
-            level: 'error',
-            isComponentError: false,
-            message: {
-              content: 'Some kind of message (latest)',
-              substitutions: [],
-            },
-            stack: [],
-            category: 'Some kind of message (latest)',
-            componentStack: [],
-          }),
-        ]}
-      />,
-    );
+  it('should minimize inspector on back press when a log is selected', async () => {
+    const spy = jest.spyOn(LogBoxData, 'setSelectedLog');
 
-    expect(output).toMatchSnapshot();
-  });
-
-  it('should render selected fatal error even when disabled', async () => {
-    const output = await render.create(
-      <LogBoxNotificationContainer
-        isDisabled
+    output = await render.create(
+      <LogBoxInspectorContainer
         selectedLogIndex={0}
         logs={[
           new LogBoxLog({
-            level: 'fatal',
+            level: 'warn',
             isComponentError: false,
             message: {
-              content: 'Should be selected',
+              content: 'Some kind of message',
               substitutions: [],
             },
             stack: [],
@@ -180,39 +97,72 @@ describe('LogBoxNotificationContainer', () => {
       />,
     );
 
-    expect(output).toMatchSnapshot();
+    BackHandler.mockPressBack();
+
+    expect(spy).toHaveBeenCalledWith(-1);
+    expect(BackHandler.exitApp).not.toHaveBeenCalled();
+
+    spy.mockRestore();
   });
 
-  it('should render selected syntax error even when disabled', async () => {
-    const output = await render.create(
-      <LogBoxNotificationContainer
-        isDisabled
-        selectedLogIndex={0}
+  it('should not intercept back press when no log is selected', async () => {
+    const spy = jest.spyOn(LogBoxData, 'setSelectedLog');
+
+    output = await render.create(
+      <LogBoxInspectorContainer
+        selectedLogIndex={-1}
         logs={[
           new LogBoxLog({
-            level: 'syntax',
+            level: 'warn',
             isComponentError: false,
             message: {
-              content: 'Should be selected',
+              content: 'Some kind of message',
               substitutions: [],
             },
             stack: [],
-            category: 'Some kind of syntax error message',
+            category: 'Some kind of message',
             componentStack: [],
-            codeFrame: {
-              fileName: '/path/to/RKJSModules/Apps/CrashReact/CrashReactApp.js',
-              location: {row: 199, column: 0},
-              content: `  197 | });
-  198 |
-> 199 | export default CrashReactApp;
-      | ^
-  200 |`,
-            },
           }),
         ]}
       />,
     );
 
-    expect(output).toMatchSnapshot();
+    BackHandler.mockPressBack();
+
+    expect(spy).not.toHaveBeenCalled();
+
+    spy.mockRestore();
+  });
+
+  it('should remove back handler on unmount', async () => {
+    const spy = jest.spyOn(LogBoxData, 'setSelectedLog');
+
+    output = await render.create(
+      <LogBoxInspectorContainer
+        selectedLogIndex={0}
+        logs={[
+          new LogBoxLog({
+            level: 'warn',
+            isComponentError: false,
+            message: {
+              content: 'Some kind of message',
+              substitutions: [],
+            },
+            stack: [],
+            category: 'Some kind of message',
+            componentStack: [],
+          }),
+        ]}
+      />,
+    );
+
+    await render.unmount(output);
+    output = null;
+
+    BackHandler.mockPressBack();
+
+    expect(spy).not.toHaveBeenCalled();
+
+    spy.mockRestore();
   });
 });

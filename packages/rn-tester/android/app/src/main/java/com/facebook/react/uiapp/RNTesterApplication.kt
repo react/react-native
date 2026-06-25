@@ -119,6 +119,7 @@ internal class RNTesterApplication : Application(), ReactApplication {
 
   override fun onCreate() {
     ReactFontManager.getInstance().addCustomFont(this, "Rubik", R.font.rubik)
+    ReactFontManager.getInstance().addCustomFont(this, "FiraCode", R.font.firacode)
     super.onCreate()
     loadReactNative(this)
   }

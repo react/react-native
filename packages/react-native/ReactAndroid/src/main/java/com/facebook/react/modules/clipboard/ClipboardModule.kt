@@ -7,6 +7,7 @@
 
 package com.facebook.react.modules.clipboard
 
+import android.annotation.SuppressLint
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -22,6 +23,7 @@ internal class ClipboardModule(context: ReactApplicationContext) : NativeClipboa
   private val clipboardService: ClipboardManager
     get() = reactApplicationContext.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
 
+  @SuppressLint("ClipboardUsage")
   override fun getString(promise: Promise) {
     try {
       val clipboard = clipboardService
@@ -37,6 +39,7 @@ internal class ClipboardModule(context: ReactApplicationContext) : NativeClipboa
     }
   }
 
+  @SuppressLint("ClipboardUsage")
   override fun setString(text: String?) {
     val clipdata: ClipData = ClipData.newPlainText(null, text)
     clipboardService.setPrimaryClip(clipdata)

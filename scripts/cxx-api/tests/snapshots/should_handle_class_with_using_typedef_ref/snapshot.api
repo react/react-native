@@ -1,0 +1,4 @@
+class test::Clss {
+  public typedef MyInt32 int32_t;
+  public using OtherInt32 = MyInt32;
+}

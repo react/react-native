@@ -59,10 +59,6 @@ bool operator==(const StubView& lhs, const StubView& rhs) {
   return true;
 }
 
-bool operator!=(const StubView& lhs, const StubView& rhs) {
-  return !(lhs == rhs);
-}
-
 #if RN_DEBUG_STRING_CONVERTIBLE
 
 std::string getDebugName(const StubView& stubView) {

@@ -142,8 +142,9 @@ internal class PerfMonitorOverlayView(
     val dialog =
         createAnchoredDialog(dpToPx(12f), dpToPx(12f)).apply { setContentView(containerLayout) }
     dialog.window?.apply {
-      attributes =
-          attributes?.apply { flags = flags or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE }
+      attributes = attributes?.apply {
+        flags = flags or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+      }
     }
 
     return dialog
@@ -158,14 +159,13 @@ internal class PerfMonitorOverlayView(
           setCancelable(false)
         }
     dialog.window?.apply {
-      attributes =
-          attributes?.apply {
-            width = WindowManager.LayoutParams.WRAP_CONTENT
-            height = WindowManager.LayoutParams.WRAP_CONTENT
-            gravity = Gravity.TOP or Gravity.END
-            x = offsetX.toInt()
-            y = offsetY.toInt()
-          }
+      attributes = attributes?.apply {
+        width = WindowManager.LayoutParams.WRAP_CONTENT
+        height = WindowManager.LayoutParams.WRAP_CONTENT
+        gravity = Gravity.TOP or Gravity.END
+        x = offsetX.toInt()
+        y = offsetY.toInt()
+      }
     }
     dialog.window?.decorView?.let { decorView ->
       ViewCompat.setOnApplyWindowInsetsListener(decorView) { view, windowInsets ->

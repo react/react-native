@@ -16,4 +16,7 @@ module.exports = {
   // See https://github.com/facebook/react/pull/33161 for details.
   enableEagerAlternateStateNodeCleanup: true,
   enableFragmentRefs: true,
+  enableFragmentRefsInstanceHandles: true,
+  enableFragmentRefsTextNodes: true,
+  enableViewTransitionForPersistenceMode: true,
 };

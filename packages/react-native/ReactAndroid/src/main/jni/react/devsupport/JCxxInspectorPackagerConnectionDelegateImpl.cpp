@@ -30,6 +30,9 @@ JCxxInspectorPackagerConnectionDelegateImpl::connectWebSocket(
               "connectWebSocket");
   auto jWebSocket = method(
       self(), url, make_global(JWebSocketDelegate::newObjectCxxArgs(delegate)));
+  if (!jWebSocket) {
+    return nullptr;
+  }
   return jWebSocket->wrapInUniquePtr();
 }
 

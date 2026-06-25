@@ -72,6 +72,13 @@ class RuntimeAgent final {
 
   void notifyBindingCalled(const std::string &bindingName, const std::string &payload);
 
+  /**
+   * Called by RuntimeTarget when JS calls __notifyFastRefreshComplete().
+   * Emits a ReactNativeApplication.unstable_fastRefreshComplete CDP
+   * notification if the ReactNativeApplication domain is enabled.
+   */
+  void notifyFastRefreshComplete();
+
   struct ExportedState {
     std::unique_ptr<RuntimeAgentDelegate::ExportedState> delegateState;
   };

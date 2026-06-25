@@ -31,8 +31,26 @@ const argv = yargs
     description: 'Whether the script is invoked from an `app` or a `library`',
     default: 'app',
   })
+  .option('f', {
+    alias: 'forceOutputPath',
+    description:
+      'Whether to force React Native Core artifacts to output to the specified path',
+    type: 'boolean',
+    default: false,
+  })
   .usage('Usage: $0 -p [path to app] -t [target platform] -o [output path]')
   .demandOption(['p', 't']).argv;
 
-// $FlowFixMe[prop-missing]
-executor.execute(argv.path, argv.targetPlatform, argv.outputPath, argv.source);
+executor.execute(
+  // $FlowFixMe[prop-missing]
+  argv.path,
+  // $FlowFixMe[prop-missing]
+  argv.targetPlatform,
+  // $FlowFixMe[prop-missing]
+  argv.outputPath,
+  // $FlowFixMe[prop-missing]
+  argv.source,
+  true, // runReactNativeCodegen
+  // $FlowFixMe[prop-missing]
+  argv.forceOutputPath,
+);

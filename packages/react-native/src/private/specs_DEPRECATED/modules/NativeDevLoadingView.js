@@ -13,13 +13,13 @@ import type {TurboModule} from '../../../../Libraries/TurboModule/RCTExport';
 import * as TurboModuleRegistry from '../../../../Libraries/TurboModule/TurboModuleRegistry';
 
 export interface Spec extends TurboModule {
-  +showMessage: (
+  readonly showMessage: (
     message: string,
     withColor: ?number,
     withBackgroundColor: ?number,
     withDismissButton: ?boolean,
   ) => void;
-  +hide: () => void;
+  readonly hide: () => void;
 }
 
-export default (TurboModuleRegistry.get<Spec>('DevLoadingView'): ?Spec);
+export default TurboModuleRegistry.get<Spec>('DevLoadingView') as ?Spec;

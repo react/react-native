@@ -46,8 +46,7 @@ public class ReactDrawerLayoutManager :
       reactContext: ThemedReactContext,
       view: ReactDrawerLayout,
   ) {
-    val eventDispatcher =
-        UIManagerHelper.getEventDispatcherForReactTag(reactContext, view.id) ?: return
+    val eventDispatcher = UIManagerHelper.getEventDispatcher(reactContext) ?: return
     view.addDrawerListener(DrawerEventEmitter(view, eventDispatcher))
   }
 

@@ -22,11 +22,11 @@ import {useCallback} from 'react';
  * lead to problems with the given refs being invoked more times than desired.
  */
 export default function useMergeRefs<Instance>(
-  ...refs: $ReadOnlyArray<?React.RefSetter<Instance>>
+  ...refs: ReadonlyArray<?React.RefSetter<Instance>>
 ): React.RefSetter<Instance> {
   const refEffect = useCallback(
     (current: Instance) => {
-      const cleanups: $ReadOnlyArray<void | (() => void)> = refs.map(ref => {
+      const cleanups: ReadonlyArray<void | (() => void)> = refs.map(ref => {
         if (ref == null) {
           return undefined;
         } else {

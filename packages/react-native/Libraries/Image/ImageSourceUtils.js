@@ -23,11 +23,15 @@ export type ImageSourceHeaders = {
  * A function which returns the appropriate value for image source
  * by resolving the `source`, `src` and `srcSet` props.
  */
-export function getImageSourcesFromImageProps(
-  imageProps: ImageProps,
-):
+export function getImageSourcesFromImageProps(imageProps: ImageProps):
   | ?ResolvedAssetSource
-  | $ReadOnlyArray<{uri: string, headers: ImageSourceHeaders, ...}> {
+  | ReadonlyArray<{
+      readonly uri: string,
+      readonly headers: ImageSourceHeaders,
+      readonly width: ?number,
+      readonly height: ?number,
+      ...
+    }> {
   let source = resolveAssetSource(imageProps.source);
 
   let sources;
@@ -43,17 +47,20 @@ export function getImageSourcesFromImageProps(
   }
   if (srcSet != null) {
     const sourceList = [];
-    const srcSetList = srcSet.split(', ');
+    const srcSetList = srcSet
+      .split(',')
+      .map(imageSrc => imageSrc.trim())
+      .filter(Boolean);
     // `src` prop should be used with default scale if `srcSet` does not have 1x scale.
     let shouldUseSrcForDefaultScale = true;
     srcSetList.forEach(imageSrc => {
-      const [uri, xScale = '1x'] = imageSrc.split(' ');
+      const [uri, xScale = '1x'] = imageSrc.split(/\s+/);
       if (!xScale.endsWith('x')) {
         console.warn(
           'The provided format for scale is not supported yet. Please use scales like 1x, 2x, etc.',
         );
       } else {
-        const scale = parseInt(xScale.split('x')[0], 10);
+        const scale = parseFloat(xScale.slice(0, -1));
         if (!isNaN(scale)) {
           // 1x scale is provided in `srcSet` prop so ignore the `src` prop if provided.
           shouldUseSrcForDefaultScale =

@@ -20,7 +20,7 @@ internal class ReactTextContentSizeWatcher(private val editText: ReactEditText) 
 
   init {
     val reactContext = UIManagerHelper.getReactContext(editText)
-    eventDispatcher = UIManagerHelper.getEventDispatcherForReactTag(reactContext, editText.id)
+    eventDispatcher = UIManagerHelper.getEventDispatcher(reactContext)
     surfaceId = UIManagerHelper.getSurfaceId(reactContext)
   }
 

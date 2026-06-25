@@ -1,0 +1,4 @@
+template <typename T = int>
+class test::Tmp {
+  public T field;
+}

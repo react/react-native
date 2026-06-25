@@ -35,12 +35,12 @@ const ToastAndroidConstants = NativeToastAndroid.getConstants();
 
 const ToastAndroid = {
   // Toast duration constants
-  SHORT: (ToastAndroidConstants.SHORT: number),
-  LONG: (ToastAndroidConstants.LONG: number),
+  SHORT: ToastAndroidConstants.SHORT as number,
+  LONG: ToastAndroidConstants.LONG as number,
   // Toast gravity constants
-  TOP: (ToastAndroidConstants.TOP: number),
-  BOTTOM: (ToastAndroidConstants.BOTTOM: number),
-  CENTER: (ToastAndroidConstants.CENTER: number),
+  TOP: ToastAndroidConstants.TOP as number,
+  BOTTOM: ToastAndroidConstants.BOTTOM as number,
+  CENTER: ToastAndroidConstants.CENTER as number,
 
   show: function (message: string, duration: number): void {
     NativeToastAndroid.show(message, duration);

@@ -25,16 +25,16 @@ import Position from './Position';
 import * as React from 'react';
 
 const extractSingleTouch = (nativeEvent: {
-  +changedTouches: $ReadOnlyArray<GestureResponderEvent['nativeEvent']>,
-  +force?: number,
-  +identifier: number,
-  +locationX: number,
-  +locationY: number,
-  +pageX: number,
-  +pageY: number,
-  +target: ?number,
-  +timestamp: number,
-  +touches: $ReadOnlyArray<GestureResponderEvent['nativeEvent']>,
+  readonly changedTouches: ReadonlyArray<GestureResponderEvent['nativeEvent']>,
+  readonly force?: number,
+  readonly identifier: number,
+  readonly locationX: number,
+  readonly locationY: number,
+  readonly pageX: number,
+  readonly pageY: number,
+  readonly target: ?number,
+  readonly timestamp: number,
+  readonly touches: ReadonlyArray<GestureResponderEvent['nativeEvent']>,
 }) => {
   const touches = nativeEvent.touches;
   const changedTouches = nativeEvent.changedTouches;
@@ -947,7 +947,7 @@ const TouchableMixinImpl = {
     }
   },
 
-  withoutDefaultFocusAndBlur: ({}: {...}),
+  withoutDefaultFocusAndBlur: {} as {...},
 };
 
 /**

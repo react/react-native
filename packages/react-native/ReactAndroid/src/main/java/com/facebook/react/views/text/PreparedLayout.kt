@@ -20,4 +20,6 @@ internal class PreparedLayout(
     val maximumNumberOfLines: Int,
     val verticalOffset: Float,
     val reactTags: IntArray,
+    val textBreakStrategy: Int,
+    val justificationMode: Int,
 )

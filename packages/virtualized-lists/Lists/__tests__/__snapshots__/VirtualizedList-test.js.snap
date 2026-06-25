@@ -2097,7 +2097,7 @@ exports[`constrains batch render region when an item is removed 1`] = `
 </RCTScrollView>
 `;
 
-exports[`discards intitial render if initialScrollIndex != 0 1`] = `
+exports[`discards initial render if initialScrollIndex != 0 1`] = `
 <RCTScrollView
   data={
     Array [
@@ -5846,97 +5846,7 @@ exports[`retains batch render region when an item is appended 1`] = `
 </RCTScrollView>
 `;
 
-exports[`retains initial render region when an item is appended 1`] = `
-<RCTScrollView
-  data={
-    Array [
-      Object {
-        "key": 0,
-      },
-      Object {
-        "key": 1,
-      },
-      Object {
-        "key": 2,
-      },
-      Object {
-        "key": 3,
-      },
-      Object {
-        "key": 4,
-      },
-      Object {
-        "key": 5,
-      },
-      Object {
-        "key": 6,
-      },
-      Object {
-        "key": 7,
-      },
-      Object {
-        "key": 8,
-      },
-      Object {
-        "key": 9,
-      },
-      Object {
-        "key": 10,
-      },
-    ]
-  }
-  getItem={[Function]}
-  getItemCount={[Function]}
-  getItemLayout={[Function]}
-  initialNumToRender={3}
-  onContentSizeChange={[Function]}
-  onLayout={[Function]}
-  onMomentumScrollBegin={[Function]}
-  onMomentumScrollEnd={[Function]}
-  onScroll={[Function]}
-  onScrollBeginDrag={[Function]}
-  onScrollEndDrag={[Function]}
-  renderItem={[Function]}
-  scrollEventThrottle={0.0001}
-  stickyHeaderIndices={Array []}
->
-  <View>
-    <View
-      onFocusCapture={[Function]}
-      style={null}
-    >
-      <MockCellItem
-        value={0}
-      />
-    </View>
-    <View
-      onFocusCapture={[Function]}
-      style={null}
-    >
-      <MockCellItem
-        value={1}
-      />
-    </View>
-    <View
-      onFocusCapture={[Function]}
-      style={null}
-    >
-      <MockCellItem
-        value={2}
-      />
-    </View>
-    <View
-      style={
-        Object {
-          "height": 80,
-        }
-      }
-    />
-  </View>
-</RCTScrollView>
-`;
-
-exports[`retains intitial render if initialScrollIndex == 0 1`] = `
+exports[`retains initial render if initialScrollIndex == 0 1`] = `
 <RCTScrollView
   data={
     Array [
@@ -6115,6 +6025,96 @@ exports[`retains intitial render if initialScrollIndex == 0 1`] = `
         value={19}
       />
     </View>
+  </View>
+</RCTScrollView>
+`;
+
+exports[`retains initial render region when an item is appended 1`] = `
+<RCTScrollView
+  data={
+    Array [
+      Object {
+        "key": 0,
+      },
+      Object {
+        "key": 1,
+      },
+      Object {
+        "key": 2,
+      },
+      Object {
+        "key": 3,
+      },
+      Object {
+        "key": 4,
+      },
+      Object {
+        "key": 5,
+      },
+      Object {
+        "key": 6,
+      },
+      Object {
+        "key": 7,
+      },
+      Object {
+        "key": 8,
+      },
+      Object {
+        "key": 9,
+      },
+      Object {
+        "key": 10,
+      },
+    ]
+  }
+  getItem={[Function]}
+  getItemCount={[Function]}
+  getItemLayout={[Function]}
+  initialNumToRender={3}
+  onContentSizeChange={[Function]}
+  onLayout={[Function]}
+  onMomentumScrollBegin={[Function]}
+  onMomentumScrollEnd={[Function]}
+  onScroll={[Function]}
+  onScrollBeginDrag={[Function]}
+  onScrollEndDrag={[Function]}
+  renderItem={[Function]}
+  scrollEventThrottle={0.0001}
+  stickyHeaderIndices={Array []}
+>
+  <View>
+    <View
+      onFocusCapture={[Function]}
+      style={null}
+    >
+      <MockCellItem
+        value={0}
+      />
+    </View>
+    <View
+      onFocusCapture={[Function]}
+      style={null}
+    >
+      <MockCellItem
+        value={1}
+      />
+    </View>
+    <View
+      onFocusCapture={[Function]}
+      style={null}
+    >
+      <MockCellItem
+        value={2}
+      />
+    </View>
+    <View
+      style={
+        Object {
+          "height": 80,
+        }
+      }
+    />
   </View>
 </RCTScrollView>
 `;

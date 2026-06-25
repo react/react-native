@@ -168,3 +168,16 @@ export function createIntersectionObserverEntry(
 ): IntersectionObserverEntry {
   return new IntersectionObserverEntry(entry, target);
 }
+
+export const IntersectionObserverEntry_public: typeof IntersectionObserverEntry =
+  /* eslint-disable no-shadow */
+  // $FlowExpectedError[incompatible-type]
+  function IntersectionObserverEntry() {
+    throw new TypeError(
+      "Failed to construct 'IntersectionObserverEntry': Illegal constructor",
+    );
+  };
+
+// $FlowExpectedError[prop-missing]
+IntersectionObserverEntry_public.prototype =
+  IntersectionObserverEntry.prototype;

@@ -39,7 +39,7 @@ export type ListRenderItemInfo<ItemT> = {
   ...
 };
 
-export type CellRendererProps<ItemT> = $ReadOnly<{
+export type CellRendererProps<ItemT> = Readonly<{
   cellKey: string,
   children: React.Node,
   index: number,

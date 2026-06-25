@@ -70,3 +70,14 @@ export default class ReadOnlyCharacterData extends ReadOnlyNode {
     return data.slice(offset, offset + adjustedCount);
   }
 }
+
+export const ReadOnlyCharacterData_public: typeof ReadOnlyCharacterData =
+  // $FlowExpectedError[incompatible-type]
+  function CharacterData() {
+    throw new TypeError(
+      "Failed to construct 'CharacterData': Illegal constructor",
+    );
+  };
+
+// $FlowExpectedError[prop-missing]
+ReadOnlyCharacterData_public.prototype = ReadOnlyCharacterData.prototype;

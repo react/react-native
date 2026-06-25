@@ -11,67 +11,48 @@
 #import <React/RCTConversions.h>
 #import <React/RCTScrollViewComponentView.h>
 #import <React/RCTScrollableProtocol.h>
+#import <React/RCTVirtualViewContainerProtocol.h>
+#import <React/RCTVirtualViewContainerState.h>
 #import <React/UIView+React.h>
 #import <jsi/jsi.h>
 
-#import <react/featureflags/ReactNativeFeatureFlags.h>
 #import <react/renderer/components/FBReactNativeSpec/ComponentDescriptors.h>
 #import <react/renderer/components/FBReactNativeSpec/EventEmitters.h>
 #import <react/renderer/components/FBReactNativeSpec/Props.h>
 #import <react/renderer/components/virtualview/VirtualViewComponentDescriptor.h>
 #import <react/renderer/components/virtualview/VirtualViewShadowNode.h>
 
-#import "../VirtualViewExperimental/RCTVirtualViewMode.h"
-#import "../VirtualViewExperimental/RCTVirtualViewRenderState.h"
 #import "RCTFabricComponentsPlugins.h"
+#import "RCTVirtualViewMode.h"
+#import "RCTVirtualViewRenderState.h"
 
 using namespace facebook;
 using namespace facebook::react;
 
-/**
- * Checks whether one CGRect overlaps with another CGRect.
- *
- * This is different from CGRectIntersectsRect because a CGRect representing
- * a line or a point is considered to overlap with another CGRect if the line
- * or point is within the rect bounds. However, two CGRects are not considered
- * to overlap if they only share a boundary.
- */
-static BOOL CGRectOverlaps(CGRect rect1, CGRect rect2)
-{
-  CGFloat minY1 = CGRectGetMinY(rect1);
-  CGFloat maxY1 = CGRectGetMaxY(rect1);
-  CGFloat minY2 = CGRectGetMinY(rect2);
-  CGFloat maxY2 = CGRectGetMaxY(rect2);
-  if (minY1 >= maxY2 || minY2 >= maxY1) {
-    // No overlap on the y-axis.
-    return NO;
-  }
-  CGFloat minX1 = CGRectGetMinX(rect1);
-  CGFloat maxX1 = CGRectGetMaxX(rect1);
-  CGFloat minX2 = CGRectGetMinX(rect2);
-  CGFloat maxX2 = CGRectGetMaxX(rect2);
-  if (minX1 >= maxX2 || minX2 >= maxX1) {
-    // No overlap on the x-axis.
-    return NO;
-  }
-  return YES;
+@interface RCTVirtualViewComponentView () {
+  NSString *_virtualViewID;
 }
 
-@interface RCTVirtualViewComponentView () <UIScrollViewDelegate>
 @end
 
 @implementation RCTVirtualViewComponentView {
-  RCTScrollViewComponentView *_lastParentScrollViewComponentView;
+  id<RCTVirtualViewContainerProtocol> _parentVirtualViewContainer;
   std::optional<RCTVirtualViewMode> _mode;
   RCTVirtualViewRenderState _renderState;
   std::optional<CGRect> _targetRect;
+  NSString *_nativeId;
+  BOOL _didLayout;
 }
+
+#pragma mark - Public API
 
 - (instancetype)initWithFrame:(CGRect)frame
 {
-  if (self = [super initWithFrame:frame]) {
+  if ((self = [super initWithFrame:frame]) != nil) {
     _props = VirtualViewShadowNode::defaultSharedProps();
     _renderState = RCTVirtualViewRenderStateUnknown;
+    _virtualViewID = [[NSUUID UUID] UUIDString];
+    _didLayout = NO;
   }
 
   return self;
@@ -83,39 +64,25 @@ static BOOL CGRectOverlaps(CGRect rect1, CGRect rect2)
 
   if (!_mode.has_value()) {
     _mode = newViewProps.initialHidden ? RCTVirtualViewModeHidden : RCTVirtualViewModeVisible;
-    if (ReactNativeFeatureFlags::hideOffscreenVirtualViewsOnIOS()) {
-      self.hidden = newViewProps.initialHidden && !sIsAccessibilityUsed;
-    }
   }
 
-  // If disabled, `_renderState` will always be `RCTVirtualViewRenderStateUnknown`.
-  if (ReactNativeFeatureFlags::enableVirtualViewRenderState()) {
-    switch (newViewProps.renderState) {
-      case 1:
-        _renderState = RCTVirtualViewRenderStateRendered;
-        break;
-      case 2:
-        _renderState = RCTVirtualViewRenderStateNone;
-        break;
-      default:
-        _renderState = RCTVirtualViewRenderStateUnknown;
-        break;
-    }
+  switch (newViewProps.renderState) {
+    case 1:
+      _renderState = RCTVirtualViewRenderStateRendered;
+      break;
+    case 2:
+      _renderState = RCTVirtualViewRenderStateNone;
+      break;
+    default:
+      _renderState = RCTVirtualViewRenderStateUnknown;
+      break;
   }
+
+  const auto &newBaseViewProps = static_cast<const ViewProps &>(*props);
+  const auto nativeId = RCTNSStringFromStringNilIfEmpty(newBaseViewProps.nativeId);
+  _virtualViewID = nativeId == nil ? _virtualViewID : nativeId;
 
   [super updateProps:props oldProps:oldProps];
-}
-
-- (RCTScrollViewComponentView *)getParentScrollViewComponentView
-{
-  UIView *view = self.superview;
-  while (view != nil) {
-    if ([view isKindOfClass:[RCTScrollViewComponentView class]]) {
-      return (RCTScrollViewComponentView *)view;
-    }
-    view = view.superview;
-  }
-  return nil;
 }
 
 /**
@@ -125,18 +92,6 @@ static BOOL CGRectOverlaps(CGRect rect1, CGRect rect2)
  * features will work correctly.
  */
 static BOOL sIsAccessibilityUsed = NO;
-
-- (void)_unhideIfNeeded
-{
-  if (!sIsAccessibilityUsed) {
-    // accessibility is detected for the first time. Make views visible.
-    sIsAccessibilityUsed = YES;
-  }
-
-  if (self.hidden) {
-    self.hidden = NO;
-  }
-}
 
 - (NSInteger)accessibilityElementCount
 {
@@ -154,19 +109,23 @@ static BOOL sIsAccessibilityUsed = NO;
   return [super focusItemsInRect:rect];
 }
 
+- (NSString *)virtualViewID
+{
+  // Return a unique identifier for this virtual view
+  // Using the tag as a unique identifier since it's already unique per view
+  return _virtualViewID;
+}
+
 - (void)prepareForRecycle
 {
   [super prepareForRecycle];
 
-  // No need to remove the scroll listener here since the view is always removed from window before being recycled and
-  // we do that in didMoveToWindow, which gets called when the view is removed from window.
-  RCTAssert(
-      _lastParentScrollViewComponentView == nil,
-      @"_lastParentScrollViewComponentView should already have been cleared in didMoveToWindow.");
-
+  [[_parentVirtualViewContainer virtualViewContainerState] remove:self];
   self.hidden = NO;
+  _didLayout = NO;
   _mode.reset();
   _targetRect.reset();
+  _parentVirtualViewContainer = nil;
 }
 
 // Handles case when sibling changes size.
@@ -176,97 +135,41 @@ static BOOL sIsAccessibilityUsed = NO;
            oldLayoutMetrics:(const LayoutMetrics &)oldLayoutMetrics
 {
   [super updateLayoutMetrics:layoutMetrics oldLayoutMetrics:_layoutMetrics];
+  _didLayout = YES;
+  [self updateState];
+}
 
-  [self dispatchOnModeChangeIfNeeded:YES];
+- (void)updateState
+{
+  [[_parentVirtualViewContainer virtualViewContainerState] onChange:self];
 }
 
 - (void)didMoveToWindow
 {
   [super didMoveToWindow];
+  // here we will set the pointer to the virtualView container
+  // and if there was a layout, update
 
-  if (_lastParentScrollViewComponentView) {
-    [_lastParentScrollViewComponentView removeScrollListener:self];
-    _lastParentScrollViewComponentView = nil;
-  }
-
-  if (RCTScrollViewComponentView *parentScrollViewComponentView = [self getParentScrollViewComponentView]) {
-    if (self.window) {
-      // TODO(T202601695): We also want the ScrollView to emit layout changes from didLayoutSubviews so that any event
-      // that may affect visibily of this view notifies the listeners.
-      [parentScrollViewComponentView addScrollListener:self];
-      _lastParentScrollViewComponentView = parentScrollViewComponentView;
-
-      // We want to dispatch the event immediately when the view is added to the window before any scrolling occurs.
-      [self dispatchOnModeChangeIfNeeded:NO];
-    }
+  _parentVirtualViewContainer = [self _getParentVirtualViewContainer];
+  if (_parentVirtualViewContainer != nil && self.window != nil && _didLayout) {
+    [self updateState];
   }
 }
 
-- (void)scrollViewDidScroll:(UIScrollView *)scrollView
+- (CGRect)containerRelativeRect:(UIView *)scrollView
 {
-  [self dispatchOnModeChangeIfNeeded:NO];
+  // Return the view's position relative to its container (the scroll view)
+  return [self convertRect:self.bounds toView:scrollView];
 }
 
-- (void)dispatchOnModeChangeIfNeeded:(BOOL)checkForTargetRectChange
+- (void)onModeChange:(RCTVirtualViewMode)newMode targetRect:(CGRect)targetRect thresholdRect:(CGRect)thresholdRect
 {
-  if (!_lastParentScrollViewComponentView) {
-    return;
-  }
-
-  UIScrollView *scrollView = _lastParentScrollViewComponentView.scrollView;
-  CGRect targetRect = [self convertRect:self.bounds toView:scrollView];
-
-  // While scrolling, the `targetRect` does not change, so we don't check for changed `targetRect` in that case.
-  if (checkForTargetRectChange) {
-    if (_targetRect.has_value() && CGRectEqualToRect(targetRect, _targetRect.value())) {
-      return;
-    }
-    _targetRect = targetRect;
-  }
-
-  RCTVirtualViewMode newMode;
-  CGRect thresholdRect = CGRectMake(
-      scrollView.contentOffset.x,
-      scrollView.contentOffset.y,
-      scrollView.frame.size.width,
-      scrollView.frame.size.height);
-  const CGFloat visibleWidth = thresholdRect.size.width;
-  const CGFloat visibleHeight = thresholdRect.size.height;
-
-  if (CGRectOverlaps(targetRect, thresholdRect)) {
-    newMode = RCTVirtualViewModeVisible;
-  } else {
-    auto prerender = false;
-    const CGFloat prerenderRatio = ReactNativeFeatureFlags::virtualViewPrerenderRatio();
-    if (prerenderRatio > 0) {
-      thresholdRect = CGRectInset(thresholdRect, -visibleWidth * prerenderRatio, -visibleHeight * prerenderRatio);
-      prerender = CGRectOverlaps(targetRect, thresholdRect);
-    }
-    if (prerender) {
-      newMode = RCTVirtualViewModePrerender;
-    } else {
-      const CGFloat hysteresisRatio = ReactNativeFeatureFlags::virtualViewHysteresisRatio();
-      if (_mode.has_value() && hysteresisRatio > 0) {
-        thresholdRect = CGRectInset(thresholdRect, -visibleWidth * hysteresisRatio, -visibleHeight * hysteresisRatio);
-        if (CGRectOverlaps(targetRect, thresholdRect)) {
-          newMode = _mode.value();
-        } else {
-          newMode = RCTVirtualViewModeHidden;
-          thresholdRect = CGRectZero;
-        }
-      } else {
-        newMode = RCTVirtualViewModeHidden;
-        thresholdRect = CGRectZero;
-      }
-    }
-  }
-
   if (_mode.has_value() && newMode == _mode.value()) {
     return;
   }
 
-  // NOTE: Make sure to keep these props in sync with dispatchSyncModeChange below where we have to explicitly copy all
-  // props.
+  // NOTE: Make sure to keep these props in sync with dispatchSyncModeChange below where we have to explicitly copy
+  // all props.
   VirtualViewEventEmitter::OnModeChange event = {
       .mode = (int)newMode,
       .targetRect =
@@ -286,45 +189,53 @@ static BOOL sIsAccessibilityUsed = NO;
 
   switch (newMode) {
     case RCTVirtualViewModeVisible:
-      if (_renderState == RCTVirtualViewRenderStateUnknown) {
-        // Feature flag is disabled, so use the former logic.
-        [self dispatchSyncModeChange:event];
-      } else {
-        // If the previous mode was prerender and the result of dispatching that event was committed, we do not need to
-        // dispatch an event for visible.
-        const auto wasPrerenderCommitted = oldMode.has_value() && oldMode == RCTVirtualViewModePrerender &&
-            _renderState == RCTVirtualViewRenderStateRendered;
-        if (!wasPrerenderCommitted) {
-          [self dispatchSyncModeChange:event];
-        }
+      // If the previous mode was hidden, emit a mode change even if `renderState` is rendered,
+      // because the hidden mode change is still pending and will eventually be committed. Only
+      // skip emitting a mode change if the previous mode was prerender and the result of that
+      // event has already been committed.
+      if (!oldMode.has_value() || oldMode == RCTVirtualViewModeHidden ||
+          _renderState != RCTVirtualViewRenderStateRendered) {
+        [self _dispatchSyncModeChange:event];
       }
       break;
     case RCTVirtualViewModePrerender:
       if (!oldMode.has_value() || oldMode != RCTVirtualViewModeVisible) {
-        [self dispatchAsyncModeChange:event];
+        [self _dispatchAsyncModeChange:event];
       }
       break;
     case RCTVirtualViewModeHidden:
-      [self dispatchAsyncModeChange:event];
+      [self _dispatchAsyncModeChange:event];
       break;
-  }
-
-  if (ReactNativeFeatureFlags::hideOffscreenVirtualViewsOnIOS()) {
-    switch (newMode) {
-      case RCTVirtualViewModeVisible:
-        self.hidden = NO;
-        break;
-      case RCTVirtualViewModePrerender:
-        self.hidden = !sIsAccessibilityUsed;
-        break;
-      case RCTVirtualViewModeHidden:
-        self.hidden = YES;
-        break;
-    }
   }
 }
 
-- (void)dispatchAsyncModeChange:(VirtualViewEventEmitter::OnModeChange &)event
+#pragma mark - Private API
+
+- (void)_unhideIfNeeded
+{
+  if (!sIsAccessibilityUsed) {
+    // accessibility is detected for the first time. Make views visible.
+    sIsAccessibilityUsed = YES;
+  }
+
+  if (self.hidden) {
+    self.hidden = NO;
+  }
+}
+
+- (id<RCTVirtualViewContainerProtocol>)_getParentVirtualViewContainer
+{
+  UIView *view = self.superview;
+  while (view != nil) {
+    if ([view respondsToSelector:@selector(virtualViewContainerState)]) {
+      return (id<RCTVirtualViewContainerProtocol>)view;
+    }
+    view = view.superview;
+  }
+  return nil;
+}
+
+- (void)_dispatchAsyncModeChange:(VirtualViewEventEmitter::OnModeChange &)event
 {
   if (!_eventEmitter) {
     return;
@@ -334,7 +245,7 @@ static BOOL sIsAccessibilityUsed = NO;
   emitter.onModeChange(event);
 }
 
-- (void)dispatchSyncModeChange:(VirtualViewEventEmitter::OnModeChange &)event
+- (void)_dispatchSyncModeChange:(VirtualViewEventEmitter::OnModeChange &)event
 {
   if (!_eventEmitter) {
     return;

@@ -1,0 +1,7 @@
+struct outer::inner::Type {
+}
+
+
+struct outer::sibling::Clss {
+  public operator outer::inner::Type();
+}

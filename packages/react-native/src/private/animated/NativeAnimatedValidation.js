@@ -20,7 +20,7 @@ import {
 } from '../../../Libraries/Animated/NativeAnimatedAllowlist';
 
 export function validateInterpolation<
-  OutputT: InterpolationConfigSupportedOutputType,
+  OutputT extends InterpolationConfigSupportedOutputType,
 >(config: InterpolationConfigType<OutputT>): void {
   for (const key in config) {
     if (key !== 'debugID' && !isSupportedInterpolationParam(key)) {

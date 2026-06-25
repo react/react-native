@@ -84,11 +84,11 @@ function ManyPointersPropertiesExample(): React.Node {
   );
 }
 
-export default ({
+export default {
   name: 'many_pointers_properties_example',
   description: 'Display of properties for multiple pointers',
   title: 'Display Properties of many pointers',
   render(): React.Node {
     return <ManyPointersPropertiesExample />;
   },
-}: RNTesterModuleExample);
+} as RNTesterModuleExample;

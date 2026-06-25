@@ -29,14 +29,14 @@ declare const MutationRecord: Class<MutationRecordType>;
 
 setUpMutationObserver();
 
-function ensureReactNativeElement(value: mixed): ReactNativeElement {
+function ensureReactNativeElement(value: unknown): ReactNativeElement {
   return ensureInstance(value, ReactNativeElement);
 }
 
 function ensureMutationRecordArray(
-  value: mixed,
-): $ReadOnlyArray<MutationRecord> {
-  return ensureInstance(value, Array).map((element: mixed) =>
+  value: unknown,
+): ReadonlyArray<MutationRecord> {
+  return ensureInstance(value, Array).map((element: unknown) =>
     ensureInstance(element, MutationRecord),
   );
 }
@@ -239,7 +239,7 @@ describe('MutationObserver', () => {
       const node = ensureReactNativeElement(nodeRef.current);
 
       const observerCallbackCallArgs = [];
-      const observerCallback = (...args: $ReadOnlyArray<mixed>) => {
+      const observerCallback = (...args: ReadonlyArray<unknown>) => {
         observerCallbackCallArgs.push(args);
       };
       const observer = new MutationObserver(observerCallback);
@@ -926,6 +926,18 @@ describe('MutationObserver', () => {
       expect(() => {
         observer.disconnect();
       }).not.toThrow();
+    });
+  });
+
+  describe('MutationRecord global constructor', () => {
+    it('throws when called', () => {
+      expect(
+        () =>
+          // The public stub throws regardless of arguments; the real class
+          // requires one so Flow needs a suppression here.
+          // $FlowExpectedError[incompatible-type]
+          new MutationRecord(),
+      ).toThrow("Failed to construct 'MutationRecord': Illegal constructor");
     });
   });
 });

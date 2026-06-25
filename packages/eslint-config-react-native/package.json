@@ -1,22 +1,22 @@
 {
   "name": "@react-native/eslint-config",
-  "version": "0.84.0-main",
+  "version": "0.87.0-main",
   "description": "ESLint config for React Native",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/facebook/react-native.git",
+    "url": "git+https://github.com/react/react-native.git",
     "directory": "packages/eslint-config-react-native"
   },
-  "homepage": "https://github.com/facebook/react-native/tree/HEAD/packages/eslint-config-react-native#readme",
+  "homepage": "https://github.com/react/react-native/tree/HEAD/packages/eslint-config-react-native#readme",
   "keywords": [
     "eslint",
     "config",
     "react-native"
   ],
-  "bugs": "https://github.com/facebook/react-native/issues",
+  "bugs": "https://github.com/react/react-native/issues",
   "engines": {
-    "node": ">= 20.19.4"
+    "node": "^22.13.0 || ^24.3.0 || >= 26.0.0"
   },
   "main": "index.js",
   "exports": {
@@ -26,14 +26,14 @@
   "dependencies": {
     "@babel/core": "^7.25.2",
     "@babel/eslint-parser": "^7.25.1",
-    "@react-native/eslint-plugin": "0.84.0-main",
-    "@typescript-eslint/eslint-plugin": "^8.36.0",
-    "@typescript-eslint/parser": "^8.36.0",
+    "@react-native/eslint-plugin": "0.87.0-main",
+    "@typescript-eslint/eslint-plugin": "^8.59.2",
+    "@typescript-eslint/parser": "^8.59.2",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-eslint-comments": "^3.2.0",
     "eslint-plugin-ft-flow": "^2.0.1",
     "eslint-plugin-jest": "^29.0.1",
-    "eslint-plugin-react": "^7.30.1",
+    "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-native": "^5.0.0"
   },

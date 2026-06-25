@@ -21,4 +21,32 @@ internal interface SynchronousEventReceiver {
       @EventCategoryDef eventCategory: Int,
       experimentalIsSynchronous: Boolean,
   )
+
+  /**
+   * Receives an event with a specific timestamp. The default implementation delegates to the
+   * non-timestamped version for backward compatibility with existing implementations.
+   *
+   * @param eventTimestamp timestamp when the event was triggered (in milliseconds since boot, from
+   *   SystemClock.uptimeMillis())
+   */
+  fun receiveEvent(
+      surfaceId: Int,
+      reactTag: Int,
+      eventName: String,
+      canCoalesceEvent: Boolean,
+      params: WritableMap?,
+      @EventCategoryDef eventCategory: Int,
+      experimentalIsSynchronous: Boolean,
+      eventTimestamp: Long,
+  ) {
+    receiveEvent(
+        surfaceId,
+        reactTag,
+        eventName,
+        canCoalesceEvent,
+        params,
+        eventCategory,
+        experimentalIsSynchronous,
+    )
+  }
 }

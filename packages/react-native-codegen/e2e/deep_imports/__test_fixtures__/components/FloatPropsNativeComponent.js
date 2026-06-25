@@ -17,7 +17,7 @@ import type {
 
 import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
 
-type NativeProps = $ReadOnly<{
+type NativeProps = Readonly<{
   ...ViewProps,
 
   // Props
@@ -30,6 +30,6 @@ type NativeProps = $ReadOnly<{
   blurRadiusNullable?: WithDefault<Float, null>,
 }>;
 
-export default (codegenNativeComponent<NativeProps>(
+export default codegenNativeComponent<NativeProps>(
   'FloatPropsNativeComponentView',
-): HostComponent<NativeProps>);
+) as HostComponent<NativeProps>;

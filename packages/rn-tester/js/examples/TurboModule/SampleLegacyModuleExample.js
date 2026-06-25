@@ -26,7 +26,7 @@ type State = {
   testResults: {
     [string]: {
       type: string,
-      value: mixed,
+      value: unknown,
       ...
     },
     ...
@@ -49,14 +49,14 @@ function getSampleLegacyModule() {
   return module;
 }
 
-function stringify(obj: mixed): string {
-  function replacer(_: string, value: mixed) {
+function stringify(obj: unknown): string {
+  function replacer(_: string, value: unknown) {
     if (value instanceof Object && !(value instanceof Array)) {
       /* $FlowFixMe[constant-condition] Error discovered during Constant
        * Condition roll out. See https://fburl.com/workplace/1v97vimq. */
       return Object.keys(value ?? {})
         .sort()
-        .reduce((sorted: {[key: string]: mixed}, key: string) => {
+        .reduce((sorted: {[key: string]: unknown}, key: string) => {
           // $FlowFixMe[invalid-computed-prop]
           /* $FlowFixMe[constant-condition] Error discovered during Constant
            * Condition roll out. See https://fburl.com/workplace/1v97vimq. */
@@ -183,7 +183,7 @@ class SampleLegacyModuleExample extends React.Component<{}, State> {
           getConst3: () => getSampleLegacyModule()?.const3,
         };
 
-  _setResult(name: string, result: mixed) {
+  _setResult(name: string, result: unknown) {
     this.setState(({testResults}) => ({
       /* $FlowFixMe[cannot-spread-indexer] (>=0.122.0 site=react_native_fb)
        * This comment suppresses an error found when Flow v0.122.0 was

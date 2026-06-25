@@ -358,6 +358,7 @@ TYPED_TEST(JsiIntegrationPortableTest, ReactNativeApplicationEnable) {
                                           "method": "ReactNativeApplication.metadataUpdated",
                                           "params": {
                                             "integrationName": "JsiIntegrationTest",
+                                            "unstable_frameRecordingEnabled": false,
                                             "unstable_isProfilingBuild": false,
                                             "unstable_networkInspectionEnabled": false
                                           }
@@ -567,11 +568,12 @@ TYPED_TEST(JsiIntegrationHermesTest, EvaluateExpressionInExecutionContext) {
           std::to_string(executionContextId)));
 }
 
-#if !defined(HERMES_STATIC_HERMES)
-// FIXME(T239924718): Breakpoint resolution in Static Hermes is broken for
-// locations without column numbers under lazy compilation.
+#if !defined(HERMES_STATIC_HERMES_STABLE)
+// TODO: Unconditionally enable test for line-only (columnless) breakpoints
+// after D83595036 (fix for T239924718) ships to the stable branch of Static
+// Hermes.
 
-TYPED_TEST(JsiIntegrationHermesTest, ResolveBreakpointAfterEval) {
+TYPED_TEST(JsiIntegrationHermesTest, ResolveColumnlessBreakpointAfterEval) {
   this->connect();
 
   InSequence s;
@@ -609,7 +611,7 @@ TYPED_TEST(JsiIntegrationHermesTest, ResolveBreakpointAfterEval) {
                                })");
 }
 
-TYPED_TEST(JsiIntegrationHermesTest, ResolveBreakpointAfterReload) {
+TYPED_TEST(JsiIntegrationHermesTest, ResolveColumnlessBreakpointAfterReload) {
   this->connect();
 
   InSequence s;
@@ -651,7 +653,158 @@ TYPED_TEST(JsiIntegrationHermesTest, ResolveBreakpointAfterReload) {
       scriptInfo->value()["params"]["scriptId"]);
 }
 
-#endif // !defined(HERMES_STATIC_HERMES)
+#endif // !defined(HERMES_STATIC_HERMES_STABLE)
+
+TYPED_TEST(JsiIntegrationHermesTest, ResolveColumnBreakpointAfterEval) {
+  this->connect();
+
+  InSequence s;
+
+  this->expectMessageFromPage(JsonEq(R"({
+                                         "id": 1,
+                                         "result": {}
+                                       })"));
+  this->toPage_->sendMessage(R"({
+                                 "id": 1,
+                                 "method": "Debugger.enable"
+                               })");
+
+  auto scriptInfo = this->expectMessageFromPage(JsonParsed(AllOf(
+      AtJsonPtr("/method", "Debugger.scriptParsed"),
+      AtJsonPtr("/params/url", "breakpointTest.js"))));
+  this->eval(R"( // line 0
+    globalThis.foo = function() { // line 1
+      Date.now(); // line 2
+    };
+    //# sourceURL=breakpointTest.js
+  )");
+  ASSERT_TRUE(scriptInfo->has_value());
+
+  this->expectMessageFromPage(JsonParsed(AllOf(
+      AtJsonPtr("/id", 2),
+      AtJsonPtr("/result/locations/0/lineNumber", 2),
+      AtJsonPtr("/result/locations/0/columnNumber", 6),
+      AtJsonPtr(
+          "/result/locations/0/scriptId",
+          scriptInfo->value()["params"]["scriptId"]))));
+  this->toPage_->sendMessage(R"({
+                                 "id": 2,
+                                 "method": "Debugger.setBreakpointByUrl",
+                                 "params": {"lineNumber": 2,
+                                             "columnNumber": 6,
+                                 "url": "breakpointTest.js"}
+                               })");
+}
+
+TYPED_TEST(JsiIntegrationHermesTest, ResolveColumnBreakpointAfterReload) {
+  this->connect();
+
+  InSequence s;
+
+  this->expectMessageFromPage(JsonEq(R"({
+                                         "id": 1,
+                                         "result": {}
+                                       })"));
+  this->toPage_->sendMessage(R"({
+                                 "id": 1,
+                                 "method": "Debugger.enable"
+                               })");
+
+  this->expectMessageFromPage(JsonParsed(AtJsonPtr("/id", 2)));
+  this->toPage_->sendMessage(R"({
+                                 "id": 2,
+                                 "method": "Debugger.setBreakpointByUrl",
+                                 "params": {"lineNumber": 2, "columnNumber": 6, "url": "breakpointTest.js"}
+                               })");
+
+  this->reload();
+
+  auto scriptInfo = this->expectMessageFromPage(JsonParsed(AllOf(
+      AtJsonPtr("/method", "Debugger.scriptParsed"),
+      AtJsonPtr("/params/url", "breakpointTest.js"))));
+  auto breakpointInfo = this->expectMessageFromPage(JsonParsed(AllOf(
+      AtJsonPtr("/method", "Debugger.breakpointResolved"),
+      AtJsonPtr("/params/location/lineNumber", 2),
+      AtJsonPtr("/params/location/columnNumber", 6))));
+  this->eval(R"( // line 0
+    globalThis.foo = function() { // line 1
+      Date.now(); // line 2
+    };
+    //# sourceURL=breakpointTest.js
+  )");
+  ASSERT_TRUE(breakpointInfo->has_value());
+  ASSERT_TRUE(scriptInfo->has_value());
+  EXPECT_EQ(
+      breakpointInfo->value()["params"]["location"]["scriptId"],
+      scriptInfo->value()["params"]["scriptId"]);
+}
+
+TYPED_TEST(JsiIntegrationHermesTest, TwoConnectionsEnableDebugger) {
+  this->connect();
+  auto secondary = this->connectSecondary();
+
+  EXPECT_CALL(
+      this->fromPage(), onMessage(JsonEq(R"({"id": 1, "result": {}})")));
+  EXPECT_CALL(
+      secondary.fromPage(), onMessage(JsonEq(R"({"id": 2, "result": {}})")));
+
+  this->toPage_->sendMessage(R"({"id": 1, "method": "Debugger.enable"})");
+  secondary.toPage().sendMessage(R"({"id": 2, "method": "Debugger.enable"})");
+}
+
+TYPED_TEST(JsiIntegrationHermesTest, TwoConnectionsDebuggerLifecycle) {
+  this->connect();
+  auto secondary = this->connectSecondary();
+
+  this->expectMessageFromPage(JsonEq(R"({"id": 1, "result": {}})"));
+  this->toPage_->sendMessage(R"({"id": 1, "method": "Debugger.enable"})");
+
+  // Connections: Main (Debugger enabled), Secondary (Debugger disabled)
+  // --> Only the main connection receives Debugger events.
+  this->expectMessageFromPage(JsonParsed(AllOf(
+      AtJsonPtr("/method", "Debugger.scriptParsed"),
+      AtJsonPtr("/params/url", "script1.js"))));
+  this->eval("1 + 1; //# sourceURL=script1.js");
+
+  // Connections: Main (Debugger enabled), Secondary (Debugger being enabled)
+  // --> The secondary connection receives buffered Debugger events.
+  EXPECT_CALL(
+      secondary.fromPage(), onMessage(JsonEq(R"({"id": 2, "result": {}})")));
+  EXPECT_CALL(
+      secondary.fromPage(),
+      onMessage(JsonParsed(AllOf(
+          AtJsonPtr("/method", "Debugger.scriptParsed"),
+          AtJsonPtr("/params/url", "script1.js")))));
+  secondary.toPage().sendMessage(R"({"id": 2, "method": "Debugger.enable"})");
+
+  // Connections: Main (Debugger enabled), Secondary (Debugger enabled)
+  // --> Both connections receive Debugger events.
+  this->expectMessageFromPage(JsonParsed(AllOf(
+      AtJsonPtr("/method", "Debugger.scriptParsed"),
+      AtJsonPtr("/params/url", "script2.js"))));
+  EXPECT_CALL(
+      secondary.fromPage(),
+      onMessage(JsonParsed(AllOf(
+          AtJsonPtr("/method", "Debugger.scriptParsed"),
+          AtJsonPtr("/params/url", "script2.js")))));
+  this->eval("2 + 2; //# sourceURL=script2.js");
+
+  this->expectMessageFromPage(JsonEq(R"({"id": 3, "result": {}})"));
+  this->toPage_->sendMessage(R"({"id": 3, "method": "Debugger.disable"})");
+
+  // Connections: Main (Debugger disabled), Secondary (Debugger enabled)
+  // --> Only the secondary connection receives Debugger events.
+  EXPECT_CALL(
+      secondary.fromPage(),
+      onMessage(JsonParsed(AllOf(
+          AtJsonPtr("/method", "Debugger.scriptParsed"),
+          AtJsonPtr("/params/url", "script3.js")))));
+  this->eval("3 + 3; //# sourceURL=script3.js");
+
+  EXPECT_CALL(
+      secondary.fromPage(), onMessage(JsonEq(R"({"id": 4, "result": {}})")));
+  secondary.toPage().sendMessage(R"({"id": 4, "method": "Debugger.disable"})");
+}
 
 TYPED_TEST(JsiIntegrationHermesTest, CDPAgentReentrancyRegressionTest) {
   this->connect();

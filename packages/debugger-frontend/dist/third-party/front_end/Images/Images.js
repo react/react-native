@@ -20,7 +20,6 @@ style.setProperty('--image-file-nodeIcon', 'url(\"' + new URL('./nodeIcon.avif',
 style.setProperty('--image-file-popoverArrows', 'url(\"' + new URL('./popoverArrows.png', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-react_native/learn-debugging-basics', 'url(\"' + new URL('./react_native/learn-debugging-basics.jpg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-react_native/learn-native-debugging', 'url(\"' + new URL('./react_native/learn-native-debugging.jpg', import.meta.url).toString() + '\")');
-style.setProperty('--image-file-react_native/whats-new-083', 'url(\"' + new URL('./react_native/whats-new-083.jpg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-react_native/learn-react-native-devtools', 'url(\"' + new URL('./react_native/learn-react-native-devtools.jpg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-react_native/welcomeIcon', 'url(\"' + new URL('./react_native/welcomeIcon.png', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-toolbarResizerVertical', 'url(\"' + new URL('./toolbarResizerVertical.png', import.meta.url).toString() + '\")');

@@ -16,7 +16,7 @@ import type AnimatedValue from 'react-native/Libraries/Animated/nodes/AnimatedVa
 import RNTesterSettingSwitchRow from '../../components/RNTesterSettingSwitchRow';
 import RNTesterText from '../../components/RNTesterText';
 import useJsStalls from '../../utils/useJsStalls';
-import React from 'react';
+import * as React from 'react';
 import {
   Animated,
   StyleSheet,

@@ -22,7 +22,7 @@ declare module 'jsonc-parser' {
   /**
    * The scanner object, representing a JSON scanner at a position in the input string.
    */
-  export type JSONScanner = $ReadOnly<{
+  export type JSONScanner = Readonly<{
     /**
      * Sets the scan position to a new offset. A call to 'scan' is needed to get the first token.
      */
@@ -351,7 +351,7 @@ declare module 'jsonc-parser' {
   /**
    * Options used by {@linkcode format} when computing the formatting edit operations
    */
-  export type FormattingOptions = $ReadOnly<{
+  export type FormattingOptions = Readonly<{
     /**
      * If indentation is based on spaces (`insertSpaces` = true), the number of spaces that make an indent.
      */

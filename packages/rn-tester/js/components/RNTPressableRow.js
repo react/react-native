@@ -18,12 +18,12 @@ type ViewStyleProp = React.ElementConfig<typeof View>['style'];
 type Props = {
   accessibilityLabel?: ?string,
   testID?: ?string,
-  onPressIn?: ?() => mixed,
-  onPressOut?: ?() => mixed,
+  onPressIn?: ?() => unknown,
+  onPressOut?: ?() => unknown,
   children?: ?React.Node,
   title: string,
   description?: ?string,
-  onPress: () => mixed,
+  onPress: () => unknown,
   style?: ViewStyleProp | ((pressed: boolean) => ViewStyleProp),
 };
 

@@ -16,20 +16,12 @@ import StyleSheet from '../../StyleSheet/StyleSheet';
 import Text from '../../Text/Text';
 import * as React from 'react';
 
-type Props = {
-  message: Message,
-  style: TextStyleProp,
-  plaintext?: ?boolean,
-  maxLength?: ?number,
-  ...
-};
-
 type Range = {
   lowerBound: number,
   upperBound: number,
 };
 
-function getLinkRanges(string: string): $ReadOnlyArray<Range> {
+function getLinkRanges(string: string): ReadonlyArray<Range> {
   const regex = /https?:\/\/[^\s$.?#].[^\s]*/gi;
   const matches = [];
 
@@ -46,15 +38,12 @@ function getLinkRanges(string: string): $ReadOnlyArray<Range> {
   return matches;
 }
 
-function TappableLinks(props: {
-  content: string,
-  style: void | TextStyleProp,
-}): React.Node {
-  const matches = getLinkRanges(props.content);
+component TappableLinks(content: string, style: void | TextStyleProp) {
+  const matches = getLinkRanges(content);
 
   if (matches.length === 0) {
     // No URLs detected. Just return the content.
-    return <Text style={props.style}>{props.content}</Text>;
+    return <Text style={style}>{content}</Text>;
   }
 
   // URLs were detected. Construct array of Text nodes.
@@ -65,14 +54,11 @@ function TappableLinks(props: {
 
   for (const linkRange of matches) {
     if (startIndex < linkRange.lowerBound) {
-      const text = props.content.substring(startIndex, linkRange.lowerBound);
+      const text = content.substring(startIndex, linkRange.lowerBound);
       fragments.push(<Text key={++indexCounter}>{text}</Text>);
     }
 
-    const link = props.content.substring(
-      linkRange.lowerBound,
-      linkRange.upperBound,
-    );
+    const link = content.substring(linkRange.lowerBound, linkRange.upperBound);
     fragments.push(
       <Text
         onPress={() => {
@@ -88,46 +74,51 @@ function TappableLinks(props: {
     startIndex = linkRange.upperBound;
   }
 
-  if (startIndex < props.content.length) {
-    const text = props.content.substring(startIndex);
+  if (startIndex < content.length) {
+    const text = content.substring(startIndex);
     fragments.push(
-      <Text key={++indexCounter} style={props.style}>
+      <Text key={++indexCounter} style={style}>
         {text}
       </Text>,
     );
   }
 
-  return <Text style={props.style}>{fragments}</Text>;
+  return <Text style={style}>{fragments}</Text>;
 }
 
 const cleanContent = (content: string) =>
-  content.replace(/^(TransformError |Warning: (Warning: )?|Error: )/g, '');
+  content.replace(/^(TransformError |Error: )/g, '');
 
-function LogBoxMessage(props: Props): React.Node {
-  const {content, substitutions}: Message = props.message;
+component LogBoxMessage(
+  message: Message,
+  style: TextStyleProp,
+  plaintext?: ?boolean,
+  maxLength?: ?number,
+) {
+  const {content, substitutions}: Message = message;
 
-  if (props.plaintext === true) {
+  if (plaintext === true) {
     return <Text>{cleanContent(content)}</Text>;
   }
 
-  const maxLength = props.maxLength != null ? props.maxLength : Infinity;
-  const substitutionStyle: TextStyleProp = props.style;
+  const resolvedMaxLength = maxLength != null ? maxLength : Infinity;
+  const substitutionStyle: TextStyleProp = style;
   const elements = [];
   let length = 0;
   const createUnderLength = (
     key: string,
-    message: string,
-    style: void | TextStyleProp,
+    messageText: string,
+    textStyle: void | TextStyleProp,
   ) => {
-    let cleanMessage = cleanContent(message);
+    let cleanMessage = cleanContent(messageText);
 
-    if (props.maxLength != null) {
-      cleanMessage = cleanMessage.slice(0, props.maxLength - length);
+    if (maxLength != null) {
+      cleanMessage = cleanMessage.slice(0, maxLength - length);
     }
 
-    if (length < maxLength) {
+    if (length < resolvedMaxLength) {
       elements.push(
-        <TappableLinks content={cleanMessage} key={key} style={style} />,
+        <TappableLinks content={cleanMessage} key={key} style={textStyle} />,
       );
     }
 

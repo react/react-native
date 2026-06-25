@@ -29,13 +29,7 @@ const styles = StyleSheet.create({
   },
 });
 
-function FadeInView({
-  useNativeDriver,
-  children,
-}: {
-  useNativeDriver: boolean,
-  children: React.Node,
-}) {
+component FadeInView(useNativeDriver: boolean, children: React.Node) {
   //opacity 0
   const [fadeAnim] = useState(() => new Animated.Value(0));
   useEffect(() => {
@@ -64,7 +58,7 @@ function FadeInView({
   );
 }
 
-function FadeInExample(): React.Node {
+component FadeInExample() {
   const [show, setShow] = useState(true);
   const [useNativeDriver, setUseNativeDriver] = useState(false);
   return (
@@ -89,13 +83,13 @@ function FadeInExample(): React.Node {
   );
 }
 
-export default ({
+export default {
   title: 'FadeInView',
   name: 'fadeInView',
   description: ('Uses a simple timing animation to ' +
     'bring opacity from 0 to 1 when the component ' +
-    'mounts.': string),
+    'mounts.') as string,
   expect:
     'FadeInView box should animate from opacity 0 to 1. \nExpect no animation when hiding.\nHiding the view mid-animation should not affect next animation.',
   render: (): React.Node => <FadeInExample />,
-}: RNTesterModuleExample);
+} as RNTesterModuleExample;

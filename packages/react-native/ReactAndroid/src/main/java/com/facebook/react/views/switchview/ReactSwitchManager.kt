@@ -5,6 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+@file:Suppress("DEPRECATION")
+
 package com.facebook.react.views.switchview
 
 import android.content.Context
@@ -14,6 +16,7 @@ import androidx.annotation.ColorInt
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.uimanager.BaseViewManager
+import com.facebook.react.uimanager.LayoutShadowNode
 import com.facebook.react.uimanager.PixelUtil
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.UIManagerHelper
@@ -25,19 +28,16 @@ import com.facebook.react.viewmanagers.AndroidSwitchManagerInterface
 import com.facebook.yoga.YogaMeasureMode
 import com.facebook.yoga.YogaMeasureOutput
 
-@Suppress("DEPRECATION")
 internal class ReactSwitchManager :
-    BaseViewManager<ReactSwitch, ReactSwitchShadowNode>(),
-    AndroidSwitchManagerInterface<ReactSwitch> {
+    BaseViewManager<ReactSwitch, LayoutShadowNode>(), AndroidSwitchManagerInterface<ReactSwitch> {
 
   private val delegate: ViewManagerDelegate<ReactSwitch> = AndroidSwitchManagerDelegate(this)
 
   override fun getName(): String = REACT_CLASS
 
-  override fun createShadowNodeInstance(): ReactSwitchShadowNode = ReactSwitchShadowNode()
+  override fun createShadowNodeInstance(): LayoutShadowNode = LayoutShadowNode()
 
-  override fun getShadowNodeClass(): Class<ReactSwitchShadowNode> =
-      ReactSwitchShadowNode::class.java
+  override fun getShadowNodeClass(): Class<LayoutShadowNode> = LayoutShadowNode::class.java
 
   override fun createViewInstance(context: ThemedReactContext): ReactSwitch =
       ReactSwitch(context).apply { showText = false }
@@ -139,7 +139,7 @@ internal class ReactSwitchManager :
         CompoundButton.OnCheckedChangeListener { buttonView, isChecked ->
           val reactContext = buttonView.context as ReactContext
           val reactTag = buttonView.id
-          UIManagerHelper.getEventDispatcherForReactTag(reactContext, reactTag)
+          UIManagerHelper.getEventDispatcher(reactContext)
               ?.dispatchEvent(
                   ReactSwitchEvent(UIManagerHelper.getSurfaceId(reactContext), reactTag, isChecked)
               )

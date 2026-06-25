@@ -15,7 +15,7 @@ import * as React from 'react';
 import {useState} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 
-export function FlatList_contentInset(): React.Node {
+export component FlatList_contentInset() {
   const [initialContentInset, toggledContentInset] = [44, 88];
 
   const [output, setOutput] = useState(
@@ -77,10 +77,10 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ({
+export default {
   title: 'Content Inset',
   name: 'contentInset',
   description:
     'The amount by which the scroll view content is inset from the edges of the scroll view.',
   render: () => <FlatList_contentInset />,
-}: RNTesterModuleExample);
+} as RNTesterModuleExample;

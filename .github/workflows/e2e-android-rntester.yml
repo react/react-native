@@ -1,0 +1,71 @@
+name: E2E Android RNTester
+
+permissions:
+  contents: read
+
+on:
+  workflow_call:
+    inputs:
+      fail-on-error:
+        type: boolean
+        default: false
+    outputs:
+      status:
+        description: 'The result of the E2E tests (success or failure)'
+        value: ${{ jobs.report.outputs.status }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    outputs:
+      status: ${{ steps.report-status.outputs.status }}
+    strategy:
+      fail-fast: false
+      matrix:
+        flavor: [debug, release]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup node.js
+        uses: ./.github/actions/setup-node
+      - name: Install node dependencies
+        uses: ./.github/actions/yarn-install
+      - name: Download APK
+        uses: actions/download-artifact@v7
+        with:
+          name: rntester-${{ matrix.flavor }}
+          path: ./packages/rn-tester/android/app/build/outputs/apk/${{ matrix.flavor }}/
+      - name: Print folder structure
+        run: ls -lR ./packages/rn-tester/android/app/build/outputs/apk/${{ matrix.flavor }}/
+      - name: Run E2E Tests
+        id: run-tests
+        continue-on-error: true
+        uses: ./.github/actions/maestro-android
+        timeout-minutes: 60
+        with:
+          app-path: ./packages/rn-tester/android/app/build/outputs/apk/${{ matrix.flavor }}/app-x86-${{ matrix.flavor }}.apk
+          app-id: com.facebook.react.uiapp
+          maestro-flow: ./packages/rn-tester/.maestro
+          flavor: ${{ matrix.flavor }}
+      - name: Report status
+        id: report-status
+        if: ${{ always() && steps.run-tests.outcome == 'failure' }}
+        run: echo "status=failure" >> $GITHUB_OUTPUT
+
+  report:
+    needs: test
+    if: always()
+    runs-on: ubuntu-latest
+    outputs:
+      status: ${{ steps.check.outputs.status }}
+    steps:
+      - id: check
+        run: |
+          if [[ "${{ needs.test.outputs.status }}" == "failure" ]]; then
+            echo "status=failure" >> $GITHUB_OUTPUT
+          else
+            echo "status=success" >> $GITHUB_OUTPUT
+          fi
+      - name: Fail if needed
+        if: ${{ inputs.fail-on-error && steps.check.outputs.status == 'failure' }}
+        run: exit 1

@@ -1,22 +1,22 @@
 {
   "name": "@react-native/gradle-plugin",
-  "version": "0.84.0-main",
+  "version": "0.87.0-main",
   "description": "Gradle Plugin for React Native",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/facebook/react-native.git",
+    "url": "git+https://github.com/react/react-native.git",
     "directory": "packages/gradle-plugin"
   },
-  "homepage": "https://github.com/facebook/react-native/tree/HEAD/packages/gradle-plugin#readme",
+  "homepage": "https://github.com/react/react-native/tree/HEAD/packages/gradle-plugin#readme",
   "keywords": [
     "gradle",
     "plugin",
     "react-native"
   ],
-  "bugs": "https://github.com/facebook/react-native/issues",
+  "bugs": "https://github.com/react/react-native/issues",
   "engines": {
-    "node": ">= 20.19.4"
+    "node": "^22.13.0 || ^24.3.0 || >= 26.0.0"
   },
   "scripts": {
     "build": "./gradlew build",
@@ -31,6 +31,7 @@
     "gradlew.bat",
     "README.md",
     "react-native-gradle-plugin",
+    "!react-native-gradle-plugin/src/test",
     "settings-plugin",
     "shared",
     "shared-testutil"

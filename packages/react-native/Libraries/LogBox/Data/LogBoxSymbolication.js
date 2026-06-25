@@ -53,7 +53,7 @@ export function deleteStack(stack: Stack): void {
 
 export function symbolicate(
   stack: Stack,
-  extraData?: mixed,
+  extraData?: unknown,
 ): Promise<SymbolicatedStackTrace> {
   let promise = cache.get(stack);
   if (promise == null) {

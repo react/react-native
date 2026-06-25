@@ -1,0 +1,8 @@
+struct test::Node {
+  public void setArray(int(&arr)[10]);
+  template <size_t N>
+  public static std::vector<test::PropNameID> names(test::PropNameID(&&propertyNames)[N]);
+}
+
+struct test::PropNameID {
+}

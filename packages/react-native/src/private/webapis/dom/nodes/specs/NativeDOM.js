@@ -51,73 +51,73 @@ export interface Spec extends TurboModule {
    * Methods from the `Node` interface (for `ReadOnlyNode`).
    */
 
-  +compareDocumentPosition: (
-    nativeNodeReference: mixed /* NativeNodeReference */,
-    otherNativeNodeReference: mixed /* NativeNodeReference */,
+  readonly compareDocumentPosition: (
+    nativeNodeReference: unknown /* NativeNodeReference */,
+    otherNativeNodeReference: unknown /* NativeNodeReference */,
   ) => number;
 
-  +getChildNodes: (
-    nativeNodeReference: mixed /* NativeNodeReference */,
-  ) => $ReadOnlyArray<mixed> /* $ReadOnlyArray<InstanceHandle> */;
+  readonly getChildNodes: (
+    nativeNodeReference: unknown /* NativeNodeReference */,
+  ) => ReadonlyArray<unknown> /* $ReadOnlyArray<InstanceHandle> */;
 
-  +getElementById?: (
-    nativeNodeReference: mixed /* NativeNodeReference */,
+  readonly getElementById?: (
+    nativeNodeReference: unknown /* NativeNodeReference */,
     id: string,
-  ) => mixed /* ?InstanceHandle */;
+  ) => unknown /* ?InstanceHandle */;
 
-  +getParentNode: (
-    nativeNodeReference: mixed /* NativeNodeReference */,
-  ) => mixed /* ?InstanceHandle */;
+  readonly getParentNode: (
+    nativeNodeReference: unknown /* NativeNodeReference */,
+  ) => unknown /* ?InstanceHandle */;
 
-  +isConnected: (
-    nativeNodeReference: mixed /* NativeNodeReference */,
+  readonly isConnected: (
+    nativeNodeReference: unknown /* NativeNodeReference */,
   ) => boolean;
 
   /*
    * Methods from the `Element` interface (for `ReactNativeElement`).
    */
 
-  +getBorderWidth: (
-    nativeElementReference: mixed /* NativeElementReference */,
-  ) => $ReadOnlyArray<number> /* [topWidth: number, rightWidth: number, bottomWidth: number, leftWidth: number] */;
+  readonly getBorderWidth: (
+    nativeElementReference: unknown /* NativeElementReference */,
+  ) => ReadonlyArray<number> /* [topWidth: number, rightWidth: number, bottomWidth: number, leftWidth: number] */;
 
-  +getBoundingClientRect: (
-    nativeElementReference: mixed /* NativeElementReference */,
+  readonly getBoundingClientRect: (
+    nativeElementReference: unknown /* NativeElementReference */,
     includeTransform: boolean,
-  ) => $ReadOnlyArray<number> /* [x: number, y: number, width: number, height: number] */;
+  ) => ReadonlyArray<number> /* [x: number, y: number, width: number, height: number] */;
 
-  +getInnerSize: (
-    nativeElementReference: mixed /* NativeElementReference */,
-  ) => $ReadOnlyArray<number> /* [width: number, height: number] */;
+  readonly getInnerSize: (
+    nativeElementReference: unknown /* NativeElementReference */,
+  ) => ReadonlyArray<number> /* [width: number, height: number] */;
 
-  +getScrollPosition: (
-    nativeElementReference: mixed /* NativeElementReference */,
-  ) => $ReadOnlyArray<number> /* [scrollLeft: number, scrollTop: number] */;
+  readonly getScrollPosition: (
+    nativeElementReference: unknown /* NativeElementReference */,
+  ) => ReadonlyArray<number> /* [scrollLeft: number, scrollTop: number] */;
 
-  +getScrollSize: (
-    nativeElementReference: mixed /* NativeElementReference */,
-  ) => $ReadOnlyArray<number> /* [scrollWidth: number, scrollHeight: number] */;
+  readonly getScrollSize: (
+    nativeElementReference: unknown /* NativeElementReference */,
+  ) => ReadonlyArray<number> /* [scrollWidth: number, scrollHeight: number] */;
 
-  +getTagName: (
-    nativeElementReference: mixed /* NativeElementReference */,
+  readonly getTagName: (
+    nativeElementReference: unknown /* NativeElementReference */,
   ) => string;
 
-  +getTextContent: (
-    nativeElementReference: mixed /* NativeElementReference */,
+  readonly getTextContent: (
+    nativeElementReference: unknown /* NativeElementReference */,
   ) => string;
 
-  +hasPointerCapture: (
-    nativeElementReference: mixed /* NativeElementReference */,
+  readonly hasPointerCapture: (
+    nativeElementReference: unknown /* NativeElementReference */,
     pointerId: number,
   ) => boolean;
 
-  +releasePointerCapture: (
-    nativeElementReference: mixed /* NativeElementReference */,
+  readonly releasePointerCapture: (
+    nativeElementReference: unknown /* NativeElementReference */,
     pointerId: number,
   ) => void;
 
-  +setPointerCapture: (
-    nativeElementReference: mixed /* NativeElementReference */,
+  readonly setPointerCapture: (
+    nativeElementReference: unknown /* NativeElementReference */,
     pointerId: number,
   ) => void;
 
@@ -125,36 +125,36 @@ export interface Spec extends TurboModule {
    * Methods from the `HTMLElement` interface (for `ReactNativeElement`).
    */
 
-  +getOffset: (
-    nativeElementReference: mixed /* NativeElementReference */,
-  ) => $ReadOnlyArray<mixed> /* [offsetParent: ?InstanceHandle, top: number, left: number] */;
+  readonly getOffset: (
+    nativeElementReference: unknown /* NativeElementReference */,
+  ) => ReadonlyArray<unknown> /* [offsetParent: ?InstanceHandle, top: number, left: number] */;
 
   /*
    * Special methods to handle the root node.
    */
 
-  +linkRootNode?: (
+  readonly linkRootNode?: (
     rootTag: number /* RootTag */,
-    instanceHandle: mixed /* InstanceHandle */,
-  ) => mixed /* ?NativeElementReference */;
+    instanceHandle: unknown /* InstanceHandle */,
+  ) => unknown /* ?NativeElementReference */;
 
   /**
    * Legacy layout APIs (for `ReactNativeElement`).
    */
 
-  +measure: (
-    nativeElementReference: mixed,
+  readonly measure: (
+    nativeElementReference: unknown,
     callback: MeasureOnSuccessCallback,
   ) => void;
 
-  +measureInWindow: (
-    nativeElementReference: mixed,
+  readonly measureInWindow: (
+    nativeElementReference: unknown,
     callback: MeasureInWindowOnSuccessCallback,
   ) => void;
 
-  +measureLayout: (
-    nativeElementReference: mixed,
-    relativeNode: mixed,
+  readonly measureLayout: (
+    nativeElementReference: unknown,
+    relativeNode: unknown,
     onFail: () => void,
     onSuccess: MeasureLayoutOnSuccessCallback,
   ) => void;
@@ -163,9 +163,9 @@ export interface Spec extends TurboModule {
    * Legacy direct manipulation APIs (for `ReactNativeElement`).
    */
 
-  +setNativeProps: (
-    nativeElementReference: mixed,
-    updatePayload: mixed,
+  readonly setNativeProps: (
+    nativeElementReference: unknown,
+    updatePayload: unknown,
   ) => void;
 }
 
@@ -184,7 +184,7 @@ export interface RefinedSpec {
    * revision of the shadow tree (if any). If any of the nodes is not present,
    * it just indicates they are disconnected.
    */
-  +compareDocumentPosition: (
+  readonly compareDocumentPosition: (
     nativeNodeReference: NativeNodeReference,
     otherNativeNodeReference: NativeNodeReference,
   ) => number;
@@ -197,9 +197,9 @@ export interface RefinedSpec {
    * of an active shadow tree, it returns an array of instance handles of its
    * children. Otherwise, it returns an empty array.
    */
-  +getChildNodes: (
+  readonly getChildNodes: (
     nativeNodeReference: NativeNodeReference,
-  ) => $ReadOnlyArray<InstanceHandle>;
+  ) => ReadonlyArray<InstanceHandle>;
 
   /**
    * This is a React Native implementation of `Document.prototype.getElementById`
@@ -208,7 +208,7 @@ export interface RefinedSpec {
    * If the document is active and contains an element with the given ID, it
    * returns the instance handle of that element. Otherwise, it returns `null`.
    */
-  +getElementById: (rootTag: RootTag, id: string) => ?InstanceHandle;
+  readonly getElementById: (rootTag: RootTag, id: string) => ?InstanceHandle;
 
   /**
    * This is a React Native implementation of `Node.prototype.parentNode`
@@ -218,7 +218,9 @@ export interface RefinedSpec {
    * an active shadow tree, it returns the instance handle of its parent.
    * Otherwise, it returns `null`.
    */
-  +getParentNode: (nativeNodeReference: NativeNodeReference) => ?InstanceHandle;
+  readonly getParentNode: (
+    nativeNodeReference: NativeNodeReference,
+  ) => ?InstanceHandle;
 
   /**
    * This is a React Native implementation of `Node.prototype.isConnected`
@@ -227,7 +229,7 @@ export interface RefinedSpec {
    * Indicates whether a version of the given shadow node is present in the
    * current revision of an active shadow tree.
    */
-  +isConnected: (nativeNodeReference: NativeNodeReference) => boolean;
+  readonly isConnected: (nativeNodeReference: NativeNodeReference) => boolean;
 
   /*
    * Methods from the `Element` interface (for `ReactNativeElement`).
@@ -245,9 +247,9 @@ export interface RefinedSpec {
    * it has an inline display, it returns `undefined`. Otherwise, it returns its
    * border size.
    */
-  +getBorderWidth: (
+  readonly getBorderWidth: (
     nativeElementReference: NativeElementReference,
-  ) => $ReadOnly<
+  ) => Readonly<
     [
       /* topWidth: */ number,
       /* rightWidth: */ number,
@@ -267,10 +269,10 @@ export interface RefinedSpec {
    * to implement methods like [`offsetWidth`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetWidth)
    * and [`offsetHeight`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetHeight).
    */
-  +getBoundingClientRect: (
+  readonly getBoundingClientRect: (
     nativeElementReference: NativeElementReference,
     includeTransform: boolean,
-  ) => $ReadOnly<
+  ) => Readonly<
     [
       /* x: */ number,
       /* y: */ number,
@@ -291,9 +293,9 @@ export interface RefinedSpec {
    * it has an inline display, it returns `undefined`. Otherwise, it returns its
    * inner size.
    */
-  +getInnerSize: (
+  readonly getInnerSize: (
     nativeElementReference: NativeElementReference,
-  ) => $ReadOnly<[/* width: */ number, /* height: */ number]>;
+  ) => Readonly<[/* width: */ number, /* height: */ number]>;
 
   /**
    * This is a method to access scroll information for a shadow node, to
@@ -306,9 +308,9 @@ export interface RefinedSpec {
    * (because any of its ancestors or itself have 'display: none'), it returns
    * `undefined`. Otherwise, it returns the scroll position.
    */
-  +getScrollPosition: (
+  readonly getScrollPosition: (
     nativeElementReference: NativeElementReference,
-  ) => $ReadOnly<[/* scrollLeft: */ number, /* scrollTop: */ number]>;
+  ) => Readonly<[/* scrollLeft: */ number, /* scrollTop: */ number]>;
 
   /**
    *
@@ -322,15 +324,17 @@ export interface RefinedSpec {
    * (because any of its ancestors or itself have 'display: none'), it returns
    * `undefined`. Otherwise, it returns the scroll size.
    */
-  +getScrollSize: (
+  readonly getScrollSize: (
     nativeElementReference: NativeElementReference,
-  ) => $ReadOnly<[/* scrollWidth: */ number, /* scrollHeight: */ number]>;
+  ) => Readonly<[/* scrollWidth: */ number, /* scrollHeight: */ number]>;
 
   /**
    * This is a method to access the normalized tag name of a shadow node, to
    * implement `Element.prototype.tagName` (see https://developer.mozilla.org/en-US/docs/Web/API/Element/tagName).
    */
-  +getTagName: (nativeElementReference: NativeElementReference) => string;
+  readonly getTagName: (
+    nativeElementReference: NativeElementReference,
+  ) => string;
 
   /**
    * This is a React Native implementation of `Element.prototype.textContent`
@@ -344,19 +348,19 @@ export interface RefinedSpec {
    * This is also used to access the text content of text nodes, which does not
    * need any traversal.
    */
-  +getTextContent: (nativeNodeReference: NativeNodeReference) => string;
+  readonly getTextContent: (nativeNodeReference: NativeNodeReference) => string;
 
-  +hasPointerCapture: (
+  readonly hasPointerCapture: (
     nativeElementReference: NativeElementReference,
     pointerId: number,
   ) => boolean;
 
-  +releasePointerCapture: (
+  readonly releasePointerCapture: (
     nativeElementReference: NativeElementReference,
     pointerId: number,
   ) => void;
 
-  +setPointerCapture: (
+  readonly setPointerCapture: (
     nativeElementReference: NativeElementReference,
     pointerId: number,
   ) => void;
@@ -375,9 +379,9 @@ export interface RefinedSpec {
    * React Native are currently "positioned") and its offset relative to its
    * parent.
    */
-  +getOffset: (
+  readonly getOffset: (
     nativeElementReference: NativeElementReference,
-  ) => $ReadOnly<
+  ) => Readonly<
     [
       /* offsetParent: */ ?InstanceHandle,
       /* top: */ number,
@@ -403,7 +407,7 @@ export interface RefinedSpec {
    *
    * Returns a shadow node representing the root node if it is still mounted.
    */
-  +linkRootNode: (
+  readonly linkRootNode: (
     rootTag: RootTag,
     instanceHandle: InstanceHandle,
   ) => ?NativeElementReference;
@@ -412,17 +416,17 @@ export interface RefinedSpec {
    * Legacy layout APIs
    */
 
-  +measure: (
+  readonly measure: (
     nativeElementReference: NativeElementReference,
     callback: MeasureOnSuccessCallback,
   ) => void;
 
-  +measureInWindow: (
+  readonly measureInWindow: (
     nativeElementReference: NativeElementReference,
     callback: MeasureInWindowOnSuccessCallback,
   ) => void;
 
-  +measureLayout: (
+  readonly measureLayout: (
     nativeElementReference: NativeElementReference,
     relativeNode: NativeElementReference,
     onFail: () => void,
@@ -432,7 +436,7 @@ export interface RefinedSpec {
   /**
    * Legacy direct manipulation APIs
    */
-  +setNativeProps: (
+  readonly setNativeProps: (
     nativeElementReference: NativeElementReference,
     updatePayload: {...},
   ) => void;
@@ -448,4 +452,4 @@ export interface RefinedSpec {
 //    might end up loading this but not using it.
 // 2. We lose automatic backwards compatibility checks because of this.
 // $FlowExpectedError[incompatible-type]
-export default (TurboModuleRegistry.get<Spec>('NativeDOMCxx'): RefinedSpec);
+export default TurboModuleRegistry.get<Spec>('NativeDOMCxx') as RefinedSpec;

@@ -38,10 +38,10 @@ class NetworkReporterTestBase : public TracingTestBase<
  protected:
   NetworkReporterTestBase()
       : TracingTestBase({
-            .networkInspectionEnabled = true,
             .enableNetworkEventReporting =
                 WithParamInterface<Params>::GetParam()
                     .enableNetworkEventReporting,
+            .networkInspectionEnabled = true,
         }) {}
 
   void SetUp() override {
@@ -586,6 +586,40 @@ TEST_P(NetworkReporterTest, testCreateRequestIdWithoutNetworkDomain) {
   EXPECT_NE(id2, "");
 
   EXPECT_NE(id1, id2);
+}
+
+TEST_P(NetworkReporterTest, testTwoSessionsReceiveNetworkEvents) {
+  auto secondary = this->connectSecondary();
+
+  this->expectMessageFromPage(JsonEq(R"({"id": 1, "result": {}})"));
+  this->toPage_->sendMessage(R"({"id": 1, "method": "Network.enable"})");
+
+  EXPECT_CALL(
+      secondary.fromPage(), onMessage(JsonEq(R"({"id": 2, "result": {}})")));
+  secondary.toPage().sendMessage(R"({"id": 2, "method": "Network.enable"})");
+
+  // Both sessions should receive the network event
+  this->expectMessageFromPage(JsonParsed(AllOf(
+      AtJsonPtr("/method", "Network.requestWillBeSent"),
+      AtJsonPtr("/params/requestId", "multi-session-request"))));
+  EXPECT_CALL(
+      secondary.fromPage(),
+      onMessage(JsonParsed(AllOf(
+          AtJsonPtr("/method", "Network.requestWillBeSent"),
+          AtJsonPtr("/params/requestId", "multi-session-request")))));
+
+  RequestInfo requestInfo;
+  requestInfo.url = "https://example.com/test";
+  requestInfo.httpMethod = "GET";
+  NetworkReporter::getInstance().reportRequestStart(
+      "multi-session-request", requestInfo, 0, std::nullopt);
+
+  this->expectMessageFromPage(JsonEq(R"({"id": 3, "result": {}})"));
+  this->toPage_->sendMessage(R"({"id": 3, "method": "Network.disable"})");
+
+  EXPECT_CALL(
+      secondary.fromPage(), onMessage(JsonEq(R"({"id": 4, "result": {}})")));
+  secondary.toPage().sendMessage(R"({"id": 4, "method": "Network.disable"})");
 }
 
 struct NetworkReporterTracingTestParams {

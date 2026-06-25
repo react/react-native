@@ -1,0 +1,5 @@
+struct test::BundleHeader {
+  public uint32_t magic32;
+  public uint32_t version;
+  public uint64_t magic64;
+}

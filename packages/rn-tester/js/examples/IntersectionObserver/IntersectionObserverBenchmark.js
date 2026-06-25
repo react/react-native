@@ -35,7 +35,7 @@ export function render(): React.Node {
 const ROWS = 100;
 const COLUMNS = 5;
 
-function IntersectionObserverBenchark(): React.Node {
+component IntersectionObserverBenchark() {
   const [isObserving, setObserving] = useState(false);
 
   return (

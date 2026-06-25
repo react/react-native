@@ -1,0 +1,6 @@
+union test::TypedefUnion {
+  public test::TypedefUnion::FloatType floatValue;
+  public test::TypedefUnion::ValueType intValue;
+  public typedef float FloatType;
+  public using ValueType = int32_t;
+}

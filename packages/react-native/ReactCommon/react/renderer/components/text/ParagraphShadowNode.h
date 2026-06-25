@@ -26,7 +26,7 @@ extern const char ParagraphComponentName[];
  * containing and displaying text. Text content is represented as nested <Text>
  * and <RawText> components.
  */
-class ParagraphShadowNode final
+class ParagraphShadowNode
     : public ConcreteViewShadowNode<ParagraphComponentName, ParagraphProps, ParagraphEventEmitter, ParagraphState>,
       public BaseTextShadowNode {
  public:
@@ -106,7 +106,7 @@ class ParagraphShadowNode final
    * `TextLayoutManager`) if needed.
    */
   template <typename ParagraphStateT>
-  void updateStateIfNeeded(const Content &content, const MeasuredPreparedLayout &layout);
+  void updateStateIfNeeded(const Content &content, const MeasuredPreparedTextLayout &layout);
 
   /*
    * Creates a `State` object (with `AttributedText` and
@@ -118,7 +118,7 @@ class ParagraphShadowNode final
    * Returns any previously prepared layout, generated for measurement, which
    * may be used, given the currently assigned layout to the ShadowNode
    */
-  MeasuredPreparedLayout *findUsableLayout();
+  MeasuredPreparedTextLayout *findUsableLayout();
 
   /**
    * Returns the final measure of the content frame, before layout rounding
@@ -136,7 +136,7 @@ class ParagraphShadowNode final
    * Intermediate layout results generated during measurement, that may be
    * reused by the platform.
    */
-  mutable std::vector<MeasuredPreparedLayout> measuredLayouts_;
+  mutable std::vector<MeasuredPreparedTextLayout> measuredLayouts_;
 };
 
 } // namespace facebook::react

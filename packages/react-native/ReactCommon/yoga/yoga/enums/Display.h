@@ -19,11 +19,12 @@ enum class Display : uint8_t {
   Flex = YGDisplayFlex,
   None = YGDisplayNone,
   Contents = YGDisplayContents,
+  Grid = YGDisplayGrid,
 };
 
 template <>
 constexpr int32_t ordinalCount<Display>() {
-  return 3;
+  return 4;
 }
 
 constexpr Display scopedEnum(YGDisplay unscoped) {

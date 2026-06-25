@@ -33,6 +33,10 @@ public class ReactFontManager {
   private val fontCache: MutableMap<String, AssetFontFamily> = mutableMapOf()
   private val customTypefaceCache: MutableMap<String, Typeface> = mutableMapOf()
 
+  /** The set of font family names that have been registered via [addCustomFont]. */
+  public val customFontFamilies: Set<String>
+    get() = customTypefaceCache.keys.toSet()
+
   public fun getTypeface(
       fontFamilyName: String,
       style: Int,

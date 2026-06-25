@@ -97,9 +97,7 @@ let nativeComponentName = 'ColorPropNativeComponentView';
 export const __INTERNAL_VIEW_CONFIG = {
   uiViewClassName: \\"ColorPropNativeComponentView\\",
   validAttributes: {
-    tintColor: {
-      process: require('react-native/Libraries/StyleSheet/processColor').default
-    }
+    tintColor: require('react-native/Libraries/Components/View/ReactNativeStyleAttributes').colorAttribute
   }
 };
 export default NativeComponentRegistry.get(nativeComponentName, () => __INTERNAL_VIEW_CONFIG);
@@ -505,12 +503,8 @@ export const __INTERNAL_VIEW_CONFIG = {
     thumbImage: {
       process: (req => 'default' in req ? req.default : req)(require('react-native/Libraries/Image/resolveAssetSource'))
     },
-    color: {
-      process: require('react-native/Libraries/StyleSheet/processColor').default
-    },
-    thumbTintColor: {
-      process: require('react-native/Libraries/StyleSheet/processColor').default
-    },
+    color: require('react-native/Libraries/Components/View/ReactNativeStyleAttributes').colorAttribute,
+    thumbTintColor: require('react-native/Libraries/Components/View/ReactNativeStyleAttributes').colorAttribute,
     point: {
       diff: (req => 'default' in req ? req.default : req)(require('react-native/Libraries/Utilities/differ/pointsDiffer'))
     }

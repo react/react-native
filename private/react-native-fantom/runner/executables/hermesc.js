@@ -21,40 +21,53 @@ import {
   runCommandSync,
 } from '../utils';
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 
-type TesterOptions = $ReadOnly<{
-  isOptimizedMode: boolean,
+type HermescOptions = Readonly<{
+  enableCoverage: boolean,
+  enableOptimized: boolean,
   hermesVariant: HermesVariant,
 }>;
 
 function getHermesCompilerPath({
-  isOptimizedMode,
+  enableOptimized,
   hermesVariant,
-}: TesterOptions): string {
+}: HermescOptions): string {
   return path.join(
     NATIVE_BUILD_OUTPUT_PATH,
-    `hermesc-${(hermesVariant as string).toLowerCase()}-${isOptimizedMode ? 'opt' : 'dev'}`,
+    `hermesc-${(hermesVariant as string).toLowerCase()}-${enableOptimized ? 'opt' : 'dev'}`,
   );
 }
-
-export function build(options: TesterOptions): void {
+export function build(options: HermescOptions): void {
   const destPath = getHermesCompilerPath(options);
   if (fs.existsSync(destPath)) {
     return;
   }
 
-  const tmpPath = destPath + '-' + Date.now();
+  // Use system temp directory outside the repo to avoid macOS extended
+  // attribute issues with EdenFS/NFS-backed directories
+  const tmpPath = path.join(
+    os.tmpdir(),
+    `hermesc-${Date.now()}-${process.pid}`,
+  );
+  const destTmpPath = destPath + '-' + Date.now() + '-' + process.pid;
 
   try {
-    const result = runBuck2Sync([
-      'build',
-      ...getBuckModesForPlatform(options.isOptimizedMode),
-      ...getBuckOptionsForHermes(options.hermesVariant),
-      getHermesCompilerTarget(options.hermesVariant),
-      '--out',
-      tmpPath,
-    ]);
+    const result = runBuck2Sync(
+      [
+        'build',
+        ...getBuckModesForPlatform({
+          enableOptimized: options.enableOptimized,
+          enableCoverage: options.enableCoverage,
+        }),
+        ...getBuckOptionsForHermes(options.hermesVariant),
+        getHermesCompilerTarget(options.hermesVariant),
+        '--out',
+        tmpPath,
+      ],
+      {},
+    );
 
     if (result.status !== 0) {
       throw new Error(getDebugInfoFromCommandResult(result));
@@ -65,21 +78,43 @@ export function build(options: TesterOptions): void {
       return;
     }
 
-    fs.renameSync(tmpPath, destPath);
+    // Remove extended attributes to avoid "Operation not permitted" errors
+    // when copying to EdenFS/NFS-backed directories on macOS
+    if (os.platform() === 'darwin') {
+      runCommandSync('xattr', ['-rc', tmpPath], {});
+    }
+
+    fs.copyFileSync(tmpPath, destTmpPath);
+
+    try {
+      fs.renameSync(destTmpPath, destPath);
+    } catch (e: unknown) {
+      // Another process may have created the file already - that's fine
+      const code =
+        typeof e === 'object' && e != null && typeof e.code === 'string'
+          ? e.code
+          : null;
+      if (code !== 'EEXIST' && !fs.existsSync(destPath)) {
+        throw e;
+      }
+    }
   } finally {
     try {
       fs.unlinkSync(tmpPath);
+    } catch {}
+    try {
+      fs.unlinkSync(destTmpPath);
     } catch {}
   }
 }
 
 export function run(
-  args: $ReadOnlyArray<string>,
-  options: TesterOptions,
+  args: ReadonlyArray<string>,
+  options: HermescOptions,
 ): SyncCommandResult {
   if (!isCI) {
     build(options);
   }
 
-  return runCommandSync(getHermesCompilerPath(options), args);
+  return runCommandSync(getHermesCompilerPath(options), args, {});
 }

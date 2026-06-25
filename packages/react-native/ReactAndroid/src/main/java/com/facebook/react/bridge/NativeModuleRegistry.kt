@@ -46,7 +46,9 @@ public class NativeModuleRegistry(
   ) // This is needed till there are Java Consumer of this API inside React
   // Native
   internal fun registerModules(newRegister: NativeModuleRegistry) {
-    check(reactApplicationContext == newRegister.reactApplicationContext) {
+    val ownContext = reactApplicationContext
+    val otherContext = newRegister.reactApplicationContext
+    check(ownContext == otherContext) {
       "Extending native modules with non-matching application contexts."
     }
 

@@ -51,7 +51,7 @@ type RequiredSectionListProps<ItemT, SectionT = DefaultSectionT> = {
    *       ItemSeparatorComponent?: ?ReactClass<{highlighted: boolean, ...}>,
    *     }>
    */
-  sections: $ReadOnlyArray<SectionData<ItemT, SectionT>>,
+  sections: ReadonlyArray<SectionData<ItemT, SectionT>>,
 };
 
 export type SectionListRenderItemInfo<ItemT, SectionT = DefaultSectionT> = {
@@ -105,6 +105,7 @@ type OptionalSectionListProps<ItemT, SectionT = DefaultSectionT> = {
   removeClippedSubviews?: boolean,
 };
 
+/** @build-types emit-as-interface Uniwind compatibility */
 export type SectionListProps<ItemT, SectionT = DefaultSectionT> = {
   ...Omit<
     VirtualizedSectionListProps<ItemT, SectionT>,
@@ -264,3 +265,5 @@ export default class SectionList<
     this._wrapperListRef = ref;
   };
 }
+
+export type SectionListInstance = SectionList<>;

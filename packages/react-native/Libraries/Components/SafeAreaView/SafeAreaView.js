@@ -8,11 +8,14 @@
  * @format
  */
 
+import type {HostInstance} from '../../../src/private/types/HostInstance';
 import type {ViewProps} from '../View/ViewPropTypes';
 
 import Platform from '../../Utilities/Platform';
 import View from '../View/View';
 import * as React from 'react';
+
+export type SafeAreaViewInstance = HostInstance;
 
 /**
  * Renders nested content and automatically applies paddings reflect the portion
@@ -25,7 +28,7 @@ import * as React from 'react';
  * @deprecated Use `react-native-safe-area-context` instead. This component will be removed in a future release.
  */
 const SafeAreaView: component(
-  ref?: React.RefSetter<React.ElementRef<typeof View>>,
+  ref?: React.RefSetter<SafeAreaViewInstance>,
   ...props: ViewProps
 ) = Platform.select({
   ios: require('./RCTSafeAreaViewNativeComponent').default,

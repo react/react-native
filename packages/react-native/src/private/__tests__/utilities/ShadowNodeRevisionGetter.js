@@ -23,7 +23,7 @@ function createShadowNodeRevisionGetter(
 
 export function createShadowNodeReferenceGetterRef(): [
   () => ?number,
-  React.RefSetter<mixed>,
+  React.RefSetter<unknown>,
 ] {
   let getRevision: ?() => ?number;
 
@@ -34,7 +34,7 @@ export function createShadowNodeReferenceGetterRef(): [
     return getRevision();
   }
 
-  function ref(instance: mixed | null) {
+  function ref(instance: unknown | null) {
     if (instance == null) {
       return;
     }

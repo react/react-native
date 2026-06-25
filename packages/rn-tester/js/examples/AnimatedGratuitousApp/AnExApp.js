@@ -13,7 +13,7 @@
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 
 import AnExSet from './AnExSet';
-import React from 'react';
+import * as React from 'react';
 import {
   Animated,
   LayoutAnimation,

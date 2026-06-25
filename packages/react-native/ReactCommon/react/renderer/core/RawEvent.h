@@ -8,7 +8,6 @@
 #pragma once
 
 #include <memory>
-#include <optional>
 #include <string>
 
 #include <react/renderer/core/EventLogger.h>
@@ -74,7 +73,8 @@ struct RawEvent {
       SharedEventTarget eventTarget,
       std::weak_ptr<const ShadowNodeFamily> shadowNodeFamily,
       Category category = Category::Unspecified,
-      bool isUnique = false);
+      bool isUnique = false,
+      HighResTimeStamp eventStartTimeStamp = HighResTimeStamp::now());
 
   std::string type;
   SharedEventPayload eventPayload;
@@ -84,10 +84,10 @@ struct RawEvent {
   EventTag loggingTag{0};
   bool isUnique{false};
 
-  // The client may specify a platform-specific timestamp for the event start
-  // time, for example when MotionEvent was triggered on the Android native
-  // side.
-  std::optional<HighResTimeStamp> eventStartTimeStamp = std::nullopt;
+  // The timestamp for the event start time. This defaults to the current
+  // time if not specified by the client (e.g., when MotionEvent was triggered
+  // on the Android native side).
+  HighResTimeStamp eventStartTimeStamp;
 };
 
 } // namespace facebook::react

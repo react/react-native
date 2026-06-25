@@ -1,0 +1,9 @@
+template <typename T>
+T test::convert(T value);
+template <typename T>
+void test::process(T* ptr);
+test::MyType test::convert<test::MyType>(test::MyType value);
+void test::process<test::MyType>(test::MyType* ptr);
+
+struct test::MyType {
+}

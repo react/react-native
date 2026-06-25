@@ -77,10 +77,6 @@ inline bool operator==(const YGValue& lhs, const YGValue& rhs) {
   }
 }
 
-inline bool operator!=(const YGValue& lhs, const YGValue& rhs) {
-  return !(lhs == rhs);
-}
-
 inline YGValue operator-(const YGValue& value) {
   return {-value.value, value.unit};
 }

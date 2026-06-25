@@ -216,7 +216,7 @@ UITextContentType RCTUITextContentTypeFromString(const std::string &contentType)
       @"oneTimeCode" : UITextContentTypeOneTimeCode,
     }];
 
-    if (@available(iOS 15.0, *)) {
+    if (@available(iOS 15.0, tvOS 15.0, *)) {
       [mutableContentTypeMap addEntriesFromDictionary:@{
         @"dateTime" : UITextContentTypeDateTime,
         @"flightNumber" : UITextContentTypeFlightNumber,
@@ -225,7 +225,7 @@ UITextContentType RCTUITextContentTypeFromString(const std::string &contentType)
     }
 
 #if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 170000 /* __IPHONE_17_0 */
-    if (@available(iOS 17.0, *)) {
+    if (@available(iOS 17.0, tvOS 17.0, *)) {
       [mutableContentTypeMap addEntriesFromDictionary:@{
         @"creditCardExpiration" : UITextContentTypeCreditCardExpiration,
         @"creditCardExpirationMonth" : UITextContentTypeCreditCardExpirationMonth,
@@ -271,6 +271,7 @@ UITextSmartInsertDeleteType RCTUITextSmartInsertDeleteTypeFromOptionalBool(std::
       : UITextSmartInsertDeleteTypeDefault;
 }
 
+#if !TARGET_OS_TV
 UIDataDetectorTypes RCTUITextViewDataDetectorTypesFromStringVector(const std::vector<std::string> &dataDetectorTypes)
 {
   static dispatch_once_t onceToken;
@@ -298,3 +299,4 @@ UIDataDetectorTypes RCTUITextViewDataDetectorTypesFromStringVector(const std::ve
   }
   return ret;
 }
+#endif

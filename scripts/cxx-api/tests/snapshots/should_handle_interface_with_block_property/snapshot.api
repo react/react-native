@@ -1,0 +1,5 @@
+interface RCTInterfaceWithBlockProperty : public NSObject {
+  public @property (copy) NSString*(^blockWithReturn)(int value);
+  public @property (copy) void(^eventInterceptor)(NSString* eventName, NSDictionary* event, NSNumber* reactTag);
+  public @property (copy) void(^simpleBlock)(void);
+}

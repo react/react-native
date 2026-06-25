@@ -43,7 +43,7 @@
 import type EventTarget from './EventTarget';
 import type {EventCallback} from './EventTarget';
 
-type EventHandler = $ReadOnly<{
+type EventHandler = Readonly<{
   handleEvent: EventCallback,
 }>;
 type EventHandlerAttributeMap = Map<string, EventHandler | null>;
@@ -119,7 +119,7 @@ export function setEventHandlerAttribute(
         setEventHandlerAttributeMap(target, map);
       }
       map.set(type, listener);
-    } catch (e) {
+    } catch {
       // Assigning incorrect listener does not throw in setters.
     }
   }

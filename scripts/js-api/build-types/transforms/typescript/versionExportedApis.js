@@ -31,7 +31,7 @@ const debug = require('debug')('build-types:transforms:versionExportedApis');
  */
 function createVersionExportedApis(
   outputDebugAnnotations: boolean = false,
-): PluginObj<mixed> {
+): PluginObj<unknown> {
   return {
     visitor: {
       Program(path) {

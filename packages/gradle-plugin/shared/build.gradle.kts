@@ -33,7 +33,7 @@ kotlin { jvmToolchain(17) }
 
 tasks.withType<KotlinCompile>().configureEach {
   compilerOptions {
-    apiVersion.set(KotlinVersion.KOTLIN_1_8)
+    apiVersion.set(KotlinVersion.KOTLIN_2_0)
     // See comment above on JDK 11 support
     jvmTarget.set(JvmTarget.JVM_11)
     allWarningsAsErrors.set(

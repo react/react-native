@@ -25,15 +25,15 @@ const Dimensions =
 const BorderBox = require('./BorderBox').default;
 const resolveBoxStyle = require('./resolveBoxStyle').default;
 
-type Props = $ReadOnly<{
+type Props = Readonly<{
   frame: InspectedElementFrame,
   style?: ?ViewStyleProp,
 }>;
 
 function ElementBox({frame, style}: Props): React.Node {
   const flattenedStyle = flattenStyle(style) || {};
-  let margin: ?$ReadOnly<Style> = resolveBoxStyle('margin', flattenedStyle);
-  let padding: ?$ReadOnly<Style> = resolveBoxStyle('padding', flattenedStyle);
+  let margin: ?Readonly<Style> = resolveBoxStyle('margin', flattenedStyle);
+  let padding: ?Readonly<Style> = resolveBoxStyle('padding', flattenedStyle);
 
   const frameStyle = {...frame};
   const contentStyle: {width: number, height: number} = {
@@ -110,7 +110,7 @@ type Style = {
  * @param style the style to resolve
  * @return a modified copy
  */
-function resolveRelativeSizes(style: $ReadOnly<Style>): Style {
+function resolveRelativeSizes(style: Readonly<Style>): Style {
   let resolvedStyle = {...style};
   resolveSizeInPlace(resolvedStyle, 'top', 'height');
   resolveSizeInPlace(resolvedStyle, 'right', 'width');

@@ -9,18 +9,26 @@
  */
 
 import NativeDeviceEventManager from '../../Libraries/NativeModules/specs/NativeDeviceEventManager';
+import {setEventInitTimeStamp} from '../../src/private/webapis/dom/events/internals/EventInternals';
 import RCTDeviceEventEmitter from '../EventEmitter/RCTDeviceEventEmitter';
+import {HardwareBackPressEvent} from './HardwareBackPressEvent';
 
 const DEVICE_BACK_EVENT = 'hardwareBackPress';
 
 type BackPressEventName = 'backPress' | 'hardwareBackPress';
-type BackPressHandler = () => ?boolean;
+type BackPressHandler = (event: HardwareBackPressEvent) => ?boolean;
 
 const _backPressSubscriptions: Array<BackPressHandler> = [];
 
-RCTDeviceEventEmitter.addListener(DEVICE_BACK_EVENT, function () {
+RCTDeviceEventEmitter.addListener(DEVICE_BACK_EVENT, function (nativeEvent) {
+  const options = {};
+  const nativeTimestamp = nativeEvent?.timeStamp;
+  if (nativeTimestamp != null) {
+    setEventInitTimeStamp(options, nativeTimestamp);
+  }
+  const event = new HardwareBackPressEvent(options);
   for (let i = _backPressSubscriptions.length - 1; i >= 0; i--) {
-    if (_backPressSubscriptions[i]?.()) {
+    if (_backPressSubscriptions[i]?.(event)) {
       return;
     }
   }
@@ -55,8 +63,8 @@ RCTDeviceEventEmitter.addListener(DEVICE_BACK_EVENT, function () {
  * ```
  */
 type TBackHandler = {
-  +exitApp: () => void,
-  +addEventListener: (
+  readonly exitApp: () => void,
+  readonly addEventListener: (
     eventName: BackPressEventName,
     handler: BackPressHandler,
   ) => {remove: () => void, ...},

@@ -36,7 +36,8 @@ public open class DeviceEventManagerModule(
   public open fun emitHardwareBackPressed() {
     val reactApplicationContext: ReactApplicationContext? =
         getReactApplicationContextIfActiveOrWarn()
-    reactApplicationContext?.emitDeviceEvent("hardwareBackPress", null)
+    val map = buildReadableMap { put("timeStamp", System.nanoTime() / 1_000_000.0) }
+    reactApplicationContext?.emitDeviceEvent("hardwareBackPress", map)
   }
 
   /** Sends an event to the JS instance that a new intent was received. */

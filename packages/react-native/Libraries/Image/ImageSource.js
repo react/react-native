@@ -21,32 +21,32 @@ export interface ImageURISource {
    * resource (which should be wrapped in the `require('./path/to/image.png')`
    * function).
    */
-  +uri?: ?string;
+  readonly uri?: ?string;
 
   /**
    * `bundle` is the iOS asset bundle which the image is included in. This
    * will default to [NSBundle mainBundle] if not set.
    * @platform ios
    */
-  +bundle?: ?string;
+  readonly bundle?: ?string;
 
   /**
    * `method` is the HTTP Method to use. Defaults to GET if not specified.
    */
-  +method?: ?string;
+  readonly method?: ?string;
 
   /**
    * `headers` is an object representing the HTTP headers to send along with the
    * request for a remote image.
    */
-  +headers?: ?{[string]: string};
+  readonly headers?: ?{[string]: string};
 
   /**
    * `body` is the HTTP body to send with the request. This must be a valid
    * UTF-8 string, and will be sent exactly as specified, with no
    * additional encoding (e.g. URL-escaping or base64) applied.
    */
-  +body?: ?string;
+  readonly body?: ?string;
 
   /**
    * `cache` determines how the requests handles potentially cached
@@ -66,20 +66,20 @@ export interface ImageURISource {
    * to a URL load request, no attempt is made to load the data from the originating source,
    * and the load is considered to have failed.
    */
-  +cache?: ?('default' | 'reload' | 'force-cache' | 'only-if-cached');
+  readonly cache?: ?('default' | 'reload' | 'force-cache' | 'only-if-cached');
 
   /**
    * `width` and `height` can be specified if known at build time, in which case
    * these will be used to set the default `<Image/>` component dimensions.
    */
-  +width?: ?number;
-  +height?: ?number;
+  readonly width?: ?number;
+  readonly height?: ?number;
 
   /**
    * `scale` is used to indicate the scale factor of the image. Defaults to 1.0 if
    * unspecified, meaning that one image pixel equates to one display point / DIP.
    */
-  +scale?: ?number;
+  readonly scale?: ?number;
 }
 
 export type ImageRequireSource = number;
@@ -87,7 +87,7 @@ export type ImageRequireSource = number;
 export type ImageSource =
   | ImageRequireSource
   | ImageURISource
-  | $ReadOnlyArray<ImageURISource>;
+  | ReadonlyArray<ImageURISource>;
 
 type ImageSourceProperties = {
   body?: ?string,
@@ -104,7 +104,7 @@ type ImageSourceProperties = {
 
 export function getImageSourceProperties(
   imageSource: ImageURISource,
-): $ReadOnly<ImageSourceProperties> {
+): Readonly<ImageSourceProperties> {
   const object: ImageSourceProperties = {};
   if (imageSource.body != null) {
     object.body = imageSource.body;

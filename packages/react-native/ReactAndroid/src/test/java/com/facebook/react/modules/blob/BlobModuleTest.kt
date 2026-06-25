@@ -10,7 +10,11 @@ package com.facebook.react.modules.blob
 import android.net.Uri
 import com.facebook.react.bridge.JavaOnlyArray
 import com.facebook.react.bridge.JavaOnlyMap
+import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactTestHelper
+import com.facebook.soloader.SoLoader
+import com.facebook.testutils.shadows.ShadowArguments
+import java.io.ByteArrayInputStream
 import java.nio.ByteBuffer
 import java.util.UUID
 import kotlin.random.Random
@@ -19,28 +23,40 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.MockedStatic
+import org.mockito.Mockito.mockStatic
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
-@Config(manifest = Config.NONE)
+@Config(manifest = Config.NONE, shadows = [ShadowArguments::class])
 class BlobModuleTest {
   private lateinit var bytes: ByteArray
   private lateinit var blobId: String
+  private lateinit var context: ReactApplicationContext
   private lateinit var blobModule: BlobModule
+  private lateinit var mockedStaticSoLoader: MockedStatic<SoLoader>
 
   @Before
   fun prepareModules() {
+    mockedStaticSoLoader = mockStatic(SoLoader::class.java)
+    mockedStaticSoLoader
+        .`when`<Boolean> { SoLoader.loadLibrary("reactnativeblob") }
+        .thenReturn(true)
+
     bytes = ByteArray(120)
     Random.Default.nextBytes(bytes)
 
-    blobModule = BlobModule(ReactTestHelper.createCatalystContextForTest())
+    context = ReactTestHelper.createCatalystContextForTest()
+    blobModule = BlobModule(context)
     blobId = blobModule.store(bytes)
   }
 
   @After
   fun cleanUp() {
     blobModule.remove(blobId)
+    mockedStaticSoLoader.close()
   }
 
   @Test
@@ -135,5 +151,77 @@ class BlobModuleTest {
     blobModule.release(blobId)
 
     assertThat(blobModule.resolve(blobId, 0, bytes.size)).isNull()
+  }
+
+  @Test
+  fun testUriHandlerSupportsContentUri() {
+    val handler = blobModule.networkingUriHandler
+    val uri = Uri.parse("content://com.example.provider/blob/123")
+    assertThat(handler.supports(uri, "blob")).isTrue()
+  }
+
+  @Test
+  fun testUriHandlerDoesNotSupportContentUriWithNonBlobResponseType() {
+    val handler = blobModule.networkingUriHandler
+    val uri = Uri.parse("content://com.example.provider/blob/123")
+    assertThat(handler.supports(uri, "text")).isFalse()
+  }
+
+  @Test
+  fun testUriHandlerDoesNotSupportHttpUri() {
+    val handler = blobModule.networkingUriHandler
+    val uri = Uri.parse("http://example.com/blob/123")
+    assertThat(handler.supports(uri, "blob")).isFalse()
+  }
+
+  @Test
+  fun testUriHandlerDoesNotSupportHttpsUri() {
+    val handler = blobModule.networkingUriHandler
+    val uri = Uri.parse("https://example.com/blob/123")
+    assertThat(handler.supports(uri, "blob")).isFalse()
+  }
+
+  @Test
+  fun testUriHandlerSupportsFileUriWithBlobResponseType() {
+    val handler = blobModule.networkingUriHandler
+    val uri = Uri.parse("file:///storage/emulated/0/Download/test.pdf")
+    assertThat(handler.supports(uri, "blob")).isTrue()
+  }
+
+  @Test
+  fun testUriHandlerFetchesContentUri() {
+    val testData = "Hello from content provider!".toByteArray()
+    val contentUri = Uri.parse("content://com.example.provider/files/test.txt")
+
+    val shadowResolver = shadowOf(context.contentResolver)
+    shadowResolver.registerInputStream(contentUri, ByteArrayInputStream(testData))
+
+    val handler = blobModule.networkingUriHandler
+    assertThat(handler.supports(contentUri, "blob")).isTrue()
+
+    val (blob, data) = handler.fetch(contentUri)
+    assertThat(data).isEqualTo(testData)
+    assertThat(blob.getInt("offset")).isEqualTo(0)
+    assertThat(blob.getInt("size")).isEqualTo(testData.size)
+    assertThat(blob.getString("blobId")).isNotEmpty()
+  }
+
+  @Test
+  fun testUriHandlerFetchesFileUri() {
+    val testData = "Hello from a local file!".toByteArray()
+    val fileUri = Uri.parse("file:///storage/emulated/0/Download/test.txt")
+
+    val shadowResolver = shadowOf(context.contentResolver)
+    shadowResolver.registerInputStream(fileUri, ByteArrayInputStream(testData))
+
+    val handler = blobModule.networkingUriHandler
+
+    assertThat(handler.supports(fileUri, "blob")).isTrue()
+
+    val (blob, data) = handler.fetch(fileUri)
+    assertThat(data).isEqualTo(testData)
+    assertThat(blob.getInt("offset")).isEqualTo(0)
+    assertThat(blob.getInt("size")).isEqualTo(testData.size)
+    assertThat(blob.getString("blobId")).isNotEmpty()
   }
 }

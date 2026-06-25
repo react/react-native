@@ -8,7 +8,9 @@
 package com.facebook.react.bridge
 
 import com.facebook.soloader.SoLoader
+import com.facebook.soloader.annotation.SoLoaderLibrary
 
+@SoLoaderLibrary("reactnativejni_common")
 internal object ReactNativeJniCommonSoLoader {
 
   @JvmStatic

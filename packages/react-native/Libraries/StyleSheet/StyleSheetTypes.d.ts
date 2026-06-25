@@ -365,7 +365,8 @@ export type BlendMode =
   | 'hue'
   | 'saturation'
   | 'color'
-  | 'luminosity';
+  | 'luminosity'
+  | 'plus-lighter';
 
 export type LinearGradientValue = {
   type: 'linear-gradient';
@@ -423,13 +424,10 @@ type RadialGradientValue = {
 
 export type BackgroundImageValue = LinearGradientValue | RadialGradientValue;
 
-export type BackgroundSizeValue =
-  | {
-      x: string | number;
-      y: string | number;
-    }
-  | 'cover'
-  | 'contain';
+export type BackgroundSizeValue = {
+  x: string | number;
+  y: string | number;
+};
 
 export type BackgroundRepeatKeyword =
   | 'repeat'
@@ -519,6 +517,7 @@ export interface ViewStyle extends FlexStyle, ShadowStyleIOS, TransformsStyle {
   filter?: ReadonlyArray<FilterFunction> | string | undefined;
 
   mixBlendMode?: BlendMode | undefined;
+  backgroundImage?: ReadonlyArray<BackgroundImageValue> | string | undefined;
   experimental_backgroundImage?:
     | ReadonlyArray<BackgroundImageValue>
     | string
@@ -574,7 +573,13 @@ export type FontVariant =
 export interface TextStyleIOS extends ViewStyle {
   fontVariant?: FontVariant[] | undefined;
   textDecorationColor?: ColorValue | undefined;
-  textDecorationStyle?: 'solid' | 'double' | 'dotted' | 'dashed' | undefined;
+  textDecorationStyle?:
+    | 'solid'
+    | 'double'
+    | 'dotted'
+    | 'dashed'
+    | 'wavy'
+    | undefined;
   writingDirection?: 'auto' | 'ltr' | 'rtl' | undefined;
 }
 
@@ -636,7 +641,13 @@ export interface TextStyle extends TextStyleIOS, TextStyleAndroid, ViewStyle {
     | 'line-through'
     | 'underline line-through'
     | undefined;
-  textDecorationStyle?: 'solid' | 'double' | 'dotted' | 'dashed' | undefined;
+  textDecorationStyle?:
+    | 'solid'
+    | 'double'
+    | 'dotted'
+    | 'dashed'
+    | 'wavy'
+    | undefined;
   textDecorationColor?: ColorValue | undefined;
   textShadowColor?: ColorValue | undefined;
   textShadowOffset?: {width: number; height: number} | undefined;

@@ -35,9 +35,9 @@ export default class MutationRecord {
     const target: ReactNativeElement = nativeRecord.target;
     this._target = target;
     // $FlowExpectedError[incompatible-type] the codegen doesn't support the actual type.
-    const addedNodes: $ReadOnlyArray<ReadOnlyNode> = nativeRecord.addedNodes;
+    const addedNodes: ReadonlyArray<ReadOnlyNode> = nativeRecord.addedNodes;
     this._addedNodes = createNodeList(addedNodes);
-    const removedNodes: $ReadOnlyArray<ReadOnlyNode> =
+    const removedNodes: ReadonlyArray<ReadOnlyNode> =
       // $FlowFixMe[incompatible-type]
       nativeRecord.removedNodes;
     this._removedNodes = createNodeList(removedNodes);
@@ -55,7 +55,7 @@ export default class MutationRecord {
     return null;
   }
 
-  get oldValue(): mixed | null {
+  get oldValue(): unknown | null {
     return null;
   }
 
@@ -83,3 +83,15 @@ export function createMutationRecord(
 ): MutationRecord {
   return new MutationRecord(entry);
 }
+
+export const MutationRecord_public: typeof MutationRecord =
+  /* eslint-disable no-shadow */
+  // $FlowExpectedError[incompatible-type]
+  function MutationRecord() {
+    throw new TypeError(
+      "Failed to construct 'MutationRecord': Illegal constructor",
+    );
+  };
+
+// $FlowExpectedError[prop-missing]
+MutationRecord_public.prototype = MutationRecord.prototype;

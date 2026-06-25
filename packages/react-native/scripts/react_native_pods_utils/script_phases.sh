@@ -16,8 +16,9 @@ cd "$RCT_SCRIPT_RN_DIR"
 CODEGEN_CLI_PATH=""
 
 error () {
-    echo "$1"
-    "[Codegen] $1" >> "${SCRIPT_OUTPUT_FILE_0}" 2>&1
+    message="$*"
+    echo "$message"
+    echo "[Codegen] $message" >> "${SCRIPT_OUTPUT_FILE_0}" 2>&1
     exit 1
 }
 
@@ -76,7 +77,7 @@ generateCodegenSchemaFromJavaScript () {
 
     # shellcheck disable=SC2086
     # $JS_SRCS not having double quotations is intentional
-    "$NODE_BINARY" "$CODEGEN_CLI_PATH/lib/cli/combine/combine-js-to-schema-cli.js" --exclude NativeSampleTurboModule "$GENERATED_SCHEMA_FILE" $JS_SRCS
+    "$NODE_BINARY" "$CODEGEN_CLI_PATH/lib/cli/combine/combine-js-to-schema-cli.js" "$GENERATED_SCHEMA_FILE" $JS_SRCS
 }
 
 generateCodegenArtifactsFromSchema () {

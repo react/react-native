@@ -25,7 +25,7 @@ const StyleSheet =
 const Text = require('../../../../../Libraries/Text/Text').default;
 const ElementProperties = require('./ElementProperties').default;
 
-type Props = $ReadOnly<{
+type Props = Readonly<{
   devtoolsIsOpen: boolean,
   inspecting: boolean,
   setInspecting: (val: boolean) => void,
@@ -33,7 +33,7 @@ type Props = $ReadOnly<{
   setTouchTargeting: (val: boolean) => void,
   hierarchy?: ?ElementsHierarchy,
   selection?: ?number,
-  setSelection: number => mixed,
+  setSelection: number => unknown,
   inspected?: ?InspectedElement,
 }>;
 
@@ -84,7 +84,7 @@ class InspectorPanel extends React.Component<Props> {
   }
 }
 
-type InspectorPanelButtonProps = $ReadOnly<{
+type InspectorPanelButtonProps = Readonly<{
   onClick: (val: boolean) => void,
   pressed: boolean,
   title: string,

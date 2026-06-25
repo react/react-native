@@ -22,12 +22,14 @@ import com.facebook.react.common.ReactConstants
 import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.modules.network.CustomClientBuilder
 import com.facebook.react.modules.network.ForwardingCookieHandler
+import com.facebook.react.modules.network.OkHttpClientProvider
 import java.io.IOException
 import java.net.URI
 import java.net.URISyntaxException
 import java.util.HashMap
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
+import okhttp3.CookieJar
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
@@ -80,7 +82,10 @@ public class WebSocketModule(context: ReactApplicationContext) :
   ) {
     val id = socketID.toInt()
     val okHttpBuilder =
-        OkHttpClient.Builder()
+        OkHttpClientProvider.getOkHttpClient()
+            .newBuilder()
+            // Don't let BridgeInterceptor overwrite a caller-supplied Cookie header.
+            .cookieJar(CookieJar.NO_COOKIES)
             .connectTimeout(10, TimeUnit.SECONDS)
             .writeTimeout(10, TimeUnit.SECONDS)
             .readTimeout(0, TimeUnit.MINUTES) // Disable timeouts for read
@@ -149,8 +154,8 @@ public class WebSocketModule(context: ReactApplicationContext) :
             sendEvent("websocketOpen", params)
           }
 
-          override fun onClosing(websocket: WebSocket, code: Int, reason: String) {
-            websocket.close(code, reason)
+          override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
+            webSocket.close(code, reason)
           }
 
           override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
@@ -198,9 +203,6 @@ public class WebSocketModule(context: ReactApplicationContext) :
           }
         },
     )
-
-    // Trigger shutdown of the dispatcher's executor so this process can exit cleanly
-    client.dispatcher().executorService().shutdown()
   }
 
   override fun close(code: Double, reason: String?, socketID: Double) {
@@ -396,9 +398,9 @@ public class WebSocketModule(context: ReactApplicationContext) :
 
         val defaultOrigin =
             if (requestURI.port != -1) {
-              String.format("%s://%s:%s", scheme, requestURI.host, requestURI.port)
+              "$scheme://${requestURI.host}:${requestURI.port}"
             } else {
-              String.format("%s://%s", scheme, requestURI.host)
+              "$scheme://${requestURI.host}"
             }
 
         return defaultOrigin

@@ -30,17 +30,10 @@ public interface RCTEventEmitter : JavaScriptModule {
   @Deprecated("Use [RCTModernEventEmitter.receiveEvent] instead")
   public fun receiveEvent(targetTag: Int, eventName: String, params: WritableMap?)
 
-  /**
-   * Receive and process touches
-   *
-   * @param eventName JS event name
-   * @param touches active pointers data
-   * @param changedIndices indices of changed pointers
-   */
-  @Deprecated("Dispatch the TouchEvent using [EventDispatcher] instead")
+  @Deprecated("Use [EventDispatcher] to dispatch touch events instead")
   public fun receiveTouches(
       eventName: String,
       touches: WritableArray,
       changedIndices: WritableArray,
-  )
+  ): Unit = Unit
 }

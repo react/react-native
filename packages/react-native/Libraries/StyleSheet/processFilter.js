@@ -15,6 +15,14 @@ import type {DropShadowValue, FilterFunction} from './StyleSheetTypes';
 
 import processColor from './processColor';
 
+// Pre-compiled regex patterns for performance - avoids regex compilation on each call
+const NEWLINE_REGEX = /\n/g;
+const FILTER_FUNCTION_REGEX =
+  /([\w-]+)\(([^()]*|\([^()]*\)|[^()]*\([^()]*\)[^()]*)\)/g;
+const ARGS_WITH_UNITS_REGEX = /([+-]?\d*(\.\d+)?)([a-zA-Z%]+)?/g;
+const WHITESPACE_SPLIT_REGEX = /\s+(?![^(]*\))/;
+const LENGTH_PARSE_REGEX = /([+-]?\d*(\.\d+)?)([\w\W]+)?/g;
+
 type ParsedFilter =
   | {brightness: number}
   | {blur: number}
@@ -35,21 +43,21 @@ type ParsedDropShadow = {
 };
 
 export default function processFilter(
-  filter: ?($ReadOnlyArray<FilterFunction> | string),
-): $ReadOnlyArray<ParsedFilter> {
+  filter: ?(ReadonlyArray<FilterFunction> | string),
+): ReadonlyArray<ParsedFilter> {
   let result: Array<ParsedFilter> = [];
   if (filter == null) {
     return result;
   }
 
   if (typeof filter === 'string') {
-    filter = filter.replace(/\n/g, ' ');
+    filter = filter.replace(NEWLINE_REGEX, ' ');
 
     // matches on functions with args and nested functions like "drop-shadow(10 10 10 rgba(0, 0, 0, 1))"
-    const regex = /([\w-]+)\(([^()]*|\([^()]*\)|[^()]*\([^()]*\)[^()]*)\)/g;
+    FILTER_FUNCTION_REGEX.lastIndex = 0;
     let matches;
 
-    while ((matches = regex.exec(filter))) {
+    while ((matches = FILTER_FUNCTION_REGEX.exec(filter))) {
       let filterName = matches[1].toLowerCase();
       if (filterName === 'drop-shadow') {
         const dropShadow = parseDropShadow(matches[2]);
@@ -115,13 +123,13 @@ export default function processFilter(
   return result;
 }
 
-function _getFilterAmount(filterName: string, filterArgs: mixed): ?number {
+function _getFilterAmount(filterName: string, filterArgs: unknown): ?number {
   let filterArgAsNumber: number;
   let unit: string;
   if (typeof filterArgs === 'string') {
     // matches on args with units like "1.5 5% -80deg"
-    const argsWithUnitsRegex = new RegExp(/([+-]?\d*(\.\d+)?)([a-zA-Z%]+)?/g);
-    const match = argsWithUnitsRegex.exec(filterArgs);
+    ARGS_WITH_UNITS_REGEX.lastIndex = 0;
+    const match = ARGS_WITH_UNITS_REGEX.exec(filterArgs);
 
     if (!match || isNaN(Number(match[1]))) {
       return undefined;
@@ -258,7 +266,7 @@ function parseDropShadowString(rawDropShadow: string): ?DropShadowValue {
   let keywordDetectedAfterLength = false;
 
   // split args by all whitespaces that are not in parenthesis
-  for (const arg of rawDropShadow.split(/\s+(?![^(]*\))/)) {
+  for (const arg of rawDropShadow.split(WHITESPACE_SPLIT_REGEX)) {
     const processedColor = processColor(arg);
     if (processedColor != null) {
       if (dropShadow.color != null) {
@@ -305,8 +313,8 @@ function parseDropShadowString(rawDropShadow: string): ?DropShadowValue {
 
 function parseLength(length: string): ?number {
   // matches on args with units like "1.5 5% -80deg"
-  const argsWithUnitsRegex = /([+-]?\d*(\.\d+)?)([\w\W]+)?/g;
-  const match = argsWithUnitsRegex.exec(length);
+  LENGTH_PARSE_REGEX.lastIndex = 0;
+  const match = LENGTH_PARSE_REGEX.exec(length);
 
   if (!match || Number.isNaN(match[1])) {
     return null;

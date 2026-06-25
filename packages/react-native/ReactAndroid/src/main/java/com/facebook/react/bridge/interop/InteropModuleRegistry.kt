@@ -10,7 +10,6 @@ package com.facebook.react.bridge.interop
 import com.facebook.react.bridge.JavaScriptModule
 import com.facebook.react.common.annotations.internal.InteropLegacyArchitecture
 import com.facebook.react.common.annotations.internal.LegacyArchitectureLogger
-import com.facebook.react.internal.featureflags.ReactNativeNewArchitectureFeatureFlags.enableFabricRenderer
 import com.facebook.react.internal.featureflags.ReactNativeNewArchitectureFeatureFlags.useFabricInterop
 
 /**
@@ -44,8 +43,7 @@ internal class InteropModuleRegistry {
     }
   }
 
-  private fun checkReactFeatureFlagsConditions(): Boolean =
-      enableFabricRenderer() && useFabricInterop()
+  private fun checkReactFeatureFlagsConditions(): Boolean = useFabricInterop()
 
   private companion object {
     init {

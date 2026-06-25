@@ -16,6 +16,7 @@ import com.facebook.react.uimanager.BaseViewManagerDelegate;
 import com.facebook.react.uimanager.BaseViewManager;
 import com.facebook.react.uimanager.LayoutShadowNode;
 
+@SuppressWarnings("deprecation")
 public class AndroidPopupMenuManagerDelegate<T extends View, U extends BaseViewManager<T, ? extends LayoutShadowNode> & AndroidPopupMenuManagerInterface<T>> extends BaseViewManagerDelegate<T, U> {
   public AndroidPopupMenuManagerDelegate(U viewManager) {
     super(viewManager);

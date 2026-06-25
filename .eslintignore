@@ -17,3 +17,4 @@ private/react-native-codegen-typescript-test/lib/**/*
 **/Pods/*
 **/*.macos.js
 **/*.windows.js
+**/__fixtures__/**

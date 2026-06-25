@@ -261,6 +261,31 @@ export interface Spec extends TurboModule {
 export default TurboModuleRegistry.getEnforcing<Spec>('MapWithExtraKeysNativeModule');
 `;
 
+const NATIVE_MODULES_WITH_ARRAY_BUFFER_IN_OBJECT_PROPERTY = `
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @format
+ */
+
+import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
+import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+
+type Row = {
+  buf: ArrayBuffer;
+};
+
+export interface Spec extends TurboModule {
+  readonly useRow: (row: Row) => void;
+}
+
+export default TurboModuleRegistry.getEnforcing<Spec>('SampleTurboModule');
+
+`;
+
 module.exports = {
   NATIVE_MODULES_WITH_UNNAMED_PARAMS,
   NATIVE_MODULES_WITH_PROMISE_WITHOUT_TYPE,
@@ -273,4 +298,5 @@ module.exports = {
   MIXED_VALUES_ENUM_NATIVE_MODULE,
   NUMERIC_VALUES_ENUM_NATIVE_MODULE,
   MAP_WITH_EXTRA_KEYS_NATIVE_MODULE,
+  NATIVE_MODULES_WITH_ARRAY_BUFFER_IN_OBJECT_PROPERTY,
 };

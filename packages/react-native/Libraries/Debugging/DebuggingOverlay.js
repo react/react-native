@@ -26,8 +26,8 @@ const isNativeComponentReady =
   UIManager.hasViewManagerConfig('DebuggingOverlay');
 
 type DebuggingOverlayHandle = {
-  highlightTraceUpdates(updates: $ReadOnlyArray<TraceUpdate>): void,
-  highlightElements(elements: $ReadOnlyArray<ElementRectangle>): void,
+  highlightTraceUpdates(updates: ReadonlyArray<TraceUpdate>): void,
+  highlightElements(elements: ReadonlyArray<ElementRectangle>): void,
   clearElementsHighlight(): void,
 };
 

@@ -7,7 +7,7 @@
  * @noflow
  * @nolint
  * @preventMunge
- * @generated SignedSource<<e02bd84b9218e9b7cbc92a39eee81f5f>>
+ * @generated SignedSource<<c4dae0f7dbb88147f400089cab897268>>
  *
  * This file was sync'd from the facebook/react repository.
  */
@@ -12298,10 +12298,10 @@ batchedUpdatesImpl = function (fn, a) {
 var roots = new Map(),
   internals$jscomp$inline_1537 = {
     bundleType: 0,
-    version: "19.2.0",
+    version: "19.2.3",
     rendererPackageName: "react-native-renderer",
     currentDispatcherRef: ReactSharedInternals,
-    reconcilerVersion: "19.2.0"
+    reconcilerVersion: "19.2.3"
   };
 null !== extraDevToolsConfig &&
   (internals$jscomp$inline_1537.rendererConfig = extraDevToolsConfig);

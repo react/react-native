@@ -16,13 +16,13 @@ import ExceptionsManager, {
 import * as React from 'react';
 
 type ErrorInfo = {
-  +componentStack?: ?string,
+  readonly componentStack?: ?string,
   // $FlowFixMe[unclear-type] unknown props and state.
-  +errorBoundary?: ?React.Component<any, any>,
+  readonly errorBoundary?: ?React.Component<any, any>,
 };
 
 function getExtendedError(
-  errorValue: mixed,
+  errorValue: unknown,
   errorInfo: ErrorInfo,
 ): ExtendedError {
   let error;
@@ -33,17 +33,17 @@ function getExtendedError(
     /* $FlowFixMe[class-object-subtyping] added when improving typing for
      * this parameters */
     // $FlowFixMe[incompatible-type]
-    error = (errorValue: ExtendedError);
+    error = errorValue as ExtendedError;
   } else if (typeof errorValue === 'string') {
     /* $FlowFixMe[class-object-subtyping] added when improving typing for
      * this parameters */
     // $FlowFixMe[incompatible-type]
-    error = (new SyntheticError(errorValue): ExtendedError);
+    error = new SyntheticError(errorValue) as ExtendedError;
   } else {
     /* $FlowFixMe[class-object-subtyping] added when improving typing for
      * this parameters */
     // $FlowFixMe[incompatible-type]
-    error = (new SyntheticError('Unspecified error'): ExtendedError);
+    error = new SyntheticError('Unspecified error') as ExtendedError;
   }
   try {
     // $FlowFixMe[incompatible-use] this is in try/catch.
@@ -56,14 +56,17 @@ function getExtendedError(
   return error;
 }
 
-export function onUncaughtError(errorValue: mixed, errorInfo: ErrorInfo): void {
+export function onUncaughtError(
+  errorValue: unknown,
+  errorInfo: ErrorInfo,
+): void {
   const error = getExtendedError(errorValue, errorInfo);
 
   // Uncaught errors are fatal.
   ExceptionsManager.handleException(error, true);
 }
 
-export function onCaughtError(errorValue: mixed, errorInfo: ErrorInfo): void {
+export function onCaughtError(errorValue: unknown, errorInfo: ErrorInfo): void {
   const error = getExtendedError(errorValue, errorInfo);
 
   // Caught errors are not fatal.
@@ -71,7 +74,7 @@ export function onCaughtError(errorValue: mixed, errorInfo: ErrorInfo): void {
 }
 
 export function onRecoverableError(
-  errorValue: mixed,
+  errorValue: unknown,
   errorInfo: ErrorInfo,
 ): void {
   const error = getExtendedError(errorValue, errorInfo);

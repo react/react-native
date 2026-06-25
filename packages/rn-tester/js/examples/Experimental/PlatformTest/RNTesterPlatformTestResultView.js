@@ -41,7 +41,7 @@ const DISPLAY_STATUS_MAPPING: {[PlatformTestResultStatus]: string} = {
   SKIPPED: 'Skipped',
 };
 
-type FilterModalProps = $ReadOnly<{
+type FilterModalProps = Readonly<{
   filterText: string,
   setFilterText: (newFilterText: string) => void,
   filterFail: boolean,
@@ -176,10 +176,10 @@ function renderTableRow({item}: ListRenderItemInfo<PlatformTestResult>) {
   return <TableRow testResult={item} />;
 }
 
-type Props = $ReadOnly<{
+type Props = Readonly<{
   numPending: number,
   reset: () => void,
-  results: $ReadOnlyArray<PlatformTestResult>,
+  results: ReadonlyArray<PlatformTestResult>,
   style?: ?ViewStyleProp,
 }>;
 export default function RNTesterPlatformTestResultView(
@@ -275,7 +275,7 @@ export default function RNTesterPlatformTestResultView(
             <View style={styles.titleContainer}>
               <Text style={styles.title}>Results</Text>
               <Text style={styles.filteredText}>{filteredNotice}</Text>
-              <Text style={styles.summaryContainer}>
+              <View style={styles.summaryContainer}>
                 <RNTesterPlatformTestResultsText
                   numError={numError}
                   numFail={numFail}
@@ -283,7 +283,7 @@ export default function RNTesterPlatformTestResultView(
                   numPending={numPending}
                   numSkipped={numSkipped}
                 />
-              </Text>
+              </View>
             </View>
             <View style={styles.actionsContainer}>
               <FilterModalButton

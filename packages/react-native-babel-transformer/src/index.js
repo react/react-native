@@ -141,6 +141,9 @@ function buildBabelConfig(
         : true,
     code: false,
     cwd: options.projectRoot,
+    envName: options.dev
+      ? 'development'
+      : process.env.BABEL_ENV || 'production',
     filename,
     highlightCode: true,
   };
@@ -183,53 +186,49 @@ const transform /*: BabelTransformer['transform'] */ = ({
   src,
   plugins,
 }) => {
-  const OLD_BABEL_ENV = process.env.BABEL_ENV;
-  process.env.BABEL_ENV = options.dev
-    ? 'development'
-    : process.env.BABEL_ENV || 'production';
+  const babelConfig /*: BabelCoreOptions */ = {
+    // ES modules require sourceType='module' but OSS may not always want that
+    sourceType: 'unambiguous',
+    ...buildBabelConfig(filename, options, plugins),
+    caller: {
+      // Varies Babel's config cache - presets will be re-initialized
+      // if they use caller information.
+      name: 'metro',
+      bundler: 'metro',
+      platform: options.platform,
+      unstable_transformProfile: options.unstable_transformProfile,
+    },
+    ast: true,
 
-  try {
-    const babelConfig /*: BabelCoreOptions */ = {
-      // ES modules require sourceType='module' but OSS may not always want that
-      sourceType: 'unambiguous',
-      ...buildBabelConfig(filename, options, plugins),
-      caller: {name: 'metro', bundler: 'metro', platform: options.platform},
-      ast: true,
+    // NOTE(EvanBacon): We split the parse/transform steps up to accommodate
+    // Hermes parsing, but this defaults to cloning the AST which increases
+    // the transformation time by a fair amount.
+    // You get this behavior by default when using Babel's `transform` method directly.
+    cloneInputAst: false,
+  };
+  const sourceAst /*: BabelNodeFile */ =
+    isTypeScriptSource(filename) ||
+    isTSXSource(filename) ||
+    !options.hermesParser
+      ? parseSync(src, babelConfig)
+      : // $FlowFixMe[incompatible-exact]
+        require('hermes-parser').parse(src, {
+          babel: true,
+          reactRuntimeTarget: '19',
+          sourceType: babelConfig.sourceType,
+        });
 
-      // NOTE(EvanBacon): We split the parse/transform steps up to accommodate
-      // Hermes parsing, but this defaults to cloning the AST which increases
-      // the transformation time by a fair amount.
-      // You get this behavior by default when using Babel's `transform` method directly.
-      cloneInputAst: false,
-    };
-    const sourceAst /*: BabelNodeFile */ =
-      isTypeScriptSource(filename) ||
-      isTSXSource(filename) ||
-      !options.hermesParser
-        ? parseSync(src, babelConfig)
-        : // $FlowFixMe[incompatible-exact]
-          require('hermes-parser').parse(src, {
-            babel: true,
-            reactRuntimeTarget: '19',
-            sourceType: babelConfig.sourceType,
-          });
+  const result /*: TransformResult<MetroBabelFileMetadata> */ =
+    transformFromAstSync(sourceAst, src, babelConfig);
 
-    const result /*: TransformResult<MetroBabelFileMetadata> */ =
-      transformFromAstSync(sourceAst, src, babelConfig);
-
-    // The result from `transformFromAstSync` can be null (if the file is ignored)
-    if (!result) {
-      /* $FlowFixMe[incompatible-type] BabelTransformer specifies that the `ast` can never be null but
-       * the function returns here. Discovered when typing `BabelNode`. */
-      return {ast: null};
-    }
-
-    return {ast: nullthrows(result.ast), metadata: result.metadata};
-  } finally {
-    if (OLD_BABEL_ENV) {
-      process.env.BABEL_ENV = OLD_BABEL_ENV;
-    }
+  // The result from `transformFromAstSync` can be null (if the file is ignored)
+  if (!result) {
+    /* $FlowFixMe[incompatible-type] BabelTransformer specifies that the `ast` can never be null but
+     * the function returns here. Discovered when typing `BabelNode`. */
+    return {ast: null};
   }
+
+  return {ast: nullthrows(result.ast), metadata: result.metadata};
 };
 
 function getCacheKey() {

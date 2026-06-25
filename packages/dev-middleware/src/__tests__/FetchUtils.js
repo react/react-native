@@ -48,7 +48,9 @@ export async function requestLocal(
   };
 }
 
-export async function fetchJson<T: JSONSerializable>(url: string): Promise<T> {
+export async function fetchJson<T extends JSONSerializable>(
+  url: string,
+): Promise<T> {
   const response = await requestLocal(url);
   if (response.statusCode !== 200) {
     throw new Error(`HTTP ${response.statusCode}`);

@@ -21,12 +21,12 @@ import codegenNativeCommands from '../../../../Libraries/Utilities/codegenNative
 import codegenNativeComponent from '../../../../Libraries/Utilities/codegenNativeComponent';
 import * as React from 'react';
 
-type AndroidSwitchChangeEvent = $ReadOnly<{
+type AndroidSwitchChangeEvent = Readonly<{
   value: boolean,
   target: Int32,
 }>;
 
-type AndroidSwitchNativeProps = $ReadOnly<{
+type AndroidSwitchNativeProps = Readonly<{
   ...ViewProps,
 
   // Props
@@ -47,7 +47,7 @@ type AndroidSwitchNativeProps = $ReadOnly<{
 type NativeType = HostComponent<AndroidSwitchNativeProps>;
 
 interface NativeCommands {
-  +setNativeValue: (
+  readonly setNativeValue: (
     viewRef: React.ElementRef<NativeType>,
     value: boolean,
   ) => void;
@@ -57,9 +57,9 @@ export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
   supportedCommands: ['setNativeValue'],
 });
 
-export default (codegenNativeComponent<AndroidSwitchNativeProps>(
+export default codegenNativeComponent<AndroidSwitchNativeProps>(
   'AndroidSwitch',
   {
     interfaceOnly: true,
   },
-): NativeType);
+) as NativeType;

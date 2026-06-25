@@ -18,10 +18,10 @@ import * as React from 'react';
 import {useContext, useState} from 'react';
 import {Pressable, StyleSheet, Text, View} from 'react-native';
 
-type Props = $ReadOnly<{
+type Props = Readonly<{
   testID?: ?string,
   label: string,
-  onPress?: ?(event: GestureResponderEvent) => mixed,
+  onPress?: ?(event: GestureResponderEvent) => unknown,
   selected?: ?boolean,
   multiSelect?: ?boolean,
   disabled?: ?boolean,

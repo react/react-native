@@ -34,7 +34,7 @@ function getEventEmitterTypeObjCType(
         case 'string':
           return 'NSString *_Nonnull';
         default:
-          (validUnionType: empty);
+          validUnionType as empty;
           throw new Error(`Unsupported union member type`);
       }
     case 'NumberTypeAnnotation':
@@ -58,7 +58,7 @@ function getEventEmitterTypeObjCType(
         `Unsupported eventType for ${eventEmitter.name}. Found: ${eventEmitter.typeAnnotation.typeAnnotation.type}`,
       );
     default:
-      (typeAnnotation.type: empty);
+      typeAnnotation.type as empty;
       throw new Error(
         `Unsupported eventType for ${eventEmitter.name}. Found: ${eventEmitter.typeAnnotation.typeAnnotation.type}`,
       );

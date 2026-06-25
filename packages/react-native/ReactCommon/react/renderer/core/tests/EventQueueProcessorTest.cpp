@@ -12,11 +12,13 @@
 #include <react/renderer/core/EventPipe.h>
 #include <react/renderer/core/EventQueueProcessor.h>
 #include <react/renderer/core/EventTarget.h>
+#include <react/renderer/core/InstanceHandle.h>
 #include <react/renderer/core/ShadowNodeFamily.h>
 #include <react/renderer/core/StatePipe.h>
 #include <react/renderer/core/ValueFactoryEventPayload.h>
 
 #include <memory>
+#include <stdexcept>
 #include <string_view>
 
 namespace facebook::react {
@@ -42,13 +44,14 @@ class EventQueueProcessorTest : public testing::Test {
                          const EventTarget* /*eventTarget*/,
                          const std::string& type,
                          ReactEventPriority priority,
-                         const EventPayload& /*payload*/) {
+                         const EventPayload& /*payload*/,
+                         HighResTimeStamp /*eventTimestamp*/) {
       eventTypes_.push_back(type);
       eventPriorities_.push_back(priority);
     };
 
-    auto dummyEventPipeConclusion = [](jsi::Runtime& runtime) {};
-    auto dummyStatePipe = [](const StateUpdate& stateUpdate) {};
+    auto dummyEventPipeConclusion = [](jsi::Runtime&) {};
+    auto dummyStatePipe = [](const StateUpdate&) {};
     auto mockEventLogger = std::make_shared<MockEventLogger>();
 
     eventProcessor_ = std::make_unique<EventQueueProcessor>(
@@ -154,6 +157,52 @@ TEST_F(EventQueueProcessorTest, alwaysDiscreteEvent) {
 
   EXPECT_EQ(eventTypes_[0], "onChange");
   EXPECT_EQ(eventPriorities_[0], ReactEventPriority::Discrete);
+}
+
+TEST_F(EventQueueProcessorTest, releasesEventTargetsWhenDispatchThrows) {
+  // Set up an enabled EventTarget so that flushEvents() will retain a strong
+  // JSI reference to its instance handle.
+  auto object = jsi::Object(*runtime_);
+  auto instanceHandle = std::make_shared<InstanceHandle>(
+      *runtime_, jsi::Value(*runtime_, object), 1);
+  auto eventTarget =
+      std::make_shared<EventTarget>(std::move(instanceHandle), 41);
+  eventTarget->setEnabled(true);
+
+  // An event pipe that throws, simulating a JS exception during dispatch.
+  auto throwingEventPipe = [](jsi::Runtime& /*runtime*/,
+                              const EventTarget* /*eventTarget*/,
+                              const std::string& /*type*/,
+                              ReactEventPriority /*priority*/,
+                              const EventPayload& /*payload*/,
+                              HighResTimeStamp /*eventTimestamp*/) {
+    throw std::runtime_error("dispatch failed");
+  };
+  auto dummyEventPipeConclusion = [](jsi::Runtime& /*runtime*/) {};
+  auto dummyStatePipe = [](const StateUpdate& /*stateUpdate*/) {};
+  auto mockEventLogger = std::make_shared<MockEventLogger>();
+
+  auto processor = EventQueueProcessor(
+      throwingEventPipe,
+      dummyEventPipeConclusion,
+      dummyStatePipe,
+      mockEventLogger);
+
+  EXPECT_THROW(
+      processor.flushEvents(
+          *runtime_,
+          {RawEvent(
+              "onThrow",
+              std::make_shared<ValueFactoryEventPayload>(dummyValueFactory_),
+              eventTarget,
+              {},
+              RawEvent::Category::Discrete)}),
+      std::runtime_error);
+
+  // The strong JSI reference acquired by retain() must have been released even
+  // though dispatch threw, so the instance handle is no longer reachable
+  // through the EventTarget.
+  EXPECT_TRUE(eventTarget->getInstanceHandle(*runtime_).isNull());
 }
 
 } // namespace facebook::react

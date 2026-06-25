@@ -13,21 +13,21 @@ import type {TurboModule} from '../../../../Libraries/TurboModule/RCTExport';
 import * as TurboModuleRegistry from '../../../../Libraries/TurboModule/TurboModuleRegistry';
 
 export interface Spec extends TurboModule {
-  +reload: () => void;
-  +reloadWithReason?: (reason: string) => void;
-  +onFastRefresh?: () => void;
-  +setHotLoadingEnabled: (isHotLoadingEnabled: boolean) => void;
-  +setProfilingEnabled: (isProfilingEnabled: boolean) => void;
-  +toggleElementInspector: () => void;
-  +addMenuItem: (title: string) => void;
-  +openDebugger?: () => void;
+  readonly reload: () => void;
+  readonly reloadWithReason?: (reason: string) => void;
+  readonly onFastRefresh?: () => void;
+  readonly setHotLoadingEnabled: (isHotLoadingEnabled: boolean) => void;
+  readonly setProfilingEnabled: (isProfilingEnabled: boolean) => void;
+  readonly toggleElementInspector: () => void;
+  readonly addMenuItem: (title: string) => void;
+  readonly openDebugger?: () => void;
 
   // Events
-  +addListener: (eventName: string) => void;
-  +removeListeners: (count: number) => void;
+  readonly addListener: (eventName: string) => void;
+  readonly removeListeners: (count: number) => void;
 
   // iOS only.
-  +setIsShakeToShowDevMenuEnabled: (enabled: boolean) => void;
+  readonly setIsShakeToShowDevMenuEnabled: (enabled: boolean) => void;
 }
 
-export default (TurboModuleRegistry.getEnforcing<Spec>('DevSettings'): Spec);
+export default TurboModuleRegistry.getEnforcing<Spec>('DevSettings') as Spec;

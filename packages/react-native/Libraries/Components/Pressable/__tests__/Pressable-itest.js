@@ -17,7 +17,7 @@ import * as Fantom from '@react-native/fantom';
 import * as React from 'react';
 import {createRef} from 'react';
 import {Pressable} from 'react-native';
-import {Text} from 'react-native';
+import {PlatformColor, Text} from 'react-native';
 import accessibilityPropsSuite from 'react-native/src/private/__tests__/utilities/accessibilityPropsSuite';
 import ensureInstance from 'react-native/src/private/__tests__/utilities/ensureInstance';
 import ReactNativeElement from 'react-native/src/private/webapis/dom/nodes/ReactNativeElement';
@@ -48,10 +48,10 @@ describe('<Pressable>', () => {
             accessible="true"
             accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
             backgroundColor="rgba(0, 0, 255, 1)"
-            borderWidth="3.000000"
-            height="50.000000"
+            borderWidth="3"
+            height="50"
             opacity="40"
-            width="100.000000"
+            width="100"
           />,
         );
       });
@@ -123,6 +123,132 @@ describe('<Pressable>', () => {
 
         expect(onPressCallback).toHaveBeenCalledTimes(0);
       });
+
+      it('sets accessibilityState disabled to true', () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(<Pressable disabled={true} />);
+        });
+
+        expect(
+          root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+        ).toEqual(
+          <rn-view accessibilityState="{disabled:true,selected:false,checked:None,busy:false,expanded:null}" />,
+        );
+      });
+
+      it('sets accessibilityState disabled to true when accessibilityState is empty', () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(<Pressable disabled={true} accessibilityState={{}} />);
+        });
+
+        expect(
+          root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+        ).toEqual(
+          <rn-view accessibilityState="{disabled:true,selected:false,checked:None,busy:false,expanded:null}" />,
+        );
+      });
+
+      it('preserves other accessibilityState fields when disabled is true', () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(
+            <Pressable disabled={true} accessibilityState={{checked: true}} />,
+          );
+        });
+
+        expect(
+          root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+        ).toEqual(
+          <rn-view accessibilityState="{disabled:true,selected:false,checked:Checked,busy:false,expanded:null}" />,
+        );
+      });
+
+      it('overwrites accessibilityState.disabled with the disabled prop', () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(
+            <Pressable
+              disabled={true}
+              accessibilityState={{disabled: false}}
+            />,
+          );
+        });
+
+        expect(
+          root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+        ).toEqual(
+          <rn-view accessibilityState="{disabled:true,selected:false,checked:None,busy:false,expanded:null}" />,
+        );
+      });
+    });
+
+    describe('android_ripple', () => {
+      it('renders with a numeric color and alpha', () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(
+            <Pressable android_ripple={{color: '#FF0000', alpha: 0.5}} />,
+          );
+        });
+
+        expect(root.getRenderedOutput().toJSX()).toEqual(
+          <rn-view
+            accessible="true"
+            accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+          />,
+        );
+      });
+
+      it('renders with a PlatformColor and alpha', () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(
+            <Pressable
+              android_ripple={{
+                color: PlatformColor('?attr/colorAccent'),
+                alpha: 0.3,
+              }}
+            />,
+          );
+        });
+
+        expect(root.getRenderedOutput().toJSX()).toEqual(
+          <rn-view
+            accessible="true"
+            accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+          />,
+        );
+      });
+
+      it('does not crash with an unresolvable PlatformColor', () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(
+            <Pressable
+              android_ripple={{
+                color: PlatformColor('?attr/doesNotExist'),
+                alpha: 0.5,
+              }}
+            />,
+          );
+        });
+
+        expect(root.getRenderedOutput().toJSX()).toEqual(
+          <rn-view
+            accessible="true"
+            accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+          />,
+        );
+      });
     });
 
     describe('children', () => {
@@ -150,7 +276,8 @@ describe('<Pressable>', () => {
               ellipsizeMode="tail"
               fontSize="NaN"
               fontSizeMultiplier="NaN"
-              foregroundColor="rgba(0, 0, 0, 0)">
+              foregroundColor="rgba(0, 0, 0, 0)"
+              overflow="hidden">
               the quick brown fox
             </rn-paragraph>
           </rn-view>,

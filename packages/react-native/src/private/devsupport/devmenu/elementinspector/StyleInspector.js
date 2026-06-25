@@ -20,7 +20,7 @@ const StyleSheet =
   require('../../../../../Libraries/StyleSheet/StyleSheet').default;
 const Text = require('../../../../../Libraries/Text/Text').default;
 
-type Props = $ReadOnly<{
+type Props = Readonly<{
   style?: ?____FlattenStyleProp_Internal<ViewStyleProp>,
 }>;
 

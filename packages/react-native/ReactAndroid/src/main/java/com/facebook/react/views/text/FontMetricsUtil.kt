@@ -7,10 +7,10 @@
 
 package com.facebook.react.views.text
 
-import android.content.Context
 import android.graphics.Rect
 import android.text.Layout
 import android.text.TextPaint
+import android.util.DisplayMetrics
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.WritableArray
 import com.facebook.react.bridge.buildReadableMap
@@ -22,8 +22,7 @@ internal object FontMetricsUtil {
   private const val AMPLIFICATION_FACTOR = 100f
 
   @JvmStatic
-  fun getFontMetrics(text: CharSequence, layout: Layout, context: Context): WritableArray {
-    val dm = context.resources.displayMetrics
+  fun getFontMetrics(text: CharSequence, layout: Layout, dm: DisplayMetrics): WritableArray {
     val lines = Arguments.createArray()
 
     // To calculate xHeight and capHeight we have to render an "x" and "T" and manually measure

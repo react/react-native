@@ -34,7 +34,7 @@ import processColor from '../StyleSheet/processColor';
 
 // TODO(T171193075): __REACT_DEVTOOLS_GLOBAL_HOOK__ is always injected in dev-bundles,
 // but it is not mocked in some Jest tests. We should update Jest tests setup, so it would be the same as expected testing environment.
-const reactDevToolsHook: ?ReactDevToolsGlobalHook = (window: $FlowFixMe)
+const reactDevToolsHook: ?ReactDevToolsGlobalHook = (window as $FlowFixMe)
   .__REACT_DEVTOOLS_GLOBAL_HOOK__;
 
 export type DebuggingOverlayRegistrySubscriberProtocol = {

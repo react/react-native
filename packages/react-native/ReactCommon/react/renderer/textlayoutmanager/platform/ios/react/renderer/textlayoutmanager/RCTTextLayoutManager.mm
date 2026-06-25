@@ -7,6 +7,8 @@
 
 #import "RCTTextLayoutManager.h"
 
+#import <array>
+
 #import "RCTAttributedTextUtils.h"
 
 #import <React/NSTextStorage+FontScaling.h>
@@ -94,6 +96,137 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
 #if TARGET_OS_MACCATALYST
   CGContextRestoreGState(context);
 #endif
+
+  // Custom decoration pass: enumerate `RCTCustomDecorationAttributeName`
+  // ranges and paint each one ourselves. Covers wavy (no UIKit equivalent),
+  // dotted, and dashed (UIKit's pattern bits don't match browser geometry).
+  {
+    CGContextRef ctx = UIGraphicsGetCurrentContext();
+    if (ctx != nullptr) {
+      NSRange charRange = [layoutManager characterRangeForGlyphRange:glyphRange actualGlyphRange:nullptr];
+      [textStorage
+          enumerateAttribute:RCTCustomDecorationAttributeName
+                     inRange:charRange
+                     options:0
+                  usingBlock:^(NSDictionary *_Nullable attrs, NSRange attrRange, __unused BOOL *stop) {
+                    if (attrs == nil) {
+                      return;
+                    }
+                    NSArray<NSString *> *lines = attrs[@"lines"];
+                    UIColor *strokeColor = attrs[@"color"];
+                    NSString *style = attrs[@"style"];
+                    UIFont *font = [textStorage attribute:NSFontAttributeName
+                                                  atIndex:attrRange.location
+                                           effectiveRange:nullptr];
+                    if (font == nil || strokeColor == nil || style == nil) {
+                      return;
+                    }
+
+                    CGFloat fontSize = font.pointSize;
+                    // Thickness scales with the type size so the decoration
+                    // remains visible at small sizes and proportionate at
+                    // large ones. ~`fontSize / 12` plus a 1.5pt floor.
+                    CGFloat thickness = MAX(fontSize / 12.0f, 1.5f);
+                    CGFloat wavyWavelength = 1.0f + 2.0f * round(2.0f * thickness + 0.5f);
+                    CGFloat wavyCpDistance = 0.5f + round(3.0f * thickness + 0.5f);
+
+                    NSRange targetGlyphRange = [layoutManager glyphRangeForCharacterRange:attrRange
+                                                                     actualCharacterRange:nullptr];
+
+                    CGContextSaveGState(ctx);
+                    CGContextSetStrokeColorWithColor(ctx, strokeColor.CGColor);
+                    CGContextSetLineWidth(ctx, thickness);
+                    CGContextSetShouldAntialias(ctx, YES);
+
+                    if ([style isEqualToString:@"dotted"]) {
+                      const std::array<CGFloat, 2> dotIntervals = {0.0f, thickness * 2.0f};
+                      CGContextSetLineDash(ctx, 0, dotIntervals.data(), dotIntervals.size());
+                      CGContextSetLineCap(ctx, kCGLineCapRound);
+                    } else if ([style isEqualToString:@"dashed"]) {
+                      const std::array<CGFloat, 2> dashIntervals = {thickness * 2.0f, thickness};
+                      CGContextSetLineDash(ctx, 0, dashIntervals.data(), dashIntervals.size());
+                      CGContextSetLineCap(ctx, kCGLineCapButt);
+                    } else {
+                      CGContextSetLineCap(ctx, kCGLineCapRound);
+                    }
+
+                    [layoutManager
+                        enumerateLineFragmentsForGlyphRange:targetGlyphRange
+                                                 usingBlock:^(
+                                                     CGRect lineRect,
+                                                     __unused CGRect usedRect,
+                                                     NSTextContainer *_Nonnull container,
+                                                     NSRange lineGlyphRange,
+                                                     __unused BOOL *_Nonnull innerStop) {
+                                                   NSRange intersection =
+                                                       NSIntersectionRange(targetGlyphRange, lineGlyphRange);
+                                                   if (intersection.length == 0) {
+                                                     return;
+                                                   }
+                                                   CGRect firstGlyphRect = [layoutManager
+                                                       boundingRectForGlyphRange:NSMakeRange(intersection.location, 1)
+                                                                 inTextContainer:container];
+                                                   CGRect lastGlyphRect = [layoutManager
+                                                       boundingRectForGlyphRange:NSMakeRange(
+                                                                                     NSMaxRange(intersection) - 1, 1)
+                                                                 inTextContainer:container];
+                                                   CGFloat x1 = firstGlyphRect.origin.x + frame.origin.x;
+                                                   CGFloat x2 = CGRectGetMaxX(lastGlyphRect) + frame.origin.x;
+                                                   CGFloat baseline =
+                                                       lineRect.origin.y + font.ascender + frame.origin.y;
+
+                                                   // NOLINTNEXTLINE(cppcoreguidelines-init-variables)
+                                                   for (NSString *line in lines) {
+                                                     CGFloat y = 0.0f;
+                                                     if ([line isEqualToString:@"underline"]) {
+                                                       if ([style isEqualToString:@"wavy"]) {
+                                                         y = baseline + 1.0f;
+                                                       } else {
+                                                         y = baseline + thickness + 1.0f;
+                                                       }
+                                                     } else {
+                                                       y = baseline - (font.ascender + font.descender) / 2.0f + 1.0f;
+                                                     }
+                                                     if ([style isEqualToString:@"wavy"]) {
+                                                       CGContextSaveGState(ctx);
+                                                       CGContextClipToRect(
+                                                           ctx,
+                                                           CGRectMake(
+                                                               x1,
+                                                               y - wavyCpDistance - thickness,
+                                                               x2 - x1,
+                                                               2 * wavyCpDistance + 2 * thickness));
+                                                       CGContextBeginPath(ctx);
+                                                       CGContextMoveToPoint(ctx, x1, y);
+                                                       CGFloat step = wavyWavelength / 2.0f;
+                                                       CGFloat wx = x1;
+                                                       while (wx < x2) {
+                                                         CGFloat midX = wx + step;
+                                                         CGContextAddCurveToPoint(
+                                                             ctx,
+                                                             midX,
+                                                             y + wavyCpDistance,
+                                                             midX,
+                                                             y - wavyCpDistance,
+                                                             wx + wavyWavelength,
+                                                             y);
+                                                         wx += wavyWavelength;
+                                                       }
+                                                       CGContextStrokePath(ctx);
+                                                       CGContextRestoreGState(ctx);
+                                                     } else {
+                                                       CGContextBeginPath(ctx);
+                                                       CGContextMoveToPoint(ctx, x1, y);
+                                                       CGContextAddLineToPoint(ctx, x2, y);
+                                                       CGContextStrokePath(ctx);
+                                                     }
+                                                   }
+                                                 }];
+
+                    CGContextRestoreGState(ctx);
+                  }];
+    }
+  }
 
   if (block != nil) {
     __block UIBezierPath *highlightPath = nil;
@@ -208,8 +341,9 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
                                          .width = usedRect.size.width, .height = usedRect.size.height}};
 
                                  CGFloat baseline = [layoutManager locationForGlyphAtIndex:range.location].y;
+                                 const char *renderedUTF8 = [renderedString UTF8String];
                                  auto line = LineMeasurement{
-                                     std::string([renderedString UTF8String]),
+                                     std::string(renderedUTF8 != nullptr ? renderedUTF8 : ""),
                                      rect,
                                      overallRect.size.height - baseline,
                                      font.capHeight,
@@ -251,10 +385,10 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
   return textStorage;
 }
 
-- (SharedEventEmitter)getEventEmitterWithAttributeString:(AttributedString)attributedString
-                                     paragraphAttributes:(ParagraphAttributes)paragraphAttributes
-                                                   frame:(CGRect)frame
-                                                 atPoint:(CGPoint)point
+- (std::shared_ptr<const EventEmitter>)getEventEmitterWithAttributeString:(AttributedString)attributedString
+                                                      paragraphAttributes:(ParagraphAttributes)paragraphAttributes
+                                                                    frame:(CGRect)frame
+                                                                  atPoint:(CGPoint)point
 {
   NSTextStorage *textStorage = [self
       _textStorageAndLayoutManagerWithAttributesString:[self _nsAttributedStringFromAttributedString:attributedString]
@@ -391,6 +525,8 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
   size = (CGSize){ceil(size.width * layoutContext.pointScaleFactor) / layoutContext.pointScaleFactor,
                   ceil(size.height * layoutContext.pointScaleFactor) / layoutContext.pointScaleFactor};
 
+  NSRange visibleGlyphRange = [layoutManager glyphRangeForTextContainer:textContainer];
+
   __block auto attachments = TextMeasurement::Attachments{};
 
   [textStorage
@@ -406,7 +542,15 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
                                                                      actualCharacterRange:NULL];
                 NSRange truncatedRange =
                     [layoutManager truncatedGlyphRangeInLineFragmentForGlyphAtIndex:attachmentGlyphRange.location];
-                if (truncatedRange.location != NSNotFound && attachmentGlyphRange.location >= truncatedRange.location) {
+
+                // Attachment on a line that did not fit (e.g. on the 4th line when the container is limited to 3 lines)
+                BOOL isOutsideVisibleRange = !NSLocationInRange(attachmentGlyphRange.location, visibleGlyphRange);
+                // Attachment in the ellipsis range of the last visible line (line truncated with "..." and the
+                // attachment falls in that portion)
+                BOOL isInTruncatedRange =
+                    truncatedRange.location != NSNotFound && attachmentGlyphRange.location >= truncatedRange.location;
+
+                if (isOutsideVisibleRange || isInTruncatedRange) {
                   attachments.push_back(TextMeasurement::Attachment{.isClipped = true});
                 } else {
                   CGSize attachmentSize = attachment.bounds.size;

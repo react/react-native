@@ -12,9 +12,10 @@
 
 import type {ComponentShape} from '../../CodegenSchema';
 
-function upperCaseFirst(inString: string): string {
-  return inString[0].toUpperCase() + inString.slice(1);
-}
+const {
+  getJavaImportsForReservedPrimitive,
+} = require('../ReservedPrimitiveTypes');
+const {toSafeIdentifier} = require('../Utils');
 
 function getInterfaceJavaClassName(componentName: string): string {
   return `${componentName.replace(/^RCT/, '')}ManagerInterface`;
@@ -28,13 +29,7 @@ function toSafeJavaString(
   input: string,
   shouldUpperCaseFirst?: boolean,
 ): string {
-  const parts = input.split('-');
-
-  if (shouldUpperCaseFirst === false) {
-    return parts.join('');
-  }
-
-  return parts.map(upperCaseFirst).join('');
+  return toSafeIdentifier(input, shouldUpperCaseFirst !== false);
 }
 
 function getImports(
@@ -57,11 +52,11 @@ function getImports(
             imports.add('import android.view.View;');
             return;
           default:
-            (extendProps.knownTypeName: empty);
+            extendProps.knownTypeName as empty;
             throw new Error('Invalid knownTypeName');
         }
       default:
-        (extendProps.type: empty);
+        extendProps.type as empty;
         throw new Error('Invalid extended type');
     }
   });
@@ -74,33 +69,8 @@ function getImports(
       | 'PointPrimitive'
       | 'DimensionPrimitive',
   ) {
-    switch (name) {
-      case 'ColorPrimitive':
-        if (type === 'delegate') {
-          imports.add('import com.facebook.react.bridge.ColorPropConverter;');
-        }
-        return;
-      case 'ImageSourcePrimitive':
-        imports.add('import com.facebook.react.bridge.ReadableMap;');
-        return;
-      case 'PointPrimitive':
-        imports.add('import com.facebook.react.bridge.ReadableMap;');
-        return;
-      case 'EdgeInsetsPrimitive':
-        imports.add('import com.facebook.react.bridge.ReadableMap;');
-        return;
-      case 'DimensionPrimitive':
-        if (type === 'delegate') {
-          imports.add(
-            'import com.facebook.react.bridge.DimensionPropConverter;',
-          );
-        } else {
-          imports.add('import com.facebook.yoga.YogaValue;');
-        }
-        return;
-      default:
-        (name: empty);
-        throw new Error(`Invalid ReservedPropTypeAnnotation name, got ${name}`);
+    for (const javaImport of getJavaImportsForReservedPrimitive(name, type)) {
+      imports.add(javaImport);
     }
   }
 

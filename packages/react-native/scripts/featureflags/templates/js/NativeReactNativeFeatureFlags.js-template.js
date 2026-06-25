@@ -35,7 +35,7 @@ export interface Spec extends TurboModule {
 ${Object.entries(definitions.common)
   .map(
     ([flagName, flagConfig]) =>
-      `  +${flagName}?: () => ${typeof flagConfig.defaultValue};`,
+      `  readonly ${flagName}?: () => ${typeof flagConfig.defaultValue};`,
   )
   .join('\n')}
 }

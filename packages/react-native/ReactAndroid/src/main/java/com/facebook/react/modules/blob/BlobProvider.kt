@@ -53,9 +53,8 @@ public class BlobProvider : ContentProvider() {
     var blobModule: BlobModule? = null
     val context = context?.applicationContext
     if (context is ReactApplication) {
-      @Suppress("DEPRECATION") val host = (context as ReactApplication).reactNativeHost
       val reactContext =
-          host.reactInstanceManager.currentReactContext
+          context.reactHost?.currentReactContext
               ?: throw RuntimeException("No ReactContext associated with BlobProvider")
       blobModule = reactContext.getNativeModule(BlobModule::class.java)
     }

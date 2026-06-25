@@ -493,7 +493,6 @@ TEST(
 TEST(
     LayoutAnimationTest,
     stableSmallerTreeFewRepeatsFewStages_Overlapping_ManyConflicts_597132284) {
-  GTEST_SKIP();
   testShadowNodeTreeLifeCycleLayoutAnimations(
       /* seed */ 597132284,
       /* size */ 128,
@@ -514,7 +513,6 @@ TEST(
 TEST(
     LayoutAnimationTest,
     stableBiggerTreeFewRepeatsManyStages_Overlapping_ManyConflicts_2029343357) {
-  GTEST_SKIP();
   testShadowNodeTreeLifeCycleLayoutAnimations(
       /* seed */ 2029343357,
       /* size */ 512,

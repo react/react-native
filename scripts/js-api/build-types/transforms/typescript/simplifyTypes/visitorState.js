@@ -16,6 +16,7 @@ const t = require('@babel/types');
 
 export type BaseVisitorState = {
   aliasToPathMap: Map<string, NodePath<t.TSTypeAliasDeclaration>>,
+  interfaceToPathMap?: Map<string, NodePath<t.TSInterfaceDeclaration>>,
   parentTypeAliases?: Set<string>,
   nodeToAliasMap: Map<t.Node, string>,
   ...

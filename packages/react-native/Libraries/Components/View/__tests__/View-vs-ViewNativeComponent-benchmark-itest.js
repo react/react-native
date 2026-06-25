@@ -22,7 +22,7 @@ let testViews: React.MixedElement;
 const NUMBER_OF_VIEWS = 100;
 const NUMBER_OF_ITERATIONS = 1000;
 
-component Noop(children: React.Node, style?: mixed) {
+component Noop(children: React.Node, style?: unknown) {
   return children;
 }
 

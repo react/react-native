@@ -17,7 +17,7 @@ const {
 } = require('./SampleLegacyModuleExample');
 const React = require('react');
 
-exports.displayName = (undefined: ?string);
+exports.displayName = undefined as ?string;
 exports.title = 'Legacy Native Module';
 exports.category = 'Basic';
 exports.description = 'Usage of legacy Native Module';

@@ -24,6 +24,7 @@ enum PropName {
   POSITION,
   FLEX,
   TRANSFORM,
+  TRANSFORM_ORIGIN,
   BACKGROUND_COLOR,
   SHADOW_COLOR,
   SHADOW_OFFSET,
@@ -33,7 +34,37 @@ enum PropName {
   OUTLINE_COLOR,
   OUTLINE_OFFSET,
   OUTLINE_STYLE,
-  OUTLINE_WIDTH
+  OUTLINE_WIDTH,
+  ALIGN_CONTENT,
+  ALIGN_ITEMS,
+  ALIGN_SELF,
+  ASPECT_RATIO,
+  BOX_SIZING,
+  DISPLAY,
+  FLEX_BASIS,
+  FLEX_DIRECTION,
+  ROW_GAP,
+  COLUMN_GAP,
+  FLEX_GROW,
+  FLEX_SHRINK,
+  FLEX_WRAP,
+  JUSTIFY_CONTENT,
+  MAX_HEIGHT,
+  MAX_WIDTH,
+  MIN_HEIGHT,
+  MIN_WIDTH,
+  STYLE_OVERFLOW,
+  POSITION_TYPE,
+  Z_INDEX,
+  DIRECTION,
+  BORDER_CURVES,
+  BORDER_STYLES,
+  POINTER_EVENTS,
+  ISOLATION,
+  CURSOR,
+  BOX_SHADOW,
+  MIX_BLEND_MODE,
+  BACKFACE_VISIBILITY
 };
 
 struct AnimatedPropBase {
@@ -225,6 +256,10 @@ inline void cloneProp(BaseViewProps &viewProps, const AnimatedPropBase &animated
       viewProps.transform = get<Transform>(animatedProp);
       break;
 
+    case TRANSFORM_ORIGIN:
+      viewProps.transformOrigin = get<TransformOrigin>(animatedProp);
+      break;
+
     case BACKGROUND_COLOR:
       viewProps.backgroundColor = get<SharedColor>(animatedProp);
       break;
@@ -263,6 +298,126 @@ inline void cloneProp(BaseViewProps &viewProps, const AnimatedPropBase &animated
 
     case OUTLINE_WIDTH:
       viewProps.outlineWidth = get<Float>(animatedProp);
+      break;
+
+    case ALIGN_CONTENT:
+      viewProps.yogaStyle.setAlignContent(get<yoga::Align>(animatedProp));
+      break;
+
+    case ALIGN_ITEMS:
+      viewProps.yogaStyle.setAlignItems(get<yoga::Align>(animatedProp));
+      break;
+
+    case ALIGN_SELF:
+      viewProps.yogaStyle.setAlignSelf(get<yoga::Align>(animatedProp));
+      break;
+
+    case ASPECT_RATIO:
+      viewProps.yogaStyle.setAspectRatio(get<yoga::FloatOptional>(animatedProp));
+      break;
+
+    case BOX_SIZING:
+      viewProps.yogaStyle.setBoxSizing(get<yoga::BoxSizing>(animatedProp));
+      break;
+
+    case DISPLAY:
+      viewProps.yogaStyle.setDisplay(get<yoga::Display>(animatedProp));
+      break;
+
+    case FLEX_BASIS:
+      viewProps.yogaStyle.setFlexBasis(get<yoga::Style::SizeLength>(animatedProp));
+      break;
+
+    case FLEX_DIRECTION:
+      viewProps.yogaStyle.setFlexDirection(get<yoga::FlexDirection>(animatedProp));
+      break;
+
+    case ROW_GAP:
+      viewProps.yogaStyle.setGap(yoga::Gutter::Row, get<yoga::Style::Length>(animatedProp));
+      break;
+
+    case COLUMN_GAP:
+      viewProps.yogaStyle.setGap(yoga::Gutter::Column, get<yoga::Style::Length>(animatedProp));
+      break;
+
+    case FLEX_GROW:
+      viewProps.yogaStyle.setFlexGrow(get<yoga::FloatOptional>(animatedProp));
+      break;
+
+    case FLEX_SHRINK:
+      viewProps.yogaStyle.setFlexShrink(get<yoga::FloatOptional>(animatedProp));
+      break;
+
+    case FLEX_WRAP:
+      viewProps.yogaStyle.setFlexWrap(get<yoga::Wrap>(animatedProp));
+      break;
+
+    case JUSTIFY_CONTENT:
+      viewProps.yogaStyle.setJustifyContent(get<yoga::Justify>(animatedProp));
+      break;
+
+    case MAX_HEIGHT:
+      viewProps.yogaStyle.setMaxDimension(yoga::Dimension::Height, get<yoga::Style::SizeLength>(animatedProp));
+      break;
+
+    case MAX_WIDTH:
+      viewProps.yogaStyle.setMaxDimension(yoga::Dimension::Width, get<yoga::Style::SizeLength>(animatedProp));
+      break;
+
+    case MIN_HEIGHT:
+      viewProps.yogaStyle.setMinDimension(yoga::Dimension::Height, get<yoga::Style::SizeLength>(animatedProp));
+      break;
+
+    case MIN_WIDTH:
+      viewProps.yogaStyle.setMinDimension(yoga::Dimension::Width, get<yoga::Style::SizeLength>(animatedProp));
+      break;
+
+    case STYLE_OVERFLOW:
+      viewProps.yogaStyle.setOverflow(get<yoga::Overflow>(animatedProp));
+      break;
+
+    case POSITION_TYPE:
+      viewProps.yogaStyle.setPositionType(get<yoga::PositionType>(animatedProp));
+      break;
+
+    case Z_INDEX:
+      viewProps.zIndex = get<std::optional<int>>(animatedProp);
+      break;
+
+    case DIRECTION:
+      viewProps.yogaStyle.setDirection(get<yoga::Direction>(animatedProp));
+      break;
+
+    case BORDER_CURVES:
+      viewProps.borderCurves = get<CascadedBorderCurves>(animatedProp);
+      break;
+
+    case BORDER_STYLES:
+      viewProps.borderStyles = get<CascadedBorderStyles>(animatedProp);
+      break;
+
+    case POINTER_EVENTS:
+      viewProps.pointerEvents = get<PointerEventsMode>(animatedProp);
+      break;
+
+    case ISOLATION:
+      viewProps.isolation = get<Isolation>(animatedProp);
+      break;
+
+    case CURSOR:
+      viewProps.cursor = get<Cursor>(animatedProp);
+      break;
+
+    case BOX_SHADOW:
+      viewProps.boxShadow = get<std::vector<BoxShadow>>(animatedProp);
+      break;
+
+    case MIX_BLEND_MODE:
+      viewProps.mixBlendMode = get<BlendMode>(animatedProp);
+      break;
+
+    case BACKFACE_VISIBILITY:
+      viewProps.backfaceVisibility = get<BackfaceVisibility>(animatedProp);
       break;
 
     default:

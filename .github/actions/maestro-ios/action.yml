@@ -16,7 +16,7 @@ inputs:
     default: Release
   working-directory:
     required: false
-    default: "."
+    default: '.'
     description: The directory from which metro should be started
 
 runs:
@@ -24,13 +24,13 @@ runs:
   steps:
     - name: Installing Maestro
       shell: bash
-      run: export MAESTRO_VERSION=1.40.0; curl -Ls "https://get.maestro.mobile.dev" | bash
+      run: export MAESTRO_VERSION=2.6.1; curl -Ls "https://get.maestro.mobile.dev" | bash
     - name: Installing Maestro dependencies
       shell: bash
       run: |
         brew tap facebook/fb
         brew install facebook/fb/idb-companion
-    - name: Set up JDK 11
+    - name: Set up JDK 17
       uses: actions/setup-java@v5
       with:
         java-version: '17'
@@ -69,6 +69,7 @@ runs:
       uses: actions/upload-artifact@v6
       with:
         name: e2e_ios_${{ inputs.app-id }}_report_${{ inputs.flavor }}_NewArch
+        overwrite: true
         path: |
           video_record_1.mov
           video_record_2.mov
@@ -81,4 +82,5 @@ runs:
       uses: actions/upload-artifact@v6
       with:
         name: maestro-logs-${{ inputs.app-id }}-${{ inputs.flavor }}-NewArch
+        overwrite: true
         path: /tmp/MaestroLogs

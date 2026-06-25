@@ -92,19 +92,18 @@ internal class InsetBoxShadowDrawable(
             bounds.right - (computedBorderInsets?.right ?: 0f),
             bounds.bottom - (computedBorderInsets?.bottom ?: 0f),
         )
-    val paddingBoxRadii =
-        computedBorderRadii?.let {
-          floatArrayOf(
-              innerRadius(it.topLeft.horizontal, computedBorderInsets?.left),
-              innerRadius(it.topLeft.vertical, computedBorderInsets?.top),
-              innerRadius(it.topRight.horizontal, computedBorderInsets?.right),
-              innerRadius(it.topRight.vertical, computedBorderInsets?.top),
-              innerRadius(it.bottomRight.horizontal, computedBorderInsets?.right),
-              innerRadius(it.bottomRight.vertical, computedBorderInsets?.bottom),
-              innerRadius(it.bottomLeft.horizontal, computedBorderInsets?.left),
-              innerRadius(it.bottomLeft.vertical, computedBorderInsets?.bottom),
-          )
-        }
+    val paddingBoxRadii = computedBorderRadii?.let {
+      floatArrayOf(
+          innerRadius(it.topLeft.horizontal, computedBorderInsets?.left),
+          innerRadius(it.topLeft.vertical, computedBorderInsets?.top),
+          innerRadius(it.topRight.horizontal, computedBorderInsets?.right),
+          innerRadius(it.topRight.vertical, computedBorderInsets?.top),
+          innerRadius(it.bottomRight.horizontal, computedBorderInsets?.right),
+          innerRadius(it.bottomRight.vertical, computedBorderInsets?.bottom),
+          innerRadius(it.bottomLeft.horizontal, computedBorderInsets?.left),
+          innerRadius(it.bottomLeft.vertical, computedBorderInsets?.bottom),
+      )
+    }
 
     val x = offsetX.dpToPx()
     val y = offsetY.dpToPx()

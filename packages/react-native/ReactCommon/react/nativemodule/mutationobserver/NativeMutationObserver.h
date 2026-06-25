@@ -7,7 +7,11 @@
 
 #pragma once
 
+#if __has_include("FBReactNativeSpecJSI.h") // CocoaPod headers on Apple
+#include "FBReactNativeSpecJSI.h"
+#else
 #include <FBReactNativeSpec/FBReactNativeSpecJSI.h>
+#endif
 #include <react/renderer/bridging/bridging.h>
 #include <react/renderer/observers/mutation/MutationObserverManager.h>
 #include <react/renderer/uimanager/UIManager.h>

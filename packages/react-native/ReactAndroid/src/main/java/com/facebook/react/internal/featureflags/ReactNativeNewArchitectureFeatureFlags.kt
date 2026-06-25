@@ -36,18 +36,6 @@ public object ReactNativeNewArchitectureFeatureFlags {
   }
 
   @JvmStatic
-  public fun enableFabricRenderer(): Boolean {
-    if (ReactBuildConfig.UNSTABLE_ENABLE_MINIFY_LEGACY_ARCHITECTURE) {
-      Assertions.assertCondition(
-          ReactNativeFeatureFlags.enableFabricRenderer(),
-          "ReactNativeFeatureFlags.enableFabricRenderer() should be set to TRUE when Strict Mode is enabled",
-      )
-      return true
-    }
-    return ReactNativeFeatureFlags.enableFabricRenderer()
-  }
-
-  @JvmStatic
   public fun useFabricInterop(): Boolean {
     if (ReactBuildConfig.UNSTABLE_ENABLE_MINIFY_LEGACY_ARCHITECTURE) {
       Assertions.assertCondition(
@@ -69,17 +57,5 @@ public object ReactNativeNewArchitectureFeatureFlags {
       return false
     }
     return ReactNativeFeatureFlags.useTurboModuleInterop()
-  }
-
-  @JvmStatic
-  public fun useTurboModules(): Boolean {
-    if (ReactBuildConfig.UNSTABLE_ENABLE_MINIFY_LEGACY_ARCHITECTURE) {
-      Assertions.assertCondition(
-          ReactNativeFeatureFlags.useTurboModules(),
-          "ReactNativeFeatureFlags.useTurboModules() should be set to TRUE when Strict Mode is enabled",
-      )
-      return true
-    }
-    return ReactNativeFeatureFlags.useTurboModules()
   }
 }

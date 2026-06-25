@@ -16,10 +16,10 @@ import type {ViewStyleProp} from 'react-native/Libraries/StyleSheet/StyleSheet';
 import RNTesterBlock from '../../components/RNTesterBlock';
 import RNTesterPage from '../../components/RNTesterPage';
 import RNTesterText from '../../components/RNTesterText';
-import React from 'react';
+import * as React from 'react';
 import {StyleSheet, View} from 'react-native';
 
-type CicleProps = $ReadOnly<{
+type CicleProps = Readonly<{
   backgroundColor?: string,
   size?: number,
 }>;
@@ -41,7 +41,7 @@ function Circle({
   );
 }
 
-type CircleBlockProps = $ReadOnly<{
+type CircleBlockProps = Readonly<{
   children: React.Node,
   style: ViewStyleProp,
 }>;

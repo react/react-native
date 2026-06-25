@@ -44,7 +44,6 @@ class StubView final {
 };
 
 bool operator==(const StubView &lhs, const StubView &rhs);
-bool operator!=(const StubView &lhs, const StubView &rhs);
 
 #if RN_DEBUG_STRING_CONVERTIBLE
 

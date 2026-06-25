@@ -62,42 +62,7 @@ class ImageRequestParams {
   std::string analyticTag{};
   Size size{};
 
-  bool operator==(const ImageRequestParams &rhs) const
-  {
-    return std::tie(
-               this->blurRadius,
-               this->defaultSource,
-               this->resizeMode,
-               this->resizeMethod,
-               this->resizeMultiplier,
-               this->shouldNotifyLoadEvents,
-               this->overlayColor,
-               this->tintColor,
-               this->fadeDuration,
-               this->progressiveRenderingEnabled,
-               this->loadingIndicatorSource,
-               this->analyticTag,
-               this->size) ==
-        std::tie(
-               rhs.blurRadius,
-               rhs.defaultSource,
-               rhs.resizeMode,
-               rhs.resizeMethod,
-               rhs.resizeMultiplier,
-               rhs.shouldNotifyLoadEvents,
-               rhs.overlayColor,
-               rhs.tintColor,
-               rhs.fadeDuration,
-               rhs.progressiveRenderingEnabled,
-               rhs.loadingIndicatorSource,
-               rhs.analyticTag,
-               rhs.size);
-  }
-
-  bool operator!=(const ImageRequestParams &rhs) const
-  {
-    return !(*this == rhs);
-  }
+  bool operator==(const ImageRequestParams &rhs) const = default;
 };
 
 struct ImageRequestItem {

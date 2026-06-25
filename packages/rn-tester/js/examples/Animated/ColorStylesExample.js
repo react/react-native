@@ -17,7 +17,7 @@ import * as React from 'react';
 import {useState} from 'react';
 import {Animated, StyleSheet, Text, View} from 'react-native';
 
-function AnimatedView({useNativeDriver}: {useNativeDriver: boolean}) {
+component AnimatedView(useNativeDriver: boolean) {
   const animations = [];
 
   const animatedViewStyle = {
@@ -123,7 +123,7 @@ function AnimatedView({useNativeDriver}: {useNativeDriver: boolean}) {
   );
 }
 
-function AnimatedColorStyleExample(): React.Node {
+component AnimatedColorStyleExample() {
   const [useNativeDriver, setUseNativeDriver] = useState(false);
 
   return (
@@ -162,9 +162,9 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ({
+export default {
   title: 'Color Styles',
   name: 'colorStyles',
   description: 'Animations of color styles.',
   render: () => <AnimatedColorStyleExample />,
-}: RNTesterModuleExample);
+} as RNTesterModuleExample;

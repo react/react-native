@@ -15,8 +15,7 @@ void MessageQueueThreadImpl::runOnQueue(std::function<void()>&& runnable) {
   if (!taskDispatchThread_.isRunning()) {
     return;
   }
-  taskDispatchThread_.runAsync(
-      [runnable = std::move(runnable)]() noexcept { runnable(); });
+  taskDispatchThread_.runAsync(std::move(runnable));
 }
 
 void MessageQueueThreadImpl::runOnQueueSync(std::function<void()>&& runnable) {
@@ -26,8 +25,7 @@ void MessageQueueThreadImpl::runOnQueueSync(std::function<void()>&& runnable) {
   if (taskDispatchThread_.isOnThread()) {
     runnable();
   } else {
-    taskDispatchThread_.runSync(
-        [runnable = std::move(runnable)]() noexcept { runnable(); });
+    taskDispatchThread_.runSync(std::move(runnable));
   }
 }
 

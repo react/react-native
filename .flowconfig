@@ -8,9 +8,6 @@
 ; Ignore the codegen e2e tests
 <PROJECT_ROOT>/packages/react-native-codegen/e2e/__test_fixtures__/modules/NativeEnumTurboModule.js
 
-; Ignore the Dangerfile
-<PROJECT_ROOT>/private/react-native-bots/dangerfile.js
-
 ; Ignore "BUCK" generated dirs
 <PROJECT_ROOT>/\.buckd/
 
@@ -42,18 +39,10 @@
 
 [libs]
 flow-typed/
-packages/react-native/interface.js
 packages/react-native/flow/
 
 [options]
-enums=true
-experimental.pattern_matching=true
-casting_syntax=both
-component_syntax=true
-
 emoji=true
-
-exact_by_default=true
 
 format.bracket_spacing=false
 
@@ -74,6 +63,11 @@ module.name_mapper='^@?[./a-zA-Z0-9$_-]+\.\(bmp\|gif\|jpg\|jpeg\|png\|psd\|svg\|
 module.system.haste.module_ref_prefix=m#
 
 react.runtime=automatic
+
+experimental.deprecated_utilities.excludes=<PROJECT_ROOT>/packages/react-native/Libraries/Renderer/shims/ReactNativeTypes.js
+experimental.deprecated_utilities.excludes=<PROJECT_ROOT>/packages/react-native/Libraries/Renderer/shims/ReactNativeViewConfigRegistry.js
+experimental.deprecated_colon_extends.excludes=<PROJECT_ROOT>/packages/react-native/Libraries/Renderer/shims/ReactNativeTypes.js
+experimental.deprecated_variance_sigils.excludes=<PROJECT_ROOT>/packages/react-native/Libraries/Renderer/shims/ReactNativeTypes.js
 
 ban_spread_key_props=true
 
@@ -98,4 +92,4 @@ untyped-import
 untyped-type-import
 
 [version]
-^0.294.0
+^0.319.0

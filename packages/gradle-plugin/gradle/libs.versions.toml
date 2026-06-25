@@ -1,10 +1,10 @@
 [versions]
-agp = "8.12.0"
+agp = "9.2.1"
 gson = "2.8.9"
 guava = "31.0.1-jre"
 javapoet = "1.13.0"
 junit = "4.13.2"
-kotlin = "2.1.20"
+kotlin = "2.2.0"
 assertj = "3.25.1"
 ktfmt = "0.22.0"
 

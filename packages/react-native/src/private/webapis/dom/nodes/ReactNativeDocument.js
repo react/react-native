@@ -139,3 +139,14 @@ export function createReactNativeDocument(
   const document = new ReactNativeDocument(rootTag, instanceHandle);
   return document;
 }
+
+export const ReactNativeDocument_public: typeof ReactNativeDocument =
+  // $FlowExpectedError[incompatible-type]
+  function Document() {
+    throw new TypeError(
+      "Failed to construct 'Document': Nodes cannot be imperatively created in React Native",
+    );
+  };
+
+// $FlowExpectedError[prop-missing]
+ReactNativeDocument_public.prototype = ReactNativeDocument.prototype;

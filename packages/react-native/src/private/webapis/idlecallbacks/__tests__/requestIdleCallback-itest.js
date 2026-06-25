@@ -13,8 +13,8 @@ import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 import * as Fantom from '@react-native/fantom';
 
 interface IdleDeadline {
-  +didTimeout: boolean;
-  +timeRemaining: () => number;
+  readonly didTimeout: boolean;
+  readonly timeRemaining: () => number;
 }
 
 function activeSleep(timeMs: number): void {
@@ -90,7 +90,11 @@ describe('requestIdleCallback', () => {
       activeSleep(20);
 
       const finalTimeRemaining = idleDeadline.timeRemaining();
-      expect(finalTimeRemaining).toBeLessThanOrEqual(30);
+      // We slept ~20 ms out of a ~50 ms budget, so at least ~18 ms should
+      // have been consumed. We compare against initialTimeRemaining (rather
+      // than baking in the 50 ms budget) so the assertion is robust against
+      // sub-millisecond drift in the busy-wait sleep.
+      expect(finalTimeRemaining).toBeLessThanOrEqual(initialTimeRemaining - 18);
     };
 
     Fantom.runTask(async () => {

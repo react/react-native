@@ -35,7 +35,7 @@ type PrimitiveTypeAnnotationType =
   | 'FloatTypeAnnotation'
   | 'BooleanTypeAnnotation';
 
-const PRIMITIVES: $ReadOnlyArray<[string, PrimitiveTypeAnnotationType]> = [
+const PRIMITIVES: ReadonlyArray<[string, PrimitiveTypeAnnotationType]> = [
   ['string', 'StringTypeAnnotation'],
   ['number', 'NumberTypeAnnotation'],
   ['Int32', 'Int32TypeAnnotation'],
@@ -44,9 +44,7 @@ const PRIMITIVES: $ReadOnlyArray<[string, PrimitiveTypeAnnotationType]> = [
   ['boolean', 'BooleanTypeAnnotation'],
 ];
 
-const RESERVED_FUNCTION_VALUE_TYPE_NAME: $ReadOnlyArray<'RootTag'> = [
-  'RootTag',
-];
+const RESERVED_FUNCTION_VALUE_TYPE_NAME: ReadonlyArray<'RootTag'> = ['RootTag'];
 
 const MODULE_NAME = 'NativeFoo';
 
@@ -419,7 +417,7 @@ describe('Flow Module Parser', () => {
               propName: string,
               propType: string,
             ): [
-              $ReadOnly<{
+              Readonly<{
                 name: string,
                 optional: boolean,
                 typeAnnotation: NativeModuleBaseTypeAnnotation,
@@ -954,7 +952,7 @@ describe('Flow Module Parser', () => {
                 propName: string,
                 propType: string,
               ): [
-                $ReadOnly<{
+                Readonly<{
                   name: string,
                   optional: boolean,
                   typeAnnotation: NativeModuleBaseTypeAnnotation,

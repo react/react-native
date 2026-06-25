@@ -6,7 +6,6 @@
  */
 
 #include "ComponentFactory.h"
-#include <android/log.h>
 #include <fbjni/fbjni.h>
 #include <jsi/jsi.h>
 #include <react/renderer/componentregistry/ComponentDescriptorRegistry.h>

@@ -1,0 +1,13 @@
+struct test::MyType {
+}
+
+template <typename T>
+class test::Wrapper {
+  public T get();
+  public void set(T value);
+}
+
+class test::Wrapper<test::MyType*> {
+  public test::MyType* get();
+  public void set(test::MyType* value);
+}

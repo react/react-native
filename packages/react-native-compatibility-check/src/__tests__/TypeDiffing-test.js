@@ -242,17 +242,23 @@ describe('components', () => {
           {},
           {},
         ),
-      ).toEqual({
-        status: 'unionMembers',
-        memberLog: {
-          addedMembers: [
-            {
-              type: 'StringLiteralTypeAnnotation',
-              value: 'baz',
-            },
-          ],
-        },
-      });
+      ).toEqual(
+        expect.objectContaining({
+          status: 'members',
+          memberLog: {
+            memberKind: 'union',
+            addedMembers: [
+              {
+                type: 'StringLiteralTypeAnnotation',
+                value: 'baz',
+              },
+            ],
+          },
+          errorLog: expect.objectContaining({
+            type: 'TypeAnnotationComparisonError',
+          }),
+        }),
+      );
     });
 
     it('array of an object to an extra key not compatible', () => {
@@ -515,6 +521,9 @@ describe('compareTypes objects', () => {
         propertyLog: expect.objectContaining({
           addedProperties: expect.any(Object),
         }),
+        errorLog: expect.objectContaining({
+          type: 'TypeAnnotationComparisonError',
+        }),
       }),
     );
   });
@@ -532,6 +541,9 @@ describe('compareTypes objects', () => {
         status: 'properties',
         propertyLog: expect.objectContaining({
           missingProperties: expect.any(Object),
+        }),
+        errorLog: expect.objectContaining({
+          type: 'TypeAnnotationComparisonError',
         }),
       }),
     );
@@ -610,6 +622,9 @@ describe('compareTypes objects', () => {
         propertyLog: expect.objectContaining({
           madeStrict: expect.any(Object),
         }),
+        errorLog: expect.objectContaining({
+          type: 'TypeAnnotationComparisonError',
+        }),
       }),
     );
   });
@@ -627,6 +642,9 @@ describe('compareTypes objects', () => {
         status: 'properties',
         propertyLog: expect.objectContaining({
           madeOptional: expect.any(Object),
+        }),
+        errorLog: expect.objectContaining({
+          type: 'TypeAnnotationComparisonError',
         }),
       }),
     );
@@ -646,9 +664,17 @@ describe('compareTypes objects', () => {
         propertyLog: expect.objectContaining({
           madeStrict: expect.objectContaining({
             '0': expect.objectContaining({
-              furtherChange: expect.objectContaining({status: 'properties'}),
+              furtherChange: expect.objectContaining({
+                status: 'properties',
+                errorLog: expect.objectContaining({
+                  type: 'TypeAnnotationComparisonError',
+                }),
+              }),
             }),
           }),
+        }),
+        errorLog: expect.objectContaining({
+          type: 'TypeAnnotationComparisonError',
         }),
       }),
     );
@@ -668,9 +694,17 @@ describe('compareTypes objects', () => {
         propertyLog: expect.objectContaining({
           madeOptional: expect.objectContaining({
             '0': expect.objectContaining({
-              furtherChange: expect.objectContaining({status: 'properties'}),
+              furtherChange: expect.objectContaining({
+                status: 'properties',
+                errorLog: expect.objectContaining({
+                  type: 'TypeAnnotationComparisonError',
+                }),
+              }),
             }),
           }),
+        }),
+        errorLog: expect.objectContaining({
+          type: 'TypeAnnotationComparisonError',
         }),
       }),
     );
@@ -1011,9 +1045,13 @@ describe('compareTypes unions', () => {
       ).functionChangeLog.parameterTypes.nestedChanges[0][2],
     ).toEqual(
       expect.objectContaining({
-        status: 'unionMembers',
+        status: 'members',
         memberLog: expect.objectContaining({
+          memberKind: 'union',
           missingMembers: expect.any(Array),
+        }),
+        errorLog: expect.objectContaining({
+          type: 'TypeAnnotationComparisonError',
         }),
       }),
     );
@@ -1162,6 +1200,7 @@ describe('compareTypes on generic types', () => {
         propertyLog: expect.objectContaining({
           missingProperties: expect.any(Object),
         }),
+        errorLog: expect.any(Object),
       }),
     );
   });
@@ -1198,17 +1237,23 @@ describe('compareTypes on string literal unions', () => {
         nativeTypeDiffingTypesAliases,
         nativeTypeDiffingTypesAliases,
       ),
-    ).toEqual({
-      status: 'unionMembers',
-      memberLog: {
-        missingMembers: [
-          {
-            type: 'StringLiteralTypeAnnotation',
-            value: 'd',
-          },
-        ],
-      },
-    });
+    ).toEqual(
+      expect.objectContaining({
+        status: 'members',
+        memberLog: {
+          memberKind: 'union',
+          missingMembers: [
+            {
+              type: 'StringLiteralTypeAnnotation',
+              value: 'd',
+            },
+          ],
+        },
+        errorLog: expect.objectContaining({
+          type: 'TypeAnnotationComparisonError',
+        }),
+      }),
+    );
   });
 
   it('fails on unions with differing elements', () => {
@@ -1219,23 +1264,29 @@ describe('compareTypes on string literal unions', () => {
         nativeTypeDiffingTypesAliases,
         nativeTypeDiffingTypesAliases,
       ),
-    ).toEqual({
-      status: 'unionMembers',
-      memberLog: {
-        addedMembers: [
-          {
-            type: 'StringLiteralTypeAnnotation',
-            value: 'b',
-          },
-        ],
-        missingMembers: [
-          {
-            type: 'StringLiteralTypeAnnotation',
-            value: 'x',
-          },
-        ],
-      },
-    });
+    ).toEqual(
+      expect.objectContaining({
+        status: 'members',
+        memberLog: {
+          memberKind: 'union',
+          addedMembers: [
+            {
+              type: 'StringLiteralTypeAnnotation',
+              value: 'b',
+            },
+          ],
+          missingMembers: [
+            {
+              type: 'StringLiteralTypeAnnotation',
+              value: 'x',
+            },
+          ],
+        },
+        errorLog: expect.objectContaining({
+          type: 'TypeAnnotationComparisonError',
+        }),
+      }),
+    );
   });
 });
 
@@ -1266,6 +1317,9 @@ describe('compareTypes on nullables', () => {
           optionsReduced: true,
           interiorLog: expect.objectContaining({status: 'matching'}),
         }),
+        errorLog: expect.objectContaining({
+          type: 'TypeAnnotationComparisonError',
+        }),
       }),
     );
   });
@@ -1285,6 +1339,9 @@ describe('compareTypes on nullables', () => {
           optionsReduced: false,
           interiorLog: expect.objectContaining({status: 'matching'}),
         }),
+        errorLog: expect.objectContaining({
+          type: 'TypeAnnotationComparisonError',
+        }),
       }),
     );
   });
@@ -1302,7 +1359,15 @@ describe('compareTypes on nullables', () => {
         status: 'nullableChange',
         nullableLog: expect.objectContaining({
           optionsReduced: true,
-          interiorLog: expect.objectContaining({status: 'properties'}),
+          interiorLog: expect.objectContaining({
+            status: 'properties',
+            errorLog: expect.objectContaining({
+              type: 'TypeAnnotationComparisonError',
+            }),
+          }),
+        }),
+        errorLog: expect.objectContaining({
+          type: 'TypeAnnotationComparisonError',
         }),
       }),
     );
@@ -1377,6 +1442,7 @@ describe('compareTypes on enums', () => {
       expect.objectContaining({
         status: 'members',
         memberLog: expect.objectContaining({
+          memberKind: 'enum',
           missingMembers: expect.arrayContaining([
             expect.objectContaining({
               name: 'D',
@@ -1385,6 +1451,9 @@ describe('compareTypes on enums', () => {
               }),
             }),
           ]),
+        }),
+        errorLog: expect.objectContaining({
+          type: 'TypeAnnotationComparisonError',
         }),
       }),
     );
@@ -1404,6 +1473,7 @@ describe('compareTypes on enums', () => {
       expect.objectContaining({
         status: 'members',
         memberLog: expect.objectContaining({
+          memberKind: 'enum',
           addedMembers: expect.arrayContaining([
             expect.objectContaining({
               name: 'D',
@@ -1412,6 +1482,9 @@ describe('compareTypes on enums', () => {
               }),
             }),
           ]),
+        }),
+        errorLog: expect.objectContaining({
+          type: 'TypeAnnotationComparisonError',
         }),
       }),
     );

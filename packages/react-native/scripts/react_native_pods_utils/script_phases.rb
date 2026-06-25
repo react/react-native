@@ -35,9 +35,15 @@ end
 
 def get_script_template(react_native_path, export_vars={})
     template =<<~EOS
-        pushd "$PODS_ROOT/../" > /dev/null
-        RCT_SCRIPT_POD_INSTALLATION_ROOT=$(pwd)
-        popd >/dev/null
+        # Use PODFILE_DIR (set by react_native_post_install) to locate the
+        # Podfile directory. PODS_ROOT/.. does not work when Pods/ is a symlink.
+        if [ -n "$PODFILE_DIR" ]; then
+          RCT_SCRIPT_POD_INSTALLATION_ROOT="$PODFILE_DIR"
+        else
+          pushd "$PODS_ROOT/../" > /dev/null
+          RCT_SCRIPT_POD_INSTALLATION_ROOT=$(pwd)
+          popd >/dev/null
+        fi
         <% export_vars.each do |(varname, value)| %>
         export <%= varname -%>=<%= value -%>
         <% end %>

@@ -53,8 +53,9 @@ static RCTSource *RCTSourceCreate(NSURL *url, NSData *data, int64_t length) NS_R
 {
   NSMutableString *desc = [NSMutableString new];
   [desc appendString:_status ?: @"Bundling"];
-
-  if ([_total integerValue] > 0 && [_done integerValue] > [_total integerValue]) {
+  if (_percent != nil) {
+    [desc appendFormat:@" %ld%%", (long)[_percent integerValue]];
+  } else if ([_total integerValue] > 0 && [_done integerValue] > [_total integerValue]) {
     [desc appendFormat:@" %ld%%", (long)100];
   } else if ([_total integerValue] > 0) {
     [desc appendFormat:@" %ld%%", (long)(100 * [_done integerValue] / [_total integerValue])];
@@ -348,6 +349,9 @@ static RCTLoadingProgress *progressEventFromData(NSData *rawData)
   progress.status = info[@"status"];
   progress.done = info[@"done"];
   progress.total = info[@"total"];
+  if (info[@"percent"] != nil) {
+    progress.percent = info[@"percent"];
+  }
   return progress;
 }
 

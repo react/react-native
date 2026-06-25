@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
+#import <React/RCTDefines.h>
 #import <React/RCTMultipartStreamReader.h>
 
 typedef void (^RCTMultipartDataTaskCallback)(
@@ -15,6 +16,14 @@ typedef void (^RCTMultipartDataTaskCallback)(
     NSData *content,
     NSError *error,
     BOOL done);
+
+typedef NSURLRequest *_Nullable (^RCTMultipartDataTaskRequestInterceptor)(NSURLRequest *request);
+/**
+ * The block provided via this function can inspect/modify multipart data task
+ * requests before they are sent. Return a modified request to override, or nil
+ * to use the original request unchanged.
+ */
+RCT_EXTERN void RCTSetCustomMultipartDataTaskRequestInterceptor(RCTMultipartDataTaskRequestInterceptor /*interceptor*/);
 
 @interface RCTMultipartDataTask : NSObject
 

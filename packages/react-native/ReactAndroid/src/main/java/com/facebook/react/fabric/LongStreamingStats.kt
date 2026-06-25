@@ -49,14 +49,14 @@ internal class LongStreamingStats {
 
   val median: Double
     get() {
-      if (minHeap.size == 0 && maxHeap.size == 0) {
+      if (minHeap.isEmpty() && maxHeap.isEmpty()) {
         return 0.0
       }
       val median =
           if (minHeap.size > maxHeap.size) {
             minHeap.peek()
           } else {
-            (minHeap.peek() ?: 0 + maxHeap.peek()!!) / 2
+            ((minHeap.peek() ?: 0L) + (maxHeap.peek() ?: 0L)) / 2
           }
       return median.toDouble()
     }

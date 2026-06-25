@@ -7,6 +7,8 @@
 
 #include "RCTInteropTurboModule.h"
 
+#ifndef RCT_REMOVE_LEGACY_MODULE_INTEROP
+
 #import <objc/message.h>
 #import <objc/runtime.h>
 
@@ -694,3 +696,5 @@ std::vector<facebook::jsi::PropNameID> ObjCInteropTurboModule::getPropertyNames(
 }
 
 } // namespace facebook::react
+
+#endif // RCT_REMOVE_LEGACY_MODULE_INTEROP

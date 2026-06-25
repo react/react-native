@@ -9,8 +9,10 @@
  */
 
 import type {ColorValue} from '../../StyleSheet/StyleSheet';
+import type {EventSubscription} from '../../vendor/emitter/EventEmitter';
 
 import processColor from '../../StyleSheet/processColor';
+import * as Appearance from '../../Utilities/Appearance';
 import Platform from '../../Utilities/Platform';
 import NativeStatusBarManagerAndroid from './NativeStatusBarManagerAndroid';
 import NativeStatusBarManagerIOS from './NativeStatusBarManagerIOS';
@@ -20,11 +22,16 @@ import * as React from 'react';
 /**
  * Status bar style
  */
-export type StatusBarStyle = $Keys<{
+export type StatusBarStyle = keyof {
   /**
    * Default status bar style (dark for iOS, light for Android)
    */
   default: string,
+  /**
+   * Automatically picks `light-content` or `dark-content` based on the current
+   * color scheme. Updates whenever the color scheme changes.
+   */
+  auto: string,
   /**
    * Dark background, white texts and icons
    */
@@ -34,12 +41,12 @@ export type StatusBarStyle = $Keys<{
    */
   'dark-content': string,
   ...
-}>;
+};
 
 /**
  * Status bar animation
  */
-export type StatusBarAnimation = $Keys<{
+export type StatusBarAnimation = keyof {
   /**
    * No animation
    */
@@ -53,9 +60,9 @@ export type StatusBarAnimation = $Keys<{
    */
   slide: string,
   ...
-}>;
+};
 
-export type StatusBarPropsAndroid = $ReadOnly<{
+export type StatusBarPropsAndroid = Readonly<{
   /**
    * The background color of the status bar.
    *
@@ -76,7 +83,7 @@ export type StatusBarPropsAndroid = $ReadOnly<{
   translucent?: ?boolean,
 }>;
 
-export type StatusBarPropsIOS = $ReadOnly<{
+export type StatusBarPropsIOS = Readonly<{
   /**
    * If the network activity indicator should be visible.
    *
@@ -92,7 +99,7 @@ export type StatusBarPropsIOS = $ReadOnly<{
   showHideTransition?: ?('fade' | 'slide' | 'none'),
 }>;
 
-type StatusBarBaseProps = $ReadOnly<{
+type StatusBarBaseProps = Readonly<{
   /**
    * If the status bar is hidden.
    */
@@ -105,10 +112,10 @@ type StatusBarBaseProps = $ReadOnly<{
   /**
    * Sets the color of the status bar text.
    */
-  barStyle?: ?('default' | 'light-content' | 'dark-content'),
+  barStyle?: ?('default' | 'auto' | 'light-content' | 'dark-content'),
 }>;
 
-export type StatusBarProps = $ReadOnly<{
+export type StatusBarProps = Readonly<{
   ...StatusBarPropsAndroid,
   ...StatusBarPropsIOS,
   ...StatusBarBaseProps,
@@ -133,13 +140,24 @@ type StackProps = {
 };
 
 /**
- * Merges the prop stack with the default values.
+ * Returns the bar style to use when `barStyle` is `'auto'`, picked against
+ * the current color scheme.
+ */
+function getAutoBarStyle(): 'light-content' | 'dark-content' {
+  return Appearance.getColorScheme() === 'dark'
+    ? 'light-content'
+    : 'dark-content';
+}
+
+/**
+ * Merges the prop stack with the default values, resolving the `'auto'`
+ * barStyle to a concrete value.
  */
 function mergePropsStack(
   propsStack: Array<Object>,
   defaultValues: Object,
 ): Object {
-  return propsStack.reduce(
+  const merged: StackProps = propsStack.reduce(
     (prev, cur) => {
       for (const prop in cur) {
         if (cur[prop] != null) {
@@ -150,6 +168,12 @@ function mergePropsStack(
     },
     {...defaultValues},
   );
+
+  if (merged.barStyle?.value === 'auto') {
+    merged.barStyle = {...merged.barStyle, value: getAutoBarStyle()};
+  }
+
+  return merged;
 }
 
 /**
@@ -247,8 +271,15 @@ class StatusBar extends React.Component<StatusBarProps> {
   // Timer for updating the native module values at the end of the frame.
   static _updateImmediate: ?number = null;
 
-  // The current merged values from the props stack.
+  // The current merged values from the props stack. `barStyle.value` is stored
+  // in its resolved form (never `'auto'`), so diff comparisons reflect what
+  // was actually sent to the native module.
   static _currentValues: ?StackProps = null;
+
+  // Number of mounted `StatusBar` instances. Used to lazily subscribe to color
+  // scheme changes only while at least one instance is on screen.
+  static _mountedCount: number = 0;
+  static _appearanceSubscription: ?EventSubscription = null;
 
   // TODO(janic): Provide a real API to deal with status bar height. See the
   // discussion in #6195.
@@ -289,10 +320,11 @@ class StatusBar extends React.Component<StatusBarProps> {
   static setBarStyle(style: StatusBarStyle, animated?: boolean) {
     animated = animated || false;
     StatusBar._defaultProps.barStyle.value = style;
+    const resolvedStyle = style === 'auto' ? getAutoBarStyle() : style;
     if (Platform.OS === 'ios') {
-      NativeStatusBarManagerIOS.setStyle(style, animated);
+      NativeStatusBarManagerIOS.setStyle(resolvedStyle, animated);
     } else if (Platform.OS === 'android') {
-      NativeStatusBarManagerAndroid.setStyle(style);
+      NativeStatusBarManagerAndroid.setStyle(resolvedStyle);
     }
   }
 
@@ -407,6 +439,16 @@ class StatusBar extends React.Component<StatusBarProps> {
     // stack. This allows having multiple StatusBar components and the one that is
     // added last or is deeper in the view hierarchy will have priority.
     this._stackEntry = StatusBar.pushStackEntry(this.props);
+
+    if (StatusBar._mountedCount === 0) {
+      // Re-run the native update when the system color scheme changes so any
+      // `barStyle: 'auto'` entries resolve to the new appropriate value.
+      StatusBar._appearanceSubscription = Appearance.addChangeListener(() => {
+        StatusBar._updatePropsStack();
+      });
+    }
+
+    StatusBar._mountedCount++;
   }
 
   componentWillUnmount() {
@@ -414,6 +456,16 @@ class StatusBar extends React.Component<StatusBarProps> {
     // the native bar with the next props.
     if (this._stackEntry != null) {
       StatusBar.popStackEntry(this._stackEntry);
+    }
+
+    StatusBar._mountedCount--;
+
+    if (
+      StatusBar._appearanceSubscription != null &&
+      StatusBar._mountedCount === 0
+    ) {
+      StatusBar._appearanceSubscription.remove();
+      StatusBar._appearanceSubscription = null;
     }
   }
 
@@ -508,5 +560,7 @@ class StatusBar extends React.Component<StatusBarProps> {
     return null;
   }
 }
+
+export type StatusBarInstance = StatusBar;
 
 export default StatusBar;

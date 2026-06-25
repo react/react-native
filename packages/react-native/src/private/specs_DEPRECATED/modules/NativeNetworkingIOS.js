@@ -13,7 +13,7 @@ import type {TurboModule} from '../../../../Libraries/TurboModule/RCTExport';
 import * as TurboModuleRegistry from '../../../../Libraries/TurboModule/TurboModuleRegistry';
 
 export interface Spec extends TurboModule {
-  +sendRequest: (
+  readonly sendRequest: (
     query: {
       method: string,
       url: string,
@@ -23,16 +23,16 @@ export interface Spec extends TurboModule {
       incrementalUpdates: boolean,
       timeout: number,
       withCredentials: boolean,
-      +unstable_devToolsRequestId?: string,
+      readonly unstable_devToolsRequestId?: string,
     },
     callback: (requestId: number) => void,
   ) => void;
-  +abortRequest: (requestId: number) => void;
-  +clearCookies: (callback: (result: boolean) => void) => void;
+  readonly abortRequest: (requestId: number) => void;
+  readonly clearCookies: (callback: (result: boolean) => void) => void;
 
   // RCTEventEmitter
-  +addListener: (eventName: string) => void;
-  +removeListeners: (count: number) => void;
+  readonly addListener: (eventName: string) => void;
+  readonly removeListeners: (count: number) => void;
 }
 
-export default (TurboModuleRegistry.getEnforcing<Spec>('Networking'): Spec);
+export default TurboModuleRegistry.getEnforcing<Spec>('Networking') as Spec;

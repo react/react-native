@@ -6,6 +6,9 @@
  */
 
 #import "RCTLegacyViewManagerInteropCoordinatorAdapter.h"
+
+#ifndef RCT_REMOVE_LEGACY_COMPONENT_INTEROP
+
 #import <React/UIView+React.h>
 #import <react/utils/FollyConvert.h>
 
@@ -146,3 +149,5 @@
 }
 
 @end
+
+#endif // RCT_REMOVE_LEGACY_COMPONENT_INTEROP

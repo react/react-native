@@ -8,6 +8,7 @@
  * @format
  */
 
+import type {HostInstance} from '../../../src/private/types/HostInstance';
 import type {ColorValue} from '../../StyleSheet/StyleSheet';
 import type {AccessibilityState} from '../View/ViewAccessibility';
 import type {TouchableWithoutFeedbackProps} from './TouchableWithoutFeedback';
@@ -19,10 +20,13 @@ import Pressability, {
 import {PressabilityDebugView} from '../../Pressability/PressabilityDebug';
 import StyleSheet, {type ViewStyleProp} from '../../StyleSheet/StyleSheet';
 import Platform from '../../Utilities/Platform';
+import warnOnce from '../../Utilities/warnOnce';
 import * as React from 'react';
 import {cloneElement} from 'react';
 
-type AndroidProps = $ReadOnly<{
+export type TouchableHighlightInstance = HostInstance;
+
+type AndroidProps = Readonly<{
   nextFocusDown?: ?number,
   nextFocusForward?: ?number,
   nextFocusLeft?: ?number,
@@ -30,14 +34,14 @@ type AndroidProps = $ReadOnly<{
   nextFocusUp?: ?number,
 }>;
 
-type IOSProps = $ReadOnly<{
+type IOSProps = Readonly<{
   /**
    * @deprecated Use `focusable` instead
    */
   hasTVPreferredFocus?: ?boolean,
 }>;
 
-type TouchableHighlightBaseProps = $ReadOnly<{
+type TouchableHighlightBaseProps = Readonly<{
   /**
    * Determines what the opacity of the wrapped view should be when touch is active.
    */
@@ -60,22 +64,23 @@ type TouchableHighlightBaseProps = $ReadOnly<{
   onHideUnderlay?: ?() => void,
   testOnly_pressed?: ?boolean,
 
-  hostRef?: React.RefSetter<React.ElementRef<typeof View>>,
+  hostRef?: React.RefSetter<TouchableHighlightInstance>,
 }>;
 
-export type TouchableHighlightProps = $ReadOnly<{
+/** @build-types emit-as-interface Uniwind compatibility */
+export type TouchableHighlightProps = Readonly<{
   ...TouchableWithoutFeedbackProps,
   ...AndroidProps,
   ...IOSProps,
   ...TouchableHighlightBaseProps,
 }>;
 
-type ExtraStyles = $ReadOnly<{
+type ExtraStyles = Readonly<{
   child: ViewStyleProp,
   underlay: ViewStyleProp,
 }>;
 
-type TouchableHighlightState = $ReadOnly<{
+type TouchableHighlightState = Readonly<{
   pressability: Pressability,
   extraStyles: ?ExtraStyles,
 }>;
@@ -304,6 +309,13 @@ class TouchableHighlightImpl extends React.Component<
 
   render(): React.Node {
     const child = React.Children.only<$FlowFixMe>(this.props.children);
+    if (__DEV__ && child.type === React.Fragment) {
+      warnOnce(
+        'TouchableHighlight-fragment',
+        'TouchableHighlight does not support React.Fragment as a child. ' +
+          'Wrap the children in a single host element such as <View>.',
+      );
+    }
 
     // BACKWARD-COMPATIBILITY: Focus and blur events were never supported before
     // adopting `Pressability`, so preserve that behavior.
@@ -376,12 +388,14 @@ class TouchableHighlightImpl extends React.Component<
         testID={this.props.testID}
         ref={this.props.hostRef}
         {...eventHandlersWithoutBlurAndFocus}>
-        {cloneElement(child, {
-          style: StyleSheet.compose(
-            child.props.style,
-            this.state.extraStyles?.child,
-          ),
-        })}
+        {child.type === React.Fragment
+          ? child
+          : cloneElement(child, {
+              style: StyleSheet.compose(
+                child.props.style,
+                this.state.extraStyles?.child,
+              ),
+            })}
         {__DEV__ ? (
           <PressabilityDebugView color="green" hitSlop={this.props.hitSlop} />
         ) : null}
@@ -411,14 +425,14 @@ class TouchableHighlightImpl extends React.Component<
 }
 
 const TouchableHighlight: component(
-  ref?: React.RefSetter<React.ElementRef<typeof View>>,
-  ...props: $ReadOnly<Omit<TouchableHighlightProps, 'hostRef'>>
+  ref?: React.RefSetter<TouchableHighlightInstance>,
+  ...props: Readonly<Omit<TouchableHighlightProps, 'hostRef'>>
 ) = ({
   ref: hostRef,
   ...props
 }: {
-  ref?: React.RefSetter<React.ElementRef<typeof View>>,
-  ...$ReadOnly<Omit<TouchableHighlightProps, 'hostRef'>>,
+  ref?: React.RefSetter<TouchableHighlightInstance>,
+  ...Readonly<Omit<TouchableHighlightProps, 'hostRef'>>,
 }) => <TouchableHighlightImpl {...props} hostRef={hostRef} />;
 
 TouchableHighlight.displayName = 'TouchableHighlight';

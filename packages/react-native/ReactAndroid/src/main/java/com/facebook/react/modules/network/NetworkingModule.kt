@@ -20,6 +20,7 @@ import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.ReadableType
 import com.facebook.react.bridge.WritableMap
+import com.facebook.react.common.build.ReactBuildConfig
 import com.facebook.react.common.network.OkHttpCallUtil
 import com.facebook.react.module.annotations.ReactModule
 import java.io.IOException
@@ -36,7 +37,6 @@ import okhttp3.JavaNetCookieJar
 import okhttp3.MediaType
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
-import okhttp3.Protocol
 import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.Response
@@ -310,21 +310,14 @@ public class NetworkingModule(
         if (handler.supports(uri, responseType)) {
           val (res, rawBody) = handler.fetch(uri)
           val encodedDataLength = res.toString().toByteArray().size
-          // fix: UriHandlers which are not using file:// scheme fail in whatwg-fetch at this line
-          // https://github.com/JakeChampion/fetch/blob/main/fetch.js#L547
-          val response =
-              Response.Builder()
-                  .protocol(Protocol.HTTP_1_1)
-                  .request(Request.Builder().url(url.orEmpty()).build())
-                  .code(200)
-                  .message("OK")
-                  .build()
           NetworkEventUtil.onResponseReceived(
               reactApplicationContext,
               requestId,
               devToolsRequestId,
               url,
-              response,
+              200,
+              emptyMap(),
+              encodedDataLength.toLong(),
           )
           NetworkEventUtil.onDataReceived(
               reactApplicationContext,
@@ -611,7 +604,16 @@ public class NetworkingModule(
 
     addRequest(requestId)
     val request = requestBuilder.build()
-    NetworkEventUtil.onCreateRequest(devToolsRequestId, request)
+
+    NetworkEventUtil.onCreateRequest(
+        devToolsRequestId,
+        request.url().toString(),
+        request.method(),
+        NetworkEventUtil.okHttpHeadersToMap(request.headers()),
+        if (ReactBuildConfig.DEBUG) NetworkEventUtil.getRequestBodyPreview(request.body())
+        else null,
+        request.body()?.contentLength() ?: 0,
+    )
 
     client
         .newCall(request)
@@ -644,8 +646,10 @@ public class NetworkingModule(
                     reactApplicationContext,
                     requestId,
                     devToolsRequestId,
-                    url,
-                    response,
+                    response.request().url().toString(),
+                    response.code(),
+                    NetworkEventUtil.okHttpHeadersToMap(response.headers()),
+                    response.body()?.contentLength() ?: 0L,
                 )
 
                 try {
@@ -768,6 +772,14 @@ public class NetworkingModule(
                       devToolsRequestId,
                       e.message,
                       e,
+                  )
+                } catch (e: OutOfMemoryError) {
+                  NetworkEventUtil.onRequestError(
+                      reactApplicationContext,
+                      requestId,
+                      devToolsRequestId,
+                      "Out of memory while processing network response",
+                      null,
                   )
                 }
               }

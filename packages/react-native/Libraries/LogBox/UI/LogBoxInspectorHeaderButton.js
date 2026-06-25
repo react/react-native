@@ -38,7 +38,7 @@ const backgroundForLevel = (level: LogLevel) =>
   })[level];
 
 export default function LogBoxInspectorHeaderButton(
-  props: $ReadOnly<{
+  props: Readonly<{
     id: string,
     disabled: boolean,
     image: ImageSource,

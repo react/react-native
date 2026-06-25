@@ -18,17 +18,17 @@ import type {
 
 import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
 
-type OnChangeEvent = $ReadOnly<{
+type OnChangeEvent = Readonly<{
   location: {
     source: {url: string, ...},
     x: Int32,
     y: Int32,
-    arrayOfObjects: $ReadOnlyArray<{value: $ReadOnly<{str: string}>}>,
+    arrayOfObjects: ReadonlyArray<{value: Readonly<{str: string}>}>,
     ...
   },
 }>;
 
-type NativeProps = $ReadOnly<{
+type NativeProps = Readonly<{
   ...ViewProps,
 
   // Props
@@ -38,6 +38,6 @@ type NativeProps = $ReadOnly<{
   onChange?: ?BubblingEventHandler<OnChangeEvent>,
 }>;
 
-export default (codegenNativeComponent<NativeProps>(
+export default codegenNativeComponent<NativeProps>(
   'EventNestedObjectPropsNativeComponentView',
-): HostComponent<NativeProps>);
+) as HostComponent<NativeProps>;

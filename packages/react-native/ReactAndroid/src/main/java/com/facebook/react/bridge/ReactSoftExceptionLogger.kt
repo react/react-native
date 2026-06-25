@@ -11,6 +11,7 @@ import androidx.annotation.StringDef
 import com.facebook.common.logging.FLog
 import com.facebook.proguard.annotations.DoNotStrip
 import com.facebook.react.bridge.ReactSoftExceptionLogger.Categories.CLIPPING_PROHIBITED_VIEW
+import com.facebook.react.bridge.ReactSoftExceptionLogger.Categories.RVG_ADD_CHILDREN_FOR_ACCESSIBILITY
 import com.facebook.react.bridge.ReactSoftExceptionLogger.Categories.RVG_IS_VIEW_CLIPPED
 import com.facebook.react.bridge.ReactSoftExceptionLogger.Categories.RVG_ON_VIEW_REMOVED
 import com.facebook.react.bridge.ReactSoftExceptionLogger.Categories.SOFT_ASSERTIONS
@@ -21,6 +22,7 @@ import java.util.concurrent.CopyOnWriteArrayList
 internal object ReactSoftExceptionLogger {
   @Retention(AnnotationRetention.SOURCE)
   @StringDef(
+      RVG_ADD_CHILDREN_FOR_ACCESSIBILITY,
       RVG_IS_VIEW_CLIPPED,
       RVG_ON_VIEW_REMOVED,
       CLIPPING_PROHIBITED_VIEW,
@@ -31,6 +33,8 @@ internal object ReactSoftExceptionLogger {
 
   /** Constants that listeners can utilize for custom category-based behavior. */
   object Categories {
+    const val RVG_ADD_CHILDREN_FOR_ACCESSIBILITY: String =
+        "ReactViewGroup.addChildrenForAccessibility"
     const val RVG_IS_VIEW_CLIPPED: String = "ReactViewGroup.isViewClipped"
     const val RVG_ON_VIEW_REMOVED: String = "ReactViewGroup.onViewRemoved"
     const val CLIPPING_PROHIBITED_VIEW: String = "ReactClippingProhibitedView"

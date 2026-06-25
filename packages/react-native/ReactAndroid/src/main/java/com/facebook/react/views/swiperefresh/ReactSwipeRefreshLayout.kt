@@ -17,7 +17,7 @@ import com.facebook.react.uimanager.events.NativeGestureUtil
 import kotlin.math.abs
 
 /** Basic extension of [SwipeRefreshLayout] with ReactNative-specific functionality. */
-public class ReactSwipeRefreshLayout(reactContext: ReactContext) :
+public open class ReactSwipeRefreshLayout(reactContext: ReactContext) :
     SwipeRefreshLayout(reactContext) {
 
   private var didLayout: Boolean = false

@@ -9,14 +9,14 @@ package com.facebook.react.fabric.events
 
 import android.annotation.SuppressLint
 import com.facebook.jni.HybridClassBase
-import com.facebook.proguard.annotations.DoNotStrip
+import com.facebook.proguard.annotations.DoNotStripAny
 import com.facebook.react.fabric.FabricSoLoader
 import com.facebook.react.uimanager.events.BatchEventDispatchedListener
 
 /**
  * Class that acts as a proxy between the list of EventBeats registered in C++ and the Android side.
  */
-@DoNotStrip
+@DoNotStripAny
 @SuppressLint("MissingNativeLoadLibrary")
 internal class EventBeatManager : HybridClassBase(), BatchEventDispatchedListener {
   init {

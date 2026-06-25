@@ -10,12 +10,12 @@
 
 declare class StyleSheet {
   disabled: boolean;
-  +href: string;
-  +media: MediaList;
-  +ownerNode: Node;
-  +parentStyleSheet: ?StyleSheet;
-  +title: string;
-  +type: string;
+  readonly href: string;
+  readonly media: MediaList;
+  readonly ownerNode: Node;
+  readonly parentStyleSheet: ?StyleSheet;
+  readonly title: string;
+  readonly type: string;
 }
 
 declare class StyleSheetList {
@@ -35,10 +35,10 @@ declare class MediaList {
 }
 
 declare class CSSStyleSheet extends StyleSheet {
-  +cssRules: CSSRuleList;
+  readonly cssRules: CSSRuleList;
   deleteRule(index: number): void;
   insertRule(rule: string, index: number): number;
-  +ownerRule: ?CSSRule;
+  readonly ownerRule: ?CSSRule;
   replace(text: string): Promise<CSSStyleSheet>;
   replaceSync(text: string): void;
 }
@@ -56,24 +56,24 @@ declare class CSSRule {
   static MEDIA_RULE: number;
   static NAMESPACE_RULE: number;
   static PAGE_RULE: number;
-  +parentRule: ?CSSRule;
-  +parentStyleSheet: ?CSSStyleSheet;
+  readonly parentRule: ?CSSRule;
+  readonly parentStyleSheet: ?CSSStyleSheet;
   static REGION_STYLE_RULE: number;
   static STYLE_RULE: number;
   static SUPPORTS_RULE: number;
-  +type: number;
+  readonly type: number;
   static UNKNOWN_RULE: number;
   static VIEWPORT_RULE: number;
 }
 
 declare class CSSKeyframeRule extends CSSRule {
   keyText: string;
-  +style: CSSStyleDeclaration;
+  readonly style: CSSStyleDeclaration;
 }
 
 declare class CSSKeyframesRule extends CSSRule {
   appendRule(rule: string): void;
-  +cssRules: CSSRuleList;
+  readonly cssRules: CSSRuleList;
   deleteRule(select: string): void;
   findRule(select: string): CSSKeyframeRule | null;
   name: string;
@@ -418,7 +418,7 @@ type CompositeOperation = 'replace' | 'add' | 'accumulate';
 type CompositeOperationOrAuto = CompositeOperation | 'auto';
 
 declare class AnimationTimeline {
-  +currentTime: number | null;
+  readonly currentTime: number | null;
 }
 
 type DocumentTimelineOptions = {
@@ -522,19 +522,19 @@ declare class Animation extends EventTarget {
   currentTime: number | null;
   effect: AnimationEffect | null;
   finish(): void;
-  +finished: Promise<Animation>;
+  readonly finished: Promise<Animation>;
   id: string;
-  oncancel: ?(ev: AnimationPlaybackEvent) => mixed;
-  onfinish: ?(ev: AnimationPlaybackEvent) => mixed;
-  onremove: ?(ev: AnimationPlaybackEvent) => mixed;
+  oncancel: ?(ev: AnimationPlaybackEvent) => unknown;
+  onfinish: ?(ev: AnimationPlaybackEvent) => unknown;
+  onremove: ?(ev: AnimationPlaybackEvent) => unknown;
   pause(): void;
-  +pending: boolean;
+  readonly pending: boolean;
   persist(): void;
   play(): void;
   playbackRate: number;
-  +playState: AnimationPlayState;
-  +ready: Promise<Animation>;
-  +replaceState: AnimationReplaceState;
+  readonly playState: AnimationPlayState;
+  readonly ready: Promise<Animation>;
+  readonly replaceState: AnimationReplaceState;
   reverse(): void;
   startTime: number | null;
   timeline: AnimationTimeline | null;
@@ -570,6 +570,6 @@ declare class AnimationPlaybackEvent extends Event {
     type: string,
     animationEventInitDict?: AnimationPlaybackEvent$Init,
   ): void;
-  +currentTime: number | null;
-  +timelineTime: number | null;
+  readonly currentTime: number | null;
+  readonly timelineTime: number | null;
 }

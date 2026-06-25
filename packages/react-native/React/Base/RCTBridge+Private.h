@@ -16,16 +16,6 @@ RCT_EXTERN void RCTRegisterModule(Class);
 
 @interface RCTBridge ()
 
-#ifndef RCT_REMOVE_LEGACY_ARCH
-// Private designated initializer
-- (instancetype)initWithDelegate:(id<RCTBridgeDelegate>)delegate
-                       bundleURL:(NSURL *)bundleURL
-                  moduleProvider:(RCTBridgeModuleListProvider)block
-                   launchOptions:(NSDictionary *)launchOptions NS_DESIGNATED_INITIALIZER
-    __deprecated_msg("This API will be removed along with the legacy architecture.");
-
-#endif // RCT_REMOVE_LEGACY_ARCH
-
 // Used for the profiler flow events between JS and native
 @property (nonatomic, assign) int64_t flowID;
 @property (nonatomic, assign) CFMutableDictionaryRef flowIDMap;
@@ -142,17 +132,5 @@ RCT_EXTERN void RCTRegisterModule(Class);
  * Allow super fast, one time, timers to skip the queue and be directly executed
  */
 - (void)_immediatelyCallTimer:(NSNumber *)timer;
-
-@end
-
-@interface RCTCxxBridge : RCTBridge
-
-// TODO(cjhopman): this seems unsafe unless we require that it is only called on the main js queue.
-@property (nonatomic, readonly) void *runtime;
-
-#ifndef RCT_REMOVE_LEGACY_ARCH
-- (instancetype)initWithParentBridge:(RCTBridge *)bridge NS_DESIGNATED_INITIALIZER
-    __deprecated_msg("This API will be removed along with the legacy architecture.");
-#endif // RCT_REMOVE_LEGACY_ARCH
 
 @end

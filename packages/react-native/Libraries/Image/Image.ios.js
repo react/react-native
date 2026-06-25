@@ -30,10 +30,12 @@ import NativeImageLoaderIOS from './NativeImageLoaderIOS';
 import resolveAssetSource from './resolveAssetSource';
 import * as React from 'react';
 
+export type ImageInstance = HostInstance;
+
 function getSize(
   uri: string,
   success?: (width: number, height: number) => void,
-  failure?: (error: mixed) => void,
+  failure?: (error: unknown) => void,
 ): void | Promise<ImageSize> {
   const promise = NativeImageLoaderIOS.getSize(uri).then(([width, height]) => ({
     width,
@@ -56,7 +58,7 @@ function getSizeWithHeaders(
   uri: string,
   headers: {[string]: string, ...},
   success?: (width: number, height: number) => void,
-  failure?: (error: mixed) => void,
+  failure?: (error: unknown) => void,
 ): void | Promise<ImageSize> {
   const promise = NativeImageLoaderIOS.getSizeWithHeaders(uri, headers);
   if (typeof success !== 'function') {
@@ -111,7 +113,7 @@ let BaseImage: AbstractImageIOS = ({
   ref: forwardedRef,
   ...props
 }: {
-  ref?: React.RefSetter<HostInstance>,
+  ref?: React.RefSetter<ImageInstance>,
   ...ImageProps,
 }) => {
   const source = getImageSourcesFromImageProps(props) || {

@@ -15,7 +15,7 @@ import {TurboModuleRegistry} from 'react-native';
 export type ScreenshotManagerOptions = CodegenTypes.UnsafeObject;
 
 export interface Spec extends TurboModule {
-  +getConstants: () => {};
+  readonly getConstants: () => {};
   takeScreenshot(
     id: string,
     options: ScreenshotManagerOptions,

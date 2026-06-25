@@ -105,7 +105,7 @@ function PointerEventLayoutShouldFirePointerOverTestCase(
   );
 }
 
-type Props = $ReadOnly<{}>;
+type Props = Readonly<{}>;
 export default function PointerEventLayoutShouldFirePointerOver(
   props: Props,
 ): React.MixedElement {

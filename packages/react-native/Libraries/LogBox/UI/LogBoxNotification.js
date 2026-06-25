@@ -20,12 +20,13 @@ import * as LogBoxStyle from './LogBoxStyle';
 import * as React from 'react';
 import {useEffect} from 'react';
 
-type Props = $ReadOnly<{
+type Props = Readonly<{
   log: LogBoxLog,
   totalLogCount: number,
   level: 'warn' | 'error',
   onPressOpen: () => void,
   onPressDismiss: () => void,
+  onFocusChange?: ?(focused: boolean) => void,
 }>;
 
 export default function LogBoxNotification(props: Props): React.Node {
@@ -41,6 +42,7 @@ export default function LogBoxNotification(props: Props): React.Node {
       <LogBoxButton
         id={`logbox_open_button_${level}`}
         onPress={props.onPressOpen}
+        onFocusChange={props.onFocusChange}
         style={styles.press}
         backgroundColor={{
           default: LogBoxStyle.getBackgroundColor(1),

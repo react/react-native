@@ -25,11 +25,13 @@ enum class Align : uint8_t {
   SpaceBetween = YGAlignSpaceBetween,
   SpaceAround = YGAlignSpaceAround,
   SpaceEvenly = YGAlignSpaceEvenly,
+  Start = YGAlignStart,
+  End = YGAlignEnd,
 };
 
 template <>
 constexpr int32_t ordinalCount<Align>() {
-  return 9;
+  return 11;
 }
 
 constexpr Align scopedEnum(YGAlign unscoped) {

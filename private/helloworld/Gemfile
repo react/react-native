@@ -12,5 +12,8 @@ gem 'bigdecimal'
 gem 'logger'
 gem 'benchmark'
 gem 'mutex_m'
+gem 'nkf'
+gem 'base64'
+
 gem 'ffi',  '>= 1.17.2'
 gem 'rexml', '>= 3.3.9'

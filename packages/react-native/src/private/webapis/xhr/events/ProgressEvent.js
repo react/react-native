@@ -20,9 +20,9 @@ import type {EventInit} from '../../dom/events/Event';
 import Event from '../../dom/events/Event';
 
 export interface ProgressEventInit extends EventInit {
-  +lengthComputable: boolean;
-  +loaded: number;
-  +total: number;
+  readonly lengthComputable: boolean;
+  readonly loaded: number;
+  readonly total: number;
 }
 
 export default class ProgressEvent extends Event {

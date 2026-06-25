@@ -14,6 +14,12 @@
 @implementation RCTEventEmitter {
   NSInteger _listenerCount;
   BOOL _observationDisabled;
+  // Set to YES when -setCallableJSModules: is called with a non-nil value.
+  // _callableJSModules is weak and can return to nil after wiring (e.g. on
+  // host teardown) while this instance lives on, so the current value of
+  // _callableJSModules can't tell us whether we were ever set up correctly.
+  // This flag can.
+  BOOL _callableJSModulesWasInitialized;
 }
 
 @synthesize callableJSModules = _callableJSModules;
@@ -40,15 +46,14 @@
 
 - (void)sendEventWithName:(NSString *)eventName body:(id)body
 {
-  // Assert that subclasses of RCTEventEmitter does not have `@synthesize _callableJSModules`
-  // which would cause _callableJSModules in the parent RCTEventEmitter to be nil.
   RCTAssert(
-      _callableJSModules != nil,
-      @"Error when sending event: %@ with body: %@. "
+      _callableJSModulesWasInitialized,
+      @"Error when sending event: %@ (listenerCount: %lld) with body: %@. "
        "RCTCallableJSModules is not set. This is probably because you've "
        "explicitly synthesized the RCTCallableJSModules in %@, even though it's inherited "
        "from RCTEventEmitter.",
       eventName,
+      (long long)_listenerCount,
       body,
       [self class]);
 
@@ -60,14 +65,29 @@
         [[self supportedEvents] componentsJoinedByString:@"`, `"]);
   }
 
-  BOOL shouldEmitEvent = (_observationDisabled || _listenerCount > 0);
+  // _callableJSModules is weak, so read it exactly once into a strong local.
+  RCTCallableJSModules *callableJSModules = _callableJSModules;
+  if (!callableJSModules) {
+    RCTLogWarn(@"Sending `%@` but callableJSModules is nil, bridge was probably torn down", eventName);
+    return;
+  }
 
-  if (shouldEmitEvent && _callableJSModules) {
-    [_callableJSModules invokeModule:@"RCTDeviceEventEmitter"
-                              method:@"emit"
-                            withArgs:body ? @[ eventName, body ] : @[ eventName ]];
-  } else {
+  BOOL shouldEmitEvent = (_observationDisabled || _listenerCount > 0);
+  if (!shouldEmitEvent) {
     RCTLogWarn(@"Sending `%@` with no listeners registered.", eventName);
+    return;
+  }
+
+  [callableJSModules invokeModule:@"RCTDeviceEventEmitter"
+                           method:@"emit"
+                         withArgs:body ? @[ eventName, body ] : @[ eventName ]];
+}
+
+- (void)setCallableJSModules:(RCTCallableJSModules *)callableJSModules
+{
+  _callableJSModules = callableJSModules;
+  if (callableJSModules != nil) {
+    _callableJSModulesWasInitialized = YES;
   }
 }
 

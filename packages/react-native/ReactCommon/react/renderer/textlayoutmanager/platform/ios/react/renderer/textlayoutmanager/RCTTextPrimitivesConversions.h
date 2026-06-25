@@ -49,13 +49,13 @@ inline static NSLineBreakStrategy RCTNSLineBreakStrategyFromLineBreakStrategy(
     case facebook::react::LineBreakStrategy::PushOut:
       return NSLineBreakStrategyPushOut;
     case facebook::react::LineBreakStrategy::HangulWordPriority:
-      if (@available(iOS 14.0, *)) {
+      if (@available(iOS 14.0, tvOS 14.0, *)) {
         return NSLineBreakStrategyHangulWordPriority;
       } else {
         return NSLineBreakStrategyNone;
       }
     case facebook::react::LineBreakStrategy::Standard:
-      if (@available(iOS 14.0, *)) {
+      if (@available(iOS 14.0, tvOS 14.0, *)) {
         return NSLineBreakStrategyStandard;
       } else {
         return NSLineBreakStrategyNone;
@@ -106,10 +106,18 @@ inline static NSUnderlineStyle RCTNSUnderlineStyleFromTextDecorationStyle(
       return NSUnderlineStyleSingle;
     case facebook::react::TextDecorationStyle::Double:
       return NSUnderlineStyleDouble;
+    // Dotted, dashed, and wavy are tagged with
+    // `RCTCustomDecorationAttributeName` in `RCTAttributedTextUtils.mm` and
+    // painted by `RCTTextLayoutManager.mm`'s drawing pass; UIKit's pattern
+    // bits don't match the geometry browsers use, and there is no native
+    // wavy value at all. These branches are unreachable in normal flow; the
+    // returned values keep the switch exhaustive.
     case facebook::react::TextDecorationStyle::Dashed:
-      return NSUnderlineStylePatternDash | NSUnderlineStyleSingle;
+      return NSUnderlineStyleSingle;
     case facebook::react::TextDecorationStyle::Dotted:
-      return NSUnderlineStylePatternDot | NSUnderlineStyleSingle;
+      return NSUnderlineStyleSingle;
+    case facebook::react::TextDecorationStyle::Wavy:
+      return NSUnderlineStyleSingle;
   }
 }
 

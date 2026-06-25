@@ -212,7 +212,7 @@ export function check_PointerEvent(
  * view events with the same handler
  */
 export function useTestEventHandler(
-  eventNames: $ReadOnlyArray<string>,
+  eventNames: ReadonlyArray<string>,
   handler: (event: any, eventName: string) => void,
 ): ViewProps {
   const eventProps: any = useMemo(() => {
@@ -243,7 +243,7 @@ export function mkEvent(id: string, eventName: EventName): EventOccurrence {
   };
 }
 
-export type EventTrackerProps = $ReadOnly<{
+export type EventTrackerProps = Readonly<{
   eventsRef?: {current: Array<EventOccurrence>},
   onAnyEvent?: (EventOccurrence, PointerEvent) => void,
   eventsToTrack: Array<EventName>,

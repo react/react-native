@@ -11,13 +11,13 @@
 'use strict';
 
 function compareSnaps(
-  flowFixtures /*: $ReadOnly<{[string]: string}> */,
-  flowSnaps /*: $ReadOnly<{[string]: string}> */,
-  flowExtraCases /*: $ReadOnlyArray<string> */,
-  tsFixtures /*: $ReadOnly<{[string]: string}> */,
-  tsSnaps /*: $ReadOnly<{[string]: string}> */,
-  tsExtraCases /*: $ReadOnlyArray<string> */,
-  ignoredCases /*: $ReadOnlyArray<string> */,
+  flowFixtures /*: Readonly<{[string]: string}> */,
+  flowSnaps /*: Readonly<{[string]: string}> */,
+  flowExtraCases /*: ReadonlyArray<string> */,
+  tsFixtures /*: Readonly<{[string]: string}> */,
+  tsSnaps /*: Readonly<{[string]: string}> */,
+  tsExtraCases /*: ReadonlyArray<string> */,
+  ignoredCases /*: ReadonlyArray<string> */,
 ) {
   const flowCases = Object.keys(flowFixtures).sort();
   const tsCases = Object.keys(tsFixtures).sort();
@@ -68,8 +68,8 @@ function compareSnaps(
 }
 
 function compareTsArraySnaps(
-  tsSnaps /*: $ReadOnly<{[string]: string}> */,
-  tsExtraCases /*: $ReadOnlyArray<string> */,
+  tsSnaps /*: Readonly<{[string]: string}> */,
+  tsExtraCases /*: ReadonlyArray<string> */,
 ) {
   for (const array2Case of tsExtraCases.filter(
     name => name.indexOf('ARRAY2') !== -1,

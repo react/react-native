@@ -23,7 +23,7 @@ type DefaultVirtualizedSectionT = {
 };
 
 export type SectionData<SectionItemT, SectionT = DefaultVirtualizedSectionT> =
-  | ($ReadOnly<SectionBase<SectionItemT, SectionT>> & SectionT)
+  | (Readonly<SectionBase<SectionItemT, SectionT>> & SectionT)
   | (SectionBase<SectionItemT, SectionT> & SectionT)
   | SectionT;
 
@@ -31,7 +31,7 @@ export type SectionBase<SectionItemT, SectionT = DefaultVirtualizedSectionT> = {
   /**
    * The data for rendering items in this section.
    */
-  data: $ReadOnlyArray<SectionItemT>,
+  data: ReadonlyArray<SectionItemT>,
   /**
    * Optional key to keep track of section re-ordering. If you don't plan on re-ordering sections,
    * the array index will be used by default.
@@ -59,7 +59,7 @@ type RequiredVirtualizedSectionListProps<
   ItemT,
   SectionT = DefaultVirtualizedSectionT,
 > = {
-  sections: $ReadOnlyArray<SectionData<ItemT, SectionT>>,
+  sections: ReadonlyArray<SectionData<ItemT, SectionT>>,
 };
 
 type OptionalVirtualizedSectionListProps<
@@ -131,7 +131,7 @@ type State = {childProps: VirtualizedListProps, ...};
  */
 class VirtualizedSectionList<
   ItemT,
-  SectionT: SectionBase<
+  SectionT extends SectionBase<
     ItemT,
     DefaultVirtualizedSectionT,
   > = DefaultVirtualizedSectionT,
@@ -189,7 +189,7 @@ class VirtualizedSectionList<
     const listHeaderOffset = this.props.ListHeaderComponent ? 1 : 0;
 
     const stickyHeaderIndices = this.props.stickySectionHeadersEnabled
-      ? ([]: Array<number>)
+      ? ([] as Array<number>)
       : undefined;
 
     let itemCount = 0;
@@ -228,7 +228,7 @@ class VirtualizedSectionList<
 
   _getItem(
     props: VirtualizedSectionListProps<ItemT, SectionT>,
-    sections: ?$ReadOnlyArray<SectionData<ItemT, SectionT>>,
+    sections: ?ReadonlyArray<SectionData<ItemT, SectionT>>,
     index: number,
   ): ?ItemT {
     if (!sections) {
@@ -478,7 +478,7 @@ class VirtualizedSectionList<
   };
 }
 
-type ItemWithSeparatorCommonProps<ItemT> = $ReadOnly<{
+type ItemWithSeparatorCommonProps<ItemT> = Readonly<{
   leadingItem: ?ItemT,
   leadingSection: ?Object,
   section: Object,
@@ -486,7 +486,7 @@ type ItemWithSeparatorCommonProps<ItemT> = $ReadOnly<{
   trailingSection: ?Object,
 }>;
 
-type ItemWithSeparatorProps<ItemT> = $ReadOnly<{
+type ItemWithSeparatorProps<ItemT> = Readonly<{
   ...ItemWithSeparatorCommonProps<ItemT>,
   LeadingSeparatorComponent: ?(React.ComponentType<any> | React.MixedElement),
   SeparatorComponent: ?(React.ComponentType<any> | React.MixedElement),
@@ -615,7 +615,7 @@ function ItemWithSeparator<ItemT>(
         highlighted={leadingSeparatorHiglighted}
         {...leadingSeparatorProps}
       />
-    )): any);
+    )) as any);
   const separator =
     SeparatorComponent != null &&
     ((React.isValidElement(SeparatorComponent) ? (
@@ -627,7 +627,7 @@ function ItemWithSeparator<ItemT>(
         highlighted={separatorHighlighted}
         {...separatorProps}
       />
-    )): any);
+    )) as any);
   const RenderSeparator = leadingSeparator || separator;
   const firstSeparator = inverted === false ? leadingSeparator : separator;
   const secondSeparator = inverted === false ? separator : leadingSeparator;
@@ -643,7 +643,7 @@ function ItemWithSeparator<ItemT>(
 
 const VirtualizedSectionListComponent = VirtualizedSectionList as component<
   ItemT,
-  SectionT: SectionBase<
+  SectionT extends SectionBase<
     ItemT,
     DefaultVirtualizedSectionT,
   > = DefaultVirtualizedSectionT,

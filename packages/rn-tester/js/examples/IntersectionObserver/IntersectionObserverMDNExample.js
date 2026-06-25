@@ -8,8 +8,6 @@
  * @format
  */
 
-import type IntersectionObserverType from 'react-native/src/private/webapis/intersectionobserver/IntersectionObserver';
-
 import {RNTesterThemeContext} from '../../components/RNTesterTheme';
 import * as React from 'react';
 import {
@@ -20,8 +18,6 @@ import {
   useState,
 } from 'react';
 import {Button, ScrollView, StyleSheet, Text, View} from 'react-native';
-
-declare var IntersectionObserver: Class<IntersectionObserverType>;
 
 export const name = 'IntersectionObserver MDN Example';
 export const title = name;
@@ -35,7 +31,7 @@ export function render(): React.Node {
 /**
  * Similar to the example in MDN: https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API
  */
-function IntersectionObserverMDNExample(): React.Node {
+component IntersectionObserverMDNExample() {
   const theme = useContext(RNTesterThemeContext);
   const [showMargin, setShowMargin] = useState(true);
 

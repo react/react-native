@@ -16,7 +16,6 @@ import connect from 'connect';
 import http from 'http';
 import https from 'https';
 import * as selfsigned from 'selfsigned';
-import url from 'url';
 
 type CreateDevMiddlewareOptions = Parameters<typeof createDevMiddleware>[0];
 type CreateServerOptions = {
@@ -25,7 +24,9 @@ type CreateServerOptions = {
 };
 type ConnectApp = ReturnType<typeof connect>;
 
-export function withServerForEachTest(options: CreateServerOptions): $ReadOnly<{
+jest.mock('../utils/DefaultToolLauncher');
+
+export function withServerForEachTest(options: CreateServerOptions): Readonly<{
   serverBaseUrl: string,
   serverBaseWsUrl: string,
   app: ConnectApp,
@@ -87,7 +88,7 @@ export async function createServer(options: CreateServerOptions): Promise<{
   const {secure = false, ...devMiddlewareOptions} = options;
   let httpServer;
   if (secure) {
-    const {cert, private: key} = selfsigned.generate(
+    const {cert, private: key} = await selfsigned.generate(
       [{name: 'commonName', value: 'localhost'}],
       {days: 1},
     );
@@ -109,7 +110,7 @@ export async function createServer(options: CreateServerOptions): Promise<{
       });
       app.use(middleware);
       httpServer.on('upgrade', (request, socket, head) => {
-        const {pathname} = url.parse(request.url);
+        const {pathname} = new URL(request.url, 'http://example.com');
         if (pathname != null && websocketEndpoints[pathname]) {
           websocketEndpoints[pathname].handleUpgrade(
             request,

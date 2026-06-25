@@ -77,7 +77,7 @@ public object AndroidInfoHelpers {
         "appDisplayName" to appDisplayName,
         "appIdentifier" to appIdentifier,
         "platform" to "android",
-        "deviceName" to Build.MODEL,
+        "deviceName" to "${Build.MANUFACTURER} ${Build.MODEL}",
         "reactNativeVersion" to getReactNativeVersionString(),
     )
   }

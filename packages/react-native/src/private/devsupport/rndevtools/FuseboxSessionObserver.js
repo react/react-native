@@ -8,34 +8,21 @@
  * @format
  */
 
-class FuseboxSessionObserver {
-  #hasNativeSupport: boolean;
+import GlobalStateObserver from './GlobalStateObserver';
 
-  constructor() {
-    this.#hasNativeSupport = global.hasOwnProperty(
-      '__DEBUGGER_SESSION_OBSERVER__',
-    );
-  }
+const observer = new GlobalStateObserver(
+  '__DEBUGGER_SESSION_OBSERVER__',
+  'hasActiveSession',
+);
 
+const FuseboxSessionObserver = {
   hasActiveSession(): boolean {
-    if (!this.#hasNativeSupport) {
-      return false;
-    }
-
-    return global.__DEBUGGER_SESSION_OBSERVER__.hasActiveSession;
-  }
+    return observer.getStatus();
+  },
 
   subscribe(callback: (status: boolean) => void): () => void {
-    if (!this.#hasNativeSupport) {
-      return () => {};
-    }
+    return observer.subscribe(callback);
+  },
+};
 
-    global.__DEBUGGER_SESSION_OBSERVER__.subscribers.add(callback);
-    return () => {
-      global.__DEBUGGER_SESSION_OBSERVER__.subscribers.delete(callback);
-    };
-  }
-}
-
-const observerInstance: FuseboxSessionObserver = new FuseboxSessionObserver();
-export default observerInstance;
+export default FuseboxSessionObserver;

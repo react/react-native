@@ -8,7 +8,7 @@
  * @format
  */
 
-import typeof ScrollViewNativeComponent from '../Components/ScrollView/ScrollViewNativeComponent';
+import type {ScrollViewInstance} from '../Components/ScrollView/ScrollView';
 import type {ViewStyleProp} from '../StyleSheet/StyleSheet';
 import type {
   ListRenderItem,
@@ -38,7 +38,7 @@ type RequiredFlatListProps<ItemT> = {
    * An array (or array-like list) of items to render. Other data types can be
    * used by targeting VirtualizedList directly.
    */
-  data: ?$ReadOnly<$ArrayLike<ItemT>>,
+  data: ?Readonly<$ArrayLike<ItemT>>,
 };
 type OptionalFlatListProps<ItemT> = {
   /**
@@ -93,7 +93,7 @@ type OptionalFlatListProps<ItemT> = {
    * specify `ItemSeparatorComponent`.
    */
   getItemLayout?: (
-    data: ?$ReadOnly<$ArrayLike<ItemT>>,
+    data: ?Readonly<$ArrayLike<ItemT>>,
     index: number,
   ) => {
     length: number,
@@ -172,7 +172,7 @@ function numColumnsOrDefault(numColumns: ?number) {
   return numColumns ?? 1;
 }
 
-function isArrayLike(data: mixed): boolean {
+function isArrayLike(data: unknown): boolean {
   // $FlowExpectedError[incompatible-use]
   return typeof Object(data).length === 'number';
 }
@@ -182,7 +182,8 @@ type FlatListBaseProps<ItemT> = {
   ...OptionalFlatListProps<ItemT>,
 };
 
-export type FlatListProps<ItemT> = {
+/** @build-types emit-as-interface Nativewind compatibility */
+export type FlatListProps<ItemT> = Readonly<{
   ...Omit<
     VirtualizedListProps,
     | 'data'
@@ -194,7 +195,7 @@ export type FlatListProps<ItemT> = {
   >,
   ...FlatListBaseProps<ItemT>,
   ...
-};
+}>;
 
 /**
  * A performant interface for rendering simple, flat lists, supporting the most handy features:
@@ -397,12 +398,8 @@ class FlatList<ItemT = any> extends React.PureComponent<FlatListProps<ItemT>> {
   /**
    * Provides a reference to the underlying host component
    */
-  getNativeScrollRef():
-    | ?React.ElementRef<typeof View>
-    | ?React.ElementRef<ScrollViewNativeComponent> {
+  getNativeScrollRef(): ?ScrollViewInstance {
     if (this._listRef) {
-      /* $FlowFixMe[incompatible-return] Suppresses errors found when fixing
-       * TextInput typing */
       return this._listRef.getScrollRef();
     }
   }
@@ -413,7 +410,7 @@ class FlatList<ItemT = any> extends React.PureComponent<FlatListProps<ItemT>> {
     }
   }
 
-  setNativeProps(props: {[string]: mixed, ...}) {
+  setNativeProps(props: {[string]: unknown, ...}) {
     if (this._listRef) {
       this._listRef.setNativeProps(props);
     }
@@ -519,7 +516,7 @@ class FlatList<ItemT = any> extends React.PureComponent<FlatListProps<ItemT>> {
   _getItem = (
     data: $ArrayLike<ItemT>,
     index: number,
-  ): ?(ItemT | $ReadOnlyArray<ItemT>) => {
+  ): ?(ItemT | ReadonlyArray<ItemT>) => {
     const numColumns = numColumnsOrDefault(this.props.numColumns);
     if (numColumns > 1) {
       const ret = [];
@@ -564,7 +561,7 @@ class FlatList<ItemT = any> extends React.PureComponent<FlatListProps<ItemT>> {
       );
       return items
         .map((item, kk) =>
-          keyExtractor(((item: $FlowFixMe): ItemT), index * numColumns + kk),
+          keyExtractor(item as $FlowFixMe as ItemT, index * numColumns + kk),
         )
         .join(':');
     }
@@ -708,5 +705,7 @@ class FlatList<ItemT = any> extends React.PureComponent<FlatListProps<ItemT>> {
 const styles = StyleSheet.create({
   row: {flexDirection: 'row'},
 });
+
+export type FlatListInstance = FlatList<>;
 
 export default FlatList;

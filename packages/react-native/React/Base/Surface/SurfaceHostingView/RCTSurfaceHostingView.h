@@ -12,9 +12,6 @@
 #import <React/RCTSurfaceSizeMeasureMode.h>
 #import <React/RCTSurfaceStage.h>
 
-@class RCTBridge;
-@class RCTSurface;
-
 typedef UIView *_Nullable (^RCTSurfaceHostingViewActivityIndicatorViewFactory)(void);
 
 NS_ASSUME_NONNULL_BEGIN

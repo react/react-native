@@ -10,7 +10,6 @@
 package com.facebook.react.internal.interop
 
 import com.facebook.react.bridge.ReactContext
-import com.facebook.react.bridge.WritableArray
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.common.annotations.VisibleForTesting
 import com.facebook.react.common.annotations.internal.InteropLegacyArchitecture
@@ -36,22 +35,9 @@ internal class InteropEventEmitter(private val reactContext: ReactContext) : RCT
 
   @Deprecated("Deprecated in Java")
   override fun receiveEvent(targetTag: Int, eventName: String, params: WritableMap?) {
-    val dispatcher: EventDispatcher? =
-        eventDispatcherOverride
-            ?: UIManagerHelper.getEventDispatcherForReactTag(reactContext, targetTag)
+    val dispatcher = eventDispatcherOverride ?: UIManagerHelper.getEventDispatcher(reactContext)
     val surfaceId = UIManagerHelper.getSurfaceId(reactContext)
     dispatcher?.dispatchEvent(InteropEvent(eventName, params, surfaceId, targetTag))
-  }
-
-  @Deprecated("Deprecated in Java")
-  override fun receiveTouches(
-      eventName: String,
-      touches: WritableArray,
-      changedIndices: WritableArray,
-  ) {
-    throw UnsupportedOperationException(
-        "EventEmitter#receiveTouches is not supported by the Fabric Interop Layer"
-    )
   }
 
   @VisibleForTesting

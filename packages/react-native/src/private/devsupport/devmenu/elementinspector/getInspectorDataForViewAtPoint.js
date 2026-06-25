@@ -26,14 +26,14 @@ export type ReactRenderer = {
 };
 type AttachedRendererEventPayload = {id: number, renderer: ReactRenderer};
 
-const reactDevToolsHook = (window: any).__REACT_DEVTOOLS_GLOBAL_HOOK__;
+const reactDevToolsHook = (window as any).__REACT_DEVTOOLS_GLOBAL_HOOK__;
 invariant(
   Boolean(reactDevToolsHook),
   'getInspectorDataForViewAtPoint should not be used if React DevTools hook is not injected',
 );
 
 const renderers: Array<ReactRenderer> = Array.from(
-  (window: any).__REACT_DEVTOOLS_GLOBAL_HOOK__.renderers.values(),
+  (window as any).__REACT_DEVTOOLS_GLOBAL_HOOK__.renderers.values(),
 );
 
 const appendRenderer = ({renderer}: AttachedRendererEventPayload) =>

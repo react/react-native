@@ -19,12 +19,15 @@ export type ImageSize = {
 };
 
 export interface Spec extends TurboModule {
-  +abortRequest: (requestId: number) => void;
-  +getConstants: () => {};
-  +getSize: (uri: string) => Promise<ImageSize>;
-  +getSizeWithHeaders: (uri: string, headers: Object) => Promise<ImageSize>;
-  +prefetchImage: (uri: string, requestId: number) => Promise<boolean>;
-  +queryCache: (uris: Array<string>) => Promise<Object>;
+  readonly abortRequest: (requestId: number) => void;
+  readonly getConstants: () => {};
+  readonly getSize: (uri: string) => Promise<ImageSize>;
+  readonly getSizeWithHeaders: (
+    uri: string,
+    headers: Object,
+  ) => Promise<ImageSize>;
+  readonly prefetchImage: (uri: string, requestId: number) => Promise<boolean>;
+  readonly queryCache: (uris: Array<string>) => Promise<Object>;
 }
 
-export default (TurboModuleRegistry.getEnforcing<Spec>('ImageLoader'): Spec);
+export default TurboModuleRegistry.getEnforcing<Spec>('ImageLoader') as Spec;

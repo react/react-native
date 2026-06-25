@@ -94,8 +94,6 @@ class GenerateCodegenSchemaTaskTest {
             File(codegenDir, "lib/cli/combine/combine-js-to-schema-cli.js").toString(),
             "--platform",
             "android",
-            "--exclude",
-            "NativeSampleTurboModule",
             File(outputDir, "schema.json").toString(),
             jsRootDir.toString(),
         )
@@ -131,8 +129,6 @@ class GenerateCodegenSchemaTaskTest {
                 .path,
             "--platform",
             "android",
-            "--exclude",
-            "NativeSampleTurboModule",
             File(outputDir, "schema.json").relativeTo(project.projectDir).path,
             jsRootDir.relativeTo(project.projectDir).path,
         )

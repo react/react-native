@@ -67,7 +67,6 @@ auto ordinals() {
     }
 
     bool operator==(const Iterator& other) const = default;
-    bool operator!=(const Iterator& other) const = default;
   };
 
   struct Range {

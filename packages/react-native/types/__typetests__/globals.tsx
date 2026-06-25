@@ -8,6 +8,9 @@
 const noop = () => { };
 
 function testInterval() {
+    clearInterval(null);
+    clearInterval(undefined);
+
     let handle = setInterval(noop, 0);
     clearInterval(handle);
 
@@ -38,6 +41,9 @@ function testInterval() {
 }
 
 function testTimeout() {
+    clearTimeout(null);
+    clearTimeout(undefined);
+
     let handle = setTimeout(noop, 0);
     clearTimeout(handle);
 
@@ -68,6 +74,9 @@ function testTimeout() {
 }
 
 function testImmediate() {
+    clearImmediate(null);
+    clearImmediate(undefined);
+
     let handle = setImmediate(noop);
     clearImmediate(handle);
 
@@ -95,6 +104,37 @@ function testImmediate() {
     // @ts-expect-error
     }, 100, 'missing-arg');
     clearImmediate(handle);
+}
+
+function testRequestAnimationFrame(){
+    cancelAnimationFrame(null);
+    cancelAnimationFrame(undefined);
+
+    let handle = requestAnimationFrame((time: number) => {
+        console.log('time', time);
+    });
+    cancelAnimationFrame(handle);
+
+    handle = requestAnimationFrame(() => {
+      console.log('no time');
+    });
+    cancelAnimationFrame(handle);
+
+    handle = requestAnimationFrame(
+      // @ts-expect-error
+      (notTime: string) => {
+      console.log('argument have to be number', notTime);
+    });
+    cancelAnimationFrame(handle);
+
+    // @ts-expect-error
+    const resultHaveToBeNum: string = requestAnimationFrame(() => {
+      console.log('result have to be number');
+    });
+    cancelAnimationFrame(
+      // @ts-expect-error
+      resultHaveToBeNum
+    );
 }
 
 const fetchCopy: WindowOrWorkerGlobalScope['fetch'] = fetch;

@@ -121,6 +121,114 @@ issues when:
 - Building dependent frameworks that rely on proper module boundaries
 - Integrating with Swift Package Manager projects expecting modular headers
 
+## VFS Overlay System
+
+The prebuilt XCFrameworks use Clang's Virtual File System (VFS) overlay
+mechanism to enable header imports without modifying the actual header file
+structure. This is necessary because React Native's headers are organized
+differently than standard framework conventions.
+
+### Overview
+
+The VFS overlay creates a virtual mapping between the import paths used in code
+(e.g., `#import <react/renderer/graphics/Size.h>`) and the actual physical
+locations of headers within the XCFramework. This allows the prebuilt frameworks
+to work seamlessly while maintaining the original import syntax.
+
+### Build-Time VFS Generation (`vfs.js`)
+
+The `vfs.js` script creates a VFS overlay template during the prebuild process:
+
+1. **Header Collection** (`headers.js`): Scans all podspec files in the React
+   Native package to discover header files and their target import paths.
+
+2. **VFS Structure Building**: The `buildVFSStructure()` function creates a
+   hierarchical directory tree representation from the header mappings. Clang's
+   VFS overlay requires directories to contain their children in a tree
+   structure.
+
+3. **YAML Generation**: The `generateVFSOverlayYAML()` function converts the VFS
+   structure into Clang's expected YAML format.
+
+4. **Template Creation**: The generated overlay uses `${ROOT_PATH}` as a
+   placeholder for the actual installation path. This template is included in
+   the XCFramework as `React-VFS-template.yaml`.
+
+#### Key Functions
+
+- `createVFSOverlay(rootFolder)`: Main entry point that generates the complete
+  VFS overlay YAML string
+- `createVFSOverlayContents(rootFolder)`: Creates the VFS overlay object
+  structure
+- `buildVFSStructure(mappings)`: Builds the hierarchical directory tree from
+  flat mappings
+- `resolveVFSOverlay(vfsTemplate, rootPath)`: Replaces `${ROOT_PATH}` with the
+  actual path
+
+### Runtime VFS Processing (CocoaPods)
+
+When consuming prebuilt frameworks via CocoaPods, the VFS overlay is processed
+at pod install time by `rncore.rb`:
+
+#### `process_vfs_overlay()`
+
+Called during `react_native_post_install`, this method:
+
+1. Reads the `React-VFS-template.yaml` from the XCFramework
+2. Resolves the `${ROOT_PATH}` placeholder with the actual XCFramework path
+3. Writes the resolved overlay to
+   `$(PODS_ROOT)/React-Core-prebuilt/React-VFS.yaml`
+
+#### `add_rncore_dependency(s)`
+
+Adds VFS overlay compiler flags to podspecs that depend on React Native:
+
+```ruby
+# For C/C++ compilation
+OTHER_CFLAGS += "-ivfsoverlay $(PODS_ROOT)/React-Core-prebuilt/React-VFS.yaml"
+OTHER_CPLUSPLUSFLAGS += "-ivfsoverlay $(PODS_ROOT)/React-Core-prebuilt/React-VFS.yaml"
+
+# For Swift compilation (flags passed to underlying Clang)
+OTHER_SWIFT_FLAGS += "-Xcc -ivfsoverlay -Xcc $(PODS_ROOT)/React-Core-prebuilt/React-VFS.yaml"
+```
+
+#### `configure_aggregate_xcconfig(installer)`
+
+Configures VFS overlay flags for:
+
+- **Aggregate targets**: Main app targets that don't go through podspec
+  processing
+- **All pod targets**: Third-party pods that don't explicitly call
+  `add_rncore_dependency`
+
+This ensures all compilation units in the project can resolve React Native
+headers through the VFS overlay.
+
+### VFS Overlay Format
+
+The VFS overlay uses Clang's hierarchical YAML format:
+
+```yaml
+version: 0
+case-sensitive: false
+roots:
+  - name: '${ROOT_PATH}/Headers'
+    type: 'directory'
+    contents:
+      - name: 'react'
+        type: 'directory'
+        contents:
+          - name: 'renderer'
+            type: 'directory'
+            contents:
+              - name: 'Size.h'
+                type: 'file'
+                external-contents: '${ROOT_PATH}/Headers/React/react/renderer/Size.h'
+```
+
+The structure maps virtual paths (what the compiler sees) to physical paths
+(where the files actually exist in the XCFramework).
+
 ## Integrating in your project with Cocoapods
 
 For consuming, debugging or troubleshooting when using Cocoapods scripts, you

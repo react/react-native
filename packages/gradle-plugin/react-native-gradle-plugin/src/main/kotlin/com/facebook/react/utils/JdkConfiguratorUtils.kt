@@ -18,9 +18,9 @@ import org.jetbrains.kotlin.gradle.dsl.kotlinExtension
 
 internal object JdkConfiguratorUtils {
   /**
-   * Function that takes care of configuring the JDK toolchain for all the projects projects. As we
-   * do decide the JDK version based on the AGP version that RNGP brings over, here we can safely
-   * configure the toolchain to 17.
+   * Function that takes care of configuring the JDK toolchain for all the projects. As we do decide
+   * the JDK version based on the AGP version that RNGP brings over, here we can safely configure
+   * the toolchain to 17.
    */
   fun configureJavaToolChains(input: Project) {
     // Check at the app level if react.internal.disableJavaVersionAlignment is set.

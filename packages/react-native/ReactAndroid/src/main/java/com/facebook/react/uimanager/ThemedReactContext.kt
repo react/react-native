@@ -11,6 +11,7 @@ package com.facebook.react.uimanager
 
 import android.app.Activity
 import android.content.Context
+import android.view.Window
 import com.facebook.react.bridge.Callback
 import com.facebook.react.bridge.CatalystInstance
 import com.facebook.react.bridge.JavaScriptContextHolder
@@ -19,8 +20,11 @@ import com.facebook.react.bridge.LifecycleEventListener
 import com.facebook.react.bridge.NativeModule
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContext
+import com.facebook.react.bridge.RuntimeExecutor
+import com.facebook.react.bridge.ScrollEndedListeners
 import com.facebook.react.bridge.UIManager
 import com.facebook.react.common.annotations.internal.LegacyArchitecture
+import com.facebook.react.interfaces.ExtraWindowEventListener
 import com.facebook.react.turbomodule.core.interfaces.CallInvokerHolder
 
 /**
@@ -64,6 +68,22 @@ public class ThemedReactContext(
 
   override fun removeLifecycleEventListener(listener: LifecycleEventListener) {
     reactApplicationContext.removeLifecycleEventListener(listener)
+  }
+
+  override fun addExtraWindowEventListener(listener: ExtraWindowEventListener) {
+    reactApplicationContext.addExtraWindowEventListener(listener)
+  }
+
+  override fun removeExtraWindowEventListener(listener: ExtraWindowEventListener) {
+    reactApplicationContext.removeExtraWindowEventListener(listener)
+  }
+
+  override fun onExtraWindowCreate(window: Window) {
+    reactApplicationContext.onExtraWindowCreate(window)
+  }
+
+  override fun onExtraWindowDestroy(window: Window) {
+    reactApplicationContext.onExtraWindowDestroy(window)
   }
 
   override fun hasCurrentActivity(): Boolean = reactApplicationContext.hasCurrentActivity()
@@ -143,6 +163,8 @@ public class ThemedReactContext(
   override fun getJSCallInvokerHolder(): CallInvokerHolder? =
       reactApplicationContext.getJSCallInvokerHolder()
 
+  override fun getRuntimeExecutor(): RuntimeExecutor? = reactApplicationContext.runtimeExecutor
+
   @Deprecated(
       "This method is deprecated, please use UIManagerHelper.getUIManager() instead.",
       ReplaceWith("UIManagerHelper.getUIManager()"),
@@ -154,4 +176,7 @@ public class ThemedReactContext(
   override fun registerSegment(segmentId: Int, path: String?, callback: Callback?) {
     reactApplicationContext.registerSegment(segmentId, path, callback)
   }
+
+  override fun getScrollEndedListeners(): ScrollEndedListeners =
+      reactApplicationContext.scrollEndedListeners
 }

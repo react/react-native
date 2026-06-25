@@ -221,6 +221,75 @@ YG_EXPORT void YGNodeSetMeasureFunc(YGNodeRef node, YGMeasureFunc measureFunc);
 YG_EXPORT bool YGNodeHasMeasureFunc(YGNodeConstRef node);
 
 /**
+ * Optional companion to `YGMeasureFunc` invoked by the CSS Flexbox §4.5
+ * automatic minimum sizing path when probing this node for its min-content
+ * size along the main axis.
+ *
+ * The signature mirrors `YGMeasureFunc`. The algorithm calls this with
+ * `AtMost 0` along the probed axis and `Undefined` on the other. A
+ * min-content-aware Primitive can return its true minimum (e.g., `Image`
+ * and `Collection` along the scroll axis can return 0; text returns its
+ * longest-word width; etc.) without doing a full measure pass.
+ *
+ * When unset, the algorithm falls back to the regular `YGMeasureFunc`
+ * invoked with the same `AtMost 0` constraint — preserving today's
+ * behavior. Setting this is a perf opt-in for Primitives whose min-content
+ * size is cheap to compute or differs from what the regular measure would
+ * return.
+ */
+typedef YGSize (*YGMinContentMeasureFunc)(
+    YGNodeConstRef node,
+    float width,
+    YGMeasureMode widthMode,
+    float height,
+    YGMeasureMode heightMode);
+
+/**
+ * Provides a measure function specialised for min-content probes. See
+ * `YGMinContentMeasureFunc`.
+ */
+YG_EXPORT void YGNodeSetMinContentMeasureFunc(
+    YGNodeRef node,
+    YGMinContentMeasureFunc minContentMeasureFunc);
+
+/**
+ * Whether a min-content measure function is set.
+ */
+YG_EXPORT bool YGNodeHasMinContentMeasureFunc(YGNodeConstRef node);
+
+/**
+ * Static per-axis min-content size used by the CSS Flexbox §4.5 automatic
+ * minimum sizing probe. Pass `YGUndefined` to clear.
+ *
+ * When set, the algorithm's probe short-circuits at this node along the
+ * matching axis — skipping both the regular `YGMeasureFunc` / `YGMinContent
+ * MeasureFunc` callback path AND any container recursion. The most common
+ * use is declaring "0" for axes that have no min-content contribution per
+ * spec (e.g., images on both axes; scroll containers along their scroll
+ * axis).
+ *
+ * Precedence inside the probe is:
+ *   1. Static value via `YGNodeSetMinContentWidth/Height` (this API)
+ *   2. Dynamic callback via `YGNodeSetMinContentMeasureFunc`
+ *   3. Regular `YGMeasureFunc` with `AtMost 0` (today's default)
+ *   4. Container recursion (sum on main axis, max on cross)
+ *
+ * Static is preferred for known-constant values because it skips the JNI
+ * round-trip / native callback dispatch entirely.
+ */
+YG_EXPORT void YGNodeSetMinContentWidth(YGNodeRef node, float minContentWidth);
+YG_EXPORT void YGNodeSetMinContentHeight(
+    YGNodeRef node,
+    float minContentHeight);
+
+/**
+ * Returns the static min-content size along the requested axis, or
+ * `YGUndefined` if not set.
+ */
+YG_EXPORT float YGNodeGetMinContentWidth(YGNodeConstRef node);
+YG_EXPORT float YGNodeGetMinContentHeight(YGNodeConstRef node);
+
+/**
  * @returns a defined offset to baseline (ascent).
  */
 typedef float (*YGBaselineFunc)(YGNodeConstRef node, float width, float height);
@@ -257,7 +326,7 @@ YG_EXPORT bool YGNodeIsReferenceBaseline(YGNodeConstRef node);
 YG_EXPORT void YGNodeSetNodeType(YGNodeRef node, YGNodeType nodeType);
 
 /**
- * Wwhether a leaf node's layout results may be truncated during layout
+ * Whether a leaf node's layout results may be truncated during layout
  * rounding.
  */
 YG_EXPORT YGNodeType YGNodeGetNodeType(YGNodeConstRef node);

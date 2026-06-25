@@ -20,7 +20,46 @@ import com.facebook.soloader.SoLoader
 @DoNotStrip
 public object PerformanceTracer {
   init {
-    SoLoader.loadLibrary("react_performancetracerjni")
+    SoLoader.loadLibrary("react_tracingjni")
+  }
+
+  public fun <T> trace(name: String, block: () -> T): T {
+    return trace(name, null /* track */, null /* trackGroup */, null /* color */, block)
+  }
+
+  public fun <T> trace(name: String, track: String, block: () -> T): T {
+    return trace(name, track, null /* trackGroup */, null /* color */, block)
+  }
+
+  public fun <T> trace(name: String, track: String, trackGroup: String, block: () -> T): T {
+    return trace(name, track, trackGroup, null /* color */, block)
+  }
+
+  public fun <T> trace(
+      name: String,
+      track: String?,
+      trackGroup: String?,
+      color: String?,
+      block: () -> T,
+  ): T {
+    if (!isTracing()) {
+      return block()
+    }
+
+    val startTimeNanos = java.lang.System.nanoTime()
+    try {
+      return block()
+    } finally {
+      val endTimeNanos = java.lang.System.nanoTime()
+      reportTimeStamp(
+          name,
+          startTimeNanos,
+          endTimeNanos,
+          track,
+          trackGroup,
+          color,
+      )
+    }
   }
 
   /** Callback interface for tracing state changes. */

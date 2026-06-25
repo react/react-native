@@ -25,8 +25,7 @@ import type IntersectionObserver, {
 import type IntersectionObserverEntry from '../IntersectionObserverEntry';
 import type {NativeIntersectionObserverToken} from '../specs/NativeIntersectionObserver';
 
-import * as Systrace from '../../../../../Libraries/Performance/Systrace';
-import warnOnce from '../../../../../Libraries/Utilities/warnOnce';
+import {trace} from '../../../../../Libraries/Performance/Systrace';
 import {
   getInstanceHandle,
   getNativeNodeReference,
@@ -53,7 +52,7 @@ const instanceHandleToTargetMap: WeakMap<interface {}, ReactNativeElement> =
   new WeakMap();
 
 function getTargetFromInstanceHandle(
-  instanceHandle: mixed,
+  instanceHandle: unknown,
 ): ?ReactNativeElement {
   // $FlowExpectedError[incompatible-type] instanceHandle is typed as mixed but we know it's an object and we need it to be to use it as a key in a WeakMap.
   const key: interface {} = instanceHandle;
@@ -61,7 +60,7 @@ function getTargetFromInstanceHandle(
 }
 
 function setTargetForInstanceHandle(
-  instanceHandle: mixed,
+  instanceHandle: unknown,
   target: ReactNativeElement,
 ): void {
   // $FlowExpectedError[incompatible-type] instanceHandle is typed as mixed but we know it's an object and we need it to be to use it as a key in a WeakMap.
@@ -123,7 +122,7 @@ export function observe({
   target: ReactNativeElement,
 }): boolean {
   if (NativeIntersectionObserver == null) {
-    warnNoNativeIntersectionObserver();
+    throwIfNoNativeIntersectionObserver();
     return false;
   }
 
@@ -187,7 +186,7 @@ export function unobserve(
   target: ReactNativeElement,
 ): void {
   if (NativeIntersectionObserver == null) {
-    warnNoNativeIntersectionObserver();
+    throwIfNoNativeIntersectionObserver();
     return;
   }
 
@@ -220,19 +219,15 @@ export function unobserve(
  * entries to dispatch.
  */
 function notifyIntersectionObservers(): void {
-  Systrace.beginEvent(
+  trace(
     'IntersectionObserverManager.notifyIntersectionObservers',
+    doNotifyIntersectionObservers,
   );
-  try {
-    doNotifyIntersectionObservers();
-  } finally {
-    Systrace.endEvent();
-  }
 }
 
 function doNotifyIntersectionObservers(): void {
   if (NativeIntersectionObserver == null) {
-    warnNoNativeIntersectionObserver();
+    throwIfNoNativeIntersectionObserver();
     return;
   }
 
@@ -283,9 +278,6 @@ function doNotifyIntersectionObservers(): void {
   }
 }
 
-function warnNoNativeIntersectionObserver() {
-  warnOnce(
-    'missing-native-intersection-observer',
-    'Missing native implementation of IntersectionObserver',
-  );
+function throwIfNoNativeIntersectionObserver() {
+  throw new Error('Missing native implementation of IntersectionObserver');
 }

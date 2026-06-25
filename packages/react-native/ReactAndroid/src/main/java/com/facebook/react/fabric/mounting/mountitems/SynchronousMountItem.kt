@@ -20,12 +20,10 @@ internal class SynchronousMountItem(private val reactTag: Int, private val props
       mountingManager.storeSynchronousMountPropsOverride(reactTag, props)
       mountingManager.updatePropsSynchronously(reactTag, props)
     } catch (ex: Exception) {
-      // TODO T42943890: Fix animations in Fabric and remove this try/catch?
-      // There might always be race conditions between surface teardown and
-      // animations/other operations, so it may not be feasible to remove this.
-      // Practically 100% of reported errors from this point are because the
-      // surface has stopped by this point, but the MountItem was queued before
-      // the surface was stopped. It's likely not feasible to prevent all such races.
+      // The surface-stopped race condition (which was the primary source of exceptions here)
+      // is now handled by null-safe lookups in MountingManager. This catch remains as a
+      // safety net for other potential failures (e.g., view manager bugs, state
+      // inconsistencies during prop updates).
     }
   }
 

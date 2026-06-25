@@ -546,6 +546,7 @@ class TouchEventDispatchTest {
             anyInt(),
             argument.capture(),
             anyInt(),
+            anyLong(),
         )
     assertThat(startMoveEndExpectedSequence).isEqualTo(argument.allValues)
   }
@@ -565,6 +566,7 @@ class TouchEventDispatchTest {
             anyInt(),
             argument.capture(),
             anyInt(),
+            anyLong(),
         )
     assertThat(startMoveCancelExpectedSequence).isEqualTo(argument.allValues)
   }
@@ -584,6 +586,7 @@ class TouchEventDispatchTest {
             anyInt(),
             argument.capture(),
             anyInt(),
+            anyLong(),
         )
     assertThat(startPointerMoveUpExpectedSequence).isEqualTo(argument.allValues)
   }

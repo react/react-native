@@ -12,13 +12,13 @@ import type {CodegenTypes, HostComponent, ViewProps} from 'react-native';
 
 import {codegenNativeComponent} from 'react-native';
 
-type NativeProps = $ReadOnly<{
+type NativeProps = Readonly<{
   ...ViewProps,
 
   // Props
   mixedProp?: CodegenTypes.UnsafeMixed,
 }>;
 
-export default (codegenNativeComponent<NativeProps>(
+export default codegenNativeComponent<NativeProps>(
   'MixedPropNativeComponentView',
-): HostComponent<NativeProps>);
+) as HostComponent<NativeProps>;

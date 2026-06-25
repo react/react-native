@@ -35,7 +35,6 @@ struct ShadowView final {
   ShadowView &operator=(ShadowView &&other) = default;
 
   bool operator==(const ShadowView &rhs) const;
-  bool operator!=(const ShadowView &rhs) const;
 
   ComponentName componentName{};
   ComponentHandle componentHandle{};

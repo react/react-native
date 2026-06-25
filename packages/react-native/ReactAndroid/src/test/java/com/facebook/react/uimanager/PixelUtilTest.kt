@@ -37,13 +37,11 @@ class PixelUtilTest {
   @Before
   fun setUp() {
     context = RuntimeEnvironment.getApplication()
-    DisplayMetricsHolder.setWindowDisplayMetrics(null)
     DisplayMetricsHolder.setScreenDisplayMetrics(null)
   }
 
   @After
   fun tearDown() {
-    DisplayMetricsHolder.setWindowDisplayMetrics(null)
     DisplayMetricsHolder.setScreenDisplayMetrics(null)
   }
 
@@ -57,7 +55,6 @@ class PixelUtilTest {
     displayMetrics.heightPixels = 1920
     displayMetrics.densityDpi = DisplayMetrics.DENSITY_XXHIGH
 
-    DisplayMetricsHolder.setWindowDisplayMetrics(displayMetrics)
     DisplayMetricsHolder.setScreenDisplayMetrics(displayMetrics)
 
     // Test that toPixelFromSP respects fontScale < 1.0
@@ -80,7 +77,6 @@ class PixelUtilTest {
     displayMetrics.heightPixels = 1920
     displayMetrics.densityDpi = DisplayMetrics.DENSITY_XXHIGH
 
-    DisplayMetricsHolder.setWindowDisplayMetrics(displayMetrics)
     DisplayMetricsHolder.setScreenDisplayMetrics(displayMetrics)
 
     // Test that toPixelFromSP respects fontScale > 1.0
@@ -103,7 +99,6 @@ class PixelUtilTest {
     displayMetrics.heightPixels = 1920
     displayMetrics.densityDpi = DisplayMetrics.DENSITY_XXHIGH
 
-    DisplayMetricsHolder.setWindowDisplayMetrics(displayMetrics)
     DisplayMetricsHolder.setScreenDisplayMetrics(displayMetrics)
 
     // Test that maxFontScale limits the scaling
@@ -128,7 +123,6 @@ class PixelUtilTest {
     displayMetrics.heightPixels = 1920
     displayMetrics.densityDpi = DisplayMetrics.DENSITY_XXHIGH
 
-    DisplayMetricsHolder.setWindowDisplayMetrics(displayMetrics)
     DisplayMetricsHolder.setScreenDisplayMetrics(displayMetrics)
 
     // Test that maxFontScale doesn't prevent scaling down

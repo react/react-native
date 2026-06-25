@@ -7,6 +7,7 @@
 
 #include "EventQueueProcessor.h"
 
+#include <folly/ScopeGuard.h>
 #include <logger/react_native_log.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
 
@@ -37,6 +38,20 @@ void EventQueueProcessor::flushEvents(
       }
     }
   }
+
+  // RAII guard for the matching release() pass. If event dispatch throws (a JS
+  // exception from eventPipe_, or eventPipeConclusion_), the previous code
+  // skipped the release loop entirely, leaking JSI strong references. The
+  // guard destructor runs on every exit path. No DispatchMutex needed for
+  // release: we hold a strong pointer to each EventTarget via `events`, and
+  // release() only touches runtime-thread-confined state.
+  SCOPE_EXIT {
+    for (const auto& event : events) {
+      if (event.eventTarget) {
+        event.eventTarget->release(runtime);
+      }
+    }
+  };
 
   for (const auto& event : events) {
     auto reactPriority = ReactEventPriority::Default;
@@ -96,7 +111,8 @@ void EventQueueProcessor::flushEvents(
         event.eventTarget.get(),
         event.type,
         reactPriority,
-        *event.eventPayload);
+        *event.eventPayload,
+        event.eventStartTimeStamp);
 
     if (eventLogger != nullptr) {
       eventLogger->onEventProcessingEnd(event.loggingTag);
@@ -110,15 +126,7 @@ void EventQueueProcessor::flushEvents(
   // We only run the "Conclusion" once per event group when batched.
   eventPipeConclusion_(runtime);
 
-  // No need to lock `EventEmitter::DispatchMutex()` here.
-  // The mutex protects from a situation when the `instanceHandle` can be
-  // deallocated during accessing, but that's impossible at this point because
-  // we have a strong pointer to it.
-  for (const auto& event : events) {
-    if (event.eventTarget) {
-      event.eventTarget->release(runtime);
-    }
-  }
+  // EventTarget release happens in the SCOPE_EXIT above.
 }
 
 void EventQueueProcessor::flushStateUpdates(

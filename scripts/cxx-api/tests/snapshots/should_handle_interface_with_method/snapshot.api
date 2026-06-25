@@ -1,0 +1,5 @@
+interface RCTInterfaceWithMethod {
+  public virtual NSString* getTitle();
+  public virtual void doSomething();
+  public virtual void processValue:withName:(int value, NSString* name);
+}

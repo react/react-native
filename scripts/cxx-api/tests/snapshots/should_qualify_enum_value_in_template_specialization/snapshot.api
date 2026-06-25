@@ -1,0 +1,19 @@
+struct test::Event {
+}
+
+enum test::Event::Type {
+  NodeAllocation,
+  NodeDeallocation,
+}
+
+template <test::Event::Type E>
+struct test::Event::TypedData {
+}
+
+struct test::Event::TypedData<test::Event::NodeAllocation> {
+  public int config;
+}
+
+struct test::Event::TypedData<test::Event::NodeDeallocation> {
+  public int config;
+}

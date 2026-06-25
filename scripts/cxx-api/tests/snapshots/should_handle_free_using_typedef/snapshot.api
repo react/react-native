@@ -1,0 +1,1 @@
+using test::MyInt32 = int32_t;

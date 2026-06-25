@@ -22,7 +22,7 @@ import {
   View,
 } from 'react-native';
 
-function TextBox({children}: $ReadOnly<{children: React.Node}>): React.Node {
+component TextBox(children: React.Node) {
   // Prevent touch from being hijacked by Text
   return (
     <View pointerEvents="none">
@@ -31,15 +31,13 @@ function TextBox({children}: $ReadOnly<{children: React.Node}>): React.Node {
   );
 }
 
-function AnimatedEventExample({
-  containerPageXY,
-  useNativeDriver,
-}: $ReadOnly<{
-  containerPageXY: $ReadOnly<{x: number, y: number}>,
+component AnimatedEventExample(
+  containerPageXY: Readonly<{x: number, y: number}>,
   useNativeDriver: boolean,
-}>): React.Node {
+) {
   const boxRef = useRef<?React.ElementRef<typeof Animated.View>>();
 
+  // $FlowFixMe[react-rule-unsafe-ref]
   const pointerPageXY = useRef(
     new Animated.ValueXY(
       {
@@ -50,6 +48,7 @@ function AnimatedEventExample({
     ),
   ).current;
 
+  // $FlowFixMe[react-rule-unsafe-ref]
   const dragStartOffsetXY = useRef(
     new Animated.ValueXY({x: 0, y: 0}, {useNativeDriver}),
   ).current;
@@ -126,13 +125,14 @@ function AnimatedEventExample({
   );
 }
 
-function PanResponderExample({
-  useNativeDriver,
-}: $ReadOnly<{useNativeDriver: boolean}>): React.Node {
+component PanResponderExample(useNativeDriver: boolean) {
+  // $FlowFixMe[react-rule-unsafe-ref]
   const finalOffsetXY = useRef(
     new Animated.ValueXY({x: 0, y: 0}, {useNativeDriver}),
   ).current;
+  // $FlowFixMe[react-rule-unsafe-ref]
   const dragStartOffsetXY = useRef({x: 0, y: 0}).current;
+  // $FlowFixMe[react-rule-unsafe-ref]
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (pressEvent, gestureState) => {
@@ -177,7 +177,7 @@ function PanResponderExample({
   );
 }
 
-function PanGestureExample(): React.Node {
+component PanGestureExample() {
   const [busy, setBusy] = useState(false);
   const [useNativeDriver, setUseNativeDriver] = useState(false);
 
@@ -247,9 +247,9 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ({
+export default {
   title: 'Pan Gesture',
   name: 'panGesture',
   description: 'Animations driven by pan gesture.',
   render: () => <PanGestureExample />,
-}: RNTesterModuleExample);
+} as RNTesterModuleExample;

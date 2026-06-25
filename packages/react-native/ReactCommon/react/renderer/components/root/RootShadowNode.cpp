@@ -59,7 +59,7 @@ RootShadowNode::Unshared RootShadowNode::clone(
 
 void RootShadowNode::setInstanceHandle(
     InstanceHandle::Shared instanceHandle) const {
-  getFamily().setInstanceHandle(instanceHandle);
+  getFamilyShared()->setInstanceHandle(instanceHandle);
 }
 
 } // namespace facebook::react

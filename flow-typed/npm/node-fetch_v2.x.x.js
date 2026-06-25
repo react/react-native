@@ -20,8 +20,8 @@ declare module 'node-fetch' {
     +aborted: boolean,
     +onabort: (event?: {...}) => void,
 
-    +addEventListener: (name: string, cb: () => mixed) => void,
-    +removeEventListener: (name: string, cb: () => mixed) => void,
+    +addEventListener: (name: string, cb: () => unknown) => void,
+    +removeEventListener: (name: string, cb: () => unknown) => void,
     +dispatchEvent: (event: {...}) => void,
     ...
   };

@@ -19,8 +19,8 @@ import type {
   MeasureInWindowOnSuccessCallback,
   MeasureLayoutOnSuccessCallback,
   MeasureOnSuccessCallback,
-  NativeMethods,
 } from '../../../types/HostInstance';
+import type Event from '../events/Event';
 import type {InstanceHandle} from './internals/NodeInternals';
 import type ReactNativeDocument from './ReactNativeDocument';
 
@@ -29,7 +29,14 @@ import {Commands as ViewCommands} from '../../../../../Libraries/Components/View
 import {create as createAttributePayload} from '../../../../../Libraries/ReactNative/ReactFabricPublicInstance/ReactNativeAttributePayload';
 import warnForStyleProps from '../../../../../Libraries/ReactNative/ReactFabricPublicInstance/warnForStyleProps';
 import * as ReactNativeFeatureFlags from '../../../featureflags/ReactNativeFeatureFlags';
+import {getEventTypePropName} from '../../../renderer/events/ReactNativeEventTypeMapping';
 import {
+  getBubbledPropName,
+  getCapturedPropName,
+} from '../events/internals/EventInternals';
+import {EVENT_TARGET_GET_DECLARATIVE_LISTENER_KEY} from '../events/internals/EventTargetInternals';
+import {
+  getCurrentProps,
   getNativeElementReference,
   getPublicInstanceFromInstanceHandle,
   setInstanceHandle,
@@ -59,7 +66,8 @@ const noop = () => {};
 // was slower than this method because the engine has to create an object than
 // we then discard to create a new one.
 
-class ReactNativeElement extends ReadOnlyElement implements NativeMethods {
+/** @build-types protected-constructor */
+class ReactNativeElement extends ReadOnlyElement {
   // These need to be accessible from `ReactFabricPublicInstanceUtils`.
   __nativeTag: number;
   __internalInstanceHandle: InstanceHandle;
@@ -141,6 +149,9 @@ class ReactNativeElement extends ReadOnlyElement implements NativeMethods {
    * React Native compatibility methods
    */
 
+  /**
+   * Removes focus from an input or view. This is the opposite of `focus()`.
+   */
   blur(): void {
     if (TextInputState.isTextInput(this)) {
       TextInputState.blurTextInput(this);
@@ -149,6 +160,10 @@ class ReactNativeElement extends ReadOnlyElement implements NativeMethods {
     }
   }
 
+  /**
+   * Requests focus for the given input or view. The exact behavior triggered
+   * will depend on the platform and type of view.
+   */
   focus() {
     if (TextInputState.isTextInput(this)) {
       TextInputState.focusTextInput(this);
@@ -157,6 +172,23 @@ class ReactNativeElement extends ReadOnlyElement implements NativeMethods {
     }
   }
 
+  /**
+   * Determines the location on screen, width, and height of the given view and
+   * returns the values via an async callback. If successful, the callback will
+   * be called with the following arguments:
+   *
+   *  - x
+   *  - y
+   *  - width
+   *  - height
+   *  - pageX
+   *  - pageY
+   *
+   * Note that these measurements are not available until after the rendering
+   * has been completed in native. If you need the measurements as soon as
+   * possible, consider using the [`onLayout`
+   * prop](docs/view.html#onlayout) instead.
+   */
   measure(callback: MeasureOnSuccessCallback) {
     const node = getNativeElementReference(this);
     if (node != null) {
@@ -164,6 +196,21 @@ class ReactNativeElement extends ReadOnlyElement implements NativeMethods {
     }
   }
 
+  /**
+   * Determines the location of the given view in the window and returns the
+   * values via an async callback. If the React root view is embedded in
+   * another native view, this will give you the absolute coordinates. If
+   * successful, the callback will be called with the following
+   * arguments:
+   *
+   *  - x
+   *  - y
+   *  - width
+   *  - height
+   *
+   * Note that these measurements are not available until after the rendering
+   * has been completed in native.
+   */
   measureInWindow(callback: MeasureInWindowOnSuccessCallback) {
     const node = getNativeElementReference(this);
     if (node != null) {
@@ -171,6 +218,12 @@ class ReactNativeElement extends ReadOnlyElement implements NativeMethods {
     }
   }
 
+  /**
+   * Like [`measure()`](#measure), but measures the view relative an ancestor,
+   * specified as `relativeToNativeComponentRef`. This means that the returned x, y
+   * are relative to the origin x, y of the ancestor view.
+   * _Can also be called with a relativeNativeNodeHandle but is deprecated._
+   */
   measureLayout(
     relativeToNativeNode: number | HostInstance,
     onSuccess: MeasureLayoutOnSuccessCallback,
@@ -199,6 +252,12 @@ class ReactNativeElement extends ReadOnlyElement implements NativeMethods {
     }
   }
 
+  /**
+   * This function sends props straight to native. They will not participate in
+   * future diff process - this means that if you do not include them in the
+   * next render, they will remain active (see [Direct
+   * Manipulation](https://reactnative.dev/docs/the-new-architecture/direct-manipulation-new-architecture)).
+   */
   setNativeProps(nativeProps: {...}): void {
     if (__DEV__) {
       warnForStyleProps(nativeProps, this.__viewConfig.validAttributes);
@@ -214,6 +273,40 @@ class ReactNativeElement extends ReadOnlyElement implements NativeMethods {
     if (node != null && updatePayload != null) {
       NativeDOM.setNativeProps(node, updatePayload);
     }
+  }
+
+  // Provide event listeners from React props during EventTarget dispatch.
+  // This is called by EventTarget.invoke() before explicit addEventListener
+  // listeners, allowing prop-based handlers to be resolved at dispatch time
+  // without registering them via addEventListener during commit.
+  //
+  // Fast path: when `event` is a `LegacySyntheticEvent` (always the case for
+  // events created by `dispatchNativeEvent`), the React prop names have been
+  // pre-resolved on the event during construction. Reading them directly
+  // avoids the `getEventTypePropName(eventType, isCapture)` hash lookup per
+  // ancestor per phase.
+  // $FlowExpectedError[unsupported-syntax]
+  [EVENT_TARGET_GET_DECLARATIVE_LISTENER_KEY](
+    event: Event,
+    isCapture: boolean,
+  ): ((event: Event) => void) | null {
+    const currentProps = getCurrentProps(this);
+    if (currentProps == null) {
+      return null;
+    }
+    let propName = isCapture
+      ? getCapturedPropName(event)
+      : getBubbledPropName(event);
+    if (propName === undefined) {
+      // The event wasn't created via `dispatchNativeEvent` (e.g.,
+      // user-dispatched). Fall back to the mapping table.
+      propName = getEventTypePropName(event.type, isCapture);
+    }
+    if (propName == null) {
+      return null;
+    }
+    const handler = currentProps[propName];
+    return typeof handler === 'function' ? handler : null;
   }
 }
 
@@ -250,3 +343,35 @@ function replaceConstructorWithoutSuper(
 export default replaceConstructorWithoutSuper(
   ReactNativeElement,
 ) as typeof ReactNativeElement;
+
+export const ReactNativeElement_public: typeof ReactNativeElement =
+  // $FlowExpectedError[incompatible-type]
+  function HTMLElement() {
+    throw new TypeError(
+      "Failed to construct 'HTMLElement': Nodes cannot be imperatively created in React Native",
+    );
+  };
+
+// $FlowExpectedError[prop-missing]
+ReactNativeElement_public.prototype = ReactNativeElement.prototype;
+
+// The public imperative EventTarget API (`addEventListener`,
+// `removeEventListener`, `dispatchEvent`) is only inherited by this final class
+// when `enableNativeEventTargetEventDispatching` is enabled (which makes
+// `ReadOnlyNode` extend `EventTarget`). Until that public API is finalized, it
+// is gated behind `enableImperativeEvents`: when that flag is off we remove
+// those methods from this final class. Native/internal event dispatch does not
+// rely on these public methods, so removing them is safe.
+if (
+  ReactNativeFeatureFlags.enableNativeEventTargetEventDispatching() &&
+  !ReactNativeFeatureFlags.enableImperativeEvents()
+) {
+  const prototype: interface {
+    addEventListener?: unknown,
+    removeEventListener?: unknown,
+    dispatchEvent?: unknown,
+  } = ReactNativeElement.prototype;
+  prototype.addEventListener = undefined;
+  prototype.removeEventListener = undefined;
+  prototype.dispatchEvent = undefined;
+}

@@ -28,7 +28,9 @@ const preTransforms: Array<PreTransformFn> = [
   require('./transforms/flow/reattachDocComments'),
   require('./transforms/flow/ensureNoUnprefixedProps'),
 ];
-const postTransforms = (filePath: string): Array<PluginObj<mixed>> => [
+const postTransforms = (filePath: string): Array<PluginObj<unknown>> => [
+  require('./transforms/typescript/convertTypeAliasesToInterfaces'),
+  require('./transforms/typescript/replaceProtectedConstructors'),
   require('./transforms/typescript/replaceDefaultExportName')(filePath),
 ];
 const prettierOptions = {parser: 'babel'};

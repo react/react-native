@@ -21,7 +21,7 @@ const path = require('path');
  */
 async function createSwiftPackageFile(
   scheme /*: string */,
-  dependencies /*  :$ReadOnlyArray<Dependency> */,
+  dependencies /*  :ReadonlyArray<Dependency> */,
   rootFolder /*: string */,
 ) {
   console.log(

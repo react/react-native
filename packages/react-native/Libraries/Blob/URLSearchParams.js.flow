@@ -10,7 +10,7 @@
 
 declare export class URLSearchParams {
   _searchParams: Array<[string, string]>;
-  +size: number;
+  readonly size: number;
   constructor(
     params?: Record<string, string> | string | Array<[string, string]>,
   ): void;

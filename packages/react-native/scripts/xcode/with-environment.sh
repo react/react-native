@@ -17,7 +17,13 @@ NODE_BINARY=$(command -v node || echo "")
 export NODE_BINARY
 
 # Override the default with the global environment
-ENV_PATH="$PODS_ROOT/../.xcode.env"
+# Use PODFILE_DIR (set by react_native_post_install) to locate .xcode.env.
+# PODS_ROOT/.. does not work when Pods/ is a symlink.
+if [ -n "$PODFILE_DIR" ]; then
+    ENV_PATH="$PODFILE_DIR/.xcode.env"
+else
+    ENV_PATH="$PODS_ROOT/../.xcode.env"
+fi
 if [ -f "$ENV_PATH" ]; then
     source "$ENV_PATH"
 fi

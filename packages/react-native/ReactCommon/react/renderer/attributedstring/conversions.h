@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include <folly/dynamic.h>
 #include <react/debug/react_native_expect.h>
+#include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/renderer/attributedstring/AttributedString.h>
 #include <react/renderer/attributedstring/ParagraphAttributes.h>
 #include <react/renderer/attributedstring/TextAttributes.h>
@@ -21,9 +21,12 @@
 #include <react/renderer/core/conversions.h>
 #include <react/renderer/core/graphicsConversions.h>
 #include <react/renderer/core/propsConversions.h>
+#include <react/renderer/css/CSSFontVariant.h>
+#include <react/renderer/css/CSSValueParser.h>
 #include <unordered_map>
 
 #ifdef RN_SERIALIZABLE_STATE
+#include <folly/json.h>
 #include <react/renderer/mapbuffer/MapBuffer.h>
 #include <react/renderer/mapbuffer/MapBufferBuilder.h>
 #endif
@@ -317,7 +320,73 @@ inline std::string toString(const FontStyle &fontStyle)
   return "normal";
 }
 
-inline void fromRawValue(const PropsParserContext &context, const RawValue &value, FontVariant &result)
+inline std::optional<FontVariant> fontVariantFromCSSFontVariant(CSSFontVariant cssVariant)
+{
+  switch (cssVariant) {
+    case CSSFontVariant::SmallCaps:
+      return FontVariant::SmallCaps;
+    case CSSFontVariant::OldstyleNums:
+      return FontVariant::OldstyleNums;
+    case CSSFontVariant::LiningNums:
+      return FontVariant::LiningNums;
+    case CSSFontVariant::TabularNums:
+      return FontVariant::TabularNums;
+    case CSSFontVariant::ProportionalNums:
+      return FontVariant::ProportionalNums;
+    case CSSFontVariant::StylisticOne:
+      return FontVariant::StylisticOne;
+    case CSSFontVariant::StylisticTwo:
+      return FontVariant::StylisticTwo;
+    case CSSFontVariant::StylisticThree:
+      return FontVariant::StylisticThree;
+    case CSSFontVariant::StylisticFour:
+      return FontVariant::StylisticFour;
+    case CSSFontVariant::StylisticFive:
+      return FontVariant::StylisticFive;
+    case CSSFontVariant::StylisticSix:
+      return FontVariant::StylisticSix;
+    case CSSFontVariant::StylisticSeven:
+      return FontVariant::StylisticSeven;
+    case CSSFontVariant::StylisticEight:
+      return FontVariant::StylisticEight;
+    case CSSFontVariant::StylisticNine:
+      return FontVariant::StylisticNine;
+    case CSSFontVariant::StylisticTen:
+      return FontVariant::StylisticTen;
+    case CSSFontVariant::StylisticEleven:
+      return FontVariant::StylisticEleven;
+    case CSSFontVariant::StylisticTwelve:
+      return FontVariant::StylisticTwelve;
+    case CSSFontVariant::StylisticThirteen:
+      return FontVariant::StylisticThirteen;
+    case CSSFontVariant::StylisticFourteen:
+      return FontVariant::StylisticFourteen;
+    case CSSFontVariant::StylisticFifteen:
+      return FontVariant::StylisticFifteen;
+    case CSSFontVariant::StylisticSixteen:
+      return FontVariant::StylisticSixteen;
+    case CSSFontVariant::StylisticSeventeen:
+      return FontVariant::StylisticSeventeen;
+    case CSSFontVariant::StylisticEighteen:
+      return FontVariant::StylisticEighteen;
+    case CSSFontVariant::StylisticNineteen:
+      return FontVariant::StylisticNineteen;
+    case CSSFontVariant::StylisticTwenty:
+      return FontVariant::StylisticTwenty;
+    case CSSFontVariant::CommonLigatures:
+    case CSSFontVariant::NoCommonLigatures:
+    case CSSFontVariant::DiscretionaryLigatures:
+    case CSSFontVariant::NoDiscretionaryLigatures:
+    case CSSFontVariant::HistoricalLigatures:
+    case CSSFontVariant::NoHistoricalLigatures:
+    case CSSFontVariant::Contextual:
+    case CSSFontVariant::NoContextual:
+      return std::nullopt;
+  }
+}
+
+inline void
+parseProcessedFontVariant(const PropsParserContext & /*context*/, const RawValue &value, FontVariant &result)
 {
   result = FontVariant::Default;
   react_native_expect(value.hasType<std::vector<std::string>>());
@@ -376,11 +445,44 @@ inline void fromRawValue(const PropsParserContext &context, const RawValue &valu
         result = (FontVariant)((int)result | (int)FontVariant::StylisticTwenty);
       } else {
         LOG(ERROR) << "Unsupported FontVariant value: " << item;
-        react_native_expect(false);
       }
     }
   } else {
     LOG(ERROR) << "Unsupported FontVariant type";
+  }
+}
+
+inline void parseUnprocessedFontVariantString(const std::string &value, FontVariant &result)
+{
+  auto fontVariantList = parseCSSProperty<CSSFontVariantList>(value);
+  if (!std::holds_alternative<CSSFontVariantList>(fontVariantList)) {
+    result = FontVariant::Default;
+    return;
+  }
+
+  result = FontVariant::Default;
+  for (const auto &cssVariant : std::get<CSSFontVariantList>(fontVariantList)) {
+    if (auto fv = fontVariantFromCSSFontVariant(cssVariant)) {
+      result = (FontVariant)((int)result | (int)*fv);
+    }
+  }
+}
+
+inline void parseUnprocessedFontVariant(const PropsParserContext &context, const RawValue &value, FontVariant &result)
+{
+  if (value.hasType<std::string>()) {
+    parseUnprocessedFontVariantString((std::string)value, result);
+  } else {
+    parseProcessedFontVariant(context, value, result);
+  }
+}
+
+inline void fromRawValue(const PropsParserContext &context, const RawValue &value, FontVariant &result)
+{
+  if (ReactNativeFeatureFlags::enableNativeCSSParsing()) {
+    parseUnprocessedFontVariant(context, value, result);
+  } else {
+    parseProcessedFontVariant(context, value, result);
   }
 }
 
@@ -815,6 +917,8 @@ inline void fromRawValue(const PropsParserContext &context, const RawValue &valu
       result = TextDecorationStyle::Dotted;
     } else if (string == "dashed") {
       result = TextDecorationStyle::Dashed;
+    } else if (string == "wavy") {
+      result = TextDecorationStyle::Wavy;
     } else {
       LOG(ERROR) << "Unsupported TextDecorationStyle value: " << string;
       react_native_expect(false);
@@ -840,6 +944,8 @@ inline std::string toString(const TextDecorationStyle &textDecorationStyle)
       return "dotted";
     case TextDecorationStyle::Dashed:
       return "dashed";
+    case TextDecorationStyle::Wavy:
+      return "wavy";
   }
 
   LOG(ERROR) << "Unsupported TextDecorationStyle value";
@@ -1027,6 +1133,11 @@ constexpr static MapBuffer::Key TA_KEY_ROLE = 26;
 constexpr static MapBuffer::Key TA_KEY_TEXT_TRANSFORM = 27;
 constexpr static MapBuffer::Key TA_KEY_ALIGNMENT_VERTICAL = 28;
 constexpr static MapBuffer::Key TA_KEY_MAX_FONT_SIZE_MULTIPLIER = 29;
+constexpr static MapBuffer::Key TA_KEY_TEXT_EFFECTS = 30;
+
+// Keys within each text effect entry MapBuffer
+constexpr static MapBuffer::Key TE_KEY_NAME = 0;
+constexpr static MapBuffer::Key TE_KEY_PROPS = 1;
 
 // constants for ParagraphAttributes serialization
 constexpr static MapBuffer::Key PA_KEY_MAX_NUMBER_OF_LINES = 0;
@@ -1075,6 +1186,66 @@ inline MapBuffer toMapBuffer(const FontVariant &fontVariant)
   }
   if ((int)fontVariant & (int)FontVariant::ProportionalNums) {
     builder.putString(index++, "proportional-nums");
+  }
+  if ((int)fontVariant & (int)FontVariant::StylisticOne) {
+    builder.putString(index++, "stylistic-one");
+  }
+  if ((int)fontVariant & (int)FontVariant::StylisticTwo) {
+    builder.putString(index++, "stylistic-two");
+  }
+  if ((int)fontVariant & (int)FontVariant::StylisticThree) {
+    builder.putString(index++, "stylistic-three");
+  }
+  if ((int)fontVariant & (int)FontVariant::StylisticFour) {
+    builder.putString(index++, "stylistic-four");
+  }
+  if ((int)fontVariant & (int)FontVariant::StylisticFive) {
+    builder.putString(index++, "stylistic-five");
+  }
+  if ((int)fontVariant & (int)FontVariant::StylisticSix) {
+    builder.putString(index++, "stylistic-six");
+  }
+  if ((int)fontVariant & (int)FontVariant::StylisticSeven) {
+    builder.putString(index++, "stylistic-seven");
+  }
+  if ((int)fontVariant & (int)FontVariant::StylisticEight) {
+    builder.putString(index++, "stylistic-eight");
+  }
+  if ((int)fontVariant & (int)FontVariant::StylisticNine) {
+    builder.putString(index++, "stylistic-nine");
+  }
+  if ((int)fontVariant & (int)FontVariant::StylisticTen) {
+    builder.putString(index++, "stylistic-ten");
+  }
+  if ((int)fontVariant & (int)FontVariant::StylisticEleven) {
+    builder.putString(index++, "stylistic-eleven");
+  }
+  if ((int)fontVariant & (int)FontVariant::StylisticTwelve) {
+    builder.putString(index++, "stylistic-twelve");
+  }
+  if ((int)fontVariant & (int)FontVariant::StylisticThirteen) {
+    builder.putString(index++, "stylistic-thirteen");
+  }
+  if ((int)fontVariant & (int)FontVariant::StylisticFourteen) {
+    builder.putString(index++, "stylistic-fourteen");
+  }
+  if ((int)fontVariant & (int)FontVariant::StylisticFifteen) {
+    builder.putString(index++, "stylistic-fifteen");
+  }
+  if ((int)fontVariant & (int)FontVariant::StylisticSixteen) {
+    builder.putString(index++, "stylistic-sixteen");
+  }
+  if ((int)fontVariant & (int)FontVariant::StylisticSeventeen) {
+    builder.putString(index++, "stylistic-seventeen");
+  }
+  if ((int)fontVariant & (int)FontVariant::StylisticEighteen) {
+    builder.putString(index++, "stylistic-eighteen");
+  }
+  if ((int)fontVariant & (int)FontVariant::StylisticNineteen) {
+    builder.putString(index++, "stylistic-nineteen");
+  }
+  if ((int)fontVariant & (int)FontVariant::StylisticTwenty) {
+    builder.putString(index++, "stylistic-twenty");
   }
 
   return builder.build();
@@ -1170,6 +1341,16 @@ inline MapBuffer toMapBuffer(const TextAttributes &textAttributes)
   }
   if (textAttributes.role.has_value()) {
     builder.putInt(TA_KEY_ROLE, static_cast<int32_t>(*textAttributes.role));
+  }
+  if (!textAttributes.textEffects.empty()) {
+    auto effectsBuilder = MapBufferBuilder();
+    for (size_t i = 0; i < textAttributes.textEffects.size(); i++) {
+      auto effectBuilder = MapBufferBuilder();
+      effectBuilder.putString(TE_KEY_NAME, textAttributes.textEffects[i].name);
+      effectBuilder.putString(TE_KEY_PROPS, folly::toJson(textAttributes.textEffects[i].props));
+      effectsBuilder.putMapBuffer(i, effectBuilder.build());
+    }
+    builder.putMapBuffer(TA_KEY_TEXT_EFFECTS, effectsBuilder.build());
   }
   return builder.build();
 }

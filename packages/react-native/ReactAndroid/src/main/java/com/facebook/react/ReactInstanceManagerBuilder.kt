@@ -387,13 +387,13 @@ public class ReactInstanceManagerBuilder {
   }
 
   private companion object {
+    private val TAG: String = ReactInstanceManagerBuilder::class.java.simpleName
+
     init {
       LegacyArchitectureLogger.assertLegacyArchitecture(
           "ReactInstanceManagerBuilder",
           LegacyArchitectureLogLevel.ERROR,
       )
     }
-
-    private val TAG: String = ReactInstanceManagerBuilder::class.java.simpleName
   }
 }

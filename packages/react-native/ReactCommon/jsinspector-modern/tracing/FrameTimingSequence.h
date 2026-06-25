@@ -11,6 +11,10 @@
 
 #include <react/timing/primitives.h>
 
+#include <cstdint>
+#include <optional>
+#include <vector>
+
 namespace facebook::react::jsinspector_modern::tracing {
 
 using FrameSequenceId = uint64_t;
@@ -24,15 +28,13 @@ struct FrameTimingSequence {
   FrameTimingSequence(
       FrameSequenceId id,
       ThreadId threadId,
-      HighResTimeStamp beginDrawingTimestamp,
-      HighResTimeStamp commitTimestamp,
-      HighResTimeStamp endDrawingTimestamp,
-      std::optional<std::string> screenshot = std::nullopt)
+      HighResTimeStamp beginTimestamp,
+      HighResTimeStamp endTimestamp,
+      std::optional<std::vector<uint8_t>> screenshot = std::nullopt)
       : id(id),
         threadId(threadId),
-        beginDrawingTimestamp(beginDrawingTimestamp),
-        commitTimestamp(commitTimestamp),
-        endDrawingTimestamp(endDrawingTimestamp),
+        beginTimestamp(beginTimestamp),
+        endTimestamp(endTimestamp),
         screenshot(std::move(screenshot))
   {
   }
@@ -47,14 +49,13 @@ struct FrameTimingSequence {
    */
   ThreadId threadId;
 
-  HighResTimeStamp beginDrawingTimestamp;
-  HighResTimeStamp commitTimestamp;
-  HighResTimeStamp endDrawingTimestamp;
+  HighResTimeStamp beginTimestamp;
+  HighResTimeStamp endTimestamp;
 
   /**
-   * Optional screenshot data (base64 encoded) captured during the frame.
+   * Optional screenshot data captured during the frame.
    */
-  std::optional<std::string> screenshot;
+  std::optional<std::vector<uint8_t>> screenshot;
 };
 
 } // namespace facebook::react::jsinspector_modern::tracing

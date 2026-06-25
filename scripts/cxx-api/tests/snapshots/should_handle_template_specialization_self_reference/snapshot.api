@@ -1,0 +1,12 @@
+template <typename R, typename... Args>
+class test::Callback {
+}
+
+template <typename R, typename... Args>
+class test::Callback<R(Args...)> {
+  public Callback(const test::Callback&) = delete;
+  public Callback(test::Callback&& other) noexcept;
+  public R call(Args... args) const;
+  public test::Callback& operator=(const test::Callback&) = delete;
+  public test::Callback& operator=(test::Callback&& other) noexcept;
+}

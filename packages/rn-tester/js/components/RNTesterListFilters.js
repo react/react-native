@@ -16,7 +16,7 @@ const {StyleSheet, Text, TouchableOpacity, View} = require('react-native');
 const filters = ['Basic', 'UI', 'ListView', 'iOS', 'Android'];
 
 type Props = {
-  onFilterButtonPress: (filter: string) => mixed, //optional only for testing
+  onFilterButtonPress: (filter: string) => unknown, //optional only for testing
   ...
 };
 

@@ -21,7 +21,7 @@ const DATA = Array.from({length: 20}, (_, i) => ({
 
 const MAINTAIN_VISIBLE_CONTENT_POSITION = {minIndexForVisible: 0};
 
-export function FlatList_maintainVisibleContentPosition(): React.Node {
+export component FlatList_maintainVisibleContentPosition() {
   const [height, setHeight] = useState<number>(200);
   const [isItemResponsive, setIsItemResponsive] = useState<boolean>(true);
 
@@ -91,9 +91,9 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ({
+export default {
   title: 'maintainVisibleContentPosition',
   name: 'maintainVisibleContentPosition',
   description: 'Test maintainVisibleContentPosition prop on FlatList',
   render: () => <FlatList_maintainVisibleContentPosition />,
-}: RNTesterModuleExample);
+} as RNTesterModuleExample;

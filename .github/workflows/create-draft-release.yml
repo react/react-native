@@ -6,11 +6,7 @@ on:
       hermesVersion:
         required: false
         type: string
-        description: The version of Hermes to use for this release (eg. 0.15.0). If not specified, it will use React Native Version
-      hermesV1Version:
-        required: false
-        type: string
-        description: The version of Hermes V1 to use for this release (eg. 250829098.0.2). If not specified, it will use React Native Version
+        description: The version of Hermes to use for this release (eg. 250829098.0.2). If not specified, it will read HERMES_VERSION_NAME from version.properties
 
 jobs:
   create-draft-release:
@@ -37,7 +33,7 @@ jobs:
             const {createDraftRelease} = require('./.github/workflow-scripts/createDraftRelease.js');
             const version = '${{ github.ref_name }}';
             const {isLatest} = require('./.github/workflow-scripts/publishTemplate.js');
-            return (await createDraftRelease(version, isLatest(), '${{secrets.REACT_NATIVE_BOT_GITHUB_TOKEN}}', '${{ inputs.hermesVersion }}', '${{ inputs.hermesV1Version }}')).id;
+            return (await createDraftRelease(version, isLatest(), '${{secrets.REACT_NATIVE_BOT_GITHUB_TOKEN}}', '${{ inputs.hermesVersion }}')).id;
           result-encoding: string
       - name: Upload release assets for DotSlash
         uses: actions/github-script@v8

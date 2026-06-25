@@ -12,6 +12,7 @@
 #include <cxxreact/CxxNativeModule.h>
 #include <cxxreact/Instance.h>
 #include <cxxreact/JsArgumentHelpers.h>
+#include <cxxreact/MessageQueueThread.h>
 #include <cxxreact/NativeModule.h>
 #include <fbjni/fbjni.h>
 
@@ -19,7 +20,6 @@
 #include <fbsystrace.h>
 #endif
 
-#include "CatalystInstanceImpl.h"
 #include "ReadableNativeArray.h"
 
 #ifndef RCT_REMOVE_LEGACY_ARCH

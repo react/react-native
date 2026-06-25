@@ -21,7 +21,8 @@ target_link_libraries(reactnativeblob
         fbjni
         folly_runtime
         jsi
-        reactnativejni)
+        reactnativejni
+        turbomodulejsijni)
 
 target_compile_reactnative_options(reactnativeblob PRIVATE)
 target_compile_options(reactnativeblob PRIVATE -fvisibility=hidden)

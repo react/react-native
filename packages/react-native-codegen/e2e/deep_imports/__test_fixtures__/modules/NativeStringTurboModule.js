@@ -16,10 +16,10 @@ export type String = string;
 type AnotherString = String;
 
 export interface Spec extends TurboModule {
-  +getString: (arg: string) => string;
-  +getStringWithAlias: (arg: String) => AnotherString;
+  readonly getString: (arg: string) => string;
+  readonly getStringWithAlias: (arg: String) => AnotherString;
 }
 
-export default (TurboModuleRegistry.getEnforcing<Spec>(
+export default TurboModuleRegistry.getEnforcing<Spec>(
   'SampleTurboModule',
-): Spec);
+) as Spec;

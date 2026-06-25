@@ -32,6 +32,7 @@ void Props::initialize(
   nativeId = ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
       ? sourceProps.nativeId
       : convertRawProp(context, rawProps, "nativeID", sourceProps.nativeId, {});
+
 #ifdef RN_SERIALIZABLE_STATE
   if (!ReactNativeFeatureFlags::enableExclusivePropsUpdateAndroid()) {
     initializeDynamicProps(sourceProps, rawProps, filterObjectKeys);

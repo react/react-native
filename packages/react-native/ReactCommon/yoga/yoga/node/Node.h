@@ -73,6 +73,24 @@ class YG_EXPORT Node : public ::YGNode {
       float availableHeight,
       MeasureMode heightMode);
 
+  bool hasMinContentMeasureFunc() const noexcept {
+    return minContentMeasureFunc_ != nullptr;
+  }
+
+  YGSize measureMinContent(
+      float availableWidth,
+      MeasureMode widthMode,
+      float availableHeight,
+      MeasureMode heightMode);
+
+  FloatOptional getMinContentWidth() const noexcept {
+    return minContentWidth_;
+  }
+
+  FloatOptional getMinContentHeight() const noexcept {
+    return minContentHeight_;
+  }
+
   bool hasBaselineFunc() const noexcept {
     return baselineFunc_ != nullptr;
   }
@@ -220,6 +238,18 @@ class YG_EXPORT Node : public ::YGNode {
 
   void setMeasureFunc(YGMeasureFunc measureFunc);
 
+  void setMinContentMeasureFunc(YGMinContentMeasureFunc minContentMeasureFunc) {
+    minContentMeasureFunc_ = minContentMeasureFunc;
+  }
+
+  void setMinContentWidth(FloatOptional minContentWidth) noexcept {
+    minContentWidth_ = minContentWidth;
+  }
+
+  void setMinContentHeight(FloatOptional minContentHeight) noexcept {
+    minContentHeight_ = minContentHeight;
+  }
+
   void setBaselineFunc(YGBaselineFunc baseLineFunc) {
     baselineFunc_ = baseLineFunc;
   }
@@ -294,14 +324,14 @@ class YG_EXPORT Node : public ::YGNode {
   bool isNodeFlexible();
   void reset();
 
- private:
-  // Used to allow resetting the node
-  Node& operator=(Node&&) noexcept = default;
-
   float relativePosition(
       FlexDirection axis,
       Direction direction,
       float axisSize) const;
+
+ private:
+  // Used to allow resetting the node
+  Node& operator=(Node&&) noexcept = default;
 
   void useWebDefaults() {
     style_.setFlexDirection(FlexDirection::Row);
@@ -315,6 +345,9 @@ class YG_EXPORT Node : public ::YGNode {
   NodeType nodeType_ : bitCount<NodeType>() = NodeType::Default;
   void* context_ = nullptr;
   YGMeasureFunc measureFunc_ = nullptr;
+  YGMinContentMeasureFunc minContentMeasureFunc_ = nullptr;
+  FloatOptional minContentWidth_{};
+  FloatOptional minContentHeight_{};
   YGBaselineFunc baselineFunc_ = nullptr;
   YGDirtiedFunc dirtiedFunc_ = nullptr;
   Style style_;

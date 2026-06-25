@@ -25,6 +25,13 @@ void RCTSetCustomNSURLSessionConfigurationProvider(NSURLSessionConfigurationProv
   urlSessionConfigurationProvider = provider;
 }
 
+static RCTHTTPRequestInterceptor httpRequestInterceptor;
+
+void RCTSetCustomHTTPRequestInterceptor(RCTHTTPRequestInterceptor interceptor)
+{
+  httpRequestInterceptor = interceptor;
+}
+
 @implementation RCTHTTPRequestHandler {
   NSMapTable *_delegates;
   NSURLSession *_session;
@@ -99,7 +106,14 @@ RCT_EXPORT_MODULE()
                                            valueOptions:NSPointerFunctionsStrongMemory
                                                capacity:0];
   }
-  NSURLSessionDataTask *task = [_session dataTaskWithRequest:request];
+  NSURLRequest *finalRequest = request;
+  if (httpRequestInterceptor != nullptr) {
+    NSURLRequest *intercepted = httpRequestInterceptor(request);
+    if (intercepted != nil) {
+      finalRequest = intercepted;
+    }
+  }
+  NSURLSessionDataTask *task = [_session dataTaskWithRequest:finalRequest];
   [_delegates setObject:delegate forKey:task];
   [task resume];
   return task;

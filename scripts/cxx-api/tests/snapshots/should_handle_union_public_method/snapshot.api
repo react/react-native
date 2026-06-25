@@ -1,0 +1,5 @@
+union test::MethodUnion {
+  public float floatValue;
+  public int32_t getInt() const;
+  public int32_t intValue;
+}

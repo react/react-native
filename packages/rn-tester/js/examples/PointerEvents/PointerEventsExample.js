@@ -13,15 +13,15 @@
 const React = require('react');
 const {StyleSheet, Text, View} = require('react-native');
 
-type ExampleBoxComponentProps = $ReadOnly<{
+type ExampleBoxComponentProps = Readonly<{
   onLog: (msg: string) => void,
 }>;
 
-type ExampleBoxProps = $ReadOnly<{
+type ExampleBoxProps = Readonly<{
   Component: React.ComponentType<ExampleBoxComponentProps>,
 }>;
 
-type ExampleBoxState = $ReadOnly<{
+type ExampleBoxState = Readonly<{
   log: string[],
 }>;
 
@@ -278,7 +278,7 @@ class BoxOnlyStyleExample extends React.Component<$FlowFixMe> {
   }
 }
 
-type OverflowExampleProps = $ReadOnly<{
+type OverflowExampleProps = Readonly<{
   overflow: 'hidden' | 'visible',
   onLog: (msg: string) => void,
 }>;
@@ -463,5 +463,5 @@ exports.framework = 'React';
 exports.title = 'Pointer Events';
 exports.category = 'Basic';
 exports.description = ('Demonstrates the use of the pointerEvents prop of a ' +
-  'View to control how touches should be handled.': string);
-exports.examples = (exampleClasses.map(infoToExample): Array<any>);
+  'View to control how touches should be handled.') as string;
+exports.examples = exampleClasses.map(infoToExample) as Array<any>;

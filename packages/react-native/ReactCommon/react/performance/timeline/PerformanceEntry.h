@@ -80,7 +80,7 @@ using PerformanceEntry = std::variant<
     PerformanceResourceTiming>;
 
 struct PerformanceEntrySorter {
-  bool operator()(const PerformanceEntry &lhs, const PerformanceEntry &rhs)
+  bool operator()(const PerformanceEntry &lhs, const PerformanceEntry &rhs) const
   {
     return std::visit(
         [](const auto &left, const auto &right) {

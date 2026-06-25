@@ -10,7 +10,7 @@
 
 import type {ArrayLike} from '../../utils/ArrayLikeUtils';
 
-declare export default class HTMLCollection<+T>
+declare export default class HTMLCollection<out T>
   // $FlowFixMe[incompatible-variance]
   implements Iterable<T>, ArrayLike<T>
 {
@@ -18,12 +18,14 @@ declare export default class HTMLCollection<+T>
   // read-only indexers correctly (thinks reads are writes and fails).
   // $FlowFixMe[incompatible-variance]
   [index: number]: T;
-  +length: number;
+  readonly length: number;
   item(index: number): T | null;
   namedItem(name: string): T | null;
   @@iterator(): Iterator<T>;
 }
 
 declare export function createHTMLCollection<T>(
-  elements: $ReadOnlyArray<T>,
+  elements: ReadonlyArray<T>,
 ): HTMLCollection<T>;
+
+declare export var HTMLCollection_public: typeof HTMLCollection;

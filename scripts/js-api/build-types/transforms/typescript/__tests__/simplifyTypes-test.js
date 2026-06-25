@@ -258,4 +258,149 @@ describe('simplifyTypes', () => {
       `"type Foo<T> = Omit<Bar, \\"touchHistory\\">;"`,
     );
   });
+
+  test('should remove Omit when no keys exist on interface', async () => {
+    const code = `
+      interface Foo {
+        x: string;
+      }
+      type Bar = Omit<Foo, "y" | "z">;
+    `;
+
+    const result = await applyPostTransforms(code);
+    expect(result).toMatchInlineSnapshot(`
+      "interface Foo {
+        x: string;
+      }
+      type Bar = Foo;"
+    `);
+  });
+
+  test('should prune Omit keys that do not exist on interface', async () => {
+    const code = `
+      interface Foo {
+        x: string;
+        y: number;
+      }
+      type Bar = Omit<Foo, "x" | "z">;
+    `;
+
+    const result = await applyPostTransforms(code);
+    expect(result).toMatchInlineSnapshot(`
+      "interface Foo {
+        x: string;
+        y: number;
+      }
+      type Bar = Omit<Foo, \\"x\\">;"
+    `);
+  });
+
+  test('should resolve Omit through interface extends chain', async () => {
+    const code = `
+      type Base = {
+        a: string;
+        b: number;
+      };
+      interface Child extends Base {
+        c: boolean;
+      }
+      type Result = Omit<Child, "a" | "d">;
+    `;
+
+    const result = await applyPostTransforms(code);
+    expect(result).toMatchInlineSnapshot(`
+      "type Base = {
+        a: string;
+        b: number;
+      };
+      interface Child extends Base {
+        c: boolean;
+      }
+      type Result = Omit<Child, \\"a\\">;"
+    `);
+  });
+
+  test('should resolve Omit through Readonly in interface extends', async () => {
+    const code = `
+      type Base = {
+        a: string;
+      };
+      interface Props extends Readonly<Base> {
+        b: number;
+      }
+      type Result = Omit<Props, "a" | "c">;
+    `;
+
+    const result = await applyPostTransforms(code);
+    expect(result).toMatchInlineSnapshot(`
+      "type Base = {
+        a: string;
+      };
+      interface Props extends Readonly<Base> {
+        b: number;
+      }
+      type Result = Omit<Props, \\"a\\">;"
+    `);
+  });
+
+  test('should resolve Omit through interface extending intersection', async () => {
+    const code = `
+      type A = {
+        x: string;
+      };
+      type B = {
+        y: number;
+      };
+      interface Props extends Readonly<A & B> {}
+      type Result = Omit<Props, "x" | "z">;
+    `;
+
+    const result = await applyPostTransforms(code);
+    expect(result).toMatchInlineSnapshot(`
+      "type A = {
+        x: string;
+      };
+      type B = {
+        y: number;
+      };
+      interface Props extends Readonly<A & B> {}
+      type Result = Omit<Props, \\"x\\">;"
+    `);
+  });
+
+  test('should not prune Omit when type has an index signature', async () => {
+    const code = `
+      type Foo = {
+        x: string;
+        [key: string]: unknown;
+      };
+      type Bar = Omit<Foo, "y">;
+    `;
+
+    const result = await applyPostTransforms(code);
+    expect(result).toMatchInlineSnapshot(`
+      "type Foo = {
+        x: string;
+        [key: string]: unknown;
+      };
+      type Bar = Omit<Foo, \\"y\\">;"
+    `);
+  });
+
+  test('should not prune Omit when interface extends unknown type', async () => {
+    const code = `
+      interface Props extends UnknownBase {
+        a: string;
+      }
+      type Result = Omit<Props, "a" | "b">;
+    `;
+
+    const result = await applyPostTransforms(code);
+    expect(result).toMatchInlineSnapshot(`
+      "interface Props extends UnknownBase {
+        a: string;
+      }
+      type Result = Omit<Props, \\"a\\" | \\"b\\">;"
+    `);
+  });
 });

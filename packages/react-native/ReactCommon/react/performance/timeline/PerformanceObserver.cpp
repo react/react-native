@@ -25,16 +25,21 @@ void PerformanceObserver::handleEntry(const PerformanceEntry& entry) {
       return;
     }
 
-    buffer_.push_back(entry);
+    {
+      std::lock_guard lock(bufferMutex_);
+      buffer_.push_back(entry);
+    }
     scheduleFlushBuffer();
   }
 }
 
 std::vector<PerformanceEntry> PerformanceObserver::takeRecords() {
   std::vector<PerformanceEntry> result;
-  buffer_.swap(result);
-
-  didScheduleFlushBuffer_ = false;
+  {
+    std::lock_guard lock(bufferMutex_);
+    buffer_.swap(result);
+    didScheduleFlushBuffer_ = false;
+  }
 
   return result;
 }
@@ -87,9 +92,16 @@ void PerformanceObserver::disconnect() noexcept {
 }
 
 void PerformanceObserver::scheduleFlushBuffer() {
-  if (!didScheduleFlushBuffer_) {
-    didScheduleFlushBuffer_ = true;
+  bool shouldSchedule = false;
+  {
+    std::lock_guard lock(bufferMutex_);
+    if (!didScheduleFlushBuffer_) {
+      didScheduleFlushBuffer_ = true;
+      shouldSchedule = true;
+    }
+  }
 
+  if (shouldSchedule) {
     callback_();
   }
 }

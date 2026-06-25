@@ -144,7 +144,7 @@ using namespace facebook::react;
   NSMutableParagraphStyle *str2ParagraphStyle = [NSMutableParagraphStyle new];
   str2ParagraphStyle.alignment = NSTextAlignmentLeft;
 
-  // Base writing direction unless overriden by prop is determined by locale, and we assume this test runs in an LTR
+  // Base writing direction unless overridden by prop is determined by locale, and we assume this test runs in an LTR
   // locale.
   str2ParagraphStyle.baseWritingDirection = NSWritingDirectionLeftToRight;
   [attributedString2 addAttribute:NSParagraphStyleAttributeName value:str2ParagraphStyle range:NSMakeRange(0, 5)];
@@ -173,7 +173,7 @@ using namespace facebook::react;
   NSMutableParagraphStyle *str2ParagraphStyle = [NSMutableParagraphStyle new];
   str2ParagraphStyle.alignment = NSTextAlignmentRight;
 
-  // Base writing direction unless overriden by prop is determined by locale, and we assume this test runs in an LTR
+  // Base writing direction unless overridden by prop is determined by locale, and we assume this test runs in an LTR
   // locale.
   str2ParagraphStyle.baseWritingDirection = NSWritingDirectionLeftToRight;
   [attributedString2 addAttribute:NSParagraphStyleAttributeName value:str2ParagraphStyle range:NSMakeRange(0, 5)];
@@ -199,7 +199,7 @@ using namespace facebook::react;
   NSMutableParagraphStyle *str2ParagraphStyle = [NSMutableParagraphStyle new];
   str2ParagraphStyle.alignment = NSTextAlignmentLeft;
 
-  // Base writing direction unless overriden by prop is determined by locale, and we assume this test runs in an LTR
+  // Base writing direction unless overridden by prop is determined by locale, and we assume this test runs in an LTR
   // locale.
   str2ParagraphStyle.baseWritingDirection = NSWritingDirectionLeftToRight;
   [attributedString2 addAttribute:NSParagraphStyleAttributeName value:str2ParagraphStyle range:NSMakeRange(0, 5)];
@@ -230,7 +230,7 @@ using namespace facebook::react;
   NSMutableParagraphStyle *str2ParagraphStyle = [NSMutableParagraphStyle new];
   str2ParagraphStyle.alignment = NSTextAlignmentCenter;
 
-  // Base writing direction unless overriden by prop is determined by locale, and we assume this test runs in an LTR
+  // Base writing direction unless overridden by prop is determined by locale, and we assume this test runs in an LTR
   // locale.
   str2ParagraphStyle.baseWritingDirection = NSWritingDirectionLeftToRight;
   [attributedString2 addAttribute:NSParagraphStyleAttributeName value:str2ParagraphStyle range:NSMakeRange(0, 5)];
@@ -256,7 +256,7 @@ using namespace facebook::react;
   NSMutableParagraphStyle *str2ParagraphStyle = [NSMutableParagraphStyle new];
   str2ParagraphStyle.alignment = NSTextAlignmentLeft;
 
-  // Base writing direction unless overriden by prop is determined by locale, and we assume this test runs in an LTR
+  // Base writing direction unless overridden by prop is determined by locale, and we assume this test runs in an LTR
   // locale.
   str2ParagraphStyle.baseWritingDirection = NSWritingDirectionLeftToRight;
   [attributedString2 addAttribute:NSParagraphStyleAttributeName value:str2ParagraphStyle range:NSMakeRange(0, 5)];

@@ -35,20 +35,20 @@ export type ExceptionData = {
 };
 export interface Spec extends TurboModule {
   // Deprecated: Use `reportException`
-  +reportFatalException: (
+  readonly reportFatalException: (
     message: string,
     stack: Array<StackFrame>,
     exceptionId: number,
   ) => void;
   // Deprecated: Use `reportException`
-  +reportSoftException: (
+  readonly reportSoftException: (
     message: string,
     stack: Array<StackFrame>,
     exceptionId: number,
   ) => void;
-  +reportException?: (data: ExceptionData) => void;
+  readonly reportException?: (data: ExceptionData) => void;
   // TODO(T53311281): This is a noop on iOS now. Implement it.
-  +dismissRedbox?: () => void;
+  readonly dismissRedbox?: () => void;
 }
 
 const NativeModule =

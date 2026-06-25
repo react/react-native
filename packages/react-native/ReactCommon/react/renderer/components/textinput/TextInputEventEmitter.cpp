@@ -140,7 +140,8 @@ void TextInputEventEmitter::onBlur(const Metrics& textInputMetrics) const {
 }
 
 void TextInputEventEmitter::onChange(const Metrics& textInputMetrics) const {
-  dispatchTextInputEvent("change", textInputMetrics);
+  dispatchTextInputEvent(
+      "change", textInputMetrics, /* includeSelectionState */ true);
 }
 
 void TextInputEventEmitter::onContentSizeChange(

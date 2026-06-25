@@ -10,6 +10,8 @@
 
 import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
+import * as Fantom from '@react-native/fantom';
+
 describe('Performance', () => {
   it('does NOT allow creating instances of Performance directly', () => {
     expect(() => {
@@ -40,7 +42,24 @@ describe('Performance', () => {
   });
 
   describe('timeOrigin', () => {
-    it('allows moving timestamps to Unix epoch', () => {
+    it('is a positive number that does not change between calls', () => {
+      const first = performance.timeOrigin;
+      const second = performance.timeOrigin;
+
+      expect(typeof first).toBe('number');
+      expect(first).toBeGreaterThan(0);
+      expect(second).toBe(first);
+    });
+
+    // On macOS, `performance.now()` is backed by a monotonic clock that does
+    // NOT include time spent while the system is asleep. This causes the
+    // monotonic time to drift relative to wall time (`Date.now()`) the longer
+    // the machine has been running, so we can't reliably compare
+    // `performance.now() + performance.timeOrigin` against `Date.now()` like
+    // we can on other platforms.
+    const itIfNotMacOS = Fantom.getHostPlatform() === 'macos' ? it.skip : it;
+
+    itIfNotMacOS('allows moving timestamps to Unix epoch', () => {
       // We need to truncate timestamps because `Date.now()` only provides
       // integer millisecond precision.
       const adjustedMonotonicTime = Math.trunc(

@@ -17,7 +17,7 @@ const {verifyPropNotAlreadyDefined} = require('../../parsers-commons');
 const {getValueFromTypes} = require('../utils.js');
 
 // $FlowFixMe[unsupported-variance-annotation]
-function getTypeAnnotationForArray<+T>(
+function getTypeAnnotationForArray<out T>(
   name: string,
   typeAnnotation: $FlowFixMe,
   defaultValue: $FlowFixMe | null,
@@ -169,7 +169,7 @@ function getTypeAnnotationForArray<+T>(
       if (unionType === 'StringLiteralTypeAnnotation') {
         return {
           type: 'StringEnumTypeAnnotation',
-          default: (defaultValue: string),
+          default: defaultValue as string,
           options: typeAnnotation.types.map(option => option.value),
         };
       } else if (unionType === 'NumberLiteralTypeAnnotation') {
@@ -187,10 +187,10 @@ function getTypeAnnotationForArray<+T>(
 }
 
 function flattenProperties(
-  typeDefinition: $ReadOnlyArray<PropAST>,
+  typeDefinition: ReadonlyArray<PropAST>,
   types: TypeDeclarationMap,
   parser: Parser,
-): $ReadOnlyArray<PropAST> {
+): ReadonlyArray<PropAST> {
   return typeDefinition
     .map(property => {
       if (property.type === 'ObjectTypeProperty') {
@@ -219,7 +219,7 @@ function flattenProperties(
 }
 
 // $FlowFixMe[unsupported-variance-annotation]
-function getTypeAnnotation<+T>(
+function getTypeAnnotation<out T>(
   name: string,
   annotation: $FlowFixMe | ASTNode,
   defaultValue: $FlowFixMe | null,
@@ -313,32 +313,32 @@ function getTypeAnnotation<+T>(
     case 'Int32':
       return {
         type: 'Int32TypeAnnotation',
-        default: ((defaultValue ? defaultValue : 0): number),
+        default: (defaultValue ? defaultValue : 0) as number,
       };
     case 'Double':
       return {
         type: 'DoubleTypeAnnotation',
-        default: ((defaultValue ? defaultValue : 0): number),
+        default: (defaultValue ? defaultValue : 0) as number,
       };
     case 'Float':
       return {
         type: 'FloatTypeAnnotation',
         default: withNullDefault
-          ? (defaultValue: number | null)
-          : ((defaultValue ? defaultValue : 0): number),
+          ? (defaultValue as number | null)
+          : ((defaultValue ? defaultValue : 0) as number),
       };
     case 'BooleanTypeAnnotation':
       return {
         type: 'BooleanTypeAnnotation',
         default: withNullDefault
-          ? (defaultValue: boolean | null)
-          : ((defaultValue == null ? false : defaultValue): boolean),
+          ? (defaultValue as boolean | null)
+          : ((defaultValue == null ? false : defaultValue) as boolean),
       };
     case 'StringTypeAnnotation':
       if (typeof defaultValue !== 'undefined') {
         return {
           type: 'StringTypeAnnotation',
-          default: (defaultValue: string | null),
+          default: defaultValue as string | null,
         };
       }
       throw new Error(`A default string (or null) is required for "${name}"`);
@@ -346,7 +346,7 @@ function getTypeAnnotation<+T>(
       if (typeof defaultValue !== 'undefined') {
         return {
           type: 'StringTypeAnnotation',
-          default: (defaultValue: string | null),
+          default: defaultValue as string | null,
         };
       }
       throw new Error(`A default string (or null) is required for "${name}"`);
@@ -366,13 +366,13 @@ function getTypeAnnotation<+T>(
       if (unionType === 'StringLiteralTypeAnnotation') {
         return {
           type: 'StringEnumTypeAnnotation',
-          default: (defaultValue: string),
+          default: defaultValue as string,
           options: typeAnnotation.types.map(option => option.value),
         };
       } else if (unionType === 'NumberLiteralTypeAnnotation') {
         return {
           type: 'Int32EnumTypeAnnotation',
-          default: (defaultValue: number),
+          default: defaultValue as number,
           options: typeAnnotation.types.map(option => option.value),
         };
       } else {

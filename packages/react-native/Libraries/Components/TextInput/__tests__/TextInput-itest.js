@@ -10,8 +10,6 @@
 
 import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
-import type {TextInputInstance} from '../TextInput.flow';
-
 import * as Fantom from '@react-native/fantom';
 import nullthrows from 'nullthrows';
 import * as React from 'react';
@@ -45,7 +43,7 @@ describe('<TextInput>', () => {
     describe('onChange', () => {
       it('is called when the change native event is dispatched', () => {
         const root = Fantom.createRoot();
-        const nodeRef = createRef<TextInputInstance>();
+        const nodeRef = createRef<React.ElementRef<typeof TextInput>>();
         const onChange = jest.fn();
 
         Fantom.runTask(() => {
@@ -76,7 +74,7 @@ describe('<TextInput>', () => {
     describe('onChangeText', () => {
       it('is called when the change native event is dispatched', () => {
         const root = Fantom.createRoot();
-        const nodeRef = createRef<TextInputInstance>();
+        const nodeRef = createRef<React.ElementRef<typeof TextInput>>();
         const onChangeText = jest.fn();
 
         Fantom.runTask(() => {
@@ -100,7 +98,7 @@ describe('<TextInput>', () => {
     describe('onFocus', () => {
       it('is called when the focus native event is dispatched', () => {
         const root = Fantom.createRoot();
-        const nodeRef = createRef<TextInputInstance>();
+        const nodeRef = createRef<React.ElementRef<typeof TextInput>>();
 
         let focusEvent = jest.fn();
 
@@ -126,7 +124,7 @@ describe('<TextInput>', () => {
     describe('onBlur', () => {
       it('is called when the blur native event is dispatched', () => {
         const root = Fantom.createRoot();
-        const nodeRef = createRef<TextInputInstance>();
+        const nodeRef = createRef<React.ElementRef<typeof TextInput>>();
 
         let blurEvent = jest.fn();
 
@@ -148,11 +146,143 @@ describe('<TextInput>', () => {
         expect(blurEvent).toHaveBeenCalledTimes(1);
       });
     });
+
+    describe('id and nativeID', () => {
+      it(`has 'id' propagated as 'nativeID' to the mounting layer`, () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(<TextInput id="alpha" />);
+        });
+
+        expect(root.getRenderedOutput({props: ['nativeID']}).toJSX()).toEqual(
+          <rn-androidTextInput nativeID="alpha" />,
+        );
+      });
+
+      it(`has 'nativeID' propagated correctly`, () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(<TextInput nativeID="alpha" />);
+        });
+
+        expect(root.getRenderedOutput({props: ['nativeID']}).toJSX()).toEqual(
+          <rn-androidTextInput nativeID="alpha" />,
+        );
+      });
+
+      it(`has a precedence of 'id' over 'nativeID'`, () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(<TextInput id="alpha" nativeID="gamma" />);
+        });
+
+        expect(root.getRenderedOutput({props: ['nativeID']}).toJSX()).toEqual(
+          <rn-androidTextInput nativeID="alpha" />,
+        );
+      });
+    });
+
+    describe('testID', () => {
+      it('is propagated to the mounting layer', () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(<TextInput testID="my-test-id" />);
+        });
+
+        expect(root.getRenderedOutput({props: ['testID']}).toJSX()).toEqual(
+          <rn-androidTextInput testID="my-test-id" />,
+        );
+      });
+    });
+
+    describe('aria-label and accessibilityLabel', () => {
+      it(`has 'aria-label' propagated as 'accessibilityLabel'`, () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(<TextInput aria-label="label" />);
+        });
+
+        expect(
+          root.getRenderedOutput({props: ['accessibilityLabel']}).toJSX(),
+        ).toEqual(<rn-androidTextInput accessibilityLabel="label" />);
+      });
+
+      it(`has 'accessibilityLabel' propagated correctly`, () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(<TextInput accessibilityLabel="label" />);
+        });
+
+        expect(
+          root.getRenderedOutput({props: ['accessibilityLabel']}).toJSX(),
+        ).toEqual(<rn-androidTextInput accessibilityLabel="label" />);
+      });
+    });
+
+    describe('aria-* and accessibilityState', () => {
+      it(`maps 'aria-*' state props to 'accessibilityState'`, () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(
+            <TextInput
+              aria-busy={true}
+              aria-checked={true}
+              aria-disabled={true}
+              aria-expanded={true}
+              aria-selected={true}
+            />,
+          );
+        });
+
+        expect(
+          root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+        ).toEqual(
+          <rn-androidTextInput accessibilityState="{disabled:true,selected:true,checked:Checked,busy:true,expanded:true}" />,
+        );
+      });
+    });
+
+    describe('accessibilityRole', () => {
+      it('is propagated to the mounting layer', () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(<TextInput accessibilityRole="button" />);
+        });
+
+        expect(
+          root.getRenderedOutput({props: ['accessibilityRole']}).toJSX(),
+        ).toEqual(<rn-androidTextInput accessibilityRole="button" />);
+      });
+    });
+
+    describe('style', () => {
+      it('propagates style values to the mounting layer', () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(<TextInput style={{backgroundColor: 'white'}} />);
+        });
+
+        expect(
+          root.getRenderedOutput({props: ['backgroundColor']}).toJSX(),
+        ).toEqual(
+          <rn-androidTextInput backgroundColor="rgba(255, 255, 255, 1)" />,
+        );
+      });
+    });
   });
 
   describe('ref', () => {
     it('is an element node', () => {
-      const ref = createRef<TextInputInstance>();
+      const ref = createRef<React.ElementRef<typeof TextInput>>();
 
       const root = Fantom.createRoot();
 
@@ -164,7 +294,7 @@ describe('<TextInput>', () => {
     });
 
     it('provides additional methods: clear, isFocused, getNativeRef, setSelection', () => {
-      const ref = createRef<TextInputInstance>();
+      const ref = createRef<React.ElementRef<typeof TextInput>>();
 
       const root = Fantom.createRoot();
 
@@ -181,7 +311,7 @@ describe('<TextInput>', () => {
     describe('focus()', () => {
       it('dispatches the focus command', () => {
         const root = Fantom.createRoot();
-        const ref = createRef<TextInputInstance>();
+        const ref = createRef<React.ElementRef<typeof TextInput>>();
 
         Fantom.runTask(() => {
           root.render(<TextInput nativeID="text-input" ref={ref} />);
@@ -276,12 +406,49 @@ describe('<TextInput>', () => {
           'Command {type: "AndroidTextInput", nativeID: "text-input", name: "focus"}',
         ]);
       });
+
+      it('unfocuses any previously focused TextInput when a new one is focused', () => {
+        const root = Fantom.createRoot();
+        const ref1 = createRef<React.ElementRef<typeof TextInput>>();
+        const ref2 = createRef<React.ElementRef<typeof TextInput>>();
+
+        Fantom.runTask(() => {
+          root.render(
+            <>
+              <TextInput nativeID="text-input-1" ref={ref1} />
+              <TextInput nativeID="text-input-2" ref={ref2} />
+            </>,
+          );
+        });
+
+        const instance1 = nullthrows(ref1.current);
+        const instance2 = nullthrows(ref2.current);
+
+        expect(instance1.isFocused()).toBe(false);
+        expect(instance2.isFocused()).toBe(false);
+
+        Fantom.runTask(() => {
+          instance1.focus();
+        });
+
+        expect(instance1.isFocused()).toBe(true);
+        expect(instance2.isFocused()).toBe(false);
+        expect(TextInput.State.currentlyFocusedInput()).toBe(instance1);
+
+        Fantom.runTask(() => {
+          instance2.focus();
+        });
+
+        expect(instance1.isFocused()).toBe(false);
+        expect(instance2.isFocused()).toBe(true);
+        expect(TextInput.State.currentlyFocusedInput()).toBe(instance2);
+      });
     });
 
     describe('blur()', () => {
       it('does NOT dispatch any commands if the input is NOT focused', () => {
         const root = Fantom.createRoot();
-        const ref = createRef<TextInputInstance>();
+        const ref = createRef<React.ElementRef<typeof TextInput>>();
 
         Fantom.runTask(() => {
           root.render(<TextInput nativeID="text-input" ref={ref} />);
@@ -300,7 +467,7 @@ describe('<TextInput>', () => {
 
       it('does dispatches the blur command if the input is focused', () => {
         const root = Fantom.createRoot();
-        const ref = createRef<TextInputInstance>();
+        const ref = createRef<React.ElementRef<typeof TextInput>>();
 
         Fantom.runTask(() => {
           root.render(<TextInput nativeID="text-input" ref={ref} />);
@@ -327,7 +494,7 @@ describe('<TextInput>', () => {
     describe('clear()', () => {
       it('dispatches the clear command', () => {
         const root = Fantom.createRoot();
-        const ref = createRef<TextInputInstance>();
+        const ref = createRef<React.ElementRef<typeof TextInput>>();
 
         Fantom.runTask(() => {
           root.render(
@@ -352,7 +519,7 @@ describe('<TextInput>', () => {
     describe('isFocused()', () => {
       it('returns true if the input is focused', () => {
         const root = Fantom.createRoot();
-        const ref = createRef<TextInputInstance>();
+        const ref = createRef<React.ElementRef<typeof TextInput>>();
 
         Fantom.runTask(() => {
           root.render(<TextInput nativeID="text-input" ref={ref} />);
@@ -374,12 +541,70 @@ describe('<TextInput>', () => {
 
         expect(instance.isFocused()).toBe(false);
       });
+
+      it('returns false if the input is unmounted', () => {
+        const root = Fantom.createRoot();
+        const ref = createRef<React.ElementRef<typeof TextInput>>();
+
+        Fantom.runTask(() => {
+          root.render(<TextInput nativeID="text-input" ref={ref} />);
+        });
+
+        const instance = nullthrows(ref.current);
+
+        expect(instance.isFocused()).toBe(false);
+
+        Fantom.runTask(() => {
+          instance.focus();
+        });
+
+        expect(instance.isFocused()).toBe(true);
+
+        Fantom.runTask(() => {
+          // unmount TextInput
+          root.render(<></>);
+        });
+
+        expect(instance.isFocused()).toBe(false);
+      });
+
+      it('returns false if the input is unmounted and never focused', () => {
+        Fantom.runTask(() => {
+          // TextInputState is global, so we need to clean up the state to be sure that we
+          // don't have a focused input ref
+          TextInput.State.blurTextInput(
+            TextInput.State.currentlyFocusedInput(),
+          );
+        });
+
+        expect(TextInput.State.currentlyFocusedInput()).toBe(null);
+
+        const root = Fantom.createRoot();
+        const ref = createRef<React.ElementRef<typeof TextInput>>();
+
+        Fantom.runTask(() => {
+          root.render(<TextInput nativeID="text-input" ref={ref} />);
+        });
+
+        const instance = nullthrows(ref.current);
+
+        expect(instance.isFocused()).toBe(false);
+
+        Fantom.runTask(() => {
+          // unmount TextInput
+          root.render(<></>);
+        });
+
+        expect(instance.getNativeRef()).toBe(null);
+        expect(TextInput.State.currentlyFocusedInput()).toBe(null);
+        expect(instance.isFocused()).toBe(false);
+      });
     });
 
     describe('setSelection', () => {
       it('dispatches the setTextAndSelection command', () => {
         const root = Fantom.createRoot();
-        const ref = createRef<TextInputInstance>();
+        const ref = createRef<React.ElementRef<typeof TextInput>>();
 
         Fantom.runTask(() => {
           root.render(
@@ -400,5 +625,9 @@ describe('<TextInput>', () => {
         ]);
       });
     });
+  });
+
+  it('has the correct displayName', () => {
+    expect(TextInput.displayName).toBe('TextInput');
   });
 });

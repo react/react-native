@@ -22,8 +22,8 @@ import type { Dependency, Destination, Platform } from './types';
 async function buildDepenencies(
   scheme /*: string */,
   configuration /*: string */,
-  dependencies /*: $ReadOnlyArray<Dependency> */,
-  destinations /*: $ReadOnlyArray<Destination> */,
+  dependencies /*: ReadonlyArray<Dependency> */,
+  destinations /*: ReadonlyArray<Destination> */,
   rootFolder /*: string */,
   buildFolder /*: string */,
 ) {

@@ -10,7 +10,7 @@
 
 import typeof TNativeAnimatedModule from '../../specs_DEPRECATED/modules/NativeAnimatedModule';
 
-import {create, unmount, update} from '../../../../jest/renderer';
+import {create, unmount, update} from '@react-native/jest-preset/jest/renderer';
 import * as React from 'react';
 import {createRef} from 'react';
 import {format} from 'util';
@@ -406,6 +406,7 @@ describe('Native Animated', () => {
           frames: expect.any(Array),
           toValue: expect.any(Number),
           iterations: 1,
+          deferredStart: false,
         },
         expect.any(Function),
       );
@@ -1219,6 +1220,7 @@ describe('Native Animated', () => {
           frames: expect.any(Array),
           toValue: expect.any(Number),
           iterations: 1,
+          deferredStart: false,
         },
         expect.any(Function),
       );
@@ -1360,6 +1362,7 @@ describe('Native Animated', () => {
           frames: expect.any(Array),
           toValue: expect.any(Number),
           iterations: 1,
+          deferredStart: false,
         },
         expect.any(Function),
       );

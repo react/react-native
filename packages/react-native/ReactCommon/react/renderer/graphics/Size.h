@@ -42,11 +42,6 @@ inline bool operator==(const Size &rhs, const Size &lhs) noexcept
   return std::tie(lhs.width, lhs.height) == std::tie(rhs.width, rhs.height);
 }
 
-inline bool operator!=(const Size &rhs, const Size &lhs) noexcept
-{
-  return !(lhs == rhs);
-}
-
 } // namespace facebook::react
 
 namespace std {

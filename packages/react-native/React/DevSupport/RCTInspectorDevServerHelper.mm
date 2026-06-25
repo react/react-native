@@ -14,33 +14,43 @@
 
 #import <React/RCTCxxInspectorPackagerConnection.h>
 #import <React/RCTDefines.h>
+#import <React/RCTDevSupportHttpHeaders.h>
 
 #import <CommonCrypto/CommonCrypto.h>
 #import <jsinspector-modern/InspectorFlags.h>
 
 static NSString *const kDebuggerMsgDisable = @"{ \"id\":1,\"method\":\"Debugger.disable\" }";
+static const int kDefaultMetroPort = 8081;
 
 static NSString *getServerHost(NSURL *bundleURL)
 {
-  NSNumber *port = @8081;
-  NSString *portStr = [[[NSProcessInfo processInfo] environment] objectForKey:@"RCT_METRO_PORT"];
-  if ((portStr != nullptr) && [portStr length] > 0) {
-    port = [NSNumber numberWithInt:[portStr intValue]];
-  }
-  if ([bundleURL port] != nullptr) {
-    port = [bundleURL port];
-  }
   NSString *host = [bundleURL host];
   if (host == nullptr) {
     host = @"localhost";
   }
+  // NSURL.host strips IPv6 brackets, but URL authority requires them.
+  if ([host containsString:@":"] && ![host hasPrefix:@"["] && ![host hasSuffix:@"]"]) {
+    host = [NSString stringWithFormat:@"[%@]", host];
+  }
 
-  // this is consistent with the Android implementation, where http:// is the
-  // hardcoded implicit scheme for the debug server. Note, packagerURL
-  // technically looks like it could handle schemes/protocols other than HTTP,
-  // so rather than force HTTP, leave it be for now, in case someone is relying
-  // on that ability when developing against iOS.
-  return [NSString stringWithFormat:@"%@:%@", host, port];
+  // Use explicit port from URL if available
+  if ([bundleURL port] != nullptr) {
+    return [NSString stringWithFormat:@"%@:%@", host, [bundleURL port]];
+  }
+
+  // Check environment variable
+  NSString *portStr = [[[NSProcessInfo processInfo] environment] objectForKey:@"RCT_METRO_PORT"];
+  if ((portStr != nullptr) && [portStr length] > 0) {
+    return [NSString stringWithFormat:@"%@:%@", host, portStr];
+  }
+
+  // For https, omit port — the scheme implies 443
+  if ([[bundleURL scheme] isEqualToString:@"https"]) {
+    return host;
+  }
+
+  // Default to 8081 for local development (Metro's default port)
+  return [NSString stringWithFormat:@"%@:%d", host, kDefaultMetroPort];
 }
 
 static NSString *getSHA256(NSString *string)
@@ -111,13 +121,15 @@ static NSURL *getInspectorDeviceUrl(NSURL *bundleURL)
   NSString *escapedInspectorDeviceId = [getInspectorDeviceId()
       stringByAddingPercentEncodingWithAllowedCharacters:NSCharacterSet.URLQueryAllowedCharacterSet];
 
-  return [NSURL
-      URLWithString:[NSString stringWithFormat:@"http://%@/inspector/device?name=%@&app=%@&device=%@&profiling=%@",
-                                               getServerHost(bundleURL),
-                                               escapedDeviceName,
-                                               escapedAppName,
-                                               escapedInspectorDeviceId,
-                                               isProfilingBuild ? @"true" : @"false"]];
+  NSString *scheme = [bundleURL scheme] != nullptr ? [bundleURL scheme] : @"http";
+  return
+      [NSURL URLWithString:[NSString stringWithFormat:@"%@://%@/inspector/device?name=%@&app=%@&device=%@&profiling=%@",
+                                                      scheme,
+                                                      getServerHost(bundleURL),
+                                                      escapedDeviceName,
+                                                      escapedAppName,
+                                                      escapedInspectorDeviceId,
+                                                      isProfilingBuild ? @"true" : @"false"]];
 }
 
 @implementation RCTInspectorDevServerHelper
@@ -149,11 +161,14 @@ static void sendEventToAllConnections(NSString *event)
   NSString *escapedInspectorDeviceId = [getInspectorDeviceId()
       stringByAddingPercentEncodingWithAllowedCharacters:NSCharacterSet.URLQueryAllowedCharacterSet];
 
-  NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"http://%@/open-debugger?device=%@",
+  NSString *scheme = [bundleURL scheme] != nullptr ? [bundleURL scheme] : @"http";
+  NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@://%@/open-debugger?device=%@",
+                                                               scheme,
                                                                getServerHost(bundleURL),
                                                                escapedInspectorDeviceId]];
   NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
   [request setHTTPMethod:@"POST"];
+  [[RCTDevSupportHttpHeaders sharedInstance] applyHeadersToRequest:request];
 
   [[[NSURLSession sharedSession]
       dataTaskWithRequest:request

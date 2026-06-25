@@ -789,8 +789,8 @@ public abstract class DevSupportManagerBase(
               callback.onSuccess(bundleLoader)
             }
 
-            override fun onProgress(status: String?, done: Int?, total: Int?) {
-              devLoadingViewManager?.updateProgress(status, done, total)
+            override fun onProgress(status: String?, done: Int?, total: Int?, percent: Int?) {
+              devLoadingViewManager?.updateProgress(status, done, total, percent)
             }
 
             override fun onFailure(cause: Exception) {
@@ -856,9 +856,9 @@ public abstract class DevSupportManagerBase(
             callback.onSuccess()
           }
 
-          override fun onProgress(status: String?, done: Int?, total: Int?) {
-            devLoadingViewManager?.updateProgress(status, done, total)
-            devBundleDownloadListener?.onProgress(status, done, total)
+          override fun onProgress(status: String?, done: Int?, total: Int?, percent: Int?) {
+            devLoadingViewManager?.updateProgress(status, done, total, percent)
+            devBundleDownloadListener?.onProgress(status, done, total, percent)
           }
 
           override fun onFailure(cause: Exception) {

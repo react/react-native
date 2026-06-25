@@ -16,6 +16,8 @@ import type {ImageSource} from './ImageSource';
 
 import * as React from 'react';
 
+export type ImageInstance = HostInstance;
+
 export type ImageSize = {
   width: number,
   height: number,
@@ -23,12 +25,12 @@ export type ImageSize = {
 
 export type ImageResolvedAssetSource = ResolvedAssetSource;
 
-type ImageComponentStaticsIOS = $ReadOnly<{
+type ImageComponentStaticsIOS = Readonly<{
   getSize(uri: string): Promise<ImageSize>,
   getSize(
     uri: string,
     success: (width: number, height: number) => void,
-    failure?: (error: mixed) => void,
+    failure?: (error: unknown) => void,
   ): void,
 
   getSizeWithHeaders(
@@ -39,7 +41,7 @@ type ImageComponentStaticsIOS = $ReadOnly<{
     uri: string,
     headers: {[string]: string, ...},
     success: (width: number, height: number) => void,
-    failure?: (error: mixed) => void,
+    failure?: (error: unknown) => void,
   ): void,
 
   prefetch(url: string): Promise<boolean>,
@@ -60,7 +62,7 @@ type ImageComponentStaticsIOS = $ReadOnly<{
   resolveAssetSource(source: ImageSource): ?ImageResolvedAssetSource,
 }>;
 
-type ImageComponentStaticsAndroid = $ReadOnly<{
+type ImageComponentStaticsAndroid = Readonly<{
   ...ImageComponentStaticsIOS,
   abortPrefetch(requestId: number): void,
 }>;

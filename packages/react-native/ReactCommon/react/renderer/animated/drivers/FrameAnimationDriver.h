@@ -35,6 +35,7 @@ class FrameAnimationDriver : public AnimationDriver {
   std::vector<double> frames_{};
   double toValue_{0};
   std::optional<double> startValue_{};
+  bool deferredStart_{false};
 };
 
 } // namespace facebook::react

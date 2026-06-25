@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "strictFunctionTypes": false
+    "strict": false
   },
   "include": ["ReactNativeApi.d.ts"]
 }

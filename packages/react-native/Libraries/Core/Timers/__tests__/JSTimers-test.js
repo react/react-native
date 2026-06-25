@@ -16,13 +16,10 @@ const NativeTiming = {
   setSendIdleEvents: jest.fn(),
 };
 
-jest
-  .enableAutomock()
-  .mock('../NativeTiming', () => ({
-    __esModule: true,
-    default: NativeTiming,
-  }))
-  .unmock('../JSTimers');
+jest.mock('../NativeTiming', () => ({
+  __esModule: true,
+  default: NativeTiming,
+}));
 
 const JSTimers = require('../JSTimers').default;
 

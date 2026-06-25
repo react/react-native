@@ -77,8 +77,8 @@ const {
 } = require('./utils');
 const invariant = require('invariant');
 
-export type CommandOptions = $ReadOnly<{
-  supportedCommands: $ReadOnlyArray<string>,
+export type CommandOptions = Readonly<{
+  supportedCommands: ReadonlyArray<string>,
 }>;
 
 // $FlowFixMe[unclear-type] TODO(T108222691): Use flow-types for @babel/parser
@@ -90,7 +90,7 @@ type ExtendedPropResult = {
 } | null;
 
 export type EventArgumentReturnType = {
-  argumentProps: ?$ReadOnlyArray<$FlowFixMe>,
+  argumentProps: ?ReadonlyArray<$FlowFixMe>,
   paperTopLevelNameDeprecated: ?$FlowFixMe,
   bubblingType: ?'direct' | 'bubble',
 };
@@ -107,7 +107,7 @@ function wrapModuleSchema(
 }
 
 // $FlowFixMe[unsupported-variance-annotation]
-function unwrapNullable<+T: NativeModuleTypeAnnotation>(
+function unwrapNullable<out T extends NativeModuleTypeAnnotation>(
   x: Nullable<T>,
 ): [T, boolean] {
   if (x.type === 'NullableTypeAnnotation') {
@@ -118,7 +118,7 @@ function unwrapNullable<+T: NativeModuleTypeAnnotation>(
 }
 
 // $FlowFixMe[unsupported-variance-annotation]
-function wrapNullable<+T: NativeModuleTypeAnnotation>(
+function wrapNullable<out T extends NativeModuleTypeAnnotation>(
   nullable: boolean,
   typeAnnotation: T,
 ): Nullable<T> {
@@ -189,30 +189,42 @@ function getObjectTypeAnnotations(
     if (!isTypeAlias) {
       return;
     }
-    const parent = parser.nextNodeForTypeAlias(value);
+    let parent = parser.nextNodeForTypeAlias(value);
+    // Unwrap $ReadOnly/Readonly wrappers to get the inner object type
+    if (
+      parent.type === 'GenericTypeAnnotation' &&
+      (parent.id?.name === '$ReadOnly' || parent.id?.name === 'Readonly') &&
+      parent.typeParameters?.params?.length === 1
+    ) {
+      parent = parent.typeParameters.params[0];
+    } else if (
+      parent.type === 'TSTypeReference' &&
+      parent.typeName?.name === 'Readonly' &&
+      parent.typeParameters?.params?.length === 1
+    ) {
+      parent = parent.typeParameters.params[0];
+    }
     if (
       parent.type !== 'ObjectTypeAnnotation' &&
       parent.type !== 'TSTypeLiteral'
     ) {
       return;
     }
-    const typeProperties = parser
-      .getAnnotatedElementProperties(value)
-      .map(prop =>
-        parseObjectProperty(
-          parent,
-          prop,
-          hasteModuleName,
-          types,
-          aliasMap,
-          {}, // enumMap
-          tryParse,
-          true, // cxxOnly
-          prop?.optional || false,
-          translateTypeAnnotation,
-          parser,
-        ),
-      );
+    const typeProperties = (parent.properties ?? parent.members).map(prop =>
+      parseObjectProperty(
+        parent,
+        prop,
+        hasteModuleName,
+        types,
+        aliasMap,
+        {}, // enumMap
+        tryParse,
+        true, // cxxOnly
+        prop?.optional || false,
+        translateTypeAnnotation,
+        parser,
+      ),
+    );
     aliasMap[key] = {
       type: 'ObjectTypeAnnotation',
       properties: typeProperties,
@@ -295,7 +307,8 @@ function parseObjectProperty(
   if (
     (propertyTypeAnnotation.type === 'FunctionTypeAnnotation' && !cxxOnly) ||
     propertyTypeAnnotation.type === 'PromiseTypeAnnotation' ||
-    propertyTypeAnnotation.type === 'VoidTypeAnnotation'
+    propertyTypeAnnotation.type === 'VoidTypeAnnotation' ||
+    propertyTypeAnnotation.type === 'ArrayBufferTypeAnnotation'
   ) {
     throwIfPropertyValueTypeIsUnsupported(
       hasteModuleName,
@@ -592,10 +605,10 @@ function buildSchemaFromConfigType(
       if (parsingErrors.length > 0) {
         /**
          * TODO(T77968131): We have two options:
-         *  - Throw the first error, but indicate there are more then one errors.
+         *  - Throw the first error, but indicate there are more than one error.
          *  - Display all errors, nicely formatted.
          *
-         * For the time being, we're just throw the first error.
+         * For the time being, we're just throwing the first error.
          **/
 
         throw parsingErrors[0];
@@ -751,9 +764,9 @@ const buildModuleSchema = (
 ): NativeModuleSchema => {
   const language = parser.language();
   const types = parser.getTypes(ast);
-  const moduleSpecs = (Object.values(types): $ReadOnlyArray<$FlowFixMe>).filter(
-    t => parser.isModuleInterface(t),
-  );
+  const moduleSpecs = (
+    Object.values(types) as ReadonlyArray<$FlowFixMe>
+  ).filter(t => parser.isModuleInterface(t));
 
   throwIfModuleInterfaceNotFound(
     moduleSpecs.length,
@@ -793,7 +806,7 @@ const buildModuleSchema = (
         parser,
       )
     : {};
-  const properties: $ReadOnlyArray<$FlowFixMe> =
+  const properties: ReadonlyArray<$FlowFixMe> =
     language === 'Flow' ? moduleSpec.body.properties : moduleSpec.body.body;
 
   type PropertyShape =
@@ -1043,8 +1056,8 @@ function getCommandTypeNameAndOptionsExpression(
 }
 
 function propertyNames(
-  properties: $ReadOnlyArray<$FlowFixMe>,
-): $ReadOnlyArray<$FlowFixMe> {
+  properties: ReadonlyArray<$FlowFixMe>,
+): ReadonlyArray<$FlowFixMe> {
   return properties
     .map(property => property && property.key && property.key.name)
     .filter(Boolean);
@@ -1293,7 +1306,7 @@ function buildPropertiesForEvent(
 }
 
 function verifyPropNotAlreadyDefined(
-  props: $ReadOnlyArray<PropAST>,
+  props: ReadonlyArray<PropAST>,
   needleProp: PropAST,
 ) {
   const propName = needleProp.key.name;

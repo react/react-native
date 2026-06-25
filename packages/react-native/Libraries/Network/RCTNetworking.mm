@@ -162,7 +162,6 @@ static NSString *RCTGenerateFormBoundary()
   NSMutableArray<id<RCTNetworkingRequestHandler>> *_requestHandlers;
   NSMutableArray<id<RCTNetworkingResponseHandler>> *_responseHandlers;
   NSMutableArray<id<RCTNetworkingTextResponseHandler>> *_textResponseHandlers;
-  dispatch_queue_t _requestQueue;
 }
 
 @synthesize methodQueue = _methodQueue;
@@ -319,7 +318,7 @@ RCT_EXPORT_MODULE()
   request.HTTPMethod = [RCTConvert NSString:RCTNilIfNull(query[@"method"])].uppercaseString ?: @"GET";
   request.HTTPShouldHandleCookies = [RCTConvert BOOL:query[@"withCredentials"]];
 
-  if (request.HTTPShouldHandleCookies == YES) {
+  if (request.HTTPShouldHandleCookies) {
     // Load and set the cookie header.
     NSArray<NSHTTPCookie *> *cookies = [[NSHTTPCookieStorage sharedHTTPCookieStorage] cookiesForURL:URL];
     request.allHTTPHeaderFields = [NSHTTPCookie requestHeaderFieldsWithCookies:cookies];

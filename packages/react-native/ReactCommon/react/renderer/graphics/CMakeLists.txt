@@ -30,6 +30,7 @@ target_link_libraries(react_renderer_graphics
         ${fbjni}
         folly_runtime
         react_debug
+        react_renderer_debug
         react_utils
 )
 target_compile_reactnative_options(react_renderer_graphics PRIVATE)

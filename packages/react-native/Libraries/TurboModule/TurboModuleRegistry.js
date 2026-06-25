@@ -16,7 +16,7 @@ const NativeModules = require('../BatchedBridge/NativeModules').default;
 
 const turboModuleProxy = global.__turboModuleProxy;
 
-function requireModule<T: TurboModule>(name: string): ?T {
+function requireModule<T extends TurboModule>(name: string): ?T {
   if (turboModuleProxy != null) {
     const module: ?T = turboModuleProxy(name);
     if (module != null) {
@@ -32,11 +32,11 @@ function requireModule<T: TurboModule>(name: string): ?T {
   return null;
 }
 
-export function get<T: TurboModule>(name: string): ?T {
+export function get<T extends TurboModule>(name: string): ?T {
   return requireModule<T>(name);
 }
 
-export function getEnforcing<T: TurboModule>(name: string): T {
+export function getEnforcing<T extends TurboModule>(name: string): T {
   const module = requireModule<T>(name);
   invariant(
     module != null,

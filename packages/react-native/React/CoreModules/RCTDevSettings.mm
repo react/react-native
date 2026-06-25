@@ -36,6 +36,14 @@ static NSString *const kRCTDevSettingsUserDefaultsKey = @"RCTDevMenu";
 #import <React/RCTPackagerConnection.h>
 #endif
 
+#ifndef RCT_DEV_SETTINGS_ENABLE_PACKAGER_CONNECTION
+#if RCT_DEV && (__has_include("RCTPackagerConnection.h") || __has_include(<React/RCTPackagerConnection.h>))
+#define RCT_DEV_SETTINGS_ENABLE_PACKAGER_CONNECTION 1
+#else
+#define RCT_DEV_SETTINGS_ENABLE_PACKAGER_CONNECTION 0
+#endif
+#endif
+
 #if RCT_DEV_SETTINGS_ENABLE_PACKAGER_CONNECTION
 #import <React/RCTPackagerClient.h>
 #endif

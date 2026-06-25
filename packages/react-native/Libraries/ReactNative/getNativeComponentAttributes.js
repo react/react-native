@@ -69,7 +69,7 @@ function getNativeComponentAttributes(uiViewClassName: string): any {
     }
   }
 
-  const validAttributes: {[string]: mixed} = {};
+  const validAttributes: {[string]: unknown} = {};
 
   for (const key in nativeProps) {
     const typeName = nativeProps[key];

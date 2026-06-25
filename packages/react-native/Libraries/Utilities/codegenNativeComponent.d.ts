@@ -14,6 +14,8 @@ interface Options {
   readonly paperComponentName?: string | undefined;
   readonly paperComponentNameDeprecated?: string | undefined;
   readonly excludedPlatforms?: ReadonlyArray<'iOS' | 'android'> | undefined;
+  readonly generateOptionalProperties?: boolean | undefined;
+  readonly generateOptionalObjectProperties?: boolean | undefined;
 }
 
 type NativeComponentType<T> = HostComponent<T>;

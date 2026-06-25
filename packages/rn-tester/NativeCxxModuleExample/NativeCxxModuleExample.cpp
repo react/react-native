@@ -6,10 +6,14 @@
  */
 
 #include "NativeCxxModuleExample.h"
+#include <react/bridging/ArrayBuffer.h>
 #include <react/debug/react_native_assert.h>
 #include <iomanip>
+#include <numeric>
 #include <ostream>
+#include <span>
 #include <sstream>
+#include <thread>
 #include <utility>
 
 namespace facebook::react {
@@ -21,6 +25,22 @@ std::string to_string_with_precision(double value, int precision = 2) {
   oss << std::setprecision(precision) << std::fixed << value;
   return oss.str();
 }
+
+struct IntegerSequence : jsi::MutableBuffer {
+  explicit IntegerSequence(int32_t size) : data_(size) {
+    std::iota(data_.begin(), data_.end(), 1);
+  }
+
+  size_t size() const override {
+    return data_.size();
+  }
+
+  uint8_t* data() override {
+    return data_.data();
+  }
+
+  std::vector<uint8_t> data_;
+};
 
 } // namespace
 
@@ -50,6 +70,48 @@ std::vector<std::optional<ObjectStruct>> NativeCxxModuleExample::getArray(
     jsi::Runtime& /*rt*/,
     std::vector<std::optional<ObjectStruct>> arg) {
   return arg;
+}
+
+jsi::ArrayBuffer NativeCxxModuleExample::getArrayBuffer(
+    jsi::Runtime& /*rt*/,
+    jsi::ArrayBuffer arg) {
+  return arg;
+}
+
+jsi::ArrayBuffer NativeCxxModuleExample::createNativeBuffer(
+    jsi::Runtime& rt,
+    int32_t arg) {
+  return {rt, std::make_shared<IntegerSequence>(arg)};
+}
+
+AsyncPromise<double> NativeCxxModuleExample::processAsyncBuffer(
+    jsi::Runtime& rt,
+    jsi::ArrayBuffer arg) {
+  auto promise = AsyncPromise<double>(rt, jsInvoker_);
+  auto storage = AsyncArrayBuffer::acquire(rt, arg);
+  // NOLINTNEXTLINE(facebook-hte-BadCall-detach) — example/demo code
+  std::thread([promise, storage = std::move(storage)]() mutable {
+    auto sum = 0.0;
+    auto bytes = std::span(storage.data(), storage.size());
+    for (auto byte : bytes) {
+      sum += byte;
+    }
+    promise.resolve(sum);
+  }).detach();
+
+  return promise;
+}
+
+AsyncPromise<AsyncArrayBuffer> NativeCxxModuleExample::getAsyncBuffer(
+    jsi::Runtime& rt,
+    int32_t arg) {
+  auto promise = AsyncPromise<AsyncArrayBuffer>(rt, jsInvoker_);
+  // NOLINTNEXTLINE(facebook-hte-BadCall-detach) — example/demo code
+  std::thread([promise, arg]() mutable {
+    promise.resolve(
+        AsyncArrayBuffer::wrap(std::make_shared<IntegerSequence>(arg)));
+  }).detach();
+  return promise;
 }
 
 bool NativeCxxModuleExample::getBool(jsi::Runtime& /*rt*/, bool arg) {

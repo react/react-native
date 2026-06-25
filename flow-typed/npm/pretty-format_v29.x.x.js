@@ -4,7 +4,7 @@
  * @flow strict
  * @format
  */
-declare type Print = (value: mixed) => string;
+declare type Print = (value: unknown) => string;
 declare type Indent = (value: string) => string;
 declare type PluginOptions = {
   edgeSpacing: string,
@@ -22,17 +22,17 @@ declare type Colors = {
 declare type PrettyFormatPlugin =
   | {
       print: (
-        value: mixed,
+        value: unknown,
         print?: ?Print,
         indent?: ?Indent,
         options?: ?PluginOptions,
         colors?: ?Colors,
       ) => string,
-      test: (value: mixed) => boolean,
+      test: (value: unknown) => boolean,
     }
   | {
-      serialize: (value: mixed) => string,
-      test: (value: mixed) => boolean,
+      serialize: (value: unknown) => string,
+      test: (value: unknown) => boolean,
     };
 
 declare module 'pretty-format' {
@@ -41,7 +41,7 @@ declare module 'pretty-format' {
     | null
     | void;
   declare export function format(
-    value: mixed,
+    value: unknown,
     options?: ?{
       callToJSON?: ?boolean,
       compareKeys?: CompareKeys,

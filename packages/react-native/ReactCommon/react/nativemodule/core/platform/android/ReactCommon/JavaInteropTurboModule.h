@@ -7,6 +7,8 @@
 
 #pragma once
 
+#ifndef RCT_REMOVE_LEGACY_MODULE_INTEROP
+
 #include <string>
 #include <vector>
 
@@ -46,3 +48,5 @@ class JSI_EXPORT JavaInteropTurboModule : public JavaTurboModule {
 };
 
 } // namespace facebook::react
+
+#endif // RCT_REMOVE_LEGACY_MODULE_INTEROP

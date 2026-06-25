@@ -23,7 +23,7 @@ import type { Dependency, Platform } from './types';
 async function createFramework(
   scheme /*: string */,
   configuration /*: string */,
-  dependencies /*: $ReadOnlyArray<Dependency> */,
+  dependencies /*: ReadonlyArray<Dependency> */,
   rootFolder /*: string */,
   buildFolder /*: string */,
   identity /*: ?string */,
@@ -81,7 +81,7 @@ async function createFramework(
  */
 function copyHeaders(
   scheme /*: string */,
-  dependencies /*: $ReadOnlyArray<Dependency> */,
+  dependencies /*: ReadonlyArray<Dependency> */,
   rootFolder /*: string */,
 ) {
   console.log('Copying header files for dependencies...');
@@ -114,7 +114,7 @@ function copyHeaders(
  */
 function copyBundles(
   scheme /*: string */,
-  dependencies /*: $ReadOnlyArray<Dependency> */,
+  dependencies /*: ReadonlyArray<Dependency> */,
   outputFolder /*:string*/,
   frameworkPaths /*:Array<string>*/,
 ) {

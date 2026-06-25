@@ -70,7 +70,7 @@ TEST(WeakListTest, ForEach) {
   EXPECT_THAT(visited, ElementsAre(1, 3));
 }
 
-TEST(WeakListTest, ElementsAreAliveDuringCallback) {
+TEST(WeakListTest, ElementsAreAliveDuringForEachCallback) {
   WeakList<int> list;
   auto p1 = std::make_shared<int>(1);
   // A separate weak_ptr to observe the lifetime of `p1`.
@@ -86,6 +86,36 @@ TEST(WeakListTest, ElementsAreAliveDuringCallback) {
 
   EXPECT_TRUE(wp1.expired());
   EXPECT_THAT(visited, ElementsAre(1));
+}
+
+TEST(WeakListTest, AnyOf) {
+  WeakList<int> list;
+  auto p1 = std::make_shared<int>(1);
+  auto p2 = std::make_shared<int>(2);
+  auto p3 = std::make_shared<int>(3);
+  list.insert(p1);
+  list.insert(p2);
+  list.insert(p3);
+
+  EXPECT_TRUE(list.anyOf([](const int& value) { return value == 2; }));
+  EXPECT_FALSE(list.anyOf([](const int& value) { return value == 4; }));
+}
+
+TEST(WeakListTest, ElementsAreAliveDuringAnyOfCallback) {
+  WeakList<int> list;
+  auto p1 = std::make_shared<int>(42);
+  // A separate weak_ptr to observe the lifetime of `p1`.
+  std::weak_ptr wp1 = p1;
+  list.insert(p1);
+
+  bool result = list.anyOf([&](const int& value) {
+    p1.reset();
+    EXPECT_FALSE(wp1.expired());
+    return value == 42;
+  });
+
+  EXPECT_TRUE(result);
+  EXPECT_TRUE(wp1.expired());
 }
 
 } // namespace facebook::react::jsinspector_modern

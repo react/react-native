@@ -134,6 +134,8 @@ public class ReactModalHostView(context: ThemedReactContext) :
     dialogRootViewGroup.dispatchProvideStructure(structure)
   }
 
+  override fun shouldDelayChildPressedState(): Boolean = false
+
   protected override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
     // Do nothing as we are laid out by UIManager
   }
@@ -197,6 +199,9 @@ public class ReactModalHostView(context: ThemedReactContext) :
 
     dialog?.let { nonNullDialog ->
       if (nonNullDialog.isShowing) {
+        nonNullDialog.window?.let { window ->
+          (context as ThemedReactContext).onExtraWindowDestroy(window)
+        }
         val dialogContext =
             ContextUtils.findContextOfType(nonNullDialog.context, Activity::class.java)
         if (dialogContext == null || !dialogContext.isFinishing) {
@@ -341,6 +346,7 @@ public class ReactModalHostView(context: ThemedReactContext) :
       newDialog.show()
       updateSystemAppearance()
       window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
+      (context as ThemedReactContext).onExtraWindowCreate(window)
     }
   }
 
@@ -593,7 +599,7 @@ public class ReactModalHostView(context: ThemedReactContext) :
 
     override fun onInterceptHoverEvent(event: MotionEvent): Boolean {
       eventDispatcher?.let { jSPointerDispatcher?.handleMotionEvent(event, it, true) }
-      return super.onHoverEvent(event)
+      return super.onInterceptHoverEvent(event)
     }
 
     override fun onHoverEvent(event: MotionEvent): Boolean {

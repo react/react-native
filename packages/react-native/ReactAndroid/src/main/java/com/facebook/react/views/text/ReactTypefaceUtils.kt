@@ -9,7 +9,6 @@ package com.facebook.react.views.text
 
 import android.content.res.AssetManager
 import android.graphics.Typeface
-import android.text.TextUtils
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.common.ReactConstants
 import com.facebook.react.common.assets.ReactFontManager
@@ -93,7 +92,7 @@ public object ReactTypefaceUtils {
         "stylistic-twenty" -> features.add("'ss20'")
       }
     }
-    return TextUtils.join(", ", features)
+    return features.joinToString(", ")
   }
 
   @JvmStatic

@@ -27,9 +27,9 @@ function isBackgroundRepeatKeyword(
 }
 
 export default function processBackgroundRepeat(
-  backgroundRepeat: ?($ReadOnlyArray<BackgroundRepeatValue> | string),
-): $ReadOnlyArray<BackgroundRepeatValue> {
-  let result: $ReadOnlyArray<BackgroundRepeatValue> = [];
+  backgroundRepeat: ?(ReadonlyArray<BackgroundRepeatValue> | string),
+): ReadonlyArray<BackgroundRepeatValue> {
+  let result: ReadonlyArray<BackgroundRepeatValue> = [];
   if (backgroundRepeat == null) {
     return [];
   }
@@ -50,7 +50,7 @@ export default function processBackgroundRepeat(
 // https://www.w3.org/TR/css-backgrounds-3/#typedef-repeat-style
 function parseBackgroundRepeatCSSString(
   backgroundRepeat: string,
-): $ReadOnlyArray<BackgroundRepeatValue> {
+): ReadonlyArray<BackgroundRepeatValue> {
   const result: Array<BackgroundRepeatValue> = [];
   const bgRepeatArray = backgroundRepeat.split(',').map(s => s.trim());
 

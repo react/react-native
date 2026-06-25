@@ -15,7 +15,7 @@ import fs from 'fs';
 import path from 'path';
 
 async function createKeepFileAsync(
-  assets: $ReadOnlyArray<AssetData>,
+  assets: ReadonlyArray<AssetData>,
   outputDirectory: string,
 ): Promise<void> {
   if (!assets.length) {

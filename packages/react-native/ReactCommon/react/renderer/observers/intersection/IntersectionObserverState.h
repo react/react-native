@@ -30,7 +30,6 @@ class IntersectionObserverState {
   bool isIntersecting() const;
 
   bool operator==(const IntersectionObserverState &other) const;
-  bool operator!=(const IntersectionObserverState &other) const;
 
  private:
   explicit IntersectionObserverState(IntersectionObserverStateType state);

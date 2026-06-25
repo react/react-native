@@ -21,7 +21,7 @@ import codegenNativeCommands from '../../../../Libraries/Utilities/codegenNative
 import codegenNativeComponent from '../../../../Libraries/Utilities/codegenNativeComponent';
 import * as React from 'react';
 
-type AndroidSwipeRefreshLayoutNativeProps = $ReadOnly<{
+type AndroidSwipeRefreshLayoutNativeProps = Readonly<{
   ...ViewProps,
 
   /**
@@ -31,7 +31,7 @@ type AndroidSwipeRefreshLayoutNativeProps = $ReadOnly<{
   /**
    * The colors (at least one) that will be used to draw the refresh indicator.
    */
-  colors?: ?$ReadOnlyArray<ColorValue>,
+  colors?: ?ReadonlyArray<ColorValue>,
   /**
    * The background color of the refresh indicator.
    */
@@ -59,7 +59,7 @@ type AndroidSwipeRefreshLayoutNativeProps = $ReadOnly<{
 type NativeType = HostComponent<AndroidSwipeRefreshLayoutNativeProps>;
 
 interface NativeCommands {
-  +setNativeRefreshing: (
+  readonly setNativeRefreshing: (
     viewRef: React.ElementRef<NativeType>,
     value: boolean,
   ) => void;
@@ -69,6 +69,6 @@ export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
   supportedCommands: ['setNativeRefreshing'],
 });
 
-export default (codegenNativeComponent<AndroidSwipeRefreshLayoutNativeProps>(
+export default codegenNativeComponent<AndroidSwipeRefreshLayoutNativeProps>(
   'AndroidSwipeRefreshLayout',
-): NativeType);
+) as NativeType;

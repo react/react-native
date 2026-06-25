@@ -10,7 +10,7 @@
 
 'use strict';
 
-export type PointProp = $ReadOnly<{
+export type PointProp = Readonly<{
   x: number,
   y: number,
   ...

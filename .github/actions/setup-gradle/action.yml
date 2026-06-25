@@ -1,13 +1,13 @@
 name: Setup gradle
-description: "Set up your GitHub Actions workflow with a specific version of gradle"
+description: 'Set up your GitHub Actions workflow with a specific version of gradle'
 inputs:
   cache-read-only:
     description: "Whether the Gradle Cache should be in read-only mode so this job won't be allowed to write to it"
-    default: "true"
+    default: 'true'
   cache-encryption-key:
-    description: "The encryption key needed to store the Gradle Configuration cache"
+    description: 'The encryption key needed to store the Gradle Configuration cache'
 runs:
-  using: "composite"
+  using: 'composite'
   steps:
     - name: Setup gradle
       uses: gradle/actions/setup-gradle@v4

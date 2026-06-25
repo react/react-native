@@ -120,7 +120,7 @@ function PointerEventPointerMoveBetweenTestCase(
   );
 }
 
-type Props = $ReadOnly<{}>;
+type Props = Readonly<{}>;
 export default function PointerEventPointerMoveBetween(
   props: Props,
 ): React.MixedElement {

@@ -6,7 +6,6 @@
  *
  * @flow strict-local
  * @format
- * @fantom_flags reduceDefaultPropsInImage:*
  */
 
 import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';

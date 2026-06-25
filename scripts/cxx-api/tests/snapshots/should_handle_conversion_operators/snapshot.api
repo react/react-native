@@ -1,0 +1,6 @@
+class test::Clss {
+  public operator test::Other() const;
+}
+
+class test::Other {
+}

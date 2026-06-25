@@ -380,19 +380,19 @@ void BaseTextProps::appendTextAttributesProps(
   if (textAttributes.fontWeight != oldProps->textAttributes.fontWeight) {
     result["fontWeight"] = textAttributes.fontWeight.has_value()
         ? toString(textAttributes.fontWeight.value())
-        : nullptr;
+        : folly::dynamic(nullptr);
   }
 
   if (textAttributes.fontStyle != oldProps->textAttributes.fontStyle) {
     result["fontStyle"] = textAttributes.fontStyle.has_value()
         ? toString(textAttributes.fontStyle.value())
-        : nullptr;
+        : folly::dynamic(nullptr);
   }
 
   if (textAttributes.fontVariant != oldProps->textAttributes.fontVariant) {
     result["fontVariant"] = textAttributes.fontVariant.has_value()
         ? toString(textAttributes.fontVariant.value())
-        : nullptr;
+        : folly::dynamic(nullptr);
   }
 
   if (textAttributes.allowFontScaling !=
@@ -412,7 +412,7 @@ void BaseTextProps::appendTextAttributesProps(
       oldProps->textAttributes.dynamicTypeRamp) {
     result["dynamicTypeRamp"] = textAttributes.dynamicTypeRamp.has_value()
         ? toString(textAttributes.dynamicTypeRamp.value())
-        : nullptr;
+        : folly::dynamic(nullptr);
   }
 
   if (!floatEquality(
@@ -424,7 +424,7 @@ void BaseTextProps::appendTextAttributesProps(
   if (textAttributes.textTransform != oldProps->textAttributes.textTransform) {
     result["textTransform"] = textAttributes.textTransform.has_value()
         ? toString(textAttributes.textTransform.value())
-        : nullptr;
+        : folly::dynamic(nullptr);
   }
 
   if (!floatEquality(
@@ -435,7 +435,7 @@ void BaseTextProps::appendTextAttributesProps(
   if (textAttributes.alignment != oldProps->textAttributes.alignment) {
     result["textAlign"] = textAttributes.alignment.has_value()
         ? toString(textAttributes.alignment.value())
-        : nullptr;
+        : folly::dynamic(nullptr);
   }
 
   if (textAttributes.baseWritingDirection !=
@@ -443,7 +443,7 @@ void BaseTextProps::appendTextAttributesProps(
     result["baseWritingDirection"] =
         textAttributes.baseWritingDirection.has_value()
         ? toString(textAttributes.baseWritingDirection.value())
-        : nullptr;
+        : folly::dynamic(nullptr);
   }
 
   if (textAttributes.lineBreakStrategy !=
@@ -451,13 +451,13 @@ void BaseTextProps::appendTextAttributesProps(
     result["lineBreakStrategyIOS"] =
         textAttributes.lineBreakStrategy.has_value()
         ? toString(textAttributes.lineBreakStrategy.value())
-        : nullptr;
+        : folly::dynamic(nullptr);
   }
 
   if (textAttributes.lineBreakMode != oldProps->textAttributes.lineBreakMode) {
     result["lineBreakModeIOS"] = textAttributes.lineBreakMode.has_value()
         ? toString(textAttributes.lineBreakMode.value())
-        : nullptr;
+        : folly::dynamic(nullptr);
   }
 
   if (textAttributes.textDecorationColor !=
@@ -470,7 +470,7 @@ void BaseTextProps::appendTextAttributesProps(
     result["textDecorationLine"] =
         textAttributes.textDecorationLineType.has_value()
         ? toString(textAttributes.textDecorationLineType.value())
-        : nullptr;
+        : folly::dynamic(nullptr);
   }
 
   if (textAttributes.textDecorationStyle !=
@@ -478,14 +478,14 @@ void BaseTextProps::appendTextAttributesProps(
     result["textDecorationStyle"] =
         textAttributes.textDecorationStyle.has_value()
         ? toString(textAttributes.textDecorationStyle.value())
-        : nullptr;
+        : folly::dynamic(nullptr);
   }
 
   if (textAttributes.textShadowOffset !=
       oldProps->textAttributes.textShadowOffset) {
     result["textShadowOffset"] = textAttributes.textShadowOffset.has_value()
         ? toDynamic(textAttributes.textShadowOffset.value())
-        : nullptr;
+        : folly::dynamic(nullptr);
   }
 
   if (!floatEquality(
@@ -515,13 +515,13 @@ void BaseTextProps::appendTextAttributesProps(
       oldProps->textAttributes.accessibilityRole) {
     result["accessibilityRole"] = textAttributes.accessibilityRole.has_value()
         ? toString(textAttributes.accessibilityRole.value())
-        : nullptr;
+        : folly::dynamic(nullptr);
   }
 
   if (textAttributes.role != oldProps->textAttributes.role) {
     result["role"] = textAttributes.role.has_value()
         ? toString(textAttributes.role.value())
-        : nullptr;
+        : folly::dynamic(nullptr);
   }
 
   if (!floatEquality(

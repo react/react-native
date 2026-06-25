@@ -10,6 +10,7 @@
 #include <react/renderer/graphics/Color.h>
 #include <react/renderer/graphics/Float.h>
 
+#include <optional>
 #include <string>
 #include <string_view>
 #include <variant>
@@ -29,7 +30,7 @@ enum class FilterType {
   DropShadow
 };
 
-inline FilterType filterTypeFromString(std::string_view filterName)
+inline std::optional<FilterType> filterTypeFromString(std::string_view filterName)
 {
   if (filterName == "blur") {
     return FilterType::Blur;
@@ -52,7 +53,7 @@ inline FilterType filterTypeFromString(std::string_view filterName)
   } else if (filterName == "dropShadow") {
     return FilterType::DropShadow;
   } else {
-    throw std::invalid_argument(std::string(filterName));
+    return std::nullopt;
   }
 }
 

@@ -12,7 +12,7 @@ import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 import type {ColorValue} from 'react-native';
 
 import RNTesterText from '../../components/RNTesterText';
-import React from 'react';
+import * as React from 'react';
 import {
   Appearance,
   Button,

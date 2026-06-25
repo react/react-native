@@ -37,12 +37,29 @@ constexpr MapBuffer::Key IS_KEY_ANALYTIC_TAG = 14;
 constexpr MapBuffer::Key IS_KEY_TAG = 15;
 constexpr MapBuffer::Key IS_KEY_VIEW_WIDTH = 16;
 constexpr MapBuffer::Key IS_KEY_VIEW_HEIGHT = 17;
+constexpr MapBuffer::Key IS_KEY_CACHE_CONTROL = 18;
+
+inline std::string cacheStrategyToString(ImageSource::CacheStategy cache)
+{
+  switch (cache) {
+    case ImageSource::CacheStategy::Reload:
+      return "reload";
+    case ImageSource::CacheStategy::ForceCache:
+      return "force-cache";
+    case ImageSource::CacheStategy::OnlyIfCached:
+      return "only-if-cached";
+    case ImageSource::CacheStategy::Default:
+    default:
+      return "default";
+  }
+}
 
 inline void serializeImageSource(MapBufferBuilder &builder, const ImageSource &imageSource)
 {
   builder.putString(IS_KEY_URI, imageSource.uri);
   builder.putInt(IS_KEY_IMAGE_WIDTH, static_cast<int32_t>(imageSource.size.width));
   builder.putInt(IS_KEY_IMAGE_HEIGHT, static_cast<int32_t>(imageSource.size.height));
+  builder.putString(IS_KEY_CACHE_CONTROL, cacheStrategyToString(imageSource.cache));
 }
 
 inline void serializeImageRequestParams(MapBufferBuilder &builder, const ImageRequestParams &imageRequestParams)

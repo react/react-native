@@ -1,21 +1,21 @@
 appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebook.react.uiapp
 ---
 - launchApp
-- assertVisible: "Components"
+- assertVisible: 'Components'
 - scrollUntilVisible:
     element:
-      id: "Modal"
+      id: 'Modal'
     direction: DOWN
     speed: 60
 - tapOn:
-    id: "Modal"
+    id: 'Modal'
 - assertVisible:
-    text: "Show Modal"
+    text: 'Show Modal'
 - tapOn:
-    text: "Show Modal"
+    text: 'Show Modal'
 - assertVisible:
-    text: "Close"
+    text: 'Close'
 - tapOn:
-    text: "Close"
+    text: 'Close'
 - assertVisible:
-    text: "Show Modal"
+    text: 'Show Modal'

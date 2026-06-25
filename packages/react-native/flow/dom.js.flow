@@ -32,12 +32,12 @@ declare class Blob {
 }
 
 declare class FileReader extends EventTarget {
-  +EMPTY: 0;
-  +LOADING: 1;
-  +DONE: 2;
-  +error: null | DOMError;
-  +readyState: 0 | 1 | 2;
-  +result: null | string | ArrayBuffer;
+  readonly EMPTY: 0;
+  readonly LOADING: 1;
+  readonly DONE: 2;
+  readonly error: null | DOMError;
+  readonly readyState: 0 | 1 | 2;
+  readonly result: null | string | ArrayBuffer;
   abort(): void;
   onabort: null | ((ev: ProgressEvent) => any);
   onerror: null | ((ev: ProgressEvent) => any);
@@ -58,7 +58,7 @@ declare type FilePropertyBag = {
 };
 declare class File extends Blob {
   constructor(
-    fileBits: $ReadOnlyArray<string | BufferDataSource | Blob>,
+    fileBits: ReadonlyArray<string | BufferDataSource | Blob>,
     filename: string,
     options?: FilePropertyBag,
   ): void;
@@ -101,7 +101,7 @@ declare class DataTransferItemList {
 declare class DataTransferItem {
   kind: string; // readonly
   type: string; // readonly
-  getAsString(_callback: ?(data: string) => mixed): void;
+  getAsString(_callback: ?(data: string) => unknown): void;
   getAsFile(): ?File;
   /*
    * This is not supported by all browsers, please have a fallback plan for it.
@@ -117,8 +117,8 @@ declare type DOMStringMap = {[key: string]: string, ...};
 
 declare class DOMStringList {
   @@iterator(): Iterator<string>;
-  +[key: number]: string;
-  +length: number;
+  readonly [key: number]: string;
+  readonly length: number;
   item(number): string | null;
   contains(string): boolean;
 }
@@ -140,16 +140,16 @@ declare interface CustomElementRegistry {
 }
 
 declare interface ShadowRoot extends DocumentFragment {
-  +delegatesFocus: boolean;
-  +host: Element;
+  readonly delegatesFocus: boolean;
+  readonly host: Element;
   // flowlint unsafe-getters-setters:off
   get innerHTML(): string;
   set innerHTML(value: string | TrustedHTML): void;
   // flowlint unsafe-getters-setters:error
-  +mode: ShadowRootMode;
+  readonly mode: ShadowRootMode;
 
   // From DocumentOrShadowRoot Mixin.
-  +styleSheets: StyleSheetList;
+  readonly styleSheets: StyleSheetList;
   adoptedStyleSheets: Array<CSSStyleSheet>;
 }
 
@@ -168,79 +168,79 @@ declare type ScrollToOptions = {
   ...
 };
 
-type EventHandler = (event: Event) => mixed;
+type EventHandler = (event: Event) => unknown;
 type EventListener = {handleEvent: EventHandler, ...} | EventHandler;
-type MouseEventHandler = (event: MouseEvent) => mixed;
+type MouseEventHandler = (event: MouseEvent) => unknown;
 type MouseEventListener =
   | {handleEvent: MouseEventHandler, ...}
   | MouseEventHandler;
-type FocusEventHandler = (event: FocusEvent) => mixed;
+type FocusEventHandler = (event: FocusEvent) => unknown;
 type FocusEventListener =
   | {handleEvent: FocusEventHandler, ...}
   | FocusEventHandler;
-type KeyboardEventHandler = (event: KeyboardEvent) => mixed;
+type KeyboardEventHandler = (event: KeyboardEvent) => unknown;
 type KeyboardEventListener =
   | {handleEvent: KeyboardEventHandler, ...}
   | KeyboardEventHandler;
-type InputEventHandler = (event: InputEvent) => mixed;
+type InputEventHandler = (event: InputEvent) => unknown;
 type InputEventListener =
   | {handleEvent: InputEventHandler, ...}
   | InputEventHandler;
-type TouchEventHandler = (event: TouchEvent) => mixed;
+type TouchEventHandler = (event: TouchEvent) => unknown;
 type TouchEventListener =
   | {handleEvent: TouchEventHandler, ...}
   | TouchEventHandler;
-type WheelEventHandler = (event: WheelEvent) => mixed;
+type WheelEventHandler = (event: WheelEvent) => unknown;
 type WheelEventListener =
   | {handleEvent: WheelEventHandler, ...}
   | WheelEventHandler;
-type AbortProgressEventHandler = (event: ProgressEvent) => mixed;
+type AbortProgressEventHandler = (event: ProgressEvent) => unknown;
 type AbortProgressEventListener =
   | {handleEvent: AbortProgressEventHandler, ...}
   | AbortProgressEventHandler;
-type ProgressEventHandler = (event: ProgressEvent) => mixed;
+type ProgressEventHandler = (event: ProgressEvent) => unknown;
 type ProgressEventListener =
   | {handleEvent: ProgressEventHandler, ...}
   | ProgressEventHandler;
-type DragEventHandler = (event: DragEvent) => mixed;
+type DragEventHandler = (event: DragEvent) => unknown;
 type DragEventListener =
   | {handleEvent: DragEventHandler, ...}
   | DragEventHandler;
-type PointerEventHandler = (event: PointerEvent) => mixed;
+type PointerEventHandler = (event: PointerEvent) => unknown;
 type PointerEventListener =
   | {handleEvent: PointerEventHandler, ...}
   | PointerEventHandler;
-type AnimationEventHandler = (event: AnimationEvent) => mixed;
+type AnimationEventHandler = (event: AnimationEvent) => unknown;
 type AnimationEventListener =
   | {handleEvent: AnimationEventHandler, ...}
   | AnimationEventHandler;
-type ClipboardEventHandler = (event: ClipboardEvent) => mixed;
+type ClipboardEventHandler = (event: ClipboardEvent) => unknown;
 type ClipboardEventListener =
   | {handleEvent: ClipboardEventHandler, ...}
   | ClipboardEventHandler;
-type TransitionEventHandler = (event: TransitionEvent) => mixed;
+type TransitionEventHandler = (event: TransitionEvent) => unknown;
 type TransitionEventListener =
   | {handleEvent: TransitionEventHandler, ...}
   | TransitionEventHandler;
-type MessageEventHandler = (event: MessageEvent) => mixed;
+type MessageEventHandler = (event: MessageEvent) => unknown;
 type MessageEventListener =
   | {handleEvent: MessageEventHandler, ...}
   | MessageEventHandler;
-type BeforeUnloadEventHandler = (event: BeforeUnloadEvent) => mixed;
+type BeforeUnloadEventHandler = (event: BeforeUnloadEvent) => unknown;
 type BeforeUnloadEventListener =
   | {handleEvent: BeforeUnloadEventHandler, ...}
   | BeforeUnloadEventHandler;
-type StorageEventHandler = (event: StorageEvent) => mixed;
+type StorageEventHandler = (event: StorageEvent) => unknown;
 type StorageEventListener =
   | {handleEvent: StorageEventHandler, ...}
   | StorageEventHandler;
 type SecurityPolicyViolationEventHandler = (
   event: SecurityPolicyViolationEvent,
-) => mixed;
+) => unknown;
 type SecurityPolicyViolationEventListener =
   | {handleEvent: SecurityPolicyViolationEventHandler, ...}
   | SecurityPolicyViolationEventHandler;
-type USBConnectionEventHandler = (event: USBConnectionEvent) => mixed;
+type USBConnectionEventHandler = (event: USBConnectionEvent) => unknown;
 type USBConnectionEventListener =
   | {handleEvent: USBConnectionEventHandler, ...}
   | USBConnectionEventHandler;
@@ -650,17 +650,17 @@ declare class Event {
   /**
    * Returns the type of event, e.g. "click", "hashchange", or "submit".
    */
-  +type: string;
+  readonly type: string;
   /**
    * Returns the object to which event is dispatched (its target).
    */
-  +target: EventTarget; // TODO: nullable
+  readonly target: EventTarget; // TODO: nullable
   /** @deprecated */
-  +srcElement: Element; // TODO: nullable
+  readonly srcElement: Element; // TODO: nullable
   /**
    * Returns the object whose event listener's callback is currently being invoked.
    */
-  +currentTarget: EventTarget; // TODO: nullable
+  readonly currentTarget: EventTarget; // TODO: nullable
   /**
    * Returns the invocation target objects of event's path (objects on which
    * listeners will be invoked), except for any nodes in shadow trees of which
@@ -669,15 +669,15 @@ declare class Event {
    */
   composedPath(): Array<EventTarget>;
 
-  +NONE: number;
-  +AT_TARGET: number;
-  +BUBBLING_PHASE: number;
-  +CAPTURING_PHASE: number;
+  readonly NONE: number;
+  readonly AT_TARGET: number;
+  readonly BUBBLING_PHASE: number;
+  readonly CAPTURING_PHASE: number;
   /**
    * Returns the event's phase, which is one of NONE, CAPTURING_PHASE, AT_TARGET,
    * and BUBBLING_PHASE.
    */
-  +eventPhase: number;
+  readonly eventPhase: number;
 
   /**
    * When dispatched in a tree, invoking this method prevents event from reaching
@@ -696,14 +696,14 @@ declare class Event {
    * event goes through its target's ancestors in reverse tree order, and
    * false otherwise.
    */
-  +bubbles: boolean;
+  readonly bubbles: boolean;
   /**
    * Returns true or false depending on how event was initialized. Its
    * return value does not always carry meaning, but true can indicate
    * that part of the operation during which event was dispatched, can
    * be canceled by invoking the preventDefault() method.
    */
-  +cancelable: boolean;
+  readonly cancelable: boolean;
   // returnValue: boolean; // legacy, and some subclasses still define it as a string!
   /**
    * If invoked when the cancelable attribute value is true, and while
@@ -716,28 +716,28 @@ declare class Event {
    * Returns true if preventDefault() was invoked successfully to indicate
    * cancelation, and false otherwise.
    */
-  +defaultPrevented: boolean;
+  readonly defaultPrevented: boolean;
   /**
    * Returns true or false depending on how event was initialized. True if
    * event invokes listeners past a ShadowRoot node that is the root of its
    * target, and false otherwise.
    */
-  +composed: boolean;
+  readonly composed: boolean;
 
   /**
    * Returns true if event was dispatched by the user agent, and false otherwise.
    */
-  +isTrusted: boolean;
+  readonly isTrusted: boolean;
   /**
    * Returns the event's timestamp as the number of milliseconds measured relative
    * to the time origin.
    */
-  +timeStamp: number;
+  readonly timeStamp: number;
 
   /** Non-standard. See Event.prototype.composedPath */
-  +deepPath?: () => EventTarget[];
+  readonly deepPath?: () => EventTarget[];
   /** Non-standard. See Event.prototype.composed */
-  +scoped: boolean;
+  readonly scoped: boolean;
 
   /**
    * @deprecated
@@ -831,15 +831,15 @@ type WheelEvent$Init = {
 };
 
 declare class WheelEvent extends MouseEvent {
-  static +DOM_DELTA_PIXEL: 0x00;
-  static +DOM_DELTA_LINE: 0x01;
-  static +DOM_DELTA_PAGE: 0x02;
+  static readonly DOM_DELTA_PIXEL: 0x00;
+  static readonly DOM_DELTA_LINE: 0x01;
+  static readonly DOM_DELTA_PAGE: 0x02;
 
   constructor(type: string, eventInitDict?: WheelEvent$Init): void;
-  +deltaX: number;
-  +deltaY: number;
-  +deltaZ: number;
-  +deltaMode: 0x00 | 0x01 | 0x02;
+  readonly deltaX: number;
+  readonly deltaY: number;
+  readonly deltaZ: number;
+  readonly deltaMode: 0x00 | 0x01 | 0x02;
 }
 
 declare class DragEvent extends MouseEvent {
@@ -907,7 +907,7 @@ type PageTransitionEventInit = {
 // https://html.spec.whatwg.org/multipage/browsing-the-web.html#the-pagetransitionevent-interface
 declare class PageTransitionEvent extends Event {
   constructor(type: string, init?: PageTransitionEventInit): void;
-  +persisted: boolean;
+  readonly persisted: boolean;
 }
 
 // used for websockets and postMessage, for example. See:
@@ -917,7 +917,7 @@ declare class PageTransitionEvent extends Event {
 // and
 // https://html.spec.whatwg.org/multipage/comms.html#the-messageevent-interfaces
 declare class MessageEvent extends Event {
-  data: mixed;
+  data: unknown;
   origin: string;
   lastEventId: string;
   source: WindowProxy;
@@ -929,12 +929,12 @@ declare class EventSource extends EventTarget {
     url: string,
     configuration?: {withCredentials: boolean, ...},
   ): void;
-  +CLOSED: 2;
-  +CONNECTING: 0;
-  +OPEN: 1;
-  +readyState: 0 | 1 | 2;
-  +url: string;
-  +withCredentials: boolean;
+  readonly CLOSED: 2;
+  readonly CONNECTING: 0;
+  readonly OPEN: 1;
+  readonly readyState: 0 | 1 | 2;
+  readonly url: string;
+  readonly withCredentials: boolean;
   onerror: () => void;
   onmessage: MessageEventListener;
   onopen: () => void;
@@ -1028,33 +1028,33 @@ declare class KeyboardEvent extends UIEvent {
   constructor(typeArg: string, init?: KeyboardEvent$Init): void;
 
   /** `true` if the Alt (alternative) (or "Option") key modifier was active. */
-  +altKey: boolean;
+  readonly altKey: boolean;
   /**
    * Holds a string that identifies the physical key being pressed. The value
    * is not affected by the current keyboard layout or modifier state, so a
    * particular key will always return the same value.
    */
-  +code: string;
+  readonly code: string;
   /** `true` if the Control (control) key modifier was active. */
-  +ctrlKey: boolean;
+  readonly ctrlKey: boolean;
   /**
    * `true` if the key event occurs as part of a composition session, i.e.,
    * after a `compositionstart` event and before the corresponding
    * `compositionend` event.
    */
-  +isComposing: boolean;
+  readonly isComposing: boolean;
   /**
    * Holds a [key attribute value](https://www.w3.org/TR/uievents-key/#key-attribute-value)
    * corresponding to the key pressed. */
-  +key: string;
+  readonly key: string;
   /** An indication of the logical location of the key on the device. */
-  +location: number;
+  readonly location: number;
   /** `true` if the meta (Meta) key (or "Command") modifier was active. */
-  +metaKey: boolean;
+  readonly metaKey: boolean;
   /** `true` if the key has been pressed in a sustained manner. */
-  +repeat: boolean;
+  readonly repeat: boolean;
   /** `true` if the shift (Shift) key modifier was active. */
-  +shiftKey: boolean;
+  readonly shiftKey: boolean;
 
   /**
    * Queries the state of a modifier using a key value.
@@ -1072,7 +1072,7 @@ declare class KeyboardEvent extends UIEvent {
    *
    * @deprecated You should use KeyboardEvent.key instead, if available.
    */
-  +charCode: number;
+  readonly charCode: number;
   /**
    * Holds a system- and implementation-dependent numerical code signifying
    * the unmodified identifier associated with the key pressed. Unlike the
@@ -1084,7 +1084,7 @@ declare class KeyboardEvent extends UIEvent {
    *
    * @deprecated You should use KeyboardEvent.key instead, if available.
    */
-  +keyCode: number;
+  readonly keyCode: number;
   /**
    * Holds a system- and implementation-dependent numerical code signifying
    * the unmodified identifier associated with the key pressed. In most cases,
@@ -1092,7 +1092,7 @@ declare class KeyboardEvent extends UIEvent {
    *
    * @deprecated You should use KeyboardEvent.key instead, if available.
    */
-  +which: number;
+  readonly which: number;
 }
 
 type InputEvent$Init = {
@@ -1107,10 +1107,10 @@ type InputEvent$Init = {
 
 declare class InputEvent extends UIEvent {
   constructor(typeArg: string, inputEventInit: InputEvent$Init): void;
-  +data: string | null;
-  +dataTransfer: DataTransfer | null;
-  +inputType: string;
-  +isComposing: boolean;
+  readonly data: string | null;
+  readonly dataTransfer: DataTransfer | null;
+  readonly inputType: string;
+  readonly isComposing: boolean;
   getTargetRanges(): Array<any>; // TODO: StaticRange
 }
 
@@ -1144,11 +1144,11 @@ declare class ErrorEvent extends Event {
       ...
     },
   ): void;
-  +message: string;
-  +filename: string;
-  +lineno: number;
-  +colno: number;
-  +error: any;
+  readonly message: string;
+  readonly filename: string;
+  readonly lineno: number;
+  readonly colno: number;
+  readonly error: any;
 }
 
 // https://html.spec.whatwg.org/multipage/web-messaging.html#broadcasting-to-other-browsing-contexts
@@ -1158,7 +1158,7 @@ declare class BroadcastChannel extends EventTarget {
   onmessageerror: ?(event: MessageEvent) => void;
 
   constructor(name: string): void;
-  postMessage(msg: mixed): void;
+  postMessage(msg: unknown): void;
   close(): void;
 }
 
@@ -1216,7 +1216,7 @@ type ClipboardItemOptions = {
 };
 
 declare class ClipboardItem {
-  +types: $ReadOnlyArray<string>;
+  readonly types: ReadonlyArray<string>;
   getType(type: string): Promise<Blob>;
   constructor(
     items: {[type: string]: ClipboardItemData},
@@ -1233,7 +1233,7 @@ type ClipboardEvent$Init = {
 
 declare class ClipboardEvent extends Event {
   constructor(type: ClipboardEventTypes, eventInit?: ClipboardEvent$Init): void;
-  +clipboardData: ?DataTransfer; // readonly
+  readonly clipboardData: ?DataTransfer; // readonly
 }
 
 // https://www.w3.org/TR/2017/WD-css-transitions-1-20171130/#interface-transitionevent
@@ -1252,9 +1252,9 @@ declare class TransitionEvent extends Event {
     eventInit?: TransitionEvent$Init,
   ): void;
 
-  +propertyName: string; // readonly
-  +elapsedTime: number; // readonly
-  +pseudoElement: string; // readonly
+  readonly propertyName: string; // readonly
+  readonly elapsedTime: number; // readonly
+  readonly pseudoElement: string; // readonly
 }
 
 // https://www.w3.org/TR/html50/browsers.html#beforeunloadevent
@@ -1263,18 +1263,18 @@ declare class BeforeUnloadEvent extends Event {
 }
 
 declare class SecurityPolicyViolationEvent extends Event {
-  +documentURI: string;
-  +referrer: string;
-  +blockedURI: string;
-  +effectiveDirective: string;
-  +violatedDirective: string;
-  +originalPolicy: string;
-  +sourceFile: string;
-  +sample: string;
-  +disposition: 'enforce' | 'report';
-  +statusCode: number;
-  +lineNumber: number;
-  +columnNumber: number;
+  readonly documentURI: string;
+  readonly referrer: string;
+  readonly blockedURI: string;
+  readonly effectiveDirective: string;
+  readonly violatedDirective: string;
+  readonly originalPolicy: string;
+  readonly sourceFile: string;
+  readonly sample: string;
+  readonly disposition: 'enforce' | 'report';
+  readonly statusCode: number;
+  readonly lineNumber: number;
+  readonly columnNumber: number;
 }
 
 // https://developer.mozilla.org/en-US/docs/Web/API/USBConnectionEvent
@@ -1288,7 +1288,7 @@ declare class Node extends EventTarget {
   baseURI: ?string;
   childNodes: NodeList<Node>;
   firstChild: ?Node;
-  +isConnected: boolean;
+  readonly isConnected: boolean;
   lastChild: ?Node;
   nextSibling: ?Node;
   nodeName: string;
@@ -1300,22 +1300,22 @@ declare class Node extends EventTarget {
   previousSibling: ?Node;
   rootNode: Node;
   textContent: string;
-  appendChild<T: Node>(newChild: T): T;
+  appendChild<T extends Node>(newChild: T): T;
   cloneNode(deep?: boolean): this;
   compareDocumentPosition(other: Node): number;
   contains(other: ?Node): boolean;
   getRootNode(options?: {composed: boolean, ...}): Node;
   hasChildNodes(): boolean;
-  insertBefore<T: Node>(newChild: T, refChild?: ?Node): T;
+  insertBefore<T extends Node>(newChild: T, refChild?: ?Node): T;
   isDefaultNamespace(namespaceURI: string): boolean;
   isEqualNode(arg: Node): boolean;
   isSameNode(other: Node): boolean;
   lookupNamespaceURI(prefix: string): string;
   lookupPrefix(namespaceURI: string): string;
   normalize(): void;
-  removeChild<T: Node>(oldChild: T): T;
-  replaceChild<T: Node>(newChild: Node, oldChild: T): T;
-  replaceChildren(...nodes: $ReadOnlyArray<Node | string>): void;
+  removeChild<T extends Node>(oldChild: T): T;
+  replaceChild<T extends Node>(newChild: Node, oldChild: T): T;
+  replaceChildren(...nodes: ReadonlyArray<Node | string>): void;
   static ATTRIBUTE_NODE: number;
   static CDATA_SECTION_NODE: number;
   static COMMENT_NODE: number;
@@ -1379,7 +1379,7 @@ declare class Attr extends Node {
   localName: string;
 }
 
-declare class HTMLCollection<+Elem: HTMLElement> {
+declare class HTMLCollection<out Elem extends HTMLElement> {
   @@iterator(): Iterator<Elem>;
   length: number;
   item(nameOrIndex?: any, optionalIndex?: any): Elem | null;
@@ -1391,57 +1391,57 @@ declare class HTMLCollection<+Elem: HTMLElement> {
 // from https://www.w3.org/TR/custom-elements/#extensions-to-document-interface-to-register
 // See also https://github.com/w3c/webcomponents/
 type ElementRegistrationOptions = {
-  +prototype?: {
+  readonly prototype?: {
     // from https://www.w3.org/TR/custom-elements/#types-of-callbacks
     // See also https://github.com/w3c/webcomponents/
-    +createdCallback?: () => mixed,
-    +attachedCallback?: () => mixed,
-    +detachedCallback?: () => mixed,
-    +attributeChangedCallback?: ((
+    readonly createdCallback?: () => unknown,
+    readonly attachedCallback?: () => unknown,
+    readonly detachedCallback?: () => unknown,
+    readonly attributeChangedCallback?: ((
       // attribute is set
       attributeLocalName: string,
       oldAttributeValue: null,
       newAttributeValue: string,
       attributeNamespace: string,
-    ) => mixed) &
+    ) => unknown) &
       // attribute is changed
       ((
         attributeLocalName: string,
         oldAttributeValue: string,
         newAttributeValue: string,
         attributeNamespace: string,
-      ) => mixed) &
+      ) => unknown) &
       // attribute is removed
       ((
         attributeLocalName: string,
         oldAttributeValue: string,
         newAttributeValue: null,
         attributeNamespace: string,
-      ) => mixed),
+      ) => unknown),
     ...
   },
-  +extends?: string,
+  readonly extends?: string,
   ...
 };
 
 type ElementCreationOptions = {is: string, ...};
 
 declare class Document extends Node {
-  +timeline: DocumentTimeline;
+  readonly timeline: DocumentTimeline;
   getAnimations(): Array<Animation>;
-  +URL: string;
-  adoptNode<T: Node>(source: T): T;
+  readonly URL: string;
+  adoptNode<T extends Node>(source: T): T;
   anchors: HTMLCollection<HTMLAnchorElement>;
   applets: HTMLCollection<HTMLAppletElement>;
   body: HTMLBodyElement | null;
-  +characterSet: string;
+  readonly characterSet: string;
   /**
    * Legacy alias of `characterSet`
    * @deprecated
    */
-  +charset: string;
+  readonly charset: string;
   close(): void;
-  +contentType: string;
+  readonly contentType: string;
   cookie: string;
   createAttribute(name: string): Attr;
   createAttributeNS(namespaceURI: string | null, qualifiedName: string): Attr;
@@ -1696,10 +1696,10 @@ declare class Document extends Node {
   createTextNode(data: string): Text;
   currentScript: HTMLScriptElement | null;
   dir: 'rtl' | 'ltr';
-  +doctype: DocumentType | null;
-  +documentElement: HTMLElement | null;
+  readonly doctype: DocumentType | null;
+  readonly documentElement: HTMLElement | null;
   documentMode: number;
-  +documentURI: string;
+  readonly documentURI: string;
   domain: string | null;
   embeds: HTMLCollection<HTMLEmbedElement>;
   exitFullscreen(): Promise<void>;
@@ -2033,13 +2033,13 @@ declare class Document extends Node {
   ): HTMLCollection<HTMLElement>;
   head: HTMLHeadElement | null;
   images: HTMLCollection<HTMLImageElement>;
-  +implementation: DOMImplementation;
-  importNode<T: Node>(importedNode: T, deep: boolean): T;
+  readonly implementation: DOMImplementation;
+  importNode<T extends Node>(importedNode: T, deep: boolean): T;
   /**
    * Legacy alias of `characterSet`
    * @deprecated
    */
-  +inputEncoding: string;
+  readonly inputEncoding: string;
   lastModified: string;
   links: HTMLCollection<HTMLLinkElement>;
   media: string;
@@ -2071,7 +2071,7 @@ declare class Document extends Node {
   elementFromPoint(x: number, y: number): HTMLElement | null;
   elementsFromPoint(x: number, y: number): Array<HTMLElement>;
   defaultView: any;
-  +compatMode: 'BackCompat' | 'CSS1Compat';
+  readonly compatMode: 'BackCompat' | 'CSS1Compat';
   hidden: boolean;
 
   // Pointer Lock specification
@@ -2237,12 +2237,12 @@ declare class Document extends Node {
   // NodeFilter.SHOW_ATTRIBUTE === 1), RootNodeT must be Attr, and when
   // RootNodeT is Attr, bitmasks other than NodeFilter.SHOW_ATTRIBUTE are
   // meaningless.
-  createNodeIterator<RootNodeT: Attr>(
+  createNodeIterator<RootNodeT extends Attr>(
     root: RootNodeT,
     whatToShow: 2,
     filter?: NodeFilterInterface,
   ): NodeIterator<RootNodeT, Attr>;
-  createTreeWalker<RootNodeT: Attr>(
+  createTreeWalker<RootNodeT extends Attr>(
     root: RootNodeT,
     whatToShow: 2,
     filter?: NodeFilterInterface,
@@ -2254,122 +2254,122 @@ declare class Document extends Node {
 
   // When (whatToShow & NodeFilter.SHOW_DOCUMENT === 1 || whatToShow &
   // NodeFilter.SHOW_DOCUMENT_TYPE === 1), RootNodeT must be Document.
-  createNodeIterator<RootNodeT: Document>(
+  createNodeIterator<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 256,
     filter?: NodeFilterInterface,
   ): NodeIterator<RootNodeT, Document>;
-  createNodeIterator<RootNodeT: Document>(
+  createNodeIterator<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 257,
     filter?: NodeFilterInterface,
   ): NodeIterator<RootNodeT, Document | Element>;
-  createNodeIterator<RootNodeT: Document>(
+  createNodeIterator<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 260,
     filter?: NodeFilterInterface,
   ): NodeIterator<RootNodeT, Document | Text>;
-  createNodeIterator<RootNodeT: Document>(
+  createNodeIterator<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 261,
     filter?: NodeFilterInterface,
   ): NodeIterator<RootNodeT, Document | Element | Text>;
-  createNodeIterator<RootNodeT: Document>(
+  createNodeIterator<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 384,
     filter?: NodeFilterInterface,
   ): NodeIterator<RootNodeT, Document | Comment>;
-  createNodeIterator<RootNodeT: Document>(
+  createNodeIterator<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 385,
     filter?: NodeFilterInterface,
   ): NodeIterator<RootNodeT, Document | Element | Comment>;
-  createNodeIterator<RootNodeT: Document>(
+  createNodeIterator<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 388,
     filter?: NodeFilterInterface,
   ): NodeIterator<RootNodeT, Document | Text | Comment>;
-  createNodeIterator<RootNodeT: Document>(
+  createNodeIterator<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 389,
     filter?: NodeFilterInterface,
   ): NodeIterator<RootNodeT, Document | Element | Text | Comment>;
-  createNodeIterator<RootNodeT: Document>(
+  createNodeIterator<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 512,
     filter?: NodeFilterInterface,
   ): NodeIterator<RootNodeT, DocumentType>;
-  createNodeIterator<RootNodeT: Document>(
+  createNodeIterator<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 513,
     filter?: NodeFilterInterface,
   ): NodeIterator<RootNodeT, DocumentType | Element>;
-  createNodeIterator<RootNodeT: Document>(
+  createNodeIterator<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 516,
     filter?: NodeFilterInterface,
   ): NodeIterator<RootNodeT, DocumentType | Text>;
-  createNodeIterator<RootNodeT: Document>(
+  createNodeIterator<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 517,
     filter?: NodeFilterInterface,
   ): NodeIterator<RootNodeT, DocumentType | Element | Text>;
-  createNodeIterator<RootNodeT: Document>(
+  createNodeIterator<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 640,
     filter?: NodeFilterInterface,
   ): NodeIterator<RootNodeT, DocumentType | Comment>;
-  createNodeIterator<RootNodeT: Document>(
+  createNodeIterator<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 641,
     filter?: NodeFilterInterface,
   ): NodeIterator<RootNodeT, DocumentType | Element | Comment>;
-  createNodeIterator<RootNodeT: Document>(
+  createNodeIterator<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 644,
     filter?: NodeFilterInterface,
   ): NodeIterator<RootNodeT, DocumentType | Text | Comment>;
-  createNodeIterator<RootNodeT: Document>(
+  createNodeIterator<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 645,
     filter?: NodeFilterInterface,
   ): NodeIterator<RootNodeT, DocumentType | Element | Text | Comment>;
-  createNodeIterator<RootNodeT: Document>(
+  createNodeIterator<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 768,
     filter?: NodeFilterInterface,
   ): NodeIterator<RootNodeT, DocumentType | Document>;
-  createNodeIterator<RootNodeT: Document>(
+  createNodeIterator<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 769,
     filter?: NodeFilterInterface,
   ): NodeIterator<RootNodeT, DocumentType | Document | Element>;
-  createNodeIterator<RootNodeT: Document>(
+  createNodeIterator<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 772,
     filter?: NodeFilterInterface,
   ): NodeIterator<RootNodeT, DocumentType | Document | Text>;
-  createNodeIterator<RootNodeT: Document>(
+  createNodeIterator<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 773,
     filter?: NodeFilterInterface,
   ): NodeIterator<RootNodeT, DocumentType | Document | Element | Text>;
-  createNodeIterator<RootNodeT: Document>(
+  createNodeIterator<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 896,
     filter?: NodeFilterInterface,
   ): NodeIterator<RootNodeT, DocumentType | Document | Comment>;
-  createNodeIterator<RootNodeT: Document>(
+  createNodeIterator<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 897,
     filter?: NodeFilterInterface,
   ): NodeIterator<RootNodeT, DocumentType | Document | Element | Comment>;
-  createNodeIterator<RootNodeT: Document>(
+  createNodeIterator<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 900,
     filter?: NodeFilterInterface,
   ): NodeIterator<RootNodeT, DocumentType | Document | Text | Comment>;
-  createNodeIterator<RootNodeT: Document>(
+  createNodeIterator<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 901,
     filter?: NodeFilterInterface,
@@ -2377,145 +2377,145 @@ declare class Document extends Node {
     RootNodeT,
     DocumentType | Document | Element | Text | Comment,
   >;
-  createTreeWalker<RootNodeT: Document>(
+  createTreeWalker<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 256,
     filter?: NodeFilterInterface,
     entityReferenceExpansion?: boolean,
   ): TreeWalker<RootNodeT, Document>;
-  createTreeWalker<RootNodeT: Document>(
+  createTreeWalker<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 257,
     filter?: NodeFilterInterface,
     entityReferenceExpansion?: boolean,
   ): TreeWalker<RootNodeT, Document | Element>;
-  createTreeWalker<RootNodeT: Document>(
+  createTreeWalker<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 260,
     filter?: NodeFilterInterface,
     entityReferenceExpansion?: boolean,
   ): TreeWalker<RootNodeT, Document | Text>;
-  createTreeWalker<RootNodeT: Document>(
+  createTreeWalker<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 261,
     filter?: NodeFilterInterface,
     entityReferenceExpansion?: boolean,
   ): TreeWalker<RootNodeT, Document | Element | Text>;
-  createTreeWalker<RootNodeT: Document>(
+  createTreeWalker<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 384,
     filter?: NodeFilterInterface,
     entityReferenceExpansion?: boolean,
   ): TreeWalker<RootNodeT, Document | Comment>;
-  createTreeWalker<RootNodeT: Document>(
+  createTreeWalker<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 385,
     filter?: NodeFilterInterface,
     entityReferenceExpansion?: boolean,
   ): TreeWalker<RootNodeT, Document | Element | Comment>;
-  createTreeWalker<RootNodeT: Document>(
+  createTreeWalker<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 388,
     filter?: NodeFilterInterface,
     entityReferenceExpansion?: boolean,
   ): TreeWalker<RootNodeT, Document | Text | Comment>;
-  createTreeWalker<RootNodeT: Document>(
+  createTreeWalker<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 389,
     filter?: NodeFilterInterface,
     entityReferenceExpansion?: boolean,
   ): TreeWalker<RootNodeT, Document | Element | Text | Comment>;
-  createTreeWalker<RootNodeT: Document>(
+  createTreeWalker<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 512,
     filter?: NodeFilterInterface,
     entityReferenceExpansion?: boolean,
   ): TreeWalker<RootNodeT, DocumentType>;
-  createTreeWalker<RootNodeT: Document>(
+  createTreeWalker<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 513,
     filter?: NodeFilterInterface,
     entityReferenceExpansion?: boolean,
   ): TreeWalker<RootNodeT, DocumentType | Element>;
-  createTreeWalker<RootNodeT: Document>(
+  createTreeWalker<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 516,
     filter?: NodeFilterInterface,
     entityReferenceExpansion?: boolean,
   ): TreeWalker<RootNodeT, DocumentType | Text>;
-  createTreeWalker<RootNodeT: Document>(
+  createTreeWalker<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 517,
     filter?: NodeFilterInterface,
     entityReferenceExpansion?: boolean,
   ): TreeWalker<RootNodeT, DocumentType | Element | Text>;
-  createTreeWalker<RootNodeT: Document>(
+  createTreeWalker<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 640,
     filter?: NodeFilterInterface,
     entityReferenceExpansion?: boolean,
   ): TreeWalker<RootNodeT, DocumentType | Comment>;
-  createTreeWalker<RootNodeT: Document>(
+  createTreeWalker<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 641,
     filter?: NodeFilterInterface,
     entityReferenceExpansion?: boolean,
   ): TreeWalker<RootNodeT, DocumentType | Element | Comment>;
-  createTreeWalker<RootNodeT: Document>(
+  createTreeWalker<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 644,
     filter?: NodeFilterInterface,
     entityReferenceExpansion?: boolean,
   ): TreeWalker<RootNodeT, DocumentType | Text | Comment>;
-  createTreeWalker<RootNodeT: Document>(
+  createTreeWalker<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 645,
     filter?: NodeFilterInterface,
     entityReferenceExpansion?: boolean,
   ): TreeWalker<RootNodeT, DocumentType | Element | Text | Comment>;
-  createTreeWalker<RootNodeT: Document>(
+  createTreeWalker<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 768,
     filter?: NodeFilterInterface,
     entityReferenceExpansion?: boolean,
   ): TreeWalker<RootNodeT, DocumentType | Document>;
-  createTreeWalker<RootNodeT: Document>(
+  createTreeWalker<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 769,
     filter?: NodeFilterInterface,
     entityReferenceExpansion?: boolean,
   ): TreeWalker<RootNodeT, DocumentType | Document | Element>;
-  createTreeWalker<RootNodeT: Document>(
+  createTreeWalker<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 772,
     filter?: NodeFilterInterface,
     entityReferenceExpansion?: boolean,
   ): TreeWalker<RootNodeT, DocumentType | Document | Text>;
-  createTreeWalker<RootNodeT: Document>(
+  createTreeWalker<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 773,
     filter?: NodeFilterInterface,
     entityReferenceExpansion?: boolean,
   ): TreeWalker<RootNodeT, DocumentType | Document | Element | Text>;
-  createTreeWalker<RootNodeT: Document>(
+  createTreeWalker<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 896,
     filter?: NodeFilterInterface,
     entityReferenceExpansion?: boolean,
   ): TreeWalker<RootNodeT, DocumentType | Document | Comment>;
-  createTreeWalker<RootNodeT: Document>(
+  createTreeWalker<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 897,
     filter?: NodeFilterInterface,
     entityReferenceExpansion?: boolean,
   ): TreeWalker<RootNodeT, DocumentType | Document | Element | Comment>;
-  createTreeWalker<RootNodeT: Document>(
+  createTreeWalker<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 900,
     filter?: NodeFilterInterface,
     entityReferenceExpansion?: boolean,
   ): TreeWalker<RootNodeT, DocumentType | Document | Text | Comment>;
-  createTreeWalker<RootNodeT: Document>(
+  createTreeWalker<RootNodeT extends Document>(
     root: RootNodeT,
     whatToShow: 901,
     filter?: NodeFilterInterface,
@@ -2524,89 +2524,89 @@ declare class Document extends Node {
 
   // When (whatToShow & NodeFilter.SHOW_DOCUMENT_FRAGMENT === 1), RootNodeT
   // must be a DocumentFragment.
-  createNodeIterator<RootNodeT: DocumentFragment>(
+  createNodeIterator<RootNodeT extends DocumentFragment>(
     root: RootNodeT,
     whatToShow: 1024,
     filter?: NodeFilterInterface,
   ): NodeIterator<RootNodeT, DocumentFragment>;
-  createNodeIterator<RootNodeT: DocumentFragment>(
+  createNodeIterator<RootNodeT extends DocumentFragment>(
     root: RootNodeT,
     whatToShow: 1025,
     filter?: NodeFilterInterface,
   ): NodeIterator<RootNodeT, DocumentFragment | Element>;
-  createNodeIterator<RootNodeT: DocumentFragment>(
+  createNodeIterator<RootNodeT extends DocumentFragment>(
     root: RootNodeT,
     whatToShow: 1028,
     filter?: NodeFilterInterface,
   ): NodeIterator<RootNodeT, DocumentFragment | Text>;
-  createNodeIterator<RootNodeT: DocumentFragment>(
+  createNodeIterator<RootNodeT extends DocumentFragment>(
     root: RootNodeT,
     whatToShow: 1029,
     filter?: NodeFilterInterface,
   ): NodeIterator<RootNodeT, DocumentFragment | Element | Text>;
-  createNodeIterator<RootNodeT: DocumentFragment>(
+  createNodeIterator<RootNodeT extends DocumentFragment>(
     root: RootNodeT,
     whatToShow: 1152,
     filter?: NodeFilterInterface,
   ): NodeIterator<RootNodeT, DocumentFragment | Comment>;
-  createNodeIterator<RootNodeT: DocumentFragment>(
+  createNodeIterator<RootNodeT extends DocumentFragment>(
     root: RootNodeT,
     whatToShow: 1153,
     filter?: NodeFilterInterface,
   ): NodeIterator<RootNodeT, DocumentFragment | Element | Comment>;
-  createNodeIterator<RootNodeT: DocumentFragment>(
+  createNodeIterator<RootNodeT extends DocumentFragment>(
     root: RootNodeT,
     whatToShow: 1156,
     filter?: NodeFilterInterface,
   ): NodeIterator<RootNodeT, DocumentFragment | Text | Comment>;
-  createNodeIterator<RootNodeT: DocumentFragment>(
+  createNodeIterator<RootNodeT extends DocumentFragment>(
     root: RootNodeT,
     whatToShow: 1157,
     filter?: NodeFilterInterface,
   ): NodeIterator<RootNodeT, DocumentFragment | Element | Text | Comment>;
-  createTreeWalker<RootNodeT: DocumentFragment>(
+  createTreeWalker<RootNodeT extends DocumentFragment>(
     root: RootNodeT,
     whatToShow: 1024,
     filter?: NodeFilterInterface,
     entityReferenceExpansion?: boolean,
   ): TreeWalker<RootNodeT, DocumentFragment>;
-  createTreeWalker<RootNodeT: DocumentFragment>(
+  createTreeWalker<RootNodeT extends DocumentFragment>(
     root: RootNodeT,
     whatToShow: 1025,
     filter?: NodeFilterInterface,
     entityReferenceExpansion?: boolean,
   ): TreeWalker<RootNodeT, DocumentFragment | Element>;
-  createTreeWalker<RootNodeT: DocumentFragment>(
+  createTreeWalker<RootNodeT extends DocumentFragment>(
     root: RootNodeT,
     whatToShow: 1028,
     filter?: NodeFilterInterface,
     entityReferenceExpansion?: boolean,
   ): TreeWalker<RootNodeT, DocumentFragment | Text>;
-  createTreeWalker<RootNodeT: DocumentFragment>(
+  createTreeWalker<RootNodeT extends DocumentFragment>(
     root: RootNodeT,
     whatToShow: 1029,
     filter?: NodeFilterInterface,
     entityReferenceExpansion?: boolean,
   ): TreeWalker<RootNodeT, DocumentFragment | Element | Text>;
-  createTreeWalker<RootNodeT: DocumentFragment>(
+  createTreeWalker<RootNodeT extends DocumentFragment>(
     root: RootNodeT,
     whatToShow: 1152,
     filter?: NodeFilterInterface,
     entityReferenceExpansion?: boolean,
   ): TreeWalker<RootNodeT, DocumentFragment | Comment>;
-  createTreeWalker<RootNodeT: DocumentFragment>(
+  createTreeWalker<RootNodeT extends DocumentFragment>(
     root: RootNodeT,
     whatToShow: 1153,
     filter?: NodeFilterInterface,
     entityReferenceExpansion?: boolean,
   ): TreeWalker<RootNodeT, DocumentFragment | Element | Comment>;
-  createTreeWalker<RootNodeT: DocumentFragment>(
+  createTreeWalker<RootNodeT extends DocumentFragment>(
     root: RootNodeT,
     whatToShow: 1156,
     filter?: NodeFilterInterface,
     entityReferenceExpansion?: boolean,
   ): TreeWalker<RootNodeT, DocumentFragment | Text | Comment>;
-  createTreeWalker<RootNodeT: DocumentFragment>(
+  createTreeWalker<RootNodeT extends DocumentFragment>(
     root: RootNodeT,
     whatToShow: 1157,
     filter?: NodeFilterInterface,
@@ -2616,78 +2616,78 @@ declare class Document extends Node {
   // In the general case, RootNodeT may be any Node and whatToShow may be
   // NodeFilter.SHOW_ALL or any combination of NodeFilter.SHOW_ELEMENT,
   // NodeFilter.SHOW_TEXT and/or NodeFilter.SHOW_COMMENT
-  createNodeIterator<RootNodeT: Node>(
+  createNodeIterator<RootNodeT extends Node>(
     root: RootNodeT,
     whatToShow: 1,
     filter?: NodeFilterInterface,
   ): NodeIterator<RootNodeT, Element>;
-  createNodeIterator<RootNodeT: Node>(
+  createNodeIterator<RootNodeT extends Node>(
     root: RootNodeT,
     whatToShow: 4,
     filter?: NodeFilterInterface,
   ): NodeIterator<RootNodeT, Text>;
-  createNodeIterator<RootNodeT: Node>(
+  createNodeIterator<RootNodeT extends Node>(
     root: RootNodeT,
     whatToShow: 5,
     filter?: NodeFilterInterface,
   ): NodeIterator<RootNodeT, Element | Text>;
-  createNodeIterator<RootNodeT: Node>(
+  createNodeIterator<RootNodeT extends Node>(
     root: RootNodeT,
     whatToShow: 128,
     filter?: NodeFilterInterface,
   ): NodeIterator<RootNodeT, Comment>;
-  createNodeIterator<RootNodeT: Node>(
+  createNodeIterator<RootNodeT extends Node>(
     root: RootNodeT,
     whatToShow: 129,
     filter?: NodeFilterInterface,
   ): NodeIterator<RootNodeT, Element | Comment>;
-  createNodeIterator<RootNodeT: Node>(
+  createNodeIterator<RootNodeT extends Node>(
     root: RootNodeT,
     whatToShow: 132,
     filter?: NodeFilterInterface,
   ): NodeIterator<RootNodeT, Text | Comment>;
-  createNodeIterator<RootNodeT: Node>(
+  createNodeIterator<RootNodeT extends Node>(
     root: RootNodeT,
     whatToShow: 133,
     filter?: NodeFilterInterface,
   ): NodeIterator<RootNodeT, Text | Element | Comment>;
-  createTreeWalker<RootNodeT: Node>(
+  createTreeWalker<RootNodeT extends Node>(
     root: RootNodeT,
     whatToShow: 1,
     filter?: NodeFilterInterface,
     entityReferenceExpansion?: boolean,
   ): TreeWalker<RootNodeT, Element>;
-  createTreeWalker<RootNodeT: Node>(
+  createTreeWalker<RootNodeT extends Node>(
     root: RootNodeT,
     whatToShow: 4,
     filter?: NodeFilterInterface,
     entityReferenceExpansion?: boolean,
   ): TreeWalker<RootNodeT, Text>;
-  createTreeWalker<RootNodeT: Node>(
+  createTreeWalker<RootNodeT extends Node>(
     root: RootNodeT,
     whatToShow: 5,
     filter?: NodeFilterInterface,
     entityReferenceExpansion?: boolean,
   ): TreeWalker<RootNodeT, Element | Text>;
-  createTreeWalker<RootNodeT: Node>(
+  createTreeWalker<RootNodeT extends Node>(
     root: RootNodeT,
     whatToShow: 128,
     filter?: NodeFilterInterface,
     entityReferenceExpansion?: boolean,
   ): TreeWalker<RootNodeT, Comment>;
-  createTreeWalker<RootNodeT: Node>(
+  createTreeWalker<RootNodeT extends Node>(
     root: RootNodeT,
     whatToShow: 129,
     filter?: NodeFilterInterface,
     entityReferenceExpansion?: boolean,
   ): TreeWalker<RootNodeT, Element | Comment>;
-  createTreeWalker<RootNodeT: Node>(
+  createTreeWalker<RootNodeT extends Node>(
     root: RootNodeT,
     whatToShow: 132,
     filter?: NodeFilterInterface,
     entityReferenceExpansion?: boolean,
   ): TreeWalker<RootNodeT, Text | Comment>;
-  createTreeWalker<RootNodeT: Node>(
+  createTreeWalker<RootNodeT extends Node>(
     root: RootNodeT,
     whatToShow: 133,
     filter?: NodeFilterInterface,
@@ -2696,12 +2696,12 @@ declare class Document extends Node {
 
   // Catch all for when we don't know the value of `whatToShow`
   // And for when whatToShow is not provided, it is assumed to be SHOW_ALL
-  createNodeIterator<RootNodeT: Node>(
+  createNodeIterator<RootNodeT extends Node>(
     root: RootNodeT,
     whatToShow?: number,
     filter?: NodeFilterInterface,
   ): NodeIterator<RootNodeT, Node>;
-  createTreeWalker<RootNodeT: Node>(
+  createTreeWalker<RootNodeT extends Node>(
     root: RootNodeT,
     whatToShow?: number,
     filter?: NodeFilterInterface,
@@ -2712,7 +2712,7 @@ declare class Document extends Node {
   getElementById(elementId: string): HTMLElement | null;
 
   // From DocumentOrShadowRoot Mixin.
-  +styleSheets: StyleSheetList;
+  readonly styleSheets: StyleSheetList;
   adoptedStyleSheets: Array<CSSStyleSheet>;
 }
 
@@ -2857,7 +2857,7 @@ declare class Element extends Node implements Animatable {
   scrollLeft: number;
   scrollTop: number;
   scrollWidth: number;
-  +tagName: string;
+  readonly tagName: string;
 
   // TODO: a lot more ARIA properties
   ariaHidden: void | 'true' | 'false';
@@ -3466,8 +3466,8 @@ declare class HTMLTableElement extends HTMLElement {
   caption: HTMLTableCaptionElement | null;
   tHead: HTMLTableSectionElement | null;
   tFoot: HTMLTableSectionElement | null;
-  +tBodies: HTMLCollection<HTMLTableSectionElement>;
-  +rows: HTMLCollection<HTMLTableRowElement>;
+  readonly tBodies: HTMLCollection<HTMLTableSectionElement>;
+  readonly rows: HTMLCollection<HTMLTableRowElement>;
   createTHead(): HTMLTableSectionElement;
   deleteTHead(): void;
   createTFoot(): HTMLTableSectionElement;
@@ -3489,7 +3489,7 @@ declare class HTMLTableColElement extends HTMLElement {
 
 declare class HTMLTableSectionElement extends HTMLElement {
   tagName: 'THEAD' | 'TFOOT' | 'TBODY';
-  +rows: HTMLCollection<HTMLTableRowElement>;
+  readonly rows: HTMLCollection<HTMLTableRowElement>;
   insertRow(index?: number): HTMLTableRowElement;
   deleteRow(index: number): void;
 }
@@ -3498,15 +3498,15 @@ declare class HTMLTableCellElement extends HTMLElement {
   tagName: 'TD' | 'TH';
   colSpan: number;
   rowSpan: number;
-  +cellIndex: number;
+  readonly cellIndex: number;
 }
 
 declare class HTMLTableRowElement extends HTMLElement {
   tagName: 'TR';
   align: 'left' | 'right' | 'center';
-  +rowIndex: number;
-  +sectionRowIndex: number;
-  +cells: HTMLCollection<HTMLTableCellElement>;
+  readonly rowIndex: number;
+  readonly sectionRowIndex: number;
+  readonly cells: HTMLCollection<HTMLTableCellElement>;
   deleteCell(index: number): void;
   insertCell(index?: number): HTMLTableCellElement;
 }
@@ -3797,7 +3797,7 @@ declare class CanvasRenderingContext2D {
     y: number,
     w: number,
     h: number,
-    radii?: number | DOMPointInit | $ReadOnlyArray<number | DOMPointInit>,
+    radii?: number | DOMPointInit | ReadonlyArray<number | DOMPointInit>,
   ): void;
   strokeRect(x: number, y: number, w: number, h: number): void;
 
@@ -5948,23 +5948,30 @@ declare class Comment extends CharacterData {
   text: string;
 }
 
+interface StringLike {
+  toString(): string;
+}
+
 declare class URL {
   static canParse(url: string, base?: string): boolean;
   static createObjectURL(blob: Blob): string;
   static createObjectURL(mediaSource: MediaSource): string;
   static revokeObjectURL(url: string): void;
-  constructor(url: string, base?: string | URL): void;
+  constructor(
+    url: string | URL | StringLike,
+    base?: string | URL | StringLike,
+  ): void;
   hash: string;
   host: string;
   hostname: string;
   href: string;
-  +origin: string;
+  readonly origin: string;
   password: string;
   pathname: string;
   port: string;
   protocol: string;
   search: string;
-  +searchParams: URLSearchParams;
+  readonly searchParams: URLSearchParams;
   username: string;
   toString(): string;
   toJSON(): string;
@@ -6243,30 +6250,30 @@ type NotificationOptions = {
 
 declare class Notification extends EventTarget {
   constructor(title: string, options?: NotificationOptions): void;
-  static +permission: NotificationPermission;
+  static readonly permission: NotificationPermission;
   static requestPermission(
-    callback?: (perm: NotificationPermission) => mixed,
+    callback?: (perm: NotificationPermission) => unknown,
   ): Promise<NotificationPermission>;
-  static +maxActions: number;
-  onclick: ?(evt: Event) => mixed;
-  onclose: ?(evt: Event) => mixed;
-  onerror: ?(evt: Event) => mixed;
-  onshow: ?(evt: Event) => mixed;
-  +title: string;
-  +dir: NotificationDirection;
-  +lang: string;
-  +body: string;
-  +tag: string;
-  +image?: string;
-  +icon?: string;
-  +badge?: string;
-  +vibrate?: Array<number>;
-  +timestamp: number;
-  +renotify: boolean;
-  +silent: boolean;
-  +requireInteraction: boolean;
-  +data: any;
-  +actions: Array<NotificationAction>;
+  static readonly maxActions: number;
+  onclick: ?(evt: Event) => unknown;
+  onclose: ?(evt: Event) => unknown;
+  onerror: ?(evt: Event) => unknown;
+  onshow: ?(evt: Event) => unknown;
+  readonly title: string;
+  readonly dir: NotificationDirection;
+  readonly lang: string;
+  readonly body: string;
+  readonly tag: string;
+  readonly image?: string;
+  readonly icon?: string;
+  readonly badge?: string;
+  readonly vibrate?: Array<number>;
+  readonly timestamp: number;
+  readonly renotify: boolean;
+  readonly silent: boolean;
+  readonly requireInteraction: boolean;
+  readonly data: any;
+  readonly actions: Array<NotificationAction>;
 
   close(): void;
 }

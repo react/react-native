@@ -2,7 +2,7 @@ name: Monitor React Native New Issues
 
 on:
   schedule:
-    - cron: "0 0,6,12,18 * * *"
+    - cron: '0 0,6,12,18 * * *'
   workflow_dispatch:
 
 # Reminder for when we have to update the schedule (before Jan 2026):
@@ -12,14 +12,14 @@ on:
 jobs:
   monitor-issues:
     runs-on: ubuntu-latest
-    if: github.repository == 'facebook/react-native'
+    if: github.repository == 'react/react-native'
     steps:
       - name: Checkout
         uses: actions/checkout@v6
       - name: Set up Node.js
         uses: ./.github/actions/setup-node
       - name: Install dependencies
-        uses:  ./.github/actions/yarn-install
+        uses: ./.github/actions/yarn-install
       - name: Extract next oncall
         run: |
           ONCALLS=$(node ./.github/workflow-scripts/extractIssueOncalls.js "${{ secrets.ONCALL_SCHEDULE }}")
@@ -30,12 +30,12 @@ jobs:
       - name: Monitor New Issues
         uses: react-native-community/repo-monitor@v1.0.1
         with:
-          task: "monitor-issues"
+          task: 'monitor-issues'
           git_secret: ${{ secrets.GITHUB_TOKEN }}
-          notifier: "discord"
+          notifier: 'discord'
           fetch_data_interval: 6
-          repo_owner: "facebook"
-          repo_name: "react-native"
-          discord_webhook_url: "${{ secrets.DISCORD_WEBHOOK_URL }}"
-          discord_id_type: "user"
-          discord_ids: "${{ env.oncall1 }},${{ env.oncall2 }}"
+          repo_owner: 'react'
+          repo_name: 'react-native'
+          discord_webhook_url: '${{ secrets.DISCORD_WEBHOOK_URL }}'
+          discord_id_type: 'user'
+          discord_ids: '${{ env.oncall1 }},${{ env.oncall2 }}'

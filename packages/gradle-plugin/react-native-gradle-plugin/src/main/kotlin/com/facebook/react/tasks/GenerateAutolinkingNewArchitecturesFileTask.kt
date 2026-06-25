@@ -14,7 +14,9 @@ import java.io.File
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 
@@ -27,6 +29,8 @@ abstract class GenerateAutolinkingNewArchitecturesFileTask : DefaultTask() {
   @get:InputFile abstract val autolinkInputFile: RegularFileProperty
 
   @get:OutputDirectory abstract val generatedOutputDirectory: DirectoryProperty
+
+  @get:Optional @get:InputDirectory abstract val generatedPureCxxSourceDirectory: DirectoryProperty
 
   @TaskAction
   fun taskAction() {
@@ -55,37 +59,68 @@ abstract class GenerateAutolinkingNewArchitecturesFileTask : DefaultTask() {
         packages.joinToString("\n") { dep ->
           var addDirectoryString = ""
           val libraryName = dep.libraryName
-          val cmakeListsPath = dep.cmakeListsPath
+          val cmakeListsPath = cmakeListsPathForDependency(dep)
           val cxxModuleCMakeListsPath = dep.cxxModuleCMakeListsPath
           if (libraryName != null && cmakeListsPath != null) {
-            // If user provided a custom cmakeListsPath, let's honor it.
+            // If user provided a custom cmakeListsPath, let's honor it. Otherwise, pure C++
+            // dependencies use the app-owned generated codegen directory.
             val nativeFolderPath = sanitizeCmakeListsPath(cmakeListsPath)
             addDirectoryString +=
-                "add_subdirectory(\"$nativeFolderPath\" ${libraryName}_autolinked_build)"
+                """
+                if(EXISTS "$nativeFolderPath")
+                  add_subdirectory("$nativeFolderPath" ${libraryName}_autolinked_build)
+                  list(APPEND AUTOLINKED_LIBRARIES $CODEGEN_LIB_PREFIX${libraryName})
+                else()
+                  message(WARNING "React Native: Skipping autolinked library '$CODEGEN_LIB_PREFIX${libraryName}' because the source directory does not exist: $nativeFolderPath")
+                endif()
+                """
+                    .trimIndent()
           }
           if (cxxModuleCMakeListsPath != null) {
             // If user provided a custom cxxModuleCMakeListsPath, let's honor it.
             val nativeFolderPath = sanitizeCmakeListsPath(cxxModuleCMakeListsPath)
             addDirectoryString +=
-                "\nadd_subdirectory(\"$nativeFolderPath\" ${libraryName}_cxxmodule_autolinked_build)"
+                """
+
+                if(EXISTS "$nativeFolderPath")
+                  add_subdirectory("$nativeFolderPath" ${libraryName}_cxxmodule_autolinked_build)
+                ${
+                    dep.cxxModuleCMakeListsModuleName?.let {
+                      "  list(APPEND AUTOLINKED_LIBRARIES $it)"
+                    } ?: ""
+                }
+                else()
+                  message(WARNING "React Native: Skipping autolinked C++ module '${dep.cxxModuleCMakeListsModuleName ?: libraryName}' because the source directory does not exist: $nativeFolderPath")
+                endif()
+                """
+                    .trimIndent()
           }
           addDirectoryString
         }
 
-    val libraryModules =
-        packages.joinToString("\n  ") { dep ->
-          var autolinkedLibraries = ""
-          if (dep.libraryName != null) {
-            autolinkedLibraries += "$CODEGEN_LIB_PREFIX${dep.libraryName}"
-          }
-          if (dep.cxxModuleCMakeListsModuleName != null) {
-            autolinkedLibraries += "\n${dep.cxxModuleCMakeListsModuleName}"
-          }
-          autolinkedLibraries
-        }
-
     return CMAKE_TEMPLATE.replace("{{ libraryIncludes }}", libraryIncludes)
-        .replace("{{ libraryModules }}", libraryModules)
+  }
+
+  internal fun cmakeListsPathForDependency(
+      dep: ModelAutolinkingDependenciesPlatformAndroidJson
+  ): String? {
+    if (dep.cmakeListsPath != null) {
+      return dep.cmakeListsPath
+    }
+
+    if (
+        dep.isPureCxxDependency != true ||
+            dep.libraryName == null ||
+            !generatedPureCxxSourceDirectory.isPresent
+    ) {
+      return null
+    }
+
+    return generatedPureCxxSourceDirectory
+        .get()
+        .file("${dep.libraryName}/jni/CMakeLists.txt")
+        .asFile
+        .absolutePath
   }
 
   internal fun generateCppFileContent(
@@ -173,11 +208,9 @@ abstract class GenerateAutolinkingNewArchitecturesFileTask : DefaultTask() {
         # or link against a old prefab target (this is needed for React Native 0.76 on).
         set(REACTNATIVE_MERGED_SO true)
 
-        {{ libraryIncludes }}
+        set(AUTOLINKED_LIBRARIES)
 
-        set(AUTOLINKED_LIBRARIES
-          {{ libraryModules }}
-        )
+        {{ libraryIncludes }}
         """
             .trimIndent()
 

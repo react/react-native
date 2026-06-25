@@ -14,15 +14,23 @@ import AnExBobble from './AnExBobble';
 import AnExChained from './AnExChained';
 import AnExScroll from './AnExScroll';
 import AnExTilt from './AnExTilt';
-import React, {useRef, useState} from 'react';
-import {Animated, PanResponder, StyleSheet, Text, View} from 'react-native';
+import * as React from 'react';
+import {useState} from 'react';
+import {
+  Animated,
+  PanResponder,
+  StyleSheet,
+  Text,
+  View,
+  useAnimatedValue,
+} from 'react-native';
 
 const randColor = () => {
   const colors = [0, 1, 2].map(() => Math.floor(Math.random() * 150 + 100));
   return `rgb(${colors.join(',')})`;
 };
 
-type AnExSetProps = $ReadOnly<{
+type AnExSetProps = Readonly<{
   openVal: Animated.Value,
   containerLayout: {width: number, height: number},
   id: string,
@@ -39,7 +47,7 @@ const AnExSet = ({
 }: AnExSetProps): React.Node => {
   const [closeColor] = useState(randColor());
   const [openColor] = useState(randColor());
-  const dismissY = useRef(new Animated.Value(0)).current;
+  const dismissY = useAnimatedValue(0);
 
   const dismissResponder = PanResponder.create({
     onStartShouldSetPanResponder: () => isActive,

@@ -20,12 +20,17 @@ const StyleSheet =
   require('../../../../../Libraries/StyleSheet/StyleSheet').default;
 const ElementBox = require('./ElementBox').default;
 
-type Props = $ReadOnly<{
+type Props = Readonly<{
   inspected?: ?InspectedElement,
   onTouchPoint: (locationX: number, locationY: number) => void,
+  externalInspectionActive?: boolean,
 }>;
 
-function InspectorOverlay({inspected, onTouchPoint}: Props): React.Node {
+function InspectorOverlay({
+  inspected,
+  onTouchPoint,
+  externalInspectionActive,
+}: Props): React.Node {
   const findViewForTouchEvent = (e: GestureResponderEvent) => {
     const {locationX, locationY} = e.nativeEvent.touches[0];
 
@@ -47,7 +52,10 @@ function InspectorOverlay({inspected, onTouchPoint}: Props): React.Node {
       onStartShouldSetResponder={handleStartShouldSetResponder}
       onResponderMove={findViewForTouchEvent}
       nativeID="inspectorOverlay" /* TODO: T68258846. */
-      style={styles.inspector}>
+      style={[
+        styles.inspector,
+        externalInspectionActive === true && styles.externalInspectionIndicator,
+      ]}>
       {content}
     </View>
   );
@@ -61,6 +69,10 @@ const styles = StyleSheet.create({
     top: 0,
     right: 0,
     bottom: 0,
+  },
+  externalInspectionIndicator: {
+    borderWidth: 4,
+    borderColor: 'rgba(255, 0, 0, 0.8)',
   },
 });
 

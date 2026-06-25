@@ -14,7 +14,7 @@ const {version: packageVersion} = require('../package.json');
 const main = require('./configs/main');
 
 module.exports = function (babel, options) {
-  return main(options);
+  return main(options, babel);
 };
 
 let cacheKey;

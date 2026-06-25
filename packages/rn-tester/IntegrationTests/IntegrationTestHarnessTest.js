@@ -16,7 +16,7 @@ import {NativeModules, StyleSheet, Text, View} from 'react-native';
 
 const {TestModule} = NativeModules;
 
-type Props = $ReadOnly<{
+type Props = Readonly<{
   shouldThrow?: boolean,
   waitOneFrame?: boolean,
 }>;

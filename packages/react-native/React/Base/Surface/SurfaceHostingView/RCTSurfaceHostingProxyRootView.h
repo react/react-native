@@ -39,6 +39,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) NSTimeInterval loadingViewFadeDuration;
 @property (nonatomic, assign) CGSize minimumSize;
 
+#if TARGET_OS_TV
+@property (nonatomic, copy, nullable) NSArray<id<UIFocusEnvironment>> *reactPreferredFocusEnvironments;
+@property (nonatomic, weak, nullable) UIView *reactPreferredFocusedView;
+#endif
+
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
 - (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;

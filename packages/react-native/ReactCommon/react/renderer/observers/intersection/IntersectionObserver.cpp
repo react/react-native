@@ -32,6 +32,7 @@ std::vector<MarginValue> parseNormalizedRootMargin(
 
   std::vector<MarginValue> values;
   CSSSyntaxParser syntaxParser(marginStr);
+  CSSValueParser valueParser(syntaxParser);
 
   // Parse exactly 4 space-separated values
   while (!syntaxParser.isFinished() && values.size() < 4) {
@@ -40,7 +41,7 @@ std::vector<MarginValue> parseNormalizedRootMargin(
       break;
     }
 
-    auto parsed = parseNextCSSValue<CSSLength, CSSPercentage>(syntaxParser);
+    auto parsed = valueParser.parseNextValue<CSSLength, CSSPercentage>();
 
     if (std::holds_alternative<CSSLength>(parsed)) {
       auto length = std::get<CSSLength>(parsed);

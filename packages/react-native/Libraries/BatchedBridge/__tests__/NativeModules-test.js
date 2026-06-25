@@ -21,11 +21,11 @@ const PARAMS = 2;
 const CALL_ID = 3;
 
 const assertQueue = (
-  flushedQueue: null | [Array<number>, Array<number>, Array<mixed>, number],
+  flushedQueue: null | [Array<number>, Array<number>, Array<unknown>, number],
   index: number,
   moduleID: number,
   methodID: number,
-  params: $ReadOnlyArray<mixed>,
+  params: ReadonlyArray<unknown>,
 ) => {
   if (flushedQueue == null) {
     throw new Error('Expected `flushedQueue` to be non-null');

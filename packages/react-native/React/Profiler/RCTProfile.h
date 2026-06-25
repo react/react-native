@@ -19,6 +19,9 @@
  * using it.
  */
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated"
+
 RCT_EXTERN __deprecated_msg("This API will be removed along with the legacy architecture.") NSString *const
     RCTProfileDidStartProfiling;
 RCT_EXTERN __deprecated_msg("This API will be removed along with the legacy architecture.") NSString *const
@@ -261,3 +264,5 @@ RCT_EXTERN void RCTProfileHideControls(void)
 #define RCTProfileHideControls(...)
 
 #endif
+
+#pragma clang diagnostic pop

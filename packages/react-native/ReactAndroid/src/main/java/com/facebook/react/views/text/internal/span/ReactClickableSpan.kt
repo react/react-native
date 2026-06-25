@@ -42,7 +42,7 @@ internal class ReactClickableSpan(val reactTag: Int) : ClickableSpan(), ReactSpa
 
   override fun onClick(view: View) {
     val context = view.context as ReactContext
-    val eventDispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, reactTag)
+    val eventDispatcher = UIManagerHelper.getEventDispatcher(context)
     eventDispatcher?.dispatchEvent(
         ViewGroupClickEvent(UIManagerHelper.getSurfaceId(context), reactTag)
     )

@@ -47,6 +47,5 @@ void _react_native_log_default(ReactNativeLogLevel level, const char* message) {
       break;
     case ReactNativeLogLevelFatal:
       LOG(FATAL) << message;
-      break;
   }
 }

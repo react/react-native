@@ -49,6 +49,14 @@ class StyleValueHandle {
     return type() == Type::Auto;
   }
 
+  constexpr bool isPercent() const {
+    return type() == Type::Percent;
+  }
+
+  constexpr bool isPoint() const {
+    return type() == Type::Point;
+  }
+
  private:
   friend class StyleValuePool;
 

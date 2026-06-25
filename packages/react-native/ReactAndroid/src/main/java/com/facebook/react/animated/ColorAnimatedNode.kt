@@ -27,10 +27,6 @@ internal class ColorAnimatedNode(
   private var nativeColor: ReadableMap? = null
   private var nativeColorApplied = false
 
-  init {
-    onUpdateConfig(config)
-  }
-
   val color: Int
     get() {
       tryApplyNativeColor()
@@ -44,6 +40,17 @@ internal class ColorAnimatedNode(
       val a = aNode?.nodeValue ?: 0.0
       return normalize(r, g, b, a)
     }
+
+  private val context: Context?
+    get() {
+      // There are cases where the activity may not exist (such as for VRShell panel apps). In this
+      // case we will search for a view associated with a PropsAnimatedNode to get the context.
+      return reactApplicationContext.currentActivity ?: getContextHelper(this)
+    }
+
+  init {
+    onUpdateConfig(config)
+  }
 
   override fun onUpdateConfig(config: ReadableMap?) {
     if (config != null) {
@@ -83,13 +90,6 @@ internal class ColorAnimatedNode(
     aNode?.nodeValue = Color.alpha(color) / 255.0
     nativeColorApplied = true
   }
-
-  private val context: Context?
-    get() {
-      // There are cases where the activity may not exist (such as for VRShell panel apps). In this
-      // case we will search for a view associated with a PropsAnimatedNode to get the context.
-      return reactApplicationContext.currentActivity ?: getContextHelper(this)
-    }
 
   companion object {
     private fun getContextHelper(node: AnimatedNode): Context? {

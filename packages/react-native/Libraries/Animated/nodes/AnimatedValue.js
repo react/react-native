@@ -21,10 +21,11 @@ import type {AnimatedNodeConfig} from './AnimatedNode';
 import type AnimatedTracking from './AnimatedTracking';
 
 import NativeAnimatedHelper from '../../../src/private/animated/NativeAnimatedHelper';
+import * as ReactNativeFeatureFlags from '../../../src/private/featureflags/ReactNativeFeatureFlags';
 import AnimatedInterpolation from './AnimatedInterpolation';
 import AnimatedWithChildren from './AnimatedWithChildren';
 
-export type AnimatedValueConfig = $ReadOnly<{
+export type AnimatedValueConfig = Readonly<{
   ...AnimatedNodeConfig,
   useNativeDriver: boolean,
 }>;
@@ -58,7 +59,7 @@ export function flushValue(rootNode: AnimatedNode): void {
   function findAnimatedStyles(node: AnimatedNode) {
     // $FlowFixMe[prop-missing]
     if (typeof node.update === 'function') {
-      leaves.add((node: any));
+      leaves.add(node as any);
     } else {
       node.__getChildren().forEach(findAnimatedStyles);
     }
@@ -95,6 +96,7 @@ export default class AnimatedValue extends AnimatedWithChildren {
   _offset: number;
   _animation: ?Animation;
   _tracking: ?AnimatedTracking;
+  __deferAnimationStart: boolean;
 
   constructor(value: number, config?: ?AnimatedValueConfig) {
     super(config);
@@ -107,6 +109,8 @@ export default class AnimatedValue extends AnimatedWithChildren {
 
     this._startingValue = this._value = value;
     this._offset = 0;
+    this.__deferAnimationStart =
+      ReactNativeFeatureFlags.animatedDeferStartOfTimingAnimations();
     this._animation = null;
     if (config && config.useNativeDriver) {
       this.__makeNative();
@@ -134,7 +138,7 @@ export default class AnimatedValue extends AnimatedWithChildren {
     }
   }
 
-  addListener(callback: (value: any) => mixed): string {
+  addListener(callback: (value: any) => unknown): string {
     const id = super.addListener(callback);
     this._listenerCount++;
     if (this.__isNative) {
@@ -301,7 +305,7 @@ export default class AnimatedValue extends AnimatedWithChildren {
    * Interpolates the value before updating the property, e.g. mapping 0-1 to
    * 0-10.
    */
-  interpolate<OutputT: InterpolationConfigSupportedOutputType>(
+  interpolate<OutputT extends InterpolationConfigSupportedOutputType>(
     config: InterpolationConfigType<OutputT>,
   ): AnimatedInterpolation<OutputT> {
     return new AnimatedInterpolation(this, config);
@@ -327,6 +331,10 @@ export default class AnimatedValue extends AnimatedWithChildren {
       result => {
         this._animation = null;
         callback && callback(result);
+        if (this._animation == null) {
+          this.__deferAnimationStart =
+            ReactNativeFeatureFlags.animatedDeferStartOfTimingAnimations();
+        }
       },
       previousAnimation,
       this,

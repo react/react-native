@@ -10,10 +10,9 @@ package com.facebook.react.packagerconnection
 import android.os.Handler
 import android.os.Looper
 import com.facebook.common.logging.FLog
+import com.facebook.react.devsupport.inspector.DevSupportHttpClient
 import java.io.IOException
 import java.nio.channels.ClosedChannelException
-import java.util.concurrent.TimeUnit
-import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import okhttp3.WebSocket
@@ -40,12 +39,7 @@ public class ReconnectingWebSocket(
   }
 
   private val handler = Handler(Looper.getMainLooper())
-  private val okHttpClient: OkHttpClient =
-      OkHttpClient.Builder()
-          .connectTimeout(10, TimeUnit.SECONDS)
-          .writeTimeout(10, TimeUnit.SECONDS)
-          .readTimeout(0, TimeUnit.MINUTES) // Disable timeouts for read
-          .build()
+  private val okHttpClient = DevSupportHttpClient.websocketClient
   private var closed = false
   private var suppressConnectionErrors = false
   private var webSocket: WebSocket? = null

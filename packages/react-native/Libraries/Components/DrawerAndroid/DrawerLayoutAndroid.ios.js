@@ -12,4 +12,6 @@
 
 import DrawerLayoutAndroidFallback from './DrawerLayoutAndroidFallback';
 
+export type DrawerLayoutAndroidInstance = DrawerLayoutAndroidFallback;
+
 export default DrawerLayoutAndroidFallback;

@@ -119,14 +119,12 @@ void parseProcessedBackgroundImage(
           std::string directionType = (std::string)(directionTypeIt->second);
 
           if (directionType == "angle") {
-            linearGradient.direction.type = GradientDirectionType::Angle;
             if (valueIt->second.hasType<Float>()) {
-              linearGradient.direction.value = (Float)(valueIt->second);
+              linearGradient.direction = (Float)(valueIt->second);
             }
           } else if (directionType == "keyword") {
-            linearGradient.direction.type = GradientDirectionType::Keyword;
             if (valueIt->second.hasType<std::string>()) {
-              linearGradient.direction.value =
+              linearGradient.direction =
                   parseGradientKeyword((std::string)(valueIt->second));
             }
           }
@@ -309,30 +307,26 @@ void parseUnprocessedBackgroundImageList(
                 std::get<CSSLinearGradientDirection>(cssDirection);
 
             if (std::holds_alternative<CSSAngle>(direction.value)) {
-              linearGradient.direction.type = GradientDirectionType::Angle;
-              linearGradient.direction.value =
+              linearGradient.direction =
                   std::get<CSSAngle>(direction.value).degrees;
             } else if (std::holds_alternative<
                            CSSLinearGradientDirectionKeyword>(
                            direction.value)) {
-              linearGradient.direction.type = GradientDirectionType::Keyword;
               auto keyword =
                   std::get<CSSLinearGradientDirectionKeyword>(direction.value);
 
               switch (keyword) {
                 case CSSLinearGradientDirectionKeyword::ToTopLeft:
-                  linearGradient.direction.value = GradientKeyword::ToTopLeft;
+                  linearGradient.direction = GradientKeyword::ToTopLeft;
                   break;
                 case CSSLinearGradientDirectionKeyword::ToTopRight:
-                  linearGradient.direction.value = GradientKeyword::ToTopRight;
+                  linearGradient.direction = GradientKeyword::ToTopRight;
                   break;
                 case CSSLinearGradientDirectionKeyword::ToBottomLeft:
-                  linearGradient.direction.value =
-                      GradientKeyword::ToBottomLeft;
+                  linearGradient.direction = GradientKeyword::ToBottomLeft;
                   break;
                 case CSSLinearGradientDirectionKeyword::ToBottomRight:
-                  linearGradient.direction.value =
-                      GradientKeyword::ToBottomRight;
+                  linearGradient.direction = GradientKeyword::ToBottomRight;
                   break;
               }
             }
@@ -477,7 +471,7 @@ void fromCSSColorStop(
 }
 
 std::optional<BackgroundImage> fromCSSBackgroundImage(
-    const CSSBackgroundImageVariant& cssBackgroundImage) {
+    const CSSBackgroundImage& cssBackgroundImage) {
   if (std::holds_alternative<CSSLinearGradientFunction>(cssBackgroundImage)) {
     const auto& gradient =
         std::get<CSSLinearGradientFunction>(cssBackgroundImage);
@@ -486,26 +480,23 @@ std::optional<BackgroundImage> fromCSSBackgroundImage(
     if (gradient.direction.has_value()) {
       if (std::holds_alternative<CSSAngle>(gradient.direction->value)) {
         const auto& angle = std::get<CSSAngle>(gradient.direction->value);
-        linearGradient.direction.type = GradientDirectionType::Angle;
-        linearGradient.direction.value = angle.degrees;
+        linearGradient.direction = angle.degrees;
       } else if (std::holds_alternative<CSSLinearGradientDirectionKeyword>(
                      gradient.direction->value)) {
         const auto& dirKeyword = std::get<CSSLinearGradientDirectionKeyword>(
             gradient.direction->value);
-        linearGradient.direction.type = GradientDirectionType::Keyword;
-
         switch (dirKeyword) {
           case CSSLinearGradientDirectionKeyword::ToTopLeft:
-            linearGradient.direction.value = GradientKeyword::ToTopLeft;
+            linearGradient.direction = GradientKeyword::ToTopLeft;
             break;
           case CSSLinearGradientDirectionKeyword::ToTopRight:
-            linearGradient.direction.value = GradientKeyword::ToTopRight;
+            linearGradient.direction = GradientKeyword::ToTopRight;
             break;
           case CSSLinearGradientDirectionKeyword::ToBottomLeft:
-            linearGradient.direction.value = GradientKeyword::ToBottomLeft;
+            linearGradient.direction = GradientKeyword::ToBottomLeft;
             break;
           case CSSLinearGradientDirectionKeyword::ToBottomRight:
-            linearGradient.direction.value = GradientKeyword::ToBottomRight;
+            linearGradient.direction = GradientKeyword::ToBottomRight;
             break;
         }
       }
@@ -606,14 +597,14 @@ void parseUnprocessedBackgroundImageString(
   for (const auto& cssBackgroundImage :
        std::get<CSSBackgroundImageList>(backgroundImageList)) {
     if (auto backgroundImage = fromCSSBackgroundImage(cssBackgroundImage)) {
-      backgroundImages.push_back(*backgroundImage);
+      backgroundImages.push_back(std::move(*backgroundImage));
     } else {
       result = {};
       return;
     }
   }
 
-  result = backgroundImages;
+  result = std::move(backgroundImages);
 }
 
 } // namespace facebook::react

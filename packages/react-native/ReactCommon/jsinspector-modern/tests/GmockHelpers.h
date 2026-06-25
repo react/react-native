@@ -14,7 +14,7 @@
  * a std::source_location parameter.
  */
 #define GMOCK_ON_CALL_WITH_SOURCE_LOCATION_IMPL_(location, mock_expr, Setter, call) \
-  ((mock_expr).gmock_##call)(::testing::internal::GetWithoutMatchers(), nullptr)    \
+  ((mock_expr).gmock_##call)(::testing::internal::WithoutMatchers::Get(), nullptr)  \
       .Setter((location).file_name(), (location).line(), #mock_expr, #call)
 
 /**

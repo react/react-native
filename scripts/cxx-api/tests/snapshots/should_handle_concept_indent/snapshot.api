@@ -1,0 +1,9 @@
+template <typename ReturnT, typename... VisitorsT>
+concept test::CSSUniqueComponentValueVisitors = CSSSyntaxVisitorReturn<ReturnT>&& (CSSComponentValueVisitor<VisitorsT, ReturnT> && ...) &&
+  ((CSSFunctionVisitor<VisitorsT, ReturnT> ? 1 : 0) + ... + 0) <= 1&&
+  ((CSSPreservedTokenVisitor<VisitorsT, ReturnT> ? 1 : 0) + ... + 0) <= 1&&
+  ((CSSSimpleBlockVisitor<VisitorsT, ReturnT> ? 1 : 0) + ... + 0) <= 1;
+template <typename T, typename ReturnT = std::any>
+concept test::CSSParserSink = requires(CSSSyntaxParser& parser) {
+    { T::consume(parser) } -> std::convertible_to<ReturnT>;
+};

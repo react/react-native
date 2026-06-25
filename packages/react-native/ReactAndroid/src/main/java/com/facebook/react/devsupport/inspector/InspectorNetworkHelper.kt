@@ -10,26 +10,15 @@
 package com.facebook.react.devsupport.inspector
 
 import java.io.IOException
-import java.util.concurrent.TimeUnit
 import okhttp3.Call
 import okhttp3.Callback
-import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 
 internal object InspectorNetworkHelper {
-  private lateinit var client: OkHttpClient
 
   @JvmStatic
   fun loadNetworkResource(url: String, listener: InspectorNetworkRequestListener) {
-    if (!::client.isInitialized) {
-      client =
-          OkHttpClient.Builder()
-              .connectTimeout(10, TimeUnit.SECONDS)
-              .writeTimeout(10, TimeUnit.SECONDS)
-              .readTimeout(0, TimeUnit.MINUTES) // Disable timeouts for read
-              .build()
-    }
 
     val request =
         try {
@@ -40,7 +29,7 @@ internal object InspectorNetworkHelper {
         }
 
     // TODO(T196951523): Assign cancel function to listener
-    val call = client.newCall(request)
+    val call = DevSupportHttpClient.httpClient.newCall(request)
 
     call.enqueue(
         object : Callback {

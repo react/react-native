@@ -13,6 +13,7 @@
 #include <folly/dynamic.h>
 
 #include <atomic>
+#include <list>
 #include <mutex>
 #include <string>
 #include <tuple>
@@ -36,24 +37,17 @@ class NetworkHandler {
   static NetworkHandler &getInstance();
 
   /**
-   * Set the channel used to send CDP events to the frontend. This should be
-   * supplied before calling `enable`.
+   * Register a frontend channel for receiving Network domain events.
+   * Implicitly enables the domain if this is the first agent.
+   * \returns An agent ID to be passed to disableAgent() on cleanup.
    */
-  void setFrontendChannel(FrontendChannel frontendChannel);
+  size_t enableAgent(FrontendChannel frontendChannel);
 
   /**
-   * Enable network debugging. Returns `false` if already enabled.
-   *
-   * @cdp Network.enable
+   * Unregister a frontend channel by its ID.
+   * Implicitly disables the domain if this was the last agent.
    */
-  bool enable();
-
-  /**
-   * Disable network debugging. Returns `false` if not initially enabled.
-   *
-   * @cdp Network.disable
-   */
-  bool disable();
+  void disableAgent(size_t agentId);
 
   /**
    * Returns whether network debugging is currently enabled.
@@ -134,7 +128,19 @@ class NetworkHandler {
 
   std::optional<folly::dynamic> consumeStoredRequestInitiator(const std::string &requestId);
 
-  FrontendChannel frontendChannel_;
+  /**
+   * Send a message to all registered frontend channels.
+   */
+  void sendToAllAgents(std::string_view message);
+
+  struct AgentRecord {
+    size_t id;
+    FrontendChannel channel;
+  };
+
+  std::list<AgentRecord> agents_;
+  size_t nextAgentId_{0};
+  std::mutex agentsMutex_;
 
   std::map<std::string, std::string> resourceTypeMap_{};
   std::map<std::string, folly::dynamic> requestInitiatorById_{};

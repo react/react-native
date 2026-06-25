@@ -21,10 +21,6 @@ import * as LogBoxStyle from './LogBoxStyle';
 import * as React from 'react';
 import {useState} from 'react';
 
-type Props = $ReadOnly<{
-  log: LogBoxLog,
-}>;
-
 const BEFORE_SLASH_RE = /^(.*)[\\/]/;
 
 // Taken from React https://github.com/facebook/react/blob/206d61f72214e8ae5b935f0bf8628491cb7f0797/packages/react-devtools-shared/src/backend/describeComponentFrame.js#L27-L41
@@ -49,29 +45,30 @@ function getPrettyFileName(path: string) {
 
   return fileName;
 }
-function LogBoxInspectorReactFrames(props: Props): React.Node {
+
+component LogBoxInspectorReactFrames(log: LogBoxLog) {
   const [collapsed, setCollapsed] = useState(true);
   if (
-    props.log.getAvailableComponentStack() == null ||
-    props.log.getAvailableComponentStack().length < 1
+    log.getAvailableComponentStack() == null ||
+    log.getAvailableComponentStack().length < 1
   ) {
     return null;
   }
 
   function getStackList() {
     if (collapsed) {
-      return props.log.getAvailableComponentStack().slice(0, 3);
+      return log.getAvailableComponentStack().slice(0, 3);
     } else {
-      return props.log.getAvailableComponentStack();
+      return log.getAvailableComponentStack();
     }
   }
 
   function getCollapseMessage() {
-    if (props.log.getAvailableComponentStack().length <= 3) {
+    if (log.getAvailableComponentStack().length <= 3) {
       return;
     }
 
-    const count = props.log.getAvailableComponentStack().length - 3;
+    const count = log.getAvailableComponentStack().length - 3;
     if (collapsed) {
       return `See ${count} more components`;
     } else {
@@ -95,9 +92,9 @@ function LogBoxInspectorReactFrames(props: Props): React.Node {
               // Older versions of DevTools do not provide full path.
               // This will not work on Windows, remove check once the
               // DevTools return the full file path.
-              frame.fileName.startsWith('/')
+              frame.file != null && frame.file.startsWith('/')
                 ? () =>
-                    openFileInEditor(frame.fileName, frame.location?.row ?? 1)
+                    openFileInEditor(frame.file ?? '', frame.lineNumber ?? 1)
                 : null
             }
             style={componentStyles.frame}>
@@ -106,13 +103,13 @@ function LogBoxInspectorReactFrames(props: Props): React.Node {
                 id="logbox_component_stack_frame_text"
                 style={componentStyles.frameName}>
                 <Text style={componentStyles.bracket}>{'<'}</Text>
-                {frame.content}
+                {frame.methodName}
                 <Text style={componentStyles.bracket}>{' />'}</Text>
               </Text>
             </View>
             <Text style={componentStyles.frameLocation}>
-              {getPrettyFileName(frame.fileName)}
-              {frame.location ? `:${frame.location.row}` : ''}
+              {frame.file != null ? getPrettyFileName(frame.file) : ''}
+              {frame.lineNumber != null ? `:${frame.lineNumber}` : ''}
             </Text>
           </LogBoxButton>
         </View>
@@ -164,14 +161,24 @@ const componentStyles = StyleSheet.create({
     paddingRight: 10,
   },
   frameName: {
-    fontFamily: Platform.select({android: 'monospace', ios: 'Menlo'}),
+    fontFamily: Platform.select({
+      android: 'monospace',
+      ios: 'Menlo',
+      macos: 'Menlo',
+      windows: 'Consolas',
+    }),
     color: LogBoxStyle.getTextColor(1),
     fontSize: 14,
     includeFontPadding: false,
     lineHeight: 18,
   },
   bracket: {
-    fontFamily: Platform.select({android: 'monospace', ios: 'Menlo'}),
+    fontFamily: Platform.select({
+      android: 'monospace',
+      ios: 'Menlo',
+      macos: 'Menlo',
+      windows: 'Consolas',
+    }),
     color: LogBoxStyle.getTextColor(0.4),
     fontSize: 14,
     fontWeight: '500',

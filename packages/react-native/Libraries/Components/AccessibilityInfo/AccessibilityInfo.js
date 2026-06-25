@@ -28,47 +28,49 @@ type AccessibilityEventDefinitionsAndroid = {
 type AccessibilityEventDefinitionsIOS = {
   announcementFinished: [{announcement: string, success: boolean}],
   boldTextChanged: [boolean],
-  grayscaleChanged: [boolean],
-  invertColorsChanged: [boolean],
-  reduceTransparencyChanged: [boolean],
   darkerSystemColorsChanged: [boolean],
+  reduceTransparencyChanged: [boolean],
 };
 
 type AccessibilityEventDefinitions = {
   ...AccessibilityEventDefinitionsAndroid,
   ...AccessibilityEventDefinitionsIOS,
   change: [boolean], // screenReaderChanged
+  grayscaleChanged: [boolean],
+  invertColorsChanged: [boolean],
   reduceMotionChanged: [boolean],
   screenReaderChanged: [boolean],
 };
 
-type AccessibilityEventTypes = 'click' | 'focus' | 'viewHoverEnter';
+type AccessibilityEventTypes =
+  | 'click'
+  | 'focus'
+  | 'viewHoverEnter'
+  | 'windowStateChange';
 
 // Mapping of public event names to platform-specific event names.
-const EventNames: Map<
-  $Keys<AccessibilityEventDefinitions>,
-  string,
-> = Platform.OS === 'android'
-  ? new Map([
-      ['change', 'touchExplorationDidChange'],
-      ['reduceMotionChanged', 'reduceMotionDidChange'],
-      ['highTextContrastChanged', 'highTextContrastDidChange'],
-      ['screenReaderChanged', 'touchExplorationDidChange'],
-      ['accessibilityServiceChanged', 'accessibilityServiceDidChange'],
-      ['invertColorsChanged', 'invertColorDidChange'],
-      ['grayscaleChanged', 'grayscaleModeDidChange'],
-    ])
-  : new Map([
-      ['announcementFinished', 'announcementFinished'],
-      ['boldTextChanged', 'boldTextChanged'],
-      ['change', 'screenReaderChanged'],
-      ['grayscaleChanged', 'grayscaleChanged'],
-      ['invertColorsChanged', 'invertColorsChanged'],
-      ['reduceMotionChanged', 'reduceMotionChanged'],
-      ['reduceTransparencyChanged', 'reduceTransparencyChanged'],
-      ['screenReaderChanged', 'screenReaderChanged'],
-      ['darkerSystemColorsChanged', 'darkerSystemColorsChanged'],
-    ]);
+const EventNames: Map<keyof AccessibilityEventDefinitions, string> =
+  Platform.OS === 'android'
+    ? new Map([
+        ['change', 'touchExplorationDidChange'],
+        ['reduceMotionChanged', 'reduceMotionDidChange'],
+        ['highTextContrastChanged', 'highTextContrastDidChange'],
+        ['screenReaderChanged', 'touchExplorationDidChange'],
+        ['accessibilityServiceChanged', 'accessibilityServiceDidChange'],
+        ['invertColorsChanged', 'invertColorDidChange'],
+        ['grayscaleChanged', 'grayscaleModeDidChange'],
+      ])
+    : new Map([
+        ['announcementFinished', 'announcementFinished'],
+        ['boldTextChanged', 'boldTextChanged'],
+        ['change', 'screenReaderChanged'],
+        ['grayscaleChanged', 'grayscaleChanged'],
+        ['invertColorsChanged', 'invertColorsChanged'],
+        ['reduceMotionChanged', 'reduceMotionChanged'],
+        ['reduceTransparencyChanged', 'reduceTransparencyChanged'],
+        ['screenReaderChanged', 'screenReaderChanged'],
+        ['darkerSystemColorsChanged', 'darkerSystemColorsChanged'],
+      ]);
 
 /**
  * Sometimes it's useful to know whether or not the device has a screen reader
@@ -134,7 +136,7 @@ const AccessibilityInfo = {
             reject,
           );
         } else {
-          reject(new Error('AccessibilityInfo native module is not available'));
+          reject(new Error('NativeAccessibilityManagerIOS is not available'));
         }
       });
     }
@@ -169,7 +171,7 @@ const AccessibilityInfo = {
             reject,
           );
         } else {
-          reject(new Error('AccessibilityInfo native module is not available'));
+          reject(new Error('NativeAccessibilityManagerIOS is not available'));
         }
       });
     }
@@ -189,7 +191,7 @@ const AccessibilityInfo = {
         if (NativeAccessibilityInfoAndroid != null) {
           NativeAccessibilityInfoAndroid.isReduceMotionEnabled(resolve);
         } else {
-          reject(new Error('AccessibilityInfo native module is not available'));
+          reject(new Error('NativeAccessibilityInfoAndroid is not available'));
         }
       } else {
         if (NativeAccessibilityManagerIOS != null) {
@@ -209,10 +211,12 @@ const AccessibilityInfo = {
    *
    * Returns a promise which resolves to a boolean.
    * The result is `true` when high text contrast is enabled and `false` otherwise.
+   *
+   * See https://reactnative.dev/docs/accessibilityinfo#ishightextcontrastenabled-android
    */
   isHighTextContrastEnabled(): Promise<boolean> {
-    return new Promise((resolve, reject) => {
-      if (Platform.OS === 'android') {
+    if (Platform.OS === 'android') {
+      return new Promise((resolve, reject) => {
         if (NativeAccessibilityInfoAndroid?.isHighTextContrastEnabled != null) {
           NativeAccessibilityInfoAndroid.isHighTextContrastEnabled(resolve);
         } else {
@@ -222,10 +226,10 @@ const AccessibilityInfo = {
             ),
           );
         }
-      } else {
-        return Promise.resolve(false);
-      }
-    });
+      });
+    } else {
+      return Promise.resolve(false);
+    }
   },
 
   /**
@@ -233,12 +237,14 @@ const AccessibilityInfo = {
    *
    * Returns a promise which resolves to a boolean.
    * The result is `true` when dark system colors is enabled and `false` otherwise.
+   *
+   * See https://reactnative.dev/docs/accessibilityinfo#isdarkersystemcolorsenabled-ios
    */
   isDarkerSystemColorsEnabled(): Promise<boolean> {
-    return new Promise((resolve, reject) => {
-      if (Platform.OS === 'android') {
-        return Promise.resolve(false);
-      } else {
+    if (Platform.OS === 'android') {
+      return Promise.resolve(false);
+    } else {
+      return new Promise((resolve, reject) => {
         if (
           NativeAccessibilityManagerIOS?.getCurrentDarkerSystemColorsState !=
           null
@@ -254,8 +260,8 @@ const AccessibilityInfo = {
             ),
           );
         }
-      }
-    });
+      });
+    }
   },
 
   /**
@@ -267,10 +273,10 @@ const AccessibilityInfo = {
    * See https://reactnative.dev/docs/accessibilityinfo#prefersCrossFadeTransitions
    */
   prefersCrossFadeTransitions(): Promise<boolean> {
-    return new Promise((resolve, reject) => {
-      if (Platform.OS === 'android') {
-        return Promise.resolve(false);
-      } else {
+    if (Platform.OS === 'android') {
+      return Promise.resolve(false);
+    } else {
+      return new Promise((resolve, reject) => {
         if (
           NativeAccessibilityManagerIOS?.getCurrentPrefersCrossFadeTransitionsState !=
           null
@@ -286,8 +292,8 @@ const AccessibilityInfo = {
             ),
           );
         }
-      }
-    });
+      });
+    }
   },
 
   /**
@@ -389,18 +395,18 @@ const AccessibilityInfo = {
    * - `screenReaderChanged`: Fires when the state of the screen reader changes. The argument
    *   to the event handler is a boolean. The boolean is `true` when a screen
    *   reader is enabled and `false` otherwise.
+   * - `grayscaleChanged`: Fires when the state of the gray scale toggle changes.
+   *   The argument to the event handler is a boolean. The boolean is `true` when gray scale
+   *   is enabled and `false` otherwise.
+   * - `invertColorsChanged`: Fires when the state of the invert colors toggle
+   *   changes. The argument to the event handler is a boolean. The boolean is `true` when invert
+   *   colors is enabled and `false` otherwise.
    *
    * These events are only supported on iOS:
    *
    * - `boldTextChanged`: iOS-only event. Fires when the state of the bold text toggle changes.
    *   The argument to the event handler is a boolean. The boolean is `true` when a bold text
    *   is enabled and `false` otherwise.
-   * - `grayscaleChanged`: iOS-only event. Fires when the state of the gray scale toggle changes.
-   *   The argument to the event handler is a boolean. The boolean is `true` when a gray scale
-   *   is enabled and `false` otherwise.
-   * - `invertColorsChanged`: iOS-only event. Fires when the state of the invert colors toggle
-   *   changes. The argument to the event handler is a boolean. The boolean is `true` when a invert
-   *   colors is enabled and `false` otherwise.
    * - `reduceTransparencyChanged`: iOS-only event. Fires when the state of the reduce transparency
    *   toggle changes.  The argument to the event handler is a boolean. The boolean is `true`
    *   when a reduce transparency is enabled and `false` otherwise.
@@ -422,7 +428,7 @@ const AccessibilityInfo = {
    *
    * See https://reactnative.dev/docs/accessibilityinfo#addeventlistener
    */
-  addEventListener<K: $Keys<AccessibilityEventDefinitions>>(
+  addEventListener<K extends keyof AccessibilityEventDefinitions>(
     eventName: K,
     // $FlowFixMe[incompatible-type] - Flow bug with unions and generics (T128099423)
     handler: (...AccessibilityEventDefinitions[K]) => void,
@@ -438,6 +444,8 @@ const AccessibilityInfo = {
    * Set accessibility focus to a React component.
    *
    * See https://reactnative.dev/docs/accessibilityinfo#setaccessibilityfocus
+   *
+   * @deprecated Use `sendAccessibilityEvent` with eventType `focus` instead.
    */
   setAccessibilityFocus(reactTag: number): void {
     legacySendAccessibilityEvent(reactTag, 'focus');
@@ -508,7 +516,9 @@ const AccessibilityInfo = {
   getRecommendedTimeoutMillis(originalTimeout: number): Promise<number> {
     if (Platform.OS === 'android') {
       return new Promise((resolve, reject) => {
-        if (NativeAccessibilityInfoAndroid?.getRecommendedTimeoutMillis) {
+        if (
+          NativeAccessibilityInfoAndroid?.getRecommendedTimeoutMillis != null
+        ) {
           NativeAccessibilityInfoAndroid.getRecommendedTimeoutMillis(
             originalTimeout,
             resolve,

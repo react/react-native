@@ -16,14 +16,11 @@
 using namespace facebook;
 using namespace facebook::react;
 
-#if RCT_DEBUG
+#define ENABLE_DEBUG_LOGGING 0 && RCT_DEBUG
+
+#if ENABLE_DEBUG_LOGGING
 static void debugLog(NSString *msg, ...)
 {
-  auto debugEnabled = ReactNativeFeatureFlags::enableVirtualViewDebugFeatures();
-  if (!debugEnabled) {
-    return;
-  }
-
   va_list args;
   va_start(args, msg);
   NSString *msgString = [[NSString alloc] initWithFormat:msg arguments:args];
@@ -31,6 +28,9 @@ static void debugLog(NSString *msg, ...)
   va_end(args); // Don't forget to call va_end to clean up
 }
 
+#define DEBUG_LOG(...) debugLog(__VA_ARGS__)
+#else
+#define DEBUG_LOG(...) ((void)0)
 #endif
 
 /**
@@ -87,18 +87,14 @@ static BOOL CGRectOverlaps(CGRect rect1, CGRect rect2)
     _prerenderRatio = ReactNativeFeatureFlags::virtualViewPrerenderRatio();
     [_scrollViewComponentView addScrollListener:self];
 
-#if RCT_DEBUG
-    debugLog(@"initWithScrollView");
-#endif
+    DEBUG_LOG(@"initWithScrollView");
   }
   return self;
 }
 
 - (void)dealloc
 {
-#if RCT_DEBUG
-  debugLog(@"dealloc");
-#endif
+  DEBUG_LOG(@"dealloc");
   if (_scrollViewComponentView != nil) {
     [_scrollViewComponentView removeScrollListener:self];
     _scrollViewComponentView = nil;
@@ -112,14 +108,9 @@ static BOOL CGRectOverlaps(CGRect rect1, CGRect rect2)
 {
   if (![_virtualViews containsObject:virtualView]) {
     [_virtualViews addObject:virtualView];
-#if RCT_DEBUG
-    debugLog(@"Add virtualViewID=%@", virtualView.virtualViewID);
-#endif
-
+    DEBUG_LOG(@"Add virtualViewID=%@", virtualView.virtualViewID);
   } else {
-#if RCT_DEBUG
-    debugLog(@"Update virtualViewID=%@", virtualView.virtualViewID);
-#endif
+    DEBUG_LOG(@"Update virtualViewID=%@", virtualView.virtualViewID);
   }
   [self _updateModes:virtualView];
 }
@@ -131,10 +122,7 @@ static BOOL CGRectOverlaps(CGRect rect1, CGRect rect2)
   }
 
   [_virtualViews removeObject:virtualView];
-
-#if RCT_DEBUG
-  debugLog(@"Remove virtualViewID=%@", virtualView.virtualViewID);
-#endif
+  DEBUG_LOG(@"Remove virtualViewID=%@", virtualView.virtualViewID);
 }
 
 #pragma mark - Private Helpers
@@ -169,14 +157,12 @@ static BOOL CGRectOverlaps(CGRect rect1, CGRect rect2)
       thresholdRect = _prerenderRect;
     }
 
-#if RCT_DEBUG
-    debugLog(
+    DEBUG_LOG(
         @"UpdateModes virtualView=%@ mode=%ld rect=%@ thresholdRect=%@",
         vv.virtualViewID,
         (long)mode,
         NSStringFromCGRect(rect),
         NSStringFromCGRect(thresholdRect));
-#endif
     [vv onModeChange:mode targetRect:rect thresholdRect:thresholdRect];
   }
 }

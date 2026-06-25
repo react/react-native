@@ -12,10 +12,6 @@
 
 const childProcess = require('child_process');
 
-/*::
-type Commit = string;
-*/
-
 function isGitRepo() /*: boolean */ {
   try {
     const result = childProcess.execSync(

@@ -29,8 +29,7 @@ folly::dynamic targetCapabilitiesToDynamic(
     const InspectorTargetCapabilities& capabilities) {
   return folly::dynamic::object(
       "nativePageReloads", capabilities.nativePageReloads)(
-      "nativeSourceCodeFetching", capabilities.nativeSourceCodeFetching)(
-      "prefersFuseboxFrontend", capabilities.prefersFuseboxFrontend);
+      "nativeSourceCodeFetching", capabilities.nativeSourceCodeFetching);
 }
 
 namespace {
@@ -143,13 +142,9 @@ int InspectorImpl::addPage(
       pageId,
       Page{pageId, description, vm, std::move(connectFunc), capabilities});
 
-  // Strong assumption: If prefersFuseboxFrontend is set, the page added is a
-  // HostTarget and not a legacy Hermes runtime target.
-  if (capabilities.prefersFuseboxFrontend) {
-    for (const auto& listenerWeak : listeners_) {
-      if (auto listener = listenerWeak.lock()) {
-        listener->unstable_onHostTargetAdded();
-      }
+  for (const auto& listenerWeak : listeners_) {
+    if (auto listener = listenerWeak.lock()) {
+      listener->unstable_onHostTargetAdded();
     }
   }
 

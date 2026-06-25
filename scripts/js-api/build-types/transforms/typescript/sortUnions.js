@@ -13,7 +13,7 @@ import type {PluginObj} from '@babel/core';
 import generate from '@babel/generator';
 import * as t from '@babel/types';
 
-const visitor: PluginObj<mixed> = {
+const visitor: PluginObj<unknown> = {
   visitor: {
     TSUnionType(path) {
       path.node.types.sort((a, b) => {

@@ -64,7 +64,7 @@ export function getDefaultConfig(projectRoot: string): ConfigT {
         require.resolve('react-native/Libraries/Core/InitializeCore'),
       ],
       getPolyfills: () => require('@react-native/js-polyfills')(),
-      isThirdPartyModule({path: modulePath}: $ReadOnly<{path: string, ...}>) {
+      isThirdPartyModule({path: modulePath}: Readonly<{path: string, ...}>) {
         return (
           INTERNAL_CALLSITES_REGEX.test(modulePath) ||
           /(?:^|[/\\])node_modules[/\\]/.test(modulePath)
@@ -75,7 +75,7 @@ export function getDefaultConfig(projectRoot: string): ConfigT {
       port: Number(process.env.RCT_METRO_PORT) || 8081,
     },
     symbolicator: {
-      customizeFrame: (frame: $ReadOnly<{file: ?string, ...}>) => {
+      customizeFrame: (frame: Readonly<{file: ?string, ...}>) => {
         const collapse = Boolean(
           frame.file != null && INTERNAL_CALLSITES_REGEX.test(frame.file),
         );

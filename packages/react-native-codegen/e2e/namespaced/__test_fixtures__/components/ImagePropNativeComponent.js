@@ -12,13 +12,13 @@ import type {HostComponent, ImageSource, ViewProps} from 'react-native';
 
 import {codegenNativeComponent} from 'react-native';
 
-type NativeProps = $ReadOnly<{
+type NativeProps = Readonly<{
   ...ViewProps,
 
   // Props
   thumbImage?: ImageSource,
 }>;
 
-export default (codegenNativeComponent<NativeProps>(
+export default codegenNativeComponent<NativeProps>(
   'ImagePropNativeComponentView',
-): HostComponent<NativeProps>);
+) as HostComponent<NativeProps>;

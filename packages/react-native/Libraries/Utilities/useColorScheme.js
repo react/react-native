@@ -20,6 +20,14 @@ const subscribe = (onStoreChange: () => void) => {
   return () => appearanceSubscription.remove();
 };
 
-export default function useColorScheme(): ?ColorSchemeName {
+/**
+ * Returns the active color scheme (`'light'` or `'dark'`). Automatically
+ * re-renders the component when the color scheme changes.
+ *
+ * Notes:
+ * - `null` will only be returned if the native Appearance module is unavailable
+ *   (out of tree platforms).
+ */
+export default function useColorScheme(): ColorSchemeName | null {
   return useSyncExternalStore(subscribe, getColorScheme);
 }

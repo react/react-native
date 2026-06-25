@@ -36,10 +36,6 @@ bool ParagraphAttributes::operator==(const ParagraphAttributes& rhs) const {
       floatEquality(minimumFontScale, rhs.minimumFontScale);
 }
 
-bool ParagraphAttributes::operator!=(const ParagraphAttributes& rhs) const {
-  return !(*this == rhs);
-}
-
 #pragma mark - DebugStringConvertible
 
 #if RN_DEBUG_STRING_CONVERTIBLE

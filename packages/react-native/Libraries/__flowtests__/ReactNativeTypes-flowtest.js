@@ -15,7 +15,7 @@ import * as React from 'react';
 
 function takesHostComponentInstance(instance: HostInstance | null): void {}
 
-const MyHostComponent = (('Host': any): HostComponent<{...}>);
+const MyHostComponent = 'Host' as any as HostComponent<{...}>;
 
 <MyHostComponent
   ref={hostComponentRef => {

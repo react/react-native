@@ -177,9 +177,13 @@ class RuntimeScheduler_Modern final : public RuntimeSchedulerBase {
    */
   void runEventLoopTick(jsi::Runtime &runtime, Task &task);
 
-  void executeTask(jsi::Runtime &runtime, Task &task, bool didUserCallbackTimeout) const;
+  void executeTask(jsi::Runtime &runtime, Task &task, bool didUserCallbackTimeout);
 
   void updateRendering(HighResTimeStamp taskEndTime);
+
+  void handleTaskError(jsi::Runtime &runtime, jsi::JSError &error);
+
+  void clearQueues();
 
   bool performingMicrotaskCheckpoint_{false};
   void performMicrotaskCheckpoint(jsi::Runtime &runtime);

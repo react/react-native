@@ -24,27 +24,27 @@ class HostTracingProfileSerializer {
  public:
   /**
    * Transforms the profile into a sequence of serialized Trace Events, which
-   * is split in chunks of sizes \p traceEventsChunkSize or
-   * \p profileTraceEventsChunkSize, depending on type, and sent with \p
-   * chunkCallback.
+   * is split in chunks of at most \p maxChunkBytes serialized bytes or
+   * \p profileTraceEventsChunkSize events, depending on type, and sent with
+   * \p chunkCallback.
    */
   static void emitAsDataCollectedChunks(
       HostTracingProfile &&hostTracingProfile,
       const std::function<void(folly::dynamic &&chunk)> &chunkCallback,
-      uint16_t traceEventsChunkSize,
+      size_t maxChunkBytes,
       uint16_t profileTraceEventsChunkSize);
 
   static void emitPerformanceTraceEvents(
       std::vector<TraceEvent> &&events,
       const std::function<void(folly::dynamic &&chunk)> &chunkCallback,
-      uint16_t chunkSize);
+      size_t maxChunkBytes);
 
   static void emitFrameTimings(
       std::vector<FrameTimingSequence> &&frameTimings,
       ProcessId processId,
       HighResTimeStamp recordingStartTimestamp,
       const std::function<void(folly::dynamic &&chunk)> &chunkCallback,
-      uint16_t chunkSize);
+      size_t maxChunkBytes);
 };
 
 } // namespace facebook::react::jsinspector_modern::tracing

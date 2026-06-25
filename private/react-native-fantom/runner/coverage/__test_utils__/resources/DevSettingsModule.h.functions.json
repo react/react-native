@@ -1,0 +1,20 @@
+[{
+  "branches": [],
+  "count": 0,
+  "filenames": [
+    "packages/react-native/ReactCxxPlatform/react/devsupport/DevSettingsModule.h"
+  ],
+  "name": "_ZN8facebook5react17DevSettingsModuleC2ESt10shared_ptrINS0_11CallInvokerEESt8weak_ptrINS0_15DevServerHelperEESt8functionIFvvEE",
+  "regions": [
+    [
+      28,
+      3,
+      29,
+      4,
+      0,
+      0,
+      0,
+      0
+    ]
+  ]
+}]

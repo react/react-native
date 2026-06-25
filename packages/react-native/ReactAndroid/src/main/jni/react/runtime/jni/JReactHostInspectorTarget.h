@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <fbjni/ByteBuffer.h>
 #include <fbjni/fbjni.h>
 
 #include <jsinspector-modern/HostTarget.h>
@@ -84,34 +85,31 @@ struct JFrameTimingSequence : public jni::JavaClass<JFrameTimingSequence> {
     return static_cast<uint64_t>(getFieldValue(field));
   }
 
-  HighResTimeStamp getBeginDrawingTimestamp() const
+  HighResTimeStamp getBeginTimestamp() const
   {
-    auto field = javaClassStatic()->getField<jlong>("beginDrawingTimestamp");
+    auto field = javaClassStatic()->getField<jlong>("beginTimestamp");
     return HighResTimeStamp::fromChronoSteadyClockTimePoint(
         std::chrono::steady_clock::time_point(std::chrono::nanoseconds(getFieldValue(field))));
   }
 
-  HighResTimeStamp getCommitTimestamp() const
+  HighResTimeStamp getEndTimestamp() const
   {
-    auto field = javaClassStatic()->getField<jlong>("commitTimestamp");
+    auto field = javaClassStatic()->getField<jlong>("endTimestamp");
     return HighResTimeStamp::fromChronoSteadyClockTimePoint(
         std::chrono::steady_clock::time_point(std::chrono::nanoseconds(getFieldValue(field))));
   }
 
-  HighResTimeStamp getEndDrawingTimestamp() const
+  std::optional<std::vector<uint8_t>> getScreenshot() const
   {
-    auto field = javaClassStatic()->getField<jlong>("endDrawingTimestamp");
-    return HighResTimeStamp::fromChronoSteadyClockTimePoint(
-        std::chrono::steady_clock::time_point(std::chrono::nanoseconds(getFieldValue(field))));
-  }
-
-  std::optional<std::string> getScreenshot() const
-  {
-    auto field = javaClassStatic()->getField<jstring>("screenshot");
+    auto field = javaClassStatic()->getField<jbyteArray>("screenshot");
     auto javaScreenshot = getFieldValue(field);
     if (javaScreenshot) {
-      auto jstring = jni::static_ref_cast<jni::JString>(javaScreenshot);
-      return jstring->toStdString();
+      auto size = static_cast<size_t>(javaScreenshot->size());
+      if (size > 0) {
+        std::vector<uint8_t> result(size);
+        javaScreenshot->getRegion(0, javaScreenshot->size(), reinterpret_cast<jbyte *>(result.data()));
+        return result;
+      }
     }
     return std::nullopt;
   }
@@ -146,6 +144,19 @@ struct JReactHostImpl : public jni::JavaClass<JReactHostImpl> {
                           jni::local_ref<jni::JString>, jni::local_ref<InspectorNetworkRequestListener::javaobject>)>(
                           "loadNetworkResource");
     return method(self(), jni::make_jstring(url), listener);
+  }
+
+  jni::local_ref<jni::JString> captureScreenshot(const std::string &format, int quality) const
+  {
+    auto method = javaClassStatic()->getMethod<jni::local_ref<jni::JString>(jni::local_ref<jni::JString>, jint)>(
+        "captureScreenshot");
+    return method(self(), jni::make_jstring(format), static_cast<jint>(quality));
+  }
+
+  void setEmulatedMedia(const std::string &colorScheme)
+  {
+    static auto method = javaClassStatic()->getMethod<void(jni::local_ref<jni::JString>)>("setEmulatedMedia");
+    method(self(), jni::make_jstring(colorScheme));
   }
 };
 
@@ -240,7 +251,7 @@ class JReactHostInspectorTarget : public jni::HybridClass<JReactHostInspectorTar
   /**
    * Stops previously started trace recording and discards the captured trace.
    */
-  void stopAndDiscardBackgroundTrace();
+  void stopTracing();
 
   jsinspector_modern::HostTarget *getInspectorTarget();
 
@@ -277,8 +288,9 @@ class JReactHostInspectorTarget : public jni::HybridClass<JReactHostInspectorTar
   void loadNetworkResource(
       const jsinspector_modern::LoadNetworkResourceRequest &params,
       jsinspector_modern::ScopedExecutor<jsinspector_modern::NetworkRequestListener> executor) override;
-  std::optional<jsinspector_modern::tracing::HostTracingProfile>
-  unstable_getHostTracingProfileThatWillBeEmittedOnInitialization() override;
+  std::optional<std::string> captureScreenshot(
+      const jsinspector_modern::HostTargetDelegate::PageCaptureScreenshotRequest &request) override;
+  bool onSetEmulatedMedia(const jsinspector_modern::HostTargetDelegate::SetEmulatedMediaRequest &request) override;
   jsinspector_modern::HostTargetTracingDelegate *getTracingDelegate() override;
 
  private:
@@ -286,6 +298,13 @@ class JReactHostInspectorTarget : public jni::HybridClass<JReactHostInspectorTar
       jni::alias_ref<JReactHostInspectorTarget::javaobject> jobj,
       jni::alias_ref<JReactHostImpl> reactHostImpl,
       jni::alias_ref<JExecutor::javaobject> javaExecutor);
+
+  /**
+   * Returns a reference to the HostTarget, throwing a Java IllegalStateException
+   * if the Fusebox backend is not enabled (i.e., inspectorTarget_ is null).
+   */
+  jsinspector_modern::HostTarget &inspectorTarget();
+
   jni::global_ref<JReactHostInspectorTarget::javaobject> jobj_;
   // This weak reference breaks the cycle between the C++ HostTarget and the
   // Java ReactHostImpl, preventing memory leaks in apps that create multiple
@@ -296,20 +315,6 @@ class JReactHostInspectorTarget : public jni::HybridClass<JReactHostInspectorTar
   std::shared_ptr<jsinspector_modern::HostTarget> inspectorTarget_;
   std::optional<int> inspectorPageId_;
 
-  /**
-   * Stops previously started trace recording and returns the captured HostTracingProfile.
-   */
-  jsinspector_modern::tracing::HostTracingProfile stopTracing();
-  /**
-   * Stashes previously recorded HostTracingProfile that will be emitted when
-   * CDP session is created. Once emitted, the value will be cleared from this
-   * instance.
-   */
-  void stashTracingProfile(jsinspector_modern::tracing::HostTracingProfile &&hostTracingProfile);
-  /**
-   * Previously recorded HostTracingProfile that will be emitted when CDP session is created.
-   */
-  std::optional<jsinspector_modern::tracing::HostTracingProfile> stashedTracingProfile_;
   /**
    * Encapsulates the logic around tracing for this HostInspectorTarget.
    */

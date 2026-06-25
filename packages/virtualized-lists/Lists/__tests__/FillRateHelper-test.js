@@ -11,7 +11,7 @@
 import FillRateHelper from '../FillRateHelper';
 
 let rowFramesGlobal: ?{
-  [string]: $ReadOnly<{
+  [string]: Readonly<{
     height: number,
     isMounted: boolean,
     y: number,
@@ -37,13 +37,13 @@ function computeResult({
   helper,
   state,
   scroll,
-}: $ReadOnly<{
+}: Readonly<{
   helper: FillRateHelper,
-  state?: $ReadOnly<{
+  state?: Readonly<{
     first?: number,
     last?: number,
   }>,
-  scroll?: $ReadOnly<{
+  scroll?: Readonly<{
     offset?: number,
     visibleLength?: number,
   }>,

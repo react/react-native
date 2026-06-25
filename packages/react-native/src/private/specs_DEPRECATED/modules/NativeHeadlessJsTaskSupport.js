@@ -13,8 +13,8 @@ import type {TurboModule} from '../../../../Libraries/TurboModule/RCTExport';
 import * as TurboModuleRegistry from '../../../../Libraries/TurboModule/TurboModuleRegistry';
 
 export interface Spec extends TurboModule {
-  +notifyTaskFinished: (taskId: number) => void;
-  +notifyTaskRetry: (taskId: number) => Promise<boolean>;
+  readonly notifyTaskFinished: (taskId: number) => void;
+  readonly notifyTaskRetry: (taskId: number) => Promise<boolean>;
 }
 
-export default (TurboModuleRegistry.get<Spec>('HeadlessJsTaskSupport'): ?Spec);
+export default TurboModuleRegistry.get<Spec>('HeadlessJsTaskSupport') as ?Spec;

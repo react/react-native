@@ -27,7 +27,7 @@ import {
 } from '../../components/ListExampleShared';
 import RNTesterPage from '../../components/RNTesterPage';
 import RNTesterText from '../../components/RNTesterText';
-import React from 'react';
+import * as React from 'react';
 import {useRef, useState} from 'react';
 import {
   Alert,
@@ -172,7 +172,7 @@ const SectionSeparatorComponent = info => (
   <CustomSeparatorComponent {...info} text="SECTION SEPARATOR" />
 );
 
-export function SectionList_scrollable(Props: {...}): React.MixedElement {
+export component SectionList_scrollable() {
   const scrollPos = new Animated.Value(0);
   const scrollSinkY = Animated.event(
     [{nativeEvent: {contentOffset: {y: scrollPos}}}],

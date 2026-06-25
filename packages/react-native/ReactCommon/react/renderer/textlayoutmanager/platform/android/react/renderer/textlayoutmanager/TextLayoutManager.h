@@ -29,7 +29,7 @@ class TextLayoutManager;
  */
 class TextLayoutManager {
  public:
-  using PreparedLayout = SafeReleaseJniRef<jni::global_ref<JPreparedLayout>>;
+  using PreparedTextLayout = SafeReleaseJniRef<jni::global_ref<JPreparedLayout>>;
 
   TextLayoutManager(const std::shared_ptr<const ContextContainer> &contextContainer);
 
@@ -77,17 +77,17 @@ class TextLayoutManager {
    * Create a platform representation of fully laid out text, to later be
    * reused.
    */
-  PreparedLayout prepareLayout(
+  PreparedTextLayout prepareLayout(
       const AttributedString &attributedString,
       const ParagraphAttributes &paragraphAttributes,
       const TextLayoutContext &layoutContext,
       const LayoutConstraints &layoutConstraints) const;
 
   /**
-   * Derive text and attachment measurements from a PreparedLayout.
+   * Derive text and attachment measurements from a PreparedTextLayout.
    */
   TextMeasurement measurePreparedLayout(
-      const PreparedLayout &layout,
+      const PreparedTextLayout &layout,
       const TextLayoutContext &layoutContext,
       const LayoutConstraints &layoutConstraints) const;
 
@@ -95,7 +95,7 @@ class TextLayoutManager {
   std::shared_ptr<const ContextContainer> contextContainer_;
   TextMeasureCache textMeasureCache_;
   LineMeasureCache lineMeasureCache_;
-  SimpleThreadSafeCache<PreparedTextCacheKey, PreparedLayout, -1 /* Set dynamically*/> preparedTextCache_;
+  SimpleThreadSafeCache<PreparedTextCacheKey, PreparedTextLayout, -1 /* Set dynamically*/> preparedTextCache_;
 };
 
 } // namespace facebook::react

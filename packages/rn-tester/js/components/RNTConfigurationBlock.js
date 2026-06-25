@@ -15,7 +15,7 @@ import * as React from 'react';
 import {useContext} from 'react';
 import {StyleSheet, View} from 'react-native';
 
-type Props = $ReadOnly<{
+type Props = Readonly<{
   children?: ?React.Node,
   testID?: string,
 }>;

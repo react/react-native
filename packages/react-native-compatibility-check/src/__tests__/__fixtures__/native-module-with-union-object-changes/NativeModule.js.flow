@@ -26,12 +26,12 @@ type ObjectB = {|
 type ObjectUnion = ObjectA | ObjectB;
 
 export interface Spec extends TurboModule {
-  +exampleFunction: (a: ObjectUnion, b: number) => void;
-  +getConstants: () => {
-    +exampleConstant: number,
+  readonly exampleFunction: (a: ObjectUnion, b: number) => void;
+  readonly getConstants: () => {
+    readonly exampleConstant: number,
   };
 }
 
-export default (TurboModuleRegistry.getEnforcing<Spec>(
+export default TurboModuleRegistry.getEnforcing<Spec>(
   'NativeModuleTest',
-): Spec);
+) as Spec;

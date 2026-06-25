@@ -15,6 +15,7 @@ import type IntersectionObserverEntry from 'react-native/src/private/webapis/int
 import * as React from 'react';
 import {useCallback, useLayoutEffect, useRef, useState} from 'react';
 import {Button, StyleSheet, Text, TextInput, View} from 'react-native';
+import DOMRectReadOnly from 'react-native/src/private/webapis/geometry/DOMRectReadOnly';
 
 export const name = 'IntersectionObserver Parent Clipping Example';
 export const title = name;
@@ -22,48 +23,33 @@ export const description = 'A clipping parent clips both the root and target';
 
 declare var IntersectionObserver: Class<IntersectionObserverType>;
 
-export function render(): React.Node {
-  return <IntersectionObserverCustomClippingRootExample />;
+export function render(options?: {e2eTest?: boolean}): React.Node {
+  return (
+    <IntersectionObserverCustomClippingRootExample
+      e2eTest={options?.e2eTest ?? false}
+    />
+  );
 }
 
 /**
- * Showcase threshold of two overlapping elements
+ * Formats a DOMRectReadOnly for display with a label.
  */
-function roundRect(rect: mixed): ?{
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-} {
+function formatRect(label: string, rect: ?DOMRectReadOnly): ?string {
   if (rect == null || typeof rect !== 'object') {
     return null;
   }
-  // $FlowFixMe[prop-missing]
-  const x = rect.x;
-  // $FlowFixMe[prop-missing]
-  const y = rect.y;
-  // $FlowFixMe[prop-missing]
   const width = rect.width;
-  // $FlowFixMe[prop-missing]
   const height = rect.height;
 
-  if (
-    typeof x !== 'number' ||
-    typeof y !== 'number' ||
-    typeof width !== 'number' ||
-    typeof height !== 'number'
-  ) {
+  if (typeof width !== 'number' || typeof height !== 'number') {
     return null;
   }
-  return {
-    x: Math.round(x),
-    y: Math.round(y),
-    width: Math.round(width),
-    height: Math.round(height),
-  };
+  return `${label}: width:${Math.round(width)}, height:${Math.round(height)}`;
 }
 
-function IntersectionObserverCustomClippingRootExample(): React.Node {
+component IntersectionObserverCustomClippingRootExample(
+  e2eTest: boolean = false,
+) {
   const rootRef = useRef<?HostInstance>(null);
   const targetRef = useRef<?HostInstance>(null);
   const [intersectionEntry, setIntersectionEntry] =
@@ -72,7 +58,7 @@ function IntersectionObserverCustomClippingRootExample(): React.Node {
   const [rootMarginValue, setRootMarginValue] = useState<string>('0px');
 
   const onObserve = useCallback(
-    (entries: $ReadOnlyArray<IntersectionObserverEntry>) => {
+    (entries: ReadonlyArray<IntersectionObserverEntry>) => {
       entries.forEach(entry => {
         setIntersectionEntry(entry);
       });
@@ -136,35 +122,39 @@ function IntersectionObserverCustomClippingRootExample(): React.Node {
       <Text style={styles.currentMargin}>
         Current Root Margin: {rootMarginValue}
       </Text>
-      <Text style={styles.description}>
-        This example highlights a clipping parent to both the explicit root
-        (blue) and target (yellow). The dashed borders show the full extent of
-        the root and target, while the solid colors show what's actually visible
-        after clipping. The purple dashed border shows the root bounds after
-        applying rootMargin.
-      </Text>
-      <View style={styles.legend}>
-        <View style={styles.legendItem}>
-          <View style={[styles.legendBox, styles.legendClipping]} />
-          <Text style={styles.legendText}>Clipping Area (100x100)</Text>
+      {!e2eTest && (
+        <Text style={styles.description}>
+          This example highlights a clipping parent to both the explicit root
+          (blue) and target (yellow). The dashed borders show the full extent of
+          the root and target, while the solid colors show what's actually
+          visible after clipping. The purple dashed border shows the root bounds
+          after applying rootMargin.
+        </Text>
+      )}
+      {!e2eTest && (
+        <View style={styles.legend}>
+          <View style={styles.legendItem}>
+            <View style={[styles.legendBox, styles.legendClipping]} />
+            <Text style={styles.legendText}>Clipping Area (100x100)</Text>
+          </View>
+          <View style={styles.legendItem}>
+            <View style={[styles.legendBox, styles.legendRoot]} />
+            <Text style={styles.legendText}>Root (visible)</Text>
+          </View>
+          <View style={styles.legendItem}>
+            <View style={[styles.legendBox, styles.legendTarget]} />
+            <Text style={styles.legendText}>Target (visible)</Text>
+          </View>
+          <View style={styles.legendItem}>
+            <View style={[styles.legendBox, styles.legendIndicator]} />
+            <Text style={styles.legendText}>Full extent (dashed)</Text>
+          </View>
+          <View style={styles.legendItem}>
+            <View style={[styles.legendBox, styles.legendRootMargin]} />
+            <Text style={styles.legendText}>Root + Margin (purple)</Text>
+          </View>
         </View>
-        <View style={styles.legendItem}>
-          <View style={[styles.legendBox, styles.legendRoot]} />
-          <Text style={styles.legendText}>Root (visible)</Text>
-        </View>
-        <View style={styles.legendItem}>
-          <View style={[styles.legendBox, styles.legendTarget]} />
-          <Text style={styles.legendText}>Target (visible)</Text>
-        </View>
-        <View style={styles.legendItem}>
-          <View style={[styles.legendBox, styles.legendIndicator]} />
-          <Text style={styles.legendText}>Full extent (dashed)</Text>
-        </View>
-        <View style={styles.legendItem}>
-          <View style={[styles.legendBox, styles.legendRootMargin]} />
-          <Text style={styles.legendText}>Root + Margin (purple)</Text>
-        </View>
-      </View>
+      )}
       <View style={styles.visualizationContainer}>
         <View style={styles.clippingParent}>
           <View ref={rootRef} style={styles.root}>
@@ -214,16 +204,19 @@ function IntersectionObserverCustomClippingRootExample(): React.Node {
             {(intersectionEntry.intersectionRatio * 100).toFixed(1)}%
           </Text>
           <Text style={styles.metric}>
-            Intersection Rect:{' '}
-            {JSON.stringify(roundRect(intersectionEntry.intersectionRect))}
+            {formatRect(
+              'Intersection Rect',
+              intersectionEntry.intersectionRect,
+            )}
           </Text>
           <Text style={styles.metric}>
-            Bounding Client Rect:{' '}
-            {JSON.stringify(roundRect(intersectionEntry.boundingClientRect))}
+            {formatRect(
+              'Bounding Client Rect',
+              intersectionEntry.boundingClientRect,
+            )}
           </Text>
           <Text style={styles.metric}>
-            Root Bounds:{' '}
-            {JSON.stringify(roundRect(intersectionEntry.rootBounds))}
+            {formatRect('Root Bounds', intersectionEntry.rootBounds)}
           </Text>
         </View>
       )}

@@ -26,9 +26,19 @@ class ReactNativeFeatureFlagsOverrides
       const InspectorFlagOverrides& overrides)
       : overrides_(overrides) {}
 
+  bool fuseboxScreenshotCaptureEnabled() override {
+    return overrides_.screenshotCaptureEnabled.value_or(
+        ReactNativeFeatureFlagsDefaults::fuseboxScreenshotCaptureEnabled());
+  }
+
   bool fuseboxEnabledRelease() override {
     return overrides_.fuseboxEnabledRelease.value_or(
         ReactNativeFeatureFlagsDefaults::fuseboxEnabledRelease());
+  }
+
+  bool fuseboxFrameRecordingEnabled() override {
+    return overrides_.frameRecordingEnabled.value_or(
+        ReactNativeFeatureFlagsDefaults::fuseboxFrameRecordingEnabled());
   }
 
   bool fuseboxNetworkInspectionEnabled() override {

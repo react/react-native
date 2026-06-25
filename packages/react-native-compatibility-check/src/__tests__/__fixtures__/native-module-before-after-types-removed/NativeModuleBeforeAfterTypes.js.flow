@@ -21,13 +21,13 @@ type BeforeMatchingGeneric<T> = {||};
 type AfterMatchingGeneric<T> = {||};
 
 export interface Spec extends TurboModule {
-  +simpleObject: (a: SimpleObject) => void;
-  +beforeMismatchGeneric: <T>(a: BeforeMismatchGeneric<T>) => void;
+  readonly simpleObject: (a: SimpleObject) => void;
+  readonly beforeMismatchGeneric: <T>(a: BeforeMismatchGeneric<T>) => void;
 
-  +beforeMatchingGeneric: <T>(a: BeforeMatchingGeneric<T>) => void;
-  +afterMatchingGeneric: <T>(a: AfterMatchingGeneric<T>) => void;
+  readonly beforeMatchingGeneric: <T>(a: BeforeMatchingGeneric<T>) => void;
+  readonly afterMatchingGeneric: <T>(a: AfterMatchingGeneric<T>) => void;
 }
 
-(TurboModuleRegistry.getEnforcing<Spec>(
+TurboModuleRegistry.getEnforcing<Spec>(
   'NativeModuleTest',
-): Spec);
+) as Spec;

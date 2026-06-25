@@ -5,11 +5,19 @@ inputs:
     description: 'The node.js version to use'
     required: false
     default: '22.14.0'
+  registry-url:
+    description: |
+      Optional npm registry URL passed through to actions/setup-node. Set on
+      jobs that publish to npm so setup-node writes a `.npmrc` configured to
+      pick up the OIDC-minted token from npm Trusted Publishing.
+    required: false
+    default: ''
 runs:
-  using: "composite"
+  using: 'composite'
   steps:
     - name: Setup node.js
       uses: actions/setup-node@v6
       with:
         node-version: ${{ inputs.node-version }}
         cache: yarn
+        registry-url: ${{ inputs.registry-url }}

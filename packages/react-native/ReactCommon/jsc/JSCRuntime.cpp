@@ -146,6 +146,10 @@ class JSCRuntime : public jsi::Runtime {
     friend class JSCRuntime;
   };
 
+  using IRuntime::getProperty;
+  using IRuntime::hasProperty;
+  using IRuntime::setPropertyValue;
+
   PointerValue* cloneSymbol(const Runtime::PointerValue* pv) override;
   PointerValue* cloneBigInt(const Runtime::PointerValue* pv) override;
   PointerValue* cloneString(const Runtime::PointerValue* pv) override;
@@ -175,6 +179,7 @@ class JSCRuntime : public jsi::Runtime {
   jsi::String createStringFromAscii(const char* str, size_t length) override;
   jsi::String createStringFromUtf8(const uint8_t* utf8, size_t length) override;
   std::string utf8(const jsi::String& /*str*/) override;
+  size_t length(const jsi::String& /*str*/) override;
 
   jsi::Object createObject() override;
   jsi::Object createObject(std::shared_ptr<jsi::HostObject> ho) override;
@@ -739,6 +744,10 @@ jsi::String JSCRuntime::createStringFromUtf8(
 
 std::string JSCRuntime::utf8(const jsi::String& str) {
   return JSStringToSTLString(stringRef(str));
+}
+
+size_t JSCRuntime::length(const jsi::String& str) {
+  return JSStringGetLength(stringRef(str));
 }
 
 jsi::Object JSCRuntime::createObject() {

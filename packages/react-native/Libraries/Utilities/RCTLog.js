@@ -20,11 +20,11 @@ const levelsMap = {
   fatal: 'error',
 };
 
-let warningHandler: ?(...Array<mixed>) => void = null;
+let warningHandler: ?(...Array<unknown>) => void = null;
 
 const RCTLog = {
   // level one of log, info, warn, error, mustfix
-  logIfNoNativeHook(level: string, ...args: Array<mixed>): void {
+  logIfNoNativeHook(level: string, ...args: Array<unknown>): void {
     // We already printed in the native console, so only log here if using a js debugger
     if (typeof global.nativeLoggingHook === 'undefined') {
       RCTLog.logToConsole(level, ...args);
@@ -37,7 +37,7 @@ const RCTLog = {
   },
 
   // Log to console regardless of nativeLoggingHook
-  logToConsole(level: string, ...args: Array<mixed>): void {
+  logToConsole(level: string, ...args: Array<unknown>): void {
     // $FlowFixMe[invalid-computed-prop]
     const logFn = levelsMap[level];
     invariant(

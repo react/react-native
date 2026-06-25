@@ -36,11 +36,6 @@ inline bool operator==(const LayoutConstraints &lhs, const LayoutConstraints &rh
       std::tie(rhs.minimumSize, rhs.maximumSize, rhs.layoutDirection);
 }
 
-inline bool operator!=(const LayoutConstraints &lhs, const LayoutConstraints &rhs)
-{
-  return !(lhs == rhs);
-}
-
 } // namespace facebook::react
 
 namespace std {

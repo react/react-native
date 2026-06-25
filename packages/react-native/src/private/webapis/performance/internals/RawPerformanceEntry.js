@@ -119,7 +119,7 @@ export function performanceEntryTypeToRaw(
       return RawPerformanceEntryTypeValues.RESOURCE;
     default:
       // Verify exhaustive check with Flow
-      (type: empty);
+      (type) as empty;
       throw new TypeError(
         `performanceEntryTypeToRaw: unexpected performance entry type received: ${type}`,
       );

@@ -105,4 +105,6 @@ class ImageBackground extends React.Component<ImageBackgroundProps> {
   }
 }
 
+export type ImageBackgroundInstance = ImageBackground;
+
 export default ImageBackground;

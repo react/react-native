@@ -18,18 +18,18 @@ import type {
 
 import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
 
-export type Props = $ReadOnly<{
+export type Props = Readonly<{
   ...ViewProps,
   text: string,
   backgroundColor?: WithDefault<string, 'transparent'>,
   height?: WithDefault<Int32, 100>,
-  pins: $ReadOnly<{
+  pins: Readonly<{
     x: Float,
     y: Float,
     color: string,
   }>,
 }>;
 
-export default (codegenNativeComponent<Props>(
+export default codegenNativeComponent<Props>(
   'NativeComponent',
-): HostComponent<Props>);
+) as HostComponent<Props>;

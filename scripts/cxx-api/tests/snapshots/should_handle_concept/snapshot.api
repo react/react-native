@@ -1,0 +1,4 @@
+template <typename T, typename ReturnT = std::any>
+concept test::CSSParserSink = requires(CSSSyntaxParser& parser) {
+  { T::consume(parser) } -> std::convertible_to<ReturnT>;
+};

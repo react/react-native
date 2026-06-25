@@ -1,0 +1,2 @@
+struct test::nested::NestedStruct {
+}

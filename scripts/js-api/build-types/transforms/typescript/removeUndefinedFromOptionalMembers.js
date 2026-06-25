@@ -12,7 +12,7 @@ import type {PluginObj} from '@babel/core';
 
 import * as t from '@babel/types';
 
-const visitor: PluginObj<mixed> = {
+const visitor: PluginObj<unknown> = {
   visitor: {
     TSPropertySignature(path) {
       if (path.node.optional !== true) {

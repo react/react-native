@@ -21,6 +21,7 @@
 #include <react/renderer/uimanager/LayoutAnimationStatusDelegate.h>
 #include <react/renderer/uimanager/primitives.h>
 
+#include "AndroidAnimationChoreographer.h"
 #include "JFabricUIManager.h"
 #include "SurfaceHandlerBinding.h"
 
@@ -96,6 +97,10 @@ class FabricUIManagerBinding : public jni::HybridClass<FabricUIManagerBinding>,
   void schedulerShouldRenderTransactions(
       const std::shared_ptr<const MountingCoordinator> &mountingCoordinator) override;
 
+  void schedulerShouldMergeReactRevision(SurfaceId surfaceId) override;
+
+  void mergeReactRevision(SurfaceId surfaceId);
+
   void schedulerDidRequestPreliminaryViewAllocation(const ShadowNode &shadowNode) override;
 
   void schedulerDidDispatchCommand(
@@ -112,9 +117,17 @@ class FabricUIManagerBinding : public jni::HybridClass<FabricUIManagerBinding>,
 
   void schedulerDidUpdateShadowTree(const std::unordered_map<Tag, folly::dynamic> &tagToProps) override;
 
+  void schedulerDidCaptureViewSnapshot(Tag tag, SurfaceId surfaceId) override;
+
+  void schedulerDidSetViewSnapshot(Tag sourceTag, Tag targetTag, SurfaceId surfaceId) override;
+
+  void schedulerDidClearPendingSnapshots() override;
+
   void setPixelDensity(float pointScaleFactor);
 
   void driveCxxAnimations();
+
+  void driveAnimationBackend(jdouble frameTimeMs);
 
   void drainPreallocateViewsQueue();
 
@@ -153,6 +166,10 @@ class FabricUIManagerBinding : public jni::HybridClass<FabricUIManagerBinding>,
   float pointScaleFactor_ = 1;
 
   bool enableFabricLogs_{false};
+
+  std::shared_ptr<AndroidAnimationChoreographer> animationChoreographer_;
+
+  void setAnimationBackendChoreographer(jni::alias_ref<JAnimationBackendChoreographer::javaobject> animationBackend);
 };
 
 } // namespace facebook::react

@@ -7,6 +7,8 @@
 
 #pragma once
 
+#ifndef RCT_REMOVE_LEGACY_COMPONENT_INTEROP
+
 #include <react/renderer/components/legacyviewmanagerinterop/UnstableLegacyViewManagerAutomaticShadowNode.h>
 #include <react/renderer/core/ConcreteComponentDescriptor.h>
 #include <react/renderer/core/ReactPrimitives.h>
@@ -33,3 +35,5 @@ class UnstableLegacyViewManagerAutomaticComponentDescriptor final
   std::string legacyComponentName_;
 };
 } // namespace facebook::react
+
+#endif // RCT_REMOVE_LEGACY_COMPONENT_INTEROP

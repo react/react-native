@@ -24,7 +24,7 @@ import {
 } from 'react-native';
 
 class ViewBorderStyleExample extends React.Component<
-  $ReadOnly<{}>,
+  Readonly<{}>,
   {showBorder: boolean},
 > {
   state: {showBorder: boolean} = {
@@ -89,7 +89,7 @@ const offscreenAlphaCompositingStyles = StyleSheet.create({
 });
 
 class OffscreenAlphaCompositing extends React.Component<
-  $ReadOnly<{testID?: ?string}>,
+  Readonly<{testID?: ?string}>,
   {
     active: boolean,
   },
@@ -173,7 +173,7 @@ const ZIndexExampleStyles = StyleSheet.create({
 });
 
 class ZIndexExample extends React.Component<
-  $ReadOnly<{}>,
+  Readonly<{}>,
   {
     flipped: boolean,
   },
@@ -317,7 +317,7 @@ function PositionStaticZIndexExample(): React.Node {
 }
 
 class DisplayNoneStyle extends React.Component<
-  $ReadOnly<{}>,
+  Readonly<{}>,
   {
     index: number,
   },
@@ -383,7 +383,7 @@ class DisplayNoneStyle extends React.Component<
   };
 }
 
-class FlexGapExample extends React.Component<$ReadOnly<{testID?: ?string}>> {
+class FlexGapExample extends React.Component<Readonly<{testID?: ?string}>> {
   render(): React.Node {
     return (
       <View
@@ -768,12 +768,12 @@ function FocusBlurExample(): React.Node {
   );
 }
 
-export default ({
+export default {
   title: 'View',
   documentationURL: 'https://reactnative.dev/docs/view',
   category: 'Basic',
   description: ('Basic building block of all UI, examples that ' +
-    'demonstrate some of the many styles available.': string),
+    'demonstrate some of the many styles available.') as string,
   displayName: 'ViewExample',
   examples: [
     {
@@ -1438,4 +1438,4 @@ export default ({
       render: FocusBlurExample,
     },
   ],
-}: RNTesterModule);
+} as RNTesterModule;

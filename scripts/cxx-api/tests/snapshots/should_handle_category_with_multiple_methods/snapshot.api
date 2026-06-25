@@ -1,0 +1,7 @@
+category RCTConvert(Transform) {
+  public virtual static CATransform3D CATransform3D:(id json);
+  public virtual static RCTTransformOrigin RCTTransformOrigin:(id json);
+}
+
+interface RCTConvert : public NSObject {
+}

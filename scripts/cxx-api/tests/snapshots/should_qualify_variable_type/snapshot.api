@@ -1,0 +1,7 @@
+struct test::Container {
+  public const test::Param constField;
+  public test::Param field;
+}
+
+struct test::Param {
+}

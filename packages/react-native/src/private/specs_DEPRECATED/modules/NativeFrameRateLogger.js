@@ -13,10 +13,10 @@ import type {TurboModule} from '../../../../Libraries/TurboModule/RCTExport';
 import * as TurboModuleRegistry from '../../../../Libraries/TurboModule/TurboModuleRegistry';
 
 export interface Spec extends TurboModule {
-  +setGlobalOptions: (options: {+debug?: ?boolean}) => void;
-  +setContext: (context: string) => void;
-  +beginScroll: () => void;
-  +endScroll: () => void;
+  readonly setGlobalOptions: (options: {readonly debug?: ?boolean}) => void;
+  readonly setContext: (context: string) => void;
+  readonly beginScroll: () => void;
+  readonly endScroll: () => void;
 }
 
-export default (TurboModuleRegistry.get<Spec>('FrameRateLogger'): ?Spec);
+export default TurboModuleRegistry.get<Spec>('FrameRateLogger') as ?Spec;

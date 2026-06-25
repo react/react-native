@@ -13,9 +13,9 @@ import type {TurboModule} from '../../../../Libraries/TurboModule/RCTExport';
 import * as TurboModuleRegistry from '../../../../Libraries/TurboModule/TurboModuleRegistry';
 
 export interface Spec extends TurboModule {
-  +getConstants: () => {};
-  +getString: () => Promise<string>;
-  +setString: (content: string) => void;
+  readonly getConstants: () => {};
+  readonly getString: () => Promise<string>;
+  readonly setString: (content: string) => void;
 }
 
-export default (TurboModuleRegistry.getEnforcing<Spec>('Clipboard'): Spec);
+export default TurboModuleRegistry.getEnforcing<Spec>('Clipboard') as Spec;

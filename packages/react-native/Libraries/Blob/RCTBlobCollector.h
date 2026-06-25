@@ -16,7 +16,7 @@ class JSI_EXPORT RCTBlobCollector : public jsi::HostObject {
   RCTBlobCollector(RCTBlobManager *blobManager, const std::string &blobId);
   ~RCTBlobCollector();
 
-  static void install(RCTBlobManager *blobManager);
+  static void install(jsi::Runtime &runtime, RCTBlobManager *blobManager);
 
  private:
   const std::string blobId_;

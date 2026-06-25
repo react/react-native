@@ -9,7 +9,8 @@ set(CMAKE_VERBOSE_MAKEFILE on)
 include(${REACT_COMMON_DIR}/cmake-utils/react-native-flags.cmake)
 
 file(GLOB react_debug_SRC CONFIGURE_DEPENDS *.cpp)
-add_library(react_debug OBJECT ${react_debug_SRC})
+file(GLOB react_debug_redbox_SRC CONFIGURE_DEPENDS redbox/*.cpp)
+add_library(react_debug OBJECT ${react_debug_SRC} ${react_debug_redbox_SRC})
 
 target_include_directories(react_debug PUBLIC ${REACT_COMMON_DIR})
 

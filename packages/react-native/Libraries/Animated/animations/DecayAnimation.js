@@ -14,11 +14,11 @@ import type {AnimationConfig, EndCallback} from './Animation';
 
 import Animation from './Animation';
 
-export type DecayAnimationConfig = $ReadOnly<{
+export type DecayAnimationConfig = Readonly<{
   ...AnimationConfig,
   velocity:
     | number
-    | $ReadOnly<{
+    | Readonly<{
         x: number,
         y: number,
         ...
@@ -27,7 +27,7 @@ export type DecayAnimationConfig = $ReadOnly<{
   ...
 }>;
 
-export type DecayAnimationConfigSingle = $ReadOnly<{
+export type DecayAnimationConfigSingle = Readonly<{
   ...AnimationConfig,
   velocity: number,
   deceleration?: number,
@@ -52,7 +52,7 @@ export default class DecayAnimation extends Animation {
     this._platformConfig = config.platformConfig;
   }
 
-  __getNativeAnimationConfig(): $ReadOnly<{
+  __getNativeAnimationConfig(): Readonly<{
     deceleration: number,
     iterations: number,
     platformConfig: ?PlatformConfig,
@@ -85,6 +85,7 @@ export default class DecayAnimation extends Animation {
     this._startTime = Date.now();
 
     const useNativeDriver = this.__startAnimationIfNative(animatedValue);
+    // TODO: T274006331 - Remove js-only animation once shared backend is fully rolled out
     if (!useNativeDriver) {
       this._animationFrame = requestAnimationFrame(() => this.onUpdate());
     }

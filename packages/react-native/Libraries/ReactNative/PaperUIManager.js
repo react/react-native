@@ -121,7 +121,7 @@ function lazifyViewManagerConfig(viewName: string) {
     defineLazyObjectProperty(viewConfig, 'Constants', {
       get: () => {
         const viewManager = NativeModules[viewConfig.Manager];
-        const constants: {[string]: mixed} = {};
+        const constants: {[string]: unknown} = {};
         viewManager &&
           Object.keys(viewManager).forEach(key => {
             const value = viewManager[key];

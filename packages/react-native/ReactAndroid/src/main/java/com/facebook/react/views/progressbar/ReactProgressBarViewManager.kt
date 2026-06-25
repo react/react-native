@@ -5,6 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+@file:Suppress("DEPRECATION")
+
 package com.facebook.react.views.progressbar
 
 import android.content.Context
@@ -16,6 +18,7 @@ import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.common.ReactConstants
 import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.uimanager.BaseViewManager
+import com.facebook.react.uimanager.LayoutShadowNode
 import com.facebook.react.uimanager.PixelUtil.toDIPFromPixel
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.ViewManagerDelegate
@@ -33,10 +36,9 @@ import java.util.WeakHashMap
  * a [ProgressBar] changes, we have to drop the existing [ProgressBar] (if there is one) and create
  * a new one with the style given.
  */
-@Suppress("DEPRECATION")
 @ReactModule(name = ReactProgressBarViewManager.REACT_CLASS)
 internal class ReactProgressBarViewManager :
-    BaseViewManager<ProgressBarContainerView, ProgressBarShadowNode>(),
+    BaseViewManager<ProgressBarContainerView, LayoutShadowNode>(),
     AndroidProgressBarManagerInterface<ProgressBarContainerView> {
   @Suppress("IDENTITY_SENSITIVE_OPERATIONS_WITH_VALUE_TYPE")
   private val measuredStyles = WeakHashMap<Int, Pair<Int, Int>>()
@@ -82,10 +84,9 @@ internal class ReactProgressBarViewManager :
   @ReactProp(name = PROP_ATTR)
   override fun setTypeAttr(view: ProgressBarContainerView, value: String?): Unit = Unit
 
-  override fun createShadowNodeInstance(): ProgressBarShadowNode = ProgressBarShadowNode()
+  override fun createShadowNodeInstance(): LayoutShadowNode = LayoutShadowNode()
 
-  override fun getShadowNodeClass(): Class<ProgressBarShadowNode> =
-      ProgressBarShadowNode::class.java
+  override fun getShadowNodeClass(): Class<LayoutShadowNode> = LayoutShadowNode::class.java
 
   override fun updateExtraData(root: ProgressBarContainerView, extraData: Any) {
     // do nothing
@@ -99,16 +100,16 @@ internal class ReactProgressBarViewManager :
 
   override fun measure(
       context: Context,
-      localData: ReadableMap,
-      props: ReadableMap,
-      state: ReadableMap,
+      localData: ReadableMap?,
+      props: ReadableMap?,
+      state: ReadableMap?,
       width: Float,
       widthMode: YogaMeasureMode,
       height: Float,
       heightMode: YogaMeasureMode,
       attachmentsPositions: FloatArray?,
   ): Long {
-    val style = getStyleFromString(props.getString(PROP_STYLE))
+    val style = getStyleFromString(props?.getString(PROP_STYLE))
     val value =
         measuredStyles.getOrPut(style) {
           val progressBar = createProgressBar(context, style)

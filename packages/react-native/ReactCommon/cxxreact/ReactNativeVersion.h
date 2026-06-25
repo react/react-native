@@ -18,11 +18,13 @@
 
 namespace facebook::react {
 
-constexpr struct {
+struct ReactNativeVersionType {
   int32_t Major = 1000;
   int32_t Minor = 0;
   int32_t Patch = 0;
   std::string_view Prerelease = "";
-} ReactNativeVersion;
+};
+
+constexpr ReactNativeVersionType ReactNativeVersion;
 
 } // namespace facebook::react

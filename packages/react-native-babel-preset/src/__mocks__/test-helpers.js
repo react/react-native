@@ -17,8 +17,8 @@ const generate = require('@babel/generator').default;
 const t = require('@babel/types');
 const nullthrows = require('nullthrows');
 
-function makeTransformOptions<OptionsT: ?EntryOptions>(
-  plugins: $ReadOnlyArray<PluginEntry>,
+function makeTransformOptions<OptionsT extends ?EntryOptions>(
+  plugins: ReadonlyArray<PluginEntry>,
   options: OptionsT,
 ): BabelCoreOptions {
   return {
@@ -52,8 +52,8 @@ function validateOutputAst(ast: BabelNode) {
   });
 }
 
-function transformToAst<T: ?EntryOptions>(
-  plugins: $ReadOnlyArray<PluginEntry>,
+function transformToAst<T extends ?EntryOptions>(
+  plugins: ReadonlyArray<PluginEntry>,
   code: string,
   options: T,
 ): BabelNodeFile {
@@ -68,7 +68,7 @@ function transformToAst<T: ?EntryOptions>(
 
 function transform(
   code: string,
-  plugins: $ReadOnlyArray<PluginEntry>,
+  plugins: ReadonlyArray<PluginEntry>,
   options: ?EntryOptions,
 ): string {
   return generate(transformToAst(plugins, code, options)).code;

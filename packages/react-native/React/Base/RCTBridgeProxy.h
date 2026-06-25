@@ -14,12 +14,20 @@ NS_ASSUME_NONNULL_BEGIN
 @class RCTBundleManager;
 @class RCTCallableJSModules;
 @class RCTModuleRegistry;
+@class RCTPerformanceLogger;
 @class RCTViewRegistry;
 
 @interface RCTBridgeProxy : NSProxy
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
+
+/**
+ * The performance logger for this React instance. In bridgeless mode it is
+ * injected by RCTInstance so that consumers reading `[bridge performanceLogger]`
+ * on `RCTJavaScriptDidLoadNotification` keep working; previously it returned nil.
+ */
+@property (nonatomic, strong, nullable) RCTPerformanceLogger *performanceLogger;
 
 - (instancetype)initWithViewRegistry:(RCTViewRegistry *)viewRegistry
                       moduleRegistry:(RCTModuleRegistry *)moduleRegistry

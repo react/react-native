@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "RCTDefines.h"
+#include <React/RCTDefines.h>
 #include "RCTMacros.h"
 
 #if RCT_PROFILE && defined(__i386__)

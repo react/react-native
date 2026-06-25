@@ -19,7 +19,7 @@ PointerHoverTracker::PointerHoverTracker(
     : target_(std::move(target)) {
   if (target_ != nullptr) {
     // Retrieve the root shadow node at this current revision so that we can
-    // leverage it to get the event path list at the moment the event occured
+    // leverage it to get the event path list at the moment the event occurred
     auto rootShadowNode = std::shared_ptr<const ShadowNode>{};
     auto& shadowTreeRegistry = uiManager.getShadowTreeRegistry();
     shadowTreeRegistry.visit(

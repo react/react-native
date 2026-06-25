@@ -16,7 +16,7 @@ import type {
   JSONSerializable,
   MessageFromDevice,
   MessageToDevice,
-  WrappedEvent,
+  WrappedEventToDevice,
 } from '../inspector-proxy/types';
 
 import nullthrows from 'nullthrows';
@@ -98,17 +98,24 @@ export class DeviceAgent {
 
 export class DeviceMock extends DeviceAgent {
   // Empty handlers
-  +connect: JestMockFn<[message: ConnectRequest], void> = jest.fn();
-  +disconnect: JestMockFn<[message: DisconnectRequest], void> = jest.fn();
-  +getPages: JestMockFn<
+  readonly connect: JestMockFn<[message: ConnectRequest], void> = jest.fn();
+  readonly disconnect: JestMockFn<[message: DisconnectRequest], void> =
+    jest.fn();
+  readonly getPages: JestMockFn<
     [message: GetPagesRequest],
     | GetPagesResponse['payload']
     | Promise<GetPagesResponse['payload'] | void>
     | void,
   > = jest.fn();
-  +wrappedEvent: JestMockFn<[message: WrappedEvent], void> = jest.fn();
-  +wrappedEventParsed: JestMockFn<
-    [payload: {...WrappedEvent['payload'], wrappedEvent: JSONSerializable}],
+  readonly wrappedEvent: JestMockFn<[message: WrappedEventToDevice], void> =
+    jest.fn();
+  readonly wrappedEventParsed: JestMockFn<
+    [
+      payload: {
+        ...WrappedEventToDevice['payload'],
+        wrappedEvent: JSONSerializable,
+      },
+    ],
     void,
   > = jest.fn();
 
@@ -132,12 +139,12 @@ export class DeviceMock extends DeviceAgent {
         });
         break;
       default:
-        (message: empty);
+        message as empty;
         throw new Error(`Unhandled event ${message.event}`);
     }
   }
 
-  #sendPayloadIfNonNull<Event: MessageFromDevice['event']>(
+  #sendPayloadIfNonNull<Event extends MessageFromDevice['event']>(
     event: Event,
     maybePayload:
       | MessageFromDevice['payload']

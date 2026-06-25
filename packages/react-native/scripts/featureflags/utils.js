@@ -34,7 +34,7 @@ export function getCxxValueFromDefaultValue(
     case 'number':
       const numericString = defaultValue.toString();
       // If the number is an integer, we need to append ".0" so that the result
-      // is interpeted as a double in C++.
+      // is interpreted as a double in C++.
       return numericString.includes('.') ? numericString : `${numericString}.0`;
     case 'string':
       return JSON.stringify(defaultValue);
@@ -97,7 +97,7 @@ export function getKotlinValueFromDefaultValue(
     case 'number':
       const numericString = defaultValue.toString();
       // If the number is an integer, we need to append ".0" so that the result
-      // is interpeted as a double in Kotlin.
+      // is interpreted as a double in Kotlin.
       return numericString.includes('.') ? numericString : `${numericString}.0`;
     case 'string':
       return JSON.stringify(defaultValue);

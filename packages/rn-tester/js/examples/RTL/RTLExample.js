@@ -13,7 +13,7 @@
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 
 import RNTexterText from '../../components/RNTesterText';
-import React from 'react';
+import * as React from 'react';
 import {
   Alert,
   Animated,
@@ -735,7 +735,7 @@ exports.examples = [
   {
     title: 'Default Text Alignment',
     description: ('In iOS, it depends on active language. ' +
-      'In Android, it depends on the text content.': string),
+      'In Android, it depends on the text content.') as string,
     render: function (): React.MixedElement {
       return <TextAlignmentExample style={styles.fontSizeSmall} />;
     },
@@ -743,7 +743,7 @@ exports.examples = [
   {
     title: "Using textAlign: 'left'",
     description: ('In iOS/Android, text alignment flips regardless of ' +
-      'languages or text content.': string),
+      'languages or text content.') as string,
     render: function (): React.MixedElement {
       return (
         <TextAlignmentExample
@@ -755,7 +755,7 @@ exports.examples = [
   {
     title: "Using textAlign: 'right'",
     description: ('In iOS/Android, text alignment flips regardless of ' +
-      'languages or text content.': string),
+      'languages or text content.') as string,
     render: function (): React.MixedElement {
       return (
         <TextAlignmentExample
@@ -766,7 +766,7 @@ exports.examples = [
   },
   {
     title: "Using textAlign: 'right' for TextInput",
-    description: ('Flip TextInput direction to RTL': string),
+    description: 'Flip TextInput direction to RTL' as string,
     render: function (): React.MixedElement {
       return <TextInputExample style={[styles.textAlignRight]} />;
     },

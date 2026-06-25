@@ -93,7 +93,7 @@ void HostTarget::recordFrameTimings(
   std::lock_guard lock(tracingMutex_);
 
   if (traceRecording_) {
-    traceRecording_->recordFrameTimings(frameTimingSequence);
+    traceRecording_->recordFrameTimings(std::move(frameTimingSequence));
   } else {
     assert(
         false &&

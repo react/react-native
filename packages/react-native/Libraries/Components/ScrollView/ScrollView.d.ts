@@ -264,7 +264,7 @@ interface ScrollResponderMixin extends SubscribableMixin {
    *        down to make it meet the keyboard's top. Default is false.
    */
   scrollResponderScrollNativeHandleToKeyboard(
-    nodeHandle: any,
+    nodeHandle: number | HostInstance,
     additionalOffset?: number,
     preventNegativeScrollOffset?: boolean,
   ): void;
@@ -586,6 +586,15 @@ export interface ScrollViewPropsAndroid {
    * Causes the scrollbars not to turn transparent when they are not in use. The default value is false.
    */
   persistentScrollbar?: boolean | undefined;
+
+  /**
+   * When false, the ScrollView will not automatically scroll to a focused child when
+   * the child requests focus. This can be useful when you want to control the scroll
+   * position programmatically. The default value is true.
+   *
+   * @platform android
+   */
+  scrollsChildToFocus?: boolean | undefined;
 }
 
 export interface ScrollViewProps
@@ -827,10 +836,29 @@ export interface ScrollViewProps
   StickyHeaderComponent?: React.ComponentType<any> | undefined;
 }
 
-declare class ScrollViewComponent extends React.Component<ScrollViewProps> {}
-export declare const ScrollViewBase: Constructor<ScrollResponderMixin> &
-  typeof ScrollViewComponent;
-export class ScrollView extends ScrollViewBase {
+export interface ScrollViewScrollToOptions {
+  x?: number | undefined;
+  y?: number | undefined;
+  animated?: boolean | undefined;
+}
+
+// Public methods for ScrollView
+export interface ScrollViewImperativeMethods {
+  /**
+   * Returns a reference to the underlying scroll responder, which supports
+   * operations like `scrollTo`. All ScrollView-like components should
+   * implement this method so that they can be composed while providing access
+   * to the underlying scroll responder's methods.
+   */
+  readonly getScrollResponder: () => ScrollResponderType;
+  readonly getScrollableNode: () => number | undefined;
+  readonly getInnerViewNode: () => number | undefined;
+  readonly getInnerViewRef: () => React.ComponentRef<typeof View> | null;
+  /**
+   * Returns a reference to the underlying native scroll view, or null if the
+   * native instance is not mounted.
+   */
+  readonly getNativeScrollRef: () => HostInstance | null;
   /**
    * Scrolls to a given x, y offset, either immediately or with a smooth animation.
    * Syntax:
@@ -841,18 +869,11 @@ export class ScrollView extends ScrollViewBase {
    * the function also accepts separate arguments as an alternative to the options object.
    * This is deprecated due to ambiguity (y before x), and SHOULD NOT BE USED.
    */
-  scrollTo(
-    y?:
-      | number
-      | {
-          x?: number | undefined;
-          y?: number | undefined;
-          animated?: boolean | undefined;
-        },
+  readonly scrollTo: (
+    options?: ScrollViewScrollToOptions | number,
     deprecatedX?: number,
     deprecatedAnimated?: boolean,
-  ): void;
-
+  ) => void;
   /**
    * A helper function that scrolls to the end of the scrollview;
    * If this is a vertical ScrollView, it scrolls to the bottom.
@@ -861,32 +882,39 @@ export class ScrollView extends ScrollViewBase {
    * The options object has an animated prop, that enables the scrolling animation or not.
    * The animated prop defaults to true
    */
-  scrollToEnd(options?: {animated?: boolean | undefined}): void;
-
+  readonly scrollToEnd: (options?: ScrollViewScrollToOptions | null) => void;
   /**
    * Displays the scroll indicators momentarily.
    */
-  flashScrollIndicators(): void;
+  readonly flashScrollIndicators: () => void;
+  scrollResponderZoomTo(
+    rect: {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+      animated?: boolean | undefined;
+    },
+    animated?: boolean, // deprecated, put this inside the rect argument instead
+  ): void;
+  scrollResponderScrollNativeHandleToKeyboard(
+    nodeHandle: number | HostInstance,
+    additionalOffset?: number,
+    preventNegativeScrollOffset?: boolean,
+  ): void;
+}
 
-  /**
-   * Returns a reference to the underlying scroll responder, which supports
-   * operations like `scrollTo`. All ScrollView-like components should
-   * implement this method so that they can be composed while providing access
-   * to the underlying scroll responder's methods.
-   */
-  getScrollResponder(): ScrollResponderMixin;
+export type ScrollResponderType = ScrollViewImperativeMethods;
 
-  getScrollableNode(): any;
+export interface PublicScrollViewInstance
+  extends HostInstance,
+    ScrollViewImperativeMethods {}
 
-  // Undocumented
-  getInnerViewNode(): any;
-
-  /**
-   * Returns a reference to the underlying native scroll view, or null if the
-   * native instance is not mounted.
-   */
-  getNativeScrollRef: () => HostInstance | null;
-
+declare class ScrollViewComponent extends React.Component<ScrollViewProps> {}
+export declare const ScrollViewBase: Constructor<ScrollResponderMixin> &
+  typeof ScrollViewComponent;
+export interface ScrollView extends ScrollViewImperativeMethods {}
+export class ScrollView extends ScrollViewBase {
   /**
    * @deprecated Use scrollTo instead
    */

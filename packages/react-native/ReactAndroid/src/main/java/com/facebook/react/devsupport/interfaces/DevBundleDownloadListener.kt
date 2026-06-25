@@ -10,7 +10,7 @@ package com.facebook.react.devsupport.interfaces
 public interface DevBundleDownloadListener {
   public fun onSuccess()
 
-  public fun onProgress(status: String?, done: Int?, total: Int?)
+  public fun onProgress(status: String?, done: Int?, total: Int?, percent: Int?)
 
   public fun onFailure(cause: Exception)
 }

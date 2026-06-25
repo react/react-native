@@ -10,17 +10,11 @@
 
 import * as path from 'path';
 
-const {
-  readHermesTag,
-  readHermesV1Tag,
-  setHermesTag,
-} = require('../hermes-utils');
+const {readHermesTag, setHermesTag} = require('../hermes-utils');
 // $FlowFixMe[untyped-import] (OSS) memfs
 const {memfs} = require('memfs');
 
-const hermesTag =
-  'hermes-2022-04-28-RNv0.69.0-15d07c2edd29a4ea0b8f15ab0588a0c1adb1200f';
-const hermesV1Tag = '250829098.0.0';
+const hermesTag = '250829098.0.13';
 const ROOT_DIR = path.normalize(path.join(__dirname, '../../..'));
 const SDKS_DIR = path.join(ROOT_DIR, 'sdks');
 
@@ -44,62 +38,36 @@ describe('hermes-utils', () => {
 
   describe('Versioning Hermes', () => {
     describe('readHermesTag', () => {
-      it('should throw if .hermesversion does not exist', () => {
+      it('should throw if .hermesv1version does not exist', () => {
         expect(() => {
           readHermesTag();
-        }).toThrow('[Hermes] .hermesversion does not exist.');
+        }).toThrow('[Hermes] .hermesv1version does not exist.');
       });
       it('should fail if hermes tag is empty', () => {
-        fs.writeFileSync(path.join(SDKS_DIR, '.hermesversion'), '');
+        fs.writeFileSync(path.join(SDKS_DIR, '.hermesv1version'), '');
         expect(() => {
           readHermesTag();
-        }).toThrow('[Hermes] .hermesversion file is empty.');
+        }).toThrow('[Hermes] .hermesv1version file is empty.');
       });
-      it('should return tag from .hermesversion if file exists', () => {
-        fs.writeFileSync(path.join(SDKS_DIR, '.hermesversion'), hermesTag);
+      it('should return tag from .hermesv1version if file exists', () => {
+        fs.writeFileSync(path.join(SDKS_DIR, '.hermesv1version'), hermesTag);
         expect(readHermesTag()).toEqual(hermesTag);
       });
     });
 
-    describe('readHermesV1Tag', () => {
-      it('should throw if .hermesv1version does not exist', () => {
-        expect(() => {
-          readHermesV1Tag();
-        }).toThrow('[Hermes] .hermesv1version does not exist.');
-      });
-      it('should fail if hermes v1 tag is empty', () => {
-        fs.writeFileSync(path.join(SDKS_DIR, '.hermesv1version'), '');
-        expect(() => {
-          readHermesV1Tag();
-        }).toThrow('[Hermes] .hermesv1version file is empty.');
-      });
-      it('should return tag from .hermesv1version if file exists', () => {
-        fs.writeFileSync(path.join(SDKS_DIR, '.hermesv1version'), hermesV1Tag);
-        expect(readHermesV1Tag()).toEqual(hermesV1Tag);
-      });
-    });
-
     describe('setHermesTag', () => {
-      it('should write tag to .hermesversion file', async () => {
-        await setHermesTag(hermesTag, hermesV1Tag);
-        expect(
-          fs.readFileSync(path.join(SDKS_DIR, '.hermesversion'), {
-            encoding: 'utf8',
-            flag: 'r',
-          }),
-        ).toEqual(hermesTag);
-
+      it('should write tag to .hermesv1version file', async () => {
+        await setHermesTag(hermesTag);
         expect(
           fs.readFileSync(path.join(SDKS_DIR, '.hermesv1version'), {
             encoding: 'utf8',
             flag: 'r',
           }),
-        ).toEqual(hermesV1Tag);
+        ).toEqual(hermesTag);
       });
       it('should set Hermes tag and read it back', async () => {
-        await setHermesTag(hermesTag, hermesV1Tag);
+        await setHermesTag(hermesTag);
         expect(readHermesTag()).toEqual(hermesTag);
-        expect(readHermesV1Tag()).toEqual(hermesV1Tag);
       });
     });
   });

@@ -80,8 +80,6 @@ NSString *RCTInterpolateString(
   RCTInterpolationOutputType _outputType;
   id _Nullable _outputvalue;
   NSString *_Nullable _outputPattern;
-
-  NSArray<NSTextCheckingResult *> *_matches;
 }
 
 - (instancetype)initWithTag:(NSNumber *)tag config:(NSDictionary<NSString *, id> *)config

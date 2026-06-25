@@ -8,7 +8,8 @@
 #import "RCTSurfaceView.h"
 #import "RCTSurfaceView+Internal.h"
 
-#import "RCTDefines.h"
+#import <React/RCTDefines.h>
+
 #import "RCTSurface.h"
 #import "RCTSurfaceProtocol.h"
 #import "RCTSurfaceRootView.h"

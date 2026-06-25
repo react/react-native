@@ -7,7 +7,7 @@
 
 #include "ValueUnit.h"
 
-#include "DoubleConversions.h"
+#include <react/renderer/debug/DebugStringConvertible.h>
 
 namespace facebook::react {
 

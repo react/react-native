@@ -11,6 +11,7 @@
 import type {DebuggerSessionIDs, EventReporter} from '../types/EventReporter';
 import type {Experiments} from '../types/Experiments';
 import type {Logger} from '../types/Logger';
+import type {ReadonlyURL} from '../types/ReadonlyURL';
 import type {CreateCustomMessageHandlerFn} from './CustomMessageHandler';
 import type {DeviceOptions} from './Device';
 import type {
@@ -27,10 +28,16 @@ import Device from './Device';
 import EventLoopPerfTracker from './EventLoopPerfTracker';
 import InspectorProxyHeartbeat from './InspectorProxyHeartbeat';
 import nullthrows from 'nullthrows';
-import url from 'url';
 import WS from 'ws';
 
 const debug = require('debug')('Metro:InspectorProxy');
+
+const WS_DEBUGGER_ALLOWED_ORIGIN_HOSTNAMES = new Set([
+  'localhost',
+  '127.0.0.1',
+  '0.0.0.0',
+  '[::]',
+]);
 
 const WS_DEVICE_URL = '/inspector/device';
 const WS_DEBUGGER_URL = '/inspector/debug';
@@ -57,7 +64,7 @@ const INTERNAL_ERROR_MESSAGES = {
 };
 
 export type GetPageDescriptionsConfig = {
-  requestorRelativeBaseUrl: URL,
+  requestorRelativeBaseUrl: ReadonlyURL,
   logNoPagesForConnectedDevice?: boolean,
 };
 
@@ -71,18 +78,12 @@ export interface InspectorProxyQueries {
   ): Array<PageDescription>;
 }
 
-export type RemoveHasConnectedDevicesListener = () => void;
-
-export type HasConnectedDevicesListener = (
-  callback: (hasConnectedDevices: boolean) => void,
-) => RemoveHasConnectedDevicesListener;
-
 /**
  * Main Inspector Proxy class that connects JavaScript VM inside Android/iOS apps and JS debugger.
  */
 export default class InspectorProxy implements InspectorProxyQueries {
   // The base URL to the dev server from the dev-middleware host.
-  #serverBaseUrl: URL;
+  #serverBaseUrl: ReadonlyURL;
 
   // Maps device ID to Device instance.
   #devices: Map<string, Device>;
@@ -92,7 +93,7 @@ export default class InspectorProxy implements InspectorProxyQueries {
 
   #eventReporter: ?EventReporter;
 
-  #experiments: Experiments;
+  readonly #experiments: Experiments;
 
   // custom message handler factory allowing implementers to handle unsupported CDP messages.
   #customMessageHandler: ?CreateCustomMessageHandlerFn;
@@ -103,23 +104,20 @@ export default class InspectorProxy implements InspectorProxyQueries {
 
   #eventLoopPerfTracker: EventLoopPerfTracker;
 
-  #onHasConnectedDevicesChangedFns: Set<(boolean) => void>;
-
   constructor(
-    serverBaseUrl: string,
+    serverBaseUrl: ReadonlyURL,
     eventReporter: ?EventReporter,
     experiments: Experiments,
     logger?: Logger,
     customMessageHandler: ?CreateCustomMessageHandlerFn,
     trackEventLoopPerf?: boolean = false,
   ) {
-    this.#serverBaseUrl = new URL(serverBaseUrl);
+    this.#serverBaseUrl = serverBaseUrl;
     this.#devices = new Map();
     this.#eventReporter = eventReporter;
     this.#experiments = experiments;
     this.#logger = logger;
     this.#customMessageHandler = customMessageHandler;
-    this.#onHasConnectedDevicesChangedFns = new Set();
     if (trackEventLoopPerf) {
       this.#eventLoopPerfTracker = new EventLoopPerfTracker({
         perfMeasurementDuration: EVENT_LOOP_PERF_MEASUREMENT_MS,
@@ -150,18 +148,6 @@ export default class InspectorProxy implements InspectorProxyQueries {
       });
     }
   }
-
-  unstable_hasConnectedDevices(): boolean {
-    return this.#devices.size > 0;
-  }
-
-  unstable_addHasConnectedDevicesListener: HasConnectedDevicesListener =
-    onDevicesChanged => {
-      this.#onHasConnectedDevicesChangedFns.add(onDevicesChanged);
-      return () => {
-        this.#onHasConnectedDevicesChangedFns.delete(onDevicesChanged);
-      };
-    };
 
   getPageDescriptions({
     requestorRelativeBaseUrl,
@@ -219,9 +205,9 @@ export default class InspectorProxy implements InspectorProxyQueries {
   processRequest(
     request: IncomingMessage,
     response: ServerResponse,
-    next: (?Error) => mixed,
+    next: (?Error) => unknown,
   ) {
-    const pathname = url.parse(request.url).pathname;
+    const pathname = new URL(request.url, 'http://example.com').pathname;
     if (
       pathname === PAGES_LIST_JSON_URL ||
       pathname === PAGES_LIST_JSON_URL_2
@@ -259,7 +245,7 @@ export default class InspectorProxy implements InspectorProxyQueries {
     deviceId: string,
     device: Device,
     page: Page,
-    requestorRelativeBaseUrl: URL,
+    requestorRelativeBaseUrl: ReadonlyURL,
   ): PageDescription {
     const {host, protocol} = requestorRelativeBaseUrl;
     const webSocketScheme = protocol === 'https:' ? 'wss' : 'ws';
@@ -269,10 +255,9 @@ export default class InspectorProxy implements InspectorProxyQueries {
     const devtoolsFrontendUrl = getDevToolsFrontendUrl(
       this.#experiments,
       webSocketDebuggerUrl,
-      this.#serverBaseUrl.origin,
+      new URL(this.#serverBaseUrl),
       {
         relative: true,
-        useFuseboxEntryPoint: page.capabilities.prefersFuseboxFrontend,
       },
     );
 
@@ -352,12 +337,11 @@ export default class InspectorProxy implements InspectorProxyQueries {
       const wssTimestamp = Date.now();
 
       const fallbackDeviceId = String(this.#deviceCounter++);
-
-      const query = url.parse(req.url || '', true).query || {};
-      const deviceId = query.device || fallbackDeviceId;
-      const deviceName = query.name || 'Unknown';
-      const appName = query.app || 'Unknown';
-      const isProfilingBuild = query.profiling === 'true';
+      const query = tryParseQueryParams(req.url);
+      const deviceId = query?.get('device') || fallbackDeviceId;
+      const deviceName = query?.get('name') || 'Unknown';
+      const appName = query?.get('app') || 'Unknown';
+      const isProfilingBuild = query?.get('profiling') === 'true';
 
       try {
         const deviceRelativeBaseUrl =
@@ -376,6 +360,7 @@ export default class InspectorProxy implements InspectorProxyQueries {
           deviceRelativeBaseUrl,
           serverRelativeBaseUrl: this.#serverBaseUrl,
           isProfilingBuild,
+          experiments: this.#experiments,
         };
 
         if (oldDevice) {
@@ -386,9 +371,6 @@ export default class InspectorProxy implements InspectorProxyQueries {
         }
 
         this.#devices.set(deviceId, newDevice);
-        if (this.#devices.size === 1) {
-          this.#onHasConnectedDevicesChangedFns.forEach(cb => cb(true));
-        }
 
         debug(
           "Got new device connection: name='%s', app=%s, device=%s, via=%s",
@@ -481,9 +463,6 @@ export default class InspectorProxy implements InspectorProxyQueries {
 
           if (this.#devices.get(deviceId)?.dangerouslyGetSocket() === socket) {
             this.#devices.delete(deviceId);
-            if (this.#devices.size === 0) {
-              this.#onHasConnectedDevicesChangedFns.forEach(cb => cb(false));
-            }
           }
         });
       } catch (error) {
@@ -511,14 +490,44 @@ export default class InspectorProxy implements InspectorProxyQueries {
       // Don't crash on exceptionally large messages - assume the debugger is
       // well-behaved and the device is prepared to handle large messages.
       maxPayload: 0,
+      // Verify the client is from an allowed origin.
+      // $FlowFixMe[incompatible-type] - `ws` definition is incomplete.
+      verifyClient: (
+        info: Readonly<{
+          origin: string,
+          secure: boolean,
+          req: http$IncomingMessage<>,
+        }>,
+      ) => {
+        if (this.#serverBaseUrl.origin === info.origin) {
+          return true;
+        }
+
+        if (URL.canParse(info.origin)) {
+          const {hostname} = new URL(info.origin);
+          if (WS_DEBUGGER_ALLOWED_ORIGIN_HOSTNAMES.has(hostname)) {
+            return true;
+          }
+        }
+
+        this.#logger?.error(
+          "Connection from DevTools failed to be established for origin '%s' and path '%s'. Was expecting origin: '%s', or origin hostname to be one of: %s",
+          info.origin,
+          info.req.url,
+          this.#serverBaseUrl.origin,
+          Array.from(WS_DEBUGGER_ALLOWED_ORIGIN_HOSTNAMES).join(', '),
+        );
+        return false;
+      },
     });
+
     // $FlowFixMe[value-as-type]
     wss.on('connection', async (socket: WS, req) => {
       const wssTimestamp = Date.now();
 
-      const query = url.parse(req.url || '', true).query || {};
-      const deviceId = query.device;
-      const pageId = query.page;
+      const query = tryParseQueryParams(req.url);
+      const deviceId = query?.get('device') || null;
+      const pageId = query?.get('page') || null;
       const debuggerRelativeBaseUrl =
         getBaseUrlFromRequest(req) ?? this.#serverBaseUrl;
       const device: Device | void = deviceId
@@ -605,7 +614,8 @@ export default class InspectorProxy implements InspectorProxyQueries {
 
         device.handleDebuggerConnection(socket, pageId, {
           debuggerRelativeBaseUrl,
-          userAgent: req.headers['user-agent'] ?? query.userAgent ?? null,
+          userAgent:
+            req.headers['user-agent'] ?? query?.get('userAgent') ?? null,
         });
 
         socket.on('close', (code: number, reason: string) => {
@@ -631,7 +641,7 @@ export default class InspectorProxy implements InspectorProxyQueries {
           "Connection failed to be established with DevTools for app='%s' on device='%s' and device id='%s' with error:",
           device?.getApp() || 'unknown',
           device?.getName() || 'unknown',
-          deviceId,
+          deviceId || 'unknown',
           error,
         );
         socket.close(INTERNAL_ERROR_CODE, error?.toString() ?? 'Unknown error');
@@ -644,5 +654,13 @@ export default class InspectorProxy implements InspectorProxyQueries {
       }
     });
     return wss;
+  }
+}
+
+function tryParseQueryParams(urlString: string): ?URLSearchParams {
+  try {
+    return new URL(urlString, 'http://example.com').searchParams;
+  } catch {
+    return null;
   }
 }

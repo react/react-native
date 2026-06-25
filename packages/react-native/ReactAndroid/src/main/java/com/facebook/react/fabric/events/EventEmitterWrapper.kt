@@ -27,33 +27,49 @@ internal class EventEmitterWrapper private constructor() : HybridClassBase() {
       eventName: String,
       params: NativeMap?,
       @EventCategoryDef category: Int,
+      eventTimestamp: Long,
   )
 
-  private external fun dispatchEventSynchronously(eventName: String, params: NativeMap?)
+  private external fun dispatchEventSynchronously(
+      eventName: String,
+      params: NativeMap?,
+      eventTimestamp: Long,
+  )
 
-  private external fun dispatchUniqueEvent(eventName: String, params: NativeMap?)
+  private external fun dispatchUniqueEvent(
+      eventName: String,
+      params: NativeMap?,
+      eventTimestamp: Long,
+  )
 
   /**
    * Invokes the execution of the C++ EventEmitter.
    *
    * @param eventName [String] name of the event to execute.
    * @param params [WritableMap] payload of the event
+   * @param eventCategory event category
+   * @param eventTimestamp timestamp when the event was triggered (in milliseconds since boot)
    */
   @Synchronized
-  fun dispatch(eventName: String, params: WritableMap?, @EventCategoryDef eventCategory: Int) {
+  fun dispatch(
+      eventName: String,
+      params: WritableMap?,
+      @EventCategoryDef eventCategory: Int,
+      eventTimestamp: Long,
+  ) {
     if (!isValid) {
       return
     }
-    dispatchEvent(eventName, params as NativeMap?, eventCategory)
+    dispatchEvent(eventName, params as NativeMap?, eventCategory, eventTimestamp)
   }
 
   @Synchronized
-  fun dispatchEventSynchronously(eventName: String, params: WritableMap?) {
+  fun dispatchEventSynchronously(eventName: String, params: WritableMap?, eventTimestamp: Long) {
     if (!isValid) {
       return
     }
     UiThreadUtil.assertOnUiThread()
-    dispatchEventSynchronously(eventName, params as NativeMap?)
+    dispatchEventSynchronously(eventName, params as NativeMap?, eventTimestamp)
   }
 
   /**
@@ -62,13 +78,14 @@ internal class EventEmitterWrapper private constructor() : HybridClassBase() {
    *
    * @param eventName [String] name of the event to execute.
    * @param params [WritableMap] payload of the event
+   * @param eventTimestamp timestamp when the event was triggered (in milliseconds since boot)
    */
   @Synchronized
-  fun dispatchUnique(eventName: String, params: WritableMap?) {
+  fun dispatchUnique(eventName: String, params: WritableMap?, eventTimestamp: Long) {
     if (!isValid) {
       return
     }
-    dispatchUniqueEvent(eventName, params as NativeMap?)
+    dispatchUniqueEvent(eventName, params as NativeMap?, eventTimestamp)
   }
 
   @Synchronized

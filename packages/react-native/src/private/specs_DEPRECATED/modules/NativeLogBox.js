@@ -13,8 +13,8 @@ import type {TurboModule} from '../../../../Libraries/TurboModule/RCTExport';
 import * as TurboModuleRegistry from '../../../../Libraries/TurboModule/TurboModuleRegistry';
 
 export interface Spec extends TurboModule {
-  +show: () => void;
-  +hide: () => void;
+  readonly show: () => void;
+  readonly hide: () => void;
 }
 
-export default (TurboModuleRegistry.get<Spec>('LogBox'): ?Spec);
+export default TurboModuleRegistry.get<Spec>('LogBox') as ?Spec;

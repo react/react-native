@@ -7,8 +7,6 @@
 
 #include "EventTarget.h"
 
-#include <react/debug/react_native_assert.h>
-
 namespace facebook::react {
 
 using Tag = EventTarget::Tag;
@@ -20,11 +18,11 @@ EventTarget::EventTarget(
       surfaceId_(surfaceId),
       strongInstanceHandle_(jsi::Value::null()) {}
 
-void EventTarget::setEnabled(bool enabled) const {
+void EventTarget::setEnabled(bool enabled) {
   enabled_ = enabled;
 }
 
-void EventTarget::retain(jsi::Runtime& runtime) const {
+void EventTarget::retain(jsi::Runtime& runtime) {
   if (!enabled_) {
     return;
   }
@@ -46,16 +44,21 @@ void EventTarget::retain(jsi::Runtime& runtime) const {
   // react_native_assert(!strongInstanceHandle_.isUndefined());
 }
 
-void EventTarget::release(jsi::Runtime& /*runtime*/) const {
+void EventTarget::release(jsi::Runtime& /*runtime*/) {
   // The method does not use `jsi::Runtime` reference.
   // It takes it only to ensure thread-safety (if the caller has the reference,
   // we are on a proper thread).
 
-  if (--retainCount_ == 0) {
+  // retainCount_ is unsigned. retain() early-returns when the target is
+  // disabled but the matching release() still runs, so we can land here with
+  // a zero count; an unconditional decrement would wrap to SIZE_MAX and the
+  // strong handle would never be cleared again.
+  if (retainCount_ > 0) {
+    --retainCount_;
+  }
+  if (retainCount_ == 0) {
     strongInstanceHandle_ = jsi::Value::null();
   }
-
-  react_native_assert(retainCount_ >= 0);
 }
 
 jsi::Value EventTarget::getInstanceHandle(jsi::Runtime& runtime) const {

@@ -3,7 +3,7 @@ PODS:
   - DoubleConversion (1.1.6)
   - fast_float (8.0.0)
   - FBLazyVector (1000.0.0)
-  - fmt (11.0.2)
+  - fmt (12.1.0)
   - glog (0.3.5)
   - hermes-engine (1000.0.0):
     - hermes-engine/cdp (= 1000.0.0)
@@ -77,20 +77,20 @@ PODS:
     - boost
     - DoubleConversion
     - fast_float (= 8.0.0)
-    - fmt (= 11.0.2)
+    - fmt (= 12.1.0)
     - glog
     - RCT-Folly/Default (= 2024.11.18.00)
   - RCT-Folly/Default (2024.11.18.00):
     - boost
     - DoubleConversion
     - fast_float (= 8.0.0)
-    - fmt (= 11.0.2)
+    - fmt (= 12.1.0)
     - glog
   - RCT-Folly/Fabric (2024.11.18.00):
     - boost
     - DoubleConversion
     - fast_float (= 8.0.0)
-    - fmt (= 11.0.2)
+    - fmt (= 12.1.0)
     - glog
   - RCTDeprecation (1000.0.0)
   - RCTRequired (1000.0.0)
@@ -1257,7 +1257,6 @@ PODS:
     - React-FabricComponents/components/textinput (= 1000.0.0)
     - React-FabricComponents/components/unimplementedview (= 1000.0.0)
     - React-FabricComponents/components/virtualview (= 1000.0.0)
-    - React-FabricComponents/components/virtualviewexperimental (= 1000.0.0)
     - React-featureflags
     - React-graphics
     - React-jsi
@@ -1541,33 +1540,6 @@ PODS:
     - SocketRocket
     - Yoga
   - React-FabricComponents/components/virtualview (1000.0.0):
-    - boost
-    - DoubleConversion
-    - fast_float
-    - fmt
-    - glog
-    - hermes-engine
-    - RCT-Folly
-    - RCT-Folly/Fabric
-    - RCTRequired
-    - RCTTypeSafety
-    - React-Core
-    - React-cxxreact
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-jsi
-    - React-jsiexecutor
-    - React-logger
-    - React-RCTFBReactNativeSpec
-    - React-rendererdebug
-    - React-runtimescheduler
-    - React-utils
-    - ReactCommon/turbomodule/core
-    - SocketRocket
-    - Yoga
-  - React-FabricComponents/components/virtualviewexperimental (1000.0.0):
     - boost
     - DoubleConversion
     - fast_float
@@ -2760,8 +2732,8 @@ SPEC CHECKSUMS:
   boost: 7e761d76ca2ce687f7cc98e698152abd03a18f90
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
   fast_float: b32c788ed9c6a8c584d114d0047beda9664e7cc6
-  FBLazyVector: 68b07a5bc7c49d3baee756d7fdcd6c23aeb67124
-  fmt: a40bb5bd0294ea969aaaba240a927bd33d878cdd
+  FBLazyVector: d3c2dd739a63c1a124e775df075dc7c517a719cb
+  fmt: 530618a01105dae0fa3a2f27c81ae11fa8f67eac
   glog: 5683914934d5b6e4240e497e0f4a3b42d1854183
   hermes-engine: b18262a626b43561b2fdb63766417735dedf9731
   MyNativeView: 26b517931cc8bfc7b602c410572b323348185461

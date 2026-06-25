@@ -101,8 +101,8 @@ declare global {
 
   // #region Timer Functions
 
-  function clearInterval(handle: number): void;
-  function clearTimeout(handle: number): void;
+  function clearInterval(handle: number | null | undefined): void;
+  function clearTimeout(handle: number | null | undefined): void;
   function setInterval(handler: () => void, timeout: number): number;
   function setInterval<Args extends any[]>(
     handler: (...args: Args) => void,
@@ -115,14 +115,14 @@ declare global {
     timeout?: number,
     ...args: Args
   ): number;
-  function clearImmediate(handle: number): void;
+  function clearImmediate(handle: number | null | undefined): void;
   function setImmediate(handler: () => void): number;
   function setImmediate<Args extends any[]>(
     handler: (...args: Args) => void,
     ...args: Args
   ): number;
 
-  function cancelAnimationFrame(handle: number): void;
+  function cancelAnimationFrame(handle: number | null | undefined): void;
   function requestAnimationFrame(callback: (time: number) => void): number;
 
   function fetchBundle(

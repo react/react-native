@@ -9,11 +9,31 @@
  */
 
 import type {SnapshotConfig} from '../runtime/snapshotContext';
-import type {FantomRuntimeConstants} from '../src/Constants';
+import type {FantomRuntimeConstants, HostPlatform} from '../src/Constants';
 import type {FantomTestConfig} from './getFantomTestConfigs';
 
 import * as EnvironmentOptions from './EnvironmentOptions';
 import formatFantomConfig from './formatFantomConfig';
+
+function getHostPlatform(): HostPlatform {
+  match (process.platform) {
+    'darwin' => {
+      return 'macos';
+    }
+    'win32' => {
+      return 'windows';
+    }
+    'linux' => {
+      return 'linux';
+    }
+    'android' => {
+      return 'android';
+    }
+    _ => {
+      throw new Error(`Unsupported platform: ${process.platform}`);
+    }
+  }
+}
 
 module.exports = function entrypointTemplate({
   testPath,
@@ -37,11 +57,12 @@ module.exports = function entrypointTemplate({
   const constants: FantomRuntimeConstants = {
     isOSS: EnvironmentOptions.isOSS,
     isRunningFromCI: EnvironmentOptions.isCI,
-    forceTestModeForBenchmarks: EnvironmentOptions.forceTestModeForBenchmarks,
+    runBenchmarks: EnvironmentOptions.runBenchmarks,
     fantomConfigSummary: formatFantomConfig(testConfig),
     jsTraceOutputPath,
     jsHeapSnapshotOutputPathTemplate,
     jsHeapSnapshotOutputPathTemplateToken,
+    hostPlatform: getHostPlatform(),
   };
 
   return `/**

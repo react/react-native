@@ -1,0 +1,23 @@
+class test::Clss {
+  public virtual void fn16() = 0;
+  public void fn0(int32_t arg1);
+  public void fn1(int32_t arg1, int32_t arg2);
+  public void fn2(std::function<int32_t(int32_t)> arg1);
+  public void fn3(std::function<int32_t(int32_t)> arg1, std::function<int32_t(int32_t, int32_t)> arg2);
+  public void fn4(std::map<std::string, int> m);
+  public void fn5(std::unordered_map<K, std::vector<V>> m);
+  public void fn6(std::tuple<int, float, std::string> t);
+  public void fn7(std::vector<std::vector<std::pair<int, int>>> v);
+  public void fn8(std::map<K, std::function<void(A, B)>> m);
+  public void fn9(int(*)(int, int) callback);
+  public void fn10(void(*)(const char*, size_t) handler);
+  public void fn11(int(*(*fp)(int))(double));
+  public void fn12(int x = 5, std::string s = "default");
+  public void fn13(std::function<void()> f = nullptr);
+  public void fn14(std::vector<int> v = {1, 2, 3});
+  public void fn15() noexcept;
+  public void fn17() = default;
+  public void fn18() = delete;
+  public void fn19() final;
+  public void fn20() override final;
+}

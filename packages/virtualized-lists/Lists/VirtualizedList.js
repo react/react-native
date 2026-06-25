@@ -509,7 +509,7 @@ class VirtualizedList extends StateSafePureComponent<
   static _createRenderMask(
     props: VirtualizedListProps,
     cellsAroundViewport: {first: number, last: number},
-    additionalRegions?: ?$ReadOnlyArray<{first: number, last: number}>,
+    additionalRegions?: ?ReadonlyArray<{first: number, last: number}>,
   ): CellRenderMask {
     const itemCount = props.getItemCount(props.data);
 
@@ -535,16 +535,18 @@ class VirtualizedList extends StateSafePureComponent<
         renderMask.addCells(initialRegion);
       }
 
-      // The layout coordinates of sticker headers may be off-screen while the
+      // The layout coordinates of sticky headers may be off-screen while the
       // actual header is on-screen. Keep the most recent before the viewport
       // rendered, even if its layout coordinates are not in viewport.
-      const stickyIndicesSet = new Set(props.stickyHeaderIndices);
-      VirtualizedList._ensureClosestStickyHeader(
-        props,
-        stickyIndicesSet,
-        renderMask,
-        cellsAroundViewport.first,
-      );
+      const stickyHeaderIndices = props.stickyHeaderIndices;
+      if (stickyHeaderIndices != null && stickyHeaderIndices.length > 0) {
+        VirtualizedList._ensureClosestStickyHeader(
+          props,
+          stickyHeaderIndices,
+          renderMask,
+          cellsAroundViewport.first,
+        );
+      }
     }
 
     return renderMask;
@@ -575,17 +577,29 @@ class VirtualizedList extends StateSafePureComponent<
 
   static _ensureClosestStickyHeader(
     props: VirtualizedListProps,
-    stickyIndicesSet: Set<number>,
+    stickyHeaderIndices: ReadonlyArray<number>,
     renderMask: CellRenderMask,
     cellIdx: number,
   ) {
     const stickyOffset = props.ListHeaderComponent ? 1 : 0;
+    const targetStickyIndex = cellIdx + stickyOffset;
+    let closestStickyIndex = null;
 
-    for (let itemIdx = cellIdx - 1; itemIdx >= 0; itemIdx--) {
-      if (stickyIndicesSet.has(itemIdx + stickyOffset)) {
-        renderMask.addCells({first: itemIdx, last: itemIdx});
-        break;
+    for (let itemIdx = 0; itemIdx < stickyHeaderIndices.length; itemIdx++) {
+      const stickyIndex = stickyHeaderIndices[itemIdx];
+      if (
+        Number.isInteger(stickyIndex) &&
+        stickyIndex < targetStickyIndex &&
+        stickyIndex >= stickyOffset &&
+        (closestStickyIndex == null || stickyIndex > closestStickyIndex)
+      ) {
+        closestStickyIndex = stickyIndex;
       }
+    }
+
+    if (closestStickyIndex != null) {
+      const itemIdx = closestStickyIndex - stickyOffset;
+      renderMask.addCells({first: itemIdx, last: itemIdx});
     }
   }
 
@@ -971,15 +985,15 @@ class VirtualizedList extends StateSafePureComponent<
     // 2a. Add a cell for ListEmptyComponent if applicable
     const itemCount = this.props.getItemCount(data);
     if (itemCount === 0 && ListEmptyComponent) {
-      const element: ExactReactElement_DEPRECATED<any> = ((isValidElement(
-        ListEmptyComponent,
-      ) ? (
-        ListEmptyComponent
-      ) : (
-        // $FlowFixMe[not-a-component]
-        // $FlowFixMe[incompatible-type]
-        <ListEmptyComponent />
-      )): any);
+      const element: ExactReactElement_DEPRECATED<any> = (
+        isValidElement(ListEmptyComponent) ? (
+          ListEmptyComponent
+        ) : (
+          // $FlowFixMe[not-a-component]
+          // $FlowFixMe[incompatible-type]
+          <ListEmptyComponent />
+        )
+      ) as any;
       cells.push(
         <VirtualizedListCellContextProvider
           cellKey={this._getCellKey() + '-empty'}
@@ -1502,7 +1516,7 @@ class VirtualizedList extends StateSafePureComponent<
   }
 
   _selectLength(
-    metrics: $ReadOnly<{
+    metrics: Readonly<{
       height: number,
       width: number,
       ...
@@ -1513,7 +1527,7 @@ class VirtualizedList extends StateSafePureComponent<
       : metrics.width;
   }
 
-  _selectOffset({x, y}: $ReadOnly<{x: number, y: number, ...}>): number {
+  _selectOffset({x, y}: Readonly<{x: number, y: number, ...}>): number {
     return this._orientation().horizontal ? x : y;
   }
 
@@ -1952,7 +1966,7 @@ class VirtualizedList extends StateSafePureComponent<
 
   _getNonViewportRenderRegions = (
     props: CellMetricProps,
-  ): $ReadOnlyArray<{
+  ): ReadonlyArray<{
     first: number,
     last: number,
   }> => {

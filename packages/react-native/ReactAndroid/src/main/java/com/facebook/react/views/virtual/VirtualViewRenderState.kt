@@ -8,7 +8,7 @@
 package com.facebook.react.views.virtual
 
 /**
- * Represents the the render state of children in the most recent commit.
+ * Represents the render state of children in the most recent commit.
  *
  * This enables `ReactVirtualView` to know whether a previously emitted `VirtualViewModeChangeEvent`
  * has been committed, in order to only emit subsequent events that would change it.

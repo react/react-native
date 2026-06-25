@@ -10,7 +10,7 @@ package com.facebook.react.views.scroll
 import android.graphics.Rect
 import android.view.ViewGroup
 import com.facebook.common.logging.FLog
-import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
+import com.facebook.react.common.build.ReactBuildConfig
 import com.facebook.react.views.virtual.VirtualViewMode
 
 internal class VirtualViewContainerStateExperimental(scrollView: ViewGroup) :
@@ -24,8 +24,8 @@ internal class VirtualViewContainerStateExperimental(scrollView: ViewGroup) :
       }
   override val virtualViews = IntervalTree(horizontal)
 
-  // set of all VirtualViews that are in hysteresis, prerender, or visible range
-  var HPV: MutableSet<String> = mutableSetOf()
+  // set of all VirtualViews that are in prerender or visible ranges
+  var PV: MutableSet<String> = mutableSetOf()
   // set of all VirtualViews that are in prerender (not in viewport)
   var P: MutableSet<String> = mutableSetOf()
   // set of all VirtualViews that are in viewport
@@ -51,7 +51,7 @@ internal class VirtualViewContainerStateExperimental(scrollView: ViewGroup) :
 
   override fun remove(virtualView: VirtualView) {
     super.remove(virtualView)
-    HPV.remove(virtualView.virtualViewID)
+    PV.remove(virtualView.virtualViewID)
     P.remove(virtualView.virtualViewID)
     V.remove(virtualView.virtualViewID)
   }
@@ -63,57 +63,38 @@ internal class VirtualViewContainerStateExperimental(scrollView: ViewGroup) :
   private fun updateMode(virtualView: VirtualView) {
     val rect = virtualView.containerRelativeRect
 
-    var mode: VirtualViewMode? = VirtualViewMode.Hidden
+    var mode: VirtualViewMode = VirtualViewMode.Hidden
     var thresholdRect = emptyRect
     when {
       rectsOverlap(rect, visibleRect) -> {
         thresholdRect = visibleRect
-        if (onWindowFocusChangeListener != null) {
-          if (scrollView.hasWindowFocus()) {
-            mode = VirtualViewMode.Visible
-          } else {
-            mode = VirtualViewMode.Prerender
-          }
-        } else {
-          mode = VirtualViewMode.Visible
-        }
+        mode = VirtualViewMode.Visible
       }
       rectsOverlap(rect, prerenderRect) -> {
         mode = VirtualViewMode.Prerender
         thresholdRect = prerenderRect
       }
-      (hysteresisRatio > 0.0 && rectsOverlap(rect, hysteresisRect)) -> {
-        mode = null
-      }
     }
 
-    if (mode != null) {
-      virtualView.onModeChange(mode, thresholdRect)
-    }
+    virtualView.onModeChange(mode, thresholdRect)
 
     // move the virtualView into the correct set(s)
-    when {
-      mode == VirtualViewMode.Visible -> {
-        HPV.add(virtualView.virtualViewID)
+    when (mode) {
+      VirtualViewMode.Visible -> {
+        PV.add(virtualView.virtualViewID)
         P.remove(virtualView.virtualViewID)
         V.add(virtualView.virtualViewID)
       }
 
-      mode == VirtualViewMode.Prerender -> {
-        HPV.add(virtualView.virtualViewID)
+      VirtualViewMode.Prerender -> {
+        PV.add(virtualView.virtualViewID)
         P.add(virtualView.virtualViewID)
         V.remove(virtualView.virtualViewID)
       }
 
-      mode == VirtualViewMode.Hidden -> {
+      VirtualViewMode.Hidden -> {
         // remove from all sets
-        HPV.remove(virtualView.virtualViewID)
-        P.remove(virtualView.virtualViewID)
-        V.remove(virtualView.virtualViewID)
-      }
-
-      else -> { // hysteresis
-        HPV.add(virtualView.virtualViewID)
+        PV.remove(virtualView.virtualViewID)
         P.remove(virtualView.virtualViewID)
         V.remove(virtualView.virtualViewID)
       }
@@ -125,27 +106,25 @@ internal class VirtualViewContainerStateExperimental(scrollView: ViewGroup) :
    * n), where m = size of the prerender window in terms of index
    */
   private fun updateModesAll() {
-    // collect V', PV', HPV' sets
+    // collect V' and PV' sets
     val VPrime = virtualViews.query(visibleRect)
     val PVPrime = virtualViews.query(prerenderRect)
-    val HPVPrime = virtualViews.query(hysteresisRect)
 
-    debugLog("updateModes", { "V: ${V}, P: ${P}, HPV: ${HPV}" })
+    debugLog("updateModes", { "V: ${V}, P: ${P}, PV: ${PV}" })
 
     /** Perform utility set differences: */
     // P'=PV'-V'
     val PPrime = PVPrime.minus(VPrime)
 
-    debugLog("updateModes", { "V': ${VPrime}, P': ${PPrime}, HPV': ${HPVPrime}" })
+    debugLog("updateModes", { "V': ${VPrime}, P': ${PPrime}, PV': ${PVPrime}" })
 
     /** Get useful set differences */
     // V'-V - update to visible
     val toVisible = VPrime.minus(V)
     // P'-P - update to prerender
     val toPrerender = PPrime.minus(P)
-    // ignore H' - we don't care about VVs in hysteresis
-    // HPV-HPV' - update to hidden
-    val toHidden = HPV.minus(HPVPrime)
+    // PV-PV' - update to hidden
+    val toHidden = PV.minus(PVPrime)
 
     debugLog("updateModes", { "toV: ${toVisible}, toP: ${toPrerender}, toH: ${toHidden}" })
 
@@ -160,10 +139,10 @@ internal class VirtualViewContainerStateExperimental(scrollView: ViewGroup) :
       virtualViews.getVirtualView(vvID)?.onModeChange(VirtualViewMode.Hidden, emptyRect)
     }
 
-    /** update old sets - V, P, and HPV */
+    /** update old sets - V, P, and PV */
     V = VPrime
     P = PPrime.toMutableSet()
-    HPV = HPVPrime.toMutableSet()
+    PV = PVPrime.toMutableSet()
   }
 }
 
@@ -524,10 +503,10 @@ internal class IntervalTree(private val horizontal: Boolean) : MutableCollection
   }
 }
 
-private const val DEBUG_TAG: String = "VirtualViewContainerStateExperimental"
+private val ENABLE_DEBUG_LOGS = ReactBuildConfig.DEBUG && false
 
 private inline fun debugLog(subtag: String, block: () -> String = { "" }) {
-  if (IS_DEBUG_BUILD && ReactNativeFeatureFlags.enableVirtualViewDebugFeatures()) {
-    FLog.d("$DEBUG_TAG:$subtag", block())
+  if (ENABLE_DEBUG_LOGS) {
+    FLog.d("VirtualViewContainerStateExperimental:$subtag", block())
   }
 }

@@ -14,7 +14,7 @@ import ensureInstance from '../../../__tests__/utilities/ensureInstance';
 import DOMException from '../../errors/DOMException';
 import * as Fantom from '@react-native/fantom';
 
-function getThrownError(fn: () => mixed): mixed {
+function getThrownError(fn: () => unknown): unknown {
   try {
     fn();
   } catch (e) {
@@ -23,7 +23,7 @@ function getThrownError(fn: () => mixed): mixed {
   throw new Error('Expected function to throw');
 }
 
-function toJSON(entries: PerformanceEntryList): Array<mixed> {
+function toJSON(entries: PerformanceEntryList): Array<unknown> {
   return entries.map(entry => entry.toJSON());
 }
 

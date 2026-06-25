@@ -26,18 +26,10 @@ struct ValueUnit {
   float value{0.0f};
   UnitType unit{UnitType::Undefined};
 
-  ValueUnit() = default;
-  ValueUnit(float v, UnitType u) : value(v), unit(u) {}
+  constexpr ValueUnit() = default;
+  constexpr ValueUnit(float v, UnitType u) : value(v), unit(u) {}
 
-  bool operator==(const ValueUnit &other) const
-  {
-    return value == other.value && unit == other.unit;
-  }
-
-  bool operator!=(const ValueUnit &other) const
-  {
-    return !(*this == other);
-  }
+  constexpr bool operator==(const ValueUnit &other) const = default;
 
   constexpr float resolve(float referenceLength) const
   {

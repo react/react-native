@@ -17,7 +17,6 @@ import * as React from 'react';
 
 const AppContainer = ({
   children,
-  fabric,
   initialProps,
   rootTag,
   WrapperComponent,
@@ -27,7 +26,7 @@ const AppContainer = ({
 
   if (WrapperComponent != null) {
     innerView = (
-      <WrapperComponent initialProps={initialProps} fabric={fabric === true}>
+      <WrapperComponent initialProps={initialProps}>
         {innerView}
       </WrapperComponent>
     );

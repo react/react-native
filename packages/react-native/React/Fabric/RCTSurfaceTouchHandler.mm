@@ -15,6 +15,8 @@
 #import "RCTSurfacePointerHandler.h"
 #import "RCTTouchableComponentViewProtocol.h"
 
+#if !TARGET_OS_TV
+
 using namespace facebook::react;
 
 typedef NS_ENUM(NSInteger, RCTTouchEventType) {
@@ -65,6 +67,7 @@ static void UpdateActiveTouchWithUITouch(
   activeTouch.touch.pagePoint = RCTPointFromCGPoint(pagePoint);
 
   activeTouch.touch.timestamp = uiTouch.timestamp;
+  activeTouch.touch.timeStamp = RCTHighResTimeStampFromSeconds(uiTouch.timestamp);
 
   if (RCTForceTouchAvailable()) {
     activeTouch.touch.force = RCTZeroIfNaN(uiTouch.force / uiTouch.maximumPossibleForce);
@@ -414,3 +417,5 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithTarget : (id)target action : (SEL)act
 }
 
 @end
+
+#endif // !TARGET_OS_TV

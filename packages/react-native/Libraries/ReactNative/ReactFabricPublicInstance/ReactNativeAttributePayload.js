@@ -34,7 +34,7 @@ const deepDifferOptions = {
   unsafelyIgnoreFunctions: true,
 };
 
-function defaultDiffer(prevProp: mixed, nextProp: mixed): boolean {
+function defaultDiffer(prevProp: unknown, nextProp: unknown): boolean {
   if (typeof nextProp !== 'object' || nextProp === null) {
     // Scalars have already been checked for equality
     return true;
@@ -258,11 +258,11 @@ function diffProperties(
       if (!attributeConfigHasProcess) {
         // functions are converted to booleans as markers that the associated
         // events should be sent from native.
-        nextProp = (true: any);
+        nextProp = true as any;
         // If nextProp is not a function, then don't bother changing prevProp
         // since nextProp will win and go into the updatePayload regardless.
         if (typeof prevProp === 'function') {
-          prevProp = (true: any);
+          prevProp = true as any;
         }
       }
     }
@@ -270,9 +270,9 @@ function diffProperties(
     // An explicit value of undefined is treated as a null because it overrides
     // any other preceding value.
     if (typeof nextProp === 'undefined') {
-      nextProp = (null: any);
+      nextProp = null as any;
       if (typeof prevProp === 'undefined') {
-        prevProp = (null: any);
+        prevProp = null as any;
       }
     }
 
@@ -313,7 +313,7 @@ function diffProperties(
       // case: !Object is the default case
       if (defaultDiffer(prevProp, nextProp)) {
         // a normal leaf has changed
-        (updatePayload || (updatePayload = ({}: {[string]: $FlowFixMe})))[
+        (updatePayload || (updatePayload = {} as {[string]: $FlowFixMe}))[
           propKey
         ] = nextProp;
       }
@@ -333,7 +333,7 @@ function diffProperties(
             ? // $FlowFixMe[incompatible-use] found when upgrading Flow
               attributeConfig.process(nextProp)
             : nextProp;
-        (updatePayload || (updatePayload = ({}: {[string]: $FlowFixMe})))[
+        (updatePayload || (updatePayload = {} as {[string]: $FlowFixMe}))[
           propKey
         ] = nextValue;
       }
@@ -347,13 +347,13 @@ function diffProperties(
         updatePayload,
         prevProp,
         nextProp,
-        ((attributeConfig: any): AttributeConfiguration),
+        attributeConfig as any as AttributeConfiguration,
       );
       if (removedKeyCount > 0 && updatePayload) {
         restoreDeletedValuesInNestedArray(
           updatePayload,
           nextProp,
-          ((attributeConfig: any): AttributeConfiguration),
+          attributeConfig as any as AttributeConfiguration,
         );
         removedKeys = null;
       }
@@ -389,11 +389,11 @@ function diffProperties(
     ) {
       // case: CustomAttributeConfiguration | !Object
       // Flag the leaf property for removal by sending a sentinel.
-      (updatePayload || (updatePayload = ({}: {[string]: $FlowFixMe})))[
+      (updatePayload || (updatePayload = {} as {[string]: $FlowFixMe}))[
         propKey
       ] = null;
       if (!removedKeys) {
-        removedKeys = ({}: {[string]: boolean});
+        removedKeys = {} as {[string]: boolean};
       }
       if (!removedKeys[propKey]) {
         removedKeys[propKey] = true;
@@ -406,7 +406,7 @@ function diffProperties(
       updatePayload = clearNestedProperty(
         updatePayload,
         prevProp,
-        ((attributeConfig: any): AttributeConfiguration),
+        attributeConfig as any as AttributeConfiguration,
       );
     }
   }
@@ -429,9 +429,9 @@ function addNestedProperty(
   for (const propKey in props) {
     const prop = props[propKey];
 
-    const attributeConfig = ((validAttributes[
+    const attributeConfig = validAttributes[
       propKey
-    ]: any): AttributeConfiguration);
+    ] as any as AttributeConfiguration;
 
     if (attributeConfig == null) {
       continue;
@@ -466,7 +466,7 @@ function addNestedProperty(
 
     if (newValue !== undefined) {
       if (!payload) {
-        payload = ({}: {[string]: $FlowFixMe});
+        payload = {} as {[string]: $FlowFixMe};
       }
       payload[propKey] = newValue;
       continue;

@@ -4,6 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
+ * @fantom_flags enableFabricCommitBranching:*
  * @flow strict-local
  * @format
  */
@@ -86,6 +87,68 @@ describe('ViewFlattening', () => {
   });
 
   /**
+   * Test worst-case reordering: moving the first child to the end.
+   *
+   *    P -> [A,B,C,D,E]  ==>  P -> [B,C,D,E,A]
+   *
+   * The greedy two-pointer encounters A vs B mismatch at the first
+   * position and generates excessive REMOVE+INSERT pairs:
+   * 4 removes + 4 inserts = 8 mutations.
+   */
+  test('reordering: move first child to last (worst case for greedy)', () => {
+    const root = Fantom.createRoot();
+
+    Fantom.runTask(() => {
+      root.render(
+        <View nativeID="P">
+          <View key="A" nativeID="A" />
+          <View key="B" nativeID="B" />
+          <View key="C" nativeID="C" />
+          <View key="D" nativeID="D" />
+          <View key="E" nativeID="E" />
+        </View>,
+      );
+    });
+
+    root.takeMountingManagerLogs();
+
+    Fantom.runTask(() => {
+      root.render(
+        <View nativeID="P">
+          <View key="B" nativeID="B" />
+          <View key="C" nativeID="C" />
+          <View key="D" nativeID="D" />
+          <View key="E" nativeID="E" />
+          <View key="A" nativeID="A" />
+        </View>,
+      );
+    });
+
+    expect(root.getRenderedOutput().toJSX()).toEqual(
+      <rn-view nativeID="P">
+        <rn-view key="0" nativeID="B" />
+        <rn-view key="1" nativeID="C" />
+        <rn-view key="2" nativeID="D" />
+        <rn-view key="3" nativeID="E" />
+        <rn-view key="4" nativeID="A" />
+      </rn-view>,
+    );
+
+    const logs = root.takeMountingManagerLogs();
+    // Greedy: 4 removes + 4 inserts = 8 mutations
+    expect(logs).toEqual([
+      'Remove {type: "View", parentNativeID: "P", index: 4, nativeID: "E"}',
+      'Remove {type: "View", parentNativeID: "P", index: 3, nativeID: "D"}',
+      'Remove {type: "View", parentNativeID: "P", index: 2, nativeID: "C"}',
+      'Remove {type: "View", parentNativeID: "P", index: 1, nativeID: "B"}',
+      'Insert {type: "View", parentNativeID: "P", index: 0, nativeID: "B"}',
+      'Insert {type: "View", parentNativeID: "P", index: 1, nativeID: "C"}',
+      'Insert {type: "View", parentNativeID: "P", index: 2, nativeID: "D"}',
+      'Insert {type: "View", parentNativeID: "P", index: 3, nativeID: "E"}',
+    ]);
+  });
+
+  /**
    * Test reparenting mutation instruction generation.
    * We cannot practically handle all possible use-cases here.
    */
@@ -140,7 +203,7 @@ describe('ViewFlattening', () => {
     expect(root.getRenderedOutput().toJSX()).toEqual(
       <rn-view nativeID="G">
         <rn-view nativeID="H">
-          <rn-view width="100.000000" nativeID="A" />
+          <rn-view width="100" nativeID="A" />
         </rn-view>
       </rn-view>,
     );
@@ -175,7 +238,7 @@ describe('ViewFlattening', () => {
         <rn-view nativeID="H">
           <rn-view nativeID="I">
             <rn-view key="0" nativeID="B" />
-            <rn-view key="1" nativeID="A" width="100.000000" />
+            <rn-view key="1" nativeID="A" width="100" />
           </rn-view>
         </rn-view>
       </rn-view>,
@@ -213,7 +276,7 @@ describe('ViewFlattening', () => {
         <rn-view nativeID="H">
           <rn-view nativeID="I">
             <rn-view nativeID="J">
-              <rn-view key="0" nativeID="A" width="100.000000" />
+              <rn-view key="0" nativeID="A" width="100" />
               <rn-view key="1" nativeID="B" />
             </rn-view>
           </rn-view>
@@ -339,6 +402,7 @@ describe('ViewFlattening', () => {
         </View>,
       );
     });
+
     expect(root.takeMountingManagerLogs()).toEqual([
       'Update {type: "View", nativeID: "child"}',
       'Remove {type: "View", parentNativeID: (root), index: 0, nativeID: (N/A)}',
@@ -377,8 +441,8 @@ describe('ViewFlattening', () => {
         .toJSX(),
     ).toEqual(
       <rn-view
-        width="100.000000"
-        height="100.000000"
+        width="100"
+        height="100"
         backgroundColor="rgba(255, 255, 255, 0.498039)"
       />,
     );

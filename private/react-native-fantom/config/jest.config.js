@@ -11,10 +11,32 @@
 'use strict';
 
 const baseConfig = require('../../../jest.config');
+const os = require('os');
 const path = require('path');
+
+// Every Fantom worker shares a single Metro server. With unbounded
+// parallelism, concurrent bundle builds pile up faster than the
+// per-test DELETE eviction can free their dependency graphs. Cap
+// concurrency so the number of in-flight graphs stays bounded on
+// high-core machines, while still using all available CPUs on smaller
+// ones. The cap pairs with the Node heap size set in scripts/fantom.sh
+// (16 GB) to leave comfortable headroom over the observed peak.
+function getNumCpus() /*: number */ {
+  if (typeof os.availableParallelism === 'function') {
+    return os.availableParallelism();
+  }
+  const cpus = os.cpus();
+  return cpus != null ? cpus.length : 1;
+}
+
+const FANTOM_MAX_WORKERS /*: number */ = Math.max(
+  1,
+  Math.min(getNumCpus() - 1, 16),
+);
 
 module.exports = {
   displayName: 'fantom',
+  maxWorkers: FANTOM_MAX_WORKERS,
   rootDir: path.resolve(__dirname, '../../..') /*:: as string */,
   roots: [
     '<rootDir>/packages/react-native',
@@ -26,7 +48,7 @@ module.exports = {
     ...baseConfig.moduleFileExtensions,
     'cpp',
     'h',
-  ] /*:: as $ReadOnlyArray<string> */,
+  ] /*:: as ReadonlyArray<string> */,
   // This allows running Meta-internal tests with the `-test.fb.js` suffix.
   testRegex: '/__tests__/.*-itest(\\.fb)?\\.js$',
   testPathIgnorePatterns: baseConfig.testPathIgnorePatterns,

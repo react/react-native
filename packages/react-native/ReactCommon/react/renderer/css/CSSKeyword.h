@@ -23,6 +23,7 @@ namespace facebook::react {
  */
 enum class CSSKeyword : uint8_t {
   Absolute,
+  At,
   Auto,
   Baseline,
   Block,
@@ -110,6 +111,7 @@ enum class CSSKeyword : uint8_t {
   TabularNums,
   Thick,
   Thin,
+  To,
   Top,
   Unset,
   Visible,
@@ -143,6 +145,7 @@ enum class CSSWideKeyword : std::underlying_type_t<CSSKeyword> {
   }
 
 CSS_DEFINE_KEYWORD(Absolute, "absolute")
+CSS_DEFINE_KEYWORD(At, "at")
 CSS_DEFINE_KEYWORD(Auto, "auto")
 CSS_DEFINE_KEYWORD(Baseline, "baseline")
 CSS_DEFINE_KEYWORD(Block, "block")
@@ -230,6 +233,7 @@ CSS_DEFINE_KEYWORD(StylisticTwo, "stylistic-two")
 CSS_DEFINE_KEYWORD(TabularNums, "tabular-nums")
 CSS_DEFINE_KEYWORD(Thick, "thick")
 CSS_DEFINE_KEYWORD(Thin, "thin")
+CSS_DEFINE_KEYWORD(To, "to")
 CSS_DEFINE_KEYWORD(Top, "top")
 CSS_DEFINE_KEYWORD(Unset, "unset")
 CSS_DEFINE_KEYWORD(Visible, "visible")
@@ -254,6 +258,7 @@ constexpr std::optional<KeywordT> parseCSSKeyword(std::string_view ident)
 {
   switch (fnv1aLowercase(ident)) {
     CSS_HANDLE_KEYWORD(Absolute)
+    CSS_HANDLE_KEYWORD(At)
     CSS_HANDLE_KEYWORD(Auto)
     CSS_HANDLE_KEYWORD(Baseline)
     CSS_HANDLE_KEYWORD(Block)
@@ -341,11 +346,14 @@ constexpr std::optional<KeywordT> parseCSSKeyword(std::string_view ident)
     CSS_HANDLE_KEYWORD(TabularNums)
     CSS_HANDLE_KEYWORD(Thick)
     CSS_HANDLE_KEYWORD(Thin)
+    CSS_HANDLE_KEYWORD(To)
     CSS_HANDLE_KEYWORD(Top)
     CSS_HANDLE_KEYWORD(Unset)
     CSS_HANDLE_KEYWORD(Visible)
     CSS_HANDLE_KEYWORD(Wrap)
     CSS_HANDLE_KEYWORD(WrapReverse)
+    default:
+      return std::nullopt;
   }
 
   return std::nullopt;

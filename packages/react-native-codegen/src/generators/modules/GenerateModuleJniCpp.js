@@ -42,7 +42,7 @@ const HostFunctionTemplate = ({
   propertyName,
   jniSignature,
   jsReturnType,
-}: $ReadOnly<{
+}: Readonly<{
   hasteModuleName: string,
   propertyName: string,
   jniSignature: string,
@@ -58,10 +58,10 @@ const ModuleClassConstructorTemplate = ({
   hasteModuleName,
   eventEmitters,
   methods,
-}: $ReadOnly<{
+}: Readonly<{
   hasteModuleName: string,
-  eventEmitters: $ReadOnlyArray<NativeModuleEventEmitterShape>,
-  methods: $ReadOnlyArray<{
+  eventEmitters: ReadonlyArray<NativeModuleEventEmitterShape>,
+  methods: ReadonlyArray<{
     propertyName: string,
     argCount: number,
   }>,
@@ -94,7 +94,7 @@ ${methods
 const ModuleLookupTemplate = ({
   moduleName,
   hasteModuleName,
-}: $ReadOnly<{moduleName: string, hasteModuleName: string}>) => {
+}: Readonly<{moduleName: string, hasteModuleName: string}>) => {
   return `  if (moduleName == "${moduleName}") {
     return std::make_shared<${hasteModuleName}SpecJSI>(params);
   }`;
@@ -105,11 +105,11 @@ const FileTemplate = ({
   include,
   modules,
   moduleLookups,
-}: $ReadOnly<{
+}: Readonly<{
   libraryName: string,
   include: string,
   modules: string,
-  moduleLookups: $ReadOnlyArray<{
+  moduleLookups: ReadonlyArray<{
     hasteModuleName: string,
     moduleName: string,
   }>,
@@ -157,7 +157,7 @@ function translateReturnTypeToKind(
         case 'RootTag':
           return 'NumberKind';
         default:
-          (realTypeAnnotation.name: empty);
+          realTypeAnnotation.name as empty;
           throw new Error(
             `Invalid ReservedFunctionValueTypeName name, got ${realTypeAnnotation.name}`,
           );
@@ -195,7 +195,7 @@ function translateReturnTypeToKind(
         case 'string':
           return 'StringKind';
         default:
-          (validUnionType: empty);
+          validUnionType as empty;
           throw new Error(`Unsupported union member type`);
       }
     case 'NumberTypeAnnotation':
@@ -216,8 +216,10 @@ function translateReturnTypeToKind(
       return 'ObjectKind';
     case 'ArrayTypeAnnotation':
       return 'ArrayKind';
+    case 'ArrayBufferTypeAnnotation':
+      throw new Error('ArrayBuffer is only supported for C++ TurboModules.');
     default:
-      (realTypeAnnotation.type: 'MixedTypeAnnotation');
+      realTypeAnnotation.type as 'MixedTypeAnnotation';
       throw new Error(
         `Unknown prop type for returning value, found: ${realTypeAnnotation.type}"`,
       );
@@ -246,7 +248,7 @@ function translateParamTypeToJniType(
         case 'RootTag':
           return !isRequired ? 'Ljava/lang/Double;' : 'D';
         default:
-          (realTypeAnnotation.name: empty);
+          realTypeAnnotation.name as empty;
           throw new Error(
             `Invalid ReservedFunctionValueTypeName name, got ${realTypeAnnotation.name}`,
           );
@@ -282,7 +284,7 @@ function translateParamTypeToJniType(
         case 'string':
           return 'Ljava/lang/String;';
         default:
-          (validUnionType: empty);
+          validUnionType as empty;
           throw new Error(`Unsupported union member type`);
       }
     case 'NumberTypeAnnotation':
@@ -303,8 +305,10 @@ function translateParamTypeToJniType(
       return 'Lcom/facebook/react/bridge/ReadableArray;';
     case 'FunctionTypeAnnotation':
       return 'Lcom/facebook/react/bridge/Callback;';
+    case 'ArrayBufferTypeAnnotation':
+      throw new Error('ArrayBuffer is only supported for C++ TurboModules.');
     default:
-      (realTypeAnnotation.type: 'MixedTypeAnnotation');
+      realTypeAnnotation.type as 'MixedTypeAnnotation';
       throw new Error(
         `Unknown prop type for method arg, found: ${realTypeAnnotation.type}"`,
       );
@@ -328,7 +332,7 @@ function translateReturnTypeToJniType(
         case 'RootTag':
           return nullable ? 'Ljava/lang/Double;' : 'D';
         default:
-          (realTypeAnnotation.name: empty);
+          realTypeAnnotation.name as empty;
           throw new Error(
             `Invalid ReservedFunctionValueTypeName name, got ${realTypeAnnotation.name}`,
           );
@@ -366,7 +370,7 @@ function translateReturnTypeToJniType(
         case 'string':
           return 'Ljava/lang/String;';
         default:
-          (validUnionType: empty);
+          validUnionType as empty;
           throw new Error(`Unsupported union member type`);
       }
     case 'NumberTypeAnnotation':
@@ -387,8 +391,10 @@ function translateReturnTypeToJniType(
       return 'Lcom/facebook/react/bridge/WritableMap;';
     case 'ArrayTypeAnnotation':
       return 'Lcom/facebook/react/bridge/WritableArray;';
+    case 'ArrayBufferTypeAnnotation':
+      throw new Error('ArrayBuffer is only supported for C++ TurboModules.');
     default:
-      (realTypeAnnotation.type: 'MixedTypeAnnotation');
+      realTypeAnnotation.type as 'MixedTypeAnnotation';
       throw new Error(
         `Unknown prop type for method return type, found: ${realTypeAnnotation.type}"`,
       );
@@ -527,7 +533,7 @@ module.exports = {
       })
       .join('\n');
 
-    const moduleLookups: $ReadOnlyArray<{
+    const moduleLookups: ReadonlyArray<{
       hasteModuleName: string,
       moduleName: string,
     }> = Object.keys(nativeModules)

@@ -20,13 +20,13 @@ import type {
   SchemaType,
 } from '../CodegenSchema.js';
 
-export type ComponentSchemaBuilderConfig = $ReadOnly<{
+export type ComponentSchemaBuilderConfig = Readonly<{
   filename: string,
   componentName: string,
-  extendsProps: $ReadOnlyArray<ExtendsPropsShape>,
-  events: $ReadOnlyArray<EventTypeShape>,
-  props: $ReadOnlyArray<NamedShape<PropTypeAnnotation>>,
-  commands: $ReadOnlyArray<NamedShape<CommandTypeAnnotation>>,
+  extendsProps: ReadonlyArray<ExtendsPropsShape>,
+  events: ReadonlyArray<EventTypeShape>,
+  props: ReadonlyArray<NamedShape<PropTypeAnnotation>>,
+  commands: ReadonlyArray<NamedShape<CommandTypeAnnotation>>,
   options?: ?OptionsShape,
 }>;
 

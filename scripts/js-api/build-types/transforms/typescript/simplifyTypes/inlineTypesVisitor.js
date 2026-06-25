@@ -253,4 +253,4 @@ const inlineTypes: PluginObj<InlineVisitorState> = {
 };
 
 // Visitor state is only used internally, so we can safely cast to PluginObj<mixed>.
-module.exports = inlineTypes as $FlowFixMe as PluginObj<mixed>;
+module.exports = inlineTypes as $FlowFixMe as PluginObj<unknown>;

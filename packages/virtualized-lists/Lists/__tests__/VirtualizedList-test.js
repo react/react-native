@@ -988,6 +988,52 @@ describe('VirtualizedList', () => {
     // scrolled-past in layout space.
     expect(component).toMatchSnapshot();
   });
+
+  it('does not add a sticky header to the render mask when no sticky headers are configured', () => {
+    const expectedRegions = [
+      {first: 0, last: 9, isSpacer: true},
+      {first: 10, last: 12, isSpacer: false},
+      {first: 13, last: 19, isSpacer: true},
+    ];
+
+    expect(createRenderMaskForStickyHeaderTest().enumerateRegions()).toEqual(
+      expectedRegions,
+    );
+    expect(
+      createRenderMaskForStickyHeaderTest({
+        stickyHeaderIndices: [],
+      }).enumerateRegions(),
+    ).toEqual(expectedRegions);
+  });
+
+  it('adds the closest sticky header above the viewport from unsorted stickyHeaderIndices', () => {
+    expect(
+      createRenderMaskForStickyHeaderTest({
+        stickyHeaderIndices: [12, 0, 8.5, 7, 7, -1],
+      }).enumerateRegions(),
+    ).toEqual([
+      {first: 0, last: 6, isSpacer: true},
+      {first: 7, last: 7, isSpacer: false},
+      {first: 8, last: 9, isSpacer: true},
+      {first: 10, last: 12, isSpacer: false},
+      {first: 13, last: 19, isSpacer: true},
+    ]);
+  });
+
+  it('accounts for ListHeaderComponent offset when adding the closest sticky header', () => {
+    expect(
+      createRenderMaskForStickyHeaderTest({
+        ListHeaderComponent: () => createElement('Header'),
+        stickyHeaderIndices: [3],
+      }).enumerateRegions(),
+    ).toEqual([
+      {first: 0, last: 1, isSpacer: true},
+      {first: 2, last: 2, isSpacer: false},
+      {first: 3, last: 9, isSpacer: true},
+      {first: 10, last: 12, isSpacer: false},
+      {first: 13, last: 19, isSpacer: true},
+    ]);
+  });
 });
 
 it('unmounts sticky headers moved below viewport', async () => {
@@ -1374,12 +1420,12 @@ it('does not over-render when there is less than initialNumToRender cells', asyn
     );
   });
 
-  // Check that the first render clamps to the last item when intialNumToRender
+  // Check that the first render clamps to the last item when initialNumToRender
   // goes over it.
   expect(component).toMatchSnapshot();
 });
 
-it('retains intitial render if initialScrollIndex == 0', async () => {
+it('retains initial render if initialScrollIndex == 0', async () => {
   const items = generateItems(20);
   const ITEM_HEIGHT = 10;
 
@@ -1415,7 +1461,7 @@ it('retains intitial render if initialScrollIndex == 0', async () => {
   expect(component).toMatchSnapshot();
 });
 
-it('discards intitial render if initialScrollIndex != 0', async () => {
+it('discards initial render if initialScrollIndex != 0', async () => {
   const items = generateItems(20);
   const ITEM_HEIGHT = 10;
 
@@ -1612,12 +1658,11 @@ it('adjusts render area with non-zero initialScrollIndex', async () => {
       content: {width: 10, height: 200},
     });
     simulateScroll(component, {x: 0, y: 10}); // simulate scroll offset for initialScrollIndex
-
-    // TODO: Rewrite test to tolerate subtle timing changes.
-    jest.advanceTimersToNextTimer(3);
   });
 
-  // We should expand the render area after receiving a message indcating we
+  await advanceUntilRenderAreaChanged(component);
+
+  // We should expand the render area after receiving a message indicating we
   // arrived at initialScrollIndex.
   expect(component).toMatchSnapshot();
 });
@@ -1711,7 +1756,7 @@ it('renders no spacers up to initialScrollIndex on first render when virtualizat
   });
 
   // There should be no spacers present in an offset initial render with
-  // virtualiztion disabled. Only initialNumToRender items starting at
+  // virtualization disabled. Only initialNumToRender items starting at
   // initialScrollIndex.
   expect(component).toMatchSnapshot();
 });
@@ -1734,7 +1779,7 @@ it('expands first in viewport to render up to maxToRenderPerBatch on initial ren
   });
 
   // When virtualization is disabled we may render items before initialItemIndex
-  // if initialItemIndex + initialNumToRender < maToRenderPerBatch. Expect cells
+  // if initialItemIndex + initialNumToRender < maxToRenderPerBatch. Expect cells
   // 0-3 to be rendered in this example, even though initialScrollIndex is 4.
   expect(component).toMatchSnapshot();
 });
@@ -1837,56 +1882,49 @@ it('retains initial render region when an item is appended', async () => {
   expect(component).toMatchSnapshot();
 });
 
-// TODO: Revisit this test case after upgrading to React 19.
-skipTestSilenceLinter(
-  'retains batch render region when an item is appended',
-  async () => {
-    const items = generateItems(10);
-    const ITEM_HEIGHT = 10;
+it('retains batch render region when an item is appended', async () => {
+  const items = generateItems(10);
+  const ITEM_HEIGHT = 10;
 
-    let component;
-    await act(() => {
-      component = create(
-        <VirtualizedList
-          initialNumToRender={1}
-          maxToRenderPerBatch={1}
-          {...baseItemProps(items)}
-          {...fixedHeightItemLayoutProps(ITEM_HEIGHT)}
-        />,
-      );
+  let component;
+  await act(() => {
+    component = create(
+      <VirtualizedList
+        initialNumToRender={1}
+        maxToRenderPerBatch={1}
+        {...baseItemProps(items)}
+        {...fixedHeightItemLayoutProps(ITEM_HEIGHT)}
+      />,
+    );
+  });
+
+  await act(() => {
+    simulateLayout(component, {
+      viewport: {width: 10, height: 50},
+      content: {width: 10, height: 100},
     });
+  });
 
-    await act(() => {
-      simulateLayout(component, {
-        viewport: {width: 10, height: 50},
-        content: {width: 10, height: 100},
-      });
-      performAllBatches();
-    });
+  await advanceUntilLastCellIndexRendered(component, items.length - 1);
 
-    await act(async () => {
-      await jest.runAllTimersAsync();
-    });
+  await act(() => {
+    component.update(
+      <VirtualizedList
+        initialNumToRender={1}
+        maxToRenderPerBatch={1}
+        {...baseItemProps(items)}
+        {...fixedHeightItemLayoutProps(ITEM_HEIGHT)}
+        data={generateItems(11)}
+      />,
+    );
+  });
 
-    await act(() => {
-      component.update(
-        <VirtualizedList
-          initialNumToRender={1}
-          maxToRenderPerBatch={1}
-          {...baseItemProps(items)}
-          {...fixedHeightItemLayoutProps(ITEM_HEIGHT)}
-          data={generateItems(11)}
-        />,
-      );
-    });
-
-    // Adding an item to the list after batch render should keep the existing
-    // rendered items rendered. We batch render 10 items, then add an 11th. Expect
-    // the first ten items to be present, with a spacer for the 11th until the
-    // next batch render.
-    expect(component).toMatchSnapshot();
-  },
-);
+  // Adding an item to the list after batch render should keep the existing
+  // rendered items rendered. We batch render 10 items, then add an 11th. Expect
+  // the first ten items to be present, with a spacer for the 11th until the
+  // next batch render.
+  expect(component).toMatchSnapshot();
+});
 
 it('constrains batch render region when an item is removed', async () => {
   const items = generateItems(10);
@@ -2577,6 +2615,26 @@ function fixedHeightItemLayoutProps(height) {
   };
 }
 
+function createRenderMaskForStickyHeaderTest({
+  ListHeaderComponent,
+  stickyHeaderIndices: stickyHeaderIndicesForTest,
+} = {}) {
+  return VirtualizedList._createRenderMask(
+    {
+      data: {length: 20},
+      getItem: (data, index) => index,
+      getItemCount: data => data.length,
+      initialScrollIndex: 1,
+      ListHeaderComponent,
+      stickyHeaderIndices: stickyHeaderIndicesForTest,
+    },
+    {
+      first: 10,
+      last: 12,
+    },
+  );
+}
+
 let lastViewportLayout;
 let lastContentLayout;
 
@@ -2622,6 +2680,46 @@ function simulateScroll(component, position) {
       zoomScale: 1,
     },
   });
+}
+
+async function advanceUntilRenderAreaChanged(component) {
+  const instance = component.getInstance();
+  const initialRenderArea = instance.state.cellsAroundViewport;
+  const MAX_TIMER_STEPS = 20;
+
+  for (let step = 0; step < MAX_TIMER_STEPS; step++) {
+    const currentRenderArea = instance.state.cellsAroundViewport;
+    const renderAreaChanged =
+      currentRenderArea.first !== initialRenderArea.first ||
+      currentRenderArea.last !== initialRenderArea.last;
+
+    if (renderAreaChanged) {
+      return;
+    }
+
+    await act(() => {
+      performNextBatch();
+    });
+  }
+
+  throw new Error(`Render area did not change`);
+}
+
+async function advanceUntilLastCellIndexRendered(component, targetLastIndex) {
+  const instance = component.getInstance();
+  const MAX_TIMER_STEPS = 20;
+
+  for (let step = 0; step < MAX_TIMER_STEPS; step++) {
+    if (instance.state.cellsAroundViewport.last === targetLastIndex) {
+      return;
+    }
+
+    await act(() => {
+      performNextBatch();
+    });
+  }
+
+  throw new Error(`Target last index ${targetLastIndex} not rendered`);
 }
 
 function performAllBatches() {

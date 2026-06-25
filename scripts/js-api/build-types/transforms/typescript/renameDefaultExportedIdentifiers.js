@@ -22,7 +22,7 @@ import * as t from '@babel/types';
  * the symbol. Finally, it replaces occurences of the local symbol by suffixing
  * it with `_default`.
  */
-const visitor: PluginObj<mixed> = {
+const visitor: PluginObj<unknown> = {
   visitor: {
     Program(nodePath) {
       let localSymbol: ?string = null;

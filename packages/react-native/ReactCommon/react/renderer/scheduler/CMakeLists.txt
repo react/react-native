@@ -21,6 +21,7 @@ target_link_libraries(react_renderer_scheduler
         react_featureflags
         react_performance_cdpmetrics
         react_performance_timeline
+        react_renderer_animationbackend
         react_renderer_componentregistry
         react_renderer_core
         react_renderer_debug
@@ -29,6 +30,7 @@ target_link_libraries(react_renderer_scheduler
         react_renderer_observers_events
         react_renderer_runtimescheduler
         react_renderer_uimanager
+        react_renderer_viewtransition
         react_utils
         rrc_root
         rrc_view

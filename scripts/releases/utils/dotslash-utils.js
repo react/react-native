@@ -40,7 +40,7 @@ type DotSlashPlatformSpec = {
   ...
 };
 
-export type DotSlashArtifactInfo = $ReadOnly<{
+export type DotSlashArtifactInfo = Readonly<{
   size: number,
   hash: 'blake3' | 'sha256',
   digest: string,
@@ -54,13 +54,13 @@ type JSONCFormattingOptions = {
 };
 
 type DotSlashProvidersTransformFn = (
-  providers: $ReadOnlyArray<DotSlashProvider>,
+  providers: ReadonlyArray<DotSlashProvider>,
   suggestedFilename: string,
   artifactInfo: DotSlashArtifactInfo,
-) => ?$ReadOnlyArray<DotSlashProvider> | Promise<?$ReadOnlyArray<DotSlashProvider>>;
+) => ?ReadonlyArray<DotSlashProvider> | Promise<?ReadonlyArray<DotSlashProvider>>;
 */
 
-const DEFAULT_FORMATTING_OPTIONS /*: $ReadOnly<JSONCFormattingOptions> */ = {
+const DEFAULT_FORMATTING_OPTIONS /*: Readonly<JSONCFormattingOptions> */ = {
   tabSize: 4,
   insertSpaces: true,
   eol: '\n',
@@ -75,7 +75,7 @@ const DEFAULT_FORMATTING_OPTIONS /*: $ReadOnly<JSONCFormattingOptions> */ = {
 async function processDotSlashFileInPlace(
   filename /*: string */,
   transformProviders /*: DotSlashProvidersTransformFn */,
-  formattingOptions /*: $ReadOnly<JSONCFormattingOptions> */ = DEFAULT_FORMATTING_OPTIONS,
+  formattingOptions /*: Readonly<JSONCFormattingOptions> */ = DEFAULT_FORMATTING_OPTIONS,
 ) /*: Promise<void> */ {
   // Validate the file using `dotslash` itself so we can be reasonably sure that it conforms
   // to the expected format.
@@ -87,7 +87,7 @@ async function processDotSlashFileInPlace(
   const json = parse(originalContentsJson);
   let intermediateContentsJson = originalContentsJson;
   for (const [platform, platformSpec] of Object.entries(json.platforms) /*::
-   as $ReadOnlyArray<[string, DotSlashPlatformSpec]>
+   as ReadonlyArray<[string, DotSlashPlatformSpec]>
   */) {
     const providers = platformSpec.providers;
     const suggestedFilename =
@@ -144,7 +144,7 @@ function splitShebangFromContents(
  */
 async function validateAndParseDotSlashFile(
   filename /*: string */,
-) /*: mixed */ {
+) /*: unknown */ {
   const {stdout} = await execFile(dotslash, ['--', 'parse', filename]);
   return JSON.parse(stdout);
 }

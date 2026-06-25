@@ -38,20 +38,20 @@ struct CSSRatio {
 
 template <>
 struct CSSDataTypeParser<CSSRatio> {
-  static constexpr auto consume(CSSSyntaxParser &parser) -> std::optional<CSSRatio>
+  static constexpr auto consume(CSSValueParser &parser) -> std::optional<CSSRatio>
   {
     // <ratio> = <number [0,∞]> [ / <number [0,∞]> ]?
     // https://www.w3.org/TR/css-values-4/#ratio
-    auto numerator = parseNextCSSValue<CSSNumber>(parser);
+    auto numerator = parser.parseNextValue<CSSNumber>();
     if (!std::holds_alternative<CSSNumber>(numerator)) {
       return {};
     }
 
     auto numeratorValue = std::get<CSSNumber>(numerator).value;
     if (numeratorValue >= 0) {
-      auto denominator = peekNextCSSValue<CSSNumber>(parser, CSSDelimiter::Solidus);
+      auto denominator = parser.peekNextValue<CSSNumber>(CSSDelimiter::Solidus);
       if (std::holds_alternative<CSSNumber>(denominator) && std::get<CSSNumber>(denominator).value >= 0) {
-        parseNextCSSValue<CSSNumber>(parser, CSSDelimiter::Solidus);
+        parser.parseNextValue<CSSNumber>(CSSDelimiter::Solidus);
         return CSSRatio{.numerator = numeratorValue, .denominator = std::get<CSSNumber>(denominator).value};
       }
 

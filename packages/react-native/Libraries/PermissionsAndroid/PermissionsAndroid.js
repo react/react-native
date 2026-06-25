@@ -31,7 +31,7 @@ const PERMISSION_REQUEST_RESULT = Object.freeze({
   NEVER_ASK_AGAIN: 'never_ask_again',
 });
 
-type PermissionsType = $ReadOnly<{
+type PermissionsType = Readonly<{
   READ_CALENDAR: 'android.permission.READ_CALENDAR',
   WRITE_CALENDAR: 'android.permission.WRITE_CALENDAR',
   CAMERA: 'android.permission.CAMERA',
@@ -75,10 +75,11 @@ type PermissionsType = $ReadOnly<{
   UWB_RANGING: 'android.permission.UWB_RANGING',
   POST_NOTIFICATIONS: 'android.permission.POST_NOTIFICATIONS',
   NEARBY_WIFI_DEVICES: 'android.permission.NEARBY_WIFI_DEVICES',
+  ACCESS_LOCAL_NETWORK: 'android.permission.ACCESS_LOCAL_NETWORK',
 }>;
 
 export type PermissionStatus = 'granted' | 'denied' | 'never_ask_again';
-export type Permission = $Values<PermissionsType>;
+export type Permission = Values<PermissionsType>;
 
 const PERMISSIONS = Object.freeze({
   READ_CALENDAR: 'android.permission.READ_CALENDAR',
@@ -125,6 +126,7 @@ const PERMISSIONS = Object.freeze({
   UWB_RANGING: 'android.permission.UWB_RANGING',
   POST_NOTIFICATIONS: 'android.permission.POST_NOTIFICATIONS',
   NEARBY_WIFI_DEVICES: 'android.permission.NEARBY_WIFI_DEVICES',
+  ACCESS_LOCAL_NETWORK: 'android.permission.ACCESS_LOCAL_NETWORK',
 }) as PermissionsType;
 
 /**
@@ -134,7 +136,7 @@ const PERMISSIONS = Object.freeze({
  */
 class PermissionsAndroidImpl {
   PERMISSIONS: PermissionsType = PERMISSIONS;
-  RESULTS: $ReadOnly<{
+  RESULTS: Readonly<{
     DENIED: 'denied',
     GRANTED: 'granted',
     NEVER_ASK_AGAIN: 'never_ask_again',

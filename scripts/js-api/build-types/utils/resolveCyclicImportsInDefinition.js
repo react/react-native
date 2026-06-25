@@ -13,7 +13,7 @@ import type {PluginObj} from '@babel/core';
 import * as babel from '@babel/core';
 import path from 'path';
 
-type PackageConfig = $ReadOnlyArray<{
+type PackageConfig = ReadonlyArray<{
   directory: string,
   name: string,
 }>;

@@ -20,7 +20,7 @@ export interface ArrayLike<T> extends Iterable<T> {
   // This property should've been read-only as well, but Flow doesn't handle
   // read-only indexers correctly (thinks reads are writes and fails).
   [indexer: number]: T;
-  +length: number;
+  readonly length: number;
 }
 
 export function* createValueIterator<T>(arrayLike: ArrayLike<T>): Iterator<T> {

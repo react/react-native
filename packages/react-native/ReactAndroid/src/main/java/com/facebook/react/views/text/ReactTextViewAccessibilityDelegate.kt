@@ -18,9 +18,11 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
 import androidx.core.view.accessibility.AccessibilityNodeProviderCompat
 import com.facebook.react.R
+import com.facebook.react.common.annotations.UnstableReactNativeAPI
 import com.facebook.react.uimanager.ReactAccessibilityDelegate
 import com.facebook.react.views.text.internal.span.ReactClickableSpan
 
+@OptIn(UnstableReactNativeAPI::class)
 internal class ReactTextViewAccessibilityDelegate(
     view: View,
     originalFocus: Boolean,
@@ -154,6 +156,8 @@ internal class ReactTextViewAccessibilityDelegate(
   private fun getLayoutFromHost(): Layout? {
     return if (hostView is PreparedLayoutTextView) {
       (hostView as PreparedLayoutTextView).preparedLayout?.layout
+    } else if (hostView is ReactTextView && (hostView as ReactTextView).preparedLayout != null) {
+      (hostView as ReactTextView).preparedLayout?.layout
     } else if (hostView is TextView) {
       (hostView as TextView).layout
     } else {
@@ -170,6 +174,8 @@ internal class ReactTextViewAccessibilityDelegate(
   private fun getSpannedFromHost(): Spanned? {
     val host = hostView
     return if (host is PreparedLayoutTextView) {
+      host.preparedLayout?.layout?.text as? Spanned
+    } else if (host is ReactTextView && host.preparedLayout != null) {
       host.preparedLayout?.layout?.text as? Spanned
     } else if (host is TextView) {
       host.text as? Spanned

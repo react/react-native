@@ -10,7 +10,7 @@
 
 import type {IEventEmitter} from '../vendor/emitter/EventEmitter';
 
-import {beginEvent, endEvent} from '../Performance/Systrace';
+import {trace} from '../Performance/Systrace';
 import EventEmitter from '../vendor/emitter/EventEmitter';
 
 // FIXME: use typed events
@@ -25,16 +25,16 @@ type RCTDeviceEventDefinitions = {[name: string]: Array<any>};
  */
 class RCTDeviceEventEmitterImpl extends EventEmitter<RCTDeviceEventDefinitions> {
   // Add systrace to RCTDeviceEventEmitter.emit method for debugging
-  emit<TEvent: $Keys<RCTDeviceEventDefinitions>>(
+  emit<TEvent extends keyof RCTDeviceEventDefinitions>(
     eventType: TEvent,
     ...args: RCTDeviceEventDefinitions[TEvent]
   ): void {
-    beginEvent(() => `RCTDeviceEventEmitter.emit#${eventType}`);
-    try {
-      super.emit(eventType, ...args);
-    } finally {
-      endEvent();
-    }
+    trace(
+      () => `RCTDeviceEventEmitter.emit#${eventType}`,
+      () => {
+        super.emit(eventType, ...args);
+      },
+    );
   }
 }
 const RCTDeviceEventEmitter: IEventEmitter<RCTDeviceEventDefinitions> =
@@ -45,4 +45,4 @@ Object.defineProperty(global, '__rctDeviceEventEmitter', {
   value: RCTDeviceEventEmitter,
 });
 
-export default (RCTDeviceEventEmitter: IEventEmitter<RCTDeviceEventDefinitions>);
+export default RCTDeviceEventEmitter as IEventEmitter<RCTDeviceEventDefinitions>;

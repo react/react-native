@@ -7,14 +7,13 @@
 
 package com.facebook.react.uimanager
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.util.DisplayMetrics
 import android.view.WindowManager
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.facebook.react.bridge.WritableMap
-import com.facebook.react.bridge.WritableNativeMap
 import com.facebook.react.uimanager.PixelUtil.pxToDp
 
 /**
@@ -25,20 +24,7 @@ public object DisplayMetricsHolder {
   private const val INITIALIZATION_MISSING_MESSAGE =
       "DisplayMetricsHolder must be initialized with initDisplayMetricsIfNotInitialized or initDisplayMetrics"
 
-  @JvmStatic private var windowDisplayMetrics: DisplayMetrics? = null
   @JvmStatic private var screenDisplayMetrics: DisplayMetrics? = null
-
-  /** The metrics of the window associated to the Context used to initialize ReactNative */
-  @JvmStatic
-  public fun getWindowDisplayMetrics(): DisplayMetrics {
-    checkNotNull(windowDisplayMetrics) { INITIALIZATION_MISSING_MESSAGE }
-    return windowDisplayMetrics as DisplayMetrics
-  }
-
-  @JvmStatic
-  public fun setWindowDisplayMetrics(displayMetrics: DisplayMetrics?) {
-    windowDisplayMetrics = displayMetrics
-  }
 
   /** Screen metrics returns the metrics of the default screen on the device. */
   @JvmStatic
@@ -61,54 +47,26 @@ public object DisplayMetricsHolder {
   }
 
   @JvmStatic
-  @Suppress("DEPRECATION")
+  @SuppressLint("DeprecatedMethod") // for Android Lint
+  @Suppress("DEPRECATION") // for Kotlin compiler
   public fun initDisplayMetrics(context: Context) {
     val displayMetrics = context.resources.displayMetrics
-    windowDisplayMetrics = displayMetrics
     val screenDisplayMetrics = DisplayMetrics()
     screenDisplayMetrics.setTo(displayMetrics)
-    val wm = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-    // Get the real display metrics if we are using API level 17 or higher.
-    // The real metrics include system decor elements (e.g. soft menu bar).
-    //
-    // See:
-    // http://developer.android.com/reference/android/view/Display.html#getRealMetrics(android.util.DisplayMetrics)
-    wm.defaultDisplay.getRealMetrics(screenDisplayMetrics)
+    try {
+      val wm = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+      // getRealMetrics includes system decor (e.g. nav bar) excluded from resource metrics.
+      wm.defaultDisplay.getRealMetrics(screenDisplayMetrics)
+    } catch (_: Exception) {
+      // Non-visual contexts (e.g. Application) may throw on API 30+.
+      // Falls back to resource display metrics copied via setTo() above.
+    }
     // Preserve fontScale from the configuration because getRealMetrics() returns
     // physical display metrics without the system font scale setting.
     // This is needed for proper text scaling when fontScale < 1.0
     screenDisplayMetrics.scaledDensity = displayMetrics.scaledDensity
     DisplayMetricsHolder.screenDisplayMetrics = screenDisplayMetrics
   }
-
-  @JvmStatic
-  public fun getDisplayMetricsWritableMap(fontScale: Double): WritableMap {
-    checkNotNull(windowDisplayMetrics) { INITIALIZATION_MISSING_MESSAGE }
-    checkNotNull(screenDisplayMetrics) { INITIALIZATION_MISSING_MESSAGE }
-
-    return WritableNativeMap().apply {
-      putMap(
-          "windowPhysicalPixels",
-          getPhysicalPixelsWritableMap(windowDisplayMetrics as DisplayMetrics, fontScale),
-      )
-      putMap(
-          "screenPhysicalPixels",
-          getPhysicalPixelsWritableMap(screenDisplayMetrics as DisplayMetrics, fontScale),
-      )
-    }
-  }
-
-  private fun getPhysicalPixelsWritableMap(
-      displayMetrics: DisplayMetrics,
-      fontScale: Double,
-  ): WritableMap =
-      WritableNativeMap().apply {
-        putInt("width", displayMetrics.widthPixels)
-        putInt("height", displayMetrics.heightPixels)
-        putDouble("scale", displayMetrics.density.toDouble())
-        putDouble("fontScale", fontScale)
-        putDouble("densityDpi", displayMetrics.densityDpi.toDouble())
-      }
 
   internal fun getStatusBarHeightPx(activity: Activity?): Int {
     val windowInsets = activity?.window?.decorView?.let(ViewCompat::getRootWindowInsets) ?: return 0

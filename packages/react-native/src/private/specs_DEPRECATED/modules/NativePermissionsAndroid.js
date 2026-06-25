@@ -65,14 +65,16 @@ export type PermissionType =
   */
 
 export interface Spec extends TurboModule {
-  +checkPermission: (permission: PermissionType) => Promise<boolean>;
-  +requestPermission: (permission: PermissionType) => Promise<PermissionStatus>;
-  +shouldShowRequestPermissionRationale: (
+  readonly checkPermission: (permission: PermissionType) => Promise<boolean>;
+  readonly requestPermission: (
+    permission: PermissionType,
+  ) => Promise<PermissionStatus>;
+  readonly shouldShowRequestPermissionRationale: (
     permission: string,
   ) => Promise<boolean>;
-  +requestMultiplePermissions: (
+  readonly requestMultiplePermissions: (
     permissions: Array<PermissionType>,
   ) => Promise<{[permission: PermissionType]: PermissionStatus, ...}>;
 }
 
-export default (TurboModuleRegistry.get<Spec>('PermissionsAndroid'): ?Spec);
+export default TurboModuleRegistry.get<Spec>('PermissionsAndroid') as ?Spec;

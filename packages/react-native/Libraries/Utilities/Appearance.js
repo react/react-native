@@ -9,33 +9,41 @@
  */
 
 import type {EventSubscription} from '../vendor/emitter/EventEmitter';
-import type {AppearancePreferences, ColorSchemeName} from './NativeAppearance';
+import type {
+  AppearancePreferences as NativeAppearancePreferences,
+  ColorSchemeName,
+  ColorSchemeOverride,
+} from './NativeAppearance';
 import typeof INativeAppearance from './NativeAppearance';
 
 import NativeEventEmitter from '../EventEmitter/NativeEventEmitter';
 import EventEmitter from '../vendor/emitter/EventEmitter';
 
-export type {AppearancePreferences};
+export type {ColorSchemeName, ColorSchemeOverride};
+
+export type AppearancePreferences = {
+  colorScheme: ColorSchemeName | null,
+};
 
 type Appearance = {
-  colorScheme: ?ColorSchemeName,
+  colorScheme: ColorSchemeName | null,
 };
 
 let lazyState: ?{
-  +NativeAppearance: INativeAppearance,
+  readonly NativeAppearance: INativeAppearance,
   // Cache the color scheme to reduce the cost of reading it between changes.
   // NOTE: If `NativeAppearance` is null, this will always be null.
   appearance: ?Appearance,
   // NOTE: This is non-nullable to make it easier for `onChangedListener` to
   // return a non-nullable `EventSubscription` value. This is not the common
   // path, so we do not have to over-optimize it.
-  +eventEmitter: EventEmitter<{change: [Appearance]}>,
+  readonly eventEmitter: EventEmitter<{change: [Appearance]}>,
 };
 
 /**
  * Ensures that all state and listeners are lazily initialized correctly.
  */
-function getState(): $NonMaybeType<typeof lazyState> {
+function getState(): NonNullable<typeof lazyState> {
   if (lazyState != null) {
     return lazyState;
   }
@@ -50,13 +58,13 @@ function getState(): $NonMaybeType<typeof lazyState> {
       eventEmitter,
     };
   } else {
-    const state: $NonMaybeType<typeof lazyState> = {
+    const state: NonNullable<typeof lazyState> = {
       NativeAppearance,
       appearance: null,
       eventEmitter,
     };
     new NativeEventEmitter<{
-      appearanceChanged: [AppearancePreferences],
+      appearanceChanged: [NativeAppearancePreferences],
     }>(NativeAppearance).addListener('appearanceChanged', newAppearance => {
       state.appearance = {
         colorScheme: newAppearance.colorScheme,
@@ -69,11 +77,18 @@ function getState(): $NonMaybeType<typeof lazyState> {
 }
 
 /**
- * Returns the current color scheme preference. This value may change, so the
- * value should not be cached without either listening to changes or using
- * the `useColorScheme` hook.
+ * Returns the active color scheme (`'light'` or `'dark'`). This value may
+ * change at runtime, either at the system level (e.g. scheduled color scheme
+ * change at sunrise or sunset) or when overridden at the app level via
+ * `setColorScheme()`.
+ *
+ * Prefer `useColorScheme()` in React components.
+ *
+ * Notes:
+ * - `null` will only be returned if the native Appearance module is unavailable
+ *   (out of tree platforms).
  */
-export function getColorScheme(): ?ColorSchemeName {
+export function getColorScheme(): ColorSchemeName | null {
   let colorScheme = null;
   const state = getState();
   const {NativeAppearance} = state;
@@ -91,24 +106,31 @@ export function getColorScheme(): ?ColorSchemeName {
 }
 
 /**
- * Updates the current color scheme to the supplied value.
+ * Force the application to always adopt a light or dark interface style. Pass
+ * `'auto'` to reset and follow the system default (removes any override).
+ * This does not affect the system UI, only the application.
  */
-export function setColorScheme(colorScheme: ColorSchemeName): void {
+export function setColorScheme(colorScheme: ColorSchemeOverride): void {
   const state = getState();
   const {NativeAppearance} = state;
   if (NativeAppearance != null) {
     NativeAppearance.setColorScheme(colorScheme);
     state.appearance = {
-      colorScheme,
+      colorScheme:
+        colorScheme === 'auto' || colorScheme === 'unspecified'
+          ? NativeAppearance.getColorScheme()
+          : colorScheme,
     };
   }
 }
 
 /**
- * Add an event handler that is fired when appearance preferences change.
+ * Subscribe to color scheme changes. The listener receives the new appearance
+ * preferences whenever the color scheme changes, whether from a system event
+ * or a call to `setColorScheme()`.
  */
 export function addChangeListener(
-  listener: ({colorScheme: ?ColorSchemeName}) => void,
+  listener: (preferences: AppearancePreferences) => void,
 ): EventSubscription {
   const {eventEmitter} = getState();
   return eventEmitter.addListener('change', listener);

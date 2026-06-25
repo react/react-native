@@ -1,0 +1,7 @@
+struct test::Container {
+  public using Wrapper = test::Wrapper<int>;
+}
+
+template <typename T>
+struct test::Wrapper {
+}

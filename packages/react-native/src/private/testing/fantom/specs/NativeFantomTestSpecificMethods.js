@@ -9,6 +9,7 @@
  */
 
 import type {TurboModule} from '../../../../../Libraries/TurboModule/RCTExport';
+import type {Float, Int32} from '../../../../../Libraries/Types/CodegenTypes';
 
 import * as TurboModuleRegistry from '../../../../../Libraries/TurboModule/TurboModuleRegistry';
 
@@ -22,10 +23,15 @@ import * as TurboModuleRegistry from '../../../../../Libraries/TurboModule/Turbo
  * that this is the only way to test the behavior.
  */
 export interface Spec extends TurboModule {
-  +registerForcedCloneCommitHook: () => void;
-  +takeFunctionAndNoop: (fn: () => void) => void;
+  readonly registerForcedCloneCommitHook: () => void;
+  readonly takeFunctionAndNoop: (fn: () => void) => void;
+  readonly setRootNodeSize: (
+    surfaceId: Int32,
+    width: Float,
+    height: Float,
+  ) => void;
 }
 
-export default (TurboModuleRegistry.getEnforcing<Spec>(
+export default TurboModuleRegistry.getEnforcing<Spec>(
   'NativeFantomTestSpecificMethodsCxx',
-): Spec);
+) as Spec;

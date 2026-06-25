@@ -1,0 +1,5 @@
+class test::Cache {
+  public const int* constPtr;
+  public mutable const int* mutableConstPtr;
+  public mutable int* mutablePtr;
+}

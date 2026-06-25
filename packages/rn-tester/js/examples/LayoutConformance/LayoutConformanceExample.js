@@ -21,7 +21,7 @@ import {
 
 function LayoutConformanceExample({
   testID,
-}: $ReadOnly<{testID: ?string}>): React.Node {
+}: Readonly<{testID: ?string}>): React.Node {
   return (
     <View style={{flexDirection: 'row', gap: 10}} testID={testID}>
       <View>
@@ -72,7 +72,7 @@ function LayoutConformanceBox(): React.Node {
   );
 }
 
-export default ({
+export default {
   title: 'LayoutConformance',
   description:
     'Examples laid out in compatibility mode will show a red bar, not present in examples with conformant layout.',
@@ -103,4 +103,4 @@ export default ({
       ),
     },
   ],
-}: RNTesterModule);
+} as RNTesterModule;

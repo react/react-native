@@ -297,10 +297,6 @@ const publicAPIMapping = {
     default: 'I18nManager',
     types: null,
   },
-  'Libraries/Interaction/InteractionManager': {
-    default: 'InteractionManager',
-    types: ['Handle', 'PromiseTask', 'SimpleTask'],
-  },
   'Libraries/Components/Keyboard/Keyboard': {
     default: 'Keyboard',
     types: [
@@ -330,10 +326,6 @@ const publicAPIMapping = {
   'Libraries/LogBox/LogBox': {
     default: 'LogBox',
     types: ['ExtendedExceptionData', 'IgnorePattern', 'LogData'],
-  },
-  'Libraries/NativeModules/specs/NativeDialogManagerAndroid': {
-    default: 'NativeDialogManagerAndroid',
-    types: null,
   },
   'Libraries/EventEmitter/NativeEventEmitter': {
     default: 'NativeEventEmitter',

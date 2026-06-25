@@ -16,17 +16,21 @@
 namespace facebook::yoga {
 
 enum class Justify : uint8_t {
+  Auto = YGJustifyAuto,
   FlexStart = YGJustifyFlexStart,
   Center = YGJustifyCenter,
   FlexEnd = YGJustifyFlexEnd,
   SpaceBetween = YGJustifySpaceBetween,
   SpaceAround = YGJustifySpaceAround,
   SpaceEvenly = YGJustifySpaceEvenly,
+  Stretch = YGJustifyStretch,
+  Start = YGJustifyStart,
+  End = YGJustifyEnd,
 };
 
 template <>
 constexpr int32_t ordinalCount<Justify>() {
-  return 6;
+  return 10;
 }
 
 constexpr Justify scopedEnum(YGJustify unscoped) {

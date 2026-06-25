@@ -283,6 +283,7 @@ internal class PointerEvent private constructor() : Event<PointerEvent>() {
           coalescingKey.toInt(),
           eventData,
           getEventCategory(_eventName),
+          timestampMs,
       )
     }
   }

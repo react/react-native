@@ -1,0 +1,17 @@
+interface RCTDeprecatedInterface {
+  public virtual void customBubblingEventTypes();
+  public virtual void legacyTitle();
+  public virtual void normalMethod();
+  public virtual void oldMethod();
+}
+
+interface RCTTestInterface {
+  public virtual NSArray* deprecatedMethod:(id param);
+  public virtual instancetype initWithURL:launchOptions:(NSURL* url, NSDictionary* launchOptions);
+  public virtual void normalMethod:(NSString* name);
+}
+
+protocol RCTDeprecatedProtocol {
+  public virtual void deprecatedProtocolMethod();
+  public virtual void normalProtocolMethod();
+}

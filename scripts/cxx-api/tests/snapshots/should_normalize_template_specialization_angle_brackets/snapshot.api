@@ -1,0 +1,17 @@
+class AndroidSwitchComponentDescriptor : public ConcreteComponentDescriptor<AndroidSwitchShadowNode> {
+  public AndroidSwitchComponentDescriptor(const ComponentDescriptorParameters& parameters);
+  public void adopt(ShadowNode& shadowNode) const;
+}
+
+struct CSSDataTypeParser<CSSMatrix> {
+  public static constexpr std::optional<CSSMatrix> consumeFunctionBlock(const CSSFunctionBlock& func, CSSValueParser& parser);
+}
+
+struct CSSMatrix {
+  public constexpr bool operator==(const CSSMatrix& rhs) const = default;
+  public std::array<float, 6> values;
+}
+
+template <typename ShadowNodeT>
+class ConcreteComponentDescriptor {
+}

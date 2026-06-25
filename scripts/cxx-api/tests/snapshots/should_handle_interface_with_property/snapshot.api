@@ -1,0 +1,5 @@
+interface RCTInterfaceWithProperty {
+  public @property (assign) BOOL enabled;
+  public @property (copy) NSString* title;
+  public @property (weak) id delegate;
+}

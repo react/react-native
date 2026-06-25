@@ -21,6 +21,7 @@
 #include <jsinspector-modern/tracing/TraceRecordingState.h>
 
 #include <memory>
+#include <optional>
 #include <utility>
 
 #ifndef JSINSPECTOR_EXPORT
@@ -129,6 +130,14 @@ class RuntimeTargetController {
   void installBindingHandler(const std::string &bindingName);
 
   /**
+   * Evaluates the given JavaScript source on the runtime's thread before any
+   * user code runs. Used to replay @cdp
+   * Page.addScriptToEvaluateOnNewDocument scripts onto a freshly created
+   * runtime.
+   */
+  void installScriptToEvaluateOnNewDocument(const std::string &source);
+
+  /**
    * Notifies the target that an agent has received an enable or disable
    * message for the given domain.
    */
@@ -146,6 +155,11 @@ class RuntimeTargetController {
    * Return recorded sampling profile for the previous sampling session.
    */
   tracing::RuntimeSamplingProfile collectSamplingProfile();
+
+  /**
+   * Emits a tracing state change to JavaScript via the tracing state observer.
+   */
+  void emitTracingStateChange(bool isTracing);
 
  private:
   RuntimeTarget &target_;
@@ -262,6 +276,7 @@ class JSINSPECTOR_EXPORT RuntimeTarget : public EnableExecutorFromThis<RuntimeTa
    * session - HostTargetTraceRecording.
    */
   std::weak_ptr<RuntimeTracingAgent> tracingAgent_;
+
   /**
    * Start sampling profiler for a particular JavaScript runtime.
    */
@@ -283,10 +298,24 @@ class JSINSPECTOR_EXPORT RuntimeTarget : public EnableExecutorFromThis<RuntimeTa
   void installBindingHandler(const std::string &bindingName);
 
   /**
+   * Evaluates the given JavaScript source on the runtime's thread before any
+   * user code runs. Used to replay @cdp
+   * Page.addScriptToEvaluateOnNewDocument scripts onto a freshly created
+   * runtime.
+   */
+  void installScriptToEvaluateOnNewDocument(const std::string &source);
+
+  /**
    * Installs any global values we want to expose to framework/user JavaScript
    * code.
    */
   void installGlobals();
+
+  /**
+   * Installs __notifyFastRefreshComplete on the runtime's global object.
+   * When called from JS, dispatches to all connected RuntimeAgents.
+   */
+  void installFastRefreshHandler();
 
   /**
    * Install the console API handler.
@@ -305,6 +334,13 @@ class JSINSPECTOR_EXPORT RuntimeTarget : public EnableExecutorFromThis<RuntimeTa
   void installDebuggerSessionObserver();
 
   /**
+   * Installs __TRACING_STATE_OBSERVER__ object on the JavaScript's global
+   * object, which can be referenced from JavaScript side for determining the
+   * status of performance tracing.
+   */
+  void installTracingStateObserver();
+
+  /**
    * Installs the private __NETWORK_REPORTER__ object on the Runtime's
    * global object.
    */
@@ -321,6 +357,11 @@ class JSINSPECTOR_EXPORT RuntimeTarget : public EnableExecutorFromThis<RuntimeTa
    * onStatusChange on __DEBUGGER_SESSION_OBSERVER__.
    */
   void emitDebuggerSessionDestroyed();
+
+  /**
+   * Emits a tracing state change to JavaScript via the tracing state observer.
+   */
+  void emitTracingStateChange(bool isTracing);
 
   /**
    * \returns a globally unique ID for a network request.

@@ -29,6 +29,8 @@ const char* LayoutPassReasonToString(const LayoutPassReason value) {
       return "abs_measure";
     case LayoutPassReason::kFlexMeasure:
       return "flex_measure";
+    case LayoutPassReason::kGridLayout:
+      return "grid_layout";
     default:
       return "unknown";
   }

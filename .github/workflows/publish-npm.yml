@@ -1,0 +1,275 @@
+# Single top-level workflow for every npm publish in this repo.
+#
+# Why: npmjs.com Trusted Publishing matches the `workflow_ref` OIDC claim,
+# which is always the TOP-LEVEL workflow filename. npm allows only ONE
+# trusted publisher per package, so every `npm publish` must originate
+# from the same top-level file. By consolidating all publish triggers
+# here, the OIDC claim is always `publish-npm.yml`.
+#
+# This replaces the previous separate entry points:
+#   - publish-release.yml  (tag push)       → mode=release
+#   - nightly.yml          (cron/dispatch)   → mode=nightly
+#   - publish-bumped-packages.yml (main/stable branch push) → mode=bumped-packages
+#
+# See https://docs.npmjs.com/trusted-publishers
+name: Publish to npm
+
+on:
+  push:
+    tags:
+      - 'v0.*.*' # This should match v0.X.Y
+      - 'v0.*.*-rc.*' # This should match v0.X.Y-RC.0
+    branches:
+      - 'main'
+      - '*-stable'
+  workflow_dispatch:
+  # nightly build @ 2:15 AM UTC
+  schedule:
+    - cron: '15 2 * * *'
+
+permissions:
+  contents: read
+
+jobs:
+  # ─── Determine what kind of publish this is ──────────────────────
+  determine_mode:
+    runs-on: ubuntu-latest
+    if: github.repository == 'react/react-native'
+    outputs:
+      mode: ${{ steps.mode.outputs.mode }}
+      release-type: ${{ steps.mode.outputs.release-type }}
+    steps:
+      - id: mode
+        run: |
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            echo "mode=release" >> $GITHUB_OUTPUT
+            echo "release-type=release" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event_name }}" == "schedule" || "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "mode=nightly" >> $GITHUB_OUTPUT
+            echo "release-type=nightly" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event_name }}" == "push" ]]; then
+            echo "mode=bumped-packages" >> $GITHUB_OUTPUT
+            echo "release-type=" >> $GITHUB_OUTPUT
+          fi
+      - run: |
+          echo "Mode: ${{ steps.mode.outputs.mode }}"
+          echo "Release type: ${{ steps.mode.outputs.release-type }}"
+
+  # ─── Release-only: extract Hermes version for draft release ──────
+  set_hermes_version:
+    runs-on: ubuntu-latest
+    if: github.ref_type == 'tag'
+    outputs:
+      HERMES_VERSION: ${{ steps.set_hermes_version.outputs.HERMES_VERSION }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - id: set_hermes_version
+        run: |
+          hermes_version=$(grep -oE 'HERMES_VERSION_NAME=([0-9]+\.[0-9]+\.[0-9]+)' packages/react-native/sdks/hermes-engine/version.properties | cut -d'=' -f2)
+          echo "HERMES_VERSION=$hermes_version" >> $GITHUB_OUTPUT
+          echo "HERMES_VERSION=$hermes_version"
+
+  # ─── Apple prebuilds (release + nightly) ─────────────────────────
+  prebuild_apple_dependencies:
+    needs: [determine_mode]
+    if: needs.determine_mode.outputs.mode == 'release' || needs.determine_mode.outputs.mode == 'nightly'
+    uses: ./.github/workflows/prebuild-ios-dependencies.yml
+    secrets: inherit
+
+  prebuild_react_native_core:
+    needs: [determine_mode, prebuild_apple_dependencies]
+    if: needs.determine_mode.outputs.mode == 'release' || needs.determine_mode.outputs.mode == 'nightly'
+    uses: ./.github/workflows/prebuild-ios-core.yml
+    secrets: inherit
+    with:
+      use-hermes-prebuilt: ${{ needs.determine_mode.outputs.mode == 'nightly' }}
+      version-type: ${{ needs.determine_mode.outputs.mode == 'nightly' && 'nightly' || '' }}
+
+  # ─── Android build (nightly only — releases handle this in the
+  #     build-npm-package action's Gradle step) ─────────────────────
+  build_android:
+    needs: [determine_mode]
+    if: needs.determine_mode.outputs.mode == 'nightly'
+    runs-on: ubuntu-latest
+    container:
+      image: reactnativecommunity/react-native-android:latest
+      env:
+        TERM: 'dumb'
+        # Set the encoding to resolve a known character encoding issue with decompressing tar.gz files in containers
+        # via Gradle: https://github.com/gradle/gradle/issues/23391#issuecomment-1878979127
+        LC_ALL: C.UTF8
+        GRADLE_OPTS: '-Dorg.gradle.daemon=false'
+        ORG_GRADLE_PROJECT_SIGNING_PWD: ${{ secrets.ORG_GRADLE_PROJECT_SIGNING_PWD }}
+        ORG_GRADLE_PROJECT_SIGNING_KEY: ${{ secrets.ORG_GRADLE_PROJECT_SIGNING_KEY }}
+        ORG_GRADLE_PROJECT_SONATYPE_USERNAME: ${{ secrets.ORG_GRADLE_PROJECT_SONATYPE_USERNAME }}
+        ORG_GRADLE_PROJECT_SONATYPE_PASSWORD: ${{ secrets.ORG_GRADLE_PROJECT_SONATYPE_PASSWORD }}
+        REACT_NATIVE_DOWNLOADS_DIR: /opt/react-native-downloads
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Build Android
+        uses: ./.github/actions/build-android
+        with:
+          release-type: nightly
+          gradle-cache-encryption-key: ${{ secrets.GRADLE_CACHE_ENCRYPTION_KEY }}
+
+  # ─── Build + Publish: react-native + all @react-native/* packages
+  #     (release and nightly modes) ─────────────────────────────────
+  publish_react_native:
+    needs:
+      [
+        determine_mode,
+        build_android,
+        prebuild_apple_dependencies,
+        prebuild_react_native_core,
+      ]
+    # For nightly, also wait on build_android. Use always() so this
+    # job isn't skipped when build_android is skipped (release mode).
+    # The explicit status checks below handle the real gating.
+    if: |
+      always() &&
+      (needs.determine_mode.outputs.mode == 'release' || needs.determine_mode.outputs.mode == 'nightly') &&
+      needs.determine_mode.result == 'success' &&
+      needs.prebuild_apple_dependencies.result == 'success' &&
+      needs.prebuild_react_native_core.result == 'success' &&
+      (needs.determine_mode.outputs.mode == 'release' || needs.build_android.result == 'success')
+    runs-on: ubuntu-latest
+    environment: npm-publish
+    # `id-token: write` is required so the npm CLI can mint the OIDC
+    # token that npm Trusted Publishing exchanges for a publish token.
+    permissions:
+      contents: read
+      id-token: write
+    container:
+      image: reactnativecommunity/react-native-android:latest
+      env:
+        TERM: 'dumb'
+        # Set the encoding to resolve a known character encoding issue with decompressing tar.gz files in containers
+        # via Gradle: https://github.com/gradle/gradle/issues/23391#issuecomment-1878979127
+        LC_ALL: C.UTF8
+        GRADLE_OPTS: '-Dorg.gradle.daemon=false'
+        # By default we only build ARM64 to save time/resources. For release/nightlies, we override this value to build all archs.
+        ORG_GRADLE_PROJECT_reactNativeArchitectures: 'arm64-v8a'
+        REACT_NATIVE_DOWNLOADS_DIR: /opt/react-native-downloads
+    env:
+      ORG_GRADLE_PROJECT_SIGNING_PWD: ${{ secrets.ORG_GRADLE_PROJECT_SIGNING_PWD }}
+      ORG_GRADLE_PROJECT_SIGNING_KEY: ${{ secrets.ORG_GRADLE_PROJECT_SIGNING_KEY }}
+      ORG_GRADLE_PROJECT_SONATYPE_USERNAME: ${{ secrets.ORG_GRADLE_PROJECT_SONATYPE_USERNAME }}
+      ORG_GRADLE_PROJECT_SONATYPE_PASSWORD: ${{ secrets.ORG_GRADLE_PROJECT_SONATYPE_PASSWORD }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - name: Build and Publish NPM Package
+        uses: ./.github/actions/build-npm-package
+        with:
+          release-type: ${{ needs.determine_mode.outputs.release-type }}
+          gradle-cache-encryption-key: ${{ secrets.GRADLE_CACHE_ENCRYPTION_KEY }}
+
+  # ─── Publish bumped monorepo packages (main/stable push) ─────────
+  publish_bumped_packages:
+    needs: [determine_mode]
+    if: needs.determine_mode.outputs.mode == 'bumped-packages'
+    runs-on: ubuntu-latest
+    environment: npm-publish
+    # `id-token: write` is required so the npm CLI can mint the OIDC
+    # token that npm Trusted Publishing exchanges for a publish token.
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup node.js
+        uses: ./.github/actions/setup-node
+        with:
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
+      - name: Run Yarn Install
+        uses: ./.github/actions/yarn-install
+      - name: Build packages
+        run: yarn build
+      - name: Build types
+        run: yarn build-types --skip-snapshot
+      - name: Find and publish all bumped packages
+        run: node ./scripts/releases-ci/publish-updated-packages.js
+
+  # ─── Release-only: post-publish steps ────────────────────────────
+  post_publish:
+    runs-on: ubuntu-latest
+    needs: [determine_mode, publish_react_native]
+    if: needs.determine_mode.outputs.mode == 'release'
+    env:
+      REACT_NATIVE_BOT_GITHUB_TOKEN: ${{ secrets.REACT_NATIVE_BOT_GITHUB_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - name: Publish @react-native-community/template
+        id: publish-template-to-npm
+        uses: actions/github-script@v8
+        with:
+          github-token: ${{ secrets.REACT_NATIVE_BOT_GITHUB_TOKEN }}
+          script: |
+            const {publishTemplate} = require('./.github/workflow-scripts/publishTemplate.js')
+            const version = "${{ github.ref_name }}"
+            const isDryRun = false
+            await publishTemplate(github, version, isDryRun);
+      - name: Wait for template to be published
+        timeout-minutes: 3
+        uses: actions/github-script@v8
+        with:
+          github-token: ${{ secrets.REACT_NATIVE_BOT_GITHUB_TOKEN }}
+          script: |
+            const {verifyPublishedTemplate, isLatest} = require('./.github/workflow-scripts/publishTemplate.js')
+            const version = "${{ github.ref_name }}"
+            await verifyPublishedTemplate(version, isLatest());
+      - name: Update rn-diff-purge to generate upgrade-support diff
+        run: |
+          curl -X POST https://api.github.com/repos/react-native-community/rn-diff-purge/dispatches \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: Bearer $REACT_NATIVE_BOT_GITHUB_TOKEN" \
+            -d "{\"event_type\": \"publish\", \"client_payload\": { \"version\": \"${{ github.ref_name }}\" }}"
+      - name: Verify Release is on NPM
+        timeout-minutes: 3
+        uses: actions/github-script@v8
+        with:
+          github-token: ${{ secrets.REACT_NATIVE_BOT_GITHUB_TOKEN }}
+          script: |
+            const {verifyReleaseOnNpm} = require('./.github/workflow-scripts/verifyReleaseOnNpm.js');
+            const {isLatest} = require('./.github/workflow-scripts/publishTemplate.js');
+            const version = "${{ github.ref_name }}";
+            await verifyReleaseOnNpm(version, isLatest());
+      - name: Verify that artifacts are on Maven
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const {verifyArtifactsAreOnMaven} = require('./.github/workflow-scripts/verifyArtifactsAreOnMaven.js');
+            const version = "${{ github.ref_name }}";
+            await verifyArtifactsAreOnMaven(version);
+
+  # ─── Release-only: changelog, podfile bump, draft release ────────
+  generate_changelog:
+    needs: [determine_mode, publish_react_native]
+    if: needs.determine_mode.outputs.mode == 'release'
+    uses: ./.github/workflows/generate-changelog.yml
+    secrets: inherit
+
+  bump_podfile_lock:
+    needs: [determine_mode, publish_react_native]
+    if: needs.determine_mode.outputs.mode == 'release'
+    uses: ./.github/workflows/bump-podfile-lock.yml
+    secrets: inherit
+
+  create_draft_release:
+    needs: [determine_mode, generate_changelog, set_hermes_version]
+    if: needs.determine_mode.outputs.mode == 'release'
+    uses: ./.github/workflows/create-draft-release.yml
+    secrets: inherit
+    with:
+      hermesVersion: ${{ needs.set_hermes_version.outputs.HERMES_VERSION }}

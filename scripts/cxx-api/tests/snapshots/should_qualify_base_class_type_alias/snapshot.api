@@ -1,0 +1,9 @@
+using test::BaseAlias = test::Base;
+
+class test::Base {
+  public void method();
+}
+
+class test::DerivedFromAlias : public test::Base {
+  public void derivedMethod();
+}

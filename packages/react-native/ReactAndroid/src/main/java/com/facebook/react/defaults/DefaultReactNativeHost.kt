@@ -54,7 +54,7 @@ protected constructor(
           DefaultComponentsRegistry.register(componentFactory)
 
           val viewManagerRegistry =
-              if (lazyViewManagersEnabled) {
+              if (getLazyViewManagersEnabled()) {
                 ViewManagerRegistry(
                     object : ViewManagerResolver {
                       override fun getViewManager(viewManagerName: String) =
@@ -120,12 +120,12 @@ protected constructor(
     val concreteJSRuntimeFactory = jsRuntimeFactory ?: HermesInstance()
     return DefaultReactHost.getDefaultReactHost(
         context,
-        packages,
-        jsMainModuleName,
-        bundleAssetName ?: "index.android.bundle",
-        jsBundleFile,
+        getPackages(),
+        getJSMainModuleName(),
+        getBundleAssetName() ?: "index.android.bundle",
+        getJSBundleFile(),
         concreteJSRuntimeFactory,
-        useDeveloperSupport,
+        getUseDeveloperSupport(),
     )
   }
 }

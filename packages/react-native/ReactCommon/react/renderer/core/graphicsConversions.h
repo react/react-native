@@ -83,7 +83,7 @@ inline folly::dynamic toDynamic(const Point &point)
 }
 #endif
 
-inline void fromRawValue(const PropsParserContext &context, const RawValue &value, Point &result)
+inline void fromRawValue(const PropsParserContext & /*context*/, const RawValue &value, Point &result)
 {
   if (value.hasType<std::unordered_map<std::string, Float>>()) {
     auto map = (std::unordered_map<std::string, Float>)value;
@@ -112,7 +112,7 @@ inline void fromRawValue(const PropsParserContext &context, const RawValue &valu
   }
 }
 
-inline void fromRawValue(const PropsParserContext &context, const RawValue &value, Size &result)
+inline void fromRawValue(const PropsParserContext & /*context*/, const RawValue &value, Size &result)
 {
   if (value.hasType<std::unordered_map<std::string, Float>>()) {
     auto map = (std::unordered_map<std::string, Float>)value;
@@ -144,7 +144,7 @@ inline void fromRawValue(const PropsParserContext &context, const RawValue &valu
   }
 }
 
-inline void fromRawValue(const PropsParserContext &context, const RawValue &value, EdgeInsets &result)
+inline void fromRawValue(const PropsParserContext & /*context*/, const RawValue &value, EdgeInsets &result)
 {
   if (value.hasType<Float>()) {
     auto number = (Float)value;
@@ -198,7 +198,7 @@ inline folly::dynamic toDynamic(const EdgeInsets &edgeInsets)
 }
 #endif
 
-inline void fromRawValue(const PropsParserContext &context, const RawValue &value, CornerInsets &result)
+inline void fromRawValue(const PropsParserContext & /*context*/, const RawValue &value, CornerInsets &result)
 {
   if (value.hasType<Float>()) {
     auto number = (Float)value;

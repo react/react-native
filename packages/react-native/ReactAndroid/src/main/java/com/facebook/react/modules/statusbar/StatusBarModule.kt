@@ -9,10 +9,11 @@ package com.facebook.react.modules.statusbar
 
 import android.animation.ArgbEvaluator
 import android.animation.ValueAnimator
-import android.os.Build
-import android.view.View
-import android.view.WindowInsetsController
+import android.view.Window
 import android.view.WindowManager
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import com.facebook.common.logging.FLog
 import com.facebook.fbreact.specs.NativeStatusBarManagerAndroidSpec
 import com.facebook.react.bridge.GuardedRunnable
@@ -20,17 +21,48 @@ import com.facebook.react.bridge.NativeModule
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.UiThreadUtil
 import com.facebook.react.common.ReactConstants
+import com.facebook.react.interfaces.ExtraWindowEventListener
 import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.uimanager.DisplayMetricsHolder.getStatusBarHeightPx
 import com.facebook.react.uimanager.PixelUtil
 import com.facebook.react.views.view.isEdgeToEdgeFeatureFlagOn
+import com.facebook.react.views.view.setStatusBarStyle
 import com.facebook.react.views.view.setStatusBarTranslucency
 import com.facebook.react.views.view.setStatusBarVisibility
+import java.util.Collections
+import java.util.WeakHashMap
 
 /** [NativeModule] that allows changing the appearance of the status bar. */
 @ReactModule(name = NativeStatusBarManagerAndroidSpec.NAME)
 internal class StatusBarModule(reactContext: ReactApplicationContext?) :
-    NativeStatusBarManagerAndroidSpec(reactContext) {
+    NativeStatusBarManagerAndroidSpec(reactContext), ExtraWindowEventListener {
+
+  init {
+    reactApplicationContext.addExtraWindowEventListener(this)
+  }
+
+  override fun invalidate() {
+    super.invalidate()
+    reactApplicationContext.removeExtraWindowEventListener(this)
+  }
+
+  override fun onExtraWindowCreate(window: Window) {
+    extraWindows.add(window)
+
+    reactApplicationContext.currentActivity?.window?.let { activityWindow ->
+      val controller = WindowCompat.getInsetsController(activityWindow, activityWindow.decorView)
+      val insets = ViewCompat.getRootWindowInsets(activityWindow.decorView)
+      val style = if (controller.isAppearanceLightStatusBars) "dark-content" else "light-content"
+      val visible = insets?.isVisible(WindowInsetsCompat.Type.statusBars()) ?: true
+
+      window.setStatusBarStyle(style)
+      window.setStatusBarVisibility(!visible)
+    }
+  }
+
+  override fun onExtraWindowDestroy(window: Window) {
+    extraWindows.remove(window)
+  }
 
   @Suppress("DEPRECATION")
   override fun getTypedExportedConstants(): Map<String, Any> {
@@ -118,10 +150,13 @@ internal class StatusBarModule(reactContext: ReactApplicationContext?) :
       )
       return
     }
-    UiThreadUtil.runOnUiThread { activity.window?.setStatusBarVisibility(hidden) }
+    UiThreadUtil.runOnUiThread {
+      if (activity.isFinishing || activity.isDestroyed) return@runOnUiThread
+      activity.window?.setStatusBarVisibility(hidden)
+      extraWindows.forEach { it.setStatusBarVisibility(hidden) }
+    }
   }
 
-  @Suppress("DEPRECATION")
   override fun setStyle(style: String?) {
     val activity = reactApplicationContext.getCurrentActivity()
     if (activity == null) {
@@ -131,41 +166,17 @@ internal class StatusBarModule(reactContext: ReactApplicationContext?) :
       )
       return
     }
-    UiThreadUtil.runOnUiThread(
-        Runnable {
-          val window = activity.window ?: return@Runnable
-          if (Build.VERSION.SDK_INT > Build.VERSION_CODES.R) {
-            val insetsController = window.insetsController ?: return@Runnable
-            if ("dark-content" == style) {
-              // dark-content means dark icons on a light status bar
-              insetsController.setSystemBarsAppearance(
-                  WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS,
-                  WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS,
-              )
-            } else {
-              insetsController.setSystemBarsAppearance(
-                  0,
-                  WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS,
-              )
-            }
-          } else {
-            val decorView = window.decorView
-            var systemUiVisibilityFlags = decorView.systemUiVisibility
-            systemUiVisibilityFlags =
-                if ("dark-content" == style) {
-                  systemUiVisibilityFlags or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-                } else {
-                  systemUiVisibilityFlags and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
-                }
-            decorView.systemUiVisibility = systemUiVisibilityFlags
-          }
-        }
-    )
+    UiThreadUtil.runOnUiThread {
+      if (activity.isFinishing || activity.isDestroyed) return@runOnUiThread
+      activity.window?.setStatusBarStyle(style)
+      extraWindows.forEach { it.setStatusBarStyle(style) }
+    }
   }
 
   companion object {
     private const val HEIGHT_KEY = "HEIGHT"
     private const val DEFAULT_BACKGROUND_COLOR_KEY = "DEFAULT_BACKGROUND_COLOR"
     const val NAME: String = NativeStatusBarManagerAndroidSpec.NAME
+    private val extraWindows = Collections.newSetFromMap<Window>(WeakHashMap())
   }
 }

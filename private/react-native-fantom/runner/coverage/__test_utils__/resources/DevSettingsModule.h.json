@@ -1,0 +1,52 @@
+{
+  "branches": [],
+  "expansions": [],
+  "filename": "packages/react-native/ReactCxxPlatform/react/devsupport/DevSettingsModule.h",
+  "segments": [
+    [
+      28,
+      3,
+      0,
+      true,
+      true,
+      false
+    ],
+    [
+      29,
+      4,
+      0,
+      false,
+      false,
+      false
+    ]
+  ],
+  "summary": {
+    "branches": {
+      "count": 0,
+      "covered": 0,
+      "notcovered": 0,
+      "percent": 0
+    },
+    "functions": {
+      "count": 1,
+      "covered": 0,
+      "percent": 0
+    },
+    "instantiations": {
+      "count": 1,
+      "covered": 0,
+      "percent": 0
+    },
+    "lines": {
+      "count": 2,
+      "covered": 0,
+      "percent": 0
+    },
+    "regions": {
+      "count": 1,
+      "covered": 0,
+      "notcovered": 1,
+      "percent": 0
+    }
+  }
+}

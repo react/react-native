@@ -15,13 +15,13 @@ export type Difference =
   | {
       type: 'missing',
       path: Array<string>,
-      nativeValue: mixed,
+      nativeValue: unknown,
     }
   | {
       type: 'unequal',
       path: Array<string>,
-      nativeValue: mixed,
-      staticValue: mixed,
+      nativeValue: unknown,
+      staticValue: unknown,
     };
 
 export type ValidationResult = ValidResult | InvalidResult;
@@ -143,6 +143,6 @@ function accumulateDifferences(
   }
 }
 
-function ifObject(value: mixed): ?{...} {
+function ifObject(value: unknown): ?{...} {
   return typeof value === 'object' && !Array.isArray(value) ? value : null;
 }

@@ -14,6 +14,7 @@
 #include <glog/logging.h>
 #include <cerrno>
 #include <chrono>
+#include <exception>
 #include <utility>
 
 using namespace std::literals;
@@ -22,6 +23,7 @@ namespace facebook::react::jsinspector_modern {
 
 static constexpr const std::chrono::duration RECONNECT_DELAY =
     std::chrono::milliseconds{2000};
+static constexpr const std::chrono::milliseconds MAX_RECONNECT_DELAY{120000};
 static constexpr const char* INVALID = "<invalid>";
 
 // InspectorPackagerConnection::Impl method definitions
@@ -72,29 +74,78 @@ void InspectorPackagerConnection::Impl::handleProxyMessage(
 
 void InspectorPackagerConnection::Impl::sendEventToAllConnections(
     const std::string& event) {
-  for (auto& connection : inspectorSessions_) {
-    connection.second.localConnection->sendMessage(event);
+  for (auto& pageEntry : inspectorSessionsByPage_) {
+    for (auto& sessionEntry : pageEntry.second) {
+      sessionEntry.second.localConnection->sendMessage(event);
+    }
   }
 }
 
 void InspectorPackagerConnection::Impl::closeAllConnections() {
-  for (auto& connection : inspectorSessions_) {
-    connection.second.localConnection->disconnect();
+  while (!inspectorSessionsByPage_.empty()) {
+    auto pageIt = inspectorSessionsByPage_.begin();
+    while (pageIt != inspectorSessionsByPage_.end() &&
+           !pageIt->second.empty()) {
+      pageIt = disconnectSession({
+          pageIt,
+          pageIt->second.begin(),
+      });
+    }
   }
-  inspectorSessions_.clear();
+}
+
+std::optional<std::pair<
+    InspectorPackagerConnection::Impl::InspectorSessionsByPage::iterator,
+    InspectorPackagerConnection::Impl::PageSessions::iterator>>
+InspectorPackagerConnection::Impl::findPageAndSession(
+    const folly::const_dynamic_view& payload,
+    std::string_view caller) {
+  std::string pageId = payload.descend("pageId").string_or(INVALID);
+  auto proxySessionId = payload.descend("sessionId").string_or("");
+
+  auto pageIt = inspectorSessionsByPage_.find(pageId);
+  if (pageIt == inspectorSessionsByPage_.end()) {
+    LOG(WARNING) << caller << ": page not found (pageId=" << pageId << ")";
+    return std::nullopt;
+  }
+
+  auto& pageSessions = pageIt->second;
+  auto sessionIt = pageSessions.find(proxySessionId);
+  if (sessionIt == pageSessions.end()) {
+    LOG(WARNING) << caller << ": session not found (pageId=" << pageId
+                 << ", sessionId=" << proxySessionId << ")";
+    return std::nullopt;
+  }
+
+  return std::make_pair(pageIt, sessionIt);
 }
 
 void InspectorPackagerConnection::Impl::handleConnect(
     const folly::const_dynamic_view& payload) {
   std::string pageId = payload.descend("pageId").string_or(INVALID);
-  auto existingConnectionIt = inspectorSessions_.find(pageId);
-  if (existingConnectionIt != inspectorSessions_.end()) {
-    auto existingConnection = std::move(existingConnectionIt->second);
-    inspectorSessions_.erase(existingConnectionIt);
-    existingConnection.localConnection->disconnect();
-    LOG(WARNING) << "Already connected: " << pageId;
+  auto proxySessionId = payload.descend("sessionId").string_or("");
+
+  // An empty or missing proxySessionId switches us to legacy single-session
+  // mode.
+  if (proxySessionId.empty()) {
+    disconnectNonLegacySessions(pageId);
+  }
+
+  auto pageIt = inspectorSessionsByPage_.try_emplace(pageId).first;
+
+  auto sessionIt = pageIt->second.find(proxySessionId);
+  if (sessionIt != pageIt->second.end()) {
+    LOG(WARNING) << "Duplicate session, disconnecting (pageId=" << pageId
+                 << ", sessionId=" << proxySessionId << ")";
+    disconnectSession({pageIt, sessionIt});
+    // NOTE: At least as far back as D52134592, receiving a second
+    // `connect` message for the same page (and more specifically
+    // since D90174642, for the same proxySessionId) has been handled by
+    // disconnecting the previous session and returning *without* creating a new
+    // one. This seems like a bug and requires more investigation.
     return;
   }
+
   int pageIdInt = 0;
   try {
     pageIdInt = std::stoi(pageId);
@@ -105,60 +156,102 @@ void InspectorPackagerConnection::Impl::handleConnect(
   auto sessionId = nextSessionId_++;
   auto remoteConnection =
       std::make_unique<InspectorPackagerConnection::Impl::RemoteConnection>(
-          weak_from_this(), pageId, sessionId);
+          weak_from_this(), pageId, sessionId, proxySessionId);
   auto& inspector = getInspectorInstance();
   auto inspectorConnection =
       inspector.connect(pageIdInt, std::move(remoteConnection));
   if (!inspectorConnection) {
     LOG(INFO) << "Connection to page " << pageId << " rejected";
 
-    // RemoteConnection::onDisconnect(), if the connection even calls it,  will
-    // be a no op (because the session is not added to `inspectorSessions_`), so
-    // let's always notify the remote client of the disconnection ourselves.
+    // RemoteConnection::onDisconnect(), if the connection even calls it, will
+    // be a no op (because the session is not added to
+    // `inspectorSessionsByPage_`), so let's always notify the remote client
+    // of the disconnection ourselves.
+    folly::dynamic disconnectPayload =
+        folly::dynamic::object("pageId", pageId)("sessionId", proxySessionId);
     sendToPackager(
         folly::dynamic::object("event", "disconnect")(
-            "payload", folly::dynamic::object("pageId", pageId)));
+            "payload", std::move(disconnectPayload)));
     return;
   }
-  inspectorSessions_.emplace(
-      pageId,
+  pageIt->second.emplace(
+      proxySessionId,
       Session{
           .localConnection = std::move(inspectorConnection),
-          .sessionId = sessionId});
+          .sessionId = sessionId,
+          .proxySessionId = proxySessionId});
 }
 
 void InspectorPackagerConnection::Impl::handleDisconnect(
     const folly::const_dynamic_view& payload) {
-  std::string pageId = payload.descend("pageId").string_or(INVALID);
-  auto inspectorConnection = removeConnectionForPage(pageId);
-  if (inspectorConnection) {
-    inspectorConnection->disconnect();
+  if (auto sessionIterators = findPageAndSession(payload, "disconnect")) {
+    disconnectSession(*sessionIterators);
   }
 }
 
-std::unique_ptr<ILocalConnection>
-InspectorPackagerConnection::Impl::removeConnectionForPage(
-    const std::string& pageId) {
-  auto it = inspectorSessions_.find(pageId);
-  if (it != inspectorSessions_.end()) {
-    auto connection = std::move(it->second);
-    inspectorSessions_.erase(it);
-    return std::move(connection.localConnection);
+InspectorPackagerConnection::Impl::InspectorSessionsByPage::iterator
+InspectorPackagerConnection::Impl::disconnectSession(
+    std::pair<InspectorSessionsByPage::iterator, PageSessions::iterator>
+        sessionIterators) {
+  auto [pageIt, sessionIt] = sessionIterators;
+  auto& pageSessions = pageIt->second;
+  auto connection = std::move(sessionIt->second.localConnection);
+  pageSessions.erase(sessionIt);
+
+  // Clean up empty page entry
+  if (pageSessions.empty()) {
+    inspectorSessionsByPage_.erase(pageIt);
+    pageIt = inspectorSessionsByPage_.end();
   }
-  return nullptr;
+
+  if (connection) {
+    connection->disconnect();
+  }
+
+  return pageIt;
+}
+
+void InspectorPackagerConnection::Impl::disconnectNonLegacySessions(
+    const std::string& pageId) {
+  auto pageIt = inspectorSessionsByPage_.find(pageId);
+  if (pageIt == inspectorSessionsByPage_.end() || pageIt->second.empty()) {
+    return;
+  }
+
+  bool logged = false;
+  while (pageIt != inspectorSessionsByPage_.end()) {
+    // Find first non-legacy session (non-empty proxySessionId)
+    auto sessionIt = std::find_if(
+        pageIt->second.begin(), pageIt->second.end(), [](const auto& entry) {
+          return !entry.first.empty();
+        });
+
+    if (sessionIt == pageIt->second.end()) {
+      break;
+    }
+
+    if (!logged) {
+      LOG(WARNING)
+          << "Switching to legacy single-session mode, disconnecting non-legacy "
+             "sessions (pageId="
+          << pageId << ")";
+      logged = true;
+    }
+
+    pageIt = disconnectSession({pageIt, sessionIt});
+  }
 }
 
 void InspectorPackagerConnection::Impl::handleWrappedEvent(
     const folly::const_dynamic_view& payload) {
-  std::string pageId = payload.descend("pageId").string_or(INVALID);
   std::string wrappedEvent = payload.descend("wrappedEvent").string_or(INVALID);
-  auto connectionIt = inspectorSessions_.find(pageId);
-  if (connectionIt == inspectorSessions_.end()) {
-    LOG(WARNING) << "Not connected to page: " << pageId
-                 << " , failed trying to handle event: " << wrappedEvent;
+
+  auto maybeSession = findPageAndSession(payload, "wrappedEvent");
+  if (!maybeSession) {
     return;
   }
-  connectionIt->second.localConnection->sendMessage(wrappedEvent);
+  auto [pageIt, sessionIt] = *maybeSession;
+  sessionIt->second.localConnection->sendMessage(wrappedEvent);
 }
 
 folly::dynamic InspectorPackagerConnection::Impl::pages() {
@@ -172,8 +265,12 @@ folly::dynamic InspectorPackagerConnection::Impl::pages() {
     pageDescription["title"] = appName_ + " (" + deviceName_ + ")";
     pageDescription["description"] = page.description + " [C++ connection]";
     pageDescription["app"] = appName_;
-    pageDescription["capabilities"] =
+
+    folly::dynamic capabilities =
         targetCapabilitiesToDynamic(page.capabilities);
+    // Report device-level multi-debugger support capability
+    capabilities["supportsMultipleDebuggers"] = true;
+    pageDescription["capabilities"] = std::move(capabilities);
 
     array.push_back(pageDescription);
   }
@@ -206,6 +303,8 @@ void InspectorPackagerConnection::Impl::didReceiveMessage(
 
 void InspectorPackagerConnection::Impl::didOpen() {
   connected_ = true;
+  reconnectDelayMs_ = RECONNECT_DELAY;
+  suppressConnectionErrors_ = false;
 }
 
 void InspectorPackagerConnection::Impl::didClose() {
@@ -218,9 +317,13 @@ void InspectorPackagerConnection::Impl::didClose() {
 }
 
 void InspectorPackagerConnection::Impl::onPageRemoved(int pageId) {
-  auto connection = removeConnectionForPage(std::to_string(pageId));
-  if (connection) {
-    connection->disconnect();
+  auto pageIt = inspectorSessionsByPage_.find(std::to_string(pageId));
+
+  while (pageIt != inspectorSessionsByPage_.end() && !pageIt->second.empty()) {
+    pageIt = disconnectSession({
+        pageIt,
+        pageIt->second.begin(),
+    });
   }
 }
 
@@ -234,7 +337,18 @@ void InspectorPackagerConnection::Impl::connect() {
         << "Illegal state: Can't connect after having previously been closed.";
     return;
   }
-  webSocket_ = delegate_->connectWebSocket(url_, weak_from_this());
+  try {
+    webSocket_ = delegate_->connectWebSocket(url_, weak_from_this());
+  } catch (const std::exception& e) {
+    LOG(ERROR) << "Failed to create WebSocket connection: " << e.what();
+    webSocket_.reset();
+  } catch (...) {
+    LOG(ERROR) << "Failed to create WebSocket connection: unknown error";
+    webSocket_.reset();
+  }
+  if (!webSocket_ && !closed_) {
+    reconnect();
+  }
 }
 
 void InspectorPackagerConnection::Impl::reconnect() {
@@ -258,6 +372,11 @@ void InspectorPackagerConnection::Impl::reconnect() {
 
   reconnectPending_ = true;
 
+  auto currentDelay = reconnectDelayMs_;
+
+  // Exponential backoff: double the delay for next time, up to the max.
+  reconnectDelayMs_ = std::min(reconnectDelayMs_ * 2, MAX_RECONNECT_DELAY);
+
   delegate_->scheduleCallback(
       [weakSelf = weak_from_this()] {
         auto strongSelf = weakSelf.lock();
@@ -271,7 +390,7 @@ void InspectorPackagerConnection::Impl::reconnect() {
           strongSelf->connect();
         }
       },
-      RECONNECT_DELAY);
+      currentDelay);
 }
 
 void InspectorPackagerConnection::Impl::closeQuietly() {
@@ -291,18 +410,24 @@ void InspectorPackagerConnection::Impl::sendToPackager(
 void InspectorPackagerConnection::Impl::scheduleSendToPackager(
     folly::dynamic message,
     SessionId sourceSessionId,
-    const std::string& sourcePageId) {
+    const std::string& sourcePageId,
+    const std::string& sourceProxySessionId) {
   delegate_->scheduleCallback(
       [weakSelf = weak_from_this(),
        message = std::move(message),
        sourceSessionId,
-       sourcePageId]() mutable {
+       sourcePageId,
+       sourceProxySessionId]() mutable {
         auto strongSelf = weakSelf.lock();
         if (!strongSelf) {
           return;
         }
-        auto sessionIt = strongSelf->inspectorSessions_.find(sourcePageId);
-        if (sessionIt != strongSelf->inspectorSessions_.end() &&
+        auto pageIt = strongSelf->inspectorSessionsByPage_.find(sourcePageId);
+        if (pageIt == strongSelf->inspectorSessionsByPage_.end()) {
+          return;
+        }
+        auto sessionIt = pageIt->second.find(sourceProxySessionId);
+        if (sessionIt != pageIt->second.end() &&
             sessionIt->second.sessionId == sourceSessionId) {
           strongSelf->sendToPackager(std::move(message));
         }
@@ -333,10 +458,12 @@ void InspectorPackagerConnection::Impl::disposeWebSocket() {
 InspectorPackagerConnection::Impl::RemoteConnection::RemoteConnection(
     std::weak_ptr<InspectorPackagerConnection::Impl> owningPackagerConnection,
     std::string pageId,
-    SessionId sessionId)
+    SessionId sessionId,
+    std::string proxySessionId)
     : owningPackagerConnection_(std::move(owningPackagerConnection)),
       pageId_(std::move(pageId)),
-      sessionId_(sessionId) {}
+      sessionId_(sessionId),
+      proxySessionId_(std::move(proxySessionId)) {}
 
 void InspectorPackagerConnection::Impl::RemoteConnection::onMessage(
     std::string message) {
@@ -344,22 +471,25 @@ void InspectorPackagerConnection::Impl::RemoteConnection::onMessage(
   if (!owningPackagerConnectionStrong) {
     return;
   }
+  folly::dynamic payload = folly::dynamic::object("pageId", pageId_)(
+      "wrappedEvent", message)("sessionId", proxySessionId_);
   owningPackagerConnectionStrong->scheduleSendToPackager(
-      folly::dynamic::object("event", "wrappedEvent")(
-          "payload",
-          folly::dynamic::object("pageId", pageId_)("wrappedEvent", message)),
+      folly::dynamic::object("event", "wrappedEvent")("payload", payload),
       sessionId_,
-      pageId_);
+      pageId_,
+      proxySessionId_);
 }
 
 void InspectorPackagerConnection::Impl::RemoteConnection::onDisconnect() {
   auto owningPackagerConnectionStrong = owningPackagerConnection_.lock();
   if (owningPackagerConnectionStrong) {
+    folly::dynamic payload =
+        folly::dynamic::object("pageId", pageId_)("sessionId", proxySessionId_);
     owningPackagerConnectionStrong->scheduleSendToPackager(
-        folly::dynamic::object("event", "disconnect")(
-            "payload", folly::dynamic::object("pageId", pageId_)),
+        folly::dynamic::object("event", "disconnect")("payload", payload),
         sessionId_,
-        pageId_);
+        pageId_,
+        proxySessionId_);
   }
 }
 

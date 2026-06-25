@@ -19,17 +19,17 @@ import * as React from 'react';
 import codegenNativeCommands from 'react-native/Libraries/Utilities/codegenNativeCommands';
 import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
 
-type PopupMenuSelectionEvent = $ReadOnly<{
+type PopupMenuSelectionEvent = Readonly<{
   item: Int32,
 }>;
 
-type PopupMenuDismissEvent = $ReadOnly<{}>;
+type PopupMenuDismissEvent = Readonly<{}>;
 
-type NativeProps = $ReadOnly<{
+type NativeProps = Readonly<{
   ...ViewProps,
 
   //Props
-  menuItems?: ?$ReadOnlyArray<string>,
+  menuItems?: ?ReadonlyArray<string>,
 
   onPopupMenuSelectionChange?: DirectEventHandler<PopupMenuSelectionEvent>,
   onPopupMenuDismiss?: DirectEventHandler<PopupMenuDismissEvent>,
@@ -38,13 +38,13 @@ type NativeProps = $ReadOnly<{
 type ComponentType = HostComponent<NativeProps>;
 
 interface NativeCommands {
-  +show: (viewRef: React.ElementRef<ComponentType>) => void;
+  readonly show: (viewRef: React.ElementRef<ComponentType>) => void;
 }
 
 export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
   supportedCommands: ['show'],
 });
 
-export default (codegenNativeComponent<NativeProps>(
+export default codegenNativeComponent<NativeProps>(
   'AndroidPopupMenu',
-): HostComponent<NativeProps>);
+) as HostComponent<NativeProps>;

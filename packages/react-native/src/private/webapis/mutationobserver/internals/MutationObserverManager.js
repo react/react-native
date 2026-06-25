@@ -24,7 +24,7 @@ import type MutationObserver, {
 } from '../MutationObserver';
 import type MutationRecord from '../MutationRecord';
 
-import * as Systrace from '../../../../../Libraries/Performance/Systrace';
+import {trace} from '../../../../../Libraries/Performance/Systrace';
 import {getPublicInstanceFromInternalInstanceHandle} from '../../../../../Libraries/ReactNative/RendererProxy';
 import warnOnce from '../../../../../Libraries/Utilities/warnOnce';
 import {getNativeNodeReference} from '../../dom/nodes/internals/NodeInternals';
@@ -38,7 +38,7 @@ let isConnected: boolean = false;
 
 const registeredMutationObservers: Map<
   MutationObserverId,
-  $ReadOnly<{observer: MutationObserver, callback: MutationObserverCallback}>,
+  Readonly<{observer: MutationObserver, callback: MutationObserverCallback}>,
 > = new Map();
 
 /**
@@ -147,12 +147,10 @@ export function unobserveAll(mutationObserverId: number): void {
  * entries to dispatch.
  */
 function notifyMutationObservers(): void {
-  Systrace.beginEvent('MutationObserverManager.notifyMutationObservers');
-  try {
-    doNotifyMutationObservers();
-  } finally {
-    Systrace.endEvent();
-  }
+  trace(
+    'MutationObserverManager.notifyMutationObservers',
+    doNotifyMutationObservers,
+  );
 }
 
 function doNotifyMutationObservers(): void {

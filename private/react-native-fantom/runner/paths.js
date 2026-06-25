@@ -25,6 +25,10 @@ export const JS_TRACES_OUTPUT_PATH: string = path.join(
   OUTPUT_PATH,
   'js-traces',
 );
+export const CPP_TRACES_OUTPUT_PATH: string = path.join(
+  OUTPUT_PATH,
+  'cpp-traces',
+);
 export const JS_HEAP_SNAPSHOTS_OUTPUT_PATH: string = path.join(
   OUTPUT_PATH,
   'js-heap-snapshots',

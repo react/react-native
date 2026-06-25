@@ -11,7 +11,6 @@
 #import <React/UIView+React.h>
 
 #import <React/RCTBackedTextInputDelegateAdapter.h>
-#import <React/RCTTextAttributes.h>
 
 @implementation RCTUITextView {
   UILabel *_placeholderView;
@@ -21,6 +20,7 @@
   NSArray<UIBarButtonItemGroup *> *_initialValueLeadingBarButtonGroups;
   NSArray<UIBarButtonItemGroup *> *_initialValueTrailingBarButtonGroups;
   NSArray<NSString *> *_acceptDragAndDropTypes;
+  BOOL _disableKeyboardShortcuts;
 }
 
 static UIFont *defaultPlaceholderFont(void)
@@ -53,7 +53,9 @@ static UIColor *defaultPlaceholderColor(void)
     self.textColor = [UIColor blackColor];
     // This line actually removes 5pt (default value) left and right padding in UITextView.
     self.textContainer.lineFragmentPadding = 0;
+#if !TARGET_OS_TV
     self.scrollsToTop = NO;
+#endif
     self.scrollEnabled = YES;
     _initialValueLeadingBarButtonGroups = nil;
     _initialValueTrailingBarButtonGroups = nil;
@@ -149,6 +151,7 @@ static UIColor *defaultPlaceholderColor(void)
 
 - (void)setDisableKeyboardShortcuts:(BOOL)disableKeyboardShortcuts
 {
+  _disableKeyboardShortcuts = disableKeyboardShortcuts;
 #if TARGET_OS_IOS
   // Initialize the initial values only once
   if (_initialValueLeadingBarButtonGroups == nil) {
@@ -165,8 +168,12 @@ static UIColor *defaultPlaceholderColor(void)
     self.inputAssistantItem.leadingBarButtonGroups = _initialValueLeadingBarButtonGroups;
     self.inputAssistantItem.trailingBarButtonGroups = _initialValueTrailingBarButtonGroups;
   }
-  _disableKeyboardShortcuts = disableKeyboardShortcuts;
 #endif
+}
+
+- (BOOL)disableKeyboardShortcuts
+{
+  return _disableKeyboardShortcuts;
 }
 
 #pragma mark - Overrides
@@ -306,7 +313,7 @@ static UIColor *defaultPlaceholderColor(void)
 
 - (void)buildMenuWithBuilder:(id<UIMenuBuilder>)builder
 {
-#if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 170000
+#if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 170000 && !TARGET_OS_TV
   if (@available(iOS 17.0, *)) {
     if (_contextMenuHidden) {
       [builder removeMenuForIdentifier:UIMenuAutoFill];

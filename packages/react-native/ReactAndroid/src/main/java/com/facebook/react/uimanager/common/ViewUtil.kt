@@ -8,9 +8,25 @@
 package com.facebook.react.uimanager.common
 
 import android.view.View
+import com.facebook.react.common.annotations.internal.LegacyArchitecture
 
+/**
+ * Utility object providing helper methods for working with React Native views.
+ *
+ * This object contains utilities for determining which UIManager (Legacy/Paper or Fabric) a view
+ * belongs to, based on view tags and surface IDs. These utilities are essential for routing events
+ * and operations to the correct UIManager implementation.
+ *
+ * @see UIManagerType
+ */
 public object ViewUtil {
 
+  /**
+   * Constant representing the absence of a surface ID.
+   *
+   * This value (-1) is used as a placeholder when no surface ID is available, typically indicating
+   * that the view or event originated from the legacy (Paper) UIManager rather than Fabric.
+   */
   public const val NO_SURFACE_ID: Int = -1
 
   /**
@@ -18,53 +34,51 @@ public object ViewUtil {
    * https://github.com/facebook/react/pull/12587
    *
    * @param viewTag tag of the view this is event is dispatched to
+   * @deprecated Fabric is now the only supported UIManager. This method always returns
+   *   [UIManagerType.FABRIC].
    */
+  @Deprecated(
+      "Fabric is now the only supported UIManager. This method always returns UIManagerType.FABRIC.",
+      ReplaceWith("UIManagerType.FABRIC"),
+  )
+  @LegacyArchitecture
   @JvmStatic
   @UIManagerType
-  public fun getUIManagerType(viewTag: Int): Int =
-      if (viewTag % 2 == 0) {
-        UIManagerType.FABRIC
-      } else {
-        UIManagerType.LEGACY
-      }
+  public fun getUIManagerType(viewTag: Int): Int = UIManagerType.FABRIC
 
   /**
    * Overload for [getUIManagerType] that uses the view's id to determine if it originated from
    * Fabric
+   *
+   * @deprecated Fabric is now the only supported UIManager. This method always returns
+   *   [UIManagerType.FABRIC].
    */
-  @JvmStatic @UIManagerType public fun getUIManagerType(view: View): Int = getUIManagerType(view.id)
+  @Deprecated(
+      "Fabric is now the only supported UIManager. This method always returns UIManagerType.FABRIC.",
+      ReplaceWith("UIManagerType.FABRIC"),
+  )
+  @LegacyArchitecture
+  @JvmStatic
+  @UIManagerType
+  public fun getUIManagerType(view: View): Int = UIManagerType.FABRIC
 
   /**
    * Version of getUIManagerType that uses both surfaceId and viewTag heuristics
    *
    * @param viewTag tag of the view this is event is dispatched to
    * @param surfaceId ID of the corresponding surface
+   * @deprecated Fabric is now the only supported UIManager. This method always returns
+   *   [UIManagerType.FABRIC].
    */
-  @Suppress("DEPRECATION")
+  @Deprecated(
+      "Fabric is now the only supported UIManager. This method always returns UIManagerType.FABRIC.",
+      ReplaceWith("UIManagerType.FABRIC"),
+  )
+  @LegacyArchitecture
+  @Suppress("UNUSED_PARAMETER")
   @JvmStatic
   @UIManagerType
-  public fun getUIManagerType(viewTag: Int, surfaceId: Int): Int {
-    // We have a contract that Fabric events *always* have a SurfaceId passed in, and non-Fabric
-    // events NEVER have a SurfaceId passed in (the default/placeholder of -1 is passed in instead).
-    //
-    // Why does this matter?
-    // Events can be sent to Views that are part of the View hierarchy *but not directly managed
-    // by React Native*. For example, embedded custom hierarchies, Litho hierarchies, etc.
-    // In those cases it's important to know that the Event should be sent to the Fabric or
-    // non-Fabric UIManager, and we cannot use the ViewTag for inference since it's not controlled
-    // by RN and is essentially a random number.
-    // At some point it would be great to pass the SurfaceContext here instead.
-    @UIManagerType
-    val uiManagerType = if (surfaceId == -1) UIManagerType.LEGACY else UIManagerType.FABRIC
-    if (uiManagerType == UIManagerType.LEGACY && !isRootTag(viewTag)) {
-      // TODO (T123064648): Some events for Fabric still didn't have the surfaceId set, so if it's
-      // not a React RootView, double check if the tag belongs to Fabric.
-      if (viewTag % 2 == 0) {
-        return UIManagerType.FABRIC
-      }
-    }
-    return uiManagerType
-  }
+  public fun getUIManagerType(viewTag: Int, surfaceId: Int): Int = UIManagerType.FABRIC
 
   /**
    * @param viewTag react tag

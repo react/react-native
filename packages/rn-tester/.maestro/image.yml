@@ -1,12 +1,27 @@
 appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebook.react.uiapp
 ---
-- launchApp
-- assertVisible: "Components"
-- scrollUntilVisible:
-    element:
-      id: "Image"
-    direction: DOWN
-    speed: 40
+- runFlow: ./helpers/launch-app-and-search.yml
+- inputText:
+    text: 'Image'
+- assertVisible:
+    id: 'Image'
 - tapOn:
-    id: "Image"
-- assertVisible: "Plain Network Image with `source` prop."
+    id: 'Image'
+- assertVisible: 'Plain Network Image with `source` prop.'
+- assertVisible:
+    id: 'example_search'
+- tapOn:
+    id: 'example_search'
+- inputText:
+    text: 'Image.getSize'
+- hideKeyboard
+- tapOn:
+    id: 'platform-test-results'
+- assertVisible: 'Results'
+- extendedWaitUntil:
+    visible: 'Image.getSize resolves source dimensions'
+    timeout: 30000
+- assertVisible:
+    id: 'platform-test-pass-count-1'
+- assertVisible:
+    id: 'platform-test-fail-count-0'

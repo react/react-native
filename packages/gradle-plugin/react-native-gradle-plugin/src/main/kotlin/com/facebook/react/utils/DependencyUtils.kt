@@ -13,7 +13,6 @@ import com.facebook.react.utils.PropertyUtils.EXCLUSIVE_ENTEPRISE_REPOSITORY
 import com.facebook.react.utils.PropertyUtils.INCLUDE_JITPACK_REPOSITORY
 import com.facebook.react.utils.PropertyUtils.INCLUDE_JITPACK_REPOSITORY_DEFAULT
 import com.facebook.react.utils.PropertyUtils.INTERNAL_HERMES_PUBLISHING_GROUP
-import com.facebook.react.utils.PropertyUtils.INTERNAL_HERMES_V1_VERSION_NAME
 import com.facebook.react.utils.PropertyUtils.INTERNAL_HERMES_VERSION_NAME
 import com.facebook.react.utils.PropertyUtils.INTERNAL_REACT_NATIVE_MAVEN_LOCAL_REPO
 import com.facebook.react.utils.PropertyUtils.INTERNAL_REACT_PUBLISHING_GROUP
@@ -32,16 +31,19 @@ internal object DependencyUtils {
   internal data class Coordinates(
       val versionString: String,
       val hermesVersionString: String,
-      val hermesV1VersionString: String,
       val reactGroupString: String = DEFAULT_INTERNAL_REACT_PUBLISHING_GROUP,
       val hermesGroupString: String = DEFAULT_INTERNAL_HERMES_PUBLISHING_GROUP,
-  )
+      private val isHermesNightly: Boolean = false,
+  ) {
+    val isNightly: Boolean
+      get() = versionString.isNightly() || isHermesNightly
+  }
 
   /**
    * This method takes care of configuring the repositories{} block for both the app and all the 3rd
    * party libraries which are auto-linked.
    */
-  fun configureRepositories(project: Project) {
+  fun configureRepositories(project: Project, isNightly: Boolean) {
     val exclusiveEnterpriseRepository = project.rootProject.exclusiveEnterpriseRepository()
     if (exclusiveEnterpriseRepository != null) {
       project.logger.lifecycle(
@@ -67,9 +69,11 @@ internal object DependencyUtils {
           return@allprojects
         }
 
-        // We add the snapshot for users on nightlies.
-        mavenRepoFromUrl("https://central.sonatype.com/repository/maven-snapshots/") { repo ->
-          repo.content { it.excludeGroup("org.webkit") }
+        if (isNightly) {
+          // We add the snapshot for users on nightlies.
+          mavenRepoFromUrl("https://central.sonatype.com/repository/maven-snapshots/") { repo ->
+            repo.content { it.excludeGroup("org.webkit") }
+          }
         }
         repositories.mavenCentral { repo ->
           // We don't want to fetch JSC from Maven Central as there are older versions there.
@@ -108,19 +112,12 @@ internal object DependencyUtils {
    * party libraries which are auto-linked. Specifically it takes care of:
    * - Forcing the react-android/hermes-android version to the one specified in the package.json
    * - Substituting `react-native` with `react-android` and `hermes-engine` with `hermes-android`
-   * - Selecting between the classic Hermes and Hermes V1
    */
   fun configureDependencies(
       project: Project,
       coordinates: Coordinates,
-      hermesV1Enabled: Boolean = false,
   ) {
-    if (
-        coordinates.versionString.isBlank() ||
-            (!hermesV1Enabled && coordinates.hermesVersionString.isBlank()) ||
-            (hermesV1Enabled && coordinates.hermesV1VersionString.isBlank())
-    )
-        return
+    if (coordinates.versionString.isBlank() || coordinates.hermesVersionString.isBlank()) return
     project.rootProject.allprojects { eachProject ->
       eachProject.configurations.all { configuration ->
         // Here we set a dependencySubstitution for both react-native and hermes-engine as those
@@ -128,8 +125,7 @@ internal object DependencyUtils {
         // This allows users to import libraries that are still using
         // implementation("com.facebook.react:react-native:+") and resolve the right dependency.
         configuration.resolutionStrategy.dependencySubstitution {
-          getDependencySubstitutions(coordinates, hermesV1Enabled).forEach { (module, dest, reason)
-            ->
+          getDependencySubstitutions(coordinates).forEach { (module, dest, reason) ->
             it.substitute(it.module(module)).using(it.module(dest)).because(reason)
           }
         }
@@ -140,7 +136,7 @@ internal object DependencyUtils {
           // Contributors only: The hermes-engine version is forced only if the user has
           // not opted into using nightlies for local development.
           configuration.resolutionStrategy.force(
-              "${coordinates.hermesGroupString}:hermes-android:${if (hermesV1Enabled) coordinates.hermesV1VersionString else coordinates.hermesVersionString}"
+              "${coordinates.hermesGroupString}:hermes-android:${coordinates.hermesVersionString}"
           )
         }
       }
@@ -149,12 +145,10 @@ internal object DependencyUtils {
 
   internal fun getDependencySubstitutions(
       coordinates: Coordinates,
-      hermesV1Enabled: Boolean = false,
   ): List<Triple<String, String, String>> {
     val dependencySubstitution = mutableListOf<Triple<String, String, String>>()
-    val hermesVersion =
-        if (hermesV1Enabled) coordinates.hermesV1VersionString else coordinates.hermesVersionString
-    val hermesVersionString = "${coordinates.hermesGroupString}:hermes-android:${hermesVersion}"
+    val hermesVersionString =
+        "${coordinates.hermesGroupString}:hermes-android:${coordinates.hermesVersionString}"
     dependencySubstitution.add(
         Triple(
             "com.facebook.react:react-native",
@@ -204,13 +198,17 @@ internal object DependencyUtils {
     return dependencySubstitution
   }
 
-  fun readVersionAndGroupStrings(propertiesFile: File, hermesVersionFile: File): Coordinates {
+  fun readVersionAndGroupStrings(
+      project: Project,
+      propertiesFile: File,
+      hermesVersionFile: File,
+  ): Coordinates {
     val reactAndroidProperties = Properties()
     propertiesFile.inputStream().use { reactAndroidProperties.load(it) }
     val versionStringFromFile = (reactAndroidProperties[INTERNAL_VERSION_NAME] as? String).orEmpty()
     // If on a nightly, we need to fetch the -SNAPSHOT artifact from Sonatype.
     val versionString =
-        if (versionStringFromFile.startsWith("0.0.0") || "-nightly-" in versionStringFromFile) {
+        if (versionStringFromFile.isNightly()) {
           "$versionStringFromFile-SNAPSHOT"
         } else {
           versionStringFromFile
@@ -235,15 +233,14 @@ internal object DependencyUtils {
           hermesVersionString
         }
 
-    val hermesV1Version =
-        (hermesVersionProperties[INTERNAL_HERMES_V1_VERSION_NAME] as? String).orEmpty()
+    val isHermesNightly = (project.findProperty(INTERNAL_USE_HERMES_NIGHTLY) as? String).toBoolean()
 
     return Coordinates(
         versionString,
         hermesVersion,
-        hermesV1Version,
         reactGroupString,
         hermesGroupString,
+        isHermesNightly,
     )
   }
 
@@ -273,6 +270,8 @@ internal object DependencyUtils {
             property(INCLUDE_JITPACK_REPOSITORY).toString().toBoolean()
         else -> INCLUDE_JITPACK_REPOSITORY_DEFAULT
       }
+
+  internal fun String.isNightly(): Boolean = this.startsWith("0.0.0") || "-nightly-" in this
 
   internal fun Project.exclusiveEnterpriseRepository() =
       when {

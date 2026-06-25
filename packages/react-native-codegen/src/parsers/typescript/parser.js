@@ -157,7 +157,7 @@ class TypeScriptParser implements Parser {
 
   getFunctionTypeAnnotationParameters(
     functionTypeAnnotation: $FlowFixMe,
-  ): $ReadOnlyArray<$FlowFixMe> {
+  ): ReadonlyArray<$FlowFixMe> {
     return functionTypeAnnotation.parameters;
   }
 
@@ -248,7 +248,7 @@ class TypeScriptParser implements Parser {
 
   parseEnumMembers(
     typeAnnotation: $FlowFixMe,
-  ): $ReadOnlyArray<NativeModuleEnumMember> {
+  ): ReadonlyArray<NativeModuleEnumMember> {
     return typeAnnotation.members.map(member => {
       const value =
         member.initializer?.operator === '-'
@@ -298,9 +298,7 @@ class TypeScriptParser implements Parser {
     return types[typeAnnotation.typeParameters.params[0].typeName.name];
   }
 
-  /**
-   * TODO(T108222691): Use flow-types for @babel/parser
-   */
+  // TODO(T108222691): Use flow-types for @babel/parser
   getTypes(ast: $FlowFixMe): TypeDeclarationMap {
     return ast.body.reduce((types, node) => {
       switch (node.type) {
@@ -385,7 +383,7 @@ class TypeScriptParser implements Parser {
     return annotatedElement.typeAnnotation.members;
   }
 
-  bodyProperties(typeAlias: TypeDeclarationMap): $ReadOnlyArray<$FlowFixMe> {
+  bodyProperties(typeAlias: TypeDeclarationMap): ReadonlyArray<$FlowFixMe> {
     return typeAlias.body.body;
   }
 
@@ -516,11 +514,11 @@ class TypeScriptParser implements Parser {
   }
 
   getProps(
-    typeDefinition: $ReadOnlyArray<PropAST>,
+    typeDefinition: ReadonlyArray<PropAST>,
     types: TypeDeclarationMap,
   ): {
-    props: $ReadOnlyArray<NamedShape<PropTypeAnnotation>>,
-    extendsProps: $ReadOnlyArray<ExtendsPropsShape>,
+    props: ReadonlyArray<NamedShape<PropTypeAnnotation>>,
+    extendsProps: ReadonlyArray<ExtendsPropsShape>,
   } {
     const extendsProps: Array<ExtendsPropsShape> = [];
     const componentPropAsts: Array<PropAST> = [];

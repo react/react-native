@@ -7,8 +7,6 @@
 
 #include "CoreComponentsRegistry.h"
 
-#include <android/log.h>
-
 #include <react/renderer/componentregistry/ComponentDescriptorRegistry.h>
 #include <react/renderer/components/FBReactNativeSpec/ComponentDescriptors.h>
 #include <react/renderer/components/androidswitch/AndroidSwitchComponentDescriptor.h>
@@ -21,11 +19,12 @@
 #include <react/renderer/components/scrollview/ScrollViewComponentDescriptor.h>
 #include <react/renderer/components/text/ParagraphComponentDescriptor.h>
 #include <react/renderer/components/text/RawTextComponentDescriptor.h>
+#include <react/renderer/components/text/SelectableParagraphComponentDescriptor.h>
 #include <react/renderer/components/text/TextComponentDescriptor.h>
+#include <react/renderer/components/text/TextEffectComponentDescriptor.h>
 #include <react/renderer/components/view/LayoutConformanceComponentDescriptor.h>
 #include <react/renderer/components/view/ViewComponentDescriptor.h>
 #include <react/renderer/components/virtualview/VirtualViewComponentDescriptor.h>
-#include <react/renderer/components/virtualviewexperimental/VirtualViewExperimentalComponentDescriptor.h>
 
 namespace facebook::react::CoreComponentsRegistry {
 
@@ -64,6 +63,8 @@ void addCoreComponents(
   providerRegistry->add(
       concreteComponentDescriptorProvider<TextComponentDescriptor>());
   providerRegistry->add(
+      concreteComponentDescriptorProvider<TextEffectComponentDescriptor>());
+  providerRegistry->add(
       concreteComponentDescriptorProvider<RawTextComponentDescriptor>());
   providerRegistry->add(
       concreteComponentDescriptorProvider<ScrollViewComponentDescriptor>());
@@ -72,6 +73,9 @@ void addCoreComponents(
           AndroidHorizontalScrollContentViewComponentDescriptor>());
   providerRegistry->add(
       concreteComponentDescriptorProvider<ParagraphComponentDescriptor>());
+  providerRegistry->add(
+      concreteComponentDescriptorProvider<
+          SelectableParagraphComponentDescriptor>());
   providerRegistry->add(
       concreteComponentDescriptorProvider<
           AndroidDrawerLayoutComponentDescriptor>());
@@ -83,9 +87,6 @@ void addCoreComponents(
           LayoutConformanceComponentDescriptor>());
   providerRegistry->add(
       concreteComponentDescriptorProvider<VirtualViewComponentDescriptor>());
-  providerRegistry->add(
-      concreteComponentDescriptorProvider<
-          VirtualViewExperimentalComponentDescriptor>());
 }
 
 } // namespace facebook::react::CoreComponentsRegistry

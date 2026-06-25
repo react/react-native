@@ -8,19 +8,8 @@
  * @format
  */
 
-/**
- * This module exists to allow apps to select their renderer implementation
- * (e.g.: Fabric-only, Paper-only) without having to pull all the renderer
- * implementations into their app bundle, which affects app size.
- *
- * By default, the setup will be:
- *   -> RendererProxy
- *     -> RendererImplementation (which uses Fabric or Paper depending on a flag at runtime)
- *
- * But this will allow a setup like this without duplicating logic:
- *   -> RendererProxy (fork)
- *     -> RendererImplementation (which uses Fabric or Paper depending on a flag at runtime)
- *     or -> OtherImplementation (which uses Fabric only)
- */
-
+// This module allows app bundles to set up the appropriate Fabric renderer
+// variant (e.g., profiling vs production) before React Native is initialized.
+// The internal implementation (RendererProxy.fb.js) provides the indirection
+// needed to swap the renderer implementation at runtime.
 export * from './RendererImplementation';

@@ -41,7 +41,7 @@ export function testGoodDataWithGoodItem(): React.Node {
   return <SectionList renderItem={renderMyListItem} sections={sections} />;
 }
 
-export function testBadRenderItemFunction(): $ReadOnlyArray<React.Node> {
+export function testBadRenderItemFunction(): ReadonlyArray<React.Node> {
   const sections = [
     {
       key: 'a',

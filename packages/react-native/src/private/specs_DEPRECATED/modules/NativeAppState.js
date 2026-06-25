@@ -19,15 +19,15 @@ export type AppStateConstants = {
 export type AppState = {app_state: string};
 
 export interface Spec extends TurboModule {
-  +getConstants: () => AppStateConstants;
-  +getCurrentAppState: (
+  readonly getConstants: () => AppStateConstants;
+  readonly getCurrentAppState: (
     success: (appState: AppState) => void,
     error: (error: Object) => void,
   ) => void;
 
   // Events
-  +addListener: (eventName: string) => void;
-  +removeListeners: (count: number) => void;
+  readonly addListener: (eventName: string) => void;
+  readonly removeListeners: (count: number) => void;
 }
 
-export default (TurboModuleRegistry.getEnforcing<Spec>('AppState'): Spec);
+export default TurboModuleRegistry.getEnforcing<Spec>('AppState') as Spec;

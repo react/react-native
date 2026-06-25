@@ -18,21 +18,21 @@ import {setPlatformObject} from '../webidl/PlatformObjects';
 import * as MutationObserverManager from './internals/MutationObserverManager';
 
 export type MutationObserverCallback = (
-  mutationRecords: $ReadOnlyArray<MutationRecord>,
+  mutationRecords: ReadonlyArray<MutationRecord>,
   observer: MutationObserver,
-) => mixed;
+) => unknown;
 
 export interface MutationObserverInit {
-  +subtree?: boolean;
+  readonly subtree?: boolean;
   // This is the only supported option so it's required to be `true`.
-  +childList: true;
+  readonly childList: true;
 
   // Unsupported:
-  +attributes?: boolean;
-  +attributeFilter?: $ReadOnlyArray<string>;
-  +attributeOldValue?: boolean;
-  +characterData?: boolean;
-  +characterDataOldValue?: boolean;
+  readonly attributes?: boolean;
+  readonly attributeFilter?: ReadonlyArray<string>;
+  readonly attributeOldValue?: boolean;
+  readonly characterData?: boolean;
+  readonly characterDataOldValue?: boolean;
 }
 
 /**

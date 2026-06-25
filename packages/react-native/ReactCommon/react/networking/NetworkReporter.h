@@ -9,7 +9,6 @@
 
 #include "NetworkTypes.h"
 
-#include <folly/dynamic.h>
 #include <react/timing/primitives.h>
 
 #include <mutex>

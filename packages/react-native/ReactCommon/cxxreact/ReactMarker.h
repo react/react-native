@@ -8,11 +8,9 @@
 #pragma once
 
 #include <cmath>
-#include <shared_mutex>
-
-#ifdef __APPLE__
 #include <functional>
-#endif
+#include <mutex>
+#include <shared_mutex>
 
 namespace facebook::react::ReactMarker {
 
@@ -36,28 +34,49 @@ enum ReactMarkerId {
   REACT_INSTANCE_INIT_STOP
 };
 
-#ifdef __APPLE__
-using LogTaggedMarker = std::function<void(const ReactMarkerId, const char *tag)>; // Bridge only
-using LogTaggedMarkerBridgeless = std::function<void(const ReactMarkerId, const char *tag)>;
-#else
-typedef void (*LogTaggedMarker)(const ReactMarkerId, const char *tag); // Bridge only
-typedef void (*LogTaggedMarkerBridgeless)(const ReactMarkerId, const char *tag);
-#endif
+using LogTaggedMarker = std::function<void(ReactMarkerId, const char *tag)>;
+using LogTaggedMarkerBridgeless = LogTaggedMarker;
 
 #ifndef RN_EXPORT
 #define RN_EXPORT __attribute__((visibility("default")))
 #endif
 
-extern RN_EXPORT std::shared_mutex logTaggedMarkerImplMutex;
-/// - important: To ensure this gets read and written to in a thread safe
-/// manner, make use of `logTaggedMarkerImplMutex`.
-extern RN_EXPORT LogTaggedMarker logTaggedMarkerImpl;
-extern RN_EXPORT LogTaggedMarker logTaggedMarkerBridgelessImpl;
+/// Thread-safe holder for a LogTaggedMarker callback. Reads and writes are
+/// internally synchronized, so callers do not need external locking.
+struct RN_EXPORT AtomicLogTaggedMarker {
+  AtomicLogTaggedMarker &operator=(LogTaggedMarker marker)
+  {
+    std::unique_lock lock(mutex_);
+    impl_ = std::move(marker);
+    return *this;
+  }
 
-extern RN_EXPORT void logMarker(ReactMarkerId markerId); // Bridge only
-extern RN_EXPORT void logTaggedMarker(ReactMarkerId markerId,
-                                      const char *tag); // Bridge only
+  explicit operator bool() const noexcept
+  {
+    std::shared_lock lock(mutex_);
+    return static_cast<bool>(impl_);
+  }
+
+  void operator()(ReactMarkerId markerId, const char *tag) const
+  {
+    std::shared_lock lock(mutex_);
+    if (impl_) {
+      impl_(markerId, tag);
+    }
+  }
+
+ private:
+  LogTaggedMarker impl_;
+  mutable std::shared_mutex mutex_;
+};
+
+extern RN_EXPORT AtomicLogTaggedMarker logTaggedMarkerImpl;
+
+extern RN_EXPORT void logMarker(ReactMarkerId markerId);
+extern RN_EXPORT void logTaggedMarker(ReactMarkerId markerId, const char *tag);
+[[deprecated("Use logMarker instead")]]
 extern RN_EXPORT void logMarkerBridgeless(ReactMarkerId markerId);
+[[deprecated("Use logTaggedMarker instead")]]
 extern RN_EXPORT void logTaggedMarkerBridgeless(ReactMarkerId markerId, const char *tag);
 
 struct ReactMarkerEvent {
@@ -74,9 +93,7 @@ class RN_EXPORT StartupLogger {
   void reset();
   double getAppStartupStartTime();
   double getInitReactRuntimeStartTime();
-  double getInitReactRuntimeEndTime();
   double getRunJSBundleStartTime();
-  double getRunJSBundleEndTime();
   double getAppStartupEndTime();
 
  private:

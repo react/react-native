@@ -15,7 +15,8 @@ import type {KeyEvent, NativeSyntheticEvent} from 'react-native';
 
 import RNTesterButton from '../../components/RNTesterButton';
 import RNTesterText from '../../components/RNTesterText';
-import React, {useCallback, useState} from 'react';
+import * as React from 'react';
+import {useCallback, useState} from 'react';
 import {ScrollView, StyleSheet, TextInput, View} from 'react-native';
 
 type KeyEventLog = {

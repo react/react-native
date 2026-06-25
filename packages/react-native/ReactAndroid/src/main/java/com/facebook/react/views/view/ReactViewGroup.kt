@@ -12,6 +12,7 @@ package com.facebook.react.views.view
 import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.BlendMode
 import android.graphics.Canvas
 import android.graphics.Paint
@@ -28,6 +29,7 @@ import com.facebook.react.R
 import com.facebook.react.bridge.ReactNoCrashSoftException
 import com.facebook.react.bridge.ReactSoftExceptionLogger
 import com.facebook.react.bridge.ReactSoftExceptionLogger.logSoftException
+import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.UiThreadUtil.assertOnUiThread
 import com.facebook.react.bridge.UiThreadUtil.runOnUiThread
 import com.facebook.react.common.ReactConstants.TAG
@@ -37,6 +39,7 @@ import com.facebook.react.touch.OnInterceptTouchEventListener
 import com.facebook.react.touch.ReactHitSlopView
 import com.facebook.react.touch.ReactInterceptingViewGroup
 import com.facebook.react.uimanager.BackgroundStyleApplicator.clipToPaddingBox
+import com.facebook.react.uimanager.BackgroundStyleApplicator.getPaddingBoxRect
 import com.facebook.react.uimanager.BackgroundStyleApplicator.setBackgroundColor
 import com.facebook.react.uimanager.BackgroundStyleApplicator.setBorderColor
 import com.facebook.react.uimanager.BackgroundStyleApplicator.setBorderRadius
@@ -57,10 +60,6 @@ import com.facebook.react.uimanager.ReactClippingViewGroup
 import com.facebook.react.uimanager.ReactClippingViewGroupHelper.calculateClippingRect
 import com.facebook.react.uimanager.ReactOverflowViewWithInset
 import com.facebook.react.uimanager.ReactPointerEventsView
-import com.facebook.react.uimanager.ReactZIndexedViewGroup
-import com.facebook.react.uimanager.ViewGroupDrawingOrderHelper
-import com.facebook.react.uimanager.common.UIManagerType
-import com.facebook.react.uimanager.common.ViewUtil.getUIManagerType
 import com.facebook.react.uimanager.style.BorderRadiusProp
 import com.facebook.react.uimanager.style.BorderStyle
 import com.facebook.react.uimanager.style.LogicalEdge
@@ -83,7 +82,6 @@ public open class ReactViewGroup public constructor(context: Context?) :
     ReactClippingViewGroup,
     ReactPointerEventsView,
     ReactHitSlopView,
-    ReactZIndexedViewGroup,
     ReactOverflowViewWithInset {
 
   public override val overflowInset: Rect = Rect()
@@ -129,7 +127,7 @@ public open class ReactViewGroup public constructor(context: Context?) :
    * override all possible add methods for [ViewGroup] so that we can control this process whenever
    * the option is set. We also override [ViewGroup#getChildAt] and [ViewGroup#getChildCount] so
    * those methods may return views that are not attached. This is risky but allows us to perform a
-   * correct cleanup in `NativeViewHierarchyManager`.
+   * correct cleanup.
    */
   internal var _removeClippedSubviews = false
 
@@ -156,6 +154,9 @@ public open class ReactViewGroup public constructor(context: Context?) :
       null
   private var focusOnAttach = false
 
+  internal var nativeBackgroundMap: ReadableMap? = null
+  internal var nativeForegroundMap: ReadableMap? = null
+
   init {
     initView()
   }
@@ -176,13 +177,15 @@ public open class ReactViewGroup public constructor(context: Context?) :
     hitSlopRect = null
     _overflow = Overflow.VISIBLE
     pointerEvents = PointerEvents.AUTO
+    ImportantForInteractionHelper.setImportantForInteraction(this, pointerEvents)
     childrenLayoutChangeListener = null
     onInterceptTouchEventListener = null
     needsOffscreenAlphaCompositing = false
-    _drawingOrderHelper = null
     backfaceOpacity = 1f
     backfaceVisible = true
     childrenRemovedWhileTransitioning = null
+    nativeBackgroundMap = null
+    nativeForegroundMap = null
   }
 
   internal open fun recycleView() {
@@ -219,15 +222,6 @@ public open class ReactViewGroup public constructor(context: Context?) :
     focusOnAttach = false
   }
 
-  private var _drawingOrderHelper: ViewGroupDrawingOrderHelper? = null
-  private val drawingOrderHelper: ViewGroupDrawingOrderHelper
-    get() {
-      if (_drawingOrderHelper == null) {
-        _drawingOrderHelper = ViewGroupDrawingOrderHelper(this)
-      }
-      return requireNotNull(_drawingOrderHelper)
-    }
-
   override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
     assertExplicitMeasureSpec(widthMeasureSpec, heightMeasureSpec)
 
@@ -244,7 +238,7 @@ public open class ReactViewGroup public constructor(context: Context?) :
   @SuppressLint("MissingSuperCall")
   override fun requestLayout() {
     // No-op, terminate `requestLayout` here, UIManager handles laying out children and
-    // `layout` is called on all RN-managed views by `NativeViewHierarchyManager`
+    // `layout` is called on all RN-managed views by the UIManager
   }
 
   @TargetApi(23)
@@ -598,36 +592,38 @@ public open class ReactViewGroup public constructor(context: Context?) :
     }
   }
 
-  private fun customDrawOrderDisabled(): Boolean {
-    if (id == NO_ID) {
-      return false
+  override fun onConfigurationChanged(newConfig: Configuration) {
+    super.onConfigurationChanged(newConfig)
+    if (nativeBackgroundMap != null) {
+      applyNativeBackground(nativeBackgroundMap)
     }
+    if (nativeForegroundMap != null) {
+      applyNativeForeground(nativeForegroundMap)
+    }
+  }
 
-    // Custom draw order is disabled for Fabric.
-    return getUIManagerType(id) == UIManagerType.FABRIC
+  internal fun applyNativeBackground(map: ReadableMap?) {
+    nativeBackgroundMap = map
+    setFeedbackUnderlay(
+        this,
+        map?.let { ReactDrawableHelper.createDrawableFromJSDescription(context, it) },
+    )
+  }
+
+  internal fun applyNativeForeground(map: ReadableMap?) {
+    nativeForegroundMap = map
+    foreground = map?.let { ReactDrawableHelper.createDrawableFromJSDescription(context, it) }
   }
 
   override fun onViewAdded(child: View) {
     assertOnUiThread()
     checkViewClippingTag(child, false)
-    if (!customDrawOrderDisabled()) {
-      drawingOrderHelper.handleAddView(child)
-      isChildrenDrawingOrderEnabled = drawingOrderHelper.shouldEnableCustomDrawingOrder()
-    } else {
-      isChildrenDrawingOrderEnabled = false
-    }
     super.onViewAdded(child)
   }
 
   override fun onViewRemoved(child: View) {
     assertOnUiThread()
     checkViewClippingTag(child, true)
-    if (!customDrawOrderDisabled()) {
-      drawingOrderHelper.handleRemoveView(child)
-      isChildrenDrawingOrderEnabled = drawingOrderHelper.shouldEnableCustomDrawingOrder()
-    } else {
-      isChildrenDrawingOrderEnabled = false
-    }
 
     // The parent might not be null in case the child is transitioning.
     if (child.parent != null) {
@@ -654,36 +650,7 @@ public open class ReactViewGroup public constructor(context: Context?) :
     }
   }
 
-  override fun getChildDrawingOrder(childCount: Int, index: Int): Int {
-    assertOnUiThread()
-
-    return if (!customDrawOrderDisabled()) {
-      drawingOrderHelper.getChildDrawingOrder(childCount, index)
-    } else {
-      index
-    }
-  }
-
-  override fun getZIndexMappedChildIndex(index: Int): Int {
-    assertOnUiThread()
-
-    if (!customDrawOrderDisabled() && drawingOrderHelper.shouldEnableCustomDrawingOrder()) {
-      return drawingOrderHelper.getChildDrawingOrder(childCount, index)
-    }
-
-    // Fabric behavior
-    return index
-  }
-
-  override fun updateDrawingOrder() {
-    if (customDrawOrderDisabled()) {
-      return
-    }
-
-    drawingOrderHelper.update()
-    isChildrenDrawingOrderEnabled = drawingOrderHelper.shouldEnableCustomDrawingOrder()
-    invalidate()
-  }
+  override fun shouldDelayChildPressedState(): Boolean = false
 
   override fun dispatchSetPressed(pressed: Boolean) {
     // Prevents the ViewGroup from dispatching the pressed state
@@ -870,6 +837,39 @@ public open class ReactViewGroup public constructor(context: Context?) :
       invalidate()
     }
 
+  /**
+   * Returns the clip bounds for this view based on the overflow property.
+   *
+   * When overflow is hidden or scroll, returns the padding box rect (the area inside the borders)
+   * so that systems querying [View.getClipBounds] can determine the view's clipping region. Returns
+   * null when overflow is visible (no clipping).
+   */
+  override fun getClipBounds(): Rect? {
+    if (
+        ReactNativeFeatureFlags.syncAndroidClipBoundsWithOverflow() &&
+            _overflow != null &&
+            _overflow != Overflow.VISIBLE
+    ) {
+      val rect = Rect()
+      getPaddingBoxRect(this, rect)
+      return rect
+    }
+    return super.getClipBounds()
+  }
+
+  /** See [getClipBounds]. */
+  override fun getClipBounds(outRect: Rect): Boolean {
+    if (
+        ReactNativeFeatureFlags.syncAndroidClipBoundsWithOverflow() &&
+            _overflow != null &&
+            _overflow != Overflow.VISIBLE
+    ) {
+      getPaddingBoxRect(this, outRect)
+      return true
+    }
+    return super.getClipBounds(outRect)
+  }
+
   override fun setOverflowInset(left: Int, top: Int, right: Int, bottom: Int) {
     if (
         needsIsolatedLayer(this) &&
@@ -893,11 +893,7 @@ public open class ReactViewGroup public constructor(context: Context?) :
   }
 
   override fun draw(canvas: Canvas) {
-    if (
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
-            getUIManagerType(this) == UIManagerType.FABRIC &&
-            needsIsolatedLayer(this)
-    ) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && needsIsolatedLayer(this)) {
       // Check if the view is a stacking context and has children, if it does, do the rendering
       // offscreen and then composite back. This follows the idea of group isolation on blending
       // https://www.w3.org/TR/compositing-1/#isolationblending
@@ -932,11 +928,7 @@ public open class ReactViewGroup public constructor(context: Context?) :
     }
 
     var mixBlendMode: BlendMode? = null
-    if (
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
-            getUIManagerType(this) == UIManagerType.FABRIC &&
-            needsIsolatedLayer(this)
-    ) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && needsIsolatedLayer(this)) {
       mixBlendMode = child.getTag(R.id.mix_blend_mode) as? BlendMode
       if (mixBlendMode != null) {
         val p = Paint()
@@ -1039,12 +1031,12 @@ public open class ReactViewGroup public constructor(context: Context?) :
     } else if (axOrderParentOrderList != null) {
       // view is a container so add its children normally
       if (!isFocusable) {
-        super.addChildrenForAccessibility(outChildren)
+        safeAddChildrenForAccessibility(outChildren)
         return
 
         // If this view can coopt, turn the focusability off its children but add them to the tree
       } else if (isFocusable && (contentDescription == null || contentDescription == "")) {
-        super.addChildrenForAccessibility(outChildren)
+        safeAddChildrenForAccessibility(outChildren)
         for (i in 0..<childCount) {
           ReactAxOrderHelper.disableFocusForSubtree(getChildAt(i), axOrderParentOrderList)
         }
@@ -1054,7 +1046,23 @@ public open class ReactViewGroup public constructor(context: Context?) :
         return
       }
     } else {
+      safeAddChildrenForAccessibility(outChildren)
+    }
+  }
+
+  private fun safeAddChildrenForAccessibility(outChildren: ArrayList<View>) {
+    try {
       super.addChildrenForAccessibility(outChildren)
+    } catch (error: IllegalArgumentException) {
+      // Android 16 can race while building accessibility child lists during fast re-parenting.
+      if (error.message?.contains("descendant of this view") == true) {
+        logSoftException(
+            ReactSoftExceptionLogger.Categories.RVG_ADD_CHILDREN_FOR_ACCESSIBILITY,
+            error,
+        )
+      } else {
+        throw error
+      }
     }
   }
 

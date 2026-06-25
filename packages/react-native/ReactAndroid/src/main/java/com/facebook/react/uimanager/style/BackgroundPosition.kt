@@ -11,6 +11,17 @@ import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.ReadableType
 import com.facebook.react.uimanager.LengthPercentage
 
+/**
+ * Represents the position of a background image within its container.
+ *
+ * This class models CSS-like background-position values, allowing specification of offsets from any
+ * edge (top, left, right, bottom). Each offset can be a length or percentage value.
+ *
+ * @property top Offset from the top edge, or null if not specified
+ * @property left Offset from the left edge, or null if not specified
+ * @property right Offset from the right edge, or null if not specified
+ * @property bottom Offset from the bottom edge, or null if not specified
+ */
 internal class BackgroundPosition(
     public val top: LengthPercentage?,
     public val left: LengthPercentage?,
@@ -18,6 +29,15 @@ internal class BackgroundPosition(
     public val bottom: LengthPercentage?,
 ) {
   public companion object {
+    /**
+     * Parses a ReadableMap into a BackgroundPosition.
+     *
+     * The map may contain "top", "left", "right", and/or "bottom" keys with length or percentage
+     * values.
+     *
+     * @param backgroundPositionMap The map containing position values
+     * @return A BackgroundPosition instance, or null if the map is null
+     */
     public fun parse(backgroundPositionMap: ReadableMap?): BackgroundPosition? {
       if (backgroundPositionMap == null) return null
 

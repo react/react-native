@@ -211,22 +211,16 @@ internal class AccessibilityInfoModule(context: ReactApplicationContext) :
   private fun updateAndSendTouchExplorationChangeEvent(enabled: Boolean) {
     if (touchExplorationEnabled != enabled) {
       touchExplorationEnabled = enabled
-      val reactApplicationContext = getReactApplicationContextIfActiveOrWarn()
-      if (reactApplicationContext != null) {
-        getReactApplicationContext()
-            .emitDeviceEvent(TOUCH_EXPLORATION_EVENT_NAME, touchExplorationEnabled)
-      }
+      getReactApplicationContextIfActiveOrWarn()
+          ?.emitDeviceEvent(TOUCH_EXPLORATION_EVENT_NAME, touchExplorationEnabled)
     }
   }
 
   private fun updateAndSendAccessibilityServiceChangeEvent(enabled: Boolean) {
     if (accessibilityServiceEnabled != enabled) {
       accessibilityServiceEnabled = enabled
-      val reactApplicationContext = getReactApplicationContextIfActiveOrWarn()
-      if (reactApplicationContext != null) {
-        getReactApplicationContext()
-            .emitDeviceEvent(ACCESSIBILITY_SERVICE_EVENT_NAME, accessibilityServiceEnabled)
-      }
+      getReactApplicationContextIfActiveOrWarn()
+          ?.emitDeviceEvent(ACCESSIBILITY_SERVICE_EVENT_NAME, accessibilityServiceEnabled)
     }
   }
 

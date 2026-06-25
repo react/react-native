@@ -15,6 +15,7 @@
 #include <react/logging/DefaultLogger.h>
 #include <react/nativemodule/JavaScriptModule.h>
 #include <react/nativemodule/TurboModuleProvider.h>
+#include <react/renderer/animationbackend/AnimationChoreographer.h>
 #include <react/renderer/scheduler/Scheduler.h>
 #include <react/runtime/ReactInstance.h>
 #include <react/utils/RunLoopObserverManager.h>
@@ -51,7 +52,8 @@ class ReactHost {
       TurboModuleProviders turboModuleProviders = {},
       std::shared_ptr<SurfaceDelegate> logBoxSurfaceDelegate = nullptr,
       std::shared_ptr<NativeAnimatedNodesManagerProvider> animatedNodesManagerProvider = nullptr,
-      ReactInstance::BindingsInstallFunc bindingsInstallFunc = nullptr);
+      ReactInstance::BindingsInstallFunc bindingsInstallFunc = nullptr,
+      std::shared_ptr<AnimationChoreographer> animationChoreographer = nullptr);
   ReactHost(const ReactHost &) = delete;
   ReactHost &operator=(const ReactHost &) = delete;
   ReactHost(ReactHost &&) noexcept = delete;
@@ -108,6 +110,7 @@ class ReactHost {
   std::unique_ptr<SurfaceManager> surfaceManager_;
 
   std::shared_ptr<DevServerHelper> devServerHelper_;
+  std::shared_ptr<std::string> sourceURL_ = std::make_shared<std::string>();
   std::shared_ptr<Inspector> inspector_;
   std::unique_ptr<PackagerConnection> packagerConnection_;
 

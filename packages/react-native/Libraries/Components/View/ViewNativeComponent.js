@@ -21,10 +21,10 @@ const ViewNativeComponent: HostComponent<Props> =
   }));
 
 interface NativeCommands {
-  +focus: (viewRef: HostInstance) => void;
-  +blur: (viewRef: HostInstance) => void;
-  +hotspotUpdate: (viewRef: HostInstance, x: number, y: number) => void;
-  +setPressed: (viewRef: HostInstance, pressed: boolean) => void;
+  readonly focus: (viewRef: HostInstance) => void;
+  readonly blur: (viewRef: HostInstance) => void;
+  readonly hotspotUpdate: (viewRef: HostInstance, x: number, y: number) => void;
+  readonly setPressed: (viewRef: HostInstance, pressed: boolean) => void;
 }
 
 export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
@@ -42,5 +42,3 @@ export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
 // Additional note: Our long term plan is to reduce the overhead of the <Text>
 // and <View> wrappers so that we no longer have any reason to export these APIs.
 export default ViewNativeComponent;
-
-export type ViewNativeComponentType = HostComponent<Props>;

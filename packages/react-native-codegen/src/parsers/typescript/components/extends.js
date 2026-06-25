@@ -27,7 +27,7 @@ function isEvent(typeAnnotation: $FlowFixMe, parser: Parser): boolean {
 type PropsAST = Object;
 
 function categorizeProps(
-  typeDefinition: $ReadOnlyArray<PropsAST>,
+  typeDefinition: ReadonlyArray<PropsAST>,
   types: TypeDeclarationMap,
   events: Array<PropsAST>,
   parser: Parser,

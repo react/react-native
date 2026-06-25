@@ -256,8 +256,7 @@ LayoutAnimationKeyFrameManager::pullTransaction(
       //   Catch delete+create (reparenting) (this should be optimized away at
       //   the diffing level eventually?)
       // TODO: to prevent this step we could tag Remove/Insert mutations as
-      // being moves on the Differ level, since we know that there? We could use
-      // TinyMap here, but it's not exposed by Differentiator (yet).
+      // being moves on the Differ level, since we know that there?
       std::unordered_set<Tag> insertedTags;
       std::unordered_set<Tag> deletedTags;
       std::unordered_set<Tag>

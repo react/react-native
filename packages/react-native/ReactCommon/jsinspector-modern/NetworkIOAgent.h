@@ -211,6 +211,13 @@ class NetworkIOAgent {
   {
   }
 
+  ~NetworkIOAgent();
+
+  NetworkIOAgent(const NetworkIOAgent &) = delete;
+  NetworkIOAgent &operator=(const NetworkIOAgent &) = delete;
+  NetworkIOAgent(NetworkIOAgent &&) = delete;
+  NetworkIOAgent &operator=(NetworkIOAgent &&) = delete;
+
   /**
    * Handle a CDP request. The response will be sent over the provided
    * \c FrontendChannel synchronously or asynchronously.
@@ -246,6 +253,12 @@ class NetworkIOAgent {
    * NewtworkIOAgent instance. This stores the next one to use.
    */
   unsigned long nextStreamId_{0};
+
+  /**
+   * If non-nullopt, indicates that this agent has enabled the Network domain
+   * via NetworkHandler, storing the agent ID for cleanup.
+   */
+  std::optional<size_t> networkAgentId_;
 
   /**
    * Begin loading an HTTP resource, delegating platform-specific

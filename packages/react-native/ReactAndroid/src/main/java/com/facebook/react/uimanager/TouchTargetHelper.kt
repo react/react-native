@@ -13,11 +13,10 @@ import android.graphics.PointF
 import android.view.View
 import android.view.ViewGroup
 import com.facebook.common.logging.FLog
+import com.facebook.react.R
 import com.facebook.react.bridge.UiThreadUtil
 import com.facebook.react.common.ReactConstants
 import com.facebook.react.touch.ReactHitSlopView
-import com.facebook.react.uimanager.common.UIManagerType
-import com.facebook.react.uimanager.common.ViewUtil
 import java.util.EnumSet
 
 /**
@@ -86,7 +85,7 @@ public object TouchTargetHelper {
     // Store eventCoords in array so that they are modified to be relative to the targetView found.
     viewCoords[0] = eventX
     viewCoords[1] = eventY
-    val nativeTargetView = findTouchTargetViewWithPointerEvents(viewCoords, viewGroup, null)
+    val nativeTargetView = findTouchTargetViewWithPointerEvents(viewCoords, viewGroup)
     if (nativeTargetView != null) {
       val reactTargetView = findClosestReactAncestor(nativeTargetView)
       if (reactTargetView != null) {
@@ -193,10 +192,7 @@ public object TouchTargetHelper {
         if (view is ReactOverflowViewWithInset) {
           // If the touch point is outside of the overflow inset for the view, we can safely ignore
           // it.
-          if (
-              ViewUtil.getUIManagerType(view.id) == UIManagerType.FABRIC &&
-                  !isTouchPointInViewWithOverflowInset(eventCoords[0], eventCoords[1], view)
-          ) {
+          if (!isTouchPointInViewWithOverflowInset(eventCoords[0], eventCoords[1], view)) {
             return null
           }
 
@@ -214,13 +210,14 @@ public object TouchTargetHelper {
       }
 
       val childrenCount = viewGroup.childCount
-      // Consider z-index when determining the touch target.
-      val zIndexedViewGroup = viewGroup as? ReactZIndexedViewGroup
       for (i in childrenCount - 1 downTo 0) {
-        val childIndex = zIndexedViewGroup?.getZIndexMappedChildIndex(i) ?: i
-        val child = viewGroup.getChildAt(childIndex)
+        val child = viewGroup.getChildAt(i)
         val childPoint = tempPoint
-        getChildPoint(eventCoords[0], eventCoords[1], viewGroup, child, childPoint)
+        if (!getChildPoint(eventCoords[0], eventCoords[1], viewGroup, child, childPoint)) {
+          // Child's transform is non-invertible (e.g. scaleX: 0 or scaleY: 0): the child is
+          // visually degenerate, so it must not receive touches.
+          continue
+        }
         // The childPoint value will contain the view coordinates relative to the child.
         // We need to store the existing X,Y for the viewGroup away as it is possible this child
         // will not actually be the target and so we restore them if not
@@ -285,7 +282,13 @@ public object TouchTargetHelper {
   /**
    * Returns the coordinates of a touch in the child View. It is transform-aware and will invert the
    * transform Matrix to find the true local points. This code is taken from {@link
-   * ViewGroup#isTransformedTouchPointInView()}
+   * ViewGroup#isTransformedTouchPointInView()}.
+   *
+   * Returns `true` when [outLocalPoint] was populated with coordinates in the child's coordinate
+   * space. Returns `false` when the child's transform matrix is not invertible (for example
+   * `scaleX: 0` or `scaleY: 0`). On `false`, [outLocalPoint] is left in an indeterminate state and
+   * callers must skip the child — the shared [inverseMatrix] field is retained from the previous
+   * successful `invert`, so using it here would leak coordinates from another view.
    */
   private fun getChildPoint(
       x: Float,
@@ -293,21 +296,28 @@ public object TouchTargetHelper {
       parent: ViewGroup,
       child: View,
       outLocalPoint: PointF,
-  ) {
+  ): Boolean {
     var localX = x + parent.scrollX - child.left
     var localY = y + parent.scrollY - child.top
-    val matrix = child.matrix
+    // BaseViewManager applies skewX / skewY through View.setAnimationMatrix, which is composed
+    // for drawing but not exposed via View.getMatrix(); fall back to the stashed matrix so hit
+    // testing follows the rendered parallelogram and not the original rectangle.
+    val skewMatrix = child.getTag(R.id.skew_animation_matrix) as? Matrix
+    val matrix = skewMatrix ?: child.matrix
     if (!matrix.isIdentity) {
+      val inverseMatrix = inverseMatrix
+      if (!matrix.invert(inverseMatrix)) {
+        return false
+      }
       val localXY = matrixTransformCoords
       localXY[0] = localX
       localXY[1] = localY
-      val inverseMatrix = inverseMatrix
-      matrix.invert(inverseMatrix)
       inverseMatrix.mapPoints(localXY)
       localX = localXY[0]
       localY = localXY[1]
     }
     outLocalPoint.set(localX, localY)
+    return true
   }
 
   /**

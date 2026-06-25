@@ -13,6 +13,9 @@
 #include <react/renderer/components/root/RootComponentDescriptor.h>
 #include <react/renderer/components/view/ViewComponentDescriptor.h>
 #include <react/renderer/core/PropsParserContext.h>
+#include <react/renderer/element/ComponentBuilder.h>
+#include <react/renderer/element/Element.h>
+#include <react/renderer/element/testUtils.h>
 #include <react/renderer/mounting/Differentiator.h>
 #include <react/renderer/mounting/ShadowViewMutation.h>
 
@@ -346,7 +349,9 @@ static void testShadowNodeTreeLifeCycleExtensiveFlatteningUnflattening(
 
 using namespace facebook::react;
 
-TEST(
+class ShadowTreeLifecycleTest : public ::testing::Test {};
+
+TEST_F(
     ShadowTreeLifecycleTest,
     stableBiggerTreeFewerIterationsOptimizedMovesFlattener) {
   testShadowNodeTreeLifeCycle(
@@ -356,7 +361,7 @@ TEST(
       /* stages */ 32);
 }
 
-TEST(
+TEST_F(
     ShadowTreeLifecycleTest,
     stableBiggerTreeFewerIterationsOptimizedMovesFlattener2) {
   testShadowNodeTreeLifeCycle(
@@ -366,7 +371,7 @@ TEST(
       /* stages */ 32);
 }
 
-TEST(
+TEST_F(
     ShadowTreeLifecycleTest,
     stableSmallerTreeMoreIterationsOptimizedMovesFlattener) {
   testShadowNodeTreeLifeCycle(
@@ -376,7 +381,7 @@ TEST(
       /* stages */ 32);
 }
 
-TEST(
+TEST_F(
     ShadowTreeLifecycleTest,
     unstableSmallerTreeFewerIterationsExtensiveFlatteningUnflattening) {
   testShadowNodeTreeLifeCycleExtensiveFlatteningUnflattening(
@@ -386,7 +391,7 @@ TEST(
       /* stages */ 32);
 }
 
-TEST(
+TEST_F(
     ShadowTreeLifecycleTest,
     unstableBiggerTreeFewerIterationsExtensiveFlatteningUnflattening) {
   testShadowNodeTreeLifeCycleExtensiveFlatteningUnflattening(
@@ -396,7 +401,7 @@ TEST(
       /* stages */ 32);
 }
 
-TEST(
+TEST_F(
     ShadowTreeLifecycleTest,
     unstableSmallerTreeMoreIterationsExtensiveFlatteningUnflattening) {
   testShadowNodeTreeLifeCycleExtensiveFlatteningUnflattening(
@@ -407,20 +412,18 @@ TEST(
 }
 
 // failing test case found 4-25-2021
-// TODO: T213669056
-// TEST(
-//     ShadowTreeLifecycleTest,
-//     unstableSmallerTreeMoreIterationsExtensiveFlatteningUnflattening_1167342011)
-//     {
-//   testShadowNodeTreeLifeCycleExtensiveFlatteningUnflattening(
-//       /* seed */ 1167342011,
-//       /* size */ 32,
-//       /* repeats */ 512,
-//       /* stages */ 32);
-// }
+TEST_F(
+    ShadowTreeLifecycleTest,
+    unstableSmallerTreeMoreIterationsExtensiveFlatteningUnflattening_1167342011) {
+  testShadowNodeTreeLifeCycleExtensiveFlatteningUnflattening(
+      /* seed */ 1167342011,
+      /* size */ 32,
+      /* repeats */ 512,
+      /* stages */ 32);
+}
 
 // You may uncomment this - locally only! - to generate failing seeds.
-// TEST(
+// TEST_F(
 //     ShadowTreeLifecycleTest,
 //     unstableSmallerTreeMoreIterationsExtensiveFlatteningUnflatteningManyRandom)
 //     {
@@ -435,3 +438,61 @@ TEST(
 //         /* stages */ 32);
 //   }
 // }
+
+// Tests greedy algorithm behavior for a simple child reorder:
+// [A,B,C,D,E] → [B,C,D,E,A].
+TEST_F(ShadowTreeLifecycleTest, moveFirstChildToLast) {
+  auto builder = simpleComponentBuilder();
+
+  auto makeProps = [](const std::string& id) {
+    auto props = std::make_shared<ViewShadowNodeProps>();
+    props->nativeId = id;
+    return props;
+  };
+
+  // clang-format off
+  auto rootElement =
+      Element<RootShadowNode>()
+        .tag(1)
+        .children({
+          Element<ViewShadowNode>().tag(2).props(makeProps("A")),
+          Element<ViewShadowNode>().tag(3).props(makeProps("B")),
+          Element<ViewShadowNode>().tag(4).props(makeProps("C")),
+          Element<ViewShadowNode>().tag(5).props(makeProps("D")),
+          Element<ViewShadowNode>().tag(6).props(makeProps("E")),
+        });
+  // clang-format on
+
+  auto rootNode = builder.build(rootElement);
+
+  // Clone root with children reordered to [B, C, D, E, A].
+  auto children = rootNode->getChildren();
+  auto reorderedChildren =
+      std::make_shared<std::vector<std::shared_ptr<const ShadowNode>>>();
+  for (size_t i = 1; i < children.size(); i++) {
+    reorderedChildren->push_back(children[i]);
+  }
+  reorderedChildren->push_back(children[0]);
+
+  auto reorderedRootNode = std::static_pointer_cast<const RootShadowNode>(
+      rootNode->ShadowNode::clone(
+          ShadowNodeFragment{
+              .props = ShadowNodeFragment::propsPlaceholder(),
+              .children = reorderedChildren}));
+
+  auto expected =
+      buildStubViewTreeWithoutUsingDifferentiator(*reorderedRootNode);
+  auto mutations = calculateShadowViewMutations(*rootNode, *reorderedRootNode);
+
+  auto isMoveOp = [](const ShadowViewMutation& m) {
+    return m.type == ShadowViewMutation::Remove ||
+        m.type == ShadowViewMutation::Insert;
+  };
+
+  // Greedy: 4 REMOVE + 4 INSERT = 8 move ops.
+  EXPECT_EQ(std::count_if(mutations.begin(), mutations.end(), isMoveOp), 8);
+
+  auto viewTree = buildStubViewTreeWithoutUsingDifferentiator(*rootNode);
+  viewTree.mutate(mutations);
+  EXPECT_EQ(viewTree, expected);
+}

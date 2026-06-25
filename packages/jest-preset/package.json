@@ -1,0 +1,40 @@
+{
+  "name": "@react-native/jest-preset",
+  "version": "0.87.0-main",
+  "description": "Jest preset for React Native apps",
+  "keywords": [
+    "jest",
+    "preset",
+    "react-native"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/react/react-native.git",
+    "directory": "packages/jest-preset"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">= 22.13.0"
+  },
+  "main": "./jest-preset.js",
+  "files": [
+    "jest",
+    "jest-preset.js",
+    "index.js",
+    "README.md",
+    "!**/__docs__/**",
+    "!**/__fixtures__/**",
+    "!**/__mocks__/**",
+    "!**/__tests__/**"
+  ],
+  "dependencies": {
+    "@jest/create-cache-key-function": "^29.7.0",
+    "@react-native/js-polyfills": "0.87.0-main",
+    "babel-jest": "^29.7.0",
+    "jest-environment-node": "^29.7.0",
+    "regenerator-runtime": "^0.13.2"
+  },
+  "peerDependencies": {
+    "react": "^19.2.3"
+  }
+}

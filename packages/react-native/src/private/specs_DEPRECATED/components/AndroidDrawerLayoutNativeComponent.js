@@ -22,15 +22,15 @@ import codegenNativeCommands from '../../../../Libraries/Utilities/codegenNative
 import codegenNativeComponent from '../../../../Libraries/Utilities/codegenNativeComponent';
 import * as React from 'react';
 
-type DrawerStateEvent = $ReadOnly<{
+type DrawerStateEvent = Readonly<{
   drawerState: Int32,
 }>;
 
-type DrawerSlideEvent = $ReadOnly<{
+type DrawerSlideEvent = Readonly<{
   offset: Float,
 }>;
 
-type AndroidDrawerLayoutNativeProps = $ReadOnly<{
+type AndroidDrawerLayoutNativeProps = Readonly<{
   ...ViewProps,
   /**
    * Determines whether the keyboard gets dismissed in response to a drag.
@@ -111,14 +111,14 @@ type AndroidDrawerLayoutNativeProps = $ReadOnly<{
 type NativeType = HostComponent<AndroidDrawerLayoutNativeProps>;
 
 interface NativeCommands {
-  +openDrawer: (viewRef: React.ElementRef<NativeType>) => void;
-  +closeDrawer: (viewRef: React.ElementRef<NativeType>) => void;
+  readonly openDrawer: (viewRef: React.ElementRef<NativeType>) => void;
+  readonly closeDrawer: (viewRef: React.ElementRef<NativeType>) => void;
 }
 
 export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
   supportedCommands: ['openDrawer', 'closeDrawer'],
 });
 
-export default (codegenNativeComponent<AndroidDrawerLayoutNativeProps>(
+export default codegenNativeComponent<AndroidDrawerLayoutNativeProps>(
   'AndroidDrawerLayout',
-): NativeType);
+) as NativeType;

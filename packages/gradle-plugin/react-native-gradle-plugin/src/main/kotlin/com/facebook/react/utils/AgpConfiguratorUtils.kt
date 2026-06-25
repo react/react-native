@@ -9,7 +9,6 @@ package com.facebook.react.utils
 
 import com.android.build.api.variant.ApplicationAndroidComponentsExtension
 import com.android.build.api.variant.LibraryAndroidComponentsExtension
-import com.android.build.gradle.LibraryExtension
 import com.facebook.react.ReactExtension
 import com.facebook.react.utils.ProjectUtils.isEdgeToEdgeEnabled
 import com.facebook.react.utils.ProjectUtils.isHermesEnabled
@@ -18,7 +17,6 @@ import java.net.Inet4Address
 import java.net.NetworkInterface
 import javax.xml.parsers.DocumentBuilder
 import javax.xml.parsers.DocumentBuilderFactory
-import kotlin.plus
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.plugins.AppliedPlugin
@@ -77,17 +75,14 @@ internal object AgpConfiguratorUtils {
     project.pluginManager.withPlugin("com.android.library", action)
   }
 
-  fun configureBuildConfigFieldsForLibraries(appProject: Project) {
-    appProject.rootProject.allprojects { subproject ->
-      subproject.pluginManager.withPlugin("com.android.library") {
-        subproject.extensions
-            .getByType(LibraryAndroidComponentsExtension::class.java)
-            .finalizeDsl { ext -> ext.buildFeatures.buildConfig = true }
-      }
+  fun configureBuildConfigFieldsForLibraries(project: Project) {
+    project.extensions.getByType(LibraryAndroidComponentsExtension::class.java).finalizeDsl { ext ->
+      ext.buildFeatures.buildConfig = true
     }
   }
 
   fun configureDevServerLocation(project: Project) {
+    val devServerIp = project.properties["reactNativeDevServerIp"]?.toString() ?: getHostIpAddress()
     val devServerPort =
         project.properties["reactNativeDevServerPort"]?.toString() ?: DEFAULT_DEV_SERVER_PORT
 
@@ -100,7 +95,7 @@ internal object AgpConfiguratorUtils {
                 ext.defaultConfig.resValue(
                     "string",
                     "react_native_dev_server_ip",
-                    getHostIpAddress(),
+                    devServerIp,
                 )
                 ext.defaultConfig.resValue("integer", "react_native_dev_server_port", devServerPort)
               }
@@ -110,29 +105,33 @@ internal object AgpConfiguratorUtils {
     project.pluginManager.withPlugin("com.android.library", action)
   }
 
-  fun configureNamespaceForLibraries(appProject: Project) {
-    appProject.rootProject.allprojects { subproject ->
-      subproject.pluginManager.withPlugin("com.android.library") {
-        subproject.extensions
-            .getByType(LibraryAndroidComponentsExtension::class.java)
-            .finalizeDsl { ext ->
-              if (ext.namespace == null) {
-                val android = subproject.extensions.getByType(LibraryExtension::class.java)
-                val manifestFile = android.sourceSets.getByName("main").manifest.srcFile
-
-                manifestFile
-                    .takeIf { it.exists() }
-                    ?.let { file ->
-                      getPackageNameFromManifest(file)?.let { packageName ->
-                        ext.namespace = packageName
-                      }
-                    }
+  fun configureNamespaceForLibraries(project: Project) {
+    // This helper can be reached both from a library's own application of the React plugin and
+    // from the app-level sweep in ReactPlugin (which also covers libraries that don't apply
+    // `com.facebook.react`). A project's `finalizeDsl` callback must be registered before AGP
+    // finalizes its DSL — registering it twice (or after finalization) is a hard error on AGP 9+ —
+    // so we guard to register the namespace fallback at most once per project.
+    if (project.extensions.extraProperties.has(NAMESPACE_CONFIGURED_PROPERTY)) {
+      return
+    }
+    project.extensions.extraProperties.set(NAMESPACE_CONFIGURED_PROPERTY, true)
+    project.extensions.getByType(LibraryAndroidComponentsExtension::class.java).finalizeDsl { ext ->
+      if (ext.namespace == null) {
+        val manifestFile =
+            project.layout.projectDirectory.file("src/main/AndroidManifest.xml").asFile
+        manifestFile
+            .takeIf { it.exists() }
+            ?.let { file ->
+              getPackageNameFromManifest(file)?.let { packageName ->
+                ext.namespace = packageName
               }
             }
       }
     }
   }
 }
+
+private const val NAMESPACE_CONFIGURED_PROPERTY = "com.facebook.react.internal.namespaceConfigured"
 
 const val DEFAULT_DEV_SERVER_PORT = "8081"
 

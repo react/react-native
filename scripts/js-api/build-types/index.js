@@ -11,7 +11,10 @@
 require('../../shared/babelRegister').registerForScript();
 
 const buildApiSnapshot = require('./buildApiSnapshot');
-const buildGeneratedTypes = require('./buildGeneratedTypes');
+const {
+  buildGeneratedTypes,
+  watchGeneratedTypes,
+} = require('./buildGeneratedTypes');
 const debug = require('debug');
 const {parseArgs, styleText} = require('util');
 
@@ -22,6 +25,7 @@ const config = {
     help: {type: 'boolean'},
     'skip-snapshot': {type: 'boolean'},
     validate: {type: 'boolean'},
+    watch: {type: 'boolean'},
   },
 };
 
@@ -33,6 +37,7 @@ async function main() {
       help,
       'skip-snapshot': skipSnapshot,
       validate,
+      watch,
     },
     /* $FlowFixMe[incompatible-type] Natural Inference rollout. See
      * https://fburl.com/workplace/6291gfvu */
@@ -52,6 +57,8 @@ async function main() {
     --skip-snapshot   Skip API snapshot generation.
     --validate        Validate if the current API snapshot on disk is up to
                       date. Exits with an error if differences are detected.
+    --watch           Watch for file changes and rebuild incrementally. Skips
+                      API snapshot generation.
     `);
     process.exitCode = 0;
     return;
@@ -69,9 +76,11 @@ async function main() {
       ) +
       '\n',
   );
-  await buildGeneratedTypes();
+  const translatedFiles = await buildGeneratedTypes();
 
-  if (!skipSnapshot) {
+  if (watch === true) {
+    watchGeneratedTypes(translatedFiles);
+  } else if (!skipSnapshot) {
     console.log(
       styleText(['bold', 'inverse'], ' Building API snapshot ') + '\n',
     );

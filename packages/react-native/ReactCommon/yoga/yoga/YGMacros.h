@@ -29,6 +29,8 @@
 
 #ifdef _WINDLL
 #define YG_EXPORT __declspec(dllexport)
+#elif defined(__EMSCRIPTEN__)
+#define YG_EXPORT __attribute__((visibility("default"), used))
 #elif !defined(_MSC_VER)
 #define YG_EXPORT __attribute__((visibility("default")))
 #else

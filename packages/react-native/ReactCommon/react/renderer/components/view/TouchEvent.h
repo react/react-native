@@ -9,8 +9,6 @@
 
 #include <react/renderer/debug/DebugStringConvertible.h>
 
-#include <unordered_set>
-
 #include <react/renderer/components/view/Touch.h>
 
 namespace facebook::react {

@@ -16,7 +16,7 @@ import dismissKeyboard from '../../Utilities/dismissKeyboard';
 import Platform from '../../Utilities/Platform';
 import NativeKeyboardObserver from './NativeKeyboardObserver';
 
-export type KeyboardEventName = $Keys<KeyboardEventDefinitions>;
+export type KeyboardEventName = keyof KeyboardEventDefinitions;
 
 export type KeyboardEventEasing =
   | 'easeIn'
@@ -25,7 +25,7 @@ export type KeyboardEventEasing =
   | 'linear'
   | 'keyboard';
 
-export type KeyboardMetrics = $ReadOnly<{
+export type KeyboardMetrics = Readonly<{
   screenX: number,
   screenY: number,
   width: number,
@@ -40,13 +40,13 @@ type BaseKeyboardEvent = {
   endCoordinates: KeyboardMetrics,
 };
 
-export type AndroidKeyboardEvent = $ReadOnly<{
+export type AndroidKeyboardEvent = Readonly<{
   ...BaseKeyboardEvent,
   duration: 0,
   easing: 'keyboard',
 }>;
 
-export type IOSKeyboardEvent = $ReadOnly<{
+export type IOSKeyboardEvent = Readonly<{
   ...BaseKeyboardEvent,
   startCoordinates: KeyboardMetrics,
   isEventFromThisApp: boolean,
@@ -146,10 +146,10 @@ class KeyboardImpl {
    *
    * @param {function} callback function to be called when the event fires.
    */
-  addListener<K: $Keys<KeyboardEventDefinitions>>(
+  addListener<K extends keyof KeyboardEventDefinitions>(
     eventType: K,
-    listener: (...KeyboardEventDefinitions[K]) => mixed,
-    context?: mixed,
+    listener: (...KeyboardEventDefinitions[K]) => unknown,
+    context?: unknown,
   ): EventSubscription {
     return this._emitter.addListener(eventType, listener);
   }
@@ -159,7 +159,9 @@ class KeyboardImpl {
    *
    * @param {string} eventType The native event string listeners are watching which will be removed.
    */
-  removeAllListeners<K: $Keys<KeyboardEventDefinitions>>(eventType: ?K): void {
+  removeAllListeners<K extends keyof KeyboardEventDefinitions>(
+    eventType: ?K,
+  ): void {
     this._emitter.removeAllListeners(eventType);
   }
 

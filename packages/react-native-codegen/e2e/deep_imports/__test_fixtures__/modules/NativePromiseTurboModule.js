@@ -16,10 +16,10 @@ export type String = string;
 type AnotherPromise = Promise<String>;
 
 export interface Spec extends TurboModule {
-  +getValueWithPromise: (error: boolean) => Promise<string>;
-  +getValueWithPromiseWithAlias: (arg: String) => AnotherPromise;
+  readonly getValueWithPromise: (error: boolean) => Promise<string>;
+  readonly getValueWithPromiseWithAlias: (arg: String) => AnotherPromise;
 }
 
-export default (TurboModuleRegistry.getEnforcing<Spec>(
+export default TurboModuleRegistry.getEnforcing<Spec>(
   'SampleTurboModule',
-): Spec);
+) as Spec;

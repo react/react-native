@@ -6,6 +6,8 @@ exports[`RN Codegen TypeScript Parser Fails with error message MAP_WITH_EXTRA_KE
 
 exports[`RN Codegen TypeScript Parser Fails with error message MIXED_VALUES_ENUM_NATIVE_MODULE 1`] = `"Module NativeSampleTurboModule: Failed parsing the enum SomeEnum in NativeSampleTurboModule with the error: Enum values can not be mixed. They all must be either blank, number, or string values."`;
 
+exports[`RN Codegen TypeScript Parser Fails with error message NATIVE_MODULES_WITH_ARRAY_BUFFER_IN_OBJECT_PROPERTY 1`] = `"Module NativeSampleTurboModule: Object property '[object Object]' cannot have type 'ArrayBuffer'."`;
+
 exports[`RN Codegen TypeScript Parser Fails with error message NATIVE_MODULES_WITH_ARRAY_WITH_NO_TYPE_FOR_CONTENT 1`] = `"Module NativeSampleTurboModule: Generic 'Array' must have type parameters."`;
 
 exports[`RN Codegen TypeScript Parser Fails with error message NATIVE_MODULES_WITH_ARRAY_WITH_NO_TYPE_FOR_CONTENT_AS_PARAM 1`] = `"Module NativeSampleTurboModule: Generic 'Array' must have type parameters."`;
@@ -1087,6 +1089,90 @@ exports[`RN Codegen TypeScript Parser can generate fixture NATIVE_MODULE_WITH_AL
                   }
                 }
               ]
+            }
+          }
+        ]
+      },
+      'moduleName': 'SampleTurboModule'
+    }
+  }
+}"
+`;
+
+exports[`RN Codegen TypeScript Parser can generate fixture NATIVE_MODULE_WITH_ARRAY_BUFFER 1`] = `
+"{
+  'modules': {
+    'NativeSampleTurboModule': {
+      'type': 'NativeModule',
+      'aliasMap': {},
+      'enumMap': {},
+      'spec': {
+        'eventEmitters': [],
+        'methods': [
+          {
+            'name': 'getArrayBuffer',
+            'optional': false,
+            'typeAnnotation': {
+              'type': 'FunctionTypeAnnotation',
+              'returnTypeAnnotation': {
+                'type': 'ArrayBufferTypeAnnotation'
+              },
+              'params': []
+            }
+          },
+          {
+            'name': 'voidArrayBuffer',
+            'optional': false,
+            'typeAnnotation': {
+              'type': 'FunctionTypeAnnotation',
+              'returnTypeAnnotation': {
+                'type': 'VoidTypeAnnotation'
+              },
+              'params': [
+                {
+                  'name': 'arg',
+                  'optional': false,
+                  'typeAnnotation': {
+                    'type': 'ArrayBufferTypeAnnotation'
+                  }
+                }
+              ]
+            }
+          },
+          {
+            'name': 'voidNullableArrayBuffer',
+            'optional': false,
+            'typeAnnotation': {
+              'type': 'FunctionTypeAnnotation',
+              'returnTypeAnnotation': {
+                'type': 'VoidTypeAnnotation'
+              },
+              'params': [
+                {
+                  'name': 'arg',
+                  'optional': false,
+                  'typeAnnotation': {
+                    'type': 'NullableTypeAnnotation',
+                    'typeAnnotation': {
+                      'type': 'ArrayBufferTypeAnnotation'
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          {
+            'name': 'promiseArrayBuffer',
+            'optional': false,
+            'typeAnnotation': {
+              'type': 'FunctionTypeAnnotation',
+              'returnTypeAnnotation': {
+                'type': 'PromiseTypeAnnotation',
+                'elementType': {
+                  'type': 'ArrayBufferTypeAnnotation'
+                }
+              },
+              'params': []
             }
           }
         ]

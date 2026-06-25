@@ -9,6 +9,7 @@
 
 #import <React/RCTConvert.h>
 #import <React/RCTDefines.h>
+#import <React/RCTDevSupportHttpHeaders.h>
 
 #import <SocketRocket/SRWebSocket.h>
 
@@ -46,7 +47,9 @@
 {
   [self stop];
   _stopped = NO;
-  _socket = [[SRWebSocket alloc] initWithURL:_url];
+  NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:_url];
+  [[RCTDevSupportHttpHeaders sharedInstance] applyHeadersToRequest:request];
+  _socket = [[SRWebSocket alloc] initWithURLRequest:request];
   _socket.delegate = self;
   [_socket setDelegateDispatchQueue:_delegateDispatchQueue];
   [_socket open];

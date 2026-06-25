@@ -66,6 +66,11 @@
   <!-- tag is used to invalidate transform style in view manager -->
   <item type="id" name="invalidate_transform"/>
 
+  <!-- tag stores the active 2D-affine skew Matrix applied to the View via setAnimationMatrix,
+       so non-skew updates can clear it only on the transition out and TouchTargetHelper can
+       reuse it for hit testing -->
+  <item type="id" name="skew_animation_matrix"/>
+
   <!-- tag is used to store if we should render the view to a hardware texture -->
   <item type="id" name="use_hardware_layer"/>
 
@@ -74,4 +79,7 @@
 
   <!-- tag is used to store mixBlendMode effects to apply to the view -->
   <item type="id" name="mix_blend_mode"/>
+
+  <!-- tag is used to store important_for_interaction state -->
+  <item type="id" name="important_for_interaction"/>
 </resources>

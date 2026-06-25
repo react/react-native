@@ -14,8 +14,8 @@ const ALLOWED_SCALES: {[key: string]: number[]} = {
 
 function filterPlatformAssetScales(
   platform: string,
-  scales: $ReadOnlyArray<number>,
-): $ReadOnlyArray<number> {
+  scales: ReadonlyArray<number>,
+): ReadonlyArray<number> {
   const whitelist: number[] = ALLOWED_SCALES[platform];
   if (!whitelist) {
     return scales;

@@ -13,15 +13,15 @@
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 
 import RNTesterText from '../../components/RNTesterText';
-import React from 'react';
+import * as React from 'react';
 import {Platform, Switch, View} from 'react-native';
 
-type OnOffIndicatorProps = $ReadOnly<{on: boolean, testID: string}>;
+type OnOffIndicatorProps = Readonly<{on: boolean, testID: string}>;
 function OnOffIndicator({on, testID}: OnOffIndicatorProps) {
   return <RNTesterText testID={testID}>{on ? 'On' : 'Off'}</RNTesterText>;
 }
 
-type ExampleRowProps = $ReadOnly<{children: React.Node}>;
+type ExampleRowProps = Readonly<{children: React.Node}>;
 function ExampleRow({children}: ExampleRowProps) {
   return (
     <View
@@ -36,7 +36,7 @@ function ExampleRow({children}: ExampleRowProps) {
   );
 }
 
-type SimpleSwitchExampleState = $ReadOnly<{
+type SimpleSwitchExampleState = Readonly<{
   trueSwitchIsOn: boolean,
   falseSwitchIsOn: boolean,
 }>;

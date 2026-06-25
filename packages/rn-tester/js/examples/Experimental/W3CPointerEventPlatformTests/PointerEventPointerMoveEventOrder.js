@@ -133,7 +133,7 @@ function PointerEventPointerMoveEventOrderTestCase(
   );
 }
 
-type Props = $ReadOnly<{}>;
+type Props = Readonly<{}>;
 export default function PointerEventPointerMoveEventOrder(
   props: Props,
 ): React.MixedElement {

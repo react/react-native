@@ -10,8 +10,8 @@
 
 declare module 'deep-equal' {
   declare module.exports: (
-    actual: mixed,
-    expected: mixed,
+    actual: unknown,
+    expected: unknown,
     options?: {strict: boolean},
   ) => boolean;
 }

@@ -18,25 +18,25 @@ declare module 'typescript' {
     Bundler = 'Bundler',
   }
 
-  declare type SourceFile = $ReadOnly<{
+  declare type SourceFile = Readonly<{
     fileName: string,
     text: string,
     ...
   }>;
 
-  declare type Diagnostic = $ReadOnly<{
+  declare type Diagnostic = Readonly<{
     file?: SourceFile,
     start?: number,
     messageText: string,
     ...
   }>;
 
-  declare type EmitResult = $ReadOnly<{
+  declare type EmitResult = Readonly<{
     diagnostics: Array<Diagnostic>,
     ...
   }>;
 
-  declare type Program = $ReadOnly<{
+  declare type Program = Readonly<{
     emit: () => EmitResult,
     ...
   }>;
@@ -47,7 +47,7 @@ declare module 'typescript' {
     getLineAndCharacterOfPosition(
       file: SourceFile,
       start?: number,
-    ): $ReadOnly<{line: number, character: number}>,
+    ): Readonly<{line: number, character: number}>,
     convertCompilerOptionsFromJson(
       jsonOptions: any,
       basePath: string,

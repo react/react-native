@@ -1,0 +1,13 @@
+class test::Clss {
+  public Clss();
+  public const int constFn();
+  public const int constOverrideFn() override;
+  public const int testFnConst() const;
+  public const int testOverrideFnConst() const override;
+  public int fn();
+  public int overrideFn() override;
+  public virtual const int constVirtualFn();
+  public virtual const int testVirtualFnConst() const;
+  public virtual int virtualFn();
+  public virtual ~Clss();
+}

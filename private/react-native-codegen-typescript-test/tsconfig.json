@@ -3,9 +3,10 @@
     "lib": [
       "es6"
     ],
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "target": "es5",
+    "module": "node16",
+    "moduleResolution": "node16",
+    "target": "es2015",
+    "types": ["jest", "node"],
     "declaration": false,
     "sourceMap": false,
     "outDir": "./lib",

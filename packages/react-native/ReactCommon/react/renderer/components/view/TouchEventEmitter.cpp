@@ -42,26 +42,38 @@ static jsi::Value touchEventPayload(
   return object;
 }
 
+static HighResTimeStamp getTimestampFromTouchEvent(const TouchEvent& event) {
+  if (!event.changedTouches.empty()) {
+    const auto& firstChangedTouch = *event.changedTouches.begin();
+    return firstChangedTouch.timeStamp;
+  }
+  return HighResTimeStamp::now();
+}
+
 void TouchEventEmitter::dispatchTouchEvent(
     std::string type,
     TouchEvent event,
     RawEvent::Category category) const {
+  auto eventTimestamp = getTimestampFromTouchEvent(event);
   dispatchEvent(
       std::move(type),
       [event = std::move(event)](jsi::Runtime& runtime) {
         return touchEventPayload(runtime, event);
       },
-      category);
+      category,
+      eventTimestamp);
 }
 
 void TouchEventEmitter::dispatchPointerEvent(
     std::string type,
     PointerEvent event,
     RawEvent::Category category) const {
+  auto eventTimestamp = event.timeStamp;
   dispatchEvent(
       std::move(type),
       std::make_shared<PointerEvent>(std::move(event)),
-      category);
+      category,
+      eventTimestamp);
 }
 
 void TouchEventEmitter::onTouchStart(TouchEvent event) const {
@@ -70,10 +82,13 @@ void TouchEventEmitter::onTouchStart(TouchEvent event) const {
 }
 
 void TouchEventEmitter::onTouchMove(TouchEvent event) const {
+  auto eventTimestamp = getTimestampFromTouchEvent(event);
   dispatchUniqueEvent(
-      "touchMove", [event = std::move(event)](jsi::Runtime& runtime) {
+      "touchMove",
+      [event = std::move(event)](jsi::Runtime& runtime) {
         return touchEventPayload(runtime, event);
-      });
+      },
+      eventTimestamp);
 }
 
 void TouchEventEmitter::onTouchEnd(TouchEvent event) const {
@@ -101,8 +116,11 @@ void TouchEventEmitter::onPointerDown(PointerEvent event) const {
 }
 
 void TouchEventEmitter::onPointerMove(PointerEvent event) const {
+  auto eventTimestamp = event.timeStamp;
   dispatchUniqueEvent(
-      "pointerMove", std::make_shared<PointerEvent>(std::move(event)));
+      "pointerMove",
+      std::make_shared<PointerEvent>(std::move(event)),
+      eventTimestamp);
 }
 
 void TouchEventEmitter::onPointerUp(PointerEvent event) const {

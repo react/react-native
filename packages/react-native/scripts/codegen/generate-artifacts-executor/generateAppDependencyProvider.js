@@ -10,7 +10,7 @@
 
 'use strict';
 const {TEMPLATES_FOLDER_PATH, packageJson} = require('./constants');
-const {codegenLog} = require('./utils');
+const {codegenLog, writeFileSyncIfChanged} = require('./utils');
 const fs = require('fs');
 const path = require('path');
 
@@ -38,7 +38,7 @@ function generateAppDependencyProvider(outputDir /*: string */) {
     'utf8',
   );
   const finalPathH = path.join(outputDir, 'RCTAppDependencyProvider.h');
-  fs.writeFileSync(finalPathH, templateH);
+  writeFileSyncIfChanged(finalPathH, templateH);
   codegenLog(`Generated artifact: ${finalPathH}`);
 
   const templateMM = fs.readFileSync(
@@ -46,7 +46,7 @@ function generateAppDependencyProvider(outputDir /*: string */) {
     'utf8',
   );
   const finalPathMM = path.join(outputDir, 'RCTAppDependencyProvider.mm');
-  fs.writeFileSync(finalPathMM, templateMM);
+  writeFileSyncIfChanged(finalPathMM, templateMM);
   codegenLog(`Generated artifact: ${finalPathMM}`);
 
   // Generate the podspec file
@@ -58,7 +58,7 @@ function generateAppDependencyProvider(outputDir /*: string */) {
     outputDir,
     'ReactAppDependencyProvider.podspec',
   );
-  fs.writeFileSync(finalPathPodspec, templatePodspec);
+  writeFileSyncIfChanged(finalPathPodspec, templatePodspec);
   codegenLog(`Generated podspec: ${finalPathPodspec}`);
 }
 

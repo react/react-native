@@ -11,6 +11,7 @@
 #include <react/renderer/core/ReactPrimitives.h>
 #include <react/renderer/debug/DebugStringConvertible.h>
 #include <react/renderer/graphics/Point.h>
+#include <react/timing/primitives.h>
 
 namespace facebook::react {
 
@@ -110,6 +111,10 @@ struct PointerEvent : public EventPayload {
    * was fired.
    */
   int button;
+  /*
+   * The time when the event occurred.
+   */
+  HighResTimeStamp timeStamp{};
 
   /*
    * EventPayload implementations

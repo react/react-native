@@ -5,7 +5,7 @@ inputs:
     required: true
     description: The type of release we are building. It could be nightly, release or dry-run
   gradle-cache-encryption-key:
-    description: "The encryption key needed to store the Gradle Configuration cache"
+    description: 'The encryption key needed to store the Gradle Configuration cache'
 runs:
   using: composite
   steps:
@@ -16,16 +16,25 @@ runs:
       uses: ./.github/actions/setup-node
     - name: Install node dependencies
       uses: ./.github/actions/yarn-install
+    - name: Read current RNVersion
+      shell: bash
+      id: read-rn-version
+      run: |
+        echo "rn-version=$(jq -r '.version' packages/react-native/package.json)" >> $GITHUB_OUTPUT
     - name: Set React Native Version
       # We don't want to set the version for stable branches, because this has been
       # already set from the 'create release' commits on the release branch.
-      if: ${{ !endsWith(github.ref_name, '-stable') }}
+      # For testing RC.0, though, the version has not been set yet. In that case, we are on Stable branch and
+      # it is the only case when the version is still 1000.0.0
+      # We also skip this when the PR targets a stable branch (github.base_ref ends with '-stable'),
+      # since the version is already set on the stable branch.
+      if: ${{ !endsWith(github.ref_name, '-stable') && !endsWith(github.base_ref || '', '-stable') || endsWith(github.ref_name, '-stable') && steps.read-rn-version.outputs.rn-version == '1000.0.0' }}
       shell: bash
       run: node ./scripts/releases/set-rn-artifacts-version.js --build-type ${{ inputs.release-type }}
     - name: Setup gradle
       uses: ./.github/actions/setup-gradle
       with:
-        cache-read-only: "false"
+        cache-read-only: 'false'
         cache-encryption-key: ${{ inputs.gradle-cache-encryption-key }}
     - name: Restore Android ccache
       uses: actions/cache/restore@v5

@@ -26,7 +26,8 @@ import Keyboard from './Keyboard';
 import * as React from 'react';
 import {createRef} from 'react';
 
-export type KeyboardAvoidingViewProps = $ReadOnly<{
+/** @build-types emit-as-interface Uniwind compatibility */
+export type KeyboardAvoidingViewProps = Readonly<{
   ...ViewProps,
 
   /**
@@ -208,7 +209,7 @@ class KeyboardAvoidingView extends React.Component<
       ];
     } else {
       this._subscriptions = [
-        Keyboard.addListener('keyboardDidHide', this._onKeyboardChange),
+        Keyboard.addListener('keyboardDidHide', this._onKeyboardHide),
         Keyboard.addListener('keyboardDidShow', this._onKeyboardChange),
       ];
     }
@@ -296,5 +297,7 @@ class KeyboardAvoidingView extends React.Component<
     }
   }
 }
+
+export type KeyboardAvoidingViewInstance = KeyboardAvoidingView;
 
 export default KeyboardAvoidingView;

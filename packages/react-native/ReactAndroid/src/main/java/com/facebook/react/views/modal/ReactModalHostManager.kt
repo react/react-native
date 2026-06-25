@@ -91,7 +91,7 @@ internal class ReactModalHostManager :
   }
 
   override fun addEventEmitters(reactContext: ThemedReactContext, view: ReactModalHostView) {
-    val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(reactContext, view.id)
+    val dispatcher = UIManagerHelper.getEventDispatcher(reactContext)
     if (dispatcher != null) {
       view.onRequestCloseListener = OnRequestCloseListener {
         dispatcher.dispatchEvent(

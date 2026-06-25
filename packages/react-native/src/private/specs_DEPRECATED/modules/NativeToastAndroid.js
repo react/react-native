@@ -13,20 +13,20 @@ import type {TurboModule} from '../../../../Libraries/TurboModule/RCTExport';
 import * as TurboModuleRegistry from '../../../../Libraries/TurboModule/TurboModuleRegistry';
 
 export interface Spec extends TurboModule {
-  +getConstants: () => {
+  readonly getConstants: () => {
     SHORT: number,
     LONG: number,
     TOP: number,
     BOTTOM: number,
     CENTER: number,
   };
-  +show: (message: string, duration: number) => void;
-  +showWithGravity: (
+  readonly show: (message: string, duration: number) => void;
+  readonly showWithGravity: (
     message: string,
     duration: number,
     gravity: number,
   ) => void;
-  +showWithGravityAndOffset: (
+  readonly showWithGravityAndOffset: (
     message: string,
     duration: number,
     gravity: number,
@@ -35,4 +35,4 @@ export interface Spec extends TurboModule {
   ) => void;
 }
 
-export default (TurboModuleRegistry.getEnforcing<Spec>('ToastAndroid'): Spec);
+export default TurboModuleRegistry.getEnforcing<Spec>('ToastAndroid') as Spec;

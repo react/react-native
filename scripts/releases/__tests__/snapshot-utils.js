@@ -25,7 +25,7 @@ function sanitizeSnapshots(
   tokenOrPattern: string | RegExp | (() => string | RegExp),
   replacement: string,
 ): JestPrettyFormatPlugin {
-  const test = (val: mixed) => {
+  const test = (val: unknown) => {
     if (typeof val !== 'string') {
       return false;
     }
@@ -39,11 +39,11 @@ function sanitizeSnapshots(
     return tokenOrPatternToTest.test(val);
   };
   const serialize = (
-    val: mixed,
-    config: mixed,
-    indentation: mixed,
-    depth: mixed,
-    refs: mixed,
+    val: unknown,
+    config: unknown,
+    indentation: unknown,
+    depth: unknown,
+    refs: unknown,
     // $FlowFixMe[unclear-type] TODO: add up-to-date and accurate types for Jest snapshot serializers.
     printer: any,
   ) => {

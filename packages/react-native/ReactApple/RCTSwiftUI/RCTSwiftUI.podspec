@@ -25,7 +25,7 @@ Pod::Spec.new do |s|
   s.author                 = "Meta Platforms, Inc. and its affiliates"
   s.platforms              = min_supported_versions
   s.source                 = source
-  s.source_files           = "*.{h,m,swift}"
+  s.source_files           = podspec_sources("*.{h,m,swift}", "")
   s.public_header_files    = "*.h"
   s.module_name            = "RCTSwiftUI"
   s.header_dir             = "RCTSwiftUI"

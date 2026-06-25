@@ -55,16 +55,12 @@ inline static NSURLRequestCachePolicy NSURLRequestCachePolicyFromImageSource(
   switch (imageSource.cache) {
     case facebook::react::ImageSource::CacheStategy::Reload:
       return NSURLRequestReloadIgnoringLocalCacheData;
-      break;
     case facebook::react::ImageSource::CacheStategy::ForceCache:
       return NSURLRequestReturnCacheDataElseLoad;
-      break;
     case facebook::react::ImageSource::CacheStategy::OnlyIfCached:
       return NSURLRequestReturnCacheDataDontLoad;
-      break;
     default:
       return NSURLRequestUseProtocolCachePolicy;
-      break;
   }
 }
 

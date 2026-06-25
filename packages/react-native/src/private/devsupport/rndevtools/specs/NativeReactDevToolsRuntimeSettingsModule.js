@@ -24,10 +24,12 @@ export type PartialReloadAndProfileConfig = {
 };
 
 export interface Spec extends TurboModule {
-  +setReloadAndProfileConfig: (config: PartialReloadAndProfileConfig) => void;
-  +getReloadAndProfileConfig: () => ReloadAndProfileConfig;
+  readonly setReloadAndProfileConfig: (
+    config: PartialReloadAndProfileConfig,
+  ) => void;
+  readonly getReloadAndProfileConfig: () => ReloadAndProfileConfig;
 }
 
-export default (TurboModuleRegistry.get<Spec>(
+export default TurboModuleRegistry.get<Spec>(
   'ReactDevToolsRuntimeSettingsModule',
-): ?Spec);
+) as ?Spec;

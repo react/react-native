@@ -7,30 +7,33 @@
 
 #pragma once
 
+#include <ReactCommon/BindingsInstallerHolder.h>
 #include <fbjni/fbjni.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
 
-class BlobCollector : public jni::HybridClass<BlobCollector>, public jsi::HostObject {
+class BlobCollector : public jsi::HostObject {
  public:
   BlobCollector(jni::global_ref<jobject> blobModule, std::string blobId);
   ~BlobCollector();
 
   size_t getBlobLength();
 
-  static constexpr auto kJavaDescriptor = "Lcom/facebook/react/modules/blob/BlobCollector;";
+ private:
+  jni::global_ref<jobject> blobModule_;
+  const std::string blobId_;
+};
 
-  static void
-  nativeInstall(jni::alias_ref<jclass> /*unused*/, jni::alias_ref<jobject> blobModule, jlong jsContextNativePointer);
+class BlobModuleJSIBindings : public jni::JavaClass<BlobModuleJSIBindings> {
+ public:
+  static constexpr const char *kJavaDescriptor = "Lcom/facebook/react/modules/blob/BlobModule;";
 
   static void registerNatives();
 
  private:
-  friend HybridBase;
-
-  jni::global_ref<jobject> blobModule_;
-  const std::string blobId_;
+  static jni::local_ref<BindingsInstallerHolder::javaobject> getBindingsInstaller(
+      jni::alias_ref<BlobModuleJSIBindings> jobj);
 };
 
 } // namespace facebook::react

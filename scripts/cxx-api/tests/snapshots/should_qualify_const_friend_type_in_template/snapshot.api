@@ -1,0 +1,7 @@
+struct test::ComponentDescriptor {
+  public friend ShadowNode;
+  public virtual std::shared_ptr<const test::ShadowNode> clone() const = 0;
+}
+
+struct test::ShadowNode {
+}

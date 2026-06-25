@@ -1,0 +1,27 @@
+class test::BaseTextShadowNode : public test::ShadowNode {
+  public BaseTextShadowNode(const test::ShadowNode& source, const test::ShadowNode::Fragment& fragment);
+  public BaseTextShadowNode(const test::ShadowNode::Fragment& fragment, const test::ShadowNode::Shared& family, test::ShadowNode::Traits traits);
+}
+
+class test::ConcreteViewShadowNode : public test::ShadowNode {
+  public ConcreteViewShadowNode(const test::ShadowNode& source, const test::ShadowNode::Fragment& fragment);
+  public ConcreteViewShadowNode(const test::ShadowNode::Fragment& fragment, const test::ShadowNode::Shared& family, test::ShadowNode::Traits traits);
+}
+
+class test::ParagraphShadowNode : public test::ConcreteViewShadowNode, public test::BaseTextShadowNode {
+  public ParagraphShadowNode(const test::ShadowNode& source, const test::ShadowNode::Fragment& fragment);
+  public ParagraphShadowNode(const test::ShadowNode::Fragment& fragment, const test::ShadowNode::Shared& family, test::ShadowNode::Traits traits);
+}
+
+class test::ShadowNode {
+}
+
+enum test::ShadowNode::Traits {
+  None,
+}
+
+struct test::ShadowNode::Fragment {
+}
+
+struct test::ShadowNode::Shared {
+}

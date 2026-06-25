@@ -13,16 +13,16 @@ import type {HostComponent} from '../../types/HostComponent';
 
 import codegenNativeComponent from '../../../../Libraries/Utilities/codegenNativeComponent';
 
-type RCTSafeAreaViewNativeProps = $ReadOnly<{
+type RCTSafeAreaViewNativeProps = Readonly<{
   ...ViewProps,
 
   // No props
 }>;
 
-export default (codegenNativeComponent<RCTSafeAreaViewNativeProps>(
+export default codegenNativeComponent<RCTSafeAreaViewNativeProps>(
   'SafeAreaView',
   {
     paperComponentName: 'RCTSafeAreaView',
     interfaceOnly: true,
   },
-): HostComponent<RCTSafeAreaViewNativeProps>);
+) as HostComponent<RCTSafeAreaViewNativeProps>;

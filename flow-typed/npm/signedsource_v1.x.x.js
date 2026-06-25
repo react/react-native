@@ -12,7 +12,7 @@ declare module 'signedsource' {
     isSigned(data: string): boolean,
     signFile(data: string): string,
     verifySignature(data: string): boolean,
-    [key: string]: mixed,
+    [key: string]: unknown,
   };
 
   declare module.exports: SignedSource;

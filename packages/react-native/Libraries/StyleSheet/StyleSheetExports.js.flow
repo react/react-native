@@ -13,7 +13,7 @@ import type {____Styles_Internal} from './StyleSheetTypes';
 import composeStyles from '../../src/private/styles/composeStyles';
 import flattenStyle from './flattenStyle';
 
-type AbsoluteFillStyle = $ReadOnly<{
+type AbsoluteFillStyle = Readonly<{
   position: 'absolute',
   left: 0,
   right: 0,
@@ -46,11 +46,6 @@ declare export const hairlineWidth: number;
  * styles.
  */
 declare export const absoluteFill: AbsoluteFillStyle;
-
-/**
- * @deprecated Use `StyleSheet.absoluteFill`.
- */
-declare export const absoluteFillObject: AbsoluteFillStyle;
 
 /**
  * Combines two styles such that style2 will override any styles in style1.
@@ -100,6 +95,6 @@ declare export const setStyleAttributePreprocessor: (
  * An identity function for creating style sheets.
  */
 // $FlowFixMe[unsupported-variance-annotation]
-declare export const create: <+S: ____Styles_Internal>(
+declare export const create: <out S extends ____Styles_Internal>(
   obj: S & ____Styles_Internal,
-) => $ReadOnly<S>;
+) => Readonly<S>;

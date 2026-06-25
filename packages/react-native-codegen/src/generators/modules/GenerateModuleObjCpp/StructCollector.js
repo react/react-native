@@ -42,23 +42,23 @@ const {
   parseValidUnionType,
 } = require('../../Utils');
 
-type StructContext = 'CONSTANTS' | 'REGULAR';
+export type StructContext = 'CONSTANTS' | 'REGULAR';
 
-export type RegularStruct = $ReadOnly<{
+export type RegularStruct = Readonly<{
   context: 'REGULAR',
   name: string,
-  properties: $ReadOnlyArray<StructProperty>,
+  properties: ReadonlyArray<StructProperty>,
 }>;
 
-export type ConstantsStruct = $ReadOnly<{
+export type ConstantsStruct = Readonly<{
   context: 'CONSTANTS',
   name: string,
-  properties: $ReadOnlyArray<StructProperty>,
+  properties: ReadonlyArray<StructProperty>,
 }>;
 
 export type Struct = RegularStruct | ConstantsStruct;
 
-export type StructProperty = $ReadOnly<{
+export type StructProperty = Readonly<{
   name: string,
   optional: boolean,
   typeAnnotation: Nullable<StructTypeAnnotation>,
@@ -132,6 +132,10 @@ class StructCollector {
         return wrapNullable(nullable, typeAnnotation);
       case 'MixedTypeAnnotation':
         throw new Error('Mixed types are unsupported in structs');
+      case 'ArrayBufferTypeAnnotation':
+        throw new Error(
+          'ArrayBuffer is unsupported in TurboModule struct types.',
+        );
       case 'UnionTypeAnnotation':
         try {
           const validUnionType = parseValidUnionType(typeAnnotation);
@@ -155,7 +159,7 @@ class StructCollector {
                 type: 'StringTypeAnnotation',
               });
             default:
-              (validUnionType: empty);
+              validUnionType as empty;
               throw new Error(`Unsupported union member types`);
           }
         } catch (ex) {
@@ -200,7 +204,7 @@ class StructCollector {
   ): void {
     // $FlowFixMe[missing-type-arg]
     const properties = objectTypeAnnotation.properties.map<
-      $ReadOnly<{
+      Readonly<{
         name: string,
         optional: boolean,
         typeAnnotation: Nullable<StructTypeAnnotation>,
@@ -235,12 +239,12 @@ class StructCollector {
         });
         break;
       default:
-        (structContext: empty);
+        structContext as empty;
         throw new Error(`Detected an invalid struct context: ${structContext}`);
     }
   }
 
-  getAllStructs(): $ReadOnlyArray<Struct> {
+  getAllStructs(): ReadonlyArray<Struct> {
     return [...this._structs.values()];
   }
 

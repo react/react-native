@@ -7,6 +7,8 @@
 
 #include "JavaInteropTurboModule.h"
 
+#ifndef RCT_REMOVE_LEGACY_MODULE_INTEROP
+
 namespace facebook::react {
 
 namespace {
@@ -189,3 +191,5 @@ std::vector<facebook::jsi::PropNameID> JavaInteropTurboModule::getPropertyNames(
 }
 
 } // namespace facebook::react
+
+#endif // RCT_REMOVE_LEGACY_MODULE_INTEROP

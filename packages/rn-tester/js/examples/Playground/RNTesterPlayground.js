@@ -30,9 +30,9 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ({
+export default {
   title: 'Playground',
   name: 'playground',
   description: 'Test out new features and ideas.',
   render: (): React.Node => <Playground />,
-}: RNTesterModuleExample);
+} as RNTesterModuleExample;

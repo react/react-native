@@ -41,6 +41,8 @@ export type MeasureLayoutOnSuccessCallback = (
  * native view. This will generally include most components that you define in your own app.
  * For more information, see [Direct Manipulation](https://reactnative.dev/docs/the-new-architecture/direct-manipulation-new-architecture).
  * @see https://github.com/facebook/react-native/blob/master/Libraries/Renderer/shims/ReactNativeTypes.js#L87
+ *
+ * @deprecated Use HostInstance instead.
  */
 export interface NativeMethods {
   /**
@@ -112,11 +114,11 @@ export interface NativeMethods {
 }
 
 /**
- * @deprecated Use NativeMethods instead.
+ * @deprecated Use HostInstance instead.
  */
 export type NativeMethodsMixin = NativeMethods;
 /**
- * @deprecated Use NativeMethods instead.
+ * @deprecated Use HostInstance instead.
  */
 export type NativeMethodsMixinType = NativeMethods;
 

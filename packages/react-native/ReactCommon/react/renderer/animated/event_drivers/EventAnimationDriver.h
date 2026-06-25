@@ -11,7 +11,6 @@
 
 #pragma once
 
-#include <folly/dynamic.h>
 #include <react/renderer/core/EventPayload.h>
 #include <react/renderer/core/ReactPrimitives.h>
 #include <optional>

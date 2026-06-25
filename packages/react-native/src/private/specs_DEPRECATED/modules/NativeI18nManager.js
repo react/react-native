@@ -19,10 +19,10 @@ export type I18nManagerConstants = {
 };
 
 export interface Spec extends TurboModule {
-  +getConstants: () => I18nManagerConstants;
+  readonly getConstants: () => I18nManagerConstants;
   allowRTL: (allowRTL: boolean) => void;
   forceRTL: (forceRTL: boolean) => void;
   swapLeftAndRightInRTL: (flipStyles: boolean) => void;
 }
 
-export default (TurboModuleRegistry.get<Spec>('I18nManager'): ?Spec);
+export default TurboModuleRegistry.get<Spec>('I18nManager') as ?Spec;

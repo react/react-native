@@ -45,7 +45,7 @@ struct CSSTransformOrigin {
 
 template <>
 struct CSSDataTypeParser<CSSTransformOrigin> {
-  static constexpr auto consume(CSSSyntaxParser &parser) -> std::optional<CSSTransformOrigin>
+  static constexpr auto consume(CSSValueParser &parser) -> std::optional<CSSTransformOrigin>
   {
     //  [ left | center | right | top | bottom | <length-percentage> ]
     // |
@@ -54,19 +54,18 @@ struct CSSDataTypeParser<CSSTransformOrigin> {
     // |
     //   [ [ center | left | right ] && [ center | top | bottom ] ] <length>?
 
-    auto firstValue = parseNextCSSValue<CSSLengthPercentage, CSSTransformOriginKeyword>(parser);
+    auto firstValue = parser.parseNextValue<CSSLengthPercentage, CSSTransformOriginKeyword>();
     if (std::holds_alternative<std::monostate>(firstValue)) {
       return {};
     }
 
-    auto secondValue =
-        parseNextCSSValue<CSSLengthPercentage, CSSTransformOriginKeyword>(parser, CSSDelimiter::Whitespace);
+    auto secondValue = parser.parseNextValue<CSSLengthPercentage, CSSTransformOriginKeyword>(CSSDelimiter::Whitespace);
 
     if (std::holds_alternative<std::monostate>(secondValue)) {
       return singleValue(firstValue);
     }
 
-    auto thirdValue = parseNextCSSValue<CSSLength>(parser, CSSDelimiter::Whitespace);
+    auto thirdValue = parser.parseNextValue<CSSLength>(CSSDelimiter::Whitespace);
 
     if (std::holds_alternative<CSSLength>(firstValue) || std::holds_alternative<CSSPercentage>(firstValue) ||
         std::holds_alternative<CSSLength>(secondValue) || std::holds_alternative<CSSPercentage>(secondValue)) {

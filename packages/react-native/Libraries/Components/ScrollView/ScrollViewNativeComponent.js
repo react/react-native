@@ -15,6 +15,7 @@ import type {ScrollViewNativeProps as Props} from './ScrollViewNativeComponentTy
 import * as NativeComponentRegistry from '../../NativeComponent/NativeComponentRegistry';
 import {ConditionallyIgnoredEventHandlers} from '../../NativeComponent/ViewConfigIgnore';
 import Platform from '../../Utilities/Platform';
+import {colorAttribute} from '../View/ReactNativeStyleAttributes';
 
 export const __INTERNAL_VIEW_CONFIG: PartialViewConfig =
   Platform.OS === 'android'
@@ -60,34 +61,23 @@ export const __INTERNAL_VIEW_CONFIG: PartialViewConfig =
           nestedScrollEnabled: true,
           scrollEventThrottle: true,
           borderStyle: true,
-          borderRightColor: {
-            process: require('../../StyleSheet/processColor').default,
-          },
-          borderColor: {
-            process: require('../../StyleSheet/processColor').default,
-          },
-          borderBottomColor: {
-            process: require('../../StyleSheet/processColor').default,
-          },
+          borderRightColor: colorAttribute,
+          borderColor: colorAttribute,
+          borderBottomColor: colorAttribute,
           persistentScrollbar: true,
           horizontal: true,
-          endFillColor: {
-            process: require('../../StyleSheet/processColor').default,
-          },
+          endFillColor: colorAttribute,
           fadingEdgeLength: true,
           overScrollMode: true,
           borderTopLeftRadius: true,
           scrollPerfTag: true,
-          borderTopColor: {
-            process: require('../../StyleSheet/processColor').default,
-          },
+          borderTopColor: colorAttribute,
           removeClippedSubviews: true,
           borderTopRightRadius: true,
-          borderLeftColor: {
-            process: require('../../StyleSheet/processColor').default,
-          },
+          borderLeftColor: colorAttribute,
           pointerEvents: true,
           isInvertedVirtualizedList: true,
+          scrollsChildToFocus: true,
         },
       }
     : {

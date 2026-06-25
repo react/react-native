@@ -1,0 +1,4 @@
+enum test::Enum {
+  Value1,
+  Value2,
+}

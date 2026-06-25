@@ -10,7 +10,7 @@
 
 import {useCallback, useRef} from 'react';
 
-type CallbackRef<T> = T => mixed;
+type CallbackRef<T> = T => unknown;
 
 /**
  * Constructs a callback ref that provides similar semantics as `useEffect`. The

@@ -113,6 +113,7 @@ enum class CSSDelimiter {
 class CSSSyntaxParser {
   template <CSSSyntaxVisitorReturn ReturnT, CSSComponentValueVisitor<ReturnT>... VisitorsT>
   friend struct CSSComponentValueVisitorDispatcher;
+  friend class CSSValueParser;
 
  public:
   /**
@@ -226,20 +227,23 @@ class CSSSyntaxParser {
         return hasWhiteSpace;
       case CSSDelimiter::None:
         return true;
+      default:
+        return false;
     }
+  }
 
-    return false;
+  /**
+   * Returns the current token without consuming it.
+   */
+  constexpr const CSSToken &peek() const
+  {
+    return currentToken_;
   }
 
  private:
   constexpr CSSSyntaxParser(CSSSyntaxParser &parser, CSSTokenType terminator)
       : tokenizer_{parser.tokenizer_}, currentToken_{parser.currentToken_}, terminator_{terminator}
   {
-  }
-
-  constexpr const CSSToken &peek() const
-  {
-    return currentToken_;
   }
 
   constexpr CSSToken consumeToken()

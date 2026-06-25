@@ -15,12 +15,14 @@ RawEvent::RawEvent(
     SharedEventTarget eventTarget,
     std::weak_ptr<const ShadowNodeFamily> shadowNodeFamily,
     Category category,
-    bool isUnique)
+    bool isUnique,
+    HighResTimeStamp eventStartTimeStamp)
     : type(std::move(type)),
       eventPayload(std::move(eventPayload)),
       eventTarget(std::move(eventTarget)),
       shadowNodeFamily(std::move(shadowNodeFamily)),
       category(category),
-      isUnique(isUnique) {}
+      isUnique(isUnique),
+      eventStartTimeStamp(eventStartTimeStamp) {}
 
 } // namespace facebook::react

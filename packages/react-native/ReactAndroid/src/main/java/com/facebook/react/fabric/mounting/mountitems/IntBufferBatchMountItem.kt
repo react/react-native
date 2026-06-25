@@ -109,7 +109,7 @@ internal class IntBufferBatchMountItem(
             surfaceMountingManager.createView(
                 fabricComponentName,
                 intBuffer[i++],
-                objBuffer[j++] as ReadableMap?,
+                objBuffer[j++] as ReadableMap,
                 objBuffer[j++] as StateWrapper?,
                 objBuffer[j++] as EventEmitterWrapper?,
                 intBuffer[i++] == 1,
@@ -124,7 +124,7 @@ internal class IntBufferBatchMountItem(
           INSTRUCTION_REMOVE ->
               surfaceMountingManager.removeViewAt(intBuffer[i++], intBuffer[i++], intBuffer[i++])
           INSTRUCTION_UPDATE_PROPS ->
-              surfaceMountingManager.updateProps(intBuffer[i++], objBuffer[j++] as ReadableMap?)
+              surfaceMountingManager.updateProps(intBuffer[i++], objBuffer[j++] as ReadableMap)
           INSTRUCTION_UPDATE_STATE ->
               surfaceMountingManager.updateState(intBuffer[i++], objBuffer[j++] as StateWrapper?)
           INSTRUCTION_UPDATE_LAYOUT -> {

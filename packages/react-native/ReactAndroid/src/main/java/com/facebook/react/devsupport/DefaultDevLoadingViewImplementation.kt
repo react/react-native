@@ -51,13 +51,14 @@ public class DefaultDevLoadingViewImplementation(
     }
   }
 
-  override fun updateProgress(status: String?, done: Int?, total: Int?) {
+  override fun updateProgress(status: String?, done: Int?, total: Int?, percent: Int?) {
     if (!isEnabled) {
       return
     }
     UiThreadUtil.runOnUiThread {
       val percentage =
-          if (done != null && total != null && total > 0)
+          if (percent != null) String.format(Locale.getDefault(), " %d%%", percent)
+          else if (done != null && total != null && total > 0)
               String.format(Locale.getDefault(), " %.1f%%", done.toFloat() / total * 100)
           else ""
       devLoadingView?.text =

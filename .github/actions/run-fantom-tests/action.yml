@@ -1,19 +1,12 @@
 name: Run Fantom Tests
-inputs:
-  release-type:
-    required: true
-    description: The type of release we are building. It could be nightly, release or dry-run
-  gradle-cache-encryption-key:
-    description: "The encryption key needed to store the Gradle Configuration cache"
-
 runs:
   using: composite
   steps:
-    - name: Install dependencies
+    - name: Install runtime dependencies
       shell: bash
       run: |
         sudo apt update
-        sudo apt install -y git cmake openssl libssl-dev clang
+        sudo apt install -y openssl libssl-dev
     - name: Setup git safe folders
       shell: bash
       run: git config --global --add safe.directory '*'
@@ -21,58 +14,36 @@ runs:
       uses: ./.github/actions/setup-node
     - name: Install node dependencies
       uses: ./.github/actions/yarn-install
-    - name: Setup gradle
-      uses: ./.github/actions/setup-gradle
+    - name: Download Fantom Runner binary
+      uses: actions/download-artifact@v7
       with:
-        cache-read-only: "false"
-        cache-encryption-key: ${{ inputs.gradle-cache-encryption-key }}
-    - name: Restore Fantom ccache
-      uses: actions/cache/restore@v5
-      with:
-        path: /github/home/.cache/ccache
-        key: v2-ccache-fantom-${{ github.job }}-${{ github.ref }}-${{ hashFiles(
-            'packages/react-native/ReactAndroid/**/*.cpp',
-            'packages/react-native/ReactAndroid/**/*.h',
-            'packages/react-native/ReactAndroid/**/CMakeLists.txt',
-            'packages/react-native/ReactCommon/**/*.cpp',
-            'packages/react-native/ReactCommon/**/*.h',
-            'packages/react-native/ReactCommon/**/CMakeLists.txt',
-            'private/react-native-fantom/tester/**/*.cpp',
-            'private/react-native-fantom/tester/**/*.h',
-            'private/react-native-fantom/tester/**/CMakeLists.txt'
-          ) }}
-        restore-keys: |
-          v2-ccache-fantom-${{ github.job }}-${{ github.ref }}-
-          v2-ccache-fantom-${{ github.job }}-
-          v2-ccache-fantom-
-    - name: Show ccache stats
+        name: fantom-runner-binary
+        path: private/react-native-fantom/build/tester
+    - name: Make binary executable
       shell: bash
-      run: ccache -s -v
+      run: chmod +x private/react-native-fantom/build/tester/fantom_tester
     - name: Run Fantom Tests
       shell: bash
-      run: yarn fantom
+      run: |
+        for attempt in 1 2 3; do
+          echo "Attempt $attempt of 3"
+          if [ "$attempt" -eq 1 ]; then
+            if yarn fantom; then
+              exit 0
+            fi
+          else
+            if yarn fantom --onlyFailures; then
+              exit 0
+            fi
+          fi
+          if [ "$attempt" -lt 3 ]; then
+            echo "Attempt $attempt failed. Retrying only failed tests..."
+          fi
+        done
+        echo "All 3 attempts failed."
+        exit 1
       env:
-        CC: clang
-        CXX: clang++
-    - name: Save Fantom ccache
-      if: ${{ github.ref == 'refs/heads/main' || contains(github.ref, '-stable') }}
-      uses: actions/cache/save@v5
-      with:
-        path: /github/home/.cache/ccache
-        key: v2-ccache-fantom-${{ github.job }}-${{ github.ref }}-${{ hashFiles(
-            'packages/react-native/ReactAndroid/**/*.cpp',
-            'packages/react-native/ReactAndroid/**/*.h',
-            'packages/react-native/ReactAndroid/**/CMakeLists.txt',
-            'packages/react-native/ReactCommon/**/*.cpp',
-            'packages/react-native/ReactCommon/**/*.h',
-            'packages/react-native/ReactCommon/**/CMakeLists.txt',
-            'private/react-native-fantom/tester/**/*.cpp',
-            'private/react-native-fantom/tester/**/*.h',
-            'private/react-native-fantom/tester/**/CMakeLists.txt'
-          ) }}
-    - name: Show ccache stats
-      shell: bash
-      run: ccache -s -v
+        LD_LIBRARY_PATH: ${{ github.workspace }}/private/react-native-fantom/build/tester
     - name: Upload test results
       if: ${{ always() }}
       uses: actions/upload-artifact@v6

@@ -1,0 +1,4 @@
+class test::Runtime {
+  public int data;
+  public virtual void getStringData(void* ctx, void(*)(void* ctx, bool ascii, const void* data, size_t num) cb);
+}

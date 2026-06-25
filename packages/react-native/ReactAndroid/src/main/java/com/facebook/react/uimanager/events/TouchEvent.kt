@@ -14,8 +14,6 @@ import androidx.core.util.Pools.SynchronizedPool
 import com.facebook.infer.annotation.Assertions
 import com.facebook.react.bridge.ReactSoftExceptionLogger
 import com.facebook.react.bridge.SoftAssertions
-import com.facebook.react.uimanager.common.UIManagerType
-import com.facebook.react.uimanager.common.ViewUtil.getUIManagerType
 import com.facebook.react.uimanager.events.TouchEventType.Companion.getJSEventName
 
 /**
@@ -115,25 +113,12 @@ public class TouchEvent private constructor() : Event<TouchEvent>() {
 
   override fun getCoalescingKey(): Short = coalescingKey
 
-  @Deprecated("Deprecated in Java")
-  override fun dispatch(rctEventEmitter: RCTEventEmitter) {
-    if (verifyMotionEvent()) {
-      TouchesHelper.sendTouchesLegacy(rctEventEmitter, this)
-    }
-  }
-
   override fun dispatchModern(rctEventEmitter: RCTModernEventEmitter) {
     if (!verifyMotionEvent()) {
       return
     }
 
-    @UIManagerType val uiManagerType = getUIManagerType(viewTag, surfaceId)
-    if (uiManagerType == UIManagerType.FABRIC) {
-      // TouchesHelper.sendTouchEvent can be inlined here post Fabric rollout
-      TouchesHelper.sendTouchEvent(rctEventEmitter, this)
-    } else if (uiManagerType == UIManagerType.LEGACY) {
-      TouchesHelper.sendTouchesLegacy(rctEventEmitter, this)
-    }
+    TouchesHelper.sendTouchEvent(rctEventEmitter, this)
   }
 
   public override fun getEventCategory(): Int {

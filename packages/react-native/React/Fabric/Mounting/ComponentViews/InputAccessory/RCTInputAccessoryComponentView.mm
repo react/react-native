@@ -43,7 +43,9 @@ static UIView<RCTBackedTextInputViewProtocol> *_Nullable RCTFindTextInputWithNat
 @implementation RCTInputAccessoryComponentView {
   InputAccessoryShadowNode::ConcreteState::Shared _state;
   RCTInputAccessoryContentView *_contentView;
+#if !TARGET_OS_TV
   RCTSurfaceTouchHandler *_touchHandler;
+#endif
   UIView<RCTBackedTextInputViewProtocol> __weak *_textInput;
 }
 
@@ -52,8 +54,10 @@ static UIView<RCTBackedTextInputViewProtocol> *_Nullable RCTFindTextInputWithNat
   if (self = [super initWithFrame:frame]) {
     _props = InputAccessoryShadowNode::defaultSharedProps();
     _contentView = [RCTInputAccessoryContentView new];
+#if !TARGET_OS_TV
     _touchHandler = [RCTSurfaceTouchHandler new];
     [_touchHandler attachToView:_contentView];
+#endif
   }
 
   return self;

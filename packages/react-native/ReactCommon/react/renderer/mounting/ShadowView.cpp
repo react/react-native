@@ -50,10 +50,6 @@ bool ShadowView::operator==(const ShadowView& rhs) const {
              rhs.state);
 }
 
-bool ShadowView::operator!=(const ShadowView& rhs) const {
-  return !(*this == rhs);
-}
-
 #if RN_DEBUG_STRING_CONVERTIBLE
 
 std::string getDebugName(const ShadowView& object) {

@@ -15,7 +15,7 @@ import * as TurboModuleRegistry from '../../../../Libraries/TurboModule/TurboMod
 type Header = [string, string];
 
 export interface Spec extends TurboModule {
-  +sendRequest: (
+  readonly sendRequest: (
     method: string,
     url: string,
     requestId: number,
@@ -26,12 +26,12 @@ export interface Spec extends TurboModule {
     timeout: number,
     withCredentials: boolean,
   ) => void;
-  +abortRequest: (requestId: number) => void;
-  +clearCookies: (callback: (result: boolean) => void) => void;
+  readonly abortRequest: (requestId: number) => void;
+  readonly clearCookies: (callback: (result: boolean) => void) => void;
 
   // RCTEventEmitter
-  +addListener: (eventName: string) => void;
-  +removeListeners: (count: number) => void;
+  readonly addListener: (eventName: string) => void;
+  readonly removeListeners: (count: number) => void;
 }
 
-export default (TurboModuleRegistry.getEnforcing<Spec>('Networking'): Spec);
+export default TurboModuleRegistry.getEnforcing<Spec>('Networking') as Spec;

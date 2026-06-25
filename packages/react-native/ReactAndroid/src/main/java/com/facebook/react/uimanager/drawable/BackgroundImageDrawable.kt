@@ -134,9 +134,11 @@ internal class BackgroundImageDrawable(
       // So we draw in reverse (last drawn in canvas appears closest)
       for (index in layers.indices.reversed()) {
         val backgroundImageLayer = layers[index]
-        val size = backgroundSize?.let { it.getOrNull(index % it.size) }
-        val repeat = backgroundRepeat?.let { it.getOrNull(index % it.size) }
-        val position = backgroundPosition?.let { it.getOrNull(index % it.size) }
+        val size = backgroundSize?.takeIf { it.isNotEmpty() }?.let { it.getOrNull(index % it.size) }
+        val repeat =
+            backgroundRepeat?.takeIf { it.isNotEmpty() }?.let { it.getOrNull(index % it.size) }
+        val position =
+            backgroundPosition?.takeIf { it.isNotEmpty() }?.let { it.getOrNull(index % it.size) }
 
         // 2. Calculate the size of a single tile.
         val (tileWidth, tileHeight) =

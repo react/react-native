@@ -170,55 +170,55 @@ enum EnumUnsorted {
 }
 
 export interface Spec extends TurboModule {
-  +stringLiteral0: (a: StringLiteral0) => void;
-  +stringLiteral1: (a: StringLiteral1) => void;
+  readonly stringLiteral0: (a: StringLiteral0) => void;
+  readonly stringLiteral1: (a: StringLiteral1) => void;
 
-  +booleanLiteral0: (a: BooleanLiteral0) => void;
-  +booleanLiteral1: (a: BooleanLiteral1) => void;
+  readonly booleanLiteral0: (a: BooleanLiteral0) => void;
+  readonly booleanLiteral1: (a: BooleanLiteral1) => void;
 
-  +numericLiteral0: (a: NumericLiteral0) => void;
-  +numericLiteral1: (a: NumericLiteral1) => void;
+  readonly numericLiteral0: (a: NumericLiteral0) => void;
+  readonly numericLiteral1: (a: NumericLiteral1) => void;
 
-  +stringLiteralUnion0: (a: StringLiteralUnion0) => void;
-  +stringLiteralUnion1: (a: StringLiteralUnion1) => void;
-  +stringLiteralUnion2: (a: StringLiteralUnion2) => void;
+  readonly stringLiteralUnion0: (a: StringLiteralUnion0) => void;
+  readonly stringLiteralUnion1: (a: StringLiteralUnion1) => void;
+  readonly stringLiteralUnion2: (a: StringLiteralUnion2) => void;
 
-  +referenceType: (a: ReferenceType) => void;
-  +referenceType2: (a: ReferenceType2) => void;
-  +referenceType3: (a: ReferenceType3) => void;
+  readonly referenceType: (a: ReferenceType) => void;
+  readonly referenceType2: (a: ReferenceType2) => void;
+  readonly referenceType3: (a: ReferenceType3) => void;
 
-  +referenceGeneric: <T>(a: ReferenceGeneric<T>) => void;
-  +referenceGeneric2: <T, X>(a: ReferenceGeneric2<T, X>) => void;
+  readonly referenceGeneric: <T>(a: ReferenceGeneric<T>) => void;
+  readonly referenceGeneric2: <T, X>(a: ReferenceGeneric2<T, X>) => void;
 
-  +objectTypeWithProps: (a: ObjectTypeWithProps) => void;
-  +objectTypeLessProps: (a: ObjectTypeLessProps) => void;
-  +objectTypeWithDifferentProps: (a: ObjectTypeWithDifferentProps) => void;
-  +objectTypeWithNesting: (a: ObjectTypeWithNesting) => void;
-  +objectTypeWithChanges: (a: ObjectTypeWithChanges) => void;
-  +objectTypeWithNestedChanges: (a: ObjectTypeWithNestedChanges) => void;
-  +objectTypeWithTwoOptionals: (a: ObjectTypeWithTwoOptionals) => void;
-  +objectTypeWithOptionalNestedChange: (a: ObjectTypeWithOptionalNestedChange) => void;
-  +nonNullableType: (a: NonNullableType) => void;
-  +nullableType: (a: NullableType) => void;
-  +genericObjectType: (a: GenericObjectType) => void;
-  +unsafeObjectType: (a: UnsafeObjectType) => void;
-  +optionalTypeLessProps: (a: OptionalTypeLessProps) => void;
-  +objectTypeLiteral1: (a: ObjectTypeLiteral1) => void;
-  +objectTypeLiteral2: (a: ObjectTypeLiteral2) => void;
-  +objectTypeLiteral1TypeAlias: (a: ObjectTypeLiteral1TypeAlias) => void;
-  +objectTypeLiteral2TypeAlias: (a: ObjectTypeLiteral2TypeAlias) => void;
-  +genericObjectType: (a: Object) => void;
+  readonly objectTypeWithProps: (a: ObjectTypeWithProps) => void;
+  readonly objectTypeLessProps: (a: ObjectTypeLessProps) => void;
+  readonly objectTypeWithDifferentProps: (a: ObjectTypeWithDifferentProps) => void;
+  readonly objectTypeWithNesting: (a: ObjectTypeWithNesting) => void;
+  readonly objectTypeWithChanges: (a: ObjectTypeWithChanges) => void;
+  readonly objectTypeWithNestedChanges: (a: ObjectTypeWithNestedChanges) => void;
+  readonly objectTypeWithTwoOptionals: (a: ObjectTypeWithTwoOptionals) => void;
+  readonly objectTypeWithOptionalNestedChange: (a: ObjectTypeWithOptionalNestedChange) => void;
+  readonly nonNullableType: (a: NonNullableType) => void;
+  readonly nullableType: (a: NullableType) => void;
+  readonly genericObjectType: (a: GenericObjectType) => void;
+  readonly unsafeObjectType: (a: UnsafeObjectType) => void;
+  readonly optionalTypeLessProps: (a: OptionalTypeLessProps) => void;
+  readonly objectTypeLiteral1: (a: ObjectTypeLiteral1) => void;
+  readonly objectTypeLiteral2: (a: ObjectTypeLiteral2) => void;
+  readonly objectTypeLiteral1TypeAlias: (a: ObjectTypeLiteral1TypeAlias) => void;
+  readonly objectTypeLiteral2TypeAlias: (a: ObjectTypeLiteral2TypeAlias) => void;
+  readonly genericObjectType: (a: Object) => void;
 
-  +mapWithKey: (a: MapWithKey) => void;
-  +mapWithKey2: (a: MapWithKey2) => void;
+  readonly mapWithKey: (a: MapWithKey) => void;
+  readonly mapWithKey2: (a: MapWithKey2) => void;
 
-  +enum: (a: Enum) => void;
-  +enumWithTypeChange: (a: EnumWithTypeChange) => void;
-  +enumWithRemoval: (a: EnumWithRemoval) => void;
-  +enumWithValueChange: (a: EnumWithValueChange) => void;
-  +enumUnsorted: (a: EnumUnsorted) => void;
+  readonly enum: (a: Enum) => void;
+  readonly enumWithTypeChange: (a: EnumWithTypeChange) => void;
+  readonly enumWithRemoval: (a: EnumWithRemoval) => void;
+  readonly enumWithValueChange: (a: EnumWithValueChange) => void;
+  readonly enumUnsorted: (a: EnumUnsorted) => void;
 }
 
-(TurboModuleRegistry.getEnforcing<Spec>(
+TurboModuleRegistry.getEnforcing<Spec>(
   'NativeModuleTest',
-): Spec);
+) as Spec;

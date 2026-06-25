@@ -30,7 +30,7 @@ type Props<T> = {
   testID?: string,
   hideFilterPills?: boolean,
   page: 'examples_page' | 'components_page',
-  sections: $ReadOnlyArray<SectionData<T>>,
+  sections: ReadonlyArray<SectionData<T>>,
   ...
 };
 
@@ -81,7 +81,7 @@ class RNTesterExampleFilter<T> extends React.Component<Props<T>, State> {
   }
 
   _renderFilteredSections(
-    filteredSections: $ReadOnlyArray<{
+    filteredSections: ReadonlyArray<{
       data: Array<T>,
       key: string,
       title: string,

@@ -152,7 +152,7 @@ struct Bridging<NativeEnumTurboModuleStatusLowerCaseEnum> {
 
 #pragma mark - NativeEnumTurboModuleStatusNumEnum
 
-enum class NativeEnumTurboModuleStatusNumEnum { Active, Paused, Off };
+enum class NativeEnumTurboModuleStatusNumEnum { Active = 2, Paused = 1, Off = 0 };
 
 template <>
 struct Bridging<NativeEnumTurboModuleStatusNumEnum> {
@@ -1749,7 +1749,7 @@ struct Bridging<NativeEnumTurboModuleStatusLowerCaseEnum> {
 
 #pragma mark - NativeEnumTurboModuleStatusNumEnum
 
-enum class NativeEnumTurboModuleStatusNumEnum { Active, Paused, Off };
+enum class NativeEnumTurboModuleStatusNumEnum { Active = 2, Paused = 1, Off = 0 };
 
 template <>
 struct Bridging<NativeEnumTurboModuleStatusNumEnum> {

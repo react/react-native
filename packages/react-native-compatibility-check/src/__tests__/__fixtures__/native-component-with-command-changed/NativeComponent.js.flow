@@ -14,14 +14,17 @@ import type {ViewProps} from 'react-native/Libraries/Components/View/ViewPropTyp
 import codegenNativeCommands from 'react-native/Libraries/Utilities/codegenNativeCommands';
 import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
 
-type NativeProps = $ReadOnly<{
+type NativeProps = Readonly<{
   ...ViewProps,
 }>;
 
 type NativeType = HostComponent<NativeProps>;
 
 interface NativeCommands {
-  +methodInt: (viewRef: React.ElementRef<NativeType>, a: string) => void;
+  readonly methodInt: (
+    viewRef: React.ElementRef<NativeType>,
+    a: string,
+  ) => void;
 }
 
 export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({

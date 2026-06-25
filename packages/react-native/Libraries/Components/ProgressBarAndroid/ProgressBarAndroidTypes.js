@@ -35,7 +35,7 @@ type IndeterminateProgressBarAndroidStyleAttrProp = {
   indeterminate: true,
 };
 
-type ProgressBarAndroidBaseProps = $ReadOnly<{
+type ProgressBarAndroidBaseProps = Readonly<{
   /**
    * Whether to show the ProgressBar (true, the default) or hide it (false).
    */
@@ -51,12 +51,12 @@ type ProgressBarAndroidBaseProps = $ReadOnly<{
 }>;
 
 export type ProgressBarAndroidProps =
-  | $ReadOnly<{
+  | Readonly<{
       ...ViewProps,
       ...ProgressBarAndroidBaseProps,
       ...DeterminateProgressBarAndroidStyleAttrProp,
     }>
-  | $ReadOnly<{
+  | Readonly<{
       ...ViewProps,
       ...ProgressBarAndroidBaseProps,
       ...IndeterminateProgressBarAndroidStyleAttrProp,

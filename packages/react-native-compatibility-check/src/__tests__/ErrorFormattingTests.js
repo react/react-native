@@ -33,6 +33,10 @@ export const okayChanges = [
     'native-component-with-props/NativeComponent',
     'native-component-with-props-default-change/NativeComponent',
   ],
+  [
+    'native-module-with-union-object/NativeModule',
+    'native-module-with-union-object-added/NativeModule',
+  ],
 ];
 
 export const incompatibleChanges = [
@@ -129,6 +133,10 @@ export const incompatibleChanges = [
   [
     'native-module-with-union-object/NativeModule',
     'native-module-with-union-object-changes/NativeModule',
+  ],
+  [
+    'native-module-with-union-object-added/NativeModule',
+    'native-module-with-union-object/NativeModule',
   ],
   [
     'native-component-with-command/NativeComponent',

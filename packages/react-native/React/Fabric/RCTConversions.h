@@ -13,8 +13,22 @@
 #import <react/renderer/graphics/Color.h>
 #import <react/renderer/graphics/RCTPlatformColorUtils.h>
 #import <react/renderer/graphics/Transform.h>
+#import <react/timing/primitives.h>
 
 NS_ASSUME_NONNULL_BEGIN
+
+/*
+ * Converts an iOS timestamp (seconds since boot, NOT including sleep time, from
+ * NSProcessInfo.processInfo.systemUptime or UITouch.timestamp) to a HighResTimeStamp.
+ *
+ * iOS timestamps and HighResTimeStamp both use mach_absolute_time() which doesn't
+ * account for sleep time. We convert the timestamp directly since they share the
+ * same time domain.
+ */
+inline facebook::react::HighResTimeStamp RCTHighResTimeStampFromSeconds(NSTimeInterval seconds)
+{
+  return facebook::react::HighResTimeStamp::fromDOMHighResTimeStamp(seconds * 1e3);
+}
 
 inline NSString *RCTNSStringFromString(
     const std::string &string,

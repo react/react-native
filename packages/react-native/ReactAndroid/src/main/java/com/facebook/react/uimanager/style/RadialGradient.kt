@@ -23,6 +23,19 @@ import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.sqrt
 
+/**
+ * Represents a CSS radial gradient for background rendering.
+ *
+ * This class implements the CSS radial-gradient specification, supporting circular and elliptical
+ * shapes, various sizing keywords, and custom positioning. It generates an Android Shader for
+ * rendering.
+ *
+ * @property shape The shape of the gradient (circle or ellipse)
+ * @property size The sizing specification (keyword or explicit dimensions)
+ * @property position The center position of the gradient
+ * @property colorStops The list of color stops defining the gradient colors
+ * @see <a href="https://www.w3.org/TR/css-images-3/#radial-gradients">CSS Radial Gradients</a>
+ */
 internal class RadialGradient(
     val shape: Shape,
     val size: GradientSize,
@@ -129,8 +142,15 @@ internal class RadialGradient(
     }
   }
 
+  /**
+   * Enum representing the shape of a radial gradient.
+   *
+   * @see <a href="https://www.w3.org/TR/css-images-3/#valdef-radial-gradient-circle">CSS circle</a>
+   */
   internal enum class Shape {
+    /** A circular gradient with equal horizontal and vertical radii. */
     CIRCLE,
+    /** An elliptical gradient that can have different horizontal and vertical radii. */
     ELLIPSE;
 
     companion object {
@@ -144,11 +164,33 @@ internal class RadialGradient(
     }
   }
 
+  /**
+   * Sealed class representing the sizing specification for a radial gradient.
+   *
+   * Sizes can be specified using keywords (closest-side, farthest-corner, etc.) or explicit
+   * dimensions.
+   */
   sealed class GradientSize {
+    /**
+     * Represents a size specified using a CSS keyword.
+     *
+     * @property keyword The sizing keyword
+     */
     class Keyword(val keyword: KeywordType) : GradientSize()
 
+    /**
+     * Represents a size specified using explicit horizontal and vertical dimensions.
+     *
+     * @property x The horizontal radius
+     * @property y The vertical radius
+     */
     class Dimensions(val x: LengthPercentage, val y: LengthPercentage) : GradientSize()
 
+    /**
+     * Enum of CSS radial gradient sizing keywords.
+     *
+     * @property value The CSS string value
+     */
     enum class KeywordType(val value: String) {
       CLOSEST_SIDE("closest-side"),
       FARTHEST_SIDE("farthest-side"),

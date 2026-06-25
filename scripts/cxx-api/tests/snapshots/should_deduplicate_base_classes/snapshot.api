@@ -1,0 +1,19 @@
+struct test::BaseA {
+}
+
+struct test::Derived : public test::BaseA {
+}
+
+struct test::false_type {
+}
+
+struct test::true_type {
+}
+
+template <typename T>
+struct test::is_special<T *> : public test::true_type {
+}
+
+template <typename>
+struct test::is_special : public test::false_type {
+}

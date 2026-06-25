@@ -106,14 +106,14 @@ function maximumDepthError(
 }
 
 function expectNoConsoleWarn() {
-  (jest: $FlowFixMe).spyOn(console, 'warn').mockImplementation((...args) => {
+  (jest as $FlowFixMe).spyOn(console, 'warn').mockImplementation((...args) => {
     expect(args).toBeFalsy();
   });
 }
 
 function expectNoConsoleError() {
   let hasNotFailed = true;
-  (jest: $FlowFixMe).spyOn(console, 'error').mockImplementation((...args) => {
+  (jest as $FlowFixMe).spyOn(console, 'error').mockImplementation((...args) => {
     if (hasNotFailed) {
       hasNotFailed = false; // set false to prevent infinite recursion
       expect(args).toBeFalsy();
@@ -124,7 +124,7 @@ function expectNoConsoleError() {
 async function expectRendersMatchingSnapshot(
   name: string,
   ComponentProvider: () => React.MixedElement,
-  unmockComponent: () => mixed,
+  unmockComponent: () => unknown,
 ) {
   let instance;
 
@@ -172,7 +172,7 @@ function renderWithStrictMode(element: React.Node): ReactTestRendererType {
   const WorkAroundBugWithStrictModeInTestRenderer = (prps: {
     children: React.Node,
   }) => prps.children;
-  const StrictMode = (React: $FlowFixMe).StrictMode;
+  const StrictMode = (React as $FlowFixMe).StrictMode;
   return ReactTestRenderer.create(
     <WorkAroundBugWithStrictModeInTestRenderer>
       <StrictMode>{element}</StrictMode>
@@ -217,7 +217,7 @@ function scrollToBottom(instance: ReactTestInstance) {
 // To make error messages a little bit better, we attach a custom toString
 // implementation to a predicate
 function withMessage(fn: Predicate, message: string): Predicate {
-  (fn: any).toString = () => message;
+  (fn as any).toString = () => message;
   return fn;
 }
 

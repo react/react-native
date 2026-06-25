@@ -2,45 +2,45 @@ appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebo
 ---
 - launchApp
 - assertVisible:
-    text: "APIs"
+    text: 'APIs'
 - tapOn:
-    id: "apis-tab"
+    id: 'apis-tab'
 - runFlow: ./helpers/search.yml
 - inputText:
-    text: "Legacy Native"
+    text: 'Legacy Native'
 - assertVisible:
-    id: "Legacy Native Module"
+    id: 'Legacy Native Module'
 - tapOn:
-    id: "Legacy Native Module"
-- tapOn: 
-    text: "voidFunc"
-- assertVisible:
-    id: "voidFunc-result"
+    id: 'Legacy Native Module'
 - tapOn:
-    text: "getBool"
+    text: 'voidFunc'
 - assertVisible:
-    id: "getBool-result"
+    id: 'voidFunc-result'
 - tapOn:
-    text: "getEnum"
+    text: 'getBool'
 - assertVisible:
-    id: "getEnum-result"
+    id: 'getBool-result'
 - tapOn:
-    text: "getInt"
+    text: 'getEnum'
 - assertVisible:
-    id: "getInt-result"
+    id: 'getEnum-result'
 - tapOn:
-    text: "getString"
+    text: 'getInt'
 - assertVisible:
-    id: "getString-result"
+    id: 'getInt-result'
 - tapOn:
-    text: "getObject"
+    text: 'getString'
 - assertVisible:
-    id: "getObject-result"
+    id: 'getString-result'
 - tapOn:
-    text: "getUnsafeObject"
+    text: 'getObject'
 - assertVisible:
-    id: "getUnsafeObject-result"
+    id: 'getObject-result'
 - tapOn:
-    text: "getValue"
+    text: 'getUnsafeObject'
 - assertVisible:
-    id: "getValue-result"
+    id: 'getUnsafeObject-result'
+- tapOn:
+    text: 'getValue'
+- assertVisible:
+    id: 'getValue-result'

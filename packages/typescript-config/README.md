@@ -1,5 +1,10 @@
 # @react-native/typescript-config
 
+[![npm]](https://www.npmjs.com/package/@react-native/typescript-config) [![npm downloads]](https://www.npmjs.com/package/@react-native/typescript-config)
+
+[npm]: https://img.shields.io/npm/v/@react-native/typescript-config.svg?color=blue
+[npm downloads]: https://img.shields.io/npm/dm/@react-native/typescript-config.svg
+
 This package provides the default `tsconfig.json` used by newly built React Native apps.
 
 This template is customized for specific versions of React Native, and should be updated in sync with the rest of your app.

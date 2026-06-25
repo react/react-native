@@ -1,0 +1,2 @@
+union test::EmptyUnion {
+}

@@ -37,7 +37,7 @@ class ImageProps final : public ViewProps {
   Float resizeMultiplier{1.f};
   bool shouldNotifyLoadEvents{};
   SharedColor overlayColor{};
-  Float fadeDuration{};
+  Float fadeDuration{300.f};
   bool progressiveRenderingEnabled{};
 
 #ifdef RN_SERIALIZABLE_STATE

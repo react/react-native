@@ -1,0 +1,109 @@
+name: E2E Android Template App
+
+permissions:
+  contents: read
+
+on:
+  workflow_call:
+    inputs:
+      fail-on-error:
+        type: boolean
+        default: false
+    outputs:
+      status:
+        description: 'The result of the E2E tests (success or failure)'
+        value: ${{ jobs.report.outputs.status }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    outputs:
+      status: ${{ steps.report-status.outputs.status }}
+    strategy:
+      fail-fast: false
+      matrix:
+        flavor: [debug, release]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup node.js
+        uses: ./.github/actions/setup-node
+      - name: Run yarn
+        uses: ./.github/actions/yarn-install
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'zulu'
+      - name: Download Maven Local
+        uses: actions/download-artifact@v7
+        with:
+          name: maven-local
+          path: /tmp/react-native-tmp/maven-local
+      - name: Download React Native Package
+        uses: actions/download-artifact@v7
+        with:
+          name: react-native-package
+          path: /tmp/react-native-tmp
+      - name: Print /tmp folder
+        run: ls -lR /tmp/react-native-tmp
+      - name: Prepare artifacts
+        id: prepare-artifacts
+        run: |
+          REACT_NATIVE_PKG=$(find /tmp/react-native-tmp -type f -name "*.tgz")
+          echo "React Native tgs is $REACT_NATIVE_PKG"
+
+          MAVEN_LOCAL=/tmp/react-native-tmp/maven-local
+          echo "Maven local path is $MAVEN_LOCAL"
+
+          # For stable branches, we want to use the stable branch of the template
+          # In all the other cases, we want to use "main"
+          BRANCH=${{ github.ref_name }}
+          if ! [[ $BRANCH == *-stable* ]]; then
+            BRANCH=main
+          fi
+          node ./scripts/e2e/init-project-e2e.js --projectName RNTestProject --currentBranch $BRANCH  --directory /tmp/RNTestProject --pathToLocalReactNative $REACT_NATIVE_PKG
+
+          echo "Feed maven local to gradle.properties"
+          cd /tmp/RNTestProject
+          echo -e "\nreact.internal.mavenLocalRepo=$MAVEN_LOCAL" >> android/gradle.properties
+
+          # Build
+          cd android
+          CAPITALIZED_FLAVOR=$(echo "${{ matrix.flavor }}" | awk '{print toupper(substr($0, 1, 1)) substr($0, 2)}')
+          ./gradlew assemble$CAPITALIZED_FLAVOR --no-daemon -PreactNativeArchitectures=x86
+
+      - name: Run E2E Tests
+        id: run-tests
+        continue-on-error: true
+        uses: ./.github/actions/maestro-android
+        timeout-minutes: 60
+        with:
+          app-path: /tmp/RNTestProject/android/app/build/outputs/apk/${{ matrix.flavor }}/app-${{ matrix.flavor }}.apk
+          app-id: com.rntestproject
+          maestro-flow: ./scripts/e2e/.maestro/
+          install-java: 'false'
+          flavor: ${{ matrix.flavor }}
+          working-directory: /tmp/RNTestProject
+      - name: Report status
+        id: report-status
+        if: ${{ always() && steps.run-tests.outcome == 'failure' }}
+        run: echo "status=failure" >> $GITHUB_OUTPUT
+
+  report:
+    needs: test
+    if: always()
+    runs-on: ubuntu-latest
+    outputs:
+      status: ${{ steps.check.outputs.status }}
+    steps:
+      - id: check
+        run: |
+          if [[ "${{ needs.test.outputs.status }}" == "failure" ]]; then
+            echo "status=failure" >> $GITHUB_OUTPUT
+          else
+            echo "status=success" >> $GITHUB_OUTPUT
+          fi
+      - name: Fail if needed
+        if: ${{ inputs.fail-on-error && steps.check.outputs.status == 'failure' }}
+        run: exit 1

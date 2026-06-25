@@ -683,6 +683,83 @@ static void jni_YGNodeSetHasMeasureFuncJNI(
       static_cast<bool>(hasMeasureFunc) ? YGJNIMeasureFunc : nullptr);
 }
 
+static YGSize YGJNIMinContentMeasureFunc(
+    YGNodeConstRef node,
+    float width,
+    YGMeasureMode widthMode,
+    float height,
+    YGMeasureMode heightMode) {
+  if (auto obj = YGNodeJobject(node)) {
+    YGTransferLayoutDirection(node, obj.get());
+    JNIEnv* env = getCurrentEnv();
+    auto objectClass = facebook::yoga::vanillajni::make_local_ref(
+        env, env->GetObjectClass(obj.get()));
+    // NOLINTNEXTLINE(misc-misplaced-const)
+    static const jmethodID methodId = facebook::yoga::vanillajni::getMethodId(
+        env, objectClass.get(), "measureMinContent", "(FIFI)J");
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
+    const auto measureResult = facebook::yoga::vanillajni::callLongMethod(
+        env, obj.get(), methodId, width, widthMode, height, heightMode);
+
+    uint32_t wBits = 0xFFFFFFFF & (measureResult >> 32);
+    uint32_t hBits = 0xFFFFFFFF & measureResult;
+    auto measuredWidth = std::bit_cast<float>(wBits);
+    auto measuredHeight = std::bit_cast<float>(hBits);
+
+    return YGSize{measuredWidth, measuredHeight};
+  } else {
+    return YGSize{
+        widthMode == YGMeasureModeUndefined ? 0 : width,
+        heightMode == YGMeasureModeUndefined ? 0 : height,
+    };
+  }
+}
+
+static void jni_YGNodeSetHasMinContentMeasureFuncJNI(
+    JNIEnv* /*env*/,
+    jobject /*obj*/,
+    jlong nativePointer,
+    jboolean hasMinContentMeasureFunc) {
+  YGNodeSetMinContentMeasureFunc(
+      _jlong2YGNodeRef(nativePointer),
+      static_cast<bool>(hasMinContentMeasureFunc) ? YGJNIMinContentMeasureFunc
+                                                  : nullptr);
+}
+
+static void jni_YGNodeSetMinContentWidthJNI(
+    JNIEnv* /*env*/,
+    jobject /*obj*/,
+    jlong nativePointer,
+    jfloat minContentWidth) {
+  YGNodeSetMinContentWidth(
+      _jlong2YGNodeRef(nativePointer), static_cast<float>(minContentWidth));
+}
+
+static void jni_YGNodeSetMinContentHeightJNI(
+    JNIEnv* /*env*/,
+    jobject /*obj*/,
+    jlong nativePointer,
+    jfloat minContentHeight) {
+  YGNodeSetMinContentHeight(
+      _jlong2YGNodeRef(nativePointer), static_cast<float>(minContentHeight));
+}
+
+static jfloat jni_YGNodeGetMinContentWidthJNI(
+    JNIEnv* /*env*/,
+    jobject /*obj*/,
+    jlong nativePointer) {
+  return static_cast<jfloat>(
+      YGNodeGetMinContentWidth(_jlong2YGNodeRef(nativePointer)));
+}
+
+static jfloat jni_YGNodeGetMinContentHeightJNI(
+    JNIEnv* /*env*/,
+    jobject /*obj*/,
+    jlong nativePointer) {
+  return static_cast<jfloat>(
+      YGNodeGetMinContentHeight(_jlong2YGNodeRef(nativePointer)));
+}
+
 static float YGJNIBaselineFunc(YGNodeConstRef node, float width, float height) {
   if (auto obj = YGNodeJobject(node)) {
     JNIEnv* env = getCurrentEnv();
@@ -1058,6 +1135,23 @@ static JNINativeMethod methods[] = {
     {"jni_YGNodeSetHasMeasureFuncJNI",
      "(JZ)V",
      (void*)jni_YGNodeSetHasMeasureFuncJNI},
+    // NOLINTBEGIN(cppcoreguidelines-pro-type-cstyle-cast)
+    {"jni_YGNodeSetHasMinContentMeasureFuncJNI",
+     "(JZ)V",
+     (void*)jni_YGNodeSetHasMinContentMeasureFuncJNI},
+    {"jni_YGNodeSetMinContentWidthJNI",
+     "(JF)V",
+     (void*)jni_YGNodeSetMinContentWidthJNI},
+    {"jni_YGNodeSetMinContentHeightJNI",
+     "(JF)V",
+     (void*)jni_YGNodeSetMinContentHeightJNI},
+    {"jni_YGNodeGetMinContentWidthJNI",
+     "(J)F",
+     (void*)jni_YGNodeGetMinContentWidthJNI},
+    {"jni_YGNodeGetMinContentHeightJNI",
+     "(J)F",
+     (void*)jni_YGNodeGetMinContentHeightJNI},
+    // NOLINTEND(cppcoreguidelines-pro-type-cstyle-cast)
     {"jni_YGNodeStyleGetGapJNI", "(JI)J", (void*)jni_YGNodeStyleGetGapJNI},
     {"jni_YGNodeStyleSetGapJNI", "(JIF)V", (void*)jni_YGNodeStyleSetGapJNI},
     {"jni_YGNodeStyleSetGapPercentJNI",

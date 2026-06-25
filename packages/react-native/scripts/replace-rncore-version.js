@@ -12,6 +12,8 @@
 
 const {spawnSync} = require('child_process');
 const fs = require('fs');
+const os = require('os');
+const path = require('path');
 const yargs = require('yargs');
 
 const LAST_BUILD_FILENAME = 'React-Core-prebuilt/.last_build_configuration';
@@ -62,14 +64,98 @@ function replaceRNCoreConfiguration(
   const tarballURLPath = `${podsRoot}/ReactNativeCore-artifacts/reactnative-core-${version.toLowerCase()}-${configuration.toLowerCase()}.tar.gz`;
 
   const finalLocation = 'React-Core-prebuilt';
-  console.log('Preparing the final location', finalLocation);
-  fs.rmSync(finalLocation, {force: true, recursive: true});
-  fs.mkdirSync(finalLocation, {recursive: true});
 
-  console.log('Extracting the tarball', tarballURLPath);
-  spawnSync('tar', ['-xf', tarballURLPath, '-C', finalLocation], {
-    stdio: 'inherit',
-  });
+  // Extract to a temporary directory on a regular filesystem first, then move
+  // into the final location. This avoids issues with partial tar extraction on
+  // certain filesystems (e.g. EdenFS) where extracting directly can silently
+  // produce incomplete results.
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rncore-'));
+  const tmpExtractDir = path.join(tmpDir, 'React-Core-prebuilt');
+  fs.mkdirSync(tmpExtractDir, {recursive: true});
+
+  // Preserve Expo-generated modulemap before replacing directories
+  const useFrameworksModulemapName = 'React-use-frameworks.modulemap';
+  const useFrameworksModulemapPath = path.join(
+    finalLocation,
+    useFrameworksModulemapName,
+  );
+  let savedModulemap = null;
+  if (fs.existsSync(useFrameworksModulemapPath)) {
+    console.log('Preserving', useFrameworksModulemapName);
+    savedModulemap = fs.readFileSync(useFrameworksModulemapPath);
+  }
+
+  try {
+    console.log('Extracting the tarball to temp dir', tarballURLPath);
+    const result = spawnSync(
+      'tar',
+      ['-xf', tarballURLPath, '-C', tmpExtractDir],
+      {
+        stdio: 'inherit',
+      },
+    );
+
+    if (result.status !== 0) {
+      throw new Error(`tar extraction failed with exit code ${result.status}`);
+    }
+
+    // Verify extraction produced the expected xcframework structure
+    const xcfwPath = path.join(tmpExtractDir, 'React.xcframework');
+    const modulemapPath = path.join(xcfwPath, 'Modules', 'module.modulemap');
+    if (!fs.existsSync(modulemapPath)) {
+      throw new Error(
+        `Extraction verification failed: ${modulemapPath} not found`,
+      );
+    }
+
+    // Delete all directories in finalLocation - not files, since we want to
+    // keep the React-VFS.yaml file
+    const dirs = fs
+      .readdirSync(finalLocation, {withFileTypes: true})
+      .filter(dirent => dirent.isDirectory());
+    for (const dirent of dirs) {
+      const direntName =
+        typeof dirent.name === 'string' ? dirent.name : dirent.name.toString();
+      const dirPath = `${finalLocation}/${direntName}`;
+      console.log('Removing directory', dirPath);
+      fs.rmSync(dirPath, {force: true, recursive: true});
+    }
+
+    // Move extracted directories from temp to final location
+    const extractedEntries = fs
+      .readdirSync(tmpExtractDir, {withFileTypes: true})
+      .filter(dirent => dirent.isDirectory());
+    for (const dirent of extractedEntries) {
+      const direntName =
+        typeof dirent.name === 'string' ? dirent.name : dirent.name.toString();
+      const src = path.join(tmpExtractDir, direntName);
+      const dst = path.join(finalLocation, direntName);
+      const mvResult = spawnSync('mv', [src, dst], {stdio: 'inherit'});
+      if (mvResult.status !== 0) {
+        // Fallback: copy recursively then remove source
+        console.log(`mv failed for ${direntName}, falling back to cp -R`);
+        const cpResult = spawnSync('cp', ['-R', src, dst], {
+          stdio: 'inherit',
+        });
+        if (cpResult.status !== 0) {
+          throw new Error(
+            `cp fallback failed with exit code ${cpResult.status}`,
+          );
+        }
+      }
+    }
+  } finally {
+    // Clean up temp directory
+    fs.rmSync(tmpDir, {force: true, recursive: true});
+
+    // Restore Expo-generated modulemap after directory replacement.
+    // Runs in finally so it is not skipped if mv/cp partially fails.
+    if (savedModulemap != null) {
+      const restoredPath = path.join(finalLocation, useFrameworksModulemapName);
+      fs.writeFileSync(restoredPath, savedModulemap);
+      console.log('Restored', useFrameworksModulemapName);
+    }
+  }
 }
 
 function updateLastBuildConfiguration(configuration /*: string */) {

@@ -13,11 +13,11 @@ import type {TurboModule} from '../../../../Libraries/TurboModule/RCTExport';
 import * as TurboModuleRegistry from '../../../../Libraries/TurboModule/TurboModuleRegistry';
 
 export interface Spec extends TurboModule {
-  +getInitialURL: () => Promise<string>;
-  +canOpenURL: (url: string) => Promise<boolean>;
-  +openURL: (url: string) => Promise<void>;
-  +openSettings: () => Promise<void>;
-  +sendIntent: (
+  readonly getInitialURL: () => Promise<string>;
+  readonly canOpenURL: (url: string) => Promise<boolean>;
+  readonly openURL: (url: string) => Promise<void>;
+  readonly openSettings: () => Promise<void>;
+  readonly sendIntent: (
     action: string,
     extras: ?Array<{
       key: string,
@@ -27,4 +27,4 @@ export interface Spec extends TurboModule {
   ) => Promise<void>;
 }
 
-export default (TurboModuleRegistry.get<Spec>('IntentAndroid'): ?Spec);
+export default TurboModuleRegistry.get<Spec>('IntentAndroid') as ?Spec;

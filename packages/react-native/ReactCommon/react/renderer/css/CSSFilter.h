@@ -28,14 +28,14 @@ namespace detail {
 template <typename DataT, TemplateStringLiteral Name>
   requires(std::is_same_v<decltype(DataT::amount), float>)
 struct CSSFilterSimpleAmountParser {
-  static constexpr auto consumeFunctionBlock(const CSSFunctionBlock &func, CSSSyntaxParser &parser)
+  static constexpr auto consumeFunctionBlock(const CSSFunctionBlock &func, CSSValueParser &parser)
       -> std::optional<DataT>
   {
     if (!iequals(func.name, Name)) {
       return {};
     }
 
-    auto amount = parseNextCSSValue<CSSNumber, CSSPercentage>(parser);
+    auto amount = parser.parseNextValue<CSSNumber, CSSPercentage>();
     if (std::holds_alternative<CSSNumber>(amount)) {
       if (std::get<CSSNumber>(amount).value < 0.0f) {
         return {};
@@ -65,14 +65,14 @@ struct CSSBlurFilter {
 
 template <>
 struct CSSDataTypeParser<CSSBlurFilter> {
-  static constexpr auto consumeFunctionBlock(const CSSFunctionBlock &func, CSSSyntaxParser &parser)
+  static constexpr auto consumeFunctionBlock(const CSSFunctionBlock &func, CSSValueParser &parser)
       -> std::optional<CSSBlurFilter>
   {
     if (!iequals(func.name, "blur")) {
       return {};
     }
 
-    auto len = parseNextCSSValue<CSSLength>(parser);
+    auto len = parser.parseNextValue<CSSLength>();
     return CSSBlurFilter{std::holds_alternative<CSSLength>(len) ? std::get<CSSLength>(len) : CSSLength{}};
   }
 };
@@ -123,7 +123,7 @@ struct CSSDropShadowFilter {
 
 template <>
 struct CSSDataTypeParser<CSSDropShadowFilter> {
-  static constexpr auto consumeFunctionBlock(const CSSFunctionBlock &func, CSSSyntaxParser &parser)
+  static constexpr auto consumeFunctionBlock(const CSSFunctionBlock &func, CSSValueParser &parser)
       -> std::optional<CSSDropShadowFilter>
   {
     if (!iequals(func.name, "drop-shadow")) {
@@ -133,7 +133,7 @@ struct CSSDataTypeParser<CSSDropShadowFilter> {
     std::optional<CSSColor> color{};
     std::optional<std::array<CSSLength, 3>> lengths{};
 
-    auto firstVal = parseNextCSSValue<CSSColor, CSSLength>(parser);
+    auto firstVal = parser.parseNextValue<CSSColor, CSSLength>();
     if (std::holds_alternative<std::monostate>(firstVal)) {
       return {};
     }
@@ -147,7 +147,7 @@ struct CSSDataTypeParser<CSSDropShadowFilter> {
       }
     }
 
-    auto secondVal = parseNextCSSValue<CSSColor, CSSLength>(parser, CSSDelimiter::Whitespace);
+    auto secondVal = parser.parseNextValue<CSSColor, CSSLength>(CSSDelimiter::Whitespace);
     if (std::holds_alternative<CSSColor>(secondVal)) {
       if (color.has_value()) {
         return {};
@@ -173,14 +173,14 @@ struct CSSDataTypeParser<CSSDropShadowFilter> {
   }
 
  private:
-  static constexpr std::optional<std::array<CSSLength, 3>> parseLengths(CSSLength offsetX, CSSSyntaxParser &parser)
+  static constexpr std::optional<std::array<CSSLength, 3>> parseLengths(CSSLength offsetX, CSSValueParser &parser)
   {
-    auto offsetY = parseNextCSSValue<CSSLength>(parser, CSSDelimiter::Whitespace);
+    auto offsetY = parser.parseNextValue<CSSLength>(CSSDelimiter::Whitespace);
     if (!std::holds_alternative<CSSLength>(offsetY)) {
       return {};
     }
 
-    auto standardDeviation = parseNextCSSValue<CSSLength>(parser, CSSDelimiter::Whitespace);
+    auto standardDeviation = parser.parseNextValue<CSSLength>(CSSDelimiter::Whitespace);
     if (std::holds_alternative<CSSLength>(standardDeviation) && std::get<CSSLength>(standardDeviation).value < 0.0f) {
       return {};
     }
@@ -220,14 +220,14 @@ struct CSSHueRotateFilter {
 
 template <>
 struct CSSDataTypeParser<CSSHueRotateFilter> {
-  static constexpr auto consumeFunctionBlock(const CSSFunctionBlock &func, CSSSyntaxParser &parser)
+  static constexpr auto consumeFunctionBlock(const CSSFunctionBlock &func, CSSValueParser &parser)
       -> std::optional<CSSHueRotateFilter>
   {
     if (!iequals(func.name, "hue-rotate")) {
       return {};
     }
 
-    auto angle = parseNextCSSValue<CSSAngle, CSSZero>(parser);
+    auto angle = parser.parseNextValue<CSSAngle, CSSZero>();
     return CSSHueRotateFilter{std::holds_alternative<CSSAngle>(angle) ? std::get<CSSAngle>(angle).degrees : 0.0f};
   }
 };
@@ -306,11 +306,6 @@ using CSSFilterFunction = CSSCompoundDataType<
     CSSOpacityFilter,
     CSSSaturateFilter,
     CSSSepiaFilter>;
-
-/**
- * Variant of possible CSS filter function types
- */
-using CSSFilterFunctionVariant = CSSVariantWithTypes<CSSFilterFunction>;
 
 /**
  * Representation of <filter-value-list>

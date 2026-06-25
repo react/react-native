@@ -6,8 +6,7 @@
  */
 
 #import <Foundation/Foundation.h>
-
-@class RCTRootView;
+#import <React/RCTRootView.h>
 
 @protocol RCTRootViewDelegate <NSObject>
 
@@ -25,6 +24,10 @@
  * The new intrinsic content size is available via the `intrinsicContentSize`
  * property of the root view. The view will not resize itself.
  */
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated"
 - (void)rootViewDidChangeIntrinsicSize:(RCTRootView *)rootView;
+#pragma clang diagnostic pop
 
 @end

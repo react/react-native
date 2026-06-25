@@ -45,7 +45,7 @@ function PointerEventPrimaryTouchPointerTestCase(
 ) {
   const {harness} = props;
 
-  const detected_eventsRef = useRef(({}: {[string]: boolean}));
+  const detected_eventsRef = useRef({} as {[string]: boolean});
 
   const handleIncomingPointerEvent = useCallback(
     (boxLabel: string, eventType: string, isPrimary: boolean) => {
@@ -128,7 +128,7 @@ function PointerEventPrimaryTouchPointerTestCase(
   );
 }
 
-type Props = $ReadOnly<{}>;
+type Props = Readonly<{}>;
 export default function PointerEventPrimaryTouchPointer(
   props: Props,
 ): React.MixedElement {

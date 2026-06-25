@@ -44,6 +44,7 @@ void YGNodeFree(const YGNodeRef nodeRef) {
   if (auto owner = node->getOwner()) {
     owner->removeChild(node);
     node->setOwner(nullptr);
+    owner->markDirtyAndPropagate();
   }
 
   const size_t childCount = node->getChildCount();
@@ -177,6 +178,13 @@ void YGNodeRemoveChild(
     if (owner == childOwner) {
       excludedChild->setLayout({}); // layout is no longer valid
       excludedChild->setOwner(nullptr);
+      // Mark dirty to invalidate cache, but suppress the dirtied callback
+      // since the node is being detached from the tree and should not
+      // propagate dirty signals through external callback mechanisms.
+      auto dirtiedFunc = excludedChild->getDirtiedFunc();
+      excludedChild->setDirtiedFunc(nullptr);
+      excludedChild->setDirty(true);
+      excludedChild->setDirtiedFunc(dirtiedFunc);
     }
     owner->markDirtyAndPropagate();
   }
@@ -198,6 +206,13 @@ void YGNodeRemoveAllChildren(const YGNodeRef ownerRef) {
       yoga::Node* oldChild = owner->getChild(i);
       oldChild->setLayout({}); // layout is no longer valid
       oldChild->setOwner(nullptr);
+      // Mark dirty to invalidate cache, but suppress the dirtied callback
+      // since the node is being detached from the tree and should not
+      // propagate dirty signals through external callback mechanisms.
+      auto dirtiedFunc = oldChild->getDirtiedFunc();
+      oldChild->setDirtiedFunc(nullptr);
+      oldChild->setDirty(true);
+      oldChild->setDirtiedFunc(dirtiedFunc);
     }
     owner->clearChildren();
     owner->markDirtyAndPropagate();
@@ -293,6 +308,32 @@ void YGNodeSetMeasureFunc(YGNodeRef node, YGMeasureFunc measureFunc) {
 
 bool YGNodeHasMeasureFunc(YGNodeConstRef node) {
   return resolveRef(node)->hasMeasureFunc();
+}
+
+void YGNodeSetMinContentMeasureFunc(
+    YGNodeRef node,
+    YGMinContentMeasureFunc minContentMeasureFunc) {
+  resolveRef(node)->setMinContentMeasureFunc(minContentMeasureFunc);
+}
+
+bool YGNodeHasMinContentMeasureFunc(YGNodeConstRef node) {
+  return resolveRef(node)->hasMinContentMeasureFunc();
+}
+
+void YGNodeSetMinContentWidth(YGNodeRef node, float minContentWidth) {
+  resolveRef(node)->setMinContentWidth(FloatOptional{minContentWidth});
+}
+
+void YGNodeSetMinContentHeight(YGNodeRef node, float minContentHeight) {
+  resolveRef(node)->setMinContentHeight(FloatOptional{minContentHeight});
+}
+
+float YGNodeGetMinContentWidth(YGNodeConstRef node) {
+  return resolveRef(node)->getMinContentWidth().unwrapOrDefault(YGUndefined);
+}
+
+float YGNodeGetMinContentHeight(YGNodeConstRef node) {
+  return resolveRef(node)->getMinContentHeight().unwrapOrDefault(YGUndefined);
 }
 
 void YGNodeSetBaselineFunc(YGNodeRef node, YGBaselineFunc baselineFunc) {

@@ -82,13 +82,13 @@ export type PerformanceObserverCallback = (
 ) => void;
 
 export interface PerformanceObserverInit {
-  +entryTypes?: Array<PerformanceEntryType>;
-  +type?: PerformanceEntryType;
-  +buffered?: boolean;
-  +durationThreshold?: DOMHighResTimeStamp;
+  readonly entryTypes?: Array<PerformanceEntryType>;
+  readonly type?: PerformanceEntryType;
+  readonly buffered?: boolean;
+  readonly durationThreshold?: DOMHighResTimeStamp;
 }
 
-function getSupportedPerformanceEntryTypes(): $ReadOnlyArray<PerformanceEntryType> {
+function getSupportedPerformanceEntryTypes(): ReadonlyArray<PerformanceEntryType> {
   return Object.freeze(
     NativePerformance.getSupportedPerformanceEntryTypes().map(
       rawToPerformanceEntryType,
@@ -237,7 +237,7 @@ export class PerformanceObserver {
     }
   }
 
-  static supportedEntryTypes: $ReadOnlyArray<PerformanceEntryType> =
+  static supportedEntryTypes: ReadonlyArray<PerformanceEntryType> =
     getSupportedPerformanceEntryTypes();
 }
 

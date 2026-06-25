@@ -6,7 +6,6 @@
  *
  * @flow strict-local
  * @format
- * @fantom_flags reduceDefaultPropsInText:*
  */
 
 import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
@@ -43,7 +42,8 @@ describe('<Text>', () => {
             ellipsizeMode="tail"
             fontSize="NaN"
             fontSizeMultiplier="NaN"
-            foregroundColor="rgba(0, 0, 0, 0)">
+            foregroundColor="rgba(0, 0, 0, 0)"
+            overflow="hidden">
             {TEST_TEXT}
           </rn-paragraph>,
         );
@@ -311,6 +311,204 @@ describe('<Text>', () => {
     });
 
     describe('style', () => {
+      describe('textDecorationStyle', () => {
+        it('propagates each style to mounting layer', () => {
+          const root = Fantom.createRoot();
+
+          Fantom.runTask(() => {
+            root.render(
+              <Text
+                style={{
+                  textDecorationLine: 'underline',
+                  textDecorationStyle: 'solid',
+                }}>
+                {TEST_TEXT}
+              </Text>,
+            );
+          });
+
+          expect(
+            root
+              .getRenderedOutput({
+                props: ['textDecorationLineType', 'textDecorationStyle'],
+              })
+              .toJSX(),
+          ).toEqual(
+            <rn-paragraph
+              textDecorationLineType="underline"
+              textDecorationStyle="solid">
+              {TEST_TEXT}
+            </rn-paragraph>,
+          );
+
+          Fantom.runTask(() => {
+            root.render(
+              <Text
+                style={{
+                  textDecorationLine: 'underline',
+                  textDecorationStyle: 'double',
+                }}>
+                {TEST_TEXT}
+              </Text>,
+            );
+          });
+
+          expect(
+            root
+              .getRenderedOutput({
+                props: ['textDecorationLineType', 'textDecorationStyle'],
+              })
+              .toJSX(),
+          ).toEqual(
+            <rn-paragraph
+              textDecorationLineType="underline"
+              textDecorationStyle="double">
+              {TEST_TEXT}
+            </rn-paragraph>,
+          );
+
+          Fantom.runTask(() => {
+            root.render(
+              <Text
+                style={{
+                  textDecorationLine: 'underline',
+                  textDecorationStyle: 'dotted',
+                }}>
+                {TEST_TEXT}
+              </Text>,
+            );
+          });
+
+          expect(
+            root
+              .getRenderedOutput({
+                props: ['textDecorationLineType', 'textDecorationStyle'],
+              })
+              .toJSX(),
+          ).toEqual(
+            <rn-paragraph
+              textDecorationLineType="underline"
+              textDecorationStyle="dotted">
+              {TEST_TEXT}
+            </rn-paragraph>,
+          );
+
+          Fantom.runTask(() => {
+            root.render(
+              <Text
+                style={{
+                  textDecorationLine: 'underline',
+                  textDecorationStyle: 'dashed',
+                }}>
+                {TEST_TEXT}
+              </Text>,
+            );
+          });
+
+          expect(
+            root
+              .getRenderedOutput({
+                props: ['textDecorationLineType', 'textDecorationStyle'],
+              })
+              .toJSX(),
+          ).toEqual(
+            <rn-paragraph
+              textDecorationLineType="underline"
+              textDecorationStyle="dashed">
+              {TEST_TEXT}
+            </rn-paragraph>,
+          );
+
+          Fantom.runTask(() => {
+            root.render(
+              <Text
+                style={{
+                  textDecorationLine: 'underline',
+                  textDecorationStyle: 'wavy',
+                }}>
+                {TEST_TEXT}
+              </Text>,
+            );
+          });
+
+          expect(
+            root
+              .getRenderedOutput({
+                props: ['textDecorationLineType', 'textDecorationStyle'],
+              })
+              .toJSX(),
+          ).toEqual(
+            <rn-paragraph
+              textDecorationLineType="underline"
+              textDecorationStyle="wavy">
+              {TEST_TEXT}
+            </rn-paragraph>,
+          );
+        });
+
+        it('works with multi-line wrapped text', () => {
+          const root = Fantom.createRoot({viewportWidth: 100});
+
+          Fantom.runTask(() => {
+            root.render(
+              <Text
+                style={{
+                  textDecorationLine: 'underline',
+                  textDecorationStyle: 'wavy',
+                }}>
+                This is a long text that should wrap across multiple lines to
+                verify decoration continuity
+              </Text>,
+            );
+          });
+
+          expect(
+            root
+              .getRenderedOutput({
+                props: ['textDecorationLineType', 'textDecorationStyle'],
+              })
+              .toJSX(),
+          ).toEqual(
+            <rn-paragraph
+              textDecorationLineType="underline"
+              textDecorationStyle="wavy">
+              This is a long text that should wrap across multiple lines to
+              verify decoration continuity
+            </rn-paragraph>,
+          );
+        });
+
+        it('works with line-through', () => {
+          const root = Fantom.createRoot();
+
+          Fantom.runTask(() => {
+            root.render(
+              <Text
+                style={{
+                  textDecorationLine: 'line-through',
+                  textDecorationStyle: 'wavy',
+                }}>
+                {TEST_TEXT}
+              </Text>,
+            );
+          });
+
+          expect(
+            root
+              .getRenderedOutput({
+                props: ['textDecorationLineType', 'textDecorationStyle'],
+              })
+              .toJSX(),
+          ).toEqual(
+            <rn-paragraph
+              textDecorationLineType="strikethrough"
+              textDecorationStyle="wavy">
+              {TEST_TEXT}
+            </rn-paragraph>,
+          );
+        });
+      });
+
       describe('writingDirection', () => {
         it('propagates to mounting layer', () => {
           const root = Fantom.createRoot();
@@ -432,6 +630,189 @@ describe('<Text>', () => {
         ReadOnlyText,
       );
       expect(secondChildText.textContent).toBe('also in bold');
+    });
+  });
+
+  describe('displayName', () => {
+    it('is "Text"', () => {
+      expect(Text.displayName).toBe('Text');
+    });
+  });
+
+  describe('press handlers set accessibilityRole', () => {
+    const PRESS_PROPS = [
+      'accessibilityRole',
+      'role',
+      'isHighlighted',
+      'isPressable',
+      'disabled',
+      'accessibilityState',
+    ];
+
+    it('automatically sets accessibilityRole="link" when onPress is provided', () => {
+      const root = Fantom.createRoot();
+      Fantom.runTask(() => {
+        root.render(<Text onPress={() => {}}>{TEST_TEXT}</Text>);
+      });
+      expect(root.getRenderedOutput({props: PRESS_PROPS}).toJSX())
+        .toMatchInlineSnapshot(`
+        <rn-paragraph
+          accessibilityRole="link"
+          isHighlighted="false"
+          isPressable="true"
+        >
+          the text
+        </rn-paragraph>
+      `);
+    });
+
+    it('automatically sets accessibilityRole="link" when onLongPress is provided', () => {
+      const root = Fantom.createRoot();
+      Fantom.runTask(() => {
+        root.render(<Text onLongPress={() => {}}>{TEST_TEXT}</Text>);
+      });
+      expect(root.getRenderedOutput({props: PRESS_PROPS}).toJSX())
+        .toMatchInlineSnapshot(`
+        <rn-paragraph
+          accessibilityRole="link"
+          isHighlighted="false"
+          isPressable="true"
+        >
+          the text
+        </rn-paragraph>
+      `);
+    });
+
+    it('automatically sets accessibilityRole="link" when onStartShouldSetResponder is provided', () => {
+      const root = Fantom.createRoot();
+      Fantom.runTask(() => {
+        root.render(
+          <Text onStartShouldSetResponder={() => true}>{TEST_TEXT}</Text>,
+        );
+      });
+      expect(root.getRenderedOutput({props: PRESS_PROPS}).toJSX())
+        .toMatchInlineSnapshot(`
+        <rn-paragraph
+          accessibilityRole="link"
+          isHighlighted="false"
+          isPressable="true"
+        >
+          the text
+        </rn-paragraph>
+      `);
+    });
+
+    it('respects explicit accessibilityRole', () => {
+      const root = Fantom.createRoot();
+      Fantom.runTask(() => {
+        root.render(
+          <Text accessibilityRole="button" onPress={() => {}}>
+            {TEST_TEXT}
+          </Text>,
+        );
+      });
+      expect(root.getRenderedOutput({props: PRESS_PROPS}).toJSX())
+        .toMatchInlineSnapshot(`
+        <rn-paragraph
+          accessibilityRole="button"
+          isHighlighted="false"
+          isPressable="true"
+        >
+          the text
+        </rn-paragraph>
+      `);
+    });
+
+    it('respects explicit role prop', () => {
+      const root = Fantom.createRoot();
+      Fantom.runTask(() => {
+        root.render(
+          // $FlowFixMe[prop-missing]
+          <Text onPress={() => {}} role="button">
+            {TEST_TEXT}
+          </Text>,
+        );
+      });
+      expect(root.getRenderedOutput({props: PRESS_PROPS}).toJSX())
+        .toMatchInlineSnapshot(`
+        <rn-paragraph
+          isHighlighted="false"
+          isPressable="true"
+          role="button"
+        >
+          the text
+        </rn-paragraph>
+      `);
+    });
+
+    it('does not automatically set accessibilityRole when disabled', () => {
+      const root = Fantom.createRoot();
+      Fantom.runTask(() => {
+        root.render(
+          <Text disabled onPress={() => {}}>
+            {TEST_TEXT}
+          </Text>,
+        );
+      });
+      expect(root.getRenderedOutput({props: PRESS_PROPS}).toJSX())
+        .toMatchInlineSnapshot(`
+        <rn-paragraph
+          accessibilityState="{disabled:true,selected:false,checked:None,busy:false,expanded:null}"
+        >
+          the text
+        </rn-paragraph>
+      `);
+    });
+
+    it('automatically sets accessibilityRole="link" for nested Text with onPress', () => {
+      const root = Fantom.createRoot();
+      Fantom.runTask(() => {
+        root.render(
+          <Text>
+            Parent Text<Text onPress={() => {}}>Nested Clickable Link</Text>
+          </Text>,
+        );
+      });
+      expect(root.getRenderedOutput({props: PRESS_PROPS}).toJSX())
+        .toMatchInlineSnapshot(`
+        <rn-paragraph>
+          Parent Text
+          <rn-text
+            accessibilityRole="link"
+            isHighlighted="false"
+            isPressable="true"
+          >
+            Nested Clickable Link
+          </rn-text>
+        </rn-paragraph>
+      `);
+    });
+
+    it('does not set accessibilityRole when no press handlers are provided', () => {
+      const root = Fantom.createRoot();
+      Fantom.runTask(() => {
+        root.render(<Text>{TEST_TEXT}</Text>);
+      });
+      expect(root.getRenderedOutput({props: PRESS_PROPS}).toJSX())
+        .toMatchInlineSnapshot(`
+        <rn-paragraph>
+          the text
+        </rn-paragraph>
+      `);
+    });
+  });
+
+  describe('compat with web', () => {
+    it('maps verticalAlign style to textAlignVertical', () => {
+      const root = Fantom.createRoot();
+      Fantom.runTask(() => {
+        root.render(<Text style={{verticalAlign: 'middle'}}>{TEST_TEXT}</Text>);
+      });
+      expect(
+        root.getRenderedOutput({props: ['textAlignVertical']}).toJSX(),
+      ).toEqual(
+        <rn-paragraph textAlignVertical="center">{TEST_TEXT}</rn-paragraph>,
+      );
     });
   });
 

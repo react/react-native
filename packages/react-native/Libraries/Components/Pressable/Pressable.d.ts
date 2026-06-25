@@ -30,6 +30,7 @@ export interface PressableAndroidRippleConfig {
   borderless?: null | boolean | undefined;
   radius?: null | number | undefined;
   foreground?: null | boolean | undefined;
+  alpha?: null | number | undefined;
 }
 
 export interface PressableProps
@@ -54,6 +55,11 @@ export interface PressableProps
    * Called when a touch is engaged before `onPress`.
    */
   onPressIn?: null | ((event: GestureResponderEvent) => void) | undefined;
+
+  /**
+   * Called when the press location moves.
+   */
+  onPressMove?: null | ((event: GestureResponderEvent) => void) | undefined;
 
   /**
    * Called when a touch is released before `onPress`.

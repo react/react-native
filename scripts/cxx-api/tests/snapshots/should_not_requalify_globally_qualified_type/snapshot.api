@@ -1,0 +1,10 @@
+struct other::Consumer {
+  public test::inner::MyType create();
+  public void process(const test::inner::MyType& param);
+  public void processPtr(test::inner::MyType* param);
+}
+
+
+struct test::inner::MyType {
+  public int value;
+}

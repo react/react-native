@@ -19,12 +19,12 @@ enum TestEnum {
 }
 
 export interface Spec extends TurboModule {
-  +exampleFunction: (a: TestEnum, b: number) => void;
-  +getConstants: () => {
-    +exampleConstant: number,
+  readonly exampleFunction: (a: TestEnum, b: number) => void;
+  readonly getConstants: () => {
+    readonly exampleConstant: number,
   };
 }
 
-export default (TurboModuleRegistry.getEnforcing<Spec>(
+export default TurboModuleRegistry.getEnforcing<Spec>(
   'NativeModuleTest',
-): Spec);
+) as Spec;

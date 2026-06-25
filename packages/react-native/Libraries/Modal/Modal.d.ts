@@ -50,6 +50,11 @@ export interface ModalBaseProps {
    * Defaults to `white` if not provided and transparent is `false`. Ignored if `transparent` is `true`.
    */
   backdropColor?: ColorValue | undefined;
+
+  /**
+   * A ref to the native Modal component.
+   */
+  modalRef?: React.RefObject<Modal | null> | undefined;
 }
 
 export interface ModalPropsIOS {

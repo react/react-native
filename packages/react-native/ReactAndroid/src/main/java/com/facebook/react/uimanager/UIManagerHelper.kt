@@ -14,16 +14,11 @@ import android.content.ContextWrapper
 import android.view.View
 import android.widget.EditText
 import androidx.core.view.ViewCompat
-import com.facebook.react.bridge.CatalystInstance
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.ReactNoCrashSoftException
 import com.facebook.react.bridge.ReactSoftExceptionLogger
 import com.facebook.react.bridge.UIManager
-import com.facebook.react.common.annotations.internal.LegacyArchitectureLogLevel
-import com.facebook.react.common.annotations.internal.LegacyArchitectureLogger
-import com.facebook.react.common.build.ReactBuildConfig
 import com.facebook.react.uimanager.common.UIManagerType
-import com.facebook.react.uimanager.common.ViewUtil.getUIManagerType
 import com.facebook.react.uimanager.events.EventDispatcher
 import com.facebook.react.uimanager.events.EventDispatcherProvider
 
@@ -38,130 +33,59 @@ public object UIManagerHelper {
   /** @return a [UIManager] that can handle the react tag received by parameter. */
   @JvmStatic
   public fun getUIManagerForReactTag(context: ReactContext, reactTag: Int): UIManager? =
-      getUIManager(context, getUIManagerType(reactTag))
+      getUIManager(context, UIManagerType.FABRIC)
 
   /** @return a [UIManager] that can handle the react tag received by parameter. */
   @JvmStatic
-  public fun getUIManager(context: ReactContext, @UIManagerType uiManagerType: Int): UIManager? =
-      getUIManager(context, uiManagerType, true)
-
-  @JvmStatic
-  private fun getUIManager(
-      context: ReactContext,
-      @UIManagerType uiManagerType: Int,
-      returnNullIfCatalystIsInactive: Boolean,
-  ): UIManager? {
-    if (ReactBuildConfig.UNSTABLE_ENABLE_MINIFY_LEGACY_ARCHITECTURE || context.isBridgeless()) {
-      val uiManager = context.getFabricUIManager()
-      if (uiManager == null) {
-        ReactSoftExceptionLogger.logSoftException(
-            TAG,
-            ReactNoCrashSoftException(
-                "Cannot get UIManager because the instance hasn't been initialized yet."
-            ),
-        )
-        return null
-      }
-      return uiManager
-    }
-
-    // The following code is compiled-out when `context.isBridgeless() == true &&
-    // ReactBuildConfig.UNSTABLE_ENABLE_MINIFY_LEGACY_ARCHITECTURE == true ` because:
-    // - BridgelessReactContext.isBridgeless() is set to true statically
-    // - BridgeReactContext is compiled-out when UNSTABLE_ENABLE_MINIFY_LEGACY_ARCHITECTURE == true
-    //
-    // To detect a potential regression we add the following assertion ERROR
-    LegacyArchitectureLogger.assertLegacyArchitecture(
-        "UIManagerHelper.getUIManager(context, uiManagerType)",
-        LegacyArchitectureLogLevel.ERROR,
-    )
-    if (!context.hasCatalystInstance()) {
-      ReactSoftExceptionLogger.logSoftException(
-          TAG,
-          ReactNoCrashSoftException(
-              "Cannot get UIManager because the context doesn't contain a CatalystInstance."
-          ),
-      )
-      return null
-    }
-    // TODO T60461551: add tests to verify emission of events when the ReactContext is being turn
-    // down.
+  public fun getUIManager(context: ReactContext, @UIManagerType uiManagerType: Int): UIManager? {
     if (!context.hasActiveReactInstance()) {
       ReactSoftExceptionLogger.logSoftException(
           TAG,
           ReactNoCrashSoftException(
-              "Cannot get UIManager because the context doesn't contain an active" +
-                  " CatalystInstance."
+              "Cannot get UIManager because the context doesn't contain an active React instance."
           ),
       )
-      if (returnNullIfCatalystIsInactive) {
-        return null
-      }
+      return null
     }
-    val catalystInstance: CatalystInstance = context.getCatalystInstance()
-    try {
-      return if (uiManagerType == UIManagerType.Companion.FABRIC) context.getFabricUIManager()
-      else catalystInstance.getNativeModule<UIManagerModule>(UIManagerModule::class.java)
-    } catch (_: IllegalArgumentException) {
-      // TODO T67518514 Clean this up once we migrate everything over to bridgeless mode
+
+    val uiManager = context.getFabricUIManager()
+    if (uiManager == null) {
       ReactSoftExceptionLogger.logSoftException(
           TAG,
-          ReactNoCrashSoftException("Cannot get UIManager for UIManagerType: $uiManagerType"),
+          ReactNoCrashSoftException(
+              "Cannot get UIManager because the instance hasn't been initialized yet."
+          ),
       )
-      return catalystInstance.getNativeModule<UIManagerModule>(UIManagerModule::class.java)
     }
+    return uiManager
+  }
+
+  /** @return the [EventDispatcher] that handles events for the given [ReactContext]. */
+  @JvmStatic
+  public fun getEventDispatcher(context: ReactContext): EventDispatcher? {
+    var localContext = context
+    if (localContext is ThemedReactContext) {
+      localContext = localContext.reactApplicationContext
+    }
+    return (localContext as EventDispatcherProvider).getEventDispatcher()
   }
 
   /** @return the [EventDispatcher] that handles events for the reactTag received as a parameter. */
   @JvmStatic
-  public fun getEventDispatcherForReactTag(context: ReactContext, reactTag: Int): EventDispatcher? {
-    val eventDispatcher = getEventDispatcher(context, getUIManagerType(reactTag))
-    if (eventDispatcher == null) {
-      ReactSoftExceptionLogger.logSoftException(
-          TAG,
-          IllegalStateException("Cannot get EventDispatcher for reactTag $reactTag"),
-      )
-    }
-    return eventDispatcher
-  }
+  @Deprecated("reactTag is no longer needed", ReplaceWith("getEventDispatcher(context)"))
+  public fun getEventDispatcherForReactTag(context: ReactContext, reactTag: Int): EventDispatcher? =
+      getEventDispatcher(context)
 
   /**
    * @return the [EventDispatcher] that handles events for the [UIManagerType] received as a
    *   parameter.
    */
   @JvmStatic
+  @Deprecated("UIManagerType is no longer needed", ReplaceWith("getEventDispatcher(context)"))
   public fun getEventDispatcher(
       context: ReactContext,
       @UIManagerType uiManagerType: Int,
-  ): EventDispatcher? {
-    // TODO T67518514 Clean this up once we migrate everything over to bridgeless mode
-    var localContext = context
-    if (localContext.isBridgeless()) {
-      if (localContext is ThemedReactContext) {
-        localContext = localContext.reactApplicationContext
-      }
-      return (localContext as EventDispatcherProvider).getEventDispatcher()
-    }
-    val uiManager = getUIManager(localContext, uiManagerType, false)
-    if (uiManager == null) {
-      ReactSoftExceptionLogger.logSoftException(
-          TAG,
-          ReactNoCrashSoftException("Unable to find UIManager for UIManagerType $uiManagerType"),
-      )
-      return null
-    }
-    val eventDispatcher = uiManager.eventDispatcher
-    // Linter shows "Condition is always 'false'."
-    // Keeping it for now as it was in the original Java code.
-    @Suppress("SENSELESS_COMPARISON")
-    if (eventDispatcher == null) {
-      ReactSoftExceptionLogger.logSoftException(
-          TAG,
-          IllegalStateException("Cannot get EventDispatcher for UIManagerType $uiManagerType"),
-      )
-    }
-    return eventDispatcher
-  }
+  ): EventDispatcher? = getEventDispatcher(context)
 
   /**
    * @return The [ReactContext] associated to the [View] received as a parameter.
@@ -194,15 +118,7 @@ public object UIManagerHelper {
   public fun getSurfaceId(view: View): Int {
     if (view is ReactRoot) {
       val rootView = view as ReactRoot
-      return if (rootView.getUIManagerType() == UIManagerType.FABRIC) rootView.getRootViewTag()
-      else -1
-    }
-
-    val reactTag = view.id
-
-    // In non-Fabric we don't have (or use) SurfaceId
-    if (getUIManagerType(reactTag) == UIManagerType.LEGACY) {
-      return -1
+      return rootView.getRootViewTag()
     }
 
     var context = view.context
@@ -216,7 +132,7 @@ public object UIManagerHelper {
       ReactSoftExceptionLogger.logSoftException(
           TAG,
           IllegalStateException(
-              "Fabric View [$reactTag] does not have SurfaceId associated with it"
+              "Fabric View [${view.id}] does not have SurfaceId associated with it"
           ),
       )
     }

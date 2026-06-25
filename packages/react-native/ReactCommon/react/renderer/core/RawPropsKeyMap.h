@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include <react/renderer/core/RawPropsKey.h>
 #include <react/renderer/core/RawPropsPrimitives.h>
+#include <string_view>
 #include <vector>
 
 namespace facebook::react {
@@ -25,7 +25,7 @@ class RawPropsKeyMap final {
   /*
    * Stores `value` with by given `key`.
    */
-  void insert(const RawPropsKey &key, RawPropsValueIndex value) noexcept;
+  void insert(std::string_view key, RawPropsValueIndex value) noexcept;
 
   /*
    * Reindexes the stored data.
@@ -37,7 +37,7 @@ class RawPropsKeyMap final {
    * Finds and returns the `value` (some index) by given `key`.
    * Returns `kRawPropsValueIndexEmpty` if the value wan't found.
    */
-  RawPropsValueIndex at(const char *name, RawPropsPropNameLength length) noexcept;
+  RawPropsValueIndex at(std::string_view name) noexcept;
 
  private:
   struct Item {

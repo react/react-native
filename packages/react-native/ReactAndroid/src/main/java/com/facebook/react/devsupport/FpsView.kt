@@ -23,7 +23,7 @@ import java.util.Locale
  *
  * NB: Requires API 16 for use of FpsDebugFrameCallback.
  */
-internal class FpsView(reactContext: ReactContext?) : FrameLayout(reactContext!!) {
+internal class FpsView(reactContext: ReactContext) : FrameLayout(reactContext) {
   private val textView: TextView
   private val frameCallback: FpsDebugFrameCallback
   private val fpsMonitorRunnable: FPSMonitorRunnable
@@ -31,7 +31,7 @@ internal class FpsView(reactContext: ReactContext?) : FrameLayout(reactContext!!
   init {
     inflate(reactContext, R.layout.fps_view, this)
     textView = findViewById<View>(R.id.fps_text) as TextView
-    frameCallback = FpsDebugFrameCallback(reactContext!!)
+    frameCallback = FpsDebugFrameCallback(reactContext)
     fpsMonitorRunnable = FPSMonitorRunnable()
     setCurrentFPS(0.0, 0.0, 0, 0, frameCallback.isRunningOnFabric)
   }

@@ -11,7 +11,6 @@ import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.ReadableType
 import com.facebook.react.bridge.UnexpectedNativeTypeException
-import com.facebook.react.bridge.WritableArray
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.uimanager.events.EventCategoryDef
 import com.facebook.react.uimanager.events.RCTModernEventEmitter
@@ -23,31 +22,7 @@ internal class EventAnimationDriver(
     private val eventPath: List<String>,
     @JvmField internal var valueNode: ValueAnimatedNode,
 ) : RCTModernEventEmitter {
-  @Deprecated(
-      "Deprecated in Java",
-      ReplaceWith("receiveEvent(surfaceId, targetTag, eventName, params)"),
-  )
-  override fun receiveEvent(targetTag: Int, eventName: String, params: WritableMap?) =
-      receiveEvent(-1, targetTag, eventName, params)
-
-  override fun receiveEvent(
-      surfaceId: Int,
-      targetTag: Int,
-      eventName: String,
-      params: WritableMap?,
-  ) =
-      // We assume this event can't be coalesced. `customCoalesceKey` has no meaning in Fabric.
-      receiveEvent(surfaceId, targetTag, eventName, false, 0, params, EventCategoryDef.UNSPECIFIED)
-
-  @Deprecated("Deprecated in Java")
-  override fun receiveTouches(
-      eventName: String,
-      touches: WritableArray,
-      changedIndices: WritableArray,
-  ) {
-    throw UnsupportedOperationException("receiveTouches is not support by native animated events")
-  }
-
+  @Deprecated("Use the overload with eventTimestamp parameter instead.")
   override fun receiveEvent(
       surfaceId: Int,
       targetTag: Int,

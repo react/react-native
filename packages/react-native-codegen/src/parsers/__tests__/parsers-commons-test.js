@@ -698,9 +698,9 @@ describe('buildSchema', () => {
         ...ViewProps,
       |}>;
 
-      export default (codegenNativeComponent<ModuleProps>(
+      export default codegenNativeComponent<ModuleProps>(
         'Module',
-      ): HostComponent<ModuleProps>);
+      ) as HostComponent<ModuleProps>;
     `;
 
     it('returns a module with good properties', () => {
@@ -808,9 +808,9 @@ describe('buildSchema', () => {
         +getArray: (a: Array<any>) => Array<string>;
       }
 
-      export default (TurboModuleRegistry.getEnforcing<Spec>(
+      export default TurboModuleRegistry.getEnforcing<Spec>(
         'SampleTurboModule',
-      ): Spec);
+      ) as Spec;
     `;
 
     it('returns a module with good properties', () => {
@@ -1101,9 +1101,9 @@ describe('buildModuleSchema', () => {
       +getArray: (a: Array<any>) => Array<string>;
     }
 
-    export default (TurboModuleRegistry.getEnforcing<Spec>(
+    export default TurboModuleRegistry.getEnforcing<Spec>(
       'SampleTurboModule',
-    ): Spec);
+    ) as Spec;
   `;
 
   describe('throwIfModuleInterfaceNotFound', () => {
@@ -1201,9 +1201,9 @@ describe('buildModuleSchema', () => {
           +getArray: (a: Array<any>) => Array<string>;
         }
 
-        export default (TurboModuleRegistry.getEnforcing<Spec>(
+        export default TurboModuleRegistry.getEnforcing<Spec>(
           'SampleTurboModule',
-        ): Spec);
+        ) as Spec;
       `;
       const ast = flowParser.getAst(contents);
       const types = flowParser.getTypes(ast);

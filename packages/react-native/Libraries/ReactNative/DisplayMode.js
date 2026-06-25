@@ -12,7 +12,7 @@ export opaque type DisplayModeType = number;
 
 /** DisplayMode should be in sync with the method displayModeToInt from
  * react/renderer/uimanager/primitives.h. */
-const DisplayMode: {+[string]: DisplayModeType} = Object.freeze({
+const DisplayMode: {readonly [string]: DisplayModeType} = Object.freeze({
   VISIBLE: 1,
   SUSPENDED: 2,
   HIDDEN: 3,

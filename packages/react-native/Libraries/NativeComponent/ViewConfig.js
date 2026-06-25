@@ -43,9 +43,9 @@ export function createViewConfig(
 }
 
 function composeIndexers<T>(
-  maybeA: ?{+[string]: T},
-  maybeB: ?{+[string]: T},
-): {+[string]: T} {
+  maybeA: ?{readonly [string]: T},
+  maybeB: ?{readonly [string]: T},
+): {readonly [string]: T} {
   return maybeA == null || maybeB == null
     ? (maybeA ?? maybeB ?? {})
     : {...maybeA, ...maybeB};

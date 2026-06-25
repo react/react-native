@@ -8,12 +8,15 @@
  * @format
  */
 
+import type {HostInstance} from '../../../src/private/types/HostInstance';
 import type {ViewProps} from './ViewPropTypes';
 
 import TextAncestorContext from '../../Text/TextAncestorContext';
 import ViewNativeComponent from './ViewNativeComponent';
 import * as React from 'react';
 import {use} from 'react';
+
+export type ViewInstance = HostInstance;
 
 /**
  * The most fundamental component for building a UI, View is a container that
@@ -22,10 +25,7 @@ import {use} from 'react';
  *
  * @see https://reactnative.dev/docs/view
  */
-component View(
-  ref?: React.RefSetter<React.ElementRef<typeof ViewNativeComponent>>,
-  ...props: ViewProps
-) {
+component View(ref?: React.RefSetter<ViewInstance>, ...props: ViewProps) {
   const hasTextAncestor = use(TextAncestorContext);
 
   const {
@@ -49,36 +49,35 @@ component View(
     ...otherProps
   } = props;
 
-  // Since we destructured props, we can now treat it as mutable
-  const processedProps = otherProps as {...ViewProps};
+  const resolvedProps = otherProps as {...ViewProps};
 
   const parsedAriaLabelledBy = ariaLabelledBy?.split(/\s*,\s*/g);
   if (parsedAriaLabelledBy !== undefined) {
-    processedProps.accessibilityLabelledBy = parsedAriaLabelledBy;
+    resolvedProps.accessibilityLabelledBy = parsedAriaLabelledBy;
   }
 
   if (ariaLabel !== undefined) {
-    processedProps.accessibilityLabel = ariaLabel;
+    resolvedProps.accessibilityLabel = ariaLabel;
   }
 
   if (ariaLive !== undefined) {
-    processedProps.accessibilityLiveRegion =
+    resolvedProps.accessibilityLiveRegion =
       ariaLive === 'off' ? 'none' : ariaLive;
   }
 
   if (ariaHidden !== undefined) {
-    processedProps.accessibilityElementsHidden = ariaHidden;
+    resolvedProps.accessibilityElementsHidden = ariaHidden;
     if (ariaHidden === true) {
-      processedProps.importantForAccessibility = 'no-hide-descendants';
+      resolvedProps.importantForAccessibility = 'no-hide-descendants';
     }
   }
 
   if (id !== undefined) {
-    processedProps.nativeID = id;
+    resolvedProps.nativeID = id;
   }
 
   if (tabIndex !== undefined) {
-    processedProps.focusable = !tabIndex;
+    resolvedProps.focusable = !tabIndex;
   }
 
   if (
@@ -89,7 +88,7 @@ component View(
     ariaExpanded != null ||
     ariaSelected != null
   ) {
-    processedProps.accessibilityState = {
+    resolvedProps.accessibilityState = {
       busy: ariaBusy ?? accessibilityState?.busy,
       checked: ariaChecked ?? accessibilityState?.checked,
       disabled: ariaDisabled ?? accessibilityState?.disabled,
@@ -105,7 +104,7 @@ component View(
     ariaValueNow != null ||
     ariaValueText != null
   ) {
-    processedProps.accessibilityValue = {
+    resolvedProps.accessibilityValue = {
       max: ariaValueMax ?? accessibilityValue?.max,
       min: ariaValueMin ?? accessibilityValue?.min,
       now: ariaValueNow ?? accessibilityValue?.now,
@@ -115,9 +114,9 @@ component View(
 
   const actualView =
     ref == null ? (
-      <ViewNativeComponent {...processedProps} />
+      <ViewNativeComponent {...resolvedProps} />
     ) : (
-      <ViewNativeComponent {...processedProps} ref={ref} />
+      <ViewNativeComponent {...resolvedProps} ref={ref} />
     );
 
   if (hasTextAncestor) {

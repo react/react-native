@@ -30,7 +30,7 @@ declare module 'selfsigned' {
     /**
      * additional extensions for the certificate
      */
-    extensions?: mixed[];
+    extensions?: unknown[];
     /**
      * The signature algorithm sha256 or sha1
      * @default "sha1"
@@ -74,7 +74,7 @@ declare module 'selfsigned' {
     attrs?: pki$CertificateField[],
     opts?: SelfsignedOptions,
     /** Optional callback, if not provided the generation is synchronous */
-    done?: (err: void | Error, result: GenerateResult) => mixed,
+    done?: (err: void | Error, result: GenerateResult) => unknown,
   ): void;
 
   // definitions from node-forge's `pki` and `asn1` namespaces
@@ -94,7 +94,7 @@ declare module 'selfsigned' {
   declare interface pki$CertificateField extends pki$CertificateFieldOptions {
     valueConstructed?: boolean | void;
     valueTagClass?: asn1$Class | void;
-    value?: mixed[] | string | void;
-    extensions?: mixed[] | void;
+    value?: unknown[] | string | void;
+    extensions?: unknown[] | void;
   }
 }

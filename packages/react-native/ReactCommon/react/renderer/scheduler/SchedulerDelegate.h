@@ -39,6 +39,12 @@ class SchedulerDelegate {
       const std::shared_ptr<const MountingCoordinator> &mountingCoordinator) = 0;
 
   /*
+   * Called at the end of the event loop if there were commits to the JS
+   * during the pass and JS branch should be "merged" to the main revision.
+   */
+  virtual void schedulerShouldMergeReactRevision(SurfaceId surfaceId) = 0;
+
+  /*
    * Called right after a new ShadowNode was created.
    */
   virtual void schedulerDidRequestPreliminaryViewAllocation(const ShadowNode &shadowNode) = 0;
@@ -59,6 +65,11 @@ class SchedulerDelegate {
   virtual void schedulerShouldSynchronouslyUpdateViewOnUIThread(Tag tag, const folly::dynamic &props) = 0;
 
   virtual void schedulerDidUpdateShadowTree(const std::unordered_map<Tag, folly::dynamic> &tagToProps) = 0;
+
+  // View transition bitmap snapshot capture and application.
+  virtual void schedulerDidCaptureViewSnapshot(Tag tag, SurfaceId surfaceId) = 0;
+  virtual void schedulerDidSetViewSnapshot(Tag sourceTag, Tag targetTag, SurfaceId surfaceId) = 0;
+  virtual void schedulerDidClearPendingSnapshots() = 0;
 
   virtual ~SchedulerDelegate() noexcept = default;
 };

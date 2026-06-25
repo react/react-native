@@ -52,7 +52,6 @@ class StubViewTree {
   std::vector<std::string> mountingLogs_{};
 
   friend bool operator==(const StubViewTree &lhs, const StubViewTree &rhs);
-  friend bool operator!=(const StubViewTree &lhs, const StubViewTree &rhs);
 
   std::ostream &dumpTags(std::ostream &stream) const;
 
@@ -62,6 +61,5 @@ class StubViewTree {
 };
 
 bool operator==(const StubViewTree &lhs, const StubViewTree &rhs);
-bool operator!=(const StubViewTree &lhs, const StubViewTree &rhs);
 
 } // namespace facebook::react

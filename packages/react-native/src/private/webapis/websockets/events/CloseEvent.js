@@ -20,9 +20,9 @@ import type {EventInit} from '../../dom/events/Event';
 import Event from '../../dom/events/Event';
 
 export interface CloseEventInit extends EventInit {
-  +wasClean?: boolean;
-  +code?: number;
-  +reason?: string;
+  readonly wasClean?: boolean;
+  readonly code?: number;
+  readonly reason?: string;
 }
 
 export default class CloseEvent extends Event {

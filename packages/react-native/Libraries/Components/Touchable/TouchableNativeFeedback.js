@@ -8,6 +8,8 @@
  * @format
  */
 
+import type {ProcessedColorValue} from '../../StyleSheet/processColor';
+import type {ColorValue} from '../../StyleSheet/StyleSheet';
 import type {GestureResponderEvent} from '../../Types/CoreEventTypes';
 import type {TouchableWithoutFeedbackProps} from './TouchableWithoutFeedback';
 
@@ -20,7 +22,6 @@ import {findHostInstance_DEPRECATED} from '../../ReactNative/RendererProxy';
 import processColor from '../../StyleSheet/processColor';
 import Platform from '../../Utilities/Platform';
 import {Commands} from '../View/ViewNativeComponent';
-import invariant from 'invariant';
 import * as React from 'react';
 import {cloneElement} from 'react';
 
@@ -69,7 +70,7 @@ type TouchableNativeFeedbackTVProps = {
   nextFocusUp?: ?number,
 };
 
-export type TouchableNativeFeedbackProps = $ReadOnly<{
+export type TouchableNativeFeedbackProps = Readonly<{
   ...TouchableWithoutFeedbackProps,
   ...TouchableNativeFeedbackTVProps,
   /**
@@ -87,16 +88,16 @@ export type TouchableNativeFeedbackProps = $ReadOnly<{
    *         type is available on Android API level 21+
    */
   background?: ?(
-    | $ReadOnly<{
+    | Readonly<{
         type: 'ThemeAttrAndroid',
         attribute:
           | 'selectableItemBackground'
           | 'selectableItemBackgroundBorderless',
         rippleRadius: ?number,
       }>
-    | $ReadOnly<{
+    | Readonly<{
         type: 'RippleAndroid',
-        color: ?number,
+        color: ?ProcessedColorValue,
         borderless: boolean,
         rippleRadius: ?number,
       }>
@@ -114,7 +115,7 @@ export type TouchableNativeFeedbackProps = $ReadOnly<{
   useForeground?: ?boolean,
 }>;
 
-type TouchableNativeFeedbackState = $ReadOnly<{
+type TouchableNativeFeedbackState = Readonly<{
   pressability: Pressability,
 }>;
 
@@ -138,7 +139,7 @@ class TouchableNativeFeedback extends React.Component<
    *
    * @param rippleRadius The radius of ripple effect
    */
-  static SelectableBackground: (rippleRadius?: ?number) => $ReadOnly<{
+  static SelectableBackground: (rippleRadius?: ?number) => Readonly<{
     attribute: 'selectableItemBackground',
     type: 'ThemeAttrAndroid',
     rippleRadius: ?number,
@@ -155,7 +156,7 @@ class TouchableNativeFeedback extends React.Component<
    *
    * @param rippleRadius The radius of ripple effect
    */
-  static SelectableBackgroundBorderless: (rippleRadius?: ?number) => $ReadOnly<{
+  static SelectableBackgroundBorderless: (rippleRadius?: ?number) => Readonly<{
     attribute: 'selectableItemBackgroundBorderless',
     type: 'ThemeAttrAndroid',
     rippleRadius: ?number,
@@ -177,23 +178,18 @@ class TouchableNativeFeedback extends React.Component<
    * @param rippleRadius The radius of ripple effect
    */
   static Ripple: (
-    color: string,
+    color: ColorValue,
     borderless: boolean,
     rippleRadius?: ?number,
-  ) => $ReadOnly<{
+  ) => Readonly<{
     borderless: boolean,
-    color: ?number,
+    color: ?ProcessedColorValue,
     rippleRadius: ?number,
     type: 'RippleAndroid',
-  }> = (color: string, borderless: boolean, rippleRadius?: ?number) => {
+  }> = (color: ColorValue, borderless: boolean, rippleRadius?: ?number) => {
     const processedColor = processColor(color);
-    invariant(
-      processedColor == null || typeof processedColor === 'number',
-      'Unexpected color given for Ripple color',
-    );
     return {
       type: 'RippleAndroid',
-      // $FlowFixMe[incompatible-type]
       color: processedColor,
       borderless,
       rippleRadius,
@@ -390,7 +386,7 @@ class TouchableNativeFeedback extends React.Component<
     this.state.pressability.configure(this._createPressabilityConfig());
   }
 
-  componentDidMount(): mixed {
+  componentDidMount(): unknown {
     this.state.pressability.configure(this._createPressabilityConfig());
   }
 
@@ -412,5 +408,7 @@ const getBackgroundProp =
       (background, useForeground: boolean) => null;
 
 TouchableNativeFeedback.displayName = 'TouchableNativeFeedback';
+
+export type TouchableNativeFeedbackInstance = TouchableNativeFeedback;
 
 export default TouchableNativeFeedback;

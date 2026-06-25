@@ -13,7 +13,7 @@
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 
 import RNTesterText from '../../components/RNTesterText';
-import React from 'react';
+import * as React from 'react';
 import {useState} from 'react';
 import {Button, DeviceInfo, Modal, StyleSheet, View} from 'react-native';
 
@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
   },
 });
 
-exports.displayName = (undefined: ?string);
+exports.displayName = undefined as ?string;
 exports.framework = 'React';
 exports.title = 'SafeAreaView';
 exports.category = 'UI';
@@ -97,7 +97,7 @@ exports.examples = [
       ('`DeviceInfo.isIPhoneX_deprecated` returns true only on iPhone X. ' +
         'Note: This prop is deprecated and will be removed in a future ' +
         'release. Please use this only for a quick and temporary solution. ' +
-        'Use <SafeAreaView> instead.': string),
+        'Use <SafeAreaView> instead.') as string,
     render: (): React.Node => <IsIPhoneXExample />,
   },
 ] as Array<RNTesterModuleExample>;

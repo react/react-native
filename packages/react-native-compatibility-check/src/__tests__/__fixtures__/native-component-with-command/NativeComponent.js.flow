@@ -15,14 +15,14 @@ import type {Int32} from 'react-native/Libraries/Types/CodegenTypes';
 import codegenNativeCommands from 'react-native/Libraries/Utilities/codegenNativeCommands';
 import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
 
-type NativeProps = $ReadOnly<{
+type NativeProps = Readonly<{
   ...ViewProps,
 }>;
 
 type NativeType = HostComponent<NativeProps>;
 
 interface NativeCommands {
-  +methodInt: (viewRef: React.ElementRef<NativeType>, a: Int32) => void;
+  readonly methodInt: (viewRef: React.ElementRef<NativeType>, a: Int32) => void;
 }
 
 export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({

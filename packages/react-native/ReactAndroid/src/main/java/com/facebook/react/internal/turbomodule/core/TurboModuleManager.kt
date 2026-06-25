@@ -52,7 +52,6 @@ public class TurboModuleManager(
   @DoNotStrip
   private val mHybridData: HybridData =
       initHybrid(
-          runtimeExecutor,
           jsCallInvokerHolder as CallInvokerHolderImpl,
           nativeMethodCallInvokerHolder as NativeMethodCallInvokerHolderImpl,
           delegate,
@@ -60,7 +59,7 @@ public class TurboModuleManager(
 
   init {
 
-    installJSIBindings(shouldEnableLegacyModuleInterop())
+    dispatchJSBindingInstall(runtimeExecutor)
 
     eagerInitModuleNames = delegate?.getEagerInitModuleNames() ?: emptyList()
 
@@ -72,7 +71,7 @@ public class TurboModuleManager(
             ModuleProvider { moduleName: String -> delegate.getModule(moduleName) as NativeModule? }
 
     legacyModuleProvider =
-        if (delegate == null || !shouldEnableLegacyModuleInterop()) nullProvider
+        if (delegate == null) nullProvider
         else
             ModuleProvider { moduleName: String ->
               val nativeModule = delegate.getLegacyModule(moduleName)
@@ -92,9 +91,6 @@ public class TurboModuleManager(
 
   private fun isLegacyModule(moduleName: String): Boolean =
       delegate?.unstable_isLegacyModuleRegistered(moduleName) == true
-
-  private fun shouldEnableLegacyModuleInterop(): Boolean =
-      delegate?.unstable_shouldEnableLegacyModuleInterop() == true
 
   // used from TurboModuleManager.cpp
   @Suppress("unused")
@@ -281,13 +277,12 @@ public class TurboModuleManager(
   }
 
   private external fun initHybrid(
-      runtimeExecutor: RuntimeExecutor,
       jsCallInvokerHolder: CallInvokerHolderImpl,
       nativeMethodCallInvoker: NativeMethodCallInvokerHolderImpl,
       tmmDelegate: TurboModuleManagerDelegate?,
   ): HybridData
 
-  private external fun installJSIBindings(shouldCreateLegacyModules: Boolean)
+  private external fun dispatchJSBindingInstall(runtimeExecutor: RuntimeExecutor)
 
   override fun invalidate() {
     /*

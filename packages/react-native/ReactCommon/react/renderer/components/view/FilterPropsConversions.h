@@ -45,70 +45,70 @@ parseProcessedFilter(const PropsParserContext &context, const RawValue &value, s
 
     auto rawFilterFunction = static_cast<std::unordered_map<std::string, RawValue>>(rawFilterPrimitive);
     FilterFunction filterFunction{};
-    try {
-      filterFunction.type = filterTypeFromString(rawFilterFunction.begin()->first);
-      if (filterFunction.type == FilterType::DropShadow) {
-        auto rawDropShadow = static_cast<std::unordered_map<std::string, RawValue>>(rawFilterFunction.begin()->second);
-        DropShadowParams dropShadowParams{};
-
-        auto offsetX = rawDropShadow.find("offsetX");
-        react_native_expect(offsetX != rawDropShadow.end());
-        if (offsetX == rawDropShadow.end()) {
-          result = {};
-          return;
-        }
-
-        react_native_expect(offsetX->second.hasType<Float>());
-        if (!offsetX->second.hasType<Float>()) {
-          result = {};
-          return;
-        }
-        dropShadowParams.offsetX = (Float)offsetX->second;
-
-        auto offsetY = rawDropShadow.find("offsetY");
-        react_native_expect(offsetY != rawDropShadow.end());
-        if (offsetY == rawDropShadow.end()) {
-          result = {};
-          return;
-        }
-        react_native_expect(offsetY->second.hasType<Float>());
-        if (!offsetY->second.hasType<Float>()) {
-          result = {};
-          return;
-        }
-        dropShadowParams.offsetY = (Float)offsetY->second;
-
-        auto standardDeviation = rawDropShadow.find("standardDeviation");
-        if (standardDeviation != rawDropShadow.end()) {
-          react_native_expect(standardDeviation->second.hasType<Float>());
-          if (!standardDeviation->second.hasType<Float>()) {
-            result = {};
-            return;
-          }
-          dropShadowParams.standardDeviation = (Float)standardDeviation->second;
-        }
-
-        auto color = rawDropShadow.find("color");
-        if (color != rawDropShadow.end()) {
-          fromRawValue(context.contextContainer, context.surfaceId, color->second, dropShadowParams.color);
-        }
-
-        filterFunction.parameters = dropShadowParams;
-      } else {
-        filterFunction.parameters = (float)rawFilterFunction.begin()->second;
-      }
-      filter.push_back(std::move(filterFunction));
-    } catch (const std::exception &e) {
-      LOG(ERROR) << "Could not parse FilterFunction: " << e.what();
+    auto filterType = filterTypeFromString(rawFilterFunction.begin()->first);
+    if (!filterType.has_value()) {
+      LOG(ERROR) << "Could not parse FilterFunction: " << rawFilterFunction.begin()->first;
       result = {};
       return;
     }
+    filterFunction.type = *filterType;
+    if (filterFunction.type == FilterType::DropShadow) {
+      auto rawDropShadow = static_cast<std::unordered_map<std::string, RawValue>>(rawFilterFunction.begin()->second);
+      DropShadowParams dropShadowParams{};
+
+      auto offsetX = rawDropShadow.find("offsetX");
+      react_native_expect(offsetX != rawDropShadow.end());
+      if (offsetX == rawDropShadow.end()) {
+        result = {};
+        return;
+      }
+
+      react_native_expect(offsetX->second.hasType<Float>());
+      if (!offsetX->second.hasType<Float>()) {
+        result = {};
+        return;
+      }
+      dropShadowParams.offsetX = (Float)offsetX->second;
+
+      auto offsetY = rawDropShadow.find("offsetY");
+      react_native_expect(offsetY != rawDropShadow.end());
+      if (offsetY == rawDropShadow.end()) {
+        result = {};
+        return;
+      }
+      react_native_expect(offsetY->second.hasType<Float>());
+      if (!offsetY->second.hasType<Float>()) {
+        result = {};
+        return;
+      }
+      dropShadowParams.offsetY = (Float)offsetY->second;
+
+      auto standardDeviation = rawDropShadow.find("standardDeviation");
+      if (standardDeviation != rawDropShadow.end()) {
+        react_native_expect(standardDeviation->second.hasType<Float>());
+        if (!standardDeviation->second.hasType<Float>()) {
+          result = {};
+          return;
+        }
+        dropShadowParams.standardDeviation = (Float)standardDeviation->second;
+      }
+
+      auto color = rawDropShadow.find("color");
+      if (color != rawDropShadow.end()) {
+        fromRawValue(context.contextContainer, context.surfaceId, color->second, dropShadowParams.color);
+      }
+
+      filterFunction.parameters = dropShadowParams;
+    } else {
+      filterFunction.parameters = (float)rawFilterFunction.begin()->second;
+    }
+    filter.push_back(filterFunction);
   }
 
   result = filter;
 }
 
-inline FilterType filterTypeFromVariant(const CSSFilterFunctionVariant &filter)
+inline FilterType filterTypeFromVariant(const CSSFilterFunction &filter)
 {
   return std::visit(
       [](auto &&filter) -> FilterType {
@@ -148,7 +148,7 @@ inline FilterType filterTypeFromVariant(const CSSFilterFunctionVariant &filter)
       filter);
 }
 
-inline std::optional<FilterFunction> fromCSSFilter(const CSSFilterFunctionVariant &cssFilter)
+inline std::optional<FilterFunction> fromCSSFilter(const CSSFilterFunction &cssFilter)
 {
   return std::visit(
       [&](auto &&filter) -> std::optional<FilterFunction> {
@@ -313,11 +313,15 @@ inline std::optional<FilterFunction> parseFilterRawValue(const PropsParserContex
     }
     return {};
   } else {
+    auto filterType = filterTypeFromString(filterKey);
+    if (!filterType.has_value()) {
+      return {};
+    }
     if (auto amount = coerceAmount(rawFilter.begin()->second)) {
       if (*amount < 0.0f) {
         return {};
       }
-      return FilterFunction{.type = filterTypeFromString(filterKey), .parameters = *amount};
+      return FilterFunction{.type = *filterType, .parameters = *amount};
     }
     return {};
   }

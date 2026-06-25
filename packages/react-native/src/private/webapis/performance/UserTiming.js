@@ -22,20 +22,20 @@ import {getCurrentTimeStamp} from './internals/Utilities';
 import {PerformanceEntry} from './PerformanceEntry';
 
 export type DetailType =
-  | mixed
+  | unknown
   // This will effectively ignored by Flow (mixed | anything = mixed)
   // but we'll use it as documentation for how to use the extensibility API.
   | {devtools?: ExtensionMarkerPayload | ExtensionTrackEntryPayload, ...};
 
 export interface PerformanceMarkOptions {
-  +detail?: DetailType;
-  +startTime?: DOMHighResTimeStamp;
+  readonly detail?: DetailType;
+  readonly startTime?: DOMHighResTimeStamp;
 }
 
 export type TimeStampOrName = DOMHighResTimeStamp | string;
 
 export interface PerformanceMeasureInit extends PerformanceEntryInit {
-  +detail?: DetailType;
+  readonly detail?: DetailType;
 }
 
 class PerformanceMarkTemplate extends PerformanceEntry {

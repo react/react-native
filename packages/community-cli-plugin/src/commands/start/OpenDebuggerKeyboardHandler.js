@@ -12,7 +12,7 @@ import type {TerminalReporter} from 'metro';
 
 import {styleText} from 'util';
 
-type PageDescription = $ReadOnly<{
+type PageDescription = Readonly<{
   id: string,
   title: string,
   description: string,
@@ -22,7 +22,7 @@ type PageDescription = $ReadOnly<{
 export default class OpenDebuggerKeyboardHandler {
   #devServerUrl: string;
   #reporter: TerminalReporter;
-  #targetsShownForSelection: ?$ReadOnlyArray<PageDescription> = null;
+  #targetsShownForSelection: ?ReadonlyArray<PageDescription> = null;
 
   constructor({
     devServerUrl,
@@ -82,7 +82,7 @@ export default class OpenDebuggerKeyboardHandler {
       if (res.status !== 200) {
         throw new Error(`Unexpected status code: ${res.status}`);
       }
-      const targets = (await res.json()) as $ReadOnlyArray<PageDescription>;
+      const targets = (await res.json()) as ReadonlyArray<PageDescription>;
       if (!Array.isArray(targets)) {
         throw new Error('Expected array.');
       }
@@ -153,7 +153,7 @@ export default class OpenDebuggerKeyboardHandler {
     this.#targetsShownForSelection = null;
   }
 
-  #log(level: 'info' | 'warn' | 'error', ...data: Array<mixed>): void {
+  #log(level: 'info' | 'warn' | 'error', ...data: Array<unknown>): void {
     this.#reporter.update({
       type: 'unstable_server_log',
       level,

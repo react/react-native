@@ -14,7 +14,6 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
-import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
 import android.text.Editable
@@ -23,6 +22,7 @@ import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.TextPaint
+import android.text.TextUtils
 import android.text.TextWatcher
 import android.text.method.KeyListener
 import android.text.method.QwertyKeyListener
@@ -41,6 +41,7 @@ import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.widget.AppCompatEditText
+import androidx.core.graphics.withTranslation
 import androidx.core.util.Predicate
 import androidx.core.view.ViewCompat
 import com.facebook.common.logging.FLog
@@ -63,8 +64,6 @@ import com.facebook.react.uimanager.PixelUtil.toDIPFromPixel
 import com.facebook.react.uimanager.ReactAccessibilityDelegate
 import com.facebook.react.uimanager.StateWrapper
 import com.facebook.react.uimanager.UIManagerHelper
-import com.facebook.react.uimanager.common.UIManagerType
-import com.facebook.react.uimanager.common.ViewUtil.getUIManagerType
 import com.facebook.react.uimanager.events.EventDispatcher
 import com.facebook.react.uimanager.style.BorderRadiusProp
 import com.facebook.react.uimanager.style.BorderStyle
@@ -76,6 +75,7 @@ import com.facebook.react.views.text.ReactTypefaceUtils.parseFontStyle
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.facebook.react.views.text.TextAttributes
 import com.facebook.react.views.text.TextLayoutManager
+import com.facebook.react.views.text.internal.span.CanvasEffectSpan
 import com.facebook.react.views.text.internal.span.CustomLetterSpacingSpan
 import com.facebook.react.views.text.internal.span.CustomLineHeightSpan
 import com.facebook.react.views.text.internal.span.CustomStyleSpan
@@ -86,7 +86,6 @@ import com.facebook.react.views.text.internal.span.ReactSpan
 import com.facebook.react.views.text.internal.span.ReactStrikethroughSpan
 import com.facebook.react.views.text.internal.span.ReactTextPaintHolderSpan
 import com.facebook.react.views.text.internal.span.ReactUnderlineSpan
-import com.facebook.react.views.text.internal.span.TextInlineImageSpan
 import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.math.max
 import kotlin.math.min
@@ -119,7 +118,7 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
   private var listeners: CopyOnWriteArrayList<TextWatcher>?
 
   public var stagedInputType: Int
-  protected var containsImages: Boolean = false
+  internal var stagedAutoCapitalize: Int = 0
   public var submitBehavior: String? = null
   public var dragAndDropFilter: List<String>? = null
 
@@ -141,6 +140,7 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
   private var selectTextOnFocus = false
   private var placeholder: String? = null
   private var overflow = Overflow.VISIBLE
+  private var wasMultiline = false
 
   public var stateWrapper: StateWrapper? = null
   internal var disableTextDiffing: Boolean = false
@@ -545,14 +545,41 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
     super.setTypeface(tf)
 
     /**
-     * If set forces multiline on input, because of a restriction on Android source that enables
-     * multiline only for inputs of type Text and Multiline on method
+     * Keep the single-line state in sync with the multiline input type flag.
+     *
+     * When multiline is on we must force [isSingleLine] off, because of a restriction on Android
+     * source that enables multiline only for inputs of type Text and Multiline on method
      * [android.widget.TextView.isMultilineInputType]} Source:
      * [TextView.java](https://android.googlesource.com/platform/frameworks/base/+/jb-release/core/java/android/widget/TextView.java)
+     *
+     * When multiline is off we must force [isSingleLine] back on. [TextView.setInputType] only
+     * re-applies the single-line layout (maxLines, horizontal scrolling) when its internal
+     * single-line flag actually changes; because we force it off above whenever multiline is on,
+     * that flag can be stale and the reset is skipped, leaving the placeholder/hint wrapped across
+     * multiple lines after multiline is toggled back off. Setting it explicitly guarantees the
+     * reset. We skip secure text so we don't replace its password transformation method with the
+     * single-line one.
      */
     if (isMultiline) {
       isSingleLine = false
+    } else if (!isSecureText) {
+      isSingleLine = true
     }
+
+    // Restoring the single-line input type above is not enough on its own when multiline is toggled
+    // off: under Fabric the view is not re-measured while its measured size is unchanged, so the
+    // placeholder/hint is rebuilt at draw time (which lays the hint out at the view's physical
+    // width) and stays wrapped across multiple lines. Forcing a re-measure at the current bounds
+    // rebuilds the hint as a single line, matching the initial mount.
+    if (wasMultiline && !isMultiline && isLaidOut && width > 0 && height > 0) {
+      forceLayout()
+      measure(
+          View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
+          View.MeasureSpec.makeMeasureSpec(height, View.MeasureSpec.EXACTLY),
+      )
+      layout(left, top, right, bottom)
+    }
+    wasMultiline = isMultiline
 
     // We override the KeyListener so that all keys on the soft input keyboard as well as hardware
     // keyboards work. Some KeyListeners like DigitsKeyListener will display the keyboard but not
@@ -623,14 +650,12 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
           paintFlags and Paint.SUBPIXEL_TEXT_FLAG.inv()
         }
 
-    if (ReactNativeFeatureFlags.enableAndroidLinearText()) {
-      paintFlags =
-          if (enableSubpixelText) {
-            paintFlags or Paint.LINEAR_TEXT_FLAG
-          } else {
-            paintFlags and Paint.LINEAR_TEXT_FLAG.inv()
-          }
-    }
+    paintFlags =
+        if (enableSubpixelText) {
+          paintFlags or Paint.LINEAR_TEXT_FLAG
+        } else {
+          paintFlags and Paint.LINEAR_TEXT_FLAG.inv()
+        }
   }
 
   public fun requestFocusFromJS() {
@@ -639,13 +664,13 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
 
   public fun incrementAndGetEventCounter(): Int = ++nativeEventCount
 
-  public fun maybeSetTextFromJS(reactTextUpdate: ReactTextUpdate) {
+  internal fun maybeSetTextFromJS(reactTextUpdate: ReactTextUpdate) {
     isSettingTextFromJS = true
     maybeSetText(reactTextUpdate)
     isSettingTextFromJS = false
   }
 
-  public fun maybeSetTextFromState(reactTextUpdate: ReactTextUpdate) {
+  internal fun maybeSetTextFromState(reactTextUpdate: ReactTextUpdate) {
     isSettingTextFromState = true
     maybeSetText(reactTextUpdate)
     isSettingTextFromState = false
@@ -654,7 +679,7 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
   public fun canUpdateWithEventCount(eventCounter: Int): Boolean = eventCounter >= nativeEventCount
 
   private fun maybeSetText(reactTextUpdate: ReactTextUpdate) {
-    if (isSecureText && (text == reactTextUpdate.text)) {
+    if (isSecureText && TextUtils.equals(text, reactTextUpdate.text)) {
       return
     }
 
@@ -678,9 +703,6 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
 
     manageSpans(spannableStringBuilder)
     stripStyleEquivalentSpans(spannableStringBuilder)
-
-    @Suppress("DEPRECATION")
-    containsImages = reactTextUpdate.containsImages()
 
     // When we update text, we trigger onChangeText code that will
     // try to update state if the wrapper is available. Temporarily disable
@@ -921,54 +943,6 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
         }
   }
 
-  override fun verifyDrawable(drawable: Drawable): Boolean {
-    if (containsImages) {
-      val text: Spanned? = text
-      val spans = checkNotNull(text).getSpans(0, text.length, TextInlineImageSpan::class.java)
-      for (span in spans) {
-        if (span.drawable === drawable) {
-          return true
-        }
-      }
-    }
-    return super.verifyDrawable(drawable)
-  }
-
-  override fun invalidateDrawable(drawable: Drawable) {
-    if (containsImages) {
-      val text: Spanned? = text
-      val spans = checkNotNull(text).getSpans(0, text.length, TextInlineImageSpan::class.java)
-      for (span in spans) {
-        if (span.drawable === drawable) {
-          invalidate()
-        }
-      }
-    }
-    super.invalidateDrawable(drawable)
-  }
-
-  public override fun onDetachedFromWindow() {
-    super.onDetachedFromWindow()
-    if (containsImages) {
-      val text: Spanned? = text
-      val spans = checkNotNull(text).getSpans(0, text.length, TextInlineImageSpan::class.java)
-      for (span in spans) {
-        span.onDetachedFromWindow()
-      }
-    }
-  }
-
-  override fun onStartTemporaryDetach() {
-    super.onStartTemporaryDetach()
-    if (containsImages) {
-      val text: Spanned? = text
-      val spans = checkNotNull(text).getSpans(0, text.length, TextInlineImageSpan::class.java)
-      for (span in spans) {
-        span.onStartTemporaryDetach()
-      }
-    }
-  }
-
   public override fun onConfigurationChanged(newConfig: Configuration) {
     super.onConfigurationChanged(newConfig)
 
@@ -994,30 +968,11 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
     // Restore the selection since `setTextIsSelectable` changed it.
     maybeSetSelection(selectionStart, selectionEnd)
 
-    if (containsImages) {
-      val text: Spanned? = text
-      val spans = checkNotNull(text).getSpans(0, text.length, TextInlineImageSpan::class.java)
-      for (span in spans) {
-        span.onAttachedToWindow()
-      }
-    }
-
     if (autoFocus && !didAttachToWindow) {
       requestFocusProgrammatically()
     }
 
     didAttachToWindow = true
-  }
-
-  override fun onFinishTemporaryDetach() {
-    super.onFinishTemporaryDetach()
-    if (containsImages) {
-      val text: Spanned? = text
-      val spans = checkNotNull(text).getSpans(0, text.length, TextInlineImageSpan::class.java)
-      for (span in spans) {
-        span.onFinishTemporaryDetach()
-      }
-    }
   }
 
   override fun setBackgroundColor(color: Int) {
@@ -1172,9 +1127,6 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
     if (!haveText) {
       if (hint != null && hint.isNotEmpty()) {
         sb.append(hint)
-      } else if (getUIManagerType(this) != UIManagerType.FABRIC) {
-        // Measure something so we have correct height, even if there's no string.
-        sb.append("I")
       }
     }
 
@@ -1206,6 +1158,30 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
   public override fun onDraw(canvas: Canvas) {
     if (overflow != Overflow.VISIBLE) {
       clipToPaddingBox(this, canvas)
+    }
+
+    val spanned = text as? Spanned
+    if (spanned != null) {
+      val layout = layout
+      if (layout != null) {
+        val drawSpans = spanned.getSpans(0, spanned.length, CanvasEffectSpan::class.java)
+        if (drawSpans.isNotEmpty()) {
+          canvas.withTranslation(compoundPaddingLeft.toFloat(), extendedPaddingTop.toFloat()) {
+            for (span in drawSpans) {
+              span.onPreDraw(spanned.getSpanStart(span), spanned.getSpanEnd(span), this, layout)
+            }
+          }
+
+          super.onDraw(canvas)
+
+          canvas.withTranslation(compoundPaddingLeft.toFloat(), extendedPaddingTop.toFloat()) {
+            for (span in drawSpans) {
+              span.onDraw(spanned.getSpanStart(span), spanned.getSpanEnd(span), this, layout)
+            }
+          }
+          return
+        }
+      }
     }
 
     super.onDraw(canvas)

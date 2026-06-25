@@ -13,13 +13,14 @@
 
 namespace facebook::react {
 
+namespace {
+const int kInstanceKey = 1;
+}
+
 void JReactMarker::setLogPerfMarkerIfNeeded() {
   static std::once_flag flag{};
   std::call_once(flag, []() {
-    std::unique_lock lock(ReactMarker::logTaggedMarkerImplMutex);
     ReactMarker::logTaggedMarkerImpl = JReactMarker::logPerfMarker;
-    ReactMarker::logTaggedMarkerBridgelessImpl =
-        JReactMarker::logPerfMarkerBridgeless;
   });
 }
 
@@ -51,21 +52,6 @@ void JReactMarker::logMarker(
 void JReactMarker::logPerfMarker(
     const ReactMarker::ReactMarkerId markerId,
     const char* tag) {
-  const int bridgeInstanceKey = 0;
-  logPerfMarkerWithInstanceKey(markerId, tag, bridgeInstanceKey);
-}
-
-void JReactMarker::logPerfMarkerBridgeless(
-    const ReactMarker::ReactMarkerId markerId,
-    const char* tag) {
-  const int bridgelessInstanceKey = 1;
-  logPerfMarkerWithInstanceKey(markerId, tag, bridgelessInstanceKey);
-}
-
-void JReactMarker::logPerfMarkerWithInstanceKey(
-    const ReactMarker::ReactMarkerId markerId,
-    const char* tag,
-    const int instanceKey) {
   switch (markerId) {
     case ReactMarker::APP_STARTUP_START:
       JReactMarker::logMarker("APP_STARTUP_START");
@@ -80,10 +66,10 @@ void JReactMarker::logPerfMarkerWithInstanceKey(
       JReactMarker::logMarker("INIT_REACT_RUNTIME_END");
       break;
     case ReactMarker::RUN_JS_BUNDLE_START:
-      JReactMarker::logMarker("RUN_JS_BUNDLE_START", tag, instanceKey);
+      JReactMarker::logMarker("RUN_JS_BUNDLE_START", tag, kInstanceKey);
       break;
     case ReactMarker::RUN_JS_BUNDLE_STOP:
-      JReactMarker::logMarker("RUN_JS_BUNDLE_END", tag, instanceKey);
+      JReactMarker::logMarker("RUN_JS_BUNDLE_END", tag, kInstanceKey);
       break;
     case ReactMarker::CREATE_REACT_CONTEXT_STOP:
       JReactMarker::logMarker("CREATE_REACT_CONTEXT_END");
@@ -95,16 +81,16 @@ void JReactMarker::logPerfMarkerWithInstanceKey(
       JReactMarker::logMarker("loadApplicationScript_endStringConvert");
       break;
     case ReactMarker::NATIVE_MODULE_SETUP_START:
-      JReactMarker::logMarker("NATIVE_MODULE_SETUP_START", tag, instanceKey);
+      JReactMarker::logMarker("NATIVE_MODULE_SETUP_START", tag, kInstanceKey);
       break;
     case ReactMarker::NATIVE_MODULE_SETUP_STOP:
-      JReactMarker::logMarker("NATIVE_MODULE_SETUP_END", tag, instanceKey);
+      JReactMarker::logMarker("NATIVE_MODULE_SETUP_END", tag, kInstanceKey);
       break;
     case ReactMarker::REGISTER_JS_SEGMENT_START:
-      JReactMarker::logMarker("REGISTER_JS_SEGMENT_START", tag, instanceKey);
+      JReactMarker::logMarker("REGISTER_JS_SEGMENT_START", tag, kInstanceKey);
       break;
     case ReactMarker::REGISTER_JS_SEGMENT_STOP:
-      JReactMarker::logMarker("REGISTER_JS_SEGMENT_STOP", tag, instanceKey);
+      JReactMarker::logMarker("REGISTER_JS_SEGMENT_STOP", tag, kInstanceKey);
       break;
     case ReactMarker::NATIVE_REQUIRE_START:
     case ReactMarker::NATIVE_REQUIRE_STOP:

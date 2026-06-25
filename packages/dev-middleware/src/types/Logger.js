@@ -8,7 +8,7 @@
  * @format
  */
 
-export type Logger = $ReadOnly<{
+export type Logger = Readonly<{
   error: (...message: Array<string>) => void,
   info: (...message: Array<string>) => void,
   warn: (...message: Array<string>) => void,

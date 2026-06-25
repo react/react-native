@@ -39,6 +39,10 @@ private constructor(
   override var count: Int = 0
     private set
 
+  // returns the relative offset of the first byte of dynamic data
+  private val offsetForDynamicData: Int
+    get() = getKeyOffsetForBucketIndex(count)
+
   init {
     readHeader()
   }
@@ -55,10 +59,6 @@ private constructor(
     // count
     count = readUnsignedShort(buffer.position()).toInt()
   }
-
-  // returns the relative offset of the first byte of dynamic data
-  private val offsetForDynamicData: Int
-    get() = getKeyOffsetForBucketIndex(count)
 
   /**
    * @param intKey Key to search for

@@ -38,6 +38,7 @@ const {
 } = require('../error-utils');
 const {
   IncorrectModuleRegistryCallArgumentTypeParserError,
+  IncorrectModuleRegistryCallArgumentValueParserError,
   IncorrectModuleRegistryCallArityParserError,
   IncorrectModuleRegistryCallTypeParameterParserError,
   MisnamedModuleInterfaceParserError,
@@ -489,7 +490,7 @@ describe('throwIfIncorrectModuleRegistryCallArgument', () => {
   });
 
   it("don't throw error if callExpressionArg type is `Literal` in Flow", () => {
-    const callExpressionArg = {type: 'Literal'};
+    const callExpressionArg = {type: 'Literal', value: 'ValidModuleName'};
     expect(() => {
       throwIfIncorrectModuleRegistryCallArgument(
         nativeModuleName,
@@ -511,7 +512,7 @@ describe('throwIfIncorrectModuleRegistryCallArgument', () => {
   });
 
   it("don't throw error if callExpressionArg type is `StringLiteral` in TypeScript", () => {
-    const callExpressionArg = {type: 'StringLiteral'};
+    const callExpressionArg = {type: 'StringLiteral', value: 'ValidModuleName'};
     expect(() => {
       throwIfIncorrectModuleRegistryCallArgument(
         nativeModuleName,
@@ -519,6 +520,101 @@ describe('throwIfIncorrectModuleRegistryCallArgument', () => {
         methodName,
       );
     }).not.toThrow(IncorrectModuleRegistryCallArgumentTypeParserError);
+  });
+
+  it('throw error if callExpressionArg value contains double quotes', () => {
+    const callExpressionArg = {
+      type: 'StringLiteral',
+      value:
+        'Malicious"; static { System.exit(1); } public static final String IGNORE = "',
+    };
+    expect(() => {
+      throwIfIncorrectModuleRegistryCallArgument(
+        nativeModuleName,
+        callExpressionArg,
+        methodName,
+      );
+    }).toThrow(IncorrectModuleRegistryCallArgumentValueParserError);
+  });
+
+  it('throw error if callExpressionArg value contains newlines', () => {
+    const callExpressionArg = {
+      type: 'StringLiteral',
+      value: 'Malicious\nCode',
+    };
+    expect(() => {
+      throwIfIncorrectModuleRegistryCallArgument(
+        nativeModuleName,
+        callExpressionArg,
+        methodName,
+      );
+    }).toThrow(IncorrectModuleRegistryCallArgumentValueParserError);
+  });
+
+  it('throw error if callExpressionArg value contains spaces', () => {
+    const callExpressionArg = {type: 'StringLiteral', value: 'has spaces'};
+    expect(() => {
+      throwIfIncorrectModuleRegistryCallArgument(
+        nativeModuleName,
+        callExpressionArg,
+        methodName,
+      );
+    }).toThrow(IncorrectModuleRegistryCallArgumentValueParserError);
+  });
+
+  it('throw error if callExpressionArg value contains special characters', () => {
+    const callExpressionArg = {type: 'StringLiteral', value: 'Module;Drop'};
+    expect(() => {
+      throwIfIncorrectModuleRegistryCallArgument(
+        nativeModuleName,
+        callExpressionArg,
+        methodName,
+      );
+    }).toThrow(IncorrectModuleRegistryCallArgumentValueParserError);
+  });
+
+  it('throw error if callExpressionArg value is empty string', () => {
+    const callExpressionArg = {type: 'StringLiteral', value: ''};
+    expect(() => {
+      throwIfIncorrectModuleRegistryCallArgument(
+        nativeModuleName,
+        callExpressionArg,
+        methodName,
+      );
+    }).toThrow(IncorrectModuleRegistryCallArgumentValueParserError);
+  });
+
+  it('throw error if callExpressionArg value starts with a number', () => {
+    const callExpressionArg = {type: 'StringLiteral', value: '1Module'};
+    expect(() => {
+      throwIfIncorrectModuleRegistryCallArgument(
+        nativeModuleName,
+        callExpressionArg,
+        methodName,
+      );
+    }).toThrow(IncorrectModuleRegistryCallArgumentValueParserError);
+  });
+
+  it("don't throw error for valid module name with underscores", () => {
+    const callExpressionArg = {type: 'StringLiteral', value: 'My_Module_123'};
+    expect(() => {
+      throwIfIncorrectModuleRegistryCallArgument(
+        nativeModuleName,
+        callExpressionArg,
+        methodName,
+      );
+    }).not.toThrow();
+  });
+
+  it("don't throw error for valid module name starting with underscore", () => {
+    const callExpressionArg = {type: 'StringLiteral', value: '_PrivateModule'};
+    expect(() => {
+      throwIfIncorrectModuleRegistryCallArgument(
+        nativeModuleName,
+        callExpressionArg,
+        methodName,
+      );
+    }).not.toThrow();
   });
 });
 
@@ -635,7 +731,7 @@ describe('throwIfModuleTypeIsUnsupported', () => {
 describe('throwIfMoreThanOneModuleInterfaceParserError', () => {
   it("don't throw error if module specs length is <= 1", () => {
     const nativeModuleName = 'moduleName';
-    const moduleSpecs: $ReadOnlyArray<$FlowFixMe> = [];
+    const moduleSpecs: ReadonlyArray<$FlowFixMe> = [];
     const parserType = 'Flow';
 
     expect(() => {

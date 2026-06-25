@@ -17,8 +17,8 @@ const LogBox = require('../LogBox').default;
 declare var console: any;
 
 function mockFilterResult(returnValues: $FlowFixMe) {
-  (LogBoxData.checkWarningFilter: any).mockReturnValue({
-    finalFormat: 'Warning: ...',
+  (LogBoxData.checkWarningFilter as any).mockReturnValue({
+    finalFormat: '...',
     forceDialogImmediately: false,
     suppressDialog_LEGACY: false,
     suppressCompletely: false,
@@ -124,17 +124,6 @@ describe('LogBox', () => {
     console.warn('...');
     expect(LogBoxData.addLog).not.toBeCalled();
     expect(LogBoxData.reportLogBoxError).toBeCalledWith(mockError);
-  });
-
-  it('only registers errors beginning with "Warning: "', () => {
-    jest.spyOn(LogBoxData, 'addLog');
-    jest.spyOn(LogBoxData, 'checkWarningFilter');
-
-    LogBox.install();
-
-    console.error('...');
-    expect(LogBoxData.addLog).not.toBeCalled();
-    expect(LogBoxData.checkWarningFilter).not.toBeCalled();
   });
 
   it('registers react errors with the formatting from filter', () => {
@@ -245,121 +234,6 @@ describe('LogBox', () => {
     );
   });
 
-  it('registers warning module errors with the formatting from filter', () => {
-    jest.spyOn(LogBoxData, 'addLog');
-    jest.spyOn(LogBoxData, 'checkWarningFilter');
-
-    mockFilterResult({
-      finalFormat: 'Custom format',
-    });
-
-    ExceptionsManager.installConsoleErrorReporter();
-    LogBox.install();
-
-    console.error('Warning: ...');
-    expect(LogBoxData.addLog).toBeCalledWith(
-      expect.objectContaining({
-        message: {content: 'Custom format', substitutions: []},
-        category: 'Custom format',
-      }),
-    );
-    expect(LogBoxData.checkWarningFilter).toBeCalledWith('...');
-  });
-
-  it('registers warning module errors as errors by default', () => {
-    jest.spyOn(LogBoxData, 'addLog');
-    jest.spyOn(LogBoxData, 'checkWarningFilter');
-
-    mockFilterResult({});
-
-    ExceptionsManager.installConsoleErrorReporter();
-    LogBox.install();
-
-    console.error('Warning: ...');
-    expect(LogBoxData.addLog).toBeCalledWith(
-      expect.objectContaining({level: 'error'}),
-    );
-    expect(LogBoxData.checkWarningFilter).toBeCalledWith('...');
-  });
-
-  it('registers warning module errors with only legacy suppression as warning', () => {
-    jest.spyOn(LogBoxData, 'addLog');
-    jest.spyOn(LogBoxData, 'checkWarningFilter');
-
-    mockFilterResult({
-      suppressDialog_LEGACY: true,
-      monitorEvent: 'warning',
-    });
-
-    ExceptionsManager.installConsoleErrorReporter();
-    LogBox.install();
-
-    console.error('Warning: ...');
-    expect(LogBoxData.addLog).toBeCalledWith(
-      expect.objectContaining({level: 'warn'}),
-    );
-  });
-
-  it('registers warning module errors with a forced dialog as fatals', () => {
-    jest.spyOn(LogBoxData, 'addLog');
-    jest.spyOn(LogBoxData, 'checkWarningFilter');
-
-    mockFilterResult({
-      forceDialogImmediately: true,
-      monitorEvent: 'warning',
-    });
-
-    ExceptionsManager.installConsoleErrorReporter();
-    LogBox.install();
-
-    console.error('Warning: ...');
-    expect(LogBoxData.addLog).toBeCalledWith(
-      expect.objectContaining({level: 'fatal'}),
-    );
-  });
-
-  it('ignores warning module errors that are suppressed completely', () => {
-    jest.spyOn(LogBoxData, 'addLog');
-    jest.spyOn(LogBoxData, 'checkWarningFilter');
-
-    mockFilterResult({
-      suppressCompletely: true,
-      monitorEvent: 'warning',
-    });
-
-    ExceptionsManager.installConsoleErrorReporter();
-    LogBox.install();
-
-    console.error('Warning: ...');
-    expect(LogBoxData.addLog).not.toBeCalled();
-  });
-
-  it('ignores warning module errors that are pattern ignored', () => {
-    jest.spyOn(LogBoxData, 'checkWarningFilter');
-    jest.spyOn(LogBoxData, 'isMessageIgnored').mockReturnValue(true);
-    jest.spyOn(LogBoxData, 'addLog');
-
-    mockFilterResult({});
-
-    LogBox.install();
-
-    console.error('Warning: ...');
-    expect(LogBoxData.addLog).not.toBeCalled();
-  });
-
-  it('ignores warning module errors that are from LogBox itself', () => {
-    jest.spyOn(LogBoxData, 'checkWarningFilter');
-    jest.spyOn(LogBoxData, 'isLogBoxErrorMessage').mockReturnValue(true);
-    jest.spyOn(LogBoxData, 'addLog');
-
-    mockFilterResult({});
-
-    LogBox.install();
-
-    console.error('Warning: ...');
-    expect(LogBoxData.addLog).not.toBeCalled();
-  });
-
   it('ignores logs that are pattern ignored"', () => {
     jest.spyOn(LogBoxData, 'checkWarningFilter');
     jest.spyOn(LogBoxData, 'isMessageIgnored').mockReturnValue(true);
@@ -399,7 +273,6 @@ describe('LogBox', () => {
     expect(LogBoxData.addLog).toBeCalledWith({
       category: '﻿%s ...',
       componentStack: [],
-      componentStackType: 'legacy',
       level: 'warn',
       message: {
         content: '(ADVICE) ...',
@@ -432,7 +305,6 @@ describe('LogBox', () => {
       category: 'test',
       message: {content: 'Some warning', substitutions: []},
       componentStack: [],
-      componentStackType: null,
     });
 
     expect(LogBoxData.addLog).not.toHaveBeenCalled();

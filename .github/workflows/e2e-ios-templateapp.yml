@@ -1,0 +1,128 @@
+name: E2E iOS Template App
+
+permissions:
+  contents: read
+
+on:
+  workflow_call:
+    inputs:
+      fail-on-error:
+        type: boolean
+        default: false
+    outputs:
+      status:
+        description: 'The result of the E2E tests (success or failure)'
+        value: ${{ jobs.report.outputs.status }}
+
+jobs:
+  test:
+    runs-on: macos-15-large
+    outputs:
+      status: ${{ steps.report-status.outputs.status }}
+    strategy:
+      fail-fast: false
+      matrix:
+        flavor: [Debug, Release]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup xcode
+        uses: ./.github/actions/setup-xcode
+      - name: Setup node.js
+        uses: ./.github/actions/setup-node
+      - name: Run yarn
+        uses: ./.github/actions/yarn-install
+      - name: Setup ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 2.6.10
+      - name: Download React Native Package
+        uses: actions/download-artifact@v7
+        with:
+          name: react-native-package
+          path: /tmp/react-native-tmp
+      - name: Print /tmp folder
+        run: ls -lR /tmp/react-native-tmp
+      - name: Download ReactNativeDependencies
+        uses: actions/download-artifact@v7
+        with:
+          name: ReactNativeDependencies${{ matrix.flavor }}.xcframework.tar.gz
+          path: /tmp/third-party
+      - name: Print third-party folder
+        shell: bash
+        run: ls -lR /tmp/third-party
+      - name: Download React Native Prebuilds
+        uses: actions/download-artifact@v7
+        with:
+          name: ReactCore${{ matrix.flavor }}.xcframework.tar.gz
+          path: /tmp/ReactCore
+      - name: Print ReactCore folder
+        shell: bash
+        run: ls -lR /tmp/ReactCore
+      - name: Configure git
+        shell: bash
+        run: |
+          git config --global user.email "react-native-bot@meta.com"
+          git config --global user.name "React Native Bot"
+      - name: Prepare artifacts
+        run: |
+          REACT_NATIVE_PKG=$(find /tmp/react-native-tmp -type f -name "*.tgz")
+          echo "React Native tgs is $REACT_NATIVE_PKG"
+
+          # For stable branches, we want to use the stable branch of the template
+          # In all the other cases, we want to use "main"
+          BRANCH=${{ github.ref_name }}
+          if ! [[ $BRANCH == *-stable* ]]; then
+            BRANCH=main
+          fi
+
+          node ./scripts/e2e/init-project-e2e.js --projectName RNTestProject --currentBranch $BRANCH --directory /tmp/RNTestProject --pathToLocalReactNative $REACT_NATIVE_PKG
+
+          cd /tmp/RNTestProject/ios
+          bundle install
+          NEW_ARCH_ENABLED=1
+
+          export RCT_USE_LOCAL_RN_DEP=/tmp/third-party/ReactNativeDependencies${{ matrix.flavor }}.xcframework.tar.gz
+          # Disable prebuilds for now, as they are causing issues with E2E tests for 0.82-stable branch
+          export RCT_TESTONLY_RNCORE_TARBALL_PATH="/tmp/ReactCore/ReactCore${{ matrix.flavor }}.xcframework.tar.gz"
+          RCT_NEW_ARCH_ENABLED=$NEW_ARCH_ENABLED bundle exec pod install
+
+          xcodebuild \
+            -scheme "RNTestProject" \
+            -workspace RNTestProject.xcworkspace \
+            -configuration "${{ matrix.flavor }}" \
+            -sdk "iphonesimulator" \
+            -destination "generic/platform=iOS Simulator" \
+            -derivedDataPath "/tmp/RNTestProject"
+      - name: Run E2E Tests
+        id: run-tests
+        continue-on-error: true
+        uses: ./.github/actions/maestro-ios
+        with:
+          app-path: '/tmp/RNTestProject/Build/Products/${{ matrix.flavor }}-iphonesimulator/RNTestProject.app'
+          app-id: org.reactjs.native.example.RNTestProject
+          maestro-flow: ./scripts/e2e/.maestro/
+          flavor: ${{ matrix.flavor }}
+          working-directory: /tmp/RNTestProject
+      - name: Report status
+        id: report-status
+        if: ${{ always() && steps.run-tests.outcome == 'failure' }}
+        run: echo "status=failure" >> $GITHUB_OUTPUT
+
+  report:
+    needs: test
+    if: always()
+    runs-on: ubuntu-latest
+    outputs:
+      status: ${{ steps.check.outputs.status }}
+    steps:
+      - id: check
+        run: |
+          if [[ "${{ needs.test.outputs.status }}" == "failure" ]]; then
+            echo "status=failure" >> $GITHUB_OUTPUT
+          else
+            echo "status=success" >> $GITHUB_OUTPUT
+          fi
+      - name: Fail if needed
+        if: ${{ inputs.fail-on-error && steps.check.outputs.status == 'failure' }}
+        run: exit 1

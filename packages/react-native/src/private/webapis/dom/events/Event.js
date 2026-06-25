@@ -21,6 +21,7 @@ import {setPlatformObject} from '../../webidl/PlatformObjects';
 import {
   COMPOSED_PATH_KEY,
   CURRENT_TARGET_KEY,
+  EVENT_INIT_TIMESTAMP_KEY,
   EVENT_PHASE_KEY,
   IN_PASSIVE_LISTENER_FLAG_KEY,
   IS_TRUSTED_KEY,
@@ -38,21 +39,21 @@ import {
 } from './internals/EventInternals';
 
 export interface EventInit {
-  +bubbles?: boolean;
-  +cancelable?: boolean;
-  +composed?: boolean;
+  readonly bubbles?: boolean;
+  readonly cancelable?: boolean;
+  readonly composed?: boolean;
 }
 
 export default class Event {
-  static +NONE: 0;
-  static +CAPTURING_PHASE: 1;
-  static +AT_TARGET: 2;
-  static +BUBBLING_PHASE: 3;
+  static readonly NONE: 0;
+  static readonly CAPTURING_PHASE: 1;
+  static readonly AT_TARGET: 2;
+  static readonly BUBBLING_PHASE: 3;
 
-  +NONE: 0;
-  +CAPTURING_PHASE: 1;
-  +AT_TARGET: 2;
-  +BUBBLING_PHASE: 3;
+  readonly NONE: 0;
+  readonly CAPTURING_PHASE: 1;
+  readonly AT_TARGET: 2;
+  readonly BUBBLING_PHASE: 3;
 
   _bubbles: boolean;
   _cancelable: boolean;
@@ -60,7 +61,7 @@ export default class Event {
   _type: string;
 
   _defaultPrevented: boolean = false;
-  _timeStamp: number = performance.now();
+  _timeStamp: number;
 
   // $FlowExpectedError[unsupported-syntax]
   [COMPOSED_PATH_KEY]: boolean = [];
@@ -109,6 +110,14 @@ export default class Event {
     this._bubbles = Boolean(options?.bubbles);
     this._cancelable = Boolean(options?.cancelable);
     this._composed = Boolean(options?.composed);
+
+    // For internal construction of events using a custom timestamp (instead of
+    // event object creation), for use cases like dispatching events from the
+    // host platform using the original timestamps.
+    // $FlowExpectedError[prop-missing]
+    const initTimestamp: number | void = options?.[EVENT_INIT_TIMESTAMP_KEY];
+    this._timeStamp =
+      initTimestamp !== undefined ? initTimestamp : performance.now();
   }
 
   get bubbles(): boolean {
@@ -151,7 +160,7 @@ export default class Event {
     return this._type;
   }
 
-  composedPath(): $ReadOnlyArray<EventTarget> {
+  composedPath(): ReadonlyArray<EventTarget> {
     return getComposedPath(this).slice();
   }
 

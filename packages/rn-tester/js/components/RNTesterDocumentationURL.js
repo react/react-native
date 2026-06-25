@@ -12,7 +12,7 @@ import * as React from 'react';
 import {Image, StyleSheet, TouchableOpacity} from 'react-native';
 import openURLInBrowser from 'react-native/Libraries/Core/Devtools/openURLInBrowser';
 
-type Props = $ReadOnly<{
+type Props = Readonly<{
   documentationURL: string,
 }>;
 

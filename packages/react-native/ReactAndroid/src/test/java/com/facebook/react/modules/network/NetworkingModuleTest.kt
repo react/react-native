@@ -10,15 +10,18 @@
 
 package com.facebook.react.modules.network
 
+import android.net.Uri
 import com.facebook.react.bridge.JavaOnlyArray
 import com.facebook.react.bridge.JavaOnlyMap
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.WritableArray
+import com.facebook.react.bridge.WritableMap
 import com.facebook.react.common.network.OkHttpCallUtil
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsDefaults
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsForTests
 import com.facebook.testutils.shadows.ShadowArguments
+import java.io.IOException
 import java.io.InputStream
 import java.nio.charset.StandardCharsets
 import okhttp3.Call
@@ -598,6 +601,65 @@ class NetworkingModuleTest {
     for (idx in 0 until requests) {
       assertThat(requestIdArguments.allValues.contains(idx + 1)).isTrue
     }
+  }
+
+  @Test
+  fun testFileUriHandlerEmitsSuccessEvents() {
+    val testData = "file content".toByteArray()
+    val blobResponse =
+        JavaOnlyMap().apply {
+          putString("blobId", "test-blob-id")
+          putInt("offset", 0)
+          putInt("size", testData.size)
+        }
+
+    val fileUriHandler =
+        object : NetworkingModule.UriHandler {
+          override fun supports(uri: Uri, responseType: String): Boolean =
+              uri.scheme == "file" && responseType == "blob"
+
+          @Throws(IOException::class)
+          override fun fetch(uri: Uri): Pair<WritableMap, ByteArray> = blobResponse to testData
+        }
+
+    networkingModule.addUriHandler(fileUriHandler)
+
+    networkingModule.sendRequest(
+        "GET",
+        "file:///storage/emulated/0/Download/test.pdf",
+        1.0, /* requestId */
+        JavaOnlyArray.of(), /* headers */
+        null, /* body */
+        "blob", /* responseType */
+        false, /* useIncrementalUpdates*/
+        0.0, /* timeout */
+        false, /* withCredentials */
+    )
+
+    // Should not have made an OkHttp call; fileUriHandler should have handled the request.
+    verify(httpClient, times(0)).newCall(any())
+
+    // Verify the three expected events were emitted in order:
+    // didReceiveNetworkResponse, didReceiveNetworkData, didCompleteNetworkResponse
+    val eventNameCaptor = argumentCaptor<String>()
+    val eventArgsCaptor = argumentCaptor<WritableArray>()
+    verify(context, times(3)).emitDeviceEvent(eventNameCaptor.capture(), eventArgsCaptor.capture())
+
+    assertThat(eventNameCaptor.allValues[0]).isEqualTo("didReceiveNetworkResponse")
+    assertThat(eventNameCaptor.allValues[1]).isEqualTo("didReceiveNetworkData")
+    assertThat(eventNameCaptor.allValues[2]).isEqualTo("didCompleteNetworkResponse")
+
+    // Verify response event has status 200, request ID 1, empty headers, and expected URL
+    val responseArgs = eventArgsCaptor.allValues[0]
+    assertThat(responseArgs.getInt(0)).isEqualTo(1)
+    assertThat(responseArgs.getInt(1)).isEqualTo(200)
+    assertThat(responseArgs.getMap(2)).isEqualTo(JavaOnlyMap.of())
+    assertThat(responseArgs.getString(3)).isEqualTo("file:///storage/emulated/0/Download/test.pdf")
+
+    // Verify completion event has request ID 1 and null error
+    val completionArgs = eventArgsCaptor.allValues[2]
+    assertThat(completionArgs.getInt(0)).isEqualTo(1)
+    assertThat(completionArgs.isNull(1)).isTrue()
   }
 }
 

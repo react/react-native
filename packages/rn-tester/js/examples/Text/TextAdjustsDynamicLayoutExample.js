@@ -12,7 +12,7 @@ import * as React from 'react';
 import {useState} from 'react';
 import {Button, StyleSheet, Text, View} from 'react-native';
 
-export default function TextAdjustsDynamicLayoutExample(props: {}): React.Node {
+export default component TextAdjustsDynamicLayoutExample() {
   const [height, setHeight] = useState(20);
 
   return (

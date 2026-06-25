@@ -12,7 +12,7 @@ import type {ImageURISource} from './ImageSource';
 
 import Platform from '../Utilities/Platform';
 
-type NativeImageSourceSpec = $ReadOnly<{
+type NativeImageSourceSpec = Readonly<{
   android?: string,
   ios?: string,
   default?: string,

@@ -30,7 +30,7 @@ import structuredClone from 'react-native/src/private/webapis/structuredClone/st
 setUpIntersectionObserver();
 setUpMutationObserver();
 
-function expectDataCloneError(fn: () => mixed) {
+function expectDataCloneError(fn: () => unknown) {
   try {
     fn();
   } catch (error) {
@@ -284,7 +284,7 @@ describe('structuredClone', () => {
   });
 
   it('handles circular references', () => {
-    const obj: {arr: Array<mixed>} = {arr: []};
+    const obj: {arr: Array<unknown>} = {arr: []};
     obj.arr.push(obj);
     const map = new Map<string, interface {}>();
     map.set('key', map);
@@ -389,7 +389,7 @@ describe('structuredClone', () => {
         });
         expect(ref.current).not.toBe(null);
 
-        const entries: Array<mixed> = [];
+        const entries: Array<unknown> = [];
         Fantom.runTask(() => {
           const observer = new IntersectionObserver((e, self) => {
             entries.push(...e);
@@ -418,7 +418,7 @@ describe('structuredClone', () => {
         });
         expect(ref.current).not.toBe(null);
 
-        const records: Array<mixed> = [];
+        const records: Array<unknown> = [];
         Fantom.runTask(() => {
           const observer = new MutationObserver(e => {
             records.push(...e);

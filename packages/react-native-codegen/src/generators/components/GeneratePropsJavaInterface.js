@@ -110,7 +110,7 @@ function getJavaValueForProp(
           addNullable(imports);
           return '@Nullable YogaValue value';
         default:
-          (typeAnnotation.name: empty);
+          typeAnnotation.name as empty;
           throw new Error('Received unknown ReservedPropTypeAnnotation');
       }
     case 'ArrayTypeAnnotation': {
@@ -130,7 +130,7 @@ function getJavaValueForProp(
     case 'MixedTypeAnnotation':
       return 'Dynamic value';
     default:
-      (typeAnnotation: empty);
+      typeAnnotation as empty;
       throw new Error('Received invalid typeAnnotation');
   }
 }
@@ -158,7 +158,7 @@ function getCommandArgJavaType(param: NamedShape<CommandParamTypeAnnotation>) {
         case 'RootTag':
           return 'double';
         default:
-          (typeAnnotation.name: empty);
+          typeAnnotation.name as empty;
           throw new Error(`Receieved invalid type: ${typeAnnotation.name}`);
       }
     case 'BooleanTypeAnnotation':
@@ -174,7 +174,7 @@ function getCommandArgJavaType(param: NamedShape<CommandParamTypeAnnotation>) {
     case 'ArrayTypeAnnotation':
       return 'ReadableArray';
     default:
-      (typeAnnotation.type: empty);
+      typeAnnotation.type as empty;
       throw new Error('Receieved invalid typeAnnotation');
   }
 }
@@ -218,11 +218,11 @@ function getClassExtendString(component: ComponentShape): string {
             case 'ReactNativeCoreViewProps':
               return 'View';
             default:
-              (extendProps.knownTypeName: empty);
+              extendProps.knownTypeName as empty;
               throw new Error('Invalid knownTypeName');
           }
         default:
-          (extendProps.type: empty);
+          extendProps.type as empty;
           throw new Error('Invalid extended type');
       }
     })

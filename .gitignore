@@ -176,3 +176,12 @@ fix_*.patch
 
 # [Experimental] Generated TS type definitions
 /packages/**/types_generated/
+
+# Python
+__pycache__/
+
+# Doxygen XML output used for C++ API tracking
+/packages/react-native/**/api/xml
+/packages/react-native/**/api/codegen
+/packages/react-native/**/.doxygen.config.*.generated
+/scripts/cxx-api/codegen

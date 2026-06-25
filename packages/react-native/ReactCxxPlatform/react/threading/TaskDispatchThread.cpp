@@ -9,6 +9,7 @@
 
 #include <folly/portability/SysResource.h>
 #include <folly/system/ThreadName.h>
+#include <cassert>
 #include <chrono>
 #include <future>
 #include <utility>
@@ -67,27 +68,30 @@ bool TaskDispatchThread::isRunning() noexcept {
 void TaskDispatchThread::runAsync(
     TaskFn&& task,
     std::chrono::milliseconds delayMs) noexcept {
+  std::lock_guard<std::mutex> guard(mutex_);
   if (!running_) {
     return;
   }
-  std::lock_guard<std::mutex> guard(mutex_);
   auto dispatchTime = std::chrono::system_clock::now() + delayMs;
   queue_.emplace(dispatchTime, std::move(task));
   loopCv_.notify_one();
 }
 
 void TaskDispatchThread::runSync(TaskFn&& task) noexcept {
-  if (!running_) {
-    return;
-  }
-  std::promise<void> promise;
-  runAsync([&]() {
-    if (running_) {
-      task();
-    }
-    promise.set_value();
-  });
-  promise.get_future().wait();
+  // Calling runSync from the dispatch thread would deadlock, as the thread
+  // would wait for itself to execute the task it just queued.
+  assert(!isOnThread());
+
+  // Use shared_ptr to ensure the promise outlives both the caller and the
+  // queued task. The destructor guard ensures the promise is fulfilled even
+  // if the task is destroyed without executing (e.g., when quit() clears the
+  // queue during shutdown).
+  auto promise = std::make_shared<std::promise<void>>();
+  auto guard = std::shared_ptr<void>(
+      nullptr, [promise](void*) { promise->set_value(); });
+
+  runAsync([guard = std::move(guard), task = std::move(task)]() { task(); });
+  promise->get_future().wait();
 }
 
 void TaskDispatchThread::quit() noexcept {

@@ -112,7 +112,7 @@ internal open class SwipeRefreshLayoutManager :
 
   override fun addEventEmitters(reactContext: ThemedReactContext, view: ReactSwipeRefreshLayout) {
     view.setOnRefreshListener {
-      val eventDispatcher = UIManagerHelper.getEventDispatcherForReactTag(reactContext, view.id)
+      val eventDispatcher = UIManagerHelper.getEventDispatcher(reactContext)
       eventDispatcher?.dispatchEvent(RefreshEvent(UIManagerHelper.getSurfaceId(view), view.id))
     }
   }

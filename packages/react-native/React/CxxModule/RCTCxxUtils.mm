@@ -12,26 +12,9 @@
 #import <cxxreact/CxxNativeModule.h>
 #import <jsi/jsi.h>
 
-#import "DispatchMessageQueueThread.h"
-#import "RCTNativeModule.h"
-
 namespace facebook::react {
 
 using facebook::jsi::JSError;
-
-#ifndef RCT_REMOVE_LEGACY_ARCH
-
-std::vector<std::unique_ptr<NativeModule>>
-createNativeModules(NSArray<RCTModuleData *> *modules, RCTBridge *bridge, const std::shared_ptr<Instance> &instance)
-{
-  std::vector<std::unique_ptr<NativeModule>> nativeModules;
-  for (RCTModuleData *moduleData in modules) {
-    nativeModules.emplace_back(std::make_unique<RCTNativeModule>(bridge, moduleData));
-  }
-  return nativeModules;
-}
-
-#endif // RCT_REMOVE_LEGACY_ARCH
 
 static NSError *errorWithException(const std::exception &e)
 {

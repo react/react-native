@@ -70,7 +70,14 @@ internal class ReactHostImplDevHelper(private val delegate: ReactHostImpl) :
   }
 
   override fun destroyRootView(rootView: View) {
-    // Not implemented, only referenced by BridgeDevSupportManager
+    val surface = (rootView as? ReactSurfaceView)?.surface ?: return
+    // stop() synchronously removes the surface from ReactHostImpl.attachedSurfaces via
+    // detachSurface(), then asynchronously tears down the React component tree.
+    // detach() severs the surface's back-reference to the host.
+    // clear() removes child views from the ReactSurfaceView.
+    surface.stop()
+    surface.detach()
+    surface.clear()
   }
 
   override fun reload(reason: String) {

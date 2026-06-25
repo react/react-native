@@ -29,14 +29,14 @@ namespace detail {
 template <typename DataT, TemplateStringLiteral Name, CSSDataType... AllowedComponentsT>
   requires(std::is_same_v<decltype(DataT::value), std::variant<AllowedComponentsT...>>)
 struct CSSVariantComponentTransformParser {
-  static constexpr auto consumeFunctionBlock(const CSSFunctionBlock &func, CSSSyntaxParser &parser)
+  static constexpr auto consumeFunctionBlock(const CSSFunctionBlock &func, CSSValueParser &parser)
       -> std::optional<DataT>
   {
     if (!iequals(func.name, Name)) {
       return {};
     }
 
-    auto val = parseNextCSSValue<AllowedComponentsT...>(parser);
+    auto val = parser.parseNextValue<AllowedComponentsT...>();
 
     return std::visit(
         [&](auto &&v) -> std::optional<DataT> {
@@ -53,14 +53,14 @@ struct CSSVariantComponentTransformParser {
 template <typename DataT, TemplateStringLiteral Name>
   requires(std::is_same_v<decltype(DataT::value), float>)
 struct CSSNumberPercentTransformParser {
-  static constexpr auto consumeFunctionBlock(const CSSFunctionBlock &func, CSSSyntaxParser &parser)
+  static constexpr auto consumeFunctionBlock(const CSSFunctionBlock &func, CSSValueParser &parser)
       -> std::optional<DataT>
   {
     if (!iequals(func.name, Name)) {
       return {};
     }
 
-    auto val = parseNextCSSValue<CSSNumber, CSSPercentage>(parser);
+    auto val = parser.parseNextValue<CSSNumber, CSSPercentage>();
     if (std::holds_alternative<std::monostate>(val)) {
       return {};
     }
@@ -74,14 +74,14 @@ struct CSSNumberPercentTransformParser {
 template <typename DataT, TemplateStringLiteral Name>
   requires(std::is_same_v<decltype(DataT::degrees), float>)
 struct CSSAngleTransformParser {
-  static constexpr auto consumeFunctionBlock(const CSSFunctionBlock &func, CSSSyntaxParser &parser)
+  static constexpr auto consumeFunctionBlock(const CSSFunctionBlock &func, CSSValueParser &parser)
       -> std::optional<DataT>
   {
     if (!iequals(func.name, Name)) {
       return {};
     }
 
-    auto value = parseNextCSSValue<CSSAngle, CSSZero>(parser);
+    auto value = parser.parseNextValue<CSSAngle, CSSZero>();
     if (std::holds_alternative<std::monostate>(value)) {
       return {};
     }
@@ -105,7 +105,7 @@ struct CSSMatrix {
 
 template <>
 struct CSSDataTypeParser<CSSMatrix> {
-  static constexpr auto consumeFunctionBlock(const CSSFunctionBlock &func, CSSSyntaxParser &parser)
+  static constexpr auto consumeFunctionBlock(const CSSFunctionBlock &func, CSSValueParser &parser)
       -> std::optional<CSSMatrix>
   {
     if (!iequals(func.name, "matrix")) {
@@ -114,7 +114,7 @@ struct CSSDataTypeParser<CSSMatrix> {
 
     CSSMatrix matrix{};
     for (int i = 0; i < 6; i++) {
-      auto value = parseNextCSSValue<CSSNumber>(parser, i == 0 ? CSSDelimiter::None : CSSDelimiter::Comma);
+      auto value = parser.parseNextValue<CSSNumber>(i == 0 ? CSSDelimiter::None : CSSDelimiter::Comma);
       if (std::holds_alternative<std::monostate>(value)) {
         return {};
       }
@@ -139,19 +139,19 @@ struct CSSTranslate {
 
 template <>
 struct CSSDataTypeParser<CSSTranslate> {
-  static constexpr auto consumeFunctionBlock(const CSSFunctionBlock &func, CSSSyntaxParser &parser)
+  static constexpr auto consumeFunctionBlock(const CSSFunctionBlock &func, CSSValueParser &parser)
       -> std::optional<CSSTranslate>
   {
     if (!iequals(func.name, "translate")) {
       return {};
     }
 
-    auto x = parseNextCSSValue<CSSLengthPercentage>(parser);
+    auto x = parser.parseNextValue<CSSLengthPercentage>();
     if (std::holds_alternative<std::monostate>(x)) {
       return {};
     }
 
-    auto y = parseNextCSSValue<CSSLengthPercentage>(parser, CSSDelimiter::Comma);
+    auto y = parser.parseNextValue<CSSLengthPercentage>(CSSDelimiter::Comma);
 
     CSSTranslate translate{};
     translate.x = std::holds_alternative<CSSLength>(x)
@@ -183,24 +183,24 @@ struct CSSTranslate3D {
 
 template <>
 struct CSSDataTypeParser<CSSTranslate3D> {
-  static constexpr auto consumeFunctionBlock(const CSSFunctionBlock &func, CSSSyntaxParser &parser)
+  static constexpr auto consumeFunctionBlock(const CSSFunctionBlock &func, CSSValueParser &parser)
       -> std::optional<CSSTranslate3D>
   {
     if (!iequals(func.name, "translate3d")) {
       return {};
     }
 
-    auto x = parseNextCSSValue<CSSLengthPercentage>(parser);
+    auto x = parser.parseNextValue<CSSLengthPercentage>();
     if (std::holds_alternative<std::monostate>(x)) {
       return {};
     }
 
-    auto y = parseNextCSSValue<CSSLengthPercentage>(parser, CSSDelimiter::Comma);
+    auto y = parser.parseNextValue<CSSLengthPercentage>(CSSDelimiter::Comma);
     if (std::holds_alternative<std::monostate>(y)) {
       return {};
     }
 
-    auto z = parseNextCSSValue<CSSLength>(parser, CSSDelimiter::Comma);
+    auto z = parser.parseNextValue<CSSLength>(CSSDelimiter::Comma);
     if (std::holds_alternative<std::monostate>(z)) {
       return {};
     }
@@ -259,7 +259,7 @@ struct CSSScale {
 
 template <>
 struct CSSDataTypeParser<CSSScale> {
-  static constexpr auto consumeFunctionBlock(const CSSFunctionBlock &func, CSSSyntaxParser &parser)
+  static constexpr auto consumeFunctionBlock(const CSSFunctionBlock &func, CSSValueParser &parser)
       -> std::optional<CSSScale>
   {
     if (!iequals(func.name, "scale")) {
@@ -268,12 +268,12 @@ struct CSSDataTypeParser<CSSScale> {
 
     // Transforms module level 2 allows percentage syntax
     // https://drafts.csswg.org/css-transforms-2/#transform-functions
-    auto x = parseNextCSSValue<CSSNumber, CSSPercentage>(parser);
+    auto x = parser.parseNextValue<CSSNumber, CSSPercentage>();
     if (std::holds_alternative<std::monostate>(x)) {
       return {};
     }
 
-    auto y = parseNextCSSValue<CSSNumber, CSSPercentage>(parser, CSSDelimiter::Comma);
+    auto y = parser.parseNextValue<CSSNumber, CSSPercentage>(CSSDelimiter::Comma);
 
     auto normX =
         std::holds_alternative<CSSNumber>(x) ? std::get<CSSNumber>(x).value : std::get<CSSPercentage>(x).value / 100.0f;
@@ -411,14 +411,14 @@ struct CSSPerspective {
 
 template <>
 struct CSSDataTypeParser<CSSPerspective> {
-  static constexpr auto consumeFunctionBlock(const CSSFunctionBlock &func, CSSSyntaxParser &parser)
+  static constexpr auto consumeFunctionBlock(const CSSFunctionBlock &func, CSSValueParser &parser)
       -> std::optional<CSSPerspective>
   {
     if (!iequals(func.name, "perspective")) {
       return {};
     }
 
-    auto value = parseNextCSSValue<CSSLength>(parser);
+    auto value = parser.parseNextValue<CSSLength>();
     if (std::holds_alternative<std::monostate>(value) || std::get<CSSLength>(value).value < 0) {
       return {};
     }

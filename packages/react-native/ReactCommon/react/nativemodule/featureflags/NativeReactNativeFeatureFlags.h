@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<3caa7ab068af35b4b198bce5925dea1d>>
+ * @generated SignedSource<<19abe441594bf45b32c5c9cdcd9ca8d4>>
  */
 
 /**
@@ -42,13 +42,13 @@ class NativeReactNativeFeatureFlags
 
   bool cxxNativeAnimatedEnabled(jsi::Runtime& runtime);
 
+  bool defaultTextToOverflowHidden(jsi::Runtime& runtime);
+
   bool disableEarlyViewCommandExecution(jsi::Runtime& runtime);
 
   bool disableImageViewPreallocationAndroid(jsi::Runtime& runtime);
 
   bool disableMountItemReorderingAndroid(jsi::Runtime& runtime);
-
-  bool disableOldAndroidAttachmentMetricsWorkarounds(jsi::Runtime& runtime);
 
   bool disableSubviewClippingAndroid(jsi::Runtime& runtime);
 
@@ -59,10 +59,6 @@ class NativeReactNativeFeatureFlags
   bool enableAccessibilityOrder(jsi::Runtime& runtime);
 
   bool enableAccumulatedUpdatesInRawPropsAndroid(jsi::Runtime& runtime);
-
-  bool enableAndroidAntialiasedBorderRadiusClipping(jsi::Runtime& runtime);
-
-  bool enableAndroidLinearText(jsi::Runtime& runtime);
 
   bool enableAndroidTextMeasurementOptimizations(jsi::Runtime& runtime);
 
@@ -76,15 +72,15 @@ class NativeReactNativeFeatureFlags
 
   bool enableDoubleMeasurementFixAndroid(jsi::Runtime& runtime);
 
-  bool enableEagerMainQueueModulesOnIOS(jsi::Runtime& runtime);
-
   bool enableEagerRootViewAttachment(jsi::Runtime& runtime);
 
   bool enableExclusivePropsUpdateAndroid(jsi::Runtime& runtime);
 
+  bool enableFabricCommitBranching(jsi::Runtime& runtime);
+
   bool enableFabricLogs(jsi::Runtime& runtime);
 
-  bool enableFabricRenderer(jsi::Runtime& runtime);
+  bool enableFlexboxAutoMinSizeInStrictMode(jsi::Runtime& runtime);
 
   bool enableFontScaleChangesUpdatingLayout(jsi::Runtime& runtime);
 
@@ -93,10 +89,6 @@ class NativeReactNativeFeatureFlags
   bool enableIOSViewClipToPaddingBox(jsi::Runtime& runtime);
 
   bool enableImagePrefetchingAndroid(jsi::Runtime& runtime);
-
-  bool enableImagePrefetchingJNIBatchingAndroid(jsi::Runtime& runtime);
-
-  bool enableImagePrefetchingOnUiThreadAndroid(jsi::Runtime& runtime);
 
   bool enableImmediateUpdateModeForContentOffsetChanges(jsi::Runtime& runtime);
 
@@ -112,9 +104,9 @@ class NativeReactNativeFeatureFlags
 
   bool enableLayoutAnimationsOnIOS(jsi::Runtime& runtime);
 
-  bool enableMainQueueCoordinatorOnIOS(jsi::Runtime& runtime);
-
   bool enableModuleArgumentNSNullConversionIOS(jsi::Runtime& runtime);
+
+  bool enableMutationObserverByDefault(jsi::Runtime& runtime);
 
   bool enableNativeCSSParsing(jsi::Runtime& runtime);
 
@@ -123,6 +115,10 @@ class NativeReactNativeFeatureFlags
   bool enablePreparedTextLayout(jsi::Runtime& runtime);
 
   bool enablePropsUpdateReconciliationAndroid(jsi::Runtime& runtime);
+
+  bool enableRuntimeSchedulerQueueClearingOnError(jsi::Runtime& runtime);
+
+  bool enableSchedulerDelegateInvalidation(jsi::Runtime& runtime);
 
   bool enableSwiftUIBasedFilters(jsi::Runtime& runtime);
 
@@ -140,25 +136,23 @@ class NativeReactNativeFeatureFlags
 
   bool enableVirtualViewContainerStateExperimental(jsi::Runtime& runtime);
 
-  bool enableVirtualViewDebugFeatures(jsi::Runtime& runtime);
-
-  bool enableVirtualViewRenderState(jsi::Runtime& runtime);
-
-  bool enableVirtualViewWindowFocusDetection(jsi::Runtime& runtime);
-
-  bool enableWebPerformanceAPIsByDefault(jsi::Runtime& runtime);
+  bool fixDifferentiatorParentTagForUnflattenCase(jsi::Runtime& runtime);
 
   bool fixMappingOfEventPrioritiesBetweenFabricAndReact(jsi::Runtime& runtime);
 
-  bool fixTextClippingAndroid15useBoundsForWidth(jsi::Runtime& runtime);
+  bool fixYogaFlexBasisFitContentInMainAxis(jsi::Runtime& runtime);
 
   bool fuseboxAssertSingleHostState(jsi::Runtime& runtime);
 
   bool fuseboxEnabledRelease(jsi::Runtime& runtime);
 
+  bool fuseboxFrameRecordingEnabled(jsi::Runtime& runtime);
+
   bool fuseboxNetworkInspectionEnabled(jsi::Runtime& runtime);
 
-  bool hideOffscreenVirtualViewsOnIOS(jsi::Runtime& runtime);
+  bool fuseboxScreenshotCaptureEnabled(jsi::Runtime& runtime);
+
+  bool optimizedAnimatedPropUpdates(jsi::Runtime& runtime);
 
   bool overrideBySynchronousMountPropsAtMountingAndroid(jsi::Runtime& runtime);
 
@@ -170,37 +164,31 @@ class NativeReactNativeFeatureFlags
 
   bool preventShadowTreeCommitExhaustion(jsi::Runtime& runtime);
 
+  bool redBoxV2Android(jsi::Runtime& runtime);
+
+  bool redBoxV2IOS(jsi::Runtime& runtime);
+
   bool shouldPressibilityUseW3CPointerEventsForHover(jsi::Runtime& runtime);
-
-  bool shouldResetClickableWhenRecyclingView(jsi::Runtime& runtime);
-
-  bool shouldResetOnClickListenerWhenRecyclingView(jsi::Runtime& runtime);
-
-  bool shouldSetEnabledBasedOnAccessibilityState(jsi::Runtime& runtime);
-
-  bool shouldSetIsClickableByDefault(jsi::Runtime& runtime);
 
   bool shouldTriggerResponderTransferOnScrollAndroid(jsi::Runtime& runtime);
 
   bool skipActivityIdentityAssertionOnHostPause(jsi::Runtime& runtime);
 
+  bool syncAndroidClipBoundsWithOverflow(jsi::Runtime& runtime);
+
   bool traceTurboModulePromiseRejectionsOnAndroid(jsi::Runtime& runtime);
 
   bool updateRuntimeShadowNodeReferencesOnCommit(jsi::Runtime& runtime);
+
+  bool updateRuntimeShadowNodeReferencesOnCommitThread(jsi::Runtime& runtime);
 
   bool useAlwaysAvailableJSErrorHandling(jsi::Runtime& runtime);
 
   bool useFabricInterop(jsi::Runtime& runtime);
 
-  bool useNativeEqualsInNativeReadableArrayAndroid(jsi::Runtime& runtime);
-
-  bool useNativeTransformHelperAndroid(jsi::Runtime& runtime);
-
   bool useNativeViewConfigsInBridgelessMode(jsi::Runtime& runtime);
 
-  bool useRawPropsJsiValue(jsi::Runtime& runtime);
-
-  bool useShadowNodeStateOnClone(jsi::Runtime& runtime);
+  bool useNestedScrollViewAndroid(jsi::Runtime& runtime);
 
   bool useSharedAnimatedBackend(jsi::Runtime& runtime);
 
@@ -208,11 +196,11 @@ class NativeReactNativeFeatureFlags
 
   bool useTurboModuleInterop(jsi::Runtime& runtime);
 
-  bool useTurboModules(jsi::Runtime& runtime);
-
   double viewCullingOutsetRatio(jsi::Runtime& runtime);
 
-  double virtualViewHysteresisRatio(jsi::Runtime& runtime);
+  bool viewTransitionEnabled(jsi::Runtime& runtime);
+
+  bool viewTransitionUseHardwareBitmapAndroid(jsi::Runtime& runtime);
 
   double virtualViewPrerenderRatio(jsi::Runtime& runtime);
 };

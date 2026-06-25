@@ -11,6 +11,7 @@
 #include <react/renderer/imagemanager/ImageResponseObserver.h>
 #include <react/utils/SharedFunction.h>
 
+#include <memory>
 #include <mutex>
 #include <vector>
 
@@ -31,12 +32,12 @@ class ImageResponseObserverCoordinator {
    * If the current image request status is not equal to `Loading`, the observer
    * will be called immediately.
    */
-  void addObserver(const ImageResponseObserver &observer) const;
+  void addObserver(std::shared_ptr<const ImageResponseObserver> observer) const;
 
   /*
    * Interested parties may stop observing the image response.
    */
-  void removeObserver(const ImageResponseObserver &observer) const;
+  void removeObserver(const std::shared_ptr<const ImageResponseObserver> &observer) const;
 
   /*
    * Platform-specific image loader will call this method with progress updates.
@@ -65,7 +66,7 @@ class ImageResponseObserverCoordinator {
    * List of observers.
    * Mutable: protected by mutex_.
    */
-  mutable std::vector<const ImageResponseObserver *> observers_;
+  mutable std::vector<std::shared_ptr<const ImageResponseObserver>> observers_;
 
   /*
    * Current status of image loading.

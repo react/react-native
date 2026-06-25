@@ -11,11 +11,15 @@
 'use strict';
 
 import VirtualizedLists from '@react-native/virtualized-lists';
+import * as React from 'react';
 
 type VirtualizedSectionListType =
   typeof VirtualizedLists.VirtualizedSectionList;
 const VirtualizedSectionList: VirtualizedSectionListType =
   VirtualizedLists.VirtualizedSectionList;
+
+export type VirtualizedSectionListInstance =
+  React.ElementRef<VirtualizedSectionListType>;
 
 export type {
   SectionBase,

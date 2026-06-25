@@ -1,0 +1,7 @@
+protocol RCTBaseProtocol {
+  public virtual void baseMethod();
+}
+
+protocol RCTChildProtocol : public RCTBaseProtocol {
+  public virtual void childMethod();
+}

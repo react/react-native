@@ -19,9 +19,7 @@
 #include <react/renderer/graphics/Vector.h>
 #include <react/utils/hash_combine.h>
 
-#ifdef ANDROID
 #include <folly/dynamic.h>
-#endif
 
 namespace facebook::react {
 
@@ -51,14 +49,7 @@ struct TransformOrigin {
   std::array<ValueUnit, 2> xy = {ValueUnit(0.0f, UnitType::Undefined), ValueUnit(0.0f, UnitType::Undefined)};
   float z = 0.0f;
 
-  bool operator==(const TransformOrigin &other) const
-  {
-    return xy[0] == other.xy[0] && xy[1] == other.xy[1] && z == other.z;
-  }
-  bool operator!=(const TransformOrigin &other) const
-  {
-    return !(*this == other);
-  }
+  bool operator==(const TransformOrigin &other) const = default;
   bool isSet() const
   {
     return xy[0].value != 0.0f || xy[0].unit != UnitType::Undefined || xy[1].value != 0.0f ||
@@ -159,7 +150,6 @@ struct Transform {
    * Equality operators.
    */
   bool operator==(const Transform &rhs) const noexcept;
-  bool operator!=(const Transform &rhs) const noexcept;
 
   /*
    * Matrix subscript.
@@ -177,7 +167,6 @@ struct Transform {
   /**
    * Convert to folly::dynamic.
    */
-#ifdef ANDROID
   operator folly::dynamic() const
   {
     return folly::dynamic::array(
@@ -198,7 +187,6 @@ struct Transform {
         matrix[14],
         matrix[15]);
   }
-#endif
 };
 
 /*

@@ -25,7 +25,11 @@ internal class TrackingAnimatedNode(
     if (valAnimatedNode != null) {
       animationConfig.putDouble("toValue", valAnimatedNode.getValue())
     } else {
-      animationConfig.putNull("toValue")
+      val drivenNode = nativeAnimatedNodesManager.getNodeById(valueNode) as? ValueAnimatedNode
+      if (drivenNode == null) {
+        return
+      }
+      animationConfig.putDouble("toValue", drivenNode.getValue())
     }
     nativeAnimatedNodesManager.startAnimatingNode(animationId, valueNode, animationConfig, null)
   }

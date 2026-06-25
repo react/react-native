@@ -10,7 +10,7 @@
 
 'use strict';
 const {TEMPLATES_FOLDER_PATH} = require('./constants');
-const {codegenLog} = require('./utils');
+const {codegenLog, writeFileSyncIfChanged} = require('./utils');
 const fs = require('fs');
 const path = require('path');
 
@@ -35,7 +35,7 @@ function generatePackageSwift(
       path.relative(fullOutputPath, reactNativePath),
     );
   const finalPathH = path.join(outputDir, 'Package.swift');
-  fs.writeFileSync(finalPathH, templateH);
+  writeFileSyncIfChanged(finalPathH, templateH);
   codegenLog(`Generated artifact: ${finalPathH}`);
 }
 

@@ -389,7 +389,7 @@ function isReactNativeCoreLibrary(libraryName /*: string */) /*: boolean */ {
  * Validates that components are defined in at most one library.
  */
 function parseiOSAnnotations(
-  libraries /*: $ReadOnlyArray<$FlowFixMe> */,
+  libraries /*: ReadonlyArray<$FlowFixMe> */,
 ) /*: {[string]: $FlowFixMe} */ {
   const mLibraryMap /*: {[string]: $FlowFixMe} */ = {};
   const cLibraryMap /*: {[string]: $FlowFixMe} */ = {};
@@ -485,6 +485,52 @@ function findReactNativeRootPath(projectRoot /* : string */) /* : string */ {
   return path.dirname(reactNativePackageJsonPath);
 }
 
+function writeFileSyncIfChanged(
+  targetPath /*: string */,
+  contents /*: string */,
+) {
+  try {
+    const oldContents = fs.readFileSync(targetPath, 'utf8');
+    if (oldContents === contents) {
+      return;
+    }
+  } catch (error) {
+    if (error.code !== 'ENOENT') {
+      throw error;
+    }
+  }
+  fs.writeFileSync(targetPath, contents);
+}
+
+function cpSyncRecursiveIfChanged(
+  sourcePath /*: string */,
+  targetPath /*: string */,
+) {
+  fs.cpSync(sourcePath, targetPath, {
+    recursive: true,
+    force: true,
+    preserveTimestamps: true,
+    filter(src /*: string */, dest /*: string */) {
+      try {
+        const stat = fs.statSync(src);
+        if (!stat.isFile()) {
+          return true;
+        } else {
+          const oldContents = fs.readFileSync(dest, 'utf8');
+          const newContents = fs.readFileSync(src, 'utf8');
+          return oldContents !== newContents;
+        }
+      } catch (error) {
+        if (error.code !== 'ENOENT' && error.code !== 'EISDIR') {
+          throw error;
+        } else {
+          return true;
+        }
+      }
+    },
+  });
+}
+
 module.exports = {
   buildCodegenIfNeeded,
   pkgJsonIncludesGeneratedCode,
@@ -499,4 +545,6 @@ module.exports = {
   readReactNativeConfig,
   findDisabledLibrariesByPlatform,
   findReactNativeRootPath,
+  writeFileSyncIfChanged,
+  cpSyncRecursiveIfChanged,
 };

@@ -13,7 +13,7 @@ import type {ViewProps} from '../View/ViewPropTypes';
 
 import * as NativeComponentRegistry from '../../NativeComponent/NativeComponentRegistry';
 
-type Props = $ReadOnly<{
+type Props = Readonly<{
   mode: 'strict' | 'compatibility',
   ...ViewProps,
 }>;

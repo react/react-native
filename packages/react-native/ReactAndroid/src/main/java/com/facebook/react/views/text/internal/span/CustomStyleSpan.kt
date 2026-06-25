@@ -14,7 +14,6 @@ import android.text.TextPaint
 import android.text.style.MetricAffectingSpan
 import com.facebook.react.common.ReactConstants
 import com.facebook.react.common.assets.ReactFontManager
-import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import com.facebook.react.views.text.ReactTypefaceUtils
 
 /**
@@ -74,9 +73,7 @@ internal class CustomStyleSpan(
         fontFeatureSettings = fontFeatureSettingsParam
         setTypeface(typeface)
         isSubpixelText = true
-        if (ReactNativeFeatureFlags.enableAndroidLinearText()) {
-          isLinearText = true
-        }
+        isLinearText = true
       }
     }
   }

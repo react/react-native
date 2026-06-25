@@ -9,40 +9,22 @@
 
 namespace facebook::react::ReactMarker {
 
-#if __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wglobal-constructors"
-#endif
-
-LogTaggedMarker logTaggedMarkerBridgelessImpl = nullptr;
-LogTaggedMarker logTaggedMarkerImpl = nullptr;
-std::shared_mutex logTaggedMarkerImplMutex;
-
-#if __clang__
-#pragma clang diagnostic pop
-#endif
+AtomicLogTaggedMarker logTaggedMarkerImpl;
 
 void logMarker(const ReactMarkerId markerId) {
   logTaggedMarker(markerId, nullptr);
 }
 
 void logTaggedMarker(const ReactMarkerId markerId, const char* tag) {
-  LogTaggedMarker marker = nullptr;
-  {
-    std::shared_lock lock(logTaggedMarkerImplMutex);
-    marker = logTaggedMarkerImpl;
-  }
-  if (marker != nullptr) {
-    marker(markerId, tag);
-  }
+  logTaggedMarkerImpl(markerId, tag);
 }
 
 void logMarkerBridgeless(const ReactMarkerId markerId) {
-  logTaggedMarkerBridgeless(markerId, nullptr);
+  logTaggedMarker(markerId, nullptr);
 }
 
 void logTaggedMarkerBridgeless(const ReactMarkerId markerId, const char* tag) {
-  logTaggedMarkerBridgelessImpl(markerId, tag);
+  logTaggedMarker(markerId, tag);
 }
 
 void logMarkerDone(const ReactMarkerId markerId, double markerTime) {
@@ -120,16 +102,8 @@ double StartupLogger::getInitReactRuntimeStartTime() {
   return initReactRuntimeStartTime;
 }
 
-double StartupLogger::getInitReactRuntimeEndTime() {
-  return initReactRuntimeEndTime;
-}
-
 double StartupLogger::getRunJSBundleStartTime() {
   return runJSBundleStartTime;
-}
-
-double StartupLogger::getRunJSBundleEndTime() {
-  return runJSBundleEndTime;
 }
 
 double StartupLogger::getAppStartupEndTime() {

@@ -26,7 +26,7 @@ const I18nManager =
 function resolveBoxStyle(
   prefix: string,
   style: Object,
-): ?$ReadOnly<{
+): ?Readonly<{
   bottom: number,
   left: number,
   right: number,

@@ -8,7 +8,7 @@
  * @format
  */
 
-export default function ensureInstance<T>(value: mixed, Class: Class<T>): T {
+export default function ensureInstance<T>(value: unknown, Class: Class<T>): T {
   if (!(value instanceof Class)) {
     // $FlowFixMe[incompatible-use]
     const className = Class.name;

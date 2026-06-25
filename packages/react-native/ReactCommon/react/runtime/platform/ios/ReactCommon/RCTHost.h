@@ -49,11 +49,24 @@ typedef NSURL *_Nullable (^RCTHostBundleURLProvider)(void);
                exceptionId:(NSUInteger)exceptionId
                    isFatal:(BOOL)isFatal
                  extraData:(NSDictionary<NSString *, id> *)extraData __attribute__((deprecated));
+
+/**
+ Delegate method invoked after the host has finished initializing the JavaScript runtime. At this stage,
+ bindings for Turbo Modules and the NativeComponentRegistry are already installed,
+ but the JavaScript bundle has not yet been executed. This method is called on the JavaScript thread;
+ accessing the runtime from any other thread is prohibited and will result in crashes.
+ */
+- (void)host:(RCTHost *)host didInitializeRuntime:(facebook::jsi::Runtime &)runtime;
+
 @end
 
-@protocol RCTHostRuntimeDelegate <NSObject>
+// `RCTHostRuntimeDelegate` has been merged into `RCTHostDelegate` in 0.84
+[[deprecated("Use 'RCTHostDelegate' instead")]]
+@protocol RCTHostRuntimeDelegate<NSObject>
 
-- (void)host:(RCTHost *)host didInitializeRuntime:(facebook::jsi::Runtime &)runtime;
+- (void)host:(RCTHost *)host
+    didInitializeRuntime:(facebook::jsi::Runtime &)runtime
+    [[deprecated("Use an equivalent method from 'RCTHostDelegate' instead")]];
 
 @end
 
@@ -84,7 +97,8 @@ typedef std::shared_ptr<facebook::react::JSRuntimeFactory> (^RCTHostJSEngineProv
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
 
-@property (nonatomic, weak, nullable) id<RCTHostRuntimeDelegate> runtimeDelegate;
+@property (nonatomic, weak, nullable) id<RCTHostRuntimeDelegate> runtimeDelegate
+    [[deprecated("Use 'RCTHostDelegate' instead")]];
 
 @property (nonatomic, readonly) RCTSurfacePresenter *surfacePresenter;
 

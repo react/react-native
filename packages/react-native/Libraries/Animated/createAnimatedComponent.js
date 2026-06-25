@@ -29,9 +29,9 @@ import {useMemo} from 'react';
 
 type Nullable = void | null;
 type Primitive = string | number | boolean | symbol | void;
-type Builtin = (...$ReadOnlyArray<empty>) => mixed | Date | Error | RegExp;
+type Builtin = (...ReadonlyArray<empty>) => unknown | Date | Error | RegExp;
 
-export type WithAnimatedValue<+T> = T extends Builtin | Nullable
+export type WithAnimatedValue<out T> = T extends Builtin | Nullable
   ? T
   : T extends Primitive
     ?
@@ -48,10 +48,10 @@ export type WithAnimatedValue<+T> = T extends Builtin | Nullable
         | AnimatedInterpolation<number>
         | AnimatedInterpolation<string>
         | AnimatedInterpolation<NativeColorValue>
-    : T extends $ReadOnlyArray<infer P>
-      ? $ReadOnlyArray<WithAnimatedValue<P>>
+    : T extends ReadonlyArray<infer P>
+      ? ReadonlyArray<WithAnimatedValue<P>>
       : T extends {...}
-        ? {+[K in keyof T]: WithAnimatedValue<T[K]>}
+        ? {readonly [K in keyof T]: WithAnimatedValue<T[K]>}
         : T;
 
 type NonAnimatedProps =
@@ -61,16 +61,16 @@ type NonAnimatedProps =
   | 'testID'
   | 'disabled'
   | 'accessibilityLabel';
-type PassThroughProps = $ReadOnly<{
+type PassThroughProps = Readonly<{
   passthroughAnimatedPropExplicitValues?: ViewProps | null,
 }>;
 
-type LooseOmit<O: interface {}, K: $Keys<$FlowFixMe>> = Pick<
+type LooseOmit<O extends interface {}, K extends keyof $FlowFixMe> = Pick<
   O,
-  Exclude<$Keys<O>, K>,
+  Exclude<keyof O, K>,
 >;
 
-export type AnimatedProps<Props: {...}> = LooseOmit<
+export type AnimatedProps<Props extends {...}> = LooseOmit<
   {
     [K in keyof Props]: K extends NonAnimatedProps
       ? Props[K]
@@ -80,7 +80,7 @@ export type AnimatedProps<Props: {...}> = LooseOmit<
 > &
   PassThroughProps;
 
-export type AnimatedBaseProps<Props: {...}> = LooseOmit<
+export type AnimatedBaseProps<Props extends {...}> = LooseOmit<
   {
     [K in keyof Props]: K extends NonAnimatedProps
       ? Props[K]
@@ -89,25 +89,25 @@ export type AnimatedBaseProps<Props: {...}> = LooseOmit<
   'ref',
 >;
 
-export type AnimatedComponentType<Props: {...}, +Instance = mixed> = component(
-  ref?: React.RefSetter<Instance>,
-  ...AnimatedProps<Props>
-);
+export type AnimatedComponentType<
+  Props extends {...},
+  out Instance = unknown,
+> = component(ref?: React.RefSetter<Instance>, ...AnimatedProps<Props>);
 
 export default function createAnimatedComponent<
-  TInstance: React.ComponentType<any>,
+  TInstance extends React.ComponentType<any>,
 >(
   Component: TInstance,
 ): AnimatedComponentType<
-  $ReadOnly<React.ElementConfig<TInstance>>,
+  Readonly<React.ElementConfig<TInstance>>,
   React.ElementRef<TInstance>,
 > {
   return unstable_createAnimatedComponentWithAllowlist(Component, null);
 }
 
 export function unstable_createAnimatedComponentWithAllowlist<
-  TProps: {...},
-  TInstance: React.ComponentType<TProps>,
+  TProps extends {...},
+  TInstance extends React.ComponentType<TProps>,
 >(
   Component: TInstance,
   allowlist: ?AnimatedPropsAllowlist,

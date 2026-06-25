@@ -276,7 +276,7 @@ declare type BabelNodeFunctionDeclaration = {
   loc: ?BabelNodeSourceLocation,
   type: "FunctionDeclaration";
   id?: BabelNodeIdentifier;
-  params: Array<BabelNodeIdentifier | BabelNodePattern | BabelNodeRestElement>;
+  params: Array<BabelNodeFunctionParameter>;
   body: BabelNodeBlockStatement;
   generator?: boolean;
   async?: boolean;
@@ -295,7 +295,7 @@ declare type BabelNodeFunctionExpression = {
   loc: ?BabelNodeSourceLocation,
   type: "FunctionExpression";
   id?: BabelNodeIdentifier;
-  params: Array<BabelNodeIdentifier | BabelNodePattern | BabelNodeRestElement>;
+  params: Array<BabelNodeFunctionParameter>;
   body: BabelNodeBlockStatement;
   generator?: boolean;
   async?: boolean;
@@ -475,7 +475,7 @@ declare type BabelNodeObjectMethod = {
   type: "ObjectMethod";
   kind?: "method" | "get" | "set";
   key: BabelNodeExpression | BabelNodeIdentifier | BabelNodeStringLiteral | BabelNodeNumericLiteral | BabelNodeBigIntLiteral;
-  params: Array<BabelNodeIdentifier | BabelNodePattern | BabelNodeRestElement>;
+  params: Array<BabelNodeFunctionParameter>;
   body: BabelNodeBlockStatement;
   computed?: boolean;
   generator?: boolean;
@@ -508,7 +508,7 @@ declare type BabelNodeRestElement = {
   end: ?number;
   loc: ?BabelNodeSourceLocation,
   type: "RestElement";
-  argument: BabelNodeLVal;
+  argument: BabelNodeIdentifier | BabelNodeArrayPattern | BabelNodeObjectPattern | BabelNodeMemberExpression | BabelNodeTSAsExpression | BabelNodeTSSatisfiesExpression | BabelNodeTSTypeAssertion | BabelNodeTSNonNullExpression | BabelNodeRestElement | BabelNodeAssignmentPattern;
   decorators?: Array<BabelNodeDecorator>;
   optional?: boolean;
   typeAnnotation?: BabelNodeTypeAnnotation | BabelNodeTSTypeAnnotation | BabelNodeNoop;
@@ -652,7 +652,7 @@ declare type BabelNodeVariableDeclarator = {
   end: ?number;
   loc: ?BabelNodeSourceLocation,
   type: "VariableDeclarator";
-  id: BabelNodeLVal;
+  id: BabelNodeLVal | BabelNodeVoidPattern;
   init?: BabelNodeExpression;
   definite?: boolean;
 };
@@ -704,7 +704,7 @@ declare type BabelNodeArrayPattern = {
   end: ?number;
   loc: ?BabelNodeSourceLocation,
   type: "ArrayPattern";
-  elements: Array<null | BabelNodePatternLike | BabelNodeLVal>;
+  elements: Array<null | BabelNodePatternLike>;
   decorators?: Array<BabelNodeDecorator>;
   optional?: boolean;
   typeAnnotation?: BabelNodeTypeAnnotation | BabelNodeTSTypeAnnotation | BabelNodeNoop;
@@ -718,7 +718,7 @@ declare type BabelNodeArrowFunctionExpression = {
   end: ?number;
   loc: ?BabelNodeSourceLocation,
   type: "ArrowFunctionExpression";
-  params: Array<BabelNodeIdentifier | BabelNodePattern | BabelNodeRestElement>;
+  params: Array<BabelNodeFunctionParameter>;
   body: BabelNodeBlockStatement | BabelNodeExpression;
   async?: boolean;
   expression: boolean;
@@ -786,8 +786,8 @@ declare type BabelNodeExportAllDeclaration = {
   loc: ?BabelNodeSourceLocation,
   type: "ExportAllDeclaration";
   source: BabelNodeStringLiteral;
-  assertions?: Array<BabelNodeImportAttribute>;
   attributes?: Array<BabelNodeImportAttribute>;
+  assertions?: Array<BabelNodeImportAttribute>;
   exportKind?: "type" | "value";
 };
 
@@ -814,8 +814,8 @@ declare type BabelNodeExportNamedDeclaration = {
   declaration?: BabelNodeDeclaration;
   specifiers?: Array<BabelNodeExportSpecifier | BabelNodeExportDefaultSpecifier | BabelNodeExportNamespaceSpecifier>;
   source?: BabelNodeStringLiteral;
-  assertions?: Array<BabelNodeImportAttribute>;
   attributes?: Array<BabelNodeImportAttribute>;
+  assertions?: Array<BabelNodeImportAttribute>;
   exportKind?: "type" | "value";
 };
 
@@ -856,8 +856,8 @@ declare type BabelNodeImportDeclaration = {
   type: "ImportDeclaration";
   specifiers: Array<BabelNodeImportSpecifier | BabelNodeImportDefaultSpecifier | BabelNodeImportNamespaceSpecifier>;
   source: BabelNodeStringLiteral;
-  assertions?: Array<BabelNodeImportAttribute>;
   attributes?: Array<BabelNodeImportAttribute>;
+  assertions?: Array<BabelNodeImportAttribute>;
   importKind?: "type" | "typeof" | "value";
   module?: boolean;
   phase?: "source" | "defer";
@@ -933,7 +933,7 @@ declare type BabelNodeClassMethod = {
   type: "ClassMethod";
   kind?: "get" | "set" | "method" | "constructor";
   key: BabelNodeIdentifier | BabelNodeStringLiteral | BabelNodeNumericLiteral | BabelNodeBigIntLiteral | BabelNodeExpression;
-  params: Array<BabelNodeIdentifier | BabelNodePattern | BabelNodeRestElement | BabelNodeTSParameterProperty>;
+  params: Array<BabelNodeFunctionParameter | BabelNodeTSParameterProperty>;
   body: BabelNodeBlockStatement;
   computed?: boolean;
   static?: boolean;
@@ -1182,7 +1182,7 @@ declare type BabelNodeClassPrivateMethod = {
   type: "ClassPrivateMethod";
   kind?: "get" | "set" | "method";
   key: BabelNodePrivateName;
-  params: Array<BabelNodeIdentifier | BabelNodePattern | BabelNodeRestElement | BabelNodeTSParameterProperty>;
+  params: Array<BabelNodeFunctionParameter | BabelNodeTSParameterProperty>;
   body: BabelNodeBlockStatement;
   static?: boolean;
   abstract?: boolean;
@@ -1218,6 +1218,18 @@ declare type BabelNodeStaticBlock = {
   loc: ?BabelNodeSourceLocation,
   type: "StaticBlock";
   body: Array<BabelNodeStatement>;
+};
+
+declare type BabelNodeImportAttribute = {
+  leadingComments?: Array<BabelNodeComment>;
+  innerComments?: Array<BabelNodeComment>;
+  trailingComments?: Array<BabelNodeComment>;
+  start: ?number;
+  end: ?number;
+  loc: ?BabelNodeSourceLocation,
+  type: "ImportAttribute";
+  key: BabelNodeIdentifier | BabelNodeStringLiteral;
+  value: BabelNodeStringLiteral;
 };
 
 declare type BabelNodeAnyTypeAnnotation = {
@@ -2237,18 +2249,6 @@ declare type BabelNodeBindExpression = {
   callee: BabelNodeExpression;
 };
 
-declare type BabelNodeImportAttribute = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ImportAttribute";
-  key: BabelNodeIdentifier | BabelNodeStringLiteral;
-  value: BabelNodeStringLiteral;
-};
-
 declare type BabelNodeDecorator = {
   leadingComments?: Array<BabelNodeComment>;
   innerComments?: Array<BabelNodeComment>;
@@ -2369,6 +2369,16 @@ declare type BabelNodePipelinePrimaryTopicReference = {
   type: "PipelinePrimaryTopicReference";
 };
 
+declare type BabelNodeVoidPattern = {
+  leadingComments?: Array<BabelNodeComment>;
+  innerComments?: Array<BabelNodeComment>;
+  trailingComments?: Array<BabelNodeComment>;
+  start: ?number;
+  end: ?number;
+  loc: ?BabelNodeSourceLocation,
+  type: "VoidPattern";
+};
+
 declare type BabelNodeTSParameterProperty = {
   leadingComments?: Array<BabelNodeComment>;
   innerComments?: Array<BabelNodeComment>;
@@ -2394,7 +2404,7 @@ declare type BabelNodeTSDeclareFunction = {
   type: "TSDeclareFunction";
   id?: BabelNodeIdentifier;
   typeParameters?: BabelNodeTSTypeParameterDeclaration | BabelNodeNoop;
-  params: Array<BabelNodeIdentifier | BabelNodePattern | BabelNodeRestElement>;
+  params: Array<BabelNodeFunctionParameter>;
   returnType?: BabelNodeTSTypeAnnotation | BabelNodeNoop;
   async?: boolean;
   declare?: boolean;
@@ -2412,7 +2422,7 @@ declare type BabelNodeTSDeclareMethod = {
   decorators?: Array<BabelNodeDecorator>;
   key: BabelNodeIdentifier | BabelNodeStringLiteral | BabelNodeNumericLiteral | BabelNodeBigIntLiteral | BabelNodeExpression;
   typeParameters?: BabelNodeTSTypeParameterDeclaration | BabelNodeNoop;
-  params: Array<BabelNodeIdentifier | BabelNodePattern | BabelNodeRestElement | BabelNodeTSParameterProperty>;
+  params: Array<BabelNodeFunctionParameter | BabelNodeTSParameterProperty>;
   returnType?: BabelNodeTSTypeAnnotation | BabelNodeNoop;
   abstract?: boolean;
   access?: "public" | "private" | "protected";
@@ -2850,7 +2860,7 @@ declare type BabelNodeTSTypeOperator = {
   loc: ?BabelNodeSourceLocation,
   type: "TSTypeOperator";
   typeAnnotation: BabelNodeTSType;
-  operator: string;
+  operator?: string;
 };
 
 declare type BabelNodeTSIndexedAccessType = {
@@ -3079,7 +3089,7 @@ declare type BabelNodeTSImportType = {
   argument: BabelNodeStringLiteral;
   qualifier?: BabelNodeTSEntityName;
   typeParameters?: BabelNodeTSTypeParameterInstantiation;
-  options?: BabelNodeExpression;
+  options?: BabelNodeObjectExpression;
 };
 
 declare type BabelNodeTSImportEqualsDeclaration = {
@@ -3189,8 +3199,8 @@ declare type BabelNodeTSTypeParameter = {
   out?: boolean;
 };
 
-declare type BabelNode = BabelNodeArrayExpression | BabelNodeAssignmentExpression | BabelNodeBinaryExpression | BabelNodeInterpreterDirective | BabelNodeDirective | BabelNodeDirectiveLiteral | BabelNodeBlockStatement | BabelNodeBreakStatement | BabelNodeCallExpression | BabelNodeCatchClause | BabelNodeConditionalExpression | BabelNodeContinueStatement | BabelNodeDebuggerStatement | BabelNodeDoWhileStatement | BabelNodeEmptyStatement | BabelNodeExpressionStatement | BabelNodeFile | BabelNodeForInStatement | BabelNodeForStatement | BabelNodeFunctionDeclaration | BabelNodeFunctionExpression | BabelNodeIdentifier | BabelNodeIfStatement | BabelNodeLabeledStatement | BabelNodeStringLiteral | BabelNodeNumericLiteral | BabelNodeNullLiteral | BabelNodeBooleanLiteral | BabelNodeRegExpLiteral | BabelNodeLogicalExpression | BabelNodeMemberExpression | BabelNodeNewExpression | BabelNodeProgram | BabelNodeObjectExpression | BabelNodeObjectMethod | BabelNodeObjectProperty | BabelNodeRestElement | BabelNodeReturnStatement | BabelNodeSequenceExpression | BabelNodeParenthesizedExpression | BabelNodeSwitchCase | BabelNodeSwitchStatement | BabelNodeThisExpression | BabelNodeThrowStatement | BabelNodeTryStatement | BabelNodeUnaryExpression | BabelNodeUpdateExpression | BabelNodeVariableDeclaration | BabelNodeVariableDeclarator | BabelNodeWhileStatement | BabelNodeWithStatement | BabelNodeAssignmentPattern | BabelNodeArrayPattern | BabelNodeArrowFunctionExpression | BabelNodeClassBody | BabelNodeClassExpression | BabelNodeClassDeclaration | BabelNodeExportAllDeclaration | BabelNodeExportDefaultDeclaration | BabelNodeExportNamedDeclaration | BabelNodeExportSpecifier | BabelNodeForOfStatement | BabelNodeImportDeclaration | BabelNodeImportDefaultSpecifier | BabelNodeImportNamespaceSpecifier | BabelNodeImportSpecifier | BabelNodeImportExpression | BabelNodeMetaProperty | BabelNodeClassMethod | BabelNodeObjectPattern | BabelNodeSpreadElement | BabelNodeSuper | BabelNodeTaggedTemplateExpression | BabelNodeTemplateElement | BabelNodeTemplateLiteral | BabelNodeYieldExpression | BabelNodeAwaitExpression | BabelNodeImport | BabelNodeBigIntLiteral | BabelNodeExportNamespaceSpecifier | BabelNodeOptionalMemberExpression | BabelNodeOptionalCallExpression | BabelNodeClassProperty | BabelNodeClassAccessorProperty | BabelNodeClassPrivateProperty | BabelNodeClassPrivateMethod | BabelNodePrivateName | BabelNodeStaticBlock | BabelNodeAnyTypeAnnotation | BabelNodeArrayTypeAnnotation | BabelNodeBooleanTypeAnnotation | BabelNodeBooleanLiteralTypeAnnotation | BabelNodeNullLiteralTypeAnnotation | BabelNodeClassImplements | BabelNodeDeclareClass | BabelNodeDeclareFunction | BabelNodeDeclareInterface | BabelNodeDeclareModule | BabelNodeDeclareModuleExports | BabelNodeDeclareTypeAlias | BabelNodeDeclareOpaqueType | BabelNodeDeclareVariable | BabelNodeDeclareExportDeclaration | BabelNodeDeclareExportAllDeclaration | BabelNodeDeclaredPredicate | BabelNodeExistsTypeAnnotation | BabelNodeFunctionTypeAnnotation | BabelNodeFunctionTypeParam | BabelNodeGenericTypeAnnotation | BabelNodeInferredPredicate | BabelNodeInterfaceExtends | BabelNodeInterfaceDeclaration | BabelNodeInterfaceTypeAnnotation | BabelNodeIntersectionTypeAnnotation | BabelNodeMixedTypeAnnotation | BabelNodeEmptyTypeAnnotation | BabelNodeNullableTypeAnnotation | BabelNodeNumberLiteralTypeAnnotation | BabelNodeNumberTypeAnnotation | BabelNodeObjectTypeAnnotation | BabelNodeObjectTypeInternalSlot | BabelNodeObjectTypeCallProperty | BabelNodeObjectTypeIndexer | BabelNodeObjectTypeProperty | BabelNodeObjectTypeSpreadProperty | BabelNodeOpaqueType | BabelNodeQualifiedTypeIdentifier | BabelNodeStringLiteralTypeAnnotation | BabelNodeStringTypeAnnotation | BabelNodeSymbolTypeAnnotation | BabelNodeThisTypeAnnotation | BabelNodeTupleTypeAnnotation | BabelNodeTypeofTypeAnnotation | BabelNodeTypeAlias | BabelNodeTypeAnnotation | BabelNodeTypeCastExpression | BabelNodeTypeParameter | BabelNodeTypeParameterDeclaration | BabelNodeTypeParameterInstantiation | BabelNodeUnionTypeAnnotation | BabelNodeVariance | BabelNodeVoidTypeAnnotation | BabelNodeEnumDeclaration | BabelNodeEnumBooleanBody | BabelNodeEnumNumberBody | BabelNodeEnumStringBody | BabelNodeEnumSymbolBody | BabelNodeEnumBooleanMember | BabelNodeEnumNumberMember | BabelNodeEnumStringMember | BabelNodeEnumDefaultedMember | BabelNodeIndexedAccessType | BabelNodeOptionalIndexedAccessType | BabelNodeJSXAttribute | BabelNodeJSXClosingElement | BabelNodeJSXElement | BabelNodeJSXEmptyExpression | BabelNodeJSXExpressionContainer | BabelNodeJSXSpreadChild | BabelNodeJSXIdentifier | BabelNodeJSXMemberExpression | BabelNodeJSXNamespacedName | BabelNodeJSXOpeningElement | BabelNodeJSXSpreadAttribute | BabelNodeJSXText | BabelNodeJSXFragment | BabelNodeJSXOpeningFragment | BabelNodeJSXClosingFragment | BabelNodeNoop | BabelNodePlaceholder | BabelNodeV8IntrinsicIdentifier | BabelNodeArgumentPlaceholder | BabelNodeBindExpression | BabelNodeImportAttribute | BabelNodeDecorator | BabelNodeDoExpression | BabelNodeExportDefaultSpecifier | BabelNodeRecordExpression | BabelNodeTupleExpression | BabelNodeDecimalLiteral | BabelNodeModuleExpression | BabelNodeTopicReference | BabelNodePipelineTopicExpression | BabelNodePipelineBareFunction | BabelNodePipelinePrimaryTopicReference | BabelNodeTSParameterProperty | BabelNodeTSDeclareFunction | BabelNodeTSDeclareMethod | BabelNodeTSQualifiedName | BabelNodeTSCallSignatureDeclaration | BabelNodeTSConstructSignatureDeclaration | BabelNodeTSPropertySignature | BabelNodeTSMethodSignature | BabelNodeTSIndexSignature | BabelNodeTSAnyKeyword | BabelNodeTSBooleanKeyword | BabelNodeTSBigIntKeyword | BabelNodeTSIntrinsicKeyword | BabelNodeTSNeverKeyword | BabelNodeTSNullKeyword | BabelNodeTSNumberKeyword | BabelNodeTSObjectKeyword | BabelNodeTSStringKeyword | BabelNodeTSSymbolKeyword | BabelNodeTSUndefinedKeyword | BabelNodeTSUnknownKeyword | BabelNodeTSVoidKeyword | BabelNodeTSThisType | BabelNodeTSFunctionType | BabelNodeTSConstructorType | BabelNodeTSTypeReference | BabelNodeTSTypePredicate | BabelNodeTSTypeQuery | BabelNodeTSTypeLiteral | BabelNodeTSArrayType | BabelNodeTSTupleType | BabelNodeTSOptionalType | BabelNodeTSRestType | BabelNodeTSNamedTupleMember | BabelNodeTSUnionType | BabelNodeTSIntersectionType | BabelNodeTSConditionalType | BabelNodeTSInferType | BabelNodeTSParenthesizedType | BabelNodeTSTypeOperator | BabelNodeTSIndexedAccessType | BabelNodeTSMappedType | BabelNodeTSTemplateLiteralType | BabelNodeTSLiteralType | BabelNodeTSExpressionWithTypeArguments | BabelNodeTSInterfaceDeclaration | BabelNodeTSInterfaceBody | BabelNodeTSTypeAliasDeclaration | BabelNodeTSInstantiationExpression | BabelNodeTSAsExpression | BabelNodeTSSatisfiesExpression | BabelNodeTSTypeAssertion | BabelNodeTSEnumBody | BabelNodeTSEnumDeclaration | BabelNodeTSEnumMember | BabelNodeTSModuleDeclaration | BabelNodeTSModuleBlock | BabelNodeTSImportType | BabelNodeTSImportEqualsDeclaration | BabelNodeTSExternalModuleReference | BabelNodeTSNonNullExpression | BabelNodeTSExportAssignment | BabelNodeTSNamespaceExportDeclaration | BabelNodeTSTypeAnnotation | BabelNodeTSTypeParameterInstantiation | BabelNodeTSTypeParameterDeclaration | BabelNodeTSTypeParameter;
-declare type BabelNodeStandardized = BabelNodeArrayExpression | BabelNodeAssignmentExpression | BabelNodeBinaryExpression | BabelNodeInterpreterDirective | BabelNodeDirective | BabelNodeDirectiveLiteral | BabelNodeBlockStatement | BabelNodeBreakStatement | BabelNodeCallExpression | BabelNodeCatchClause | BabelNodeConditionalExpression | BabelNodeContinueStatement | BabelNodeDebuggerStatement | BabelNodeDoWhileStatement | BabelNodeEmptyStatement | BabelNodeExpressionStatement | BabelNodeFile | BabelNodeForInStatement | BabelNodeForStatement | BabelNodeFunctionDeclaration | BabelNodeFunctionExpression | BabelNodeIdentifier | BabelNodeIfStatement | BabelNodeLabeledStatement | BabelNodeStringLiteral | BabelNodeNumericLiteral | BabelNodeNullLiteral | BabelNodeBooleanLiteral | BabelNodeRegExpLiteral | BabelNodeLogicalExpression | BabelNodeMemberExpression | BabelNodeNewExpression | BabelNodeProgram | BabelNodeObjectExpression | BabelNodeObjectMethod | BabelNodeObjectProperty | BabelNodeRestElement | BabelNodeReturnStatement | BabelNodeSequenceExpression | BabelNodeParenthesizedExpression | BabelNodeSwitchCase | BabelNodeSwitchStatement | BabelNodeThisExpression | BabelNodeThrowStatement | BabelNodeTryStatement | BabelNodeUnaryExpression | BabelNodeUpdateExpression | BabelNodeVariableDeclaration | BabelNodeVariableDeclarator | BabelNodeWhileStatement | BabelNodeWithStatement | BabelNodeAssignmentPattern | BabelNodeArrayPattern | BabelNodeArrowFunctionExpression | BabelNodeClassBody | BabelNodeClassExpression | BabelNodeClassDeclaration | BabelNodeExportAllDeclaration | BabelNodeExportDefaultDeclaration | BabelNodeExportNamedDeclaration | BabelNodeExportSpecifier | BabelNodeForOfStatement | BabelNodeImportDeclaration | BabelNodeImportDefaultSpecifier | BabelNodeImportNamespaceSpecifier | BabelNodeImportSpecifier | BabelNodeImportExpression | BabelNodeMetaProperty | BabelNodeClassMethod | BabelNodeObjectPattern | BabelNodeSpreadElement | BabelNodeSuper | BabelNodeTaggedTemplateExpression | BabelNodeTemplateElement | BabelNodeTemplateLiteral | BabelNodeYieldExpression | BabelNodeAwaitExpression | BabelNodeImport | BabelNodeBigIntLiteral | BabelNodeExportNamespaceSpecifier | BabelNodeOptionalMemberExpression | BabelNodeOptionalCallExpression | BabelNodeClassProperty | BabelNodeClassAccessorProperty | BabelNodeClassPrivateProperty | BabelNodeClassPrivateMethod | BabelNodePrivateName | BabelNodeStaticBlock;
+declare type BabelNode = BabelNodeArrayExpression | BabelNodeAssignmentExpression | BabelNodeBinaryExpression | BabelNodeInterpreterDirective | BabelNodeDirective | BabelNodeDirectiveLiteral | BabelNodeBlockStatement | BabelNodeBreakStatement | BabelNodeCallExpression | BabelNodeCatchClause | BabelNodeConditionalExpression | BabelNodeContinueStatement | BabelNodeDebuggerStatement | BabelNodeDoWhileStatement | BabelNodeEmptyStatement | BabelNodeExpressionStatement | BabelNodeFile | BabelNodeForInStatement | BabelNodeForStatement | BabelNodeFunctionDeclaration | BabelNodeFunctionExpression | BabelNodeIdentifier | BabelNodeIfStatement | BabelNodeLabeledStatement | BabelNodeStringLiteral | BabelNodeNumericLiteral | BabelNodeNullLiteral | BabelNodeBooleanLiteral | BabelNodeRegExpLiteral | BabelNodeLogicalExpression | BabelNodeMemberExpression | BabelNodeNewExpression | BabelNodeProgram | BabelNodeObjectExpression | BabelNodeObjectMethod | BabelNodeObjectProperty | BabelNodeRestElement | BabelNodeReturnStatement | BabelNodeSequenceExpression | BabelNodeParenthesizedExpression | BabelNodeSwitchCase | BabelNodeSwitchStatement | BabelNodeThisExpression | BabelNodeThrowStatement | BabelNodeTryStatement | BabelNodeUnaryExpression | BabelNodeUpdateExpression | BabelNodeVariableDeclaration | BabelNodeVariableDeclarator | BabelNodeWhileStatement | BabelNodeWithStatement | BabelNodeAssignmentPattern | BabelNodeArrayPattern | BabelNodeArrowFunctionExpression | BabelNodeClassBody | BabelNodeClassExpression | BabelNodeClassDeclaration | BabelNodeExportAllDeclaration | BabelNodeExportDefaultDeclaration | BabelNodeExportNamedDeclaration | BabelNodeExportSpecifier | BabelNodeForOfStatement | BabelNodeImportDeclaration | BabelNodeImportDefaultSpecifier | BabelNodeImportNamespaceSpecifier | BabelNodeImportSpecifier | BabelNodeImportExpression | BabelNodeMetaProperty | BabelNodeClassMethod | BabelNodeObjectPattern | BabelNodeSpreadElement | BabelNodeSuper | BabelNodeTaggedTemplateExpression | BabelNodeTemplateElement | BabelNodeTemplateLiteral | BabelNodeYieldExpression | BabelNodeAwaitExpression | BabelNodeImport | BabelNodeBigIntLiteral | BabelNodeExportNamespaceSpecifier | BabelNodeOptionalMemberExpression | BabelNodeOptionalCallExpression | BabelNodeClassProperty | BabelNodeClassAccessorProperty | BabelNodeClassPrivateProperty | BabelNodeClassPrivateMethod | BabelNodePrivateName | BabelNodeStaticBlock | BabelNodeImportAttribute | BabelNodeAnyTypeAnnotation | BabelNodeArrayTypeAnnotation | BabelNodeBooleanTypeAnnotation | BabelNodeBooleanLiteralTypeAnnotation | BabelNodeNullLiteralTypeAnnotation | BabelNodeClassImplements | BabelNodeDeclareClass | BabelNodeDeclareFunction | BabelNodeDeclareInterface | BabelNodeDeclareModule | BabelNodeDeclareModuleExports | BabelNodeDeclareTypeAlias | BabelNodeDeclareOpaqueType | BabelNodeDeclareVariable | BabelNodeDeclareExportDeclaration | BabelNodeDeclareExportAllDeclaration | BabelNodeDeclaredPredicate | BabelNodeExistsTypeAnnotation | BabelNodeFunctionTypeAnnotation | BabelNodeFunctionTypeParam | BabelNodeGenericTypeAnnotation | BabelNodeInferredPredicate | BabelNodeInterfaceExtends | BabelNodeInterfaceDeclaration | BabelNodeInterfaceTypeAnnotation | BabelNodeIntersectionTypeAnnotation | BabelNodeMixedTypeAnnotation | BabelNodeEmptyTypeAnnotation | BabelNodeNullableTypeAnnotation | BabelNodeNumberLiteralTypeAnnotation | BabelNodeNumberTypeAnnotation | BabelNodeObjectTypeAnnotation | BabelNodeObjectTypeInternalSlot | BabelNodeObjectTypeCallProperty | BabelNodeObjectTypeIndexer | BabelNodeObjectTypeProperty | BabelNodeObjectTypeSpreadProperty | BabelNodeOpaqueType | BabelNodeQualifiedTypeIdentifier | BabelNodeStringLiteralTypeAnnotation | BabelNodeStringTypeAnnotation | BabelNodeSymbolTypeAnnotation | BabelNodeThisTypeAnnotation | BabelNodeTupleTypeAnnotation | BabelNodeTypeofTypeAnnotation | BabelNodeTypeAlias | BabelNodeTypeAnnotation | BabelNodeTypeCastExpression | BabelNodeTypeParameter | BabelNodeTypeParameterDeclaration | BabelNodeTypeParameterInstantiation | BabelNodeUnionTypeAnnotation | BabelNodeVariance | BabelNodeVoidTypeAnnotation | BabelNodeEnumDeclaration | BabelNodeEnumBooleanBody | BabelNodeEnumNumberBody | BabelNodeEnumStringBody | BabelNodeEnumSymbolBody | BabelNodeEnumBooleanMember | BabelNodeEnumNumberMember | BabelNodeEnumStringMember | BabelNodeEnumDefaultedMember | BabelNodeIndexedAccessType | BabelNodeOptionalIndexedAccessType | BabelNodeJSXAttribute | BabelNodeJSXClosingElement | BabelNodeJSXElement | BabelNodeJSXEmptyExpression | BabelNodeJSXExpressionContainer | BabelNodeJSXSpreadChild | BabelNodeJSXIdentifier | BabelNodeJSXMemberExpression | BabelNodeJSXNamespacedName | BabelNodeJSXOpeningElement | BabelNodeJSXSpreadAttribute | BabelNodeJSXText | BabelNodeJSXFragment | BabelNodeJSXOpeningFragment | BabelNodeJSXClosingFragment | BabelNodeNoop | BabelNodePlaceholder | BabelNodeV8IntrinsicIdentifier | BabelNodeArgumentPlaceholder | BabelNodeBindExpression | BabelNodeDecorator | BabelNodeDoExpression | BabelNodeExportDefaultSpecifier | BabelNodeRecordExpression | BabelNodeTupleExpression | BabelNodeDecimalLiteral | BabelNodeModuleExpression | BabelNodeTopicReference | BabelNodePipelineTopicExpression | BabelNodePipelineBareFunction | BabelNodePipelinePrimaryTopicReference | BabelNodeVoidPattern | BabelNodeTSParameterProperty | BabelNodeTSDeclareFunction | BabelNodeTSDeclareMethod | BabelNodeTSQualifiedName | BabelNodeTSCallSignatureDeclaration | BabelNodeTSConstructSignatureDeclaration | BabelNodeTSPropertySignature | BabelNodeTSMethodSignature | BabelNodeTSIndexSignature | BabelNodeTSAnyKeyword | BabelNodeTSBooleanKeyword | BabelNodeTSBigIntKeyword | BabelNodeTSIntrinsicKeyword | BabelNodeTSNeverKeyword | BabelNodeTSNullKeyword | BabelNodeTSNumberKeyword | BabelNodeTSObjectKeyword | BabelNodeTSStringKeyword | BabelNodeTSSymbolKeyword | BabelNodeTSUndefinedKeyword | BabelNodeTSUnknownKeyword | BabelNodeTSVoidKeyword | BabelNodeTSThisType | BabelNodeTSFunctionType | BabelNodeTSConstructorType | BabelNodeTSTypeReference | BabelNodeTSTypePredicate | BabelNodeTSTypeQuery | BabelNodeTSTypeLiteral | BabelNodeTSArrayType | BabelNodeTSTupleType | BabelNodeTSOptionalType | BabelNodeTSRestType | BabelNodeTSNamedTupleMember | BabelNodeTSUnionType | BabelNodeTSIntersectionType | BabelNodeTSConditionalType | BabelNodeTSInferType | BabelNodeTSParenthesizedType | BabelNodeTSTypeOperator | BabelNodeTSIndexedAccessType | BabelNodeTSMappedType | BabelNodeTSTemplateLiteralType | BabelNodeTSLiteralType | BabelNodeTSExpressionWithTypeArguments | BabelNodeTSInterfaceDeclaration | BabelNodeTSInterfaceBody | BabelNodeTSTypeAliasDeclaration | BabelNodeTSInstantiationExpression | BabelNodeTSAsExpression | BabelNodeTSSatisfiesExpression | BabelNodeTSTypeAssertion | BabelNodeTSEnumBody | BabelNodeTSEnumDeclaration | BabelNodeTSEnumMember | BabelNodeTSModuleDeclaration | BabelNodeTSModuleBlock | BabelNodeTSImportType | BabelNodeTSImportEqualsDeclaration | BabelNodeTSExternalModuleReference | BabelNodeTSNonNullExpression | BabelNodeTSExportAssignment | BabelNodeTSNamespaceExportDeclaration | BabelNodeTSTypeAnnotation | BabelNodeTSTypeParameterInstantiation | BabelNodeTSTypeParameterDeclaration | BabelNodeTSTypeParameter;
+declare type BabelNodeStandardized = BabelNodeArrayExpression | BabelNodeAssignmentExpression | BabelNodeBinaryExpression | BabelNodeInterpreterDirective | BabelNodeDirective | BabelNodeDirectiveLiteral | BabelNodeBlockStatement | BabelNodeBreakStatement | BabelNodeCallExpression | BabelNodeCatchClause | BabelNodeConditionalExpression | BabelNodeContinueStatement | BabelNodeDebuggerStatement | BabelNodeDoWhileStatement | BabelNodeEmptyStatement | BabelNodeExpressionStatement | BabelNodeFile | BabelNodeForInStatement | BabelNodeForStatement | BabelNodeFunctionDeclaration | BabelNodeFunctionExpression | BabelNodeIdentifier | BabelNodeIfStatement | BabelNodeLabeledStatement | BabelNodeStringLiteral | BabelNodeNumericLiteral | BabelNodeNullLiteral | BabelNodeBooleanLiteral | BabelNodeRegExpLiteral | BabelNodeLogicalExpression | BabelNodeMemberExpression | BabelNodeNewExpression | BabelNodeProgram | BabelNodeObjectExpression | BabelNodeObjectMethod | BabelNodeObjectProperty | BabelNodeRestElement | BabelNodeReturnStatement | BabelNodeSequenceExpression | BabelNodeParenthesizedExpression | BabelNodeSwitchCase | BabelNodeSwitchStatement | BabelNodeThisExpression | BabelNodeThrowStatement | BabelNodeTryStatement | BabelNodeUnaryExpression | BabelNodeUpdateExpression | BabelNodeVariableDeclaration | BabelNodeVariableDeclarator | BabelNodeWhileStatement | BabelNodeWithStatement | BabelNodeAssignmentPattern | BabelNodeArrayPattern | BabelNodeArrowFunctionExpression | BabelNodeClassBody | BabelNodeClassExpression | BabelNodeClassDeclaration | BabelNodeExportAllDeclaration | BabelNodeExportDefaultDeclaration | BabelNodeExportNamedDeclaration | BabelNodeExportSpecifier | BabelNodeForOfStatement | BabelNodeImportDeclaration | BabelNodeImportDefaultSpecifier | BabelNodeImportNamespaceSpecifier | BabelNodeImportSpecifier | BabelNodeImportExpression | BabelNodeMetaProperty | BabelNodeClassMethod | BabelNodeObjectPattern | BabelNodeSpreadElement | BabelNodeSuper | BabelNodeTaggedTemplateExpression | BabelNodeTemplateElement | BabelNodeTemplateLiteral | BabelNodeYieldExpression | BabelNodeAwaitExpression | BabelNodeImport | BabelNodeBigIntLiteral | BabelNodeExportNamespaceSpecifier | BabelNodeOptionalMemberExpression | BabelNodeOptionalCallExpression | BabelNodeClassProperty | BabelNodeClassAccessorProperty | BabelNodeClassPrivateProperty | BabelNodeClassPrivateMethod | BabelNodePrivateName | BabelNodeStaticBlock | BabelNodeImportAttribute;
 declare type BabelNodeExpression = BabelNodeArrayExpression | BabelNodeAssignmentExpression | BabelNodeBinaryExpression | BabelNodeCallExpression | BabelNodeConditionalExpression | BabelNodeFunctionExpression | BabelNodeIdentifier | BabelNodeStringLiteral | BabelNodeNumericLiteral | BabelNodeNullLiteral | BabelNodeBooleanLiteral | BabelNodeRegExpLiteral | BabelNodeLogicalExpression | BabelNodeMemberExpression | BabelNodeNewExpression | BabelNodeObjectExpression | BabelNodeSequenceExpression | BabelNodeParenthesizedExpression | BabelNodeThisExpression | BabelNodeUnaryExpression | BabelNodeUpdateExpression | BabelNodeArrowFunctionExpression | BabelNodeClassExpression | BabelNodeImportExpression | BabelNodeMetaProperty | BabelNodeSuper | BabelNodeTaggedTemplateExpression | BabelNodeTemplateLiteral | BabelNodeYieldExpression | BabelNodeAwaitExpression | BabelNodeImport | BabelNodeBigIntLiteral | BabelNodeOptionalMemberExpression | BabelNodeOptionalCallExpression | BabelNodeTypeCastExpression | BabelNodeJSXElement | BabelNodeJSXFragment | BabelNodeBindExpression | BabelNodeDoExpression | BabelNodeRecordExpression | BabelNodeTupleExpression | BabelNodeDecimalLiteral | BabelNodeModuleExpression | BabelNodeTopicReference | BabelNodePipelineTopicExpression | BabelNodePipelineBareFunction | BabelNodePipelinePrimaryTopicReference | BabelNodeTSInstantiationExpression | BabelNodeTSAsExpression | BabelNodeTSSatisfiesExpression | BabelNodeTSTypeAssertion | BabelNodeTSNonNullExpression;
 declare type BabelNodeBinary = BabelNodeBinaryExpression | BabelNodeLogicalExpression;
 declare type BabelNodeScopable = BabelNodeBlockStatement | BabelNodeCatchClause | BabelNodeDoWhileStatement | BabelNodeForInStatement | BabelNodeForStatement | BabelNodeFunctionDeclaration | BabelNodeFunctionExpression | BabelNodeProgram | BabelNodeObjectMethod | BabelNodeSwitchStatement | BabelNodeWhileStatement | BabelNodeArrowFunctionExpression | BabelNodeClassExpression | BabelNodeClassDeclaration | BabelNodeForOfStatement | BabelNodeClassMethod | BabelNodeClassPrivateMethod | BabelNodeStaticBlock | BabelNodeTSModuleBlock;
@@ -3209,7 +3219,8 @@ declare type BabelNodeFunction = BabelNodeFunctionDeclaration | BabelNodeFunctio
 declare type BabelNodeFunctionParent = BabelNodeFunctionDeclaration | BabelNodeFunctionExpression | BabelNodeObjectMethod | BabelNodeArrowFunctionExpression | BabelNodeClassMethod | BabelNodeClassPrivateMethod | BabelNodeStaticBlock | BabelNodeTSModuleBlock;
 declare type BabelNodePureish = BabelNodeFunctionDeclaration | BabelNodeFunctionExpression | BabelNodeStringLiteral | BabelNodeNumericLiteral | BabelNodeNullLiteral | BabelNodeBooleanLiteral | BabelNodeRegExpLiteral | BabelNodeArrowFunctionExpression | BabelNodeBigIntLiteral | BabelNodeDecimalLiteral;
 declare type BabelNodeDeclaration = BabelNodeFunctionDeclaration | BabelNodeVariableDeclaration | BabelNodeClassDeclaration | BabelNodeExportAllDeclaration | BabelNodeExportDefaultDeclaration | BabelNodeExportNamedDeclaration | BabelNodeImportDeclaration | BabelNodeDeclareClass | BabelNodeDeclareFunction | BabelNodeDeclareInterface | BabelNodeDeclareModule | BabelNodeDeclareModuleExports | BabelNodeDeclareTypeAlias | BabelNodeDeclareOpaqueType | BabelNodeDeclareVariable | BabelNodeDeclareExportDeclaration | BabelNodeDeclareExportAllDeclaration | BabelNodeInterfaceDeclaration | BabelNodeOpaqueType | BabelNodeTypeAlias | BabelNodeEnumDeclaration | BabelNodeTSDeclareFunction | BabelNodeTSInterfaceDeclaration | BabelNodeTSTypeAliasDeclaration | BabelNodeTSEnumDeclaration | BabelNodeTSModuleDeclaration | BabelNodeTSImportEqualsDeclaration;
-declare type BabelNodePatternLike = BabelNodeIdentifier | BabelNodeRestElement | BabelNodeAssignmentPattern | BabelNodeArrayPattern | BabelNodeObjectPattern | BabelNodeTSAsExpression | BabelNodeTSSatisfiesExpression | BabelNodeTSTypeAssertion | BabelNodeTSNonNullExpression;
+declare type BabelNodeFunctionParameter = BabelNodeIdentifier | BabelNodeRestElement | BabelNodeAssignmentPattern | BabelNodeArrayPattern | BabelNodeObjectPattern | BabelNodeVoidPattern;
+declare type BabelNodePatternLike = BabelNodeIdentifier | BabelNodeMemberExpression | BabelNodeRestElement | BabelNodeAssignmentPattern | BabelNodeArrayPattern | BabelNodeObjectPattern | BabelNodeVoidPattern | BabelNodeTSAsExpression | BabelNodeTSSatisfiesExpression | BabelNodeTSTypeAssertion | BabelNodeTSNonNullExpression;
 declare type BabelNodeLVal = BabelNodeIdentifier | BabelNodeMemberExpression | BabelNodeRestElement | BabelNodeAssignmentPattern | BabelNodeArrayPattern | BabelNodeObjectPattern | BabelNodeTSParameterProperty | BabelNodeTSAsExpression | BabelNodeTSSatisfiesExpression | BabelNodeTSTypeAssertion | BabelNodeTSNonNullExpression;
 declare type BabelNodeTSEntityName = BabelNodeIdentifier | BabelNodeTSQualifiedName;
 declare type BabelNodeLiteral = BabelNodeStringLiteral | BabelNodeNumericLiteral | BabelNodeNullLiteral | BabelNodeBooleanLiteral | BabelNodeRegExpLiteral | BabelNodeTemplateLiteral | BabelNodeBigIntLiteral | BabelNodeDecimalLiteral;
@@ -3219,7 +3230,7 @@ declare type BabelNodeMethod = BabelNodeObjectMethod | BabelNodeClassMethod | Ba
 declare type BabelNodeObjectMember = BabelNodeObjectMethod | BabelNodeObjectProperty;
 declare type BabelNodeProperty = BabelNodeObjectProperty | BabelNodeClassProperty | BabelNodeClassAccessorProperty | BabelNodeClassPrivateProperty;
 declare type BabelNodeUnaryLike = BabelNodeUnaryExpression | BabelNodeSpreadElement;
-declare type BabelNodePattern = BabelNodeAssignmentPattern | BabelNodeArrayPattern | BabelNodeObjectPattern;
+declare type BabelNodePattern = BabelNodeAssignmentPattern | BabelNodeArrayPattern | BabelNodeObjectPattern | BabelNodeVoidPattern;
 declare type BabelNodeClass = BabelNodeClassExpression | BabelNodeClassDeclaration;
 declare type BabelNodeImportOrExportDeclaration = BabelNodeExportAllDeclaration | BabelNodeExportDefaultDeclaration | BabelNodeExportNamedDeclaration | BabelNodeImportDeclaration;
 declare type BabelNodeExportDeclaration = BabelNodeExportAllDeclaration | BabelNodeExportDefaultDeclaration | BabelNodeExportNamedDeclaration;
@@ -3261,8 +3272,8 @@ declare module "@babel/types" {
   declare export function file(program: BabelNodeProgram, comments?: Array<BabelNodeCommentBlock | BabelNodeCommentLine>, tokens?: Array<any>): BabelNodeFile;
   declare export function forInStatement(left: BabelNodeVariableDeclaration | BabelNodeLVal, right: BabelNodeExpression, body: BabelNodeStatement): BabelNodeForInStatement;
   declare export function forStatement(init?: BabelNodeVariableDeclaration | BabelNodeExpression, test?: BabelNodeExpression, update?: BabelNodeExpression, body: BabelNodeStatement): BabelNodeForStatement;
-  declare export function functionDeclaration(id?: BabelNodeIdentifier, params: Array<BabelNodeIdentifier | BabelNodePattern | BabelNodeRestElement>, body: BabelNodeBlockStatement, generator?: boolean, async?: boolean): BabelNodeFunctionDeclaration;
-  declare export function functionExpression(id?: BabelNodeIdentifier, params: Array<BabelNodeIdentifier | BabelNodePattern | BabelNodeRestElement>, body: BabelNodeBlockStatement, generator?: boolean, async?: boolean): BabelNodeFunctionExpression;
+  declare export function functionDeclaration(id?: BabelNodeIdentifier, params: Array<BabelNodeFunctionParameter>, body: BabelNodeBlockStatement, generator?: boolean, async?: boolean): BabelNodeFunctionDeclaration;
+  declare export function functionExpression(id?: BabelNodeIdentifier, params: Array<BabelNodeFunctionParameter>, body: BabelNodeBlockStatement, generator?: boolean, async?: boolean): BabelNodeFunctionExpression;
   declare export function identifier(name: string): BabelNodeIdentifier;
   declare export function ifStatement(test: BabelNodeExpression, consequent: BabelNodeStatement, alternate?: BabelNodeStatement): BabelNodeIfStatement;
   declare export function labeledStatement(label: BabelNodeIdentifier, body: BabelNodeStatement): BabelNodeLabeledStatement;
@@ -3276,9 +3287,9 @@ declare module "@babel/types" {
   declare export function newExpression(callee: BabelNodeExpression | BabelNodeSuper | BabelNodeV8IntrinsicIdentifier, _arguments: Array<BabelNodeExpression | BabelNodeSpreadElement | BabelNodeArgumentPlaceholder>): BabelNodeNewExpression;
   declare export function program(body: Array<BabelNodeStatement>, directives?: Array<BabelNodeDirective>, sourceType?: "script" | "module", interpreter?: BabelNodeInterpreterDirective): BabelNodeProgram;
   declare export function objectExpression(properties: Array<BabelNodeObjectMethod | BabelNodeObjectProperty | BabelNodeSpreadElement>): BabelNodeObjectExpression;
-  declare export function objectMethod(kind?: "method" | "get" | "set", key: BabelNodeExpression | BabelNodeIdentifier | BabelNodeStringLiteral | BabelNodeNumericLiteral | BabelNodeBigIntLiteral, params: Array<BabelNodeIdentifier | BabelNodePattern | BabelNodeRestElement>, body: BabelNodeBlockStatement, computed?: boolean, generator?: boolean, async?: boolean): BabelNodeObjectMethod;
+  declare export function objectMethod(kind?: "method" | "get" | "set", key: BabelNodeExpression | BabelNodeIdentifier | BabelNodeStringLiteral | BabelNodeNumericLiteral | BabelNodeBigIntLiteral, params: Array<BabelNodeFunctionParameter>, body: BabelNodeBlockStatement, computed?: boolean, generator?: boolean, async?: boolean): BabelNodeObjectMethod;
   declare export function objectProperty(key: BabelNodeExpression | BabelNodeIdentifier | BabelNodeStringLiteral | BabelNodeNumericLiteral | BabelNodeBigIntLiteral | BabelNodeDecimalLiteral | BabelNodePrivateName, value: BabelNodeExpression | BabelNodePatternLike, computed?: boolean, shorthand?: boolean, decorators?: Array<BabelNodeDecorator>): BabelNodeObjectProperty;
-  declare export function restElement(argument: BabelNodeLVal): BabelNodeRestElement;
+  declare export function restElement(argument: BabelNodeIdentifier | BabelNodeArrayPattern | BabelNodeObjectPattern | BabelNodeMemberExpression | BabelNodeTSAsExpression | BabelNodeTSSatisfiesExpression | BabelNodeTSTypeAssertion | BabelNodeTSNonNullExpression | BabelNodeRestElement | BabelNodeAssignmentPattern): BabelNodeRestElement;
   declare export function returnStatement(argument?: BabelNodeExpression): BabelNodeReturnStatement;
   declare export function sequenceExpression(expressions: Array<BabelNodeExpression>): BabelNodeSequenceExpression;
   declare export function parenthesizedExpression(expression: BabelNodeExpression): BabelNodeParenthesizedExpression;
@@ -3290,27 +3301,27 @@ declare module "@babel/types" {
   declare export function unaryExpression(operator: "void" | "throw" | "delete" | "!" | "+" | "-" | "~" | "typeof", argument: BabelNodeExpression, prefix?: boolean): BabelNodeUnaryExpression;
   declare export function updateExpression(operator: "++" | "--", argument: BabelNodeExpression, prefix?: boolean): BabelNodeUpdateExpression;
   declare export function variableDeclaration(kind: "var" | "let" | "const" | "using" | "await using", declarations: Array<BabelNodeVariableDeclarator>): BabelNodeVariableDeclaration;
-  declare export function variableDeclarator(id: BabelNodeLVal, init?: BabelNodeExpression): BabelNodeVariableDeclarator;
+  declare export function variableDeclarator(id: BabelNodeLVal | BabelNodeVoidPattern, init?: BabelNodeExpression): BabelNodeVariableDeclarator;
   declare export function whileStatement(test: BabelNodeExpression, body: BabelNodeStatement): BabelNodeWhileStatement;
   declare export function withStatement(object: BabelNodeExpression, body: BabelNodeStatement): BabelNodeWithStatement;
   declare export function assignmentPattern(left: BabelNodeIdentifier | BabelNodeObjectPattern | BabelNodeArrayPattern | BabelNodeMemberExpression | BabelNodeTSAsExpression | BabelNodeTSSatisfiesExpression | BabelNodeTSTypeAssertion | BabelNodeTSNonNullExpression, right: BabelNodeExpression): BabelNodeAssignmentPattern;
-  declare export function arrayPattern(elements: Array<null | BabelNodePatternLike | BabelNodeLVal>): BabelNodeArrayPattern;
-  declare export function arrowFunctionExpression(params: Array<BabelNodeIdentifier | BabelNodePattern | BabelNodeRestElement>, body: BabelNodeBlockStatement | BabelNodeExpression, async?: boolean): BabelNodeArrowFunctionExpression;
+  declare export function arrayPattern(elements: Array<null | BabelNodePatternLike>): BabelNodeArrayPattern;
+  declare export function arrowFunctionExpression(params: Array<BabelNodeFunctionParameter>, body: BabelNodeBlockStatement | BabelNodeExpression, async?: boolean): BabelNodeArrowFunctionExpression;
   declare export function classBody(body: Array<BabelNodeClassMethod | BabelNodeClassPrivateMethod | BabelNodeClassProperty | BabelNodeClassPrivateProperty | BabelNodeClassAccessorProperty | BabelNodeTSDeclareMethod | BabelNodeTSIndexSignature | BabelNodeStaticBlock>): BabelNodeClassBody;
   declare export function classExpression(id?: BabelNodeIdentifier, superClass?: BabelNodeExpression, body: BabelNodeClassBody, decorators?: Array<BabelNodeDecorator>): BabelNodeClassExpression;
   declare export function classDeclaration(id?: BabelNodeIdentifier, superClass?: BabelNodeExpression, body: BabelNodeClassBody, decorators?: Array<BabelNodeDecorator>): BabelNodeClassDeclaration;
-  declare export function exportAllDeclaration(source: BabelNodeStringLiteral): BabelNodeExportAllDeclaration;
+  declare export function exportAllDeclaration(source: BabelNodeStringLiteral, attributes?: Array<BabelNodeImportAttribute>): BabelNodeExportAllDeclaration;
   declare export function exportDefaultDeclaration(declaration: BabelNodeTSDeclareFunction | BabelNodeFunctionDeclaration | BabelNodeClassDeclaration | BabelNodeExpression): BabelNodeExportDefaultDeclaration;
-  declare export function exportNamedDeclaration(declaration?: BabelNodeDeclaration, specifiers?: Array<BabelNodeExportSpecifier | BabelNodeExportDefaultSpecifier | BabelNodeExportNamespaceSpecifier>, source?: BabelNodeStringLiteral): BabelNodeExportNamedDeclaration;
+  declare export function exportNamedDeclaration(declaration?: BabelNodeDeclaration, specifiers?: Array<BabelNodeExportSpecifier | BabelNodeExportDefaultSpecifier | BabelNodeExportNamespaceSpecifier>, source?: BabelNodeStringLiteral, attributes?: Array<BabelNodeImportAttribute>): BabelNodeExportNamedDeclaration;
   declare export function exportSpecifier(local: BabelNodeIdentifier, exported: BabelNodeIdentifier | BabelNodeStringLiteral): BabelNodeExportSpecifier;
   declare export function forOfStatement(left: BabelNodeVariableDeclaration | BabelNodeLVal, right: BabelNodeExpression, body: BabelNodeStatement, _await?: boolean): BabelNodeForOfStatement;
-  declare export function importDeclaration(specifiers: Array<BabelNodeImportSpecifier | BabelNodeImportDefaultSpecifier | BabelNodeImportNamespaceSpecifier>, source: BabelNodeStringLiteral): BabelNodeImportDeclaration;
+  declare export function importDeclaration(specifiers: Array<BabelNodeImportSpecifier | BabelNodeImportDefaultSpecifier | BabelNodeImportNamespaceSpecifier>, source: BabelNodeStringLiteral, attributes?: Array<BabelNodeImportAttribute>): BabelNodeImportDeclaration;
   declare export function importDefaultSpecifier(local: BabelNodeIdentifier): BabelNodeImportDefaultSpecifier;
   declare export function importNamespaceSpecifier(local: BabelNodeIdentifier): BabelNodeImportNamespaceSpecifier;
   declare export function importSpecifier(local: BabelNodeIdentifier, imported: BabelNodeIdentifier | BabelNodeStringLiteral): BabelNodeImportSpecifier;
   declare export function importExpression(source: BabelNodeExpression, options?: BabelNodeExpression): BabelNodeImportExpression;
   declare export function metaProperty(meta: BabelNodeIdentifier, property: BabelNodeIdentifier): BabelNodeMetaProperty;
-  declare export function classMethod(kind?: "get" | "set" | "method" | "constructor", key: BabelNodeIdentifier | BabelNodeStringLiteral | BabelNodeNumericLiteral | BabelNodeBigIntLiteral | BabelNodeExpression, params: Array<BabelNodeIdentifier | BabelNodePattern | BabelNodeRestElement | BabelNodeTSParameterProperty>, body: BabelNodeBlockStatement, computed?: boolean, _static?: boolean, generator?: boolean, async?: boolean): BabelNodeClassMethod;
+  declare export function classMethod(kind?: "get" | "set" | "method" | "constructor", key: BabelNodeIdentifier | BabelNodeStringLiteral | BabelNodeNumericLiteral | BabelNodeBigIntLiteral | BabelNodeExpression, params: Array<BabelNodeFunctionParameter | BabelNodeTSParameterProperty>, body: BabelNodeBlockStatement, computed?: boolean, _static?: boolean, generator?: boolean, async?: boolean): BabelNodeClassMethod;
   declare export function objectPattern(properties: Array<BabelNodeRestElement | BabelNodeObjectProperty>): BabelNodeObjectPattern;
   declare export function spreadElement(argument: BabelNodeExpression): BabelNodeSpreadElement;
   declare var _super: () => BabelNodeSuper;
@@ -3329,9 +3340,10 @@ declare module "@babel/types" {
   declare export function classProperty(key: BabelNodeIdentifier | BabelNodeStringLiteral | BabelNodeNumericLiteral | BabelNodeBigIntLiteral | BabelNodeExpression, value?: BabelNodeExpression, typeAnnotation?: BabelNodeTypeAnnotation | BabelNodeTSTypeAnnotation | BabelNodeNoop, decorators?: Array<BabelNodeDecorator>, computed?: boolean, _static?: boolean): BabelNodeClassProperty;
   declare export function classAccessorProperty(key: BabelNodeIdentifier | BabelNodeStringLiteral | BabelNodeNumericLiteral | BabelNodeBigIntLiteral | BabelNodeExpression | BabelNodePrivateName, value?: BabelNodeExpression, typeAnnotation?: BabelNodeTypeAnnotation | BabelNodeTSTypeAnnotation | BabelNodeNoop, decorators?: Array<BabelNodeDecorator>, computed?: boolean, _static?: boolean): BabelNodeClassAccessorProperty;
   declare export function classPrivateProperty(key: BabelNodePrivateName, value?: BabelNodeExpression, decorators?: Array<BabelNodeDecorator>, _static?: boolean): BabelNodeClassPrivateProperty;
-  declare export function classPrivateMethod(kind?: "get" | "set" | "method", key: BabelNodePrivateName, params: Array<BabelNodeIdentifier | BabelNodePattern | BabelNodeRestElement | BabelNodeTSParameterProperty>, body: BabelNodeBlockStatement, _static?: boolean): BabelNodeClassPrivateMethod;
+  declare export function classPrivateMethod(kind?: "get" | "set" | "method", key: BabelNodePrivateName, params: Array<BabelNodeFunctionParameter | BabelNodeTSParameterProperty>, body: BabelNodeBlockStatement, _static?: boolean): BabelNodeClassPrivateMethod;
   declare export function privateName(id: BabelNodeIdentifier): BabelNodePrivateName;
   declare export function staticBlock(body: Array<BabelNodeStatement>): BabelNodeStaticBlock;
+  declare export function importAttribute(key: BabelNodeIdentifier | BabelNodeStringLiteral, value: BabelNodeStringLiteral): BabelNodeImportAttribute;
   declare export function anyTypeAnnotation(): BabelNodeAnyTypeAnnotation;
   declare export function arrayTypeAnnotation(elementType: BabelNodeFlowType): BabelNodeArrayTypeAnnotation;
   declare export function booleanTypeAnnotation(): BabelNodeBooleanTypeAnnotation;
@@ -3417,7 +3429,6 @@ declare module "@babel/types" {
   declare export function v8IntrinsicIdentifier(name: string): BabelNodeV8IntrinsicIdentifier;
   declare export function argumentPlaceholder(): BabelNodeArgumentPlaceholder;
   declare export function bindExpression(object: BabelNodeExpression, callee: BabelNodeExpression): BabelNodeBindExpression;
-  declare export function importAttribute(key: BabelNodeIdentifier | BabelNodeStringLiteral, value: BabelNodeStringLiteral): BabelNodeImportAttribute;
   declare export function decorator(expression: BabelNodeExpression): BabelNodeDecorator;
   declare export function doExpression(body: BabelNodeBlockStatement, async?: boolean): BabelNodeDoExpression;
   declare export function exportDefaultSpecifier(exported: BabelNodeIdentifier): BabelNodeExportDefaultSpecifier;
@@ -3429,9 +3440,10 @@ declare module "@babel/types" {
   declare export function pipelineTopicExpression(expression: BabelNodeExpression): BabelNodePipelineTopicExpression;
   declare export function pipelineBareFunction(callee: BabelNodeExpression): BabelNodePipelineBareFunction;
   declare export function pipelinePrimaryTopicReference(): BabelNodePipelinePrimaryTopicReference;
+  declare export function voidPattern(): BabelNodeVoidPattern;
   declare export function tsParameterProperty(parameter: BabelNodeIdentifier | BabelNodeAssignmentPattern): BabelNodeTSParameterProperty;
-  declare export function tsDeclareFunction(id?: BabelNodeIdentifier, typeParameters?: BabelNodeTSTypeParameterDeclaration | BabelNodeNoop, params: Array<BabelNodeIdentifier | BabelNodePattern | BabelNodeRestElement>, returnType?: BabelNodeTSTypeAnnotation | BabelNodeNoop): BabelNodeTSDeclareFunction;
-  declare export function tsDeclareMethod(decorators?: Array<BabelNodeDecorator>, key: BabelNodeIdentifier | BabelNodeStringLiteral | BabelNodeNumericLiteral | BabelNodeBigIntLiteral | BabelNodeExpression, typeParameters?: BabelNodeTSTypeParameterDeclaration | BabelNodeNoop, params: Array<BabelNodeIdentifier | BabelNodePattern | BabelNodeRestElement | BabelNodeTSParameterProperty>, returnType?: BabelNodeTSTypeAnnotation | BabelNodeNoop): BabelNodeTSDeclareMethod;
+  declare export function tsDeclareFunction(id?: BabelNodeIdentifier, typeParameters?: BabelNodeTSTypeParameterDeclaration | BabelNodeNoop, params: Array<BabelNodeFunctionParameter>, returnType?: BabelNodeTSTypeAnnotation | BabelNodeNoop): BabelNodeTSDeclareFunction;
+  declare export function tsDeclareMethod(decorators?: Array<BabelNodeDecorator>, key: BabelNodeIdentifier | BabelNodeStringLiteral | BabelNodeNumericLiteral | BabelNodeBigIntLiteral | BabelNodeExpression, typeParameters?: BabelNodeTSTypeParameterDeclaration | BabelNodeNoop, params: Array<BabelNodeFunctionParameter | BabelNodeTSParameterProperty>, returnType?: BabelNodeTSTypeAnnotation | BabelNodeNoop): BabelNodeTSDeclareMethod;
   declare export function tsQualifiedName(left: BabelNodeTSEntityName, right: BabelNodeIdentifier): BabelNodeTSQualifiedName;
   declare export function tsCallSignatureDeclaration(typeParameters?: BabelNodeTSTypeParameterDeclaration, parameters: Array<BabelNodeArrayPattern | BabelNodeIdentifier | BabelNodeObjectPattern | BabelNodeRestElement>, typeAnnotation?: BabelNodeTSTypeAnnotation): BabelNodeTSCallSignatureDeclaration;
   declare export function tsConstructSignatureDeclaration(typeParameters?: BabelNodeTSTypeParameterDeclaration, parameters: Array<BabelNodeArrayPattern | BabelNodeIdentifier | BabelNodeObjectPattern | BabelNodeRestElement>, typeAnnotation?: BabelNodeTSTypeAnnotation): BabelNodeTSConstructSignatureDeclaration;
@@ -3468,7 +3480,7 @@ declare module "@babel/types" {
   declare export function tsConditionalType(checkType: BabelNodeTSType, extendsType: BabelNodeTSType, trueType: BabelNodeTSType, falseType: BabelNodeTSType): BabelNodeTSConditionalType;
   declare export function tsInferType(typeParameter: BabelNodeTSTypeParameter): BabelNodeTSInferType;
   declare export function tsParenthesizedType(typeAnnotation: BabelNodeTSType): BabelNodeTSParenthesizedType;
-  declare export function tsTypeOperator(typeAnnotation: BabelNodeTSType): BabelNodeTSTypeOperator;
+  declare export function tsTypeOperator(typeAnnotation: BabelNodeTSType, operator?: string): BabelNodeTSTypeOperator;
   declare export function tsIndexedAccessType(objectType: BabelNodeTSType, indexType: BabelNodeTSType): BabelNodeTSIndexedAccessType;
   declare export function tsMappedType(typeParameter: BabelNodeTSTypeParameter, typeAnnotation?: BabelNodeTSType, nameType?: BabelNodeTSType): BabelNodeTSMappedType;
   declare export function tsTemplateLiteralType(quasis: Array<BabelNodeTemplateElement>, types: Array<BabelNodeTSType>): BabelNodeTSTemplateLiteralType;
@@ -3584,6 +3596,7 @@ declare module "@babel/types" {
   declare export function isClassPrivateMethod(node: ?Object, opts?: ?Object): node is ClassPrivateMethod;
   declare export function isPrivateName(node: ?Object, opts?: ?Object): node is PrivateName;
   declare export function isStaticBlock(node: ?Object, opts?: ?Object): node is StaticBlock;
+  declare export function isImportAttribute(node: ?Object, opts?: ?Object): node is ImportAttribute;
   declare export function isAnyTypeAnnotation(node: ?Object, opts?: ?Object): node is AnyTypeAnnotation;
   declare export function isArrayTypeAnnotation(node: ?Object, opts?: ?Object): node is ArrayTypeAnnotation;
   declare export function isBooleanTypeAnnotation(node: ?Object, opts?: ?Object): node is BooleanTypeAnnotation;
@@ -3669,7 +3682,6 @@ declare module "@babel/types" {
   declare export function isV8IntrinsicIdentifier(node: ?Object, opts?: ?Object): node is V8IntrinsicIdentifier;
   declare export function isArgumentPlaceholder(node: ?Object, opts?: ?Object): node is ArgumentPlaceholder;
   declare export function isBindExpression(node: ?Object, opts?: ?Object): node is BindExpression;
-  declare export function isImportAttribute(node: ?Object, opts?: ?Object): node is ImportAttribute;
   declare export function isDecorator(node: ?Object, opts?: ?Object): node is Decorator;
   declare export function isDoExpression(node: ?Object, opts?: ?Object): node is DoExpression;
   declare export function isExportDefaultSpecifier(node: ?Object, opts?: ?Object): node is ExportDefaultSpecifier;
@@ -3681,6 +3693,7 @@ declare module "@babel/types" {
   declare export function isPipelineTopicExpression(node: ?Object, opts?: ?Object): node is PipelineTopicExpression;
   declare export function isPipelineBareFunction(node: ?Object, opts?: ?Object): node is PipelineBareFunction;
   declare export function isPipelinePrimaryTopicReference(node: ?Object, opts?: ?Object): node is PipelinePrimaryTopicReference;
+  declare export function isVoidPattern(node: ?Object, opts?: ?Object): node is VoidPattern;
   declare export function isTSParameterProperty(node: ?Object, opts?: ?Object): node is TSParameterProperty;
   declare export function isTSDeclareFunction(node: ?Object, opts?: ?Object): node is TSDeclareFunction;
   declare export function isTSDeclareMethod(node: ?Object, opts?: ?Object): node is TSDeclareMethod;
@@ -3748,7 +3761,7 @@ declare module "@babel/types" {
   declare export function isTSTypeParameterInstantiation(node: ?Object, opts?: ?Object): node is TSTypeParameterInstantiation;
   declare export function isTSTypeParameterDeclaration(node: ?Object, opts?: ?Object): node is TSTypeParameterDeclaration;
   declare export function isTSTypeParameter(node: ?Object, opts?: ?Object): node is TSTypeParameter;
-  declare export function isStandardized(node: ?Object, opts?: ?Object): node is (ArrayExpression | AssignmentExpression | BinaryExpression | InterpreterDirective | Directive | DirectiveLiteral | BlockStatement | BreakStatement | CallExpression | CatchClause | ConditionalExpression | ContinueStatement | DebuggerStatement | DoWhileStatement | EmptyStatement | ExpressionStatement | File | ForInStatement | ForStatement | FunctionDeclaration | FunctionExpression | Identifier | IfStatement | LabeledStatement | StringLiteral | NumericLiteral | NullLiteral | BooleanLiteral | RegExpLiteral | LogicalExpression | MemberExpression | NewExpression | Program | ObjectExpression | ObjectMethod | ObjectProperty | RestElement | ReturnStatement | SequenceExpression | ParenthesizedExpression | SwitchCase | SwitchStatement | ThisExpression | ThrowStatement | TryStatement | UnaryExpression | UpdateExpression | VariableDeclaration | VariableDeclarator | WhileStatement | WithStatement | AssignmentPattern | ArrayPattern | ArrowFunctionExpression | ClassBody | ClassExpression | ClassDeclaration | ExportAllDeclaration | ExportDefaultDeclaration | ExportNamedDeclaration | ExportSpecifier | ForOfStatement | ImportDeclaration | ImportDefaultSpecifier | ImportNamespaceSpecifier | ImportSpecifier | ImportExpression | MetaProperty | ClassMethod | ObjectPattern | SpreadElement | Super | TaggedTemplateExpression | TemplateElement | TemplateLiteral | YieldExpression | AwaitExpression | Import | BigIntLiteral | ExportNamespaceSpecifier | OptionalMemberExpression | OptionalCallExpression | ClassProperty | ClassAccessorProperty | ClassPrivateProperty | ClassPrivateMethod | PrivateName | StaticBlock);
+  declare export function isStandardized(node: ?Object, opts?: ?Object): node is (ArrayExpression | AssignmentExpression | BinaryExpression | InterpreterDirective | Directive | DirectiveLiteral | BlockStatement | BreakStatement | CallExpression | CatchClause | ConditionalExpression | ContinueStatement | DebuggerStatement | DoWhileStatement | EmptyStatement | ExpressionStatement | File | ForInStatement | ForStatement | FunctionDeclaration | FunctionExpression | Identifier | IfStatement | LabeledStatement | StringLiteral | NumericLiteral | NullLiteral | BooleanLiteral | RegExpLiteral | LogicalExpression | MemberExpression | NewExpression | Program | ObjectExpression | ObjectMethod | ObjectProperty | RestElement | ReturnStatement | SequenceExpression | ParenthesizedExpression | SwitchCase | SwitchStatement | ThisExpression | ThrowStatement | TryStatement | UnaryExpression | UpdateExpression | VariableDeclaration | VariableDeclarator | WhileStatement | WithStatement | AssignmentPattern | ArrayPattern | ArrowFunctionExpression | ClassBody | ClassExpression | ClassDeclaration | ExportAllDeclaration | ExportDefaultDeclaration | ExportNamedDeclaration | ExportSpecifier | ForOfStatement | ImportDeclaration | ImportDefaultSpecifier | ImportNamespaceSpecifier | ImportSpecifier | ImportExpression | MetaProperty | ClassMethod | ObjectPattern | SpreadElement | Super | TaggedTemplateExpression | TemplateElement | TemplateLiteral | YieldExpression | AwaitExpression | Import | BigIntLiteral | ExportNamespaceSpecifier | OptionalMemberExpression | OptionalCallExpression | ClassProperty | ClassAccessorProperty | ClassPrivateProperty | ClassPrivateMethod | PrivateName | StaticBlock | ImportAttribute);
   declare export function isExpression(node: ?Object, opts?: ?Object): node is (ArrayExpression | AssignmentExpression | BinaryExpression | CallExpression | ConditionalExpression | FunctionExpression | Identifier | StringLiteral | NumericLiteral | NullLiteral | BooleanLiteral | RegExpLiteral | LogicalExpression | MemberExpression | NewExpression | ObjectExpression | SequenceExpression | ParenthesizedExpression | ThisExpression | UnaryExpression | UpdateExpression | ArrowFunctionExpression | ClassExpression | ImportExpression | MetaProperty | Super | TaggedTemplateExpression | TemplateLiteral | YieldExpression | AwaitExpression | Import | BigIntLiteral | OptionalMemberExpression | OptionalCallExpression | TypeCastExpression | JSXElement | JSXFragment | BindExpression | DoExpression | RecordExpression | TupleExpression | DecimalLiteral | ModuleExpression | TopicReference | PipelineTopicExpression | PipelineBareFunction | PipelinePrimaryTopicReference | TSInstantiationExpression | TSAsExpression | TSSatisfiesExpression | TSTypeAssertion | TSNonNullExpression);
   declare export function isBinary(node: ?Object, opts?: ?Object): node is (BinaryExpression | LogicalExpression);
   declare export function isScopable(node: ?Object, opts?: ?Object): node is (BlockStatement | CatchClause | DoWhileStatement | ForInStatement | ForStatement | FunctionDeclaration | FunctionExpression | Program | ObjectMethod | SwitchStatement | WhileStatement | ArrowFunctionExpression | ClassExpression | ClassDeclaration | ForOfStatement | ClassMethod | ClassPrivateMethod | StaticBlock | TSModuleBlock);
@@ -3767,7 +3780,8 @@ declare module "@babel/types" {
   declare export function isFunctionParent(node: ?Object, opts?: ?Object): node is (FunctionDeclaration | FunctionExpression | ObjectMethod | ArrowFunctionExpression | ClassMethod | ClassPrivateMethod | StaticBlock | TSModuleBlock);
   declare export function isPureish(node: ?Object, opts?: ?Object): node is (FunctionDeclaration | FunctionExpression | StringLiteral | NumericLiteral | NullLiteral | BooleanLiteral | RegExpLiteral | ArrowFunctionExpression | BigIntLiteral | DecimalLiteral);
   declare export function isDeclaration(node: ?Object, opts?: ?Object): node is (FunctionDeclaration | VariableDeclaration | ClassDeclaration | ExportAllDeclaration | ExportDefaultDeclaration | ExportNamedDeclaration | ImportDeclaration | DeclareClass | DeclareFunction | DeclareInterface | DeclareModule | DeclareModuleExports | DeclareTypeAlias | DeclareOpaqueType | DeclareVariable | DeclareExportDeclaration | DeclareExportAllDeclaration | InterfaceDeclaration | OpaqueType | TypeAlias | EnumDeclaration | TSDeclareFunction | TSInterfaceDeclaration | TSTypeAliasDeclaration | TSEnumDeclaration | TSModuleDeclaration | TSImportEqualsDeclaration);
-  declare export function isPatternLike(node: ?Object, opts?: ?Object): node is (Identifier | RestElement | AssignmentPattern | ArrayPattern | ObjectPattern | TSAsExpression | TSSatisfiesExpression | TSTypeAssertion | TSNonNullExpression);
+  declare export function isFunctionParameter(node: ?Object, opts?: ?Object): node is (Identifier | RestElement | AssignmentPattern | ArrayPattern | ObjectPattern | VoidPattern);
+  declare export function isPatternLike(node: ?Object, opts?: ?Object): node is (Identifier | MemberExpression | RestElement | AssignmentPattern | ArrayPattern | ObjectPattern | VoidPattern | TSAsExpression | TSSatisfiesExpression | TSTypeAssertion | TSNonNullExpression);
   declare export function isLVal(node: ?Object, opts?: ?Object): node is (Identifier | MemberExpression | RestElement | AssignmentPattern | ArrayPattern | ObjectPattern | TSParameterProperty | TSAsExpression | TSSatisfiesExpression | TSTypeAssertion | TSNonNullExpression);
   declare export function isTSEntityName(node: ?Object, opts?: ?Object): node is (Identifier | TSQualifiedName);
   declare export function isLiteral(node: ?Object, opts?: ?Object): node is (StringLiteral | NumericLiteral | NullLiteral | BooleanLiteral | RegExpLiteral | TemplateLiteral | BigIntLiteral | DecimalLiteral);
@@ -3777,7 +3791,7 @@ declare module "@babel/types" {
   declare export function isObjectMember(node: ?Object, opts?: ?Object): node is (ObjectMethod | ObjectProperty);
   declare export function isProperty(node: ?Object, opts?: ?Object): node is (ObjectProperty | ClassProperty | ClassAccessorProperty | ClassPrivateProperty);
   declare export function isUnaryLike(node: ?Object, opts?: ?Object): node is (UnaryExpression | SpreadElement);
-  declare export function isPattern(node: ?Object, opts?: ?Object): node is (AssignmentPattern | ArrayPattern | ObjectPattern);
+  declare export function isPattern(node: ?Object, opts?: ?Object): node is (AssignmentPattern | ArrayPattern | ObjectPattern | VoidPattern);
   declare export function isClass(node: ?Object, opts?: ?Object): node is (ClassExpression | ClassDeclaration);
   declare export function isImportOrExportDeclaration(node: ?Object, opts?: ?Object): node is (ExportAllDeclaration | ExportDefaultDeclaration | ExportNamedDeclaration | ImportDeclaration);
   declare export function isExportDeclaration(node: ?Object, opts?: ?Object): node is (ExportAllDeclaration | ExportDefaultDeclaration | ExportNamedDeclaration);
@@ -3846,7 +3860,7 @@ declare module "@babel/types" {
     enter?: TraversalHandler<T>,
     exit?: TraversalHandler<T>,
   };
-  declare export function traverse<T>(n: BabelNode, TraversalHandler<T> | TraversalHandlers<T>, state?: T): void;
+  declare export function traverse<T>(n: BabelNode, handler: TraversalHandler<T> | TraversalHandlers<T>, state?: T): void;
   declare export function traverseFast<T>(n: Node, h: TraversalHandler<T>, state?: T): void;
   declare export function shallowEqual(actual: Object, expected: Object): boolean
   declare export function buildMatchMemberExpression(match: string, allowPartial?: boolean): (?BabelNode) => boolean
@@ -3960,6 +3974,7 @@ declare module "@babel/types" {
   declare export type ClassPrivateMethod = BabelNodeClassPrivateMethod;
   declare export type PrivateName = BabelNodePrivateName;
   declare export type StaticBlock = BabelNodeStaticBlock;
+  declare export type ImportAttribute = BabelNodeImportAttribute;
   declare export type AnyTypeAnnotation = BabelNodeAnyTypeAnnotation;
   declare export type ArrayTypeAnnotation = BabelNodeArrayTypeAnnotation;
   declare export type BooleanTypeAnnotation = BabelNodeBooleanTypeAnnotation;
@@ -4045,7 +4060,6 @@ declare module "@babel/types" {
   declare export type V8IntrinsicIdentifier = BabelNodeV8IntrinsicIdentifier;
   declare export type ArgumentPlaceholder = BabelNodeArgumentPlaceholder;
   declare export type BindExpression = BabelNodeBindExpression;
-  declare export type ImportAttribute = BabelNodeImportAttribute;
   declare export type Decorator = BabelNodeDecorator;
   declare export type DoExpression = BabelNodeDoExpression;
   declare export type ExportDefaultSpecifier = BabelNodeExportDefaultSpecifier;
@@ -4057,6 +4071,7 @@ declare module "@babel/types" {
   declare export type PipelineTopicExpression = BabelNodePipelineTopicExpression;
   declare export type PipelineBareFunction = BabelNodePipelineBareFunction;
   declare export type PipelinePrimaryTopicReference = BabelNodePipelinePrimaryTopicReference;
+  declare export type VoidPattern = BabelNodeVoidPattern;
   declare export type TSParameterProperty = BabelNodeTSParameterProperty;
   declare export type TSDeclareFunction = BabelNodeTSDeclareFunction;
   declare export type TSDeclareMethod = BabelNodeTSDeclareMethod;
@@ -4143,6 +4158,7 @@ declare module "@babel/types" {
   declare export type FunctionParent = BabelNodeFunctionParent;
   declare export type Pureish = BabelNodePureish;
   declare export type Declaration = BabelNodeDeclaration;
+  declare export type FunctionParameter = BabelNodeFunctionParameter;
   declare export type PatternLike = BabelNodePatternLike;
   declare export type LVal = BabelNodeLVal;
   declare export type TSEntityName = BabelNodeTSEntityName;

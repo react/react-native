@@ -38,7 +38,7 @@ const MEMORY_LIMITS_KB = {
   },
 };
 
-function limitFor(scenario: $Keys<typeof MEMORY_LIMITS_KB>): number {
+function limitFor(scenario: keyof typeof MEMORY_LIMITS_KB): number {
   return MEMORY_LIMITS_KB[scenario][__DEV__ ? 'dev' : 'opt'];
 }
 

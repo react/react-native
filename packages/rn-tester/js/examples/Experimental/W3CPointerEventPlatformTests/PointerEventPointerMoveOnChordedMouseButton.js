@@ -117,7 +117,7 @@ function PointerEventPointerMoveOnChordedMouseButtonTestCase(
   );
 }
 
-type Props = $ReadOnly<{}>;
+type Props = Readonly<{}>;
 export default function PointerEventPointerMoveOnChordedMouseButton(
   props: Props,
 ): React.MixedElement {

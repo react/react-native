@@ -34,6 +34,15 @@ namespace facebook::react {
 
 namespace {
 
+/**
+ * Default `durationThreshold` (in milliseconds) applied to `event` entries when
+ * the JS API does not provide an explicit value. Per the W3C Event Timing
+ * spec, observers for `event` entries default to a 104ms threshold:
+ * https://www.w3.org/TR/event-timing/#sec-modifications-perf-timeline
+ */
+constexpr HighResDuration DEFAULT_EVENT_DURATION_THRESHOLD =
+    HighResDuration::fromMilliseconds(104);
+
 class PerformanceObserverWrapper : public jsi::NativeState {
  public:
   explicit PerformanceObserverWrapper(
@@ -337,7 +346,7 @@ void NativePerformance::observe(
   }
 
   auto durationThreshold =
-      options.durationThreshold.value_or(HighResDuration::zero());
+      options.durationThreshold.value_or(DEFAULT_EVENT_DURATION_THRESHOLD);
 
   // observer of type multiple
   if (options.entryTypes.has_value()) {

@@ -12,7 +12,7 @@ import type {HostComponent, ViewProps} from 'react-native';
 
 import {codegenNativeComponent} from 'react-native';
 
-type NativeProps = $ReadOnly<{
+type NativeProps = Readonly<{
   ...ViewProps,
 
   // Props
@@ -20,6 +20,6 @@ type NativeProps = $ReadOnly<{
   // contentInset?: EdgeInsetsValue,
 }>;
 
-export default (codegenNativeComponent<NativeProps>(
+export default codegenNativeComponent<NativeProps>(
   'EdgeInsetsPropNativeComponentView',
-): HostComponent<NativeProps>);
+) as HostComponent<NativeProps>;

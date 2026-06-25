@@ -8,7 +8,6 @@
 plugins {
   id("com.facebook.react")
   id("com.android.library")
-  id("org.jetbrains.kotlin.android")
 }
 
 android {
@@ -27,6 +26,11 @@ android {
 kotlin {
   jvmToolchain(17)
   explicitApi()
+}
+
+tasks.withType<JavaCompile>().configureEach {
+  options.compilerArgs.add("-Xlint:deprecation,unchecked")
+  options.compilerArgs.add("-Werror")
 }
 
 dependencies {

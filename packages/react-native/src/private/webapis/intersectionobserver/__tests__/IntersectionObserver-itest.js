@@ -12,6 +12,7 @@ import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
 import type {HostInstance} from 'react-native';
 import type IntersectionObserverType from 'react-native/src/private/webapis/intersectionobserver/IntersectionObserver';
+import type IntersectionObserverEntryType from 'react-native/src/private/webapis/intersectionobserver/IntersectionObserverEntry';
 
 import ensureInstance from '../../../__tests__/utilities/ensureInstance';
 import {createShadowNodeReferenceCountingRef} from '../../../__tests__/utilities/ShadowNodeReferenceCounter';
@@ -22,13 +23,13 @@ import {ScrollView, View} from 'react-native';
 import setUpIntersectionObserver from 'react-native/src/private/setup/setUpIntersectionObserver';
 import ReactNativeElement from 'react-native/src/private/webapis/dom/nodes/ReactNativeElement';
 import DOMRectReadOnly from 'react-native/src/private/webapis/geometry/DOMRectReadOnly';
-import IntersectionObserverEntry from 'react-native/src/private/webapis/intersectionobserver/IntersectionObserverEntry';
 
 declare const IntersectionObserver: Class<IntersectionObserverType>;
+declare const IntersectionObserverEntry: Class<IntersectionObserverEntryType>;
 
 setUpIntersectionObserver();
 
-function ensureReactNativeElement(value: mixed): ReactNativeElement {
+function ensureReactNativeElement(value: unknown): ReactNativeElement {
   return ensureInstance(value, ReactNativeElement);
 }
 
@@ -2978,7 +2979,7 @@ describe('IntersectionObserver', () => {
         };
       };
 
-      function Observe({children}: $ReadOnly<{children?: React.Node}>) {
+      function Observe({children}: Readonly<{children?: React.Node}>) {
         return <View ref={observeRef}>{children}</View>;
       }
 
@@ -4275,6 +4276,20 @@ describe('IntersectionObserver', () => {
           expect(intersectionObserverCallback).toHaveBeenCalledTimes(0);
         });
       });
+    });
+  });
+
+  describe('IntersectionObserverEntry global constructor', () => {
+    it('throws when called', () => {
+      expect(
+        () =>
+          // The public stub throws regardless of arguments; the real class
+          // requires two so Flow needs a suppression here.
+          // $FlowExpectedError[incompatible-type]
+          new IntersectionObserverEntry(),
+      ).toThrow(
+        "Failed to construct 'IntersectionObserverEntry': Illegal constructor",
+      );
     });
   });
 });

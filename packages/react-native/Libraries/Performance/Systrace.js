@@ -66,6 +66,33 @@ export function endEvent(args?: EventArgs): void {
 }
 
 /**
+ * Traces the execution of the given function by marking its start with
+ * `beginEvent` and its end with `endEvent`, even if the function throws.
+ *
+ * @example
+ * Systrace.trace('myEvent', () => {
+ *   // logic to trace
+ * });
+ */
+export function trace<T>(
+  eventName: EventName,
+  fn: () => T,
+  args?: EventArgs,
+): T {
+  if (isEnabled()) {
+    const eventNameString =
+      typeof eventName === 'function' ? eventName() : eventName;
+    global.nativeTraceBeginSection(TRACE_TAG_REACT, eventNameString, args);
+    try {
+      return fn();
+    } finally {
+      global.nativeTraceEndSection(TRACE_TAG_REACT);
+    }
+  }
+  return fn();
+}
+
+/**
  * Marks the start of a potentially asynchronous event. The end of this event
  * should be marked calling the `endAsyncEvent` function with the cookie
  * returned by this function.
@@ -128,6 +155,7 @@ if (__DEV__) {
     setEnabled,
     beginEvent,
     endEvent,
+    trace,
     beginAsyncEvent,
     endAsyncEvent,
     counterEvent,

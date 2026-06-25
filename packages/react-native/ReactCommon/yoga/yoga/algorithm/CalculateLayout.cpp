@@ -35,7 +35,7 @@ namespace facebook::yoga {
 
 std::atomic<uint32_t> gCurrentGenerationCount(0);
 
-static void constrainMaxSizeForMode(
+void constrainMaxSizeForMode(
     const yoga::Node* node,
     Direction direction,
     FlexDirection axis,
@@ -94,7 +94,18 @@ static void computeFlexBasisForChild(
   const bool isColumnStyleDimDefined =
       child->hasDefiniteLength(Dimension::Height, ownerHeight);
 
-  if (resolvedFlexBasis.isDefined() && yoga::isDefined(mainAxisSize)) {
+  const bool fixFlexBasisFitContent =
+      node->getConfig()->isExperimentalFeatureEnabled(
+          ExperimentalFeature::FixFlexBasisFitContent);
+
+  bool useResolvedFlexBasis =
+      resolvedFlexBasis.isDefined() && yoga::isDefined(mainAxisSize);
+  if (fixFlexBasisFitContent && resolvedFlexBasis.isDefined() &&
+      resolvedFlexBasis.unwrap() > 0) {
+    useResolvedFlexBasis = true;
+  }
+
+  if (useResolvedFlexBasis) {
     if (child->getLayout().computedFlexBasis.isUndefined() ||
         (child->getConfig()->isExperimentalFeatureEnabled(
              ExperimentalFeature::WebFlexBasis) &&
@@ -164,12 +175,37 @@ static void computeFlexBasisForChild(
       }
     }
 
-    if ((isMainAxisRow && node->style().overflow() == Overflow::Scroll) ||
-        node->style().overflow() != Overflow::Scroll) {
-      if (yoga::isUndefined(childHeight) && yoga::isDefined(height)) {
-        childHeight = height;
-        childHeightSizingMode = SizingMode::FitContent;
+    // For height in the main axis (column direction): when the
+    // FixFlexBasisFitContent feature is enabled, skip FitContent for
+    // non-measure container children inside scroll subtrees. This makes the
+    // flex basis independent of content-determined heights, preventing
+    // unnecessary re-measurement cascades when a sibling changes size in a
+    // ScrollView, while preserving viewport bounds for wrappers outside the
+    // scroll subtree.
+    //
+    // We only optimize the height (column) axis because text wrapping depends
+    // on width constraints propagating through container nodes. Removing
+    // FitContent from the width axis would cause text inside nested
+    // containers to stop wrapping.
+    bool applyHeightFitContent =
+        isMainAxisRow || node->style().overflow() != Overflow::Scroll;
+    if (fixFlexBasisFitContent) {
+      bool nodeHasScrollAncestor = false;
+      for (auto owner = node->getOwner(); owner != nullptr;
+           owner = owner->getOwner()) {
+        if (owner->style().overflow() == Overflow::Scroll) {
+          nodeHasScrollAncestor = true;
+          break;
+        }
       }
+      applyHeightFitContent = isMainAxisRow ||
+          ((child->hasMeasureFunc() || !nodeHasScrollAncestor) &&
+           node->style().overflow() != Overflow::Scroll);
+    }
+    if (applyHeightFitContent && yoga::isUndefined(childHeight) &&
+        yoga::isDefined(height)) {
+      childHeight = height;
+      childHeightSizingMode = SizingMode::FitContent;
     }
 
     const auto& childStyle = child->style();
@@ -339,13 +375,13 @@ static void measureNodeWithMeasureFunc(
 
     Event::publish<Event::MeasureCallbackEnd>(
         node,
-        {innerWidth,
-         unscopedEnum(measureMode(widthSizingMode)),
-         innerHeight,
-         unscopedEnum(measureMode(heightSizingMode)),
-         measuredSize.width,
-         measuredSize.height,
-         reason});
+        {.width = innerWidth,
+         .widthMeasureMode = unscopedEnum(measureMode(widthSizingMode)),
+         .height = innerHeight,
+         .heightMeasureMode = unscopedEnum(measureMode(heightSizingMode)),
+         .measuredWidth = measuredSize.width,
+         .measuredHeight = measuredSize.height,
+         .reason = reason});
 
     node->setLayoutMeasuredDimension(
         boundAxis(
@@ -468,7 +504,7 @@ static bool measureNodeWithFixedSize(
   return false;
 }
 
-static void zeroOutLayoutRecursively(yoga::Node* const node) {
+void zeroOutLayoutRecursively(yoga::Node* const node) {
   node->getLayout() = {};
   node->setLayoutDimension(0, Dimension::Width);
   node->setLayoutDimension(0, Dimension::Height);
@@ -480,7 +516,9 @@ static void zeroOutLayoutRecursively(yoga::Node* const node) {
   }
 }
 
-static void cleanupContentsNodesRecursively(yoga::Node* const node) {
+void cleanupContentsNodesRecursively(
+    yoga::Node* const node,
+    bool didPerformLayout) {
   if (node->hasContentsChildren()) [[unlikely]] {
     node->cloneContentsChildrenIfNeeded();
     for (auto child : node->getChildren()) {
@@ -488,17 +526,19 @@ static void cleanupContentsNodesRecursively(yoga::Node* const node) {
         child->getLayout() = {};
         child->setLayoutDimension(0, Dimension::Width);
         child->setLayoutDimension(0, Dimension::Height);
-        child->setHasNewLayout(true);
+        if (didPerformLayout) {
+          child->setHasNewLayout(true);
+        }
         child->setDirty(false);
         child->cloneChildrenIfNeeded();
 
-        cleanupContentsNodesRecursively(child);
+        cleanupContentsNodesRecursively(child, didPerformLayout);
       }
     }
   }
 }
 
-static float calculateAvailableInnerDimension(
+float calculateAvailableInnerDimension(
     const yoga::Node* const node,
     const Direction direction,
     const Dimension dimension,
@@ -537,6 +577,8 @@ static float computeFlexBasisForChildren(
     yoga::Node* const node,
     const float availableInnerWidth,
     const float availableInnerHeight,
+    const float ownerWidth,
+    const float ownerHeight,
     SizingMode widthSizingMode,
     SizingMode heightSizingMode,
     Direction direction,
@@ -573,9 +615,18 @@ static float computeFlexBasisForChildren(
   for (auto child : children) {
     child->processDimensions();
     if (child->style().display() == Display::None) {
-      zeroOutLayoutRecursively(child);
-      child->setHasNewLayout(true);
-      child->setDirty(false);
+      // Only mutate display: none children during layout passes. Zeroing them
+      // out during measure-only passes contributes nothing to the measurement,
+      // but sets `hasNewLayout` on nodes the parent's layout pass may never
+      // visit (e.g. when its layout is restored from cache, skipping
+      // `cloneChildrenIfNeeded()`). Such a leaked flag survives the commit and
+      // is copied into lazily-shared clones, later tripping the ownership
+      // assertion in `YogaLayoutableShadowNode::layout`.
+      if (performLayout) {
+        zeroOutLayoutRecursively(child);
+        child->setHasNewLayout(true);
+        child->setDirty(false);
+      }
       continue;
     }
     if (performLayout) {
@@ -598,8 +649,8 @@ static float computeFlexBasisForChildren(
           availableInnerWidth,
           widthSizingMode,
           availableInnerHeight,
-          availableInnerWidth,
-          availableInnerHeight,
+          ownerWidth,
+          ownerHeight,
           heightSizingMode,
           direction,
           layoutMarkerData,
@@ -613,6 +664,237 @@ static float computeFlexBasisForChildren(
   }
 
   return totalOuterFlexBasis;
+}
+
+// Returns the min-content size of `node` along `requestedAxis`, used by CSS
+// Flexbox §4.5 automatic minimum sizing.
+//
+// Mirrors RenderCore FlexLayout's `AlgorithmBase::computeMinContentSize` /
+// `measureMinContentMainSize` pair (see `xplat/flexlayout/flexlayout/
+// FlexboxAlgorithm.h`). Unlike FlexLayout, which crosses a JNI/bridge
+// boundary for nested flex containers via thread-local min-content markers,
+// Yoga's flex containers are native nodes — so this function recurses
+// directly into containers rather than going through a measure callback.
+//
+// Algorithm:
+//   * Leaf with measure function: invoke it with `AtMost 0` on the
+//     requested axis and `Undefined` on the other. Text measure-funcs
+//     respond with longest-word width; image/collection-like measures
+//     respond with 0 along their scroll axis.
+//   * Empty leaf: return 0.
+//   * Container: iterate in-flow children. For each, take its
+//     min-content along the container's own main axis (sum into
+//     `mainTotal`) and along its cross axis (max into `crossMax`),
+//     plus the child's margins. Add the container's own padding and
+//     border on both ends of each axis. Project onto `requestedAxis`.
+//
+// Container-level recursion does no layout writes (no positions, no
+// alignment, no flex distribution); only the descendant leaf measure
+// callbacks observe state changes (the same ones a normal layout pass
+// would invoke). Roughly equivalent to FlexLayout's dedicated
+// `computeMinContentSize` cost: one measure call per leaf + linear walk
+// per container.
+static float computeMinContentMainSize(
+    yoga::Node* const node,
+    const FlexDirection requestedAxis,
+    const Direction ownerDirection,
+    const float ownerWidth,
+    const float ownerHeight) {
+  const bool wantRow = isRow(requestedAxis);
+
+  // 1. Static value wins for any node (leaf or container). Short-circuits
+  // both the measure callback path AND any container recursion. The most
+  // common use is `YGNodeSetMinContentWidth(node, 0)` declaring no
+  // contribution per CSS-Images (Image) or CSS-Overflow (scroll
+  // containers along their scroll axis).
+  const FloatOptional staticMin =
+      wantRow ? node->getMinContentWidth() : node->getMinContentHeight();
+  if (staticMin.isDefined()) {
+    return staticMin.unwrap();
+  }
+
+  if (node->hasMeasureFunc()) {
+    // 2. Dynamic min-content callback if set (for Primitives whose
+    // min-content depends on state). Otherwise fall back to the regular
+    // measure function with `AtMost 0`, which text measurers naturally
+    // answer with longest-word width.
+    const YGSize size = node->hasMinContentMeasureFunc()
+        ? node->measureMinContent(
+              wantRow ? 0.0f : YGUndefined,
+              wantRow ? MeasureMode::AtMost : MeasureMode::Undefined,
+              wantRow ? YGUndefined : 0.0f,
+              wantRow ? MeasureMode::Undefined : MeasureMode::AtMost)
+        : node->measure(
+              wantRow ? 0.0f : YGUndefined,
+              wantRow ? MeasureMode::AtMost : MeasureMode::Undefined,
+              wantRow ? YGUndefined : 0.0f,
+              wantRow ? MeasureMode::Undefined : MeasureMode::AtMost);
+    // Add the leaf's own padding and border, like the container branch below.
+    const Direction leafDirection = node->resolveDirection(ownerDirection);
+    const float paddingAndBorder =
+        node->style().computeFlexStartPaddingAndBorder(
+            requestedAxis, leafDirection, ownerWidth) +
+        node->style().computeFlexEndPaddingAndBorder(
+            requestedAxis, leafDirection, ownerWidth);
+    return (wantRow ? size.width : size.height) + paddingAndBorder;
+  }
+
+  if (node->getChildCount() == 0) {
+    return 0.0f;
+  }
+
+  const Direction direction = node->resolveDirection(ownerDirection);
+  const FlexDirection nodeMainAxis =
+      resolveDirection(node->style().flexDirection(), direction);
+  const FlexDirection nodeCrossAxis =
+      resolveCrossDirection(nodeMainAxis, direction);
+
+  float mainTotal = 0.0f;
+  float crossMax = 0.0f;
+
+  for (size_t i = 0; i < node->getChildCount(); i++) {
+    auto* const child = node->getChild(i);
+    if (child->style().display() == Display::None ||
+        child->style().positionType() == PositionType::Absolute) {
+      continue;
+    }
+
+    float childMain = computeMinContentMainSize(
+        child, nodeMainAxis, direction, ownerWidth, ownerHeight);
+    childMain += child->style().computeMarginForAxis(nodeMainAxis, ownerWidth);
+
+    float childCross = computeMinContentMainSize(
+        child, nodeCrossAxis, direction, ownerWidth, ownerHeight);
+    childCross +=
+        child->style().computeMarginForAxis(nodeCrossAxis, ownerWidth);
+
+    mainTotal += childMain;
+    crossMax = std::max(crossMax, childCross);
+  }
+
+  mainTotal += node->style().computeFlexStartPaddingAndBorder(
+                   nodeMainAxis, direction, ownerWidth) +
+      node->style().computeFlexEndPaddingAndBorder(
+          nodeMainAxis, direction, ownerWidth);
+  crossMax += node->style().computeFlexStartPaddingAndBorder(
+                  nodeCrossAxis, direction, ownerWidth) +
+      node->style().computeFlexEndPaddingAndBorder(
+          nodeCrossAxis, direction, ownerWidth);
+
+  const bool nodeMainIsRow = isRow(nodeMainAxis);
+  const float widthMin = nodeMainIsRow ? mainTotal : crossMax;
+  const float heightMin = nodeMainIsRow ? crossMax : mainTotal;
+  return wantRow ? widthMin : heightMin;
+}
+
+// Computes the CSS Flexbox §4.5 automatic minimum main-axis size for
+// `child`. Returns Undefined when no auto-min applies (feature off, explicit
+// `min-{w,h}` already set, or `display:none`); 0 when the item's own
+// `overflow != visible` (the spec's per-item escape hatch); or a concrete
+// floor otherwise.
+//
+// Floor = min(content-size, specified-size) capped by max-size, with the
+// transferred (aspect-ratio × cross-size) suggestion replacing the
+// specified-size leg when the item has an aspect ratio but no specified
+// main size. See https://www.w3.org/TR/css-flexbox-1/#min-size-auto.
+static FloatOptional computeAutoMinMainSize(
+    yoga::Node* const child,
+    const FlexDirection mainAxis,
+    const Direction direction,
+    const float ownerMainAxisSize,
+    const float ownerWidth,
+    const float ownerHeight) {
+  if (child->hasErrata(Errata::MinSizeUndefinedInsteadOfAuto)) {
+    return FloatOptional{};
+  }
+  if (child->style().display() == Display::None) {
+    return FloatOptional{};
+  }
+  // Explicit `min-{w,h}` (including `0`) wins over auto. This is the
+  // CSS-spec opt-out (§4.5).
+  if (child->style().minDimension(dimension(mainAxis)).isDefined()) {
+    return FloatOptional{};
+  }
+  // Per CSS §4.5: a flex item whose own `overflow` is not `visible` gets
+  // auto-min = 0 (let scroll/clip handle overflow rather than enforce a
+  // content-based minimum).
+  if (child->style().overflow() != Overflow::Visible) {
+    return FloatOptional{0.0f};
+  }
+
+  const Dimension mainDim = dimension(mainAxis);
+  const Dimension crossDim =
+      isRow(mainAxis) ? Dimension::Height : Dimension::Width;
+  const bool isMainAxisRow = isRow(mainAxis);
+
+  // Specified size suggestion: the resolved main-axis style dimension.
+  const FloatOptional specifiedMain = child->getResolvedDimension(
+      direction, mainDim, ownerMainAxisSize, ownerWidth);
+
+  // Transferred size suggestion: cross × aspect-ratio, if both are definite.
+  FloatOptional transferredMain;
+  const FloatOptional aspectRatio = child->style().aspectRatio();
+  if (aspectRatio.isDefined()) {
+    const float crossOwner = isMainAxisRow ? ownerHeight : ownerWidth;
+    const FloatOptional crossResolved = child->getResolvedDimension(
+        direction, crossDim, crossOwner, ownerWidth);
+    if (crossResolved.isDefined()) {
+      const float ratio = aspectRatio.unwrap();
+      const float crossValue = crossResolved.unwrap();
+      transferredMain = FloatOptional{
+          isMainAxisRow ? crossValue * ratio : crossValue / ratio};
+    }
+  }
+
+  // Content size suggestion: probe via min-content recursion.
+  const FloatOptional contentMain = FloatOptional{computeMinContentMainSize(
+      child, mainAxis, direction, ownerWidth, ownerHeight)};
+
+  // Combine per §4.5: floor = min(content, specified) when specified is
+  // definite; otherwise floor = min(content, transferred) when transferred
+  // applies (item has aspect-ratio + definite cross + no specified main);
+  // else floor = content.
+  FloatOptional floor = contentMain;
+  if (specifiedMain.isDefined()) {
+    if (floor.isUndefined() || specifiedMain < floor) {
+      floor = specifiedMain;
+    }
+  } else if (transferredMain.isDefined()) {
+    if (floor.isUndefined() || transferredMain < floor) {
+      floor = transferredMain;
+    }
+  }
+
+  // §4.5: cap by the max main size.
+  const FloatOptional maxMain = child->style().resolvedMaxDimension(
+      direction, mainDim, ownerMainAxisSize, ownerWidth);
+  if (maxMain.isDefined() && floor > maxMain) {
+    floor = maxMain;
+  }
+
+  if (floor.isUndefined() || floor.unwrap() < 0.0f) {
+    floor = FloatOptional{0.0f};
+  }
+  return floor;
+}
+
+// boundAxis with an additional lower bound from `child`'s cached
+// `computedAutoMinMainSize`, applied on the main axis only. Used inside
+// the flex-shrink distribution to honor CSS §4.5 auto-min while preserving
+// the existing min/max/padding-and-border clamping.
+static float boundAxisWithAutoMin(
+    const yoga::Node* const child,
+    const FlexDirection axis,
+    const Direction direction,
+    const float value,
+    const float axisSize,
+    const float widthSize) {
+  float bounded = boundAxis(child, axis, direction, value, axisSize, widthSize);
+  const FloatOptional autoMin = child->getLayout().computedAutoMinMainSize;
+  if (autoMin.isDefined() && bounded < autoMin.unwrap()) {
+    bounded = autoMin.unwrap();
+  }
+  return bounded;
 }
 
 // It distributes the free space to the flexible items and ensures that the size
@@ -673,7 +955,7 @@ static float distributeFreeSpaceSecondPass(
                   flexShrinkScaledFactor;
         }
 
-        updatedMainSize = boundAxis(
+        updatedMainSize = boundAxisWithAutoMin(
             currentLineChild,
             mainAxis,
             direction,
@@ -688,7 +970,7 @@ static float distributeFreeSpaceSecondPass(
 
       // Is this child able to grow?
       if (!std::isnan(flexGrowFactor) && flexGrowFactor != 0) {
-        updatedMainSize = boundAxis(
+        updatedMainSize = boundAxisWithAutoMin(
             currentLineChild,
             mainAxis,
             direction,
@@ -853,7 +1135,7 @@ static void distributeFreeSpaceFirstPass(
             flexLine.layout.remainingFreeSpace /
                 flexLine.layout.totalFlexShrinkScaledFactors *
                 flexShrinkScaledFactor;
-        boundMainSize = boundAxis(
+        boundMainSize = boundAxisWithAutoMin(
             currentLineChild,
             mainAxis,
             direction,
@@ -946,6 +1228,29 @@ static void resolveFlexibleLength(
     const uint32_t depth,
     const uint32_t generationCount) {
   const float originalFreeSpace = flexLine.layout.remainingFreeSpace;
+
+  // CSS Flexbox §4.5: compute each item's automatic minimum main-axis size
+  // up front so the bounding helpers below can floor shrunk values.
+  // computeAutoMinMainSize returns Undefined when the feature is off or an
+  // explicit `min-{w,h}` already pins the floor, in which case the cached
+  // value is also Undefined and `boundAxisWithAutoMin` reduces to `boundAxis`.
+  if (!node->hasErrata(Errata::MinSizeUndefinedInsteadOfAuto)) {
+    for (auto currentLineChild : flexLine.itemsInFlow) {
+      currentLineChild->getLayout().computedAutoMinMainSize =
+          computeAutoMinMainSize(
+              currentLineChild,
+              mainAxis,
+              direction,
+              mainAxisOwnerSize,
+              availableInnerWidth,
+              availableInnerHeight);
+    }
+  } else {
+    for (auto currentLineChild : flexLine.itemsInFlow) {
+      currentLineChild->getLayout().computedAutoMinMainSize = FloatOptional{};
+    }
+  }
+
   // First pass: detect the flex items whose min/max constraints trigger
   distributeFreeSpaceFirstPass(
       flexLine,
@@ -1046,6 +1351,14 @@ static void justifyMainAxis(
 
   if (flexLine.numberOfAutoMargins == 0) {
     switch (justifyContent) {
+      case Justify::Start:
+      case Justify::End:
+      case Justify::Auto:
+        // No-Op
+        break;
+      case Justify::Stretch:
+        // No-Op
+        break;
       case Justify::Center:
         leadingMainDim = flexLine.layout.remainingFreeSpace / 2;
         break;
@@ -1113,7 +1426,14 @@ static void justifyMainAxis(
       // dimensionWithMargin.
       flexLine.layout.mainDim +=
           child->style().computeMarginForAxis(mainAxis, availableInnerWidth) +
-          childLayout.computedFlexBasis.unwrap();
+          boundAxisWithinMinAndMax(
+              child,
+              direction,
+              mainAxis,
+              childLayout.computedFlexBasis,
+              mainAxisOwnerSize,
+              ownerWidth)
+              .unwrap();
       flexLine.layout.crossDim = availableInnerCrossDim;
     } else {
       // The main dimension is the sum of all the elements dimension plus
@@ -1317,7 +1637,7 @@ static void calculateLayoutImpl(
 
     // Clean and update all display: contents nodes with a direct path to the
     // current node as they will not be traversed
-    cleanupContentsNodesRecursively(node);
+    cleanupContentsNodesRecursively(node, performLayout);
     return;
   }
 
@@ -1335,7 +1655,7 @@ static void calculateLayoutImpl(
 
     // Clean and update all display: contents nodes with a direct path to the
     // current node as they will not be traversed
-    cleanupContentsNodesRecursively(node);
+    cleanupContentsNodesRecursively(node, performLayout);
     return;
   }
 
@@ -1353,7 +1673,7 @@ static void calculateLayoutImpl(
           ownerHeight)) {
     // Clean and update all display: contents nodes with a direct path to the
     // current node as they will not be traversed
-    cleanupContentsNodesRecursively(node);
+    cleanupContentsNodesRecursively(node, /* didPerformLayout */ false);
     return;
   }
 
@@ -1365,7 +1685,7 @@ static void calculateLayoutImpl(
 
   // Clean and update all display: contents nodes with a direct path to the
   // current node as they will not be traversed
-  cleanupContentsNodesRecursively(node);
+  cleanupContentsNodesRecursively(node, performLayout);
 
   // STEP 1: CALCULATE VALUES FOR REMAINDER OF ALGORITHM
   const FlexDirection mainAxis =
@@ -1421,12 +1741,53 @@ static void calculateLayoutImpl(
 
   // STEP 3: DETERMINE FLEX BASIS FOR EACH ITEM
 
+  // When this node is measured with MaxContent (FixFlexBasisFitContent
+  // behavior), availableInnerHeight is NaN.
+  // To preserve percentage resolution for descendants, derive a definite
+  // owner-size from the parent-provided ownerHeight.
+  float ownerWidthForChildren = availableInnerWidth;
+  float ownerHeightForChildren = availableInnerHeight;
+
+  if (node->getConfig()->isExperimentalFeatureEnabled(
+          ExperimentalFeature::FixFlexBasisFitContent)) {
+    const auto* owner = node->getOwner();
+    const bool isChildOfScrollContainer =
+        owner != nullptr && owner->style().overflow() == Overflow::Scroll;
+
+    if (!isChildOfScrollContainer) {
+      if (yoga::isUndefined(ownerWidthForChildren) &&
+          yoga::isDefined(ownerWidth)) {
+        ownerWidthForChildren = calculateAvailableInnerDimension(
+            node,
+            direction,
+            Dimension::Width,
+            ownerWidth - marginAxisRow,
+            paddingAndBorderAxisRow,
+            ownerWidth,
+            ownerWidth);
+      }
+      if (yoga::isUndefined(ownerHeightForChildren) &&
+          yoga::isDefined(ownerHeight)) {
+        ownerHeightForChildren = calculateAvailableInnerDimension(
+            node,
+            direction,
+            Dimension::Height,
+            ownerHeight - marginAxisColumn,
+            paddingAndBorderAxisColumn,
+            ownerHeight,
+            ownerWidth);
+      }
+    }
+  }
+
   // Computed basis + margins + gap
   float totalMainDim = 0;
   totalMainDim += computeFlexBasisForChildren(
       node,
       availableInnerWidth,
       availableInnerHeight,
+      ownerWidthForChildren,
+      ownerHeightForChildren,
       widthSizingMode,
       heightSizingMode,
       direction,
@@ -1799,6 +2160,10 @@ static void calculateLayoutImpl(
         : fallbackAlignment(node->style().alignContent());
 
     switch (alignContent) {
+      case Align::Start:
+      case Align::End:
+        // No-Op
+        break;
       case Align::FlexEnd:
         currentLead += remainingAlignContentDim;
         break;
@@ -1886,6 +2251,10 @@ static void calculateLayoutImpl(
         }
         if (child->style().positionType() != PositionType::Absolute) {
           switch (resolveChildAlignment(node, child)) {
+            case Align::Start:
+            case Align::End:
+              // Not yet implemented
+              break;
             case Align::FlexStart: {
               child->setLayoutPosition(
                   currentLead +

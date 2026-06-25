@@ -25,8 +25,6 @@ class JReactMarker : public facebook::jni::JavaClass<JReactMarker> {
   static void logMarker(const std::string &marker, const std::string &tag);
   static void logMarker(const std::string &marker, const std::string &tag, int instanceKey);
   static void logPerfMarker(ReactMarker::ReactMarkerId markerId, const char *tag);
-  static void logPerfMarkerBridgeless(ReactMarker::ReactMarkerId markerId, const char *tag);
-  static void logPerfMarkerWithInstanceKey(ReactMarker::ReactMarkerId markerId, const char *tag, int instanceKey);
   static void nativeLogMarker(jni::alias_ref<jclass> /* unused */, const std::string &markerNameStr, jlong markerTime);
 };
 

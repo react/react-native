@@ -12,19 +12,21 @@ import type {TurboModule} from '../../../../Libraries/TurboModule/RCTExport';
 
 import * as TurboModuleRegistry from '../../../../Libraries/TurboModule/TurboModuleRegistry';
 
-export type ColorSchemeName = 'light' | 'dark' | 'unspecified';
+export type ColorSchemeName = 'light' | 'dark';
+
+export type ColorSchemeOverride = 'light' | 'dark' | 'auto' | 'unspecified';
 
 export type AppearancePreferences = {
-  colorScheme?: ?ColorSchemeName,
+  colorScheme: ColorSchemeName,
 };
 
 export interface Spec extends TurboModule {
-  +getColorScheme: () => ?ColorSchemeName;
-  +setColorScheme: (colorScheme: ColorSchemeName) => void;
+  readonly getColorScheme: () => ColorSchemeName;
+  readonly setColorScheme: (colorScheme: ColorSchemeOverride) => void;
 
   // RCTEventEmitter
-  +addListener: (eventName: string) => void;
-  +removeListeners: (count: number) => void;
+  readonly addListener: (eventName: string) => void;
+  readonly removeListeners: (count: number) => void;
 }
 
-export default (TurboModuleRegistry.get<Spec>('Appearance'): ?Spec);
+export default TurboModuleRegistry.get<Spec>('Appearance') as ?Spec;

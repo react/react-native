@@ -8,8 +8,8 @@ on:
         type: string
         required: false
         default: ''
-      use-hermes-nightly:
-        description: 'Whether to use the hermes nightly build or read the version from the versions.properties file'
+      use-hermes-prebuilt:
+        description: 'Whether to resolve Hermes from the latest-v1 npm dist-tag (true) or from the version pinned in version.properties (false)'
         type: boolean
         required: false
         default: false
@@ -21,11 +21,7 @@ jobs:
       fail-fast: false
       matrix:
         flavor: ['Debug', 'Release']
-        slice: [
-          'ios',
-          'ios-simulator',
-          'mac-catalyst',
-        ]
+        slice: ['ios', 'ios-simulator', 'mac-catalyst']
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -41,16 +37,17 @@ jobs:
       - name: Setup xcode
         if: steps.restore-ios-slice.outputs.cache-hit != 'true'
         uses: ./.github/actions/setup-xcode
-        with:
-          platform: ${{ matrix.slice }}
       - name: Yarn Install
         if: steps.restore-ios-slice.outputs.cache-hit != 'true'
         uses: ./.github/actions/yarn-install
       - name: Set Hermes version
         shell: bash
         run: |
-          if [ "${{ inputs.use-hermes-nightly }}" == "true" ]; then
-            HERMES_VERSION="nightly"
+          # Non-stable RN builds resolve Hermes from npm's latest-v1 dist-tag.
+          # TODO: rename 'latest-v1' to 'latest' once V1 is the only Hermes on npm.
+          # Stable builds use the version pinned in version.properties.
+          if [ "${{ inputs.use-hermes-prebuilt }}" == "true" ]; then
+            HERMES_VERSION="latest-v1"
           else
             HERMES_VERSION=$(sed -n 's/^HERMES_VERSION_NAME=//p' packages/react-native/sdks/hermes-engine/version.properties)
           fi
@@ -102,8 +99,7 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: prebuild-ios-core-headers-${{ matrix.flavor }}-${{ matrix.slice }}
-          path:
-            packages/react-native/.build/headers
+          path: packages/react-native/.build/headers
       - name: Upload artifacts
         uses: actions/upload-artifact@v6
         with:
@@ -144,8 +140,6 @@ jobs:
       - name: Setup xcode
         if: steps.restore-ios-xcframework.outputs.cache-hit != 'true'
         uses: ./.github/actions/setup-xcode
-        with:
-          xcode-version: '16.2.0'
       - name: Yarn Install
         if: steps.restore-ios-xcframework.outputs.cache-hit != 'true'
         uses: ./.github/actions/yarn-install

@@ -8,12 +8,7 @@
  * @format
  */
 
-const {
-  PACKAGES_DIR,
-  PRIVATE_DIR,
-  RN_INTEGRATION_TESTS_RUNNER_DIR,
-  SCRIPTS_DIR,
-} = require('./consts');
+const {PACKAGES_DIR, PRIVATE_DIR, SCRIPTS_DIR} = require('./consts');
 
 let isRegisteredForMonorepo = false;
 
@@ -42,12 +37,7 @@ function registerForMonorepo() {
     require('@fb-tools/babel-register');
   } else {
     const {register} = require('metro-babel-register');
-    register([
-      PACKAGES_DIR,
-      PRIVATE_DIR,
-      SCRIPTS_DIR,
-      RN_INTEGRATION_TESTS_RUNNER_DIR,
-    ]);
+    register([PACKAGES_DIR, PRIVATE_DIR, SCRIPTS_DIR]);
   }
 
   isRegisteredForMonorepo = true;

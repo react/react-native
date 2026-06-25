@@ -21,8 +21,6 @@ jobs:
           git config --local user.name "React Native Bot"
       - name: Setup xcode
         uses: ./.github/actions/setup-xcode
-        with:
-          platform: 'ios'
       - name: Extract branch name
         run: |
           TAG="${{ github.ref_name }}";
@@ -37,8 +35,9 @@ jobs:
       - name: Bump podfile.lock
         run: |
           cd packages/rn-tester
+          rm Podfile.lock
           bundle install
-          bundle exec pod update hermes-engine --no-repo-update
+          bundle exec pod install
       - name: Commit changes
         run: |
           git add packages/rn-tester/Podfile.lock

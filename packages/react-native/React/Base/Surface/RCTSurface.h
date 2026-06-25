@@ -32,8 +32,11 @@ NS_ASSUME_NONNULL_BEGIN
  *  * ability to create a UIView instance on demand (later);
  *  * ability to communicate the current stage of the surface granularly.
  */
+#pragma clang diagnostic push
+#pragma clang diagnostic warning "-Wdeprecated"
 __deprecated_msg("This API will be removed along with the legacy architecture.") @interface RCTSurface
     : NSObject<RCTSurfaceProtocol>
+#pragma clang diagnostic pop
 
 - (instancetype)initWithBridge:(RCTBridge *)bridge
                     moduleName:(NSString *)moduleName

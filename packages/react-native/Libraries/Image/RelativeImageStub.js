@@ -15,7 +15,7 @@
 
 const AssetRegistry = require('@react-native/assets-registry/registry');
 
-const RelativeImageStub = (AssetRegistry.registerAsset({
+const RelativeImageStub = AssetRegistry.registerAsset({
   __packager_asset: true,
   fileSystemLocation: '/full/path/to/directory',
   httpServerLocation: '/assets/full/path/to/directory',
@@ -25,7 +25,7 @@ const RelativeImageStub = (AssetRegistry.registerAsset({
   hash: 'nonsense',
   name: 'icon',
   type: 'png',
-}): number);
+}) as number;
 
 // eslint-disable-next-line @react-native/monorepo/no-commonjs-exports
 module.exports = RelativeImageStub;

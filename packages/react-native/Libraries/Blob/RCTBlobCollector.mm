@@ -8,7 +8,6 @@
 #import "RCTBlobCollector.h"
 
 #import <React/RCTBlobManager.h>
-#import <React/RCTBridge+Private.h>
 
 namespace facebook::react {
 
@@ -26,32 +25,21 @@ RCTBlobCollector::~RCTBlobCollector()
   });
 }
 
-void RCTBlobCollector::install(RCTBlobManager *blobManager)
+void RCTBlobCollector::install(jsi::Runtime &runtime, RCTBlobManager *blobManager)
 {
-  __weak RCTCxxBridge *cxxBridge = (RCTCxxBridge *)blobManager.bridge;
-  [cxxBridge
-      dispatchBlock:^{
-        if ((cxxBridge == nullptr) || cxxBridge.runtime == nullptr) {
-          return;
-        }
-        jsi::Runtime &runtime = *(jsi::Runtime *)cxxBridge.runtime;
-        runtime.global().setProperty(
-            runtime,
-            "__blobCollectorProvider",
-            jsi::Function::createFromHostFunction(
-                runtime,
-                jsi::PropNameID::forAscii(runtime, "__blobCollectorProvider"),
-                1,
-                [blobManager](jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args, size_t count) {
-                  auto blobId = args[0].asString(rt).utf8(rt);
-                  auto blobCollector = std::make_shared<RCTBlobCollector>(blobManager, blobId);
-                  auto blobCollectorJsObject = jsi::Object::createFromHostObject(rt, blobCollector);
-                  blobCollectorJsObject.setExternalMemoryPressure(
-                      rt, [blobManager lengthOfBlobWithId:[NSString stringWithUTF8String:blobId.c_str()]]);
-                  return blobCollectorJsObject;
-                }));
-      }
-              queue:RCTJSThread];
+  auto provider = jsi::Function::createFromHostFunction(
+      runtime,
+      jsi::PropNameID::forAscii(runtime, "__blobCollectorProvider"),
+      1,
+      [blobManager](jsi::Runtime &rt, const jsi::Value & /*thisVal*/, const jsi::Value *args, size_t /*count*/) {
+        auto blobId = args[0].asString(rt).utf8(rt);
+        auto blobCollector = std::make_shared<RCTBlobCollector>(blobManager, blobId);
+        auto blobCollectorJsObject = jsi::Object::createFromHostObject(rt, blobCollector);
+        blobCollectorJsObject.setExternalMemoryPressure(
+            rt, [blobManager lengthOfBlobWithId:[NSString stringWithUTF8String:blobId.c_str()]]);
+        return blobCollectorJsObject;
+      });
+  runtime.global().setProperty(runtime, "__blobCollectorProvider", std::move(provider));
 }
 
 } // namespace facebook::react

@@ -7,6 +7,7 @@
 
 package com.facebook.react.uimanager
 
+import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.graphics.BlendMode
 import android.graphics.BlendModeColorFilter
@@ -30,6 +31,7 @@ import kotlin.math.sin
  *
  * @see <a href="https://www.w3.org/TR/filter-effects-1/">CSS Filter Effects Module Level 1</a>
  */
+@SuppressLint("UseRequiresApi")
 @TargetApi(31)
 internal object FilterHelper {
 
@@ -104,7 +106,7 @@ internal object FilterHelper {
     }
 
     for (i in 0 until filters.size()) {
-      val filter = filters.getMap(i)!!.entryIterator.next()
+      val filter = checkNotNull(filters.getMap(i)).entryIterator.next()
       val filterName = filter.key
       if (filterName == "blur" || filterName == "dropShadow") {
         return false

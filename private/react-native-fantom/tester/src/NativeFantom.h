@@ -130,6 +130,11 @@ class NativeFantom : public NativeFantomCxxSpec<NativeFantom> {
 
   void forceHighResTimeStamp(jsi::Runtime &runtime, std::optional<HighResTimeStamp> now);
 
+  void setTimerMockEnabled(jsi::Runtime &runtime, bool enabled);
+  void advanceTimers(jsi::Runtime &runtime, double deltaMs);
+  void runAllTimers(jsi::Runtime &runtime);
+  double getPendingTimerCount(jsi::Runtime &runtime);
+
   void startJSSamplingProfiler(jsi::Runtime &runtime);
 
   void stopJSSamplingProfilerAndSaveToFile(jsi::Runtime &runtime, const std::string &filePath);

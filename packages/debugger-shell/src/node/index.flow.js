@@ -8,12 +8,10 @@
  * @format
  */
 
-import {
-  prepareDebuggerShellFromDotSlashFile,
-  spawnAndGetStderr,
-} from './private/LaunchUtils';
+import {prepareDebuggerShellFromDotSlashFile} from './private/LaunchUtils';
 
 const {spawn} = require('cross-spawn');
+const debug = require('debug')('Metro:DebuggerShell');
 const path = require('path');
 
 // The 'prebuilt' flavor will use the prebuilt shell binary (and the JavaScript embedded in it).
@@ -31,7 +29,8 @@ async function unstable_spawnDebuggerShellWithArgs(
     mode = 'detached',
     flavor = process.env.RNDT_DEV === '1' ? 'dev' : 'prebuilt',
     prebuiltBinaryPath,
-  }: $ReadOnly<{
+    silent = process.env.NODE_ENV === 'test',
+  }: Readonly<{
     // In 'syncAndExit' mode, the current process will block until the spawned process exits, and then it will exit
     // with the same exit code as the spawned process.
     // In 'detached' mode, the spawned process will be detached from the current process and the current process will
@@ -39,6 +38,7 @@ async function unstable_spawnDebuggerShellWithArgs(
     mode?: 'syncThenExit' | 'detached',
     flavor?: DebuggerShellFlavor,
     prebuiltBinaryPath?: ?string,
+    silent?: boolean,
   }> = {},
 ): Promise<void> {
   const [binaryPath, baseArgs] = getShellBinaryAndArgs(
@@ -55,17 +55,26 @@ async function unstable_spawnDebuggerShellWithArgs(
       ...env
     } = process.env;
     const child = spawn(binaryPath, [...baseArgs, ...args], {
-      stdio: 'inherit',
+      stdio: ['ignore', 'pipe', 'pipe'],
       windowsHide: true,
       detached: mode === 'detached',
       env,
     });
     if (mode === 'detached') {
       child.on('spawn', () => {
+        debug('Debugger spawned in detached mode');
         resolve();
       });
-      child.on('close', (code: number) => {
+      child.on('close', (code: number, signal: string) => {
+        debug('Debugger closed with code %s and signal %s', code, signal);
         if (code !== 0) {
+          if (!silent) {
+            console.error(
+              'Debugger exited with non-zero code (code: %s, signal: %s)',
+              code,
+              signal,
+            );
+          }
           reject(
             new Error(
               `Failed to open debugger shell: exited with code ${code}`,
@@ -73,11 +82,28 @@ async function unstable_spawnDebuggerShellWithArgs(
           );
         }
       });
+      child.on('error', error => {
+        debug('Debugger shell encountered error: %s', error);
+        reject(error);
+      });
+      if (!silent) {
+        child.stdout.on('data', data =>
+          console.log('[debugger-shell stdout] ' + String(data)),
+        );
+        child.stderr.on('data', data =>
+          console.warn('[debugger-shell stderr] ' + String(data)),
+        );
+      }
       child.unref();
     } else if (mode === 'syncThenExit') {
       child.on('close', function (code, signal) {
-        if (code === null) {
-          console.error('Debugger shell exited with signal', signal);
+        debug('Debugger exited with code %s and signal %s', code, signal);
+        if (code == null && !silent) {
+          console.error(
+            'Debugger exited with code %s and signal %s',
+            code,
+            signal,
+          );
           process.exit(1);
         }
         process.exit(code);
@@ -85,6 +111,7 @@ async function unstable_spawnDebuggerShellWithArgs(
 
       const handleTerminationSignal = function (signal: string) {
         process.on(signal, function signalHandler() {
+          debug('Received signal %s. Killing debugger shell.', signal);
           if (!child.killed) {
             child.kill(signal);
           }
@@ -97,7 +124,7 @@ async function unstable_spawnDebuggerShellWithArgs(
   });
 }
 
-export type DebuggerShellPreparationResult = $ReadOnly<{
+export type DebuggerShellPreparationResult = Readonly<{
   code:
     | 'success'
     | 'not_implemented'
@@ -144,20 +171,6 @@ async function unstable_prepareDebuggerShell({
         throw new Error(`Unknown flavor: ${flavor}`);
     }
 
-    const [binaryPath, baseArgs] = getShellBinaryAndArgs(
-      flavor,
-      prebuiltBinaryPath,
-    );
-    const {code, stderr} = await spawnAndGetStderr(binaryPath, [
-      ...baseArgs,
-      '--version',
-    ]);
-    if (code !== 0) {
-      return {
-        code: 'unexpected_error',
-        verboseInfo: stderr,
-      };
-    }
     return {code: 'success'};
   } catch (e) {
     return {

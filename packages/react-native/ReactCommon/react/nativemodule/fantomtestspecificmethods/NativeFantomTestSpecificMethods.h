@@ -21,6 +21,8 @@ class NativeFantomTestSpecificMethods : public NativeFantomTestSpecificMethodsCx
 
   void takeFunctionAndNoop(jsi::Runtime &runtime, jsi::Function callback);
 
+  void setRootNodeSize(jsi::Runtime &runtime, int surfaceId, float width, float height);
+
  private:
   std::shared_ptr<FantomForcedCloneCommitHook> fantomForcedCloneCommitHook_{};
 };

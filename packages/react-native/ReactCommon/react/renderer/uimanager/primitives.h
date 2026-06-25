@@ -19,14 +19,17 @@ namespace facebook::react {
 using BackgroundExecutor = std::function<void(std::function<void()> &&callback)>;
 
 struct ShadowNodeListWrapper : public jsi::NativeState {
-  ShadowNodeListWrapper(ShadowNode::UnsharedListOfShared shadowNodeList) : shadowNodeList(std::move(shadowNodeList)) {}
+  ShadowNodeListWrapper(std::shared_ptr<std::vector<std::shared_ptr<const ShadowNode>>> shadowNodeList)
+      : shadowNodeList(std::move(shadowNodeList))
+  {
+  }
 
   // The below method needs to be implemented out-of-line in order for the class
   // to have at least one "key function" (see
   // https://itanium-cxx-abi.github.io/cxx-abi/abi.html#vague-vtable)
   ~ShadowNodeListWrapper() override;
 
-  ShadowNode::UnsharedListOfShared shadowNodeList;
+  std::shared_ptr<std::vector<std::shared_ptr<const ShadowNode>>> shadowNodeList;
 };
 
 inline static jsi::Value valueFromShadowNode(
@@ -48,7 +51,9 @@ inline static jsi::Value valueFromShadowNode(
 
 // TODO: once we no longer need to mutate the return value (appendChildToSet)
 // make this a SharedListOfShared
-inline static ShadowNode::UnsharedListOfShared shadowNodeListFromValue(jsi::Runtime &runtime, const jsi::Value &value)
+inline static std::shared_ptr<std::vector<std::shared_ptr<const ShadowNode>>> shadowNodeListFromValue(
+    jsi::Runtime &runtime,
+    const jsi::Value &value)
 {
   // TODO: cleanup when passChildrenWhenCloningPersistedNodes is rolled out
   jsi::Object object = value.asObject(runtime);
@@ -75,7 +80,9 @@ inline static ShadowNode::UnsharedListOfShared shadowNodeListFromValue(jsi::Runt
   }
 }
 
-inline static jsi::Value valueFromShadowNodeList(jsi::Runtime &runtime, ShadowNode::UnsharedListOfShared shadowNodeList)
+inline static jsi::Value valueFromShadowNodeList(
+    jsi::Runtime &runtime,
+    std::shared_ptr<std::vector<std::shared_ptr<const ShadowNode>>> shadowNodeList)
 {
   auto wrapper = std::make_shared<ShadowNodeListWrapper>(std::move(shadowNodeList));
   // Use the wrapper for NativeState too, otherwise we can't implement
@@ -85,8 +92,8 @@ inline static jsi::Value valueFromShadowNodeList(jsi::Runtime &runtime, ShadowNo
   return obj;
 }
 
-inline static ShadowNode::UnsharedListOfShared shadowNodeListFromWeakList(
-    const ShadowNode::UnsharedListOfWeak &weakShadowNodeList)
+inline static std::shared_ptr<std::vector<std::shared_ptr<const ShadowNode>>> shadowNodeListFromWeakList(
+    const std::shared_ptr<std::vector<std::weak_ptr<const ShadowNode>>> &weakShadowNodeList)
 {
   auto result = std::make_shared<std::vector<std::shared_ptr<const ShadowNode>>>();
   for (const auto &weakShadowNode : *weakShadowNodeList) {
@@ -99,7 +106,9 @@ inline static ShadowNode::UnsharedListOfShared shadowNodeListFromWeakList(
   return result;
 }
 
-inline static ShadowNode::UnsharedListOfWeak weakShadowNodeListFromValue(jsi::Runtime &runtime, const jsi::Value &value)
+inline static std::shared_ptr<std::vector<std::weak_ptr<const ShadowNode>>> weakShadowNodeListFromValue(
+    jsi::Runtime &runtime,
+    const jsi::Value &value)
 {
   auto shadowNodeList = shadowNodeListFromValue(runtime, value);
   auto weakShadowNodeList = std::make_shared<std::vector<std::weak_ptr<const ShadowNode>>>();

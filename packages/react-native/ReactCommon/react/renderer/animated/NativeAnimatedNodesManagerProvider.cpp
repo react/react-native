@@ -8,13 +8,10 @@
 #include "NativeAnimatedNodesManagerProvider.h"
 
 #include <glog/logging.h>
-#include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/renderer/animated/MergedValueDispatcher.h>
 #include <react/renderer/animated/internal/AnimatedMountingOverrideDelegate.h>
-#ifdef RN_USE_ANIMATION_BACKEND
-#include <react/renderer/animationbackend/AnimationBackend.h>
-#endif
 #include <react/renderer/animated/internal/primitives.h>
+#include <react/renderer/animationbackend/AnimationBackend.h>
 #include <react/renderer/components/view/conversions.h>
 #include <react/renderer/scheduler/Scheduler.h>
 #include <react/renderer/uimanager/UIManagerBinding.h>
@@ -47,8 +44,17 @@ std::shared_ptr<NativeAnimatedNodesManager>
 NativeAnimatedNodesManagerProvider::getOrCreate(
     jsi::Runtime& runtime,
     std::shared_ptr<CallInvoker> jsInvoker) {
-  if (nativeAnimatedNodesManager_ == nullptr) {
-    auto* uiManager = &UIManagerBinding::getBinding(runtime)->getUIManager();
+  if (nativeAnimatedNodesManager_ != nullptr) {
+    return nativeAnimatedNodesManager_;
+  }
+
+  auto* uiManager = &UIManagerBinding::getBinding(runtime)->getUIManager();
+
+  auto animationBackend = uiManager->unstable_getAnimationBackend().lock();
+  if (animationBackend == nullptr) {
+    // === PATH 1: Legacy Backend (no shared AnimationBackend attached) ===
+    // Uses the architecture with MergedValueDispatcher and
+    // AnimatedMountingOverrideDelegate
 
     mergedValueDispatcher_ = std::make_unique<MergedValueDispatcher>(
         [jsInvoker](std::function<void()>&& func) {
@@ -86,64 +92,17 @@ NativeAnimatedNodesManagerProvider::getOrCreate(
       }
     };
 
-    if (ReactNativeFeatureFlags::useSharedAnimatedBackend()) {
-#ifdef RN_USE_ANIMATION_BACKEND
-      // TODO: this should be initialized outside of animated, but for now it
-      // was convenient to do it here
-      animationBackend_ = std::make_shared<AnimationBackend>(
-          std::move(startOnRenderCallback_),
-          std::move(stopOnRenderCallback_),
-          std::move(directManipulationCallback),
-          std::move(fabricCommitCallback),
-          uiManager);
+    nativeAnimatedNodesManager_ = std::make_shared<NativeAnimatedNodesManager>(
+        std::move(directManipulationCallback),
+        std::move(fabricCommitCallback),
+        std::move(resolvePlatformColor),
+        std::move(startOnRenderCallback_),
+        std::move(stopOnRenderCallback_),
+        std::move(frameRateListenerCallback_));
 
-      nativeAnimatedNodesManager_ =
-          std::make_shared<NativeAnimatedNodesManager>(animationBackend_);
-
-      nativeAnimatedDelegate_ =
-          std::make_shared<UIManagerNativeAnimatedDelegateBackendImpl>(
-              animationBackend_);
-
-      uiManager->unstable_setAnimationBackend(animationBackend_);
-#endif
-    } else {
-      nativeAnimatedNodesManager_ =
-          std::make_shared<NativeAnimatedNodesManager>(
-              std::move(directManipulationCallback),
-              std::move(fabricCommitCallback),
-              std::move(resolvePlatformColor),
-              std::move(startOnRenderCallback_),
-              std::move(stopOnRenderCallback_),
-              std::move(frameRateListenerCallback_));
-
-      nativeAnimatedDelegate_ =
-          std::make_shared<UIManagerNativeAnimatedDelegateImpl>(
-              nativeAnimatedNodesManager_);
-    }
-
-    addEventEmitterListener(
-        nativeAnimatedNodesManager_->getEventEmitterListener());
-
-    uiManager->addEventListener(
-        std::make_shared<EventListener>(
-            [eventEmitterListenerContainerWeak =
-                 std::weak_ptr<EventEmitterListenerContainer>(
-                     eventEmitterListenerContainer_)](
-                const RawEvent& rawEvent) {
-              const auto& eventTarget = rawEvent.eventTarget;
-              const auto& eventPayload = rawEvent.eventPayload;
-              if (eventTarget && eventPayload) {
-                if (auto eventEmitterListenerContainer =
-                        eventEmitterListenerContainerWeak.lock();
-                    eventEmitterListenerContainer != nullptr) {
-                  return eventEmitterListenerContainer->willDispatchEvent(
-                      eventTarget->getTag(), rawEvent.type, *eventPayload);
-                }
-              }
-              return false;
-            }));
-
-    uiManager->setNativeAnimatedDelegate(nativeAnimatedDelegate_);
+    nativeAnimatedDelegate_ =
+        std::make_shared<UIManagerNativeAnimatedDelegateImpl>(
+            nativeAnimatedNodesManager_);
 
     animatedMountingOverrideDelegate_ =
         std::make_shared<AnimatedMountingOverrideDelegate>(
@@ -158,6 +117,7 @@ NativeAnimatedNodesManagerProvider::getOrCreate(
           shadowTree.getMountingCoordinator()->setMountingOverrideDelegate(
               animatedMountingOverrideDelegate);
         });
+
     // Register on surfaces started in the future
     uiManager->setOnSurfaceStartCallback(
         [animatedMountingOverrideDelegate =
@@ -167,7 +127,40 @@ NativeAnimatedNodesManagerProvider::getOrCreate(
           shadowTree.getMountingCoordinator()->setMountingOverrideDelegate(
               animatedMountingOverrideDelegate);
         });
+
+    uiManager->setNativeAnimatedDelegate(nativeAnimatedDelegate_);
+  } else {
+    // === PATH 2: Shared AnimationBackend ===
+    // Uses the shared AnimationBackend from UIManager. The backend handles all
+    // animation commits and platform integration internally. It is guaranteed
+    // non-null here because it was successfully locked above.
+    animationBackend->registerJSInvoker(jsInvoker);
+
+    nativeAnimatedNodesManager_ =
+        std::make_shared<NativeAnimatedNodesManager>(animationBackend);
   }
+
+  addEventEmitterListener(
+      nativeAnimatedNodesManager_->getEventEmitterListener());
+
+  uiManager->addEventListener(
+      std::make_shared<EventListener>(
+          [eventEmitterListenerContainerWeak =
+               std::weak_ptr<EventEmitterListenerContainer>(
+                   eventEmitterListenerContainer_)](const RawEvent& rawEvent) {
+            const auto& eventTarget = rawEvent.eventTarget;
+            const auto& eventPayload = rawEvent.eventPayload;
+            if (eventTarget && eventPayload) {
+              if (auto eventEmitterListenerContainer =
+                      eventEmitterListenerContainerWeak.lock();
+                  eventEmitterListenerContainer != nullptr) {
+                return eventEmitterListenerContainer->willDispatchEvent(
+                    eventTarget->getTag(), rawEvent.type, *eventPayload);
+              }
+            }
+            return false;
+          }));
+
   return nativeAnimatedNodesManager_;
 }
 

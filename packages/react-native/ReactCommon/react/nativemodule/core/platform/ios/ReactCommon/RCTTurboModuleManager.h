@@ -65,15 +65,6 @@
 
 @interface RCTTurboModuleManager : NSObject <RCTTurboModuleRegistry>
 
-- (instancetype)initWithBridge:(RCTBridge *)bridge
-                      delegate:(id<RCTTurboModuleManagerDelegate>)delegate
-                     jsInvoker:(std::shared_ptr<facebook::react::CallInvoker>)jsInvoker;
-
-- (instancetype)initWithBridgeProxy:(RCTBridgeProxy *)bridgeProxy
-              bridgeModuleDecorator:(RCTBridgeModuleDecorator *)bridgeModuleDecorator
-                           delegate:(id<RCTTurboModuleManagerDelegate>)delegate
-                          jsInvoker:(std::shared_ptr<facebook::react::CallInvoker>)jsInvoker;
-
 - (instancetype)initWithBridgeProxy:(RCTBridgeProxy *)bridgeProxy
               bridgeModuleDecorator:(RCTBridgeModuleDecorator *)bridgeModuleDecorator
                            delegate:(id<RCTTurboModuleManagerDelegate>)delegate

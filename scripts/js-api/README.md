@@ -19,7 +19,7 @@ Snapshot file of the public API shape, used by maintainers\
 
 `yarn build-types` makes use of the following dependencies, composed with other pre/post transformation steps and dependency resolution.
 
-- Flow → TypeScript conversion: [flow-api-extractor](https://www.npmjs.com/package/flow-api-translator)
+- Flow → TypeScript conversion: [flow-api-translator](https://www.npmjs.com/package/flow-api-translator)
 - TypeScript → (initial) API rollup: [@microsoft/api-extractor](https://api-extractor.com/)
 
 ## Usage
@@ -73,7 +73,7 @@ Directory providing TypeScript user types for the `react-native` package, distri
 
 ### Public API snapshot
 
-`ReactNative.d.ts`
+`ReactNativeApi.d.ts`
 
 Provides a human-readable, maintainable reference of the React Native's public JavaScript API, optimized for developers and diff tooling.
 

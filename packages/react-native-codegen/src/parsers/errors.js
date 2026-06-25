@@ -15,7 +15,7 @@ import type {Parser} from './parser';
 export type ParserType = 'Flow' | 'TypeScript';
 
 class ParserError extends Error {
-  nodes: $ReadOnlyArray<$FlowFixMe>;
+  nodes: ReadonlyArray<$FlowFixMe>;
   constructor(
     nativeModuleName: string,
     astNodeOrNodes: $FlowFixMe,
@@ -57,8 +57,8 @@ class ModuleInterfaceNotFoundParserError extends ParserError {
 class MoreThanOneModuleInterfaceParserError extends ParserError {
   constructor(
     nativeModuleName: string,
-    flowModuleInterfaces: $ReadOnlyArray<$FlowFixMe>,
-    names: $ReadOnlyArray<string>,
+    flowModuleInterfaces: ReadonlyArray<$FlowFixMe>,
+    names: ReadonlyArray<string>,
     language: ParserType,
   ) {
     const finalName = names[names.length - 1];
@@ -128,7 +128,7 @@ class UnsupportedModulePropertyParserError extends ParserError {
 }
 
 class UnsupportedTypeAnnotationParserError extends ParserError {
-  +typeAnnotationType: string;
+  readonly typeAnnotationType: string;
   constructor(
     nativeModuleName: string,
     typeAnnotation: $FlowFixMe,
@@ -425,6 +425,21 @@ class IncorrectModuleRegistryCallArgumentTypeParserError extends ParserError {
   }
 }
 
+class IncorrectModuleRegistryCallArgumentValueParserError extends ParserError {
+  constructor(
+    nativeModuleName: string,
+    flowArgument: $FlowFixMe,
+    methodName: string,
+    value: string,
+  ) {
+    super(
+      nativeModuleName,
+      flowArgument,
+      `Please call TurboModuleRegistry.${methodName}<Spec>() with a safe module name. Module names must only contain alphanumeric characters and underscores (matching /^[a-zA-Z_][a-zA-Z0-9_]*$/). Got '${value.replace(/[^\x20-\x7e]/g, '?')}'`,
+    );
+  }
+}
+
 module.exports = {
   ParserError,
   MissingTypeParameterGenericParserError,
@@ -452,4 +467,5 @@ module.exports = {
   IncorrectModuleRegistryCallTypeParameterParserError,
   IncorrectModuleRegistryCallArityParserError,
   IncorrectModuleRegistryCallArgumentTypeParserError,
+  IncorrectModuleRegistryCallArgumentValueParserError,
 };

@@ -44,23 +44,25 @@ NSString *RCTBridgeModuleNameForClass(Class bridgeModuleClass);
 NSMutableArray<NSString *> *getModulesLoadedWithOldArch(void);
 
 /**
- * Experimental.
- * Check/set if JSI-bound NativeModule is enabled. By default it's off.
+ * The New Architecture is enabled by default. These APIs are no-ops and will
+ * be removed in a future release.
  */
-BOOL RCTTurboModuleEnabled(void);
-void RCTEnableTurboModule(BOOL enabled);
+BOOL RCTTurboModuleEnabled(void)
+    __attribute__((deprecated("TurboModules are always enabled; this always returns YES (NO in test env).")));
+void RCTEnableTurboModule(BOOL enabled)
+    __attribute__((deprecated("No-op. The New Architecture is enabled by default.")));
 
+#ifndef RCT_REMOVE_LEGACY_MODULE_INTEROP
 // Turn on TurboModule interop
 BOOL RCTTurboModuleInteropEnabled(void);
 void RCTEnableTurboModuleInterop(BOOL enabled);
+#endif // RCT_REMOVE_LEGACY_MODULE_INTEROP
 
-// Turn on TurboModule interop's Bridge proxy
-BOOL RCTTurboModuleInteropBridgeProxyEnabled(void);
-void RCTEnableTurboModuleInteropBridgeProxy(BOOL enabled);
-
+#ifndef RCT_REMOVE_LEGACY_COMPONENT_INTEROP
 // Turn on the fabric interop layer
 BOOL RCTFabricInteropLayerEnabled(void);
 void RCTEnableFabricInteropLayer(BOOL enabled);
+#endif // RCT_REMOVE_LEGACY_COMPONENT_INTEROP
 
 BOOL RCTUIManagerDispatchAccessibilityManagerInitOntoMain(void);
 void RCTUIManagerSetDispatchAccessibilityManagerInitOntoMain(BOOL enabled);

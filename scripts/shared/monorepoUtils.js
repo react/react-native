@@ -22,11 +22,12 @@ export type PackageJson = {
   private?: boolean,
   dependencies?: Record<string, string>,
   devDependencies?: Record<string, string>,
+  peerDependencies?: Record<string, string>,
   main?: string,
   ...
 };
 
-type PackagesFilter = $ReadOnly<{
+type PackagesFilter = Readonly<{
   // Include the main react-native package
   includeReactNative: boolean,
 
@@ -134,7 +135,7 @@ async function parsePackageInfo(
  */
 async function updatePackageJson(
   {path: packagePath, packageJson} /*: PackageInfo */,
-  newPackageVersions /*: $ReadOnly<{[string]: string}> */,
+  newPackageVersions /*: Readonly<{[string]: string}> */,
 ) /*: Promise<void> */ {
   const packageName = packageJson.name;
 
@@ -145,6 +146,7 @@ async function updatePackageJson(
   for (const dependencyField of [
     'dependencies',
     'devDependencies',
+    'peerDependencies',
   ] /*:: as const */) {
     const deps = packageJson[dependencyField];
 

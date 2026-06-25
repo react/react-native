@@ -7,11 +7,9 @@
 
 #pragma once
 
-#include <folly/dynamic.h>
 #include <react/renderer/mounting/MountingOverrideDelegate.h>
 #include <react/renderer/mounting/MountingTransaction.h>
 #include <react/renderer/mounting/ShadowViewMutation.h>
-#include <functional>
 #include <optional>
 
 namespace facebook::react {

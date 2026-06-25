@@ -1,0 +1,6 @@
+class test::Outer {
+}
+
+struct test::Outer::InnerStruct {
+  public bool value;
+}

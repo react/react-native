@@ -25,7 +25,7 @@ import RotatingImagesExample from './RotatingImagesExample';
 import TransformBounceExample from './TransformBounceExample';
 import TransformStylesExample from './TransformStylesExample';
 
-export default ({
+export default {
   framework: 'React',
   title: 'Animated',
   category: 'UI',
@@ -50,4 +50,4 @@ export default ({
     PressabilityWithNativeDrivers,
     PanGestureExample,
   ],
-}: RNTesterModule);
+} as RNTesterModule;

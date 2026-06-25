@@ -23,8 +23,7 @@ HostTargetTraceRecording::HostTargetTraceRecording(
       windowSize_(windowSize) {
   if (windowSize) {
     frameTimings_ = tracing::TimeWindowedBuffer<tracing::FrameTimingSequence>(
-        [](auto& sequence) { return sequence.beginDrawingTimestamp; },
-        *windowSize);
+        [](auto& sequence) { return sequence.beginTimestamp; }, *windowSize);
   } else {
     frameTimings_ = tracing::TimeWindowedBuffer<tracing::FrameTimingSequence>();
   };

@@ -29,12 +29,6 @@ AppRegistry.registerComponent('LogBox', () => {
 
 global.RN$AppRegistry = AppRegistry;
 
-// Backwards compat with SurfaceRegistry, remove me later
-global.RN$SurfaceRegistry = {
-  renderSurface: AppRegistry.runApplication,
-  setSurfaceProps: AppRegistry.setSurfaceProps,
-};
-
 registerCallableModule('AppRegistry', AppRegistry);
 
 export {AppRegistry};

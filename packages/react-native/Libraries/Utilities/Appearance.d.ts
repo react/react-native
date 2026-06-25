@@ -9,35 +9,46 @@
 
 import {NativeEventSubscription} from '../EventEmitter/RCTNativeAppEventEmitter';
 
-type ColorSchemeName = 'light' | 'dark' | 'unspecified';
+type ColorSchemeName = 'light' | 'dark';
+
+type ColorSchemeOverride =
+  | ColorSchemeName
+  | 'auto'
+  /** @deprecated Use 'auto' instead */
+  | 'unspecified';
 
 export namespace Appearance {
   type AppearancePreferences = {
-    colorScheme: ColorSchemeName;
+    colorScheme: ColorSchemeName | null;
   };
 
   type AppearanceListener = (preferences: AppearancePreferences) => void;
 
   /**
-   * Note: Although color scheme is available immediately, it may change at any
-   * time. Any rendering logic or styles that depend on this should try to call
-   * this function on every render, rather than caching the value (for example,
-   * using inline styles rather than setting a value in a `StyleSheet`).
+   * Returns the active color scheme (`'light'` or `'dark'`). This value may
+   * change at runtime, either at the system level (e.g. scheduled color scheme
+   * change at sunrise or sunset) or when overridden at the app level via
+   * `setColorScheme()`.
    *
-   * Example: `const colorScheme = Appearance.getColorScheme();`
+   * Prefer `useColorScheme()` in React components.
+   *
+   * Notes:
+   * - `null` will only be returned if the native Appearance module is
+   *   unavailable (out of tree platforms).
    */
-  export function getColorScheme(): ColorSchemeName | null | undefined;
+  export function getColorScheme(): ColorSchemeName | null;
 
   /**
-   * Set the color scheme preference. This is useful for overriding the default
-   * color scheme preference for the app. Note that this will not change the
-   * appearance of the system UI, only the appearance of the app.
-   * Only available on iOS 13+ and Android 10+.
+   * Force the application to always adopt a light or dark interface style. Pass
+   * `'auto'` to reset and follow the system default (removes any override).
+   * This does not affect the system UI, only the application.
    */
-  export function setColorScheme(scheme: ColorSchemeName): void;
+  export function setColorScheme(scheme: ColorSchemeOverride): void;
 
   /**
-   * Add an event handler that is fired when appearance preferences change.
+   * Subscribe to color scheme changes. The listener receives the new appearance
+   * preferences whenever the color scheme changes, whether from a system event
+   * or a call to `setColorScheme()`.
    */
   export function addChangeListener(
     listener: AppearanceListener,
@@ -45,7 +56,11 @@ export namespace Appearance {
 }
 
 /**
- * A new useColorScheme hook is provided as the preferred way of accessing
- * the user's preferred color scheme (e.g. Dark Mode).
+ * Returns the active color scheme (`'light'` or `'dark'`). Automatically
+ * re-renders the component when the color scheme changes.
+ *
+ * Notes:
+ * - `null` will only be returned if the native Appearance module is unavailable
+ *   (out of tree platforms).
  */
-export function useColorScheme(): ColorSchemeName;
+export function useColorScheme(): ColorSchemeName | null;

@@ -29,6 +29,8 @@
 #include <yoga/enums/Unit.h>
 #include <yoga/enums/Wrap.h>
 #include <yoga/numeric/FloatOptional.h>
+#include <yoga/style/GridLine.h>
+#include <yoga/style/GridTrack.h>
 #include <yoga/style/StyleLength.h>
 #include <yoga/style/StyleSizeLength.h>
 #include <yoga/style/StyleValuePool.h>
@@ -63,6 +65,20 @@ class YG_EXPORT Style {
   }
   void setJustifyContent(Justify value) {
     justifyContent_ = value;
+  }
+
+  Justify justifyItems() const {
+    return justifyItems_;
+  }
+  void setJustifyItems(Justify value) {
+    justifyItems_ = value;
+  }
+
+  Justify justifySelf() const {
+    return justifySelf_;
+  }
+  void setJustifySelf(Justify value) {
+    justifySelf_ = value;
   }
 
   Align alignContent() const {
@@ -191,13 +207,99 @@ class YG_EXPORT Style {
     pool_.store(minDimensions_[yoga::to_underlying(axis)], value);
   }
 
+  // Grid Container Properties
+  const GridTrackList& gridTemplateColumns() const {
+    return gridTemplateColumns_;
+  }
+  void setGridTemplateColumns(GridTrackList value) {
+    gridTemplateColumns_ = std::move(value);
+  }
+  void resizeGridTemplateColumns(size_t count) {
+    gridTemplateColumns_.resize(count);
+  }
+  void setGridTemplateColumnAt(size_t index, GridTrackSize value) {
+    gridTemplateColumns_[index] = value;
+  }
+
+  const GridTrackList& gridTemplateRows() const {
+    return gridTemplateRows_;
+  }
+  void setGridTemplateRows(GridTrackList value) {
+    gridTemplateRows_ = std::move(value);
+  }
+  void resizeGridTemplateRows(size_t count) {
+    gridTemplateRows_.resize(count);
+  }
+  void setGridTemplateRowAt(size_t index, GridTrackSize value) {
+    gridTemplateRows_[index] = value;
+  }
+
+  const GridTrackList& gridAutoColumns() const {
+    return gridAutoColumns_;
+  }
+  void setGridAutoColumns(GridTrackList value) {
+    gridAutoColumns_ = std::move(value);
+  }
+  void resizeGridAutoColumns(size_t count) {
+    gridAutoColumns_.resize(count);
+  }
+  void setGridAutoColumnAt(size_t index, GridTrackSize value) {
+    gridAutoColumns_[index] = value;
+  }
+
+  const GridTrackList& gridAutoRows() const {
+    return gridAutoRows_;
+  }
+  void setGridAutoRows(GridTrackList value) {
+    gridAutoRows_ = std::move(value);
+  }
+  void resizeGridAutoRows(size_t count) {
+    gridAutoRows_.resize(count);
+  }
+  void setGridAutoRowAt(size_t index, GridTrackSize value) {
+    gridAutoRows_[index] = value;
+  }
+
+  // Grid Item Properties
+  const GridLine& gridColumnStart() const {
+    return gridColumnStart_;
+  }
+  void setGridColumnStart(GridLine value) {
+    gridColumnStart_ = value;
+  }
+
+  const GridLine& gridColumnEnd() const {
+    return gridColumnEnd_;
+  }
+  void setGridColumnEnd(GridLine value) {
+    gridColumnEnd_ = value;
+  }
+
+  const GridLine& gridRowStart() const {
+    return gridRowStart_;
+  }
+  void setGridRowStart(GridLine value) {
+    gridRowStart_ = value;
+  }
+
+  const GridLine& gridRowEnd() const {
+    return gridRowEnd_;
+  }
+  void setGridRowEnd(GridLine value) {
+    gridRowEnd_ = value;
+  }
+
   FloatOptional resolvedMinDimension(
       Direction direction,
       Dimension axis,
       float referenceLength,
       float ownerWidth) const {
-    FloatOptional value = minDimension(axis).resolve(referenceLength);
-    if (boxSizing() == BoxSizing::BorderBox) {
+    const auto handle = minDimensions_[yoga::to_underlying(axis)];
+    if (handle.isUndefined()) {
+      return FloatOptional{};
+    }
+    FloatOptional value = resolve(handle, referenceLength);
+    if (boxSizing() == BoxSizing::BorderBox || !value.isDefined()) {
       return value;
     }
 
@@ -221,8 +323,12 @@ class YG_EXPORT Style {
       Dimension axis,
       float referenceLength,
       float ownerWidth) const {
-    FloatOptional value = maxDimension(axis).resolve(referenceLength);
-    if (boxSizing() == BoxSizing::BorderBox) {
+    const auto handle = maxDimensions_[yoga::to_underlying(axis)];
+    if (handle.isUndefined()) {
+      return FloatOptional{};
+    }
+    FloatOptional value = resolve(handle, referenceLength);
+    if (boxSizing() == BoxSizing::BorderBox || !value.isDefined()) {
       return value;
     }
 
@@ -311,8 +417,7 @@ class YG_EXPORT Style {
       FlexDirection axis,
       Direction direction,
       float axisSize) const {
-    return computePosition(flexStartEdge(axis), direction)
-        .resolve(axisSize)
+    return resolve(computePosition(flexStartEdge(axis), direction), axisSize)
         .unwrapOrDefault(0.0f);
   }
 
@@ -320,8 +425,9 @@ class YG_EXPORT Style {
       FlexDirection axis,
       Direction direction,
       float axisSize) const {
-    return computePosition(inlineStartEdge(axis, direction), direction)
-        .resolve(axisSize)
+    return resolve(
+               computePosition(inlineStartEdge(axis, direction), direction),
+               axisSize)
         .unwrapOrDefault(0.0f);
   }
 
@@ -329,8 +435,7 @@ class YG_EXPORT Style {
       FlexDirection axis,
       Direction direction,
       float axisSize) const {
-    return computePosition(flexEndEdge(axis), direction)
-        .resolve(axisSize)
+    return resolve(computePosition(flexEndEdge(axis), direction), axisSize)
         .unwrapOrDefault(0.0f);
   }
 
@@ -338,8 +443,9 @@ class YG_EXPORT Style {
       FlexDirection axis,
       Direction direction,
       float axisSize) const {
-    return computePosition(inlineEndEdge(axis, direction), direction)
-        .resolve(axisSize)
+    return resolve(
+               computePosition(inlineEndEdge(axis, direction), direction),
+               axisSize)
         .unwrapOrDefault(0.0f);
   }
 
@@ -347,8 +453,7 @@ class YG_EXPORT Style {
       FlexDirection axis,
       Direction direction,
       float widthSize) const {
-    return computeMargin(flexStartEdge(axis), direction)
-        .resolve(widthSize)
+    return resolve(computeMargin(flexStartEdge(axis), direction), widthSize)
         .unwrapOrDefault(0.0f);
   }
 
@@ -356,8 +461,9 @@ class YG_EXPORT Style {
       FlexDirection axis,
       Direction direction,
       float widthSize) const {
-    return computeMargin(inlineStartEdge(axis, direction), direction)
-        .resolve(widthSize)
+    return resolve(
+               computeMargin(inlineStartEdge(axis, direction), direction),
+               widthSize)
         .unwrapOrDefault(0.0f);
   }
 
@@ -365,8 +471,7 @@ class YG_EXPORT Style {
       FlexDirection axis,
       Direction direction,
       float widthSize) const {
-    return computeMargin(flexEndEdge(axis), direction)
-        .resolve(widthSize)
+    return resolve(computeMargin(flexEndEdge(axis), direction), widthSize)
         .unwrapOrDefault(0.0f);
   }
 
@@ -374,36 +479,36 @@ class YG_EXPORT Style {
       FlexDirection axis,
       Direction direction,
       float widthSize) const {
-    return computeMargin(inlineEndEdge(axis, direction), direction)
-        .resolve(widthSize)
+    return resolve(
+               computeMargin(inlineEndEdge(axis, direction), direction),
+               widthSize)
         .unwrapOrDefault(0.0f);
   }
 
   float computeFlexStartBorder(FlexDirection axis, Direction direction) const {
     return maxOrDefined(
-        computeBorder(flexStartEdge(axis), direction).resolve(0.0f).unwrap(),
+        resolve(computeBorder(flexStartEdge(axis), direction), 0.0f).unwrap(),
         0.0f);
   }
 
   float computeInlineStartBorder(FlexDirection axis, Direction direction)
       const {
     return maxOrDefined(
-        computeBorder(inlineStartEdge(axis, direction), direction)
-            .resolve(0.0f)
+        resolve(
+            computeBorder(inlineStartEdge(axis, direction), direction), 0.0f)
             .unwrap(),
         0.0f);
   }
 
   float computeFlexEndBorder(FlexDirection axis, Direction direction) const {
     return maxOrDefined(
-        computeBorder(flexEndEdge(axis), direction).resolve(0.0f).unwrap(),
+        resolve(computeBorder(flexEndEdge(axis), direction), 0.0f).unwrap(),
         0.0f);
   }
 
   float computeInlineEndBorder(FlexDirection axis, Direction direction) const {
     return maxOrDefined(
-        computeBorder(inlineEndEdge(axis, direction), direction)
-            .resolve(0.0f)
+        resolve(computeBorder(inlineEndEdge(axis, direction), direction), 0.0f)
             .unwrap(),
         0.0f);
   }
@@ -413,8 +518,7 @@ class YG_EXPORT Style {
       Direction direction,
       float widthSize) const {
     return maxOrDefined(
-        computePadding(flexStartEdge(axis), direction)
-            .resolve(widthSize)
+        resolve(computePadding(flexStartEdge(axis), direction), widthSize)
             .unwrap(),
         0.0f);
   }
@@ -424,8 +528,9 @@ class YG_EXPORT Style {
       Direction direction,
       float widthSize) const {
     return maxOrDefined(
-        computePadding(inlineStartEdge(axis, direction), direction)
-            .resolve(widthSize)
+        resolve(
+            computePadding(inlineStartEdge(axis, direction), direction),
+            widthSize)
             .unwrap(),
         0.0f);
   }
@@ -435,8 +540,7 @@ class YG_EXPORT Style {
       Direction direction,
       float widthSize) const {
     return maxOrDefined(
-        computePadding(flexEndEdge(axis), direction)
-            .resolve(widthSize)
+        resolve(computePadding(flexEndEdge(axis), direction), widthSize)
             .unwrap(),
         0.0f);
   }
@@ -446,8 +550,9 @@ class YG_EXPORT Style {
       Direction direction,
       float widthSize) const {
     return maxOrDefined(
-        computePadding(inlineEndEdge(axis, direction), direction)
-            .resolve(widthSize)
+        resolve(
+            computePadding(inlineEndEdge(axis, direction), direction),
+            widthSize)
             .unwrap(),
         0.0f);
   }
@@ -512,7 +617,13 @@ class YG_EXPORT Style {
 
   float computeGapForAxis(FlexDirection axis, float ownerSize) const {
     auto gap = isRow(axis) ? computeColumnGap() : computeRowGap();
-    return maxOrDefined(gap.resolve(ownerSize).unwrap(), 0.0f);
+    return maxOrDefined(resolve(gap, ownerSize).unwrap(), 0.0f);
+  }
+
+  float computeGapForDimension(Dimension dimension, float ownerSize) const {
+    auto gap =
+        dimension == Dimension::Width ? computeColumnGap() : computeRowGap();
+    return maxOrDefined(resolve(gap, ownerSize).unwrap(), 0.0f);
   }
 
   bool flexStartMarginIsAuto(FlexDirection axis, Direction direction) const {
@@ -523,10 +634,20 @@ class YG_EXPORT Style {
     return computeMargin(flexEndEdge(axis), direction).isAuto();
   }
 
+  bool inlineStartMarginIsAuto(FlexDirection axis, Direction direction) const {
+    return computeMargin(inlineStartEdge(axis, direction), direction).isAuto();
+  }
+
+  bool inlineEndMarginIsAuto(FlexDirection axis, Direction direction) const {
+    return computeMargin(inlineEndEdge(axis, direction), direction).isAuto();
+  }
+
   bool operator==(const Style& other) const {
     return direction_ == other.direction_ &&
         flexDirection_ == other.flexDirection_ &&
         justifyContent_ == other.justifyContent_ &&
+        justifyItems_ == other.justifyItems_ &&
+        justifySelf_ == other.justifySelf_ &&
         alignContent_ == other.alignContent_ &&
         alignItems_ == other.alignItems_ && alignSelf_ == other.alignSelf_ &&
         positionType_ == other.positionType_ && flexWrap_ == other.flexWrap_ &&
@@ -540,16 +661,20 @@ class YG_EXPORT Style {
         lengthsEqual(padding_, pool_, other.padding_, other.pool_) &&
         lengthsEqual(border_, pool_, other.border_, other.pool_) &&
         lengthsEqual(gap_, pool_, other.gap_, other.pool_) &&
-        lengthsEqual(dimensions_, pool_, other.dimensions_, other.pool_) &&
-        lengthsEqual(
+        sizeLengthsEqual(dimensions_, pool_, other.dimensions_, other.pool_) &&
+        sizeLengthsEqual(
                minDimensions_, pool_, other.minDimensions_, other.pool_) &&
-        lengthsEqual(
+        sizeLengthsEqual(
                maxDimensions_, pool_, other.maxDimensions_, other.pool_) &&
-        numbersEqual(aspectRatio_, pool_, other.aspectRatio_, other.pool_);
-  }
-
-  bool operator!=(const Style& other) const {
-    return !(*this == other);
+        numbersEqual(aspectRatio_, pool_, other.aspectRatio_, other.pool_) &&
+        gridTemplateColumns_ == other.gridTemplateColumns_ &&
+        gridTemplateRows_ == other.gridTemplateRows_ &&
+        gridAutoColumns_ == other.gridAutoColumns_ &&
+        gridAutoRows_ == other.gridAutoRows_ &&
+        gridColumnStart_ == other.gridColumnStart_ &&
+        gridColumnEnd_ == other.gridColumnEnd_ &&
+        gridRowStart_ == other.gridRowStart_ &&
+        gridRowEnd_ == other.gridRowEnd_;
   }
 
  private:
@@ -591,79 +716,107 @@ class YG_EXPORT Style {
         });
   }
 
-  Style::Length computeColumnGap() const {
+  static inline bool sizeLengthsEqual(
+      const StyleValueHandle& lhsHandle,
+      const StyleValuePool& lhsPool,
+      const StyleValueHandle& rhsHandle,
+      const StyleValuePool& rhsPool) {
+    return (lhsHandle.isUndefined() && rhsHandle.isUndefined()) ||
+        (lhsPool.getSize(lhsHandle) == rhsPool.getSize(rhsHandle));
+  }
+
+  template <size_t N>
+  static inline bool sizeLengthsEqual(
+      const std::array<StyleValueHandle, N>& lhs,
+      const StyleValuePool& lhsPool,
+      const std::array<StyleValueHandle, N>& rhs,
+      const StyleValuePool& rhsPool) {
+    return std::equal(
+        lhs.begin(),
+        lhs.end(),
+        rhs.begin(),
+        rhs.end(),
+        [&](const auto& lhs, const auto& rhs) {
+          return sizeLengthsEqual(lhs, lhsPool, rhs, rhsPool);
+        });
+  }
+
+  StyleValueHandle computeColumnGap() const {
     if (gap_[yoga::to_underlying(Gutter::Column)].isDefined()) {
-      return pool_.getLength(gap_[yoga::to_underlying(Gutter::Column)]);
+      return gap_[yoga::to_underlying(Gutter::Column)];
     } else {
-      return pool_.getLength(gap_[yoga::to_underlying(Gutter::All)]);
+      return gap_[yoga::to_underlying(Gutter::All)];
     }
   }
 
-  Style::Length computeRowGap() const {
+  StyleValueHandle computeRowGap() const {
     if (gap_[yoga::to_underlying(Gutter::Row)].isDefined()) {
-      return pool_.getLength(gap_[yoga::to_underlying(Gutter::Row)]);
+      return gap_[yoga::to_underlying(Gutter::Row)];
     } else {
-      return pool_.getLength(gap_[yoga::to_underlying(Gutter::All)]);
+      return gap_[yoga::to_underlying(Gutter::All)];
     }
   }
 
-  Style::Length computeLeftEdge(const Edges& edges, Direction layoutDirection)
-      const {
+  StyleValueHandle computeLeftEdge(
+      const Edges& edges,
+      Direction layoutDirection) const {
     if (layoutDirection == Direction::LTR &&
         edges[yoga::to_underlying(Edge::Start)].isDefined()) {
-      return pool_.getLength(edges[yoga::to_underlying(Edge::Start)]);
+      return edges[yoga::to_underlying(Edge::Start)];
     } else if (
         layoutDirection == Direction::RTL &&
         edges[yoga::to_underlying(Edge::End)].isDefined()) {
-      return pool_.getLength(edges[yoga::to_underlying(Edge::End)]);
+      return edges[yoga::to_underlying(Edge::End)];
     } else if (edges[yoga::to_underlying(Edge::Left)].isDefined()) {
-      return pool_.getLength(edges[yoga::to_underlying(Edge::Left)]);
+      return edges[yoga::to_underlying(Edge::Left)];
     } else if (edges[yoga::to_underlying(Edge::Horizontal)].isDefined()) {
-      return pool_.getLength(edges[yoga::to_underlying(Edge::Horizontal)]);
+      return edges[yoga::to_underlying(Edge::Horizontal)];
     } else {
-      return pool_.getLength(edges[yoga::to_underlying(Edge::All)]);
+      return edges[yoga::to_underlying(Edge::All)];
     }
   }
 
-  Style::Length computeTopEdge(const Edges& edges) const {
+  StyleValueHandle computeTopEdge(const Edges& edges) const {
     if (edges[yoga::to_underlying(Edge::Top)].isDefined()) {
-      return pool_.getLength(edges[yoga::to_underlying(Edge::Top)]);
+      return edges[yoga::to_underlying(Edge::Top)];
     } else if (edges[yoga::to_underlying(Edge::Vertical)].isDefined()) {
-      return pool_.getLength(edges[yoga::to_underlying(Edge::Vertical)]);
+      return edges[yoga::to_underlying(Edge::Vertical)];
     } else {
-      return pool_.getLength(edges[yoga::to_underlying(Edge::All)]);
+      return edges[yoga::to_underlying(Edge::All)];
     }
   }
 
-  Style::Length computeRightEdge(const Edges& edges, Direction layoutDirection)
-      const {
+  StyleValueHandle computeRightEdge(
+      const Edges& edges,
+      Direction layoutDirection) const {
     if (layoutDirection == Direction::LTR &&
         edges[yoga::to_underlying(Edge::End)].isDefined()) {
-      return pool_.getLength(edges[yoga::to_underlying(Edge::End)]);
+      return edges[yoga::to_underlying(Edge::End)];
     } else if (
         layoutDirection == Direction::RTL &&
         edges[yoga::to_underlying(Edge::Start)].isDefined()) {
-      return pool_.getLength(edges[yoga::to_underlying(Edge::Start)]);
+      return edges[yoga::to_underlying(Edge::Start)];
     } else if (edges[yoga::to_underlying(Edge::Right)].isDefined()) {
-      return pool_.getLength(edges[yoga::to_underlying(Edge::Right)]);
+      return edges[yoga::to_underlying(Edge::Right)];
     } else if (edges[yoga::to_underlying(Edge::Horizontal)].isDefined()) {
-      return pool_.getLength(edges[yoga::to_underlying(Edge::Horizontal)]);
+      return edges[yoga::to_underlying(Edge::Horizontal)];
     } else {
-      return pool_.getLength(edges[yoga::to_underlying(Edge::All)]);
+      return edges[yoga::to_underlying(Edge::All)];
     }
   }
 
-  Style::Length computeBottomEdge(const Edges& edges) const {
+  StyleValueHandle computeBottomEdge(const Edges& edges) const {
     if (edges[yoga::to_underlying(Edge::Bottom)].isDefined()) {
-      return pool_.getLength(edges[yoga::to_underlying(Edge::Bottom)]);
+      return edges[yoga::to_underlying(Edge::Bottom)];
     } else if (edges[yoga::to_underlying(Edge::Vertical)].isDefined()) {
-      return pool_.getLength(edges[yoga::to_underlying(Edge::Vertical)]);
+      return edges[yoga::to_underlying(Edge::Vertical)];
     } else {
-      return pool_.getLength(edges[yoga::to_underlying(Edge::All)]);
+      return edges[yoga::to_underlying(Edge::All)];
     }
   }
 
-  Style::Length computePosition(PhysicalEdge edge, Direction direction) const {
+  StyleValueHandle computePosition(PhysicalEdge edge, Direction direction)
+      const {
     switch (edge) {
       case PhysicalEdge::Left:
         return computeLeftEdge(position_, direction);
@@ -678,7 +831,7 @@ class YG_EXPORT Style {
     }
   }
 
-  Style::Length computeMargin(PhysicalEdge edge, Direction direction) const {
+  StyleValueHandle computeMargin(PhysicalEdge edge, Direction direction) const {
     switch (edge) {
       case PhysicalEdge::Left:
         return computeLeftEdge(margin_, direction);
@@ -693,7 +846,8 @@ class YG_EXPORT Style {
     }
   }
 
-  Style::Length computePadding(PhysicalEdge edge, Direction direction) const {
+  StyleValueHandle computePadding(PhysicalEdge edge, Direction direction)
+      const {
     switch (edge) {
       case PhysicalEdge::Left:
         return computeLeftEdge(padding_, direction);
@@ -708,7 +862,7 @@ class YG_EXPORT Style {
     }
   }
 
-  Style::Length computeBorder(PhysicalEdge edge, Direction direction) const {
+  StyleValueHandle computeBorder(PhysicalEdge edge, Direction direction) const {
     switch (edge) {
       case PhysicalEdge::Left:
         return computeLeftEdge(border_, direction);
@@ -723,10 +877,32 @@ class YG_EXPORT Style {
     }
   }
 
+  /**
+   * Internal resolution of a StyleValueHandle.
+   *
+   * Part of the handle-based optimization, this function allows the layout
+   * engine to resolve stored values (Points, Percents) directly from the pool
+   * via handles. This avoids the overhead of materializing an intermediate
+   * StyleLength/StyleSizeLength object on the stack during hot-path overhead
+   * calculations.
+   */
+  FloatOptional resolve(StyleValueHandle handle, float referenceLength) const {
+    if (handle.isPoint()) {
+      return FloatOptional{pool_.getStoredValue(handle)};
+    }
+    if (handle.isPercent()) {
+      return FloatOptional{
+          pool_.getStoredValue(handle) * referenceLength * 0.01f};
+    }
+    return FloatOptional{};
+  }
+
   Direction direction_ : bitCount<Direction>() = Direction::Inherit;
   FlexDirection flexDirection_
       : bitCount<FlexDirection>() = FlexDirection::Column;
   Justify justifyContent_ : bitCount<Justify>() = Justify::FlexStart;
+  Justify justifyItems_ : bitCount<Justify>() = Justify::Stretch;
+  Justify justifySelf_ : bitCount<Justify>() = Justify::Auto;
   Align alignContent_ : bitCount<Align>() = Align::FlexStart;
   Align alignItems_ : bitCount<Align>() = Align::Stretch;
   Align alignSelf_ : bitCount<Align>() = Align::Auto;
@@ -752,6 +928,16 @@ class YG_EXPORT Style {
   Dimensions minDimensions_{};
   Dimensions maxDimensions_{};
   StyleValueHandle aspectRatio_{};
+
+  // Grid properties
+  GridTrackList gridTemplateColumns_{};
+  GridTrackList gridTemplateRows_{};
+  GridTrackList gridAutoColumns_{};
+  GridTrackList gridAutoRows_{};
+  GridLine gridColumnStart_{};
+  GridLine gridColumnEnd_{};
+  GridLine gridRowStart_{};
+  GridLine gridRowEnd_{};
 
   StyleValuePool pool_;
 };

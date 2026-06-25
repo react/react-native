@@ -16,10 +16,10 @@ export type String = string;
 type CB = (value: String) => void;
 
 export interface Spec extends TurboModule {
-  +getValueWithCallback: (callback: (value: string) => void) => void;
-  +getValueWithCallbackWithAlias: (c: CB) => void;
+  readonly getValueWithCallback: (callback: (value: string) => void) => void;
+  readonly getValueWithCallbackWithAlias: (c: CB) => void;
 }
 
-export default (TurboModuleRegistry.getEnforcing<Spec>(
+export default TurboModuleRegistry.getEnforcing<Spec>(
   'SampleTurboModule',
-): Spec);
+) as Spec;

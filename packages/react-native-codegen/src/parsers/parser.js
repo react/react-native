@@ -183,7 +183,7 @@ export interface Parser {
    */
   getFunctionTypeAnnotationParameters(
     functionTypeAnnotation: $FlowFixMe,
-  ): $ReadOnlyArray<$FlowFixMe>;
+  ): ReadonlyArray<$FlowFixMe>;
 
   /**
    * Given a parameter, it returns the function name of the parameter.
@@ -235,7 +235,7 @@ export interface Parser {
    */
   parseEnumMembers(
     typeAnnotation: $FlowFixMe,
-  ): $ReadOnlyArray<NativeModuleEnumMember>;
+  ): ReadonlyArray<NativeModuleEnumMember>;
 
   /**
    * Given a node, it returns true if it is a module interface
@@ -328,7 +328,7 @@ export interface Parser {
    * @parameter typeAlias: the type alias.
    * @returns: an array of properties.
    */
-  bodyProperties(typeAlias: $FlowFixMe): $ReadOnlyArray<$FlowFixMe>;
+  bodyProperties(typeAlias: $FlowFixMe): ReadonlyArray<$FlowFixMe>;
 
   /**
    * Given a keyword convert it to TypeAnnotation.
@@ -382,11 +382,11 @@ export interface Parser {
   getResolveTypeAnnotationFN(): ResolveTypeAnnotationFN;
 
   getProps(
-    typeDefinition: $ReadOnlyArray<PropAST>,
+    typeDefinition: ReadonlyArray<PropAST>,
     types: TypeDeclarationMap,
   ): {
-    props: $ReadOnlyArray<NamedShape<PropTypeAnnotation>>,
-    extendsProps: $ReadOnlyArray<ExtendsPropsShape>,
+    props: ReadonlyArray<NamedShape<PropTypeAnnotation>>,
+    extendsProps: ReadonlyArray<ExtendsPropsShape>,
   };
 
   getProperties(typeName: string, types: TypeDeclarationMap): $FlowFixMe;

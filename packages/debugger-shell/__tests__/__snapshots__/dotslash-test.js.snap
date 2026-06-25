@@ -3,7 +3,7 @@
 exports[`prepareDebuggerShellFromDotSlashFile fails with the expected error message for a missing dotslash file 1`] = `
 Object {
   "code": "unexpected_error",
-  "humanReadableMessage": "An unexpected error occured while installing the latest version of React Native DevTools. Using a fallback version instead.",
+  "humanReadableMessage": "An unexpected error occurred while installing the latest version of React Native DevTools. Using a fallback version instead.",
   "verboseInfo": Any<String>,
 }
 `;

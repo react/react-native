@@ -17,7 +17,7 @@ namespace facebook::react {
 
 static bool
 hasValue(const RawProps& rawProps, bool defaultValue, const char* name) {
-  auto rawValue = rawProps.at(name, nullptr, nullptr);
+  auto rawValue = rawProps.at(name);
 
   // No change to prop - use default
   if (rawValue == nullptr) {

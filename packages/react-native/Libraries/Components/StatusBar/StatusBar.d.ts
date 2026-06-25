@@ -10,7 +10,11 @@
 import type * as React from 'react';
 import {ColorValue} from '../../StyleSheet/StyleSheet';
 
-export type StatusBarStyle = 'default' | 'light-content' | 'dark-content';
+export type StatusBarStyle =
+  | 'default'
+  | 'auto'
+  | 'light-content'
+  | 'dark-content';
 
 export type StatusBarAnimation = 'none' | 'fade' | 'slide';
 

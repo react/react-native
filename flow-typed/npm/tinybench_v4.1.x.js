@@ -11,7 +11,7 @@
 declare module 'tinybench' {
   declare export class Task extends EventTarget {
     name: string;
-    result: void | $ReadOnly<TaskResult>;
+    result: void | Readonly<TaskResult>;
     runs: number;
 
     reset(): void;
@@ -108,13 +108,13 @@ declare module 'tinybench' {
   declare export class Bench extends EventTarget {
     concurrency: null | 'task' | 'bench';
     name?: string;
-    opts: $ReadOnly<BenchOptions>;
+    opts: Readonly<BenchOptions>;
     threshold: number;
 
     constructor(options?: BenchOptions): this;
 
     // $FlowExpectedError[unsafe-getters-setters]
-    get results(): Array<$ReadOnly<TaskResult>>;
+    get results(): Array<Readonly<TaskResult>>;
 
     // $FlowExpectedError[unsafe-getters-setters]
     get tasks(): Array<Task>;

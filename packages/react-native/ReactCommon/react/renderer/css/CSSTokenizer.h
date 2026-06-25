@@ -67,6 +67,8 @@ class CSSTokenizer {
         } else {
           return consumeDelim();
         }
+      default:
+        break;
     }
 
     if (isDigit(nextChar)) {

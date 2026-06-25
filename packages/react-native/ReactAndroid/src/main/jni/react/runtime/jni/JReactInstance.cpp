@@ -173,7 +173,10 @@ void JReactInstance::callFunctionOnModule(
     const std::string& moduleName,
     const std::string& methodName,
     NativeArray* args) {
-  instance_->callFunctionOnModule(moduleName, methodName, args->consume());
+  instance_->callFunctionOnModule(
+      moduleName,
+      methodName,
+      args != nullptr ? args->consume() : folly::dynamic::array());
 }
 
 jni::alias_ref<JRuntimeExecutor::javaobject>

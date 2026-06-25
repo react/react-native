@@ -16,18 +16,27 @@ declare module 'tinyglobby' {
     followSymbolicLinks?: boolean,
     fs?: FileSystemAdapter,
     globstar?: boolean,
-    ignore?: string | $ReadOnlyArray<string>,
+    ignore?: string | ReadonlyArray<string>,
     onlyDirectories?: boolean,
     onlyFiles?: boolean,
     signal?: AbortSignal,
   };
 
   declare type GlobModule = {
-    convertPathToPattern(path: string): string;
-    escapePath(path: string): string;
-    isDynamicPattern(pattern: string, options?: { caseSensitiveMatch: boolean }): boolean;
-    glob(patterns: string | $ReadOnlyArray<string>, options?: GlobOptions): Promise<string[]>;
-    globSync(patterns: string | $ReadOnlyArray<string>, options?: GlobOptions): string[];
+    convertPathToPattern(path: string): string,
+    escapePath(path: string): string,
+    isDynamicPattern(
+      pattern: string,
+      options?: {caseSensitiveMatch: boolean},
+    ): boolean,
+    glob(
+      patterns: string | ReadonlyArray<string>,
+      options?: GlobOptions,
+    ): Promise<string[]>,
+    globSync(
+      patterns: string | ReadonlyArray<string>,
+      options?: GlobOptions,
+    ): string[],
   };
 
   declare module.exports: GlobModule;

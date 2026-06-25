@@ -1,0 +1,12 @@
+struct test::Converter<int> : public test::ConverterBase<int> {
+  public void doSomething();
+}
+
+template <typename T>
+struct test::Converter {
+}
+
+template <typename T>
+struct test::ConverterBase {
+  public ConverterBase() = default;
+}

@@ -11,6 +11,6 @@
 import type {Spec} from '../ReactNative/NativeUIManager';
 
 export interface UIManagerJSInterface extends Spec {
-  +getViewManagerConfig: (viewManagerName: string) => Object;
-  +hasViewManagerConfig: (viewManagerName: string) => boolean;
+  readonly getViewManagerConfig: (viewManagerName: string) => Object;
+  readonly hasViewManagerConfig: (viewManagerName: string) => boolean;
 }

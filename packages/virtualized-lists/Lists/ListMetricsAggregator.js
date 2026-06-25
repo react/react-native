@@ -135,7 +135,7 @@ export default class ListMetricsAggregator {
     layout,
   }: {
     orientation: ListOrientation,
-    layout: $ReadOnly<{width: number, height: number}>,
+    layout: Readonly<{width: number, height: number}>,
   }): void {
     this._invalidateIfOrientationChanged(orientation);
     this._contentLength = this._selectLength(layout);
@@ -320,11 +320,11 @@ export default class ListMetricsAggregator {
   _selectLength({
     width,
     height,
-  }: $ReadOnly<{width: number, height: number, ...}>): number {
+  }: Readonly<{width: number, height: number, ...}>): number {
     return this._orientation.horizontal ? width : height;
   }
 
-  _selectOffset({x, y}: $ReadOnly<{x: number, y: number, ...}>): number {
+  _selectOffset({x, y}: Readonly<{x: number, y: number, ...}>): number {
     return this._orientation.horizontal ? x : y;
   }
 }

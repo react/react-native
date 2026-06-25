@@ -14,6 +14,7 @@ const {
   codegenLog,
   isReactNativeCoreLibrary,
   parseiOSAnnotations,
+  writeFileSyncIfChanged,
 } = require('./utils');
 const fs = require('fs');
 const path = require('path');
@@ -31,7 +32,7 @@ const MODULE_PROVIDERS_MM_TEMPLATE_PATH = path.join(
 function generateRCTModuleProviders(
   projectRoot /*: string */,
   pkgJson /*: $FlowFixMe */,
-  libraries /*: $ReadOnlyArray<$FlowFixMe> */,
+  libraries /*: ReadonlyArray<$FlowFixMe> */,
   outputDir /*: string */,
 ) {
   fs.mkdirSync(outputDir, {recursive: true});
@@ -39,7 +40,7 @@ function generateRCTModuleProviders(
   codegenLog('Generating RCTModulesProvider.h');
   const templateH = fs.readFileSync(MODULE_PROVIDERS_H_TEMPLATE_PATH, 'utf8');
   const finalPathH = path.join(outputDir, 'RCTModuleProviders.h');
-  fs.writeFileSync(finalPathH, templateH);
+  writeFileSyncIfChanged(finalPathH, templateH);
   codegenLog(`Generated artifact: ${finalPathH}`);
 
   codegenLog('Generating RCTModuleProviders.mm');
@@ -112,7 +113,7 @@ function generateRCTModuleProviders(
     .readFileSync(MODULE_PROVIDERS_MM_TEMPLATE_PATH, 'utf8')
     .replace(/{moduleMapping}/, modulesMapping);
   const finalPathMM = path.join(outputDir, 'RCTModuleProviders.mm');
-  fs.writeFileSync(finalPathMM, templateMM);
+  writeFileSyncIfChanged(finalPathMM, templateMM);
   codegenLog(`Generated artifact: ${finalPathMM}`);
 }
 

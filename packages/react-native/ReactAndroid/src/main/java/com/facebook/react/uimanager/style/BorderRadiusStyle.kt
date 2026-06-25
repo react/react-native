@@ -12,7 +12,12 @@ import android.util.LayoutDirection
 import com.facebook.react.modules.i18nmanager.I18nUtil
 import com.facebook.react.uimanager.LengthPercentage
 
-/** Represents the collection of possible border radius style properties. */
+/**
+ * Enum representing all possible border radius style property names.
+ *
+ * This includes both physical corner properties (e.g., BORDER_TOP_LEFT_RADIUS) and logical corner
+ * properties (e.g., BORDER_START_START_RADIUS) that adapt to layout direction.
+ */
 public enum class BorderRadiusProp {
   BORDER_RADIUS,
   BORDER_TOP_LEFT_RADIUS,
@@ -29,7 +34,16 @@ public enum class BorderRadiusProp {
   BORDER_START_START_RADIUS,
 }
 
-/** Represents all logical properties and shorthands for border radius. */
+/**
+ * Represents all logical and physical border radius properties and shorthands.
+ *
+ * This data class stores border radius values using both physical corner names (topLeft, topRight,
+ * etc.) and logical corner names (topStart, startStart, etc.) that adapt to layout direction.
+ * Values are stored as [LengthPercentage] to support both absolute and percentage-based radii.
+ *
+ * @see BorderRadiusProp
+ * @see ComputedBorderRadius
+ */
 internal data class BorderRadiusStyle(
     var uniform: LengthPercentage? = null,
     var topLeft: LengthPercentage? = null,
@@ -49,6 +63,12 @@ internal data class BorderRadiusStyle(
     properties.forEach { (k, v) -> set(k, v) }
   }
 
+  /**
+   * Sets a border radius property value.
+   *
+   * @param property The border radius property to set
+   * @param value The length/percentage value, or null to clear
+   */
   fun set(property: BorderRadiusProp, value: LengthPercentage?) {
     when (property) {
       BorderRadiusProp.BORDER_RADIUS -> uniform = value
@@ -67,6 +87,12 @@ internal data class BorderRadiusStyle(
     }
   }
 
+  /**
+   * Gets a border radius property value.
+   *
+   * @param property The border radius property to get
+   * @return The length/percentage value, or null if not set
+   */
   fun get(property: BorderRadiusProp): LengthPercentage? {
     return when (property) {
       BorderRadiusProp.BORDER_RADIUS -> uniform
@@ -85,6 +111,11 @@ internal data class BorderRadiusStyle(
     }
   }
 
+  /**
+   * Checks if any border radius property is set.
+   *
+   * @return true if at least one border radius is defined
+   */
   fun hasRoundedBorders(): Boolean {
     return uniform != null ||
         topLeft != null ||
@@ -101,6 +132,19 @@ internal data class BorderRadiusStyle(
         endEnd != null
   }
 
+  /**
+   * Resolves logical border radius properties to physical corners based on layout direction.
+   *
+   * This method converts logical properties (startStart, topEnd, etc.) to physical corners
+   * (topLeft, topRight, etc.) based on the layout direction and RTL settings. It also ensures
+   * corner radii do not overlap per the CSS specification.
+   *
+   * @param layoutDirection The resolved layout direction (LTR or RTL)
+   * @param context Android context for RTL configuration
+   * @param width The width of the element for percentage resolution
+   * @param height The height of the element for percentage resolution
+   * @return ComputedBorderRadius with resolved physical corner radii
+   */
   fun resolve(
       layoutDirection: Int,
       context: Context,
@@ -117,11 +161,11 @@ internal data class BorderRadiusStyle(
                     CornerRadii(it, width, height)
                   } ?: zeroRadii,
               topRight =
-                  (endStart ?: topEnd ?: topRight ?: uniform)?.let {
+                  (startEnd ?: topEnd ?: topRight ?: uniform)?.let {
                     CornerRadii(it, width, height)
                   } ?: zeroRadii,
               bottomLeft =
-                  (startEnd ?: bottomStart ?: bottomLeft ?: uniform)?.let {
+                  (endStart ?: bottomStart ?: bottomLeft ?: uniform)?.let {
                     CornerRadii(it, width, height)
                   } ?: zeroRadii,
               bottomRight =
@@ -135,7 +179,7 @@ internal data class BorderRadiusStyle(
           if (I18nUtil.instance.doLeftAndRightSwapInRTL(context)) {
             ensureNoOverlap(
                 topLeft =
-                    (endStart ?: topEnd ?: topRight ?: uniform)?.let {
+                    (startEnd ?: topEnd ?: topRight ?: uniform)?.let {
                       CornerRadii(it, width, height)
                     } ?: zeroRadii,
                 topRight =
@@ -147,7 +191,7 @@ internal data class BorderRadiusStyle(
                       CornerRadii(it, width, height)
                     } ?: zeroRadii,
                 bottomRight =
-                    (startEnd ?: bottomStart ?: bottomLeft ?: uniform)?.let {
+                    (endStart ?: bottomStart ?: bottomLeft ?: uniform)?.let {
                       CornerRadii(it, width, height)
                     } ?: zeroRadii,
                 width = width,
@@ -156,7 +200,7 @@ internal data class BorderRadiusStyle(
           } else {
             ensureNoOverlap(
                 topLeft =
-                    (endStart ?: topEnd ?: topLeft ?: uniform)?.let {
+                    (startEnd ?: topEnd ?: topLeft ?: uniform)?.let {
                       CornerRadii(it, width, height)
                     } ?: zeroRadii,
                 topRight =
@@ -168,7 +212,7 @@ internal data class BorderRadiusStyle(
                       CornerRadii(it, width, height)
                     } ?: zeroRadii,
                 bottomRight =
-                    (startEnd ?: bottomEnd ?: bottomRight ?: uniform)?.let {
+                    (endStart ?: bottomEnd ?: bottomRight ?: uniform)?.let {
                       CornerRadii(it, width, height)
                     } ?: zeroRadii,
                 width = width,

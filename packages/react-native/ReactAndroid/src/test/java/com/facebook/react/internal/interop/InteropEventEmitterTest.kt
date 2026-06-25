@@ -10,7 +10,6 @@
 package com.facebook.react.internal.interop
 
 import com.facebook.react.bridge.BridgeReactContext
-import com.facebook.react.bridge.JavaOnlyArray
 import com.facebook.react.bridge.JavaOnlyMap
 import com.facebook.react.bridge.ReactContext
 import com.facebook.testutils.fakes.FakeEventDispatcher
@@ -58,11 +57,5 @@ class InteropEventEmitterTest {
     val dispatchedEventData = event.eventData
     assertThat(dispatchedEventData).isNotNull()
     assertThat(dispatchedEventData!!.getString("color")).isEqualTo("indigo")
-  }
-
-  @Test(expected = java.lang.UnsupportedOperationException::class)
-  fun receiveTouches_isNotSupported() {
-    val eventEmitter = InteropEventEmitter(reactContext)
-    eventEmitter.receiveTouches("a touch", JavaOnlyArray.of(), JavaOnlyArray.of())
   }
 }

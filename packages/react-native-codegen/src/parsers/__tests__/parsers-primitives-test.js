@@ -652,6 +652,39 @@ describe('emitPromise', () => {
       });
     });
   });
+
+  describe('when Promise element type resolves to ArrayBufferTypeAnnotation', () => {
+    it('returns PromiseTypeAnnotation with ArrayBuffer element type', () => {
+      const result = emitPromise(
+        moduleName,
+        {
+          typeParameters: {
+            params: [{}],
+            type: 'TypeParameterInstantiation',
+          },
+          id: {
+            name: 'Promise',
+          },
+        },
+        parser,
+        false,
+        {},
+        {},
+        {},
+        function <T>(f: () => T): $FlowFixMe {
+          return f();
+        },
+        false,
+        () => ({
+          type: 'ArrayBufferTypeAnnotation',
+        }),
+      );
+      expect(result).toEqual({
+        type: 'PromiseTypeAnnotation',
+        elementType: {type: 'ArrayBufferTypeAnnotation'},
+      });
+    });
+  });
 });
 
 describe('emitGenericObject', () => {
@@ -1825,6 +1858,26 @@ describe('emitUnion', () => {
       const result = emitCommonTypesForUnitTest(typeAnnotation, false);
 
       it("returns 'FloatTypeAnnotation'", () => {
+        expect(result).toEqual(expected);
+      });
+    });
+
+    describe("when 'typeAnnotation.id.name' is 'ArrayBuffer'", () => {
+      const typeAnnotation = {
+        typeParameters: {
+          params: [1, 2],
+          type: 'GenericTypeAnnotation',
+        },
+        id: {
+          name: 'ArrayBuffer',
+        },
+      };
+      const expected = {
+        type: 'ArrayBufferTypeAnnotation',
+      };
+      const result = emitCommonTypesForUnitTest(typeAnnotation, false);
+
+      it("returns 'ArrayBufferTypeAnnotation'", () => {
         expect(result).toEqual(expected);
       });
     });

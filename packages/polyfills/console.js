@@ -611,13 +611,12 @@ if (global.nativeLoggingHook) {
   // Delete the copy there after the c++ pipeline is rolled out everywhere.
   if (global.RN$useAlwaysAvailableJSErrorHandling === true) {
     let originalConsoleError = console.error;
-    console.reportErrorsAsExceptions = true;
     function stringifySafe(arg) {
       return inspect(arg, {depth: 10}).replace(/\n\s*/g, ' ');
     }
     console.error = function (...args) {
       originalConsoleError.apply(this, args);
-      if (!console.reportErrorsAsExceptions) {
+      if (console.reportErrorsAsExceptions === false) {
         return;
       }
       if (global.RN$inExceptionHandler?.()) {

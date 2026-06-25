@@ -5,6 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#ifndef RCT_REMOVE_LEGACY_ARCH
+
 #include <cxxreact/MethodCall.h>
 
 #include <folly/json.h>
@@ -152,3 +154,5 @@ TEST(parseMethodCalls, ParseTwoCalls) {
   auto returnedCalls = parseMethodCalls(folly::parseJson(jsText));
   EXPECT_EQ(2, returnedCalls.size());
 }
+
+#endif // RCT_REMOVE_LEGACY_ARCH

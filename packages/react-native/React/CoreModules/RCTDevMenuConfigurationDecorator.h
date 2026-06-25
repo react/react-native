@@ -15,8 +15,8 @@
 
 @property (nonatomic, strong, readonly) RCTDevMenuConfiguration *__nullable devMenuConfiguration;
 
-- (instancetype)initWithDevMenuConfiguration:(RCTDevMenuConfiguration *__nullable)devMenuConfiguration;
-- (void)decorate:(id<RCTBridgeModule>)devMenuModule;
+- (instancetype _Nonnull)initWithDevMenuConfiguration:(RCTDevMenuConfiguration *__nullable)devMenuConfiguration;
+- (void)decorate:(id<RCTBridgeModule> _Nonnull)devMenuModule;
 
 #endif
 

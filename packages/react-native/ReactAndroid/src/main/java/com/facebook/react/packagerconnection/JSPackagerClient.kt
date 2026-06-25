@@ -9,6 +9,7 @@ package com.facebook.react.packagerconnection
 
 import android.net.Uri
 import com.facebook.common.logging.FLog
+import com.facebook.react.devsupport.inspector.DevSupportHttpClient
 import com.facebook.react.modules.systeminfo.AndroidInfoHelpers.getFriendlyDeviceName
 import com.facebook.react.packagerconnection.ReconnectingWebSocket.MessageCallback
 import okio.ByteString
@@ -28,7 +29,7 @@ public constructor(
   init {
     val url =
         Uri.Builder()
-            .scheme("ws")
+            .scheme(DevSupportHttpClient.wsScheme(settings.debugServerHost))
             .encodedAuthority(settings.debugServerHost)
             .appendPath("message")
             .appendQueryParameter("device", getFriendlyDeviceName())

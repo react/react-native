@@ -15,7 +15,7 @@ import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 const SampleTurboModuleExample = require('./SampleTurboModuleExample');
 const React = require('react');
 
-exports.displayName = (undefined: ?string);
+exports.displayName = undefined as ?string;
 exports.title = 'TurboModule';
 exports.category = 'Basic';
 exports.description = 'Usage of TurboModule';

@@ -10,25 +10,25 @@
 
 'use strict';
 
-type HermesStackLocationNative = $ReadOnly<{
+type HermesStackLocationNative = Readonly<{
   type: 'NATIVE',
 }>;
 
-type HermesStackLocationSource = $ReadOnly<{
+type HermesStackLocationSource = Readonly<{
   type: 'SOURCE',
   sourceUrl: string,
   line1Based: number,
   column1Based: number,
 }>;
 
-type HermesStackLocationInternalBytecode = $ReadOnly<{
+type HermesStackLocationInternalBytecode = Readonly<{
   type: 'INTERNAL_BYTECODE',
   sourceUrl: string,
   line1Based: number,
   virtualOffset0Based: number,
 }>;
 
-type HermesStackLocationBytecode = $ReadOnly<{
+type HermesStackLocationBytecode = Readonly<{
   type: 'BYTECODE',
   sourceUrl: string,
   line1Based: number,
@@ -41,22 +41,22 @@ type HermesStackLocation =
   | HermesStackLocationInternalBytecode
   | HermesStackLocationBytecode;
 
-type HermesStackEntryFrame = $ReadOnly<{
+type HermesStackEntryFrame = Readonly<{
   type: 'FRAME',
   location: HermesStackLocation,
   functionName: string,
 }>;
 
-type HermesStackEntrySkipped = $ReadOnly<{
+type HermesStackEntrySkipped = Readonly<{
   type: 'SKIPPED',
   count: number,
 }>;
 
 type HermesStackEntry = HermesStackEntryFrame | HermesStackEntrySkipped;
 
-export type HermesParsedStack = $ReadOnly<{
+export type HermesParsedStack = Readonly<{
   message: string,
-  entries: $ReadOnlyArray<HermesStackEntry>,
+  entries: ReadonlyArray<HermesStackEntry>,
 }>;
 
 // Capturing groups:

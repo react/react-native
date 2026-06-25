@@ -45,8 +45,8 @@ export default function attachKeyHandlers({
   reporter,
 }: {
   devServerUrl: string,
-  messageSocket: $ReadOnly<{
-    broadcast: (type: string, params?: Record<string, mixed> | null) => void,
+  messageSocket: Readonly<{
+    broadcast: (type: string, params?: Record<string, unknown> | null) => void,
     ...
   }>,
   reporter: TerminalReporter,

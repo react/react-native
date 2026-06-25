@@ -15,7 +15,7 @@ import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 import RNTesterBlock from '../../components/RNTesterBlock';
 import RNTesterPage from '../../components/RNTesterPage';
 import RNTesterText from '../../components/RNTesterText';
-import React from 'react';
+import * as React from 'react';
 import {Alert, StyleSheet, TouchableWithoutFeedback, View} from 'react-native';
 
 const importantForAccessibilityValues = [

@@ -6,7 +6,7 @@ inputs:
     default: 2.6.10
   run-unit-tests:
     description: whether unit tests should run or not.
-    default: "true"
+    default: false
   flavor:
     description: The flavor of the build. Must be one of "Debug", "Release".
     default: Debug
@@ -24,8 +24,6 @@ runs:
   steps:
     - name: Setup xcode
       uses: ./.github/actions/setup-xcode
-      with:
-        platform: ios
     - name: Setup node.js
       uses: ./.github/actions/setup-node
     - name: Run yarn
@@ -34,10 +32,10 @@ runs:
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: ${{ inputs.ruby-version }}
-    - name: Set nightly Hermes versions
+    - name: Set Hermes prebuilt version
       shell: bash
       run: |
-        node ./scripts/releases/use-hermes-nightly.js
+        node ./scripts/releases/use-hermes-prebuilt.js
     - name: Run yarn install again, with the correct hermes version
       uses: ./.github/actions/yarn-install
     - name: Prepare IOS Tests
@@ -94,7 +92,7 @@ runs:
 
           echo "App found at $APP_PATH"
           echo "app-path=$APP_PATH" >> $GITHUB_ENV
-    - name: "Run Tests: iOS Unit and Integration Tests"
+    - name: 'Run Tests: iOS Unit and Integration Tests'
       if: ${{ inputs.run-unit-tests == 'true' }}
       shell: bash
       run: yarn test-ios

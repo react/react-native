@@ -27,7 +27,6 @@ import {
   useWindowDimensions,
 } from 'react-native';
 
-type Props = $ReadOnly<{}>;
 const boxSize = 12;
 const padding = 8;
 const leftToRightTimingConfig = (useNativeDriver: boolean) => ({
@@ -128,12 +127,7 @@ const items = [
   },
 ];
 
-function ComposingExampleItem({
-  title,
-  description,
-  compositeAnimation,
-  useNativeDriver,
-}: {
+component ComposingExampleItem(
   title: string,
   description: string,
   compositeAnimation: (
@@ -141,7 +135,7 @@ function ComposingExampleItem({
     useNativeDriver: boolean,
   ) => CompositeAnimation,
   useNativeDriver: boolean,
-}): React.Node {
+) {
   const {width: windowWidth} = useWindowDimensions();
 
   // Figure out how far along the x axis we should translate the box by taking into
@@ -150,6 +144,7 @@ function ComposingExampleItem({
   const boxIndexes = useMemo(() => [0, 1, 2, 3, 4], []);
   const xTranslations = useRef(boxIndexes.map(() => new Animated.Value(0)));
   const animation = useRef(
+    // $FlowFixMe[react-rule-unsafe-ref]
     compositeAnimation(xTranslations.current, useNativeDriver),
   );
   const theme = useContext(RNTesterThemeContext);
@@ -206,7 +201,7 @@ function ComposingExampleItem({
   );
 }
 
-function ComposingExample(props: Props): React.Node {
+component ComposingExample() {
   const [useNativeDriver, setUseNativeDriver] = useState(false);
 
   return (
@@ -260,9 +255,9 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ({
+export default {
   title: 'Composing',
   name: 'composing',
   description: 'Combine multiple animations using composition functions',
   render: () => <ComposingExample />,
-}: RNTesterModuleExample);
+} as RNTesterModuleExample;

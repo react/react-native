@@ -13,7 +13,7 @@ const {getPackages} = require('../../../shared/monorepoUtils');
 const {existsSync} = require('fs');
 const path = require('path');
 
-export type DependencyContext = $ReadOnly<{
+export type DependencyContext = Readonly<{
   reportUnresolvedDependency(importPath: string): void,
 }>;
 

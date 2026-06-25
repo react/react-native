@@ -9,7 +9,7 @@
  */
 
 export default function parseKeyValueParamArray(
-  keyValueArray: $ReadOnlyArray<string>,
+  keyValueArray: ReadonlyArray<string>,
 ): Record<string, string> {
   const result = {};
 

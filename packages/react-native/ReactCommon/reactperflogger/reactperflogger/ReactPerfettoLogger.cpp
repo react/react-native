@@ -20,7 +20,6 @@ namespace {
 #if defined(WITH_PERFETTO)
 const HighResTimeStamp PROGRAM_INIT_TIME = HighResTimeStamp::now();
 const std::string PERFETTO_DEFAULT_TRACK_NAME = "# Web Performance";
-const std::string PERFETTO_TRACK_NAME_PREFIX = "# Web Performance: ";
 
 std::string toPerfettoTrackName(
     const std::optional<std::string_view>& trackName,

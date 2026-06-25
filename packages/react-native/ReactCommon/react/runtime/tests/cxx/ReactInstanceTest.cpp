@@ -26,9 +26,9 @@ namespace facebook::react {
 
 class MockTimerRegistry : public PlatformTimerRegistry {
  public:
-  MOCK_METHOD2(createTimer, void(uint32_t, double));
-  MOCK_METHOD2(createRecurringTimer, void(uint32_t, double));
-  MOCK_METHOD1(deleteTimer, void(uint32_t));
+  MOCK_METHOD(void, createTimer, (uint32_t, double), (override));
+  MOCK_METHOD(void, createRecurringTimer, (uint32_t, double), (override));
+  MOCK_METHOD(void, deleteTimer, (uint32_t), (override));
 };
 
 class MockMessageQueueThread : public MessageQueueThread {

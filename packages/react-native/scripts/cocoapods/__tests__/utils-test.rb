@@ -39,6 +39,53 @@ class UtilsTests < Test::Unit::TestCase
         $RN_PLATFORMS = nil
     end
 
+    # ===================== #
+    # TEST - localFileUri   #
+    # ===================== #
+
+    def test_localFileUri_whenPathContainsUnicode_returnsEscapedFileUri
+        # Arrange
+        path = "/tmp/rn-unicode/💻dev/React-Core-prebuilt.tar.gz"
+
+        # Act
+        result = ReactNativePodsUtils.local_file_uri(path)
+
+        # Assert
+        assert_equal("file:///tmp/rn-unicode/%F0%9F%92%BBdev/React-Core-prebuilt.tar.gz", result)
+    end
+
+    def test_localFileUri_whenPathContainsSpaces_returnsEscapedFileUri
+        # Arrange
+        path = "/tmp/rn space/React Core.tar.gz"
+
+        # Act
+        result = ReactNativePodsUtils.local_file_uri(path)
+
+        # Assert
+        assert_equal("file:///tmp/rn%20space/React%20Core.tar.gz", result)
+    end
+
+    def test_localFileUri_whenPathContainsOnlyAscii_returnsFileUri
+        # Arrange
+        path = "/tmp/rn-ascii/React-Core-prebuilt.tar.gz"
+
+        # Act
+        result = ReactNativePodsUtils.local_file_uri(path)
+
+        # Assert
+        assert_equal("file:///tmp/rn-ascii/React-Core-prebuilt.tar.gz", result)
+    end
+
+    def test_localFileUri_whenPathContainsUnicode_withoutEscapingUriFileBuildRaises
+        # Arrange
+        path = "/tmp/rn-unicode/💻dev/React-Core-prebuilt.tar.gz"
+
+        # Act & Assert
+        assert_raise(URI::InvalidComponentError) do
+            URI::File.build(path: path).to_s
+        end
+    end
+
     # ======================= #
     # TEST - warnIfNotOnArm64 #
     # ======================= #
@@ -585,7 +632,7 @@ class UtilsTests < Test::Unit::TestCase
         # Assert
         user_project_mock.build_configurations.each do |config|
             received_search_path = config.build_settings["HEADER_SEARCH_PATHS"]
-            expected_search_path = "$(inherited) ${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon/ReactCommon.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon/ReactCommon.framework/Headers/react/nativemodule/core ${PODS_CONFIGURATION_BUILD_DIR}/React-runtimeexecutor/React_runtimeexecutor.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/React-runtimeexecutor/React_runtimeexecutor.framework/Headers/platform/ios ${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon-Samples/ReactCommon_Samples.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon-Samples/ReactCommon_Samples.framework/Headers/platform/ios ${PODS_CONFIGURATION_BUILD_DIR}/React-Fabric/React_Fabric.framework/Headers/react/renderer/components/view/platform/cxx ${PODS_CONFIGURATION_BUILD_DIR}/React-NativeModulesApple/React_NativeModulesApple.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers/react/renderer/graphics/platform/ios"
+            expected_search_path = "$(inherited) ${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon/ReactCommon.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon/ReactCommon.framework/Headers/react/nativemodule/core ${PODS_CONFIGURATION_BUILD_DIR}/React-runtimeexecutor/React_runtimeexecutor.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/React-runtimeexecutor/React_runtimeexecutor.framework/Headers/platform/ios ${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon-Samples/ReactCommon_Samples.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon-Samples/ReactCommon_Samples.framework/Headers/platform/ios ${PODS_CONFIGURATION_BUILD_DIR}/React-Fabric/React_Fabric.framework/Headers/react/renderer/components/view/platform/cxx ${PODS_CONFIGURATION_BUILD_DIR}/React-NativeModulesApple/React_NativeModulesApple.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers/react/renderer/graphics/platform/ios ${PODS_CONFIGURATION_BUILD_DIR}/React-featureflags/React_featureflags.framework/Headers ${PODS_CONFIGURATION_BUILD_DIR}/React-renderercss/React_renderercss.framework/Headers"
             assert_equal(expected_search_path, received_search_path)
         end
 

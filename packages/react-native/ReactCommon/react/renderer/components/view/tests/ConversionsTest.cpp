@@ -7,8 +7,10 @@
 
 #include <gtest/gtest.h>
 
+#include <react/renderer/attributedstring/conversions.h>
 #include <react/renderer/components/view/BoxShadowPropsConversions.h>
 #include <react/renderer/components/view/FilterPropsConversions.h>
+#include <react/renderer/components/view/conversions.h>
 
 namespace facebook::react {
 
@@ -237,6 +239,305 @@ TEST(ConversionsTest, unprocessed_filter_objects_multiple_objects) {
       PropsParserContext{-1, ContextContainer{}}, value, filters);
 
   EXPECT_TRUE(filters.empty());
+}
+
+TEST(ConversionsTest, unprocessed_filter_objects_unknown_type) {
+  RawValue value{
+      folly::dynamic::array(folly::dynamic::object("unknown-filter", 5))};
+
+  std::vector<FilterFunction> filters;
+  parseUnprocessedFilter(
+      PropsParserContext{-1, ContextContainer{}}, value, filters);
+
+  EXPECT_TRUE(filters.empty());
+}
+
+TEST(ConversionsTest, unprocessed_transform_css_string) {
+  Transform result;
+  parseUnprocessedTransformString(
+      "rotate(45deg) scale(2) translateX(10px)", result);
+
+  EXPECT_EQ(result.operations.size(), 3);
+
+  // rotate(45deg) -> Rotate, z = 45 * PI / 180
+  EXPECT_EQ(result.operations[0].type, TransformOperationType::Rotate);
+  EXPECT_NEAR(
+      result.operations[0].z.value,
+      static_cast<float>(45.0 * M_PI / 180.0),
+      0.001f);
+
+  // scale(2) -> Scale, x=2, y=2
+  EXPECT_EQ(result.operations[1].type, TransformOperationType::Scale);
+  EXPECT_EQ(result.operations[1].x.value, 2.0f);
+  EXPECT_EQ(result.operations[1].y.value, 2.0f);
+
+  // translateX(10px) -> Translate, x=10
+  EXPECT_EQ(result.operations[2].type, TransformOperationType::Translate);
+  EXPECT_EQ(result.operations[2].x.value, 10.0f);
+  EXPECT_EQ(result.operations[2].x.unit, UnitType::Point);
+  EXPECT_EQ(result.operations[2].y.value, 0.0f);
+}
+
+TEST(ConversionsTest, unprocessed_transform_css_translate_percent) {
+  Transform result;
+  parseUnprocessedTransformString("translate(10px, 50%)", result);
+
+  EXPECT_EQ(result.operations.size(), 1);
+  EXPECT_EQ(result.operations[0].type, TransformOperationType::Translate);
+  EXPECT_EQ(result.operations[0].x.value, 10.0f);
+  EXPECT_EQ(result.operations[0].x.unit, UnitType::Point);
+  EXPECT_EQ(result.operations[0].y.value, 50.0f);
+  EXPECT_EQ(result.operations[0].y.unit, UnitType::Percent);
+}
+
+TEST(ConversionsTest, unprocessed_transform_css_perspective) {
+  Transform result;
+  parseUnprocessedTransformString("perspective(500px)", result);
+
+  EXPECT_EQ(result.operations.size(), 1);
+  EXPECT_EQ(result.operations[0].type, TransformOperationType::Perspective);
+  EXPECT_EQ(result.operations[0].x.value, 500.0f);
+}
+
+TEST(ConversionsTest, unprocessed_transform_css_invalid_string) {
+  Transform result;
+  parseUnprocessedTransformString("not-a-transform", result);
+
+  EXPECT_TRUE(result.operations.empty());
+}
+
+TEST(ConversionsTest, unprocessed_transform_rawvalue_string) {
+  RawValue value{folly::dynamic("rotate(45deg) scale(2)")};
+  Transform result;
+  parseUnprocessedTransform(
+      PropsParserContext{-1, ContextContainer{}}, value, result);
+
+  EXPECT_EQ(result.operations.size(), 2);
+  EXPECT_EQ(result.operations[0].type, TransformOperationType::Rotate);
+  EXPECT_EQ(result.operations[1].type, TransformOperationType::Scale);
+}
+
+TEST(ConversionsTest, unprocessed_transform_rawvalue_array) {
+  RawValue value{folly::dynamic::array(
+      folly::dynamic::object("rotate", "45deg"),
+      folly::dynamic::object("scale", 2))};
+  Transform result;
+  parseUnprocessedTransform(
+      PropsParserContext{-1, ContextContainer{}}, value, result);
+
+  EXPECT_EQ(result.operations.size(), 2);
+  EXPECT_EQ(result.operations[0].type, TransformOperationType::Rotate);
+  EXPECT_EQ(result.operations[1].type, TransformOperationType::Scale);
+  EXPECT_EQ(result.operations[1].x.value, 2.0f);
+}
+
+TEST(ConversionsTest, unprocessed_transform_rawvalue_matrix) {
+  RawValue value{folly::dynamic::array(
+      folly::dynamic::object(
+          "matrix",
+          folly::dynamic::array(
+              1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)))};
+  Transform result;
+  parseUnprocessedTransform(
+      PropsParserContext{-1, ContextContainer{}}, value, result);
+
+  EXPECT_EQ(result.operations.size(), 1);
+  EXPECT_EQ(result.operations[0].type, TransformOperationType::Arbitrary);
+}
+
+TEST(ConversionsTest, unprocessed_transform_rawvalue_translate_percent) {
+  RawValue value{
+      folly::dynamic::array(folly::dynamic::object("translateX", "50%"))};
+  Transform result;
+  parseUnprocessedTransform(
+      PropsParserContext{-1, ContextContainer{}}, value, result);
+
+  EXPECT_EQ(result.operations.size(), 1);
+  EXPECT_EQ(result.operations[0].type, TransformOperationType::Translate);
+  EXPECT_EQ(result.operations[0].x.value, 50.0f);
+  EXPECT_EQ(result.operations[0].x.unit, UnitType::Percent);
+}
+
+TEST(ConversionsTest, unprocessed_transform_origin_css_top_left) {
+  TransformOrigin result;
+  parseUnprocessedTransformOriginString("top left", result);
+
+  EXPECT_EQ(result.xy[0].value, 0.0f);
+  EXPECT_EQ(result.xy[0].unit, UnitType::Percent);
+  EXPECT_EQ(result.xy[1].value, 0.0f);
+  EXPECT_EQ(result.xy[1].unit, UnitType::Percent);
+  EXPECT_EQ(result.z, 0.0f);
+}
+
+TEST(ConversionsTest, unprocessed_transform_origin_css_center) {
+  TransformOrigin result;
+  parseUnprocessedTransformOriginString("center", result);
+
+  EXPECT_EQ(result.xy[0].value, 50.0f);
+  EXPECT_EQ(result.xy[0].unit, UnitType::Percent);
+  EXPECT_EQ(result.xy[1].value, 50.0f);
+  EXPECT_EQ(result.xy[1].unit, UnitType::Percent);
+  EXPECT_EQ(result.z, 0.0f);
+}
+
+TEST(ConversionsTest, unprocessed_transform_origin_css_right_bottom) {
+  TransformOrigin result;
+  parseUnprocessedTransformOriginString("right bottom", result);
+
+  EXPECT_EQ(result.xy[0].value, 100.0f);
+  EXPECT_EQ(result.xy[0].unit, UnitType::Percent);
+  EXPECT_EQ(result.xy[1].value, 100.0f);
+  EXPECT_EQ(result.xy[1].unit, UnitType::Percent);
+  EXPECT_EQ(result.z, 0.0f);
+}
+
+TEST(ConversionsTest, unprocessed_transform_origin_css_length_percent) {
+  TransformOrigin result;
+  parseUnprocessedTransformOriginString("10px 50%", result);
+
+  EXPECT_EQ(result.xy[0].value, 10.0f);
+  EXPECT_EQ(result.xy[0].unit, UnitType::Point);
+  EXPECT_EQ(result.xy[1].value, 50.0f);
+  EXPECT_EQ(result.xy[1].unit, UnitType::Percent);
+  EXPECT_EQ(result.z, 0.0f);
+}
+
+TEST(ConversionsTest, unprocessed_transform_origin_processed_array) {
+  RawValue value{folly::dynamic::array("50%", "50%", 0)};
+
+  TransformOrigin result;
+  parseProcessedTransformOrigin(
+      PropsParserContext{-1, ContextContainer{}}, value, result);
+
+  EXPECT_EQ(result.xy[0].value, 50.0f);
+  EXPECT_EQ(result.xy[0].unit, UnitType::Percent);
+  EXPECT_EQ(result.xy[1].value, 50.0f);
+  EXPECT_EQ(result.xy[1].unit, UnitType::Percent);
+  EXPECT_EQ(result.z, 0.0f);
+}
+
+TEST(ConversionsTest, unprocessed_transform_origin_rawvalue_string) {
+  RawValue value{folly::dynamic("top left")};
+  TransformOrigin result;
+  parseUnprocessedTransformOrigin(
+      PropsParserContext{-1, ContextContainer{}}, value, result);
+
+  EXPECT_EQ(result.xy[0].value, 0.0f);
+  EXPECT_EQ(result.xy[0].unit, UnitType::Percent);
+  EXPECT_EQ(result.xy[1].value, 0.0f);
+  EXPECT_EQ(result.xy[1].unit, UnitType::Percent);
+  EXPECT_EQ(result.z, 0.0f);
+}
+
+TEST(ConversionsTest, unprocessed_transform_origin_rawvalue_array) {
+  RawValue value{folly::dynamic::array(10, "50%", 5)};
+  TransformOrigin result;
+  parseUnprocessedTransformOrigin(
+      PropsParserContext{-1, ContextContainer{}}, value, result);
+
+  EXPECT_EQ(result.xy[0].value, 10.0f);
+  EXPECT_EQ(result.xy[0].unit, UnitType::Point);
+  EXPECT_EQ(result.xy[1].value, 50.0f);
+  EXPECT_EQ(result.xy[1].unit, UnitType::Percent);
+  EXPECT_EQ(result.z, 5.0f);
+}
+
+TEST(ConversionsTest, unprocessed_transform_origin_rawvalue_string_with_z) {
+  RawValue value{folly::dynamic("center center 15px")};
+  TransformOrigin result;
+  parseUnprocessedTransformOrigin(
+      PropsParserContext{-1, ContextContainer{}}, value, result);
+
+  EXPECT_EQ(result.xy[0].value, 50.0f);
+  EXPECT_EQ(result.xy[0].unit, UnitType::Percent);
+  EXPECT_EQ(result.xy[1].value, 50.0f);
+  EXPECT_EQ(result.xy[1].unit, UnitType::Percent);
+  EXPECT_EQ(result.z, 15.0f);
+}
+
+TEST(ConversionsTest, unprocessed_font_variant_string_single) {
+  FontVariant result{};
+  parseUnprocessedFontVariantString("small-caps", result);
+
+  EXPECT_EQ((int)result, (int)FontVariant::SmallCaps);
+}
+
+TEST(ConversionsTest, unprocessed_font_variant_string_multiple) {
+  FontVariant result{};
+  parseUnprocessedFontVariantString(
+      "small-caps oldstyle-nums tabular-nums", result);
+
+  EXPECT_EQ(
+      (int)result,
+      (int)FontVariant::SmallCaps | (int)FontVariant::OldstyleNums |
+          (int)FontVariant::TabularNums);
+}
+
+TEST(ConversionsTest, unprocessed_font_variant_string_invalid) {
+  FontVariant result{};
+  parseUnprocessedFontVariantString("not-a-variant", result);
+
+  EXPECT_EQ((int)result, (int)FontVariant::Default);
+}
+
+TEST(ConversionsTest, convert_aspect_ratio_float) {
+  RawValue value{folly::dynamic(1.5)};
+  auto result =
+      convertAspectRatio(PropsParserContext{-1, ContextContainer{}}, value);
+
+  EXPECT_FALSE(result.isUndefined());
+  EXPECT_EQ(result.unwrap(), 1.5f);
+}
+
+TEST(ConversionsTest, convert_aspect_ratio_ratio_string) {
+  // CSSRatio parses "16/9" as {numerator: 16, denominator: 9}
+  auto ratio = parseCSSProperty<CSSRatio>("16/9");
+  ASSERT_TRUE(std::holds_alternative<CSSRatio>(ratio));
+  auto r = std::get<CSSRatio>(ratio);
+  EXPECT_FALSE(r.isDegenerate());
+  EXPECT_NEAR(r.numerator / r.denominator, 16.0f / 9.0f, 0.001f);
+}
+
+TEST(ConversionsTest, convert_aspect_ratio_number_string) {
+  // CSSRatio parses "1.5" as {numerator: 1.5, denominator: 1.0}
+  auto ratio = parseCSSProperty<CSSRatio>("1.5");
+  ASSERT_TRUE(std::holds_alternative<CSSRatio>(ratio));
+  auto r = std::get<CSSRatio>(ratio);
+  EXPECT_FALSE(r.isDegenerate());
+  EXPECT_EQ(r.numerator / r.denominator, 1.5f);
+}
+
+TEST(ConversionsTest, convert_aspect_ratio_degenerate) {
+  auto ratio = parseCSSProperty<CSSRatio>("0/0");
+  ASSERT_TRUE(std::holds_alternative<CSSRatio>(ratio));
+  EXPECT_TRUE(std::get<CSSRatio>(ratio).isDegenerate());
+}
+
+TEST(ConversionsTest, float_optional_from_rawvalue_float) {
+  RawValue value{folly::dynamic(1.5)};
+  yoga::FloatOptional result;
+  fromRawValue(PropsParserContext{-1, ContextContainer{}}, value, result);
+
+  EXPECT_FALSE(result.isUndefined());
+  EXPECT_EQ(result.unwrap(), 1.5f);
+}
+
+TEST(ConversionsTest, float_optional_undefined_for_non_float) {
+  RawValue value{folly::dynamic(nullptr)};
+  yoga::FloatOptional result;
+  fromRawValue(PropsParserContext{-1, ContextContainer{}}, value, result);
+
+  EXPECT_TRUE(result.isUndefined());
+}
+
+TEST(ConversionsTest, float_optional_undefined_for_string) {
+  // fromRawValue for FloatOptional does not parse strings —
+  // that is handled by convertAspectRatio specifically.
+  RawValue value{folly::dynamic("16/9")};
+  yoga::FloatOptional result;
+  fromRawValue(PropsParserContext{-1, ContextContainer{}}, value, result);
+
+  EXPECT_TRUE(result.isUndefined());
 }
 
 } // namespace facebook::react

@@ -8,27 +8,3 @@
 #import <React/RCTConvert.h>
 #import <React/RCTInvalidating.h>
 #import <React/RCTViewManager.h>
-
-#ifndef RCT_REMOVE_LEGACY_ARCH
-
-typedef void (^RCTModalViewInteractionBlock)(
-    UIViewController *reactViewController,
-    UIViewController *viewController,
-    BOOL animated,
-    dispatch_block_t completionBlock)
-    __attribute__((deprecated("This API will be removed along with the legacy architecture.")));
-
-__attribute__((deprecated("This API will be removed along with the legacy architecture.")))
-@interface RCTModalHostViewManager : RCTViewManager<RCTInvalidating>
-
-/**
- * `presentationBlock` and `dismissalBlock` allow you to control how a Modal interacts with your case,
- * e.g. in case you have a native navigator that has its own way to display a modal.
- * If these are not specified, it falls back to the UIViewController standard way of presenting.
- */
-@property (nonatomic, strong) RCTModalViewInteractionBlock presentationBlock;
-@property (nonatomic, strong) RCTModalViewInteractionBlock dismissalBlock;
-
-@end
-
-#endif // RCT_REMOVE_LEGACY_ARCH

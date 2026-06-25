@@ -16,10 +16,10 @@ export type Number = number;
 type AnotherNumber = Number;
 
 export interface Spec extends TurboModule {
-  +getNumber: (arg: number) => number;
-  +getNumberWithAlias: (arg: Number) => AnotherNumber;
+  readonly getNumber: (arg: number) => number;
+  readonly getNumberWithAlias: (arg: Number) => AnotherNumber;
 }
 
-export default (TurboModuleRegistry.getEnforcing<Spec>(
+export default TurboModuleRegistry.getEnforcing<Spec>(
   'SampleTurboModule',
-): Spec);
+) as Spec;

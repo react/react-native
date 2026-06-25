@@ -46,7 +46,7 @@ type RequiredProps<ItemT, SectionT = DefaultSectionT> = {
    *       ItemSeparatorComponent?: ?ReactClass<{highlighted: boolean, ...}>,
    *     }>
    */
-  sections: $ReadOnlyArray<SectionData<ItemT, SectionT>>,
+  sections: ReadonlyArray<SectionData<ItemT, SectionT>>,
 };
 
 type OptionalProps<ItemT, SectionT = DefaultSectionT> = {
@@ -101,7 +101,7 @@ type OptionalProps<ItemT, SectionT = DefaultSectionT> = {
   removeClippedSubviews?: boolean,
 };
 
-export type Props<ItemT, SectionT = DefaultSectionT> = $ReadOnly<{
+export type Props<ItemT, SectionT = DefaultSectionT> = Readonly<{
   ...Omit<
     VirtualizedSectionListProps<ItemT, SectionT>,
     'getItem' | 'getItemCount' | 'renderItem' | 'keyExtractor',

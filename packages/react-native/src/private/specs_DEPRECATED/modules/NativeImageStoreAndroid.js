@@ -13,14 +13,14 @@ import type {TurboModule} from '../../../../Libraries/TurboModule/RCTExport';
 import * as TurboModuleRegistry from '../../../../Libraries/TurboModule/TurboModuleRegistry';
 
 export interface Spec extends TurboModule {
-  +getConstants: () => {};
-  +getBase64ForTag: (
+  readonly getConstants: () => {};
+  readonly getBase64ForTag: (
     uri: string,
     successCallback: (base64ImageData: string) => void,
     errorCallback: (error: string) => void,
   ) => void;
 }
 
-export default (TurboModuleRegistry.getEnforcing<Spec>(
+export default TurboModuleRegistry.getEnforcing<Spec>(
   'ImageStoreManager',
-): Spec);
+) as Spec;

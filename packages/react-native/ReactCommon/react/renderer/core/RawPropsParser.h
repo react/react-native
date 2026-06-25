@@ -7,14 +7,13 @@
 
 #pragma once
 
-#include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/renderer/core/Props.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/core/RawProps.h>
-#include <react/renderer/core/RawPropsKey.h>
 #include <react/renderer/core/RawPropsKeyMap.h>
 #include <react/renderer/core/RawPropsPrimitives.h>
 #include <react/renderer/core/RawValue.h>
+#include <string_view>
 
 namespace facebook::react {
 
@@ -27,11 +26,9 @@ class RawPropsParser final {
   /*
    * Default constructor.
    * To be used by `ConcreteComponentDescriptor` only.
-   * If `useRawPropsJsiValue` is `true`, the parser will use `jsi::Value`
-   * directly for RawValues instead of converting them to `folly::dynamic`.
    */
-  RawPropsParser(bool useRawPropsJsiValue = ReactNativeFeatureFlags::useRawPropsJsiValue())
-      : useRawPropsJsiValue_(useRawPropsJsiValue) {};
+  RawPropsParser() = default;
+  [[deprecated]] explicit RawPropsParser(bool /* ignored */) : RawPropsParser() {}
 
   /*
    * To be used by `ConcreteComponentDescriptor` only.
@@ -59,7 +56,6 @@ class RawPropsParser final {
   template <class ShadowNodeT>
   friend class ConcreteComponentDescriptor;
   friend class RawProps;
-  bool useRawPropsJsiValue_{false};
 
   /*
    * To be used by `RawProps` only.
@@ -74,9 +70,9 @@ class RawPropsParser final {
   /*
    * To be used by `RawProps` only.
    */
-  const RawValue *at(const RawProps &rawProps, const RawPropsKey &key) const noexcept;
+  const RawValue *at(const RawProps &rawProps, std::string_view key) const noexcept;
 
-  mutable std::vector<RawPropsKey> keys_{};
+  mutable std::vector<std::string_view> keys_{};
   mutable RawPropsKeyMap nameToIndex_{};
   mutable bool ready_{false};
 };

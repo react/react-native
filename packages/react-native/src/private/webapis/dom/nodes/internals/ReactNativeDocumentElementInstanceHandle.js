@@ -49,7 +49,7 @@ export function setPublicInstanceForReactNativeDocumentElementInstanceHandle(
 }
 
 export function isReactNativeDocumentElementInstanceHandle(
-  instanceHandle: mixed,
+  instanceHandle: unknown,
 ): instanceHandle is ReactNativeDocumentElementInstanceHandle {
   return instanceHandle instanceof ReactNativeDocumentElementInstanceHandleImpl;
 }

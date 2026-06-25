@@ -15,10 +15,16 @@ import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.RippleDrawable
 import android.util.TypedValue
+import com.facebook.common.logging.FLog
+import com.facebook.react.bridge.ColorPropConverter
+import com.facebook.react.bridge.JSApplicationCausedNativeException
 import com.facebook.react.bridge.JSApplicationIllegalArgumentException
 import com.facebook.react.bridge.ReadableMap
+import com.facebook.react.bridge.ReadableType
+import com.facebook.react.common.ReactConstants
 import com.facebook.react.uimanager.PixelUtil
 import com.facebook.react.uimanager.ViewProps
+import kotlin.math.roundToInt
 
 /**
  * Utility class that helps with converting android drawable description used in JS to an actual
@@ -73,11 +79,21 @@ public object ReactDrawableHelper {
       context: Context,
       drawableDescriptionDict: ReadableMap,
   ): RippleDrawable {
-    val color = getColor(context, drawableDescriptionDict)
-    val mask = getMask(drawableDescriptionDict)
-    val colorStateList = ColorStateList(arrayOf(intArrayOf()), intArrayOf(color))
+    val resolvedColor = getColor(context, drawableDescriptionDict)
+    var color = resolvedColor ?: getFallbackColor(context)
 
-    return RippleDrawable(colorStateList, null, mask)
+    if (
+        resolvedColor != null &&
+            drawableDescriptionDict.hasKey("alpha") &&
+            !drawableDescriptionDict.isNull("alpha")
+    ) {
+      val alphaFactor = drawableDescriptionDict.getDouble("alpha").coerceIn(0.0, 1.0)
+      val newAlpha = (Color.alpha(color) * alphaFactor).roundToInt()
+      color = Color.argb(newAlpha, Color.red(color), Color.green(color), Color.blue(color))
+    }
+
+    val mask = getMask(drawableDescriptionDict)
+    return RippleDrawable(ColorStateList(arrayOf(intArrayOf()), intArrayOf(color)), null, mask)
   }
 
   private fun setRadius(drawableDescriptionDict: ReadableMap, drawable: Drawable?): Drawable? {
@@ -88,26 +104,49 @@ public object ReactDrawableHelper {
     return drawable
   }
 
-  private fun getColor(context: Context, drawableDescriptionDict: ReadableMap): Int =
-      if (
-          drawableDescriptionDict.hasKey(ViewProps.COLOR) &&
-              !drawableDescriptionDict.isNull(ViewProps.COLOR)
-      ) {
-        drawableDescriptionDict.getInt(ViewProps.COLOR)
-      } else {
+  /**
+   * Returns the resolved ripple color, or null if none was provided or the PlatformColor resource
+   * couldn't be found.
+   */
+  private fun getColor(context: Context, drawableDescriptionDict: ReadableMap): Int? {
+    val rawColor: Any? =
         if (
-            context.theme.resolveAttribute(
-                android.R.attr.colorControlHighlight,
-                resolveOutValue,
-                true,
-            )
+            drawableDescriptionDict.hasKey(ViewProps.COLOR) &&
+                !drawableDescriptionDict.isNull(ViewProps.COLOR)
         ) {
-          context.resources.getColor(resolveOutValue.resourceId, context.theme)
+          when (drawableDescriptionDict.getType(ViewProps.COLOR)) {
+            ReadableType.Number -> drawableDescriptionDict.getDouble(ViewProps.COLOR)
+            ReadableType.Map -> drawableDescriptionDict.getMap(ViewProps.COLOR)
+            else -> null
+          }
         } else {
-          throw JSApplicationIllegalArgumentException(
-              "Attribute colorControlHighlight couldn't be resolved into a drawable"
-          )
+          null
         }
+    return try {
+      ColorPropConverter.getColor(rawColor, context)
+    } catch (e: JSApplicationCausedNativeException) {
+      FLog.w(
+          ReactConstants.TAG,
+          e,
+          "android_ripple: color resource not found, using colorControlHighlight",
+      )
+      null
+    }
+  }
+
+  private fun getFallbackColor(context: Context): Int =
+      if (
+          context.theme.resolveAttribute(
+              android.R.attr.colorControlHighlight,
+              resolveOutValue,
+              true,
+          )
+      ) {
+        context.resources.getColor(resolveOutValue.resourceId, context.theme)
+      } else {
+        throw JSApplicationIllegalArgumentException(
+            "Attribute colorControlHighlight couldn't be resolved into a drawable"
+        )
       }
 
   private fun getMask(drawableDescriptionDict: ReadableMap): Drawable? {

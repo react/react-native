@@ -1,23 +1,23 @@
 {
   "name": "@react-native/virtualized-lists",
-  "version": "0.84.0-main",
+  "version": "0.87.0-main",
   "description": "Virtualized lists for React Native.",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/facebook/react-native.git",
+    "url": "git+https://github.com/react/react-native.git",
     "directory": "packages/virtualized-lists"
   },
-  "homepage": "https://github.com/facebook/react-native/tree/HEAD/packages/virtualized-lists#readme",
+  "homepage": "https://github.com/react/react-native/tree/HEAD/packages/virtualized-lists#readme",
   "keywords": [
     "lists",
     "virtualized-lists",
     "section-lists",
     "react-native"
   ],
-  "bugs": "https://github.com/facebook/react-native/issues",
+  "bugs": "https://github.com/react/react-native/issues",
   "engines": {
-    "node": ">= 20.19.4"
+    "node": "^22.13.0 || ^24.3.0 || >= 26.0.0"
   },
   "exports": {
     ".": {
@@ -48,12 +48,12 @@
     "nullthrows": "^1.1.1"
   },
   "devDependencies": {
-    "react-test-renderer": "19.2.0"
+    "react-test-renderer": "19.2.3"
   },
   "peerDependencies": {
     "@types/react": "^19.2.0",
     "react": "*",
-    "react-native": "*"
+    "react-native": "1000.0.0"
   },
   "peerDependenciesMeta": {
     "@types/react": {

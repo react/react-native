@@ -125,6 +125,7 @@ internal class RedBoxDialogSurfaceDelegate(private val devSupportManager: DevSup
               .apply {
                 requestWindowFeature(Window.FEATURE_NO_TITLE)
                 setContentView(checkNotNull(redBoxContentView))
+                setOnCancelListener { devSupportManager.hideRedboxDialog() }
               }
     }
     dialog?.show()

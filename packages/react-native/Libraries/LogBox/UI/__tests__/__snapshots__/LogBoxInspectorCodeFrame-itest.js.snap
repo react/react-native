@@ -1,0 +1,924 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`LogBoxInspectorCodeFrame should dedupe if code frames are the same 1`] = `
+<React.Fragment>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    flex="1"
+    fontSize="18"
+    fontSizeMultiplier="NaN"
+    fontWeight="600"
+    foregroundColor="rgba(255, 255, 255, 1)"
+    includeFontPadding="false"
+    lineHeight="20"
+    overflow="hidden"
+  >
+    Source
+  </rn-paragraph>
+  <rn-view
+    backgroundColor="rgba(51, 51, 51, 1)"
+    marginLeft="10"
+    marginRight="10"
+    marginTop="5"
+  />
+  <rn-view
+    borderBottomWidth="1"
+    padding="10"
+  />
+  <rn-scrollView
+    flexDirection="row"
+    flexGrow="1"
+    flexShrink="1"
+    horizontal="true"
+    overflow="scroll"
+  >
+    <rn-androidHorizontalScrollContentView
+      flexDirection="row"
+      minWidth="100%"
+    >
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        flexGrow="1"
+        fontSize="NaN"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(0, 0, 0, 0)"
+        overflow="hidden"
+      >
+        <rn-text
+          allowFontScaling="true"
+          fontFamily="monospace"
+          fontSize="12"
+          foregroundColor="rgba(255, 255, 255, 1)"
+          layoutDirection="ltr"
+          lineHeight="20"
+        >
+          ‎  63 | function ConsoleWithThrow() {
+        </rn-text>
+      </rn-paragraph>
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        flexGrow="1"
+        fontSize="NaN"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(0, 0, 0, 0)"
+        overflow="hidden"
+      >
+        <rn-text
+          allowFontScaling="true"
+          fontFamily="monospace"
+          fontSize="12"
+          foregroundColor="rgba(255, 255, 255, 1)"
+          layoutDirection="ltr"
+          lineHeight="20"
+        >
+          ‎  64 |   console.error('hit');
+        </rn-text>
+      </rn-paragraph>
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        flexGrow="1"
+        fontSize="NaN"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(0, 0, 0, 0)"
+        overflow="hidden"
+      >
+        <rn-text
+          allowFontScaling="true"
+          fontFamily="monospace"
+          fontSize="12"
+          foregroundColor="rgba(255, 255, 255, 1)"
+          layoutDirection="ltr"
+          lineHeight="20"
+        >
+          ‎&gt; 65 |   throw new Error('test');
+        </rn-text>
+      </rn-paragraph>
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        flexGrow="1"
+        fontSize="NaN"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(0, 0, 0, 0)"
+        overflow="hidden"
+      >
+        <rn-text
+          allowFontScaling="true"
+          fontFamily="monospace"
+          fontSize="12"
+          foregroundColor="rgba(255, 255, 255, 1)"
+          layoutDirection="ltr"
+          lineHeight="20"
+        >
+          ‎     |                  ^
+        </rn-text>
+      </rn-paragraph>
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        flexGrow="1"
+        fontSize="NaN"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(0, 0, 0, 0)"
+        overflow="hidden"
+      >
+        <rn-text
+          allowFontScaling="true"
+          fontFamily="monospace"
+          fontSize="12"
+          foregroundColor="rgba(255, 255, 255, 1)"
+          layoutDirection="ltr"
+          lineHeight="20"
+        >
+          ‎  66 | }
+        </rn-text>
+      </rn-paragraph>
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        flexGrow="1"
+        fontSize="NaN"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(0, 0, 0, 0)"
+        overflow="hidden"
+      >
+        <rn-text
+          allowFontScaling="true"
+          fontFamily="monospace"
+          fontSize="12"
+          foregroundColor="rgba(255, 255, 255, 1)"
+          layoutDirection="ltr"
+          lineHeight="20"
+        >
+          ‎  67 |
+        </rn-text>
+      </rn-paragraph>
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        flexGrow="1"
+        fontSize="NaN"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(0, 0, 0, 0)"
+        overflow="hidden"
+      >
+        <rn-text
+          allowFontScaling="true"
+          fontFamily="monospace"
+          fontSize="12"
+          foregroundColor="rgba(255, 255, 255, 1)"
+          layoutDirection="ltr"
+          lineHeight="20"
+        >
+          ‎  68 |
+        </rn-text>
+      </rn-paragraph>
+    </rn-androidHorizontalScrollContentView>
+  </rn-scrollView>
+  <rn-view
+    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessible="true"
+    paddingBottom="10"
+    paddingTop="10"
+  >
+    <rn-paragraph
+      alignment="center"
+      allowFontScaling="true"
+      ellipsizeMode="tail"
+      flex="1"
+      fontFamily="monospace"
+      fontSize="12"
+      fontSizeMultiplier="NaN"
+      foregroundColor="rgba(255, 255, 255, 0.501961)"
+      includeFontPadding="false"
+      lineHeight="16"
+      overflow="hidden"
+    >
+      CrashReactApp.js (65:19)
+    </rn-paragraph>
+  </rn-view>
+</React.Fragment>
+`;
+
+exports[`LogBoxInspectorCodeFrame should render a code frame 1`] = `
+<React.Fragment>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    flex="1"
+    fontSize="18"
+    fontSizeMultiplier="NaN"
+    fontWeight="600"
+    foregroundColor="rgba(255, 255, 255, 1)"
+    includeFontPadding="false"
+    lineHeight="20"
+    overflow="hidden"
+  >
+    Source
+  </rn-paragraph>
+  <rn-view
+    backgroundColor="rgba(51, 51, 51, 1)"
+    marginLeft="10"
+    marginRight="10"
+    marginTop="5"
+  />
+  <rn-view
+    borderBottomWidth="1"
+    padding="10"
+  />
+  <rn-scrollView
+    flexDirection="row"
+    flexGrow="1"
+    flexShrink="1"
+    horizontal="true"
+    overflow="scroll"
+  >
+    <rn-androidHorizontalScrollContentView
+      flexDirection="row"
+      minWidth="100%"
+    >
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        flexGrow="1"
+        fontSize="NaN"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(0, 0, 0, 0)"
+        overflow="hidden"
+      >
+        <rn-text
+          allowFontScaling="true"
+          fontFamily="monospace"
+          fontSize="12"
+          foregroundColor="rgba(255, 255, 255, 1)"
+          layoutDirection="ltr"
+          lineHeight="20"
+        >
+          ‎  197 | });
+        </rn-text>
+      </rn-paragraph>
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        flexGrow="1"
+        fontSize="NaN"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(0, 0, 0, 0)"
+        overflow="hidden"
+      >
+        <rn-text
+          allowFontScaling="true"
+          fontFamily="monospace"
+          fontSize="12"
+          foregroundColor="rgba(255, 255, 255, 1)"
+          layoutDirection="ltr"
+          lineHeight="20"
+        >
+          ‎    198 |
+        </rn-text>
+      </rn-paragraph>
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        flexGrow="1"
+        fontSize="NaN"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(0, 0, 0, 0)"
+        overflow="hidden"
+      >
+        <rn-text
+          allowFontScaling="true"
+          fontFamily="monospace"
+          fontSize="12"
+          foregroundColor="rgba(255, 255, 255, 1)"
+          layoutDirection="ltr"
+          lineHeight="20"
+        >
+          ‎  &gt; 199 | export default CrashReactApp;
+        </rn-text>
+      </rn-paragraph>
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        flexGrow="1"
+        fontSize="NaN"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(0, 0, 0, 0)"
+        overflow="hidden"
+      >
+        <rn-text
+          allowFontScaling="true"
+          fontFamily="monospace"
+          fontSize="12"
+          foregroundColor="rgba(255, 255, 255, 1)"
+          layoutDirection="ltr"
+          lineHeight="20"
+        >
+          ‎        | ^
+        </rn-text>
+      </rn-paragraph>
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        flexGrow="1"
+        fontSize="NaN"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(0, 0, 0, 0)"
+        overflow="hidden"
+      >
+        <rn-text
+          allowFontScaling="true"
+          fontFamily="monospace"
+          fontSize="12"
+          foregroundColor="rgba(255, 255, 255, 1)"
+          layoutDirection="ltr"
+          lineHeight="20"
+        >
+          ‎    200 |
+        </rn-text>
+      </rn-paragraph>
+    </rn-androidHorizontalScrollContentView>
+  </rn-scrollView>
+  <rn-view
+    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessible="true"
+    paddingBottom="10"
+    paddingTop="10"
+  >
+    <rn-paragraph
+      alignment="center"
+      allowFontScaling="true"
+      ellipsizeMode="tail"
+      flex="1"
+      fontFamily="monospace"
+      fontSize="12"
+      fontSizeMultiplier="NaN"
+      foregroundColor="rgba(255, 255, 255, 0.501961)"
+      includeFontPadding="false"
+      lineHeight="16"
+      overflow="hidden"
+    >
+      CrashReactApp.js (199:1)
+    </rn-paragraph>
+  </rn-view>
+</React.Fragment>
+`;
+
+exports[`LogBoxInspectorCodeFrame should render a code frame without a location 1`] = `
+<React.Fragment>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    flex="1"
+    fontSize="18"
+    fontSizeMultiplier="NaN"
+    fontWeight="600"
+    foregroundColor="rgba(255, 255, 255, 1)"
+    includeFontPadding="false"
+    lineHeight="20"
+    overflow="hidden"
+  >
+    Source
+  </rn-paragraph>
+  <rn-view
+    backgroundColor="rgba(51, 51, 51, 1)"
+    marginLeft="10"
+    marginRight="10"
+    marginTop="5"
+  />
+  <rn-view
+    borderBottomWidth="1"
+    padding="10"
+  />
+  <rn-scrollView
+    flexDirection="row"
+    flexGrow="1"
+    flexShrink="1"
+    horizontal="true"
+    overflow="scroll"
+  >
+    <rn-androidHorizontalScrollContentView
+      flexDirection="row"
+      minWidth="100%"
+    >
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        flexGrow="1"
+        fontSize="NaN"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(0, 0, 0, 0)"
+        overflow="hidden"
+      >
+        <rn-text
+          allowFontScaling="true"
+          fontFamily="monospace"
+          fontSize="12"
+          foregroundColor="rgba(255, 255, 255, 1)"
+          layoutDirection="ltr"
+          lineHeight="20"
+        >
+          ‎  197 | });
+        </rn-text>
+      </rn-paragraph>
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        flexGrow="1"
+        fontSize="NaN"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(0, 0, 0, 0)"
+        overflow="hidden"
+      >
+        <rn-text
+          allowFontScaling="true"
+          fontFamily="monospace"
+          fontSize="12"
+          foregroundColor="rgba(255, 255, 255, 1)"
+          layoutDirection="ltr"
+          lineHeight="20"
+        >
+          ‎    198 |
+        </rn-text>
+      </rn-paragraph>
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        flexGrow="1"
+        fontSize="NaN"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(0, 0, 0, 0)"
+        overflow="hidden"
+      >
+        <rn-text
+          allowFontScaling="true"
+          fontFamily="monospace"
+          fontSize="12"
+          foregroundColor="rgba(255, 255, 255, 1)"
+          layoutDirection="ltr"
+          lineHeight="20"
+        >
+          ‎  &gt; 199 | export default CrashReactApp;
+        </rn-text>
+      </rn-paragraph>
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        flexGrow="1"
+        fontSize="NaN"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(0, 0, 0, 0)"
+        overflow="hidden"
+      >
+        <rn-text
+          allowFontScaling="true"
+          fontFamily="monospace"
+          fontSize="12"
+          foregroundColor="rgba(255, 255, 255, 1)"
+          layoutDirection="ltr"
+          lineHeight="20"
+        >
+          ‎        | ^
+        </rn-text>
+      </rn-paragraph>
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        flexGrow="1"
+        fontSize="NaN"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(0, 0, 0, 0)"
+        overflow="hidden"
+      >
+        <rn-text
+          allowFontScaling="true"
+          fontFamily="monospace"
+          fontSize="12"
+          foregroundColor="rgba(255, 255, 255, 1)"
+          layoutDirection="ltr"
+          lineHeight="20"
+        >
+          ‎    200 |
+        </rn-text>
+      </rn-paragraph>
+    </rn-androidHorizontalScrollContentView>
+  </rn-scrollView>
+  <rn-view
+    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessible="true"
+    paddingBottom="10"
+    paddingTop="10"
+  >
+    <rn-paragraph
+      alignment="center"
+      allowFontScaling="true"
+      ellipsizeMode="tail"
+      flex="1"
+      fontFamily="monospace"
+      fontSize="12"
+      fontSizeMultiplier="NaN"
+      foregroundColor="rgba(255, 255, 255, 0.501961)"
+      includeFontPadding="false"
+      lineHeight="16"
+      overflow="hidden"
+    >
+      CrashReactApp.js
+    </rn-paragraph>
+  </rn-view>
+</React.Fragment>
+`;
+
+exports[`LogBoxInspectorCodeFrame should render both a code frame and a component frame 1`] = `
+<React.Fragment>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    flex="1"
+    fontSize="18"
+    fontSizeMultiplier="NaN"
+    fontWeight="600"
+    foregroundColor="rgba(255, 255, 255, 1)"
+    includeFontPadding="false"
+    lineHeight="20"
+    overflow="hidden"
+  >
+    Sources
+  </rn-paragraph>
+  <rn-view
+    backgroundColor="rgba(51, 51, 51, 1)"
+    marginLeft="10"
+    marginRight="10"
+    marginTop="5"
+  />
+  <rn-view
+    borderBottomWidth="1"
+    padding="10"
+  />
+  <rn-scrollView
+    flexDirection="row"
+    flexGrow="1"
+    flexShrink="1"
+    horizontal="true"
+    overflow="scroll"
+  >
+    <rn-androidHorizontalScrollContentView
+      flexDirection="row"
+      minWidth="100%"
+    >
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        flexGrow="1"
+        fontSize="NaN"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(0, 0, 0, 0)"
+        overflow="hidden"
+      >
+        <rn-text
+          allowFontScaling="true"
+          fontFamily="monospace"
+          fontSize="12"
+          foregroundColor="rgba(255, 255, 255, 1)"
+          layoutDirection="ltr"
+          lineHeight="20"
+        >
+          ‎  62 |
+        </rn-text>
+      </rn-paragraph>
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        flexGrow="1"
+        fontSize="NaN"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(0, 0, 0, 0)"
+        overflow="hidden"
+      >
+        <rn-text
+          allowFontScaling="true"
+          fontFamily="monospace"
+          fontSize="12"
+          foregroundColor="rgba(255, 255, 255, 1)"
+          layoutDirection="ltr"
+          lineHeight="20"
+        >
+          ‎  63 | function ConsoleWithThrow() {
+        </rn-text>
+      </rn-paragraph>
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        flexGrow="1"
+        fontSize="NaN"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(0, 0, 0, 0)"
+        overflow="hidden"
+      >
+        <rn-text
+          allowFontScaling="true"
+          fontFamily="monospace"
+          fontSize="12"
+          foregroundColor="rgba(255, 255, 255, 1)"
+          layoutDirection="ltr"
+          lineHeight="20"
+        >
+          ‎&gt; 64 |   console.error('hit');
+        </rn-text>
+      </rn-paragraph>
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        flexGrow="1"
+        fontSize="NaN"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(0, 0, 0, 0)"
+        overflow="hidden"
+      >
+        <rn-text
+          allowFontScaling="true"
+          fontFamily="monospace"
+          fontSize="12"
+          foregroundColor="rgba(255, 255, 255, 1)"
+          layoutDirection="ltr"
+          lineHeight="20"
+        >
+          ‎     |                ^
+        </rn-text>
+      </rn-paragraph>
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        flexGrow="1"
+        fontSize="NaN"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(0, 0, 0, 0)"
+        overflow="hidden"
+      >
+        <rn-text
+          allowFontScaling="true"
+          fontFamily="monospace"
+          fontSize="12"
+          foregroundColor="rgba(255, 255, 255, 1)"
+          layoutDirection="ltr"
+          lineHeight="20"
+        >
+          ‎  65 |   throw new Error('test');
+        </rn-text>
+      </rn-paragraph>
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        flexGrow="1"
+        fontSize="NaN"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(0, 0, 0, 0)"
+        overflow="hidden"
+      >
+        <rn-text
+          allowFontScaling="true"
+          fontFamily="monospace"
+          fontSize="12"
+          foregroundColor="rgba(255, 255, 255, 1)"
+          layoutDirection="ltr"
+          lineHeight="20"
+        >
+          ‎  66 | }
+        </rn-text>
+      </rn-paragraph>
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        flexGrow="1"
+        fontSize="NaN"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(0, 0, 0, 0)"
+        overflow="hidden"
+      >
+        <rn-text
+          allowFontScaling="true"
+          fontFamily="monospace"
+          fontSize="12"
+          foregroundColor="rgba(255, 255, 255, 1)"
+          layoutDirection="ltr"
+          lineHeight="20"
+        >
+          ‎  67 |
+        </rn-text>
+      </rn-paragraph>
+    </rn-androidHorizontalScrollContentView>
+  </rn-scrollView>
+  <rn-view
+    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessible="true"
+    paddingBottom="10"
+    paddingTop="10"
+  >
+    <rn-paragraph
+      alignment="center"
+      allowFontScaling="true"
+      ellipsizeMode="tail"
+      flex="1"
+      fontFamily="monospace"
+      fontSize="12"
+      fontSizeMultiplier="NaN"
+      foregroundColor="rgba(255, 255, 255, 0.501961)"
+      includeFontPadding="false"
+      lineHeight="16"
+      overflow="hidden"
+    >
+      CrashReactApp.js (64:17)
+    </rn-paragraph>
+  </rn-view>
+  <rn-view
+    backgroundColor="rgba(51, 51, 51, 1)"
+    marginLeft="10"
+    marginRight="10"
+    marginTop="5"
+  />
+  <rn-view
+    borderBottomWidth="1"
+    padding="10"
+  />
+  <rn-scrollView
+    flexDirection="row"
+    flexGrow="1"
+    flexShrink="1"
+    horizontal="true"
+    overflow="scroll"
+  >
+    <rn-androidHorizontalScrollContentView
+      flexDirection="row"
+      minWidth="100%"
+    >
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        flexGrow="1"
+        fontSize="NaN"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(0, 0, 0, 0)"
+        overflow="hidden"
+      >
+        <rn-text
+          allowFontScaling="true"
+          fontFamily="monospace"
+          fontSize="12"
+          foregroundColor="rgba(255, 255, 255, 1)"
+          layoutDirection="ltr"
+          lineHeight="20"
+        >
+          ‎  89 |
+        </rn-text>
+      </rn-paragraph>
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        flexGrow="1"
+        fontSize="NaN"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(0, 0, 0, 0)"
+        overflow="hidden"
+      >
+        <rn-text
+          allowFontScaling="true"
+          fontFamily="monospace"
+          fontSize="12"
+          foregroundColor="rgba(255, 255, 255, 1)"
+          layoutDirection="ltr"
+          lineHeight="20"
+        >
+          ‎  90 | function Child() {
+        </rn-text>
+      </rn-paragraph>
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        flexGrow="1"
+        fontSize="NaN"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(0, 0, 0, 0)"
+        overflow="hidden"
+      >
+        <rn-text
+          allowFontScaling="true"
+          fontFamily="monospace"
+          fontSize="12"
+          foregroundColor="rgba(255, 255, 255, 1)"
+          layoutDirection="ltr"
+          lineHeight="20"
+        >
+          ‎&gt; 91 |   return &lt;ConsoleWithThrow /&gt;;
+        </rn-text>
+      </rn-paragraph>
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        flexGrow="1"
+        fontSize="NaN"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(0, 0, 0, 0)"
+        overflow="hidden"
+      >
+        <rn-text
+          allowFontScaling="true"
+          fontFamily="monospace"
+          fontSize="12"
+          foregroundColor="rgba(255, 255, 255, 1)"
+          layoutDirection="ltr"
+          lineHeight="20"
+        >
+          ‎     |          ^
+        </rn-text>
+      </rn-paragraph>
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        flexGrow="1"
+        fontSize="NaN"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(0, 0, 0, 0)"
+        overflow="hidden"
+      >
+        <rn-text
+          allowFontScaling="true"
+          fontFamily="monospace"
+          fontSize="12"
+          foregroundColor="rgba(255, 255, 255, 1)"
+          layoutDirection="ltr"
+          lineHeight="20"
+        >
+          ‎  92 | }
+        </rn-text>
+      </rn-paragraph>
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        flexGrow="1"
+        fontSize="NaN"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(0, 0, 0, 0)"
+        overflow="hidden"
+      >
+        <rn-text
+          allowFontScaling="true"
+          fontFamily="monospace"
+          fontSize="12"
+          foregroundColor="rgba(255, 255, 255, 1)"
+          layoutDirection="ltr"
+          lineHeight="20"
+        >
+          ‎  93 |
+        </rn-text>
+      </rn-paragraph>
+      <rn-paragraph
+        allowFontScaling="true"
+        ellipsizeMode="tail"
+        flexGrow="1"
+        fontSize="NaN"
+        fontSizeMultiplier="NaN"
+        foregroundColor="rgba(0, 0, 0, 0)"
+        overflow="hidden"
+      >
+        <rn-text
+          allowFontScaling="true"
+          fontFamily="monospace"
+          fontSize="12"
+          foregroundColor="rgba(255, 255, 255, 1)"
+          layoutDirection="ltr"
+          lineHeight="20"
+        >
+          ‎  94 |
+        </rn-text>
+      </rn-paragraph>
+    </rn-androidHorizontalScrollContentView>
+  </rn-scrollView>
+  <rn-view
+    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessible="true"
+    paddingBottom="10"
+    paddingTop="10"
+  >
+    <rn-paragraph
+      alignment="center"
+      allowFontScaling="true"
+      ellipsizeMode="tail"
+      flex="1"
+      fontFamily="monospace"
+      fontSize="12"
+      fontSizeMultiplier="NaN"
+      foregroundColor="rgba(255, 255, 255, 0.501961)"
+      includeFontPadding="false"
+      lineHeight="16"
+      overflow="hidden"
+    >
+      CrashReactApp.js (90:11)
+    </rn-paragraph>
+  </rn-view>
+</React.Fragment>
+`;
+
+exports[`LogBoxInspectorCodeFrame should render null for no code frame 1`] = `null`;

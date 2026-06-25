@@ -102,9 +102,7 @@ public object DefaultNewArchitectureEntryPoint {
       }
     }
 
-    privateFabricEnabled = fabricEnabled
     privateTurboModulesEnabled = turboModulesEnabled
-    privateConcurrentReactEnabled = fabricEnabled
     privateBridgelessEnabled = bridgelessEnabled
 
     DefaultSoLoader.maybeLoadSoLibrary()
@@ -114,15 +112,13 @@ public object DefaultNewArchitectureEntryPoint {
   internal fun loadWithFeatureFlags(featureFlags: ReactNativeFeatureFlagsProvider) {
     ReactNativeFeatureFlags.override(featureFlags)
 
-    privateFabricEnabled = featureFlags.enableFabricRenderer()
-    privateTurboModulesEnabled = featureFlags.useTurboModules()
-    privateConcurrentReactEnabled = featureFlags.enableFabricRenderer()
+    privateTurboModulesEnabled = true
     privateBridgelessEnabled = featureFlags.enableBridgelessArchitecture()
 
     val (isValid, errorMessage) =
         isConfigurationValid(
             privateTurboModulesEnabled,
-            privateFabricEnabled,
+            true,
             privateBridgelessEnabled,
         )
     if (!isValid) {
@@ -132,11 +128,9 @@ public object DefaultNewArchitectureEntryPoint {
     DefaultSoLoader.maybeLoadSoLibrary()
   }
 
-  private var privateFabricEnabled: Boolean = false
-
   @JvmStatic
   public val fabricEnabled: Boolean
-    get() = privateFabricEnabled
+    get() = true
 
   private var privateTurboModulesEnabled: Boolean = false
 
@@ -144,11 +138,9 @@ public object DefaultNewArchitectureEntryPoint {
   public val turboModulesEnabled: Boolean
     get() = privateTurboModulesEnabled
 
-  private var privateConcurrentReactEnabled: Boolean = false
-
   @JvmStatic
   public val concurrentReactEnabled: Boolean
-    get() = privateConcurrentReactEnabled
+    get() = true
 
   private var privateBridgelessEnabled: Boolean = false
 

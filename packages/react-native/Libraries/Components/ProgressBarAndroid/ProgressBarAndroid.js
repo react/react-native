@@ -10,10 +10,12 @@
 
 'use strict';
 
-import typeof ProgressBarAndroidNativeComponentType from './ProgressBarAndroidNativeComponent';
+import type {HostInstance} from '../../../src/private/types/HostInstance';
 import type {ProgressBarAndroidProps} from './ProgressBarAndroidTypes';
 
 import Platform from '../../Utilities/Platform';
+
+export type ProgressBarAndroidInstance = HostInstance;
 
 export type {ProgressBarAndroidProps};
 
@@ -21,7 +23,7 @@ export type {ProgressBarAndroidProps};
 // of ProgressBarAndroidProps. TS's Omit does not distribute over unions, so
 // we define our own version which does. This does not affect Flow.
 // $FlowExpectedError[unclear-type]
-type Omit<T, K> = T extends any ? Pick<T, Exclude<$Keys<T>, K>> : T;
+type Omit<T, K> = T extends any ? Pick<T, Exclude<keyof T, K>> : T;
 
 /**
  * ProgressBarAndroid has been extracted from react-native core and will be removed in a future release.
@@ -30,9 +32,7 @@ type Omit<T, K> = T extends any ? Pick<T, Exclude<$Keys<T>, K>> : T;
  * @deprecated
  */
 let ProgressBarAndroid: component(
-  ref?: React.RefSetter<
-    React.ElementRef<ProgressBarAndroidNativeComponentType>,
-  >,
+  ref?: React.RefSetter<ProgressBarAndroidInstance>,
   ...props: Omit<ProgressBarAndroidProps, empty>
 );
 

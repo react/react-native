@@ -13,8 +13,8 @@ import type {TurboModule} from '../../../../Libraries/TurboModule/RCTExport';
 import * as TurboModuleRegistry from '../../../../Libraries/TurboModule/TurboModuleRegistry';
 
 export interface Spec extends TurboModule {
-  +setExtraData: (extraData: Object, forIdentifier: string) => void;
-  +dismiss: () => void;
+  readonly setExtraData: (extraData: Object, forIdentifier: string) => void;
+  readonly dismiss: () => void;
 }
 
-export default (TurboModuleRegistry.get<Spec>('RedBox'): ?Spec);
+export default TurboModuleRegistry.get<Spec>('RedBox') as ?Spec;

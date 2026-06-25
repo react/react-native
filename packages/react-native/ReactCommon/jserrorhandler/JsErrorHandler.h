@@ -8,7 +8,7 @@
 #pragma once
 
 #include <jsi/jsi.h>
-#include <iostream>
+#include <iosfwd>
 #include <optional>
 
 namespace facebook::react {

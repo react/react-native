@@ -12,18 +12,18 @@ import type {JSONSerializable} from '../types';
 import type {Commands, Events} from './protocol';
 
 // Note: A CDP event is a JSON-RPC notification with no `id` member.
-export type CDPEvent<TEvent: $Keys<Events> = 'unknown'> = {
+export type CDPEvent<TEvent extends keyof Events = 'unknown'> = {
   method: TEvent,
   params: Events[TEvent],
 };
 
-export type CDPRequest<TCommand: $Keys<Commands> = 'unknown'> = {
+export type CDPRequest<TCommand extends keyof Commands = 'unknown'> = {
   method: TCommand,
   params: Commands[TCommand]['paramsType'],
   id: number,
 };
 
-export type CDPResponse<TCommand: $Keys<Commands> = 'unknown'> =
+export type CDPResponse<TCommand extends keyof Commands = 'unknown'> =
   | {
       result: Commands[TCommand]['resultType'],
       id: number,

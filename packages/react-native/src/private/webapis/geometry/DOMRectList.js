@@ -29,7 +29,7 @@ export default class DOMRectList implements Iterable<DOMRectReadOnly> {
    * @private This is not defined in the declaration file, so users will not see
    *          the signature of the constructor.
    */
-  constructor(elements: $ReadOnlyArray<DOMRectReadOnly>) {
+  constructor(elements: ReadonlyArray<DOMRectReadOnly>) {
     for (let i = 0; i < elements.length; i++) {
       Object.defineProperty(this, i, {
         value: elements[i],
@@ -73,7 +73,19 @@ setPlatformObject(DOMRectList);
  * `DOMRectList.js.flow`, not here.
  */
 export function createDOMRectList(
-  elements: $ReadOnlyArray<DOMRectReadOnly>,
+  elements: ReadonlyArray<DOMRectReadOnly>,
 ): DOMRectList {
   return new DOMRectList(elements);
 }
+
+export const DOMRectList_public: typeof DOMRectList =
+  /* eslint-disable no-shadow */
+  // $FlowExpectedError[incompatible-type]
+  function DOMRectList() {
+    throw new TypeError(
+      "Failed to construct 'DOMRectList': Illegal constructor",
+    );
+  };
+
+// $FlowExpectedError[prop-missing]
+DOMRectList_public.prototype = DOMRectList.prototype;

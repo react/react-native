@@ -12,6 +12,8 @@ import android.content.Context
 import android.content.Intent
 import android.nfc.NfcAdapter
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.graphics.createBitmap
 import com.facebook.common.logging.FLog
 import com.facebook.infer.annotation.Assertions
 import com.facebook.infer.annotation.ThreadConfined
@@ -250,6 +252,7 @@ public class ReactHostImpl(
     stateTracker.enterState("onHostResume(activity)")
 
     currentActivity = activity
+    frameTimingsObserver?.setCurrentWindow(activity?.window)
 
     maybeEnableDevSupport(true)
     reactLifecycleStateManager.moveToOnHostResume(currentReactContext, activity)
@@ -444,6 +447,56 @@ public class ReactHostImpl(
   @DoNotStrip
   private fun loadNetworkResource(url: String, listener: InspectorNetworkRequestListener) {
     InspectorNetworkHelper.loadNetworkResource(url, listener)
+  }
+
+  @DoNotStrip
+  private fun setEmulatedMedia(colorScheme: String) {
+    UiThreadUtil.runOnUiThread {
+      val mode =
+          when (colorScheme) {
+            "dark" -> AppCompatDelegate.MODE_NIGHT_YES
+            "light" -> AppCompatDelegate.MODE_NIGHT_NO
+            else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+          }
+      AppCompatDelegate.setDefaultNightMode(mode)
+    }
+  }
+
+  @DoNotStrip
+  private fun captureScreenshot(format: String, quality: Int): String? {
+    val activity = currentActivity ?: return null
+    val window = activity.window ?: return null
+    val decorView = window.decorView.rootView
+
+    val width = decorView.width
+    val height = decorView.height
+    if (width <= 0 || height <= 0) {
+      return null
+    }
+
+    val bitmap = createBitmap(width, height)
+    val canvas = android.graphics.Canvas(bitmap)
+    decorView.draw(canvas)
+
+    val outputStream = java.io.ByteArrayOutputStream()
+    val compressFormat =
+        when (format) {
+          "jpeg" -> android.graphics.Bitmap.CompressFormat.JPEG
+          "webp" ->
+              if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                android.graphics.Bitmap.CompressFormat.WEBP_LOSSY
+              } else {
+                @Suppress("DEPRECATION") android.graphics.Bitmap.CompressFormat.WEBP
+              }
+          else -> android.graphics.Bitmap.CompressFormat.PNG
+        }
+    val compressQuality = if (quality in 0..100) quality else 80
+
+    bitmap.compress(compressFormat, compressQuality, outputStream)
+    bitmap.recycle()
+
+    val bytes = outputStream.toByteArray()
+    return android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
   }
 
   /**
@@ -753,7 +806,7 @@ public class ReactHostImpl(
   internal fun callFunctionOnModule(
       moduleName: String,
       methodName: String,
-      args: NativeArray,
+      args: NativeArray?,
   ): Task<Boolean> {
     val method = "callFunctionOnModule(\"$moduleName\", \"$methodName\")"
     return callWithExistingReactInstance(method) { reactInstance: ReactInstance ->
@@ -803,16 +856,6 @@ public class ReactHostImpl(
           ReactNativeNewArchitectureFeatureFlags.enableBridgelessArchitecture(),
           "enableBridgelessArchitecture FeatureFlag must be set to start ReactNative.",
       )
-
-      Assertions.assertCondition(
-          ReactNativeNewArchitectureFeatureFlags.enableFabricRenderer(),
-          "enableFabricRenderer FeatureFlag must be set to start ReactNative.",
-      )
-
-      Assertions.assertCondition(
-          ReactNativeNewArchitectureFeatureFlags.useTurboModules(),
-          "useTurboModules FeatureFlag must be set to start ReactNative.",
-      )
     }
     if (ReactBuildConfig.UNSTABLE_ENABLE_MINIFY_LEGACY_ARCHITECTURE) {
       Assertions.assertCondition(
@@ -851,6 +894,7 @@ public class ReactHostImpl(
   private fun moveToHostDestroy(currentContext: ReactContext?) {
     reactLifecycleStateManager.moveToOnHostDestroy(currentContext)
     currentActivity = null
+    frameTimingsObserver?.setCurrentWindow(null)
   }
 
   private fun raiseSoftException(
@@ -987,11 +1031,10 @@ public class ReactHostImpl(
           jsBundleLoader.onSuccess(
               { task ->
                 val bundleLoader = checkNotNull(task.getResult())
-                val reactContext =
-                    bridgelessReactContextRef.getOrCreate {
-                      stateTracker.enterState(method, "Creating BridgelessReactContext")
-                      BridgelessReactContext(context, this)
-                    }
+                val reactContext = bridgelessReactContextRef.getOrCreate {
+                  stateTracker.enterState(method, "Creating BridgelessReactContext")
+                  BridgelessReactContext(context, this)
+                }
                 reactContext.jsExceptionHandler = devSupportManager
 
                 stateTracker.enterState(method, "Creating ReactInstance")
@@ -1563,15 +1606,15 @@ public class ReactHostImpl(
           when (state) {
             TracingState.ENABLED_IN_BACKGROUND_MODE,
             TracingState.ENABLED_IN_CDP_MODE -> {
-              currentActivity?.window?.let { window ->
+              if (InspectorFlags.getFrameRecordingEnabled()) {
                 val observer =
                     FrameTimingsObserver(
-                        window,
                         _screenshotsEnabled,
                         { frameTimingsSequence ->
                           inspectorTarget.recordFrameTimings(frameTimingsSequence)
                         },
                     )
+                observer.setCurrentWindow(currentActivity?.window)
                 observer.start()
                 frameTimingsObserver = observer
               }

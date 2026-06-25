@@ -13,17 +13,17 @@ import type {TurboModule} from '../../../../Libraries/TurboModule/RCTExport';
 import * as TurboModuleRegistry from '../../../../Libraries/TurboModule/TurboModuleRegistry';
 
 type Options = {
-  +offset: {
-    +x: number,
-    +y: number,
+  readonly offset: {
+    readonly x: number,
+    readonly y: number,
   },
-  +size: {
-    +width: number,
-    +height: number,
+  readonly size: {
+    readonly width: number,
+    readonly height: number,
   },
-  +displaySize?: ?{
-    +width: number,
-    +height: number,
+  readonly displaySize?: ?{
+    readonly width: number,
+    readonly height: number,
   },
   /**
    * Enum with potential values:
@@ -33,13 +33,13 @@ type Options = {
    *  - center
    *  - repeat
    */
-  +resizeMode?: ?string,
-  +allowExternalStorage?: boolean,
+  readonly resizeMode?: ?string,
+  readonly allowExternalStorage?: boolean,
 };
 
 export interface Spec extends TurboModule {
-  +getConstants: () => {};
-  +cropImage: (
+  readonly getConstants: () => {};
+  readonly cropImage: (
     uri: string,
     cropData: Options,
     successCallback: (uri: string) => void,
@@ -47,6 +47,6 @@ export interface Spec extends TurboModule {
   ) => void;
 }
 
-export default (TurboModuleRegistry.getEnforcing<Spec>(
+export default TurboModuleRegistry.getEnforcing<Spec>(
   'ImageEditingManager',
-): Spec);
+) as Spec;

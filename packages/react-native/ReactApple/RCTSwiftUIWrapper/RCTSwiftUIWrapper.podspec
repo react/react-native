@@ -25,12 +25,11 @@ Pod::Spec.new do |s|
   s.author                 = "Meta Platforms, Inc. and its affiliates"
   s.platforms              = min_supported_versions
   s.source                 = source
-  s.source_files           = "*.{h,m}"
+  s.source_files           = podspec_sources("*.{h,m}", "*.{h}")
   s.public_header_files    = "*.h"
   s.module_name            = "RCTSwiftUIWrapper"
   s.header_dir             = "RCTSwiftUIWrapper"
   s.dependency "RCTSwiftUI"
-  
   s.pod_target_xcconfig    = {
     "SWIFT_VERSION" => "5.0",
   }

@@ -8,6 +8,7 @@
  * @format
  */
 
+import type {HostInstance} from '../../../src/private/types/HostInstance';
 import type {ViewStyleProp} from '../../StyleSheet/StyleSheet';
 import type {TouchableWithoutFeedbackProps} from './TouchableWithoutFeedback';
 
@@ -21,7 +22,9 @@ import flattenStyle from '../../StyleSheet/flattenStyle';
 import Platform from '../../Utilities/Platform';
 import * as React from 'react';
 
-export type TouchableOpacityTVProps = $ReadOnly<{
+export type TouchableOpacityInstance = HostInstance;
+
+export type TouchableOpacityTVProps = Readonly<{
   /**
    * *(Apple TV only)* TV preferred focus (see documentation for the View component).
    *
@@ -66,7 +69,7 @@ export type TouchableOpacityTVProps = $ReadOnly<{
   nextFocusUp?: ?number,
 }>;
 
-type TouchableOpacityBaseProps = $ReadOnly<{
+type TouchableOpacityBaseProps = Readonly<{
   /**
    * Determines what the opacity of the wrapped view should be when touch is active.
    * Defaults to 0.2
@@ -74,16 +77,16 @@ type TouchableOpacityBaseProps = $ReadOnly<{
   activeOpacity?: ?number,
   style?: ?Animated.WithAnimatedValue<ViewStyleProp>,
 
-  hostRef?: ?React.RefSetter<React.ElementRef<typeof Animated.View>>,
+  hostRef?: ?React.RefSetter<TouchableOpacityInstance>,
 }>;
 
-export type TouchableOpacityProps = $ReadOnly<{
+export type TouchableOpacityProps = Readonly<{
   ...TouchableWithoutFeedbackProps,
   ...TouchableOpacityTVProps,
   ...TouchableOpacityBaseProps,
 }>;
 
-type TouchableOpacityState = $ReadOnly<{
+type TouchableOpacityState = Readonly<{
   anim: Animated.Value,
   pressability: Pressability,
 }>;
@@ -378,13 +381,13 @@ class TouchableOpacity extends React.Component<
 }
 
 const Touchable: component(
-  ref?: React.RefSetter<React.ElementRef<typeof Animated.View>>,
+  ref?: React.RefSetter<TouchableOpacityInstance>,
   ...props: TouchableOpacityProps
 ) = ({
   ref,
   ...props
 }: {
-  ref?: React.RefSetter<React.ElementRef<typeof Animated.View>>,
+  ref?: React.RefSetter<TouchableOpacityInstance>,
   ...TouchableOpacityProps,
 }) => <TouchableOpacity {...props} hostRef={ref} />;
 

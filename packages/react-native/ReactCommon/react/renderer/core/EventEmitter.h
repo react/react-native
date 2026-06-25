@@ -16,12 +16,13 @@
 #include <react/renderer/core/EventTarget.h>
 #include <react/renderer/core/ReactPrimitives.h>
 #include <react/renderer/core/ValueFactoryEventPayload.h>
+#include <react/timing/primitives.h>
 
 namespace facebook::react {
 
 class EventEmitter;
 
-using SharedEventEmitter = std::shared_ptr<const EventEmitter>;
+using SharedEventEmitter = std::shared_ptr<EventEmitter>;
 
 /*
  * Base class for all particular typed event handlers.
@@ -31,7 +32,7 @@ using SharedEventEmitter = std::shared_ptr<const EventEmitter>;
  */
 class EventEmitter {
  public:
-  using Shared = std::shared_ptr<const EventEmitter>;
+  using Shared = std::shared_ptr<EventEmitter>;
 
   static std::string normalizeEventType(std::string type);
 
@@ -53,12 +54,12 @@ class EventEmitter {
    * a number of `disable` calls to release the event target.
    * `DispatchMutex` must be acquired before calling.
    */
-  void setEnabled(bool enabled) const;
+  void setEnabled(bool enabled);
 
   /*
    * Sets a weak reference to the cooresponding ShadowNodeFamily
    */
-  void setShadowNodeFamily(std::weak_ptr<const ShadowNodeFamily> shadowNodeFamily) const;
+  void setShadowNodeFamily(std::weak_ptr<const ShadowNodeFamily> shadowNodeFamily);
 
   const SharedEventTarget &getEventTarget() const;
 
@@ -88,6 +89,12 @@ class EventEmitter {
 
   void dispatchEvent(
       std::string type,
+      const ValueFactory &payloadFactory,
+      RawEvent::Category category,
+      HighResTimeStamp eventTimestamp) const;
+
+  void dispatchEvent(
+      std::string type,
       folly::dynamic &&payload,
       RawEvent::Category category = RawEvent::Category::Unspecified) const;
 
@@ -96,22 +103,40 @@ class EventEmitter {
       SharedEventPayload payload,
       RawEvent::Category category = RawEvent::Category::Unspecified) const;
 
+  void dispatchEvent(
+      std::string type,
+      folly::dynamic &&payload,
+      RawEvent::Category category,
+      HighResTimeStamp eventTimestamp) const;
+
+  void dispatchEvent(
+      std::string type,
+      SharedEventPayload payload,
+      RawEvent::Category category,
+      HighResTimeStamp eventTimestamp) const;
+
   void dispatchUniqueEvent(std::string type, folly::dynamic &&payload) const;
 
   void dispatchUniqueEvent(std::string type, const ValueFactory &payloadFactory = EventEmitter::defaultPayloadFactory())
       const;
 
+  void dispatchUniqueEvent(std::string type, const ValueFactory &payloadFactory, HighResTimeStamp eventTimestamp) const;
+
   void dispatchUniqueEvent(std::string type, SharedEventPayload payload) const;
+
+  void dispatchUniqueEvent(std::string type, folly::dynamic &&payload, HighResTimeStamp eventTimestamp) const;
+
+  void dispatchUniqueEvent(std::string type, SharedEventPayload payload, HighResTimeStamp eventTimestamp) const;
 
  private:
   friend class UIManagerBinding;
 
-  mutable SharedEventTarget eventTarget_;
-  mutable std::weak_ptr<const ShadowNodeFamily> shadowNodeFamily_;
+  SharedEventTarget eventTarget_;
+  std::weak_ptr<const ShadowNodeFamily> shadowNodeFamily_;
 
   EventDispatcher::Weak eventDispatcher_;
-  mutable int enableCounter_{0};
-  mutable bool isEnabled_{false};
+  int enableCounter_{0};
+  bool isEnabled_{false};
 };
 
 } // namespace facebook::react

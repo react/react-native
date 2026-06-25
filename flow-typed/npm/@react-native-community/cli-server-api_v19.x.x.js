@@ -13,7 +13,7 @@ declare module '@react-native-community/cli-server-api' {
 
   declare type MiddlewareOptions = {
     host?: string,
-    watchFolders: $ReadOnlyArray<string>,
+    watchFolders: ReadonlyArray<string>,
     port: number,
   };
 
@@ -32,7 +32,7 @@ declare module '@react-native-community/cli-server-api' {
       server: ws$WebSocketServer,
       broadcast: (
         method: string,
-        params?: Record<string, mixed> | null,
+        params?: Record<string, unknown> | null,
       ) => void,
     },
     eventsSocketEndpoint: {

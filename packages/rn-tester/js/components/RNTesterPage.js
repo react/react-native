@@ -15,7 +15,7 @@ import {useContext} from 'react';
 const React = require('react');
 const {Platform, ScrollView, StyleSheet, View} = require('react-native');
 
-type Props = $ReadOnly<{
+type Props = Readonly<{
   children?: React.Node,
   title?: ?string,
   noScroll?: ?boolean,

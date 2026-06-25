@@ -23,7 +23,7 @@ function PointerEventPointerCancelTouchTestCase(
 ) {
   const {harness} = props;
 
-  const testPointerEvent = harness.useAsyncTest('pointercancel event recieved');
+  const testPointerEvent = harness.useAsyncTest('pointercancel event received');
 
   const pointerDownEventRef = useRef<PointerEvent | null>(null);
   const pointerCancelEventRef = useRef<PointerEvent | null>(null);
@@ -40,7 +40,7 @@ function PointerEventPointerCancelTouchTestCase(
 
       testPointerEvent.step(({assert_equals, assert_not_equals}) => {
         const pointerDownEvent = pointerDownEventRef.current;
-        assert_not_equals(pointerDownEvent, null, 'pointerdown was recieved: ');
+        assert_not_equals(pointerDownEvent, null, 'pointerdown was received: ');
         if (pointerDownEvent != null) {
           assert_equals(
             event.nativeEvent.pointerId,
@@ -87,7 +87,7 @@ function PointerEventPointerCancelTouchTestCase(
         assert_not_equals(
           pointerCancelEvent,
           null,
-          'pointercancel was recieved: ',
+          'pointercancel was received: ',
         );
         if (pointerCancelEvent != null) {
           assert_equals(
@@ -118,7 +118,7 @@ function PointerEventPointerCancelTouchTestCase(
         assert_not_equals(
           pointerCancelEvent,
           null,
-          'pointercancel was recieved: ',
+          'pointercancel was received: ',
         );
         if (pointerCancelEvent != null) {
           assert_equals(
@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
   },
 });
 
-type Props = $ReadOnly<{}>;
+type Props = Readonly<{}>;
 export default function PoitnerEventPointerCancelTouch(
   props: Props,
 ): React.MixedElement {

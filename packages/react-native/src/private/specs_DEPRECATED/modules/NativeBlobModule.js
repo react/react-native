@@ -15,13 +15,13 @@ import * as TurboModuleRegistry from '../../../../Libraries/TurboModule/TurboMod
 export type Constants = {BLOB_URI_SCHEME: ?string, BLOB_URI_HOST: ?string};
 
 export interface Spec extends TurboModule {
-  +getConstants: () => Constants;
-  +addNetworkingHandler: () => void;
-  +addWebSocketHandler: (id: number) => void;
-  +removeWebSocketHandler: (id: number) => void;
-  +sendOverSocket: (blob: Object, socketID: number) => void;
-  +createFromParts: (parts: Array<Object>, withId: string) => void;
-  +release: (blobId: string) => void;
+  readonly getConstants: () => Constants;
+  readonly addNetworkingHandler: () => void;
+  readonly addWebSocketHandler: (id: number) => void;
+  readonly removeWebSocketHandler: (id: number) => void;
+  readonly sendOverSocket: (blob: Object, socketID: number) => void;
+  readonly createFromParts: (parts: Array<Object>, withId: string) => void;
+  readonly release: (blobId: string) => void;
 }
 
 const NativeModule = TurboModuleRegistry.get<Spec>('BlobModule');
@@ -58,4 +58,4 @@ if (NativeModule != null) {
   };
 }
 
-export default (NativeBlobModule: ?Spec);
+export default NativeBlobModule as ?Spec;

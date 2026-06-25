@@ -134,7 +134,7 @@ enum class LineBreakMode {
 
 enum class TextDecorationLineType { None, Underline, Strikethrough, UnderlineStrikethrough };
 
-enum class TextDecorationStyle { Solid, Double, Dotted, Dashed };
+enum class TextDecorationStyle { Solid, Double, Dotted, Dashed, Wavy };
 
 enum class TextTransform {
   None,

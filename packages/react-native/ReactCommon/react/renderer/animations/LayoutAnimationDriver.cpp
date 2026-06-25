@@ -74,6 +74,10 @@ void LayoutAnimationDriver::animationMutationsForFrame(
     }
   }
 
+  // Record boundary: animation-frame Updates above this point carry
+  // parentTag from before any structural changes and must execute first.
+  auto animationUpdatesEnd = mutationsList.size();
+
   // Clear out finished animations
   for (auto it = inflightAnimations_.begin();
        it != inflightAnimations_.end();) {
@@ -99,10 +103,11 @@ void LayoutAnimationDriver::animationMutationsForFrame(
     }
   }
 
-  // Final step: make sure that all operations execute in the proper order.
-  // REMOVE operations with highest indices must operate first.
+  // Sort only the final mutations from completed animations.
+  // Animation-frame Updates must stay before structural mutations because
+  // they reference views by their pre-structural-change parentTag.
   std::stable_sort(
-      mutationsList.begin(),
+      mutationsList.begin() + static_cast<ptrdiff_t>(animationUpdatesEnd),
       mutationsList.end(),
       &shouldFirstComeBeforeSecondMutation);
 }

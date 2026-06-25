@@ -197,10 +197,12 @@ function translateTypeAnnotation(
       const objectTypeAnnotation = {
         type: 'ObjectTypeAnnotation',
         // $FlowFixMe[missing-type-arg]
-        properties: ([
-          ...typeAnnotation.properties,
-          ...typeAnnotation.indexers,
-        ]: Array<$FlowFixMe>)
+        properties: (
+          [
+            ...typeAnnotation.properties,
+            ...typeAnnotation.indexers,
+          ] as Array<$FlowFixMe>
+        )
           .map<?NamedShape<Nullable<NativeModuleBaseTypeAnnotation>>>(
             property => {
               return tryParse(() => {

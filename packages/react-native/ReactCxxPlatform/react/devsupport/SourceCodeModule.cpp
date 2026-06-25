@@ -7,17 +7,10 @@
 
 #include "SourceCodeModule.h"
 
-#include <react/devsupport/DevServerHelper.h>
-#include <string>
-
 namespace facebook::react {
 
 SourceCodeConstants SourceCodeModule::getConstants(jsi::Runtime& /*rt*/) {
-  std::string scriptURL;
-  if (auto devServerHelper = devServerHelper_.lock()) {
-    scriptURL = devServerHelper->getBundleUrl();
-  }
-  return SourceCodeConstants{.scriptURL = scriptURL};
+  return SourceCodeConstants{.scriptURL = sourceURL_};
 }
 
 } // namespace facebook::react

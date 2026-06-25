@@ -37,8 +37,8 @@ function getPurposeString(purpose: string): string {
 }
 
 function compareFeatureFlags(
-  [keyA, valueA]: $ReadOnly<[string, $ReadOnly<{Purpose: string, ...}>]>,
-  [keyB, valueB]: $ReadOnly<[string, $ReadOnly<{Purpose: string, ...}>]>,
+  [keyA, valueA]: Readonly<[string, Readonly<{Purpose: string, ...}>]>,
+  [keyB, valueB]: Readonly<[string, Readonly<{Purpose: string, ...}>]>,
 ): number {
   const purposeA = PURPOSE_ORDER.indexOf(valueA.Purpose);
   const purposeB = PURPOSE_ORDER.indexOf(valueB.Purpose);

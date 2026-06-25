@@ -13,10 +13,13 @@
 let logListeners;
 
 type LogListeners = {
-  +onDifferentFunctionsIgnored: (nameOne: ?string, nameTwo: ?string) => void,
+  readonly onDifferentFunctionsIgnored: (
+    nameOne: ?string,
+    nameTwo: ?string,
+  ) => void,
 };
 
-type Options = {+unsafelyIgnoreFunctions?: boolean};
+type Options = {readonly unsafelyIgnoreFunctions?: boolean};
 
 function unstable_setLogListeners(listeners: ?LogListeners) {
   logListeners = listeners;

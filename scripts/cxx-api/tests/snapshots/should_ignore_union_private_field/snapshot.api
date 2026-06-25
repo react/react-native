@@ -1,0 +1,3 @@
+union test::PrivateUnion {
+  public float publicValue;
+}

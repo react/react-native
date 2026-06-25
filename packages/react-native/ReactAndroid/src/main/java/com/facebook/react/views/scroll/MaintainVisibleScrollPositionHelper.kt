@@ -18,7 +18,6 @@ import com.facebook.react.bridge.UiThreadUtil.runOnUiThread
 import com.facebook.react.common.annotations.UnstableReactNativeAPI
 import com.facebook.react.uimanager.UIManagerHelper
 import com.facebook.react.uimanager.common.UIManagerType
-import com.facebook.react.uimanager.common.ViewUtil.getUIManagerType
 import com.facebook.react.views.scroll.ReactScrollViewHelper.HasSmoothScroll
 import com.facebook.react.views.view.ReactViewGroup
 import java.lang.ref.WeakReference
@@ -47,7 +46,7 @@ internal class MaintainVisibleScrollPositionHelper<ScrollViewT>(
         checkNotNull(
             UIManagerHelper.getUIManager(
                 checkNotNull(scrollView?.context as ReactContext?),
-                getUIManagerType(scrollView?.id ?: 0),
+                UIManagerType.FABRIC,
             )
         )
 
@@ -81,18 +80,6 @@ internal class MaintainVisibleScrollPositionHelper<ScrollViewT>(
     }
     isListening = false
     uIManager.removeUIManagerEventListener(this)
-  }
-
-  /**
-   * Update the scroll position of the managed ScrollView. This should be called after layout has
-   * been updated.
-   */
-  fun updateScrollPosition() {
-    // On Fabric this will be called internally in `didMountItems`.
-    if (scrollView == null || getUIManagerType(scrollView.id) == UIManagerType.FABRIC) {
-      return
-    }
-    updateScrollPositionInternal()
   }
 
   private fun updateScrollPositionInternal() {

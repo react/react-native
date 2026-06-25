@@ -10,9 +10,9 @@
 
 import typeof NativeExceptionsManager from '../NativeExceptionsManager';
 
-export default ({
+export default {
   reportFatalException: jest.fn(),
   reportSoftException: jest.fn(),
   dismissRedbox: jest.fn(),
   reportException: jest.fn(),
-}: NativeExceptionsManager);
+} as NativeExceptionsManager;

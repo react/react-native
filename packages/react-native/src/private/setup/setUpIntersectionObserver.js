@@ -24,4 +24,11 @@ export default function setUpIntersectionObserver() {
     () =>
       require('../webapis/intersectionobserver/IntersectionObserver').default,
   );
+
+  polyfillGlobal(
+    'IntersectionObserverEntry',
+    () =>
+      require('../webapis/intersectionobserver/IntersectionObserverEntry')
+        .IntersectionObserverEntry_public,
+  );
 }

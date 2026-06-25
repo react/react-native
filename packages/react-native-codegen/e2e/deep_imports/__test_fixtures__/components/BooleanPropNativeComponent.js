@@ -14,7 +14,7 @@ import type {WithDefault} from 'react-native/Libraries/Types/CodegenTypes';
 
 import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
 
-type NativeProps = $ReadOnly<{
+type NativeProps = Readonly<{
   ...ViewProps,
 
   // Props
@@ -22,6 +22,6 @@ type NativeProps = $ReadOnly<{
   disabledNullable?: WithDefault<boolean, null>,
 }>;
 
-export default (codegenNativeComponent<NativeProps>(
+export default codegenNativeComponent<NativeProps>(
   'BooleanPropNativeComponentView',
-): HostComponent<NativeProps>);
+) as HostComponent<NativeProps>;

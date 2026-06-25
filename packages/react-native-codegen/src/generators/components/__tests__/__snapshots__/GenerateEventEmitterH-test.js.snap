@@ -513,6 +513,7 @@ class EventsNativeComponentEventEmitter : public ViewEventEmitter {
     switch (value) {
       case OnArrayEventTypeString_enum_event_prop::YES: return \\"YES\\";
       case OnArrayEventTypeString_enum_event_prop::NO: return \\"NO\\";
+      default: return \\"\\";
     }
   }
 
@@ -543,6 +544,7 @@ class EventsNativeComponentEventEmitter : public ViewEventEmitter {
     switch (value) {
       case OnOrientationChangeOrientation::Landscape: return \\"landscape\\";
       case OnOrientationChangeOrientation::Portrait: return \\"portrait\\";
+      default: return \\"\\";
     }
   }
 

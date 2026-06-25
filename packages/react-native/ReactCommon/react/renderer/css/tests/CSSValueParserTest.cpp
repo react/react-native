@@ -21,8 +21,8 @@ struct ConsumeDataType {
 template <>
 struct CSSDataTypeParser<ConsumeDataType> {
   constexpr static std::optional<ConsumeDataType> consume(
-      CSSSyntaxParser& parser) {
-    auto val = parseNextCSSValue<CSSNumber>(parser);
+      CSSValueParser& parser) {
+    auto val = parser.parseNextValue<CSSNumber>();
     if (std::holds_alternative<CSSNumber>(val)) {
       return ConsumeDataType{std::get<CSSNumber>(val).value};
     }
@@ -33,33 +33,34 @@ struct CSSDataTypeParser<ConsumeDataType> {
 
 static_assert(CSSDataType<ConsumeDataType>);
 
-TEST(CSSValueParser, consume_multiple_with_delimeter) {
-  CSSSyntaxParser parser{"1 2, 3, 4 / 5"};
+TEST(CSSValueParser, consume_multiple_with_delimiter) {
+  CSSSyntaxParser syntaxParser{"1 2, 3, 4 / 5"};
+  CSSValueParser parser{syntaxParser};
 
-  auto next = parseNextCSSValue<ConsumeDataType>(parser);
+  auto next = parser.parseNextValue<ConsumeDataType>();
   EXPECT_TRUE(std::holds_alternative<ConsumeDataType>(next));
   EXPECT_EQ(std::get<ConsumeDataType>(next).number, 1);
 
-  next = parseNextCSSValue<ConsumeDataType>(parser, CSSDelimiter::None);
+  next = parser.parseNextValue<ConsumeDataType>(CSSDelimiter::None);
   EXPECT_FALSE(std::holds_alternative<ConsumeDataType>(next));
 
-  next = parseNextCSSValue<ConsumeDataType>(parser, CSSDelimiter::Whitespace);
+  next = parser.parseNextValue<ConsumeDataType>(CSSDelimiter::Whitespace);
   EXPECT_TRUE(std::holds_alternative<ConsumeDataType>(next));
   EXPECT_EQ(std::get<ConsumeDataType>(next).number, 2);
 
-  next = parseNextCSSValue<ConsumeDataType>(parser, CSSDelimiter::Comma);
+  next = parser.parseNextValue<ConsumeDataType>(CSSDelimiter::Comma);
   EXPECT_TRUE(std::holds_alternative<ConsumeDataType>(next));
   EXPECT_EQ(std::get<ConsumeDataType>(next).number, 3);
 
-  next = parseNextCSSValue<ConsumeDataType>(parser, CSSDelimiter::Comma);
+  next = parser.parseNextValue<ConsumeDataType>(CSSDelimiter::Comma);
   EXPECT_TRUE(std::holds_alternative<ConsumeDataType>(next));
   EXPECT_EQ(std::get<ConsumeDataType>(next).number, 4);
 
-  next = parseNextCSSValue<ConsumeDataType>(parser, CSSDelimiter::Solidus);
+  next = parser.parseNextValue<ConsumeDataType>(CSSDelimiter::Solidus);
   EXPECT_TRUE(std::holds_alternative<ConsumeDataType>(next));
   EXPECT_EQ(std::get<ConsumeDataType>(next).number, 5);
 
-  next = parseNextCSSValue<ConsumeDataType>(parser);
+  next = parser.parseNextValue<ConsumeDataType>();
   EXPECT_FALSE(std::holds_alternative<ConsumeDataType>(next));
 }
 

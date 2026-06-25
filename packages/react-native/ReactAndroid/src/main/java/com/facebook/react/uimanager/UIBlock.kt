@@ -7,7 +7,13 @@
 
 package com.facebook.react.uimanager
 
-/** A task to execute on the UI View for third party libraries. */
+/**
+ * A task to execute on the UI View for third party libraries.
+ *
+ * @deprecated This interface is part of the Legacy Architecture and will be removed in a future
+ *   release. Use [com.facebook.react.bridge.UIManagerListener] or View Commands instead.
+ */
+@Deprecated("Use UIManagerListener or View Commands instead")
 public fun interface UIBlock {
   public fun execute(
       @Suppress("DEPRECATION") nativeViewHierarchyManager: NativeViewHierarchyManager

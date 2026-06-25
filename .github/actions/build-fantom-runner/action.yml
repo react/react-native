@@ -1,0 +1,84 @@
+name: Build Fantom Runner
+inputs:
+  release-type:
+    required: true
+    description: The type of release we are building. It could be nightly, release or dry-run
+  gradle-cache-encryption-key:
+    description: 'The encryption key needed to store the Gradle Configuration cache'
+
+runs:
+  using: composite
+  steps:
+    - name: Install dependencies
+      shell: bash
+      run: |
+        sudo apt update
+        sudo apt install -y git cmake openssl libssl-dev clang
+    - name: Setup git safe folders
+      shell: bash
+      run: git config --global --add safe.directory '*'
+    - name: Setup node.js
+      uses: ./.github/actions/setup-node
+    - name: Install node dependencies
+      uses: ./.github/actions/yarn-install
+    - name: Setup gradle
+      uses: ./.github/actions/setup-gradle
+      with:
+        cache-read-only: 'false'
+        cache-encryption-key: ${{ inputs.gradle-cache-encryption-key }}
+    - name: Restore Fantom ccache
+      uses: actions/cache/restore@v5
+      with:
+        path: /github/home/.cache/ccache
+        key: v2-ccache-fantom-${{ github.job }}-${{ github.ref }}-${{ hashFiles(
+          'packages/react-native/ReactAndroid/**/*.cpp',
+          'packages/react-native/ReactAndroid/**/*.h',
+          'packages/react-native/ReactAndroid/**/CMakeLists.txt',
+          'packages/react-native/ReactCommon/**/*.cpp',
+          'packages/react-native/ReactCommon/**/*.h',
+          'packages/react-native/ReactCommon/**/CMakeLists.txt',
+          'private/react-native-fantom/tester/**/*.cpp',
+          'private/react-native-fantom/tester/**/*.h',
+          'private/react-native-fantom/tester/**/CMakeLists.txt'
+          ) }}
+        restore-keys: |
+          v2-ccache-fantom-${{ github.job }}-${{ github.ref }}-
+          v2-ccache-fantom-${{ github.job }}-
+          v2-ccache-fantom-
+    - name: Show ccache stats (before)
+      shell: bash
+      run: ccache -s -v
+    - name: Build Fantom Runner
+      shell: bash
+      run: yarn workspace @react-native/fantom build
+      env:
+        CC: clang
+        CXX: clang++
+    - name: Save Fantom ccache
+      if: ${{ github.ref == 'refs/heads/main' || contains(github.ref, '-stable') }}
+      uses: actions/cache/save@v5
+      with:
+        path: /github/home/.cache/ccache
+        key: v2-ccache-fantom-${{ github.job }}-${{ github.ref }}-${{ hashFiles(
+          'packages/react-native/ReactAndroid/**/*.cpp',
+          'packages/react-native/ReactAndroid/**/*.h',
+          'packages/react-native/ReactAndroid/**/CMakeLists.txt',
+          'packages/react-native/ReactCommon/**/*.cpp',
+          'packages/react-native/ReactCommon/**/*.h',
+          'packages/react-native/ReactCommon/**/CMakeLists.txt',
+          'private/react-native-fantom/tester/**/*.cpp',
+          'private/react-native-fantom/tester/**/*.h',
+          'private/react-native-fantom/tester/**/CMakeLists.txt'
+          ) }}
+    - name: Show ccache stats (after)
+      shell: bash
+      run: ccache -s -v
+    - name: Copy shared libraries
+      shell: bash
+      run: cp packages/react-native/ReactAndroid/hermes-engine/build/hermes/lib/libhermesvm.so private/react-native-fantom/build/tester/
+    - name: Upload Fantom Runner binary
+      uses: actions/upload-artifact@v6
+      with:
+        name: fantom-runner-binary
+        compression-level: 1
+        path: private/react-native-fantom/build/tester/

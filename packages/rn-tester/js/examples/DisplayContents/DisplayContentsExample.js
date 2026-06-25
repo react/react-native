@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ({
+export default {
   title: 'Display: contents',
   category: 'UI',
   description:
@@ -218,4 +218,4 @@ export default ({
       },
     },
   ],
-}: RNTesterModule);
+} as RNTesterModule;

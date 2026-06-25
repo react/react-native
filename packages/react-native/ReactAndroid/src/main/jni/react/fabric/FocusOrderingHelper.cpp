@@ -6,7 +6,6 @@
  */
 
 #include "FocusOrderingHelper.h"
-#include <android/log.h>
 #include <react/renderer/uimanager/UIManager.h>
 
 namespace facebook::react {

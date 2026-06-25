@@ -9,6 +9,8 @@
  */
 
 import type {EventReporter} from '../types/EventReporter';
+import type {Experiments} from '../types/Experiments';
+import type {ReadonlyURL} from '../types/ReadonlyURL';
 import type {
   CDPClientMessage,
   CDPRequest,
@@ -28,6 +30,7 @@ import type {
 
 import CdpDebugLogging from './CdpDebugLogging';
 import DeviceEventReporter from './DeviceEventReporter';
+import crypto from 'crypto';
 import invariant from 'invariant';
 import WS from 'ws';
 
@@ -54,8 +57,6 @@ export const WS_CLOSE_REASON = {
 // more details.
 const FILE_PREFIX = 'file://';
 
-let fuseboxConsoleNoticeLogged = false;
-
 type DebuggerConnection = {
   // Debugger web socket connection
   socket: WS,
@@ -63,21 +64,24 @@ type DebuggerConnection = {
   pageId: string,
   userAgent: string | null,
   customHandler: ?CustomMessageHandler,
-  debuggerRelativeBaseUrl: URL,
+  debuggerRelativeBaseUrl: ReadonlyURL,
+  // Session ID assigned by the proxy for multi-debugger support
+  sessionId: string,
 };
 
 const REACT_NATIVE_RELOADABLE_PAGE_ID = '-1';
 
-export type DeviceOptions = $ReadOnly<{
+export type DeviceOptions = Readonly<{
   id: string,
   name: string,
   app: string,
   socket: WS,
   eventReporter: ?EventReporter,
   createMessageMiddleware: ?CreateCustomMessageHandlerFn,
-  deviceRelativeBaseUrl: URL,
-  serverRelativeBaseUrl: URL,
+  deviceRelativeBaseUrl: ReadonlyURL,
+  serverRelativeBaseUrl: ReadonlyURL,
   isProfilingBuild: boolean,
+  experiments: Experiments,
 }>;
 
 /**
@@ -98,10 +102,10 @@ export default class Device {
   #deviceSocket: WS;
 
   // Stores the most recent listing of device's pages, keyed by the `id` field.
-  #pages: $ReadOnlyMap<string, Page> = new Map();
+  #pages: ReadonlyMap<string, Page> = new Map();
 
-  // Stores information about currently connected debugger (if any).
-  #debuggerConnection: ?DebuggerConnection = null;
+  // Stores information about currently connected debuggers, keyed by sessionId.
+  #debuggerConnections: Map<string, DebuggerConnection> = new Map();
 
   // Last known Page ID of the React Native page.
   // This is used by debugger connections that don't have PageID specified
@@ -124,19 +128,20 @@ export default class Device {
   // The device message middleware factory function allowing implementers to handle unsupported CDP messages.
   #createCustomMessageHandler: ?CreateCustomMessageHandlerFn;
 
-  #connectedPageIds: Set<string> = new Set();
-
   // A base HTTP(S) URL to this server, reachable from the device. Derived from
   // the http request that created the connection.
-  #deviceRelativeBaseUrl: URL;
+  #deviceRelativeBaseUrl: ReadonlyURL;
 
   // A base HTTP(S) URL to the server, relative to this server.
-  #serverRelativeBaseUrl: URL;
+  #serverRelativeBaseUrl: ReadonlyURL;
 
   // Logging reporting batches of cdp messages
   #cdpDebugLogging: CdpDebugLogging;
 
+  readonly #experiments: Experiments;
+
   constructor(deviceOptions: DeviceOptions) {
+    this.#experiments = deviceOptions.experiments;
     this.#dangerouslyConstruct(deviceOptions);
   }
 
@@ -220,14 +225,40 @@ export default class Device {
     });
   }
 
-  #terminateDebuggerConnection(code?: number, reason?: string) {
-    const debuggerConnection = this.#debuggerConnection;
-    if (debuggerConnection) {
-      this.#sendDisconnectEventToDevice(
-        this.#mapToDevicePageId(debuggerConnection.pageId),
-      );
-      debuggerConnection.socket.close(code, reason);
-      this.#debuggerConnection = null;
+  /**
+   * Terminates debugger connection(s).
+   * If sessionId is provided, terminates only that session.
+   * If sessionId is not provided, terminates all sessions.
+   */
+  #terminateDebuggerConnection(
+    code?: number,
+    reason?: string,
+    sessionId?: string,
+  ) {
+    if (sessionId != null) {
+      // Terminate specific session
+      const debuggerConnection = this.#debuggerConnections.get(sessionId);
+      if (debuggerConnection) {
+        // Delete from map first so #sendDisconnectEventToDevice can correctly
+        // check if there are other debuggers connected to this page
+        this.#debuggerConnections.delete(sessionId);
+        this.#sendDisconnectEventToDevice(
+          this.#mapToDevicePageId(debuggerConnection.pageId),
+          sessionId,
+        );
+        debuggerConnection.socket.close(code, reason);
+      }
+    } else {
+      // Terminate all sessions - collect connections first, then process
+      const connections = Array.from(this.#debuggerConnections.entries());
+      this.#debuggerConnections.clear();
+      for (const [sid, debuggerConnection] of connections) {
+        this.#sendDisconnectEventToDevice(
+          this.#mapToDevicePageId(debuggerConnection.pageId),
+          sid,
+        );
+        debuggerConnection.socket.close(code, reason);
+      }
     }
   }
 
@@ -246,7 +277,8 @@ export default class Device {
       'dangerouslyRecreateDevice() can only be used for the same device ID',
     );
 
-    const oldDebugger = this.#debuggerConnection;
+    // Store existing debugger connections for potential reuse
+    const oldDebuggerConnections = new Map(this.#debuggerConnections);
 
     if (this.#app !== deviceOptions.app || this.#name !== deviceOptions.name) {
       this.#deviceSocket.close(
@@ -259,21 +291,26 @@ export default class Device {
       );
     }
 
-    this.#debuggerConnection = null;
+    this.#debuggerConnections.clear();
 
-    if (oldDebugger) {
-      oldDebugger.socket.removeAllListeners();
+    // Close the old device socket before reconstructing
+    if (oldDebuggerConnections.size > 0) {
       this.#deviceSocket.close(
         WS_CLOSURE_CODE.NORMAL,
         WS_CLOSE_REASON.RECREATING_DEVICE,
       );
+    }
+
+    this.#dangerouslyConstruct(deviceOptions);
+
+    // Restore all debugger connections, not just the first one
+    for (const oldDebugger of oldDebuggerConnections.values()) {
+      oldDebugger.socket.removeAllListeners();
       this.handleDebuggerConnection(oldDebugger.socket, oldDebugger.pageId, {
         debuggerRelativeBaseUrl: oldDebugger.debuggerRelativeBaseUrl,
         userAgent: oldDebugger.userAgent,
       });
     }
-
-    this.#dangerouslyConstruct(deviceOptions);
   }
 
   getName(): string {
@@ -284,7 +321,7 @@ export default class Device {
     return this.#app;
   }
 
-  getPagesList(): $ReadOnlyArray<Page> {
+  getPagesList(): ReadonlyArray<Page> {
     if (this.#lastConnectedLegacyReactNativePage) {
       return [...this.#pages.values(), this.#createSyntheticPage()];
     } else {
@@ -302,8 +339,8 @@ export default class Device {
     {
       debuggerRelativeBaseUrl,
       userAgent,
-    }: $ReadOnly<{
-      debuggerRelativeBaseUrl: URL,
+    }: Readonly<{
+      debuggerRelativeBaseUrl: ReadonlyURL,
       userAgent: string | null,
     }>,
   ) {
@@ -327,69 +364,82 @@ export default class Device {
     // Clear any commands we were waiting on.
     this.#deviceEventReporter?.logDisconnection('debugger');
 
-    // Disconnect current debugger if we already have debugger connected.
-    this.#terminateDebuggerConnection(
-      WS_CLOSURE_CODE.NORMAL,
-      WS_CLOSE_REASON.NEW_DEBUGGER_OPENED,
-    );
+    // Check if this specific page supports multiple debuggers.
+    // If not (legacy mode), disconnect existing debuggers for THIS PAGE only
+    // before connecting the new one.
+    if (!this.#pageHasCapability(page, 'supportsMultipleDebuggers')) {
+      for (const [sid, conn] of this.#debuggerConnections) {
+        if (conn.pageId === pageId) {
+          this.#terminateDebuggerConnection(
+            WS_CLOSURE_CODE.NORMAL,
+            WS_CLOSE_REASON.NEW_DEBUGGER_OPENED,
+            sid,
+          );
+        }
+      }
+    }
+
+    // Generate a unique session ID for this debugger connection using UUID
+    // to minimize collision likelihood across device reconnections
+    const sessionId = crypto.randomUUID();
 
     this.#deviceEventReporter?.logConnection('debugger', {
       pageId,
       frontendUserAgent: userAgent,
     });
 
-    const debuggerInfo: ?DebuggerConnection & DebuggerConnection = {
+    const debuggerInfo: DebuggerConnection = {
       socket,
       prependedFilePrefix: false,
       pageId,
       userAgent: userAgent,
       customHandler: null,
       debuggerRelativeBaseUrl,
+      sessionId,
     };
 
-    this.#debuggerConnection = debuggerInfo;
+    this.#debuggerConnections.set(sessionId, debuggerInfo);
 
     debug(
       `Got new debugger connection via ${debuggerRelativeBaseUrl.href} for ` +
-        `page ${pageId} of ${this.#name}`,
+        `page ${pageId} of ${this.#name} with sessionId ${sessionId}`,
     );
 
-    if (this.#debuggerConnection && this.#createCustomMessageHandler) {
-      this.#debuggerConnection.customHandler = this.#createCustomMessageHandler(
-        {
-          page,
-          debugger: {
-            userAgent: debuggerInfo.userAgent,
-            sendMessage: message => {
-              try {
-                const payload = JSON.stringify(message);
-                this.#cdpDebugLogging.log('ProxyToDebugger', payload);
-                socket.send(payload);
-              } catch {}
-            },
-          },
-          device: {
-            appId: this.#app,
-            id: this.#id,
-            name: this.#name,
-            sendMessage: message => {
-              try {
-                const payload = JSON.stringify({
-                  event: 'wrappedEvent',
-                  payload: {
-                    pageId: this.#mapToDevicePageId(pageId),
-                    wrappedEvent: JSON.stringify(message),
-                  },
-                });
-                this.#cdpDebugLogging.log('DebuggerToProxy', payload);
-                this.#deviceSocket.send(payload);
-              } catch {}
-            },
+    if (this.#createCustomMessageHandler) {
+      debuggerInfo.customHandler = this.#createCustomMessageHandler({
+        page,
+        debugger: {
+          userAgent: debuggerInfo.userAgent,
+          sendMessage: message => {
+            try {
+              const payload = JSON.stringify(message);
+              this.#cdpDebugLogging.log('ProxyToDebugger', payload);
+              socket.send(payload);
+            } catch {}
           },
         },
-      );
+        device: {
+          appId: this.#app,
+          id: this.#id,
+          name: this.#name,
+          sendMessage: message => {
+            try {
+              const payload = JSON.stringify({
+                event: 'wrappedEvent',
+                payload: {
+                  pageId: this.#mapToDevicePageId(pageId),
+                  wrappedEvent: JSON.stringify(message),
+                  sessionId,
+                },
+              });
+              this.#cdpDebugLogging.log('DebuggerToProxy', payload);
+              this.#deviceSocket.send(payload);
+            } catch {}
+          },
+        },
+      });
 
-      if (this.#debuggerConnection.customHandler) {
+      if (debuggerInfo.customHandler) {
         debug('Created new custom message handler for debugger connection');
       } else {
         debug(
@@ -398,25 +448,21 @@ export default class Device {
       }
     }
 
-    this.#sendConnectEventToDevice(this.#mapToDevicePageId(pageId));
+    this.#sendConnectEventToDevice(this.#mapToDevicePageId(pageId), sessionId);
 
     // $FlowFixMe[incompatible-type]
     socket.on('message', (message: string) => {
       this.#cdpDebugLogging.log('DebuggerToProxy', message);
       const debuggerRequest = JSON.parse(message);
       this.#deviceEventReporter?.logRequest(debuggerRequest, 'debugger', {
-        pageId: this.#debuggerConnection?.pageId ?? null,
+        pageId: debuggerInfo.pageId,
         frontendUserAgent: userAgent,
-        prefersFuseboxFrontend: this.#isPageFuseboxFrontend(
-          this.#debuggerConnection?.pageId,
-        ),
       });
       let processedReq = debuggerRequest;
 
       if (
-        this.#debuggerConnection?.customHandler?.handleDebuggerMessage(
-          debuggerRequest,
-        ) === true
+        debuggerInfo.customHandler?.handleDebuggerMessage(debuggerRequest) ===
+        true
       ) {
         return;
       }
@@ -435,16 +481,17 @@ export default class Device {
           payload: {
             pageId: this.#mapToDevicePageId(pageId),
             wrappedEvent: JSON.stringify(processedReq),
+            sessionId,
           },
         });
       }
     });
     socket.on('close', () => {
-      debug(`Debugger for page ${pageId} and ${this.#name} disconnected.`);
+      debug(
+        `Debugger for page ${pageId} and ${this.#name} disconnected (sessionId: ${sessionId}).`,
+      );
       this.#deviceEventReporter?.logDisconnection('debugger');
-      if (this.#debuggerConnection?.socket === socket) {
-        this.#terminateDebuggerConnection();
-      }
+      this.#terminateDebuggerConnection(undefined, undefined, sessionId);
     });
 
     const cdpDebugLogging = this.#cdpDebugLogging;
@@ -457,32 +504,24 @@ export default class Device {
     };
   }
 
-  #sendConnectEventToDevice(devicePageId: string) {
-    if (this.#connectedPageIds.has(devicePageId)) {
-      return;
-    }
-    this.#connectedPageIds.add(devicePageId);
+  #sendConnectEventToDevice(devicePageId: string, sessionId: string) {
     this.#sendMessageToDevice({
       event: 'connect',
-      payload: {pageId: devicePageId},
+      payload: {pageId: devicePageId, sessionId},
     });
   }
 
-  #sendDisconnectEventToDevice(devicePageId: string) {
-    if (!this.#connectedPageIds.has(devicePageId)) {
-      return;
-    }
-    this.#connectedPageIds.delete(devicePageId);
+  #sendDisconnectEventToDevice(devicePageId: string, sessionId: string) {
     this.#sendMessageToDevice({
       event: 'disconnect',
-      payload: {pageId: devicePageId},
+      payload: {pageId: devicePageId, sessionId},
     });
   }
 
   /**
    * Returns `true` if a page supports the given target capability flag.
    */
-  #pageHasCapability(page: Page, flag: $Keys<TargetCapabilityFlags>): boolean {
+  #pageHasCapability(page: Page, flag: keyof TargetCapabilityFlags): boolean {
     return page.capabilities[flag] === true;
   }
 
@@ -509,15 +548,24 @@ export default class Device {
   #handleMessageFromDevice(message: MessageFromDevice) {
     if (message.event === 'getPages') {
       // Preserve ordering - getPages guarantees addition order.
+      const shouldDisableMultipleDebuggers =
+        !this.#experiments.enableStandaloneFuseboxShell;
       this.#pages = new Map(
-        message.payload.map(({capabilities, ...page}) => [
-          page.id,
-          {
-            ...page,
-            capabilities: capabilities ?? {},
-          },
-        ]),
+        message.payload.map(({capabilities: rawCapabilities, ...page}) => {
+          const capabilities: TargetCapabilityFlags =
+            shouldDisableMultipleDebuggers
+              ? {...(rawCapabilities ?? {}), supportsMultipleDebuggers: false}
+              : (rawCapabilities ?? {});
+          return [
+            page.id,
+            {
+              ...page,
+              capabilities,
+            },
+          ];
+        }),
       );
+
       if (message.payload.length !== this.#pages.size) {
         const duplicateIds = new Set<string>();
         const idsSeen = new Set<string>();
@@ -542,7 +590,6 @@ export default class Device {
       // created instead of manually checking this on every getPages result.
       for (const page of this.#pages.values()) {
         if (this.#pageHasCapability(page, 'nativePageReloads')) {
-          this.#logFuseboxConsoleNotice();
           continue;
         }
 
@@ -557,6 +604,8 @@ export default class Device {
       // Device sends disconnect events only when page is reloaded or
       // if debugger socket was disconnected.
       const pageId = message.payload.pageId;
+      const sessionId = message.payload.sessionId;
+
       // TODO(moti): Handle null case explicitly, e.g. swallow disconnect events
       // for unknown pages.
       const page: ?Page = this.#pages.get(pageId);
@@ -565,63 +614,86 @@ export default class Device {
         return;
       }
 
-      const debuggerSocket = this.#debuggerConnection
-        ? this.#debuggerConnection.socket
-        : null;
-      if (debuggerSocket && debuggerSocket.readyState === WS.OPEN) {
+      // Find the debugger connection(s) for this page
+      if (sessionId != null) {
+        // Disconnect specific session
+        const debuggerConnection = this.#debuggerConnections.get(sessionId);
         if (
-          this.#debuggerConnection != null &&
-          this.#debuggerConnection.pageId !== REACT_NATIVE_RELOADABLE_PAGE_ID
+          debuggerConnection &&
+          debuggerConnection.socket.readyState === WS.OPEN
         ) {
-          debug(`Legacy page ${pageId} is reloading.`);
-          debuggerSocket.send(JSON.stringify({method: 'reload'}));
+          if (debuggerConnection.pageId !== REACT_NATIVE_RELOADABLE_PAGE_ID) {
+            debug(
+              `Legacy page ${pageId} is reloading (sessionId: ${sessionId}).`,
+            );
+            debuggerConnection.socket.send(JSON.stringify({method: 'reload'}));
+          }
+        }
+      } else {
+        // Legacy mode: send to all connected debuggers for this page
+        for (const debuggerConnection of this.#debuggerConnections.values()) {
+          if (
+            debuggerConnection.pageId !== REACT_NATIVE_RELOADABLE_PAGE_ID &&
+            debuggerConnection.socket.readyState === WS.OPEN
+          ) {
+            debug(`Legacy page ${pageId} is reloading.`);
+            debuggerConnection.socket.send(JSON.stringify({method: 'reload'}));
+          }
         }
       }
     } else if (message.event === 'wrappedEvent') {
-      if (this.#debuggerConnection == null) {
+      const sessionId = message.payload.sessionId;
+
+      // Route message to the correct debugger connection by sessionId
+      let debuggerConnection: ?DebuggerConnection = null;
+      if (sessionId != null) {
+        debuggerConnection = this.#debuggerConnections.get(sessionId);
+      } else {
+        // Legacy mode: route to the first (and only) debugger connection
+        // ASSERT: In legacy mode, there should be at most one debugger connected.
+        if (this.#debuggerConnections.size > 1) {
+          debug(
+            'WARNING: Device sent message without sessionId but multiple debuggers are connected. ' +
+              'This indicates a device/proxy version mismatch.',
+          );
+        }
+        debuggerConnection =
+          this.#debuggerConnections.values().next().value ?? null;
+      }
+
+      if (debuggerConnection == null) {
         return;
       }
 
-      // FIXME: Is it possible that we received message for pageID that does not
-      // correspond to current debugger connection?
-      // TODO(moti): yes, fix multi-debugger case
-
-      const debuggerSocket = this.#debuggerConnection.socket;
+      const debuggerSocket = debuggerConnection.socket;
       if (debuggerSocket == null || debuggerSocket.readyState !== WS.OPEN) {
         // TODO(hypuk): Send error back to device?
         return;
       }
 
       const parsedPayload = JSON.parse(message.payload.wrappedEvent);
-      const pageId = this.#debuggerConnection?.pageId ?? null;
+      const pageId = debuggerConnection.pageId;
       if ('id' in parsedPayload) {
         this.#deviceEventReporter?.logResponse(parsedPayload, 'device', {
           pageId,
-          frontendUserAgent: this.#debuggerConnection?.userAgent ?? null,
-          prefersFuseboxFrontend: this.#isPageFuseboxFrontend(pageId),
+          frontendUserAgent: debuggerConnection.userAgent ?? null,
         });
       }
 
-      const debuggerConnection = this.#debuggerConnection;
-      if (debuggerConnection != null) {
-        if (
-          debuggerConnection.customHandler?.handleDeviceMessage(
-            parsedPayload,
-          ) === true
-        ) {
-          return;
-        }
-
-        this.#processMessageFromDeviceLegacy(
-          parsedPayload,
-          debuggerConnection,
-          pageId,
-        );
-        const messageToSend = JSON.stringify(parsedPayload);
-        debuggerSocket.send(messageToSend);
-      } else {
-        debuggerSocket.send(message.payload.wrappedEvent);
+      if (
+        debuggerConnection.customHandler?.handleDeviceMessage(parsedPayload) ===
+        true
+      ) {
+        return;
       }
+
+      this.#processMessageFromDeviceLegacy(
+        parsedPayload,
+        debuggerConnection,
+        pageId,
+      );
+      const messageToSend = JSON.stringify(parsedPayload);
+      debuggerSocket.send(messageToSend);
     }
   }
 
@@ -639,10 +711,17 @@ export default class Device {
   // We received new React Native Page ID.
   #newLegacyReactNativePage(page: Page) {
     debug(`React Native page updated to ${page.id}`);
-    if (
-      this.#debuggerConnection == null ||
-      this.#debuggerConnection.pageId !== REACT_NATIVE_RELOADABLE_PAGE_ID
-    ) {
+
+    // Find the debugger connection that's connected to the reloadable page
+    let reloadablePageDebugger: ?DebuggerConnection = null;
+    for (const debuggerConnection of this.#debuggerConnections.values()) {
+      if (debuggerConnection.pageId === REACT_NATIVE_RELOADABLE_PAGE_ID) {
+        reloadablePageDebugger = debuggerConnection;
+        break;
+      }
+    }
+
+    if (reloadablePageDebugger == null) {
       // We can just remember new page ID without any further actions if no
       // debugger is currently attached or attached debugger is not
       // "Reloadable React Native" connection.
@@ -659,10 +738,13 @@ export default class Device {
     // page.
 
     if (oldPageId != null) {
-      this.#sendDisconnectEventToDevice(oldPageId);
+      this.#sendDisconnectEventToDevice(
+        oldPageId,
+        reloadablePageDebugger.sessionId,
+      );
     }
 
-    this.#sendConnectEventToDevice(page.id);
+    this.#sendConnectEventToDevice(page.id, reloadablePageDebugger.sessionId);
 
     const toSend = [
       {method: 'Runtime.enable', id: 1e9},
@@ -670,17 +752,17 @@ export default class Device {
     ];
 
     for (const message of toSend) {
-      const pageId = this.#debuggerConnection?.pageId ?? null;
+      const pageId = reloadablePageDebugger.pageId;
       this.#deviceEventReporter?.logRequest(message, 'proxy', {
         pageId,
-        frontendUserAgent: this.#debuggerConnection?.userAgent ?? null,
-        prefersFuseboxFrontend: this.#isPageFuseboxFrontend(pageId),
+        frontendUserAgent: reloadablePageDebugger.userAgent ?? null,
       });
       this.#sendMessageToDevice({
         event: 'wrappedEvent',
         payload: {
           pageId: this.#mapToDevicePageId(page.id),
           wrappedEvent: JSON.stringify(message),
+          sessionId: reloadablePageDebugger.sessionId,
         },
       });
     }
@@ -822,17 +904,15 @@ export default class Device {
       // at its convenience.
       const resumeMessage = {method: 'Debugger.resume', id: 0};
       this.#deviceEventReporter?.logRequest(resumeMessage, 'proxy', {
-        pageId: this.#debuggerConnection?.pageId ?? null,
-        frontendUserAgent: this.#debuggerConnection?.userAgent ?? null,
-        prefersFuseboxFrontend: this.#isPageFuseboxFrontend(
-          this.#debuggerConnection?.pageId,
-        ),
+        pageId: debuggerInfo.pageId,
+        frontendUserAgent: debuggerInfo.userAgent ?? null,
       });
       this.#sendMessageToDevice({
         event: 'wrappedEvent',
         payload: {
           pageId: this.#mapToDevicePageId(debuggerInfo.pageId),
           wrappedEvent: JSON.stringify(resumeMessage),
+          sessionId: debuggerInfo.sessionId,
         },
       });
 
@@ -872,7 +952,7 @@ export default class Device {
         return this.#processDebuggerSetBreakpointByUrl(req, debuggerInfo);
       case 'Debugger.getScriptSource':
         // Sends response to debugger via side-effect
-        void this.#processDebuggerGetScriptSource(req, socket);
+        void this.#processDebuggerGetScriptSource(req, socket, debuggerInfo);
         return null;
       case 'Network.loadNetworkResource':
         // If we're rewriting URLs (to frontend-relative), we don't want to
@@ -892,11 +972,10 @@ export default class Device {
         };
         const response = {id: req.id, result};
         socket.send(JSON.stringify(response));
-        const pageId = this.#debuggerConnection?.pageId ?? null;
+        const pageId = debuggerInfo.pageId;
         this.#deviceEventReporter?.logResponse(response, 'proxy', {
           pageId,
-          frontendUserAgent: this.#debuggerConnection?.userAgent ?? null,
-          prefersFuseboxFrontend: this.#isPageFuseboxFrontend(pageId),
+          frontendUserAgent: debuggerInfo.userAgent ?? null,
         });
         return null;
       default:
@@ -960,6 +1039,7 @@ export default class Device {
   async #processDebuggerGetScriptSource(
     req: CDPRequest<'Debugger.getScriptSource'>,
     socket: WS,
+    debuggerInfo: DebuggerConnection,
   ): Promise<void> {
     const sendSuccessResponse = (scriptSource: string) => {
       const result: {
@@ -971,11 +1051,10 @@ export default class Device {
         result,
       };
       socket.send(JSON.stringify(response));
-      const pageId = this.#debuggerConnection?.pageId ?? null;
+      const pageId = debuggerInfo.pageId;
       this.#deviceEventReporter?.logResponse(response, 'proxy', {
         pageId,
-        frontendUserAgent: this.#debuggerConnection?.userAgent ?? null,
-        prefersFuseboxFrontend: this.#isPageFuseboxFrontend(pageId),
+        frontendUserAgent: debuggerInfo.userAgent ?? null,
       });
     };
     const sendErrorResponse = (error: string) => {
@@ -985,12 +1064,11 @@ export default class Device {
       socket.send(JSON.stringify(response));
 
       // Send to the console as well, so the user can see it
-      this.#sendErrorToDebugger(error);
-      const pageId = this.#debuggerConnection?.pageId ?? null;
+      this.#sendErrorToDebugger(error, debuggerInfo);
+      const pageId = debuggerInfo.pageId;
       this.#deviceEventReporter?.logResponse(response, 'proxy', {
         pageId,
-        frontendUserAgent: this.#debuggerConnection?.userAgent ?? null,
-        prefersFuseboxFrontend: this.#isPageFuseboxFrontend(pageId),
+        frontendUserAgent: debuggerInfo.userAgent ?? null,
       });
     };
 
@@ -1059,8 +1137,8 @@ export default class Device {
     return text;
   }
 
-  #sendErrorToDebugger(message: string) {
-    const debuggerSocket = this.#debuggerConnection?.socket;
+  #sendErrorToDebugger(message: string, debuggerInfo?: DebuggerConnection) {
+    const debuggerSocket = debuggerInfo?.socket;
     if (debuggerSocket && debuggerSocket.readyState === WS.OPEN) {
       debuggerSocket.send(
         JSON.stringify({
@@ -1080,26 +1158,7 @@ export default class Device {
     }
   }
 
-  #isPageFuseboxFrontend(pageId: ?string): boolean | null {
-    const page = pageId == null ? null : this.#pages.get(pageId);
-    if (page == null) {
-      return null;
-    }
-
-    return this.#pageHasCapability(page, 'prefersFuseboxFrontend');
-  }
-
   dangerouslyGetSocket(): WS {
     return this.#deviceSocket;
-  }
-
-  // TODO(T214991636): Remove notice
-  #logFuseboxConsoleNotice() {
-    if (fuseboxConsoleNoticeLogged) {
-      return;
-    }
-
-    this.#deviceEventReporter?.logFuseboxConsoleNotice();
-    fuseboxConsoleNoticeLogged = true;
   }
 }

@@ -29,6 +29,10 @@ const char* YGAlignToString(const YGAlign value) {
       return "space-around";
     case YGAlignSpaceEvenly:
       return "space-evenly";
+    case YGAlignStart:
+      return "start";
+    case YGAlignEnd:
+      return "end";
   }
   return "unknown";
 }
@@ -73,6 +77,8 @@ const char* YGDisplayToString(const YGDisplay value) {
       return "none";
     case YGDisplayContents:
       return "contents";
+    case YGDisplayGrid:
+      return "grid";
   }
   return "unknown";
 }
@@ -111,6 +117,8 @@ const char* YGErrataToString(const YGErrata value) {
       return "absolute-position-without-insets-excludes-padding";
     case YGErrataAbsolutePercentAgainstInnerSize:
       return "absolute-percent-against-inner-size";
+    case YGErrataMinSizeUndefinedInsteadOfAuto:
+      return "min-size-undefined-instead-of-auto";
     case YGErrataAll:
       return "all";
     case YGErrataClassic:
@@ -123,6 +131,8 @@ const char* YGExperimentalFeatureToString(const YGExperimentalFeature value) {
   switch (value) {
     case YGExperimentalFeatureWebFlexBasis:
       return "web-flex-basis";
+    case YGExperimentalFeatureFixFlexBasisFitContent:
+      return "fix-flex-basis-fit-content";
   }
   return "unknown";
 }
@@ -141,6 +151,22 @@ const char* YGFlexDirectionToString(const YGFlexDirection value) {
   return "unknown";
 }
 
+const char* YGGridTrackTypeToString(const YGGridTrackType value) {
+  switch (value) {
+    case YGGridTrackTypeAuto:
+      return "auto";
+    case YGGridTrackTypePoints:
+      return "points";
+    case YGGridTrackTypePercent:
+      return "percent";
+    case YGGridTrackTypeFr:
+      return "fr";
+    case YGGridTrackTypeMinmax:
+      return "minmax";
+  }
+  return "unknown";
+}
+
 const char* YGGutterToString(const YGGutter value) {
   switch (value) {
     case YGGutterColumn:
@@ -155,6 +181,8 @@ const char* YGGutterToString(const YGGutter value) {
 
 const char* YGJustifyToString(const YGJustify value) {
   switch (value) {
+    case YGJustifyAuto:
+      return "auto";
     case YGJustifyFlexStart:
       return "flex-start";
     case YGJustifyCenter:
@@ -167,6 +195,12 @@ const char* YGJustifyToString(const YGJustify value) {
       return "space-around";
     case YGJustifySpaceEvenly:
       return "space-evenly";
+    case YGJustifyStretch:
+      return "stretch";
+    case YGJustifyStart:
+      return "start";
+    case YGJustifyEnd:
+      return "end";
   }
   return "unknown";
 }

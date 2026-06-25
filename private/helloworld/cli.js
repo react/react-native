@@ -12,29 +12,10 @@
 import {Command} from 'commander';
 */
 
-// eslint-disable-next-line @react-native/monorepo/sort-imports
-const {patchCoreCLIUtilsPackageJSON} = require('./scripts/monorepo');
-
-function injectCoreCLIUtilsRuntimePatch() {
-  patchCoreCLIUtilsPackageJSON(true);
-  const cleared = {
-    status: false,
-  };
-  ['exit', 'SIGUSR1', 'SIGUSR2', 'uncaughtException'].forEach(event => {
-    if (cleared.status) {
-      return;
-    }
-    patchCoreCLIUtilsPackageJSON(false);
-    cleared.status = true;
-  });
-}
-
 if (process.env.BUILD_EXCLUDE_BABEL_REGISTER == null) {
   // $FlowFixMe[cannot-resolve-module]
   require('../../scripts/shared/babelRegister').registerForMonorepo();
 }
-
-injectCoreCLIUtilsRuntimePatch();
 
 const program /*: Command */ = require('./cli.flow.js').default;
 

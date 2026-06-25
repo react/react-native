@@ -13,9 +13,9 @@
 // An interface shaped like a subset of the Octokit class from `@octokit/rest`.
 // Used to allow mocking in tests.
 export interface IOctokit {
-  +repos: $ReadOnly<{
+  readonly repos: Readonly<{
     listReleaseAssets: (
-      params: $ReadOnly<{
+      params: Readonly<{
         owner: string,
         repo: string,
         release_id: string,
@@ -29,13 +29,13 @@ export interface IOctokit {
       ...
     }>,
     uploadReleaseAsset: (
-      params: $ReadOnly<{
+      params: Readonly<{
         owner: string,
         repo: string,
         release_id: string,
         name: string,
         data: Buffer,
-        headers: $ReadOnly<{
+        headers: Readonly<{
           'content-type': string,
           ...
         }>,
@@ -53,6 +53,6 @@ export interface IOctokit {
       repo: string,
       asset_id: string,
       ...
-    }) => Promise<mixed>,
+    }) => Promise<unknown>,
   }>;
 }

@@ -16,7 +16,7 @@ try {
   isMetaInternal = false;
 }
 
-let additionalConfig /*: $ReadOnly<{
+let additionalConfig /*: Readonly<{
   appVersionHash: ?string,
 }> */ = {
   appVersionHash: null,

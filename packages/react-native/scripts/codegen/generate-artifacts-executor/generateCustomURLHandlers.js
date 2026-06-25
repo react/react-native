@@ -11,7 +11,7 @@
 'use strict';
 
 const {TEMPLATES_FOLDER_PATH} = require('./constants');
-const {parseiOSAnnotations} = require('./utils');
+const {parseiOSAnnotations, writeFileSyncIfChanged} = require('./utils');
 const fs = require('fs');
 const path = require('path');
 
@@ -26,7 +26,7 @@ const MODULES_PROTOCOLS_MM_TEMPLATE_PATH = path.join(
 );
 
 function generateCustomURLHandlers(
-  libraries /*: $ReadOnlyArray<$FlowFixMe> */,
+  libraries /*: ReadonlyArray<$FlowFixMe> */,
   outputDir /*: string */,
 ) {
   const iosAnnotations = parseiOSAnnotations(libraries);
@@ -105,13 +105,13 @@ function generateCustomURLHandlers(
 
   fs.mkdirSync(outputDir, {recursive: true});
 
-  fs.writeFileSync(
+  writeFileSyncIfChanged(
     path.join(outputDir, 'RCTModulesConformingToProtocolsProvider.mm'),
     finalMMFile,
   );
 
   const templateH = fs.readFileSync(MODULES_PROTOCOLS_H_TEMPLATE_PATH, 'utf8');
-  fs.writeFileSync(
+  writeFileSyncIfChanged(
     path.join(outputDir, 'RCTModulesConformingToProtocolsProvider.h'),
     templateH,
   );

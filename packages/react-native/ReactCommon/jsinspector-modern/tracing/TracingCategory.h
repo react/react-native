@@ -44,7 +44,6 @@ inline std::string tracingCategoryToString(const Category &category)
       return "disabled-by-default-devtools.screenshot";
     default:
       folly::assume_unreachable();
-      return "unknown";
   }
 }
 

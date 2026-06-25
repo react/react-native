@@ -1,0 +1,2 @@
+template <typename T>
+T test::helloWorld();

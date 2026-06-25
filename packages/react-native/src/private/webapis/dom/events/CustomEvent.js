@@ -20,11 +20,11 @@ import type {EventInit} from './Event';
 import Event from './Event';
 
 export interface CustomEventInit extends EventInit {
-  +detail?: mixed;
+  readonly detail?: unknown;
 }
 
 export default class CustomEvent extends Event {
-  _detail: mixed;
+  _detail: unknown;
 
   constructor(type: string, options?: ?CustomEventInit) {
     super(type, options);
@@ -32,7 +32,7 @@ export default class CustomEvent extends Event {
     this._detail = options?.detail;
   }
 
-  get detail(): mixed {
+  get detail(): unknown {
     return this._detail;
   }
 }

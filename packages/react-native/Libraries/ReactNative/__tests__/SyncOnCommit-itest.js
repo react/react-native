@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @fantom_flags updateRuntimeShadowNodeReferencesOnCommit:true
+ * @fantom_flags updateRuntimeShadowNodeReferencesOnCommit:true enableFabricCommitBranching:*
  * @fantom_react_fb_flags passChildrenWhenCloningPersistedNodes:true
  * @flow strict-local
  * @format

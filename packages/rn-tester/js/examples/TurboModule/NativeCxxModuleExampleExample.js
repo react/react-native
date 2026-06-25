@@ -29,7 +29,7 @@ type State = {
   testResults: {
     [string]: {
       type: string,
-      value: mixed,
+      value: unknown,
       ...
     },
     ...
@@ -40,6 +40,9 @@ type Examples =
   | 'callback'
   | 'callbackWithSubscription'
   | 'getArray'
+  | 'getArrayBuffer'
+  | 'processAsyncBuffer'
+  | 'getAsyncBuffer'
   | 'getBool'
   | 'getConstants'
   | 'getCustomEnum'
@@ -102,6 +105,31 @@ class NativeCxxModuleExampleExample extends React.Component<{}, State> {
         {a: 2, b: 'bar'},
         null,
       ]),
+    getArrayBuffer: () => {
+      const view = new Uint8Array([1, 2, 3, 4, 5]);
+      const buffer = NativeCxxModuleExample?.getArrayBuffer(view.buffer);
+      return new Uint8Array(buffer || []).toString();
+    },
+    processAsyncBuffer: async () => {
+      const view = new Uint8Array([10, 20, 30, 40, 50]);
+      const nativeBuffer = NativeCxxModuleExample?.createNativeBuffer(10);
+
+      const [byteSum, zeroCopyByteSum] = await Promise.all([
+        NativeCxxModuleExample?.processAsyncBuffer(view.buffer),
+        nativeBuffer != null
+          ? NativeCxxModuleExample?.processAsyncBuffer(nativeBuffer)
+          : Promise.resolve(0),
+      ]);
+
+      this._setResult(
+        'processAsyncBuffer',
+        `sum=${(byteSum ?? 0) + (zeroCopyByteSum ?? 0)}`,
+      );
+    },
+    getAsyncBuffer: () =>
+      NativeCxxModuleExample?.getAsyncBuffer(10).then(buffer => {
+        this._setResult('getAsyncBuffer', new Uint8Array(buffer).toString());
+      }),
     getBool: () => NativeCxxModuleExample?.getBool(true),
     getConstants: () => NativeCxxModuleExample?.getConstants(),
     getCustomEnum: () => NativeCxxModuleExample?.getCustomEnum(EnumInt.IB),
@@ -239,7 +267,7 @@ class NativeCxxModuleExampleExample extends React.Component<{}, State> {
       | {const1: boolean, const2: number, const3: string}
       | number
       | {[key: string]: ?number}
-      | Promise<mixed>
+      | Promise<unknown>
       | number
       | string,
   ) {

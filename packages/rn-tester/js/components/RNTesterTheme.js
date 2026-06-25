@@ -15,7 +15,7 @@ import {createContext} from 'react';
 import {use} from 'react';
 import {Appearance} from 'react-native';
 
-export type RNTesterTheme = $ReadOnly<{
+export type RNTesterTheme = Readonly<{
   LabelColor: ColorValue,
   SecondaryLabelColor: ColorValue,
   TertiaryLabelColor: ColorValue,

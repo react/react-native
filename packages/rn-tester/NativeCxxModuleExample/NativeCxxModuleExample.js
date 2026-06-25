@@ -31,11 +31,11 @@ export type UnionFloat = 1.44 | 2.88 | 5.76;
 export type UnionString = 'One' | 'Two' | 'Three';
 export type UnionObject = {value: number} | {low: string};
 
-export type ConstantsStruct = {
+export type ConstantsStruct = Readonly<{
   const1: boolean,
   const2: number,
   const3: string,
-};
+}>;
 
 export type ObjectStruct = {
   a: number,
@@ -76,46 +76,54 @@ export type CustomDeviceEvent = {
 };
 
 export interface Spec extends TurboModule {
-  +onPress: CodegenTypes.EventEmitter<void>;
-  +onClick: CodegenTypes.EventEmitter<string>;
-  +onChange: CodegenTypes.EventEmitter<ObjectStruct>;
-  +onSubmit: CodegenTypes.EventEmitter<ObjectStruct[]>;
-  +onEvent: CodegenTypes.EventEmitter<EnumNone>;
-  +getArray: (arg: Array<ObjectStruct | null>) => Array<ObjectStruct | null>;
-  +getBool: (arg: boolean) => boolean;
-  +getConstants: () => ConstantsStruct;
-  +getCustomEnum: (arg: EnumInt) => EnumInt;
-  +getCustomHostObject: () => CustomHostObject;
-  +consumeCustomHostObject: (customHostObject: CustomHostObject) => string;
-  +getBinaryTreeNode: (arg: BinaryTreeNode) => BinaryTreeNode;
-  +getGraphNode: (arg: GraphNode) => GraphNode;
-  +getNumEnum: (arg: EnumInt) => EnumInt;
-  +getStrEnum: (arg: EnumNone) => EnumStr;
-  +getMap: (arg: {[key: string]: ?number}) => {[key: string]: ?number};
-  +getNumber: (arg: number) => number;
-  +getObject: (arg: ObjectStruct) => ObjectStruct;
-  +getSet: (arg: Array<number>) => Array<number>;
-  +getString: (arg: string) => string;
-  +getUnion: (x: UnionFloat, y: UnionString, z: UnionObject) => string;
-  +getValue: (x: number, y: string, z: ObjectStruct) => ValueStruct;
-  +getValueWithCallback: (callback: (value: string) => void) => void;
-  +setValueCallbackWithSubscription: (
+  readonly onPress: CodegenTypes.EventEmitter<void>;
+  readonly onClick: CodegenTypes.EventEmitter<string>;
+  readonly onChange: CodegenTypes.EventEmitter<ObjectStruct>;
+  readonly onSubmit: CodegenTypes.EventEmitter<ObjectStruct[]>;
+  readonly onEvent: CodegenTypes.EventEmitter<EnumNone>;
+  readonly getArray: (
+    arg: Array<ObjectStruct | null>,
+  ) => Array<ObjectStruct | null>;
+  readonly getArrayBuffer: (payload: ArrayBuffer) => ArrayBuffer;
+  readonly createNativeBuffer: (size: number) => ArrayBuffer;
+  readonly processAsyncBuffer: (payload: ArrayBuffer) => Promise<number>;
+  readonly getAsyncBuffer: (size: number) => Promise<ArrayBuffer>;
+  readonly getBool: (arg: boolean) => boolean;
+  readonly getConstants: () => ConstantsStruct;
+  readonly getCustomEnum: (arg: EnumInt) => EnumInt;
+  readonly getCustomHostObject: () => CustomHostObject;
+  readonly consumeCustomHostObject: (
+    customHostObject: CustomHostObject,
+  ) => string;
+  readonly getBinaryTreeNode: (arg: BinaryTreeNode) => BinaryTreeNode;
+  readonly getGraphNode: (arg: GraphNode) => GraphNode;
+  readonly getNumEnum: (arg: EnumInt) => EnumInt;
+  readonly getStrEnum: (arg: EnumNone) => EnumStr;
+  readonly getMap: (arg: {[key: string]: ?number}) => {[key: string]: ?number};
+  readonly getNumber: (arg: number) => number;
+  readonly getObject: (arg: ObjectStruct) => ObjectStruct;
+  readonly getSet: (arg: Array<number>) => Array<number>;
+  readonly getString: (arg: string) => string;
+  readonly getUnion: (x: UnionFloat, y: UnionString, z: UnionObject) => string;
+  readonly getValue: (x: number, y: string, z: ObjectStruct) => ValueStruct;
+  readonly getValueWithCallback: (callback: (value: string) => void) => void;
+  readonly setValueCallbackWithSubscription: (
     callback: (value: string) => void,
   ) => () => void;
-  +getValueWithPromise: (error: boolean) => Promise<string>;
-  +getWithWithOptionalArgs: (optionalArg?: boolean) => ?boolean;
-  +voidFunc: () => void;
-  +voidPromise: () => Promise<void>;
-  +setMenu: (menuItem: MenuItem) => void;
-  +emitCustomDeviceEvent: (eventName: string) => void;
-  +voidFuncThrows: () => void;
-  +getObjectThrows: (arg: ObjectStruct) => ObjectStruct;
-  +promiseThrows: () => Promise<void>;
-  +voidFuncAssert: () => void;
-  +getObjectAssert: (arg: ObjectStruct) => ObjectStruct;
-  +promiseAssert: () => Promise<void>;
+  readonly getValueWithPromise: (error: boolean) => Promise<string>;
+  readonly getWithWithOptionalArgs: (optionalArg?: boolean) => ?boolean;
+  readonly voidFunc: () => void;
+  readonly voidPromise: () => Promise<void>;
+  readonly setMenu: (menuItem: MenuItem) => void;
+  readonly emitCustomDeviceEvent: (eventName: string) => void;
+  readonly voidFuncThrows: () => void;
+  readonly getObjectThrows: (arg: ObjectStruct) => ObjectStruct;
+  readonly promiseThrows: () => Promise<void>;
+  readonly voidFuncAssert: () => void;
+  readonly getObjectAssert: (arg: ObjectStruct) => ObjectStruct;
+  readonly promiseAssert: () => Promise<void>;
 }
 
-export default (TurboModuleRegistry.get<Spec>(
+export default TurboModuleRegistry.get<Spec>(
   'NativeCxxModuleExampleCxx',
-): ?Spec);
+) as ?Spec;

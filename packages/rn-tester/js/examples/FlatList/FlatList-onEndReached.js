@@ -16,7 +16,7 @@ import BaseFlatListExample from './BaseFlatListExample';
 import * as React from 'react';
 import {useRef, useState} from 'react';
 
-export function FlatList_onEndReached(): React.Node {
+export component FlatList_onEndReached() {
   const [output, setOutput] = useState('');
   const exampleProps = {
     onEndReached: (info: {distanceFromEnd: number, ...}) =>
@@ -42,7 +42,7 @@ export function FlatList_onEndReached(): React.Node {
   );
 }
 
-export default ({
+export default {
   title: 'onEndReached',
   name: 'onEndReached',
   description:
@@ -50,4 +50,4 @@ export default ({
   render: function () {
     return <FlatList_onEndReached />;
   },
-}: RNTesterModuleExample);
+} as RNTesterModuleExample;

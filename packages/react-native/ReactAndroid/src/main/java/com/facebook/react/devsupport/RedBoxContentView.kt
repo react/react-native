@@ -33,12 +33,12 @@ import android.widget.TextView
 import com.facebook.common.logging.FLog
 import com.facebook.react.R
 import com.facebook.react.common.ReactConstants
+import com.facebook.react.devsupport.inspector.DevSupportHttpClient
 import com.facebook.react.devsupport.interfaces.DevSupportManager
 import com.facebook.react.devsupport.interfaces.ErrorType
 import com.facebook.react.devsupport.interfaces.RedBoxHandler
 import com.facebook.react.devsupport.interfaces.StackFrame
 import okhttp3.MediaType
-import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
 import org.json.JSONObject
@@ -165,7 +165,7 @@ internal class RedBoxContentView(
                 .query(null)
                 .build()
                 .toString()
-        val client = OkHttpClient()
+        val client = DevSupportHttpClient.httpClient
         for (frame in stackFrames) {
           val payload = stackFrameToJson(checkNotNull(frame)).toString()
           val body: RequestBody = RequestBody.create(JSON, payload)

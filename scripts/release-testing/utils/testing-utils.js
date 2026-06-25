@@ -48,16 +48,10 @@ const launchEmulator = (emulatorName /*: string */) => {
   // from docs: "When using the detached option to start a long-running process, the process will not stay running in the background after the parent exits unless it is provided with a stdio configuration that is not connected to the parent. If the parent's stdio is inherited, the child will remain attached to the controlling terminal."
   // here: https://nodejs.org/api/child_process.html#optionsdetached
 
-  const child_process /*: child_process$ChildProcess */ = spawn(
-    emulatorCommand,
-    [`@${emulatorName}`],
-    {
-      detached: true,
-      stdio: 'ignore',
-    },
-  );
-
-  child_process.unref();
+  spawn(emulatorCommand, [`@${emulatorName}`], {
+    detached: true,
+    stdio: 'ignore',
+  }).unref();
 };
 
 function tryLaunchEmulator() {

@@ -7,7 +7,6 @@
 
 #import "RCTAppSetupUtils.h"
 
-#import <React/RCTJSIExecutorRuntimeInstaller.h>
 #import <react/renderer/runtimescheduler/RuntimeScheduler.h>
 #import <react/renderer/runtimescheduler/RuntimeSchedulerBinding.h>
 
@@ -28,28 +27,6 @@
 #import <jsinspector-modern/InspectorFlags.h>
 
 #import "RCTDependencyProvider.h"
-
-void RCTAppSetupPrepareApp(UIApplication *application, BOOL turboModuleEnabled)
-{
-  RCTEnableTurboModule(YES);
-
-#if DEBUG
-  // Disable idle timer in dev builds to avoid putting application in background and complicating
-  // Metro reconnection logic. Users only need this when running the application using our CLI tooling.
-  application.idleTimerDisabled = YES;
-#endif
-}
-
-UIView *
-RCTAppSetupDefaultRootView(RCTBridge *bridge, NSString *moduleName, NSDictionary *initialProperties, BOOL fabricEnabled)
-{
-  id<RCTSurfaceProtocol> surface = [[RCTFabricSurface alloc] initWithBridge:bridge
-                                                                 moduleName:moduleName
-                                                          initialProperties:initialProperties];
-  UIView *rootView = [[RCTSurfaceHostingProxyRootView alloc] initWithSurface:surface];
-  [surface start];
-  return rootView;
-}
 
 NSArray<NSString *> *RCTAppSetupUnstableModulesRequiringMainQueueSetup(id<RCTDependencyProvider> dependencyProvider)
 {
@@ -120,60 +97,5 @@ std::unique_ptr<facebook::react::JSExecutorFactory> RCTAppSetupDefaultJsExecutor
     RCTTurboModuleManager *turboModuleManager,
     const std::shared_ptr<facebook::react::RuntimeScheduler> &runtimeScheduler)
 {
-#ifndef RCT_REMOVE_LEGACY_ARCH
-  // Necessary to allow NativeModules to lookup TurboModules
-  [bridge setRCTTurboModuleRegistry:turboModuleManager];
-
-#if RCT_DEV
-  /**
-   * Instantiating DevMenu has the side-effect of registering
-   * shortcuts for CMD + d, CMD + i,  and CMD + n via RCTDevMenu.
-   * Therefore, when TurboModules are enabled, we must manually create this
-   * NativeModule.
-   */
-  [turboModuleManager moduleForName:"RCTDevMenu"];
-#endif // end RCT_DEV
-
-  auto runtimeInstallerLambda = [turboModuleManager, bridge, runtimeScheduler](facebook::jsi::Runtime &runtime) {
-    if (!bridge || !turboModuleManager) {
-      return;
-    }
-    if (runtimeScheduler) {
-      facebook::react::RuntimeSchedulerBinding::createAndInstallIfNeeded(runtime, runtimeScheduler);
-    }
-    [turboModuleManager installJSBindings:runtime];
-  };
-#if USE_THIRD_PARTY_JSC != 1
-  return std::make_unique<facebook::react::HermesExecutorFactory>(
-      facebook::react::RCTJSIExecutorRuntimeInstaller(runtimeInstallerLambda));
-#endif
-#else
-  // This method should not be invoked in the New Arch. So when Legacy Arch is removed, we can
-  // safly return a nullptr.
   return nullptr;
-#endif
-}
-
-std::unique_ptr<facebook::react::JSExecutorFactory> RCTAppSetupJsExecutorFactoryForOldArch(
-    RCTBridge *bridge,
-    const std::shared_ptr<facebook::react::RuntimeScheduler> &runtimeScheduler)
-{
-#ifndef RCT_REMOVE_LEGACY_ARCH
-  auto runtimeInstallerLambda = [bridge, runtimeScheduler](facebook::jsi::Runtime &runtime) {
-    if (!bridge) {
-      return;
-    }
-    if (runtimeScheduler) {
-      facebook::react::RuntimeSchedulerBinding::createAndInstallIfNeeded(runtime, runtimeScheduler);
-    }
-  };
-#if USE_THIRD_PARTY_JSC != 1
-  return std::make_unique<facebook::react::HermesExecutorFactory>(
-      facebook::react::RCTJSIExecutorRuntimeInstaller(runtimeInstallerLambda));
-#endif
-#else
-  // This method should not be invoked in the New Arch. So when Legacy Arch is removed, we can
-  // safly return a nullptr.
-  return nullptr;
-#endif
 }

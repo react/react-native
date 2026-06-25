@@ -8,10 +8,10 @@
 #include "NetworkIOAgent.h"
 #include "InspectorFlags.h"
 
-#include "Base64.h"
 #include "Utf8.h"
 
 #include <jsinspector-modern/network/NetworkHandler.h>
+#include <react/utils/Base64.h>
 
 #include <sstream>
 #include <tuple>
@@ -259,6 +259,13 @@ class Stream : public NetworkRequestListener,
 };
 } // namespace
 
+NetworkIOAgent::~NetworkIOAgent() {
+  if (networkAgentId_) {
+    NetworkHandler::getInstance().disableAgent(*networkAgentId_);
+    networkAgentId_ = std::nullopt;
+  }
+}
+
 bool NetworkIOAgent::handleRequest(
     const cdp::PreparsedRequest& req,
     LoadNetworkResourceDelegate& delegate) {
@@ -278,15 +285,17 @@ bool NetworkIOAgent::handleRequest(
 
     // @cdp Network.enable support is experimental.
     if (req.method == "Network.enable") {
-      networkHandler.setFrontendChannel(frontendChannel_);
-      networkHandler.enable();
+      networkAgentId_ = networkHandler.enableAgent(frontendChannel_);
       // NOTE: Domain enable/disable responses are sent by HostAgent.
       return false;
     }
 
     // @cdp Network.disable support is experimental.
     if (req.method == "Network.disable") {
-      networkHandler.disable();
+      if (networkAgentId_) {
+        networkHandler.disableAgent(*networkAgentId_);
+        networkAgentId_ = std::nullopt;
+      }
       // NOTE: Domain enable/disable responses are sent by HostAgent.
       return false;
     }

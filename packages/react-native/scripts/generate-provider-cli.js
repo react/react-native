@@ -34,7 +34,7 @@ const argv = yargs
     'Please provide platform, schema path, and output directory.',
   ).argv;
 
-const GENERATORS /*: {[string]: $ReadOnlyArray<string>} */ = {
+const GENERATORS /*: {[string]: ReadonlyArray<string>} */ = {
   android: [],
   ios: ['providerIOS'],
 };

@@ -178,7 +178,7 @@ function findEventArgumentsAndType(
   bubblingType: void | 'direct' | 'bubble',
   paperName: ?$FlowFixMe,
 ): {
-  argumentProps: ?$ReadOnlyArray<$FlowFixMe>,
+  argumentProps: ?ReadonlyArray<$FlowFixMe>,
   paperTopLevelNameDeprecated: ?$FlowFixMe,
   bubblingType: ?'direct' | 'bubble',
 } {
@@ -280,10 +280,10 @@ function buildEventSchema(
 }
 
 function getEvents(
-  eventTypeAST: $ReadOnlyArray<EventTypeAST>,
+  eventTypeAST: ReadonlyArray<EventTypeAST>,
   types: TypeDeclarationMap,
   parser: Parser,
-): $ReadOnlyArray<EventTypeShape> {
+): ReadonlyArray<EventTypeShape> {
   return eventTypeAST
     .map(property => buildEventSchema(types, property, parser))
     .filter(Boolean);

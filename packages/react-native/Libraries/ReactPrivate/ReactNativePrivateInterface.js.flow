@@ -10,16 +10,6 @@
 
 import typeof {createPublicTextInstance as createPublicTextInstanceT} from '../ReactNative/ReactFabricPublicInstance/ReactFabricPublicInstance';
 
-export type {
-  HostInstance as PublicInstance,
-
-  // These types are only necessary for Paper
-  NativeMethods as LegacyPublicInstance,
-  MeasureOnSuccessCallback,
-  MeasureInWindowOnSuccessCallback,
-  MeasureLayoutOnSuccessCallback,
-} from '../../src/private/types/HostInstance';
-
 export type {PublicRootInstance} from '../ReactNative/ReactFabricPublicInstance/ReactFabricPublicInstance';
 export type PublicTextInstance = ReturnType<createPublicTextInstanceT>;
 

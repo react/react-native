@@ -14,13 +14,13 @@ import type {ColorValue} from 'react-native/Libraries/StyleSheet/StyleSheet';
 
 import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
 
-type NativeProps = $ReadOnly<{
+type NativeProps = Readonly<{
   ...ViewProps,
 
   // Props
   tintColor?: ColorValue,
 }>;
 
-export default (codegenNativeComponent<NativeProps>(
+export default codegenNativeComponent<NativeProps>(
   'ColorPropNativeComponentView',
-): HostComponent<NativeProps>);
+) as HostComponent<NativeProps>;

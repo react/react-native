@@ -10,9 +10,11 @@
 
 import type {RunServerResult} from 'metro';
 
-type MetroServer = $NonMaybeType<RunServerResult?.['httpServer']>;
+type MetroServer = NonNullable<RunServerResult?.['httpServer']>;
 
 declare var __FANTOM_METRO_SERVER__: ?RunServerResult;
+
+const SHUTDOWN_TIMEOUT_MS = 5_000;
 
 function getMetroServer(): ?MetroServer {
   return typeof __FANTOM_METRO_SERVER__ !== 'undefined' &&
@@ -32,7 +34,11 @@ export default async function globalTeardown(
 }
 
 async function stopMetroServer(metroServer: MetroServer): Promise<void> {
-  return new Promise((resolve, reject) => {
+  if (!metroServer.listening) {
+    return;
+  }
+
+  const closed = new Promise<void>((resolve, reject) => {
     metroServer.close(error => {
       if (error) {
         reject(error);
@@ -41,4 +47,21 @@ async function stopMetroServer(metroServer: MetroServer): Promise<void> {
       }
     });
   });
+
+  // $FlowFixMe[method-unbinding] Node 18.2+ API
+  if (typeof metroServer.closeIdleConnections === 'function') {
+    metroServer.closeIdleConnections();
+  }
+
+  const timeout = new Promise<void>(resolve => {
+    setTimeout(() => {
+      // $FlowFixMe[method-unbinding] Node 18.2+ API
+      if (typeof metroServer.closeAllConnections === 'function') {
+        metroServer.closeAllConnections();
+      }
+      resolve();
+    }, SHUTDOWN_TIMEOUT_MS);
+  });
+
+  await Promise.race([closed, timeout]);
 }

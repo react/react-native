@@ -316,7 +316,7 @@ TEST_F(ShadowNodeTest, handleRuntimeReferenceTransferOnClone) {
 TEST_F(ShadowNodeTest, cloneMultiple) {
   auto newProps = std::make_shared<const TestProps>();
   auto newRoot = nodeA_->cloneMultiple(
-      {&nodeA_->getFamily(), &nodeAB_->getFamily()},
+      {nodeA_->getFamilyShared(), nodeAB_->getFamilyShared()},
       [&](const ShadowNode& oldShadowNode, const ShadowNodeFragment& fragment) {
         return oldShadowNode.clone({
             .props = newProps,
@@ -346,7 +346,7 @@ TEST_F(ShadowNodeTest, cloneMultiple) {
 TEST_F(ShadowNodeTest, cloneMultipleWithSingleFamily) {
   auto newProps = std::make_shared<const TestProps>();
   auto newRoot = nodeA_->cloneMultiple(
-      {&nodeAB_->getFamily()},
+      {nodeAB_->getFamilyShared()},
       [&](const ShadowNode& oldShadowNode, const ShadowNodeFragment& fragment) {
         return oldShadowNode.clone({
             .props = newProps,
@@ -373,4 +373,59 @@ TEST_F(ShadowNodeTest, cloneMultipleWithSingleFamily) {
   auto newNodeABA = newNodeAB->getChildren()[0];
   EXPECT_EQ(newNodeABA->getTag(), nodeABA_->getTag());
   EXPECT_EQ(newNodeABA.get(), nodeABA_.get());
+}
+
+TEST_F(ShadowNodeTest, cloneMultipleReturnsNullptrWhenFamilyHasNoPathToRoot) {
+  auto newProps = std::make_shared<const TestProps>();
+  // nodeZ_ is not part of nodeA_'s tree
+  auto result = nodeA_->cloneMultiple(
+      {nodeZ_->getFamilyShared()},
+      [&](const ShadowNode& oldShadowNode, const ShadowNodeFragment& fragment) {
+        return oldShadowNode.clone({
+            .props = newProps,
+            .children = fragment.children,
+            .state = fragment.state,
+        });
+      });
+
+  // cloneMultiple should return nullptr when the family has no path to the root
+  EXPECT_EQ(result, nullptr);
+}
+
+TEST_F(ShadowNodeTest, cloneMultipleWithMixOfValidAndInvalidFamilies) {
+  auto newProps = std::make_shared<const TestProps>();
+  // nodeAB_ is in the tree, nodeZ_ is not
+  auto result = nodeA_->cloneMultiple(
+      {nodeAB_->getFamilyShared(), nodeZ_->getFamilyShared()},
+      [&](const ShadowNode& oldShadowNode, const ShadowNodeFragment& fragment) {
+        return oldShadowNode.clone({
+            .props = newProps,
+            .children = fragment.children,
+            .state = fragment.state,
+        });
+      });
+
+  // Should still succeed and clone the valid family (nodeAB_)
+  EXPECT_NE(result, nullptr);
+  EXPECT_EQ(result->getTag(), nodeA_->getTag());
+  EXPECT_EQ(result->getProps(), newProps);
+
+  auto newNodeAB = result->getChildren()[1];
+  EXPECT_EQ(newNodeAB->getTag(), nodeAB_->getTag());
+  EXPECT_EQ(newNodeAB->getProps(), newProps);
+}
+
+TEST_F(ShadowNodeTest, cloneMultipleWithEmptyFamilySet) {
+  auto newProps = std::make_shared<const TestProps>();
+  auto result = nodeA_->cloneMultiple(
+      {},
+      [&](const ShadowNode& oldShadowNode, const ShadowNodeFragment& fragment) {
+        return oldShadowNode.clone({
+            .props = newProps,
+            .children = fragment.children,
+            .state = fragment.state,
+        });
+      });
+
+  EXPECT_EQ(result, nullptr);
 }

@@ -149,6 +149,8 @@ class MapBuffer {
 
   int32_t getKeyBucket(MapBuffer::Key key) const;
 
+  inline int32_t getIntAtBucket(int32_t bucketIndex) const;
+
   friend JReadableMapBuffer;
 };
 

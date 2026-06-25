@@ -124,6 +124,9 @@ public abstract class ReactActivity extends AppCompatActivity
     // as super.onBackPressed() will call all enabled callbacks in the dispatcher.
     mBackPressedCallback.setEnabled(false);
     super.onBackPressed();
+    // Re-enable callback to ensure custom back handling works after activity resume
+    // Without this, the callback remains disabled when the app returns from background
+    mBackPressedCallback.setEnabled(true);
   }
 
   @Override

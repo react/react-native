@@ -229,9 +229,8 @@ AccessibilityProps::AccessibilityProps(
     role = sourceProps.role;
     accessibilityTraits = sourceProps.accessibilityTraits;
   } else {
-    auto* accessibilityRoleValue =
-        rawProps.at("accessibilityRole", nullptr, nullptr);
-    auto* roleValue = rawProps.at("role", nullptr, nullptr);
+    auto* accessibilityRoleValue = rawProps.at("accessibilityRole");
+    auto* roleValue = rawProps.at("role");
 
     auto* precedentRoleValue =
         roleValue != nullptr ? roleValue : accessibilityRoleValue;
@@ -270,6 +269,7 @@ void AccessibilityProps::setProp(
     RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityLabel);
     RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityOrder);
     RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityLabelledBy);
+    RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityLiveRegion);
     RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityHint);
     RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityLanguage);
     RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityShowsLargeContentViewer);

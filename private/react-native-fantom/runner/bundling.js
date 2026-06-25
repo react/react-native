@@ -18,50 +18,123 @@ type BundleOptions = {
   customTransformOptions: ?{
     collectCoverage: boolean,
   },
-  out: $NonMaybeType<RunBuildOptions['out']>,
+  out: NonNullable<RunBuildOptions['out']>,
   testPath: string,
 };
 
 const PROJECT_ROOT = path.resolve(__dirname, '..', '..', '..');
 
 export async function createBundle(options: BundleOptions): Promise<void> {
-  let lastBundleResult;
-  let lastBundleError;
+  const bundleURL = getBundleURL(options);
+  const response = await fetchBundleWithRetry(bundleURL);
 
-  // Retry in case Metro hasn't seen the changes in the filesystem yet.
-  // TODO(T231910841): Remove this when Metro fixes consistency issues when resolving HTTP requests.
-  let attemps = 0;
-  do {
-    if (attemps > 0) {
-      await sleep(500);
+  await fs.promises.writeFile(options.out, await response.text(), 'utf8');
+
+  // Each test uses a unique entrypoint, so the bundle graph will never be
+  // requested again. Send DELETE to evict Metro's cached dependency graph
+  // and delta calculator for this bundle, freeing the memory.
+  try {
+    await fetch(bundleURL, {method: 'DELETE'});
+  } catch {
+    // Best-effort cleanup — don't fail the test if eviction fails.
+  }
+}
+
+// Metro's file watcher can take a moment to observe a freshly written
+// entrypoint (especially on Linux, where metro-file-map's FallbackWatcher
+// debounces fs events by 100 ms). Until Metro fixes the consistency issue
+// between HTTP requests and the file map (see TODO below), we retry on
+// errors that look like the entry — or one of its transitive deps — has
+// not been picked up yet:
+//   - HTTP 404: returned when Metro can't resolve the entry file path
+//     itself (`UnableToResolveError` thrown from `_resolveRelativePath`).
+//   - HTTP 500 with `type: 'UnableToResolveError'`: a deeper require could
+//     not be resolved while building the dependency graph.
+//   - HTTP 500 with `type: 'ResourceNotFoundError'`: the entry was found
+//     and then went missing (rare, but we treat it the same way).
+//   - fetch network errors: brief connectivity issue.
+// All other failures (syntax errors, transform errors, etc.) are real and
+// thrown immediately so we don't waste time retrying them.
+//
+// TODO(T231910841): Remove this when Metro fixes consistency issues when
+// resolving HTTP requests.
+const MAX_BUNDLE_FETCH_ATTEMPTS = 10;
+const BUNDLE_FETCH_BASE_BACKOFF_MS = 100;
+const BUNDLE_FETCH_MAX_BACKOFF_MS = 2_000;
+
+async function fetchBundleWithRetry(bundleURL: URL): Promise<Response> {
+  let lastError: ?Error;
+  let lastErrorMessage = '';
+
+  for (let attempt = 0; attempt < MAX_BUNDLE_FETCH_ATTEMPTS; attempt++) {
+    if (attempt > 0) {
+      const backoff = Math.min(
+        BUNDLE_FETCH_BASE_BACKOFF_MS * 2 ** (attempt - 1),
+        BUNDLE_FETCH_MAX_BACKOFF_MS,
+      );
+      await sleep(backoff);
     }
 
-    lastBundleError = null;
-    lastBundleResult = null;
-
+    let response;
     try {
-      lastBundleResult = await fetch(getBundleURL(options));
-    } catch (e) {
-      lastBundleError = e;
+      response = await fetch(bundleURL);
+    } catch (error: unknown) {
+      lastError =
+        error instanceof Error
+          ? error
+          : new Error(typeof error === 'string' ? error : String(error));
+      lastErrorMessage = lastError.message;
+      continue;
     }
 
-    attemps++;
-  } while (
-    attemps < 3 &&
-    (lastBundleError || lastBundleResult?.status === 404)
-  );
+    if (response.ok) {
+      return response;
+    }
 
-  if (lastBundleError || lastBundleResult?.ok !== true) {
-    throw new Error(
-      `Failed to request bundle from Metro: ${lastBundleError?.message ?? (await lastBundleResult?.text()) ?? ''}`,
-    );
+    const bodyText = await response.text();
+    const {message, retryable} = parseMetroErrorBody(response.status, bodyText);
+    lastErrorMessage = message;
+
+    if (!retryable) {
+      throw new Error(`Failed to request bundle from Metro:\n${message}`);
+    }
   }
 
-  await fs.promises.writeFile(
-    options.out,
-    await lastBundleResult.text(),
-    'utf8',
+  throw new Error(
+    `Failed to request bundle from Metro after ${MAX_BUNDLE_FETCH_ATTEMPTS} attempts:\n${lastErrorMessage}`,
   );
+}
+
+function parseMetroErrorBody(
+  status: number,
+  bodyText: string,
+): {message: string, retryable: boolean} {
+  let message = bodyText;
+  let errorType: ?string;
+
+  try {
+    const parsed = JSON.parse(bodyText);
+    if (typeof parsed?.message === 'string') {
+      message = parsed.message;
+    }
+    if (typeof parsed?.type === 'string') {
+      errorType = parsed.type;
+    }
+  } catch {
+    // Not JSON — keep the raw body as the message.
+  }
+
+  // 404 is returned by Metro when the entry file path can't be resolved.
+  // 500 with `UnableToResolveError`/`ResourceNotFoundError` signals that
+  // either the entry or a transitive dep wasn't seen by the file watcher
+  // yet — both should resolve themselves once Metro's file map catches up.
+  const retryable =
+    status === 404 ||
+    (status === 500 &&
+      (errorType === 'UnableToResolveError' ||
+        errorType === 'ResourceNotFoundError'));
+
+  return {message, retryable};
 }
 
 export async function createSourceMap(options: BundleOptions): Promise<void> {

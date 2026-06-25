@@ -13,7 +13,7 @@
 /**
  * Intentional info-level logging for clear separation from ad-hoc console debug logging.
  */
-function infoLog(...args: Array<mixed>): void {
+function infoLog(...args: Array<unknown>): void {
   return console.log(...args);
 }
 

@@ -6,7 +6,10 @@
  */
 
 #include <react/debug/react_native_expect.h>
+#include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/renderer/core/RawValue.h>
+#include <react/renderer/css/CSSColor.h>
+#include <react/renderer/css/CSSValueParser.h>
 #include <react/renderer/graphics/Color.h>
 #include <react/utils/ContextContainer.h>
 
@@ -24,7 +27,16 @@ inline void fromRawValueShared(
 {
   ColorComponents colorComponents = {0, 0, 0, 0};
 
-  if (value.hasType<int>()) {
+  if (ReactNativeFeatureFlags::enableNativeCSSParsing() && value.hasType<std::string>()) {
+    auto cssColor = parseCSSProperty<CSSColor>((std::string)value);
+    if (std::holds_alternative<CSSColor>(cssColor)) {
+      auto c = std::get<CSSColor>(cssColor);
+      result = hostPlatformColorFromRGBA(c.r, c.g, c.b, c.a);
+      return;
+    }
+    // Unparseable string - fall through to parsePlatformColor
+    result = parsePlatformColor(contextContainer, surfaceId, value);
+  } else if (value.hasType<int>()) {
     auto argb = (int64_t)value;
     auto ratio = 255.f;
     colorComponents.alpha = ((argb >> 24) & 0xFF) / ratio;

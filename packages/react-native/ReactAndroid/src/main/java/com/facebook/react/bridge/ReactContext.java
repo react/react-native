@@ -15,6 +15,7 @@ import android.content.ContextWrapper;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Window;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.facebook.common.logging.FLog;
@@ -25,6 +26,8 @@ import com.facebook.react.bridge.interop.InteropModuleRegistry;
 import com.facebook.react.bridge.queue.MessageQueueThread;
 import com.facebook.react.bridge.queue.ReactQueueConfiguration;
 import com.facebook.react.common.LifecycleState;
+import com.facebook.react.common.build.ReactBuildConfig;
+import com.facebook.react.interfaces.ExtraWindowEventListener;
 import com.facebook.react.turbomodule.core.interfaces.CallInvokerHolder;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
@@ -48,8 +51,11 @@ public abstract class ReactContext extends ContextWrapper {
       new CopyOnWriteArraySet<>();
   private final CopyOnWriteArraySet<ActivityEventListener> mActivityEventListeners =
       new CopyOnWriteArraySet<>();
+  private final CopyOnWriteArraySet<ExtraWindowEventListener> mExtraWindowEventListeners =
+      new CopyOnWriteArraySet<>();
   private final CopyOnWriteArraySet<WindowFocusChangeListener> mWindowFocusEventListeners =
       new CopyOnWriteArraySet<>();
+  private final ScrollEndedListeners mScrollEndedListeners = new ScrollEndedListeners();
 
   private LifecycleState mLifecycleState = LifecycleState.BEFORE_CREATE;
 
@@ -105,6 +111,9 @@ public abstract class ReactContext extends ContextWrapper {
   }
 
   protected void initializeInteropModules() {
+    if (ReactBuildConfig.UNSTABLE_REMOVE_LEGACY_COMPONENT_INTEROP) {
+      return;
+    }
     mInteropModuleRegistry = new InteropModuleRegistry();
   }
 
@@ -195,6 +204,21 @@ public abstract class ReactContext extends ContextWrapper {
     return mLifecycleState;
   }
 
+  /**
+   * Returns the {@link RuntimeExecutor} for the underlying JavaScript runtime, or {@code null} if
+   * the runtime has not been initialized. Works in both bridged and bridgeless modes.
+   */
+  public abstract @Nullable RuntimeExecutor getRuntimeExecutor();
+
+  /**
+   * This allows scroll views to notify NativeAnimatedModule when user-driven scrolling ends.
+   *
+   * @return The ScrollEndedListeners instance
+   */
+  public ScrollEndedListeners getScrollEndedListeners() {
+    return mScrollEndedListeners;
+  }
+
   public void addLifecycleEventListener(final LifecycleEventListener listener) {
     mLifecycleEventListeners.add(listener);
     if (hasActiveReactInstance() || isBridgeless()) {
@@ -236,6 +260,14 @@ public abstract class ReactContext extends ContextWrapper {
     mActivityEventListeners.remove(listener);
   }
 
+  public void addExtraWindowEventListener(ExtraWindowEventListener listener) {
+    mExtraWindowEventListeners.add(listener);
+  }
+
+  public void removeExtraWindowEventListener(ExtraWindowEventListener listener) {
+    mExtraWindowEventListeners.remove(listener);
+  }
+
   public void addWindowFocusChangeListener(WindowFocusChangeListener listener) {
     mWindowFocusEventListeners.add(listener);
   }
@@ -248,7 +280,7 @@ public abstract class ReactContext extends ContextWrapper {
   @ThreadConfined(UI)
   public void onHostResume(@Nullable Activity activity) {
     mLifecycleState = LifecycleState.RESUMED;
-    mCurrentActivity = new WeakReference(activity);
+    mCurrentActivity = new WeakReference<>(activity);
     ReactMarker.logMarker(ReactMarkerConstants.ON_HOST_RESUME_START);
     for (LifecycleEventListener listener : mLifecycleEventListeners) {
       try {
@@ -276,7 +308,7 @@ public abstract class ReactContext extends ContextWrapper {
   @ThreadConfined(UI)
   public void onNewIntent(@Nullable Activity activity, Intent intent) {
     UiThreadUtil.assertOnUiThread();
-    mCurrentActivity = new WeakReference(activity);
+    mCurrentActivity = new WeakReference<>(activity);
     for (ActivityEventListener listener : mActivityEventListeners) {
       try {
         listener.onNewIntent(intent);
@@ -340,6 +372,30 @@ public abstract class ReactContext extends ContextWrapper {
     for (ActivityEventListener listener : mActivityEventListeners) {
       try {
         listener.onActivityResult(activity, requestCode, resultCode, data);
+      } catch (RuntimeException e) {
+        handleException(e);
+      }
+    }
+  }
+
+  @ThreadConfined(UI)
+  public void onExtraWindowCreate(Window window) {
+    UiThreadUtil.assertOnUiThread();
+    for (ExtraWindowEventListener listener : mExtraWindowEventListeners) {
+      try {
+        listener.onExtraWindowCreate(window);
+      } catch (RuntimeException e) {
+        handleException(e);
+      }
+    }
+  }
+
+  @ThreadConfined(UI)
+  public void onExtraWindowDestroy(Window window) {
+    UiThreadUtil.assertOnUiThread();
+    for (ExtraWindowEventListener listener : mExtraWindowEventListeners) {
+      try {
+        listener.onExtraWindowDestroy(window);
       } catch (RuntimeException e) {
         handleException(e);
       }
@@ -527,6 +583,9 @@ public abstract class ReactContext extends ContextWrapper {
    */
   public <T extends JavaScriptModule> void internal_registerInteropModule(
       Class<T> interopModuleInterface, Object interopModule) {
+    if (ReactBuildConfig.UNSTABLE_REMOVE_LEGACY_COMPONENT_INTEROP) {
+      return;
+    }
     if (mInteropModuleRegistry != null) {
       mInteropModuleRegistry.registerInteropModule(interopModuleInterface, interopModule);
     }

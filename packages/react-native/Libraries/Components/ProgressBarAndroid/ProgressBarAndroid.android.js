@@ -8,11 +8,14 @@
  * @format
  */
 
+import type {HostInstance} from '../../../src/private/types/HostInstance';
 import type {ProgressBarAndroidProps} from './ProgressBarAndroidTypes';
 
 import ProgressBarAndroidNativeComponent from './ProgressBarAndroidNativeComponent';
 
 const React = require('react');
+
+export type ProgressBarAndroidInstance = HostInstance;
 
 export type {ProgressBarAndroidProps};
 
@@ -40,9 +43,7 @@ export type {ProgressBarAndroidProps};
  * ```
  */
 const ProgressBarAndroid: component(
-  ref?: React.RefSetter<
-    React.ElementRef<typeof ProgressBarAndroidNativeComponent>,
-  >,
+  ref?: React.RefSetter<ProgressBarAndroidInstance>,
   ...props: ProgressBarAndroidProps
 ) = function ProgressBarAndroid({
   ref: forwardedRef,
@@ -52,9 +53,7 @@ const ProgressBarAndroid: component(
   animating = true,
   ...restProps
 }: {
-  ref?: React.RefSetter<
-    React.ElementRef<typeof ProgressBarAndroidNativeComponent>,
-  >,
+  ref?: React.RefSetter<ProgressBarAndroidInstance>,
   ...ProgressBarAndroidProps,
 }) {
   return (

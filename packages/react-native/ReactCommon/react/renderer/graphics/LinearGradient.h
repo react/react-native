@@ -12,43 +12,34 @@
 #include <react/renderer/graphics/Float.h>
 #include <react/renderer/graphics/ValueUnit.h>
 
+#if RN_DEBUG_STRING_CONVERTIBLE
 #include <sstream>
+#endif
+
 #include <variant>
 #include <vector>
 
 namespace facebook::react {
 
-enum class GradientDirectionType { Angle, Keyword };
+enum class [[deprecated("Use std::holds_alternative")]] GradientDirectionType {
+  Angle,
+  Keyword,
+};
 
-enum class GradientKeyword {
+enum class GradientKeyword : uint8_t {
   ToTopRight,
   ToBottomRight,
   ToTopLeft,
   ToBottomLeft,
 };
 
-struct GradientDirection {
-  GradientDirectionType type;
-  std::variant<Float, GradientKeyword> value;
-
-  bool operator==(const GradientDirection &other) const
-  {
-    return type == other.type && value == other.value;
-  }
-
-#ifdef RN_SERIALIZABLE_STATE
-  folly::dynamic toDynamic() const;
-#endif
-};
+using GradientDirection = std::variant<Float, GradientKeyword>;
 
 struct LinearGradient {
   GradientDirection direction;
   std::vector<ColorStop> colorStops;
 
-  bool operator==(const LinearGradient &other) const
-  {
-    return direction == other.direction && colorStops == other.colorStops;
-  }
+  bool operator==(const LinearGradient &other) const = default;
 
 #ifdef RN_SERIALIZABLE_STATE
   folly::dynamic toDynamic() const;

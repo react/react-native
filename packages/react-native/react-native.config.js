@@ -18,7 +18,7 @@ import type {Command} from '@react-native-community/cli-types';
 // depending on and injecting:
 // - @react-native-community/cli-platform-android
 // - @react-native-community/cli-platform-ios
-// - @react-native/community-cli-plugin (via the @react-native/core-cli-utils package)
+// - @react-native/community-cli-plugin
 // - codegen command should be inhoused into @react-native-community/cli
 //
 // This is a temporary workaround.
@@ -114,9 +114,9 @@ commands.push(codegenCommand);
 
 const config = {
   commands,
-  platforms: {} /*:: as {[string]: $ReadOnly<{
-      projectConfig: mixed,
-      dependencyConfig: mixed,
+  platforms: {} /*:: as {[string]: Readonly<{
+      projectConfig: unknown,
+      dependencyConfig: unknown,
     }>} */,
 };
 

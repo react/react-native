@@ -32,14 +32,16 @@ module.exports = ({version} /*: {version: Version} */) /*: string */ => `/**
 
 namespace facebook::react {
 
-constexpr struct {
+struct ReactNativeVersionType {
   int32_t Major = ${version.major};
   int32_t Minor = ${version.minor};
   int32_t Patch = ${version.patch};
   std::string_view Prerelease = ${
     version.prerelease != null ? `"${version.prerelease}"` : '""'
   };
-} ReactNativeVersion;
+};
+
+constexpr ReactNativeVersionType ReactNativeVersion;
 
 } // namespace facebook::react
 `;

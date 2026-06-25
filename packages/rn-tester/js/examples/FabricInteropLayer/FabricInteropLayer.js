@@ -12,7 +12,8 @@
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 import type {ViewProps} from 'react-native';
 
-import React, {useState} from 'react';
+import * as React from 'react';
+import {useState} from 'react';
 import {
   Button,
   StyleSheet,

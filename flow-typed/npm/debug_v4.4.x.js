@@ -12,15 +12,15 @@
 
 declare module 'debug' {
   declare interface Formatters {
-    [formatter: string]: (v: mixed) => string;
+    [formatter: string]: (v: unknown) => string;
   }
 
   declare type Debugger = {|
-    (format: mixed, ...args: Array<mixed>): void,
+    (format: unknown, ...args: Array<unknown>): void,
     color: string,
     diff: number,
     enabled: boolean,
-    log: (format: mixed, ...args: Array<mixed>) => mixed,
+    log: (format: unknown, ...args: Array<unknown>) => unknown,
     namespace: string,
     destroy: () => boolean,
     extend: (namespace: string, delimiter?: string) => Debugger,
@@ -28,12 +28,12 @@ declare module 'debug' {
 
   declare type Debug = {|
     (namespace: string): Debugger,
-    coerce: (val: mixed) => mixed,
+    coerce: (val: unknown) => unknown,
     disable: () => string,
     enable: (namespaces: string) => void,
     enabled: (namespaces: string) => boolean,
-    formatArgs: (args: Array<mixed>) => void,
-    log: (format: mixed, ...args: Array<mixed>) => mixed,
+    formatArgs: (args: Array<unknown>) => void,
+    log: (format: unknown, ...args: Array<unknown>) => unknown,
     selectColor: (namespace: string) => string | number,
     // this should be of type require('ms') but it doesn't play nicely with eslint
     // unless we add ms to dependencies, which we don't want to do

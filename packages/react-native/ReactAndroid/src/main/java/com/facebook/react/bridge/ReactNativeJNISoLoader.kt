@@ -9,7 +9,9 @@ package com.facebook.react.bridge
 
 import com.facebook.react.common.annotations.internal.InteropLegacyArchitecture
 import com.facebook.soloader.SoLoader
+import com.facebook.soloader.annotation.SoLoaderLibrary
 
+@SoLoaderLibrary("reactnativejni")
 @InteropLegacyArchitecture
 internal object ReactNativeJNISoLoader {
 

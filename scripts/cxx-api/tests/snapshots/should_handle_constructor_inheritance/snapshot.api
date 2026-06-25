@@ -1,0 +1,11 @@
+class test::Base {
+  public Base() = default;
+  public Base(const test::Base& other);
+  public Base(int test);
+}
+
+class test::Derived : public test::Base {
+  public Derived() = default;
+  public Derived(const test::Base& other);
+  public Derived(int test);
+}

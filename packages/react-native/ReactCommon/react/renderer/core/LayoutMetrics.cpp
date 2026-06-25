@@ -44,9 +44,11 @@ std::vector<DebugStringConvertibleObject> getDebugProps(
            ",bottom:" + getDebugDescription(object.overflowInset.bottom, {}) +
            ",left:" + getDebugDescription(object.overflowInset.left, {}) + "}"},
       {.name = "displayType",
-       .value = object.displayType == DisplayType::None
-           ? "None"
-           : (object.displayType == DisplayType::Flex ? "Flex" : "Inline")},
+       .value = object.displayType == DisplayType::None  ? "None"
+           : object.displayType == DisplayType::Flex     ? "Flex"
+           : object.displayType == DisplayType::Grid     ? "Grid"
+           : object.displayType == DisplayType::Contents ? "Contents"
+                                                         : "Unknown"},
       {.name = "layoutDirection",
        .value = object.layoutDirection == LayoutDirection::Undefined
            ? "Undefined"

@@ -20,6 +20,14 @@ import type {
 
 const processColor = require('./processColor').default;
 
+// Pre-compiled regex patterns for performance - avoids regex compilation on each call
+const NEWLINE_REGEX = /\n/g;
+const GRADIENT_REGEX = /^(linear|radial)-gradient\(((?:\([^)]*\)|[^()])*)\)/;
+const COMMA_SPLIT_REGEX = /,(?![^(]*\))/;
+const WHITESPACE_SPLIT_REGEX = /\s+/;
+const COLOR_STOP_PARTS_REGEX = /\S+\([^)]*\)|\S+/g;
+const WHITESPACE_NORMALIZE_REGEX = /\s+/g;
+
 // Linear Gradient
 const LINEAR_GRADIENT_DIRECTION_REGEX =
   /^to\s+(?:top|bottom|left|right)(?:\s+(?:top|bottom|left|right))?/i;
@@ -37,7 +45,7 @@ type LinearGradientDirection =
 type LinearGradientBackgroundImage = {
   type: 'linear-gradient',
   direction: LinearGradientDirection,
-  colorStops: $ReadOnlyArray<{
+  colorStops: ReadonlyArray<{
     color: ColorStopColor,
     position: ColorStopPosition,
   }>,
@@ -57,7 +65,7 @@ type RadialGradientBackgroundImage = {
   shape: RadialGradientShape,
   size: RadialGradientSize,
   position: RadialGradientPosition,
-  colorStops: $ReadOnlyArray<{
+  colorStops: ReadonlyArray<{
     color: ColorStopColor,
     position: ColorStopPosition,
   }>,
@@ -73,15 +81,17 @@ type ParsedBackgroundImageValue =
   | RadialGradientBackgroundImage;
 
 export default function processBackgroundImage(
-  backgroundImage: ?($ReadOnlyArray<BackgroundImageValue> | string),
-): $ReadOnlyArray<ParsedBackgroundImageValue> {
-  let result: $ReadOnlyArray<ParsedBackgroundImageValue> = [];
+  backgroundImage: ?(ReadonlyArray<BackgroundImageValue> | string),
+): ReadonlyArray<ParsedBackgroundImageValue> {
+  let result: ReadonlyArray<ParsedBackgroundImageValue> = [];
   if (backgroundImage == null) {
     return result;
   }
 
   if (typeof backgroundImage === 'string') {
-    result = parseBackgroundImageCSSString(backgroundImage.replace(/\n/g, ' '));
+    result = parseBackgroundImageCSSString(
+      backgroundImage.replace(NEWLINE_REGEX, ' '),
+    );
   } else if (Array.isArray(backgroundImage)) {
     for (const bgImage of backgroundImage) {
       const processedColorStops = processColorStops(bgImage);
@@ -183,7 +193,7 @@ export default function processBackgroundImage(
   return result;
 }
 
-function processColorStops(bgImage: BackgroundImageValue): $ReadOnlyArray<{
+function processColorStops(bgImage: BackgroundImageValue): ReadonlyArray<{
   color: ColorStopColor,
   position: ColorStopPosition,
 }> | null {
@@ -249,15 +259,13 @@ function processColorStops(bgImage: BackgroundImageValue): $ReadOnlyArray<{
 
 function parseBackgroundImageCSSString(
   cssString: string,
-): $ReadOnlyArray<ParsedBackgroundImageValue> {
+): ReadonlyArray<ParsedBackgroundImageValue> {
   const gradients = [];
   const bgImageStrings = splitGradients(cssString);
 
   for (const bgImageString of bgImageStrings) {
     const bgImage = bgImageString.toLowerCase();
-    const gradientRegex = /^(linear|radial)-gradient\(((?:\([^)]*\)|[^()])*)\)/;
-
-    const match = gradientRegex.exec(bgImage);
+    const match = GRADIENT_REGEX.exec(bgImage);
     if (match) {
       const [, type, gradientContent] = match;
       const isRadial = type.toLowerCase() === 'radial';
@@ -281,7 +289,7 @@ function parseRadialGradientCSSString(
   let position: RadialGradientPosition = {...DEFAULT_RADIAL_POSITION};
 
   // split the content by commas, but not if inside parentheses (for color values)
-  const parts = gradientContent.split(/,(?![^(]*\))/);
+  const parts = gradientContent.split(COMMA_SPLIT_REGEX);
   // first part may contain shape, size, and position
   // [ <radial-shape> || <radial-size> ]? [ at <position> ]?
   const firstPartStr = parts[0].trim();
@@ -289,7 +297,7 @@ function parseRadialGradientCSSString(
   let hasShapeSizeOrPositionString = false;
   let hasExplicitSingleSize = false;
   let hasExplicitShape = false;
-  const firstPartTokens = firstPartStr.split(/\s+/);
+  const firstPartTokens = firstPartStr.split(WHITESPACE_SPLIT_REGEX);
 
   // firstPartTokens is the shape, size, and position
   while (firstPartTokens.length > 0) {
@@ -626,13 +634,13 @@ function parseColorStopsCSSString(parts: Array<string>): Array<{
     position: ColorStopPosition,
   }> = [];
   // split by comma, but not if it's inside a parentheses. e.g. red, rgba(0, 0, 0, 0.5), green => ["red", "rgba(0, 0, 0, 0.5)", "green"]
-  const stops = colorStopsString.split(/,(?![^(]*\))/);
+  const stops = colorStopsString.split(COMMA_SPLIT_REGEX);
   let prevStop = null;
   for (let i = 0; i < stops.length; i++) {
     const stop = stops[i];
     const trimmedStop = stop.trim().toLowerCase();
     // Match function like pattern or single words
-    const colorStopParts = trimmedStop.match(/\S+\([^)]*\)|\S+/g);
+    const colorStopParts = trimmedStop.match(COLOR_STOP_PARTS_REGEX);
     if (colorStopParts == null) {
       // If a color stop is invalid, return null and do not apply any gradient. Same as web.
       return null;
@@ -726,7 +734,9 @@ function getDirectionForKeyword(direction?: string): ?LinearGradientDirection {
     return null;
   }
   // Remove extra whitespace
-  const normalized = direction.replace(/\s+/g, ' ').toLowerCase();
+  const normalized = direction
+    .replace(WHITESPACE_NORMALIZE_REGEX, ' ')
+    .toLowerCase();
 
   switch (normalized) {
     case 'to top':

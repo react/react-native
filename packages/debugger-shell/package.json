@@ -1,14 +1,14 @@
 {
   "name": "@react-native/debugger-shell",
   "productName": "React Native DevTools",
-  "version": "0.84.0-main",
+  "version": "0.87.0-main",
   "description": "Experimental debugger shell for React Native for use with @react-native/debugger-frontend",
   "keywords": [
     "react-native",
     "tools"
   ],
-  "homepage": "https://github.com/facebook/react-native/tree/HEAD/packages/debugger-shell#readme",
-  "bugs": "https://github.com/facebook/react-native/issues",
+  "homepage": "https://github.com/react/react-native/tree/HEAD/packages/debugger-shell#readme",
+  "bugs": "https://github.com/react/react-native/issues",
   "main": "./src/index.js",
   "exports": {
     ".": {
@@ -33,19 +33,20 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/facebook/react-native.git",
+    "url": "git+https://github.com/react/react-native.git",
     "directory": "packages/debugger-shell"
   },
   "license": "MIT",
   "engines": {
-    "node": ">= 20.19.4"
+    "node": "^22.13.0 || ^24.3.0 || >= 26.0.0"
   },
   "dependencies": {
     "cross-spawn": "^7.0.6",
+    "debug": "^4.4.0",
     "fb-dotslash": "0.5.8"
   },
   "devDependencies": {
-    "electron": "37.2.6",
+    "electron": "39.0.0",
     "semver": "^7.1.3"
   },
   "files": [

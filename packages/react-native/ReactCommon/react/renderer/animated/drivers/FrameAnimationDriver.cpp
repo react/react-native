@@ -49,13 +49,32 @@ void FrameAnimationDriver::onConfigChanged() {
     frames_.push_back(frameValue);
   }
   toValue_ = config_["toValue"].asDouble();
+  auto deferIt = config_.find("deferredStart");
+  deferredStart_ = deferIt != config_.items().end() && deferIt->second.asBool();
 }
 
-bool FrameAnimationDriver::update(double timeDeltaMs, bool /*restarting*/) {
+bool FrameAnimationDriver::update(double timeDeltaMs, bool restarting) {
   if (auto node =
           manager_->getAnimatedNode<ValueAnimatedNode>(animatedValueTag_)) {
     if (!startValue_) {
       startValue_ = node->getRawValue();
+    }
+
+    if (deferredStart_ && restarting) {
+      // On the very first update after start: output the starting value
+      // (frame 0) and defer the time anchor. The base class will re-anchor
+      // startFrameTimeMs_ on the next call, so elapsed time is measured
+      // from the first frame that has actually been rendered — not from
+      // when startAnimatingNode was dispatched.
+      //
+      // This prevents skipping initial frames when the UI thread is busy
+      // with layout/mount work between animation start and first composite.
+      node->setRawValue(
+          startValue_.value() + frames_[0] * (toValue_ - startValue_.value()));
+      markNodeUpdated(node->tag());
+      startFrameTimeMs_ = -1;
+      deferredStart_ = false;
+      return false;
     }
 
     const auto startIndex =

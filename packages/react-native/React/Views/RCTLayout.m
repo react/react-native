@@ -128,11 +128,12 @@ RCTDisplayType RCTReactDisplayTypeFromYogaDisplayType(YGDisplay displayType)
 {
   switch (displayType) {
     case YGDisplayFlex:
+    case YGDisplayContents:
+    case YGDisplayGrid:
       return RCTDisplayTypeFlex;
     case YGDisplayNone:
       return RCTDisplayTypeNone;
-    case YGDisplayContents:
-      RCTAssert(NO, @"YGDisplayContents cannot be converted to RCTDisplayType value.");
-      return RCTDisplayTypeNone;
+    default:
+      return RCTDisplayTypeFlex;
   }
 }

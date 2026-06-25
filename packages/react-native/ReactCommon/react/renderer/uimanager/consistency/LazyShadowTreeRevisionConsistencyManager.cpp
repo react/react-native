@@ -15,22 +15,34 @@ LazyShadowTreeRevisionConsistencyManager::
         ShadowTreeRegistry& shadowTreeRegistry)
     : shadowTreeRegistry_(shadowTreeRegistry) {}
 
-void LazyShadowTreeRevisionConsistencyManager::updateCurrentRevision(
-    SurfaceId surfaceId,
-    RootShadowNode::Shared rootShadowNode) {
+std::shared_ptr<const RootShadowNode>
+LazyShadowTreeRevisionConsistencyManager::updateCurrentRevision(
+    SurfaceId surfaceId) {
+  // This method is only going to be called from JS, so we don't need to protect
+  // the access to the shadow tree registry as well.
+  // If this was multi-threaded, we would need to protect it to avoid capturing
+  // root shadow nodes concurrently.
+  RootShadowNode::Shared rootShadowNode;
+  shadowTreeRegistry_.visit(surfaceId, [&](const ShadowTree& shadowTree) {
+    auto reactRevision = shadowTree.getCurrentReactRevision();
+    rootShadowNode =
+        reactRevision.value_or(shadowTree.getCurrentRevision()).rootShadowNode;
+  });
+
   std::unique_lock lock(capturedRootShadowNodesForConsistencyMutex_);
 
   // We don't need to store the revision if we haven't locked.
   // We can resolve lazily when requested.
   if (lockCount > 0) {
-    capturedRootShadowNodesForConsistency_[surfaceId] =
-        std::move(rootShadowNode);
+    capturedRootShadowNodesForConsistency_[surfaceId] = rootShadowNode;
   }
+
+  return rootShadowNode;
 }
 
 #pragma mark - ShadowTreeRevisionProvider
 
-RootShadowNode::Shared
+std::shared_ptr<const RootShadowNode>
 LazyShadowTreeRevisionConsistencyManager::getCurrentRevision(
     SurfaceId surfaceId) {
   {
@@ -43,23 +55,7 @@ LazyShadowTreeRevisionConsistencyManager::getCurrentRevision(
     }
   }
 
-  // This method is only going to be called from JS, so we don't need to protect
-  // the access to the shadow tree registry as well.
-  // If this was multi-threaded, we would need to protect it to avoid capturing
-  // root shadow nodes concurrently.
-  RootShadowNode::Shared rootShadowNode;
-  shadowTreeRegistry_.visit(surfaceId, [&](const ShadowTree& shadowTree) {
-    rootShadowNode = shadowTree.getCurrentRevision().rootShadowNode;
-  });
-
-  {
-    std::unique_lock lock(capturedRootShadowNodesForConsistencyMutex_);
-    if (lockCount > 0) {
-      capturedRootShadowNodesForConsistency_[surfaceId] = rootShadowNode;
-    }
-  }
-
-  return rootShadowNode;
+  return updateCurrentRevision(surfaceId);
 }
 
 #pragma mark - ConsistentShadowTreeRevisionProvider

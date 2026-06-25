@@ -21,12 +21,13 @@ import type {ResolvedAssetSource} from './AssetSourceResolver';
 import type {ImageProps} from './ImageProps';
 import type {ImageSource} from './ImageSource';
 
+import {colorAttribute} from '../Components/View/ReactNativeStyleAttributes';
 import * as NativeComponentRegistry from '../NativeComponent/NativeComponentRegistry';
 import {ConditionallyIgnoredEventHandlers} from '../NativeComponent/ViewConfigIgnore';
 import codegenNativeCommands from '../Utilities/codegenNativeCommands';
 import Platform from '../Utilities/Platform';
 
-type ImageHostComponentProps = $ReadOnly<{
+type ImageHostComponentProps = Readonly<{
   ...ImageProps,
   ...ViewProps,
 
@@ -37,16 +38,14 @@ type ImageHostComponentProps = $ReadOnly<{
 
   // Android native props
   shouldNotifyLoadEvents?: boolean,
-  src?:
-    | ?ResolvedAssetSource
-    | ?$ReadOnlyArray<?$ReadOnly<{uri?: ?string, ...}>>,
+  src?: ?ResolvedAssetSource | ?ReadonlyArray<?Readonly<{uri?: ?string, ...}>>,
   headers?: ?{[string]: string},
   defaultSource?: ?ImageSource | ?string,
   loadingIndicatorSrc?: ?string,
 }>;
 
 interface NativeCommands {
-  +setIsVisible_EXPERIMENTAL: (
+  readonly setIsVisible_EXPERIMENTAL: (
     viewRef: HostInstance,
     isVisible: boolean,
     time: number,
@@ -86,9 +85,7 @@ export const __INTERNAL_VIEW_CONFIG: PartialViewConfig =
           resizeMethod: true,
           resizeMode: true,
           resizeMultiplier: true,
-          tintColor: {
-            process: require('../StyleSheet/processColor').default,
-          },
+          tintColor: colorAttribute,
           borderBottomLeftRadius: true,
           borderTopLeftRadius: true,
           src: true,
@@ -100,12 +97,8 @@ export const __INTERNAL_VIEW_CONFIG: PartialViewConfig =
           borderRadius: true,
           headers: true,
           shouldNotifyLoadEvents: true,
-          overlayColor: {
-            process: require('../StyleSheet/processColor').default,
-          },
-          borderColor: {
-            process: require('../StyleSheet/processColor').default,
-          },
+          overlayColor: colorAttribute,
+          borderColor: colorAttribute,
           accessible: true,
           progressiveRenderingEnabled: true,
           fadeDuration: true,
@@ -148,9 +141,7 @@ export const __INTERNAL_VIEW_CONFIG: PartialViewConfig =
           internal_analyticTag: true,
           resizeMode: true,
           source: true,
-          tintColor: {
-            process: require('../StyleSheet/processColor').default,
-          },
+          tintColor: colorAttribute,
           ...ConditionallyIgnoredEventHandlers({
             onLoadStart: true,
             onLoad: true,

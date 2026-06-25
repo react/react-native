@@ -28,11 +28,16 @@ const mergeObjects: PluginObj<BaseVisitorState> = {
           string,
           NodePath<t.TSTypeAliasDeclaration>,
         >();
+        state.interfaceToPathMap = new Map<
+          string,
+          NodePath<t.TSInterfaceDeclaration>,
+        >();
         state.nodeToAliasMap = new Map<t.Node, string>();
         state.parentTypeAliases = new Set<string>();
 
         path.traverse(gatherTypeAliasesVisitor, {
           aliasToPathMap: state.aliasToPathMap,
+          interfaceToPathMap: state.interfaceToPathMap,
         });
       },
 
@@ -65,4 +70,4 @@ const mergeObjects: PluginObj<BaseVisitorState> = {
 };
 
 // Visitor state is only used internally, so we can safely cast to PluginObj<mixed>.
-module.exports = mergeObjects as $FlowFixMe as PluginObj<mixed>;
+module.exports = mergeObjects as $FlowFixMe as PluginObj<unknown>;

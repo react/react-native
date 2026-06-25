@@ -82,19 +82,6 @@ DestinationTimePointT clockCast(SourceTimePointT timePoint)
 }
 
 /*
- * Returns a number of seconds that passed from the UNIX Epoch starting time
- * point to a given time point.
- * Also known as POSIX time or UNIX Timestamp.
- */
-static inline double telemetryTimePointToSecondsSinceEpoch(TelemetryTimePoint timePoint)
-{
-  auto systemClockTimePoint = clockCast<std::chrono::system_clock::time_point, TelemetryTimePoint>(timePoint);
-  return (double)std::chrono::duration_cast<std::chrono::microseconds>(systemClockTimePoint.time_since_epoch())
-             .count() /
-      1000000.0;
-}
-
-/*
  * Returns a number of milliseconds that represents the given duration object.
  */
 static inline int64_t telemetryDurationToMilliseconds(TelemetryDuration duration)

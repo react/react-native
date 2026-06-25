@@ -12,15 +12,44 @@ import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.ReadableType
 import com.facebook.react.uimanager.LengthPercentage
 
+/**
+ * Represents a background size value with horizontal (x) and vertical (y) length/percentage
+ * components.
+ *
+ * This class handles CSS-like background-size values where each dimension can be a length,
+ * percentage, or "auto". A null value for x or y indicates "auto" sizing for that dimension.
+ *
+ * @property x The horizontal size component, or null for "auto"
+ * @property y The vertical size component, or null for "auto"
+ */
 internal class BackgroundSizeLengthPercentage(
     public val x: LengthPercentage?,
     public val y: LengthPercentage?,
 ) {
+  /**
+   * Checks if the horizontal dimension is set to auto.
+   *
+   * @return true if x is null (auto), false otherwise
+   */
   public fun isXAuto(): Boolean = x == null
 
+  /**
+   * Checks if the vertical dimension is set to auto.
+   *
+   * @return true if y is null (auto), false otherwise
+   */
   public fun isYAuto(): Boolean = y == null
 
   public companion object {
+    /**
+     * Parses a ReadableMap into a BackgroundSizeLengthPercentage.
+     *
+     * The map should contain "x" and/or "y" keys with values that are either numbers (treated as
+     * points), percentage strings (e.g., "50%"), or "auto".
+     *
+     * @param backgroundSizeMap The map containing x and y size values
+     * @return A BackgroundSizeLengthPercentage instance, or null if the map is null
+     */
     public fun parse(backgroundSizeMap: ReadableMap?): BackgroundSizeLengthPercentage? {
       if (backgroundSizeMap == null) return null
 
@@ -78,11 +107,32 @@ internal class BackgroundSizeLengthPercentage(
   }
 }
 
+/**
+ * Sealed class representing CSS background-size property values.
+ *
+ * This class models the different ways a background size can be specified in CSS, currently
+ * supporting length/percentage/auto values for both dimensions.
+ *
+ * @see BackgroundSizeLengthPercentage
+ */
 internal sealed class BackgroundSize {
+  /**
+   * Represents a background size specified using length, percentage, or auto values.
+   *
+   * @property lengthPercentage The parsed size values for x and y dimensions
+   */
   public class LengthPercentageAuto(public val lengthPercentage: BackgroundSizeLengthPercentage) :
       BackgroundSize()
 
   public companion object {
+    /**
+     * Parses a Dynamic value into a BackgroundSize.
+     *
+     * Currently supports map values containing x/y dimensions.
+     *
+     * @param backgroundSizeValue The dynamic value to parse
+     * @return A BackgroundSize instance, or null if parsing fails
+     */
     public fun parse(backgroundSizeValue: Dynamic?): BackgroundSize? {
       if (backgroundSizeValue == null) return null
 

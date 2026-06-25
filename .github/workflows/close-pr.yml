@@ -1,6 +1,5 @@
 name: Label closed PR as merged and leave a comment
-on:
-  push
+on: push
 
 permissions:
   contents: read
@@ -9,7 +8,7 @@ permissions:
 jobs:
   comment-and-label:
     runs-on: ubuntu-latest
-    if: github.repository == 'facebook/react-native'
+    if: github.repository == 'react/react-native'
     steps:
       - uses: actions/github-script@v8
         with:

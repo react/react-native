@@ -1,0 +1,17 @@
+struct test::Inner {
+}
+
+template <typename T>
+class test::Container {
+  public T get();
+  public void set(T value);
+}
+
+template <typename T>
+struct test::Outer {
+}
+
+class test::Container<const test::Outer<const test::Inner*> *> {
+  public const test::Outer<const test::Inner*>* get();
+  public void set(const test::Outer<const test::Inner*>* value);
+}

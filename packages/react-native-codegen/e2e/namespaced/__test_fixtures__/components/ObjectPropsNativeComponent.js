@@ -19,15 +19,15 @@ import type {
 
 import {codegenNativeComponent} from 'react-native';
 
-type ObjectArrayPropType = $ReadOnly<{
-  array: $ReadOnlyArray<string>,
+type ObjectArrayPropType = Readonly<{
+  array: ReadonlyArray<string>,
 }>;
 
-type NativeProps = $ReadOnly<{
+type NativeProps = Readonly<{
   ...ViewProps,
 
   // Props
-  objectProp?: $ReadOnly<{
+  objectProp?: Readonly<{
     stringProp?: CodegenTypes.WithDefault<string, ''>,
     booleanProp: boolean,
     floatProp: CodegenTypes.Float,
@@ -36,13 +36,13 @@ type NativeProps = $ReadOnly<{
     intEnumProp?: CodegenTypes.WithDefault<0 | 1, 0>,
   }>,
   objectArrayProp: ObjectArrayPropType,
-  objectPrimitiveRequiredProp: $ReadOnly<{
+  objectPrimitiveRequiredProp: Readonly<{
     image: ImageSource,
     color?: ColorValue,
     point: ?PointValue,
   }>,
 }>;
 
-export default (codegenNativeComponent<NativeProps>(
+export default codegenNativeComponent<NativeProps>(
   'ObjectPropsNativeComponent',
-): HostComponent<NativeProps>);
+) as HostComponent<NativeProps>;

@@ -19,7 +19,7 @@ import {PressabilityDebugView} from '../../Pressability/PressabilityDebug';
 import Platform from '../../Utilities/Platform';
 import * as React from 'react';
 
-type TouchableBounceProps = $ReadOnly<{
+type TouchableBounceProps = Readonly<{
   ...React.ElementConfig<TouchableWithoutFeedback>,
 
   onPressAnimationComplete?: ?() => void,
@@ -31,7 +31,7 @@ type TouchableBounceProps = $ReadOnly<{
   hostRef: React.RefSetter<React.ElementRef<typeof Animated.View>>,
 }>;
 
-type TouchableBounceState = $ReadOnly<{
+type TouchableBounceState = Readonly<{
   pressability: Pressability,
   scale: Animated.Value,
 }>;
@@ -211,7 +211,7 @@ class TouchableBounce extends React.Component<
     this.state.pressability.configure(this._createPressabilityConfig());
   }
 
-  componentDidMount(): mixed {
+  componentDidMount(): unknown {
     this.state.pressability.configure(this._createPressabilityConfig());
   }
 
@@ -225,11 +225,11 @@ export default (function TouchableBounceWrapper({
   ref: hostRef,
   ...props
 }: {
-  ref: React.RefSetter<mixed>,
-  ...$ReadOnly<Omit<TouchableBounceProps, 'hostRef'>>,
+  ref: React.RefSetter<unknown>,
+  ...Readonly<Omit<TouchableBounceProps, 'hostRef'>>,
 }) {
   return <TouchableBounce {...props} hostRef={hostRef} />;
 } as component(
-  ref?: React.RefSetter<mixed>,
-  ...props: $ReadOnly<Omit<TouchableBounceProps, 'hostRef'>>
+  ref?: React.RefSetter<unknown>,
+  ...props: Readonly<Omit<TouchableBounceProps, 'hostRef'>>
 ));

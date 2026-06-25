@@ -67,23 +67,16 @@ class HostAgent final {
   void setCurrentInstanceAgent(std::shared_ptr<InstanceAgent> agent);
 
   /**
-   * Returns whether this HostAgent is part of the session that has an active
-   * Fusebox client connecte, i.e. with Chrome DevTools Frontend fork for React
-   * Native.
+   * Returns whether this HostAgent is eligible to receive notifications about
+   * background traces.
    */
-  bool hasFuseboxClientConnected() const;
-
-  /**
-   * Emits the HostTracingProfile that was captured externally, not via the
-   * CDP-initiated request.
-   */
-  void emitExternalTracingProfile(tracing::HostTracingProfile tracingProfile) const;
+  bool isEligibleForBackgroundTrace() const;
 
   /**
    * Emits a system state changed event when the number of ReactHost instances
    * changes.
    */
-  void emitSystemStateChanged(bool isSingleHost) const;
+  void emitSystemStateChanged(bool isSingleHost);
 
  private:
   // We use the private implementation idiom to ensure this class has the same

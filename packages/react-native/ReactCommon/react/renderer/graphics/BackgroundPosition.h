@@ -21,7 +21,6 @@ struct BackgroundPosition {
   BackgroundPosition() : top(ValueUnit{0.0f, UnitType::Point}), left(ValueUnit{0.0f, UnitType::Point}) {}
 
   bool operator==(const BackgroundPosition &other) const = default;
-  bool operator!=(const BackgroundPosition &other) const = default;
 };
 
 } // namespace facebook::react

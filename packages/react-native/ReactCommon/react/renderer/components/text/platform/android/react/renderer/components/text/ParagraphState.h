@@ -55,13 +55,13 @@ class ParagraphState final {
   /**
    * A fully prepared representation of a text layout to mount
    */
-  MeasuredPreparedLayout measuredLayout;
+  MeasuredPreparedTextLayout measuredLayout;
 
   ParagraphState(
       AttributedString attributedString,
       ParagraphAttributes paragraphAttributes,
       std::weak_ptr<const TextLayoutManager> layoutManager,
-      MeasuredPreparedLayout measuredLayout)
+      MeasuredPreparedTextLayout measuredLayout)
       : attributedString(std::move(attributedString)),
         paragraphAttributes(std::move(paragraphAttributes)),
         layoutManager(std::move(layoutManager)),

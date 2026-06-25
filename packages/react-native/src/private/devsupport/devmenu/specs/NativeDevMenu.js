@@ -13,10 +13,10 @@ import type {TurboModule} from '../../../../../Libraries/TurboModule/RCTExport';
 import * as TurboModuleRegistry from '../../../../../Libraries/TurboModule/TurboModuleRegistry';
 
 export interface Spec extends TurboModule {
-  +show: () => void;
-  +reload: () => void;
-  +setProfilingEnabled: (enabled: boolean) => void;
-  +setHotLoadingEnabled: (enabled: boolean) => void;
+  readonly show: () => void;
+  readonly reload: () => void;
+  readonly setProfilingEnabled: (enabled: boolean) => void;
+  readonly setHotLoadingEnabled: (enabled: boolean) => void;
 }
 
-export default (TurboModuleRegistry.getEnforcing<Spec>('DevMenu'): Spec);
+export default TurboModuleRegistry.getEnforcing<Spec>('DevMenu') as Spec;

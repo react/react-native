@@ -171,10 +171,10 @@ type ModuleProps = $ReadOnly<{|
   onBubblingEventDefinedInlineNull: BubblingEventHandler<null>,
 |}>;
 
-export default (codegenNativeComponent<ModuleProps>('Module', {
+export default codegenNativeComponent<ModuleProps>('Module', {
   interfaceOnly: true,
   paperComponentName: 'RCTModule',
-}): HostComponent<ModuleProps>);
+}) as HostComponent<ModuleProps>;
 `;
 
 const ONE_OF_EACH_PROP_EVENT_DEFAULT_AND_OPTIONS_NO_CAST = `
@@ -240,9 +240,9 @@ type ModuleProps = $ReadOnly<{|
   ...ViewProps,
 |}>;
 
-export default (codegenNativeComponent<ModuleProps>('Module', {
+export default codegenNativeComponent<ModuleProps>('Module', {
   deprecatedViewConfigName: 'DeprecateModuleName',
-}): HostComponent<ModuleProps>);
+}) as HostComponent<ModuleProps>;
 `;
 
 const ALL_PROP_TYPES_NO_EVENTS = `
@@ -374,9 +374,9 @@ type ModuleProps = $ReadOnly<{|
   mixed_optional_key?: UnsafeMixed,
 |}>;
 
-export default (codegenNativeComponent<ModuleProps, Options>(
+export default codegenNativeComponent<ModuleProps, Options>(
   'Module',
-): HostComponent<ModuleProps>);
+) as HostComponent<ModuleProps>;
 `;
 
 const ARRAY_PROP_TYPES_NO_EVENTS = `
@@ -539,9 +539,9 @@ type ModuleProps = $ReadOnly<{|
   >,
 |}>;
 
-export default (codegenNativeComponent<ModuleProps>(
+export default codegenNativeComponent<ModuleProps>(
   'Module',
-): HostComponent<ModuleProps>);
+) as HostComponent<ModuleProps>;
 `;
 
 const OBJECT_PROP_TYPES_NO_EVENTS = `
@@ -637,9 +637,9 @@ type ModuleProps = $ReadOnly<{|
   object_optional_both?: ?$ReadOnly<{|prop: $ReadOnly<{nestedProp: string}>|}>,
 |}>;
 
-export default (codegenNativeComponent<ModuleProps>(
+export default codegenNativeComponent<ModuleProps>(
   'Module',
-): HostComponent<ModuleProps>);
+) as HostComponent<ModuleProps>;
 `;
 
 const PROPS_ALIASED_LOCALLY = `
@@ -682,9 +682,9 @@ export type ModuleProps = $ReadOnly<{|
   localArr: $ReadOnlyArray<PropsInFile>
 |}>;
 
-export default (codegenNativeComponent<ModuleProps>(
+export default codegenNativeComponent<ModuleProps>(
   'Module',
-): HostComponent<ModuleProps>);
+) as HostComponent<ModuleProps>;
 `;
 
 const EVENTS_DEFINED_INLINE_WITH_ALL_TYPES = `
@@ -791,9 +791,9 @@ type ModuleProps = $ReadOnly<{|
     >,
 |}>;
 
-export default (codegenNativeComponent<ModuleProps>(
+export default codegenNativeComponent<ModuleProps>(
   'Module',
-): HostComponent<ModuleProps>);
+) as HostComponent<ModuleProps>;
 `;
 
 const EVENTS_DEFINED_AS_NULL_INLINE = `
@@ -840,9 +840,9 @@ type ModuleProps = $ReadOnly<{|
   >,
 |}>;
 
-export default (codegenNativeComponent<ModuleProps>(
+export default codegenNativeComponent<ModuleProps>(
   'Module',
-): HostComponent<ModuleProps>);
+) as HostComponent<ModuleProps>;
 `;
 
 const PROPS_AND_EVENTS_TYPES_EXPORTED = `
@@ -883,9 +883,9 @@ export type ModuleProps = $ReadOnly<{|
   onDirectEventDefinedInlineWithPaperName: DirectEventHandler<EventInFile, 'paperDirectEventDefinedInlineWithPaperName'>,
 |}>;
 
-export default (codegenNativeComponent<ModuleProps>(
+export default codegenNativeComponent<ModuleProps>(
   'Module',
-): HostComponent<ModuleProps>);
+) as HostComponent<ModuleProps>;
 `;
 
 const PROPS_AS_EXTERNAL_TYPES = `
@@ -913,9 +913,9 @@ export type ModuleProps = $ReadOnly<{|
   array: AnotherArray,
 |}>;
 
-export default (codegenNativeComponent<ModuleProps>(
+export default codegenNativeComponent<ModuleProps>(
   'Module',
-): HostComponent<ModuleProps>);
+) as HostComponent<ModuleProps>;
 `;
 
 const COMMANDS_DEFINED_WITH_ALL_TYPES = `
@@ -971,9 +971,9 @@ export const Commands = codegenNativeCommands<NativeCommands>({
   supportedCommands: ['handleRootTag', 'hotspotUpdate', 'scrollTo', 'arrayArgs'],
 });
 
-export default (codegenNativeComponent<ModuleProps>(
+export default codegenNativeComponent<ModuleProps>(
   'Module',
-): NativeType);
+) as NativeType;
 `;
 
 const COMMANDS_WITH_EXTERNAL_TYPES = `
@@ -1032,9 +1032,9 @@ export const Commands = codegenNativeCommands<NativeCommands>({
   supportedCommands: ['scrollTo', 'addOverlays'],
 });
 
-export default (codegenNativeComponent<ModuleProps>(
+export default codegenNativeComponent<ModuleProps>(
   'Module',
-): NativeType);
+) as NativeType;
 `;
 
 const COMMANDS_EVENTS_TYPES_EXPORTED = `
@@ -1091,9 +1091,9 @@ export const Commands = codegenNativeCommands<NativeCommands>({
   supportedCommands: ['scrollTo']
 });
 
-export default (codegenNativeComponent<ModuleProps>(
+export default codegenNativeComponent<ModuleProps>(
   'Module',
-): NativeType);
+) as NativeType;
 `;
 
 const NAMESPACED_EVENT_DEFINITION = `
@@ -1250,10 +1250,10 @@ type ModuleProps = $ReadOnly<{|
   onBubblingEventDefinedInlineNull: CodegenTypes.BubblingEventHandler<null>,
 |}>;
 
-export default (codegenNativeComponent<ModuleProps>('Module', {
+export default codegenNativeComponent<ModuleProps>('Module', {
   interfaceOnly: true,
   paperComponentName: 'RCTModule',
-}): HostComponent<ModuleProps>);
+}) as HostComponent<ModuleProps>;
 `;
 
 const NAMESPACED_ONE_OF_EACH_PROP_EVENT_DEFAULT_AND_OPTIONS_NO_CAST = `
@@ -1420,9 +1420,9 @@ type ModuleProps = $ReadOnly<{|
   mixed_optional_key?: CodegenTypes.UnsafeMixed,
 |}>;
 
-export default (codegenNativeComponent<ModuleProps, Options>(
+export default codegenNativeComponent<ModuleProps, Options>(
   'Module',
-): HostComponent<ModuleProps>);
+) as HostComponent<ModuleProps>;
 `;
 
 const NAMESPACED_ARRAY_PROP_TYPES_NO_EVENTS = `
@@ -1584,9 +1584,9 @@ type ModuleProps = $ReadOnly<{|
   >,
 |}>;
 
-export default (codegenNativeComponent<ModuleProps>(
+export default codegenNativeComponent<ModuleProps>(
   'Module',
-): HostComponent<ModuleProps>);
+) as HostComponent<ModuleProps>;
 `;
 
 const NAMESPACED_OBJECT_PROP_TYPES_NO_EVENTS = `
@@ -1681,9 +1681,9 @@ type ModuleProps = $ReadOnly<{|
   object_optional_both?: ?$ReadOnly<{|prop: $ReadOnly<{nestedProp: string}>|}>,
 |}>;
 
-export default (codegenNativeComponent<ModuleProps>(
+export default codegenNativeComponent<ModuleProps>(
   'Module',
-): HostComponent<ModuleProps>);
+) as HostComponent<ModuleProps>;
 `;
 
 const NAMESPACED_EVENTS_DEFINED_INLINE_WITH_ALL_TYPES = `
@@ -1782,9 +1782,9 @@ type ModuleProps = $ReadOnly<{|
     >,
 |}>;
 
-export default (codegenNativeComponent<ModuleProps>(
+export default codegenNativeComponent<ModuleProps>(
   'Module',
-): HostComponent<ModuleProps>);
+) as HostComponent<ModuleProps>;
 `;
 
 const NAMESPACED_EVENTS_DEFINED_AS_NULL_INLINE = `
@@ -1830,9 +1830,9 @@ type ModuleProps = $ReadOnly<{|
   >,
 |}>;
 
-export default (codegenNativeComponent<ModuleProps>(
+export default codegenNativeComponent<ModuleProps>(
   'Module',
-): HostComponent<ModuleProps>);
+) as HostComponent<ModuleProps>;
 `;
 
 const NAMESPACED_PROPS_AND_EVENTS_TYPES_EXPORTED = `
@@ -1869,9 +1869,9 @@ export type ModuleProps = $ReadOnly<{|
   onDirectEventDefinedInlineWithPaperName: CodegenTypes.DirectEventHandler<EventInFile, 'paperDirectEventDefinedInlineWithPaperName'>,
 |}>;
 
-export default (codegenNativeComponent<ModuleProps>(
+export default codegenNativeComponent<ModuleProps>(
   'Module',
-): HostComponent<ModuleProps>);
+) as HostComponent<ModuleProps>;
 `;
 
 const NAMESPACED_COMMANDS_DEFINED_WITH_ALL_TYPES = `
@@ -1926,9 +1926,9 @@ export const Commands = codegenNativeCommands<NativeCommands>({
   supportedCommands: ['handleRootTag', 'hotspotUpdate', 'scrollTo', 'arrayArgs'],
 });
 
-export default (codegenNativeComponent<ModuleProps>(
+export default codegenNativeComponent<ModuleProps>(
   'Module',
-): NativeType);
+) as NativeType;
 `;
 
 const NAMESPACED_COMMANDS_WITH_EXTERNAL_TYPES = `
@@ -1986,9 +1986,9 @@ export const Commands = codegenNativeCommands<NativeCommands>({
   supportedCommands: ['scrollTo', 'addOverlays'],
 });
 
-export default (codegenNativeComponent<ModuleProps>(
+export default codegenNativeComponent<ModuleProps>(
   'Module',
-): NativeType);
+) as NativeType;
 `;
 
 const NAMESPACED_COMMANDS_EVENTS_TYPES_EXPORTED = `
@@ -2041,9 +2041,9 @@ export const Commands = codegenNativeCommands<NativeCommands>({
   supportedCommands: ['scrollTo']
 });
 
-export default (codegenNativeComponent<ModuleProps>(
+export default codegenNativeComponent<ModuleProps>(
   'Module',
-): NativeType);
+) as NativeType;
 `;
 
 module.exports = {

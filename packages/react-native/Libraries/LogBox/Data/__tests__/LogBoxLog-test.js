@@ -12,13 +12,12 @@
 
 import type {SymbolicatedStackTrace} from '../../../Core/Devtools/symbolicateStackTrace';
 import type {StackFrame} from '../../../Core/NativeExceptionsManager';
-import type {CodeFrame} from '../parseLogBoxLog';
 
 jest.mock('../LogBoxSymbolication', () => {
   return {__esModule: true, symbolicate: jest.fn(), deleteStack: jest.fn()};
 });
 
-type CodeCodeFrame = $ReadOnly<{
+type CodeCodeFrame = Readonly<{
   content: string,
   location: ?{
     row: number,
@@ -40,29 +39,6 @@ const COMPONENT_CODE_FRAME: CodeCodeFrame = {
   content: 'Component',
 };
 
-// We can delete this when we delete legacy component stack types.
-function getLogBoxLogLegacy() {
-  return new (require('../LogBoxLog').default)({
-    level: 'warn',
-    isComponentError: false,
-    message: {content: '...', substitutions: []},
-    stack: createStack(['A', 'B', 'C']),
-    category: 'Message category...',
-    componentStack: [
-      {
-        content: 'LogBoxLog',
-        fileName: 'LogBoxLog.js',
-        location: {column: -1, row: 1},
-      },
-    ],
-    codeFrame: {
-      fileName: '/path/to/RKJSModules/Apps/CrashReact/CrashReactApp.js',
-      location: {row: 199, column: 0},
-      content: '<code frame>',
-    },
-  });
-}
-
 function getLogBoxLog() {
   return new (require('../LogBoxLog').default)({
     level: 'warn',
@@ -70,7 +46,6 @@ function getLogBoxLog() {
     message: {content: '...', substitutions: []},
     stack: createStack(['A', 'B', 'C']),
     category: 'Message category...',
-    componentStackType: 'stack',
     componentStack: createComponentStack(['A', 'B', 'C']),
     codeFrame: null,
   });
@@ -78,11 +53,11 @@ function getLogBoxLog() {
 
 function getLogBoxSymbolication(): {
   symbolicate: JestMockFn<
-    $ReadOnlyArray<Array<StackFrame>>,
+    ReadonlyArray<Array<StackFrame>>,
     Promise<SymbolicatedStackTrace>,
   >,
 } {
-  return (require('../LogBoxSymbolication'): any);
+  return require('../LogBoxSymbolication') as any;
 }
 
 const createStack = (methodNames: Array<string>) =>
@@ -93,7 +68,7 @@ const createStack = (methodNames: Array<string>) =>
     methodName,
   }));
 
-const createStackForComponentStack = (methodNames: Array<string>) =>
+const createComponentStack = (methodNames: Array<string>) =>
   methodNames.map((methodName): StackFrame => ({
     column: 0,
     file: 'file://path/to/component.js',
@@ -101,19 +76,8 @@ const createStackForComponentStack = (methodNames: Array<string>) =>
     methodName,
   }));
 
-const createComponentStack = (methodNames: Array<string>) =>
-  methodNames.map((methodName): CodeFrame => ({
-    collapse: false,
-    content: methodName,
-    location: {
-      row: 1,
-      column: 0,
-    },
-    fileName: 'file://path/to/component.js',
-  }));
-
 function mockSymbolicate(
-  stack: $ReadOnlyArray<StackFrame>,
+  stack: ReadonlyArray<StackFrame>,
   stackCodeFrame: ?CodeCodeFrame,
   componentCodeFrame: ?CodeCodeFrame,
 ): SymbolicatedStackTrace {
@@ -124,9 +88,7 @@ function mockSymbolicate(
     firstFrame.file.indexOf('component.js') > 0
   ) {
     return {
-      stack: createStackForComponentStack(
-        stack.map(frame => `C(${frame.methodName})`),
-      ),
+      stack: createStack(stack.map(frame => `C(${frame.methodName})`)),
       codeFrame: COMPONENT_CODE_FRAME,
     };
   }
@@ -146,243 +108,6 @@ describe('LogBoxLog', () => {
     getLogBoxSymbolication().symbolicate.mockImplementation(async stack =>
       mockSymbolicate(stack),
     );
-  });
-
-  describe('symbolicate legacy component stacks (no symbolication)', () => {
-    it('creates a LogBoxLog object', () => {
-      const log = getLogBoxLogLegacy();
-
-      expect(log.level).toEqual('warn');
-      expect(log.message).toEqual({content: '...', substitutions: []});
-      expect(log.stack).toEqual(createStack(['A', 'B', 'C']));
-      expect(log.category).toEqual('Message category...');
-      expect(log.componentStack).toEqual([
-        {
-          content: 'LogBoxLog',
-          fileName: 'LogBoxLog.js',
-          location: {column: -1, row: 1},
-        },
-      ]);
-      expect(log.codeFrame).toEqual({
-        fileName: '/path/to/RKJSModules/Apps/CrashReact/CrashReactApp.js',
-        location: {row: 199, column: 0},
-        content: '<code frame>',
-      });
-    });
-
-    it('increments LogBoxLog count', () => {
-      const log = getLogBoxLogLegacy();
-
-      expect(log.count).toEqual(1);
-
-      log.incrementCount();
-
-      expect(log.count).toEqual(2);
-    });
-
-    it('starts without a symbolicated stack', () => {
-      const log = getLogBoxLogLegacy();
-
-      expect(log.symbolicated).toEqual({
-        error: null,
-        stack: null,
-        status: 'NONE',
-      });
-    });
-
-    it('updates when symbolication is in progress', () => {
-      const log = getLogBoxLogLegacy();
-
-      const callback = jest.fn();
-      log.symbolicate(callback);
-
-      expect(callback).toBeCalledTimes(1);
-      expect(callback).toBeCalledWith('PENDING');
-      expect(getLogBoxSymbolication().symbolicate).toBeCalledTimes(1);
-      expect(log.symbolicated).toEqual({
-        error: null,
-        stack: null,
-        status: 'PENDING',
-      });
-
-      // Symbolicating while pending should not make more requests.
-      callback.mockClear();
-      getLogBoxSymbolication().symbolicate.mockClear();
-
-      log.symbolicate(callback);
-      expect(callback).not.toBeCalled();
-      expect(getLogBoxSymbolication().symbolicate).not.toBeCalled();
-    });
-
-    it('updates when symbolication finishes', async () => {
-      const log = getLogBoxLogLegacy();
-
-      const callback = jest.fn();
-      log.symbolicate(callback);
-      expect(callback).toBeCalledTimes(1);
-      expect(callback).toBeCalledWith('PENDING');
-      expect(getLogBoxSymbolication().symbolicate).toBeCalled();
-
-      await runMicrotasks();
-
-      expect(callback).toBeCalledTimes(2);
-      expect(callback).toBeCalledWith('COMPLETE');
-      expect(log.symbolicated).toEqual({
-        error: null,
-        stack: createStack(['S(A)', 'S(B)', 'S(C)']),
-        status: 'COMPLETE',
-      });
-
-      // Do not symbolicate again.
-      callback.mockClear();
-      getLogBoxSymbolication().symbolicate.mockClear();
-
-      log.symbolicate(callback);
-
-      await runMicrotasks();
-
-      expect(callback).toBeCalledTimes(0);
-      expect(getLogBoxSymbolication().symbolicate).not.toBeCalled();
-    });
-
-    it('updates when symbolication fails', async () => {
-      const error = new Error('...');
-      getLogBoxSymbolication().symbolicate.mockImplementation(async stack => {
-        throw error;
-      });
-
-      const log = getLogBoxLogLegacy();
-
-      const callback = jest.fn();
-      log.symbolicate(callback);
-      expect(callback).toBeCalledTimes(1);
-      expect(callback).toBeCalledWith('PENDING');
-      expect(getLogBoxSymbolication().symbolicate).toBeCalled();
-
-      await runMicrotasks();
-
-      expect(callback).toBeCalledTimes(2);
-      expect(callback).toBeCalledWith('FAILED');
-      expect(log.symbolicated).toEqual({
-        error,
-        stack: null,
-        status: 'FAILED',
-      });
-
-      // Do not symbolicate again, retry if needed.
-      callback.mockClear();
-      getLogBoxSymbolication().symbolicate.mockClear();
-
-      log.symbolicate(callback);
-
-      await runMicrotasks();
-
-      expect(callback).toBeCalledTimes(0);
-      expect(getLogBoxSymbolication().symbolicate).not.toBeCalled();
-    });
-
-    it('retry updates when symbolication is in progress', () => {
-      const log = getLogBoxLogLegacy();
-
-      const callback = jest.fn();
-      log.retrySymbolicate(callback);
-
-      expect(callback).toBeCalledTimes(1);
-      expect(callback).toBeCalledWith('PENDING');
-      expect(getLogBoxSymbolication().symbolicate).toBeCalledTimes(1);
-      expect(log.symbolicated).toEqual({
-        error: null,
-        stack: null,
-        status: 'PENDING',
-      });
-
-      // Symbolicating while pending should not make more requests.
-      callback.mockClear();
-      getLogBoxSymbolication().symbolicate.mockClear();
-
-      log.symbolicate(callback);
-      expect(callback).not.toBeCalled();
-      expect(getLogBoxSymbolication().symbolicate).not.toBeCalled();
-    });
-
-    it('retry updates when symbolication finishes', async () => {
-      const log = getLogBoxLogLegacy();
-
-      const callback = jest.fn();
-      log.retrySymbolicate(callback);
-      expect(callback).toBeCalledTimes(1);
-      expect(callback).toBeCalledWith('PENDING');
-      expect(getLogBoxSymbolication().symbolicate).toBeCalled();
-
-      await runMicrotasks();
-
-      expect(callback).toBeCalledTimes(2);
-      expect(callback).toBeCalledWith('COMPLETE');
-      expect(log.symbolicated).toEqual({
-        error: null,
-        stack: createStack(['S(A)', 'S(B)', 'S(C)']),
-        status: 'COMPLETE',
-      });
-
-      // Do not symbolicate again
-      callback.mockClear();
-      getLogBoxSymbolication().symbolicate.mockClear();
-
-      log.retrySymbolicate(callback);
-      jest.runAllTicks();
-
-      expect(callback).toBeCalledTimes(0);
-      expect(getLogBoxSymbolication().symbolicate).not.toBeCalled();
-    });
-
-    it('retry updates when symbolication fails', async () => {
-      const error = new Error('...');
-      getLogBoxSymbolication().symbolicate.mockImplementation(async stack => {
-        throw error;
-      });
-
-      const log = getLogBoxLogLegacy();
-
-      const callback = jest.fn();
-      log.retrySymbolicate(callback);
-      expect(callback).toBeCalledTimes(1);
-      expect(callback).toBeCalledWith('PENDING');
-      expect(getLogBoxSymbolication().symbolicate).toBeCalled();
-
-      await runMicrotasks();
-
-      expect(callback).toBeCalledTimes(2);
-      expect(callback).toBeCalledWith('FAILED');
-      expect(log.symbolicated).toEqual({
-        error,
-        stack: null,
-        status: 'FAILED',
-      });
-
-      // Retry to symbolicate again.
-      callback.mockClear();
-      getLogBoxSymbolication().symbolicate.mockClear();
-      getLogBoxSymbolication().symbolicate.mockImplementation(async stack => ({
-        stack: createStack(stack.map(frame => `S(${frame.methodName})`)),
-        codeFrame: null,
-      }));
-
-      log.retrySymbolicate(callback);
-
-      expect(callback).toBeCalledTimes(1);
-      expect(callback).toBeCalledWith('PENDING');
-      expect(getLogBoxSymbolication().symbolicate).toBeCalled();
-
-      await runMicrotasks();
-
-      expect(callback).toBeCalledTimes(2);
-      expect(callback).toBeCalledWith('COMPLETE');
-      expect(log.symbolicated).toEqual({
-        error: null,
-        stack: createStack(['S(A)', 'S(B)', 'S(C)']),
-        status: 'COMPLETE',
-      });
-    });
   });
 
   describe('symbolicate component stacks', () => {
@@ -418,7 +143,7 @@ describe('LogBoxLog', () => {
       });
       expect(log.symbolicatedComponentStack).toEqual({
         error: null,
-        componentStack: null,
+        stack: null,
         status: 'NONE',
       });
     });
@@ -440,7 +165,7 @@ describe('LogBoxLog', () => {
       });
       expect(log.symbolicatedComponentStack).toEqual({
         error: null,
-        componentStack: null,
+        stack: null,
         status: 'PENDING',
       });
 
@@ -477,7 +202,7 @@ describe('LogBoxLog', () => {
       expect(log.codeFrame).toBe(STACK_CODE_FRAME);
       expect(log.symbolicatedComponentStack).toEqual({
         error: null,
-        componentStack: createComponentStack(['C(A)', 'C(B)', 'C(C)']),
+        stack: createStack(['C(A)', 'C(B)', 'C(C)']),
         status: 'COMPLETE',
       });
       expect(log.componentCodeFrame).toBe(COMPONENT_CODE_FRAME);
@@ -527,7 +252,7 @@ describe('LogBoxLog', () => {
       });
       expect(log.symbolicatedComponentStack).toEqual({
         error: null,
-        componentStack: createComponentStack(['C(A)', 'C(B)', 'C(C)']),
+        stack: createStack(['C(A)', 'C(B)', 'C(C)']),
         status: 'COMPLETE',
       });
 
@@ -579,7 +304,7 @@ describe('LogBoxLog', () => {
       expect(log.codeFrame).toBe(STACK_CODE_FRAME);
       expect(log.symbolicatedComponentStack).toEqual({
         error,
-        componentStack: null,
+        stack: null,
         status: 'FAILED',
       });
 
@@ -612,7 +337,7 @@ describe('LogBoxLog', () => {
       });
       expect(log.symbolicatedComponentStack).toEqual({
         error: null,
-        componentStack: null,
+        stack: null,
         status: 'PENDING',
       });
 
@@ -649,7 +374,7 @@ describe('LogBoxLog', () => {
       expect(log.codeFrame).toBe(STACK_CODE_FRAME);
       expect(log.symbolicatedComponentStack).toEqual({
         error: null,
-        componentStack: createComponentStack(['C(A)', 'C(B)', 'C(C)']),
+        stack: createStack(['C(A)', 'C(B)', 'C(C)']),
         status: 'COMPLETE',
       });
       expect(log.componentCodeFrame).toBe(COMPONENT_CODE_FRAME);
@@ -693,7 +418,7 @@ describe('LogBoxLog', () => {
       });
       expect(log.symbolicatedComponentStack).toEqual({
         error,
-        componentStack: null,
+        stack: null,
         status: 'FAILED',
       });
 
@@ -724,7 +449,7 @@ describe('LogBoxLog', () => {
       expect(log.codeFrame).toBe(STACK_CODE_FRAME);
       expect(log.symbolicatedComponentStack).toEqual({
         error: null,
-        componentStack: createComponentStack(['C(A)', 'C(B)', 'C(C)']),
+        stack: createStack(['C(A)', 'C(B)', 'C(C)']),
         status: 'COMPLETE',
       });
       expect(log.componentCodeFrame).toBe(COMPONENT_CODE_FRAME);
@@ -763,7 +488,7 @@ describe('LogBoxLog', () => {
       });
       expect(log.symbolicatedComponentStack).toEqual({
         error: null,
-        componentStack: createComponentStack(['C(A)', 'C(B)', 'C(C)']),
+        stack: createStack(['C(A)', 'C(B)', 'C(C)']),
         status: 'COMPLETE',
       });
       expect(log.componentCodeFrame).toBe(COMPONENT_CODE_FRAME);
@@ -795,7 +520,7 @@ describe('LogBoxLog', () => {
       expect(log.codeFrame).toBe(STACK_CODE_FRAME);
       expect(log.symbolicatedComponentStack).toEqual({
         error: null,
-        componentStack: createComponentStack(['C(A)', 'C(B)', 'C(C)']),
+        stack: createStack(['C(A)', 'C(B)', 'C(C)']),
         status: 'COMPLETE',
       });
       expect(log.componentCodeFrame).toBe(COMPONENT_CODE_FRAME);
@@ -835,7 +560,7 @@ describe('LogBoxLog', () => {
       expect(log.codeFrame).toBe(STACK_CODE_FRAME);
       expect(log.symbolicatedComponentStack).toEqual({
         error,
-        componentStack: null,
+        stack: null,
         status: 'FAILED',
       });
 
@@ -866,7 +591,7 @@ describe('LogBoxLog', () => {
       expect(log.codeFrame).toBe(STACK_CODE_FRAME);
       expect(log.symbolicatedComponentStack).toEqual({
         error: null,
-        componentStack: createComponentStack(['C(A)', 'C(B)', 'C(C)']),
+        stack: createStack(['C(A)', 'C(B)', 'C(C)']),
         status: 'COMPLETE',
       });
       expect(log.componentCodeFrame).toBe(COMPONENT_CODE_FRAME);

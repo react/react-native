@@ -27,14 +27,15 @@ declare interface $npm$shelljs$Env {
   [key: string]: string;
 }
 
-declare type $npm$shelljs$OptionsPoly<Flags: string> = {
+declare type $npm$shelljs$OptionsPoly<Flags extends string> = {
   [keys: Flags]: boolean,
   ...
 };
 declare interface $npm$shelljs$ExecThen {
   (code: number, stdout: string, stderr: string): void;
 }
-declare type $npm$shelljs$ExecOptionsPoly<T: Object> = T & {
+declare type $npm$shelljs$ExecOptionsPoly<T extends Object> = {
+  ...T,
   async?: boolean,
   silent?: boolean,
   ...
@@ -139,7 +140,7 @@ declare interface $npm$shelljs$Result {
 declare module 'shelljs' {
   declare export type ShellArray<T> = $npm$shelljs$Array<T>;
   declare export type ShellAsync = $npm$shelljs$Async;
-  declare export type ShellOptionsPoly<Flags: string> =
+  declare export type ShellOptionsPoly<Flags extends string> =
     $npm$shelljs$OptionsPoly<Flags>;
   declare export type ShellConfig = $npm$shelljs$Config;
   declare export type ShellEnv = $npm$shelljs$Env;

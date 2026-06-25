@@ -1,0 +1,13 @@
+struct test::MyType {
+}
+
+template <typename T>
+class test::Container {
+  public void pop();
+  public void push(T value);
+}
+
+class test::Container<test::MyType> {
+  public void pop();
+  public void push(test::MyType value);
+}

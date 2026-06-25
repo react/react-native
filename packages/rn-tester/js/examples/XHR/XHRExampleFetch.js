@@ -11,7 +11,7 @@
 'use strict';
 
 import {RNTesterThemeContext} from '../../components/RNTesterTheme';
-import React from 'react';
+import * as React from 'react';
 import {
   Button,
   Platform,

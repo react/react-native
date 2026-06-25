@@ -40,20 +40,32 @@ function _extractChangelog(version) {
   return changelog.slice(changelogStarts, changelogEnds).join('\n').trim();
 }
 
-function _computeBody(changelog, version, hermesVersion, hermesV1Version) {
-  hermesVersion = hermesVersion ?? version;
-  hermesV1Version = hermesV1Version ?? version;
+function _readHermesVersionFromProperties() {
+  const propertiesPath =
+    'packages/react-native/sdks/hermes-engine/version.properties';
+  const content = String(fs.readFileSync(propertiesPath, 'utf8'));
+  const match = content.match(/^HERMES_VERSION_NAME=(.+)$/m);
+  if (!match) {
+    throw new Error(`HERMES_VERSION_NAME not found in ${propertiesPath}`);
+  }
+  return match[1].trim();
+}
+
+function _computeBody(changelog, version, hermesVersion) {
+  // The workflow input is optional and arrives as an empty string when unset,
+  // so treat both missing and empty as "fall back to version.properties".
+  // Falling back to ${version} would produce 404 dSYMS URLs since Hermes V1
+  // versions (e.g. 250829098.0.13) don't track RN versions.
+  if (hermesVersion == null || hermesVersion === '') {
+    hermesVersion = _readHermesVersionFromProperties();
+  }
   return `${changelog}
 
 ---
 
-Hermes dSYMS:
+Hermes V1 dSYMS:
 - [Debug](https://repo1.maven.org/maven2/com/facebook/hermes/hermes-ios/${hermesVersion}/hermes-ios-${hermesVersion}-hermes-framework-dSYM-debug.tar.gz)
 - [Release](https://repo1.maven.org/maven2/com/facebook/hermes/hermes-ios/${hermesVersion}/hermes-ios-${hermesVersion}-hermes-framework-dSYM-release.tar.gz)
-
-Hermes V1 dSYMS:
-- [Debug](https://repo1.maven.org/maven2/com/facebook/hermes/hermes-ios/${hermesV1Version}/hermes-ios-${hermesV1Version}-hermes-framework-dSYM-debug.tar.gz)
-- [Release](https://repo1.maven.org/maven2/com/facebook/hermes/hermes-ios/${hermesV1Version}/hermes-ios-${hermesV1Version}-hermes-framework-dSYM-release.tar.gz)
 
 ReactNativeDependencies dSYMs:
 - [Debug](https://repo1.maven.org/maven2/com/facebook/react/react-native-artifacts/${version}/react-native-artifacts-${version}-reactnative-dependencies-dSYM-debug.tar.gz)
@@ -123,13 +135,7 @@ function moveToChangelogBranch(version) {
   run(`git checkout -b changelog/v${version}`);
 }
 
-async function createDraftRelease(
-  version,
-  latest,
-  token,
-  hermesVersion,
-  hermesV1Version,
-) {
+async function createDraftRelease(version, latest, token, hermesVersion) {
   if (version.startsWith('v')) {
     version = version.substring(1);
   }
@@ -137,7 +143,7 @@ async function createDraftRelease(
   _verifyTagExists(version);
   moveToChangelogBranch(version);
   const changelog = _extractChangelog(version);
-  const body = _computeBody(changelog, version, hermesVersion, hermesV1Version);
+  const body = _computeBody(changelog, version, hermesVersion);
   const release = await _createDraftReleaseOnGitHub(
     version,
     body,
@@ -155,4 +161,5 @@ module.exports = {
   _extractChangelog,
   _computeBody,
   _createDraftReleaseOnGitHub,
+  _readHermesVersionFromProperties,
 };

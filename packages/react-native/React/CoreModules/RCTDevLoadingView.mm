@@ -51,8 +51,25 @@ RCT_EXPORT_MODULE()
                                              selector:@selector(hide)
                                                  name:RCTJavaScriptDidFailToLoadNotification
                                                object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(hide)
+                                                 name:@"RCTInstanceDidLoadBundle"
+                                               object:nil];
   }
   return self;
+}
+
+- (void)dealloc
+{
+  [self clearInitialMessageDelay];
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  UIWindow *window = _window;
+  _window = nil;
+  if (window) {
+    RCTExecuteOnMainQueue(^{
+      window.hidden = YES;
+    });
+  }
 }
 
 + (void)setEnabled:(BOOL)enabled
@@ -158,7 +175,7 @@ RCT_EXPORT_MODULE()
       buttonConfig.background.cornerRadius = 10;
       buttonConfig.baseForegroundColor = color;
 
-      // Button is a visual cue to tap anywhere on the banner to dismiss so no seperate action is needed
+      // Button is a visual cue to tap anywhere on the banner to dismiss so no separate action is needed
       self->_dismissButton = [UIButton buttonWithConfiguration:buttonConfig primaryAction:nil];
       self->_dismissButton.userInteractionEnabled = NO;
       self->_dismissButton.translatesAutoresizingMaskIntoConstraints = NO;
@@ -186,7 +203,9 @@ RCT_EXPORT_MODULE()
 
       self->_window.frame = self->_window.windowScene.coordinateSpace.bounds;
 
+#if !TARGET_OS_TV
       self->_window.windowLevel = UIWindowLevelStatusBar + 1;
+#endif
       self->_window.rootViewController = [UIViewController new];
       [self->_window.rootViewController.view addSubview:self->_container];
     }

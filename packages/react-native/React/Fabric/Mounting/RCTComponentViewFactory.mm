@@ -32,7 +32,9 @@
 #import <React/RCTComponentViewClassDescriptor.h>
 #import <React/RCTFabricComponentsPlugins.h>
 #import <React/RCTImageComponentView.h>
+#ifndef RCT_REMOVE_LEGACY_COMPONENT_INTEROP
 #import <React/RCTLegacyViewManagerInteropComponentView.h>
+#endif // RCT_REMOVE_LEGACY_COMPONENT_INTEROP
 #import <React/RCTMountingTransactionObserving.h>
 #import <React/RCTParagraphComponentView.h>
 #import <React/RCTRootComponentView.h>
@@ -125,11 +127,6 @@ static Class<RCTComponentViewProtocol> RCTComponentViewClassWithName(const char 
     return;
   }
 
-  // Paper name: we prepare this variables to warn the user
-  // when the component is registered in both Fabric and in the
-  // interop layer, so they can remove that
-  NSString *componentNameString = RCTNSStringFromString(name);
-
   // Fallback 1: Call provider function for component view class.
   Class<RCTComponentViewProtocol> klass = RCTComponentViewClassWithName(name.c_str());
   if (klass != nullptr) {
@@ -149,6 +146,12 @@ static Class<RCTComponentViewProtocol> RCTComponentViewClassWithName(const char 
     }
   }
 
+#ifndef RCT_REMOVE_LEGACY_COMPONENT_INTEROP
+  // Paper name: we prepare this variables to warn the user
+  // when the component is registered in both Fabric and in the
+  // interop layer, so they can remove that
+  NSString *componentNameString = RCTNSStringFromString(name);
+
   // Fallback 3: Try to use Paper Interop.
   // TODO(T174674274): Implement lazy loading of legacy view managers in the new architecture.
   if (RCTFabricInteropLayerEnabled() && [RCTLegacyViewManagerInteropComponentView isSupported:componentNameString]) {
@@ -166,6 +169,7 @@ static Class<RCTComponentViewProtocol> RCTComponentViewClassWithName(const char 
     _registrationStatusMap.insert({provider.name, true});
     return;
   }
+#endif // RCT_REMOVE_LEGACY_COMPONENT_INTEROP
 
   // Fallback 4: use <UnimplementedView> if component doesn't exist.
   auto flavor = std::make_shared<const std::string>(name);

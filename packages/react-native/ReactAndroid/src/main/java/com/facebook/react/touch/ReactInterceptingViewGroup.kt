@@ -10,10 +10,10 @@ package com.facebook.react.touch
 import android.view.ViewGroup
 
 /**
- * This interface should be implemented by all [ViewGroup] subviews that can be instantiating by
- * [com.facebook.react.uimanager.NativeViewHierarchyManager]. It is used to configure
- * onInterceptTouch event listener which then is used to control touch event flow in cases in which
- * they requested to be intercepted by some parent view based on a JS gesture detector.
+ * This interface should be implemented by all [ViewGroup] subviews managed by React Native. It is
+ * used to configure onInterceptTouch event listener which then is used to control touch event flow
+ * in cases in which they requested to be intercepted by some parent view based on a JS gesture
+ * detector.
  */
 internal interface ReactInterceptingViewGroup {
 

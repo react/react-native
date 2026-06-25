@@ -10,8 +10,8 @@
 
 'use strict';
 
-const {create} = require('../../../../jest/renderer');
 const StatusBar = require('../StatusBar').default;
+const {create} = require('@react-native/jest-preset/jest/renderer');
 const React = require('react');
 
 describe('StatusBar', () => {
@@ -46,6 +46,33 @@ describe('StatusBar', () => {
     expect(component.toTree()?.type._defaultProps.barStyle.animated).toBe(
       false,
     );
+  });
+  it('resolves auto barStyle against the current color scheme', () => {
+    const Appearance = require('../../../Utilities/Appearance');
+    const Platform = require('../../../Utilities/Platform').default;
+
+    const nativeStatusBarManager =
+      Platform.OS === 'ios'
+        ? require('../NativeStatusBarManagerIOS').default
+        : require('../NativeStatusBarManagerAndroid').default;
+
+    const appearanceSpy = jest.spyOn(Appearance, 'getColorScheme');
+    const setStyleSpy = jest.spyOn(nativeStatusBarManager, 'setStyle');
+
+    appearanceSpy.mockReturnValue('light');
+    setStyleSpy.mockClear();
+
+    StatusBar.setBarStyle('auto');
+    expect(setStyleSpy.mock.calls[0][0]).toBe('dark-content');
+
+    appearanceSpy.mockReturnValue('dark');
+    setStyleSpy.mockClear();
+
+    StatusBar.setBarStyle('auto');
+    expect(setStyleSpy.mock.calls[0][0]).toBe('light-content');
+
+    appearanceSpy.mockRestore();
+    setStyleSpy.mockRestore();
   });
   it('renders the statusbar but should not be visible', async () => {
     const component = await create(<StatusBar hidden={true} />);

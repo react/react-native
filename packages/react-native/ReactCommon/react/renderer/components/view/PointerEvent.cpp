@@ -98,6 +98,8 @@ std::vector<DebugStringConvertibleObject> getDebugProps(
        .value = getDebugDescription(pointerEvent.isPrimary, options)},
       {.name = "button",
        .value = getDebugDescription(pointerEvent.button, options)},
+      {.name = "timeStamp",
+       .value = getDebugDescription(pointerEvent.timeStamp, options)},
   };
 }
 

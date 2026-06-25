@@ -73,12 +73,12 @@ async function runPodDeintegrate(
 async function runIosPrebuild(
   reactNativePath /*: string */,
 ) /*: Promise<void> */ {
-  console.log('Running iOS prebuild with nightly versions...');
+  console.log('Running iOS prebuild with prebuilt versions...');
 
   const env = {
     ...process.env,
     RN_DEP_VERSION: 'nightly',
-    HERMES_VERSION: 'nightly',
+    HERMES_VERSION: 'latest-v1',
   };
 
   try {

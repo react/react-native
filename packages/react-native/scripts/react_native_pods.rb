@@ -75,10 +75,13 @@ def use_react_native! (
   error_if_try_to_use_jsc_from_core()
   warn_if_new_arch_disabled()
 
-  hermes_enabled= true
+  react_native_path = Pod::Config.instance.installation_root.join(path)
+  prefix = react_native_path.relative_path_from(Pod::Config.instance.installation_root)
+
+  hermes_enabled= !use_third_party_jsc()
   # Set the app_path as env variable so the podspecs can access it.
   ENV['APP_PATH'] = app_path
-  ENV['REACT_NATIVE_PATH'] = path
+  ENV['REACT_NATIVE_PATH'] = react_native_path.to_s
 
   # We set RCT_SKIP_CODEGEN to true, if the user wants to skip the running Codegen step from Cocoapods.
   # This is needed as part of our migration away from cocoapods
@@ -94,23 +97,23 @@ def use_react_native! (
 
   ReactNativePodsUtils.check_minimum_required_xcode()
 
+  # Enable Hermes V1 by default. Keep the env var setup for backward compatibility.
+  ENV['RCT_HERMES_V1_ENABLED'] = '1'
+
   # Current target definition is provided by Cocoapods and it refers to the target
   # that has invoked the `use_react_native!` function.
   ReactNativePodsUtils.detect_use_frameworks(current_target_definition)
 
-  CodegenUtils.clean_up_build_folder(path, $CODEGEN_OUTPUT_DIR)
+  CodegenUtils.clean_up_build_folder(react_native_path, $CODEGEN_OUTPUT_DIR)
 
   # We are relying on this flag also in third parties libraries to proper install dependencies.
   # Better to rely and enable this environment flag if the new architecture is turned on using flags.
-  relative_path_from_current = Pod::Config.instance.installation_root.relative_path_from(Pathname.pwd)
-  react_native_version = NewArchitectureHelper.extract_react_native_version(File.join(relative_path_from_current, path))
+  react_native_version = NewArchitectureHelper.extract_react_native_version(react_native_path)
   fabric_enabled = true
 
   ENV['RCT_FABRIC_ENABLED'] = "1"
   ENV['RCT_AGGREGATE_PRIVACY_FILES'] = privacy_file_aggregation_enabled ? "1" : "0"
   ENV["RCT_NEW_ARCH_ENABLED"] = "1"
-
-  prefix = path
 
   ReactNativePodsUtils.warn_if_not_on_arm64()
 
@@ -152,6 +155,8 @@ def use_react_native! (
   pod 'React-microtasksnativemodule', :path => "#{prefix}/ReactCommon/react/nativemodule/microtasks"
   pod 'React-idlecallbacksnativemodule', :path => "#{prefix}/ReactCommon/react/nativemodule/idlecallbacks"
   pod 'React-intersectionobservernativemodule', :path => "#{prefix}/ReactCommon/react/nativemodule/intersectionobserver"
+  pod 'React-mutationobservernativemodule', :path => "#{prefix}/ReactCommon/react/nativemodule/mutationobserver"
+  pod 'React-viewtransitionnativemodule', :path => "#{prefix}/ReactCommon/react/nativemodule/viewtransition"
   pod 'React-webperformancenativemodule', :path => "#{prefix}/ReactCommon/react/nativemodule/webperformance"
   pod 'React-domnativemodule', :path => "#{prefix}/ReactCommon/react/nativemodule/dom"
   pod 'React-defaultsnativemodule', :path => "#{prefix}/ReactCommon/react/nativemodule/defaults"
@@ -162,6 +167,7 @@ def use_react_native! (
   pod 'React-jsi', :path => "#{prefix}/ReactCommon/jsi"
   pod 'RCTSwiftUI', :path => "#{prefix}/ReactApple/RCTSwiftUI"
   pod 'RCTSwiftUIWrapper', :path => "#{prefix}/ReactApple/RCTSwiftUIWrapper"
+  pod 'React-RCTAnimatedModuleProvider', :path => "#{prefix}/ReactApple/RCTAnimatedModuleProvider"
 
   if hermes_enabled
     setup_hermes!(:react_native_path => prefix)
@@ -524,7 +530,29 @@ def react_native_post_install(
   ReactNativePodsUtils.fix_library_search_paths(installer)
   ReactNativePodsUtils.update_search_paths(installer)
   ReactNativePodsUtils.set_build_setting(installer, build_setting: "USE_HERMES", value: use_hermes())
-  ReactNativePodsUtils.set_build_setting(installer, build_setting: "REACT_NATIVE_PATH", value: File.join("${PODS_ROOT}", "..", react_native_path))
+  # Compute REACT_NATIVE_PATH relative to PODS_ROOT using real (physical)
+  # paths, so the relative traversal is correct even when Pods/ is a symlink.
+  pods_dir_real = Pathname.new(Pod::Config.instance.sandbox_root.to_s).realpath
+  rn_absolute = File.expand_path(react_native_path, Pod::Config.instance.installation_root.to_s)
+  rn_real = Pathname.new(rn_absolute).realpath
+  rn_relative_to_pods = rn_real.relative_path_from(pods_dir_real)
+  ReactNativePodsUtils.set_build_setting(installer, build_setting: "REACT_NATIVE_PATH", value: File.join("${PODS_ROOT}", rn_relative_to_pods.to_s))
+  # Store the Podfile directory as a build setting so that shell scripts can
+  # locate it without hardcoding an absolute path. Use Xcode variable
+  # substitution per-project so the value persisted in project.pbxproj is
+  # portable across machines: $(SRCROOT) is the Podfile dir for user projects
+  # (also avoids the PODS_ROOT/.. traversal that breaks when Pods/ is a
+  # symlink), and $(SRCROOT)/.. for the Pods project.
+  installer.aggregate_targets.map(&:user_project).uniq(&:path).each do |user_project|
+    user_project.build_configurations.each do |config|
+      config.build_settings['PODFILE_DIR'] = '$(SRCROOT)'
+    end
+    user_project.save
+  end
+  installer.pods_project.build_configurations.each do |config|
+    config.build_settings['PODFILE_DIR'] = '$(SRCROOT)/..'
+  end
+  installer.pods_project.save
   ReactNativePodsUtils.set_build_setting(installer, build_setting: "SWIFT_ACTIVE_COMPILATION_CONDITIONS", value: ['$(inherited)', 'DEBUG'], config_name: "Debug")
 
   if (ENV['RCT_REMOVE_LEGACY_ARCH'] == '1')
@@ -542,6 +570,13 @@ def react_native_post_install(
     # In XCode 26 we need to revert the new setting SWIFT_ENABLE_EXPLICIT_MODULES when building
     # with precompiled binaries.
     ReactNativePodsUtils.set_build_setting(installer, build_setting: "SWIFT_ENABLE_EXPLICIT_MODULES", value: "NO")
+
+    # Process the VFS overlay for prebuilt React Native Core - this is done as part of the post install so
+    # that we can update paths based on the final location of the Pods installation.
+    ReactNativeCoreUtils.process_vfs_overlay()
+
+    # Configure xcconfig for prebuilt usage (VFS overlay, header paths, cleanup redundant paths)
+    ReactNativeCoreUtils.configure_aggregate_xcconfig(installer)
   end
 
   SPM.apply_on_post_install(installer)

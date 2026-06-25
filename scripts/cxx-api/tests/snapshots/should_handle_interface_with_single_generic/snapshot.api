@@ -1,0 +1,5 @@
+interface RCTGenericDelegateSplitter<DelegateT> : public NSObject {
+  public @property (copy) void(^delegateUpdateBlock)(DelegateT _Nullable delegate);
+  public virtual void addDelegate:(DelegateT delegate);
+  public virtual void removeDelegate:(DelegateT delegate);
+}

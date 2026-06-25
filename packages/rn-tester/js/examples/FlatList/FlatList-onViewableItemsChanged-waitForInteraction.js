@@ -15,7 +15,7 @@ import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 import {FlatList_BaseOnViewableItemsChanged} from './FlatList-BaseOnViewableItemsChanged';
 import * as React from 'react';
 
-export default ({
+export default {
   title: 'onViewableItemsChanged',
   name: 'onViewableItemsChanged-waitForInteraction',
   description: 'E2E Test:\nonViewableItemsChanged-waitForInteraction',
@@ -23,4 +23,4 @@ export default ({
   render: () => (
     <FlatList_BaseOnViewableItemsChanged waitForInteraction={true} />
   ),
-}: RNTesterModuleExample);
+} as RNTesterModuleExample;

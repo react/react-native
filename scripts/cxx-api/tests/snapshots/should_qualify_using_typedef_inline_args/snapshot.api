@@ -1,0 +1,10 @@
+struct test::Container {
+  public using Callback = void(test::Param);
+  public using Processor = test::Result(test::Param, int);
+}
+
+struct test::Param {
+}
+
+struct test::Result {
+}

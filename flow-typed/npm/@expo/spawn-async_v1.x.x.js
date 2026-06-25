@@ -38,7 +38,7 @@ declare module '@expo/spawn-async' {
 
   declare function spawnAsync(
     command: string,
-    args?: $ReadOnlyArray<string>,
+    args?: ReadonlyArray<string>,
     options?: SpawnOptions,
   ): SpawnPromise<SpawnResult>;
 

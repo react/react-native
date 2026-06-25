@@ -84,11 +84,16 @@ void MapBufferBuilder::putLong(MapBuffer::Key key, int64_t value) {
 }
 
 void MapBufferBuilder::putString(MapBuffer::Key key, const std::string& value) {
-  auto strSize = value.size();
+  // The wire format encodes lengths and offsets as int32_t (see
+  // MapBuffer::getString). Without an explicit narrowing cast, `auto` deduces
+  // size_t (8 bytes on 64-bit) and `memcpy(&x, ..., INT_SIZE)` then copies only
+  // the first 4 bytes of an 8-byte value: silent truncation on little-endian,
+  // wrong (high) bytes on big-endian.
+  auto strSize = static_cast<int32_t>(value.size());
   const char* strData = value.data();
 
   // format [length of string (int)] + [Array of Characters in the string]
-  auto offset = dynamicData_.size();
+  auto offset = static_cast<int32_t>(dynamicData_.size());
   dynamicData_.resize(offset + INT_SIZE + strSize, 0);
   memcpy(dynamicData_.data() + offset, &strSize, INT_SIZE);
   memcpy(dynamicData_.data() + offset + INT_SIZE, strData, strSize);
@@ -102,9 +107,12 @@ void MapBufferBuilder::putString(MapBuffer::Key key, const std::string& value) {
 }
 
 void MapBufferBuilder::putMapBuffer(MapBuffer::Key key, const MapBuffer& map) {
-  auto mapBufferSize = map.size();
+  // Wire format encodes lengths and offsets as int32_t (see
+  // MapBuffer::getMapBuffer). Cast explicitly so memcpy(&x, ..., INT_SIZE)
+  // copies the full value, not the first 4 bytes of an 8-byte size_t.
+  auto mapBufferSize = static_cast<int32_t>(map.size());
 
-  auto offset = dynamicData_.size();
+  auto offset = static_cast<int32_t>(dynamicData_.size());
 
   // format [length of buffer (int)] + [bytes of MapBuffer]
   dynamicData_.resize(offset + INT_SIZE + mapBufferSize, 0);

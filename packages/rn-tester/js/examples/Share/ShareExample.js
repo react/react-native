@@ -13,7 +13,7 @@
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 
 import RNTesterText from '../../components/RNTesterText';
-import React from 'react';
+import * as React from 'react';
 import {useState} from 'react';
 import {Button, Share, StyleSheet, View} from 'react-native';
 
@@ -22,7 +22,7 @@ const shareMessage = () => {
   Share.share({
     message:
       ('Our top priority for React Native is to match the expectations people have for each platform. This is why React Native renders to platform primitives. We value native look-and-feel over cross-platform consistency.' +
-        'For example, the TextInput in React Native renders to a UITextField on iOS. This ensures that integration with password managers and keyboard controls work out of the box. By using platform primitives, React Native apps are also able to stay up-to-date with design and behavior changes from new releases of Android and iOS.': string),
+        'For example, the TextInput in React Native renders to a UITextField on iOS. This ensures that integration with password managers and keyboard controls work out of the box. By using platform primitives, React Native apps are also able to stay up-to-date with design and behavior changes from new releases of Android and iOS.') as string,
   });
 };
 
@@ -33,7 +33,7 @@ const shareText = () => {
       title: 'Massive Scale',
       message:
         ('Hundreds of screens in the Facebook app are implemented with React Native. The Facebook app is used by billions of people on a huge range of devices. This is why we invest in the most challenging problems at scale.' +
-          'Deploying React Native in our apps lets us identify problems that we wouldn’t see at a smaller scale. For example, Facebook focuses on improving performance across a broad spectrum of devices from the newest iPhone to many older generations of Android devices. This focus informs our architecture projects such as Hermes, Fabric, and TurboModules.': string),
+          'Deploying React Native in our apps lets us identify problems that we wouldn’t see at a smaller scale. For example, Facebook focuses on improving performance across a broad spectrum of devices from the newest iPhone to many older generations of Android devices. This focus informs our architecture projects such as Hermes, Fabric, and TurboModules.') as string,
       url: 'https://reactnative.dev/blog/2020/07/17/react-native-principles',
     },
     {
@@ -92,7 +92,7 @@ const SharedAction = () => {
         {
           title: 'Create native apps',
           message:
-            ('React Native combines the best parts of native development with React, a best-in-class JavaScript library for building user interfaces.': string),
+            'React Native combines the best parts of native development with React, a best-in-class JavaScript library for building user interfaces.' as string,
           url: 'https://reactnative.dev/',
         },
         {

@@ -102,14 +102,7 @@ async function testRNTesterIOS(
     exec(`unzip ${hermesAppZipPath} -d ${appOutputFolder}`);
 
     // boot device
-    const bootedDevice = String(
-      exec('xcrun simctl list | grep "iPhone 16 Pro" | grep Booted', {
-        silent: true,
-      }),
-    ).trim();
-    if (!bootedDevice || bootedDevice.length === 0) {
-      exec('xcrun simctl boot "iPhone 16 Pro"');
-    }
+    bootSimulatorIfNeeded();
 
     // install app on device
     exec(`xcrun simctl install booted ${appOutputFolder}`);
@@ -118,12 +111,13 @@ async function testRNTesterIOS(
       `USE_HERMES=1 CI=${onReleaseBranch.toString()} RCT_NEW_ARCH_ENABLED=1 bundle exec pod install --ansi`,
     );
 
+    // boot device
+    bootSimulatorIfNeeded();
+
     // build the app on iOS simulator
     exec(
       'xcodebuild -workspace RNTesterPods.xcworkspace -scheme RNTester -sdk "iphonesimulator" -destination "generic/platform=iOS Simulator" -derivedDataPath "/tmp/RNTesterBuild"',
     );
-    // boot device
-    exec('xcrun simctl boot "iPhone 16 Pro"');
     // install app on device
     exec(
       'xcrun simctl install booted "/tmp/RNTesterBuild/Build/Products/Debug-iphonesimulator/RNTester.app"',
@@ -298,7 +292,7 @@ async function testRNTestProject(
 
   // need to do this here so that Android will be properly setup either way
   exec(
-    `echo "react.internal.mavenLocalRepo=${mavenLocalPath}" >> android/gradle.properties`,
+    `echo -e "\nreact.internal.mavenLocalRepo=${mavenLocalPath}" >> android/gradle.properties`,
   );
 
   // Only build the simulator architecture. CI is however generating only that one.
@@ -322,6 +316,41 @@ async function testRNTestProject(
     exec('npm run android');
   }
   popd();
+}
+
+function bootSimulatorIfNeeded() {
+  const bootedDevices = String(
+    exec('xcrun simctl list devices booted', {silent: true}),
+  ).trim();
+  // Check if there is at least one booted device by looking for a line with a UDID
+  if (/\([A-F0-9-]+\)/i.test(bootedDevices)) {
+    console.info('An iOS simulator is already booted, skipping boot.');
+    return;
+  }
+
+  // Find the latest available iPhone simulator by picking the last iOS runtime
+  // and the first iPhone device listed under it.
+  const devicesJson = JSON.parse(
+    String(
+      exec('xcrun simctl list devices iPhone available -j', {silent: true}),
+    ),
+  );
+  const runtimes = Object.keys(devicesJson.devices)
+    .filter(r => r.startsWith('com.apple.CoreSimulator.SimRuntime.iOS'))
+    .sort();
+  const latestRuntime = runtimes[runtimes.length - 1];
+  const device =
+    latestRuntime != null
+      ? devicesJson.devices[latestRuntime].find(d => d.name.includes('iPhone'))
+      : null;
+
+  if (device != null) {
+    console.info(`Booting ${device.name} (${latestRuntime})...`);
+    exec(`xcrun simctl boot "${device.udid}"`);
+  } else {
+    console.error('No available iPhone simulator found.');
+    process.exit(1);
+  }
 }
 
 async function main() {

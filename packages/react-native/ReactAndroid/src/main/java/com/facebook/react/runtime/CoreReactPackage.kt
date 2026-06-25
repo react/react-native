@@ -20,6 +20,7 @@ import com.facebook.react.module.model.ReactModuleInfoProvider
 import com.facebook.react.modules.core.DefaultHardwareBackBtnHandler
 import com.facebook.react.modules.core.DeviceEventManagerModule
 import com.facebook.react.modules.core.ExceptionsManagerModule
+import com.facebook.react.modules.core.HeadlessJsTaskSupportModule
 import com.facebook.react.modules.debug.DevMenuModule
 import com.facebook.react.modules.debug.DevSettingsModule
 import com.facebook.react.modules.debug.SourceCodeModule
@@ -38,6 +39,7 @@ import java.util.HashMap
             LogBoxModule::class,
             DeviceEventManagerModule::class,
             ExceptionsManagerModule::class,
+            HeadlessJsTaskSupportModule::class,
         ]
 )
 internal class CoreReactPackage(
@@ -57,6 +59,7 @@ internal class CoreReactPackage(
 
         LogBoxModule.NAME -> LogBoxModule(reactContext, devSupportManager)
         ExceptionsManagerModule.NAME -> ExceptionsManagerModule(devSupportManager)
+        HeadlessJsTaskSupportModule.NAME -> HeadlessJsTaskSupportModule(reactContext)
         else -> null
       }
 
@@ -96,6 +99,7 @@ internal class CoreReactPackage(
             DeviceEventManagerModule::class.java,
             LogBoxModule::class.java,
             ExceptionsManagerModule::class.java,
+            HeadlessJsTaskSupportModule::class.java,
         )
     val reactModuleInfoMap: MutableMap<String, ReactModuleInfo> = HashMap()
     for (moduleClass in moduleList) {

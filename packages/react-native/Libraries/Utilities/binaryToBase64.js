@@ -24,7 +24,7 @@ function binaryToBase64(data: ArrayBuffer | $ArrayBufferView): string {
     throw new Error('data must be ArrayBuffer or typed array');
   }
   // Already checked that `data` is `DataView` in `ArrayBuffer.isView(data)`
-  const {buffer, byteOffset, byteLength}: DataView = (data: $FlowFixMe);
+  const {buffer, byteOffset, byteLength}: DataView = data as $FlowFixMe;
   return base64.fromByteArray(new Uint8Array(buffer, byteOffset, byteLength));
 }
 

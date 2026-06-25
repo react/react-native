@@ -4,33 +4,11 @@ inputs:
   xcode-version:
     description: 'The xcode version to use'
     required: false
-    default: '16.2.0'
-  platform:
-    description: 'The platform to use. Valid values are: ios, ios-simulator, macos, mac-catalyst, tvos, tvos-simulator, xros, xros-simulator'
-    required: false
-    default: 'macos'
+    default: '16.4.0'
 runs:
-  using: "composite"
+  using: 'composite'
   steps:
     - name: Setup xcode
       uses: maxim-lobanov/setup-xcode@60606e260d2fc5762a71e64e74b2174e8ea3c8bd
       with:
         xcode-version: ${{ inputs.xcode-version }}
-    - name: Setup Platform ${{ inputs.platform }}
-      if: ${{ inputs.platform != 'macos' && inputs.platform != 'mac-catalyst' }}
-      shell: bash
-      run: |
-        # https://github.com/actions/runner-images/issues/12541
-        sudo xcodebuild -runFirstLaunch
-        sudo xcrun simctl list
-
-        # Install platform based on the platform
-        if [[ "${{ inputs.platform }}" == "xros" || "${{ inputs.platform }}" == "xros-simulator" ]]; then
-          sudo xcodebuild -downloadPlatform visionOS
-        elif [[ "${{ inputs.platform }}" == "tvos" || "${{ inputs.platform }}" == "tvos-simulator" ]]; then
-          sudo xcodebuild -downloadPlatform tvOS
-        else
-          sudo xcodebuild -downloadPlatform iOS
-        fi
-
-        sudo xcodebuild -runFirstLaunch

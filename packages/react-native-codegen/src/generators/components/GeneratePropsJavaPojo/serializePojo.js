@@ -108,7 +108,7 @@ function toJavaType(
           return '@Nullable YogaValue';
 
         default:
-          (typeAnnotation.name: empty);
+          typeAnnotation.name as empty;
           throw new Error(
             `Received unknown ReservedPropTypeAnnotation ${typeAnnotation.name}`,
           );
@@ -201,7 +201,7 @@ function toJavaType(
                 return 'YogaValue';
 
               default:
-                (elementType.name: empty);
+                elementType.name as empty;
                 throw new Error(
                   `Received unknown ReservedPropTypeAnnotation ${elementType.name}`,
                 );
@@ -216,7 +216,7 @@ function toJavaType(
             return `ArrayList<${pojoTypeAliasTypeAnnotation.name}>`;
           }
           default: {
-            (elementType.type: empty);
+            elementType.type as empty;
             throw new Error(
               `Unrecognized PojoTypeAnnotation Array element type annotation '${elementType.type}'`,
             );
@@ -234,7 +234,7 @@ function toJavaType(
     }
 
     default: {
-      (typeAnnotation.type: empty);
+      typeAnnotation.type as empty;
       throw new Error(
         `Unrecognized PojoTypeAnnotation '${typeAnnotation.type}'`,
       );

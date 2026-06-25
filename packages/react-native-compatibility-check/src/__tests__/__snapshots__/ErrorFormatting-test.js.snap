@@ -42,6 +42,13 @@ Object {
 }
 `;
 
+exports[`codegen formattedSummarizeDiffSet allows a diff from native-module-with-union-object-added/NativeModule to native-module-with-union-object/NativeModule 1`] = `
+Object {
+  "incompatibilityReport": Object {},
+  "status": "ok",
+}
+`;
+
 exports[`codegen formattedSummarizeDiffSet reports a diff from native-component-with-command/NativeComponent to native-component-with-command-extra-arg/NativeComponent 1`] = `
 Object {
   "incompatibilityReport": Object {
@@ -194,9 +201,13 @@ Object {
       "framework": "ReactNative",
       "incompatibleSpecs": Array [
         Object {
-          "errorCode": "addedUnionCases",
-          "message": "NativeComponent.sizes: Union added items, but native will not expect/support them
-  -- Member \\"huge\\"",
+          "errorCode": "addedMemberCases",
+          "message": "NativeComponent: Object contained a property with a type mismatch
+  -- sizes: has conflicting type changes
+      --new: (small | large | huge)
+      --old: (small | large)
+      Union added items, but native will not expect/support them
+          -- Member \\"huge\\"",
         },
       ],
     },
@@ -235,9 +246,13 @@ Object {
       "framework": "ReactNative",
       "incompatibleSpecs": Array [
         Object {
-          "errorCode": "addedUnionCases",
-          "message": "NativeComponent.size: Union added items, but native will not expect/support them
-  -- Member \\"huge\\"",
+          "errorCode": "addedMemberCases",
+          "message": "NativeComponent: Object contained a property with a type mismatch
+  -- size: has conflicting type changes
+      --new: (small | huge | large)
+      --old: (small | large)
+      Union added items, but native will not expect/support them
+          -- Member \\"huge\\"",
         },
       ],
     },
@@ -256,6 +271,7 @@ Object {
           "errorCode": "addedProps",
           "message": "NativeModuleTest: Object added required properties, which native will not provide
   -- afterMismatchGeneric
+  -- arrayBufferType
   -- booleanType
   -- exampleFunction
   -- simpleArray
@@ -344,8 +360,18 @@ Object {
       "incompatibleSpecs": Array [
         Object {
           "errorCode": "optionalProps",
-          "message": "NativeModuleTest.exampleFunction parameter 0: Property made optional, but native requires it
-  -- a2",
+          "message": "NativeModuleTest: Object contained a property with a type mismatch
+  -- exampleFunction: has conflicting type changes
+      --new: (a: {a1: string, a2?: number, a3: string}, b: number)=>void
+      --old: (a: {a1: string, a2: number}, b: number)=>void
+      Parameter at index 0 did not match
+          --new: {a1: string, a2?: number, a3: string}
+          --old: {a1: string, a2: number}
+          Object has property changes
+              --new: {a1: string, a2?: number, a3: string}
+              --old: {a1: string, a2: number}
+              Property made optional, but native requires it
+              -- a2",
         },
       ],
     },
@@ -391,8 +417,18 @@ Object {
       "incompatibleSpecs": Array [
         Object {
           "errorCode": "removedProps",
-          "message": "NativeModuleTest.exampleFunction parameter 0: Object removed required properties expected by native
-  -- a3",
+          "message": "NativeModuleTest: Object contained a property with a type mismatch
+  -- exampleFunction: has conflicting type changes
+      --new: (a: {a1: string, a2: number}, b: number)=>void
+      --old: (a: {a1: string, a2: number, a3: string}, b: number)=>void
+      Parameter at index 0 did not match
+          --new: {a1: string, a2: number}
+          --old: {a1: string, a2: number, a3: string}
+          Object has property changes
+              --new: {a1: string, a2: number}
+              --old: {a1: string, a2: number, a3: string}
+              Object removed required properties expected by native
+              -- a3",
         },
       ],
     },
@@ -409,8 +445,18 @@ Object {
       "incompatibleSpecs": Array [
         Object {
           "errorCode": "optionalProps",
-          "message": "NativeModuleTest.exampleFunction parameter 0: Property made optional, but native requires it
-  -- a2",
+          "message": "NativeModuleTest: Object contained a property with a type mismatch
+  -- exampleFunction: has conflicting type changes
+      --new: (a: {a1: string, a2?: number, a3: string}, b: number)=>void
+      --old: (a: {a1: string, a2: number, a3: string}, b: number)=>void
+      Parameter at index 0 did not match
+          --new: {a1: string, a2?: number, a3: string}
+          --old: {a1: string, a2: number, a3: string}
+          Object has property changes
+              --new: {a1: string, a2?: number, a3: string}
+              --old: {a1: string, a2: number, a3: string}
+              Property made optional, but native requires it
+              -- a2",
         },
       ],
     },
@@ -427,9 +473,16 @@ Object {
       "incompatibleSpecs": Array [
         Object {
           "errorCode": "nullableOfNonNull",
-          "message": "NativeModuleTest.exampleFunction parameter 0: Type made nullable, but native requires it
-  --new: ?{a1: string, a2?: number, a3: string}
-  --old: {a1: string, a2?: number, a3: string}",
+          "message": "NativeModuleTest: Object contained a property with a type mismatch
+  -- exampleFunction: has conflicting type changes
+      --new: (a: ?{a1: string, a2?: number, a3: string}, b: number)=>void
+      --old: (a: {a1: string, a2?: number, a3: string}, b: number)=>void
+      Parameter at index 0 did not match
+          --new: ?{a1: string, a2?: number, a3: string}
+          --old: {a1: string, a2?: number, a3: string}
+          Type made nullable, but native requires it
+              --new: ?{a1: string, a2?: number, a3: string}
+              --old: {a1: string, a2?: number, a3: string}",
         },
       ],
     },
@@ -471,9 +524,16 @@ Object {
       "framework": "ReactNative",
       "incompatibleSpecs": Array [
         Object {
-          "errorCode": "addedEnumCases",
-          "message": "NativeModuleTest.exampleFunction parameter 0: Enum added items, but native will not expect/support them
-  -- Member D",
+          "errorCode": "addedMemberCases",
+          "message": "NativeModuleTest: Object contained a property with a type mismatch
+  -- exampleFunction: has conflicting type changes
+      --new: (a: Enum<number>, b: number)=>void
+      --old: (a: Enum<number>, b: number)=>void
+      Parameter at index 0 did not match
+          --new: Enum<number> {A = 1, B = 2, C = 3, D = 4}
+          --old: Enum<number> {A = 1, B = 2, C = 3}
+          Enum added items, but native will not expect/support them
+              -- Member D",
         },
       ],
     },
@@ -489,9 +549,17 @@ Object {
       "framework": "ReactNative",
       "incompatibleSpecs": Array [
         Object {
-          "errorCode": "removedEnumCases",
-          "message": "NativeModuleTest.getConstants.exampleConstant: Enum removed items, but native may still provide them
-  -- Member D",
+          "errorCode": "removedMemberCases",
+          "message": "NativeModuleTest: Object contained a property with a type mismatch
+  -- getConstants: has conflicting type changes
+      --new: ()=>{exampleConstant: Enum<number>}
+      --old: ()=>{exampleConstant: Enum<number>}
+      Object contained a property with a type mismatch
+          -- exampleConstant: has conflicting type changes
+              --new: Enum<number> {A = 1, B = 2, C = 3}
+              --old: Enum<number> {A = 1, B = 2, C = 3, D = 4}
+              Enum removed items, but native may still provide them
+                  -- Member D",
         },
       ],
     },
@@ -709,9 +777,16 @@ Object {
       "framework": "ReactNative",
       "incompatibleSpecs": Array [
         Object {
-          "errorCode": "addedUnionCases",
-          "message": "NativeModuleTest.exampleFunction parameter 0: Union added items, but native will not expect/support them
-  -- Member \\"d\\"",
+          "errorCode": "addedMemberCases",
+          "message": "NativeModuleTest: Object contained a property with a type mismatch
+  -- exampleFunction: has conflicting type changes
+      --new: (a: (a | b | c | d), b: number)=>void
+      --old: (a: (a | b | c), b: number)=>void
+      Parameter at index 0 did not match
+          --new: (a | b | c | d)
+          --old: (a | b | c)
+          Union added items, but native will not expect/support them
+              -- Member \\"d\\"",
         },
       ],
     },
@@ -753,10 +828,17 @@ Object {
       "framework": "ReactNative",
       "incompatibleSpecs": Array [
         Object {
-          "errorCode": "addedUnionCases",
-          "message": "NativeModuleTest.exampleFunction parameter 0: Union added items, but native will not expect/support them
-  -- Member \\"b\\"
-  -- Member \\"c\\"",
+          "errorCode": "addedMemberCases",
+          "message": "NativeModuleTest: Object contained a property with a type mismatch
+  -- exampleFunction: has conflicting type changes
+      --new: (a: (a | b | c), b: number)=>void
+      --old: (a: (a | '0' | '1' | 'a long string'), b: number)=>void
+      Parameter at index 0 did not match
+          --new: (a | b | c)
+          --old: (a | '0' | '1' | 'a long string')
+          Union added items, but native will not expect/support them
+              -- Member \\"b\\"
+              -- Member \\"c\\"",
         },
       ],
     },
@@ -772,9 +854,17 @@ Object {
       "framework": "ReactNative",
       "incompatibleSpecs": Array [
         Object {
-          "errorCode": "removedUnionCases",
-          "message": "NativeModuleTest.getConstants.exampleConstant: Union removed items, but native may still provide them
-  -- Member \\"d\\"",
+          "errorCode": "removedMemberCases",
+          "message": "NativeModuleTest: Object contained a property with a type mismatch
+  -- getConstants: has conflicting type changes
+      --new: ()=>{exampleConstant: (a | b | c)}
+      --old: ()=>{exampleConstant: (a | b | c | d)}
+      Object contained a property with a type mismatch
+          -- exampleConstant: has conflicting type changes
+              --new: (a | b | c)
+              --old: (a | b | c | d)
+              Union removed items, but native may still provide them
+                  -- Member \\"d\\"",
         },
       ],
     },
@@ -809,6 +899,31 @@ Object {
 }
 `;
 
+exports[`codegen formattedSummarizeDiffSet reports a diff from native-module-with-union-object/NativeModule to native-module-with-union-object-added/NativeModule 1`] = `
+Object {
+  "incompatibilityReport": Object {
+    "NativeModule": Object {
+      "framework": "ReactNative",
+      "incompatibleSpecs": Array [
+        Object {
+          "errorCode": "addedMemberCases",
+          "message": "NativeModuleTest: Object contained a property with a type mismatch
+  -- exampleFunction: has conflicting type changes
+      --new: (a: Union<mixed>, b: number)=>void
+      --old: (a: Union<mixed>, b: number)=>void
+      Parameter at index 0 did not match
+          --new: Union<mixed>
+          --old: Union<mixed>
+          Union added items, but native will not expect/support them
+              -- Member ObjectC",
+        },
+      ],
+    },
+  },
+  "status": "incompatible",
+}
+`;
+
 exports[`codegen formattedSummarizeDiffSet reports a diff from native-module-with-union-object-changes/NativeModule to native-module-with-union-object/NativeModule 1`] = `
 Object {
   "incompatibilityReport": Object {
@@ -816,9 +931,16 @@ Object {
       "framework": "ReactNative",
       "incompatibleSpecs": Array [
         Object {
-          "errorCode": "addedUnionCases",
-          "message": "NativeModuleTest.exampleFunction parameter 0: Union added items, but native will not expect/support them
-  -- Member TypeAliasTypeAnnotation",
+          "errorCode": "addedMemberCases",
+          "message": "NativeModuleTest: Object contained a property with a type mismatch
+  -- exampleFunction: has conflicting type changes
+      --new: (a: Union<mixed>, b: number)=>void
+      --old: (a: Union<mixed>, b: number)=>void
+      Parameter at index 0 did not match
+          --new: Union<mixed>
+          --old: Union<mixed>
+          Union added items, but native will not expect/support them
+              -- Member ObjectA",
         },
       ],
     },

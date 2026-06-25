@@ -9,15 +9,12 @@ package com.facebook.react.views.scroll
 
 import android.graphics.Rect
 import android.view.ViewGroup
-import android.view.ViewTreeObserver
-import com.facebook.common.logging.FLog
-import com.facebook.react.common.build.ReactBuildConfig
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import com.facebook.react.views.virtual.VirtualViewMode
 import java.util.*
 
 internal interface VirtualViewContainer {
-  public val virtualViewContainerState: VirtualViewContainerState
+  val virtualViewContainerState: VirtualViewContainerState
 }
 
 public interface VirtualView {
@@ -46,28 +43,27 @@ internal fun rectsOverlap(rect1: Rect, rect2: Rect): Boolean {
   return true
 }
 
-internal abstract class VirtualViewContainerState {
+/**
+ * Manages the state and visibility tracking of virtual views within a scroll container.
+ *
+ * Virtual views are lightweight representations of off-screen content that can transition between
+ * rendering modes (e.g., visible, prerendered, hidden) based on their position relative to the
+ * scroll viewport. Subclasses implement the specific strategy for tracking and updating these
+ * views.
+ *
+ * Use [create] to obtain an instance appropriate for the current feature flag configuration.
+ */
+public abstract class VirtualViewContainerState {
   protected val prerenderRatio: Double = ReactNativeFeatureFlags.virtualViewPrerenderRatio()
-  protected val hysteresisRatio: Double = ReactNativeFeatureFlags.virtualViewHysteresisRatio()
   protected abstract val virtualViews: MutableCollection<VirtualView>
   protected val emptyRect: Rect = Rect()
   protected val visibleRect: Rect = Rect()
   protected val prerenderRect: Rect = Rect()
-  protected val hysteresisRect: Rect = Rect()
-  protected val onWindowFocusChangeListener =
-      if (ReactNativeFeatureFlags.enableVirtualViewWindowFocusDetection()) {
-        ViewTreeObserver.OnWindowFocusChangeListener {
-          debugLog("onWindowFocusChanged")
-          updateModes()
-        }
-      } else {
-        null
-      }
   protected val scrollView: ViewGroup
 
-  companion object {
+  public companion object {
     @JvmStatic
-    fun create(scrollView: ViewGroup): VirtualViewContainerState {
+    public fun create(scrollView: ViewGroup): VirtualViewContainerState {
       return if (ReactNativeFeatureFlags.enableVirtualViewContainerStateExperimental()) {
         VirtualViewContainerStateExperimental(scrollView)
       } else {
@@ -76,45 +72,27 @@ internal abstract class VirtualViewContainerState {
     }
   }
 
-  constructor(scrollView: ViewGroup) {
+  public constructor(scrollView: ViewGroup) {
     this.scrollView = scrollView
-    if (onWindowFocusChangeListener != null) {
-      scrollView.viewTreeObserver.addOnWindowFocusChangeListener(onWindowFocusChangeListener)
-    }
   }
 
-  fun cleanup() {
-    if (onWindowFocusChangeListener != null) {
-      scrollView.viewTreeObserver.removeOnWindowFocusChangeListener(onWindowFocusChangeListener)
-    }
-  }
-
-  open fun onChange(virtualView: VirtualView) {
-    if (virtualViews.add(virtualView)) {
-      debugLog("add", { "virtualViewID=${virtualView.virtualViewID}" })
-    } else {
-      debugLog("update", { "virtualViewID=${virtualView.virtualViewID}" })
-    }
+  public open fun onChange(virtualView: VirtualView) {
+    virtualViews.add(virtualView)
     updateModes(virtualView)
   }
 
-  open fun remove(virtualView: VirtualView) {
+  public open fun remove(virtualView: VirtualView) {
     assert(virtualViews.remove(virtualView)) {
       "Attempting to remove non-existent VirtualView: ${virtualView.virtualViewID}"
     }
-    debugLog("remove", { "virtualViewID=${virtualView.virtualViewID}" })
   }
 
   // Called on ScrollView onLayout or onScroll
-  fun updateState() {
-    debugLog("updateState")
+  public fun updateState() {
     updateModes()
   }
 
-  /**
-   * Refreshes the coordinates for the Rects this class cares about (visibleRect, prerenderRect,
-   * hysteresisRect)
-   */
+  /** Refreshes the coordinates for the Rects this class cares about (visibleRect, prerenderRect) */
   protected fun updateRects() {
     scrollView.getDrawingRect(visibleRect)
 
@@ -122,11 +100,9 @@ internal abstract class VirtualViewContainerState {
     // intentionally goes but curently ScrollView and v1 Fling use this check to determine if
     // "content ready"
     if (visibleRect.isEmpty()) {
-      debugLog("updateRects", { "scrollView visibleRect is empty" })
       // should set the other rects here in case scrollview is suddenly empty after the other rects
       // are non-empty
       prerenderRect.set(visibleRect)
-      hysteresisRect.set(prerenderRect)
       return
     }
 
@@ -135,30 +111,7 @@ internal abstract class VirtualViewContainerState {
         (-prerenderRect.width() * prerenderRatio).toInt(),
         (-prerenderRect.height() * prerenderRatio).toInt(),
     )
-
-    hysteresisRect.set(prerenderRect)
-    hysteresisRect.inset(
-        (-visibleRect.width() * hysteresisRatio).toInt(),
-        (-visibleRect.height() * hysteresisRatio).toInt(),
-    )
-
-    debugLog(
-        "updateRects",
-        {
-          "visibleRect ${visibleRect.toString()} prerenderRect ${prerenderRect.toString()} hysteresisRect ${hysteresisRect.toString()}"
-        },
-    )
   }
 
   protected abstract fun updateModes(virtualView: VirtualView? = null)
-}
-
-private const val DEBUG_TAG: String = "VirtualViewContainerState"
-internal val IS_DEBUG_BUILD =
-    ReactBuildConfig.DEBUG || ReactBuildConfig.IS_INTERNAL_BUILD || ReactBuildConfig.ENABLE_PERFETTO
-
-private inline fun debugLog(subtag: String, block: () -> String = { "" }) {
-  if (IS_DEBUG_BUILD && ReactNativeFeatureFlags.enableVirtualViewDebugFeatures()) {
-    FLog.d("$DEBUG_TAG:$subtag", block())
-  }
 }

@@ -72,9 +72,9 @@ export const DEFAULT_FEATURE_FLAGS: FantomTestConfigFeatureFlags = {
 
 const FANTOM_FLAG_FORMAT = /^(\w+):((?:\w+)|\*)$/;
 
-const FANTOM_BENCHMARK_FILENAME_RE = /[Bb]enchmark-itest\./g;
+const FANTOM_BENCHMARK_FILENAME_RE = /[Bb]enchmark-itest\./;
 const FANTOM_BENCHMARK_SUITE_RE =
-  /\n(Fantom\.)?unstable_benchmark(\s*)\.suite\(/g;
+  /\n(Fantom\.)?unstable_benchmark(\s*)\.suite\(/;
 
 const MAX_FANTOM_CONFIGURATION_VARIATIONS = 12;
 
@@ -434,7 +434,7 @@ export default function getFantomTestConfigs(
 
 function getConfigurationVariations(
   config: FantomTestConfig,
-  variations: $ReadOnlyArray<$ReadOnlyArray<PartialFantomTestConfig>>,
+  variations: ReadonlyArray<ReadonlyArray<PartialFantomTestConfig>>,
 ): Array<FantomTestConfig> {
   if (variations.length === 0) {
     return [config];
@@ -485,7 +485,7 @@ function getConfigurationVariations(
   return results;
 }
 
-function parseFeatureFlagValue<T: boolean | number | string>(
+function parseFeatureFlagValue<T extends boolean | number | string>(
   defaultValue: T,
   value: string,
 ): T {

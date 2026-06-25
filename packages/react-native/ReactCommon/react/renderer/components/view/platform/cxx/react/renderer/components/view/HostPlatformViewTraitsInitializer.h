@@ -12,12 +12,12 @@
 
 namespace facebook::react::HostPlatformViewTraitsInitializer {
 
-inline bool formsStackingContext(const ViewProps &props)
+inline bool formsStackingContext(const ViewProps & /*props*/)
 {
   return false;
 }
 
-inline bool formsView(const ViewProps &props)
+inline bool formsView(const ViewProps & /*props*/)
 {
   return false;
 }

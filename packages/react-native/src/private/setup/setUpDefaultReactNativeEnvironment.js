@@ -47,4 +47,10 @@ export default function setUpDefaltReactNativeEnvironment(
   ) {
     require('./setUpIntersectionObserver').default();
   }
+
+  if (
+    require('../../../src/private/featureflags/ReactNativeFeatureFlags').enableMutationObserverByDefault()
+  ) {
+    require('./setUpMutationObserver').default();
+  }
 }

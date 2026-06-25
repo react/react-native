@@ -308,4 +308,12 @@ describe('ReactNativeDocument', () => {
       expect(document.getElementById('baz')).toBe(null);
     });
   });
+
+  describe('global constructor', () => {
+    it('throws when called', () => {
+      expect(() => new Document()).toThrow(
+        "Failed to construct 'Document': Nodes cannot be imperatively created in React Native",
+      );
+    });
+  });
 });

@@ -12,17 +12,7 @@
 
 @implementation RCTModuleRegistry {
   __weak id<RCTTurboModuleRegistry> _turboModuleRegistry;
-#ifndef RCT_REMOVE_LEGACY_ARCH
-  __weak RCTBridge *_bridge;
-#endif // RCT_REMOVE_LEGACY_ARCH
 }
-
-#ifndef RCT_REMOVE_LEGACY_ARCH
-- (void)setBridge:(RCTBridge *)bridge
-{
-  _bridge = bridge;
-}
-#endif // RCT_REMOVE_LEGACY_ARCH
 
 - (void)setTurboModuleRegistry:(id<RCTTurboModuleRegistry>)turboModuleRegistry
 {
@@ -38,13 +28,6 @@
 {
   id<RCTBridgeModule> module = nil;
 
-#ifndef RCT_REMOVE_LEGACY_ARCH
-  RCTBridge *bridge = _bridge;
-  if (bridge) {
-    module = [bridge moduleForName: [NSString stringWithUTF8String:moduleName] lazilyLoadIfNecessary:lazilyLoad];
-  }
-#endif // RCT_REMOVE_LEGACY_ARCH
-
   id<RCTTurboModuleRegistry> turboModuleRegistry = _turboModuleRegistry;
   if (module == nil && turboModuleRegistry && (lazilyLoad || [turboModuleRegistry moduleIsInitialized:moduleName])) {
     module = [turboModuleRegistry moduleForName:moduleName];
@@ -55,14 +38,6 @@
 
 - (BOOL)moduleIsInitialized:(Class)moduleClass
 {
-#ifndef RCT_REMOVE_LEGACY_ARCH
-  RCTBridge *bridge = _bridge;
-
-  if (bridge) {
-    return [bridge moduleIsInitialized:moduleClass];
-  }
-#endif // RCT_REMOVE_LEGACY_ARCH
-
   id<RCTTurboModuleRegistry> turboModuleRegistry = _turboModuleRegistry;
   if (turboModuleRegistry) {
     NSString *moduleName = RCTBridgeModuleNameForClass(moduleClass);

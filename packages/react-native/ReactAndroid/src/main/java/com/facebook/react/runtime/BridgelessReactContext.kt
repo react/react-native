@@ -17,10 +17,10 @@ import com.facebook.react.bridge.CatalystInstance
 import com.facebook.react.bridge.JavaScriptContextHolder
 import com.facebook.react.bridge.JavaScriptModule
 import com.facebook.react.bridge.JavaScriptModuleRegistry
-import com.facebook.react.bridge.NativeArray
 import com.facebook.react.bridge.NativeModule
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactSoftExceptionLogger.logSoftException
+import com.facebook.react.bridge.RuntimeExecutor
 import com.facebook.react.bridge.UIManager
 import com.facebook.react.common.annotations.FrameworkAPI
 import com.facebook.react.common.annotations.UnstableReactNativeAPI
@@ -49,8 +49,17 @@ internal class BridgelessReactContext(context: Context, private val reactHost: R
   private val sourceURLRef = AtomicReference<String>()
   private val TAG: String = this.javaClass.simpleName
 
+  val devSupportManager: DevSupportManager
+    get() = reactHost.devSupportManager
+
+  val defaultHardwareBackBtnHandler: DefaultHardwareBackBtnHandler
+    get() = reactHost.defaultBackButtonHandler
+
   init {
-    if (ReactNativeNewArchitectureFeatureFlags.useFabricInterop()) {
+    if (
+        !ReactBuildConfig.UNSTABLE_REMOVE_LEGACY_COMPONENT_INTEROP &&
+            ReactNativeNewArchitectureFeatureFlags.useFabricInterop()
+    ) {
       initializeInteropModules()
     }
   }
@@ -103,9 +112,6 @@ internal class BridgelessReactContext(context: Context, private val reactHost: R
 
   override fun destroy() = Unit
 
-  val devSupportManager: DevSupportManager
-    get() = reactHost.devSupportManager
-
   override fun registerSegment(segmentId: Int, path: String, callback: Callback) {
     reactHost.registerSegment(segmentId, path, callback)
   }
@@ -114,8 +120,8 @@ internal class BridgelessReactContext(context: Context, private val reactHost: R
       private val reactHost: ReactHostImpl,
       private val jsModuleInterface: Class<out JavaScriptModule>,
   ) : InvocationHandler {
-    override fun invoke(proxy: Any, method: Method, args: Array<Any?>): Any? {
-      val jsArgs: NativeArray = Arguments.fromJavaArgs(args)
+    override fun invoke(proxy: Any, method: Method, args: Array<Any?>?): Any? {
+      val jsArgs = if (args != null) Arguments.fromJavaArgs(args) else null
       reactHost.callFunctionOnModule(
           JavaScriptModuleRegistry.getJSModuleName(jsModuleInterface),
           method.name,
@@ -131,7 +137,7 @@ internal class BridgelessReactContext(context: Context, private val reactHost: R
         logSoftException(
             TAG,
             IllegalArgumentException(
-                "getJSModule(RCTEventEmitter) is not recommended in the new architecture and will stop working with interop disabled. Please use UIManagerHelper.getEventDispatcher or UIManagerHelper.getEventDispatcherForReactTag instead"
+                "getJSModule(RCTEventEmitter) is not recommended in the new architecture and will stop working with interop disabled. Please use UIManagerHelper.getEventDispatcher instead"
             ),
         )
       }
@@ -145,7 +151,7 @@ internal class BridgelessReactContext(context: Context, private val reactHost: R
             arrayOf<Class<*>>(jsInterface),
             BridgelessJSModuleInvocationHandler(reactHost, jsInterface),
         ) as JavaScriptModule
-    @Suppress("UNCHECKED_CAST")
+    @Suppress("UNCHECKED_CAST", "KotlinGenericsCast")
     return interfaceProxy as? T
   }
 
@@ -179,6 +185,5 @@ internal class BridgelessReactContext(context: Context, private val reactHost: R
 
   override fun getJSCallInvokerHolder(): CallInvokerHolder? = reactHost.jsCallInvokerHolder
 
-  val defaultHardwareBackBtnHandler: DefaultHardwareBackBtnHandler
-    get() = reactHost.defaultBackButtonHandler
+  override fun getRuntimeExecutor(): RuntimeExecutor? = reactHost.runtimeExecutor
 }

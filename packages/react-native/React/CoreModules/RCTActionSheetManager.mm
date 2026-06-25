@@ -7,16 +7,19 @@
 
 #import <React/RCTActionSheetManager.h>
 
+#import <FBReactNativeSpec/FBReactNativeSpec.h>
+
+#import "CoreModulesPlugins.h"
+
+#if !TARGET_OS_TV
+
 #import <React/RCTBridge.h>
 #import <React/RCTConvert.h>
 #import <React/RCTLog.h>
 #import <React/RCTUIManager.h>
 #import <React/RCTUtils.h>
 
-#import <FBReactNativeSpec/FBReactNativeSpec.h>
 #import <RCTTypeSafety/RCTConvertHelpers.h>
-
-#import "CoreModulesPlugins.h"
 
 using namespace facebook::react;
 
@@ -312,6 +315,28 @@ RCT_EXPORT_METHOD(
 }
 
 @end
+
+#else
+
+using namespace facebook::react;
+
+@implementation RCTActionSheetManager
+
+RCT_EXPORT_MODULE()
+
++ (BOOL)requiresMainQueueSetup
+{
+  return NO;
+}
+
+- (std::shared_ptr<TurboModule>)getTurboModule:(const ObjCTurboModule::InitParams &)params
+{
+  return std::make_shared<NativeActionSheetManagerSpecJSI>(params);
+}
+
+@end
+
+#endif
 
 Class RCTActionSheetManagerCls(void)
 {

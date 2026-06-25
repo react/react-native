@@ -10,7 +10,6 @@
 #import "RCTReactNativeFactory.h"
 #import "RCTRootViewFactory.h"
 
-@class RCTBridge;
 @protocol RCTBridgeDelegate;
 @protocol RCTComponentViewProtocol;
 @class RCTRootView;
@@ -41,10 +40,6 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * Overridable methods
  * Shared:
- *   - (RCTBridge *)createBridgeWithDelegate:(id<RCTBridgeDelegate>)delegate launchOptions:(NSDictionary
- *)launchOptions;
- *   - (UIView *)createRootViewWithBridge:(RCTBridge *)bridge moduleName:(NSString*)moduleName initProps:(NSDictionary
- *)initProps;
  *   - (UIViewController *)createRootViewController;
  *   - (void)setRootView:(UIView *)rootView toRootViewController:(UIViewController *)rootViewController;
  * New Architecture:
@@ -66,18 +61,19 @@ __attribute__((deprecated(
 /// The window object, used to render the UViewControllers
 @property (nonatomic, strong, nonnull) UIWindow *window;
 
+#if !defined(RCT_REMOVE_LEGACY_ARCH)
 @property (nonatomic, nullable) RCTBridge *bridge
     __attribute__((deprecated("The bridge is deprecated and will be removed when removing the legacy architecture.")));
+@property (nonatomic, nullable) RCTSurfacePresenterBridgeAdapter *bridgeAdapter __attribute__((
+    deprecated("The bridge adapter is deprecated and will be removed when removing the legacy architecture.")));
+#endif
+
 @property (nonatomic, strong, nullable) NSString *moduleName;
 @property (nonatomic, strong, nullable) NSDictionary *initialProps;
 @property (nonatomic, strong) RCTReactNativeFactory *reactNativeFactory;
 
 /// If `automaticallyLoadReactNativeWindow` is set to `true`, the React Native window will be loaded automatically.
 @property (nonatomic, assign) BOOL automaticallyLoadReactNativeWindow;
-
-@property (nonatomic, nullable) RCTSurfacePresenterBridgeAdapter *bridgeAdapter __attribute__((
-    deprecated("The bridge adapter is deprecated and will be removed when removing the legacy architecture.")));
-;
 
 - (RCTRootViewFactory *)rootViewFactory;
 

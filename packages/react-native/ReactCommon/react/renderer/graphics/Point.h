@@ -64,8 +64,6 @@ struct Point {
   }
 
   inline bool operator==(const Point &rhs) const = default;
-
-  inline bool operator!=(const Point &rhs) const = default;
 };
 
 } // namespace facebook::react

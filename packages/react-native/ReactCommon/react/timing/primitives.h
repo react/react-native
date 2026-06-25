@@ -11,6 +11,10 @@
 #include <chrono>
 #include <functional>
 
+#ifdef __APPLE__
+#include <mach/mach_time.h>
+#endif
+
 namespace facebook::react {
 
 class HighResDuration;
@@ -312,6 +316,23 @@ class HighResTimeStamp {
     return HighResDuration(systemNow.time_since_epoch() - steadyNow.time_since_epoch());
   }
 
+#ifdef __APPLE__
+  static double getMachTimebaseConversionFactor()
+  {
+    mach_timebase_info_data_t info;
+    mach_timebase_info(&info);
+    return static_cast<double>(info.numer) / info.denom;
+  }
+
+  static std::chrono::steady_clock::time_point machAbsoluteTimeToSteadyClockTimePoint()
+  {
+    static double conversionFactor = getMachTimebaseConversionFactor();
+    uint64_t machTime = mach_absolute_time();
+    auto nanoseconds = static_cast<int64_t>(static_cast<double>(machTime) * conversionFactor);
+    return std::chrono::steady_clock::time_point(std::chrono::nanoseconds(nanoseconds));
+  }
+#endif
+
 #ifdef REACT_NATIVE_DEBUG
   static std::function<std::chrono::steady_clock::time_point()> &getTimeStampProvider()
   {
@@ -322,12 +343,23 @@ class HighResTimeStamp {
   static std::chrono::steady_clock::time_point chronoNow()
   {
     auto &timeStampProvider = getTimeStampProvider();
-    return timeStampProvider != nullptr ? timeStampProvider() : std::chrono::steady_clock::now();
+    if (timeStampProvider != nullptr) {
+      return timeStampProvider();
+    }
+#ifdef __APPLE__
+    return machAbsoluteTimeToSteadyClockTimePoint();
+#else
+    return std::chrono::steady_clock::now();
+#endif
   }
 #else
   inline static std::chrono::steady_clock::time_point chronoNow()
   {
+#ifdef __APPLE__
+    return machAbsoluteTimeToSteadyClockTimePoint();
+#else
     return std::chrono::steady_clock::now();
+#endif
   }
 #endif
 };

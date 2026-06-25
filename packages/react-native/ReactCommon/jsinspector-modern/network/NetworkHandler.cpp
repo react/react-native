@@ -37,27 +37,31 @@ NetworkHandler& NetworkHandler::getInstance() {
   return instance;
 }
 
-void NetworkHandler::setFrontendChannel(FrontendChannel frontendChannel) {
-  frontendChannel_ = std::move(frontendChannel);
-}
-
-bool NetworkHandler::enable() {
-  if (enabled_.load(std::memory_order_acquire)) {
-    return false;
-  }
-
+size_t NetworkHandler::enableAgent(FrontendChannel frontendChannel) {
+  std::lock_guard<std::mutex> lock(agentsMutex_);
+  size_t id = nextAgentId_++;
+  agents_.push_back({id, std::move(frontendChannel)});
   enabled_.store(true, std::memory_order_release);
-  return true;
+  return id;
 }
 
-bool NetworkHandler::disable() {
-  if (!enabled_.load(std::memory_order_acquire)) {
-    return false;
-  }
+void NetworkHandler::disableAgent(size_t agentId) {
+  std::lock_guard<std::mutex> lock(agentsMutex_);
+  agents_.remove_if(
+      [agentId](const AgentRecord& r) { return r.id == agentId; });
+  if (agents_.empty()) {
+    enabled_.store(false, std::memory_order_release);
 
-  enabled_.store(false, std::memory_order_release);
-  responseBodyBuffer_.clear();
-  return true;
+    std::lock_guard<std::mutex> lock2(requestBodyMutex_);
+    responseBodyBuffer_.clear();
+  }
+}
+
+void NetworkHandler::sendToAllAgents(std::string_view message) {
+  std::lock_guard<std::mutex> lock(agentsMutex_);
+  for (auto& agent : agents_) {
+    agent.channel(message);
+  }
 }
 
 void NetworkHandler::onRequestWillBeSent(
@@ -88,7 +92,7 @@ void NetworkHandler::onRequestWillBeSent(
       .redirectResponse = redirectResponse,
   };
 
-  frontendChannel_(
+  sendToAllAgents(
       cdp::jsonNotification("Network.requestWillBeSent", params.toDynamic()));
 }
 
@@ -105,7 +109,7 @@ void NetworkHandler::onRequestWillBeSentExtraInfo(
       .connectTiming = {.requestTime = getCurrentUnixTimestampSeconds()},
   };
 
-  frontendChannel_(
+  sendToAllAgents(
       cdp::jsonNotification(
           "Network.requestWillBeSentExtraInfo", params.toDynamic()));
 }
@@ -132,7 +136,7 @@ void NetworkHandler::onResponseReceived(
       .hasExtraInfo = false,
   };
 
-  frontendChannel_(
+  sendToAllAgents(
       cdp::jsonNotification("Network.responseReceived", params.toDynamic()));
 }
 
@@ -151,7 +155,7 @@ void NetworkHandler::onDataReceived(
       .encodedDataLength = encodedDataLength,
   };
 
-  frontendChannel_(
+  sendToAllAgents(
       cdp::jsonNotification("Network.dataReceived", params.toDynamic()));
 }
 
@@ -168,7 +172,7 @@ void NetworkHandler::onLoadingFinished(
       .encodedDataLength = encodedDataLength,
   };
 
-  frontendChannel_(
+  sendToAllAgents(
       cdp::jsonNotification("Network.loadingFinished", params.toDynamic()));
 }
 
@@ -191,7 +195,7 @@ void NetworkHandler::onLoadingFailed(
         .canceled = cancelled,
     };
 
-    frontendChannel_(
+    sendToAllAgents(
         cdp::jsonNotification("Network.loadingFailed", params.toDynamic()));
   }
 }

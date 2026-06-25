@@ -275,10 +275,10 @@ type TypeMap = {
 };
 
 function getEvents(
-  eventTypeAST: $ReadOnlyArray<EventTypeAST>,
+  eventTypeAST: ReadonlyArray<EventTypeAST>,
   types: TypeMap,
   parser: Parser,
-): $ReadOnlyArray<EventTypeShape> {
+): ReadonlyArray<EventTypeShape> {
   return eventTypeAST
     .filter(property => property.type === 'ObjectTypeProperty')
     .map(property => buildEventSchema(types, property, parser))

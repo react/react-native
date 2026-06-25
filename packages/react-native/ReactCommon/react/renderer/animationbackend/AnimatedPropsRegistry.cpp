@@ -35,6 +35,18 @@ void AnimatedPropsRegistry::update(
       auto& snapshot = it->second;
       auto& viewProps = snapshot->props;
 
+      if (animatedProps.rawProps) {
+        const auto& newRawProps = *animatedProps.rawProps;
+        auto& currentRawProps = snapshot->rawProps;
+
+        if (currentRawProps) {
+          auto newRawPropsDynamic = newRawProps.toDynamic();
+          currentRawProps->merge_patch(newRawPropsDynamic);
+        } else {
+          currentRawProps =
+              std::make_unique<folly::dynamic>(newRawProps.toDynamic());
+        }
+      }
       for (const auto& animatedProp : animatedProps.props) {
         snapshot->propNames.insert(animatedProp->propName);
         cloneProp(viewProps, *animatedProp);
@@ -43,7 +55,9 @@ void AnimatedPropsRegistry::update(
   }
 }
 
-std::pair<std::unordered_set<const ShadowNodeFamily*>&, SnapshotMap&>
+std::pair<
+    std::unordered_set<std::shared_ptr<const ShadowNodeFamily>>&,
+    SnapshotMap&>
 AnimatedPropsRegistry::getMap(SurfaceId surfaceId) {
   auto lock = std::lock_guard(mutex_);
   auto& [pendingMap, map, pendingFamilies, families] =
@@ -58,6 +72,13 @@ AnimatedPropsRegistry::getMap(SurfaceId surfaceId) {
       map.insert_or_assign(tag, std::move(propsSnapshot));
     } else {
       auto& currentSnapshot = currentIt->second;
+      if (propsSnapshot->rawProps) {
+        if (currentSnapshot->rawProps) {
+          currentSnapshot->rawProps->merge_patch(*propsSnapshot->rawProps);
+        } else {
+          currentSnapshot->rawProps = std::move(propsSnapshot->rawProps);
+        }
+      }
       for (auto& propName : propsSnapshot->propNames) {
         currentSnapshot->propNames.insert(propName);
         updateProp(propName, currentSnapshot->props, *propsSnapshot);
@@ -72,10 +93,17 @@ AnimatedPropsRegistry::getMap(SurfaceId surfaceId) {
 
 void AnimatedPropsRegistry::clear(SurfaceId surfaceId) {
   auto lock = std::lock_guard(mutex_);
+  if (auto it = surfaceContexts_.find(surfaceId);
+      it != surfaceContexts_.end()) {
+    auto& surfaceContext = it->second;
+    surfaceContext.families.clear();
+    surfaceContext.map.clear();
+  }
+}
 
-  auto& surfaceContext = surfaceContexts_[surfaceId];
-  surfaceContext.families.clear();
-  surfaceContext.map.clear();
+void AnimatedPropsRegistry::clearOnSurfaceStop(SurfaceId surfaceId) {
+  auto lock = std::lock_guard(mutex_);
+  surfaceContexts_.erase(surfaceId);
 }
 
 } // namespace facebook::react

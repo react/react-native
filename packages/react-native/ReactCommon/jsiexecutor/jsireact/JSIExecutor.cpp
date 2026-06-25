@@ -144,25 +144,14 @@ void JSIExecutor::initializeRuntime() {
   if (runtimeInstaller_) {
     runtimeInstaller_(*runtime_);
   }
-  bool hasLogger = false;
-  {
-    std::shared_lock lock(ReactMarker::logTaggedMarkerImplMutex);
-    hasLogger = ReactMarker::logTaggedMarkerImpl != nullptr;
-  }
-  if (hasLogger) {
-    ReactMarker::logMarker(ReactMarker::CREATE_REACT_CONTEXT_STOP);
-  }
+  ReactMarker::logMarker(ReactMarker::CREATE_REACT_CONTEXT_STOP);
 }
 
 void JSIExecutor::loadBundle(
     std::unique_ptr<const JSBigString> script,
     std::string sourceURL) {
   TraceSection s("JSIExecutor::loadBundle");
-  bool hasLogger = false;
-  {
-    std::shared_lock lock(ReactMarker::logTaggedMarkerImplMutex);
-    hasLogger = ReactMarker::logTaggedMarkerImpl != nullptr;
-  }
+  bool hasLogger(ReactMarker::logTaggedMarkerImpl);
   std::string scriptName = simpleBasename(sourceURL);
   if (hasLogger) {
     ReactMarker::logTaggedMarker(

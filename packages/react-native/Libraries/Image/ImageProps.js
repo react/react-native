@@ -38,7 +38,7 @@ type ImageProgressEventDataIOS = {
  * @see ImagePropsIOS.onProgress
  */
 export type ImageProgressEventIOS = NativeSyntheticEvent<
-  $ReadOnly<ImageProgressEventDataIOS>,
+  Readonly<ImageProgressEventDataIOS>,
 >;
 
 type ImageErrorEventData = {
@@ -46,7 +46,7 @@ type ImageErrorEventData = {
 };
 
 export type ImageErrorEvent = NativeSyntheticEvent<
-  $ReadOnly<ImageErrorEventData>,
+  Readonly<ImageErrorEventData>,
 >;
 
 type ImageLoadEventData = {
@@ -57,11 +57,9 @@ type ImageLoadEventData = {
   },
 };
 
-export type ImageLoadEvent = NativeSyntheticEvent<
-  $ReadOnly<ImageLoadEventData>,
->;
+export type ImageLoadEvent = NativeSyntheticEvent<Readonly<ImageLoadEventData>>;
 
-export type ImagePropsIOS = $ReadOnly<{
+export type ImagePropsIOS = Readonly<{
   /**
    * A static image to display while loading the image source.
    *
@@ -82,13 +80,13 @@ export type ImagePropsIOS = $ReadOnly<{
   onProgress?: ?(event: ImageProgressEventIOS) => void,
 }>;
 
-export type ImagePropsAndroid = $ReadOnly<{
+export type ImagePropsAndroid = Readonly<{
   /**
    * similarly to `source`, this property represents the resource used to render
    * the loading indicator for the image, displayed until image is ready to be
    * displayed, typically after when it got downloaded from network.
    */
-  loadingIndicatorSource?: ?(number | $ReadOnly<ImageURISource>),
+  loadingIndicatorSource?: ?(number | Readonly<ImageURISource>),
   progressiveRenderingEnabled?: ?boolean,
   fadeDuration?: ?number,
 
@@ -127,7 +125,8 @@ export type ImagePropsAndroid = $ReadOnly<{
   resizeMultiplier?: ?number,
 }>;
 
-export type ImagePropsBase = $ReadOnly<{
+/** @build-types emit-as-interface Expo compatibility */
+export type ImagePropsBase = Readonly<{
   ...Omit<ViewProps, 'style'>,
   /**
    * When true, indicates the image is an accessibility element.
@@ -220,7 +219,7 @@ export type ImagePropsBase = $ReadOnly<{
    * See https://reactnative.dev/docs/image#onlayout
    */
 
-  onLayout?: ?(event: LayoutChangeEvent) => mixed,
+  onLayout?: ?(event: LayoutChangeEvent) => unknown,
 
   /**
    * Invoked when load completes successfully.
@@ -333,7 +332,7 @@ export type ImagePropsBase = $ReadOnly<{
   children?: empty,
 }>;
 
-export type ImageProps = $ReadOnly<{
+export type ImageProps = Readonly<{
   ...ImagePropsIOS,
   ...ImagePropsAndroid,
   ...ImagePropsBase,
@@ -344,7 +343,8 @@ export type ImageProps = $ReadOnly<{
   style?: ?ImageStyleProp,
 }>;
 
-export type ImageBackgroundProps = $ReadOnly<{
+/** @build-types emit-as-interface Uniwind compatibility */
+export type ImageBackgroundProps = Readonly<{
   ...ImageProps,
   children?: React.Node,
 

@@ -34,7 +34,7 @@ UIFontMetrics *RCTUIFontMetricsForDynamicTypeRamp(RCTDynamicTypeRamp dynamicType
   static NSDictionary<NSNumber *, UIFontTextStyle> *mapping;
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
-    mapping = @{
+    NSMutableDictionary<NSNumber *, UIFontTextStyle> *mutableMapping = [@{
       @(RCTDynamicTypeRampCaption2) : UIFontTextStyleCaption2,
       @(RCTDynamicTypeRampCaption1) : UIFontTextStyleCaption1,
       @(RCTDynamicTypeRampFootnote) : UIFontTextStyleFootnote,
@@ -45,8 +45,11 @@ UIFontMetrics *RCTUIFontMetricsForDynamicTypeRamp(RCTDynamicTypeRamp dynamicType
       @(RCTDynamicTypeRampTitle3) : UIFontTextStyleTitle3,
       @(RCTDynamicTypeRampTitle2) : UIFontTextStyleTitle2,
       @(RCTDynamicTypeRampTitle1) : UIFontTextStyleTitle1,
-      @(RCTDynamicTypeRampLargeTitle) : UIFontTextStyleLargeTitle,
-    };
+    } mutableCopy];
+#if !TARGET_OS_TV
+    mutableMapping[@(RCTDynamicTypeRampLargeTitle)] = UIFontTextStyleLargeTitle;
+#endif
+    mapping = [mutableMapping copy];
   });
 
   id textStyle =

@@ -9,15 +9,11 @@ package com.facebook.react.utils
 
 import com.facebook.react.ReactExtension
 import com.facebook.react.model.ModelPackageJson
-import com.facebook.react.utils.KotlinStdlibCompatUtils.lowercaseCompat
-import com.facebook.react.utils.KotlinStdlibCompatUtils.toBooleanStrictOrNullCompat
 import com.facebook.react.utils.PropertyUtils.EDGE_TO_EDGE_ENABLED
 import com.facebook.react.utils.PropertyUtils.HERMES_ENABLED
-import com.facebook.react.utils.PropertyUtils.HERMES_V1_ENABLED
 import com.facebook.react.utils.PropertyUtils.REACT_NATIVE_ARCHITECTURES
 import com.facebook.react.utils.PropertyUtils.SCOPED_EDGE_TO_EDGE_ENABLED
 import com.facebook.react.utils.PropertyUtils.SCOPED_HERMES_ENABLED
-import com.facebook.react.utils.PropertyUtils.SCOPED_HERMES_V1_ENABLED
 import com.facebook.react.utils.PropertyUtils.SCOPED_REACT_NATIVE_ARCHITECTURES
 import com.facebook.react.utils.PropertyUtils.SCOPED_USE_THIRD_PARTY_JSC
 import com.facebook.react.utils.PropertyUtils.USE_THIRD_PARTY_JSC
@@ -40,17 +36,13 @@ internal object ProjectUtils {
               } else {
                 SCOPED_HERMES_ENABLED
               }
-          project
-              .property(propertyString)
-              .toString()
-              .lowercaseCompat()
-              .toBooleanStrictOrNullCompat() ?: true
+          project.property(propertyString).toString().lowercase().toBooleanStrictOrNull() ?: true
         } else if (project.extensions.extraProperties.has("react")) {
           @Suppress("UNCHECKED_CAST")
           val reactMap = project.extensions.extraProperties.get("react") as? Map<String, Any?>
           when (val enableHermesKey = reactMap?.get("enableHermes")) {
             is Boolean -> enableHermesKey
-            is String -> enableHermesKey.lowercaseCompat().toBooleanStrictOrNullCompat() ?: true
+            is String -> enableHermesKey.lowercase().toBooleanStrictOrNull() ?: true
             else -> HERMES_FALLBACK
           }
         } else {
@@ -70,17 +62,6 @@ internal object ProjectUtils {
             project.property(USE_THIRD_PARTY_JSC).toString().toBoolean()) ||
             (project.hasProperty(SCOPED_USE_THIRD_PARTY_JSC) &&
                 project.property(SCOPED_USE_THIRD_PARTY_JSC).toString().toBoolean())
-
-  internal val Project.isHermesV1Enabled: Boolean
-    get() =
-        (project.hasProperty(HERMES_V1_ENABLED) &&
-            project.property(HERMES_V1_ENABLED).toString().toBoolean()) ||
-            (project.hasProperty(SCOPED_HERMES_V1_ENABLED) &&
-                project.property(SCOPED_HERMES_V1_ENABLED).toString().toBoolean()) ||
-            (project.extraProperties.has(HERMES_V1_ENABLED) &&
-                project.extraProperties.get(HERMES_V1_ENABLED).toString().toBoolean()) ||
-            (project.extraProperties.has(SCOPED_HERMES_V1_ENABLED) &&
-                project.extraProperties.get(SCOPED_HERMES_V1_ENABLED).toString().toBoolean())
 
   internal fun Project.needsCodegenFromPackageJson(rootProperty: DirectoryProperty): Boolean {
     val parsedPackageJson = readPackageJsonFile(this, rootProperty)

@@ -78,7 +78,7 @@ function sortMembers<T>(members: T[]): T[] {
     .concat(enumMembers);
 }
 
-const visitor: PluginObj<mixed> = {
+const visitor: PluginObj<unknown> = {
   visitor: {
     TSInterfaceBody(path) {
       path.node.body = sortMembers(path.node.body);

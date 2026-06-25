@@ -1,0 +1,3 @@
+interface RCTAppearance : public RCTEventEmitter <RCTBridgeModule> {
+  public virtual instancetype init();
+}

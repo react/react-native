@@ -42,63 +42,69 @@ export type RawPerformanceEntry = {
   decodedBodySize?: number,
 };
 
-export opaque type OpaqueNativeObserverHandle = mixed;
+export opaque type OpaqueNativeObserverHandle = unknown;
 
 export type NativeBatchedObserverCallback = () => void;
 export type NativePerformanceMarkResult = number;
-export type NativePerformanceMeasureResult = $ReadOnlyArray<number>; // [startTime, duration]
+export type NativePerformanceMeasureResult = ReadonlyArray<number>; // [startTime, duration]
 
 export type PerformanceObserverInit = {
-  entryTypes?: $ReadOnlyArray<number>,
+  entryTypes?: ReadonlyArray<number>,
   type?: number,
   buffered?: boolean,
   durationThreshold?: number,
 };
 
 export interface Spec extends TurboModule {
-  +now: () => number;
-  +timeOrigin?: () => number;
+  readonly now: () => number;
+  readonly timeOrigin?: () => number;
 
-  +reportMark: (name: string, startTime: number, entry: mixed) => void;
-  +reportMeasure: (
+  readonly reportMark: (
+    name: string,
+    startTime: number,
+    entry: unknown,
+  ) => void;
+  readonly reportMeasure: (
     name: string,
     startTime: number,
     duration: number,
-    entry: mixed,
+    entry: unknown,
   ) => void;
-  +getMarkTime: (name: string) => ?number;
-  +clearMarks: (entryName?: string) => void;
-  +clearMeasures: (entryName?: string) => void;
-  +getEntries: () => $ReadOnlyArray<RawPerformanceEntry>;
-  +getEntriesByName: (
+  readonly getMarkTime: (name: string) => ?number;
+  readonly clearMarks: (entryName?: string) => void;
+  readonly clearMeasures: (entryName?: string) => void;
+  readonly getEntries: () => ReadonlyArray<RawPerformanceEntry>;
+  readonly getEntriesByName: (
     entryName: string,
     entryType?: ?RawPerformanceEntryType,
-  ) => $ReadOnlyArray<RawPerformanceEntry>;
-  +getEntriesByType: (
+  ) => ReadonlyArray<RawPerformanceEntry>;
+  readonly getEntriesByType: (
     entryType: RawPerformanceEntryType,
-  ) => $ReadOnlyArray<RawPerformanceEntry>;
-  +getEventCounts: () => $ReadOnlyArray<[string, number]>;
-  +getSimpleMemoryInfo: () => NativeMemoryInfo;
-  +getReactNativeStartupTiming: () => ReactNativeStartupTiming;
+  ) => ReadonlyArray<RawPerformanceEntry>;
+  readonly getEventCounts: () => ReadonlyArray<[string, number]>;
+  readonly getSimpleMemoryInfo: () => NativeMemoryInfo;
+  readonly getReactNativeStartupTiming: () => ReactNativeStartupTiming;
 
-  +createObserver: (
+  readonly createObserver: (
     callback: NativeBatchedObserverCallback,
   ) => OpaqueNativeObserverHandle;
-  +getDroppedEntriesCount: (observer: OpaqueNativeObserverHandle) => number;
+  readonly getDroppedEntriesCount: (
+    observer: OpaqueNativeObserverHandle,
+  ) => number;
 
-  +observe: (
+  readonly observe: (
     observer: OpaqueNativeObserverHandle,
     options: PerformanceObserverInit,
   ) => void;
-  +disconnect: (observer: OpaqueNativeObserverHandle) => void;
-  +takeRecords: (
+  readonly disconnect: (observer: OpaqueNativeObserverHandle) => void;
+  readonly takeRecords: (
     observer: OpaqueNativeObserverHandle,
     sort: boolean,
-  ) => $ReadOnlyArray<RawPerformanceEntry>;
+  ) => ReadonlyArray<RawPerformanceEntry>;
 
-  +getSupportedPerformanceEntryTypes: () => $ReadOnlyArray<RawPerformanceEntryType>;
+  readonly getSupportedPerformanceEntryTypes: () => ReadonlyArray<RawPerformanceEntryType>;
 
-  +clearEventCountsForTesting: () => void;
+  readonly clearEventCountsForTesting: () => void;
 }
 
-export default (TurboModuleRegistry.get<Spec>('NativePerformanceCxx'): ?Spec);
+export default TurboModuleRegistry.get<Spec>('NativePerformanceCxx') as ?Spec;

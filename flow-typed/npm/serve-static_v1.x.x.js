@@ -12,7 +12,7 @@ declare module 'serve-static' {
   import type {NextHandleFunction} from 'connect';
   import type http from 'http';
 
-  declare export type Options = $ReadOnly<{
+  declare export type Options = Readonly<{
     /**
      * Enable or disable accepting ranged requests, defaults to true. Disabling
      * this will not send `Accept-Ranges` and ignore the contents of the

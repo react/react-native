@@ -9,7 +9,7 @@ package com.facebook.react.views.scroll
 
 import android.view.ViewGroup
 import com.facebook.common.logging.FLog
-import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
+import com.facebook.react.common.build.ReactBuildConfig
 import com.facebook.react.views.virtual.VirtualViewMode
 
 internal class VirtualViewContainerStateClassic(scrollView: ViewGroup) :
@@ -33,60 +33,39 @@ internal class VirtualViewContainerStateClassic(scrollView: ViewGroup) :
         (-prerenderRect.height() * prerenderRatio).toInt(),
     )
 
-    if (hysteresisRatio > 0.0) {
-      hysteresisRect.set(prerenderRect)
-      hysteresisRect.inset(
-          (-visibleRect.width() * hysteresisRatio).toInt(),
-          (-visibleRect.height() * hysteresisRatio).toInt(),
-      )
-    }
-
     val virtualViewsIt =
         if (virtualView != null) listOf(virtualView) else virtualViews.toMutableSet()
     virtualViewsIt.forEach { vv ->
       val rect = vv.containerRelativeRect
 
-      var mode: VirtualViewMode? = VirtualViewMode.Hidden
+      var mode: VirtualViewMode = VirtualViewMode.Hidden
       var thresholdRect = emptyRect
       when {
         rectsOverlap(rect, visibleRect) -> {
           thresholdRect = visibleRect
-          if (onWindowFocusChangeListener != null) {
-            if (scrollView.hasWindowFocus()) {
-              mode = VirtualViewMode.Visible
-            } else {
-              mode = VirtualViewMode.Prerender
-            }
-          } else {
-            mode = VirtualViewMode.Visible
-          }
+          mode = VirtualViewMode.Visible
         }
         rectsOverlap(rect, prerenderRect) -> {
           mode = VirtualViewMode.Prerender
           thresholdRect = prerenderRect
         }
-        (hysteresisRatio > 0.0 && rectsOverlap(rect, hysteresisRect)) -> {
-          mode = null
-        }
       }
 
-      if (mode != null) {
-        vv.onModeChange(mode, thresholdRect)
-        debugLog(
-            "updateModes",
-            {
-              "virtualView=${vv.virtualViewID} mode=$mode  rect=$rect thresholdRect=$thresholdRect"
-            },
-        )
-      }
+      vv.onModeChange(mode, thresholdRect)
+      debugLog(
+          "updateModes",
+          { "virtualView=${vv.virtualViewID} mode=$mode  rect=$rect thresholdRect=$thresholdRect" },
+      )
     }
   }
-}
 
-private const val DEBUG_TAG: String = "VirtualViewContainerStateClassic"
+  internal companion object {
+    private val ENABLE_DEBUG_LOGS = ReactBuildConfig.DEBUG && false
 
-private inline fun debugLog(subtag: String, block: () -> String = { "" }) {
-  if (IS_DEBUG_BUILD && ReactNativeFeatureFlags.enableVirtualViewDebugFeatures()) {
-    FLog.d("$DEBUG_TAG:$subtag", block())
+    internal inline fun debugLog(subtag: String, block: () -> String = { "" }) {
+      if (ENABLE_DEBUG_LOGS) {
+        FLog.d("VirtualViewContainerStateClassic:$subtag", block())
+      }
+    }
   }
 }

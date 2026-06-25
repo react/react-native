@@ -28,7 +28,6 @@ struct BackgroundSizeLengthPercentage {
   }
 
   bool operator==(const BackgroundSizeLengthPercentage &other) const = default;
-  bool operator!=(const BackgroundSizeLengthPercentage &other) const = default;
 };
 
 enum class BackgroundSizeKeyword { Cover, Contain };

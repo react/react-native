@@ -107,7 +107,8 @@ std::shared_ptr<ShadowNode> UIManager::createNode(
 
 std::shared_ptr<ShadowNode> UIManager::cloneNode(
     const ShadowNode& shadowNode,
-    const ShadowNode::SharedListOfShared& children,
+    const std::shared_ptr<const std::vector<std::shared_ptr<const ShadowNode>>>&
+        children,
     RawProps rawProps) const {
   TraceSection s(
       "UIManager::cloneNode", "componentName", shadowNode.getComponentName());
@@ -184,12 +185,15 @@ void UIManager::appendChild(
 
 void UIManager::completeSurface(
     SurfaceId surfaceId,
-    const ShadowNode::UnsharedListOfShared& rootChildren,
+    const std::shared_ptr<std::vector<std::shared_ptr<const ShadowNode>>>&
+        rootChildren,
     ShadowTree::CommitOptions commitOptions) {
   TraceSection s("UIManager::completeSurface", "surfaceId", surfaceId);
 
+  ShadowTree::CommitStatus result;
+
   shadowTreeRegistry_.visit(surfaceId, [&](const ShadowTree& shadowTree) {
-    auto result = shadowTree.commit(
+    result = shadowTree.commit(
         [&](const RootShadowNode& oldRootShadowNode) {
           return std::make_shared<RootShadowNode>(
               oldRootShadowNode,
@@ -199,20 +203,18 @@ void UIManager::completeSurface(
               });
         },
         commitOptions);
-
-    if (result == ShadowTree::CommitStatus::Succeeded) {
-      // It's safe to update the visible revision of the shadow tree immediately
-      // after we commit a specific one.
-      lazyShadowTreeRevisionConsistencyManager_->updateCurrentRevision(
-          surfaceId, shadowTree.getCurrentRevision().rootShadowNode);
-
-      if (ReactNativeFeatureFlags::useSharedAnimatedBackend()) {
-        if (auto animationBackend = animationBackend_.lock()) {
-          animationBackend->clearRegistry(surfaceId);
-        }
-      }
-    }
   });
+
+  if (result == ShadowTree::CommitStatus::Succeeded) {
+    // It's safe to update the visible revision of the shadow tree immediately
+    // after we commit a specific one.
+    lazyShadowTreeRevisionConsistencyManager_->updateCurrentRevision(surfaceId);
+
+    if (ReactNativeFeatureFlags::useSharedAnimatedBackend() &&
+        animationBackend_) {
+      animationBackend_->clearRegistry(surfaceId);
+    }
+  }
 }
 
 void UIManager::setIsJSResponder(
@@ -271,7 +273,7 @@ void UIManager::setSurfaceProps(
 ShadowTree::Unique UIManager::stopSurface(SurfaceId surfaceId) const {
   TraceSection s("UIManager::stopSurface");
 
-  // Stop any ongoing animations.
+  // Stop any ongoing layout animations.
   stopSurfaceForAnimationDelegate(surfaceId);
 
   // Waiting for all concurrent commits to be finished and unregistering the
@@ -290,6 +292,18 @@ ShadowTree::Unique UIManager::stopSurface(SurfaceId surfaceId) const {
       leakChecker_->stopSurface(surfaceId);
     }
   }
+
+  if (ReactNativeFeatureFlags::useSharedAnimatedBackend()) {
+    runtimeExecutor_(
+        [surfaceId,
+         animationBackendWeak = std::weak_ptr<UIManagerAnimationBackend>(
+             animationBackend_)](jsi::Runtime& /*runtime*/) {
+          if (auto animationBackend = animationBackendWeak.lock()) {
+            animationBackend->clearRegistryOnSurfaceStop(surfaceId);
+          }
+        });
+  }
+
   return shadowTree;
 }
 
@@ -437,8 +451,8 @@ void UIManager::setNativeProps_DEPRECATED(
   if (family.nativeProps_DEPRECATED) {
     // Values in `rawProps` patch (take precedence over)
     // `nativeProps_DEPRECATED`. For example, if both `nativeProps_DEPRECATED`
-    // and `rawProps` contain key 'A'. Value from `rawProps` overrides what was
-    // previously in `nativeProps_DEPRECATED`.
+    // and `rawProps` contain key 'A'. Value from `rawProps` overrides what
+    // was previously in `nativeProps_DEPRECATED`.
     family.nativeProps_DEPRECATED =
         std::make_unique<folly::dynamic>(mergeDynamicProps(
             *family.nativeProps_DEPRECATED,
@@ -470,7 +484,7 @@ void UIManager::setNativeProps_DEPRECATED(
                             ->getProps(),
                         RawProps(rawProps));
 
-                    return oldShadowNode.clone({/* .props = */ .props = props});
+                    return oldShadowNode.clone({.props = props});
                   });
 
               return std::static_pointer_cast<RootShadowNode>(rootNode);
@@ -487,6 +501,10 @@ void UIManager::sendAccessibilityEvent(
   }
 }
 
+UIManagerViewTransitionDelegate* UIManager::getViewTransitionDelegate() const {
+  return viewTransitionDelegate_;
+}
+
 void UIManager::configureNextLayoutAnimation(
     jsi::Runtime& runtime,
     const RawValue& config,
@@ -494,15 +512,12 @@ void UIManager::configureNextLayoutAnimation(
     const jsi::Value& failureCallback) const {
   if (animationDelegate_ != nullptr) {
     animationDelegate_->uiManagerDidConfigureNextLayoutAnimation(
-        runtime,
-        config,
-        std::move(successCallback),
-        std::move(failureCallback));
+        runtime, config, successCallback, failureCallback);
   }
 }
 
 static std::shared_ptr<const ShadowNode> findShadowNodeByTagRecursively(
-    std::shared_ptr<const ShadowNode> parentShadowNode,
+    const std::shared_ptr<const ShadowNode>& parentShadowNode,
     Tag tag) {
   if (parentShadowNode->getTag() == tag) {
     return parentShadowNode;
@@ -524,20 +539,8 @@ std::shared_ptr<const ShadowNode> UIManager::findShadowNodeByTag_DEPRECATED(
   auto shadowNode = std::shared_ptr<const ShadowNode>{};
 
   shadowTreeRegistry_.enumerate([&](const ShadowTree& shadowTree, bool& stop) {
-    const RootShadowNode* rootShadowNode = nullptr;
-    // The public interface of `ShadowTree` discourages accessing a stored
-    // pointer to a root node because of the possible data race.
-    // To work around this, we ask for a commit and immediately cancel it
-    // returning `nullptr` instead of a new shadow tree.
-    // We don't want to add a way to access a stored pointer to a root node
-    // because this `findShadowNodeByTag` is deprecated. It is only added
-    // to make migration to the new architecture easier.
-    shadowTree.tryCommit(
-        [&](const RootShadowNode& oldRootShadowNode) {
-          rootShadowNode = &oldRootShadowNode;
-          return nullptr;
-        },
-        {/* default commit options */});
+    auto rootShadowNodeHolder = shadowTree.getCurrentRevision().rootShadowNode;
+    const auto* rootShadowNode = rootShadowNodeHolder.get();
 
     if (rootShadowNode != nullptr) {
       const auto& children = rootShadowNode->getChildren();
@@ -645,6 +648,20 @@ void UIManager::shadowTreeDidFinishTransaction(
   }
 }
 
+void UIManager::shadowTreeDidFinishReactCommit(
+    const ShadowTree& shadowTree) const {
+  if (delegate_ != nullptr) {
+    delegate_->uiManagerDidFinishReactCommit(shadowTree);
+  }
+}
+
+void UIManager::shadowTreeDidPromoteReactRevision(
+    const ShadowTree& shadowTree) const {
+  if (delegate_ != nullptr) {
+    delegate_->uiManagerDidPromoteReactRevision(shadowTree);
+  }
+}
+
 void UIManager::reportMount(SurfaceId surfaceId) const {
   TraceSection s("UIManager::reportMount");
 
@@ -686,8 +703,15 @@ void UIManager::setNativeAnimatedDelegate(
   nativeAnimatedDelegate_ = delegate;
 }
 
+void UIManager::setViewTransitionDelegate(
+    UIManagerViewTransitionDelegate* delegate) {
+  if (ReactNativeFeatureFlags::viewTransitionEnabled()) {
+    viewTransitionDelegate_ = delegate;
+  }
+}
+
 void UIManager::unstable_setAnimationBackend(
-    std::weak_ptr<UIManagerAnimationBackend> animationBackend) {
+    std::shared_ptr<UIManagerAnimationBackend> animationBackend) {
   animationBackend_ = animationBackend;
 }
 
@@ -704,8 +728,10 @@ void UIManager::animationTick() const {
     });
   }
 
-  if (auto nativeAnimatedDelegate = nativeAnimatedDelegate_.lock()) {
-    nativeAnimatedDelegate->runAnimationFrame();
+  if (!ReactNativeFeatureFlags::useSharedAnimatedBackend()) {
+    if (auto nativeAnimatedDelegate = nativeAnimatedDelegate_.lock()) {
+      nativeAnimatedDelegate->runAnimationFrame();
+    }
   }
 }
 
@@ -715,6 +741,12 @@ void UIManager::synchronouslyUpdateViewOnUIThread(
   if (delegate_ != nullptr) {
     delegate_->uiManagerShouldSynchronouslyUpdateViewOnUIThread(tag, props);
   }
+}
+
+#pragma mark ContextContainer
+
+std::shared_ptr<const ContextContainer> UIManager::getContextContainer() const {
+  return contextContainer_;
 }
 
 #pragma mark - Add & Remove event listener

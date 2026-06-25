@@ -33,6 +33,7 @@ NS_ENUM(NSInteger){
 @property (nonatomic, copy) NSString *status;
 @property (strong, nonatomic) NSNumber *done;
 @property (strong, nonatomic) NSNumber *total;
+@property (strong, nonatomic) NSNumber *percent;
 
 @end
 

@@ -29,7 +29,7 @@ const config = {
   // Make Metro able to resolve required external dependencies
   watchFolders: [
     repositoryPath('node_modules'),
-    repositoryPath('packages/assets'),
+    repositoryPath('packages/assets-registry'),
     repositoryPath('packages/normalize-color'),
     repositoryPath('packages/polyfills'),
     repositoryPath('packages/react-native'),
@@ -46,4 +46,4 @@ const config = {
 module.exports = mergeConfig(
   getDefaultConfig(__dirname),
   config,
-) /*:: as $ReadOnly<InputConfigT> */;
+) /*:: as Readonly<InputConfigT> */;

@@ -58,7 +58,8 @@ export type Permission =
   | 'android.permission.READ_PHONE_NUMBERS'
   | 'android.permission.UWB_RANGING'
   | 'android.permission.POST_NOTIFICATIONS'
-  | 'android.permission.NEARBY_WIFI_DEVICES';
+  | 'android.permission.NEARBY_WIFI_DEVICES'
+  | 'android.permission.ACCESS_LOCAL_NETWORK';
 
 export type PermissionStatus = 'granted' | 'denied' | 'never_ask_again';
 
@@ -116,7 +117,8 @@ export interface PermissionsAndroidStatic {
       | 'READ_PHONE_NUMBERS'
       | 'UWB_RANGING'
       | 'POST_NOTIFICATIONS'
-      | 'NEARBY_WIFI_DEVICES']: Permission;
+      | 'NEARBY_WIFI_DEVICES'
+      | 'ACCESS_LOCAL_NETWORK']: Permission;
   };
   new (): PermissionsAndroidStatic;
   /**

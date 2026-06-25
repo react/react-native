@@ -10,7 +10,7 @@
 
 import type {PluginObj} from '@babel/core';
 
-function createDefaultExportNameReplacer(filePath: string): PluginObj<mixed> {
+function createDefaultExportNameReplacer(filePath: string): PluginObj<unknown> {
   return {
     visitor: {
       Identifier(node) {

@@ -44,34 +44,34 @@ type SimpleArray = Array<string>;
 type SimpleArrayChange = Array<string>;
 
 export interface Spec extends TurboModule {
-    +exampleFunction: (a: SimpleObject) => void;
-    +simpleObject: (a: SimpleObject) => void;
-    +beforeMismatchGeneric: <T>(a: BeforeMismatchGeneric<T>) => void;
-    +afterMismatchGeneric: <Foo>(a: AfterMismatchGeneric<Foo>) => void;
+    readonly exampleFunction: (a: SimpleObject) => void;
+    readonly simpleObject: (a: SimpleObject) => void;
+    readonly beforeMismatchGeneric: <T>(a: BeforeMismatchGeneric<T>) => void;
+    readonly afterMismatchGeneric: <Foo>(a: AfterMismatchGeneric<Foo>) => void;
 
-    +beforeMatchingGeneric: <T>(a: BeforeMatchingGeneric<T>) => void;
-    +afterMatchingGeneric: <T>(a: AfterMatchingGeneric<T>) => void;
+    readonly beforeMatchingGeneric: <T>(a: BeforeMatchingGeneric<T>) => void;
+    readonly afterMatchingGeneric: <T>(a: AfterMatchingGeneric<T>) => void;
 
-    +booleanType: (a: BooleanType) => void;
-    +stringType: (a: StringType) => void;
+    readonly booleanType: (a: BooleanType) => void;
+    readonly stringType: (a: StringType) => void;
 
-    +simpleFunction: (a: string) => string;
-    +simpleFunction2: (a: string) => number;
-    +simpleFunction3: (foo: string) => string;
-    +simpleFunction4: (a: number) => string;
+    readonly simpleFunction: (a: string) => string;
+    readonly simpleFunction2: (a: string) => number;
+    readonly simpleFunction3: (foo: string) => string;
+    readonly simpleFunction4: (a: number) => string;
 
-    +simpleUnion: (a: SimpleUnion) => void;
-    +simpleUnionLonger: (a: SimpleUnionLonger) => void;
-    +simpleUnionOrderChanged: (a: SimpleUnionOrderChanged) => void;
-    +simpleUnion2: (a: SimpleUnion2) => void;
-    +simpleUnion2OrderChanged: (a: SimpleUnion2OrderChanged) => void;
-    +simpleUnion3: (a: SimpleUnion3) => void;
-    +simpleUnion4: (a: SimpleUnion4) => void;
+    readonly simpleUnion: (a: SimpleUnion) => void;
+    readonly simpleUnionLonger: (a: SimpleUnionLonger) => void;
+    readonly simpleUnionOrderChanged: (a: SimpleUnionOrderChanged) => void;
+    readonly simpleUnion2: (a: SimpleUnion2) => void;
+    readonly simpleUnion2OrderChanged: (a: SimpleUnion2OrderChanged) => void;
+    readonly simpleUnion3: (a: SimpleUnion3) => void;
+    readonly simpleUnion4: (a: SimpleUnion4) => void;
 
-    +simpleArray: (a: SimpleArray) => void;
-    +simpleArrayChange: (a: SimpleArrayChange) => void;
+    readonly simpleArray: (a: SimpleArray) => void;
+    readonly simpleArrayChange: (a: SimpleArrayChange) => void;
   }
 
-  (TurboModuleRegistry.getEnforcing<Spec>(
+  TurboModuleRegistry.getEnforcing<Spec>(
     'NativeModuleTest',
-  ): Spec);
+  ) as Spec;

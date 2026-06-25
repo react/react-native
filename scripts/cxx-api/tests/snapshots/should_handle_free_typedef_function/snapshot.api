@@ -1,0 +1,1 @@
+typedef void(*test::FnPtr)(int32_t);

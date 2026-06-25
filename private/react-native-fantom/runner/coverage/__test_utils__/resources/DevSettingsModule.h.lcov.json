@@ -1,0 +1,14 @@
+[
+    "SF:packages/react-native/ReactCxxPlatform/react/devsupport/DevSettingsModule.h",
+    "FN:28,_ZN8facebook5react17DevSettingsModuleC2ESt10shared_ptrINS0_11CallInvokerEESt8weak_ptrINS0_15DevServerHelperEESt8functionIFvvEE",
+    "FNDA:0,_ZN8facebook5react17DevSettingsModuleC2ESt10shared_ptrINS0_11CallInvokerEESt8weak_ptrINS0_15DevServerHelperEESt8functionIFvvEE",
+    "FNF:1",
+    "FNH:0",
+    "DA:28,0",
+    "DA:29,0",
+    "BRF:0",
+    "BRH:0",
+    "LF:2",
+    "LH:0",
+    "end_of_record"
+]

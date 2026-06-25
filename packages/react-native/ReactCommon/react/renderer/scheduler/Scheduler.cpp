@@ -13,6 +13,7 @@
 #include <cxxreact/TraceSection.h>
 #include <react/debug/react_native_assert.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
+#include <react/renderer/animationbackend/AnimationBackend.h>
 #include <react/renderer/componentregistry/ComponentDescriptorRegistry.h>
 #include <react/renderer/core/EventQueueProcessor.h>
 #include <react/renderer/core/LayoutContext.h>
@@ -28,7 +29,8 @@ Scheduler::Scheduler(
     const SchedulerToolbox& schedulerToolbox,
     UIManagerAnimationDelegate* animationDelegate,
     SchedulerDelegate* delegate)
-    : runtimeExecutor_(schedulerToolbox.runtimeExecutor),
+    : delegateInvalidated_(std::make_shared<std::atomic<bool>>(false)),
+      runtimeExecutor_(schedulerToolbox.runtimeExecutor),
       contextContainer_(schedulerToolbox.contextContainer) {
   // Creating a container for future `EventDispatcher` instance.
   eventDispatcher_ = std::make_shared<std::optional<const EventDispatcher>>();
@@ -55,6 +57,16 @@ Scheduler::Scheduler(
   auto uiManager =
       std::make_shared<UIManager>(runtimeExecutor_, contextContainer_);
 
+  if (ReactNativeFeatureFlags::useSharedAnimatedBackend()) {
+    auto animationBackend = std::make_shared<AnimationBackend>(
+        schedulerToolbox.animationChoreographer, uiManager);
+
+    schedulerToolbox.animationChoreographer->setAnimationBackend(
+        animationBackend);
+
+    uiManager->unstable_setAnimationBackend(animationBackend);
+  }
+
   auto eventOwnerBox = std::make_shared<EventBeat::OwnerBox>();
   eventOwnerBox->owner = eventDispatcher_;
 
@@ -74,14 +86,15 @@ Scheduler::Scheduler(
 
   auto eventPipe = [uiManager](
                        jsi::Runtime& runtime,
-                       const EventTarget* eventTarget,
+                       EventTarget* eventTarget,
                        const std::string& type,
                        ReactEventPriority priority,
-                       const EventPayload& payload) {
+                       const EventPayload& payload,
+                       HighResTimeStamp eventTimestamp) {
     uiManager->visitBinding(
         [&](const UIManagerBinding& uiManagerBinding) {
           uiManagerBinding.dispatchEvent(
-              runtime, eventTarget, type, priority, payload);
+              runtime, eventTarget, type, priority, payload, eventTimestamp);
         },
         runtime);
   };
@@ -146,12 +159,27 @@ Scheduler::Scheduler(
   }
   uiManager_->setAnimationDelegate(animationDelegate);
 
+  // Initialize ViewTransitionModule
+  if (ReactNativeFeatureFlags::viewTransitionEnabled()) {
+    viewTransitionModule_ = std::make_shared<ViewTransitionModule>();
+    viewTransitionModule_->initialize(uiManager_.get(), viewTransitionModule_);
+  }
+
   uiManager->registerMountHook(*eventPerformanceLogger_);
 }
 
 Scheduler::~Scheduler() {
   LOG(WARNING) << "Scheduler::~Scheduler() was called (address: " << this
                << ").";
+
+  // Invalidate any lambdas already queued via scheduleRenderingUpdate that
+  // captured a raw delegate_ pointer; without this they'd dereference a
+  // dangling SchedulerDelegate after Scheduler teardown. (No replacement
+  // token is allocated here — Scheduler is going away.)
+  // Gated to allow controlled rollout / rollback.
+  if (ReactNativeFeatureFlags::enableSchedulerDelegateInvalidation()) {
+    *delegateInvalidated_ = true;
+  }
 
   auto weakRuntimeScheduler =
       contextContainer_->find<std::weak_ptr<RuntimeScheduler>>(
@@ -175,6 +203,7 @@ Scheduler::~Scheduler() {
   // The thread-safety of this operation is guaranteed by this requirement.
   uiManager_->setDelegate(nullptr);
   uiManager_->setAnimationDelegate(nullptr);
+  uiManager_->setViewTransitionDelegate(nullptr);
 
   if (cdpMetricsReporter_) {
     performanceEntryReporter_->removeEventListener(&*cdpMetricsReporter_);
@@ -241,6 +270,21 @@ Scheduler::findComponentDescriptorByHandle_DO_NOT_USE_THIS_IS_BROKEN(
 #pragma mark - Delegate
 
 void Scheduler::setDelegate(SchedulerDelegate* delegate) {
+  // Gated to allow controlled rollout / rollback.
+  if (ReactNativeFeatureFlags::enableSchedulerDelegateInvalidation() &&
+      delegate_ != delegate) {
+    // Mark the *current* token invalid: any rendering-update lambda already
+    // queued holds a shared_ptr to this atomic and will observe `true` on
+    // its next read, so it no-ops instead of calling into the previous
+    // delegate (which the caller is about to drop).
+    *delegateInvalidated_ = true;
+    // Then install a *fresh* token (a new atomic) so lambdas captured
+    // against the new delegate use their own non-invalidated flag.
+    // Reusing the previous atomic and flipping it back to `false` would
+    // re-arm the in-flight lambdas — exactly the use-after-free we're
+    // trying to prevent — because they share the same shared_ptr.
+    delegateInvalidated_ = std::make_shared<std::atomic<bool>>(false);
+  }
   delegate_ = delegate;
 }
 
@@ -269,10 +313,21 @@ void Scheduler::uiManagerDidFinishTransaction(
     if (!mountSynchronously) {
       auto surfaceId = mountingCoordinator->getSurfaceId();
 
+      // Capture the gating flag at queue time: the lambda's decision to
+      // honor the invalidation guard is fixed when we enqueue, not when it
+      // later runs. Avoids per-invocation feature-flag reads and keeps the
+      // contract for an in-flight lambda stable across flag flips.
+      auto guardEnabled =
+          ReactNativeFeatureFlags::enableSchedulerDelegateInvalidation();
       runtimeScheduler_->scheduleRenderingUpdate(
           surfaceId,
           [delegate = delegate_,
+           invalidated = delegateInvalidated_,
+           guardEnabled,
            mountingCoordinator = std::move(mountingCoordinator)]() {
+            if (guardEnabled && *invalidated) {
+              return;
+            }
             delegate->schedulerShouldRenderTransactions(mountingCoordinator);
           });
     } else {
@@ -295,12 +350,20 @@ void Scheduler::uiManagerDidDispatchCommand(
       "Scheduler::uiManagerDispatchCommand", "commandName", commandName);
   if (delegate_ != nullptr) {
     auto shadowView = ShadowView(*shadowNode);
+    // See comment in uiManagerDidFinishTransaction above for gating shape.
+    auto guardEnabled =
+        ReactNativeFeatureFlags::enableSchedulerDelegateInvalidation();
     runtimeScheduler_->scheduleRenderingUpdate(
         shadowNode->getSurfaceId(),
         [delegate = delegate_,
+         invalidated = delegateInvalidated_,
+         guardEnabled,
          shadowView = std::move(shadowView),
          commandName,
          args]() {
+          if (guardEnabled && *invalidated) {
+            return;
+          }
           delegate->schedulerDidDispatchCommand(shadowView, commandName, args);
         });
   }
@@ -345,6 +408,27 @@ void Scheduler::uiManagerDidUpdateShadowTree(
   }
 }
 
+void Scheduler::uiManagerDidCaptureViewSnapshot(Tag tag, SurfaceId surfaceId) {
+  if (delegate_ != nullptr) {
+    delegate_->schedulerDidCaptureViewSnapshot(tag, surfaceId);
+  }
+}
+
+void Scheduler::uiManagerDidSetViewSnapshot(
+    Tag sourceTag,
+    Tag targetTag,
+    SurfaceId surfaceId) {
+  if (delegate_ != nullptr) {
+    delegate_->schedulerDidSetViewSnapshot(sourceTag, targetTag, surfaceId);
+  }
+}
+
+void Scheduler::uiManagerDidClearPendingSnapshots() {
+  if (delegate_ != nullptr) {
+    delegate_->schedulerDidClearPendingSnapshots();
+  }
+}
+
 void Scheduler::uiManagerShouldAddEventListener(
     std::shared_ptr<const EventListener> listener) {
   addEventListener(listener);
@@ -353,6 +437,22 @@ void Scheduler::uiManagerShouldAddEventListener(
 void Scheduler::uiManagerShouldRemoveEventListener(
     const std::shared_ptr<const EventListener>& listener) {
   removeEventListener(listener);
+}
+
+void Scheduler::uiManagerDidFinishReactCommit(const ShadowTree& shadowTree) {
+  auto surfaceId = shadowTree.getSurfaceId();
+  runtimeScheduler_->scheduleRenderingUpdate(
+      surfaceId, [surfaceId, uiManager = uiManager_]() {
+        uiManager->getShadowTreeRegistry().visit(
+            surfaceId,
+            [](const ShadowTree& tree) { tree.promoteReactRevision(); });
+      });
+}
+
+void Scheduler::uiManagerDidPromoteReactRevision(const ShadowTree& shadowTree) {
+  if (delegate_ != nullptr) {
+    delegate_->schedulerShouldMergeReactRevision(shadowTree.getSurfaceId());
+  }
 }
 
 void Scheduler::uiManagerDidStartSurface(const ShadowTree& shadowTree) {

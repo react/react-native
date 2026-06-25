@@ -19,7 +19,7 @@ import type {
 } from '../../Types/CoreEventTypes';
 import type {ViewProps} from '../View/ViewPropTypes';
 
-export type ScrollViewNativeProps = $ReadOnly<{
+export type ScrollViewNativeProps = Readonly<{
   ...ViewProps,
   alwaysBounceHorizontal?: ?boolean,
   alwaysBounceVertical?: ?boolean,
@@ -46,7 +46,7 @@ export type ScrollViewNativeProps = $ReadOnly<{
   indicatorStyle?: ?('default' | 'black' | 'white'),
   isInvertedVirtualizedList?: ?boolean,
   keyboardDismissMode?: ?('none' | 'on-drag' | 'interactive'),
-  maintainVisibleContentPosition?: ?$ReadOnly<{
+  maintainVisibleContentPosition?: ?Readonly<{
     minIndexForVisible: number,
     autoscrollToTopThreshold?: ?number,
   }>,
@@ -69,13 +69,14 @@ export type ScrollViewNativeProps = $ReadOnly<{
   scrollPerfTag?: ?string,
   scrollToOverflowEnabled?: ?boolean,
   scrollsToTop?: ?boolean,
+  scrollsChildToFocus?: ?boolean,
   sendMomentumEvents?: ?boolean,
   showsHorizontalScrollIndicator?: ?boolean,
   showsVerticalScrollIndicator?: ?boolean,
   snapToAlignment?: ?('start' | 'center' | 'end'),
   snapToEnd?: ?boolean,
   snapToInterval?: ?number,
-  snapToOffsets?: ?$ReadOnlyArray<number>,
+  snapToOffsets?: ?ReadonlyArray<number>,
   snapToStart?: ?boolean,
   zoomScale?: ?number,
   // Overrides

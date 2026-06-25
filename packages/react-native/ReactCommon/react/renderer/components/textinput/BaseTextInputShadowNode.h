@@ -25,6 +25,16 @@
 
 namespace facebook::react {
 
+inline ShadowView shadowViewFromShadowNode(const ShadowNode &shadowNode)
+{
+  auto shadowView = ShadowView{shadowNode};
+  // Clearing `props` and `state` (which we don't use) allows avoiding retain
+  // cycles.
+  shadowView.props = nullptr;
+  shadowView.state = nullptr;
+  return shadowView;
+}
+
 /*
  * Base `ShadowNode` for <TextInput> component.
  */
@@ -171,7 +181,9 @@ class BaseTextInputShadowNode
     AttributedString attributedString;
     attributedString.appendFragment(
         AttributedString::Fragment{
-            .string = props.text, .textAttributes = textAttributes, .parentShadowView = ShadowView(*this)});
+            .string = props.text,
+            .textAttributes = textAttributes,
+            .parentShadowView = shadowViewFromShadowNode(*this)});
 
     auto attachments = BaseTextShadowNode::Attachments{};
     BaseTextShadowNode::buildAttributedString(textAttributes, *this, attributedString, attachments);

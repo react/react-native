@@ -30,9 +30,9 @@ export type PerformanceEventTimingJSON = {
 };
 
 export interface PerformanceEventTimingInit extends PerformanceEntryInit {
-  +processingStart?: DOMHighResTimeStamp;
-  +processingEnd?: DOMHighResTimeStamp;
-  +interactionId?: number;
+  readonly processingStart?: DOMHighResTimeStamp;
+  readonly processingEnd?: DOMHighResTimeStamp;
+  readonly interactionId?: number;
 }
 
 export class PerformanceEventTiming extends PerformanceEntry {

@@ -67,9 +67,6 @@ typedef NSMutableArray<NSURLQueryItem *> *_Nullable (^RCTPackagerOptionsUpdater)
 
 - (nullable instancetype)initWithBundleConfig:(nullable RCTBundleConfiguration *)bundleConfig;
 
-#ifndef RCT_REMOVE_LEGACY_ARCH
-- (void)setBridge:(nullable RCTBridge *)bridge;
-#endif // RCT_REMOVE_LEGACY_ARCH
 - (void)setBridgelessBundleURLGetter:(nullable RCTBridgelessBundleURLGetter)getter
                            andSetter:(nullable RCTBridgelessBundleURLSetter)setter
                     andDefaultGetter:(nullable RCTBridgelessBundleURLGetter)defaultGetter;

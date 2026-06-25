@@ -13,7 +13,7 @@ import type VirtualizedList from './VirtualizedList';
 import * as React from 'react';
 import {createContext, useContext, useMemo} from 'react';
 
-type Context = $ReadOnly<{
+type Context = Readonly<{
   cellKey: ?string,
   getScrollMetrics: () => {
     contentLength: number,

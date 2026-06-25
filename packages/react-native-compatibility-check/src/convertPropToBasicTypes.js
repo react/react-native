@@ -76,7 +76,7 @@ export default function convertPropToBasicTypes(
       resultingType = inputType;
       break;
     case 'ObjectTypeAnnotation':
-      resultingType = ({
+      resultingType = {
         type: 'ObjectTypeAnnotation',
         ...(inputType.baseTypes != null
           ? {baseTypes: inputType.baseTypes}
@@ -86,16 +86,16 @@ export default function convertPropToBasicTypes(
           optional: property.optional,
           typeAnnotation: convertPropToBasicTypes(property.typeAnnotation),
         })),
-      }: ObjectTypeAnnotation<CompleteTypeAnnotation>);
+      } as ObjectTypeAnnotation<CompleteTypeAnnotation>;
       break;
     case 'ArrayTypeAnnotation':
-      resultingType = ({
+      resultingType = {
         type: 'ArrayTypeAnnotation',
         elementType: convertPropToBasicTypes(inputType.elementType),
-      }: ArrayTypeAnnotation<CompleteTypeAnnotation>);
+      } as ArrayTypeAnnotation<CompleteTypeAnnotation>;
       break;
     default:
-      (inputType.type: empty);
+      inputType.type as empty;
       throw new Error('Unexpected type ' + inputType.type);
   }
 

@@ -61,25 +61,17 @@ public class NativeAnimatedNodesManager(
   private val runUpdateNodeList: MutableList<AnimatedNode> = LinkedList()
 
   private var eventListenerInitializedForFabric = false
-  private var eventListenerInitializedForNonFabric = false
 
   private var warnedAboutGraphTraversal = false
 
   /**
-   * Initialize event listeners for Fabric UIManager or non-Fabric UIManager, exactly once. Once
-   * Fabric is the only UIManager, this logic can be simplified. This is expected to only be called
-   * from the native module thread.
+   * Initialize event listeners for Fabric UIManager exactly once. This is expected to only be
+   * called from the native module thread.
    *
    * @param uiManagerType
    */
   public fun initializeEventListenerForUIManagerType(@UIManagerType uiManagerType: Int) {
-    val isEventListenerInitialized =
-        when (uiManagerType) {
-          UIManagerType.FABRIC -> eventListenerInitializedForFabric
-          else -> eventListenerInitializedForNonFabric
-        }
-
-    if (isEventListenerInitialized) {
+    if (eventListenerInitializedForFabric) {
       return
     }
 
@@ -87,11 +79,7 @@ public class NativeAnimatedNodesManager(
         UIManagerHelper.getUIManager(checkNotNull(reactApplicationContext), uiManagerType)
     if (uiManager != null) {
       uiManager.eventDispatcher.addListener(this)
-      if (uiManagerType == UIManagerType.FABRIC) {
-        eventListenerInitializedForFabric = true
-      } else {
-        eventListenerInitializedForNonFabric = true
-      }
+      eventListenerInitializedForFabric = true
     }
   }
 
@@ -233,7 +221,7 @@ public class NativeAnimatedNodesManager(
             )
     if (node !is ValueAnimatedNode) {
       throw JSApplicationIllegalArgumentException(
-          ("startAnimatingNode: Animated node [${animatedNodeTag}] should be of type ${ValueAnimatedNode::class.java.name}")
+          ("startAnimatingNode: Animated node [${animatedNodeTag}] should be of type ValueAnimatedNode")
       )
     }
 
@@ -389,7 +377,7 @@ public class NativeAnimatedNodesManager(
             )
     if (node !is PropsAnimatedNode) {
       throw JSApplicationIllegalArgumentException(
-          ("connectAnimatedNodeToView: Animated node connected to view [${viewTag}] should be of type ${PropsAnimatedNode::class.java.name}")
+          ("connectAnimatedNodeToView: Animated node connected to view [${viewTag}] should be of type PropsAnimatedNode")
       )
     }
     checkNotNull(reactApplicationContext) {
@@ -420,7 +408,7 @@ public class NativeAnimatedNodesManager(
             )
     if (node !is PropsAnimatedNode) {
       throw JSApplicationIllegalArgumentException(
-          ("disconnectAnimatedNodeFromView: Animated node connected to view [${viewTag}] should be of type ${PropsAnimatedNode::class.java.name}")
+          ("disconnectAnimatedNodeFromView: Animated node connected to view [${viewTag}] should be of type PropsAnimatedNode")
       )
     }
     node.disconnectFromView(viewTag)
@@ -463,7 +451,7 @@ public class NativeAnimatedNodesManager(
     // default values since it will never actually update the view.
     if (node !is PropsAnimatedNode) {
       throw JSApplicationIllegalArgumentException(
-          "Animated node connected to view [?] should be of type ${PropsAnimatedNode::class.java.name}"
+          "Animated node connected to view [?] should be of type PropsAnimatedNode"
       )
     }
     node.restoreDefaultValues()
@@ -483,7 +471,7 @@ public class NativeAnimatedNodesManager(
             )
     if (node !is ValueAnimatedNode) {
       throw JSApplicationIllegalArgumentException(
-          ("addAnimatedEventToView: Animated node on view [${viewTag}] connected to event handler (${eventHandlerName}) should be of type ${ValueAnimatedNode::class.java.name}")
+          ("addAnimatedEventToView: Animated node on view [${viewTag}] connected to event handler (${eventHandlerName}) should be of type ValueAnimatedNode")
       )
     }
 
@@ -763,7 +751,6 @@ public class NativeAnimatedNodesManager(
         FLog.e(TAG, node.prettyPrintWithChildren())
       }
 
-      // If we're running only in non-Fabric, we still throw an exception.
       // In Fabric, it seems that animations enter an inconsistent state fairly often.
       // We detect if the inconsistency is due to a cycle (a fatal error for which we must crash)
       // or disconnected regions, indicating a partially-set-up animation graph, which is not
@@ -773,17 +760,9 @@ public class NativeAnimatedNodesManager(
           IllegalStateException(
               ("Looks like animated nodes graph has ${reason}, there are $activeNodesCount but toposort visited only $updatedNodesCount")
           )
-      if (eventListenerInitializedForFabric && cyclesDetected == 0) {
-        // TODO T71377544: investigate these SoftExceptions and see if we can remove entirely
-        // or fix the root cause
-        ReactSoftExceptionLogger.logSoftException(TAG, ReactNoCrashSoftException(ex))
-      } else if (eventListenerInitializedForFabric) {
-        // TODO T71377544: investigate these SoftExceptions and see if we can remove entirely
-        // or fix the root cause
-        ReactSoftExceptionLogger.logSoftException(TAG, ReactNoCrashSoftException(ex))
-      } else {
-        throw ex
-      }
+      // TODO T71377544: investigate these SoftExceptions and see if we can remove entirely
+      // or fix the root cause
+      ReactSoftExceptionLogger.logSoftException(TAG, ReactNoCrashSoftException(ex))
     } else {
       warnedAboutGraphTraversal = false
     }

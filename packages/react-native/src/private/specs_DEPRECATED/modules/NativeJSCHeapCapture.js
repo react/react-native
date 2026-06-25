@@ -13,7 +13,7 @@ import type {TurboModule} from '../../../../Libraries/TurboModule/RCTExport';
 import * as TurboModuleRegistry from '../../../../Libraries/TurboModule/TurboModuleRegistry';
 
 export interface Spec extends TurboModule {
-  +captureComplete: (path: string, error: ?string) => void;
+  readonly captureComplete: (path: string, error: ?string) => void;
 }
 
-export default (TurboModuleRegistry.get<Spec>('JSCHeapCapture'): ?Spec);
+export default TurboModuleRegistry.get<Spec>('JSCHeapCapture') as ?Spec;

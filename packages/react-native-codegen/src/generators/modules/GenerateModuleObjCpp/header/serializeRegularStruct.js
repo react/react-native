@@ -15,18 +15,15 @@ import type {RegularStruct, StructTypeAnnotation} from '../StructCollector';
 import type {StructSerilizationOutput} from './serializeStruct';
 
 const {unwrapNullable} = require('../../../../parsers/parsers-commons');
-const {wrapOptional: wrapCxxOptional} = require('../../../TypeUtils/Cxx');
-const {
-  wrapOptional: wrapObjCOptional,
-} = require('../../../TypeUtils/Objective-C');
 const {capitalize} = require('../../../Utils');
 const {getNamespacedStructName, getSafePropertyName} = require('../Utils');
+const {toObjCType} = require('./serializeStructUtils');
 
 const StructTemplate = ({
   hasteModuleName,
   structName,
   structProperties,
-}: $ReadOnly<{
+}: Readonly<{
   hasteModuleName: string,
   structName: string,
   structProperties: string,
@@ -53,7 +50,7 @@ const MethodTemplate = ({
   structName,
   propertyName,
   safePropertyName,
-}: $ReadOnly<{
+}: Readonly<{
   returnType: string,
   returnValue: string,
   hasteModuleName: string,
@@ -65,83 +62,6 @@ const MethodTemplate = ({
   id const p = _v[@"${propertyName}"];
   return ${returnValue};
 }`;
-
-function toObjCType(
-  hasteModuleName: string,
-  nullableTypeAnnotation: Nullable<StructTypeAnnotation>,
-  isOptional: boolean = false,
-): string {
-  const [typeAnnotation, nullable] = unwrapNullable(nullableTypeAnnotation);
-  const isRequired = !nullable && !isOptional;
-
-  switch (typeAnnotation.type) {
-    case 'ReservedTypeAnnotation':
-      switch (typeAnnotation.name) {
-        case 'RootTag':
-          return wrapCxxOptional('double', isRequired);
-        default:
-          (typeAnnotation.name: empty);
-          throw new Error(`Unknown prop type, found: ${typeAnnotation.name}"`);
-      }
-    case 'StringTypeAnnotation':
-      return 'NSString *';
-    case 'StringLiteralTypeAnnotation':
-      return 'NSString *';
-    case 'UnionTypeAnnotation':
-      // TODO(T247151345): Implement proper heterogeneous union support. This is unsafe.
-      return 'NSObject *';
-    case 'NumberTypeAnnotation':
-      return wrapCxxOptional('double', isRequired);
-    case 'NumberLiteralTypeAnnotation':
-      return wrapCxxOptional('double', isRequired);
-    case 'FloatTypeAnnotation':
-      return wrapCxxOptional('double', isRequired);
-    case 'Int32TypeAnnotation':
-      return wrapCxxOptional('double', isRequired);
-    case 'DoubleTypeAnnotation':
-      return wrapCxxOptional('double', isRequired);
-    case 'BooleanTypeAnnotation':
-      return wrapCxxOptional('bool', isRequired);
-    case 'BooleanLiteralTypeAnnotation':
-      return wrapCxxOptional('bool', isRequired);
-    case 'EnumDeclaration':
-      switch (typeAnnotation.memberType) {
-        case 'NumberTypeAnnotation':
-          return wrapCxxOptional('double', isRequired);
-        case 'StringTypeAnnotation':
-          return 'NSString *';
-        default:
-          throw new Error(
-            `Couldn't convert enum into ObjC type: ${typeAnnotation.type}"`,
-          );
-      }
-    case 'GenericObjectTypeAnnotation':
-      return wrapObjCOptional('id<NSObject>', isRequired);
-    case 'ArrayTypeAnnotation':
-      if (typeAnnotation.elementType.type === 'AnyTypeAnnotation') {
-        return wrapObjCOptional('id<NSObject>', isRequired);
-      }
-      return wrapCxxOptional(
-        `facebook::react::LazyVector<${toObjCType(
-          hasteModuleName,
-          typeAnnotation.elementType,
-        )}>`,
-        isRequired,
-      );
-    case 'TypeAliasTypeAnnotation':
-      const structName = capitalize(typeAnnotation.name);
-      const namespacedStructName = getNamespacedStructName(
-        hasteModuleName,
-        structName,
-      );
-      return wrapCxxOptional(namespacedStructName, isRequired);
-    default:
-      (typeAnnotation.type: empty);
-      throw new Error(
-        `Couldn't convert into ObjC type: ${typeAnnotation.type}"`,
-      );
-  }
-}
 
 function toObjCValue(
   hasteModuleName: string,
@@ -165,7 +85,7 @@ function toObjCValue(
         case 'RootTag':
           return RCTBridgingTo('Double');
         default:
-          (typeAnnotation.name: empty);
+          typeAnnotation.name as empty;
           throw new Error(
             `Couldn't convert into ObjC type: ${typeAnnotation.type}"`,
           );
@@ -212,7 +132,11 @@ function toObjCValue(
       }
 
       const localVarName = `itemValue_${depth}`;
-      const elementObjCType = toObjCType(hasteModuleName, elementType);
+      const elementObjCType = toObjCType(
+        hasteModuleName,
+        elementType,
+        'REGULAR',
+      );
       const elementObjCValue = toObjCValue(
         hasteModuleName,
         elementType,
@@ -235,7 +159,7 @@ function toObjCValue(
         ? `(${value} == nil ? std::nullopt : std::make_optional(${namespacedStructName}(${value})))`
         : `${namespacedStructName}(${value})`;
     default:
-      (typeAnnotation.type: empty);
+      typeAnnotation.type as empty;
       throw new Error(
         `Couldn't convert into ObjC value: ${typeAnnotation.type}"`,
       );
@@ -256,6 +180,7 @@ function serializeRegularStruct(
         const returnType = toObjCType(
           hasteModuleName,
           typeAnnotation,
+          'REGULAR',
           optional,
         );
 
@@ -270,7 +195,12 @@ function serializeRegularStruct(
     .map<string>(property => {
       const {typeAnnotation, optional, name: propName} = property;
       const safePropertyName = getSafePropertyName(property);
-      const returnType = toObjCType(hasteModuleName, typeAnnotation, optional);
+      const returnType = toObjCType(
+        hasteModuleName,
+        typeAnnotation,
+        'REGULAR',
+        optional,
+      );
       const returnValue = toObjCValue(
         hasteModuleName,
         typeAnnotation,

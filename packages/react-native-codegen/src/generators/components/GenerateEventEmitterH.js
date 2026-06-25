@@ -31,7 +31,7 @@ const nullthrows = require('nullthrows');
 type FilesOutput = Map<string, string>;
 type StructsMap = Map<string, string>;
 
-type ComponentCollection = $ReadOnly<{
+type ComponentCollection = Readonly<{
   [component: string]: ComponentShape,
   ...
 }>;
@@ -109,6 +109,7 @@ const EnumTemplate = ({
 static char const *toString(const ${enumName} value) {
   switch (value) {
     ${toCases}
+    default: return "";
   }
 }
 `.trim();
@@ -116,7 +117,7 @@ static char const *toString(const ${enumName} value) {
 function getNativeTypeFromAnnotation(
   componentName: string,
   eventProperty: NamedShape<EventTypeAnnotation>,
-  nameParts: $ReadOnlyArray<string>,
+  nameParts: ReadonlyArray<string>,
 ): string {
   const {typeAnnotation} = eventProperty;
   switch (typeAnnotation.type) {
@@ -147,7 +148,7 @@ function getNativeTypeFromAnnotation(
         eventProperty.name,
       ]);
     default:
-      (typeAnnotation.type: empty);
+      typeAnnotation.type as empty;
       throw new Error(
         `Received invalid event property type ${typeAnnotation.type}`,
       );
@@ -155,7 +156,7 @@ function getNativeTypeFromAnnotation(
 }
 function generateEnum(
   structs: StructsMap,
-  options: $ReadOnlyArray<string>,
+  options: ReadonlyArray<string>,
   nameParts: Array<string>,
 ) {
   const structName = generateEventStructName(nameParts);
@@ -185,7 +186,7 @@ function handleGenerateStructForArray(
   name: string,
   componentName: string,
   elementType: EventTypeAnnotation,
-  nameParts: $ReadOnlyArray<string>,
+  nameParts: ReadonlyArray<string>,
 ): void {
   if (elementType.type === 'ObjectTypeAnnotation') {
     generateStruct(
@@ -218,8 +219,8 @@ function handleGenerateStructForArray(
 function generateStruct(
   structs: StructsMap,
   componentName: string,
-  nameParts: $ReadOnlyArray<string>,
-  properties: $ReadOnlyArray<NamedShape<EventTypeAnnotation>>,
+  nameParts: ReadonlyArray<string>,
+  properties: ReadonlyArray<NamedShape<EventTypeAnnotation>>,
 ): void {
   const structNameParts = nameParts;
   const structName = generateEventStructName(structNameParts);
@@ -273,7 +274,7 @@ function generateStruct(
         );
         return;
       default:
-        (typeAnnotation.type: empty);
+        typeAnnotation.type as empty;
         throw new Error(
           `Received invalid event property type ${typeAnnotation.type}`,
         );

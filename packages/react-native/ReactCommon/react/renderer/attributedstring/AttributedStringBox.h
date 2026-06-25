@@ -58,7 +58,6 @@ class AttributedStringBox final {
 };
 
 bool operator==(const AttributedStringBox &lhs, const AttributedStringBox &rhs);
-bool operator!=(const AttributedStringBox &lhs, const AttributedStringBox &rhs);
 
 } // namespace facebook::react
 

@@ -10,6 +10,9 @@
 
 import invariant from 'invariant';
 
+// Pre-compiled regex pattern for performance - avoids regex compilation on each call
+const TRANSFORM_ORIGIN_REGEX = /(top|bottom|left|right|center|\d+(?:%|px)|0)/gi;
+
 const INDEX_X = 0;
 const INDEX_Y = 1;
 const INDEX_Z = 2;
@@ -20,12 +23,14 @@ export default function processTransformOrigin(
 ): Array<string | number> {
   if (typeof transformOrigin === 'string') {
     const transformOriginString = transformOrigin;
-    const regex = /(top|bottom|left|right|center|\d+(?:%|px)|0)/gi;
+    TRANSFORM_ORIGIN_REGEX.lastIndex = 0;
     const transformOriginArray: Array<string | number> = ['50%', '50%', 0];
 
     let index = INDEX_X;
     let matches;
-    outer: while ((matches = regex.exec(transformOriginString))) {
+    outer: while (
+      (matches = TRANSFORM_ORIGIN_REGEX.exec(transformOriginString))
+    ) {
       let nextIndex = index + 1;
 
       const value = matches[0];
@@ -53,7 +58,9 @@ export default function processTransformOrigin(
 
           // Handle [[ center | left | right ] && [ center | top | bottom ]] <length>?
           if (index === INDEX_X) {
-            const horizontal = regex.exec(transformOriginString);
+            const horizontal = TRANSFORM_ORIGIN_REGEX.exec(
+              transformOriginString,
+            );
             if (horizontal == null) {
               break outer;
             }

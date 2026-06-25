@@ -38,7 +38,7 @@ const Item = ({item, separators}: ListRenderItemInfo<string>) => {
   );
 };
 
-export function FlatList_stickyHeaders(): React.Node {
+export component FlatList_stickyHeaders() {
   return (
     <FlatList
       data={DATA}
@@ -64,9 +64,9 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ({
+export default {
   title: 'Sticky Headers',
   name: 'stickyHeaders',
   description: 'Test sticky headers on FlatList',
   render: () => <FlatList_stickyHeaders />,
-}: RNTesterModuleExample);
+} as RNTesterModuleExample;

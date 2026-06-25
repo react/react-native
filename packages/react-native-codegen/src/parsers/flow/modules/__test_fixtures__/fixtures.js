@@ -985,6 +985,33 @@ export default TurboModuleRegistry.getEnforcing<Spec>('SampleTurboModule');
 
 `;
 
+const NATIVE_MODULE_WITH_ARRAY_BUFFER = `
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @flow strict-local
+ * @format
+ */
+
+'use strict';
+
+import type {TurboModule} from '../RCTExport';
+import * as TurboModuleRegistry from '../TurboModuleRegistry';
+
+export interface Spec extends TurboModule {
+  +getArrayBuffer: () => ArrayBuffer;
+  +voidArrayBuffer: (arg: ArrayBuffer) => void;
+  +voidNullableArrayBuffer: (arg: ?ArrayBuffer) => void;
+  +promiseArrayBuffer: () => Promise<ArrayBuffer>;
+}
+
+export default TurboModuleRegistry.getEnforcing<Spec>('SampleTurboModule');
+
+`;
+
 module.exports = {
   NATIVE_MODULE_WITH_OBJECT_WITH_OBJECT_DEFINED_IN_FILE_AS_PROPERTY,
   NATIVE_MODULE_WITH_ARRAY_WITH_UNION_AND_TOUPLE,
@@ -1009,6 +1036,7 @@ module.exports = {
   NATIVE_MODULE_WITH_UNION_RETURN_TYPES,
   NATIVE_MODULE_WITH_EVENT_EMITTERS,
   NATIVE_MODULE_WITH_OPAQUE_TYPES,
+  NATIVE_MODULE_WITH_ARRAY_BUFFER,
   EMPTY_NATIVE_MODULE,
   ANDROID_ONLY_NATIVE_MODULE,
   IOS_ONLY_NATIVE_MODULE,

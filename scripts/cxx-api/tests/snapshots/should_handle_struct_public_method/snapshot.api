@@ -1,0 +1,3 @@
+struct test::TestStruct {
+  public void test();
+}

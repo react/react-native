@@ -11,19 +11,40 @@
 import SafeAreaView from '../../src/private/components/safeareaview/SafeAreaView_INTERNAL_DO_NOT_USE';
 import View from '../Components/View/View';
 import StyleSheet from '../StyleSheet/StyleSheet';
+import BackHandler from '../Utilities/BackHandler';
 import * as LogBoxData from './Data/LogBoxData';
 import LogBoxLog from './Data/LogBoxLog';
 import LogBoxLogNotification from './UI/LogBoxNotification';
 import * as React from 'react';
 
-type Props = $ReadOnly<{
-  logs: $ReadOnlyArray<LogBoxLog>,
+type Props = Readonly<{
+  logs: ReadonlyArray<LogBoxLog>,
   selectedLogIndex: number,
   isDisabled?: ?boolean,
 }>;
 
-export function _LogBoxNotificationContainer(props: Props): React.Node {
+function useLogBoxBackHandler(focused: boolean, logCount: number): void {
+  React.useEffect(() => {
+    if (!focused || logCount === 0) {
+      return;
+    }
+    const subscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      () => {
+        LogBoxData.clearWarnings();
+        LogBoxData.clearErrors();
+        return true;
+      },
+    );
+    return () => subscription.remove();
+  }, [focused, logCount]);
+}
+
+export function LogBoxNotificationContainer(props: Props): React.Node {
   const {logs} = props;
+  const [focused, setFocused] = React.useState(false);
+
+  useLogBoxBackHandler(focused, logs.length);
 
   const onDismissWarns = () => {
     LogBoxData.clearWarnings();
@@ -68,6 +89,7 @@ export function _LogBoxNotificationContainer(props: Props): React.Node {
             totalLogCount={warnings.length}
             onPressOpen={() => openLog(warnings[warnings.length - 1])}
             onPressDismiss={onDismissWarns}
+            onFocusChange={setFocused}
           />
         </View>
       )}
@@ -79,6 +101,7 @@ export function _LogBoxNotificationContainer(props: Props): React.Node {
             totalLogCount={errors.length}
             onPressOpen={() => openLog(errors[errors.length - 1])}
             onPressDismiss={onDismissErrors}
+            onFocusChange={setFocused}
           />
         </View>
       )}
@@ -100,6 +123,6 @@ const styles = StyleSheet.create({
   },
 });
 
-export default (LogBoxData.withSubscription(
-  _LogBoxNotificationContainer,
-): React.ComponentType<{}>);
+export default LogBoxData.withSubscription(
+  LogBoxNotificationContainer,
+) as React.ComponentType<{}>;

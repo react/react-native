@@ -37,12 +37,14 @@ TextMeasurement TextLayoutManager::measure(
 
   switch (attributedStringBox.getMode()) {
     case AttributedStringBox::Mode::Value: {
-      auto attributedString = ensurePlaceholderIfEmpty_DO_NOT_USE(attributedStringBox.getValue());
+      auto originalAtributedString = attributedStringBox.getValue();
+      auto attributedString = ensurePlaceholderIfEmpty_DO_NOT_USE(originalAtributedString);
 
       measurement = textMeasureCache_.get(
           {.attributedString = attributedString,
            .paragraphAttributes = paragraphAttributes,
-           .layoutConstraints = layoutConstraints},
+           .layoutConstraints = layoutConstraints,
+           .pointScaleFactor = layoutContext.pointScaleFactor},
           [&]() {
             auto telemetry = TransactionTelemetry::threadLocalTelemetry();
             if (telemetry) {
@@ -53,6 +55,14 @@ TextMeasurement TextLayoutManager::measure(
                                                       paragraphAttributes:paragraphAttributes
                                                             layoutContext:layoutContext
                                                         layoutConstraints:layoutConstraints];
+
+            // TODO(D63303709): We compensate for the placeholder character
+            // being used to represent empty string. iOS TextLayoutManager
+            // should instead measure using `baseTextAttributes` of the
+            // `AttributedString`.
+            if (originalAtributedString.isEmpty()) {
+              measurement.size.width = 0;
+            }
 
             if (telemetry) {
               telemetry->didMeasureText();

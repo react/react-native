@@ -26,25 +26,25 @@ import type {
 
 import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
 
-type NativeProps = $ReadOnly<{
+type NativeProps = Readonly<{
   ...ViewProps,
 
   // Props
-  names?: $ReadOnlyArray<string>,
-  disableds?: $ReadOnlyArray<boolean>,
-  progress?: $ReadOnlyArray<Int32>,
-  radii?: $ReadOnlyArray<Float>,
-  colors?: $ReadOnlyArray<ColorValue>,
-  srcs?: $ReadOnlyArray<ImageSource>,
-  points?: $ReadOnlyArray<PointValue>,
-  edgeInsets?: $ReadOnlyArray<EdgeInsetsValue>,
-  dimensions?: $ReadOnlyArray<DimensionValue>,
-  sizes?: WithDefault<$ReadOnlyArray<'small' | 'large'>, 'small'>,
-  object?: $ReadOnlyArray<$ReadOnly<{prop: string}>>,
-  arrayOfObjects?: $ReadOnlyArray<$ReadOnly<{prop1: Float, prop2: Int32}>>,
-  arrayOfMixed?: $ReadOnlyArray<UnsafeMixed>,
+  names?: ReadonlyArray<string>,
+  disableds?: ReadonlyArray<boolean>,
+  progress?: ReadonlyArray<Int32>,
+  radii?: ReadonlyArray<Float>,
+  colors?: ReadonlyArray<ColorValue>,
+  srcs?: ReadonlyArray<ImageSource>,
+  points?: ReadonlyArray<PointValue>,
+  edgeInsets?: ReadonlyArray<EdgeInsetsValue>,
+  dimensions?: ReadonlyArray<DimensionValue>,
+  sizes?: WithDefault<ReadonlyArray<'small' | 'large'>, 'small'>,
+  object?: ReadonlyArray<Readonly<{prop: string}>>,
+  arrayOfObjects?: ReadonlyArray<Readonly<{prop1: Float, prop2: Int32}>>,
+  arrayOfMixed?: ReadonlyArray<UnsafeMixed>,
 }>;
 
-export default (codegenNativeComponent<NativeProps>(
+export default codegenNativeComponent<NativeProps>(
   'ArrayPropsNativeComponentView',
-): HostComponent<NativeProps>);
+) as HostComponent<NativeProps>;

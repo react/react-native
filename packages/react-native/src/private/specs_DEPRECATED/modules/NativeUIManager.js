@@ -37,15 +37,19 @@ export type NativeMeasureLayoutOnSuccessCallback = (
 ) => void;
 
 export interface Spec extends TurboModule {
-  +getConstants: () => Object;
-  +createView: (
+  readonly getConstants: () => Object;
+  readonly createView: (
     reactTag: number,
     viewName: string,
     rootTag: RootTag,
     props: Object,
   ) => void;
-  +updateView: (reactTag: number, viewName: string, props: Object) => void;
-  +findSubviewIn: (
+  readonly updateView: (
+    reactTag: number,
+    viewName: string,
+    props: Object,
+  ) => void;
+  readonly findSubviewIn: (
     reactTag: number,
     point: Array<number>,
     callback: (
@@ -63,7 +67,7 @@ export interface Spec extends TurboModule {
    * commandID - Id of the native method that should be called.
    * commandArgs - Args of the native method that we can pass from JS to native.
    */
-  +dispatchViewManagerCommand: (
+  readonly dispatchViewManagerCommand: (
     reactTag: number,
     commandID: number, // number || string
     commandArgs?: Array<any>,
@@ -87,7 +91,7 @@ export interface Spec extends TurboModule {
    *
    * @deprecated Use `ref.measure` instead.
    */
-  +measure: (
+  readonly measure: (
     reactTag: number,
     callback: NativeMeasureOnSuccessCallback,
   ) => void;
@@ -108,11 +112,11 @@ export interface Spec extends TurboModule {
    *
    * @deprecated Use `ref.measureInWindow` instead.
    */
-  +measureInWindow: (
+  readonly measureInWindow: (
     reactTag: number,
     callback: NativeMeasureInWindowOnSuccessCallback,
   ) => void;
-  +viewIsDescendantOf: (
+  readonly viewIsDescendantOf: (
     reactTag: number,
     ancestorReactTag: number,
     callback: (result: Array<boolean>) => void,
@@ -127,13 +131,13 @@ export interface Spec extends TurboModule {
    *
    * @deprecated Use `ref.measureLayout` instead.
    */
-  +measureLayout: (
+  readonly measureLayout: (
     reactTag: number,
     ancestorReactTag: number,
     errorCallback: (error: Object) => void,
     callback: NativeMeasureLayoutOnSuccessCallback,
   ) => void;
-  +measureLayoutRelativeToParent: (
+  readonly measureLayoutRelativeToParent: (
     reactTag: number,
     errorCallback: (error: Object) => void,
     callback: (
@@ -143,15 +147,21 @@ export interface Spec extends TurboModule {
       height: number,
     ) => void,
   ) => void;
-  +setJSResponder: (reactTag: number, blockNativeResponder: boolean) => void;
-  +clearJSResponder: () => void;
-  +configureNextLayoutAnimation: (
+  readonly setJSResponder: (
+    reactTag: number,
+    blockNativeResponder: boolean,
+  ) => void;
+  readonly clearJSResponder: () => void;
+  readonly configureNextLayoutAnimation: (
     config: Object,
     callback: () => void, // check what is returned here
     errorCallback: (error: Object) => void,
   ) => void;
-  +setChildren: (containerTag: number, reactTags: Array<number>) => void;
-  +manageChildren: (
+  readonly setChildren: (
+    containerTag: number,
+    reactTags: Array<number>,
+  ) => void;
+  readonly manageChildren: (
     containerTag: number,
     moveFromIndices: Array<number>,
     moveToIndices: Array<number>,
@@ -161,8 +171,8 @@ export interface Spec extends TurboModule {
   ) => void;
 
   // Android only
-  +getConstantsForViewManager?: (viewManagerName: string) => ?Object;
-  +getDefaultEventTypes?: () => Array<string>;
+  readonly getConstantsForViewManager?: (viewManagerName: string) => ?Object;
+  readonly getDefaultEventTypes?: () => Array<string>;
   /**
    * Automatically animates views to their new positions when the
    * next layout happens.
@@ -175,13 +185,16 @@ export interface Spec extends TurboModule {
    * UIManager.setLayoutAnimationEnabledExperimental && UIManager.setLayoutAnimationEnabledExperimental(true);
    * ```
    */
-  +setLayoutAnimationEnabledExperimental?: (enabled: boolean) => void;
-  +sendAccessibilityEvent?: (reactTag: number, eventType: number) => void;
+  readonly setLayoutAnimationEnabledExperimental?: (enabled: boolean) => void;
+  readonly sendAccessibilityEvent?: (
+    reactTag: number,
+    eventType: number,
+  ) => void;
 
   // ios only
-  +lazilyLoadView?: (name: string) => Object; // revisit return
-  +focus?: (reactTag: number) => void;
-  +blur?: (reactTag: number) => void;
+  readonly lazilyLoadView?: (name: string) => Object; // revisit return
+  readonly focus?: (reactTag: number) => void;
+  readonly blur?: (reactTag: number) => void;
 }
 
-export default (TurboModuleRegistry.getEnforcing<Spec>('UIManager'): Spec);
+export default TurboModuleRegistry.getEnforcing<Spec>('UIManager') as Spec;

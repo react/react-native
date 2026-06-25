@@ -9,7 +9,8 @@
  */
 
 import {RNTesterThemeContext} from '../../components/RNTesterTheme';
-import React, {useContext} from 'react';
+import * as React from 'react';
+import {useContext} from 'react';
 import {StyleSheet, TextInput} from 'react-native';
 
 const ExampleTextInput: component(

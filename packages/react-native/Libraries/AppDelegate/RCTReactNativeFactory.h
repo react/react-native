@@ -8,7 +8,6 @@
 #import <React/RCTBridgeDelegate.h>
 #import <React/RCTConvert.h>
 #import <UIKit/UIKit.h>
-#import "RCTArchConfiguratorProtocol.h"
 #import "RCTDependencyProvider.h"
 #import "RCTJSRuntimeConfiguratorProtocol.h"
 #import "RCTRootViewFactory.h"
@@ -39,8 +38,7 @@ typedef NS_ENUM(NSInteger, RCTReleaseLevel) { Canary, Experimental, Stable };
     RCTTurboModuleManagerDelegate,
     RCTComponentViewFactoryComponentProvider,
 #endif
-    RCTJSRuntimeConfiguratorProtocol,
-    RCTArchConfiguratorProtocol>
+    RCTJSRuntimeConfiguratorProtocol>
 
 /// Return the bundle URL for the main bundle.
 - (NSURL *__nullable)bundleURL;
@@ -48,39 +46,6 @@ typedef NS_ENUM(NSInteger, RCTReleaseLevel) { Canary, Experimental, Stable };
 @property (nonatomic, strong) id<RCTDependencyProvider> dependencyProvider;
 
 @optional
-/**
- * It creates a `RCTBridge` using a delegate and some launch options.
- * By default, it is invoked passing `self` as a delegate.
- * You can override this function to customize the logic that creates the RCTBridge
- *
- * @parameter: delegate - an object that implements the `RCTBridgeDelegate` protocol.
- * @parameter: launchOptions - a dictionary with a set of options.
- *
- * @returns: a newly created instance of RCTBridge.
- */
-- (RCTBridge *)createBridgeWithDelegate:(id<RCTBridgeDelegate>)delegate
-                          launchOptions:(NSDictionary *)launchOptions
-    __attribute__((deprecated(
-        "createBridgeWithDelegate:launchOptions: is deprecated and will be removed when removing the legacy architecture.")));
-
-/**
- * It creates a `UIView` starting from a bridge, a module name and a set of initial properties.
- * By default, it is invoked using the bridge created by `createBridgeWithDelegate:launchOptions` and
- * the name in the `self.moduleName` variable.
- * You can override this function to customize the logic that creates the Root View.
- *
- * @parameter: bridge - an instance of the `RCTBridge` object.
- * @parameter: moduleName - the name of the app, used by Metro to resolve the module.
- * @parameter: initProps - a set of initial properties.
- *
- * @returns: a UIView properly configured with a bridge for React Native.
- */
-- (UIView *)createRootViewWithBridge:(RCTBridge *)bridge
-                          moduleName:(NSString *)moduleName
-                           initProps:(NSDictionary *)initProps
-    __attribute__((deprecated(
-        "createRootViewWithBridge:moduleName:initProps is deprecated and will be removed when removing the legacy architecture.")));
-
 /// This method returns a map of Component Descriptors and Components classes that needs to be registered in the
 /// new renderer. The Component Descriptor is a string which represent the name used in JS to refer to the native
 /// component. The default implementation returns an empty dictionary. Subclasses can override this method to register
@@ -136,9 +101,12 @@ typedef NS_ENUM(NSInteger, RCTReleaseLevel) { Canary, Experimental, Stable };
 
 @property (nonatomic, strong, nonnull) RCTRootViewFactory *rootViewFactory;
 
+#if !defined(RCT_REMOVE_LEGACY_ARCH)
 @property (nonatomic, nullable) RCTSurfacePresenterBridgeAdapter *bridgeAdapter __attribute__((
     deprecated("The bridgeAdapter is deprecated and will be removed when removing the legacy architecture.")));
-;
+#endif
+
+@property (nonatomic, strong, nonnull) RCTRootViewFactory *rootViewFactory;
 
 @property (nonatomic, weak) id<RCTReactNativeFactoryDelegate> delegate;
 

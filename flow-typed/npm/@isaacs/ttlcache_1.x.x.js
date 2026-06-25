@@ -31,7 +31,7 @@ declare module '@isaacs/ttlcache' {
      * as in `cache.set(key, undefined)`. Use `cache.has()` to determine
      * whether a key is present in the cache at all.
      */
-    get<T: V = V>(key: K, options?: TTLCache$GetOptions): T | void;
+    get<T extends V = V>(key: K, options?: TTLCache$GetOptions): T | void;
 
     /**
      * Check if a key is in the cache.

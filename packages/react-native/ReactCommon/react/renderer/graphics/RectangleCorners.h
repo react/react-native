@@ -25,16 +25,7 @@ struct RectangleCorners {
   T bottomLeft{};
   T bottomRight{};
 
-  bool operator==(const RectangleCorners<T> &rhs) const noexcept
-  {
-    return std::tie(this->topLeft, this->topRight, this->bottomLeft, this->bottomRight) ==
-        std::tie(rhs.topLeft, rhs.topRight, rhs.bottomLeft, rhs.bottomRight);
-  }
-
-  bool operator!=(const RectangleCorners<T> &rhs) const noexcept
-  {
-    return !(*this == rhs);
-  }
+  bool operator==(const RectangleCorners<T> &rhs) const noexcept = default;
 
   bool isUniform() const noexcept
   {

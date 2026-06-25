@@ -31,7 +31,7 @@ const blank = {
   bottom: 0,
 };
 
-type BoxInspectorProps = $ReadOnly<{
+type BoxInspectorProps = Readonly<{
   style: ViewStyleProp,
   frame: ?InspectedElementFrame,
 }>;
@@ -57,10 +57,10 @@ function BoxInspector({style, frame}: BoxInspectorProps): React.Node {
   );
 }
 
-type BoxContainerProps = $ReadOnly<{
+type BoxContainerProps = Readonly<{
   title: string,
   titleStyle?: TextStyleProp,
-  box: $ReadOnly<{
+  box: Readonly<{
     top: number,
     left: number,
     right: number,

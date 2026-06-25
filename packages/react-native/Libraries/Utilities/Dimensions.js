@@ -60,7 +60,7 @@ class Dimensions {
    *
    * @param {DimensionsPayload} dims Simple string-keyed object of dimensions to set
    */
-  static set(dims: $ReadOnly<DimensionsPayload>): void {
+  static set(dims: Readonly<DimensionsPayload>): void {
     // We calculate the window dimensions in JS so that we don't encounter loss of
     // precision in transferring the dimensions (which could be non-integers) over
     // the bridge.

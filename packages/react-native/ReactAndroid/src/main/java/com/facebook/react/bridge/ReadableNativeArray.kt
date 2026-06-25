@@ -8,7 +8,6 @@
 package com.facebook.react.bridge
 
 import com.facebook.proguard.annotations.DoNotStrip
-import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import java.util.ArrayList
 import java.util.Arrays
 import kotlin.jvm.JvmStatic
@@ -90,17 +89,7 @@ public open class ReadableNativeArray protected constructor() : NativeArray(), R
 
   override fun hashCode(): Int = localArray.hashCode()
 
-  override fun equals(other: Any?): Boolean {
-    if (other !is ReadableNativeArray) {
-      return false
-    }
-
-    return if (ReactNativeFeatureFlags.useNativeEqualsInNativeReadableArrayAndroid()) {
-      nativeEquals(other)
-    } else {
-      localArray.contentDeepEquals(other.localArray)
-    }
-  }
+  override fun equals(other: Any?): Boolean = (other is ReadableNativeArray) && nativeEquals(other)
 
   private external fun nativeEquals(other: ReadableNativeArray): Boolean
 

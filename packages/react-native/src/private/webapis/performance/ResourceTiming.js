@@ -33,19 +33,19 @@ export type PerformanceResourceTimingJSON = {
 };
 
 export interface PerformanceResourceTimingInit {
-  +name: string;
-  +startTime: DOMHighResTimeStamp;
-  +duration: DOMHighResTimeStamp;
-  +fetchStart: DOMHighResTimeStamp;
-  +requestStart: DOMHighResTimeStamp;
-  +connectStart: DOMHighResTimeStamp;
-  +connectEnd: DOMHighResTimeStamp;
-  +responseStart: DOMHighResTimeStamp;
-  +responseEnd: DOMHighResTimeStamp;
-  +responseStatus: number;
-  +contentType: string;
-  +encodedBodySize: number;
-  +decodedBodySize: number;
+  readonly name: string;
+  readonly startTime: DOMHighResTimeStamp;
+  readonly duration: DOMHighResTimeStamp;
+  readonly fetchStart: DOMHighResTimeStamp;
+  readonly requestStart: DOMHighResTimeStamp;
+  readonly connectStart: DOMHighResTimeStamp;
+  readonly connectEnd: DOMHighResTimeStamp;
+  readonly responseStart: DOMHighResTimeStamp;
+  readonly responseEnd: DOMHighResTimeStamp;
+  readonly responseStatus: number;
+  readonly contentType: string;
+  readonly encodedBodySize: number;
+  readonly decodedBodySize: number;
 }
 
 export class PerformanceResourceTiming extends PerformanceEntry {

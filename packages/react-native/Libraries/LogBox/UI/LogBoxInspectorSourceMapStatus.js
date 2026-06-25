@@ -19,19 +19,17 @@ import * as LogBoxStyle from './LogBoxStyle';
 import * as React from 'react';
 import {useEffect, useState} from 'react';
 
-type Props = $ReadOnly<{
+component LogBoxInspectorSourceMapStatus(
   onPress?: ?(event: GestureResponderEvent) => void,
   status: 'COMPLETE' | 'FAILED' | 'NONE' | 'PENDING',
-}>;
-
-function LogBoxInspectorSourceMapStatus(props: Props): React.Node {
+) {
   const [state, setState] = useState({
     animation: null,
     rotate: null,
   });
 
   useEffect(() => {
-    if (props.status === 'PENDING') {
+    if (status === 'PENDING') {
       if (state.animation == null) {
         const animated = new Animated.Value(0);
         const animation = Animated.loop(
@@ -67,11 +65,11 @@ function LogBoxInspectorSourceMapStatus(props: Props): React.Node {
         state.animation.stop();
       }
     };
-  }, [props.status, state.animation]);
+  }, [status, state.animation]);
 
   let image;
   let color;
-  switch (props.status) {
+  switch (status) {
     case 'FAILED':
       image = require('./LogBoxImages/alert-triangle.png');
       color = LogBoxStyle.getErrorColor(1);
@@ -82,7 +80,7 @@ function LogBoxInspectorSourceMapStatus(props: Props): React.Node {
       break;
   }
 
-  if (props.status === 'COMPLETE' || image == null) {
+  if (status === 'COMPLETE' || image == null) {
     return null;
   }
 
@@ -93,14 +91,14 @@ function LogBoxInspectorSourceMapStatus(props: Props): React.Node {
         pressed: LogBoxStyle.getBackgroundColor(1),
       }}
       hitSlop={{bottom: 8, left: 8, right: 8, top: 8}}
-      onPress={props.onPress}
+      onPress={onPress}
       style={styles.root}>
       <Animated.Image
         source={image}
         style={[
           styles.image,
           {tintColor: color},
-          state.rotate == null || props.status !== 'PENDING'
+          state.rotate == null || status !== 'PENDING'
             ? null
             : {transform: [{rotate: state.rotate}]},
         ]}

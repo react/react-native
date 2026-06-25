@@ -11,13 +11,13 @@
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 
 import * as React from 'react';
-import {useRef, useState} from 'react';
-import {Animated, Button, Text, View} from 'react-native';
+import {useState} from 'react';
+import {Animated, Button, Text, View, useAnimatedValue} from 'react-native';
 
 const componentList: number[] = Array.from({length: 100}, (_, i) => i + 1);
 
-function PressableWithNativeDriver() {
-  const currScroll = useRef(new Animated.Value(0)).current;
+component PressableWithNativeDriver() {
+  const currScroll = useAnimatedValue(0);
   const [count, setCount] = useState(0);
 
   return (
@@ -67,9 +67,9 @@ function PressableWithNativeDriver() {
   );
 }
 
-export default ({
+export default {
   title: 'Pressability With Native Driver',
   name: 'pressabilityWithNativeDrivers',
   description: 'Pressabile animated with Native Drivers',
   render: () => <PressableWithNativeDriver />,
-}: RNTesterModuleExample);
+} as RNTesterModuleExample;

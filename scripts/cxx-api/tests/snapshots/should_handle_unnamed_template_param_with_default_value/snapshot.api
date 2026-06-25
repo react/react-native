@@ -1,0 +1,16 @@
+class test::BigInt {
+}
+
+class test::Object {
+}
+
+class test::String {
+}
+
+class test::Symbol {
+}
+
+struct test::Value {
+  template <typename T, typename = std::enable_if_t<std::is_base_of<test::Symbol, T>::value || std::is_base_of<test::BigInt, T>::value || std::is_base_of<test::String, T>::value || std::is_base_of<test::Object, T>::value>>
+  public Value(T&& other);
+}

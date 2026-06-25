@@ -356,7 +356,7 @@ TEST_F(LayoutTest, overflowInsetTransformScaleTest) {
   auto layoutMetricsABC = viewShadowNodeABC_->getLayoutMetrics();
 
   // The frame of box ABC won't actually scale up. The transform matrix is
-  // purely cosmatic and should apply later in mounting phase.
+  // purely cosmetic and should apply later in mounting phase.
   EXPECT_EQ(layoutMetricsABC.frame.size.width, 110);
   EXPECT_EQ(layoutMetricsABC.frame.size.height, 20);
 

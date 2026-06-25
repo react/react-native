@@ -1,0 +1,55 @@
+name: post-pr-comment
+description: Post or update a PR comment, or delete if no sections
+inputs:
+  sections:
+    description: 'JSON array of markdown sections to include in comment'
+    required: false
+    default: '[]'
+  header:
+    description: 'Optional header text to display at the top of the comment'
+    required: false
+    default: ''
+  marker:
+    description: 'HTML comment marker to identify this comment'
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Create, update, or delete comment
+      uses: actions/github-script@v8
+      env:
+        SECTIONS_INPUT: ${{ inputs.sections }}
+        MARKER_INPUT: ${{ inputs.marker }}
+        HEADER_INPUT: ${{ inputs.header }}
+      with:
+        script: |
+          const marker = process.env.MARKER_INPUT;
+          const header = process.env.HEADER_INPUT;
+          const sections = JSON.parse(process.env.SECTIONS_INPUT)
+            .filter(Boolean)
+            .filter(s => s.trim());
+
+          const {owner, repo} = context.repo;
+          const issue_number = context.issue.number;
+
+          const {data: comments} = await github.rest.issues.listComments({
+            owner, repo, issue_number,
+          });
+
+          const existing = comments.find(c => c.body?.includes(marker));
+
+          if (!sections.length) {
+            if (existing) {
+              await github.rest.issues.deleteComment({owner, repo, comment_id: existing.id});
+            }
+            return;
+          }
+
+          const content = sections.join('\n\n');
+          const body = header ? `${marker}\n## ${header}\n\n${content}` : `${marker}\n${content}`;
+
+          if (existing) {
+            await github.rest.issues.updateComment({owner, repo, comment_id: existing.id, body});
+          } else {
+            await github.rest.issues.createComment({owner, repo, issue_number, body});
+          }

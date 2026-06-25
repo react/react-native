@@ -26,17 +26,4 @@
 
 'use strict';
 
-const start = Date.now();
-
 require('../../src/private/setup/setUpDefaultReactNativeEnvironment').default();
-
-const GlobalPerformanceLogger =
-  require('../Utilities/GlobalPerformanceLogger').default;
-// We could just call GlobalPerformanceLogger.markPoint at the top of the file,
-// but then we'd be excluding the time it took to require the logger.
-// Instead, we just use Date.now and backdate the timestamp.
-GlobalPerformanceLogger.markPoint(
-  'initializeCore_start',
-  GlobalPerformanceLogger.currentTimestamp() - (Date.now() - start),
-);
-GlobalPerformanceLogger.markPoint('initializeCore_end');

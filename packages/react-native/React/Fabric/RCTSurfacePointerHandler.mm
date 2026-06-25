@@ -15,6 +15,8 @@
 #import "RCTConversions.h"
 #import "RCTTouchableComponentViewProtocol.h"
 
+#if !TARGET_OS_TV
+
 using namespace facebook::react;
 
 typedef NS_ENUM(NSInteger, RCTPointerEventType) {
@@ -283,6 +285,7 @@ static PointerEvent CreatePointerEventFromActivePointer(
   PointerEvent event = {};
   event.pointerId = activePointer.identifier;
   event.pointerType = PointerTypeCStringFromUITouchType(activePointer.touchType);
+  event.timeStamp = RCTHighResTimeStampFromSeconds(activePointer.timestamp);
 
   if (eventType == RCTPointerEventTypeCancel) {
     event.clientPoint = RCTPointFromCGPoint(CGPointZero);
@@ -299,17 +302,21 @@ static PointerEvent CreatePointerEventFromActivePointer(
 
   event.pressure = activePointer.force;
 
-  if (activePointer.touchType == UITouchTypeIndirectPointer) {
-    // pointer events with a mouse button pressed should report a pressure of 0.5
-    // when the touch is down and 0.0 when it is lifted regardless of how it is reported by the OS
-    event.pressure = eventType != RCTPointerEventTypeEnd ? 0.5 : 0.0;
+  if (@available(iOS 13.4, tvOS 13.4, *)) {
+    if (activePointer.touchType == UITouchTypeIndirectPointer) {
+      // pointer events with a mouse button pressed should report a pressure of 0.5
+      // when the touch is down and 0.0 when it is lifted regardless of how it is reported by the OS
+      event.pressure = eventType != RCTPointerEventTypeEnd ? 0.5 : 0.0;
+    }
   }
 
   CGFloat pointerSize = activePointer.majorRadius * 2.0;
 
-  if (activePointer.touchType == UITouchTypeIndirectPointer) {
-    // mouse type pointers should always report a size of 1
-    pointerSize = 1.0;
+  if (@available(iOS 13.4, tvOS 13.4, *)) {
+    if (activePointer.touchType == UITouchTypeIndirectPointer) {
+      // mouse type pointers should always report a size of 1
+      pointerSize = 1.0;
+    }
   }
 
   event.width = pointerSize;
@@ -339,7 +346,8 @@ static PointerEvent CreatePointerEventFromIncompleteHoverData(
     CGPoint clientLocation,
     CGPoint screenLocation,
     CGPoint offsetLocation,
-    UIKeyModifierFlags modifierFlags)
+    UIKeyModifierFlags modifierFlags,
+    HighResTimeStamp timeStamp)
 {
   PointerEvent event = {};
   event.pointerId = pointerId;
@@ -359,6 +367,7 @@ static PointerEvent CreatePointerEventFromIncompleteHoverData(
   event.tangentialPressure = 0.0;
   event.twist = 0;
   event.isPrimary = true;
+  event.timeStamp = timeStamp;
 
   return event;
 }
@@ -754,8 +763,11 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithTarget : (id)target action : (SEL)act
 
   modifierFlags = recognizer.modifierFlags;
 
+  // For hover events, use the current time as we don't have a precise timestamp
+  HighResTimeStamp eventTimestamp = HighResTimeStamp::now();
+
   PointerEvent event = CreatePointerEventFromIncompleteHoverData(
-      pointerId, pointerType, clientLocation, screenLocation, offsetLocation, modifierFlags);
+      pointerId, pointerType, clientLocation, screenLocation, offsetLocation, modifierFlags, eventTimestamp);
 
   SharedTouchEventEmitter eventEmitter = GetTouchEmitterFromView(targetView, offsetLocation);
   if (eventEmitter != nil) {
@@ -771,3 +783,5 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithTarget : (id)target action : (SEL)act
 }
 
 @end
+
+#endif // !TARGET_OS_TV

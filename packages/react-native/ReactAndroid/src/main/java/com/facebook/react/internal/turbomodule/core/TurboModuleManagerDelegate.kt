@@ -48,9 +48,6 @@ public abstract class TurboModuleManagerDelegate {
 
   public open fun getEagerInitModuleNames(): List<String> = emptyList()
 
-  /** Can the TurboModule system create legacy modules? */
-  public open fun unstable_shouldEnableLegacyModuleInterop(): Boolean = false
-
   // TODO(T171231381): Consider removing this method: could we just use the static initializer
   // of derived classes instead?
   @Synchronized protected fun maybeLoadOtherSoLibraries(): Unit = Unit

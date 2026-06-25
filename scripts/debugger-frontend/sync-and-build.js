@@ -25,7 +25,7 @@ const supportsColor = require('supports-color');
 const {parseArgs, styleText} = require('util');
 
 const DEVTOOLS_FRONTEND_REPO_URL =
-  'https://github.com/facebook/react-native-devtools-frontend';
+  'https://github.com/react/react-native-devtools-frontend';
 
 const config = {
   allowPositionals: true,
@@ -163,9 +163,9 @@ async function buildDebuggerFrontend(
   packagePath /*: string */,
   scratchPath /*: string */,
   localCheckoutPath /*: ?string */,
-  {branch, gclientSyncOptions, noBuild} /*: $ReadOnly<{
+  {branch, gclientSyncOptions, noBuild} /*: Readonly<{
     branch: string,
-    gclientSyncOptions: $ReadOnly<{nohooks: boolean}>,
+    gclientSyncOptions: Readonly<{nohooks: boolean}>,
     noBuild: boolean,
   }>*/,
 ) /*: Promise<{checkoutPath: string}> */ {
@@ -244,7 +244,7 @@ async function checkoutDevToolsFrontend(
 async function setupGclientWorkspace(
   scratchPath /*: string */,
   checkoutPath /*: string */,
-  {nohooks} /*: $ReadOnly<{nohooks: boolean}> */,
+  {nohooks} /*: Readonly<{nohooks: boolean}> */,
 ) {
   process.stdout.write('Setting up gclient workspace' + '\n');
   await spawnSafe(
@@ -345,12 +345,12 @@ async function copyLicenseToPackage(
 }
 
 async function generateBuildInfo(
-  info /*: $ReadOnly<{
+  info /*: Readonly<{
   checkoutPath: string,
   isLocalCheckout: boolean,
   branch: string,
   packagePath: string,
-  gclientSyncOptions: $ReadOnly<{nohooks: boolean}>,
+  gclientSyncOptions: Readonly<{nohooks: boolean}>,
   gnArgsSummary: string,
   noBuild: boolean,
 }> */,
@@ -588,7 +588,7 @@ async function createSyncDiff(
   {
     checkoutPath,
     noBuild,
-  } /*: $ReadOnly<{checkoutPath: string, noBuild: boolean}> */,
+  } /*: Readonly<{checkoutPath: string, noBuild: boolean}> */,
 ) {
   process.stdout.write('Creating a sync diff\n');
   const {packagePath, baseGitRevision} = diffBaseInfo;

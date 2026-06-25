@@ -1,0 +1,5 @@
+class test::Base {
+}
+
+class test::Derived : public virtual test::Base {
+}

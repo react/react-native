@@ -150,7 +150,7 @@ function PointerEventPointerMoveAcrossTestCase(
   );
 }
 
-type Props = $ReadOnly<{}>;
+type Props = Readonly<{}>;
 export default function PointerEventPointerMoveAcross(
   props: Props,
 ): React.MixedElement {

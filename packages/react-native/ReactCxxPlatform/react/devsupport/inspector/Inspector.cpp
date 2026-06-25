@@ -148,18 +148,24 @@ Inspector::~Inspector() noexcept {
 }
 
 void Inspector::connectDebugger(const std::string& inspectorUrl) noexcept {
-  if (!packagerConnection_) {
-    packagerConnection_ =
-        std::make_unique<jsinspector_modern::InspectorPackagerConnection>(
-            inspectorUrl,
-            deviceName_,
-            appName_,
-            std::make_unique<InspectorPackagerConnectionDelegate>(
-                weak_from_this(), webSocketClientFactory_));
-  }
-  if (!packagerConnection_->isConnected()) {
-    packagerConnection_->connect();
-  }
+  invokeElsePost([weakThis = weak_from_this(), inspectorUrl]() {
+    auto self = weakThis.lock();
+    if (!self) {
+      return;
+    }
+    if (!self->packagerConnection_) {
+      self->packagerConnection_ =
+          std::make_unique<jsinspector_modern::InspectorPackagerConnection>(
+              inspectorUrl,
+              self->deviceName_,
+              self->appName_,
+              std::make_unique<InspectorPackagerConnectionDelegate>(
+                  weakThis, self->webSocketClientFactory_));
+    }
+    if (!self->packagerConnection_->isConnected()) {
+      self->packagerConnection_->connect();
+    }
+  });
 }
 
 void Inspector::ensureHostTarget(
@@ -180,7 +186,7 @@ void Inspector::ensureHostTarget(
       });
   static_cast<InspectorHostTargetDelegate&>(*hostDelegate_).setTarget(target_);
   jsinspector_modern::InspectorTargetCapabilities capabilities{
-      .nativePageReloads = true, .prefersFuseboxFrontend = true};
+      .nativePageReloads = true};
   pageId_ = jsinspector_modern::getInspectorInstance().addPage(
       std::string(INTEGRATION_NAME),
       "", /*vm*/

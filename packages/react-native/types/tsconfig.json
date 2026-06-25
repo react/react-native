@@ -2,6 +2,7 @@
   "compilerOptions": {
     "module": "commonjs",
     "lib": ["es6"],
+    "strict": false,
     "noImplicitAny": true,
     "noImplicitThis": true,
     "strictFunctionTypes": true,

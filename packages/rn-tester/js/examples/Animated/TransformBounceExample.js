@@ -29,7 +29,7 @@ const styles = StyleSheet.create({
   },
 });
 
-function TransformBounceView({useNativeDriver}: {useNativeDriver: boolean}) {
+component TransformBounceView(useNativeDriver: boolean) {
   const anim = new Animated.Value(0);
   const bounceAnimation = Animated.spring(anim, {
     // Returns to the start
@@ -91,7 +91,7 @@ function TransformBounceView({useNativeDriver}: {useNativeDriver: boolean}) {
   );
 }
 
-function TransformBounceExample(): React.Node {
+component TransformBounceExample() {
   const [useNativeDriver, setUseNativeDriver] = useState(false);
 
   return (
@@ -112,7 +112,7 @@ function TransformBounceExample(): React.Node {
   );
 }
 
-export default ({
+export default {
   title: 'Transform Bounce',
   name: 'transformBounce',
   expect: 'Transform animation on rotation, translation, scale of View',
@@ -120,6 +120,6 @@ export default ({
     'spring with custom constants and mapped to an ' +
     'ordered set of transforms.  Each transform has ' +
     'an interpolation to convert the value into the ' +
-    'right range and units.': string),
+    'right range and units.') as string,
   render: () => <TransformBounceExample />,
-}: RNTesterModuleExample);
+} as RNTesterModuleExample;

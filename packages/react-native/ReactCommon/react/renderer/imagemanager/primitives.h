@@ -39,11 +39,6 @@ class ImageSource {
     return std::tie(this->type, this->uri) == std::tie(rhs.type, rhs.uri);
   }
 
-  bool operator!=(const ImageSource &rhs) const
-  {
-    return !(*this == rhs);
-  }
-
 #ifdef RN_SERIALIZABLE_STATE
   folly::dynamic toDynamic() const
   {

@@ -12,8 +12,10 @@
 #include <react/debug/react_native_assert.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
+#ifndef RCT_REMOVE_LEGACY_COMPONENT_INTEROP
 #include <react/renderer/components/legacyviewmanagerinterop/UnstableLegacyViewManagerAutomaticComponentDescriptor.h>
 #include <react/renderer/components/legacyviewmanagerinterop/UnstableLegacyViewManagerAutomaticShadowNode.h>
+#endif // RCT_REMOVE_LEGACY_COMPONENT_INTEROP
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/core/ShadowNodeFragment.h>
 #include <utility>
@@ -84,6 +86,7 @@ const ComponentDescriptor& ComponentDescriptorRegistry::at(
   }
 
   if (it == _registryByName.end()) {
+#ifndef RCT_REMOVE_LEGACY_COMPONENT_INTEROP
     if (ReactNativeFeatureFlags::useFabricInterop()) {
       // When interop is enabled, if the component is not found we rely on
       // UnstableLegacyViewManagerAutomaticComponentDescriptor to support legacy
@@ -94,6 +97,7 @@ const ComponentDescriptor& ComponentDescriptorRegistry::at(
       registerComponentDescriptor(componentDescriptor);
       return *_registryByName.find(unifiedComponentName)->second;
     } else {
+#endif // RCT_REMOVE_LEGACY_COMPONENT_INTEROP
       // When interop is disabled, if the component is not found we rely on
       // fallbackComponentDescriptor (default:
       // UnimplementedNativeViewComponentDescriptor).
@@ -107,7 +111,9 @@ const ComponentDescriptor& ComponentDescriptorRegistry::at(
       } else {
         return *_fallbackComponentDescriptor.get();
       }
+#ifndef RCT_REMOVE_LEGACY_COMPONENT_INTEROP
     }
+#endif // RCT_REMOVE_LEGACY_COMPONENT_INTEROP
   }
 
   return *it->second;

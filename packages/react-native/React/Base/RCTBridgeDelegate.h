@@ -23,62 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (NSURL *__nullable)sourceURLForBridge:(RCTBridge *)bridge
     __deprecated_msg("This API will be removed along with the legacy architecture.");
-
-@optional
-
-/**
- * The bridge initializes any registered RCTBridgeModules automatically, however
- * if you wish to instantiate your own module instances, you can return them
- * from this method.
- *
- * Note: You should always return a new instance for each call, rather than
- * returning the same instance each time the bridge is reloaded. Module instances
- * should not be shared between bridges, and this may cause unexpected behavior.
- *
- * It is also possible to override standard modules with your own implementations
- * by returning a class with the same `moduleName` from this method, but this is
- * not recommended in most cases - if the module methods and behavior do not
- * match exactly, it may lead to bugs or crashes.
- */
-- (NSArray<id<RCTBridgeModule>> *)extraModulesForBridge:(RCTBridge *)bridge
-    __deprecated_msg("This API will be removed along with the legacy architecture.");
-
-/**
- * The bridge will call this method when a module been called from JS
- * cannot be found among registered modules.
- * It should return YES if the module with name 'moduleName' was registered
- * in the implementation, and the system must attempt to look for it again among registered.
- * If the module was not registered, return NO to prevent further searches.
- */
-- (BOOL)bridge:(RCTBridge *)bridge
-    didNotFindModule:(NSString *)moduleName
-    __deprecated_msg("This API will be removed along with the legacy architecture.");
-
-/**
- * The bridge will automatically attempt to load the JS source code from the
- * location specified by the `sourceURLForBridge:` method, however, if you want
- * to handle loading the JS yourself, you can do so by implementing this method.
- */
-- (void)loadSourceForBridge:(RCTBridge *)bridge
-                 onProgress:(RCTSourceLoadProgressBlock)onProgress
-                 onComplete:(RCTSourceLoadBlock)loadCallback
-    __deprecated_msg("This API will be removed along with the legacy architecture.");
-
-/**
- * Similar to loadSourceForBridge:onProgress:onComplete: but without progress
- * reporting.
- */
-- (void)loadSourceForBridge:(RCTBridge *)bridge
-                  withBlock:(RCTSourceLoadBlock)loadCallback
-    __deprecated_msg("This API will be removed along with the legacy architecture.");
-
-/**
- * Retrieve the list of lazy-native-modules names for the given bridge.
- */
-- (NSDictionary<NSString *, Class> *)extraLazyModuleClassesForBridge:(RCTBridge *)bridge
-    __deprecated_msg("This API will be removed along with the legacy architecture.");
-
-#endif // RCT_REMOVE_LEGACY_ARCH
+#endif
 @end
 
 NS_ASSUME_NONNULL_END

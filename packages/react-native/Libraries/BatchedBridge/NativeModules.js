@@ -18,9 +18,9 @@ const invariant = require('invariant');
 export type ModuleConfig = [
   string /* name */,
   ?{...} /* constants */,
-  ?$ReadOnlyArray<string> /* functions */,
-  ?$ReadOnlyArray<number> /* promise method IDs */,
-  ?$ReadOnlyArray<number> /* sync method IDs */,
+  ?ReadonlyArray<string> /* functions */,
+  ?ReadonlyArray<number> /* promise method IDs */,
+  ?ReadonlyArray<number> /* sync method IDs */,
 ];
 
 export type MethodType = 'async' | 'promise' | 'sync';
@@ -50,7 +50,7 @@ function genModule(
     return {name: moduleName};
   }
 
-  const module: {[string]: mixed} = {};
+  const module: {[string]: unknown} = {};
   methods &&
     methods.forEach((methodName, methodID) => {
       const isPromise =
@@ -99,7 +99,7 @@ function loadModule(name: string, moduleID: number): ?{...} {
 function genMethod(moduleID: number, methodID: number, type: MethodType) {
   let fn = null;
   if (type === 'promise') {
-    fn = function promiseMethodWrapper(...args: Array<mixed>) {
+    fn = function promiseMethodWrapper(...args: Array<unknown>) {
       // In case we reject, capture a useful stack trace here.
       /* $FlowFixMe[class-object-subtyping] added when improving typing for
        * this parameters */
@@ -114,7 +114,7 @@ function genMethod(moduleID: number, methodID: number, type: MethodType) {
           errorData =>
             reject(
               updateErrorWithErrorData(
-                (errorData: $FlowFixMe),
+                errorData as $FlowFixMe,
                 enqueueingFrameError,
               ),
             ),
@@ -122,7 +122,7 @@ function genMethod(moduleID: number, methodID: number, type: MethodType) {
       });
     };
   } else {
-    fn = function nonPromiseMethodWrapper(...args: Array<mixed>) {
+    fn = function nonPromiseMethodWrapper(...args: Array<unknown>) {
       const lastArg = args.length > 0 ? args[args.length - 1] : null;
       const secondLastArg = args.length > 1 ? args[args.length - 2] : null;
       const hasSuccessCallback = typeof lastArg === 'function';
@@ -133,9 +133,11 @@ function genMethod(moduleID: number, methodID: number, type: MethodType) {
           'Cannot have a non-function arg after a function arg.',
         );
       // $FlowFixMe[incompatible-type]
-      const onSuccess: ?(mixed) => void = hasSuccessCallback ? lastArg : null;
-      // $FlowFixMe[incompatible-type]
-      const onFail: ?(mixed) => void = hasErrorCallback ? secondLastArg : null;
+      const onSuccess: ?(unknown) => void = hasSuccessCallback ? lastArg : null;
+      const onFail: ?(unknown) => void = hasErrorCallback
+        ? // $FlowFixMe[incompatible-type]
+          secondLastArg
+        : null;
       // $FlowFixMe[unsafe-addition]
       const callbackCount = hasSuccessCallback + hasErrorCallback;
       const newArgs = args.slice(0, args.length - callbackCount);
@@ -163,7 +165,7 @@ function genMethod(moduleID: number, methodID: number, type: MethodType) {
   return fn;
 }
 
-function arrayContains<T>(array: $ReadOnlyArray<T>, value: T): boolean {
+function arrayContains<T>(array: ReadonlyArray<T>, value: T): boolean {
   return array.indexOf(value) !== -1;
 }
 

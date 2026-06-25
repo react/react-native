@@ -21,7 +21,9 @@
 - (instancetype)init;
 - (void)invalidate;
 - (void)registerModuleForFrameUpdates:(id<RCTBridgeModule>)module
-                     withModuleHolder:(id<RCTDisplayLinkModuleHolder>)moduleHolder;
+                     withModuleHolder:(id<RCTDisplayLinkModuleHolder>)moduleHolder
+    __attribute__((deprecated(
+        "registerModuleForFrameUpdates is part of the legacy architecture and will be removed in a future React Native release.")));
 - (void)addToRunLoop:(NSRunLoop *)runLoop;
 
 @end

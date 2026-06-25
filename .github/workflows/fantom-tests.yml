@@ -1,0 +1,54 @@
+name: Fantom Tests
+
+permissions:
+  contents: read
+
+on:
+  workflow_call:
+    inputs:
+      fail-on-error:
+        type: boolean
+        default: false
+    outputs:
+      status:
+        description: 'The result of the Fantom tests (success or failure)'
+        value: ${{ jobs.report.outputs.status }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    outputs:
+      status: ${{ steps.report-status.outputs.status }}
+    container:
+      image: reactnativecommunity/react-native-android:latest
+      env:
+        TERM: 'dumb'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Run Fantom Tests
+        id: run-tests
+        continue-on-error: true
+        uses: ./.github/actions/run-fantom-tests
+      - name: Report status
+        id: report-status
+        if: ${{ always() && steps.run-tests.outcome == 'failure' }}
+        run: echo "status=failure" >> $GITHUB_OUTPUT
+
+  report:
+    needs: test
+    if: always()
+    runs-on: ubuntu-latest
+    outputs:
+      status: ${{ steps.check.outputs.status }}
+    steps:
+      - id: check
+        run: |
+          if [[ "${{ needs.test.outputs.status }}" == "failure" ]]; then
+            echo "status=failure" >> $GITHUB_OUTPUT
+          else
+            echo "status=success" >> $GITHUB_OUTPUT
+          fi
+      - name: Fail if needed
+        if: ${{ inputs.fail-on-error && steps.check.outputs.status == 'failure' }}
+        run: exit 1

@@ -14,7 +14,7 @@ import type {ViewStyleProp} from '../../StyleSheet/StyleSheet';
 import StyleSheet from '../../StyleSheet/StyleSheet';
 import * as React from 'react';
 
-type Props = $ReadOnly<{
+type Props = Readonly<{
   style?: ?ViewStyleProp,
   children?: React.Node,
   ...

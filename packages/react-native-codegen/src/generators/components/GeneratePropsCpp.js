@@ -205,7 +205,7 @@ function generatePropsDiffString(
                 'ImageRequestPrimitive should not be used in Props',
               );
             default:
-              (typeAnnotation.name: empty);
+              typeAnnotation.name as empty;
               throw new Error('Received unknown ReservedPropTypeAnnotation');
           }
         default:
@@ -288,11 +288,11 @@ function getClassExtendString(component: ComponentShape): string {
               case 'ReactNativeCoreViewProps':
                 return 'ViewProps(context, sourceProps, rawProps)';
               default:
-                (extendProps.knownTypeName: empty);
+                extendProps.knownTypeName as empty;
                 throw new Error('Invalid knownTypeName');
             }
           default:
-            (extendProps.type: empty);
+            extendProps.type as empty;
             throw new Error('Invalid extended type');
         }
       })

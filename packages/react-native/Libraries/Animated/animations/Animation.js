@@ -24,7 +24,7 @@ export type EndResult = {
 };
 export type EndCallback = (result: EndResult) => void;
 
-export type AnimationConfig = $ReadOnly<{
+export type AnimationConfig = Readonly<{
   isInteraction?: boolean,
   useNativeDriver: boolean,
   platformConfig?: PlatformConfig,
@@ -70,6 +70,7 @@ export default class Animation {
     previousAnimation: ?Animation,
     animatedValue: AnimatedValue,
   ): void {
+    // TODO: T274006331 - Remove js-only animation once shared backend is fully rolled out
     if (!this._useNativeDriver && animatedValue.__isNative === true) {
       throw new Error(
         'Attempting to run JS driven animation on animated node ' +
@@ -98,7 +99,7 @@ export default class Animation {
     this.__active = false;
   }
 
-  __getNativeAnimationConfig(): $ReadOnly<{
+  __getNativeAnimationConfig(): Readonly<{
     platformConfig: ?PlatformConfig,
     ...
   }> {
@@ -141,14 +142,22 @@ export default class Animation {
         animatedValue.__getNativeTag(),
         config,
         result => {
-          this.__notifyAnimationEnd(result);
-
           // When using natively driven animations, once the animation completes,
           // we need to ensure that the JS side nodes are synced with the updated
           // values.
           const {value, offset} = result;
-          if (value != null) {
+          const syncBeforeCallback =
+            ReactNativeFeatureFlags.animatedShouldSyncValueBeforeStartCallback();
+          if (syncBeforeCallback && value != null) {
             animatedValue.__onAnimatedValueUpdateReceived(value, offset);
+          }
+
+          this.__notifyAnimationEnd(result);
+
+          if (value != null) {
+            if (!syncBeforeCallback) {
+              animatedValue.__onAnimatedValueUpdateReceived(value, offset);
+            }
 
             const isJsSyncRemoved =
               ReactNativeFeatureFlags.cxxNativeAnimatedEnabled();
@@ -158,8 +167,8 @@ export default class Animation {
               }
             }
 
-            // Once the JS side node is synced with the updated values, trigger an
-            // update on the AnimatedProps nodes to call any registered callbacks.
+            // Trigger an update on the AnimatedProps nodes to call any
+            // registered callbacks now that the JS-side node is in sync.
             this.__findAnimatedPropsNodes(animatedValue).forEach(node =>
               node.update(),
             );
@@ -168,7 +177,7 @@ export default class Animation {
       );
 
       return true;
-    } catch (e) {
+    } catch (e: unknown) {
       throw e;
     } finally {
       NativeAnimatedHelper.API.unsetWaitingForIdentifier(

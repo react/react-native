@@ -21,6 +21,10 @@ import type {
   StringTypeAnnotation,
 } from '../../CodegenSchema';
 
+const {
+  getCppLocalIncludesForReservedPrimitive,
+  getCppTypeForReservedPrimitive,
+} = require('../ReservedPrimitiveTypes');
 const {getEnumName} = require('../Utils');
 const {
   generateStructName,
@@ -45,16 +49,16 @@ function getNativeTypeFromAnnotation(
           | ObjectTypeAnnotation<PropTypeAnnotation>
           | ReservedPropTypeAnnotation
           | {
-              +default: string,
-              +options: $ReadOnlyArray<string>,
-              +type: 'StringEnumTypeAnnotation',
+              readonly default: string,
+              readonly options: ReadonlyArray<string>,
+              readonly type: 'StringEnumTypeAnnotation',
             }
           | {
-              +elementType: ObjectTypeAnnotation<PropTypeAnnotation>,
-              +type: 'ArrayTypeAnnotation',
+              readonly elementType: ObjectTypeAnnotation<PropTypeAnnotation>,
+              readonly type: 'ArrayTypeAnnotation',
             },
       },
-  nameParts: $ReadOnlyArray<string>,
+  nameParts: ReadonlyArray<string>,
 ): string {
   const typeAnnotation = prop.typeAnnotation;
 
@@ -66,23 +70,7 @@ function getNativeTypeFromAnnotation(
     case 'FloatTypeAnnotation':
       return getCppTypeForAnnotation(typeAnnotation.type);
     case 'ReservedPropTypeAnnotation':
-      switch (typeAnnotation.name) {
-        case 'ColorPrimitive':
-          return 'SharedColor';
-        case 'ImageSourcePrimitive':
-          return 'ImageSource';
-        case 'ImageRequestPrimitive':
-          return 'ImageRequest';
-        case 'PointPrimitive':
-          return 'Point';
-        case 'EdgeInsetsPrimitive':
-          return 'EdgeInsets';
-        case 'DimensionPrimitive':
-          return 'YGValue';
-        default:
-          (typeAnnotation.name: empty);
-          throw new Error('Received unknown ReservedPropTypeAnnotation');
-      }
+      return getCppTypeForReservedPrimitive(typeAnnotation.name);
     case 'ArrayTypeAnnotation': {
       const arrayType = typeAnnotation.elementType.type;
       if (arrayType === 'ArrayTypeAnnotation') {
@@ -123,7 +111,7 @@ function getNativeTypeFromAnnotation(
     case 'MixedTypeAnnotation':
       return 'folly::dynamic';
     default:
-      (typeAnnotation: empty);
+      typeAnnotation as empty;
       throw new Error(
         `Received invalid typeAnnotation for ${componentName} prop ${prop.name}, received ${typeAnnotation.type}`,
       );
@@ -175,46 +163,28 @@ function convertVariableToPointer(
   return value;
 }
 
-const convertCtorParamToAddressType = (type: string): string => {
-  const typesToConvert: Set<string> = new Set();
-  typesToConvert.add('ImageSource');
+// Configuration for C++ type conversions of reserved types.
+// Centralizes the knowledge of which types need special pointer/address handling.
+const CTOR_PARAM_ADDRESS_TYPES: Set<string> = new Set(['ImageSource']);
+const SHARED_POINTER_TYPES: Set<string> = new Set(['ImageRequest']);
 
-  return convertTypesToConstAddressIfNeeded(type, typesToConvert);
-};
+const convertCtorParamToAddressType = (type: string): string =>
+  convertTypesToConstAddressIfNeeded(type, CTOR_PARAM_ADDRESS_TYPES);
 
-const convertCtorInitToSharedPointers = (
-  type: string,
-  value: string,
-): string => {
-  const typesToConvert: Set<string> = new Set();
-  typesToConvert.add('ImageRequest');
+const convertCtorInitToSharedPointers = (type: string, value: string): string =>
+  convertValueToSharedPointerWithMove(type, value, SHARED_POINTER_TYPES);
 
-  return convertValueToSharedPointerWithMove(type, value, typesToConvert);
-};
+const convertGettersReturnTypeToAddressType = (type: string): string =>
+  convertTypesToConstAddressIfNeeded(type, SHARED_POINTER_TYPES);
 
-const convertGettersReturnTypeToAddressType = (type: string): string => {
-  const typesToConvert: Set<string> = new Set();
-  typesToConvert.add('ImageRequest');
+const convertVarTypeToSharedPointer = (type: string): string =>
+  convertVariableToSharedPointer(type, SHARED_POINTER_TYPES);
 
-  return convertTypesToConstAddressIfNeeded(type, typesToConvert);
-};
-
-const convertVarTypeToSharedPointer = (type: string): string => {
-  const typesToConvert: Set<string> = new Set();
-  typesToConvert.add('ImageRequest');
-
-  return convertVariableToSharedPointer(type, typesToConvert);
-};
-
-const convertVarValueToPointer = (type: string, value: string): string => {
-  const typesToConvert: Set<string> = new Set();
-  typesToConvert.add('ImageRequest');
-
-  return convertVariableToPointer(type, value, typesToConvert);
-};
+const convertVarValueToPointer = (type: string, value: string): string =>
+  convertVariableToPointer(type, value, SHARED_POINTER_TYPES);
 
 function getLocalImports(
-  properties: $ReadOnlyArray<NamedShape<PropTypeAnnotation>>,
+  properties: ReadonlyArray<NamedShape<PropTypeAnnotation>>,
 ): Set<string> {
   const imports: Set<string> = new Set();
 
@@ -227,29 +197,8 @@ function getLocalImports(
       | 'ImageRequestPrimitive'
       | 'DimensionPrimitive',
   ) {
-    switch (name) {
-      case 'ColorPrimitive':
-        imports.add('#include <react/renderer/graphics/Color.h>');
-        return;
-      case 'ImageSourcePrimitive':
-        imports.add('#include <react/renderer/imagemanager/primitives.h>');
-        return;
-      case 'ImageRequestPrimitive':
-        imports.add('#include <react/renderer/imagemanager/ImageRequest.h>');
-        return;
-      case 'PointPrimitive':
-        imports.add('#include <react/renderer/graphics/Point.h>');
-        return;
-      case 'EdgeInsetsPrimitive':
-        imports.add('#include <react/renderer/graphics/RectangleEdges.h>');
-        return;
-      case 'DimensionPrimitive':
-        imports.add('#include <yoga/Yoga.h>');
-        imports.add('#include <react/renderer/core/graphicsConversions.h>');
-        return;
-      default:
-        (name: empty);
-        throw new Error(`Invalid ReservedPropTypeAnnotation name, got ${name}`);
+    for (const include of getCppLocalIncludesForReservedPrimitive(name)) {
+      imports.add(include);
     }
   }
 

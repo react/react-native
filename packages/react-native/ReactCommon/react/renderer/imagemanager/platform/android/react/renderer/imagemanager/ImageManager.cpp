@@ -25,7 +25,7 @@ ImageManager::ImageManager(
     : contextContainer_(contextContainer),
       self_(new std::shared_ptr<ImageFetcher>(
           std::make_shared<ImageFetcher>(contextContainer))) {
-  if (ReactNativeFeatureFlags::enableImagePrefetchingJNIBatchingAndroid()) {
+  if (ReactNativeFeatureFlags::enableImagePrefetchingAndroid()) {
     std::weak_ptr<ImageFetcher> weakImageFetcher =
         *static_cast<std::shared_ptr<ImageFetcher>*>(self_);
     contextContainer->insert(ImageFetcherKey, weakImageFetcher);
@@ -33,7 +33,7 @@ ImageManager::ImageManager(
 }
 
 ImageManager::~ImageManager() {
-  if (ReactNativeFeatureFlags::enableImagePrefetchingJNIBatchingAndroid()) {
+  if (ReactNativeFeatureFlags::enableImagePrefetchingAndroid()) {
     contextContainer_->erase(ImageFetcherKey);
   }
   delete static_cast<std::shared_ptr<ImageFetcher>*>(self_);

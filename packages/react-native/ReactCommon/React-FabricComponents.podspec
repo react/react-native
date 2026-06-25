@@ -28,6 +28,7 @@ if ENV['USE_FRAMEWORKS']
   header_search_path = header_search_path + [
     "\"$(PODS_TARGET_SRCROOT)/react/renderer/textlayoutmanager/platform/ios\"",
     "\"$(PODS_TARGET_SRCROOT)/react/renderer/components/scrollview/platform/cxx\"",
+    "\"$(PODS_TARGET_SRCROOT)/react/renderer/components/scrollview/platform/ios\"",
     "\"$(PODS_TARGET_SRCROOT)/react/renderer/components/textinput/platform/ios\"",
     "\"$(PODS_TARGET_SRCROOT)/react/renderer/components/text/platform/cxx\"",
     "\"$(PODS_TARGET_SRCROOT)/react/renderer/components/view/platform/cxx\"",
@@ -70,6 +71,7 @@ Pod::Spec.new do |s|
   add_dependency(s, "React-graphics", :additional_framework_paths => ["react/renderer/graphics/platform/ios"])
   add_dependency(s, "React-Fabric", :additional_framework_paths => [
     "react/renderer/components/scrollview/platform/cxx",
+    "react/renderer/components/scrollview/platform/ios",
     "react/renderer/components/view/platform/cxx",
     "react/renderer/imagemanager/platform/ios"
   ])
@@ -101,9 +103,11 @@ Pod::Spec.new do |s|
 
     ss.subspec "scrollview" do |sss|
       sss.source_files         = podspec_sources(["react/renderer/components/scrollview/*.{m,mm,cpp,h}",
-                                  "react/renderer/components/scrollview/platform/cxx/**/*.{m,mm,cpp,h}"],
+                                  "react/renderer/components/scrollview/platform/cxx/**/*.{m,mm,cpp,h}",
+                                  "react/renderer/components/scrollview/platform/ios/**/*.{m,mm,cpp,h}"],
                                   ["react/renderer/components/scrollview/*.h",
-                                  "react/renderer/components/scrollview/platform/cxx/**/*.h"])
+                                  "react/renderer/components/scrollview/platform/cxx/**/*.h",
+                                  "react/renderer/components/scrollview/platform/ios/**/*.h"])
       sss.exclude_files        = "react/renderer/components/scrollview/tests"
       sss.header_dir           = "react/renderer/components/scrollview"
     end
@@ -144,15 +148,9 @@ Pod::Spec.new do |s|
     end
 
     ss.subspec "virtualview" do |sss|
-      sss.source_files         = "react/renderer/components/virtualview/**/*.{m,mm,cpp,h}"
+      sss.source_files         = podspec_sources("react/renderer/components/virtualview/**/*.{m,mm,cpp,h}", "react/renderer/components/virtualview/**/*.h")
       sss.exclude_files        = "react/renderer/components/virtualview/tests"
       sss.header_dir           = "react/renderer/components/virtualview"
-    end
-
-     ss.subspec "virtualviewexperimental" do |sss|
-      sss.source_files         = "react/renderer/components/virtualviewexperimental/**/*.{m,mm,cpp,h}"
-      sss.exclude_files        = "react/renderer/components/virtualviewexperimental/tests"
-      sss.header_dir           = "react/renderer/components/virtualviewexperimental"
     end
 
     # Legacy header paths for backwards compat

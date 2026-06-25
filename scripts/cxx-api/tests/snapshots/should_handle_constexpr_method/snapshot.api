@@ -1,0 +1,4 @@
+class test::Clss {
+  public constexpr int getValue() const;
+  public static constexpr int getDefault();
+}

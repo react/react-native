@@ -39,8 +39,6 @@ static NSString *const RCTPerfMonitorCellIdentifier = @"RCTPerfMonitorCellIdenti
 static const CGFloat RCTPerfMonitorBarHeight = 50;
 static const CGFloat RCTPerfMonitorExpandHeight = 250;
 
-using RCTJSCSetOptionType = BOOL (*)(const char *);
-
 NSArray<NSString *> *LabelsForRCTPerformanceLoggerTags();
 
 static BOOL RCTJSCSetOption(const char *option)
@@ -180,7 +178,11 @@ RCT_EXPORT_MODULE()
     [_container addGestureRecognizer:self.gestureRecognizer];
     [_container addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tap)]];
 
+#if TARGET_OS_TV
+    _container.backgroundColor = [UIColor whiteColor];
+#else
     _container.backgroundColor = [UIColor systemBackgroundColor];
+#endif
   }
 
   return _container;

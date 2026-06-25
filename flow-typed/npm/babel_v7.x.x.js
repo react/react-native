@@ -10,7 +10,7 @@
 
 'use strict';
 
-type _BabelSourceMap = $ReadOnly<{
+type _BabelSourceMap = Readonly<{
   file?: string,
   mappings: string,
   names: Array<string>,
@@ -28,9 +28,27 @@ type _BabelSourceMapSegment = {
   ...
 };
 
-export type BabelSourceLocation = $ReadOnly<{
-  start: $ReadOnly<{line: number, column: number}>,
-  end: $ReadOnly<{line: number, column: number}>,
+// A "decoded" source map (as produced by `@jridgewell/gen-mapping`), grouped by
+// generated line. Segment fields are all 0-based: generated column, source
+// index, source line, source column, name index.
+type _BabelDecodedSourceMapSegment =
+  | [number]
+  | [number, number, number, number]
+  | [number, number, number, number, number];
+
+type _BabelDecodedSourceMap = Readonly<{
+  file?: string,
+  mappings: Array<Array<_BabelDecodedSourceMapSegment>>,
+  names: Array<string>,
+  sourceRoot?: string,
+  sources: Array<string>,
+  sourcesContent?: Array<?string>,
+  version: number,
+}>;
+
+export type BabelSourceLocation = Readonly<{
+  start: Readonly<{line: number, column: number}>,
+  end: Readonly<{line: number, column: number}>,
 }>;
 
 declare module '@babel/parser' {
@@ -304,9 +322,9 @@ declare module '@babel/core' {
 
   declare class Store {
     constructor(): Store;
-    setDynamic(key: string, fn: () => mixed): void;
-    set(key: string, val: mixed): void;
-    get(key: string): mixed;
+    setDynamic(key: string, fn: () => unknown): void;
+    set(key: string, val: unknown): void;
+    get(key: string): unknown;
   }
 
   declare export class File extends Store {
@@ -330,7 +348,7 @@ declare module '@babel/core' {
 
     constructor(
       options: BabelCoreOptions,
-      input: $ReadOnly<{ast: BabelNode, code: string, inputMap: any}>,
+      input: Readonly<{ast: BabelNode, code: string, inputMap: any}>,
     ): File;
 
     getMetadata(): void;
@@ -353,7 +371,7 @@ declare module '@babel/core' {
       raw: BabelNodeArrayExpression,
     ): BabelNodeIdentifier;
 
-    buildCodeFrameError<TError: Error>(
+    buildCodeFrameError<TError extends Error>(
       node: BabelNode,
       msg: string,
       Class<TError>,
@@ -367,7 +385,7 @@ declare module '@babel/core' {
 
     transform(): TransformResult<>;
 
-    wrap(code: string, callback: () => mixed): TransformResult<>;
+    wrap(code: string, callback: () => unknown): TransformResult<>;
 
     addCode(code: string): void;
 
@@ -394,7 +412,7 @@ declare module '@babel/core' {
 
   declare export type PluginObj<TVisitorState = void> = {
     name?: string,
-    inherits?: mixed,
+    inherits?: unknown,
     maniuplateOptions?: (
       opts: BabelCoreOptions,
       parserOpts: ParserOptions,
@@ -411,7 +429,7 @@ declare module '@babel/core' {
   // but have not yet been executed to call functions with options.
   declare export type UnloadedDescriptor = {
     name: string | void,
-    value: PluginObj<mixed> | (() => PluginObj<mixed>),
+    value: PluginObj<unknown> | (() => PluginObj<unknown>),
     options: EntryOptions,
     dirname: string,
     alias: string,
@@ -423,7 +441,7 @@ declare module '@babel/core' {
   };
 
   declare export class ConfigItem {
-    +value: PluginObj<mixed> | (() => PluginObj<mixed>);
+    +value: PluginObj<unknown> | (() => PluginObj<unknown>);
     +options: EntryOptions;
     +dirname: string;
     +name: string | void;
@@ -924,8 +942,8 @@ declare module '@babel/core' {
   |};
 
   declare type TransformCallback<TMetadata> =
-    | ((Error, null) => mixed)
-    | ((null, TransformResult<TMetadata> | null) => mixed);
+    | ((Error, null) => unknown)
+    | ((null, TransformResult<TMetadata> | null) => unknown);
 
   /**
    * Transforms the passed in code. Calling a callback with an object with the generated code, source map, and AST.
@@ -1027,7 +1045,7 @@ declare module '@babel/core' {
   declare export var template: Template;
   declare export var traverse: Traverse;
   declare export var types: Types;
-  declare export var DEFAULT_EXTENSIONS: $ReadOnlyArray<string>;
+  declare export var DEFAULT_EXTENSIONS: ReadonlyArray<string>;
 
   declare export function buildExternalHelpers(
     whitelist?: Array<string>,
@@ -1059,30 +1077,32 @@ declare module '@babel/core' {
 
   declare export type ResolvedConfig = {
     options: BabelCoreOptions,
-    passes: Array<Array<PluginObj<mixed> | (() => PluginObj<mixed>)>>,
+    passes: Array<Array<PluginObj<unknown> | (() => PluginObj<unknown>)>>,
   };
 
   declare export function loadOptions(
-    options?: mixed,
+    options?: unknown,
     callback:
-      | ((error: Error, null) => mixed)
-      | ((null, config: ResolvedConfig | null) => mixed),
+      | ((error: Error, null) => unknown)
+      | ((null, config: ResolvedConfig | null) => unknown),
   ): void;
   declare export function loadOptionsSync(
-    options?: mixed,
+    options?: unknown,
   ): ResolvedConfig | null;
   declare export function loadOptionsAsync(
-    options?: mixed,
+    options?: unknown,
   ): Promise<ResolvedConfig | null>;
 
   // For now
   declare type ValidatedOptions = BabelCoreOptions;
 
   declare class PartialConfig {
-    +options: $ReadOnly<ValidatedOptions>;
+    +options: Readonly<ValidatedOptions>;
     +babelrc: string | void;
     +babelignore: string | void;
     +config: string | void;
+    +files: ReadonlySet<string>;
+    +fileHandling: 'ignored' | 'transpile' | 'unsupported';
 
     constructor(options: ValidatedOptions): PartialConfig;
 
@@ -1090,16 +1110,16 @@ declare module '@babel/core' {
   }
 
   declare export function loadPartialConfig(
-    options?: mixed,
+    options?: unknown,
     callback:
-      | ((error: Error, null) => mixed)
-      | ((null, config: PartialConfig | null) => mixed),
+      | ((error: Error, null) => unknown)
+      | ((null, config: PartialConfig | null) => unknown),
   ): void;
   declare export function loadPartialConfigSync(
-    options?: mixed,
+    options?: unknown,
   ): PartialConfig | null;
   declare export function loadPartialConfigAsync(
-    options?: mixed,
+    options?: unknown,
   ): Promise<PartialConfig | null>;
 }
 
@@ -1109,6 +1129,7 @@ declare module '@babel/generator' {
   declare export type GeneratorResult = {
     code: string,
     map: ?_BabelSourceMap,
+    decodedMap: ?_BabelDecodedSourceMap,
     rawMappings: ?Array<BabelSourceMapSegment>,
   };
 
@@ -1189,7 +1210,7 @@ declare module '@babel/generator' {
     jsecsOption?: {...},
 
     decoratorsBeforeExport?: boolean,
-    recordAndTupleSyntaxType?: mixed,
+    recordAndTupleSyntaxType?: unknown,
 
     /**
      * Enable generating source maps
@@ -1283,13 +1304,13 @@ declare module '@babel/template' {
     (tpl: string, opts: ?PublicOpts): (?PublicReplacements) => T,
 
     // Building from a template literal produces an AST builder function by default.
-    (tpl: Array<string>, ...args: Array<mixed>): (?PublicReplacements) => T,
+    (tpl: Array<string>, ...args: Array<unknown>): (?PublicReplacements) => T,
 
     // Allow users to explicitly create templates that produce ASTs, skipping
     // the need for an intermediate function.
     ast: {
       (tpl: string, opts: ?PublicOpts): T,
-      (tpl: Array<string>, ...args: Array<mixed>): T,
+      (tpl: Array<string>, ...args: Array<unknown>): T,
     },
   };
 
@@ -1321,14 +1342,17 @@ declare module '@babel/template' {
     // Building from a template literal produces an AST builder function by default.
     (
       tpl: Array<string>,
-      ...args: Array<mixed>
+      ...args: Array<unknown>
     ): (?PublicReplacements) => Statement | Array<Statement>,
 
     // Allow users to explicitly create templates that produce ASTs, skipping
     // the need for an intermediate function.
     ast: {
       (tpl: string, opts: ?PublicOpts): Statement | Array<Statement>,
-      (tpl: Array<string>, ...args: Array<mixed>): Statement | Array<Statement>,
+      (
+        tpl: Array<string>,
+        ...args: Array<unknown>
+      ): Statement | Array<Statement>,
     },
   };
 

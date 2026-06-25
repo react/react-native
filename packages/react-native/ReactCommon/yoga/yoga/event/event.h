@@ -32,6 +32,7 @@ enum struct LayoutPassReason : int {
   kMeasureChild = 5,
   kAbsMeasureChild = 6,
   kFlexMeasure = 7,
+  kGridLayout = 8,
   COUNT
 };
 

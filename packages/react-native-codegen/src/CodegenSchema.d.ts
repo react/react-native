@@ -46,6 +46,10 @@ export interface VoidTypeAnnotation {
   readonly type: 'VoidTypeAnnotation';
 }
 
+export interface ArrayBufferTypeAnnotation {
+  readonly type: 'ArrayBufferTypeAnnotation';
+}
+
 export interface BooleanLiteralTypeAnnotation {
   readonly type: 'BooleanLiteralTypeAnnotation';
   readonly value: boolean;
@@ -417,7 +421,8 @@ export type NativeModuleEventEmitterTypeAnnotation =
   | ArrayTypeAnnotation<NativeModuleEventEmitterBaseTypeAnnotation>;
 
 export type NativeModuleBaseTypeAnnotation =
-  NativeModuleStringTypeAnnotation
+  ArrayBufferTypeAnnotation
+  | NativeModuleStringTypeAnnotation
   | StringLiteralTypeAnnotation
   | StringLiteralUnionTypeAnnotation
   | NativeModuleNumberTypeAnnotation

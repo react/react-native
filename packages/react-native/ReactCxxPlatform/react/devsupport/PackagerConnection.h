@@ -8,6 +8,8 @@
 #pragma once
 
 #include <react/http/IWebSocketClient.h>
+#include <react/threading/TaskDispatchThread.h>
+#include <atomic>
 #include <functional>
 #include <memory>
 #include <string>
@@ -20,8 +22,8 @@ class PackagerConnection {
 
  public:
   PackagerConnection(
-      const WebSocketClientFactory &webSocketClientFactory,
-      const std::string &packagerConnectionUrl,
+      WebSocketClientFactory webSocketClientFactory,
+      std::string packagerConnectionUrl,
       LiveReloadCallback &&liveReloadCallback,
       ShowDevMenuCallback &&showDevMenuCallback);
   ~PackagerConnection() noexcept;
@@ -31,9 +33,17 @@ class PackagerConnection {
   PackagerConnection &operator=(PackagerConnection &&other) = delete;
 
  private:
+  void attemptConnection();
+  void scheduleReconnect();
+
+  const WebSocketClientFactory webSocketClientFactory_;
+  const std::string packagerConnectionUrl_;
   const LiveReloadCallback liveReloadCallback_;
   const ShowDevMenuCallback showDevMenuCallback_;
   std::unique_ptr<IWebSocketClient> websocket_;
+  std::atomic<bool> isInitialConnection_{true};
+  std::atomic<bool> reconnectPending_{false};
+  TaskDispatchThread reconnectThread_{"PackagerReconnect"};
 };
 
 } // namespace facebook::react

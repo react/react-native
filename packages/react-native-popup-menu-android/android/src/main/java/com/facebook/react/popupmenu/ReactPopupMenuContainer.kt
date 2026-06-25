@@ -34,7 +34,7 @@ public class ReactPopupMenuContainer(context: Context) : FrameLayout(context) {
     }
     popupMenu.setOnMenuItemClickListener { menuItem ->
       val reactContext = context as ReactContext
-      val eventDispatcher = UIManagerHelper.getEventDispatcherForReactTag(reactContext, id)
+      val eventDispatcher = UIManagerHelper.getEventDispatcher(reactContext)
       if (eventDispatcher != null) {
         val surfaceId = UIManagerHelper.getSurfaceId(reactContext)
         eventDispatcher.dispatchEvent(PopupMenuSelectionEvent(surfaceId, id, menuItem.order))
@@ -43,7 +43,7 @@ public class ReactPopupMenuContainer(context: Context) : FrameLayout(context) {
     }
     popupMenu.setOnDismissListener {
       val reactContext = context as ReactContext
-      val eventDispatcher = UIManagerHelper.getEventDispatcherForReactTag(reactContext, id)
+      val eventDispatcher = UIManagerHelper.getEventDispatcher(reactContext)
       if (eventDispatcher != null) {
         val surfaceId = UIManagerHelper.getSurfaceId(reactContext)
         eventDispatcher.dispatchEvent(PopupMenuDismissEvent(surfaceId, id))

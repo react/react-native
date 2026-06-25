@@ -15,7 +15,7 @@ import normalizeColor from '../StyleSheet/normalizeColor';
 import {type RectOrSize, normalizeRect} from '../StyleSheet/Rect';
 import * as React from 'react';
 
-type Props = $ReadOnly<{
+type Props = Readonly<{
   color: ColorValue,
   hitSlop: ?RectOrSize,
 }>;

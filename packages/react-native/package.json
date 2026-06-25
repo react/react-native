@@ -5,7 +5,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/facebook/react-native.git",
+    "url": "git+https://github.com/react/react-native.git",
     "directory": "packages/react-native"
   },
   "homepage": "https://reactnative.dev/",
@@ -19,9 +19,9 @@
     "app-framework",
     "mobile-development"
   ],
-  "bugs": "https://github.com/facebook/react-native/issues",
+  "bugs": "https://github.com/react/react-native/issues",
   "engines": {
-    "node": ">= 20.19.4"
+    "node": "^22.13.0 || ^24.3.0 || >= 26.0.0"
   },
   "bin": {
     "react-native": "cli.js"
@@ -34,14 +34,14 @@
       "types": "./types/index.d.ts",
       "default": "./index.js"
     },
-    "./*": {
+    "./Libraries/*": {
       "react-native-strict-api": null,
-      "types": "./*.d.ts",
-      "default": "./*.js"
+      "types": "./Libraries/*.d.ts",
+      "default": "./Libraries/*.js"
     },
-    "./*.js": {
+    "./Libraries/*.js": {
       "react-native-strict-api": null,
-      "default": "./*.js"
+      "default": "./Libraries/*.js"
     },
     "./Libraries/*.d.ts": {
       "react-native-strict-api": null,
@@ -49,23 +49,16 @@
     },
     "./scripts/*": "./scripts/*",
     "./src/*": {
-      "react-native-strict-api": null,
+      "types": null,
       "default": "./src/*.js"
     },
     "./types/*.d.ts": {
       "react-native-strict-api": null,
       "default": "./types/*.d.ts"
     },
-    "./gradle/*": null,
-    "./React/*": null,
-    "./ReactAndroid/*": null,
-    "./ReactApple/*": null,
-    "./ReactCommon/*": null,
-    "./sdks/*": null,
+    "./jest-preset": "./jest-preset.js",
+    "./rn-get-polyfills": "./rn-get-polyfills.js",
     "./src/fb_internal/*": "./src/fb_internal/*",
-    "./third-party-podspecs/*": null,
-    "./types/*": null,
-    "./types_generated/*": null,
     "./package.json": "./package.json"
   },
   "jest-junit": {
@@ -80,9 +73,7 @@
     "gradle/libs.versions.toml",
     "index.js",
     "index.js.flow",
-    "interface.js",
     "jest-preset.js",
-    "jest",
     "Libraries",
     "LICENSE",
     "React-Core.podspec",
@@ -128,7 +119,6 @@
     "scripts/xcode/ccache-clang++.sh",
     "scripts/xcode/ccache.conf",
     "scripts/xcode/with-environment.sh",
-    "sdks/.hermesversion",
     "sdks/.hermesv1version",
     "sdks/hermes-engine",
     "sdks/hermesc",
@@ -150,37 +140,38 @@
     "featureflags": "node ./scripts/featureflags/index.js"
   },
   "peerDependencies": {
+    "@react-native/jest-preset": "0.87.0-main",
     "@types/react": "^19.1.1",
-    "react": "^19.2.0"
+    "react": "^19.2.3"
   },
   "peerDependenciesMeta": {
     "@types/react": {
       "optional": true
+    },
+    "@react-native/jest-preset": {
+      "optional": true
     }
   },
   "dependencies": {
-    "@jest/create-cache-key-function": "^29.7.0",
-    "@react-native/assets-registry": "0.84.0-main",
-    "@react-native/codegen": "0.84.0-main",
-    "@react-native/community-cli-plugin": "0.84.0-main",
-    "@react-native/gradle-plugin": "0.84.0-main",
-    "@react-native/js-polyfills": "0.84.0-main",
-    "@react-native/normalize-colors": "0.84.0-main",
-    "@react-native/virtualized-lists": "0.84.0-main",
+    "@react-native/assets-registry": "0.87.0-main",
+    "@react-native/codegen": "0.87.0-main",
+    "@react-native/community-cli-plugin": "0.87.0-main",
+    "@react-native/gradle-plugin": "0.87.0-main",
+    "@react-native/js-polyfills": "0.87.0-main",
+    "@react-native/normalize-colors": "0.87.0-main",
+    "@react-native/virtualized-lists": "0.87.0-main",
     "abort-controller": "^3.0.0",
     "anser": "^1.4.9",
     "ansi-regex": "^5.0.0",
-    "babel-jest": "^29.7.0",
-    "babel-plugin-syntax-hermes-parser": "0.32.0",
+    "babel-plugin-syntax-hermes-parser": "0.36.1",
     "base64-js": "^1.5.1",
     "commander": "^12.0.0",
     "flow-enums-runtime": "^0.0.6",
     "hermes-compiler": "0.0.0",
     "invariant": "^2.2.4",
-    "jest-environment-node": "^29.7.0",
     "memoize-one": "^5.0.0",
-    "metro-runtime": "^0.83.3",
-    "metro-source-map": "^0.83.3",
+    "metro-runtime": "^0.84.3",
+    "metro-source-map": "^0.84.3",
     "nullthrows": "^1.1.1",
     "pretty-format": "^29.7.0",
     "promise": "^8.3.0",
@@ -215,6 +206,9 @@
               "unstableRequiresMainQueueSetup": true
             },
             "PlatformConstants": {
+              "unstableRequiresMainQueueSetup": true
+            },
+            "SampleTurboModule": {
               "unstableRequiresMainQueueSetup": true
             },
             "StatusBarManager": {

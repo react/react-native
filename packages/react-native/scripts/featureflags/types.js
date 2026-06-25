@@ -10,7 +10,7 @@
 
 export type FeatureFlagValue = boolean | number | string;
 
-export type FeatureFlagDefinitions = $ReadOnly<{
+export type FeatureFlagDefinitions = Readonly<{
   common: CommonFeatureFlagList,
   jsOnly: JsOnlyFeatureFlagList,
 }>;
@@ -29,8 +29,8 @@ export type OSSReleaseStageValue =
   | 'stable';
 
 export type CommonFeatureFlagConfig<
-  TValue: FeatureFlagValue = FeatureFlagValue,
-> = $ReadOnly<{
+  TValue extends FeatureFlagValue = FeatureFlagValue,
+> = Readonly<{
   defaultValue: TValue,
   metadata: FeatureFlagMetadata<TValue>,
   ossReleaseStage: OSSReleaseStageValue,
@@ -39,24 +39,26 @@ export type CommonFeatureFlagConfig<
   skipNativeAPI?: true,
 }>;
 
-export type CommonFeatureFlagList = $ReadOnly<{
+export type CommonFeatureFlagList = Readonly<{
   [flagName: string]: CommonFeatureFlagConfig<>,
 }>;
 
 export type JsOnlyFeatureFlagConfig<
-  TValue: FeatureFlagValue = FeatureFlagValue,
-> = $ReadOnly<{
+  TValue extends FeatureFlagValue = FeatureFlagValue,
+> = Readonly<{
   defaultValue: TValue,
   metadata: FeatureFlagMetadata<TValue>,
   ossReleaseStage: OSSReleaseStageValue,
 }>;
 
-export type JsOnlyFeatureFlagList = $ReadOnly<{
+export type JsOnlyFeatureFlagList = Readonly<{
   [flagName: string]: JsOnlyFeatureFlagConfig<>,
 }>;
 
-export type FeatureFlagMetadata<TValue: FeatureFlagValue = FeatureFlagValue> =
-  | $ReadOnly<{
+export type FeatureFlagMetadata<
+  TValue extends FeatureFlagValue = FeatureFlagValue,
+> =
+  | Readonly<{
       purpose: 'experimentation',
       /**
        * Approximate date when the flag was added.
@@ -66,13 +68,13 @@ export type FeatureFlagMetadata<TValue: FeatureFlagValue = FeatureFlagValue> =
       description: string,
       expectedReleaseValue: TValue,
     }>
-  | $ReadOnly<{
+  | Readonly<{
       purpose: 'operational' | 'release',
       description: string,
       expectedReleaseValue: TValue,
     }>;
 
-export type GeneratorConfig = $ReadOnly<{
+export type GeneratorConfig = Readonly<{
   featureFlagDefinitions: FeatureFlagDefinitions,
   jsPath: string,
   commonCxxPath: string,
@@ -81,10 +83,10 @@ export type GeneratorConfig = $ReadOnly<{
   androidJniPath: string,
 }>;
 
-export type GeneratorOptions = $ReadOnly<{
+export type GeneratorOptions = Readonly<{
   verifyUnchanged: boolean,
 }>;
 
-export type GeneratorResult = $ReadOnly<{
+export type GeneratorResult = Readonly<{
   [path: string]: string /* content */,
 }>;

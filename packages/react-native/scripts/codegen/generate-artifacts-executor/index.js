@@ -66,6 +66,7 @@ function execute(
   optionalBaseOutputPath /*: ?string */,
   source /*: string */,
   runReactNativeCodegen /*: boolean */ = true,
+  forceOutputPath /*: boolean */ = false,
 ) {
   try {
     codegenLog(`Analyzing ${path.join(projectRoot, 'package.json')}`);
@@ -146,6 +147,7 @@ function execute(
           ),
           pkgJsonIncludesGeneratedCode(pkgJson),
           platform,
+          forceOutputPath,
         );
       }
 

@@ -5,7 +5,7 @@
   "description": "TypeScript related unit test for @react-native/codegen",
   "license": "MIT",
   "engines": {
-    "node": ">= 20.19.4"
+    "node": "^22.13.0 || ^24.3.0 || >= 26.0.0"
   },
   "scripts": {
     "build": "yarn clean && node scripts/build.js --verbose && tsc",
@@ -13,7 +13,7 @@
     "prepare": "yarn run build"
   },
   "dependencies": {
-    "@react-native/codegen": "0.84.0-main"
+    "@react-native/codegen": "0.87.0-main"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
