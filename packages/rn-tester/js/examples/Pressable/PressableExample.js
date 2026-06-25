@@ -282,7 +282,7 @@ function PressablePreventNativePropagationExample() {
   return (
     <View>
       <Text style={blockNativeStyles.sectionHeader}>
-        {'preventNativePropagation={false} (default)'}
+        {'blockNativeResponder={false} (default)'}
       </Text>
       <RNTNativeTouchReceiver
         style={blockNativeStyles.receiver}
@@ -298,7 +298,7 @@ function PressablePreventNativePropagationExample() {
       </RNTNativeTouchReceiver>
 
       <Text style={blockNativeStyles.sectionHeader}>
-        {'preventNativePropagation={true}'}
+        {'blockNativeResponder={true}'}
       </Text>
       <RNTNativeTouchReceiver
         style={blockNativeStyles.receiver}
@@ -307,7 +307,7 @@ function PressablePreventNativePropagationExample() {
         }>
         <Pressable
           style={blockNativeStyles.pressable}
-          preventNativePropagation={true}
+          blockNativeResponder={true}
           onPressIn={() => setLog([])}
           onPress={() => setLog(prev => [...prev, 'Pressable.onPress'])}>
           <Text style={blockNativeStyles.pressableText}>Tap me</Text>
@@ -770,10 +770,10 @@ const examples = [
     },
   },
   {
-    title: 'preventNativePropagation',
+    title: 'blockNativeResponder',
     name: 'prevent-native-propagation',
     description:
-      'Pressable inside a native UIView parent. Without preventNativePropagation the touch leaks up the UIKit responder chain to the parent.' as string,
+      'Pressable inside a native UIView parent. Without blockNativeResponder the touch leaks up the UIKit responder chain to the parent.' as string,
     platform: 'ios',
     render: function (): React.Node {
       return <PressablePreventNativePropagationExample />;
