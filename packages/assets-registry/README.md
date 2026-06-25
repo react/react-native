@@ -11,10 +11,14 @@ Most apps never import this directly — assets are handled through `<Image>`.
 
 ## API
 
-### `@react-native/assets-registry/registry`
+### `@react-native/assets-registry/registry` (DEPRECATED)
 
-> [!Note]
-> Aliases to [`AssetRegistry`](https://reactnative.dev/docs/assetregistry) (since 0.87). Prefer importing directly from the `'react-native'` package in libraries.
+> [!Warning]
+> **Deprecated**: Aliases to [`AssetRegistry`](https://reactnative.dev/docs/assetregistry) (since 0.87).
+>
+> Please use:
+> - `import { AssetRegistry } from 'react-native';` (apps/library code)
+> - `'react-native/asset-registry'` (entrypoint for Metro/build configs)
 
 | Export | Signature | Notes |
 |---|---|---|

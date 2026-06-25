@@ -7,8 +7,14 @@
  * @format
  */
 
+/**
+ * @deprecated Use `import type {AssetDestPathResolver} from 'react-native'` instead.
+ */
 export type AssetDestPathResolver = 'android' | 'generic';
 
+/**
+ * @deprecated Use `import type {PackagerAsset} from 'react-native'` instead.
+ */
 export type PackagerAsset = {
   readonly __packager_asset: boolean;
   readonly fileSystemLocation: string;
@@ -22,6 +28,12 @@ export type PackagerAsset = {
   readonly resolver?: AssetDestPathResolver | undefined;
 };
 
+/**
+ * @deprecated Use `import {AssetRegistry} from 'react-native'` instead.
+ */
 export function registerAsset(asset: PackagerAsset): number;
 
+/**
+ * @deprecated Use `import {AssetRegistry} from 'react-native'` instead.
+ */
 export function getAssetByID(assetId: number): PackagerAsset;

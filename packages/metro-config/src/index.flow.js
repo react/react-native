@@ -84,7 +84,7 @@ export function getDefaultConfig(projectRoot: string): ConfigT {
     },
     transformer: {
       allowOptionalDependencies: true,
-      assetRegistryPath: 'react-native/Libraries/Image/AssetRegistry',
+      assetRegistryPath: 'react-native/asset-registry',
       asyncRequireModulePath: require.resolve(
         'metro-runtime/src/modules/asyncRequire',
       ),
