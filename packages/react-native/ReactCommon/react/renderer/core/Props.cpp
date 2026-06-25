@@ -19,20 +19,17 @@ Props::Props(
     const PropsParserContext& context,
     const Props& sourceProps,
     const RawProps& rawProps,
-    const std::function<bool(const std::string&)>& filterObjectKeys) {
-  initialize(context, sourceProps, rawProps, filterObjectKeys);
-}
-
-void Props::initialize(
-    const PropsParserContext& context,
-    const Props& sourceProps,
-    const RawProps& rawProps,
     [[maybe_unused]] const std::function<bool(const std::string&)>&
-        filterObjectKeys) {
-  nativeId = ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-      ? sourceProps.nativeId
-      : convertRawProp(context, rawProps, "nativeID", sourceProps.nativeId, {});
-
+        filterObjectKeys)
+    : nativeId(
+          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
+              ? sourceProps.nativeId
+              : convertRawProp(
+                    context,
+                    rawProps,
+                    "nativeID",
+                    sourceProps.nativeId,
+                    {})) {
 #ifdef RN_SERIALIZABLE_STATE
   if (!ReactNativeFeatureFlags::enableExclusivePropsUpdateAndroid()) {
     initializeDynamicProps(sourceProps, rawProps, filterObjectKeys);
