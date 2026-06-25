@@ -1802,6 +1802,7 @@ class facebook::react::BaseViewEventEmitter : public facebook::react::TouchEvent
 class facebook::react::BaseViewProps : public facebook::react::YogaStylableProps, public facebook::react::AccessibilityProps {
   public BaseViewProps() = default;
   public BaseViewProps(const facebook::react::PropsParserContext& context, const facebook::react::BaseViewProps& sourceProps, const facebook::react::RawProps& rawProps, const std::function<bool(const std::string&)>& filterObjectKeys = nullptr);
+  public bool blockNativeResponder;
   public bool collapsable;
   public bool collapsableChildren;
   public bool getClipsContentToBounds() const;

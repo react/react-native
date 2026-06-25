@@ -1133,6 +1133,7 @@ class facebook::react::BaseViewProps : public facebook::react::YogaStylableProps
   public Float outlineWidth;
   public Float shadowOpacity;
   public Float shadowRadius;
+  public bool blockNativeResponder;
   public bool collapsable;
   public bool collapsableChildren;
   public bool getClipsContentToBounds() const;

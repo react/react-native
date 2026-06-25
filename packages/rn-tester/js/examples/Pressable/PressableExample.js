@@ -739,7 +739,7 @@ const examples = [
     },
   },
   {
-    title: 'blockNativeResponder',
+    title: 'Pressable with blockNativeResponder',
     name: 'prevent-native-propagation',
     description:
       'Pressable inside a native parent view. Without blockNativeResponder the touch leaks up the native touch event system to the parent.' as string,
