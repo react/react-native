@@ -131,8 +131,8 @@ export type PressabilityConfig = Readonly<{
   onPressOut?: ?(event: GestureResponderEvent) => unknown,
 
   /**
-   * Whether to prevent any other native components from becoming responder
-   * while this pressable is responder.
+   * When true, prevents native ancestor views (UIKit responder chain) from
+   * receiving touch events when this Pressable handles a press. iOS only.
    */
   preventNativePropagation?: ?boolean,
 }>;

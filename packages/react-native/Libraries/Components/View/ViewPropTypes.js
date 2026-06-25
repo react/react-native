@@ -504,8 +504,12 @@ type ViewBaseProps = Readonly<{
 
   /**
    * When true, prevents native ancestor views (UIKit responder chain) from
-   * receiving touch events when this view is the active JS responder.
-   * Requires that the Fabric gesture recognizer has already claimed the touch.
+   * receiving touch events when this view handles a press. Without this, UIKit
+   * delivers touches independently to every view that received touchesBegan:,
+   * so parent views fire touchesEnded: even when a child Pressable handles the
+   * press.
+   *
+   * @platform ios
    */
   preventNativePropagation?: ?boolean,
 
