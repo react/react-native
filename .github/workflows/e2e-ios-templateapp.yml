@@ -11,7 +11,7 @@ on:
         default: false
     outputs:
       status:
-        description: "The result of the E2E tests (success or failure)"
+        description: 'The result of the E2E tests (success or failure)'
         value: ${{ jobs.report.outputs.status }}
 
 jobs:
@@ -62,8 +62,8 @@ jobs:
       - name: Configure git
         shell: bash
         run: |
-            git config --global user.email "react-native-bot@meta.com"
-            git config --global user.name "React Native Bot"
+          git config --global user.email "react-native-bot@meta.com"
+          git config --global user.name "React Native Bot"
       - name: Prepare artifacts
         run: |
           REACT_NATIVE_PKG=$(find /tmp/react-native-tmp -type f -name "*.tgz")
@@ -99,7 +99,7 @@ jobs:
         continue-on-error: true
         uses: ./.github/actions/maestro-ios
         with:
-          app-path: "/tmp/RNTestProject/Build/Products/${{ matrix.flavor }}-iphonesimulator/RNTestProject.app"
+          app-path: '/tmp/RNTestProject/Build/Products/${{ matrix.flavor }}-iphonesimulator/RNTestProject.app'
           app-id: org.reactjs.native.example.RNTestProject
           maestro-flow: ./scripts/e2e/.maestro/
           flavor: ${{ matrix.flavor }}

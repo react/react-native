@@ -5,16 +5,16 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/facebook/react-native.git",
+    "url": "git+https://github.com/react/react-native.git",
     "directory": "packages/eslint-config-react-native"
   },
-  "homepage": "https://github.com/facebook/react-native/tree/HEAD/packages/eslint-config-react-native#readme",
+  "homepage": "https://github.com/react/react-native/tree/HEAD/packages/eslint-config-react-native#readme",
   "keywords": [
     "eslint",
     "config",
     "react-native"
   ],
-  "bugs": "https://github.com/facebook/react-native/issues",
+  "bugs": "https://github.com/react/react-native/issues",
   "engines": {
     "node": "^22.13.0 || ^24.3.0 || >= 26.0.0"
   },

@@ -11,7 +11,7 @@ runs:
     - name: Boot iPhone Simulator
       shell: bash
       run: source scripts/.tests.env && xcrun simctl boot "$IOS_DEVICE" || true
-    - name: "Brew: Tap wix/brew"
+    - name: 'Brew: Tap wix/brew'
       shell: bash
       run: brew tap wix/brew
     - name: brew install applesimutils watchman

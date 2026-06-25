@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<ea8284ad906ae89281a3fbd849e88c19>>
+ * @generated SignedSource<<671da9c60f7c7331ece553327ee3ab33>>
  */
 
 /**
@@ -141,12 +141,6 @@ class ReactNativeFeatureFlagsJavaProvider
     return method(javaProvider_);
   }
 
-  bool enableDifferentiatorMutationVectorPreallocation() override {
-    static const auto method =
-        getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enableDifferentiatorMutationVectorPreallocation");
-    return method(javaProvider_);
-  }
-
   bool enableDoubleMeasurementFixAndroid() override {
     static const auto method =
         getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enableDoubleMeasurementFixAndroid");
@@ -204,12 +198,6 @@ class ReactNativeFeatureFlagsJavaProvider
   bool enableImagePrefetchingAndroid() override {
     static const auto method =
         getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enableImagePrefetchingAndroid");
-    return method(javaProvider_);
-  }
-
-  bool enableImageRequestDowngradingForNonVisibleImages() override {
-    static const auto method =
-        getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enableImageRequestDowngradingForNonVisibleImages");
     return method(javaProvider_);
   }
 
@@ -399,12 +387,6 @@ class ReactNativeFeatureFlagsJavaProvider
     return method(javaProvider_);
   }
 
-  bool hideOffscreenVirtualViewsOnIOS() override {
-    static const auto method =
-        getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("hideOffscreenVirtualViewsOnIOS");
-    return method(javaProvider_);
-  }
-
   bool optimizedAnimatedPropUpdates() override {
     static const auto method =
         getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("optimizedAnimatedPropUpdates");
@@ -516,12 +498,6 @@ class ReactNativeFeatureFlagsJavaProvider
   bool useNestedScrollViewAndroid() override {
     static const auto method =
         getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("useNestedScrollViewAndroid");
-    return method(javaProvider_);
-  }
-
-  bool useOptimizedViewRegistryOnAndroid() override {
-    static const auto method =
-        getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("useOptimizedViewRegistryOnAndroid");
     return method(javaProvider_);
   }
 
@@ -656,11 +632,6 @@ bool JReactNativeFeatureFlagsCxxInterop::enableDestroyShadowTreeRevisionAsync(
   return ReactNativeFeatureFlags::enableDestroyShadowTreeRevisionAsync();
 }
 
-bool JReactNativeFeatureFlagsCxxInterop::enableDifferentiatorMutationVectorPreallocation(
-    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
-  return ReactNativeFeatureFlags::enableDifferentiatorMutationVectorPreallocation();
-}
-
 bool JReactNativeFeatureFlagsCxxInterop::enableDoubleMeasurementFixAndroid(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
   return ReactNativeFeatureFlags::enableDoubleMeasurementFixAndroid();
@@ -709,11 +680,6 @@ bool JReactNativeFeatureFlagsCxxInterop::enableIOSViewClipToPaddingBox(
 bool JReactNativeFeatureFlagsCxxInterop::enableImagePrefetchingAndroid(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
   return ReactNativeFeatureFlags::enableImagePrefetchingAndroid();
-}
-
-bool JReactNativeFeatureFlagsCxxInterop::enableImageRequestDowngradingForNonVisibleImages(
-    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
-  return ReactNativeFeatureFlags::enableImageRequestDowngradingForNonVisibleImages();
 }
 
 bool JReactNativeFeatureFlagsCxxInterop::enableImmediateUpdateModeForContentOffsetChanges(
@@ -871,11 +837,6 @@ bool JReactNativeFeatureFlagsCxxInterop::fuseboxScreenshotCaptureEnabled(
   return ReactNativeFeatureFlags::fuseboxScreenshotCaptureEnabled();
 }
 
-bool JReactNativeFeatureFlagsCxxInterop::hideOffscreenVirtualViewsOnIOS(
-    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
-  return ReactNativeFeatureFlags::hideOffscreenVirtualViewsOnIOS();
-}
-
 bool JReactNativeFeatureFlagsCxxInterop::optimizedAnimatedPropUpdates(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
   return ReactNativeFeatureFlags::optimizedAnimatedPropUpdates();
@@ -969,11 +930,6 @@ bool JReactNativeFeatureFlagsCxxInterop::useNativeViewConfigsInBridgelessMode(
 bool JReactNativeFeatureFlagsCxxInterop::useNestedScrollViewAndroid(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
   return ReactNativeFeatureFlags::useNestedScrollViewAndroid();
-}
-
-bool JReactNativeFeatureFlagsCxxInterop::useOptimizedViewRegistryOnAndroid(
-    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
-  return ReactNativeFeatureFlags::useOptimizedViewRegistryOnAndroid();
 }
 
 bool JReactNativeFeatureFlagsCxxInterop::useSharedAnimatedBackend(
@@ -1094,9 +1050,6 @@ void JReactNativeFeatureFlagsCxxInterop::registerNatives() {
         "enableDestroyShadowTreeRevisionAsync",
         JReactNativeFeatureFlagsCxxInterop::enableDestroyShadowTreeRevisionAsync),
       makeNativeMethod(
-        "enableDifferentiatorMutationVectorPreallocation",
-        JReactNativeFeatureFlagsCxxInterop::enableDifferentiatorMutationVectorPreallocation),
-      makeNativeMethod(
         "enableDoubleMeasurementFixAndroid",
         JReactNativeFeatureFlagsCxxInterop::enableDoubleMeasurementFixAndroid),
       makeNativeMethod(
@@ -1126,9 +1079,6 @@ void JReactNativeFeatureFlagsCxxInterop::registerNatives() {
       makeNativeMethod(
         "enableImagePrefetchingAndroid",
         JReactNativeFeatureFlagsCxxInterop::enableImagePrefetchingAndroid),
-      makeNativeMethod(
-        "enableImageRequestDowngradingForNonVisibleImages",
-        JReactNativeFeatureFlagsCxxInterop::enableImageRequestDowngradingForNonVisibleImages),
       makeNativeMethod(
         "enableImmediateUpdateModeForContentOffsetChanges",
         JReactNativeFeatureFlagsCxxInterop::enableImmediateUpdateModeForContentOffsetChanges),
@@ -1223,9 +1173,6 @@ void JReactNativeFeatureFlagsCxxInterop::registerNatives() {
         "fuseboxScreenshotCaptureEnabled",
         JReactNativeFeatureFlagsCxxInterop::fuseboxScreenshotCaptureEnabled),
       makeNativeMethod(
-        "hideOffscreenVirtualViewsOnIOS",
-        JReactNativeFeatureFlagsCxxInterop::hideOffscreenVirtualViewsOnIOS),
-      makeNativeMethod(
         "optimizedAnimatedPropUpdates",
         JReactNativeFeatureFlagsCxxInterop::optimizedAnimatedPropUpdates),
       makeNativeMethod(
@@ -1282,9 +1229,6 @@ void JReactNativeFeatureFlagsCxxInterop::registerNatives() {
       makeNativeMethod(
         "useNestedScrollViewAndroid",
         JReactNativeFeatureFlagsCxxInterop::useNestedScrollViewAndroid),
-      makeNativeMethod(
-        "useOptimizedViewRegistryOnAndroid",
-        JReactNativeFeatureFlagsCxxInterop::useOptimizedViewRegistryOnAndroid),
       makeNativeMethod(
         "useSharedAnimatedBackend",
         JReactNativeFeatureFlagsCxxInterop::useSharedAnimatedBackend),

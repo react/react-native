@@ -1,0 +1,203 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`LogBoxInspectorFooter should render no buttons and a message for syntax error 1`] = `
+<rn-view
+  backgroundColor="rgba(51, 51, 51, 1)"
+  flexDirection="row"
+>
+  <rn-paragraph
+    alignment="center"
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    fontSizeMultiplier="NaN"
+    fontStyle="italic"
+    foregroundColor="rgba(255, 255, 255, 0.6)"
+    height="48"
+    lineHeight="20"
+    nativeID="logbox_dismissable_text"
+    overflow="hidden"
+    paddingBottom="50"
+    paddingTop="20"
+    width="100%"
+  >
+    This error cannot be dismissed.
+  </rn-paragraph>
+</rn-view>
+`;
+
+exports[`LogBoxInspectorFooter should render two buttons for error 1`] = `
+<rn-view
+  backgroundColor="rgba(51, 51, 51, 1)"
+  flexDirection="row"
+>
+  <rn-view
+    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessible="true"
+    nativeID="logbox_footer_button_dismiss"
+  >
+    <rn-paragraph
+      allowFontScaling="true"
+      ellipsizeMode="tail"
+      fontSizeMultiplier="NaN"
+      foregroundColor="rgba(255, 255, 255, 1)"
+      includeFontPadding="false"
+      lineHeight="20"
+      overflow="hidden"
+    >
+      Dismiss
+    </rn-paragraph>
+  </rn-view>
+  <rn-view
+    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessible="true"
+    nativeID="logbox_footer_button_minimize"
+  >
+    <rn-paragraph
+      allowFontScaling="true"
+      ellipsizeMode="tail"
+      fontSizeMultiplier="NaN"
+      foregroundColor="rgba(255, 255, 255, 1)"
+      includeFontPadding="false"
+      lineHeight="20"
+      overflow="hidden"
+    >
+      Minimize
+    </rn-paragraph>
+  </rn-view>
+  <rn-view
+    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessible="true"
+    nativeID="logbox_footer_button_copy"
+  >
+    <rn-paragraph
+      allowFontScaling="true"
+      ellipsizeMode="tail"
+      fontSizeMultiplier="NaN"
+      foregroundColor="rgba(255, 255, 255, 1)"
+      includeFontPadding="false"
+      lineHeight="20"
+      overflow="hidden"
+    >
+      Copy
+    </rn-paragraph>
+  </rn-view>
+</rn-view>
+`;
+
+exports[`LogBoxInspectorFooter should render two buttons for fatal 1`] = `
+<rn-view
+  backgroundColor="rgba(51, 51, 51, 1)"
+  flexDirection="row"
+>
+  <rn-view
+    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessible="true"
+    nativeID="logbox_footer_button_dismiss"
+  >
+    <rn-paragraph
+      allowFontScaling="true"
+      ellipsizeMode="tail"
+      fontSizeMultiplier="NaN"
+      foregroundColor="rgba(255, 255, 255, 1)"
+      includeFontPadding="false"
+      lineHeight="20"
+      overflow="hidden"
+    >
+      Dismiss
+    </rn-paragraph>
+  </rn-view>
+  <rn-view
+    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessible="true"
+    nativeID="logbox_footer_button_minimize"
+  >
+    <rn-paragraph
+      allowFontScaling="true"
+      ellipsizeMode="tail"
+      fontSizeMultiplier="NaN"
+      foregroundColor="rgba(255, 255, 255, 1)"
+      includeFontPadding="false"
+      lineHeight="20"
+      overflow="hidden"
+    >
+      Minimize
+    </rn-paragraph>
+  </rn-view>
+  <rn-view
+    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessible="true"
+    nativeID="logbox_footer_button_copy"
+  >
+    <rn-paragraph
+      allowFontScaling="true"
+      ellipsizeMode="tail"
+      fontSizeMultiplier="NaN"
+      foregroundColor="rgba(255, 255, 255, 1)"
+      includeFontPadding="false"
+      lineHeight="20"
+      overflow="hidden"
+    >
+      Copy
+    </rn-paragraph>
+  </rn-view>
+</rn-view>
+`;
+
+exports[`LogBoxInspectorFooter should render two buttons for warning 1`] = `
+<rn-view
+  backgroundColor="rgba(51, 51, 51, 1)"
+  flexDirection="row"
+>
+  <rn-view
+    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessible="true"
+    nativeID="logbox_footer_button_dismiss"
+  >
+    <rn-paragraph
+      allowFontScaling="true"
+      ellipsizeMode="tail"
+      fontSizeMultiplier="NaN"
+      foregroundColor="rgba(255, 255, 255, 1)"
+      includeFontPadding="false"
+      lineHeight="20"
+      overflow="hidden"
+    >
+      Dismiss
+    </rn-paragraph>
+  </rn-view>
+  <rn-view
+    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessible="true"
+    nativeID="logbox_footer_button_minimize"
+  >
+    <rn-paragraph
+      allowFontScaling="true"
+      ellipsizeMode="tail"
+      fontSizeMultiplier="NaN"
+      foregroundColor="rgba(255, 255, 255, 1)"
+      includeFontPadding="false"
+      lineHeight="20"
+      overflow="hidden"
+    >
+      Minimize
+    </rn-paragraph>
+  </rn-view>
+  <rn-view
+    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessible="true"
+    nativeID="logbox_footer_button_copy"
+  >
+    <rn-paragraph
+      allowFontScaling="true"
+      ellipsizeMode="tail"
+      fontSizeMultiplier="NaN"
+      foregroundColor="rgba(255, 255, 255, 1)"
+      includeFontPadding="false"
+      lineHeight="20"
+      overflow="hidden"
+    >
+      Copy
+    </rn-paragraph>
+  </rn-view>
+</rn-view>
+`;

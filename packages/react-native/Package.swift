@@ -626,11 +626,18 @@ let reactRCTVibration = RNTarget(
   dependencies: [.yoga, .jsi, .reactTurboModuleCore]
 )
 
+/// React-RCTAnimatedModuleProvider.podspec
+let reactRCTAnimatedModuleProvider = RNTarget(
+  name: .reactRCTAnimatedModuleProvider,
+  path: "ReactApple/RCTAnimatedModuleProvider",
+  dependencies: [.reactNativeDependencies, .jsi, .reactCore, .reactFeatureFlags, .reactFabric, .reactTurboModuleCore, .yoga, .hermesPrebuilt]
+)
+
 /// React-RCTAppDelegate.podspec
 let reactAppDelegate = RNTarget(
   name: .reactAppDelegate,
   path: "Libraries/AppDelegate",
-  dependencies: [.reactNativeDependencies, .jsi, .reactJsiExecutor, .reactRuntime, .reactRCTImage, .reactHermes, .reactCore, .reactFabric, .reactTurboModuleCore, .hermesPrebuilt, .yoga]
+  dependencies: [.reactNativeDependencies, .jsi, .reactJsiExecutor, .reactRuntime, .reactRCTImage, .reactHermes, .reactCore, .reactFabric, .reactTurboModuleCore, .reactRCTAnimatedModuleProvider, .hermesPrebuilt, .yoga]
 )
 
 /// React-RCTLinking.podspec
@@ -716,6 +723,7 @@ let targets = [
   reactViewTransitionNativeModule,
   reactFeatureflagsNativemodule,
   reactNativeModuleDom,
+  reactRCTAnimatedModuleProvider,
   reactAppDelegate,
   reactSettings,
   reactRuntimeExecutor,
@@ -895,6 +903,7 @@ extension String {
   static let reactRCTActionSheet = "React-RCTActionSheet" // Empty target
   static let reactRCTLinking = "React-RCTLinking"
   static let reactCoreModules = "React-CoreModules"
+  static let reactRCTAnimatedModuleProvider = "RCTAnimatedModuleProvider"
   static let reactTurboModuleBridging = "ReactCommon/turbomodule/bridging"
   static let reactTurboModuleCore = "ReactCommon/turbomodule/core"
   static let reactTurboModuleCoreDefaults = "ReactCommon/turbomodule/core/defaults"

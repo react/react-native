@@ -16,7 +16,6 @@
 #import <React/UIView+React.h>
 #import <jsi/jsi.h>
 
-#import <react/featureflags/ReactNativeFeatureFlags.h>
 #import <react/renderer/components/FBReactNativeSpec/ComponentDescriptors.h>
 #import <react/renderer/components/FBReactNativeSpec/EventEmitters.h>
 #import <react/renderer/components/FBReactNativeSpec/Props.h>
@@ -65,9 +64,6 @@ using namespace facebook::react;
 
   if (!_mode.has_value()) {
     _mode = newViewProps.initialHidden ? RCTVirtualViewModeHidden : RCTVirtualViewModeVisible;
-    if (ReactNativeFeatureFlags::hideOffscreenVirtualViewsOnIOS()) {
-      self.hidden = newViewProps.initialHidden && !sIsAccessibilityUsed;
-    }
   }
 
   switch (newViewProps.renderState) {
@@ -210,20 +206,6 @@ static BOOL sIsAccessibilityUsed = NO;
     case RCTVirtualViewModeHidden:
       [self _dispatchAsyncModeChange:event];
       break;
-  }
-
-  if (ReactNativeFeatureFlags::hideOffscreenVirtualViewsOnIOS()) {
-    switch (newMode) {
-      case RCTVirtualViewModeVisible:
-        self.hidden = NO;
-        break;
-      case RCTVirtualViewModePrerender:
-        self.hidden = !sIsAccessibilityUsed;
-        break;
-      case RCTVirtualViewModeHidden:
-        self.hidden = YES;
-        break;
-    }
   }
 }
 

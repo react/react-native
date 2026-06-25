@@ -1,0 +1,69 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`LogBoxInspectorSection should render with action on the right 1`] = `
+<React.Fragment>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    flex="1"
+    fontSize="18"
+    fontSizeMultiplier="NaN"
+    fontWeight="600"
+    foregroundColor="rgba(255, 255, 255, 1)"
+    includeFontPadding="false"
+    lineHeight="20"
+    overflow="hidden"
+  >
+    Test Section
+  </rn-paragraph>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    fontSize="NaN"
+    fontSizeMultiplier="NaN"
+    foregroundColor="rgba(0, 0, 0, 0)"
+    overflow="hidden"
+  >
+    Right
+  </rn-paragraph>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    fontSize="NaN"
+    fontSizeMultiplier="NaN"
+    foregroundColor="rgba(0, 0, 0, 0)"
+    overflow="hidden"
+  >
+    Child
+  </rn-paragraph>
+</React.Fragment>
+`;
+
+exports[`LogBoxInspectorSection should render with only heading 1`] = `
+<React.Fragment>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    flex="1"
+    fontSize="18"
+    fontSizeMultiplier="NaN"
+    fontWeight="600"
+    foregroundColor="rgba(255, 255, 255, 1)"
+    includeFontPadding="false"
+    lineHeight="20"
+    overflow="hidden"
+  >
+    Test Section
+  </rn-paragraph>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    fontSize="NaN"
+    fontSizeMultiplier="NaN"
+    foregroundColor="rgba(0, 0, 0, 0)"
+    overflow="hidden"
+  >
+    Child
+  </rn-paragraph>
+</React.Fragment>
+`;

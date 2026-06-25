@@ -402,6 +402,8 @@ internal class PreparedLayoutTextView(context: Context) : ViewGroup(context), Re
     }
   }
 
+  override fun shouldDelayChildPressedState(): Boolean = false
+
   public override fun dispatchHoverEvent(event: MotionEvent): Boolean =
       super.dispatchHoverEvent(event)
 

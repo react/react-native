@@ -978,4 +978,183 @@ describe('<FlatList>', () => {
       });
     });
   });
+
+  describe('ListItemComponent', () => {
+    it('renders items using ListItemComponent', () => {
+      const root = Fantom.createRoot();
+      function ListItemComponent({
+        item,
+      }: {
+        item: {key: string, title: string},
+        ...
+      }) {
+        return <Text>{item.title}</Text>;
+      }
+      Fantom.runTask(() => {
+        root.render(
+          <FlatList
+            data={[
+              {key: '1', title: 'Item 1'},
+              {key: '2', title: 'Item 2'},
+            ]}
+            ListItemComponent={ListItemComponent}
+          />,
+        );
+      });
+
+      expect(root.getRenderedOutput({props: []}).toJSX()).toEqual(
+        <rn-scrollView>
+          <rn-view>
+            <rn-paragraph key="0">Item 1</rn-paragraph>
+            <rn-paragraph key="1">Item 2</rn-paragraph>
+          </rn-view>
+        </rn-scrollView>,
+      );
+    });
+
+    it('renders items using ListItemComponent across multiple columns', () => {
+      const root = Fantom.createRoot({viewportWidth: 400, viewportHeight: 600});
+      function ListItemComponent({item}: {item: {key: string}, ...}) {
+        return <View style={{height: 50, flex: 1}} collapsable={false} />;
+      }
+      Fantom.runTask(() => {
+        root.render(
+          <FlatList
+            data={[{key: '1'}, {key: '2'}, {key: '3'}]}
+            ListItemComponent={ListItemComponent}
+            numColumns={2}
+          />,
+        );
+      });
+
+      // Items 1 and 2 share the first row (each 200px wide),
+      // item 3 is alone on the second row (full 400px width).
+      expect(
+        root
+          .getRenderedOutput({
+            includeLayoutMetrics: true,
+            props: ['layoutMetrics-frame'],
+          })
+          .toJSX(),
+      ).toEqual(
+        <rn-scrollView layoutMetrics-frame="{x:0,y:0,width:400,height:600}">
+          <rn-view layoutMetrics-frame="{x:0,y:0,width:400,height:100}">
+            <rn-view
+              key="0"
+              layoutMetrics-frame="{x:0,y:0,width:200,height:50}"
+            />
+            <rn-view
+              key="1"
+              layoutMetrics-frame="{x:200,y:0,width:200,height:50}"
+            />
+            <rn-view
+              key="2"
+              layoutMetrics-frame="{x:0,y:50,width:400,height:50}"
+            />
+          </rn-view>
+        </rn-scrollView>,
+      );
+    });
+  });
+
+  describe('data variants', () => {
+    it('renders an empty list', () => {
+      const root = Fantom.createRoot();
+      Fantom.runTask(() => {
+        root.render(
+          <FlatList
+            data={[]}
+            renderItem={({item}) => <Text>{item.key}</Text>}
+          />,
+        );
+      });
+
+      expect(root.getRenderedOutput({props: []}).toJSX()).toEqual(
+        <rn-scrollView>
+          <rn-view />
+        </rn-scrollView>,
+      );
+    });
+
+    it('renders array-like data', () => {
+      const root = Fantom.createRoot();
+      const arrayLike = {
+        length: 2,
+        0: {key: '1', title: 'Item 1'},
+        1: {key: '2', title: 'Item 2'},
+      };
+      Fantom.runTask(() => {
+        root.render(
+          <FlatList
+            // $FlowFixMe[incompatible-type] - array-like (non-array) data is supported at runtime
+            data={arrayLike}
+            renderItem={({item}) => <Text>{item.title}</Text>}
+          />,
+        );
+      });
+
+      expect(root.getRenderedOutput({props: []}).toJSX()).toEqual(
+        <rn-scrollView>
+          <rn-view>
+            <rn-paragraph key="0">Item 1</rn-paragraph>
+            <rn-paragraph key="1">Item 2</rn-paragraph>
+          </rn-view>
+        </rn-scrollView>,
+      );
+    });
+
+    it('ignores invalid data', () => {
+      const root = Fantom.createRoot();
+      Fantom.runTask(() => {
+        root.render(
+          <FlatList
+            // $FlowExpectedError[incompatible-type] - deliberately passing invalid data
+            data={123456}
+            // $FlowFixMe[missing-local-annot]
+            renderItem={({item}) => <Text>{item.key}</Text>}
+          />,
+        );
+      });
+
+      expect(root.getRenderedOutput({props: []}).toJSX()).toEqual(
+        <rn-scrollView>
+          <rn-view />
+        </rn-scrollView>,
+      );
+    });
+
+    it('calls renderItem for every data item, including null and undefined entries', () => {
+      const root = Fantom.createRoot();
+      const data: Array<?{key: string}> = [
+        {key: 'i1'},
+        null,
+        undefined,
+        {key: 'i2'},
+        null,
+        undefined,
+        {key: 'i3'},
+      ];
+
+      const renderItemInOneColumn = jest.fn();
+      Fantom.runTask(() => {
+        root.render(
+          <FlatList data={data} renderItem={renderItemInOneColumn} />,
+        );
+      });
+      expect(renderItemInOneColumn).toHaveBeenCalledTimes(7);
+
+      const renderItemInThreeColumns = jest.fn();
+      const multiColumnRoot = Fantom.createRoot();
+      Fantom.runTask(() => {
+        multiColumnRoot.render(
+          <FlatList
+            data={data}
+            renderItem={renderItemInThreeColumns}
+            numColumns={3}
+          />,
+        );
+      });
+      expect(renderItemInThreeColumns).toHaveBeenCalledTimes(7);
+    });
+  });
 });

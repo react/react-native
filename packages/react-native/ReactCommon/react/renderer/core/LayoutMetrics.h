@@ -40,6 +40,8 @@ struct LayoutMetrics {
   bool wasLeftAndRightSwapped{false};
   // Pixel density. Number of device pixels per density-independent pixel.
   Float pointScaleFactor{1.0};
+  // Surface font scale this node was last laid out with.
+  Float fontSizeMultiplier{1.0};
   // How much the children of the node actually overflow in each direction.
   // Positive values indicate that children are overflowing outside of the node.
   // Negative values indicate that children are clipped inside the node
@@ -120,6 +122,7 @@ struct hash<facebook::react::LayoutMetrics> {
         layoutMetrics.displayType,
         layoutMetrics.layoutDirection,
         layoutMetrics.pointScaleFactor,
+        layoutMetrics.fontSizeMultiplier,
         layoutMetrics.overflowInset);
   }
 };

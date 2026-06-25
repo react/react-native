@@ -112,6 +112,18 @@ const bubblingEventTypes = {
       bubbled: 'onPointerOver',
     },
   },
+  topGotPointerCapture: {
+    phasedRegistrationNames: {
+      captured: 'onGotPointerCaptureCapture',
+      bubbled: 'onGotPointerCapture',
+    },
+  },
+  topLostPointerCapture: {
+    phasedRegistrationNames: {
+      captured: 'onLostPointerCaptureCapture',
+      bubbled: 'onLostPointerCapture',
+    },
+  },
   topClick: {
     phasedRegistrationNames: {
       captured: 'onClickCapture',
@@ -199,6 +211,7 @@ const validAttributesForNonEventProps = {
   backgroundColor: colorAttribute,
   transform: true,
   transformOrigin: true,
+  backgroundImage: backgroundImageAttribute,
   experimental_backgroundImage: backgroundImageAttribute,
   experimental_backgroundSize: backgroundSizeAttribute,
   experimental_backgroundPosition: backgroundPositionAttribute,
@@ -424,6 +437,10 @@ const validAttributesForEventProps = {
   onPointerOutCapture: true,
   onPointerOver: true,
   onPointerOverCapture: true,
+  onGotPointerCapture: true,
+  onGotPointerCaptureCapture: true,
+  onLostPointerCapture: true,
+  onLostPointerCaptureCapture: true,
 } as const;
 
 /**

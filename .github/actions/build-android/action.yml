@@ -5,7 +5,7 @@ inputs:
     required: true
     description: The type of release we are building. It could be nightly, release or dry-run
   gradle-cache-encryption-key:
-    description: "The encryption key needed to store the Gradle Configuration cache"
+    description: 'The encryption key needed to store the Gradle Configuration cache'
 runs:
   using: composite
   steps:
@@ -34,7 +34,7 @@ runs:
     - name: Setup gradle
       uses: ./.github/actions/setup-gradle
       with:
-        cache-read-only: "false"
+        cache-read-only: 'false'
         cache-encryption-key: ${{ inputs.gradle-cache-encryption-key }}
     - name: Restore Android ccache
       uses: actions/cache/restore@v5

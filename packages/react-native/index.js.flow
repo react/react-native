@@ -63,6 +63,7 @@ export type {
 export {default as Image} from './Libraries/Image/Image';
 export type {ImageBackgroundInstance} from './Libraries/Image/ImageBackground';
 export {default as ImageBackground} from './Libraries/Image/ImageBackground';
+export type {ImageResizeMode} from './Libraries/Image/ImageResizeMode';
 
 export type {InputAccessoryViewProps} from './Libraries/Components/TextInput/InputAccessoryView';
 export {default as InputAccessoryView} from './Libraries/Components/TextInput/InputAccessoryView';
@@ -161,6 +162,7 @@ export type {
   TextInputInstance,
   TextInputIOSProps,
   TextInputProps,
+  TextInputBlurEvent,
   TextInputChangeEvent,
   TextInputContentSizeChangeEvent,
   TextInputEndEditingEvent,
@@ -198,6 +200,7 @@ export {default as TouchableWithoutFeedback} from './Libraries/Components/Toucha
 
 export type {
   AccessibilityActionEvent,
+  AccessibilityActionInfo,
   AccessibilityProps,
   AccessibilityRole,
   AccessibilityState,
@@ -422,6 +425,7 @@ export type {
   EdgeInsetsValue,
   PointValue,
 } from './Libraries/StyleSheet/StyleSheetTypes';
+export type {EdgeInsetsProp} from './Libraries/StyleSheet/EdgeInsetsPropType';
 export type {Insets} from './Libraries/StyleSheet/Rect';
 export {default as StyleSheet} from './Libraries/StyleSheet/StyleSheet';
 

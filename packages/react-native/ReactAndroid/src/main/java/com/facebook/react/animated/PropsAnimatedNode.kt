@@ -75,7 +75,12 @@ internal class PropsAnimatedNode(
     }
     for ((key, value) in propNodeMapping) {
       val node = nativeAnimatedNodesManager.getNodeById(value)
-      requireNotNull(node) { "Mapped property node does not exist" }
+      // The mapped node can be dropped mid-teardown (e.g. component unmounts during
+      // navigation) while this prop update is still in flight. Skip it instead of
+      // throwing, mirroring the connectedViewTag == -1 guard.
+      if (node == null) {
+        continue
+      }
       if (node is StyleAnimatedNode) {
         node.collectViewUpdates(propMap)
       } else if (node is ValueAnimatedNode) {

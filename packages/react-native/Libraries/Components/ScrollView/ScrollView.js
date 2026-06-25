@@ -171,9 +171,6 @@ export interface ScrollViewInstance
   extends HostInstance,
     ScrollViewImperativeMethods {}
 
-/** @deprecated Use ScrollViewInstance instead */
-export type PublicScrollViewInstance = ScrollViewInstance;
-
 type InnerViewInstance = React.ElementRef<typeof View>;
 
 export type ScrollViewPropsIOS = Readonly<{

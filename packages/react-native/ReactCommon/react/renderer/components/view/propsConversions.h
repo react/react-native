@@ -357,7 +357,7 @@ convertRawProp(const PropsParserContext &context, const RawProps &rawProps, cons
       convertRawProp(context, rawProps, "maxHeight", sourceValue.maxDimension(yoga::Dimension::Height), {}));
 
   {
-    const auto *rawValue = rawProps.at("aspectRatio", nullptr, nullptr);
+    const auto *rawValue = rawProps.at("aspectRatio");
     if (rawValue != nullptr) {
       yogaStyle.setAspectRatio(rawValue->hasValue() ? convertAspectRatio(context, *rawValue) : yogaStyle.aspectRatio());
     } else {
@@ -371,43 +371,67 @@ convertRawProp(const PropsParserContext &context, const RawProps &rawProps, cons
   return yogaStyle;
 }
 
+struct CascadedRectangleCornersNames {
+  const char *topLeft;
+  const char *topRight;
+  const char *bottomLeft;
+  const char *bottomRight;
+  const char *topStart;
+  const char *topEnd;
+  const char *bottomStart;
+  const char *bottomEnd;
+  const char *endEnd;
+  const char *endStart;
+  const char *startEnd;
+  const char *startStart;
+  const char *all;
+};
+
+struct CascadedRectangleEdgesNames {
+  const char *left;
+  const char *right;
+  const char *top;
+  const char *bottom;
+  const char *start;
+  const char *end;
+  const char *horizontal;
+  const char *vertical;
+  const char *block;
+  const char *blockEnd;
+  const char *blockStart;
+  const char *all;
+};
+
 // This can be deleted when non-iterator ViewProp parsing is deleted
 template <typename T>
 static inline CascadedRectangleCorners<T> convertRawProp(
     const PropsParserContext &context,
     const RawProps &rawProps,
-    const char *prefix,
-    const char *suffix,
+    const CascadedRectangleCornersNames &names,
     const CascadedRectangleCorners<T> &sourceValue,
     const CascadedRectangleCorners<T> &defaultValue)
 {
   CascadedRectangleCorners<T> result;
 
-  result.topLeft =
-      convertRawProp(context, rawProps, "TopLeft", sourceValue.topLeft, defaultValue.topLeft, prefix, suffix);
-  result.topRight =
-      convertRawProp(context, rawProps, "TopRight", sourceValue.topRight, defaultValue.topRight, prefix, suffix);
+  result.topLeft = convertRawProp(context, rawProps, names.topLeft, sourceValue.topLeft, defaultValue.topLeft);
+  result.topRight = convertRawProp(context, rawProps, names.topRight, sourceValue.topRight, defaultValue.topRight);
   result.bottomLeft =
-      convertRawProp(context, rawProps, "BottomLeft", sourceValue.bottomLeft, defaultValue.bottomLeft, prefix, suffix);
-  result.bottomRight = convertRawProp(
-      context, rawProps, "BottomRight", sourceValue.bottomRight, defaultValue.bottomRight, prefix, suffix);
+      convertRawProp(context, rawProps, names.bottomLeft, sourceValue.bottomLeft, defaultValue.bottomLeft);
+  result.bottomRight =
+      convertRawProp(context, rawProps, names.bottomRight, sourceValue.bottomRight, defaultValue.bottomRight);
 
-  result.topStart =
-      convertRawProp(context, rawProps, "TopStart", sourceValue.topStart, defaultValue.topStart, prefix, suffix);
-  result.topEnd = convertRawProp(context, rawProps, "TopEnd", sourceValue.topEnd, defaultValue.topEnd, prefix, suffix);
-  result.bottomStart = convertRawProp(
-      context, rawProps, "BottomStart", sourceValue.bottomStart, defaultValue.bottomStart, prefix, suffix);
-  result.bottomEnd =
-      convertRawProp(context, rawProps, "BottomEnd", sourceValue.bottomEnd, defaultValue.bottomEnd, prefix, suffix);
-  result.endEnd = convertRawProp(context, rawProps, "EndEnd", sourceValue.endEnd, defaultValue.endEnd, prefix, suffix);
-  result.endStart =
-      convertRawProp(context, rawProps, "EndStart", sourceValue.endStart, defaultValue.endStart, prefix, suffix);
-  result.startEnd =
-      convertRawProp(context, rawProps, "StartEnd", sourceValue.startEnd, defaultValue.startEnd, prefix, suffix);
+  result.topStart = convertRawProp(context, rawProps, names.topStart, sourceValue.topStart, defaultValue.topStart);
+  result.topEnd = convertRawProp(context, rawProps, names.topEnd, sourceValue.topEnd, defaultValue.topEnd);
+  result.bottomStart =
+      convertRawProp(context, rawProps, names.bottomStart, sourceValue.bottomStart, defaultValue.bottomStart);
+  result.bottomEnd = convertRawProp(context, rawProps, names.bottomEnd, sourceValue.bottomEnd, defaultValue.bottomEnd);
+  result.endEnd = convertRawProp(context, rawProps, names.endEnd, sourceValue.endEnd, defaultValue.endEnd);
+  result.endStart = convertRawProp(context, rawProps, names.endStart, sourceValue.endStart, defaultValue.endStart);
+  result.startEnd = convertRawProp(context, rawProps, names.startEnd, sourceValue.startEnd, defaultValue.startEnd);
   result.startStart =
-      convertRawProp(context, rawProps, "StartStart", sourceValue.startStart, defaultValue.startStart, prefix, suffix);
+      convertRawProp(context, rawProps, names.startStart, sourceValue.startStart, defaultValue.startStart);
 
-  result.all = convertRawProp(context, rawProps, "", sourceValue.all, defaultValue.all, prefix, suffix);
+  result.all = convertRawProp(context, rawProps, names.all, sourceValue.all, defaultValue.all);
 
   return result;
 }
@@ -416,31 +440,28 @@ template <typename T>
 static inline CascadedRectangleEdges<T> convertRawProp(
     const PropsParserContext &context,
     const RawProps &rawProps,
-    const char *prefix,
-    const char *suffix,
+    const CascadedRectangleEdgesNames &names,
     const CascadedRectangleEdges<T> &sourceValue,
     const CascadedRectangleEdges<T> &defaultValue)
 {
   CascadedRectangleEdges<T> result;
 
-  result.left = convertRawProp(context, rawProps, "Left", sourceValue.left, defaultValue.left, prefix, suffix);
-  result.right = convertRawProp(context, rawProps, "Right", sourceValue.right, defaultValue.right, prefix, suffix);
-  result.top = convertRawProp(context, rawProps, "Top", sourceValue.top, defaultValue.top, prefix, suffix);
-  result.bottom = convertRawProp(context, rawProps, "Bottom", sourceValue.bottom, defaultValue.bottom, prefix, suffix);
+  result.left = convertRawProp(context, rawProps, names.left, sourceValue.left, defaultValue.left);
+  result.right = convertRawProp(context, rawProps, names.right, sourceValue.right, defaultValue.right);
+  result.top = convertRawProp(context, rawProps, names.top, sourceValue.top, defaultValue.top);
+  result.bottom = convertRawProp(context, rawProps, names.bottom, sourceValue.bottom, defaultValue.bottom);
 
-  result.start = convertRawProp(context, rawProps, "Start", sourceValue.start, defaultValue.start, prefix, suffix);
-  result.end = convertRawProp(context, rawProps, "End", sourceValue.end, defaultValue.end, prefix, suffix);
+  result.start = convertRawProp(context, rawProps, names.start, sourceValue.start, defaultValue.start);
+  result.end = convertRawProp(context, rawProps, names.end, sourceValue.end, defaultValue.end);
   result.horizontal =
-      convertRawProp(context, rawProps, "Horizontal", sourceValue.horizontal, defaultValue.horizontal, prefix, suffix);
-  result.vertical =
-      convertRawProp(context, rawProps, "Vertical", sourceValue.vertical, defaultValue.vertical, prefix, suffix);
-  result.block = convertRawProp(context, rawProps, "Block", sourceValue.block, defaultValue.block, prefix, suffix);
-  result.blockEnd =
-      convertRawProp(context, rawProps, "BlockEnd", sourceValue.blockEnd, defaultValue.blockEnd, prefix, suffix);
+      convertRawProp(context, rawProps, names.horizontal, sourceValue.horizontal, defaultValue.horizontal);
+  result.vertical = convertRawProp(context, rawProps, names.vertical, sourceValue.vertical, defaultValue.vertical);
+  result.block = convertRawProp(context, rawProps, names.block, sourceValue.block, defaultValue.block);
+  result.blockEnd = convertRawProp(context, rawProps, names.blockEnd, sourceValue.blockEnd, defaultValue.blockEnd);
   result.blockStart =
-      convertRawProp(context, rawProps, "BlockStart", sourceValue.blockStart, defaultValue.blockStart, prefix, suffix);
+      convertRawProp(context, rawProps, names.blockStart, sourceValue.blockStart, defaultValue.blockStart);
 
-  result.all = convertRawProp(context, rawProps, "", sourceValue.all, defaultValue.all, prefix, suffix);
+  result.all = convertRawProp(context, rawProps, names.all, sourceValue.all, defaultValue.all);
 
   return result;
 }

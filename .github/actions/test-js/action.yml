@@ -2,9 +2,9 @@ name: test-js
 description: Runs all the JS tests in the codebase
 inputs:
   node-version:
-    description: "The node.js version to use"
+    description: 'The node.js version to use'
     required: false
-    default: "22"
+    default: '22'
 runs:
   using: composite
   steps:

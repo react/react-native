@@ -1,0 +1,177 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`LogBoxInspectorHeader should render both buttons for two total 1`] = `
+<React.Fragment>
+  <rn-view
+    backgroundColor="rgba(250, 186, 48, 1)"
+  />
+  <rn-view
+    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessible="true"
+    alignItems="center"
+    aspectRatio="1"
+    justifyContent="center"
+    marginBottom="-8"
+    marginLeft="6"
+    marginRight="6"
+    marginTop="5"
+    nativeID="logbox_header_button_prev"
+  >
+    <rn-image
+      height="14"
+      overflow="hidden"
+      resizeMode="cover"
+      source-scale="1"
+      source-size="{16, 28}"
+      source-type="local"
+      source-uri="file://drawable-mdpi/packages_reactnative_libraries_logbox_ui_logboximages_chevronleft.png"
+      tintColor="rgba(255, 255, 255, 1)"
+      width="8"
+    />
+  </rn-view>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    fontSize="16"
+    fontSizeMultiplier="NaN"
+    fontWeight="600"
+    foregroundColor="rgba(255, 255, 255, 1)"
+    includeFontPadding="false"
+    lineHeight="20"
+    nativeID="logbox_header_title_text"
+    overflow="hidden"
+  >
+    Log 2 of 2
+  </rn-paragraph>
+  <rn-view
+    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessible="true"
+    alignItems="center"
+    aspectRatio="1"
+    justifyContent="center"
+    marginBottom="-8"
+    marginLeft="6"
+    marginRight="6"
+    marginTop="5"
+    nativeID="logbox_header_button_next"
+  >
+    <rn-image
+      height="14"
+      overflow="hidden"
+      resizeMode="cover"
+      source-scale="1"
+      source-size="{16, 28}"
+      source-type="local"
+      source-uri="file://drawable-mdpi/packages_reactnative_libraries_logbox_ui_logboximages_chevronright.png"
+      tintColor="rgba(255, 255, 255, 1)"
+      width="8"
+    />
+  </rn-view>
+</React.Fragment>
+`;
+
+exports[`LogBoxInspectorHeader should render no buttons for one total 1`] = `
+<React.Fragment>
+  <rn-view
+    backgroundColor="rgba(250, 186, 48, 1)"
+  />
+  <rn-view
+    alignItems="center"
+    aspectRatio="1"
+    justifyContent="center"
+    marginBottom="-8"
+    marginLeft="6"
+    marginRight="6"
+    marginTop="5"
+    nativeID="logbox_header_button_prev"
+  />
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    fontSize="16"
+    fontSizeMultiplier="NaN"
+    fontWeight="600"
+    foregroundColor="rgba(255, 255, 255, 1)"
+    includeFontPadding="false"
+    lineHeight="20"
+    nativeID="logbox_header_title_text"
+    overflow="hidden"
+  >
+    Log 1 of 1
+  </rn-paragraph>
+  <rn-view
+    alignItems="center"
+    aspectRatio="1"
+    justifyContent="center"
+    marginBottom="-8"
+    marginLeft="6"
+    marginRight="6"
+    marginTop="5"
+    nativeID="logbox_header_button_next"
+  />
+</React.Fragment>
+`;
+
+exports[`LogBoxInspectorHeader should render syntax error header 1`] = `
+<React.Fragment>
+  <rn-view
+    backgroundColor="rgba(243, 83, 105, 1)"
+  />
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    fontSize="16"
+    fontSizeMultiplier="NaN"
+    fontWeight="600"
+    foregroundColor="rgba(255, 255, 255, 1)"
+    includeFontPadding="false"
+    lineHeight="20"
+    nativeID="logbox_header_title_text"
+    overflow="hidden"
+  >
+    Failed to compile
+  </rn-paragraph>
+</React.Fragment>
+`;
+
+exports[`LogBoxInspectorHeader should render two buttons for three or more total 1`] = `
+<React.Fragment>
+  <rn-view
+    backgroundColor="rgba(250, 186, 48, 1)"
+  />
+  <rn-view
+    alignItems="center"
+    aspectRatio="1"
+    justifyContent="center"
+    marginBottom="-8"
+    marginLeft="6"
+    marginRight="6"
+    marginTop="5"
+    nativeID="logbox_header_button_prev"
+  />
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    fontSize="16"
+    fontSizeMultiplier="NaN"
+    fontWeight="600"
+    foregroundColor="rgba(255, 255, 255, 1)"
+    includeFontPadding="false"
+    lineHeight="20"
+    nativeID="logbox_header_title_text"
+    overflow="hidden"
+  >
+    Log 1 of 1
+  </rn-paragraph>
+  <rn-view
+    alignItems="center"
+    aspectRatio="1"
+    justifyContent="center"
+    marginBottom="-8"
+    marginLeft="6"
+    marginRight="6"
+    marginTop="5"
+    nativeID="logbox_header_button_next"
+  />
+</React.Fragment>
+`;

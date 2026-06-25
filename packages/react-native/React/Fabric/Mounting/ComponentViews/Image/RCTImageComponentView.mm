@@ -11,7 +11,6 @@
 #import <React/RCTConversions.h>
 #import <React/RCTImageBlurUtils.h>
 #import <React/RCTImageResponseObserverProxy.h>
-#import <react/featureflags/ReactNativeFeatureFlags.h>
 #import <react/renderer/components/image/ImageComponentDescriptor.h>
 #import <react/renderer/components/image/ImageEventEmitter.h>
 #import <react/renderer/components/image/ImageProps.h>
@@ -20,40 +19,9 @@
 
 using namespace facebook::react;
 
-static NSString *const RCTImageRequestPriorityDebugOverlayEnabledEnvironmentVariable =
-    @"RCT_IMAGE_REQUEST_PRIORITY_DEBUG_OVERLAY";
-
-static BOOL RCTImageRequestPriorityDebugOverlayEnabled()
-{
-  if (ReactNativeFeatureFlags::enableImageRequestDowngradingForNonVisibleImages()) {
-    static BOOL enabled = NO;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-      NSDictionary<NSString *, NSString *> *environment = [[NSProcessInfo processInfo] environment];
-      enabled = [environment[RCTImageRequestPriorityDebugOverlayEnabledEnvironmentVariable] boolValue];
-    });
-    return enabled;
-  } else {
-    return NO;
-  }
-}
-
-static NSString *RCTImageRequestPriorityDebugLabel(ImageRequestPriority priority)
-{
-  switch (priority) {
-    case ImageRequestPriority::Immediate:
-      return @"immediate";
-    case ImageRequestPriority::Prefetch:
-      return @"offscreen";
-    default:
-      return @"unknown";
-  }
-}
-
 @implementation RCTImageComponentView {
   ImageShadowNode::ConcreteState::Shared _state;
   std::shared_ptr<RCTImageResponseObserverProxy> _imageResponseObserverProxy;
-  UILabel *_requestPriorityLabel;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame
@@ -117,7 +85,6 @@ static NSString *RCTImageRequestPriorityDebugLabel(ImageRequestPriority priority
   auto newImageState = std::static_pointer_cast<const ImageShadowNode::ConcreteState>(state);
 
   [self _setStateAndResubscribeImageResponseObserver:newImageState];
-  [self _updateRequestPriorityLabelWithState:newImageState];
 
   bool havePreviousData = oldImageState && oldImageState->getData().getImageSource() != ImageSource{};
 
@@ -148,53 +115,10 @@ static NSString *RCTImageRequestPriorityDebugLabel(ImageRequestPriority priority
   }
 }
 
-- (UILabel *)_requestPriorityLabel
-{
-  if (!_requestPriorityLabel) {
-    _requestPriorityLabel = [UILabel new];
-    _requestPriorityLabel.accessibilityElementsHidden = YES;
-    _requestPriorityLabel.backgroundColor = [UIColor colorWithWhite:0 alpha:0.65];
-    _requestPriorityLabel.clipsToBounds = YES;
-    _requestPriorityLabel.font = [UIFont systemFontOfSize:10 weight:UIFontWeightSemibold];
-    _requestPriorityLabel.hidden = YES;
-    _requestPriorityLabel.isAccessibilityElement = NO;
-    _requestPriorityLabel.layer.cornerRadius = 3;
-    _requestPriorityLabel.textAlignment = NSTextAlignmentCenter;
-    _requestPriorityLabel.textColor = UIColor.whiteColor;
-    [_imageView addSubview:_requestPriorityLabel];
-  }
-
-  return _requestPriorityLabel;
-}
-
-- (void)_updateRequestPriorityLabelWithState:(const ImageShadowNode::ConcreteState::Shared &)state
-{
-  if (!state || !RCTImageRequestPriorityDebugOverlayEnabled()) {
-    if (_requestPriorityLabel) {
-      _requestPriorityLabel.hidden = YES;
-      _requestPriorityLabel.text = nil;
-    }
-    return;
-  }
-
-  UILabel *requestPriorityLabel = [self _requestPriorityLabel];
-  requestPriorityLabel.text = RCTImageRequestPriorityDebugLabel(state->getData().getImageRequestParams().priority);
-  [requestPriorityLabel sizeToFit];
-
-  CGRect frame = requestPriorityLabel.frame;
-  frame.origin = CGPointMake(2, 2);
-  frame.size.width += 8;
-  frame.size.height += 4;
-  requestPriorityLabel.frame = frame;
-  requestPriorityLabel.hidden = NO;
-  [_imageView bringSubviewToFront:requestPriorityLabel];
-}
-
 - (void)prepareForRecycle
 {
   [super prepareForRecycle];
   [self _setStateAndResubscribeImageResponseObserver:nullptr];
-  [self _updateRequestPriorityLabelWithState:nullptr];
   _imageView.image = nil;
 }
 

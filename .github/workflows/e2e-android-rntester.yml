@@ -11,12 +11,12 @@ on:
         default: false
     outputs:
       status:
-        description: "The result of the E2E tests (success or failure)"
+        description: 'The result of the E2E tests (success or failure)'
         value: ${{ jobs.report.outputs.status }}
 
 jobs:
   test:
-    runs-on: 4-core-ubuntu
+    runs-on: ubuntu-latest
     outputs:
       status: ${{ steps.report-status.outputs.status }}
     strategy:

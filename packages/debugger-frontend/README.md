@@ -1,10 +1,11 @@
 # @react-native/debugger-frontend
 
-![npm package](https://img.shields.io/npm/v/@react-native/debugger-frontend?color=brightgreen&label=npm%20package)
+[![npm]](https://www.npmjs.com/package/@react-native/debugger-frontend) [![npm downloads]](https://www.npmjs.com/package/@react-native/debugger-frontend)
 
-Debugger frontend for React Native based on Chrome DevTools.
+[npm]: https://img.shields.io/npm/v/@react-native/debugger-frontend.svg?color=blue
+[npm downloads]: https://img.shields.io/npm/dm/@react-native/debugger-frontend.svg
 
-This package is internal to React Native and is intended to be used via [`@react-native/dev-middleware`](https://www.npmjs.com/package/@react-native/dev-middleware).
+Debugger frontend for React Native based on Chrome DevTools. It is intended to be used via [`@react-native/dev-middleware`](https://www.npmjs.com/package/@react-native/dev-middleware).
 
 ## Usage
 

@@ -14,15 +14,15 @@ jobs:
       issues: write # for react-native-community/needs-attention to label issues
     name: Apply Needs Attention Label
     runs-on: ubuntu-latest
-    if: github.repository == 'facebook/react-native'
+    if: github.repository == 'react/react-native'
     steps:
       - uses: actions/checkout@v6
       - name: Apply Needs Attention Label
         uses: react-native-community/needs-attention@v2.0.0
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          response-required-label: "Needs: Author Feedback"
-          needs-attention-label: "Needs: Attention"
+          response-required-label: 'Needs: Author Feedback'
+          needs-attention-label: 'Needs: Attention'
         id: needs-attention
       - name: Result
         run: echo '${{ steps.needs-attention.outputs.result }}'

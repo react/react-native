@@ -1,5 +1,10 @@
 # @react-native/community-cli-plugin
 
+[![npm]](https://www.npmjs.com/package/@react-native/community-cli-plugin) [![npm downloads]](https://www.npmjs.com/package/@react-native/community-cli-plugin)
+
+[npm]: https://img.shields.io/npm/v/@react-native/community-cli-plugin.svg?color=blue
+[npm downloads]: https://img.shields.io/npm/dm/@react-native/community-cli-plugin.svg
+
 > This is an internal dependency of React Native. **Please don't depend on it directly.**
 
 CLI entry points supporting core React Native development features.

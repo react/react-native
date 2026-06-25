@@ -1,11 +1,11 @@
 name: 🔍 Debugger - Bug Report
 description: Report a bug with React Native DevTools and the New Debugger
-labels: ["Needs: Triage :mag:", "Debugging"]
+labels: ['Needs: Triage :mag:', 'Debugging']
 
 body:
   - type: markdown
     attributes:
-      value: "## Reporting a bug for React Native DevTools"
+      value: '## Reporting a bug for React Native DevTools'
   - type: markdown
     attributes:
       value: |
@@ -42,7 +42,7 @@ body:
     attributes:
       label: React Native Version
       description: The version of react-native that this issue reproduces on. Bear in mind that only issues on [supported versions](https://github.com/reactwg/react-native-releases#which-versions-are-currently-supported) will be looked into.
-      placeholder: "0.76.0"
+      placeholder: '0.76.0'
     validations:
       required: true
   - type: textarea

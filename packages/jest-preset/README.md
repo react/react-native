@@ -1,5 +1,10 @@
 # @react-native/jest-preset
 
+[![npm]](https://www.npmjs.com/package/@react-native/jest-preset) [![npm downloads]](https://www.npmjs.com/package/@react-native/jest-preset)
+
+[npm]: https://img.shields.io/npm/v/@react-native/jest-preset.svg?color=blue
+[npm downloads]: https://img.shields.io/npm/dm/@react-native/jest-preset.svg
+
 Jest preset for [React Native](https://reactnative.dev) apps.
 
 ## Usage

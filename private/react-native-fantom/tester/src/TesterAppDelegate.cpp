@@ -7,6 +7,7 @@
 
 #include "TesterAppDelegate.h"
 
+#include "FantomTimerRegistry.h"
 #include "NativeFantom.h"
 #include "platform/TesterTurboModuleProvider.h"
 #include "stubs/StubClock.h"
@@ -24,7 +25,6 @@
 #include <react/nativemodule/cputime/NativeCPUTime.h>
 #include <react/nativemodule/fantomtestspecificmethods/NativeFantomTestSpecificMethods.h>
 #include <react/renderer/animated/NativeAnimatedNodesManagerProvider.h>
-#include <react/renderer/components/image/ImageComponentDescriptor.h>
 #include <react/renderer/core/LayoutConstraints.h>
 #include <react/renderer/mounting/stubs/stubs.h>
 #include <react/renderer/runtimescheduler/RuntimeSchedulerBinding.h>
@@ -87,7 +87,6 @@ TesterAppDelegate::TesterAppDelegate(
       DevToolsHttpClientFactoryKey, getHttpClientFactory());
   contextContainer->insert(
       DevToolsWebSocketClientFactoryKey, getWebSocketClientFactory());
-  contextContainer->insert(ImageManagerKey, mountingManager_->imageManager_);
 
   runLoopObserverManager_ = std::make_shared<RunLoopObserverManager>();
 
@@ -124,8 +123,15 @@ TesterAppDelegate::TesterAppDelegate(
 
   animationChoreographer_ = std::make_shared<TesterAnimationChoreographer>();
 
+  ReactInstanceConfig reactInstanceConfigWithTimers = reactInstanceConfig;
+  reactInstanceConfigWithTimers.platformTimerRegistryFactory = [this]() {
+    auto registry = std::make_unique<FantomTimerRegistry>();
+    timerRegistry_ = registry.get();
+    return registry;
+  };
+
   reactHost_ = std::make_unique<ReactHost>(
-      reactInstanceConfig,
+      reactInstanceConfigWithTimers,
       mountingManager_,
       runLoopObserverManager_,
       std::move(contextContainer),
@@ -193,7 +199,6 @@ void TesterAppDelegate::startSurface(
   LayoutContext layoutContext{
       .pointScaleFactor = pointScaleFactor,
       .viewportOffset = {.x = offsetX, .y = offsetY},
-      .viewportSize = extentsDp,
   };
 
   reactHost_->startSurface(
@@ -229,7 +234,6 @@ void TesterAppDelegate::updateSurfaceConstraints(
 
   LayoutContext layoutContext{
       .pointScaleFactor = pointScaleFactor,
-      .viewportSize = extentsDp,
   };
 
   reactHost_->setSurfaceConstraints(
@@ -263,6 +267,28 @@ void TesterAppDelegate::produceFramesForDuration(double milliseconds) {
 
     remainingTimeMicrosecs -= timeStep;
   }
+}
+
+void TesterAppDelegate::setTimerMockEnabled(bool enabled) {
+  if (timerRegistry_ != nullptr) {
+    timerRegistry_->setMockEnabled(enabled);
+  }
+}
+
+void TesterAppDelegate::advanceTimers(double deltaMs) {
+  if (timerRegistry_ != nullptr) {
+    timerRegistry_->advanceTimersByTime(deltaMs);
+  }
+}
+
+void TesterAppDelegate::runAllTimers() {
+  if (timerRegistry_ != nullptr) {
+    timerRegistry_->runAllTimers();
+  }
+}
+
+uint32_t TesterAppDelegate::getPendingTimerCount() {
+  return timerRegistry_ != nullptr ? timerRegistry_->getPendingTimerCount() : 0;
 }
 
 void TesterAppDelegate::runUITick() {

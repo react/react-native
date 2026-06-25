@@ -114,7 +114,12 @@ ReactHost::~ReactHost() noexcept {
 
 void ReactHost::createReactInstance() {
   // Set up timers
-  auto platformTimers = std::make_unique<PlatformTimerRegistryImpl>();
+  std::unique_ptr<PlatformTimerRegistry> platformTimers;
+  if (reactInstanceConfig_.platformTimerRegistryFactory) {
+    platformTimers = reactInstanceConfig_.platformTimerRegistryFactory();
+  } else {
+    platformTimers = std::make_unique<PlatformTimerRegistryImpl>();
+  }
   auto* platformTimersPtr = platformTimers.get();
   auto timerManager = std::make_shared<TimerManager>(std::move(platformTimers));
   platformTimersPtr->setTimerManager(timerManager);

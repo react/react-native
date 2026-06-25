@@ -8,9 +8,13 @@
 #pragma once
 
 #include <react/debug/flags.h>
+#include <functional>
+#include <memory>
 #include <string>
 
 namespace facebook::react {
+
+class PlatformTimerRegistry;
 
 struct ReactInstanceConfig {
   std::string appId;
@@ -24,6 +28,12 @@ struct ReactInstanceConfig {
 #endif
   std::string devServerHost{"localhost"};
   uint32_t devServerPort{8081};
+
+  // Optional factory used to create the PlatformTimerRegistry for the instance.
+  // When unset, a default thread-based PlatformTimerRegistryImpl is used. This
+  // is a seam for tests (e.g. Fantom) to inject a deterministic, mockable timer
+  // registry.
+  std::function<std::unique_ptr<PlatformTimerRegistry>()> platformTimerRegistryFactory{nullptr};
 };
 
 } // namespace facebook::react

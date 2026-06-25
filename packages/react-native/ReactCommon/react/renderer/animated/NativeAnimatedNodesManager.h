@@ -78,6 +78,14 @@ class NativeAnimatedNodesManager : public std::enable_shared_from_this<NativeAni
   NativeAnimatedNodesManager(NativeAnimatedNodesManager &&) = delete;
   NativeAnimatedNodesManager &operator=(NativeAnimatedNodesManager &&) = delete;
 
+  // Whether this instance was constructed to use the shared AnimationBackend.
+  // Latched at construction, so it is immune to later flips of the
+  // process-global useSharedAnimatedBackend() flag.
+  bool useSharedAnimatedBackend() const noexcept
+  {
+    return useSharedAnimatedBackend_;
+  }
+
   template <typename T, typename = std::enable_if_t<std::is_base_of_v<AnimatedNode, T>>>
   T *getAnimatedNode(Tag tag) const
     requires(std::is_base_of_v<AnimatedNode, T>)
@@ -207,6 +215,8 @@ class NativeAnimatedNodesManager : public std::enable_shared_from_this<NativeAni
 
   bool onAnimationFrame(double timestamp);
 
+  void flushAnimatedNodesCreatedAsync() noexcept;
+
   bool isAnimationUpdateNeeded() const noexcept;
 
   void stopAnimationsForNode(Tag nodeTag);
@@ -216,6 +226,12 @@ class NativeAnimatedNodesManager : public std::enable_shared_from_this<NativeAni
   void handleAnimatedEvent(Tag tag, const std::string &eventName, const EventPayload &payload) noexcept;
 
   std::weak_ptr<UIManagerAnimationBackend> animationBackend_;
+
+  // Latched per-instance copy of which backend this manager uses, set from the
+  // constructor that ran (true for the shared-AnimationBackend ctor). Reads stay
+  // stable even when the global useSharedAnimatedBackend() flag is re-overridden
+  // on another RN runtime.
+  const bool useSharedAnimatedBackend_;
 
   std::unique_ptr<AnimatedNode> animatedNode(Tag tag, const folly::dynamic &config) noexcept;
 

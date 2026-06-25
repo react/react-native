@@ -480,6 +480,7 @@ void YogaLayoutableShadowNode::updateYogaProps() {
 
 void YogaLayoutableShadowNode::configureYogaTree(
     float pointScaleFactor,
+    Float fontSizeMultiplier,
     YGErrata defaultErrata,
     bool swapLeftAndRight) {
   ensureUnsealed();
@@ -488,6 +489,18 @@ void YogaLayoutableShadowNode::configureYogaTree(
   YGErrata errata = resolveErrata(defaultErrata);
   YGConfigSetErrata(&yogaConfig_, errata);
   YGConfigSetPointScaleFactor(&yogaConfig_, pointScaleFactor);
+
+  // A measurable node's measurement depends on `fontSizeMultiplier`, but unlike
+  // `pointScaleFactor` it is not part of the Yoga config, so a change does not
+  // invalidate Yoga's layout cache. Dirty the node when it changes to force
+  // re-measurement. We propagate up to the root so an unchanged, still-cached
+  // ancestor isn't skipped by `calculateLayoutInternal` before reaching us.
+  if (ReactNativeFeatureFlags::enableFontScaleChangesUpdatingLayout() &&
+      getTraits().check(ShadowNodeTraits::Trait::MeasurableYogaNode) &&
+      !floatEquality(
+          getLayoutMetrics().fontSizeMultiplier, fontSizeMultiplier)) {
+    yogaNode_.markDirtyAndPropagate();
+  }
 
   // TODO: `swapLeftAndRight` modified backing props and cannot be undone
   if (swapLeftAndRight) {
@@ -507,6 +520,8 @@ void YogaLayoutableShadowNode::configureYogaTree(
 
     if (child.yogaTreeHasBeenConfigured_ &&
         childLayoutMetrics.pointScaleFactor == pointScaleFactor &&
+        floatEquality(
+            childLayoutMetrics.fontSizeMultiplier, fontSizeMultiplier) &&
         childLayoutMetrics.wasLeftAndRightSwapped == swapLeftAndRight &&
         childErrata == child.resolveErrata(errata)) {
       continue;
@@ -515,10 +530,13 @@ void YogaLayoutableShadowNode::configureYogaTree(
     if (doesOwn(child)) {
       auto& mutableChild = const_cast<YogaLayoutableShadowNode&>(child);
       mutableChild.configureYogaTree(
-          pointScaleFactor, child.resolveErrata(errata), swapLeftAndRight);
+          pointScaleFactor,
+          fontSizeMultiplier,
+          child.resolveErrata(errata),
+          swapLeftAndRight);
     } else {
       cloneChildInPlace(i).configureYogaTree(
-          pointScaleFactor, errata, swapLeftAndRight);
+          pointScaleFactor, fontSizeMultiplier, errata, swapLeftAndRight);
     }
   }
 }
@@ -627,6 +645,7 @@ void YogaLayoutableShadowNode::layoutTree(
     TraceSection s2("YogaLayoutableShadowNode::configureYogaTree");
     configureYogaTree(
         layoutContext.pointScaleFactor,
+        layoutContext.fontSizeMultiplier,
         YGErrataAll /*defaultErrata*/,
         swapLeftAndRight);
   }
@@ -692,18 +711,12 @@ void YogaLayoutableShadowNode::layoutTree(
   if (yogaNode_.getHasNewLayout()) {
     auto layoutMetrics = layoutMetricsFromYogaNode(yogaNode_);
     layoutMetrics.pointScaleFactor = layoutContext.pointScaleFactor;
+    layoutMetrics.fontSizeMultiplier = layoutContext.fontSizeMultiplier;
     layoutMetrics.wasLeftAndRightSwapped = swapLeftAndRight;
     setLayoutMetrics(layoutMetrics);
     yogaNode_.setHasNewLayout(false);
   }
 
-  if (ReactNativeFeatureFlags::
-          enableImageRequestDowngradingForNonVisibleImages()) {
-    layoutContext.experimental_layoutOrigin = layoutContext.viewportOffset;
-    layoutContext.experimental_layoutFrame = Rect{
-        .origin = layoutContext.viewportOffset,
-        .size = getLayoutMetrics().frame.size};
-  }
   layout(layoutContext);
 }
 
@@ -746,6 +759,7 @@ void YogaLayoutableShadowNode::layout(LayoutContext layoutContext) {
 
       auto newLayoutMetrics = layoutMetricsFromYogaNode(*childYogaNode);
       newLayoutMetrics.pointScaleFactor = layoutContext.pointScaleFactor;
+      newLayoutMetrics.fontSizeMultiplier = layoutContext.fontSizeMultiplier;
       newLayoutMetrics.wasLeftAndRightSwapped =
           layoutContext.swapLeftAndRightInRTL &&
           newLayoutMetrics.layoutDirection == LayoutDirection::RightToLeft;
@@ -762,21 +776,7 @@ void YogaLayoutableShadowNode::layout(LayoutContext layoutContext) {
       childNode.setLayoutMetrics(newLayoutMetrics);
 
       if (newLayoutMetrics.displayType != DisplayType::None) {
-        auto childLayoutContext = layoutContext;
-        if (ReactNativeFeatureFlags::
-                enableImageRequestDowngradingForNonVisibleImages()) {
-          auto childFrame = Rect{
-              .origin = layoutContext.experimental_layoutOrigin +
-                  newLayoutMetrics.frame.origin + getContentOriginOffset(false),
-              .size = newLayoutMetrics.frame.size};
-          if (!childNode.getTraits().check(
-                  ShadowNodeTraits::Trait::RootNodeKind)) {
-            childFrame = childFrame * childNode.getTransform();
-          }
-          childLayoutContext.experimental_layoutOrigin = childFrame.origin;
-          childLayoutContext.experimental_layoutFrame = childFrame;
-        }
-        childNode.layout(childLayoutContext);
+        childNode.layout(layoutContext);
       }
     }
   }

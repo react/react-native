@@ -8,6 +8,7 @@
 #include "NetworkingModule.h"
 
 #include <react/debug/react_native_assert.h>
+#include <react/utils/Base64.h>
 
 namespace facebook::react {
 
@@ -270,15 +271,35 @@ int64_t NetworkingModule::didReceiveNetworkIncrementalData(
   return bytesRead;
 };
 
+namespace {
+// Encodes a response body for delivery to JS according to responseType.
+//
+// The JS XMLHttpRequest layer base64-decodes the delivered string for
+// 'base64'-type responses (responseType 'arraybuffer'), so binary bodies must
+// be base64-encoded here, matching the Android and iOS NetworkingModule
+// implementations. Without this, base64.toByteArray() on the JS side
+// mis-decodes the raw payload and corrupts the response (e.g. JSON.parse
+// failures on arraybuffer fetches). All other response types are delivered
+// unchanged.
+std::string encodeResponseBody(
+    const std::string& responseType,
+    std::string body) {
+  if (responseType == "base64") {
+    return base64Encode(body);
+  }
+  return body;
+}
+} // namespace
+
 void NetworkingModule::didReceiveNetworkData(
     uint32_t requestId,
-    const std::string& /*responseType*/,
+    const std::string& responseType,
     std::unique_ptr<folly::IOBuf> buf) {
   if (requests_.isStopped()) {
     return;
   }
 
-  auto responseData = buf->toString();
+  auto responseData = encodeResponseBody(responseType, buf->toString());
   emitDeviceEvent(
       "didReceiveNetworkData",
       [requestId,

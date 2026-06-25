@@ -34,9 +34,7 @@ using namespace facebook::react;
   return self;
 }
 
-- (ImageRequest)requestImage:(ImageSource)imageSource
-                   surfaceId:(SurfaceId)surfaceId
-                    priority:(ImageRequestPriority)priority
+- (ImageRequest)requestImage:(ImageSource)imageSource surfaceId:(SurfaceId)surfaceId
 {
   auto telemetry = std::make_shared<ImageTelemetry>(surfaceId);
   auto sharedCancelationFunction = SharedFunction<>();
@@ -78,13 +76,13 @@ using namespace facebook::react;
     observerCoordinator->nativeImageResponseProgress((float)progress / (float)total, progress, total);
   };
 
-  RCTImageURLLoaderRequest *loaderRequest =
+  RCTImageURLLoaderRequest *__unused loaderRequest =
       [self->_imageLoader loadImageWithURLRequest:request
                                              size:CGSizeMake(imageSource.size.width, imageSource.size.height)
                                             scale:imageSource.scale
                                           clipped:YES
                                        resizeMode:RCTResizeModeStretch
-                                         priority:RCTImageLoaderPriorityFromImageRequestPriority(priority)
+                                         priority:RCTImageLoaderPriorityImmediate
                                       attribution:{
                                                       .surfaceId = surfaceId,
   }

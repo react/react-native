@@ -157,6 +157,58 @@ describe('Event Dispatching', () => {
     expect(onPointerUpPriority).toBe(UIManager.unstable_DiscreteEventPriority);
   });
 
+  it('dispatches pointer capture events', () => {
+    const root = Fantom.createRoot();
+
+    const ref = React.createRef<React.ElementRef<typeof View>>();
+    const order: Array<string> = [];
+
+    Fantom.runTask(() => {
+      root.render(
+        <View
+          ref={ref}
+          onGotPointerCaptureCapture={() => {
+            order.push('got-capture');
+          }}
+          onGotPointerCapture={() => {
+            order.push('got-bubble');
+          }}
+          onLostPointerCaptureCapture={() => {
+            order.push('lost-capture');
+          }}
+          onLostPointerCapture={() => {
+            order.push('lost-bubble');
+          }}
+        />,
+      );
+    });
+
+    Fantom.dispatchNativeEvent(
+      ref,
+      'onGotPointerCapture',
+      {pointerId: 1},
+      {
+        category: Fantom.NativeEventCategory.Discrete,
+      },
+    );
+
+    Fantom.dispatchNativeEvent(
+      ref,
+      'onLostPointerCapture',
+      {pointerId: 1},
+      {
+        category: Fantom.NativeEventCategory.Discrete,
+      },
+    );
+
+    expect(order).toEqual([
+      'got-capture',
+      'got-bubble',
+      'lost-capture',
+      'lost-bubble',
+    ]);
+  });
+
   it('dispatches events with continuous priority', () => {
     const root = Fantom.createRoot();
 

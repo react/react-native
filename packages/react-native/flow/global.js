@@ -86,3 +86,9 @@ declare var global: {
   // Undeclared properties are implicitly `any`.
   [string | symbol]: any,
 };
+
+// Declared as a bare global so unqualified `__DEV__` references type-check as
+// `boolean`. The suppression is a no-op in this checkout but avoids a duplicate
+// declaration where `__DEV__` is also declared by another Flow libdef.
+// $FlowFixMe[libdef-override]
+declare var __DEV__: boolean;

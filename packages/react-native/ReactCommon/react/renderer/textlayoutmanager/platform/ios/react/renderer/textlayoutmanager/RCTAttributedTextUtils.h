@@ -19,6 +19,17 @@ NSString *const RCTAttributedStringEventEmitterKey = @"EventEmitter";
 // String representation of either `role` or `accessibilityRole`
 NSString *const RCTTextAttributesAccessibilityRoleAttributeName = @"AccessibilityRole";
 
+// Custom attribute key for ranges whose decoration line cannot be rendered
+// faithfully via UIKit's `NSUnderlineStyle` pattern bits (wavy has no native
+// equivalent; dotted/dashed don't match the geometry browsers use). These
+// ranges are painted by `RCTTextLayoutManager`'s drawing pass.
+//
+// Stored as an NSDictionary:
+//   @"lines": NSArray of @"underline" / @"line-through"
+//   @"color": UIColor stroke color
+//   @"style": NSString — @"wavy" | @"dotted" | @"dashed"
+NSString *const RCTCustomDecorationAttributeName = @"RCTCustomDecoration";
+
 /*
  * Creates `NSTextAttributes` from given `facebook::react::TextAttributes`
  */

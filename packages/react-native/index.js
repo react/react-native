@@ -367,7 +367,14 @@ module.exports = {
   get useWindowDimensions() {
     return require('./Libraries/Utilities/useWindowDimensions').default;
   },
+  /**
+   * @deprecated UTFSequence will be removed in a future release. Please insert Unicode escape sequences directly
+   */
   get UTFSequence() {
+    warnOnce(
+      'utfsequence-deprecated',
+      "UTFSequence has been deprecated and will be removed in a future release. Please insert Unicode escape sequences directly, e.g. `'\\ufeff'` (BOM)",
+    );
     return require('./Libraries/UTFSequence').default;
   },
   get Vibration() {

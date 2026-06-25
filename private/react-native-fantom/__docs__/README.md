@@ -463,6 +463,32 @@ Fantom.scrollTo(scrollViewElement, {
 expect(scrollViewElement.scrollTop).toBe(1);
 ```
 
+#### How can I test logic that relies on timers (`setTimeout`/`setInterval`)?
+
+Install a deterministic timer mock with `Fantom.installTimerMock()`. While
+installed, `setTimeout`/`setInterval` callbacks do not fire on their own; you
+advance a virtual clock to fire them, similar to `jest.useFakeTimers()`:
+
+```javascript
+const timers = Fantom.installTimerMock();
+
+const callback = jest.fn();
+setTimeout(callback, 100);
+
+timers.advanceTimersByTime(50);
+expect(callback).toHaveBeenCalledTimes(0);
+
+timers.advanceTimersByTime(50);
+expect(callback).toHaveBeenCalledTimes(1);
+
+timers.uninstall();
+```
+
+`advanceTimersByTime`/`runAllTimers` run the work loop internally, so callbacks
+have executed by the time they return. Use `getPendingTimerCount()` to inspect
+how many timers are still scheduled, and `uninstall()` (typically in
+`afterEach`) to restore the default behavior.
+
 #### What can be tested with Fantom?
 
 Fantom was designed to make it possible to test integration between React and

@@ -229,9 +229,8 @@ AccessibilityProps::AccessibilityProps(
     role = sourceProps.role;
     accessibilityTraits = sourceProps.accessibilityTraits;
   } else {
-    auto* accessibilityRoleValue =
-        rawProps.at("accessibilityRole", nullptr, nullptr);
-    auto* roleValue = rawProps.at("role", nullptr, nullptr);
+    auto* accessibilityRoleValue = rawProps.at("accessibilityRole");
+    auto* roleValue = rawProps.at("role");
 
     auto* precedentRoleValue =
         roleValue != nullptr ? roleValue : accessibilityRoleValue;

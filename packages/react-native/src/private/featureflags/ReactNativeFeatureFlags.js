@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<d9146c8c9b0c602e4cedb99e6d91558e>>
+ * @generated SignedSource<<f44477b5f5a4f7030798a61694d0332a>>
  * @flow strict
  * @noformat
  */
@@ -27,9 +27,10 @@ import {
   setOverrides,
 } from './ReactNativeFeatureFlagsBase';
 
-export type ReactNativeFeatureFlagsJsOnly = $ReadOnly<{
+export type ReactNativeFeatureFlagsJsOnly = Readonly<{
   jsOnlyTestFlag: Getter<boolean>,
   animatedDeferStartOfTimingAnimations: Getter<boolean>,
+  animatedForceNativeDriver: Getter<boolean>,
   animatedShouldDebounceQueueFlush: Getter<boolean>,
   animatedShouldSyncValueBeforeStartCallback: Getter<boolean>,
   animatedShouldUseSingleOp: Getter<boolean>,
@@ -46,7 +47,7 @@ export type ReactNativeFeatureFlagsJsOnly = $ReadOnly<{
 
 export type ReactNativeFeatureFlagsJsOnlyOverrides = OverridesFor<ReactNativeFeatureFlagsJsOnly>;
 
-export type ReactNativeFeatureFlags = $ReadOnly<{
+export type ReactNativeFeatureFlags = Readonly<{
   ...ReactNativeFeatureFlagsJsOnly,
   commonTestFlag: Getter<boolean>,
   commonTestFlagWithoutNativeImplementation: Getter<boolean>,
@@ -66,7 +67,6 @@ export type ReactNativeFeatureFlags = $ReadOnly<{
   enableCppPropsIteratorSetter: Getter<boolean>,
   enableCustomFocusSearchOnClippedElementsAndroid: Getter<boolean>,
   enableDestroyShadowTreeRevisionAsync: Getter<boolean>,
-  enableDifferentiatorMutationVectorPreallocation: Getter<boolean>,
   enableDoubleMeasurementFixAndroid: Getter<boolean>,
   enableEagerRootViewAttachment: Getter<boolean>,
   enableExclusivePropsUpdateAndroid: Getter<boolean>,
@@ -77,7 +77,6 @@ export type ReactNativeFeatureFlags = $ReadOnly<{
   enableIOSTextBaselineOffsetPerLine: Getter<boolean>,
   enableIOSViewClipToPaddingBox: Getter<boolean>,
   enableImagePrefetchingAndroid: Getter<boolean>,
-  enableImageRequestDowngradingForNonVisibleImages: Getter<boolean>,
   enableImmediateUpdateModeForContentOffsetChanges: Getter<boolean>,
   enableImperativeFocus: Getter<boolean>,
   enableInteropViewManagerClassLookUpOptimizationIOS: Getter<boolean>,
@@ -109,7 +108,6 @@ export type ReactNativeFeatureFlags = $ReadOnly<{
   fuseboxFrameRecordingEnabled: Getter<boolean>,
   fuseboxNetworkInspectionEnabled: Getter<boolean>,
   fuseboxScreenshotCaptureEnabled: Getter<boolean>,
-  hideOffscreenVirtualViewsOnIOS: Getter<boolean>,
   optimizedAnimatedPropUpdates: Getter<boolean>,
   overrideBySynchronousMountPropsAtMountingAndroid: Getter<boolean>,
   perfIssuesEnabled: Getter<boolean>,
@@ -129,7 +127,6 @@ export type ReactNativeFeatureFlags = $ReadOnly<{
   useFabricInterop: Getter<boolean>,
   useNativeViewConfigsInBridgelessMode: Getter<boolean>,
   useNestedScrollViewAndroid: Getter<boolean>,
-  useOptimizedViewRegistryOnAndroid: Getter<boolean>,
   useSharedAnimatedBackend: Getter<boolean>,
   useTraitHiddenOnAndroid: Getter<boolean>,
   useTurboModuleInterop: Getter<boolean>,
@@ -150,9 +147,14 @@ export const jsOnlyTestFlag: Getter<boolean> = createJavaScriptFlagGetter('jsOnl
 export const animatedDeferStartOfTimingAnimations: Getter<boolean> = createJavaScriptFlagGetter('animatedDeferStartOfTimingAnimations', false);
 
 /**
+ * When enabled, forces `useNativeDriver` to `true` for all Animated animations and events, overriding the config (including an explicit `false`). Has no effect unless the shared animated backend is enabled, which is required to support native driver for all props.
+ */
+export const animatedForceNativeDriver: Getter<boolean> = createJavaScriptFlagGetter('animatedForceNativeDriver', false);
+
+/**
  * Enables an experimental flush-queue debouncing in Animated.js.
  */
-export const animatedShouldDebounceQueueFlush: Getter<boolean> = createJavaScriptFlagGetter('animatedShouldDebounceQueueFlush', false);
+export const animatedShouldDebounceQueueFlush: Getter<boolean> = createJavaScriptFlagGetter('animatedShouldDebounceQueueFlush', true);
 
 /**
  * When a useNativeDriver animation completes, syncs the JS-side AnimatedValue with the post-animation value BEFORE invoking the user-supplied start({finished}) callback. Without the flag, the callback observes the pre-animation value, which can cause downstream re-renders to read stale interpolation outputs.
@@ -162,7 +164,7 @@ export const animatedShouldSyncValueBeforeStartCallback: Getter<boolean> = creat
 /**
  * Enables an experimental mega-operation for Animated.js that replaces many calls to native with a single call into native, to reduce JSI/JNI traffic.
  */
-export const animatedShouldUseSingleOp: Getter<boolean> = createJavaScriptFlagGetter('animatedShouldUseSingleOp', false);
+export const animatedShouldUseSingleOp: Getter<boolean> = createJavaScriptFlagGetter('animatedShouldUseSingleOp', true);
 
 /**
  * Use the deferred cell render update mechanism for focus change in FlatList.
@@ -224,7 +226,7 @@ export const cdpInteractionMetricsEnabled: Getter<boolean> = createNativeFlagGet
 /**
  * Use a C++ implementation of Native Animated instead of the platform implementation.
  */
-export const cxxNativeAnimatedEnabled: Getter<boolean> = createNativeFlagGetter('cxxNativeAnimatedEnabled', false);
+export const cxxNativeAnimatedEnabled: Getter<boolean> = createNativeFlagGetter('cxxNativeAnimatedEnabled', true);
 /**
  * When enabled, sets the default overflow style for Text components to hidden instead of visible.
  */
@@ -282,10 +284,6 @@ export const enableCustomFocusSearchOnClippedElementsAndroid: Getter<boolean> = 
  */
 export const enableDestroyShadowTreeRevisionAsync: Getter<boolean> = createNativeFlagGetter('enableDestroyShadowTreeRevisionAsync', false);
 /**
- * Pre-allocate mutation vectors in the Differentiator to reduce reallocation overhead during shadow view diffing.
- */
-export const enableDifferentiatorMutationVectorPreallocation: Getter<boolean> = createNativeFlagGetter('enableDifferentiatorMutationVectorPreallocation', false);
-/**
  * When enabled a subset of components will avoid double measurement on Android.
  */
 export const enableDoubleMeasurementFixAndroid: Getter<boolean> = createNativeFlagGetter('enableDoubleMeasurementFixAndroid', false);
@@ -325,10 +323,6 @@ export const enableIOSViewClipToPaddingBox: Getter<boolean> = createNativeFlagGe
  * When enabled, Android will build and initiate image prefetch requests on ImageShadowNode::layout
  */
 export const enableImagePrefetchingAndroid: Getter<boolean> = createNativeFlagGetter('enableImagePrefetchingAndroid', false);
-/**
- * When enabled, ImageShadowNode downgrades image requests to prefetch priority when layout determines that the image does not intersect the viewport.
- */
-export const enableImageRequestDowngradingForNonVisibleImages: Getter<boolean> = createNativeFlagGetter('enableImageRequestDowngradingForNonVisibleImages', false);
 /**
  * Dispatches state updates for content offset changes synchronously on the main thread.
  */
@@ -424,7 +418,7 @@ export const enableVirtualViewContainerStateExperimental: Getter<boolean> = crea
 /**
  * Fix incorrect parentTag passed as parentTagForUpdate in the unflatten-unflatten branch of calculateShadowViewMutationsFlattener, which causes UPDATE mutations to reference a parent being created in the same batch.
  */
-export const fixDifferentiatorParentTagForUnflattenCase: Getter<boolean> = createNativeFlagGetter('fixDifferentiatorParentTagForUnflattenCase', false);
+export const fixDifferentiatorParentTagForUnflattenCase: Getter<boolean> = createNativeFlagGetter('fixDifferentiatorParentTagForUnflattenCase', true);
 /**
  * Uses the default event priority instead of the discreet event priority by default when dispatching events from Fabric to React.
  */
@@ -453,10 +447,6 @@ export const fuseboxNetworkInspectionEnabled: Getter<boolean> = createNativeFlag
  * Enable Page.captureScreenshot CDP method support in the React Native DevTools CDP backend. This flag is global and should not be changed across React Host lifetimes.
  */
 export const fuseboxScreenshotCaptureEnabled: Getter<boolean> = createNativeFlagGetter('fuseboxScreenshotCaptureEnabled', false);
-/**
- * Hides offscreen VirtualViews on iOS by setting hidden = YES to avoid extra cost of views
- */
-export const hideOffscreenVirtualViewsOnIOS: Getter<boolean> = createNativeFlagGetter('hideOffscreenVirtualViewsOnIOS', false);
 /**
  * When enabled, uses optimized platform-specific paths to apply animated props synchronously. On Android, this uses a batched int/double buffer protocol with a single JNI call. On iOS, this passes AnimatedProps directly through the delegate chain and applies them via cloneProps, avoiding the folly::dynamic round-trip.
  */
@@ -533,10 +523,6 @@ export const useNativeViewConfigsInBridgelessMode: Getter<boolean> = createNativ
  * When enabled, ReactScrollView will extend NestedScrollView instead of ScrollView on Android for improved nested scrolling support.
  */
 export const useNestedScrollViewAndroid: Getter<boolean> = createNativeFlagGetter('useNestedScrollViewAndroid', false);
-/**
- * Use MutableIntObjectMap with ReadWriteLock instead of ConcurrentHashMap for the view registry in SurfaceMountingManager to reduce memory overhead and GC pressure.
- */
-export const useOptimizedViewRegistryOnAndroid: Getter<boolean> = createNativeFlagGetter('useOptimizedViewRegistryOnAndroid', false);
 /**
  * Use shared animation backend in C++ Animated
  */

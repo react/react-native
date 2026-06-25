@@ -1,0 +1,100 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`LogBoxInspectorStackFrames should render null for empty stack frames 1`] = `null`;
+
+exports[`LogBoxInspectorStackFrames should render stack frames with 1 frame collapsed 1`] = `
+<React.Fragment>
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    flex="1"
+    fontSize="18"
+    fontSizeMultiplier="NaN"
+    fontWeight="600"
+    foregroundColor="rgba(255, 255, 255, 1)"
+    includeFontPadding="false"
+    lineHeight="20"
+    overflow="hidden"
+  >
+    Call Stack
+  </rn-paragraph>
+  <rn-view
+    backgroundColor="rgba(51, 51, 51, 1)"
+    marginBottom="5"
+    marginHorizontal="10"
+    paddingHorizontal="5"
+    paddingVertical="10"
+  />
+  <rn-paragraph
+    allowFontScaling="true"
+    ellipsizeMode="tail"
+    fontSize="13"
+    fontSizeMultiplier="NaN"
+    fontWeight="400"
+    foregroundColor="rgba(255, 255, 255, 0.701961)"
+    includeFontPadding="false"
+    lineHeight="18"
+    marginHorizontal="10"
+    overflow="hidden"
+  >
+    This call stack is not symbolicated. Some features are unavailable such as viewing the function name or tapping to open files.
+  </rn-paragraph>
+  <rn-view
+    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessible="true"
+    flex="1"
+    paddingHorizontal="10"
+    paddingVertical="4"
+  >
+    <rn-paragraph
+      allowFontScaling="true"
+      ellipsizeMode="tail"
+      fontFamily="monospace"
+      fontSizeMultiplier="NaN"
+      fontWeight="400"
+      foregroundColor="rgba(255, 255, 255, 1)"
+      includeFontPadding="false"
+      lineHeight="18"
+      nativeID="logbox_stack_frame_text"
+      overflow="hidden"
+    >
+      foo
+    </rn-paragraph>
+    <rn-paragraph
+      allowFontScaling="true"
+      ellipsizeMode="middle"
+      fontSize="12"
+      fontSizeMultiplier="NaN"
+      fontWeight="300"
+      foregroundColor="rgba(255, 255, 255, 0.8)"
+      includeFontPadding="false"
+      lineHeight="16"
+      maximumNumberOfLines="1"
+      overflow="hidden"
+      paddingLeft="10"
+    >
+      dependency.js:1:2
+    </rn-paragraph>
+  </rn-view>
+  <rn-view
+    accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
+    accessible="true"
+  >
+    <rn-paragraph
+      allowFontScaling="true"
+      ellipsizeMode="tail"
+      fontSize="12"
+      fontSizeMultiplier="NaN"
+      fontWeight="300"
+      foregroundColor="rgba(255, 255, 255, 0.701961)"
+      lineHeight="20"
+      marginTop="0"
+      overflow="hidden"
+      paddingHorizontal="10"
+      paddingVertical="5"
+    >
+      See 1 more frame
+    </rn-paragraph>
+  </rn-view>
+</React.Fragment>
+`;

@@ -4,26 +4,26 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
-      - "packages/react-native/ReactCommon/**"
-      - "packages/react-native/ReactAndroid/**"
-      - "packages/react-native/React/**"
-      - "packages/react-native/ReactApple/**"
-      - "packages/react-native/Libraries/**"
-      - "scripts/cxx-api/**"
+      - 'packages/react-native/ReactCommon/**'
+      - 'packages/react-native/ReactAndroid/**'
+      - 'packages/react-native/React/**'
+      - 'packages/react-native/ReactApple/**'
+      - 'packages/react-native/Libraries/**'
+      - 'scripts/cxx-api/**'
   push:
     branches:
       - main
-      - "*-stable"
+      - '*-stable'
     paths:
-      - "packages/react-native/ReactCommon/**"
-      - "packages/react-native/ReactAndroid/**"
-      - "packages/react-native/React/**"
-      - "packages/react-native/ReactApple/**"
-      - "packages/react-native/Libraries/**"
-      - "scripts/cxx-api/**"
+      - 'packages/react-native/ReactCommon/**'
+      - 'packages/react-native/ReactAndroid/**'
+      - 'packages/react-native/React/**'
+      - 'packages/react-native/ReactApple/**'
+      - 'packages/react-native/Libraries/**'
+      - 'scripts/cxx-api/**'
 
 env:
-  DOXYGEN_VERSION: "1.16.1"
+  DOXYGEN_VERSION: '1.16.1'
 
 permissions:
   contents: read
@@ -31,7 +31,7 @@ permissions:
 jobs:
   validate_cxx_api_snapshots:
     runs-on: ubuntu-latest
-    if: github.repository == 'facebook/react-native'
+    if: github.repository == 'react/react-native'
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -70,7 +70,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: '3.12'
       - name: Install Python dependencies
         shell: bash
         run: pip install doxmlparser natsort pyyaml

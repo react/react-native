@@ -73,7 +73,8 @@ NativeAnimatedNodesManager::NativeAnimatedNodesManager(
     StartOnRenderCallback&& startOnRenderCallback,
     StopOnRenderCallback&& stopOnRenderCallback,
     FrameRateListenerCallback&& frameRateListenerCallback) noexcept
-    : directManipulationCallback_(std::move(directManipulationCallback)),
+    : useSharedAnimatedBackend_(false),
+      directManipulationCallback_(std::move(directManipulationCallback)),
       fabricCommitCallback_(std::move(fabricCommitCallback)),
       resolvePlatformColor_(std::move(resolvePlatformColor)),
       startOnRenderCallback_(std::move(startOnRenderCallback)),
@@ -97,7 +98,7 @@ NativeAnimatedNodesManager::NativeAnimatedNodesManager(
 
 NativeAnimatedNodesManager::NativeAnimatedNodesManager(
     std::shared_ptr<UIManagerAnimationBackend> animationBackend) noexcept
-    : animationBackend_(animationBackend) {}
+    : animationBackend_(animationBackend), useSharedAnimatedBackend_(true) {}
 
 NativeAnimatedNodesManager::~NativeAnimatedNodesManager() noexcept {
   stopRenderCallbackIfNeeded(true);
@@ -256,7 +257,7 @@ void NativeAnimatedNodesManager::disconnectAnimatedNodeFromView(
   auto node = getAnimatedNode<PropsAnimatedNode>(propsNodeTag);
   if (node != nullptr) {
     node->disconnectFromView(viewTag);
-    if (ReactNativeFeatureFlags::useSharedAnimatedBackend()) {
+    if (useSharedAnimatedBackend_) {
       node->disconnectFromShadowNodeFamily();
     }
     {
@@ -521,7 +522,7 @@ void NativeAnimatedNodesManager::handleAnimatedEvent(
     // That's why, in case this is called from the UI thread, we need to
     // proactivelly trigger the animation loop to avoid showing stale
     // frames.
-    if (ReactNativeFeatureFlags::useSharedAnimatedBackend()) {
+    if (useSharedAnimatedBackend_) {
       if (auto animationBackend = animationBackend_.lock()) {
         animationBackend->pushAnimationMutations(
             [this](AnimationTimestamp timestamp) -> AnimationMutations {
@@ -561,7 +562,7 @@ void NativeAnimatedNodesManager::startRenderCallbackIfNeeded(bool isAsync) {
     return;
   }
 
-  if (ReactNativeFeatureFlags::useSharedAnimatedBackend()) {
+  if (useSharedAnimatedBackend_) {
     if (auto animationBackend = animationBackend_.lock()) {
       auto weak = weak_from_this();
       animationBackendCallbackId_ = animationBackend->start(
@@ -589,7 +590,7 @@ void NativeAnimatedNodesManager::stopRenderCallbackIfNeeded(
   // stopRenderCallbackIfNeeded is always called from the UI thread.
   auto isRenderCallbackStarted = isRenderCallbackStarted_.exchange(false);
 
-  if (ReactNativeFeatureFlags::useSharedAnimatedBackend()) {
+  if (useSharedAnimatedBackend_) {
     if (isRenderCallbackStarted) {
       if (auto animationBackend = animationBackend_.lock()) {
         animationBackend->stop(animationBackendCallbackId_);
@@ -922,7 +923,7 @@ void NativeAnimatedNodesManager::schedulePropsCommit(
     bool layoutStyleUpdated,
     bool forceFabricCommit,
     ShadowNodeFamily::Weak shadowNodeFamily) noexcept {
-  if (ReactNativeFeatureFlags::useSharedAnimatedBackend()) {
+  if (useSharedAnimatedBackend_) {
     if (forceFabricCommit) {
       shouldRequestAsyncFlush_.insert(viewTag);
     }
@@ -1029,7 +1030,7 @@ AnimationMutations NativeAnimatedNodesManager::onAnimationFrameForBackend(
 
 AnimationMutations NativeAnimatedNodesManager::pullAnimationMutations(
     AnimationTimestamp timestamp) {
-  if (!ReactNativeFeatureFlags::useSharedAnimatedBackend()) {
+  if (!useSharedAnimatedBackend_) {
     return {};
   }
   TraceSection s(
@@ -1038,6 +1039,9 @@ AnimationMutations NativeAnimatedNodesManager::pullAnimationMutations(
       activeAnimations_.size());
 
   isOnRenderThread_ = true;
+
+  // Apply nodes created via the unbatched `createAnimatedNodeAsync` path.
+  flushAnimatedNodesCreatedAsync();
 
   // Run operations scheduled from AnimatedModule
   std::vector<UiTask> operations;
@@ -1097,8 +1101,26 @@ AnimationMutations NativeAnimatedNodesManager::pullAnimationMutations(
   return mutations;
 }
 
+void NativeAnimatedNodesManager::flushAnimatedNodesCreatedAsync() noexcept {
+  // Flush async created animated nodes
+  std::unordered_map<Tag, std::unique_ptr<AnimatedNode>>
+      animatedNodesCreatedAsync;
+  {
+    std::lock_guard<std::mutex> lock(animatedNodesCreatedAsyncMutex_);
+    std::swap(animatedNodesCreatedAsync, animatedNodesCreatedAsync_);
+  }
+
+  if (!animatedNodesCreatedAsync.empty()) {
+    std::lock_guard<std::mutex> lock(connectedAnimatedNodesMutex_);
+    for (auto& [tag, node] : animatedNodesCreatedAsync) {
+      animatedNodes_.insert({tag, std::move(node)});
+      updatedNodeTags_.insert(tag);
+    }
+  }
+}
+
 void NativeAnimatedNodesManager::onRender() {
-  if (ReactNativeFeatureFlags::useSharedAnimatedBackend()) {
+  if (useSharedAnimatedBackend_) {
     return;
   }
   TraceSection s(
@@ -1112,23 +1134,7 @@ void NativeAnimatedNodesManager::onRender() {
 
   isOnRenderThread_ = true;
 
-  {
-    // Flush async created animated nodes
-    std::unordered_map<Tag, std::unique_ptr<AnimatedNode>>
-        animatedNodesCreatedAsync;
-    {
-      std::lock_guard<std::mutex> lock(animatedNodesCreatedAsyncMutex_);
-      std::swap(animatedNodesCreatedAsync, animatedNodesCreatedAsync_);
-    }
-
-    if (!animatedNodesCreatedAsync.empty()) {
-      std::lock_guard<std::mutex> lock(connectedAnimatedNodesMutex_);
-      for (auto& [tag, node] : animatedNodesCreatedAsync) {
-        animatedNodes_.insert({tag, std::move(node)});
-        updatedNodeTags_.insert(tag);
-      }
-    }
-  }
+  flushAnimatedNodesCreatedAsync();
 
   // Run operations scheduled from AnimatedModule
   std::vector<UiTask> operations;

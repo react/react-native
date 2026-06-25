@@ -92,7 +92,7 @@ runs:
 
           echo "App found at $APP_PATH"
           echo "app-path=$APP_PATH" >> $GITHUB_ENV
-    - name: "Run Tests: iOS Unit and Integration Tests"
+    - name: 'Run Tests: iOS Unit and Integration Tests'
       if: ${{ inputs.run-unit-tests == 'true' }}
       shell: bash
       run: yarn test-ios

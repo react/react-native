@@ -106,6 +106,15 @@ internal object AgpConfiguratorUtils {
   }
 
   fun configureNamespaceForLibraries(project: Project) {
+    // This helper can be reached both from a library's own application of the React plugin and
+    // from the app-level sweep in ReactPlugin (which also covers libraries that don't apply
+    // `com.facebook.react`). A project's `finalizeDsl` callback must be registered before AGP
+    // finalizes its DSL — registering it twice (or after finalization) is a hard error on AGP 9+ —
+    // so we guard to register the namespace fallback at most once per project.
+    if (project.extensions.extraProperties.has(NAMESPACE_CONFIGURED_PROPERTY)) {
+      return
+    }
+    project.extensions.extraProperties.set(NAMESPACE_CONFIGURED_PROPERTY, true)
     project.extensions.getByType(LibraryAndroidComponentsExtension::class.java).finalizeDsl { ext ->
       if (ext.namespace == null) {
         val manifestFile =
@@ -121,6 +130,8 @@ internal object AgpConfiguratorUtils {
     }
   }
 }
+
+private const val NAMESPACE_CONFIGURED_PROPERTY = "com.facebook.react.internal.namespaceConfigured"
 
 const val DEFAULT_DEV_SERVER_PORT = "8081"
 

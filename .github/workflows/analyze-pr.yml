@@ -11,7 +11,7 @@ permissions:
 jobs:
   analyze_pr:
     runs-on: ubuntu-latest
-    if: github.repository == 'facebook/react-native'
+    if: github.repository == 'react/react-native'
     steps:
       - name: Check out main branch
         uses: actions/checkout@v6

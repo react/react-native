@@ -1123,6 +1123,19 @@ function LineHeightExample(props: {}): React.Node {
         style={[
           {
             fontSize: 24,
+            lineHeight: 24,
+            borderColor: 'black',
+            borderWidth: 1,
+          },
+          styles.wrappedText,
+        ]}
+        testID="line-height-matches-font-size-descenders">
+        gjpqy
+      </RNTesterText>
+      <RNTesterText
+        style={[
+          {
+            fontSize: 24,
             lineHeight: 8,
             borderColor: 'black',
             borderWidth: 1,

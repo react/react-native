@@ -5,11 +5,11 @@
   "keywords": [
     "react-native"
   ],
-  "homepage": "https://github.com/facebook/react-native/tree/HEAD/packages/new-app-screen#readme",
-  "bugs": "https://github.com/facebook/react-native/issues",
+  "homepage": "https://github.com/react/react-native/tree/HEAD/packages/new-app-screen#readme",
+  "bugs": "https://github.com/react/react-native/issues",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/facebook/react-native.git",
+    "url": "git+https://github.com/react/react-native.git",
     "directory": "packages/new-app-screen"
   },
   "license": "MIT",

@@ -35,7 +35,7 @@ import {
   setOverrides,
 } from './ReactNativeFeatureFlagsBase';
 
-export type ReactNativeFeatureFlagsJsOnly = $ReadOnly<{
+export type ReactNativeFeatureFlagsJsOnly = Readonly<{
 ${Object.entries(definitions.jsOnly)
   .map(
     ([flagName, flagConfig]) =>
@@ -46,7 +46,7 @@ ${Object.entries(definitions.jsOnly)
 
 export type ReactNativeFeatureFlagsJsOnlyOverrides = OverridesFor<ReactNativeFeatureFlagsJsOnly>;
 
-export type ReactNativeFeatureFlags = $ReadOnly<{
+export type ReactNativeFeatureFlags = Readonly<{
   ...ReactNativeFeatureFlagsJsOnly,
 ${Object.entries(definitions.common)
   .map(

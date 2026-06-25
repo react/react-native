@@ -615,9 +615,18 @@ static float computeFlexBasisForChildren(
   for (auto child : children) {
     child->processDimensions();
     if (child->style().display() == Display::None) {
-      zeroOutLayoutRecursively(child);
-      child->setHasNewLayout(true);
-      child->setDirty(false);
+      // Only mutate display: none children during layout passes. Zeroing them
+      // out during measure-only passes contributes nothing to the measurement,
+      // but sets `hasNewLayout` on nodes the parent's layout pass may never
+      // visit (e.g. when its layout is restored from cache, skipping
+      // `cloneChildrenIfNeeded()`). Such a leaked flag survives the commit and
+      // is copied into lazily-shared clones, later tripping the ownership
+      // assertion in `YogaLayoutableShadowNode::layout`.
+      if (performLayout) {
+        zeroOutLayoutRecursively(child);
+        child->setHasNewLayout(true);
+        child->setDirty(false);
+      }
       continue;
     }
     if (performLayout) {
@@ -720,7 +729,14 @@ static float computeMinContentMainSize(
               wantRow ? MeasureMode::AtMost : MeasureMode::Undefined,
               wantRow ? YGUndefined : 0.0f,
               wantRow ? MeasureMode::Undefined : MeasureMode::AtMost);
-    return wantRow ? size.width : size.height;
+    // Add the leaf's own padding and border, like the container branch below.
+    const Direction leafDirection = node->resolveDirection(ownerDirection);
+    const float paddingAndBorder =
+        node->style().computeFlexStartPaddingAndBorder(
+            requestedAxis, leafDirection, ownerWidth) +
+        node->style().computeFlexEndPaddingAndBorder(
+            requestedAxis, leafDirection, ownerWidth);
+    return (wantRow ? size.width : size.height) + paddingAndBorder;
   }
 
   if (node->getChildCount() == 0) {

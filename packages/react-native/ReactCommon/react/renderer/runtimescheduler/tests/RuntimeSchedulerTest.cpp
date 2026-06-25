@@ -1431,6 +1431,10 @@ TEST_P(RuntimeSchedulerTest, reportsLongTasksWithYielding) {
 INSTANTIATE_TEST_SUITE_P(
     UseModernRuntimeScheduler,
     RuntimeSchedulerTest,
+#ifdef RCT_REMOVE_LEGACY_ARCH
+    testing::Values(true));
+#else
     testing::Values(false, true));
+#endif
 
 } // namespace facebook::react

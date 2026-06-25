@@ -5,10 +5,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/facebook/react-native.git",
+    "url": "git+https://github.com/react/react-native.git",
     "directory": "packages/eslint-plugin-specs"
   },
-  "homepage": "https://github.com/facebook/react-native/tree/HEAD/packages/eslint-plugin-specs#readme",
+  "homepage": "https://github.com/react/react-native/tree/HEAD/packages/eslint-plugin-specs#readme",
   "keywords": [
     "eslint",
     "rules",
@@ -17,7 +17,7 @@
     "components",
     "specs"
   ],
-  "bugs": "https://github.com/facebook/react-native/issues",
+  "bugs": "https://github.com/react/react-native/issues",
   "main": "index.js",
   "scripts": {
     "prepack": "node prepack.js",

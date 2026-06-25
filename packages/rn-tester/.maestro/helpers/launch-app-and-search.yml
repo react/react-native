@@ -1,5 +1,5 @@
 appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebook.react.uiapp
 ---
 - launchApp
-- assertVisible: "Components"
+- assertVisible: 'Components'
 - runFlow: ./search.yml

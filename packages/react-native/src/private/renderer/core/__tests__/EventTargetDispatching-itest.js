@@ -1327,15 +1327,7 @@ const {isOSS} = Fantom.getConstants();
       expect(order).toEqual(['parent-capture']);
     });
 
-    // When enableNativeEventTargetEventDispatching is true, EventTarget.js
-    // defers handler errors via setTimeout(0) in reportListenerError. This
-    // leaves a pending callback that Fantom's validateEmptyMessageQueue
-    // catches, and the error leaks into subsequent tests. Skip in that
-    // configuration until the error propagation mechanism is made
-    // synchronous (matching the legacy rethrowCaughtError pattern).
-    (ReactNativeFeatureFlags.enableNativeEventTargetEventDispatching()
-      ? describe.skip
-      : describe)('error handling', () => {
+    describe('error handling', () => {
       it('error in event handler does not break dispatch to subsequent listeners', () => {
         const root = Fantom.createRoot();
         const childRef = React.createRef<React.ElementRef<typeof View>>();

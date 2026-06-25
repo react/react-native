@@ -633,6 +633,189 @@ describe('<Text>', () => {
     });
   });
 
+  describe('displayName', () => {
+    it('is "Text"', () => {
+      expect(Text.displayName).toBe('Text');
+    });
+  });
+
+  describe('press handlers set accessibilityRole', () => {
+    const PRESS_PROPS = [
+      'accessibilityRole',
+      'role',
+      'isHighlighted',
+      'isPressable',
+      'disabled',
+      'accessibilityState',
+    ];
+
+    it('automatically sets accessibilityRole="link" when onPress is provided', () => {
+      const root = Fantom.createRoot();
+      Fantom.runTask(() => {
+        root.render(<Text onPress={() => {}}>{TEST_TEXT}</Text>);
+      });
+      expect(root.getRenderedOutput({props: PRESS_PROPS}).toJSX())
+        .toMatchInlineSnapshot(`
+        <rn-paragraph
+          accessibilityRole="link"
+          isHighlighted="false"
+          isPressable="true"
+        >
+          the text
+        </rn-paragraph>
+      `);
+    });
+
+    it('automatically sets accessibilityRole="link" when onLongPress is provided', () => {
+      const root = Fantom.createRoot();
+      Fantom.runTask(() => {
+        root.render(<Text onLongPress={() => {}}>{TEST_TEXT}</Text>);
+      });
+      expect(root.getRenderedOutput({props: PRESS_PROPS}).toJSX())
+        .toMatchInlineSnapshot(`
+        <rn-paragraph
+          accessibilityRole="link"
+          isHighlighted="false"
+          isPressable="true"
+        >
+          the text
+        </rn-paragraph>
+      `);
+    });
+
+    it('automatically sets accessibilityRole="link" when onStartShouldSetResponder is provided', () => {
+      const root = Fantom.createRoot();
+      Fantom.runTask(() => {
+        root.render(
+          <Text onStartShouldSetResponder={() => true}>{TEST_TEXT}</Text>,
+        );
+      });
+      expect(root.getRenderedOutput({props: PRESS_PROPS}).toJSX())
+        .toMatchInlineSnapshot(`
+        <rn-paragraph
+          accessibilityRole="link"
+          isHighlighted="false"
+          isPressable="true"
+        >
+          the text
+        </rn-paragraph>
+      `);
+    });
+
+    it('respects explicit accessibilityRole', () => {
+      const root = Fantom.createRoot();
+      Fantom.runTask(() => {
+        root.render(
+          <Text accessibilityRole="button" onPress={() => {}}>
+            {TEST_TEXT}
+          </Text>,
+        );
+      });
+      expect(root.getRenderedOutput({props: PRESS_PROPS}).toJSX())
+        .toMatchInlineSnapshot(`
+        <rn-paragraph
+          accessibilityRole="button"
+          isHighlighted="false"
+          isPressable="true"
+        >
+          the text
+        </rn-paragraph>
+      `);
+    });
+
+    it('respects explicit role prop', () => {
+      const root = Fantom.createRoot();
+      Fantom.runTask(() => {
+        root.render(
+          // $FlowFixMe[prop-missing]
+          <Text onPress={() => {}} role="button">
+            {TEST_TEXT}
+          </Text>,
+        );
+      });
+      expect(root.getRenderedOutput({props: PRESS_PROPS}).toJSX())
+        .toMatchInlineSnapshot(`
+        <rn-paragraph
+          isHighlighted="false"
+          isPressable="true"
+          role="button"
+        >
+          the text
+        </rn-paragraph>
+      `);
+    });
+
+    it('does not automatically set accessibilityRole when disabled', () => {
+      const root = Fantom.createRoot();
+      Fantom.runTask(() => {
+        root.render(
+          <Text disabled onPress={() => {}}>
+            {TEST_TEXT}
+          </Text>,
+        );
+      });
+      expect(root.getRenderedOutput({props: PRESS_PROPS}).toJSX())
+        .toMatchInlineSnapshot(`
+        <rn-paragraph
+          accessibilityState="{disabled:true,selected:false,checked:None,busy:false,expanded:null}"
+        >
+          the text
+        </rn-paragraph>
+      `);
+    });
+
+    it('automatically sets accessibilityRole="link" for nested Text with onPress', () => {
+      const root = Fantom.createRoot();
+      Fantom.runTask(() => {
+        root.render(
+          <Text>
+            Parent Text<Text onPress={() => {}}>Nested Clickable Link</Text>
+          </Text>,
+        );
+      });
+      expect(root.getRenderedOutput({props: PRESS_PROPS}).toJSX())
+        .toMatchInlineSnapshot(`
+        <rn-paragraph>
+          Parent Text
+          <rn-text
+            accessibilityRole="link"
+            isHighlighted="false"
+            isPressable="true"
+          >
+            Nested Clickable Link
+          </rn-text>
+        </rn-paragraph>
+      `);
+    });
+
+    it('does not set accessibilityRole when no press handlers are provided', () => {
+      const root = Fantom.createRoot();
+      Fantom.runTask(() => {
+        root.render(<Text>{TEST_TEXT}</Text>);
+      });
+      expect(root.getRenderedOutput({props: PRESS_PROPS}).toJSX())
+        .toMatchInlineSnapshot(`
+        <rn-paragraph>
+          the text
+        </rn-paragraph>
+      `);
+    });
+  });
+
+  describe('compat with web', () => {
+    it('maps verticalAlign style to textAlignVertical', () => {
+      const root = Fantom.createRoot();
+      Fantom.runTask(() => {
+        root.render(<Text style={{verticalAlign: 'middle'}}>{TEST_TEXT}</Text>);
+      });
+      expect(
+        root.getRenderedOutput({props: ['textAlignVertical']}).toJSX(),
+      ).toEqual(
+        <rn-paragraph textAlignVertical="center">{TEST_TEXT}</rn-paragraph>,
+      );
+    });
+  });
+
   component TestComponent(testID?: ?string, ...props: AccessibilityProps) {
     return (
       <Text testID={testID} {...props}>

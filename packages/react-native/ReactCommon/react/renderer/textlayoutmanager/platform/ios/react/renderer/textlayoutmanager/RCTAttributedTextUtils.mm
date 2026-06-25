@@ -240,29 +240,56 @@ NSMutableDictionary<NSAttributedStringKey, id> *RCTNSTextAttributesFromTextAttri
   // Decoration
   if (textAttributes.textDecorationLineType.value_or(TextDecorationLineType::None) != TextDecorationLineType::None) {
     auto textDecorationLineType = textAttributes.textDecorationLineType.value();
-
-    NSUnderlineStyle style = RCTNSUnderlineStyleFromTextDecorationStyle(
-        textAttributes.textDecorationStyle.value_or(TextDecorationStyle::Solid));
-
+    auto textDecorationStyleValue = textAttributes.textDecorationStyle.value_or(TextDecorationStyle::Solid);
     UIColor *textDecorationColor = RCTUIColorFromSharedColor(textAttributes.textDecorationColor);
 
-    // Underline
-    if (textDecorationLineType == TextDecorationLineType::Underline ||
-        textDecorationLineType == TextDecorationLineType::UnderlineStrikethrough) {
-      attributes[NSUnderlineStyleAttributeName] = @(style);
-
-      if (textDecorationColor) {
-        attributes[NSUnderlineColorAttributeName] = textDecorationColor;
+    // Custom drawing for styles UIKit can't render faithfully: wavy (no
+    // native value), and dotted/dashed (UIKit's pattern bits don't match
+    // browser geometry). The other styles continue to use NSUnderlineStyle.
+    bool needsCustomDrawing = textDecorationStyleValue == TextDecorationStyle::Wavy ||
+        textDecorationStyleValue == TextDecorationStyle::Dotted ||
+        textDecorationStyleValue == TextDecorationStyle::Dashed;
+    if (needsCustomDrawing) {
+      UIColor *strokeColor = (textDecorationColor != nil) ? textDecorationColor
+                                                          : RCTUIColorFromSharedColor(textAttributes.foregroundColor);
+      NSMutableArray<NSString *> *lines = [NSMutableArray array];
+      if (textDecorationLineType == TextDecorationLineType::Underline ||
+          textDecorationLineType == TextDecorationLineType::UnderlineStrikethrough) {
+        [lines addObject:@"underline"];
       }
-    }
+      if (textDecorationLineType == TextDecorationLineType::Strikethrough ||
+          textDecorationLineType == TextDecorationLineType::UnderlineStrikethrough) {
+        [lines addObject:@"line-through"];
+      }
+      NSString *styleKey = textDecorationStyleValue == TextDecorationStyle::Wavy
+          ? @"wavy"
+          : (textDecorationStyleValue == TextDecorationStyle::Dotted ? @"dotted" : @"dashed");
+      attributes[RCTCustomDecorationAttributeName] = @{
+        @"lines" : lines,
+        @"color" : (strokeColor != nil) ? strokeColor : [UIColor labelColor],
+        @"style" : styleKey
+      };
+    } else {
+      NSUnderlineStyle style = RCTNSUnderlineStyleFromTextDecorationStyle(textDecorationStyleValue);
 
-    // Strikethrough
-    if (textDecorationLineType == TextDecorationLineType::Strikethrough ||
-        textDecorationLineType == TextDecorationLineType::UnderlineStrikethrough) {
-      attributes[NSStrikethroughStyleAttributeName] = @(style);
+      // Underline
+      if (textDecorationLineType == TextDecorationLineType::Underline ||
+          textDecorationLineType == TextDecorationLineType::UnderlineStrikethrough) {
+        attributes[NSUnderlineStyleAttributeName] = @(style);
 
-      if (textDecorationColor) {
-        attributes[NSStrikethroughColorAttributeName] = textDecorationColor;
+        if (textDecorationColor != nil) {
+          attributes[NSUnderlineColorAttributeName] = textDecorationColor;
+        }
+      }
+
+      // Strikethrough
+      if (textDecorationLineType == TextDecorationLineType::Strikethrough ||
+          textDecorationLineType == TextDecorationLineType::UnderlineStrikethrough) {
+        attributes[NSStrikethroughStyleAttributeName] = @(style);
+
+        if (textDecorationColor != nil) {
+          attributes[NSStrikethroughColorAttributeName] = textDecorationColor;
+        }
       }
     }
   }

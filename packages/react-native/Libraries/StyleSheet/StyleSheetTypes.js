@@ -887,6 +887,7 @@ export type ____ViewStyle_InternalBase = Readonly<{
   boxShadow?: ReadonlyArray<BoxShadowValue> | string,
   filter?: ReadonlyArray<FilterFunction> | string,
   mixBlendMode?: ____BlendMode_Internal,
+  backgroundImage?: ReadonlyArray<BackgroundImageValue> | string,
   experimental_backgroundImage?: ReadonlyArray<BackgroundImageValue> | string,
   experimental_backgroundSize?: ReadonlyArray<BackgroundSizeValue> | string,
   experimental_backgroundPosition?:

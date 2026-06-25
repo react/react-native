@@ -16,6 +16,7 @@ import * as Fantom from '@react-native/fantom';
 import * as React from 'react';
 import {createRef} from 'react';
 import {Image} from 'react-native';
+import * as ImageInjection from 'react-native/Libraries/Image/ImageInjection';
 import accessibilityPropsSuite from 'react-native/src/private/__tests__/utilities/accessibilityPropsSuite';
 import {testIDPropSuite} from 'react-native/src/private/__tests__/utilities/commonPropsSuite';
 import ensureInstance from 'react-native/src/private/__tests__/utilities/ensureInstance';
@@ -654,6 +655,275 @@ describe('<Image>', () => {
         const element = ensureInstance(elementRef.current, ReactNativeElement);
         expect(element.tagName).toBe('RN:Image');
       });
+    });
+  });
+
+  describe('resolveAssetSource', () => {
+    it('resolves a plain source object to itself', () => {
+      expect(Image.resolveAssetSource({uri: 'foo-bar.jpg'})).toEqual({
+        uri: 'foo-bar.jpg',
+      });
+    });
+  });
+
+  describe('image attached callbacks', () => {
+    it('invokes original ref callbacks correctly when using image attached callbacks', () => {
+      let imageInstanceFromCallback = null;
+      let imageInstanceFromRef1 = null;
+      let imageInstanceFromRef2 = null;
+
+      const callback = jest.fn((instance: HostInstance) => {
+        imageInstanceFromCallback = instance;
+
+        return () => {
+          imageInstanceFromCallback = null;
+        };
+      });
+
+      ImageInjection.unstable_registerImageAttachedCallback(callback);
+
+      expect(imageInstanceFromCallback).toBe(null);
+
+      const root = Fantom.createRoot();
+
+      const ref1 = jest.fn();
+      const ref1Setter = (instance: HostInstance | null): void => {
+        imageInstanceFromRef1 = instance;
+        ref1(instance);
+      };
+
+      Fantom.runTask(() => {
+        root.render(<Image source={LOGO_SOURCE} ref={ref1Setter} />);
+      });
+
+      expect(imageInstanceFromCallback).not.toBe(null);
+      expect(imageInstanceFromRef1).not.toBe(null);
+      expect(imageInstanceFromCallback).toBe(imageInstanceFromRef1);
+      expect(callback).toHaveBeenCalledTimes(1);
+      expect(ref1).toHaveBeenCalledTimes(1);
+
+      const ref2 = jest.fn();
+      const ref2Setter = (instance: HostInstance | null): void => {
+        imageInstanceFromRef2 = instance;
+        ref2(instance);
+      };
+
+      Fantom.runTask(() => {
+        root.render(<Image source={LOGO_SOURCE} ref={ref2Setter} />);
+      });
+
+      expect(imageInstanceFromCallback).not.toBe(null);
+      expect(imageInstanceFromRef1).toBe(null);
+      expect(imageInstanceFromRef2).not.toBe(null);
+      expect(imageInstanceFromCallback).toBe(imageInstanceFromRef2);
+      expect(callback).toHaveBeenCalledTimes(2);
+      expect(ref1).toHaveBeenCalledTimes(2);
+      expect(ref2).toHaveBeenCalledTimes(1);
+
+      Fantom.runTask(() => {
+        root.render(<Image source={LOGO_SOURCE} ref={ref2Setter} />);
+      });
+
+      expect(callback).toHaveBeenCalledTimes(2);
+      expect(ref2).toHaveBeenCalledTimes(1);
+
+      ImageInjection.unstable_unregisterImageAttachedCallback(callback);
+      Fantom.runTask(() => {
+        root.render(<></>);
+      });
+    });
+
+    it('calls image attached callbacks (basic)', () => {
+      let imageInstanceFromCallback = null;
+      let imageInstanceFromRef = null;
+
+      const callback = (instance: HostInstance) => {
+        imageInstanceFromCallback = instance;
+
+        return () => {
+          imageInstanceFromCallback = null;
+        };
+      };
+
+      ImageInjection.unstable_registerImageAttachedCallback(callback);
+
+      expect(imageInstanceFromCallback).toBe(null);
+
+      const root = Fantom.createRoot();
+
+      Fantom.runTask(() => {
+        root.render(
+          <Image
+            source={LOGO_SOURCE}
+            ref={instance => {
+              imageInstanceFromRef = instance;
+            }}
+          />,
+        );
+      });
+
+      expect(imageInstanceFromCallback).not.toBe(null);
+      expect(imageInstanceFromRef).not.toBe(null);
+      expect(imageInstanceFromCallback).toBe(imageInstanceFromRef);
+
+      Fantom.runTask(() => {
+        root.render(<></>);
+      });
+
+      expect(imageInstanceFromCallback).toBe(null);
+      expect(imageInstanceFromRef).toBe(null);
+
+      ImageInjection.unstable_unregisterImageAttachedCallback(callback);
+
+      Fantom.runTask(() => {
+        root.render(
+          <Image
+            source={LOGO_SOURCE}
+            ref={instance => {
+              imageInstanceFromRef = instance;
+            }}
+          />,
+        );
+      });
+
+      expect(imageInstanceFromRef).not.toBe(null);
+      expect(imageInstanceFromCallback).toBe(null);
+
+      Fantom.runTask(() => {
+        root.render(<></>);
+      });
+    });
+
+    it('calls image attached callbacks (multiple callbacks)', () => {
+      let imageInstanceFromCallback1 = null;
+      let imageInstanceFromCallback2 = null;
+      let imageInstanceFromRef = null;
+
+      const callback1 = (instance: HostInstance) => {
+        imageInstanceFromCallback1 = instance;
+
+        return () => {
+          imageInstanceFromCallback1 = null;
+        };
+      };
+      const callback2 = (instance: HostInstance) => {
+        imageInstanceFromCallback2 = instance;
+
+        return () => {
+          imageInstanceFromCallback2 = null;
+        };
+      };
+
+      ImageInjection.unstable_registerImageAttachedCallback(callback1);
+      ImageInjection.unstable_registerImageAttachedCallback(callback2);
+
+      expect(imageInstanceFromCallback1).toBe(null);
+      expect(imageInstanceFromCallback2).toBe(null);
+
+      const root = Fantom.createRoot();
+
+      Fantom.runTask(() => {
+        root.render(
+          <Image
+            source={LOGO_SOURCE}
+            ref={instance => {
+              imageInstanceFromRef = instance;
+            }}
+          />,
+        );
+      });
+
+      expect(imageInstanceFromRef).not.toBe(null);
+      expect(imageInstanceFromCallback1).not.toBe(null);
+      expect(imageInstanceFromCallback2).not.toBe(null);
+      expect(imageInstanceFromCallback1).toBe(imageInstanceFromRef);
+      expect(imageInstanceFromCallback2).toBe(imageInstanceFromRef);
+
+      Fantom.runTask(() => {
+        root.render(<></>);
+      });
+
+      expect(imageInstanceFromRef).toBe(null);
+      expect(imageInstanceFromCallback1).toBe(null);
+      expect(imageInstanceFromCallback2).toBe(null);
+
+      ImageInjection.unstable_unregisterImageAttachedCallback(callback1);
+      ImageInjection.unstable_unregisterImageAttachedCallback(callback2);
+    });
+
+    it('calls image attached callbacks (multiple images)', () => {
+      let imageInstancesFromCallback = new Set<HostInstance>();
+
+      const callback = (instance: HostInstance) => {
+        imageInstancesFromCallback.add(instance);
+
+        return () => {
+          imageInstancesFromCallback.delete(instance);
+        };
+      };
+
+      ImageInjection.unstable_registerImageAttachedCallback(callback);
+
+      expect(imageInstancesFromCallback.size).toBe(0);
+
+      const root = Fantom.createRoot();
+
+      let firstInstance;
+      let secondInstance;
+
+      const firstImageElement = (
+        <Image
+          key="first-image"
+          source={LOGO_SOURCE}
+          ref={instance => {
+            firstInstance = instance;
+          }}
+        />
+      );
+
+      const secondImageElement = (
+        <Image
+          key="second-image"
+          source={LOGO_SOURCE}
+          ref={instance => {
+            secondInstance = instance;
+          }}
+        />
+      );
+
+      Fantom.runTask(() => {
+        root.render(
+          <>
+            {firstImageElement}
+            {secondImageElement}
+          </>,
+        );
+      });
+
+      expect(firstInstance).not.toBe(null);
+      expect(secondInstance).not.toBe(null);
+      expect(imageInstancesFromCallback.size).toBe(2);
+      expect([...imageInstancesFromCallback][0]).toBe(firstInstance);
+      expect([...imageInstancesFromCallback][1]).toBe(secondInstance);
+
+      Fantom.runTask(() => {
+        root.render(<>{secondImageElement}</>);
+      });
+
+      expect(firstInstance).toBe(null);
+      expect(secondInstance).not.toBe(null);
+      expect(imageInstancesFromCallback.size).toBe(1);
+      expect([...imageInstancesFromCallback][0]).toBe(secondInstance);
+
+      Fantom.runTask(() => {
+        root.render(<></>);
+      });
+
+      expect(firstInstance).toBe(null);
+      expect(secondInstance).toBe(null);
+      expect(imageInstancesFromCallback.size).toBe(0);
+
+      ImageInjection.unstable_unregisterImageAttachedCallback(callback);
     });
   });
 

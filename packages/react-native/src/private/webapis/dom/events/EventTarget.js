@@ -207,7 +207,7 @@ export default class EventTarget {
 
     setIsTrusted(event, false);
 
-    dispatch(this, event);
+    dispatch(this, event, false);
 
     return !event.defaultPrevented;
   }
@@ -249,11 +249,21 @@ export default class EventTarget {
    * canceled (i.e. `event.defaultPrevented`), otherwise `true`.
    */
   // $FlowExpectedError[unsupported-syntax]
-  [INTERNAL_DISPATCH_METHOD_KEY](event: Event): boolean {
-    dispatch(this, event);
+  [INTERNAL_DISPATCH_METHOD_KEY](
+    event: Event,
+    rethrowListenerErrors?: boolean,
+  ): boolean {
+    dispatch(this, event, rethrowListenerErrors === true);
     return !event.defaultPrevented;
   }
 }
+
+// $FlowFixMe[cannot-write]
+Object.defineProperties(EventTarget.prototype, {
+  addEventListener: {enumerable: true},
+  removeEventListener: {enumerable: true},
+  dispatchEvent: {enumerable: true},
+});
 
 setPlatformObject(EventTarget);
 
@@ -280,12 +290,25 @@ function getDefaultPassiveValue(
  * Implements the "event dispatch" concept
  * (see https://dom.spec.whatwg.org/#concept-event-dispatch).
  */
-function dispatch(eventTarget: EventTarget, event: Event): void {
+function dispatch(
+  eventTarget: EventTarget,
+  event: Event,
+  rethrowErrors: boolean,
+): void {
   setEventDispatchFlag(event, true);
 
   const eventPath = getEventPath(eventTarget, event);
   setComposedPath(event, eventPath);
   setTarget(event, eventTarget);
+
+  // When `rethrowErrors` is set (trusted dispatch of native UI events), collect
+  // the first listener error and rethrow it synchronously once the dispatch
+  // completes, matching the legacy plugin system's `rethrowCaughtError`
+  // behavior. Otherwise (the public `dispatchEvent` API, XHR, etc.) listener
+  // errors are reported to the global error handler per the DOM spec.
+  const errorState: ListenerErrorState | null = rethrowErrors
+    ? {hasError: false, error: undefined}
+    : null;
 
   for (let i = eventPath.length - 1; i >= 0; i--) {
     if (getStopPropagationFlag(event)) {
@@ -297,7 +320,7 @@ function dispatch(eventTarget: EventTarget, event: Event): void {
       event,
       target === eventTarget ? Event.AT_TARGET : Event.CAPTURING_PHASE,
     );
-    invoke(target, event, Event.CAPTURING_PHASE);
+    invoke(target, event, Event.CAPTURING_PHASE, errorState);
   }
 
   for (const target of eventPath) {
@@ -315,7 +338,7 @@ function dispatch(eventTarget: EventTarget, event: Event): void {
       event,
       target === eventTarget ? Event.AT_TARGET : Event.BUBBLING_PHASE,
     );
-    invoke(target, event, Event.BUBBLING_PHASE);
+    invoke(target, event, Event.BUBBLING_PHASE, errorState);
   }
 
   setEventPhase(event, Event.NONE);
@@ -325,6 +348,12 @@ function dispatch(eventTarget: EventTarget, event: Event): void {
   setEventDispatchFlag(event, false);
   setStopImmediatePropagationFlag(event, false);
   setStopPropagationFlag(event, false);
+
+  // Trusted dispatch: surface the first listener error synchronously, after the
+  // event has been fully cleaned up.
+  if (errorState != null && errorState.hasError) {
+    throw errorState.error;
+  }
 }
 
 /**
@@ -356,6 +385,7 @@ function invoke(
   eventTarget: EventTarget,
   event: Event,
   eventPhase: EventPhase,
+  errorState: ListenerErrorState | null,
 ) {
   const isCapture = eventPhase === Event.CAPTURING_PHASE;
 
@@ -385,7 +415,7 @@ function invoke(
       try {
         propListener.call(eventTarget, event);
       } catch (error) {
-        reportListenerError(error);
+        handleListenerError(error, errorState);
       }
       global.event = currentEvent;
       return;
@@ -404,7 +434,7 @@ function invoke(
     for (const registration of maybeListeners.values()) {
       listeners.push(registration);
     }
-    invokeListeners(eventTarget, event, listeners, isCapture);
+    invokeListeners(eventTarget, event, listeners, isCapture, errorState);
     return;
   }
 
@@ -419,6 +449,7 @@ function invoke(
     event,
     Array.from(maybeListeners.values()),
     isCapture,
+    errorState,
   );
 }
 
@@ -427,6 +458,7 @@ function invokeListeners(
   event: Event,
   listeners: Array<EventListenerRegistration>,
   isCapture: boolean,
+  errorState: ListenerErrorState | null,
 ): void {
   for (const listener of listeners) {
     if (listener.removed) {
@@ -454,7 +486,7 @@ function invokeListeners(
         callback.handleEvent(event);
       }
     } catch (error) {
-      reportListenerError(error);
+      handleListenerError(error, errorState);
     }
 
     if (listener.passive) {
@@ -509,12 +541,44 @@ function setEventDispatchFlag(event: Event, value: boolean): void {
   event[EVENT_DISPATCH_FLAG] = value;
 }
 
+type ListenerErrorState = {hasError: boolean, error: unknown};
+
+/**
+ * Handle an error thrown by an event listener without aborting the rest of the
+ * dispatch.
+ *
+ * For trusted dispatch of native UI events (`errorState` is non-null), the
+ * first error is recorded so `dispatch` can rethrow it synchronously once the
+ * dispatch completes, matching the legacy plugin path (React's
+ * runEventsInBatch + `rethrowCaughtError`). This keeps listener errors
+ * catchable by React error boundaries and the native event call, instead of
+ * escaping as deferred uncaught exceptions.
+ *
+ * Otherwise (`errorState` is null: the public `dispatchEvent` API, XHR, etc.)
+ * the DOM spec requires reporting the exception to the global error handler
+ * without throwing, so it is deferred via `reportListenerError`.
+ */
+function handleListenerError(
+  error: unknown,
+  errorState: ListenerErrorState | null,
+): void {
+  if (errorState != null) {
+    if (!errorState.hasError) {
+      errorState.hasError = true;
+      errorState.error = error;
+    }
+    return;
+  }
+
+  reportListenerError(error);
+}
+
 /**
  * Surface a listener error to the global error handler without aborting the
- * rest of the dispatch. Throws in a new task so the error becomes an
- * uncaught exception (matching the legacy plugin path's behavior of
- * propagating listener errors via React's runEventsInBatch +
- * `rethrowCaughtError`, rather than swallowing them as a `console.error`).
+ * rest of the dispatch. Throws in a new task so the error becomes an uncaught
+ * exception. Used for dispatches that follow the DOM `dispatchEvent` contract
+ * (the public API, XHR, etc.), where errors are reported rather than thrown
+ * synchronously.
  *
  * `setTimeout(0)` schedules a new macrotask; the throw inside it has no
  * catcher above, so it bubbles up to the host's unhandled-error reporter.

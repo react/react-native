@@ -28,6 +28,24 @@ type _BabelSourceMapSegment = {
   ...
 };
 
+// A "decoded" source map (as produced by `@jridgewell/gen-mapping`), grouped by
+// generated line. Segment fields are all 0-based: generated column, source
+// index, source line, source column, name index.
+type _BabelDecodedSourceMapSegment =
+  | [number]
+  | [number, number, number, number]
+  | [number, number, number, number, number];
+
+type _BabelDecodedSourceMap = Readonly<{
+  file?: string,
+  mappings: Array<Array<_BabelDecodedSourceMapSegment>>,
+  names: Array<string>,
+  sourceRoot?: string,
+  sources: Array<string>,
+  sourcesContent?: Array<?string>,
+  version: number,
+}>;
+
 export type BabelSourceLocation = Readonly<{
   start: Readonly<{line: number, column: number}>,
   end: Readonly<{line: number, column: number}>,
@@ -1111,6 +1129,7 @@ declare module '@babel/generator' {
   declare export type GeneratorResult = {
     code: string,
     map: ?_BabelSourceMap,
+    decodedMap: ?_BabelDecodedSourceMap,
     rawMappings: ?Array<BabelSourceMapSegment>,
   };
 

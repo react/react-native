@@ -892,20 +892,6 @@ static void calculateShadowViewMutations(
   // Lists of mutations
   auto mutationContainer = OrderedMutationInstructionContainer{};
 
-  if (ReactNativeFeatureFlags::
-          enableDifferentiatorMutationVectorPreallocation()) {
-    // Pre-allocate mutation sub-vectors based on expected child count to avoid
-    // repeated reallocations during diffing.
-    size_t estimatedSize = std::max(oldChildPairs.size(), newChildPairs.size());
-    mutationContainer.createMutations.reserve(estimatedSize);
-    mutationContainer.deleteMutations.reserve(estimatedSize);
-    mutationContainer.insertMutations.reserve(estimatedSize);
-    mutationContainer.removeMutations.reserve(estimatedSize);
-    mutationContainer.updateMutations.reserve(estimatedSize);
-    mutationContainer.downwardMutations.reserve(estimatedSize);
-    mutationContainer.destructiveDownwardMutations.reserve(estimatedSize);
-  }
-
   DEBUG_LOGS({
     LOG(ERROR) << "Differ Entry: Child Pairs of node: [" << parentTag << "]";
     LOG(ERROR) << "> Old Child Pairs: " << oldChildPairs;
@@ -1339,19 +1325,6 @@ static void calculateShadowViewMutations(
     }
   }
 
-  if (ReactNativeFeatureFlags::
-          enableDifferentiatorMutationVectorPreallocation()) {
-    mutations.reserve(
-        mutations.size() +
-        mutationContainer.destructiveDownwardMutations.size() +
-        mutationContainer.updateMutations.size() +
-        mutationContainer.removeMutations.size() +
-        mutationContainer.deleteMutations.size() +
-        mutationContainer.createMutations.size() +
-        mutationContainer.downwardMutations.size() +
-        mutationContainer.insertMutations.size());
-  }
-
   // All mutations in an optimal order:
   std::move(
       mutationContainer.destructiveDownwardMutations.begin(),
@@ -1420,14 +1393,7 @@ ShadowViewMutation::List calculateShadowViewMutations(
       {} /* layoutOffset */,
       {} /* cullingContext */);
 
-  if (ReactNativeFeatureFlags::
-          enableDifferentiatorMutationVectorPreallocation()) {
-    // Estimate ~2 mutations per view (create + insert or remove + delete).
-    mutations.reserve(
-        std::max(size_t(256), (sliceOne.size() + sliceTwo.size()) * 2));
-  } else {
-    mutations.reserve(256);
-  }
+  mutations.reserve(256);
 
   calculateShadowViewMutations(
       innerViewNodePairScope,

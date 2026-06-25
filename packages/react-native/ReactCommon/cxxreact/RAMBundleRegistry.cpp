@@ -20,18 +20,6 @@ namespace facebook::react {
 constexpr uint32_t RAMBundleRegistry::MAIN_BUNDLE_ID;
 #pragma clang diagnostic pop
 
-std::unique_ptr<RAMBundleRegistry> RAMBundleRegistry::singleBundleRegistry(
-    std::unique_ptr<JSModulesUnbundle> mainBundle) {
-  return std::make_unique<RAMBundleRegistry>(std::move(mainBundle));
-}
-
-std::unique_ptr<RAMBundleRegistry> RAMBundleRegistry::multipleBundlesRegistry(
-    std::unique_ptr<JSModulesUnbundle> mainBundle,
-    std::function<std::unique_ptr<JSModulesUnbundle>(std::string)> factory) {
-  return std::make_unique<RAMBundleRegistry>(
-      std::move(mainBundle), std::move(factory));
-}
-
 RAMBundleRegistry::RAMBundleRegistry(
     std::unique_ptr<JSModulesUnbundle> mainBundle,
     std::function<std::unique_ptr<JSModulesUnbundle>(std::string)> factory)

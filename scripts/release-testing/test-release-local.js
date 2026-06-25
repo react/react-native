@@ -292,7 +292,7 @@ async function testRNTestProject(
 
   // need to do this here so that Android will be properly setup either way
   exec(
-    `echo "\nreact.internal.mavenLocalRepo=${mavenLocalPath}" >> android/gradle.properties`,
+    `echo -e "\nreact.internal.mavenLocalRepo=${mavenLocalPath}" >> android/gradle.properties`,
   );
 
   // Only build the simulator architecture. CI is however generating only that one.

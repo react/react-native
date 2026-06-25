@@ -136,7 +136,11 @@ async function initNewProjectFromSource(
 
     if (useHelloWorld) {
       console.log('Preparing private/helloworld/ to be built');
-      _prepareHelloWorld(version, pathToLocalReactNative);
+      const localPackages = await getPackages({
+        includeReactNative: false,
+        includePrivate: true,
+      });
+      _prepareHelloWorld(version, pathToLocalReactNative, localPackages);
       directory = path.join(PRIVATE_DIR, 'helloworld');
     } else {
       const pathToTemplate = _prepareTemplate(
@@ -209,6 +213,7 @@ async function installProjectUsingProxy(cwd /*: string */) {
 function _prepareHelloWorld(
   version /*: string */,
   pathToLocalReactNative /*: ?string*/,
+  packages /*: ProjectInfo */,
 ) {
   const helloworldDir = path.join(PRIVATE_DIR, 'helloworld');
   const helloworldPackageJson = path.join(helloworldDir, 'package.json');
@@ -216,24 +221,28 @@ function _prepareHelloWorld(
     fs.readFileSync(helloworldPackageJson, 'utf8'),
   );
 
-  // and update the dependencies and devDependencies of packages scoped as @react-native
-  // to the version passed as parameter
-  for (const key of Object.keys(packageJson.dependencies)) {
-    if (
-      key.startsWith('@react-native/') &&
-      packageJson.dependencies[key] !== '*'
-    ) {
-      packageJson.dependencies[key] = version;
+  // Point each in-repo @react-native/* dependency at the version published to
+  // the local proxy. Deps declared as `*` are unpublished reference packages
+  // (e.g. @react-native/core-cli-utils, which lives in private/) and are absent
+  // from the proxy, so resolve those to their local source via a `file:` path.
+  const updateDependencies = (deps /*: Record<string, string> */) => {
+    for (const key of Object.keys(deps)) {
+      if (!key.startsWith('@react-native/')) {
+        continue;
+      }
+      if (deps[key] === '*') {
+        const localPackage = packages[key];
+        if (localPackage != null) {
+          deps[key] = `file:${path.relative(helloworldDir, localPackage.path)}`;
+        }
+      } else {
+        deps[key] = version;
+      }
     }
-  }
-  for (const key of Object.keys(packageJson.devDependencies)) {
-    if (
-      key.startsWith('@react-native/') &&
-      packageJson.devDependencies[key] !== '*'
-    ) {
-      packageJson.devDependencies[key] = version;
-    }
-  }
+  };
+  updateDependencies(packageJson.dependencies);
+  updateDependencies(packageJson.devDependencies);
+
   if (pathToLocalReactNative != null) {
     packageJson.dependencies['react-native'] = `file:${pathToLocalReactNative}`;
   }

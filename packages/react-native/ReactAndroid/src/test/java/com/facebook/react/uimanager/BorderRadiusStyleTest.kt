@@ -42,14 +42,14 @@ class BorderRadiusStyleTest {
                     BorderRadiusProp.BORDER_RADIUS,
                     BorderRadiusProp.BORDER_TOP_RIGHT_RADIUS,
                     BorderRadiusProp.BORDER_TOP_END_RADIUS,
-                    BorderRadiusProp.BORDER_END_START_RADIUS,
+                    BorderRadiusProp.BORDER_START_END_RADIUS,
                 ),
             ComputedBorderRadiusProp.COMPUTED_BORDER_BOTTOM_LEFT_RADIUS to
                 arrayOf(
                     BorderRadiusProp.BORDER_RADIUS,
                     BorderRadiusProp.BORDER_BOTTOM_LEFT_RADIUS,
                     BorderRadiusProp.BORDER_BOTTOM_START_RADIUS,
-                    BorderRadiusProp.BORDER_START_END_RADIUS,
+                    BorderRadiusProp.BORDER_END_START_RADIUS,
                 ),
             ComputedBorderRadiusProp.COMPUTED_BORDER_BOTTOM_RIGHT_RADIUS to
                 arrayOf(
@@ -88,7 +88,7 @@ class BorderRadiusStyleTest {
                     BorderRadiusProp.BORDER_RADIUS,
                     BorderRadiusProp.BORDER_TOP_RIGHT_RADIUS,
                     BorderRadiusProp.BORDER_TOP_END_RADIUS,
-                    BorderRadiusProp.BORDER_END_START_RADIUS,
+                    BorderRadiusProp.BORDER_START_END_RADIUS,
                 ),
             ComputedBorderRadiusProp.COMPUTED_BORDER_TOP_RIGHT_RADIUS to
                 arrayOf(
@@ -109,7 +109,7 @@ class BorderRadiusStyleTest {
                     BorderRadiusProp.BORDER_RADIUS,
                     BorderRadiusProp.BORDER_BOTTOM_LEFT_RADIUS,
                     BorderRadiusProp.BORDER_BOTTOM_START_RADIUS,
-                    BorderRadiusProp.BORDER_START_END_RADIUS,
+                    BorderRadiusProp.BORDER_END_START_RADIUS,
                 ),
         )
 
@@ -136,7 +136,7 @@ class BorderRadiusStyleTest {
                     BorderRadiusProp.BORDER_RADIUS,
                     BorderRadiusProp.BORDER_TOP_LEFT_RADIUS,
                     BorderRadiusProp.BORDER_TOP_END_RADIUS,
-                    BorderRadiusProp.BORDER_END_START_RADIUS,
+                    BorderRadiusProp.BORDER_START_END_RADIUS,
                 ),
             ComputedBorderRadiusProp.COMPUTED_BORDER_TOP_RIGHT_RADIUS to
                 arrayOf(
@@ -157,7 +157,7 @@ class BorderRadiusStyleTest {
                     BorderRadiusProp.BORDER_RADIUS,
                     BorderRadiusProp.BORDER_BOTTOM_RIGHT_RADIUS,
                     BorderRadiusProp.BORDER_BOTTOM_END_RADIUS,
-                    BorderRadiusProp.BORDER_START_END_RADIUS,
+                    BorderRadiusProp.BORDER_END_START_RADIUS,
                 ),
         )
 

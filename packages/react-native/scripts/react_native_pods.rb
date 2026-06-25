@@ -167,6 +167,7 @@ def use_react_native! (
   pod 'React-jsi', :path => "#{prefix}/ReactCommon/jsi"
   pod 'RCTSwiftUI', :path => "#{prefix}/ReactApple/RCTSwiftUI"
   pod 'RCTSwiftUIWrapper', :path => "#{prefix}/ReactApple/RCTSwiftUIWrapper"
+  pod 'React-RCTAnimatedModuleProvider', :path => "#{prefix}/ReactApple/RCTAnimatedModuleProvider"
 
   if hermes_enabled
     setup_hermes!(:react_native_path => prefix)

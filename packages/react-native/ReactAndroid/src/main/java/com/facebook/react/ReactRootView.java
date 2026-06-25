@@ -776,22 +776,6 @@ public class ReactRootView extends FrameLayout implements RootView, ReactRoot {
     }
   }
 
-  /**
-   * Is used by unit test to setup mIsAttachedToWindow flags, that will let this view to be properly
-   * attached to catalyst instance by startReactApplication call
-   */
-  @VisibleForTesting
-  /* package */ void simulateAttachForTesting() {
-    mIsAttachedToInstance = true;
-    mJSTouchDispatcher = new JSTouchDispatcher(this);
-    if (ReactFeatureFlags.dispatchPointerEvents) {
-      mJSPointerDispatcher = new JSPointerDispatcher(this);
-    }
-    if (ReactNativeFeatureFlags.enableKeyEvents()) {
-      mJSKeyDispatcher = new JSKeyDispatcher();
-    }
-  }
-
   @VisibleForTesting
   /* package */ void simulateCheckForKeyboardForTesting() {
     getCustomGlobalLayoutListener().checkForKeyboardEvents();

@@ -21,11 +21,7 @@ jobs:
       fail-fast: false
       matrix:
         flavor: ['Debug', 'Release']
-        slice: [
-          'ios',
-          'ios-simulator',
-          'mac-catalyst',
-        ]
+        slice: ['ios', 'ios-simulator', 'mac-catalyst']
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -103,8 +99,7 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: prebuild-ios-core-headers-${{ matrix.flavor }}-${{ matrix.slice }}
-          path:
-            packages/react-native/.build/headers
+          path: packages/react-native/.build/headers
       - name: Upload artifacts
         uses: actions/upload-artifact@v6
         with:

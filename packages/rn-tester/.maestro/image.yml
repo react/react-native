@@ -2,26 +2,26 @@ appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebo
 ---
 - runFlow: ./helpers/launch-app-and-search.yml
 - inputText:
-    text: "Image"
+    text: 'Image'
 - assertVisible:
-    id: "Image"
+    id: 'Image'
 - tapOn:
-    id: "Image"
-- assertVisible: "Plain Network Image with `source` prop."
+    id: 'Image'
+- assertVisible: 'Plain Network Image with `source` prop.'
 - assertVisible:
-    id: "example_search"
+    id: 'example_search'
 - tapOn:
-    id: "example_search"
+    id: 'example_search'
 - inputText:
-    text: "Image.getSize"
+    text: 'Image.getSize'
 - hideKeyboard
 - tapOn:
-    id: "platform-test-results"
-- assertVisible: "Results"
+    id: 'platform-test-results'
+- assertVisible: 'Results'
 - extendedWaitUntil:
-    visible: "Image.getSize resolves source dimensions"
+    visible: 'Image.getSize resolves source dimensions'
     timeout: 30000
 - assertVisible:
-    id: "platform-test-pass-count-1"
+    id: 'platform-test-pass-count-1'
 - assertVisible:
-    id: "platform-test-fail-count-0"
+    id: 'platform-test-fail-count-0'

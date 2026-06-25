@@ -253,13 +253,6 @@ class HostTargetController final {
   bool hasInstance() const;
 
   /**
-   * [Experimental] Install a runtime binding subscribing to new Performance
-   * Issues, which we broadcast to the V2 Perf Monitor overlay via
-   * \ref HostTargetDelegate::unstable_onPerfIssueAdded.
-   */
-  void installPerfIssuesBinding();
-
-  /**
    * Increments the target's pause overlay counter. The counter represents the
    * exact number of Agents that have (concurrently) requested the pause
    * overlay to be shown. It's the caller's responsibility to only call this

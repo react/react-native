@@ -130,6 +130,21 @@ void RuntimeTarget::installBindingHandler(const std::string& bindingName) {
   });
 }
 
+void RuntimeTarget::installScriptToEvaluateOnNewDocument(
+    const std::string& source) {
+  jsExecutor_([source](jsi::Runtime& runtime) {
+    try {
+      runtime.evaluateJavaScript(
+          std::make_shared<jsi::StringBuffer>(source),
+          "<addScriptToEvaluateOnNewDocument>");
+    } catch (jsi::JSIException&) {
+      // Swallow exceptions thrown while evaluating the injected script so a
+      // faulty script cannot break the app. This mirrors how
+      // installBindingHandler isolates binding-setup failures.
+    }
+  });
+}
+
 void RuntimeTarget::installFastRefreshHandler() {
   jsExecutor_([selfExecutor = executorFromThis()](jsi::Runtime& runtime) {
     auto globalObj = runtime.global();
@@ -311,6 +326,11 @@ RuntimeTargetController::RuntimeTargetController(RuntimeTarget& target)
 void RuntimeTargetController::installBindingHandler(
     const std::string& bindingName) {
   target_.installBindingHandler(bindingName);
+}
+
+void RuntimeTargetController::installScriptToEvaluateOnNewDocument(
+    const std::string& source) {
+  target_.installScriptToEvaluateOnNewDocument(source);
 }
 
 void RuntimeTargetController::enableSamplingProfiler() {

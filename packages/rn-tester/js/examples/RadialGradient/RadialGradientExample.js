@@ -57,7 +57,7 @@ exports.examples = [
       return (
         <GradientBox
           style={{
-            experimental_backgroundImage: 'radial-gradient(#e66465, #9198e5)',
+            backgroundImage: 'radial-gradient(#e66465, #9198e5)',
           }}
           testID="radial-gradient-basic">
           <RNTesterText style={styles.text}>Radial Gradient</RNTesterText>
@@ -73,8 +73,7 @@ exports.examples = [
       return (
         <GradientBox
           style={{
-            experimental_backgroundImage:
-              'radial-gradient(at 70% 30%, red, blue)',
+            backgroundImage: 'radial-gradient(at 70% 30%, red, blue)',
           }}
           testID="radial-gradient-position"
         />
@@ -89,7 +88,7 @@ exports.examples = [
       return (
         <GradientBox
           style={{
-            experimental_backgroundImage:
+            backgroundImage:
               'radial-gradient(circle closest-side, yellow, green)',
           }}
           testID="radial-gradient-size"
@@ -105,7 +104,7 @@ exports.examples = [
         <GradientBox
           testID="radial-gradient-color-stops"
           style={{
-            experimental_backgroundImage:
+            backgroundImage:
               'radial-gradient(red 0%, yellow 30%, green 60%, blue 100%)',
           }}
         />
@@ -120,7 +119,7 @@ exports.examples = [
         <GradientBox
           testID="radial-gradient-object-style-syntax"
           style={{
-            experimental_backgroundImage: [
+            backgroundImage: [
               {
                 type: 'radial-gradient',
                 shape: 'circle',
@@ -145,8 +144,7 @@ exports.examples = [
         <GradientBox
           testID="radial-gradient-with-uniform-borders"
           style={{
-            experimental_backgroundImage:
-              'radial-gradient(circle at center, yellow, green)',
+            backgroundImage: 'radial-gradient(circle at center, yellow, green)',
             borderRadius: 16,
           }}
         />
@@ -161,7 +159,7 @@ exports.examples = [
         <GradientBox
           testID="radial-gradient-with-non-uniform-borders"
           style={{
-            experimental_backgroundImage: `radial-gradient(
+            backgroundImage: `radial-gradient(
               circle at 70% 30%,
               #8a2be2 0%,
               #4b0082 50%,
@@ -184,7 +182,7 @@ exports.examples = [
         <GradientBox
           testID="radial-gradient-elliptical"
           style={{
-            experimental_backgroundImage:
+            backgroundImage:
               'radial-gradient(ellipse farthest-corner at 30% 40%, red, blue)',
           }}
         />
@@ -199,7 +197,7 @@ exports.examples = [
         <GradientBox
           testID="radial-gradient-platform-colors"
           style={{
-            experimental_backgroundImage: [
+            backgroundImage: [
               {
                 type: 'radial-gradient',
                 shape: 'circle',
@@ -229,7 +227,7 @@ exports.examples = [
       return (
         <GradientBox
           style={{
-            experimental_backgroundImage: 'radial-gradient(red, 40%, blue)',
+            backgroundImage: 'radial-gradient(red, 40%, blue)',
           }}
           testID="radial-gradient-transition-hint"
         />
@@ -244,7 +242,7 @@ exports.examples = [
         <GradientBox
           testID="radial-gradient-multiple"
           style={{
-            experimental_backgroundImage: `
+            backgroundImage: `
                   radial-gradient(circle at top 20% right 20%, rgba(238, 64, 53, 0.8), rgba(238, 64, 53, 0) 70%),
                   radial-gradient(circle at 50% 50%, rgba(243, 119, 54, 0.8), rgba(243, 119, 54, 0) 70%),
                   radial-gradient(circle at 80% 80%, rgba(123, 192, 67, 0.8), rgba(123, 192, 67, 0) 70%)
@@ -263,7 +261,7 @@ exports.examples = [
         <GradientBox
           testID="radial-gradient-non-square-bounds"
           style={{
-            experimental_backgroundImage: 'radial-gradient(red, blue)',
+            backgroundImage: 'radial-gradient(red, blue)',
             width: 200,
             height: 100,
           }}
@@ -279,7 +277,7 @@ exports.examples = [
         <GradientBox
           testID="radial-gradient-non-square-bounds-height-gt-width"
           style={{
-            experimental_backgroundImage: 'radial-gradient(red, blue)',
+            backgroundImage: 'radial-gradient(red, blue)',
             width: 100,
             height: 300,
           }}

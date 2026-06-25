@@ -14,6 +14,7 @@
 #include <string_view>
 #include <unordered_map>
 #include <unordered_set>
+#include <vector>
 
 namespace facebook::react::jsinspector_modern {
 
@@ -42,6 +43,36 @@ struct SessionState {
    * will not emit events on it).
    */
   std::unordered_map<std::string, ExecutionContextSelectorSet> subscribedBindings;
+
+  /**
+   * A single script registered during this session using @cdp
+   * Page.addScriptToEvaluateOnNewDocument.
+   */
+  struct ScriptToEvaluateOnNewDocument {
+    /** Opaque identifier returned to the frontend, used by @cdp
+     * Page.removeScriptToEvaluateOnNewDocument. */
+    std::string identifier;
+    /** The JavaScript source to evaluate. */
+    std::string source;
+  };
+
+  /**
+   * Scripts registered during this session using @cdp
+   * Page.addScriptToEvaluateOnNewDocument, in registration order.
+   *
+   * Like subscribedBindings, these are treated as session state: each new
+   * RuntimeAgent replays them onto its runtime so they evaluate before any
+   * user code (i.e. before the app's main bundle). Per CDP semantics they do
+   * NOT run in the runtime that is current when they are registered - the
+   * client must trigger a reload (@cdp Page.reload) for them to take effect.
+   */
+  std::vector<ScriptToEvaluateOnNewDocument> scriptsToEvaluateOnNewDocument;
+
+  /**
+   * Monotonic counter for generating the identifiers returned from @cdp
+   * Page.addScriptToEvaluateOnNewDocument.
+   */
+  unsigned int nextScriptToEvaluateOnNewDocumentId{1};
 
   /**
    * Messages logged through the HostAgent::sendConsoleMessage and

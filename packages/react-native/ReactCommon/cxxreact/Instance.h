@@ -57,8 +57,6 @@ class RN_EXPORT [[deprecated("This API will be removed along with the legacy arc
   void setSourceURL(std::string sourceURL);
 
   void loadScriptFromString(std::unique_ptr<const JSBigString> string, std::string sourceURL, bool loadSynchronously);
-  void loadRAMBundleFromString(std::unique_ptr<const JSBigString> script, const std::string &sourceURL);
-  void loadRAMBundleFromFile(const std::string &sourcePath, const std::string &sourceURL, bool loadSynchronously);
   void loadRAMBundle(
       std::unique_ptr<RAMBundleRegistry> bundleRegistry,
       std::unique_ptr<const JSBigString> startupScript,

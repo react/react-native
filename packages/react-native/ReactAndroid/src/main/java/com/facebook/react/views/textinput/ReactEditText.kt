@@ -140,6 +140,7 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
   private var selectTextOnFocus = false
   private var placeholder: String? = null
   private var overflow = Overflow.VISIBLE
+  private var wasMultiline = false
 
   public var stateWrapper: StateWrapper? = null
   internal var disableTextDiffing: Boolean = false
@@ -544,14 +545,41 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
     super.setTypeface(tf)
 
     /**
-     * If set forces multiline on input, because of a restriction on Android source that enables
-     * multiline only for inputs of type Text and Multiline on method
+     * Keep the single-line state in sync with the multiline input type flag.
+     *
+     * When multiline is on we must force [isSingleLine] off, because of a restriction on Android
+     * source that enables multiline only for inputs of type Text and Multiline on method
      * [android.widget.TextView.isMultilineInputType]} Source:
      * [TextView.java](https://android.googlesource.com/platform/frameworks/base/+/jb-release/core/java/android/widget/TextView.java)
+     *
+     * When multiline is off we must force [isSingleLine] back on. [TextView.setInputType] only
+     * re-applies the single-line layout (maxLines, horizontal scrolling) when its internal
+     * single-line flag actually changes; because we force it off above whenever multiline is on,
+     * that flag can be stale and the reset is skipped, leaving the placeholder/hint wrapped across
+     * multiple lines after multiline is toggled back off. Setting it explicitly guarantees the
+     * reset. We skip secure text so we don't replace its password transformation method with the
+     * single-line one.
      */
     if (isMultiline) {
       isSingleLine = false
+    } else if (!isSecureText) {
+      isSingleLine = true
     }
+
+    // Restoring the single-line input type above is not enough on its own when multiline is toggled
+    // off: under Fabric the view is not re-measured while its measured size is unchanged, so the
+    // placeholder/hint is rebuilt at draw time (which lays the hint out at the view's physical
+    // width) and stays wrapped across multiple lines. Forcing a re-measure at the current bounds
+    // rebuilds the hint as a single line, matching the initial mount.
+    if (wasMultiline && !isMultiline && isLaidOut && width > 0 && height > 0) {
+      forceLayout()
+      measure(
+          View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
+          View.MeasureSpec.makeMeasureSpec(height, View.MeasureSpec.EXACTLY),
+      )
+      layout(left, top, right, bottom)
+    }
+    wasMultiline = isMultiline
 
     // We override the KeyListener so that all keys on the soft input keyboard as well as hardware
     // keyboards work. Some KeyListeners like DigitsKeyListener will display the keyboard but not

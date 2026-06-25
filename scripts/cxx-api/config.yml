@@ -1,23 +1,23 @@
 exclude_patterns:
-  - "*/ReactCommon/react/nativemodule/fantomtestspecificmethods/*"
-  - "*/ReactCommon/react/nativemodule/featureflags/*"
-  - "*/ReactCommon/react/featureflags/*"
-  - "*/test_utils/*"
-  - "*/test/*"
-  - "*/test_helper/*"
-  - "*/stubs/*"
-  - "*/metainternal/*"
+  - '*/ReactCommon/react/nativemodule/fantomtestspecificmethods/*'
+  - '*/ReactCommon/react/nativemodule/featureflags/*'
+  - '*/ReactCommon/react/featureflags/*'
+  - '*/test_utils/*'
+  - '*/test/*'
+  - '*/test_helper/*'
+  - '*/stubs/*'
+  - '*/metainternal/*'
 
 exclude_symbols:
-  - "Fantom"
-  - "NativeReactNativeFeatureFlags"
-  - "(?i)experimental"
-  - "unstable_"
-  - "UnstableLegacy"
-  - "packAnimatedProps"
-  - "DO_NOT_USE"
-  - "_DEPRECATED|DEPRECATED_"
-  - "internal_"
+  - 'Fantom'
+  - 'NativeReactNativeFeatureFlags'
+  - '(?i)experimental'
+  - 'unstable_'
+  - 'UnstableLegacy'
+  - 'packAnimatedProps'
+  - 'DO_NOT_USE'
+  - '_DEPRECATED|DEPRECATED_'
+  - 'internal_'
 
 platforms:
   ReactCommon:
@@ -25,12 +25,12 @@ platforms:
     inputs:
       - packages/react-native/ReactCommon
     exclude_patterns:
-      - "*/jni/*"
-      - "*/platform/cxx/*" # Should this be included in ReactCommon?
-      - "*/platform/windows/*"
-      - "*/platform/macos/*"
-      - "*/platform/ios/*"
-      - "*/platform/android/*"
+      - '*/jni/*'
+      - '*/platform/cxx/*' # Should this be included in ReactCommon?
+      - '*/platform/windows/*'
+      - '*/platform/macos/*'
+      - '*/platform/ios/*'
+      - '*/platform/android/*'
     input_filter: false
     definitions:
     variants:
@@ -52,16 +52,16 @@ platforms:
       - packages/react-native/ReactCommon
       - packages/react-native/ReactAndroid
     exclude_patterns:
-      - "*/ReactAndroid/src/main/jni/react/featureflags/*"
-      - "*/components/switch/iosswitch/*"
-      - "*/components/inputaccessory/*"
-      - "*/platform/cxx/*"
-      - "*/platform/windows/*"
-      - "*/platform/macos/*"
-      - "*/platform/ios/*"
+      - '*/ReactAndroid/src/main/jni/react/featureflags/*'
+      - '*/components/switch/iosswitch/*'
+      - '*/components/inputaccessory/*'
+      - '*/platform/cxx/*'
+      - '*/platform/windows/*'
+      - '*/platform/macos/*'
+      - '*/platform/ios/*'
     exclude_symbols:
-      - "InputAccessory"
-      - "IOS"
+      - 'InputAccessory'
+      - 'IOS'
     input_filter: false
     definitions:
       RN_SERIALIZABLE_STATE: 1
@@ -88,19 +88,19 @@ platforms:
       - packages/react-native/ReactApple
       - packages/react-native/Libraries
     exclude_patterns:
-      - "*/jni/*"
-      - "*/platform/cxx/*"
-      - "*/platform/windows/*"
-      - "*/platform/macos/*"
-      - "*/platform/android/*"
-      - "*+Private.h"
-      - "*+Internal.h"
-      - "*/scripts/*"
-      - "*/templates/*"
-      - "*/components/progressbar/android/*"
-      - "*/components/switch/androidswitch/*"
+      - '*/jni/*'
+      - '*/platform/cxx/*'
+      - '*/platform/windows/*'
+      - '*/platform/macos/*'
+      - '*/platform/android/*'
+      - '*+Private.h'
+      - '*+Internal.h'
+      - '*/scripts/*'
+      - '*/templates/*'
+      - '*/components/progressbar/android/*'
+      - '*/components/switch/androidswitch/*'
     exclude_symbols:
-      - "Android"
+      - 'Android'
       - "\\(Deprecated\\)"
       - "\\(Internal\\)"
     input_filter: true
