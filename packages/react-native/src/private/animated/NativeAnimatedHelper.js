@@ -203,11 +203,7 @@ const API = {
   disableQueue(): void {
     invariant(NativeAnimatedModule, 'Native animated module is not available');
 
-    if (ReactNativeFeatureFlags.animatedShouldDebounceQueueFlush()) {
-      scheduleQueueFlush();
-    } else {
-      API.flushQueue();
-    }
+    scheduleQueueFlush();
   },
   disconnectAnimatedNodeFromView(nodeTag: number, viewTag: number): void {
     NativeOperations.disconnectAnimatedNodeFromView(nodeTag, viewTag);
@@ -311,10 +307,7 @@ const API = {
 
     waitingForQueuedOperations.add(id);
     queueOperations = true;
-    if (
-      ReactNativeFeatureFlags.animatedShouldDebounceQueueFlush() &&
-      flushQueueImmediate
-    ) {
+    if (flushQueueImmediate) {
       clearImmediate(flushQueueImmediate);
     }
   },
