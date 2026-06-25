@@ -503,6 +503,13 @@ type ViewBaseProps = Readonly<{
   removeClippedSubviews?: ?boolean,
 
   /**
+   * When true, prevents native ancestor views (UIKit responder chain) from
+   * receiving touch events when this view is the active JS responder.
+   * Requires that the Fabric gesture recognizer has already claimed the touch.
+   */
+  blockNativeResponder?: ?boolean,
+
+  /**
    * Defines the order in which descendant elements receive accessibility focus.
    * The elements in the array represent nativeID values for the respective
    * descendant elements.

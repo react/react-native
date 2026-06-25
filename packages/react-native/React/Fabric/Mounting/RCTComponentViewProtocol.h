@@ -124,6 +124,7 @@ typedef NS_OPTIONS(NSInteger, RNComponentViewUpdateMask) {
 
 - (BOOL)isJSResponder;
 - (void)setIsJSResponder:(BOOL)isJSResponder;
+- (void)setIsJSResponder:(BOOL)isJSResponder blockNativeResponder:(BOOL)blockNativeResponder;
 
 /*
  * This is broken. Do not use.

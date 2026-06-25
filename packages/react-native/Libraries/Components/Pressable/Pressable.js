@@ -339,7 +339,8 @@ function Pressable({
       {...eventHandlers}
       ref={mergedRef}
       style={typeof style === 'function' ? style({pressed}) : style}
-      collapsable={false}>
+      collapsable={false}
+      blockNativeResponder={blockNativeResponder}>
       {typeof children === 'function' ? children({pressed}) : children}
       {__DEV__ ? <PressabilityDebugView color="red" hitSlop={hitSlop} /> : null}
     </View>

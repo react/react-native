@@ -45,6 +45,7 @@ using namespace facebook::react;
  */
 - (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
 {
+  NSLog(@"[BNR] NativeTouchReceiver touchesEnded FIRED");
   if (_eventEmitter) {
     auto const &emitter =
         *std::static_pointer_cast<const RNTNativeTouchReceiverEventEmitter>(_eventEmitter);
