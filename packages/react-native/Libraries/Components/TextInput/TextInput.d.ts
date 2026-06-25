@@ -515,6 +515,12 @@ export type TextInputKeyPressEvent =
 export interface TextInputChangeEventData extends TargetedEvent {
   eventCount: number;
   text: string;
+  selection?:
+    | {
+        start: number;
+        end: number;
+      }
+    | undefined;
 }
 
 /**

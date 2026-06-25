@@ -12,7 +12,6 @@
 #include "PropsAnimatedNode.h"
 
 #include <react/debug/react_native_assert.h>
-#include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/renderer/animated/NativeAnimatedNodesManager.h>
 #include <react/renderer/animated/nodes/ColorAnimatedNode.h>
 #include <react/renderer/animated/nodes/ObjectAnimatedNode.h>
@@ -84,7 +83,7 @@ void PropsAnimatedNode::disconnectFromView(Tag viewTag) {
 void PropsAnimatedNode::restoreDefaultValues() {
   // If node is already disconnected from View, we cannot restore default values
   if (connectedViewTag_ != animated::undefinedAnimatedNodeIdentifier) {
-    if (ReactNativeFeatureFlags::useSharedAnimatedBackend()) {
+    if (manager_->useSharedAnimatedBackend()) {
       manager_->schedulePropsCommit(
           connectedViewTag_,
           folly::dynamic::object(),
@@ -166,7 +165,7 @@ void PropsAnimatedNode::update(bool forceFabricCommit) {
 
   layoutStyleUpdated_ = isLayoutStyleUpdated(getConfig()["props"], *manager_);
 
-  if (ReactNativeFeatureFlags::useSharedAnimatedBackend()) {
+  if (manager_->useSharedAnimatedBackend()) {
     manager_->schedulePropsCommit(
         connectedViewTag_,
         props_,

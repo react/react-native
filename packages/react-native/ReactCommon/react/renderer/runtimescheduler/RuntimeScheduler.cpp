@@ -6,12 +6,16 @@
  */
 
 #include "RuntimeScheduler.h"
-#include "RuntimeScheduler_Legacy.h"
 #include "RuntimeScheduler_Modern.h"
+#ifndef RCT_REMOVE_LEGACY_ARCH
+#include "RuntimeScheduler_Legacy.h"
+#endif
 
 #include <cxxreact/ErrorUtils.h>
 #include <cxxreact/TraceSection.h>
+#ifndef RCT_REMOVE_LEGACY_ARCH
 #include <react/featureflags/ReactNativeFeatureFlags.h>
+#endif
 #include <utility>
 
 namespace facebook::react {
@@ -23,13 +27,17 @@ std::unique_ptr<RuntimeSchedulerBase> getRuntimeSchedulerImplementation(
     RuntimeExecutor runtimeExecutor,
     std::function<HighResTimeStamp()> now,
     RuntimeSchedulerTaskErrorHandler onTaskError) {
+#ifndef RCT_REMOVE_LEGACY_ARCH
   if (ReactNativeFeatureFlags::enableBridgelessArchitecture()) {
+#endif
     return std::make_unique<RuntimeScheduler_Modern>(
         std::move(runtimeExecutor), std::move(now), std::move(onTaskError));
+#ifndef RCT_REMOVE_LEGACY_ARCH
   } else {
     return std::make_unique<RuntimeScheduler_Legacy>(
         std::move(runtimeExecutor), std::move(now), std::move(onTaskError));
   }
+#endif
 }
 
 } // namespace

@@ -11,7 +11,7 @@ on:
         default: false
     outputs:
       status:
-        description: "The result of the E2E tests (success or failure)"
+        description: 'The result of the E2E tests (success or failure)'
         value: ${{ jobs.report.outputs.status }}
 
 jobs:
@@ -42,7 +42,7 @@ jobs:
         continue-on-error: true
         uses: ./.github/actions/maestro-ios
         with:
-          app-path: "/tmp/RNTesterBuild/RNTester.app"
+          app-path: '/tmp/RNTesterBuild/RNTester.app'
           app-id: com.meta.RNTester.localDevelopment
           maestro-flow: ./packages/rn-tester/.maestro/
           flavor: ${{ matrix.flavor }}

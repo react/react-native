@@ -265,4 +265,12 @@ export interface PointerEvents {
   onPointerDownCapture?: ((event: PointerEvent) => void) | undefined;
   onPointerUp?: ((event: PointerEvent) => void) | undefined;
   onPointerUpCapture?: ((event: PointerEvent) => void) | undefined;
+  onPointerOver?: ((event: PointerEvent) => void) | undefined;
+  onPointerOverCapture?: ((event: PointerEvent) => void) | undefined;
+  onPointerOut?: ((event: PointerEvent) => void) | undefined;
+  onPointerOutCapture?: ((event: PointerEvent) => void) | undefined;
+  onGotPointerCapture?: ((event: PointerEvent) => void) | undefined;
+  onGotPointerCaptureCapture?: ((event: PointerEvent) => void) | undefined;
+  onLostPointerCapture?: ((event: PointerEvent) => void) | undefined;
+  onLostPointerCaptureCapture?: ((event: PointerEvent) => void) | undefined;
 }

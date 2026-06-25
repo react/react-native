@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<8dfc52502bd539e5e43d547f895a6d33>>
+ * @generated SignedSource<<6451b9c50b78b3b00fc74b137f5ca541>>
  */
 
 /**
@@ -36,7 +36,7 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool cxxNativeAnimatedEnabled() override {
-    return false;
+    return true;
   }
 
   bool defaultTextToOverflowHidden() override {
@@ -95,10 +95,6 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
-  bool enableDifferentiatorMutationVectorPreallocation() override {
-    return false;
-  }
-
   bool enableDoubleMeasurementFixAndroid() override {
     return false;
   }
@@ -136,10 +132,6 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool enableImagePrefetchingAndroid() override {
-    return false;
-  }
-
-  bool enableImageRequestDowngradingForNonVisibleImages() override {
     return false;
   }
 
@@ -236,7 +228,7 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool fixDifferentiatorParentTagForUnflattenCase() override {
-    return false;
+    return true;
   }
 
   bool fixMappingOfEventPrioritiesBetweenFabricAndReact() override {
@@ -264,10 +256,6 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool fuseboxScreenshotCaptureEnabled() override {
-    return false;
-  }
-
-  bool hideOffscreenVirtualViewsOnIOS() override {
     return false;
   }
 
@@ -344,10 +332,6 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool useNestedScrollViewAndroid() override {
-    return false;
-  }
-
-  bool useOptimizedViewRegistryOnAndroid() override {
     return false;
   }
 

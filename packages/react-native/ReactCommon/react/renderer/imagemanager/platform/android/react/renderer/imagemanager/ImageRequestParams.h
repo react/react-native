@@ -61,8 +61,6 @@ class ImageRequestParams {
   ImageSource loadingIndicatorSource{};
   std::string analyticTag{};
   Size size{};
-  // Consumed by Apple image managers for now; Android keeps Immediate.
-  ImageRequestPriority priority{ImageRequestPriority::Immediate};
 
   bool operator==(const ImageRequestParams &rhs) const = default;
 };

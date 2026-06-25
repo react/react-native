@@ -62,6 +62,7 @@ Pod::Spec.new do |s|
   s.dependency "React-CoreModules"
   s.dependency "React-RCTFBReactNativeSpec"
   s.dependency "React-defaultsnativemodule"
+  s.dependency "React-RCTAnimatedModuleProvider"
   if use_hermes()
     s.dependency 'React-hermes'
   end

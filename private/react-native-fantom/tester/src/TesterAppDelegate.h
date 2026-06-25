@@ -9,6 +9,7 @@
 
 #include <react/renderer/core/ReactPrimitives.h>
 #include <react/runtime/ReactInstanceConfig.h>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
@@ -22,6 +23,7 @@ class Runtime;
 
 namespace facebook::react {
 
+class FantomTimerRegistry;
 class ReactHost;
 class StubQueue;
 class RunLoopObserverManager;
@@ -58,6 +60,12 @@ class TesterAppDelegate {
 
   void produceFramesForDuration(double milliseconds);
 
+  // Deterministic timer control (driven from JS via NativeFantom).
+  void setTimerMockEnabled(bool enabled);
+  void advanceTimers(double deltaMs);
+  void runAllTimers();
+  uint32_t getPendingTimerCount();
+
   void flushMessageQueue();
 
   bool hasPendingTasksInMessageQueue();
@@ -79,6 +87,10 @@ class TesterAppDelegate {
   void runUITick();
 
   std::function<void()> onAnimationRender_{nullptr};
+
+  // Owned by the TimerManager (inside the ReactInstance); this is a non-owning
+  // pointer used to drive the deterministic timer mock from JS.
+  FantomTimerRegistry *timerRegistry_{nullptr};
 };
 
 } // namespace facebook::react

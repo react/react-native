@@ -11,18 +11,18 @@ on:
         default: false
     outputs:
       status:
-        description: "The result of the Fantom tests (success or failure)"
+        description: 'The result of the Fantom tests (success or failure)'
         value: ${{ jobs.report.outputs.status }}
 
 jobs:
   test:
-    runs-on: 8-core-ubuntu
+    runs-on: ubuntu-latest
     outputs:
       status: ${{ steps.report-status.outputs.status }}
     container:
       image: reactnativecommunity/react-native-android:latest
       env:
-        TERM: "dumb"
+        TERM: 'dumb'
     steps:
       - name: Checkout
         uses: actions/checkout@v6

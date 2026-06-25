@@ -650,6 +650,8 @@ public open class ReactViewGroup public constructor(context: Context?) :
     }
   }
 
+  override fun shouldDelayChildPressedState(): Boolean = false
+
   override fun dispatchSetPressed(pressed: Boolean) {
     // Prevents the ViewGroup from dispatching the pressed state
     // to it's children.

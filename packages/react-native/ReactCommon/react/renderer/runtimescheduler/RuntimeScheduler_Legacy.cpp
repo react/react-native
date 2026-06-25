@@ -6,6 +6,9 @@
  */
 
 #include "RuntimeScheduler_Legacy.h"
+
+#ifndef RCT_REMOVE_LEGACY_ARCH
+
 #include "SchedulerPriorityUtils.h"
 
 #include <ReactCommon/RuntimeExecutorSyncUIThreadUtils.h>
@@ -282,3 +285,5 @@ void RuntimeScheduler_Legacy::executeTask(
 }
 
 } // namespace facebook::react
+
+#endif // RCT_REMOVE_LEGACY_ARCH

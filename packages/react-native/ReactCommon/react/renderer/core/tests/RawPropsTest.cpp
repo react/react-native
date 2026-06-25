@@ -175,7 +175,7 @@ TEST(RawPropsTest, handleRawPropsSingleString) {
   parser.prepare<Props>();
   raw.parse(parser);
 
-  std::string value = (std::string)*raw.at("nativeID", nullptr, nullptr);
+  std::string value = (std::string)*raw.at("nativeID");
 
   EXPECT_STREQ(value.c_str(), "abc");
 }
@@ -189,7 +189,7 @@ TEST(RawPropsTest, handleRawPropsSingleFloat) {
   parser.prepare<PropsSingleFloat>();
   raw.parse(parser);
 
-  auto value = (float)*raw.at("floatValue", nullptr, nullptr);
+  auto value = (float)*raw.at("floatValue");
 
   EXPECT_NEAR(value, 42.42, 0.00001);
 }
@@ -203,7 +203,7 @@ TEST(RawPropsTest, handleRawPropsSingleDouble) {
   parser.prepare<PropsSingleDouble>();
   raw.parse(parser);
 
-  auto value = (double)*raw.at("doubleValue", nullptr, nullptr);
+  auto value = (double)*raw.at("doubleValue");
 
   EXPECT_NEAR(value, 42.42, 0.00001);
 }
@@ -217,7 +217,7 @@ TEST(RawPropsTest, handleRawPropsSingleInt) {
   parser.prepare<PropsSingleInt>();
   raw.parse(parser);
 
-  int value = (int)*raw.at("intValue", nullptr, nullptr);
+  int value = (int)*raw.at("intValue");
 
   EXPECT_EQ(value, 42);
 }
@@ -231,9 +231,9 @@ TEST(RawPropsTest, handleRawPropsSingleIntGetManyTimes) {
   parser.prepare<PropsSingleInt>();
   raw.parse(parser);
 
-  EXPECT_EQ((int)*raw.at("intValue", nullptr, nullptr), 42);
-  EXPECT_EQ((int)*raw.at("intValue", nullptr, nullptr), 42);
-  EXPECT_EQ((int)*raw.at("intValue", nullptr, nullptr), 42);
+  EXPECT_EQ((int)*raw.at("intValue"), 42);
+  EXPECT_EQ((int)*raw.at("intValue"), 42);
+  EXPECT_EQ((int)*raw.at("intValue"), 42);
 }
 
 TEST(RawPropsTest, handleRawPropsPrimitiveTypes) {
@@ -249,13 +249,11 @@ TEST(RawPropsTest, handleRawPropsPrimitiveTypes) {
   parser.prepare<PropsPrimitiveTypes>();
   raw.parse(parser);
 
-  EXPECT_EQ((int)*raw.at("intValue", nullptr, nullptr), 42);
-  EXPECT_NEAR((double)*raw.at("doubleValue", nullptr, nullptr), 17.42, 0.0001);
-  EXPECT_NEAR((float)*raw.at("floatValue", nullptr, nullptr), 66.67, 0.00001);
-  EXPECT_STREQ(
-      ((std::string)*raw.at("stringValue", nullptr, nullptr)).c_str(),
-      "helloworld");
-  EXPECT_EQ((bool)*raw.at("boolValue", nullptr, nullptr), true);
+  EXPECT_EQ((int)*raw.at("intValue"), 42);
+  EXPECT_NEAR((double)*raw.at("doubleValue"), 17.42, 0.0001);
+  EXPECT_NEAR((float)*raw.at("floatValue"), 66.67, 0.00001);
+  EXPECT_STREQ(((std::string)*raw.at("stringValue")).c_str(), "helloworld");
+  EXPECT_EQ((bool)*raw.at("boolValue"), true);
 }
 
 TEST(RawPropsTest, handleRawPropsPrimitiveTypesGetTwice) {
@@ -271,21 +269,17 @@ TEST(RawPropsTest, handleRawPropsPrimitiveTypesGetTwice) {
   parser.prepare<PropsPrimitiveTypes>();
   raw.parse(parser);
 
-  EXPECT_EQ((int)*raw.at("intValue", nullptr, nullptr), 42);
-  EXPECT_NEAR((double)*raw.at("doubleValue", nullptr, nullptr), 17.42, 0.0001);
-  EXPECT_NEAR((float)*raw.at("floatValue", nullptr, nullptr), 66.67, 0.00001);
-  EXPECT_STREQ(
-      ((std::string)*raw.at("stringValue", nullptr, nullptr)).c_str(),
-      "helloworld");
-  EXPECT_EQ((bool)*raw.at("boolValue", nullptr, nullptr), true);
+  EXPECT_EQ((int)*raw.at("intValue"), 42);
+  EXPECT_NEAR((double)*raw.at("doubleValue"), 17.42, 0.0001);
+  EXPECT_NEAR((float)*raw.at("floatValue"), 66.67, 0.00001);
+  EXPECT_STREQ(((std::string)*raw.at("stringValue")).c_str(), "helloworld");
+  EXPECT_EQ((bool)*raw.at("boolValue"), true);
 
-  EXPECT_EQ((int)*raw.at("intValue", nullptr, nullptr), 42);
-  EXPECT_NEAR((double)*raw.at("doubleValue", nullptr, nullptr), 17.42, 0.0001);
-  EXPECT_NEAR((float)*raw.at("floatValue", nullptr, nullptr), 66.67, 0.00001);
-  EXPECT_STREQ(
-      ((std::string)*raw.at("stringValue", nullptr, nullptr)).c_str(),
-      "helloworld");
-  EXPECT_EQ((bool)*raw.at("boolValue", nullptr, nullptr), true);
+  EXPECT_EQ((int)*raw.at("intValue"), 42);
+  EXPECT_NEAR((double)*raw.at("doubleValue"), 17.42, 0.0001);
+  EXPECT_NEAR((float)*raw.at("floatValue"), 66.67, 0.00001);
+  EXPECT_STREQ(((std::string)*raw.at("stringValue")).c_str(), "helloworld");
+  EXPECT_EQ((bool)*raw.at("boolValue"), true);
 }
 
 TEST(RawPropsTest, handleRawPropsPrimitiveTypesGetOutOfOrder) {
@@ -301,21 +295,17 @@ TEST(RawPropsTest, handleRawPropsPrimitiveTypesGetOutOfOrder) {
   parser.prepare<PropsPrimitiveTypes>();
   raw.parse(parser);
 
-  EXPECT_EQ((int)*raw.at("intValue", nullptr, nullptr), 42);
-  EXPECT_NEAR((double)*raw.at("doubleValue", nullptr, nullptr), 17.42, 0.0001);
-  EXPECT_NEAR((float)*raw.at("floatValue", nullptr, nullptr), 66.67, 0.00001);
-  EXPECT_STREQ(
-      ((std::string)*raw.at("stringValue", nullptr, nullptr)).c_str(),
-      "helloworld");
-  EXPECT_EQ((bool)*raw.at("boolValue", nullptr, nullptr), true);
+  EXPECT_EQ((int)*raw.at("intValue"), 42);
+  EXPECT_NEAR((double)*raw.at("doubleValue"), 17.42, 0.0001);
+  EXPECT_NEAR((float)*raw.at("floatValue"), 66.67, 0.00001);
+  EXPECT_STREQ(((std::string)*raw.at("stringValue")).c_str(), "helloworld");
+  EXPECT_EQ((bool)*raw.at("boolValue"), true);
 
-  EXPECT_NEAR((double)*raw.at("doubleValue", nullptr, nullptr), 17.42, 0.0001);
-  EXPECT_EQ((int)*raw.at("intValue", nullptr, nullptr), 42);
-  EXPECT_NEAR((float)*raw.at("floatValue", nullptr, nullptr), 66.67, 0.00001);
-  EXPECT_STREQ(
-      ((std::string)*raw.at("stringValue", nullptr, nullptr)).c_str(),
-      "helloworld");
-  EXPECT_EQ((bool)*raw.at("boolValue", nullptr, nullptr), true);
+  EXPECT_NEAR((double)*raw.at("doubleValue"), 17.42, 0.0001);
+  EXPECT_EQ((int)*raw.at("intValue"), 42);
+  EXPECT_NEAR((float)*raw.at("floatValue"), 66.67, 0.00001);
+  EXPECT_STREQ(((std::string)*raw.at("stringValue")).c_str(), "helloworld");
+  EXPECT_EQ((bool)*raw.at("boolValue"), true);
 }
 
 TEST(RawPropsTest, handleRawPropsPrimitiveTypesIncomplete) {
@@ -328,13 +318,13 @@ TEST(RawPropsTest, handleRawPropsPrimitiveTypesIncomplete) {
   parser.prepare<PropsPrimitiveTypes>();
   raw.parse(parser);
 
-  EXPECT_EQ((int)*raw.at("intValue", nullptr, nullptr), 42);
-  EXPECT_EQ(raw.at("doubleValue", nullptr, nullptr), nullptr);
-  EXPECT_EQ(raw.at("floatValue", nullptr, nullptr), nullptr);
-  EXPECT_EQ((int)*raw.at("intValue", nullptr, nullptr), 42);
-  EXPECT_EQ(raw.at("stringValue", nullptr, nullptr), nullptr);
-  EXPECT_EQ(raw.at("boolValue", nullptr, nullptr), nullptr);
-  EXPECT_EQ((int)*raw.at("intValue", nullptr, nullptr), 42);
+  EXPECT_EQ((int)*raw.at("intValue"), 42);
+  EXPECT_EQ(raw.at("doubleValue"), nullptr);
+  EXPECT_EQ(raw.at("floatValue"), nullptr);
+  EXPECT_EQ((int)*raw.at("intValue"), 42);
+  EXPECT_EQ(raw.at("stringValue"), nullptr);
+  EXPECT_EQ(raw.at("boolValue"), nullptr);
+  EXPECT_EQ((int)*raw.at("intValue"), 42);
 }
 
 #ifdef REACT_NATIVE_DEBUG
@@ -351,8 +341,8 @@ TEST(RawPropsTest, handleRawPropsPrimitiveTypesIncorrectLookup) {
   // Before D18662135, looking up an invalid key would trigger
   // an infinite loop. This is out of contract, so we should only
   // test this in debug.
-  EXPECT_EQ(raw.at("flurb", nullptr, nullptr), nullptr);
-  EXPECT_EQ((int)*raw.at("intValue", nullptr, nullptr), 42);
+  EXPECT_EQ(raw.at("flurb"), nullptr);
+  EXPECT_EQ((int)*raw.at("intValue"), 42);
 }
 #endif
 

@@ -338,6 +338,18 @@ const lists = StyleSheet.create({
 
 const container = StyleSheet.compose(page.container, lists.listContainer);
 <View style={container} />;
+
+// Pointer events (W3C): all variants should be accepted on View.
+<View
+  onPointerOver={e => e.nativeEvent.pointerId}
+  onPointerOverCapture={e => e.nativeEvent.pointerId}
+  onPointerOut={e => e.nativeEvent.pointerId}
+  onPointerOutCapture={e => e.nativeEvent.pointerId}
+  onGotPointerCapture={e => e.nativeEvent.pointerId}
+  onGotPointerCaptureCapture={e => e.nativeEvent.pointerId}
+  onLostPointerCapture={e => e.nativeEvent.pointerId}
+  onLostPointerCaptureCapture={e => e.nativeEvent.pointerId}
+/>;
 const text = StyleSheet.compose(page.text, lists.listItem) as TextStyle;
 <Text style={text} />;
 

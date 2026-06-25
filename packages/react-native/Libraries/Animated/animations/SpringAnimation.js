@@ -225,6 +225,7 @@ export default class SpringAnimation extends Animation {
 
     const start = () => {
       const useNativeDriver = this.__startAnimationIfNative(animatedValue);
+      // TODO: T274006331 - Remove js-only animation once shared backend is fully rolled out
       if (!useNativeDriver) {
         this.onUpdate();
       }

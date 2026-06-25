@@ -9,7 +9,6 @@
 
 #include <cxxreact/TraceSection.h>
 #include <react/debug/react_native_assert.h>
-#include <react/renderer/core/RawPropsKey.h>
 #include <react/renderer/core/RawPropsParser.h>
 
 namespace facebook::react {
@@ -110,15 +109,11 @@ bool RawProps::isEmpty() const noexcept {
  * Returns a const unowning pointer to `RawValue` of a prop with a given name.
  * Returns `nullptr` if a prop with the given name does not exist.
  */
-const RawValue* RawProps::at(
-    const char* name,
-    const char* prefix,
-    const char* suffix) const noexcept {
+const RawValue* RawProps::at(const char* name) const noexcept {
   react_native_assert(
       parser_ &&
       "The object is not parsed. `parse` must be called before `at`.");
-  return parser_->at(
-      *this, RawPropsKey{.prefix = prefix, .name = name, .suffix = suffix});
+  return parser_->at(*this, name);
 }
 
 } // namespace facebook::react

@@ -72,7 +72,7 @@ const definitions: FeatureFlagDefinitions = {
       ossReleaseStage: 'none',
     },
     cxxNativeAnimatedEnabled: {
-      defaultValue: false,
+      defaultValue: true,
       metadata: {
         dateAdded: '2025-03-14',
         description:
@@ -232,17 +232,6 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
-    enableDifferentiatorMutationVectorPreallocation: {
-      defaultValue: false,
-      metadata: {
-        dateAdded: '2026-02-28',
-        description:
-          'Pre-allocate mutation vectors in the Differentiator to reduce reallocation overhead during shadow view diffing.',
-        expectedReleaseValue: true,
-        purpose: 'experimentation',
-      },
-      ossReleaseStage: 'none',
-    },
     enableDoubleMeasurementFixAndroid: {
       defaultValue: false,
       metadata: {
@@ -343,17 +332,6 @@ const definitions: FeatureFlagDefinitions = {
         dateAdded: '2025-06-21',
         description:
           'When enabled, Android will build and initiate image prefetch requests on ImageShadowNode::layout',
-        expectedReleaseValue: true,
-        purpose: 'experimentation',
-      },
-      ossReleaseStage: 'none',
-    },
-    enableImageRequestDowngradingForNonVisibleImages: {
-      defaultValue: false,
-      metadata: {
-        dateAdded: '2026-05-21',
-        description:
-          'When enabled, ImageShadowNode downgrades image requests to prefetch priority when layout determines that the image does not intersect the viewport.',
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
@@ -605,7 +583,7 @@ const definitions: FeatureFlagDefinitions = {
       ossReleaseStage: 'none',
     },
     fixDifferentiatorParentTagForUnflattenCase: {
-      defaultValue: false,
+      defaultValue: true,
       metadata: {
         dateAdded: '2026-04-18',
         description:
@@ -685,17 +663,6 @@ const definitions: FeatureFlagDefinitions = {
         dateAdded: '2026-04-01',
         description:
           'Enable Page.captureScreenshot CDP method support in the React Native DevTools CDP backend. This flag is global and should not be changed across React Host lifetimes.',
-        expectedReleaseValue: true,
-        purpose: 'experimentation',
-      },
-      ossReleaseStage: 'none',
-    },
-    hideOffscreenVirtualViewsOnIOS: {
-      defaultValue: false,
-      metadata: {
-        dateAdded: '2025-06-30',
-        description:
-          'Hides offscreen VirtualViews on iOS by setting hidden = YES to avoid extra cost of views',
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
@@ -904,17 +871,6 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
-    useOptimizedViewRegistryOnAndroid: {
-      defaultValue: false,
-      metadata: {
-        dateAdded: '2026-04-28',
-        description:
-          'Use MutableIntObjectMap with ReadWriteLock instead of ConcurrentHashMap for the view registry in SurfaceMountingManager to reduce memory overhead and GC pressure.',
-        expectedReleaseValue: true,
-        purpose: 'experimentation',
-      },
-      ossReleaseStage: 'none',
-    },
     useSharedAnimatedBackend: {
       defaultValue: false,
       metadata: {
@@ -1003,8 +959,19 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
-    animatedShouldDebounceQueueFlush: {
+    animatedForceNativeDriver: {
       defaultValue: false,
+      metadata: {
+        dateAdded: '2026-06-10',
+        description:
+          'When enabled, forces `useNativeDriver` to `true` for all Animated animations and events, overriding the config (including an explicit `false`). Has no effect unless the shared animated backend is enabled, which is required to support native driver for all props.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
+    animatedShouldDebounceQueueFlush: {
+      defaultValue: true,
       metadata: {
         dateAdded: '2024-02-05',
         description:
@@ -1026,7 +993,7 @@ const definitions: FeatureFlagDefinitions = {
       ossReleaseStage: 'none',
     },
     animatedShouldUseSingleOp: {
-      defaultValue: false,
+      defaultValue: true,
       metadata: {
         dateAdded: '2024-02-05',
         description:

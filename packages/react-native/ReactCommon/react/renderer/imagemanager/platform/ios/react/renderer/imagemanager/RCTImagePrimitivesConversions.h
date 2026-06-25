@@ -31,19 +31,6 @@ inline static UIViewContentMode RCTContentModeFromImageResizeMode(facebook::reac
   }
 }
 
-inline static RCTImageLoaderPriority RCTImageLoaderPriorityFromImageRequestPriority(
-    facebook::react::ImageRequestPriority imageRequestPriority)
-{
-  switch (imageRequestPriority) {
-    case facebook::react::ImageRequestPriority::Immediate:
-      return RCTImageLoaderPriorityImmediate;
-    case facebook::react::ImageRequestPriority::Prefetch:
-      return RCTImageLoaderPriorityPrefetch;
-    default:
-      return RCTImageLoaderPriorityImmediate;
-  }
-}
-
 inline std::string toString(const facebook::react::ImageResizeMode &value)
 {
   switch (value) {

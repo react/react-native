@@ -44,6 +44,7 @@ void YGNodeFree(const YGNodeRef nodeRef) {
   if (auto owner = node->getOwner()) {
     owner->removeChild(node);
     node->setOwner(nullptr);
+    owner->markDirtyAndPropagate();
   }
 
   const size_t childCount = node->getChildCount();

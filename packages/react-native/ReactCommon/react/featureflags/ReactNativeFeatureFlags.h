@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<6958847f0d788c06cf64478ee2c36386>>
+ * @generated SignedSource<<f14bb4f5e859587a468b1f2a320577c0>>
  */
 
 /**
@@ -125,11 +125,6 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool enableDestroyShadowTreeRevisionAsync();
 
   /**
-   * Pre-allocate mutation vectors in the Differentiator to reduce reallocation overhead during shadow view diffing.
-   */
-  RN_EXPORT static bool enableDifferentiatorMutationVectorPreallocation();
-
-  /**
    * When enabled a subset of components will avoid double measurement on Android.
    */
   RN_EXPORT static bool enableDoubleMeasurementFixAndroid();
@@ -178,11 +173,6 @@ class ReactNativeFeatureFlags {
    * When enabled, Android will build and initiate image prefetch requests on ImageShadowNode::layout
    */
   RN_EXPORT static bool enableImagePrefetchingAndroid();
-
-  /**
-   * When enabled, ImageShadowNode downgrades image requests to prefetch priority when layout determines that the image does not intersect the viewport.
-   */
-  RN_EXPORT static bool enableImageRequestDowngradingForNonVisibleImages();
 
   /**
    * Dispatches state updates for content offset changes synchronously on the main thread.
@@ -340,11 +330,6 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool fuseboxScreenshotCaptureEnabled();
 
   /**
-   * Hides offscreen VirtualViews on iOS by setting hidden = YES to avoid extra cost of views
-   */
-  RN_EXPORT static bool hideOffscreenVirtualViewsOnIOS();
-
-  /**
    * When enabled, uses optimized platform-specific paths to apply animated props synchronously. On Android, this uses a batched int/double buffer protocol with a single JNI call. On iOS, this passes AnimatedProps directly through the delegate chain and applies them via cloneProps, avoiding the folly::dynamic round-trip.
    */
   RN_EXPORT static bool optimizedAnimatedPropUpdates();
@@ -438,11 +423,6 @@ class ReactNativeFeatureFlags {
    * When enabled, ReactScrollView will extend NestedScrollView instead of ScrollView on Android for improved nested scrolling support.
    */
   RN_EXPORT static bool useNestedScrollViewAndroid();
-
-  /**
-   * Use MutableIntObjectMap with ReadWriteLock instead of ConcurrentHashMap for the view registry in SurfaceMountingManager to reduce memory overhead and GC pressure.
-   */
-  RN_EXPORT static bool useOptimizedViewRegistryOnAndroid();
 
   /**
    * Use shared animation backend in C++ Animated

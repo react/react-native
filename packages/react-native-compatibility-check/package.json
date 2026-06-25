@@ -5,10 +5,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/facebook/react-native.git",
+    "url": "git+https://github.com/react/react-native.git",
     "directory": "packages/react-native-compatibility-check"
   },
-  "homepage": "https://github.com/facebook/react-native/tree/HEAD/packages/react-native-compatibility-check#readme",
+  "homepage": "https://github.com/react/react-native/tree/HEAD/packages/react-native-compatibility-check#readme",
   "keywords": [
     "boundary",
     "crashes",
@@ -17,7 +17,7 @@
     "tools",
     "react-native"
   ],
-  "bugs": "https://github.com/facebook/react-native/issues",
+  "bugs": "https://github.com/react/react-native/issues",
   "engines": {
     "node": "^22.13.0 || ^24.3.0 || >= 26.0.0"
   },

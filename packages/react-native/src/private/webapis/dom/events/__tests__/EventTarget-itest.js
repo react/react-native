@@ -54,6 +54,19 @@ function createListener(
 }
 
 describe('EventTarget', () => {
+  it('should have 3 enumerable methods', () => {
+    const methods = new Set([
+      'addEventListener',
+      'removeEventListener',
+      'dispatchEvent',
+    ]);
+    for (const key in new EventTarget()) {
+      expect(methods.has(key)).toBe(true);
+      methods.delete(key);
+    }
+    expect(methods.size).toBe(0);
+  });
+
   describe('addEventListener', () => {
     it('should throw an error if event or callback are NOT passed', () => {
       const eventTarget = new EventTarget();

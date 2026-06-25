@@ -8,8 +8,7 @@
  * @flow strict-local
  */
 
-import type {HostInstance} from 'react-native';
-import type {PublicScrollViewInstance} from 'react-native/Libraries/Components/ScrollView/ScrollView';
+import type {HostInstance, ScrollViewInstance} from 'react-native';
 import type {ViewStyleProp} from 'react-native/Libraries/StyleSheet/StyleSheet';
 import type IntersectionObserverType from 'react-native/src/private/webapis/intersectionobserver/IntersectionObserver';
 
@@ -42,8 +41,8 @@ component IntersectionObserverExplicitRootScrollExample() {
   const [observationRoot, setObservationRoot] = useState<?HostInstance>(null);
 
   const [showMargin, setShowMargin] = useState(true);
-  const roofRef: React.RefSetter<PublicScrollViewInstance> = useCallback(
-    (rootNode: ?PublicScrollViewInstance) => {
+  const roofRef: React.RefSetter<ScrollViewInstance> = useCallback(
+    (rootNode: ?ScrollViewInstance) => {
       if (rootNode != null) {
         setObservationRoot(rootNode);
       }

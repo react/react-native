@@ -134,7 +134,8 @@ class YogaLayoutableShadowNode : public LayoutableShadowNode {
    * ShadowTree has been constructed, but before it has been is laid out or
    * committed.
    */
-  void configureYogaTree(float pointScaleFactor, YGErrata defaultErrata, bool swapLeftAndRight);
+  void
+  configureYogaTree(float pointScaleFactor, Float fontSizeMultiplier, YGErrata defaultErrata, bool swapLeftAndRight);
 
   /**
    * Return an errata based on a `layoutConformance` prop if given, otherwise

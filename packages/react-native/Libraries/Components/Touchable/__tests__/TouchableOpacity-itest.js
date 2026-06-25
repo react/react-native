@@ -21,6 +21,10 @@ import ensureInstance from 'react-native/src/private/__tests__/utilities/ensureI
 import ReactNativeElement from 'react-native/src/private/webapis/dom/nodes/ReactNativeElement';
 
 describe('<TouchableOpacity>', () => {
+  it('sets displayName', () => {
+    expect(TouchableOpacity.displayName).toBe('TouchableOpacity');
+  });
+
   describe('props', () => {
     describe('rendering', () => {
       it('renders as a view with accessible="true"', () => {
@@ -147,6 +151,22 @@ describe('<TouchableOpacity>', () => {
 
         Fantom.runTask(() => {
           root.render(<TouchableOpacity disabled={true} />);
+        });
+
+        expect(
+          root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+        ).toEqual(
+          <rn-view accessibilityState="{disabled:true,selected:false,checked:None,busy:false,expanded:null}" />,
+        );
+      });
+
+      it('sets accessibilityState disabled to true via accessibilityState prop', () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(
+            <TouchableOpacity accessibilityState={{disabled: true}} />,
+          );
         });
 
         expect(

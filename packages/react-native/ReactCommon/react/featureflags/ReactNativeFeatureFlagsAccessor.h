@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<1974d5797f43e8f73b521ebfd46ce492>>
+ * @generated SignedSource<<f5c1b31e5554063a4b96dc59380489d9>>
  */
 
 /**
@@ -49,7 +49,6 @@ class ReactNativeFeatureFlagsAccessor {
   bool enableCppPropsIteratorSetter();
   bool enableCustomFocusSearchOnClippedElementsAndroid();
   bool enableDestroyShadowTreeRevisionAsync();
-  bool enableDifferentiatorMutationVectorPreallocation();
   bool enableDoubleMeasurementFixAndroid();
   bool enableEagerRootViewAttachment();
   bool enableExclusivePropsUpdateAndroid();
@@ -60,7 +59,6 @@ class ReactNativeFeatureFlagsAccessor {
   bool enableIOSTextBaselineOffsetPerLine();
   bool enableIOSViewClipToPaddingBox();
   bool enableImagePrefetchingAndroid();
-  bool enableImageRequestDowngradingForNonVisibleImages();
   bool enableImmediateUpdateModeForContentOffsetChanges();
   bool enableImperativeFocus();
   bool enableInteropViewManagerClassLookUpOptimizationIOS();
@@ -92,7 +90,6 @@ class ReactNativeFeatureFlagsAccessor {
   bool fuseboxFrameRecordingEnabled();
   bool fuseboxNetworkInspectionEnabled();
   bool fuseboxScreenshotCaptureEnabled();
-  bool hideOffscreenVirtualViewsOnIOS();
   bool optimizedAnimatedPropUpdates();
   bool overrideBySynchronousMountPropsAtMountingAndroid();
   bool perfIssuesEnabled();
@@ -112,7 +109,6 @@ class ReactNativeFeatureFlagsAccessor {
   bool useFabricInterop();
   bool useNativeViewConfigsInBridgelessMode();
   bool useNestedScrollViewAndroid();
-  bool useOptimizedViewRegistryOnAndroid();
   bool useSharedAnimatedBackend();
   bool useTraitHiddenOnAndroid();
   bool useTurboModuleInterop();
@@ -131,7 +127,7 @@ class ReactNativeFeatureFlagsAccessor {
   std::unique_ptr<ReactNativeFeatureFlagsProvider> currentProvider_;
   bool wasOverridden_;
 
-  std::array<std::atomic<const char*>, 88> accessedFeatureFlags_;
+  std::array<std::atomic<const char*>, 84> accessedFeatureFlags_;
 
   std::atomic<std::optional<bool>> commonTestFlag_;
   std::atomic<std::optional<bool>> cdpInteractionMetricsEnabled_;
@@ -150,7 +146,6 @@ class ReactNativeFeatureFlagsAccessor {
   std::atomic<std::optional<bool>> enableCppPropsIteratorSetter_;
   std::atomic<std::optional<bool>> enableCustomFocusSearchOnClippedElementsAndroid_;
   std::atomic<std::optional<bool>> enableDestroyShadowTreeRevisionAsync_;
-  std::atomic<std::optional<bool>> enableDifferentiatorMutationVectorPreallocation_;
   std::atomic<std::optional<bool>> enableDoubleMeasurementFixAndroid_;
   std::atomic<std::optional<bool>> enableEagerRootViewAttachment_;
   std::atomic<std::optional<bool>> enableExclusivePropsUpdateAndroid_;
@@ -161,7 +156,6 @@ class ReactNativeFeatureFlagsAccessor {
   std::atomic<std::optional<bool>> enableIOSTextBaselineOffsetPerLine_;
   std::atomic<std::optional<bool>> enableIOSViewClipToPaddingBox_;
   std::atomic<std::optional<bool>> enableImagePrefetchingAndroid_;
-  std::atomic<std::optional<bool>> enableImageRequestDowngradingForNonVisibleImages_;
   std::atomic<std::optional<bool>> enableImmediateUpdateModeForContentOffsetChanges_;
   std::atomic<std::optional<bool>> enableImperativeFocus_;
   std::atomic<std::optional<bool>> enableInteropViewManagerClassLookUpOptimizationIOS_;
@@ -193,7 +187,6 @@ class ReactNativeFeatureFlagsAccessor {
   std::atomic<std::optional<bool>> fuseboxFrameRecordingEnabled_;
   std::atomic<std::optional<bool>> fuseboxNetworkInspectionEnabled_;
   std::atomic<std::optional<bool>> fuseboxScreenshotCaptureEnabled_;
-  std::atomic<std::optional<bool>> hideOffscreenVirtualViewsOnIOS_;
   std::atomic<std::optional<bool>> optimizedAnimatedPropUpdates_;
   std::atomic<std::optional<bool>> overrideBySynchronousMountPropsAtMountingAndroid_;
   std::atomic<std::optional<bool>> perfIssuesEnabled_;
@@ -213,7 +206,6 @@ class ReactNativeFeatureFlagsAccessor {
   std::atomic<std::optional<bool>> useFabricInterop_;
   std::atomic<std::optional<bool>> useNativeViewConfigsInBridgelessMode_;
   std::atomic<std::optional<bool>> useNestedScrollViewAndroid_;
-  std::atomic<std::optional<bool>> useOptimizedViewRegistryOnAndroid_;
   std::atomic<std::optional<bool>> useSharedAnimatedBackend_;
   std::atomic<std::optional<bool>> useTraitHiddenOnAndroid_;
   std::atomic<std::optional<bool>> useTurboModuleInterop_;

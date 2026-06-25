@@ -23,7 +23,7 @@ class ObjCTimerRegistry : public facebook::react::PlatformTimerRegistry {
   void createTimer(uint32_t timerID, double delayMS) override;
   void deleteTimer(uint32_t timerID) override;
   void createRecurringTimer(uint32_t timerID, double delayMS) override;
-  void setTimerManager(std::weak_ptr<facebook::react::TimerManager> timerManager);
+  void setTimerManager(std::weak_ptr<facebook::react::TimerManager> timerManager) override;
   RCTTiming *_Null_unspecified timing;
 
  private:

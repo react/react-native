@@ -1,4 +1,4 @@
 appId: ${APP_ID} # iOS: org.reactjs.native.example.RNTestProject  | Android: com.rntestproject
 ---
 - launchApp
-- assertVisible: "Welcome to React Native"
+- assertVisible: 'Welcome to React Native'

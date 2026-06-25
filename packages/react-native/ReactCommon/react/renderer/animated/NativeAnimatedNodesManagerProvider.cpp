@@ -8,7 +8,6 @@
 #include "NativeAnimatedNodesManagerProvider.h"
 
 #include <glog/logging.h>
-#include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/renderer/animated/MergedValueDispatcher.h>
 #include <react/renderer/animated/internal/AnimatedMountingOverrideDelegate.h>
 #include <react/renderer/animated/internal/primitives.h>
@@ -51,8 +50,9 @@ NativeAnimatedNodesManagerProvider::getOrCreate(
 
   auto* uiManager = &UIManagerBinding::getBinding(runtime)->getUIManager();
 
-  if (!ReactNativeFeatureFlags::useSharedAnimatedBackend()) {
-    // === PATH 1: Legacy Backend (useSharedAnimatedBackend = false) ===
+  auto animationBackend = uiManager->unstable_getAnimationBackend().lock();
+  if (animationBackend == nullptr) {
+    // === PATH 1: Legacy Backend (no shared AnimationBackend attached) ===
     // Uses the architecture with MergedValueDispatcher and
     // AnimatedMountingOverrideDelegate
 
@@ -130,13 +130,10 @@ NativeAnimatedNodesManagerProvider::getOrCreate(
 
     uiManager->setNativeAnimatedDelegate(nativeAnimatedDelegate_);
   } else {
-    // === PATH 2: Shared AnimationBackend (useSharedAnimatedBackend = true) ===
+    // === PATH 2: Shared AnimationBackend ===
     // Uses the shared AnimationBackend from UIManager. The backend handles all
-    // animation commits and platform integration internally.
-
-    auto animationBackend = uiManager->unstable_getAnimationBackend().lock();
-    react_native_assert(
-        animationBackend != nullptr && "animationBackend is nullptr");
+    // animation commits and platform integration internally. It is guaranteed
+    // non-null here because it was successfully locked above.
     animationBackend->registerJSInvoker(jsInvoker);
 
     nativeAnimatedNodesManager_ =

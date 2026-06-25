@@ -42,5 +42,11 @@ module.exports = {
         requirePragma: false,
       },
     },
+    {
+      files: ['*.yml', '*.yaml'],
+      options: {
+        requirePragma: false,
+      },
+    },
   ],
 };

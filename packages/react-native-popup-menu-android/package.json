@@ -2,6 +2,11 @@
   "name": "@react-native/popup-menu-android",
   "version": "0.87.0-main",
   "description": "PopupMenu for the Android platform",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/react/react-native.git",
+    "directory": "packages/react-native-popup-menu-android"
+  },
   "main": "index.js",
   "files": [
     "js",

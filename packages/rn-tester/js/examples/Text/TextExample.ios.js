@@ -881,6 +881,14 @@ const examples = [
             }}>
             Dotted underline with custom color
           </Text>
+          <Text
+            style={{
+              textDecorationLine: 'underline',
+              textDecorationStyle: 'wavy',
+              textDecorationColor: 'red',
+            }}>
+            Wavy underline (red)
+          </Text>
           <Text style={{textDecorationLine: 'none'}}>None textDecoration</Text>
           <Text
             style={{
@@ -913,8 +921,41 @@ const examples = [
             }}>
             Dotted line-through with custom color
           </Text>
-          <Text style={{textDecorationLine: 'underline line-through'}}>
-            Both underline and line-through
+          <Text
+            style={{
+              textDecorationLine: 'line-through',
+              textDecorationStyle: 'wavy',
+              textDecorationColor: 'red',
+            }}>
+            Wavy line-through (red)
+          </Text>
+          <Text
+            style={{
+              textDecorationLine: 'underline line-through',
+              textDecorationStyle: 'wavy',
+            }}>
+            Both underline and line-through (wavy)
+          </Text>
+          <Text>
+            Mixed text with{' '}
+            <Text style={{textDecorationLine: 'underline'}}>underline</Text> and{' '}
+            <Text style={{textDecorationLine: 'line-through'}}>
+              line-through
+            </Text>{' '}
+            text nodes
+          </Text>
+          <Text>
+            Unstyled text{' '}
+            <Text
+              style={{
+                textDecorationLine: 'line-through',
+                textDecorationStyle: 'wavy',
+                textDecorationColor: 'red',
+              }}>
+              with wavy strike-through that wraps across multiple lines to
+              verify continuity
+            </Text>{' '}
+            normal text
           </Text>
         </View>
       );

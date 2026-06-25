@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<32404575231774f230ece7a097ae08c5>>
+ * @generated SignedSource<<19abe441594bf45b32c5c9cdcd9ca8d4>>
  */
 
 /**
@@ -70,8 +70,6 @@ class NativeReactNativeFeatureFlags
 
   bool enableDestroyShadowTreeRevisionAsync(jsi::Runtime& runtime);
 
-  bool enableDifferentiatorMutationVectorPreallocation(jsi::Runtime& runtime);
-
   bool enableDoubleMeasurementFixAndroid(jsi::Runtime& runtime);
 
   bool enableEagerRootViewAttachment(jsi::Runtime& runtime);
@@ -91,8 +89,6 @@ class NativeReactNativeFeatureFlags
   bool enableIOSViewClipToPaddingBox(jsi::Runtime& runtime);
 
   bool enableImagePrefetchingAndroid(jsi::Runtime& runtime);
-
-  bool enableImageRequestDowngradingForNonVisibleImages(jsi::Runtime& runtime);
 
   bool enableImmediateUpdateModeForContentOffsetChanges(jsi::Runtime& runtime);
 
@@ -156,8 +152,6 @@ class NativeReactNativeFeatureFlags
 
   bool fuseboxScreenshotCaptureEnabled(jsi::Runtime& runtime);
 
-  bool hideOffscreenVirtualViewsOnIOS(jsi::Runtime& runtime);
-
   bool optimizedAnimatedPropUpdates(jsi::Runtime& runtime);
 
   bool overrideBySynchronousMountPropsAtMountingAndroid(jsi::Runtime& runtime);
@@ -195,8 +189,6 @@ class NativeReactNativeFeatureFlags
   bool useNativeViewConfigsInBridgelessMode(jsi::Runtime& runtime);
 
   bool useNestedScrollViewAndroid(jsi::Runtime& runtime);
-
-  bool useOptimizedViewRegistryOnAndroid(jsi::Runtime& runtime);
 
   bool useSharedAnimatedBackend(jsi::Runtime& runtime);
 

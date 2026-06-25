@@ -553,6 +553,15 @@ android {
   defaultConfig {
     minSdk = libs.versions.minSdk.get().toInt()
 
+    aarMetadata {
+      // RN's public ABI exposes no android API newer than 34, and the source is written to
+      // compile against SDK 34 (see util/AndroidVersion.kt). compileSdk is 36 only to build
+      // against the latest platform — it is not an API requirement. Without this, AGP 9
+      // defaults minCompileSdk to compileSdk (36), needlessly forcing every consuming
+      // library/app to compileSdk 36.
+      minCompileSdk = 34
+    }
+
     consumerProguardFiles("proguard-rules.pro")
 
     buildConfigField("boolean", "IS_INTERNAL_BUILD", "false")

@@ -106,12 +106,17 @@ inline static NSUnderlineStyle RCTNSUnderlineStyleFromTextDecorationStyle(
       return NSUnderlineStyleSingle;
     case facebook::react::TextDecorationStyle::Double:
       return NSUnderlineStyleDouble;
+    // Dotted, dashed, and wavy are tagged with
+    // `RCTCustomDecorationAttributeName` in `RCTAttributedTextUtils.mm` and
+    // painted by `RCTTextLayoutManager.mm`'s drawing pass; UIKit's pattern
+    // bits don't match the geometry browsers use, and there is no native
+    // wavy value at all. These branches are unreachable in normal flow; the
+    // returned values keep the switch exhaustive.
     case facebook::react::TextDecorationStyle::Dashed:
-      return NSUnderlineStylePatternDash | NSUnderlineStyleSingle;
+      return NSUnderlineStyleSingle;
     case facebook::react::TextDecorationStyle::Dotted:
-      return NSUnderlineStylePatternDot | NSUnderlineStyleSingle;
+      return NSUnderlineStyleSingle;
     case facebook::react::TextDecorationStyle::Wavy:
-      // No native NSUnderlineStyle for wavy; fall back to solid.
       return NSUnderlineStyleSingle;
   }
 }

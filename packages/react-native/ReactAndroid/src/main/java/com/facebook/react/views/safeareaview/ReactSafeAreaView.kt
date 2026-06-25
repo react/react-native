@@ -39,6 +39,8 @@ internal class ReactSafeAreaView(val reactContext: ThemedReactContext) : ViewGro
 
   override fun onLayout(p0: Boolean, p1: Int, p2: Int, p3: Int, p4: Int): Unit = Unit
 
+  override fun shouldDelayChildPressedState(): Boolean = false
+
   @Suppress("DEPRECATION")
   @UiThread
   private fun updateState(insets: Insets) {

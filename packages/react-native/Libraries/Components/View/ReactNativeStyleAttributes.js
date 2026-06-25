@@ -194,6 +194,7 @@ const ReactNativeStyleAttributes: {[string]: AnyAttributeType, ...} = {
   /**
    * BackgroundImage
    */
+  backgroundImage: backgroundImageAttribute,
   experimental_backgroundImage: backgroundImageAttribute,
 
   /**

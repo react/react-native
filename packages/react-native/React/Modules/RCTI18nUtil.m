@@ -95,7 +95,9 @@
   return direction == NSLocaleLanguageDirectionRightToLeft;
 }
 
-// Check if the current application language is RTL
+// Intersect Xcode "Localization" languages with the system languages and checks if the result is using RTL
+// For RTL support, app must add an RTL lang to .pbxproj's knownRegions = ( ... )
+// and user must have chosen an RTL language
 - (BOOL)isApplicationPreferredLanguageRTL
 {
   NSWritingDirection direction = [NSParagraphStyle defaultWritingDirectionForLanguage:nil];

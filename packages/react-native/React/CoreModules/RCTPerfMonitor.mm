@@ -39,8 +39,6 @@ static NSString *const RCTPerfMonitorCellIdentifier = @"RCTPerfMonitorCellIdenti
 static const CGFloat RCTPerfMonitorBarHeight = 50;
 static const CGFloat RCTPerfMonitorExpandHeight = 250;
 
-using RCTJSCSetOptionType = BOOL (*)(const char *);
-
 NSArray<NSString *> *LabelsForRCTPerformanceLoggerTags();
 
 static BOOL RCTJSCSetOption(const char *option)

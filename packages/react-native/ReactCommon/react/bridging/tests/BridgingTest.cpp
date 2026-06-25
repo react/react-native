@@ -843,15 +843,16 @@ TEST_F(BridgingTest, asyncArrayBufferBorrowThrowsOnJsHeapTest) {
 }
 
 TEST_F(BridgingTest, asyncArrayBufferBorrowNativeBackedTest) {
-  // Native-backed buffer: borrow succeeds, zero-copy. Only meaningful on
-  // runtimes that implement tryGetMutableBuffer.
+  // Native-backed buffer: borrow succeeds zero-copy on runtimes that implement
+  // tryGetMutableBuffer; otherwise borrow throws (since there is no native
+  // MutableBuffer to hand back).
   auto nativeBuf =
       std::make_shared<detail::OwnedBytesBuffer>(std::vector<uint8_t>{5, 6, 7});
   auto* rawPtr = nativeBuf.get();
   auto jsBuf = jsi::ArrayBuffer(rt, nativeBuf);
   if (jsBuf.tryGetMutableBuffer(rt) == nullptr) {
-    GTEST_SKIP()
-        << "Runtime does not expose tryGetMutableBuffer; borrow always throws";
+    EXPECT_JSI_THROW(AsyncArrayBuffer::borrow(rt, jsBuf));
+    return;
   }
   auto safe = AsyncArrayBuffer::borrow(rt, jsBuf);
   EXPECT_EQ(3, safe.size());

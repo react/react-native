@@ -48,10 +48,6 @@ export function getLogColor(opacity?: number): string {
   return `rgba(119, 119, 119, ${opacity == null ? 1 : opacity})`;
 }
 
-export function getWarningHighlightColor(opacity?: number): string {
-  return `rgba(252, 176, 29, ${opacity == null ? 1 : opacity})`;
-}
-
 export function getDividerColor(opacity?: number): string {
   return `rgba(255, 255, 255, ${opacity == null ? 1 : opacity})`;
 }

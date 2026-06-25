@@ -9,7 +9,7 @@ on:
       - main
     paths:
       - packages/debugger-shell/bin/react-native-devtools
-      - "scripts/releases/**"
+      - 'scripts/releases/**'
       - package.json
       - yarn.lock
   pull_request:
@@ -17,17 +17,17 @@ on:
       - main
     paths:
       - packages/debugger-shell/bin/react-native-devtools
-      - "scripts/releases/**"
+      - 'scripts/releases/**'
       - package.json
       - yarn.lock
   # Same time as the nightly build: 2:15 AM UTC
   schedule:
-    - cron: "15 2 * * *"
+    - cron: '15 2 * * *'
 
 jobs:
   validate-dotslash-artifacts:
     runs-on: ubuntu-latest
-    if: github.repository == 'facebook/react-native'
+    if: github.repository == 'react/react-native'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6

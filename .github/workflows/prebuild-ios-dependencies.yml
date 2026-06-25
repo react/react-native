@@ -3,7 +3,6 @@ name: Prebuild iOS Dependencies
 on:
   workflow_call: # this directive allow us to call this workflow from other workflows
 
-
 jobs:
   prepare_workspace:
     name: Prepare workspace
@@ -52,14 +51,17 @@ jobs:
       fail-fast: false
       matrix:
         flavor: ['Debug', 'Release']
-        slice: ['ios',
-                'ios-simulator',
-                'macos',
-                'mac-catalyst',
-                'tvos',
-                'tvos-simulator',
-                'xros',
-                'xros-simulator']
+        slice:
+          [
+            'ios',
+            'ios-simulator',
+            'macos',
+            'mac-catalyst',
+            'tvos',
+            'tvos-simulator',
+            'xros',
+            'xros-simulator',
+          ]
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -88,7 +90,7 @@ jobs:
         run: ls -lR packages/react-native/third-party
       - name: Build slice ${{ matrix.slice }} for ${{ matrix.flavor }}
         if: steps.restore-slice-folder.outputs.cache-hit != 'true'
-        run:  node scripts/releases/prepare-ios-prebuilds.js -b -p ${{ matrix.slice }} -r ${{ matrix.flavor }}
+        run: node scripts/releases/prepare-ios-prebuilds.js -b -p ${{ matrix.slice }} -r ${{ matrix.flavor }}
       - name: Upload Artifacts
         uses: actions/upload-artifact@v6
         with:

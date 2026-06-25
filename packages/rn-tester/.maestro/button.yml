@@ -1,15 +1,15 @@
 appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebook.react.uiapp
 ---
 - launchApp
-- assertVisible: "Components"
+- assertVisible: 'Components'
 - scrollUntilVisible:
     element:
-      id: "Button"
+      id: 'Button'
     direction: DOWN
     speed: 40
 - tapOn:
-    id: "Button"
+    id: 'Button'
 - tapOn:
-    id: "button_default_styling"
-- assertVisible: "Your application has been submitted!"
-- tapOn: "OK"
+    id: 'button_default_styling'
+- assertVisible: 'Your application has been submitted!'
+- tapOn: 'OK'

@@ -5,16 +5,16 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/facebook/react-native.git",
+    "url": "git+https://github.com/react/react-native.git",
     "directory": "packages/typescript-config"
   },
-  "homepage": "https://github.com/facebook/react-native/tree/HEAD/packages/typescript-config#readme",
+  "homepage": "https://github.com/react/react-native/tree/HEAD/packages/typescript-config#readme",
   "keywords": [
     "typescript",
     "tsconfig",
     "react-native"
   ],
-  "bugs": "https://github.com/facebook/react-native/issues",
+  "bugs": "https://github.com/react/react-native/issues",
   "exports": {
     ".": "./tsconfig.json",
     "./strict": "./tsconfig.strict.json"

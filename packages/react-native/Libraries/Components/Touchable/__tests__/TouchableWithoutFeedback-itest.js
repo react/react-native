@@ -48,6 +48,84 @@ describe('<TouchableWithoutFeedback>', () => {
     }
 
     accessibilityPropsSuite(ComponentWithAccessibilityProps);
+
+    describe('disabled', () => {
+      it('sets accessibilityState disabled to true', () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(
+            <TouchableWithoutFeedback disabled={true}>
+              <View />
+            </TouchableWithoutFeedback>,
+          );
+        });
+
+        expect(
+          root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+        ).toEqual(
+          <rn-view accessibilityState="{disabled:true,selected:false,checked:None,busy:false,expanded:null}" />,
+        );
+      });
+
+      it('sets accessibilityState disabled to true when accessibilityState is empty', () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(
+            <TouchableWithoutFeedback disabled={true} accessibilityState={{}}>
+              <View />
+            </TouchableWithoutFeedback>,
+          );
+        });
+
+        expect(
+          root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+        ).toEqual(
+          <rn-view accessibilityState="{disabled:true,selected:false,checked:None,busy:false,expanded:null}" />,
+        );
+      });
+
+      it('preserves other accessibilityState fields when disabled is true', () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(
+            <TouchableWithoutFeedback
+              disabled={true}
+              accessibilityState={{checked: true}}>
+              <View />
+            </TouchableWithoutFeedback>,
+          );
+        });
+
+        expect(
+          root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+        ).toEqual(
+          <rn-view accessibilityState="{disabled:true,selected:false,checked:Checked,busy:false,expanded:null}" />,
+        );
+      });
+
+      it('overwrites accessibilityState.disabled with the disabled prop', () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(
+            <TouchableWithoutFeedback
+              disabled={true}
+              accessibilityState={{disabled: false}}>
+              <View />
+            </TouchableWithoutFeedback>,
+          );
+        });
+
+        expect(
+          root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+        ).toEqual(
+          <rn-view accessibilityState="{disabled:true,selected:false,checked:None,busy:false,expanded:null}" />,
+        );
+      });
+    });
   });
 
   describe('ref', () => {

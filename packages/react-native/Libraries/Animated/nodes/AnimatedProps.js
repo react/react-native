@@ -15,6 +15,7 @@ import type {AnimatedStyleAllowlist} from './AnimatedStyle';
 
 import NativeAnimatedHelper from '../../../src/private/animated/NativeAnimatedHelper';
 import * as ReactNativeFeatureFlags from '../../../src/private/featureflags/ReactNativeFeatureFlags';
+import {getFabricUIManager} from '../../ReactNative/FabricUIManager';
 import {findNodeHandle} from '../../ReactNative/RendererProxy';
 import {getNodeFromPublicInstance} from '../../ReactPrivate/ReactNativePrivateInterface';
 import flattenStyle from '../../StyleSheet/flattenStyle';
@@ -298,8 +299,31 @@ export default class AnimatedProps extends AnimatedNode {
     }
 
     invariant(this.__isNative, 'Expected node to be marked as "native"');
-    // $FlowExpectedError[incompatible-type] - target.instance may be an HTMLElement but we need ReactNativeElement for Fabric
-    const shadowNode = getNodeFromPublicInstance(target.instance);
+    // Host components and ScrollView (whose ref is the host instance) resolve a
+    // shadow node directly; FlatList/SectionList are class composites that expose
+    // the host via getNativeScrollRef().
+    // $FlowFixMe[unclear-type] - Legacy instance assumptions.
+    const instance: any = target.instance;
+    const candidates = [instance, instance?.getNativeScrollRef?.()];
+    let shadowNode = null;
+    for (const candidate of candidates) {
+      if (candidate == null) {
+        continue;
+      }
+      shadowNode = getNodeFromPublicInstance(candidate);
+      if (shadowNode != null) {
+        break;
+      }
+    }
+    // Any other class composite: resolve from the host tag #connectAnimatedView
+    // already found via findNodeHandle (the lookup runs on the native side).
+    const connectedViewTag = target.connectedViewTag;
+    if (shadowNode == null && connectedViewTag != null) {
+      shadowNode =
+        getFabricUIManager()?.findShadowNodeByTag_DEPRECATED?.(
+          connectedViewTag,
+        );
+    }
     if (shadowNode == null) {
       return;
     }

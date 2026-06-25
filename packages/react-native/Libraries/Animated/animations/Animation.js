@@ -70,6 +70,7 @@ export default class Animation {
     previousAnimation: ?Animation,
     animatedValue: AnimatedValue,
   ): void {
+    // TODO: T274006331 - Remove js-only animation once shared backend is fully rolled out
     if (!this._useNativeDriver && animatedValue.__isNative === true) {
       throw new Error(
         'Attempting to run JS driven animation on animated node ' +

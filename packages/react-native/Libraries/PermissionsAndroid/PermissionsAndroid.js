@@ -75,6 +75,7 @@ type PermissionsType = Readonly<{
   UWB_RANGING: 'android.permission.UWB_RANGING',
   POST_NOTIFICATIONS: 'android.permission.POST_NOTIFICATIONS',
   NEARBY_WIFI_DEVICES: 'android.permission.NEARBY_WIFI_DEVICES',
+  ACCESS_LOCAL_NETWORK: 'android.permission.ACCESS_LOCAL_NETWORK',
 }>;
 
 export type PermissionStatus = 'granted' | 'denied' | 'never_ask_again';
@@ -125,6 +126,7 @@ const PERMISSIONS = Object.freeze({
   UWB_RANGING: 'android.permission.UWB_RANGING',
   POST_NOTIFICATIONS: 'android.permission.POST_NOTIFICATIONS',
   NEARBY_WIFI_DEVICES: 'android.permission.NEARBY_WIFI_DEVICES',
+  ACCESS_LOCAL_NETWORK: 'android.permission.ACCESS_LOCAL_NETWORK',
 }) as PermissionsType;
 
 /**

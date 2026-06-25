@@ -18,6 +18,10 @@ import {ActivityIndicator} from 'react-native';
 import ReactNativeElement from 'react-native/src/private/webapis/dom/nodes/ReactNativeElement';
 
 describe('<ActivityIndicator>', () => {
+  it('sets displayName', () => {
+    expect(ActivityIndicator.displayName).toBe('ActivityIndicator');
+  });
+
   describe('props', () => {
     describe('size', () => {
       it('defaults to "small" (20x20)', () => {

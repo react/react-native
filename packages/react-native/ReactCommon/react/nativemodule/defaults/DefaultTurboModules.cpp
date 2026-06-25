@@ -65,7 +65,13 @@ namespace facebook::react {
   }
 
   if (ReactNativeFeatureFlags::cxxNativeAnimatedEnabled() &&
+  // on Android, the render loop for AnimatedModule is driven
+  // internally whether or not shared backend is enabled; ios uses
+  // RCTAnimatedModuleProvider.mm to drive the render loop when shared backend
+  // is off
+#ifndef __ANDROID__
       ReactNativeFeatureFlags::useSharedAnimatedBackend() &&
+#endif
       name == AnimatedModule::kModuleName) {
     return std::make_shared<AnimatedModule>(
         jsInvoker, std::make_shared<NativeAnimatedNodesManagerProvider>());

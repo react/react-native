@@ -28,6 +28,13 @@ internal object AndroidVersion {
   internal const val VERSION_CODE_BAKLAVA: Int = 36
 
   /**
+   * This is the version code for Android 17 (SDK Level 37). Internally at Meta this code is also
+   * compiled against SDK 34, so we need to retain this constant instead of using
+   * [Build.VERSION_CODES.CINNAMON_BUN] directly.
+   */
+  internal const val VERSION_CODE_CINNAMON_BUN: Int = 37
+
+  /**
    * android.R.attr.windowOptOutEdgeToEdgeEnforcement added in API 35. Internally at Meta this code
    * is compiled against an SDK that may not have this attribute defined.
    * https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/core/res/res/values/public-final.xml;l=3848

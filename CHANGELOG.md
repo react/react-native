@@ -1,46 +1,6 @@
 # Changelog
 
-## v0.86.0-rc.3
-
-### Fixed
-
-- **React Native DevTools**: Bump Hermes V1 to 250829098.0.14 to fix missing JavaScript samples in the Performance panel timeline on Apple platforms ([cd5b3b5fa5](https://github.com/facebook/react-native/commit/cd5b3b5fa576366723c4f73b98736c033856ac03) by [@fabriziocucci](https://github.com/fabriziocucci))
-
-## v0.86.0-rc.2
-
-### Added
-
-#### Android specific
-
-- **Pressable**: `android_ripple` now accepts `PlatformColor` ([60d8b282ea](https://github.com/facebook/react-native/commit/60d8b282eaf5bd2803fdaa838520f6ff41cc6737) by [@adrcotfas](https://github.com/adrcotfas))
-
-### Changed
-
-#### iOS specific
-
-- **Build**: Cache prebuilt iOS binaries ([9a0b05b8d0](https://github.com/facebook/react-native/commit/9a0b05b8d07f3468a08077119189406d56a230ba) by [@cipolleschi](https://github.com/cipolleschi))
-
-### Fixed
-
-#### iOS specific
-
-- **Build**: Fixed escaping local file URIs for unicode paths in ruby scripts ([9563cb5b5a](https://github.com/facebook/react-native/commit/9563cb5b5a546d6daf09abc9d5594850129a4ae3) by [@chrfalch](https://github.com/chrfalch))
-- **CocoaPods**: Fix Pod install checksum drifting ([814ebb12b6](https://github.com/facebook/react-native/commit/814ebb12b64cee51b91ada9fa0d90970feac9a9f) by [@chrfalch](https://github.com/chrfalch))
-- **CocoaPods**: Load `RCTDefines.h` first in the prebuilt React umbrella and drop the `module *` submodule wildcard so RCT_* macros propagate to consumer pods under `use_frameworks!`. ([90c303fafb](https://github.com/facebook/react-native/commit/90c303fafb941155dbe379e6b3e74390a139872a) by [@wneel](https://github.com/wneel))
-
-## v0.86.0-rc.1
-
-### Fixed
-
-#### Android specific
-
-- **Image**: `Image.getSize` and `Image.getSizeWithHeaders` now return the true source dimensions instead of Fresco's downsampled values ([8823a8009b](https://github.com/facebook/react-native/commit/8823a8009b18950d5be2682a86cfcf0c7014a068) by [@zoontek](https://github.com/zoontek))
-
-#### iOS specific
-
-- **Build**: Persist `PODFILE_DIR` as `$(SRCROOT)`-relative so `project.pbxproj` is portable across machines ([44bb83bd84](https://github.com/facebook/react-native/commit/44bb83bd843a3b34779f1e7b1e09dbb3f4f38c6a) by [@zoontek](https://github.com/zoontek))
-
-## v0.86.0-rc.0
+## v0.86.0
 
 ### Added
 
@@ -63,6 +23,7 @@
 - **Events**: Channel play/pause hardware events. ([5087aa0dba](https://github.com/facebook/react-native/commit/5087aa0dba4e06986b98007bc33ee16af11f9358) by Nishil Shah)
 - **Events**: Pass event object to `BackHandler` `hardwareBackPress` events to access timeStamp from native event. ([bf277cb6d4](https://github.com/facebook/react-native/commit/bf277cb6d4b6f53227717e8888a4d9701d8a3449) by [@rubennorte](https://github.com/rubennorte))
 - **LogBox**: Allow LogBox notification toasts and inspector overlay to be dismissed via Android back button ([6530092162](https://github.com/facebook/react-native/commit/6530092162b9996b2c53cd5fd76b9c9a6520e57f) by [@Abbondanzo](https://github.com/Abbondanzo))
+- **Pressable**: `android_ripple` now accepts `PlatformColor` ([60d8b282ea](https://github.com/facebook/react-native/commit/60d8b282eaf5bd2803fdaa838520f6ff41cc6737) by [@adrcotfas](https://github.com/adrcotfas))
 - **Runtime**: Add `ExtraWindowEventListener` interface to allow native modules to react to window creation / destruction (e.g. Modal dialogs) ([58fec1fa8d](https://github.com/facebook/react-native/commit/58fec1fa8d351c40a68cb0da807c49c7c2c96a80) by [@zoontek](https://github.com/zoontek))
 - **Runtime**: Add test for synchronous mount props override behavior ([a25e0fdddf](https://github.com/facebook/react-native/commit/a25e0fdddf0ab77c798dd00f8c88e842ee72c955) by [@zeyap](https://github.com/zeyap))
 - **Text**: Add E2E tests for Text visual examples (batch 1) ([b53b228673](https://github.com/facebook/react-native/commit/b53b228673e0b833cae7718bbb778b2ecaec5d76) by [@NickGerleman](https://github.com/NickGerleman))
@@ -100,6 +61,7 @@
 
 #### iOS specific
 
+- **Build**: Cache prebuilt iOS binaries ([9a0b05b8d0](https://github.com/facebook/react-native/commit/9a0b05b8d07f3468a08077119189406d56a230ba) by [@cipolleschi](https://github.com/cipolleschi))
 - **Networking**: Add `RCTHTTPRequestInterceptor` for selective HTTP request modification ([0c7d780aa0](https://github.com/facebook/react-native/commit/0c7d780aa03e7a3fccd24553fdb59ce3219139b2) by [@cipolleschi](https://github.com/cipolleschi))
 - **Networking**: Add `SRWebSocketProvider` for selective WebSocket header injection ([f3aa8c21d1](https://github.com/facebook/react-native/commit/f3aa8c21d1349b3c968c601ef89850427dfdcf64) by [@cipolleschi](https://github.com/cipolleschi))
 - **React Native DevTools**: Derive inspector and debugger URL scheme from bundle URL to support HTTPS dev servers ([36dfcef023](https://github.com/facebook/react-native/commit/36dfcef023549ac2795fbd42467594f056f2630a) by [@cipolleschi](https://github.com/cipolleschi))
@@ -121,6 +83,7 @@
 - **Documentation**: Correct the v0.85.0 changelog entry for the removal of `StyleSheet.absoluteFillObject`. ([fdbe0d0b63](https://github.com/facebook/react-native/commit/fdbe0d0b63e9c69b6375aafca6361107500a6311) by [@jingjing2222](https://github.com/jingjing2222))
 - **Modal**: Forward `style` prop to Modal's inner container View with correct precedence so consumer styles are applied without overriding `transparent` or `backdropColor` ([f8fa76f94c](https://github.com/facebook/react-native/commit/f8fa76f94c37a97e0479f55e9945e1dd111a5567) by [@AnuMessi10](https://github.com/AnuMessi10))
 - **React Native DevTools**: Add exponential backoff and exception handling to `InspectorPackagerConnection` reconnect loop to prevent heap fragmentation crashes ([32d3eafdc4](https://github.com/facebook/react-native/commit/32d3eafdc438eab517e84845ea9efe5165023c56) by [@shubhamksavita](https://github.com/shubhamksavita))
+- **React Native DevTools**: Bump Hermes V1 to 250829098.0.14 to fix missing JavaScript samples in the Performance panel timeline on Apple platforms ([cd5b3b5fa5](https://github.com/facebook/react-native/commit/cd5b3b5fa576366723c4f73b98736c033856ac03) by [@fabriziocucci](https://github.com/fabriziocucci))
 - **Runtime**: Add missing `VIEW_EVENT_CASE` entries in `BaseViewProps::setProp` for Click, PointerDown, PointerUp, GotPointerCapture, LostPointerCapture and their Capture variants (offsets 30-37) ([8d5482dd94](https://github.com/facebook/react-native/commit/8d5482dd9452ee149b65c0ca5cffb1c96af29fc9) by Harini Malothu)
 - **Runtime**: Fix crash in Performance API when sorting entries ([81c99682a4](https://github.com/facebook/react-native/commit/81c99682a49b57b90aa36db801ff578f53930a95) by [@Abbondanzo](https://github.com/Abbondanzo))
 - **Runtime**: Fix event timestamp injection overriding native timestamps with lowercase property name ([68debb27ff](https://github.com/facebook/react-native/commit/68debb27ff17ca3ca17404c5326afce888c444a2) by [@fkgozali](https://github.com/fkgozali))
@@ -143,6 +106,7 @@
 - **Hermes**: Fix `HermesSamplingProfiler.disable()` JNI registration calling `enable()` instead of `disable()` ([7f2a58e46c](https://github.com/facebook/react-native/commit/7f2a58e46cdf0fd797aa58c6b0c8035913d34402) by [@elirangoshen](https://github.com/elirangoshen))
 - **Hermes**: Use Hermes V1 stable release instead of legacy nightly to fix startup crash caused by JSI ABI mismatch ([45ceacc08f](https://github.com/facebook/react-native/commit/45ceacc08f5c1e69f8f517afc7cd4f527283ea15) by [@cipolleschi](https://github.com/cipolleschi))
 - **Image**: Fix image content disappearing on API 24 (Nougat) when antialiased border radius clipping is applied ([fdd6ca5bb1](https://github.com/facebook/react-native/commit/fdd6ca5bb11b105284c7ad977ff2208c2f2e66f2) by [@Abbondanzo](https://github.com/Abbondanzo))
+- **Image**: `Image.getSize` and `Image.getSizeWithHeaders` now return the true source dimensions instead of Fresco's downsampled values ([8823a8009b](https://github.com/facebook/react-native/commit/8823a8009b18950d5be2682a86cfcf0c7014a068) by [@zoontek](https://github.com/zoontek))
 - **Image**: Make sure view width and height are non 0 before calling `createBitmap()` ([c20a58ab6b](https://github.com/facebook/react-native/commit/c20a58ab6b7fd21b0c61fc355b6cb629541c39e5) by [@zeyap](https://github.com/zeyap))
 - **Legacy Architecture**: Fix `onHostPause` crash in `ReactInstanceManager` without feature flag ([3aa8a043de](https://github.com/facebook/react-native/commit/3aa8a043de283f539cc907c7a5368e61cecb35b9) by [@shubhamksavita](https://github.com/shubhamksavita))
 - **LogBox**: Fixed activity context memory leak in `LogBoxDialogSurfaceDelegate` when using bridgeless mode ([f10cded1f8](https://github.com/facebook/react-native/commit/f10cded1f833bf0a143e736dfd364f5b405c648c) by Ilya Kovalyov)
@@ -173,11 +137,15 @@
 
 - **Build**: Addressed -Wunreachable-code-return violations ([9172bfe647](https://github.com/facebook/react-native/commit/9172bfe647d7489bc9e0067f85752e3e30e557e0) by [@ingridwang](https://github.com/ingridwang))
 - **Build**: Addressing -Wunreachable-code-return issues. ([722623aaeb](https://github.com/facebook/react-native/commit/722623aaebb10acb68b3de24449815c619722028) by [@ingridwang](https://github.com/ingridwang))
+- **Build**: Fixed escaping local file URIs for unicode paths in ruby scripts ([9563cb5b5a](https://github.com/facebook/react-native/commit/9563cb5b5a546d6daf09abc9d5594850129a4ae3) by [@chrfalch](https://github.com/chrfalch))
 - **Build**: Fixing unreachable-code-break ([795d902270](https://github.com/facebook/react-native/commit/795d9022707d543540217c72bf05d4e5893ecfe2) by [@ingridwang](https://github.com/ingridwang))
 - **Build**: Made `ReactInternal` compatible with Swift ([fc5cc2821f](https://github.com/facebook/react-native/commit/fc5cc2821f6e0117c0ea1bb4e6c5c45f58a2a167) by [@rmaz](https://github.com/rmaz))
+- **Build**: Persist `PODFILE_DIR` as `$(SRCROOT)`-relative so `project.pbxproj` is portable across machines ([44bb83bd84](https://github.com/facebook/react-native/commit/44bb83bd843a3b34779f1e7b1e09dbb3f4f38c6a) by [@zoontek](https://github.com/zoontek))
 - **Build**: Removing unused ivars ([3d2d14df16](https://github.com/facebook/react-native/commit/3d2d14df1686590f701559319d4b46ad82fcab89) by [@ingridwang](https://github.com/ingridwang))
+- **CocoaPods**: Fix Pod install checksum drifting ([814ebb12b6](https://github.com/facebook/react-native/commit/814ebb12b64cee51b91ada9fa0d90970feac9a9f) by [@chrfalch](https://github.com/chrfalch))
 - **CocoaPods**: Fix `REACT_NATIVE_PATH` resolution when `Pods/` is a symlink ([ea383822b7](https://github.com/facebook/react-native/commit/ea383822b73c3c4e154336f087205ee53db99115) by [@huntie](https://github.com/huntie))
 - **CocoaPods**: Fix React-CoreModules failing to compile with `use_frameworks!` due to missing React-featureflags header path ([fb0d28c6fd](https://github.com/facebook/react-native/commit/fb0d28c6fd7dd3ed961f7d96c7072cf37b2d228d) by [@radko93](https://github.com/radko93))
+- **CocoaPods**: Load `RCTDefines.h` first in the prebuilt React umbrella and drop the `module *` submodule wildcard so RCT_* macros propagate to consumer pods under `use_frameworks!`. ([90c303fafb](https://github.com/facebook/react-native/commit/90c303fafb941155dbe379e6b3e74390a139872a) by [@wneel](https://github.com/wneel))
 - **CocoaPods**: Preserve Expo-generated `React-use-frameworks.modulemap` across `replace-rncore-version.js` runs ([ada39220a0](https://github.com/facebook/react-native/commit/ada39220a0b67179f729a59a862cc8c18fdc5631) by [@Insik-Han](https://github.com/Insik-Han))
 - **Dev Server**: Fix iOS dev-support IPv6 handling for packager and inspector connections. ([4a59f90c22](https://github.com/facebook/react-native/commit/4a59f90c22ea850946aba0326214e036a7a2019c) by [@hannojg](https://github.com/hannojg))
 - **Hermes**: Fix compilation error in `createJSRuntimeFactory` and skip Hermes pods when `USE_THIRD_PARTY_JSC` is enabled ([2d8143794d](https://github.com/facebook/react-native/commit/2d8143794d3896f2217dc42dbe92b7fb091d2b81) by [@tux2nicolae](https://github.com/tux2nicolae))
@@ -701,7 +669,6 @@
 
 - **Appearance**: Fix color scheme in appearance state after setting it to unspecified ([08d1764530](https://github.com/facebook/react-native/commit/08d176453095db99300aa77632603ab42c57e152) by [@ismarbesic](https://github.com/ismarbesic))
 - **Assets**: Handle `unstable_path` query param in asset URLs ([42986f27a0](https://github.com/facebook/react-native/commit/42986f27a0285e501f71cf5cedacedefdc44c74e) by [@tido64](https://github.com/tido64))
-- **Networking**: Fix incorrect `fetch()` response URL after redirect (https://github.com/facebook/react-native/issues/55248) ([fbe6a686e6](https://github.com/facebook/react-native/commit/fbe6a686e65e70dd61700413084ddc54c0b86765) by [@MarkCSmith](https://github.com/MarkCSmith))
 
 #### Android specific
 

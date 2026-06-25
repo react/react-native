@@ -150,6 +150,14 @@ public open class ReactViewManager : ReactClippingViewManager<ReactViewGroup>() 
     }
   }
 
+  @ReactProp(name = ViewProps.EXPERIMENTAL_BACKGROUND_IMAGE, customType = "BackgroundImage")
+  public open fun setExperimentalBackgroundImage(
+      view: ReactViewGroup,
+      backgroundImage: ReadableArray?,
+  ) {
+    setBackgroundImage(view, backgroundImage)
+  }
+
   @ReactProp(name = ViewProps.BACKGROUND_SIZE, customType = "BackgroundSize")
   public open fun setBackgroundSize(view: ReactViewGroup, backgroundSize: ReadableArray?) {
     if (backgroundSize != null && backgroundSize.size() > 0) {

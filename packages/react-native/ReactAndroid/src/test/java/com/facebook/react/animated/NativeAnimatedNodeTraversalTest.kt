@@ -165,6 +165,25 @@ class NativeAnimatedNodeTraversalTest {
   }
 
   @Test
+  fun testUpdateViewSkipsDroppedMappedNode() {
+    // Regression test for #37267: a mapped child node can be dropped (e.g. its
+    // component unmounts during navigation) while the props node still has an
+    // in-flight update. updateView() must skip the missing node instead of
+    // throwing "Mapped property node does not exist".
+    createSimpleAnimatedViewWithOpacity()
+
+    // Drop the mapped style node (id 2) that the props node (id 3) references,
+    // reproducing the teardown race.
+    nativeAnimatedNodesManager.dropAnimatedNode(2)
+    assertThat(nativeAnimatedNodesManager.getNodeById(2)).isNull()
+
+    val propsNode = nativeAnimatedNodesManager.getNodeById(3) as PropsAnimatedNode
+
+    // The missing mapped node is skipped: updateView completes without throwing.
+    propsNode.updateView()
+  }
+
+  @Test
   fun testFramesAnimationWithFinalFrameBeingDifferentFromToValue() {
     createSimpleAnimatedViewWithOpacity()
 

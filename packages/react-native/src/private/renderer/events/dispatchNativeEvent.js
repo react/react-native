@@ -44,64 +44,75 @@ export default function dispatchNativeEvent(
   // Process responder events before normal event dispatch.
   processResponderEvent(type, target, payload);
 
-  // Normal EventTarget dispatch
-  const bubbleConfig = customBubblingEventTypes[type];
-  const directConfig = customDirectEventTypes[type];
+  try {
+    // Normal EventTarget dispatch
+    const bubbleConfig = customBubblingEventTypes[type];
+    const directConfig = customDirectEventTypes[type];
 
-  // Skip events that are not registered in the view config
-  if (bubbleConfig != null || directConfig != null) {
-    // Honor `skipBubbling` declared in the view config: when set, the bubble
-    // phase only fires on the target itself (matching the legacy renderer's
-    // behavior). The synthesized event reports `bubbles: false`, which causes
-    // the EventTarget bubble loop to short-circuit after dispatching to the
-    // target. Capture-phase listeners are unaffected.
-    const bubbles =
-      bubbleConfig != null &&
-      bubbleConfig.phasedRegistrationNames.skipBubbling !== true;
+    // Skip events that are not registered in the view config
+    if (bubbleConfig != null || directConfig != null) {
+      // Honor `skipBubbling` declared in the view config: when set, the bubble
+      // phase only fires on the target itself (matching the legacy renderer's
+      // behavior). The synthesized event reports `bubbles: false`, which causes
+      // the EventTarget bubble loop to short-circuit after dispatching to the
+      // target. Capture-phase listeners are unaffected.
+      const bubbles =
+        bubbleConfig != null &&
+        bubbleConfig.phasedRegistrationNames.skipBubbling !== true;
 
-    const eventType = topLevelTypeToEventType(type);
-    const options: {bubbles: boolean, cancelable: boolean} = {
-      bubbles,
-      cancelable: true,
-    };
+      const eventType = topLevelTypeToEventType(type);
+      const options: {bubbles: boolean, cancelable: boolean} = {
+        bubbles,
+        cancelable: true,
+      };
 
-    // Preserve the native event timestamp for backwards compatibility.
-    const nativeTimestamp = payload.timeStamp ?? payload.timestamp;
-    if (typeof nativeTimestamp === 'number') {
-      setEventInitTimeStamp(options, nativeTimestamp);
-    }
+      // Preserve the native event timestamp for backwards compatibility.
+      const nativeTimestamp = payload.timeStamp ?? payload.timestamp;
+      if (typeof nativeTimestamp === 'number') {
+        setEventInitTimeStamp(options, nativeTimestamp);
+      }
 
-    const syntheticEvent = new LegacySyntheticEvent(
-      eventType,
-      options,
-      payload,
-      bubbleConfig ?? directConfig,
-    );
-
-    // Pre-resolve the React prop names ("onFoo" / "onFooCapture") once per
-    // dispatch and stash them on the event so per-ancestor
-    // `EVENT_TARGET_GET_DECLARATIVE_LISTENER_KEY` lookups can read them
-    // directly, avoiding the per-call `getEventTypePropName` hash lookup.
-    if (bubbleConfig != null) {
-      const phasedRegistrationNames = bubbleConfig.phasedRegistrationNames;
-      setBubbledPropName(
-        syntheticEvent,
-        phasedRegistrationNames.bubbled ?? null,
+      const syntheticEvent = new LegacySyntheticEvent(
+        eventType,
+        options,
+        payload,
+        bubbleConfig ?? directConfig,
       );
-      setCapturedPropName(
-        syntheticEvent,
-        phasedRegistrationNames.captured ?? null,
-      );
-    } else if (directConfig != null) {
-      setBubbledPropName(syntheticEvent, directConfig.registrationName ?? null);
-      setCapturedPropName(syntheticEvent, null);
-    }
 
-    dispatchTrustedEvent(target, syntheticEvent);
+      // Pre-resolve the React prop names ("onFoo" / "onFooCapture") once per
+      // dispatch and stash them on the event so per-ancestor
+      // `EVENT_TARGET_GET_DECLARATIVE_LISTENER_KEY` lookups can read them
+      // directly, avoiding the per-call `getEventTypePropName` hash lookup.
+      if (bubbleConfig != null) {
+        const phasedRegistrationNames = bubbleConfig.phasedRegistrationNames;
+        setBubbledPropName(
+          syntheticEvent,
+          phasedRegistrationNames.bubbled ?? null,
+        );
+        setCapturedPropName(
+          syntheticEvent,
+          phasedRegistrationNames.captured ?? null,
+        );
+      } else if (directConfig != null) {
+        setBubbledPropName(
+          syntheticEvent,
+          directConfig.registrationName ?? null,
+        );
+        setCapturedPropName(syntheticEvent, null);
+      }
+
+      // Pass `rethrowListenerErrors: true` so the first listener error is
+      // rethrown synchronously (matching the legacy plugin path) rather than
+      // deferred to a new task, keeping it catchable by React error boundaries
+      // and the native event call.
+      dispatchTrustedEvent(target, syntheticEvent, true);
+    }
+  } finally {
+    // Rethrow the first error caught during responder lifecycle dispatch,
+    // after all dispatching is complete. This matches the old system's
+    // runEventsInBatch → rethrowCaughtError pattern. Running it in a `finally`
+    // ensures a pending responder error is never left to leak into a later
+    // dispatch even if the normal dispatch above threw synchronously.
+    rethrowCaughtError();
   }
-
-  // Rethrow the first error caught during responder lifecycle dispatch,
-  // after all dispatching is complete. This matches the old system's
-  // runEventsInBatch → rethrowCaughtError pattern.
-  rethrowCaughtError();
 }

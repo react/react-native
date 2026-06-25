@@ -11,7 +11,6 @@
 
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/core/RawProps.h>
-#include <react/renderer/core/RawPropsKey.h>
 #include <react/renderer/core/graphicsConversions.h>
 
 namespace facebook::react {
@@ -168,11 +167,9 @@ T convertRawProp(
     const RawProps &rawProps,
     const char *name,
     const T &sourceValue,
-    const U &defaultValue,
-    const char *namePrefix = nullptr,
-    const char *nameSuffix = nullptr)
+    const U &defaultValue)
 {
-  const auto *rawValue = rawProps.at(name, namePrefix, nameSuffix);
+  const auto *rawValue = rawProps.at(name);
   if (rawValue == nullptr) [[likely]] {
     return sourceValue;
   }
@@ -189,9 +186,8 @@ T convertRawProp(
     return result;
   } catch (const std::exception &e) {
     // In case of errors, log the error and fall back to the default
-    RawPropsKey key{.prefix = namePrefix, .name = name, .suffix = nameSuffix};
     // TODO: report this using ErrorUtils so it's more visible to the user
-    LOG(ERROR) << "Error while converting prop '" << static_cast<std::string>(key) << "': " << e.what();
+    LOG(ERROR) << "Error while converting prop '" << name << "': " << e.what();
     return defaultValue;
   }
 }

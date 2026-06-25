@@ -1,5 +1,6 @@
 {
   "name": "@react-native/core-cli-utils",
+  "private": true,
   "version": "0.0.0",
   "description": "Reference implementation of React Native CLI tooling",
   "license": "MIT",

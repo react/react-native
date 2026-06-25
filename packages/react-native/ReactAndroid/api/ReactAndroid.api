@@ -4509,6 +4509,7 @@ public final class com/facebook/react/uimanager/ViewProps {
 	public static final field ELLIPSIZE_MODE Ljava/lang/String;
 	public static final field ENABLED Ljava/lang/String;
 	public static final field END Ljava/lang/String;
+	public static final field EXPERIMENTAL_BACKGROUND_IMAGE Ljava/lang/String;
 	public static final field FILTER Ljava/lang/String;
 	public static final field FLEX Ljava/lang/String;
 	public static final field FLEX_BASIS Ljava/lang/String;
@@ -5403,6 +5404,7 @@ public final class com/facebook/react/views/modal/ReactModalHostView : android/v
 	public final fun setStateWrapper (Lcom/facebook/react/uimanager/StateWrapper;)V
 	public final fun setStatusBarTranslucent (Z)V
 	public final fun setTransparent (Z)V
+	public fun shouldDelayChildPressedState ()Z
 	public final fun showOrUpdate ()V
 }
 
@@ -6445,6 +6447,7 @@ public class com/facebook/react/views/view/ReactViewGroup : android/view/ViewGro
 	public fun setPointerEvents (Lcom/facebook/react/uimanager/PointerEvents;)V
 	public fun setRemoveClippedSubviews (Z)V
 	public final fun setTranslucentBackgroundDrawable (Landroid/graphics/drawable/Drawable;)V
+	public fun shouldDelayChildPressedState ()Z
 	public fun updateClippingRect ()V
 	public fun updateClippingRect (Ljava/util/Set;)V
 }
@@ -6484,6 +6487,7 @@ public class com/facebook/react/views/view/ReactViewManager : com/facebook/react
 	public fun setBorderWidth (Lcom/facebook/react/views/view/ReactViewGroup;IF)V
 	public fun setCollapsable (Lcom/facebook/react/views/view/ReactViewGroup;Z)V
 	public fun setCollapsableChildren (Lcom/facebook/react/views/view/ReactViewGroup;Z)V
+	public fun setExperimentalBackgroundImage (Lcom/facebook/react/views/view/ReactViewGroup;Lcom/facebook/react/bridge/ReadableArray;)V
 	public fun setFocusable (Lcom/facebook/react/views/view/ReactViewGroup;Z)V
 	public fun setHitSlop (Lcom/facebook/react/views/view/ReactViewGroup;Lcom/facebook/react/bridge/Dynamic;)V
 	public fun setNativeBackground (Lcom/facebook/react/views/view/ReactViewGroup;Lcom/facebook/react/bridge/ReadableMap;)V

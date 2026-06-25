@@ -731,6 +731,7 @@ export function takeJSMemoryHeapSnapshot(): void {
 }
 
 export * from './HighResTimeStampMock';
+export * from './TimerMock';
 
 function runLogBoxCheck() {
   if (isLogBoxCheckEnabled && LogBox.isInstalled()) {

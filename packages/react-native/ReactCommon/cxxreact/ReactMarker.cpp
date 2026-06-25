@@ -102,16 +102,8 @@ double StartupLogger::getInitReactRuntimeStartTime() {
   return initReactRuntimeStartTime;
 }
 
-double StartupLogger::getInitReactRuntimeEndTime() {
-  return initReactRuntimeEndTime;
-}
-
 double StartupLogger::getRunJSBundleStartTime() {
   return runJSBundleStartTime;
-}
-
-double StartupLogger::getRunJSBundleEndTime() {
-  return runJSBundleEndTime;
 }
 
 double StartupLogger::getAppStartupEndTime() {

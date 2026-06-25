@@ -110,6 +110,32 @@ describe('<ImageBackground>', () => {
         ).toEqual(<rn-image width="100" height="100" />);
       });
     });
+
+    describe('importantForAccessibility', () => {
+      it('is set on both the wrapper `View` and the inner `Image`', () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(
+            <ImageBackground
+              importantForAccessibility="no"
+              style={{width: 150, height: 50}}
+              source={{uri: 'foo-bar.jpg'}}
+            />,
+          );
+        });
+
+        expect(
+          root
+            .getRenderedOutput({props: ['importantForAccessibility']})
+            .toJSX(),
+        ).toEqual(
+          <rn-view importantForAccessibility="no">
+            <rn-image importantForAccessibility="no" />
+          </rn-view>,
+        );
+      });
+    });
   });
 
   describe('ref', () => {

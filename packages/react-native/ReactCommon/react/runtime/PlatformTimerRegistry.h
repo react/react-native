@@ -8,8 +8,11 @@
 #pragma once
 
 #include <cstdint>
+#include <memory>
 
 namespace facebook::react {
+
+class TimerManager;
 
 /**
  * This interface is implemented by each platform.
@@ -27,6 +30,13 @@ class PlatformTimerRegistry {
   virtual ~PlatformTimerRegistry() noexcept = default;
 
   virtual void quit() {}
+
+  /**
+   * Provides the owning TimerManager so the registry can fire due timers via
+   * TimerManager::callTimer. The default is a no-op for platforms that wire the
+   * TimerManager through other means.
+   */
+  virtual void setTimerManager(std::weak_ptr<TimerManager> /*timerManager*/) {}
 };
 
 using TimerManagerDelegate = PlatformTimerRegistry;

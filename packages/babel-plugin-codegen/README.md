@@ -1,21 +1,8 @@
 # @react-native/babel-plugin-codegen
 
-[![Version][version-badge]][package]
+[![npm]](https://www.npmjs.com/package/@react-native/babel-plugin-codegen) [![npm downloads]](https://www.npmjs.com/package/@react-native/babel-plugin-codegen)
 
-## Installation
+[npm]: https://img.shields.io/npm/v/@react-native/babel-plugin-codegen.svg?color=blue
+[npm downloads]: https://img.shields.io/npm/dm/@react-native/babel-plugin-codegen.svg
 
-```
-yarn add --dev @babel/core @react-native/babel-plugin-codegen
-```
-
-*Note: We're using `yarn` to install deps. Feel free to change commands to use `npm` 3+ and `npx` if you like*
-
-[version-badge]: https://img.shields.io/npm/v/@react-native/babel-plugin-codegen?style=flat-square
-[package]: https://www.npmjs.com/package/@react-native/babel-plugin-codegen
-
-## Testing
-
-To run the tests in this package, run the following commands from the React Native root folder:
-
-1. `yarn` to install the dependencies. You just need to run this once
-2. `yarn jest packages/babel-plugin-codegen`.
+Babel plugin that generates native module and view manager binding code for React Native, powered by [`@react-native/codegen`](https://www.npmjs.com/package/@react-native/codegen).

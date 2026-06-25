@@ -19,7 +19,9 @@
         "es2022.array",
         "es2022.error",
         "es2022.object",
-        "es2022.string"
+        "es2022.string",
+        "es2024.promise",
+        "esnext.promise"
       ],
       "allowJs": true,
       "jsx": "react-native",

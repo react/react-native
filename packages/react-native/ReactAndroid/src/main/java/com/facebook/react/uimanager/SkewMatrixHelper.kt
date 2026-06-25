@@ -36,7 +36,9 @@ internal object SkewMatrixHelper {
     for (i in 0 until transforms.size()) {
       if (transforms.getType(i) != ReadableType.Map) continue
       val map = transforms.getMap(i) ?: continue
-      val type = map.keySetIterator().nextKey()
+      val iterator = map.keySetIterator()
+      if (!iterator.hasNextKey()) continue
+      val type = iterator.nextKey()
       when (type) {
         "matrix",
         "perspective",
@@ -98,7 +100,9 @@ internal object SkewMatrixHelper {
     for (i in 0 until transforms.size()) {
       if (transforms.getType(i) != ReadableType.Map) continue
       val map = transforms.getMap(i) ?: continue
-      val type = map.keySetIterator().nextKey()
+      val iterator = map.keySetIterator()
+      if (!iterator.hasNextKey()) continue
+      val type = iterator.nextKey()
       when (type) {
         "rotate",
         "rotateZ" ->

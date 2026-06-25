@@ -20,7 +20,6 @@
 #include "RecoverableError.h"
 #include "TraceSection.h"
 
-#include <cxxreact/JSIndexedRAMBundle.h>
 #include <folly/json.h>
 #include <react/debug/react_native_assert.h>
 
@@ -173,30 +172,6 @@ void Instance::loadScriptFromString(
   } else {
     loadBundle(nullptr, std::move(string), std::move(sourceURL));
   }
-}
-
-void Instance::loadRAMBundleFromString(
-    std::unique_ptr<const JSBigString> script,
-    const std::string& sourceURL) {
-  auto bundle = std::make_unique<JSIndexedRAMBundle>(std::move(script));
-  auto startupScript = bundle->getStartupCode();
-  auto registry = RAMBundleRegistry::singleBundleRegistry(std::move(bundle));
-  loadRAMBundle(std::move(registry), std::move(startupScript), sourceURL, true);
-}
-
-void Instance::loadRAMBundleFromFile(
-    const std::string& sourcePath,
-    const std::string& sourceURL,
-    bool loadSynchronously) {
-  auto bundle = std::make_unique<JSIndexedRAMBundle>(sourcePath.c_str());
-  auto startupScript = bundle->getStartupCode();
-  auto registry = RAMBundleRegistry::multipleBundlesRegistry(
-      std::move(bundle), JSIndexedRAMBundle::buildFactory());
-  loadRAMBundle(
-      std::move(registry),
-      std::move(startupScript),
-      sourceURL,
-      loadSynchronously);
 }
 
 void Instance::loadRAMBundle(

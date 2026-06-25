@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<34ba54f5915738fc4792567680679880>>
+ * @generated SignedSource<<84ae8c7745f319878c329e07551bcc11>>
  */
 
 /**
@@ -129,11 +129,6 @@ bool NativeReactNativeFeatureFlags::enableDestroyShadowTreeRevisionAsync(
   return ReactNativeFeatureFlags::enableDestroyShadowTreeRevisionAsync();
 }
 
-bool NativeReactNativeFeatureFlags::enableDifferentiatorMutationVectorPreallocation(
-    jsi::Runtime& /*runtime*/) {
-  return ReactNativeFeatureFlags::enableDifferentiatorMutationVectorPreallocation();
-}
-
 bool NativeReactNativeFeatureFlags::enableDoubleMeasurementFixAndroid(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::enableDoubleMeasurementFixAndroid();
@@ -182,11 +177,6 @@ bool NativeReactNativeFeatureFlags::enableIOSViewClipToPaddingBox(
 bool NativeReactNativeFeatureFlags::enableImagePrefetchingAndroid(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::enableImagePrefetchingAndroid();
-}
-
-bool NativeReactNativeFeatureFlags::enableImageRequestDowngradingForNonVisibleImages(
-    jsi::Runtime& /*runtime*/) {
-  return ReactNativeFeatureFlags::enableImageRequestDowngradingForNonVisibleImages();
 }
 
 bool NativeReactNativeFeatureFlags::enableImmediateUpdateModeForContentOffsetChanges(
@@ -344,11 +334,6 @@ bool NativeReactNativeFeatureFlags::fuseboxScreenshotCaptureEnabled(
   return ReactNativeFeatureFlags::fuseboxScreenshotCaptureEnabled();
 }
 
-bool NativeReactNativeFeatureFlags::hideOffscreenVirtualViewsOnIOS(
-    jsi::Runtime& /*runtime*/) {
-  return ReactNativeFeatureFlags::hideOffscreenVirtualViewsOnIOS();
-}
-
 bool NativeReactNativeFeatureFlags::optimizedAnimatedPropUpdates(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::optimizedAnimatedPropUpdates();
@@ -442,11 +427,6 @@ bool NativeReactNativeFeatureFlags::useNativeViewConfigsInBridgelessMode(
 bool NativeReactNativeFeatureFlags::useNestedScrollViewAndroid(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::useNestedScrollViewAndroid();
-}
-
-bool NativeReactNativeFeatureFlags::useOptimizedViewRegistryOnAndroid(
-    jsi::Runtime& /*runtime*/) {
-  return ReactNativeFeatureFlags::useOptimizedViewRegistryOnAndroid();
 }
 
 bool NativeReactNativeFeatureFlags::useSharedAnimatedBackend(

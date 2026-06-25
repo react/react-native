@@ -412,10 +412,10 @@ internal class MountItemDispatcher(
       }
 
       return buildList {
-            do {
-              queue.poll()?.let { add(it) }
-            } while (queue.isNotEmpty())
-          }
+        do {
+          queue.poll()?.let { add(it) }
+        } while (queue.isNotEmpty())
+      }
           .takeIf { it.isNotEmpty() }
     }
 

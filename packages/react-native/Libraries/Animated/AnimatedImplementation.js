@@ -20,6 +20,7 @@ import type {DecayAnimationConfig} from './animations/DecayAnimation';
 import type {SpringAnimationConfig} from './animations/SpringAnimation';
 import type {TimingAnimationConfig} from './animations/TimingAnimation';
 
+import NativeAnimatedHelper from '../../src/private/animated/NativeAnimatedHelper';
 import {AnimatedEvent, attachNativeEventImpl} from './AnimatedEvent';
 import DecayAnimation from './animations/DecayAnimation';
 import SpringAnimation from './animations/SpringAnimation';
@@ -200,7 +201,11 @@ const springImpl = function (
       },
 
       _isUsingNativeDriver: function (): boolean {
-        return config.useNativeDriver || false;
+        return (
+          NativeAnimatedHelper.isNativeDriverForced() ||
+          config.useNativeDriver ||
+          false
+        );
       },
     }
   );
@@ -254,7 +259,11 @@ const timingImpl = function (
       },
 
       _isUsingNativeDriver: function (): boolean {
-        return config.useNativeDriver || false;
+        return (
+          NativeAnimatedHelper.isNativeDriverForced() ||
+          config.useNativeDriver ||
+          false
+        );
       },
     }
   );
@@ -296,7 +305,11 @@ const decayImpl = function (
       },
 
       _isUsingNativeDriver: function (): boolean {
-        return config.useNativeDriver || false;
+        return (
+          NativeAnimatedHelper.isNativeDriverForced() ||
+          config.useNativeDriver ||
+          false
+        );
       },
     }
   );

@@ -180,6 +180,27 @@ class SkewMatrixHelperTest {
     assertThat(values[Matrix.MTRANS_X]).isCloseTo(0f, within(EPSILON))
   }
 
+  @Test
+  fun emptyMapInTransforms_doesNotThrow() {
+    // Regression test for T274692242: an empty map in the transforms array caused
+    // NoSuchElementException from keySetIterator().nextKey() without hasNextKey() guard.
+    val transforms =
+        JavaOnlyArray.of(
+            JavaOnlyMap(), // empty map — previously crashed
+            JavaOnlyMap.of("skewX", "20deg"),
+        )
+
+    // isAffine2DTransformWithSkew must not throw and should still detect skew
+    assertThat(SkewMatrixHelper.isAffine2DTransformWithSkew(transforms)).isTrue()
+
+    // buildAffine2DMatrix must not throw when encountering the empty map
+    val matrix = SkewMatrixHelper.buildAffine2DMatrix(transforms, 100f, 100f, null)
+    val values = matrixValues(matrix)
+    // The empty map is skipped; only the skewX entry contributes
+    val tan20 = Math.tan(Math.toRadians(20.0)).toFloat()
+    assertThat(values[Matrix.MSKEW_X]).isCloseTo(tan20, within(EPSILON))
+  }
+
   private fun matrixValues(matrix: Matrix): FloatArray {
     val values = FloatArray(9)
     matrix.getValues(values)

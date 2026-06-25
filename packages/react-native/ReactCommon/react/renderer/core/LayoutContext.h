@@ -10,7 +10,6 @@
 #include <vector>
 
 #include <react/renderer/core/LayoutableShadowNode.h>
-#include <react/renderer/graphics/Rect.h>
 
 namespace facebook::react {
 
@@ -65,18 +64,6 @@ struct LayoutContext {
    * Viewport size is size of the React Native's root view.
    */
   Size viewportSize{};
-
-  /*
-   * Experimental: Origin of the shadow node currently being laid out, in viewport
-   * coordinates. This is populated while walking the layout tree.
-   */
-  Point experimental_layoutOrigin{};
-
-  /*
-   * Experimental: Frame of the shadow node currently being laid out, in viewport
-   * coordinates after layout transforms are applied.
-   */
-  Rect experimental_layoutFrame{};
 };
 
 inline bool operator==(const LayoutContext &lhs, const LayoutContext &rhs)

@@ -16,14 +16,12 @@
  * --maxWorkers [num] - how many workers, default 1
  * --jestBinary [path] - path to jest binary, defaults to local node modules
  * --yarnBinary [path] - path to yarn binary, defaults to yarn
- * --flowBinary [path] - path to flow binary, defaults to running `yarn run flow-check`
  */
 
 const {execSync} = require('child_process');
 const argv /*:Readonly<{
   maxWorkers?: number,
   jestBinary?: string,
-  flowBinary?: string,
   yarnBinary?: string,
 }> */ =
   // $FlowFixMe[incompatible-type]
@@ -34,7 +32,6 @@ const argv /*:Readonly<{
 const numberOfMaxWorkers = argv.maxWorkers ?? 1;
 
 const JEST_BINARY = argv.jestBinary ?? './node_modules/.bin/jest';
-const FLOW_BINARY = argv.flowBinary;
 const YARN_BINARY = argv.yarnBinary ?? 'yarn';
 
 class ExecError extends Error {
@@ -61,11 +58,7 @@ try {
   execAndLog(`${YARN_BINARY} run build-types --validate`);
 
   describe('Test: Flow check');
-  const flowCommand =
-    FLOW_BINARY == null
-      ? `${YARN_BINARY} run flow-check`
-      : `${FLOW_BINARY} full-check`;
-  execAndLog(flowCommand);
+  execAndLog(`${YARN_BINARY} run flow-check`);
 
   /*
    * Build @react-native/codegen and  @react-native/codegen-typescript-test

@@ -11,8 +11,6 @@
 
 #ifdef RN_SERIALIZABLE_STATE
 #include <folly/dynamic.h>
-#include <react/renderer/mapbuffer/MapBuffer.h>
-#include <react/renderer/mapbuffer/MapBufferBuilder.h>
 #endif
 
 namespace facebook::react {
@@ -27,8 +25,10 @@ struct StateData final {
 #ifdef RN_SERIALIZABLE_STATE
   StateData() = default;
   StateData(const StateData &previousState, folly::dynamic data) {}
-  folly::dynamic getDynamic() const;
-  MapBuffer getMapBuffer() const;
+  folly::dynamic getDynamic() const
+  {
+    return {};
+  }
 #endif
 };
 

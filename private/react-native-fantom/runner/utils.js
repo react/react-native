@@ -123,22 +123,25 @@ export function getBuckModesForPlatform({
     );
   }
 
-  // When coverage instrumentation is enabled, the active build platform
-  // may not carry a `hermes_build_mode` constraint, causing
-  // `rn_build_mode()` in `tools/build_defs/oss/rn_defs.bzl` to fall back
-  // to the non-debug path. That leaves `REACT_NATIVE_DEBUG` undefined,
-  // which breaks dev-mode tests that use debug-only native APIs (e.g.
-  // timer mocking via `installHighResTimeStampMock`).
+  // The coverage platform (e.g. `@//arvr/mode/linux/code-coverage`) pins the
+  // `core_build_mode` constraint to `opt`. `get_react_native_preprocessor_flags()`
+  // in `tools/build_defs/oss/rn_defs.bzl` selects on that constraint
+  // (`ovr_config//build_mode/constraints:{dev,opt}`) to decide between
+  // `-DREACT_NATIVE_DEBUG` and `-DREACT_NATIVE_PRODUCTION`. Under coverage it
+  // therefore compiles the native tester with `REACT_NATIVE_PRODUCTION`, which
+  // breaks dev-mode tests that use debug-only native APIs (e.g. timer mocking
+  // via `installHighResTimeStampMock`).
   //
-  // Explicitly stack the `hermes_build_mode` constraint so the build
-  // reflects the test's intended dev/opt mode regardless of how the
-  // coverage build is configured.
+  // Explicitly stack the `core_build_mode` constraint so the build reflects the
+  // test's intended dev/opt mode. This only overrides `core_build_mode`; the
+  // coverage instrumentation constraint and `-c code_coverage.*` flags above are
+  // left intact, so coverage is still collected.
   if (enableCoverage) {
     result.push(
       '--modifier',
       enableOptimized
-        ? 'fbsource//xplat/hermes/constraints:opt'
-        : 'fbsource//xplat/hermes/constraints:dev',
+        ? 'ovr_config//build_mode/constraints:opt'
+        : 'ovr_config//build_mode/constraints:dev',
     );
   }
 

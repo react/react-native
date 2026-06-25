@@ -23,21 +23,21 @@ object JsonUtils {
   fun fromAutolinkingConfigJson(input: File): ModelAutolinkingConfigJson? =
       input.bufferedReader().use { reader ->
         runCatching {
-              // We sanitize the output of the `config` command as it could contain debug logs
-              // such as:
-              //
-              // > AwesomeProject@0.0.1 npx
-              // > rnc-cli config
-              //
-              // which will render the JSON invalid.
-              val content =
-                  reader
-                      .readLines()
-                      .filterNot { line -> line.startsWith(">") }
-                      .joinToString("\n")
-                      .trim()
-              gsonConverter.fromJson(content, ModelAutolinkingConfigJson::class.java)
-            }
+          // We sanitize the output of the `config` command as it could contain debug logs
+          // such as:
+          //
+          // > AwesomeProject@0.0.1 npx
+          // > rnc-cli config
+          //
+          // which will render the JSON invalid.
+          val content =
+              reader
+                  .readLines()
+                  .filterNot { line -> line.startsWith(">") }
+                  .joinToString("\n")
+                  .trim()
+          gsonConverter.fromJson(content, ModelAutolinkingConfigJson::class.java)
+        }
             .getOrNull()
       }
 }

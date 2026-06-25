@@ -42,6 +42,7 @@ runs:
     - name: Setup node.js
       uses: ./.github/actions/setup-node
       with:
+        node-version: '24'
         registry-url: 'https://registry.npmjs.org'
     - name: Install dependencies
       uses: ./.github/actions/yarn-install

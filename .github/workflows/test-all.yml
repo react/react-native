@@ -6,7 +6,7 @@ on:
   push:
     branches:
       - main
-      - "*-stable"
+      - '*-stable'
 
 permissions:
   contents: read
@@ -14,7 +14,7 @@ permissions:
 jobs:
   set_release_type:
     runs-on: ubuntu-latest
-    if: github.repository == 'facebook/react-native'
+    if: github.repository == 'react/react-native'
     outputs:
       RELEASE_TYPE: ${{ steps.set_release_type.outputs.RELEASE_TYPE }}
     env:
@@ -38,7 +38,7 @@ jobs:
 
   check_code_changes:
     runs-on: ubuntu-latest
-    if: github.repository == 'facebook/react-native'
+    if: github.repository == 'react/react-native'
     outputs:
       any_code_change: ${{ steps.filter_exclusions.outputs.any_code_change == 'true' || github.event_name != 'pull_request' }}
       should_test_android: ${{ steps.filter_exclusions.outputs.should_test_android == 'true' || github.event_name != 'pull_request' }}
@@ -107,8 +107,7 @@ jobs:
 
   test_ios_rntester_ruby_3_2_0:
     runs-on: macos-15
-    needs:
-      [prebuild_apple_dependencies, prebuild_react_native_core]
+    needs: [prebuild_apple_dependencies, prebuild_react_native_core]
     if: ${{ needs.prebuild_react_native_core.result == 'success' }}
     steps:
       - name: Checkout
@@ -116,7 +115,7 @@ jobs:
       - name: Run it
         uses: ./.github/actions/test-ios-rntester
         with:
-          ruby-version: "3.2.0"
+          ruby-version: '3.2.0'
           flavor: Debug
 
   test_ios_rntester_dynamic_frameworks:
@@ -141,8 +140,7 @@ jobs:
 
   test_ios_rntester:
     runs-on: macos-15-large
-    needs:
-      [prebuild_apple_dependencies, prebuild_react_native_core]
+    needs: [prebuild_apple_dependencies, prebuild_react_native_core]
     if: ${{ needs.prebuild_react_native_core.result == 'success' }}
     continue-on-error: true
     strategy:
@@ -220,7 +218,7 @@ jobs:
     secrets: inherit
 
   build_fantom_runner:
-    runs-on: 8-core-ubuntu
+    runs-on: ubuntu-latest
     needs: [set_release_type, check_code_changes, lint]
     if: needs.check_code_changes.outputs.any_code_change == 'true'
     container:
@@ -229,8 +227,8 @@ jobs:
         # Set the encoding to resolve a known character encoding issue with decompressing tar.gz files in containers
         # via Gradle: https://github.com/gradle/gradle/issues/23391#issuecomment-1878979127
         LC_ALL: C.UTF8
-        TERM: "dumb"
-        GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+        TERM: 'dumb'
+        GRADLE_OPTS: '-Dorg.gradle.daemon=false'
         ORG_GRADLE_PROJECT_SIGNING_PWD: ${{ secrets.ORG_GRADLE_PROJECT_SIGNING_PWD }}
         ORG_GRADLE_PROJECT_SIGNING_KEY: ${{ secrets.ORG_GRADLE_PROJECT_SIGNING_KEY }}
         REACT_NATIVE_DOWNLOADS_DIR: /opt/react-native-downloads
@@ -263,7 +261,7 @@ jobs:
     secrets: inherit
 
   build_android:
-    runs-on: 8-core-ubuntu
+    runs-on: ubuntu-latest
     needs: [set_release_type, check_code_changes]
     if: |
       needs.check_code_changes.outputs.any_code_change == 'true' &&
@@ -274,8 +272,8 @@ jobs:
         # Set the encoding to resolve a known character encoding issue with decompressing tar.gz files in containers
         # via Gradle: https://github.com/gradle/gradle/issues/23391#issuecomment-1878979127
         LC_ALL: C.UTF8
-        TERM: "dumb"
-        GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+        TERM: 'dumb'
+        GRADLE_OPTS: '-Dorg.gradle.daemon=false'
         ORG_GRADLE_PROJECT_SIGNING_PWD: ${{ secrets.ORG_GRADLE_PROJECT_SIGNING_PWD }}
         ORG_GRADLE_PROJECT_SIGNING_KEY: ${{ secrets.ORG_GRADLE_PROJECT_SIGNING_KEY }}
         REACT_NATIVE_DOWNLOADS_DIR: /opt/react-native-downloads
@@ -309,7 +307,7 @@ jobs:
     secrets: inherit
 
   build_npm_package:
-    runs-on: 8-core-ubuntu
+    runs-on: ubuntu-latest
     needs:
       [
         set_release_type,
@@ -325,11 +323,11 @@ jobs:
     container:
       image: reactnativecommunity/react-native-android:latest
       env:
-        TERM: "dumb"
+        TERM: 'dumb'
         # Set the encoding to resolve a known character encoding issue with decompressing tar.gz files in containers
         # via Gradle: https://github.com/gradle/gradle/issues/23391#issuecomment-1878979127
         LC_ALL: C.UTF8
-        GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+        GRADLE_OPTS: '-Dorg.gradle.daemon=false'
         REACT_NATIVE_DOWNLOADS_DIR: /opt/react-native-downloads
     steps:
       - name: Checkout
@@ -342,7 +340,7 @@ jobs:
           skip-apple-prebuilts: ${{ needs.check_code_changes.outputs.should_test_ios == 'false' }}
 
   test_android_helloworld:
-    runs-on: 4-core-ubuntu
+    runs-on: ubuntu-latest
     needs: [build_npm_package, build_android]
     if: ${{ always() && needs.build_android.result == 'success' && needs.build_npm_package.result == 'success' }}
     container:
@@ -352,9 +350,9 @@ jobs:
       # via Gradle: https://github.com/gradle/gradle/issues/23391#issuecomment-1878979127
       LC_ALL: C.UTF8
       YARN_ENABLE_IMMUTABLE_INSTALLS: false
-      TERM: "dumb"
-      GRADLE_OPTS: "-Dorg.gradle.daemon=false"
-      TARGET_ARCHITECTURE: "arm64-v8a"
+      TERM: 'dumb'
+      GRADLE_OPTS: '-Dorg.gradle.daemon=false'
+      TARGET_ARCHITECTURE: 'arm64-v8a'
       REACT_NATIVE_DOWNLOADS_DIR: /opt/react-native-downloads
     continue-on-error: true
     strategy:
@@ -447,7 +445,7 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
-    if: github.repository == 'facebook/react-native'
+    if: github.repository == 'react/react-native'
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -484,7 +482,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: ["24", "22.13.0"]
+        node-version: ['24', '22.13.0']
     steps:
       - name: Checkout
         uses: actions/checkout@v6

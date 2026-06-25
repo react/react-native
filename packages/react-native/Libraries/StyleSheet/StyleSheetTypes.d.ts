@@ -517,6 +517,7 @@ export interface ViewStyle extends FlexStyle, ShadowStyleIOS, TransformsStyle {
   filter?: ReadonlyArray<FilterFunction> | string | undefined;
 
   mixBlendMode?: BlendMode | undefined;
+  backgroundImage?: ReadonlyArray<BackgroundImageValue> | string | undefined;
   experimental_backgroundImage?:
     | ReadonlyArray<BackgroundImageValue>
     | string
