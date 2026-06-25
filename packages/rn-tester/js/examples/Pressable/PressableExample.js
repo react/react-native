@@ -276,64 +276,23 @@ function PressableDisabled() {
   );
 }
 
-/**
- * Repro for: Pressable does not consume native touches on iOS/iPadOS.
- *
- * Topology: NativeTouchReceiver (UIView with touchesEnded:) is the PARENT.
- *           Pressable is the CHILD and the UIKit hit-tested target.
- *
- * Bug: tapping the Pressable makes it the JS responder (onPress fires), but
- * the touch also bubbles up the UIKit responder chain to NativeTouchReceiver
- * because RCTSurfaceTouchHandler has cancelsTouchesInView=NO — so
- * touchesEnded: is never cancelled on the ancestor, and onNativeTouch fires too.
- *
- * Expected after preventNativePropagation fix:
- *   preventNativePropagation={false} → both onPress AND onNativeTouch fire  (bug)
- *   preventNativePropagation={true}  → only onPress fires                   (fixed)
- */
-function PressableBlockNativeResponderExample() {
+function PressablePreventNativePropagationExample() {
   const [log, setLog] = useState<Array<string>>([]);
-
-  function emit(msg: string) {
-    setLog(prev => [msg, ...prev].slice(0, 10));
-  }
 
   return (
     <View>
-      <Text style={blockNativeStyles.description}>
-        Tap the Pressable button inside each row.{'\n\n'}
-        <Text style={blockNativeStyles.bold}>[default]</Text>
-        {' — BUG: both Pressable.onPress (JS) and NativeTouchReceiver.onNativeTouch'}
-        {' (UIKit responder chain) fire for the same tap.\n'}
-        <Text style={blockNativeStyles.bold}>[blocked]</Text>
-        {' — FIXED: only Pressable.onPress fires.'}
-      </Text>
-
-      <View style={blockNativeStyles.logBox}>
-        {log.length === 0 ? (
-          <Text style={blockNativeStyles.logPlaceholder}>
-            events will appear here
-          </Text>
-        ) : (
-          log.map((line, i) => (
-            <Text key={i} style={blockNativeStyles.logLine}>
-              {line}
-            </Text>
-          ))
-        )}
-      </View>
-
       <Text style={blockNativeStyles.sectionHeader}>
-        {'Default (preventNativePropagation={false})'}
+        {'preventNativePropagation={false} (default)'}
       </Text>
       <RNTNativeTouchReceiver
         style={blockNativeStyles.receiver}
         onNativeTouch={() =>
-          emit('[default] NativeTouchReceiver.touchesEnded: ← native leaked')
+          setLog(prev => [...prev, 'NativeTouchReceiver.onNativeTouch'])
         }>
         <Pressable
           style={blockNativeStyles.pressable}
-          onPress={() => emit('[default] Pressable.onPress ✓')}>
+          onPressIn={() => setLog([])}
+          onPress={() => setLog(prev => [...prev, 'Pressable.onPress'])}>
           <Text style={blockNativeStyles.pressableText}>Tap me</Text>
         </Pressable>
       </RNTNativeTouchReceiver>
@@ -344,31 +303,39 @@ function PressableBlockNativeResponderExample() {
       <RNTNativeTouchReceiver
         style={blockNativeStyles.receiver}
         onNativeTouch={() =>
-          emit(
-            '[blocked] NativeTouchReceiver.touchesEnded: ← UNEXPECTED, fix not working',
-          )
+          setLog(prev => [...prev, 'NativeTouchReceiver.onNativeTouch'])
         }>
         <Pressable
           style={blockNativeStyles.pressable}
           preventNativePropagation={true}
-          onPress={() => emit('[blocked] Pressable.onPress ✓')}>
+          onPressIn={() => setLog([])}
+          onPress={() => setLog(prev => [...prev, 'Pressable.onPress'])}>
           <Text style={blockNativeStyles.pressableText}>Tap me</Text>
         </Pressable>
       </RNTNativeTouchReceiver>
+
+      <LogBox lines={log} />
+    </View>
+  );
+}
+
+function LogBox({lines}: {lines: Array<string>}) {
+  return (
+    <View style={blockNativeStyles.logBox}>
+      {lines.length === 0 ? (
+        <Text style={blockNativeStyles.logPlaceholder}>tap to see events</Text>
+      ) : (
+        lines.map((line, i) => (
+          <Text key={i} style={blockNativeStyles.logLine}>
+            {line}
+          </Text>
+        ))
+      )}
     </View>
   );
 }
 
 const blockNativeStyles = StyleSheet.create({
-  description: {
-    fontSize: 13,
-    color: '#333',
-    marginBottom: 10,
-    lineHeight: 19,
-  },
-  bold: {
-    fontWeight: '700',
-  },
   logBox: {
     backgroundColor: '#1a1a1a',
     borderRadius: 6,
@@ -803,19 +770,13 @@ const examples = [
     },
   },
   {
-    title: 'preventNativePropagation — press leaks to native parent (iOS repro)',
-    name: 'block-native-responder',
+    title: 'preventNativePropagation',
+    name: 'prevent-native-propagation',
     description:
-      ('Repro for: Pressable does not consume the native touch on iOS/iPadOS. ' +
-        'A Pressable sits inside a NativeTouchReceiver (plain UIView with ' +
-        'touchesEnded: overridden). Tapping the Pressable makes it the JS ' +
-        'responder (onPress fires), but the touch also bubbles up the UIKit ' +
-        'responder chain so the parent NativeTouchReceiver fires too. ' +
-        'With preventNativePropagation={true} and the fix applied, only ' +
-        'Pressable.onPress should fire.') as string,
+      'Pressable inside a native UIView parent. Without preventNativePropagation the touch leaks up the UIKit responder chain to the parent.' as string,
     platform: 'ios',
     render: function (): React.Node {
-      return <PressableBlockNativeResponderExample />;
+      return <PressablePreventNativePropagationExample />;
     },
   },
   ...PressableExampleFbInternal.examples,
