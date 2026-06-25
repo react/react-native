@@ -27,6 +27,7 @@ import com.facebook.react.module.model.ReactModuleInfo
 import com.facebook.react.module.model.ReactModuleInfoProvider
 import com.facebook.react.uiapp.component.MyLegacyViewManager
 import com.facebook.react.uiapp.component.MyNativeViewManager
+import com.facebook.react.uiapp.component.RNTNativeTouchReceiverManager
 import com.facebook.react.uiapp.component.ReportFullyDrawnViewManager
 import com.facebook.react.uimanager.ReactShadowNode
 import com.facebook.react.uimanager.ViewManager
@@ -83,6 +84,7 @@ internal class RNTesterApplication : Application(), ReactApplication {
                             "RNTMyNativeView",
                             "RNTMyLegacyNativeView",
                             "RNTReportFullyDrawnView",
+                            "RNTNativeTouchReceiver",
                         )
 
                     override fun createViewManagers(
@@ -92,6 +94,7 @@ internal class RNTesterApplication : Application(), ReactApplication {
                             MyNativeViewManager(),
                             MyLegacyViewManager(reactContext),
                             ReportFullyDrawnViewManager(),
+                            RNTNativeTouchReceiverManager(),
                         )
 
                     override fun createViewManager(
@@ -102,6 +105,7 @@ internal class RNTesterApplication : Application(), ReactApplication {
                           "RNTMyNativeView" -> MyNativeViewManager()
                           "RNTMyLegacyNativeView" -> MyLegacyViewManager(reactContext)
                           "RNTReportFullyDrawnView" -> ReportFullyDrawnViewManager()
+                          "RNTNativeTouchReceiver" -> RNTNativeTouchReceiverManager()
                           else -> null
                         }
                   }
