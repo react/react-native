@@ -970,17 +970,6 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
-    animatedShouldDebounceQueueFlush: {
-      defaultValue: true,
-      metadata: {
-        dateAdded: '2024-02-05',
-        description:
-          'Enables an experimental flush-queue debouncing in Animated.js.',
-        expectedReleaseValue: true,
-        purpose: 'experimentation',
-      },
-      ossReleaseStage: 'none',
-    },
     animatedShouldSyncValueBeforeStartCallback: {
       defaultValue: true,
       metadata: {
