@@ -10,6 +10,7 @@ package com.facebook.react.fabric
 import com.facebook.proguard.annotations.DoNotStripAny
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.UiThreadUtil
+import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import com.facebook.react.modules.core.ReactChoreographer
 import com.facebook.react.uimanager.GuardedFrameCallback
 import java.util.concurrent.atomic.AtomicBoolean
@@ -41,9 +42,11 @@ internal class AnimationBackendChoreographer(
   private val paused: AtomicBoolean = AtomicBoolean(true)
 
   init {
-    // Register the self-reposting callback once, on the UI thread, so the
-    // callback queues are only ever mutated from the UI thread.
-    UiThreadUtil.runOnUiThread { postCallback() }
+    if (ReactNativeFeatureFlags.useSharedAnimatedBackend()) {
+      // Register the self-reposting callback once, on the UI thread, so the
+      // callback queues are only ever mutated from the UI thread.
+      UiThreadUtil.runOnUiThread { postCallback() }
+    }
   }
 
   fun resume() {
