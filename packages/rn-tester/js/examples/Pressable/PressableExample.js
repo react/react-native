@@ -276,57 +276,116 @@ function PressableDisabled() {
   );
 }
 
+const scenarioReceiverStyle = {
+  padding: 16,
+  backgroundColor: '#fff3cd',
+  borderRadius: 8,
+  borderWidth: StyleSheet.hairlineWidth,
+  borderColor: '#e0bb5a',
+  marginBottom: 4,
+  alignItems: 'flex-start' as const,
+};
+
+function Scenario({
+  label,
+  blockNativeResponder,
+  onNativeTouch,
+  onPressIn,
+  onPress,
+}: {
+  label: string,
+  blockNativeResponder?: boolean,
+  onNativeTouch: () => void,
+  onPressIn: () => void,
+  onPress: () => void,
+}) {
+  return (
+    <>
+      <Text
+        style={{
+          fontSize: 13,
+          fontWeight: '600',
+          color: '#444',
+          marginTop: 10,
+          marginBottom: 4,
+        }}>
+        {label}
+      </Text>
+      <RNTNativeTouchReceiver
+        style={scenarioReceiverStyle}
+        onNativeTouch={onNativeTouch}>
+        <Pressable
+          style={{
+            backgroundColor: '#0a84ff',
+            borderRadius: 6,
+            paddingVertical: 10,
+            paddingHorizontal: 20,
+          }}
+          blockNativeResponder={blockNativeResponder}
+          onPressIn={onPressIn}
+          onPress={onPress}>
+          <Text style={{color: '#fff', fontWeight: '600', fontSize: 15}}>
+            Tap me
+          </Text>
+        </Pressable>
+      </RNTNativeTouchReceiver>
+    </>
+  );
+}
+
 function PressablePreventNativePropagationExample() {
   const [log, setLog] = useState<Array<string>>([]);
+  const onNativeTouch = () =>
+    setLog(prev => [...prev, 'NativeTouchReceiver.onNativeTouch']);
+  const onPressIn = () => setLog([]);
+  const onPress = () => setLog(prev => [...prev, 'Pressable.onPress']);
 
   return (
     <View>
-      <Text style={blockNativeStyles.sectionHeader}>
-        {'blockNativeResponder={false} (default)'}
-      </Text>
-      <RNTNativeTouchReceiver
-        style={blockNativeStyles.receiver}
-        onNativeTouch={() =>
-          setLog(prev => [...prev, 'NativeTouchReceiver.onNativeTouch'])
-        }>
-        <Pressable
-          style={blockNativeStyles.pressable}
-          onPressIn={() => setLog([])}
-          onPress={() => setLog(prev => [...prev, 'Pressable.onPress'])}>
-          <Text style={blockNativeStyles.pressableText}>Tap me</Text>
-        </Pressable>
-      </RNTNativeTouchReceiver>
-
-      <Text style={blockNativeStyles.sectionHeader}>
-        {'blockNativeResponder={true}'}
-      </Text>
-      <RNTNativeTouchReceiver
-        style={blockNativeStyles.receiver}
-        onNativeTouch={() =>
-          setLog(prev => [...prev, 'NativeTouchReceiver.onNativeTouch'])
-        }>
-        <Pressable
-          style={blockNativeStyles.pressable}
-          blockNativeResponder={true}
-          onPressIn={() => setLog([])}
-          onPress={() => setLog(prev => [...prev, 'Pressable.onPress'])}>
-          <Text style={blockNativeStyles.pressableText}>Tap me</Text>
-        </Pressable>
-      </RNTNativeTouchReceiver>
-
+      <Scenario
+        label="blockNativeResponder={false} (default)"
+        onNativeTouch={onNativeTouch}
+        onPressIn={onPressIn}
+        onPress={onPress}
+      />
+      <Scenario
+        label="blockNativeResponder={true}"
+        blockNativeResponder={true}
+        onNativeTouch={onNativeTouch}
+        onPressIn={onPressIn}
+        onPress={onPress}
+      />
       <LogBox lines={log} />
     </View>
   );
 }
 
+const monoFont = Platform.OS === 'ios' ? 'Menlo' : 'monospace';
+
 function LogBox({lines}: {lines: Array<string>}) {
   return (
-    <View style={blockNativeStyles.logBox}>
+    <View
+      style={{
+        backgroundColor: '#1a1a1a',
+        borderRadius: 6,
+        padding: 10,
+        minHeight: 100,
+        marginBottom: 12,
+      }}>
       {lines.length === 0 ? (
-        <Text style={blockNativeStyles.logPlaceholder}>tap to see events</Text>
+        <Text style={{color: '#555', fontSize: 12, fontStyle: 'italic'}}>
+          tap to see events
+        </Text>
       ) : (
         lines.map((line, i) => (
-          <Text key={i} style={blockNativeStyles.logLine}>
+          <Text
+            key={i}
+            style={{
+              color: '#b5f5a0',
+              fontSize: 12,
+              fontFamily: monoFont,
+              lineHeight: 17,
+            }}>
             {line}
           </Text>
         ))
@@ -334,54 +393,6 @@ function LogBox({lines}: {lines: Array<string>}) {
     </View>
   );
 }
-
-const blockNativeStyles = StyleSheet.create({
-  logBox: {
-    backgroundColor: '#1a1a1a',
-    borderRadius: 6,
-    padding: 10,
-    minHeight: 100,
-    marginBottom: 12,
-  },
-  logPlaceholder: {
-    color: '#555',
-    fontSize: 12,
-    fontStyle: 'italic',
-  },
-  logLine: {
-    color: '#b5f5a0',
-    fontSize: 12,
-    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-    lineHeight: 17,
-  },
-  sectionHeader: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#444',
-    marginTop: 10,
-    marginBottom: 4,
-  },
-  receiver: {
-    padding: 16,
-    backgroundColor: '#fff3cd',
-    borderRadius: 8,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#e0bb5a',
-    marginBottom: 4,
-    alignItems: 'flex-start',
-  },
-  pressable: {
-    backgroundColor: '#0a84ff',
-    borderRadius: 6,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-  },
-  pressableText: {
-    color: '#fff',
-    fontWeight: '600',
-    fontSize: 15,
-  },
-});
 
 const styles = StyleSheet.create({
   row: {
