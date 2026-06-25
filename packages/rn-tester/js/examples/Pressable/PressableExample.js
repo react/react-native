@@ -10,8 +10,8 @@
 
 import type {RNTesterModule} from '../../types/RNTesterTypes';
 
-import * as PressableExampleFbInternal from './PressableExampleFbInternal';
 import RNTNativeTouchReceiver from './NativeTouchReceiverNativeComponent';
+import * as PressableExampleFbInternal from './PressableExampleFbInternal';
 import * as React from 'react';
 import {
   Alert,
