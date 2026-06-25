@@ -17,13 +17,8 @@ import com.facebook.react.uimanager.events.Event
 import com.facebook.react.views.view.ReactViewGroup
 
 /**
- * A native ViewGroup that fires onNativeTouch via onInterceptTouchEvent.
- *
- * This simulates a native parent that receives touch events through Android's touch dispatch.
- * When blockNativeResponder=false on a Pressable child, requestDisallowInterceptTouchEvent is NOT
- * called, so onInterceptTouchEvent fires and onNativeTouch is dispatched. When
- * blockNativeResponder=true, requestDisallowInterceptTouchEvent(true) is called on this view,
- * suppressing onInterceptTouchEvent — and thus onNativeTouch — for that gesture.
+ * Native ViewGroup that receives touch events through Android's touch dispatch
+ * and emits onNativeTouch.
  */
 internal class RNTNativeTouchReceiverView(context: ThemedReactContext) : ReactViewGroup(context) {
 

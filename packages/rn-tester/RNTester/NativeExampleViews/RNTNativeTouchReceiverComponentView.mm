@@ -38,10 +38,7 @@ using namespace facebook::react;
 }
 
 /**
- * touchesEnded: fires when UIKit delivers the touch-up event through the
- * native responder chain.  Even when a Pressable child is the JS responder,
- * this still fires because RCTSurfaceTouchHandler sets cancelsTouchesInView=NO.
- * That is the bug this component helps reproduce.
+ * Emits onNativeTouch when UIKit delivers the touch-up event.
  */
 - (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
 {
