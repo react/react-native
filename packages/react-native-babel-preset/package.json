@@ -4,7 +4,7 @@
   "description": "Babel preset for React Native applications",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/react/react-native.git",
+    "url": "git+https://github.com/react/react-native.git",
     "directory": "packages/react-native-babel-preset"
   },
   "keywords": [
