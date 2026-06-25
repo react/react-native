@@ -25,6 +25,7 @@
 #ifndef RN_DISABLE_OSS_PLUGIN_HEADER
 #import <RNTMyNativeViewComponentView.h>
 #endif
+#import "NativeExampleViews/RNTNativeTouchReceiverComponentView.h"
 
 #if __has_include(<ReactAppDependencyProvider/RCTAppDependencyProvider.h>)
 #define USE_OSS_CODEGEN 1
@@ -170,6 +171,9 @@ static NSString *kBundlePath = @"js/RNTesterApp.ios";
   }
   if (!dict[@"SampleNativeComponent"]) {
     dict[@"SampleNativeComponent"] = NSClassFromString(@"RCTSampleNativeComponentComponentView");
+  }
+  if (!dict[@"RNTNativeTouchReceiver"]) {
+    dict[@"RNTNativeTouchReceiver"] = [RNTNativeTouchReceiverComponentView class];
   }
   return dict;
 }

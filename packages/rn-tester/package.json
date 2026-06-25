@@ -47,6 +47,9 @@
       "components": {
         "RNTMyNativeView": {
           "className": "RNTMyNativeViewComponentView"
+        },
+        "RNTNativeTouchReceiver": {
+          "className": "RNTNativeTouchReceiverComponentView"
         }
       }
     }

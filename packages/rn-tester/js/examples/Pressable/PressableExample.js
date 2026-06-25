@@ -11,6 +11,7 @@
 import type {RNTesterModule} from '../../types/RNTesterTypes';
 
 import * as PressableExampleFbInternal from './PressableExampleFbInternal';
+import RNTNativeTouchReceiver from './NativeTouchReceiverNativeComponent';
 import * as React from 'react';
 import {
   Alert,
@@ -274,6 +275,146 @@ function PressableDisabled() {
     </>
   );
 }
+
+/**
+ * Repro for: Pressable does not consume native touches on iOS/iPadOS.
+ *
+ * Topology: NativeTouchReceiver (UIView with touchesEnded:) is the PARENT.
+ *           Pressable is the CHILD and the UIKit hit-tested target.
+ *
+ * Bug: tapping the Pressable makes it the JS responder (onPress fires), but
+ * the touch also bubbles up the UIKit responder chain to NativeTouchReceiver
+ * because RCTSurfaceTouchHandler has cancelsTouchesInView=NO — so
+ * touchesEnded: is never cancelled on the ancestor, and onNativeTouch fires too.
+ *
+ * Expected after blockNativeResponder fix:
+ *   blockNativeResponder=false  → both onPress AND onNativeTouch fire  (bug)
+ *   blockNativeResponder=true   → only onPress fires                   (fixed)
+ */
+function PressableBlockNativeResponderExample() {
+  const [log, setLog] = useState<Array<string>>([]);
+
+  function emit(msg: string) {
+    setLog(prev => [msg, ...prev].slice(0, 10));
+  }
+
+  return (
+    <View>
+      <Text style={blockNativeStyles.description}>
+        Tap the Pressable button inside each row.{'\n\n'}
+        <Text style={blockNativeStyles.bold}>[default]</Text>
+        {' — BUG: both Pressable.onPress (JS) and NativeTouchReceiver.onNativeTouch'}
+        {' (UIKit responder chain) fire for the same tap.\n'}
+        <Text style={blockNativeStyles.bold}>[blocked]</Text>
+        {' — FIXED: only Pressable.onPress fires.'}
+      </Text>
+
+      <View style={blockNativeStyles.logBox}>
+        {log.length === 0 ? (
+          <Text style={blockNativeStyles.logPlaceholder}>
+            events will appear here
+          </Text>
+        ) : (
+          log.map((line, i) => (
+            <Text key={i} style={blockNativeStyles.logLine}>
+              {line}
+            </Text>
+          ))
+        )}
+      </View>
+
+      <Text style={blockNativeStyles.sectionHeader}>
+        blockNativeResponder=undefined (default)
+      </Text>
+      <RNTNativeTouchReceiver
+        style={blockNativeStyles.receiver}
+        onNativeTouch={() =>
+          emit('[default] NativeTouchReceiver.touchesEnded: ← native leaked')
+        }>
+        <Pressable
+          style={blockNativeStyles.pressable}
+          onPress={() => emit('[default] Pressable.onPress ✓')}>
+          <Text style={blockNativeStyles.pressableText}>Tap me</Text>
+        </Pressable>
+      </RNTNativeTouchReceiver>
+
+      <Text style={blockNativeStyles.sectionHeader}>
+        blockNativeResponder=true
+      </Text>
+      <RNTNativeTouchReceiver
+        style={blockNativeStyles.receiver}
+        onNativeTouch={() =>
+          emit(
+            '[blocked] NativeTouchReceiver.touchesEnded: ← UNEXPECTED, fix not working',
+          )
+        }>
+        <Pressable
+          style={blockNativeStyles.pressable}
+          blockNativeResponder={true}
+          onPress={() => emit('[blocked] Pressable.onPress ✓')}>
+          <Text style={blockNativeStyles.pressableText}>Tap me</Text>
+        </Pressable>
+      </RNTNativeTouchReceiver>
+    </View>
+  );
+}
+
+const blockNativeStyles = StyleSheet.create({
+  description: {
+    fontSize: 13,
+    color: '#333',
+    marginBottom: 10,
+    lineHeight: 19,
+  },
+  bold: {
+    fontWeight: '700',
+  },
+  logBox: {
+    backgroundColor: '#1a1a1a',
+    borderRadius: 6,
+    padding: 10,
+    minHeight: 100,
+    marginBottom: 12,
+  },
+  logPlaceholder: {
+    color: '#555',
+    fontSize: 12,
+    fontStyle: 'italic',
+  },
+  logLine: {
+    color: '#b5f5a0',
+    fontSize: 12,
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    lineHeight: 17,
+  },
+  sectionHeader: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#444',
+    marginTop: 10,
+    marginBottom: 4,
+  },
+  receiver: {
+    padding: 16,
+    backgroundColor: '#fff3cd',
+    borderRadius: 8,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#e0bb5a',
+    marginBottom: 4,
+    alignItems: 'flex-start',
+  },
+  pressable: {
+    backgroundColor: '#0a84ff',
+    borderRadius: 6,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+  },
+  pressableText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 15,
+  },
+});
 
 const styles = StyleSheet.create({
   row: {
@@ -659,6 +800,22 @@ const examples = [
           />
         </Pressable>
       );
+    },
+  },
+  {
+    title: 'blockNativeResponder — press leaks to native parent (iOS repro)',
+    name: 'block-native-responder',
+    description:
+      ('Repro for: Pressable does not consume the native touch on iOS/iPadOS. ' +
+        'A Pressable sits inside a NativeTouchReceiver (plain UIView with ' +
+        'touchesEnded: overridden). Tapping the Pressable makes it the JS ' +
+        'responder (onPress fires), but the touch also bubbles up the UIKit ' +
+        'responder chain so the parent NativeTouchReceiver fires too. ' +
+        'With blockNativeResponder={true} and the fix applied, only ' +
+        'Pressable.onPress should fire.') as string,
+    platform: 'ios',
+    render: function (): React.Node {
+      return <PressableBlockNativeResponderExample />;
     },
   },
   ...PressableExampleFbInternal.examples,
