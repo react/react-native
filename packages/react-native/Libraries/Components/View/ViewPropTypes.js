@@ -507,7 +507,7 @@ type ViewBaseProps = Readonly<{
    * receiving touch events when this view is the active JS responder.
    * Requires that the Fabric gesture recognizer has already claimed the touch.
    */
-  blockNativeResponder?: ?boolean,
+  preventNativePropagation?: ?boolean,
 
   /**
    * Defines the order in which descendant elements receive accessibility focus.

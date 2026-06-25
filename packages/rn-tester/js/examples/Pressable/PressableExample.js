@@ -287,9 +287,9 @@ function PressableDisabled() {
  * because RCTSurfaceTouchHandler has cancelsTouchesInView=NO — so
  * touchesEnded: is never cancelled on the ancestor, and onNativeTouch fires too.
  *
- * Expected after blockNativeResponder fix:
- *   blockNativeResponder=false  → both onPress AND onNativeTouch fire  (bug)
- *   blockNativeResponder=true   → only onPress fires                   (fixed)
+ * Expected after preventNativePropagation fix:
+ *   preventNativePropagation={false} → both onPress AND onNativeTouch fire  (bug)
+ *   preventNativePropagation={true}  → only onPress fires                   (fixed)
  */
 function PressableBlockNativeResponderExample() {
   const [log, setLog] = useState<Array<string>>([]);
@@ -324,7 +324,7 @@ function PressableBlockNativeResponderExample() {
       </View>
 
       <Text style={blockNativeStyles.sectionHeader}>
-        blockNativeResponder=undefined (default)
+        {'Default (preventNativePropagation={false})'}
       </Text>
       <RNTNativeTouchReceiver
         style={blockNativeStyles.receiver}
@@ -339,7 +339,7 @@ function PressableBlockNativeResponderExample() {
       </RNTNativeTouchReceiver>
 
       <Text style={blockNativeStyles.sectionHeader}>
-        blockNativeResponder=true
+        {'preventNativePropagation={true}'}
       </Text>
       <RNTNativeTouchReceiver
         style={blockNativeStyles.receiver}
@@ -350,7 +350,7 @@ function PressableBlockNativeResponderExample() {
         }>
         <Pressable
           style={blockNativeStyles.pressable}
-          blockNativeResponder={true}
+          preventNativePropagation={true}
           onPress={() => emit('[blocked] Pressable.onPress ✓')}>
           <Text style={blockNativeStyles.pressableText}>Tap me</Text>
         </Pressable>
@@ -803,7 +803,7 @@ const examples = [
     },
   },
   {
-    title: 'blockNativeResponder — press leaks to native parent (iOS repro)',
+    title: 'preventNativePropagation — press leaks to native parent (iOS repro)',
     name: 'block-native-responder',
     description:
       ('Repro for: Pressable does not consume the native touch on iOS/iPadOS. ' +
@@ -811,7 +811,7 @@ const examples = [
         'touchesEnded: overridden). Tapping the Pressable makes it the JS ' +
         'responder (onPress fires), but the touch also bubbles up the UIKit ' +
         'responder chain so the parent NativeTouchReceiver fires too. ' +
-        'With blockNativeResponder={true} and the fix applied, only ' +
+        'With preventNativePropagation={true} and the fix applied, only ' +
         'Pressable.onPress should fire.') as string,
     platform: 'ios',
     render: function (): React.Node {

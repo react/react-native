@@ -425,14 +425,14 @@ BaseViewProps::BaseViewProps(
                     "removeClippedSubviews",
                     sourceProps.removeClippedSubviews,
                     false)),
-      blockNativeResponder(
+      preventNativePropagation(
           ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.blockNativeResponder
+              ? sourceProps.preventNativePropagation
               : convertRawProp(
                     context,
                     rawProps,
-                    "blockNativeResponder",
-                    sourceProps.blockNativeResponder,
+                    "preventNativePropagation",
+                    sourceProps.preventNativePropagation,
                     false)) {}
 
 #define VIEW_EVENT_CASE(eventType)                      \
@@ -484,7 +484,7 @@ void BaseViewProps::setProp(
     RAW_SET_PROP_SWITCH_CASE_BASIC(collapsable);
     RAW_SET_PROP_SWITCH_CASE_BASIC(collapsableChildren);
     RAW_SET_PROP_SWITCH_CASE_BASIC(removeClippedSubviews);
-    RAW_SET_PROP_SWITCH_CASE_BASIC(blockNativeResponder);
+    RAW_SET_PROP_SWITCH_CASE_BASIC(preventNativePropagation);
     RAW_SET_PROP_SWITCH_CASE_BASIC(cursor);
     RAW_SET_PROP_SWITCH_CASE_BASIC(outlineColor);
     RAW_SET_PROP_SWITCH_CASE_BASIC(outlineOffset);

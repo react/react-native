@@ -134,7 +134,7 @@ export type PressabilityConfig = Readonly<{
    * Whether to prevent any other native components from becoming responder
    * while this pressable is responder.
    */
-  blockNativeResponder?: ?boolean,
+  preventNativePropagation?: ?boolean,
 }>;
 
 export type EventHandlers = Readonly<{
@@ -477,7 +477,7 @@ export default class Pressability {
           this._handleLongPress(event);
         }, delayLongPress + delayPressIn);
 
-        return this._config.blockNativeResponder === true;
+        return this._config.preventNativePropagation === true;
       },
 
       onResponderMove: (event: GestureResponderEvent): void => {

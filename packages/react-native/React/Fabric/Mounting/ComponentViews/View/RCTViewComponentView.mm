@@ -675,7 +675,7 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
 {
   const auto &viewProps = static_cast<const ViewProps &>(*_props);
-  if (viewProps.blockNativeResponder) {
+  if (viewProps.preventNativePropagation) {
     return;
   }
   [super touchesBegan:touches withEvent:event];
@@ -684,7 +684,7 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
 - (void)touchesMoved:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
 {
   const auto &viewProps = static_cast<const ViewProps &>(*_props);
-  if (viewProps.blockNativeResponder) {
+  if (viewProps.preventNativePropagation) {
     return;
   }
   [super touchesMoved:touches withEvent:event];
@@ -693,7 +693,7 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
 - (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
 {
   const auto &viewProps = static_cast<const ViewProps &>(*_props);
-  if (viewProps.blockNativeResponder) {
+  if (viewProps.preventNativePropagation) {
     return;
   }
   [super touchesEnded:touches withEvent:event];
@@ -702,7 +702,7 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
 - (void)touchesCancelled:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
 {
   const auto &viewProps = static_cast<const ViewProps &>(*_props);
-  if (viewProps.blockNativeResponder) {
+  if (viewProps.preventNativePropagation) {
     return;
   }
   [super touchesCancelled:touches withEvent:event];
