@@ -511,7 +511,7 @@ type ViewBaseProps = Readonly<{
    *
    * @platform ios
    */
-  preventNativePropagation?: ?boolean,
+  blockNativeResponder?: ?boolean,
 
   /**
    * Defines the order in which descendant elements receive accessibility focus.

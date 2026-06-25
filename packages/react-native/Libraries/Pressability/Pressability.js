@@ -134,7 +134,7 @@ export type PressabilityConfig = Readonly<{
    * When true, prevents native ancestor views (UIKit responder chain) from
    * receiving touch events when this Pressable handles a press. iOS only.
    */
-  preventNativePropagation?: ?boolean,
+  blockNativeResponder?: ?boolean,
 }>;
 
 export type EventHandlers = Readonly<{
@@ -477,7 +477,7 @@ export default class Pressability {
           this._handleLongPress(event);
         }, delayLongPress + delayPressIn);
 
-        return this._config.preventNativePropagation === true;
+        return this._config.blockNativeResponder === true;
       },
 
       onResponderMove: (event: GestureResponderEvent): void => {

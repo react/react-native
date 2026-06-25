@@ -247,7 +247,7 @@ const validAttributesForNonEventProps = {
   hitSlop: {diff: require('../Utilities/differ/insetsDiffer').default},
   collapsable: true,
   collapsableChildren: true,
-  preventNativePropagation: true,
+  blockNativeResponder: true,
   filter: filterAttribute,
   boxShadow: boxShadowAttribute,
   mixBlendMode: true,

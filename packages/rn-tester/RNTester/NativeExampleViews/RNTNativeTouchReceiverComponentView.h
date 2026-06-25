@@ -14,9 +14,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Fabric component view whose touchesEnded: fires onNativeTouch.
- * Used as the parent wrapper in the preventNativePropagation repro:
+ * Used as the parent wrapper in the blockNativeResponder repro:
  *   <RNTNativeTouchReceiver onNativeTouch={...}>
- *     <Pressable preventNativePropagation={true} ...>...</Pressable>
+ *     <Pressable blockNativeResponder={true} ...>...</Pressable>
  *   </RNTNativeTouchReceiver>
  */
 @interface RNTNativeTouchReceiverComponentView : RCTViewComponentView

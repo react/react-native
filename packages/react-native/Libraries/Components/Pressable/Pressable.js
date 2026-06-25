@@ -125,7 +125,7 @@ type PressableBaseProps = Readonly<{
    *
    * @platform ios
    */
-  preventNativePropagation?: ?boolean,
+  blockNativeResponder?: ?boolean,
 
   /**
    * Either view styles or a function that receives a boolean reflecting whether
@@ -193,7 +193,7 @@ function Pressable({
     'aria-expanded': ariaExpanded,
     'aria-label': ariaLabel,
     'aria-selected': ariaSelected,
-    preventNativePropagation,
+    blockNativeResponder,
     cancelable,
     children,
     delayHoverIn,
@@ -305,12 +305,12 @@ function Pressable({
           onPressOut(event);
         }
       },
-      preventNativePropagation,
+      blockNativeResponder,
     }),
     [
       android_disableSound,
       android_rippleConfig,
-      preventNativePropagation,
+      blockNativeResponder,
       cancelable,
       delayHoverIn,
       delayHoverOut,
@@ -342,7 +342,7 @@ function Pressable({
       ref={mergedRef}
       style={typeof style === 'function' ? style({pressed}) : style}
       collapsable={false}
-      preventNativePropagation={preventNativePropagation}>
+      blockNativeResponder={blockNativeResponder}>
       {typeof children === 'function' ? children({pressed}) : children}
       {__DEV__ ? <PressabilityDebugView color="red" hitSlop={hitSlop} /> : null}
     </View>
