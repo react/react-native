@@ -508,8 +508,6 @@ type ViewBaseProps = Readonly<{
    * delivers touches independently to every view that received touchesBegan:,
    * so parent views fire touchesEnded: even when a child Pressable handles the
    * press.
-   *
-   * @platform ios
    */
   blockNativeResponder?: ?boolean,
 

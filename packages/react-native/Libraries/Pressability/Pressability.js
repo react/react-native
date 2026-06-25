@@ -132,7 +132,7 @@ export type PressabilityConfig = Readonly<{
 
   /**
    * When true, prevents native ancestor views (UIKit responder chain) from
-   * receiving touch events when this Pressable handles a press. iOS only.
+   * receiving touch events when this Pressable handles a press.
    */
   blockNativeResponder?: ?boolean,
 }>;

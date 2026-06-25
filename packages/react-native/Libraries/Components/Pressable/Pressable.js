@@ -122,8 +122,6 @@ type PressableBaseProps = Readonly<{
   /**
    * When true, prevents native ancestor views (UIKit responder chain) from
    * receiving touch events when this Pressable handles a press.
-   *
-   * @platform ios
    */
   blockNativeResponder?: ?boolean,
 

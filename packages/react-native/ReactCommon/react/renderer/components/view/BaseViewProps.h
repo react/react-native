@@ -108,7 +108,7 @@ class BaseViewProps : public YogaStylableProps, public AccessibilityProps {
   bool collapsableChildren{true};
 
   bool removeClippedSubviews{false};
-  bool blockNativeResponder{false}; // iOS only
+  bool blockNativeResponder{false};
 
 #pragma mark - Convenience Methods
 
