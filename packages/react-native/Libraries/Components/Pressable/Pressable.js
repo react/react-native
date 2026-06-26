@@ -120,8 +120,10 @@ type PressableBaseProps = Readonly<{
   onPressOut?: ?(event: GestureResponderEvent) => unknown,
 
   /**
-   * When true, prevents native ancestor views (UIKit responder chain) from
-   * receiving touch events when this Pressable handles a press.
+   * When true, prevents native ancestor views from receiving any touch events
+   * that begin on this Pressable, including pan gestures. Suppression is
+   * unconditional (not gated on JS responder state) to avoid timing races on
+   * fast taps. Does not affect UIGestureRecognizer-based interactions.
    */
   blockNativeResponder?: ?boolean,
 
