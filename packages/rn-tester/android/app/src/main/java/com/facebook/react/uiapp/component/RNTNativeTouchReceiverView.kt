@@ -22,17 +22,17 @@ import com.facebook.react.views.view.ReactViewGroup
  */
 internal class RNTNativeTouchReceiverView(context: ThemedReactContext) : ReactViewGroup(context) {
 
-  override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
-    val intercepted = super.onInterceptTouchEvent(ev)
-    if (ev.action == MotionEvent.ACTION_UP) {
+  override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
+    val intercepted = super.onInterceptTouchEvent(event)
+    if (event.action == MotionEvent.ACTION_UP) {
       emitNativeTouchEvent()
     }
     return intercepted
   }
 
-  override fun onTouchEvent(ev: MotionEvent): Boolean {
-    val handled = super.onTouchEvent(ev)
-    if (ev.action == MotionEvent.ACTION_UP) {
+  override fun onTouchEvent(event: MotionEvent): Boolean {
+    val handled = super.onTouchEvent(event)
+    if (event.action == MotionEvent.ACTION_UP) {
       emitNativeTouchEvent()
     }
     return handled
