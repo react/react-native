@@ -334,6 +334,7 @@ function Pressable({
   const eventHandlers = usePressability(config);
 
   return (
+    // $FlowFixMe[incompatible-type] blockNativeResponder is an internal prop, intentionally absent from public ViewProps
     <View
       {...restPropsWithDefaults}
       {...eventHandlers}
@@ -343,7 +344,6 @@ function Pressable({
       // Must be false when disabled so touches reach native ancestors. Cannot
       // guard this on the native side via _isJSResponder — it's set async and
       // races with touchesBegan on fast taps.
-      // $FlowFixMe[incompatible-type] internal prop, intentionally absent from public ViewProps
       blockNativeResponder={disabled !== true && blockNativeResponder}>
       {typeof children === 'function' ? children({pressed}) : children}
       {__DEV__ ? <PressabilityDebugView color="red" hitSlop={hitSlop} /> : null}
