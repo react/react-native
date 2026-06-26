@@ -274,6 +274,8 @@ void BaseTextProps::setProp(
         maxFontSizeMultiplier,
         "maxFontSizeMultiplier");
     REBUILD_FIELD_SWITCH_CASE(
+        defaults, value, textAttributes, dynamicTypeRamp, "dynamicTypeRamp");
+    REBUILD_FIELD_SWITCH_CASE(
         defaults, value, textAttributes, letterSpacing, "letterSpacing");
     REBUILD_FIELD_SWITCH_CASE(
         defaults, value, textAttributes, textTransform, "textTransform");
@@ -286,7 +288,7 @@ void BaseTextProps::setProp(
         value,
         textAttributes,
         baseWritingDirection,
-        "baseWritingDirection");
+        "writingDirection");
     REBUILD_FIELD_SWITCH_CASE(
         defaults,
         value,

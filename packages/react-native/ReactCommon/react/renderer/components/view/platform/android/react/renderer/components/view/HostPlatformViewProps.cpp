@@ -143,18 +143,6 @@ HostPlatformViewProps::HostPlatformViewProps(
                     sourceProps.nextFocusUp,
                     {})) {}
 
-#define VIEW_EVENT_CASE(eventType)                      \
-  case CONSTEXPR_RAW_PROPS_KEY_HASH("on" #eventType): { \
-    const auto offset = ViewEvents::Offset::eventType;  \
-    ViewEvents defaultViewEvents{};                     \
-    bool res = defaultViewEvents[offset];               \
-    if (value.hasValue()) {                             \
-      fromRawValue(context, value, res);                \
-    }                                                   \
-    events[offset] = res;                               \
-    return;                                             \
-  }
-
 void HostPlatformViewProps::setProp(
     const PropsParserContext& context,
     RawPropsPropNameHash hash,

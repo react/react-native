@@ -395,6 +395,7 @@ void BaseScrollViewProps::setProp(
     RAW_SET_PROP_SWITCH_CASE_BASIC(centerContent);
     RAW_SET_PROP_SWITCH_CASE_BASIC(automaticallyAdjustContentInsets);
     RAW_SET_PROP_SWITCH_CASE_BASIC(automaticallyAdjustsScrollIndicatorInsets);
+    RAW_SET_PROP_SWITCH_CASE_BASIC(automaticallyAdjustKeyboardInsets);
     RAW_SET_PROP_SWITCH_CASE_BASIC(decelerationRate);
     RAW_SET_PROP_SWITCH_CASE_BASIC(directionalLockEnabled);
     RAW_SET_PROP_SWITCH_CASE_BASIC(indicatorStyle);

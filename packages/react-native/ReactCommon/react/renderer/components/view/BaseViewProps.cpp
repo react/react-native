@@ -465,6 +465,7 @@ void BaseViewProps::setProp(
     RAW_SET_PROP_SWITCH_CASE_BASIC(shadowOpacity);
     RAW_SET_PROP_SWITCH_CASE_BASIC(shadowRadius);
     RAW_SET_PROP_SWITCH_CASE_BASIC(transform);
+    RAW_SET_PROP_SWITCH_CASE_BASIC(transformOrigin);
     RAW_SET_PROP_SWITCH_CASE_BASIC(backfaceVisibility);
     RAW_SET_PROP_SWITCH_CASE_BASIC(shouldRasterize);
     RAW_SET_PROP_SWITCH_CASE_BASIC(zIndex);
@@ -522,6 +523,7 @@ void BaseViewProps::setProp(
     // BorderRadii
     SET_CASCADED_RECTANGLE_CORNERS(borderRadii, "border", "Radius", value);
     SET_CASCADED_RECTANGLE_EDGES(borderColors, "border", "Color", value);
+    SET_CASCADED_RECTANGLE_CORNERS(borderCurves, "border", "Curve", value);
     SET_CASCADED_RECTANGLE_EDGES(borderStyles, "border", "Style", value);
   }
 }
