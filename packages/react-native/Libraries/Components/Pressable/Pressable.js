@@ -340,10 +340,9 @@ function Pressable({
       ref={mergedRef}
       style={typeof style === 'function' ? style({pressed}) : style}
       collapsable={false}
-      // Disabled when `disabled` to allow touches to reach native ancestors.
-      // Cannot use `_isJSResponder` on the native side because it is set via
-      // RCTExecuteOnMainQueue (async), so it may not be true yet when
-      // touchesBegan fires, causing a race condition on fast taps.
+      // Must be false when disabled so touches reach native ancestors. Cannot
+      // guard this on the native side via _isJSResponder — it's set async and
+      // races with touchesBegan on fast taps.
       blockNativeResponder={disabled !== true && blockNativeResponder}>
       {typeof children === 'function' ? children({pressed}) : children}
       {__DEV__ ? <PressabilityDebugView color="red" hitSlop={hitSlop} /> : null}
