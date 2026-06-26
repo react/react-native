@@ -25,7 +25,8 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "react-native.config.js"
   ],
   "scripts": {
     "prepack": "node ../../scripts/build/prepack.js"
