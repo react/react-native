@@ -39,6 +39,7 @@ const buildConfig: BuildConfig = {
   /* eslint sort-keys: "error" */
   packages: {
     'community-cli-plugin': {
+      emitTypeScriptDefs: true,
       target: 'node',
     },
     'debugger-shell': {
