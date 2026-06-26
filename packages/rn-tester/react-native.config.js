@@ -10,12 +10,7 @@
 
 'use strict';
 
-// Inside the React Native monorepo, we need to explicitly extend the base
-// CLI config as the adjacent package will not be conventionally discovered.
-const config = require('../react-native/react-native.config.js');
-
 module.exports = {
-  ...config,
   reactNativePath: '../react-native',
   project: {
     ios: {

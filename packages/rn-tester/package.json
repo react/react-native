@@ -59,9 +59,7 @@
     }
   },
   "devDependencies": {
-    "@react-native-community/cli": "20.2.0",
-    "@react-native-community/cli-platform-android": "20.2.0",
-    "@react-native-community/cli-platform-ios": "20.2.0",
+    "@react-native-community/cli": "21.0.0-alpha.1",
     "@react-native/community-cli-plugin": "0.87.0-main",
     "@react-native/core-cli-utils": "*",
     "commander": "^12.0.0",
