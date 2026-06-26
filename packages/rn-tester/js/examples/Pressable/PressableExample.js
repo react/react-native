@@ -323,7 +323,12 @@ function PressableBlockNativeResponderExample() {
           </Text>
         </Pressable>
       </RNTNativeTouchReceiver>
-      <View style={{flexDirection: 'row', justifyContent: 'flex-end', marginTop: 4}}>
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'flex-end',
+          marginTop: 4,
+        }}>
         <Pressable onPress={() => setLog([])}>
           <Text style={{fontSize: 12, color: '#0a84ff'}}>Clear log</Text>
         </Pressable>
