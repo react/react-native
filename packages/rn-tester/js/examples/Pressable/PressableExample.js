@@ -292,7 +292,6 @@ function PressableBlockNativeResponderExample() {
   const [log, setLog] = useState<Array<string>>([]);
   const onNativeTouch = () =>
     setLog(prev => [...prev, 'NativeTouchReceiver.onNativeTouch']);
-  const onPressIn = () => setLog([]);
   const onPress = () => setLog(prev => [...prev, 'Pressable.onPress']);
 
   return (
@@ -318,13 +317,17 @@ function PressableBlockNativeResponderExample() {
             paddingHorizontal: 20,
           }}
           blockNativeResponder={blockNativeResponder}
-          onPressIn={onPressIn}
           onPress={onPress}>
           <Text style={{color: '#fff', fontWeight: '600', fontSize: 15}}>
             Press Me
           </Text>
         </Pressable>
       </RNTNativeTouchReceiver>
+      <View style={{flexDirection: 'row', justifyContent: 'flex-end', marginTop: 4}}>
+        <Pressable onPress={() => setLog([])}>
+          <Text style={{fontSize: 12, color: '#0a84ff'}}>Clear log</Text>
+        </Pressable>
+      </View>
       <LogBox lines={log} />
     </View>
   );
