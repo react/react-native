@@ -503,15 +503,6 @@ type ViewBaseProps = Readonly<{
   removeClippedSubviews?: ?boolean,
 
   /**
-   * When true, prevents native ancestor views (UIKit responder chain) from
-   * receiving touch events when this view handles a press. Without this, UIKit
-   * delivers touches independently to every view that received touchesBegan:,
-   * so parent views fire touchesEnded: even when a child Pressable handles the
-   * press.
-   */
-  blockNativeResponder?: ?boolean,
-
-  /**
    * Defines the order in which descendant elements receive accessibility focus.
    * The elements in the array represent nativeID values for the respective
    * descendant elements.
