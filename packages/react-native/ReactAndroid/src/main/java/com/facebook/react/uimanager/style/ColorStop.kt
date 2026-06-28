@@ -124,6 +124,12 @@ internal object ColorStopUtils {
                 )
           }
           lastDefinedIndex = i
+        } else if (endPosition != null) {
+          // Current stop has a defined position but there are no unpositioned
+          // stops between lastDefinedIndex and i. Still need to advance
+          // lastDefinedIndex so that subsequent interpolation uses the
+          // correct start point instead of stale data.
+          lastDefinedIndex = i
         }
       }
     }
