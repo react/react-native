@@ -478,6 +478,8 @@ public object ReactScrollViewHelper {
               override fun onAnimationCancel(animator: Animator) {
                 scrollView.reactScrollViewScrollState.isCanceled = true
                 notifyUserDrivenScrollEnded(scrollView)
+                // Dispatch an unthrottled scroll event to ensure JS state is updated after cancellation
+                emitScrollEventNoThrottle(scrollView, 0f, 0f)
               }
 
               override fun onAnimationRepeat(animator: Animator) = Unit
