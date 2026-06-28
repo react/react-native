@@ -637,7 +637,43 @@ if (scrollEventType == SCROLL &&
 
 ---
 
-## 8. Appendix: Key Code References
+## 8. Design Details and Trade-offs
+
+This section documents specific design choices and the trade-offs that shaped the current implementation.
+
+### 8.1 JS Cell Metrics — Orientation Change Handling
+
+The `_cellMetrics` Map stores per-cell layout info keyed by cell ID. When orientation changes, the metric coordinate system flips (horizontal ↔ vertical), making all stored metrics invalid.
+
+**Why the Map must be cleared (not just counters):** Clearing `_cellMetrics` is necessary because the counters alone don't prevent stale entries from being found on subsequent `notifyCellLayout` calls. The Map acts as a set of "known cells" — if not cleared, old entries persist and interfere with new measurements.
+
+**Why the division is guarded:** The `_averageCellLength` computation uses `if (count > 0)` rather than relying solely on the orientation change invalidation. This is defense-in-depth: even if the invalidation is missed or delayed (e.g., rapid orientation changes), the division won't produce `NaN`.
+
+### 8.2 iOS Fabric — Anchor View Abort Conditions
+
+MVCP uses three abort conditions in `_adjustForMaintainVisibleContentPosition` to handle views that are no longer valid anchors:
+
+1. **Nil check** (`!_firstVisibleView`): Catches the case where the list was empty during mount and no anchor was captured.
+2. **Tag check** (`_firstVisibleView.tag != _firstVisibleViewTag`): Detects when the anchor view was recycled from the pool and reassigned to a different item. `RCTComponentViewRegistry` assigns tags during dequeue and resets to 0 during enqueue, so a tag mismatch means the view no longer represents the same item.
+3. **Superview check** (`_firstVisibleView.superview != _contentView`): Detects when the anchor view was removed from the scroll view's hierarchy (e.g., during a data reset).
+
+**Ordering rationale:** The nil check is first (cheapest, catches empty list). The tag check is second (catches recycling). The superview check is last (catches deletion). This ordering minimizes unnecessary checks in the common case (normal prepend where all three pass).
+
+**Why the tag check is always active:** `RCTComponentViewRegistry` assigns tags during dequeue and resets to 0 during enqueue regardless of culling state. When items are removed and re-added (even without culling), recycled UIViews can receive new tags based on their new position. The tag check must always run to avoid applying a delta to the wrong view.
+
+### 8.3 Android — Scroll Event Throttle Design
+
+`scrollEventThrottle` limits `onScroll` event frequency to reduce JS bridge traffic during active scrolling. This creates a trade-off: MVCP adjustments that occur during or immediately after a scroll animation may find stale JS offset state if the throttle blocks the adjustment event.
+
+**Resolution: selective unthrottling.** The `emitScrollEventNoThrottle()` function bypasses the throttle check but is only called in two specific places: after scroll animations end, and after MVCP adjustments. This preserves the throttle's purpose (reducing JS bridge traffic during active scrolling) while ensuring JS state is current when needed for delta calculations.
+
+**Why two call sites are needed:** The animation-end call site ensures JS state is updated when a user-initiated scroll animation completes (preventing stale state for subsequent MVCP corrections). The MVCP call site ensures JS state reflects the MVCP-adjusted position immediately (preventing stale delta calculations). Both are needed because MVCP corrections can happen independently of scroll animations (e.g., during data updates).
+
+**Platform difference:** iOS uses UIScrollViewDelegate callbacks that don't apply the same throttle to programmatic scrolls. Android's ReactScrollView applies throttle uniformly to all events, which is why this design detail is specific to Android.
+
+---
+
+## 9. Appendix: Key Code References
 
 ### iOS Fabric
 
