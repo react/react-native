@@ -47,6 +47,9 @@ function renderItem(item) {
   );
 }
 
+// Trigger: Items inserted at beginning of data array. FlatList re-renders, native mounts new views at top.
+// Expected: Anchor view shifts downward by total height of prepended items. MVCP captures anchor's pre-mount frame,
+// computes delta = newFrame - oldFrame, adjusts contentOffset to keep anchor at same screen position.
 test('maintainVisibleContentPosition preserves position on prepend', () => {
   const root = Fantom.createRoot({
     viewportWidth: 100,
@@ -124,6 +127,9 @@ test('maintainVisibleContentPosition preserves position on prepend', () => {
   expect(prependingLogs.some(log => log.includes('item_5'))).toBe(true);
 });
 
+// Trigger: Multiple prepend operations in quick succession (no user interaction between batches).
+// The `pendingScrollUpdateCount` mechanism prevents render window adjustment during MVCP corrections.
+// Expected: Each prepend's delta applied sequentially. Anchor's final position after all prepends should be stable.
 test('maintainVisibleContentPosition handles consecutive prepends without drift', () => {
   const root = Fantom.createRoot({
     viewportWidth: 100,
@@ -186,6 +192,7 @@ test('maintainVisibleContentPosition handles consecutive prepends without drift'
   expect(lastLogs.some(log => log.includes('item_19'))).toBe(true);
 });
 
+// Ensures normal scrolling is not affected by MVCP prop being set.
 test('maintainVisibleContentPosition does not interfere with normal scroll', () => {
   const root = Fantom.createRoot({
     viewportWidth: 100,
@@ -234,6 +241,8 @@ test('maintainVisibleContentPosition does not interfere with normal scroll', () 
   expect(logs.length).toBeGreaterThan(0);
 });
 
+// Trigger: ScrollView with autoscrollToTopThreshold set.
+// Expected: When scroll offset drops below threshold, ScrollView auto-scrolls to top. MVCP should not interfere.
 test('maintainVisibleContentPosition with autoscrollToTopThreshold triggers scroll to top', () => {
   const root = Fantom.createRoot({
     viewportWidth: 100,
@@ -292,6 +301,9 @@ test('maintainVisibleContentPosition with autoscrollToTopThreshold triggers scro
   expect(prependingLogs.length).toBeGreaterThan(0);
 });
 
+// Trigger: ScrollView with maintainVisibleContentPosition={{minIndexForVisible: N}}.
+// Expected: Same MVCP logic as FlatList, but ScrollView has fixed set of subviews (no virtualization).
+// Anchor is the Nth subview whose bottom edge is below scroll offset.
 test('maintainVisibleContentPosition with minIndexForVisible > 0 skips early items', () => {
   const root = Fantom.createRoot({
     viewportWidth: 100,
@@ -346,6 +358,9 @@ test('maintainVisibleContentPosition with minIndexForVisible > 0 skips early ite
   expect(logs2.length).toBeGreaterThan(0);
 });
 
+// Trigger: Vertically inverted FlatList (inverted={true}). Items rendered in reverse order.
+// Expected: Inverted mode uses CSS transforms (scaleY: -1) to flip visual order. Native subview order unchanged.
+// MVCP finds first subview whose bottom edge is below scroll offset — the visually-topmost visible item.
 test('maintainVisibleContentPosition with inverted ScrollView preserves position on prepend', () => {
   const root = Fantom.createRoot({
     viewportWidth: 100,
@@ -406,6 +421,8 @@ test('maintainVisibleContentPosition with inverted ScrollView preserves position
   expect(prependingLogs.some(log => log.includes('item_5'))).toBe(true);
 });
 
+// Trigger: Multiple prepends in inverted mode.
+// Expected: Tag comparison safeguard must work correctly in inverted mode.
 test('maintainVisibleContentPosition with inverted ScrollView handles consecutive prepends', () => {
   const root = Fantom.createRoot({
     viewportWidth: 100,
@@ -470,6 +487,9 @@ test('maintainVisibleContentPosition with inverted ScrollView handles consecutiv
   expect(lastLogs.some(log => log.includes('item_19'))).toBe(true);
 });
 
+// Trigger: User actively dragging (touch-scrolling) when data change triggers MVCP.
+// Expected: MVCP correction may compete with user's scroll. Scroll skip guard on `patch/add-scrolling-guard`
+// branch would skip correction during user dragging, but this is NOT merged.
 test('maintainVisibleContentPosition does not interrupt scroll during prepend', () => {
   const root = Fantom.createRoot({
     viewportWidth: 100,
@@ -535,6 +555,8 @@ test('maintainVisibleContentPosition does not interrupt scroll during prepend', 
   expect(prependLogs.some(log => log.includes('item_10'))).toBe(true);
 });
 
+// Trigger: Horizontally scrolling list in left-to-right layout direction.
+// Expected: Both iOS and Android compute deltas using frames directly, in same coordinate space as contentOffset.
 test('maintainVisibleContentPosition preserves position on horizontal prepend', () => {
   const root = Fantom.createRoot({
     viewportWidth: VIEWPORT_HEIGHT,
@@ -589,6 +611,8 @@ test('maintainVisibleContentPosition preserves position on horizontal prepend', 
   expect(logs.some(log => log.includes('item_5'))).toBe(true);
 });
 
+// Trigger: Horizontally inverted FlatList.
+// Expected: Same as vertical inverted — CSS transform flips visual order, native subview order unchanged.
 test('maintainVisibleContentPosition preserves position on horizontal + inverted prepend', () => {
   const root = Fantom.createRoot({
     viewportWidth: VIEWPORT_HEIGHT,
@@ -643,6 +667,8 @@ test('maintainVisibleContentPosition preserves position on horizontal + inverted
   expect(logs.some(log => log.includes('item_5'))).toBe(true);
 });
 
+// Trigger: Items inserted at end of data array.
+// Expected: Appends don't shift existing items' frames, so MVCP delta is 0 and no scroll correction triggered.
 test('maintainVisibleContentPosition does not trigger correction on append', () => {
   const root = Fantom.createRoot({
     viewportWidth: 100,
@@ -696,6 +722,8 @@ test('maintainVisibleContentPosition does not trigger correction on append', () 
   expect(logs.some(log => log.includes('item_20'))).toBe(true);
 });
 
+// Trigger: Item currently at anchor position (first visible) removed from data array.
+// Expected: Anchor shifts to next visible item. MVCP captures new anchor's frame, computes delta, adjusts scroll.
 test('maintainVisibleContentPosition handles delete of anchor item', () => {
   const root = Fantom.createRoot({
     viewportWidth: 100,
@@ -746,6 +774,8 @@ test('maintainVisibleContentPosition handles delete of anchor item', () => {
   expect(logs.some(log => log.includes('item_6'))).toBe(true);
 });
 
+// Trigger: Item not at anchor position removed from data array.
+// Expected: If deleted item is above anchor, anchor shifts up. MVCP delta = newFrame - oldFrame.
 test('maintainVisibleContentPosition handles delete from middle of list', () => {
   const root = Fantom.createRoot({
     viewportWidth: 100,
@@ -796,6 +826,9 @@ test('maintainVisibleContentPosition handles delete from middle of list', () => 
   expect(logs.some(log => log.includes('item_10'))).toBe(true);
 });
 
+// Trigger: All items removed from data array. List becomes empty.
+// Expected: `_recomputeFirstVisibleViewForMaintainVisibleContentPosition` doesn't execute (loop doesn't run).
+// nil check prevents accessing frame on nil/invalid view.
 test('maintainVisibleContentPosition handles empty list gracefully', () => {
   const root = Fantom.createRoot({
     viewportWidth: 100,
@@ -842,6 +875,9 @@ test('maintainVisibleContentPosition handles empty list gracefully', () => {
   expect(logs.length).toBeGreaterThan(0);
 });
 
+// Trigger: Items positioned above anchor grow in size (e.g., images load, expandable content opens).
+// Expected: Mathematical invariant `deltaY = newAnchorY - oldAnchorY = growth_of_items_above_anchor` holds.
+// Anchor's screen position remains constant. Anchor can never be pushed off-screen by sibling growth alone.
 test('maintainVisibleContentPosition handles sibling items above anchor growing', () => {
   const root = Fantom.createRoot({
     viewportWidth: 100,
@@ -907,6 +943,8 @@ test('maintainVisibleContentPosition handles sibling items above anchor growing'
   expect(logs.some(log => log.includes('item_8'))).toBe(true);
 });
 
+// Trigger: Items positioned above anchor shrink in size.
+// Expected: Same invariant as growth, but delta is negative. contentOffset decreases by shrinkage amount.
 test('maintainVisibleContentPosition handles sibling items above anchor shrinking', () => {
   const root = Fantom.createRoot({
     viewportWidth: 100,
@@ -972,6 +1010,10 @@ test('maintainVisibleContentPosition handles sibling items above anchor shrinkin
   expect(logs.some(log => log.includes('item_8'))).toBe(true);
 });
 
+// Trigger: setData([]) + scrollToOffset(0) clears and repopulates list.
+// Expected: If old anchor key exists in new data, position maintained. Otherwise, JS computes adjustment as null
+// and native side recomputes anchor from new view hierarchy.
+// Two abort conditions: tag check (catches view recycling), superview check (catches view deletion).
 test('maintainVisibleContentPosition handles data reset with entire data replacement', () => {
   const root = Fantom.createRoot({
     viewportWidth: 100,
@@ -1022,6 +1064,9 @@ test('maintainVisibleContentPosition handles data reset with entire data replace
   expect(logs.some(log => log.includes('item_105'))).toBe(true);
 });
 
+// Trigger: List rendered with initialScrollIndex pointing to non-first item, then items prepended.
+// Expected: If initialScrollIndex refers to item pushed by prepend, scroll destination may be wrong
+// because JS's initial scroll calculation doesn't account for MVCP corrections.
 test('maintainVisibleContentPosition with initialScrollIndex + prepend after remount', () => {
   const root = Fantom.createRoot({
     viewportWidth: 100,
@@ -1072,6 +1117,9 @@ test('maintainVisibleContentPosition with initialScrollIndex + prepend after rem
   expect(logs.some(log => log.includes('item_20'))).toBe(true);
 });
 
+// Trigger: Horizontally scrolling list in right-to-left layout direction.
+// Expected: Frame-based delta computation should work for RTL since frames are in same coordinate space as contentOffset.
+// contentInset handling in RTL not explicitly tested.
 test('maintainVisibleContentPosition preserves position on horizontal prepend in RTL', () => {
   const root = Fantom.createRoot({
     viewportWidth: VIEWPORT_HEIGHT,
@@ -1128,6 +1176,8 @@ test('maintainVisibleContentPosition preserves position on horizontal prepend in
   expect(logs.some(log => log.includes('item_20'))).toBe(true);
 });
 
+// Trigger: Multiple mutation types in same data batch: items prepended at top, appended at bottom, deleted from middle.
+// Expected: Anchor's final frame reflects ALL changes, delta correct for net effect.
 test('maintainVisibleContentPosition handles complex concurrent mutations (prepend + append + middle delete)', () => {
   const root = Fantom.createRoot({
     viewportWidth: 100,
@@ -1190,6 +1240,9 @@ test('maintainVisibleContentPosition handles complex concurrent mutations (prepe
   expect(logs.some(log => log.includes('item_20'))).toBe(true);
 });
 
+// Trigger: FlatList with getItemLayout prop providing fixed item dimensions.
+// Expected: Native MVCP always reads actual frames, so accurate regardless of JS metrics.
+// getItemLayout doesn't affect native MVCP.
 test('maintainVisibleContentPosition with getItemLayout prop', () => {
   const root = Fantom.createRoot({
     viewportWidth: 100,
@@ -1257,6 +1310,8 @@ test('maintainVisibleContentPosition with getItemLayout prop', () => {
   expect(logs.some(log => log.includes('item_7'))).toBe(true);
 });
 
+// Trigger: Content view has only spacers (placeholder views with no data binding) in visible area.
+// Expected: Anchor selection incorrect. Delta computed from spacer's frame is meaningless.
 test('maintainVisibleContentPosition handles all items culled (spacers only in viewport)', () => {
   const root = Fantom.createRoot({
     viewportWidth: 100,
@@ -1342,6 +1397,8 @@ test('maintainVisibleContentPosition handles all items culled (spacers only in v
   expect(logs.some(log => log.includes('item_10'))).toBe(true);
 });
 
+// Trigger: User performs pull-to-refresh which triggers data prepend.
+// Expected: Pull-to-refresh typically scrolls to top, then prepends items. MVCP handles prepend delta after refresh.
 test('maintainVisibleContentPosition simulates pull-to-refresh pattern', () => {
   const root = Fantom.createRoot({
     viewportWidth: 100,
@@ -1404,6 +1461,9 @@ test('maintainVisibleContentPosition simulates pull-to-refresh pattern', () => {
   expect(logs.some(log => log.includes('item_5'))).toBe(true);
 });
 
+// Trigger: ScrollView unmounted (user navigates away), then remounted (new screen).
+// Expected: iOS Fabric: prepareForRecycle resets anchor state. Android: stop() removes UIManager listener.
+// Fresh MVCP state initialization on remount.
 test('maintainVisibleContentPosition handles unmount/remount (navigation pattern)', () => {
   const root = Fantom.createRoot({
     viewportWidth: 100,
@@ -1465,6 +1525,8 @@ test('maintainVisibleContentPosition handles unmount/remount (navigation pattern
   expect(remountLogs.some(log => log.includes('item_55'))).toBe(true);
 });
 
+// Trigger: Keyboard or safe area insets change, changing ScrollView's contentInset.
+// Expected: Frame-based MVCP delta computation not affected by inset changes because frames are in content coordinates.
 test('maintainVisibleContentPosition handles contentInset changes (keyboard/safe area)', () => {
   const root = Fantom.createRoot({
     viewportWidth: 100,
@@ -1520,6 +1582,9 @@ test('maintainVisibleContentPosition handles contentInset changes (keyboard/safe
   expect(logs.some(log => log.includes('item_8'))).toBe(true);
 });
 
+// Trigger: Items prepended at top AND removed from bottom in same data batch.
+// Expected: Native side unaffected by bottom deletes since MVCP only looks at first visible view.
+// TODO: detect and handle/ignore re-ordering comment at RCTScrollViewComponentView.mm:1110 explicitly unhandled.
 test('maintainVisibleContentPosition handles prepend with delete from bottom', () => {
   const root = Fantom.createRoot({
     viewportWidth: 100,
@@ -1573,6 +1638,9 @@ test('maintainVisibleContentPosition handles prepend with delete from bottom', (
   expect(logs.some(log => log.includes('item_5'))).toBe(true);
 });
 
+// Trigger: Large number of items (50+) inserted at beginning of data array.
+// Expected: Anchor view may be recycled by FlatList's view pool. Tag comparison safeguard detects recycled view
+// and aborts correction. Without this check, delta computed from wrong view.
 test('maintainVisibleContentPosition handles large prepend (50+ items)', () => {
   const root = Fantom.createRoot({
     viewportWidth: 100,
@@ -1626,6 +1694,9 @@ test('maintainVisibleContentPosition handles large prepend (50+ items)', () => {
   expect(logs.some(log => log.includes('item_5'))).toBe(true);
 });
 
+// Trigger: Very first prepend after initial list mount. Anchor state not yet initialized by prior MVCP cycle.
+// Expected: On first mount, `_prepareForMaintainVisibleScrollPosition` initializes anchor state.
+// First prepend should work correctly because initial mount establishes baseline.
 test('maintainVisibleContentPosition handles first prepend after initial mount', () => {
   const root = Fantom.createRoot({
     viewportWidth: 100,
@@ -1673,6 +1744,10 @@ test('maintainVisibleContentPosition handles first prepend after initial mount',
   expect(logs.some(log => log.includes('item_5'))).toBe(true);
 });
 
+// Trigger: Items have dynamic heights (images loading, variable text). Anchor's frame size may differ between
+// pre-mount capture and post-layout measurement.
+// Expected: Delta formula `newFrame - oldFrame` conflates position shift from prepended items and size change of
+// anchor item itself. Frame-based approach inherently correct but first correction may be inaccurate.
 test('maintainVisibleContentPosition handles variable-height items', () => {
   const root = Fantom.createRoot({
     viewportWidth: 100,
@@ -1755,6 +1830,9 @@ test('maintainVisibleContentPosition handles variable-height items', () => {
   expect(logs.some(log => log.includes('item_6'))).toBe(true);
 });
 
+// Trigger: Items above anchor grow, pushing anchor off top of visible area. Culling removes off-screen views.
+// Expected: On next mount cycle, `_recomputeFirstVisibleViewForMaintainVisibleContentPosition` finds new anchor.
+// Tag comparison safeguard detects when anchor view was recycled (different tag) and aborts correction.
 test('maintainVisibleContentPosition handles anchor culled (pushed off-screen)', () => {
   const root = Fantom.createRoot({
     viewportWidth: 100,
@@ -1808,6 +1886,8 @@ test('maintainVisibleContentPosition handles anchor culled (pushed off-screen)',
   expect(logs.some(log => log.includes('item_13'))).toBe(true);
 });
 
+// Trigger: Inverted list with culling enabled, causing view recycling during prepends.
+// Expected: Tag comparison safeguard must work correctly in inverted mode. Tag check always active.
 test('maintainVisibleContentPosition with inverted + recycling', () => {
   const root = Fantom.createRoot({
     viewportWidth: 100,
@@ -1863,6 +1943,9 @@ test('maintainVisibleContentPosition with inverted + recycling', () => {
   expect(logs.some(log => log.includes('item_5'))).toBe(true);
 });
 
+// Trigger: Many rapid state updates cause many re-renders in quick succession.
+// Expected: If scroll events throttled, `pendingScrollUpdateCount` may not decrement promptly, blocking render
+// window updates. Android scroll throttle fix ensures JS state current after MVCP adjustments.
 test('maintainVisibleContentPosition handles rapid state updates', () => {
   const root = Fantom.createRoot({
     viewportWidth: 100,
@@ -1921,6 +2004,9 @@ test('maintainVisibleContentPosition handles rapid state updates', () => {
   expect(logs.some(log => log.includes('item_8'))).toBe(true);
 });
 
+// Trigger: Programmatic scrollToOffset call while MVCP is active.
+// Expected: Programmatic scrollToOffset during MVCP active can cause incorrect final position.
+// MVCP delta is additive, adds to whatever current scroll position is. Known open issue.
 test('maintainVisibleContentPosition with scrollToOffset (non-animated)', () => {
   const root = Fantom.createRoot({
     viewportWidth: 100,
@@ -1962,6 +2048,9 @@ test('maintainVisibleContentPosition with scrollToOffset (non-animated)', () => 
   expect(logs.length).toBeGreaterThan(0);
 });
 
+// Trigger: Animated scrollToOffset call in progress when MVCP correction applied.
+// Expected: Animated scrollToOffset interrupted by MVCP correction because setting contentOffset directly
+// (iOS) or calling scrollToPreservingMomentum (Android) replaces any ongoing animation.
 test('maintainVisibleContentPosition with scrollToOffset (animated)', () => {
   const root = Fantom.createRoot({
     viewportWidth: 100,
@@ -2003,6 +2092,8 @@ test('maintainVisibleContentPosition with scrollToOffset (animated)', () => {
   expect(logs.length).toBeGreaterThan(0);
 });
 
+// Trigger: Item's content changes but rendered size stays the same.
+// Expected: No frame change, no delta, no scroll correction. Anchor stays at same position.
 test('maintainVisibleContentPosition handles content change with same size', () => {
   const root = Fantom.createRoot({
     viewportWidth: 100,

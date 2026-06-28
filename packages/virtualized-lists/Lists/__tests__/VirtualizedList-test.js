@@ -2471,6 +2471,9 @@ it('virtualizes away last focused index if item removed', async () => {
   expect(component).toMatchSnapshot();
 });
 
+// Trigger: Items inserted at beginning of data array. FlatList re-renders, native mounts new views at top.
+// Expected: Anchor view shifts downward by total height of prepended items. MVCP captures anchor's pre-mount frame,
+// computes delta = newFrame - oldFrame, adjusts contentOffset to keep anchor at same screen position.
 it('handles maintainVisibleContentPosition', async () => {
   const items = generateItems(20);
   const ITEM_HEIGHT = 10;
@@ -2531,6 +2534,8 @@ it('handles maintainVisibleContentPosition', async () => {
   expect(component).toMatchSnapshot();
 });
 
+// Trigger: Item at anchor position removed from data array.
+// Expected: Anchor shifts to next visible item. MVCP captures new anchor's frame, computes delta, adjusts scroll.
 it('handles maintainVisibleContentPosition when anchor moves before minIndexForVisible', async () => {
   const items = generateItems(20);
   const ITEM_HEIGHT = 10;
@@ -2578,6 +2583,9 @@ it('handles maintainVisibleContentPosition when anchor moves before minIndexForV
   expect(component).toMatchSnapshot();
 });
 
+// Trigger: Multiple prepend operations in quick succession (no user interaction between batches).
+// The `pendingScrollUpdateCount` mechanism prevents render window adjustment during MVCP corrections.
+// Expected: Each prepend's delta applied sequentially. Anchor's final position after all prepends should be stable.
 it('handles multiple rapid prepends with maintainVisibleContentPosition', async () => {
   const items = generateItems(20);
   const ITEM_HEIGHT = 10;
@@ -2661,6 +2669,8 @@ it('handles multiple rapid prepends with maintainVisibleContentPosition', async 
   expect(component).toMatchSnapshot();
 });
 
+// Trigger: Multiple prepends in quick succession.
+// Expected: Delta computation stays bounded — anchor index should not drift beyond expected range.
 it('maintainVisibleContentPosition delta stays bounded across consecutive updates', async () => {
   const ITEM_HEIGHT = 10;
   const VIEWPORT_HEIGHT = 50;
@@ -2735,6 +2745,8 @@ it('maintainVisibleContentPosition delta stays bounded across consecutive update
   );
 });
 
+// Trigger: Rapid prepends with minIndexForVisible > 0.
+// Expected: Only items at or beyond minIndexForVisible are considered for anchor selection.
 it('maintainVisibleContentPosition with minIndexForVisible > 0 handles rapid prepends', async () => {
   const items = generateItems(20);
   const ITEM_HEIGHT = 10;
@@ -2793,6 +2805,9 @@ it('maintainVisibleContentPosition with minIndexForVisible > 0 handles rapid pre
   expect(anchorAfterPrepend).toBeLessThanOrEqual(anchorBeforePrepend + 10);
 });
 
+// Trigger: Vertically inverted FlatList (inverted={true}). Items rendered in reverse order.
+// Expected: Inverted mode uses CSS transforms (scaleY: -1) to flip visual order. Native subview order unchanged.
+// MVCP finds first subview whose bottom edge is below scroll offset — the visually-topmost visible item.
 it('maintainVisibleContentPosition with inverted VirtualizedList handles prepends', async () => {
   const items = generateItems(20);
   const ITEM_HEIGHT = 10;
