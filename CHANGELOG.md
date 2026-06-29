@@ -595,6 +595,30 @@
 - **Touch Handling**: Respect `cancelsTouchesInView` when canceling touches in `RCTSurfaceTouchHandler` ([5634e8a601](https://github.com/facebook/react-native/commit/5634e8a601caf0faa174bac3511929de767609ac) by [@intmain](https://github.com/intmain))
 - **View**: Fix duplicate shadow bug during component recycling by cleaning up visual layers in prepareForRecycle ([7dcedf1def](https://github.com/facebook/react-native/commit/7dcedf1def880163ab7ca07b2575a8153029a925) by Atharv Soni)
 
+## v0.83.10
+
+### Added
+
+#### iOS specific
+
+- **Prebuild**: Cache prebuilt iOS binaries in `~/Library/Caches/ReactNative` so Hermes, ReactNativeDependencies and ReactNativeCore tarballs are reused across clean installs and projects instead of being re-downloaded from Maven ([9a0b05b8d0](https://github.com/react/react-native/commit/9a0b05b8d07f3468a08077119189406d56a230ba) by [@cipolleschi](https://github.com/cipolleschi))
+
+### Fixed
+
+- **React Native DevTools**: Fix a bug where we would incorrectly flag apps using additional Hermes runtimes (e.g. Reanimated) as being multi-host ([c800503214](https://github.com/react/react-native/commit/c8005032140f1aff16027b5ed53caea6c9d299f5) by [@huntie](https://github.com/huntie))
+- **Yoga**: Fixed Yoga node ownership when `display: contents` is used in absolutely positioned subtrees ([f2f92098dd](https://github.com/react/react-native/commit/f2f92098ddf996d3f75cfbaa143d7151c29776f7) by [@j-piasecki](https://github.com/j-piasecki))
+- **Yoga**: Fixed `display: contents` nodes having `hasNewLayout` set incorrectly ([2546ce4d82](https://github.com/react/react-native/commit/2546ce4d8219050fcd1bf432c7c830c9fd70c9af) by [@j-piasecki](https://github.com/j-piasecki))
+
+#### Android specific
+
+- **Networking**: `fetch()` response URL is now correct after a redirect ([fbe6a686e6](https://github.com/react/react-native/commit/fbe6a686e65e70dd61700413084ddc54c0b86765) by [@MarkCSmith](https://github.com/MarkCSmith))
+- **React Native DevTools**: Limit WebSocket queue size for the packager connection to prevent the Android inspector from being force-disconnected on large payloads ([7164f96d58](https://github.com/react/react-native/commit/7164f96d581115e6a7a5646a50ded8e5fdff7742) by [@huntie](https://github.com/huntie))
+
+#### iOS specific
+
+- **CocoaPods**: Make Podfile.lock SPEC CHECKSUMS deterministic across machines by sorting Dir.glob results in Yoga.podspec and using a dynamically computed Pods-relative path in hermes-engine.podspec ([64c9663152](https://github.com/react/react-native/commit/64c9663152879a87d061a3f01b9e9c4e98cc73bc) by [@IsaacIsrael](https://github.com/IsaacIsrael))
+- **View**: Fixes crash when changing the value of `removeClippedSubviews` ([91e3f773b7](https://github.com/react/react-native/commit/91e3f773b7e571a503b57e09a1cb8a44ff26cd1e) by [@javache](https://github.com/javache))
+
 ## v0.83.8
 
 ### Fixed

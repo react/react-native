@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<f44477b5f5a4f7030798a61694d0332a>>
+ * @generated SignedSource<<1a333a44919efce6bb2070bae79bdf9b>>
  * @flow strict
  * @noformat
  */
@@ -31,7 +31,6 @@ export type ReactNativeFeatureFlagsJsOnly = Readonly<{
   jsOnlyTestFlag: Getter<boolean>,
   animatedDeferStartOfTimingAnimations: Getter<boolean>,
   animatedForceNativeDriver: Getter<boolean>,
-  animatedShouldDebounceQueueFlush: Getter<boolean>,
   animatedShouldSyncValueBeforeStartCallback: Getter<boolean>,
   animatedShouldUseSingleOp: Getter<boolean>,
   deferFlatListFocusChangeRenderUpdate: Getter<boolean>,
@@ -150,11 +149,6 @@ export const animatedDeferStartOfTimingAnimations: Getter<boolean> = createJavaS
  * When enabled, forces `useNativeDriver` to `true` for all Animated animations and events, overriding the config (including an explicit `false`). Has no effect unless the shared animated backend is enabled, which is required to support native driver for all props.
  */
 export const animatedForceNativeDriver: Getter<boolean> = createJavaScriptFlagGetter('animatedForceNativeDriver', false);
-
-/**
- * Enables an experimental flush-queue debouncing in Animated.js.
- */
-export const animatedShouldDebounceQueueFlush: Getter<boolean> = createJavaScriptFlagGetter('animatedShouldDebounceQueueFlush', true);
 
 /**
  * When a useNativeDriver animation completes, syncs the JS-side AnimatedValue with the post-animation value BEFORE invoking the user-supplied start({finished}) callback. Without the flag, the callback observes the pre-animation value, which can cause downstream re-renders to read stale interpolation outputs.

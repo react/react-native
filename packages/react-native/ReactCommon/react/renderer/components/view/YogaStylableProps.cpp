@@ -24,13 +24,11 @@ YogaStylableProps::YogaStylableProps(
     const YogaStylableProps& sourceProps,
     const RawProps& rawProps,
     const std::function<bool(const std::string&)>& filterObjectKeys)
-    : Props() {
-  initialize(context, sourceProps, rawProps, filterObjectKeys);
-
-  yogaStyle = ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-      ? sourceProps.yogaStyle
-      : convertRawProp(context, rawProps, sourceProps.yogaStyle);
-
+    : Props(context, sourceProps, rawProps, filterObjectKeys),
+      yogaStyle(
+          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
+              ? sourceProps.yogaStyle
+              : convertRawProp(context, rawProps, sourceProps.yogaStyle)) {
   if (!ReactNativeFeatureFlags::enableCppPropsIteratorSetter()) {
     convertRawPropAliases(context, sourceProps, rawProps);
   }

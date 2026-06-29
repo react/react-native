@@ -100,6 +100,34 @@ Map {
 #import <vector>
 
 
+@protocol NativeSampleTurboModuleSpec <RCTBridgeModule, RCTTurboModule>
+
+- (NSMutableData *)getArrayBuffer;
+- (void)voidArrayBuffer:(NSMutableData *)arg;
+- (void)voidNullableArrayBuffer:(NSMutableData * _Nullable)arg;
+- (void)promiseArrayBuffer:(RCTPromiseResolveBlock)resolve
+                    reject:(RCTPromiseRejectBlock)reject;
+
+@end
+
+@interface NativeSampleTurboModuleSpecBase : NSObject {
+@protected
+facebook::react::EventEmitterCallback _eventEmitterCallback;
+}
+- (void)setEventEmitterCallback:(EventEmitterCallbackWrapper *)eventEmitterCallbackWrapper;
+
+
+@end
+
+namespace facebook::react {
+  /**
+   * ObjC++ class for module 'NativeSampleTurboModule'
+   */
+  class JSI_EXPORT NativeSampleTurboModuleSpecJSI : public ObjCTurboModule {
+  public:
+    NativeSampleTurboModuleSpecJSI(const ObjCTurboModule::InitParams &params);
+  };
+} // namespace facebook::react
 
 #endif // array_buffer_native_module_H
 ",

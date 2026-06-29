@@ -11,6 +11,8 @@
 #import <hermes/hermes.h>
 #import <react/featureflags/ReactNativeFeatureFlags.h>
 
+#import <vector>
+
 #import <OCMock/OCMock.h>
 
 using namespace facebook::react;
@@ -26,6 +28,23 @@ RCT_EXPORT_MODULE()
 RCT_EXPORT_METHOD(testMethodWhichTakesObject : (id)object) {}
 
 @end
+
+// Minimal concrete MutableBuffer that owns its bytes, used to observe lifetime.
+class TestMutableBuffer : public facebook::jsi::MutableBuffer {
+ public:
+  explicit TestMutableBuffer(size_t size) : bytes_(size, 0) {}
+  size_t size() const override
+  {
+    return bytes_.size();
+  }
+  uint8_t *data() override
+  {
+    return bytes_.data();
+  }
+
+ private:
+  std::vector<uint8_t> bytes_;
+};
 
 class StubNativeMethodCallInvoker : public NativeMethodCallInvoker {
  public:
@@ -102,6 +121,36 @@ class StubNativeMethodCallInvoker : public NativeMethodCallInvoker {
   module_->invokeObjCMethod(
       *rt, VoidKind, "testMethodWhichTakesObject", @selector(testMethodWhichTakesObject:), args, 1);
   OCMVerify(OCMTimes(1), [instance_ testMethodWhichTakesObject:nil]);
+}
+
+// A JS ArrayBuffer converts to an NSMutableData that owns an independent copy of
+// the bytes — NSMutableData cannot alias a foreign buffer, so the result stays
+// valid and is safe to mutate after the source buffer is gone. This covers the
+// ArrayBuffer-backed-by-native-MutableBuffer case, which is the one that could in
+// principle have been aliased zero-copy.
+- (void)testArrayBufferConvertsToIndependentNSMutableData
+{
+  constexpr size_t kBufferSize = 64 * 1024;
+
+  auto hermesRuntime = facebook::hermes::makeHermesRuntime();
+  facebook::jsi::Runtime *rt = hermesRuntime.get();
+
+  auto buffer = std::make_shared<TestMutableBuffer>(kBufferSize);
+  *buffer->data() = 0xAB;
+
+  facebook::jsi::ArrayBuffer arrayBuffer(*rt, buffer);
+  id converted =
+      TurboModuleConvertUtils::convertJSIValueToObjCObject(*rt, facebook::jsi::Value(*rt, arrayBuffer), nullptr);
+
+  XCTAssertTrue([converted isKindOfClass:[NSMutableData class]]);
+  NSMutableData *data = (NSMutableData *)converted;
+  XCTAssertEqual(data.length, (NSUInteger)kBufferSize);
+  XCTAssertEqual(*static_cast<const uint8_t *>(data.bytes), 0xAB);
+
+  // Independent copy: mutating the NSMutableData must not write through to the
+  // source MutableBuffer.
+  *static_cast<uint8_t *>(data.mutableBytes) = 0xCD;
+  XCTAssertEqual(*buffer->data(), 0xAB, @"NSMutableData must not alias the source buffer");
 }
 
 @end

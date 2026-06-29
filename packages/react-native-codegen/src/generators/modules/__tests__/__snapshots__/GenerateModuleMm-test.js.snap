@@ -58,6 +58,50 @@ Map {
 #import \\"array_buffer_native_module.h\\"
 
 
+@implementation NativeSampleTurboModuleSpecBase
+
+
+- (void)setEventEmitterCallback:(EventEmitterCallbackWrapper *)eventEmitterCallbackWrapper
+{
+  _eventEmitterCallback = std::move(eventEmitterCallbackWrapper->_eventEmitterCallback);
+}
+@end
+
+
+namespace facebook::react {
+  
+    static facebook::jsi::Value __hostFunction_NativeSampleTurboModuleSpecJSI_getArrayBuffer(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
+      return static_cast<ObjCTurboModule&>(turboModule).invokeObjCMethod(rt, ArrayBufferKind, \\"getArrayBuffer\\", @selector(getArrayBuffer), args, count);
+    }
+
+    static facebook::jsi::Value __hostFunction_NativeSampleTurboModuleSpecJSI_voidArrayBuffer(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
+      return static_cast<ObjCTurboModule&>(turboModule).invokeObjCMethod(rt, VoidKind, \\"voidArrayBuffer\\", @selector(voidArrayBuffer:), args, count);
+    }
+
+    static facebook::jsi::Value __hostFunction_NativeSampleTurboModuleSpecJSI_voidNullableArrayBuffer(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
+      return static_cast<ObjCTurboModule&>(turboModule).invokeObjCMethod(rt, VoidKind, \\"voidNullableArrayBuffer\\", @selector(voidNullableArrayBuffer:), args, count);
+    }
+
+    static facebook::jsi::Value __hostFunction_NativeSampleTurboModuleSpecJSI_promiseArrayBuffer(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
+      return static_cast<ObjCTurboModule&>(turboModule).invokeObjCMethod(rt, PromiseKind, \\"promiseArrayBuffer\\", @selector(promiseArrayBuffer:reject:), args, count);
+    }
+
+  NativeSampleTurboModuleSpecJSI::NativeSampleTurboModuleSpecJSI(const ObjCTurboModule::InitParams &params)
+    : ObjCTurboModule(params) {
+      
+        methodMap_[\\"getArrayBuffer\\"] = MethodMetadata {0, __hostFunction_NativeSampleTurboModuleSpecJSI_getArrayBuffer};
+        
+        
+        methodMap_[\\"voidArrayBuffer\\"] = MethodMetadata {1, __hostFunction_NativeSampleTurboModuleSpecJSI_voidArrayBuffer};
+        
+        
+        methodMap_[\\"voidNullableArrayBuffer\\"] = MethodMetadata {1, __hostFunction_NativeSampleTurboModuleSpecJSI_voidNullableArrayBuffer};
+        
+        
+        methodMap_[\\"promiseArrayBuffer\\"] = MethodMetadata {0, __hostFunction_NativeSampleTurboModuleSpecJSI_promiseArrayBuffer};
+        
+  }
+} // namespace facebook::react
 ",
 }
 `;

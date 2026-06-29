@@ -218,7 +218,7 @@ jobs:
     secrets: inherit
 
   build_fantom_runner:
-    runs-on: ubuntu-latest
+    runs-on: 8-core-ubuntu
     needs: [set_release_type, check_code_changes, lint]
     if: needs.check_code_changes.outputs.any_code_change == 'true'
     container:
@@ -261,7 +261,7 @@ jobs:
     secrets: inherit
 
   build_android:
-    runs-on: ubuntu-latest
+    runs-on: 8-core-ubuntu
     needs: [set_release_type, check_code_changes]
     if: |
       needs.check_code_changes.outputs.any_code_change == 'true' &&
@@ -307,7 +307,7 @@ jobs:
     secrets: inherit
 
   build_npm_package:
-    runs-on: ubuntu-latest
+    runs-on: 8-core-ubuntu
     needs:
       [
         set_release_type,
@@ -340,7 +340,7 @@ jobs:
           skip-apple-prebuilts: ${{ needs.check_code_changes.outputs.should_test_ios == 'false' }}
 
   test_android_helloworld:
-    runs-on: ubuntu-latest
+    runs-on: 4-core-ubuntu
     needs: [build_npm_package, build_android]
     if: ${{ always() && needs.build_android.result == 'success' && needs.build_npm_package.result == 'success' }}
     container:
