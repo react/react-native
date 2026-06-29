@@ -52,10 +52,6 @@
       "types": null,
       "default": "./src/*.js"
     },
-    "./types/*.d.ts": {
-      "react-native-strict-api": null,
-      "default": "./types/*.d.ts"
-    },
     "./jest-preset": "./jest-preset.js",
     "./rn-get-polyfills": "./rn-get-polyfills.js",
     "./src/fb_internal/*": "./src/fb_internal/*",
