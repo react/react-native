@@ -15,6 +15,7 @@ import type {NativeModeChangeEvent} from '../VirtualViewNativeComponent';
 
 import ensureInstance from '../../../__tests__/utilities/ensureInstance';
 import isUnreachable from '../../../__tests__/utilities/isUnreachable';
+import {createShadowNodeReferenceCountingRef} from '../../../__tests__/utilities/ShadowNodeReferenceCounter';
 import {getNodeFromPublicInstance} from '../../../../../Libraries/ReactPrivate/ReactNativePrivateInterface';
 import ReactNativeElement from '../../../webapis/dom/nodes/ReactNativeElement';
 import VirtualView, {_logs, VirtualViewMode} from '../VirtualView';
@@ -290,6 +291,28 @@ describe('memory management', () => {
     dispatchModeChangeEvent(viewRef.current, VirtualViewMode.Hidden);
 
     expect(isUnreachable(nullthrows(weakRef))).toBe(true);
+  });
+
+  test('does not retain shadow node after becoming hidden', () => {
+    const root = Fantom.createRoot();
+
+    const [getReferenceCount, childRef] =
+      createShadowNodeReferenceCountingRef();
+    const viewRef = createRef<React.RefOf<VirtualView>>();
+
+    Fantom.runTask(() => {
+      root.render(
+        <VirtualView ref={viewRef}>
+          <Text ref={childRef}>Child</Text>
+        </VirtualView>,
+      );
+    });
+
+    expect(getReferenceCount()).toBeGreaterThan(0);
+
+    dispatchModeChangeEvent(viewRef.current, VirtualViewMode.Hidden);
+
+    expect(getReferenceCount()).toBe(0);
   });
 });
 
