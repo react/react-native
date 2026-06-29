@@ -121,7 +121,7 @@ std::shared_ptr<ShadowNode> UIManager::cloneNode(
   auto props = ShadowNodeFragment::propsPlaceholder();
 
   if (!rawProps.isEmpty()) {
-    std::lock_guard<std::recursive_mutex> npGuard(family.nativePropsMutex);
+    std::lock_guard<std::mutex> npGuard(family.nativePropsMutex);
     if (family.nativeProps_DEPRECATED != nullptr) {
       // 1. update the nativeProps_DEPRECATED props.
       //

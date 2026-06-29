@@ -115,7 +115,7 @@ class ShadowNodeFamily final : public jsi::NativeState {
    * architecture and will be removed in the future.
    */
   mutable std::unique_ptr<folly::dynamic> nativeProps_DEPRECATED;
-  mutable std::recursive_mutex nativePropsMutex;
+  mutable std::mutex nativePropsMutex;
 
   /**
    * @return tag for the ShadowNodeFamily.
