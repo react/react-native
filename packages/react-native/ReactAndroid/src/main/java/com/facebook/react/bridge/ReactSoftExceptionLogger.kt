@@ -14,6 +14,7 @@ import com.facebook.react.bridge.ReactSoftExceptionLogger.Categories.CLIPPING_PR
 import com.facebook.react.bridge.ReactSoftExceptionLogger.Categories.RVG_ADD_CHILDREN_FOR_ACCESSIBILITY
 import com.facebook.react.bridge.ReactSoftExceptionLogger.Categories.RVG_IS_VIEW_CLIPPED
 import com.facebook.react.bridge.ReactSoftExceptionLogger.Categories.RVG_ON_VIEW_REMOVED
+import com.facebook.react.bridge.ReactSoftExceptionLogger.Categories.RVG_REMOVE_VIEW_NOT_IN_ALL_CHILDREN
 import com.facebook.react.bridge.ReactSoftExceptionLogger.Categories.SOFT_ASSERTIONS
 import com.facebook.react.bridge.ReactSoftExceptionLogger.Categories.SURFACE_MOUNTING_MANAGER_MISSING_VIEWSTATE
 import java.util.concurrent.CopyOnWriteArrayList
@@ -25,6 +26,7 @@ internal object ReactSoftExceptionLogger {
       RVG_ADD_CHILDREN_FOR_ACCESSIBILITY,
       RVG_IS_VIEW_CLIPPED,
       RVG_ON_VIEW_REMOVED,
+      RVG_REMOVE_VIEW_NOT_IN_ALL_CHILDREN,
       CLIPPING_PROHIBITED_VIEW,
       SOFT_ASSERTIONS,
       SURFACE_MOUNTING_MANAGER_MISSING_VIEWSTATE,
@@ -37,6 +39,8 @@ internal object ReactSoftExceptionLogger {
         "ReactViewGroup.addChildrenForAccessibility"
     const val RVG_IS_VIEW_CLIPPED: String = "ReactViewGroup.isViewClipped"
     const val RVG_ON_VIEW_REMOVED: String = "ReactViewGroup.onViewRemoved"
+    const val RVG_REMOVE_VIEW_NOT_IN_ALL_CHILDREN: String =
+        "ReactViewGroup.removeViewWithSubviewClippingEnabled:NotInAllChildren"
     const val CLIPPING_PROHIBITED_VIEW: String = "ReactClippingProhibitedView"
     const val SOFT_ASSERTIONS: String = "SoftAssertions"
     const val SURFACE_MOUNTING_MANAGER_MISSING_VIEWSTATE: String =

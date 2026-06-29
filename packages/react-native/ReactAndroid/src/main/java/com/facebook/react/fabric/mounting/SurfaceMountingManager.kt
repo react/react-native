@@ -360,7 +360,7 @@ internal constructor(
       // thus prevent the RemoveDeleteTree worker from deleting this
       // View in the future.
       if (currParentView is ViewGroup) {
-        currParentView.removeView(view)
+        removeViewFromCurrentParent(currParentView, view)
       }
       erroneouslyReaddedReactTags.add(tag)
     }
@@ -393,6 +393,33 @@ internal constructor(
         logViewHierarchy(parentView, false)
       }
     }
+  }
+
+  /**
+   * Removes [view] from [currentParent] as part of [addViewAt]'s evasive recovery, keeping any
+   * subview-clipping bookkeeping in sync.
+   *
+   * A raw [ViewGroup.removeView] only detaches the view from the Android hierarchy. When
+   * [currentParent] manages subview clipping (`removeClippedSubviews`), it also keeps an internal
+   * `allChildren` array that is only updated through its [ViewManager]'s removal path; a raw
+   * removal leaves a stale entry there pointing at a view that has just been reparented elsewhere,
+   * and a later clipping pass then trips the parent's `parent === this` invariant and crashes.
+   * Routing the removal through the parent's [ViewManager] (when its [ViewState] is known) reuses
+   * the clipping-aware removal and keeps the bookkeeping consistent; otherwise we fall back to the
+   * raw removal.
+   */
+  private fun removeViewFromCurrentParent(currentParent: ViewGroup, view: View) {
+    val currentParentState = getNullableViewState(currentParent.id)
+    if (currentParentState?.viewManager is IViewGroupManager<*>) {
+      val manager = getViewGroupManager(currentParentState)
+      for (i in 0 until manager.getChildCount(currentParent)) {
+        if (manager.getChildAt(currentParent, i) === view) {
+          manager.removeViewAt(currentParent, i)
+          return
+        }
+      }
+    }
+    currentParent.removeView(view)
   }
 
   @UiThread

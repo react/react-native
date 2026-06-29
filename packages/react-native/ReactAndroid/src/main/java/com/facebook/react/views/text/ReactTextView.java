@@ -49,6 +49,7 @@ import com.facebook.react.uimanager.style.Overflow;
 import com.facebook.react.views.text.internal.span.CanvasEffectSpan;
 import com.facebook.react.views.text.internal.span.ReactFragmentIndexSpan;
 import com.facebook.react.views.text.internal.span.ReactTagSpan;
+import com.facebook.react.views.view.ClippingAwareViewRemover;
 import com.facebook.yoga.YogaMeasureMode;
 
 @Nullsafe(Nullsafe.Mode.LOCAL)
@@ -104,10 +105,9 @@ public class ReactTextView extends AppCompatTextView implements ReactCompoundVie
     initView();
 
     // If the view is still attached to a parent, we need to remove it from the parent
-    // before we can recycle it.
-    if (getParent() != null) {
-      ((ViewGroup) getParent()).removeView(this);
-    }
+    // before we can recycle it. Route through the clipping-aware helper so a clipping parent
+    // does not retain a stale `allChildren` reference to this recycled view.
+    ClippingAwareViewRemover.removeFromParent(this);
 
     BackgroundStyleApplicator.reset(this);
 

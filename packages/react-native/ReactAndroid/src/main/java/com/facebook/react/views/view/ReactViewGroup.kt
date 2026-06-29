@@ -33,6 +33,7 @@ import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.UiThreadUtil.assertOnUiThread
 import com.facebook.react.bridge.UiThreadUtil.runOnUiThread
 import com.facebook.react.common.ReactConstants.TAG
+import com.facebook.react.common.annotations.UnstableReactNativeAPI
 import com.facebook.react.config.ReactFeatureFlags
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import com.facebook.react.touch.OnInterceptTouchEventListener
@@ -188,6 +189,7 @@ public open class ReactViewGroup public constructor(context: Context?) :
     nativeForegroundMap = null
   }
 
+  @OptIn(UnstableReactNativeAPI::class)
   internal open fun recycleView() {
     recycleCount++
 
@@ -208,10 +210,9 @@ public open class ReactViewGroup public constructor(context: Context?) :
     removeAllViews()
 
     // If the view is still attached to a parent, we need to remove it from the parent
-    // before we can recycle it.
-    if (parent != null) {
-      (parent as ViewGroup).removeView(this)
-    }
+    // before we can recycle it. Route through the clipping-aware helper so a clipping parent
+    // does not retain a stale `allChildren` reference to this recycled view.
+    ClippingAwareViewRemover.removeFromParent(this)
 
     // Reset background, borders
     updateBackgroundDrawable(null)
@@ -712,6 +713,20 @@ public open class ReactViewGroup public constructor(context: Context?) :
     val allChildren = checkNotNull(allChildren)
     view.removeOnLayoutChangeListener(childrenLayoutChangeListener)
     val index = indexOfChildInAllChildren(view)
+    if (index < 0) {
+      // The view is not tracked in allChildren (e.g. it was added before clipping was enabled or
+      // never routed through the clipping-aware add). Return instead of indexing allChildren[-1];
+      // there is nothing to remove from the clipping bookkeeping and detaching the view is the
+      // caller's responsibility. Logged because we are unsure how often this happens in practice
+      // and want to measure its frequency.
+      logSoftException(
+          ReactSoftExceptionLogger.Categories.RVG_REMOVE_VIEW_NOT_IN_ALL_CHILDREN,
+          ReactNoCrashSoftException(
+              "removeViewWithSubviewClippingEnabled: view not in allChildren. parentThis=${view.parent === this} allChildrenCount=$allChildrenCount recycleCount=$recycleCount"
+          ),
+      )
+      return
+    }
     if (!isViewClipped(allChildren[index], index)) {
       var clippedSoFar = 0
       for (i in 0..<index) {

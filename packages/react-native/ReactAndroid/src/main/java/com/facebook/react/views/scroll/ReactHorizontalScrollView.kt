@@ -33,6 +33,7 @@ import androidx.core.view.isNotEmpty
 import com.facebook.common.logging.FLog
 import com.facebook.react.R
 import com.facebook.react.common.ReactConstants
+import com.facebook.react.common.annotations.UnstableReactNativeAPI
 import com.facebook.react.common.build.ReactBuildConfig
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import com.facebook.react.uimanager.BackgroundStyleApplicator
@@ -61,6 +62,7 @@ import com.facebook.react.views.scroll.ReactScrollViewHelper.SNAP_ALIGNMENT_DISA
 import com.facebook.react.views.scroll.ReactScrollViewHelper.SNAP_ALIGNMENT_END
 import com.facebook.react.views.scroll.ReactScrollViewHelper.SNAP_ALIGNMENT_START
 import com.facebook.react.views.scroll.ReactScrollViewHelper.findNextFocusableView
+import com.facebook.react.views.view.ClippingAwareViewRemover
 import com.facebook.systrace.Systrace
 import kotlin.math.abs
 import kotlin.math.ceil
@@ -287,11 +289,12 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
     scrollsChildToFocus = true
   }
 
+  @OptIn(UnstableReactNativeAPI::class)
   internal fun recycleView() {
     initView()
-    if (parent != null) {
-      (parent as ViewGroup).removeView(this)
-    }
+    // Route through the clipping-aware helper so a clipping parent does not retain a stale
+    // `allChildren` reference to this recycled view.
+    ClippingAwareViewRemover.removeFromParent(this)
     updateView()
   }
 
