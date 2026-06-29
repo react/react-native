@@ -9,6 +9,7 @@
 
 #include <limits>
 #include <optional>
+#include <string>
 
 #include <folly/dynamic.h>
 #include <jsi/JSIDynamic.h>
@@ -91,6 +92,10 @@ class RawProps final {
    * Returns `nullptr` if a prop with the given name does not exist.
    */
   const RawValue *at(const char *name) const noexcept;
+
+  // Deprecated: Use at(name) instead. This overload exists for backwards
+  // compatibility with callers that pass prefix/suffix separately.
+  const RawValue *at(const char *name, const char *prefix, const char *suffix) const noexcept;
 
  private:
   friend class RawPropsParser;
