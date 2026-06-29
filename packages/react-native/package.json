@@ -43,10 +43,6 @@
       "react-native-strict-api": null,
       "default": "./Libraries/*.js"
     },
-    "./Libraries/*.d.ts": {
-      "react-native-strict-api": null,
-      "default": "./Libraries/*.d.ts"
-    },
     "./scripts/*": "./scripts/*",
     "./src/*": {
       "types": null,
