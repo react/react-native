@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<0642a793f11832205a362e6d1ae6e081>>
+ * @generated SignedSource<<d0524c8293f029992b78e4f9479b8a1d>>
  */
 
 /**
@@ -22,6 +22,8 @@ package com.facebook.react.internal.featureflags
 public open class ReactNativeFeatureFlagsOverrides_RNOSS_Canary_Android : ReactNativeFeatureFlagsDefaults() {
   // We could use JNI to get the defaults from C++,
   // but that is more expensive than just duplicating the defaults here.
+
+  override fun cxxNativeAnimatedEnabled(): Boolean = true
 
   override fun enableAccessibilityOrder(): Boolean = true
 

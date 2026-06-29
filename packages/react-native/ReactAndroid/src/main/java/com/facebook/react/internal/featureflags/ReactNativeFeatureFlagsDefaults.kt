@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<4c0b09eb9df8e4580dc4778a91591236>>
+ * @generated SignedSource<<4227353cb809dac40fe70d83154ba2bc>>
  */
 
 /**
@@ -27,7 +27,7 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun cdpInteractionMetricsEnabled(): Boolean = false
 
-  override fun cxxNativeAnimatedEnabled(): Boolean = true
+  override fun cxxNativeAnimatedEnabled(): Boolean = false
 
   override fun defaultTextToOverflowHidden(): Boolean = true
 

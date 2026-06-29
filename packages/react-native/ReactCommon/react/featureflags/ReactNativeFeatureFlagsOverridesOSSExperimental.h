@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<e4a9f907d9bcfa0e84f8dbcf5b1dc2be>>
+ * @generated SignedSource<<7341b28bb77aeeec670051149faeae04>>
  */
 
 /**
@@ -26,10 +26,6 @@ namespace facebook::react {
 class ReactNativeFeatureFlagsOverridesOSSExperimental : public ReactNativeFeatureFlagsOverridesOSSCanary {
  public:
     ReactNativeFeatureFlagsOverridesOSSExperimental() = default;
-
-  bool cxxNativeAnimatedEnabled() override {
-    return true;
-  }
 
   bool enableFlexboxAutoMinSizeInStrictMode() override {
     return true;
