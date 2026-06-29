@@ -1,0 +1,35 @@
+appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebook.react.uiapp
+---
+# Prefetch an image, then render the same URI with blurRadius so the blur
+# postprocessor applies to the already-decoded bitmap. Cross-platform.
+- runFlow: ./helpers/launch-app-and-search.yml
+- inputText:
+    text: 'Image'
+- assertVisible:
+    id: 'Image'
+- tapOn:
+    id: 'Image'
+- assertVisible:
+    id: 'example_search'
+- tapOn:
+    id: 'example_search'
+- inputText: 'Blur Radius with Prefetch'
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: 'image-blur-prefetch'
+    direction: DOWN
+    speed: 40
+    timeout: 10000
+- extendedWaitUntil:
+    visible: 'prefetch: ok'
+    timeout: 20000
+- extendedWaitUntil:
+    visible: 'blurred image: loaded'
+    timeout: 20000
+# Change this to takeScreenshot when you want to update the screenshot
+- assertScreenshot:
+    path: screenshots/image-blur-prefetch-${maestro.platform}
+    cropOn:
+      id: 'image-blur-prefetch'
+    thresholdPercentage: 95

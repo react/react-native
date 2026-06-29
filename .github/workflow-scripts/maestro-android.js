@@ -60,9 +60,10 @@ async function executeFlowInFolder(flowFolder) {
     const filePath = `${flowFolder}/${file}`;
     if (fs.lstatSync(filePath).isDirectory()) {
       await executeFlowInFolder(filePath);
-    } else {
+    } else if (file.endsWith('.yml') || file.endsWith('.yaml')) {
       await executeFlowWithRetries(filePath, 0);
     }
+    // Skip non-flow files (e.g. screenshot baselines under screenshots/).
   }
 }
 
