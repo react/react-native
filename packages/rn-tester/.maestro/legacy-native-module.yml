@@ -1,8 +1,12 @@
 appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebook.react.uiapp
 ---
 - launchApp
-- assertVisible:
-    text: 'APIs'
+# Wait for the JS bundle to render the landing screen instead of asserting
+# immediately, which races app cold start on CI.
+- extendedWaitUntil:
+    visible:
+      text: 'APIs'
+    timeout: 30000
 - tapOn:
     id: 'apis-tab'
 - runFlow: ./helpers/search.yml

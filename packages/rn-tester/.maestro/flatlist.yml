@@ -1,7 +1,11 @@
 appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebook.react.uiapp
 ---
 - launchApp
-- assertVisible: 'Components'
+# Wait for the JS bundle to render the landing screen instead of asserting
+# immediately, which races app cold start on CI.
+- extendedWaitUntil:
+    visible: 'Components'
+    timeout: 30000
 - scrollUntilVisible:
     element:
       id: 'Flatlist'
