@@ -756,13 +756,11 @@ public open class ReactViewGroup public constructor(context: Context?) :
           ),
       )
     }
-    // fallback - should be transitioning or have no parent if the view was removed
-    if (parent == null || transitioning) {
-      return true
-    } else {
-      check(parent === this)
-      return false
-    }
+    // fallback - a view that is transitioning, has no parent, or is parented elsewhere is no longer
+    // a live child of `this`, so it is reported as clipped. Only a view still parented to `this`
+    // (and not transitioning) is not clipped. The missing-tag inconsistency is already surfaced as
+    // a soft exception above.
+    return transitioning || parent !== this
   }
 
   private fun indexOfChildInAllChildren(child: View): Int {
