@@ -12,5 +12,6 @@
     "noEmit": true,
     "forceConsistentCasingInFileNames": true,
     "paths": {"react-native": ["."]}
-  }
+  },
+  "include": ["**/*.d.ts", "../__typetests__/**/*"]
 }

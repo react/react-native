@@ -13,5 +13,5 @@
     "moduleResolution": "bundler",
     "customConditions": ["react-native-strict-api"]
   },
-  "include": ["**/*.d.ts", "../types/__typetests__/**/*"]
+  "include": ["**/*.d.ts", "../__typetests__/**/*"]
 }
