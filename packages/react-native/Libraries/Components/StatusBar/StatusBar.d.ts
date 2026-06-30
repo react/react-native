@@ -30,7 +30,7 @@ export interface StatusBarPropsIOS {
 export interface StatusBarProps extends StatusBarPropsIOS {
   /**
    * If the transition between status bar property changes should be
-   * animated. Supported for backgroundColor, barStyle and hidden.
+   * animated. Supported for barStyle and hidden.
    */
   animated?: boolean | undefined;
 
