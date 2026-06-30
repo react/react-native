@@ -72,9 +72,6 @@ internal class ReactModalHostManager :
   @ReactProp(name = "presentationStyle")
   override fun setPresentationStyle(view: ReactModalHostView, value: String?): Unit = Unit
 
-  @ReactProp(name = "animated")
-  override fun setAnimated(view: ReactModalHostView, value: Boolean): Unit = Unit
-
   @ReactProp(name = "supportedOrientations")
   override fun setSupportedOrientations(view: ReactModalHostView, value: ReadableArray?): Unit =
       Unit

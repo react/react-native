@@ -14,10 +14,6 @@ import {ColorValue} from '../StyleSheet/StyleSheet';
 
 export interface ModalBaseProps {
   /**
-   * @deprecated Use animationType instead
-   */
-  animated?: boolean | undefined;
-  /**
    * The `animationType` prop controls how the modal animates.
    *
    * - `slide` slides in from the bottom

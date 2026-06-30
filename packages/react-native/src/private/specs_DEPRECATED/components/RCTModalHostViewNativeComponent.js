@@ -108,11 +108,6 @@ type RCTModalHostViewNativeProps = Readonly<{
   visible?: WithDefault<boolean, false>,
 
   /**
-   * Deprecated. Use the `animationType` prop instead.
-   */
-  animated?: WithDefault<boolean, false>,
-
-  /**
    * Controls whether the modal can be dismissed by swiping down on iOS.
    * This requires you to implement the `onRequestClose` prop to handle the dismissal.
    */

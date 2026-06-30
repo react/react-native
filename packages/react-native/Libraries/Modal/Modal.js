@@ -60,11 +60,6 @@ type OrientationChangeEvent = Readonly<{
 /** @build-types emit-as-interface Uniwind compatibility */
 export type ModalBaseProps = {
   /**
-   * @deprecated Use `animationType` instead.
-   */
-  animated?: boolean,
-
-  /**
    * Controls how the modal animates. `'slide'` slides in from the bottom,
    * `'fade'` fades into view, `'none'` appears without animation.
    *
