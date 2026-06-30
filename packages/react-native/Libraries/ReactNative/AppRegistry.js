@@ -9,11 +9,6 @@
  */
 
 import registerCallableModule from '../Core/registerCallableModule';
-/**
- * `AppRegistry` is the JavaScript entry point to running all React Native apps.
- *
- * See https://reactnative.dev/docs/appregistry
- */
 import * as AppRegistry from './AppRegistryImpl';
 
 // Register LogBox as a default surface
@@ -31,4 +26,19 @@ global.RN$AppRegistry = AppRegistry;
 
 registerCallableModule('AppRegistry', AppRegistry);
 
+/**
+ * `AppRegistry` is the JS entry point to running all React Native apps. Root
+ * components register themselves with `AppRegistry.registerComponent`, then
+ * the native system can load the bundle for the app and run it when ready by
+ * invoking `AppRegistry.runApplication`.
+ *
+ * To stop an application when a view should be destroyed, call
+ * `AppRegistry.unmountApplicationComponentAtRootTag` with the tag that was
+ * passed into `runApplication`. These should always be used as a pair.
+ *
+ * `AppRegistry` should be required early in the require sequence to make sure
+ * the JS execution environment is set up before other modules are required.
+ *
+ * @see https://reactnative.dev/docs/appregistry
+ */
 export {AppRegistry};

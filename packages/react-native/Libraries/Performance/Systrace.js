@@ -8,6 +8,14 @@
  * @format
  */
 
+/**
+ * `Systrace` provides performance tracing for React Native applications.
+ * Methods in this module allow marking synchronous and asynchronous events
+ * that are visualized in supported system tracing tools.
+ *
+ * @see https://reactnative.dev/docs/systrace
+ */
+
 import typeof * as SystraceModule from './Systrace';
 
 const TRACE_TAG_REACT = 1 << 13; // eslint-disable-line no-bitwise

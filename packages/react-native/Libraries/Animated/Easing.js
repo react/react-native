@@ -15,9 +15,8 @@ let ease;
 export type EasingFunction = (t: number) => number;
 
 /**
- * The `Easing` module implements common easing functions. This module is used
- * by [Animate.timing()](docs/animate.html#timing) to convey physically
- * believable motion in animations.
+ * Implements common easing functions for use with `Animated.timing()` to convey
+ * physically believable motion in animations.
  *
  * You can find a visualization of some common easing functions at
  * http://easings.net/
@@ -58,6 +57,8 @@ export type EasingFunction = (t: number) => number;
  * - [`in`](docs/easing.html#in) runs an easing function forwards
  * - [`inOut`](docs/easing.html#inout) makes any easing function symmetrical
  * - [`out`](docs/easing.html#out) runs an easing function backwards
+ *
+ * @see https://reactnative.dev/docs/easing
  */
 const EasingStatic = {
   /**

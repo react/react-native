@@ -185,6 +185,10 @@ class PushNotificationIOS {
   _remoteNotificationCompleteCallbackCalled: boolean;
   _threadID: string;
 
+  /**
+   * iOS fetch results that best describe the result of a finished remote notification handler.
+   * For a list of possible values, see `PushNotificationIOS.FetchResult`.
+   */
   static FetchResult: FetchResult = {
     NewData: 'UIBackgroundFetchResultNewData',
     NoData: 'UIBackgroundFetchResultNoData',

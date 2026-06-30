@@ -169,6 +169,7 @@ export type SectionListProps<ItemT, SectionT = DefaultSectionT> = {
  * - By default, the list looks for a `key` prop on each item and uses that for the React key.
  *   Alternatively, you can provide a custom `keyExtractor` prop.
  *
+ * @see https://reactnative.dev/docs/sectionlist
  */
 export default class SectionList<
   ItemT = any,
@@ -222,6 +223,9 @@ export default class SectionList<
     }
   }
 
+  /**
+   * Provides a handle to the underlying scroll node.
+   */
   getScrollableNode(): any {
     const listRef = this._wrapperListRef && this._wrapperListRef.getListRef();
     if (listRef) {

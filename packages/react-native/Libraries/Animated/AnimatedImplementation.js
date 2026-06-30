@@ -40,8 +40,29 @@ import AnimatedValue from './nodes/AnimatedValue';
 import AnimatedValueXY from './nodes/AnimatedValueXY';
 
 export type CompositeAnimation = {
+  /**
+   * Animations are started by calling start() on your animation.
+   * start() takes a completion callback that will be called when the
+   * animation is done or when the animation is done because stop() was
+   * called on it before it could finish.
+   *
+   * @param callback - Optional function that will be called
+   *      after the animation finished running normally or when the animation
+   *      is done because stop() was called on it before it could finish
+   *
+   * @example
+   *   Animated.timing({}).start(({ finished }) => {
+   *    // completion callback
+   *   });
+   */
   start: (callback?: ?EndCallback, isLooping?: boolean) => void,
+  /**
+   * Stops any running animation.
+   */
   stop: () => void,
+  /**
+   * Stops any running animation and resets the value to its original.
+   */
   reset: () => void,
   _startNativeLoop: (iterations?: number) => void,
   _isUsingNativeDriver: () => boolean,
@@ -621,21 +642,104 @@ export default {
    * See https://reactnative.dev/docs/animated#node
    */
   Node: AnimatedNode,
+  /**
+   * Animates a value from an initial velocity to zero based on a decay
+   * coefficient.
+   */
   decay: decayImpl,
+  /**
+   * Animates a value along a timed easing curve.  The `Easing` module has tons
+   * of pre-defined curves, or you can use your own function.
+   */
   timing: timingImpl,
+  /**
+   * Spring animation based on Rebound and Origami.  Tracks velocity state to
+   * create fluid motions as the `toValue` updates, and can be chained together.
+   */
   spring: springImpl,
+  /**
+   * Creates a new Animated value composed from two Animated values added
+   * together.
+   */
   add: addImpl,
+  /**
+   * Creates a new Animated value composed by subtracting the second Animated
+   * value from the first Animated value.
+   */
   subtract: subtractImpl,
+  /**
+   * Creates a new Animated value composed by dividing the first Animated
+   * value by the second Animated value.
+   */
   divide: divideImpl,
+  /**
+   * Creates a new Animated value composed from two Animated values multiplied
+   * together.
+   */
   multiply: multiplyImpl,
+  /**
+   * Creates a new Animated value that is the (non-negative) modulo of the
+   * provided Animated value
+   */
   modulo: moduloImpl,
+  /**
+   * Create a new Animated value that is limited between 2 values. It uses the
+   * difference between the last value so even if the value is far from the bounds
+   * it will start changing when the value starts getting closer again.
+   * (`value = clamp(value + diff, min, max)`).
+   *
+   * This is useful with scroll events, for example, to show the navbar when
+   * scrolling up and to hide it when scrolling down.
+   */
   diffClamp: diffClampImpl,
+  /**
+   * Starts an animation after the given delay.
+   */
   delay: delayImpl,
+  /**
+   * Starts an array of animations in order, waiting for each to complete
+   * before starting the next.  If the current running animation is stopped, no
+   * following animations will be started.
+   */
   sequence: sequenceImpl,
+  /**
+   * Starts an array of animations all at the same time.  By default, if one
+   * of the animations is stopped, they will all be stopped.  You can override
+   * this with the `stopTogether` flag.
+   */
   parallel: parallelImpl,
+  /**
+   * Array of animations may run in parallel (overlap), but are started in
+   * sequence with successive delays.  Nice for doing trailing effects.
+   */
   stagger: staggerImpl,
+  /**
+   * Loops a given animation continuously, so that each time it reaches the end,
+   * it resets and begins again from the start. Can specify number of times to
+   * loop using the key 'iterations' in the config. Will loop without blocking
+   * the UI thread if the child animation is set to 'useNativeDriver'.
+   */
   loop: loopImpl,
+  /**
+   *  Takes an array of mappings and extracts values from each arg accordingly,
+   *  then calls `setValue` on the mapped outputs.  e.g.
+   *
+   *```javascript
+   *  onScroll={Animated.event(
+   *    [{nativeEvent: {contentOffset: {x: this._scrollX}}}]
+   *    {listener},          // Optional async listener
+   *  )
+   *  ...
+   *  onPanResponderMove: Animated.event([
+   *    null,                // raw event arg ignored
+   *    {dx: this._panX},    // gestureState arg
+   *  ]),
+   *```
+   */
   event: eventImpl,
+  /**
+   * Make any React component Animatable.  Used to create `Animated.View`, etc.
+   */
   createAnimatedComponent,
   attachNativeEvent: attachNativeEventImpl,
   forkEvent: forkEventImpl,

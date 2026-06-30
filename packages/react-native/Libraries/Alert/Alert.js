@@ -57,9 +57,43 @@ export type AlertOptions = {
  * alerts. On iOS, you can show an alert that prompts the user to enter
  * some information.
  *
- * See https://reactnative.dev/docs/alert
+ * ## iOS
+ *
+ * On iOS you can specify any number of buttons. Each button can optionally
+ * specify a style, which is one of 'default', 'cancel' or 'destructive'.
+ *
+ * ## Android
+ *
+ * On Android at most three buttons can be specified. Android has a concept
+ * of a neutral, negative and a positive button:
+ *
+ *   - If you specify one button, it will be the 'positive' one (such as 'OK')
+ *   - Two buttons mean 'negative', 'positive' (such as 'Cancel', 'OK')
+ *   - Three buttons mean 'neutral', 'negative', 'positive' (such as 'Later', 'Cancel', 'OK')
+ *
+ * Example:
+ *
+ * ```tsx
+ * // Works on both iOS and Android
+ * Alert.alert(
+ *   'Alert Title',
+ *   'My Alert Msg',
+ *   [
+ *     {text: 'Ask me later', onPress: () => console.log('Ask me later pressed')},
+ *     {text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
+ *     {text: 'OK', onPress: () => console.log('OK Pressed')},
+ *   ]
+ * )
+ * ```
+ *
+ * @see https://reactnative.dev/docs/alert
  */
 class Alert {
+  /**
+   * Display an alert dialog with the specified title, message, and buttons.
+   * On Android, at most three buttons can be specified. On iOS, any number of
+   * buttons can be used.
+   */
   static alert(
     title: ?string,
     message?: ?string,
@@ -140,6 +174,9 @@ class Alert {
   }
 
   /**
+   * Create and display a prompt to enter text. Accepts a title, message,
+   * callback or buttons, input type, default value, keyboard type, and options.
+   *
    * @platform ios
    */
   static prompt(

@@ -1069,9 +1069,18 @@ export type TextInputProps = Readonly<{
  * It isn't technically a class but this is the most elegant way to type it.
  */
 declare class _TextInputInstance extends ReactNativeElement {
+  /**
+   * Removes all text from the input.
+   */
   clear(): void;
+  /**
+   * Returns if the input is currently focused.
+   */
   isFocused(): boolean;
   getNativeRef(): ?ReactNativeElement;
+  /**
+   * Sets the start and end positions of text selection.
+   */
   setSelection(start: number, end: number): void;
 }
 

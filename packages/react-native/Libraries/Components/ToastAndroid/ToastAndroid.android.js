@@ -11,41 +11,43 @@
 import NativeToastAndroid from './NativeToastAndroid';
 
 /**
- * This exposes the native ToastAndroid module as a JS module. This has a function 'show'
- * which takes the following parameters:
+ * Displays Android toast messages.
  *
- * 1. String message: A string with the text to toast
- * 2. int duration: The duration of the toast. May be ToastAndroid.SHORT or ToastAndroid.LONG
- *
- * There is also a function `showWithGravity` to specify the layout gravity. May be
- * ToastAndroid.TOP, ToastAndroid.BOTTOM, ToastAndroid.CENTER.
- *
- * The 'showWithGravityAndOffset' function adds on the ability to specify offset
- * These offset values will translate to pixels.
- *
- * Basic usage:
- * ```javascript
- * ToastAndroid.show('A pikachu appeared nearby !', ToastAndroid.SHORT);
- * ToastAndroid.showWithGravity('All Your Base Are Belong To Us', ToastAndroid.SHORT, ToastAndroid.CENTER);
- * ToastAndroid.showWithGravityAndOffset('A wild toast appeared!', ToastAndroid.LONG, ToastAndroid.BOTTOM, 25, 50);
- * ```
+ * @see https://reactnative.dev/docs/toastandroid
+ * @platform android
  */
 
 const ToastAndroidConstants = NativeToastAndroid.getConstants();
 
 const ToastAndroid = {
-  // Toast duration constants
+  /** Toast duration constant for a short display time. */
   SHORT: ToastAndroidConstants.SHORT as number,
+
+  /** Toast duration constant for a long display time. */
   LONG: ToastAndroidConstants.LONG as number,
-  // Toast gravity constants
+
+  /** Toast gravity constant for top positioning. */
   TOP: ToastAndroidConstants.TOP as number,
+
+  /** Toast gravity constant for bottom positioning. */
   BOTTOM: ToastAndroidConstants.BOTTOM as number,
+
+  /** Toast gravity constant for center positioning. */
   CENTER: ToastAndroidConstants.CENTER as number,
 
+  /**
+   * Show a toast with the given message and duration (`ToastAndroid.SHORT` or
+   * `ToastAndroid.LONG`).
+   */
   show: function (message: string, duration: number): void {
     NativeToastAndroid.show(message, duration);
   },
 
+  /**
+   * Show a toast at a specified gravity position (`ToastAndroid.TOP`,
+   * `ToastAndroid.BOTTOM`, or `ToastAndroid.CENTER`). Only works on API 29
+   * and below.
+   */
   showWithGravity: function (
     message: string,
     duration: number,
@@ -54,6 +56,10 @@ const ToastAndroid = {
     NativeToastAndroid.showWithGravity(message, duration, gravity);
   },
 
+  /**
+   * Show a toast at a specified gravity position with additional pixel
+   * offsets. Only works on API 29 and below.
+   */
   showWithGravityAndOffset: function (
     message: string,
     duration: number,

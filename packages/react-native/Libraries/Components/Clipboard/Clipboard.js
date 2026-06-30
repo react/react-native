@@ -12,6 +12,11 @@ import NativeClipboard from './NativeClipboard';
 
 /**
  * `Clipboard` gives you an interface for setting and getting content from Clipboard on both iOS and Android
+ *
+ * Clipboard has been extracted from react-native core and will be removed in a future release.
+ * It can now be installed and imported from `@react-native-clipboard/clipboard` instead of 'react-native'.
+ * @see https://github.com/react-native-clipboard/clipboard
+ * @deprecated
  */
 export default {
   /**
