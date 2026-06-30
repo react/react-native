@@ -80,6 +80,8 @@ class FileReader extends EventTarget {
       );
     }
 
+    this._setReadyState(LOADING);
+
     NativeFileReaderModule.readAsDataURL(blob.data).then(
       (text: string) => {
         if (this._aborted) {
@@ -111,6 +113,8 @@ class FileReader extends EventTarget {
       );
     }
 
+    this._setReadyState(LOADING);
+
     NativeFileReaderModule.readAsDataURL(blob.data).then(
       (text: string) => {
         if (this._aborted) {
@@ -137,6 +141,8 @@ class FileReader extends EventTarget {
         "Failed to execute 'readAsText' on 'FileReader': parameter 1 is not of type 'Blob'",
       );
     }
+
+    this._setReadyState(LOADING);
 
     NativeFileReaderModule.readAsText(blob.data, encoding).then(
       (text: string) => {
