@@ -229,6 +229,8 @@ void NativeAnimatedNodesManager::connectAnimatedNodeToView(
       connectedAnimatedNodes_.insert({viewTag, propsNodeTag});
     }
     updatedNodeTags_.insert(node->tag());
+    // Seed props_ so getManagedProps() is live the instant the view is managed.
+    node->update();
   } else {
     LOG(WARNING)
         << "Cannot ConnectAnimatedNodeToView, animated node has to be props type";
