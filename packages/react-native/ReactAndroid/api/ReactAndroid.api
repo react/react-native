@@ -5097,11 +5097,10 @@ public class com/facebook/react/viewmanagers/ModalHostViewManagerDelegate : com/
 public abstract interface class com/facebook/react/viewmanagers/ModalHostViewManagerInterface : com/facebook/react/uimanager/ViewManagerWithGeneratedInterface {
 	public abstract fun setAllowSwipeDismissal (Landroid/view/View;Z)V
 	public abstract fun setAnimationType (Landroid/view/View;Ljava/lang/String;)V
+	public abstract fun setEdgeToEdge (Landroid/view/View;Z)V
 	public abstract fun setHardwareAccelerated (Landroid/view/View;Z)V
 	public abstract fun setIdentifier (Landroid/view/View;I)V
-	public abstract fun setNavigationBarTranslucent (Landroid/view/View;Z)V
 	public abstract fun setPresentationStyle (Landroid/view/View;Ljava/lang/String;)V
-	public abstract fun setStatusBarTranslucent (Landroid/view/View;Z)V
 	public abstract fun setSupportedOrientations (Landroid/view/View;Lcom/facebook/react/bridge/ReadableArray;)V
 	public abstract fun setTransparent (Landroid/view/View;Z)V
 	public abstract fun setVisible (Landroid/view/View;Z)V
@@ -5378,13 +5377,12 @@ public final class com/facebook/react/views/modal/ReactModalHostView : android/v
 	public final fun getAnimationType ()Ljava/lang/String;
 	public fun getChildAt (I)Landroid/view/View;
 	public fun getChildCount ()I
+	public final fun getEdgeToEdge ()Z
 	public final fun getEventDispatcher ()Lcom/facebook/react/uimanager/events/EventDispatcher;
 	public final fun getHardwareAccelerated ()Z
-	public final fun getNavigationBarTranslucent ()Z
 	public final fun getOnRequestCloseListener ()Lcom/facebook/react/views/modal/ReactModalHostView$OnRequestCloseListener;
 	public final fun getOnShowListener ()Landroid/content/DialogInterface$OnShowListener;
 	public final fun getStateWrapper ()Lcom/facebook/react/uimanager/StateWrapper;
-	public final fun getStatusBarTranslucent ()Z
 	public final fun getTransparent ()Z
 	public final fun onDropInstance ()V
 	public fun onHostDestroy ()V
@@ -5394,14 +5392,13 @@ public final class com/facebook/react/views/modal/ReactModalHostView : android/v
 	public fun removeViewAt (I)V
 	public final fun setAnimationType (Ljava/lang/String;)V
 	public final fun setDialogRootViewGroupTestId (Ljava/lang/String;)V
+	public final fun setEdgeToEdge (Z)V
 	public final fun setEventDispatcher (Lcom/facebook/react/uimanager/events/EventDispatcher;)V
 	public final fun setHardwareAccelerated (Z)V
 	public fun setId (I)V
-	public final fun setNavigationBarTranslucent (Z)V
 	public final fun setOnRequestCloseListener (Lcom/facebook/react/views/modal/ReactModalHostView$OnRequestCloseListener;)V
 	public final fun setOnShowListener (Landroid/content/DialogInterface$OnShowListener;)V
 	public final fun setStateWrapper (Lcom/facebook/react/uimanager/StateWrapper;)V
-	public final fun setStatusBarTranslucent (Z)V
 	public final fun setTransparent (Z)V
 	public fun shouldDelayChildPressedState ()Z
 	public final fun showOrUpdate ()V

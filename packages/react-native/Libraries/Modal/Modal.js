@@ -182,7 +182,8 @@ export type ModalPropsAndroid = {
   hardwareAccelerated?: ?boolean,
 
   /**
-   * Whether the modal should go under the system statusbar.
+   * Whether the modal should go under the system status bar. Must be set
+   * together with `navigationBarTranslucent` to draw the modal edge-to-edge.
    *
    * @default `false`
    *
@@ -191,8 +192,8 @@ export type ModalPropsAndroid = {
   statusBarTranslucent?: ?boolean,
 
   /**
-   * Whether the modal should go under the system navigation bar.
-   * `statusBarTranslucent` also needs to be `true`.
+   * Whether the modal should go under the system navigation bar. Must be set
+   * together with `statusBarTranslucent` to draw the modal edge-to-edge.
    *
    * @default `false`
    *
@@ -220,11 +221,11 @@ function confirmProps(props: ModalProps) {
       );
     }
     if (
-      props.navigationBarTranslucent === true &&
-      props.statusBarTranslucent !== true
+      (props.statusBarTranslucent === true) !==
+      (props.navigationBarTranslucent === true)
     ) {
       console.warn(
-        'Modal with translucent navigation bar and without translucent status bar is not supported.',
+        '`statusBarTranslucent` and `navigationBarTranslucent` must both be enabled to draw the Modal edge-to-edge. Enabling only one of them has no effect.',
       );
     }
 
@@ -373,8 +374,10 @@ class Modal extends React.Component<ModalProps, ModalState> {
         onDismiss={onDismiss}
         ref={this.props.modalRef}
         visible={this.props.visible}
-        statusBarTranslucent={this.props.statusBarTranslucent}
-        navigationBarTranslucent={this.props.navigationBarTranslucent}
+        edgeToEdge={
+          this.props.statusBarTranslucent === true &&
+          this.props.navigationBarTranslucent === true
+        }
         identifier={this._identifier}
         style={styles.modal}
         // $FlowFixMe[method-unbinding] added when improving typing for this parameters

@@ -54,7 +54,6 @@ import com.facebook.react.views.view.ReactViewGroup
 import com.facebook.react.views.view.disableEdgeToEdge
 import com.facebook.react.views.view.enableEdgeToEdge
 import com.facebook.react.views.view.isEdgeToEdgeFeatureFlagOn
-import com.facebook.react.views.view.setStatusBarTranslucency
 
 /**
  * ReactModalHostView is a view that sits in the view hierarchy representing a Modal view.
@@ -80,14 +79,7 @@ public class ReactModalHostView(context: ThemedReactContext) :
   public var onShowListener: DialogInterface.OnShowListener? = null
   public var onRequestCloseListener: OnRequestCloseListener? = null
 
-  public var statusBarTranslucent: Boolean = false
-    get() = field || isEdgeToEdgeFeatureFlagOn
-    set(value) {
-      field = value
-      createNewDialog = createNewDialog || !isEdgeToEdgeFeatureFlagOn
-    }
-
-  public var navigationBarTranslucent: Boolean = false
+  public var edgeToEdge: Boolean = false
     get() = field || isEdgeToEdgeFeatureFlagOn
     set(value) {
       field = value
@@ -360,7 +352,7 @@ public class ReactModalHostView(context: ThemedReactContext) :
     get() =
         FrameLayout(context).apply {
           addView(dialogRootViewGroup)
-          if (!statusBarTranslucent) {
+          if (!edgeToEdge) {
             // this is needed to prevent content hiding behind systems bars < API 30
             this.fitsSystemWindows = true
           }
@@ -392,12 +384,10 @@ public class ReactModalHostView(context: ThemedReactContext) :
         }
       }
 
-      // Navigation bar cannot be translucent without status bar being translucent too
-      if (navigationBarTranslucent) {
+      if (edgeToEdge) {
         dialogWindow.enableEdgeToEdge()
       } else {
         dialogWindow.disableEdgeToEdge()
-        dialogWindow.setStatusBarTranslucency(statusBarTranslucent)
       }
 
       if (transparent) {

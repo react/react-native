@@ -149,73 +149,63 @@ describe('<Modal>', () => {
         );
       });
     });
-    describe('statusBarTranslucent', () => {
-      it('renders a Modal with statusBarTranslucent="true"', () => {
+    describe('edgeToEdge', () => {
+      it('sets edgeToEdge="true" when both statusBarTranslucent and navigationBarTranslucent are true', () => {
         Fantom.runTask(() => {
-          root.render(<Modal statusBarTranslucent={true} />);
-        });
-
-        expect(
-          root.getRenderedOutput({props: ['statusBarTranslucent']}).toJSX(),
-        ).toEqual(
-          <rn-modalHostView statusBarTranslucent="true">
-            <rn-view />
-          </rn-modalHostView>,
-        );
-      });
-      it('renders a Modal with statusBarTranslucent="false"', () => {
-        Fantom.runTask(() => {
-          root.render(<Modal statusBarTranslucent={false} />);
-        });
-
-        expect(
-          root.getRenderedOutput({props: ['statusBarTranslucent']}).toJSX(),
-        ).toEqual(
-          <rn-modalHostView>
-            <rn-view />
-          </rn-modalHostView>,
-        );
-      });
-    });
-    describe('navigationBarTranslucent', () => {
-      it('renders a Modal with navigationBarTranslucent="true" and statusBarTranslucent="true"', () => {
-        Fantom.runTask(() => {
-          // navigationBarTranslucent=true with statusBarTranslucent=false is not supported
-          // and it emits a warning.
           root.render(
             <Modal
-              navigationBarTranslucent={true}
               statusBarTranslucent={true}
+              navigationBarTranslucent={true}
             />,
           );
         });
 
-        expect(
-          root
-            .getRenderedOutput({
-              props: ['navigationBarTranslucent', 'statusBarTranslucent'],
-            })
-            .toJSX(),
-        ).toEqual(
-          <rn-modalHostView
-            navigationBarTranslucent="true"
-            statusBarTranslucent="true">
+        expect(root.getRenderedOutput({props: ['edgeToEdge']}).toJSX()).toEqual(
+          <rn-modalHostView edgeToEdge="true">
             <rn-view />
           </rn-modalHostView>,
         );
       });
-      it('renders a Modal with navigationBarTranslucent="false"', () => {
+      it('does not set edgeToEdge when only statusBarTranslucent is true', () => {
+        // Enabling only one of statusBarTranslucent / navigationBarTranslucent
+        // has no effect and emits a warning.
+        const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
         Fantom.runTask(() => {
-          root.render(<Modal navigationBarTranslucent={false} />);
+          root.render(<Modal statusBarTranslucent={true} />);
         });
 
-        expect(
-          root
-            .getRenderedOutput({
-              props: ['navigationBarTranslucent', 'statusBarTranslucent'],
-            })
-            .toJSX(),
-        ).toEqual(
+        expect(root.getRenderedOutput({props: ['edgeToEdge']}).toJSX()).toEqual(
+          <rn-modalHostView>
+            <rn-view />
+          </rn-modalHostView>,
+        );
+        expect(warn).toHaveBeenCalled();
+        warn.mockRestore();
+      });
+      it('does not set edgeToEdge when only navigationBarTranslucent is true', () => {
+        // Enabling only one of statusBarTranslucent / navigationBarTranslucent
+        // has no effect and emits a warning.
+        const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+        Fantom.runTask(() => {
+          root.render(<Modal navigationBarTranslucent={true} />);
+        });
+
+        expect(root.getRenderedOutput({props: ['edgeToEdge']}).toJSX()).toEqual(
+          <rn-modalHostView>
+            <rn-view />
+          </rn-modalHostView>,
+        );
+        expect(warn).toHaveBeenCalled();
+        warn.mockRestore();
+      });
+      it('does not set edgeToEdge when neither is true', () => {
+        Fantom.runTask(() => {
+          root.render(<Modal />);
+        });
+
+        expect(root.getRenderedOutput({props: ['edgeToEdge']}).toJSX()).toEqual(
           <rn-modalHostView>
             <rn-view />
           </rn-modalHostView>,
