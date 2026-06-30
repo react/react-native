@@ -3350,7 +3350,6 @@ class facebook::react::ModalHostViewProps : public facebook::react::HostPlatform
   public ModalHostViewProps() = default;
   public ModalHostViewProps(const facebook::react::PropsParserContext& context, const facebook::react::ModalHostViewProps& sourceProps, const facebook::react::RawProps& rawProps);
   public bool allowSwipeDismissal;
-  public bool animated;
   public bool hardwareAccelerated;
   public bool navigationBarTranslucent;
   public bool statusBarTranslucent;
