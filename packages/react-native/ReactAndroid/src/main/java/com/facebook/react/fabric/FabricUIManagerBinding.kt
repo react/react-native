@@ -25,6 +25,8 @@ internal class FabricUIManagerBinding : HybridClassBase() {
 
   private external fun initHybrid()
 
+  private var animationBackendChoreographer: AnimationBackendChoreographer? = null
+
   private external fun installFabricUIManager(
       runtimeExecutor: RuntimeExecutor,
       runtimeScheduler: RuntimeScheduler,
@@ -103,6 +105,7 @@ internal class FabricUIManagerBinding : HybridClassBase() {
     animationBackendChoreographer.frameCallback = AnimationFrameCallback { frameTimeMs: Double ->
       driveAnimationBackend(frameTimeMs)
     }
+    this.animationBackendChoreographer = animationBackendChoreographer
     setAnimationBackendChoreographer(animationBackendChoreographer)
 
     installFabricUIManager(
@@ -118,6 +121,19 @@ internal class FabricUIManagerBinding : HybridClassBase() {
   private external fun uninstallFabricUIManager()
 
   fun unregister() {
+    // Stop driving the animation backend before tearing down the native binding.
+    // The choreographer's frame callback is registered with ReactChoreographer
+    // for the choreographer's lifetime and re-posts itself every frame, so it
+    // keeps invoking driveAnimationBackend even after uninstallFabricUIManager()
+    // has run. A late frame would then make a JNI call through this binding's
+    // freed native state (use-after-teardown). Pausing flips a memory-visible
+    // AtomicBoolean (unregister may run off the UI thread), so the UI-thread
+    // frame callback reliably no-ops afterwards.
+    animationBackendChoreographer?.let { choreographer ->
+      choreographer.pause()
+      choreographer.frameCallback = null
+    }
+    animationBackendChoreographer = null
     uninstallFabricUIManager()
   }
 
