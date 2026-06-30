@@ -86,6 +86,11 @@ class Blob {
     let {offset, size} = this.data;
 
     if (typeof start === 'number') {
+      if (start < 0) {
+        // A negative start is relative to the end of the blob.
+        // $FlowFixMe[reassign-const]
+        start = Math.max(this.size + start, 0);
+      }
       if (start > size) {
         // $FlowFixMe[reassign-const]
         start = size;
@@ -102,7 +107,8 @@ class Blob {
           // $FlowFixMe[reassign-const]
           end = this.size;
         }
-        size = end - start;
+        // Clamp to 0 so an end that precedes start yields an empty blob.
+        size = Math.max(end - start, 0);
       }
     }
     return BlobManager.createFromOptions({
