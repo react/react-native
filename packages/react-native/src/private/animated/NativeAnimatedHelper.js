@@ -56,7 +56,6 @@ const singleOpQueue: Array<unknown> = [];
 const isSingleOpBatching =
   Platform.OS === 'android' &&
   NativeAnimatedModule?.queueAndExecuteBatchedOperations != null &&
-  ReactNativeFeatureFlags.animatedShouldUseSingleOp() &&
   !ReactNativeFeatureFlags.cxxNativeAnimatedEnabled();
 let flushQueueImmediate = null;
 
