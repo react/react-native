@@ -1017,8 +1017,7 @@ void YogaLayoutableShadowNode::swapLeftAndRightInYogaStyleProps() {
 void YogaLayoutableShadowNode::swapLeftAndRightInViewProps() {
   if (auto viewShadowNode = dynamic_cast<ViewShadowNode*>(this)) {
     // TODO: Do not mutate props directly.
-    auto& props =
-        const_cast<ViewShadowNodeProps&>(viewShadowNode->getConcreteProps());
+    auto& props = const_cast<ViewProps&>(viewShadowNode->getConcreteProps());
 
     // Swap border node values, borderRadii, borderColors and borderStyles.
     if (props.borderRadii.topLeft.has_value()) {

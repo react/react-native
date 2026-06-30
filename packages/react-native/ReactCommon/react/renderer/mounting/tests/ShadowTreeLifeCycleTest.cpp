@@ -445,7 +445,7 @@ TEST_F(ShadowTreeLifecycleTest, moveFirstChildToLast) {
   auto builder = simpleComponentBuilder();
 
   auto makeProps = [](const std::string& id) {
-    auto props = std::make_shared<ViewShadowNodeProps>();
+    auto props = std::make_shared<ViewProps>();
     props->nativeId = id;
     return props;
   };

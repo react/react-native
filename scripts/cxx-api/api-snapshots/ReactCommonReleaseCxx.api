@@ -349,6 +349,7 @@ using facebook::react::ValueFactory = std::function<facebook::jsi::Value(faceboo
 using facebook::react::ViewEventEmitter = facebook::react::HostPlatformViewEventEmitter;
 using facebook::react::ViewNodePairScope = std::deque<facebook::react::ShadowViewNodePair>;
 using facebook::react::ViewProps = facebook::react::HostPlatformViewProps;
+using facebook::react::ViewShadowNodeProps = facebook::react::ViewProps;
 using facebook::react::VirtualViewComponentDescriptor = facebook::react::ConcreteComponentDescriptor<facebook::react::VirtualViewShadowNode>;
 using facebook::react::parsePlatformColorFn = facebook::react::SharedColor(*)(const facebook::react::ContextContainer&, int32_t, const facebook::react::RawValue&);
 template <typename GeneratorT, typename ValueT>
@@ -3844,14 +3845,9 @@ class facebook::react::ViewComponentDescriptor : public facebook::react::Concret
   public ViewComponentDescriptor(const facebook::react::ComponentDescriptorParameters& parameters);
 }
 
-class facebook::react::ViewShadowNode : public facebook::react::ConcreteViewShadowNode<facebook::react::ViewComponentName, facebook::react::ViewShadowNodeProps, facebook::react::ViewEventEmitter> {
+class facebook::react::ViewShadowNode : public facebook::react::ConcreteViewShadowNode<facebook::react::ViewComponentName, facebook::react::ViewProps, facebook::react::ViewEventEmitter> {
   public ViewShadowNode(const facebook::react::ShadowNode& sourceShadowNode, const facebook::react::ShadowNodeFragment& fragment);
   public ViewShadowNode(const facebook::react::ShadowNodeFragment& fragment, const facebook::react::ShadowNodeFamily::Shared& family, facebook::react::ShadowNodeTraits traits);
-}
-
-class facebook::react::ViewShadowNodeProps : public facebook::react::HostPlatformViewProps {
-  public ViewShadowNodeProps() = default;
-  public ViewShadowNodeProps(const facebook::react::PropsParserContext& context, const facebook::react::ViewShadowNodeProps& sourceProps, const facebook::react::RawProps& rawProps);
 }
 
 class facebook::react::ViewTransitionModule : public facebook::react::UIManagerViewTransitionDelegate, public facebook::react::UIManagerCommitHook, public facebook::react::MountingOverrideDelegate {
