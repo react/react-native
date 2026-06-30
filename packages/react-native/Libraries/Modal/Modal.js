@@ -185,6 +185,9 @@ export type ModalPropsAndroid = {
    * Whether the modal should go under the system status bar. Must be set
    * together with `navigationBarTranslucent` to draw the modal edge-to-edge.
    *
+   * @deprecated Has no effect on its own on API level 35+ (Android 15+) due to
+   * edge-to-edge enforcement.
+   *
    * @default `false`
    *
    * @platform android
@@ -194,6 +197,9 @@ export type ModalPropsAndroid = {
   /**
    * Whether the modal should go under the system navigation bar. Must be set
    * together with `statusBarTranslucent` to draw the modal edge-to-edge.
+   *
+   * @deprecated Has no effect on its own on API level 35+ (Android 15+) due to
+   * edge-to-edge enforcement.
    *
    * @default `false`
    *
