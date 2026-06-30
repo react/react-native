@@ -19,9 +19,12 @@ import {use} from 'react';
 export type ViewInstance = HostInstance;
 
 /**
- * The most fundamental component for building a UI, View is a container that
+ * The most fundamental component for building a UI. `View` is a container that
  * supports layout with flexbox, style, some touch handling, and accessibility
- * controls.
+ * controls. `View` maps directly to the native view equivalent on whatever
+ * platform React Native is running on, whether that is a `UIView`, `<div>`,
+ * `android.view`, etc. `View` is designed to be nested inside other views and
+ * can have 0 to many children of any type.
  *
  * @see https://reactnative.dev/docs/view
  */
