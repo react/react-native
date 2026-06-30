@@ -15,10 +15,7 @@ import * as TurboModuleRegistry from '../../../../Libraries/TurboModule/TurboMod
 export interface Spec extends TurboModule {
   readonly getConstants: () => {
     readonly HEIGHT: number,
-    readonly DEFAULT_BACKGROUND_COLOR: number,
   };
-  readonly setColor: (color: number, animated: boolean) => void;
-  readonly setTranslucent: (translucent: boolean) => void;
 
   /**
    *  - statusBarStyles can be:
@@ -35,20 +32,11 @@ let constants = null;
 const NativeStatusBarManager = {
   getConstants(): {
     readonly HEIGHT: number,
-    readonly DEFAULT_BACKGROUND_COLOR?: number,
   } {
     if (constants == null) {
       constants = NativeModule.getConstants();
     }
     return constants;
-  },
-
-  setColor(color: number, animated: boolean): void {
-    NativeModule.setColor(color, animated);
-  },
-
-  setTranslucent(translucent: boolean): void {
-    NativeModule.setTranslucent(translucent);
   },
 
   /**
