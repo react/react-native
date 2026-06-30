@@ -66,18 +66,21 @@ export type StatusBarPropsAndroid = Readonly<{
   /**
    * The background color of the status bar.
    *
-   * Please note that this prop has no effect on Android 15+
+   * @deprecated Has no effect on API level 35+ (Android 15+) due to
+   * edge-to-edge enforcement.
    *
    * @platform android
    */
   backgroundColor?: ?ColorValue,
+
   /**
-   * If the status bar is translucent.
-   * When translucent is set to true, the app will draw under the status bar.
-   * This is useful when using a semi transparent status bar color.
+   * If the status bar is translucent. When `true`, the app draws under the
+   * status bar. This is useful when using a semi-transparent status bar color.
    *
-   * Please note that this prop has no effect on Android 15+
+   * @deprecated Has no effect on API level 35+ (Android 15+) due to
+   * edge-to-edge enforcement.
    *
+   * @default `false`
    * @platform android
    */
   translucent?: ?boolean,
@@ -87,13 +90,16 @@ export type StatusBarPropsIOS = Readonly<{
   /**
    * If the network activity indicator should be visible.
    *
+   * @default `false`
    * @platform ios
    */
   networkActivityIndicatorVisible?: ?boolean,
+
   /**
-   * The transition effect when showing and hiding the status bar using the `hidden`
-   * prop. Defaults to 'fade'.
+   * The transition effect when showing and hiding the status bar using the
+   * `hidden` prop.
    *
+   * @default `'fade'`
    * @platform ios
    */
   showHideTransition?: ?('fade' | 'slide' | 'none'),
@@ -102,15 +108,23 @@ export type StatusBarPropsIOS = Readonly<{
 type StatusBarBaseProps = Readonly<{
   /**
    * If the status bar is hidden.
+   *
+   * @default `false`
    */
   hidden?: ?boolean,
+
   /**
    * If the transition between status bar property changes should be animated.
-   * Supported for backgroundColor, barStyle and hidden.
+   * Supported for `backgroundColor`, `barStyle`, and `hidden`.
+   *
+   * @default `false`
    */
   animated?: ?boolean,
+
   /**
    * Sets the color of the status bar text.
+   *
+   * @default `'default'`
    */
   barStyle?: ?('default' | 'auto' | 'light-content' | 'dark-content'),
 }>;
@@ -212,11 +226,12 @@ function createStackEntry(props: StatusBarProps): StackProps {
 }
 
 /**
- * Component to control the app status bar.
+ * Component to control the app's status bar. The status bar is the zone,
+ * typically at the top of the screen, that displays the current time, Wi-Fi and
+ * cellular network information, battery level and/or other status icons.
  *
- * It is possible to have multiple `StatusBar` components mounted at the same
- * time. The props will be merged in the order the `StatusBar` components were
- * mounted.
+ * Multiple `StatusBar` components can be mounted simultaneously; props merge in
+ * mount order.
  *
  * ### Imperative API
  *
@@ -228,7 +243,9 @@ function createStackEntry(props: StatusBarProps): StackProps {
  * before launching a third-party native UI component, and then call
  * `StatusBar.popStackEntry` when completed.
  *
- * ```
+ * Example:
+ *
+ * ```tsx
  * const openThirdPartyBugReporter = async () => {
  *   // The bug reporter has a dark background, so we push a new status bar style.
  *   const stackEntry = StatusBar.pushStackEntry({barStyle: 'light-content'});
@@ -252,6 +269,8 @@ function createStackEntry(props: StatusBarProps): StackProps {
  * ### Constants
  *
  * `currentHeight` (Android only) The height of the status bar.
+ *
+ * @see https://reactnative.dev/docs/statusbar
  */
 class StatusBar extends React.Component<StatusBarProps> {
   static _propsStack: Array<StackProps> = [];
@@ -329,10 +348,13 @@ class StatusBar extends React.Component<StatusBarProps> {
   }
 
   /**
-   * DEPRECATED - The status bar network activity indicator is not supported in iOS 13 and later. This will be removed in a future release.
+   * DEPRECATED - The status bar network activity indicator is not supported in
+   * iOS 13 and later. This will be removed in a future release.
+   *
    * @param visible Show the indicator.
    *
-   * @deprecated
+   * @deprecated The status bar network activity indicator is not supported in
+   * iOS 13 and later.
    */
   static setNetworkActivityIndicatorVisible(visible: boolean) {
     if (Platform.OS !== 'ios') {

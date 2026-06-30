@@ -63,64 +63,86 @@ export type ImagePropsIOS = Readonly<{
   /**
    * A static image to display while loading the image source.
    *
-   * See https://reactnative.dev/docs/image#defaultsource
+   * @platform ios
    */
   defaultSource?: ?ImageSource,
+
   /**
-   * Invoked when a partial load of the image is complete.
+   * Invoked when a partial load of the image is complete. Definition of what
+   * constitutes a "partial load" is loader specific though this is meant for
+   * progressive JPEG loads.
    *
-   * See https://reactnative.dev/docs/image#onpartialload
+   * @platform ios
    */
   onPartialLoad?: ?() => void,
+
   /**
-   * Invoked on download progress with `{nativeEvent: {loaded, total}}`.
+   * Invoked on download progress.
    *
-   * See https://reactnative.dev/docs/image#onprogress
+   * @platform ios
    */
   onProgress?: ?(event: ImageProgressEventIOS) => void,
 }>;
 
 export type ImagePropsAndroid = Readonly<{
   /**
-   * similarly to `source`, this property represents the resource used to render
-   * the loading indicator for the image, displayed until image is ready to be
-   * displayed, typically after when it got downloaded from network.
+   * Resource used to render a loading indicator for the image, displayed
+   * until the image is ready to be displayed.
+   *
+   * @platform android
    */
   loadingIndicatorSource?: ?(number | Readonly<ImageURISource>),
+
+  /**
+   * When `true`, enables progressive JPEG streaming.
+   *
+   * @default `false`
+   * @platform android
+   */
   progressiveRenderingEnabled?: ?boolean,
+
+  /**
+   * Duration of the fade-in animation in milliseconds.
+   *
+   * @default `300`
+   * @platform android
+   */
   fadeDuration?: ?number,
 
   /**
-   * The mechanism that should be used to resize the image when the image's dimensions
-   * differ from the image view's dimensions. Defaults to `auto`.
+   * The mechanism that should be used to resize the image when the image's
+   * dimensions differ from the image view's dimensions.
    *
    * - `auto`: Use heuristics to pick between `resize` and `scale`.
    *
-   * - `resize`: A software operation which changes the encoded image in memory before it
-   * gets decoded. This should be used instead of `scale` when the image is much larger
-   * than the view.
+   * - `resize`: A software operation which changes the encoded image in memory
+   *   before it gets decoded. This should be used instead of `scale` when the
+   *   image is much larger than the view.
    *
-   * - `scale`: The image gets drawn downscaled or upscaled. Compared to `resize`, `scale` is
-   * faster (usually hardware accelerated) and produces higher quality images. This
-   * should be used if the image is smaller than the view. It should also be used if the
-   * image is slightly bigger than the view.
+   * - `scale`: The image gets drawn downscaled or upscaled. Compared to
+   *   `resize`, `scale` is faster (usually hardware accelerated) and produces
+   *   higher quality images. This should be used if the image is smaller than
+   *   the view. It should also be used if the image is slightly bigger than
+   *   the view.
    *
-   * - `none`: No sampling is performed and the image is displayed in its full resolution. This
-   * should only be used in rare circumstances because it is considered unsafe as Android will
-   * throw a runtime exception when trying to render images that consume too much memory.
+   * - `none`: No sampling is performed and the image is displayed in its full
+   *   resolution. This should only be used in rare circumstances because it is
+   *   considered unsafe as Android throws a runtime exception when trying to
+   *   render images that consume too much memory.
    *
-   * More details about `resize` and `scale` can be found at http://frescolib.org/docs/resizing-rotating.html.
-   *
+   * @default `'auto'`
    * @platform android
    */
   resizeMethod?: ?('auto' | 'resize' | 'scale' | 'none'),
 
   /**
-   * When the `resizeMethod` is set to `resize`, the destination dimensions are
+   * When `resizeMethod` is set to `resize`, the destination dimensions are
    * multiplied by this value. The `scale` method is used to perform the
-   * remainder of the resize.
-   * This is used to produce higher quality images when resizing to small dimensions.
-   * Defaults to 1.0.
+   * remainder of the resize. This is used to produce higher quality images
+   * when resizing to small dimensions.
+   *
+   * @default `1.0`
+   * @platform android
    */
   resizeMultiplier?: ?number,
 }>;
@@ -128,138 +150,120 @@ export type ImagePropsAndroid = Readonly<{
 /** @build-types emit-as-interface Expo compatibility */
 export type ImagePropsBase = Readonly<{
   ...Omit<ViewProps, 'style'>,
+
   /**
-   * When true, indicates the image is an accessibility element.
-   *
-   * See https://reactnative.dev/docs/image#accessible
+   * When `true`, indicates the image is an accessibility element.
    */
   accessible?: ?boolean,
 
   /**
-   * Internal prop to set an "Analytics Tag" that can will be set on the Image
+   * Internal prop to set an "Analytics Tag" that can will be set on the Image.
    */
   internal_analyticTag?: ?string,
 
   /**
    * The text that's read by the screen reader when the user interacts with
    * the image.
-   *
-   * See https://reactnative.dev/docs/image#accessibilitylabel
    */
   accessibilityLabel?: ?Stringish,
 
   /**
-   * Alias for accessibilityLabel
-   * See https://reactnative.dev/docs/image#accessibilitylabel
+   * Alias for `accessibilityLabel`.
    */
   'aria-label'?: ?Stringish,
 
   /**
-   * Represents the nativeID of the associated label. When the assistive technology focuses on the component with this props.
+   * Represents the `nativeID` of the associated label. When the assistive
+   * technology focuses on the component with this prop.
    *
    * @platform android
    */
   'aria-labelledby'?: ?string,
+
   /**
-   * The text that's read by the screen reader when the user interacts with
-   * the image.
-   *
-   * See https://reactnative.dev/docs/image#alt
+   * Alternative text description of the image, read by the screen reader
+   * when the user interacts with it. Automatically marks the element as
+   * accessible.
    */
   alt?: ?Stringish,
 
   /**
-   * blurRadius: the blur radius of the blur filter added to the image
-   *
-   * See https://reactnative.dev/docs/image#blurradius
+   * The blur radius of the blur filter added to the image. On iOS, needs to
+   * be more than 5.
    */
   blurRadius?: ?number,
 
   /**
-   * See https://reactnative.dev/docs/image#capinsets
+   * When the image is resized, the corners of the size specified by
+   * `capInsets` stay a fixed size, but the center content and borders of
+   * the image are stretched. This is useful for creating resizable rounded
+   * buttons, shadows, and other resizable assets.
+   *
+   * @platform ios
    */
   capInsets?: ?EdgeInsetsProp,
 
   /**
-   * Adds the CORS related header to the request.
-   * Similar to crossorigin from HTML.
+   * CORS mode for fetching the image resource. When unset, the image
+   * request is made without the CORS header.
    *
-   * See https://reactnative.dev/docs/image#crossorigin
+   * @default `'anonymous'`
    */
   crossOrigin?: ?('anonymous' | 'use-credentials'),
 
   /**
    * Height of the image component.
-   *
-   * See https://reactnative.dev/docs/image#height
    */
   height?: number,
 
   /**
    * Width of the image component.
-   *
-   * See https://reactnative.dev/docs/image#width
    */
   width?: number,
 
   /**
-   * Invoked on load error with `{nativeEvent: {error}}`.
-   *
-   * See https://reactnative.dev/docs/image#onerror
+   * Invoked on load error.
    */
   onError?: ?(event: ImageErrorEvent) => void,
 
   /**
-   * onLayout function
-   *
-   * Invoked on mount and layout changes with
-   *
-   * {nativeEvent: { layout: {x, y, width, height} }}.
-   *
-   * See https://reactnative.dev/docs/image#onlayout
+   * Invoked on mount and on layout changes.
    */
-
   onLayout?: ?(event: LayoutChangeEvent) => unknown,
 
   /**
    * Invoked when load completes successfully.
-   *
-   * See https://reactnative.dev/docs/image#onload
    */
   onLoad?: ?(event: ImageLoadEvent) => void,
 
   /**
    * Invoked when load either succeeds or fails.
-   *
-   * See https://reactnative.dev/docs/image#onloadend
    */
   onLoadEnd?: ?() => void,
 
   /**
    * Invoked on load start.
-   *
-   * See https://reactnative.dev/docs/image#onloadstart
    */
   onLoadStart?: ?() => void,
 
   /**
    * The image source (either a remote URL or a local file resource).
    *
-   * This prop can also contain several remote URLs, specified together with their width and height and potentially with scale/other URI arguments.
-   * The native side will then choose the best uri to display based on the measured size of the image container.
-   * A cache property can be added to control how networked request interacts with the local cache.
+   * This prop can also contain several remote URLs, specified together with
+   * their width and height and potentially with scale/other URI arguments.
+   * The native side then chooses the best URI to display based on the
+   * measured size of the image container. A `cache` property can be added to
+   * control how networked request interacts with the local cache.
    *
-   * The currently supported formats are png, jpg, jpeg, bmp, gif, webp (Android only), psd (iOS only).
-   *
-   * See https://reactnative.dev/docs/image#source
+   * The currently supported formats are `png`, `jpg`, `jpeg`, `bmp`, `gif`,
+   * `webp` (Android only), and `psd` (iOS only).
    */
   source?: ?ImageSource,
 
   /**
-   * A string indicating which referrer to use when fetching the resource.
-   * Similar to referrerpolicy from HTML.
+   * Which referrer to use when fetching the image resource.
    *
-   * See https://reactnative.dev/docs/image#referrerpolicy
+   * @default `'strict-origin-when-cross-origin'`
    */
   referrerPolicy?: ?(
     | 'no-referrer'
@@ -276,59 +280,50 @@ export type ImagePropsBase = Readonly<{
    * Determines how to resize the image when the frame doesn't match the raw
    * image dimensions.
    *
-   * 'cover': Scale the image uniformly (maintain the image's aspect ratio)
-   * so that both dimensions (width and height) of the image will be equal
-   * to or larger than the corresponding dimension of the view (minus padding).
+   * - `cover`: Scale the image uniformly (maintain the image's aspect ratio)
+   *   so that both dimensions (width and height) of the image are equal to
+   *   or larger than the corresponding dimension of the view (minus padding).
    *
-   * 'contain': Scale the image uniformly (maintain the image's aspect ratio)
-   * so that both dimensions (width and height) of the image will be equal to
-   * or less than the corresponding dimension of the view (minus padding).
+   * - `contain`: Scale the image uniformly (maintain the image's aspect
+   *   ratio) so that both dimensions (width and height) of the image are
+   *   equal to or less than the corresponding dimension of the view (minus
+   *   padding).
    *
-   * 'stretch': Scale width and height independently, This may change the
-   * aspect ratio of the src.
+   * - `stretch`: Scale width and height independently. This may change the
+   *   aspect ratio of the source.
    *
-   * 'repeat': Repeat the image to cover the frame of the view.
-   * The image will keep it's size and aspect ratio. (iOS only)
+   * - `repeat`: Repeat the image to cover the frame of the view. The image
+   *   keeps its size and aspect ratio (iOS only).
    *
-   * 'center': Scale the image down so that it is completely visible,
-   * if bigger than the area of the view.
-   * The image will not be scaled up.
+   * - `center`: Scale the image down so that it is completely visible, if
+   *   bigger than the area of the view. The image is not scaled up.
    *
-   * 'none': Do not resize the image. The image will be displayed at its intrinsic size.
+   * - `none`: Do not resize the image. The image is displayed at its
+   *   intrinsic size.
    *
-   * See https://reactnative.dev/docs/image#resizemode
+   * @default `'cover'`
    */
   resizeMode?: ?ImageResizeMode,
 
-  /**
-   * A unique identifier for this element to be used in UI Automation
-   * testing scripts.
-   *
-   * See https://reactnative.dev/docs/image#testid
-   */
   testID?: ?string,
 
   /**
-   * Changes the color of all the non-transparent pixels to the tintColor.
-   *
-   * See https://reactnative.dev/docs/image#tintcolor
+   * Changes the color of all non-transparent pixels to the `tintColor`.
    */
   tintColor?: ColorValue,
 
   /**
-   * A string representing the resource identifier for the image. Similar to
-   * src from HTML.
-   *
-   * See https://reactnative.dev/docs/image#src
+   * A remote URL string for the image resource. Takes precedence over
+   * `source`.
    */
   src?: ?string,
 
   /**
-   * Similar to srcset from HTML.
-   *
-   * See https://reactnative.dev/docs/image#srcset
+   * Comma-separated list of candidate image sources with pixel density
+   * descriptors.
    */
   srcSet?: ?string,
+
   children?: empty,
 }>;
 
@@ -338,7 +333,7 @@ export type ImageProps = Readonly<{
   ...ImagePropsBase,
 
   /**
-   * See https://reactnative.dev/docs/image#style
+   * Style applied to the `Image` component.
    */
   style?: ?ImageStyleProp,
 }>;
@@ -349,23 +344,19 @@ export type ImageBackgroundProps = Readonly<{
   children?: React.Node,
 
   /**
-   * Style applied to the outer View component
-   *
-   * See https://reactnative.dev/docs/imagebackground#style
+   * Style applied to the outer `View` wrapper. Accepts `ViewStyle` props
+   * rather than `ImageStyle` props.
    */
   style?: ?ViewStyleProp,
 
   /**
-   * Style applied to the inner Image component
-   *
-   * See https://reactnative.dev/docs/imagebackground#imagestyle
+   * Style applied to the inner `Image` component.
    */
   imageStyle?: ?ImageStyleProp,
 
   /**
-   * Allows to set a reference to the inner Image component
-   *
-   * See https://reactnative.dev/docs/imagebackground#imageref
+   * A ref setter assigned the element node of the inner `Image` component
+   * when mounted.
    */
   imageRef?: React.RefSetter<React.ElementRef<ImageType>>,
 }>;

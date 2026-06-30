@@ -33,35 +33,10 @@ import {createRef} from 'react';
 const DRAWER_STATES = ['Idle', 'Dragging', 'Settling'] as const;
 
 /**
- * React component that wraps the platform `DrawerLayout` (Android only). The
- * Drawer (typically used for navigation) is rendered with `renderNavigationView`
- * and direct children are the main view (where your content goes). The navigation
- * view is initially not visible on the screen, but can be pulled in from the
- * side of the window specified by the `drawerPosition` prop and its width can
- * be set by the `drawerWidth` prop.
+ * React component that wraps the platform `DrawerLayout` (Android only). The Drawer (typically used for navigation) is rendered with `renderNavigationView` and direct children are the main view. The navigation view is initially not visible on the screen, but can be pulled in from the side of the window specified by the `drawerPosition` prop and its width can be set by the `drawerWidth` prop.
  *
- * Example:
- *
- * ```
- * render: function() {
- *   var navigationView = (
- *     <View style={{flex: 1, backgroundColor: '#fff'}}>
- *       <Text style={{margin: 10, fontSize: 15, textAlign: 'left'}}>I'm in the Drawer!</Text>
- *     </View>
- *   );
- *   return (
- *     <DrawerLayoutAndroid
- *       drawerWidth={300}
- *       drawerPosition="left"
- *       renderNavigationView={() => navigationView}>
- *       <View style={{flex: 1, alignItems: 'center'}}>
- *         <Text style={{margin: 10, fontSize: 15, textAlign: 'right'}}>Hello</Text>
- *         <Text style={{margin: 10, fontSize: 15, textAlign: 'right'}}>World!</Text>
- *       </View>
- *     </DrawerLayoutAndroid>
- *   );
- * },
- * ```
+ * @see https://reactnative.dev/docs/drawerlayoutandroid
+ * @platform android
  */
 class DrawerLayoutAndroid
   extends React.Component<DrawerLayoutAndroidProps, DrawerLayoutAndroidState>
@@ -199,42 +174,6 @@ class DrawerLayoutAndroid
   closeDrawer() {
     Commands.closeDrawer(nullthrows(this._nativeRef.current));
   }
-
-  /**
-   * Closing and opening example
-   * Note: To access the drawer you have to give it a ref
-   *
-   * Class component:
-   *
-   * render () {
-   *   this.openDrawer = () => {
-   *     this.refs.DRAWER.openDrawer()
-   *   }
-   *   this.closeDrawer = () => {
-   *     this.refs.DRAWER.closeDrawer()
-   *   }
-   *   return (
-   *     <DrawerLayoutAndroid ref={'DRAWER'}>
-   *      {children}
-   *     </DrawerLayoutAndroid>
-   *   )
-   * }
-   *
-   * Function component:
-   *
-   * const drawerRef = useRef()
-   * const openDrawer = () => {
-   *   drawerRef.current.openDrawer()
-   * }
-   * const closeDrawer = () => {
-   *   drawerRef.current.closeDrawer()
-   * }
-   * return (
-   *   <DrawerLayoutAndroid ref={drawerRef}>
-   *     {children}
-   *   </DrawerLayoutAndroid>
-   * )
-   */
 
   /**
    * Native methods
