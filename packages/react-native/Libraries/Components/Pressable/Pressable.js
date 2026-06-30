@@ -51,11 +51,13 @@ type PressableBaseProps = Readonly<{
 
   /**
    * Duration to wait after hover in before calling `onHoverIn`.
+   * @platform macos windows
    */
   delayHoverIn?: ?number,
 
   /**
    * Duration to wait after hover out before calling `onHoverOut`.
+   * @platform macos windows
    */
   delayHoverOut?: ?number,
 

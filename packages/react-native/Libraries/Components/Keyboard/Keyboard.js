@@ -42,7 +42,13 @@ type BaseKeyboardEvent = {
 
 export type AndroidKeyboardEvent = Readonly<{
   ...BaseKeyboardEvent,
+  /**
+   * Always set to 0 on Android.
+   */
   duration: 0,
+  /**
+   * Always set to "keyboard" on Android.
+   */
   easing: 'keyboard',
 }>;
 
@@ -60,48 +66,6 @@ type KeyboardEventDefinitions = {
   keyboardWillChangeFrame: [KeyboardEvent],
   keyboardDidChangeFrame: [KeyboardEvent],
 };
-
-/**
- * `Keyboard` module to control keyboard events.
- *
- * ### Usage
- *
- * The Keyboard module allows you to listen for native events and react to them, as
- * well as make changes to the keyboard, like dismissing it.
- *
- *```
- * import React, { Component } from 'react';
- * import { Keyboard, TextInput } from 'react-native';
- *
- * class Example extends Component {
- *   componentWillMount () {
- *     this.keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', this._keyboardDidShow);
- *     this.keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', this._keyboardDidHide);
- *   }
- *
- *   componentWillUnmount () {
- *     this.keyboardDidShowListener.remove();
- *     this.keyboardDidHideListener.remove();
- *   }
- *
- *   _keyboardDidShow () {
- *     alert('Keyboard Shown');
- *   }
- *
- *   _keyboardDidHide () {
- *     alert('Keyboard Hidden');
- *   }
- *
- *   render() {
- *     return (
- *       <TextInput
- *         onSubmitEditing={Keyboard.dismiss}
- *       />
- *     );
- *   }
- * }
- *```
- */
 
 class KeyboardImpl {
   _currentlyShowing: ?KeyboardEvent;
@@ -204,6 +168,47 @@ class KeyboardImpl {
   }
 }
 
+/**
+ * `Keyboard` module to control keyboard events.
+ *
+ * ### Usage
+ *
+ * The Keyboard module allows you to listen for native events and react to them, as
+ * well as make changes to the keyboard, like dismissing it.
+ *
+ *```
+ * import React, { Component } from 'react';
+ * import { Keyboard, TextInput } from 'react-native';
+ *
+ * class Example extends Component {
+ *   componentWillMount () {
+ *     this.keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', this._keyboardDidShow);
+ *     this.keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', this._keyboardDidHide);
+ *   }
+ *
+ *   componentWillUnmount () {
+ *     this.keyboardDidShowListener.remove();
+ *     this.keyboardDidHideListener.remove();
+ *   }
+ *
+ *   _keyboardDidShow () {
+ *     alert('Keyboard Shown');
+ *   }
+ *
+ *   _keyboardDidHide () {
+ *     alert('Keyboard Hidden');
+ *   }
+ *
+ *   render() {
+ *     return (
+ *       <TextInput
+ *         onSubmitEditing={Keyboard.dismiss}
+ *       />
+ *     );
+ *   }
+ * }
+ *```
+ */
 const Keyboard: KeyboardImpl = new KeyboardImpl();
 
 export default Keyboard;

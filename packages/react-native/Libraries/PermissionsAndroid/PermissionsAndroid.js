@@ -129,13 +129,14 @@ const PERMISSIONS = Object.freeze({
   ACCESS_LOCAL_NETWORK: 'android.permission.ACCESS_LOCAL_NETWORK',
 }) as PermissionsType;
 
-/**
- * `PermissionsAndroid` provides access to Android M's new permissions model.
- *
- * See https://reactnative.dev/docs/permissionsandroid
- */
 class PermissionsAndroidImpl {
+  /**
+   * A list of specified "dangerous" permissions that require prompting the user
+   */
   PERMISSIONS: PermissionsType = PERMISSIONS;
+  /**
+   * A list of permission results that are returned
+   */
   RESULTS: Readonly<{
     DENIED: 'denied',
     GRANTED: 'granted',
@@ -227,6 +228,12 @@ class PermissionsAndroidImpl {
    * Prompts the user to enable a permission and returns a promise resolving to a
    * string value indicating whether the user allowed or denied the request
    *
+   * If the optional rationale argument is included (which is an object with a
+   * title and message), this function checks with the OS whether it is necessary
+   * to show a dialog explaining why the permission is needed
+   * (https://developer.android.com/training/permissions/requesting.html#explain)
+   * and then shows the system permission dialog
+   *
    * See https://reactnative.dev/docs/permissionsandroid#request
    */
   async request(
@@ -300,6 +307,11 @@ class PermissionsAndroidImpl {
   }
 }
 
+/**
+ * `PermissionsAndroid` provides access to Android M's new permissions model.
+ *
+ * See https://reactnative.dev/docs/permissionsandroid
+ */
 const PermissionsAndroidInstance: PermissionsAndroidImpl =
   new PermissionsAndroidImpl();
 export default PermissionsAndroidInstance;

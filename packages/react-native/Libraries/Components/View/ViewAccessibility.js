@@ -145,12 +145,12 @@ export type AccessibilityActionName =
   /**
    * Generated when a VoiceOver user places focus on or inside the component and double taps with two fingers.
    * @platform ios
-   * */
+   */
   | 'magicTap'
   /**
    * Generated when a VoiceOver user places focus on or inside the component and performs a two finger scrub gesture (left, right, left).
    * @platform ios
-   * */
+   */
   | 'escape';
 
 // the info associated with an accessibility action
@@ -249,9 +249,15 @@ export type AccessibilityPropsAndroid = Readonly<{
   'aria-live'?: ?('polite' | 'assertive' | 'off'),
 
   /**
-   * Controls how view is important for accessibility which is if it
-   * fires accessibility events and if it is reported to accessibility services
-   * that query the screen. Works for Android only.
+   * Controls how view is important for accessibility which is if it fires accessibility events
+   * and if it is reported to accessibility services that query the screen.
+   * Works for Android only. See http://developer.android.com/reference/android/R.attr.html#importantForAccessibility for references.
+   *
+   * Possible values:
+   *      'auto' - The system determines whether the view is important for accessibility - default (recommended).
+   *      'yes' - The view is important for accessibility.
+   *      'no' - The view is not important for accessibility.
+   *      'no-hide-descendants' - The view is not important for accessibility, nor are any of its descendant views.
    *
    * @platform android
    *
@@ -288,6 +294,9 @@ export type AccessibilityPropsIOS = Readonly<{
   accessibilityViewIsModal?: ?boolean,
 
   /**
+   * A Boolean value that indicates whether or not to show the item in the large content viewer.
+   * Available on iOS 13.0+
+   *
    * @platform ios
    *
    * See https://reactnative.dev/docs/view#accessibilityshowslargecontentviewer
@@ -295,6 +304,8 @@ export type AccessibilityPropsIOS = Readonly<{
   accessibilityShowsLargeContentViewer?: ?boolean,
 
   /**
+   * When `accessibilityShowsLargeContentViewer` is set, this string will be used as title for the large content viewer.
+   *
    * @platform ios
    *
    * See https://reactnative.dev/docs/view#accessibilitylargecontenttitle

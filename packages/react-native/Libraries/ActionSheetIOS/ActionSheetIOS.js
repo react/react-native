@@ -38,6 +38,10 @@ export type ShareActionSheetIOSOptions = Readonly<{
   tintColor?: ?number,
   cancelButtonTintColor?: ?number,
   disabledButtonTintColor?: ?number,
+  /**
+   * The activities to exclude from the ActionSheet.
+   * For example: ['com.apple.UIKit.activity.PostToTwitter']
+   */
   excludedActivityTypes?: ?Array<string>,
   userInterfaceStyle?: ?string,
 }>;

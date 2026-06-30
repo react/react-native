@@ -47,12 +47,6 @@ const ModalEventEmitter =
       )
     : null;
 
-/**
- * The Modal component is a simple way to present content above an enclosing view.
- *
- * See https://reactnative.dev/docs/modal
- */
-
 // In order to route onDismiss callbacks, we need to uniquely identifier each
 // <Modal> on screen. There can be different ones, either nested or as siblings.
 // We cannot pass the onDismiss callback to native as the view will be
@@ -218,6 +212,11 @@ type ModalState = {
   isRendered: boolean,
 };
 
+/**
+ * The Modal component is a simple way to present content above an enclosing view.
+ *
+ * See https://reactnative.dev/docs/modal
+ */
 class Modal extends React.Component<ModalProps, ModalState> {
   static defaultProps: {hardwareAccelerated: boolean, visible: boolean} = {
     visible: true,

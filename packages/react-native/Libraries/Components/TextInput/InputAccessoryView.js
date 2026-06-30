@@ -18,6 +18,18 @@ import useWindowDimensions from '../../Utilities/useWindowDimensions';
 import RCTInputAccessoryViewNativeComponent from './RCTInputAccessoryViewNativeComponent';
 import * as React from 'react';
 
+/** @build-types emit-as-interface Expo compatibility */
+export type InputAccessoryViewProps = Readonly<{
+  readonly children: React.Node,
+  /**
+   * An ID which is used to associate this `InputAccessoryView` to
+   * specified TextInput(s).
+   */
+  nativeID?: ?string,
+  style?: ?ViewStyleProp,
+  backgroundColor?: ?ColorValue,
+}>;
+
 /**
  * Note: iOS only
  *
@@ -75,19 +87,6 @@ import * as React from 'react';
  * TextInput with the InputAccessoryView component, and don't set a nativeID.
  * For an example, look at InputAccessoryViewExample.js in RNTester.
  */
-
-/** @build-types emit-as-interface Expo compatibility */
-export type InputAccessoryViewProps = Readonly<{
-  readonly children: React.Node,
-  /**
-   * An ID which is used to associate this `InputAccessoryView` to
-   * specified TextInput(s).
-   */
-  nativeID?: ?string,
-  style?: ?ViewStyleProp,
-  backgroundColor?: ?ColorValue,
-}>;
-
 const InputAccessoryView: React.ComponentType<InputAccessoryViewProps> = (
   props: InputAccessoryViewProps,
 ) => {

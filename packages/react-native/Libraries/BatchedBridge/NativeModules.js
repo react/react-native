@@ -180,6 +180,13 @@ function updateErrorWithErrorData(
   return Object.assign(error, errorData || {});
 }
 
+/**
+ * Native Modules written in ObjectiveC/Swift/Java exposed via the RCTBridge
+ * Define lazy getters for each module. These will return the module if already loaded, or load it if not.
+ * See https://reactnative.dev/docs/native-modules-ios
+ * @example
+ * const MyModule = NativeModules.ModuleName
+ */
 /* $FlowFixMe[unclear-type] unclear type of NativeModules */
 let NativeModules: {[moduleName: string]: any, ...} = {};
 if (global.nativeModuleProxy) {

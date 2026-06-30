@@ -67,7 +67,9 @@ export type ImagePropsIOS = Readonly<{
    */
   defaultSource?: ?ImageSource,
   /**
-   * Invoked when a partial load of the image is complete.
+   * Invoked when a partial load of the image is complete. The definition of
+   * what constitutes a "partial load" is loader specific though this is meant
+   * for progressive JPEG loads.
    *
    * See https://reactnative.dev/docs/image#onpartialload
    */
@@ -88,6 +90,11 @@ export type ImagePropsAndroid = Readonly<{
    */
   loadingIndicatorSource?: ?(number | Readonly<ImageURISource>),
   progressiveRenderingEnabled?: ?boolean,
+  /**
+   * Duration of fade in animation in ms. Defaults to 300
+   *
+   * @platform android
+   */
   fadeDuration?: ?number,
 
   /**
@@ -176,6 +183,11 @@ export type ImagePropsBase = Readonly<{
   blurRadius?: ?number,
 
   /**
+   * When the image is resized, the corners of the size specified by capInsets will stay a fixed size,
+   * but the center content and borders of the image will be stretched.
+   * This is useful for creating resizable rounded buttons, shadows, and other resizable assets.
+   * More info on Apple documentation
+   *
    * See https://reactnative.dev/docs/image#capinsets
    */
   capInsets?: ?EdgeInsetsProp,

@@ -76,6 +76,9 @@ export type LayoutChangeEvent = NativeSyntheticEvent<
   }>,
 >;
 
+/**
+ * @deprecated Use `TextLayoutEvent` instead.
+ */
 type TextLayoutEventData = Readonly<{
   lines: Array<TextLayoutLine>,
 }>;

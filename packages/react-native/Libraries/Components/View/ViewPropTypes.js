@@ -112,8 +112,18 @@ type PointerEventProps = Readonly<{
 }>;
 
 type FocusEventProps = Readonly<{
+  /**
+   * Callback that is called when the view is blurred.
+   *
+   * Note: This will only be called if the view is focusable.
+   */
   onBlur?: ?(event: BlurEvent) => void,
   onBlurCapture?: ?(event: BlurEvent) => void,
+  /**
+   * Callback that is called when the view is focused.
+   *
+   * Note: This will only be called if the view is focusable.
+   */
   onFocus?: ?(event: FocusEvent) => void,
   onFocusCapture?: ?(event: FocusEvent) => void,
 }>;
@@ -371,6 +381,7 @@ export type TVViewPropsIOS = Readonly<{
    * *(Apple TV only)* May be set to true to force the Apple TV focus engine to move focus to this view.
    *
    * @platform ios
+   * @deprecated Use `focusable` instead
    */
   hasTVPreferredFocus?: boolean,
 

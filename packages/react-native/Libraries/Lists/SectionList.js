@@ -222,6 +222,9 @@ export default class SectionList<
     }
   }
 
+  /**
+   * Provides a handle to the underlying scroll node.
+   */
   getScrollableNode(): any {
     const listRef = this._wrapperListRef && this._wrapperListRef.getListRef();
     if (listRef) {

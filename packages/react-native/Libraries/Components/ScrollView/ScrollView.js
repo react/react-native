@@ -135,17 +135,48 @@ export interface ScrollViewScrollToOptions {
 
 // Public methods for ScrollView
 export interface ScrollViewImperativeMethods {
+  /**
+   * Returns a reference to the underlying scroll responder, which supports
+   * operations like `scrollTo`. All ScrollView-like components should
+   * implement this method so that they can be composed while providing access
+   * to the underlying scroll responder's methods.
+   */
   readonly getScrollResponder: () => ScrollResponderType;
   readonly getScrollableNode: () => ?number;
   readonly getInnerViewNode: () => ?number;
   readonly getInnerViewRef: () => InnerViewInstance | null;
+  /**
+   * Returns a reference to the underlying native scroll view, or null if the
+   * native instance is not mounted.
+   */
   readonly getNativeScrollRef: () => ScrollViewInstance | null;
+  /**
+   * Scrolls to a given x, y offset, either immediately or with a smooth animation.
+   * Syntax:
+   *
+   * scrollTo(options: {x: number = 0; y: number = 0; animated: boolean = true})
+   *
+   * Note: The weird argument signature is due to the fact that, for historical reasons,
+   * the function also accepts separate arguments as an alternative to the options object.
+   * This is deprecated due to ambiguity (y before x), and SHOULD NOT BE USED.
+   */
   readonly scrollTo: (
     options?: ScrollViewScrollToOptions | number,
     deprecatedX?: number,
     deprecatedAnimated?: boolean,
   ) => void;
+  /**
+   * A helper function that scrolls to the end of the scrollview;
+   * If this is a vertical ScrollView, it scrolls to the bottom.
+   * If this is a horizontal ScrollView scrolls to the right.
+   *
+   * The options object has an animated prop, that enables the scrolling animation or not.
+   * The animated prop defaults to true
+   */
   readonly scrollToEnd: (options?: ?ScrollViewScrollToOptions) => void;
+  /**
+   * Displays the scroll indicators momentarily.
+   */
   readonly flashScrollIndicators: () => void;
   readonly scrollResponderZoomTo: (
     rect: {

@@ -98,6 +98,8 @@ type TouchableOpacityState = Readonly<{
  * Opacity is controlled by wrapping the children in an Animated.View, which is
  * added to the view hierarchy.  Be aware that this can affect layout.
  *
+ * @see https://reactnative.dev/docs/touchableopacity
+ *
  * Example:
  *
  * ```
