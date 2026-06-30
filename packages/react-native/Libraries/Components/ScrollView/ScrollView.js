@@ -886,17 +886,6 @@ class ScrollView extends React.Component<ScrollViewProps, ScrollViewState> {
   };
 
   componentDidMount() {
-    if (typeof this.props.keyboardShouldPersistTaps === 'boolean') {
-      console.warn(
-        `'keyboardShouldPersistTaps={${
-          this.props.keyboardShouldPersistTaps === true ? 'true' : 'false'
-        }}' is deprecated. ` +
-          `Use 'keyboardShouldPersistTaps="${
-            this.props.keyboardShouldPersistTaps ? 'always' : 'never'
-          }"' instead`,
-      );
-    }
-
     this._keyboardMetrics = Keyboard.metrics();
     this._additionalScrollOffset = 0;
 
@@ -1481,7 +1470,6 @@ class ScrollView extends React.Component<ScrollViewProps, ScrollViewState> {
     const currentlyFocusedTextInput = TextInputState.currentlyFocusedInput();
     if (
       currentlyFocusedTextInput != null &&
-      this.props.keyboardShouldPersistTaps !== true &&
       this.props.keyboardShouldPersistTaps !== 'always' &&
       this._keyboardIsDismissible() &&
       e.target !== currentlyFocusedTextInput &&
