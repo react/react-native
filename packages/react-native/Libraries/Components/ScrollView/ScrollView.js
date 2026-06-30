@@ -581,12 +581,10 @@ type ScrollViewBaseProps = Readonly<{
    *     catch taps, but children of the scroll view can catch taps.
    *   - `'handled'`, the keyboard will not dismiss automatically when the tap was handled by
    *     children, (or captured by an ancestor).
-   *   - `false`, deprecated, use `'never'` instead.
-   *   - `true`, deprecated, use `'always'` instead.
    *
    * @default `'never'`
    */
-  keyboardShouldPersistTaps?: ?('always' | 'never' | 'handled' | true | false),
+  keyboardShouldPersistTaps?: ?('always' | 'never' | 'handled'),
   /**
    * When set, the scroll view will adjust the scroll position so that the first child that is
    * partially or fully visible and at or beyond `minIndexForVisible` will not change position.
