@@ -79,6 +79,11 @@ module.exports = {
                 );
               },
             });
+          } else {
+            // Deep type imports without a known public API type mapping are
+            // still deep imports and must be reported (just without an
+            // auto-fix), matching the behavior for default and named imports.
+            context.report(getStandardReport(node.source));
           }
         } else {
           context.report(getStandardReport(node.source));
