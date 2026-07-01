@@ -9,14 +9,15 @@
  */
 
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
+import type {ScrollEvent, ScrollViewInstance} from 'react-native';
 
 import * as React from 'react';
 import {useCallback, useRef, useState} from 'react';
 import {Button, ScrollView, StyleSheet, Text, View} from 'react-native';
 
 type MaintainVisibleConfig = {
-  minIndexForVisible: number;
-  autoscrollToTopThreshold?: number | null;
+  minIndexForVisible: number,
+  autoscrollToTopThreshold?: number | null,
 };
 
 function createConfig(
@@ -35,29 +36,25 @@ function ScrollView_maintainVisibleContentPosition(): React.Node {
     Array.from({length: 20}, (_, i) => ({id: i.toString()})),
   );
   const [minIndexForVisible, setMinIndexForVisible] = useState(0);
-  const [autoscrollToTopThreshold, setAutoscrollToTopThreshold] =
-    useState<number | null>(null);
+  const [autoscrollToTopThreshold, setAutoscrollToTopThreshold] = useState<
+    number | null,
+  >(null);
   const [scrollOffset, setScrollOffset] = useState(0);
-  const scrollViewRef = useRef<ScrollView | null>(null);
+  const scrollViewRef = useRef<?ScrollViewInstance>(null);
 
   const config = createConfig(minIndexForVisible, autoscrollToTopThreshold);
 
-  const onScroll = useCallback(
-    (e) => {
-      setScrollOffset(e.nativeEvent.contentOffset.y);
-    },
-    [],
-  );
+  const onScroll = useCallback((e: ScrollEvent) => {
+    setScrollOffset(e.nativeEvent.contentOffset.y);
+  }, []);
 
   const addItemAtTop = useCallback(() => {
-    setItems(prev => [{ id: `new-${Date.now()}` }, ...prev]);
+    setItems(prev => [{id: `new-${Date.now()}`}, ...prev]);
   }, []);
 
   const resetItems = useCallback(() => {
-    setItems(
-      Array.from({length: 20}, (_, i) => ({id: i.toString()})),
-    );
-    scrollViewRef.current?.scrollTo({ x: 0, y: 0, animated: false });
+    setItems(Array.from({length: 20}, (_, i) => ({id: i.toString()})));
+    scrollViewRef.current?.scrollTo({x: 0, y: 0, animated: false});
   }, []);
 
   return (
@@ -83,7 +80,9 @@ function ScrollView_maintainVisibleContentPosition(): React.Node {
         ))}
       </ScrollView>
       <View style={styles.controlsContainer}>
-        <Text style={styles.info} testID="scroll-offset-display">offset:{Math.round(scrollOffset)}</Text>
+        <Text style={styles.info} testID="scroll-offset-display">
+          offset:{Math.round(scrollOffset)}
+        </Text>
         <View style={styles.buttonRow}>
           <Button onPress={addItemAtTop} title="Add 1 item at top" />
           <Button onPress={resetItems} title="Reset" />

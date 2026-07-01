@@ -2613,10 +2613,7 @@ it('handles multiple rapid prepends with maintainVisibleContentPosition', async 
   });
 
   // First prepend: add 5 items at the start
-  const afterFirstPrepend = [
-    ...generateItems(5, items.length),
-    ...items,
-  ];
+  const afterFirstPrepend = [...generateItems(5, items.length), ...items];
   await act(() => {
     component.update(
       <VirtualizedList

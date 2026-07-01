@@ -13,7 +13,6 @@ import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 import type {HostInstance} from 'react-native';
 
 import * as Fantom from '@react-native/fantom';
-import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {createRef} from 'react';
 import {ScrollView, View} from 'react-native';
@@ -86,10 +85,7 @@ test('maintainVisibleContentPosition preserves position on prepend', () => {
   expect(scrollLogs1.length).toBeGreaterThan(0);
 
   // Prepend 5 items at the top
-  const itemsAfterPrepend = [
-    ...makeItems(5, NUM_ITEMS),
-    ...initialItems,
-  ];
+  const itemsAfterPrepend = [...makeItems(5, NUM_ITEMS), ...initialItems];
 
   Fantom.runTask(() => {
     root.render(
@@ -278,10 +274,7 @@ test('maintainVisibleContentPosition with autoscrollToTopThreshold triggers scro
   expect(logs.length).toBeGreaterThan(0);
 
   // Prepend items — since we're within the threshold, scroll should go to top
-  const itemsAfterPrepend = [
-    ...makeItems(5, NUM_ITEMS),
-    ...items,
-  ];
+  const itemsAfterPrepend = [...makeItems(5, NUM_ITEMS), ...items];
 
   Fantom.runTask(() => {
     root.render(
@@ -338,10 +331,7 @@ test('maintainVisibleContentPosition with minIndexForVisible > 0 skips early ite
 
   // Prepend 3 items — item 8 becomes item 11, but minIndexForVisible: 5
   // means items 0-4 are not considered for anchor
-  const itemsAfterPrepend = [
-    ...makeItems(3, NUM_ITEMS),
-    ...items,
-  ];
+  const itemsAfterPrepend = [...makeItems(3, NUM_ITEMS), ...items];
 
   Fantom.runTask(() => {
     root.render(
@@ -397,10 +387,7 @@ test('maintainVisibleContentPosition with inverted ScrollView preserves position
   expect(scrollLogs1.length).toBeGreaterThan(0);
 
   // Prepend 5 items at the top
-  const itemsAfterPrepend = [
-    ...makeItems(5, NUM_ITEMS),
-    ...initialItems,
-  ];
+  const itemsAfterPrepend = [...makeItems(5, NUM_ITEMS), ...initialItems];
 
   Fantom.runTask(() => {
     root.render(
@@ -531,10 +518,7 @@ test('maintainVisibleContentPosition does not interrupt scroll during prepend', 
   expect(dragScrollLogs.length).toBeGreaterThan(0);
 
   // Prepend 5 items while the scroll position is at item 10
-  const itemsAfterPrepend = [
-    ...makeItems(5, NUM_ITEMS),
-    ...initialItems,
-  ];
+  const itemsAfterPrepend = [...makeItems(5, NUM_ITEMS), ...initialItems];
 
   Fantom.runTask(() => {
     root.render(
@@ -589,10 +573,7 @@ test('maintainVisibleContentPosition preserves position on horizontal prepend', 
   root.takeMountingManagerLogs();
 
   // Prepend 5 items
-  const itemsAfterPrepend = [
-    ...makeItems(5, NUM_ITEMS),
-    ...initialItems,
-  ];
+  const itemsAfterPrepend = [...makeItems(5, NUM_ITEMS), ...initialItems];
 
   Fantom.runTask(() => {
     root.render(
@@ -644,10 +625,7 @@ test('maintainVisibleContentPosition preserves position on horizontal + inverted
 
   root.takeMountingManagerLogs();
 
-  const itemsAfterPrepend = [
-    ...makeItems(5, NUM_ITEMS),
-    ...initialItems,
-  ];
+  const itemsAfterPrepend = [...makeItems(5, NUM_ITEMS), ...initialItems];
 
   Fantom.runTask(() => {
     root.render(
@@ -700,10 +678,7 @@ test('maintainVisibleContentPosition does not trigger correction on append', () 
   root.takeMountingManagerLogs();
 
   // Append 5 items at the end (should not affect anchor position)
-  const itemsAfterAppend = [
-    ...initialItems,
-    ...makeItems(5, NUM_ITEMS),
-  ];
+  const itemsAfterAppend = [...initialItems, ...makeItems(5, NUM_ITEMS)];
 
   Fantom.runTask(() => {
     root.render(
@@ -916,23 +891,23 @@ test('maintainVisibleContentPosition handles sibling items above anchor growing'
         style={{height: VIEWPORT_HEIGHT, width: 100}}
         maintainVisibleContentPosition={{minIndexForVisible: 0}}>
         {initialItems.map((item, index) =>
-          index < 5
-            ? (
-                <View
-                  key={item.key}
-                  nativeID={`item_${item.id}`}
-                  style={{height: ITEM_HEIGHT * 2, width: 100}}>
-                  <View
-                    nativeID={`inner_${item.id}`}
-                    style={{
-                      height: ITEM_HEIGHT * 2 - 2,
-                      width: 100 - 2,
-                      backgroundColor: '#4CAF50',
-                    }}
-                  />
-                </View>
-              )
-            : renderItem(item),
+          index < 5 ? (
+            <View
+              key={item.key}
+              nativeID={`item_${item.id}`}
+              style={{height: ITEM_HEIGHT * 2, width: 100}}>
+              <View
+                nativeID={`inner_${item.id}`}
+                style={{
+                  height: ITEM_HEIGHT * 2 - 2,
+                  width: 100 - 2,
+                  backgroundColor: '#4CAF50',
+                }}
+              />
+            </View>
+          ) : (
+            renderItem(item)
+          ),
         )}
       </ScrollView>,
     );
@@ -983,23 +958,23 @@ test('maintainVisibleContentPosition handles sibling items above anchor shrinkin
         style={{height: VIEWPORT_HEIGHT, width: 100}}
         maintainVisibleContentPosition={{minIndexForVisible: 0}}>
         {initialItems.map((item, index) =>
-          index < 5
-            ? (
-                <View
-                  key={item.key}
-                  nativeID={`item_${item.id}`}
-                  style={{height: ITEM_HEIGHT / 2, width: 100}}>
-                  <View
-                    nativeID={`inner_${item.id}`}
-                    style={{
-                      height: ITEM_HEIGHT / 2 - 2,
-                      width: 100 - 2,
-                      backgroundColor: '#4CAF50',
-                    }}
-                  />
-                </View>
-              )
-            : renderItem(item),
+          index < 5 ? (
+            <View
+              key={item.key}
+              nativeID={`item_${item.id}`}
+              style={{height: ITEM_HEIGHT / 2, width: 100}}>
+              <View
+                nativeID={`inner_${item.id}`}
+                style={{
+                  height: ITEM_HEIGHT / 2 - 2,
+                  width: 100 - 2,
+                  backgroundColor: '#4CAF50',
+                }}
+              />
+            </View>
+          ) : (
+            renderItem(item)
+          ),
         )}
       </ScrollView>,
     );
@@ -1093,10 +1068,7 @@ test('maintainVisibleContentPosition with initialScrollIndex + prepend after rem
   root.takeMountingManagerLogs();
 
   // Force remount with a different key (simulates navigation to new screen with same component)
-  const itemsAfterPrepend = [
-    ...makeItems(3, NUM_ITEMS),
-    ...initialItems,
-  ];
+  const itemsAfterPrepend = [...makeItems(3, NUM_ITEMS), ...initialItems];
 
   Fantom.runTask(() => {
     root.render(
@@ -1152,10 +1124,7 @@ test('maintainVisibleContentPosition preserves position on horizontal prepend in
   root.takeMountingManagerLogs();
 
   // Prepend 5 items in RTL mode
-  const itemsAfterPrepend = [
-    ...makeItems(5, NUM_ITEMS),
-    ...initialItems,
-  ];
+  const itemsAfterPrepend = [...makeItems(5, NUM_ITEMS), ...initialItems];
 
   Fantom.runTask(() => {
     root.render(
@@ -1281,10 +1250,7 @@ test('maintainVisibleContentPosition with getItemLayout prop', () => {
   root.takeMountingManagerLogs();
 
   // Prepend 4 items
-  const itemsAfterPrepend = [
-    ...makeItems(4, NUM_ITEMS),
-    ...initialItems,
-  ];
+  const itemsAfterPrepend = [...makeItems(4, NUM_ITEMS), ...initialItems];
 
   const getItemLayoutAfterPrepend = (_: mixed, index: number) => ({
     length: ITEM_HEIGHT,
@@ -1361,10 +1327,7 @@ test('maintainVisibleContentPosition handles all items culled (spacers only in v
 
   // Prepend 3 items — the culled items (0-2) are replaced by new items (20-22)
   // The viewport may show spacers (culled item slots) and new data items
-  const itemsAfterPrepend = [
-    ...makeItems(3, NUM_ITEMS),
-    ...initialItems,
-  ];
+  const itemsAfterPrepend = [...makeItems(3, NUM_ITEMS), ...initialItems];
 
   Fantom.runTask(() => {
     root.render(
@@ -1439,10 +1402,7 @@ test('maintainVisibleContentPosition simulates pull-to-refresh pattern', () => {
   root.takeMountingManagerLogs();
 
   // Refresh completes: prepend new items (simulating fresh data from server)
-  const itemsAfterRefresh = [
-    ...makeItems(3, NUM_ITEMS),
-    ...currentItems,
-  ];
+  const itemsAfterRefresh = [...makeItems(3, NUM_ITEMS), ...currentItems];
 
   Fantom.runTask(() => {
     root.render(
@@ -1497,9 +1457,7 @@ test('maintainVisibleContentPosition handles unmount/remount (navigation pattern
 
   // Unmount: replace with empty content (simulates navigating away)
   Fantom.runTask(() => {
-    root.render(
-      <View style={{height: VIEWPORT_HEIGHT, width: 100}} />,
-    );
+    root.render(<View style={{height: VIEWPORT_HEIGHT, width: 100}} />);
   });
 
   const unmountLogs = root.takeMountingManagerLogs();
@@ -1559,10 +1517,7 @@ test('maintainVisibleContentPosition handles contentInset changes (keyboard/safe
   root.takeMountingManagerLogs();
 
   // Simulate keyboard appearance: change contentInset (bottom inset increases)
-  const itemsAfterPrepend = [
-    ...makeItems(2, NUM_ITEMS),
-    ...initialItems,
-  ];
+  const itemsAfterPrepend = [...makeItems(2, NUM_ITEMS), ...initialItems];
 
   Fantom.runTask(() => {
     root.render(
@@ -1672,10 +1627,7 @@ test('maintainVisibleContentPosition handles large prepend (50+ items)', () => {
   root.takeMountingManagerLogs();
 
   // Prepend 50 items — this causes view recycling, tag comparison safeguard must detect it
-  const itemsAfterPrepend = [
-    ...makeItems(50, NUM_ITEMS),
-    ...initialItems,
-  ];
+  const itemsAfterPrepend = [...makeItems(50, NUM_ITEMS), ...initialItems];
 
   Fantom.runTask(() => {
     root.render(
@@ -1722,10 +1674,7 @@ test('maintainVisibleContentPosition handles first prepend after initial mount',
   expect(initialLogs.length).toBeGreaterThan(0);
 
   // Prepend 5 items on the very first update (anchor state being initialized)
-  const itemsAfterPrepend = [
-    ...makeItems(5, NUM_ITEMS),
-    ...initialItems,
-  ];
+  const itemsAfterPrepend = [...makeItems(5, NUM_ITEMS), ...initialItems];
 
   Fantom.runTask(() => {
     root.render(
@@ -1768,7 +1717,10 @@ test('maintainVisibleContentPosition handles variable-height items', () => {
           <View
             key={item.key}
             nativeID={`item_${item.id}`}
-            style={{height: index % 3 === 0 ? ITEM_HEIGHT * 2 : ITEM_HEIGHT, width: 100}}>
+            style={{
+              height: index % 3 === 0 ? ITEM_HEIGHT * 2 : ITEM_HEIGHT,
+              width: 100,
+            }}>
             <View
               nativeID={`inner_${item.id}`}
               style={{
@@ -1794,10 +1746,7 @@ test('maintainVisibleContentPosition handles variable-height items', () => {
   root.takeMountingManagerLogs();
 
   // Prepend 3 variable-height items
-  const itemsAfterPrepend = [
-    ...makeItems(3, NUM_ITEMS),
-    ...initialItems,
-  ];
+  const itemsAfterPrepend = [...makeItems(3, NUM_ITEMS), ...initialItems];
 
   Fantom.runTask(() => {
     root.render(
@@ -1809,7 +1758,10 @@ test('maintainVisibleContentPosition handles variable-height items', () => {
           <View
             key={item.key}
             nativeID={`item_${item.id}`}
-            style={{height: index % 3 === 0 ? ITEM_HEIGHT * 2 : ITEM_HEIGHT, width: 100}}>
+            style={{
+              height: index % 3 === 0 ? ITEM_HEIGHT * 2 : ITEM_HEIGHT,
+              width: 100,
+            }}>
             <View
               nativeID={`inner_${item.id}`}
               style={{
@@ -1864,10 +1816,7 @@ test('maintainVisibleContentPosition handles anchor culled (pushed off-screen)',
   root.takeMountingManagerLogs();
 
   // Prepend 10 items — pushes item_3 off-screen (culled), a new anchor is selected
-  const itemsAfterPrepend = [
-    ...makeItems(10, NUM_ITEMS),
-    ...initialItems,
-  ];
+  const itemsAfterPrepend = [...makeItems(10, NUM_ITEMS), ...initialItems];
 
   Fantom.runTask(() => {
     root.render(
@@ -1920,10 +1869,7 @@ test('maintainVisibleContentPosition with inverted + recycling', () => {
   root.takeMountingManagerLogs();
 
   // Prepend 50 items — causes recycling in inverted mode
-  const itemsAfterPrepend = [
-    ...makeItems(50, NUM_ITEMS),
-    ...initialItems,
-  ];
+  const itemsAfterPrepend = [...makeItems(50, NUM_ITEMS), ...initialItems];
 
   Fantom.runTask(() => {
     root.render(

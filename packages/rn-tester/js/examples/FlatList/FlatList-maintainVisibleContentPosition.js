@@ -13,7 +13,7 @@ import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 
 import * as React from 'react';
 import {useCallback, useRef, useState} from 'react';
-import {Button, FlatList, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {FlatList, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 
 const HEIGHTS = [30, 50, 70, 90, 110];
 
@@ -23,8 +23,8 @@ const INITIAL_DATA = Array.from({length: 20}, (_, i) => ({
 }));
 
 type MaintainVisibleConfig = {
-  minIndexForVisible: number;
-  autoscrollToTopThreshold?: number | null;
+  minIndexForVisible: number,
+  autoscrollToTopThreshold?: number | null,
 };
 
 function createConfig(
@@ -42,20 +42,20 @@ export component FlatList_maintainVisibleContentPosition() {
   const [data, setData] = useState(INITIAL_DATA);
   const [horizontal, setHorizontal] = useState(false);
   const [inverted, setInverted] = useState(false);
-  const [minIndexForVisible, setMinIndexForVisible] = useState(0);
-  const [autoscrollToTopThreshold, setAutoscrollToTopThreshold] =
-    useState<number | null>(null);
+  const [minIndexForVisible] = useState(0);
+  const [autoscrollToTopThreshold, setAutoscrollToTopThreshold] = useState<
+    number | null,
+  >(null);
   const [windowSize, setWindowSize] = useState(51);
   const [scrollEventThrottle, setScrollEventThrottle] = useState(16);
   const [variableHeight, setVariableHeight] = useState(false);
   const [scrollOffset, setScrollOffset] = useState(0);
   const flatListRef = useRef<FlatList | null>(null);
-  const scrollOffsetRef = useRef(0);
 
   const config = createConfig(minIndexForVisible, autoscrollToTopThreshold);
 
   const renderItem = useCallback(
-    ({item}: ListRenderItemInfo<{id: string; height?: number}>) => (
+    ({item}: ListRenderItemInfo<{id: string, height?: number}>) => (
       <View
         key={item.id}
         testID={`item_${item.id}`}
@@ -74,25 +74,25 @@ export component FlatList_maintainVisibleContentPosition() {
   );
 
   const addItemAtTop = useCallback(() => {
-    setData(prev => [{ id: `added-${prev.length}` }, ...prev]);
+    setData(prev => [{id: `added-${prev.length}`}, ...prev]);
   }, []);
 
   const addItemAtBottom = useCallback(() => {
-    setData(prev => [...prev, { id: `added-${prev.length}` }]);
+    setData(prev => [...prev, {id: `added-${prev.length}`}]);
   }, []);
 
   const addItemAtTopMultiple = useCallback(() => {
     setData(prev => [
-      { id: `added-${prev.length}` },
-      { id: `added-${prev.length + 1}` },
-      { id: `added-${prev.length + 2}` },
+      {id: `added-${prev.length}`},
+      {id: `added-${prev.length + 1}`},
+      {id: `added-${prev.length + 2}`},
       ...prev,
     ]);
   }, []);
 
   const addItemAtTopFifty = useCallback(() => {
     setData(prev => {
-      const newItems = Array.from({ length: 50 }, (_, i) => ({
+      const newItems = Array.from({length: 50}, (_, i) => ({
         id: `added-${prev.length + i}`,
       }));
       return [...newItems, ...prev];
@@ -101,34 +101,34 @@ export component FlatList_maintainVisibleContentPosition() {
 
   const resetData = useCallback(() => {
     setData(INITIAL_DATA);
-    flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
+    flatListRef.current?.scrollToOffset({offset: 0, animated: false});
   }, []);
 
   const scrollToOffset500 = useCallback(() => {
-    flatListRef.current?.scrollToOffset({ offset: 500, animated: true });
+    flatListRef.current?.scrollToOffset({offset: 500, animated: true});
   }, []);
 
   const scrollToOffset100 = useCallback(() => {
-    flatListRef.current?.scrollToOffset({ offset: 100, animated: true });
+    flatListRef.current?.scrollToOffset({offset: 100, animated: true});
   }, []);
 
   const clearData = useCallback(() => {
     setData([]);
-    flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
+    flatListRef.current?.scrollToOffset({offset: 0, animated: false});
   }, []);
 
   const addItemAtTopAndRemoveBottom = useCallback(() => {
     setData(prev => {
-      const newItems = [{ id: `added-${prev.length}` }];
+      const newItems = [{id: `added-${prev.length}`}];
       const remaining = prev.slice(0, Math.max(0, prev.length - 3));
       return [...newItems, ...remaining];
     });
   }, []);
 
   const onScroll = useCallback(
-    (e) => {
-      const offset = horizontal 
-        ? e.nativeEvent.contentOffset.x 
+    e => {
+      const offset = horizontal
+        ? e.nativeEvent.contentOffset.x
         : e.nativeEvent.contentOffset.y;
       setScrollOffset(offset);
     },
@@ -151,66 +151,144 @@ export component FlatList_maintainVisibleContentPosition() {
         style={horizontal ? styles.listHorizontal : styles.list}
       />
       <View style={styles.controlsContainer}>
-        <Text style={styles.info} testID="scroll-offset-display">offset:{Math.round(scrollOffset)}</Text>
+        <Text style={styles.info} testID="scroll-offset-display">
+          offset:{Math.round(scrollOffset)}
+        </Text>
         <View style={styles.smallButtonRow}>
           <View style={styles.smallButtonContainer}>
-            <TouchableOpacity style={styles.smallButtonText} onPress={addItemAtTop}><Text>Add 1 item at top</Text></TouchableOpacity>
+            <TouchableOpacity
+              style={styles.smallButtonText}
+              onPress={addItemAtTop}>
+              <Text>Add 1 item at top</Text>
+            </TouchableOpacity>
           </View>
           <View style={styles.smallButtonContainer}>
-            <TouchableOpacity style={styles.smallButtonText} onPress={addItemAtBottom}><Text>Add 1 item at bottom</Text></TouchableOpacity>
+            <TouchableOpacity
+              style={styles.smallButtonText}
+              onPress={addItemAtBottom}>
+              <Text>Add 1 item at bottom</Text>
+            </TouchableOpacity>
           </View>
         </View>
         <View style={styles.smallButtonRow}>
           <View style={styles.smallButtonContainer}>
-            <TouchableOpacity style={styles.smallButtonText} onPress={addItemAtTopMultiple}><Text>Add 3 items at top</Text></TouchableOpacity>
+            <TouchableOpacity
+              style={styles.smallButtonText}
+              onPress={addItemAtTopMultiple}>
+              <Text>Add 3 items at top</Text>
+            </TouchableOpacity>
           </View>
           <View style={styles.smallButtonContainer}>
-            <TouchableOpacity style={styles.smallButtonText} onPress={addItemAtTopFifty}><Text>Add 50 items at top</Text></TouchableOpacity>
-          </View>
-        </View>
-        <View style={styles.smallButtonRow}>
-          <View style={styles.smallButtonContainer}>
-            <TouchableOpacity style={styles.smallButtonText} onPress={addItemAtTopAndRemoveBottom}><Text>Add + Remove (net -2)</Text></TouchableOpacity>
-          </View>
-        </View>
-        <View style={styles.smallButtonRow}>
-          <View style={styles.smallButtonContainer}>
-            <TouchableOpacity style={styles.smallButtonText} onPress={() => setHorizontal(h => !h)}><Text>{horizontal ? 'Horizontal: ON' : 'Horizontal: OFF'}</Text></TouchableOpacity>
-          </View>
-          <View style={styles.smallButtonContainer}>
-            <TouchableOpacity style={styles.smallButtonText} onPress={() => setInverted(i => !i)}><Text>{inverted ? 'Inverted: ON' : 'Inverted: OFF'}</Text></TouchableOpacity>
+            <TouchableOpacity
+              style={styles.smallButtonText}
+              onPress={addItemAtTopFifty}>
+              <Text>Add 50 items at top</Text>
+            </TouchableOpacity>
           </View>
         </View>
         <View style={styles.smallButtonRow}>
           <View style={styles.smallButtonContainer}>
-            <TouchableOpacity style={styles.smallButtonText} onPress={() => setWindowSize(windowSize === 51 ? 3 : 51)}><Text>{windowSize === 51 ? 'Recycle: OFF' : 'Recycle: ON'}</Text></TouchableOpacity>
-          </View>
-          <View style={styles.smallButtonContainer}>
-            <TouchableOpacity style={styles.smallButtonText} onPress={() => setVariableHeight(v => !v)}><Text>{variableHeight ? 'Height: Variable' : 'Height: Fixed'}</Text></TouchableOpacity>
-          </View>
-        </View>
-        <View style={styles.smallButtonRow}>
-          <View style={styles.smallButtonContainer}>
-            <TouchableOpacity style={styles.smallButtonText} onPress={() => setAutoscrollToTopThreshold(autoscrollToTopThreshold === 100 ? null : 100)}><Text>{autoscrollToTopThreshold === 100 ? 'Threshold: 100' : 'Threshold: OFF'}</Text></TouchableOpacity>
-          </View>
-          <View style={styles.smallButtonContainer}>
-            <TouchableOpacity style={styles.smallButtonText} onPress={() => setScrollEventThrottle(scrollEventThrottle === 16 ? 500 : 16)}><Text>{scrollEventThrottle === 16 ? 'Throttle: 16ms' : 'Throttle: 500ms'}</Text></TouchableOpacity>
+            <TouchableOpacity
+              style={styles.smallButtonText}
+              onPress={addItemAtTopAndRemoveBottom}>
+              <Text>Add + Remove (net -2)</Text>
+            </TouchableOpacity>
           </View>
         </View>
         <View style={styles.smallButtonRow}>
           <View style={styles.smallButtonContainer}>
-            <TouchableOpacity style={styles.smallButtonText} onPress={scrollToOffset100}><Text>ScrollToOffset 100</Text></TouchableOpacity>
+            <TouchableOpacity
+              style={styles.smallButtonText}
+              onPress={() => setHorizontal(h => !h)}>
+              <Text>{horizontal ? 'Horizontal: ON' : 'Horizontal: OFF'}</Text>
+            </TouchableOpacity>
           </View>
           <View style={styles.smallButtonContainer}>
-            <TouchableOpacity style={styles.smallButtonText} onPress={scrollToOffset500}><Text>ScrollToOffset 500</Text></TouchableOpacity>
+            <TouchableOpacity
+              style={styles.smallButtonText}
+              onPress={() => setInverted(i => !i)}>
+              <Text>{inverted ? 'Inverted: ON' : 'Inverted: OFF'}</Text>
+            </TouchableOpacity>
           </View>
         </View>
         <View style={styles.smallButtonRow}>
           <View style={styles.smallButtonContainer}>
-            <TouchableOpacity style={styles.smallButtonText} onPress={clearData}><Text>Clear (empty list)</Text></TouchableOpacity>
+            <TouchableOpacity
+              style={styles.smallButtonText}
+              onPress={() => setWindowSize(windowSize === 51 ? 3 : 51)}>
+              <Text>{windowSize === 51 ? 'Recycle: OFF' : 'Recycle: ON'}</Text>
+            </TouchableOpacity>
           </View>
           <View style={styles.smallButtonContainer}>
-            <TouchableOpacity style={styles.smallButtonText} onPress={resetData}><Text>Reset</Text></TouchableOpacity>
+            <TouchableOpacity
+              style={styles.smallButtonText}
+              onPress={() => setVariableHeight(v => !v)}>
+              <Text>
+                {variableHeight ? 'Height: Variable' : 'Height: Fixed'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+        <View style={styles.smallButtonRow}>
+          <View style={styles.smallButtonContainer}>
+            <TouchableOpacity
+              style={styles.smallButtonText}
+              onPress={() =>
+                setAutoscrollToTopThreshold(
+                  autoscrollToTopThreshold === 100 ? null : 100,
+                )
+              }>
+              <Text>
+                {autoscrollToTopThreshold === 100
+                  ? 'Threshold: 100'
+                  : 'Threshold: OFF'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.smallButtonContainer}>
+            <TouchableOpacity
+              style={styles.smallButtonText}
+              onPress={() =>
+                setScrollEventThrottle(scrollEventThrottle === 16 ? 500 : 16)
+              }>
+              <Text>
+                {scrollEventThrottle === 16
+                  ? 'Throttle: 16ms'
+                  : 'Throttle: 500ms'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+        <View style={styles.smallButtonRow}>
+          <View style={styles.smallButtonContainer}>
+            <TouchableOpacity
+              style={styles.smallButtonText}
+              onPress={scrollToOffset100}>
+              <Text>ScrollToOffset 100</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.smallButtonContainer}>
+            <TouchableOpacity
+              style={styles.smallButtonText}
+              onPress={scrollToOffset500}>
+              <Text>ScrollToOffset 500</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+        <View style={styles.smallButtonRow}>
+          <View style={styles.smallButtonContainer}>
+            <TouchableOpacity
+              style={styles.smallButtonText}
+              onPress={clearData}>
+              <Text>Clear (empty list)</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.smallButtonContainer}>
+            <TouchableOpacity
+              style={styles.smallButtonText}
+              onPress={resetData}>
+              <Text>Reset</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </View>
