@@ -2539,7 +2539,6 @@ protocol NativeStatusBarManagerIOSSpec : public NSObjectRCTBridgeModule, public 
   public virtual void getHeight:(RCTResponseSenderBlock callback);
   public virtual void removeListeners:(double count);
   public virtual void setHidden:withAnimation:(BOOL hidden, NSString* withAnimation);
-  public virtual void setNetworkActivityIndicatorVisible:(BOOL visible);
   public virtual void setStyle:animated:(NSString* _Nullable statusBarStyle, BOOL animated);
 }
 
