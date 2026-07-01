@@ -276,9 +276,7 @@ const RNTesterApp = ({
 
   return (
     <RNTesterThemeContext.Provider value={theme}>
-      {Platform.OS === 'android' ? (
-        <StatusBar barStyle="dark-content" />
-      ) : null}
+      {Platform.OS === 'android' ? <StatusBar barStyle="dark-content" /> : null}
       {!shouldHideChrome && (
         <RNTTitleBar
           title={title}
