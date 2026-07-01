@@ -184,9 +184,6 @@ export type ModalPropsAndroid = {
   /**
    * Whether the modal should go under the system statusbar.
    *
-   * @deprecated Has no effect on its own on API level 35+ (Android 15+) due to
-   * edge-to-edge enforcement.
-   *
    * @default `false`
    *
    * @platform android
@@ -196,9 +193,6 @@ export type ModalPropsAndroid = {
   /**
    * Whether the modal should go under the system navigation bar.
    * `statusBarTranslucent` also needs to be `true`.
-   *
-   * @deprecated Has no effect on its own on API level 35+ (Android 15+) due to
-   * edge-to-edge enforcement.
    *
    * @default `false`
    *
