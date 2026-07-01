@@ -183,11 +183,19 @@ MapBuffer MapBufferBuilder::build() {
 
   std::vector<uint8_t> buffer(bufferSize);
   memcpy(buffer.data(), &header_, headerSize);
-  memcpy(buffer.data() + headerSize, buckets_.data(), bucketSize);
-  memcpy(
-      buffer.data() + headerSize + bucketSize,
-      dynamicData_.data(),
-      dynamicData_.size());
+  // buckets_.data() / dynamicData_.data() return nullptr when the vector is
+  // empty; passing nullptr to memcpy is UB even with size 0 (glibc marks the
+  // src argument nonnull) and trips UBSan halt-on-error on empty / scalar-only
+  // MapBuffers.
+  if (!buckets_.empty()) {
+    memcpy(buffer.data() + headerSize, buckets_.data(), bucketSize);
+  }
+  if (!dynamicData_.empty()) {
+    memcpy(
+        buffer.data() + headerSize + bucketSize,
+        dynamicData_.data(),
+        dynamicData_.size());
+  }
 
   return MapBuffer(std::move(buffer));
 }
