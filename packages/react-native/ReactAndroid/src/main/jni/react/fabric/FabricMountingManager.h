@@ -13,6 +13,7 @@
 
 #include <fbjni/fbjni.h>
 #include <react/fabric/JFabricUIManager.h>
+#include <react/renderer/animationbackend/AnimatedProps.h>
 #include <react/renderer/uimanager/primitives.h>
 
 namespace facebook::react {
@@ -74,6 +75,9 @@ class FabricMountingManager final {
 
   void clearPendingSnapshots();
 
+  void synchronouslyUpdateAnimatedPropsOnUIThread(
+      SurfaceId surfaceId,
+      const std::unordered_map<Tag, AnimatedProps> &updates);
   void scheduleReactRevisionMerge(SurfaceId surfaceId);
 
  private:

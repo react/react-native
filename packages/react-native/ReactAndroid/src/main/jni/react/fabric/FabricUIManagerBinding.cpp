@@ -20,6 +20,7 @@
 #include <jsi/JSIDynamic.h>
 #include <jsi/jsi.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
+#include <react/renderer/animationbackend/AnimatedProps.h>
 #include <react/renderer/animations/LayoutAnimationDriver.h>
 #include <react/renderer/componentregistry/ComponentDescriptorFactory.h>
 #include <react/renderer/core/EventBeat.h>
@@ -789,6 +790,16 @@ void FabricUIManagerBinding::schedulerShouldSynchronouslyUpdateViewOnUIThread(
     const folly::dynamic& props) {
   if (ReactNativeFeatureFlags::cxxNativeAnimatedEnabled() && mountingManager_) {
     mountingManager_->synchronouslyUpdateViewOnUIThread(tag, props);
+  }
+}
+
+void FabricUIManagerBinding::
+    schedulerShouldSynchronouslyUpdateAnimatedPropsOnUIThread(
+        SurfaceId surfaceId,
+        const std::unordered_map<Tag, AnimatedProps>& updates) {
+  if (ReactNativeFeatureFlags::cxxNativeAnimatedEnabled() && mountingManager_) {
+    mountingManager_->synchronouslyUpdateAnimatedPropsOnUIThread(
+        surfaceId, updates);
   }
 }
 

@@ -71,6 +71,13 @@ void SchedulerDelegateImpl::schedulerShouldSynchronouslyUpdateViewOnUIThread(
   mountingManager_->synchronouslyUpdateViewOnUIThread(tag, props);
 }
 
+void SchedulerDelegateImpl::
+    schedulerShouldSynchronouslyUpdateAnimatedPropsOnUIThread(
+        SurfaceId /*surfaceId*/,
+        const std::unordered_map<Tag, AnimatedProps>& /*updates*/) {
+  // Not implemented on CxxPlatform.
+}
+
 void SchedulerDelegateImpl::schedulerDidUpdateShadowTree(
     const std::unordered_map<Tag, folly::dynamic>& tagToProps) {
   mountingManager_->onUpdateShadowTree(tagToProps);
