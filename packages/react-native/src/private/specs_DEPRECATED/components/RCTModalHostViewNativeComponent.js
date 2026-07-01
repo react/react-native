@@ -51,10 +51,20 @@ type RCTModalHostViewNativeProps = Readonly<{
   transparent?: WithDefault<boolean, false>,
 
   /**
-   * The `edgeToEdge` prop determines whether your modal should go under the
-   * system bars (status bar and navigation bar).
+   * The `statusBarTranslucent` prop determines whether your modal should go under
+   * the system statusbar.
+   *
+   * See https://reactnative.dev/docs/modal#statusBarTranslucent
    */
-  edgeToEdge?: WithDefault<boolean, false>,
+  statusBarTranslucent?: WithDefault<boolean, false>,
+
+  /**
+   * The `navigationBarTranslucent` prop determines whether your modal should go under
+   * the system navigationbar.
+   *
+   * See https://reactnative.dev/docs/modal#navigationBarTranslucent
+   */
+  navigationBarTranslucent?: WithDefault<boolean, false>,
 
   /**
    * The `hardwareAccelerated` prop controls whether to force hardware

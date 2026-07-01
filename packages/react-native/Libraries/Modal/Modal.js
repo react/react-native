@@ -182,8 +182,7 @@ export type ModalPropsAndroid = {
   hardwareAccelerated?: ?boolean,
 
   /**
-   * Whether the modal should go under the system status bar. Must be set
-   * together with `navigationBarTranslucent` to draw the modal edge-to-edge.
+   * Whether the modal should go under the system statusbar.
    *
    * @deprecated Has no effect on its own on API level 35+ (Android 15+) due to
    * edge-to-edge enforcement.
@@ -195,8 +194,8 @@ export type ModalPropsAndroid = {
   statusBarTranslucent?: ?boolean,
 
   /**
-   * Whether the modal should go under the system navigation bar. Must be set
-   * together with `statusBarTranslucent` to draw the modal edge-to-edge.
+   * Whether the modal should go under the system navigation bar.
+   * `statusBarTranslucent` also needs to be `true`.
    *
    * @deprecated Has no effect on its own on API level 35+ (Android 15+) due to
    * edge-to-edge enforcement.
@@ -227,11 +226,11 @@ function confirmProps(props: ModalProps) {
       );
     }
     if (
-      (props.statusBarTranslucent === true) !==
-      (props.navigationBarTranslucent === true)
+      props.navigationBarTranslucent === true &&
+      props.statusBarTranslucent !== true
     ) {
       console.warn(
-        '`statusBarTranslucent` and `navigationBarTranslucent` must both be enabled to draw the Modal edge-to-edge. Enabling only one of them has no effect.',
+        'Modal with translucent navigation bar and without translucent status bar is not supported.',
       );
     }
 
@@ -380,10 +379,8 @@ class Modal extends React.Component<ModalProps, ModalState> {
         onDismiss={onDismiss}
         ref={this.props.modalRef}
         visible={this.props.visible}
-        edgeToEdge={
-          this.props.statusBarTranslucent === true &&
-          this.props.navigationBarTranslucent === true
-        }
+        statusBarTranslucent={this.props.statusBarTranslucent}
+        navigationBarTranslucent={this.props.navigationBarTranslucent}
         identifier={this._identifier}
         style={styles.modal}
         // $FlowFixMe[method-unbinding] added when improving typing for this parameters

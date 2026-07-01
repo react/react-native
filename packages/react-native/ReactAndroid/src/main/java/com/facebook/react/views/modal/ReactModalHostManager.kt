@@ -49,9 +49,14 @@ internal class ReactModalHostManager :
     view.transparent = value
   }
 
-  @ReactProp(name = "edgeToEdge")
-  override fun setEdgeToEdge(view: ReactModalHostView, value: Boolean) {
-    view.edgeToEdge = value
+  @ReactProp(name = "statusBarTranslucent")
+  override fun setStatusBarTranslucent(view: ReactModalHostView, value: Boolean) {
+    view.statusBarTranslucent = value
+  }
+
+  @ReactProp(name = "navigationBarTranslucent")
+  override fun setNavigationBarTranslucent(view: ReactModalHostView, value: Boolean) {
+    view.navigationBarTranslucent = value
   }
 
   @ReactProp(name = "hardwareAccelerated")

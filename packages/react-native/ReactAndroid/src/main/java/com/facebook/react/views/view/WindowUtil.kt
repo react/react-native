@@ -15,6 +15,7 @@ import android.view.Window
 import android.view.WindowInsetsController
 import android.view.WindowManager
 import androidx.annotation.VisibleForTesting
+import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -65,6 +66,26 @@ internal fun updateEdgeToEdgeFeatureFlag(activity: Activity) {
   if (isEdgeToEdgeFeatureFlagOn) {
     activity.window.enableEdgeToEdge()
   }
+}
+
+@Suppress("DEPRECATION")
+internal fun Window.setStatusBarTranslucency(isTranslucent: Boolean) {
+  // If the status bar is translucent hook into the window insets calculations
+  // and consume all the top insets so no padding will be added under the status bar.
+  if (isTranslucent) {
+    decorView.setOnApplyWindowInsetsListener { v, insets ->
+      val defaultInsets = v.onApplyWindowInsets(insets)
+      defaultInsets.replaceSystemWindowInsets(
+          defaultInsets.systemWindowInsetLeft,
+          0,
+          defaultInsets.systemWindowInsetRight,
+          defaultInsets.systemWindowInsetBottom,
+      )
+    }
+  } else {
+    decorView.setOnApplyWindowInsetsListener(null)
+  }
+  ViewCompat.requestApplyInsets(decorView)
 }
 
 internal fun Window.setStatusBarVisibility(isHidden: Boolean) {
