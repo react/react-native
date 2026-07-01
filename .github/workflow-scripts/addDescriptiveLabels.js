@@ -109,7 +109,6 @@ const apis = [
   'ImageEditor',
   'ImagePickerIOS',
   'ImageStore',
-  'InteractionManager',
   'Keyboard',
   'LayoutAnimation',
   'Linking',

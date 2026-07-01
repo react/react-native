@@ -27,7 +27,6 @@
 import typeof * as ReactNativePublicAPI from './index.js.flow';
 
 const warnOnce = require('./Libraries/Utilities/warnOnce').default;
-const invariant = require('invariant');
 
 module.exports = {
   // #region Components
@@ -386,21 +385,3 @@ module.exports = {
   },
   // #endregion
 } as ReactNativePublicAPI;
-
-if (__DEV__) {
-  /* $FlowFixMe[prop-missing] This is intentional: Flow will error when
-   * attempting to access InteractionManager. */
-  /* $FlowFixMe[invalid-export] This is intentional: Flow will error when
-   * attempting to access InteractionManager. */
-  Object.defineProperty(module.exports, 'InteractionManager', {
-    configurable: true,
-    get() {
-      invariant(
-        false,
-        'InteractionManager has been removed from react-native core. ' +
-          'Please refactor long tasks into smaller ones, and use ' +
-          "'requestIdleCallback' instead.",
-      );
-    },
-  });
-}
