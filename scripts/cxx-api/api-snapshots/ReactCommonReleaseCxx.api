@@ -2911,7 +2911,7 @@ enum facebook::react::RunLoopObserver::Activity : int32_t {
   None,
 }
 
-class facebook::react::RuntimeScheduler {
+class facebook::react::RuntimeScheduler : public facebook::react::RuntimeSchedulerBase {
   public RuntimeScheduler(const facebook::react::RuntimeScheduler&) = delete;
   public RuntimeScheduler(facebook::react::RuntimeExecutor runtimeExecutor, std::function<facebook::react::HighResTimeStamp()> now = facebook::react::HighResTimeStamp::now, facebook::react::RuntimeSchedulerTaskErrorHandler onTaskError = handleTaskErrorDefault);
   public RuntimeScheduler(facebook::react::RuntimeScheduler&&) = delete;
@@ -2924,18 +2924,21 @@ class facebook::react::RuntimeScheduler {
   public virtual std::shared_ptr<facebook::react::Task> scheduleIdleTask(facebook::react::RawCallback&& callback, facebook::react::HighResDuration timeout = timeoutForSchedulerPriority(facebook::react::SchedulerPriority::IdlePriority)) noexcept override;
   public virtual std::shared_ptr<facebook::react::Task> scheduleTask(facebook::react::SchedulerPriority priority, facebook::jsi::Function&& callback) noexcept override;
   public virtual std::shared_ptr<facebook::react::Task> scheduleTask(facebook::react::SchedulerPriority priority, facebook::react::RawCallback&& callback) noexcept override;
+  public virtual uint64_t registerTaskQueueSource() override;
   public virtual void callExpiredTasks(facebook::jsi::Runtime& runtime) override;
   public virtual void cancelTask(facebook::react::Task& task) noexcept override;
   public virtual void executeNowOnTheSameThread(facebook::react::RawCallback&& callback) override;
   public virtual void scheduleRenderingUpdate(facebook::react::SurfaceId surfaceId, facebook::react::RuntimeSchedulerRenderingUpdate&& renderingUpdate) override;
+  public virtual void scheduleTask(const std::function<void()>& task) override;
   public virtual void scheduleWork(facebook::react::RawCallback&& callback) noexcept override;
   public virtual void setEventTimingDelegate(facebook::react::RuntimeSchedulerEventTimingDelegate* eventTimingDelegate) override;
   public virtual void setIntersectionObserverDelegate(facebook::react::RuntimeSchedulerIntersectionObserverDelegate* intersectionObserverDelegate) override;
   public virtual void setPerformanceEntryReporter(facebook::react::PerformanceEntryReporter* reporter) override;
   public virtual void setShadowTreeRevisionConsistencyManager(facebook::react::ShadowTreeRevisionConsistencyManager* shadowTreeRevisionConsistencyManager) override;
+  public virtual void unregisterTaskQueueSource(uint64_t sourceId) override;
 }
 
-class facebook::react::RuntimeSchedulerBase {
+class facebook::react::RuntimeSchedulerBase : public facebook::hermes::IEventLoopControl {
   public virtual bool getShouldYield() noexcept = 0;
   public virtual facebook::react::HighResTimeStamp now() const noexcept = 0;
   public virtual facebook::react::SchedulerPriority getCurrentPriorityLevel() const noexcept = 0;
@@ -2947,6 +2950,7 @@ class facebook::react::RuntimeSchedulerBase {
   public virtual void cancelTask(facebook::react::Task& task) noexcept = 0;
   public virtual void executeNowOnTheSameThread(facebook::react::RawCallback&& callback) = 0;
   public virtual void scheduleRenderingUpdate(facebook::react::SurfaceId surfaceId, facebook::react::RuntimeSchedulerRenderingUpdate&& renderingUpdate) = 0;
+  public virtual void scheduleTask(const std::function<void()>& task) = 0;
   public virtual void scheduleWork(facebook::react::RawCallback&& callback) noexcept = 0;
   public virtual void setEventTimingDelegate(facebook::react::RuntimeSchedulerEventTimingDelegate* eventTimingDelegate) = 0;
   public virtual void setIntersectionObserverDelegate(facebook::react::RuntimeSchedulerIntersectionObserverDelegate* intersectionObserverDelegate) = 0;
@@ -2993,15 +2997,18 @@ class facebook::react::RuntimeScheduler_Legacy : public facebook::react::Runtime
   public virtual std::shared_ptr<facebook::react::Task> scheduleIdleTask(facebook::react::RawCallback&& callback, facebook::react::HighResDuration timeout = timeoutForSchedulerPriority(facebook::react::SchedulerPriority::IdlePriority)) noexcept override;
   public virtual std::shared_ptr<facebook::react::Task> scheduleTask(facebook::react::SchedulerPriority priority, facebook::jsi::Function&& callback) noexcept override;
   public virtual std::shared_ptr<facebook::react::Task> scheduleTask(facebook::react::SchedulerPriority priority, facebook::react::RawCallback&& callback) noexcept override;
+  public virtual uint64_t registerTaskQueueSource() override;
   public virtual void callExpiredTasks(facebook::jsi::Runtime& runtime) override;
   public virtual void cancelTask(facebook::react::Task& task) noexcept override;
   public virtual void executeNowOnTheSameThread(facebook::react::RawCallback&& callback) override;
   public virtual void scheduleRenderingUpdate(facebook::react::SurfaceId surfaceId, facebook::react::RuntimeSchedulerRenderingUpdate&& renderingUpdate) override;
+  public virtual void scheduleTask(const std::function<void()>& task) override;
   public virtual void scheduleWork(facebook::react::RawCallback&& callback) noexcept override;
   public virtual void setEventTimingDelegate(facebook::react::RuntimeSchedulerEventTimingDelegate* eventTimingDelegate) override;
   public virtual void setIntersectionObserverDelegate(facebook::react::RuntimeSchedulerIntersectionObserverDelegate* intersectionObserverDelegate) override;
   public virtual void setPerformanceEntryReporter(facebook::react::PerformanceEntryReporter* performanceEntryReporter) override;
   public virtual void setShadowTreeRevisionConsistencyManager(facebook::react::ShadowTreeRevisionConsistencyManager* shadowTreeRevisionConsistencyManager) override;
+  public virtual void unregisterTaskQueueSource(uint64_t sourceId) override;
 }
 
 class facebook::react::RuntimeScheduler_Modern : public facebook::react::RuntimeSchedulerBase {
@@ -3017,15 +3024,18 @@ class facebook::react::RuntimeScheduler_Modern : public facebook::react::Runtime
   public virtual std::shared_ptr<facebook::react::Task> scheduleIdleTask(facebook::react::RawCallback&& callback, facebook::react::HighResDuration customTimeout = timeoutForSchedulerPriority(facebook::react::SchedulerPriority::IdlePriority)) noexcept override;
   public virtual std::shared_ptr<facebook::react::Task> scheduleTask(facebook::react::SchedulerPriority priority, facebook::jsi::Function&& callback) noexcept override;
   public virtual std::shared_ptr<facebook::react::Task> scheduleTask(facebook::react::SchedulerPriority priority, facebook::react::RawCallback&& callback) noexcept override;
+  public virtual uint64_t registerTaskQueueSource() override;
   public virtual void callExpiredTasks(facebook::jsi::Runtime& runtime) override;
   public virtual void cancelTask(facebook::react::Task& task) noexcept override;
   public virtual void executeNowOnTheSameThread(facebook::react::RawCallback&& callback) override;
   public virtual void scheduleRenderingUpdate(facebook::react::SurfaceId surfaceId, facebook::react::RuntimeSchedulerRenderingUpdate&& renderingUpdate) override;
+  public virtual void scheduleTask(const std::function<void()>& task) override;
   public virtual void scheduleWork(facebook::react::RawCallback&& callback) noexcept override;
   public virtual void setEventTimingDelegate(facebook::react::RuntimeSchedulerEventTimingDelegate* eventTimingDelegate) override;
   public virtual void setIntersectionObserverDelegate(facebook::react::RuntimeSchedulerIntersectionObserverDelegate* intersectionObserverDelegate) override;
   public virtual void setPerformanceEntryReporter(facebook::react::PerformanceEntryReporter* performanceEntryReporter) override;
   public virtual void setShadowTreeRevisionConsistencyManager(facebook::react::ShadowTreeRevisionConsistencyManager* shadowTreeRevisionConsistencyManager) override;
+  public virtual void unregisterTaskQueueSource(uint64_t sourceId) override;
 }
 
 class facebook::react::SafeAreaViewComponentDescriptor : public facebook::react::ConcreteComponentDescriptor<facebook::react::SafeAreaViewShadowNode> {

@@ -47,6 +47,23 @@ void RuntimeScheduler_Modern::scheduleWork(RawCallback&& callback) noexcept {
   scheduleTask(SchedulerPriority::ImmediatePriority, std::move(callback));
 }
 
+void RuntimeScheduler_Modern::scheduleTask(const std::function<void()>& task) {
+  scheduleIdleTask([task](jsi::Runtime& /*runtime*/) { task(); });
+}
+
+uint64_t RuntimeScheduler_Modern::registerTaskQueueSource() {
+  // It's fine to wrap around, as it's impossible to hold so many live task
+  // queue sources in practice.
+  return nextTaskQueueSourceId_.fetch_add(1) + 1;
+}
+
+void RuntimeScheduler_Modern::unregisterTaskQueueSource(uint64_t /*sourceId*/) {
+  // For now, we don't need to do unregistering. The reason is that the event
+  // loop of the runtime scheduler doesn't need to be blocked on the task
+  // producer of IEventLoopControl. When the event loop ends, we just ignore
+  // all queueing tasks.
+}
+
 std::shared_ptr<Task> RuntimeScheduler_Modern::scheduleTask(
     SchedulerPriority priority,
     jsi::Function&& callback) noexcept {

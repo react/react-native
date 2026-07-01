@@ -48,6 +48,16 @@ std::shared_ptr<RuntimeScheduler> createRuntimeScheduler(
   return scheduler;
 }
 
+void setHermesEventLoopControl(
+    jsi::Runtime& runtime,
+    facebook::hermes::IEventLoopControl* eventLoopControl) {
+  auto* setEventLoopControl =
+      jsi::castInterface<facebook::hermes::ISetEventLoopControl>(&runtime);
+  if (setEventLoopControl != nullptr) {
+    setEventLoopControl->setEventLoopControl(eventLoopControl);
+  }
+}
+
 std::string getSyntheticBundlePath(uint32_t bundleId) {
   std::array<char, 32> buffer{};
   std::snprintf(buffer.data(), buffer.size(), "seg-%u.js", bundleId);
@@ -156,6 +166,11 @@ ReactInstance::ReactInstance(
         });
   }
 
+  runtimeExecutor(
+      [runtimeScheduler = runtimeScheduler_.get()](jsi::Runtime& runtime) {
+        setHermesEventLoopControl(runtime, runtimeScheduler);
+      });
+
   bufferedRuntimeExecutor_ = std::make_shared<BufferedRuntimeExecutor>(
       [runtimeScheduler = runtimeScheduler_.get()](
           std::function<void(jsi::Runtime & runtime)>&& callback) {
@@ -163,6 +178,11 @@ ReactInstance::ReactInstance(
       });
 }
 ReactInstance::~ReactInstance() noexcept {
+  // This is thread safe because there is no JSI call at this point, and there
+  // won't be any concurrent calls to getEventLoopControl().
+  // We need to clear this pointer before runtimeScheduler_ is destroyed.
+  setHermesEventLoopControl(runtime_->getRuntime(), nullptr);
+
   if (timerManager_ != nullptr) {
     timerManager_->quit();
   }

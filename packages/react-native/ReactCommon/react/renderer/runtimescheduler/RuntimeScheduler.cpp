@@ -61,6 +61,18 @@ void RuntimeScheduler::scheduleWork(RawCallback&& callback) noexcept {
   return runtimeSchedulerImpl_->scheduleWork(std::move(callback));
 }
 
+void RuntimeScheduler::scheduleTask(const std::function<void()>& task) {
+  return runtimeSchedulerImpl_->scheduleTask(task);
+}
+
+uint64_t RuntimeScheduler::registerTaskQueueSource() {
+  return runtimeSchedulerImpl_->registerTaskQueueSource();
+}
+
+void RuntimeScheduler::unregisterTaskQueueSource(uint64_t sourceId) {
+  return runtimeSchedulerImpl_->unregisterTaskQueueSource(sourceId);
+}
+
 std::shared_ptr<Task> RuntimeScheduler::scheduleTask(
     SchedulerPriority priority,
     jsi::Function&& callback) noexcept {
