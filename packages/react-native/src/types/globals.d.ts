@@ -667,4 +667,168 @@ declare global {
   };
 
   // #endregion
+
+  // #region Performance API - React Native extensions
+
+  type DOMHighResTimeStamp = number;
+
+  interface MemoryInfo {
+    readonly jsHeapSizeLimit: number | null;
+    readonly totalJSHeapSize: number | null;  
+    readonly usedJSHeapSize: number | null;
+  }
+
+  interface ReactNativeStartupTiming {
+    readonly startTime: number | null;
+    readonly endTime: number | null;
+    readonly initializeRuntimeStart: number | null;
+    readonly executeJavaScriptBundleEntryPointStart: number | null;
+  }
+
+  type PerformanceEntryType = 'mark' | 'measure' | 'event' | 'longtask' | 'resource';
+
+  interface PerformanceEntry {
+    readonly name: string;
+    readonly entryType: PerformanceEntryType;
+    readonly startTime: DOMHighResTimeStamp;
+    readonly duration: DOMHighResTimeStamp;
+    toJSON(): any;
+  }
+
+  interface PerformanceMark extends PerformanceEntry {
+    readonly entryType: 'mark';
+    readonly detail: any;
+  }
+
+  interface PerformanceMeasure extends PerformanceEntry {
+    readonly entryType: 'measure';
+    readonly detail: any;
+  }
+
+  interface PerformanceEventTiming extends PerformanceEntry {
+    readonly entryType: 'event';
+    readonly processingStart: DOMHighResTimeStamp;
+    readonly processingEnd: DOMHighResTimeStamp;
+    readonly interactionId: number;
+  }
+
+  interface PerformanceResourceTiming extends PerformanceEntry {
+    readonly entryType: 'resource';
+    readonly fetchStart: DOMHighResTimeStamp;
+    readonly requestStart: DOMHighResTimeStamp;
+    readonly connectStart: DOMHighResTimeStamp;
+    readonly connectEnd: DOMHighResTimeStamp;
+    readonly responseStart: DOMHighResTimeStamp;
+    readonly responseEnd: DOMHighResTimeStamp;
+    readonly responseStatus: number;
+    readonly contentType: string;
+    readonly encodedBodySize: number;
+    readonly decodedBodySize: number;
+  }
+
+  interface PerformanceLongTaskTiming extends PerformanceEntry {
+    readonly entryType: 'longtask';
+    readonly attribution: [];
+    // readonly attribution: TaskAttributionTiming[];
+  }
+
+  // interface TaskAttributionTiming extends PerformanceEntry {
+  //   readonly containerType: string;
+  //   readonly containerSrc: string;
+  //   readonly containerId: string;
+  //   readonly containerName: string;
+  // }
+
+  interface PerformanceObserverEntryList {
+    getEntries(): PerformanceEntry[];
+    getEntriesByType(type: PerformanceEntryType): PerformanceEntry[];
+    getEntriesByName(name: string, type?: PerformanceEntryType): PerformanceEntry[];
+  }
+
+  interface PerformanceObserverCallbackOptions {
+    droppedEntriesCount: number;
+  }
+
+  interface PerformanceObserverCallback {
+    (
+      list: PerformanceObserverEntryList,
+      observer: PerformanceObserver,
+      options?: PerformanceObserverCallbackOptions
+    ): void;
+  }
+
+  interface PerformanceObserverInit {
+    entryTypes?: PerformanceEntryType[] | undefined;
+    type?: PerformanceEntryType | undefined;
+    buffered?: boolean | undefined;
+    durationThreshold?: DOMHighResTimeStamp | undefined;
+  }
+
+  interface PerformanceObserver {
+    observe(options: PerformanceObserverInit): void;
+    disconnect(): void;
+    takeRecords(): PerformanceEntry[];
+  }
+
+  interface PerformanceObserverConstructor {
+    new (callback: PerformanceObserverCallback): PerformanceObserver;
+    readonly supportedEntryTypes: ReadonlyArray<PerformanceEntryType>;
+  }
+
+  interface EventCounts {
+    get(eventType: string): number | null | undefined;
+    has(eventType: string): boolean;
+    keys(): IterableIterator<string>;
+    values(): IterableIterator<number>;
+    entries(): IterableIterator<[string, number]>;
+    readonly size: number;
+    forEach(
+      callback: (value: number, key: string, map: Map<string, number>) => void
+    ): void;
+  }
+
+  interface PerformanceMarkOptions {
+    detail?: any | undefined;
+    startTime?: DOMHighResTimeStamp | undefined;
+  }
+
+  interface PerformanceMeasureOptions {
+    detail?: any | undefined;
+    start?: DOMHighResTimeStamp | string | undefined;
+    duration?: DOMHighResTimeStamp | undefined;
+    end?: DOMHighResTimeStamp | string | undefined;
+  }
+
+  // React Native Performance interface (stable since 0.83.0)
+  interface Performance {
+    // High Resolution Time
+    now(): DOMHighResTimeStamp;
+    readonly timeOrigin: DOMHighResTimeStamp;
+
+    // User Timing API
+    mark(markName: string, markOptions?: PerformanceMarkOptions): PerformanceMark;
+    measure(
+      measureName: string,
+      startOrMeasureOptions?: string | PerformanceMeasureOptions,
+      endMark?: string
+    ): PerformanceMeasure;
+    clearMarks(markName?: string): void;
+    clearMeasures(measureName?: string): void;
+
+    // Performance Timeline API
+    getEntries(): PerformanceEntry[];
+    getEntriesByType(type: PerformanceEntryType): PerformanceEntry[];
+    getEntriesByName(name: string, type?: PerformanceEntryType): PerformanceEntry[];
+
+    // React Native specific extensions
+    readonly memory: MemoryInfo;
+    readonly rnStartupTiming: ReactNativeStartupTiming;
+    readonly eventCounts: EventCounts;
+  }
+
+  var performance: Performance;
+
+  var PerformanceObserver: PerformanceObserverConstructor;
+
+  // #endregion
 }
