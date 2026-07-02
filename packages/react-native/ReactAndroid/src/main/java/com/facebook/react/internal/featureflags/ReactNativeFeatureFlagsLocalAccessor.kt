@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<c7adeebaabd6c647865bb5398b823221>>
+ * @generated SignedSource<<98a6085638c86aaa012c8bd972627ad4>>
  */
 
 /**
@@ -49,6 +49,7 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
   private var enableFabricLogsCache: Boolean? = null
   private var enableFlexboxAutoMinSizeInStrictModeCache: Boolean? = null
   private var enableFontScaleChangesUpdatingLayoutCache: Boolean? = null
+  private var enableIOSCompressedTextFrameAdjustmentCache: Boolean? = null
   private var enableIOSTextBaselineOffsetPerLineCache: Boolean? = null
   private var enableIOSViewClipToPaddingBoxCache: Boolean? = null
   private var enableImagePrefetchingAndroidCache: Boolean? = null
@@ -356,6 +357,16 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
       cached = currentProvider.enableFontScaleChangesUpdatingLayout()
       accessedFeatureFlags.add("enableFontScaleChangesUpdatingLayout")
       enableFontScaleChangesUpdatingLayoutCache = cached
+    }
+    return cached
+  }
+
+  override fun enableIOSCompressedTextFrameAdjustment(): Boolean {
+    var cached = enableIOSCompressedTextFrameAdjustmentCache
+    if (cached == null) {
+      cached = currentProvider.enableIOSCompressedTextFrameAdjustment()
+      accessedFeatureFlags.add("enableIOSCompressedTextFrameAdjustment")
+      enableIOSCompressedTextFrameAdjustmentCache = cached
     }
     return cached
   }

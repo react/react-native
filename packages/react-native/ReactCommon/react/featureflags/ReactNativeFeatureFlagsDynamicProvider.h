@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<553b7e77f96cf03411007ce24cc6ac4b>>
+ * @generated SignedSource<<e8be340d97ada771fba14742a1c6a154>>
  */
 
 /**
@@ -268,6 +268,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::enableFontScaleChangesUpdatingLayout();
+  }
+
+  bool enableIOSCompressedTextFrameAdjustment() override {
+    auto value = values_["enableIOSCompressedTextFrameAdjustment"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::enableIOSCompressedTextFrameAdjustment();
   }
 
   bool enableIOSTextBaselineOffsetPerLine() override {

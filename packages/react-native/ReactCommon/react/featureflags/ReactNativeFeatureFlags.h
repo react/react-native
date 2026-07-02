@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<d7532c66f74b2f5e3b1dcd259089f6cd>>
+ * @generated SignedSource<<5c7e2061344bf998e5fc6b621af2ff45>>
  */
 
 /**
@@ -163,6 +163,11 @@ class ReactNativeFeatureFlags {
    * Enables font scale changes updating layout for measurable nodes.
    */
   RN_EXPORT static bool enableFontScaleChangesUpdatingLayout();
+
+  /**
+   * Adjusts iOS Text drawing frames for compressed explicit line heights.
+   */
+  RN_EXPORT static bool enableIOSCompressedTextFrameAdjustment();
 
   /**
    * Applies base offset for each line of text separately on iOS.

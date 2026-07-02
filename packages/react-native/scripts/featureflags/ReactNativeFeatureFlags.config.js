@@ -316,6 +316,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    enableIOSCompressedTextFrameAdjustment: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-07-02',
+        description:
+          'Adjusts iOS Text drawing frames for compressed explicit line heights.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
     enableIOSTextBaselineOffsetPerLine: {
       defaultValue: false,
       metadata: {
