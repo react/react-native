@@ -94,8 +94,9 @@ class MapBuffer {
 
   /**
    * Data types available for serialization in MapBuffer
-   * Keep in sync with `DataType` enum in `JReadableMapBuffer.java`, which
-   * expects the same values after reading them through JNI.
+   * Keep in sync with the `DataType` enum in `MapBuffer.kt`
+   * (packages/react-native/ReactAndroid/.../common/mapbuffer/MapBuffer.kt),
+   * which is ordinal-indexed on the JVM side, so the order must match exactly.
    */
   enum DataType : uint16_t {
     Boolean = 0,
@@ -104,6 +105,13 @@ class MapBuffer {
     String = 3,
     Map = 4,
     Long = 5,
+    // Homogeneous, length-prefixed arrays stored contiguously in the dynamic
+    // data section. Unlike Map, they carry no per-element key/type overhead, so
+    // a batch of N values costs ~N*elementSize bytes plus a single 4-byte count
+    // prefix instead of N*12-byte buckets. The bucket value is the offset of the
+    // array within the dynamic data section.
+    IntBuffer = 6,
+    DoubleBuffer = 7,
   };
 
   explicit MapBuffer(std::vector<uint8_t> data);
@@ -130,6 +138,10 @@ class MapBuffer {
   MapBuffer getMapBuffer(MapBuffer::Key key) const;
 
   std::vector<MapBuffer> getMapBufferList(MapBuffer::Key key) const;
+
+  std::vector<int32_t> getIntBuffer(MapBuffer::Key key) const;
+
+  std::vector<double> getDoubleBuffer(MapBuffer::Key key) const;
 
   size_t size() const;
 

@@ -1665,7 +1665,9 @@ public abstract interface class com/facebook/react/common/mapbuffer/MapBuffer : 
 	public abstract fun getBoolean (I)Z
 	public abstract fun getCount ()I
 	public abstract fun getDouble (I)D
+	public abstract fun getDoubleBuffer (I)[D
 	public abstract fun getInt (I)I
+	public abstract fun getIntBuffer (I)[I
 	public abstract fun getKeyOffset (I)I
 	public abstract fun getLong (I)J
 	public abstract fun getMapBuffer (I)Lcom/facebook/react/common/mapbuffer/MapBuffer;
@@ -1680,7 +1682,9 @@ public final class com/facebook/react/common/mapbuffer/MapBuffer$Companion {
 public final class com/facebook/react/common/mapbuffer/MapBuffer$DataType : java/lang/Enum {
 	public static final field BOOL Lcom/facebook/react/common/mapbuffer/MapBuffer$DataType;
 	public static final field DOUBLE Lcom/facebook/react/common/mapbuffer/MapBuffer$DataType;
+	public static final field DOUBLE_BUFFER Lcom/facebook/react/common/mapbuffer/MapBuffer$DataType;
 	public static final field INT Lcom/facebook/react/common/mapbuffer/MapBuffer$DataType;
+	public static final field INT_BUFFER Lcom/facebook/react/common/mapbuffer/MapBuffer$DataType;
 	public static final field LONG Lcom/facebook/react/common/mapbuffer/MapBuffer$DataType;
 	public static final field MAP Lcom/facebook/react/common/mapbuffer/MapBuffer$DataType;
 	public static final field STRING Lcom/facebook/react/common/mapbuffer/MapBuffer$DataType;
@@ -1691,7 +1695,9 @@ public final class com/facebook/react/common/mapbuffer/MapBuffer$DataType : java
 
 public abstract interface class com/facebook/react/common/mapbuffer/MapBuffer$Entry {
 	public abstract fun getBooleanValue ()Z
+	public abstract fun getDoubleBufferValue ()[D
 	public abstract fun getDoubleValue ()D
+	public abstract fun getIntBufferValue ()[I
 	public abstract fun getIntValue ()I
 	public abstract fun getKey ()I
 	public abstract fun getLongValue ()J
@@ -1708,7 +1714,9 @@ public final class com/facebook/react/common/mapbuffer/ReadableMapBuffer : com/f
 	public fun getBoolean (I)Z
 	public fun getCount ()I
 	public fun getDouble (I)D
+	public fun getDoubleBuffer (I)[D
 	public fun getInt (I)I
+	public fun getIntBuffer (I)[I
 	public fun getKeyOffset (I)I
 	public fun getLong (I)J
 	public synthetic fun getMapBuffer (I)Lcom/facebook/react/common/mapbuffer/MapBuffer;

@@ -46,6 +46,8 @@ public interface MapBuffer : Iterable<MapBuffer.Entry> {
     STRING,
     MAP,
     LONG,
+    INT_BUFFER,
+    DOUBLE_BUFFER,
   }
 
   /**
@@ -161,6 +163,30 @@ public interface MapBuffer : Iterable<MapBuffer.Entry> {
    */
   public fun getMapBufferList(key: Int): List<MapBuffer>
 
+  /**
+   * Provides parsed [IntArray] value if the entry for given key exists with [DataType.INT_BUFFER]
+   * type. This is a compact representation of a homogeneous list of ints with no per-element
+   * key/type overhead.
+   *
+   * @param key key to lookup the [IntArray] value for
+   * @return value associated with the requested key
+   * @throws IllegalArgumentException if the key doesn't exist
+   * @throws IllegalStateException if the data type doesn't match
+   */
+  public fun getIntBuffer(key: Int): IntArray
+
+  /**
+   * Provides parsed [DoubleArray] value if the entry for given key exists with
+   * [DataType.DOUBLE_BUFFER] type. This is a compact representation of a homogeneous list of
+   * doubles with no per-element key/type overhead.
+   *
+   * @param key key to lookup the [DoubleArray] value for
+   * @return value associated with the requested key
+   * @throws IllegalArgumentException if the key doesn't exist
+   * @throws IllegalStateException if the data type doesn't match
+   */
+  public fun getDoubleBuffer(key: Int): DoubleArray
+
   /** Iterable entry representing parsed MapBuffer values */
   public interface Entry {
     /**
@@ -213,5 +239,19 @@ public interface MapBuffer : Iterable<MapBuffer.Entry> {
      * @throws IllegalStateException if the data type doesn't match [DataType.MAP]
      */
     public val mapBufferValue: MapBuffer
+
+    /**
+     * Entry value represented as [IntArray]
+     *
+     * @throws IllegalStateException if the data type doesn't match [DataType.INT_BUFFER]
+     */
+    public val intBufferValue: IntArray
+
+    /**
+     * Entry value represented as [DoubleArray]
+     *
+     * @throws IllegalStateException if the data type doesn't match [DataType.DOUBLE_BUFFER]
+     */
+    public val doubleBufferValue: DoubleArray
   }
 }

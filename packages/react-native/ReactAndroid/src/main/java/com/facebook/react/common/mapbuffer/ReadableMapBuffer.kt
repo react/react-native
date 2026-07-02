@@ -152,6 +152,24 @@ private constructor(
     return readMapBufferList
   }
 
+  private fun readIntBufferValue(bufferPosition: Int): IntArray {
+    var offset = offsetForDynamicData + buffer.getInt(bufferPosition)
+    val count = buffer.getInt(offset)
+    offset += Int.SIZE_BYTES
+    val result = IntArray(count)
+    buffer.duplicate().order(buffer.order()).apply { position(offset) }.asIntBuffer().get(result)
+    return result
+  }
+
+  private fun readDoubleBufferValue(bufferPosition: Int): DoubleArray {
+    var offset = offsetForDynamicData + buffer.getInt(bufferPosition)
+    val count = buffer.getInt(offset)
+    offset += Int.SIZE_BYTES
+    val result = DoubleArray(count)
+    buffer.duplicate().order(buffer.order()).apply { position(offset) }.asDoubleBuffer().get(result)
+    return result
+  }
+
   private fun getKeyOffsetForBucketIndex(bucketIndex: Int): Int {
     return offsetToMapBuffer + HEADER_SIZE + BUCKET_SIZE * bucketIndex
   }
@@ -193,6 +211,12 @@ private constructor(
   override fun getMapBufferList(key: Int): List<ReadableMapBuffer> =
       readMapBufferListValue(getTypedValueOffsetForKey(key, MapBuffer.DataType.MAP))
 
+  override fun getIntBuffer(key: Int): IntArray =
+      readIntBufferValue(getTypedValueOffsetForKey(key, MapBuffer.DataType.INT_BUFFER))
+
+  override fun getDoubleBuffer(key: Int): DoubleArray =
+      readDoubleBufferValue(getTypedValueOffsetForKey(key, MapBuffer.DataType.DOUBLE_BUFFER))
+
   override fun hashCode(): Int {
     buffer.rewind()
     return buffer.hashCode()
@@ -229,6 +253,8 @@ private constructor(
             append('"')
           }
           MapBuffer.DataType.MAP -> append(entry.mapBufferValue.toString())
+          MapBuffer.DataType.INT_BUFFER -> append(entry.intBufferValue.contentToString())
+          MapBuffer.DataType.DOUBLE_BUFFER -> append(entry.doubleBufferValue.contentToString())
         }
       }
     }
@@ -310,6 +336,18 @@ private constructor(
       get() {
         assertType(MapBuffer.DataType.MAP)
         return readMapBufferValue(bucketOffset + VALUE_OFFSET)
+      }
+
+    override val intBufferValue: IntArray
+      get() {
+        assertType(MapBuffer.DataType.INT_BUFFER)
+        return readIntBufferValue(bucketOffset + VALUE_OFFSET)
+      }
+
+    override val doubleBufferValue: DoubleArray
+      get() {
+        assertType(MapBuffer.DataType.DOUBLE_BUFFER)
+        return readDoubleBufferValue(bucketOffset + VALUE_OFFSET)
       }
   }
 
