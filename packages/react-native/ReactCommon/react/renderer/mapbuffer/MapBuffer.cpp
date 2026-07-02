@@ -8,7 +8,42 @@
 #include "MapBuffer.h"
 #include <react/renderer/mapbuffer/MapBufferBuilder.h>
 
+#include <algorithm>
+#include <cstring>
+
 namespace facebook::react {
+
+namespace {
+// Reads a value of type T from a (possibly unaligned) offset in the buffer.
+// MapBuffer's packed layout places multi-byte values at offsets that are not
+// naturally aligned for their type (e.g. an 8-byte value at a 2-byte boundary),
+// so dereferencing a reinterpret_cast pointer there is undefined behavior and
+// can fault on 32-bit ARM. memcpy compiles to a single unaligned load on
+// arm64/x86 and to alignment-safe loads on armv7.
+template <typename T>
+inline T readUnaligned(const uint8_t* data, int32_t offset) {
+  T value;
+  std::memcpy(&value, data + offset, sizeof(T));
+  return value;
+}
+
+// Debug-asserts on OOB (catches corrupt buffers early in dev) AND clamps in
+// release so a corrupt bucket length can never drive an OOB memcpy read.
+// react_native_assert is compiled out in release, so the runtime cost outside
+// dev is the single min() call.
+inline int32_t
+clampToBufferBounds(int32_t offset, int32_t byteLength, size_t bufferSize) {
+  react_native_assert(offset >= 0 && byteLength >= 0);
+  react_native_assert(
+      static_cast<size_t>(offset) + static_cast<size_t>(byteLength) <=
+      bufferSize);
+  size_t maxLength = bufferSize > static_cast<size_t>(offset)
+      ? bufferSize - static_cast<size_t>(offset)
+      : 0;
+  return static_cast<int32_t>(
+      std::min(static_cast<size_t>(std::max(byteLength, 0)), maxLength));
+}
+} // namespace
 
 static inline int32_t bucketOffset(int32_t index) {
   return sizeof(MapBuffer::Header) + sizeof(MapBuffer::Bucket) * index;
@@ -18,16 +53,20 @@ static inline int32_t valueOffset(int32_t bucketIndex) {
   return bucketOffset(bucketIndex) + offsetof(MapBuffer::Bucket, data);
 }
 
+// Dynamic-data entries pack [offset (low 32 bits)][byteLength (high 32 bits)]
+// into the bucket's 8-byte value, so the payload in the dynamic data section
+// carries no in-band length prefix. This returns the position of the high
+// 32 bits (the length).
+static inline int32_t lengthOffset(int32_t bucketIndex) {
+  return valueOffset(bucketIndex) + static_cast<int32_t>(sizeof(int32_t));
+}
+
 // TODO T83483191: Extend MapBuffer C++ implementation to support basic random
 // access
 MapBuffer::MapBuffer(std::vector<uint8_t> data) : bytes_(std::move(data)) {
-  auto header = reinterpret_cast<const Header*>(bytes_.data());
-  count_ = header->count;
-
-  if (header->bufferSize != bytes_.size()) {
-    LOG(ERROR) << "Error: Data size does not match, expected "
-               << header->bufferSize << " found: " << bytes_.size();
-    abort();
+  if (bytes_.size() >= sizeof(Header)) {
+    auto header = reinterpret_cast<const Header*>(bytes_.data());
+    count_ = header->count;
   }
 }
 
@@ -37,8 +76,7 @@ int32_t MapBuffer::getKeyBucket(Key key) const {
   while (lo <= hi) {
     int32_t mid = (lo + hi) >> 1;
 
-    Key midVal =
-        *reinterpret_cast<const Key*>(bytes_.data() + bucketOffset(mid));
+    Key midVal = readUnaligned<Key>(bytes_.data(), bucketOffset(mid));
 
     if (midVal < key) {
       lo = mid + 1;
@@ -53,8 +91,7 @@ int32_t MapBuffer::getKeyBucket(Key key) const {
 }
 
 inline int32_t MapBuffer::getIntAtBucket(int32_t bucketIndex) const {
-  return *reinterpret_cast<const int32_t*>(
-      bytes_.data() + valueOffset(bucketIndex));
+  return readUnaligned<int32_t>(bytes_.data(), valueOffset(bucketIndex));
 }
 
 int32_t MapBuffer::getInt(Key key) const {
@@ -74,8 +111,7 @@ int64_t MapBuffer::getLong(Key key) const {
     return 0;
   }
 
-  return *reinterpret_cast<const int64_t*>(
-      bytes_.data() + valueOffset(bucketIndex));
+  return readUnaligned<int64_t>(bytes_.data(), valueOffset(bucketIndex));
 }
 
 bool MapBuffer::getBool(Key key) const {
@@ -89,8 +125,7 @@ double MapBuffer::getDouble(Key key) const {
     return 0;
   }
 
-  return *reinterpret_cast<const double*>(
-      bytes_.data() + valueOffset(bucketIndex));
+  return readUnaligned<double>(bytes_.data(), valueOffset(bucketIndex));
 }
 
 int32_t MapBuffer::getDynamicDataOffset() const {
@@ -107,9 +142,10 @@ std::string MapBuffer::getString(Key key) const {
   }
 
   int32_t offset = getDynamicDataOffset() + getIntAtBucket(bucketIndex);
-  int32_t stringLength =
-      *reinterpret_cast<const int32_t*>(bytes_.data() + offset);
-  const uint8_t* stringPtr = bytes_.data() + offset + sizeof(int);
+  auto stringLength =
+      readUnaligned<int32_t>(bytes_.data(), lengthOffset(bucketIndex));
+  stringLength = clampToBufferBounds(offset, stringLength, bytes_.size());
+  const uint8_t* stringPtr = bytes_.data() + offset;
 
   return {stringPtr, stringPtr + stringLength};
 }
@@ -122,17 +158,13 @@ MapBuffer MapBuffer::getMapBuffer(Key key) const {
   }
 
   int32_t offset = getDynamicDataOffset() + getIntAtBucket(bucketIndex);
-  int32_t mapBufferLength =
-      *reinterpret_cast<const int32_t*>(bytes_.data() + offset);
-  size_t maxLength = bytes_.size() - offset - sizeof(int32_t);
-  if (mapBufferLength > maxLength) {
-    mapBufferLength = maxLength;
-  }
+  auto mapBufferLength =
+      readUnaligned<int32_t>(bytes_.data(), lengthOffset(bucketIndex));
+  mapBufferLength = clampToBufferBounds(offset, mapBufferLength, bytes_.size());
 
   std::vector<uint8_t> value(mapBufferLength);
 
-  memcpy(
-      value.data(), bytes_.data() + offset + sizeof(int32_t), mapBufferLength);
+  memcpy(value.data(), bytes_.data() + offset, mapBufferLength);
 
   return MapBuffer(std::move(value));
 }
@@ -146,19 +178,27 @@ std::vector<MapBuffer> MapBuffer::getMapBufferList(MapBuffer::Key key) const {
 
   std::vector<MapBuffer> mapBufferList;
   int32_t offset = getDynamicDataOffset() + getIntAtBucket(bucketIndex);
-  int32_t mapBufferListLength =
-      *reinterpret_cast<const int32_t*>(bytes_.data() + offset);
-  offset = offset + sizeof(uint32_t);
+  auto mapBufferListLength =
+      readUnaligned<int32_t>(bytes_.data(), lengthOffset(bucketIndex));
+  mapBufferListLength =
+      clampToBufferBounds(offset, mapBufferListLength, bytes_.size());
 
   int32_t curLen = 0;
   while (curLen < mapBufferListLength) {
-    int32_t mapBufferLength =
-        *reinterpret_cast<const int32_t*>(bytes_.data() + offset + curLen);
-    curLen = curLen + sizeof(uint32_t);
+    if (curLen + sizeof(int32_t) > mapBufferListLength) {
+      break;
+    }
+
+    auto mapBufferLength =
+        readUnaligned<int32_t>(bytes_.data(), offset + curLen);
+    curLen += sizeof(int32_t);
+
+    mapBufferLength =
+        clampToBufferBounds(offset + curLen, mapBufferLength, bytes_.size());
     std::vector<uint8_t> value(mapBufferLength);
     memcpy(value.data(), bytes_.data() + offset + curLen, mapBufferLength);
     mapBufferList.emplace_back(std::move(value));
-    curLen = curLen + mapBufferLength;
+    curLen += mapBufferLength;
   }
   return mapBufferList;
 }
@@ -171,13 +211,18 @@ std::vector<int32_t> MapBuffer::getIntBuffer(MapBuffer::Key key) const {
   }
 
   int32_t offset = getDynamicDataOffset() + getIntAtBucket(bucketIndex);
-  int32_t count = *reinterpret_cast<const int32_t*>(bytes_.data() + offset);
+  auto byteLength =
+      readUnaligned<int32_t>(bytes_.data(), lengthOffset(bucketIndex));
+  byteLength = clampToBufferBounds(offset, byteLength, bytes_.size());
+  int32_t count = byteLength / static_cast<int32_t>(sizeof(int32_t));
 
   std::vector<int32_t> result(count);
   if (count > 0) {
+    // Copy only whole elements: a clamped byteLength may not be a multiple of
+    // sizeof(int32_t), and result holds exactly count elements.
     memcpy(
         result.data(),
-        bytes_.data() + offset + sizeof(int32_t),
+        bytes_.data() + offset,
         static_cast<size_t>(count) * sizeof(int32_t));
   }
   return result;
@@ -191,13 +236,18 @@ std::vector<double> MapBuffer::getDoubleBuffer(MapBuffer::Key key) const {
   }
 
   int32_t offset = getDynamicDataOffset() + getIntAtBucket(bucketIndex);
-  int32_t count = *reinterpret_cast<const int32_t*>(bytes_.data() + offset);
+  auto byteLength =
+      readUnaligned<int32_t>(bytes_.data(), lengthOffset(bucketIndex));
+  byteLength = clampToBufferBounds(offset, byteLength, bytes_.size());
+  int32_t count = byteLength / static_cast<int32_t>(sizeof(double));
 
   std::vector<double> result(count);
   if (count > 0) {
+    // Copy only whole elements: a clamped byteLength may not be a multiple of
+    // sizeof(double), and result holds exactly count elements.
     memcpy(
         result.data(),
-        bytes_.data() + offset + sizeof(int32_t),
+        bytes_.data() + offset,
         static_cast<size_t>(count) * sizeof(double));
   }
   return result;

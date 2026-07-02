@@ -51,13 +51,11 @@ private constructor(
       ReadableMapBuffer(buffer.duplicate().apply { position(offset) }, offset)
 
   private fun readHeader() {
-    // byte order
-    val storedAlignment = buffer.short
-    if (storedAlignment.toInt() != ALIGNMENT) {
-      buffer.order(ByteOrder.LITTLE_ENDIAN)
-    }
-    // count
-    count = readUnsignedShort(buffer.position()).toInt()
+    // The C++ writer always serializes in little-endian byte order. ByteBuffer
+    // defaults to big-endian and duplicate() resets the order, so set it
+    // explicitly on every instance, including nested clones.
+    buffer.order(ByteOrder.LITTLE_ENDIAN)
+    count = readUnsignedShort(offsetToMapBuffer).toInt()
   }
 
   /**
@@ -122,26 +120,27 @@ private constructor(
     return readIntValue(bufferPosition) == 1
   }
 
+  // Dynamic-data entries store [offset][byteLength] in the bucket's 8-byte
+  // value: getInt(bufferPosition) is the offset, getInt(bufferPosition + 4) is
+  // the byte length. The dynamic data section itself carries no length prefix.
   private fun readStringValue(bufferPosition: Int): String {
     val offset = offsetForDynamicData + buffer.getInt(bufferPosition)
-    val sizeOfString = buffer.getInt(offset)
+    val sizeOfString = buffer.getInt(bufferPosition + Int.SIZE_BYTES)
     val result = ByteArray(sizeOfString)
-    val stringOffset = offset + Int.SIZE_BYTES
-    buffer.position(stringOffset)
-    buffer[result, 0, sizeOfString]
+    buffer.position(offset)
+    buffer.get(result, 0, sizeOfString)
     return String(result)
   }
 
   private fun readMapBufferValue(position: Int): ReadableMapBuffer {
     val offset = offsetForDynamicData + buffer.getInt(position)
-    return cloneWithOffset(offset + Int.SIZE_BYTES)
+    return cloneWithOffset(offset)
   }
 
   private fun readMapBufferListValue(position: Int): List<ReadableMapBuffer> {
     val readMapBufferList = arrayListOf<ReadableMapBuffer>()
-    var offset = offsetForDynamicData + buffer.getInt(position)
-    val sizeMapBufferList = buffer.getInt(offset)
-    offset += Int.SIZE_BYTES
+    val offset = offsetForDynamicData + buffer.getInt(position)
+    val sizeMapBufferList = buffer.getInt(position + Int.SIZE_BYTES)
     var curLen = 0
     while (curLen < sizeMapBufferList) {
       val sizeMapBuffer = buffer.getInt(offset + curLen)
@@ -153,18 +152,18 @@ private constructor(
   }
 
   private fun readIntBufferValue(bufferPosition: Int): IntArray {
-    var offset = offsetForDynamicData + buffer.getInt(bufferPosition)
-    val count = buffer.getInt(offset)
-    offset += Int.SIZE_BYTES
+    val offset = offsetForDynamicData + buffer.getInt(bufferPosition)
+    val byteLength = buffer.getInt(bufferPosition + Int.SIZE_BYTES)
+    val count = byteLength / Int.SIZE_BYTES
     val result = IntArray(count)
     buffer.duplicate().order(buffer.order()).apply { position(offset) }.asIntBuffer().get(result)
     return result
   }
 
   private fun readDoubleBufferValue(bufferPosition: Int): DoubleArray {
-    var offset = offsetForDynamicData + buffer.getInt(bufferPosition)
-    val count = buffer.getInt(offset)
-    offset += Int.SIZE_BYTES
+    val offset = offsetForDynamicData + buffer.getInt(bufferPosition)
+    val byteLength = buffer.getInt(bufferPosition + Int.SIZE_BYTES)
+    val count = byteLength / Double.SIZE_BYTES
     val result = DoubleArray(count)
     buffer.duplicate().order(buffer.order()).apply { position(offset) }.asDoubleBuffer().get(result)
     return result
@@ -359,13 +358,10 @@ private constructor(
   }
 
   public companion object {
-    // Value used to verify if the data is serialized with LittleEndian order.
-    private const val ALIGNMENT = 0xFE
+    // 2 bytes = 2 (count)
+    private const val HEADER_SIZE = 2
 
-    // 8 bytes = 2 (alignment) + 2 (count) + 4 (size)
-    private const val HEADER_SIZE = 8
-
-    // 10 bytes = 2 (key) + 2 (type) + 8 (value)
+    // 12 bytes = 2 (key) + 2 (type) + 8 (value)
     private const val BUCKET_SIZE = 12
 
     // 2 bytes = 2 (key)

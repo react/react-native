@@ -15,6 +15,14 @@ constexpr uint32_t LONG_SIZE = sizeof(uint64_t);
 constexpr uint32_t DOUBLE_SIZE = sizeof(double);
 constexpr uint32_t MAX_BUCKET_VALUE_SIZE = sizeof(uint64_t);
 
+// Dynamic-data entries store their location in the bucket's 8-byte value as
+// [offset (low 32 bits)][byteLength (high 32 bits)], so the payload in the
+// dynamic data section needs no in-band length prefix.
+static inline uint64_t packOffsetAndLength(int32_t offset, int32_t length) {
+  return static_cast<uint64_t>(static_cast<uint32_t>(offset)) |
+      (static_cast<uint64_t>(static_cast<uint32_t>(length)) << 32);
+}
+
 MapBuffer MapBufferBuilder::EMPTY() {
   return MapBufferBuilder(0).build();
 }
@@ -22,7 +30,6 @@ MapBuffer MapBufferBuilder::EMPTY() {
 MapBufferBuilder::MapBufferBuilder(uint32_t initialSize) {
   buckets_.reserve(initialSize);
   header_.count = 0;
-  header_.bufferSize = 0;
 }
 
 void MapBufferBuilder::storeKeyValue(
@@ -84,128 +91,111 @@ void MapBufferBuilder::putLong(MapBuffer::Key key, int64_t value) {
 }
 
 void MapBufferBuilder::putString(MapBuffer::Key key, const std::string& value) {
-  // The wire format encodes lengths and offsets as int32_t (see
-  // MapBuffer::getString). Without an explicit narrowing cast, `auto` deduces
-  // size_t (8 bytes on 64-bit) and `memcpy(&x, ..., INT_SIZE)` then copies only
-  // the first 4 bytes of an 8-byte value: silent truncation on little-endian,
-  // wrong (high) bytes on big-endian.
   auto strSize = static_cast<int32_t>(value.size());
-  const char* strData = value.data();
-
-  // format [length of string (int)] + [Array of Characters in the string]
   auto offset = static_cast<int32_t>(dynamicData_.size());
-  dynamicData_.resize(offset + INT_SIZE + strSize, 0);
-  memcpy(dynamicData_.data() + offset, &strSize, INT_SIZE);
-  memcpy(dynamicData_.data() + offset + INT_SIZE, strData, strSize);
 
-  // Store Key and pointer to the string
+  // The bucket stores [offset][byteLength]; the dynamic section holds only the
+  // raw string bytes.
+  dynamicData_.resize(offset + strSize, 0);
+  if (strSize > 0) {
+    memcpy(dynamicData_.data() + offset, value.data(), strSize);
+  }
+
+  uint64_t data = packOffsetAndLength(offset, strSize);
   storeKeyValue(
       key,
       MapBuffer::DataType::String,
-      reinterpret_cast<const uint8_t*>(&offset),
-      INT_SIZE);
+      reinterpret_cast<const uint8_t*>(&data),
+      sizeof(data));
 }
 
 void MapBufferBuilder::putMapBuffer(MapBuffer::Key key, const MapBuffer& map) {
-  // Wire format encodes lengths and offsets as int32_t (see
-  // MapBuffer::getMapBuffer). Cast explicitly so memcpy(&x, ..., INT_SIZE)
-  // copies the full value, not the first 4 bytes of an 8-byte size_t.
   auto mapBufferSize = static_cast<int32_t>(map.size());
-
   auto offset = static_cast<int32_t>(dynamicData_.size());
 
-  // format [length of buffer (int)] + [bytes of MapBuffer]
-  dynamicData_.resize(offset + INT_SIZE + mapBufferSize, 0);
-  memcpy(dynamicData_.data() + offset, &mapBufferSize, INT_SIZE);
-  // Copy the content of the map into dynamicData_
-  memcpy(dynamicData_.data() + offset + INT_SIZE, map.data(), mapBufferSize);
+  // The bucket stores [offset][byteLength]; the dynamic section holds only the
+  // serialized child MapBuffer bytes.
+  dynamicData_.resize(offset + mapBufferSize, 0);
+  memcpy(dynamicData_.data() + offset, map.data(), mapBufferSize);
 
-  // Store Key and pointer to the string
+  uint64_t data = packOffsetAndLength(offset, mapBufferSize);
   storeKeyValue(
       key,
       MapBuffer::DataType::Map,
-      reinterpret_cast<const uint8_t*>(&offset),
-      INT_SIZE);
+      reinterpret_cast<const uint8_t*>(&data),
+      sizeof(data));
 }
 
 void MapBufferBuilder::putMapBufferList(
     MapBuffer::Key key,
     const std::vector<MapBuffer>& mapBufferList) {
   auto offset = static_cast<int32_t>(dynamicData_.size());
-  int32_t dataSize = 0;
-  for (const MapBuffer& mapBuffer : mapBufferList) {
-    dataSize = dataSize + INT_SIZE + static_cast<int32_t>(mapBuffer.size());
-  }
 
-  dynamicData_.resize(offset + INT_SIZE, 0);
-  memcpy(dynamicData_.data() + offset, &dataSize, INT_SIZE);
-
+  // The bucket stores [offset][byteLength] for the whole list region; within it
+  // each child stays framed as [int32 childSize][child bytes] so the children
+  // remain individually delimited.
   for (const MapBuffer& mapBuffer : mapBufferList) {
     auto mapBufferSize = static_cast<int32_t>(mapBuffer.size());
-    auto dynamicDataSize = static_cast<int32_t>(dynamicData_.size());
-    dynamicData_.resize(dynamicDataSize + INT_SIZE + mapBufferSize, 0);
-    // format [length of buffer (int)] + [bytes of MapBuffer]
-    memcpy(dynamicData_.data() + dynamicDataSize, &mapBufferSize, INT_SIZE);
-    // Copy the content of the map into dynamicData_
+    auto pos = static_cast<int32_t>(dynamicData_.size());
+    dynamicData_.resize(pos + INT_SIZE + mapBufferSize, 0);
+    memcpy(dynamicData_.data() + pos, &mapBufferSize, INT_SIZE);
     memcpy(
-        dynamicData_.data() + dynamicDataSize + INT_SIZE,
-        mapBuffer.data(),
-        mapBufferSize);
+        dynamicData_.data() + pos + INT_SIZE, mapBuffer.data(), mapBufferSize);
   }
 
-  // Store Key and pointer to the list. Uses the dedicated MapBufferList type so
-  // the entry is self-describing and distinguishable from a single Map.
+  auto totalSize = static_cast<int32_t>(dynamicData_.size()) - offset;
+  uint64_t data = packOffsetAndLength(offset, totalSize);
+  // Uses the dedicated MapBufferList type so the entry is self-describing and
+  // distinguishable from a single Map.
   storeKeyValue(
       key,
       MapBuffer::DataType::MapBufferList,
-      reinterpret_cast<const uint8_t*>(&offset),
-      INT_SIZE);
+      reinterpret_cast<const uint8_t*>(&data),
+      sizeof(data));
 }
 
 void MapBufferBuilder::putIntBuffer(
     MapBuffer::Key key,
     const std::vector<int32_t>& value) {
-  // Wire format: [element count (int32)] + [count * int32]. The count is the
-  // number of elements, not bytes; see MapBuffer::getIntBuffer.
-  auto count = static_cast<int32_t>(value.size());
+  // The bucket stores [offset][byteLength]; the dynamic section holds the raw
+  // int32 elements. Element count is recovered as byteLength / sizeof(int32_t).
   auto payloadSize = static_cast<int32_t>(value.size() * sizeof(int32_t));
-
   auto offset = static_cast<int32_t>(dynamicData_.size());
-  dynamicData_.resize(offset + INT_SIZE + payloadSize, 0);
-  memcpy(dynamicData_.data() + offset, &count, INT_SIZE);
+  dynamicData_.resize(offset + payloadSize, 0);
   if (payloadSize > 0) {
-    memcpy(dynamicData_.data() + offset + INT_SIZE, value.data(), payloadSize);
+    memcpy(dynamicData_.data() + offset, value.data(), payloadSize);
   }
 
+  uint64_t data = packOffsetAndLength(offset, payloadSize);
   storeKeyValue(
       key,
       MapBuffer::DataType::IntBuffer,
-      reinterpret_cast<const uint8_t*>(&offset),
-      INT_SIZE);
+      reinterpret_cast<const uint8_t*>(&data),
+      sizeof(data));
 }
 
 void MapBufferBuilder::putDoubleBuffer(
     MapBuffer::Key key,
     const std::vector<double>& value) {
-  // Wire format: [element count (int32)] + [count * double]. Doubles are copied
-  // byte-for-byte; the reader uses memcpy, so the payload needs no special
-  // alignment for correctness. A consumer that wants a zero-copy typed view on
-  // the JVM (ByteBuffer::asDoubleBuffer) must ensure 8-byte alignment itself.
-  auto count = static_cast<int32_t>(value.size());
+  // The bucket stores [offset][byteLength]; the dynamic section holds the raw
+  // double elements. Element count is recovered as byteLength / sizeof(double).
+  // Doubles are copied byte-for-byte; the reader uses memcpy, so the payload
+  // needs no special alignment for correctness. A consumer that wants a
+  // zero-copy typed view on the JVM (ByteBuffer::asDoubleBuffer) must ensure
+  // 8-byte alignment itself.
   auto payloadSize = static_cast<int32_t>(value.size() * sizeof(double));
-
   auto offset = static_cast<int32_t>(dynamicData_.size());
-  dynamicData_.resize(offset + INT_SIZE + payloadSize, 0);
-  memcpy(dynamicData_.data() + offset, &count, INT_SIZE);
+  dynamicData_.resize(offset + payloadSize, 0);
   if (payloadSize > 0) {
-    memcpy(dynamicData_.data() + offset + INT_SIZE, value.data(), payloadSize);
+    memcpy(dynamicData_.data() + offset, value.data(), payloadSize);
   }
 
+  uint64_t data = packOffsetAndLength(offset, payloadSize);
   storeKeyValue(
       key,
       MapBuffer::DataType::DoubleBuffer,
-      reinterpret_cast<const uint8_t*>(&offset),
-      INT_SIZE);
+      reinterpret_cast<const uint8_t*>(&data),
+      sizeof(data));
 }
 
 static inline bool compareBuckets(
@@ -219,8 +209,6 @@ MapBuffer MapBufferBuilder::build() {
   auto bucketSize = buckets_.size() * sizeof(MapBuffer::Bucket);
   auto headerSize = sizeof(MapBuffer::Header);
   auto bufferSize = headerSize + bucketSize + dynamicData_.size();
-
-  header_.bufferSize = static_cast<uint32_t>(bufferSize);
 
   if (needsSort_) {
     std::sort(buckets_.begin(), buckets_.end(), compareBuckets);

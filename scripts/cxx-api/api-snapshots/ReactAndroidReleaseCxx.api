@@ -3244,7 +3244,6 @@ class facebook::react::MapBuffer {
   public int32_t getInt(facebook::react::MapBuffer::Key key) const;
   public int64_t getLong(facebook::react::MapBuffer::Key key) const;
   public size_t size() const;
-  public static constexpr uint16_t HEADER_ALIGNMENT;
   public std::string getString(facebook::react::MapBuffer::Key key) const;
   public std::vector<double> getDoubleBuffer(facebook::react::MapBuffer::Key key) const;
   public std::vector<facebook::react::MapBuffer> getMapBufferList(facebook::react::MapBuffer::Key key) const;
@@ -3273,9 +3272,7 @@ struct facebook::react::MapBuffer::Bucket {
 }
 
 struct facebook::react::MapBuffer::Header {
-  public uint16_t alignment;
   public uint16_t count;
-  public uint32_t bufferSize;
 }
 
 class facebook::react::MapBufferBuilder {

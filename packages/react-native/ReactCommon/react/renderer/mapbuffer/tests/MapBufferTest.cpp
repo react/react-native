@@ -49,7 +49,7 @@ TEST(MapBufferTest, testSimpleLongMap) {
 }
 
 TEST(MapBufferTest, testMapBufferExtension) {
-  // 26 = 2 buckets: 2*10 + 6 sizeof(header)
+  // initialSize is a reserve hint for the number of buckets
   int initialSize = 26;
   auto buffer = MapBufferBuilder(initialSize);
 
