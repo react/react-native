@@ -9,6 +9,7 @@
 #import "RCTParagraphComponentAccessibilityProvider.h"
 
 #import <MobileCoreServices/UTCoreTypes.h>
+#import <react/featureflags/ReactNativeFeatureFlags.h>
 #import <react/renderer/components/text/ParagraphComponentDescriptor.h>
 #import <react/renderer/components/text/ParagraphProps.h>
 #import <react/renderer/components/text/ParagraphState.h>
@@ -24,6 +25,15 @@
 
 using namespace facebook::react;
 
+@interface RCTTextLayoutManager (RCTParagraphComponentViewPrivate)
+
+- (CGRect)drawingFrameForAttributedString:(facebook::react::AttributedString)attributedString
+                      paragraphAttributes:(facebook::react::ParagraphAttributes)paragraphAttributes
+                                    frame:(CGRect)frame
+                           containerFrame:(CGRect *)containerFrame;
+
+@end
+
 // ParagraphTextView is an auxiliary view we set as contentView so the drawing
 // can happen on top of the layers manipulated by RCTViewComponentView (the parent view)
 @interface RCTParagraphTextView : UIView
@@ -31,6 +41,7 @@ using namespace facebook::react;
 @property (nonatomic) ParagraphShadowNode::ConcreteState::Shared state;
 @property (nonatomic) ParagraphAttributes paragraphAttributes;
 @property (nonatomic) LayoutMetrics layoutMetrics;
+@property (nonatomic) CGRect drawingFrame;
 
 @end
 
@@ -50,6 +61,7 @@ using namespace facebook::react;
   RCTParagraphComponentAccessibilityProvider *_accessibilityProvider;
   UILongPressGestureRecognizer *_longPressGestureRecognizer;
   RCTParagraphTextView *_textView;
+  CGRect _textLayoutFrame;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame
@@ -60,6 +72,7 @@ using namespace facebook::react;
     self.opaque = NO;
     _textView = [RCTParagraphTextView new];
     _textView.backgroundColor = UIColor.clearColor;
+    _textView.drawingFrame = self.bounds;
     self.contentView = _textView;
   }
 
@@ -134,6 +147,7 @@ using namespace facebook::react;
   // re-applying individual sub-values which weren't changed.
   [super updateLayoutMetrics:layoutMetrics oldLayoutMetrics:_layoutMetrics];
   _textView.layoutMetrics = _layoutMetrics;
+  _textLayoutFrame = RCTCGRectFromRect(_layoutMetrics.getContentFrame());
   [_textView setNeedsDisplay];
   [self setNeedsLayout];
 }
@@ -149,7 +163,28 @@ using namespace facebook::react;
 {
   [super layoutSubviews];
 
-  _textView.frame = self.bounds;
+  CGRect textViewFrame = self.bounds;
+  CGRect drawingFrame = RCTCGRectFromRect(_layoutMetrics.getContentFrame());
+
+  if (ReactNativeFeatureFlags::enableIOSCompressedTextFrameAdjustment() && _textView.state &&
+      drawingFrame.size.height > 0) {
+    const auto &stateData = _textView.state->getData();
+    auto textLayoutManager = stateData.layoutManager.lock();
+    if (textLayoutManager) {
+      RCTTextLayoutManager *nativeTextLayoutManager =
+          (RCTTextLayoutManager *)unwrapManagedObject(textLayoutManager->getNativeTextLayoutManager());
+      CGRect drawingContainerFrame = drawingFrame;
+      drawingFrame = [nativeTextLayoutManager drawingFrameForAttributedString:stateData.attributedString
+                                                          paragraphAttributes:_paragraphAttributes
+                                                                        frame:drawingFrame
+                                                               containerFrame:&drawingContainerFrame];
+      textViewFrame = CGRectUnion(textViewFrame, drawingContainerFrame);
+    }
+  }
+
+  _textLayoutFrame = drawingFrame;
+  _textView.frame = textViewFrame;
+  _textView.drawingFrame = CGRectOffset(drawingFrame, -textViewFrame.origin.x, -textViewFrame.origin.y);
 }
 
 #pragma mark - Accessibility
@@ -194,7 +229,7 @@ using namespace facebook::react;
     if (textLayoutManager) {
       RCTTextLayoutManager *nativeTextLayoutManager =
           (RCTTextLayoutManager *)unwrapManagedObject(textLayoutManager->getNativeTextLayoutManager());
-      CGRect frame = RCTCGRectFromRect(_layoutMetrics.getContentFrame());
+      CGRect frame = _textLayoutFrame;
       _accessibilityProvider =
           [[RCTParagraphComponentAccessibilityProvider alloc] initWithString:data.attributedString
                                                                layoutManager:nativeTextLayoutManager
@@ -268,7 +303,7 @@ using namespace facebook::react;
 
   RCTTextLayoutManager *nativeTextLayoutManager =
       (RCTTextLayoutManager *)unwrapManagedObject(textLayoutManager->getNativeTextLayoutManager());
-  CGRect frame = RCTCGRectFromRect(_layoutMetrics.getContentFrame());
+  CGRect frame = _textLayoutFrame;
 
   auto eventEmitter = [nativeTextLayoutManager getEventEmitterWithAttributeString:stateData.attributedString
                                                               paragraphAttributes:_paragraphAttributes
@@ -404,7 +439,7 @@ Class<RCTComponentViewProtocol> RCTParagraphCls(void)
   RCTTextLayoutManager *nativeTextLayoutManager =
       (RCTTextLayoutManager *)unwrapManagedObject(textLayoutManager->getNativeTextLayoutManager());
 
-  CGRect frame = RCTCGRectFromRect(_layoutMetrics.getContentFrame());
+  CGRect frame = _drawingFrame;
 
   [nativeTextLayoutManager drawAttributedString:stateData.attributedString
                             paragraphAttributes:_paragraphAttributes

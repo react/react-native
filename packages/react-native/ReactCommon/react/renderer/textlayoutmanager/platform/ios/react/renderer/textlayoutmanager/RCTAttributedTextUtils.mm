@@ -369,7 +369,7 @@ static void RCTApplyBaselineOffsetForRange(NSMutableAttributedString *attributed
                             maximumFontLineHeight = MAX(font.lineHeight, maximumFontLineHeight);
                           }];
 
-  if (maximumLineHeight < maximumFontLineHeight) {
+  if (maximumLineHeight < maximumFontLineHeight && !ReactNativeFeatureFlags::enableIOSCompressedTextFrameAdjustment()) {
     return;
   }
 
