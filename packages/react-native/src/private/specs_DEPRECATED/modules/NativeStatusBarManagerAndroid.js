@@ -12,12 +12,20 @@ import type {TurboModule} from '../../../../Libraries/TurboModule/RCTExport';
 
 import * as TurboModuleRegistry from '../../../../Libraries/TurboModule/TurboModuleRegistry';
 
+export type NativePlatformColorValue = {
+  readonly resource_paths: Array<string>,
+};
+
 export interface Spec extends TurboModule {
   readonly getConstants: () => {
     readonly HEIGHT: number,
     readonly DEFAULT_BACKGROUND_COLOR: number,
   };
   readonly setColor: (color: number, animated: boolean) => void;
+  readonly setColorObject: (
+    color: NativePlatformColorValue,
+    animated: boolean,
+  ) => void;
   readonly setTranslucent: (translucent: boolean) => void;
 
   /**
@@ -45,6 +53,10 @@ const NativeStatusBarManager = {
 
   setColor(color: number, animated: boolean): void {
     NativeModule.setColor(color, animated);
+  },
+
+  setColorObject(color: NativePlatformColorValue, animated: boolean): void {
+    NativeModule.setColorObject(color, animated);
   },
 
   setTranslucent(translucent: boolean): void {

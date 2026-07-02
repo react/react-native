@@ -8626,6 +8626,12 @@ struct facebook::react::NativeSourceCodeSourceCodeConstants {
   public bool operator==(const facebook::react::NativeSourceCodeSourceCodeConstants& other) const;
 }
 
+template <typename P0>
+struct facebook::react::NativeStatusBarManagerAndroidNativePlatformColorValue {
+  public P0 resource_paths;
+  public bool operator==(const facebook::react::NativeStatusBarManagerAndroidNativePlatformColorValue& other) const;
+}
+
 template <typename R, typename... Args>
 class facebook::react::SyncCallback<R(Args...)> {
   public R call(Args... args) const;
@@ -9466,6 +9472,14 @@ struct facebook::react::NativeSourceCodeSourceCodeConstantsBridging {
   public static T types;
   public static facebook::jsi::Object toJs(facebook::jsi::Runtime& rt, const T& value, const std::shared_ptr<facebook::react::CallInvoker>& jsInvoker);
   public static facebook::jsi::String scriptURLToJs(facebook::jsi::Runtime& rt, decltype(types.scriptURL) value);
+}
+
+template <typename T>
+struct facebook::react::NativeStatusBarManagerAndroidNativePlatformColorValueBridging {
+  public static T fromJs(facebook::jsi::Runtime& rt, const facebook::jsi::Object& value, const std::shared_ptr<facebook::react::CallInvoker>& jsInvoker);
+  public static T types;
+  public static facebook::jsi::Array resource_pathsToJs(facebook::jsi::Runtime& rt, decltype(types.resource_paths) value);
+  public static facebook::jsi::Object toJs(facebook::jsi::Runtime& rt, const T& value, const std::shared_ptr<facebook::react::CallInvoker>& jsInvoker);
 }
 
 template <typename T>

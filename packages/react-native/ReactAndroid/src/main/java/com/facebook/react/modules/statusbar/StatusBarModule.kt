@@ -16,9 +16,11 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import com.facebook.common.logging.FLog
 import com.facebook.fbreact.specs.NativeStatusBarManagerAndroidSpec
+import com.facebook.react.bridge.ColorPropConverter
 import com.facebook.react.bridge.GuardedRunnable
 import com.facebook.react.bridge.NativeModule
 import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.UiThreadUtil
 import com.facebook.react.common.ReactConstants
 import com.facebook.react.interfaces.ExtraWindowEventListener
@@ -79,7 +81,24 @@ internal class StatusBarModule(reactContext: ReactApplicationContext?) :
 
   @Suppress("DEPRECATION")
   override fun setColor(colorDouble: Double, animated: Boolean) {
-    val color = colorDouble.toInt()
+    applyStatusBarColor(colorDouble.toInt(), animated)
+  }
+
+  @Suppress("DEPRECATION")
+  override fun setColorObject(color: ReadableMap, animated: Boolean) {
+    val resolved = ColorPropConverter.getColor(color, reactApplicationContext)
+    if (resolved == null) {
+      FLog.w(
+          ReactConstants.TAG,
+          "StatusBarModule: Ignored status bar change, unable to resolve color.",
+      )
+      return
+    }
+    applyStatusBarColor(resolved, animated)
+  }
+
+  @Suppress("DEPRECATION")
+  private fun applyStatusBarColor(color: Int, animated: Boolean) {
     val activity = reactApplicationContext.getCurrentActivity()
     if (activity == null) {
       FLog.w(

@@ -551,12 +551,14 @@ class StatusBar extends React.Component<StatusBarProps> {
           console.warn(
             `\`StatusBar._updatePropsStack\`: Color ${mergedProps.backgroundColor.value} parsed to null or undefined`,
           );
-        } else {
-          invariant(
-            typeof processedColor === 'number',
-            'Unexpected color given in StatusBar._updatePropsStack',
-          );
+        } else if (typeof processedColor === 'number') {
           NativeStatusBarManagerAndroid.setColor(
+            processedColor,
+            mergedProps.backgroundColor.animated,
+          );
+        } else {
+          NativeStatusBarManagerAndroid.setColorObject(
+            // $FlowFixMe[incompatible-type] - Opaque NativeColorValue on Android matches the spec shape {resource_paths: Array<string>}.
             processedColor,
             mergedProps.backgroundColor.animated,
           );
