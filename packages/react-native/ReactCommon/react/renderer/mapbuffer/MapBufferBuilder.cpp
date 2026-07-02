@@ -153,10 +153,11 @@ void MapBufferBuilder::putMapBufferList(
         mapBufferSize);
   }
 
-  // Store Key and pointer to the string
+  // Store Key and pointer to the list. Uses the dedicated MapBufferList type so
+  // the entry is self-describing and distinguishable from a single Map.
   storeKeyValue(
       key,
-      MapBuffer::DataType::Map,
+      MapBuffer::DataType::MapBufferList,
       reinterpret_cast<const uint8_t*>(&offset),
       INT_SIZE);
 }

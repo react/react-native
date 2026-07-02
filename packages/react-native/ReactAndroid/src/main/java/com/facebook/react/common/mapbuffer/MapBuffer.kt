@@ -48,6 +48,7 @@ public interface MapBuffer : Iterable<MapBuffer.Entry> {
     LONG,
     INT_BUFFER,
     DOUBLE_BUFFER,
+    MAP_BUFFER_LIST,
   }
 
   /**
@@ -153,8 +154,8 @@ public interface MapBuffer : Iterable<MapBuffer.Entry> {
   public fun getMapBuffer(key: Int): MapBuffer
 
   /**
-   * Provides parsed [List<MapBuffer>] value if the entry for given key exists with [DataType.MAP]
-   * type
+   * Provides parsed [List<MapBuffer>] value if the entry for given key exists with
+   * [DataType.MAP_BUFFER_LIST] type
    *
    * @param key key to lookup [List<MapBuffer>] value for
    * @return value associated with the requested key
@@ -253,5 +254,12 @@ public interface MapBuffer : Iterable<MapBuffer.Entry> {
      * @throws IllegalStateException if the data type doesn't match [DataType.DOUBLE_BUFFER]
      */
     public val doubleBufferValue: DoubleArray
+
+    /**
+     * Entry value represented as [List<MapBuffer>]
+     *
+     * @throws IllegalStateException if the data type doesn't match [DataType.MAP_BUFFER_LIST]
+     */
+    public val mapBufferListValue: List<MapBuffer>
   }
 }

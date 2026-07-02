@@ -206,6 +206,9 @@ internal class WritableMapBuffer : MapBuffer {
 
     override val doubleBufferValue: DoubleArray
       get() = verifyValue(key, values.valueAt(index))
+
+    override val mapBufferListValue: List<MapBuffer>
+      get() = verifyValue(key, values.valueAt(index))
   }
 
   /*

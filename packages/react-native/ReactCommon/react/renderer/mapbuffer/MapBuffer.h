@@ -112,6 +112,10 @@ class MapBuffer {
     // array within the dynamic data section.
     IntBuffer = 6,
     DoubleBuffer = 7,
+    // A homogeneous, ordered array of nested MapBuffers. Distinct from `Map` so
+    // that a list of MapBuffers is self-describing (a single Map and a list are
+    // byte-distinct in payload but previously shared the `Map` type tag).
+    MapBufferList = 8,
   };
 
   explicit MapBuffer(std::vector<uint8_t> data);
