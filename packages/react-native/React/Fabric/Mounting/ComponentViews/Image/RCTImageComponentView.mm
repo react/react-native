@@ -69,6 +69,41 @@ using namespace facebook::react;
   [super updateProps:props oldProps:oldProps];
 }
 
+- (void)_setImage:(UIImage *)image setImageBlock:(void (^)(UIImage *finalImage))setImageBlock
+{
+  const auto &imageProps = static_cast<const ImageProps &>(*_props);
+
+  if (imageProps.tintColor) {
+    image = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+  }
+
+  if (imageProps.resizeMode == ImageResizeMode::Repeat) {
+    image = [image resizableImageWithCapInsets:RCTUIEdgeInsetsFromEdgeInsets(imageProps.capInsets)
+                                  resizingMode:UIImageResizingModeTile];
+  } else if (imageProps.capInsets != EdgeInsets()) {
+    // Applying capInsets of 0 will switch the "resizingMode" of the image to "tile" which is undesired.
+    image = [image resizableImageWithCapInsets:RCTUIEdgeInsetsFromEdgeInsets(imageProps.capInsets)
+                                  resizingMode:UIImageResizingModeStretch];
+  }
+
+  if (imageProps.blurRadius > __FLT_EPSILON__) {
+    // Blur on a background thread to avoid blocking interaction.
+    CGFloat blurRadius = imageProps.blurRadius;
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+      UIImage *blurredImage = RCTBlurredImageWithRadius(image, blurRadius);
+      RCTExecuteOnMainQueue(^{
+        if (setImageBlock) {
+          setImageBlock(blurredImage);
+        }
+      });
+    });
+  } else {
+    if (setImageBlock) {
+      setImageBlock(image);
+    }
+  }
+}
+
 - (NSObject *)accessibilityElement
 {
   return _imageView;
@@ -90,6 +125,21 @@ using namespace facebook::react;
 
   if (!havePreviousData ||
       (newImageState && newImageState->getData().getImageSource() != oldImageState->getData().getImageSource())) {
+    const auto &imageProps = static_cast<const ImageProps &>(*_props);
+    if (imageProps.defaultSource != ImageSource{}) {
+      UIImage *defaultImage = [self _getUIImageWithImageSource:imageProps.defaultSource];
+
+      if (defaultImage) {
+        __weak RCTImageComponentView *weakSelf = self;
+        [self _setImage:defaultImage
+            setImageBlock:^(UIImage *finalImage) {
+              RCTImageComponentView *strongSelf = weakSelf;
+              if (strongSelf && !strongSelf->_imageView.image) {
+                strongSelf->_imageView.image = finalImage;
+              }
+            }];
+      }
+    }
     // Loading actually starts a little before this, but this is the first time we know
     // the image is loading and can fire an event from this component
     static_cast<const ImageEventEmitter &>(*_eventEmitter).onLoadStart();
@@ -97,6 +147,62 @@ using namespace facebook::react;
     // TODO (T58941612): Tracking for visibility should be done directly on this class.
     // For now, we consolidate instrumentation logic in the image loader, so that pre-Fabric gets the same treatment.
   }
+}
+
+- (UIImage *)_getUIImageWithImageSource:(const ImageSource &)imageSource
+{
+  if (imageSource.uri.empty()) {
+    return nil;
+  }
+  UIImage *image;
+  NSURL *URL = [NSURL URLWithString:[[NSString alloc] initWithBytesNoCopy:(void *)imageSource.uri.c_str()
+                                                                   length:imageSource.uri.size()
+                                                                 encoding:NSUTF8StringEncoding
+                                                             freeWhenDone:NO]];
+  NSString *scheme = URL.scheme.lowercaseString;
+  if ([scheme isEqualToString:@"file"]) {
+    image = RCTImageFromLocalAssetURL(URL);
+    // There is a case where this may fail when the image is at the bundle location.
+    // RCTImageFromLocalAssetURL only checks for the image in the same location as the jsbundle
+    // Hence, if the bundle is CodePush-ed, it will not be able to find the image.
+    // This check is added here instead of being inside RCTImageFromLocalAssetURL, since
+    // we don't want breaking changes to RCTImageFromLocalAssetURL, which is called in a lot of places
+    // This is a deprecated method, and hence has the least impact on existing code. Basically,
+    // instead of crashing the app, it tries one more location for the image.
+    if (!image) {
+      image = RCTImageFromLocalBundleAssetURL(URL);
+    }
+    if (!image) {
+      RCTLogError(@"%@ is not an image. File not found.", URL);
+    }
+  } else if ([scheme isEqualToString:@"data"]) {
+    image = [UIImage imageWithData:[NSData dataWithContentsOfURL:URL]];
+  } else if ([scheme isEqualToString:@"http"] && imageSource.type == ImageSource::Type::Local) {
+    image = [UIImage imageWithData:[NSData dataWithContentsOfURL:URL]];
+  } else {
+    RCTLogError(@"%@ is not an image. Only local files or data URIs are supported.", URL);
+    return nil;
+  }
+
+  CGFloat scale = imageSource.scale;
+  if (!scale && imageSource.size.width) {
+    // If no scale provided, set scale to image width / source width
+    scale = CGImageGetWidth(image.CGImage) / imageSource.size.width;
+  }
+
+  if (scale) {
+    image = [UIImage imageWithCGImage:image.CGImage scale:scale orientation:image.imageOrientation];
+  }
+
+  facebook::react::Size imageSize = {image.size.width, image.size.height};
+  if (!(imageSource.size == facebook::react::Size()) && !(imageSource.size == imageSize)) {
+    RCTLogInfo(
+        @"Image source %@ size %@ does not match loaded image size %@.",
+        URL.path.lastPathComponent,
+        NSStringFromCGSize(CGSizeMake(imageSource.size.width, imageSource.size.height)),
+        NSStringFromCGSize(image.size));
+  }
+  return image;
 }
 
 - (void)_setStateAndResubscribeImageResponseObserver:(const ImageShadowNode::ConcreteState::Shared &)state
@@ -139,33 +245,14 @@ using namespace facebook::react;
   static_cast<const ImageEventEmitter &>(*_eventEmitter).onLoad(imageSource);
   static_cast<const ImageEventEmitter &>(*_eventEmitter).onLoadEnd();
 
-  const auto &imageProps = static_cast<const ImageProps &>(*_props);
-
-  if (imageProps.tintColor) {
-    image = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-  }
-
-  if (imageProps.resizeMode == ImageResizeMode::Repeat) {
-    image = [image resizableImageWithCapInsets:RCTUIEdgeInsetsFromEdgeInsets(imageProps.capInsets)
-                                  resizingMode:UIImageResizingModeTile];
-  } else if (imageProps.capInsets != EdgeInsets()) {
-    // Applying capInsets of 0 will switch the "resizingMode" of the image to "tile" which is undesired.
-    image = [image resizableImageWithCapInsets:RCTUIEdgeInsetsFromEdgeInsets(imageProps.capInsets)
-                                  resizingMode:UIImageResizingModeStretch];
-  }
-
-  if (imageProps.blurRadius > __FLT_EPSILON__) {
-    // Blur on a background thread to avoid blocking interaction.
-    CGFloat blurRadius = imageProps.blurRadius;
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-      UIImage *blurredImage = RCTBlurredImageWithRadius(image, blurRadius);
-      RCTExecuteOnMainQueue(^{
-        self->_imageView.image = blurredImage;
-      });
-    });
-  } else {
-    self->_imageView.image = image;
-  }
+  __weak RCTImageComponentView *weakSelf = self;
+  [self _setImage:image
+      setImageBlock:^(UIImage *finalImage) {
+        RCTImageComponentView *strongSelf = weakSelf;
+        if (strongSelf) {
+          strongSelf->_imageView.image = finalImage;
+        }
+      }];
 }
 
 - (void)didReceiveProgress:(float)progress
