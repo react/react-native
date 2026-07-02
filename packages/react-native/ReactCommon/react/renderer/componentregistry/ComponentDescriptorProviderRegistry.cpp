@@ -44,7 +44,7 @@ void ComponentDescriptorProviderRegistry::add(
 void ComponentDescriptorProviderRegistry::setComponentDescriptorProviderRequest(
     ComponentDescriptorProviderRequest componentDescriptorProviderRequest)
     const {
-  std::shared_lock lock(mutex_);
+  std::unique_lock lock(mutex_);
   componentDescriptorProviderRequest_ =
       std::move(componentDescriptorProviderRequest);
 }
@@ -66,16 +66,20 @@ void ComponentDescriptorProviderRegistry::request(
 ComponentDescriptorRegistry::Shared
 ComponentDescriptorProviderRegistry::createComponentDescriptorRegistry(
     const ComponentDescriptorParameters& parameters) const {
-  std::shared_lock lock(mutex_);
-
   auto registry = std::make_shared<const ComponentDescriptorRegistry>(
       parameters, *this, parameters.contextContainer);
+  {
+    std::shared_lock lock(mutex_);
 
-  for (const auto& pair : componentDescriptorProviders_) {
-    registry->add(pair.second);
+    for (const auto& pair : componentDescriptorProviders_) {
+      registry->add(pair.second);
+    }
   }
 
-  componentDescriptorRegistries_.push_back(registry);
+  {
+    std::unique_lock lock(mutex_);
+    componentDescriptorRegistries_.push_back(registry);
+  }
 
   return registry;
 }
