@@ -47,7 +47,7 @@
   "devDependencies": {
     "@react-native/debugger-shell": "0.87.0-main",
     "selfsigned": "^5.5.0",
-    "undici": "^6.23.0",
+    "undici": "^6.24.0",
     "wait-for-expect": "^3.0.2"
   },
   "engines": {
