@@ -89,7 +89,6 @@ export * from '../Libraries/Components/LayoutConformance/LayoutConformance';
 export * from '../Libraries/Components/Pressable/Pressable';
 export * from '../Libraries/Components/ProgressBarAndroid/ProgressBarAndroid';
 export * from '../Libraries/Components/RefreshControl/RefreshControl';
-export * from '../Libraries/Components/SafeAreaView/SafeAreaView';
 export * from '../Libraries/Components/ScrollView/ScrollView';
 export * from '../Libraries/Components/StatusBar/StatusBar';
 export * from '../Libraries/Components/Switch/Switch';

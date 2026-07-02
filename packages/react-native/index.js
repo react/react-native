@@ -103,20 +103,6 @@ module.exports = {
     return require('./Libraries/Components/RefreshControl/RefreshControl')
       .default;
   },
-  /**
-   * @deprecated SafeAreaView has been deprecated and will be removed in a future release.
-   * Please use 'react-native-safe-area-context' instead.
-   * See https://github.com/AppAndFlow/react-native-safe-area-context
-   */
-  get SafeAreaView() {
-    warnOnce(
-      'safe-area-view-deprecated',
-      'SafeAreaView has been deprecated and will be removed in a future release. ' +
-        "Please use 'react-native-safe-area-context' instead. " +
-        'See https://github.com/AppAndFlow/react-native-safe-area-context',
-    );
-    return require('./Libraries/Components/SafeAreaView/SafeAreaView').default;
-  },
   get ScrollView() {
     return require('./Libraries/Components/ScrollView/ScrollView').default;
   },
@@ -411,6 +397,22 @@ if (__DEV__) {
         'InteractionManager has been removed from react-native core. ' +
           'Please refactor long tasks into smaller ones, and use ' +
           "'requestIdleCallback' instead.",
+      );
+    },
+  });
+
+  /* $FlowFixMe[prop-missing] This is intentional: Flow will error when
+   * attempting to access SafeAreaView. */
+  /* $FlowFixMe[invalid-export] This is intentional: Flow will error when
+   * attempting to access SafeAreaView. */
+  Object.defineProperty(module.exports, 'SafeAreaView', {
+    configurable: true,
+    get() {
+      invariant(
+        false,
+        'SafeAreaView has been removed from react-native core. ' +
+          "Please use 'react-native-safe-area-context' instead. " +
+          'See https://github.com/AppAndFlow/react-native-safe-area-context',
       );
     },
   });

@@ -69,7 +69,6 @@ const components = [
   'ProgressBarAndroid',
   'ProgressViewIOS',
   'RefreshControl',
-  'SafeAreaView',
   'ScrollView',
   'SectionList',
   'SegmentedControlIOS',

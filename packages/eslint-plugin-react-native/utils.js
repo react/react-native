@@ -102,10 +102,6 @@ const publicAPIMapping = {
       'RefreshControlPropsIOS',
     ],
   },
-  'Libraries/Components/SafeAreaView/SafeAreaView': {
-    default: 'SafeAreaView',
-    types: null,
-  },
   'Libraries/Components/ScrollView/ScrollView': {
     default: 'ScrollView',
     types: [

@@ -8,28 +8,16 @@
  */
 
 import * as React from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  View,
-  useColorScheme,
-} from 'react-native';
+import {ScrollView, StatusBar, StyleSheet, Text} from 'react-native';
 
 function App(): React.ReactNode {
-  const isDarkMode = useColorScheme() === 'dark';
-
   return (
-    <SafeAreaView>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+    <>
+      <StatusBar barStyle="auto" />
       <ScrollView contentInsetAdjustmentBehavior="automatic">
-        <View>
-          <Text style={styles.title}>Hello, World!</Text>
-        </View>
+        <Text style={styles.title}>Hello, World!</Text>
       </ScrollView>
-    </SafeAreaView>
+    </>
   );
 }
 

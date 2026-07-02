@@ -25,7 +25,6 @@ import {
   KeyboardAvoidingView,
   Modal,
   Platform,
-  SafeAreaView,
   StyleSheet,
   Switch,
   Text,
@@ -86,7 +85,7 @@ function FilterModalButton(props: FilterModalProps) {
         animationType="fade"
         presentationStyle="overFullScreen"
         transparent={true}>
-        <SafeAreaView style={styles.filterModalRoot}>
+        <View style={styles.filterModalRoot}>
           <KeyboardAvoidingView
             style={styles.filterModalKeyboardAvoidingRoot}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
@@ -122,7 +121,7 @@ function FilterModalButton(props: FilterModalProps) {
               </View>
             </View>
           </KeyboardAvoidingView>
-        </SafeAreaView>
+        </View>
       </Modal>
     </>
   );
@@ -265,7 +264,7 @@ export default function RNTesterPlatformTestResultView(
         animationType="slide"
         onRequestClose={handleMaximizedPress}
         visible={resultsExpanded}>
-        <SafeAreaView
+        <View
           style={{
             width: '100%',
             height: '100%',
@@ -307,7 +306,7 @@ export default function RNTesterPlatformTestResultView(
             <TableHeader />
             <FlatList data={filteredResults} renderItem={renderTableRow} />
           </View>
-        </SafeAreaView>
+        </View>
       </Modal>
     </>
   );
