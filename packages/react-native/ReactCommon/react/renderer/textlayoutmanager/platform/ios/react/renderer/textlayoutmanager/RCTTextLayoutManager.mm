@@ -577,4 +577,16 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
   return TextMeasurement{.size = {.width = size.width, .height = size.height}, .attachments = attachments};
 }
 
+- (NSTextStorage *)getTextStorageForAttributedString:(AttributedString)attributedString
+                                 paragraphAttributes:(ParagraphAttributes)paragraphAttributes
+                                                size:(CGSize)size
+{
+  NSAttributedString *nsAttributedString = [self _nsAttributedStringFromAttributedString:attributedString];
+  NSTextStorage *textStorage = [self _textStorageAndLayoutManagerWithAttributesString:nsAttributedString
+                                                                  paragraphAttributes:paragraphAttributes
+                                                                                 size:size];
+
+  return textStorage;
+}
+
 @end

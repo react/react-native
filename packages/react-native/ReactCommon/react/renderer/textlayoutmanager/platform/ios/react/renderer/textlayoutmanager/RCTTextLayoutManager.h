@@ -59,6 +59,10 @@ using RCTTextLayoutFragmentEnumerationBlock =
                               frame:(CGRect)frame
                          usingBlock:(RCTTextLayoutFragmentEnumerationBlock)block;
 
+- (NSTextStorage *)getTextStorageForAttributedString:(facebook::react::AttributedString)attributedString
+                                 paragraphAttributes:(facebook::react::ParagraphAttributes)paragraphAttributes
+                                                size:(CGSize)size;
+
 @end
 
 NS_ASSUME_NONNULL_END

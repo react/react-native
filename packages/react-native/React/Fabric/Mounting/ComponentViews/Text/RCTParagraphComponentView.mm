@@ -34,6 +34,9 @@ using namespace facebook::react;
 
 @end
 
+@interface RCTParagraphSelectableTextView : UITextView
+@end
+
 #if !TARGET_OS_TV
 @interface RCTParagraphComponentView () <UIEditMenuInteractionDelegate>
 
@@ -50,6 +53,7 @@ using namespace facebook::react;
   RCTParagraphComponentAccessibilityProvider *_accessibilityProvider;
   UILongPressGestureRecognizer *_longPressGestureRecognizer;
   RCTParagraphTextView *_textView;
+  RCTParagraphSelectableTextView *_selectableTextView;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame
@@ -111,9 +115,9 @@ using namespace facebook::react;
 
   if (newParagraphProps.isSelectable != oldParagraphProps.isSelectable) {
     if (newParagraphProps.isSelectable) {
-      [self enableContextMenu];
+      [self _enableSelection];
     } else {
-      [self disableContextMenu];
+      [self _disableSelection];
     }
   }
 
@@ -125,6 +129,10 @@ using namespace facebook::react;
   _textView.state = std::static_pointer_cast<const ParagraphShadowNode::ConcreteState>(state);
   [_textView setNeedsDisplay];
   [self setNeedsLayout];
+
+  if (_selectableTextView) {
+    [self updateSelectableTextStorage];
+  }
 }
 
 - (void)updateLayoutMetrics:(const LayoutMetrics &)layoutMetrics
@@ -136,11 +144,18 @@ using namespace facebook::react;
   _textView.layoutMetrics = _layoutMetrics;
   [_textView setNeedsDisplay];
   [self setNeedsLayout];
+
+  if (_selectableTextView) {
+    [self updateSelectableTextStorage];
+  }
 }
 
 - (void)prepareForRecycle
 {
   [super prepareForRecycle];
+  if (_selectableTextView) {
+    [self _disableSelection];
+  }
   _textView.state = nullptr;
   _accessibilityProvider = nil;
 }
@@ -149,7 +164,79 @@ using namespace facebook::react;
 {
   [super layoutSubviews];
 
+  if (_selectableTextView) {
+    _selectableTextView.frame = self.bounds;
+  } else {
+    _textView.frame = self.bounds;
+  }
+}
+
+#pragma mark - Selection Management
+
+- (void)_enableSelection
+{
+  if (_selectableTextView) {
+    return;
+  }
+
+  _selectableTextView = [[RCTParagraphSelectableTextView alloc] initWithFrame:self.bounds];
+  _selectableTextView.editable = NO;
+  _selectableTextView.selectable = YES;
+  _selectableTextView.scrollEnabled = NO;
+  _selectableTextView.textContainerInset = UIEdgeInsetsZero;
+  _selectableTextView.textContainer.lineFragmentPadding = 0;
+  _selectableTextView.backgroundColor = [UIColor clearColor];
+
+  // Sync text content into the UITextView.
+  [self updateSelectableTextStorage];
+
+  // Swap: remove the default text view, install the selectable one.
+  [_textView removeFromSuperview];
+  self.contentView = _selectableTextView;
+
+  // Also enable the context menu (long press to copy).
+  [self enableContextMenu];
+}
+
+- (void)_disableSelection
+{
+  if (!_selectableTextView) {
+    return;
+  }
+
+  [self disableContextMenu];
+
+  // Swap back: remove the selectable text view, restore the default one.
+  [_selectableTextView removeFromSuperview];
+  _selectableTextView = nil;
+
+  self.contentView = _textView;
   _textView.frame = self.bounds;
+  [_textView setNeedsDisplay];
+}
+
+- (void)updateSelectableTextStorage
+{
+  if (!_selectableTextView || !_textView.state) {
+    return;
+  }
+
+  const auto &stateData = _textView.state->getData();
+  auto textLayoutManager = stateData.layoutManager.lock();
+  if (!textLayoutManager) {
+    return;
+  }
+
+  RCTTextLayoutManager *nativeTextLayoutManager =
+      (RCTTextLayoutManager *)unwrapManagedObject(textLayoutManager->getNativeTextLayoutManager());
+  CGRect frame = RCTCGRectFromRect(_layoutMetrics.getContentFrame());
+
+  NSTextStorage *textStorage = [nativeTextLayoutManager getTextStorageForAttributedString:stateData.attributedString
+                                                                      paragraphAttributes:_paragraphAttributes
+                                                                                     size:frame.size];
+
+  _selectableTextView.attributedText = textStorage;
+  _selectableTextView.frame = frame;
 }
 
 #pragma mark - Accessibility
@@ -425,4 +512,7 @@ Class<RCTComponentViewProtocol> RCTParagraphCls(void)
                               }];
 }
 
+@end
+
+@implementation RCTParagraphSelectableTextView
 @end
