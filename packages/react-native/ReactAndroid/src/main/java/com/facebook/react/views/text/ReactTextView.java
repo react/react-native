@@ -219,8 +219,14 @@ public class ReactTextView extends AppCompatTextView implements ReactCompoundVie
           CanvasEffectSpan[] drawSpans =
               spanned.getSpans(0, spanned.length(), CanvasEffectSpan.class);
           if (drawSpans.length > 0) {
+            int voffsetText =
+                verticalGravityOffset(
+                    getGravity(),
+                    getMeasuredHeight() - getExtendedPaddingTop() - getExtendedPaddingBottom(),
+                    layout.getHeight());
+
             canvas.save();
-            canvas.translate(getCompoundPaddingLeft(), getExtendedPaddingTop());
+            canvas.translate(getCompoundPaddingLeft(), getExtendedPaddingTop() + voffsetText);
             for (CanvasEffectSpan span : drawSpans) {
               int start = spanned.getSpanStart(span);
               int end = spanned.getSpanEnd(span);
@@ -231,7 +237,7 @@ public class ReactTextView extends AppCompatTextView implements ReactCompoundVie
             super.onDraw(canvas);
 
             canvas.save();
-            canvas.translate(getCompoundPaddingLeft(), getExtendedPaddingTop());
+            canvas.translate(getCompoundPaddingLeft(), getExtendedPaddingTop() + voffsetText);
             for (CanvasEffectSpan span : drawSpans) {
               int start = spanned.getSpanStart(span);
               int end = spanned.getSpanEnd(span);
@@ -411,6 +417,20 @@ public class ReactTextView extends AppCompatTextView implements ReactCompoundVie
       gravityVertical = DEFAULT_GRAVITY & Gravity.VERTICAL_GRAVITY_MASK;
     }
     setGravity((getGravity() & ~Gravity.VERTICAL_GRAVITY_MASK) | gravityVertical);
+  }
+
+  /**
+   * The vertical shift `super.onDraw` applies to glyphs for the current gravity, mirroring the
+   * private {@code TextView.getVerticalOffset()}. {@link CanvasEffectSpan} decorations paint in a
+   * separate pass and must add the same offset so they track the text. Returns 0 for {@code TOP}
+   * gravity and whenever the text fills or overflows the box (no room to shift).
+   */
+  /* package */ static int verticalGravityOffset(int gravity, int boxHeight, int textHeight) {
+    int vertical = gravity & Gravity.VERTICAL_GRAVITY_MASK;
+    if (vertical == Gravity.TOP || textHeight >= boxHeight) {
+      return 0;
+    }
+    return (vertical == Gravity.BOTTOM) ? (boxHeight - textHeight) : (boxHeight - textHeight) / 2;
   }
 
   public void setNumberOfLines(int numberOfLines) {
