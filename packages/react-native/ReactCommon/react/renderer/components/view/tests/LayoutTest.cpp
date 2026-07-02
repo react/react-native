@@ -10,6 +10,7 @@
 #include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
 #include <react/renderer/components/root/RootComponentDescriptor.h>
 #include <react/renderer/components/view/ViewComponentDescriptor.h>
+#include <react/renderer/components/view/YogaStylableProps.h>
 #include <react/renderer/element/ComponentBuilder.h>
 #include <react/renderer/element/Element.h>
 #include <react/renderer/element/testUtils.h>
@@ -442,6 +443,76 @@ TEST_F(LayoutTest, overflowInsetHitSlopTransformTranslateTest) {
   EXPECT_EQ(layoutMetricsABC.overflowInset.top, -50);
   EXPECT_EQ(layoutMetricsABC.overflowInset.right, 0);
   EXPECT_EQ(layoutMetricsABC.overflowInset.bottom, 0);
+}
+
+// Test CSS calc() post-layout offsets.
+// A child with width: calc(50% - 20px) inside a 200px-wide parent
+// should resolve to 200*0.5 - 20 = 80px.
+class CalcOffsetTest : public ::testing::Test {
+ protected:
+  ComponentBuilder builder_;
+  std::shared_ptr<RootShadowNode> rootShadowNode_;
+  std::shared_ptr<ViewShadowNode> childNode_;
+
+  CalcOffsetTest() : builder_(simpleComponentBuilder()) {}
+
+  void initialize() {
+    // clang-format off
+    auto element =
+        Element<RootShadowNode>()
+          .reference(rootShadowNode_)
+          .tag(1)
+          .props([] {
+            auto sharedProps = std::make_shared<RootProps>();
+            auto &props = *sharedProps;
+            props.layoutConstraints = LayoutConstraints{
+                .minimumSize = {.width = 0, .height = 0},
+                .maximumSize = {.width = 500, .height = 500}};
+            auto &yogaStyle = props.yogaStyle;
+            yogaStyle.setDimension(
+                yoga::Dimension::Width, yoga::StyleSizeLength::points(200));
+            yogaStyle.setDimension(
+                yoga::Dimension::Height, yoga::StyleSizeLength::points(200));
+            return sharedProps;
+          })
+          .children({
+            Element<ViewShadowNode>()
+              .reference(childNode_)
+              .tag(2)
+              .props([] {
+                auto sharedProps = std::make_shared<ViewShadowNodeProps>();
+                auto &props = *sharedProps;
+                auto &yogaStyle = props.yogaStyle;
+                // Simulate calc(50% - 20px): set 50% on Yoga, store -20 offset
+                yogaStyle.setDimension(
+                    yoga::Dimension::Width,
+                    yoga::StyleSizeLength::percent(50));
+                // CalcPropId::Width == 0, CalcPropId::Height == 1
+                props.calcOffsets[0] = -20.0f;
+                // Simulate calc(100% - 64px) for height
+                yogaStyle.setDimension(
+                    yoga::Dimension::Height,
+                    yoga::StyleSizeLength::percent(100));
+                props.calcOffsets[1] = -64.0f;
+                return sharedProps;
+              })
+          });
+    // clang-format on
+
+    builder_.build(element);
+    rootShadowNode_->layoutIfNeeded();
+  }
+};
+
+TEST_F(CalcOffsetTest, calcWidthAndHeight) {
+  initialize();
+
+  auto layoutMetrics = childNode_->getLayoutMetrics();
+
+  // width: calc(50% - 20px) = 200 * 0.5 - 20 = 80
+  EXPECT_EQ(layoutMetrics.frame.size.width, 80);
+  // height: calc(100% - 64px) = 200 * 1.0 - 64 = 136
+  EXPECT_EQ(layoutMetrics.frame.size.height, 136);
 }
 
 } // namespace facebook::react

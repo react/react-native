@@ -7,6 +7,8 @@
 
 #include "YogaStylableProps.h"
 
+#include <string>
+
 #include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/renderer/components/view/conversions.h>
 #include <react/renderer/components/view/propsConversions.h>
@@ -32,6 +34,42 @@ YogaStylableProps::YogaStylableProps(
   if (!ReactNativeFeatureFlags::enableCppPropsIteratorSetter()) {
     convertRawPropAliases(context, sourceProps, rawProps);
   }
+
+  // Read calc() offsets for dimension props. The JS side sends
+  // the percentage part as a normal dimension value (e.g. width: "50%")
+  // and the point offset as a separate float prop.
+  calcOffsets[0] = convertRawProp(
+      context, rawProps, "__calcWidthOffset", sourceProps.calcOffsets[0], 0.0f);
+  calcOffsets[1] = convertRawProp(
+      context,
+      rawProps,
+      "__calcHeightOffset",
+      sourceProps.calcOffsets[1],
+      0.0f);
+  calcOffsets[2] = convertRawProp(
+      context,
+      rawProps,
+      "__calcMinWidthOffset",
+      sourceProps.calcOffsets[2],
+      0.0f);
+  calcOffsets[3] = convertRawProp(
+      context,
+      rawProps,
+      "__calcMinHeightOffset",
+      sourceProps.calcOffsets[3],
+      0.0f);
+  calcOffsets[4] = convertRawProp(
+      context,
+      rawProps,
+      "__calcMaxWidthOffset",
+      sourceProps.calcOffsets[4],
+      0.0f);
+  calcOffsets[5] = convertRawProp(
+      context,
+      rawProps,
+      "__calcMaxHeightOffset",
+      sourceProps.calcOffsets[5],
+      0.0f);
 };
 
 template <typename T>

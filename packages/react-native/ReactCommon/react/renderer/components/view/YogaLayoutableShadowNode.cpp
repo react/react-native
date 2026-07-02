@@ -734,6 +734,59 @@ static EdgeInsets calculateOverflowInset(
   return overflowInset;
 }
 
+static void applyCalcOffsets(
+    LayoutMetrics& metrics,
+    const YogaStylableProps& props) {
+  // Width
+  float widthOffset = props.calcOffsets[static_cast<size_t>(CalcPropId::Width)];
+  if (widthOffset != 0.0f) {
+    metrics.frame.size.width += widthOffset;
+  }
+  // Height
+  float heightOffset =
+      props.calcOffsets[static_cast<size_t>(CalcPropId::Height)];
+  if (heightOffset != 0.0f) {
+    metrics.frame.size.height += heightOffset;
+  }
+  // MinWidth: clamp width from below
+  float minWidthOffset =
+      props.calcOffsets[static_cast<size_t>(CalcPropId::MinWidth)];
+  if (minWidthOffset != 0.0f) {
+    // Yoga already applied minWidth percent; adjust the resolved minimum
+    float adjustedMin = metrics.frame.size.width + minWidthOffset;
+    if (metrics.frame.size.width < adjustedMin) {
+      metrics.frame.size.width = adjustedMin;
+    }
+  }
+  // MinHeight
+  float minHeightOffset =
+      props.calcOffsets[static_cast<size_t>(CalcPropId::MinHeight)];
+  if (minHeightOffset != 0.0f) {
+    float adjustedMin = metrics.frame.size.height + minHeightOffset;
+    if (metrics.frame.size.height < adjustedMin) {
+      metrics.frame.size.height = adjustedMin;
+    }
+  }
+  // MaxWidth: clamp width from above
+  float maxWidthOffset =
+      props.calcOffsets[static_cast<size_t>(CalcPropId::MaxWidth)];
+  if (maxWidthOffset != 0.0f) {
+    float adjustedMax = metrics.frame.size.width + maxWidthOffset;
+    if (metrics.frame.size.width > adjustedMax) {
+      metrics.frame.size.width = adjustedMax;
+    }
+  }
+  // MaxHeight
+  float maxHeightOffset =
+      props.calcOffsets[static_cast<size_t>(CalcPropId::MaxHeight)];
+  if (maxHeightOffset != 0.0f) {
+    float adjustedMax = metrics.frame.size.height + maxHeightOffset;
+    if (metrics.frame.size.height > adjustedMax) {
+      metrics.frame.size.height = adjustedMax;
+    }
+  }
+}
+
 void YogaLayoutableShadowNode::layout(LayoutContext layoutContext) {
   // Reading data from a dirtied node does not make sense.
   react_native_assert(!YGNodeIsDirty(&yogaNode_));
@@ -763,6 +816,20 @@ void YogaLayoutableShadowNode::layout(LayoutContext layoutContext) {
       newLayoutMetrics.wasLeftAndRightSwapped =
           layoutContext.swapLeftAndRightInRTL &&
           newLayoutMetrics.layoutDirection == LayoutDirection::RightToLeft;
+
+      // Apply CSS calc() post-layout offsets. When a calc expression contains
+      // a percentage (e.g. calc(50% - 20px)), Yoga resolves the percentage
+      // part during layout. The point offset is applied here afterward.
+      {
+        const auto& childPropsShared = childNode.getProps();
+        if (childPropsShared != nullptr) {
+          const auto& childProps =
+              static_cast<const YogaStylableProps&>(*childPropsShared);
+          if (childProps.hasCalcOffsets()) {
+            applyCalcOffsets(newLayoutMetrics, childProps);
+          }
+        }
+      }
 
       // Child node's layout has changed. When a node is added to
       // `affectedNodes`, onLayout event is called on the component. Comparing
