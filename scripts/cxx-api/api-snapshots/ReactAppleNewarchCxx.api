@@ -5408,7 +5408,9 @@ class facebook::react::MapBuffer {
   public size_t size() const;
   public static constexpr uint16_t HEADER_ALIGNMENT;
   public std::string getString(facebook::react::MapBuffer::Key key) const;
+  public std::vector<double> getDoubleBuffer(facebook::react::MapBuffer::Key key) const;
   public std::vector<facebook::react::MapBuffer> getMapBufferList(facebook::react::MapBuffer::Key key) const;
+  public std::vector<int32_t> getIntBuffer(facebook::react::MapBuffer::Key key) const;
   public uint16_t count() const;
   public using Key = uint16_t;
 }
@@ -5416,7 +5418,9 @@ class facebook::react::MapBuffer {
 enum facebook::react::MapBuffer::DataType : uint16_t {
   Boolean,
   Double,
+  DoubleBuffer,
   Int,
+  IntBuffer,
   Long,
   Map,
   String,
@@ -5441,7 +5445,9 @@ class facebook::react::MapBufferBuilder {
   public static facebook::react::MapBuffer EMPTY();
   public void putBool(facebook::react::MapBuffer::Key key, bool value);
   public void putDouble(facebook::react::MapBuffer::Key key, double value);
+  public void putDoubleBuffer(facebook::react::MapBuffer::Key key, const std::vector<double>& value);
   public void putInt(facebook::react::MapBuffer::Key key, int32_t value);
+  public void putIntBuffer(facebook::react::MapBuffer::Key key, const std::vector<int32_t>& value);
   public void putLong(facebook::react::MapBuffer::Key key, int64_t value);
   public void putMapBuffer(facebook::react::MapBuffer::Key key, const facebook::react::MapBuffer& map);
   public void putMapBufferList(facebook::react::MapBuffer::Key key, const std::vector<facebook::react::MapBuffer>& mapBufferList);

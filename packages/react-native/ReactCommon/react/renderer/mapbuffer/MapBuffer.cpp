@@ -163,6 +163,46 @@ std::vector<MapBuffer> MapBuffer::getMapBufferList(MapBuffer::Key key) const {
   return mapBufferList;
 }
 
+std::vector<int32_t> MapBuffer::getIntBuffer(MapBuffer::Key key) const {
+  auto bucketIndex = getKeyBucket(key);
+  react_native_assert(bucketIndex != -1 && "Key not found in MapBuffer");
+  if (bucketIndex == -1) {
+    return {};
+  }
+
+  int32_t offset = getDynamicDataOffset() + getIntAtBucket(bucketIndex);
+  int32_t count = *reinterpret_cast<const int32_t*>(bytes_.data() + offset);
+
+  std::vector<int32_t> result(count);
+  if (count > 0) {
+    memcpy(
+        result.data(),
+        bytes_.data() + offset + sizeof(int32_t),
+        static_cast<size_t>(count) * sizeof(int32_t));
+  }
+  return result;
+}
+
+std::vector<double> MapBuffer::getDoubleBuffer(MapBuffer::Key key) const {
+  auto bucketIndex = getKeyBucket(key);
+  react_native_assert(bucketIndex != -1 && "Key not found in MapBuffer");
+  if (bucketIndex == -1) {
+    return {};
+  }
+
+  int32_t offset = getDynamicDataOffset() + getIntAtBucket(bucketIndex);
+  int32_t count = *reinterpret_cast<const int32_t*>(bytes_.data() + offset);
+
+  std::vector<double> result(count);
+  if (count > 0) {
+    memcpy(
+        result.data(),
+        bytes_.data() + offset + sizeof(int32_t),
+        static_cast<size_t>(count) * sizeof(double));
+  }
+  return result;
+}
+
 size_t MapBuffer::size() const {
   return bytes_.size();
 }

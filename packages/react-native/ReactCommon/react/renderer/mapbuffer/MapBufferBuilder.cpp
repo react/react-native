@@ -161,6 +161,52 @@ void MapBufferBuilder::putMapBufferList(
       INT_SIZE);
 }
 
+void MapBufferBuilder::putIntBuffer(
+    MapBuffer::Key key,
+    const std::vector<int32_t>& value) {
+  // Wire format: [element count (int32)] + [count * int32]. The count is the
+  // number of elements, not bytes; see MapBuffer::getIntBuffer.
+  auto count = static_cast<int32_t>(value.size());
+  auto payloadSize = static_cast<int32_t>(value.size() * sizeof(int32_t));
+
+  auto offset = static_cast<int32_t>(dynamicData_.size());
+  dynamicData_.resize(offset + INT_SIZE + payloadSize, 0);
+  memcpy(dynamicData_.data() + offset, &count, INT_SIZE);
+  if (payloadSize > 0) {
+    memcpy(dynamicData_.data() + offset + INT_SIZE, value.data(), payloadSize);
+  }
+
+  storeKeyValue(
+      key,
+      MapBuffer::DataType::IntBuffer,
+      reinterpret_cast<const uint8_t*>(&offset),
+      INT_SIZE);
+}
+
+void MapBufferBuilder::putDoubleBuffer(
+    MapBuffer::Key key,
+    const std::vector<double>& value) {
+  // Wire format: [element count (int32)] + [count * double]. Doubles are copied
+  // byte-for-byte; the reader uses memcpy, so the payload needs no special
+  // alignment for correctness. A consumer that wants a zero-copy typed view on
+  // the JVM (ByteBuffer::asDoubleBuffer) must ensure 8-byte alignment itself.
+  auto count = static_cast<int32_t>(value.size());
+  auto payloadSize = static_cast<int32_t>(value.size() * sizeof(double));
+
+  auto offset = static_cast<int32_t>(dynamicData_.size());
+  dynamicData_.resize(offset + INT_SIZE + payloadSize, 0);
+  memcpy(dynamicData_.data() + offset, &count, INT_SIZE);
+  if (payloadSize > 0) {
+    memcpy(dynamicData_.data() + offset + INT_SIZE, value.data(), payloadSize);
+  }
+
+  storeKeyValue(
+      key,
+      MapBuffer::DataType::DoubleBuffer,
+      reinterpret_cast<const uint8_t*>(&offset),
+      INT_SIZE);
+}
+
 static inline bool compareBuckets(
     const MapBuffer::Bucket& a,
     const MapBuffer::Bucket& b) {
