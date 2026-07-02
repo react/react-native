@@ -209,7 +209,7 @@ private constructor(
       readMapBufferValue(getTypedValueOffsetForKey(key, MapBuffer.DataType.MAP))
 
   override fun getMapBufferList(key: Int): List<ReadableMapBuffer> =
-      readMapBufferListValue(getTypedValueOffsetForKey(key, MapBuffer.DataType.MAP))
+      readMapBufferListValue(getTypedValueOffsetForKey(key, MapBuffer.DataType.MAP_BUFFER_LIST))
 
   override fun getIntBuffer(key: Int): IntArray =
       readIntBufferValue(getTypedValueOffsetForKey(key, MapBuffer.DataType.INT_BUFFER))
@@ -255,6 +255,7 @@ private constructor(
           MapBuffer.DataType.MAP -> append(entry.mapBufferValue.toString())
           MapBuffer.DataType.INT_BUFFER -> append(entry.intBufferValue.contentToString())
           MapBuffer.DataType.DOUBLE_BUFFER -> append(entry.doubleBufferValue.contentToString())
+          MapBuffer.DataType.MAP_BUFFER_LIST -> append(entry.mapBufferListValue.toString())
         }
       }
     }
@@ -348,6 +349,12 @@ private constructor(
       get() {
         assertType(MapBuffer.DataType.DOUBLE_BUFFER)
         return readDoubleBufferValue(bucketOffset + VALUE_OFFSET)
+      }
+
+    override val mapBufferListValue: List<MapBuffer>
+      get() {
+        assertType(MapBuffer.DataType.MAP_BUFFER_LIST)
+        return readMapBufferListValue(bucketOffset + VALUE_OFFSET)
       }
   }
 

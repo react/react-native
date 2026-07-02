@@ -5499,6 +5499,7 @@ enum facebook::react::MapBuffer::DataType : uint16_t {
   IntBuffer,
   Long,
   Map,
+  MapBufferList,
   String,
 }
 
