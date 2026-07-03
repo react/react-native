@@ -30,6 +30,7 @@ void RCTCopyBackedTextInput(
   toTextInput.textInputDelegate = fromTextInput.textInputDelegate;
   toTextInput.placeholderColor = fromTextInput.placeholderColor;
   toTextInput.defaultTextAttributes = fromTextInput.defaultTextAttributes;
+  toTextInput.adjustsFontForContentSizeCategory = fromTextInput.adjustsFontForContentSizeCategory;
   toTextInput.autocapitalizationType = fromTextInput.autocapitalizationType;
   toTextInput.autocorrectionType = fromTextInput.autocorrectionType;
   toTextInput.contextMenuHidden = fromTextInput.contextMenuHidden;
