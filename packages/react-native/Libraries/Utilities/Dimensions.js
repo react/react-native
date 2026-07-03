@@ -8,10 +8,13 @@
  * @format
  */
 
+import type {EventSubscription} from '../vendor/emitter/EventEmitter';
+
+import Event from '../../src/private/webapis/dom/events/Event';
+import EventTarget, {
+  type AddEventListenerOptions,
+} from '../../src/private/webapis/dom/events/EventTarget';
 import RCTDeviceEventEmitter from '../EventEmitter/RCTDeviceEventEmitter';
-import EventEmitter, {
-  type EventSubscription,
-} from '../vendor/emitter/EventEmitter';
 import NativeDeviceInfo, {
   type DimensionsPayload,
   type DisplayMetrics,
@@ -24,9 +27,7 @@ export type {DimensionsPayload, DisplayMetrics, DisplayMetricsAndroid};
 /** @deprecated Use DisplayMetrics */
 export type ScaledSize = DisplayMetrics;
 
-const eventEmitter = new EventEmitter<{
-  change: [DimensionsPayload],
-}>();
+const eventTarget = new EventTarget();
 let dimensionsInitialized = false;
 let dimensions: DimensionsPayload;
 
@@ -94,7 +95,7 @@ class Dimensions {
     dimensions = {window, screen};
     if (dimensionsInitialized) {
       // Don't fire 'change' the first time the dimensions are set.
-      eventEmitter.emit('change', dimensions);
+      eventTarget.dispatchEvent(new Event('change'));
     } else {
       dimensionsInitialized = true;
     }
@@ -112,13 +113,16 @@ class Dimensions {
   static addEventListener(
     type: 'change',
     handler: Function,
+    options?: Pick<AddEventListenerOptions, 'once' | 'signal'>,
   ): EventSubscription {
     invariant(
       type === 'change',
       'Trying to subscribe to unknown event: "%s"',
       type,
     );
-    return eventEmitter.addListener(type, handler);
+    const onChange = () => handler(dimensions);
+    eventTarget.addEventListener(type, onChange, options);
+    return {remove: () => eventTarget.removeEventListener(type, onChange)};
   }
 }
 
