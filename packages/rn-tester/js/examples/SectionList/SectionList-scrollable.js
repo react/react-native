@@ -179,7 +179,6 @@ export component SectionList_scrollable() {
     {useNativeDriver: true},
   );
   const [filterText, setFilterText] = useState('');
-  const [virtualized, setVirtualized] = useState(true);
   const [logViewable, setLogViewable] = useState(false);
   const [debug, setDebug] = useState(false);
   const [inverted, setInverted] = useState(false);
@@ -253,7 +252,6 @@ export component SectionList_scrollable() {
           value={filterText}
         />
         <View style={styles.optionSection}>
-          {renderSmallSwitchOption('Virtualized', virtualized, setVirtualized)}
           {renderSmallSwitchOption('Log Viewable', logViewable, setLogViewable)}
           {renderSmallSwitchOption('Debug', debug, setDebug)}
           {renderSmallSwitchOption('Inverted', inverted, setInverted)}
@@ -299,7 +297,6 @@ export component SectionList_scrollable() {
         accessibilityRole="list"
         debug={debug}
         inverted={inverted}
-        disableVirtualization={!virtualized}
         onRefresh={() => Alert.alert('onRefresh: nothing to refresh :P')}
         onScroll={scrollSinkY}
         onViewableItemsChanged={onViewableItemsChanged}

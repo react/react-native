@@ -609,12 +609,8 @@ class VirtualizedList extends StateSafePureComponent<
     pendingScrollUpdateCount: number,
   ): {first: number, last: number} {
     const {data, getItemCount} = props;
-    const onEndReachedThreshold = onEndReachedThresholdOrDefault(
-      props.onEndReachedThreshold,
-    );
-    const {offset, visibleLength} = this._scrollMetrics;
+    const {visibleLength} = this._scrollMetrics;
     const contentLength = this._listMetrics.getContentLength();
-    const distanceFromEnd = contentLength - visibleLength - offset;
 
     // Wait until the scroll view metrics have been set up. And until then,
     // we will trust the initialNumToRender suggestion
@@ -624,42 +620,26 @@ class VirtualizedList extends StateSafePureComponent<
         : cellsAroundViewport;
     }
 
-    let newCellsAroundViewport: {first: number, last: number};
-    if (props.disableVirtualization) {
-      const renderAhead =
-        distanceFromEnd < onEndReachedThreshold * visibleLength
-          ? maxToRenderPerBatchOrDefault(props.maxToRenderPerBatch)
-          : 0;
-
-      newCellsAroundViewport = {
-        first: 0,
-        last: Math.min(
-          cellsAroundViewport.last + renderAhead,
-          getItemCount(data) - 1,
-        ),
-      };
-    } else {
-      // If we have a pending scroll update, we should not adjust the render window as it
-      // might override the correct window.
-      if (pendingScrollUpdateCount > 0) {
-        return cellsAroundViewport.last >= getItemCount(data)
-          ? VirtualizedList._constrainToItemCount(cellsAroundViewport, props)
-          : cellsAroundViewport;
-      }
-
-      newCellsAroundViewport = computeWindowedRenderLimits(
-        props,
-        maxToRenderPerBatchOrDefault(props.maxToRenderPerBatch),
-        windowSizeOrDefault(props.windowSize),
-        cellsAroundViewport,
-        this._listMetrics,
-        this._scrollMetrics,
-      );
-      invariant(
-        newCellsAroundViewport.last < getItemCount(data),
-        'computeWindowedRenderLimits() should return range in-bounds',
-      );
+    // If we have a pending scroll update, we should not adjust the render window as it
+    // might override the correct window.
+    if (pendingScrollUpdateCount > 0) {
+      return cellsAroundViewport.last >= getItemCount(data)
+        ? VirtualizedList._constrainToItemCount(cellsAroundViewport, props)
+        : cellsAroundViewport;
     }
+
+    const newCellsAroundViewport = computeWindowedRenderLimits(
+      props,
+      maxToRenderPerBatchOrDefault(props.maxToRenderPerBatch),
+      windowSizeOrDefault(props.windowSize),
+      cellsAroundViewport,
+      this._listMetrics,
+      this._scrollMetrics,
+    );
+    invariant(
+      newCellsAroundViewport.last < getItemCount(data),
+      'computeWindowedRenderLimits() should return range in-bounds',
+    );
 
     if (this._nestedChildLists.size() > 0) {
       // If some cell in the new state has a child list in it, we should only render
@@ -1015,12 +995,6 @@ class VirtualizedList extends StateSafePureComponent<
 
       for (const section of renderRegions) {
         if (section.isSpacer) {
-          // Legacy behavior is to avoid spacers when virtualization is
-          // disabled (including head spacers on initial render).
-          if (this.props.disableVirtualization) {
-            continue;
-          }
-
           // Without getItemLayout, we limit our tail spacer to the _highestMeasuredFrameIndex to
           // prevent the user for hyperscrolling into un-measured area because otherwise content will
           // likely jump around as it renders in above the viewport.

@@ -211,13 +211,6 @@ export interface VirtualizedListWithoutRenderItemProps<ItemT>
   debug?: boolean | undefined;
 
   /**
-   * DEPRECATED: Virtualization provides significant performance and memory optimizations, but fully
-   * unmounts react instances that are outside of the render window. You should only need to disable
-   * this for debugging purposes.
-   */
-  disableVirtualization?: boolean | undefined;
-
-  /**
    * A marker property for telling the list to re-render (since it implements `PureComponent`). If
    * any of your `renderItem`, Header, Footer, etc. functions depend on anything outside of the
    * `data` prop, stick it here and treat it immutably.

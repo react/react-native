@@ -1716,51 +1716,6 @@ it('renders new items when data is updated with non-zero initialScrollIndex', as
   expect(component).toMatchSnapshot();
 });
 
-it('renders initialNumToRender cells when virtualization disabled', async () => {
-  const items = generateItems(10);
-  const ITEM_HEIGHT = 10;
-
-  let component;
-  await act(() => {
-    component = create(
-      <VirtualizedList
-        initialNumToRender={5}
-        initialScrollIndex={1}
-        disableVirtualization
-        {...baseItemProps(items)}
-        {...fixedHeightItemLayoutProps(ITEM_HEIGHT)}
-      />,
-    );
-  });
-  // We should render initialNumToRender items with no spacers on initial render
-  // when virtualization is disabled
-  expect(component).toMatchSnapshot();
-});
-
-it('renders no spacers up to initialScrollIndex on first render when virtualization disabled', async () => {
-  const items = generateItems(10);
-  const ITEM_HEIGHT = 10;
-
-  let component;
-  await act(() => {
-    component = create(
-      <VirtualizedList
-        initialNumToRender={2}
-        initialScrollIndex={4}
-        maxToRenderPerBatch={1}
-        disableVirtualization
-        {...baseItemProps(items)}
-        {...fixedHeightItemLayoutProps(ITEM_HEIGHT)}
-      />,
-    );
-  });
-
-  // There should be no spacers present in an offset initial render with
-  // virtualization disabled. Only initialNumToRender items starting at
-  // initialScrollIndex.
-  expect(component).toMatchSnapshot();
-});
-
 it('expands first in viewport to render up to maxToRenderPerBatch on initial render', async () => {
   const items = generateItems(10);
   const ITEM_HEIGHT = 10;
@@ -1781,72 +1736,6 @@ it('expands first in viewport to render up to maxToRenderPerBatch on initial ren
   // When virtualization is disabled we may render items before initialItemIndex
   // if initialItemIndex + initialNumToRender < maxToRenderPerBatch. Expect cells
   // 0-3 to be rendered in this example, even though initialScrollIndex is 4.
-  expect(component).toMatchSnapshot();
-});
-
-it('renders items before initialScrollIndex on first batch tick when virtualization disabled', async () => {
-  const items = generateItems(10);
-  const ITEM_HEIGHT = 10;
-
-  let component;
-  await act(() => {
-    component = create(
-      <VirtualizedList
-        initialNumToRender={1}
-        initialScrollIndex={5}
-        maxToRenderPerBatch={1}
-        disableVirtualization
-        {...baseItemProps(items)}
-        {...fixedHeightItemLayoutProps(ITEM_HEIGHT)}
-      />,
-    );
-  });
-
-  await act(() => {
-    simulateLayout(component, {
-      viewport: {width: 10, height: 50},
-      content: {width: 10, height: 100},
-    });
-    performNextBatch();
-  });
-
-  // When virtualization is disabled, we render "maxToRenderPerBatch" items
-  // sequentially per batch tick. Any items not yet rendered before
-  // initialScrollIndex are currently rendered at this time. Expect the first
-  // tick to render all items before initialScrollIndex, along with
-  // maxToRenderPerBatch after.
-  expect(component).toMatchSnapshot();
-});
-
-it('eventually renders all items when virtualization disabled', async () => {
-  const items = generateItems(10);
-  const ITEM_HEIGHT = 10;
-
-  let component;
-  await act(() => {
-    component = create(
-      <VirtualizedList
-        initialNumToRender={5}
-        initialScrollIndex={1}
-        windowSize={1}
-        maxToRenderPerBatch={10}
-        disableVirtualization
-        {...baseItemProps(items)}
-        {...fixedHeightItemLayoutProps(ITEM_HEIGHT)}
-      />,
-    );
-  });
-
-  await act(() => {
-    simulateLayout(component, {
-      viewport: {width: 10, height: 50},
-      content: {width: 10, height: 100},
-    });
-    performAllBatches();
-  });
-
-  // After all batch ticks, all items should eventually be rendered when\
-  // virtualization is disabled.
   expect(component).toMatchSnapshot();
 });
 

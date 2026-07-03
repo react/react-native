@@ -37,7 +37,6 @@ component MultiColumnExample() {
   const [fixedHeight, setFixedHeight] = useState(true);
   const [logViewable, setLogViewable] = useState(false);
   const [numColumns, setNumColumns] = useState(2);
-  const [virtualized, setVirtualized] = useState(true);
 
   const _onChangeFilterText = (_filterText: string) => {
     setFilterText(_filterText);
@@ -48,9 +47,6 @@ component MultiColumnExample() {
 
   const _setBooleanValue = (key: string) => (value: boolean) => {
     switch (key) {
-      case 'virtualized':
-        setVirtualized(value);
-        break;
       case 'fixedHeight':
         setFixedHeight(value);
         break;
@@ -139,11 +135,6 @@ component MultiColumnExample() {
         </View>
         <View style={styles.row}>
           {renderSmallSwitchOption(
-            'Virtualized',
-            virtualized,
-            _setBooleanValue('virtualized'),
-          )}
-          {renderSmallSwitchOption(
             'Fixed Height',
             fixedHeight,
             _setBooleanValue('fixedHeight'),
@@ -168,7 +159,6 @@ component MultiColumnExample() {
         }
         refreshing={false}
         renderItem={_renderItemComponent}
-        disableVirtualization={virtualized}
         onViewableItemsChanged={_onViewableItemsChanged}
       />
     </RNTesterPage>
