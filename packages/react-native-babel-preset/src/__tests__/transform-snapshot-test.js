@@ -290,6 +290,20 @@ describe('react-native-babel-preset transform snapshots', () => {
       expect(result).toContain('_wrapAsyncGenerator');
     });
 
+    it('imports interopRequireWildcard from @babel/runtime instead of inlining it', () => {
+      // Regression test: previously the `interopRequireWildcard` helper injected
+      // for `import * as ...` was inlined into every module, bloating the bundle.
+      const code = `
+        import * as React from 'react';
+        console.log(React);
+      `;
+      const result = transformCode(code, {dev: false});
+      // The helper is imported from @babel/runtime (deduplicated)...
+      expect(result).toContain('@babel/runtime/helpers/interopRequireWildcard');
+      // ...rather than inlined as a per-module function definition.
+      expect(result).not.toContain('function _interopRequireWildcard');
+    });
+
     it('handles optional chaining', () => {
       const code = `const x = obj?.a?.b?.c;`;
       const result = transformCode(code, {

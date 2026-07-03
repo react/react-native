@@ -17,7 +17,8 @@
  *   - Options: {"dev":true,"unstable_transformProfile":"hermes-stable","customTransformOptions":{"unstable_preserveClassPrivate":true}}
  */
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault").default;
+var _interopRequireWildcard = require("@babel/runtime/helpers/interopRequireWildcard").default;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -39,8 +40,8 @@ exports.parseDate = parseDate;
 exports.processUser = processUser;
 exports.safeJsonParse = safeJsonParse;
 exports.sumPairs = sumPairs;
-var _inherits2 = _interopRequireDefault(require("@babel/runtime/helpers/inherits"));
-var _setPrototypeOf2 = _interopRequireDefault(require("@babel/runtime/helpers/setPrototypeOf"));
+var _wrapRegExp2 = _interopRequireDefault(require("@babel/runtime/helpers/wrapRegExp"));
+var _createForOfIteratorHelperLoose2 = _interopRequireDefault(require("@babel/runtime/helpers/createForOfIteratorHelperLoose"));
 var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime/helpers/slicedToArray"));
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _awaitAsyncGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/awaitAsyncGenerator"));
@@ -50,11 +51,6 @@ var React = _react;
 var _jsxRuntime = require("react/jsx-runtime");
 var _dataUtils = require("./data-utils");
 var _jsxFileName = "/absolute/path/to/input.js";
-function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function (e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t in e) "default" !== _t && {}.hasOwnProperty.call(e, _t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t)) && (i.get || i.set) ? o(f, _t, i) : f[_t] = e[_t]); return f; })(e, t); }
-function _wrapRegExp() { _wrapRegExp = function (e, r) { return new BabelRegExp(e, void 0, r); }; var e = RegExp.prototype, r = new WeakMap(); function BabelRegExp(e, t, p) { var o = RegExp(e, t); return r.set(o, p || r.get(e)), (0, _setPrototypeOf2.default)(o, BabelRegExp.prototype); } function buildGroups(e, t) { var p = r.get(t); return Object.keys(p).reduce(function (r, t) { var o = p[t]; if ("number" == typeof o) r[t] = e[o];else { for (var i = 0; void 0 === e[o[i]] && i + 1 < o.length;) i++; r[t] = e[o[i]]; } return r; }, Object.create(null)); } return (0, _inherits2.default)(BabelRegExp, RegExp), BabelRegExp.prototype.exec = function (r) { var t = e.exec.call(this, r); if (t) { t.groups = buildGroups(t, this); var p = t.indices; p && (p.groups = buildGroups(p, this)); } return t; }, BabelRegExp.prototype[Symbol.replace] = function (t, p) { if ("string" == typeof p) { var o = r.get(this); return e[Symbol.replace].call(this, t, p.replace(/\$<([^>]+)(>|$)/g, function (e, r, t) { if ("" === t) return e; var p = o[r]; return Array.isArray(p) ? "$" + p.join("$") : "number" == typeof p ? "$" + p : ""; })); } if ("function" == typeof p) { var i = this; return e[Symbol.replace].call(this, t, function () { var e = arguments; return "object" != typeof e[e.length - 1] && (e = [].slice.call(e)).push(buildGroups(e, i)), p.apply(this, e); }); } return e[Symbol.replace].call(this, t, p); }, _wrapRegExp.apply(this, arguments); }
-function _createForOfIteratorHelperLoose(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (t) return (t = t.call(r)).next.bind(t); if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var o = 0; return function () { return o >= r.length ? { done: !0 } : { done: !1, value: r[o++] }; }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
-function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 class Counter {
   #count = 0;
   static #instances = 0;
@@ -154,7 +150,7 @@ function mergeConfigs(base, ...overrides) {
 }
 function sumPairs(pairs) {
   var total = 0;
-  for (var _iterator = _createForOfIteratorHelperLoose(pairs), _step; !(_step = _iterator()).done;) {
+  for (var _iterator = (0, _createForOfIteratorHelperLoose2.default)(pairs), _step; !(_step = _iterator()).done;) {
     var _ref = _step.value;
     var _ref2 = (0, _slicedToArray2.default)(_ref, 2);
     var a = _ref2[0];
@@ -164,7 +160,7 @@ function sumPairs(pairs) {
   return total;
 }
 function parseDate(dateString) {
-  var regex = _wrapRegExp(/(\d{4})-(\d{2})-(\d{2})/, {
+  var regex = (0, _wrapRegExp2.default)(/(\d{4})-(\d{2})-(\d{2})/, {
     year: 1,
     month: 2,
     day: 3

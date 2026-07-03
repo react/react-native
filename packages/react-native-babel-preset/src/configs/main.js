@@ -204,15 +204,35 @@ const getPreset = (src, options, babel) => {
   }
 
   if (!options || options.enableBabelRuntime !== false) {
-    // Allows configuring a specific runtime version to optimize output
-    const isVersion = typeof options?.enableBabelRuntime === 'string';
+    // Pass a runtime version to `@babel/plugin-transform-runtime` so that
+    // helpers added to `@babel/runtime` after 7.0.0 (such as the modern
+    // `interopRequireWildcard`) are imported from `@babel/runtime` instead of
+    // being inlined into every module that uses them, which needlessly bloats
+    // the bundle. Without a version the plugin assumes 7.0.0 and inlines them.
+    //
+    // Prefer an explicitly-provided version, otherwise resolve the installed
+    // `@babel/runtime` version (the same approach as babel-preset-expo).
+    let runtimeVersion;
+    if (typeof options?.enableBabelRuntime === 'string') {
+      runtimeVersion = options.enableBabelRuntime;
+    } else {
+      try {
+        runtimeVersion = require('@babel/runtime/package.json').version;
+      } catch (error) {
+        if (error.code !== 'MODULE_NOT_FOUND') {
+          throw error;
+        }
+      }
+    }
 
     extraPlugins.push([
       require('@babel/plugin-transform-runtime'),
       {
         helpers: true,
         regenerator: enableRegenerator,
-        ...(isVersion && {version: options.enableBabelRuntime}),
+        // Fall back to a conservative version when `@babel/runtime` can't be
+        // resolved (it is a runtime dependency of the app, not this preset).
+        version: runtimeVersion ?? '7.25.0',
       },
     ]);
   } else if (enableRegenerator) {

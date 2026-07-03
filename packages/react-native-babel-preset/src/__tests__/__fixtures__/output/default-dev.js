@@ -17,7 +17,8 @@
  *   - Options: {"dev":true}
  */
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault").default;
+var _interopRequireWildcard = require("@babel/runtime/helpers/interopRequireWildcard").default;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -39,10 +40,9 @@ exports.parseDate = parseDate;
 exports.processUser = processUser;
 exports.safeJsonParse = safeJsonParse;
 exports.sumPairs = sumPairs;
-var _setPrototypeOf2 = _interopRequireDefault(require("@babel/runtime/helpers/setPrototypeOf"));
+var _wrapRegExp2 = _interopRequireDefault(require("@babel/runtime/helpers/wrapRegExp"));
 var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime/helpers/slicedToArray"));
-var _possibleConstructorReturn2 = _interopRequireDefault(require("@babel/runtime/helpers/possibleConstructorReturn"));
-var _getPrototypeOf2 = _interopRequireDefault(require("@babel/runtime/helpers/getPrototypeOf"));
+var _callSuper2 = _interopRequireDefault(require("@babel/runtime/helpers/callSuper"));
 var _inherits2 = _interopRequireDefault(require("@babel/runtime/helpers/inherits"));
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime/helpers/classCallCheck"));
@@ -56,10 +56,6 @@ var React = _react;
 var _jsxRuntime = require("react/jsx-runtime");
 var _dataUtils = require("./data-utils");
 var _jsxFileName = "/absolute/path/to/input.js";
-function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function (e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t in e) "default" !== _t && {}.hasOwnProperty.call(e, _t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t)) && (i.get || i.set) ? o(f, _t, i) : f[_t] = e[_t]); return f; })(e, t); }
-function _wrapRegExp() { _wrapRegExp = function (e, r) { return new BabelRegExp(e, void 0, r); }; var e = RegExp.prototype, r = new WeakMap(); function BabelRegExp(e, t, p) { var o = RegExp(e, t); return r.set(o, p || r.get(e)), (0, _setPrototypeOf2.default)(o, BabelRegExp.prototype); } function buildGroups(e, t) { var p = r.get(t); return Object.keys(p).reduce(function (r, t) { var o = p[t]; if ("number" == typeof o) r[t] = e[o];else { for (var i = 0; void 0 === e[o[i]] && i + 1 < o.length;) i++; r[t] = e[o[i]]; } return r; }, Object.create(null)); } return (0, _inherits2.default)(BabelRegExp, RegExp), BabelRegExp.prototype.exec = function (r) { var t = e.exec.call(this, r); if (t) { t.groups = buildGroups(t, this); var p = t.indices; p && (p.groups = buildGroups(p, this)); } return t; }, BabelRegExp.prototype[Symbol.replace] = function (t, p) { if ("string" == typeof p) { var o = r.get(this); return e[Symbol.replace].call(this, t, p.replace(/\$<([^>]+)(>|$)/g, function (e, r, t) { if ("" === t) return e; var p = o[r]; return Array.isArray(p) ? "$" + p.join("$") : "number" == typeof p ? "$" + p : ""; })); } if ("function" == typeof p) { var i = this; return e[Symbol.replace].call(this, t, function () { var e = arguments; return "object" != typeof e[e.length - 1] && (e = [].slice.call(e)).push(buildGroups(e, i)), p.apply(this, e); }); } return e[Symbol.replace].call(this, t, p); }, _wrapRegExp.apply(this, arguments); }
-function _callSuper(t, o, e) { return o = (0, _getPrototypeOf2.default)(o), (0, _possibleConstructorReturn2.default)(t, _isNativeReflectConstruct() ? Reflect.construct(o, e || [], (0, _getPrototypeOf2.default)(t).constructor) : o.apply(t, e)); }
-function _isNativeReflectConstruct() { try { var t = !Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); } catch (t) {} return (_isNativeReflectConstruct = function () { return !!t; })(); }
 var _count = (0, _classPrivateFieldLooseKey2.default)("count");
 var _instances = (0, _classPrivateFieldLooseKey2.default)("instances");
 var _increment = (0, _classPrivateFieldLooseKey2.default)("increment");
@@ -154,7 +150,7 @@ var Dog = exports.Dog = function (_Animal2) {
   function Dog(name, age, breed) {
     var _this;
     (0, _classCallCheck2.default)(this, Dog);
-    _this = _callSuper(this, Dog, [name, age]);
+    _this = (0, _callSuper2.default)(this, Dog, [name, age]);
     _this.breed = breed;
     return _this;
   }
@@ -207,7 +203,7 @@ function sumPairs(pairs) {
   return total;
 }
 function parseDate(dateString) {
-  var regex = _wrapRegExp(/(\d{4})-(\d{2})-(\d{2})/, {
+  var regex = (0, _wrapRegExp2.default)(/(\d{4})-(\d{2})-(\d{2})/, {
     year: 1,
     month: 2,
     day: 3
