@@ -380,11 +380,20 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
       // Avoid refocusing to a new view on old versions of Android by default
       // by preventing `requestFocus()` on the rootView from moving focus to any child.
       // https://cs.android.com/android/_/android/platform/frameworks/base/+/bdc66cb5a0ef513f4306edf9156cc978b08e06e4
-      val rootViewGroup = rootView as ViewGroup
-      val oldDescendantFocusability = rootViewGroup.descendantFocusability
-      rootViewGroup.descendantFocusability = ViewGroup.FOCUS_BLOCK_DESCENDANTS
-      super.clearFocus()
-      rootViewGroup.descendantFocusability = oldDescendantFocusability
+      //
+      // getRootView() returns the view itself when it is detached from the window, so the root
+      // is not necessarily a ViewGroup: an IME editor action delivered over Binder can race the
+      // removal of this view from the hierarchy. There is no focus to move in that case, so a
+      // plain clearFocus() is enough.
+      val rootViewGroup = rootView as? ViewGroup
+      if (rootViewGroup != null) {
+        val oldDescendantFocusability = rootViewGroup.descendantFocusability
+        rootViewGroup.descendantFocusability = ViewGroup.FOCUS_BLOCK_DESCENDANTS
+        super.clearFocus()
+        rootViewGroup.descendantFocusability = oldDescendantFocusability
+      } else {
+        super.clearFocus()
+      }
     }
     hideSoftKeyboard()
   }
