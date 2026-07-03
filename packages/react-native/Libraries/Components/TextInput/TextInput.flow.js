@@ -507,6 +507,13 @@ export type TextInputAndroidProps = Readonly<{
   textBreakStrategy?: ?('simple' | 'highQuality' | 'balanced'),
 
   /**
+   * Align the input text to the top, center, or bottom of the field.
+   * Defaults to `'auto'`.
+   * @platform android
+   */
+  textAlignVertical?: ?('auto' | 'top' | 'bottom' | 'center'),
+
+  /**
    * The color of the `TextInput` underline.
    * @platform android
    */
