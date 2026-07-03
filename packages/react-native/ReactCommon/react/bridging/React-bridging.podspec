@@ -5,7 +5,7 @@
 
 require "json"
 
-package = JSON.parse(File.read(File.join(__dir__, "..", "..", "package.json")))
+package = JSON.parse(File.read(File.join(__dir__, "..", "..", "..", "package.json")))
 version = package['version']
 
 source = { :git => 'https://github.com/facebook/react-native.git' }
@@ -16,10 +16,8 @@ else
   source[:tag] = "v#{version}"
 end
 
-react_native_path = ".."
-
 Pod::Spec.new do |s|
-  s.name                   = "React-jserrorhandler"
+  s.name                   = "React-bridging"
   s.version                = version
   s.summary                = "-"
   s.homepage               = "https://reactnative.dev/"
@@ -27,26 +25,20 @@ Pod::Spec.new do |s|
   s.author                 = "Meta Platforms, Inc. and its affiliates"
   s.platforms              = min_supported_versions
   s.source                 = source
-  s.header_dir             = "jserrorhandler"
-  s.source_files           = podspec_sources(["JsErrorHandler.{cpp,h}", "StackTraceParser.{cpp,h}"], ["JsErrorHandler.h", "StackTraceParser.h"])
-  s.pod_target_xcconfig = {
+  s.source_files           = podspec_sources("*.{cpp,h}", "*.h")
+  s.header_dir             = "react/bridging"
+  s.pod_target_xcconfig    = {
     "USE_HEADERMAP" => "YES",
-    "CLANG_CXX_LANGUAGE_STANDARD" => rct_cxx_language_standard()
+    "CLANG_CXX_LANGUAGE_STANDARD" => rct_cxx_language_standard(),
+    "DEFINES_MODULE" => "YES"
   }
 
-  resolve_use_frameworks(s, header_mappings_dir: '../', module_name: "React_jserrorhandler")
+  resolve_use_frameworks(s, header_mappings_dir: "../..", module_name: "React_bridging")
 
   s.dependency "React-jsi"
-  s.dependency "React-cxxreact"
-  s.dependency "React-bridging"
-  add_dependency(s, "React-featureflags")
-  add_dependency(s, "React-debug")
-
-  if use_hermes()
-    s.dependency 'hermes-engine'
-  end
+  s.dependency "React-callinvoker"
+  s.dependency "React-timing"
 
   add_rn_third_party_dependencies(s)
   add_rncore_dependency(s)
-
 end

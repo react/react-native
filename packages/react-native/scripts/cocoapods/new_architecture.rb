@@ -119,7 +119,7 @@ class NewArchitectureHelper
 
         spec.dependency "RCTRequired"
         spec.dependency "RCTTypeSafety"
-        spec.dependency "ReactCommon/turbomodule/bridging"
+        spec.dependency "React-bridging"
         spec.dependency "ReactCommon/turbomodule/core"
         spec.dependency "React-NativeModulesApple"
         spec.dependency "Yoga"

@@ -262,13 +262,13 @@ let reactRuntimeScheduler = RNTarget(
   dependencies: [.reactNativeDependencies, .reactFeatureFlags, .reactCxxReact, .reactPerfLogger, .reactPerformanceTimeline, .reactRendererConsistency, .reactUtils, .reactRuntimeExecutor]
 )
 
-/// ReactCommon.podspec
-/// This target represent the ReactCommon/turbomodule/bridging subspec
+/// React-bridging.podspec
 let reactTurboModuleBridging = RNTarget(
   name: .reactTurboModuleBridging,
   path: "ReactCommon/react/bridging",
+  searchPaths: [CallInvokerPath],
   excludedPaths: ["tests"],
-  dependencies: [.reactNativeDependencies, .reactPerfLogger, .reactCxxReact, .jsi, .logger]
+  dependencies: [.reactNativeDependencies, .jsi]
 )
 
 /// React-jserrorhandler.podspec
@@ -904,7 +904,7 @@ extension String {
   static let reactRCTLinking = "React-RCTLinking"
   static let reactCoreModules = "React-CoreModules"
   static let reactRCTAnimatedModuleProvider = "RCTAnimatedModuleProvider"
-  static let reactTurboModuleBridging = "ReactCommon/turbomodule/bridging"
+  static let reactTurboModuleBridging = "React-bridging"
   static let reactTurboModuleCore = "ReactCommon/turbomodule/core"
   static let reactTurboModuleCoreDefaults = "ReactCommon/turbomodule/core/defaults"
   static let reactTurboModuleCoreMicrotasks = "ReactCommon/turbomodule/core/microtasks"

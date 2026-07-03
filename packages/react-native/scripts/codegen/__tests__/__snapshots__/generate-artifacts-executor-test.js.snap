@@ -465,7 +465,7 @@ Pod::Spec.new do |s|
   s.dependency \\"RCTTypeSafety\\"
   s.dependency \\"React-Core\\"
   s.dependency \\"React-jsi\\"
-  s.dependency \\"ReactCommon/turbomodule/bridging\\"
+  s.dependency \\"React-bridging\\"
   s.dependency \\"ReactCommon/turbomodule/core\\"
   s.dependency \\"React-NativeModulesApple\\"
   s.dependency 'React-graphics'
@@ -948,7 +948,7 @@ Pod::Spec.new do |s|
   s.dependency \\"RCTTypeSafety\\"
   s.dependency \\"React-Core\\"
   s.dependency \\"React-jsi\\"
-  s.dependency \\"ReactCommon/turbomodule/bridging\\"
+  s.dependency \\"React-bridging\\"
   s.dependency \\"ReactCommon/turbomodule/core\\"
   s.dependency \\"React-NativeModulesApple\\"
   s.dependency 'React-graphics'

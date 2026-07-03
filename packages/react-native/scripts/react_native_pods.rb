@@ -162,6 +162,7 @@ def use_react_native! (
   pod 'React-domnativemodule', :path => "#{prefix}/ReactCommon/react/nativemodule/dom"
   pod 'React-defaultsnativemodule', :path => "#{prefix}/ReactCommon/react/nativemodule/defaults"
   pod 'React-Mapbuffer', :path => "#{prefix}/ReactCommon"
+  pod 'React-bridging', :path => "#{prefix}/ReactCommon/react/bridging", :modular_headers => true
   pod 'React-jserrorhandler', :path => "#{prefix}/ReactCommon/jserrorhandler"
   pod 'RCTDeprecation', :path => "#{prefix}/ReactApple/Libraries/RCTFoundation/RCTDeprecation"
   pod 'React-RCTFBReactNativeSpec', :path => "#{prefix}/React"
