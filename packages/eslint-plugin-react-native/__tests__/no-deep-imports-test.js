@@ -125,5 +125,31 @@ eslintTester.run('../no-deep-imports', rule, {
       ],
       output: null,
     },
+    {
+      // Deep type import with no public API mapping: still reported, no fix.
+      code: "import type {Foo} from 'react-native/Libraries/Components/Foo';",
+      errors: [
+        {
+          messageId: 'deepImport',
+          data: {importPath: 'react-native/Libraries/Components/Foo'},
+        },
+      ],
+      output: null,
+    },
+    {
+      // Deep type import from a module whose mapping has `types: null`
+      // (e.g. AccessibilityInfo): still reported, no fix.
+      code: "import type {AccessibilityChangeEventName} from 'react-native/Libraries/Components/AccessibilityInfo/AccessibilityInfo';",
+      errors: [
+        {
+          messageId: 'deepImport',
+          data: {
+            importPath:
+              'react-native/Libraries/Components/AccessibilityInfo/AccessibilityInfo',
+          },
+        },
+      ],
+      output: null,
+    },
   ],
 });
