@@ -86,6 +86,22 @@ describe('AbortController', () => {
     );
   });
 
+  describe("'onabort' prop", () => {
+    it('should call event lisnters in correct order', () => {
+      const listener = jest.fn();
+      const c = new AbortController();
+      c.signal.addEventListener('abort', () => listener(1));
+      c.signal.onabort = () => listener(2);
+      c.signal.addEventListener('abort', () => listener(3));
+
+      c.abort();
+
+      expect(listener).toHaveBeenNthCalledWith(1, 1);
+      expect(listener).toHaveBeenNthCalledWith(2, 2);
+      expect(listener).toHaveBeenNthCalledWith(3, 3);
+    });
+  });
+
   describe("'signal' property", () => {
     let signal: AbortSignal;
 
