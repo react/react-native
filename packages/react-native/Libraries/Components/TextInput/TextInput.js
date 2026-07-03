@@ -456,18 +456,10 @@ function InternalTextInput(props: TextInputProps): React.Node {
       submitBehavior = props.submitBehavior;
     }
   } else if (multiline) {
-    if (props.blurOnSubmit === true) {
-      submitBehavior = 'blurAndSubmit';
-    } else {
-      submitBehavior = 'newline';
-    }
+    submitBehavior = 'newline';
   } else {
     // Single line
-    if (props.blurOnSubmit !== false) {
-      submitBehavior = 'blurAndSubmit';
-    } else {
-      submitBehavior = 'submit';
-    }
+    submitBehavior = 'blurAndSubmit';
   }
 
   const accessible = props.accessible !== false;

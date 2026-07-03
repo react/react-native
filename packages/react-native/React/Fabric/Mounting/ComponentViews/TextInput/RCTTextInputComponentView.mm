@@ -280,7 +280,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     [self _setShowSoftInputOnFocus:newTextInputProps.traits.showSoftInputOnFocus];
   }
 
-  // Traits `blurOnSubmit`, `clearTextOnFocus`, and `selectTextOnFocus` were omitted intentionally here
+  // Traits `clearTextOnFocus` and `selectTextOnFocus` were omitted intentionally here
   // because they are being checked on-demand.
 
   // Other props:

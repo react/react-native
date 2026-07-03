@@ -757,20 +757,6 @@ export interface TextInputProps
   autoFocus?: boolean | undefined;
 
   /**
-   * If `true`, the text field will blur when submitted.
-   * The default value is true for single-line fields and false for
-   * multiline fields. Note that for multiline fields, setting `blurOnSubmit`
-   * to `true` means that pressing return will blur the field and trigger the
-   * `onSubmitEditing` event instead of inserting a newline into the field.
-   *
-   * @deprecated
-   * Note that `submitBehavior` now takes the place of `blurOnSubmit` and will
-   * override any behavior defined by `blurOnSubmit`.
-   * @see submitBehavior
-   */
-  blurOnSubmit?: boolean | undefined;
-
-  /**
    * When the return key is pressed,
    *
    * For single line inputs:
