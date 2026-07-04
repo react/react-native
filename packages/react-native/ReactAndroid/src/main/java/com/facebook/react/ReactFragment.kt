@@ -9,6 +9,7 @@ package com.facebook.react
 
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -157,10 +158,10 @@ public open class ReactFragment : Fragment(), PermissionAwareActivity {
   }
 
   override fun checkPermission(permission: String, pid: Int, uid: Int): Int =
-      activity?.checkPermission(permission, pid, uid) ?: 0
+      activity?.checkPermission(permission, pid, uid) ?: PackageManager.PERMISSION_DENIED
 
   override fun checkSelfPermission(permission: String): Int =
-      activity?.checkSelfPermission(permission) ?: 0
+      activity?.checkSelfPermission(permission) ?: PackageManager.PERMISSION_DENIED
 
   @Suppress("DEPRECATION")
   override fun requestPermissions(
