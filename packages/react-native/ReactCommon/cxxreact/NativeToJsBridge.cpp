@@ -15,7 +15,7 @@
 #include <jsi/jsi.h>
 #include <reactperflogger/BridgeNativeModulePerfLogger.h>
 
-#include "ErrorUtils.h"
+#include <jserrorhandler/ErrorUtils.h>
 #include "Instance.h"
 #include "JSBigString.h"
 #include "MessageQueueThread.h"
