@@ -112,9 +112,30 @@ class ConcreteComponentDescriptor : public ComponentDescriptor {
       ShadowNodeT::filterRawProps(rawProps);
     }
 
-    rawProps.parse(rawPropsParser_);
+    // Two construction paths:
+    //  - Iterator-setter (only available when `ConcreteProps` satisfies
+    //    `HasIteratorSetterCtor` AND the runtime flag is on): copy-construct
+    //    from sourceProps, then walk rawProps in-place via `forEachItem` and
+    //    route each entry through `setProp`. Skips both
+    //    `RawProps::parse(parser)` and the `folly::dynamic` materialization
+    //    that the legacy path needed.
+    //  - Classic (the fallback for any `ConcreteProps` that doesn't opt in,
+    //    and the only path when the flag is off): parse + per-field
+    //    `convertRawProp` via the 3-arg ctor.
+    constexpr bool kSupportsIteratorSetter = HasIteratorSetterCtor<ConcreteProps>;
+    const bool useIteratorSetter = kSupportsIteratorSetter && ReactNativeFeatureFlags::enableCppPropsIteratorSetter();
 
-    auto shadowNodeProps = ShadowNodeT::Props(context, rawProps, props);
+    std::shared_ptr<ConcreteProps> shadowNodeProps;
+    if constexpr (kSupportsIteratorSetter) {
+      if (useIteratorSetter) {
+        shadowNodeProps = ShadowNodeT::Props(props);
+      }
+    }
+    if (!useIteratorSetter) {
+      rawProps.parse(rawPropsParser_);
+      shadowNodeProps = ShadowNodeT::Props(context, rawProps, props);
+    }
+
 #ifdef RN_SERIALIZABLE_STATE
     bool fallbackToDynamicRawPropsAccumulation = true;
     if (ReactNativeFeatureFlags::enableExclusivePropsUpdateAndroid() &&
@@ -134,19 +155,12 @@ class ConcreteComponentDescriptor : public ComponentDescriptor {
       ShadowNodeT::initializeDynamicProps(shadowNodeProps, rawProps, props);
     }
 #endif
-    // Use the new-style iterator
-    // Note that we just check if `Props` has this flag set, no matter
-    // the type of ShadowNode; it acts as the single global flag.
-    if (ReactNativeFeatureFlags::enableCppPropsIteratorSetter()) {
-#ifdef RN_SERIALIZABLE_STATE
-      const auto &dynamic =
-          fallbackToDynamicRawPropsAccumulation ? shadowNodeProps->rawProps : static_cast<folly::dynamic>(rawProps);
-#else
-      const auto &dynamic = static_cast<folly::dynamic>(rawProps);
-#endif
-      for (const auto &pair : dynamic.items()) {
-        const auto &name = pair.first.getString();
-        shadowNodeProps->setProp(context, RAW_PROPS_KEY_HASH(name), name.c_str(), RawValue(pair.second));
+
+    if constexpr (kSupportsIteratorSetter) {
+      if (useIteratorSetter) {
+        rawProps.forEachItem([&](std::string_view name, const RawValue &value) {
+          shadowNodeProps->setProp(context, RAW_PROPS_KEY_HASH(name), name.data(), value);
+        });
       }
     }
     return shadowNodeProps;
