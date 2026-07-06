@@ -243,7 +243,7 @@ let reactPerformanceCdpMetrics = RNTarget(
   name: .reactPerformanceCdpMetrics,
   path: "ReactCommon/react/performance/cdpmetrics",
   excludedPaths: ["tests"],
-  dependencies: [.reactNativeDependencies, .reactCxxReact, .jsi, .reactPerformanceTimeline, .reactRuntimeExecutor]
+  dependencies: [.reactNativeDependencies, .jsi, .reactPerformanceTimeline, .reactRuntimeExecutor]
 )
 
 /// React-performancetimeline.podspec
@@ -251,7 +251,7 @@ let reactPerformanceTimeline = RNTarget(
   name: .reactPerformanceTimeline,
   path: "ReactCommon/react/performance/timeline",
   excludedPaths: ["tests"],
-  dependencies: [.reactNativeDependencies, .reactFeatureFlags, .reactJsInspectorTracing, .reactCxxReact, .reactPerfLogger]
+  dependencies: [.reactNativeDependencies, .reactFeatureFlags, .reactJsInspectorTracing, .reactPerfLogger]
 )
 
 /// React-runtimescheduler.podspec
