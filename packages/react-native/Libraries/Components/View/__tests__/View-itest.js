@@ -6,6 +6,7 @@
  *
  * @flow strict-local
  * @fantom_flags enableNativeCSSParsing:*
+ * @fantom_flags enableCppPropsIteratorSetter:*
  * @format
  */
 

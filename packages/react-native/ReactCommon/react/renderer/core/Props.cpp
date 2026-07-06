@@ -29,13 +29,7 @@ Props::Props(
                     rawProps,
                     "nativeID",
                     sourceProps.nativeId,
-                    {})) {
-#ifdef RN_SERIALIZABLE_STATE
-  if (!ReactNativeFeatureFlags::enableExclusivePropsUpdateAndroid()) {
-    initializeDynamicProps(sourceProps, rawProps, filterObjectKeys);
-  }
-#endif
-}
+                    {})) {}
 
 void Props::setProp(
     const PropsParserContext& context,

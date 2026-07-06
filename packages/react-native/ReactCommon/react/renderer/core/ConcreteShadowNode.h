@@ -71,11 +71,30 @@ class ConcreteShadowNode : public BaseShadowNodeT {
     return BaseShadowNodeT::BaseTraits();
   }
 
+  /*
+   * Classic / parse path: construct `PropsT` by parsing `rawProps` field-by-
+   * field via the 3-arg `(context, sourceProps, rawProps)` constructor.
+   * `ConcreteComponentDescriptor::cloneProps` calls this when the
+   * iterator-setter path is disabled (per-class via the
+   * `HasIteratorSetterCtor` concept, or globally via the runtime flag).
+   */
   static UnsharedConcreteProps
   Props(const PropsParserContext &context, const RawProps &rawProps, const Props::Shared &baseProps = nullptr)
   {
     return std::make_shared<PropsT>(
         context, baseProps ? static_cast<const PropsT &>(*baseProps) : *defaultSharedProps(), rawProps);
+  }
+
+  /*
+   * Iterator-setter path: copy-construct `PropsT` from `baseProps` only.
+   * `ConcreteComponentDescriptor::cloneProps` then walks `rawProps` via
+   * `RawProps::forEachItem` and overwrites individual fields through
+   * `PropsT::setProp`. Available when `PropsT` satisfies
+   * `HasIteratorSetterCtor`.
+   */
+  static UnsharedConcreteProps Props(const Props::Shared &baseProps)
+  {
+    return std::make_shared<PropsT>(baseProps ? static_cast<const PropsT &>(*baseProps) : *defaultSharedProps());
   }
 
 #ifdef RN_SERIALIZABLE_STATE
