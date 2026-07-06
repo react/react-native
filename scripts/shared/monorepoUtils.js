@@ -155,7 +155,11 @@ async function updatePackageJson(
     }
 
     for (const dependency in newPackageVersions) {
-      if (dependency in deps) {
+      if (
+        dependency in deps &&
+        // Preserve wildcard specifiers
+        deps[dependency] !== '*'
+      ) {
         deps[dependency] = newPackageVersions[dependency];
       }
     }

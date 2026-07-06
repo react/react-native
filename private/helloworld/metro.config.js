@@ -30,7 +30,6 @@ const config = {
   watchFolders: [
     repositoryPath('node_modules'),
     repositoryPath('packages/asset-utils'),
-    repositoryPath('packages/assets-registry'),
     repositoryPath('packages/normalize-color'),
     repositoryPath('packages/polyfills'),
     repositoryPath('packages/react-native'),

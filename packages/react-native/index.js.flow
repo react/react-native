@@ -279,6 +279,12 @@ export type {
 } from './Libraries/AppState/AppState';
 export {default as AppState} from './Libraries/AppState/AppState';
 
+export {AssetRegistry} from './src/private/assets/AssetRegistry';
+export type {
+  AssetDestPathResolver,
+  PackagerAsset,
+} from './src/private/assets/AssetRegistry';
+
 export type {BackPressEventName} from './Libraries/Utilities/BackHandler';
 export {default as BackHandler} from './Libraries/Utilities/BackHandler';
 

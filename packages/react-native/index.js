@@ -233,6 +233,9 @@ module.exports = {
   get AppState() {
     return require('./Libraries/AppState/AppState').default;
   },
+  get AssetRegistry() {
+    return require('./src/private/assets/AssetRegistry').AssetRegistry;
+  },
   get BackHandler() {
     return require('./Libraries/Utilities/BackHandler').default;
   },
