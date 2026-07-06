@@ -145,6 +145,7 @@
     }
   },
   "dependencies": {
+    "@react-native/asset-utils": "0.87.0-main",
     "@react-native/assets-registry": "0.87.0-main",
     "@react-native/codegen": "0.87.0-main",
     "@react-native/community-cli-plugin": "0.87.0-main",

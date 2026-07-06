@@ -29,6 +29,7 @@ const config = {
   // Make Metro able to resolve required external dependencies
   watchFolders: [
     repositoryPath('node_modules'),
+    repositoryPath('packages/asset-utils'),
     repositoryPath('packages/assets-registry'),
     repositoryPath('packages/normalize-color'),
     repositoryPath('packages/polyfills'),

@@ -10,7 +10,7 @@
 
 import filterPlatformAssetScales from '../filterPlatformAssetScales';
 
-jest.dontMock('../filterPlatformAssetScales').dontMock('../assetPathUtils');
+jest.dontMock('../filterPlatformAssetScales');
 
 describe('filterPlatformAssetScales', () => {
   test('removes everything but 2x and 3x for iOS', () => {

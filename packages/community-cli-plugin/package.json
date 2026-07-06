@@ -31,6 +31,7 @@
     "prepack": "node ../../scripts/build/prepack.js"
   },
   "dependencies": {
+    "@react-native/asset-utils": "0.87.0-main",
     "@react-native/dev-middleware": "0.87.0-main",
     "debug": "^4.4.0",
     "invariant": "^2.2.4",

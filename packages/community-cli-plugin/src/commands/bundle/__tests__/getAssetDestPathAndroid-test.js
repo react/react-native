@@ -12,7 +12,9 @@ import getAssetDestPathAndroid from '../getAssetDestPathAndroid';
 
 const path = require('path');
 
-jest.dontMock('../getAssetDestPathAndroid').dontMock('../assetPathUtils');
+jest
+  .dontMock('../getAssetDestPathAndroid')
+  .dontMock('@react-native/asset-utils');
 
 describe('getAssetDestPathAndroid', () => {
   test('should use the right destination folder', () => {
