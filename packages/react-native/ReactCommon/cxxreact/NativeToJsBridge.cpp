@@ -21,9 +21,10 @@
 #include "MessageQueueThread.h"
 #include "MethodCall.h"
 #include "ModuleRegistry.h"
-#include "MoveWrapper.h"
 #include "RAMBundleRegistry.h"
 #include "TraceSection.h"
+
+#include <react/utils/MoveWrapper.h>
 
 #include <memory>
 #include <utility>
