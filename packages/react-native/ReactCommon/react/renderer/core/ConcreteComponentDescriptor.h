@@ -48,7 +48,18 @@ class ConcreteComponentDescriptor : public ComponentDescriptor {
       RawPropsParser &&rawPropsParser = {})
       : ComponentDescriptor(parameters, std::move(rawPropsParser))
   {
-    rawPropsParser_.prepare<ConcreteProps>();
+    // The parser's `keys_` / `nameToIndex_` are only consumed by
+    // `RawProps::at()`, which is reached exclusively through the classic
+    // per-field `convertRawProp` path. When `ConcreteProps` opts into the
+    // iterator-setter path and the runtime flag is on, `parse()` is never
+    // called, so the O(n²) preparation here is wasted. Skip it.
+    if constexpr (HasIteratorSetterCtor<ConcreteProps>) {
+      if (!ReactNativeFeatureFlags::enableCppPropsIteratorSetter()) {
+        rawPropsParser_.prepare<ConcreteProps>();
+      }
+    } else {
+      rawPropsParser_.prepare<ConcreteProps>();
+    }
   }
 
   ComponentHandle getComponentHandle() const override
