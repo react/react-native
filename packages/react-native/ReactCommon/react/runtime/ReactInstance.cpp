@@ -9,7 +9,6 @@
 
 #include <ReactCommon/RuntimeExecutor.h>
 #include <cxxreact/JSBigString.h>
-#include <cxxreact/JSExecutor.h>
 #include <cxxreact/ReactMarker.h>
 #include <cxxreact/TraceSection.h>
 #include <glog/logging.h>
