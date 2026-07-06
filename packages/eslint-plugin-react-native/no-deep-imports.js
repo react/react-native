@@ -32,6 +32,7 @@ module.exports = {
         if (
           !isDeepReactNativeImport(node.source) ||
           isInitializeCoreImport(node.source) ||
+          isSecondaryEntryPoint(node.source) ||
           isFbInternalImport(node.source)
         ) {
           return;
@@ -88,6 +89,7 @@ module.exports = {
         if (
           !isDeepRequire(node) ||
           isInitializeCoreImport(node.arguments[0]) ||
+          isSecondaryEntryPoint(node.arguments[0]) ||
           isFbInternalImport(node.arguments[0])
         ) {
           return;
@@ -171,6 +173,14 @@ module.exports = {
       }
 
       return source.value === 'react-native/Libraries/Core/InitializeCore';
+    }
+
+    function isSecondaryEntryPoint(source) {
+      if (source.type !== 'Literal' || typeof source.value !== 'string') {
+        return false;
+      }
+
+      return source.value === 'react-native/asset-registry';
     }
 
     function isFbInternalImport(source) {
