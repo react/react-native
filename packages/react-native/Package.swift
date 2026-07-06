@@ -198,7 +198,7 @@ let reactCxxReact = RNTarget(
   path: "ReactCommon/cxxreact",
   searchPaths: [CallInvokerPath],
   excludedPaths: ["tests"],
-  dependencies: [.reactNativeDependencies, .jsi, .reactPerfLogger, .logger, .reactDebug, .reactJsInspector]
+  dependencies: [.reactNativeDependencies, .jsi, .reactPerfLogger, .logger, .reactDebug, .reactJsErrorHandler, .reactJsInspector]
 )
 
 /// React-jsitooling.podspec
@@ -212,7 +212,7 @@ let reactJsiTooling = RNTarget(
 let reactJsiExecutor = RNTarget(
   name: .reactJsiExecutor,
   path: "ReactCommon/jsiexecutor",
-  dependencies: [.reactNativeDependencies, .jsi, .reactCxxReact, .reactJsiTooling]
+  dependencies: [.reactNativeDependencies, .jsi, .reactCxxReact, .reactJsErrorHandler, .reactJsiTooling]
 )
 
 /// React-hermes.podspec
@@ -259,7 +259,7 @@ let reactRuntimeScheduler = RNTarget(
   name: .reactRuntimeScheduler,
   path: "ReactCommon/react/renderer/runtimescheduler",
   excludedPaths: ["tests"],
-  dependencies: [.reactNativeDependencies, .reactFeatureFlags, .reactCxxReact, .reactPerfLogger, .reactPerformanceTimeline, .reactRendererConsistency, .reactUtils, .reactRuntimeExecutor]
+  dependencies: [.reactNativeDependencies, .reactFeatureFlags, .reactCxxReact, .reactJsErrorHandler, .reactPerfLogger, .reactPerformanceTimeline, .reactRendererConsistency, .reactUtils, .reactRuntimeExecutor]
 )
 
 /// React-bridging.podspec
@@ -276,7 +276,7 @@ let reactJsErrorHandler = RNTarget(
   name: .reactJsErrorHandler,
   path: "ReactCommon/jserrorhandler",
   excludedPaths: ["tests"],
-  dependencies: [.reactNativeDependencies, .jsi, .reactCxxReact, .reactFeatureFlags, .reactDebug, .reactTurboModuleBridging]
+  dependencies: [.reactNativeDependencies, .jsi, .reactFeatureFlags, .reactDebug, .reactTurboModuleBridging]
 )
 
 /// React-graphicsApple
@@ -307,7 +307,7 @@ let reactTurboModuleCore = RNTarget(
     "ReactCommon/react/nativemodule/core/platform/ios",
   ],
   excludedPaths: ["platform/android", "iostests"],
-  dependencies: [.reactNativeDependencies, .reactDebug, .reactFeatureFlags, .reactUtils, .reactPerfLogger, .reactCxxReact, .reactTurboModuleBridging, .yoga, .reactRuntimeExecutor]
+  dependencies: [.reactNativeDependencies, .reactDebug, .reactJsErrorHandler, .reactFeatureFlags, .reactUtils, .reactPerfLogger, .reactCxxReact, .reactTurboModuleBridging, .yoga, .reactRuntimeExecutor]
 )
 
 /// React-defaultsnativemodule.podspec

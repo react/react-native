@@ -18,6 +18,7 @@ target_link_libraries(react_cxxreact
         callinvoker
         folly_runtime
         glog
+        jserrorhandler
         jsi
         jsinspector
         logger

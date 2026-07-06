@@ -26,7 +26,8 @@ Pod::Spec.new do |s|
   s.platforms              = min_supported_versions
   s.source                 = source
   s.source_files           = podspec_sources("jsireact/*.{cpp,h}", "jsireact/*.h")
-  s.pod_target_xcconfig    = { "CLANG_CXX_LANGUAGE_STANDARD" => rct_cxx_language_standard() }
+  s.pod_target_xcconfig    = { "CLANG_CXX_LANGUAGE_STANDARD" => rct_cxx_language_standard(),
+                               "HEADER_SEARCH_PATHS" => "\"$(PODS_TARGET_SRCROOT)/..\"" }
   s.header_dir             = "jsireact"
 
   s.dependency "React-cxxreact"

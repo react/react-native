@@ -7,6 +7,10 @@
 
 #pragma once
 
-#warning Deprecated: use <jserrorhandler/ErrorUtils.h> instead.
+#include <jsi/jsi.h>
 
-#include <jserrorhandler/ErrorUtils.h>
+namespace facebook::react {
+
+void handleJSError(jsi::Runtime &runtime, const jsi::JSError &error, bool isFatal);
+
+} // namespace facebook::react
