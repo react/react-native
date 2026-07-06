@@ -28,7 +28,7 @@ Pod::Spec.new do |s|
   s.platforms              = min_supported_versions
   s.source                 = source
   s.header_dir             = "jserrorhandler"
-  s.source_files           = podspec_sources(["JsErrorHandler.{cpp,h}", "StackTraceParser.{cpp,h}"], ["JsErrorHandler.h", "StackTraceParser.h"])
+  s.source_files           = podspec_sources(["ErrorUtils.{cpp,h}", "JsErrorHandler.{cpp,h}", "StackTraceParser.{cpp,h}"], ["ErrorUtils.h", "JsErrorHandler.h", "StackTraceParser.h"])
   s.pod_target_xcconfig = {
     "USE_HEADERMAP" => "YES",
     "CLANG_CXX_LANGUAGE_STANDARD" => rct_cxx_language_standard()
@@ -37,7 +37,6 @@ Pod::Spec.new do |s|
   resolve_use_frameworks(s, header_mappings_dir: '../', module_name: "React_jserrorhandler")
 
   s.dependency "React-jsi"
-  s.dependency "React-cxxreact"
   s.dependency "React-bridging"
   add_dependency(s, "React-featureflags")
   add_dependency(s, "React-debug")

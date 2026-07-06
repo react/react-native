@@ -11,8 +11,8 @@
 #include "RuntimeScheduler_Legacy.h"
 #endif
 
-#include <cxxreact/ErrorUtils.h>
 #include <cxxreact/TraceSection.h>
+#include <jserrorhandler/ErrorUtils.h>
 #ifndef RCT_REMOVE_LEGACY_ARCH
 #include <react/featureflags/ReactNativeFeatureFlags.h>
 #endif
