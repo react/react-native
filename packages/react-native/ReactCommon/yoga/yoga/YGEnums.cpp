@@ -285,6 +285,8 @@ const char* YGUnitToString(const YGUnit value) {
       return "fit-content";
     case YGUnitStretch:
       return "stretch";
+    case YGUnitDynamic:
+      return "dynamic";
   }
   return "unknown";
 }

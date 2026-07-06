@@ -69,6 +69,10 @@ inline folly::dynamic toDynamic(const YGValue &dimension)
       return dimension.value;
     case YGUnitPercent:
       return std::format("{}%", dimension.value);
+    case YGUnitDynamic:
+      // YGValue do not support YGUnitDynamic yet.
+      // Return placeholder that won't parse as valid calc.
+      return "calc(dynamic)";
   }
 
   return nullptr;

@@ -119,7 +119,7 @@ float Node::dimensionWithMargin(
     const FlexDirection axis,
     const float widthSize) {
   return getLayout().measuredDimension(dimension(axis)) +
-      style_.computeMarginForAxis(axis, widthSize);
+      style_.computeMarginForAxis(axis, widthSize, this);
 }
 
 bool Node::isLayoutDimensionDefined(const FlexDirection axis) {
@@ -305,10 +305,10 @@ float Node::relativePosition(
   }
   if (style_.isInlineStartPositionDefined(axis, direction) &&
       !style_.isInlineStartPositionAuto(axis, direction)) {
-    return style_.computeInlineStartPosition(axis, direction, axisSize);
+    return style_.computeInlineStartPosition(axis, direction, axisSize, this);
   }
 
-  return -1 * style_.computeInlineEndPosition(axis, direction, axisSize);
+  return -1 * style_.computeInlineEndPosition(axis, direction, axisSize, this);
 }
 
 void Node::setPosition(
@@ -341,19 +341,19 @@ void Node::setPosition(
   const auto crossAxisTrailingEdge = inlineEndEdge(crossAxis, direction);
 
   setLayoutPosition(
-      (style_.computeInlineStartMargin(mainAxis, direction, ownerWidth) +
+      (style_.computeInlineStartMargin(mainAxis, direction, ownerWidth, this) +
        relativePositionMain),
       mainAxisLeadingEdge);
   setLayoutPosition(
-      (style_.computeInlineEndMargin(mainAxis, direction, ownerWidth) +
+      (style_.computeInlineEndMargin(mainAxis, direction, ownerWidth, this) +
        relativePositionMain),
       mainAxisTrailingEdge);
   setLayoutPosition(
-      (style_.computeInlineStartMargin(crossAxis, direction, ownerWidth) +
+      (style_.computeInlineStartMargin(crossAxis, direction, ownerWidth, this) +
        relativePositionCross),
       crossAxisLeadingEdge);
   setLayoutPosition(
-      (style_.computeInlineEndMargin(crossAxis, direction, ownerWidth) +
+      (style_.computeInlineEndMargin(crossAxis, direction, ownerWidth, this) +
        relativePositionCross),
       crossAxisTrailingEdge);
 }
@@ -375,14 +375,15 @@ FloatOptional Node::resolveFlexBasis(
     FlexDirection flexDirection,
     float referenceLength,
     float ownerWidth) const {
-  FloatOptional value = processFlexBasis().resolve(referenceLength);
+  FloatOptional value = processFlexBasis().resolve(referenceLength, this);
   if (style_.boxSizing() == BoxSizing::BorderBox) {
     return value;
   }
 
   Dimension dim = dimension(flexDirection);
-  FloatOptional dimensionPaddingAndBorder = FloatOptional{
-      style_.computePaddingAndBorderForDimension(direction, dim, ownerWidth)};
+  FloatOptional dimensionPaddingAndBorder =
+      FloatOptional{style_.computePaddingAndBorderForDimension(
+          direction, dim, ownerWidth, this)};
 
   return value +
       (dimensionPaddingAndBorder.isDefined() ? dimensionPaddingAndBorder

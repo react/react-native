@@ -58,7 +58,7 @@ class YogaLayoutableShadowNode : public LayoutableShadowNode {
 
   void updateYogaChildren();
 
-  void updateYogaProps();
+  void updateYogaProps(const CalcExpressions& previousCalcExpressions = {});
 
   /*
    * Sets layoutable size of node.
@@ -86,6 +86,11 @@ class YogaLayoutableShadowNode : public LayoutableShadowNode {
   void layout(LayoutContext layoutContext) override;
 
   Rect getContentBounds() const;
+
+  static YGValue yogaNodeCalcValueResolver(
+      YGNodeConstRef yogaNode,
+      YGValueDynamicID id,
+      YGValueDynamicContext context);
 
  protected:
   /**

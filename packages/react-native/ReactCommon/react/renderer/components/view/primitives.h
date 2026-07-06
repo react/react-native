@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <react/renderer/css/CSSCalc.h>
 #include <react/renderer/graphics/Color.h>
 #include <react/renderer/graphics/RectangleCorners.h>
 #include <react/renderer/graphics/RectangleEdges.h>
@@ -16,6 +17,7 @@
 #include <bitset>
 #include <cmath>
 #include <optional>
+#include <unordered_map>
 
 namespace facebook::react {
 
@@ -252,5 +254,7 @@ inline bool areBorderRadiiCircular(const BorderRadii &borderRadii)
 {
   return borderRadii.isUniform() && borderRadii.topLeft.horizontal == borderRadii.topLeft.vertical;
 }
+
+using CalcExpressions = std::unordered_map<uint32_t, CSSCalc>;
 
 } // namespace facebook::react

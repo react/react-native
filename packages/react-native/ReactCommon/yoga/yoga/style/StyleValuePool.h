@@ -32,6 +32,8 @@ class StyleValuePool {
       handle.setType(StyleValueHandle::Type::Undefined);
     } else if (length.isAuto()) {
       handle.setType(StyleValueHandle::Type::Auto);
+    } else if (length.isDynamic()) {
+      storeDynamic(handle, length.callback(), length.callbackId());
     } else {
       auto type = length.isPoints() ? StyleValueHandle::Type::Point
                                     : StyleValueHandle::Type::Percent;
@@ -50,6 +52,8 @@ class StyleValuePool {
       storeKeyword(handle, StyleValueHandle::Keyword::Stretch);
     } else if (sizeValue.isFitContent()) {
       storeKeyword(handle, StyleValueHandle::Keyword::FitContent);
+    } else if (sizeValue.isDynamic()) {
+      storeDynamic(handle, sizeValue.callback(), sizeValue.callbackId());
     } else {
       auto type = sizeValue.isPoints() ? StyleValueHandle::Type::Point
                                        : StyleValueHandle::Type::Percent;
@@ -70,6 +74,9 @@ class StyleValuePool {
       return StyleLength::undefined();
     } else if (handle.isAuto()) {
       return StyleLength::ofAuto();
+    } else if (handle.isDynamic()) {
+      return StyleLength::dynamic(
+          getDynamicCallback(handle), getDynamicCallbackID(handle));
     } else {
       assert(
           handle.type() == StyleValueHandle::Type::Point ||
@@ -95,6 +102,9 @@ class StyleValuePool {
       return StyleSizeLength::ofFitContent();
     } else if (handle.isKeyword(StyleValueHandle::Keyword::Stretch)) {
       return StyleSizeLength::ofStretch();
+    } else if (handle.isDynamic()) {
+      return StyleSizeLength::dynamic(
+          getDynamicCallback(handle), getDynamicCallbackID(handle));
     } else {
       assert(
           handle.type() == StyleValueHandle::Type::Point ||
@@ -131,6 +141,19 @@ class StyleValuePool {
         : unpackInlineInteger(handle.value());
   }
 
+  YGValueDynamic getDynamicCallback(StyleValueHandle handle) const {
+    assert(handle.isDynamic());
+    assert(handle.isValueIndexed());
+    return reinterpret_cast<YGValueDynamic>(
+        static_cast<uintptr_t>(buffer_.get64(handle.value())));
+  }
+
+  YGValueDynamicID getDynamicCallbackID(StyleValueHandle handle) const {
+    assert(handle.isDynamic());
+    assert(handle.isValueIndexed());
+    return buffer_.get32(handle.value() + 2);
+  }
+
  private:
   void storeValue(
       StyleValueHandle& handle,
@@ -162,6 +185,31 @@ class StyleValuePool {
       handle.setValue(newIndex);
     } else {
       handle.setValue(static_cast<uint16_t>(keyword));
+    }
+  }
+
+  void storeDynamic(
+      StyleValueHandle& handle,
+      YGValueDynamic callback,
+      YGValueDynamicID id) {
+    handle.setType(StyleValueHandle::Type::Dynamic);
+    auto packed = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(callback));
+
+    if (handle.isValueIndexed()) {
+      auto oldIndex = handle.value();
+      auto newIndex = buffer_.replace(oldIndex, packed);
+      if (newIndex == oldIndex) {
+        [[maybe_unused]] auto replacedIndex = buffer_.replace(
+            static_cast<uint16_t>(newIndex + 2), static_cast<uint32_t>(id));
+      } else {
+        buffer_.push(static_cast<uint32_t>(id));
+      }
+      handle.setValue(newIndex);
+    } else {
+      auto newIndex = buffer_.push(packed);
+      buffer_.push(static_cast<uint32_t>(id));
+      handle.setValue(newIndex);
+      handle.setValueIsIndexed();
     }
   }
 

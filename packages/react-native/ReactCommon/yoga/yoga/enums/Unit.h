@@ -23,11 +23,12 @@ enum class Unit : uint8_t {
   MaxContent = YGUnitMaxContent,
   FitContent = YGUnitFitContent,
   Stretch = YGUnitStretch,
+  Dynamic = YGUnitDynamic,
 };
 
 template <>
 constexpr int32_t ordinalCount<Unit>() {
-  return 7;
+  return 8;
 }
 
 constexpr Unit scopedEnum(YGUnit unscoped) {

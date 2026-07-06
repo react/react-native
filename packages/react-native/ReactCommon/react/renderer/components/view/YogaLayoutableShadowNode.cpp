@@ -139,7 +139,9 @@ YogaLayoutableShadowNode::YogaLayoutableShadowNode(
   }
 
   if (fragment.props) {
-    updateYogaProps();
+    auto& sourceProps =
+        static_cast<const YogaStylableProps&>(*sourceShadowNode.getProps());
+    updateYogaProps(sourceProps.calcExpressions);
   }
 
   if (fragment.children) {
@@ -389,15 +391,18 @@ void YogaLayoutableShadowNode::updateYogaChildren() {
   yogaNode_.setDirty(!isClean);
 }
 
-void YogaLayoutableShadowNode::updateYogaProps() {
+void YogaLayoutableShadowNode::updateYogaProps(
+    const CalcExpressions& previousCalcExpressions) {
   ensureUnsealed();
 
   auto& props = static_cast<const YogaStylableProps&>(*props_);
   auto styleResult = applyAliasedProps(props.yogaStyle, props);
 
   // Resetting `dirty` flag only if `yogaStyle` portion of `Props` was
-  // changed.
-  if (!YGNodeIsDirty(&yogaNode_) && (styleResult != yogaNode_.style())) {
+  // changed or calc expressions changed.
+  if (!YGNodeIsDirty(&yogaNode_) &&
+      (props.calcExpressions != previousCalcExpressions ||
+       styleResult != yogaNode_.style())) {
     yogaNode_.setDirty(true);
   }
 
@@ -934,6 +939,29 @@ YogaLayoutableShadowNode& YogaLayoutableShadowNode::shadowNodeFromContext(
   return dynamic_cast<YogaLayoutableShadowNode&>(
       *static_cast<ShadowNode*>(YGNodeGetContext(yogaNode)));
 }
+
+YGValue YogaLayoutableShadowNode::yogaNodeCalcValueResolver(
+    YGNodeConstRef yogaNode,
+    YGValueDynamicID id,
+    YGValueDynamicContext context) {
+  if (!yogaNode) {
+    return {};
+  }
+
+  auto& node = shadowNodeFromContext(yogaNode);
+  auto& props = static_cast<const YogaStylableProps&>(*node.props_);
+  if (!props.calcExpressions.contains(id)) {
+    return {};
+  }
+
+  auto& calc = props.calcExpressions.at(id);
+  return YGValue(
+      calc.resolve(
+          context.referenceLength,
+          threadLocalLayoutContext.viewportSize.width,
+          threadLocalLayoutContext.viewportSize.height),
+      YGUnitPoint);
+};
 
 yoga::Config& YogaLayoutableShadowNode::initializeYogaConfig(
     yoga::Config& config,

@@ -9,8 +9,10 @@
 
 #include <yoga/style/Style.h>
 
+#include <react/renderer/components/view/primitives.h>
 #include <react/renderer/core/Props.h>
 #include <react/renderer/core/PropsParserContext.h>
+#include <react/renderer/css/CSSCalc.h>
 #include <react/renderer/debug/DebugStringConvertible.h>
 
 namespace facebook::react {
@@ -57,6 +59,8 @@ class YogaStylableProps : public Props {
   yoga::Style::Length paddingBlockStart;
   yoga::Style::Length paddingBlockEnd;
 
+  CalcExpressions calcExpressions;
+
 #if RN_DEBUG_STRING_CONVERTIBLE
 
 #pragma mark - DebugStringConvertible (Partial)
@@ -70,6 +74,11 @@ class YogaStylableProps : public Props {
       const PropsParserContext &context,
       const YogaStylableProps &sourceProps,
       const RawProps &rawProps);
+      
+  CalcExpressions buildCalcExpressions(
+      const PropsParserContext &context,
+      const RawProps &rawProps,
+      const CalcExpressions &defaultValue);
 };
 
 } // namespace facebook::react

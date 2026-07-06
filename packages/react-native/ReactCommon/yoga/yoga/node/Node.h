@@ -106,7 +106,7 @@ class YG_EXPORT Node : public ::YGNode {
    * https://www.w3.org/TR/css-sizing-3/#definite
    */
   inline bool hasDefiniteLength(Dimension dimension, float ownerSize) {
-    auto usedValue = getProcessedDimension(dimension).resolve(ownerSize);
+    auto usedValue = getProcessedDimension(dimension).resolve(ownerSize, this);
     return usedValue.isDefined() && usedValue.unwrap() >= 0.0f;
   }
 
@@ -204,14 +204,14 @@ class YG_EXPORT Node : public ::YGNode {
       float referenceLength,
       float ownerWidth) const {
     FloatOptional value =
-        getProcessedDimension(dimension).resolve(referenceLength);
+        getProcessedDimension(dimension).resolve(referenceLength, this);
     if (style_.boxSizing() == BoxSizing::BorderBox) {
       return value;
     }
 
     FloatOptional dimensionPaddingAndBorder =
         FloatOptional{style_.computePaddingAndBorderForDimension(
-            direction, dimension, ownerWidth)};
+            direction, dimension, ownerWidth, this)};
 
     return value +
         (dimensionPaddingAndBorder.isDefined() ? dimensionPaddingAndBorder

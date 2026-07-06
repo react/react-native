@@ -68,6 +68,10 @@ class StyleSizeLength {
     return StyleSizeLength{{}, Unit::Undefined};
   }
 
+  static StyleSizeLength dynamic(YGValueDynamic callback, YGValueDynamicID id) {
+    return StyleSizeLength{callback, id};
+  }
+
   constexpr bool isAuto() const {
     return unit_ == Unit::Auto;
   }
@@ -100,11 +104,27 @@ class StyleSizeLength {
     return unit_ == Unit::Percent;
   }
 
-  constexpr FloatOptional value() const {
-    return value_;
+  constexpr bool isDynamic() const {
+    return unit_ == Unit::Dynamic;
   }
 
-  constexpr FloatOptional resolve(float referenceLength) const {
+  constexpr FloatOptional value() const {
+    if (isDynamic()) {
+      return FloatOptional{};
+    }
+    return payload_.value;
+  }
+
+  YGValueDynamic callback() const {
+    return isDynamic() ? payload_.dynamic.callback : nullptr;
+  }
+
+  constexpr YGValueDynamicID callbackId() const {
+    return isDynamic() ? payload_.dynamic.id : 0;
+  }
+
+  constexpr FloatOptional resolve(float referenceLength, YGNodeConstRef node)
+      const {
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wswitch-enum"
@@ -114,34 +134,73 @@ class StyleSizeLength {
 #pragma clang diagnostic pop
 #endif
       case Unit::Point:
-        return value_;
+        return payload_.value;
       case Unit::Percent:
-        return FloatOptional{value_.unwrap() * referenceLength * 0.01f};
+        return FloatOptional{payload_.value.unwrap() * referenceLength * 0.01f};
+      case Unit::Dynamic:
+        if (payload_.dynamic.callback != nullptr && node != nullptr) {
+          auto value = payload_.dynamic.callback(
+              node,
+              payload_.dynamic.id,
+              YGValueDynamicContext{referenceLength});
+          return FloatOptional{value.value};
+        }
+        return FloatOptional{};
       default:
         return FloatOptional{};
     }
   }
 
   explicit constexpr operator YGValue() const {
-    return YGValue{value_.unwrap(), unscopedEnum(unit_)};
+    return YGValue{value().unwrap(), unscopedEnum(unit_)};
   }
 
   constexpr bool operator==(const StyleSizeLength& rhs) const {
-    return value_ == rhs.value_ && unit_ == rhs.unit_;
+    if (unit_ != rhs.unit_) {
+      return false;
+    }
+    if (isDynamic()) {
+      return payload_.dynamic.callback == rhs.payload_.dynamic.callback &&
+          payload_.dynamic.id == rhs.payload_.dynamic.id;
+    }
+    return payload_.value == rhs.payload_.value;
   }
 
   constexpr bool inexactEquals(const StyleSizeLength& other) const {
-    return unit_ == other.unit_ &&
-        facebook::yoga::inexactEquals(value_, other.value_);
+    if (unit_ != other.unit_) {
+      return false;
+    }
+    if (isDynamic()) {
+      return payload_.dynamic.callback == other.payload_.dynamic.callback &&
+          payload_.dynamic.id == other.payload_.dynamic.id;
+    }
+    return facebook::yoga::inexactEquals(payload_.value, other.payload_.value);
   }
 
  private:
+  struct YGValueDynamicData {
+    YGValueDynamic callback;
+    YGValueDynamicID id;
+  };
+
+  union Payload {
+    constexpr Payload() : value{} {}
+    constexpr explicit Payload(FloatOptional val) : value(val) {}
+    constexpr Payload(YGValueDynamic callback, YGValueDynamicID id)
+        : dynamic{callback, id} {}
+
+    FloatOptional value;
+    YGValueDynamicData dynamic;
+  };
+
   // We intentionally do not allow direct construction using value and unit, to
   // avoid invalid, or redundant combinations.
   constexpr StyleSizeLength(FloatOptional value, Unit unit)
-      : value_(value), unit_(unit) {}
+      : payload_(value), unit_(unit) {}
+  constexpr StyleSizeLength(YGValueDynamic callback, YGValueDynamicID id)
+      : payload_(callback, id), unit_(Unit::Dynamic) {}
 
-  FloatOptional value_{};
+  Payload payload_{};
   Unit unit_{Unit::Undefined};
 };
 

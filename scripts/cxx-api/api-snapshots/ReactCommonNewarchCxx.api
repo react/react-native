@@ -16,6 +16,10 @@ struct YGValue {
   public float value;
 }
 
+struct YGValueDynamicContext {
+  public float referenceLength;
+}
+
 
 bool facebook::xplat::jsArgAsBool(const folly::dynamic& args, size_t n);
 double facebook::xplat::jsArgAsDouble(const folly::dynamic& args, size_t n);
@@ -227,6 +231,7 @@ using facebook::react::CSSRadialGradientSize = std::variant<facebook::react::CSS
 using facebook::react::CSSShadowList = facebook::react::CSSCommaSeparatedList<facebook::react::CSSShadow>;
 using facebook::react::CSSTransformFunction = facebook::react::CSSCompoundDataType<facebook::react::CSSMatrix, facebook::react::CSSTranslate, facebook::react::CSSTranslateX, facebook::react::CSSTranslateY, facebook::react::CSSTranslate3D, facebook::react::CSSScale, facebook::react::CSSScaleX, facebook::react::CSSScaleY, facebook::react::CSSRotate, facebook::react::CSSRotateX, facebook::react::CSSRotateY, facebook::react::CSSRotateZ, facebook::react::CSSSkewX, facebook::react::CSSSkewY, facebook::react::CSSPerspective>;
 using facebook::react::CSSTransformList = facebook::react::CSSWhitespaceSeparatedList<facebook::react::CSSTransformFunction>;
+using facebook::react::CalcExpressions = std::unordered_map<uint32_t, facebook::react::CSSCalc>;
 using facebook::react::CallFunc = std::function<void(facebook::jsi::Runtime&)>;
 using facebook::react::Callback = std::function<facebook::react::AnimationMutations(facebook::react::AnimationTimestamp)>;
 using facebook::react::CallbackHandle = facebook::jsi::Object;
@@ -3782,6 +3787,7 @@ class facebook::react::YogaLayoutableShadowNode : public facebook::react::Layout
   public YogaLayoutableShadowNode(const facebook::react::ShadowNode& sourceShadowNode, const facebook::react::ShadowNodeFragment& fragment);
   public YogaLayoutableShadowNode(const facebook::react::ShadowNodeFragment& fragment, const facebook::react::ShadowNodeFamily::Shared& family, facebook::react::ShadowNodeTraits traits);
   public facebook::react::Rect getContentBounds() const;
+  public static YGValue yogaNodeCalcValueResolver(YGNodeConstRef yogaNode, YGValueDynamicID id, YGValueDynamicContext context);
   public using ListOfShared = std::vector<facebook::react::YogaLayoutableShadowNode::Shared>;
   public using Shared = std::shared_ptr<const facebook::react::YogaLayoutableShadowNode>;
   public virtual bool getIsLayoutClean() const override;
@@ -3796,12 +3802,13 @@ class facebook::react::YogaLayoutableShadowNode : public facebook::react::Layout
   public void setPositionType(YGPositionType positionType) const;
   public void setSize(facebook::react::Size size) const;
   public void updateYogaChildren();
-  public void updateYogaProps();
+  public void updateYogaProps(const facebook::react::CalcExpressions& previousCalcExpressions = {});
 }
 
 class facebook::react::YogaStylableProps : public facebook::react::Props {
   public YogaStylableProps() = default;
   public YogaStylableProps(const facebook::react::PropsParserContext& context, const facebook::react::YogaStylableProps& sourceProps, const facebook::react::RawProps& rawProps, const std::function<bool(const std::string&)>& filterObjectKeys = nullptr);
+  public facebook::react::CalcExpressions calcExpressions;
   public facebook::yoga::Style yogaStyle;
   public facebook::yoga::Style::Length insetBlockEnd;
   public facebook::yoga::Style::Length insetBlockStart;
@@ -5073,6 +5080,31 @@ struct facebook::react::CSSBlurFilter {
 struct facebook::react::CSSBrightnessFilter {
   public constexpr bool operator==(const facebook::react::CSSBrightnessFilter& rhs) const = default;
   public float amount;
+}
+
+struct facebook::react::CSSCalc {
+  public bool unitless;
+  public constexpr bool isPercentOnly() const;
+  public constexpr bool isPointsOnly() const;
+  public constexpr bool isUnitless() const;
+  public constexpr bool isZero() const;
+  public constexpr bool operator==(const facebook::react::CSSCalc& rhs) const = default;
+  public constexpr facebook::react::CSSCalc operator*(float scalar) const;
+  public constexpr facebook::react::CSSCalc operator+(const facebook::react::CSSCalc& rhs) const;
+  public constexpr facebook::react::CSSCalc operator-() const;
+  public constexpr facebook::react::CSSCalc operator-(const facebook::react::CSSCalc& rhs) const;
+  public constexpr facebook::react::CSSCalc operator/(float scalar) const;
+  public float percent;
+  public float px;
+  public float resolve(float percentRef, float viewportWidth, float viewportHeight) const;
+  public float vh;
+  public float vw;
+  public static constexpr facebook::react::CSSCalc fromNumber(float value);
+  public static constexpr facebook::react::CSSCalc fromPercent(float value);
+  public static constexpr facebook::react::CSSCalc fromPoints(float value);
+  public static constexpr facebook::react::CSSCalc fromVh(float value);
+  public static constexpr facebook::react::CSSCalc fromVw(float value);
+  public static constexpr std::optional<facebook::react::CSSCalc> fromLength(float value, facebook::react::CSSLengthUnit unit);
 }
 
 struct facebook::react::CSSColor {
@@ -6608,6 +6640,12 @@ struct facebook::react::CSSDataTypeParser<facebook::react::CSSBlurFilter> {
 }
 
 struct facebook::react::CSSDataTypeParser<facebook::react::CSSBrightnessFilter> : public facebook::react::detail::CSSFilterSimpleAmountParser<facebook::react::CSSBrightnessFilter, "brightness"> {
+}
+
+struct facebook::react::CSSDataTypeParser<facebook::react::CSSCalc> {
+  public static constexpr std::optional<facebook::react::CSSCalc> consumeFunctionBlock(const facebook::react::CSSFunctionBlock& func, facebook::react::CSSValueParser& parser);
+  public static constexpr std::optional<facebook::react::CSSCalc> consumeSimpleBlock(const facebook::react::CSSSimpleBlock& block, facebook::react::CSSValueParser& parser);
+  public static constexpr std::optional<facebook::react::CSSCalc> parseCalcExpression(facebook::react::CSSValueParser& parser);
 }
 
 struct facebook::react::CSSDataTypeParser<facebook::react::CSSColor> {
@@ -9919,8 +9957,8 @@ class facebook::yoga::Style {
   public facebook::yoga::FloatOptional flex() const;
   public facebook::yoga::FloatOptional flexGrow() const;
   public facebook::yoga::FloatOptional flexShrink() const;
-  public facebook::yoga::FloatOptional resolvedMaxDimension(facebook::yoga::Direction direction, facebook::yoga::Dimension axis, float referenceLength, float ownerWidth) const;
-  public facebook::yoga::FloatOptional resolvedMinDimension(facebook::yoga::Direction direction, facebook::yoga::Dimension axis, float referenceLength, float ownerWidth) const;
+  public facebook::yoga::FloatOptional resolvedMaxDimension(facebook::yoga::Direction direction, facebook::yoga::Dimension axis, float referenceLength, float ownerWidth, YGNodeConstRef node) const;
+  public facebook::yoga::FloatOptional resolvedMinDimension(facebook::yoga::Direction direction, facebook::yoga::Dimension axis, float referenceLength, float ownerWidth, YGNodeConstRef node) const;
   public facebook::yoga::Justify justifyContent() const;
   public facebook::yoga::Justify justifyItems() const;
   public facebook::yoga::Justify justifySelf() const;
@@ -9936,31 +9974,31 @@ class facebook::yoga::Style {
   public facebook::yoga::Style::SizeLength maxDimension(facebook::yoga::Dimension axis) const;
   public facebook::yoga::Style::SizeLength minDimension(facebook::yoga::Dimension axis) const;
   public facebook::yoga::Wrap flexWrap() const;
-  public float computeBorderForAxis(facebook::yoga::FlexDirection axis) const;
-  public float computeFlexEndBorder(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction) const;
-  public float computeFlexEndMargin(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction, float widthSize) const;
-  public float computeFlexEndPadding(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction, float widthSize) const;
-  public float computeFlexEndPaddingAndBorder(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction, float widthSize) const;
-  public float computeFlexEndPosition(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction, float axisSize) const;
-  public float computeFlexStartBorder(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction) const;
-  public float computeFlexStartMargin(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction, float widthSize) const;
-  public float computeFlexStartPadding(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction, float widthSize) const;
-  public float computeFlexStartPaddingAndBorder(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction, float widthSize) const;
-  public float computeFlexStartPosition(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction, float axisSize) const;
-  public float computeGapForAxis(facebook::yoga::FlexDirection axis, float ownerSize) const;
-  public float computeGapForDimension(facebook::yoga::Dimension dimension, float ownerSize) const;
-  public float computeInlineEndBorder(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction) const;
-  public float computeInlineEndMargin(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction, float widthSize) const;
-  public float computeInlineEndPadding(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction, float widthSize) const;
-  public float computeInlineEndPaddingAndBorder(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction, float widthSize) const;
-  public float computeInlineEndPosition(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction, float axisSize) const;
-  public float computeInlineStartBorder(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction) const;
-  public float computeInlineStartMargin(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction, float widthSize) const;
-  public float computeInlineStartPadding(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction, float widthSize) const;
-  public float computeInlineStartPaddingAndBorder(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction, float widthSize) const;
-  public float computeInlineStartPosition(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction, float axisSize) const;
-  public float computeMarginForAxis(facebook::yoga::FlexDirection axis, float widthSize) const;
-  public float computePaddingAndBorderForDimension(facebook::yoga::Direction direction, facebook::yoga::Dimension dimension, float widthSize) const;
+  public float computeBorderForAxis(facebook::yoga::FlexDirection axis, YGNodeConstRef node) const;
+  public float computeFlexEndBorder(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction, YGNodeConstRef node) const;
+  public float computeFlexEndMargin(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction, float widthSize, YGNodeConstRef node) const;
+  public float computeFlexEndPadding(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction, float widthSize, YGNodeConstRef node) const;
+  public float computeFlexEndPaddingAndBorder(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction, float widthSize, YGNodeConstRef node) const;
+  public float computeFlexEndPosition(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction, float axisSize, YGNodeConstRef node) const;
+  public float computeFlexStartBorder(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction, YGNodeConstRef node) const;
+  public float computeFlexStartMargin(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction, float widthSize, YGNodeConstRef node) const;
+  public float computeFlexStartPadding(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction, float widthSize, YGNodeConstRef node) const;
+  public float computeFlexStartPaddingAndBorder(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction, float widthSize, YGNodeConstRef node) const;
+  public float computeFlexStartPosition(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction, float axisSize, YGNodeConstRef node) const;
+  public float computeGapForAxis(facebook::yoga::FlexDirection axis, float ownerSize, YGNodeConstRef node) const;
+  public float computeGapForDimension(facebook::yoga::Dimension dimension, float ownerSize, YGNodeConstRef node) const;
+  public float computeInlineEndBorder(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction, YGNodeConstRef node) const;
+  public float computeInlineEndMargin(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction, float widthSize, YGNodeConstRef node) const;
+  public float computeInlineEndPadding(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction, float widthSize, YGNodeConstRef node) const;
+  public float computeInlineEndPaddingAndBorder(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction, float widthSize, YGNodeConstRef node) const;
+  public float computeInlineEndPosition(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction, float axisSize, YGNodeConstRef node) const;
+  public float computeInlineStartBorder(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction, YGNodeConstRef node) const;
+  public float computeInlineStartMargin(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction, float widthSize, YGNodeConstRef node) const;
+  public float computeInlineStartPadding(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction, float widthSize, YGNodeConstRef node) const;
+  public float computeInlineStartPaddingAndBorder(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction, float widthSize, YGNodeConstRef node) const;
+  public float computeInlineStartPosition(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction, float axisSize, YGNodeConstRef node) const;
+  public float computeMarginForAxis(facebook::yoga::FlexDirection axis, float widthSize, YGNodeConstRef node) const;
+  public float computePaddingAndBorderForDimension(facebook::yoga::Direction direction, facebook::yoga::Dimension dimension, float widthSize, YGNodeConstRef node) const;
   public static constexpr float DefaultFlexGrow;
   public static constexpr float DefaultFlexShrink;
   public static constexpr float WebDefaultFlexShrink;
@@ -10011,28 +10049,35 @@ class facebook::yoga::Style {
 }
 
 class facebook::yoga::StyleLength {
+  public YGValueDynamic callback() const;
   public constexpr StyleLength() = default;
+  public constexpr YGValueDynamicID callbackId() const;
   public constexpr bool inexactEquals(const facebook::yoga::StyleLength& other) const;
   public constexpr bool isAuto() const;
   public constexpr bool isDefined() const;
+  public constexpr bool isDynamic() const;
   public constexpr bool isPercent() const;
   public constexpr bool isPoints() const;
   public constexpr bool isUndefined() const;
   public constexpr bool operator==(const facebook::yoga::StyleLength& rhs) const;
-  public constexpr facebook::yoga::FloatOptional resolve(float referenceLength);
+  public constexpr facebook::yoga::FloatOptional resolve(float referenceLength, YGNodeConstRef node) const;
   public constexpr facebook::yoga::FloatOptional value() const;
   public constexpr operator YGValue() const;
   public static constexpr facebook::yoga::StyleLength ofAuto();
   public static constexpr facebook::yoga::StyleLength percent(float value);
   public static constexpr facebook::yoga::StyleLength points(float value);
   public static constexpr facebook::yoga::StyleLength undefined();
+  public static facebook::yoga::StyleLength dynamic(YGValueDynamic callback, YGValueDynamicID id);
 }
 
 class facebook::yoga::StyleSizeLength {
+  public YGValueDynamic callback() const;
   public constexpr StyleSizeLength() = default;
+  public constexpr YGValueDynamicID callbackId() const;
   public constexpr bool inexactEquals(const facebook::yoga::StyleSizeLength& other) const;
   public constexpr bool isAuto() const;
   public constexpr bool isDefined() const;
+  public constexpr bool isDynamic() const;
   public constexpr bool isFitContent() const;
   public constexpr bool isMaxContent() const;
   public constexpr bool isPercent() const;
@@ -10040,7 +10085,7 @@ class facebook::yoga::StyleSizeLength {
   public constexpr bool isStretch() const;
   public constexpr bool isUndefined() const;
   public constexpr bool operator==(const facebook::yoga::StyleSizeLength& rhs) const;
-  public constexpr facebook::yoga::FloatOptional resolve(float referenceLength) const;
+  public constexpr facebook::yoga::FloatOptional resolve(float referenceLength, YGNodeConstRef node) const;
   public constexpr facebook::yoga::FloatOptional value() const;
   public constexpr operator YGValue() const;
   public static constexpr facebook::yoga::StyleSizeLength ofAuto();
@@ -10051,11 +10096,13 @@ class facebook::yoga::StyleSizeLength {
   public static constexpr facebook::yoga::StyleSizeLength points(float value);
   public static constexpr facebook::yoga::StyleSizeLength stretch(float fraction);
   public static constexpr facebook::yoga::StyleSizeLength undefined();
+  public static facebook::yoga::StyleSizeLength dynamic(YGValueDynamic callback, YGValueDynamicID id);
 }
 
 class facebook::yoga::StyleValueHandle {
   public constexpr bool isAuto() const;
   public constexpr bool isDefined() const;
+  public constexpr bool isDynamic() const;
   public constexpr bool isPercent() const;
   public constexpr bool isPoint() const;
   public constexpr bool isUndefined() const;
@@ -10063,6 +10110,8 @@ class facebook::yoga::StyleValueHandle {
 }
 
 class facebook::yoga::StyleValuePool {
+  public YGValueDynamic getDynamicCallback(facebook::yoga::StyleValueHandle handle) const;
+  public YGValueDynamicID getDynamicCallbackID(facebook::yoga::StyleValueHandle handle) const;
   public facebook::yoga::FloatOptional getNumber(facebook::yoga::StyleValueHandle handle) const;
   public facebook::yoga::StyleLength getLength(facebook::yoga::StyleValueHandle handle) const;
   public facebook::yoga::StyleSizeLength getSize(facebook::yoga::StyleValueHandle handle) const;
@@ -10238,6 +10287,7 @@ enum facebook::yoga::SizingMode {
 
 enum facebook::yoga::Unit : uint8_t {
   Auto,
+  Dynamic,
   FitContent,
   MaxContent,
   Percent,

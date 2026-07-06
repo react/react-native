@@ -16,7 +16,8 @@ public enum class YogaUnit(public val intValue: Int) {
   AUTO(3),
   MAX_CONTENT(4),
   FIT_CONTENT(5),
-  STRETCH(6);
+  STRETCH(6),
+  DYNAMIC(7);
 
   public fun intValue(): Int = intValue
 
@@ -31,6 +32,7 @@ public enum class YogaUnit(public val intValue: Int) {
           4 -> MAX_CONTENT
           5 -> FIT_CONTENT
           6 -> STRETCH
+          7 -> DYNAMIC
           else -> throw IllegalArgumentException("Unknown enum value: $value")
         }
   }
