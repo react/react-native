@@ -5,7 +5,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/renderer/components/image/ImageProps.h>
 #include <react/renderer/components/image/conversions.h>
 #include <react/renderer/core/propsConversions.h>
@@ -19,131 +18,85 @@ ImageProps::ImageProps(
     const RawProps& rawProps)
     : ViewProps(context, sourceProps, rawProps),
       sources(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.sources
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "source",
-                    sourceProps.sources,
-                    {})),
-      defaultSource(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.defaultSource
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "defaultSource",
-                    sourceProps.defaultSource,
-                    {})),
-      loadingIndicatorSource(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.loadingIndicatorSource
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "loadingIndicatorSource",
-                    sourceProps.loadingIndicatorSource,
-                    {})),
-      resizeMode(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.resizeMode
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "resizeMode",
-                    sourceProps.resizeMode,
-                    ImageResizeMode::Stretch)),
-      blurRadius(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.blurRadius
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "blurRadius",
-                    sourceProps.blurRadius,
-                    {})),
-      capInsets(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.capInsets
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "capInsets",
-                    sourceProps.capInsets,
-                    {})),
-      tintColor(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.tintColor
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "tintColor",
-                    sourceProps.tintColor,
-                    {})),
-      internal_analyticTag(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.internal_analyticTag
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "internal_analyticTag",
-                    sourceProps.internal_analyticTag,
-                    {})),
-      resizeMethod(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.resizeMethod
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "resizeMethod",
-                    sourceProps.resizeMethod,
-                    {"auto"})),
-      resizeMultiplier(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.resizeMultiplier
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "resizeMultiplier",
-                    sourceProps.resizeMultiplier,
-                    1)),
-      shouldNotifyLoadEvents(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.shouldNotifyLoadEvents
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "shouldNotifyLoadEvents",
-                    sourceProps.shouldNotifyLoadEvents,
-                    {})),
-      overlayColor(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.overlayColor
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "overlayColor",
-                    sourceProps.overlayColor,
-                    {})),
-      fadeDuration(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.fadeDuration
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "fadeDuration",
-                    sourceProps.fadeDuration,
-                    {})),
-      progressiveRenderingEnabled(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.progressiveRenderingEnabled
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "progressiveRenderingEnabled",
-                    sourceProps.progressiveRenderingEnabled,
-                    {})) {}
+          convertRawProp(context, rawProps, "source", sourceProps.sources, {})),
+      defaultSource(convertRawProp(
+          context,
+          rawProps,
+          "defaultSource",
+          sourceProps.defaultSource,
+          {})),
+      loadingIndicatorSource(convertRawProp(
+          context,
+          rawProps,
+          "loadingIndicatorSource",
+          sourceProps.loadingIndicatorSource,
+          {})),
+      resizeMode(convertRawProp(
+          context,
+          rawProps,
+          "resizeMode",
+          sourceProps.resizeMode,
+          ImageResizeMode::Stretch)),
+      blurRadius(convertRawProp(
+          context,
+          rawProps,
+          "blurRadius",
+          sourceProps.blurRadius,
+          {})),
+      capInsets(convertRawProp(
+          context,
+          rawProps,
+          "capInsets",
+          sourceProps.capInsets,
+          {})),
+      tintColor(convertRawProp(
+          context,
+          rawProps,
+          "tintColor",
+          sourceProps.tintColor,
+          {})),
+      internal_analyticTag(convertRawProp(
+          context,
+          rawProps,
+          "internal_analyticTag",
+          sourceProps.internal_analyticTag,
+          {})),
+      resizeMethod(convertRawProp(
+          context,
+          rawProps,
+          "resizeMethod",
+          sourceProps.resizeMethod,
+          {"auto"})),
+      resizeMultiplier(convertRawProp(
+          context,
+          rawProps,
+          "resizeMultiplier",
+          sourceProps.resizeMultiplier,
+          1)),
+      shouldNotifyLoadEvents(convertRawProp(
+          context,
+          rawProps,
+          "shouldNotifyLoadEvents",
+          sourceProps.shouldNotifyLoadEvents,
+          {})),
+      overlayColor(convertRawProp(
+          context,
+          rawProps,
+          "overlayColor",
+          sourceProps.overlayColor,
+          {})),
+      fadeDuration(convertRawProp(
+          context,
+          rawProps,
+          "fadeDuration",
+          sourceProps.fadeDuration,
+          {})),
+      progressiveRenderingEnabled(convertRawProp(
+          context,
+          rawProps,
+          "progressiveRenderingEnabled",
+          sourceProps.progressiveRenderingEnabled,
+          {})) {}
 
 void ImageProps::setProp(
     const PropsParserContext& context,

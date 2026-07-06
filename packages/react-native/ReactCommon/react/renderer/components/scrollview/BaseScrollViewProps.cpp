@@ -7,7 +7,6 @@
 
 #include "BaseScrollViewProps.h"
 
-#include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/renderer/components/scrollview/conversions.h>
 #include <react/renderer/core/graphicsConversions.h>
 #include <react/renderer/debug/debugStringConvertibleUtils.h>
@@ -22,357 +21,240 @@ BaseScrollViewProps::BaseScrollViewProps(
     const BaseScrollViewProps& sourceProps,
     const RawProps& rawProps)
     : ViewProps(context, sourceProps, rawProps),
-      alwaysBounceHorizontal(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.alwaysBounceHorizontal
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "alwaysBounceHorizontal",
-                    sourceProps.alwaysBounceHorizontal,
-                    {})),
-      alwaysBounceVertical(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.alwaysBounceVertical
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "alwaysBounceVertical",
-                    sourceProps.alwaysBounceVertical,
-                    {})),
-      bounces(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.bounces
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "bounces",
-                    sourceProps.bounces,
-                    true)),
-      bouncesZoom(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.bouncesZoom
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "bouncesZoom",
-                    sourceProps.bouncesZoom,
-                    true)),
-      canCancelContentTouches(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.canCancelContentTouches
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "canCancelContentTouches",
-                    sourceProps.canCancelContentTouches,
-                    true)),
-      centerContent(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.centerContent
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "centerContent",
-                    sourceProps.centerContent,
-                    {})),
-      automaticallyAdjustContentInsets(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.automaticallyAdjustContentInsets
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "automaticallyAdjustContentInsets",
-                    sourceProps.automaticallyAdjustContentInsets,
-                    {})),
-      automaticallyAdjustsScrollIndicatorInsets(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.automaticallyAdjustsScrollIndicatorInsets
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "automaticallyAdjustsScrollIndicatorInsets",
-                    sourceProps.automaticallyAdjustsScrollIndicatorInsets,
-                    true)),
-      automaticallyAdjustKeyboardInsets(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.automaticallyAdjustKeyboardInsets
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "automaticallyAdjustKeyboardInsets",
-                    sourceProps.automaticallyAdjustKeyboardInsets,
-                    false)),
-      decelerationRate(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.decelerationRate
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "decelerationRate",
-                    sourceProps.decelerationRate,
-                    (Float)0.998)),
-      endDraggingSensitivityMultiplier(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.endDraggingSensitivityMultiplier
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "endDraggingSensitivityMultiplier",
-                    sourceProps.endDraggingSensitivityMultiplier,
-                    (Float)1)),
-      directionalLockEnabled(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.directionalLockEnabled
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "directionalLockEnabled",
-                    sourceProps.directionalLockEnabled,
-                    {})),
-      indicatorStyle(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.indicatorStyle
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "indicatorStyle",
-                    sourceProps.indicatorStyle,
-                    {})),
-      keyboardDismissMode(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.keyboardDismissMode
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "keyboardDismissMode",
-                    sourceProps.keyboardDismissMode,
-                    {})),
-      maintainVisibleContentPosition(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.maintainVisibleContentPosition
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "maintainVisibleContentPosition",
-                    sourceProps.maintainVisibleContentPosition,
-                    {})),
-      maximumZoomScale(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.maximumZoomScale
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "maximumZoomScale",
-                    sourceProps.maximumZoomScale,
-                    (Float)1.0)),
-      minimumZoomScale(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.minimumZoomScale
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "minimumZoomScale",
-                    sourceProps.minimumZoomScale,
-                    (Float)1.0)),
-      scrollEnabled(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.scrollEnabled
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "scrollEnabled",
-                    sourceProps.scrollEnabled,
-                    true)),
-      pagingEnabled(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.pagingEnabled
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "pagingEnabled",
-                    sourceProps.pagingEnabled,
-                    {})),
-      pinchGestureEnabled(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.pinchGestureEnabled
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "pinchGestureEnabled",
-                    sourceProps.pinchGestureEnabled,
-                    true)),
-      scrollsToTop(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.scrollsToTop
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "scrollsToTop",
-                    sourceProps.scrollsToTop,
-                    true)),
-      showsHorizontalScrollIndicator(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.showsHorizontalScrollIndicator
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "showsHorizontalScrollIndicator",
-                    sourceProps.showsHorizontalScrollIndicator,
-                    true)),
-      showsVerticalScrollIndicator(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.showsVerticalScrollIndicator
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "showsVerticalScrollIndicator",
-                    sourceProps.showsVerticalScrollIndicator,
-                    true)),
-      persistentScrollbar(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.persistentScrollbar
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "persistentScrollbar",
-                    sourceProps.persistentScrollbar,
-                    true)),
-      horizontal(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.horizontal
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "horizontal",
-                    sourceProps.horizontal,
-                    true)),
-      scrollEventThrottle(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.scrollEventThrottle
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "scrollEventThrottle",
-                    sourceProps.scrollEventThrottle,
-                    {})),
-      zoomScale(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.zoomScale
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "zoomScale",
-                    sourceProps.zoomScale,
-                    (Float)1.0)),
-      contentInset(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.contentInset
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "contentInset",
-                    sourceProps.contentInset,
-                    {})),
-      contentOffset(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.contentOffset
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "contentOffset",
-                    sourceProps.contentOffset,
-                    {})),
-      scrollIndicatorInsets(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.scrollIndicatorInsets
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "scrollIndicatorInsets",
-                    sourceProps.scrollIndicatorInsets,
-                    {})),
-      snapToInterval(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.snapToInterval
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "snapToInterval",
-                    sourceProps.snapToInterval,
-                    {})),
-      snapToAlignment(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.snapToAlignment
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "snapToAlignment",
-                    sourceProps.snapToAlignment,
-                    {})),
-      disableIntervalMomentum(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.disableIntervalMomentum
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "disableIntervalMomentum",
-                    sourceProps.disableIntervalMomentum,
-                    {})),
-      snapToOffsets(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.snapToOffsets
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "snapToOffsets",
-                    sourceProps.snapToOffsets,
-                    {})),
-      snapToStart(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.snapToStart
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "snapToStart",
-                    sourceProps.snapToStart,
-                    true)),
-      snapToEnd(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.snapToEnd
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "snapToEnd",
-                    sourceProps.snapToEnd,
-                    true)),
-      contentInsetAdjustmentBehavior(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.contentInsetAdjustmentBehavior
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "contentInsetAdjustmentBehavior",
-                    sourceProps.contentInsetAdjustmentBehavior,
-                    {ContentInsetAdjustmentBehavior::Never})),
-      scrollToOverflowEnabled(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.scrollToOverflowEnabled
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "scrollToOverflowEnabled",
-                    sourceProps.scrollToOverflowEnabled,
-                    {})),
-      isInvertedVirtualizedList(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.isInvertedVirtualizedList
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "isInvertedVirtualizedList",
-                    sourceProps.isInvertedVirtualizedList,
-                    {})) {}
+      alwaysBounceHorizontal(convertRawProp(
+          context,
+          rawProps,
+          "alwaysBounceHorizontal",
+          sourceProps.alwaysBounceHorizontal,
+          {})),
+      alwaysBounceVertical(convertRawProp(
+          context,
+          rawProps,
+          "alwaysBounceVertical",
+          sourceProps.alwaysBounceVertical,
+          {})),
+      bounces(convertRawProp(
+          context,
+          rawProps,
+          "bounces",
+          sourceProps.bounces,
+          true)),
+      bouncesZoom(convertRawProp(
+          context,
+          rawProps,
+          "bouncesZoom",
+          sourceProps.bouncesZoom,
+          true)),
+      canCancelContentTouches(convertRawProp(
+          context,
+          rawProps,
+          "canCancelContentTouches",
+          sourceProps.canCancelContentTouches,
+          true)),
+      centerContent(convertRawProp(
+          context,
+          rawProps,
+          "centerContent",
+          sourceProps.centerContent,
+          {})),
+      automaticallyAdjustContentInsets(convertRawProp(
+          context,
+          rawProps,
+          "automaticallyAdjustContentInsets",
+          sourceProps.automaticallyAdjustContentInsets,
+          {})),
+      automaticallyAdjustsScrollIndicatorInsets(convertRawProp(
+          context,
+          rawProps,
+          "automaticallyAdjustsScrollIndicatorInsets",
+          sourceProps.automaticallyAdjustsScrollIndicatorInsets,
+          true)),
+      automaticallyAdjustKeyboardInsets(convertRawProp(
+          context,
+          rawProps,
+          "automaticallyAdjustKeyboardInsets",
+          sourceProps.automaticallyAdjustKeyboardInsets,
+          false)),
+      decelerationRate(convertRawProp(
+          context,
+          rawProps,
+          "decelerationRate",
+          sourceProps.decelerationRate,
+          (Float)0.998)),
+      endDraggingSensitivityMultiplier(convertRawProp(
+          context,
+          rawProps,
+          "endDraggingSensitivityMultiplier",
+          sourceProps.endDraggingSensitivityMultiplier,
+          (Float)1)),
+      directionalLockEnabled(convertRawProp(
+          context,
+          rawProps,
+          "directionalLockEnabled",
+          sourceProps.directionalLockEnabled,
+          {})),
+      indicatorStyle(convertRawProp(
+          context,
+          rawProps,
+          "indicatorStyle",
+          sourceProps.indicatorStyle,
+          {})),
+      keyboardDismissMode(convertRawProp(
+          context,
+          rawProps,
+          "keyboardDismissMode",
+          sourceProps.keyboardDismissMode,
+          {})),
+      maintainVisibleContentPosition(convertRawProp(
+          context,
+          rawProps,
+          "maintainVisibleContentPosition",
+          sourceProps.maintainVisibleContentPosition,
+          {})),
+      maximumZoomScale(convertRawProp(
+          context,
+          rawProps,
+          "maximumZoomScale",
+          sourceProps.maximumZoomScale,
+          (Float)1.0)),
+      minimumZoomScale(convertRawProp(
+          context,
+          rawProps,
+          "minimumZoomScale",
+          sourceProps.minimumZoomScale,
+          (Float)1.0)),
+      scrollEnabled(convertRawProp(
+          context,
+          rawProps,
+          "scrollEnabled",
+          sourceProps.scrollEnabled,
+          true)),
+      pagingEnabled(convertRawProp(
+          context,
+          rawProps,
+          "pagingEnabled",
+          sourceProps.pagingEnabled,
+          {})),
+      pinchGestureEnabled(convertRawProp(
+          context,
+          rawProps,
+          "pinchGestureEnabled",
+          sourceProps.pinchGestureEnabled,
+          true)),
+      scrollsToTop(convertRawProp(
+          context,
+          rawProps,
+          "scrollsToTop",
+          sourceProps.scrollsToTop,
+          true)),
+      showsHorizontalScrollIndicator(convertRawProp(
+          context,
+          rawProps,
+          "showsHorizontalScrollIndicator",
+          sourceProps.showsHorizontalScrollIndicator,
+          true)),
+      showsVerticalScrollIndicator(convertRawProp(
+          context,
+          rawProps,
+          "showsVerticalScrollIndicator",
+          sourceProps.showsVerticalScrollIndicator,
+          true)),
+      persistentScrollbar(convertRawProp(
+          context,
+          rawProps,
+          "persistentScrollbar",
+          sourceProps.persistentScrollbar,
+          true)),
+      horizontal(convertRawProp(
+          context,
+          rawProps,
+          "horizontal",
+          sourceProps.horizontal,
+          true)),
+      scrollEventThrottle(convertRawProp(
+          context,
+          rawProps,
+          "scrollEventThrottle",
+          sourceProps.scrollEventThrottle,
+          {})),
+      zoomScale(convertRawProp(
+          context,
+          rawProps,
+          "zoomScale",
+          sourceProps.zoomScale,
+          (Float)1.0)),
+      contentInset(convertRawProp(
+          context,
+          rawProps,
+          "contentInset",
+          sourceProps.contentInset,
+          {})),
+      contentOffset(convertRawProp(
+          context,
+          rawProps,
+          "contentOffset",
+          sourceProps.contentOffset,
+          {})),
+      scrollIndicatorInsets(convertRawProp(
+          context,
+          rawProps,
+          "scrollIndicatorInsets",
+          sourceProps.scrollIndicatorInsets,
+          {})),
+      snapToInterval(convertRawProp(
+          context,
+          rawProps,
+          "snapToInterval",
+          sourceProps.snapToInterval,
+          {})),
+      snapToAlignment(convertRawProp(
+          context,
+          rawProps,
+          "snapToAlignment",
+          sourceProps.snapToAlignment,
+          {})),
+      disableIntervalMomentum(convertRawProp(
+          context,
+          rawProps,
+          "disableIntervalMomentum",
+          sourceProps.disableIntervalMomentum,
+          {})),
+      snapToOffsets(convertRawProp(
+          context,
+          rawProps,
+          "snapToOffsets",
+          sourceProps.snapToOffsets,
+          {})),
+      snapToStart(convertRawProp(
+          context,
+          rawProps,
+          "snapToStart",
+          sourceProps.snapToStart,
+          true)),
+      snapToEnd(convertRawProp(
+          context,
+          rawProps,
+          "snapToEnd",
+          sourceProps.snapToEnd,
+          true)),
+      contentInsetAdjustmentBehavior(convertRawProp(
+          context,
+          rawProps,
+          "contentInsetAdjustmentBehavior",
+          sourceProps.contentInsetAdjustmentBehavior,
+          {ContentInsetAdjustmentBehavior::Never})),
+      scrollToOverflowEnabled(convertRawProp(
+          context,
+          rawProps,
+          "scrollToOverflowEnabled",
+          sourceProps.scrollToOverflowEnabled,
+          {})),
+      isInvertedVirtualizedList(convertRawProp(
+          context,
+          rawProps,
+          "isInvertedVirtualizedList",
+          sourceProps.isInvertedVirtualizedList,
+          {})) {}
 
 void BaseScrollViewProps::setProp(
     const PropsParserContext& context,

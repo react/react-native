@@ -10,8 +10,8 @@
 #include <react/renderer/core/propsConversions.h>
 
 #include <react/featureflags/ReactNativeFeatureFlags.h>
+#include <react/renderer/core/DynamicPropsUtilities.h>
 #include <react/renderer/debug/debugStringConvertibleUtils.h>
-#include "DynamicPropsUtilities.h"
 
 namespace facebook::react {
 
@@ -21,15 +21,12 @@ Props::Props(
     const RawProps& rawProps,
     [[maybe_unused]] const std::function<bool(const std::string&)>&
         filterObjectKeys)
-    : nativeId(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.nativeId
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "nativeID",
-                    sourceProps.nativeId,
-                    {})) {}
+    : nativeId(convertRawProp(
+          context,
+          rawProps,
+          "nativeID",
+          sourceProps.nativeId,
+          {})) {}
 
 void Props::setProp(
     const PropsParserContext& context,
