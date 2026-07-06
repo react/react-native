@@ -42,8 +42,7 @@ const {pickScale} = require('./AssetUtils');
 const {
   getAndroidResourceFolderName,
   getAndroidResourceIdentifier,
-  getBasePath,
-} = require('@react-native/assets-registry/path-support');
+} = require('@react-native/asset-utils');
 const invariant = require('invariant');
 
 /**
@@ -64,6 +63,11 @@ function getAssetPathInDrawableFolder(asset: PackagerAsset): string {
   const drawableFolder = getAndroidResourceFolderName(asset, scale);
   const fileName = getAndroidResourceIdentifier(asset);
   return drawableFolder + '/' + fileName + '.' + asset.type;
+}
+
+function getBasePath(asset: PackagerAsset): string {
+  const basePath = asset.httpServerLocation;
+  return basePath.startsWith('/') ? basePath.slice(1) : basePath;
 }
 
 /**
