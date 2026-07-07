@@ -18,8 +18,9 @@ import com.facebook.react.uimanager.events.EventDispatcher
 internal class ReactTextInputTextWatcher(
     reactContext: ReactContext,
     private val editText: ReactEditText,
+    private val eventDispatcher: EventDispatcher? =
+        UIManagerHelper.getEventDispatcher(reactContext),
 ) : TextWatcher {
-  private val eventDispatcher: EventDispatcher? = UIManagerHelper.getEventDispatcher(reactContext)
   private val surfaceId = UIManagerHelper.getSurfaceId(reactContext)
   private var previousText: String? = null
 
@@ -55,6 +56,11 @@ internal class ReactTextInputTextWatcher(
       stateWrapper.updateState(newStateData)
     }
 
+    // While an autofill is in progress the cursor still sits at its pre-autofill position;
+    // TextView.autofill() moves it to the end of the text only after this watcher has run.
+    val selectionStart = if (editText.isBeingAutofilled) s.length else editText.selectionStart
+    val selectionEnd = if (editText.isBeingAutofilled) s.length else editText.selectionEnd
+
     // The event that contains the event counter and updates it must be sent first.
     eventDispatcher?.dispatchEvent(
         ReactTextChangedEvent(
@@ -62,8 +68,8 @@ internal class ReactTextInputTextWatcher(
             editText.id,
             s.toString(),
             editText.incrementAndGetEventCounter(),
-            editText.selectionStart,
-            editText.selectionEnd,
+            selectionStart,
+            selectionEnd,
         )
     )
   }
