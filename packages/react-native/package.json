@@ -52,6 +52,7 @@
       "types": null,
       "default": "./src/asset-registry.js"
     },
+    "./setup-env": "./src/setup-env.js",
     "./jest-preset": "./jest-preset.js",
     "./rn-get-polyfills": "./rn-get-polyfills.js",
     "./src/fb_internal/*": "./src/fb_internal/*",

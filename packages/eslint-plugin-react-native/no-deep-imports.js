@@ -21,6 +21,8 @@ module.exports = {
     messages: {
       deepImport:
         "'{{importPath}}' React Native deep imports are deprecated. Please use the top level import instead.",
+      useReplacementSource:
+        "'{{importPath}}' is deprecated. Please import '{{replacementSource}}' instead.",
     },
     schema: [],
     fixable: 'code',
@@ -31,10 +33,12 @@ module.exports = {
       ImportDeclaration(node) {
         if (
           !isDeepReactNativeImport(node.source) ||
-          isInitializeCoreImport(node.source) ||
           isSecondaryEntryPoint(node.source) ||
           isFbInternalImport(node.source)
         ) {
+          return;
+        }
+        if (reportReplacementSource(node.source)) {
           return;
         }
         if (isDefaultImport(node)) {
@@ -88,10 +92,13 @@ module.exports = {
       CallExpression(node) {
         if (
           !isDeepRequire(node) ||
-          isInitializeCoreImport(node.arguments[0]) ||
           isSecondaryEntryPoint(node.arguments[0]) ||
           isFbInternalImport(node.arguments[0])
         ) {
+          return;
+        }
+
+        if (reportReplacementSource(node.arguments[0])) {
           return;
         }
 
@@ -122,6 +129,26 @@ module.exports = {
         }
       },
     };
+
+    function reportReplacementSource(source) {
+      const reactNativeSource = source.value.slice('react-native/'.length);
+      const mapping = publicAPIMapping[reactNativeSource];
+      if (!mapping || !mapping.replacementSource) {
+        return false;
+      }
+      context.report({
+        node: source,
+        messageId: 'useReplacementSource',
+        data: {
+          importPath: source.value,
+          replacementSource: mapping.replacementSource,
+        },
+        fix(fixer) {
+          return fixer.replaceText(source, `'${mapping.replacementSource}'`);
+        },
+      });
+      return true;
+    }
 
     function getStandardReport(source) {
       return {
@@ -167,20 +194,15 @@ module.exports = {
       return parts.length > 1 && parts[0] === 'react-native';
     }
 
-    function isInitializeCoreImport(source) {
-      if (source.type !== 'Literal' || typeof source.value !== 'string') {
-        return false;
-      }
-
-      return source.value === 'react-native/Libraries/Core/InitializeCore';
-    }
-
     function isSecondaryEntryPoint(source) {
       if (source.type !== 'Literal' || typeof source.value !== 'string') {
         return false;
       }
 
-      return source.value === 'react-native/asset-registry';
+      return (
+        source.value === 'react-native/asset-registry' ||
+        source.value === 'react-native/setup-env'
+      );
     }
 
     function isFbInternalImport(source) {

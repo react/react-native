@@ -37,6 +37,13 @@ const publicAPIMapping = {
     default: 'experimental_LayoutConformance',
     types: ['LayoutConformanceProps'],
   },
+  'Libraries/Core/InitializeCore': {
+    // `InitializeCore` has no public named export; the deep import must be
+    // swapped for the `react-native/setup-env` entry point entirely.
+    default: null,
+    types: null,
+    replacementSource: 'react-native/setup-env',
+  },
   'Libraries/Lists/FlatList': {
     default: 'FlatList',
     types: ['FlatListProps'],
