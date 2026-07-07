@@ -136,7 +136,7 @@
     "featureflags": "node ./scripts/featureflags/index.js"
   },
   "peerDependencies": {
-    "@react-native/jest-preset": "0.87.0-main",
+    "@react-native/jest-preset": "0.88.0-main",
     "@types/react": "^19.1.1",
     "react": "^19.2.3"
   },
@@ -149,13 +149,13 @@
     }
   },
   "dependencies": {
-    "@react-native/asset-utils": "0.87.0-main",
-    "@react-native/codegen": "0.87.0-main",
-    "@react-native/community-cli-plugin": "0.87.0-main",
-    "@react-native/gradle-plugin": "0.87.0-main",
-    "@react-native/js-polyfills": "0.87.0-main",
-    "@react-native/normalize-colors": "0.87.0-main",
-    "@react-native/virtualized-lists": "0.87.0-main",
+    "@react-native/asset-utils": "0.88.0-main",
+    "@react-native/codegen": "0.88.0-main",
+    "@react-native/community-cli-plugin": "0.88.0-main",
+    "@react-native/gradle-plugin": "0.88.0-main",
+    "@react-native/js-polyfills": "0.88.0-main",
+    "@react-native/normalize-colors": "0.88.0-main",
+    "@react-native/virtualized-lists": "0.88.0-main",
     "anser": "^1.4.9",
     "ansi-regex": "^5.0.0",
     "babel-plugin-syntax-hermes-parser": "0.36.1",

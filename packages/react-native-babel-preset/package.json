@@ -1,6 +1,6 @@
 {
   "name": "@react-native/babel-preset",
-  "version": "0.87.0-main",
+  "version": "0.88.0-main",
   "description": "Babel preset for React Native applications",
   "repository": {
     "type": "git",
@@ -55,7 +55,7 @@
     "@babel/plugin-transform-runtime": "^7.24.7",
     "@babel/plugin-transform-typescript": "^7.25.2",
     "@babel/plugin-transform-unicode-regex": "^7.24.7",
-    "@react-native/babel-plugin-codegen": "0.87.0-main",
+    "@react-native/babel-plugin-codegen": "0.88.0-main",
     "babel-plugin-syntax-hermes-parser": "0.36.1",
     "babel-plugin-transform-flow-enums": "^0.0.2",
     "react-refresh": "^0.14.0"
