@@ -108,7 +108,7 @@ public open class ReadableNativeArray protected constructor() : NativeArray(), R
     return arrayList
   }
 
-  private companion object {
+  internal companion object {
     @get:JvmStatic
     @get:JvmName("getJNIPassCounter")
     var jniPassCounter: Int = 0
