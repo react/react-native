@@ -59,7 +59,7 @@ function _pushCommit(version) {
 
 async function _createPR(version, token) {
   log('Creating changelog pr');
-  const url = 'https://api.github.com/repos/facebook/react-native/pulls';
+  const url = 'https://api.github.com/repos/react/react-native/pulls';
   const body = `
 ## Summary
 Add Changelog for ${version}

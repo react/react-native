@@ -16,9 +16,9 @@ body:
         * If you've found a problem with our **documentation**, [report it here](https://github.com/facebook/react-native-website/issues/).
         * If you're having an issue with **Metro** (the bundler), [report it here](https://github.com/facebook/metro/issues/).
         * If you're using an external library, report the issue to the **library first**.
-        * Please [search for similar issues](https://github.com/facebook/react-native/issues) in our issue tracker.
+        * Please [search for similar issues](https://github.com/react/react-native/issues) in our issue tracker.
 
-        Make sure that your issue is tested against the [**latest stable**](https://github.com/facebook/react-native/releases/) of React Native.
+        Make sure that your issue is tested against the [**latest stable**](https://github.com/react/react-native/releases/) of React Native.
   - type: textarea
     id: description
     attributes:

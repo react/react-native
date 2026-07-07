@@ -20,4 +20,4 @@ To help you upgrade to this version, you can use the [upgrade helper](https://re
 
 ---
 
-See changes from this release in the [changelog PR](https://github.com/facebook/react-native/labels/%F0%9F%93%9D%20Changelog)
+See changes from this release in the [changelog PR](https://github.com/react/react-native/labels/%F0%9F%93%9D%20Changelog)

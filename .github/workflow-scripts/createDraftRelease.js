@@ -23,8 +23,8 @@ function _extractChangelog(version) {
     // for RC.0 and for the release of a new stable minor, the changelog is too long
     // to be added in a release. The release body is usually something shorter.
     // See for example the release for 0.76.0 or 0.77.0:
-    // 0.76: https://github.com/facebook/react-native/releases/tag/v0.76.0
-    // 0.77: https://github.com/facebook/react-native/releases/tag/v0.77.0
+    // 0.76: https://github.com/react/react-native/releases/tag/v0.76.0
+    // 0.77: https://github.com/react/react-native/releases/tag/v0.77.0
     return '';
   }
   const changelog = String(fs.readFileSync('CHANGELOG.md', 'utf8')).split('\n');
@@ -85,11 +85,11 @@ To help you upgrade to this version, you can use the [Upgrade Helper](https://re
 
 ---
 
-View the whole changelog in the [CHANGELOG.md file](https://github.com/facebook/react-native/blob/main/CHANGELOG.md).`;
+View the whole changelog in the [CHANGELOG.md file](https://github.com/react/react-native/blob/main/CHANGELOG.md).`;
 }
 
 async function _verifyTagExists(version) {
-  const url = `https://github.com/facebook/react-native/releases/tag/v${version}`;
+  const url = `https://github.com/react/react-native/releases/tag/v${version}`;
 
   const response = await fetch(url);
   if (response.status === 404) {
@@ -98,7 +98,7 @@ async function _verifyTagExists(version) {
 }
 
 async function _createDraftReleaseOnGitHub(version, body, latest, token) {
-  const url = 'https://api.github.com/repos/facebook/react-native/releases';
+  const url = 'https://api.github.com/repos/react/react-native/releases';
   const method = 'POST';
   const headers = _headers(token);
   const fetchBody = JSON.stringify({

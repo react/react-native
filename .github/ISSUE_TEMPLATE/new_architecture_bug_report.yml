@@ -12,12 +12,12 @@ body:
         Thank you for taking the time to report an issue for [the New Architecture of React Native](https://reactnative.dev/docs/the-new-architecture/landing-page),
         your contribution will help make the framework better for everyone.
 
-        If you're **NOT** using the New Architecture, please use this [other bug type](https://github.com/facebook/react-native/issues/new?template=bug_report.yml).
+        If you're **NOT** using the New Architecture, please use this [other bug type](https://github.com/react/react-native/issues/new?template=bug_report.yml).
         Do not attempt to open a bug in this category if you're not using the New Architecture as your bug will be closed.
 
         Make sure that your issue:
         * Have a **valid reproducer** (See [How to report a bug](https://reactnative.dev/contributing/how-to-report-a-bug)).
-        * Is tested against the [**latest stable**](https://github.com/facebook/react-native/releases/) of React Native.
+        * Is tested against the [**latest stable**](https://github.com/react/react-native/releases/) of React Native.
 
         🚨 IMPORTANT: Due to the extreme number of bugs we receive, issues **without a reproducer** or for an [**unsupported versions**](https://github.com/reactwg/react-native-releases#which-versions-are-currently-supported) of React Native **will be closed**.
   - type: textarea

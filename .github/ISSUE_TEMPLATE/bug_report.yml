@@ -16,11 +16,11 @@ body:
         * If you're found a problem with our **documentation**, [report it here](https://github.com/facebook/react-native-website/issues/).
         * If you're having an issue with **Metro** (the bundler), [report it here](https://github.com/facebook/metro/issues/).
         * If you're using an external library, report the issue to the **library first**.
-        * Please [search for similar issues](https://github.com/facebook/react-native/issues) in our issue tracker.
+        * Please [search for similar issues](https://github.com/react/react-native/issues) in our issue tracker.
 
         Make sure that your issue:
         * Have a **valid reproducer** (See [How to report a bug](https://reactnative.dev/contributing/how-to-report-a-bug)).
-        * Is tested against the [**latest stable**](https://github.com/facebook/react-native/releases/) of React Native.
+        * Is tested against the [**latest stable**](https://github.com/react/react-native/releases/) of React Native.
 
         🚨 IMPORTANT: Due to the extreme number of bugs we receive, issues **without a reproducer** or for an [**unsupported versions**](https://github.com/reactwg/react-native-releases#which-versions-are-currently-supported) of React Native **will be closed**.
   - type: textarea

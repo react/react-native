@@ -15,7 +15,7 @@ The React Native website is hosted on a [separate repository](https://github.com
 
 ## 🐛 I found a bug in React Native.
 
-If you want to report a reproducible bug or regression in the React Native library, you can [create a new issue](https://github.com/facebook/react-native/issues/new?labels=Type%3A+Bug+Report&template=bug_report.md). It's a good idea to look through [open issues](https://github.com/facebook/react-native/issues) before doing so, as someone else may have reported a similar issue.
+If you want to report a reproducible bug or regression in the React Native library, you can [create a new issue](https://github.com/react/react-native/issues/new?labels=Type%3A+Bug+Report&template=bug_report.md). It's a good idea to look through [open issues](https://github.com/react/react-native/issues) before doing so, as someone else may have reported a similar issue.
 
 
 ## 🚀 I want to discuss the future of React Native.
