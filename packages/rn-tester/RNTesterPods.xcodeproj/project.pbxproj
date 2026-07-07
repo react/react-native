@@ -11,6 +11,7 @@
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		2DDEF0101F84BF7B00DBDF73 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2DDEF00F1F84BF7B00DBDF73 /* Images.xcassets */; };
 		383889DA23A7398900D06C3E /* RCTConvert_UIColorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 383889D923A7398900D06C3E /* RCTConvert_UIColorTests.m */; };
+		3B21744731FE3D9300C10B12 /* RCTPullToRefreshViewComponentViewTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 3B21744631FE3D9300C10B12 /* RCTPullToRefreshViewComponentViewTests.mm */; };
 		3D2AFAF51D646CF80089D1A3 /* legacy_image@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3D2AFAF41D646CF80089D1A3 /* legacy_image@2x.png */; };
 		3F4D148C63BBF774A25488A6 /* libPods-RNTesterIntegrationTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 93A243F0D4D5C54911E811C4 /* libPods-RNTesterIntegrationTests.a */; };
 		46C0FD761B0B9B1E8662B759 /* libPods-RNTesterUnitTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B312B0EEE90BA411618B015 /* libPods-RNTesterUnitTests.a */; };
@@ -87,6 +88,7 @@
 		2B312B0EEE90BA411618B015 /* libPods-RNTesterUnitTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-RNTesterUnitTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		2DDEF00F1F84BF7B00DBDF73 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = RNTester/Images.xcassets; sourceTree = "<group>"; };
 		383889D923A7398900D06C3E /* RCTConvert_UIColorTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCTConvert_UIColorTests.m; sourceTree = "<group>"; };
+		3B21744631FE3D9300C10B12 /* RCTPullToRefreshViewComponentViewTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = RCTPullToRefreshViewComponentViewTests.mm; sourceTree = "<group>"; };
 		3D2AFAF41D646CF80089D1A3 /* legacy_image@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "legacy_image@2x.png"; path = "RNTester/legacy_image@2x.png"; sourceTree = "<group>"; };
 		3FF60722627F93D8F62FA1E3 /* Pods-RNTesterUnitTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RNTesterUnitTests.release.xcconfig"; path = "Target Support Files/Pods-RNTesterUnitTests/Pods-RNTesterUnitTests.release.xcconfig"; sourceTree = "<group>"; };
 		4C706D402EE4AF9BE838CBA9 /* libPods-RNTester.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-RNTester.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -339,6 +341,7 @@
 				A975CA6B2C05EADE0043F72A /* RCTNetworkTaskTests.m */,
 				E7DB20BE22B2BAA4005AC45F /* RCTNativeAnimatedNodesManagerTests.m */,
 				E7DB20AD22B2BAA3005AC45F /* RCTPerformanceLoggerTests.m */,
+				3B21744631FE3D9300C10B12 /* RCTPullToRefreshViewComponentViewTests.mm */,
 				E7DB20C122B2BAA4005AC45F /* RCTUnicodeDecodeTests.m */,
 				E7DB20D022B2BAA5005AC45F /* RCTURLUtilsTests.m */,
 				E7DB20B322B2BAA4005AC45F /* RNTesterUnitTestsBundle.js */,
@@ -751,6 +754,7 @@
 				E7DB20E822B2BAA6005AC45F /* RCTModuleMethodTests.mm in Sources */,
 				F1A0B1C23D4E5F6071829302 /* RCTTurboModuleArrayBufferTests.mm in Sources */,
 				E7DB20E222B2BAA6005AC45F /* RCTGzipTests.m in Sources */,
+				3B21744731FE3D9300C10B12 /* RCTPullToRefreshViewComponentViewTests.mm in Sources */,
 				E7DB20ED22B2BAA6005AC45F /* RCTURLUtilsTests.m in Sources */,
 				E7DB20D322B2BAA6005AC45F /* RCTBlobManagerTests.m in Sources */,
 				E7DB20E322B2BAA6005AC45F /* RCTAllocationTests.m in Sources */,

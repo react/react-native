@@ -89,7 +89,8 @@ using namespace facebook::react;
 
 - (void)updateProps:(const Props::Shared &)props oldProps:(const Props::Shared &)oldProps
 {
-  const auto &oldConcreteProps = static_cast<const PullToRefreshViewProps &>(*_props);
+  const auto &oldConcreteProps =
+      static_cast<const PullToRefreshViewProps &>(*(oldProps ? oldProps : _props));
   const auto &newConcreteProps = static_cast<const PullToRefreshViewProps &>(*props);
 
   if (_recycled || newConcreteProps.tintColor != oldConcreteProps.tintColor) {
