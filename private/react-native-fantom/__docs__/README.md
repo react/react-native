@@ -187,12 +187,12 @@ hi
   underlying native (Fabric/TurboModules) code, so tests stay close to real
   usage and are more resilient to internal refactors. Observe results through
   the public surface too — e.g. assert the rendered output
-  (`root.getRenderedOutput(...)`) or values delivered to public listeners
-  rather than reading private state.
+  (`root.getRenderedOutput(...)`) or values delivered to public listeners rather
+  than reading private state.
   - When Fantom doesn't support something (a native module, a capability, a way
     to observe a result, etc.), it's fine to reach into internals to work around
-    that limitation. Prefer a short comment explaining why the internal access is
-    necessary.
+    that limitation. Prefer a short comment explaining why the internal access
+    is necessary.
 - Place test files in `__tests__` directories alongside the code being tested.
 - Benchmark tests use the `-benchmark-itest.js` suffix.
 - Use `Fantom.runTask()` to render and run synchronous operations; it ensures
