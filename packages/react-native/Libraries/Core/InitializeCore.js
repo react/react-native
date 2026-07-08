@@ -22,6 +22,7 @@
  *   1. Require system.
  *   2. Bridged modules.
  *
+ * @deprecated Since 0.87. Use `'react-native/setup-env'` instead.
  */
 
 'use strict';
