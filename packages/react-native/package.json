@@ -52,7 +52,6 @@
       "types": null,
       "default": "./src/asset-registry.js"
     },
-    "./rn-get-polyfills": "./rn-get-polyfills.js",
     "./src/fb_internal/*": "./src/fb_internal/*",
     "./package.json": "./package.json"
   },
@@ -88,7 +87,6 @@
     "ReactApple",
     "ReactCommon",
     "README.md",
-    "rn-get-polyfills.js",
     "scripts/replace-rncore-version.js",
     "scripts/bundle.js",
     "scripts/cocoapods",
@@ -147,7 +145,6 @@
     "@react-native/codegen": "0.87.0-main",
     "@react-native/community-cli-plugin": "0.87.0-main",
     "@react-native/gradle-plugin": "0.87.0-main",
-    "@react-native/js-polyfills": "0.87.0-main",
     "@react-native/normalize-colors": "0.87.0-main",
     "@react-native/virtualized-lists": "0.87.0-main",
     "anser": "^1.4.9",
