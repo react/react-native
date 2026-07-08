@@ -802,14 +802,18 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
   //     UIImageView whose natural a11y behavior would be clobbered
   //     by forcing NO / None here. Per-subclass reset is a separate
   //     follow-up.
+  //   * `accessibilityRespondsToUserInteraction` — its UIKit default is
+  //     not a fixed value but "derived from other accessibility
+  //     properties" (per the UIAccessibility.h header; e.g. an element
+  //     with UIAccessibilityTraitNotEnabled returns NO). Writing any
+  //     explicit value here would replace the derived behavior with a
+  //     constant, which is worse than the staleness it would fix.
   self.accessibilityElement.accessibilityLabel = nil;
   self.accessibilityElement.accessibilityLanguage = nil;
   self.accessibilityElement.accessibilityHint = nil;
   self.accessibilityElement.accessibilityValue = nil;
   self.accessibilityElement.accessibilityViewIsModal = NO;
   self.accessibilityElement.accessibilityElementsHidden = NO;
-  // UIView default for accessibilityRespondsToUserInteraction is YES.
-  self.accessibilityElement.accessibilityRespondsToUserInteraction = YES;
   self.accessibilityIgnoresInvertColors = NO;
   // Clear only the `accessibilityState` bits the setter writes via
   // self.accessibilityTraits (.NotEnabled / .Selected). Subclass
