@@ -124,7 +124,6 @@ import {
   // @ts-ignore
   SectionListData,
   ToastAndroid,
-  Touchable,
   LayoutAnimation,
   processColor,
   experimental_LayoutConformance as LayoutConformance,
@@ -486,22 +485,6 @@ class Welcome extends React.Component<
 }
 
 export default Welcome;
-
-// TouchableTest
-function TouchableTest() {
-  function basicUsage() {
-    return Touchable.renderDebugView({
-      color: 'mediumspringgreen',
-      hitSlop: {bottom: 5, top: 5},
-    });
-  }
-
-  function defaultHitSlop() {
-    return Touchable.renderDebugView({
-      color: 'red',
-    });
-  }
-}
 
 export class TouchableHighlightTest extends React.Component {
   buttonRef = React.createRef<React.ComponentRef<typeof TouchableHighlight>>();
