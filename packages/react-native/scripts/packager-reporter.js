@@ -10,7 +10,8 @@
 
 'use strict';
 
-let reporter /*: $FlowFixMe */;
+// $FlowFixMe[signature-verification-failure]
+let reporter;
 
 const logPath = process.env.RCT_PACKAGER_LOG_PATH;
 if (logPath != null && logPath !== '') {

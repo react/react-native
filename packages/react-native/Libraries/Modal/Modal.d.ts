@@ -58,11 +58,7 @@ export interface ModalPropsIOS {
    * The `presentationStyle` determines the style of modal to show
    */
   presentationStyle?:
-    | 'fullScreen'
-    | 'pageSheet'
-    | 'formSheet'
-    | 'overFullScreen'
-    | undefined;
+    'fullScreen' | 'pageSheet' | 'formSheet' | 'overFullScreen' | undefined;
 
   /**
    * The `supportedOrientations` prop allows the modal to be rotated to any of the specified orientations.
@@ -88,8 +84,7 @@ export interface ModalPropsIOS {
    * The orientation provided is only 'portrait' or 'landscape'. This callback is also called on initial render, regardless of the current orientation.
    */
   onOrientationChange?:
-    | ((event: NativeSyntheticEvent<any>) => void)
-    | undefined;
+    ((event: NativeSyntheticEvent<any>) => void) | undefined;
 
   /**
    * Controls whether the modal can be dismissed by swiping down on iOS.

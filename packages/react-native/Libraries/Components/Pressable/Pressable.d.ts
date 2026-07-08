@@ -34,7 +34,8 @@ export interface PressableAndroidRippleConfig {
 }
 
 export interface PressableProps
-  extends AccessibilityProps,
+  extends
+    AccessibilityProps,
     Omit<ViewProps, 'children' | 'style' | 'hitSlop'> {
   /**
    * Called when the hover is activated to provide visual feedback.
@@ -76,18 +77,14 @@ export interface PressableProps
    * @platform macos windows
    */
   onBlur?:
-    | null
-    | ((event: NativeSyntheticEvent<TargetedEvent>) => void)
-    | undefined;
+    null | ((event: NativeSyntheticEvent<TargetedEvent>) => void) | undefined;
 
   /**
    * Called after the element is focused.
    * @platform macos windows
    */
   onFocus?:
-    | null
-    | ((event: NativeSyntheticEvent<TargetedEvent>) => void)
-    | undefined;
+    null | ((event: NativeSyntheticEvent<TargetedEvent>) => void) | undefined;
 
   /**
    * Either children or a render prop that receives a boolean reflecting whether

@@ -225,7 +225,7 @@ function computeBaseOutputPath(
   ) {
     return process.env.RCT_SCRIPT_OUTPUT_DIR;
   }
-  let baseOutputPath /*: string */;
+  let baseOutputPath;
   if (optionalBaseOutputPath == null) {
     const outputDirFromPkgJson = readOutputDirFromPkgJson(pkgJson, platform);
     if (outputDirFromPkgJson != null) {

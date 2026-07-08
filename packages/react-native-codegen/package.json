@@ -48,7 +48,7 @@
     "babel-plugin-syntax-hermes-parser": "0.36.1",
     "hermes-estree": "0.36.1",
     "micromatch": "^4.0.4",
-    "prettier": "3.6.2",
+    "prettier": "3.9.4",
     "rimraf": "^3.0.2"
   },
   "peerDependencies": {

@@ -60,8 +60,7 @@ export interface TVProps {
  * @see https://reactnative.dev/docs/touchableopacity#props
  */
 export interface TouchableOpacityProps
-  extends TouchableWithoutFeedbackProps,
-    TVProps {
+  extends TouchableWithoutFeedbackProps, TVProps {
   /**
    * Determines what the opacity of the wrapped view should be when touch is active.
    * Defaults to 0.2

@@ -37,11 +37,7 @@ import {NativeEventSubscription} from '../EventEmitter/RCTNativeAppEventEmitter'
  */
 export type AppStateEvent = 'change' | 'memoryWarning' | 'blur' | 'focus';
 export type AppStateStatus =
-  | 'active'
-  | 'background'
-  | 'inactive'
-  | 'unknown'
-  | 'extension';
+  'active' | 'background' | 'inactive' | 'unknown' | 'extension';
 
 export interface AppStateStatic {
   currentState: AppStateStatus;

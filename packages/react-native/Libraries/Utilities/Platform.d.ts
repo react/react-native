@@ -11,12 +11,7 @@
  * @see https://reactnative.dev/docs/platform-specific-code#content
  */
 export type PlatformOSType =
-  | 'ios'
-  | 'android'
-  | 'macos'
-  | 'windows'
-  | 'web'
-  | 'native';
+  'ios' | 'android' | 'macos' | 'windows' | 'web' | 'native';
 type PlatformConstants = {
   isTesting: boolean;
   isDisableAnimations?: boolean | undefined;

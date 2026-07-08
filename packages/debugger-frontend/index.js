@@ -10,7 +10,12 @@
 
 const path = require('path');
 
-let frontEndPath = path.join(__dirname, 'dist', 'third-party', 'front_end');
+let frontEndPath /*:string */ = path.join(
+  __dirname,
+  'dist',
+  'third-party',
+  'front_end',
+);
 
 if (process.env.REACT_NATIVE_DEBUGGER_FRONTEND_PATH != null) {
   frontEndPath = process.env.REACT_NATIVE_DEBUGGER_FRONTEND_PATH;
@@ -33,4 +38,4 @@ if (process.env.REACT_NATIVE_DEBUGGER_FRONTEND_PATH != null) {
   );
 }
 
-module.exports = frontEndPath /*:: as string */;
+module.exports = frontEndPath;

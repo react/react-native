@@ -12,18 +12,10 @@ import {ImageResizeMode} from '../Image/ImageResizeMode';
 import {ColorValue} from './StyleSheet';
 
 type FlexAlignType =
-  | 'flex-start'
-  | 'flex-end'
-  | 'center'
-  | 'stretch'
-  | 'baseline';
+  'flex-start' | 'flex-end' | 'center' | 'stretch' | 'baseline';
 
 export type DimensionValue =
-  | number
-  | 'auto'
-  | `${number}%`
-  | Animated.AnimatedNode
-  | null;
+  number | 'auto' | `${number}%` | Animated.AnimatedNode | null;
 type AnimatableNumericValue = number | Animated.AnimatedNode;
 type AnimatableStringValue = string | Animated.AnimatedNode;
 
@@ -61,11 +53,7 @@ export interface FlexStyle {
   flex?: number | undefined;
   flexBasis?: DimensionValue | undefined;
   flexDirection?:
-    | 'row'
-    | 'column'
-    | 'row-reverse'
-    | 'column-reverse'
-    | undefined;
+    'row' | 'column' | 'row-reverse' | 'column-reverse' | undefined;
   rowGap?: number | string | undefined;
   gap?: number | string | undefined;
   columnGap?: number | string | undefined;
@@ -381,10 +369,7 @@ export type LinearGradientValue = {
 export type GradientValue = LinearGradientValue;
 
 type RadialExtent =
-  | 'closest-corner'
-  | 'closest-side'
-  | 'farthest-corner'
-  | 'farthest-side';
+  'closest-corner' | 'closest-side' | 'farthest-corner' | 'farthest-side';
 export type RadialGradientPosition =
   | {
       top: number | string;
@@ -430,10 +415,7 @@ export type BackgroundSizeValue = {
 };
 
 export type BackgroundRepeatKeyword =
-  | 'repeat'
-  | 'space'
-  | 'round'
-  | 'no-repeat';
+  'repeat' | 'space' | 'round' | 'no-repeat';
 
 export type BackgroundPositionValue =
   | {
@@ -519,21 +501,13 @@ export interface ViewStyle extends FlexStyle, ShadowStyleIOS, TransformsStyle {
   mixBlendMode?: BlendMode | undefined;
   backgroundImage?: ReadonlyArray<BackgroundImageValue> | string | undefined;
   experimental_backgroundImage?:
-    | ReadonlyArray<BackgroundImageValue>
-    | string
-    | undefined;
+    ReadonlyArray<BackgroundImageValue> | string | undefined;
   experimental_backgroundSize?:
-    | ReadonlyArray<BackgroundSizeValue>
-    | string
-    | undefined;
+    ReadonlyArray<BackgroundSizeValue> | string | undefined;
   experimental_backgroundPosition?:
-    | ReadonlyArray<BackgroundPositionValue>
-    | string
-    | undefined;
+    ReadonlyArray<BackgroundPositionValue> | string | undefined;
   experimental_backgroundRepeat?:
-    | ReadonlyArray<BackgroundRepeatValue>
-    | string
-    | undefined;
+    ReadonlyArray<BackgroundRepeatValue> | string | undefined;
 }
 
 export type FontVariant =
@@ -574,12 +548,7 @@ export interface TextStyleIOS extends ViewStyle {
   fontVariant?: FontVariant[] | undefined;
   textDecorationColor?: ColorValue | undefined;
   textDecorationStyle?:
-    | 'solid'
-    | 'double'
-    | 'dotted'
-    | 'dashed'
-    | 'wavy'
-    | undefined;
+    'solid' | 'double' | 'dotted' | 'dashed' | 'wavy' | undefined;
   writingDirection?: 'auto' | 'ltr' | 'rtl' | undefined;
 }
 
@@ -650,12 +619,7 @@ export interface TextStyle extends TextStyleIOS, TextStyleAndroid, ViewStyle {
     | 'underline line-through'
     | undefined;
   textDecorationStyle?:
-    | 'solid'
-    | 'double'
-    | 'dotted'
-    | 'dashed'
-    | 'wavy'
-    | undefined;
+    'solid' | 'double' | 'dotted' | 'dashed' | 'wavy' | undefined;
   textDecorationColor?: ColorValue | undefined;
   textShadowColor?: ColorValue | undefined;
   textShadowOffset?: {width: number; height: number} | undefined;

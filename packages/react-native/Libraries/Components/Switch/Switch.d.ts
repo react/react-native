@@ -45,8 +45,7 @@ export interface SwitchChangeEventData extends TargetedEvent {
   value: boolean;
 }
 
-export interface SwitchChangeEvent
-  extends NativeSyntheticEvent<SwitchChangeEventData> {}
+export interface SwitchChangeEvent extends NativeSyntheticEvent<SwitchChangeEventData> {}
 
 export interface SwitchProps extends SwitchPropsIOS {
   /**
@@ -76,9 +75,7 @@ export interface SwitchProps extends SwitchPropsIOS {
    * Invoked with the change event as an argument when the value changes.
    */
   onChange?:
-    | ((event: SwitchChangeEvent) => Promise<void> | void)
-    | null
-    | undefined;
+    ((event: SwitchChangeEvent) => Promise<void> | void) | null | undefined;
 
   /**
    * Invoked with the new value when the value changes.

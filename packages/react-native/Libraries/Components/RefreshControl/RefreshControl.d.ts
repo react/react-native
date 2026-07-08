@@ -53,8 +53,7 @@ export interface RefreshControlPropsAndroid extends ViewProps {
 }
 
 export interface RefreshControlProps
-  extends RefreshControlPropsIOS,
-    RefreshControlPropsAndroid {
+  extends RefreshControlPropsIOS, RefreshControlPropsAndroid {
   /**
    * Called when the view starts refreshing.
    */

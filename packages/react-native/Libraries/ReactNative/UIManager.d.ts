@@ -86,8 +86,7 @@ export interface UIManagerStatic {
    *     UIManager.setLayoutAnimationEnabledExperimental && UIManager.setLayoutAnimationEnabledExperimental(true);
    */
   setLayoutAnimationEnabledExperimental?:
-    | ((value: boolean) => void)
-    | undefined;
+    ((value: boolean) => void) | undefined;
 
   getViewManagerConfig: (name: string) => {
     Commands: {[key: string]: number};

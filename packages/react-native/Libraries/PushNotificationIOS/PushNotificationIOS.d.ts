@@ -80,22 +80,13 @@ type ScheduleLocalNotificationDetails = {
   fireDate?: number | string | undefined;
   isSilent?: boolean | undefined;
   repeatInterval?:
-    | 'year'
-    | 'month'
-    | 'week'
-    | 'day'
-    | 'hour'
-    | 'minute'
-    | undefined;
+    'year' | 'month' | 'week' | 'day' | 'hour' | 'minute' | undefined;
   soundName?: string | undefined;
   userInfo?: Object | undefined;
 };
 
 export type PushNotificationEventName =
-  | 'notification'
-  | 'localNotification'
-  | 'register'
-  | 'registrationError';
+  'notification' | 'localNotification' | 'register' | 'registrationError';
 
 type FetchResult = {
   NewData: 'UIBackgroundFetchResultNewData';

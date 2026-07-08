@@ -17,8 +17,7 @@ import {
 } from '../../Types/CoreEventTypes';
 import {ViewProps} from '../View/ViewPropTypes';
 
-export interface DrawerSlideEvent
-  extends NativeSyntheticEvent<NativeTouchEvent> {}
+export interface DrawerSlideEvent extends NativeSyntheticEvent<NativeTouchEvent> {}
 
 /**
  * DrawerLayoutAndroid is deprecated and will be removed in a future release.
@@ -101,8 +100,7 @@ export interface DrawerLayoutAndroidProps extends ViewProps {
    *   it's closing or opening animation
    */
   onDrawerStateChanged?:
-    | ((event: 'Idle' | 'Dragging' | 'Settling') => void)
-    | undefined;
+    ((event: 'Idle' | 'Dragging' | 'Settling') => void) | undefined;
 
   /**
    * The navigation view that will be rendered to the side of the

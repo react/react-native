@@ -10,10 +10,7 @@
 import type * as React from 'react';
 
 export type StatusBarStyle =
-  | 'default'
-  | 'auto'
-  | 'light-content'
-  | 'dark-content';
+  'default' | 'auto' | 'light-content' | 'dark-content';
 
 export type StatusBarAnimation = 'none' | 'fade' | 'slide';
 

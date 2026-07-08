@@ -28,8 +28,7 @@ export interface PointProp {
   y: number;
 }
 
-export interface ScrollResponderEvent
-  extends NativeSyntheticEvent<NativeTouchEvent> {}
+export interface ScrollResponderEvent extends NativeSyntheticEvent<NativeTouchEvent> {}
 
 interface SubscribableMixin {
   /**
@@ -410,11 +409,7 @@ export interface ScrollViewPropsIOS {
    * The default value of this property is "never".
    */
   contentInsetAdjustmentBehavior?:
-    | 'automatic'
-    | 'scrollableAxes'
-    | 'never'
-    | 'always'
-    | undefined;
+    'automatic' | 'scrollableAxes' | 'never' | 'always' | undefined;
 
   /**
    * When true the ScrollView will try to lock to only vertical or horizontal
@@ -523,8 +518,7 @@ export interface ScrollViewPropsIOS {
    * @platform ios
    */
   onScrollToTop?:
-    | ((event: NativeSyntheticEvent<NativeScrollEvent>) => void)
-    | undefined;
+    ((event: NativeSyntheticEvent<NativeScrollEvent>) => void) | undefined;
 
   /**
    * The current scale of the scroll view content. The default value is 1.0.
@@ -598,10 +592,7 @@ export interface ScrollViewPropsAndroid {
 }
 
 export interface ScrollViewProps
-  extends ViewProps,
-    ScrollViewPropsIOS,
-    ScrollViewPropsAndroid,
-    Touchable {
+  extends ViewProps, ScrollViewPropsIOS, ScrollViewPropsAndroid, Touchable {
   /**
    * These styles will be applied to the scroll view content container which
    * wraps all of the child views. Example:
@@ -681,43 +672,37 @@ export interface ScrollViewProps
    *
    */
   onContentSizeChange?:
-    | ((contentWidth: number, contentHeight: number) => void)
-    | undefined;
+    ((contentWidth: number, contentHeight: number) => void) | undefined;
 
   /**
    * Fires at most once per frame during scrolling.
    */
   onScroll?:
-    | ((event: NativeSyntheticEvent<NativeScrollEvent>) => void)
-    | undefined;
+    ((event: NativeSyntheticEvent<NativeScrollEvent>) => void) | undefined;
 
   /**
    * Fires if a user initiates a scroll gesture.
    */
   onScrollBeginDrag?:
-    | ((event: NativeSyntheticEvent<NativeScrollEvent>) => void)
-    | undefined;
+    ((event: NativeSyntheticEvent<NativeScrollEvent>) => void) | undefined;
 
   /**
    * Fires when a user has finished scrolling.
    */
   onScrollEndDrag?:
-    | ((event: NativeSyntheticEvent<NativeScrollEvent>) => void)
-    | undefined;
+    ((event: NativeSyntheticEvent<NativeScrollEvent>) => void) | undefined;
 
   /**
    * Fires when scroll view has finished moving
    */
   onMomentumScrollEnd?:
-    | ((event: NativeSyntheticEvent<NativeScrollEvent>) => void)
-    | undefined;
+    ((event: NativeSyntheticEvent<NativeScrollEvent>) => void) | undefined;
 
   /**
    * Fires when scroll view has begun moving
    */
   onMomentumScrollBegin?:
-    | ((event: NativeSyntheticEvent<NativeScrollEvent>) => void)
-    | undefined;
+    ((event: NativeSyntheticEvent<NativeScrollEvent>) => void) | undefined;
 
   /**
    * When true the scroll view stops on multiples of the scroll view's size
@@ -900,8 +885,7 @@ export interface ScrollViewImperativeMethods {
 export type ScrollResponderType = ScrollViewImperativeMethods;
 
 export interface PublicScrollViewInstance
-  extends HostInstance,
-    ScrollViewImperativeMethods {}
+  extends HostInstance, ScrollViewImperativeMethods {}
 
 declare class ScrollViewComponent extends React.Component<ScrollViewProps> {}
 export declare const ScrollViewBase: Constructor<ScrollResponderMixin> &

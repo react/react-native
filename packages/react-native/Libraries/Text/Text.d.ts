@@ -52,11 +52,7 @@ export interface TextPropsIOS {
    * Set line break strategy on iOS.
    */
   lineBreakStrategyIOS?:
-    | 'none'
-    | 'standard'
-    | 'hangul-word'
-    | 'push-out'
-    | undefined;
+    'none' | 'standard' | 'hangul-word' | 'push-out' | undefined;
 }
 
 export interface TextPropsAndroid {
@@ -86,13 +82,7 @@ export interface TextPropsAndroid {
    * By default no data types are detected.
    */
   dataDetectorType?:
-    | null
-    | 'phoneNumber'
-    | 'link'
-    | 'email'
-    | 'none'
-    | 'all'
-    | undefined;
+    null | 'phoneNumber' | 'link' | 'email' | 'none' | 'all' | undefined;
 
   /**
    * Hyphenation strategy
@@ -102,9 +92,7 @@ export interface TextPropsAndroid {
 
 // https://reactnative.dev/docs/text#props
 export interface TextProps
-  extends TextPropsIOS,
-    TextPropsAndroid,
-    AccessibilityProps {
+  extends TextPropsIOS, TextPropsAndroid, AccessibilityProps {
   /**
    * Specifies whether fonts should scale to respect Text Size accessibility settings.
    * The default is `true`.
@@ -216,8 +204,7 @@ export interface TextProps
    * Defines how far your touch may move off of the button, before deactivating the button.
    */
   pressRetentionOffset?:
-    | {top: number; left: number; bottom: number; right: number}
-    | undefined;
+    {top: number; left: number; bottom: number; right: number} | undefined;
 }
 
 /**
