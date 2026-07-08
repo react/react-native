@@ -290,9 +290,11 @@ async function testRNTestProject(
 
   cd('RNTestProject');
 
-  // need to do this here so that Android will be properly setup either way
+  // need to do this here so that Android will be properly setup either way.
+  // Use printf, not `echo -e`: on macOS /bin/sh's echo doesn't support -e, so
+  // it appends a literal "-e " onto the previous property and corrupts the file.
   exec(
-    `echo -e "\nreact.internal.mavenLocalRepo=${mavenLocalPath}" >> android/gradle.properties`,
+    `printf '\\nreact.internal.mavenLocalRepo=%s\\n' "${mavenLocalPath}" >> android/gradle.properties`,
   );
 
   // Only build the simulator architecture. CI is however generating only that one.

@@ -112,6 +112,10 @@ async function initNewProjectFromSource(
     // packages are updated in a lockstep, let's get the version of the first one
     const version = packages[Object.keys(packages)[0]].packageJson.version;
 
+    // npm >= 11 refuses to publish a prerelease version (e.g. 0.87.0-rc.0)
+    // without an explicit --tag, since it would otherwise become `latest`.
+    const publishTag = version.includes('-') ? ' --tag prerelease' : '';
+
     console.log('Publishing packages to local npm proxy\n');
     for (const {path: packagePath, packageJson} of Object.values(packages)) {
       const desc = `${packageJson.name} (${path.relative(
@@ -122,7 +126,7 @@ async function initNewProjectFromSource(
         `${desc} ${styleText('dim', '.').repeat(Math.max(0, 72 - desc.length))} `,
       );
       execSync(
-        `npm publish --registry ${VERDACCIO_SERVER_URL} --access public`,
+        `npm publish --registry ${VERDACCIO_SERVER_URL} --access public${publishTag}`,
         {
           cwd: packagePath,
           stdio: verbose ? 'inherit' : [process.stderr],
