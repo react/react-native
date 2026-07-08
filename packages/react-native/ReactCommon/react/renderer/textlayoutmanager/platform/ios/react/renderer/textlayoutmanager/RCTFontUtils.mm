@@ -359,16 +359,12 @@ UIFont *RCTFontWithFontProperties(RCTFontProperties fontProperties)
       // Gracefully handle being given a font name rather than font family, for
       // example: "Helvetica Light Oblique" rather than just "Helvetica".
       font = [UIFont fontWithName:fontProperties.family size:effectiveFontSize];
-      if (font != nullptr) {
-        fontNames = [UIFont fontNamesForFamilyName:font.familyName];
-        fontWeight = (fontWeight != 0.0) ?: RCTGetFontWeight(font);
-      } else {
+
+      if (!font) {
         // Failback to system font.
         font = RCTDefaultFontWithFontProperties(fontProperties);
       }
-    }
-
-    if (fontNames.count > 0) {
+    } else {
       // Get the closest font that matches the given weight for the fontFamily
       CGFloat closestWeight = INFINITY;
       for (NSString *name in fontNames) {
