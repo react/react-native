@@ -175,8 +175,6 @@ export type {
 } from './Libraries/Components/TextInput/TextInput';
 export {default as TextInput} from './Libraries/Components/TextInput/TextInput';
 
-export {default as Touchable} from './Libraries/Components/Touchable/Touchable';
-
 export type {
   TouchableHighlightInstance,
   TouchableHighlightProps,
