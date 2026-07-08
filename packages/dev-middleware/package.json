@@ -1,6 +1,6 @@
 {
   "name": "@react-native/dev-middleware",
-  "version": "0.87.0-main",
+  "version": "0.88.0-main",
   "description": "Dev server middleware for React Native",
   "keywords": [
     "react-native",
@@ -32,8 +32,8 @@
   },
   "dependencies": {
     "@isaacs/ttlcache": "^1.4.1",
-    "@react-native/debugger-frontend": "0.87.0-main",
-    "@react-native/debugger-shell": "0.87.0-main",
+    "@react-native/debugger-frontend": "0.88.0-main",
+    "@react-native/debugger-shell": "0.88.0-main",
     "chrome-launcher": "^0.15.2",
     "chromium-edge-launcher": "^0.3.0",
     "connect": "^3.6.5",
@@ -45,7 +45,7 @@
     "ws": "^7.5.10"
   },
   "devDependencies": {
-    "@react-native/debugger-shell": "0.87.0-main",
+    "@react-native/debugger-shell": "0.88.0-main",
     "selfsigned": "^5.5.0",
     "undici": "^6.23.0",
     "wait-for-expect": "^3.0.2"

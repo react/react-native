@@ -1,6 +1,6 @@
 {
   "name": "@react-native/community-cli-plugin",
-  "version": "0.87.0-main",
+  "version": "0.88.0-main",
   "description": "Core CLI commands for React Native",
   "keywords": [
     "react-native",
@@ -31,8 +31,8 @@
     "prepack": "node ../../scripts/build/prepack.js"
   },
   "dependencies": {
-    "@react-native/asset-utils": "0.87.0-main",
-    "@react-native/dev-middleware": "0.87.0-main",
+    "@react-native/asset-utils": "0.88.0-main",
+    "@react-native/dev-middleware": "0.88.0-main",
     "debug": "^4.4.0",
     "invariant": "^2.2.4",
     "metro": "^0.86.0",
@@ -43,7 +43,7 @@
   },
   "peerDependencies": {
     "@react-native-community/cli": "*",
-    "@react-native/metro-config": "0.87.0-main"
+    "@react-native/metro-config": "0.88.0-main"
   },
   "peerDependenciesMeta": {
     "@react-native-community/cli": {
