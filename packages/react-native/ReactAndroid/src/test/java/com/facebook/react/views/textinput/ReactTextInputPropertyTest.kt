@@ -11,6 +11,7 @@
 
 package com.facebook.react.views.textinput
 
+import android.content.Context
 import android.graphics.Color
 import android.os.Build
 import android.text.InputFilter
@@ -46,6 +47,15 @@ import org.robolectric.RuntimeEnvironment
 @RunWith(RobolectricTestRunner::class)
 class ReactTextInputPropertyTest {
 
+  private class TestReactEditText(context: Context) : ReactEditText(context) {
+    var showSoftKeyboardCallCount = 0
+
+    override fun showSoftKeyboard(): Boolean {
+      showSoftKeyboardCallCount++
+      return true
+    }
+  }
+
   private lateinit var context: BridgeReactContext
   private lateinit var catalystInstanceMock: CatalystInstance
   private lateinit var themedContext: ThemedReactContext
@@ -72,6 +82,17 @@ class ReactTextInputPropertyTest {
     manager = ReactTextInputManager()
     DisplayMetricsHolder.setScreenDisplayMetrics(DisplayMetrics())
     view = manager.createViewInstance(themedContext)
+  }
+
+  @Test
+  fun testShowsSoftKeyboardWhenSelectionStartsWhileFocused() {
+    val textInput = TestReactEditText(themedContext)
+    textInput.setText("hello")
+    textInput.onFocusChanged(true, View.FOCUS_DOWN, null)
+
+    textInput.setSelection(1, 3)
+
+    assertThat(textInput.showSoftKeyboardCallCount).isEqualTo(1)
   }
 
   @Test
