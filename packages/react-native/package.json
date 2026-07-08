@@ -52,7 +52,6 @@
       "types": null,
       "default": "./src/asset-registry.js"
     },
-    "./jest-preset": "./jest-preset.js",
     "./rn-get-polyfills": "./rn-get-polyfills.js",
     "./src/fb_internal/*": "./src/fb_internal/*",
     "./package.json": "./package.json"
@@ -69,7 +68,6 @@
     "gradle/libs.versions.toml",
     "index.js",
     "index.js.flow",
-    "jest-preset.js",
     "Libraries",
     "LICENSE",
     "React-Core.podspec",
@@ -136,15 +134,11 @@
     "featureflags": "node ./scripts/featureflags/index.js"
   },
   "peerDependencies": {
-    "@react-native/jest-preset": "0.87.0-main",
     "@types/react": "^19.1.1",
     "react": "^19.2.3"
   },
   "peerDependenciesMeta": {
     "@types/react": {
-      "optional": true
-    },
-    "@react-native/jest-preset": {
       "optional": true
     }
   },
