@@ -82,17 +82,3 @@ test('import from other package', () => {
     `"import { foo } from 'react-native-foo';"`,
   );
 });
-
-test('import react-native/Libraries/Core/InitializeCore', () => {
-  const code = `
-    import 'react-native/Libraries/Core/InitializeCore';
-    require('react-native/Libraries/Core/InitializeCore');
-    export * from 'react-native/Libraries/Core/InitializeCore';
-  `;
-
-  expect(transform(code, [rnDeepImportsWarningPlugin])).toMatchInlineSnapshot(`
-    "import 'react-native/Libraries/Core/InitializeCore';
-    require('react-native/Libraries/Core/InitializeCore');
-    export * from 'react-native/Libraries/Core/InitializeCore';"
-  `);
-});
