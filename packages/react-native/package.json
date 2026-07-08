@@ -44,10 +44,6 @@
       "default": "./Libraries/*.js"
     },
     "./scripts/*": "./scripts/*",
-    "./src/*": {
-      "types": null,
-      "default": "./src/*.js"
-    },
     "./asset-registry": {
       "types": null,
       "default": "./src/asset-registry.js"
