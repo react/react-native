@@ -5,23 +5,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#import <RCTDefaultReactNativeFactoryDelegate.h>
-#import <RCTReactNativeFactory.h>
+#import <RCTSceneDelegate.h>
 #import <UIKit/UIKit.h>
 
-@class ReactNativeDelegate;
-@class RCTReactNativeFactory;
-
-@interface SceneDelegate : UIResponder <UIWindowSceneDelegate>
-
-@property (strong, nonatomic) UIWindow *window;
-@property (strong, nonatomic) ReactNativeDelegate *reactNativeDelegate;
-@property (strong, nonatomic) RCTReactNativeFactory *reactNativeFactory;
+@interface SceneDelegate : RCTSceneDelegate
 
 - (NSDictionary *)prepareInitialProps;
-
-@end
-
-@interface ReactNativeDelegate : RCTDefaultReactNativeFactoryDelegate
 
 @end

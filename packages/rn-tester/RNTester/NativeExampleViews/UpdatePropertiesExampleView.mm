@@ -8,10 +8,9 @@
 #import "UpdatePropertiesExampleView.h"
 
 #import <React/RCTRootView.h>
+#import <React/RCTUtils.h>
 #import <React/RCTViewManager.h>
-
-#import "AppDelegate.h"
-#import "SceneDelegate.h"
+#import <RCTReactNativeFactory.h>
 
 @interface UpdatePropertiesExampleViewManager : RCTViewManager
 
@@ -40,13 +39,7 @@ RCT_EXPORT_MODULE();
   if (self) {
     _beige = YES;
 
-#if RNTESTER_USE_APPDELEGATE
-    AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
-    RCTReactNativeFactory* reactNativeFactory = appDelegate.reactNativeFactory;
-#else
-    SceneDelegate *sceneDelegate = (SceneDelegate*)self.window.windowScene.delegate;
-    RCTReactNativeFactory* reactNativeFactory = sceneDelegate.reactNativeFactory;
-#endif
+    RCTReactNativeFactory *reactNativeFactory = RCTGetActiveReactNativeFactory();
 
     _rootView =
         (RCTRootView *)[reactNativeFactory.rootViewFactory viewWithModuleName:@"SetPropertiesExampleApp"

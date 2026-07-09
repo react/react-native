@@ -5,16 +5,27 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import UIKit
-
-#if HELLOWORLD_USE_APPDELEGATE
+// Legacy AppDelegate-only integration reference.
+//
+// To use this pattern instead of the default SceneDelegate path:
+// 1. Add `HELLOWORLD_USE_APPDELEGATE=1` to the HelloWorld target's Active Compilation Conditions
+//    (or GCC_PREPROCESSOR_DEFINITIONS for Objective-C interoperability).
+// 2. Remove `UIApplicationSceneManifest` from HelloWorld/Info.plist.
+// 3. Use the AppDelegate implementation in AppDelegate.swift under `#if HELLOWORLD_USE_APPDELEGATE`
+//    (the bootstrap code is kept there; this file documents the legacy approach).
+//
+// The default path uses `SceneDelegate` subclassing `RCTSceneDelegate` with `UIApplicationSceneManifest`
+// declared in Info.plist.
 
 import React
 import React_RCTAppDelegate
 import ReactAppDependencyProvider
+import UIKit
 
-@main
-class AppDelegate: UIResponder, UIApplicationDelegate {
+// Full legacy AppDelegate bootstrap (mirrors pre-SceneDelegate HelloWorld).
+// Not compiled — reference only.
+
+class LegacyAppDelegate: UIResponder, UIApplicationDelegate {
   var window: UIWindow?
 
   var reactNativeDelegate: ReactNativeDelegate?
@@ -30,15 +41,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     reactNativeDelegate = delegate
     reactNativeFactory = factory
-
-    #if DEBUG
-    let devMenuConfiguration = RCTDevMenuConfiguration(
-      devMenuEnabled: true,
-      shakeGestureEnabled: true,
-      keyboardShortcutsEnabled: true
-    )
-    reactNativeFactory?.devMenuConfiguration = devMenuConfiguration
-    #endif
 
     window = UIWindow(frame: UIScreen.main.bounds)
 
@@ -61,17 +63,3 @@ class ReactNativeDelegate: RCTDefaultReactNativeFactoryDelegate {
     #endif
   }
 }
-
-#else
-
-@main
-class AppDelegate: UIResponder, UIApplicationDelegate {
-  func application(
-    _ application: UIApplication,
-    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
-  ) -> Bool {
-    true
-  }
-}
-
-#endif

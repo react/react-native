@@ -184,7 +184,62 @@ static NSString *kBundlePath = @"js/RNTesterApp.ios";
 
 @end
 #else
+
+#if !TARGET_OS_TV
+#import <UserNotifications/UserNotifications.h>
+#import <React/RCTPushNotificationManager.h>
+#endif
+
+#if !TARGET_OS_TV
+@interface AppDelegate () <UNUserNotificationCenterDelegate>
+@end
+#endif
+
 @implementation AppDelegate
+
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
+{
+#if !TARGET_OS_TV
+  [[UNUserNotificationCenter currentNotificationCenter] setDelegate:self];
+#endif
+  return YES;
+}
+
+#if !TARGET_OS_TV
+- (void)application:(__unused UIApplication *)application
+    didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken
+{
+  [RCTPushNotificationManager didRegisterForRemoteNotificationsWithDeviceToken:deviceToken];
+}
+
+- (void)application:(__unused UIApplication *)application
+    didFailToRegisterForRemoteNotificationsWithError:(NSError *)error
+{
+  [RCTPushNotificationManager didFailToRegisterForRemoteNotificationsWithError:error];
+}
+
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center
+       willPresentNotification:(UNNotification *)notification
+         withCompletionHandler:(void (^)(UNNotificationPresentationOptions))completionHandler
+{
+  [RCTPushNotificationManager didReceiveNotification:notification];
+  completionHandler(UNNotificationPresentationOptionNone);
+}
+
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center
+    didReceiveNotificationResponse:(UNNotificationResponse *)response
+             withCompletionHandler:(void (^)(void))completionHandler
+{
+  UNNotification *notification = response.notification;
+
+  if ([response.actionIdentifier isEqualToString:UNNotificationDefaultActionIdentifier]) {
+    [RCTPushNotificationManager setInitialNotification:notification];
+  }
+
+  [RCTPushNotificationManager didReceiveNotification:notification];
+  completionHandler();
+}
+#endif
 
 @end
 #endif

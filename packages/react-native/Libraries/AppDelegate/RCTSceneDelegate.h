@@ -23,18 +23,56 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * For AppDelegate-only apps, use `RCTAppDelegate` or `RCTReactNativeFactory` directly.
  *
- * To use it, make your SceneDelegate a subclass of RCTSceneDelegate:
+ * Usage:
+ * 1. Declare `UIApplicationSceneManifest` in Info.plist with your SceneDelegate class.
+ * 2. Subclass `RCTSceneDelegate` and configure it before calling `[super ...]` in
+ *    `scene:willConnectToSession:options:`.
  *
  * ```objc
  * #import <React_RCTAppDelegate/RCTSceneDelegate.h>
- * @interface SceneDelegate : RCTSceneDelegate
+ *
+ * @implementation SceneDelegate
+ *
+ * - (void)scene:(UIScene *)scene
+ *     willConnectToSession:(UISceneSession *)session
+ *                  options:(UISceneConnectionOptions *)connectionOptions
+ * {
+ *   self.moduleName = @"MyApp"; // required: JS module name registered in AppRegistry
+ *   self.initialProps = @{
+ *     // optional root props
+ *   };
+ *   self.dependencyProvider = [[RCTAppDependencyProvider alloc] init]; // if using codegen
+ *   [super scene:scene willConnectToSession:session options:connectionOptions];
+ * }
+ *
+ * - (NSURL *)bundleURL
+ * {
+ *   return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index"];
+ * }
+ *
  * @end
  * ```
  *
- * Requires `UIApplicationSceneManifest` in Info.plist with your SceneDelegate class configured.
+ * Required configuration (set before `[super scene:willConnectToSession:options:]`):
+ *   - `moduleName` — the AppRegistry component name to mount.
+ *   - `bundleURL` — override to return the JS bundle URL (raises if not implemented).
  *
- * All methods implemented by RCTSceneDelegate can be overridden. Call `[super ...]` to use the default
- * implementation.
+ * Optional configuration:
+ *   - `initialProps` — props passed to the root component.
+ *   - `dependencyProvider` — codegen module/component provider.
+ *   - `automaticallyLoadReactNativeWindow` — defaults to `YES`; set to `NO` to call
+ *     `loadReactNativeWindow:` yourself after custom setup.
+ *
+ * Linking is forwarded automatically via `RCTLinkingManager`. Push notifications and other
+ * `UIApplicationDelegate` callbacks should remain on your AppDelegate.
+ *
+ * Overridable methods (inherited from `RCTDefaultReactNativeFactoryDelegate`):
+ *   - (UIViewController *)createRootViewController;
+ *   - (void)setRootView:(UIView *)rootView toRootViewController:(UIViewController *)rootViewController;
+ *   - (void)customizeRootView:(RCTRootView *)rootView;
+ *   - (NSDictionary<NSString *, Class<RCTComponentViewProtocol>> *)thirdPartyFabricComponents;
+ *   - (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:(const std::string &)name
+ *                                                      jsInvoker:(std::shared_ptr<facebook::react::CallInvoker>)jsInvoker;
  */
 @interface RCTSceneDelegate : RCTDefaultReactNativeFactoryDelegate <UIWindowSceneDelegate>
 
