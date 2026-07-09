@@ -388,6 +388,10 @@ export default class Pressability {
     pageX: number,
     pageY: number,
   }>;
+  _touchGrantPosition: ?Readonly<{
+    pageX: number,
+    pageY: number,
+  }>;
   _touchActivateTime: ?number;
   _touchState: TouchState = 'NOT_RESPONDER';
 
@@ -710,6 +714,7 @@ export default class Pressability {
   ): void {
     if (isTerminalSignal(signal)) {
       this._touchActivatePosition = null;
+      this._touchGrantPosition = null;
       this._cancelLongPressDelayTimeout();
     }
 
@@ -719,6 +724,12 @@ export default class Pressability {
 
     const isActivationTransition =
       !isActivationSignal(prevState) && isActivationSignal(nextState);
+
+    if (isInitialTransition) {
+      const touch = getTouchFromPressEvent(event);
+      this._touchGrantPosition =
+        touch == null ? null : {pageX: touch.pageX, pageY: touch.pageY};
+    }
 
     if (isInitialTransition || isActivationTransition) {
       this._measureResponderRegion();
@@ -826,6 +837,23 @@ export default class Pressability {
       right: pageX + width,
       top: pageY,
     };
+
+    // The responder was granted by a native hit test, so the touch that
+    // granted it must lie inside the view's true on-screen region. If the
+    // measured region excludes that touch, the measurement is stale — e.g. the
+    // view was repositioned by native code (sheet footers, modals) after
+    // layout, and `measure` still reports the pre-move frame. Using such a
+    // region would cancel the press on the first touch move, so discard it.
+    const grantPosition = this._touchGrantPosition;
+    if (
+      grantPosition != null &&
+      !this._isTouchWithinResponderRegion(
+        grantPosition as $FlowFixMe,
+        this._responderRegion,
+      )
+    ) {
+      this._responderRegion = null;
+    }
   };
 
   _isTouchWithinResponderRegion(

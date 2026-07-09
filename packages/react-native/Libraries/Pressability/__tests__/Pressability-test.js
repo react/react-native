@@ -641,6 +641,70 @@ describe('Pressability', () => {
       jest.advanceTimersByTime(CONFIGURED_DEFAULT_MIN_PRESS_DURATION);
       expect(config.onPressOut).toBeCalled();
     });
+
+    it('is called when the measured region excludes the grant touch', () => {
+      // A view repositioned by native code after layout (e.g. a native sheet
+      // footer) measures at its stale layout position, far from where the
+      // press actually landed. Such a measurement must not be used to cancel
+      // the press on the first touch move.
+      mockUIManagerMeasure();
+      const {config, handlers} = createMockPressability();
+
+      handlers.onStartShouldSetResponder();
+      handlers.onResponderGrant(
+        createMockPressEvent({
+          registrationName: 'onResponderGrant',
+          pageX: 276,
+          pageY: 467,
+        }),
+      );
+      handlers.onResponderMove(
+        createMockPressEvent({
+          registrationName: 'onResponderMove',
+          pageX: 276,
+          pageY: 467,
+        }),
+      );
+      handlers.onResponderRelease(
+        createMockPressEvent({
+          registrationName: 'onResponderRelease',
+          pageX: 276,
+          pageY: 467,
+        }),
+      );
+
+      expect(config.onPress).toBeCalled();
+    });
+
+    it('is not called when the touch leaves a region containing the grant touch', () => {
+      mockUIManagerMeasure();
+      const {config, handlers} = createMockPressability();
+
+      handlers.onStartShouldSetResponder();
+      handlers.onResponderGrant(
+        createMockPressEvent({
+          registrationName: 'onResponderGrant',
+          pageX: 10,
+          pageY: 10,
+        }),
+      );
+      handlers.onResponderMove(
+        createMockPressEvent({
+          registrationName: 'onResponderMove',
+          pageX: 500,
+          pageY: 500,
+        }),
+      );
+      handlers.onResponderRelease(
+        createMockPressEvent({
+          registrationName: 'onResponderRelease',
+          pageX: 500,
+          pageY: 500,
+        }),
+      );
+
+      expect(config.onPress).not.toBeCalled();
+    });
   });
 
   describe('onPressIn', () => {
