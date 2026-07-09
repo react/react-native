@@ -12,7 +12,6 @@ import androidx.annotation.UiThread
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.WindowInsetsCompat.CONSUMED
 import com.facebook.react.bridge.GuardedRunnable
 import com.facebook.react.bridge.WritableNativeMap
 import com.facebook.react.common.build.ReactBuildConfig
@@ -20,6 +19,12 @@ import com.facebook.react.uimanager.PixelUtil.pxToDp
 import com.facebook.react.uimanager.StateWrapper
 import com.facebook.react.uimanager.ThemedReactContext
 
+/**
+ * Native view backing `SafeAreaView`. It reports the system window insets that overlap it into the
+ * component's Fabric state on attach and whenever the insets change; the shared C++ shadow node
+ * then turns those insets into per-edge padding or margin according to the `edges` and `mode`
+ * props.
+ */
 internal class ReactSafeAreaView(val reactContext: ThemedReactContext) : ViewGroup(reactContext) {
   internal var stateWrapper: StateWrapper? = null
 
@@ -32,7 +37,9 @@ internal class ReactSafeAreaView(val reactContext: ThemedReactContext) : ViewGro
               WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
           )
       updateState(insets)
-      CONSUMED
+      // Do NOT consume the insets: nested SafeAreaViews and SafeAreaProviders below this view must
+      // still receive them.
+      windowInsets
     }
     requestApplyInsets()
   }

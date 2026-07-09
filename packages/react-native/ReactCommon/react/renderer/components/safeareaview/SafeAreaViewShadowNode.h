@@ -23,6 +23,14 @@ extern const char SafeAreaViewComponentName[];
 class SafeAreaViewShadowNode final
     : public ConcreteViewShadowNode<SafeAreaViewComponentName, SafeAreaViewProps, ViewEventEmitter, SafeAreaViewState> {
   using ConcreteViewShadowNode::ConcreteViewShadowNode;
+
+ public:
+  /*
+   * Applies the safe area insets carried in the component's state as padding or
+   * margin, per the `edges` and `mode` props, by mutating the underlying Yoga
+   * style. Called from the component descriptor's `adopt`.
+   */
+  void adjustLayoutWithState();
 };
 
 } // namespace facebook::react

@@ -114,19 +114,28 @@ module.exports = {
     return require('./Libraries/Components/RefreshControl/RefreshControl')
       .default;
   },
-  /**
-   * @deprecated SafeAreaView has been deprecated and will be removed in a future release.
-   * Please use 'react-native-safe-area-context' instead.
-   * See https://github.com/AppAndFlow/react-native-safe-area-context
-   */
+  get SafeAreaFrameContext() {
+    return require('./Libraries/Components/SafeAreaView/SafeAreaContext')
+      .SafeAreaFrameContext;
+  },
+  get SafeAreaInsetsContext() {
+    return require('./Libraries/Components/SafeAreaView/SafeAreaContext')
+      .SafeAreaInsetsContext;
+  },
+  get SafeAreaListener() {
+    return require('./Libraries/Components/SafeAreaView/SafeAreaContext')
+      .SafeAreaListener;
+  },
+  get SafeAreaProvider() {
+    return require('./Libraries/Components/SafeAreaView/SafeAreaContext')
+      .SafeAreaProvider;
+  },
   get SafeAreaView() {
-    warnOnce(
-      'safe-area-view-deprecated',
-      'SafeAreaView has been deprecated and will be removed in a future release. ' +
-        "Please use 'react-native-safe-area-context' instead. " +
-        'See https://github.com/AppAndFlow/react-native-safe-area-context',
-    );
     return require('./Libraries/Components/SafeAreaView/SafeAreaView').default;
+  },
+  get withSafeAreaInsets() {
+    return require('./Libraries/Components/SafeAreaView/SafeAreaContext')
+      .withSafeAreaInsets;
   },
   get ScrollView() {
     return require('./Libraries/Components/ScrollView/ScrollView').default;
@@ -385,6 +394,18 @@ module.exports = {
   },
   get usePressability() {
     return require('./Libraries/Pressability/usePressability').default;
+  },
+  get useSafeAreaFrame() {
+    return require('./Libraries/Components/SafeAreaView/SafeAreaContext')
+      .useSafeAreaFrame;
+  },
+  get useSafeAreaInsets() {
+    return require('./Libraries/Components/SafeAreaView/SafeAreaContext')
+      .useSafeAreaInsets;
+  },
+  get initialWindowMetrics() {
+    return require('./Libraries/Components/SafeAreaView/InitialWindow')
+      .initialWindowMetrics;
   },
   get useWindowDimensions() {
     return require('./Libraries/Utilities/useWindowDimensions').default;
