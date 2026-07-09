@@ -58,6 +58,14 @@ typedef NS_ENUM(NSInteger, RCTReleaseLevel) { Canary, Experimental, Stable };
 
 @interface RCTReactNativeFactory : NSObject
 
+/**
+ * Bootstrap entrypoints:
+ * - **AppDelegate path**: `startReactNativeWithModuleName:inWindow:launchOptions:` — call from
+ *   `application:didFinishLaunchingWithOptions:` or `RCTAppDelegate`.
+ * - **SceneDelegate path**: `startReactNativeWithModuleName:inWindow:connectionOptions:` — call from
+ *   `scene:willConnectToSession:options:` or `RCTSceneDelegate`.
+ */
+
 - (instancetype)initWithDelegate:(id<RCTReactNativeFactoryDelegate>)delegate;
 
 - (instancetype)initWithDelegate:(id<RCTReactNativeFactoryDelegate>)delegate releaseLevel:(RCTReleaseLevel)releaseLevel;
@@ -98,8 +106,6 @@ typedef NS_ENUM(NSInteger, RCTReleaseLevel) { Canary, Experimental, Stable };
 
 @property (nonatomic, nullable) RCTBridge *bridge
     __attribute__((deprecated("The bridge is deprecated and will be removed when removing the legacy architecture.")));
-
-@property (nonatomic, strong, nonnull) RCTRootViewFactory *rootViewFactory;
 
 #if !defined(RCT_REMOVE_LEGACY_ARCH)
 @property (nonatomic, nullable) RCTSurfacePresenterBridgeAdapter *bridgeAdapter __attribute__((

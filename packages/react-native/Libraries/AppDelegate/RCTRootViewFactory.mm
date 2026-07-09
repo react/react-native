@@ -11,7 +11,6 @@
 #import <React/RCTRootView.h>
 #import <React/RCTUtils.h>
 #import <react/renderer/runtimescheduler/RuntimeScheduler.h>
-#import "RCTAppDelegate.h"
 #import "RCTAppSetupUtils.h"
 
 #if RN_DISABLE_OSS_PLUGIN_HEADER

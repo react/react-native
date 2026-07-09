@@ -96,6 +96,12 @@ RCT_EXTERN UIWindow *__nullable RCTKeyWindow(void);
 // Is this app a SceneDelegate app?
 RCT_EXTERN BOOL RCTIsSceneDelegateApp(void);
 
+@class RCTReactNativeFactory;
+
+/// Returns the active `RCTReactNativeFactory` from the foreground SceneDelegate or AppDelegate, if available.
+/// Useful for native code that needs access to `rootViewFactory` without holding a direct reference.
+RCT_EXTERN RCTReactNativeFactory *_Nullable RCTGetActiveReactNativeFactory(void);
+
 // Returns the presented view controller, useful if you need
 // e.g. to present a modal view controller or alert over it
 RCT_EXTERN UIViewController *__nullable RCTPresentedViewController(void);

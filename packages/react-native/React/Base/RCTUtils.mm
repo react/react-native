@@ -634,11 +634,70 @@ UIWindow *__nullable RCTKeyWindow(void)
     // Calling keyWindow on a UIScene which is not a UIWindowScene can cause a crash
     UIWindowScene *windowScene = (UIWindowScene *)sceneToUse;
     if (@available(iOS 15.0, tvOS 15.0, *)) {
-      return windowScene.keyWindow;
+      UIWindow *keyWindow = windowScene.keyWindow;
+      if (keyWindow != nil) {
+        return keyWindow;
+      }
+    }
+    for (UIWindow *window in windowScene.windows) {
+      if (window.isKeyWindow) {
+        return window;
+      }
     }
   }
 
   return nil;
+}
+
+static id RCTExtractReactNativeFactoryFromObject(id object)
+{
+  if (object == nil || ![object respondsToSelector:@selector(reactNativeFactory)]) {
+    return nil;
+  }
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+  return [object performSelector:@selector(reactNativeFactory)];
+#pragma clang diagnostic pop
+}
+
+RCTReactNativeFactory *_Nullable RCTGetActiveReactNativeFactory(void)
+{
+  if (RCTRunningInAppExtension()) {
+    return nil;
+  }
+
+  if (RCTIsSceneDelegateApp()) {
+    NSSet<UIScene *> *connectedScenes = RCTSharedApplication().connectedScenes;
+
+    UIScene *foregroundActiveScene = nil;
+    UIScene *foregroundInactiveScene = nil;
+
+    for (UIScene *scene in connectedScenes) {
+      if (![scene isKindOfClass:[UIWindowScene class]]) {
+        continue;
+      }
+
+      if (scene.activationState == UISceneActivationStateForegroundActive) {
+        foregroundActiveScene = scene;
+        break;
+      }
+
+      if (!foregroundInactiveScene && scene.activationState == UISceneActivationStateForegroundInactive) {
+        foregroundInactiveScene = scene;
+      }
+    }
+
+    UIScene *sceneToUse = foregroundActiveScene ? foregroundActiveScene : foregroundInactiveScene;
+    if ([sceneToUse isKindOfClass:[UIWindowScene class]]) {
+      UIWindowScene *windowScene = (UIWindowScene *)sceneToUse;
+      id factory = RCTExtractReactNativeFactoryFromObject(windowScene.delegate);
+      if (factory != nil) {
+        return factory;
+      }
+    }
+  }
+
+  return RCTExtractReactNativeFactoryFromObject(RCTSharedApplication().delegate);
 }
 
 BOOL RCTIsSceneDelegateApp(void)

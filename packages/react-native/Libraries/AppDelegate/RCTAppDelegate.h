@@ -19,8 +19,9 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /**
- * @deprecated RCTAppDelegate is deprecated and will be removed in a future version of React Native. Use
- `RCTReactNativeFactory` instead.
+ * @deprecated RCTAppDelegate is deprecated and will be removed in a future version of React Native. For new apps
+ * using the UIScene lifecycle, prefer `RCTSceneDelegate` or `RCTReactNativeFactory` with a SceneDelegate entrypoint.
+ * For AppDelegate-only apps, use `RCTReactNativeFactory` directly.
  *
  * The RCTAppDelegate is an utility class that implements some base configurations for all the React Native apps.
  * It is not mandatory to use it, but it could simplify your AppDelegate code.
@@ -55,7 +56,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   - (id<RCTTurboModule>)getModuleInstanceFromClass:(Class)moduleClass
  */
 __attribute__((deprecated(
-    "RCTAppDelegate is deprecated and will be removed in a future version of React Native. Use `RCTReactNativeFactory` instead.")))
+    "RCTAppDelegate is deprecated and will be removed in a future version of React Native. For UIScene apps use `RCTSceneDelegate`; otherwise use `RCTReactNativeFactory`.")))
 @interface RCTAppDelegate : RCTDefaultReactNativeFactoryDelegate<UIApplicationDelegate>
 
 /// The window object, used to render the UViewControllers
