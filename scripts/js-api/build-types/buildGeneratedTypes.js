@@ -55,26 +55,10 @@ async function buildGeneratedTypes(): Promise<Set<string>> {
     }
   }
 
-  await Promise.all([
-    fs.copyFile(
-      path.join(__dirname, 'templates', 'tsconfig.json'),
-      path.join(
-        PACKAGES_DIR,
-        'react-native',
-        TYPES_OUTPUT_DIR,
-        'tsconfig.json',
-      ),
-    ),
-    fs.copyFile(
-      path.join(__dirname, 'templates', 'tsconfig.test.json'),
-      path.join(
-        PACKAGES_DIR,
-        'react-native',
-        TYPES_OUTPUT_DIR,
-        'tsconfig.test.json',
-      ),
-    ),
-  ]);
+  await fs.copyFile(
+    path.join(__dirname, 'templates', 'tsconfig.json'),
+    path.join(PACKAGES_DIR, 'react-native', TYPES_OUTPUT_DIR, 'tsconfig.json'),
+  );
 
   if (allErrors.length > 0) {
     console.error(

@@ -471,9 +471,9 @@ jobs:
       - name: Flow
         shell: bash
         run: yarn flow-check
-      - name: TypeScript
+      - name: TypeScript (legacy deep imports / manual types)
         shell: bash
-        run: yarn test-typescript
+        run: yarn test-typescript-legacy
 
   test_js:
     runs-on: ubuntu-latest
