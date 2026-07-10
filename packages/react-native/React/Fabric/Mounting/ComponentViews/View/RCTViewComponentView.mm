@@ -472,18 +472,6 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
         RCTUIAccessibilityTraitsFromAccessibilityTraits(newViewProps.accessibilityTraits);
   }
 
-  // `accessibilityState`
-  if (oldViewProps.accessibilityState != newViewProps.accessibilityState) {
-    self.accessibilityTraits &= ~(UIAccessibilityTraitNotEnabled | UIAccessibilityTraitSelected);
-    const auto accessibilityState = newViewProps.accessibilityState.value_or(AccessibilityState{});
-    if (accessibilityState.selected) {
-      self.accessibilityTraits |= UIAccessibilityTraitSelected;
-    }
-    if (accessibilityState.disabled) {
-      self.accessibilityTraits |= UIAccessibilityTraitNotEnabled;
-    }
-  }
-
   // `accessibilityIgnoresInvertColors`
   if (oldViewProps.accessibilityIgnoresInvertColors != newViewProps.accessibilityIgnoresInvertColors) {
     self.accessibilityIgnoresInvertColors = newViewProps.accessibilityIgnoresInvertColors;
