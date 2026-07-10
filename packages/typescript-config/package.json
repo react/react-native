@@ -17,5 +17,6 @@
   "bugs": "https://github.com/react/react-native/issues",
   "exports": {
     ".": "./tsconfig.json"
-  }
+  },
+  "files": ["README.md", "tsconfig.json", "tsconfig.strict.json"]
 }

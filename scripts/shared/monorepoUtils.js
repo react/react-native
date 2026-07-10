@@ -19,11 +19,14 @@ const WORKSPACES_CONFIG = '{packages,private}/*';
 export type PackageJson = {
   name: string,
   version: string,
-  private?: boolean,
   dependencies?: Record<string, string>,
   devDependencies?: Record<string, string>,
-  peerDependencies?: Record<string, string>,
+  files?: ReadonlyArray<string>,
+  license?: string,
   main?: string,
+  peerDependencies?: Record<string, string>,
+  private?: boolean,
+  repository?: {type?: string, url?: string, directory?: string, ...},
   ...
 };
 

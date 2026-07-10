@@ -8,11 +8,13 @@
  * @format
  */
 
-import {REPO_ROOT} from '../../shared/consts';
+import {PRIVATE_DIR, REPO_ROOT} from '../../shared/consts';
 import {
+  getPackages,
   getReactNativePackage,
   getWorkspaceRoot,
 } from '../../shared/monorepoUtils';
+import path from 'path';
 import {globSync} from 'tinyglobby';
 
 describe('package manifests', () => {
@@ -24,6 +26,52 @@ describe('package manifests', () => {
   test('the react-native package must not declare devDependencies', async () => {
     const {packageJson} = await getReactNativePackage();
     expect(packageJson).not.toHaveProperty('devDependencies');
+  });
+
+  test('published packages must declare required fields', async () => {
+    const packages = await getPackages({includeReactNative: true});
+    const violations: Array<string> = [];
+
+    for (const name of Object.keys(packages)) {
+      const {packageJson} = packages[name];
+
+      if (!packageJson.version) {
+        violations.push(`${name}: missing "version"`);
+      }
+      if (packageJson.license == null || packageJson.license === '') {
+        violations.push(`${name}: missing "license"`);
+      }
+      // "repository" is required for npm's trusted publishing / provenance (OIDC)
+      if (
+        packageJson.repository?.url == null ||
+        packageJson.repository.url === ''
+      ) {
+        violations.push(`${name}: missing "repository.url"`);
+      }
+      if (
+        packageJson.repository?.directory == null ||
+        packageJson.repository.directory === ''
+      ) {
+        violations.push(`${name}: missing "repository.directory"`);
+      }
+      if (packageJson.files == null || packageJson.files.length === 0) {
+        violations.push(`${name}: missing "files"`);
+      }
+    }
+
+    expect(violations).toEqual([]);
+  });
+
+  test('packages under private/ must set "private": true', async () => {
+    const packages = await getPackages({
+      includeReactNative: true,
+      includePrivate: true,
+    });
+    const notPrivate = Object.keys(packages)
+      .filter(name => packages[name].path.startsWith(PRIVATE_DIR + path.sep))
+      .filter(name => packages[name].packageJson.private !== true);
+
+    expect(notPrivate).toEqual([]);
   });
 });
 
