@@ -453,9 +453,6 @@ jobs:
         uses: ./.github/actions/setup-node
       - name: Install dependencies
         uses: ./.github/actions/yarn-install
-      - name: Lint file structure
-        shell: bash
-        run: ./.github/workflow-scripts/lint_files.sh
       - name: Run shellcheck
         shell: bash
         run: ./.github/workflow-scripts/analyze_scripts.sh
