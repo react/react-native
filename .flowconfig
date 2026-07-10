@@ -56,6 +56,7 @@ experimental.multi_platform.extensions=.android
 munge_underscores=true
 
 module.name_mapper='^react-native$' -> '<PROJECT_ROOT>/packages/react-native/index.js'
+module.name_mapper='^react-native/react-private-interface$' -> '<PROJECT_ROOT>/packages/react-native/src/react-private-interface.js'
 module.name_mapper='^react-native/setup-env$' -> '<PROJECT_ROOT>/packages/react-native/src/setup-env.js'
 module.name_mapper='^react-native/\(.*\)$' -> '<PROJECT_ROOT>/packages/react-native/\1'
 module.name_mapper='^@react-native/dev-middleware$' -> '<PROJECT_ROOT>/packages/dev-middleware'
