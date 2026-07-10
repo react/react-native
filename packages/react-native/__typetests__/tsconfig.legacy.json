@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  // Legacy variant: Opts into the `"react-native-legacy-deep-imports"` export
+  // condition so `react-native` and `react-native/Libraries/*` resolve to the
+  // hand-written types in `types/`.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "customConditions": ["react-native-legacy-deep-imports"]
+  }
+}

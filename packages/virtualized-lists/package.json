@@ -21,8 +21,8 @@
   },
   "exports": {
     ".": {
-      "react-native-strict-api": "./types_generated/index.d.ts",
-      "types": "./index.d.ts",
+      "react-native-legacy-deep-imports": "./index.d.ts",
+      "types": "./types_generated/index.d.ts",
       "default": "./index.js"
     },
     "./*": {

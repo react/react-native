@@ -27,20 +27,19 @@
     "react-native": "cli.js"
   },
   "main": "./index.js",
-  "types": "types",
   "exports": {
     ".": {
-      "react-native-strict-api": "./types_generated/index.d.ts",
-      "types": "./types/index.d.ts",
+      "react-native-legacy-deep-imports": "./types/index.d.ts",
+      "types": "./types_generated/index.d.ts",
       "default": "./index.js"
     },
     "./Libraries/*": {
-      "react-native-strict-api": null,
-      "types": "./Libraries/*.d.ts",
+      "react-native-legacy-deep-imports": "./Libraries/*.d.ts",
+      "types": null,
       "default": "./Libraries/*.js"
     },
     "./Libraries/*.js": {
-      "react-native-strict-api": null,
+      "types": null,
       "default": "./Libraries/*.js"
     },
     "./scripts/*": "./scripts/*",

@@ -9,25 +9,18 @@ This package provides the default `tsconfig.json` used by newly built React Nati
 
 This template is customized for specific versions of React Native, and should be updated in sync with the rest of your app.
 
-## Strict TypeScript API
+## Opting out of the Strict TypeScript API (default in 0.87)
 
-To opt into the new [strict TypeScript API](https://reactnative.dev/blog/2025/06/12/moving-towards-a-stable-javascript-api#strict-typescript-api-opt-in) you can extend from `@react-native/typescript-config/strict`
+To opt out of the new [Strict TypeScript API](https://reactnative.dev/docs/strict-typescript-api) you can extend from `@react-native/typescript-config/strict`
 
-```jsonc
-{
-  "extends": "@react-native/typescript-config/strict",
-  // ...
-}
-```
-
-or alternatively add the `customConditions` yourself:
+If your app still needs access to deep `'react-native/Libraries/*'` imports (deprecated in 0.80), you can opt out via `customConditions` in your `tsconfig.json`:
 
 ```jsonc
 {
   "extends": "@react-native/typescript-config",
   "compilerOptions": {
     // ...
-    "customConditions": ["react-native-strict-api", "react-native"]
+    "customConditions": ["react-native", "react-native-legacy-deep-imports"]
   }
 }
 ```

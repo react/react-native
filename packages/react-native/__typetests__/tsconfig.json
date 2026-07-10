@@ -1,4 +1,5 @@
 {
+  "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
     "module": "esnext",
     "lib": ["es2020"],
@@ -9,9 +10,7 @@
     "jsx": "react",
     "noEmit": true,
     "forceConsistentCasingInFileNames": true,
-    "paths": {"react-native": ["."]},
-    "moduleResolution": "bundler",
-    "customConditions": ["react-native-strict-api"]
+    "moduleResolution": "bundler"
   },
-  "include": ["**/*.d.ts", "../__typetests__/**/*"]
+  "include": ["**/*"]
 }
