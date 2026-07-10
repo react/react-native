@@ -53,6 +53,11 @@
       "default": "./src/react-private-interface.js"
     },
     "./setup-env": "./src/setup-env.js",
+    "./unstable-internals-do-not-use": {
+      "react-native-unstable-internals": "./src/unstable-internals-do-not-use.d.ts",
+      "types": null,
+      "default": "./src/unstable-internals-do-not-use.js"
+    },
     "./src/fb_internal/*": "./src/fb_internal/*",
     "./package.json": "./package.json"
   },
