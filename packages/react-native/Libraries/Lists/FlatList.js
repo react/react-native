@@ -177,6 +177,88 @@ function isArrayLike(data: unknown): boolean {
   return typeof Object(data).length === 'number';
 }
 
+function getItemCountForAccessibility<ItemT>(
+  data: ?Readonly<$ArrayLike<ItemT>>,
+): number {
+  return data != null && isArrayLike(data) ? data.length : 0;
+}
+
+function createAccessibilityCollection<ItemT>(
+  data: ?Readonly<$ArrayLike<ItemT>>,
+  numColumns: number,
+  horizontal: boolean,
+): {
+  itemCount: number,
+  rowCount: number,
+  columnCount: number,
+  hierarchical: boolean,
+} {
+  const itemCount = getItemCountForAccessibility(data);
+  const totalCols = numColumns > 1 ? numColumns : 1;
+  if (horizontal) {
+    return {
+      itemCount,
+      rowCount: totalCols,
+      columnCount: Math.ceil(itemCount / totalCols),
+      hierarchical: false,
+    };
+  }
+  return {
+    itemCount,
+    rowCount: Math.ceil(itemCount / totalCols),
+    columnCount: totalCols,
+    hierarchical: false,
+  };
+}
+
+type AccessibilityCollectionItem = Readonly<{
+  itemIndex: number,
+  rowIndex: number,
+  rowSpan: number,
+  columnIndex: number,
+  columnSpan: number,
+  heading: boolean,
+  ...
+}>;
+
+function createAccessibilityCollectionItem(
+  itemIndex: number,
+  rowIndex: number,
+  columnIndex: number,
+  horizontal: boolean,
+): AccessibilityCollectionItem {
+  return {
+    itemIndex,
+    rowIndex: horizontal ? 0 : rowIndex,
+    rowSpan: 1,
+    columnIndex: horizontal ? itemIndex : columnIndex,
+    columnSpan: 1,
+    heading: false,
+  };
+}
+
+function addAccessibilityCollectionItem(
+  element: React.Node,
+  accessibilityCollectionItem: ?AccessibilityCollectionItem,
+): React.Node {
+  const elementForAccessibility: any = element;
+  if (
+    accessibilityCollectionItem == null ||
+    !React.isValidElement(elementForAccessibility) ||
+    elementForAccessibility.type === React.Fragment
+  ) {
+    return element;
+  }
+
+  if (elementForAccessibility.props.accessibilityCollectionItem !== undefined) {
+    return element;
+  }
+
+  return React.cloneElement(elementForAccessibility, {
+    accessibilityCollectionItem,
+  });
+}
+
 type FlatListBaseProps<ItemT> = {
   ...RequiredFlatListProps<ItemT>,
   ...OptionalFlatListProps<ItemT>,
@@ -634,29 +716,61 @@ class FlatList<ItemT = any> extends React.PureComponent<FlatListProps<ItemT>> {
     };
 
     const renderProp = (info: ListRenderItemInfo<ItemT>) => {
+      const isAndroid = Platform.OS === 'android';
+      const isHorizontal = this.props.horizontal === true;
       if (cols > 1) {
         const {item, index} = info;
         invariant(
           Array.isArray(item),
           'Expected array of items with numColumns > 1',
         );
+        const rowAccessibilityProps: any = isAndroid
+          ? ({}: any)
+          : {};
         return (
-          <View style={StyleSheet.compose(styles.row, columnWrapperStyle)}>
+          <View
+            {...rowAccessibilityProps}
+            style={StyleSheet.compose(styles.row, columnWrapperStyle)}>
             {item.map((it, kk) => {
+              const itemIndex = index * cols + kk;
+              const itemAccessibilityCollectionItem = isAndroid
+                ? createAccessibilityCollectionItem(
+                    itemIndex,
+                    index,
+                    kk,
+                    isHorizontal,
+                  )
+                : undefined;
               const element = render({
                 // $FlowFixMe[incompatible-type]
                 item: it,
-                index: index * cols + kk,
+                index: itemIndex,
                 separators: info.separators,
               });
               return element != null ? (
-                <React.Fragment key={kk}>{element}</React.Fragment>
+                <React.Fragment key={kk}>
+                  {addAccessibilityCollectionItem(
+                    element,
+                    itemAccessibilityCollectionItem,
+                  )}
+                </React.Fragment>
               ) : null;
             })}
           </View>
         );
       } else {
-        return render(info);
+        const itemAccessibilityCollectionItem = isAndroid
+          ? createAccessibilityCollectionItem(
+              info.index,
+              info.index,
+              0,
+              isHorizontal,
+            )
+          : undefined;
+        return addAccessibilityCollectionItem(
+          render(info),
+          itemAccessibilityCollectionItem,
+        );
       }
     };
 
@@ -677,11 +791,28 @@ class FlatList<ItemT = any> extends React.PureComponent<FlatListProps<ItemT>> {
     } = this.props;
 
     const renderer = strictMode ? this._memoizedRenderer : this._renderer;
+    const numColumnsValue = numColumnsOrDefault(numColumns);
+    const androidAccessibilityProps =
+      Platform.OS === 'android'
+        ? {
+            accessibilityCollection:
+              // $FlowFixMe[prop-missing] Internal native prop.
+              this.props.accessibilityCollection ??
+              createAccessibilityCollection(this.props.data, numColumnsValue, this.props.horizontal === true),
+            accessibilityRole:
+              this.props.role == null && this.props.accessibilityRole == null
+                ? numColumnsValue > 1
+                  ? 'grid'
+                  : 'list'
+                : this.props.accessibilityRole,
+          }
+        : {};
 
     return (
       // $FlowFixMe[incompatible-exact] - `restProps` (`Props`) is inexact.
       <VirtualizedList
         {...restProps}
+        {...androidAccessibilityProps}
         getItem={this._getItem}
         getItemCount={this._getItemCount}
         keyExtractor={this._keyExtractor}
