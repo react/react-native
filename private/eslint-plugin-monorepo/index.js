@@ -15,7 +15,6 @@ exports.rules = {
   'no-react-named-type-imports': require('./rules/no-react-named-type-imports'),
   'no-react-native-imports': require('./rules/no-react-native-imports'),
   'no-react-node-imports': require('./rules/no-react-node-imports'),
-  'react-native-manifest': require('./rules/react-native-manifest'),
   'require-extends-error': require('./rules/require-extends-error'),
   'sort-imports': require('./rules/sort-imports'),
   'valid-flow-typed-signature': require('./rules/valid-flow-typed-signature'),
