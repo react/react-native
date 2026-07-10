@@ -8,34 +8,8 @@
  * @format
  */
 
-import typeof {createPublicTextInstance as createPublicTextInstanceT} from '../ReactNative/ReactFabricPublicInstance/ReactFabricPublicInstance';
-
-export type {PublicRootInstance} from '../ReactNative/ReactFabricPublicInstance/ReactFabricPublicInstance';
-export type PublicTextInstance = ReturnType<createPublicTextInstanceT>;
-
-export {default as BatchedBridge} from '../BatchedBridge/BatchedBridge';
-export {default as ExceptionsManager} from '../Core/ExceptionsManager';
-export {default as Platform} from '../Utilities/Platform';
-export {default as RCTEventEmitter} from '../EventEmitter/RCTEventEmitter';
-export * as ReactNativeViewConfigRegistry from '../Renderer/shims/ReactNativeViewConfigRegistry';
-export {default as TextInputState} from '../Components/TextInput/TextInputState';
-export {default as UIManager} from '../ReactNative/UIManager';
-export {default as deepDiffer} from '../Utilities/differ/deepDiffer';
-export {default as deepFreezeAndThrowOnMutationInDev} from '../Utilities/deepFreezeAndThrowOnMutationInDev';
-export {default as flattenStyle} from '../StyleSheet/flattenStyle';
-export {default as ReactFiberErrorDialog} from '../Core/ReactFiberErrorDialog';
-export {default as legacySendAccessibilityEvent} from '../Components/AccessibilityInfo/legacySendAccessibilityEvent';
-export {default as RawEventEmitter} from '../Core/RawEventEmitter';
-export {default as CustomEvent} from '../../src/private/webapis/dom/events/CustomEvent';
-export {
-  create as createAttributePayload,
-  diff as diffAttributePayloads,
-} from '../ReactNative/ReactFabricPublicInstance/ReactNativeAttributePayload';
-export {
-  createPublicRootInstance,
-  createPublicInstance,
-  createPublicTextInstance,
-  getNativeTagFromPublicInstance,
-  getNodeFromPublicInstance,
-  getInternalInstanceHandleFromPublicInstance,
-} from '../ReactNative/ReactFabricPublicInstance/ReactFabricPublicInstance';
+/**
+ * @deprecated Since 0.88. Use 'react-native/react-private-interface' instead.
+ */
+export type * from '../../src/react-private-interface';
+export * from '../../src/react-private-interface';
