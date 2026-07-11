@@ -7,6 +7,7 @@
 
 package com.facebook.react.views.safeareaview
 
+import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.uimanager.ReactStylesDiffMap
 import com.facebook.react.uimanager.StateWrapper
@@ -46,6 +47,13 @@ internal class ReactSafeAreaViewManager :
     view.stateWrapper = stateWrapper
     return null
   }
+
+  // `edges` and `mode` are consumed by the shared C++ shadow node (which converts the state insets
+  // into per-edge padding/margin), so the Android view needs no behavior here. The overrides exist
+  // only to satisfy the codegen-generated manager interface.
+  override fun setEdges(view: ReactSafeAreaView, value: ReadableMap?): Unit = Unit
+
+  override fun setMode(view: ReactSafeAreaView, value: String?): Unit = Unit
 
   internal companion object {
     const val REACT_CLASS: String = "RCTSafeAreaView"
