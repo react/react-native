@@ -40,11 +40,11 @@ class JReadableMapBuffer;
  *
  * MapBuffer data is stored in a continuous chunk of memory (bytes_ field below) with the following layout:
  *
- * ┌─────────────────────Header──────────────────────┐
- * │                    10 bytes                     │
- * ├─Alignment─┬─Item count─┬──────Buffer size───────┤
- * │  2 bytes  │  2 bytes   │        4 bytes         │
- * └───────────┴────────────┴────────────────────────┘
+ * ┌──────Header──────┐
+ * │      2 bytes     │
+ * ├────Item count────┤
+ * │      2 bytes     │
+ * └──────────────────┘
  * ┌────────────────────────────────────────────────────────────────────────────────────────┐
  * │                           Buckets (one per item in the map)                            │
  * │                                                                                        │
@@ -69,14 +69,8 @@ class MapBuffer {
  public:
   using Key = uint16_t;
 
-  // The first value in the buffer, used to check correct encoding/endianness on
-  // JVM side.
-  constexpr static uint16_t HEADER_ALIGNMENT = 0xFE;
-
   struct Header {
-    uint16_t alignment = HEADER_ALIGNMENT; // alignment of serialization
     uint16_t count; // amount of items in the map
-    uint32_t bufferSize; // Amount of bytes used to store the map in memory
   };
 
 #pragma pack(push, 1)
@@ -89,13 +83,14 @@ class MapBuffer {
   };
 #pragma pack(pop)
 
-  static_assert(sizeof(Header) == 8, "MapBuffer header size is incorrect.");
+  static_assert(sizeof(Header) == 2, "MapBuffer header size is incorrect.");
   static_assert(sizeof(Bucket) == 12, "MapBuffer bucket size is incorrect.");
 
   /**
    * Data types available for serialization in MapBuffer
-   * Keep in sync with `DataType` enum in `JReadableMapBuffer.java`, which
-   * expects the same values after reading them through JNI.
+   * Keep in sync with the `DataType` enum in `MapBuffer.kt`
+   * (packages/react-native/ReactAndroid/.../common/mapbuffer/MapBuffer.kt),
+   * which is ordinal-indexed on the JVM side, so the order must match exactly.
    */
   enum DataType : uint16_t {
     Boolean = 0,
@@ -104,6 +99,19 @@ class MapBuffer {
     String = 3,
     Map = 4,
     Long = 5,
+    // Homogeneous arrays of raw elements stored contiguously in the dynamic
+    // data section. Unlike Map, they carry no per-element key/type overhead, so
+    // a batch of N values costs ~N*elementSize bytes instead of N*12-byte
+    // buckets. The bucket value packs [offset][byteLength]; the element count is
+    // recovered as byteLength / elementSize.
+    IntBuffer = 6,
+    DoubleBuffer = 7,
+    // A homogeneous, ordered array of nested MapBuffers. The bucket value packs
+    // [offset][byteLength] for the whole list region; within it each child stays
+    // framed as [int32 childSize][child bytes]. Distinct from `Map` so that a
+    // list of MapBuffers is self-describing (a single Map and a list are
+    // byte-distinct in payload but previously shared the `Map` type tag).
+    MapBufferList = 8,
   };
 
   explicit MapBuffer(std::vector<uint8_t> data);
@@ -130,6 +138,10 @@ class MapBuffer {
   MapBuffer getMapBuffer(MapBuffer::Key key) const;
 
   std::vector<MapBuffer> getMapBufferList(MapBuffer::Key key) const;
+
+  std::vector<int32_t> getIntBuffer(MapBuffer::Key key) const;
+
+  std::vector<double> getDoubleBuffer(MapBuffer::Key key) const;
 
   size_t size() const;
 

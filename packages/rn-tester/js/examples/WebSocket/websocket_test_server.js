@@ -35,7 +35,9 @@ server.on('connection', ws => {
       message = Buffer.from(message);
     }
     if (message === 'getImage') {
-      message = fs.readFileSync(path.resolve(__dirname, 'flux@3x.png'));
+      message = fs.readFileSync(
+        path.resolve(__dirname, '../../assets/flux@3x.png'),
+      );
     }
     console.log('Replying with:', message);
     ws.send(message);

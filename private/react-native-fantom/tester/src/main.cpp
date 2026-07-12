@@ -70,7 +70,13 @@ int main(int argc, char* argv[]) {
     std::this_thread::sleep_for(std::chrono::seconds(2));
   }
 
-  appDelegate.loadScript(AppSettings::defaultBundlePath, "");
+  if (AppSettings::interactive) {
+    appDelegate.loadScript(AppSettings::defaultBundlePath, "");
+    appDelegate.runInteractiveLoop();
+    return 0;
+  }
+
+  appDelegate.loadScriptAndRunTests(AppSettings::defaultBundlePath, "");
 
   return 0;
 }

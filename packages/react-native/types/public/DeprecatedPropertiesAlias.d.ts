@@ -47,7 +47,6 @@ import {
   ButtonProps,
   StatusBarProps,
   StatusBarPropsIOS,
-  StatusBarPropsAndroid,
   SwitchProps,
   SwitchPropsIOS,
 } from 'react-native';
@@ -174,9 +173,6 @@ export type StatusBarProperties = StatusBarProps;
 
 /** @deprecated Use StatusBarPropsIOS */
 export type StatusBarPropertiesIOS = StatusBarPropsIOS;
-
-/** @deprecated Use StatusBarPropsAndroid */
-export type StatusBarPropertiesAndroid = StatusBarPropsAndroid;
 
 /** @deprecated Use SwitchProps */
 export type SwitchProperties = SwitchProps;

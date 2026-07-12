@@ -1,0 +1,31 @@
+{
+  "name": "@react-native/asset-utils",
+  "version": "0.87.0-main",
+  "description": "Asset path utilities for React Native.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/react/react-native.git",
+    "directory": "packages/asset-utils"
+  },
+  "homepage": "https://github.com/react/react-native/tree/HEAD/packages/asset-utils#readme",
+  "keywords": [
+    "react-native"
+  ],
+  "bugs": "https://github.com/react/react-native/issues",
+  "engines": {
+    "node": "^22.13.0 || ^24.3.0 || >= 26.0.0"
+  },
+  "exports": {
+    ".": "./src/index.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "README.md",
+    "!**/__docs__/**",
+    "!**/__fixtures__/**",
+    "!**/__mocks__/**",
+    "!**/__tests__/**"
+  ]
+}

@@ -46,11 +46,18 @@ class PropsAnimatedNode final : public AnimatedNode {
     return props_;
   }
 
+  // Recompute props_ from the connected nodes WITHOUT scheduling a view
+  // commit, so getManagedProps() is live at connect with no commit side effect.
+  void collectProps();
+
   void update() override;
 
   void update(bool forceFabricCommit);
 
  private:
+  // Caller must hold propsMutex_.
+  void collectPropsLocked();
+
   std::mutex propsMutex_;
   folly::dynamic props_;
   bool layoutStyleUpdated_{false};

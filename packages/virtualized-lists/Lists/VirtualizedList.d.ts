@@ -142,41 +142,34 @@ export class VirtualizedList<ItemT> extends React.Component<
  * @see https://reactnative.dev/docs/virtualizedlist#props
  */
 
-export interface VirtualizedListProps<ItemT>
-  extends VirtualizedListWithoutRenderItemProps<ItemT> {
+export interface VirtualizedListProps<
+  ItemT,
+> extends VirtualizedListWithoutRenderItemProps<ItemT> {
   renderItem: ListRenderItem<ItemT> | null | undefined;
 }
 
-export interface VirtualizedListWithoutRenderItemProps<ItemT>
-  extends ScrollViewProps {
+export interface VirtualizedListWithoutRenderItemProps<
+  ItemT,
+> extends ScrollViewProps {
   /**
    * Rendered in between each item, but not at the top or bottom
    */
   ItemSeparatorComponent?:
-    | React.ComponentType<any>
-    | React.ReactElement
-    | null
-    | undefined;
+    React.ComponentType<any> | React.ReactElement | null | undefined;
 
   /**
    * Rendered when the list is empty. Can be a React Component Class, a render function, or
    * a rendered element.
    */
   ListEmptyComponent?:
-    | React.ComponentType<any>
-    | React.ReactElement
-    | null
-    | undefined;
+    React.ComponentType<any> | React.ReactElement | null | undefined;
 
   /**
    * Rendered at the bottom of all the items. Can be a React Component Class, a render function, or
    * a rendered element.
    */
   ListFooterComponent?:
-    | React.ComponentType<any>
-    | React.ReactElement
-    | null
-    | undefined;
+    React.ComponentType<any> | React.ReactElement | null | undefined;
 
   /**
    * Styling for internal View for ListFooterComponent
@@ -188,10 +181,7 @@ export interface VirtualizedListWithoutRenderItemProps<ItemT>
    * a rendered element.
    */
   ListHeaderComponent?:
-    | React.ComponentType<any>
-    | React.ReactElement
-    | null
-    | undefined;
+    React.ComponentType<any> | React.ReactElement | null | undefined;
 
   /**
    * Styling for internal View for ListHeaderComponent
@@ -316,9 +306,7 @@ export interface VirtualizedListWithoutRenderItemProps<ItemT>
    * from the logical start of the list.
    */
   onStartReached?:
-    | ((info: {distanceFromStart: number}) => void)
-    | null
-    | undefined;
+    ((info: {distanceFromStart: number}) => void) | null | undefined;
 
   /**
    * How far from the start (in units of visible length of the list) the leading edge of the
@@ -391,7 +379,5 @@ export interface VirtualizedListWithoutRenderItemProps<ItemT>
    * notify VirtualizedList of changes within the cell.
    */
   CellRendererComponent?:
-    | React.ComponentType<CellRendererProps<ItemT>>
-    | null
-    | undefined;
+    React.ComponentType<CellRendererProps<ItemT>> | null | undefined;
 }

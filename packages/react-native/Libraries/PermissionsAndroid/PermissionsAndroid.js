@@ -129,13 +129,15 @@ const PERMISSIONS = Object.freeze({
   ACCESS_LOCAL_NETWORK: 'android.permission.ACCESS_LOCAL_NETWORK',
 }) as PermissionsType;
 
-/**
- * `PermissionsAndroid` provides access to Android M's new permissions model.
- *
- * See https://reactnative.dev/docs/permissionsandroid
- */
 class PermissionsAndroidImpl {
+  /**
+   * A list of specified "dangerous" permissions that require prompting the user.
+   */
   PERMISSIONS: PermissionsType = PERMISSIONS;
+
+  /**
+   * Possible results of a permission request.
+   */
   RESULTS: Readonly<{
     DENIED: 'denied',
     GRANTED: 'granted',
@@ -170,10 +172,8 @@ class PermissionsAndroidImpl {
   }
 
   /**
-   * Returns a promise resolving to a boolean value as to whether the specified
-   * permissions has been granted
-   *
-   * See https://reactnative.dev/docs/permissionsandroid#check
+   * Check whether the specified permission has been granted. Returns a
+   * `Promise` resolving to a boolean.
    */
   check(permission: Permission): Promise<boolean> {
     if (Platform.OS !== 'android') {
@@ -224,10 +224,13 @@ class PermissionsAndroidImpl {
   }
 
   /**
-   * Prompts the user to enable a permission and returns a promise resolving to a
-   * string value indicating whether the user allowed or denied the request
+   * Prompt the user to enable a permission. Returns a `Promise` resolving to a
+   * `PermissionStatus` string indicating whether the user allowed or denied the
+   * request.
    *
-   * See https://reactnative.dev/docs/permissionsandroid#request
+   * If the optional `rationale` argument is provided, this function first
+   * checks with the OS whether it is necessary to show an explanatory dialog
+   * before presenting the system permission prompt.
    */
   async request(
     permission: Permission,
@@ -275,11 +278,9 @@ class PermissionsAndroidImpl {
   }
 
   /**
-   * Prompts the user to enable multiple permissions in the same dialog and
-   * returns an object with the permissions as keys and strings as values
-   * indicating whether the user allowed or denied the request
-   *
-   * See https://reactnative.dev/docs/permissionsandroid#requestmultiple
+   * Prompt the user to enable multiple permissions in a single dialog. Returns
+   * a `Promise` resolving to an object mapping each requested permission to its
+   * `PermissionStatus`.
    */
   requestMultiple(
     permissions: Array<Permission>,
@@ -300,6 +301,15 @@ class PermissionsAndroidImpl {
   }
 }
 
+/**
+ * Provides access to Android M's (API 23+) permissions model. Handles prompts
+ * for "dangerous" permissions that require explicit user approval. On devices
+ * before SDK 23, permissions are automatically granted if listed in the
+ * manifest.
+ *
+ * @see https://reactnative.dev/docs/permissionsandroid
+ * @platform android
+ */
 const PermissionsAndroidInstance: PermissionsAndroidImpl =
   new PermissionsAndroidImpl();
 export default PermissionsAndroidInstance;

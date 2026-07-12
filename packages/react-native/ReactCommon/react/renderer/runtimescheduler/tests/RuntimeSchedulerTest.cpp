@@ -7,6 +7,7 @@
 
 #include <gtest/gtest.h>
 #include <hermes/hermes.h>
+#include <jsi/hermes-interfaces.h>
 #include <jsi/jsi.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/featureflags/ReactNativeFeatureFlagsDefaults.h>
@@ -168,6 +169,31 @@ TEST_P(RuntimeSchedulerTest, scheduleSingleTask) {
 
   EXPECT_TRUE(didRunTask);
   EXPECT_EQ(stubQueue_->size(), 0);
+}
+
+TEST_P(RuntimeSchedulerTest, scheduleTaskViaEventLoopControl) {
+  // The RuntimeScheduler proxy is what gets registered with Hermes as an
+  // IEventLoopControl. scheduleTask() forwards to the selected fork, which
+  // schedules the work as an idle task.
+  facebook::hermes::IEventLoopControl& eventLoopControl = *runtimeScheduler_;
+
+  bool didRunTask = false;
+  eventLoopControl.scheduleTask([&didRunTask]() { didRunTask = true; });
+
+  if (GetParam()) {
+    // Modern scheduler: the task is queued on the event loop and runs on tick.
+    EXPECT_FALSE(didRunTask);
+    EXPECT_EQ(stubQueue_->size(), 1);
+
+    stubQueue_->tick();
+
+    EXPECT_TRUE(didRunTask);
+    EXPECT_EQ(stubQueue_->size(), 0);
+  } else {
+    // Legacy scheduler: idle tasks are not supported, so this is a no-op.
+    EXPECT_FALSE(didRunTask);
+    EXPECT_EQ(stubQueue_->size(), 0);
+  }
 }
 
 TEST_P(

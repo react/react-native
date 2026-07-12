@@ -22,6 +22,7 @@
 #include <react/renderer/runtimescheduler/RuntimeScheduler.h>
 #include <react/renderer/uimanager/UIManager.h>
 #include <react/renderer/uimanager/UIManagerBinding.h>
+#include <mutex>
 
 namespace facebook::react {
 
@@ -295,6 +296,9 @@ SchedulerDelegate* Scheduler::getDelegate() const {
 #pragma mark - UIManagerAnimationDelegate
 
 void Scheduler::animationTick() const {
+  if (!uiManager_) {
+    return;
+  }
   uiManager_->animationTick();
 }
 
@@ -456,9 +460,13 @@ void Scheduler::uiManagerDidPromoteReactRevision(const ShadowTree& shadowTree) {
 }
 
 void Scheduler::uiManagerDidStartSurface(const ShadowTree& shadowTree) {
-  std::shared_lock lock(onSurfaceStartCallbackMutex_);
-  if (onSurfaceStartCallback_) {
-    onSurfaceStartCallback_(shadowTree);
+  std::vector<OnSurfaceStartCallback> callbacks;
+  {
+    std::shared_lock lock(onSurfaceStartCallbackMutex_);
+    callbacks = onSurfaceStartCallbacks_;
+  }
+  for (const auto& callback : callbacks) {
+    callback(shadowTree);
   }
 }
 
@@ -488,10 +496,10 @@ void Scheduler::removeEventListener(
   }
 }
 
-void Scheduler::uiManagerShouldSetOnSurfaceStartCallback(
+void Scheduler::uiManagerShouldAddOnSurfaceStartCallback(
     OnSurfaceStartCallback&& callback) {
-  std::shared_lock lock(onSurfaceStartCallbackMutex_);
-  onSurfaceStartCallback_ = std::move(callback);
+  std::unique_lock lock(onSurfaceStartCallbackMutex_);
+  onSurfaceStartCallbacks_.push_back(std::move(callback));
 }
 
 } // namespace facebook::react

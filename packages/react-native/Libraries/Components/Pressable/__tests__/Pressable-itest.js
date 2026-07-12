@@ -11,16 +11,16 @@
 
 import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
-import type {AccessibilityProps, HostInstance} from 'react-native';
+import type {HostInstance} from 'react-native';
+import type {AccessibilityProps} from 'react-native';
 
 import * as Fantom from '@react-native/fantom';
+import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {createRef} from 'react';
 import {Pressable} from 'react-native';
 import {PlatformColor, Text} from 'react-native';
 import accessibilityPropsSuite from 'react-native/src/private/__tests__/utilities/accessibilityPropsSuite';
-import ensureInstance from 'react-native/src/private/__tests__/utilities/ensureInstance';
-import ReactNativeElement from 'react-native/src/private/webapis/dom/nodes/ReactNativeElement';
 
 describe('<Pressable>', () => {
   describe('props', () => {
@@ -94,7 +94,7 @@ describe('<Pressable>', () => {
           );
         });
 
-        const element = ensureInstance(elementRef.current, ReactNativeElement);
+        const element = nullthrows(elementRef.current);
         Fantom.dispatchNativeEvent(element, 'click');
 
         expect(onPressCallback).toHaveBeenCalledTimes(1);
@@ -118,7 +118,7 @@ describe('<Pressable>', () => {
           );
         });
 
-        const element = ensureInstance(elementRef.current, ReactNativeElement);
+        const element = nullthrows(elementRef.current);
         Fantom.dispatchNativeEvent(element, 'change', {value: true});
 
         expect(onPressCallback).toHaveBeenCalledTimes(0);
@@ -263,7 +263,7 @@ describe('<Pressable>', () => {
             </Pressable>,
           );
         });
-        const element = ensureInstance(elementRef.current, ReactNativeElement);
+        const element = nullthrows(elementRef.current);
 
         expect(element.childNodes.length).toBe(1);
 
@@ -302,7 +302,7 @@ describe('<Pressable>', () => {
           root.render(<Pressable ref={elementRef} />);
         });
 
-        expect(elementRef.current).toBeInstanceOf(ReactNativeElement);
+        expect(elementRef.current).toBeInstanceOf(HTMLElement);
       });
 
       it('uses the "RN:View" tag name', () => {
@@ -314,7 +314,7 @@ describe('<Pressable>', () => {
           root.render(<Pressable ref={elementRef} />);
         });
 
-        const element = ensureInstance(elementRef.current, ReactNativeElement);
+        const element = nullthrows(elementRef.current);
         // Pressable is implemented with a <View> under the hood
         expect(element.tagName).toBe('RN:View');
       });

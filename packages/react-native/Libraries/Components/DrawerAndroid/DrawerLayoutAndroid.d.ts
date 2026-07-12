@@ -17,11 +17,13 @@ import {
 } from '../../Types/CoreEventTypes';
 import {ViewProps} from '../View/ViewPropTypes';
 
-export interface DrawerSlideEvent
-  extends NativeSyntheticEvent<NativeTouchEvent> {}
+export interface DrawerSlideEvent extends NativeSyntheticEvent<NativeTouchEvent> {}
 
 /**
- * @see DrawerLayoutAndroid.android.js
+ * DrawerLayoutAndroid is deprecated and will be removed in a future release.
+ * Use `react-native-drawer-layout` instead.
+ * @see https://reactnavigation.org/docs/drawer-layout/
+ * @deprecated
  */
 export interface DrawerLayoutAndroidProps extends ViewProps {
   /**
@@ -98,8 +100,7 @@ export interface DrawerLayoutAndroidProps extends ViewProps {
    *   it's closing or opening animation
    */
   onDrawerStateChanged?:
-    | ((event: 'Idle' | 'Dragging' | 'Settling') => void)
-    | undefined;
+    ((event: 'Idle' | 'Dragging' | 'Settling') => void) | undefined;
 
   /**
    * The navigation view that will be rendered to the side of the
@@ -123,6 +124,12 @@ interface DrawerPosition {
 declare class DrawerLayoutAndroidComponent extends React.Component<DrawerLayoutAndroidProps> {}
 declare const DrawerLayoutAndroidBase: Constructor<HostInstance> &
   typeof DrawerLayoutAndroidComponent;
+/**
+ * DrawerLayoutAndroid is deprecated and will be removed in a future release.
+ * Use `react-native-drawer-layout` instead.
+ * @see https://reactnavigation.org/docs/drawer-layout/
+ * @deprecated
+ */
 export class DrawerLayoutAndroid extends DrawerLayoutAndroidBase {
   /**
    * drawer's positions.

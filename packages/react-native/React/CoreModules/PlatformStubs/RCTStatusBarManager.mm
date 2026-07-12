@@ -23,8 +23,6 @@ RCT_EXPORT_METHOD(setStyle : (NSString *)style animated : (BOOL)animated) {}
 
 RCT_EXPORT_METHOD(setHidden : (BOOL)hidden withAnimation : (NSString *)withAnimation) {}
 
-RCT_EXPORT_METHOD(setNetworkActivityIndicatorVisible : (BOOL)visible) {}
-
 - (facebook::react::ModuleConstants<JS::NativeStatusBarManagerIOS::Constants>)getConstants
 {
   return facebook::react::typedConstants<JS::NativeStatusBarManagerIOS::Constants>({

@@ -87,7 +87,7 @@ export default function Ansi({
     <View style={styles.container}>
       {parsedLines.map((items, i) => (
         <View style={styles.line} key={i}>
-          <Text style={styles.text}>
+          <Text maxFontSizeMultiplier={1.5} style={styles.text}>
             {items.map((bundle, key) => {
               const textStyle =
                 bundle.fg && COLORS[bundle.fg]
@@ -101,6 +101,7 @@ export default function Ansi({
               return (
                 <Text
                   id="logbox_codeframe_contents_text"
+                  maxFontSizeMultiplier={1.5}
                   style={[style, textStyle]}
                   key={key}>
                   {getText(bundle.content, key)}

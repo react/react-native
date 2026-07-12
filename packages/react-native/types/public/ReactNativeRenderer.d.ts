@@ -44,15 +44,13 @@ export interface GestureResponderHandlers {
    * Does this view want to become responder on the start of a touch?
    */
   onStartShouldSetResponder?:
-    | ((event: GestureResponderEvent) => boolean)
-    | undefined;
+    ((event: GestureResponderEvent) => boolean) | undefined;
 
   /**
    * Called for every touch move on the View when it is not the responder: does this view want to "claim" touch responsiveness?
    */
   onMoveShouldSetResponder?:
-    | ((event: GestureResponderEvent) => boolean)
-    | undefined;
+    ((event: GestureResponderEvent) => boolean) | undefined;
 
   /**
    * If the View returns true and attempts to become the responder, one of the following will happen:
@@ -92,8 +90,7 @@ export interface GestureResponderHandlers {
    *  Should this view release the responder? Returning true allows release
    */
   onResponderTerminationRequest?:
-    | ((event: GestureResponderEvent) => boolean)
-    | undefined;
+    ((event: GestureResponderEvent) => boolean) | undefined;
 
   /**
    * The responder has been taken from the View.
@@ -116,8 +113,7 @@ export interface GestureResponderHandlers {
    * it should have a onStartShouldSetResponderCapture handler which returns true.
    */
   onStartShouldSetResponderCapture?:
-    | ((event: GestureResponderEvent) => boolean)
-    | undefined;
+    ((event: GestureResponderEvent) => boolean) | undefined;
 
   /**
    * onStartShouldSetResponder and onMoveShouldSetResponder are called with a bubbling pattern,
@@ -133,8 +129,7 @@ export interface GestureResponderHandlers {
    * it should have a onStartShouldSetResponderCapture handler which returns true.
    */
   onMoveShouldSetResponderCapture?:
-    | ((event: GestureResponderEvent) => boolean)
-    | undefined;
+    ((event: GestureResponderEvent) => boolean) | undefined;
 }
 
 /**

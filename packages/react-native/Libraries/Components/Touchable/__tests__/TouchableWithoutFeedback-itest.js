@@ -13,11 +13,10 @@ import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 import type {AccessibilityProps} from 'react-native';
 
 import * as Fantom from '@react-native/fantom';
+import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {Text, TouchableWithoutFeedback, View} from 'react-native';
 import accessibilityPropsSuite from 'react-native/src/private/__tests__/utilities/accessibilityPropsSuite';
-import ensureInstance from 'react-native/src/private/__tests__/utilities/ensureInstance';
-import ReactNativeElement from 'react-native/src/private/webapis/dom/nodes/ReactNativeElement';
 
 describe('<TouchableWithoutFeedback>', () => {
   describe('props', () => {
@@ -142,10 +141,7 @@ describe('<TouchableWithoutFeedback>', () => {
         });
 
         expect(
-          ensureInstance(
-            root.document.documentElement.firstElementChild,
-            ReactNativeElement,
-          ).tagName,
+          nullthrows(root.document.documentElement.firstElementChild).tagName,
         ).toBe('RN:Paragraph');
 
         Fantom.runTask(() => {
@@ -159,10 +155,7 @@ describe('<TouchableWithoutFeedback>', () => {
         });
 
         expect(
-          ensureInstance(
-            root.document.documentElement.firstElementChild,
-            ReactNativeElement,
-          ).tagName,
+          nullthrows(root.document.documentElement.firstElementChild).tagName,
         ).toBe('RN:View');
       });
     });

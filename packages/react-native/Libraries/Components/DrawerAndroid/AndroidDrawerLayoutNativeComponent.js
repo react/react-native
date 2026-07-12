@@ -8,5 +8,5 @@
  * @format
  */
 
-export * from '../../../src/private/specs_DEPRECATED/components/AndroidDrawerLayoutNativeComponent';
-export {default} from '../../../src/private/specs_DEPRECATED/components/AndroidDrawerLayoutNativeComponent';
+export * from '../../../src/private/components/drawerlayoutandroid/specs/AndroidDrawerLayoutNativeComponent';
+export {default} from '../../../src/private/components/drawerlayoutandroid/specs/AndroidDrawerLayoutNativeComponent';

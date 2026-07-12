@@ -10,7 +10,6 @@
 
 import type {Config} from '@react-native-community/cli-types';
 import type {RunBuildOptions} from 'metro';
-import type {ConfigT} from 'metro-config';
 
 import loadMetroConfig from '../../utils/loadMetroConfig';
 import parseKeyValueParamArray from '../../utils/parseKeyValueParamArray';
@@ -19,6 +18,8 @@ import {promises as fs} from 'fs';
 import {runBuild} from 'metro';
 import path from 'path';
 import {styleText} from 'util';
+
+type HydratedMetroConfig = Awaited<ReturnType<typeof loadMetroConfig>>;
 
 export type BundleCommandArgs = {
   assetsDest?: string,
@@ -60,7 +61,7 @@ async function buildBundle(
 
 async function buildBundleWithConfig(
   args: BundleCommandArgs,
-  config: ConfigT,
+  config: HydratedMetroConfig,
   bundleImpl?: RunBuildOptions['output'],
 ): Promise<void> {
   const customResolverOptions = parseKeyValueParamArray(

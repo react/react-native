@@ -78,11 +78,7 @@ export namespace Animated {
   };
 
   type AnimatedColorInputValue =
-    | RgbaValue
-    | RgbaAnimatedValue
-    | ColorValue
-    | null
-    | undefined;
+    RgbaValue | RgbaAnimatedValue | ColorValue | null | undefined;
 
   class AnimatedColor extends AnimatedWithChildren {
     r: AnimatedValue;
@@ -542,8 +538,7 @@ export namespace Animated {
   ): (...args: any[]) => void;
 
   export type ComponentProps<T> = T extends
-    | React.ComponentType<infer P>
-    | React.Component<infer P>
+    React.ComponentType<infer P> | React.Component<infer P>
     ? P
     : never;
 
@@ -586,8 +581,9 @@ export namespace Animated {
       : WithAnimatedValue<T[key]>;
   };
 
-  export interface AnimatedComponent<T extends React.ComponentType<any>>
-    extends React.FC<AnimatedProps<React.ComponentPropsWithRef<T>>> {}
+  export interface AnimatedComponent<
+    T extends React.ComponentType<any>,
+  > extends React.FC<AnimatedProps<React.ComponentPropsWithRef<T>>> {}
 
   export type AnimatedComponentOptions = {
     collapsable?: boolean | undefined;

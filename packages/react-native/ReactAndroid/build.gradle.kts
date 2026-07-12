@@ -242,6 +242,7 @@ val preparePrefab by
                       Pair("../ReactCommon/react/renderer/telemetry/", "react/renderer/telemetry/"),
                       Pair("../ReactCommon/react/renderer/uimanager/", "react/renderer/uimanager/"),
                       Pair("../ReactCommon/react/debug/", "react/debug/"),
+                      Pair("../ReactCommon/react/cxxstableapi/", "react/cxxstableapi/"),
                       Pair("../ReactCommon/react/utils/", "react/utils/"),
                       Pair("src/main/jni/react/jni", "react/jni/"),
                       // react_cxxreactpackage

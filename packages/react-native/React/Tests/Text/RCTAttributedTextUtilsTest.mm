@@ -10,6 +10,9 @@
 
 #import <react/renderer/textlayoutmanager/RCTAttributedTextUtils.h>
 
+#include <react/renderer/attributedstring/conversions.h>
+#include <react/renderer/core/RawValue.h>
+
 using namespace facebook::react;
 
 @interface RCTAttributedTextUtilsTest : XCTestCase
@@ -17,6 +20,30 @@ using namespace facebook::react;
 @end
 
 @implementation RCTAttributedTextUtilsTest
+
+static NSTextAlignment NSTextAlignmentFromTextAlign(NSString *textAlign, LayoutDirection layoutDirection)
+{
+  ContextContainer contextContainer{};
+  PropsParserContext parserContext{-1, contextContainer};
+  TextAlignment textAlignment = TextAlignment::Natural;
+  fromRawValue(parserContext, RawValue{folly::dynamic{textAlign.UTF8String}}, textAlignment);
+
+  TextAttributes textAttributes;
+  textAttributes.alignment = textAlignment;
+  textAttributes.layoutDirection = layoutDirection;
+
+  NSDictionary<NSAttributedStringKey, id> *attributes = RCTNSTextAttributesFromTextAttributes(textAttributes);
+  NSParagraphStyle *paragraphStyle = attributes[NSParagraphStyleAttributeName];
+  return paragraphStyle.alignment;
+}
+
+- (void)testTextAlignmentStartAndEndResolveWithLayoutDirection
+{
+  XCTAssertEqual(NSTextAlignmentFromTextAlign(@"start", LayoutDirection::LeftToRight), NSTextAlignmentLeft);
+  XCTAssertEqual(NSTextAlignmentFromTextAlign(@"start", LayoutDirection::RightToLeft), NSTextAlignmentRight);
+  XCTAssertEqual(NSTextAlignmentFromTextAlign(@"end", LayoutDirection::LeftToRight), NSTextAlignmentRight);
+  XCTAssertEqual(NSTextAlignmentFromTextAlign(@"end", LayoutDirection::RightToLeft), NSTextAlignmentLeft);
+}
 
 - (void)testSamenessOfEmptyAttributedStrings
 {

@@ -45,6 +45,7 @@ Pod::Spec.new do |s|
   s.dependency "React-featureflags"
   s.dependency "React-runtimescheduler"
   s.dependency "React-cxxreact"
+  s.dependency "React-bridging"
 
   add_dependency(s, "React-runtimeexecutor", :additional_framework_paths => ["platform/ios"])
   add_dependency(s, "React-rendererdebug")

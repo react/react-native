@@ -20,6 +20,7 @@ import com.facebook.common.logging.FLog
 import com.facebook.react.R
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.common.ReactConstants
+import com.facebook.react.uimanager.HasChildPressedStateDelay
 import com.facebook.react.uimanager.ReactAccessibilityDelegate.AccessibilityRole
 import com.facebook.react.uimanager.events.NativeGestureUtil.notifyNativeGestureEnded
 import com.facebook.react.uimanager.events.NativeGestureUtil.notifyNativeGestureStarted
@@ -28,10 +29,13 @@ import com.facebook.react.uimanager.events.NativeGestureUtil.notifyNativeGesture
  * Wrapper view for [DrawerLayout]. It manages the properties that can be set on the drawer and
  * contains some ReactNative-specific functionality.
  */
-public class ReactDrawerLayout(reactContext: ReactContext) : DrawerLayout(reactContext) {
+public class ReactDrawerLayout(reactContext: ReactContext) :
+    DrawerLayout(reactContext), HasChildPressedStateDelay {
   private var drawerPosition = Gravity.START
   private var drawerWidth = DEFAULT_DRAWER_WIDTH
   private var dragging = false
+
+  override var hasChildPressedStateDelay: Boolean? = null
 
   init {
     ViewCompat.setAccessibilityDelegate(
@@ -59,6 +63,9 @@ public class ReactDrawerLayout(reactContext: ReactContext) : DrawerLayout(reactC
         },
     )
   }
+
+  override fun shouldDelayChildPressedState(): Boolean =
+      hasChildPressedStateDelay ?: super.shouldDelayChildPressedState()
 
   override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
     try {

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<57f84b7025cf1fc77f5f99dfc4653fb4>>
+ * @generated SignedSource<<b2f1772a72176d689d3152371808480a>>
  */
 
 /**
@@ -74,6 +74,10 @@ bool ReactNativeFeatureFlags::enableAccumulatedUpdatesInRawPropsAndroid() {
   return getAccessor().enableAccumulatedUpdatesInRawPropsAndroid();
 }
 
+bool ReactNativeFeatureFlags::enableAndroidFontWeightAdjustment() {
+  return getAccessor().enableAndroidFontWeightAdjustment();
+}
+
 bool ReactNativeFeatureFlags::enableAndroidTextMeasurementOptimizations() {
   return getAccessor().enableAndroidTextMeasurementOptimizations();
 }
@@ -120,6 +124,10 @@ bool ReactNativeFeatureFlags::enableFlexboxAutoMinSizeInStrictMode() {
 
 bool ReactNativeFeatureFlags::enableFontScaleChangesUpdatingLayout() {
   return getAccessor().enableFontScaleChangesUpdatingLayout();
+}
+
+bool ReactNativeFeatureFlags::enableIOSCompressedTextFrameAdjustment() {
+  return getAccessor().enableIOSCompressedTextFrameAdjustment();
 }
 
 bool ReactNativeFeatureFlags::enableIOSTextBaselineOffsetPerLine() {

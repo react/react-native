@@ -46,6 +46,31 @@ describe('FileReader', function () {
     expect(e.target?.result).toBe('data:text/plain;base64,NDI=');
   });
 
+  it('should be in the LOADING state while a read is in progress', () => {
+    const reader = new FileReader();
+    expect(reader.readyState).toBe(FileReader.EMPTY);
+    reader.readAsText(new Blob());
+    // The native read resolves on a later microtask, so the reader should
+    // report LOADING synchronously after the read starts.
+    expect(reader.readyState).toBe(FileReader.LOADING);
+  });
+
+  it('should dispatch abort and loadend when aborted during a read', () => {
+    const reader = new FileReader();
+    let aborted = false;
+    let loadended = false;
+    reader.onabort = () => {
+      aborted = true;
+    };
+    reader.onloadend = () => {
+      loadended = true;
+    };
+    reader.readAsText(new Blob());
+    reader.abort();
+    expect(aborted).toBe(true);
+    expect(loadended).toBe(true);
+  });
+
   it('should read blob as ArrayBuffer', async () => {
     const e = await new Promise<Event>((resolve, reject) => {
       const reader = new FileReader();

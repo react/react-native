@@ -8,6 +8,7 @@
 #pragma once
 
 #include <memory>
+#include <mutex>
 #include <shared_mutex>
 
 #include <react/renderer/core/EventEmitter.h>
@@ -114,6 +115,7 @@ class ShadowNodeFamily final : public jsi::NativeState {
    * architecture and will be removed in the future.
    */
   mutable std::unique_ptr<folly::dynamic> nativeProps_DEPRECATED;
+  mutable std::mutex nativePropsMutex;
 
   /**
    * @return tag for the ShadowNodeFamily.

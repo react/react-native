@@ -93,6 +93,7 @@ import com.facebook.react.uimanager.events.SynchronousEventReceiver;
 import com.facebook.react.views.text.PreparedLayout;
 import com.facebook.react.views.text.ReactTextViewManager;
 import com.facebook.react.views.text.ReactTextViewManagerCallback;
+import com.facebook.react.views.text.ReactTypefaceUtils;
 import com.facebook.react.views.text.TextEffectRegistry;
 import com.facebook.react.views.text.TextLayoutManager;
 import java.util.ArrayList;
@@ -553,6 +554,7 @@ public class FabricUIManager
     return (NativeArray)
         TextLayoutManager.measureLines(
             mReactApplicationContext.getAssets(),
+            ReactTypefaceUtils.getFontWeightAdjustment(mReactApplicationContext),
             attributedString,
             paragraphAttributes,
             PixelUtil.toPixelFromDIP(width),
@@ -639,6 +641,7 @@ public class FabricUIManager
 
     return TextLayoutManager.measureText(
         mReactApplicationContext.getAssets(),
+        ReactTypefaceUtils.getFontWeightAdjustment(mReactApplicationContext),
         attributedString,
         paragraphAttributes,
         getYogaSize(minWidth, maxWidth),
@@ -666,6 +669,7 @@ public class FabricUIManager
 
     return TextLayoutManager.createPreparedLayout(
         mReactApplicationContext.getAssets(),
+        ReactTypefaceUtils.getFontWeightAdjustment(mReactApplicationContext),
         attributedString,
         paragraphAttributes,
         getYogaSize(minWidth, maxWidth),
@@ -1622,6 +1626,10 @@ public class FabricUIManager
         throw ex;
       } finally {
         schedule();
+      }
+
+      if (ReactNativeFeatureFlags.useSharedAnimatedBackend() && mBinding != null) {
+        mBinding.driveAnimationBackend(frameTimeNanos);
       }
 
       mSynchronousEvents.clear();

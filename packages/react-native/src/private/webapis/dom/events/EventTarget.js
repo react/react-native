@@ -366,6 +366,15 @@ function getEventPath(
   eventTarget: EventTarget,
   event: Event,
 ): ReadonlyArray<EventTarget> {
+  // React Native-specific fast path: a "direct" event is dispatched only to its
+  // target, as a single AT_TARGET phase, with just the target in the event
+  // path. This skips the O(depth) ancestor walk (and the capture-phase
+  // traversal over every ancestor) that the DOM dispatch algorithm otherwise
+  // performs even for non-bubbling events.
+  if (event.rnIsDirect) {
+    return [eventTarget];
+  }
+
   const path = [];
   let target: EventTarget | null = eventTarget;
 

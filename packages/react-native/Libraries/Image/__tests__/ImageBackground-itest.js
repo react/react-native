@@ -13,11 +13,10 @@ import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 import type {HostInstance} from 'react-native';
 
 import * as Fantom from '@react-native/fantom';
+import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {createRef} from 'react';
 import {ImageBackground} from 'react-native';
-import ensureInstance from 'react-native/src/private/__tests__/utilities/ensureInstance';
-import ReactNativeElement from 'react-native/src/private/webapis/dom/nodes/ReactNativeElement';
 
 describe('<ImageBackground>', () => {
   describe('props', () => {
@@ -147,7 +146,7 @@ describe('<ImageBackground>', () => {
         root.render(<ImageBackground imageRef={elementRef} />);
       });
 
-      const image = ensureInstance(elementRef.current, ReactNativeElement);
+      const image = nullthrows(elementRef.current);
       expect(image.tagName).toBe('RN:Image');
     });
   });

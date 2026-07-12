@@ -74,4 +74,6 @@ const config /*: InputConfigT */ = {
       : [],
 };
 
-module.exports = mergeConfig(rnTesterConfig, config) /*:: as ConfigT */;
+const mergedConfig /*: ConfigT */ = mergeConfig(rnTesterConfig, config);
+
+module.exports = mergedConfig;

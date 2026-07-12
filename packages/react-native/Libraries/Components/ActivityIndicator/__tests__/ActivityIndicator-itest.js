@@ -10,12 +10,13 @@
 
 import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
-import ensureInstance from '../../../../src/private/__tests__/utilities/ensureInstance';
+import type {HostInstance} from 'react-native';
+
 import * as Fantom from '@react-native/fantom';
+import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {createRef} from 'react';
 import {ActivityIndicator} from 'react-native';
-import ReactNativeElement from 'react-native/src/private/webapis/dom/nodes/ReactNativeElement';
 
 describe('<ActivityIndicator>', () => {
   it('sets displayName', () => {
@@ -167,28 +168,26 @@ describe('<ActivityIndicator>', () => {
   });
 
   describe('ref', () => {
-    it('provides a valid ReactNativeElement instance', () => {
-      const elementRef =
-        createRef<React.ElementRef<typeof ActivityIndicator>>();
+    it('provides a valid HTMLElement instance', () => {
+      const elementRef = createRef<HostInstance>();
       const root = Fantom.createRoot();
 
       Fantom.runTask(() => {
         root.render(<ActivityIndicator ref={elementRef} />);
       });
 
-      expect(elementRef.current).toBeInstanceOf(ReactNativeElement);
+      expect(elementRef.current).toBeInstanceOf(HTMLElement);
     });
 
     it('has the correct tag name', () => {
-      const elementRef =
-        createRef<React.ElementRef<typeof ActivityIndicator>>();
+      const elementRef = createRef<HostInstance>();
       const root = Fantom.createRoot();
 
       Fantom.runTask(() => {
         root.render(<ActivityIndicator ref={elementRef} />);
       });
 
-      const element = ensureInstance(elementRef.current, ReactNativeElement);
+      const element = nullthrows(elementRef.current);
       expect(element.tagName).toBe('RN:AndroidProgressBar');
     });
   });

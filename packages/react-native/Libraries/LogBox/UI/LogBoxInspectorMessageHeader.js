@@ -32,7 +32,10 @@ component LogBoxInspectorMessageHeader(
       return null;
     }
     return (
-      <Text style={messageStyles.collapse} onPress={() => onPress()}>
+      <Text
+        maxFontSizeMultiplier={1.5}
+        style={messageStyles.collapse}
+        onPress={() => onPress()}>
         ... See More
       </Text>
     );
@@ -42,12 +45,16 @@ component LogBoxInspectorMessageHeader(
     <View style={messageStyles.body}>
       <View style={messageStyles.heading}>
         <Text
+          maxFontSizeMultiplier={1.5}
           style={[messageStyles.headingText, messageStyles[level]]}
           id="logbox_message_title_text">
           {title}
         </Text>
       </View>
-      <Text style={messageStyles.bodyText} id="logbox_message_contents_text">
+      <Text
+        maxFontSizeMultiplier={1.5}
+        style={messageStyles.bodyText}
+        id="logbox_message_contents_text">
         <LogBoxMessage
           maxLength={collapsed ? SHOW_MORE_MESSAGE_LENGTH : Infinity}
           message={message}

@@ -16,7 +16,7 @@ import {getTestBuildOutputPath} from '../paths';
 import build from './build';
 import {createDevMiddleware} from '@react-native/dev-middleware';
 import connect from 'connect';
-import Metro from 'metro';
+import * as Metro from 'metro';
 import {Server} from 'net';
 import path from 'path';
 

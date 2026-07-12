@@ -46,6 +46,9 @@ function convertLegacyComponentStack(componentStack: Stack): Stack {
 
 export type {LogData, ExtendedExceptionData, IgnorePattern};
 
+/**
+ * LogBox displays logs in the app.
+ */
 let LogBox;
 
 interface ILogBox {
@@ -60,9 +63,6 @@ interface ILogBox {
   addException(error: ExtendedExceptionData): void;
 }
 
-/**
- * LogBox displays logs in the app.
- */
 if (__DEV__) {
   const LogBoxData = require('./Data/LogBoxData');
   const {

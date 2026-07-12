@@ -13,12 +13,11 @@ import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
 import type {HostInstance} from 'react-native';
 
-import ensureInstance from '../../../../src/private/__tests__/utilities/ensureInstance';
 import * as Fantom from '@react-native/fantom';
+import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {createRef} from 'react';
 import {ScrollView, StyleSheet, View} from 'react-native';
-import ReactNativeElement from 'react-native/src/private/webapis/dom/nodes/ReactNativeElement';
 
 const VIEWPORT_WIDTH = 402;
 const VIEWPORT_HEIGHT = 760;
@@ -53,12 +52,9 @@ test('auto-height wrapper around a feed ScrollView stays bounded by the viewport
     );
   });
 
-  const wrapper = ensureInstance(wrapperRef.current, ReactNativeElement);
-  const scrollView = ensureInstance(scrollViewRef.current, ReactNativeElement);
-  const feedContent = ensureInstance(
-    feedContentRef.current,
-    ReactNativeElement,
-  );
+  const wrapper = nullthrows(wrapperRef.current);
+  const scrollView = nullthrows(scrollViewRef.current);
+  const feedContent = nullthrows(feedContentRef.current);
 
   const wrapperRect = wrapper.getBoundingClientRect();
   const scrollViewRect = scrollView.getBoundingClientRect();

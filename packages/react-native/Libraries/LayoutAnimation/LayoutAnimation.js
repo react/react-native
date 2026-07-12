@@ -159,18 +159,19 @@ const Presets = {
 };
 
 /**
- * Automatically animates views to their new positions when the
- * next layout happens.
- *
- * A common way to use this API is to call it before calling `setState`.
+ * Automatically animates views to their new positions when the next layout
+ * happens. Call before updating state to animate the transition.
  *
  * Note that in order to get this to work on **Android** you need to set the following flags via `UIManager`:
  *
  *     UIManager.setLayoutAnimationEnabledExperimental && UIManager.setLayoutAnimationEnabledExperimental(true);
+ *
+ * @see https://reactnative.dev/docs/layoutanimation
  */
 const LayoutAnimation = {
   /**
-   * Schedules an animation to happen on the next layout.
+   * Schedule an animation for the next layout. Config includes duration,
+   * create/update/delete sub-configs.
    *
    * @param config Specifies animation properties:
    *
@@ -183,10 +184,16 @@ const LayoutAnimation = {
    * @param onError Called on error. Only supported on iOS.
    */
   configureNext,
+
   /**
-   * Helper for creating a config for `configureNext`.
+   * Helper that creates a config object for `configureNext`.
    */
   create: createLayoutAnimation,
+
+  /**
+   * Enum of animation types (spring, linear, easeInEaseOut, easeIn, easeOut,
+   * keyboard).
+   */
   Types: Object.freeze({
     spring: 'spring',
     linear: 'linear',
@@ -195,15 +202,24 @@ const LayoutAnimation = {
     easeOut: 'easeOut',
     keyboard: 'keyboard',
   }) as LayoutAnimationTypes,
+
+  /**
+   * Enum of layout properties to animate (opacity, scaleX, scaleY, scaleXY).
+   */
   Properties: Object.freeze({
     opacity: 'opacity',
     scaleX: 'scaleX',
     scaleY: 'scaleY',
     scaleXY: 'scaleXY',
   }) as LayoutAnimationProperties,
+
   checkConfig(...args: Array<unknown>) {
     console.error('LayoutAnimation.checkConfig(...) has been disabled.');
   },
+
+  /**
+   * Predefined configs (easeInEaseOut, linear, spring).
+   */
   Presets,
   easeInEaseOut: configureNext.bind(null, Presets.easeInEaseOut) as (
     onAnimationDidEnd?: OnAnimationDidEndCallback,

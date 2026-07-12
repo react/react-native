@@ -29,7 +29,10 @@ export default function LogBoxInspectorFooter(props: Props): React.Node {
     return (
       <View style={styles.root}>
         <View style={styles.button}>
-          <Text id="logbox_dismissable_text" style={styles.syntaxErrorText}>
+          <Text
+            id="logbox_dismissable_text"
+            maxFontSizeMultiplier={1.5}
+            style={styles.syntaxErrorText}>
             This error cannot be dismissed.
           </Text>
         </View>

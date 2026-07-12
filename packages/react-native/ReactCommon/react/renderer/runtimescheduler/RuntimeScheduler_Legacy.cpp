@@ -46,6 +46,14 @@ void RuntimeScheduler_Legacy::scheduleWork(RawCallback&& callback) noexcept {
       });
 }
 
+void RuntimeScheduler_Legacy::scheduleTask(
+    [[maybe_unused]] const std::function<void()>& task) {}
+uint64_t RuntimeScheduler_Legacy::registerTaskQueueSource() {
+  return 0;
+}
+void RuntimeScheduler_Legacy::unregisterTaskQueueSource(
+    [[maybe_unused]] uint64_t sourceId) {}
+
 std::shared_ptr<Task> RuntimeScheduler_Legacy::scheduleTask(
     SchedulerPriority priority,
     jsi::Function&& callback) noexcept {

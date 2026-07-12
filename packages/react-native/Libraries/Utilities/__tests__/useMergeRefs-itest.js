@@ -12,8 +12,6 @@ import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
 import type {HostInstance} from '../../../src/private/types/HostInstance';
 
-import ensureInstance from '../../../src/private/__tests__/utilities/ensureInstance';
-import ReactNativeElement from '../../../src/private/webapis/dom/nodes/ReactNativeElement';
 import View from '../../Components/View/View';
 import useMergeRefs from '../useMergeRefs';
 import * as Fantom from '@react-native/fantom';
@@ -29,7 +27,7 @@ function id(instance: HostInstance | null): string | null {
   if (instance == null) {
     return null;
   }
-  return ensureInstance(instance, ReactNativeElement).id;
+  return instance.id;
 }
 
 test('accepts a ref callback', () => {

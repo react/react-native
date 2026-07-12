@@ -8,5 +8,5 @@
  * @format
  */
 
-export * from '../../../src/private/specs_DEPRECATED/components/ProgressBarAndroidNativeComponent';
-export {default} from '../../../src/private/specs_DEPRECATED/components/ProgressBarAndroidNativeComponent';
+export * from '../../../src/private/components/progressbarandroid/specs/ProgressBarAndroidNativeComponent';
+export {default} from '../../../src/private/components/progressbarandroid/specs/ProgressBarAndroidNativeComponent';

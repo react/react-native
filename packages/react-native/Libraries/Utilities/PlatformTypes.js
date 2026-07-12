@@ -29,9 +29,24 @@ export type PlatformSelectSpec<T> =
 
 type IOSPlatform = {
   __constants: null,
+
+  /** The platform identifier. Always `'ios'` on iOS. */
   OS: 'ios',
+
+  /**
+   * The OS version string (e.g. `'26.0'`).
+   *
+   * @platform ios
+   */
   // $FlowFixMe[unsafe-getters-setters]
   get Version(): string,
+
+  /**
+   * An object of platform-specific constants, including `reactNativeVersion`,
+   * `osVersion`, `interfaceIdiom`, and more.
+   *
+   * @platform ios
+   */
   // $FlowFixMe[unsafe-getters-setters]
   get constants(): {
     forceTouchAvailable: boolean,
@@ -48,26 +63,69 @@ type IOSPlatform = {
     systemName: string,
     isMacCatalyst?: boolean,
   },
+
+  /**
+   * Whether the app is running on an iPad.
+   *
+   * @platform ios
+   */
   // $FlowFixMe[unsafe-getters-setters]
   get isPad(): boolean,
+
+  /**
+   * Whether the app is running on a TV device.
+   */
   // $FlowFixMe[unsafe-getters-setters]
   get isTV(): boolean,
+
+  /**
+   * Whether the app is running on Apple Vision Pro.
+   *
+   * @platform ios
+   */
   // $FlowFixMe[unsafe-getters-setters]
   get isVision(): boolean,
+
+  /**
+   * Whether the app is running in a test environment.
+   */
   // $FlowFixMe[unsafe-getters-setters]
   get isTesting(): boolean,
+
   // $FlowFixMe[unsafe-getters-setters]
   get isDisableAnimations(): boolean,
+
   // $FlowFixMe[unsafe-getters-setters]
   get isMacCatalyst(): boolean,
+
+  /**
+   * Returns the most fitting value for the current platform from the given
+   * spec object. The spec can include keys for specific platform names
+   * (`'ios'`, `'android'`, etc.) and a `default` fallback.
+   */
   select: <T>(spec: PlatformSelectSpec<T>) => T,
 };
 
 type AndroidPlatform = {
   __constants: null,
+
+  /** The platform identifier. Always `'android'` on Android. */
   OS: 'android',
+
+  /**
+   * The Android API level (e.g. `34`).
+   *
+   * @platform android
+   */
   // $FlowFixMe[unsafe-getters-setters]
   get Version(): number,
+
+  /**
+   * An object of platform-specific constants, including `reactNativeVersion`,
+   * `Version`, `Release`, `Model`, and more.
+   *
+   * @platform android
+   */
   // $FlowFixMe[unsafe-getters-setters]
   get constants(): {
     isTesting: boolean,
@@ -88,14 +146,33 @@ type AndroidPlatform = {
     Brand: string,
     Manufacturer: string,
   },
+
+  /**
+   * Whether the app is running on a TV device.
+   */
   // $FlowFixMe[unsafe-getters-setters]
   get isTV(): boolean,
+
+  /**
+   * Whether the app is running on Apple Vision Pro. Always `false` on Android.
+   */
   // $FlowFixMe[unsafe-getters-setters]
   get isVision(): boolean,
+
+  /**
+   * Whether the app is running in a test environment.
+   */
   // $FlowFixMe[unsafe-getters-setters]
   get isTesting(): boolean,
+
   // $FlowFixMe[unsafe-getters-setters]
   get isDisableAnimations(): boolean,
+
+  /**
+   * Returns the most fitting value for the current platform from the given
+   * spec object. The spec can include keys for specific platform names
+   * (`'ios'`, `'android'`, etc.) and a `default` fallback.
+   */
   select: <T>(spec: PlatformSelectSpec<T>) => T,
 };
 

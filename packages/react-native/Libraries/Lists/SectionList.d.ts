@@ -36,10 +36,7 @@ export interface SectionBase<ItemT, SectionT = DefaultSectionT> {
   renderItem?: SectionListRenderItem<ItemT, SectionT> | undefined;
 
   ItemSeparatorComponent?:
-    | React.ComponentType<any>
-    | React.ReactElement
-    | null
-    | undefined;
+    React.ComponentType<any> | React.ReactElement | null | undefined;
 
   keyExtractor?: ((item: ItemT, index: number) => string) | undefined;
 }
@@ -54,8 +51,10 @@ export type SectionListData<ItemT, SectionT = DefaultSectionT> = SectionBase<
  * @see https://reactnative.dev/docs/sectionlist.html#props
  */
 
-export interface SectionListRenderItemInfo<ItemT, SectionT = DefaultSectionT>
-  extends ListRenderItemInfo<ItemT> {
+export interface SectionListRenderItemInfo<
+  ItemT,
+  SectionT = DefaultSectionT,
+> extends ListRenderItemInfo<ItemT> {
   section: SectionListData<ItemT, SectionT>;
 }
 
@@ -68,16 +67,15 @@ type VirtualizedListWithoutPreConfiguredProps<ItemT> = Omit<
   'stickyHeaderIndices'
 >;
 
-export interface SectionListProps<ItemT, SectionT = DefaultSectionT>
-  extends VirtualizedListWithoutPreConfiguredProps<ItemT> {
+export interface SectionListProps<
+  ItemT,
+  SectionT = DefaultSectionT,
+> extends VirtualizedListWithoutPreConfiguredProps<ItemT> {
   /**
    * Rendered in between each section.
    */
   SectionSeparatorComponent?:
-    | React.ComponentType<any>
-    | React.ReactElement
-    | null
-    | undefined;
+    React.ComponentType<any> | React.ReactElement | null | undefined;
 
   /**
    * A marker property for telling the list to re-render (since it implements PureComponent).
@@ -260,8 +258,10 @@ export class SectionList<
 > extends SectionListComponent<SectionListProps<ItemT, SectionT>> {}
 
 /* This definition is deprecated because it extends the wrong base type */
-export interface SectionListStatic<ItemT, SectionT = DefaultSectionT>
-  extends React.ComponentClass<SectionListProps<ItemT, SectionT>> {
+export interface SectionListStatic<
+  ItemT,
+  SectionT = DefaultSectionT,
+> extends React.ComponentClass<SectionListProps<ItemT, SectionT>> {
   /**
    * Scrolls to the item at the specified sectionIndex and itemIndex (within the section)
    * positioned in the viewable area such that viewPosition 0 places it at the top

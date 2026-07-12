@@ -148,6 +148,7 @@ def use_react_native! (
   pod 'React-RCTVibration', :path => "#{prefix}/Libraries/Vibration"
   pod 'React-Core/RCTWebSocket', :path => "#{prefix}/"
   pod 'React-cxxreact', :path => "#{prefix}/ReactCommon/cxxreact"
+  pod 'React-cxxstableapi', :path => "#{prefix}/ReactCommon/react/cxxstableapi"
   pod 'React-debug', :path => "#{prefix}/ReactCommon/react/debug"
   pod 'React-utils', :path => "#{prefix}/ReactCommon/react/utils"
   pod 'React-featureflags', :path => "#{prefix}/ReactCommon/react/featureflags"
@@ -161,6 +162,7 @@ def use_react_native! (
   pod 'React-domnativemodule', :path => "#{prefix}/ReactCommon/react/nativemodule/dom"
   pod 'React-defaultsnativemodule', :path => "#{prefix}/ReactCommon/react/nativemodule/defaults"
   pod 'React-Mapbuffer', :path => "#{prefix}/ReactCommon"
+  pod 'React-bridging', :path => "#{prefix}/ReactCommon/react/bridging", :modular_headers => true
   pod 'React-jserrorhandler', :path => "#{prefix}/ReactCommon/jserrorhandler"
   pod 'RCTDeprecation', :path => "#{prefix}/ReactApple/Libraries/RCTFoundation/RCTDeprecation"
   pod 'React-RCTFBReactNativeSpec', :path => "#{prefix}/React"

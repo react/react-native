@@ -63,7 +63,7 @@ component CodeFrameDisplay(codeFrame: CodeFrame) {
         onPress={() => {
           openFileInEditor(codeFrame.fileName, codeFrame.location?.row ?? 0);
         }}>
-        <Text style={styles.fileText}>
+        <Text maxFontSizeMultiplier={1.5} style={styles.fileText}>
           {getFileName()}
           {getLocation()}
         </Text>
@@ -116,7 +116,7 @@ component AppInfo() {
       }}
       style={appInfoStyles.buildButton}
       onPress={appInfo.onPress}>
-      <Text style={appInfoStyles.text}>
+      <Text maxFontSizeMultiplier={1.5} style={appInfoStyles.text}>
         {appInfo.appVersion} ({appInfo.engine})
       </Text>
     </LogBoxButton>

@@ -130,11 +130,10 @@ export type NativeMethodsMixinType = NativeMethods;
  * @todo This should eventually be defined as an AbstractComponent, but that
  *       should first be introduced in the React typings.
  */
-export interface HostComponent<P>
-  extends Pick<
-    React.ComponentClass<P>,
-    Exclude<keyof React.ComponentClass<P>, 'new'>
-  > {
+export interface HostComponent<P> extends Pick<
+  React.ComponentClass<P>,
+  Exclude<keyof React.ComponentClass<P>, 'new'>
+> {
   new (props: P, context?: any): React.Component<P> & HostInstance;
 }
 

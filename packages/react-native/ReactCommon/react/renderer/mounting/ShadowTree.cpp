@@ -428,7 +428,9 @@ CommitStatus ShadowTree::tryCommit(
       return CommitStatus::Failed;
     }
 
-    auto newRevisionNumber = currentRevision_.number + 1;
+    auto newRevisionNumber = isReactBranch
+        ? oldRevisionForStateProgression.number + 1
+        : currentRevision_.number + 1;
 
     {
       std::scoped_lock dispatchLock(EventEmitter::DispatchMutex());
@@ -513,11 +515,12 @@ void ShadowTree::mergeReactRevision() const {
     }
   }
 
-  ShadowTreeRevision::Number lastMergedRevisionNumber;
+  RootShadowNode::Shared lastMergedRootShadowNode;
+  bool lastMergeSucceeded = false;
 
   if (isPropsUpdatesAccumulationGuaranteed()) {
-    lastMergedRevisionNumber = promotedRevision.number;
-    this->commit(
+    lastMergedRootShadowNode = promotedRevision.rootShadowNode;
+    auto status = this->commit(
         [revision = std::move(promotedRevision)](
             const RootShadowNode& /*oldRootShadowNode*/) {
           return std::make_shared<RootShadowNode>(
@@ -528,13 +531,14 @@ void ShadowTree::mergeReactRevision() const {
             .mountSynchronously = true,
             .source = CommitSource::ReactRevisionMerge,
         });
+    lastMergeSucceeded = status == CommitStatus::Succeeded;
   } else {
     for (size_t i = 0; i < promotedRevisions.size(); ++i) {
       auto& revision = promotedRevisions[i];
       bool isLast = i == promotedRevisions.size() - 1;
-      lastMergedRevisionNumber = revision.number;
+      lastMergedRootShadowNode = revision.rootShadowNode;
 
-      this->commit(
+      auto status = this->commit(
           [revision = std::move(revision)](
               const RootShadowNode& /*oldRootShadowNode*/) {
             return std::make_shared<RootShadowNode>(
@@ -545,6 +549,7 @@ void ShadowTree::mergeReactRevision() const {
               .mountSynchronously = true,
               .source = CommitSource::ReactRevisionMerge,
           });
+      lastMergeSucceeded = status == CommitStatus::Succeeded;
     }
   }
 
@@ -554,8 +559,9 @@ void ShadowTree::mergeReactRevision() const {
 
     // If the current react revision is the same as the one that was just
     // merged, clear it.
-    if (currentReactRevision_.has_value() &&
-        lastMergedRevisionNumber == currentReactRevision_.value().number) {
+    if (lastMergeSucceeded && currentReactRevision_.has_value() &&
+        currentReactRevision_.value().rootShadowNode ==
+            lastMergedRootShadowNode) {
       currentReactRevision_.reset();
     }
   }

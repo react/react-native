@@ -148,7 +148,7 @@ async function validateSnapshots(
     // $FlowFixMe[prop-missing]
     // $FlowFixMe[incompatible-type]
     const diffResult = diff(prevSnapshot, newSnapshot, options);
-    const rerunCommand = isGitRepo() ? 'yarn build-types' : 'js1 build-js-api';
+    const rerunCommand = isGitRepo() ? 'yarn build-types' : 'js1 build js-api';
     console.error(
       `${styleText(['bold', 'inverse', 'red'], ' FAIL ')} ReactNativeApi.d.ts has changed. Please re-run '${rerunCommand}' and commit the updated snapshot.\n`,
     );

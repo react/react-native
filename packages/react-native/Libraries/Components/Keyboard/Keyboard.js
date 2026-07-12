@@ -42,7 +42,13 @@ type BaseKeyboardEvent = {
 
 export type AndroidKeyboardEvent = Readonly<{
   ...BaseKeyboardEvent,
+  /**
+   * Always set to 0 on Android.
+   */
   duration: 0,
+  /**
+   * Always set to "keyboard" on Android.
+   */
   easing: 'keyboard',
 }>;
 
@@ -62,47 +68,8 @@ type KeyboardEventDefinitions = {
 };
 
 /**
- * `Keyboard` module to control keyboard events.
- *
- * ### Usage
- *
- * The Keyboard module allows you to listen for native events and react to them, as
- * well as make changes to the keyboard, like dismissing it.
- *
- *```
- * import React, { Component } from 'react';
- * import { Keyboard, TextInput } from 'react-native';
- *
- * class Example extends Component {
- *   componentWillMount () {
- *     this.keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', this._keyboardDidShow);
- *     this.keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', this._keyboardDidHide);
- *   }
- *
- *   componentWillUnmount () {
- *     this.keyboardDidShowListener.remove();
- *     this.keyboardDidHideListener.remove();
- *   }
- *
- *   _keyboardDidShow () {
- *     alert('Keyboard Shown');
- *   }
- *
- *   _keyboardDidHide () {
- *     alert('Keyboard Hidden');
- *   }
- *
- *   render() {
- *     return (
- *       <TextInput
- *         onSubmitEditing={Keyboard.dismiss}
- *       />
- *     );
- *   }
- * }
- *```
+ * Module to control keyboard events and make changes to the keyboard.
  */
-
 class KeyboardImpl {
   _currentlyShowing: ?KeyboardEvent;
 
@@ -123,28 +90,18 @@ class KeyboardImpl {
   }
 
   /**
-   * The `addListener` function connects a JavaScript function to an identified native
-   * keyboard notification event.
+   * Listen for native keyboard notification events.
    *
-   * This function then returns the reference to the listener.
-   *
-   * @param {string} eventName The `nativeEvent` is the string that identifies the event you're listening for.  This
-   *can be any of the following:
-   *
-   * - `keyboardWillShow`
-   * - `keyboardDidShow`
-   * - `keyboardWillHide`
-   * - `keyboardDidHide`
-   * - `keyboardWillChangeFrame`
-   * - `keyboardDidChangeFrame`
+   * Available events are: `keyboardWillShow`, `keyboardDidShow`,
+   * `keyboardWillHide`, `keyboardDidHide`, `keyboardWillChangeFrame`, and
+   * `keyboardDidChangeFrame`. Only `keyboardDidShow` and `keyboardDidHide`
+   * are available on Android.
    *
    * Android versions prior to API 30 rely on observing layout changes when
    * `android:windowSoftInputMode` is set to `adjustResize` or `adjustPan`.
    *
-   * `keyboardWillShow` as well as `keyboardWillHide` are not available on Android since there is
-   * no native corresponding event.
-   *
-   * @param {function} callback function to be called when the event fires.
+   * @param {string} eventName The native event name to listen for.
+   * @param {function} callback Function to be called when the event fires.
    */
   addListener<K extends keyof KeyboardEventDefinitions>(
     eventType: K,
@@ -180,15 +137,15 @@ class KeyboardImpl {
   }
 
   /**
-   * Return the metrics of the soft-keyboard if visible.
+   * Return the metrics of the soft keyboard if visible.
    */
   metrics(): ?KeyboardMetrics {
     return this._currentlyShowing?.endCoordinates;
   }
 
   /**
-   * Useful for syncing TextInput (or other keyboard accessory view) size of
-   * position changes with keyboard movements.
+   * Sync `TextInput` (or other keyboard accessory view) size or position
+   * changes with keyboard movements.
    */
   scheduleLayoutAnimation(event: KeyboardEvent): void {
     const {duration, easing} = event;
@@ -204,6 +161,12 @@ class KeyboardImpl {
   }
 }
 
+/**
+ * `Keyboard` module to control keyboard events and make changes to the
+ * keyboard, like dismissing it.
+ *
+ * @see https://reactnative.dev/docs/keyboard
+ */
 const Keyboard: KeyboardImpl = new KeyboardImpl();
 
 export default Keyboard;

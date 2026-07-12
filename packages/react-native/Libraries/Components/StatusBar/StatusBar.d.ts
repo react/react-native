@@ -8,24 +8,13 @@
  */
 
 import type * as React from 'react';
-import {ColorValue} from '../../StyleSheet/StyleSheet';
 
 export type StatusBarStyle =
-  | 'default'
-  | 'auto'
-  | 'light-content'
-  | 'dark-content';
+  'default' | 'auto' | 'light-content' | 'dark-content';
 
 export type StatusBarAnimation = 'none' | 'fade' | 'slide';
 
 export interface StatusBarPropsIOS {
-  /**
-   * If the network activity indicator should be visible.
-   *
-   * @platform ios
-   */
-  networkActivityIndicatorVisible?: boolean | undefined;
-
   /**
    * The transition effect when showing and hiding the status bar using
    * the hidden prop. Defaults to 'fade'.
@@ -35,34 +24,10 @@ export interface StatusBarPropsIOS {
   showHideTransition?: null | 'fade' | 'slide' | 'none' | undefined;
 }
 
-export interface StatusBarPropsAndroid {
-  /**
-   * The background color of the status bar.
-   *
-   * Please note that this prop has no effect on Android 15+
-   *
-   * @platform android
-   */
-  backgroundColor?: ColorValue | undefined;
-
-  /**
-   * If the status bar is translucent. When translucent is set to true,
-   * the app will draw under the status bar. This is useful when using a
-   * semi transparent status bar color.
-   *
-   * Please note that this prop has no effect on Android 15+
-   *
-   * @platform android
-   */
-  translucent?: boolean | undefined;
-}
-
-export interface StatusBarProps
-  extends StatusBarPropsIOS,
-    StatusBarPropsAndroid {
+export interface StatusBarProps extends StatusBarPropsIOS {
   /**
    * If the transition between status bar property changes should be
-   * animated. Supported for backgroundColor, barStyle and hidden.
+   * animated. Supported for barStyle and hidden.
    */
   animated?: boolean | undefined;
 
@@ -98,25 +63,6 @@ export class StatusBar extends React.Component<StatusBarProps> {
    * @param animated Animate the style change.
    */
   static setBarStyle: (style: StatusBarStyle, animated?: boolean) => void;
-
-  /**
-   * Control the visibility of the network activity indicator
-   * @param visible Show the indicator.
-   */
-  static setNetworkActivityIndicatorVisible: (visible: boolean) => void;
-
-  /**
-   * Set the background color for the status bar
-   * @param color Background color.
-   * @param animated Animate the style change.
-   */
-  static setBackgroundColor: (color: ColorValue, animated?: boolean) => void;
-
-  /**
-   * Control the translucency of the status bar
-   * @param translucent Set as translucent.
-   */
-  static setTranslucent: (translucent: boolean) => void;
 
   /**
    * Push a StatusBar entry onto the stack.

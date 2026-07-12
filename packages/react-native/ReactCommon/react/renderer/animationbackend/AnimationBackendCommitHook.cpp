@@ -24,7 +24,8 @@ RootShadowNode::Unshared AnimationBackendCommitHook::shadowTreeWillCommit(
     const RootShadowNode::Unshared& newRootShadowNode,
     const ShadowTreeCommitOptions& commitOptions) noexcept {
   if (commitOptions.source != ShadowTreeCommitSource::React &&
-      commitOptions.source != ShadowTreeCommitSource::AnimationEndSync) {
+      commitOptions.source != ShadowTreeCommitSource::AnimationEndSync &&
+      commitOptions.source != ShadowTreeCommitSource::ReactRevisionMerge) {
     return newRootShadowNode;
   }
 

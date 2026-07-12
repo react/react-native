@@ -43,7 +43,11 @@ component TappableLinks(content: string, style: void | TextStyleProp) {
 
   if (matches.length === 0) {
     // No URLs detected. Just return the content.
-    return <Text style={style}>{content}</Text>;
+    return (
+      <Text maxFontSizeMultiplier={1.5} style={style}>
+        {content}
+      </Text>
+    );
   }
 
   // URLs were detected. Construct array of Text nodes.
@@ -55,7 +59,11 @@ component TappableLinks(content: string, style: void | TextStyleProp) {
   for (const linkRange of matches) {
     if (startIndex < linkRange.lowerBound) {
       const text = content.substring(startIndex, linkRange.lowerBound);
-      fragments.push(<Text key={++indexCounter}>{text}</Text>);
+      fragments.push(
+        <Text key={++indexCounter} maxFontSizeMultiplier={1.5}>
+          {text}
+        </Text>,
+      );
     }
 
     const link = content.substring(linkRange.lowerBound, linkRange.upperBound);
@@ -66,6 +74,7 @@ component TappableLinks(content: string, style: void | TextStyleProp) {
           Linking.openURL(link);
         }}
         key={++indexCounter}
+        maxFontSizeMultiplier={1.5}
         style={styles.linkText}>
         {link}
       </Text>,
@@ -77,13 +86,17 @@ component TappableLinks(content: string, style: void | TextStyleProp) {
   if (startIndex < content.length) {
     const text = content.substring(startIndex);
     fragments.push(
-      <Text key={++indexCounter} style={style}>
+      <Text key={++indexCounter} maxFontSizeMultiplier={1.5} style={style}>
         {text}
       </Text>,
     );
   }
 
-  return <Text style={style}>{fragments}</Text>;
+  return (
+    <Text maxFontSizeMultiplier={1.5} style={style}>
+      {fragments}
+    </Text>
+  );
 }
 
 const cleanContent = (content: string) =>
@@ -98,7 +111,7 @@ component LogBoxMessage(
   const {content, substitutions}: Message = message;
 
   if (plaintext === true) {
-    return <Text>{cleanContent(content)}</Text>;
+    return <Text maxFontSizeMultiplier={1}>{cleanContent(content)}</Text>;
   }
 
   const resolvedMaxLength = maxLength != null ? maxLength : Infinity;

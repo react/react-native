@@ -696,8 +696,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   // Invalidate cached content size so that updateState: recalculates the
   // container frame after zoomScale reset (which may have mutated it in RTL).
   _contentSize = CGSizeZero;
-  // Reset contentInset to prevent stale insets leaking into recycled scroll views.
-  _scrollView.contentInset = UIEdgeInsetsZero;
+  _scrollView.contentInset = RCTUIEdgeInsetsFromEdgeInsets(props.contentInset);
   // We set the default behavior to "never" so that iOS
   // doesn't do weird things to UIScrollView insets automatically
   // and keeps it as an opt-in behavior.

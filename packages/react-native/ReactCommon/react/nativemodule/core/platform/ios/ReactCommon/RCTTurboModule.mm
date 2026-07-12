@@ -89,6 +89,37 @@ static std::vector<jsi::Value> convertNSArrayToStdVector(jsi::Runtime &runtime, 
   return result;
 }
 
+static jsi::ArrayBuffer convertNSMutableDataToJSIArrayBuffer(jsi::Runtime &runtime, NSMutableData *value)
+{
+  class NSMutableDataBuffer final : public jsi::MutableBuffer {
+   public:
+    explicit NSMutableDataBuffer(NSMutableData *data) : data_(data) {}
+
+    size_t size() const override
+    {
+      return data_.length;
+    }
+
+    uint8_t *data() override
+    {
+      return static_cast<uint8_t *>(data_.mutableBytes);
+    }
+
+   private:
+    NSMutableData *data_;
+  };
+
+  // A nil NSMutableData would silently yield a NULL `mutableBytes` pointer
+  // (ObjC nil-messaging) and corrupt the resulting ArrayBuffer. Substitute a
+  // fresh empty NSMutableData so the wrapped pointer is always well-defined.
+  if (value == nil) {
+    RCTLogWarn(@"convertNSMutableDataToJSIArrayBuffer: received nil NSMutableData; returning empty ArrayBuffer");
+    value = [NSMutableData data];
+  }
+  auto buffer = std::make_shared<NSMutableDataBuffer>(value);
+  return {runtime, std::move(buffer)};
+}
+
 jsi::Value convertObjCObjectToJSIValue(jsi::Runtime &runtime, id value)
 {
   if ([value isKindOfClass:[NSString class]]) {
@@ -102,6 +133,8 @@ jsi::Value convertObjCObjectToJSIValue(jsi::Runtime &runtime, id value)
     return convertNSDictionaryToJSIObject(runtime, (NSDictionary *)value);
   } else if ([value isKindOfClass:[NSArray class]]) {
     return convertNSArrayToJSIArray(runtime, (NSArray *)value);
+  } else if ([value isKindOfClass:[NSMutableData class]]) {
+    return convertNSMutableDataToJSIArrayBuffer(runtime, (NSMutableData *)value);
   } else if (value == (id)kCFNull) {
     return jsi::Value::null();
   }
@@ -166,6 +199,18 @@ convertJSIFunctionToCallback(jsi::Runtime &rt, jsi::Function &&function, const s
   };
 }
 
+// Copy the ArrayBuffer's bytes into an NSMutableData. A zero-copy wrap is not
+// possible here: NSMutableData needs its own resizable backing store and cannot
+// alias a foreign buffer (even via initWithBytesNoCopy:length:deallocator:, which
+// copies eagerly for the mutable subclass). Copying also makes the result safe to
+// retain in a block, store, or dispatch to another thread, regardless of whether
+// the bytes were owned by JS (valid only for this callstack) or by a native
+// MutableBuffer (which the JS ArrayBuffer may GC concurrently).
+static NSMutableData *convertJSIArrayBufferToNSMutableData(jsi::Runtime &rt, const jsi::ArrayBuffer &value)
+{
+  return [NSMutableData dataWithBytes:value.data(rt) length:value.size(rt)];
+}
+
 id convertJSIValueToObjCObject(
     jsi::Runtime &runtime,
     const jsi::Value &value,
@@ -194,6 +239,9 @@ id convertJSIValueToObjCObject(
     }
     if (o.isFunction(runtime)) {
       return convertJSIFunctionToCallback(runtime, o.getFunction(runtime), jsInvoker);
+    }
+    if (o.isArrayBuffer(runtime)) {
+      return convertJSIArrayBufferToNSMutableData(runtime, o.getArrayBuffer(runtime));
     }
     return convertJSIObjectToNSDictionary(runtime, o, jsInvoker, useNSNull);
   }
@@ -522,6 +570,14 @@ jsi::Value ObjCTurboModule::convertReturnIdToJSIValue(
       returnValue = convertNSArrayToJSIArray(runtime, (NSArray *)result);
       break;
     }
+    case ArrayBufferKind: {
+      if (result != nil && ![result isKindOfClass:[NSMutableData class]]) {
+        RCTLogError(@"convertReturnIdToJSIValue: expected NSMutableData for ArrayBufferKind, got %@", [result class]);
+        break;
+      }
+      returnValue = convertNSMutableDataToJSIArrayBuffer(runtime, (NSMutableData *)result);
+      break;
+    }
     case FunctionKind:
       throw jsi::JSError(runtime, "convertReturnIdToJSIValue: FunctionKind is not supported yet.");
     case PromiseKind:
@@ -605,7 +661,7 @@ void ObjCTurboModule::setInvocationArg(
      * JS type checking ensures the Objective C argument here is either a BOOL or NSNumber*.
      */
     if (objCArgType == @encode(id)) {
-      id objCArg = [NSNumber numberWithBool:v];
+      id objCArg = @(v);
       [inv setArgument:(void *)&objCArg atIndex:i + 2];
       [retainedObjectsForInvocation addObject:objCArg];
     } else {
@@ -622,7 +678,7 @@ void ObjCTurboModule::setInvocationArg(
      * JS type checking ensures the Objective C argument here is either a double or NSNumber* or NSInteger.
      */
     if (objCArgType == @encode(id)) {
-      id objCArg = [NSNumber numberWithDouble:v];
+      id objCArg = @(v);
       [inv setArgument:(void *)&objCArg atIndex:i + 2];
       [retainedObjectsForInvocation addObject:objCArg];
     } else if (objCArgType == @encode(NSInteger)) {
@@ -813,7 +869,8 @@ jsi::Value ObjCTurboModule::invokeObjCMethod(
     case StringKind:
     case ObjectKind:
     case ArrayKind:
-    case FunctionKind: {
+    case FunctionKind:
+    case ArrayBufferKind: {
       id result = performMethodInvocation(runtime, true, methodName, inv, retainedObjectsForInvocation);
       TurboModulePerfLogger::syncMethodCallReturnConversionStart(moduleName, methodName);
       returnValue = convertReturnIdToJSIValue(runtime, methodName, returnType, result);

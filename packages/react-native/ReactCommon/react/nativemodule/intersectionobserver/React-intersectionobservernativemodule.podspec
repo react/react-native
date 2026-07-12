@@ -55,6 +55,7 @@ Pod::Spec.new do |s|
   add_rncore_dependency(s)
 
   s.dependency "ReactCommon/turbomodule/core"
+  s.dependency "React-bridging"
 
   s.dependency "React-Fabric"
   s.dependency "React-Fabric/bridging"

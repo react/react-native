@@ -49,7 +49,7 @@ TEST(MapBufferTest, testSimpleLongMap) {
 }
 
 TEST(MapBufferTest, testMapBufferExtension) {
-  // 26 = 2 buckets: 2*10 + 6 sizeof(header)
+  // initialSize is a reserve hint for the number of buckets
   int initialSize = 26;
   auto buffer = MapBufferBuilder(initialSize);
 
@@ -203,6 +203,101 @@ TEST(MapBufferTest, testMapListEntries) {
   EXPECT_EQ(mapBufferList2[0].getString(0), "This is a test");
   EXPECT_EQ(mapBufferList2[0].getInt(1), 1234);
   EXPECT_EQ(mapBufferList2[1].getDouble(3), 908.1);
+}
+
+TEST(MapBufferTest, testEmptyMapBufferList) {
+  auto builder = MapBufferBuilder();
+
+  builder.putMapBufferList(0, {});
+  auto map = builder.build();
+
+  EXPECT_EQ(map.getMapBufferList(0).size(), 0);
+}
+
+// Place the list behind another dynamic-data entry so its offset is non-zero,
+// exercising `getDynamicDataOffset() + getIntAtBucket(...)` against a non-zero
+// base rather than the zero-offset path testMapListEntries covers.
+TEST(MapBufferTest, testMapListEntriesAtNonZeroOffset) {
+  std::vector<MapBuffer> mapBufferList;
+  auto inner = MapBufferBuilder();
+  inner.putString(0, "inner");
+  inner.putInt(1, 42);
+  mapBufferList.push_back(inner.build());
+
+  auto builder = MapBufferBuilder();
+  builder.putString(0, "prefix");
+  builder.putMapBufferList(1, mapBufferList);
+  auto map = builder.build();
+
+  EXPECT_EQ(map.getString(0), "prefix");
+  std::vector<MapBuffer> readList = map.getMapBufferList(1);
+  EXPECT_EQ(readList.size(), 1);
+  EXPECT_EQ(readList[0].getString(0), "inner");
+  EXPECT_EQ(readList[0].getInt(1), 42);
+}
+
+TEST(MapBufferTest, testIntBufferEntries) {
+  auto builder = MapBufferBuilder();
+
+  std::vector<int32_t> values{
+      1,
+      -2,
+      3,
+      std::numeric_limits<int32_t>::min(),
+      std::numeric_limits<int32_t>::max()};
+  builder.putIntBuffer(0, values);
+  auto map = builder.build();
+
+  EXPECT_EQ(map.count(), 1);
+  EXPECT_EQ(map.getIntBuffer(0), values);
+}
+
+TEST(MapBufferTest, testEmptyIntBuffer) {
+  auto builder = MapBufferBuilder();
+
+  builder.putIntBuffer(0, {});
+  auto map = builder.build();
+
+  EXPECT_EQ(map.getIntBuffer(0).size(), 0);
+}
+
+TEST(MapBufferTest, testDoubleBufferEntries) {
+  auto builder = MapBufferBuilder();
+
+  std::vector<double> values{0.0, -1.5, 3.14159, 1e300, -1e-300};
+  builder.putDoubleBuffer(0, values);
+  auto map = builder.build();
+
+  EXPECT_EQ(map.count(), 1);
+  EXPECT_EQ(map.getDoubleBuffer(0), values);
+}
+
+TEST(MapBufferTest, testEmptyDoubleBuffer) {
+  auto builder = MapBufferBuilder();
+
+  builder.putDoubleBuffer(0, {});
+  auto map = builder.build();
+
+  EXPECT_EQ(map.getDoubleBuffer(0).size(), 0);
+}
+
+// Mirrors the batched-animated-props use case: a pair of typed streams plus
+// some scalar metadata, with keys inserted out of order to exercise both the
+// dynamic-data section and the bucket sort path.
+TEST(MapBufferTest, testIntAndDoubleBuffersAlongsideScalars) {
+  std::vector<int32_t> intStream{1, 100, 1, 2, 4, 15, 4};
+  std::vector<double> doubleStream{0.5, 12.0, 0.25};
+
+  auto builder = MapBufferBuilder();
+  builder.putDoubleBuffer(2, doubleStream);
+  builder.putInt(0, 7);
+  builder.putIntBuffer(1, intStream);
+  auto map = builder.build();
+
+  EXPECT_EQ(map.count(), 3);
+  EXPECT_EQ(map.getInt(0), 7);
+  EXPECT_EQ(map.getIntBuffer(1), intStream);
+  EXPECT_EQ(map.getDoubleBuffer(2), doubleStream);
 }
 
 TEST(MapBufferTest, testMapRandomAccess) {

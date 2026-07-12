@@ -38,6 +38,7 @@ using SnapshotMap = std::unordered_map<Tag, std::unique_ptr<PropsSnapshot>>;
 class AnimatedPropsRegistry {
  public:
   void update(const std::unordered_map<SurfaceId, SurfaceUpdates> &surfaceUpdates);
+  void initializeSurface(SurfaceId surfaceId);
   void clear(SurfaceId surfaceId);
   void clearOnSurfaceStop(SurfaceId surfaceId);
   std::pair<std::unordered_set<std::shared_ptr<const ShadowNodeFamily>> &, SnapshotMap &> getMap(SurfaceId surfaceId);

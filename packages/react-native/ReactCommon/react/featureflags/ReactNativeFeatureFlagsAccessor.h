@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<f5c1b31e5554063a4b96dc59380489d9>>
+ * @generated SignedSource<<e010ea1a3e640d4640676263c68a9921>>
  */
 
 /**
@@ -44,6 +44,7 @@ class ReactNativeFeatureFlagsAccessor {
   bool disableViewPreallocationAndroid();
   bool enableAccessibilityOrder();
   bool enableAccumulatedUpdatesInRawPropsAndroid();
+  bool enableAndroidFontWeightAdjustment();
   bool enableAndroidTextMeasurementOptimizations();
   bool enableBridgelessArchitecture();
   bool enableCppPropsIteratorSetter();
@@ -56,6 +57,7 @@ class ReactNativeFeatureFlagsAccessor {
   bool enableFabricLogs();
   bool enableFlexboxAutoMinSizeInStrictMode();
   bool enableFontScaleChangesUpdatingLayout();
+  bool enableIOSCompressedTextFrameAdjustment();
   bool enableIOSTextBaselineOffsetPerLine();
   bool enableIOSViewClipToPaddingBox();
   bool enableImagePrefetchingAndroid();
@@ -127,7 +129,7 @@ class ReactNativeFeatureFlagsAccessor {
   std::unique_ptr<ReactNativeFeatureFlagsProvider> currentProvider_;
   bool wasOverridden_;
 
-  std::array<std::atomic<const char*>, 84> accessedFeatureFlags_;
+  std::array<std::atomic<const char*>, 86> accessedFeatureFlags_;
 
   std::atomic<std::optional<bool>> commonTestFlag_;
   std::atomic<std::optional<bool>> cdpInteractionMetricsEnabled_;
@@ -141,6 +143,7 @@ class ReactNativeFeatureFlagsAccessor {
   std::atomic<std::optional<bool>> disableViewPreallocationAndroid_;
   std::atomic<std::optional<bool>> enableAccessibilityOrder_;
   std::atomic<std::optional<bool>> enableAccumulatedUpdatesInRawPropsAndroid_;
+  std::atomic<std::optional<bool>> enableAndroidFontWeightAdjustment_;
   std::atomic<std::optional<bool>> enableAndroidTextMeasurementOptimizations_;
   std::atomic<std::optional<bool>> enableBridgelessArchitecture_;
   std::atomic<std::optional<bool>> enableCppPropsIteratorSetter_;
@@ -153,6 +156,7 @@ class ReactNativeFeatureFlagsAccessor {
   std::atomic<std::optional<bool>> enableFabricLogs_;
   std::atomic<std::optional<bool>> enableFlexboxAutoMinSizeInStrictMode_;
   std::atomic<std::optional<bool>> enableFontScaleChangesUpdatingLayout_;
+  std::atomic<std::optional<bool>> enableIOSCompressedTextFrameAdjustment_;
   std::atomic<std::optional<bool>> enableIOSTextBaselineOffsetPerLine_;
   std::atomic<std::optional<bool>> enableIOSViewClipToPaddingBox_;
   std::atomic<std::optional<bool>> enableImagePrefetchingAndroid_;

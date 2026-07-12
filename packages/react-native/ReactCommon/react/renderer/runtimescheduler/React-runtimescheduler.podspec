@@ -47,6 +47,7 @@ Pod::Spec.new do |s|
   s.dependency "React-utils"
   s.dependency "React-featureflags"
   s.dependency "React-timing"
+  s.dependency "React-jserrorhandler"
   s.dependency "React-jsi"
   s.dependency "React-performancetimeline"
   s.dependency "React-rendererconsistency"

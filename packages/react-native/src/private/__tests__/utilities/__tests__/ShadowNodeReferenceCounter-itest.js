@@ -12,10 +12,9 @@
 import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
 import type {Node} from '../../../../../Libraries/Renderer/shims/ReactNativeTypes';
+import type {HostInstance} from 'react-native';
 
 import {getNodeFromPublicInstance} from '../../../../../Libraries/ReactPrivate/ReactNativePrivateInterface';
-import ReactNativeElement from '../../../webapis/dom/nodes/ReactNativeElement';
-import ensureInstance from '../ensureInstance';
 import isUnreachable from '../isUnreachable';
 import {
   createShadowNodeReferenceCounter,
@@ -47,14 +46,14 @@ test('shadow node expires when root is destroyed', () => {
 test('element is not retained by `createShadowNodeReferenceCounter`', () => {
   const root = Fantom.createRoot();
 
-  let elementWeakRef: ?WeakRef<ReactNativeElement>;
+  let elementWeakRef: ?WeakRef<HostInstance>;
   let getReferenceCount: ?() => number;
 
-  function ref(instance: React.ElementRef<typeof View> | null) {
+  function ref(instance: HostInstance | null) {
     if (instance == null) {
       return;
     }
-    const element = ensureInstance(instance, ReactNativeElement);
+    const element = nullthrows(instance);
     elementWeakRef = new WeakRef(element);
     getReferenceCount = createShadowNodeReferenceCounter(element);
   }
@@ -81,14 +80,14 @@ test('element is not retained by `createShadowNodeReferenceCounter`', () => {
 test('shadow node expires when JavaScript element is reachable', () => {
   const root = Fantom.createRoot();
 
-  let element: ?ReactNativeElement;
+  let element: ?HostInstance;
   let getReferenceCount: ?() => number;
 
-  function ref(instance: React.ElementRef<typeof View> | null) {
+  function ref(instance: HostInstance | null) {
     if (instance == null) {
       return;
     }
-    element = ensureInstance(instance, ReactNativeElement);
+    element = nullthrows(instance);
     getReferenceCount = createShadowNodeReferenceCounter(element);
   }
 
@@ -119,11 +118,11 @@ test('shadow node is retained when JavaScript node is reachable', () => {
   let node: ?Node;
   let getReferenceCount: ?() => number;
 
-  function ref(instance: React.ElementRef<typeof View> | null) {
+  function ref(instance: HostInstance | null) {
     if (instance == null) {
       return;
     }
-    const element = ensureInstance(instance, ReactNativeElement);
+    const element = nullthrows(instance);
     node = getNodeFromPublicInstance(element);
     getReferenceCount = createShadowNodeReferenceCounter(element);
   }

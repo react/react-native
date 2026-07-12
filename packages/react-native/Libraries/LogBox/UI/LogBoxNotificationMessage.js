@@ -24,6 +24,7 @@ export default function LogBoxNotificationMessage(props: {
     <View style={styles.container}>
       <Text
         id="logbox_notification_message_text"
+        maxFontSizeMultiplier={1}
         numberOfLines={1}
         style={styles.text}>
         {props.message && (

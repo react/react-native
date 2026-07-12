@@ -9,11 +9,20 @@
 
 import type {PackagerAsset} from './registry';
 
+/**
+ * @deprecated Use `getAndroidResourceFolderName` from `@react-native/asset-utils` instead.
+ */
 export function getAndroidResourceFolderName(
   asset: PackagerAsset,
   scale: number,
 ): string;
 
+/**
+ * @deprecated Use `getAndroidResourceIdentifier` from `@react-native/asset-utils` instead.
+ */
 export function getAndroidResourceIdentifier(asset: PackagerAsset): string;
 
+/**
+ * @deprecated Use `@react-native/asset-utils` instead.
+ */
 export function getBasePath(asset: PackagerAsset): string;

@@ -39,6 +39,10 @@ class MapBufferBuilder {
 
   void putMapBufferList(MapBuffer::Key key, const std::vector<MapBuffer> &mapBufferList);
 
+  void putIntBuffer(MapBuffer::Key key, const std::vector<int32_t> &value);
+
+  void putDoubleBuffer(MapBuffer::Key key, const std::vector<double> &value);
+
   MapBuffer build();
 
  private:

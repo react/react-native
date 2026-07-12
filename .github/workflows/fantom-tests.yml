@@ -16,7 +16,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: 8-core-ubuntu
     outputs:
       status: ${{ steps.report-status.outputs.status }}
     container:

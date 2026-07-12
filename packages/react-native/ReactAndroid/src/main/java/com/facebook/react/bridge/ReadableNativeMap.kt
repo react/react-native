@@ -215,7 +215,7 @@ public open class ReadableNativeMap protected constructor() : NativeMap(), Reada
     return hashMap
   }
 
-  private companion object {
+  internal companion object {
     @get:JvmStatic
     @get:JvmName("getJNIPassCounter")
     var jniPassCounter: Int = 0

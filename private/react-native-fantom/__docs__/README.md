@@ -112,8 +112,87 @@ Similar to Jest, you can also run Fantom in watch mode using `--watch`:
 yarn fantom <regexForTestFiles> --watch
 ```
 
+### Interactive REPL
+
+> [!WARNING]
+>
+> The REPL is experimental — its behavior and APIs may change.
+
+You can start an interactive REPL that evaluates JavaScript against the same
+Hermes runtime and React Native environment that Fantom tests use:
+
+```shell
+yarn fantom-cli
+```
+
+Each line is evaluated in a persistent session (bindings declared on one line
+are available on the next) and goes through Metro, so `import`, JSX and Flow
+syntax all work. `React`, `ReactNative` and the `Fantom` API are exposed as
+globals, so you can explore them — and render surfaces — without importing
+anything. Results are printed with a console-style inspector (similar to Chrome
+DevTools / Node.js), and pressing <kbd>Tab</kbd> autocompletes global
+identifiers, in-scope bindings and object properties.
+
+```text
+👻 Fantom REPL — evaluating against Hermes inside the Fantom runtime.
+   ⚠️  Experimental: behavior and APIs may change.
+fantom> const x = 21
+fantom> x * 2
+42
+fantom> ({items: [1, 2, 3], nested: {ok: true}})
+{ items: [ 1, 2, 3 ], nested: { ok: true } }
+```
+
+Press <kbd>Ctrl</kbd>+<kbd>D</kbd> to exit.
+
+Like Node, you can also evaluate a snippet and exit with `-e`, or run a script
+file:
+
+```shell
+yarn fantom-cli -e "console.log(Fantom.getHostPlatform())"
+yarn fantom-cli path/to/script.js
+```
+
+In both cases the value of a trailing expression is not printed (use
+`console.log`), and a thrown error exits with a non-zero status code.
+
+#### Timers and asynchronous code in the REPL
+
+The REPL runs in the Fantom environment, which uses a **deterministic virtual
+clock** — real wall-clock time never passes on its own. A zero-delay
+`setTimeout(fn, 0)` runs right after the current line, but timers with a delay
+(and `setInterval`) stay pending until the clock is advanced, so this does
+**not** print on its own:
+
+```text
+fantom> setTimeout(() => console.log('hi'), 1000)
+```
+
+Drive timers by installing the timer mock and advancing the clock, exactly like
+in a test (see the timers FAQ below):
+
+```text
+fantom> const timers = Fantom.installTimerMock()
+fantom> setTimeout(() => console.log('hi'), 1000)
+fantom> timers.advanceTimersByTime(1000)
+hi
+```
+
 ### Conventions
 
+- Prefer testing React Native through its public API (import from
+  `'react-native'`) whenever possible, rather than reaching into internal
+  modules or relying on private/protected members (e.g. `__`-prefixed methods
+  and fields such as `__getValue()`). Exercising the public API also drives the
+  underlying native (Fabric/TurboModules) code, so tests stay close to real
+  usage and are more resilient to internal refactors. Observe results through
+  the public surface too — e.g. assert the rendered output
+  (`root.getRenderedOutput(...)`) or values delivered to public listeners rather
+  than reading private state.
+  - When Fantom doesn't support something (a native module, a capability, a way
+    to observe a result, etc.), it's fine to reach into internals to work around
+    that limitation. Prefer a short comment explaining why the internal access
+    is necessary.
 - Place test files in `__tests__` directories alongside the code being tested.
 - Benchmark tests use the `-benchmark-itest.js` suffix.
 - Use `Fantom.runTask()` to render and run synchronous operations; it ensures
@@ -465,9 +544,15 @@ expect(scrollViewElement.scrollTop).toBe(1);
 
 #### How can I test logic that relies on timers (`setTimeout`/`setInterval`)?
 
-Install a deterministic timer mock with `Fantom.installTimerMock()`. While
-installed, `setTimeout`/`setInterval` callbacks do not fire on their own; you
-advance a virtual clock to fire them, similar to `jest.useFakeTimers()`:
+Fantom runs on a **deterministic virtual clock**: wall-clock time never advances
+on its own, and Fantom decides when the event loop and timers run. In the
+default environment a zero-delay `setTimeout(fn, 0)` is dispatched on the next
+work-loop tick, but timers with a positive delay (and any `setInterval`) stay
+pending and never fire unless the virtual clock is advanced.
+
+To advance the clock and run those callbacks, install a deterministic timer mock
+with `Fantom.installTimerMock()`. While installed, you advance a virtual clock
+to fire them, similar to `jest.useFakeTimers()`:
 
 ```javascript
 const timers = Fantom.installTimerMock();

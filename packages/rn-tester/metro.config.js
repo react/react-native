@@ -24,7 +24,7 @@ const config = {
   // Make Metro able to resolve required external dependencies
   watchFolders: [
     path.resolve(__dirname, '../../node_modules'),
-    path.resolve(__dirname, '../assets-registry'),
+    path.resolve(__dirname, '../asset-utils'),
     path.resolve(__dirname, '../community-cli-plugin'),
     path.resolve(__dirname, '../dev-middleware'),
     path.resolve(__dirname, '../new-app-screen'),

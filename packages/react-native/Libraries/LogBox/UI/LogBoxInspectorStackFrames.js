@@ -89,7 +89,7 @@ component LogBoxInspectorStackFrames(log: LogBoxLog, onRetry: () => void) {
       }>
       {log.symbolicated.status !== 'COMPLETE' && (
         <View style={stackStyles.hintBox}>
-          <Text style={stackStyles.hintText}>
+          <Text maxFontSizeMultiplier={1.5} style={stackStyles.hintText}>
             This call stack is not symbolicated. Some features are unavailable
             such as viewing the function name or tapping to open files.
           </Text>
@@ -138,7 +138,9 @@ component StackFrameFooter(message: string, onPress: () => void) {
         }}
         onPress={onPress}
         style={stackStyles.collapseButton}>
-        <Text style={stackStyles.collapse}>{message}</Text>
+        <Text maxFontSizeMultiplier={1.5} style={stackStyles.collapse}>
+          {message}
+        </Text>
       </LogBoxButton>
     </View>
   );

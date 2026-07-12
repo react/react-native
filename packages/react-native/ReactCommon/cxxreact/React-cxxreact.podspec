@@ -29,7 +29,7 @@ Pod::Spec.new do |s|
   s.source                 = source
   s.source_files           = podspec_sources("*.{cpp,h}", "*.h")
   s.pod_target_xcconfig    = {
-    "HEADER_SEARCH_PATHS" => "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-debug/React_debug.framework/Headers\" \"${PODS_CONFIGURATION_BUILD_DIR}/React-runtimeexecutor/React_runtimeexecutor.framework/Headers\"",
+    "HEADER_SEARCH_PATHS" => "\"$(PODS_TARGET_SRCROOT)/..\" \"$(PODS_CONFIGURATION_BUILD_DIR)/React-debug/React_debug.framework/Headers\" \"${PODS_CONFIGURATION_BUILD_DIR}/React-runtimeexecutor/React_runtimeexecutor.framework/Headers\"",
     "CLANG_CXX_LANGUAGE_STANDARD" => rct_cxx_language_standard()
   }
   s.header_dir             = "cxxreact"
@@ -40,6 +40,7 @@ Pod::Spec.new do |s|
   s.dependency "React-callinvoker", version
   add_dependency(s, "React-runtimeexecutor", :additional_framework_paths => ["platform/ios"])
   s.dependency "React-perflogger", version
+  s.dependency "React-jserrorhandler", version
   s.dependency "React-jsi", version
   s.dependency "React-logger", version
   s.dependency "React-debug", version

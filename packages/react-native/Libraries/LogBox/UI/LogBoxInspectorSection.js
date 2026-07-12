@@ -22,7 +22,9 @@ component LogBoxInspectorSection(
   return (
     <View style={styles.section}>
       <View style={styles.heading}>
-        <Text style={styles.headingText}>{heading}</Text>
+        <Text maxFontSizeMultiplier={1.5} style={styles.headingText}>
+          {heading}
+        </Text>
         {action}
       </View>
       <View style={styles.body}>{children}</View>

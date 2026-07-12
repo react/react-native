@@ -8,7 +8,7 @@
  * @format
  */
 
-export * from '../../../src/private/specs_DEPRECATED/components/PullToRefreshViewNativeComponent';
-import PullToRefreshViewNativeComponent from '../../../src/private/specs_DEPRECATED/components/PullToRefreshViewNativeComponent';
+export * from '../../../src/private/components/refreshcontrol/specs/PullToRefreshViewNativeComponent';
+import PullToRefreshViewNativeComponent from '../../../src/private/components/refreshcontrol/specs/PullToRefreshViewNativeComponent';
 
 export default PullToRefreshViewNativeComponent;

@@ -99,9 +99,7 @@ interface ImagePropsAndroid {
  * @see https://reactnative.dev/docs/image#source
  */
 export type ImageSourcePropType =
-  | ImageURISource
-  | ImageURISource[]
-  | ImageRequireSource;
+  ImageURISource | ImageURISource[] | ImageRequireSource;
 
 /**
  * @deprecated Use `ImageLoadEvent` instead.
@@ -145,9 +143,7 @@ export interface ImageResolvedAssetSource {
  * @see https://reactnative.dev/docs/image
  */
 export interface ImagePropsBase
-  extends ImagePropsIOS,
-    ImagePropsAndroid,
-    AccessibilityProps {
+  extends ImagePropsIOS, ImagePropsAndroid, AccessibilityProps {
   /**
    * Used to reference react managed images from native code.
    */

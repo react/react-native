@@ -37,7 +37,8 @@ export interface TouchableWithoutFeedbackPropsAndroid {
  * @see https://reactnative.dev/docs/touchablewithoutfeedback#props
  */
 export interface TouchableWithoutFeedbackProps
-  extends TouchableWithoutFeedbackPropsIOS,
+  extends
+    TouchableWithoutFeedbackPropsIOS,
     TouchableWithoutFeedbackPropsAndroid,
     AccessibilityProps {
   children?: React.ReactNode | undefined;

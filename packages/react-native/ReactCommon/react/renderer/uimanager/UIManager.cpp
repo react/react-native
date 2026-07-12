@@ -76,20 +76,23 @@ std::shared_ptr<ShadowNode> UIManager::createNode(
       {.tag = tag,
        .surfaceId = surfaceId,
        .instanceHandle = std::move(instanceHandle)});
-  const auto props = componentDescriptor.cloneProps(
+  auto props = componentDescriptor.cloneProps(
       propsParserContext, nullptr, std::move(rawProps));
-  const auto state = componentDescriptor.createInitialState(props, family);
+  auto state = componentDescriptor.createInitialState(props, family);
+
+  // Add a "name" prop if this is the fallback component
+  if (fallbackDescriptor != nullptr &&
+      fallbackDescriptor->getComponentHandle() ==
+          componentDescriptor.getComponentHandle()) {
+    props = componentDescriptor.cloneProps(
+        propsParserContext,
+        props,
+        RawProps(folly::dynamic::object("name", name)));
+  }
 
   auto shadowNode = componentDescriptor.createShadowNode(
       ShadowNodeFragment{
-          .props = fallbackDescriptor != nullptr &&
-                  fallbackDescriptor->getComponentHandle() ==
-                      componentDescriptor.getComponentHandle()
-              ? componentDescriptor.cloneProps(
-                    propsParserContext,
-                    props,
-                    RawProps(folly::dynamic::object("name", name)))
-              : props,
+          .props = props,
           .children = ShadowNodeFragment::childrenPlaceholder(),
           .state = state,
       },
@@ -118,49 +121,51 @@ std::shared_ptr<ShadowNode> UIManager::cloneNode(
 
   auto& componentDescriptor = shadowNode.getComponentDescriptor();
   auto& family = shadowNode.getFamily();
+
   auto props = ShadowNodeFragment::propsPlaceholder();
-
   if (!rawProps.isEmpty()) {
-    if (family.nativeProps_DEPRECATED != nullptr) {
-      // 1. update the nativeProps_DEPRECATED props.
-      //
-      // In this step, we want the most recent value for the props
-      // managed by setNativeProps.
-      // Values in `rawProps` patch (take precedence over)
-      // `nativeProps_DEPRECATED`. For example, if both
-      // `nativeProps_DEPRECATED` and `rawProps` contain key 'A'.
-      // Value from `rawProps` overrides what was previously in
-      // `nativeProps_DEPRECATED`. Notice that the `nativeProps_DEPRECATED`
-      // patch will not get more props from `rawProps`: if the key is not
-      // present in `nativeProps_DEPRECATED`, it will not be added.
-      //
-      // The result of this operation is the new `nativeProps_DEPRECATED`.
-      family.nativeProps_DEPRECATED =
-          std::make_unique<folly::dynamic>(mergeDynamicProps(
-              *family.nativeProps_DEPRECATED, // source
-              (folly::dynamic)rawProps, // patch
-              NullValueStrategy::Ignore));
+    std::optional<folly::dynamic> finalProps;
+    {
+      std::lock_guard<std::mutex> lock(family.nativePropsMutex);
+      if (family.nativeProps_DEPRECATED != nullptr) {
+        // 1. update the nativeProps_DEPRECATED props.
+        //
+        // In this step, we want the most recent value for the props
+        // managed by setNativeProps.
+        // Values in `rawProps` patch (take precedence over)
+        // `nativeProps_DEPRECATED`. For example, if both
+        // `nativeProps_DEPRECATED` and `rawProps` contain key 'A'.
+        // Value from `rawProps` overrides what was previously in
+        // `nativeProps_DEPRECATED`. Notice that the `nativeProps_DEPRECATED`
+        // patch will not get more props from `rawProps`: if the key is not
+        // present in `nativeProps_DEPRECATED`, it will not be added.
+        //
+        // The result of this operation is the new `nativeProps_DEPRECATED`.
+        family.nativeProps_DEPRECATED =
+            std::make_unique<folly::dynamic>(mergeDynamicProps(
+                *family.nativeProps_DEPRECATED, // source
+                (folly::dynamic)rawProps, // patch
+                NullValueStrategy::Ignore));
 
-      // 2. Compute the final set of props.
-      //
-      // This step takes the new props handled by `setNativeProps` and
-      // merges them in the `rawProps` managed by React.
-      // The new props handled by `nativeProps` now takes precedence
-      // on the props handled by React, as we want to make sure that
-      // all the props are applied to the component.
-      // We use these finalProps as source of truth for the component.
-      auto finalProps = mergeDynamicProps(
-          (folly::dynamic)rawProps, // source
-          *family.nativeProps_DEPRECATED, // patch
-          NullValueStrategy::Override);
-
-      // 3. Clone the props by using finalProps.
-      props = componentDescriptor.cloneProps(
-          propsParserContext, shadowNode.getProps(), RawProps(finalProps));
-    } else {
-      props = componentDescriptor.cloneProps(
-          propsParserContext, shadowNode.getProps(), std::move(rawProps));
+        // 2. Compute the final set of props.
+        //
+        // This step takes the new props handled by `setNativeProps` and
+        // merges them in the `rawProps` managed by React.
+        // The new props handled by `nativeProps` now takes precedence
+        // on the props handled by React, as we want to make sure that
+        // all the props are applied to the component.
+        // We use these finalProps as source of truth for the component.
+        finalProps = mergeDynamicProps(
+            (folly::dynamic)rawProps, // source
+            *family.nativeProps_DEPRECATED, // patch
+            NullValueStrategy::Override);
+      }
     }
+
+    props = componentDescriptor.cloneProps(
+        propsParserContext,
+        shadowNode.getProps(),
+        finalProps ? RawProps(std::move(*finalProps)) : std::move(rawProps));
   }
 
   auto clonedShadowNode = componentDescriptor.cloneShadowNode(
@@ -448,19 +453,22 @@ void UIManager::setNativeProps_DEPRECATED(
     const std::shared_ptr<const ShadowNode>& shadowNode,
     RawProps rawProps) const {
   auto& family = shadowNode->getFamily();
-  if (family.nativeProps_DEPRECATED) {
-    // Values in `rawProps` patch (take precedence over)
-    // `nativeProps_DEPRECATED`. For example, if both `nativeProps_DEPRECATED`
-    // and `rawProps` contain key 'A'. Value from `rawProps` overrides what
-    // was previously in `nativeProps_DEPRECATED`.
-    family.nativeProps_DEPRECATED =
-        std::make_unique<folly::dynamic>(mergeDynamicProps(
-            *family.nativeProps_DEPRECATED,
-            (folly::dynamic)rawProps,
-            NullValueStrategy::Override));
-  } else {
-    family.nativeProps_DEPRECATED =
-        std::make_unique<folly::dynamic>((folly::dynamic)rawProps);
+  {
+    std::lock_guard<std::mutex> lock(family.nativePropsMutex);
+    if (family.nativeProps_DEPRECATED) {
+      // Values in `rawProps` patch (take precedence over)
+      // `nativeProps_DEPRECATED`. For example, if both
+      // `nativeProps_DEPRECATED` and `rawProps` contain key 'A'. Value from
+      // `rawProps` overrides what was previously in `nativeProps_DEPRECATED`.
+      family.nativeProps_DEPRECATED =
+          std::make_unique<folly::dynamic>(mergeDynamicProps(
+              *family.nativeProps_DEPRECATED,
+              (folly::dynamic)rawProps,
+              NullValueStrategy::Override));
+    } else {
+      family.nativeProps_DEPRECATED =
+          std::make_unique<folly::dynamic>((folly::dynamic)rawProps);
+    }
   }
 
   shadowTreeRegistry_.visit(
@@ -765,10 +773,10 @@ void UIManager::removeEventListener(
   }
 }
 
-void UIManager::setOnSurfaceStartCallback(
+void UIManager::addOnSurfaceStartCallback(
     UIManagerDelegate::OnSurfaceStartCallback&& callback) {
   if (delegate_ != nullptr) {
-    delegate_->uiManagerShouldSetOnSurfaceStartCallback(std::move(callback));
+    delegate_->uiManagerShouldAddOnSurfaceStartCallback(std::move(callback));
   }
 }
 

@@ -22,6 +22,7 @@
     "@react-native/babel-preset": "0.87.0-main",
     "@react-native/core-cli-utils": "*",
     "@react-native/eslint-config": "0.87.0-main",
+    "@react-native/jest-preset": "0.87.0-main",
     "@react-native/metro-config": "0.87.0-main",
     "@react-native/typescript-config": "0.87.0-main",
     "@types/jest": "^29.5.14",

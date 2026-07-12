@@ -26,20 +26,6 @@ const inputCode = fs.readFileSync(INPUT_FILE, 'utf-8');
 
 const testConfigs = [
   {
-    name: 'default-dev',
-    options: {
-      dev: true,
-    },
-    description: 'Default transform profile in development mode',
-  },
-  {
-    name: 'default-prod',
-    options: {
-      dev: false,
-    },
-    description: 'Default transform profile in production mode',
-  },
-  {
     name: 'hermes-stable-dev',
     options: {
       dev: true,
@@ -51,9 +37,24 @@ const testConfigs = [
     name: 'hermes-stable-prod',
     options: {
       dev: false,
-      unstable_transformProfile: 'hermes-stable',
     },
     description: 'Hermes stable transform profile in production mode',
+  },
+  {
+    name: 'hermes-legacy-dev',
+    options: {
+      dev: true,
+      unstable_transformProfile: 'hermes-legacy',
+    },
+    description: 'Default transform profile in development mode',
+  },
+  {
+    name: 'hermes-legacy-prod',
+    options: {
+      dev: false,
+      unstable_transformProfile: 'hermes-legacy',
+    },
+    description: 'Default transform profile in production mode',
   },
   {
     name: 'hermes-canary-dev',
@@ -266,18 +267,6 @@ describe('react-native-babel-preset transform snapshots', () => {
   );
 
   describe('specific feature transformations', () => {
-    it('handles private class fields', () => {
-      const code = `
-        class Counter {
-          #count = 0;
-          increment() { this.#count++; }
-          get value() { return this.#count; }
-        }
-      `;
-      const result = transformCode(code, {dev: false});
-      expect(result).not.toContain('#count');
-    });
-
     it('handles async generators', () => {
       const code = `
         async function* gen() {
@@ -347,8 +336,26 @@ describe('react-native-babel-preset transform snapshots', () => {
           }
         }
       `;
-      const result = transformCode(code, {dev: false});
+      const result = transformCode(code, {
+        dev: false,
+        unstable_transformProfile: 'hermes-legacy',
+      });
       expect(result).not.toContain('class Animal');
+    });
+
+    it('does not transform classes with default profile', () => {
+      const code = `
+        class Animal {
+          constructor(name) {
+            this.name = name;
+          }
+          speak() {
+            return this.name;
+          }
+        }
+      `;
+      const result = transformCode(code, {dev: false});
+      expect(result).toContain('class Animal');
     });
 
     it('handles named capturing groups in regex', () => {

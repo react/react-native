@@ -129,7 +129,8 @@ export interface ViewPropsAndroid {
  * @see https://reactnative.dev/docs/view#props
  */
 export interface ViewProps
-  extends ViewPropsAndroid,
+  extends
+    ViewPropsAndroid,
     ViewPropsIOS,
     GestureResponderHandlers,
     Touchable,

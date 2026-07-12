@@ -8,5 +8,5 @@
  * @format
  */
 
-export * from '../../../src/private/specs_DEPRECATED/components/UnimplementedNativeViewNativeComponent';
-export {default} from '../../../src/private/specs_DEPRECATED/components/UnimplementedNativeViewNativeComponent';
+export * from '../../../src/private/components/unimplementedview/specs/UnimplementedNativeViewNativeComponent';
+export {default} from '../../../src/private/components/unimplementedview/specs/UnimplementedNativeViewNativeComponent';

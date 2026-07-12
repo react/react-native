@@ -113,5 +113,14 @@ describe('processTransformOrigin', () => {
         processTransformOrigin('top 30% center');
       }).toThrow('Could not parse transform-origin: top 30% center');
     });
+    it('should handle decimal percentage and pixel values', () => {
+      expect(processTransformOrigin('50.5% 30.2%')).toEqual([
+        '50.5%',
+        '30.2%',
+        0,
+      ]);
+      expect(processTransformOrigin('12.5px 7.5px')).toEqual([12.5, 7.5, 0]);
+      expect(processTransformOrigin('.5% .5px')).toEqual(['.5%', 0.5, 0]);
+    });
   });
 });

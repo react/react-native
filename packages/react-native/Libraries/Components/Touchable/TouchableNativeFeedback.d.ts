@@ -32,15 +32,13 @@ interface ThemeAttributeBackgroundPropType extends BaseBackgroundPropType {
 }
 
 type BackgroundPropType =
-  | RippleBackgroundPropType
-  | ThemeAttributeBackgroundPropType;
+  RippleBackgroundPropType | ThemeAttributeBackgroundPropType;
 
 /**
  * @see https://reactnative.dev/docs/touchablenativefeedback#props
  */
 export interface TouchableNativeFeedbackProps
-  extends TouchableWithoutFeedbackProps,
-    TVProps {
+  extends TouchableWithoutFeedbackProps, TVProps {
   /**
    * Determines the type of background drawable that's going to be used to display feedback.
    * It takes an object with type property and extra data depending on the type.

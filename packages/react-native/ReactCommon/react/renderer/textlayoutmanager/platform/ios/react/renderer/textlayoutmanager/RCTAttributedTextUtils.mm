@@ -18,6 +18,23 @@
 
 using namespace facebook::react;
 
+inline static TextAlignment RCTResolveTextAlignment(TextAlignment textAlignment, LayoutDirection layoutDirection)
+{
+  const bool isRTL = layoutDirection == LayoutDirection::RightToLeft;
+  switch (textAlignment) {
+    case TextAlignment::Start:
+      return isRTL ? TextAlignment::Right : TextAlignment::Left;
+    case TextAlignment::End:
+      return isRTL ? TextAlignment::Left : TextAlignment::Right;
+    case TextAlignment::Right:
+      return isRTL ? TextAlignment::Left : TextAlignment::Right;
+    case TextAlignment::Left:
+      return isRTL ? TextAlignment::Right : TextAlignment::Left;
+    default:
+      return textAlignment;
+  }
+}
+
 inline static UIFontWeight RCTUIFontWeightFromInteger(NSInteger fontWeight)
 {
   assert(fontWeight > 50);
@@ -196,14 +213,9 @@ NSMutableDictionary<NSAttributedStringKey, id> *RCTNSTextAttributesFromTextAttri
   NSMutableParagraphStyle *paragraphStyle = [NSMutableParagraphStyle new];
   BOOL isParagraphStyleUsed = NO;
   if (textAttributes.alignment.has_value()) {
-    TextAlignment textAlignment = textAttributes.alignment.value_or(TextAlignment::Natural);
-    if (textAttributes.layoutDirection.value_or(LayoutDirection::LeftToRight) == LayoutDirection::RightToLeft) {
-      if (textAlignment == TextAlignment::Right) {
-        textAlignment = TextAlignment::Left;
-      } else if (textAlignment == TextAlignment::Left) {
-        textAlignment = TextAlignment::Right;
-      }
-    }
+    TextAlignment textAlignment = RCTResolveTextAlignment(
+        textAttributes.alignment.value_or(TextAlignment::Natural),
+        textAttributes.layoutDirection.value_or(LayoutDirection::LeftToRight));
 
     paragraphStyle.alignment = RCTNSTextAlignmentFromTextAlignment(textAlignment);
     isParagraphStyleUsed = YES;
@@ -357,7 +369,7 @@ static void RCTApplyBaselineOffsetForRange(NSMutableAttributedString *attributed
                             maximumFontLineHeight = MAX(font.lineHeight, maximumFontLineHeight);
                           }];
 
-  if (maximumLineHeight < maximumFontLineHeight) {
+  if (maximumLineHeight < maximumFontLineHeight && !ReactNativeFeatureFlags::enableIOSCompressedTextFrameAdjustment()) {
     return;
   }
 

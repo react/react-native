@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<84ae8c7745f319878c329e07551bcc11>>
+ * @generated SignedSource<<1e26f8dc1f474475c0a4d6be79aedb24>>
  */
 
 /**
@@ -104,6 +104,11 @@ bool NativeReactNativeFeatureFlags::enableAccumulatedUpdatesInRawPropsAndroid(
   return ReactNativeFeatureFlags::enableAccumulatedUpdatesInRawPropsAndroid();
 }
 
+bool NativeReactNativeFeatureFlags::enableAndroidFontWeightAdjustment(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::enableAndroidFontWeightAdjustment();
+}
+
 bool NativeReactNativeFeatureFlags::enableAndroidTextMeasurementOptimizations(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::enableAndroidTextMeasurementOptimizations();
@@ -162,6 +167,11 @@ bool NativeReactNativeFeatureFlags::enableFlexboxAutoMinSizeInStrictMode(
 bool NativeReactNativeFeatureFlags::enableFontScaleChangesUpdatingLayout(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::enableFontScaleChangesUpdatingLayout();
+}
+
+bool NativeReactNativeFeatureFlags::enableIOSCompressedTextFrameAdjustment(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::enableIOSCompressedTextFrameAdjustment();
 }
 
 bool NativeReactNativeFeatureFlags::enableIOSTextBaselineOffsetPerLine(

@@ -760,9 +760,16 @@ internal constructor(
       return
     }
 
-    val view = getViewState(reactTag).view
+    val viewState = getNullableViewState(reactTag)
+    val view = viewState?.view
     if (view == null) {
-      throw RetryableMountingLayerException("Unable to find viewState view for tag $reactTag")
+      ReactSoftExceptionLogger.logSoftException(
+          ReactSoftExceptionLogger.Categories.SURFACE_MOUNTING_MANAGER_MISSING_VIEWSTATE,
+          ReactNoCrashSoftException(
+              "Unable to find viewState for tag $reactTag for sendAccessibilityEvent"
+          ),
+      )
+      return
     }
 
     view.sendAccessibilityEvent(eventType)
@@ -1004,15 +1011,23 @@ internal constructor(
       return
     }
 
-    val viewState = getViewState(reactTag)
-    val view = viewState.view
+    val viewState = getNullableViewState(reactTag)
+
+    val view = viewState?.view
+    if (view == null) {
+      ReactSoftExceptionLogger.logSoftException(
+          ReactSoftExceptionLogger.Categories.SURFACE_MOUNTING_MANAGER_MISSING_VIEWSTATE,
+          ReactNoCrashSoftException(
+              "Unable to find viewState for tag $reactTag for setJSResponder"
+          ),
+      )
+      return
+    }
+
     if (initialReactTag != reactTag && view is ViewParent) {
       // In this case, initialReactTag corresponds to a virtual/layout-only View, and we already
       // have a parent of that View in reactTag, so we can use it.
       jsResponderHandler.setJSResponder(initialReactTag, view as ViewParent)
-      return
-    } else if (view == null) {
-      SoftAssertions.assertUnreachable("Cannot find view for tag [$reactTag].")
       return
     }
 
@@ -1121,12 +1136,6 @@ internal constructor(
             "Unable to find view for tag $reactTag. Surface $surfaceId stopped: $isStopped, rootViewAttached: $isRootViewAttached"
         )
   }
-
-  private fun getViewState(reactTag: Int): ViewState =
-      getNullableViewState(reactTag)
-          ?: throw RetryableMountingLayerException(
-              "Unable to find viewState for tag $reactTag. Surface stopped: $isStopped"
-          )
 
   private fun getNullableViewState(reactTag: Int): ViewState? = registryLock.read {
     tagToViewState[reactTag]

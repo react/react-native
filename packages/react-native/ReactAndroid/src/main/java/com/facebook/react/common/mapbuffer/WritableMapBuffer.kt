@@ -84,6 +84,24 @@ internal class WritableMapBuffer : MapBuffer {
    */
   fun put(key: Int, value: MapBuffer): WritableMapBuffer = putInternal(key, value)
 
+  /**
+   * Adds an [IntArray] value for given key to the current MapBuffer.
+   *
+   * @param key entry key
+   * @param value entry value
+   * @throws IllegalArgumentException if key is out of [UShort] range
+   */
+  fun put(key: Int, value: IntArray): WritableMapBuffer = putInternal(key, value)
+
+  /**
+   * Adds a [DoubleArray] value for given key to the current MapBuffer.
+   *
+   * @param key entry key
+   * @param value entry value
+   * @throws IllegalArgumentException if key is out of [UShort] range
+   */
+  fun put(key: Int, value: DoubleArray): WritableMapBuffer = putInternal(key, value)
+
   private fun putInternal(key: Int, value: Any): WritableMapBuffer {
     require(key in KEY_RANGE) {
       "Only integers in [${UShort.MIN_VALUE};${UShort.MAX_VALUE}] range are allowed for keys."
@@ -126,6 +144,10 @@ internal class WritableMapBuffer : MapBuffer {
 
   override fun getMapBufferList(key: Int): List<MapBuffer> = verifyValue(key, values.get(key))
 
+  override fun getIntBuffer(key: Int): IntArray = verifyValue(key, values.get(key))
+
+  override fun getDoubleBuffer(key: Int): DoubleArray = verifyValue(key, values.get(key))
+
   /** Generalizes verification of the value types based on the requested type. */
   private inline fun <reified T> verifyValue(key: Int, value: Any?): T {
     require(value != null) { "Key not found: $key" }
@@ -143,6 +165,8 @@ internal class WritableMapBuffer : MapBuffer {
       is Double -> DataType.DOUBLE
       is String -> DataType.STRING
       is MapBuffer -> DataType.MAP
+      is IntArray -> DataType.INT_BUFFER
+      is DoubleArray -> DataType.DOUBLE_BUFFER
       else -> throw IllegalStateException("Key $key has value of unknown type: ${value.javaClass}")
     }
   }
@@ -175,6 +199,15 @@ internal class WritableMapBuffer : MapBuffer {
       get() = verifyValue(key, values.valueAt(index))
 
     override val mapBufferValue: MapBuffer
+      get() = verifyValue(key, values.valueAt(index))
+
+    override val intBufferValue: IntArray
+      get() = verifyValue(key, values.valueAt(index))
+
+    override val doubleBufferValue: DoubleArray
+      get() = verifyValue(key, values.valueAt(index))
+
+    override val mapBufferListValue: List<MapBuffer>
       get() = verifyValue(key, values.valueAt(index))
   }
 

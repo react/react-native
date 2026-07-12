@@ -175,8 +175,6 @@ export type {
 } from './Libraries/Components/TextInput/TextInput';
 export {default as TextInput} from './Libraries/Components/TextInput/TextInput';
 
-export {default as Touchable} from './Libraries/Components/Touchable/Touchable';
-
 export type {
   TouchableHighlightInstance,
   TouchableHighlightProps,
@@ -278,6 +276,12 @@ export type {
   AppStateEvent,
 } from './Libraries/AppState/AppState';
 export {default as AppState} from './Libraries/AppState/AppState';
+
+export {AssetRegistry} from './src/private/assets/AssetRegistry';
+export type {
+  AssetDestPathResolver,
+  PackagerAsset,
+} from './src/private/assets/AssetRegistry';
 
 export type {BackPressEventName} from './Libraries/Utilities/BackHandler';
 export {default as BackHandler} from './Libraries/Utilities/BackHandler';

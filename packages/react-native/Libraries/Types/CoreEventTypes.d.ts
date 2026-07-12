@@ -45,8 +45,11 @@ export interface TextLayoutEventData extends TargetedEvent {
 export type TextLayoutEvent = NativeSyntheticEvent<TextLayoutEventData>;
 
 // Similar to React.SyntheticEvent except for nativeEvent
-export interface NativeSyntheticEvent<T>
-  extends React.BaseSyntheticEvent<T, HostInstance, HostInstance> {}
+export interface NativeSyntheticEvent<T> extends React.BaseSyntheticEvent<
+  T,
+  HostInstance,
+  HostInstance
+> {}
 
 export interface NativeTouchEvent {
   /**
@@ -239,8 +242,7 @@ export interface NativePointerEvent extends NativeMouseEvent {
 
 export type PointerEvent = NativeSyntheticEvent<NativePointerEvent>;
 
-export interface GestureResponderEvent
-  extends NativeSyntheticEvent<NativeTouchEvent> {}
+export interface GestureResponderEvent extends NativeSyntheticEvent<NativeTouchEvent> {}
 
 export interface MouseEvent extends NativeSyntheticEvent<NativeMouseEvent> {}
 

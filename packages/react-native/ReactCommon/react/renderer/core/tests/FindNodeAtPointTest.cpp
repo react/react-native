@@ -126,7 +126,7 @@ TEST(FindNodeAtPointTest, viewIsScaled) {
           Element<ViewShadowNode>()
           .tag(3)
           .props([] {
-            auto sharedProps = std::make_shared<ViewShadowNodeProps>();
+            auto sharedProps = std::make_shared<ViewProps>();
             sharedProps->transform = Transform::Scale(0.5, 0.5, 0);
             return sharedProps;
           })
@@ -199,7 +199,7 @@ TEST(FindNodeAtPointTest, overlappingViewsWithZIndex) {
         Element<ViewShadowNode>()
         .tag(2)
         .props([] {
-          auto sharedProps = std::make_shared<ViewShadowNodeProps>();
+          auto sharedProps = std::make_shared<ViewProps>();
           sharedProps->zIndex = 1;
           auto &yogaStyle = sharedProps->yogaStyle;
           yogaStyle.setPositionType(yoga::PositionType::Absolute);
@@ -235,7 +235,7 @@ TEST(FindNodeAtPointTest, overlappingViewsWithParentPointerEventsBoxOnly) {
     Element<ViewShadowNode>()
       .tag(1)
       .props([] {
-        auto sharedProps = std::make_shared<ViewShadowNodeProps>();
+        auto sharedProps = std::make_shared<ViewProps>();
         sharedProps->pointerEvents = PointerEventsMode::BoxOnly;
         return sharedProps;
       })
@@ -277,7 +277,7 @@ TEST(FindNodeAtPointTest, overlappingViewsWithParentPointerEventsBoxNone) {
     Element<ViewShadowNode>()
       .tag(1)
       .props([] {
-        auto sharedProps = std::make_shared<ViewShadowNodeProps>();
+        auto sharedProps = std::make_shared<ViewProps>();
         sharedProps->pointerEvents = PointerEventsMode::BoxNone;
         return sharedProps;
       })
@@ -290,7 +290,7 @@ TEST(FindNodeAtPointTest, overlappingViewsWithParentPointerEventsBoxNone) {
         Element<ViewShadowNode>()
         .tag(2)
         .props([] {
-          auto sharedProps = std::make_shared<ViewShadowNodeProps>();
+          auto sharedProps = std::make_shared<ViewProps>();
           sharedProps->zIndex = 1;
           auto &yogaStyle = sharedProps->yogaStyle;
           yogaStyle.setPositionType(yoga::PositionType::Absolute);
@@ -326,7 +326,7 @@ TEST(FindNodeAtPointTest, overlappingViewsWithParentPointerEventsNone) {
     Element<ViewShadowNode>()
       .tag(1)
       .props([] {
-        auto sharedProps = std::make_shared<ViewShadowNodeProps>();
+        auto sharedProps = std::make_shared<ViewProps>();
         sharedProps->pointerEvents = PointerEventsMode::None;
         return sharedProps;
       })
@@ -339,7 +339,7 @@ TEST(FindNodeAtPointTest, overlappingViewsWithParentPointerEventsNone) {
         Element<ViewShadowNode>()
         .tag(2)
         .props([] {
-          auto sharedProps = std::make_shared<ViewShadowNodeProps>();
+          auto sharedProps = std::make_shared<ViewProps>();
           sharedProps->zIndex = 1;
           auto &yogaStyle = sharedProps->yogaStyle;
           yogaStyle.setPositionType(yoga::PositionType::Absolute);

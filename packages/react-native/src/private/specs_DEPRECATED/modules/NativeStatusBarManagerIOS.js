@@ -20,7 +20,6 @@ export interface Spec extends TurboModule {
 
   // TODO(T47754272) Can we remove this method?
   readonly getHeight: (callback: (result: {height: number}) => void) => void;
-  readonly setNetworkActivityIndicatorVisible: (visible: boolean) => void;
   readonly addListener: (eventType: string) => void;
   readonly removeListeners: (count: number) => void;
 
@@ -54,10 +53,6 @@ const NativeStatusBarManager = {
   // TODO(T47754272) Can we remove this method?
   getHeight(callback: (result: {height: number}) => void): void {
     NativeModule.getHeight(callback);
-  },
-
-  setNetworkActivityIndicatorVisible(visible: boolean): void {
-    NativeModule.setNetworkActivityIndicatorVisible(visible);
   },
 
   addListener(eventType: string): void {

@@ -17,8 +17,6 @@ import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {createRef} from 'react';
 import {ScrollView, Text, View} from 'react-native';
-import ensureInstance from 'react-native/src/private/__tests__/utilities/ensureInstance';
-import ReactNativeElement from 'react-native/src/private/webapis/dom/nodes/ReactNativeElement';
 
 describe('<ScrollView>', () => {
   describe('rendering', () => {
@@ -93,7 +91,7 @@ describe('<ScrollView>', () => {
         root.render(<ScrollView innerViewRef={ref} />);
       });
 
-      expect(ref.mock.lastCall[0]).toBeInstanceOf(ReactNativeElement);
+      expect(ref.mock.lastCall[0]).toBeInstanceOf(HTMLElement);
 
       Fantom.runTask(() => {
         root.render(<></>);
@@ -111,14 +109,14 @@ describe('<ScrollView>', () => {
         root.render(<ScrollView innerViewRef={refA} />);
       });
 
-      expect(refA.mock.lastCall[0]).toBeInstanceOf(ReactNativeElement);
+      expect(refA.mock.lastCall[0]).toBeInstanceOf(HTMLElement);
 
       Fantom.runTask(() => {
         root.render(<ScrollView innerViewRef={refB} />);
       });
 
       expect(refA.mock.lastCall[0]).toBe(null);
-      expect(refB.mock.lastCall[0]).toBeInstanceOf(ReactNativeElement);
+      expect(refB.mock.lastCall[0]).toBeInstanceOf(HTMLElement);
     });
   });
 
@@ -131,10 +129,7 @@ describe('<ScrollView>', () => {
         root.render(<ScrollView ref={ref} />);
       });
 
-      const innerView = ensureInstance(
-        nullthrows(ref.current).getInnerViewRef(),
-        ReactNativeElement,
-      );
+      const innerView = nullthrows(nullthrows(ref.current).getInnerViewRef());
       expect(innerView.tagName).toBe('RN:View');
     });
   });

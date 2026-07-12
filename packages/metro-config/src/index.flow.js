@@ -59,9 +59,9 @@ export function getDefaultConfig(projectRoot: string): ConfigT {
       unstable_conditionNames: ['react-native'],
     },
     serializer: {
-      // Note: This option is overridden in cli-plugin-metro (getOverrideConfig)
+      // NOTE: Overridden in community-cli-plugin
       getModulesRunBeforeMainModule: () => [
-        require.resolve('react-native/Libraries/Core/InitializeCore'),
+        require.resolve('react-native/setup-env'),
       ],
       getPolyfills: () => require('@react-native/js-polyfills')(),
       isThirdPartyModule({path: modulePath}: Readonly<{path: string, ...}>) {
@@ -84,7 +84,7 @@ export function getDefaultConfig(projectRoot: string): ConfigT {
     },
     transformer: {
       allowOptionalDependencies: true,
-      assetRegistryPath: 'react-native/Libraries/Image/AssetRegistry',
+      assetRegistryPath: 'react-native/asset-registry',
       asyncRequireModulePath: require.resolve(
         'metro-runtime/src/modules/asyncRequire',
       ),

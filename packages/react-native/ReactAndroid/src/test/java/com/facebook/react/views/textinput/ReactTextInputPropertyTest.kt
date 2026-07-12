@@ -438,6 +438,20 @@ class ReactTextInputPropertyTest {
     assertThat(view.gravity and Gravity.HORIZONTAL_GRAVITY_MASK)
         .isEqualTo(Gravity.CENTER_HORIZONTAL)
 
+    manager.updateProperties(view, buildStyles("textAlign", "start"))
+    assertThat(
+            view.gravity and
+                (Gravity.HORIZONTAL_GRAVITY_MASK or Gravity.RELATIVE_HORIZONTAL_GRAVITY_MASK)
+        )
+        .isEqualTo(Gravity.START)
+
+    manager.updateProperties(view, buildStyles("textAlign", "end"))
+    assertThat(
+            view.gravity and
+                (Gravity.HORIZONTAL_GRAVITY_MASK or Gravity.RELATIVE_HORIZONTAL_GRAVITY_MASK)
+        )
+        .isEqualTo(Gravity.END)
+
     manager.updateProperties(view, buildStyles("textAlign", null))
     assertThat(view.gravity and Gravity.HORIZONTAL_GRAVITY_MASK).isEqualTo(defaultHorizontalGravity)
 

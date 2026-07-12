@@ -119,7 +119,7 @@ NativeAnimatedNodesManagerProvider::getOrCreate(
         });
 
     // Register on surfaces started in the future
-    uiManager->setOnSurfaceStartCallback(
+    uiManager->addOnSurfaceStartCallback(
         [animatedMountingOverrideDelegate =
              std::weak_ptr<const AnimatedMountingOverrideDelegate>(
                  animatedMountingOverrideDelegate_)](

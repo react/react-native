@@ -51,6 +51,7 @@ Pod::Spec.new do |s|
 
   s.dependency "Yoga"
   s.dependency "ReactCommon/turbomodule/core"
+  s.dependency "React-bridging"
   s.dependency "React-Fabric"
   s.dependency "React-Fabric/bridging"
   s.dependency "React-FabricComponents"

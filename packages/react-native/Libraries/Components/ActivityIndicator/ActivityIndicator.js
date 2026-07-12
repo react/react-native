@@ -9,6 +9,7 @@
  */
 
 'use strict';
+
 import type {HostInstance} from '../../../src/private/types/HostInstance';
 import type {ViewProps} from '../View/ViewPropTypes';
 
@@ -30,39 +31,77 @@ type IndicatorSize = number | 'small' | 'large';
 
 type ActivityIndicatorIOSProps = Readonly<{
   /**
-    Whether the indicator should hide when not animating.
-
-    @platform ios
-  */
+   * Whether the indicator should hide when not animating.
+   *
+   * @platform ios
+   */
   hidesWhenStopped?: ?boolean,
 }>;
+
 /** @build-types emit-as-interface Uniwind compatibility */
 export type ActivityIndicatorProps = Readonly<{
   ...ViewProps,
   ...ActivityIndicatorIOSProps,
 
   /**
-   	Whether to show the indicator (`true`) or hide it (`false`).
+   * Whether to show the indicator (`true`) or hide it (`false`).
    */
   animating?: ?boolean,
 
   /**
-    The foreground color of the spinner.
-
-    @default {@platform android} `null` (system accent default color)
-    @default {@platform ios} '#999999'
-  */
+   * The foreground color of the spinner.
+   *
+   * @default {@platform android} `null` (system accent default color)
+   * @default {@platform ios} '#999999'
+   */
   color?: ?ColorValue,
 
   /**
-    Size of the indicator.
-
-    @type enum(`'small'`, `'large'`)
-    @type {@platform android} number
-  */
+   * Size of the indicator.
+   *
+   * Small has a height of 20, large has a height of 36.
+   *
+   * @type enum(`'small'`, `'large'`)
+   * @type {@platform android} number
+   */
   size?: ?IndicatorSize,
 }>;
 
+/**
+ * Displays a circular loading indicator.
+ *
+ * Example:
+ *
+ * ```tsx
+ * import React from 'react';
+ * import {ActivityIndicator, StyleSheet, View} from 'react-native';
+ *
+ * const App = () => (
+ *   <View style={[styles.container, styles.horizontal]}>
+ *     <ActivityIndicator />
+ *     <ActivityIndicator size="large" />
+ *     <ActivityIndicator size="small" color="#0000ff" />
+ *     <ActivityIndicator size="large" color="#00ff00" />
+ *   </View>
+ * );
+ *
+ * const styles = StyleSheet.create({
+ *   container: {
+ *     flex: 1,
+ *     justifyContent: 'center',
+ *   },
+ *   horizontal: {
+ *     flexDirection: 'row',
+ *     justifyContent: 'space-around',
+ *     padding: 10,
+ *   },
+ * });
+ *
+ * export default App;
+ * ```
+ *
+ * @see https://reactnative.dev/docs/activityindicator
+ */
 const ActivityIndicator: component(
   ref?: React.RefSetter<ActivityIndicatorInstance>,
   ...props: ActivityIndicatorProps
@@ -128,38 +167,6 @@ const ActivityIndicator: component(
     </View>
   );
 };
-
-/**
-  Displays a circular loading indicator.
-
-  ```SnackPlayer name=ActivityIndicator%20Example
-  import React from 'react';
-  import {ActivityIndicator, StyleSheet, View} from 'react-native';
-
-  const App = () => (
-    <View style={[styles.container, styles.horizontal]}>
-      <ActivityIndicator />
-      <ActivityIndicator size="large" />
-      <ActivityIndicator size="small" color="#0000ff" />
-      <ActivityIndicator size="large" color="#00ff00" />
-    </View>
-  );
-
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      justifyContent: 'center',
-    },
-    horizontal: {
-      flexDirection: 'row',
-      justifyContent: 'space-around',
-      padding: 10,
-    },
-  });
-
-  export default App;
-```
-*/
 
 ActivityIndicator.displayName = 'ActivityIndicator';
 

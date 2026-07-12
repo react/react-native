@@ -59,7 +59,7 @@ void ViewTransitionModule::initialize(
         });
 
     // Register on surfaces started in the future
-    uiManager_->setOnSurfaceStartCallback(
+    uiManager_->addOnSurfaceStartCallback(
         [weakThis](const ShadowTree& shadowTree) {
           shadowTree.getMountingCoordinator()->setMountingOverrideDelegate(
               weakThis);

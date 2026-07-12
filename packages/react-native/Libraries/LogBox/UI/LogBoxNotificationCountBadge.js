@@ -24,7 +24,10 @@ export default function LogBoxNotificationCountBadge(props: {
        * when fixing the type of `StyleSheet.create`. Remove this comment to
        * see the error. */}
       <View style={[styles.inside, styles[props.level]]}>
-        <Text id="logbox_notification_count_text" style={styles.text}>
+        <Text
+          id="logbox_notification_count_text"
+          maxFontSizeMultiplier={1}
+          style={styles.text}>
           {props.count <= 1 ? '!' : props.count}
         </Text>
       </View>

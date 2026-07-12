@@ -15,13 +15,18 @@ import {type EventSubscription} from '../vendor/emitter/EventEmitter';
 import NativeAppState from './NativeAppState';
 
 /**
- * active - The app is running in the foreground
- * background - The app is running in the background. The user is either:
- *   - in another app
- *   - on the home screen
- *   - [Android only] on another Activity, including temporary system activities such
- *     as autofill credential pickers (even if launched by your app or the system)
- * @platform ios - inactive - This is a state that occurs when transitioning between foreground & background, and during periods of inactivity such as entering the multitasking view, opening the Notification Center or in the event of an incoming call.
+ * The app's current state.
+ *
+ * - `active` — The app is running in the foreground.
+ * - `background` — The app is running in the background. The user is either
+ *   in another app, on the home screen, or (Android only) on another Activity,
+ *   including temporary system activities such as autofill credential pickers.
+ * - `inactive` — A transitional state that occurs when moving between
+ *   foreground and background, and during periods of inactivity such as
+ *   entering the multitasking view, opening the Notification Center, or in the
+ *   event of an incoming call.
+ *
+ * @platform ios `inactive`
  */
 export type AppStateStatus =
   | 'inactive'
@@ -31,10 +36,15 @@ export type AppStateStatus =
   | 'unknown';
 
 /**
- * change - This even is received when the app state has changed.
- * memoryWarning - This event is used in the need of throwing memory warning or releasing it.
- * @platform android - focus - Received when the app gains focus (the user is interacting with the app).
- * @platform android - blur - Received when the user is not actively interacting with the app.
+ * Events emitted by `AppState`.
+ *
+ * - `change` — Received when the app state has changed.
+ * - `memoryWarning` — Received when the system issues a memory warning.
+ * - `focus` — Received when the app gains focus (the user is interacting
+ *   with the app).
+ * - `blur` — Received when the user is not actively interacting with the app.
+ *
+ * @platform android `focus`, `blur`
  */
 type AppStateEventDefinitions = {
   change: [AppStateStatus],
@@ -52,13 +62,18 @@ type NativeAppStateEventDefinitions = {
 };
 
 /**
- * `AppState` can tell you if the app is in the foreground or background,
- * and notify you when the state changes.
+ * Reports the app's current state (`active`, `background`, or `inactive`) and
+ * notifies when it changes. Frequently used to handle push notification
+ * behavior.
  *
- * See https://reactnative.dev/docs/appstate
+ * @see https://reactnative.dev/docs/appstate
  */
 class AppStateImpl {
+  /**
+   * The current app state. Can be `null` until the initial value is set.
+   */
   currentState: ?string = null;
+
   isAvailable: boolean;
 
   _emitter: ?NativeEventEmitter<NativeAppStateEventDefinitions>;
@@ -106,10 +121,9 @@ class AppStateImpl {
   }
 
   /**
-   * Add a handler to AppState changes by listening to the `change` event type
-   * and providing the handler.
-   *
-   * See https://reactnative.dev/docs/appstate#addeventlistener
+   * Add a handler to `AppState` changes by listening to the `change` event
+   * type and providing the handler. See `AppStateEvent` for the list of
+   * available events.
    */
   addEventListener<K extends AppStateEvent>(
     type: K,

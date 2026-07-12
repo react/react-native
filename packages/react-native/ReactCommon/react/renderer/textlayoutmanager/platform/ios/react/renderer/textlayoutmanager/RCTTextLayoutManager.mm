@@ -68,6 +68,64 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
                        layoutConstraints:layoutConstraints];
 }
 
+- (CGRect)drawingFrameForAttributedString:(AttributedString)attributedString
+                      paragraphAttributes:(ParagraphAttributes)paragraphAttributes
+                                    frame:(CGRect)frame
+                           containerFrame:(CGRect *)containerFrame
+{
+  if (containerFrame != nullptr) {
+    *containerFrame = frame;
+  }
+
+  if (!ReactNativeFeatureFlags::enableIOSCompressedTextFrameAdjustment()) {
+    return frame;
+  }
+
+  NSTextStorage *textStorage = [self
+      _textStorageAndLayoutManagerWithAttributesString:[self _nsAttributedStringFromAttributedString:attributedString]
+                                   paragraphAttributes:paragraphAttributes
+                                                  size:frame.size];
+  NSLayoutManager *layoutManager = textStorage.layoutManagers.firstObject;
+  NSTextContainer *textContainer = layoutManager.textContainers.firstObject;
+  [layoutManager ensureLayoutForTextContainer:textContainer];
+
+  NSRange glyphRange = [layoutManager glyphRangeForTextContainer:textContainer];
+  [self processTruncatedAttributedText:textStorage textContainer:textContainer layoutManager:layoutManager];
+
+  __block CGFloat maximumLineHeight = 0;
+  [textStorage enumerateAttribute:NSParagraphStyleAttributeName
+                          inRange:NSMakeRange(0, textStorage.length)
+                          options:NSAttributedStringEnumerationLongestEffectiveRangeNotRequired
+                       usingBlock:^(NSParagraphStyle *paragraphStyle, __unused NSRange range, __unused BOOL *stop) {
+                         if (paragraphStyle != nil) {
+                           maximumLineHeight = MAX(paragraphStyle.maximumLineHeight, maximumLineHeight);
+                         }
+                       }];
+  if (maximumLineHeight == 0 || glyphRange.length == 0) {
+    return frame;
+  }
+
+  CGRect glyphBounds = [layoutManager boundingRectForGlyphRange:glyphRange inTextContainer:textContainer];
+  CGFloat glyphHeight = CGRectGetMaxY(glyphBounds) - MIN(glyphBounds.origin.y, 0);
+  CGFloat drawingHeight = MAX(frame.size.height, glyphHeight);
+  CGFloat extraHeight = drawingHeight - frame.size.height;
+
+  CGRect localContainerFrame = frame;
+  localContainerFrame.origin.y -= extraHeight / 2.0;
+  localContainerFrame.size.height = drawingHeight;
+  if (containerFrame != nullptr) {
+    *containerFrame = localContainerFrame;
+  }
+
+  CGRect drawingFrame = frame;
+  drawingFrame.size.height = drawingHeight;
+  drawingFrame.origin.y = localContainerFrame.origin.y;
+  if (glyphBounds.origin.y < 0) {
+    drawingFrame.origin.y += (drawingHeight - glyphBounds.size.height) / 2.0 - glyphBounds.origin.y;
+  }
+  return drawingFrame;
+}
+
 - (void)drawAttributedString:(AttributedString)attributedString
          paragraphAttributes:(ParagraphAttributes)paragraphAttributes
                        frame:(CGRect)frame
@@ -504,7 +562,8 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
                                  }
                                }];
 
-  CGSize size = [layoutManager usedRectForTextContainer:textContainer].size;
+  CGRect usedBounds = [layoutManager usedRectForTextContainer:textContainer];
+  CGSize size = usedBounds.size;
 
   if (textDidWrap) {
     size.width = textContainer.size.width;

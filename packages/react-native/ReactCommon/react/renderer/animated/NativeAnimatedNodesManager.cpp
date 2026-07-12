@@ -229,6 +229,9 @@ void NativeAnimatedNodesManager::connectAnimatedNodeToView(
       connectedAnimatedNodes_.insert({viewTag, propsNodeTag});
     }
     updatedNodeTags_.insert(node->tag());
+    // Seed props_ so getManagedProps() is live at mount, without staging a
+    // commit.
+    node->collectProps();
   } else {
     LOG(WARNING)
         << "Cannot ConnectAnimatedNodeToView, animated node has to be props type";
@@ -551,61 +554,84 @@ NativeAnimatedNodesManager::ensureEventEmitterListener() noexcept {
 }
 
 void NativeAnimatedNodesManager::startRenderCallbackIfNeeded(bool isAsync) {
-  // This method can be called from either the UI thread or JavaScript thread.
-  // It ensures `startOnRenderCallback_` is called exactly once using atomic
-  // operations. We use std::atomic_bool rather than std::mutex to avoid
-  // potential deadlocks that could occur if we called external code while
-  // holding a mutex.
-  auto isRenderCallbackStarted = isRenderCallbackStarted_.exchange(true);
-  if (isRenderCallbackStarted) {
-    // onRender callback is already started.
-    return;
-  }
-
-  if (useSharedAnimatedBackend_) {
-    if (auto animationBackend = animationBackend_.lock()) {
-      auto weak = weak_from_this();
-      animationBackendCallbackId_ = animationBackend->start(
-          [weak](AnimationTimestamp timestamp) -> AnimationMutations {
-            if (auto self = weak.lock()) {
-              return self->pullAnimationMutations(timestamp);
-            }
-            return {};
-          });
+  if (!useSharedAnimatedBackend_) {
+    // This method can be called from either the UI thread or JavaScript thread.
+    // It ensures `startOnRenderCallback_` is called exactly once using atomic
+    // operations. We use std::atomic_bool rather than std::mutex to avoid
+    // potential deadlocks that could occur if we called external code while
+    // holding a mutex.
+    auto isRenderCallbackStarted = isRenderCallbackStarted_.exchange(true);
+    if (isRenderCallbackStarted) {
+      // onRender callback is already started.
+      return;
     }
-
+    if (startOnRenderCallback_) {
+      startOnRenderCallback_([this]() { onRender(); }, isAsync);
+    }
     return;
   }
 
-  if (startOnRenderCallback_) {
-    startOnRenderCallback_([this]() { onRender(); }, isAsync);
+  {
+    auto animationBackend = animationBackend_.lock();
+    if (!animationBackend) {
+      return;
+    }
+    // AnimationBackend::start registers the callback before returning the id.
+    // Keep registration and id publication in one critical section; otherwise a
+    // concurrent stop can observe no id and leave the registered callback
+    // orphaned in the backend.
+    std::lock_guard<std::mutex> lock(animationBackendCallbackMutex_);
+    if (animationBackendCallbackId_.has_value()) {
+      return;
+    }
+    auto weak = weak_from_this();
+    auto callbackId = animationBackend->start(
+        [weak](AnimationTimestamp timestamp) -> AnimationMutations {
+          if (auto self = weak.lock()) {
+            return self->pullAnimationMutations(timestamp);
+          }
+          return {};
+        });
+    animationBackendCallbackId_ = callbackId;
   }
 }
 
 void NativeAnimatedNodesManager::stopRenderCallbackIfNeeded(
     bool isAsync) noexcept {
-  // When multiple threads reach this point, only one thread should call
-  // stopOnRenderCallback_. This synchronization is primarily needed during
-  // destruction of NativeAnimatedNodesManager. In normal operation,
-  // stopRenderCallbackIfNeeded is always called from the UI thread.
-  auto isRenderCallbackStarted = isRenderCallbackStarted_.exchange(false);
-
-  if (useSharedAnimatedBackend_) {
+  if (!useSharedAnimatedBackend_) {
+    // When multiple threads reach this point, only one thread should call
+    // stopOnRenderCallback_. This synchronization is primarily needed during
+    // destruction of NativeAnimatedNodesManager. In normal operation,
+    // stopRenderCallbackIfNeeded is always called from the UI thread.
+    auto isRenderCallbackStarted = isRenderCallbackStarted_.exchange(false);
     if (isRenderCallbackStarted) {
-      if (auto animationBackend = animationBackend_.lock()) {
-        animationBackend->stop(animationBackendCallbackId_);
+      if (stopOnRenderCallback_) {
+        stopOnRenderCallback_(isAsync);
+
+        if (frameRateListenerCallback_) {
+          frameRateListenerCallback_(false);
+        }
       }
     }
     return;
   }
 
-  if (isRenderCallbackStarted) {
-    if (stopOnRenderCallback_) {
-      stopOnRenderCallback_(isAsync);
-
-      if (frameRateListenerCallback_) {
-        frameRateListenerCallback_(false);
+  {
+    auto animationBackend = animationBackend_.lock();
+    CallbackId callbackId = 0;
+    {
+      std::lock_guard<std::mutex> lock(animationBackendCallbackMutex_);
+      if (!animationBackendCallbackId_.has_value()) {
+        return;
       }
+      // Clear the published id while holding the same mutex that protects
+      // start registration. This makes a concurrent start either see an active
+      // callback or wait until this stop owns the callback id.
+      callbackId = *animationBackendCallbackId_;
+      animationBackendCallbackId_.reset();
+    }
+    if (animationBackend) {
+      animationBackend->stop(callbackId);
     }
   }
 }

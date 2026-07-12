@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<2b0cbc5249ac34ae7f030a9c0fffd1f3>>
+ * @generated SignedSource<<cf60b52e15df339a179f392723007fab>>
  */
 
 /**
@@ -38,6 +38,7 @@ import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.common.ReactConstants
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import com.facebook.react.uimanager.BackgroundStyleApplicator
+import com.facebook.react.uimanager.HasChildPressedStateDelay
 import com.facebook.react.uimanager.LengthPercentage
 import com.facebook.react.uimanager.LengthPercentageType
 import com.facebook.react.uimanager.MeasureSpecAssertions
@@ -93,7 +94,8 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
     HasFlingAnimator,
     HasScrollEventThrottle,
     HasSmoothScroll,
-    VirtualViewContainer {
+    VirtualViewContainer,
+    HasChildPressedStateDelay {
 
   private companion object {
     private var scrollerField: java.lang.reflect.Field? = null
@@ -107,6 +109,7 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
   override var stateWrapper: StateWrapper? = null
   override var scrollEventThrottle: Int = 0
   override var lastScrollDispatchTime: Long = 0L
+  override var hasChildPressedStateDelay: Boolean? = null
 
   public open var pointerEvents: PointerEvents = PointerEvents.AUTO
 
@@ -551,6 +554,9 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
       Systrace.endSection(Systrace.TRACE_TAG_REACT)
     }
   }
+
+  override fun shouldDelayChildPressedState(): Boolean =
+      hasChildPressedStateDelay ?: super.shouldDelayChildPressedState()
 
   override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
     if (!scrollEnabled) return false

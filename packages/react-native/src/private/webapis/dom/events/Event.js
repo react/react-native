@@ -42,6 +42,11 @@ export interface EventInit {
   readonly bubbles?: boolean;
   readonly cancelable?: boolean;
   readonly composed?: boolean;
+  // React Native-specific. When true, the event is a "direct" event: it is
+  // dispatched only to the target node (single AT_TARGET phase) and never
+  // captures or bubbles through ancestors. A direct event must not bubble, so
+  // `bubbles` cannot also be true.
+  readonly rnIsDirect?: boolean;
 }
 
 export default class Event {
@@ -58,6 +63,7 @@ export default class Event {
   _bubbles: boolean;
   _cancelable: boolean;
   _composed: boolean;
+  _rnIsDirect: boolean;
   _type: string;
 
   _defaultPrevented: boolean = false;
@@ -110,6 +116,16 @@ export default class Event {
     this._bubbles = Boolean(options?.bubbles);
     this._cancelable = Boolean(options?.cancelable);
     this._composed = Boolean(options?.composed);
+    this._rnIsDirect = Boolean(options?.rnIsDirect);
+
+    // A direct event is dispatched only to its target and never propagates, so
+    // it cannot bubble. Reject the contradictory combination at construction
+    // time.
+    if (this._rnIsDirect && this._bubbles) {
+      throw new TypeError(
+        "Failed to construct 'Event': 'rnIsDirect' cannot be true when 'bubbles' is also true.",
+      );
+    }
 
     // For internal construction of events using a custom timestamp (instead of
     // event object creation), for use cases like dispatching events from the
@@ -130,6 +146,15 @@ export default class Event {
 
   get composed(): boolean {
     return this._composed;
+  }
+
+  /**
+   * React Native-specific. When true, this event is dispatched only to its
+   * target (single `AT_TARGET` phase) and never captures or bubbles through
+   * ancestors.
+   */
+  get rnIsDirect(): boolean {
+    return this._rnIsDirect;
   }
 
   get currentTarget(): EventTarget | null {

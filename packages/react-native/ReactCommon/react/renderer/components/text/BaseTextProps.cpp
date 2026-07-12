@@ -7,7 +7,6 @@
 
 #include "BaseTextProps.h"
 
-#include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/renderer/attributedstring/conversions.h>
 #include <react/renderer/core/graphicsConversions.h>
 #include <react/renderer/core/propsConversions.h>
@@ -230,14 +229,11 @@ BaseTextProps::BaseTextProps(
     const PropsParserContext& context,
     const BaseTextProps& sourceProps,
     const RawProps& rawProps)
-    : textAttributes(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.textAttributes
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    sourceProps.textAttributes,
-                    TextAttributes{})) {};
+    : textAttributes(convertRawProp(
+          context,
+          rawProps,
+          sourceProps.textAttributes,
+          TextAttributes{})) {};
 
 void BaseTextProps::setProp(
     const PropsParserContext& context,
@@ -274,6 +270,8 @@ void BaseTextProps::setProp(
         maxFontSizeMultiplier,
         "maxFontSizeMultiplier");
     REBUILD_FIELD_SWITCH_CASE(
+        defaults, value, textAttributes, dynamicTypeRamp, "dynamicTypeRamp");
+    REBUILD_FIELD_SWITCH_CASE(
         defaults, value, textAttributes, letterSpacing, "letterSpacing");
     REBUILD_FIELD_SWITCH_CASE(
         defaults, value, textAttributes, textTransform, "textTransform");
@@ -286,7 +284,7 @@ void BaseTextProps::setProp(
         value,
         textAttributes,
         baseWritingDirection,
-        "baseWritingDirection");
+        "writingDirection");
     REBUILD_FIELD_SWITCH_CASE(
         defaults,
         value,

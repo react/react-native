@@ -8,7 +8,7 @@
  * @format
  */
 
-export * from '../../src/private/specs_DEPRECATED/components/DebuggingOverlayNativeComponent';
-import DebuggingOverlayNativeComponent from '../../src/private/specs_DEPRECATED/components/DebuggingOverlayNativeComponent';
+export * from '../../src/private/components/debuggingoverlay/specs/DebuggingOverlayNativeComponent';
+import DebuggingOverlayNativeComponent from '../../src/private/components/debuggingoverlay/specs/DebuggingOverlayNativeComponent';
 
 export default DebuggingOverlayNativeComponent;

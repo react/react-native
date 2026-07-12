@@ -17,9 +17,16 @@ import {ViewStyle} from '../../StyleSheet/StyleSheetTypes';
  *
  * To use this component wrap your custom toolbar with the InputAccessoryView component, and set a nativeID. Then, pass
  * that nativeID as the inputAccessoryViewID of whatever TextInput you desire.
+ *
+ * InputAccessoryView is deprecated and will be removed in a future release.
+ * @deprecated
  */
 export class InputAccessoryView extends React.Component<InputAccessoryViewProps> {}
 
+/**
+ * InputAccessoryView is deprecated and will be removed in a future release.
+ * @deprecated
+ */
 export interface InputAccessoryViewProps {
   backgroundColor?: ColorValue | undefined;
 

@@ -13,11 +13,10 @@ import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
 import type {HostInstance} from 'react-native';
 
-import ensureInstance from '../../../__tests__/utilities/ensureInstance';
 import * as Fantom from '@react-native/fantom';
+import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {View} from 'react-native';
-import ReactNativeElement from 'react-native/src/private/webapis/dom/nodes/ReactNativeElement';
 
 describe('ViewFlattening', () => {
   /**
@@ -474,7 +473,7 @@ describe('reconciliation of setNativeProps and React commit', () => {
       <rn-view nativeID={'first native id'} testID={'first test id'} />,
     );
 
-    const element = ensureInstance(nodeRef.current, ReactNativeElement);
+    const element = nullthrows(nodeRef.current);
 
     Fantom.runTask(() => {
       // Calling `setNativeProps` forces bug https://github.com/facebook/react-native/issues/47476 to manifest.
@@ -534,7 +533,7 @@ describe('reconciliation of setNativeProps and React commit', () => {
         .toJSX(),
     ).toEqual(<rn-view nativeID={'first native id'} />);
 
-    const element = ensureInstance(nodeRef.current, ReactNativeElement);
+    const element = nullthrows(nodeRef.current);
 
     Fantom.runTask(() => {
       element.setNativeProps({nativeID: 'second native id'});

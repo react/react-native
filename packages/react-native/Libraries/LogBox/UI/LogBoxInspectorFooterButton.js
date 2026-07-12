@@ -35,7 +35,9 @@ export default function LogBoxInspectorFooterButton(
         }}
         onPress={props.onPress}>
         <View style={styles.buttonContent}>
-          <Text style={styles.buttonLabel}>{props.text}</Text>
+          <Text maxFontSizeMultiplier={1.5} style={styles.buttonLabel}>
+            {props.text}
+          </Text>
         </View>
       </LogBoxButton>
     </SafeAreaView>

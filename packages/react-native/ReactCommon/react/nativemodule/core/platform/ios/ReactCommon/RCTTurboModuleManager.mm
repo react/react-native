@@ -726,9 +726,10 @@ Class getFallbackClassFromName(const char *name)
    * TODO(T41180176): Investigate whether we can delete this after TM
    * rollout.
    */
-  [[NSNotificationCenter defaultCenter] postNotificationName:RCTDidInitializeModuleNotification
-                                                      object:nil
-                                                    userInfo:@{@"module" : module, @"bridge" : [NSNull null]}];
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:RCTDidInitializeModuleNotification
+                    object:nil
+                  userInfo:@{RCTDidInitializeModuleNotificationModuleKey : module, @"bridge" : [NSNull null]}];
 
   TurboModulePerfLogger::moduleCreateSetUpEnd(moduleName, moduleId);
 

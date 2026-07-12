@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<00bb39539f4fc2dc0ad85a346bdee22b>>
+ * @generated SignedSource<<c9e8eeefc709e1246577d67155300906>>
  */
 
 /**
@@ -103,6 +103,12 @@ public object ReactNativeFeatureFlags {
   public fun enableAccumulatedUpdatesInRawPropsAndroid(): Boolean = accessor.enableAccumulatedUpdatesInRawPropsAndroid()
 
   /**
+   * When enabled, Android Text measurement and rendering respects the system Bold text accessibility setting via `Configuration.fontWeightAdjustment`.
+   */
+  @JvmStatic
+  public fun enableAndroidFontWeightAdjustment(): Boolean = accessor.enableAndroidFontWeightAdjustment()
+
+  /**
    * Enables various optimizations throughout the path of measuring text on Android.
    */
   @JvmStatic
@@ -173,6 +179,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun enableFontScaleChangesUpdatingLayout(): Boolean = accessor.enableFontScaleChangesUpdatingLayout()
+
+  /**
+   * Adjusts iOS Text drawing frames for compressed explicit line heights.
+   */
+  @JvmStatic
+  public fun enableIOSCompressedTextFrameAdjustment(): Boolean = accessor.enableIOSCompressedTextFrameAdjustment()
 
   /**
    * Applies base offset for each line of text separately on iOS.

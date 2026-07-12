@@ -116,4 +116,26 @@ const RawValue* RawProps::at(const char* name) const noexcept {
   return parser_->at(*this, name);
 }
 
+const RawValue* RawProps::at(
+    const char* name,
+    const char* prefix,
+    const char* suffix) const noexcept {
+  if (prefix == nullptr && suffix == nullptr) {
+    return at(name);
+  }
+
+  std::string concatenated;
+  if (prefix != nullptr) {
+    concatenated += prefix;
+  }
+  concatenated += name;
+  if (suffix != nullptr) {
+    concatenated += suffix;
+  }
+  react_native_assert(
+      parser_ &&
+      "The object is not parsed. `parse` must be called before `at`.");
+  return parser_->at(*this, concatenated);
+}
+
 } // namespace facebook::react

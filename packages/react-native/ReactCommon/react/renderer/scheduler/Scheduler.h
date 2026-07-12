@@ -9,6 +9,7 @@
 
 #include <atomic>
 #include <memory>
+#include <vector>
 
 #include <ReactCommon/RuntimeExecutor.h>
 #include <react/performance/cdpmetrics/CdpMetricsReporter.h>
@@ -117,7 +118,7 @@ class Scheduler final : public UIManagerDelegate {
   void removeEventListener(const std::shared_ptr<const EventListener> &listener);
 
 #pragma mark - Surface start callback
-  void uiManagerShouldSetOnSurfaceStartCallback(OnSurfaceStartCallback &&callback) override;
+  void uiManagerShouldAddOnSurfaceStartCallback(OnSurfaceStartCallback &&callback) override;
 
  private:
   friend class SurfaceHandler;
@@ -159,7 +160,7 @@ class Scheduler final : public UIManagerDelegate {
   std::shared_ptr<ViewTransitionModule> viewTransitionModule_;
 
   mutable std::shared_mutex onSurfaceStartCallbackMutex_;
-  OnSurfaceStartCallback onSurfaceStartCallback_;
+  std::vector<OnSurfaceStartCallback> onSurfaceStartCallbacks_;
 };
 
 } // namespace facebook::react

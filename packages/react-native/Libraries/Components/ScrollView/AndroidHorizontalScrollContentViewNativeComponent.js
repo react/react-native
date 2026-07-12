@@ -8,5 +8,5 @@
  * @format
  */
 
-export * from '../../../src/private/specs_DEPRECATED/components/AndroidHorizontalScrollContentViewNativeComponent';
-export {default} from '../../../src/private/specs_DEPRECATED/components/AndroidHorizontalScrollContentViewNativeComponent';
+export * from '../../../src/private/components/scrollview/specs/AndroidHorizontalScrollContentViewNativeComponent';
+export {default} from '../../../src/private/components/scrollview/specs/AndroidHorizontalScrollContentViewNativeComponent';

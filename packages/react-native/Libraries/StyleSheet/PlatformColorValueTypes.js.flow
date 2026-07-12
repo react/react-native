@@ -11,6 +11,12 @@
 import type {ProcessedColorValue} from './processColor';
 import type {NativeColorValue} from './StyleSheet';
 
+/**
+ * Select native platform color
+ * The color must match the string that exists on the native platform
+ *
+ * @see https://reactnative.dev/docs/platformcolor#example
+ */
 declare export function PlatformColor(
   ...names: Array<string>
 ): NativeColorValue;

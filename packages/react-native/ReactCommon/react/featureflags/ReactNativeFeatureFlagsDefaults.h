@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<6451b9c50b78b3b00fc74b137f5ca541>>
+ * @generated SignedSource<<c511b77030561c7a6655eb512082462c>>
  */
 
 /**
@@ -36,7 +36,7 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool cxxNativeAnimatedEnabled() override {
-    return true;
+    return false;
   }
 
   bool defaultTextToOverflowHidden() override {
@@ -73,6 +73,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
 
   bool enableAccumulatedUpdatesInRawPropsAndroid() override {
     return false;
+  }
+
+  bool enableAndroidFontWeightAdjustment() override {
+    return true;
   }
 
   bool enableAndroidTextMeasurementOptimizations() override {
@@ -121,6 +125,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
 
   bool enableFontScaleChangesUpdatingLayout() override {
     return true;
+  }
+
+  bool enableIOSCompressedTextFrameAdjustment() override {
+    return false;
   }
 
   bool enableIOSTextBaselineOffsetPerLine() override {

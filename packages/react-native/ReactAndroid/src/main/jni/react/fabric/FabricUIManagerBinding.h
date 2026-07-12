@@ -127,7 +127,7 @@ class FabricUIManagerBinding : public jni::HybridClass<FabricUIManagerBinding>,
 
   void driveCxxAnimations();
 
-  void driveAnimationBackend(jdouble frameTimeMs);
+  void driveAnimationBackend(jlong frameTimeNanos);
 
   void drainPreallocateViewsQueue();
 
@@ -168,8 +168,6 @@ class FabricUIManagerBinding : public jni::HybridClass<FabricUIManagerBinding>,
   bool enableFabricLogs_{false};
 
   std::shared_ptr<AndroidAnimationChoreographer> animationChoreographer_;
-
-  void setAnimationBackendChoreographer(jni::alias_ref<JAnimationBackendChoreographer::javaobject> animationBackend);
 };
 
 } // namespace facebook::react

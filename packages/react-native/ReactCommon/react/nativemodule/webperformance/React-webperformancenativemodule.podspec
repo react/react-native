@@ -52,6 +52,7 @@ Pod::Spec.new do |s|
   add_rncore_dependency(s)
 
   s.dependency "ReactCommon/turbomodule/core"
+  s.dependency "React-bridging"
 
   add_dependency(s, "React-RCTFBReactNativeSpec")
   add_dependency(s, "React-performancetimeline")

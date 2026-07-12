@@ -8,18 +8,16 @@
 #include "ReactInstance.h"
 
 #include <ReactCommon/RuntimeExecutor.h>
-#include <cxxreact/ErrorUtils.h>
 #include <cxxreact/JSBigString.h>
-#include <cxxreact/JSExecutor.h>
 #include <cxxreact/ReactMarker.h>
 #include <cxxreact/TraceSection.h>
 #include <glog/logging.h>
+#include <jserrorhandler/ErrorUtils.h>
 #include <jsi/JSIDynamic.h>
 #include <jsi/hermes-interfaces.h>
 #include <jsi/instrumentation.h>
 #include <jsinspector-modern/HostTarget.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
-#include <react/renderer/core/ShadowNode.h>
 #include <react/renderer/runtimescheduler/RuntimeSchedulerBinding.h>
 #include <react/runtime/JSRuntimeBindings.h>
 #include <react/timing/primitives.h>
@@ -46,6 +44,16 @@ std::shared_ptr<RuntimeScheduler> createRuntimeScheduler(
       PerformanceEntryReporter::getInstance().get());
 
   return scheduler;
+}
+
+void setHermesEventLoopControl(
+    jsi::Runtime& runtime,
+    facebook::hermes::IEventLoopControl* eventLoopControl) {
+  auto* setEventLoopControl =
+      jsi::castInterface<facebook::hermes::ISetEventLoopControl>(&runtime);
+  if (setEventLoopControl != nullptr) {
+    setEventLoopControl->setEventLoopControl(eventLoopControl);
+  }
 }
 
 std::string getSyntheticBundlePath(uint32_t bundleId) {
@@ -89,7 +97,6 @@ ReactInstance::ReactInstance(
             jsi::Runtime& jsiRuntime = runtime->getRuntime();
             TraceSection s("ReactInstance::_runtimeExecutor[Callback]");
             try {
-              ShadowNode::setUseRuntimeShadowNodeReferenceUpdateOnThread(true);
               callback(jsiRuntime);
             } catch (jsi::JSError& originalError) {
               jsErrorHandler->handleError(jsiRuntime, originalError, true);
@@ -156,6 +163,11 @@ ReactInstance::ReactInstance(
         });
   }
 
+  runtimeExecutor(
+      [runtimeScheduler = runtimeScheduler_.get()](jsi::Runtime& runtime) {
+        setHermesEventLoopControl(runtime, runtimeScheduler);
+      });
+
   bufferedRuntimeExecutor_ = std::make_shared<BufferedRuntimeExecutor>(
       [runtimeScheduler = runtimeScheduler_.get()](
           std::function<void(jsi::Runtime & runtime)>&& callback) {
@@ -163,6 +175,11 @@ ReactInstance::ReactInstance(
       });
 }
 ReactInstance::~ReactInstance() noexcept {
+  // This is thread safe because there is no JSI call at this point, and there
+  // won't be any concurrent calls to getEventLoopControl().
+  // We need to clear this pointer before runtimeScheduler_ is destroyed.
+  setHermesEventLoopControl(runtime_->getRuntime(), nullptr);
+
   if (timerManager_ != nullptr) {
     timerManager_->quit();
   }

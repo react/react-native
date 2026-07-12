@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<731e92ecac8dbdf0a4b204b763a2c8c7>>
+ * @generated SignedSource<<5ae6b1a0bfa9d680aa61685dbacd69d2>>
  */
 
 /**
@@ -32,6 +32,7 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
   private var disableViewPreallocationAndroidCache: Boolean? = null
   private var enableAccessibilityOrderCache: Boolean? = null
   private var enableAccumulatedUpdatesInRawPropsAndroidCache: Boolean? = null
+  private var enableAndroidFontWeightAdjustmentCache: Boolean? = null
   private var enableAndroidTextMeasurementOptimizationsCache: Boolean? = null
   private var enableBridgelessArchitectureCache: Boolean? = null
   private var enableCppPropsIteratorSetterCache: Boolean? = null
@@ -44,6 +45,7 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
   private var enableFabricLogsCache: Boolean? = null
   private var enableFlexboxAutoMinSizeInStrictModeCache: Boolean? = null
   private var enableFontScaleChangesUpdatingLayoutCache: Boolean? = null
+  private var enableIOSCompressedTextFrameAdjustmentCache: Boolean? = null
   private var enableIOSTextBaselineOffsetPerLineCache: Boolean? = null
   private var enableIOSViewClipToPaddingBoxCache: Boolean? = null
   private var enableImagePrefetchingAndroidCache: Boolean? = null
@@ -213,6 +215,15 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
     return cached
   }
 
+  override fun enableAndroidFontWeightAdjustment(): Boolean {
+    var cached = enableAndroidFontWeightAdjustmentCache
+    if (cached == null) {
+      cached = ReactNativeFeatureFlagsCxxInterop.enableAndroidFontWeightAdjustment()
+      enableAndroidFontWeightAdjustmentCache = cached
+    }
+    return cached
+  }
+
   override fun enableAndroidTextMeasurementOptimizations(): Boolean {
     var cached = enableAndroidTextMeasurementOptimizationsCache
     if (cached == null) {
@@ -317,6 +328,15 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
     if (cached == null) {
       cached = ReactNativeFeatureFlagsCxxInterop.enableFontScaleChangesUpdatingLayout()
       enableFontScaleChangesUpdatingLayoutCache = cached
+    }
+    return cached
+  }
+
+  override fun enableIOSCompressedTextFrameAdjustment(): Boolean {
+    var cached = enableIOSCompressedTextFrameAdjustmentCache
+    if (cached == null) {
+      cached = ReactNativeFeatureFlagsCxxInterop.enableIOSCompressedTextFrameAdjustment()
+      enableIOSCompressedTextFrameAdjustmentCache = cached
     }
     return cached
   }

@@ -17,6 +17,13 @@
   ],
   "bugs": "https://github.com/react/react-native/issues",
   "main": "index.js",
+  "files": [
+    "README.md",
+    "index.js",
+    "no-deep-imports.js",
+    "platform-colors.js",
+    "utils.js"
+  ],
   "devDependencies": {
     "babel-plugin-syntax-hermes-parser": "0.36.1",
     "hermes-eslint": "0.36.1"

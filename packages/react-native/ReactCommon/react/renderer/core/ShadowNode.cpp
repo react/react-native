@@ -137,27 +137,35 @@ std::shared_ptr<ShadowNode> ShadowNode::clone(
     const ShadowNodeFragment& fragment) const {
   const auto& family = *family_;
   const auto& componentDescriptor = family.componentDescriptor_;
-  if (family.nativeProps_DEPRECATED != nullptr) {
-    auto propsParserContext = PropsParserContext{family_->getSurfaceId(), {}};
-    if (fragment.props == ShadowNodeFragment::propsPlaceholder()) {
-      // Clone existing `props_` with `family.nativeProps_DEPRECATED` to apply
-      // previously set props via `setNativeProps` API.
-      auto props = componentDescriptor.cloneProps(
-          propsParserContext, props_, RawProps(*family.nativeProps_DEPRECATED));
-      auto clonedNode = componentDescriptor.cloneShadowNode(
-          *this,
-          {.props = props,
-           .children = fragment.children,
-           .state = fragment.state});
-      return clonedNode;
-    } else {
-      // TODO: We might need to merge fragment.props with
-      // `family.nativeProps_DEPRECATED`.
-      return componentDescriptor.cloneShadowNode(*this, fragment);
+
+  std::optional<RawProps> propsOverride;
+  {
+    std::lock_guard<std::mutex> lock(family.nativePropsMutex);
+    if (family.nativeProps_DEPRECATED != nullptr) {
+      if (fragment.props == ShadowNodeFragment::propsPlaceholder()) {
+        propsOverride.emplace(*family.nativeProps_DEPRECATED);
+      } else {
+        // TODO: We might need to merge fragment.props with
+        // `family.nativeProps_DEPRECATED`.
+      }
     }
-  } else {
-    return componentDescriptor.cloneShadowNode(*this, fragment);
   }
+
+  if (propsOverride) {
+    // Clone existing `props_` with `family.nativeProps_DEPRECATED` to
+    // apply previously set props via `setNativeProps` API. The parsed
+    // result escapes the lock so the rest of the clone work runs
+    // unblocked.
+    auto propsParserContext = PropsParserContext{family_->getSurfaceId(), {}};
+    return componentDescriptor.cloneShadowNode(
+        *this,
+        {.props = componentDescriptor.cloneProps(
+             propsParserContext, props_, std::move(*propsOverride)),
+         .children = fragment.children,
+         .state = fragment.state});
+  }
+
+  return componentDescriptor.cloneShadowNode(*this, fragment);
 }
 
 std::shared_ptr<const ContextContainer> ShadowNode::getContextContainer()

@@ -62,12 +62,6 @@ module.exports = {
       parser: 'jsonc-eslint-parser',
     },
     {
-      files: ['package.json'],
-      rules: {
-        '@react-native/monorepo/react-native-manifest': 'error',
-      },
-    },
-    {
       files: ['flow-typed/**/*.js', 'packages/react-native/flow/**/*'],
       rules: {
         '@react-native/monorepo/valid-flow-typed-signature': 'error',

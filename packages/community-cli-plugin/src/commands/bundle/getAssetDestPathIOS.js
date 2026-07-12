@@ -8,7 +8,7 @@
  * @format
  */
 
-import type {PackagerAsset} from './assetPathUtils';
+import type {PackagerAsset} from '@react-native/asset-utils';
 
 import path from 'path';
 

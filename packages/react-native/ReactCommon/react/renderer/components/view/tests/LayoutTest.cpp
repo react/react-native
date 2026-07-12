@@ -86,7 +86,7 @@ class LayoutTest : public ::testing::Test {
               .reference(viewShadowNodeA_)
               .tag(2)
               .props([] {
-                auto sharedProps = std::make_shared<ViewShadowNodeProps>();
+                auto sharedProps = std::make_shared<ViewProps>();
                 auto &props = *sharedProps;
                 auto &yogaStyle = props.yogaStyle;
                 yogaStyle.setPositionType(yoga::PositionType::Absolute);
@@ -99,7 +99,7 @@ class LayoutTest : public ::testing::Test {
                   .reference(viewShadowNodeAB_)
                   .tag(3)
                   .props([=] {
-                    auto sharedProps = std::make_shared<ViewShadowNodeProps>();
+                    auto sharedProps = std::make_shared<ViewProps>();
                     auto &props = *sharedProps;
                     auto &yogaStyle = props.yogaStyle;
                     yogaStyle.setPositionType(yoga::PositionType::Absolute);
@@ -127,7 +127,7 @@ class LayoutTest : public ::testing::Test {
                       .reference(viewShadowNodeABC_)
                       .tag(4)
                       .props([=] {
-                        auto sharedProps = std::make_shared<ViewShadowNodeProps>();
+                        auto sharedProps = std::make_shared<ViewProps>();
                         auto &props = *sharedProps;
                         auto &yogaStyle = props.yogaStyle;
 
@@ -147,7 +147,7 @@ class LayoutTest : public ::testing::Test {
                           .reference(viewShadowNodeABCD_)
                           .tag(5)
                           .props([] {
-                            auto sharedProps = std::make_shared<ViewShadowNodeProps>();
+                            auto sharedProps = std::make_shared<ViewProps>();
                             auto &props = *sharedProps;
                             auto &yogaStyle = props.yogaStyle;
                             yogaStyle.setPositionType(yoga::PositionType::Absolute);
@@ -162,7 +162,7 @@ class LayoutTest : public ::testing::Test {
                       .reference(viewShadowNodeABE_)
                       .tag(6)
                       .props([] {
-                        auto sharedProps = std::make_shared<ViewShadowNodeProps>();
+                        auto sharedProps = std::make_shared<ViewProps>();
                         auto &props = *sharedProps;
                         auto &yogaStyle = props.yogaStyle;
                         yogaStyle.setPositionType(yoga::PositionType::Absolute);

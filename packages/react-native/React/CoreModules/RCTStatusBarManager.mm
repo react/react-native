@@ -175,17 +175,6 @@ RCT_EXPORT_METHOD(setHidden : (BOOL)hidden withAnimation : (NSString *)withAnima
   });
 }
 
-RCT_EXPORT_METHOD(setNetworkActivityIndicatorVisible : (BOOL)visible)
-{
-  dispatch_async(dispatch_get_main_queue(), ^{
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    // This is no longer supported in iOS 13 and later. We will remove this method in a future release.
-    RCTSharedApplication().networkActivityIndicatorVisible = visible;
-#pragma clang diagnostic pop
-  });
-}
-
 - (facebook::react::ModuleConstants<JS::NativeStatusBarManagerIOS::Constants>)getConstants
 {
   return _constants;

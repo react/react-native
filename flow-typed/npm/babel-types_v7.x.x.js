@@ -3848,8 +3848,8 @@ declare module "@babel/types" {
   declare export function prependToMemberExpression(member: BabelNodeMemberExpression, prepend: BabelNodeExpression): BabelNodeMemberExpression
   declare export function removeProperties<T>(n: T, opts: ?{}): void;
   declare export function removePropertiesDeep<T>(n: T, opts: ?{}): T;
-  declare export function getBindingIdentifiers(node: BabelNode, duplicates: boolean, outerOnly?: boolean): { [key: string]: BabelNodeIdentifier | Array<BabelNodeIdentifier> }
-  declare export function getOuterBindingIdentifiers(node: Node, duplicates: boolean): { [key: string]: BabelNodeIdentifier | Array<BabelNodeIdentifier> }
+  declare export function getBindingIdentifiers(node: BabelNode, duplicates?: boolean, outerOnly?: boolean): { [key: string]: BabelNodeIdentifier | Array<BabelNodeIdentifier> }
+  declare export function getOuterBindingIdentifiers(node: Node, duplicates?: boolean): { [key: string]: BabelNodeIdentifier | Array<BabelNodeIdentifier> }
   declare export type TraversalAncestors = Array<{
     node: BabelNode,
     key: string,

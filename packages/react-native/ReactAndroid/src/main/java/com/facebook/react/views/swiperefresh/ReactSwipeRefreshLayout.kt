@@ -12,13 +12,14 @@ import android.view.ViewConfiguration
 import android.view.ViewGroup
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.facebook.react.bridge.ReactContext
+import com.facebook.react.uimanager.HasChildPressedStateDelay
 import com.facebook.react.uimanager.PixelUtil
 import com.facebook.react.uimanager.events.NativeGestureUtil
 import kotlin.math.abs
 
 /** Basic extension of [SwipeRefreshLayout] with ReactNative-specific functionality. */
 public open class ReactSwipeRefreshLayout(reactContext: ReactContext) :
-    SwipeRefreshLayout(reactContext) {
+    SwipeRefreshLayout(reactContext), HasChildPressedStateDelay {
 
   private var didLayout: Boolean = false
   private var refreshing: Boolean = false
@@ -27,6 +28,8 @@ public open class ReactSwipeRefreshLayout(reactContext: ReactContext) :
   private var prevTouchX: Float = 0f
   private var intercepted: Boolean = false
   private var nativeGestureStarted: Boolean = false
+
+  override var hasChildPressedStateDelay: Boolean? = null
 
   public override fun setRefreshing(refreshing: Boolean) {
     this.refreshing = refreshing
@@ -78,6 +81,9 @@ public open class ReactSwipeRefreshLayout(reactContext: ReactContext) :
   public override fun requestDisallowInterceptTouchEvent(disallowIntercept: Boolean) {
     parent?.requestDisallowInterceptTouchEvent(disallowIntercept)
   }
+
+  override fun shouldDelayChildPressedState(): Boolean =
+      hasChildPressedStateDelay ?: super.shouldDelayChildPressedState()
 
   public override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
     if (shouldInterceptTouchEvent(ev) && super.onInterceptTouchEvent(ev)) {

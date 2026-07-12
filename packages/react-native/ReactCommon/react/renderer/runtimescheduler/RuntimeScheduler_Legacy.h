@@ -40,6 +40,11 @@ class RuntimeScheduler_Legacy final : public RuntimeSchedulerBase {
 
   void scheduleWork(RawCallback &&callback) noexcept override;
 
+  /// IEventLoopControl implementation. No-op for legacy scheduler.
+  void scheduleTask(const std::function<void()> &task) override;
+  uint64_t registerTaskQueueSource() override;
+  void unregisterTaskQueueSource(uint64_t sourceId) override;
+
   /*
    * Grants access to the runtime synchronously on the caller's thread.
    *

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<f44477b5f5a4f7030798a61694d0332a>>
+ * @generated SignedSource<<ff39edecf287d3fe3638da2f71e6bd1c>>
  * @flow strict
  * @noformat
  */
@@ -31,10 +31,9 @@ export type ReactNativeFeatureFlagsJsOnly = Readonly<{
   jsOnlyTestFlag: Getter<boolean>,
   animatedDeferStartOfTimingAnimations: Getter<boolean>,
   animatedForceNativeDriver: Getter<boolean>,
-  animatedShouldDebounceQueueFlush: Getter<boolean>,
   animatedShouldSyncValueBeforeStartCallback: Getter<boolean>,
-  animatedShouldUseSingleOp: Getter<boolean>,
   deferFlatListFocusChangeRenderUpdate: Getter<boolean>,
+  enableDirectEventsInEventTarget: Getter<boolean>,
   enableImperativeEvents: Getter<boolean>,
   enableNativeEventTargetEventDispatching: Getter<boolean>,
   externalElementInspectionEnabled: Getter<boolean>,
@@ -62,6 +61,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   disableViewPreallocationAndroid: Getter<boolean>,
   enableAccessibilityOrder: Getter<boolean>,
   enableAccumulatedUpdatesInRawPropsAndroid: Getter<boolean>,
+  enableAndroidFontWeightAdjustment: Getter<boolean>,
   enableAndroidTextMeasurementOptimizations: Getter<boolean>,
   enableBridgelessArchitecture: Getter<boolean>,
   enableCppPropsIteratorSetter: Getter<boolean>,
@@ -74,6 +74,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   enableFabricLogs: Getter<boolean>,
   enableFlexboxAutoMinSizeInStrictMode: Getter<boolean>,
   enableFontScaleChangesUpdatingLayout: Getter<boolean>,
+  enableIOSCompressedTextFrameAdjustment: Getter<boolean>,
   enableIOSTextBaselineOffsetPerLine: Getter<boolean>,
   enableIOSViewClipToPaddingBox: Getter<boolean>,
   enableImagePrefetchingAndroid: Getter<boolean>,
@@ -152,24 +153,19 @@ export const animatedDeferStartOfTimingAnimations: Getter<boolean> = createJavaS
 export const animatedForceNativeDriver: Getter<boolean> = createJavaScriptFlagGetter('animatedForceNativeDriver', false);
 
 /**
- * Enables an experimental flush-queue debouncing in Animated.js.
- */
-export const animatedShouldDebounceQueueFlush: Getter<boolean> = createJavaScriptFlagGetter('animatedShouldDebounceQueueFlush', true);
-
-/**
  * When a useNativeDriver animation completes, syncs the JS-side AnimatedValue with the post-animation value BEFORE invoking the user-supplied start({finished}) callback. Without the flag, the callback observes the pre-animation value, which can cause downstream re-renders to read stale interpolation outputs.
  */
 export const animatedShouldSyncValueBeforeStartCallback: Getter<boolean> = createJavaScriptFlagGetter('animatedShouldSyncValueBeforeStartCallback', true);
 
 /**
- * Enables an experimental mega-operation for Animated.js that replaces many calls to native with a single call into native, to reduce JSI/JNI traffic.
- */
-export const animatedShouldUseSingleOp: Getter<boolean> = createJavaScriptFlagGetter('animatedShouldUseSingleOp', true);
-
-/**
  * Use the deferred cell render update mechanism for focus change in FlatList.
  */
 export const deferFlatListFocusChangeRenderUpdate: Getter<boolean> = createJavaScriptFlagGetter('deferFlatListFocusChangeRenderUpdate', false);
+
+/**
+ * When enabled (together with enableNativeEventTargetEventDispatching), direct events (those that neither bubble nor capture, such as onLayout) are dispatched only to the target node via a fast path that skips construction and traversal of the ancestor event path.
+ */
+export const enableDirectEventsInEventTarget: Getter<boolean> = createJavaScriptFlagGetter('enableDirectEventsInEventTarget', false);
 
 /**
  * When enabled, ReactNativeElement and ReadOnlyText expose the public EventTarget API (addEventListener, removeEventListener, dispatchEvent). When disabled, those methods are removed from those final classes.
@@ -226,7 +222,7 @@ export const cdpInteractionMetricsEnabled: Getter<boolean> = createNativeFlagGet
 /**
  * Use a C++ implementation of Native Animated instead of the platform implementation.
  */
-export const cxxNativeAnimatedEnabled: Getter<boolean> = createNativeFlagGetter('cxxNativeAnimatedEnabled', true);
+export const cxxNativeAnimatedEnabled: Getter<boolean> = createNativeFlagGetter('cxxNativeAnimatedEnabled', false);
 /**
  * When enabled, sets the default overflow style for Text components to hidden instead of visible.
  */
@@ -263,6 +259,10 @@ export const enableAccessibilityOrder: Getter<boolean> = createNativeFlagGetter(
  * When enabled, Android will accumulate updates in rawProps to reduce the number of mounting instructions for cascading re-renders.
  */
 export const enableAccumulatedUpdatesInRawPropsAndroid: Getter<boolean> = createNativeFlagGetter('enableAccumulatedUpdatesInRawPropsAndroid', false);
+/**
+ * When enabled, Android Text measurement and rendering respects the system Bold text accessibility setting via `Configuration.fontWeightAdjustment`.
+ */
+export const enableAndroidFontWeightAdjustment: Getter<boolean> = createNativeFlagGetter('enableAndroidFontWeightAdjustment', true);
 /**
  * Enables various optimizations throughout the path of measuring text on Android.
  */
@@ -311,6 +311,10 @@ export const enableFlexboxAutoMinSizeInStrictMode: Getter<boolean> = createNativ
  * Enables font scale changes updating layout for measurable nodes.
  */
 export const enableFontScaleChangesUpdatingLayout: Getter<boolean> = createNativeFlagGetter('enableFontScaleChangesUpdatingLayout', true);
+/**
+ * Adjusts iOS Text drawing frames for compressed explicit line heights.
+ */
+export const enableIOSCompressedTextFrameAdjustment: Getter<boolean> = createNativeFlagGetter('enableIOSCompressedTextFrameAdjustment', false);
 /**
  * Applies base offset for each line of text separately on iOS.
  */

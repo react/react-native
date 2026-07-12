@@ -201,7 +201,15 @@ jobs:
   post_publish:
     runs-on: ubuntu-latest
     needs: [determine_mode, publish_react_native]
-    if: needs.determine_mode.outputs.mode == 'release'
+    # Use always() so this job still runs in release mode even though some
+    # upstream jobs (e.g. build_android) are skipped and would otherwise
+    # poison the implicit success() gate. The explicit result checks below
+    # handle the real gating: only run for a successful release publish.
+    if: |
+      always() &&
+      needs.determine_mode.result == 'success' &&
+      needs.publish_react_native.result == 'success' &&
+      needs.determine_mode.outputs.mode == 'release'
     env:
       REACT_NATIVE_BOT_GITHUB_TOKEN: ${{ secrets.REACT_NATIVE_BOT_GITHUB_TOKEN }}
     steps:
@@ -256,19 +264,38 @@ jobs:
   # ─── Release-only: changelog, podfile bump, draft release ────────
   generate_changelog:
     needs: [determine_mode, publish_react_native]
-    if: needs.determine_mode.outputs.mode == 'release'
+    # always() + explicit result checks: run for a successful release publish
+    # even when skipped upstream jobs would trip the implicit success() gate.
+    if: |
+      always() &&
+      needs.determine_mode.result == 'success' &&
+      needs.publish_react_native.result == 'success' &&
+      needs.determine_mode.outputs.mode == 'release'
     uses: ./.github/workflows/generate-changelog.yml
     secrets: inherit
 
   bump_podfile_lock:
     needs: [determine_mode, publish_react_native]
-    if: needs.determine_mode.outputs.mode == 'release'
+    # always() + explicit result checks: run for a successful release publish
+    # even when skipped upstream jobs would trip the implicit success() gate.
+    if: |
+      always() &&
+      needs.determine_mode.result == 'success' &&
+      needs.publish_react_native.result == 'success' &&
+      needs.determine_mode.outputs.mode == 'release'
     uses: ./.github/workflows/bump-podfile-lock.yml
     secrets: inherit
 
   create_draft_release:
     needs: [determine_mode, generate_changelog, set_hermes_version]
-    if: needs.determine_mode.outputs.mode == 'release'
+    # always() + explicit result checks: run for a successful release even when
+    # skipped upstream jobs would trip the implicit success() gate.
+    if: |
+      always() &&
+      needs.determine_mode.result == 'success' &&
+      needs.generate_changelog.result == 'success' &&
+      needs.set_hermes_version.result == 'success' &&
+      needs.determine_mode.outputs.mode == 'release'
     uses: ./.github/workflows/create-draft-release.yml
     secrets: inherit
     with:

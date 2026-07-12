@@ -7,13 +7,22 @@
 
 package com.facebook.react.views.text
 
+import android.content.Context
 import android.content.res.AssetManager
+import android.content.res.Configuration
 import android.graphics.Typeface
+import android.os.Build
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.common.ReactConstants
 import com.facebook.react.common.assets.ReactFontManager
+import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
+import kotlin.math.max
+import kotlin.math.min
 
 public object ReactTypefaceUtils {
+
+  private const val FONT_WEIGHT_MIN = 1
+  private const val FONT_WEIGHT_MAX = 1000
 
   @JvmStatic
   public fun parseFontWeight(fontWeightString: String?): Int =
@@ -109,5 +118,37 @@ public object ReactTypefaceUtils {
     } else {
       ReactFontManager.getInstance().getTypeface(fontFamilyName, typefaceStyle, assetManager)
     }
+  }
+
+  @JvmStatic
+  public fun getFontWeightAdjustment(context: Context): Int =
+      if (
+          Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+              ReactNativeFeatureFlags.enableAndroidFontWeightAdjustment()
+      ) {
+        context.resources.configuration.fontWeightAdjustment
+      } else {
+        0
+      }
+
+  @JvmStatic
+  public fun applyFontWeightAdjustment(
+      typeface: Typeface?,
+      fontWeightAdjustment: Int,
+  ): Typeface? {
+    if (
+        Build.VERSION.SDK_INT < Build.VERSION_CODES.S ||
+            fontWeightAdjustment == 0 ||
+            fontWeightAdjustment == Configuration.FONT_WEIGHT_ADJUSTMENT_UNDEFINED
+    ) {
+      return typeface
+    }
+
+    val baseTypeface = typeface ?: Typeface.DEFAULT
+    val adjustedWeight =
+        min(max(baseTypeface.weight + fontWeightAdjustment, FONT_WEIGHT_MIN), FONT_WEIGHT_MAX)
+    val italic = baseTypeface.style and Typeface.ITALIC != 0
+
+    return Typeface.create(baseTypeface, adjustedWeight, italic)
   }
 }

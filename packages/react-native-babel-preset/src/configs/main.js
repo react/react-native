@@ -45,7 +45,7 @@ function isFirstParty(fileName) {
 // getPreset, which is otherwise cached based on `options`. This must be pure,
 // and should be cheap.
 function getTransformProfile(caller) {
-  return caller?.unstable_transformProfile ?? 'default';
+  return caller?.unstable_transformProfile ?? 'hermes-stable';
 }
 
 // use `this.foo = bar` instead of `this.defineProperty('foo', ...)`

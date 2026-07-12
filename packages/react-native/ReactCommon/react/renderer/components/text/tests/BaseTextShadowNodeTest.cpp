@@ -9,6 +9,8 @@
 #include <react/renderer/element/ComponentBuilder.h>
 
 #include <gtest/gtest.h>
+#include <react/renderer/attributedstring/conversions.h>
+#include <react/renderer/core/RawValue.h>
 #include <react/renderer/element/Element.h>
 #include <react/renderer/element/testUtils.h>
 
@@ -22,7 +24,20 @@ Element<RawTextShadowNode> rawTextElement(const char* text) {
   return Element<RawTextShadowNode>().props(rawTextProps);
 }
 
+std::string roundTripTextAlignment(const char* textAlignment) {
+  ContextContainer contextContainer{};
+  PropsParserContext parserContext{-1, contextContainer};
+  TextAlignment result = TextAlignment::Natural;
+  fromRawValue(parserContext, RawValue{folly::dynamic{textAlignment}}, result);
+  return toString(result);
+}
+
 } // namespace
+
+TEST(BaseTextShadowNodeTest, textAlignmentStartAndEndRoundTrip) {
+  EXPECT_EQ(roundTripTextAlignment("start"), "start");
+  EXPECT_EQ(roundTripTextAlignment("end"), "end");
+}
 
 TEST(BaseTextShadowNodeTest, fragmentsWithDifferentAttributes) {
   ContextContainer contextContainer{};

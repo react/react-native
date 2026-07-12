@@ -15,7 +15,11 @@ import NativeDevSettings from '../NativeModules/specs/NativeDevSettings';
 import Platform from '../Utilities/Platform';
 
 /**
- * The DevSettings module exposes methods for customizing settings for developers in development.
+ * The `DevSettings` module exposes methods for customizing settings for
+ * developers in development mode. This module is a no-op in production
+ * builds.
+ *
+ * @see https://reactnative.dev/docs/devsettings
  */
 let DevSettings: {
   /**
@@ -31,6 +35,9 @@ let DevSettings: {
    * @param reason
    */
   reload(reason?: string): void,
+  /**
+   * Notify the native side that a Fast Refresh has occurred.
+   */
   onFastRefresh(): void,
 } = {
   addMenuItem(title: string, handler: () => unknown): void {},

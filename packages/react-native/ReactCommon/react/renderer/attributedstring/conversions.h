@@ -629,8 +629,12 @@ inline void fromRawValue(const PropsParserContext &context, const RawValue &valu
   react_native_expect(value.hasType<std::string>());
   if (value.hasType<std::string>()) {
     auto string = (std::string)value;
-    if (string == "auto" || string == "start") {
+    if (string == "auto") {
       result = TextAlignment::Natural;
+    } else if (string == "start") {
+      result = TextAlignment::Start;
+    } else if (string == "end") {
+      result = TextAlignment::End;
     } else if (string == "left") {
       result = TextAlignment::Left;
     } else if (string == "center") {
@@ -665,6 +669,10 @@ inline std::string toString(const TextAlignment &textAlignment)
       return "right";
     case TextAlignment::Justified:
       return "justified";
+    case TextAlignment::Start:
+      return "start";
+    case TextAlignment::End:
+      return "end";
   }
 
   LOG(ERROR) << "Unsupported TextAlignment value";

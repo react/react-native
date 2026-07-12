@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<d5f36861c60295a0203f939bae3b0b02>>
+ * @generated SignedSource<<e8be340d97ada771fba14742a1c6a154>>
  */
 
 /**
@@ -153,6 +153,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     return ReactNativeFeatureFlagsDefaults::enableAccumulatedUpdatesInRawPropsAndroid();
   }
 
+  bool enableAndroidFontWeightAdjustment() override {
+    auto value = values_["enableAndroidFontWeightAdjustment"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::enableAndroidFontWeightAdjustment();
+  }
+
   bool enableAndroidTextMeasurementOptimizations() override {
     auto value = values_["enableAndroidTextMeasurementOptimizations"];
     if (!value.isNull()) {
@@ -259,6 +268,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::enableFontScaleChangesUpdatingLayout();
+  }
+
+  bool enableIOSCompressedTextFrameAdjustment() override {
+    auto value = values_["enableIOSCompressedTextFrameAdjustment"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::enableIOSCompressedTextFrameAdjustment();
   }
 
   bool enableIOSTextBaselineOffsetPerLine() override {

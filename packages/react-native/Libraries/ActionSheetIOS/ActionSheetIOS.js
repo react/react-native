@@ -38,6 +38,10 @@ export type ShareActionSheetIOSOptions = Readonly<{
   tintColor?: ?number,
   cancelButtonTintColor?: ?number,
   disabledButtonTintColor?: ?number,
+  /**
+   * The activities to exclude from the ActionSheet.
+   * For example: ['com.apple.UIKit.activity.PostToTwitter']
+   */
   excludedActivityTypes?: ?Array<string>,
   userInterfaceStyle?: ?string,
 }>;
@@ -50,9 +54,10 @@ export type ShareActionSheetError = Readonly<{
 }>;
 
 /**
- * Display action sheets and share sheets on iOS.
+ * Displays native iOS action sheets and share sheets.
  *
- * See https://reactnative.dev/docs/actionsheetios
+ * @see https://reactnative.dev/docs/actionsheetios
+ * @platform ios
  */
 const ActionSheetIOS = {
   /**
@@ -62,15 +67,13 @@ const ActionSheetIOS = {
    *
    * - `options` (array of strings) - a list of button titles (required)
    * - `cancelButtonIndex` (int) - index of cancel button in `options`
-   * - `destructiveButtonIndex` (int or array of ints) - index or indices of destructive buttons in `options`
+   * - `destructiveButtonIndex` (int or array of ints) - indices of destructive buttons in `options`
    * - `title` (string) - a title to show above the action sheet
    * - `message` (string) - a message to show below the title
    * - `disabledButtonIndices` (array of numbers) - a list of button indices which should be disabled
    *
-   * The 'callback' function takes one parameter, the zero-based index
-   * of the selected item.
-   *
-   * See https://reactnative.dev/docs/actionsheetios#showactionsheetwithoptions
+   * The `callback` function receives the zero-based index of the selected
+   * item.
    */
   showActionSheetWithOptions(
     options: ActionSheetIOSOptions,
@@ -136,27 +139,19 @@ const ActionSheetIOS = {
   },
 
   /**
-   * Display the iOS share sheet. The `options` object should contain
-   * one or both of `message` and `url` and can additionally have
-   * a `subject` or `excludedActivityTypes`:
+   * Display the iOS share sheet. The `options` object should contain one or
+   * both of `message` and `url` and can additionally have a `subject` or
+   * `excludedActivityTypes`:
    *
    * - `url` (string) - a URL to share
    * - `message` (string) - a message to share
    * - `subject` (string) - a subject for the message
-   * - `excludedActivityTypes` (array) - the activities to exclude from
-   *   the ActionSheet
+   * - `excludedActivityTypes` (array) - the activities to exclude from the ActionSheet
    * - `tintColor` (color) - tint color of the buttons
    *
-   * The 'failureCallback' function takes one parameter, an error object.
-   * The only property defined on this object is an optional `stack` property
-   * of type `string`.
-   *
-   * The 'successCallback' function takes two parameters:
-   *
-   * - a boolean value signifying success or failure
-   * - a string that, in the case of success, indicates the method of sharing
-   *
-   * See https://reactnative.dev/docs/actionsheetios#showshareactionsheetwithoptions
+   * The `failureCallback` function receives an error object. The
+   * `successCallback` function receives a boolean indicating success and a
+   * string describing the sharing method used.
    */
   showShareActionSheetWithOptions(
     options: ShareActionSheetIOSOptions,
@@ -186,8 +181,8 @@ const ActionSheetIOS = {
   },
 
   /**
-   * Dismisses the most upper iOS action sheet presented, if no action sheet is
-   * present a warning is displayed.
+   * Dismiss the most upper action sheet currently presented. Displays a
+   * warning if no action sheet is present.
    */
   dismissActionSheet: () => {
     invariant(RCTActionSheetManager, "ActionSheetManager doesn't exist");

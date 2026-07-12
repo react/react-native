@@ -113,14 +113,6 @@ public class ReactHostImpl(
               applicationContext = context.applicationContext,
               reactInstanceManagerHelper = reactHostImplDevHelper,
               packagerPathForJSBundleName = reactHostDelegate.jsMainModulePath,
-              enableOnCreate = true,
-              redBoxHandler = null,
-              devBundleDownloadListener = null,
-              minNumShakes = 2,
-              customPackagerCommandHandlers = null,
-              surfaceDelegateFactory = null,
-              devLoadingViewManager = null,
-              pausedInDebuggerOverlayManager = null,
               useDevSupport = useDevSupport,
           )
           .also { devSupportManager ->
@@ -156,12 +148,14 @@ public class ReactHostImpl(
 
   @Volatile private var hostInvalidated = false
 
+  @JvmOverloads
   public constructor(
       context: Context,
       delegate: ReactHostDelegate,
       componentFactory: ComponentFactory,
       allowPackagerServerAccess: Boolean,
       useDevSupport: Boolean,
+      devSupportManagerFactory: DevSupportManagerFactory? = null,
   ) : this(
       context,
       delegate,
@@ -170,6 +164,7 @@ public class ReactHostImpl(
       Task.UI_THREAD_EXECUTOR,
       allowPackagerServerAccess,
       useDevSupport,
+      devSupportManagerFactory,
   )
 
   public override val lifecycleState: LifecycleState

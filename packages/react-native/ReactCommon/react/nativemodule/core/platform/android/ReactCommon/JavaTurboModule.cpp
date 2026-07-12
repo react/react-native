@@ -8,11 +8,11 @@
 #include <memory>
 #include <string>
 
-#include <cxxreact/MoveWrapper.h>
 #include <cxxreact/TraceSection.h>
 #include <fbjni/fbjni.h>
 #include <glog/logging.h>
 #include <jsi/jsi.h>
+#include <react/utils/MoveWrapper.h>
 
 #include <ReactCommon/TurboModule.h>
 #include <ReactCommon/TurboModulePerfLogger.h>

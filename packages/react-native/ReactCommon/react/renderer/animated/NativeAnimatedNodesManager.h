@@ -298,7 +298,10 @@ class NativeAnimatedNodesManager : public std::enable_shared_from_this<NativeAni
   bool warnedAboutGraphTraversal_ = false;
 #endif
 
-  CallbackId animationBackendCallbackId_{0};
+  // Protects the register/publish and exchange/stop lifecycle for the shared
+  // AnimationBackend callback.
+  std::mutex animationBackendCallbackMutex_;
+  std::optional<CallbackId> animationBackendCallbackId_;
 
   friend class ColorAnimatedNode;
   friend class AnimationDriver;

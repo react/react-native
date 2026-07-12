@@ -9,20 +9,21 @@
  */
 
 import type {Config} from '@react-native-community/cli-types';
-import type {ConfigT, InputConfigT, YargArguments} from 'metro-config';
+import type {MetroConfig} from 'metro';
 
 import {CLIError} from './errors';
 import {reactNativePlatformResolver} from './metroPlatformResolver';
-import {loadConfig, resolveConfig} from 'metro-config';
-import path from 'path';
+import {loadConfig, resolveConfig} from 'metro';
 
 const debug = require('debug')('ReactNative:CommunityCliPlugin');
+
+type HydratedMetroConfig = Awaited<ReturnType<typeof loadConfig>>;
+type ArgvInput = Parameters<typeof loadConfig>[0];
 
 export type {Config};
 
 export type ConfigLoadingContext = Readonly<{
   root: Config['root'],
-  reactNativePath: Config['reactNativePath'],
   platforms: Config['platforms'],
   ...
 }>;
@@ -32,12 +33,12 @@ export type ConfigLoadingContext = Readonly<{
  */
 function getCommunityCliDefaultConfig(
   ctx: ConfigLoadingContext,
-  config: ConfigT,
-): InputConfigT {
+  config: HydratedMetroConfig,
+): MetroConfig {
   const outOfTreePlatforms = Object.keys(ctx.platforms).filter(
     platform => ctx.platforms[platform].npmPackageName,
   );
-  const resolver: Partial<{...ConfigT['resolver']}> = {
+  const resolver: Partial<{...HydratedMetroConfig['resolver']}> = {
     platforms: [...Object.keys(ctx.platforms), 'native'],
   };
 
@@ -57,16 +58,15 @@ function getCommunityCliDefaultConfig(
   return {
     resolver,
     serializer: {
-      // We can include multiple copies of InitializeCore here because metro will
+      // We can include multiple copies of setup-env here because Metro will
       // only add ones that are already part of the bundle
       getModulesRunBeforeMainModule: () => [
-        require.resolve(
-          path.join(ctx.reactNativePath, 'Libraries/Core/InitializeCore'),
-          {paths: [ctx.root]},
-        ),
+        require.resolve('react-native/setup-env', {
+          paths: [ctx.root],
+        }),
         ...outOfTreePlatforms.map(platform =>
           require.resolve(
-            `${ctx.platforms[platform].npmPackageName}/Libraries/Core/InitializeCore`,
+            `${ctx.platforms[platform].npmPackageName}/setup-env`,
             {paths: [ctx.root]},
           ),
         ),
@@ -83,8 +83,8 @@ function getCommunityCliDefaultConfig(
  */
 export default async function loadMetroConfig(
   ctx: ConfigLoadingContext,
-  options: YargArguments = {},
-): Promise<ConfigT> {
+  options: NonNullable<ArgvInput> = {},
+): Promise<HydratedMetroConfig> {
   let RNMetroConfig = null;
   try {
     RNMetroConfig = require('@react-native/metro-config');

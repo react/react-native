@@ -72,7 +72,7 @@ const definitions: FeatureFlagDefinitions = {
       ossReleaseStage: 'none',
     },
     cxxNativeAnimatedEnabled: {
-      defaultValue: true,
+      defaultValue: false,
       metadata: {
         dateAdded: '2025-03-14',
         description:
@@ -80,7 +80,7 @@ const definitions: FeatureFlagDefinitions = {
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
-      ossReleaseStage: 'experimental',
+      ossReleaseStage: 'canary',
     },
     defaultTextToOverflowHidden: {
       defaultValue: true,
@@ -175,6 +175,17 @@ const definitions: FeatureFlagDefinitions = {
         dateAdded: '2024-12-10',
         description:
           'When enabled, Android will accumulate updates in rawProps to reduce the number of mounting instructions for cascading re-renders.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
+    enableAndroidFontWeightAdjustment: {
+      defaultValue: true,
+      metadata: {
+        dateAdded: '2026-06-29',
+        description:
+          'When enabled, Android Text measurement and rendering respects the system Bold text accessibility setting via `Configuration.fontWeightAdjustment`.',
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
@@ -300,6 +311,17 @@ const definitions: FeatureFlagDefinitions = {
         dateAdded: '2025-04-07',
         description:
           'Enables font scale changes updating layout for measurable nodes.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
+    enableIOSCompressedTextFrameAdjustment: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-07-02',
+        description:
+          'Adjusts iOS Text drawing frames for compressed explicit line heights.',
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
@@ -970,17 +992,6 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
-    animatedShouldDebounceQueueFlush: {
-      defaultValue: true,
-      metadata: {
-        dateAdded: '2024-02-05',
-        description:
-          'Enables an experimental flush-queue debouncing in Animated.js.',
-        expectedReleaseValue: true,
-        purpose: 'experimentation',
-      },
-      ossReleaseStage: 'none',
-    },
     animatedShouldSyncValueBeforeStartCallback: {
       defaultValue: true,
       metadata: {
@@ -992,23 +1003,23 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
-    animatedShouldUseSingleOp: {
-      defaultValue: true,
-      metadata: {
-        dateAdded: '2024-02-05',
-        description:
-          'Enables an experimental mega-operation for Animated.js that replaces many calls to native with a single call into native, to reduce JSI/JNI traffic.',
-        expectedReleaseValue: true,
-        purpose: 'experimentation',
-      },
-      ossReleaseStage: 'none',
-    },
     deferFlatListFocusChangeRenderUpdate: {
       defaultValue: false,
       metadata: {
         dateAdded: '2025-07-02',
         description:
           'Use the deferred cell render update mechanism for focus change in FlatList.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
+    enableDirectEventsInEventTarget: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-07-06',
+        description:
+          'When enabled (together with enableNativeEventTargetEventDispatching), direct events (those that neither bubble nor capture, such as onLayout) are dispatched only to the target node via a fast path that skips construction and traversal of the ancestor event path.',
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },

@@ -18,15 +18,29 @@ const subscriptions: Array<{
   ...
 }> = [];
 
+/**
+ * Wrapper around `NSUserDefaults`, a persistent key-value store available on
+ * iOS.
+ *
+ * @see https://reactnative.dev/docs/settings
+ * @platform ios
+ */
 const Settings = {
   _settings: (NativeSettingsManager &&
     NativeSettingsManager.getConstants().settings) as any,
 
+  /**
+   * Get the current value for the given key.
+   */
   get(key: string): unknown {
     // $FlowFixMe[object-this-reference]
     return this._settings[key];
   },
 
+  /**
+   * Set one or more values by merging the provided object into the current
+   * settings.
+   */
   set(settings: Object) {
     // $FlowFixMe[object-this-reference]
     // $FlowFixMe[unsafe-object-assign]
@@ -34,6 +48,11 @@ const Settings = {
     NativeSettingsManager.setValues(settings);
   },
 
+  /**
+   * Subscribe to changes for the specified keys. The callback is invoked
+   * whenever a watched key's value changes. Returns a `watchId` that can be
+   * passed to `clearWatch` to unsubscribe.
+   */
   watchKeys(keys: string | Array<string>, callback: Function): number {
     if (typeof keys === 'string') {
       keys = [keys];
@@ -49,6 +68,9 @@ const Settings = {
     return sid;
   },
 
+  /**
+   * Unsubscribe a watcher previously registered with `watchKeys`.
+   */
   clearWatch(watchId: number) {
     if (watchId < subscriptions.length) {
       subscriptions[watchId] = {keys: [], callback: null};

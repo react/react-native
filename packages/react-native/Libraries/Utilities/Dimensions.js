@@ -30,18 +30,23 @@ const eventEmitter = new EventEmitter<{
 let dimensionsInitialized = false;
 let dimensions: DimensionsPayload;
 
+/**
+ * Provides the application window's width and height. Prefer
+ * `useWindowDimensions` in React components.
+ *
+ * @see https://reactnative.dev/docs/dimensions
+ */
 class Dimensions {
   /**
+   * Returns the current dimensions for `'window'` or `'screen'`. On Android,
+   * `'window'` dimensions exclude the status bar and navigation bar.
+   *
    * NOTE: `useWindowDimensions` is the preferred API for React components.
    *
-   * Initial dimensions are set before `runApplication` is called so they should
-   * be available before any other require's are run, but may be updated later.
-   *
-   * Note: Although dimensions are available immediately, they may change (e.g
-   * due to device rotation) so any rendering logic or styles that depend on
-   * these constants should try to call this function on every render, rather
-   * than caching the value (for example, using inline styles rather than
-   * setting a value in a `StyleSheet`).
+   * Although dimensions are available immediately, they may change (e.g. due to
+   * device rotation) so any rendering logic or styles that depend on these
+   * constants should try to call this function on every render, rather than
+   * caching the value.
    *
    * Example: `const {height, width} = Dimensions.get('window');`
    *
@@ -98,10 +103,11 @@ class Dimensions {
   /**
    * Add an event handler. Supported events:
    *
-   * - `change`: Fires when a property within the `Dimensions` object changes. The argument
-   *   to the event handler is an object with `window` and `screen` properties whose values
-   *   are the same as the return values of `Dimensions.get('window')` and
-   *   `Dimensions.get('screen')`, respectively.
+   * - `change`: Fires when a property within the `Dimensions` object changes,
+   *   such as on device rotation or foldable device state changes. The argument
+   *   to the event handler is a `DimensionsPayload` object with `window` and
+   *   `screen` properties whose values are the same as the return values of
+   *   `Dimensions.get('window')` and `Dimensions.get('screen')`, respectively.
    */
   static addEventListener(
     type: 'change',

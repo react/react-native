@@ -18,8 +18,7 @@ import * as version from '../../utils/version';
 import attachKeyHandlers from './attachKeyHandlers';
 import {createDevServerMiddleware} from './middleware';
 import {createDevMiddleware} from '@react-native/dev-middleware';
-import Metro from 'metro';
-import {Terminal} from 'metro-core';
+import * as Metro from 'metro';
 import path from 'path';
 import url from 'url';
 import {styleText} from 'util';
@@ -104,7 +103,7 @@ async function runServer(
   }
 
   let reportEvent: (event: TerminalReportableEvent) => void;
-  const terminal = new Terminal(process.stdout);
+  const terminal = new Metro.Terminal(process.stdout);
   const ReporterImpl = getReporterImpl(args.customLogReporterPath);
   const terminalReporter = new ReporterImpl(terminal);
 

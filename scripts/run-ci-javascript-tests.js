@@ -81,7 +81,7 @@ try {
   );
 
   describe('Test: TypeScript tests');
-  execAndLog(`${YARN_BINARY} run test-typescript`);
+  execAndLog(`${YARN_BINARY} run test-typescript-legacy`);
 } catch (e) {
   if (e instanceof ExecError) {
     console.error(e.message);

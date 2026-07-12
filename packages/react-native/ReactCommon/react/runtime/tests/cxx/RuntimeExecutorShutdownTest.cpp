@@ -73,6 +73,12 @@ class RuntimeExecutorShutdownTest : public ::testing::Test {
         messageQueueThread_,
         timerManager,
         std::move(onJsError));
+
+    // ReactInstance construction defers registering the RuntimeScheduler as the
+    // Hermes IEventLoopControl onto the runtime executor, which enqueues a
+    // callback on messageQueueThread_. Drain it so each shutdown scenario
+    // starts from an empty queue.
+    messageQueueThread_->tick();
   }
 
   std::shared_ptr<MockMessageQueueThread> messageQueueThread_;

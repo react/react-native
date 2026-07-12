@@ -9,6 +9,7 @@
 
 #include <limits>
 #include <optional>
+#include <string>
 
 #include <folly/dynamic.h>
 #include <jsi/JSIDynamic.h>
@@ -91,6 +92,49 @@ class RawProps final {
    * Returns `nullptr` if a prop with the given name does not exist.
    */
   const RawValue *at(const char *name) const noexcept;
+
+  // Deprecated: Use at(name) instead. This overload exists for backwards
+  // compatibility with callers that pass prefix/suffix separately.
+  const RawValue *at(const char *name, const char *prefix, const char *suffix) const noexcept;
+
+  /*
+   * Iterates the underlying source object and invokes `fn(name, value)` for
+   * each entry, in source order. Skips parsing — does NOT require a prior
+   * `parse(parser)` call. For `Mode::JSI` this walks the JSI object in-place
+   * (no `folly::dynamic` materialization). For `Mode::Dynamic` it walks
+   * `dynamic_.items()`. For `Mode::Empty` it is a no-op.
+   *
+   * The callback signature is `void(std::string_view name, const RawValue &value)`.
+   * The view points into storage owned by `forEachItem` for the duration of
+   * the call and is null-terminated (i.e. `name.data()` is a valid C string).
+   */
+  template <typename Fn>
+  void forEachItem(Fn fn) const
+  {
+    switch (mode_) {
+      case Mode::Empty:
+        return;
+      case Mode::JSI: {
+        auto object = value_.asObject(*runtime_);
+        auto names = object.getPropertyNames(*runtime_);
+        auto count = names.size(*runtime_);
+        for (size_t i = 0; i < count; ++i) {
+          auto name = names.getValueAtIndex(*runtime_, i).getString(*runtime_);
+          auto propValue = object.getProperty(*runtime_, name);
+          auto nameUtf8 = name.utf8(*runtime_);
+          fn(std::string_view{nameUtf8}, RawValue{*runtime_, std::move(propValue)});
+        }
+        return;
+      }
+      case Mode::Dynamic:
+        for (const auto &pair : dynamic_.items()) {
+          fn(std::string_view{pair.first.getString()}, RawValue{pair.second});
+        }
+        return;
+      default:
+        return;
+    }
+  }
 
  private:
   friend class RawPropsParser;

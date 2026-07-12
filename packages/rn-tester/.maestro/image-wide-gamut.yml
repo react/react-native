@@ -1,0 +1,50 @@
+appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebook.react.uiapp
+tags:
+  - android-only
+---
+# Android-only: alpha transparency + sRGB vs Display-P3 wide-gamut. Color
+# fidelity needs a screenshot, so we assert load status only. Flaky on the iOS
+# E2E job, so guarded to Android; iOS skips this flow (empty=pass).
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - runFlow: ./helpers/launch-app-and-search.yml
+      - inputText:
+          text: 'Image'
+      - assertVisible:
+          id: 'Image'
+      - tapOn:
+          id: 'Image'
+      - assertVisible:
+          id: 'example_search'
+      - tapOn:
+          id: 'example_search'
+      - inputText: 'Wide Gamut'
+      - hideKeyboard
+      - scrollUntilVisible:
+          element:
+            id: 'image-wide-gamut'
+          direction: DOWN
+          speed: 40
+          timeout: 10000
+      - extendedWaitUntil:
+          visible: 'alpha: loaded'
+          timeout: 15000
+      - scrollUntilVisible:
+          element: 'sRGB: loaded'
+          direction: DOWN
+          speed: 40
+          timeout: 20000
+      # External URL; accept loaded or error.
+      - scrollUntilVisible:
+          element: 'P3: (loaded|error)'
+          direction: DOWN
+          speed: 40
+          timeout: 20000
+      # Change this to takeScreenshot when you want to update the screenshot
+      - assertScreenshot:
+          path: screenshots/image-wide-gamut-${maestro.platform}
+          cropOn:
+            id: 'image-wide-gamut'
+          thresholdPercentage: 95

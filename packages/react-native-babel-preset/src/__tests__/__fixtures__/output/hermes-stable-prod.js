@@ -14,7 +14,7 @@
  *
  * Transform configuration:
  *   - Hermes stable transform profile in production mode
- *   - Options: {"dev":false,"unstable_transformProfile":"hermes-stable"}
+ *   - Options: {"dev":false}
  */
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");

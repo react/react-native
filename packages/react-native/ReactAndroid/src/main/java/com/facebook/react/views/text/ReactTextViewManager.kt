@@ -43,6 +43,7 @@ import com.facebook.react.uimanager.style.BorderRadiusProp
 import com.facebook.react.uimanager.style.BorderStyle.Companion.fromString
 import com.facebook.react.uimanager.style.LogicalEdge
 import com.facebook.react.views.text.DefaultStyleValuesUtil.getDefaultTextColorHighlight
+import com.facebook.react.views.text.ReactTypefaceUtils.getFontWeightAdjustment
 import java.util.HashMap
 
 /** View manager for `<Text>` nodes. */
@@ -158,6 +159,7 @@ public constructor(
     val spanned: Spannable =
         TextLayoutManager.getOrCreateSpannableForText(
             view.context.assets,
+            getFontWeightAdjustment(view.context),
             attributedString,
             reactTextViewManagerCallback,
             TextEffectRegistry.current,

@@ -13,13 +13,13 @@ import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
 import type {HostInstance} from 'react-native';
 
-import ensureInstance from '../../../src/private/__tests__/utilities/ensureInstance';
 import * as ReactNativeFeatureFlags from '../../../src/private/featureflags/ReactNativeFeatureFlags';
 import * as Fantom from '@react-native/fantom';
+import nullthrows from 'nullthrows';
+import * as React from 'react';
 import {createRef} from 'react';
 import {Animated, Easing, View, useAnimatedValue} from 'react-native';
 import {allowStyleProp} from 'react-native/Libraries/Animated/NativeAnimatedAllowlist';
-import ReactNativeElement from 'react-native/src/private/webapis/dom/nodes/ReactNativeElement';
 
 // Deferred start outputs the initial value on the first animation frame and
 // re-anchors timing on the second. This delays animation progress by one
@@ -54,7 +54,7 @@ test('moving box by 100 points', () => {
     root.render(<MyApp />);
   });
 
-  const viewElement = ensureInstance(viewRef.current, ReactNativeElement);
+  const viewElement = nullthrows(viewRef.current);
 
   expect(viewElement.getBoundingClientRect().x).toBe(0);
 
@@ -119,7 +119,7 @@ test('native-driven interpolation honors custom easing', () => {
     root.render(<MyApp />);
   });
 
-  const viewElement = ensureInstance(viewRef.current, ReactNativeElement);
+  const viewElement = nullthrows(viewRef.current);
 
   Fantom.runTask(() => {
     Animated.timing(_progress, {
@@ -179,7 +179,7 @@ test('native-driven interpolation preserves easing overshoot under clamp', () =>
     root.render(<MyApp />);
   });
 
-  const viewElement = ensureInstance(viewRef.current, ReactNativeElement);
+  const viewElement = nullthrows(viewRef.current);
 
   Fantom.runTask(() => {
     Animated.timing(_progress, {
@@ -231,7 +231,7 @@ function startTimingAnimationAndGetTranslateXAfterFirstFrame(): number {
     root.render(<MyApp />);
   });
 
-  const viewElement = ensureInstance(viewRef.current, ReactNativeElement);
+  const viewElement = nullthrows(viewRef.current);
 
   Fantom.runTask(() => {
     Animated.timing(_translateX, {
@@ -326,11 +326,8 @@ test('animation driven by onScroll event', () => {
     root.render(<PressableWithNativeDriver />);
   });
 
-  const scrollViewelement = ensureInstance(
-    scrollViewRef.current,
-    ReactNativeElement,
-  );
-  const viewElement = ensureInstance(viewRef.current, ReactNativeElement);
+  const scrollViewelement = nullthrows(scrollViewRef.current);
+  const viewElement = nullthrows(viewRef.current);
 
   Fantom.scrollTo(scrollViewelement, {
     x: 0,
@@ -397,10 +394,7 @@ test('animation driven by onScroll event when animated view is unmounted', () =>
     root.render(<PressableWithNativeDriver mountAnimatedView={false} />);
   });
 
-  const scrollViewelement = ensureInstance(
-    scrollViewRef.current,
-    ReactNativeElement,
-  );
+  const scrollViewelement = nullthrows(scrollViewRef.current);
 
   Fantom.scrollTo(scrollViewelement, {
     x: 0,
@@ -438,7 +432,7 @@ test('animated opacity', () => {
     root.render(<MyApp />);
   });
 
-  const viewElement = ensureInstance(viewRef.current, ReactNativeElement);
+  const viewElement = nullthrows(viewRef.current);
 
   expect(viewElement.getBoundingClientRect().x).toBe(0);
 
@@ -492,7 +486,7 @@ test('moving box by 50 points with offset 10', () => {
     root.render(<MyApp />);
   });
 
-  const viewElement = ensureInstance(viewRef.current, ReactNativeElement);
+  const viewElement = nullthrows(viewRef.current);
 
   expect(viewElement.getBoundingClientRect().x).toBe(0);
 
@@ -592,11 +586,8 @@ describe('Value.flattenOffset', () => {
       _onScroll.addListener(fn);
     });
 
-    const scrollViewelement = ensureInstance(
-      scrollViewRef.current,
-      ReactNativeElement,
-    );
-    const viewElement = ensureInstance(viewRef.current, ReactNativeElement);
+    const scrollViewelement = nullthrows(scrollViewRef.current);
+    const viewElement = nullthrows(viewRef.current);
 
     Fantom.scrollTo(scrollViewelement, {
       x: 0,
@@ -676,11 +667,8 @@ describe('Value.extractOffset', () => {
       _onScroll.addListener(fn);
     });
 
-    const scrollViewelement = ensureInstance(
-      scrollViewRef.current,
-      ReactNativeElement,
-    );
-    const viewElement = ensureInstance(viewRef.current, ReactNativeElement);
+    const scrollViewelement = nullthrows(scrollViewRef.current);
+    const viewElement = nullthrows(viewRef.current);
 
     Fantom.scrollTo(scrollViewelement, {
       x: 0,
@@ -751,7 +739,7 @@ test('animate layout props', () => {
     root.render(<MyApp />);
   });
 
-  const viewElement = ensureInstance(viewRef.current, ReactNativeElement);
+  const viewElement = nullthrows(viewRef.current);
 
   Fantom.runTask(() => {
     _heightAnimation = Animated.timing(_animatedHeight, {
@@ -819,7 +807,7 @@ test('AnimatedValue.interpolate', () => {
     root.render(<MyApp outputRangeX={1} />);
   });
 
-  const viewElement = ensureInstance(viewRef.current, ReactNativeElement);
+  const viewElement = nullthrows(viewRef.current);
 
   expect(_valueX?.__getValue()).toBe(0.5);
   expect(_interpolatedValueX?.__getValue()).toBe(50);
@@ -891,7 +879,7 @@ test('Animated.sequence', () => {
     root.render(<MyApp />);
   });
 
-  const element = ensureInstance(elementRef.current, ReactNativeElement);
+  const element = nullthrows(elementRef.current);
 
   expect(element.getBoundingClientRect().y).toBe(0);
 

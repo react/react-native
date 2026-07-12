@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<671da9c60f7c7331ece553327ee3ab33>>
+ * @generated SignedSource<<d2a114d06852632438ba743805e49f60>>
  */
 
 /**
@@ -111,6 +111,12 @@ class ReactNativeFeatureFlagsJavaProvider
     return method(javaProvider_);
   }
 
+  bool enableAndroidFontWeightAdjustment() override {
+    static const auto method =
+        getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enableAndroidFontWeightAdjustment");
+    return method(javaProvider_);
+  }
+
   bool enableAndroidTextMeasurementOptimizations() override {
     static const auto method =
         getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enableAndroidTextMeasurementOptimizations");
@@ -180,6 +186,12 @@ class ReactNativeFeatureFlagsJavaProvider
   bool enableFontScaleChangesUpdatingLayout() override {
     static const auto method =
         getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enableFontScaleChangesUpdatingLayout");
+    return method(javaProvider_);
+  }
+
+  bool enableIOSCompressedTextFrameAdjustment() override {
+    static const auto method =
+        getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enableIOSCompressedTextFrameAdjustment");
     return method(javaProvider_);
   }
 
@@ -607,6 +619,11 @@ bool JReactNativeFeatureFlagsCxxInterop::enableAccumulatedUpdatesInRawPropsAndro
   return ReactNativeFeatureFlags::enableAccumulatedUpdatesInRawPropsAndroid();
 }
 
+bool JReactNativeFeatureFlagsCxxInterop::enableAndroidFontWeightAdjustment(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
+  return ReactNativeFeatureFlags::enableAndroidFontWeightAdjustment();
+}
+
 bool JReactNativeFeatureFlagsCxxInterop::enableAndroidTextMeasurementOptimizations(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
   return ReactNativeFeatureFlags::enableAndroidTextMeasurementOptimizations();
@@ -665,6 +682,11 @@ bool JReactNativeFeatureFlagsCxxInterop::enableFlexboxAutoMinSizeInStrictMode(
 bool JReactNativeFeatureFlagsCxxInterop::enableFontScaleChangesUpdatingLayout(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
   return ReactNativeFeatureFlags::enableFontScaleChangesUpdatingLayout();
+}
+
+bool JReactNativeFeatureFlagsCxxInterop::enableIOSCompressedTextFrameAdjustment(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
+  return ReactNativeFeatureFlags::enableIOSCompressedTextFrameAdjustment();
 }
 
 bool JReactNativeFeatureFlagsCxxInterop::enableIOSTextBaselineOffsetPerLine(
@@ -1035,6 +1057,9 @@ void JReactNativeFeatureFlagsCxxInterop::registerNatives() {
         "enableAccumulatedUpdatesInRawPropsAndroid",
         JReactNativeFeatureFlagsCxxInterop::enableAccumulatedUpdatesInRawPropsAndroid),
       makeNativeMethod(
+        "enableAndroidFontWeightAdjustment",
+        JReactNativeFeatureFlagsCxxInterop::enableAndroidFontWeightAdjustment),
+      makeNativeMethod(
         "enableAndroidTextMeasurementOptimizations",
         JReactNativeFeatureFlagsCxxInterop::enableAndroidTextMeasurementOptimizations),
       makeNativeMethod(
@@ -1070,6 +1095,9 @@ void JReactNativeFeatureFlagsCxxInterop::registerNatives() {
       makeNativeMethod(
         "enableFontScaleChangesUpdatingLayout",
         JReactNativeFeatureFlagsCxxInterop::enableFontScaleChangesUpdatingLayout),
+      makeNativeMethod(
+        "enableIOSCompressedTextFrameAdjustment",
+        JReactNativeFeatureFlagsCxxInterop::enableIOSCompressedTextFrameAdjustment),
       makeNativeMethod(
         "enableIOSTextBaselineOffsetPerLine",
         JReactNativeFeatureFlagsCxxInterop::enableIOSTextBaselineOffsetPerLine),

@@ -26,6 +26,11 @@ module.exports = {
     '.*': './jest/preprocessor.js',
   },
   resolver: './packages/jest-preset/jest/resolver.js',
+  moduleNameMapper: {
+    // `resolver.js` strips `exports`, so alias this subpath to its `src/` impl.
+    '^react-native/setup-env$':
+      '<rootDir>/packages/react-native/src/setup-env.js',
+  },
   setupFiles: ['./packages/jest-preset/jest/local-setup.js'],
   fakeTimers: {
     enableGlobally: true,

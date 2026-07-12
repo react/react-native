@@ -13,13 +13,12 @@ import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
 import type {HostInstance} from 'react-native';
 
-import ensureInstance from '../../../src/private/__tests__/utilities/ensureInstance';
 import * as Fantom from '@react-native/fantom';
+import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {Component, createRef, memo, useEffect, useMemo, useState} from 'react';
 import {Animated, View, useAnimatedValue} from 'react-native';
 import {allowStyleProp} from 'react-native/Libraries/Animated/NativeAnimatedAllowlist';
-import ReactNativeElement from 'react-native/src/private/webapis/dom/nodes/ReactNativeElement';
 
 // marginLeft (and the other margin props) are only on the native animated
 // allowlist when the shared backend is enabled. This test deliberately does NOT
@@ -108,7 +107,7 @@ test('animated opacity', () => {
     root.render(<MyApp />);
   });
 
-  const viewElement = ensureInstance(viewRef.current, ReactNativeElement);
+  const viewElement = nullthrows(viewRef.current);
 
   expect(viewElement.getBoundingClientRect().x).toBe(0);
 
@@ -414,7 +413,7 @@ test('animate non-layout props and rerender', () => {
     root.render(<MyApp />);
   });
 
-  const viewElement = ensureInstance(viewRef.current, ReactNativeElement);
+  const viewElement = nullthrows(viewRef.current);
 
   Fantom.runTask(() => {
     _opacityAnimation = Animated.timing(_animatedOpacity, {

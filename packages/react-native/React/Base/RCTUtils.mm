@@ -12,6 +12,7 @@
 #import <objc/message.h>
 #import <objc/runtime.h>
 #import <zlib.h>
+#import <atomic>
 
 #import <UIKit/UIKit.h>
 
@@ -383,24 +384,26 @@ UIDeviceOrientation RCTDeviceOrientation(void)
 
 CGSize RCTScreenSize(void)
 {
-  static CGSize portraitSize;
-  static dispatch_once_t onceToken;
-  dispatch_once(&onceToken, ^{
+  static std::atomic<CGSize> cachedSize;
+  __block CGSize size = cachedSize.load(std::memory_order_relaxed);
+
+  if (CGSizeEqualToSize(size, CGSizeZero)) {
     RCTUnsafeExecuteOnMainQueueSync(^{
       CGSize screenSize = [UIScreen mainScreen].bounds.size;
-      portraitSize = CGSizeMake(MIN(screenSize.width, screenSize.height), MAX(screenSize.width, screenSize.height));
+      size = CGSizeMake(MIN(screenSize.width, screenSize.height), MAX(screenSize.width, screenSize.height));
+      cachedSize.store(size, std::memory_order_relaxed);
     });
-  });
+  }
 
 #if !TARGET_OS_TV
   if (UIDeviceOrientationIsLandscape(RCTDeviceOrientation())) {
-    return CGSizeMake(portraitSize.height, portraitSize.width);
+    return CGSizeMake(size.height, size.width);
   } else {
-    return CGSizeMake(portraitSize.width, portraitSize.height);
+    return CGSizeMake(size.width, size.height);
   }
 #else
   // tvOS doesn't have device orientation, always return landscape size
-  return CGSizeMake(portraitSize.height, portraitSize.width);
+  return CGSizeMake(size.height, size.width);
 #endif
 }
 

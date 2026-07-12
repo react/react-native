@@ -61,8 +61,15 @@ void FabricUIManagerBinding::driveCxxAnimations() {
   scheduler->animationTick();
 }
 
-void FabricUIManagerBinding::driveAnimationBackend(jdouble frameTimeMs) {
-  animationChoreographer_->onAnimationFrame(AnimationTimestamp{frameTimeMs});
+void FabricUIManagerBinding::driveAnimationBackend(jlong frameTimeNanos) {
+  if (!animationChoreographer_) {
+    LOG(ERROR)
+        << "FabricUIManagerBinding::driveAnimationBackend: animation choreographer disappeared";
+    return;
+  }
+  auto frameTimeMs = static_cast<double>(frameTimeNanos) / 1000000.0;
+  animationChoreographer_->onAnimationFrameIfActive(
+      AnimationTimestamp{frameTimeMs});
 }
 
 void FabricUIManagerBinding::drainPreallocateViewsQueue() {
@@ -572,6 +579,8 @@ void FabricUIManagerBinding::installFabricUIManager(
 
   contextContainer->insert("FabricUIManager", globalJavaUiManager);
 
+  animationChoreographer_ = std::make_shared<AndroidAnimationChoreographer>();
+
   auto toolbox = SchedulerToolbox{};
   toolbox.contextContainer = contextContainer;
   toolbox.componentRegistryFactory = componentsRegistry->buildRegistryFunction;
@@ -583,9 +592,6 @@ void FabricUIManagerBinding::installFabricUIManager(
 
   toolbox.eventBeatFactory = eventBeatFactory;
 
-  react_native_assert(
-      animationChoreographer_ != nullptr &&
-      "AnimationChoreographer is nullptr");
   toolbox.animationChoreographer = animationChoreographer_;
 
   animationDriver_ = std::make_shared<LayoutAnimationDriver>(
@@ -604,6 +610,7 @@ void FabricUIManagerBinding::uninstallFabricUIManager() {
   std::unique_lock lock(installMutex_);
   animationDriver_ = nullptr;
   scheduler_ = nullptr;
+  animationChoreographer_ = nullptr;
   mountingManager_ = nullptr;
 }
 
@@ -876,18 +883,8 @@ void FabricUIManagerBinding::registerNatives() {
           "getRelativeAncestorList",
           FabricUIManagerBinding::getRelativeAncestorList),
       makeNativeMethod(
-          "setAnimationBackendChoreographer",
-          FabricUIManagerBinding::setAnimationBackendChoreographer),
-      makeNativeMethod(
           "mergeReactRevision", FabricUIManagerBinding::mergeReactRevision),
   });
-}
-
-void FabricUIManagerBinding::setAnimationBackendChoreographer(
-    jni::alias_ref<JAnimationBackendChoreographer::javaobject>
-        animationBackendChoreographer) {
-  animationChoreographer_ = std::make_shared<AndroidAnimationChoreographer>(
-      animationBackendChoreographer);
 }
 
 } // namespace facebook::react

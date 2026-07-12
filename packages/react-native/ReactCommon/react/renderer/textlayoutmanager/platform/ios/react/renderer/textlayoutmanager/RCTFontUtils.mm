@@ -361,7 +361,7 @@ UIFont *RCTFontWithFontProperties(RCTFontProperties fontProperties)
       font = [UIFont fontWithName:fontProperties.family size:effectiveFontSize];
       if (font != nullptr) {
         fontNames = [UIFont fontNamesForFamilyName:font.familyName];
-        fontWeight = (fontWeight != 0.0) ?: RCTGetFontWeight(font);
+        fontWeight = (fontWeight != 0.0) ? fontWeight : RCTGetFontWeight(font);
       } else {
         // Failback to system font.
         font = RCTDefaultFontWithFontProperties(fontProperties);

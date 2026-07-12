@@ -8,17 +8,17 @@
  * @format
  */
 
-import type {PackagerAsset} from './assetPathUtils';
+import type {PackagerAsset} from '@react-native/asset-utils';
 
-import assetPathUtils from './assetPathUtils';
+import {
+  getAndroidResourceFolderName,
+  getAndroidResourceIdentifier,
+} from '@react-native/asset-utils';
 import path from 'path';
 
 function getAssetDestPathAndroid(asset: PackagerAsset, scale: number): string {
-  const androidFolder = assetPathUtils.getAndroidResourceFolderName(
-    asset,
-    scale,
-  );
-  const fileName = assetPathUtils.getResourceIdentifier(asset);
+  const androidFolder = getAndroidResourceFolderName(asset, scale);
+  const fileName = getAndroidResourceIdentifier(asset);
   return path.join(androidFolder, `${fileName}.${asset.type}`);
 }
 

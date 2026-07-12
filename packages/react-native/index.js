@@ -38,7 +38,18 @@ module.exports = {
   get Button() {
     return require('./Libraries/Components/Button').default;
   },
+  /**
+   * @deprecated DrawerLayoutAndroid is deprecated and will be removed in a future release.
+   * Use 'react-native-drawer-layout' instead.
+   * See https://reactnavigation.org/docs/drawer-layout/
+   */
   get DrawerLayoutAndroid() {
+    warnOnce(
+      'drawer-layout-android-deprecated',
+      'DrawerLayoutAndroid is deprecated and will be removed in a future release. ' +
+        "Use 'react-native-drawer-layout' instead. " +
+        'See https://reactnavigation.org/docs/drawer-layout/',
+    );
     return require('./Libraries/Components/DrawerAndroid/DrawerLayoutAndroid')
       .default;
   },
@@ -51,10 +62,25 @@ module.exports = {
   get Image() {
     return require('./Libraries/Image/Image').default;
   },
+  /**
+   * @deprecated ImageBackground is deprecated and will be removed in a future release.
+   * Use a View with an absolutely positioned Image instead.
+   * See https://reactnative.dev/docs/imagebackground
+   */
   get ImageBackground() {
+    warnOnce(
+      'image-background-deprecated',
+      'ImageBackground is deprecated and will be removed in a future release. ' +
+        'Use a View with an absolutely positioned Image instead. ' +
+        'See https://reactnative.dev/docs/imagebackground',
+    );
     return require('./Libraries/Image/ImageBackground').default;
   },
   get InputAccessoryView() {
+    warnOnce(
+      'input-accessory-view-deprecated',
+      'InputAccessoryView is deprecated and will be removed in a future release.',
+    );
     return require('./Libraries/Components/TextInput/InputAccessoryView')
       .default;
   },
@@ -126,9 +152,6 @@ module.exports = {
   },
   get TextInput() {
     return require('./Libraries/Components/TextInput/TextInput').default;
-  },
-  get Touchable() {
-    return require('./Libraries/Components/Touchable/Touchable').default;
   },
   get TouchableHighlight() {
     return require('./Libraries/Components/Touchable/TouchableHighlight')
@@ -210,6 +233,9 @@ module.exports = {
   },
   get AppState() {
     return require('./Libraries/AppState/AppState').default;
+  },
+  get AssetRegistry() {
+    return require('./src/private/assets/AssetRegistry').AssetRegistry;
   },
   get BackHandler() {
     return require('./Libraries/Utilities/BackHandler').default;
@@ -386,6 +412,21 @@ module.exports = {
   },
   // #endregion
 } as ReactNativePublicAPI;
+
+// `Touchable` has been removed from the public API types, but remains
+// re-exported at runtime here because of a hanging `react-native-svg` call
+// site (fbsource).
+// TODO(huntie): Remove this re-export once `react-native-svg` is updated.
+/* $FlowFixMe[prop-missing] This is intentional: `Touchable` is a value-only
+ * re-export that is absent from the public API types. */
+/* $FlowFixMe[invalid-export] This is intentional: `Touchable` is a value-only
+ * re-export that is absent from the public API types. */
+Object.defineProperty(module.exports, 'Touchable', {
+  configurable: true,
+  get() {
+    return require('./Libraries/Components/Touchable/Touchable').default;
+  },
+});
 
 if (__DEV__) {
   /* $FlowFixMe[prop-missing] This is intentional: Flow will error when
