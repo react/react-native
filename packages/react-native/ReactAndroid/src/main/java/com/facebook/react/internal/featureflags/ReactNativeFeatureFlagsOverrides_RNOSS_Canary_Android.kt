@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<d0524c8293f029992b78e4f9479b8a1d>>
+ * @generated SignedSource<<1664bdb6cd521d608b9bab74df43eb76>>
  */
 
 /**
@@ -26,8 +26,6 @@ public open class ReactNativeFeatureFlagsOverrides_RNOSS_Canary_Android : ReactN
   override fun cxxNativeAnimatedEnabled(): Boolean = true
 
   override fun enableAccessibilityOrder(): Boolean = true
-
-  override fun enableBridgelessArchitecture(): Boolean = true
 
   override fun enableIntersectionObserverByDefault(): Boolean = true
 
