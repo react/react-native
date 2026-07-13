@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<36a98575851fdf73cb45a0d34c3a8755>>
+ * @generated SignedSource<<71e307d568421d49e3943f58c4fcb163>>
  * @flow strict
  * @noformat
  */
@@ -444,7 +444,7 @@ export const fuseboxEnabledRelease: Getter<boolean> = createNativeFlagGetter('fu
  */
 export const fuseboxFrameRecordingEnabled: Getter<boolean> = createNativeFlagGetter('fuseboxFrameRecordingEnabled', false);
 /**
- * Enable network inspection support in the React Native DevTools CDP backend. Requires `enableBridgelessArchitecture`. This flag is global and should not be changed across React Host lifetimes.
+ * Enable network inspection support in the React Native DevTools CDP backend. This flag is global and should not be changed across React Host lifetimes.
  */
 export const fuseboxNetworkInspectionEnabled: Getter<boolean> = createNativeFlagGetter('fuseboxNetworkInspectionEnabled', true);
 /**
