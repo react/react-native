@@ -666,7 +666,7 @@ const definitions: FeatureFlagDefinitions = {
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
-      ossReleaseStage: 'none',
+      ossReleaseStage: 'experimental',
     },
     fuseboxNetworkInspectionEnabled: {
       defaultValue: true,
@@ -688,7 +688,7 @@ const definitions: FeatureFlagDefinitions = {
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
-      ossReleaseStage: 'none',
+      ossReleaseStage: 'experimental',
     },
     optimizedAnimatedPropUpdates: {
       defaultValue: false,
