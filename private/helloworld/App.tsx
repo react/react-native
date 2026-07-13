@@ -26,7 +26,9 @@ function App(): React.ReactNode {
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
       <ScrollView contentInsetAdjustmentBehavior="automatic">
         <View>
-          <Text style={styles.title}>Hello, World!</Text>
+          <Text style={[styles.title, {color: isDarkMode ? 'white' : 'black'}]}>
+            Hello, World!
+          </Text>
         </View>
       </ScrollView>
     </SafeAreaView>
