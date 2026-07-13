@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<e8be340d97ada771fba14742a1c6a154>>
+ * @generated SignedSource<<5503609276a95792ab72907f3c5a4266>>
  */
 
 /**
@@ -396,15 +396,6 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     return ReactNativeFeatureFlagsDefaults::enableNativeCSSParsing();
   }
 
-  bool enableNetworkEventReporting() override {
-    auto value = values_["enableNetworkEventReporting"];
-    if (!value.isNull()) {
-      return value.getBool();
-    }
-
-    return ReactNativeFeatureFlagsDefaults::enableNetworkEventReporting();
-  }
-
   bool enablePreparedTextLayout() override {
     auto value = values_["enablePreparedTextLayout"];
     if (!value.isNull()) {
@@ -565,15 +556,6 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::fuseboxFrameRecordingEnabled();
-  }
-
-  bool fuseboxNetworkInspectionEnabled() override {
-    auto value = values_["fuseboxNetworkInspectionEnabled"];
-    if (!value.isNull()) {
-      return value.getBool();
-    }
-
-    return ReactNativeFeatureFlagsDefaults::fuseboxNetworkInspectionEnabled();
   }
 
   bool fuseboxScreenshotCaptureEnabled() override {

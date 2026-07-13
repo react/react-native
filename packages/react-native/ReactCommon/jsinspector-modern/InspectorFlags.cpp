@@ -82,8 +82,7 @@ const InspectorFlags::Values& InspectorFlags::loadFlagsAndAssertUnchanged()
           false,
 #endif
       .networkInspectionEnabled =
-          ReactNativeFeatureFlags::enableBridgelessArchitecture() &&
-          ReactNativeFeatureFlags::fuseboxNetworkInspectionEnabled(),
+          ReactNativeFeatureFlags::enableBridgelessArchitecture(),
       .perfIssuesEnabled = ReactNativeFeatureFlags::perfIssuesEnabled(),
   };
 

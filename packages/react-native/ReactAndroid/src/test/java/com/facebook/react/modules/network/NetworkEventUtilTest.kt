@@ -13,17 +13,15 @@ import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.WritableArray
 import com.facebook.react.bridge.WritableMap
-import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
-import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsDefaults
-import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsForTests
 import com.facebook.testutils.shadows.ShadowArguments
+import com.facebook.testutils.shadows.ShadowInspectorNetworkReporter
+import com.facebook.testutils.shadows.ShadowSoLoader
 import java.io.ByteArrayInputStream
 import java.net.SocketTimeoutException
 import okhttp3.MediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -35,7 +33,9 @@ import org.mockito.kotlin.verify
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
-@Config(shadows = [ShadowArguments::class])
+@Config(
+    shadows = [ShadowArguments::class, ShadowSoLoader::class, ShadowInspectorNetworkReporter::class]
+)
 @RunWith(RobolectricTestRunner::class)
 class NetworkEventUtilTest {
   private lateinit var reactContext: ReactApplicationContext
@@ -43,18 +43,6 @@ class NetworkEventUtilTest {
   @Before
   fun setUp() {
     reactContext = mock()
-
-    ReactNativeFeatureFlagsForTests.setUp()
-    ReactNativeFeatureFlags.override(
-        object : ReactNativeFeatureFlagsDefaults() {
-          override fun enableNetworkEventReporting(): Boolean = false
-        }
-    )
-  }
-
-  @After
-  fun tearDown() {
-    ReactNativeFeatureFlags.dangerouslyReset()
   }
 
   @Test

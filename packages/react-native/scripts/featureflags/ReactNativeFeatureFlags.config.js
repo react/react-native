@@ -463,16 +463,6 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
-    enableNetworkEventReporting: {
-      defaultValue: true,
-      metadata: {
-        description:
-          'Enable network event reporting hooks in each native platform through `NetworkReporter` (Web Perf APIs + CDP). This flag should be combined with `fuseboxNetworkInspectionEnabled` to enable Network CDP debugging.',
-        expectedReleaseValue: true,
-        purpose: 'release',
-      },
-      ossReleaseStage: 'none',
-    },
     enablePreparedTextLayout: {
       defaultValue: false,
       metadata: {
@@ -663,17 +653,6 @@ const definitions: FeatureFlagDefinitions = {
         dateAdded: '2026-03-05',
         description:
           'Enable frame timings and screenshots support in the React Native DevTools CDP backend. This flag is global and should not be changed across React Host lifetimes.',
-        expectedReleaseValue: true,
-        purpose: 'experimentation',
-      },
-      ossReleaseStage: 'none',
-    },
-    fuseboxNetworkInspectionEnabled: {
-      defaultValue: true,
-      metadata: {
-        dateAdded: '2024-01-31',
-        description:
-          'Enable network inspection support in the React Native DevTools CDP backend. Requires `enableBridgelessArchitecture`. This flag is global and should not be changed across React Host lifetimes.',
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },

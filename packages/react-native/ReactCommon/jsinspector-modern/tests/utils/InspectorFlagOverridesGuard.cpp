@@ -41,21 +41,10 @@ class ReactNativeFeatureFlagsOverrides
         ReactNativeFeatureFlagsDefaults::fuseboxFrameRecordingEnabled());
   }
 
-  bool fuseboxNetworkInspectionEnabled() override {
-    return overrides_.networkInspectionEnabled.value_or(
-        ReactNativeFeatureFlagsDefaults::fuseboxNetworkInspectionEnabled());
-  }
-
   bool enableBridgelessArchitecture() override {
-    // NOTE: Network support is gated by (enableBridgelessArchitecture &&
-    // fuseboxNetworkInspectionEnabled).
+    // NOTE: Network support is gated by enableBridgelessArchitecture.
     return overrides_.networkInspectionEnabled.value_or(
         ReactNativeFeatureFlagsDefaults::enableBridgelessArchitecture());
-  }
-
-  bool enableNetworkEventReporting() override {
-    return overrides_.enableNetworkEventReporting.value_or(
-        ReactNativeFeatureFlagsDefaults::enableNetworkEventReporting());
   }
 
  private:

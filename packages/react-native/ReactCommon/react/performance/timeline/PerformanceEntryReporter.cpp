@@ -9,7 +9,6 @@
 
 #include <jsinspector-modern/ConsoleTaskOrchestrator.h>
 #include <jsinspector-modern/tracing/PerformanceTracer.h>
-#include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/timing/primitives.h>
 #include <reactperflogger/ReactPerfettoLogger.h>
 
@@ -29,11 +28,8 @@ std::vector<PerformanceEntryType> getSupportedEntryTypesInternal() {
       PerformanceEntryType::MEASURE,
       PerformanceEntryType::EVENT,
       PerformanceEntryType::LONGTASK,
+      PerformanceEntryType::RESOURCE,
   };
-
-  if (ReactNativeFeatureFlags::enableNetworkEventReporting()) {
-    supportedEntryTypes.emplace_back(PerformanceEntryType::RESOURCE);
-  }
 
   return supportedEntryTypes;
 }
