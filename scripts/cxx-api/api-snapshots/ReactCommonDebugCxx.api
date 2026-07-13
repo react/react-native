@@ -9809,6 +9809,7 @@ struct facebook::jsi::detail::BeforeCaller<std::tuple<T...>> {
 }
 
 
+using facebook::yoga::BaselineItemGroups = std::map<size_t, std::vector<facebook::yoga::GridItem*>>;
 using facebook::yoga::GridTrackList = std::vector<facebook::yoga::GridTrackSize>;
 template <typename EnumT>
 concept facebook::yoga::Enumeration = std::is_enum_v<EnumT>;
@@ -10534,6 +10535,22 @@ struct facebook::yoga::FloatOptional {
   public constexpr float unwrapOrDefault(float defaultValue) const;
 }
 
+struct facebook::yoga::GridItem {
+  public GridItem(size_t columnStart, size_t columnEnd, size_t rowStart, size_t rowEnd, facebook::yoga::Node* node, float baselineShim = 0.0f);
+  public bool crossesFlexibleColumn;
+  public bool crossesFlexibleRow;
+  public bool crossesFlexibleTrack(facebook::yoga::Dimension dimension) const;
+  public bool crossesIntrinsicColumn;
+  public bool crossesIntrinsicRow;
+  public bool crossesIntrinsicTrack(facebook::yoga::Dimension dimension) const;
+  public facebook::yoga::Node* node;
+  public float baselineShim;
+  public size_t columnEnd;
+  public size_t columnStart;
+  public size_t rowEnd;
+  public size_t rowStart;
+}
+
 struct facebook::yoga::GridLine {
   public bool operator==(const facebook::yoga::GridLine& other) const = default;
   public constexpr bool isAuto() const;
@@ -10546,13 +10563,18 @@ struct facebook::yoga::GridLine {
   public static constexpr facebook::yoga::GridLine span(int32_t value);
 }
 
-struct facebook::yoga::GridTrackSize {
+struct facebook::yoga::GridTrack {
+  public GridTrack(const facebook::yoga::GridTrackSize& ts);
   public bool infinitelyGrowable;
+  public const facebook::yoga::GridTrackSize& trackSize() const;
+  public float baseSize;
+  public float growthLimit;
+}
+
+struct facebook::yoga::GridTrackSize {
   public bool operator==(const facebook::yoga::GridTrackSize& other) const = default;
   public facebook::yoga::StyleSizeLength maxSizingFunction;
   public facebook::yoga::StyleSizeLength minSizingFunction;
-  public float baseSize;
-  public float growthLimit;
   public static constexpr facebook::yoga::GridTrackSize auto_();
   public static constexpr facebook::yoga::GridTrackSize fr(float fraction);
   public static constexpr facebook::yoga::GridTrackSize length(float points);
