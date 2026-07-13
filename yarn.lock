@@ -4987,10 +4987,10 @@ hasown@^2.0.0, hasown@^2.0.1, hasown@^2.0.2:
   dependencies:
     function-bind "^1.1.2"
 
-hermes-compiler@0.0.0:
-  version "0.0.0"
-  resolved "https://registry.yarnpkg.com/hermes-compiler/-/hermes-compiler-0.0.0.tgz#8d9f6a0b2740ce34d71258fec684e7b6bfd97efa"
-  integrity sha512-boVFutx6ME/Km2mB6vvsQcdnazEYYI/jV1pomx1wcFUG/EVqTkr5CU0CW9bKipOA/8Hyu3NYwW3THg2Q1kNCfA==
+hermes-compiler@250829098.0.15:
+  version "250829098.0.15"
+  resolved "https://registry.yarnpkg.com/hermes-compiler/-/hermes-compiler-250829098.0.15.tgz#ded6ecac9e873e359b9e5e13e4a2b0149cc7bca2"
+  integrity sha512-GJiEBl2JgT8FsRcY9DOBYW9L0KGRij58y7FeINJOaqWdYIrf/o3hi8NCsW3CV+XbG1vAwEeuXvwg4+xMJ8cc3g==
 
 hermes-eslint@0.36.1:
   version "0.36.1"
@@ -6529,7 +6529,7 @@ metro-babel-register@^0.86.0:
     escape-string-regexp "^1.0.5"
     flow-enums-runtime "^0.0.6"
 
-metro-babel-transformer@0.86.0:
+metro-babel-transformer@0.86.0, metro-babel-transformer@^0.86.0:
   version "0.86.0"
   resolved "https://registry.yarnpkg.com/metro-babel-transformer/-/metro-babel-transformer-0.86.0.tgz#bf8f27c6ba7f02ab36e01e3c47371ab47b96b4f3"
   integrity sha512-gHOqsttTUPwLo54YemxsuB12WPptFBrLh1bTMwKIqmTUwOi3/EZw1sZSMVJFrrX7Md2Q72iBVvIIOWl6A+cLzA==

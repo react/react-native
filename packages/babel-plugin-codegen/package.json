@@ -29,6 +29,7 @@
     "@react-native/codegen": "0.87.0-main"
   },
   "devDependencies": {
-    "@babel/core": "^7.25.2"
+    "@babel/core": "^7.25.2",
+    "@babel/plugin-syntax-flow": "^7.26.0"
   }
 }
