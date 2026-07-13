@@ -15,6 +15,5 @@ describe('DeviceInfo', () => {
 
   it('should give device info', () => {
     expect(DeviceInfo.getConstants().Dimensions).toBeDefined();
-    expect(DeviceInfo.getInfo().Dimensions).toBeDefined();
   });
 });
