@@ -16,7 +16,7 @@ const {composeSourceMaps} = require('metro-source-map');
 
 const argv = process.argv.slice(2);
 let outputPath;
-for (let i = 0; i < argv.length; ) {
+for (let i = 0; i < argv.length;) {
   if (argv[i] === '-o') {
     outputPath = argv[i + 1];
     argv.splice(i, 2);

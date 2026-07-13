@@ -246,12 +246,7 @@ declare module '@babel/traverse' {
   }
 
   declare export type BindingKind =
-    | 'var'
-    | 'let'
-    | 'const'
-    | 'module'
-    | 'hoisted'
-    | 'unknown';
+    'var' | 'let' | 'const' | 'module' | 'hoisted' | 'unknown';
 
   declare export class Binding {
     constructor(opts: {
@@ -435,13 +430,7 @@ declare module '@babel/traverse' {
     isBaseType(baseName: string, soft?: boolean): boolean;
     couldBeBaseType(
       name:
-        | 'string'
-        | 'number'
-        | 'boolean'
-        | 'any'
-        | 'mixed'
-        | 'empty'
-        | 'void',
+        'string' | 'number' | 'boolean' | 'any' | 'mixed' | 'empty' | 'void',
     ): boolean;
     baseTypeStrictlyMatches(right: NodePath<>): ?boolean;
     isGenericType(genericName: string): boolean;
@@ -1446,8 +1435,7 @@ declare module '@babel/traverse' {
   }>;
 
   declare export type VisitNode<-TNode extends BabelNode, TState> =
-    | VisitNodeFunction<TNode, TState>
-    | VisitNodeObject<TNode, TState>;
+    VisitNodeFunction<TNode, TState> | VisitNodeObject<TNode, TState>;
 
   declare export type Visitor<TState = void> = Readonly<{
     enter?: VisitNodeFunction<BabelNode, TState>,

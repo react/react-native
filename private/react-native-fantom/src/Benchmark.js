@@ -61,8 +61,7 @@ type SuiteResults = Array<Readonly<TaskResult>>;
 type TestWithArgName<TestArgType> = string | ((testArg: TestArgType) => string);
 
 type TestWithArgOptions<TestArgType> =
-  | FnOptions
-  | ((testArg: TestArgType) => FnOptions);
+  FnOptions | ((testArg: TestArgType) => FnOptions);
 
 interface ParameterizedTestFunction {
   <TestArgType>(
