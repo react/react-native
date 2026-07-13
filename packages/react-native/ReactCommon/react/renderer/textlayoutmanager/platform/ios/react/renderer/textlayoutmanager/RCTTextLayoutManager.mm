@@ -581,8 +581,11 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
     size.height = enumeratedLinesHeight;
   }
 
-  size = (CGSize){ceil(size.width * layoutContext.pointScaleFactor) / layoutContext.pointScaleFactor,
-                  ceil(size.height * layoutContext.pointScaleFactor) / layoutContext.pointScaleFactor};
+  // Wrapped text needs one extra physical pixel so its final line remains visible after layout rounding.
+  CGFloat additionalHeightInPixels = textDidWrap ? 1.0 : 0.0;
+  size = (CGSize){
+      ceil(size.width * layoutContext.pointScaleFactor) / layoutContext.pointScaleFactor,
+      (ceil(size.height * layoutContext.pointScaleFactor) + additionalHeightInPixels) / layoutContext.pointScaleFactor};
 
   NSRange visibleGlyphRange = [layoutManager glyphRangeForTextContainer:textContainer];
 
