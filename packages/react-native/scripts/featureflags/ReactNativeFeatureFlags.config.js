@@ -203,13 +203,13 @@ const definitions: FeatureFlagDefinitions = {
       ossReleaseStage: 'none',
     },
     enableBridgelessArchitecture: {
-      defaultValue: false,
+      defaultValue: true,
       metadata: {
         description: 'Feature flag to enable the new bridgeless architecture.',
         expectedReleaseValue: true,
         purpose: 'release',
       },
-      ossReleaseStage: 'canary',
+      ossReleaseStage: 'stable',
     },
     enableCppPropsIteratorSetter: {
       defaultValue: false,

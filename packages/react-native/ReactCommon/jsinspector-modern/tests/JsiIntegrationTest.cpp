@@ -360,7 +360,7 @@ TYPED_TEST(JsiIntegrationPortableTest, ReactNativeApplicationEnable) {
                                             "integrationName": "JsiIntegrationTest",
                                             "unstable_frameRecordingEnabled": false,
                                             "unstable_isProfilingBuild": false,
-                                            "unstable_networkInspectionEnabled": false
+                                            "unstable_networkInspectionEnabled": true
                                           }
                                         })"));
 

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<ff39edecf287d3fe3638da2f71e6bd1c>>
+ * @generated SignedSource<<36a98575851fdf73cb45a0d34c3a8755>>
  * @flow strict
  * @noformat
  */
@@ -270,7 +270,7 @@ export const enableAndroidTextMeasurementOptimizations: Getter<boolean> = create
 /**
  * Feature flag to enable the new bridgeless architecture.
  */
-export const enableBridgelessArchitecture: Getter<boolean> = createNativeFlagGetter('enableBridgelessArchitecture', false);
+export const enableBridgelessArchitecture: Getter<boolean> = createNativeFlagGetter('enableBridgelessArchitecture', true);
 /**
  * Enable prop iterator setter-style construction of Props in C++ (this flag is not used in Java).
  */
