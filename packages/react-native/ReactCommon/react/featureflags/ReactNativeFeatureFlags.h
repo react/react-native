@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<4276ae19d55acb679c9e635122e813b3>>
+ * @generated SignedSource<<f871b2203c86dd7f25640cd3a6ea7d00>>
  */
 
 /**
@@ -338,6 +338,11 @@ class ReactNativeFeatureFlags {
    * Enable Page.captureScreenshot CDP method support in the React Native DevTools CDP backend. This flag is global and should not be changed across React Host lifetimes.
    */
   RN_EXPORT static bool fuseboxScreenshotCaptureEnabled();
+
+  /**
+   * Enable reporting of WebSocket network events (`Network.webSocket*` CDP events) to the React Native DevTools CDP backend. Requires `fuseboxNetworkInspectionEnabled`.
+   */
+  RN_EXPORT static bool fuseboxWebSocketEventsEnabled();
 
   /**
    * When enabled, uses optimized platform-specific paths to apply animated props synchronously. On Android, this uses a batched int/double buffer protocol with a single JNI call. On iOS, this passes AnimatedProps directly through the delegate chain and applies them via cloneProps, avoiding the folly::dynamic round-trip.

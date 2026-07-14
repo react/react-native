@@ -690,6 +690,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'experimental',
     },
+    fuseboxWebSocketEventsEnabled: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-07-11',
+        description:
+          'Enable reporting of WebSocket network events (`Network.webSocket*` CDP events) to the React Native DevTools CDP backend. Requires `fuseboxNetworkInspectionEnabled`.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
     optimizedAnimatedPropUpdates: {
       defaultValue: false,
       metadata: {

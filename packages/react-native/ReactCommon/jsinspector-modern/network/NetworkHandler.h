@@ -91,6 +91,44 @@ class NetworkHandler {
   void onLoadingFailed(const std::string &requestId, bool cancelled);
 
   /**
+   * @cdp Network.webSocketCreated
+   */
+  void onWebSocketCreated(const std::string &requestId, const std::string &url);
+
+  /**
+   * @cdp Network.webSocketWillSendHandshakeRequest
+   */
+  void onWebSocketWillSendHandshakeRequest(const std::string &requestId, const Headers &headers);
+
+  /**
+   * @cdp Network.webSocketHandshakeResponseReceived
+   */
+  void onWebSocketHandshakeResponseReceived(const std::string &requestId, uint16_t status, const Headers &headers);
+
+  /**
+   * @cdp Network.webSocketFrameSent
+   *
+   * \param payloadData The message payload. A UTF-8 string for text messages,
+   * or a base64-encoded string for binary messages.
+   * \param isBinary Whether this is a binary message.
+   */
+  void onWebSocketFrameSent(const std::string &requestId, const std::string &payloadData, bool isBinary);
+
+  /**
+   * @cdp Network.webSocketFrameReceived
+   *
+   * \param payloadData The message payload. A UTF-8 string for text messages,
+   * or a base64-encoded string for binary messages.
+   * \param isBinary Whether this is a binary message.
+   */
+  void onWebSocketFrameReceived(const std::string &requestId, const std::string &payloadData, bool isBinary);
+
+  /**
+   * @cdp Network.webSocketClosed
+   */
+  void onWebSocketClosed(const std::string &requestId);
+
+  /**
    * Store the fetched response body for a text or image network response.
    *
    * Reponse bodies are stored in a bounded buffer with a fixed maximum memory
