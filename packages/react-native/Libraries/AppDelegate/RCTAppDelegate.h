@@ -23,6 +23,9 @@ NS_ASSUME_NONNULL_BEGIN
  * using the UIScene lifecycle, prefer `RCTSceneDelegate` or `RCTReactNativeFactory` with a SceneDelegate entrypoint.
  * For AppDelegate-only apps, use `RCTReactNativeFactory` directly.
  *
+ * Scene-based apps must keep `UIApplicationSupportsMultipleScenes` set to `false` in Info.plist (see
+ * `RCTSceneDelegate` for details and the `RN_ALLOW_MULTIPLE_SCENES` escape hatch).
+ *
  * The RCTAppDelegate is an utility class that implements some base configurations for all the React Native apps.
  * It is not mandatory to use it, but it could simplify your AppDelegate code.
  *

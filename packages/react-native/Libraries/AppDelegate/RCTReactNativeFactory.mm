@@ -270,15 +270,22 @@ using namespace facebook::react;
     [_delegate hostDidStart:host];
 
     // check if the application is running with multiple scenes capability enabled in scene manifest (Info.plist),
-    // which is unsupported by RN at the moment, and warn in such case
+    // which is unsupported by RN at the moment, and crash in such case (unless RN_ALLOW_MULTIPLE_SCENES is defined).
+    // To opt out, add RN_ALLOW_MULTIPLE_SCENES=1 to the app target's GCC_PREPROCESSOR_DEFINITIONS or
+    // -DRN_ALLOW_MULTIPLE_SCENES=1 to OTHER_CFLAGS.
     NSDictionary *infoDict = [[NSBundle mainBundle] infoDictionary];
     NSDictionary *sceneManifest = infoDict ? infoDict[@"UIApplicationSceneManifest"] : nil;
     BOOL supportsMultipleScenes =
         sceneManifest ? [sceneManifest[@"UIApplicationSupportsMultipleScenes"] boolValue] : false;
 
     if (supportsMultipleScenes) {
-      RCTLogWarn(
-          @"RCTReactNativeFactory: (WARNING - UNSUPPORTED RN APP CONFIGURATION) Your application is running with the Info.plist UIApplicationSceneManifest.UIApplicationSupportsMultipleScenes key set to true, which is NOT supported by React Native at the moment. Allowing the user to run multiple windows of a RN application means allowing to run multiple instances of React Native and libraries in the same process, which may cause ALL SORTS OF PROBLEMS in implementations which use singletons or static storage lifetime variables.");
+      NSString *const message =
+          @"RCTReactNativeFactory: (FATAL - UNSUPPORTED RN APP CONFIGURATION) Your application is running with the Info.plist UIApplicationSceneManifest.UIApplicationSupportsMultipleScenes key set to true, which is NOT supported by React Native at the moment. Allowing the user to run multiple windows of a RN application means allowing to run multiple instances of React Native and libraries in the same process, which may cause ALL SORTS OF PROBLEMS in implementations which use singletons or static storage lifetime variables. Define RN_ALLOW_MULTIPLE_SCENES to downgrade this to a warning if you know what you are doing.";
+#if defined(RN_ALLOW_MULTIPLE_SCENES)
+      RCTLogWarn(message);
+#else
+      [NSException raise:@"RCTReactNativeFactory::unsupportedMultipleScenesConfiguration" format:@"%@", message];
+#endif
     }
   }
 }

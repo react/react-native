@@ -66,6 +66,13 @@ NS_ASSUME_NONNULL_BEGIN
  * Linking is forwarded automatically via `RCTLinkingManager`. Push notifications and other
  * `UIApplicationDelegate` callbacks should remain on your AppDelegate.
  *
+ * **Multi-scene / multi-window (unsupported):**
+ * React Native does not support `UIApplicationSupportsMultipleScenes` set to `true` in
+ * Info.plist. Apps that enable multi-window support on iPadOS will crash at startup.
+ * To acknowledge the risks and downgrade the crash to a warning, define the preprocessor
+ * macro `RN_ALLOW_MULTIPLE_SCENES` in your app target's build settings (e.g.
+ * `GCC_PREPROCESSOR_DEFINITIONS` or `OTHER_CFLAGS`: `-DRN_ALLOW_MULTIPLE_SCENES=1`).
+ *
  * Overridable methods (inherited from `RCTDefaultReactNativeFactoryDelegate`):
  *   - (UIViewController *)createRootViewController;
  *   - (void)setRootView:(UIView *)rootView toRootViewController:(UIViewController *)rootViewController;

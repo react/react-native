@@ -64,6 +64,12 @@ typedef NS_ENUM(NSInteger, RCTReleaseLevel) { Canary, Experimental, Stable };
  *   `application:didFinishLaunchingWithOptions:` or `RCTAppDelegate`.
  * - **SceneDelegate path**: `startReactNativeWithModuleName:inWindow:connectionOptions:` — call from
  *   `scene:willConnectToSession:options:` or `RCTSceneDelegate`.
+ *
+ * **Multi-scene / multi-window (unsupported):** When using the SceneDelegate path, React Native
+ * checks that Info.plist does not set `UIApplicationSupportsMultipleScenes` to `true`, since
+ * running multiple React Native instances in one process is unsupported. The app crashes by default;
+ * define `RN_ALLOW_MULTIPLE_SCENES` on the app target (e.g. `GCC_PREPROCESSOR_DEFINITIONS` or
+ * `OTHER_CFLAGS`: `-DRN_ALLOW_MULTIPLE_SCENES=1`) to downgrade the check to a warning.
  */
 
 - (instancetype)initWithDelegate:(id<RCTReactNativeFactoryDelegate>)delegate;
