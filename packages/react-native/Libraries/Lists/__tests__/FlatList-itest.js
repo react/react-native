@@ -16,8 +16,37 @@ import * as Fantom from '@react-native/fantom';
 import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {createRef} from 'react';
-import {FlatList, Text, View} from 'react-native';
+import {FlatList, Platform, Text, View} from 'react-native';
 import ReactNativeElement from 'react-native/src/private/webapis/dom/nodes/ReactNativeElement';
+
+// Object-valued props are serialized to a JSON string by the native Fantom
+// renderer, so we defensively parse them back into objects.
+// $FlowFixMe[unclear-type] parseCollectionProp returns a loosely-typed object.
+function parseCollectionProp(value: unknown): any {
+  if (typeof value === 'string') {
+    return JSON.parse(value);
+  }
+  return value;
+}
+
+// $FlowFixMe[unclear-type] collectItems walks a dynamically-typed tree.
+function collectItems(node: unknown, acc: Array<any> = []): Array<any> {
+  if (node == null || typeof node === 'string') {
+    return acc;
+  }
+  // $FlowFixMe[unclear-type] Fantom nodes have a dynamic shape.
+  const n: any = node;
+  const item = n.props != null ? n.props.accessibilityCollectionItem : null;
+  if (item != null) {
+    acc.push(parseCollectionProp(item));
+  }
+  if (Array.isArray(n.children)) {
+    n.children.forEach(child => {
+      collectItems(child, acc);
+    });
+  }
+  return acc;
+}
 
 function testPropPropagatedToMountingLayer<TValue>({
   propName,
@@ -100,6 +129,102 @@ describe('<FlatList>', () => {
           </rn-scrollView>,
         );
       });
+    });
+
+    it('adds Android accessibility collection metadata to list items', () => {
+      const originalPlatform = Platform.OS;
+      // $FlowFixMe[incompatible-type] Platform.OS is read-only in production.
+      Platform.OS = 'android';
+      try {
+        const root = Fantom.createRoot();
+        Fantom.runTask(() => {
+          root.render(
+            <FlatList
+              data={[{key: 'i1'}, {key: 'i2'}, {key: 'i3'}]}
+              renderItem={({item}) => <Text>{item.key}</Text>}
+            />,
+          );
+        });
+
+        const list = root
+          .getRenderedOutput({
+            props: ['accessibilityRole', 'accessibilityCollection'],
+          })
+          .toJSONObject();
+        expect(list.props.accessibilityRole).toBe('list');
+        expect(parseCollectionProp(list.props.accessibilityCollection)).toEqual(
+          {
+            itemCount: 3,
+            rowCount: 3,
+            columnCount: 1,
+            hierarchical: false,
+          },
+        );
+
+        const items = collectItems(
+          root
+            .getRenderedOutput({props: ['accessibilityCollectionItem']})
+            .toJSONObject(),
+        );
+        expect(items.map(i => i.itemIndex).sort((a, b) => a - b)).toEqual([
+          0, 1, 2,
+        ]);
+      } finally {
+        // $FlowFixMe[incompatible-type] Platform.OS is read-only in production.
+        Platform.OS = originalPlatform;
+      }
+    });
+
+    it('adds Android accessibility collection metadata to multi-column list items', () => {
+      const originalPlatform = Platform.OS;
+      // $FlowFixMe[incompatible-type] Platform.OS is read-only in production.
+      Platform.OS = 'android';
+      try {
+        const root = Fantom.createRoot();
+        Fantom.runTask(() => {
+          root.render(
+            <FlatList
+              data={[
+                {key: 'i1'},
+                {key: 'i2'},
+                {key: 'i3'},
+                {key: 'i4'},
+                {key: 'i5'},
+              ]}
+              renderItem={({item}) => <Text>{item.key}</Text>}
+              numColumns={2}
+            />,
+          );
+        });
+
+        const list = root
+          .getRenderedOutput({
+            props: ['accessibilityRole', 'accessibilityCollection'],
+          })
+          .toJSONObject();
+        expect(list.props.accessibilityRole).toBe('grid');
+        expect(parseCollectionProp(list.props.accessibilityCollection)).toEqual(
+          {
+            itemCount: 5,
+            rowCount: 3,
+            columnCount: 2,
+            hierarchical: false,
+          },
+        );
+
+        const items = collectItems(
+          root
+            .getRenderedOutput({props: ['accessibilityCollectionItem']})
+            .toJSONObject(),
+        );
+        expect(items.map(i => i.itemIndex).sort((a, b) => a - b)).toEqual([
+          0, 1, 2, 3, 4,
+        ]);
+        expect(items.some(i => i.columnIndex === 1)).toBe(true);
+      } finally {
+        // $FlowFixMe[incompatible-type] Platform.OS is read-only in production.
+        Platform.OS = originalPlatform;
+      }
     });
 
     describe('inverted', () => {
