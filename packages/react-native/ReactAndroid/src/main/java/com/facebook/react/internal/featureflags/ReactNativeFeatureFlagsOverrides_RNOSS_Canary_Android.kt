@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<1664bdb6cd521d608b9bab74df43eb76>>
+ * @generated SignedSource<<3335ab1242e91e4b85f5514a39a65002>>
  */
 
 /**
@@ -30,6 +30,8 @@ public open class ReactNativeFeatureFlagsOverrides_RNOSS_Canary_Android : ReactN
   override fun enableIntersectionObserverByDefault(): Boolean = true
 
   override fun enableSwiftUIBasedFilters(): Boolean = true
+
+  override fun fuseboxWebSocketEventsEnabled(): Boolean = true
 
   override fun useNativeViewConfigsInBridgelessMode(): Boolean = true
 
