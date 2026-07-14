@@ -1293,8 +1293,7 @@ declare module '@babel/template' {
   };
 
   declare export type PublicReplacements =
-    | {[string]: ?BabelNode}
-    | Array<?BabelNode>;
+    {[string]: ?BabelNode} | Array<?BabelNode>;
 
   declare export type TemplateBuilder<T> = {
     // Build a new builder, merging the given options with the previous ones.

@@ -219,17 +219,15 @@ export function computeWindowedRenderLimits(
       last++;
     }
   }
-  if (
-    !(
-      last >= first &&
-      first >= 0 &&
-      last < itemCount &&
-      first >= overscanFirst &&
-      last <= overscanLast &&
-      first <= visible.first &&
-      last >= visible.last
-    )
-  ) {
+  if (!(
+    last >= first &&
+    first >= 0 &&
+    last < itemCount &&
+    first >= overscanFirst &&
+    last <= overscanLast &&
+    first <= visible.first &&
+    last >= visible.last
+  )) {
     throw new Error(
       'Bad window calculation ' +
         JSON.stringify({

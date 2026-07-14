@@ -101,9 +101,7 @@ declare module 'tinybench' {
   // but we type it this way to avoid mistakes (we can make breaking changes
   // in our definition that they can't).
   export type Fn = () =>
-    | Promise<void | FnReturnedObject>
-    | void
-    | FnReturnedObject;
+    Promise<void | FnReturnedObject> | void | FnReturnedObject;
 
   declare export class Bench extends EventTarget {
     concurrency: null | 'task' | 'bench';

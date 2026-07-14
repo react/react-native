@@ -62,8 +62,7 @@ export default class NativeEventEmitter<
   TEventToArgsMap extends Readonly<
     Record<string, ReadonlyArray<UnsafeNativeEventObject>>,
   > = Readonly<Record<string, ReadonlyArray<UnsafeNativeEventObject>>>,
-> implements IEventEmitter<TEventToArgsMap>
-{
+> implements IEventEmitter<TEventToArgsMap> {
   _nativeModule: ?NativeModule;
 
   /**

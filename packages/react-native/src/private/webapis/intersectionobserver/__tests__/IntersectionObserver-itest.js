@@ -38,14 +38,12 @@ export function expectRectEquals(
   expected: {x: number, y: number, width: number, height: number},
 ): boolean {
   const {x, y, width, height} = expected;
-  if (
-    !(
-      rect.x === x &&
-      rect.y === y &&
-      rect.width === width &&
-      rect.height === height
-    )
-  ) {
+  if (!(
+    rect.x === x &&
+    rect.y === y &&
+    rect.width === width &&
+    rect.height === height
+  )) {
     const received = {
       x: rect.x,
       y: rect.y,

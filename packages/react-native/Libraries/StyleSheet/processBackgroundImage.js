@@ -39,8 +39,7 @@ const LINEAR_GRADIENT_DEFAULT_DIRECTION: LinearGradientDirection = {
 };
 
 type LinearGradientDirection =
-  | {type: 'angle', value: number}
-  | {type: 'keyword', value: string};
+  {type: 'angle', value: number} | {type: 'keyword', value: string};
 
 type LinearGradientBackgroundImage = {
   type: 'linear-gradient',
@@ -77,8 +76,7 @@ type ColorStopColor = ProcessedColorValue | null;
 type ColorStopPosition = number | string | null;
 
 type ParsedBackgroundImageValue =
-  | LinearGradientBackgroundImage
-  | RadialGradientBackgroundImage;
+  LinearGradientBackgroundImage | RadialGradientBackgroundImage;
 
 export default function processBackgroundImage(
   backgroundImage: ?(ReadonlyArray<BackgroundImageValue> | string),
