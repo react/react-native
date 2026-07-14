@@ -138,6 +138,9 @@ function testRequestAnimationFrame(){
 }
 
 function testRequestIdleCallback() {
+    cancelIdleCallback(null);
+    cancelIdleCallback(undefined);
+
     let handle = requestIdleCallback(deadline => {
         const didTimeout: boolean = deadline.didTimeout;
         const remaining: number = deadline.timeRemaining();
@@ -151,9 +154,8 @@ function testRequestIdleCallback() {
     // @ts-expect-error
     requestIdleCallback(noop, { timeout: 'wrong-type' });
 
-    // handle is opaque: object on New Architecture, number on legacy
     // @ts-expect-error
-    const handleIsNotNumber: number = requestIdleCallback(noop);
+    cancelIdleCallback('wrong-type');
 }
 
 const fetchCopy: WindowOrWorkerGlobalScope['fetch'] = fetch;
