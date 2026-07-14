@@ -572,6 +572,66 @@ TEST_P(NetworkReporterTest, testCompleteWebSocketFlow) {
                                 })");
 }
 
+TEST_P(NetworkReporterTest, testWebSocketCreatedWithInitiator) {
+  InSequence s;
+
+  this->expectMessageFromPage(JsonEq(R"({
+                                          "id": 0,
+                                          "result": {}
+                                      })"));
+  this->toPage_->sendMessage(R"({
+                                  "id": 0,
+                                  "method": "Debugger.enable"
+                              })");
+
+  this->expectMessageFromPage(JsonEq(R"({
+                                          "id": 1,
+                                          "result": {}
+                                        })"));
+  this->toPage_->sendMessage(R"({
+                                  "id": 1,
+                                  "method": "Network.enable"
+                                })");
+
+  auto& runtime = engineAdapter_->getRuntime();
+
+  auto requestId = this->eval(R"( // line 0
+    function openSocket() { // line 1
+      return globalThis.__NETWORK_REPORTER__.createDevToolsRequestId(); // line 2
+    } // line 3
+    openSocket(); // line 4
+
+    //# sourceURL=webSocketInitiatorTest.js
+  )")
+                       .asString(runtime)
+                       .utf8(runtime);
+
+  this->expectMessageFromPage(JsonParsed(AllOf(
+      AtJsonPtr("/method", "Network.webSocketCreated"),
+      AtJsonPtr("/params/requestId", requestId),
+      AtJsonPtr("/params/url", "wss://example.com/initiator"),
+      AtJsonPtr("/params/initiator/type", "script"),
+      AtJsonPtr(
+          "/params/initiator/stack/callFrames",
+          AllOf(
+              Each(AtJsonPtr("/url", "webSocketInitiatorTest.js")),
+              Contains(AllOf(
+                  AtJsonPtr("/functionName", "openSocket"),
+                  AtJsonPtr("/lineNumber", 2))))))));
+
+  NetworkReporter::getInstance().reportWebSocketCreated(
+      requestId, "wss://example.com/initiator");
+
+  this->expectMessageFromPage(JsonEq(R"({
+                                          "id": 2,
+                                          "result": {}
+                                        })"));
+  this->toPage_->sendMessage(R"({
+                                  "id": 2,
+                                  "method": "Network.disable"
+                                })");
+}
+
 TEST_P(NetworkReporterTest, testNetworkEventsWhenDisabled) {
   EXPECT_FALSE(NetworkReporter::getInstance().isDebuggingEnabled());
 

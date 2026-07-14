@@ -152,7 +152,10 @@ RCT_EXPORT_METHOD(
   [webSocket setDelegateDispatchQueue:[self methodQueue]];
   webSocket.delegate = self;
   webSocket.reactTag = @(socketID);
-  webSocket.inspectorRequestId = [[NSUUID UUID] UUIDString];
+  // Prefer the DevTools request ID created by the JS caller, which carries the
+  // request initiator stack trace for CDP reporting.
+  NSString *devToolsRequestId = options.unstable_devToolsRequestId();
+  webSocket.inspectorRequestId = devToolsRequestId.length > 0 ? devToolsRequestId : [[NSUUID UUID] UUIDString];
   if (!_sockets) {
     _sockets = [NSMutableDictionary new];
   }

@@ -145,7 +145,14 @@ class WebSocket extends EventTarget {
     );
     this._socketId = nextWebSocketId++;
     this._registerEvents();
-    NativeWebSocketModule.connect(url, protocols, {headers}, this._socketId);
+    const devToolsRequestId =
+      global.__NETWORK_REPORTER__?.createDevToolsRequestId();
+    NativeWebSocketModule.connect(
+      url,
+      protocols,
+      {headers, unstable_devToolsRequestId: devToolsRequestId},
+      this._socketId,
+    );
   }
 
   get binaryType(): ?BinaryType {
