@@ -10424,6 +10424,12 @@ class facebook::react::jsinspector_modern::JInspectorNetworkReporter : public jn
   public static void reportRequestStart(jni::alias_ref<jclass>, jni::alias_ref<jstring> requestId, jni::alias_ref<jstring> requestUrl, jni::alias_ref<jstring> requestMethod, jni::alias_ref<jni::JMap<jstring, jstring>> requestHeaders, jni::alias_ref<jstring> requestBody, jlong encodedDataLength);
   public static void reportResponseEnd(jni::alias_ref<jclass>, jni::alias_ref<jstring> requestId, jlong encodedDataLength);
   public static void reportResponseStart(jni::alias_ref<jclass>, jni::alias_ref<jstring> requestId, jni::alias_ref<jstring> requestUrl, jint responseStatus, jni::alias_ref<jni::JMap<jstring, jstring>> responseHeaders, jlong encodedDataLength);
+  public static void reportWebSocketClosed(jni::alias_ref<jclass>, jni::alias_ref<jstring> requestId);
+  public static void reportWebSocketCreated(jni::alias_ref<jclass>, jni::alias_ref<jstring> requestId, jni::alias_ref<jstring> url);
+  public static void reportWebSocketHandshakeResponseReceived(jni::alias_ref<jclass>, jni::alias_ref<jstring> requestId, jint statusCode, jni::alias_ref<jni::JMap<jstring, jstring>> headers);
+  public static void reportWebSocketMessageReceivedImpl(jni::alias_ref<jclass>, jni::alias_ref<jstring> requestId, jni::alias_ref<jstring> payloadData, jboolean isBinary);
+  public static void reportWebSocketMessageSentImpl(jni::alias_ref<jclass>, jni::alias_ref<jstring> requestId, jni::alias_ref<jstring> payloadData, jboolean isBinary);
+  public static void reportWebSocketWillSendHandshakeRequest(jni::alias_ref<jclass>, jni::alias_ref<jstring> requestId, jni::alias_ref<jni::JMap<jstring, jstring>> headers);
 }
 
 class facebook::react::jsinspector_modern::LoadNetworkResourceDelegate {
