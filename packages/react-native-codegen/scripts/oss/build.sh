@@ -27,7 +27,7 @@ YARN_BINARY="${YARN_BINARY:-$YARN_OR_NPM}"
 SAFE_MV="mv"
 
 # Detect if we are on a VirtioFS volume via Apple Virtualization.framework
-if /sbin/mount | /usr/bin/awk -v dev="$(/bin/df -P "$CODEGEN_DIR" | /usr/bin/awk 'NR==2 {print $1}')" '$1 == dev && /AppleVirtIOFS/' >/dev/null; then
+if /sbin/mount | /usr/bin/awk -v dev="$(/bin/df -P "$CODEGEN_DIR" | /usr/bin/awk 'NR==2 {print $1}')" '$1 == dev && /AppleVirtIOFS/ { found=1 } END { exit !found }'; then
   SAFE_MV="/bin/cp -R -X"
 fi
 
