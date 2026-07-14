@@ -313,6 +313,14 @@ category UIView(React) {
   public virtual void removeReactSubview:(UIView* subview);
 }
 
+category UIViewController(React) {
+  public @property (assign, readonly) BOOL reactViewControllerIsVisible;
+  public virtual void reactAddViewControllerAppearanceListener:(id<RCTViewControllerAppearanceListener> listener);
+  public virtual void reactNotifyViewControllerDidAppear:(BOOL animated);
+  public virtual void reactNotifyViewControllerDidDisappear:(BOOL animated);
+  public virtual void reactRemoveViewControllerAppearanceListener:(id<RCTViewControllerAppearanceListener> listener);
+}
+
 class ObjCTimerRegistry : public facebook::react::PlatformTimerRegistry {
   public ObjCTimerRegistry();
   public RCTTiming* _Null_unspecified timing;
@@ -3135,6 +3143,11 @@ protocol RCTUnimplementedNativeViewViewProtocol : public NSObject {
 
 protocol RCTValueAnimatedNodeObserver : public NSObject {
   public virtual void animatedNode:didUpdateValue:(RCTValueAnimatedNode* node, CGFloat value);
+}
+
+protocol RCTViewControllerAppearanceListener : public NSObject {
+  public virtual void reactViewControllerDidAppear:animated:(UIViewController* viewController, BOOL animated);
+  public virtual void reactViewControllerDidDisappear:animated:(UIViewController* viewController, BOOL animated);
 }
 
 protocol RCTVirtualViewContainerProtocol {
