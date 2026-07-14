@@ -9,7 +9,6 @@
 
 #include <memory>
 #include <mutex>
-#include <shared_mutex>
 
 #include <react/renderer/core/EventEmitter.h>
 #include <react/renderer/core/InstanceHandle.h>
@@ -145,7 +144,7 @@ class ShadowNodeFamily final : public jsi::NativeState {
 
   EventDispatcher::Weak eventDispatcher_;
   std::shared_ptr<const State> mostRecentState_;
-  mutable std::shared_mutex mutex_;
+  mutable std::mutex mutex_;
 
   std::function<void(ShadowNodeFamily &family)> onUnmountedFamilyDestroyedCallback_ = nullptr;
 
