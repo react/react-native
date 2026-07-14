@@ -1254,6 +1254,15 @@ interface RCTInspectorUtils : public NSObject {
   public virtual static CommonHostMetadata* getHostMetadata();
 }
 
+interface RCTInspectorWebSocketReporter : public NSObject {
+  public virtual static void reportHandshakeResponseReceived:httpMessage:(_Nullable NSString* requestId, _Nullable CFHTTPMessageRef httpMessage);
+  public virtual static void reportMessageReceived:message:(_Nullable NSString* requestId, _Nullable id message);
+  public virtual static void reportMessageSent:message:(_Nullable NSString* requestId, _Nullable id message);
+  public virtual static void reportWebSocketClosed:(_Nullable NSString* requestId);
+  public virtual static void reportWebSocketCreated:url:(_Nullable NSString* requestId, NSURL* url);
+  public virtual static void reportWillSendHandshakeRequest:request:(_Nullable NSString* requestId, NSURLRequest* request);
+}
+
 interface RCTInstance : public NSObject {
   public @property (strong, readonly) RCTSurfacePresenter* surfacePresenter;
   public virtual instancetype initWithDelegate:jsRuntimeFactory:bundleManager:turboModuleManagerDelegate:moduleRegistry:parentInspectorTarget:launchOptions:(id<RCTInstanceDelegate> delegate, std::shared_ptr<facebook::react::JSRuntimeFactory> jsRuntimeFactory, RCTBundleManager* bundleManager, id<RCTTurboModuleManagerDelegate> turboModuleManagerDelegate, RCTModuleRegistry* moduleRegistry, facebook::react::jsinspector_modern::HostTarget* parentInspectorTarget, _Nullable NSDictionary* launchOptions);
@@ -6111,6 +6120,12 @@ class facebook::react::NetworkReporter {
   public void reportRequestStart(const std::string& requestId, const facebook::react::RequestInfo& requestInfo, int encodedDataLength, const std::optional<facebook::react::ResponseInfo>& redirectResponse);
   public void reportResponseEnd(const std::string& requestId, int encodedDataLength);
   public void reportResponseStart(const std::string& requestId, const facebook::react::ResponseInfo& responseInfo, int encodedDataLength);
+  public void reportWebSocketClosed(const std::string& requestId) const;
+  public void reportWebSocketCreated(const std::string& requestId, const std::string& url) const;
+  public void reportWebSocketHandshakeResponseReceived(const std::string& requestId, uint16_t statusCode, const facebook::react::Headers& headers) const;
+  public void reportWebSocketMessageReceived(const std::string& requestId, const std::string& payloadData, bool isBinary) const;
+  public void reportWebSocketMessageSent(const std::string& requestId, const std::string& payloadData, bool isBinary) const;
+  public void reportWebSocketWillSendHandshakeRequest(const std::string& requestId, const facebook::react::Headers& headers) const;
   public void storeResponseBody(const std::string& requestId, std::string_view body, bool base64Encoded);
 }
 
@@ -12666,6 +12681,12 @@ class facebook::react::jsinspector_modern::NetworkHandler {
   public void onRequestWillBeSent(const std::string& requestId, const facebook::react::jsinspector_modern::cdp::network::Request& request, const std::optional<facebook::react::jsinspector_modern::cdp::network::Response>& redirectResponse);
   public void onRequestWillBeSentExtraInfo(const std::string& requestId, const facebook::react::jsinspector_modern::Headers& headers);
   public void onResponseReceived(const std::string& requestId, const facebook::react::jsinspector_modern::cdp::network::Response& response);
+  public void onWebSocketClosed(const std::string& requestId);
+  public void onWebSocketCreated(const std::string& requestId, const std::string& url);
+  public void onWebSocketFrameReceived(const std::string& requestId, const std::string& payloadData, bool isBinary);
+  public void onWebSocketFrameSent(const std::string& requestId, const std::string& payloadData, bool isBinary);
+  public void onWebSocketHandshakeResponseReceived(const std::string& requestId, uint16_t status, const facebook::react::jsinspector_modern::Headers& headers);
+  public void onWebSocketWillSendHandshakeRequest(const std::string& requestId, const facebook::react::jsinspector_modern::Headers& headers);
   public void recordRequestInitiatorStack(const std::string& requestId, folly::dynamic stackTrace);
   public void storeResponseBody(const std::string& requestId, std::string_view body, bool base64Encoded);
 }
@@ -13370,6 +13391,56 @@ struct facebook::react::jsinspector_modern::cdp::network::ResponseReceivedParams
   public std::string loaderId;
   public std::string requestId;
   public std::string type;
+}
+
+struct facebook::react::jsinspector_modern::cdp::network::WebSocketClosedParams {
+  public double timestamp;
+  public folly::dynamic toDynamic() const;
+  public std::string requestId;
+}
+
+struct facebook::react::jsinspector_modern::cdp::network::WebSocketCreatedParams {
+  public folly::dynamic initiator;
+  public folly::dynamic toDynamic() const;
+  public std::string requestId;
+  public std::string url;
+}
+
+struct facebook::react::jsinspector_modern::cdp::network::WebSocketFrame {
+  public bool mask;
+  public folly::dynamic toDynamic() const;
+  public int opcode;
+  public std::string payloadData;
+}
+
+struct facebook::react::jsinspector_modern::cdp::network::WebSocketFrameParams {
+  public double timestamp;
+  public facebook::react::jsinspector_modern::cdp::network::WebSocketFrame response;
+  public folly::dynamic toDynamic() const;
+  public std::string requestId;
+}
+
+struct facebook::react::jsinspector_modern::cdp::network::WebSocketHandshakeResponseReceivedParams {
+  public double timestamp;
+  public facebook::react::jsinspector_modern::cdp::network::WebSocketResponse response;
+  public folly::dynamic toDynamic() const;
+  public std::string requestId;
+}
+
+struct facebook::react::jsinspector_modern::cdp::network::WebSocketResponse {
+  public facebook::react::jsinspector_modern::cdp::network::Headers headers;
+  public folly::dynamic toDynamic() const;
+  public static facebook::react::jsinspector_modern::cdp::network::WebSocketResponse fromInputParams(uint16_t status, const facebook::react::jsinspector_modern::cdp::network::Headers& headers);
+  public std::string statusText;
+  public uint16_t status;
+}
+
+struct facebook::react::jsinspector_modern::cdp::network::WebSocketWillSendHandshakeRequestParams {
+  public double timestamp;
+  public double wallTime;
+  public facebook::react::jsinspector_modern::cdp::network::Headers headers;
+  public folly::dynamic toDynamic() const;
+  public std::string requestId;
 }
 
 

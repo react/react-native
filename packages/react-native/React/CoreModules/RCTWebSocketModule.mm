@@ -16,6 +16,17 @@
 #import <SocketRocket/SRWebSocket.h>
 
 #import "CoreModulesPlugins.h"
+#import "RCTInspectorWebSocketReporter.h"
+
+@interface SRWebSocket (React)
+
+/**
+ * The CDP request ID used to report this connection's events to the modern
+ * debugger server, via `RCTInspectorWebSocketReporter`.
+ */
+@property (nonatomic, copy) NSString *inspectorRequestId;
+
+@end
 
 @implementation SRWebSocket (React)
 
@@ -27,6 +38,16 @@
 - (void)setReactTag:(NSNumber *)reactTag
 {
   objc_setAssociatedObject(self, @selector(reactTag), reactTag, OBJC_ASSOCIATION_COPY_NONATOMIC);
+}
+
+- (NSString *)inspectorRequestId
+{
+  return objc_getAssociatedObject(self, _cmd);
+}
+
+- (void)setInspectorRequestId:(NSString *)inspectorRequestId
+{
+  objc_setAssociatedObject(self, @selector(inspectorRequestId), inspectorRequestId, OBJC_ASSOCIATION_COPY_NONATOMIC);
 }
 
 @end
@@ -131,16 +152,23 @@ RCT_EXPORT_METHOD(
   [webSocket setDelegateDispatchQueue:[self methodQueue]];
   webSocket.delegate = self;
   webSocket.reactTag = @(socketID);
+  webSocket.inspectorRequestId = [[NSUUID UUID] UUIDString];
   if (!_sockets) {
     _sockets = [NSMutableDictionary new];
   }
   _sockets[@(socketID)] = webSocket;
+
+  [RCTInspectorWebSocketReporter reportWebSocketCreated:webSocket.inspectorRequestId url:URL];
+  [RCTInspectorWebSocketReporter reportWillSendHandshakeRequest:webSocket.inspectorRequestId request:request];
+
   [webSocket open];
 }
 
 RCT_EXPORT_METHOD(send : (NSString *)message forSocketID : (double)socketID)
 {
-  [_sockets[@(socketID)] sendString:message error:nil];
+  SRWebSocket *webSocket = _sockets[@(socketID)];
+  [RCTInspectorWebSocketReporter reportMessageSent:webSocket.inspectorRequestId message:message];
+  [webSocket sendString:message error:nil];
 }
 
 RCT_EXPORT_METHOD(sendBinary : (NSString *)base64String forSocketID : (double)socketID)
@@ -150,7 +178,9 @@ RCT_EXPORT_METHOD(sendBinary : (NSString *)base64String forSocketID : (double)so
 
 - (void)sendData:(NSData *)data forSocketID:(NSNumber *__nonnull)socketID
 {
-  [_sockets[socketID] sendData:data error:nil];
+  SRWebSocket *webSocket = _sockets[socketID];
+  [RCTInspectorWebSocketReporter reportMessageSent:webSocket.inspectorRequestId message:data];
+  [webSocket sendData:data error:nil];
 }
 
 RCT_EXPORT_METHOD(ping : (double)socketID)
@@ -182,6 +212,7 @@ RCT_EXPORT_METHOD(close : (double)code reason : (NSString *)reason socketID : (d
   if (!socketID) {
     return;
   }
+  [RCTInspectorWebSocketReporter reportMessageReceived:webSocket.inspectorRequestId message:message];
   id contentHandler = _contentHandlers[socketID];
   if (contentHandler) {
     message = [contentHandler processWebsocketMessage:message forSocketID:socketID withType:&type];
@@ -203,6 +234,8 @@ RCT_EXPORT_METHOD(close : (double)code reason : (NSString *)reason socketID : (d
   if (!socketID) {
     return;
   }
+  [RCTInspectorWebSocketReporter reportHandshakeResponseReceived:webSocket.inspectorRequestId
+                                                     httpMessage:webSocket.receivedHTTPHeaders];
   [self sendEventWithName:@"websocketOpen"
                      body:@{@"id" : socketID, @"protocol" : webSocket.protocol ? webSocket.protocol : @""}];
 }
@@ -213,6 +246,7 @@ RCT_EXPORT_METHOD(close : (double)code reason : (NSString *)reason socketID : (d
   if (!socketID) {
     return;
   }
+  [RCTInspectorWebSocketReporter reportWebSocketClosed:webSocket.inspectorRequestId];
   _contentHandlers[socketID] = nil;
   _sockets[socketID] = nil;
   NSDictionary *body =
@@ -229,6 +263,7 @@ RCT_EXPORT_METHOD(close : (double)code reason : (NSString *)reason socketID : (d
   if (!socketID) {
     return;
   }
+  [RCTInspectorWebSocketReporter reportWebSocketClosed:webSocket.inspectorRequestId];
   _contentHandlers[socketID] = nil;
   _sockets[socketID] = nil;
   [self sendEventWithName:@"websocketClosed"

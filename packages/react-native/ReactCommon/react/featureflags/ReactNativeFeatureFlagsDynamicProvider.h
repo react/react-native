@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<e8be340d97ada771fba14742a1c6a154>>
+ * @generated SignedSource<<b34b31496393a84b7d4950bfc87e04a7>>
  */
 
 /**
@@ -583,6 +583,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::fuseboxScreenshotCaptureEnabled();
+  }
+
+  bool fuseboxWebSocketEventsEnabled() override {
+    auto value = values_["fuseboxWebSocketEventsEnabled"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::fuseboxWebSocketEventsEnabled();
   }
 
   bool optimizedAnimatedPropUpdates() override {

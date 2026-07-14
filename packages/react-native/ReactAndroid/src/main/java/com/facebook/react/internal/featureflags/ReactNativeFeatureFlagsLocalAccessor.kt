@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<98a6085638c86aaa012c8bd972627ad4>>
+ * @generated SignedSource<<9a2806b3934d130010954a92a7b48e0f>>
  */
 
 /**
@@ -84,6 +84,7 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
   private var fuseboxFrameRecordingEnabledCache: Boolean? = null
   private var fuseboxNetworkInspectionEnabledCache: Boolean? = null
   private var fuseboxScreenshotCaptureEnabledCache: Boolean? = null
+  private var fuseboxWebSocketEventsEnabledCache: Boolean? = null
   private var optimizedAnimatedPropUpdatesCache: Boolean? = null
   private var overrideBySynchronousMountPropsAtMountingAndroidCache: Boolean? = null
   private var perfIssuesEnabledCache: Boolean? = null
@@ -707,6 +708,16 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
       cached = currentProvider.fuseboxScreenshotCaptureEnabled()
       accessedFeatureFlags.add("fuseboxScreenshotCaptureEnabled")
       fuseboxScreenshotCaptureEnabledCache = cached
+    }
+    return cached
+  }
+
+  override fun fuseboxWebSocketEventsEnabled(): Boolean {
+    var cached = fuseboxWebSocketEventsEnabledCache
+    if (cached == null) {
+      cached = currentProvider.fuseboxWebSocketEventsEnabled()
+      accessedFeatureFlags.add("fuseboxWebSocketEventsEnabled")
+      fuseboxWebSocketEventsEnabledCache = cached
     }
     return cached
   }
