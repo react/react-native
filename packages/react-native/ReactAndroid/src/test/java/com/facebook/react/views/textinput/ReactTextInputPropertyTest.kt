@@ -42,19 +42,12 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
+import org.robolectric.Shadows.shadowOf
+import android.view.inputmethod.InputMethodManager
 
 /** Verify {@link EditText} view property being applied properly by {@link ReactTextInputManager} */
 @RunWith(RobolectricTestRunner::class)
 class ReactTextInputPropertyTest {
-
-  private class TestReactEditText(context: Context) : ReactEditText(context) {
-    var showSoftKeyboardCallCount = 0
-
-    override fun showSoftKeyboard(): Boolean {
-      showSoftKeyboardCallCount++
-      return true
-    }
-  }
 
   private lateinit var context: BridgeReactContext
   private lateinit var catalystInstanceMock: CatalystInstance
@@ -86,13 +79,17 @@ class ReactTextInputPropertyTest {
 
   @Test
   fun testShowsSoftKeyboardWhenSelectionStartsWhileFocused() {
-    val textInput = TestReactEditText(themedContext)
-    textInput.setText("hello")
-    textInput.onFocusChanged(true, View.FOCUS_DOWN, null)
+    val inputMethodManager =
+        RuntimeEnvironment.getApplication().getSystemService(Context.INPUT_METHOD_SERVICE)
+            as InputMethodManager
+    val shadowImm = shadowOf(inputMethodManager)
 
-    textInput.setSelection(1, 3)
+    view.setText("hello")
+    view.requestFocusFromJS()
 
-    assertThat(textInput.showSoftKeyboardCallCount).isEqualTo(1)
+    view.setSelection(1, 3)
+
+    assertThat(shadowImm.isSoftInputVisible).isTrue
   }
 
   @Test
