@@ -61,7 +61,7 @@ export function getDefaultConfig(projectRoot: string): ConfigT {
     serializer: {
       // Note: This option is overridden in cli-plugin-metro (getOverrideConfig)
       getModulesRunBeforeMainModule: () => [
-        require.resolve('react-native/setup-env'),
+        require.resolve('react-native/Libraries/Core/InitializeCore'),
       ],
       getPolyfills: () => require('@react-native/js-polyfills')(),
       isThirdPartyModule({path: modulePath}: Readonly<{path: string, ...}>) {
