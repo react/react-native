@@ -25,8 +25,18 @@ function unstable_setLogListeners(listeners: ?LogListeners) {
   logListeners = listeners;
 }
 
-/*
- * @returns {bool} true if different, false if equal
+/**
+ * Deep equality comparison that recursively checks all properties.
+ * 
+ * Returns true if values differ, false if equal. Handles primitives, objects,
+ * arrays, and mixed types. Functions are considered equal by default unless
+ * unsafelyIgnoreFunctions is set to false.
+ *
+ * @param {any} one - First value
+ * @param {any} two - Second value
+ * @param {Options|number} maxDepthOrOptions - Max recursion depth or options
+ * @param {Options} maybeOptions - Options when first is number
+ * @returns {boolean} True if different, false if equal
  */
 function deepDiffer(
   one: any,
@@ -102,3 +112,25 @@ function deepDiffer(
 
 deepDiffer.unstable_setLogListeners = unstable_setLogListeners;
 export default deepDiffer;
+
+/**
+ * USAGE EXAMPLES:
+ * 
+ * // Primitive comparison
+ * deepDiffer(1, 2); // true
+ * deepDiffer('hello', 'hello'); // false
+ * 
+ * // Object comparison
+ * deepDiffer({a: 1}, {a: 1}); // false
+ * deepDiffer({a: 1, b: 2}, {a: 1}); // true
+ * 
+ * // Array comparison
+ * deepDiffer([1, 2], [1, 2]); // false
+ * deepDiffer([1, 2], [1, 3]); // true
+ * 
+ * // Nested structures
+ * deepDiffer({a: {b: [1, 2]}}, {a: {b: [1, 2]}}); // false
+ * 
+ * // With depth limit
+ * deepDiffer({a: {b: {c: 1}}}, {a: {b: {c: 2}}}, 2); // false (depth limited)
+ */

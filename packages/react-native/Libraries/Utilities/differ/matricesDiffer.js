@@ -11,13 +11,17 @@
 'use strict';
 
 /**
- * Unrolls an array comparison specially for matrices. Prioritizes
- * checking of indices that are most likely to change so that the comparison
- * bails as early as possible.
+ * Unrolls an array comparison specially for matrices (4x4 transformation matrices).
  *
- * @param {MatrixMath.Matrix} one First matrix.
- * @param {MatrixMath.Matrix} two Second matrix.
- * @return {boolean} Whether or not the two matrices differ.
+ * Prioritizes checking of indices that are most likely to change so that the
+ * comparison bails as early as possible. This optimizes for common transformations.
+ * 
+ * Index check order: [12,13,14,5,10,0,1,2,3,4,6,7,8,9,11,15]
+ *
+ * @param {?Array<number>} one - First matrix (16 elements)
+ * @param {?Array<number>} two - Second matrix (16 elements)
+ * @returns {boolean} True if matrices differ, false if equal
+ * @performance O(1) - Fixed size comparison, early exit on first difference
  */
 function matricesDiffer(one: ?Array<number>, two: ?Array<number>): boolean {
   if (one === two) {

@@ -10,6 +10,20 @@
 
 'use strict';
 
+/**
+ * Maps an array of items to new values, inserting a separator between items.
+ *
+ * @template TFrom - Type of input array elements
+ * @template TTo - Type of output array elements
+ * @param {Array<TFrom>} items - Items to map
+ * @param {Function} itemRenderer - Function to render each item: (item, index, items) => TTo
+ * @param {Function} spacerRenderer - Function to render separators: (index) => TTo
+ * @returns {Array<TTo>} Array with items and separators interleaved
+ *
+ * @example
+ *   mapWithSeparator(['a', 'b', 'c'], x => <Text>{x}</Text>, () => <Comma />)
+ *   // Returns: [<Text>a</Text>, <Comma />, <Text>b</Text>, <Comma />, <Text>c</Text>]
+ */
 function mapWithSeparator<TFrom, TTo>(
   items: Array<TFrom>,
   itemRenderer: (item: TFrom, index: number, items: Array<TFrom>) => TTo,

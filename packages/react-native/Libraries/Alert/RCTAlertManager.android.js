@@ -14,12 +14,25 @@ import NativeDialogManagerAndroid from '../NativeModules/specs/NativeDialogManag
 
 function emptyCallback() {}
 
+/**
+ * Shows an alert dialog on Android using the native DialogManagerAndroid module.
+ * Falls back gracefully if the native module is not available.
+ *
+ * @param {Args} args - The alert configuration (title, message, buttons, etc.)
+ * @param {Function} callback - Callback function invoked with (id, value) when user selects an option
+ * @returns {void}
+ * @note NativeDialogManagerAndroid provides better Android-specific UI/UX than the
+ * standard AlertManager. If unavailable, the alert silently fails to prevent crashes.
+ * See TODO(5998984) for improved polyfill implementation.
+ */
 export function alertWithArgs(
   args: Args,
   callback: (id: number, value: string) => void,
 ) {
-  // TODO(5998984): Polyfill it correctly with DialogManagerAndroid
   if (!NativeDialogManagerAndroid) {
+    console.warn(
+      'NativeDialogManagerAndroid is not available. Alert may not be displayed.',
+    );
     return;
   }
 

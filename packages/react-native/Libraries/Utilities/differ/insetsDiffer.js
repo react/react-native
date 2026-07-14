@@ -25,6 +25,15 @@ const dummyInsets = {
   bottom: undefined,
 };
 
+/**
+ * Compares two inset objects for equality.
+ * Returns true if the insets are different, false if equal.
+ *
+ * @param {Inset} one - First inset object (top, left, right, bottom)
+ * @param {Inset} two - Second inset object
+ * @returns {boolean} True if insets differ, false if equal
+ * @performance O(1) - Compares only four numeric values
+ */
 function insetsDiffer(one: Inset, two: Inset): boolean {
   one = one || dummyInsets;
   two = two || dummyInsets;

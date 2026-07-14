@@ -9,19 +9,25 @@
  */
 
 /**
- * @return whether or not a @param {function} f is provided natively by calling
- * `toString` and check if the result includes `[native code]` in it.
+ * Detects if a function is a native function (not a polyfill or user-defined).
  *
- * Note that a polyfill can technically fake this behavior but few does it.
- * Therefore, this is usually good enough for our purpose.
+ * Checks if the function's toString representation includes `[native code]`.
+ * Note: A polyfill can technically fake this, but most don't, making this
+ * check reliable for practical purposes.
+ *
+ * @param {Function} f - Function to check
+ * @returns {boolean} True if the function is a native function
  */
 export function isNativeFunction(f: Function): boolean {
   return typeof f === 'function' && f.toString().indexOf('[native code]') > -1;
 }
 
 /**
- * @return whether or not the constructor of @param {object} o is an native
- * function named with @param {string} expectedName.
+ * Checks if an object's constructor is a native function with a specific name.
+ *
+ * @param {Object} o - Object to check
+ * @param {string} expectedName - Expected constructor name
+ * @returns {boolean} True if the constructor is native and matches the expected name
  */
 export function hasNativeConstructor(o: Object, expectedName: string): boolean {
   const con = Object.getPrototypeOf(o).constructor;

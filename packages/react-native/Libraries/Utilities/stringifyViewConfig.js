@@ -8,6 +8,20 @@
  * @format
  */
 
+/**
+ * Serializes a view configuration object to a JSON string for debugging and logging.
+ *
+ * Handles special cases like function properties by representing them with the
+ * Unicode function symbol (ƒ) followed by the function name.
+ *
+ * @param {any} viewConfig - The view configuration object to stringify
+ * @returns {string} Formatted JSON string with 2-space indentation
+ *
+ * @example
+ *   const config = { name: 'View', style: { flex: 1 }, onPress: [Function] };
+ *   const json = stringifyViewConfig(config);
+ *   // Returns: "{ ... name: 'View', style: { flex: 1 }, onPress: ƒ onPress ... }"
+ */
 export default function stringifyViewConfig(viewConfig: any): string {
   return JSON.stringify(
     viewConfig,

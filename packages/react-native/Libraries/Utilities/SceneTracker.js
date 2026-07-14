@@ -16,16 +16,33 @@ let _listeners: Array<(scene: Scene) => void> = [];
 
 let _activeScene: Scene = {name: 'default'};
 
+/**
+ * Global scene tracker for managing the currently active scene in the application.
+ * Notifies listeners whenever the active scene changes.
+ */
 const SceneTracker = {
+  /**
+   * Sets the currently active scene and notifies all registered listeners.
+   * @param {Scene} scene - The new active scene object
+   */
   setActiveScene(scene: Scene) {
     _activeScene = scene;
     _listeners.forEach(listener => listener(_activeScene));
   },
 
+  /**
+   * Gets the currently active scene.
+   * @returns {Scene} The active scene object
+   */
   getActiveScene(): Scene {
     return _activeScene;
   },
 
+  /**
+   * Registers a listener to be called whenever the active scene changes.
+   * @param {Function} callback - Function called with the new scene when it changes
+   * @returns {Object} Object with a remove() method to unsubscribe
+   */
   addActiveSceneChangedListener(callback: (scene: Scene) => void): {
     remove: () => void,
     ...

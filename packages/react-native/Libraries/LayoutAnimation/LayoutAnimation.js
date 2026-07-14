@@ -45,8 +45,15 @@ type OnAnimationDidFailCallback = () => void;
 let isLayoutAnimationEnabled: boolean =
   ReactNativeFeatureFlags.isLayoutAnimationEnabled();
 
+/**
+ * Internal function to enable or disable layout animations.
+ * When disabled, configureNext calls will be no-ops.
+ *
+ * @param {boolean} value - Whether to enable layout animations
+ * @internal
+ */
 function setLayoutAnimationEnabled(value: boolean) {
-  isLayoutAnimationEnabled = isLayoutAnimationEnabled;
+  isLayoutAnimationEnabled = value;
 }
 
 /**

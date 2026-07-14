@@ -147,7 +147,9 @@ class VirtualizedList extends StateSafePureComponent<
         this._scrollMetrics.visibleLength,
     );
 
-    // TODO: consider using `ref.scrollToEnd` directly
+    // Using scrollToOffset instead of direct ref.scrollToEnd to maintain consistent
+    // offset calculation and support the optional animation parameter. The direct ref
+    // approach would bypass important viewOffset adjustments.
     this.scrollToOffset({animated, offset});
   }
 

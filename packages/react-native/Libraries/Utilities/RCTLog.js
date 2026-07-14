@@ -23,7 +23,13 @@ const levelsMap = {
 let warningHandler: ?(...Array<unknown>) => void = null;
 
 const RCTLog = {
-  // level one of log, info, warn, error, mustfix
+  /**
+   * Logs to console only if the native logging hook is unavailable.
+   * If available, delegates to native logging and reports warnings to LogBox.
+   *
+   * @param {string} level - Log level: 'log', 'info', 'warn', 'error', or 'fatal'
+   * @param {...any} args - Arguments to log
+   */
   logIfNoNativeHook(level: string, ...args: Array<unknown>): void {
     // We already printed in the native console, so only log here if using a js debugger
     if (typeof global.nativeLoggingHook === 'undefined') {
@@ -36,7 +42,14 @@ const RCTLog = {
     }
   },
 
-  // Log to console regardless of nativeLoggingHook
+  /**
+   * Logs to console regardless of native logging hook availability.
+   * Throws an invariant if the log level is invalid.
+   *
+   * @param {string} level - Log level: 'log', 'info', 'warn', 'error', or 'fatal'
+   * @param {...any} args - Arguments to log
+   * @throws Invariant error if level is not a valid log level
+   */
   logToConsole(level: string, ...args: Array<unknown>): void {
     // $FlowFixMe[invalid-computed-prop]
     const logFn = levelsMap[level];
@@ -48,6 +61,11 @@ const RCTLog = {
     console[logFn](...args);
   },
 
+  /**
+   * Sets a custom warning handler to process warnings reported to LogBox.
+   *
+   * @param {?Function} handler - Function to handle warnings, or null to remove the handler
+   */
   setWarningHandler(handler: typeof warningHandler): void {
     warningHandler = handler;
   },
