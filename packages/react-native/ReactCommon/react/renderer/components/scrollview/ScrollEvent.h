@@ -21,6 +21,7 @@ struct ScrollEvent : public EventPayload {
   EdgeInsets contentInset;
   Size containerSize;
   Float zoomScale{};
+  bool responderIgnoreScroll{false};
 
   /*
    * The time in seconds when the touch occurred or when it was last mutated.

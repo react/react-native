@@ -44,6 +44,7 @@ jsi::Value ScrollEvent::asJSIValue(jsi::Runtime& runtime) const {
 
   payload.setProperty(runtime, "zoomScale", zoomScale);
   payload.setProperty(runtime, "timestamp", timestamp * 1000);
+  payload.setProperty(runtime, "responderIgnoreScroll", responderIgnoreScroll);
 
   return payload;
 }
@@ -67,7 +68,8 @@ folly::dynamic ScrollEvent::asDynamic() const {
           "contentInset", std::move(contentInsetObj))(
           "contentSize", std::move(contentSizeObj))(
           "layoutMeasurement", std::move(containerSizeObj))(
-          "zoomScale", zoomScale)("timestamp", timestamp * 1000);
+          "zoomScale", zoomScale)("timestamp", timestamp * 1000)(
+          "responderIgnoreScroll", responderIgnoreScroll);
 
   return metrics;
 };

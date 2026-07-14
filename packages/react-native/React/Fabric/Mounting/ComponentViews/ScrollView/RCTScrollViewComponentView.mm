@@ -599,6 +599,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   metrics.containerSize = RCTSizeFromCGSize(_scrollView.bounds.size);
   metrics.zoomScale = _scrollView.zoomScale;
   metrics.timestamp = CACurrentMediaTime();
+  metrics.responderIgnoreScroll = !_isUserTriggeredScrolling;
 
   if (_layoutMetrics.layoutDirection == LayoutDirection::RightToLeft) {
     metrics.contentOffset.x = metrics.contentSize.width - metrics.containerSize.width - metrics.contentOffset.x;
