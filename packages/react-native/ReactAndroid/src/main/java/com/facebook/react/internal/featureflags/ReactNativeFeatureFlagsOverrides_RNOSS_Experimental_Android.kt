@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<af67163b6d34bb714b783658501ca6e8>>
+ * @generated SignedSource<<41f83a9921de88f659ddc22172344226>>
  */
 
 /**
@@ -30,8 +30,6 @@ public open class ReactNativeFeatureFlagsOverrides_RNOSS_Experimental_Android : 
   override fun enableSchedulerDelegateInvalidation(): Boolean = true
 
   override fun fuseboxFrameRecordingEnabled(): Boolean = true
-
-  override fun fuseboxScreenshotCaptureEnabled(): Boolean = true
 
   override fun preventShadowTreeCommitExhaustion(): Boolean = true
 

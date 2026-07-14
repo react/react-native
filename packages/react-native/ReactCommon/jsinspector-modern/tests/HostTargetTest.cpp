@@ -1632,11 +1632,15 @@ TEST_F(HostTargetTest, TracingDelegateIsNotifiedOnDirectTracingCall) {
   page_->stopTracing();
 }
 
-TEST_F(HostTargetProtocolTest, CaptureScreenshotNotSupportedWhenFlagDisabled) {
+TEST_F(HostTargetProtocolTest, CaptureScreenshotReturnsData) {
+  EXPECT_CALL(hostTargetDelegate_, captureScreenshot(_))
+      .WillOnce(Return(std::optional<std::string>("c2NyZWVuc2hvdA==")))
+      .RetiresOnSaturation();
   EXPECT_CALL(
       fromPage(),
       onMessage(JsonParsed(AllOf(
-          AtJsonPtr("/error/code", Eq(-32601)), AtJsonPtr("/id", Eq(1))))))
+          AtJsonPtr("/id", Eq(1)),
+          AtJsonPtr("/result/data", Eq("c2NyZWVuc2hvdA=="))))))
       .RetiresOnSaturation();
   toPage_->sendMessage(R"({
                            "id": 1,
