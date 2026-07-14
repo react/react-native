@@ -137,6 +137,25 @@ function testRequestAnimationFrame(){
     );
 }
 
+function testRequestIdleCallback() {
+    let handle = requestIdleCallback(deadline => {
+        const didTimeout: boolean = deadline.didTimeout;
+        const remaining: number = deadline.timeRemaining();
+        console.log(didTimeout, remaining);
+    });
+    cancelIdleCallback(handle);
+
+    handle = requestIdleCallback(noop, { timeout: 100 });
+    cancelIdleCallback(handle);
+
+    // @ts-expect-error
+    requestIdleCallback(noop, { timeout: 'wrong-type' });
+
+    // handle is opaque: object on New Architecture, number on legacy
+    // @ts-expect-error
+    const handleIsNotNumber: number = requestIdleCallback(noop);
+}
+
 const fetchCopy: WindowOrWorkerGlobalScope['fetch'] = fetch;
 
 const myHeaders = new Headers();
