@@ -11,6 +11,7 @@
 #import <ReactCommon/RCTTurboModule.h>
 #import <ReactCommon/TestCallInvoker.h>
 #import <hermes/hermes.h>
+#import <react/bridging/ArrayBuffer.h>
 
 #import <list>
 #import <vector>

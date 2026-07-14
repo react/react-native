@@ -13,6 +13,7 @@
 #include <react/debug/react_native_assert.h>
 #include <react/renderer/components/view/PointerEvent.h>
 #include <react/renderer/core/LayoutableShadowNode.h>
+#include <react/renderer/core/ShadowNode.h>
 #include <react/renderer/dom/DOM.h>
 #include <react/renderer/runtimescheduler/RuntimeSchedulerBinding.h>
 #include <react/renderer/uimanager/primitives.h>
@@ -35,6 +36,12 @@ void UIManagerBinding::createAndInstallIfNeeded(
     auto object = jsi::Object::createFromHostObject(runtime, uiManagerBinding);
     runtime.global().setProperty(
         runtime, uiManagerModuleName, std::move(object));
+
+    // Tag this thread (the JS runtime thread) as the one allowed to propagate
+    // runtime shadow-node reference updates during Fabric commit. The flag is
+    // thread_local, so it must be set on the JS thread; installing the binding
+    // is guaranteed to run there and to happen before any JS-driven commit.
+    ShadowNode::setUseRuntimeShadowNodeReferenceUpdateOnThread(true);
   }
 }
 

@@ -46,10 +46,7 @@ type AccessibilityAnnouncementFinishedEventHandler = (
 ) => void;
 
 type AccessibilityEventTypes =
-  | 'click'
-  | 'focus'
-  | 'viewHoverEnter'
-  | 'windowStateChange';
+  'click' | 'focus' | 'viewHoverEnter' | 'windowStateChange';
 
 /**
  * @see https://reactnative.dev/docs/accessibilityinfo

@@ -641,53 +641,54 @@ function InternalTextInput(props: TextInputProps): React.Node {
           ? selectionColor
           : selectionHandleColor,
     };
-    textInput = (
-      /* $FlowFixMe[prop-missing] the types for AndroidTextInput don't match up
-       * exactly with the props for TextInput. This will need to get fixed */
-      /* $FlowFixMe[incompatible-type] the types for AndroidTextInput don't
-       * match up exactly with the props for TextInput. This will need to get
-       * fixed */
-      /* $FlowFixMe[incompatible-type-arg] the types for AndroidTextInput don't
-       * match up exactly with the props for TextInput. This will need to get
-       * fixed */
-      <AndroidTextInput
-        // Figure out imperative + forward refs.
-        ref={ref as $FlowFixMe}
-        {...otherProps}
-        {...colorProps}
-        {...eventHandlers}
-        accessibilityLabel={_accessibilityLabel}
-        accessibilityLabelledBy={_accessibilityLabelledBy}
-        accessibilityState={_accessibilityState}
-        accessible={accessible}
-        acceptDragAndDropTypes={props.experimental_acceptDragAndDropTypes}
-        autoCapitalize={autoCapitalize}
-        submitBehavior={submitBehavior}
-        caretHidden={caretHidden}
-        children={children}
-        disableFullscreenUI={props.disableFullscreenUI}
-        focusable={tabIndex !== undefined ? !tabIndex : focusable}
-        importantForAccessibility={_importantForAccessibility}
-        mostRecentEventCount={mostRecentEventCount}
-        nativeID={id ?? props.nativeID}
-        numberOfLines={props.rows ?? props.numberOfLines}
-        onBlur={_onBlur}
-        onChange={_onChange}
-        onFocus={_onFocus}
-        /* $FlowFixMe[prop-missing] the types for AndroidTextInput don't match
-         * up exactly with the props for TextInput. This will need to get fixed
-         */
-        /* $FlowFixMe[incompatible-type] the types for AndroidTextInput
-         * don't match up exactly with the props for TextInput. This will need
-         * to get fixed */
-        onScroll={_onScroll}
-        onSelectionChange={_onSelectionChange}
-        placeholder={placeholder}
-        style={_style}
-        text={text}
-        textBreakStrategy={props.textBreakStrategy}
-      />
-    );
+    textInput =
+      (
+        /* $FlowFixMe[prop-missing] the types for AndroidTextInput don't match up
+         * exactly with the props for TextInput. This will need to get fixed */
+        /* $FlowFixMe[incompatible-type] the types for AndroidTextInput don't
+         * match up exactly with the props for TextInput. This will need to get
+         * fixed */
+        /* $FlowFixMe[incompatible-type-arg] the types for AndroidTextInput don't
+         * match up exactly with the props for TextInput. This will need to get
+         * fixed */
+        <AndroidTextInput
+          // Figure out imperative + forward refs.
+          ref={ref as $FlowFixMe}
+          {...otherProps}
+          {...colorProps}
+          {...eventHandlers}
+          accessibilityLabel={_accessibilityLabel}
+          accessibilityLabelledBy={_accessibilityLabelledBy}
+          accessibilityState={_accessibilityState}
+          accessible={accessible}
+          acceptDragAndDropTypes={props.experimental_acceptDragAndDropTypes}
+          autoCapitalize={autoCapitalize}
+          submitBehavior={submitBehavior}
+          caretHidden={caretHidden}
+          children={children}
+          disableFullscreenUI={props.disableFullscreenUI}
+          focusable={tabIndex !== undefined ? !tabIndex : focusable}
+          importantForAccessibility={_importantForAccessibility}
+          mostRecentEventCount={mostRecentEventCount}
+          nativeID={id ?? props.nativeID}
+          numberOfLines={props.rows ?? props.numberOfLines}
+          onBlur={_onBlur}
+          onChange={_onChange}
+          onFocus={_onFocus}
+          /* $FlowFixMe[prop-missing] the types for AndroidTextInput don't match
+           * up exactly with the props for TextInput. This will need to get fixed
+           */
+          /* $FlowFixMe[incompatible-type] the types for AndroidTextInput
+           * don't match up exactly with the props for TextInput. This will need
+           * to get fixed */
+          onScroll={_onScroll}
+          onSelectionChange={_onSelectionChange}
+          placeholder={placeholder}
+          style={_style}
+          text={text}
+          textBreakStrategy={props.textBreakStrategy}
+        />
+      );
   }
   return <TextAncestorContext value={true}>{textInput}</TextAncestorContext>;
 }

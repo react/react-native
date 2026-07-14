@@ -457,8 +457,7 @@ declare class child_process$ChildProcessTyped<
   TStdin extends stream$Writable | null,
   TStdout extends stream$Readable | null,
   TStderr extends stream$Readable | null,
-> extends events$EventEmitter
-{
+> extends events$EventEmitter {
   +stdin: TStdin;
   +stdout: TStdout;
   +stderr: TStderr;
@@ -578,8 +577,7 @@ declare module 'child_process' {
   declare function execFile(
     file: string,
     argsOrCallback?:
-      | ReadonlyArray<string>
-      | child_process$execFileCallback<string>,
+      ReadonlyArray<string> | child_process$execFileCallback<string>,
     callback?: child_process$execFileCallback<string>,
   ): child_process$ChildProcessTyped<
     stream$Writable,
@@ -928,14 +926,7 @@ type crypto$key =
 
 declare class crypto$KeyObject {
   +asymmetricKeyType?:
-    | 'rsa'
-    | 'rsa-pss'
-    | 'dsa'
-    | 'ec'
-    | 'ed25519'
-    | 'ed448'
-    | 'x25519'
-    | 'x448';
+    'rsa' | 'rsa-pss' | 'dsa' | 'ec' | 'ed25519' | 'ed448' | 'x25519' | 'x448';
   +asymmetricKeySize?: number;
   +symmetricKeySize?: number;
   +type: 'secret' | 'public' | 'private';
@@ -2560,9 +2551,9 @@ declare class http$Agent<+SocketT = net$Socket> {
   sockets: {[name: string]: ReadonlyArray<SocketT>, ...};
 }
 
-declare class http$IncomingMessage<SocketT = net$Socket>
-  extends stream$Readable
-{
+declare class http$IncomingMessage<
+  SocketT = net$Socket,
+> extends stream$Readable {
   headers: Object;
   rawHeaders: Array<string>;
   httpVersion: string;
@@ -2578,9 +2569,9 @@ declare class http$IncomingMessage<SocketT = net$Socket>
   rawTrailers: Array<string>;
 }
 
-declare class http$ClientRequest<+SocketT = net$Socket>
-  extends stream$Writable
-{
+declare class http$ClientRequest<
+  +SocketT = net$Socket,
+> extends stream$Writable {
   abort(): void;
   aborted: boolean;
   +connection: SocketT | null;
@@ -2878,10 +2869,7 @@ declare class net$Socket extends stream$Duplex {
   destroyed: boolean;
   end(
     chunkOrEncodingOrCallback?:
-      | Buffer
-      | Uint8Array
-      | string
-      | ((data: any) => void),
+      Buffer | Uint8Array | string | ((data: any) => void),
     encodingOrCallback?: string | ((data: any) => void),
     callback?: (data: any) => void,
   ): this;
@@ -3211,9 +3199,9 @@ declare module 'perf_hooks' {
     +detail?: T;
   }
 
-  declare export class PerformanceMeasure<T = unknown>
-    extends PerformanceEntry
-  {
+  declare export class PerformanceMeasure<
+    T = unknown,
+  > extends PerformanceEntry {
     +entryType: 'measure';
     +detail?: T;
   }
@@ -3398,11 +3386,7 @@ declare module 'querystring' {
  */
 declare module 'node:sqlite' {
   declare export type SupportedValueType =
-    | null
-    | number
-    | bigint
-    | string
-    | Uint8Array;
+    null | number | bigint | string | Uint8Array;
 
   declare export type DatabaseSyncOptions = Readonly<{
     open?: boolean,
@@ -5565,9 +5549,7 @@ declare module 'repl' {
     writer?: (object: any, options?: util$InspectOptions) => string,
     completer?: readline$InterfaceCompleter,
     replMode?:
-      | $SymbolReplModeMagic
-      | $SymbolReplModeSloppy
-      | $SymbolReplModeStrict,
+      $SymbolReplModeMagic | $SymbolReplModeSloppy | $SymbolReplModeStrict,
     breakEvalOnSigint?: boolean,
     ...
   }): REPLServer;

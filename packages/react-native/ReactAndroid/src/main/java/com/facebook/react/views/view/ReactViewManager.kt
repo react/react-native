@@ -46,19 +46,18 @@ public open class ReactViewManager : ReactClippingViewManager<ReactViewGroup>() 
   public companion object {
     public const val REACT_CLASS: String = ViewProps.VIEW_CLASS_NAME
 
-    private val SPACING_TYPES =
-        intArrayOf(
-            Spacing.ALL,
-            Spacing.LEFT,
-            Spacing.RIGHT,
-            Spacing.TOP,
-            Spacing.BOTTOM,
-            Spacing.START,
-            Spacing.END,
-            Spacing.BLOCK,
-            Spacing.BLOCK_END,
-            Spacing.BLOCK_START,
-        )
+    private val SPACING_TYPES = intArrayOf(
+        Spacing.ALL,
+        Spacing.LEFT,
+        Spacing.RIGHT,
+        Spacing.TOP,
+        Spacing.BOTTOM,
+        Spacing.START,
+        Spacing.END,
+        Spacing.BLOCK,
+        Spacing.BLOCK_END,
+        Spacing.BLOCK_START,
+    )
     private const val CMD_HOTSPOT_UPDATE = 1
     private const val CMD_SET_PRESSED = 2
     private const val HOTSPOT_UPDATE_KEY = "hotspotUpdate"

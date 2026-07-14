@@ -322,12 +322,7 @@ declare global {
   type RequestCredentials_ = 'omit' | 'same-origin' | 'include';
   type RequestMode_ = 'navigate' | 'same-origin' | 'no-cors' | 'cors';
   type ResponseType_ =
-    | 'basic'
-    | 'cors'
-    | 'default'
-    | 'error'
-    | 'opaque'
-    | 'opaqueredirect';
+    'basic' | 'cors' | 'default' | 'error' | 'opaque' | 'opaqueredirect';
 
   // #endregion
   // #region XMLHttpRequest
@@ -429,8 +424,7 @@ declare global {
   }
 
   interface XMLHttpRequestUpload
-    extends EventTarget,
-      XMLHttpRequestEventTarget {
+    extends EventTarget, XMLHttpRequestEventTarget {
     addEventListener<K extends keyof XMLHttpRequestEventTargetEventMap>(
       type: K,
       listener: (
@@ -453,12 +447,7 @@ declare global {
   };
 
   type XMLHttpRequestResponseType =
-    | ''
-    | 'arraybuffer'
-    | 'blob'
-    | 'document'
-    | 'json'
-    | 'text';
+    '' | 'arraybuffer' | 'blob' | 'document' | 'json' | 'text';
 
   interface URL {
     readonly hash: string;
@@ -690,14 +679,11 @@ declare global {
     onerror: ((this: FileReader, ev: ProgressEvent<FileReader>) => any) | null;
     onload: ((this: FileReader, ev: ProgressEvent<FileReader>) => any) | null;
     onloadend:
-      | ((this: FileReader, ev: ProgressEvent<FileReader>) => any)
-      | null;
+      ((this: FileReader, ev: ProgressEvent<FileReader>) => any) | null;
     onloadstart:
-      | ((this: FileReader, ev: ProgressEvent<FileReader>) => any)
-      | null;
+      ((this: FileReader, ev: ProgressEvent<FileReader>) => any) | null;
     onprogress:
-      | ((this: FileReader, ev: ProgressEvent<FileReader>) => any)
-      | null;
+      ((this: FileReader, ev: ProgressEvent<FileReader>) => any) | null;
     readonly readyState: number;
     readonly result: string | ArrayBuffer;
     abort(): void;

@@ -36,13 +36,13 @@ class ModelAutolinkingDependenciesJsonTest {
     assertThat(ModelAutolinkingDependenciesJson("", "@react-native/package", null).nameCleansed)
         .isEqualTo("react-native_package")
     assertThat(
-            ModelAutolinkingDependenciesJson(
-                    "",
-                    "@this*is~a(more)complicated/example!of~weird)packages",
-                    null,
-                )
-                .nameCleansed
+        ModelAutolinkingDependenciesJson(
+            "",
+            "@this*is~a(more)complicated/example!of~weird)packages",
+            null,
         )
+            .nameCleansed
+    )
         .isEqualTo("this_is_a_more_complicated_example_of_weird_packages")
   }
 }

@@ -188,17 +188,16 @@ listOf("ktfmtCheck", "ktfmtFormat").forEach { taskName ->
 
 allprojects {
   // Apply exclusions for specific files that should not be formatted
-  val excludePatterns =
-      listOf(
-          "**/build/**",
-          "**/hermes-engine/**",
-          "**/internal/featureflags/**",
-          "**/systeminfo/ReactNativeVersion.kt",
-      )
+  val excludePatterns = listOf(
+      "**/build/**",
+      "**/hermes-engine/**",
+      "**/internal/featureflags/**",
+      "**/systeminfo/ReactNativeVersion.kt",
+  )
   listOf(
-          com.ncorti.ktfmt.gradle.tasks.KtfmtCheckTask::class,
-          com.ncorti.ktfmt.gradle.tasks.KtfmtFormatTask::class,
-      )
+      com.ncorti.ktfmt.gradle.tasks.KtfmtCheckTask::class,
+      com.ncorti.ktfmt.gradle.tasks.KtfmtFormatTask::class,
+  )
       .forEach { tasks.withType(it) { exclude(excludePatterns) } }
 
   // Disable the problematic ktfmt script tasks due to symbolic link issues in subprojects

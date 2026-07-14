@@ -38,10 +38,6 @@ function isDeepReactNativeImport(source) {
   return parts.length > 1 && parts[0] === 'react-native';
 }
 
-function isInitializeCoreImport(source) {
-  return source === 'react-native/Libraries/Core/InitializeCore';
-}
-
 function withLocation(node, loc) {
   if (!node.loc) {
     return {...node, loc};
@@ -55,7 +51,7 @@ module.exports = ({types: t}) => ({
     ImportDeclaration(path, state) {
       const source = path.node.source.value;
 
-      if (isDeepReactNativeImport(source) && !isInitializeCoreImport(source)) {
+      if (isDeepReactNativeImport(source)) {
         const loc = path.node.loc;
         state.import.push({source, loc});
       }
@@ -71,10 +67,7 @@ module.exports = ({types: t}) => ({
       ) {
         const source =
           args[0].node.type === 'StringLiteral' ? args[0].node.value : '';
-        if (
-          isDeepReactNativeImport(source) &&
-          !isInitializeCoreImport(source)
-        ) {
+        if (isDeepReactNativeImport(source)) {
           const loc = path.node.loc;
           state.require.push({source, loc});
         }
@@ -83,11 +76,7 @@ module.exports = ({types: t}) => ({
     ExportNamedDeclaration(path, state) {
       const source = path.node.source;
 
-      if (
-        source &&
-        isDeepReactNativeImport(source.value) &&
-        !isInitializeCoreImport(source)
-      ) {
+      if (source && isDeepReactNativeImport(source.value)) {
         const loc = path.node.loc;
         state.export.push({source: source.value, loc});
       }

@@ -28,10 +28,9 @@ internal object ReactDebugOverlayTags {
   val NATIVE_MODULE: DebugOverlayTag =
       DebugOverlayTag("Native Module", "Native Module init", Color.rgb(0x80, 0x00, 0x80))
   @JvmField
-  val UI_MANAGER: DebugOverlayTag =
-      DebugOverlayTag(
-          "UI Manager",
-          "UI Manager View Operations (requires restart\nwarning: this is spammy)",
-          Color.CYAN,
-      )
+  val UI_MANAGER: DebugOverlayTag = DebugOverlayTag(
+      "UI Manager",
+      "UI Manager View Operations (requires restart\nwarning: this is spammy)",
+      Color.CYAN,
+  )
 }

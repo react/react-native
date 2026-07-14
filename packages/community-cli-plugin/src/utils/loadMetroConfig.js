@@ -14,7 +14,6 @@ import type {MetroConfig} from 'metro';
 import {CLIError} from './errors';
 import {reactNativePlatformResolver} from './metroPlatformResolver';
 import {loadConfig, resolveConfig} from 'metro';
-import path from 'path';
 
 const debug = require('debug')('ReactNative:CommunityCliPlugin');
 
@@ -25,7 +24,6 @@ export type {Config};
 
 export type ConfigLoadingContext = Readonly<{
   root: Config['root'],
-  reactNativePath: Config['reactNativePath'],
   platforms: Config['platforms'],
   ...
 }>;
@@ -60,16 +58,15 @@ function getCommunityCliDefaultConfig(
   return {
     resolver,
     serializer: {
-      // We can include multiple copies of InitializeCore here because metro will
+      // We can include multiple copies of setup-env here because Metro will
       // only add ones that are already part of the bundle
       getModulesRunBeforeMainModule: () => [
-        require.resolve(
-          path.join(ctx.reactNativePath, 'Libraries/Core/InitializeCore'),
-          {paths: [ctx.root]},
-        ),
+        require.resolve('react-native/setup-env', {
+          paths: [ctx.root],
+        }),
         ...outOfTreePlatforms.map(platform =>
           require.resolve(
-            `${ctx.platforms[platform].npmPackageName}/Libraries/Core/InitializeCore`,
+            `${ctx.platforms[platform].npmPackageName}/setup-env`,
             {paths: [ctx.root]},
           ),
         ),

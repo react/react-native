@@ -180,24 +180,23 @@ val configureFantomTester by
       workingDir(testerDir)
       inputs.dir(testerDir)
       outputs.files(testerBuildOutputFileTree)
-      val cmdArgs =
-          mutableListOf(
-              cmakeBinaryPath,
-              // Suppress all warnings as this is the Hermes build and we can't fix them.
-              "--log-level=ERROR",
-              "-S",
-              ".",
-              "-B",
-              testerBuildDir.toString(),
-              "-DCMAKE_BUILD_TYPE=Debug",
-              "-DFANTOM_CODEGEN_DIR=$buildDir/codegen",
-              "-DFANTOM_THIRD_PARTY_DIR=$buildDir/third-party",
-              "-DREACT_ANDROID_DIR=$reactAndroidDir",
-              "-DREACT_COMMON_DIR=$reactNativeDir/ReactCommon",
-              "-DREACT_CXX_PLATFORM_DIR=$reactNativeDir/ReactCxxPlatform",
-              "-DREACT_THIRD_PARTY_NDK_DIR=$reactAndroidBuildDir/third-party-ndk",
-              "-DRN_ENABLE_DEBUG_STRING_CONVERTIBLE=ON",
-          )
+      val cmdArgs = mutableListOf(
+          cmakeBinaryPath,
+          // Suppress all warnings as this is the Hermes build and we can't fix them.
+          "--log-level=ERROR",
+          "-S",
+          ".",
+          "-B",
+          testerBuildDir.toString(),
+          "-DCMAKE_BUILD_TYPE=Debug",
+          "-DFANTOM_CODEGEN_DIR=$buildDir/codegen",
+          "-DFANTOM_THIRD_PARTY_DIR=$buildDir/third-party",
+          "-DREACT_ANDROID_DIR=$reactAndroidDir",
+          "-DREACT_COMMON_DIR=$reactNativeDir/ReactCommon",
+          "-DREACT_CXX_PLATFORM_DIR=$reactNativeDir/ReactCxxPlatform",
+          "-DREACT_THIRD_PARTY_NDK_DIR=$reactAndroidBuildDir/third-party-ndk",
+          "-DRN_ENABLE_DEBUG_STRING_CONVERTIBLE=ON",
+      )
 
       cmdArgs.add("-DHERMES_V1_ENABLED=1")
 

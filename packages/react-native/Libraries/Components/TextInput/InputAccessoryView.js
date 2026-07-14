@@ -18,7 +18,11 @@ import useWindowDimensions from '../../Utilities/useWindowDimensions';
 import RCTInputAccessoryViewNativeComponent from './RCTInputAccessoryViewNativeComponent';
 import * as React from 'react';
 
-/** @build-types emit-as-interface Expo compatibility */
+/**
+ * InputAccessoryView is deprecated and will be removed in a future release.
+ * @deprecated
+ * @build-types emit-as-interface Expo compatibility
+ */
 export type InputAccessoryViewProps = Readonly<{
   readonly children: React.Node,
   /**
@@ -36,8 +40,10 @@ export type InputAccessoryViewProps = Readonly<{
  *
  * This component can also be used to create sticky text inputs (text inputs which are anchored to the top of the keyboard). To do this, wrap a `TextInput` with `InputAccessoryView` and don't set a `nativeID`.
  *
- * @see https://reactnative.dev/docs/inputaccessoryview
+ * InputAccessoryView is deprecated and will be removed in a future release.
+ *
  * @platform ios
+ * @deprecated
  */
 const InputAccessoryView: React.ComponentType<InputAccessoryViewProps> = (
   props: InputAccessoryViewProps,

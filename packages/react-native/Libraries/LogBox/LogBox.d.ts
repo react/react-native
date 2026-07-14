@@ -22,6 +22,17 @@ export interface LogBoxStatic {
 
   install(): void;
   uninstall(): void;
+
+  /**
+   * Whether LogBox is currently installed.
+   */
+  isInstalled(): boolean;
+
+  /**
+   * Clear all logs and dismiss the LogBox surface. Invoked by the Fast Refresh
+   * pipeline on each applied update.
+   */
+  clearAllLogs(): void;
 }
 
 export const LogBox: LogBoxStatic;

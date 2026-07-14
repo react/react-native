@@ -187,80 +187,77 @@ public object ViewProps {
   internal const val ON_CLICK: String = "onClick"
   internal const val ON_CLICK_CAPTURE: String = "onClickCapture"
   @JvmField
-  public val BORDER_SPACING_TYPES: IntArray =
-      intArrayOf(
-          Spacing.ALL,
-          Spacing.START,
-          Spacing.END,
-          Spacing.TOP,
-          Spacing.BOTTOM,
-          Spacing.LEFT,
-          Spacing.RIGHT,
-      )
+  public val BORDER_SPACING_TYPES: IntArray = intArrayOf(
+      Spacing.ALL,
+      Spacing.START,
+      Spacing.END,
+      Spacing.TOP,
+      Spacing.BOTTOM,
+      Spacing.LEFT,
+      Spacing.RIGHT,
+  )
   @JvmField
-  public val PADDING_MARGIN_SPACING_TYPES: IntArray =
-      intArrayOf(
-          Spacing.ALL,
-          Spacing.VERTICAL,
-          Spacing.HORIZONTAL,
-          Spacing.START,
-          Spacing.END,
-          Spacing.TOP,
-          Spacing.BOTTOM,
-          Spacing.LEFT,
-          Spacing.RIGHT,
+  public val PADDING_MARGIN_SPACING_TYPES: IntArray = intArrayOf(
+      Spacing.ALL,
+      Spacing.VERTICAL,
+      Spacing.HORIZONTAL,
+      Spacing.START,
+      Spacing.END,
+      Spacing.TOP,
+      Spacing.BOTTOM,
+      Spacing.LEFT,
+      Spacing.RIGHT,
+  )
+  private val LAYOUT_ONLY_PROPS: HashSet<String> = HashSet(
+      listOf(
+          ALIGN_SELF,
+          ALIGN_ITEMS,
+          COLLAPSABLE,
+          FLEX,
+          FLEX_BASIS,
+          FLEX_DIRECTION,
+          FLEX_GROW,
+          ROW_GAP,
+          COLUMN_GAP,
+          GAP,
+          FLEX_SHRINK,
+          FLEX_WRAP,
+          JUSTIFY_CONTENT,
+          ALIGN_CONTENT,
+          DISPLAY, /* position */
+          POSITION,
+          RIGHT,
+          TOP,
+          BOTTOM,
+          LEFT,
+          START,
+          END, /* dimensions */
+          WIDTH,
+          HEIGHT,
+          MIN_WIDTH,
+          MAX_WIDTH,
+          MIN_HEIGHT,
+          MAX_HEIGHT, /* margins */
+          MARGIN,
+          MARGIN_VERTICAL,
+          MARGIN_HORIZONTAL,
+          MARGIN_LEFT,
+          MARGIN_RIGHT,
+          MARGIN_TOP,
+          MARGIN_BOTTOM,
+          MARGIN_START,
+          MARGIN_END, /* paddings */
+          PADDING,
+          PADDING_VERTICAL,
+          PADDING_HORIZONTAL,
+          PADDING_LEFT,
+          PADDING_RIGHT,
+          PADDING_TOP,
+          PADDING_BOTTOM,
+          PADDING_START,
+          PADDING_END,
       )
-  private val LAYOUT_ONLY_PROPS: HashSet<String> =
-      HashSet(
-          listOf(
-              ALIGN_SELF,
-              ALIGN_ITEMS,
-              COLLAPSABLE,
-              FLEX,
-              FLEX_BASIS,
-              FLEX_DIRECTION,
-              FLEX_GROW,
-              ROW_GAP,
-              COLUMN_GAP,
-              GAP,
-              FLEX_SHRINK,
-              FLEX_WRAP,
-              JUSTIFY_CONTENT,
-              ALIGN_CONTENT,
-              DISPLAY, /* position */
-              POSITION,
-              RIGHT,
-              TOP,
-              BOTTOM,
-              LEFT,
-              START,
-              END, /* dimensions */
-              WIDTH,
-              HEIGHT,
-              MIN_WIDTH,
-              MAX_WIDTH,
-              MIN_HEIGHT,
-              MAX_HEIGHT, /* margins */
-              MARGIN,
-              MARGIN_VERTICAL,
-              MARGIN_HORIZONTAL,
-              MARGIN_LEFT,
-              MARGIN_RIGHT,
-              MARGIN_TOP,
-              MARGIN_BOTTOM,
-              MARGIN_START,
-              MARGIN_END, /* paddings */
-              PADDING,
-              PADDING_VERTICAL,
-              PADDING_HORIZONTAL,
-              PADDING_LEFT,
-              PADDING_RIGHT,
-              PADDING_TOP,
-              PADDING_BOTTOM,
-              PADDING_START,
-              PADDING_END,
-          )
-      )
+  )
 
   @JvmStatic
   public fun isLayoutOnly(map: ReadableMap, prop: String): Boolean {

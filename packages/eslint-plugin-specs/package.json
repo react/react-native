@@ -19,6 +19,12 @@
   ],
   "bugs": "https://github.com/react/react-native/issues",
   "main": "index.js",
+  "files": [
+    "README.md",
+    "index.js",
+    "react-native-modules.js",
+    "with-babel-register"
+  ],
   "scripts": {
     "prepack": "node prepack.js",
     "postpack": "node postpack.js"

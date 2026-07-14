@@ -25,8 +25,7 @@ export type FailingPlatformTestAssertionResult = Readonly<{
 }>;
 
 export type PlatformTestAssertionResult =
-  | PassingPlatformTestAssertionResult
-  | FailingPlatformTestAssertionResult;
+  PassingPlatformTestAssertionResult | FailingPlatformTestAssertionResult;
 
 export type PlatformTestResultStatus = 'PASS' | 'FAIL' | 'ERROR' | 'SKIPPED';
 

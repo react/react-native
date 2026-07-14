@@ -24,8 +24,7 @@ interface NativeProps extends ViewProps {
   number?: number | undefined;
   boolean?: boolean | undefined;
   default?:
-    | CodegenTypes.WithDefault<'option1' | 'option2', 'option1'>
-    | undefined;
+    CodegenTypes.WithDefault<'option1' | 'option2', 'option1'> | undefined;
   double?: CodegenTypes.Double | undefined;
   float?: CodegenTypes.Float | undefined;
   int32?: CodegenTypes.Int32 | undefined;

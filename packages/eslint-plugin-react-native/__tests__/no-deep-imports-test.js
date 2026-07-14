@@ -29,10 +29,10 @@ eslintTester.run('../no-deep-imports', rule, {
     "import Foo from 'react-native-foo';",
     "import Foo from 'react-native-foo/Foo';",
     "import Foo from 'react/native/Foo';",
-    "import 'react-native/Libraries/Core/InitializeCore';",
-    "require('react-native/Libraries/Core/InitializeCore');",
     "import Foo from 'react-native/src/fb_internal/Foo'",
     "require('react-native/src/fb_internal/Foo')",
+    "import 'react-native/setup-env';",
+    "require('react-native/setup-env');",
   ],
   invalid: [
     {
@@ -124,6 +124,32 @@ eslintTester.run('../no-deep-imports', rule, {
         },
       ],
       output: null,
+    },
+    {
+      code: "import 'react-native/Libraries/Core/InitializeCore';",
+      errors: [
+        {
+          messageId: 'useReplacementSource',
+          data: {
+            importPath: 'react-native/Libraries/Core/InitializeCore',
+            replacementSource: 'react-native/setup-env',
+          },
+        },
+      ],
+      output: "import 'react-native/setup-env';",
+    },
+    {
+      code: "require('react-native/Libraries/Core/InitializeCore');",
+      errors: [
+        {
+          messageId: 'useReplacementSource',
+          data: {
+            importPath: 'react-native/Libraries/Core/InitializeCore',
+            replacementSource: 'react-native/setup-env',
+          },
+        },
+      ],
+      output: "require('react-native/setup-env');",
     },
   ],
 });

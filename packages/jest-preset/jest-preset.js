@@ -18,14 +18,18 @@ module.exports = {
     platforms: ['android', 'ios', 'native'],
   },
   moduleNameMapper: {
+    // `setup-env` is a secondary entry point exposed via the package's
+    // `exports`, but `./jest/resolver.js` strips `exports` and the generic
+    // mapper below resolves subpaths as literal directory paths. Alias it
+    // explicitly so it resolves to its `src/` implementation.
+    '^react-native/setup-env$': `${path.dirname(require.resolve('react-native'))}/src/setup-env.js`,
     '^react-native($|/.*)': `${path.dirname(require.resolve('react-native'))}/$1`,
   },
   resolver: require.resolve('./jest/resolver.js'),
   transform: {
     '^.+\\.(js|ts|tsx)$': 'babel-jest',
-    '^.+\\.(bmp|gif|jpg|jpeg|mp4|png|psd|svg|webp)$': require.resolve(
-      './jest/assetFileTransformer.js',
-    ),
+    '^.+\\.(bmp|gif|jpg|jpeg|mp4|png|psd|svg|webp)$':
+      require.resolve('./jest/assetFileTransformer.js'),
   },
   transformIgnorePatterns: [
     'node_modules/(?!((jest-)?react-native|@react-native(-community)?)/)',

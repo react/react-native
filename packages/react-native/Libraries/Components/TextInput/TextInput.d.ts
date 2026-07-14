@@ -40,43 +40,25 @@ export type KeyboardTypeIOS =
   | 'web-search';
 export type KeyboardTypeAndroid = 'visible-password';
 export type KeyboardTypeOptions =
-  | KeyboardType
-  | KeyboardTypeAndroid
-  | KeyboardTypeIOS;
+  KeyboardType | KeyboardTypeAndroid | KeyboardTypeIOS;
 
 export type InputModeOptions =
-  | 'none'
-  | 'text'
-  | 'decimal'
-  | 'numeric'
-  | 'tel'
-  | 'search'
-  | 'email'
-  | 'url';
+  'none' | 'text' | 'decimal' | 'numeric' | 'tel' | 'search' | 'email' | 'url';
 
 export type ReturnKeyType = 'done' | 'go' | 'next' | 'search' | 'send';
 export type ReturnKeyTypeAndroid = 'none' | 'previous';
 export type ReturnKeyTypeIOS =
-  | 'default'
-  | 'google'
-  | 'join'
-  | 'route'
-  | 'yahoo'
-  | 'emergency-call';
+  'default' | 'google' | 'join' | 'route' | 'yahoo' | 'emergency-call';
 
 export type ReturnKeyTypeOptions =
-  | ReturnKeyType
-  | ReturnKeyTypeAndroid
-  | ReturnKeyTypeIOS;
+  ReturnKeyType | ReturnKeyTypeAndroid | ReturnKeyTypeIOS;
 
 export type EnterKeyHintTypeAndroid = 'previous';
 export type EnterKeyHintTypeIOS = 'enter';
 export type EnterKeyHintType = 'done' | 'go' | 'next' | 'search' | 'send';
 
 export type EnterKeyHintTypeOptions =
-  | EnterKeyHintType
-  | EnterKeyHintTypeAndroid
-  | EnterKeyHintTypeIOS;
+  EnterKeyHintType | EnterKeyHintTypeAndroid | EnterKeyHintTypeIOS;
 
 type DataDetectorTypes =
   | 'phoneNumber'
@@ -145,11 +127,7 @@ export interface TextInputIOSProps {
    * When the clear button should appear on the right side of the text view
    */
   clearButtonMode?:
-    | 'never'
-    | 'while-editing'
-    | 'unless-editing'
-    | 'always'
-    | undefined;
+    'never' | 'while-editing' | 'unless-editing' | 'always' | undefined;
 
   /**
    * If true, clears the text field automatically when editing begins
@@ -324,24 +302,14 @@ export interface TextInputIOSProps {
    * Set line break strategy on iOS.
    */
   lineBreakStrategyIOS?:
-    | 'none'
-    | 'standard'
-    | 'hangul-word'
-    | 'push-out'
-    | undefined;
+    'none' | 'standard' | 'hangul-word' | 'push-out' | undefined;
 
   /**
    * Set line break mode on iOS.
    * @platform ios
    */
   lineBreakModeIOS?:
-    | 'wordWrapping'
-    | 'char'
-    | 'clip'
-    | 'head'
-    | 'middle'
-    | 'tail'
-    | undefined;
+    'wordWrapping' | 'char' | 'clip' | 'head' | 'middle' | 'tail' | undefined;
 
   /**
    * If `false`, the iOS system will not insert an extra space after a paste operation
@@ -573,7 +541,8 @@ export type TextInputSubmitEditingEvent =
  * @see https://reactnative.dev/docs/textinput#props
  */
 export interface TextInputProps
-  extends ViewProps,
+  extends
+    ViewProps,
     TextInputIOSProps,
     TextInputAndroidProps,
     AccessibilityProps {
@@ -865,8 +834,7 @@ export interface TextInputProps
    * Only called for multiline text inputs.
    */
   onContentSizeChange?:
-    | ((e: TextInputContentSizeChangeEvent) => void)
-    | undefined;
+    ((e: TextInputContentSizeChangeEvent) => void) | undefined;
 
   /**
    * Callback that is called when text input ends.
@@ -887,8 +855,7 @@ export interface TextInputProps
    * Callback that is called when a touch is released.
    */
   onPressOut?:
-    | ((e: NativeSyntheticEvent<NativeTouchEvent>) => void)
-    | undefined;
+    ((e: NativeSyntheticEvent<NativeTouchEvent>) => void) | undefined;
 
   /**
    * Callback that is called when the text input is focused

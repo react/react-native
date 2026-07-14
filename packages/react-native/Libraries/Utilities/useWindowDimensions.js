@@ -22,8 +22,7 @@ import {useEffect, useState} from 'react';
  * @see https://reactnative.dev/docs/usewindowdimensions
  */
 export default function useWindowDimensions():
-  | DisplayMetrics
-  | DisplayMetricsAndroid {
+  DisplayMetrics | DisplayMetricsAndroid {
   const [dimensions, setDimensions] = useState(() => Dimensions.get('window'));
   useEffect(() => {
     function handleChange({

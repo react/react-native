@@ -117,14 +117,13 @@ public class HeadlessJsTaskContext private constructor(reactContext: ReactContex
     }
 
     removeTimeout(taskId)
-    val taskConfig =
-        HeadlessJsTaskConfig(
-            sourceTaskConfig.taskKey,
-            sourceTaskConfig.data,
-            sourceTaskConfig.timeout,
-            sourceTaskConfig.isAllowedInForeground,
-            retryPolicy.update(),
-        )
+    val taskConfig = HeadlessJsTaskConfig(
+        sourceTaskConfig.taskKey,
+        sourceTaskConfig.data,
+        sourceTaskConfig.timeout,
+        sourceTaskConfig.isAllowedInForeground,
+        retryPolicy.update(),
+    )
 
     val retryAttempt = Runnable { startTask(taskConfig, taskId) }
 

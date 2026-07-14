@@ -23,8 +23,6 @@ package com.facebook.react.internal.featureflags
 public open class ReactNativeNewArchitectureFeatureFlagsDefaults() :
     ReactNativeFeatureFlagsDefaults() {
 
-  override fun enableBridgelessArchitecture(): Boolean = true
-
   override fun useNativeViewConfigsInBridgelessMode(): Boolean = true
 
   override fun useTurboModuleInterop(): Boolean = true

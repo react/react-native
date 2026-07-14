@@ -248,15 +248,14 @@ public object StackTraceHelper {
   ) : StackFrame {
 
     /** Convert the stack frame to a JSON representation. */
-    override fun toJSON(): JSONObject =
-        JSONObject(
-            mapOf(
-                FILE_KEY to (file.orEmpty()),
-                METHOD_NAME_KEY to method,
-                LINE_NUMBER_KEY to line,
-                COLUMN_KEY to column,
-                COLLAPSE_KEY to isCollapsed,
-            )
+    override fun toJSON(): JSONObject = JSONObject(
+        mapOf(
+            FILE_KEY to (file.orEmpty()),
+            METHOD_NAME_KEY to method,
+            LINE_NUMBER_KEY to line,
+            COLUMN_KEY to column,
+            COLLAPSE_KEY to isCollapsed,
         )
+    )
   }
 }

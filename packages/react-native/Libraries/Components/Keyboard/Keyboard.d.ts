@@ -19,11 +19,7 @@ export type KeyboardEventName =
   | 'keyboardDidChangeFrame';
 
 export type KeyboardEventEasing =
-  | 'easeIn'
-  | 'easeInEaseOut'
-  | 'easeOut'
-  | 'linear'
-  | 'keyboard';
+  'easeIn' | 'easeInEaseOut' | 'easeOut' | 'linear' | 'keyboard';
 
 type KeyboardMetrics = {
   screenX: number;

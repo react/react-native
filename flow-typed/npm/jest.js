@@ -214,10 +214,7 @@ type FakeTimersConfig = {
  */
 
 type JestStyledComponentsMatcherValue =
-  | string
-  | JestAsymmetricEqualityType
-  | RegExp
-  | void;
+  string | JestAsymmetricEqualityType | RegExp | void;
 
 type JestStyledComponentsMatcherOptions = {
   media?: string,

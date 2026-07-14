@@ -81,7 +81,6 @@ declare var console: {
 
   // Stack tagging
   createTask(label: string): ConsoleTask,
-
   ...
 };
 
@@ -515,9 +514,7 @@ declare class XMLHttpRequestEventTarget extends EventTarget {
 // this part of spec is not finished yet, apparently
 // https://stackoverflow.com/questions/35296664/can-fetch-get-object-as-headers
 type HeadersInit =
-  | Headers
-  | Array<[string, string]>
-  | {[key: string]: string, ...};
+  Headers | Array<[string, string]> | {[key: string]: string, ...};
 
 // TODO Heades and URLSearchParams are almost the same thing.
 // Could it somehow be abstracted away?
@@ -599,12 +596,7 @@ type ReferrerPolicyType =
   | 'unsafe-url';
 
 type ResponseType =
-  | 'basic'
-  | 'cors'
-  | 'default'
-  | 'error'
-  | 'opaque'
-  | 'opaqueredirect';
+  'basic' | 'cors' | 'default' | 'error' | 'opaque' | 'opaqueredirect';
 
 type BodyInit =
   | string

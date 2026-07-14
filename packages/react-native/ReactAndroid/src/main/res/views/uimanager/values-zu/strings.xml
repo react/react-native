@@ -4,6 +4,7 @@
 <!-- FB Locale: zu_ZA -->
 <resources exclude-from-buck-resource-map="true">
     <string name="menu_description" gender="unknown">Imenyu</string>
+    <string name="scrollbar_description" gender="unknown">Ibha Lokuskrola</string>
     <string name="rn_tab_description" gender="unknown">Ithebhu</string>
     <string name="state_off_description" gender="unknown">kuvaliwe</string>
 </resources>

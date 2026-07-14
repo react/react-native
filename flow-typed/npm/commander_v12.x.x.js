@@ -15,8 +15,7 @@
 
 declare module 'commander' {
   declare type LiteralUnion<LiteralType, BaseType: string | number> =
-    | LiteralType
-    | {...BaseType, ...{[key: empty]: empty, ...}};
+    LiteralType | {...BaseType, ...{[key: empty]: empty, ...}};
 
   declare export class CommanderError mixins Error {
     code: string;
@@ -335,10 +334,7 @@ declare module 'commander' {
     outputError?: (str: string, write: (str: string) => void) => void;
   }
   export type AddHelpTextPosition =
-    | 'beforeAll'
-    | 'before'
-    | 'after'
-    | 'afterAll';
+    'beforeAll' | 'before' | 'after' | 'afterAll';
   export type HookEvent = 'preSubcommand' | 'preAction' | 'postAction';
   export type OptionValueSource = LiteralUnion<
     'default' | 'config' | 'env' | 'cli' | 'implied',

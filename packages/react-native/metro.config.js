@@ -39,7 +39,9 @@ const config = {
   },
 };
 
-module.exports = mergeConfig(
+const mergedConfig /*: ConfigT */ = mergeConfig(
   getDefaultConfig(__dirname),
   config,
-) /*:: as ConfigT */;
+);
+
+module.exports = mergedConfig;

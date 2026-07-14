@@ -13,10 +13,6 @@ namespace facebook::react {
 
 class ReactNativeFeatureFlagsOverridesOSSStable : public ReactNativeFeatureFlagsDefaults {
  public:
-  bool enableBridgelessArchitecture() override
-  {
-    return true;
-  }
   bool useNativeViewConfigsInBridgelessMode() override
   {
     return true;

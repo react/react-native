@@ -15,8 +15,9 @@ export interface StyleSheetProperties {
 }
 
 type Falsy = undefined | null | false | '';
-interface RecursiveArray<T>
-  extends Array<T | ReadonlyArray<T> | RecursiveArray<T>> {}
+interface RecursiveArray<T> extends Array<
+  T | ReadonlyArray<T> | RecursiveArray<T>
+> {}
 export type StyleProp<T> = T | RecursiveArray<T | Falsy> | Falsy;
 
 type OpaqueColorValue = symbol & {__TYPE__: 'Color'};

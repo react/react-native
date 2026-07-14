@@ -26,20 +26,19 @@ internal class ReactTextScrollWatcher(private val editText: ReactEditText) : Scr
 
   override fun onScrollChanged(horiz: Int, vert: Int, oldHoriz: Int, oldVert: Int) {
     if (previousHorizontal != horiz || previousVert != vert) {
-      val event =
-          obtain(
-              surfaceId,
-              editText.id,
-              ScrollEventType.SCROLL,
-              horiz.toFloat(),
-              vert.toFloat(),
-              0f, // can't get x velocity
-              0f, // can't get y velocity
-              0, // can't get content width
-              0, // can't get content height
-              editText.width,
-              editText.height,
-          )
+      val event = obtain(
+          surfaceId,
+          editText.id,
+          ScrollEventType.SCROLL,
+          horiz.toFloat(),
+          vert.toFloat(),
+          0f, // can't get x velocity
+          0f, // can't get y velocity
+          0, // can't get content width
+          0, // can't get content height
+          editText.width,
+          editText.height,
+      )
 
       eventDispatcher?.dispatchEvent(event)
 

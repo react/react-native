@@ -77,6 +77,10 @@ module.exports = {
     return require('./Libraries/Image/ImageBackground').default;
   },
   get InputAccessoryView() {
+    warnOnce(
+      'input-accessory-view-deprecated',
+      'InputAccessoryView is deprecated and will be removed in a future release.',
+    );
     return require('./Libraries/Components/TextInput/InputAccessoryView')
       .default;
   },
@@ -148,9 +152,6 @@ module.exports = {
   },
   get TextInput() {
     return require('./Libraries/Components/TextInput/TextInput').default;
-  },
-  get Touchable() {
-    return require('./Libraries/Components/Touchable/Touchable').default;
   },
   get TouchableHighlight() {
     return require('./Libraries/Components/Touchable/TouchableHighlight')
@@ -411,6 +412,21 @@ module.exports = {
   },
   // #endregion
 } as ReactNativePublicAPI;
+
+// `Touchable` has been removed from the public API types, but remains
+// re-exported at runtime here because of a hanging `react-native-svg` call
+// site (fbsource).
+// TODO(huntie): Remove this re-export once `react-native-svg` is updated.
+/* $FlowFixMe[prop-missing] This is intentional: `Touchable` is a value-only
+ * re-export that is absent from the public API types. */
+/* $FlowFixMe[invalid-export] This is intentional: `Touchable` is a value-only
+ * re-export that is absent from the public API types. */
+Object.defineProperty(module.exports, 'Touchable', {
+  configurable: true,
+  get() {
+    return require('./Libraries/Components/Touchable/Touchable').default;
+  },
+});
 
 if (__DEV__) {
   /* $FlowFixMe[prop-missing] This is intentional: Flow will error when

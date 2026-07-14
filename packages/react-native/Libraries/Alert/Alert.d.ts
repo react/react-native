@@ -85,10 +85,7 @@ export interface AlertStatic {
 }
 
 export type AlertType =
-  | 'default'
-  | 'plain-text'
-  | 'secure-text'
-  | 'login-password';
+  'default' | 'plain-text' | 'secure-text' | 'login-password';
 
 export const Alert: AlertStatic;
 export type Alert = AlertStatic;

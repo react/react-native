@@ -142,8 +142,7 @@ type PressableBaseProps = Readonly<{
    * the component is currently pressed and returns view styles.
    */
   style?:
-    | ViewStyleProp
-    | ((state: PressableStateCallbackType) => ViewStyleProp),
+    ViewStyleProp | ((state: PressableStateCallbackType) => ViewStyleProp),
 
   /**
    * Identifier used to find this view in tests.

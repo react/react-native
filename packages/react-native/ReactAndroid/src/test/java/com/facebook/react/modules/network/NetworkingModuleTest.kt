@@ -225,11 +225,10 @@ class NetworkingModuleTest {
 
   @Test
   fun testHeaders() {
-    val headers =
-        listOf(
-            JavaOnlyArray.of("Accept", "text/plain"),
-            JavaOnlyArray.of("User-Agent", "React test agent/1.0"),
-        )
+    val headers = listOf(
+        JavaOnlyArray.of("Accept", "text/plain"),
+        JavaOnlyArray.of("User-Agent", "React test agent/1.0"),
+    )
 
     networkingModule.sendRequest(
         "GET",
@@ -371,12 +370,11 @@ class NetworkingModuleTest {
   @Test
   fun testMultipartPostRequestHeaders() {
     setupRequestBodyUtil()
-    val headers =
-        listOf(
-            JavaOnlyArray.of("Accept", "text/plain"),
-            JavaOnlyArray.of("User-Agent", "React test agent/1.0"),
-            JavaOnlyArray.of("content-type", "multipart/form-data"),
-        )
+    val headers = listOf(
+        JavaOnlyArray.of("Accept", "text/plain"),
+        JavaOnlyArray.of("User-Agent", "React test agent/1.0"),
+        JavaOnlyArray.of("content-type", "multipart/form-data"),
+    )
 
     val body = JavaOnlyMap()
     val formData = JavaOnlyArray()

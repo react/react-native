@@ -8,22 +8,14 @@
  */
 
 export type LayoutAnimationType =
-  | 'spring'
-  | 'linear'
-  | 'easeInEaseOut'
-  | 'easeIn'
-  | 'easeOut'
-  | 'keyboard';
+  'spring' | 'linear' | 'easeInEaseOut' | 'easeIn' | 'easeOut' | 'keyboard';
 
 export type LayoutAnimationTypes = {
   [type in LayoutAnimationType]: type;
 };
 
 export type LayoutAnimationProperty =
-  | 'opacity'
-  | 'scaleX'
-  | 'scaleY'
-  | 'scaleXY';
+  'opacity' | 'scaleX' | 'scaleY' | 'scaleXY';
 
 export type LayoutAnimationProperties = {
   [prop in LayoutAnimationProperty]: prop;

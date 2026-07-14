@@ -191,13 +191,12 @@ public class DialogModule(reactContext: ReactApplicationContext?) :
     private const val KEY_ITEMS: String = "items"
     private const val KEY_CANCELABLE: String = "cancelable"
 
-    private val CONSTANTS: Map<String, Any> =
-        mapOf(
-            ACTION_BUTTON_CLICKED to ACTION_BUTTON_CLICKED,
-            ACTION_DISMISSED to ACTION_DISMISSED,
-            KEY_BUTTON_POSITIVE to DialogInterface.BUTTON_POSITIVE,
-            KEY_BUTTON_NEGATIVE to DialogInterface.BUTTON_NEGATIVE,
-            KEY_BUTTON_NEUTRAL to DialogInterface.BUTTON_NEUTRAL,
-        )
+    private val CONSTANTS: Map<String, Any> = mapOf(
+        ACTION_BUTTON_CLICKED to ACTION_BUTTON_CLICKED,
+        ACTION_DISMISSED to ACTION_DISMISSED,
+        KEY_BUTTON_POSITIVE to DialogInterface.BUTTON_POSITIVE,
+        KEY_BUTTON_NEGATIVE to DialogInterface.BUTTON_NEGATIVE,
+        KEY_BUTTON_NEUTRAL to DialogInterface.BUTTON_NEUTRAL,
+    )
   }
 }

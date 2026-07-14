@@ -442,17 +442,15 @@ constructor(private val fpsListener: FpsListener? = null) :
   public companion object {
     public const val REACT_CLASS: String = "RCTScrollView"
 
-    public fun createExportedCustomDirectEventTypeConstants(): Map<String, Any> =
-        mapOf(
-            getJSEventName(ScrollEventType.SCROLL) to mapOf("registrationName" to "onScroll"),
-            getJSEventName(ScrollEventType.BEGIN_DRAG) to
-                mapOf("registrationName" to "onScrollBeginDrag"),
-            getJSEventName(ScrollEventType.END_DRAG) to
-                mapOf("registrationName" to "onScrollEndDrag"),
-            getJSEventName(ScrollEventType.MOMENTUM_BEGIN) to
-                mapOf("registrationName" to "onMomentumScrollBegin"),
-            getJSEventName(ScrollEventType.MOMENTUM_END) to
-                mapOf("registrationName" to "onMomentumScrollEnd"),
-        )
+    public fun createExportedCustomDirectEventTypeConstants(): Map<String, Any> = mapOf(
+        getJSEventName(ScrollEventType.SCROLL) to mapOf("registrationName" to "onScroll"),
+        getJSEventName(ScrollEventType.BEGIN_DRAG) to
+            mapOf("registrationName" to "onScrollBeginDrag"),
+        getJSEventName(ScrollEventType.END_DRAG) to mapOf("registrationName" to "onScrollEndDrag"),
+        getJSEventName(ScrollEventType.MOMENTUM_BEGIN) to
+            mapOf("registrationName" to "onMomentumScrollBegin"),
+        getJSEventName(ScrollEventType.MOMENTUM_END) to
+            mapOf("registrationName" to "onMomentumScrollEnd"),
+    )
   }
 }

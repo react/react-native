@@ -119,11 +119,10 @@ internal class ReactInstance(
      * Prepare the ReactInstance by installing JSI bindings, initializing Fabric + TurboModules, and
      * loading the JS bundle.
      */
-    val spec =
-        ReactQueueConfigurationSpec(
-            MessageQueueThreadSpec.newBackgroundThreadSpec("v_native"),
-            MessageQueueThreadSpec.newBackgroundThreadSpec("v_js"),
-        )
+    val spec = ReactQueueConfigurationSpec(
+        MessageQueueThreadSpec.newBackgroundThreadSpec("v_native"),
+        MessageQueueThreadSpec.newBackgroundThreadSpec("v_js"),
+    )
     reactQueueConfiguration = ReactQueueConfigurationImpl.create(spec, exceptionHandler)
     FLog.d(TAG, "Calling initializeMessageQueueThreads()")
     context.initializeMessageQueueThreads(reactQueueConfiguration)

@@ -18,7 +18,6 @@
 #include <jsi/instrumentation.h>
 #include <jsinspector-modern/HostTarget.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
-#include <react/renderer/core/ShadowNode.h>
 #include <react/renderer/runtimescheduler/RuntimeSchedulerBinding.h>
 #include <react/runtime/JSRuntimeBindings.h>
 #include <react/timing/primitives.h>
@@ -98,7 +97,6 @@ ReactInstance::ReactInstance(
             jsi::Runtime& jsiRuntime = runtime->getRuntime();
             TraceSection s("ReactInstance::_runtimeExecutor[Callback]");
             try {
-              ShadowNode::setUseRuntimeShadowNodeReferenceUpdateOnThread(true);
               callback(jsiRuntime);
             } catch (jsi::JSError& originalError) {
               jsErrorHandler->handleError(jsiRuntime, originalError, true);

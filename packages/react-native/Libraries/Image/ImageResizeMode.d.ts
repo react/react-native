@@ -8,12 +8,7 @@
  */
 
 export type ImageResizeMode =
-  | 'cover'
-  | 'contain'
-  | 'stretch'
-  | 'repeat'
-  | 'center'
-  | 'none';
+  'cover' | 'contain' | 'stretch' | 'repeat' | 'center' | 'none';
 
 /**
  * @see ImageResizeMode.js

@@ -61,11 +61,10 @@ internal class DebugOverlayController(private val reactContext: ReactContext) {
     fun requestPermission(context: Context) {
       // Get permission to show debug overlay in dev builds.
       if (!Settings.canDrawOverlays(context)) {
-        val intent =
-            Intent(
-                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                Uri.parse("package:" + context.packageName),
-            )
+        val intent = Intent(
+            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+            Uri.parse("package:" + context.packageName),
+        )
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         FLog.w(
             ReactConstants.TAG,

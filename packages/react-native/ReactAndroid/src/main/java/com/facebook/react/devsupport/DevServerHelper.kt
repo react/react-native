@@ -176,11 +176,11 @@ public open class DevServerHelper(
             checkNotNull(clientId)
             packagerClient =
                 JSPackagerClient(
-                        clientId,
-                        packagerConnectionSettings,
-                        handlers,
-                        onPackagerConnectedCallback,
-                    )
+                    clientId,
+                    packagerConnectionSettings,
+                    handlers,
+                    onPackagerConnectedCallback,
+                )
                     .apply { init() }
 
             return null
@@ -217,10 +217,10 @@ public open class DevServerHelper(
             }
             inspectorPackagerConnection =
                 CxxInspectorPackagerConnection(
-                        this@DevServerHelper.inspectorDeviceUrl,
-                        deviceName,
-                        packageName,
-                    )
+                    this@DevServerHelper.inspectorDeviceUrl,
+                    deviceName,
+                    packageName,
+                )
                     .apply { connect() }
             return null
           }

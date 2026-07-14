@@ -83,12 +83,11 @@ public object TransformHelper {
 
     val helperMatrix = helperMatrix.get()!!
     MatrixMathHelper.resetIdentityMatrix(result)
-    val offsets =
-        getTranslateForTransformOrigin(
-            viewWidth,
-            viewHeight,
-            transformOrigin,
-        )
+    val offsets = getTranslateForTransformOrigin(
+        viewWidth,
+        viewHeight,
+        transformOrigin,
+    )
 
     if (offsets != null) {
       MatrixMathHelper.resetIdentityMatrix(helperMatrix)

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<5c7e2061344bf998e5fc6b621af2ff45>>
+ * @generated SignedSource<<4276ae19d55acb679c9e635122e813b3>>
  */
 
 /**
@@ -330,7 +330,7 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool fuseboxFrameRecordingEnabled();
 
   /**
-   * Enable network inspection support in the React Native DevTools CDP backend. Requires `enableBridgelessArchitecture`. This flag is global and should not be changed across React Host lifetimes.
+   * Enable network inspection support in the React Native DevTools CDP backend. This flag is global and should not be changed across React Host lifetimes.
    */
   RN_EXPORT static bool fuseboxNetworkInspectionEnabled();
 

@@ -74,8 +74,7 @@ export type ____TransformStyle_Internal = Readonly<{
               // TODO: what is the actual type it expects?
               | {
                   readonly matrix:
-                    | ReadonlyArray<number | AnimatedNode>
-                    | AnimatedNode,
+                    ReadonlyArray<number | AnimatedNode> | AnimatedNode,
                 },
             >,
           >,
@@ -94,6 +93,5 @@ export type ____TransformStyle_Internal = Readonly<{
    * E.g. transformOrigin: '30% 80% 15px'
    */
   transformOrigin?:
-    | [string | number, string | number, string | number]
-    | string,
+    [string | number, string | number, string | number] | string,
 }>;
