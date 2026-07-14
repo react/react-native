@@ -168,7 +168,18 @@ public class WebSocketModule(context: ReactApplicationContext) :
     val request = builder.build()
 
     if (isInspectorNetworkReportingEnabled()) {
-      val requestId = UUID.randomUUID().toString()
+      // Prefer the DevTools request ID created by the JS caller, which carries
+      // the request initiator stack trace for CDP reporting.
+      val devToolsRequestId =
+          if (
+              options?.hasKey("unstable_devToolsRequestId") == true &&
+                  options.getType("unstable_devToolsRequestId") == ReadableType.String
+          ) {
+            options.getString("unstable_devToolsRequestId")
+          } else {
+            null
+          }
+      val requestId = devToolsRequestId ?: UUID.randomUUID().toString()
       inspectorRequestIds[id] = requestId
       InspectorNetworkReporter.reportWebSocketCreated(requestId, url)
       InspectorNetworkReporter.reportWebSocketWillSendHandshakeRequest(
