@@ -83,7 +83,7 @@ export interface FlexStyle {
   maxWidth?: DimensionValue | undefined;
   minHeight?: DimensionValue | undefined;
   minWidth?: DimensionValue | undefined;
-  overflow?: 'visible' | 'hidden' | 'scroll' | undefined;
+  overflow?: 'visible' | 'hidden' | 'scroll' | 'auto' | undefined;
   padding?: DimensionValue | undefined;
   paddingBottom?: DimensionValue | undefined;
   paddingEnd?: DimensionValue | undefined;
