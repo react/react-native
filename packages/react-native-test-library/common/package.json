@@ -1,0 +1,24 @@
+{
+  "name": "react-native-test-library-common",
+  "version": "0.87.0-main",
+  "description": "Shared JS utilities consumed by react-native-test-library-apple. Used as a fixture for validating autolinking discovery and transitive native dependency resolution in the React Native monorepo.",
+  "private": true,
+  "main": "index.js",
+  "types": "index.d.ts",
+  "license": "MIT",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "react-native.config.js",
+    "TestLibraryCommon.podspec",
+    "TestLibraryCommon.h",
+    "TestLibraryCommon.mm"
+  ],
+  "keywords": [
+    "react-native",
+    "fixture",
+    "autolinking",
+    "ios",
+    "macos"
+  ]
+}

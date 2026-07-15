@@ -92,15 +92,29 @@ function buildXCFrameworks(
   // the ReactNativeDependenciesHeaders sidecar built by the deps prebuild
   // (scripts/releases/ios-prebuild), so the core compose no longer needs the
   // deps artifact's headers.
-  // NOTE: Hermes public headers (`<hermes/...>`) are folded into
-  // ReactNativeHeaders on the consumer side by ensureHeadersLayout. When this
-  // publish path is productionized, pass the prebuild's hermes destroot/include
-  // as the 5th arg so the PUBLISHED ReactNativeHeaders carries hermes too.
+  // Fold the Hermes public headers (`<hermes/...>`) into the PUBLISHED
+  // ReactNativeHeaders so consumers resolve `<hermes/hermes.h>` out of the box
+  // (same fold ensureHeadersLayout does consumer-side). The hermes-ios tarball
+  // is staged at .build/artifacts/hermes/destroot/include by the hermes prebuild
+  // step; pass it when its `hermes/` namespace is present, else null (then
+  // `<hermes/...>` stays consumer-composed, as before).
+  const hermesInclude = path.resolve(
+    process.cwd(),
+    '.build',
+    'artifacts',
+    'hermes',
+    'destroot',
+    'include',
+  );
+  const hermesHeaders = fs.existsSync(path.join(hermesInclude, 'hermes'))
+    ? hermesInclude
+    : null;
   const headersXcfw = buildReactNativeHeadersXcframework(
     path.dirname(outputPath),
     plan,
     rootFolder,
     true, // include the mac-catalyst slice in the real compose
+    hermesHeaders,
   );
 
   if (identity) {

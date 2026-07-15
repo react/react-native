@@ -80,6 +80,26 @@ source "$REACT_NATIVE_DIR/scripts/node-binary.sh"
 HERMES_ENGINE_PATH="$PODS_ROOT/hermes-engine"
 [ -z "$HERMES_CLI_PATH" ] && HERMES_CLI_PATH="$HERMES_ENGINE_PATH/destroot/bin/hermesc"
 
+# SwiftPM consumers have no Pods directory to provide hermesc. When there is
+# no Pods installation at all and the current HERMES_CLI_PATH does not exist
+# (unset, or an injector-baked path gone stale after a package-store move),
+# resolve the hermes-compiler npm package THROUGH react-native's own dependency
+# graph — react-native pins the hermes-compiler version, so the compiler's
+# bytecode version always matches the prebuilt hermes VM artifacts (a
+# mismatched pair crashes at launch with "Wrong bytecode version").
+# STRICTLY SwiftPM-scoped: in a CocoaPods build the hermes-engine pod owns both
+# the VM and hermesc, and its hermes train may legitimately differ from the npm
+# hermes-compiler — falling back there would compile bundles the podded VM
+# rejects.
+if [[ ( -z "$PODS_ROOT" || ! -d "$PODS_ROOT" ) && ! -f "$HERMES_CLI_PATH" ]]; then
+  NODE_HERMESC=$(RN_DIR="$REACT_NATIVE_DIR" "$NODE_BINARY" --print \
+    "require('path').join(require('path').dirname(require.resolve('hermes-compiler/package.json', {paths: [process.env.RN_DIR]})), 'hermesc', 'osx-bin', 'hermesc')" \
+    2>/dev/null || true)
+  if [[ -n "$NODE_HERMESC" && -f "$NODE_HERMESC" ]]; then
+    HERMES_CLI_PATH="$NODE_HERMESC"
+  fi
+fi
+
 # If hermesc is not available and USE_HERMES is not set to false, show error.
 if [[ $USE_HERMES != false && -f "$HERMES_ENGINE_PATH" && ! -f "$HERMES_CLI_PATH" ]]; then
   echo "error: Hermes is enabled but the hermesc binary could not be found at ${HERMES_CLI_PATH}." \

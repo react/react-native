@@ -33,6 +33,8 @@ const config = {
     path.resolve(__dirname, '../react-native'),
     path.resolve(__dirname, '../virtualized-lists'),
     path.resolve(__dirname, '../react-native-popup-menu-android'),
+    path.resolve(__dirname, '../react-native-test-library/apple'),
+    path.resolve(__dirname, '../react-native-test-library/common'),
   ],
   resolver: {
     blockList: [/..\/react-native\/sdks\/hermes/],

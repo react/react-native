@@ -43,6 +43,7 @@
   },
   "workspaces": [
     "packages/*",
+    "packages/react-native-test-library/*",
     "private/*",
     "!private/helloworld"
   ],

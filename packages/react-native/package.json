@@ -112,6 +112,8 @@
     "scripts/react_native_pods_utils/script_phases.sh",
     "scripts/react_native_pods.rb",
     "scripts/react-native-xcode.sh",
+    "scripts/setup-apple-spm.js",
+    "scripts/spm",
     "scripts/xcode/ccache-clang.sh",
     "scripts/xcode/ccache-clang++.sh",
     "scripts/xcode/ccache.conf",
