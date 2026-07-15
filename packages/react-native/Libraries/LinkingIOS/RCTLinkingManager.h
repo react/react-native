@@ -14,8 +14,8 @@
 /**
  * Deep linking integration supports two iOS lifecycle paths:
  * - **AppDelegate methods** (below): use when the app does not declare `UIApplicationSceneManifest` in Info.plist.
- * - **SceneDelegate methods** (below): use when the app uses the UIScene lifecycle, or subclass `RCTSceneDelegate`
- *   which forwards these automatically.
+ * - **SceneDelegate methods** (below): use when the app uses the UIScene lifecycle. Forward these from your
+ *   app-owned `SceneDelegate`.
  */
 
 #pragma mark - AppDelegate methods
@@ -43,12 +43,10 @@
 
 #pragma mark - SceneDelegate methods
 
-/// Handles user activity for scene-based apps. Invoke from SceneDelegate, or use `RCTSceneDelegate` which forwards
-/// automatically.
+/// Handles user activity for scene-based apps. Invoke from your SceneDelegate.
 + (void)scene:(nonnull UIScene *)scene continueUserActivity:(nonnull NSUserActivity *)userActivity;
 
-/// Handles URLs opened while the app is running for scene-based apps. Invoke from SceneDelegate, or use
-/// `RCTSceneDelegate` which forwards automatically.
+/// Handles URLs opened while the app is running for scene-based apps. Invoke from your SceneDelegate.
 + (void)scene:(nonnull UIScene *)scene openURLContexts:(nonnull NSSet<UIOpenURLContext *> *)URLContexts;
 
 @end

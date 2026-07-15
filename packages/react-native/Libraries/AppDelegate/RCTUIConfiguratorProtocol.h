@@ -20,8 +20,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * This method can be used to customize the rootView that is passed to React Native.
- * Override on your `RCTReactNativeFactoryDelegate` (e.g. in AppDelegate, SceneDelegate factory delegate, or
- * `RCTAppDelegate` / `RCTSceneDelegate` subclass). Example:
+ * Override on your `RCTReactNativeFactoryDelegate` (e.g. in AppDelegate, SceneDelegate, or
+ * `RCTAppDelegate` subclass). Example:
  * ```
  * - (void)customizeRootView:(RCTRootView *)rootView
  * {

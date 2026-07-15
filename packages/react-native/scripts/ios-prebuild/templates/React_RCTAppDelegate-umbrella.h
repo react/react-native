@@ -18,7 +18,6 @@
 #endif
 
 #import "RCTAppDelegate.h"
-#import "RCTSceneDelegate.h"
 #import "RCTAppSetupUtils.h"
 #import "RCTDefaultReactNativeFactoryDelegate.h"
 #import "RCTDependencyProvider.h"

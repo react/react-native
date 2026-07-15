@@ -12,16 +12,28 @@ import UIKit
 
 #if !HELLOWORLD_USE_APPDELEGATE
 
-class SceneDelegate: RCTSceneDelegate {
-  override func scene(
+class SceneDelegate: RCTDefaultReactNativeFactoryDelegate, UIWindowSceneDelegate {
+  var window: UIWindow?
+  var reactNativeFactory: RCTReactNativeFactory?
+
+  func scene(
     _ scene: UIScene,
     willConnectTo session: UISceneSession,
     options connectionOptions: UIScene.ConnectionOptions
   ) {
-    moduleName = "HelloWorld"
-    dependencyProvider = RCTAppDependencyProvider()
+    guard let windowScene = scene as? UIWindowScene else {
+      return
+    }
 
-    super.scene(scene, willConnectTo: session, options: connectionOptions)
+    dependencyProvider = RCTAppDependencyProvider()
+    reactNativeFactory = RCTReactNativeFactory(delegate: self)
+    window = UIWindow(windowScene: windowScene)
+
+    reactNativeFactory?.startReactNative(
+      withModuleName: "HelloWorld",
+      in: window,
+      connectionOptions: connectionOptions
+    )
 
     #if DEBUG
     let devMenuConfiguration = RCTDevMenuConfiguration(
@@ -31,6 +43,14 @@ class SceneDelegate: RCTSceneDelegate {
     )
     reactNativeFactory?.devMenuConfiguration = devMenuConfiguration
     #endif
+  }
+
+  func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+    RCTLinkingManager.scene(scene, openURLContexts: URLContexts)
+  }
+
+  func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
+    RCTLinkingManager.scene(scene, continue: userActivity)
   }
 
   override func bundleURL() -> URL? {

@@ -14,8 +14,8 @@
 // 3. Use the AppDelegate implementation in AppDelegate.swift under `#if HELLOWORLD_USE_APPDELEGATE`
 //    (the bootstrap code is kept there; this file documents the legacy approach).
 //
-// The default path uses `SceneDelegate` subclassing `RCTSceneDelegate` with `UIApplicationSceneManifest`
-// declared in Info.plist.
+// The default path uses an app-owned `SceneDelegate` subclassing `RCTDefaultReactNativeFactoryDelegate`
+// with `UIApplicationSceneManifest` declared in Info.plist.
 
 import React
 import React_RCTAppDelegate

@@ -63,7 +63,8 @@ typedef NS_ENUM(NSInteger, RCTReleaseLevel) { Canary, Experimental, Stable };
  * - **AppDelegate path**: `startReactNativeWithModuleName:inWindow:launchOptions:` — call from
  *   `application:didFinishLaunchingWithOptions:` or `RCTAppDelegate`.
  * - **SceneDelegate path**: `startReactNativeWithModuleName:inWindow:connectionOptions:` — call from
- *   `scene:willConnectToSession:options:` or `RCTSceneDelegate`.
+ *   `scene:willConnectToSession:options:` in your app-owned `SceneDelegate` (subclass
+ *   `RCTDefaultReactNativeFactoryDelegate` and conform to `UIWindowSceneDelegate`).
  *
  * **Multi-scene / multi-window (unsupported):** When using the SceneDelegate path, React Native
  * checks that Info.plist does not set `UIApplicationSupportsMultipleScenes` to `true`, since

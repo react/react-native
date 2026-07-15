@@ -1695,16 +1695,6 @@ interface RCTRootViewFactoryConfiguration : public NSObject {
 interface RCTSafeAreaViewComponentView : public RCTViewComponentView {
 }
 
-interface RCTSceneDelegate : public RCTDefaultReactNativeFactoryDelegate <UIWindowSceneDelegate> {
-  public @property (assign) BOOL automaticallyLoadReactNativeWindow;
-  public @property (strong) NSDictionary* initialProps;
-  public @property (strong) NSString* moduleName;
-  public @property (strong) RCTReactNativeFactory* reactNativeFactory;
-  public @property (strong) UIWindow* window;
-  public virtual RCTRootViewFactory* rootViewFactory();
-  public virtual void loadReactNativeWindow:(UISceneConnectionOptions* _Nullable connectionOptions);
-}
-
 interface RCTScheduler : public NSObject {
   public @property (assign, readonly) const std::shared_ptr<facebook::react::UIManager> uiManager;
   public @property (weak) id<RCTSchedulerDelegate> delegate;

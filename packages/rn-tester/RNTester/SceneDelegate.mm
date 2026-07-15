@@ -9,6 +9,7 @@
 
 #import <React/RCTBundleURLProvider.h>
 #import <React/RCTDefines.h>
+#import <React/RCTLinkingManager.h>
 #import <ReactCommon/RCTSampleTurboModule.h>
 #import <ReactCommon/RCTTurboModuleManager.h>
 
@@ -47,13 +48,23 @@ static NSString *kBundlePath = @"js/RNTesterApp.ios";
     willConnectToSession:(UISceneSession *)session
                  options:(UISceneConnectionOptions *)connectionOptions
 {
-  self.moduleName = @"RNTesterApp";
-  self.initialProps = [self prepareInitialProps];
+  if (![scene isKindOfClass:[UIWindowScene class]]) {
+    return;
+  }
+
 #if USE_OSS_CODEGEN
   self.dependencyProvider = [[RCTAppDependencyProvider alloc] init];
 #endif
 
-  [super scene:scene willConnectToSession:session options:connectionOptions];
+  self.reactNativeFactory = [[RCTReactNativeFactory alloc] initWithDelegate:self];
+
+  UIWindowScene *windowScene = (UIWindowScene *)scene;
+  self.window = [[UIWindow alloc] initWithWindowScene:windowScene];
+
+  [self.reactNativeFactory startReactNativeWithModuleName:@"RNTesterApp"
+                                                 inWindow:self.window
+                                        initialProperties:[self prepareInitialProps]
+                                        connectionOptions:connectionOptions];
 
 #if RCT_DEV_MENU
   RCTDevMenuConfiguration *devMenuConfiguration = [[RCTDevMenuConfiguration alloc] initWithDevMenuEnabled:true
@@ -61,6 +72,16 @@ static NSString *kBundlePath = @"js/RNTesterApp.ios";
                                                                                  keyboardShortcutsEnabled:true];
   [self.reactNativeFactory setDevMenuConfiguration:devMenuConfiguration];
 #endif
+}
+
+- (void)scene:(UIScene *)scene openURLContexts:(NSSet<UIOpenURLContext *> *)URLContexts
+{
+  [RCTLinkingManager scene:scene openURLContexts:URLContexts];
+}
+
+- (void)scene:(UIScene *)scene continueUserActivity:(NSUserActivity *)userActivity
+{
+  [RCTLinkingManager scene:scene continueUserActivity:userActivity];
 }
 
 - (NSURL *)sourceURLForBridge:(RCTBridge *)bridge

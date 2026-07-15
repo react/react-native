@@ -20,11 +20,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * @deprecated RCTAppDelegate is deprecated and will be removed in a future version of React Native. For new apps
- * using the UIScene lifecycle, prefer `RCTSceneDelegate` or `RCTReactNativeFactory` with a SceneDelegate entrypoint.
- * For AppDelegate-only apps, use `RCTReactNativeFactory` directly.
+ * using the UIScene lifecycle, implement your own `SceneDelegate` with `RCTReactNativeFactory` (see integration
+ * docs). For AppDelegate-only apps, use `RCTReactNativeFactory` directly.
  *
- * Scene-based apps must keep `UIApplicationSupportsMultipleScenes` set to `false` in Info.plist (see
- * `RCTSceneDelegate` for details and the `RN_ALLOW_MULTIPLE_SCENES` escape hatch).
+ * Scene-based apps must keep `UIApplicationSupportsMultipleScenes` set to `false` in Info.plist. Define
+ * `RN_ALLOW_MULTIPLE_SCENES` on the app target to downgrade the unsupported-configuration crash to a warning.
  *
  * The RCTAppDelegate is an utility class that implements some base configurations for all the React Native apps.
  * It is not mandatory to use it, but it could simplify your AppDelegate code.
@@ -59,7 +59,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   - (id<RCTTurboModule>)getModuleInstanceFromClass:(Class)moduleClass
  */
 __attribute__((deprecated(
-    "RCTAppDelegate is deprecated and will be removed in a future version of React Native. For UIScene apps use `RCTSceneDelegate`; otherwise use `RCTReactNativeFactory`.")))
+    "RCTAppDelegate is deprecated and will be removed in a future version of React Native. For UIScene apps implement your own SceneDelegate with RCTReactNativeFactory; otherwise use RCTReactNativeFactory.")))
 @interface RCTAppDelegate : RCTDefaultReactNativeFactoryDelegate<UIApplicationDelegate>
 
 /// The window object, used to render the UViewControllers
