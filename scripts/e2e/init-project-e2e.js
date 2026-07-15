@@ -122,7 +122,10 @@ async function initNewProjectFromSource(
         `${desc} ${styleText('dim', '.').repeat(Math.max(0, 72 - desc.length))} `,
       );
       execSync(
-        `npm publish --registry ${VERDACCIO_SERVER_URL} --access public`,
+        // `--tag` is required by npm >= 11 when publishing a prerelease
+        // version. This is a throwaway local registry and the install step
+        // pins the exact version, so the dist-tag value is not significant.
+        `npm publish --registry ${VERDACCIO_SERVER_URL} --access public --tag react-native-e2e`,
         {
           cwd: packagePath,
           stdio: verbose ? 'inherit' : [process.stderr],
