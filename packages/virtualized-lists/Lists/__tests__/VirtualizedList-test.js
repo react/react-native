@@ -16,6 +16,18 @@ import {format} from 'util';
 
 jest.useFakeTimers();
 
+function removeOwner(obj) {
+  if (obj === null || typeof obj !== 'object') return obj;
+  if (Array.isArray(obj)) return obj.map(removeOwner);
+  
+  const result = {};
+  for (const key of Object.keys(obj)) {
+    if (key === '_owner') continue;
+    result[key] = removeOwner(obj[key]);
+  }
+  return result;
+}
+
 const skipTestSilenceLinter = it.skip;
 
 describe('VirtualizedList', () => {
@@ -233,7 +245,7 @@ describe('VirtualizedList', () => {
         />,
       );
     });
-    expect(component).toMatchSnapshot();
+    expect(removeOwner(component.toJSON())).toMatchSnapshot();
   });
 
   it('test getItem functionality where data is not an Array', async () => {
