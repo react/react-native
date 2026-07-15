@@ -11,10 +11,13 @@
 /**
  * Headers compose — emits the headers-spec layout (rules R1–R8 in
  * headers-spec.js) into a React.xcframework and builds the headers-only
- * ReactNativeHeaders.xcframework beside it. The prebuild path (xcframework.js)
- * composes before signing (R7); `ensureHeadersLayout()` applies the same
- * emission to an already-cached artifact. One projector, spec-driven,
- * byte-identical output either way.
+ * ReactNativeHeaders.xcframework beside it (pure-RN: the third-party deps
+ * namespaces ship in the ReactNativeDependenciesHeaders sidecar instead —
+ * see headers-xcframework.js). The prebuild path (xcframework.js) composes
+ * before signing (R7); `ensureHeadersLayout()` applies the same emission to
+ * an already-cached artifact and builds the deps sidecar from the slot's
+ * deps headers. One projector, spec-driven, byte-identical output either
+ * way.
  */
 
 const {
@@ -26,12 +29,17 @@ const {
 const {computeInventory} = require('./headers-inventory');
 const {
   DEPS_NAMESPACES,
-  DEPS_NAMESPACES_NOT_RELOCATED,
   planFromInventory,
   renderNamespaceModuleMap,
   renderReactModuleMap,
   renderUmbrellaHeader,
 } = require('./headers-spec');
+const {
+  CATALYST_STUB_SLICE,
+  DEFAULT_STUB_SLICES,
+  buildDepsHeadersXcframework,
+  composeHeadersOnlyXcframework,
+} = require('./headers-xcframework');
 const {execFileSync} = require('child_process');
 const crypto = require('crypto');
 const fs = require('fs');
@@ -46,13 +54,23 @@ const CP_FLAGS = process.platform === 'darwin' ? '-Rc' : '-R';
 // forces a recompose even when the cached source xcframework is untouched —
 // the Info.plist mtime alone can't catch that. Stable across fresh checkouts
 // (content-based, not mtime-based). sha256 to avoid weak-hash lint.
+//
+// This list must contain every local sibling module headers-compose.js
+// requires (i.e. every `require('./*.js')` above) — the guard test in
+// __tests__/headers-compose-test.js enforces that by parsing this file's
+// source and diffing it against this list, so an added require without a
+// matching entry here fails the test instead of silently going stale.
+const COMPOSE_TOOLING_FILES /*: Array<string> */ = [
+  'framework-resources.js',
+  'headers-inventory.js',
+  'headers-spec.js',
+  'headers-xcframework.js',
+  'headers-compose.js',
+];
+
 function composeToolingHash() /*: string */ {
   const hash = crypto.createHash('sha256');
-  for (const name of [
-    'headers-inventory.js',
-    'headers-spec.js',
-    'headers-compose.js',
-  ]) {
+  for (const name of COMPOSE_TOOLING_FILES) {
     hash.update(fs.readFileSync(path.join(__dirname, name)));
   }
   return hash.digest('hex');
@@ -202,95 +220,29 @@ function emitReactFrameworkHeaders(
   );
 }
 
-/*::
-type StubSlice = {
-  name: string, // human label
-  sdk: string, // xcrun --sdk name
-  targets: Array<string>, // clang -target triples (lipo'd when > 1)
-};
-*/
-
-const DEFAULT_STUB_SLICES /*: Array<StubSlice> */ = [
-  {name: 'ios', sdk: 'iphoneos', targets: ['arm64-apple-ios15.0']},
-  {
-    name: 'ios-simulator',
-    sdk: 'iphonesimulator',
-    targets: [
-      'arm64-apple-ios15.0-simulator',
-      'x86_64-apple-ios15.0-simulator',
-    ],
-  },
-];
-
-// Mac Catalyst slice — used by the real compose (the cached-artifact
-// repackage path skips it to stay fast; React.xcframework carries it).
-const CATALYST_STUB_SLICE /*: StubSlice */ = {
-  name: 'mac-catalyst',
-  sdk: 'macosx',
-  targets: ['arm64-apple-ios15.0-macabi', 'x86_64-apple-ios15.0-macabi'],
-};
-
 /**
  * Builds ReactNativeHeaders.xcframework (R2, R5): a headers-only LIBRARY
  * xcframework (stub static archives — nothing embeds in apps) whose Headers
- * root carries every non-React namespace incl. the third-party deps
- * namespaces, plus module.modulemap with the plain per-namespace modules.
- * SPM serves its Headers automatically to dependents — no flags.
+ * root carries every non-React RN namespace, plus module.modulemap with the
+ * plain per-namespace modules. PURE-RN: the third-party deps namespaces ship
+ * in the ReactNativeDependenciesHeaders sidecar built by the deps prebuild
+ * (and by ensureHeadersLayout on the consumer side) — never here. SPM serves
+ * its Headers automatically to dependents — no flags.
  */
 function buildReactNativeHeadersXcframework(
   outDir /*: string */,
   plan /*: HeadersSpecPlan */,
-  depsHeaders /*: string */,
   rnRoot /*: string */,
   includeCatalyst /*: boolean */ = false,
   // Optional dir containing a `hermes/` namespace (Hermes public headers from
   // the hermes-ios tarball's destroot/include). Folded in as a textual
-  // namespace like folly/glog so `<hermes/...>` resolves without per-library
-  // wiring. null when unstaged — then `<hermes/...>` stays unavailable.
+  // namespace so `<hermes/...>` resolves without per-library wiring. null
+  // when unstaged — then `<hermes/...>` stays unavailable.
   hermesHeaders /*: ?string */ = null,
 ) /*: string */ {
   // ---- stage headers ----
   const stage = fs.mkdtempSync(path.join(outDir, '.rnh-stage-'));
   stageEntries(stage, plan.reactNativeHeaders, rnRoot);
-  for (const ns of plan.depsNamespaces) {
-    const src = path.join(depsHeaders, ns);
-    // Fail closed: a declared deps namespace (folly/glog/boost/...) missing
-    // from the staged ReactNativeDependencies headers means the artifact would
-    // ship WITHOUT those `<folly/...>`-style headers — a silently-broken
-    // ReactNativeHeaders.xcframework (consumers lose third-party header
-    // resolution). Refuse rather than emit it. Stage
-    // third-party/ReactNativeDependencies.xcframework/Headers (full prebuild or
-    // cache slot) before composing.
-    if (!fs.existsSync(src)) {
-      throw new Error(
-        `headers-compose: deps namespace '${ns}' missing under ${depsHeaders}. ` +
-          `ReactNativeDependencies headers are not staged — refusing to ship an ` +
-          `incomplete ReactNativeHeaders.xcframework.`,
-      );
-    }
-    execFileSync('/bin/cp', [CP_FLAGS, src, path.join(stage, ns)]);
-  }
-  // Set equality with the deps artifact: a namespace dir present in the
-  // artifact but neither declared for relocation (DEPS_NAMESPACES) nor
-  // explicitly excluded (DEPS_NAMESPACES_NOT_RELOCATED — namespaces a real
-  // consumer pod vends itself, e.g. SocketRocket) means a new third-party dep
-  // was added upstream — fail closed so a decision is made deliberately.
-  const foundDepsDirs = fs
-    .readdirSync(depsHeaders, {withFileTypes: true})
-    .filter(e => e.isDirectory())
-    .map(e => String(e.name));
-  const undeclared = foundDepsDirs.filter(
-    d =>
-      !plan.depsNamespaces.includes(d) &&
-      !DEPS_NAMESPACES_NOT_RELOCATED.includes(d),
-  );
-  if (undeclared.length > 0) {
-    throw new Error(
-      `headers-compose: deps artifact ships undeclared namespace(s): ` +
-        `${undeclared.join(', ')}. Add them to DEPS_NAMESPACES (relocated) or ` +
-        `DEPS_NAMESPACES_NOT_RELOCATED (vended by a real pod) in headers-spec.js.`,
-    );
-  }
   // Hermes public headers (separate source from the deps namespaces — they
   // come from the hermes-ios tarball, not ReactNativeDependencies). Vend only
   // the `hermes/` namespace; `jsi/` is already provided elsewhere, so copying
@@ -323,66 +275,21 @@ function buildReactNativeHeadersXcframework(
     renderNamespaceModuleMap(plan.namespaceModules),
   );
 
-  // ---- stub static archives per slice ----
-  const work = fs.mkdtempSync(path.join(outDir, '.stub-work-'));
-  fs.writeFileSync(
-    path.join(work, 'stub.c'),
-    '// ReactNativeHeaders is headers-only; this stub satisfies xcframework tooling.\nstatic int RNHeadersStub __attribute__((unused)) = 0;\n',
-  );
+  // ---- compose (stub archives + create-xcframework) ----
   const slices = includeCatalyst
     ? [...DEFAULT_STUB_SLICES, CATALYST_STUB_SLICE]
     : DEFAULT_STUB_SLICES;
-  const libs = slices.map(slice => {
-    const sdkPath = execFileSync('xcrun', [
-      '--sdk',
-      slice.sdk,
-      '--show-sdk-path',
-    ])
-      .toString()
-      .trim();
-    const thins = slice.targets.map((t, i) => {
-      const obj = path.join(work, `stub-${slice.name}-${i}.o`);
-      execFileSync('xcrun', [
-        'clang',
-        '-c',
-        '-target',
-        t,
-        '-isysroot',
-        sdkPath,
-        path.join(work, 'stub.c'),
-        '-o',
-        obj,
-      ]);
-      const lib = path.join(work, `stub-${slice.name}-${i}.a`);
-      execFileSync('xcrun', ['libtool', '-static', '-o', lib, obj], {
-        stdio: ['ignore', 'pipe', 'ignore'],
-      });
-      return lib;
-    });
-    const outLib = path.join(work, `libReactNativeHeaders-${slice.name}.a`);
-    if (thins.length === 1) {
-      fs.copyFileSync(thins[0], outLib);
-    } else {
-      execFileSync('xcrun', ['lipo', '-create', ...thins, '-output', outLib]);
-    }
-    return outLib;
-  });
-
-  // ---- compose ----
-  const outXcfw = path.join(outDir, 'ReactNativeHeaders.xcframework');
-  fs.rmSync(outXcfw, {recursive: true, force: true});
-  const xcframeworkArgs = ['-create-xcframework'];
-  for (const l of libs) {
-    xcframeworkArgs.push('-library', l, '-headers', stage);
-  }
-  xcframeworkArgs.push('-output', outXcfw);
-  execFileSync('xcodebuild', xcframeworkArgs, {stdio: 'pipe'});
+  const outXcfw = composeHeadersOnlyXcframework(
+    outDir,
+    'ReactNativeHeaders',
+    stage,
+    slices,
+  );
   fs.rmSync(stage, {recursive: true, force: true});
-  fs.rmSync(work, {recursive: true, force: true});
   console.log(
     `headers-compose: ReactNativeHeaders.xcframework (${slices.map(s => s.name).join(', ')}) -> ${outXcfw} ` +
-      `(${plan.reactNativeHeaders.length} RN headers + deps ${plan.depsNamespaces.join(', ')}` +
-      `${hermesFolded ? ', hermes' : ''}; ` +
+      `(${plan.reactNativeHeaders.length} RN headers, pure-RN` +
+      `${hermesFolded ? ' + hermes' : ''}; ` +
       `${Object.keys(plan.namespaceModules).length} namespace modules)`,
   );
   return outXcfw;
@@ -392,20 +299,21 @@ function buildReactNativeHeadersXcframework(
  * Ensures the headers-spec layout exists at `outDir`, composed from the cache
  * slot's artifacts: clones React.xcframework (APFS clonefile), strips the
  * stale signature (R7 — production signs after compose), emits the spec
- * layout into every slice, and builds ReactNativeHeaders.xcframework from
- * the plan + the slot's deps headers.
+ * layout into every slice, builds the pure-RN ReactNativeHeaders.xcframework
+ * from the plan, and builds the ReactNativeDependenciesHeaders sidecar from
+ * the slot's deps headers.
  *
  * Skips when the freshness marker matches the source artifact (same
  * realpath + Info.plist mtime) unless `force`. Any consumer with a cache slot
- * gets composed artifacts automatically — no published ReactNativeHeaders
- * required.
+ * gets composed artifacts automatically — no published ReactNativeHeaders /
+ * ReactNativeDependenciesHeaders required.
  */
 function ensureHeadersLayout(
   artifactsDir /*: string */,
   rnRoot /*: string */,
   outDir /*: string */,
   force /*: boolean */ = false,
-) /*: {reactXcfw: string, headersXcfw: string} */ {
+) /*: {reactXcfw: string, headersXcfw: string, depsHeadersXcfw: string} */ {
   const sourceXcfw = fs.realpathSync(
     path.join(artifactsDir, 'React.xcframework'),
   );
@@ -424,6 +332,10 @@ function ensureHeadersLayout(
     : null;
   const reactXcfw = path.join(outDir, 'React.xcframework');
   const headersXcfw = path.join(outDir, 'ReactNativeHeaders.xcframework');
+  const depsHeadersXcfw = path.join(
+    outDir,
+    'ReactNativeDependenciesHeaders.xcframework',
+  );
   const markerPath = path.join(outDir, '.composed-from');
 
   const sourceStat = fs.statSync(path.join(sourceXcfw, 'Info.plist'));
@@ -437,10 +349,11 @@ function ensureHeadersLayout(
     !force &&
     fs.existsSync(reactXcfw) &&
     fs.existsSync(headersXcfw) &&
+    fs.existsSync(depsHeadersXcfw) &&
     fs.existsSync(markerPath) &&
     fs.readFileSync(markerPath, 'utf8') === marker
   ) {
-    return {reactXcfw, headersXcfw};
+    return {reactXcfw, headersXcfw, depsHeadersXcfw};
   }
 
   console.log(
@@ -460,13 +373,20 @@ function ensureHeadersLayout(
   buildReactNativeHeadersXcframework(
     outDir,
     plan,
-    depsHeaders,
     rnRoot,
     false,
     hermesHeaders,
   );
+  // The deps sidecar (like ReactNativeHeaders here) skips the catalyst slice
+  // on the consumer repackage path to stay fast.
+  buildDepsHeadersXcframework(
+    outDir,
+    depsHeaders,
+    plan.depsNamespaces,
+    DEFAULT_STUB_SLICES,
+  );
   fs.writeFileSync(markerPath, marker);
-  return {reactXcfw, headersXcfw};
+  return {reactXcfw, headersXcfw, depsHeadersXcfw};
 }
 
 module.exports = {
@@ -475,4 +395,6 @@ module.exports = {
   buildReactNativeHeadersXcframework,
   ensureHeadersLayout,
   DEPS_NAMESPACES,
+  COMPOSE_TOOLING_FILES,
+  composeToolingHash,
 };

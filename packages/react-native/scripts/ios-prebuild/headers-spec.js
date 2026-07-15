@@ -25,12 +25,14 @@
  *     would require case-folding `react.framework` → `React.framework`, which
  *     only works on case-insensitive filesystems; the header-search-path route
  *     is exact and works everywhere.
- * R2. Every other namespace (incl. `react/`) ships in ONE headers-only library
- *     xcframework ("ReactNativeHeaders"), namespace dirs at its Headers root,
- *     INCLUDING the third-party deps namespaces (folly/glog/boost/fmt/
- *     double-conversion/fast_float, sourced from the deps artifact) — making
- *     ReactNativeDependencies binary-only. Served by exact header-search-path
- *     lookup, so resolution is filesystem-case-independent.
+ * R2. Every other RN namespace (incl. `react/`) ships in ONE headers-only
+ *     library xcframework ("ReactNativeHeaders"), namespace dirs at its
+ *     Headers root. PURE-RN: the third-party deps namespaces (DEPS_NAMESPACES)
+ *     are NOT here — they ship in the ReactNativeDependenciesHeaders sidecar
+ *     built by the deps prebuild from its own artifact headers, so every
+ *     namespace has exactly ONE physical home (the SocketRocket dual-copy
+ *     regression class is structurally impossible). Both are served by exact
+ *     header-search-path lookup, so resolution is filesystem-case-independent.
  * R3. NO include rewriting anywhere — source headers are byte-identical to
  *     the repo (content authority = source files; layout authority = this
  *     spec). Consumers compile unchanged except bare-form angle includes
@@ -116,10 +118,15 @@ export type HeadersSpecPlan = {
 };
 */
 
-// R2: third-party namespaces relocated from the deps artifact. Kept in exact
-// sync with the artifact's Headers/ dirs — compose fails closed on a missing
-// OR an undeclared namespace, and the include classifier
-// (headers-inventory.js THIRD_PARTY_LIBS) derives from this same list.
+// R2: the third-party deps namespaces — the exact contents of the
+// ReactNativeDependenciesHeaders sidecar, and the exact set of namespace dirs
+// the deps artifact's Headers/ ships. The sidecar emitter fails closed on a
+// missing OR an undeclared namespace (set equality), the headers gate asserts
+// these stay ABSENT from ReactNativeHeaders (one physical home per
+// namespace — relocated copies collided with real pods' own headers: the
+// SocketRocket duplicate-@interface / poisoned-module-graph Expo regression,
+// 2026-07-03), and the include classifier (headers-inventory.js
+// THIRD_PARTY_LIBS) derives from this same list.
 const DEPS_NAMESPACES = [
   'folly',
   'glog',
@@ -127,19 +134,8 @@ const DEPS_NAMESPACES = [
   'fmt',
   'double-conversion',
   'fast_float',
+  'SocketRocket',
 ];
-
-// Namespaces the deps artifact ships but which must NOT be relocated into
-// ReactNativeHeaders: a REAL CocoaPods pod of the same name exists in consumer
-// graphs and vends these headers itself (with its own module). Relocating
-// textual copies puts them on every pod's HEADER_SEARCH_PATHS via the
-// flattened React-Core-prebuilt/Headers and collides with the pod's own
-// headers — duplicate @interface definitions compiling the SocketRocket pod,
-// and a poisoned module graph in use_frameworks/explicit-modules apps
-// (Expo regression, 2026-07-03). The compose set-equality guard treats these
-// as declared (so only genuinely NEW namespaces fail closed), and the headers
-// gate asserts they stay ABSENT from the artifact.
-const DEPS_NAMESPACES_NOT_RELOCATED = ['SocketRocket'];
 
 // R4/R5 umbrella exclusion: C extern-inline definitions.
 const EXTERN_INLINE_RE /*: RegExp */ =
@@ -476,7 +472,6 @@ function renderNamespaceModuleMap(
 
 module.exports = {
   planFromInventory,
-  DEPS_NAMESPACES_NOT_RELOCATED,
   renderReactModuleMap,
   renderUmbrellaHeader,
   renderNamespaceModuleMap,

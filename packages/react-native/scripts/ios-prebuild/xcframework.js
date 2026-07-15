@@ -86,22 +86,19 @@ function buildXCFrameworks(
     computeSpecPlan,
     emitReactFrameworkHeaders,
   } = require('./headers-compose');
-  const depsHeaders = path.join(
-    rootFolder,
-    'third-party',
-    'ReactNativeDependencies.xcframework',
-    'Headers',
-  );
   const plan = computeSpecPlan(rootFolder);
   emitReactFrameworkHeaders(outputPath, plan, rootFolder);
+  // ReactNativeHeaders is PURE-RN — the third-party deps namespaces ship in
+  // the ReactNativeDependenciesHeaders sidecar built by the deps prebuild
+  // (scripts/releases/ios-prebuild), so the core compose no longer needs the
+  // deps artifact's headers.
   // NOTE: Hermes public headers (`<hermes/...>`) are folded into
   // ReactNativeHeaders on the consumer side by ensureHeadersLayout. When this
   // publish path is productionized, pass the prebuild's hermes destroot/include
-  // as the 6th arg so the PUBLISHED ReactNativeHeaders carries hermes too.
+  // as the 5th arg so the PUBLISHED ReactNativeHeaders carries hermes too.
   const headersXcfw = buildReactNativeHeadersXcframework(
     path.dirname(outputPath),
     plan,
-    depsHeaders,
     rootFolder,
     true, // include the mac-catalyst slice in the real compose
   );

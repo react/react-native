@@ -39,7 +39,6 @@
 
 const {computeInventory} = require('./headers-inventory');
 const {
-  DEPS_NAMESPACES_NOT_RELOCATED,
   planFromInventory,
   renderNamespaceModuleMap,
   renderReactModuleMap,
@@ -227,18 +226,16 @@ function verifyStructural(
       `R10 umbrella ${u.relPath}`,
     );
   }
+  // ReactNativeHeaders is PURE-RN: every deps namespace must stay ABSENT.
+  // They ship in the ReactNativeDependenciesHeaders sidecar (one physical
+  // home per namespace) — relocated copies collide with the real pods' own
+  // headers (SocketRocket / Expo use_frameworks regression, 2026-07-03).
   for (const ns of plan.depsNamespaces) {
-    if (!fs.existsSync(path.join(rnhHeaders, ns))) {
-      throw new Error(`deps namespace missing from artifact: ${ns}`);
-    }
-  }
-  // Excluded namespaces must stay ABSENT: relocating them collides with the
-  // real pod's own headers (SocketRocket / Expo use_frameworks regression).
-  for (const ns of DEPS_NAMESPACES_NOT_RELOCATED) {
     if (fs.existsSync(path.join(rnhHeaders, ns))) {
       throw new Error(
-        `excluded deps namespace '${ns}' found in the artifact — it must NOT ` +
-          `be relocated (a real pod vends it; textual copies collide).`,
+        `deps namespace '${ns}' found in ReactNativeHeaders — it must NOT be ` +
+          `relocated (it ships in ReactNativeDependenciesHeaders; textual ` +
+          `copies collide with the real pods' headers).`,
       );
     }
   }
@@ -319,6 +316,7 @@ function runCompileGates(
   plan /*: HeadersSpecPlan */,
   reactSlice /*: string */,
   rnhHeaders /*: string */,
+  depsHeaders /*: string */,
 ) /*: void */ {
   const sdk = execFileSync(
     'xcrun',
@@ -327,6 +325,10 @@ function runCompileGates(
   ).trim();
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'headers-verify-'));
   try {
+    // ReactNativeHeaders is pure-RN, so the deps headers (folly/glog/... —
+    // reached textually from RN's public headers) come from the deps
+    // artifact's Headers dir, exactly as consumers get them from the
+    // ReactNativeDependencies pod / ReactNativeDependenciesHeaders sidecar.
     const common = [
       '-fsyntax-only',
       '-target',
@@ -337,6 +339,8 @@ function runCompileGates(
       reactSlice,
       '-I',
       rnhHeaders,
+      '-I',
+      depsHeaders,
     ];
 
     const objc = path.join(tmp, 'gate-modules.m');
@@ -394,6 +398,8 @@ function runCompileGates(
         reactSlice,
         '-I',
         rnhHeaders,
+        '-I',
+        depsHeaders,
         swift,
       ],
       'Swift gate (import React + RCTBridge.moduleRegistry)',
@@ -459,7 +465,23 @@ function main(argv /*:: ?: Array<string> */) /*: void */ {
   if (args.skipCompile) {
     log('compile gates skipped (--skip-compile).');
   } else {
-    runCompileGates(plan, reactSlice, rnhHeaders);
+    // ReactNativeHeaders is pure-RN — the compile gates additionally need the
+    // deps headers, served from the staged deps artifact (the same content
+    // the ReactNativeDependenciesHeaders sidecar ships).
+    const depsHeaders = path.join(
+      RN_ROOT,
+      'third-party',
+      'ReactNativeDependencies.xcframework',
+      'Headers',
+    );
+    if (!fs.existsSync(depsHeaders)) {
+      throw new Error(
+        `deps headers missing at ${depsHeaders} — stage the ` +
+          `ReactNativeDependencies artifact before running the compile gates ` +
+          `(or pass --skip-compile).`,
+      );
+    }
+    runCompileGates(plan, reactSlice, rnhHeaders, depsHeaders);
   }
   log('ALL GATES PASSED.');
 }

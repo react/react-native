@@ -513,7 +513,9 @@ class ReactNativeCoreUtils
     # only declares the React-Core-prebuilt dependency; it no longer touches xcconfigs.)
     #
     # `<React/...>` resolves through the vendored React.framework; this adds the search
-    # path to the flattened ReactNativeHeaders headers (every other namespace). There is
+    # path to the flattened ReactNativeHeaders headers (every other RN namespace —
+    # the third-party deps namespaces are served by the ReactNativeDependencies pod,
+    # see ReactNativeDependenciesUtils.configure_aggregate_xcconfig). There is
     # no clang VFS overlay.
     #
     # Parameters:

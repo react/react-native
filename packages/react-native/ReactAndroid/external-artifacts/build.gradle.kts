@@ -53,6 +53,30 @@ val reactNativeDependenciesReleaseDSYMArtifact: PublishArtifact =
       classifier = "reactnative-dependencies-dSYM-release"
     }
 
+// [iOS] React Native Dependencies Headers — the headers-only LIBRARY-type
+// sidecar (per-slice Headers/ + HeadersPath) that SwiftPM auto-serves; the
+// binary xcframework above is framework-type and cannot expose headers to
+// SwiftPM binaryTargets. Also shipped INSIDE the deps tarball for CocoaPods.
+val reactNativeDependenciesHeadersDebugArtifactFile: RegularFile =
+    layout.projectDirectory.file("artifacts/ReactNativeDependenciesHeadersDebug.xcframework.tar.gz")
+val reactNativeDependenciesHeadersDebugArtifact: PublishArtifact =
+    artifacts.add("externalArtifacts", reactNativeDependenciesHeadersDebugArtifactFile) {
+      type = "tgz"
+      extension = "tar.gz"
+      classifier = "reactnative-dependencies-headers-debug"
+    }
+
+val reactNativeDependenciesHeadersReleaseArtifactFile: RegularFile =
+    layout.projectDirectory.file(
+        "artifacts/ReactNativeDependenciesHeadersRelease.xcframework.tar.gz"
+    )
+val reactNativeDependenciesHeadersReleaseArtifact: PublishArtifact =
+    artifacts.add("externalArtifacts", reactNativeDependenciesHeadersReleaseArtifactFile) {
+      type = "tgz"
+      extension = "tar.gz"
+      classifier = "reactnative-dependencies-headers-release"
+    }
+
 // [iOS] React Native Core
 val reactCoreDebugArtifactFile: RegularFile =
     layout.projectDirectory.file("artifacts/ReactCoreDebug.xcframework.tar.gz")
@@ -89,6 +113,27 @@ val reactCoreReleaseDSYMArtifact: PublishArtifact =
       classifier = "reactnative-core-dSYM-release"
     }
 
+// [iOS] React Native Headers — the pure-RN headers-only xcframework, published
+// standalone (it also ships inside the ReactCore tarball for CocoaPods) so
+// SwiftPM consumers can wire it as its own binaryTarget.
+val reactNativeHeadersDebugArtifactFile: RegularFile =
+    layout.projectDirectory.file("artifacts/ReactNativeHeadersDebug.xcframework.tar.gz")
+val reactNativeHeadersDebugArtifact: PublishArtifact =
+    artifacts.add("externalArtifacts", reactNativeHeadersDebugArtifactFile) {
+      type = "tgz"
+      extension = "tar.gz"
+      classifier = "reactnative-headers-debug"
+    }
+
+val reactNativeHeadersReleaseArtifactFile: RegularFile =
+    layout.projectDirectory.file("artifacts/ReactNativeHeadersRelease.xcframework.tar.gz")
+val reactNativeHeadersReleaseArtifact: PublishArtifact =
+    artifacts.add("externalArtifacts", reactNativeHeadersReleaseArtifactFile) {
+      type = "tgz"
+      extension = "tar.gz"
+      classifier = "reactnative-headers-release"
+    }
+
 apply(from = "../publish.gradle")
 
 publishing {
@@ -99,10 +144,14 @@ publishing {
       artifact(reactNativeDependenciesReleaseArtifact)
       artifact(reactNativeDependenciesDebugDSYMArtifact)
       artifact(reactNativeDependenciesReleaseDSYMArtifact)
+      artifact(reactNativeDependenciesHeadersDebugArtifact)
+      artifact(reactNativeDependenciesHeadersReleaseArtifact)
       artifact(reactCoreDebugArtifact)
       artifact(reactCoreReleaseArtifact)
       artifact(reactCoreDebugDSYMArtifact)
       artifact(reactCoreReleaseDSYMArtifact)
+      artifact(reactNativeHeadersDebugArtifact)
+      artifact(reactNativeHeadersReleaseArtifact)
     }
   }
 }

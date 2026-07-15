@@ -13,17 +13,21 @@ xcframework binary, and the artifact's own
 `Headers/{folly,glog,boost,fmt,double-conversion,fast_float,SocketRocket}` are
 flattened into the pod's `Headers/` by the podspec's `prepare_command`.
 Consumers resolve bare `<folly/...>` / `<SocketRocket/...>` via CocoaPods
-public-header linkage from `s.dependency "ReactNativeDependencies"`, plus an
-explicit `HEADER_SEARCH_PATHS` entry
-(`$(PODS_ROOT)/ReactNativeDependencies/Headers`). The real source pods are
-neither depended on nor searched.
+public-header linkage from `s.dependency "ReactNativeDependencies"`, plus
+`HEADER_SEARCH_PATHS` entries pointing at
+`$(PODS_ROOT)/ReactNativeDependencies/Headers`: per-podspec via
+`add_rn_third_party_dependencies`, and globally (aggregate + every pod target)
+via `ReactNativeDependenciesUtils.configure_aggregate_xcconfig` at post-install
+— ReactNativeHeaders is pure-RN, so this is the only global home of the deps
+namespaces. The real source pods are neither depended on nor searched.
 
-NOTE: this is a CocoaPods-level contract. The deps XCFRAMEWORK itself is NOT
-self-serving: it is framework-type without `HeadersPath`, so its root `Headers/`
-is invisible to SPM binaryTargets (verified 2026-07-04 — `HeadersPath` is
-rejected on framework entries). In SPM the six C++ namespaces are served by
-ReactNativeHeaders.xcframework; serving them from the deps side requires the
-phase-2 headers-only library sidecar (see rn-deps-self-serving plan).
+For SPM, the deps XCFRAMEWORK itself cannot serve headers: it is framework-type
+without `HeadersPath`, and its root `Headers/` is invisible to SPM binaryTargets
+(verified 2026-07-04 — `HeadersPath` is rejected on framework entries). The deps
+prebuild therefore emits a headers-only LIBRARY-type sidecar,
+`ReactNativeDependenciesHeaders.xcframework` (same recipe as ReactNativeHeaders:
+stub archives + per-slice `Headers/`), which SPM auto-serves with zero flags.
+The sidecar ships inside the deps tarball and as a standalone artifact.
 
 ## Why SocketRocket is vended here
 

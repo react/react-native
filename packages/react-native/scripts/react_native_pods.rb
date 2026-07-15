@@ -621,6 +621,15 @@ def react_native_post_install(
     ReactNativeCoreUtils.configure_aggregate_xcconfig(installer)
   end
 
+  if !ReactNativeDependenciesUtils.build_react_native_deps_from_source()
+    # Prebuilt-deps mode: make the deps artifact headers (folly/glog/...)
+    # resolvable from the aggregate and every pod target, mirroring the rncore
+    # injection above. ReactNativeHeaders is pure-RN, so the flattened
+    # ReactNativeDependencies/Headers dir is the single global home of the
+    # third-party namespaces (see scripts/cocoapods/__docs__/prebuilt-deps.md).
+    ReactNativeDependenciesUtils.configure_aggregate_xcconfig(installer)
+  end
+
   SPM.apply_on_post_install(installer)
 
   if privacy_file_aggregation_enabled

@@ -22,11 +22,15 @@ Pod::Spec.new do |s|
   #  - React.xcframework: the compiled core. Its per-slice React.framework carries
   #    every <React/...> header + the framework module map, so `#import <React/...>`
   #    and `@import React;` resolve through FRAMEWORK_SEARCH_PATHS automatically.
-  #  - ReactNativeHeaders.xcframework: headers-only. Carries every other namespace
-  #    (<react/...>, <yoga/...>, folly, glog, ...). Its headers are flattened into a
-  #    top-level Headers/ (see prepare_command) and exposed via the standard pod
-  #    header search path. (<hermes/...> is supplied by the hermes-engine pod here;
-  #    it is folded into ReactNativeHeaders only on the SwiftPM consumer side.)
+  #  - ReactNativeHeaders.xcframework: headers-only, PURE-RN. Carries every other
+  #    RN namespace (<react/...>, <yoga/...>, ...). Its headers are flattened into
+  #    a top-level Headers/ (see prepare_command) and exposed via the standard pod
+  #    header search path. The third-party deps namespaces (folly/glog/boost/...)
+  #    are NOT here — the ReactNativeDependencies pod serves them from its own
+  #    artifact (see scripts/cocoapods/__docs__/prebuilt-deps.md), wired through
+  #    add_rn_third_party_dependencies below. (<hermes/...> is supplied by the
+  #    hermes-engine pod here; it is folded into ReactNativeHeaders only on the
+  #    SwiftPM consumer side.)
   # There is no clang VFS overlay.
   s.vendored_frameworks    = "React.xcframework"
 

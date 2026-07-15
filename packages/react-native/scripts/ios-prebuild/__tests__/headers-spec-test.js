@@ -11,6 +11,7 @@
 'use strict';
 
 const {
+  DEPS_NAMESPACES,
   planFromInventory,
   renderNamespaceModuleMap,
   renderReactModuleMap,
@@ -235,6 +236,22 @@ describe('R11 redirect shims for dual-identity headers', () => {
     for (const e of [...plan.react, ...plan.reactNativeHeaders]) {
       expect(e.redirectTo).toBeUndefined();
     }
+  });
+});
+
+describe('DEPS_NAMESPACES (R2 — the deps sidecar namespace set)', () => {
+  test('includes SocketRocket: one physical home, in the sidecar', () => {
+    // Pre-sidecar, SocketRocket was excluded from relocation because a REAL
+    // pod vended it (the 2026-07-03 dual-copy regression). With the sidecar
+    // being the deps' single header home, it must be declared like every
+    // other deps namespace.
+    expect(DEPS_NAMESPACES).toContain('SocketRocket');
+  });
+
+  test('plan.depsNamespaces mirrors the spec list', () => {
+    expect(planFromInventoryForTest(validManifest()).depsNamespaces).toEqual(
+      DEPS_NAMESPACES,
+    );
   });
 });
 

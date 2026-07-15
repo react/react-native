@@ -8,6 +8,15 @@
  * @format
  */
 
+// Shared with the core prebuild (kept dependency-light for this cross-package
+// require): the headers-only xcframework recipe and the deps namespace spec.
+const {
+  DEPS_NAMESPACES,
+} = require('../../../packages/react-native/scripts/ios-prebuild/headers-spec');
+const {
+  buildDepsHeadersXcframework,
+  stubSlicesFromXcframework,
+} = require('../../../packages/react-native/scripts/ios-prebuild/headers-xcframework');
 const {HEADERS_FOLDER, TARGET_FOLDER} = require('./constants');
 const {execSync} = require('child_process');
 const fs = require('fs');
@@ -70,8 +79,23 @@ async function createFramework(
   // Copy headers to the framework - start by building the Header folder
   copyHeaders(scheme, dependencies, rootFolder);
 
+  // Emit the headers-only ReactNativeDependenciesHeaders.xcframework sidecar
+  // from the root Headers/ just assembled. The binary xcframework is
+  // FRAMEWORK-type, so its root Headers/ is invisible to SwiftPM
+  // (`HeadersPath` is rejected on framework entries) — the LIBRARY-type
+  // sidecar is what auto-serves the deps namespaces. Root Headers/ is
+  // slice-uniform (copied once after create-xcframework), so the sidecar
+  // stages it per slice, with slice parity derived from the binary artifact.
+  const headersXcfw = buildDepsHeadersXcframework(
+    rootFolder,
+    path.join(output, 'Headers'),
+    DEPS_NAMESPACES,
+    stubSlicesFromXcframework(output),
+  );
+
   if (identity) {
     signXCFramework(identity, output);
+    signXCFramework(identity, headersXcfw);
   }
 }
 

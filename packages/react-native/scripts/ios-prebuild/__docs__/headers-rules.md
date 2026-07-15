@@ -356,9 +356,14 @@ These classes previously failed late (consumer CI lane) or not at all; the gate
 Proof the gate earns its keep — its FIRST run found two real shipping defects:
 the dual-identity redefinitions that became R11, and an undeclared
 `SocketRocket` namespace in the deps artifact (caught by the set-equality guard
-the moment it was added). SocketRocket is deliberately NOT relocated
-(`DEPS_NAMESPACES_NOT_RELOCATED`): the real pod vends it, and textual copies
-collide with it under `use_frameworks` — the gate asserts its absence.
+the moment it was added). SocketRocket now lives in `DEPS_NAMESPACES` alongside
+the other third-party deps namespaces, with a single physical home in the
+ReactNativeDependenciesHeaders sidecar: relocating a second textual copy into
+ReactNativeHeaders collided with the real pod's own headers under
+`use_frameworks` (the duplicate-`@interface` / poisoned-module-graph Expo
+regression, 2026-07-03), so the set-equality gate asserts the declared namespace
+set — `DEPS_NAMESPACES` — matches the deps artifact's namespaces exactly, in
+both directions.
 
 ### D. Remaining silent gaps — allowlist maintenance (by design)
 

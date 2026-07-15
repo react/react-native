@@ -133,7 +133,7 @@ jobs:
         uses: actions/cache/restore@v5
         with:
           path: packages/react-native/.build/output/xcframeworks
-          key: v2-ios-core-xcframework-${{ matrix.flavor }}-${{ hashFiles('packages/react-native/Package.swift', 'packages/react-native/scripts/ios-prebuild/*.js', 'packages/react-native/scripts/ios-prebuild.js', 'packages/react-native/React/**/*', 'packages/react-native/ReactCommon/**/*', 'packages/react-native/Libraries/**/*') }}
+          key: v3-ios-core-xcframework-${{ matrix.flavor }}-${{ hashFiles('packages/react-native/Package.swift', 'packages/react-native/scripts/ios-prebuild/*.js', 'packages/react-native/scripts/ios-prebuild.js', 'packages/react-native/React/**/*', 'packages/react-native/ReactCommon/**/*', 'packages/react-native/Libraries/**/*') }}
       - name: Setup node.js
         if: steps.restore-ios-xcframework.outputs.cache-hit != 'true'
         uses: ./.github/actions/setup-node
@@ -167,9 +167,11 @@ jobs:
         if: steps.restore-ios-xcframework.outputs.cache-hit != 'true'
         shell: bash
         run: |
-          # ReactNativeHeaders.xcframework (built by the compose step) folds in
-          # the third-party deps namespaces (folly/glog/boost/...), so the deps
-          # headers must be staged here too — not just in build-slices.
+          # ReactNativeHeaders.xcframework is pure-RN (the deps namespaces ship
+          # in the ReactNativeDependenciesHeaders sidecar built by the deps
+          # prebuild), but the headers-verify compile gates still need the deps
+          # headers on their include path (folly/glog/... reached from RN's
+          # public headers), so the deps artifact is staged here too.
           tar -xzf /tmp/third-party/ReactNativeDependencies${{ matrix.flavor }}.xcframework.tar.gz -C /tmp/third-party/
           mkdir -p packages/react-native/third-party/
           mv /tmp/third-party/packages/react-native/third-party/ReactNativeDependencies.xcframework packages/react-native/third-party/ReactNativeDependencies.xcframework
@@ -212,6 +214,15 @@ jobs:
         run: |
           cd packages/react-native/.build/output/xcframeworks/${{matrix.flavor}}/Symbols
           tar -cz -f ../../ReactCore${{ matrix.flavor }}.framework.dSYM.tar.gz .
+      - name: Rename ReactNativeHeaders XCFramework tarball
+        if: steps.restore-ios-xcframework.outputs.cache-hit != 'true'
+        run: |
+          # The compose step already tars ReactNativeHeaders.xcframework standalone;
+          # published as its own Maven artifact (classifier reactnative-headers-*)
+          # so SwiftPM consumers can wire it as a separate binaryTarget. It also
+          # ships inside the ReactCore tarball for the CocoaPods pod.
+          cp packages/react-native/.build/output/xcframeworks/${{matrix.flavor}}/ReactNativeHeaders.xcframework.tar.gz \
+            packages/react-native/.build/output/xcframeworks/ReactNativeHeaders${{matrix.flavor}}.xcframework.tar.gz
       - name: Upload XCFramework Artifact
         uses: actions/upload-artifact@v6
         with:
@@ -222,6 +233,11 @@ jobs:
         with:
           name: ReactCore${{ matrix.flavor }}.framework.dSYM.tar.gz
           path: packages/react-native/.build/output/xcframeworks/ReactCore${{matrix.flavor}}.framework.dSYM.tar.gz
+      - name: Upload ReactNativeHeaders XCFramework Artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: ReactNativeHeaders${{ matrix.flavor }}.xcframework.tar.gz
+          path: packages/react-native/.build/output/xcframeworks/ReactNativeHeaders${{matrix.flavor}}.xcframework.tar.gz
       - name: Save cache if present
         if: ${{ github.ref == 'refs/heads/main' }} # To avoid that the cache explode
         uses: actions/cache/save@v5
@@ -229,4 +245,5 @@ jobs:
           path: |
             packages/react-native/.build/output/xcframeworks/ReactCore${{matrix.flavor}}.xcframework.tar.gz
             packages/react-native/.build/output/xcframeworks/ReactCore${{matrix.flavor}}.framework.dSYM.tar.gz
-          key: v2-ios-core-xcframework-${{ matrix.flavor }}-${{ hashFiles('packages/react-native/Package.swift', 'packages/react-native/scripts/ios-prebuild/*.js', 'packages/react-native/scripts/ios-prebuild.js', 'packages/react-native/React/**/*', 'packages/react-native/ReactCommon/**/*', 'packages/react-native/Libraries/**/*') }}
+            packages/react-native/.build/output/xcframeworks/ReactNativeHeaders${{matrix.flavor}}.xcframework.tar.gz
+          key: v3-ios-core-xcframework-${{ matrix.flavor }}-${{ hashFiles('packages/react-native/Package.swift', 'packages/react-native/scripts/ios-prebuild/*.js', 'packages/react-native/scripts/ios-prebuild.js', 'packages/react-native/React/**/*', 'packages/react-native/ReactCommon/**/*', 'packages/react-native/Libraries/**/*') }}
