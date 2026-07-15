@@ -159,14 +159,16 @@ export component FlatList_maintainVisibleContentPosition() {
             <TouchableOpacity
               style={styles.smallButtonText}
               onPress={addItemAtTop}>
-              <Text>Add 1 item at top</Text>
+              <Text style={styles.smallButtonTextLabel}>Add 1 item at top</Text>
             </TouchableOpacity>
           </View>
           <View style={styles.smallButtonContainer}>
             <TouchableOpacity
               style={styles.smallButtonText}
               onPress={addItemAtBottom}>
-              <Text>Add 1 item at bottom</Text>
+              <Text style={styles.smallButtonTextLabel}>
+                Add 1 item at bottom
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -175,14 +177,18 @@ export component FlatList_maintainVisibleContentPosition() {
             <TouchableOpacity
               style={styles.smallButtonText}
               onPress={addItemAtTopMultiple}>
-              <Text>Add 3 items at top</Text>
+              <Text style={styles.smallButtonTextLabel}>
+                Add 3 items at top
+              </Text>
             </TouchableOpacity>
           </View>
           <View style={styles.smallButtonContainer}>
             <TouchableOpacity
               style={styles.smallButtonText}
               onPress={addItemAtTopFifty}>
-              <Text>Add 50 items at top</Text>
+              <Text style={styles.smallButtonTextLabel}>
+                Add 50 items at top
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -191,7 +197,9 @@ export component FlatList_maintainVisibleContentPosition() {
             <TouchableOpacity
               style={styles.smallButtonText}
               onPress={addItemAtTopAndRemoveBottom}>
-              <Text>Add + Remove (net -2)</Text>
+              <Text style={styles.smallButtonTextLabel}>
+                Add + Remove (net -2)
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -200,14 +208,18 @@ export component FlatList_maintainVisibleContentPosition() {
             <TouchableOpacity
               style={styles.smallButtonText}
               onPress={() => setHorizontal(h => !h)}>
-              <Text>{horizontal ? 'Horizontal: ON' : 'Horizontal: OFF'}</Text>
+              <Text style={styles.smallButtonTextLabel}>
+                {horizontal ? 'Horizontal: ON' : 'Horizontal: OFF'}
+              </Text>
             </TouchableOpacity>
           </View>
           <View style={styles.smallButtonContainer}>
             <TouchableOpacity
               style={styles.smallButtonText}
               onPress={() => setInverted(i => !i)}>
-              <Text>{inverted ? 'Inverted: ON' : 'Inverted: OFF'}</Text>
+              <Text style={styles.smallButtonTextLabel}>
+                {inverted ? 'Inverted: ON' : 'Inverted: OFF'}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -216,14 +228,16 @@ export component FlatList_maintainVisibleContentPosition() {
             <TouchableOpacity
               style={styles.smallButtonText}
               onPress={() => setWindowSize(windowSize === 51 ? 3 : 51)}>
-              <Text>{windowSize === 51 ? 'Recycle: OFF' : 'Recycle: ON'}</Text>
+              <Text style={styles.smallButtonTextLabel}>
+                {windowSize === 51 ? 'Recycle: OFF' : 'Recycle: ON'}
+              </Text>
             </TouchableOpacity>
           </View>
           <View style={styles.smallButtonContainer}>
             <TouchableOpacity
               style={styles.smallButtonText}
               onPress={() => setVariableHeight(v => !v)}>
-              <Text>
+              <Text style={styles.smallButtonTextLabel}>
                 {variableHeight ? 'Height: Variable' : 'Height: Fixed'}
               </Text>
             </TouchableOpacity>
@@ -238,7 +252,7 @@ export component FlatList_maintainVisibleContentPosition() {
                   autoscrollToTopThreshold === 100 ? null : 100,
                 )
               }>
-              <Text>
+              <Text style={styles.smallButtonTextLabel}>
                 {autoscrollToTopThreshold === 100
                   ? 'Threshold: 100'
                   : 'Threshold: OFF'}
@@ -251,7 +265,7 @@ export component FlatList_maintainVisibleContentPosition() {
               onPress={() =>
                 setScrollEventThrottle(scrollEventThrottle === 16 ? 500 : 16)
               }>
-              <Text>
+              <Text style={styles.smallButtonTextLabel}>
                 {scrollEventThrottle === 16
                   ? 'Throttle: 16ms'
                   : 'Throttle: 500ms'}
@@ -264,14 +278,18 @@ export component FlatList_maintainVisibleContentPosition() {
             <TouchableOpacity
               style={styles.smallButtonText}
               onPress={scrollToOffset100}>
-              <Text>ScrollToOffset 100</Text>
+              <Text style={styles.smallButtonTextLabel}>
+                ScrollToOffset 100
+              </Text>
             </TouchableOpacity>
           </View>
           <View style={styles.smallButtonContainer}>
             <TouchableOpacity
               style={styles.smallButtonText}
               onPress={scrollToOffset500}>
-              <Text>ScrollToOffset 500</Text>
+              <Text style={styles.smallButtonTextLabel}>
+                ScrollToOffset 500
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -280,14 +298,16 @@ export component FlatList_maintainVisibleContentPosition() {
             <TouchableOpacity
               style={styles.smallButtonText}
               onPress={clearData}>
-              <Text>Clear (empty list)</Text>
+              <Text style={styles.smallButtonTextLabel}>
+                Clear (empty list)
+              </Text>
             </TouchableOpacity>
           </View>
           <View style={styles.smallButtonContainer}>
             <TouchableOpacity
               style={styles.smallButtonText}
               onPress={resetData}>
-              <Text>Reset</Text>
+              <Text style={styles.smallButtonTextLabel}>Reset</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -323,9 +343,11 @@ const styles = StyleSheet.create({
     marginVertical: 1,
   },
   smallButtonText: {
-    fontSize: 10,
     paddingVertical: 2,
     paddingHorizontal: 4,
+  },
+  smallButtonTextLabel: {
+    fontSize: 10,
     textAlign: 'center',
   },
   smallButtonContainer: {
