@@ -20,6 +20,7 @@
 #include <optional>
 #include <set>
 #include <string>
+#include <mutex>
 
 #include <jsinspector-modern/tracing/FrameTimingSequence.h>
 #include <jsinspector-modern/tracing/HostTracingProfile.h>
