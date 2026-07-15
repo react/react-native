@@ -104,7 +104,12 @@ public abstract class BaseViewManagerDelegate<
         mViewManager.setAccessibilityLabelledBy(view, dynamicFromObject)
       }
       ViewProps.OPACITY -> mViewManager.setOpacity(view, (value as Double?)?.toFloat() ?: 1.0f)
-      ViewProps.OUTLINE_COLOR -> mViewManager.setOutlineColor(view, value as Int?)
+      ViewProps.OUTLINE_COLOR ->
+          mViewManager.setOutlineColor(
+              view,
+              // outlineColor의 nullable 계약을 보존하기 위해 기본값이 없는 변환을 사용한다.
+              ColorPropConverter.getColor(value, view.context),
+          )
 
       ViewProps.OUTLINE_OFFSET ->
           mViewManager.setOutlineOffset(
