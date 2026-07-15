@@ -58,15 +58,15 @@ function getCommunityCliDefaultConfig(
   return {
     resolver,
     serializer: {
-      // We can include multiple copies of setup-env here because Metro will
+      // We can include multiple copies of InitializeCore here because metro will
       // only add ones that are already part of the bundle
       getModulesRunBeforeMainModule: () => [
-        require.resolve('react-native/setup-env', {
+        require.resolve('react-native/Libraries/Core/InitializeCore', {
           paths: [ctx.root],
         }),
         ...outOfTreePlatforms.map(platform =>
           require.resolve(
-            `${ctx.platforms[platform].npmPackageName}/setup-env`,
+            `${ctx.platforms[platform].npmPackageName}/Libraries/Core/InitializeCore`,
             {paths: [ctx.root]},
           ),
         ),
