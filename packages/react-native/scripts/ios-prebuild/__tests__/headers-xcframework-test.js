@@ -20,7 +20,7 @@ const os = require('os');
 const path = require('path');
 
 describe('buildDepsHeadersXcframework set-equality gate', () => {
-  let tmp /*: string */;
+  let tmp /*: string */ = '';
   beforeEach(() => {
     tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'deps-headers-test-'));
   });
