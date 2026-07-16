@@ -463,16 +463,6 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
-    enableNetworkEventReporting: {
-      defaultValue: true,
-      metadata: {
-        description:
-          'Enable network event reporting hooks in each native platform through `NetworkReporter` (Web Perf APIs + CDP). This flag should be combined with `fuseboxNetworkInspectionEnabled` to enable Network CDP debugging.',
-        expectedReleaseValue: true,
-        purpose: 'release',
-      },
-      ossReleaseStage: 'none',
-    },
     enablePreparedTextLayout: {
       defaultValue: false,
       metadata: {
@@ -668,17 +658,6 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'experimental',
     },
-    fuseboxNetworkInspectionEnabled: {
-      defaultValue: true,
-      metadata: {
-        dateAdded: '2024-01-31',
-        description:
-          'Enable network inspection support in the React Native DevTools CDP backend. This flag is global and should not be changed across React Host lifetimes.',
-        expectedReleaseValue: true,
-        purpose: 'experimentation',
-      },
-      ossReleaseStage: 'none',
-    },
     fuseboxScreenshotCaptureEnabled: {
       defaultValue: true,
       metadata: {
@@ -695,7 +674,7 @@ const definitions: FeatureFlagDefinitions = {
       metadata: {
         dateAdded: '2026-07-11',
         description:
-          'Enable reporting of WebSocket network events (`Network.webSocket*` CDP events) to the React Native DevTools CDP backend. Requires `fuseboxNetworkInspectionEnabled`.',
+          'Enable reporting of WebSocket network events (`Network.webSocket*` CDP events) to the React Native DevTools CDP backend.',
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },

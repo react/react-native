@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<9a2806b3934d130010954a92a7b48e0f>>
+ * @generated SignedSource<<5b7a6ca47ca43f473596e35dfced16e0>>
  */
 
 /**
@@ -63,7 +63,6 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
   private var enableModuleArgumentNSNullConversionIOSCache: Boolean? = null
   private var enableMutationObserverByDefaultCache: Boolean? = null
   private var enableNativeCSSParsingCache: Boolean? = null
-  private var enableNetworkEventReportingCache: Boolean? = null
   private var enablePreparedTextLayoutCache: Boolean? = null
   private var enablePropsUpdateReconciliationAndroidCache: Boolean? = null
   private var enableRuntimeSchedulerQueueClearingOnErrorCache: Boolean? = null
@@ -82,7 +81,6 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
   private var fuseboxAssertSingleHostStateCache: Boolean? = null
   private var fuseboxEnabledReleaseCache: Boolean? = null
   private var fuseboxFrameRecordingEnabledCache: Boolean? = null
-  private var fuseboxNetworkInspectionEnabledCache: Boolean? = null
   private var fuseboxScreenshotCaptureEnabledCache: Boolean? = null
   private var fuseboxWebSocketEventsEnabledCache: Boolean? = null
   private var optimizedAnimatedPropUpdatesCache: Boolean? = null
@@ -502,16 +500,6 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
     return cached
   }
 
-  override fun enableNetworkEventReporting(): Boolean {
-    var cached = enableNetworkEventReportingCache
-    if (cached == null) {
-      cached = currentProvider.enableNetworkEventReporting()
-      accessedFeatureFlags.add("enableNetworkEventReporting")
-      enableNetworkEventReportingCache = cached
-    }
-    return cached
-  }
-
   override fun enablePreparedTextLayout(): Boolean {
     var cached = enablePreparedTextLayoutCache
     if (cached == null) {
@@ -688,16 +676,6 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
       cached = currentProvider.fuseboxFrameRecordingEnabled()
       accessedFeatureFlags.add("fuseboxFrameRecordingEnabled")
       fuseboxFrameRecordingEnabledCache = cached
-    }
-    return cached
-  }
-
-  override fun fuseboxNetworkInspectionEnabled(): Boolean {
-    var cached = fuseboxNetworkInspectionEnabledCache
-    if (cached == null) {
-      cached = currentProvider.fuseboxNetworkInspectionEnabled()
-      accessedFeatureFlags.add("fuseboxNetworkInspectionEnabled")
-      fuseboxNetworkInspectionEnabledCache = cached
     }
     return cached
   }

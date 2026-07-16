@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<87b76f5c2af82462dc66c7721cd66ac4>>
+ * @generated SignedSource<<6a0e60fe118f3651dc76c895a37fbce2>>
  */
 
 /**
@@ -106,8 +106,6 @@ public object ReactNativeFeatureFlagsCxxInterop {
 
   @DoNotStrip @JvmStatic public external fun enableNativeCSSParsing(): Boolean
 
-  @DoNotStrip @JvmStatic public external fun enableNetworkEventReporting(): Boolean
-
   @DoNotStrip @JvmStatic public external fun enablePreparedTextLayout(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enablePropsUpdateReconciliationAndroid(): Boolean
@@ -143,8 +141,6 @@ public object ReactNativeFeatureFlagsCxxInterop {
   @DoNotStrip @JvmStatic public external fun fuseboxEnabledRelease(): Boolean
 
   @DoNotStrip @JvmStatic public external fun fuseboxFrameRecordingEnabled(): Boolean
-
-  @DoNotStrip @JvmStatic public external fun fuseboxNetworkInspectionEnabled(): Boolean
 
   @DoNotStrip @JvmStatic public external fun fuseboxScreenshotCaptureEnabled(): Boolean
 

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<6f2362e9844cab731ca01e4af563fde9>>
+ * @generated SignedSource<<77401595559dc52e1b2b206527deb341>>
  */
 
 /**
@@ -182,10 +182,6 @@ bool ReactNativeFeatureFlags::enableNativeCSSParsing() {
   return getAccessor().enableNativeCSSParsing();
 }
 
-bool ReactNativeFeatureFlags::enableNetworkEventReporting() {
-  return getAccessor().enableNetworkEventReporting();
-}
-
 bool ReactNativeFeatureFlags::enablePreparedTextLayout() {
   return getAccessor().enablePreparedTextLayout();
 }
@@ -256,10 +252,6 @@ bool ReactNativeFeatureFlags::fuseboxEnabledRelease() {
 
 bool ReactNativeFeatureFlags::fuseboxFrameRecordingEnabled() {
   return getAccessor().fuseboxFrameRecordingEnabled();
-}
-
-bool ReactNativeFeatureFlags::fuseboxNetworkInspectionEnabled() {
-  return getAccessor().fuseboxNetworkInspectionEnabled();
 }
 
 bool ReactNativeFeatureFlags::fuseboxScreenshotCaptureEnabled() {

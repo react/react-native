@@ -19,9 +19,7 @@ namespace facebook::react::jsinspector_modern {
 
 namespace {
 
-struct NetworkReporterTestParams {
-  bool enableNetworkEventReporting;
-};
+struct NetworkReporterTestParams {};
 
 } // namespace
 
@@ -36,13 +34,7 @@ class NetworkReporterTestBase : public TracingTestBase<
                                     folly::QueuedImmediateExecutor>,
                                 public WithParamInterface<Params> {
  protected:
-  NetworkReporterTestBase()
-      : TracingTestBase({
-            .enableNetworkEventReporting =
-                WithParamInterface<Params>::GetParam()
-                    .enableNetworkEventReporting,
-            .networkInspectionEnabled = true,
-        }) {}
+  NetworkReporterTestBase() : TracingTestBase(InspectorFlagOverrides{}) {}
 
   void SetUp() override {
     JsiIntegrationPortableTestBase::SetUp();
@@ -803,13 +795,10 @@ TEST_P(NetworkReporterTest, testTwoSessionsReceiveNetworkEvents) {
 }
 
 struct NetworkReporterTracingTestParams {
-  bool enableNetworkEventReporting;
   bool enableNetworkDomain;
 
   operator NetworkReporterTestParams() const {
-    return NetworkReporterTestParams{
-        .enableNetworkEventReporting = enableNetworkEventReporting,
-    };
+    return NetworkReporterTestParams{};
   }
 };
 
@@ -982,19 +971,12 @@ TEST_P(
           AtJsonPtr("/args/data/didFail", false))));
 }
 
-static const auto networkReporterTestParamValues = testing::Values(
-    NetworkReporterTestParams{.enableNetworkEventReporting = true},
-    NetworkReporterTestParams{
-        .enableNetworkEventReporting = false,
-    });
+static const auto networkReporterTestParamValues =
+    testing::Values(NetworkReporterTestParams{});
 
 static const auto networkReporterTracingTestParamValues = testing::Values(
-    NetworkReporterTracingTestParams{
-        .enableNetworkEventReporting = true,
-        .enableNetworkDomain = true},
-    NetworkReporterTracingTestParams{
-        .enableNetworkEventReporting = true,
-        .enableNetworkDomain = false});
+    NetworkReporterTracingTestParams{.enableNetworkDomain = true},
+    NetworkReporterTracingTestParams{.enableNetworkDomain = false});
 
 INSTANTIATE_TEST_SUITE_P(
     NetworkReporterTest,

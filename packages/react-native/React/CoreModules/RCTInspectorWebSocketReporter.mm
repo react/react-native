@@ -28,14 +28,14 @@ std::string toStdString(NSString *string)
 
 /**
  * Returns whether WebSocket events should be reported for the given request
- * ID. Reporting requires the `enableNetworkEventReporting` and
- * `fuseboxWebSocketEventsEnabled` feature flags, and a connected CDP debugger
- * with the Network domain enabled (dev or profiling builds only).
+ * ID. Reporting requires the `fuseboxWebSocketEventsEnabled` feature flag, and
+ * a connected CDP debugger with the Network domain enabled (dev or profiling
+ * builds only).
  */
 BOOL isReportingEnabled(NSString *requestId)
 {
-  return requestId != nil && ReactNativeFeatureFlags::enableNetworkEventReporting() &&
-      ReactNativeFeatureFlags::fuseboxWebSocketEventsEnabled() && NetworkReporter::getInstance().isDebuggingEnabled();
+  return requestId != nil && ReactNativeFeatureFlags::fuseboxWebSocketEventsEnabled() &&
+      NetworkReporter::getInstance().isDebuggingEnabled();
 }
 
 Headers convertNSDictionaryToHeaders(const NSDictionary<NSString *, NSString *> *headers)

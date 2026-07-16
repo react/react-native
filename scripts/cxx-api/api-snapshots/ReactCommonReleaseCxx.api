@@ -7731,7 +7731,6 @@ class facebook::react::jsinspector_modern::InspectorFlags {
   public bool getFrameRecordingEnabled() const;
   public bool getFuseboxEnabled() const;
   public bool getIsProfilingBuild() const;
-  public bool getNetworkInspectionEnabled() const;
   public bool getPerfIssuesEnabled() const;
   public bool getScreenshotCaptureEnabled() const;
   public facebook::react::jsinspector_modern::InspectorFlags& operator=(const facebook::react::jsinspector_modern::InspectorFlags&) = delete;

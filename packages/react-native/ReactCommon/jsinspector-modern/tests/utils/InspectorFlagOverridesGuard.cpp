@@ -41,16 +41,6 @@ class ReactNativeFeatureFlagsOverrides
         ReactNativeFeatureFlagsDefaults::fuseboxFrameRecordingEnabled());
   }
 
-  bool fuseboxNetworkInspectionEnabled() override {
-    return overrides_.networkInspectionEnabled.value_or(
-        ReactNativeFeatureFlagsDefaults::fuseboxNetworkInspectionEnabled());
-  }
-
-  bool enableNetworkEventReporting() override {
-    return overrides_.enableNetworkEventReporting.value_or(
-        ReactNativeFeatureFlagsDefaults::enableNetworkEventReporting());
-  }
-
  private:
   InspectorFlagOverrides overrides_;
 };

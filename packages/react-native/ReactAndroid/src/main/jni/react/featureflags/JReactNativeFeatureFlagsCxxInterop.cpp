@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<42f1901c8b7cb568cc761a791991a333>>
+ * @generated SignedSource<<41ff49e9305aa1ff144582dfcac650d0>>
  */
 
 /**
@@ -273,12 +273,6 @@ class ReactNativeFeatureFlagsJavaProvider
     return method(javaProvider_);
   }
 
-  bool enableNetworkEventReporting() override {
-    static const auto method =
-        getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enableNetworkEventReporting");
-    return method(javaProvider_);
-  }
-
   bool enablePreparedTextLayout() override {
     static const auto method =
         getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enablePreparedTextLayout");
@@ -384,12 +378,6 @@ class ReactNativeFeatureFlagsJavaProvider
   bool fuseboxFrameRecordingEnabled() override {
     static const auto method =
         getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("fuseboxFrameRecordingEnabled");
-    return method(javaProvider_);
-  }
-
-  bool fuseboxNetworkInspectionEnabled() override {
-    static const auto method =
-        getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("fuseboxNetworkInspectionEnabled");
     return method(javaProvider_);
   }
 
@@ -760,11 +748,6 @@ bool JReactNativeFeatureFlagsCxxInterop::enableNativeCSSParsing(
   return ReactNativeFeatureFlags::enableNativeCSSParsing();
 }
 
-bool JReactNativeFeatureFlagsCxxInterop::enableNetworkEventReporting(
-    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
-  return ReactNativeFeatureFlags::enableNetworkEventReporting();
-}
-
 bool JReactNativeFeatureFlagsCxxInterop::enablePreparedTextLayout(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
   return ReactNativeFeatureFlags::enablePreparedTextLayout();
@@ -853,11 +836,6 @@ bool JReactNativeFeatureFlagsCxxInterop::fuseboxEnabledRelease(
 bool JReactNativeFeatureFlagsCxxInterop::fuseboxFrameRecordingEnabled(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
   return ReactNativeFeatureFlags::fuseboxFrameRecordingEnabled();
-}
-
-bool JReactNativeFeatureFlagsCxxInterop::fuseboxNetworkInspectionEnabled(
-    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
-  return ReactNativeFeatureFlags::fuseboxNetworkInspectionEnabled();
 }
 
 bool JReactNativeFeatureFlagsCxxInterop::fuseboxScreenshotCaptureEnabled(
@@ -1149,9 +1127,6 @@ void JReactNativeFeatureFlagsCxxInterop::registerNatives() {
         "enableNativeCSSParsing",
         JReactNativeFeatureFlagsCxxInterop::enableNativeCSSParsing),
       makeNativeMethod(
-        "enableNetworkEventReporting",
-        JReactNativeFeatureFlagsCxxInterop::enableNetworkEventReporting),
-      makeNativeMethod(
         "enablePreparedTextLayout",
         JReactNativeFeatureFlagsCxxInterop::enablePreparedTextLayout),
       makeNativeMethod(
@@ -1205,9 +1180,6 @@ void JReactNativeFeatureFlagsCxxInterop::registerNatives() {
       makeNativeMethod(
         "fuseboxFrameRecordingEnabled",
         JReactNativeFeatureFlagsCxxInterop::fuseboxFrameRecordingEnabled),
-      makeNativeMethod(
-        "fuseboxNetworkInspectionEnabled",
-        JReactNativeFeatureFlagsCxxInterop::fuseboxNetworkInspectionEnabled),
       makeNativeMethod(
         "fuseboxScreenshotCaptureEnabled",
         JReactNativeFeatureFlagsCxxInterop::fuseboxScreenshotCaptureEnabled),

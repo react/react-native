@@ -41,9 +41,6 @@ Object objectFreeze(Runtime& runtime, Object object) {
 } // namespace
 
 void RuntimeTarget::installNetworkReporterAPI() {
-  if (!InspectorFlags::getInstance().getNetworkInspectionEnabled()) {
-    return;
-  }
   auto jsiCreateDevToolsRequestId = [selfWeak = weak_from_this()](
                                         Runtime& runtime,
                                         const Value& /*thisVal*/,

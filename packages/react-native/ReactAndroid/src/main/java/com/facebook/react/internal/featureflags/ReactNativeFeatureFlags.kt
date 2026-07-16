@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<df3f81d0083a8ebe9d0fbcb86e652405>>
+ * @generated SignedSource<<c5ce707ba940ef24ca6c261fd9b2baf7>>
  */
 
 /**
@@ -265,12 +265,6 @@ public object ReactNativeFeatureFlags {
   public fun enableNativeCSSParsing(): Boolean = accessor.enableNativeCSSParsing()
 
   /**
-   * Enable network event reporting hooks in each native platform through `NetworkReporter` (Web Perf APIs + CDP). This flag should be combined with `fuseboxNetworkInspectionEnabled` to enable Network CDP debugging.
-   */
-  @JvmStatic
-  public fun enableNetworkEventReporting(): Boolean = accessor.enableNetworkEventReporting()
-
-  /**
    * Enables caching text layout artifacts for later reuse
    */
   @JvmStatic
@@ -379,19 +373,13 @@ public object ReactNativeFeatureFlags {
   public fun fuseboxFrameRecordingEnabled(): Boolean = accessor.fuseboxFrameRecordingEnabled()
 
   /**
-   * Enable network inspection support in the React Native DevTools CDP backend. This flag is global and should not be changed across React Host lifetimes.
-   */
-  @JvmStatic
-  public fun fuseboxNetworkInspectionEnabled(): Boolean = accessor.fuseboxNetworkInspectionEnabled()
-
-  /**
    * Enable Page.captureScreenshot CDP method support in the React Native DevTools CDP backend. This flag is global and should not be changed across React Host lifetimes.
    */
   @JvmStatic
   public fun fuseboxScreenshotCaptureEnabled(): Boolean = accessor.fuseboxScreenshotCaptureEnabled()
 
   /**
-   * Enable reporting of WebSocket network events (`Network.webSocket*` CDP events) to the React Native DevTools CDP backend. Requires `fuseboxNetworkInspectionEnabled`.
+   * Enable reporting of WebSocket network events (`Network.webSocket*` CDP events) to the React Native DevTools CDP backend.
    */
   @JvmStatic
   public fun fuseboxWebSocketEventsEnabled(): Boolean = accessor.fuseboxWebSocketEventsEnabled()

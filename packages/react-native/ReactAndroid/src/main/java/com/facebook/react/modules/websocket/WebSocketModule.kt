@@ -69,8 +69,7 @@ public class WebSocketModule(context: ReactApplicationContext) :
 
   /** Whether WebSocket events should be reported to the modern debugger server. */
   private fun isInspectorNetworkReportingEnabled(): Boolean =
-      ReactNativeFeatureFlags.enableNetworkEventReporting() &&
-          ReactNativeFeatureFlags.fuseboxWebSocketEventsEnabled()
+      ReactNativeFeatureFlags.fuseboxWebSocketEventsEnabled()
 
   /**
    * Run [block] with the connection's CDP request ID, when WebSocket event reporting to the modern

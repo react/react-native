@@ -41,10 +41,6 @@ bool InspectorFlags::getIsProfilingBuild() const {
   return loadFlagsAndAssertUnchanged().isProfilingBuild;
 }
 
-bool InspectorFlags::getNetworkInspectionEnabled() const {
-  return loadFlagsAndAssertUnchanged().networkInspectionEnabled;
-}
-
 bool InspectorFlags::getPerfIssuesEnabled() const {
   return loadFlagsAndAssertUnchanged().perfIssuesEnabled;
 }
@@ -81,8 +77,6 @@ const InspectorFlags::Values& InspectorFlags::loadFlagsAndAssertUnchanged()
 #else
           false,
 #endif
-      .networkInspectionEnabled =
-          ReactNativeFeatureFlags::fuseboxNetworkInspectionEnabled(),
       .perfIssuesEnabled = ReactNativeFeatureFlags::perfIssuesEnabled(),
   };
 
