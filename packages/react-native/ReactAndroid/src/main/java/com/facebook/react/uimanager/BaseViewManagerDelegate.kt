@@ -107,7 +107,7 @@ public abstract class BaseViewManagerDelegate<
       ViewProps.OUTLINE_COLOR ->
           mViewManager.setOutlineColor(
               view,
-              // outlineColor의 nullable 계약을 보존하기 위해 기본값이 없는 변환을 사용한다.
+              // Use the overload without a default value to preserve outlineColor's nullable contract.
               ColorPropConverter.getColor(value, view.context),
           )
 
