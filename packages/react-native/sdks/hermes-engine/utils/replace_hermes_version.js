@@ -14,7 +14,7 @@ const {spawnSync} = require('child_process');
 const fs = require('fs');
 const yargs = require('yargs');
 
-const LAST_BUILD_FILENAME = '.last_build_configuration';
+const LAST_BUILD_FILENAME = 'hermes-engine/.last_build_configuration';
 
 function validateBuildConfiguration(configuration) {
   if (!['Debug', 'Release'].includes(configuration)) {
