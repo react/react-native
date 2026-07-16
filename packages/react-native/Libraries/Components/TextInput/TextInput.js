@@ -302,8 +302,6 @@ function InternalTextInput(props: TextInputProps): React.Node {
       TextInputState.registerInput(inputRefValue);
 
       return () => {
-        // Blur the input while it is still registered, otherwise `blur()`
-        // does not dispatch the blur command.
         if (TextInputState.currentlyFocusedInput() === inputRefValue) {
           nullthrows(inputRefValue).blur();
         }
