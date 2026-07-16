@@ -1037,17 +1037,10 @@ Object {
     "onScrollBeginDrag": [Function],
     "onScrollEndDrag": [Function],
     "onViewableItemsChanged": undefined,
-    "refreshControl": Object {
-      "$$typeof": Symbol(react.transitional.element),
-      "_store": Object {},
-      "key": null,
-      "props": Object {
-        "onRefresh": [MockFunction],
-        "progressViewOffset": undefined,
-        "refreshing": false,
-      },
-      "type": [Function],
-    },
+    "refreshControl": <RefreshControlMock
+      onRefresh={[MockFunction]}
+      refreshing={false}
+    />,
     "refreshing": false,
     "renderItem": [Function],
     "scrollEventThrottle": 0.0001,

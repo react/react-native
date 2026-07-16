@@ -10,14 +10,18 @@
 
 import type {ListRenderItemInfo} from '../../../../virtualized-lists/Lists/VirtualizedListProps';
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
+import type {ScrollEvent} from 'react-native';
 
 import * as React from 'react';
 import {useCallback, useRef, useState} from 'react';
 import {FlatList, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 
 const HEIGHTS = [30, 50, 70, 90, 110];
+const FIXED_ITEM_HEIGHT = 40;
 
-const INITIAL_DATA = Array.from({length: 20}, (_, i) => ({
+type ListItem = {id: string, height: number};
+
+const INITIAL_DATA: Array<ListItem> = Array.from({length: 20}, (_, i) => ({
   id: i.toString(),
   height: HEIGHTS[i % HEIGHTS.length],
 }));
@@ -50,12 +54,12 @@ export component FlatList_maintainVisibleContentPosition() {
   const [scrollEventThrottle, setScrollEventThrottle] = useState(16);
   const [variableHeight, setVariableHeight] = useState(false);
   const [scrollOffset, setScrollOffset] = useState(0);
-  const flatListRef = useRef<FlatList | null>(null);
+  const flatListRef = useRef<FlatList<ListItem> | null>(null);
 
   const config = createConfig(minIndexForVisible, autoscrollToTopThreshold);
 
   const renderItem = useCallback(
-    ({item}: ListRenderItemInfo<{id: string, height?: number}>) => (
+    ({item}: ListRenderItemInfo<ListItem>) => (
       <View
         key={item.id}
         testID={`item_${item.id}`}
@@ -74,18 +78,18 @@ export component FlatList_maintainVisibleContentPosition() {
   );
 
   const addItemAtTop = useCallback(() => {
-    setData(prev => [{id: `added-${prev.length}`}, ...prev]);
+    setData(prev => [{id: `added-${prev.length}`, height: FIXED_ITEM_HEIGHT}, ...prev]);
   }, []);
 
   const addItemAtBottom = useCallback(() => {
-    setData(prev => [...prev, {id: `added-${prev.length}`}]);
+    setData(prev => [...prev, {id: `added-${prev.length}`, height: FIXED_ITEM_HEIGHT}]);
   }, []);
 
   const addItemAtTopMultiple = useCallback(() => {
     setData(prev => [
-      {id: `added-${prev.length}`},
-      {id: `added-${prev.length + 1}`},
-      {id: `added-${prev.length + 2}`},
+      {id: `added-${prev.length}`, height: FIXED_ITEM_HEIGHT},
+      {id: `added-${prev.length + 1}`, height: FIXED_ITEM_HEIGHT},
+      {id: `added-${prev.length + 2}`, height: FIXED_ITEM_HEIGHT},
       ...prev,
     ]);
   }, []);
@@ -94,6 +98,7 @@ export component FlatList_maintainVisibleContentPosition() {
     setData(prev => {
       const newItems = Array.from({length: 50}, (_, i) => ({
         id: `added-${prev.length + i}`,
+        height: FIXED_ITEM_HEIGHT,
       }));
       return [...newItems, ...prev];
     });
@@ -119,21 +124,18 @@ export component FlatList_maintainVisibleContentPosition() {
 
   const addItemAtTopAndRemoveBottom = useCallback(() => {
     setData(prev => {
-      const newItems = [{id: `added-${prev.length}`}];
+      const newItems = [{id: `added-${prev.length}`, height: FIXED_ITEM_HEIGHT}];
       const remaining = prev.slice(0, Math.max(0, prev.length - 3));
       return [...newItems, ...remaining];
     });
   }, []);
 
-  const onScroll = useCallback(
-    e => {
-      const offset = horizontal
-        ? e.nativeEvent.contentOffset.x
-        : e.nativeEvent.contentOffset.y;
-      setScrollOffset(offset);
-    },
-    [horizontal],
-  );
+  const onScroll = useCallback((e: ScrollEvent) => {
+    const offset = horizontal
+      ? e.nativeEvent.contentOffset.x
+      : e.nativeEvent.contentOffset.y;
+    setScrollOffset(offset);
+  }, [horizontal]);
 
   return (
     <View style={styles.root}>

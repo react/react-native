@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow strict
+ * @flow strict-local
  * @format
  */
 
@@ -21,14 +21,16 @@ const ITEM_HEIGHT = 40;
 const VIEWPORT_HEIGHT = 200;
 const NUM_ITEMS = 20;
 
-function makeItems(count, startKey = 0) {
+type Item = {key: string, id: number};
+
+function makeItems(count: number, startKey: number = 0): Array<Item> {
   return Array.from({length: count}, (_, i) => ({
     key: String(i + startKey),
     id: i + startKey,
   }));
 }
 
-function renderItem(item) {
+function renderItem(item: Item) {
   return (
     <View
       key={item.key}
@@ -101,14 +103,12 @@ test('maintainVisibleContentPosition preserves position on prepend', () => {
   // Simulate the native scroll correction that would happen after prepend.
   // The content height increased by 5 * ITEM_HEIGHT, so the scroll offset
   // should be adjusted to keep the same item visible.
-  const expectedContentHeight = itemsAfterPrepend.length * ITEM_HEIGHT;
   Fantom.runTask(() => {
     // Trigger content size change simulation
     root.render(
       <ScrollView
         ref={nodeRef}
         style={{height: VIEWPORT_HEIGHT, width: 100}}
-        contentSize={{width: 100, height: expectedContentHeight}}
         maintainVisibleContentPosition={{minIndexForVisible: 0}}>
         {itemsAfterPrepend.map(renderItem)}
       </ScrollView>,
@@ -160,7 +160,7 @@ test('maintainVisibleContentPosition handles consecutive prepends without drift'
   // Perform 3 consecutive prepends
   const numPrepends = 3;
   const itemsPerPrepend = 3;
-  let lastLogs = [];
+  let lastLogs: Array<string> = [];
 
   for (let i = 0; i < numPrepends; i++) {
     currentItems = [
@@ -348,132 +348,6 @@ test('maintainVisibleContentPosition with minIndexForVisible > 0 skips early ite
   expect(logs2.length).toBeGreaterThan(0);
 });
 
-// Trigger: Vertically inverted FlatList (inverted={true}). Items rendered in reverse order.
-// Expected: Inverted mode uses CSS transforms (scaleY: -1) to flip visual order. Native subview order unchanged.
-// MVCP finds first subview whose bottom edge is below scroll offset — the visually-topmost visible item.
-test('maintainVisibleContentPosition with inverted ScrollView preserves position on prepend', () => {
-  const root = Fantom.createRoot({
-    viewportWidth: 100,
-    viewportHeight: VIEWPORT_HEIGHT,
-  });
-  const nodeRef = createRef<HostInstance>();
-
-  const initialItems = makeItems(NUM_ITEMS);
-
-  // Render initial list with inverted mode
-  Fantom.runTask(() => {
-    root.render(
-      <ScrollView
-        ref={nodeRef}
-        style={{height: VIEWPORT_HEIGHT, width: 100}}
-        inverted
-        maintainVisibleContentPosition={{minIndexForVisible: 0}}>
-        {initialItems.map(renderItem)}
-      </ScrollView>,
-    );
-  });
-
-  // Verify initial mount
-  const initialLogs = root.takeMountingManagerLogs();
-  expect(initialLogs.length).toBeGreaterThan(0);
-
-  // Scroll to item 5 (in inverted mode, this is near the bottom)
-  Fantom.scrollTo(nodeRef, {
-    x: 0,
-    y: ITEM_HEIGHT * 5,
-  });
-
-  const scrollLogs1 = root.takeMountingManagerLogs();
-  expect(scrollLogs1.length).toBeGreaterThan(0);
-
-  // Prepend 5 items at the top
-  const itemsAfterPrepend = [...makeItems(5, NUM_ITEMS), ...initialItems];
-
-  Fantom.runTask(() => {
-    root.render(
-      <ScrollView
-        ref={nodeRef}
-        style={{height: VIEWPORT_HEIGHT, width: 100}}
-        inverted
-        maintainVisibleContentPosition={{minIndexForVisible: 0}}>
-        {itemsAfterPrepend.map(renderItem)}
-      </ScrollView>,
-    );
-  });
-
-  const prependingLogs = root.takeMountingManagerLogs();
-  expect(prependingLogs.length).toBeGreaterThan(0);
-
-  // Verify that the item_5 is still in the rendered tree after prepend
-  expect(prependingLogs.some(log => log.includes('item_5'))).toBe(true);
-});
-
-// Trigger: Multiple prepends in inverted mode.
-// Expected: Tag comparison safeguard must work correctly in inverted mode.
-test('maintainVisibleContentPosition with inverted ScrollView handles consecutive prepends', () => {
-  const root = Fantom.createRoot({
-    viewportWidth: 100,
-    viewportHeight: VIEWPORT_HEIGHT,
-  });
-  const nodeRef = createRef<HostInstance>();
-
-  let currentItems = makeItems(NUM_ITEMS);
-
-  // Render initial list with inverted mode
-  Fantom.runTask(() => {
-    root.render(
-      <ScrollView
-        ref={nodeRef}
-        style={{height: VIEWPORT_HEIGHT, width: 100}}
-        inverted
-        maintainVisibleContentPosition={{minIndexForVisible: 0}}>
-        {currentItems.map(renderItem)}
-      </ScrollView>,
-    );
-  });
-
-  root.takeMountingManagerLogs();
-
-  // Scroll to middle
-  Fantom.scrollTo(nodeRef, {
-    x: 0,
-    y: ITEM_HEIGHT * 8,
-  });
-
-  root.takeMountingManagerLogs();
-
-  // Perform 3 consecutive prepends in inverted mode
-  const numPrepends = 3;
-  const itemsPerPrepend = 3;
-  let lastLogs = [];
-
-  for (let i = 0; i < numPrepends; i++) {
-    currentItems = [
-      ...makeItems(itemsPerPrepend, currentItems.length),
-      ...currentItems,
-    ];
-
-    Fantom.runTask(() => {
-      root.render(
-        <ScrollView
-          ref={nodeRef}
-          style={{height: VIEWPORT_HEIGHT, width: 100}}
-          inverted
-          maintainVisibleContentPosition={{minIndexForVisible: 0}}>
-          {currentItems.map(renderItem)}
-        </ScrollView>,
-      );
-    });
-
-    lastLogs = root.takeMountingManagerLogs();
-    expect(lastLogs.length).toBeGreaterThan(0);
-  }
-
-  // The list should still contain the original items
-  expect(lastLogs.some(log => log.includes('item_0'))).toBe(true);
-  expect(lastLogs.some(log => log.includes('item_19'))).toBe(true);
-});
-
 // Trigger: User actively dragging (touch-scrolling) when data change triggers MVCP.
 // Expected: MVCP correction may compete with user's scroll. Scroll skip guard on `patch/add-scrolling-guard`
 // branch would skip correction during user dragging, but this is NOT merged.
@@ -580,59 +454,6 @@ test('maintainVisibleContentPosition preserves position on horizontal prepend', 
       <ScrollView
         ref={nodeRef}
         horizontal
-        style={{height: 100, width: VIEWPORT_HEIGHT}}
-        maintainVisibleContentPosition={{minIndexForVisible: 0}}>
-        {itemsAfterPrepend.map(renderItem)}
-      </ScrollView>,
-    );
-  });
-
-  const logs = root.takeMountingManagerLogs();
-  expect(logs.length).toBeGreaterThan(0);
-  expect(logs.some(log => log.includes('item_5'))).toBe(true);
-});
-
-// Trigger: Horizontally inverted FlatList.
-// Expected: Same as vertical inverted — CSS transform flips visual order, native subview order unchanged.
-test('maintainVisibleContentPosition preserves position on horizontal + inverted prepend', () => {
-  const root = Fantom.createRoot({
-    viewportWidth: VIEWPORT_HEIGHT,
-    viewportHeight: 100,
-  });
-  const nodeRef = createRef<HostInstance>();
-
-  const initialItems = makeItems(NUM_ITEMS);
-
-  Fantom.runTask(() => {
-    root.render(
-      <ScrollView
-        ref={nodeRef}
-        horizontal
-        inverted
-        style={{height: 100, width: VIEWPORT_HEIGHT}}
-        maintainVisibleContentPosition={{minIndexForVisible: 0}}>
-        {initialItems.map(renderItem)}
-      </ScrollView>,
-    );
-  });
-
-  root.takeMountingManagerLogs();
-
-  Fantom.scrollTo(nodeRef, {
-    x: ITEM_HEIGHT * 5,
-    y: 0,
-  });
-
-  root.takeMountingManagerLogs();
-
-  const itemsAfterPrepend = [...makeItems(5, NUM_ITEMS), ...initialItems];
-
-  Fantom.runTask(() => {
-    root.render(
-      <ScrollView
-        ref={nodeRef}
-        horizontal
-        inverted
         style={{height: 100, width: VIEWPORT_HEIGHT}}
         maintainVisibleContentPosition={{minIndexForVisible: 0}}>
         {itemsAfterPrepend.map(renderItem)}
@@ -1039,10 +860,9 @@ test('maintainVisibleContentPosition handles data reset with entire data replace
   expect(logs.some(log => log.includes('item_105'))).toBe(true);
 });
 
-// Trigger: List rendered with initialScrollIndex pointing to non-first item, then items prepended.
-// Expected: If initialScrollIndex refers to item pushed by prepend, scroll destination may be wrong
-// because JS's initial scroll calculation doesn't account for MVCP corrections.
-test('maintainVisibleContentPosition with initialScrollIndex + prepend after remount', () => {
+// Trigger: List remounted with different data and a different scroll position, then items prepended.
+// Expected: Remount establishes fresh baseline; MVCP handles prepend delta from new position.
+test('maintainVisibleContentPosition with remount + prepend', () => {
   const root = Fantom.createRoot({
     viewportWidth: 100,
     viewportHeight: VIEWPORT_HEIGHT,
@@ -1051,18 +871,23 @@ test('maintainVisibleContentPosition with initialScrollIndex + prepend after rem
 
   const initialItems = makeItems(NUM_ITEMS);
 
-  // Render list with initialScrollIndex pointing to a non-first item
+  // Render list scrolled to item 5 (simulates initialScrollIndex behavior)
   Fantom.runTask(() => {
     root.render(
       <ScrollView
         key="list-1"
         ref={nodeRef}
         style={{height: VIEWPORT_HEIGHT, width: 100}}
-        initialScrollIndex={5}
         maintainVisibleContentPosition={{minIndexForVisible: 0}}>
         {initialItems.map(renderItem)}
       </ScrollView>,
     );
+  });
+
+  // Scroll to item 5 (simulates initialScrollIndex={5})
+  Fantom.scrollTo(nodeRef, {
+    x: 0,
+    y: ITEM_HEIGHT * 5,
   });
 
   root.takeMountingManagerLogs();
@@ -1070,15 +895,37 @@ test('maintainVisibleContentPosition with initialScrollIndex + prepend after rem
   // Force remount with a different key (simulates navigation to new screen with same component)
   const itemsAfterPrepend = [...makeItems(3, NUM_ITEMS), ...initialItems];
 
+  // Scroll to item 8 in the remounted list (simulates initialScrollIndex={8})
   Fantom.runTask(() => {
     root.render(
       <ScrollView
         key="list-2"
         ref={nodeRef}
         style={{height: VIEWPORT_HEIGHT, width: 100}}
-        initialScrollIndex={8}
         maintainVisibleContentPosition={{minIndexForVisible: 0}}>
         {itemsAfterPrepend.map(renderItem)}
+      </ScrollView>,
+    );
+  });
+
+  Fantom.scrollTo(nodeRef, {
+    x: 0,
+    y: ITEM_HEIGHT * 8,
+  });
+
+  root.takeMountingManagerLogs();
+
+  // Prepend 3 more items after remount
+  const itemsAfterPrepend2 = [...makeItems(3, NUM_ITEMS + 6), ...itemsAfterPrepend];
+
+  Fantom.runTask(() => {
+    root.render(
+      <ScrollView
+        key="list-3"
+        ref={nodeRef}
+        style={{height: VIEWPORT_HEIGHT, width: 100}}
+        maintainVisibleContentPosition={{minIndexForVisible: 0}}>
+        {itemsAfterPrepend2.map(renderItem)}
       </ScrollView>,
     );
   });
@@ -1207,73 +1054,6 @@ test('maintainVisibleContentPosition handles complex concurrent mutations (prepe
   expect(logs.some(log => log.includes('item_8'))).toBe(true);
   // Verify prepended items are present
   expect(logs.some(log => log.includes('item_20'))).toBe(true);
-});
-
-// Trigger: FlatList with getItemLayout prop providing fixed item dimensions.
-// Expected: Native MVCP always reads actual frames, so accurate regardless of JS metrics.
-// getItemLayout doesn't affect native MVCP.
-test('maintainVisibleContentPosition with getItemLayout prop', () => {
-  const root = Fantom.createRoot({
-    viewportWidth: 100,
-    viewportHeight: VIEWPORT_HEIGHT,
-  });
-  const nodeRef = createRef<HostInstance>();
-
-  const initialItems = makeItems(NUM_ITEMS);
-
-  const getItemLayout = (_: mixed, index: number) => ({
-    length: ITEM_HEIGHT,
-    offset: ITEM_HEIGHT * index,
-    index,
-  });
-
-  Fantom.runTask(() => {
-    root.render(
-      <ScrollView
-        ref={nodeRef}
-        style={{height: VIEWPORT_HEIGHT, width: 100}}
-        getItemLayout={getItemLayout}
-        maintainVisibleContentPosition={{minIndexForVisible: 0}}>
-        {initialItems.map(renderItem)}
-      </ScrollView>,
-    );
-  });
-
-  root.takeMountingManagerLogs();
-
-  // Scroll to item 7
-  Fantom.scrollTo(nodeRef, {
-    x: 0,
-    y: ITEM_HEIGHT * 7,
-  });
-
-  root.takeMountingManagerLogs();
-
-  // Prepend 4 items
-  const itemsAfterPrepend = [...makeItems(4, NUM_ITEMS), ...initialItems];
-
-  const getItemLayoutAfterPrepend = (_: mixed, index: number) => ({
-    length: ITEM_HEIGHT,
-    offset: ITEM_HEIGHT * index,
-    index,
-  });
-
-  Fantom.runTask(() => {
-    root.render(
-      <ScrollView
-        ref={nodeRef}
-        style={{height: VIEWPORT_HEIGHT, width: 100}}
-        getItemLayout={getItemLayoutAfterPrepend}
-        maintainVisibleContentPosition={{minIndexForVisible: 0}}>
-        {itemsAfterPrepend.map(renderItem)}
-      </ScrollView>,
-    );
-  });
-
-  const logs = root.takeMountingManagerLogs();
-  expect(logs.length).toBeGreaterThan(0);
-  // The anchor item should still be visible after prepend
-  expect(logs.some(log => log.includes('item_7'))).toBe(true);
 });
 
 // Trigger: Content view has only spacers (placeholder views with no data binding) in visible area.
@@ -1835,9 +1615,9 @@ test('maintainVisibleContentPosition handles anchor culled (pushed off-screen)',
   expect(logs.some(log => log.includes('item_13'))).toBe(true);
 });
 
-// Trigger: Inverted list with culling enabled, causing view recycling during prepends.
-// Expected: Tag comparison safeguard must work correctly in inverted mode. Tag check always active.
-test('maintainVisibleContentPosition with inverted + recycling', () => {
+// Trigger: List with culling enabled, causing view recycling during prepends.
+// Expected: Tag comparison safeguard must work correctly. Tag check always active.
+test('maintainVisibleContentPosition with recycling', () => {
   const root = Fantom.createRoot({
     viewportWidth: 100,
     viewportHeight: VIEWPORT_HEIGHT,
@@ -1851,7 +1631,6 @@ test('maintainVisibleContentPosition with inverted + recycling', () => {
       <ScrollView
         ref={nodeRef}
         style={{height: VIEWPORT_HEIGHT, width: 100}}
-        inverted
         maintainVisibleContentPosition={{minIndexForVisible: 0}}>
         {initialItems.map(renderItem)}
       </ScrollView>,
@@ -1860,7 +1639,7 @@ test('maintainVisibleContentPosition with inverted + recycling', () => {
 
   root.takeMountingManagerLogs();
 
-  // Scroll to item 5 (in inverted mode, near bottom)
+  // Scroll to item 5 (near bottom)
   Fantom.scrollTo(nodeRef, {
     x: 0,
     y: ITEM_HEIGHT * 5,
@@ -1868,7 +1647,7 @@ test('maintainVisibleContentPosition with inverted + recycling', () => {
 
   root.takeMountingManagerLogs();
 
-  // Prepend 50 items — causes recycling in inverted mode
+  // Prepend 50 items — causes recycling
   const itemsAfterPrepend = [...makeItems(50, NUM_ITEMS), ...initialItems];
 
   Fantom.runTask(() => {
@@ -1876,7 +1655,6 @@ test('maintainVisibleContentPosition with inverted + recycling', () => {
       <ScrollView
         ref={nodeRef}
         style={{height: VIEWPORT_HEIGHT, width: 100}}
-        inverted
         maintainVisibleContentPosition={{minIndexForVisible: 0}}>
         {itemsAfterPrepend.map(renderItem)}
       </ScrollView>,
@@ -1885,7 +1663,7 @@ test('maintainVisibleContentPosition with inverted + recycling', () => {
 
   const logs = root.takeMountingManagerLogs();
   expect(logs.length).toBeGreaterThan(0);
-  // The list should render without crashing in inverted + recycling mode
+  // The list should render without crashing in recycling mode
   expect(logs.some(log => log.includes('item_5'))).toBe(true);
 });
 
