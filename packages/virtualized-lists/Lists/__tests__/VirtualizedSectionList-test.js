@@ -266,19 +266,83 @@ describe('VirtualizedSectionList', () => {
         viewOffset,
       });
       expect(spy).toHaveBeenCalledWith({
-        index: 1,
+        // Section header occupies flattened index 0, so itemIndex 1 (the second row)
+        // is flattened index 2.
+        index: 2,
         itemIndex: 1,
         sectionIndex: 0,
         viewOffset: viewOffset + ITEM_HEIGHT,
       });
     });
 
+    it('when sticky stickySectionHeadersEnabled={true}, itemIndex: 0 targets the first row and compensates for the sticky header (#50143)', async () => {
+      const {instance, spy} = await createVirtualizedSectionList({
+        stickySectionHeadersEnabled: true,
+      });
+
+      // $FlowFixMe[prop-missing] scrollToLocation isn't on instance
+      instance?.scrollToLocation({
+        sectionIndex: 0,
+        itemIndex: 0,
+      });
+      // Flattened index 1 is the first item (index 0 is the sticky header). The header
+      // height is added to viewOffset so the row is not obscured by the pinned header.
+      // Previously this produced index: 0 (the header) with viewOffset: 0, which no-ops
+      // against the already-pinned sticky header.
+      expect(spy).toHaveBeenCalledWith({
+        index: 1,
+        itemIndex: 0,
+        sectionIndex: 0,
+        viewOffset: ITEM_HEIGHT,
+      });
+    });
+
+    it('itemIndex: 0 in a later section resolves to that section first row (#50143)', async () => {
+      const {instance, spy} = await createVirtualizedSectionList();
+
+      // $FlowFixMe[prop-missing] scrollToLocation isn't on instance
+      instance?.scrollToLocation({
+        sectionIndex: 1,
+        itemIndex: 0,
+      });
+      // Section 0 occupies flattened indices 0..4 (header + 3 items + footer). Section 1
+      // starts at 5 (its header), so its first item is flattened index 6. Previously this
+      // resolved to index 5 (section 1's header) and silently no-oped.
+      expect(spy).toHaveBeenCalledWith({
+        index: 6,
+        itemIndex: 0,
+        sectionIndex: 1,
+        viewOffset: 0,
+      });
+    });
+
+    it('out-of-range itemIndex forwards to scrollToIndex so onScrollToIndexFailed can fire (#50143)', async () => {
+      const {instance, spy} = await createVirtualizedSectionList();
+
+      // $FlowFixMe[prop-missing] scrollToLocation isn't on instance
+      instance?.scrollToLocation({
+        sectionIndex: 1,
+        // Section 1 only has 3 items (valid itemIndex 0..2); 5 is out of range.
+        itemIndex: 5,
+      });
+      // The out-of-range location is still forwarded to VirtualizedList.scrollToIndex,
+      // which is responsible for range validation / firing onScrollToIndexFailed — it is
+      // no longer swallowed by scrollToLocation.
+      expect(spy).toHaveBeenCalledWith({
+        // 5 (header + 3 items + footer of section 0) + 1 (section 1 header) + 5 (itemIndex).
+        index: 11,
+        itemIndex: 5,
+        sectionIndex: 1,
+        viewOffset: 0,
+      });
+    });
+
     it.each([
       [
-        // prevents #18098
         {sectionIndex: 0, itemIndex: 0},
         {
-          index: 0,
+          // itemIndex 0 is the first row (flattened index 1), not the section header.
+          index: 1,
           itemIndex: 0,
           sectionIndex: 0,
           viewOffset: 0,
@@ -287,7 +351,7 @@ describe('VirtualizedSectionList', () => {
       [
         {sectionIndex: 2, itemIndex: 1},
         {
-          index: 11,
+          index: 12,
           itemIndex: 1,
           sectionIndex: 2,
           viewOffset: 0,
@@ -300,7 +364,7 @@ describe('VirtualizedSectionList', () => {
           viewOffset: 25,
         },
         {
-          index: 1,
+          index: 2,
           itemIndex: 1,
           sectionIndex: 0,
           viewOffset: 25,

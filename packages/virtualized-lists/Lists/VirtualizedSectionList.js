@@ -138,7 +138,14 @@ class VirtualizedSectionList<
   State,
 > {
   scrollToLocation(params: ScrollToLocationParamsType) {
-    let index = params.itemIndex;
+    // Each section prepends a header cell in the flattened VirtualizedList, so the
+    // first row of a section lives at the section's starting offset *plus one*. The
+    // leading `+ 1` maps `itemIndex: 0` to that first row (rather than the header),
+    // matching the documented behavior: "the item at the specified sectionIndex and
+    // itemIndex". Without it, `itemIndex: 0` resolved to the section header, which is
+    // already pinned to the top when sticky headers are enabled and therefore silently
+    // no-ops (facebook/react-native#50143).
+    let index = params.itemIndex + 1;
     for (let i = 0; i < params.sectionIndex; i++) {
       index += this.props.getItemCount(this.props.sections[i].data) + 2;
     }
@@ -147,10 +154,14 @@ class VirtualizedSectionList<
       return;
     }
     const listRef = this._listRef;
-    if (params.itemIndex > 0 && this.props.stickySectionHeadersEnabled) {
+    if (params.itemIndex >= 0 && this.props.stickySectionHeadersEnabled) {
+      // Every item sits below the (potentially sticky) section header, so the header's
+      // height is added for all items — including `itemIndex: 0` — to keep the target
+      // row from being obscured by the pinned header. The header's flattened index is
+      // now `index - params.itemIndex - 1`.
       const frame = listRef
         .__getListMetrics()
-        .getCellMetricsApprox(index - params.itemIndex, listRef.props);
+        .getCellMetricsApprox(index - params.itemIndex - 1, listRef.props);
       viewOffset += frame.length;
     }
     const toIndexParams: {
