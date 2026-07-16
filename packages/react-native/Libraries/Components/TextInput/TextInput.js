@@ -302,11 +302,16 @@ function InternalTextInput(props: TextInputProps): React.Node {
       TextInputState.registerInput(inputRefValue);
 
       return () => {
-        TextInputState.unregisterInput(inputRefValue);
-
+        // Blur the input before unregistering it. `blur()` routes through
+        // `TextInputState.isTextInput()`, which checks the registered-inputs
+        // set — if the input is unregistered first, the blur is silently
+        // skipped, the soft keyboard is never hidden, and (on Android) focus
+        // escapes to whichever focusable view remains in the window.
         if (TextInputState.currentlyFocusedInput() === inputRefValue) {
           nullthrows(inputRefValue).blur();
         }
+
+        TextInputState.unregisterInput(inputRefValue);
       };
     }
   }, []);
