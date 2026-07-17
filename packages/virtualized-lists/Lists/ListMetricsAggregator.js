@@ -103,9 +103,16 @@ export default class ListMetricsAggregator {
         this._measuredCellsCount += 1;
       }
 
+      // NOTE: _measuredCellsCount is incremented before this line whenever a new
+      // cell is added, so it should never be 0 here. This guard is defense in
+      // depth against a future bug where _measuredCellsCount is reset (e.g. during
+      // orientation changes) without also clearing _cellMetrics — which would leave
+      // `curr` with a stale value and count === 0, causing a divide-by-zero.
       if (this._measuredCellsCount > 0) {
         this._averageCellLength =
           this._measuredCellsLength / this._measuredCellsCount;
+      } else {
+        this._averageCellLength = 0;
       }
       this._cellMetrics.set(cellKey, next);
       this._highestMeasuredCellIndex = Math.max(
