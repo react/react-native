@@ -12,7 +12,7 @@ import {polyfillGlobal} from '../../../Libraries/Utilities/PolyfillFunctions';
 
 let initialized = false;
 
-export default function setUpPerformance() {
+export default function setUpPerformanceModern() {
   if (initialized) {
     return;
   }

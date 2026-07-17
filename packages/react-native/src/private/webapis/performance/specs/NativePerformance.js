@@ -57,7 +57,7 @@ export type PerformanceObserverInit = {
 
 export interface Spec extends TurboModule {
   readonly now: () => number;
-  readonly timeOrigin: () => number;
+  readonly timeOrigin?: () => number;
 
   readonly reportMark: (
     name: string,
@@ -107,6 +107,4 @@ export interface Spec extends TurboModule {
   readonly clearEventCountsForTesting: () => void;
 }
 
-export default TurboModuleRegistry.getEnforcing<Spec>(
-  'NativePerformanceCxx',
-) as Spec;
+export default TurboModuleRegistry.get<Spec>('NativePerformanceCxx') as ?Spec;
