@@ -8,6 +8,9 @@
  * @format
  */
 
+// CI test: bust the ios-core prebuild cache to force a fresh Hermes download
+// so we validate the newly published hermes-compiler@latest-v1 end-to-end.
+
 const {createLogger} = require('./utils');
 const {execSync} = require('child_process');
 const fs = require('fs');

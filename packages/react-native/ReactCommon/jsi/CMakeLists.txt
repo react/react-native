@@ -24,3 +24,10 @@ target_link_libraries(jsi
 
 target_compile_reactnative_options(jsi PRIVATE)
 target_compile_options(jsi PRIVATE -O3 -Wno-unused-lambda-capture)
+
+# Enable the in-development JSI features (e.g. jsi::Serialized / ISerialization)
+# that are gated behind JSI_UNSTABLE. This must match how the Hermes prebuilt was
+# built: a Hermes compiled with JSI_UNSTABLE references these JSI symbols, so JSI
+# must export them or libhermesvm.so fails to load at runtime. PUBLIC so consumers
+# that include jsi.h see the same declarations (consistent ABI).
+target_compile_definitions(jsi PUBLIC JSI_UNSTABLE)
