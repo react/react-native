@@ -130,6 +130,7 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
   private var keyListener: InternalKeyListener? = null
   private var detectScrollMovement = false
   private var onKeyPress = false
+  private var selectionWasCollapsed = true
   private val textAttributes: TextAttributes
   private var typefaceDirty = false
   private var fontFamily: String? = null
@@ -492,6 +493,7 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
     if (selectionWatcher != null && hasFocus()) {
       selectionWatcher?.onSelectionChanged(selStart, selEnd)
     }
+    maybeShowSoftKeyboardForSelection(selStart, selEnd)
   }
 
   override fun onFocusChanged(focused: Boolean, direction: Int, previouslyFocusedRect: Rect?) {
@@ -499,6 +501,21 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
     if (focused && selectionWatcher != null) {
       selectionWatcher?.onSelectionChanged(selectionStart, selectionEnd)
     }
+    if (focused) {
+      maybeShowSoftKeyboardForSelection(selectionStart, selectionEnd)
+    }
+  }
+
+  private fun maybeShowSoftKeyboardForSelection(selectionStart: Int, selectionEnd: Int) {
+    if (!hasFocus() || !showSoftInputOnFocus) {
+      return
+    }
+
+    val selectionIsCollapsed = selectionStart == selectionEnd
+    if (!selectionIsCollapsed && selectionWasCollapsed) {
+      showSoftKeyboard()
+    }
+    selectionWasCollapsed = selectionIsCollapsed
   }
 
   internal fun setSelectionWatcher(selectionWatcher: SelectionWatcher?) {

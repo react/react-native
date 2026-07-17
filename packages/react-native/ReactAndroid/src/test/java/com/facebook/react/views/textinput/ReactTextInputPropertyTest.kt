@@ -11,6 +11,7 @@
 
 package com.facebook.react.views.textinput
 
+import android.content.Context
 import android.graphics.Color
 import android.os.Build
 import android.text.InputFilter
@@ -41,6 +42,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
+import org.robolectric.Shadows.shadowOf
+import android.view.inputmethod.InputMethodManager
 
 /** Verify {@link EditText} view property being applied properly by {@link ReactTextInputManager} */
 @RunWith(RobolectricTestRunner::class)
@@ -72,6 +75,21 @@ class ReactTextInputPropertyTest {
     manager = ReactTextInputManager()
     DisplayMetricsHolder.setScreenDisplayMetrics(DisplayMetrics())
     view = manager.createViewInstance(themedContext)
+  }
+
+  @Test
+  fun testShowsSoftKeyboardWhenSelectionStartsWhileFocused() {
+    val inputMethodManager =
+        RuntimeEnvironment.getApplication().getSystemService(Context.INPUT_METHOD_SERVICE)
+            as InputMethodManager
+    val shadowImm = shadowOf(inputMethodManager)
+
+    view.setText("hello")
+    view.requestFocusFromJS()
+
+    view.setSelection(1, 3)
+
+    assertThat(shadowImm.isSoftInputVisible).isTrue
   }
 
   @Test
@@ -225,21 +243,22 @@ class ReactTextInputPropertyTest {
       return
     }
 
-    val expectedHints = listOf(
-        "2fa-app-otp" to HintConstants.AUTOFILL_HINT_2FA_APP_OTP,
-        "email-otp" to HintConstants.AUTOFILL_HINT_EMAIL_OTP,
-        "flight-confirmation-code" to HintConstants.AUTOFILL_HINT_FLIGHT_CONFIRMATION_CODE,
-        "flight-number" to HintConstants.AUTOFILL_HINT_FLIGHT_NUMBER,
-        "gift-card-number" to HintConstants.AUTOFILL_HINT_GIFT_CARD_NUMBER,
-        "gift-card-pin" to HintConstants.AUTOFILL_HINT_GIFT_CARD_PIN,
-        "loyalty-account-number" to HintConstants.AUTOFILL_HINT_LOYALTY_ACCOUNT_NUMBER,
-        "postal-address-dependent-locality" to
-            HintConstants.AUTOFILL_HINT_POSTAL_ADDRESS_DEPENDENT_LOCALITY,
-        "postal-address-unit" to HintConstants.AUTOFILL_HINT_POSTAL_ADDRESS_APT_NUMBER,
-        "promo-code" to HintConstants.AUTOFILL_HINT_PROMO_CODE,
-        "upi-vpa" to HintConstants.AUTOFILL_HINT_UPI_VPA,
-        "wifi-password" to HintConstants.AUTOFILL_HINT_WIFI_PASSWORD,
-    )
+    val expectedHints =
+        listOf(
+            "2fa-app-otp" to HintConstants.AUTOFILL_HINT_2FA_APP_OTP,
+            "email-otp" to HintConstants.AUTOFILL_HINT_EMAIL_OTP,
+            "flight-confirmation-code" to HintConstants.AUTOFILL_HINT_FLIGHT_CONFIRMATION_CODE,
+            "flight-number" to HintConstants.AUTOFILL_HINT_FLIGHT_NUMBER,
+            "gift-card-number" to HintConstants.AUTOFILL_HINT_GIFT_CARD_NUMBER,
+            "gift-card-pin" to HintConstants.AUTOFILL_HINT_GIFT_CARD_PIN,
+            "loyalty-account-number" to HintConstants.AUTOFILL_HINT_LOYALTY_ACCOUNT_NUMBER,
+            "postal-address-dependent-locality" to
+                HintConstants.AUTOFILL_HINT_POSTAL_ADDRESS_DEPENDENT_LOCALITY,
+            "postal-address-unit" to HintConstants.AUTOFILL_HINT_POSTAL_ADDRESS_APT_NUMBER,
+            "promo-code" to HintConstants.AUTOFILL_HINT_PROMO_CODE,
+            "upi-vpa" to HintConstants.AUTOFILL_HINT_UPI_VPA,
+            "wifi-password" to HintConstants.AUTOFILL_HINT_WIFI_PASSWORD,
+        )
 
     expectedHints.forEach { (autoComplete, expectedHint) ->
       manager.updateProperties(view, buildStyles("autoComplete", autoComplete))
