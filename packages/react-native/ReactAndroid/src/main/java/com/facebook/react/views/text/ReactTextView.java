@@ -313,6 +313,14 @@ public class ReactTextView extends AppCompatTextView implements ReactCompoundVie
     }
   }
 
+  @Override
+  protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+    super.onSizeChanged(w, h, oldw, oldh);
+    if (mAdjustsFontSizeToFit && (w != oldw || h != oldh)) {
+      mShouldAdjustSpannableFontSize = true;
+    }
+  }
+
   public void setText(ReactTextUpdate update) {
     try (SystraceSection s = new SystraceSection("ReactTextView.setText(ReactTextUpdate)")) {
       // Android's TextView crashes when it tries to relayout if LayoutParams are
