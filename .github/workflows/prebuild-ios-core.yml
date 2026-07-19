@@ -200,7 +200,7 @@ jobs:
           # privileged-consumer/Expo fixtures). Catches consumer-facing header
           # regressions here instead of in downstream builds.
           cd packages/react-native
-          node scripts/ios-prebuild/headers-verify.js --flavor "${{ matrix.flavor }}"
+          node scripts/ios-prebuild/headers-verify.js --flavor "${{ matrix.flavor }}" ${{ inputs.version-type != '' && '--require-stamped-version' || '' }}
       - name: Compress and Rename XCFramework
         if: steps.restore-ios-xcframework.outputs.cache-hit != 'true'
         run: |

@@ -35,6 +35,7 @@
  * Usage:
  *   node scripts/ios-prebuild/headers-verify.js [--flavor Debug|Release]
  *        [--artifacts <dir>] [--skip-compile] [--update-baseline]
+ *        [--require-stamped-version]
  */
 
 const {computeInventory} = require('./headers-inventory');
@@ -411,6 +412,49 @@ function runCompileGates(
 }
 
 // ---------------------------------------------------------------------------
+// Version stamp gate
+// ---------------------------------------------------------------------------
+
+/**
+ * Release/nightly artifacts must not ship ReactNativeVersion.h with the
+ * 1000.0.0 dev sentinel: the compose step copies headers from the source
+ * tree, so a compose job that forgot to run set-rn-artifacts-version.js
+ * would silently publish a sentinel header, breaking every library that
+ * gates code on REACT_NATIVE_VERSION_MAJOR/MINOR.
+ */
+function verifyVersionStamp(artifactsDir /*: string */) /*: void */ {
+  const copies = [];
+  const walk = (dir /*: string */) => {
+    for (const entry of fs.readdirSync(dir, {withFileTypes: true})) {
+      const name = String(entry.name);
+      const full = path.join(dir, name);
+      if (entry.isDirectory()) {
+        walk(full);
+      } else if (name === 'ReactNativeVersion.h') {
+        copies.push(full);
+      }
+    }
+  };
+  walk(artifactsDir);
+  if (copies.length === 0) {
+    throw new Error(
+      `no ReactNativeVersion.h found under ${artifactsDir} — cannot verify the version stamp.`,
+    );
+  }
+  const unstamped = copies.filter(f =>
+    /REACT_NATIVE_VERSION_MAJOR\s+1000\b/.test(fs.readFileSync(f, 'utf8')),
+  );
+  if (unstamped.length > 0) {
+    throw new Error(
+      `ReactNativeVersion.h still contains the 1000.0.0 dev sentinel — run ` +
+        `scripts/releases/set-rn-artifacts-version.js before composing:\n  ` +
+        unstamped.join('\n  '),
+    );
+  }
+  log(`version stamp OK (${copies.length} copies checked).`);
+}
+
+// ---------------------------------------------------------------------------
 // CLI
 // ---------------------------------------------------------------------------
 
@@ -419,11 +463,13 @@ function parseArgs(argv /*: Array<string> */) /*: {
   artifacts: ?string,
   skipCompile: boolean,
   updateBaseline: boolean,
+  requireStampedVersion: boolean,
 } */ {
   let flavor = 'Debug';
   let artifacts /*: ?string */ = null;
   let skipCompile = false;
   let updateBaseline = false;
+  let requireStampedVersion = false;
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === '--flavor') {
       flavor = argv[++i];
@@ -433,9 +479,17 @@ function parseArgs(argv /*: Array<string> */) /*: {
       skipCompile = true;
     } else if (argv[i] === '--update-baseline') {
       updateBaseline = true;
+    } else if (argv[i] === '--require-stamped-version') {
+      requireStampedVersion = true;
     }
   }
-  return {flavor, artifacts, skipCompile, updateBaseline};
+  return {
+    flavor,
+    artifacts,
+    skipCompile,
+    updateBaseline,
+    requireStampedVersion,
+  };
 }
 
 function main(argv /*:: ?: Array<string> */) /*: void */ {
@@ -460,6 +514,10 @@ function main(argv /*:: ?: Array<string> */) /*: void */ {
         `(node scripts/ios-prebuild -c -f ${args.flavor}).`,
     );
   }
+  if (args.requireStampedVersion) {
+    verifyVersionStamp(artifactsDir);
+  }
+
   const {reactSlice, rnhHeaders} = verifyStructural(plan, artifactsDir);
 
   if (args.skipCompile) {
