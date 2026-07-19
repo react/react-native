@@ -345,6 +345,10 @@ const APIs: Array<RNTesterModuleInfo> = (
       module: require('../examples/Vibration/VibrationExample'),
     },
     {
+      key: 'BinanceWebSocketDemo',
+      module: require('../examples/WebSocket/BinanceWebSocketDemo'),
+    },
+    {
       key: 'WebSocketExample',
       module: require('../examples/WebSocket/WebSocketExample'),
     },
