@@ -25,13 +25,13 @@ jest.mock('plist', () => {
 // hermetic on Linux CI. Module-level mock because flavored-frameworks.js
 // destructures execFileSync at require time (same pattern the old
 // swap-flavor-test used).
-jest.mock('child_process', () => {
-  const actual = jest.requireActual<$FlowFixMe>('child_process');
+jest.mock('node:child_process', () => {
+  const actual = jest.requireActual<$FlowFixMe>('node:child_process');
   return {
     ...actual,
     execFileSync: (cmd, args, opts) => {
       if (cmd === 'plutil') {
-        const fs = require('fs');
+        const fs = require('node:fs');
         const plist = jest.requireActual<$FlowFixMe>('plist');
         const file = args[args.length - 1];
         return Buffer.from(
@@ -43,9 +43,9 @@ jest.mock('child_process', () => {
   };
 });
 
-const fs = require('fs');
-const os = require('os');
-const path = require('path');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
 
 const realPlist = jest.requireActual<$FlowFixMe>('plist');
 

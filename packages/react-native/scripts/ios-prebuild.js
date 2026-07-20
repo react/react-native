@@ -17,7 +17,7 @@ const {getCLIConfiguration} = require('./ios-prebuild/cli');
 const {setup} = require('./ios-prebuild/setup');
 const {createLogger, throwIfOnEden} = require('./ios-prebuild/utils');
 const {buildXCFrameworks} = require('./ios-prebuild/xcframework');
-const path = require('path');
+const path = require('node:path');
 
 const REACT_NATIVE_PACKAGE_ROOT_FOLDER = path.join(__dirname, '..');
 const packageJsonPath = path.join(

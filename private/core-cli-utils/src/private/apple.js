@@ -15,8 +15,8 @@ import type {ExecaPromise} from 'execa';
 
 const {assertDependencies, isOnPath, task} = require('./utils');
 const execa = require('execa');
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 /*::
 type AppleBuildMode = 'Debug' | 'Release';

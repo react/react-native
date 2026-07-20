@@ -25,7 +25,7 @@ const getBranchName = jest.fn();
 
 const {REPO_ROOT} = require('../../shared/consts');
 const {publishNpm} = require('../publish-npm');
-const path = require('path');
+const path = require('node:path');
 
 let consoleLog;
 

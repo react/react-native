@@ -11,7 +11,7 @@
 'use strict';
 
 const withBabelRegister = require('./with-babel-register');
-const path = require('path');
+const path = require('node:path');
 
 // We use the prepack hook before publishing package to set this value to true
 const PACKAGE_USAGE = false;

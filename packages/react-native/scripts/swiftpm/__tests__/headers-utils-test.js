@@ -21,8 +21,8 @@ const {
 // Mock all required modules
 jest.mock('../utils');
 jest.mock('../headers-mappings');
-jest.mock('fs');
-jest.mock('path');
+jest.mock('node:fs');
+jest.mock('node:path');
 
 describe('symlinkHeadersFromPath', () => {
   let mockUtils;
@@ -34,8 +34,8 @@ describe('symlinkHeadersFromPath', () => {
   beforeEach(() => {
     // Setup mocks
     mockUtils = require('../utils');
-    mockFs = require('fs');
-    mockPath = require('path');
+    mockFs = require('node:fs');
+    mockPath = require('node:path');
 
     // Mock path functions
     mockPath.relative.mockImplementation((from, to) => {
@@ -307,8 +307,8 @@ describe('symlinkCodegenHeaders', () => {
   beforeEach(() => {
     // Setup mocks
     mockUtils = require('../utils');
-    mockFs = require('fs');
-    mockPath = require('path');
+    mockFs = require('node:fs');
+    mockPath = require('node:path');
 
     // Mock path functions
     mockPath.relative.mockImplementation((from, to) => {
@@ -470,8 +470,8 @@ describe('symlinkThirdPartyDependenciesHeaders', () => {
   beforeEach(() => {
     // Setup mocks
     mockUtils = require('../utils');
-    mockFs = require('fs');
-    mockPath = require('path');
+    mockFs = require('node:fs');
+    mockPath = require('node:path');
 
     // Mock path functions
     mockPath.relative.mockImplementation((from, to) => {
@@ -707,7 +707,7 @@ describe('symlinkReactAppleHeaders', () => {
   beforeEach(() => {
     // Setup mocks
     mockUtils = require('../utils');
-    mockPath = require('path');
+    mockPath = require('node:path');
 
     // Mock path functions
     mockPath.relative.mockImplementation((from, to) => {
@@ -930,7 +930,7 @@ describe('symlinkReactCommonHeaders', () => {
     mockUtils = require('../utils');
     mockReactCommonMappings =
       require('../headers-mappings').reactCommonMappings;
-    mockPath = require('path');
+    mockPath = require('node:path');
 
     // Mock path functions
     mockPath.relative.mockImplementation((from, to) => {

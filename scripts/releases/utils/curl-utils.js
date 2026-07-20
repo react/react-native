@@ -11,9 +11,9 @@
 'use strict';
 
 const spawnAsync = require('@expo/spawn-async');
-const {promises: fs} = require('fs');
-const os = require('os');
-const path = require('path');
+const {promises: fs} = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
 
 /*::
 type CurlResult = {

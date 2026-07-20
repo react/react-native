@@ -21,9 +21,9 @@ const {
   FIRST_PARTY_DOTSLASH_FILES,
 } = require('./write-dotslash-release-asset-urls');
 const {Octokit} = require('@octokit/rest');
+const path = require('node:path');
+const {parseArgs} = require('node:util');
 const nullthrows = require('nullthrows');
-const path = require('path');
-const {parseArgs} = require('util');
 
 /*::
 import type {DotSlashProvider, DotSlashHttpProvider, DotSlashArtifactInfo} from './utils/dotslash-utils';

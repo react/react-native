@@ -22,11 +22,11 @@ import {
 } from './replBundling';
 import {startMetroServer, stopMetroServer} from './replMetro';
 import {isRecoverableError, transform} from './replTransform';
-import fs from 'fs';
-import path from 'path';
-import readline from 'readline';
-import repl from 'repl';
-import tty from 'tty';
+import fs from 'node:fs';
+import path from 'node:path';
+import readline from 'node:readline';
+import repl from 'node:repl';
+import tty from 'node:tty';
 
 type ReplMessage =
   | {type: 'console-log', level: 'info' | 'warn' | 'error', message: string}

@@ -11,9 +11,9 @@
 'use strict';
 
 const {flattenSubspecs, readPodspec, regexPodspec} = require('../read-podspec');
-const fs = require('fs');
-const os = require('os');
-const path = require('path');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
 
 // Real-world podspec fixtures inlined as strings. The regex parser is tested
 // against these directly; flattenSubspecs is tested against pod-ipc-style

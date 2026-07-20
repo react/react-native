@@ -81,8 +81,8 @@
  *     stay single-owned.
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 // Fallback root only — inventory `source` paths are relative to the root the
 // inventory was computed from, so callers with a different tree (SPM tooling,

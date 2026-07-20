@@ -14,9 +14,9 @@ const {
   unstable_prepareDebuggerShell,
   unstable_spawnDebuggerShellWithArgs,
 } = require('@react-native/debugger-shell');
-const {spawn} = require('child_process');
 const ChromeLauncher = require('chrome-launcher');
 const {Launcher: EdgeLauncher} = require('chromium-edge-launcher');
+const {spawn} = require('node:child_process');
 const open = require('open');
 
 /**

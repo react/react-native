@@ -11,18 +11,18 @@
 const {PACKAGES_DIR} = require('../shared/consts');
 // $FlowFixMe[untyped-import]: TODO type ansi-styles
 const ansiStyles = require('ansi-styles');
-const {execSync, spawnSync} = require('child_process');
-const {promises: fs} = require('fs');
+const {execSync, spawnSync} = require('node:child_process');
+const {promises: fs} = require('node:fs');
+const {hostname, tmpdir, userInfo} = require('node:os');
+const path = require('node:path');
+const {parseArgs, styleText} = require('node:util');
 const nullthrows = require('nullthrows');
-const {hostname, tmpdir, userInfo} = require('os');
-const path = require('path');
 // $FlowFixMe[untyped-import]: TODO type rimraf
 const rimraf = require('rimraf');
 // $FlowFixMe[untyped-import]: TODO type signedsource
 const SignedSource = require('signedsource');
 // $FlowFixMe[untyped-import]: TODO type supports-color
 const supportsColor = require('supports-color');
-const {parseArgs, styleText} = require('util');
 
 const DEVTOOLS_FRONTEND_REPO_URL =
   'https://github.com/react/react-native-devtools-frontend';

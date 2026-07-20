@@ -14,8 +14,8 @@ import {
   drawableFileTypes,
   getAndroidResourceIdentifier,
 } from '@react-native/asset-utils';
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 async function createKeepFileAsync(
   assets: ReadonlyArray<AssetData>,

@@ -11,10 +11,10 @@
 'use strict';
 
 const {bundleCommand: bc} = require('@react-native/community-cli-plugin');
-const {execSync} = require('child_process');
 const commander = require('commander');
-const {readFileSync} = require('fs');
-const path = require('path');
+const {execSync} = require('node:child_process');
+const {readFileSync} = require('node:fs');
+const path = require('node:path');
 
 // Commander 12.0.0 changes from the global to named export
 // $FlowFixMe[signature-verification-failure]

@@ -18,9 +18,9 @@ const {
   scaffoldPackageSwiftForDep,
   translatePodspecToSpmTarget,
 } = require('../scaffold-package-swift');
-const fs = require('fs');
-const os = require('os');
-const path = require('path');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
 
 // Minimal PodspecModel fixture builder so each test stays focused on the
 // field it exercises.

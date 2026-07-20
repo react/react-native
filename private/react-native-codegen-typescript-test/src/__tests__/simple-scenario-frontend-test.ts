@@ -7,7 +7,7 @@
  * @format
  */
 
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import type {SchemaType} from '@react-native/codegen/lib/CodegenSchema';
 import {TypeScriptParser} from '@react-native/codegen/lib/parsers/typescript/parser';
 

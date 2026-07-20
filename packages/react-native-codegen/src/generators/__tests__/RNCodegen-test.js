@@ -21,7 +21,7 @@ describe('RNCodegen.generate', () => {
   });
 
   it('when type `all`, with default paths', () => {
-    jest.mock('fs', () => ({
+    jest.mock('node:fs', () => ({
       existsSync: location => {
         return true;
       },
@@ -29,7 +29,7 @@ describe('RNCodegen.generate', () => {
         // Jest in the OSS does not allow to capture variables in closures.
         // Therefore, we have to bring the variables inside the closure.
         // see: https://github.com/facebook/jest/issues/2567
-        const path = require('path');
+        const path = require('node:path');
         const outputDirectory = 'tmp/out/';
         const componentsOutputDir = 'react/renderer/components/library';
         const modulesOutputDir = 'library';

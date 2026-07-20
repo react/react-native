@@ -18,9 +18,9 @@ const {
   stubSlicesFromXcframework,
 } = require('../../../packages/react-native/scripts/ios-prebuild/headers-xcframework');
 const {HEADERS_FOLDER, TARGET_FOLDER} = require('./constants');
-const {execSync} = require('child_process');
-const fs = require('fs');
-const path = require('path');
+const {execSync} = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
 
 /*::
 import type { Dependency, Platform } from './types';

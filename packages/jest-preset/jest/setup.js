@@ -81,7 +81,7 @@ try {
    */
   jest.mock('prettier', () => {
     // $FlowExpectedError[underconstrained-implicit-instantiation]
-    const module = jest.requireActual('module');
+    const module = jest.requireActual('node:module');
     return module.prototype.require(require.resolve('prettier'));
   });
 } catch {}

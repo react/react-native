@@ -26,10 +26,10 @@ jest
       process.exit(exitCode);
     },
   }))
-  .mock('fs', () => ({
+  .mock('node:fs', () => ({
     existsSync: jest.fn().mockImplementation(_ => true),
   }))
-  .mock('path', () => ({
+  .mock('node:path', () => ({
     dirname: jest
       .fn()
       .mockImplementation(filePath =>

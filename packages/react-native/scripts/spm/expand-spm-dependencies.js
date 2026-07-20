@@ -11,8 +11,8 @@
 'use strict';
 
 const {toSwiftName} = require('./spm-utils');
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 /**
  * expand-spm-dependencies.js — Resolves transitive native deps declared via

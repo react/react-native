@@ -15,8 +15,8 @@ const {
   updatePackageJson,
 } = require('../../shared/monorepoUtils');
 const {getPackageVersionStrByTag} = require('./npm-utils');
-const {promises: fs} = require('fs');
-const path = require('path');
+const {promises: fs} = require('node:fs');
+const path = require('node:path');
 
 const MAVEN_VERSIONS_FILE_PATH = path.join(
   REACT_NATIVE_PACKAGE_DIR,

@@ -11,7 +11,7 @@
 'use strict';
 
 const {transform} = require('../index.js');
-const path = require('path');
+const path = require('node:path');
 
 const PROJECT_ROOT = path.sep === '/' ? '/my/project' : 'C:\\my\\project';
 

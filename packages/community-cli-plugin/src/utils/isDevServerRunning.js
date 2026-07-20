@@ -8,7 +8,7 @@
  * @format
  */
 
-import net from 'net';
+import net from 'node:net';
 
 /**
  * Determine whether we can run the dev server.

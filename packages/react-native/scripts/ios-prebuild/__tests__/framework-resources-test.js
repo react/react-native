@@ -21,9 +21,9 @@ const {
   serializePrivacyManifest,
 } = require('../framework-resources');
 const {emitReactFrameworkHeaders} = require('../headers-compose');
-const fs = require('fs');
-const os = require('os');
-const path = require('path');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
 
 // react-native package root (…/scripts/ios-prebuild/__tests__ -> …)
 const RN_PATH = path.resolve(__dirname, '..', '..', '..');

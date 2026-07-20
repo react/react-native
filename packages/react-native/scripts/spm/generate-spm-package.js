@@ -45,8 +45,8 @@ const {
   resolveReactNativeRoot,
   toSwiftName,
 } = require('./spm-utils');
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 const yargs = require('yargs');
 
 const {log} = makeLogger('generate-spm-package');

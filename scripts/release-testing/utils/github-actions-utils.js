@@ -11,9 +11,9 @@
 
 'use strict';
 
-const {execSync: exec} = require('child_process');
 const fetch = require('node-fetch');
-const {styleText} = require('util');
+const {execSync: exec} = require('node:child_process');
+const {styleText} = require('node:util');
 
 /*::
 type CIHeaders = {

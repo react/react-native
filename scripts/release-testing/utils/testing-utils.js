@@ -14,11 +14,11 @@ const {
   generateAndroidArtifacts,
 } = require('../../releases/utils/release-utils');
 const ghaArtifactsUtils = require('./github-actions-utils.js');
-const fs = require('fs');
 // $FlowFixMe[cannot-resolve-module]
 const {spawn} = require('node:child_process');
-const os = require('os');
-const path = require('path');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
 const {exec} = require('shelljs');
 
 /*::

@@ -11,8 +11,8 @@
 'use strict';
 
 const baseConfig = require('../../../jest.config');
-const os = require('os');
-const path = require('path');
+const os = require('node:os');
+const path = require('node:path');
 
 // Every Fantom worker shares a single Metro server. With unbounded
 // parallelism, concurrent bundle builds pile up faster than the

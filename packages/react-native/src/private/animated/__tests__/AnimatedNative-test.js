@@ -11,9 +11,9 @@
 import typeof TNativeAnimatedModule from '../../specs_DEPRECATED/modules/NativeAnimatedModule';
 
 import {create, unmount, update} from '@react-native/jest-preset/jest/renderer';
+import {format} from 'node:util';
 import * as React from 'react';
 import {createRef} from 'react';
-import {format} from 'util';
 
 describe('Native Animated', () => {
   let NativeAnimatedModule: Exclude<TNativeAnimatedModule, null | void>;
