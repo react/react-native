@@ -11,9 +11,7 @@
 // $FlowFixMe[cannot-resolve-module] libdef missing in RN OSS
 import type {DebuggerSessionIDs} from '../types/EventReporter';
 
-// $FlowFixMe[cannot-resolve-module] libdef missing in RN OSS
 import {monitorEventLoopDelay, performance} from 'node:perf_hooks';
-// $FlowFixMe[cannot-resolve-module] libdef missing in RN OSS
 import {setTimeout} from 'node:timers';
 
 export type EventLoopPerfTrackerArgs = {

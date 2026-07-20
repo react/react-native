@@ -8,10 +8,8 @@
  * @format
  */
 
-// $FlowFixMe[cannot-resolve-module] libdef missing in RN OSS
 import type {Timeout} from 'node:timers';
 
-// $FlowFixMe[cannot-resolve-module] libdef missing in RN OSS
 import {setTimeout} from 'node:timers';
 import util from 'node:util';
 

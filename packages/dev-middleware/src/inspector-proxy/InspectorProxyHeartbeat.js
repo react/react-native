@@ -8,11 +8,9 @@
  * @format
  */
 
-// $FlowFixMe[cannot-resolve-module] libdef missing in RN OSS
 import type {Timeout} from 'node:timers';
 
 // Import these from node:timers to get the correct Flow types.
-// $FlowFixMe[cannot-resolve-module] libdef missing in RN OSS
 import {clearTimeout, setTimeout} from 'node:timers';
 import WS from 'ws';
 
