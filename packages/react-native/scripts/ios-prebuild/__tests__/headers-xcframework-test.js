@@ -14,10 +14,10 @@ const {
   buildDepsHeadersXcframework,
   stubSlicesFromXcframework,
 } = require('../headers-xcframework');
-const childProcess = require('child_process');
-const fs = require('fs');
-const os = require('os');
-const path = require('path');
+const childProcess = require('node:child_process');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
 
 describe('buildDepsHeadersXcframework set-equality gate', () => {
   let tmp /*: string */ = '';

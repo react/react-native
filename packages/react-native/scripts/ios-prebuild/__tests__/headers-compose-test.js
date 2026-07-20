@@ -14,8 +14,8 @@ const {
   COMPOSE_TOOLING_FILES,
   composeToolingHash,
 } = require('../headers-compose');
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 describe('COMPOSE_TOOLING_FILES stays in sync with headers-compose.js requires', () => {
   test('every local sibling require is covered by the hashed file list', () => {

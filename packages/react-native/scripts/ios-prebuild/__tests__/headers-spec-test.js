@@ -16,7 +16,7 @@ const {
   renderNamespaceModuleMap,
   renderReactModuleMap,
 } = require('../headers-spec');
-const fs = require('fs');
+const fs = require('node:fs');
 
 /*::
 type TestInventoryManifest = {

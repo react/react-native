@@ -11,8 +11,8 @@
 import type {AssetData} from 'metro';
 
 import {getAndroidResourceIdentifier} from '@react-native/asset-utils';
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 export function cleanAssetCatalog(catalogDir: string): void {
   const files = fs

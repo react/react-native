@@ -28,8 +28,8 @@ const {
 } = require('../generate-spm-autolinking');
 const {generateXCFrameworksPackageSwift} = require('../generate-spm-package');
 const {emitScaffoldedPackageSwift} = require('../scaffold-package-swift');
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const TOOLS_VERSION_RE = /^\/\/ swift-tools-version: \d+\.\d+/;
 

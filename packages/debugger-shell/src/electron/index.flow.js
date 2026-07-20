@@ -12,7 +12,7 @@ import buildInfo from './BuildInfo';
 
 // $FlowFixMe[untyped-import] Flow doesn't infer JSON types
 const pkg = require('../../package.json');
-const util = require('util');
+const util = require('node:util');
 // $FlowFixMe[unclear-type] We have no Flow types for the Electron API.
 const {app} = require('electron') as any;
 

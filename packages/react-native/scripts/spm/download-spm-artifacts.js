@@ -57,10 +57,10 @@ const {
   makeLogger,
   sharedCacheDir,
 } = require('./spm-utils');
-const {execFileSync} = require('child_process');
-const fs = require('fs');
-const path = require('path');
-const stream = require('stream');
+const {execFileSync} = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
+const stream = require('node:stream');
 const yargs = require('yargs');
 
 const {log, warn, die} = makeLogger('download-spm-artifacts');

@@ -11,7 +11,7 @@
 import type {Command} from '@react-native-community/cli-types';
 
 import runServer from './runServer';
-import path from 'path';
+import path from 'node:path';
 
 export type {StartCommandArgs} from './runServer';
 

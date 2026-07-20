@@ -6,9 +6,9 @@
  */
 
 // @flow
-const { execSync } = require('child_process');
-const fs = require('fs');
-const path = require('path');
+const { execSync } = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
 
 function main() {
  const packageJsonPath = path.join(__dirname, '../packages/react-native/package.json');

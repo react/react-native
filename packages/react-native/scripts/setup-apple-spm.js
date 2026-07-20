@@ -107,10 +107,10 @@ const {
   remotePackageConfig,
   runCodegenAndInstallTemplate,
 } = require('./spm/spm-utils');
-const {execFileSync} = require('child_process');
-const fs = require('fs');
-const path = require('path');
-const readline = require('readline');
+const {execFileSync} = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
+const readline = require('node:readline');
 const yargs = require('yargs');
 
 const {log, warn: logError} = makeLogger('setup-apple-spm');

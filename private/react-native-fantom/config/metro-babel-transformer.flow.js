@@ -14,8 +14,8 @@ import type {
 } from 'metro-babel-transformer';
 
 import MetroBabelTransformer from '@react-native/metro-babel-transformer';
-import crypto from 'crypto';
-import fs from 'fs';
+import crypto from 'node:crypto';
+import fs from 'node:fs';
 
 const transform: BabelTransformer['transform'] = (
   args: BabelTransformerArgs,

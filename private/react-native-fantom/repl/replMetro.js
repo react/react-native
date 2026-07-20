@@ -8,13 +8,13 @@
  * @format
  */
 
-import type {Server as HttpServer} from 'http';
-import type {Server as HttpsServer} from 'https';
+import type {Server as HttpServer} from 'node:http';
+import type {Server as HttpsServer} from 'node:https';
 
 import * as Metro from 'metro';
 import {mergeConfig} from 'metro-config';
-import {Server as NetServer} from 'net';
-import path from 'path';
+import {Server as NetServer} from 'node:net';
+import path from 'node:path';
 
 let metroServer: ?(HttpServer | HttpsServer) = null;
 

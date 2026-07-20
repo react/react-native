@@ -25,10 +25,10 @@ import type {
 const {parseSync, transformFromAstSync} = require('@babel/core');
 const {getCacheKey: getPresetCacheKey} = require('@react-native/babel-preset');
 const makeHMRConfig = require('@react-native/babel-preset/src/configs/hmr');
-const crypto = require('crypto');
-const fs = require('fs');
+const crypto = require('node:crypto');
+const fs = require('node:fs');
+const path = require('node:path');
 const nullthrows = require('nullthrows');
-const path = require('path');
 
 const cacheKeyParts = [getPresetCacheKey(), fs.readFileSync(__filename)];
 

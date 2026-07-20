@@ -26,10 +26,10 @@ const {
   prepareArtifacts,
   setupGHAArtifacts,
 } = require('./utils/testing-utils');
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
+const {styleText} = require('node:util');
 const {cd, exec, popd, pushd, pwd, sed} = require('shelljs');
-const {styleText} = require('util');
 const yargs = require('yargs');
 
 /* ::

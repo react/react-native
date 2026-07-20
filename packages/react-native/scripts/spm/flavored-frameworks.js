@@ -10,10 +10,10 @@
 
 'use strict';
 
-const {execFileSync} = require('child_process');
-const crypto = require('crypto');
-const fs = require('fs');
-const path = require('path');
+const {execFileSync} = require('node:child_process');
+const crypto = require('node:crypto');
+const fs = require('node:fs');
+const path = require('node:path');
 
 // Info.plist parsing goes through plutil (as the pre-B1 swap script did): the
 // `plist` npm module is NOT a react-native dependency, so it only resolves

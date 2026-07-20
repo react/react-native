@@ -13,10 +13,10 @@ const {ENTRY_POINT, IGNORE_PATTERNS, TYPES_OUTPUT_DIR} = require('../config');
 const getRequireStack = require('./resolution/getRequireStack');
 const translatedModuleTemplate = require('./templates/translatedModule.d.ts-template');
 const translateSourceFile = require('./translateSourceFile');
-const {promises: fs, watch: fsWatch} = require('fs');
 const micromatch = require('micromatch');
-const path = require('path');
-const {styleText} = require('util');
+const {promises: fs, watch: fsWatch} = require('node:fs');
+const path = require('node:path');
+const {styleText} = require('node:util');
 
 /**
  * Build generated TypeScript types for react-native.

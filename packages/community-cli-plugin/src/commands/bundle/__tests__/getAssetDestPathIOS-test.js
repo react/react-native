@@ -10,7 +10,7 @@
 
 import getAssetDestPathIOS from '../getAssetDestPathIOS';
 
-const path = require('path');
+const path = require('node:path');
 
 jest.dontMock('../getAssetDestPathIOS');
 

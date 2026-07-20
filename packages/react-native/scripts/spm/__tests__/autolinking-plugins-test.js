@@ -11,9 +11,9 @@
 'use strict';
 
 const {discoverPlugins, invokePlugins} = require('../autolinking-plugins');
-const fs = require('fs');
-const os = require('os');
-const path = require('path');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
 
 describe('discoverPlugins', () => {
   let tmp;

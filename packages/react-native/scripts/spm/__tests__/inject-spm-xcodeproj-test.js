@@ -14,8 +14,8 @@ const {
   injectSpmIntoPbxproj,
   planInjection,
 } = require('../generate-spm-xcodeproj');
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const PLAIN = fs.readFileSync(
   path.join(__dirname, '__fixtures__', 'plain-app.pbxproj'),

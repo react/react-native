@@ -43,8 +43,8 @@ const {
   setScalarField,
 } = require('./spm-pbxproj');
 const {makeLogger, remotePackageConfig} = require('./spm-utils');
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 /*:: import type {
   FlavoredFrameworkManifestEntry,

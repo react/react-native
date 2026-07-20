@@ -28,10 +28,10 @@ const {
   rnDepsReleaseUrl,
   validateArtifactsCache,
 } = require('../download-spm-artifacts');
-const {execSync} = require('child_process');
-const fs = require('fs');
-const os = require('os');
-const path = require('path');
+const {execSync} = require('node:child_process');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
 
 // Shared fetch router used by the URL-resolution tests below. Each key is a
 // URL substring; the matched value describes the response. Anything unmatched

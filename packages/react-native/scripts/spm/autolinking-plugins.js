@@ -76,7 +76,7 @@
  * the merge, so regeneration stays deterministic and idempotent.
  */
 
-const path = require('path');
+const path = require('node:path');
 
 /*:: import type {
   AutolinkedDep,

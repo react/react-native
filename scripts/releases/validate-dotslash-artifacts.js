@@ -20,8 +20,8 @@ const {
 const {
   FIRST_PARTY_DOTSLASH_FILES,
 } = require('./write-dotslash-release-asset-urls');
-const path = require('path');
-const {parseArgs, styleText} = require('util');
+const path = require('node:path');
+const {parseArgs, styleText} = require('node:util');
 
 async function main() {
   const {

@@ -11,7 +11,7 @@
 import type {Command} from '@react-native-community/cli-types';
 
 import buildBundle from './buildBundle';
-import path from 'path';
+import path from 'node:path';
 
 export type {BundleCommandArgs} from './buildBundle';
 

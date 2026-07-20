@@ -13,8 +13,8 @@
 // $FlowExpectedError[untyped-import] - Preset is untyped
 const preset = require('../index');
 const babel = require('@babel/core');
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const FIXTURES_DIR = path.join(__dirname, '__fixtures__');
 const OUTPUT_DIR = path.join(FIXTURES_DIR, 'output');

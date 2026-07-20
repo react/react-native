@@ -8,8 +8,8 @@
  * @format
  */
 
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 // react-native-github repo root (repl -> ../../.. ).
 export const PROJECT_ROOT: string = path.resolve(__dirname, '..', '..', '..');

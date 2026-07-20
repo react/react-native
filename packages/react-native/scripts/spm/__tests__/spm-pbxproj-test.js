@@ -33,8 +33,8 @@ const {
   setScalarField,
   uuidsInArray,
 } = require('../spm-pbxproj');
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const PLAIN_PBXPROJ = fs.readFileSync(
   path.join(__dirname, '__fixtures__', 'plain-app.pbxproj'),

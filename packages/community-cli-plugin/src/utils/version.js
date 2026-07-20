@@ -11,8 +11,8 @@
 import type {Config} from '@react-native-community/cli-types';
 import type {TerminalReporter} from 'metro';
 
+import {styleText} from 'node:util';
 import semver from 'semver';
-import {styleText} from 'util';
 
 const debug = require('debug')('ReactNative:CommunityCliPlugin');
 

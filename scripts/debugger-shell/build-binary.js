@@ -28,10 +28,10 @@ if (isMetaInternal) {
 }
 
 const {packager} = require('@electron/packager');
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
+const util = require('node:util');
 const signedsource = require('signedsource');
-const util = require('util');
 
 const APP_NAME = 'React Native DevTools';
 const COMPANY_NAME = 'Meta Platforms Technologies LLC';

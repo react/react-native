@@ -56,8 +56,8 @@ const {
 } = require('./components/componentsUtils');
 const {flowTranslateTypeAnnotation} = require('./modules');
 const {parseFlowAndThrowErrors} = require('./parseFlowAndThrowErrors');
-const fs = require('fs');
 const invariant = require('invariant');
+const fs = require('node:fs');
 
 type ExtendsForProp = null | {
   type: 'ReactNativeBuiltInType',

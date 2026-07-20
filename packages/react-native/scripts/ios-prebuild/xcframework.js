@@ -14,9 +14,9 @@ const {
   generateFBReactNativeSpecIOS,
 } = require('../codegen/generate-artifacts-executor/generateFBReactNativeSpecIOS');
 const utils = require('./utils');
-const childProcess = require('child_process');
-const fs = require('fs');
-const path = require('path');
+const childProcess = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const {execSync, execFileSync} = childProcess;
 const {createLogger} = utils;

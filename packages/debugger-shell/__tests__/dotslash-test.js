@@ -11,10 +11,10 @@
 const {
   prepareDebuggerShellFromDotSlashFile,
 } = require('../src/node/private/LaunchUtils');
-const fs = require('fs').promises;
-const http = require('http');
-const os = require('os');
-const path = require('path');
+const fs = require('node:fs').promises;
+const http = require('node:http');
+const os = require('node:os');
+const path = require('node:path');
 
 // The implementation of prepareDebuggerShellFromDotSlashFile relies on
 // details of DotSlash that are not guaranteed to be stable (support for

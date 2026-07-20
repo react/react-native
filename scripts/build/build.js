@@ -18,15 +18,15 @@ const {
   getTypeScriptCompilerOptions,
 } = require('./config');
 const babel = require('@babel/core');
-const {spawn} = require('child_process');
 const translate = require('flow-api-translator');
-const {promises: fs} = require('fs');
 const micromatch = require('micromatch');
-const path = require('path');
+const {spawn} = require('node:child_process');
+const {promises: fs} = require('node:fs');
+const path = require('node:path');
+const {parseArgs, styleText} = require('node:util');
 const prettier = require('prettier');
 const {globSync} = require('tinyglobby');
 const ts = require('typescript');
-const {parseArgs, styleText} = require('util');
 
 const SRC_DIR = 'src';
 const BUILD_DIR = 'dist';

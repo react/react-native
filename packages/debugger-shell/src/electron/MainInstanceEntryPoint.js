@@ -11,8 +11,8 @@
 import {configureAppMenu} from './AppMenu.js';
 import SettingsStore from './SettingsStore.js';
 
-const path = require('path');
-const util = require('util');
+const path = require('node:path');
+const util = require('node:util');
 
 // $FlowFixMe[unclear-type] We have no Flow types for the Electron API.
 const {BrowserWindow, app, shell, ipcMain} = require('electron') as any;
