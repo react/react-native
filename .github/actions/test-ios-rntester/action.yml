@@ -99,12 +99,19 @@ runs:
         if [[ "${{ steps.prebuilds.outputs.enabled }}" == "true" ]]; then
           export RCT_USE_LOCAL_RN_DEP="/tmp/third-party/ReactNativeDependencies${{ inputs.flavor }}.xcframework.tar.gz"
           export RCT_TESTONLY_RNCORE_TARBALL_PATH="/tmp/ReactCore/ReactCore${{ inputs.flavor }}.xcframework.tar.gz"
+        else
+          export RCT_USE_RN_DEP=0
+          export RCT_USE_PREBUILT_RNCORE=0
         fi
 
         cd packages/rn-tester
 
         bundle install
-        bundle exec pod update hermes-engine --no-repo-update
+        if [[ "${{ steps.prebuilds.outputs.enabled }}" == "true" ]]; then
+          bundle exec pod update hermes-engine ReactNativeDependencies React-Core-prebuilt --no-repo-update
+        else
+          bundle exec pod update hermes-engine --no-repo-update
+        fi
     - name: Build RNTester
       shell: bash
       run: |
