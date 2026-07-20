@@ -136,6 +136,7 @@ jobs:
         with:
           flavor: ${{ matrix.flavor }}
           use-frameworks: true
+          build-from-source: true
           run-unit-tests: false # tests for dynamic frameworks are already run in the test_ios_rntester job; this is to just a test build from source (no prebuilds)
 
   test_ios_rntester:

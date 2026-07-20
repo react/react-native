@@ -27,6 +27,13 @@ inputs:
       config of the 2026-07-03 SocketRocket dual-copy regression).
     required: false
     default: auto
+  build-from-source:
+    description: >-
+      Force building ReactCore/ReactNativeDependencies from source, disabling the
+      prebuilt Maven fallback (RCT_USE_PREBUILT_RNCORE / RCT_USE_RN_DEP, which
+      otherwise default to '1'). Used by the from-source dynamic-frameworks lane.
+    required: false
+    default: false
 
 runs:
   using: composite
@@ -99,6 +106,17 @@ runs:
         if [[ "${{ steps.prebuilds.outputs.enabled }}" == "true" ]]; then
           export RCT_USE_LOCAL_RN_DEP="/tmp/third-party/ReactNativeDependencies${{ inputs.flavor }}.xcframework.tar.gz"
           export RCT_TESTONLY_RNCORE_TARBALL_PATH="/tmp/ReactCore/ReactCore${{ inputs.flavor }}.xcframework.tar.gz"
+        fi
+        if [[ "${{ inputs.build-from-source }}" == "true" ]]; then
+          # Force building ReactCore/ReactNativeDependencies from source. Both
+          # RCT_USE_PREBUILT_RNCORE and RCT_USE_RN_DEP default to '1', so on a stable
+          # branch (where released Maven artifacts exist for the current version) the
+          # install would otherwise consume those prebuilts instead of building from
+          # source. That is wrong for the from-source dynamic-frameworks lane and also
+          # fails when a published artifact predates newer podspec layout changes
+          # (e.g. a React core tarball without ReactNativeHeaders.xcframework).
+          export RCT_USE_PREBUILT_RNCORE=0
+          export RCT_USE_RN_DEP=0
         fi
 
         cd packages/rn-tester
