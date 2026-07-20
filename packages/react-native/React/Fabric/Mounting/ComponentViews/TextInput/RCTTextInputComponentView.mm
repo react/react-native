@@ -13,6 +13,7 @@
 #import <react/renderer/textlayoutmanager/TextLayoutManager.h>
 
 #import <React/RCTBackedTextInputViewProtocol.h>
+#import <React/RCTLocalizedString.h>
 #import <React/RCTScrollViewComponentView.h>
 #import <React/RCTUITextField.h>
 #import <React/RCTUITextView.h>
@@ -603,25 +604,25 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 {
   switch (returnKeyType) {
     case UIReturnKeyGo:
-      return @"Go";
+      return RCTLocalizedString("Go", "keyboard return key button label for go action");
     case UIReturnKeyNext:
-      return @"Next";
+      return RCTLocalizedString("Next", "keyboard return key button label for next action");
     case UIReturnKeySearch:
-      return @"Search";
+      return RCTLocalizedString("Search", "keyboard return key button label for search action");
     case UIReturnKeySend:
-      return @"Send";
+      return RCTLocalizedString("Send", "keyboard return key button label for send action");
     case UIReturnKeyYahoo:
-      return @"Yahoo";
+      return RCTLocalizedString("Yahoo", "keyboard return key button label for Yahoo");
     case UIReturnKeyGoogle:
-      return @"Google";
+      return RCTLocalizedString("Google", "keyboard return key button label for Google");
     case UIReturnKeyRoute:
-      return @"Route";
+      return RCTLocalizedString("Route", "keyboard return key button label for route action");
     case UIReturnKeyJoin:
-      return @"Join";
+      return RCTLocalizedString("Join", "keyboard return key button label for join action");
     case UIReturnKeyEmergencyCall:
-      return @"Emergency Call";
+      return RCTLocalizedString("Emergency Call", "keyboard return key button label for emergency call action");
     default:
-      return @"Done";
+      return RCTLocalizedString("Done", "keyboard return key button label for done action");
   }
 }
 
