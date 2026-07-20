@@ -28,8 +28,14 @@ internal class SynchronousMountItem(private val reactTag: Int, private val props
   }
 
   override fun toString(): String {
-    val propsString = if (IS_DEVELOPMENT_ENVIRONMENT) props.toHashMap().toString() else "<hidden>"
-    return "SYNC UPDATE PROPS [$reactTag]: $propsString"
+    // NOTE: Intentionally written as an early return rather than assigning the result of an
+    // `if` expression to a local `val`. The latter shape triggers a crash in the Android lint
+    // K2 UAST analyzer (resolveSyntheticJavaPropertyAccessorCall) while resolving the local
+    // variable's `if`-expression initializer, failing `lintVitalAnalyzeRelease`.
+    if (!IS_DEVELOPMENT_ENVIRONMENT) {
+      return "SYNC UPDATE PROPS [$reactTag]: <hidden>"
+    }
+    return "SYNC UPDATE PROPS [$reactTag]: ${props.toHashMap()}"
   }
 
   override fun getSurfaceId(): Int = View.NO_ID
