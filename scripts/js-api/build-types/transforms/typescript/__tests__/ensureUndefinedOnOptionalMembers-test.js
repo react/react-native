@@ -8,53 +8,57 @@
  * @format
  */
 
-const removeUndefinedFromOptionalMembersVisitor = require('../removeUndefinedFromOptionalMembers.js');
+const ensureUndefinedOnOptionalMembersVisitor = require('../ensureUndefinedOnOptionalMembers.js');
 const babel = require('@babel/core');
 
 async function translate(code: string): Promise<string> {
   const result = await babel.transformAsync(code, {
     plugins: [
       '@babel/plugin-syntax-typescript',
-      removeUndefinedFromOptionalMembersVisitor,
+      ensureUndefinedOnOptionalMembersVisitor,
     ],
   });
 
   return result.code;
 }
 
-describe('removeUndefinedFromOptionalMembers', () => {
-  test('should remove undefined from optional type members', async () => {
+describe('ensureUndefinedOnOptionalMembers', () => {
+  test('should add undefined to optional type members', async () => {
     const code = `
       type Foo = {
-        a?: number | undefined,
-        'b-key'?: number,
-        c: boolean | undefined,
-        d: string,
+        a?: number,
+        'b-key'?: number | string,
+        c?: () => void,
+        d: boolean,
+        e: string | undefined,
+        f?: (() => void) | number,
       };
     `;
     const result = await translate(code);
     expect(result).toMatchInlineSnapshot(`
       "type Foo = {
-        a?: number;
-        'b-key'?: number;
-        c: boolean | undefined;
-        d: string;
+        a?: number | undefined;
+        'b-key'?: number | string | undefined;
+        c?: (() => void) | undefined;
+        d: boolean;
+        e: string | undefined;
+        f?: (() => void) | number | undefined;
       };"
     `);
   });
 
-  test('should unwrap the lone remaining constituent, dropping redundant parens', async () => {
+  test('should not add undefined when already present', async () => {
     const code = `
       type Foo = {
-        a?: (() => void) | undefined,
-        b?: number | string | undefined,
+        a?: number | undefined,
+        b?: undefined,
       };
     `;
     const result = await translate(code);
     expect(result).toMatchInlineSnapshot(`
       "type Foo = {
-        a?: () => void;
-        b?: number | string;
+        a?: number | undefined;
+        b?: undefined;
       };"
     `);
   });
