@@ -77,7 +77,7 @@ export default class Event {
   [CURRENT_TARGET_KEY]: EventTarget | null = null;
 
   // $FlowExpectedError[unsupported-syntax]
-  [EVENT_PHASE_KEY]: boolean = Event.NONE;
+  [EVENT_PHASE_KEY]: boolean = 0;
 
   // $FlowExpectedError[unsupported-syntax]
   [IN_PASSIVE_LISTENER_FLAG_KEY]: boolean = false;
@@ -235,48 +235,64 @@ export default class Event {
 
 // $FlowExpectedError[cannot-write]
 Object.defineProperty(Event, 'NONE', {
+  writable: true,
+  configurable: true,
   enumerable: true,
   value: 0,
 });
 
 // $FlowExpectedError[cannot-write]
 Object.defineProperty(Event.prototype, 'NONE', {
+  writable: true,
+  configurable: true,
   enumerable: true,
   value: 0,
 });
 
 // $FlowExpectedError[cannot-write]
 Object.defineProperty(Event, 'CAPTURING_PHASE', {
+  writable: true,
+  configurable: true,
   enumerable: true,
   value: 1,
 });
 
 // $FlowExpectedError[cannot-write]
 Object.defineProperty(Event.prototype, 'CAPTURING_PHASE', {
+  writable: true,
+  configurable: true,
   enumerable: true,
   value: 1,
 });
 
 // $FlowExpectedError[cannot-write]
 Object.defineProperty(Event, 'AT_TARGET', {
+  writable: true,
+  configurable: true,
   enumerable: true,
   value: 2,
 });
 
 // $FlowExpectedError[cannot-write]
 Object.defineProperty(Event.prototype, 'AT_TARGET', {
+  writable: true,
+  configurable: true,
   enumerable: true,
   value: 2,
 });
 
 // $FlowExpectedError[cannot-write]
 Object.defineProperty(Event, 'BUBBLING_PHASE', {
+  writable: true,
+  configurable: true,
   enumerable: true,
   value: 3,
 });
 
 // $FlowExpectedError[cannot-write]
 Object.defineProperty(Event.prototype, 'BUBBLING_PHASE', {
+  writable: true,
+  configurable: true,
   enumerable: true,
   value: 3,
 });
