@@ -19,9 +19,18 @@ public class I18nUtil private constructor() {
    * * is forcing RTL layout, regardless of the active language (for development purpose)
    * * allows RTL layout when using RTL locale
    */
-  public fun isRTL(context: Context): Boolean =
-      applicationHasRtlSupport(context) &&
-          (isRTLForced(context) || (isRTLAllowed(context) && isDevicePreferredLanguageRTL))
+  public fun isRTL(context: Context): Boolean {
+    if (!applicationHasRtlSupport(context)) {
+      return false
+    }
+    if (isRTLForced(context)) {
+      return true
+    }
+    if (isRTLAllowed(context) && isApplicationPreferredLanguageRTL(context)) {
+      return true
+    }
+    return false
+  }
 
   /**
    * Android relies on the presence of `android:supportsRtl="true"` being set in order to resolve
@@ -60,13 +69,11 @@ public class I18nUtil private constructor() {
     setPref(context, KEY_FOR_PREFS_FORCERTL, forceRTL)
   }
 
-  private val isDevicePreferredLanguageRTL: Boolean
+  private fun isApplicationPreferredLanguageRTL(context: Context): Boolean {
     // Check if the current device language is RTL
-    get() {
-      val directionality =
-          TextUtilsCompat.getLayoutDirectionFromLocale(Locale.getAvailableLocales()[0])
-      return directionality == View.LAYOUT_DIRECTION_RTL
-    }
+    val directionality = TextUtilsCompat.getLayoutDirectionFromLocale(context.resources.configuration.locales[0])
+    return directionality == View.LAYOUT_DIRECTION_RTL
+  }
 
   private fun isPrefSet(context: Context, key: String, defaultValue: Boolean): Boolean =
       context
