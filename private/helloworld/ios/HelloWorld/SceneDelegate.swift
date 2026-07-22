@@ -10,8 +10,6 @@ import React_RCTAppDelegate
 import ReactAppDependencyProvider
 import UIKit
 
-#if !HELLOWORLD_USE_APPDELEGATE
-
 class SceneDelegate: RCTDefaultReactNativeFactoryDelegate, UIWindowSceneDelegate {
   var window: UIWindow?
   var reactNativeFactory: RCTReactNativeFactory?
@@ -61,5 +59,3 @@ class SceneDelegate: RCTDefaultReactNativeFactoryDelegate, UIWindowSceneDelegate
     #endif
   }
 }
-
-#endif
