@@ -114,11 +114,6 @@ typedef NS_ENUM(NSInteger, RCTReleaseLevel) { Canary, Experimental, Stable };
 @property (nonatomic, nullable) RCTBridge *bridge
     __attribute__((deprecated("The bridge is deprecated and will be removed when removing the legacy architecture.")));
 
-#if !defined(RCT_REMOVE_LEGACY_ARCH)
-@property (nonatomic, nullable) RCTSurfacePresenterBridgeAdapter *bridgeAdapter __attribute__((
-    deprecated("The bridgeAdapter is deprecated and will be removed when removing the legacy architecture.")));
-#endif
-
 @property (nonatomic, strong, nonnull) RCTRootViewFactory *rootViewFactory;
 
 @property (nonatomic, weak) id<RCTReactNativeFactoryDelegate> delegate;

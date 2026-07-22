@@ -65,13 +65,6 @@ __attribute__((deprecated(
 /// The window object, used to render the UViewControllers
 @property (nonatomic, strong, nonnull) UIWindow *window;
 
-#if !defined(RCT_REMOVE_LEGACY_ARCH)
-@property (nonatomic, nullable) RCTBridge *bridge
-    __attribute__((deprecated("The bridge is deprecated and will be removed when removing the legacy architecture.")));
-@property (nonatomic, nullable) RCTSurfacePresenterBridgeAdapter *bridgeAdapter __attribute__((
-    deprecated("The bridge adapter is deprecated and will be removed when removing the legacy architecture.")));
-#endif
-
 @property (nonatomic, strong, nullable) NSString *moduleName;
 @property (nonatomic, strong, nullable) NSDictionary *initialProps;
 @property (nonatomic, strong) RCTReactNativeFactory *reactNativeFactory;
