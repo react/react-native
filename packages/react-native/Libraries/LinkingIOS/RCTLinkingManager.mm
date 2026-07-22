@@ -87,12 +87,12 @@ RCT_EXPORT_MODULE()
     continueUserActivity:(NSUserActivity *)userActivity
       restorationHandler:(nonnull void (^)(NSArray<id<UIUserActivityRestoring>> *_Nullable))restorationHandler
 {
-  if (!RCTIsSceneDelegateApp()) {
-    [RCTLinkingManager handleUserActivity:userActivity window:RCTKeyWindow()];
-    return YES;
+  if (RCTIsSceneDelegateApp()) {
+    return NO;
   }
 
-  return NO;
+  [RCTLinkingManager handleUserActivity:userActivity window:RCTKeyWindow()];
+  return YES;
 }
 
 #pragma mark - SceneDelegate methods
@@ -124,12 +124,12 @@ RCT_EXPORT_MODULE()
 
 + (BOOL)handleAppDelegateURL:(NSURL *)URL app:(UIApplication *)app
 {
-  if (!RCTIsSceneDelegateApp()) {
-    [RCTLinkingManager postNotificationWithURL:URL];
-    return YES;
+  if (RCTIsSceneDelegateApp()) {
+    return NO;
   }
-
-  return NO;
+  
+  [RCTLinkingManager postNotificationWithURL:URL];
+  return YES;
 }
 
 - (void)handleOpenURLNotification:(NSNotification *)notification
