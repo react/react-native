@@ -14,10 +14,9 @@ const {
   unstable_prepareDebuggerShell,
   unstable_spawnDebuggerShellWithArgs,
 } = require('@react-native/debugger-shell');
-const ChromeLauncher = require('chrome-launcher');
-const {Launcher: EdgeLauncher} = require('chromium-edge-launcher');
-const {spawn} = require('node:child_process');
 const open = require('open');
+
+const {apps, openApp} = open;
 
 /**
  * Default `DevToolLauncher` implementation which handles opening apps on the
@@ -29,44 +28,27 @@ const DefaultToolLauncher = {
       assertMockedInTests();
     }
 
-    let chromePath;
-
+    // NOTE: Since 0.88 this is a simplified approach, since app launching is
+    // now handled by `launchDebuggerShell`. Frameworks may still override
+    // `DevToolLauncher` with an improved fallback stack.
     try {
-      // Locate Chrome installation path, will throw if not found
-      chromePath = ChromeLauncher.getChromePath();
-    } catch (e) {
-      // Fall back to Microsoft Edge
-      chromePath = EdgeLauncher.getFirstInstallation();
-    }
-
-    if (chromePath == null) {
+      const subprocess = await openApp(apps.chrome, {
+        arguments: [`--app=${url}`],
+        newInstance: true,
+      });
+      await new Promise<void>((resolve, reject) => {
+        subprocess.once('error', reject);
+        subprocess.once('exit', code => {
+          code === 0
+            ? resolve()
+            : reject(new Error(`openApp exited with code ${code}`));
+        });
+      });
+    } catch (e: unknown) {
       // Fall back to default browser - the frontend will warn if the browser
       // is not supported.
       await open(url);
-      return;
     }
-
-    const chromeFlags = [`--app=${url}`, '--window-size=1200,600'];
-
-    return new Promise((resolve, reject) => {
-      const childProcess = spawn(chromePath, chromeFlags, {
-        detached: true,
-        stdio: 'ignore',
-      });
-
-      childProcess.on('data', () => {
-        resolve();
-      });
-      childProcess.on('close', (code: number) => {
-        if (code !== 0) {
-          reject(
-            new Error(
-              `Failed to launch debugger app window: ${chromePath} exited with code ${code}`,
-            ),
-          );
-        }
-      });
-    });
   },
 
   async launchDebuggerShell(url: string, windowKey: string): Promise<void> {
