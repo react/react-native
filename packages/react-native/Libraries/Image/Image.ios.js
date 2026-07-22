@@ -178,8 +178,7 @@ let BaseImage: AbstractImageIOS = ({
   } else if (props.accessible != null) {
     accessible = props.accessible;
   } else if (
-    // For web compatibility, setting a `role` implicitly makes the element
-    // accessible, unless the role is `none`/`presentation`.
+    // For web compatibility, a `role` implicitly makes the element accessible.
     props.role != null &&
     props.role !== 'none' &&
     props.role !== 'presentation'
