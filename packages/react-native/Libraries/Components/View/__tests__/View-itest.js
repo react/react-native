@@ -651,9 +651,9 @@ describe('<View>', () => {
             root.render(<View role="button" />);
           });
 
-          expect(root.getRenderedOutput({props: ['accessible']}).toJSX()).toEqual(
-            <rn-view accessible="true" />,
-          );
+          expect(
+            root.getRenderedOutput({props: ['accessible']}).toJSX(),
+          ).toEqual(<rn-view accessible="true" />);
         });
 
         it('does not make the view accessible for the "none" role', () => {
@@ -663,9 +663,9 @@ describe('<View>', () => {
             root.render(<View role="none" collapsable={false} />);
           });
 
-          expect(root.getRenderedOutput({props: ['accessible']}).toJSX()).toEqual(
-            <rn-view />,
-          );
+          expect(
+            root.getRenderedOutput({props: ['accessible']}).toJSX(),
+          ).toEqual(<rn-view />);
         });
 
         it('does not make the view accessible for the "presentation" role', () => {
@@ -675,9 +675,9 @@ describe('<View>', () => {
             root.render(<View role="presentation" collapsable={false} />);
           });
 
-          expect(root.getRenderedOutput({props: ['accessible']}).toJSX()).toEqual(
-            <rn-view />,
-          );
+          expect(
+            root.getRenderedOutput({props: ['accessible']}).toJSX(),
+          ).toEqual(<rn-view />);
         });
 
         it('does not override an explicit "accessible" prop', () => {
@@ -691,9 +691,9 @@ describe('<View>', () => {
 
           // `accessible={false}` is not propagated to the mounting layer (it is
           // the default), so the implicit `role` behavior must not force it on.
-          expect(root.getRenderedOutput({props: ['accessible']}).toJSX()).toEqual(
-            <rn-view />,
-          );
+          expect(
+            root.getRenderedOutput({props: ['accessible']}).toJSX(),
+          ).toEqual(<rn-view />);
         });
       });
       describe('aria-label', () => {
