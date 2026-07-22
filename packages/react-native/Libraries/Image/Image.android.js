@@ -284,6 +284,14 @@ let BaseImage: AbstractImageAndroid = ({
     nativeProps.accessible = true;
   } else if (accessible != null) {
     nativeProps.accessible = accessible;
+  } else if (
+    // For web compatibility, setting a `role` implicitly makes the element
+    // accessible, unless the role is `none`/`presentation`.
+    nativeProps.role != null &&
+    nativeProps.role !== 'none' &&
+    nativeProps.role !== 'presentation'
+  ) {
+    nativeProps.accessible = true;
   }
 
   if (
