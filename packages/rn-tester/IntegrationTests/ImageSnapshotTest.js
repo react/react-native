@@ -36,4 +36,4 @@ function ImageSnapshotTest(): React.Node {
   );
 }
 
-module.exports = ImageSnapshotTest;
+export default ImageSnapshotTest;

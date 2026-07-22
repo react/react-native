@@ -54,4 +54,4 @@ const styles = StyleSheet.create({
   },
 });
 
-module.exports = SimpleSnapshotTest;
+export default SimpleSnapshotTest;

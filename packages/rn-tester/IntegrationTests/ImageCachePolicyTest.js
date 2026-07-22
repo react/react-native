@@ -105,4 +105,4 @@ const styles = StyleSheet.create({
   },
 });
 
-module.exports = ImageCachePolicyTest;
+export default ImageCachePolicyTest;

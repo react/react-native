@@ -62,4 +62,4 @@ const styles = StyleSheet.create({
   },
 });
 
-module.exports = IntegrationTestHarnessTest;
+export default IntegrationTestHarnessTest;

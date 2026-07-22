@@ -83,4 +83,4 @@ const styles = StyleSheet.create({
   },
 });
 
-module.exports = AppEventsTest;
+export default AppEventsTest;
