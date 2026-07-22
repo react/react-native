@@ -61,7 +61,10 @@ export type {
   ImageURISource,
 } from './Libraries/Image/ImageSource';
 export {default as Image} from './Libraries/Image/Image';
-export type {ImageBackgroundInstance} from './Libraries/Image/ImageBackground';
+/**
+ * `ImageBackgroundInstance` deprecated please use ViewInstance instead.
+ */
+export type {ViewInstance as ImageBackgroundInstance} from './Libraries/Components/View/View';
 export {default as ImageBackground} from './Libraries/Image/ImageBackground';
 export type {ImageResizeMode} from './Libraries/Image/ImageResizeMode';
 
