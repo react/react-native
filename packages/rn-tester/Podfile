@@ -58,10 +58,6 @@ target 'RNTester' do
   pods('RNTester')
 end
 
-target 'RNTester (AppDelegate)' do
-  pods('RNTester (AppDelegate)')
-end
-
 target 'RNTesterUnitTests' do
   pods('RNTesterUnitTests')
   pod 'React-RCTTest', :path => "./RCTTest"
