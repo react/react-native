@@ -30,6 +30,7 @@ const preTransforms: Array<PreTransformFn> = [
 ];
 const postTransforms = (filePath: string): Array<PluginObj<unknown>> => [
   require('./transforms/typescript/convertTypeAliasesToInterfaces'),
+  require('./transforms/typescript/ensureUndefinedOnOptionalMembers'),
   require('./transforms/typescript/replaceProtectedConstructors'),
   require('./transforms/typescript/replaceDefaultExportName')(filePath),
 ];
