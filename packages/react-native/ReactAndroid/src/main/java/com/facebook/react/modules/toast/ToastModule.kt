@@ -20,14 +20,13 @@ import com.facebook.react.module.annotations.ReactModule
 internal class ToastModule(reactContext: ReactApplicationContext) :
     NativeToastAndroidSpec(reactContext) {
 
-  override fun getTypedExportedConstants(): Map<String, Any> =
-      mutableMapOf(
-          DURATION_SHORT_KEY to Toast.LENGTH_SHORT,
-          DURATION_LONG_KEY to Toast.LENGTH_LONG,
-          GRAVITY_TOP_KEY to (Gravity.TOP or Gravity.CENTER_HORIZONTAL),
-          GRAVITY_BOTTOM_KEY to (Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL),
-          GRAVITY_CENTER to (Gravity.CENTER_HORIZONTAL or Gravity.CENTER_VERTICAL),
-      )
+  override fun getTypedExportedConstants(): Map<String, Any> = mutableMapOf(
+      DURATION_SHORT_KEY to Toast.LENGTH_SHORT,
+      DURATION_LONG_KEY to Toast.LENGTH_LONG,
+      GRAVITY_TOP_KEY to (Gravity.TOP or Gravity.CENTER_HORIZONTAL),
+      GRAVITY_BOTTOM_KEY to (Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL),
+      GRAVITY_CENTER to (Gravity.CENTER_HORIZONTAL or Gravity.CENTER_VERTICAL),
+  )
 
   override fun show(message: String?, durationDouble: Double) {
     val duration = durationDouble.toInt()

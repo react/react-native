@@ -16,7 +16,7 @@ import type {ConfigT} from 'metro-config';
 
 const {getDefaultConfig} = require('@react-native/metro-config');
 const {mergeConfig} = require('metro-config');
-const path = require('path');
+const path = require('node:path');
 
 /**
  * This cli config is needed for development purposes, e.g. for running

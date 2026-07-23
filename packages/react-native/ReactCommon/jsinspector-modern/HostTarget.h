@@ -17,6 +17,7 @@
 #include "WeakList.h"
 
 #include <functional>
+#include <mutex>
 #include <optional>
 #include <set>
 #include <string>

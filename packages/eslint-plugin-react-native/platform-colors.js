@@ -58,14 +58,12 @@ module.exports = {
           }
           const properties = args[0].properties;
           properties.forEach(property => {
-            if (
-              !(
-                property.type === 'Property' &&
-                (property.value.type === 'Literal' ||
-                  (property.value.type === 'CallExpression' &&
-                    property.value.callee.name === 'PlatformColor'))
-              )
-            ) {
+            if (!(
+              property.type === 'Property' &&
+              (property.value.type === 'Literal' ||
+                (property.value.type === 'CallExpression' &&
+                  property.value.callee.name === 'PlatformColor'))
+            )) {
               context.report({
                 node,
                 messageId: 'dynamicColorIOSValue',

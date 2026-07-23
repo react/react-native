@@ -10,7 +10,7 @@
 
 import type {TerminalReporter} from 'metro';
 
-import {styleText} from 'util';
+import {styleText} from 'node:util';
 
 type PageDescription = Readonly<{
   id: string,

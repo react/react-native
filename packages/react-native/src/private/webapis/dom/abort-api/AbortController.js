@@ -42,6 +42,7 @@ export class AbortController {
    * Initialize this controller.
    */
   // $FlowExpectedError[unsupported-syntax]
+  // $FlowFixMe[illegal-key]
   [SIGNAL_KEY]: AbortSignal;
 
   constructor() {

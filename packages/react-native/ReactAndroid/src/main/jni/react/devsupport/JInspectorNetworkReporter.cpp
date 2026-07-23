@@ -178,6 +178,60 @@ JInspectorNetworkReporter::maybeStoreResponseBodyIncrementalImpl(
 #endif
 }
 
+/* static */ void JInspectorNetworkReporter::reportWebSocketCreated(
+    jni::alias_ref<jclass> /*unused*/,
+    jni::alias_ref<jstring> requestId,
+    jni::alias_ref<jstring> url) {
+  NetworkReporter::getInstance().reportWebSocketCreated(
+      requestId->toStdString(), url->toStdString());
+}
+
+/* static */ void
+JInspectorNetworkReporter::reportWebSocketWillSendHandshakeRequest(
+    jni::alias_ref<jclass> /*unused*/,
+    jni::alias_ref<jstring> requestId,
+    jni::alias_ref<jni::JMap<jstring, jstring>> headers) {
+  NetworkReporter::getInstance().reportWebSocketWillSendHandshakeRequest(
+      requestId->toStdString(), convertJavaMapToHeaders(headers));
+}
+
+/* static */ void
+JInspectorNetworkReporter::reportWebSocketHandshakeResponseReceived(
+    jni::alias_ref<jclass> /*unused*/,
+    jni::alias_ref<jstring> requestId,
+    jint statusCode,
+    jni::alias_ref<jni::JMap<jstring, jstring>> headers) {
+  NetworkReporter::getInstance().reportWebSocketHandshakeResponseReceived(
+      requestId->toStdString(),
+      static_cast<uint16_t>(statusCode),
+      convertJavaMapToHeaders(headers));
+}
+
+/* static */ void JInspectorNetworkReporter::reportWebSocketMessageSentImpl(
+    jni::alias_ref<jclass> /*unused*/,
+    jni::alias_ref<jstring> requestId,
+    jni::alias_ref<jstring> payloadData,
+    jboolean isBinary) {
+  NetworkReporter::getInstance().reportWebSocketMessageSent(
+      requestId->toStdString(), payloadData->toStdString(), isBinary != 0u);
+}
+
+/* static */ void JInspectorNetworkReporter::reportWebSocketMessageReceivedImpl(
+    jni::alias_ref<jclass> /*unused*/,
+    jni::alias_ref<jstring> requestId,
+    jni::alias_ref<jstring> payloadData,
+    jboolean isBinary) {
+  NetworkReporter::getInstance().reportWebSocketMessageReceived(
+      requestId->toStdString(), payloadData->toStdString(), isBinary != 0u);
+}
+
+/* static */ void JInspectorNetworkReporter::reportWebSocketClosed(
+    jni::alias_ref<jclass> /*unused*/,
+    jni::alias_ref<jstring> requestId) {
+  NetworkReporter::getInstance().reportWebSocketClosed(
+      requestId->toStdString());
+}
+
 /* static */ void JInspectorNetworkReporter::registerNatives() {
   javaClassLocal()->registerNatives({
       makeNativeMethod(
@@ -204,6 +258,24 @@ JInspectorNetworkReporter::maybeStoreResponseBodyIncrementalImpl(
       makeNativeMethod(
           "maybeStoreResponseBodyIncrementalImpl",
           JInspectorNetworkReporter::maybeStoreResponseBodyIncrementalImpl),
+      makeNativeMethod(
+          "reportWebSocketCreated",
+          JInspectorNetworkReporter::reportWebSocketCreated),
+      makeNativeMethod(
+          "reportWebSocketWillSendHandshakeRequest",
+          JInspectorNetworkReporter::reportWebSocketWillSendHandshakeRequest),
+      makeNativeMethod(
+          "reportWebSocketHandshakeResponseReceived",
+          JInspectorNetworkReporter::reportWebSocketHandshakeResponseReceived),
+      makeNativeMethod(
+          "reportWebSocketMessageSentImpl",
+          JInspectorNetworkReporter::reportWebSocketMessageSentImpl),
+      makeNativeMethod(
+          "reportWebSocketMessageReceivedImpl",
+          JInspectorNetworkReporter::reportWebSocketMessageReceivedImpl),
+      makeNativeMethod(
+          "reportWebSocketClosed",
+          JInspectorNetworkReporter::reportWebSocketClosed),
   });
 }
 

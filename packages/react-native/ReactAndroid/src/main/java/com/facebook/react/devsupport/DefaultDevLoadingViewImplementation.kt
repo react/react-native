@@ -140,12 +140,11 @@ public class DefaultDevLoadingViewImplementation(
       // Allow tapping anywhere on the banner to dismiss
       rootView.setOnClickListener { hideInternal() }
 
-      val popup =
-          PopupWindow(
-              rootView,
-              ViewGroup.LayoutParams.MATCH_PARENT,
-              ViewGroup.LayoutParams.WRAP_CONTENT,
-          )
+      val popup = PopupWindow(
+          rootView,
+          ViewGroup.LayoutParams.MATCH_PARENT,
+          ViewGroup.LayoutParams.WRAP_CONTENT,
+      )
       popup.showAtLocation(currentActivity.window.decorView, Gravity.NO_GRAVITY, 0, topOffset)
       devLoadingView = textView // Store the TextView for updateProgress()
       devLoadingPopup = popup

@@ -1,0 +1,31 @@
+{
+  "name": "react-native-test-library-apple",
+  "version": "0.87.0-main",
+  "description": "Apple platform implementation for the React Native autolinking fixture. Depends on react-native-test-library-common; used to validate iOS/macOS autolinking discovery and transitive native dependency resolution.",
+  "private": true,
+  "main": "index.js",
+  "types": "index.d.ts",
+  "license": "MIT",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "react-native.config.js",
+    "TestLibraryApple.podspec",
+    "TestLibraryApple.h",
+    "TestLibraryApple.mm"
+  ],
+  "keywords": [
+    "react-native",
+    "fixture",
+    "autolinking",
+    "ios",
+    "macos"
+  ],
+  "dependencies": {
+    "react-native-test-library-common": "0.87.0-main"
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-native": "1000.0.0"
+  }
+}

@@ -125,6 +125,15 @@ declare global {
   function cancelAnimationFrame(handle: number | null | undefined): void;
   function requestAnimationFrame(callback: (time: number) => void): number;
 
+  function requestIdleCallback(
+    callback: (deadline: {
+      didTimeout: boolean;
+      timeRemaining: () => number;
+    }) => void,
+    options?: {timeout?: number | undefined},
+  ): number;
+  function cancelIdleCallback(handle: number | null | undefined): void;
+
   function fetchBundle(
     bundleId: number,
     callback: (error?: Error | null) => void,

@@ -53,11 +53,10 @@ public class ReactPopupMenuManager :
   public companion object {
     public const val REACT_CLASS: String = "AndroidPopupMenu"
     private const val REGISTRATION_NAME = "registrationName"
-    private val DIRECT_EVENT_TYPE_CONSTANT =
-        mapOf(
-            PopupMenuSelectionEvent.EVENT_NAME to
-                mapOf(REGISTRATION_NAME to "onPopupMenuSelectionChange"),
-            PopupMenuDismissEvent.EVENT_NAME to mapOf(REGISTRATION_NAME to "onPopupMenuDismiss"),
-        )
+    private val DIRECT_EVENT_TYPE_CONSTANT = mapOf(
+        PopupMenuSelectionEvent.EVENT_NAME to
+            mapOf(REGISTRATION_NAME to "onPopupMenuSelectionChange"),
+        PopupMenuDismissEvent.EVENT_NAME to mapOf(REGISTRATION_NAME to "onPopupMenuDismiss"),
+    )
   }
 }

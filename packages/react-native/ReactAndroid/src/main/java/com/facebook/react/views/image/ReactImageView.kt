@@ -290,14 +290,13 @@ public class ReactImageView(
       for (idx in 0 until sources.size()) {
         val source = sources.getMap(idx) ?: continue
         val cacheControl = computeCacheControl(source.getString("cache"))
-        var imageSource =
-            ImageSource(
-                context,
-                source.getString("uri"),
-                source.getDouble("width"),
-                source.getDouble("height"),
-                cacheControl,
-            )
+        var imageSource = ImageSource(
+            context,
+            source.getString("uri"),
+            source.getDouble("width"),
+            source.getDouble("height"),
+            cacheControl,
+        )
         if (Uri.EMPTY == imageSource.uri) {
           warnImageSource(source.getString("uri"))
           imageSource = getTransparentBitmapImageSource(context)

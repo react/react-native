@@ -75,27 +75,26 @@ internal class ReactAndroidHWInputDeviceHelper {
      * Contains a mapping between handled KeyEvents and the corresponding navigation event that
      * should be fired when the KeyEvent is received.
      */
-    private val KEY_EVENTS_ACTIONS: Map<Int, String> =
-        mapOf(
-            KeyEvent.KEYCODE_DPAD_CENTER to "select",
-            KeyEvent.KEYCODE_ENTER to "select",
-            KeyEvent.KEYCODE_SPACE to "select",
-            KeyEvent.KEYCODE_MEDIA_PLAY to "play",
-            KeyEvent.KEYCODE_MEDIA_PAUSE to "pause",
-            KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE to "playPause",
-            KeyEvent.KEYCODE_MEDIA_REWIND to "rewind",
-            KeyEvent.KEYCODE_MEDIA_FAST_FORWARD to "fastForward",
-            KeyEvent.KEYCODE_MEDIA_STOP to "stop",
-            KeyEvent.KEYCODE_MEDIA_NEXT to "next",
-            KeyEvent.KEYCODE_MEDIA_PREVIOUS to "previous",
-            KeyEvent.KEYCODE_DPAD_UP to "up",
-            KeyEvent.KEYCODE_DPAD_RIGHT to "right",
-            KeyEvent.KEYCODE_DPAD_DOWN to "down",
-            KeyEvent.KEYCODE_DPAD_LEFT to "left",
-            KeyEvent.KEYCODE_INFO to "info",
-            KeyEvent.KEYCODE_MENU to "menu",
-            KeyEvent.KEYCODE_CHANNEL_UP to "channelUp",
-            KeyEvent.KEYCODE_CHANNEL_DOWN to "channelDown",
-        )
+    private val KEY_EVENTS_ACTIONS: Map<Int, String> = mapOf(
+        KeyEvent.KEYCODE_DPAD_CENTER to "select",
+        KeyEvent.KEYCODE_ENTER to "select",
+        KeyEvent.KEYCODE_SPACE to "select",
+        KeyEvent.KEYCODE_MEDIA_PLAY to "play",
+        KeyEvent.KEYCODE_MEDIA_PAUSE to "pause",
+        KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE to "playPause",
+        KeyEvent.KEYCODE_MEDIA_REWIND to "rewind",
+        KeyEvent.KEYCODE_MEDIA_FAST_FORWARD to "fastForward",
+        KeyEvent.KEYCODE_MEDIA_STOP to "stop",
+        KeyEvent.KEYCODE_MEDIA_NEXT to "next",
+        KeyEvent.KEYCODE_MEDIA_PREVIOUS to "previous",
+        KeyEvent.KEYCODE_DPAD_UP to "up",
+        KeyEvent.KEYCODE_DPAD_RIGHT to "right",
+        KeyEvent.KEYCODE_DPAD_DOWN to "down",
+        KeyEvent.KEYCODE_DPAD_LEFT to "left",
+        KeyEvent.KEYCODE_INFO to "info",
+        KeyEvent.KEYCODE_MENU to "menu",
+        KeyEvent.KEYCODE_CHANNEL_UP to "channelUp",
+        KeyEvent.KEYCODE_CHANNEL_DOWN to "channelDown",
+    )
   }
 }

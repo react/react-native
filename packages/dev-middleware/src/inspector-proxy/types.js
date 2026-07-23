@@ -107,16 +107,11 @@ export type GetPagesResponse = {
 
 // Union type for all possible messages sent from device to Inspector Proxy.
 export type MessageFromDevice =
-  | GetPagesResponse
-  | WrappedEventFromDevice
-  | DisconnectRequest;
+  GetPagesResponse | WrappedEventFromDevice | DisconnectRequest;
 
 // Union type for all possible messages sent from Inspector Proxy to device.
 export type MessageToDevice =
-  | GetPagesRequest
-  | WrappedEventToDevice
-  | ConnectRequest
-  | DisconnectRequest;
+  GetPagesRequest | WrappedEventToDevice | ConnectRequest | DisconnectRequest;
 
 // Page description object that is sent in response to /json HTTP request from debugger.
 export type PageDescription = Readonly<{

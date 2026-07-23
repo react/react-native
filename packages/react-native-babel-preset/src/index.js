@@ -31,8 +31,8 @@ module.exports.getCacheKey = () => {
   // For anyone working with a `-main` version, contents may vary over time
   // even though the version does not. Hash the relevant contents of this
   // package. Lazy-load dependencies we only need on this slow path.
-  const {createHash} = require('crypto');
-  const {readFileSync} = require('fs');
+  const {createHash} = require('node:crypto');
+  const {readFileSync} = require('node:fs');
   const key = createHash('md5');
   [
     readFileSync(__filename),

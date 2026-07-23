@@ -16,7 +16,7 @@ const {
   watchGeneratedTypes,
 } = require('./buildGeneratedTypes');
 const debug = require('debug');
-const {parseArgs, styleText} = require('util');
+const {parseArgs, styleText} = require('node:util');
 
 const config = {
   options: {

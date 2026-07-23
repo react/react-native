@@ -157,12 +157,7 @@ declare module 'node-fetch' {
   }
 
   declare type ResponseType =
-    | 'basic'
-    | 'cors'
-    | 'default'
-    | 'error'
-    | 'opaque'
-    | 'opaqueredirect';
+    'basic' | 'cors' | 'default' | 'error' | 'opaque' | 'opaqueredirect';
 
   declare interface ResponseInit {
     headers?: HeaderInit;
@@ -172,12 +167,7 @@ declare module 'node-fetch' {
 
   declare type HeaderInit = Headers | Array<string>;
   declare type BodyInit =
-    | string
-    | null
-    | Buffer
-    | Blob
-    | Readable
-    | URLSearchParams;
+    string | null | Buffer | Blob | Readable | URLSearchParams;
 
   declare function fetch(
     url: string | URL | Request,

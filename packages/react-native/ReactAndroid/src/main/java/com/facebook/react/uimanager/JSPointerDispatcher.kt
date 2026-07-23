@@ -334,12 +334,11 @@ public class JSPointerDispatcher(private val rootViewGroup: ViewGroup) {
     // https://suragch.medium.com/how-touch-events-are-delivered-in-android-eee3b607b038
     val isExitFromRoot = isCapture && action == MotionEvent.ACTION_HOVER_EXIT
 
-    val eventState =
-        createEventState(
-            activePointerId,
-            motionEvent,
-            clearHitPathForActivePointer = isExitFromRoot,
-        )
+    val eventState = createEventState(
+        activePointerId,
+        motionEvent,
+        clearHitPathForActivePointer = isExitFromRoot,
+    )
 
     // Calculate the targetTag, with special handling for when we exit the root view. In that case,
     // we use the root viewId of the last event
@@ -497,13 +496,12 @@ public class JSPointerDispatcher(private val rootViewGroup: ViewGroup) {
         }
 
         // target -> root
-        val leaveViewTargets =
-            filterByShouldDispatch(
-                lastHitPath.subList(0, lastHitPath.size - firstDivergentIndexFromBack),
-                EVENT.LEAVE,
-                EVENT.LEAVE_CAPTURE,
-                nonDivergentListeningToLeave,
-            )
+        val leaveViewTargets = filterByShouldDispatch(
+            lastHitPath.subList(0, lastHitPath.size - firstDivergentIndexFromBack),
+            EVENT.LEAVE,
+            EVENT.LEAVE_CAPTURE,
+            nonDivergentListeningToLeave,
+        )
         if (leaveViewTargets.isNotEmpty()) {
           // We want to dispatch from target -> root, so no need to reverse
           dispatchEventForViewTargets(
@@ -525,13 +523,12 @@ public class JSPointerDispatcher(private val rootViewGroup: ViewGroup) {
       }
 
       // target -> root
-      val enterViewTargets =
-          filterByShouldDispatch(
-              activeHitPath.subList(0, activeHitPath.size - firstDivergentIndexFromBack),
-              EVENT.ENTER,
-              EVENT.ENTER_CAPTURE,
-              nonDivergentListeningToEnter,
-          )
+      val enterViewTargets = filterByShouldDispatch(
+          activeHitPath.subList(0, activeHitPath.size - firstDivergentIndexFromBack),
+          EVENT.ENTER,
+          EVENT.ENTER_CAPTURE,
+          nonDivergentListeningToEnter,
+      )
 
       if (enterViewTargets.isNotEmpty()) {
         // We want to iterate these from root -> target so we need to reverse

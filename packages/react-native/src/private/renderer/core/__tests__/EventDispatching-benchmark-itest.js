@@ -5,7 +5,6 @@
  * LICENSE file in the root directory of this source tree.
  *
  * @fantom_flags enableNativeEventTargetEventDispatching:*
- * @fantom_flags enableDirectEventsInEventTarget:*
  * @flow strict-local
  * @format
  */

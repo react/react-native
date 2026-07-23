@@ -123,6 +123,66 @@ class NetworkReporter {
   void reportRequestFailed(const std::string &requestId, bool cancelled) const;
 
   /**
+   * Report that a WebSocket connection is about to be created.
+   *
+   * Corresponds to `Network.webSocketCreated` in CDP. WebSocket events are
+   * reported to CDP only and have no Web Performance counterpart — in a
+   * production (non dev or profiling) build, this method is a no-op.
+   */
+  void reportWebSocketCreated(const std::string &requestId, const std::string &url) const;
+
+  /**
+   * Report that a WebSocket handshake (HTTP upgrade) request is about to be
+   * sent, along with its final request headers.
+   *
+   * Corresponds to `Network.webSocketWillSendHandshakeRequest` in CDP. In a
+   * production (non dev or profiling) build, this method is a no-op.
+   */
+  void reportWebSocketWillSendHandshakeRequest(const std::string &requestId, const Headers &headers) const;
+
+  /**
+   * Report that a WebSocket handshake response was received and the
+   * connection is established.
+   *
+   * Corresponds to `Network.webSocketHandshakeResponseReceived` in CDP. In a
+   * production (non dev or profiling) build, this method is a no-op.
+   */
+  void reportWebSocketHandshakeResponseReceived(
+      const std::string &requestId,
+      uint16_t statusCode,
+      const Headers &headers) const;
+
+  /**
+   * Report a WebSocket message sent over an open connection. `payloadData`
+   * must be a UTF-8 string for text messages, or a base64-encoded string for
+   * binary messages (`isBinary`).
+   *
+   * Corresponds to `Network.webSocketFrameSent` in CDP. In a production
+   * (non dev or profiling) build, this method is a no-op.
+   */
+  void reportWebSocketMessageSent(const std::string &requestId, const std::string &payloadData, bool isBinary) const;
+
+  /**
+   * Report a WebSocket message received over an open connection.
+   * `payloadData` must be a UTF-8 string for text messages, or a
+   * base64-encoded string for binary messages (`isBinary`).
+   *
+   * Corresponds to `Network.webSocketFrameReceived` in CDP. In a production
+   * (non dev or profiling) build, this method is a no-op.
+   */
+  void reportWebSocketMessageReceived(const std::string &requestId, const std::string &payloadData, bool isBinary)
+      const;
+
+  /**
+   * Report that a WebSocket connection was closed, whether cleanly or due to
+   * an error.
+   *
+   * Corresponds to `Network.webSocketClosed` in CDP. In a production (non dev
+   * or profiling) build, this method is a no-op.
+   */
+  void reportWebSocketClosed(const std::string &requestId) const;
+
+  /**
    * Store the fetched response body for a text or image network response.
    * These may be retrieved by CDP clients to to render a response preview via
    * `Network.getReponseBody`.

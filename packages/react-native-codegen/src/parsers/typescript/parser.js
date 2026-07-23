@@ -59,8 +59,8 @@ const {typeScriptTranslateTypeAnnotation} = require('./modules');
 const {parseTopLevelType} = require('./parseTopLevelType');
 // $FlowFixMe[untyped-import] Use flow-types for @babel/parser
 const babelParser = require('@babel/parser');
-const fs = require('fs');
 const invariant = require('invariant');
+const fs = require('node:fs');
 
 class TypeScriptParser implements Parser {
   typeParameterInstantiation: string = 'TSTypeParameterInstantiation';

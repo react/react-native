@@ -17,9 +17,9 @@ import {build as buildFantomTester} from '../executables/tester';
 import {NATIVE_BUILD_OUTPUT_PATH} from '../paths';
 import {HermesVariant} from '../utils';
 // $FlowExpectedError[untyped-import]
-import fs from 'fs';
-import os from 'os';
-import path from 'path';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 
 async function tryOrLog(
   fn: () => void | Promise<void>,

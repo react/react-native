@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<c511b77030561c7a6655eb512082462c>>
+ * @generated SignedSource<<f06add35653810c872a7ac0bee2b198a>>
  */
 
 /**
@@ -84,7 +84,7 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool enableBridgelessArchitecture() override {
-    return false;
+    return true;
   }
 
   bool enableCppPropsIteratorSetter() override {
@@ -183,10 +183,6 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
-  bool enableNetworkEventReporting() override {
-    return true;
-  }
-
   bool enablePreparedTextLayout() override {
     return false;
   }
@@ -259,11 +255,11 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
-  bool fuseboxNetworkInspectionEnabled() override {
+  bool fuseboxScreenshotCaptureEnabled() override {
     return true;
   }
 
-  bool fuseboxScreenshotCaptureEnabled() override {
+  bool fuseboxWebSocketEventsEnabled() override {
     return false;
   }
 

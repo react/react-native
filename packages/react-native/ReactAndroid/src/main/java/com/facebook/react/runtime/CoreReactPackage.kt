@@ -89,18 +89,17 @@ internal class CoreReactPackage(
 
   private fun fallbackForMissingClass(): ReactModuleInfoProvider {
     // In OSS case, the annotation processor does not run. We fall back on creating this byhand
-    val moduleList: Array<Class<out NativeModule>> =
-        arrayOf<Class<out NativeModule>>(
-            AndroidInfoModule::class.java,
-            DeviceInfoModule::class.java,
-            SourceCodeModule::class.java,
-            DevMenuModule::class.java,
-            DevSettingsModule::class.java,
-            DeviceEventManagerModule::class.java,
-            LogBoxModule::class.java,
-            ExceptionsManagerModule::class.java,
-            HeadlessJsTaskSupportModule::class.java,
-        )
+    val moduleList: Array<Class<out NativeModule>> = arrayOf<Class<out NativeModule>>(
+        AndroidInfoModule::class.java,
+        DeviceInfoModule::class.java,
+        SourceCodeModule::class.java,
+        DevMenuModule::class.java,
+        DevSettingsModule::class.java,
+        DeviceEventManagerModule::class.java,
+        LogBoxModule::class.java,
+        ExceptionsManagerModule::class.java,
+        HeadlessJsTaskSupportModule::class.java,
+    )
     val reactModuleInfoMap: MutableMap<String, ReactModuleInfo> = HashMap()
     for (moduleClass in moduleList) {
       val reactModule = moduleClass.getAnnotation(ReactModule::class.java)

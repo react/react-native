@@ -327,13 +327,12 @@ internal class RadialGradient(
       height: Float,
       sizeKeyword: GradientSize.KeywordType,
   ): Pair<Float, Float> {
-    val corners =
-        arrayOf(
-            Pair(0f, 0f), // top-left
-            Pair(width, 0f), // top-right
-            Pair(width, height), // bottom-right
-            Pair(0f, height), // bottom-left
-        )
+    val corners = arrayOf(
+        Pair(0f, 0f), // top-left
+        Pair(width, 0f), // top-right
+        Pair(width, height), // bottom-right
+        Pair(0f, height), // bottom-left
+    )
 
     var cornerIndex = 0
     var distance =

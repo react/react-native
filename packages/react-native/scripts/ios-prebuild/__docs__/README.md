@@ -111,123 +111,48 @@ The build process uses specific `xcodebuild` flags:
 - Build times vary depending on the target platform and configuration
 - XCFrameworks support multiple architectures in a single bundle
 
-## Known Issues
+## Header Resolution (headers-spec layout)
 
-The generated XCFrameworks currently use CocoaPods-style header structures
-rather than standard framework header conventions. This may cause modularity
-issues when:
+The prebuilt XCFrameworks ship a **headers-spec layout** so that header imports
+resolve through plain header/framework search paths — there is **no clang VFS
+overlay**. The layout contract is defined and validated in code:
 
-- Consuming the XCFrameworks in projects that expect standard framework headers
-- Building dependent frameworks that rely on proper module boundaries
-- Integrating with Swift Package Manager projects expecting modular headers
+- `headers-spec.js`: the executable layout contract (rules R1–R8) — which
+  namespaces are hoisted, which carry module maps, and how collisions are
+  rejected.
+- `headers-inventory.js`: scans the source tree to build the live header
+  inventory that feeds the spec.
+- `headers-compose.js`: emits the layout. `emitReactFrameworkHeaders()` writes
+  the `React/` and bare-aliased headers into every slice's
+  `React.framework/Headers`, and `buildReactNativeHeadersXcframework()`
+  assembles the headers-only `ReactNativeHeaders.xcframework` carrying every
+  other namespace (incl. `react/`) plus the third-party dependency namespaces
+  (`folly`, `glog`, `boost`, `fmt`, `double-conversion`, `fast_float`). The
+  Hermes public headers (`<hermes/...>`) are folded in only on the SwiftPM
+  consumer side (`ensureHeadersLayout`); the published prebuild artifact does
+  not yet carry them (TODO in `xcframework.js`).
 
-## VFS Overlay System
+### Artifacts
 
-The prebuilt XCFrameworks use Clang's Virtual File System (VFS) overlay
-mechanism to enable header imports without modifying the actual header file
-structure. This is necessary because React Native's headers are organized
-differently than standard framework conventions.
+The prebuild (`xcframework.js`) always produces:
 
-### Overview
+- `React.xcframework` — the compiled React core. Each slice's `React.framework`
+  carries the headers-spec layout (every `<React/...>` header + the framework
+  module map), which is what both CocoaPods and SwiftPM consume.
+- `ReactNativeHeaders.xcframework` — headers-only; carries every other
+  namespace. Consumed by SwiftPM as a `binaryTarget` and by CocoaPods via the
+  `React-Core-prebuilt` pod (headers flattened onto the header search path).
 
-The VFS overlay creates a virtual mapping between the import paths used in code
-(e.g., `#import <react/renderer/graphics/Size.h>`) and the actual physical
-locations of headers within the XCFramework. This allows the prebuilt frameworks
-to work seamlessly while maintaining the original import syntax.
+### CocoaPods consumption
 
-### Build-Time VFS Generation (`vfs.js`)
-
-The `vfs.js` script creates a VFS overlay template during the prebuild process:
-
-1. **Header Collection** (`headers.js`): Scans all podspec files in the React
-   Native package to discover header files and their target import paths.
-
-2. **VFS Structure Building**: The `buildVFSStructure()` function creates a
-   hierarchical directory tree representation from the header mappings. Clang's
-   VFS overlay requires directories to contain their children in a tree
-   structure.
-
-3. **YAML Generation**: The `generateVFSOverlayYAML()` function converts the VFS
-   structure into Clang's expected YAML format.
-
-4. **Template Creation**: The generated overlay uses `${ROOT_PATH}` as a
-   placeholder for the actual installation path. This template is included in
-   the XCFramework as `React-VFS-template.yaml`.
-
-#### Key Functions
-
-- `createVFSOverlay(rootFolder)`: Main entry point that generates the complete
-  VFS overlay YAML string
-- `createVFSOverlayContents(rootFolder)`: Creates the VFS overlay object
-  structure
-- `buildVFSStructure(mappings)`: Builds the hierarchical directory tree from
-  flat mappings
-- `resolveVFSOverlay(vfsTemplate, rootPath)`: Replaces `${ROOT_PATH}` with the
-  actual path
-
-### Runtime VFS Processing (CocoaPods)
-
-When consuming prebuilt frameworks via CocoaPods, the VFS overlay is processed
-at pod install time by `rncore.rb`:
-
-#### `process_vfs_overlay()`
-
-Called during `react_native_post_install`, this method:
-
-1. Reads the `React-VFS-template.yaml` from the XCFramework
-2. Resolves the `${ROOT_PATH}` placeholder with the actual XCFramework path
-3. Writes the resolved overlay to
-   `$(PODS_ROOT)/React-Core-prebuilt/React-VFS.yaml`
-
-#### `add_rncore_dependency(s)`
-
-Adds VFS overlay compiler flags to podspecs that depend on React Native:
-
-```ruby
-# For C/C++ compilation
-OTHER_CFLAGS += "-ivfsoverlay $(PODS_ROOT)/React-Core-prebuilt/React-VFS.yaml"
-OTHER_CPLUSPLUSFLAGS += "-ivfsoverlay $(PODS_ROOT)/React-Core-prebuilt/React-VFS.yaml"
-
-# For Swift compilation (flags passed to underlying Clang)
-OTHER_SWIFT_FLAGS += "-Xcc -ivfsoverlay -Xcc $(PODS_ROOT)/React-Core-prebuilt/React-VFS.yaml"
-```
-
-#### `configure_aggregate_xcconfig(installer)`
-
-Configures VFS overlay flags for:
-
-- **Aggregate targets**: Main app targets that don't go through podspec
-  processing
-- **All pod targets**: Third-party pods that don't explicitly call
-  `add_rncore_dependency`
-
-This ensures all compilation units in the project can resolve React Native
-headers through the VFS overlay.
-
-### VFS Overlay Format
-
-The VFS overlay uses Clang's hierarchical YAML format:
-
-```yaml
-version: 0
-case-sensitive: false
-roots:
-  - name: '${ROOT_PATH}/Headers'
-    type: 'directory'
-    contents:
-      - name: 'react'
-        type: 'directory'
-        contents:
-          - name: 'renderer'
-            type: 'directory'
-            contents:
-              - name: 'Size.h'
-                type: 'file'
-                external-contents: '${ROOT_PATH}/Headers/React/react/renderer/Size.h'
-```
-
-The structure maps virtual paths (what the compiler sees) to physical paths
-(where the files actually exist in the XCFramework).
+The `React-Core-prebuilt` pod vends `React.xcframework` (so `<React/...>` and
+`@import React;` resolve through the framework module via
+`FRAMEWORK_SEARCH_PATHS`) and flattens `ReactNativeHeaders.xcframework`'s
+headers into a top-level `Headers/` exposed on the pod header search path (so
+`<react/...>`, `<yoga/...>`, `<folly/...>` resolve). `rncore.rb` adds the
+`HEADER_SEARCH_PATHS` entry to `React-Core-prebuilt/Headers` for podspec,
+aggregate (main app), and third-party pod targets. No `-ivfsoverlay` flags are
+added.
 
 ## Integrating in your project with Cocoapods
 

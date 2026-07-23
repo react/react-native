@@ -6029,6 +6029,7 @@ public class com/facebook/react/views/text/ReactTextView : androidx/appcompat/wi
 	public final fun onFocusChanged (ZILandroid/graphics/Rect;)V
 	protected fun onLayout (ZIIII)V
 	protected fun onMeasure (II)V
+	protected fun onSizeChanged (IIII)V
 	public fun reactTagForTouch (FF)I
 	public fun setAdjustFontSizeToFit (Z)V
 	public fun setBackgroundColor (I)V

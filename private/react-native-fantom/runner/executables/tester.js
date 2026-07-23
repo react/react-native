@@ -25,9 +25,9 @@ import {
   runCommand,
   runCommandSync,
 } from '../utils';
-import fs from 'fs';
-import os from 'os';
-import path from 'path';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 
 const FANTOM_TESTER_BUCK_TARGET =
   'fbsource//xplat/js/react-native-github/private/react-native-fantom/tester:tester';

@@ -25,8 +25,8 @@
     "utils.js"
   ],
   "devDependencies": {
-    "babel-plugin-syntax-hermes-parser": "0.36.1",
-    "hermes-eslint": "0.36.1"
+    "babel-plugin-syntax-hermes-parser": "0.37.0",
+    "hermes-eslint": "0.37.0"
   },
   "engines": {
     "node": "^22.13.0 || ^24.3.0 || >= 26.0.0"

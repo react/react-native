@@ -13,45 +13,15 @@
 const {
   generateFBReactNativeSpecIOS,
 } = require('../codegen/generate-artifacts-executor/generateFBReactNativeSpecIOS');
-const headers = require('./headers');
 const utils = require('./utils');
-const vfs = require('./vfs');
-const childProcess = require('child_process');
-const fs = require('fs');
-const path = require('path');
+const childProcess = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
 
-const {execSync} = childProcess;
-const {getHeaderFilesFromPodspecs} = headers;
-const {createFolderIfNotExists, createLogger} = utils;
-const {createVFSOverlay} = vfs;
+const {execSync, execFileSync} = childProcess;
+const {createLogger} = utils;
 
 const frameworkLog = createLogger('XCFramework');
-
-/**
- * Path to the React umbrella header file.
- * This umbrella header contains ONLY the list of headers that are accessible by Swift, so no C++ construct are allowed in the headers.
- */
-const REACT_CORE_UMBRELLA_HEADER_PATH /*: string*/ = path.join(
-  __dirname,
-  'templates',
-  'React-umbrella.h',
-);
-
-/**
- * Path to the React umbrella header file.
- * This umbrella header contains ONLY the list of headers that are accessible by Swift, so no C++ construct are allowed in the headers.
- */
-const RCT_APP_DELEGATE_UMBRELLA_HEADER_PATH /*: string*/ = path.join(
-  __dirname,
-  'templates',
-  'React_RCTAppDelegate-umbrella.h',
-);
-
-const RN_MODULEMAP_PATH /*: string*/ = path.join(
-  __dirname,
-  'templates',
-  'module.modulemap',
-);
 
 function buildXCFrameworks(
   rootFolder /*: string */,
@@ -70,7 +40,7 @@ function buildXCFrameworks(
     buildType,
     'React.xcframework',
   );
-  // Delete all target platform folders (everything but the Headers and Modules folders)
+  // Delete any previous output
   try {
     fs.rmSync(outputPath, {recursive: true, force: true});
   } catch (error) {
@@ -104,98 +74,60 @@ function buildXCFrameworks(
     return;
   }
 
-  // Use the header files from podspecs
-  const podSpecsWithHeaderFiles = getHeaderFilesFromPodspecs(rootFolder);
-
-  // Delete header files to the output path
-  const outputHeadersPath = path.join(outputPath, 'Headers');
-
-  // Store umbrella headers keyed on podspec names
-  const umbrellaHeaders /*: {[key: string]: string} */ = {};
-  const copiedHeaderFilesWithPodspecNames /*: {[key: string]: string[]} */ = {};
-
-  // Enumerate podspecs and copy headers, create umbrella headers and module map file
-  Object.keys(podSpecsWithHeaderFiles).forEach(podspec => {
-    const headerFiles = podSpecsWithHeaderFiles[podspec]
-      .map(h => h.headers)
-      .flat();
-
-    // Use the first podspec spec name as the podspec name (this is the root spec in the podspec file)
-    const podSpecName = podSpecsWithHeaderFiles[podspec][0].specName.replace(
-      '-',
-      '_',
-    );
-
-    if (headerFiles.length > 0) {
-      // Create a folder for the podspec in the output headers path
-      const podSpecTargetFolder = path.join(outputHeadersPath, podSpecName);
-
-      // Copy each header file to the podspec folder
-      copiedHeaderFilesWithPodspecNames[podSpecName] = headerFiles.map(
-        headerFile => {
-          const headerFileTargetPath = path.join(
-            podSpecTargetFolder,
-            headerFile.target,
-          );
-          createFolderIfNotExists(path.dirname(headerFileTargetPath));
-          fs.copyFileSync(headerFile.source, headerFileTargetPath);
-          return headerFileTargetPath;
-        },
-      );
-
-      // Create umbrella header file for the podspec
-      const umbrellaHeaderFilename = path.join(
-        podSpecTargetFolder,
-        podSpecName + '-umbrella.h',
-      );
-
-      if (
-        podSpecName === 'React_Core' ||
-        podSpecName === 'React_RCTAppDelegate'
-      ) {
-        if (podSpecName === 'React_Core') {
-          // Copy the React-umbrella.h file to the umbrella header filename
-          fs.copyFileSync(
-            REACT_CORE_UMBRELLA_HEADER_PATH,
-            umbrellaHeaderFilename,
-          );
-        } else {
-          fs.copyFileSync(
-            RCT_APP_DELEGATE_UMBRELLA_HEADER_PATH,
-            umbrellaHeaderFilename,
-          );
-        }
-
-        // Store the umbrella header filename in the umbrellaHeaders object
-        umbrellaHeaders[podSpecName] = umbrellaHeaderFilename;
-      }
-    }
-  });
-
-  // Create the module map file using the header files in podSpecsWithHeaderFiles
-  const moduleMapFile = createModuleMapFile(outputPath);
-  if (!moduleMapFile) {
-    frameworkLog(
-      'Failed to create module map file. The XCFramework may not work correctly. Stopping.',
-      'error',
-    );
-    return;
-  }
-
-  // Copy header files and module map file to each platform slice in the XCFramework
-  copyHeaderFilesToSlices(
-    rootFolder,
-    outputPath,
-    moduleMapFile,
-    umbrellaHeaders,
-    copiedHeaderFilesWithPodspecNames,
-  );
-
   // Copy Symbols to symbols folder
   copySymbols(outputPath, frameworkFolders);
 
+  // Emit the headers-spec layout into every slice's React.framework and build
+  // the ReactNativeHeaders headers-only xcframework beside it. This is the only
+  // header surface consumers compile against — no root Headers/, no clang VFS
+  // overlay. MUST run before signing (spec R7: the signature pins the manifest).
+  const {
+    buildReactNativeHeadersXcframework,
+    computeSpecPlan,
+    emitReactFrameworkHeaders,
+  } = require('./headers-compose');
+  const plan = computeSpecPlan(rootFolder);
+  // Built header tree from the slice jobs (downloaded to `.build/headers`).
+  // When present, the compose sources header CONTENT from here (see
+  // stageEntries) so build-time generated/stamped headers — notably the
+  // version-stamped ReactNativeVersion.h — ship without re-stamping this
+  // checkout. Absent (e.g. a local compose with no prior build) → source tree.
+  const builtHeadersDir = path.join(buildFolder, 'headers');
+  const overlayDir = fs.existsSync(builtHeadersDir) ? builtHeadersDir : null;
+  emitReactFrameworkHeaders(outputPath, plan, rootFolder, overlayDir);
+  // ReactNativeHeaders is PURE-RN — the third-party deps namespaces ship in
+  // the ReactNativeDependenciesHeaders sidecar built by the deps prebuild
+  // (scripts/releases/ios-prebuild), so the core compose no longer needs the
+  // deps artifact's headers.
+  // Fold the Hermes public headers (`<hermes/...>`) into the PUBLISHED
+  // ReactNativeHeaders so consumers resolve `<hermes/hermes.h>` out of the box
+  // (same fold ensureHeadersLayout does consumer-side). The hermes-ios tarball
+  // is staged at .build/artifacts/hermes/destroot/include by the hermes prebuild
+  // step; pass it when its `hermes/` namespace is present, else null (then
+  // `<hermes/...>` stays consumer-composed, as before).
+  const hermesInclude = path.resolve(
+    process.cwd(),
+    '.build',
+    'artifacts',
+    'hermes',
+    'destroot',
+    'include',
+  );
+  const hermesHeaders = fs.existsSync(path.join(hermesInclude, 'hermes'))
+    ? hermesInclude
+    : null;
+  const headersXcfw = buildReactNativeHeadersXcframework(
+    path.dirname(outputPath),
+    plan,
+    rootFolder,
+    true, // include the mac-catalyst slice in the real compose
+    hermesHeaders,
+    overlayDir,
+  );
+
   if (identity) {
     signXCFramework(identity, outputPath);
+    signXCFramework(identity, headersXcfw);
   }
 
   // Tar the output folder to a .tar.gz file
@@ -208,15 +140,53 @@ function buildXCFrameworks(
   );
   frameworkLog('Creating tar file: ' + tarFilePath);
   try {
-    execSync(
-      `tar -czf ${tarFilePath} -C ${path.dirname(outputPath)} React.xcframework`,
-      {
-        stdio: 'inherit',
-      },
+    // Ship ReactNativeHeaders.xcframework alongside React.xcframework in the
+    // reactnative-core artifact so the React-Core-prebuilt pod can vend both
+    // (React.framework -> <React/...>, ReactNativeHeaders -> every other
+    // namespace). The headers-only xcframework is a sibling of React.xcframework.
+    execFileSync(
+      'tar',
+      [
+        '-czf',
+        tarFilePath,
+        '-C',
+        path.dirname(outputPath),
+        'React.xcframework',
+        path.basename(headersXcfw),
+      ],
+      {stdio: 'inherit'},
     );
   } catch (error) {
     frameworkLog(
       `Error creating tar file: ${error.message}. Check if the tar command is available.`,
+      'warning',
+    );
+  }
+
+  // Publish ReactNativeHeaders alongside React.
+  const headersTarPath = path.join(
+    buildFolder,
+    'output',
+    'xcframeworks',
+    buildType,
+    'ReactNativeHeaders.xcframework.tar.gz',
+  );
+  frameworkLog('Creating tar file: ' + headersTarPath);
+  try {
+    execFileSync(
+      'tar',
+      [
+        '-czf',
+        headersTarPath,
+        '-C',
+        path.dirname(headersXcfw),
+        'ReactNativeHeaders.xcframework',
+      ],
+      {stdio: 'inherit'},
+    );
+  } catch (error) {
+    frameworkLog(
+      `Error creating ReactNativeHeaders tar: ${error.message}`,
       'warning',
     );
   }
@@ -275,134 +245,6 @@ function copySymbols(
       execSync(`cp -r ${sourceSymbolPath} ${targetSymbolPath}`);
     }
   });
-}
-
-// Copy header files and module map file to each platform slice in the XCFramework.
-function copyHeaderFilesToSlices(
-  rootFolder /*:string*/,
-  outputPath /*:string*/,
-  moduleMapFile /*:string*/,
-  umbrellaHeaderFiles /*:{[key: string]: string}*/,
-  outputHeaderFiles /*: {[key: string]: string[]} */,
-) {
-  frameworkLog('Linking modules and headers to platform folders for slice...');
-
-  // Enumerate all platform folders in the output path
-  const platformFolders = fs
-    .readdirSync(outputPath)
-    .map(folder => path.join(outputPath, folder))
-    .filter(folder => {
-      return (
-        fs.statSync(folder).isDirectory() &&
-        !folder.endsWith('Headers') &&
-        !folder.endsWith('Modules')
-      );
-    });
-
-  platformFolders.forEach(platformFolder => {
-    // Link the Modules folder into the platform folder
-    const targetModulesFolder = path.join(
-      platformFolder,
-      'React.Framework',
-      'Modules',
-    );
-    createFolderIfNotExists(targetModulesFolder);
-
-    try {
-      fs.linkSync(
-        moduleMapFile,
-        path.join(targetModulesFolder, path.basename(moduleMapFile)),
-      );
-    } catch (error) {
-      frameworkLog(
-        `Error copying module map file: ${error.message}. Check if the file exists at ${moduleMapFile}.`,
-        'error',
-      );
-    }
-    // Copy headers folder into the platform folder
-    const targetHeadersFolder = path.join(
-      platformFolder,
-      'React.Framework',
-      'Headers',
-    );
-
-    // Copy umbrella / header files into the platform folder
-    Object.keys(umbrellaHeaderFiles).forEach(podSpecName => {
-      const umbrellaHeaderFile = umbrellaHeaderFiles[podSpecName];
-
-      // Create the target folder for the umbrella header file
-      const targetPodSpecFolder = path.join(targetHeadersFolder, podSpecName);
-      createFolderIfNotExists(targetPodSpecFolder);
-      // Copy the umbrella header file to the target folder
-      try {
-        fs.copyFileSync(
-          umbrellaHeaderFile,
-          path.join(targetPodSpecFolder, path.basename(umbrellaHeaderFile)),
-        );
-      } catch (error) {
-        frameworkLog(
-          `Error copying umbrella header file: ${umbrellaHeaderFile}\nError: ${error.message}. Check if the file exists.`,
-          'error',
-        );
-      }
-    });
-
-    Object.keys(outputHeaderFiles).forEach(podSpecName => {
-      outputHeaderFiles[podSpecName].forEach(headerFile => {
-        // Get the relative path from the root Headers folder to preserve directory structure
-        // headerFile is like /path/to/Headers/Yoga/yoga/style/Style.h
-        // We need to extract Yoga/yoga/style/Style.h and copy to the same structure in the slice
-        const rootHeadersFolder = path.join(outputPath, 'Headers');
-        const relativeHeaderPath = path.relative(rootHeadersFolder, headerFile);
-        const targetHeaderFile = path.join(
-          targetHeadersFolder,
-          relativeHeaderPath,
-        );
-        createFolderIfNotExists(path.dirname(targetHeaderFile));
-        if (!fs.existsSync(targetHeaderFile)) {
-          try {
-            fs.copyFileSync(headerFile, targetHeaderFile);
-          } catch (error) {
-            frameworkLog(
-              `Error copying header file: ${error.message}. Check if the file exists.`,
-              'error',
-            );
-          }
-        }
-      });
-    });
-  });
-
-  // Create VFS overlay file at the XCFramework root (same for all platforms)
-  const vfsFilePath = path.join(outputPath, 'React-VFS-template.yaml');
-  try {
-    fs.writeFileSync(vfsFilePath, createVFSOverlay(rootFolder), 'utf8');
-    frameworkLog(`Created VFS overlay: ${path.basename(vfsFilePath)}`);
-  } catch (error) {
-    frameworkLog(`Error creating VFS overlay file: ${error.message}.`, 'error');
-  }
-}
-
-function createModuleMapFile(outputPath /*: string */) {
-  // Create/get the module map folder
-  const moduleMapFolder = path.join(outputPath, 'Modules');
-  createFolderIfNotExists(moduleMapFolder);
-
-  // Create the module map file
-  const moduleMapFile = path.join(moduleMapFolder, 'module.modulemap');
-
-  frameworkLog('Creating module map file: ' + moduleMapFile);
-
-  try {
-    fs.copyFileSync(RN_MODULEMAP_PATH, moduleMapFile);
-    return moduleMapFile;
-  } catch (error) {
-    frameworkLog(
-      `Error creating module map file: ${error.message}. Check if the file exists.`,
-      'error',
-    );
-    return null;
-  }
 }
 
 function getArchsFromFramework(frameworkPath /*:string*/) {

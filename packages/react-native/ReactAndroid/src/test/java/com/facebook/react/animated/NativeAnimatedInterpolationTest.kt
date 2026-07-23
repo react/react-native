@@ -130,11 +130,10 @@ class NativeAnimatedInterpolationTest {
   @Test
   fun testInterpolateString() {
     val input = doubleArrayOf(0.0, 1.0)
-    val output =
-        arrayOf(
-            doubleArrayOf(20.0, 20.0, 20.0, 80.0, 80.0, 80.0, 80.0, 20.0),
-            doubleArrayOf(40.0, 40.0, 33.0, 60.0, 60.0, 60.0, 65.0, 40.0),
-        )
+    val output = arrayOf(
+        doubleArrayOf(20.0, 20.0, 20.0, 80.0, 80.0, 80.0, 80.0, 20.0),
+        doubleArrayOf(40.0, 40.0, 33.0, 60.0, 60.0, 60.0, 65.0, 40.0),
+    )
     val pattern = "M20,20L20,80L80,80L80,20Z"
     assertThat(
             InterpolationAnimatedNode.interpolateString(

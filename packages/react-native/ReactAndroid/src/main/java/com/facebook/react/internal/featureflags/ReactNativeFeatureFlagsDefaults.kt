@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<5c36c0a5e9e67b43016ab02eab0ecd8f>>
+ * @generated SignedSource<<37e483d52d12a735e646c8ac06acb62c>>
  */
 
 /**
@@ -51,7 +51,7 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun enableAndroidTextMeasurementOptimizations(): Boolean = false
 
-  override fun enableBridgelessArchitecture(): Boolean = false
+  override fun enableBridgelessArchitecture(): Boolean = true
 
   override fun enableCppPropsIteratorSetter(): Boolean = false
 
@@ -101,8 +101,6 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun enableNativeCSSParsing(): Boolean = false
 
-  override fun enableNetworkEventReporting(): Boolean = true
-
   override fun enablePreparedTextLayout(): Boolean = false
 
   override fun enablePropsUpdateReconciliationAndroid(): Boolean = false
@@ -139,9 +137,9 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun fuseboxFrameRecordingEnabled(): Boolean = false
 
-  override fun fuseboxNetworkInspectionEnabled(): Boolean = true
+  override fun fuseboxScreenshotCaptureEnabled(): Boolean = true
 
-  override fun fuseboxScreenshotCaptureEnabled(): Boolean = false
+  override fun fuseboxWebSocketEventsEnabled(): Boolean = false
 
   override fun optimizedAnimatedPropUpdates(): Boolean = false
 

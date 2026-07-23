@@ -6,6 +6,7 @@
 require "json"
 require 'net/http'
 require 'rexml/document'
+require 'shellwords'
 
 require_relative './utils.rb'
 
@@ -36,7 +37,7 @@ def add_rn_third_party_dependencies(s)
         header_search_paths = current_pod_target_xcconfig["HEADER_SEARCH_PATHS"] || []
 
         if header_search_paths.is_a?(String)
-            header_search_paths = header_search_paths.split(" ")
+            header_search_paths = Shellwords.shellsplit(header_search_paths)
         end
 
         header_search_paths << "$(PODS_ROOT)/glog"
@@ -47,10 +48,24 @@ def add_rn_third_party_dependencies(s)
         header_search_paths << "$(PODS_ROOT)/SocketRocket"
         header_search_paths << "$(PODS_ROOT)/RCT-Folly"
 
-        current_pod_target_xcconfig["HEADER_SEARCH_PATHS"] = header_search_paths
+        # uniq so a second call on the same spec can't duplicate entries.
+        current_pod_target_xcconfig["HEADER_SEARCH_PATHS"] = header_search_paths.uniq
     else
+        # Prebuilt-deps mode: this pod SELF-SERVES the third-party headers from its
+        # own xcframework (incl. SocketRocket - sole supplier in this mode). See
+        # scripts/cocoapods/__docs__/prebuilt-deps.md for the full contract.
         s.dependency "ReactNativeDependencies"
-        current_pod_target_xcconfig["HEADER_SEARCH_PATHS"] ||= [] << "$(PODS_ROOT)/ReactNativeDependencies"
+
+        header_search_paths = current_pod_target_xcconfig["HEADER_SEARCH_PATHS"] || []
+        if header_search_paths.is_a?(String)
+            header_search_paths = Shellwords.shellsplit(header_search_paths)
+        end
+        # Artifact headers are flattened into the pod-local Headers/ by the podspec
+        # prepare_command (see __docs__/prebuilt-deps.md).
+        header_search_paths << "$(PODS_ROOT)/ReactNativeDependencies/Headers"
+
+        # uniq so a second call on the same spec can't duplicate entries.
+        current_pod_target_xcconfig["HEADER_SEARCH_PATHS"] = header_search_paths.uniq
     end
 
     s.pod_target_xcconfig = current_pod_target_xcconfig
@@ -137,6 +152,52 @@ class ReactNativeDependenciesUtils
       if !File.exist?(ENV["RCT_USE_LOCAL_RN_DEP"])
         abort("RCT_USE_LOCAL_RN_DEP is set to #{ENV["RCT_USE_LOCAL_RN_DEP"]} but the file does not exist!")
       end
+    end
+
+    # Single post-install injection site for the prebuilt deps header resolution.
+    # Adds the flattened ReactNativeDependencies/Headers search path to the
+    # aggregate (main app) target AND every pod target, mirroring
+    # ReactNativeCoreUtils.configure_aggregate_xcconfig. ReactNativeHeaders is
+    # pure-RN, so this path is the single global home of the third-party
+    # namespaces (folly/glog/boost/fmt/double-conversion/fast_float/
+    # SocketRocket): pods that never call add_rn_third_party_dependencies (nor
+    # depend on a facade) still compile RN headers that textually reach
+    # <folly/...>. No module-map activation needed — the deps headers are
+    # served textually; modules come from the ReactNativeDependencies pod.
+    def self.configure_aggregate_xcconfig(installer)
+        return if @@build_from_source
+
+        rndeps_log("Configuring xcconfig for prebuilt React Native Dependencies...")
+        headers_search_path = " \"$(PODS_ROOT)/ReactNativeDependencies/Headers\""
+
+        # Add the header search path to aggregate target xcconfigs (used by the main app target)
+        installer.aggregate_targets.each do |aggregate_target|
+            aggregate_target.xcconfigs.each do |config_name, config_file|
+                ReactNativePodsUtils.add_flag_to_map_with_inheritance(config_file.attributes, "HEADER_SEARCH_PATHS", headers_search_path)
+                xcconfig_path = aggregate_target.xcconfig_path(config_name)
+                config_file.save_as(xcconfig_path)
+            end
+        end
+
+        # Add the header search path to ALL pod targets (for pods that don't go
+        # through add_rn_third_party_dependencies)
+        installer.pod_targets.each do |pod_target|
+            pod_target.build_settings.each do |config_name, build_settings|
+                xcconfig_path = pod_target.xcconfig_path(config_name)
+                next unless File.exist?(xcconfig_path)
+
+                xcconfig = Xcodeproj::Config.new(xcconfig_path)
+
+                # Skip if the deps header search path is already present
+                header_search_paths = xcconfig.attributes["HEADER_SEARCH_PATHS"] || ""
+                next if header_search_paths.include?("ReactNativeDependencies/Headers")
+
+                ReactNativePodsUtils.add_flag_to_map_with_inheritance(xcconfig.attributes, "HEADER_SEARCH_PATHS", headers_search_path)
+                xcconfig.save_as(xcconfig_path)
+            end
+        end
+
+        rndeps_log("Prebuilt deps xcconfig configuration complete")
     end
 
     def self.podspec_source_download_prebuild_release_tarball()

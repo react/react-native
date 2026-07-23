@@ -87,27 +87,25 @@ public object DefaultReactHost {
         }
     val defaultTmmDelegateBuilder = DefaultTurboModuleManagerDelegate.Builder()
     cxxReactPackageProviders.forEach { defaultTmmDelegateBuilder.addCxxReactPackage(it) }
-    val defaultReactHostDelegate =
-        DefaultReactHostDelegate(
-            jsMainModulePath = jsMainModulePath,
-            jsBundleLoader = bundleLoader,
-            reactPackages = packageList,
-            jsRuntimeFactory = jsRuntimeFactory ?: HermesInstance(),
-            bindingsInstaller = bindingsInstaller,
-            turboModuleManagerDelegateBuilder = defaultTmmDelegateBuilder,
-            exceptionHandler = exceptionHandler,
-        )
+    val defaultReactHostDelegate = DefaultReactHostDelegate(
+        jsMainModulePath = jsMainModulePath,
+        jsBundleLoader = bundleLoader,
+        reactPackages = packageList,
+        jsRuntimeFactory = jsRuntimeFactory ?: HermesInstance(),
+        bindingsInstaller = bindingsInstaller,
+        turboModuleManagerDelegateBuilder = defaultTmmDelegateBuilder,
+        exceptionHandler = exceptionHandler,
+    )
     val componentFactory = ComponentFactory()
     DefaultComponentsRegistry.register(componentFactory)
     // TODO: T164788699 find alternative of accessing ReactHostImpl for initialising reactHost
-    val newReactHost =
-        ReactHostImpl(
-            context,
-            defaultReactHostDelegate,
-            componentFactory,
-            true /* allowPackagerServerAccess */,
-            useDevSupport,
-        )
+    val newReactHost = ReactHostImpl(
+        context,
+        defaultReactHostDelegate,
+        componentFactory,
+        true /* allowPackagerServerAccess */,
+        useDevSupport,
+    )
     reactHost = newReactHost
     return newReactHost
   }

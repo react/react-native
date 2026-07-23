@@ -137,6 +137,30 @@ function testRequestAnimationFrame(){
     );
 }
 
+function testRequestIdleCallback() {
+    cancelIdleCallback(null);
+    cancelIdleCallback(undefined);
+
+    let handle = requestIdleCallback(deadline => {
+        const didTimeout: boolean = deadline.didTimeout;
+        const remaining: number = deadline.timeRemaining();
+        console.log(didTimeout, remaining);
+    });
+    cancelIdleCallback(handle);
+
+    handle = requestIdleCallback(noop, { timeout: 100 });
+    cancelIdleCallback(handle);
+
+    handle = requestIdleCallback(noop, {});
+    cancelIdleCallback(handle);
+
+    // @ts-expect-error
+    requestIdleCallback(noop, { timeout: 'wrong-type' });
+
+    // @ts-expect-error
+    cancelIdleCallback('wrong-type');
+}
+
 const fetchCopy: WindowOrWorkerGlobalScope['fetch'] = fetch;
 
 const myHeaders = new Headers();

@@ -17,6 +17,7 @@ import AnimatedValue from '../../../Libraries/Animated/nodes/AnimatedValue';
 import {isPublicInstance as isFabricPublicInstance} from '../../../Libraries/ReactNative/ReactFabricPublicInstance/ReactFabricPublicInstanceUtils';
 import {RootTagContext} from '../../../Libraries/ReactNative/RootTag';
 import useRefEffect from '../../../Libraries/Utilities/useRefEffect';
+import warnOnce from '../../../Libraries/Utilities/warnOnce';
 import * as ReactNativeFeatureFlags from '../featureflags/ReactNativeFeatureFlags';
 import {createAnimatedPropsMemoHook} from './createAnimatedPropsMemoHook';
 import NativeAnimatedHelper from './NativeAnimatedHelper';
@@ -51,9 +52,6 @@ export default function createAnimatedPropsHook(
   allowlist: ?AnimatedPropsAllowlist,
 ): AnimatedPropsHook {
   const useAnimatedPropsMemo = createAnimatedPropsMemoHook(allowlist);
-
-  const useNativePropsInFabric =
-    ReactNativeFeatureFlags.shouldUseSetNativePropsInFabric();
 
   return function useAnimatedProps<TProps extends {...}, TInstance>(
     props: TProps,
@@ -145,6 +143,17 @@ export default function createAnimatedPropsHook(
             return;
           }
 
+          // TODO: T274006331 - Remove js-only animation once shared backend is fully rolled out
+          const isNativeDriverForced =
+            NativeAnimatedHelper.isNativeDriverForced();
+          if (isNativeDriverForced) {
+            warnOnce(
+              'animated-force-native-driver-js-update',
+              'Animated: Expected the animation node to use the native driver when the native driver is forced.',
+            );
+            return;
+          }
+
           if (
             typeof instance !== 'object' ||
             typeof instance?.setNativeProps !== 'function'
@@ -160,6 +169,8 @@ export default function createAnimatedPropsHook(
             return instance.setNativeProps(node.__getAnimatedValue());
           }
 
+          const useNativePropsInFabric =
+            ReactNativeFeatureFlags.shouldUseSetNativePropsInFabric();
           if (!useNativePropsInFabric) {
             // Check 5: setNativeProps are disabled.
             return scheduleUpdate();

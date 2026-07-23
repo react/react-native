@@ -9,11 +9,11 @@
  */
 
 const {createLogger} = require('./utils');
-const {execSync} = require('child_process');
-const fs = require('fs');
-const path = require('path');
-const stream = require('stream');
-const {promisify} = require('util');
+const {execSync} = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
+const stream = require('node:stream');
+const {promisify} = require('node:util');
 
 const pipeline = promisify(stream.pipeline);
 const hermesLog = createLogger('Hermes');

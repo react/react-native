@@ -14,39 +14,38 @@ import com.facebook.react.uimanager.events.TouchEventType
 /** Constants exposed to JS from [UIManagerModule]. */
 internal object UIManagerModuleConstants {
   @JvmField
-  val bubblingEventTypeConstants: Map<String, Any> =
-      mapOf(
-          "topChange" to
-              mapOf(
-                  "phasedRegistrationNames" to
-                      mapOf("bubbled" to "onChange", "captured" to "onChangeCapture")
-              ),
-          "topSelect" to
-              mapOf(
-                  "phasedRegistrationNames" to
-                      mapOf("bubbled" to "onSelect", "captured" to "onSelectCapture")
-              ),
-          TouchEventType.getJSEventName(TouchEventType.START) to
-              mapOf(
-                  "phasedRegistrationNames" to
-                      mapOf("bubbled" to "onTouchStart", "captured" to "onTouchStartCapture")
-              ),
-          TouchEventType.getJSEventName(TouchEventType.MOVE) to
-              mapOf(
-                  "phasedRegistrationNames" to
-                      mapOf("bubbled" to "onTouchMove", "captured" to "onTouchMoveCapture")
-              ),
-          TouchEventType.getJSEventName(TouchEventType.END) to
-              mapOf(
-                  "phasedRegistrationNames" to
-                      mapOf("bubbled" to "onTouchEnd", "captured" to "onTouchEndCapture")
-              ),
-          TouchEventType.getJSEventName(TouchEventType.CANCEL) to
-              mapOf(
-                  "phasedRegistrationNames" to
-                      mapOf("bubbled" to "onTouchCancel", "captured" to "onTouchCancelCapture")
-              ),
-      )
+  val bubblingEventTypeConstants: Map<String, Any> = mapOf(
+      "topChange" to
+          mapOf(
+              "phasedRegistrationNames" to
+                  mapOf("bubbled" to "onChange", "captured" to "onChangeCapture")
+          ),
+      "topSelect" to
+          mapOf(
+              "phasedRegistrationNames" to
+                  mapOf("bubbled" to "onSelect", "captured" to "onSelectCapture")
+          ),
+      TouchEventType.getJSEventName(TouchEventType.START) to
+          mapOf(
+              "phasedRegistrationNames" to
+                  mapOf("bubbled" to "onTouchStart", "captured" to "onTouchStartCapture")
+          ),
+      TouchEventType.getJSEventName(TouchEventType.MOVE) to
+          mapOf(
+              "phasedRegistrationNames" to
+                  mapOf("bubbled" to "onTouchMove", "captured" to "onTouchMoveCapture")
+          ),
+      TouchEventType.getJSEventName(TouchEventType.END) to
+          mapOf(
+              "phasedRegistrationNames" to
+                  mapOf("bubbled" to "onTouchEnd", "captured" to "onTouchEndCapture")
+          ),
+      TouchEventType.getJSEventName(TouchEventType.CANCEL) to
+          mapOf(
+              "phasedRegistrationNames" to
+                  mapOf("bubbled" to "onTouchCancel", "captured" to "onTouchCancelCapture")
+          ),
+  )
 
   @JvmField
   val directEventTypeConstants: Map<String, Any> = run {
@@ -71,32 +70,31 @@ internal object UIManagerModuleConstants {
   }
 
   @JvmField
-  val constants: Map<String, Any> =
-      mapOf(
-          "UIView" to
-              mapOf(
-                  "ContentMode" to
-                      mapOf(
-                          "ScaleAspectFit" to ImageView.ScaleType.FIT_CENTER.ordinal,
-                          "ScaleAspectFill" to ImageView.ScaleType.CENTER_CROP.ordinal,
-                          "ScaleAspectCenter" to ImageView.ScaleType.CENTER_INSIDE.ordinal,
-                      )
-              ),
-          "StyleConstants" to
-              mapOf(
-                  "PointerEventsValues" to
-                      mapOf(
-                          "none" to PointerEvents.NONE.ordinal,
-                          "boxNone" to PointerEvents.BOX_NONE.ordinal,
-                          "boxOnly" to PointerEvents.BOX_ONLY.ordinal,
-                          "unspecified" to PointerEvents.AUTO.ordinal,
-                      )
-              ),
-          "AccessibilityEventTypes" to
-              mapOf(
-                  "typeWindowStateChanged" to AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED,
-                  "typeViewFocused" to AccessibilityEvent.TYPE_VIEW_FOCUSED,
-                  "typeViewClicked" to AccessibilityEvent.TYPE_VIEW_CLICKED,
-              ),
-      )
+  val constants: Map<String, Any> = mapOf(
+      "UIView" to
+          mapOf(
+              "ContentMode" to
+                  mapOf(
+                      "ScaleAspectFit" to ImageView.ScaleType.FIT_CENTER.ordinal,
+                      "ScaleAspectFill" to ImageView.ScaleType.CENTER_CROP.ordinal,
+                      "ScaleAspectCenter" to ImageView.ScaleType.CENTER_INSIDE.ordinal,
+                  )
+          ),
+      "StyleConstants" to
+          mapOf(
+              "PointerEventsValues" to
+                  mapOf(
+                      "none" to PointerEvents.NONE.ordinal,
+                      "boxNone" to PointerEvents.BOX_NONE.ordinal,
+                      "boxOnly" to PointerEvents.BOX_ONLY.ordinal,
+                      "unspecified" to PointerEvents.AUTO.ordinal,
+                  )
+          ),
+      "AccessibilityEventTypes" to
+          mapOf(
+              "typeWindowStateChanged" to AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED,
+              "typeViewFocused" to AccessibilityEvent.TYPE_VIEW_FOCUSED,
+              "typeViewClicked" to AccessibilityEvent.TYPE_VIEW_CLICKED,
+          ),
+  )
 }

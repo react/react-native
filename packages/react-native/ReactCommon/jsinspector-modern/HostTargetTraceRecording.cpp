@@ -64,13 +64,16 @@ tracing::HostTracingProfile HostTargetTraceRecording::stop() {
   auto startTime = *startTime_;
   startTime_.reset();
 
-  return tracing::HostTracingProfile{
-      .processId = oscompat::getCurrentProcessId(),
-      .startTime = startTime,
-      .frameTimings = frameTimings_.pruneExpiredAndExtract(),
-      .instanceTracingProfiles = std::move(state.instanceTracingProfiles),
-      .runtimeSamplingProfiles = std::move(state.runtimeSamplingProfiles),
-  };
+  // Member-wise assignment instead of designated initializers:
+  // HostTracingProfile declares its special members (move-only) and is no
+  // longer an aggregate.
+  tracing::HostTracingProfile profile;
+  profile.processId = oscompat::getCurrentProcessId();
+  profile.startTime = startTime;
+  profile.frameTimings = frameTimings_.pruneExpiredAndExtract();
+  profile.instanceTracingProfiles = std::move(state.instanceTracingProfiles);
+  profile.runtimeSamplingProfiles = std::move(state.runtimeSamplingProfiles);
+  return profile;
 }
 
 void HostTargetTraceRecording::recordFrameTimings(

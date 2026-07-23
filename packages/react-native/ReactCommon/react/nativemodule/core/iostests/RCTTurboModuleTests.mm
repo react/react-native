@@ -123,12 +123,11 @@ class StubNativeMethodCallInvoker : public NativeMethodCallInvoker {
   OCMVerify(OCMTimes(1), [instance_ testMethodWhichTakesObject:nil]);
 }
 
-// A JS ArrayBuffer converts to an NSMutableData that owns an independent copy of
-// the bytes — NSMutableData cannot alias a foreign buffer, so the result stays
-// valid and is safe to mutate after the source buffer is gone. This covers the
-// ArrayBuffer-backed-by-native-MutableBuffer case, which is the one that could in
-// principle have been aliased zero-copy.
-- (void)testArrayBufferConvertsToIndependentNSMutableData
+// A JS ArrayBuffer converts (on the argument path) to an immutable NSData that
+// owns an independent copy of the bytes, so the result stays valid after the
+// source buffer is gone. This covers the ArrayBuffer-backed-by-native-MutableBuffer
+// case, which is the one that could in principle have been aliased zero-copy.
+- (void)testArrayBufferConvertsToIndependentNSData
 {
   constexpr size_t kBufferSize = 64 * 1024;
 
@@ -142,15 +141,15 @@ class StubNativeMethodCallInvoker : public NativeMethodCallInvoker {
   id converted =
       TurboModuleConvertUtils::convertJSIValueToObjCObject(*rt, facebook::jsi::Value(*rt, arrayBuffer), nullptr);
 
-  XCTAssertTrue([converted isKindOfClass:[NSMutableData class]]);
-  NSMutableData *data = (NSMutableData *)converted;
+  XCTAssertTrue([converted isKindOfClass:[NSData class]]);
+  NSData *data = (NSData *)converted;
   XCTAssertEqual(data.length, (NSUInteger)kBufferSize);
   XCTAssertEqual(*static_cast<const uint8_t *>(data.bytes), 0xAB);
 
-  // Independent copy: mutating the NSMutableData must not write through to the
-  // source MutableBuffer.
-  *static_cast<uint8_t *>(data.mutableBytes) = 0xCD;
-  XCTAssertEqual(*buffer->data(), 0xAB, @"NSMutableData must not alias the source buffer");
+  // Independent copy: mutating the source MutableBuffer must not write through to
+  // the NSData.
+  *buffer->data() = 0xCD;
+  XCTAssertEqual(*static_cast<const uint8_t *>(data.bytes), 0xAB, @"NSData must not alias the source buffer");
 }
 
 @end

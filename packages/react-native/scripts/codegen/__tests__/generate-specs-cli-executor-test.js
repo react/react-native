@@ -12,7 +12,7 @@
 
 const fixtures = require('../__fixtures__/fixtures');
 const sut = require('../generate-specs-cli-executor');
-const {normalize} = require('path');
+const {normalize} = require('node:path');
 
 describe('generateSpec', () => {
   it('invokes RNCodegen with the right params', () => {
@@ -27,7 +27,7 @@ describe('generateSpec', () => {
     // Create a mock for fs.mkdirSync
     const mkdirSyncMock = jest.fn();
 
-    jest.mock('fs', () => ({
+    jest.mock('node:fs', () => ({
       readFileSync: (path, encoding) => {
         expect(path).toBe(schemaPath);
         expect(encoding).toBe('utf-8');

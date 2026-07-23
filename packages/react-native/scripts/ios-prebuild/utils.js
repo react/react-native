@@ -10,8 +10,8 @@
 
 /*:: import type {BuildFlavor, MavenSubGroup} from './types'; */
 
-const {execSync} = require('child_process');
-const fs = require('fs');
+const {execSync} = require('node:child_process');
+const fs = require('node:fs');
 
 /**
  * Creates a folder if it does not exist

@@ -107,15 +107,14 @@ public abstract class DevSupportManagerBase(
   public final override var currentReactContext: ReactContext? = null
     private set
 
-  public final override val devSettings: DeveloperSettings =
-      DevInternalSettings(
-          applicationContext,
-          object : DevInternalSettings.Listener {
-            override fun onInternalSettingsChanged() {
-              this@DevSupportManagerBase.reloadSettings()
-            }
-          },
-      )
+  public final override val devSettings: DeveloperSettings = DevInternalSettings(
+      applicationContext,
+      object : DevInternalSettings.Listener {
+        override fun onInternalSettingsChanged() {
+          this@DevSupportManagerBase.reloadSettings()
+        }
+      },
+  )
 
   override val currentActivity: Activity?
     get() = reactInstanceDevHelper.currentActivity

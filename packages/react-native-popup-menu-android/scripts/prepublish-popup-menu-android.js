@@ -24,7 +24,7 @@ function extractVersion(tomlContent, regex) {
   return match && match[1] ? match[1] : null;
 }
 
-const fs = require('fs');
+const fs = require('node:fs');
 
 const buildGradleKtsPath = 'android/build.gradle.kts';
 const libsVersionsTomlPath = '../react-native/gradle/libs.versions.toml';

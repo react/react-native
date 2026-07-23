@@ -10,7 +10,7 @@
 
 'use strict';
 
-const path = require('path');
+const path = require('node:path');
 
 module.exports = {
   haste: {
@@ -28,9 +28,8 @@ module.exports = {
   resolver: require.resolve('./jest/resolver.js'),
   transform: {
     '^.+\\.(js|ts|tsx)$': 'babel-jest',
-    '^.+\\.(bmp|gif|jpg|jpeg|mp4|png|psd|svg|webp)$': require.resolve(
-      './jest/assetFileTransformer.js',
-    ),
+    '^.+\\.(bmp|gif|jpg|jpeg|mp4|png|psd|svg|webp)$':
+      require.resolve('./jest/assetFileTransformer.js'),
   },
   transformIgnorePatterns: [
     'node_modules/(?!((jest-)?react-native|@react-native(-community)?)/)',

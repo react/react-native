@@ -14,8 +14,8 @@ import type {SchemaType} from '../../CodegenSchema.js';
 const {FlowParser} = require('../../parsers/flow/parser');
 const {TypeScriptParser} = require('../../parsers/typescript/parser');
 const {filterJSFile} = require('./combine-utils');
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 const {globSync} = require('tinyglobby');
 
 const flowParser = new FlowParser();

@@ -14,7 +14,7 @@ import {
   getAndroidResourceFolderName,
   getAndroidResourceIdentifier,
 } from '@react-native/asset-utils';
-import path from 'path';
+import path from 'node:path';
 
 function getAssetDestPathAndroid(asset: PackagerAsset, scale: number): string {
   const androidFolder = getAndroidResourceFolderName(asset, scale);

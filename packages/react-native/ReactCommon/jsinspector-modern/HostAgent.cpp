@@ -148,36 +148,34 @@ class HostAgent::Impl final {
           .shouldSendOKResponse = true,
       };
     }
-    if (InspectorFlags::getInstance().getNetworkInspectionEnabled()) {
-      if (req.method == "Network.enable") {
-        auto& inspector = getInspectorInstance();
-        if (inspector.getSystemState().registeredHostsCount > 1) {
-          frontendChannel_(
-              cdp::jsonError(
-                  req.id,
-                  cdp::ErrorCode::InternalError,
-                  "The Network domain is unavailable when multiple React Native hosts are registered."));
-          return {
-              .isFinishedHandlingRequest = true,
-              .shouldSendOKResponse = false,
-          };
-        }
-
-        sessionState_.isNetworkDomainEnabled = true;
-
+    if (req.method == "Network.enable") {
+      auto& inspector = getInspectorInstance();
+      if (inspector.getSystemState().registeredHostsCount > 1) {
+        frontendChannel_(
+            cdp::jsonError(
+                req.id,
+                cdp::ErrorCode::InternalError,
+                "The Network domain is unavailable when multiple React Native hosts are registered."));
         return {
-            .isFinishedHandlingRequest = false,
-            .shouldSendOKResponse = true,
+            .isFinishedHandlingRequest = true,
+            .shouldSendOKResponse = false,
         };
       }
-      if (req.method == "Network.disable") {
-        sessionState_.isNetworkDomainEnabled = false;
 
-        return {
-            .isFinishedHandlingRequest = false,
-            .shouldSendOKResponse = true,
-        };
-      }
+      sessionState_.isNetworkDomainEnabled = true;
+
+      return {
+          .isFinishedHandlingRequest = false,
+          .shouldSendOKResponse = true,
+      };
+    }
+    if (req.method == "Network.disable") {
+      sessionState_.isNetworkDomainEnabled = false;
+
+      return {
+          .isFinishedHandlingRequest = false,
+          .shouldSendOKResponse = true,
+      };
     }
 
     // Methods other than domain enables/disables: handle anything we know how

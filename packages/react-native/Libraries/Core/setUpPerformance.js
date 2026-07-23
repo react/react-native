@@ -8,25 +8,8 @@
  * @format
  */
 
-import setUpPerformanceModern from '../../src/private/setup/setUpPerformanceModern';
-import NativePerformance from '../../src/private/webapis/performance/specs/NativePerformance';
+// Kept as an alias of the internal `setUpPerformance` module for external
+// consumers that import this path directly.
+import setUpPerformance from '../../src/private/setup/setUpPerformance';
 
-// In case if the native implementation of the Performance API is available, use it,
-// otherwise fall back to the legacy/default one, which only defines 'Performance.now()'
-if (NativePerformance) {
-  setUpPerformanceModern();
-} else {
-  if (!global.performance) {
-    // $FlowExpectedError[cannot-write]
-    global.performance = {
-      mark: () => {},
-      clearMarks: () => {},
-      measure: () => {},
-      clearMeasures: () => {},
-      now: () => {
-        const performanceNow = global.nativePerformanceNow || Date.now;
-        return performanceNow();
-      },
-    };
-  }
-}
+setUpPerformance();

@@ -14,8 +14,8 @@ import type {ExecaPromise} from 'execa';
 import type {TaskResult, TaskSpec} from 'listr2';
 
 import {Listr} from 'listr2';
+import {styleText} from 'node:util';
 import {Observable} from 'rxjs';
-import {styleText} from 'util';
 
 export function trim(
   line: string,

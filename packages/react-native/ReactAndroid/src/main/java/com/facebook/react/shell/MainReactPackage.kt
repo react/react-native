@@ -137,28 +137,29 @@ constructor(private val config: MainPackageConfig? = null) :
       }
 
   @Suppress("DEPRECATION")
-  override fun createViewManagers(reactContext: ReactApplicationContext): List<ViewManager<*, *>> =
-      listOf(
-          ReactDrawerLayoutManager(),
-          ReactHorizontalScrollViewManager(),
-          ReactHorizontalScrollContainerViewManager(),
-          ReactProgressBarViewManager(),
-          if (ReactNativeFeatureFlags.useNestedScrollViewAndroid()) ReactNestedScrollViewManager()
-          else ReactScrollViewManager(),
-          ReactSwitchManager(),
-          ReactSafeAreaViewManager(),
-          SwipeRefreshLayoutManager(),
-          // Native equivalents
-          ReactImageManager(),
-          ReactModalHostManager(),
-          ReactTextInputManager(),
-          if (ReactNativeFeatureFlags.enablePreparedTextLayout()) PreparedLayoutTextViewManager()
-          else ReactTextViewManager(),
-          SelectableTextViewManager(),
-          ReactViewManager(),
-          ReactVirtualViewManager(),
-          ReactUnimplementedViewManager(),
-      )
+  override fun createViewManagers(
+      reactContext: ReactApplicationContext
+  ): List<ViewManager<*, *>> = listOf(
+      ReactDrawerLayoutManager(),
+      ReactHorizontalScrollViewManager(),
+      ReactHorizontalScrollContainerViewManager(),
+      ReactProgressBarViewManager(),
+      if (ReactNativeFeatureFlags.useNestedScrollViewAndroid()) ReactNestedScrollViewManager()
+      else ReactScrollViewManager(),
+      ReactSwitchManager(),
+      ReactSafeAreaViewManager(),
+      SwipeRefreshLayoutManager(),
+      // Native equivalents
+      ReactImageManager(),
+      ReactModalHostManager(),
+      ReactTextInputManager(),
+      if (ReactNativeFeatureFlags.enablePreparedTextLayout()) PreparedLayoutTextViewManager()
+      else ReactTextViewManager(),
+      SelectableTextViewManager(),
+      ReactViewManager(),
+      ReactVirtualViewManager(),
+      ReactUnimplementedViewManager(),
+  )
 
   /**
    * A map of view managers that should be registered with
@@ -166,46 +167,41 @@ constructor(private val config: MainPackageConfig? = null) :
    */
   @Suppress("DEPRECATION")
   @SuppressLint("VisibleForTests")
-  public val viewManagersMap: Map<String, ModuleSpec> =
-      mapOf(
-          ReactDrawerLayoutManager.REACT_CLASS to
-              ModuleSpec.viewManagerSpec { ReactDrawerLayoutManager() },
-          ReactHorizontalScrollViewManager.REACT_CLASS to
-              ModuleSpec.viewManagerSpec { ReactHorizontalScrollViewManager() },
-          ReactHorizontalScrollContainerViewManager.REACT_CLASS to
-              ModuleSpec.viewManagerSpec { ReactHorizontalScrollContainerViewManager() },
-          ReactProgressBarViewManager.REACT_CLASS to
-              ModuleSpec.viewManagerSpec { ReactProgressBarViewManager() },
-          ReactSafeAreaViewManager.REACT_CLASS to
-              ModuleSpec.viewManagerSpec { ReactSafeAreaViewManager() },
-          ReactScrollViewManager.REACT_CLASS to
-              ModuleSpec.viewManagerSpec {
-                if (ReactNativeFeatureFlags.useNestedScrollViewAndroid())
-                    ReactNestedScrollViewManager()
-                else ReactScrollViewManager()
-              },
-          ReactSwitchManager.REACT_CLASS to ModuleSpec.viewManagerSpec { ReactSwitchManager() },
-          SwipeRefreshLayoutManager.REACT_CLASS to
-              ModuleSpec.viewManagerSpec { SwipeRefreshLayoutManager() },
-          ReactImageManager.REACT_CLASS to ModuleSpec.viewManagerSpec { ReactImageManager() },
-          ReactModalHostManager.REACT_CLASS to
-              ModuleSpec.viewManagerSpec { ReactModalHostManager() },
-          ReactTextInputManager.REACT_CLASS to
-              ModuleSpec.viewManagerSpec { ReactTextInputManager() },
-          ReactTextViewManager.REACT_CLASS to
-              ModuleSpec.viewManagerSpec {
-                if (ReactNativeFeatureFlags.enablePreparedTextLayout())
-                    PreparedLayoutTextViewManager()
-                else ReactTextViewManager()
-              },
-          SelectableTextViewManager.REACT_CLASS to
-              ModuleSpec.viewManagerSpec { SelectableTextViewManager() },
-          ReactViewManager.REACT_CLASS to ModuleSpec.viewManagerSpec { ReactViewManager() },
-          ReactVirtualViewManager.REACT_CLASS to
-              ModuleSpec.viewManagerSpec { ReactVirtualViewManager() },
-          ReactUnimplementedViewManager.REACT_CLASS to
-              ModuleSpec.viewManagerSpec { ReactUnimplementedViewManager() },
-      )
+  public val viewManagersMap: Map<String, ModuleSpec> = mapOf(
+      ReactDrawerLayoutManager.REACT_CLASS to
+          ModuleSpec.viewManagerSpec { ReactDrawerLayoutManager() },
+      ReactHorizontalScrollViewManager.REACT_CLASS to
+          ModuleSpec.viewManagerSpec { ReactHorizontalScrollViewManager() },
+      ReactHorizontalScrollContainerViewManager.REACT_CLASS to
+          ModuleSpec.viewManagerSpec { ReactHorizontalScrollContainerViewManager() },
+      ReactProgressBarViewManager.REACT_CLASS to
+          ModuleSpec.viewManagerSpec { ReactProgressBarViewManager() },
+      ReactSafeAreaViewManager.REACT_CLASS to
+          ModuleSpec.viewManagerSpec { ReactSafeAreaViewManager() },
+      ReactScrollViewManager.REACT_CLASS to
+          ModuleSpec.viewManagerSpec {
+            if (ReactNativeFeatureFlags.useNestedScrollViewAndroid()) ReactNestedScrollViewManager()
+            else ReactScrollViewManager()
+          },
+      ReactSwitchManager.REACT_CLASS to ModuleSpec.viewManagerSpec { ReactSwitchManager() },
+      SwipeRefreshLayoutManager.REACT_CLASS to
+          ModuleSpec.viewManagerSpec { SwipeRefreshLayoutManager() },
+      ReactImageManager.REACT_CLASS to ModuleSpec.viewManagerSpec { ReactImageManager() },
+      ReactModalHostManager.REACT_CLASS to ModuleSpec.viewManagerSpec { ReactModalHostManager() },
+      ReactTextInputManager.REACT_CLASS to ModuleSpec.viewManagerSpec { ReactTextInputManager() },
+      ReactTextViewManager.REACT_CLASS to
+          ModuleSpec.viewManagerSpec {
+            if (ReactNativeFeatureFlags.enablePreparedTextLayout()) PreparedLayoutTextViewManager()
+            else ReactTextViewManager()
+          },
+      SelectableTextViewManager.REACT_CLASS to
+          ModuleSpec.viewManagerSpec { SelectableTextViewManager() },
+      ReactViewManager.REACT_CLASS to ModuleSpec.viewManagerSpec { ReactViewManager() },
+      ReactVirtualViewManager.REACT_CLASS to
+          ModuleSpec.viewManagerSpec { ReactVirtualViewManager() },
+      ReactUnimplementedViewManager.REACT_CLASS to
+          ModuleSpec.viewManagerSpec { ReactUnimplementedViewManager() },
+  )
 
   public override fun getViewManagers(reactContext: ReactApplicationContext): List<ModuleSpec> =
       viewManagersMap.values.toList()
@@ -251,36 +247,35 @@ constructor(private val config: MainPackageConfig? = null) :
   private fun fallbackForMissingClass(): ReactModuleInfoProvider {
     // In the OSS case, the annotation processor does not run.
     // We fall back to creating this by hand
-    val moduleList: Array<Class<*>> =
-        arrayOf(
-                AccessibilityInfoModule::class.java,
-                AppearanceModule::class.java,
-                AppStateModule::class.java,
-                BlobModule::class.java,
-                DevLoadingModule::class.java,
-                FileReaderModule::class.java,
-                ClipboardModule::class.java,
-                DialogModule::class.java,
-                FrescoModule::class.java,
-                I18nManagerModule::class.java,
-                ImageLoaderModule::class.java,
-                ImageStoreManager::class.java,
-                IntentModule::class.java,
-                if (ReactNativeFeatureFlags.cxxNativeAnimatedEnabled()) null
-                else NativeAnimatedModule::class.java,
-                NetworkingModule::class.java,
-                PermissionsModule::class.java,
-                ReactDevToolsSettingsManagerModule::class.java,
-                ReactDevToolsRuntimeSettingsModule::class.java,
-                ShareModule::class.java,
-                StatusBarModule::class.java,
-                SoundManagerModule::class.java,
-                ToastModule::class.java,
-                VibrationModule::class.java,
-                WebSocketModule::class.java,
-            )
-            .filterNotNull()
-            .toTypedArray()
+    val moduleList: Array<Class<*>> = arrayOf(
+        AccessibilityInfoModule::class.java,
+        AppearanceModule::class.java,
+        AppStateModule::class.java,
+        BlobModule::class.java,
+        DevLoadingModule::class.java,
+        FileReaderModule::class.java,
+        ClipboardModule::class.java,
+        DialogModule::class.java,
+        FrescoModule::class.java,
+        I18nManagerModule::class.java,
+        ImageLoaderModule::class.java,
+        ImageStoreManager::class.java,
+        IntentModule::class.java,
+        if (ReactNativeFeatureFlags.cxxNativeAnimatedEnabled()) null
+        else NativeAnimatedModule::class.java,
+        NetworkingModule::class.java,
+        PermissionsModule::class.java,
+        ReactDevToolsSettingsManagerModule::class.java,
+        ReactDevToolsRuntimeSettingsModule::class.java,
+        ShareModule::class.java,
+        StatusBarModule::class.java,
+        SoundManagerModule::class.java,
+        ToastModule::class.java,
+        VibrationModule::class.java,
+        WebSocketModule::class.java,
+    )
+        .filterNotNull()
+        .toTypedArray()
 
     val moduleMap =
         moduleList

@@ -11,13 +11,11 @@
 import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 import type {FlatListProps} from 'react-native/Libraries/Lists/FlatList';
 
-import ensureInstance from '../../../src/private/__tests__/utilities/ensureInstance';
 import * as Fantom from '@react-native/fantom';
 import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {createRef} from 'react';
 import {FlatList, Text, View} from 'react-native';
-import ReactNativeElement from 'react-native/src/private/webapis/dom/nodes/ReactNativeElement';
 
 function testPropPropagatedToMountingLayer<TValue>({
   propName,
@@ -482,9 +480,8 @@ describe('<FlatList>', () => {
       );
 
       // Scroll down to trigger rendering of additional items.
-      const scrollView = ensureInstance(
+      const scrollView = nullthrows(
         nullthrows(flatListRef.current).getNativeScrollRef(),
-        ReactNativeElement,
       );
       Fantom.scrollTo(scrollView, {x: 0, y: 100});
 
@@ -527,14 +524,218 @@ describe('<FlatList>', () => {
         );
       });
 
-      const scrollView = ensureInstance(
+      const scrollView = nullthrows(
         nullthrows(flatListRef.current).getNativeScrollRef(),
-        ReactNativeElement,
       );
 
       Fantom.scrollTo(scrollView, {x: 0, y: 800});
 
       expect(onEndReached).toHaveBeenCalled();
+    });
+  });
+
+  describe('onViewableItemsChanged', () => {
+    it('reports viewable items after scrolling', () => {
+      const root = Fantom.createRoot({
+        viewportWidth: 400,
+        viewportHeight: 200,
+      });
+      const onViewableItemsChanged = jest.fn();
+      const flatListRef = createRef<FlatList<{key: string}>>();
+      Fantom.runTask(() => {
+        root.render(
+          <FlatList
+            ref={flatListRef}
+            data={Array.from({length: 20}, (_, i) => ({key: String(i)}))}
+            renderItem={() => (
+              <View style={{height: 100}} collapsable={false} />
+            )}
+            getItemLayout={(
+              _data: ?Readonly<$ArrayLike<{key: string}>>,
+              index: number,
+            ) => ({
+              length: 100,
+              offset: 100 * index,
+              index,
+            })}
+            viewabilityConfig={{itemVisiblePercentThreshold: 50}}
+            onViewableItemsChanged={onViewableItemsChanged}
+            initialNumToRender={4}
+            windowSize={5}
+          />,
+        );
+      });
+
+      const scrollView = nullthrows(
+        nullthrows(flatListRef.current).getNativeScrollRef(),
+      );
+
+      // Scroll so items around index 3 become the viewable window.
+      Fantom.scrollTo(scrollView, {x: 0, y: 300});
+
+      expect(onViewableItemsChanged).toHaveBeenCalled();
+      const lastCall =
+        onViewableItemsChanged.mock.calls[
+          onViewableItemsChanged.mock.calls.length - 1
+        ][0];
+      const viewableKeys = lastCall.viewableItems.map(
+        (item: {key: string, ...}) => item.key,
+      );
+      expect(viewableKeys).toContain('3');
+    });
+
+    it('supports viewabilityConfigCallbackPairs', () => {
+      const root = Fantom.createRoot({
+        viewportWidth: 400,
+        viewportHeight: 200,
+      });
+      const onViewableItemsChanged = jest.fn();
+      const flatListRef = createRef<FlatList<{key: string}>>();
+      Fantom.runTask(() => {
+        root.render(
+          <FlatList
+            ref={flatListRef}
+            data={Array.from({length: 20}, (_, i) => ({key: String(i)}))}
+            renderItem={() => (
+              <View style={{height: 100}} collapsable={false} />
+            )}
+            getItemLayout={(
+              _data: ?Readonly<$ArrayLike<{key: string}>>,
+              index: number,
+            ) => ({
+              length: 100,
+              offset: 100 * index,
+              index,
+            })}
+            viewabilityConfigCallbackPairs={[
+              {
+                viewabilityConfig: {viewAreaCoveragePercentThreshold: 50},
+                onViewableItemsChanged,
+              },
+            ]}
+            initialNumToRender={4}
+            windowSize={5}
+          />,
+        );
+      });
+
+      const scrollView = nullthrows(
+        nullthrows(flatListRef.current).getNativeScrollRef(),
+      );
+
+      Fantom.scrollTo(scrollView, {x: 0, y: 300});
+
+      expect(onViewableItemsChanged).toHaveBeenCalled();
+      const lastCall =
+        onViewableItemsChanged.mock.calls[
+          onViewableItemsChanged.mock.calls.length - 1
+        ][0];
+      expect(lastCall.viewableItems.length).toBeGreaterThan(0);
+    });
+
+    it('respects minimumViewTime before reporting items', () => {
+      const root = Fantom.createRoot({
+        viewportWidth: 400,
+        viewportHeight: 200,
+      });
+      const onViewableItemsChanged = jest.fn();
+      const flatListRef = createRef<FlatList<{key: string}>>();
+      const timers = Fantom.installTimerMock();
+      try {
+        Fantom.runTask(() => {
+          root.render(
+            <FlatList
+              ref={flatListRef}
+              data={Array.from({length: 20}, (_, i) => ({key: String(i)}))}
+              renderItem={() => (
+                <View style={{height: 100}} collapsable={false} />
+              )}
+              getItemLayout={(
+                _data: ?Readonly<$ArrayLike<{key: string}>>,
+                index: number,
+              ) => ({
+                length: 100,
+                offset: 100 * index,
+                index,
+              })}
+              viewabilityConfig={{
+                itemVisiblePercentThreshold: 50,
+                minimumViewTime: 200,
+              }}
+              onViewableItemsChanged={onViewableItemsChanged}
+              initialNumToRender={4}
+              windowSize={5}
+            />,
+          );
+        });
+
+        const scrollView = nullthrows(
+          nullthrows(flatListRef.current).getNativeScrollRef(),
+        );
+        Fantom.scrollTo(scrollView, {x: 0, y: 300});
+
+        // Items must remain viewable for `minimumViewTime` before being
+        // reported, so nothing has fired yet.
+        expect(onViewableItemsChanged).not.toHaveBeenCalled();
+
+        timers.advanceTimersByTime(200);
+
+        expect(onViewableItemsChanged).toHaveBeenCalled();
+      } finally {
+        timers.uninstall();
+      }
+    });
+
+    it('waits for interaction before reporting items when waitForInteraction is set', () => {
+      const root = Fantom.createRoot({
+        viewportWidth: 400,
+        viewportHeight: 200,
+      });
+      const onViewableItemsChanged = jest.fn();
+      const flatListRef = createRef<FlatList<{key: string}>>();
+      Fantom.runTask(() => {
+        root.render(
+          <FlatList
+            ref={flatListRef}
+            data={Array.from({length: 20}, (_, i) => ({key: String(i)}))}
+            renderItem={() => (
+              <View style={{height: 100}} collapsable={false} />
+            )}
+            getItemLayout={(
+              _data: ?Readonly<$ArrayLike<{key: string}>>,
+              index: number,
+            ) => ({
+              length: 100,
+              offset: 100 * index,
+              index,
+            })}
+            viewabilityConfig={{
+              itemVisiblePercentThreshold: 50,
+              waitForInteraction: true,
+            }}
+            onViewableItemsChanged={onViewableItemsChanged}
+            initialNumToRender={4}
+            windowSize={5}
+          />,
+        );
+      });
+
+      // Initially visible items are withheld until the user interacts.
+      expect(onViewableItemsChanged).not.toHaveBeenCalled();
+
+      // Signal an interaction (scrolling records this via onScrollBeginDrag; the
+      // public method is the deterministic equivalent), then a viewability
+      // re-evaluation reports the visible items.
+      Fantom.runTask(() => {
+        nullthrows(flatListRef.current).recordInteraction();
+      });
+
+      const scrollView = nullthrows(
+        nullthrows(flatListRef.current).getNativeScrollRef(),
+      );
+      Fantom.scrollTo(scrollView, {x: 0, y: 100});
+
+      expect(onViewableItemsChanged).toHaveBeenCalled();
     });
   });
 

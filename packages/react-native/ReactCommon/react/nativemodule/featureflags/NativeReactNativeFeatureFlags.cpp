@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<1e26f8dc1f474475c0a4d6be79aedb24>>
+ * @generated SignedSource<<e064956fa1ca7954fc2f1bdb3c166dac>>
  */
 
 /**
@@ -239,11 +239,6 @@ bool NativeReactNativeFeatureFlags::enableNativeCSSParsing(
   return ReactNativeFeatureFlags::enableNativeCSSParsing();
 }
 
-bool NativeReactNativeFeatureFlags::enableNetworkEventReporting(
-    jsi::Runtime& /*runtime*/) {
-  return ReactNativeFeatureFlags::enableNetworkEventReporting();
-}
-
 bool NativeReactNativeFeatureFlags::enablePreparedTextLayout(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::enablePreparedTextLayout();
@@ -334,14 +329,14 @@ bool NativeReactNativeFeatureFlags::fuseboxFrameRecordingEnabled(
   return ReactNativeFeatureFlags::fuseboxFrameRecordingEnabled();
 }
 
-bool NativeReactNativeFeatureFlags::fuseboxNetworkInspectionEnabled(
-    jsi::Runtime& /*runtime*/) {
-  return ReactNativeFeatureFlags::fuseboxNetworkInspectionEnabled();
-}
-
 bool NativeReactNativeFeatureFlags::fuseboxScreenshotCaptureEnabled(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::fuseboxScreenshotCaptureEnabled();
+}
+
+bool NativeReactNativeFeatureFlags::fuseboxWebSocketEventsEnabled(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::fuseboxWebSocketEventsEnabled();
 }
 
 bool NativeReactNativeFeatureFlags::optimizedAnimatedPropUpdates(

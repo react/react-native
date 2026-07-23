@@ -85,12 +85,11 @@ internal class MyLegacyViewManager(reactContext: ReactApplicationContext) :
     }
   }
 
-  override fun getCommandsMap(): Map<String, Int> =
-      mapOf(
-          "changeBackgroundColor" to COMMAND_CHANGE_BACKGROUND_COLOR,
-          "addOverlays" to COMMAND_ADD_OVERLAYS,
-          "removeOverlays" to COMMAND_REMOVE_OVERLAYS,
-      )
+  override fun getCommandsMap(): Map<String, Int> = mapOf(
+      "changeBackgroundColor" to COMMAND_CHANGE_BACKGROUND_COLOR,
+      "addOverlays" to COMMAND_ADD_OVERLAYS,
+      "removeOverlays" to COMMAND_REMOVE_OVERLAYS,
+  )
 
   companion object {
     const val REACT_CLASS = "RNTMyLegacyNativeView"

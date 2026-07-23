@@ -260,16 +260,15 @@ internal class InterpolationAnimatedNode(config: ReadableMap) : ValueAnimatedNod
       val m = numericPattern.matcher(pattern)
       var i = 0
       while (m.find() && i < outputRange[rangeIndex].size) {
-        val v =
-            interpolate(
-                value,
-                inputRange[rangeIndex],
-                inputRange[rangeIndex + 1],
-                outputRange[rangeIndex][i],
-                outputRange[rangeIndex + 1][i],
-                extrapolateLeft,
-                extrapolateRight,
-            )
+        val v = interpolate(
+            value,
+            inputRange[rangeIndex],
+            inputRange[rangeIndex + 1],
+            outputRange[rangeIndex][i],
+            outputRange[rangeIndex + 1][i],
+            extrapolateLeft,
+            extrapolateRight,
+        )
         val intVal = v.toInt()
         m.appendReplacement(sb, if (intVal.toDouble() != v) v.toString() else intVal.toString())
         i++

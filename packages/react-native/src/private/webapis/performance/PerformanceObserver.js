@@ -21,12 +21,10 @@ import {
   rawToPerformanceEntry,
   rawToPerformanceEntryType,
 } from './internals/RawPerformanceEntry';
-import MaybeNativePerformance from './specs/NativePerformance';
+import NativePerformance from './specs/NativePerformance';
 import nullthrows from 'nullthrows';
 
 export {PerformanceEntry} from './PerformanceEntry';
-
-const NativePerformance = nullthrows(MaybeNativePerformance);
 
 export class PerformanceObserverEntryList {
   #entries: PerformanceEntryList;

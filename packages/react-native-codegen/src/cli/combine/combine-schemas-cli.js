@@ -16,8 +16,8 @@ import type {
   SchemaType,
 } from '../../CodegenSchema.js';
 
-const assert = require('assert');
-const fs = require('fs');
+const assert = require('node:assert');
+const fs = require('node:fs');
 const yargs = require('yargs');
 
 const argv = yargs

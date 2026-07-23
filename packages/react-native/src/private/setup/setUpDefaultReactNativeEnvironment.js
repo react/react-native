@@ -10,7 +10,7 @@
 
 let initialized = false;
 
-export default function setUpDefaltReactNativeEnvironment(
+export default function setUpDefaultReactNativeEnvironment(
   enableDeveloperTools: boolean = true,
 ) {
   if (initialized) {
@@ -21,7 +21,7 @@ export default function setUpDefaltReactNativeEnvironment(
 
   require('../../../Libraries/Core/setUpGlobals');
   require('./setUpDOM').default();
-  require('../../../Libraries/Core/setUpPerformance');
+  require('./setUpPerformance').default();
   require('../../../Libraries/Core/polyfillPromise');
   require('../../../Libraries/Core/setUpTimers');
   if (__DEV__ && enableDeveloperTools) {

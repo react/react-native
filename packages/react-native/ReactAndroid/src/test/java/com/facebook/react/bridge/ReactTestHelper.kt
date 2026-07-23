@@ -58,18 +58,17 @@ object ReactTestHelper {
 
   @OptIn(UnstableReactNativeAPI::class)
   fun createTestReactApplicationContext(application: Application): ReactApplicationContext {
-    val reactHost =
-        spy(
-            ReactHostImpl(
-                RuntimeEnvironment.getApplication(),
-                mock(),
-                mock(),
-                Task.Companion.IMMEDIATE_EXECUTOR,
-                Task.Companion.IMMEDIATE_EXECUTOR,
-                false /* allowPackagerServerAccess */,
-                false /* useDevSupport */,
-            )
+    val reactHost = spy(
+        ReactHostImpl(
+            RuntimeEnvironment.getApplication(),
+            mock(),
+            mock(),
+            Task.Companion.IMMEDIATE_EXECUTOR,
+            Task.Companion.IMMEDIATE_EXECUTOR,
+            false /* allowPackagerServerAccess */,
+            false /* useDevSupport */,
         )
+    )
     return BridgelessReactContext(application, reactHost)
   }
 }

@@ -15,9 +15,18 @@ inputs:
     required: false
     default: false
   use-frameworks:
-    description: Whether we have to build with Dynamic Frameworks. If this is set to true, it builds from source
+    description: Whether we have to build with Dynamic Frameworks.
     required: false
     default: false
+  use-prebuilds:
+    description: >-
+      Whether to consume the prebuilt ReactCore/ReactNativeDependencies
+      artifacts. 'auto' (default) keeps the historical coupling: prebuilds for
+      static, source for dynamic frameworks. Pass 'true' with
+      use-frameworks:true for the prebuilt + dynamic-frameworks lane (the
+      config of the 2026-07-03 SocketRocket dual-copy regression).
+    required: false
+    default: auto
 
 runs:
   using: composite
@@ -41,24 +50,44 @@ runs:
     - name: Prepare IOS Tests
       if: ${{ inputs.run-unit-tests == 'true' }}
       uses: ./.github/actions/prepare-ios-tests
+    - name: Resolve prebuilds mode
+      id: prebuilds
+      shell: bash
+      run: |
+        if [[ "${{ inputs.use-prebuilds }}" == "auto" ]]; then
+          # Historical coupling: prebuilds for static, source for dynamic frameworks.
+          if [[ "${{ inputs.use-frameworks }}" == "true" ]]; then
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          fi
+        elif [[ "${{ inputs.use-prebuilds }}" == "true" ]]; then
+          echo "enabled=true" >> "$GITHUB_OUTPUT"
+        elif [[ "${{ inputs.use-prebuilds }}" == "false" ]]; then
+          echo "enabled=false" >> "$GITHUB_OUTPUT"
+        else
+          # Don't silently treat a typo as 'disabled' — surface it.
+          echo "::warning::Unexpected use-prebuilds value '${{ inputs.use-prebuilds }}' (expected auto/true/false); treating as disabled."
+          echo "enabled=false" >> "$GITHUB_OUTPUT"
+        fi
     - name: Download ReactNativeDependencies
-      if: ${{ inputs.use-frameworks == 'false' }}
+      if: ${{ steps.prebuilds.outputs.enabled == 'true' }}
       uses: actions/download-artifact@v7
       with:
         name: ReactNativeDependencies${{ inputs.flavor }}.xcframework.tar.gz
         path: /tmp/third-party/
     - name: Print third-party folder
-      if: ${{ inputs.use-frameworks == 'false' }}
+      if: ${{ steps.prebuilds.outputs.enabled == 'true' }}
       shell: bash
       run: ls -lR /tmp/third-party
     - name: Download React Native Prebuilds
-      if: ${{ inputs.use-frameworks == 'false' }}
+      if: ${{ steps.prebuilds.outputs.enabled == 'true' }}
       uses: actions/download-artifact@v7
       with:
         name: ReactCore${{ inputs.flavor }}.xcframework.tar.gz
         path: /tmp/ReactCore
     - name: Print ReactCore folder
-      if: ${{ inputs.use-frameworks == 'false' }}
+      if: ${{ steps.prebuilds.outputs.enabled == 'true' }}
       shell: bash
       run: ls -lR /tmp/ReactCore
     - name: Install CocoaPods dependencies
@@ -66,8 +95,8 @@ runs:
       run: |
         if [[ ${{ inputs.use-frameworks }} == "true" ]]; then
           export USE_FRAMEWORKS=dynamic
-        else
-          # If use-frameworks is false, let's use prebuilds
+        fi
+        if [[ "${{ steps.prebuilds.outputs.enabled }}" == "true" ]]; then
           export RCT_USE_LOCAL_RN_DEP="/tmp/third-party/ReactNativeDependencies${{ inputs.flavor }}.xcframework.tar.gz"
           export RCT_TESTONLY_RNCORE_TARBALL_PATH="/tmp/ReactCore/ReactCore${{ inputs.flavor }}.xcframework.tar.gz"
         fi

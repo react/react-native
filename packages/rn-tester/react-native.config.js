@@ -29,4 +29,32 @@ module.exports = {
       packageName: 'com.facebook.react.uiapp',
     },
   },
+  // SPM-only: local native modules not discoverable via autolinking.json.
+  // These are pods added directly in Podfile for rn-tester examples.
+  spm: {
+    modules: [
+      {
+        name: 'ReactCommonSamples',
+        path: '../react-native/ReactCommon/react/nativemodule/samples/platform/ios',
+        publicHeadersPath: '.',
+      },
+      {
+        name: 'ReactRCTPushNotification',
+        path: '../react-native/Libraries/PushNotificationIOS',
+        exclude: ['React-RCTPushNotification.podspec'],
+      },
+      {
+        name: 'ScreenshotManager',
+        path: 'NativeModuleExample',
+      },
+      {
+        name: 'MyNativeView',
+        path: 'NativeComponentExample/ios',
+      },
+      {
+        name: 'NativeCxxModuleExample',
+        path: 'NativeCxxModuleExample',
+      },
+    ],
+  },
 };

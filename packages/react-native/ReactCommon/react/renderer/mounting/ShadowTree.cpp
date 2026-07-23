@@ -347,7 +347,8 @@ CommitStatus ShadowTree::tryCommit(
       getShadowTreeCommitSourceName(commitOptions.source));
 
   auto isReactBranch = ReactNativeFeatureFlags::enableFabricCommitBranching() &&
-      commitOptions.source == CommitSource::React;
+      (commitOptions.source == CommitSource::React ||
+       commitOptions.source == CommitSource::AnimationEndSync);
 
   // Commits on the JS branch are never synchronous.
   react_native_assert(!isReactBranch || !commitOptions.mountSynchronously);

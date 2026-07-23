@@ -87,9 +87,7 @@ type ExportableSchemaDiffers = {
 };
 export type SchemaDiffCategory = 'new' | 'deprecated' | SchemaDiffers;
 type ExportableSchemaDiffCategory =
-  | 'new'
-  | 'deprecated'
-  | ExportableSchemaDiffers;
+  'new' | 'deprecated' | ExportableSchemaDiffers;
 export type SchemaDiff = {
   name: string,
   framework: Framework,

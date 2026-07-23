@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<ff39edecf287d3fe3638da2f71e6bd1c>>
+ * @generated SignedSource<<18f24b20806682b774fa5ba96f291fd2>>
  * @flow strict
  * @noformat
  */
@@ -33,7 +33,6 @@ export type ReactNativeFeatureFlagsJsOnly = Readonly<{
   animatedForceNativeDriver: Getter<boolean>,
   animatedShouldSyncValueBeforeStartCallback: Getter<boolean>,
   deferFlatListFocusChangeRenderUpdate: Getter<boolean>,
-  enableDirectEventsInEventTarget: Getter<boolean>,
   enableImperativeEvents: Getter<boolean>,
   enableNativeEventTargetEventDispatching: Getter<boolean>,
   externalElementInspectionEnabled: Getter<boolean>,
@@ -88,7 +87,6 @@ export type ReactNativeFeatureFlags = Readonly<{
   enableModuleArgumentNSNullConversionIOS: Getter<boolean>,
   enableMutationObserverByDefault: Getter<boolean>,
   enableNativeCSSParsing: Getter<boolean>,
-  enableNetworkEventReporting: Getter<boolean>,
   enablePreparedTextLayout: Getter<boolean>,
   enablePropsUpdateReconciliationAndroid: Getter<boolean>,
   enableRuntimeSchedulerQueueClearingOnError: Getter<boolean>,
@@ -107,8 +105,8 @@ export type ReactNativeFeatureFlags = Readonly<{
   fuseboxAssertSingleHostState: Getter<boolean>,
   fuseboxEnabledRelease: Getter<boolean>,
   fuseboxFrameRecordingEnabled: Getter<boolean>,
-  fuseboxNetworkInspectionEnabled: Getter<boolean>,
   fuseboxScreenshotCaptureEnabled: Getter<boolean>,
+  fuseboxWebSocketEventsEnabled: Getter<boolean>,
   optimizedAnimatedPropUpdates: Getter<boolean>,
   overrideBySynchronousMountPropsAtMountingAndroid: Getter<boolean>,
   perfIssuesEnabled: Getter<boolean>,
@@ -161,11 +159,6 @@ export const animatedShouldSyncValueBeforeStartCallback: Getter<boolean> = creat
  * Use the deferred cell render update mechanism for focus change in FlatList.
  */
 export const deferFlatListFocusChangeRenderUpdate: Getter<boolean> = createJavaScriptFlagGetter('deferFlatListFocusChangeRenderUpdate', false);
-
-/**
- * When enabled (together with enableNativeEventTargetEventDispatching), direct events (those that neither bubble nor capture, such as onLayout) are dispatched only to the target node via a fast path that skips construction and traversal of the ancestor event path.
- */
-export const enableDirectEventsInEventTarget: Getter<boolean> = createJavaScriptFlagGetter('enableDirectEventsInEventTarget', false);
 
 /**
  * When enabled, ReactNativeElement and ReadOnlyText expose the public EventTarget API (addEventListener, removeEventListener, dispatchEvent). When disabled, those methods are removed from those final classes.
@@ -270,7 +263,7 @@ export const enableAndroidTextMeasurementOptimizations: Getter<boolean> = create
 /**
  * Feature flag to enable the new bridgeless architecture.
  */
-export const enableBridgelessArchitecture: Getter<boolean> = createNativeFlagGetter('enableBridgelessArchitecture', false);
+export const enableBridgelessArchitecture: Getter<boolean> = createNativeFlagGetter('enableBridgelessArchitecture', true);
 /**
  * Enable prop iterator setter-style construction of Props in C++ (this flag is not used in Java).
  */
@@ -368,10 +361,6 @@ export const enableMutationObserverByDefault: Getter<boolean> = createNativeFlag
  */
 export const enableNativeCSSParsing: Getter<boolean> = createNativeFlagGetter('enableNativeCSSParsing', false);
 /**
- * Enable network event reporting hooks in each native platform through `NetworkReporter` (Web Perf APIs + CDP). This flag should be combined with `fuseboxNetworkInspectionEnabled` to enable Network CDP debugging.
- */
-export const enableNetworkEventReporting: Getter<boolean> = createNativeFlagGetter('enableNetworkEventReporting', true);
-/**
  * Enables caching text layout artifacts for later reuse
  */
 export const enablePreparedTextLayout: Getter<boolean> = createNativeFlagGetter('enablePreparedTextLayout', false);
@@ -444,13 +433,13 @@ export const fuseboxEnabledRelease: Getter<boolean> = createNativeFlagGetter('fu
  */
 export const fuseboxFrameRecordingEnabled: Getter<boolean> = createNativeFlagGetter('fuseboxFrameRecordingEnabled', false);
 /**
- * Enable network inspection support in the React Native DevTools CDP backend. Requires `enableBridgelessArchitecture`. This flag is global and should not be changed across React Host lifetimes.
- */
-export const fuseboxNetworkInspectionEnabled: Getter<boolean> = createNativeFlagGetter('fuseboxNetworkInspectionEnabled', true);
-/**
  * Enable Page.captureScreenshot CDP method support in the React Native DevTools CDP backend. This flag is global and should not be changed across React Host lifetimes.
  */
-export const fuseboxScreenshotCaptureEnabled: Getter<boolean> = createNativeFlagGetter('fuseboxScreenshotCaptureEnabled', false);
+export const fuseboxScreenshotCaptureEnabled: Getter<boolean> = createNativeFlagGetter('fuseboxScreenshotCaptureEnabled', true);
+/**
+ * Enable reporting of WebSocket network events (`Network.webSocket*` CDP events) to the React Native DevTools CDP backend.
+ */
+export const fuseboxWebSocketEventsEnabled: Getter<boolean> = createNativeFlagGetter('fuseboxWebSocketEventsEnabled', false);
 /**
  * When enabled, uses optimized platform-specific paths to apply animated props synchronously. On Android, this uses a batched int/double buffer protocol with a single JNI call. On iOS, this passes AnimatedProps directly through the delegate chain and applies them via cloneProps, avoiding the folly::dynamic round-trip.
  */

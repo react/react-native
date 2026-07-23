@@ -11,7 +11,7 @@
 'use strict';
 
 const withBabelRegister = require('./with-babel-register');
-const path = require('path');
+const path = require('node:path');
 
 // We use the prepack hook before publishing package to set this value to true
 const PACKAGE_USAGE = false;
@@ -91,22 +91,18 @@ function isModuleRequire(node) {
   }
 
   const memberExpression = callExpression.callee;
-  if (
-    !(
-      memberExpression.object.type === 'Identifier' &&
-      memberExpression.object.name === 'TurboModuleRegistry'
-    )
-  ) {
+  if (!(
+    memberExpression.object.type === 'Identifier' &&
+    memberExpression.object.name === 'TurboModuleRegistry'
+  )) {
     return false;
   }
 
-  if (
-    !(
-      memberExpression.property.type === 'Identifier' &&
-      (memberExpression.property.name === 'get' ||
-        memberExpression.property.name === 'getEnforcing')
-    )
-  ) {
+  if (!(
+    memberExpression.property.type === 'Identifier' &&
+    (memberExpression.property.name === 'get' ||
+      memberExpression.property.name === 'getEnforcing')
+  )) {
     return false;
   }
   return true;

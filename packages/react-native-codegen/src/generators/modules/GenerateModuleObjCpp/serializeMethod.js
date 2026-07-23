@@ -221,7 +221,7 @@ function getParamObjCType(
       return notStruct(wrapOptional('NSArray *', !nullable));
     }
     case 'ArrayBufferTypeAnnotation': {
-      return notStruct(wrapOptional('NSMutableData *', !nullable));
+      return notStruct(wrapOptional('NSData *', !nullable));
     }
   }
 

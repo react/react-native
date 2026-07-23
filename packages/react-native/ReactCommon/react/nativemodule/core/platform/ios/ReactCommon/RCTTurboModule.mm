@@ -199,16 +199,15 @@ convertJSIFunctionToCallback(jsi::Runtime &rt, jsi::Function &&function, const s
   };
 }
 
-// Copy the ArrayBuffer's bytes into an NSMutableData. A zero-copy wrap is not
-// possible here: NSMutableData needs its own resizable backing store and cannot
-// alias a foreign buffer (even via initWithBytesNoCopy:length:deallocator:, which
-// copies eagerly for the mutable subclass). Copying also makes the result safe to
-// retain in a block, store, or dispatch to another thread, regardless of whether
-// the bytes were owned by JS (valid only for this callstack) or by a native
-// MutableBuffer (which the JS ArrayBuffer may GC concurrently).
-static NSMutableData *convertJSIArrayBufferToNSMutableData(jsi::Runtime &rt, const jsi::ArrayBuffer &value)
+// Copy the ArrayBuffer's bytes into an immutable NSData. An inbound buffer is
+// owned by the caller, not the native module, so NSData (not NSMutableData) is
+// the correct read-only contract. Copying makes the NSData self-contained and
+// safe to retain in a block, store, or dispatch to another thread, regardless of
+// whether the bytes were owned by JS (valid only for this callstack) or by a
+// native MutableBuffer (which the JS ArrayBuffer may GC concurrently).
+static NSData *convertJSIArrayBufferToNSData(jsi::Runtime &rt, const jsi::ArrayBuffer &value)
 {
-  return [NSMutableData dataWithBytes:value.data(rt) length:value.size(rt)];
+  return [NSData dataWithBytes:value.data(rt) length:value.size(rt)];
 }
 
 id convertJSIValueToObjCObject(
@@ -241,7 +240,7 @@ id convertJSIValueToObjCObject(
       return convertJSIFunctionToCallback(runtime, o.getFunction(runtime), jsInvoker);
     }
     if (o.isArrayBuffer(runtime)) {
-      return convertJSIArrayBufferToNSMutableData(runtime, o.getArrayBuffer(runtime));
+      return convertJSIArrayBufferToNSData(runtime, o.getArrayBuffer(runtime));
     }
     return convertJSIObjectToNSDictionary(runtime, o, jsInvoker, useNSNull);
   }

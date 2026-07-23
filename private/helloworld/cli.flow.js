@@ -20,9 +20,9 @@ import {
 } from './lib/ios';
 import {android, app, apple} from '@react-native/core-cli-utils';
 import {Command, Option, program} from 'commander';
-import {readFileSync} from 'fs';
 import {Listr} from 'listr2';
-import path from 'path';
+import {readFileSync} from 'node:fs';
+import path from 'node:path';
 
 program.version(JSON.parse(readFileSync('./package.json', 'utf8')).version);
 
@@ -246,7 +246,7 @@ bundle
             hermesc: hermesc ?? '',
           },
           callback: metroProcess => {
-            const readline = require('readline');
+            const readline = require('node:readline');
             readline.emitKeypressEvents(process.stdin);
             process.stdout.write('Press any key to close Metro...');
             // $FlowFixMe[prop-missing]

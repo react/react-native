@@ -29,11 +29,7 @@ import NativeAppState from './NativeAppState';
  * @platform ios `inactive`
  */
 export type AppStateStatus =
-  | 'inactive'
-  | 'background'
-  | 'active'
-  | 'extension'
-  | 'unknown';
+  'inactive' | 'background' | 'active' | 'extension' | 'unknown';
 
 /**
  * Events emitted by `AppState`.

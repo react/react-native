@@ -10,10 +10,12 @@
 
 import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
-import type {AccessibilityProps, HostInstance} from 'react-native';
+import type {HostInstance} from 'react-native';
+import type {AccessibilityProps} from 'react-native';
 
 import ensureInstance from '../../../src/private/__tests__/utilities/ensureInstance';
 import * as Fantom from '@react-native/fantom';
+import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {createRef} from 'react';
 import {Text} from 'react-native';
@@ -21,7 +23,7 @@ import accessibilityPropsSuite, {
   rolePropSuite,
 } from 'react-native/src/private/__tests__/utilities/accessibilityPropsSuite';
 import {testIDPropSuite} from 'react-native/src/private/__tests__/utilities/commonPropsSuite';
-import ReactNativeElement from 'react-native/src/private/webapis/dom/nodes/ReactNativeElement';
+import ReadOnlyElement from 'react-native/src/private/webapis/dom/nodes/ReadOnlyElement';
 import ReadOnlyText from 'react-native/src/private/webapis/dom/nodes/ReadOnlyText';
 
 const TEST_TEXT = 'the text';
@@ -579,7 +581,7 @@ describe('<Text>', () => {
         root.render(<Text ref={elementRef}>{TEST_TEXT}</Text>);
       });
 
-      const element = ensureInstance(elementRef.current, ReactNativeElement);
+      const element = nullthrows(elementRef.current);
       expect(element.tagName).toBe('RN:Paragraph');
     });
 
@@ -592,7 +594,7 @@ describe('<Text>', () => {
         root.render(<Text ref={elementRef}>{TEST_TEXT}</Text>);
       });
 
-      const element = ensureInstance(elementRef.current, ReactNativeElement);
+      const element = nullthrows(elementRef.current);
       expect(element.childNodes.length).toBe(1);
 
       const textChild = ensureInstance(element.childNodes[0], ReadOnlyText);
@@ -612,7 +614,7 @@ describe('<Text>', () => {
         );
       });
 
-      const element = ensureInstance(elementRef.current, ReactNativeElement);
+      const element = nullthrows(elementRef.current);
       expect(element.childNodes.length).toBe(2);
 
       const firstChild = ensureInstance(element.childNodes[0], ReadOnlyText);
@@ -620,7 +622,7 @@ describe('<Text>', () => {
 
       const secondChild = ensureInstance(
         element.childNodes[1],
-        ReactNativeElement,
+        ReadOnlyElement,
       );
       expect(secondChild.tagName).toBe('RN:Text');
       expect(secondChild.childNodes.length).toBe(1);
@@ -813,6 +815,41 @@ describe('<Text>', () => {
       ).toEqual(
         <rn-paragraph textAlignVertical="center">{TEST_TEXT}</rn-paragraph>,
       );
+    });
+  });
+
+  describe('text style props', () => {
+    it('propagates letterSpacing to the mounting layer', () => {
+      const root = Fantom.createRoot();
+      Fantom.runTask(() => {
+        root.render(<Text style={{letterSpacing: 2}}>{TEST_TEXT}</Text>);
+      });
+      expect(
+        root.getRenderedOutput({props: ['letterSpacing']}).toJSX(),
+      ).toEqual(<rn-paragraph letterSpacing="2">{TEST_TEXT}</rn-paragraph>);
+    });
+
+    it('propagates lineHeight to the mounting layer', () => {
+      const root = Fantom.createRoot();
+      Fantom.runTask(() => {
+        root.render(<Text style={{lineHeight: 30}}>{TEST_TEXT}</Text>);
+      });
+      expect(root.getRenderedOutput({props: ['lineHeight']}).toJSX()).toEqual(
+        <rn-paragraph lineHeight="30">{TEST_TEXT}</rn-paragraph>,
+      );
+    });
+
+    it('propagates fontVariant to the mounting layer', () => {
+      const root = Fantom.createRoot();
+      Fantom.runTask(() => {
+        root.render(
+          <Text style={{fontVariant: ['small-caps']}}>{TEST_TEXT}</Text>,
+        );
+      });
+      const fontVariant = root
+        .getRenderedOutput({props: ['fontVariant']})
+        .toJSONObject().props.fontVariant;
+      expect(fontVariant).toContain('small-caps');
     });
   });
 

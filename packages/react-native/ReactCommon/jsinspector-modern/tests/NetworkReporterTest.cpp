@@ -19,9 +19,7 @@ namespace facebook::react::jsinspector_modern {
 
 namespace {
 
-struct NetworkReporterTestParams {
-  bool enableNetworkEventReporting;
-};
+struct NetworkReporterTestParams {};
 
 } // namespace
 
@@ -36,13 +34,7 @@ class NetworkReporterTestBase : public TracingTestBase<
                                     folly::QueuedImmediateExecutor>,
                                 public WithParamInterface<Params> {
  protected:
-  NetworkReporterTestBase()
-      : TracingTestBase({
-            .enableNetworkEventReporting =
-                WithParamInterface<Params>::GetParam()
-                    .enableNetworkEventReporting,
-            .networkInspectionEnabled = true,
-        }) {}
+  NetworkReporterTestBase() : TracingTestBase(InspectorFlagOverrides{}) {}
 
   void SetUp() override {
     JsiIntegrationPortableTestBase::SetUp();
@@ -464,6 +456,174 @@ TEST_P(NetworkReporterTest, testGetResponseBodyWithBase64) {
                                 })");
 }
 
+TEST_P(NetworkReporterTest, testCompleteWebSocketFlow) {
+  InSequence s;
+  this->expectMessageFromPage(JsonEq(R"({
+                                          "id": 1,
+                                          "result": {}
+                                        })"));
+  this->toPage_->sendMessage(R"({
+                                  "id": 1,
+                                  "method": "Network.enable"
+                                })");
+
+  const std::string requestId = "websocket-flow-request";
+
+  // Step 1: WebSocket created
+  this->expectMessageFromPage(JsonParsed(AllOf(
+      AtJsonPtr("/method", "Network.webSocketCreated"),
+      AtJsonPtr("/params/requestId", requestId),
+      AtJsonPtr("/params/url", "wss://echo.example.com/socket"),
+      AtJsonPtr("/params/initiator/type", "script"))));
+
+  NetworkReporter::getInstance().reportWebSocketCreated(
+      requestId, "wss://echo.example.com/socket");
+
+  // Step 2: Handshake request will be sent
+  this->expectMessageFromPage(JsonParsed(AllOf(
+      AtJsonPtr("/method", "Network.webSocketWillSendHandshakeRequest"),
+      AtJsonPtr("/params/requestId", requestId),
+      AtJsonPtr("/params/timestamp", Gt(0)),
+      AtJsonPtr("/params/wallTime", Gt(0)),
+      AtJsonPtr("/params/request/headers/Origin", "https://example.com"),
+      AtJsonPtr(
+          "/params/request/headers/Sec-WebSocket-Protocol", "graphql-ws"))));
+
+  NetworkReporter::getInstance().reportWebSocketWillSendHandshakeRequest(
+      requestId,
+      Headers{
+          {"Origin", "https://example.com"},
+          {"Sec-WebSocket-Protocol", "graphql-ws"}});
+
+  // Step 3: Handshake response received
+  this->expectMessageFromPage(JsonParsed(AllOf(
+      AtJsonPtr("/method", "Network.webSocketHandshakeResponseReceived"),
+      AtJsonPtr("/params/requestId", requestId),
+      AtJsonPtr("/params/timestamp", Gt(0)),
+      AtJsonPtr("/params/response/status", 101),
+      AtJsonPtr("/params/response/statusText", "Switching Protocols"),
+      AtJsonPtr("/params/response/headers/Upgrade", "websocket"),
+      AtJsonPtr("/params/response/headers/Connection", "Upgrade"))));
+
+  NetworkReporter::getInstance().reportWebSocketHandshakeResponseReceived(
+      requestId,
+      101,
+      Headers{{"Upgrade", "websocket"}, {"Connection", "Upgrade"}});
+
+  // Step 4: Text message sent
+  this->expectMessageFromPage(JsonParsed(AllOf(
+      AtJsonPtr("/method", "Network.webSocketFrameSent"),
+      AtJsonPtr("/params/requestId", requestId),
+      AtJsonPtr("/params/timestamp", Gt(0)),
+      AtJsonPtr("/params/response/opcode", 1),
+      AtJsonPtr("/params/response/mask", true),
+      AtJsonPtr("/params/response/payloadData", R"({"type": "ping"})"))));
+
+  NetworkReporter::getInstance().reportWebSocketMessageSent(
+      requestId, R"({"type": "ping"})", false);
+
+  // Step 5: Binary message sent (payload is base64-encoded)
+  this->expectMessageFromPage(JsonParsed(AllOf(
+      AtJsonPtr("/method", "Network.webSocketFrameSent"),
+      AtJsonPtr("/params/requestId", requestId),
+      AtJsonPtr("/params/timestamp", Gt(0)),
+      AtJsonPtr("/params/response/opcode", 2),
+      AtJsonPtr("/params/response/mask", true),
+      AtJsonPtr("/params/response/payloadData", "aGVsbG8="))));
+
+  NetworkReporter::getInstance().reportWebSocketMessageSent(
+      requestId, "aGVsbG8=", true);
+
+  // Step 6: Text message received
+  this->expectMessageFromPage(JsonParsed(AllOf(
+      AtJsonPtr("/method", "Network.webSocketFrameReceived"),
+      AtJsonPtr("/params/requestId", requestId),
+      AtJsonPtr("/params/timestamp", Gt(0)),
+      AtJsonPtr("/params/response/opcode", 1),
+      AtJsonPtr("/params/response/mask", false),
+      AtJsonPtr("/params/response/payloadData", R"({"type": "pong"})"))));
+
+  NetworkReporter::getInstance().reportWebSocketMessageReceived(
+      requestId, R"({"type": "pong"})", false);
+
+  // Step 7: WebSocket closed
+  this->expectMessageFromPage(JsonParsed(AllOf(
+      AtJsonPtr("/method", "Network.webSocketClosed"),
+      AtJsonPtr("/params/requestId", requestId),
+      AtJsonPtr("/params/timestamp", Gt(0)))));
+
+  NetworkReporter::getInstance().reportWebSocketClosed(requestId);
+
+  this->expectMessageFromPage(JsonEq(R"({
+                                          "id": 2,
+                                          "result": {}
+                                        })"));
+  this->toPage_->sendMessage(R"({
+                                  "id": 2,
+                                  "method": "Network.disable"
+                                })");
+}
+
+TEST_P(NetworkReporterTest, testWebSocketCreatedWithInitiator) {
+  InSequence s;
+
+  this->expectMessageFromPage(JsonEq(R"({
+                                          "id": 0,
+                                          "result": {}
+                                      })"));
+  this->toPage_->sendMessage(R"({
+                                  "id": 0,
+                                  "method": "Debugger.enable"
+                              })");
+
+  this->expectMessageFromPage(JsonEq(R"({
+                                          "id": 1,
+                                          "result": {}
+                                        })"));
+  this->toPage_->sendMessage(R"({
+                                  "id": 1,
+                                  "method": "Network.enable"
+                                })");
+
+  auto& runtime = engineAdapter_->getRuntime();
+
+  auto requestId = this->eval(R"( // line 0
+    function openSocket() { // line 1
+      return globalThis.__NETWORK_REPORTER__.createDevToolsRequestId(); // line 2
+    } // line 3
+    openSocket(); // line 4
+
+    //# sourceURL=webSocketInitiatorTest.js
+  )")
+                       .asString(runtime)
+                       .utf8(runtime);
+
+  this->expectMessageFromPage(JsonParsed(AllOf(
+      AtJsonPtr("/method", "Network.webSocketCreated"),
+      AtJsonPtr("/params/requestId", requestId),
+      AtJsonPtr("/params/url", "wss://example.com/initiator"),
+      AtJsonPtr("/params/initiator/type", "script"),
+      AtJsonPtr(
+          "/params/initiator/stack/callFrames",
+          AllOf(
+              Each(AtJsonPtr("/url", "webSocketInitiatorTest.js")),
+              Contains(AllOf(
+                  AtJsonPtr("/functionName", "openSocket"),
+                  AtJsonPtr("/lineNumber", 2))))))));
+
+  NetworkReporter::getInstance().reportWebSocketCreated(
+      requestId, "wss://example.com/initiator");
+
+  this->expectMessageFromPage(JsonEq(R"({
+                                          "id": 2,
+                                          "result": {}
+                                        })"));
+  this->toPage_->sendMessage(R"({
+                                  "id": 2,
+                                  "method": "Network.disable"
+                                })");
+}
+
 TEST_P(NetworkReporterTest, testNetworkEventsWhenDisabled) {
   EXPECT_FALSE(NetworkReporter::getInstance().isDebuggingEnabled());
 
@@ -488,6 +648,18 @@ TEST_P(NetworkReporterTest, testNetworkEventsWhenDisabled) {
       "disabled-request", 512, 512);
   NetworkReporter::getInstance().reportResponseEnd("disabled-request", 1024);
   NetworkReporter::getInstance().reportRequestFailed("disabled-request", false);
+
+  NetworkReporter::getInstance().reportWebSocketCreated(
+      "disabled-websocket", "wss://example.com/disabled");
+  NetworkReporter::getInstance().reportWebSocketWillSendHandshakeRequest(
+      "disabled-websocket", {});
+  NetworkReporter::getInstance().reportWebSocketHandshakeResponseReceived(
+      "disabled-websocket", 101, {});
+  NetworkReporter::getInstance().reportWebSocketMessageSent(
+      "disabled-websocket", "hello", false);
+  NetworkReporter::getInstance().reportWebSocketMessageReceived(
+      "disabled-websocket", "world", false);
+  NetworkReporter::getInstance().reportWebSocketClosed("disabled-websocket");
 }
 
 TEST_P(NetworkReporterTest, testRequestWillBeSentWithInitiator) {
@@ -623,13 +795,10 @@ TEST_P(NetworkReporterTest, testTwoSessionsReceiveNetworkEvents) {
 }
 
 struct NetworkReporterTracingTestParams {
-  bool enableNetworkEventReporting;
   bool enableNetworkDomain;
 
   operator NetworkReporterTestParams() const {
-    return NetworkReporterTestParams{
-        .enableNetworkEventReporting = enableNetworkEventReporting,
-    };
+    return NetworkReporterTestParams{};
   }
 };
 
@@ -802,19 +971,12 @@ TEST_P(
           AtJsonPtr("/args/data/didFail", false))));
 }
 
-static const auto networkReporterTestParamValues = testing::Values(
-    NetworkReporterTestParams{.enableNetworkEventReporting = true},
-    NetworkReporterTestParams{
-        .enableNetworkEventReporting = false,
-    });
+static const auto networkReporterTestParamValues =
+    testing::Values(NetworkReporterTestParams{});
 
 static const auto networkReporterTracingTestParamValues = testing::Values(
-    NetworkReporterTracingTestParams{
-        .enableNetworkEventReporting = true,
-        .enableNetworkDomain = true},
-    NetworkReporterTracingTestParams{
-        .enableNetworkEventReporting = true,
-        .enableNetworkDomain = false});
+    NetworkReporterTracingTestParams{.enableNetworkDomain = true},
+    NetworkReporterTracingTestParams{.enableNetworkDomain = false});
 
 INSTANTIATE_TEST_SUITE_P(
     NetworkReporterTest,

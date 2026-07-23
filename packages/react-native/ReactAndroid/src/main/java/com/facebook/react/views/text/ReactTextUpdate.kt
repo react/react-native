@@ -25,13 +25,12 @@ internal class ReactTextUpdate(
         textAlign: Int,
         textBreakStrategy: Int,
         justificationMode: Int,
-    ): ReactTextUpdate =
-        ReactTextUpdate(
-            text,
-            jsEventCounter,
-            textAlign,
-            textBreakStrategy,
-            justificationMode,
-        )
+    ): ReactTextUpdate = ReactTextUpdate(
+        text,
+        jsEventCounter,
+        textAlign,
+        textBreakStrategy,
+        justificationMode,
+    )
   }
 }

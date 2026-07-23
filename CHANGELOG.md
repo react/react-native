@@ -1,5 +1,61 @@
 # Changelog
 
+## v0.87.0-rc.2
+
+### Breaking
+
+- **Runtime**: Remove the `SceneTracker` module from `Libraries/Utilities`, stop setting the active scene from `AppRegistry.runApplication`, and pass the app key as an optional second argument to `WrapperComponentProvider` ([bbb5be9b41](https://github.com/react/react-native/commit/bbb5be9b416efc9b1c365b08a0bcf932c14562ca) by [@rubennorte](https://github.com/rubennorte))
+
+#### iOS specific
+
+- **Build**: [0.87] Pick SwiftPM support chain (#57442, #57332, #57564) ([486df8d410](https://github.com/react/react-native/commit/486df8d410d73d7a1be3600c93a6cf7888532843) by [@cipolleschi](https://github.com/cipolleschi))
+
+### Changed
+
+#### iOS specific
+
+- **Build**: Prebuilt-deps mode: serve third-party headers from the ReactNativeDependencies pod itself and resolve community `s.dependency` on RCT-Folly/glog/boost/etc. via dependency-only facade pods ([a8156acf8b](https://github.com/react/react-native/commit/a8156acf8bbc9ee15901cf0d8935d73454768aa7) by [@chrfalch](https://github.com/chrfalch))
+- **Build**: Remove the Clang VFS overlay from prebuilt React Native Core; resolve headers via React.xcframework + a new headers-only ReactNativeHeaders.xcframework ([376bd0e464](https://github.com/react/react-native/commit/376bd0e464b7785b4bcf8673a96746ec8107f1eb) by [@chrfalch](https://github.com/chrfalch))
+
+### Fixed
+
+- **Runtime**: Fix app failing to initialize (`HMRClient.setup()` redbox) because the environment setup module was dropped from the bundle ([eb987ef550](https://github.com/react/react-native/commit/eb987ef5504d85ff862b5a679056157888c56960) by [@cipolleschi](https://github.com/cipolleschi))
+
+#### iOS specific
+
+- **Build**: Fix "redefinition of 'HighResDuration'" / "could not build module 'React'" when building Swift pods with C++ interop against the prebuilt React-Core artifact ([9847238e3f](https://github.com/react/react-native/commit/9847238e3fc2badce8eeea659c4990aba1366d9b) by [@chrfalch](https://github.com/chrfalch))
+- **Hermes**: Fix debug Hermes being silently embedded in Release builds after the hermes-engine pod is re-installed ([62a2b386c9](https://github.com/react/react-native/commit/62a2b386c91985a46ee048dfa6e2216ba42a7e89) by [@tjzel](https://github.com/tjzel))
+- **Build**: Fix "The project 'Pods' is damaged and cannot be opened" when a library uses `spm_dependency` and the generated UUID collides with an existing Pods project object ([1cdf784a06](https://github.com/react/react-native/commit/1cdf784a068e2ed16842b74c0b87b7ff7532fe03) by [@chrfalch](https://github.com/chrfalch))
+- **Build**: Ship React-Core's privacy manifest and localized strings (RCTI18nStrings) inside the prebuilt React.xcframework, so CocoaPods-prebuilt and SwiftPM apps include them ([77b75122ef](https://github.com/react/react-native/commit/77b75122ef9ed172012d7c6acb335f966d4ede79) by [@chrfalch](https://github.com/chrfalch))
+- **Build**: Fix "redefinition of module" build failure on Xcode 26.3 for pods using `spm_dependency` with prebuilt React Native core ([4a6620703c](https://github.com/react/react-native/commit/4a6620703c30b3f53917812720528684838d3bbf) by [@chrfalch](https://github.com/chrfalch))
+
+
+## v0.87.0-rc.1
+
+### Breaking
+
+- React Native's default JavaScript API is now the [Strict TypeScript API](https://reactnative.dev/docs/strict-typescript-api). Use `customConditions: ["react-native-legacy-deep-imports"]` to opt out. ([c948b61c05](https://github.com/react/react-native/commit/c948b61c051a2d5cfc79925e93eb49904db972c8) by [@huntie](https://github.com/huntie))
+- The `Touchable` root export (undocumented) is removed. If you are extending `Touchable` as a type, please use `ViewProps` instead. ([6fbf3062f9](https://github.com/react/react-native/commit/6fbf3062f9085c93bcb35c6a61c76029abbc16a5) by [@huntie](https://github.com/huntie))
+- `react-native/rn-get-polyfills` is removed — please use `react-native/js-polyfills` (package) ([b6a535afee](https://github.com/react/react-native/commit/b6a535afee1e099db00e62b904e3611f41227544) by [@huntie](https://github.com/huntie))
+- `react-native/jest-preset` is removed — all projects must now migrate to `react-native/jest-preset` (package) ([9ee21ddd9b](https://github.com/react/react-native/commit/9ee21ddd9b0d6b997709786fda4bd0b67be1ec7d) by [@huntie](https://github.com/huntie))
+
+
+### Added
+
+- Deprecate `'react-native/Libraries/Core/InitializeCore'`. Use `'react-native/setup-env'` instead. ([bfa679f0ea](https://github.com/react/react-native/commit/bfa679f0ea5431c92894d236b8e414f2feb70280) by [@huntie](https://github.com/huntie))
+
+
+### Changed
+
+- Bump Metro to 0.87.0 ([0565bcdbab](https://github.com/react/react-native/commit/0565bcdbab05e2fb6208aa842721485eb89ffc7c) by [@robhogan](https://github.com/robhogan))
+
+
+### Fixed
+
+- Fix apps failing to boot ("... not registered as callable") caused by core init not running. ([08c323346b](https://github.com/react/react-native/commit/08c323346be6c0fbbd70900d48435f977a78a1bb) by [@zeyap](https://github.com/zeyap))
+
+
+
 ## v0.87.0-rc.0
 
 ### Breaking

@@ -167,17 +167,16 @@ public class Task<TResult> : TaskInterface<TResult> {
   public fun <TContinuationResult> onSuccess(
       continuation: Continuation<TResult, TContinuationResult>,
       executor: Executor = IMMEDIATE_EXECUTOR,
-  ): Task<TContinuationResult> =
-      continueWithTask(
-          { task ->
-            when {
-              task.isCancelled() -> cancelled()
-              task.isFaulted() -> forError(task.getError())
-              else -> task.continueWith(continuation)
-            }
-          },
-          executor,
-      )
+  ): Task<TContinuationResult> = continueWithTask(
+      { task ->
+        when {
+          task.isCancelled() -> cancelled()
+          task.isFaulted() -> forError(task.getError())
+          else -> task.continueWith(continuation)
+        }
+      },
+      executor,
+  )
 
   /**
    * Runs a continuation when a task completes successfully, forwarding along [java.lang.Exception]s
@@ -186,17 +185,16 @@ public class Task<TResult> : TaskInterface<TResult> {
   public fun <TContinuationResult> onSuccessTask(
       continuation: Continuation<TResult, Task<TContinuationResult>>,
       executor: Executor = IMMEDIATE_EXECUTOR,
-  ): Task<TContinuationResult> =
-      continueWithTask(
-          { task ->
-            when {
-              task.isCancelled() -> cancelled()
-              task.isFaulted() -> forError(task.getError())
-              else -> task.continueWithTask(continuation)
-            }
-          },
-          executor,
-      )
+  ): Task<TContinuationResult> = continueWithTask(
+      { task ->
+        when {
+          task.isCancelled() -> cancelled()
+          task.isFaulted() -> forError(task.getError())
+          else -> task.continueWithTask(continuation)
+        }
+      },
+      executor,
+  )
 
   private fun runContinuations() =
       synchronized(lock) {

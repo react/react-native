@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<68ccb8d73a8f29fbf88f15a183bd910b>>
+ * @generated SignedSource<<848355c91c5827383c35686d975ebb08>>
  * @flow strict
  * @noformat
  */
@@ -64,7 +64,6 @@ export interface Spec extends TurboModule {
   readonly enableModuleArgumentNSNullConversionIOS?: () => boolean;
   readonly enableMutationObserverByDefault?: () => boolean;
   readonly enableNativeCSSParsing?: () => boolean;
-  readonly enableNetworkEventReporting?: () => boolean;
   readonly enablePreparedTextLayout?: () => boolean;
   readonly enablePropsUpdateReconciliationAndroid?: () => boolean;
   readonly enableRuntimeSchedulerQueueClearingOnError?: () => boolean;
@@ -83,8 +82,8 @@ export interface Spec extends TurboModule {
   readonly fuseboxAssertSingleHostState?: () => boolean;
   readonly fuseboxEnabledRelease?: () => boolean;
   readonly fuseboxFrameRecordingEnabled?: () => boolean;
-  readonly fuseboxNetworkInspectionEnabled?: () => boolean;
   readonly fuseboxScreenshotCaptureEnabled?: () => boolean;
+  readonly fuseboxWebSocketEventsEnabled?: () => boolean;
   readonly optimizedAnimatedPropUpdates?: () => boolean;
   readonly overrideBySynchronousMountPropsAtMountingAndroid?: () => boolean;
   readonly perfIssuesEnabled?: () => boolean;

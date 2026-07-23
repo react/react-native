@@ -142,18 +142,17 @@ private constructor(
         exceptionHandler: QueueThreadExceptionHandler,
     ): MessageQueueThreadImpl {
       val looperFuture = SimpleSettableFuture<Looper?>()
-      val bgThread =
-          Thread(
-              null,
-              {
-                Process.setThreadPriority(Process.THREAD_PRIORITY_DISPLAY)
-                Looper.prepare()
-                looperFuture.set(Looper.myLooper())
-                Looper.loop()
-              },
-              "mqt_$name",
-              stackSize,
-          )
+      val bgThread = Thread(
+          null,
+          {
+            Process.setThreadPriority(Process.THREAD_PRIORITY_DISPLAY)
+            Looper.prepare()
+            looperFuture.set(Looper.myLooper())
+            Looper.loop()
+          },
+          "mqt_$name",
+          stackSize,
+      )
       bgThread.start()
 
       val looper =

@@ -16,7 +16,7 @@ import type {ConfigT, InputConfigT} from 'metro-config';
 
 const {getDefaultConfig} = require('@react-native/metro-config');
 const {mergeConfig} = require('metro-config');
-const path = require('path');
+const path = require('node:path');
 
 const rnTesterConfig = getDefaultConfig(
   path.resolve('../../../packages/rn-tester'),

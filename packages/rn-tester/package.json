@@ -30,7 +30,9 @@
     "@react-native/popup-menu-android": "0.87.0-main",
     "flow-enums-runtime": "^0.0.6",
     "invariant": "^2.2.4",
-    "nullthrows": "^1.1.1"
+    "nullthrows": "^1.1.1",
+    "react-native-test-library-apple": "0.87.0-main",
+    "react-native-test-library-common": "0.87.0-main"
   },
   "peerDependencies": {
     "react": "19.2.3",

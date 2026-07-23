@@ -3,8 +3,12 @@
 <!-- @generated -->
 <!-- FB Locale: zu_ZA -->
 <resources exclude-from-buck-resource-map="true">
+    <string name="alert_description" gender="unknown">Isexwayiso</string>
     <string name="menu_description" gender="unknown">Imenyu</string>
+    <string name="menuitem_description" gender="unknown">Into Yemenyu</string>
     <string name="scrollbar_description" gender="unknown">Ibha Lokuskrola</string>
     <string name="rn_tab_description" gender="unknown">Ithebhu</string>
+    <string name="timer_description" gender="unknown">Isibali-sikhathi</string>
+    <string name="state_unselected_description" gender="unknown">okungakhethwanga</string>
     <string name="state_off_description" gender="unknown">kuvaliwe</string>
 </resources>

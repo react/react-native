@@ -620,6 +620,34 @@ describe('<Image>', () => {
       });
     });
 
+    describe('alt', () => {
+      it('is passed as accessibilityLabel and marks the image accessible', () => {
+        const root = Fantom.createRoot();
+        Fantom.runTask(() => {
+          root.render(<Image alt="a picture" source={LOGO_SOURCE} />);
+        });
+        expect(
+          root
+            .getRenderedOutput({props: ['accessibilityLabel', 'accessible']})
+            .toJSX(),
+        ).toEqual(
+          <rn-image accessibilityLabel="a picture" accessible="true" />,
+        );
+      });
+    });
+
+    describe('aria-label', () => {
+      it('is passed as accessibilityLabel', () => {
+        const root = Fantom.createRoot();
+        Fantom.runTask(() => {
+          root.render(<Image aria-label="labelled" source={LOGO_SOURCE} />);
+        });
+        expect(
+          root.getRenderedOutput({props: ['accessibilityLabel']}).toJSX(),
+        ).toEqual(<rn-image accessibilityLabel="labelled" />);
+      });
+    });
+
     component TestComponent(testID?: ?string, ...props: AccessibilityProps) {
       return <Image {...props} testID={testID} source={LOGO_SOURCE} />;
     }
@@ -1044,6 +1072,24 @@ describe('<Image>', () => {
         expect(result).toEqual(undefined);
         expect(error).toBeInstanceOf(Error);
         expect(error?.message).toBe('Failed to prefetch image');
+      });
+    });
+
+    describe('prefetchWithMetadata', () => {
+      it('prefetches the image', () => {
+        const uri = 'https://reactnative.dev/img/tiny_logo.png';
+
+        NativeFantom.setImageResponse(uri, {
+          width: 100,
+          height: 100,
+        });
+
+        let result;
+        Fantom.runTask(async () => {
+          result = await Image.prefetchWithMetadata(uri, 'queryRootName');
+        });
+
+        expect(result).toEqual(true);
       });
     });
 

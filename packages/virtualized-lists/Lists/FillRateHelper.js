@@ -43,7 +43,7 @@ let _sampleRate = DEBUG ? 1 : null;
  * samples (e.g. to log them), make sure to call `FillRateHelper.setSampleRate(0.0-1.0)`.
  *
  * Listeners and sample rate are global for all `VirtualizedList`s - typical usage will combine with
- * `SceneTracker.getActiveScene` to determine the context of the events.
+ * the active scene/route to determine the context of the events.
  */
 class FillRateHelper {
   _anyBlankStartTime: ?number = null;

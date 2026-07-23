@@ -215,6 +215,8 @@ val preparePrefab by
                       Pair(File(buildDir, "third-party-ndk/glog/exported/").absolutePath, ""),
                       Pair("../ReactCommon/callinvoker/", ""),
                       Pair("../ReactCommon/cxxreact/", "cxxreact/"),
+                      // Exported because the public cxxreact/ErrorUtils.h includes it
+                      Pair("../ReactCommon/jserrorhandler/", "jserrorhandler/"),
                       Pair("../ReactCommon/react/bridging/", "react/bridging/"),
                       Pair("../ReactCommon/react/nativemodule/core/", ""),
                       Pair("../ReactCommon/react/nativemodule/core/platform/android/", ""),

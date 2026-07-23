@@ -535,13 +535,12 @@ public object BackgroundStyleApplicator {
     paddingBoxRect.bottom = composite.bounds.bottom - (computedBorderInsets?.bottom?.dpToPx() ?: 0f)
 
     if (composite.borderRadius?.hasRoundedBorders() == true) {
-      val paddingBoxPath =
-          createPaddingBoxPath(
-              view,
-              composite,
-              paddingBoxRect,
-              computedBorderInsets,
-          )
+      val paddingBoxPath = createPaddingBoxPath(
+          view,
+          composite,
+          paddingBoxRect,
+          computedBorderInsets,
+      )
       paddingBoxPath.offset(drawingRect.left.toFloat(), drawingRect.top.toFloat())
 
       // On Android 28 and below, use antialiased clipping with Porter-Duff compositing. On newer
@@ -764,46 +763,38 @@ public object BackgroundStyleApplicator {
 
     val paddingBoxPath = Path()
 
-    val innerTopLeftRadiusX =
-        getInnerBorderRadius(
-            computedBorderRadius?.topLeft?.horizontal?.dpToPx(),
-            computedBorderInsets?.left?.dpToPx(),
-        )
-    val innerTopLeftRadiusY =
-        getInnerBorderRadius(
-            computedBorderRadius?.topLeft?.vertical?.dpToPx(),
-            computedBorderInsets?.top?.dpToPx(),
-        )
-    val innerTopRightRadiusX =
-        getInnerBorderRadius(
-            computedBorderRadius?.topRight?.horizontal?.dpToPx(),
-            computedBorderInsets?.right?.dpToPx(),
-        )
-    val innerTopRightRadiusY =
-        getInnerBorderRadius(
-            computedBorderRadius?.topRight?.vertical?.dpToPx(),
-            computedBorderInsets?.top?.dpToPx(),
-        )
-    val innerBottomRightRadiusX =
-        getInnerBorderRadius(
-            computedBorderRadius?.bottomRight?.horizontal?.dpToPx(),
-            computedBorderInsets?.right?.dpToPx(),
-        )
-    val innerBottomRightRadiusY =
-        getInnerBorderRadius(
-            computedBorderRadius?.bottomRight?.vertical?.dpToPx(),
-            computedBorderInsets?.bottom?.dpToPx(),
-        )
-    val innerBottomLeftRadiusX =
-        getInnerBorderRadius(
-            computedBorderRadius?.bottomLeft?.horizontal?.dpToPx(),
-            computedBorderInsets?.left?.dpToPx(),
-        )
-    val innerBottomLeftRadiusY =
-        getInnerBorderRadius(
-            computedBorderRadius?.bottomLeft?.vertical?.dpToPx(),
-            computedBorderInsets?.bottom?.dpToPx(),
-        )
+    val innerTopLeftRadiusX = getInnerBorderRadius(
+        computedBorderRadius?.topLeft?.horizontal?.dpToPx(),
+        computedBorderInsets?.left?.dpToPx(),
+    )
+    val innerTopLeftRadiusY = getInnerBorderRadius(
+        computedBorderRadius?.topLeft?.vertical?.dpToPx(),
+        computedBorderInsets?.top?.dpToPx(),
+    )
+    val innerTopRightRadiusX = getInnerBorderRadius(
+        computedBorderRadius?.topRight?.horizontal?.dpToPx(),
+        computedBorderInsets?.right?.dpToPx(),
+    )
+    val innerTopRightRadiusY = getInnerBorderRadius(
+        computedBorderRadius?.topRight?.vertical?.dpToPx(),
+        computedBorderInsets?.top?.dpToPx(),
+    )
+    val innerBottomRightRadiusX = getInnerBorderRadius(
+        computedBorderRadius?.bottomRight?.horizontal?.dpToPx(),
+        computedBorderInsets?.right?.dpToPx(),
+    )
+    val innerBottomRightRadiusY = getInnerBorderRadius(
+        computedBorderRadius?.bottomRight?.vertical?.dpToPx(),
+        computedBorderInsets?.bottom?.dpToPx(),
+    )
+    val innerBottomLeftRadiusX = getInnerBorderRadius(
+        computedBorderRadius?.bottomLeft?.horizontal?.dpToPx(),
+        computedBorderInsets?.left?.dpToPx(),
+    )
+    val innerBottomLeftRadiusY = getInnerBorderRadius(
+        computedBorderRadius?.bottomLeft?.vertical?.dpToPx(),
+        computedBorderInsets?.bottom?.dpToPx(),
+    )
 
     paddingBoxPath.addRoundRect(
         paddingBoxRect,

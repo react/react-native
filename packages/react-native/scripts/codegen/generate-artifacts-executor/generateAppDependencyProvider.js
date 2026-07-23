@@ -11,8 +11,8 @@
 'use strict';
 const {TEMPLATES_FOLDER_PATH, packageJson} = require('./constants');
 const {codegenLog, writeFileSyncIfChanged} = require('./utils');
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const APP_DEPENDENCY_PROVIDER_H_TEMPLATE_PATH = path.join(
   TEMPLATES_FOLDER_PATH,

@@ -8,11 +8,11 @@
 #pragma once
 
 #include <FBReactNativeSpec/FBReactNativeSpecJSI.h>
+#include <folly/dynamic.h>
 #include <jserrorhandler/JsErrorHandler.h>
 #include <react/bridging/Base.h>
 #include <optional>
 #include <string>
-#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -29,6 +29,11 @@ using StackFrame = NativeExceptionsManagerStackFrame<
 template <>
 struct Bridging<StackFrame> : NativeExceptionsManagerStackFrameBridging<StackFrame> {};
 
+// extraData is `?Object` on the JS side and callers routinely populate it with
+// non-string values (e.g. jsBuild as a number, nested Error-decorated objects
+// via RN$ErrorExtraDataKey). A flat unordered_map<string, string> would fail
+// bridging with "Value is an object, expected a String" before reportException
+// runs.
 using ExceptionData = NativeExceptionsManagerExceptionData<
     std::string,
     std::optional<std::string>,
@@ -37,7 +42,7 @@ using ExceptionData = NativeExceptionsManagerExceptionData<
     std::vector<StackFrame>,
     int32_t,
     bool,
-    std::optional<std::unordered_map<std::string, std::string>>>;
+    std::optional<folly::dynamic>>;
 
 template <>
 struct Bridging<ExceptionData> : NativeExceptionsManagerExceptionDataBridging<ExceptionData> {};

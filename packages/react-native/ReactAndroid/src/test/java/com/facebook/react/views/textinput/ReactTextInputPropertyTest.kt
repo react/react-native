@@ -225,22 +225,21 @@ class ReactTextInputPropertyTest {
       return
     }
 
-    val expectedHints =
-        listOf(
-            "2fa-app-otp" to HintConstants.AUTOFILL_HINT_2FA_APP_OTP,
-            "email-otp" to HintConstants.AUTOFILL_HINT_EMAIL_OTP,
-            "flight-confirmation-code" to HintConstants.AUTOFILL_HINT_FLIGHT_CONFIRMATION_CODE,
-            "flight-number" to HintConstants.AUTOFILL_HINT_FLIGHT_NUMBER,
-            "gift-card-number" to HintConstants.AUTOFILL_HINT_GIFT_CARD_NUMBER,
-            "gift-card-pin" to HintConstants.AUTOFILL_HINT_GIFT_CARD_PIN,
-            "loyalty-account-number" to HintConstants.AUTOFILL_HINT_LOYALTY_ACCOUNT_NUMBER,
-            "postal-address-dependent-locality" to
-                HintConstants.AUTOFILL_HINT_POSTAL_ADDRESS_DEPENDENT_LOCALITY,
-            "postal-address-unit" to HintConstants.AUTOFILL_HINT_POSTAL_ADDRESS_APT_NUMBER,
-            "promo-code" to HintConstants.AUTOFILL_HINT_PROMO_CODE,
-            "upi-vpa" to HintConstants.AUTOFILL_HINT_UPI_VPA,
-            "wifi-password" to HintConstants.AUTOFILL_HINT_WIFI_PASSWORD,
-        )
+    val expectedHints = listOf(
+        "2fa-app-otp" to HintConstants.AUTOFILL_HINT_2FA_APP_OTP,
+        "email-otp" to HintConstants.AUTOFILL_HINT_EMAIL_OTP,
+        "flight-confirmation-code" to HintConstants.AUTOFILL_HINT_FLIGHT_CONFIRMATION_CODE,
+        "flight-number" to HintConstants.AUTOFILL_HINT_FLIGHT_NUMBER,
+        "gift-card-number" to HintConstants.AUTOFILL_HINT_GIFT_CARD_NUMBER,
+        "gift-card-pin" to HintConstants.AUTOFILL_HINT_GIFT_CARD_PIN,
+        "loyalty-account-number" to HintConstants.AUTOFILL_HINT_LOYALTY_ACCOUNT_NUMBER,
+        "postal-address-dependent-locality" to
+            HintConstants.AUTOFILL_HINT_POSTAL_ADDRESS_DEPENDENT_LOCALITY,
+        "postal-address-unit" to HintConstants.AUTOFILL_HINT_POSTAL_ADDRESS_APT_NUMBER,
+        "promo-code" to HintConstants.AUTOFILL_HINT_PROMO_CODE,
+        "upi-vpa" to HintConstants.AUTOFILL_HINT_UPI_VPA,
+        "wifi-password" to HintConstants.AUTOFILL_HINT_WIFI_PASSWORD,
+    )
 
     expectedHints.forEach { (autoComplete, expectedHint) ->
       manager.updateProperties(view, buildStyles("autoComplete", autoComplete))

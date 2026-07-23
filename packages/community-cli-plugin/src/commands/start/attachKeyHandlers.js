@@ -12,9 +12,9 @@ import type {TerminalReporter} from 'metro';
 
 import OpenDebuggerKeyboardHandler from './OpenDebuggerKeyboardHandler';
 import invariant from 'invariant';
-import readline from 'readline';
-import {ReadStream} from 'tty';
-import {styleText} from 'util';
+import readline from 'node:readline';
+import {ReadStream} from 'node:tty';
+import {styleText} from 'node:util';
 
 const CTRL_C = '\u0003';
 const CTRL_D = '\u0004';

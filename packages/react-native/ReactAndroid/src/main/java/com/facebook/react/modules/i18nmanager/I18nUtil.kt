@@ -11,7 +11,6 @@ import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.view.View
 import androidx.core.text.TextUtilsCompat
-import java.util.Locale
 
 public class I18nUtil private constructor() {
   /**
@@ -21,7 +20,7 @@ public class I18nUtil private constructor() {
    */
   public fun isRTL(context: Context): Boolean =
       applicationHasRtlSupport(context) &&
-          (isRTLForced(context) || (isRTLAllowed(context) && isDevicePreferredLanguageRTL))
+          (isRTLForced(context) || (isRTLAllowed(context) && isDevicePreferredLanguageRTL(context)))
 
   /**
    * Android relies on the presence of `android:supportsRtl="true"` being set in order to resolve
@@ -60,13 +59,12 @@ public class I18nUtil private constructor() {
     setPref(context, KEY_FOR_PREFS_FORCERTL, forceRTL)
   }
 
-  private val isDevicePreferredLanguageRTL: Boolean
-    // Check if the current device language is RTL
-    get() {
-      val directionality =
-          TextUtilsCompat.getLayoutDirectionFromLocale(Locale.getAvailableLocales()[0])
-      return directionality == View.LAYOUT_DIRECTION_RTL
-    }
+  // Check if the current device language is RTL
+  private fun isDevicePreferredLanguageRTL(context: Context): Boolean {
+    val directionality =
+        TextUtilsCompat.getLayoutDirectionFromLocale(context.resources.configuration.locales[0])
+    return directionality == View.LAYOUT_DIRECTION_RTL
+  }
 
   private fun isPrefSet(context: Context, key: String, defaultValue: Boolean): Boolean =
       context

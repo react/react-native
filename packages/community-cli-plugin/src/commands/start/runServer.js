@@ -19,9 +19,9 @@ import attachKeyHandlers from './attachKeyHandlers';
 import {createDevServerMiddleware} from './middleware';
 import {createDevMiddleware} from '@react-native/dev-middleware';
 import * as Metro from 'metro';
-import path from 'path';
-import url from 'url';
-import {styleText} from 'util';
+import path from 'node:path';
+import url from 'node:url';
+import {styleText} from 'node:util';
 
 export type StartCommandArgs = {
   assetPlugins?: string[],

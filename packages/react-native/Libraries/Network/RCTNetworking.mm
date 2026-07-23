@@ -15,7 +15,6 @@
 #import <React/RCTUtils.h>
 
 #import <React/RCTHTTPRequestHandler.h>
-#import <react/featureflags/ReactNativeFeatureFlags.h>
 
 #import "RCTInspectorNetworkReporter.h"
 #import "RCTNetworkPlugins.h"
@@ -452,9 +451,7 @@ RCT_EXPORT_MODULE()
     __weak RCTNetworkTask *weakTask = task;
     return ^{
       [weakTask cancel];
-      if (facebook::react::ReactNativeFeatureFlags::enableNetworkEventReporting()) {
-        [RCTInspectorNetworkReporter reportRequestFailed:devToolsRequestId cancelled:YES];
-      }
+      [RCTInspectorNetworkReporter reportRequestFailed:devToolsRequestId cancelled:YES];
       if (cancellationBlock) {
         cancellationBlock();
       }
@@ -574,19 +571,17 @@ RCT_EXPORT_MODULE()
     }
   }
 
-  if (facebook::react::ReactNativeFeatureFlags::enableNetworkEventReporting()) {
-    id responseDataForPreview;
-    if ([responseType isEqualToString:@"blob"]) {
-      responseDataForPreview = data;
-    } else if ([responseData isKindOfClass:[NSString class]]) {
-      responseDataForPreview = responseData;
-    }
-    bool base64Encoded = [responseType isEqualToString:@"base64"] || [responseType isEqualToString:@"blob"];
-
-    [RCTInspectorNetworkReporter maybeStoreResponseBody:task.devToolsRequestId
-                                                   data:responseDataForPreview
-                                          base64Encoded:base64Encoded];
+  id responseDataForPreview;
+  if ([responseType isEqualToString:@"blob"]) {
+    responseDataForPreview = data;
+  } else if ([responseData isKindOfClass:[NSString class]]) {
+    responseDataForPreview = responseData;
   }
+  bool base64Encoded = [responseType isEqualToString:@"base64"] || [responseType isEqualToString:@"blob"];
+
+  [RCTInspectorNetworkReporter maybeStoreResponseBody:task.devToolsRequestId
+                                                 data:responseDataForPreview
+                                        base64Encoded:base64Encoded];
 
   [self sendEventWithName:@"didReceiveNetworkData" body:@[ task.requestID, responseData ]];
 }
@@ -620,12 +615,10 @@ RCT_EXPORT_MODULE()
     id responseURL = response.URL ? response.URL.absoluteString : [NSNull null];
     NSArray<id> *responseJSON = @[ task.requestID, @(status), headers, responseURL ];
 
-    if (facebook::react::ReactNativeFeatureFlags::enableNetworkEventReporting()) {
-      [RCTInspectorNetworkReporter reportResponseStart:task.devToolsRequestId
-                                              response:response
-                                            statusCode:status
-                                               headers:headers];
-    }
+    [RCTInspectorNetworkReporter reportResponseStart:task.devToolsRequestId
+                                            response:response
+                                          statusCode:status
+                                             headers:headers];
     [weakSelf sendEventWithName:@"didReceiveNetworkResponse" body:responseJSON];
   };
 
@@ -660,10 +653,8 @@ RCT_EXPORT_MODULE()
           @(total)
         ];
 
-        if (facebook::react::ReactNativeFeatureFlags::enableNetworkEventReporting()) {
-          [RCTInspectorNetworkReporter reportDataReceived:task.devToolsRequestId data:data];
-          [RCTInspectorNetworkReporter maybeStoreResponseBodyIncremental:task.devToolsRequestId data:responseString];
-        }
+        [RCTInspectorNetworkReporter reportDataReceived:task.devToolsRequestId data:data];
+        [RCTInspectorNetworkReporter maybeStoreResponseBodyIncremental:task.devToolsRequestId data:responseString];
         [weakSelf sendEventWithName:@"didReceiveNetworkIncrementalData" body:responseJSON];
       };
     } else {
@@ -700,12 +691,10 @@ RCT_EXPORT_MODULE()
     NSArray *responseJSON =
         @[ task.requestID, RCTNullIfNil(error.localizedDescription), error.code == kCFURLErrorTimedOut ? @YES : @NO ];
 
-    if (facebook::react::ReactNativeFeatureFlags::enableNetworkEventReporting()) {
-      if (error != nullptr) {
-        [RCTInspectorNetworkReporter reportRequestFailed:task.devToolsRequestId cancelled:NO];
-      } else {
-        [RCTInspectorNetworkReporter reportResponseEnd:task.devToolsRequestId encodedDataLength:data.length];
-      }
+    if (error != nullptr) {
+      [RCTInspectorNetworkReporter reportRequestFailed:task.devToolsRequestId cancelled:NO];
+    } else {
+      [RCTInspectorNetworkReporter reportResponseEnd:task.devToolsRequestId encodedDataLength:data.length];
     }
     [strongSelf sendEventWithName:@"didCompleteNetworkResponse" body:responseJSON];
     [strongSelf->_tasksByRequestID removeObjectForKey:task.requestID];
@@ -723,12 +712,10 @@ RCT_EXPORT_MODULE()
     }
     _tasksByRequestID[task.requestID] = task;
     responseSender(@[ task.requestID ]);
-    if (facebook::react::ReactNativeFeatureFlags::enableNetworkEventReporting()) {
-      [RCTInspectorNetworkReporter reportRequestStart:task.devToolsRequestId
-                                              request:request
-                                    encodedDataLength:task.response.expectedContentLength];
-      [RCTInspectorNetworkReporter reportConnectionTiming:task.devToolsRequestId request:task.request];
-    }
+    [RCTInspectorNetworkReporter reportRequestStart:task.devToolsRequestId
+                                            request:request
+                                  encodedDataLength:task.response.expectedContentLength];
+    [RCTInspectorNetworkReporter reportConnectionTiming:task.devToolsRequestId request:task.request];
   }
 
   [task start];

@@ -378,33 +378,32 @@ public class NetworkingModule(
       clientBuilder.addNetworkInterceptor { chain ->
         val originalResponse = chain.proceed(chain.request())
         val originalResponseBody = checkNotNull(originalResponse.body())
-        val responseBody =
-            ProgressResponseBody(
-                originalResponseBody,
-                object : ProgressListener {
-                  var last: Long = System.nanoTime()
+        val responseBody = ProgressResponseBody(
+            originalResponseBody,
+            object : ProgressListener {
+              var last: Long = System.nanoTime()
 
-                  override fun onProgress(bytesWritten: Long, contentLength: Long, done: Boolean) {
-                    val now = System.nanoTime()
-                    if (!done && !shouldDispatch(now, last)) {
-                      return
-                    }
-                    if (responseType == "text") {
-                      // For 'text' responses we continuously send response data with progress
-                      // info to
-                      // JS below, so no need to do anything here.
-                      return
-                    }
-                    NetworkEventUtil.onDataReceivedProgress(
-                        reactApplicationContext,
-                        requestId,
-                        bytesWritten,
-                        contentLength,
-                    )
-                    last = now
-                  }
-                },
-            )
+              override fun onProgress(bytesWritten: Long, contentLength: Long, done: Boolean) {
+                val now = System.nanoTime()
+                if (!done && !shouldDispatch(now, last)) {
+                  return
+                }
+                if (responseType == "text") {
+                  // For 'text' responses we continuously send response data with progress
+                  // info to
+                  // JS below, so no need to do anything here.
+                  return
+                }
+                NetworkEventUtil.onDataReceivedProgress(
+                    reactApplicationContext,
+                    requestId,
+                    bytesWritten,
+                    contentLength,
+                )
+                last = now
+              }
+            },
+        )
         originalResponse.newBuilder().body(responseBody).build()
       }
     }

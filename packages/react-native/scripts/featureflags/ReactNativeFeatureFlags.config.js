@@ -161,7 +161,7 @@ const definitions: FeatureFlagDefinitions = {
     enableAccessibilityOrder: {
       defaultValue: false,
       metadata: {
-        dateAdded: '2025-4-3',
+        dateAdded: '2025-04-03',
         description:
           'When enabled, the accessibilityOrder prop will propagate to native platforms and define the accessibility order.',
         expectedReleaseValue: true,
@@ -203,13 +203,13 @@ const definitions: FeatureFlagDefinitions = {
       ossReleaseStage: 'none',
     },
     enableBridgelessArchitecture: {
-      defaultValue: false,
+      defaultValue: true,
       metadata: {
         description: 'Feature flag to enable the new bridgeless architecture.',
         expectedReleaseValue: true,
         purpose: 'release',
       },
-      ossReleaseStage: 'canary',
+      ossReleaseStage: 'stable',
     },
     enableCppPropsIteratorSetter: {
       defaultValue: false,
@@ -246,10 +246,11 @@ const definitions: FeatureFlagDefinitions = {
     enableDoubleMeasurementFixAndroid: {
       defaultValue: false,
       metadata: {
+        dateAdded: '2025-04-29',
         description:
           'When enabled a subset of components will avoid double measurement on Android.',
         expectedReleaseValue: true,
-        purpose: 'operational',
+        purpose: 'experimentation',
       },
       ossReleaseStage: 'none',
     },
@@ -463,16 +464,6 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
-    enableNetworkEventReporting: {
-      defaultValue: true,
-      metadata: {
-        description:
-          'Enable network event reporting hooks in each native platform through `NetworkReporter` (Web Perf APIs + CDP). This flag should be combined with `fuseboxNetworkInspectionEnabled` to enable Network CDP debugging.',
-        expectedReleaseValue: true,
-        purpose: 'release',
-      },
-      ossReleaseStage: 'none',
-    },
     enablePreparedTextLayout: {
       defaultValue: false,
       metadata: {
@@ -666,21 +657,10 @@ const definitions: FeatureFlagDefinitions = {
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
-      ossReleaseStage: 'none',
-    },
-    fuseboxNetworkInspectionEnabled: {
-      defaultValue: true,
-      metadata: {
-        dateAdded: '2024-01-31',
-        description:
-          'Enable network inspection support in the React Native DevTools CDP backend. Requires `enableBridgelessArchitecture`. This flag is global and should not be changed across React Host lifetimes.',
-        expectedReleaseValue: true,
-        purpose: 'experimentation',
-      },
-      ossReleaseStage: 'none',
+      ossReleaseStage: 'experimental',
     },
     fuseboxScreenshotCaptureEnabled: {
-      defaultValue: false,
+      defaultValue: true,
       metadata: {
         dateAdded: '2026-04-01',
         description:
@@ -688,7 +668,18 @@ const definitions: FeatureFlagDefinitions = {
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
-      ossReleaseStage: 'none',
+      ossReleaseStage: 'stable',
+    },
+    fuseboxWebSocketEventsEnabled: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-07-11',
+        description:
+          'Enable reporting of WebSocket network events (`Network.webSocket*` CDP events) to the React Native DevTools CDP backend.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'canary',
     },
     optimizedAnimatedPropUpdates: {
       defaultValue: false,
@@ -737,10 +728,9 @@ const definitions: FeatureFlagDefinitions = {
     preparedTextCacheSize: {
       defaultValue: 200,
       metadata: {
-        dateAdded: '2025-06-25',
         description: 'Number cached PreparedLayouts in TextLayoutManager cache',
         expectedReleaseValue: 200,
-        purpose: 'experimentation',
+        purpose: 'operational',
       },
       ossReleaseStage: 'none',
     },
@@ -867,7 +857,7 @@ const definitions: FeatureFlagDefinitions = {
         description:
           'Should this application enable the Fabric Interop Layer for Android? If yes, the application will behave so that it can accept non-Fabric components and render them on Fabric. This toggle is controlling extra logic such as custom event dispatching that are needed for the Fabric Interop Layer to work correctly.',
         expectedReleaseValue: false,
-        purpose: 'release',
+        purpose: 'operational',
       },
       ossReleaseStage: 'none',
     },
@@ -896,7 +886,7 @@ const definitions: FeatureFlagDefinitions = {
     useSharedAnimatedBackend: {
       defaultValue: false,
       metadata: {
-        dateAdded: '2025-08-2',
+        dateAdded: '2025-08-02',
         description: 'Use shared animation backend in C++ Animated',
         expectedReleaseValue: true,
         purpose: 'experimentation',
@@ -906,7 +896,7 @@ const definitions: FeatureFlagDefinitions = {
     useTraitHiddenOnAndroid: {
       defaultValue: false,
       metadata: {
-        dateAdded: '2025-10-9',
+        dateAdded: '2025-10-09',
         description: 'Use Trait::hidden on Android',
         expectedReleaseValue: true,
         purpose: 'experimentation',
@@ -927,11 +917,10 @@ const definitions: FeatureFlagDefinitions = {
     viewCullingOutsetRatio: {
       defaultValue: 0,
       metadata: {
-        dateAdded: '2025-09-18',
         description:
           'Outset the culling context frame with the provided ratio. The culling context frame size will be outset by width * ratio on the left and right, and height * ratio on the top and bottom.',
         expectedReleaseValue: 0,
-        purpose: 'experimentation',
+        purpose: 'operational',
       },
       ossReleaseStage: 'none',
     },
@@ -1014,17 +1003,6 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
-    enableDirectEventsInEventTarget: {
-      defaultValue: false,
-      metadata: {
-        dateAdded: '2026-07-06',
-        description:
-          'When enabled (together with enableNativeEventTargetEventDispatching), direct events (those that neither bubble nor capture, such as onLayout) are dispatched only to the target node via a fast path that skips construction and traversal of the ancestor event path.',
-        expectedReleaseValue: true,
-        purpose: 'experimentation',
-      },
-      ossReleaseStage: 'none',
-    },
     enableImperativeEvents: {
       defaultValue: false,
       metadata: {
@@ -1033,8 +1011,10 @@ const definitions: FeatureFlagDefinitions = {
         expectedReleaseValue: true,
         purpose: 'release',
       },
+      // TODO: This should be "canary" now but the OSS renderer cannot be upgraded with the necessary changes until React 19.3.0 is released.
       ossReleaseStage: 'none',
     },
+    // TODO: This feature flag should be shipped and clean up now, but the OSS renderer cannot be upgraded with the necessary changes until React 19.3.0 is released.
     enableNativeEventTargetEventDispatching: {
       defaultValue: false,
       metadata: {

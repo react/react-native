@@ -43,7 +43,7 @@ const {
   readPkgJsonInDirectory,
   readReactNativeConfig,
 } = require('./utils');
-const path = require('path');
+const path = require('node:path');
 
 /**
  * This function is the entry point for the codegen. It:

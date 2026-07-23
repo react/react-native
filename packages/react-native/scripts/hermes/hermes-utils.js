@@ -10,10 +10,10 @@
 
 'use strict';
 
-const fs = require('fs');
 // $FlowFixMe[untyped-import]
 const inquirer = require('inquirer');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 /*::
 type BuildType = 'dry-run' | 'release' | 'nightly';

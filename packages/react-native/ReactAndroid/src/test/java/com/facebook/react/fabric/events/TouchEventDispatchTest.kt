@@ -45,462 +45,450 @@ class TouchEventDispatchTest {
   private val touchEventCoalescingKeyHelper = TouchEventCoalescingKeyHelper()
 
   /** Events (1 pointer): START -> MOVE -> MOVE -> UP */
-  private val startMoveEndSequence =
-      listOf(
-          createTouchEvent(
-              gestureTime = GESTURE_START_TIME,
-              action = MotionEvent.ACTION_DOWN,
-              pointerId = 0,
-              pointerIds = intArrayOf(0),
-              pointerCoords = arrayOf(pointerCoords(1f, 1f)),
-          ),
-          createTouchEvent(
-              gestureTime = GESTURE_START_TIME,
-              action = MotionEvent.ACTION_MOVE,
-              pointerId = 0,
-              pointerIds = intArrayOf(0),
-              pointerCoords = arrayOf(pointerCoords(1f, 2f)),
-          ),
-          createTouchEvent(
-              gestureTime = GESTURE_START_TIME,
-              action = MotionEvent.ACTION_MOVE,
-              pointerId = 0,
-              pointerIds = intArrayOf(0),
-              pointerCoords = arrayOf(pointerCoords(1f, 3f)),
-          ),
-          createTouchEvent(
-              gestureTime = GESTURE_START_TIME,
-              action = MotionEvent.ACTION_UP,
-              pointerId = 0,
-              pointerIds = intArrayOf(0),
-              pointerCoords = arrayOf(pointerCoords(1f, 3f)),
-          ),
-      )
+  private val startMoveEndSequence = listOf(
+      createTouchEvent(
+          gestureTime = GESTURE_START_TIME,
+          action = MotionEvent.ACTION_DOWN,
+          pointerId = 0,
+          pointerIds = intArrayOf(0),
+          pointerCoords = arrayOf(pointerCoords(1f, 1f)),
+      ),
+      createTouchEvent(
+          gestureTime = GESTURE_START_TIME,
+          action = MotionEvent.ACTION_MOVE,
+          pointerId = 0,
+          pointerIds = intArrayOf(0),
+          pointerCoords = arrayOf(pointerCoords(1f, 2f)),
+      ),
+      createTouchEvent(
+          gestureTime = GESTURE_START_TIME,
+          action = MotionEvent.ACTION_MOVE,
+          pointerId = 0,
+          pointerIds = intArrayOf(0),
+          pointerCoords = arrayOf(pointerCoords(1f, 3f)),
+      ),
+      createTouchEvent(
+          gestureTime = GESTURE_START_TIME,
+          action = MotionEvent.ACTION_UP,
+          pointerId = 0,
+          pointerIds = intArrayOf(0),
+          pointerCoords = arrayOf(pointerCoords(1f, 3f)),
+      ),
+  )
 
   /** Expected values for [startMoveEndSequence] */
-  private val startMoveEndExpectedSequence =
-      listOf(
-          /*
-           * START event for touch 1:
-           * {
-           *   touches: [touch1],
-           *   changed: [touch1]
-           * }
-           */
-          buildGestureEvent(
-              surfaceId = SURFACE_ID,
-              viewTag = TARGET_VIEW_ID,
-              locationX = 1f,
-              locationY = 1f,
-              time = GESTURE_START_TIME,
-              pointerId = 0,
-              touches =
-                  listOf(buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 1f, GESTURE_START_TIME, 0)),
-              changedTouches =
-                  listOf(buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 1f, GESTURE_START_TIME, 0)),
-          ),
-          /*
-           * MOVE event for touch 1:
-           * {
-           *   touches: [touch1],
-           *   changed: [touch1]
-           * }
-           */
-          buildGestureEvent(
-              surfaceId = SURFACE_ID,
-              viewTag = TARGET_VIEW_ID,
-              locationX = 1f,
-              locationY = 2f,
-              time = GESTURE_START_TIME,
-              pointerId = 0,
-              touches =
-                  listOf(buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 2f, GESTURE_START_TIME, 0)),
-              changedTouches =
-                  listOf(buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 2f, GESTURE_START_TIME, 0)),
-          ),
-          /*
-           * MOVE event for touch 1:
-           * {
-           *   touches: [touch1],
-           *   changed: [touch1]
-           * }
-           */
-          buildGestureEvent(
-              surfaceId = SURFACE_ID,
-              viewTag = TARGET_VIEW_ID,
-              locationX = 1f,
-              locationY = 3f,
-              time = GESTURE_START_TIME,
-              pointerId = 0,
-              touches =
-                  listOf(buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 3f, GESTURE_START_TIME, 0)),
-              changedTouches =
-                  listOf(buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 3f, GESTURE_START_TIME, 0)),
-          ),
-          /*
-           * END event for touch 1:
-           * {
-           *   touches: [],
-           *   changed: [touch1]
-           * }
-           */
-          buildGestureEvent(
-              surfaceId = SURFACE_ID,
-              viewTag = TARGET_VIEW_ID,
-              locationX = 1f,
-              locationY = 3f,
-              time = GESTURE_START_TIME,
-              pointerId = 0,
-              touches = emptyList(),
-              changedTouches =
-                  listOf(buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 3f, GESTURE_START_TIME, 0)),
-          ),
-      )
+  private val startMoveEndExpectedSequence = listOf(
+      /*
+       * START event for touch 1:
+       * {
+       *   touches: [touch1],
+       *   changed: [touch1]
+       * }
+       */
+      buildGestureEvent(
+          surfaceId = SURFACE_ID,
+          viewTag = TARGET_VIEW_ID,
+          locationX = 1f,
+          locationY = 1f,
+          time = GESTURE_START_TIME,
+          pointerId = 0,
+          touches = listOf(buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 1f, GESTURE_START_TIME, 0)),
+          changedTouches =
+              listOf(buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 1f, GESTURE_START_TIME, 0)),
+      ),
+      /*
+       * MOVE event for touch 1:
+       * {
+       *   touches: [touch1],
+       *   changed: [touch1]
+       * }
+       */
+      buildGestureEvent(
+          surfaceId = SURFACE_ID,
+          viewTag = TARGET_VIEW_ID,
+          locationX = 1f,
+          locationY = 2f,
+          time = GESTURE_START_TIME,
+          pointerId = 0,
+          touches = listOf(buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 2f, GESTURE_START_TIME, 0)),
+          changedTouches =
+              listOf(buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 2f, GESTURE_START_TIME, 0)),
+      ),
+      /*
+       * MOVE event for touch 1:
+       * {
+       *   touches: [touch1],
+       *   changed: [touch1]
+       * }
+       */
+      buildGestureEvent(
+          surfaceId = SURFACE_ID,
+          viewTag = TARGET_VIEW_ID,
+          locationX = 1f,
+          locationY = 3f,
+          time = GESTURE_START_TIME,
+          pointerId = 0,
+          touches = listOf(buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 3f, GESTURE_START_TIME, 0)),
+          changedTouches =
+              listOf(buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 3f, GESTURE_START_TIME, 0)),
+      ),
+      /*
+       * END event for touch 1:
+       * {
+       *   touches: [],
+       *   changed: [touch1]
+       * }
+       */
+      buildGestureEvent(
+          surfaceId = SURFACE_ID,
+          viewTag = TARGET_VIEW_ID,
+          locationX = 1f,
+          locationY = 3f,
+          time = GESTURE_START_TIME,
+          pointerId = 0,
+          touches = emptyList(),
+          changedTouches =
+              listOf(buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 3f, GESTURE_START_TIME, 0)),
+      ),
+  )
 
   /** Events (2 pointer): START 1st -> START 2nd -> MOVE 1st -> UP 2st -> UP 1st */
-  private val startPointerMoveUpSequence =
-      listOf(
-          createTouchEvent(
-              gestureTime = GESTURE_START_TIME,
-              action = MotionEvent.ACTION_DOWN,
-              pointerId = 0,
-              pointerIds = intArrayOf(0),
-              pointerCoords = arrayOf(pointerCoords(1f, 1f)),
-          ),
-          createTouchEvent(
-              gestureTime = GESTURE_START_TIME,
-              action = MotionEvent.ACTION_POINTER_DOWN,
-              pointerId = 1,
-              pointerIds = intArrayOf(0, 1),
-              pointerCoords = arrayOf(pointerCoords(1f, 1f), pointerCoords(2f, 1f)),
-          ),
-          createTouchEvent(
-              gestureTime = GESTURE_START_TIME,
-              action = MotionEvent.ACTION_MOVE,
-              pointerId = 0,
-              pointerIds = intArrayOf(0, 1),
-              pointerCoords = arrayOf(pointerCoords(1f, 2f), pointerCoords(2f, 1f)),
-          ),
-          createTouchEvent(
-              gestureTime = GESTURE_START_TIME,
-              action = MotionEvent.ACTION_POINTER_UP,
-              pointerId = 1,
-              pointerIds = intArrayOf(0, 1),
-              pointerCoords = arrayOf(pointerCoords(1f, 2f), pointerCoords(2f, 1f)),
-          ),
-          createTouchEvent(
-              gestureTime = GESTURE_START_TIME,
-              action = MotionEvent.ACTION_POINTER_UP,
-              pointerId = 0,
-              pointerIds = intArrayOf(0),
-              pointerCoords = arrayOf(pointerCoords(1f, 2f)),
-          ),
-      )
+  private val startPointerMoveUpSequence = listOf(
+      createTouchEvent(
+          gestureTime = GESTURE_START_TIME,
+          action = MotionEvent.ACTION_DOWN,
+          pointerId = 0,
+          pointerIds = intArrayOf(0),
+          pointerCoords = arrayOf(pointerCoords(1f, 1f)),
+      ),
+      createTouchEvent(
+          gestureTime = GESTURE_START_TIME,
+          action = MotionEvent.ACTION_POINTER_DOWN,
+          pointerId = 1,
+          pointerIds = intArrayOf(0, 1),
+          pointerCoords = arrayOf(pointerCoords(1f, 1f), pointerCoords(2f, 1f)),
+      ),
+      createTouchEvent(
+          gestureTime = GESTURE_START_TIME,
+          action = MotionEvent.ACTION_MOVE,
+          pointerId = 0,
+          pointerIds = intArrayOf(0, 1),
+          pointerCoords = arrayOf(pointerCoords(1f, 2f), pointerCoords(2f, 1f)),
+      ),
+      createTouchEvent(
+          gestureTime = GESTURE_START_TIME,
+          action = MotionEvent.ACTION_POINTER_UP,
+          pointerId = 1,
+          pointerIds = intArrayOf(0, 1),
+          pointerCoords = arrayOf(pointerCoords(1f, 2f), pointerCoords(2f, 1f)),
+      ),
+      createTouchEvent(
+          gestureTime = GESTURE_START_TIME,
+          action = MotionEvent.ACTION_POINTER_UP,
+          pointerId = 0,
+          pointerIds = intArrayOf(0),
+          pointerCoords = arrayOf(pointerCoords(1f, 2f)),
+      ),
+  )
 
   /** Expected values for [startPointerMoveUpSequence] */
-  private val startPointerMoveUpExpectedSequence =
-      listOf(
-          /*
-           * START event for touch 1:
-           * {
-           *   touch: 0,
-           *   touches: [touch1],
-           *   changed: [touch1]
-           * }
-           */
-          buildGestureEvent(
-              surfaceId = SURFACE_ID,
-              viewTag = TARGET_VIEW_ID,
-              locationX = 1f,
-              locationY = 1f,
-              time = GESTURE_START_TIME,
-              pointerId = 0,
-              touches =
-                  listOf(buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 1f, GESTURE_START_TIME, 0)),
-              changedTouches =
-                  listOf(buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 1f, GESTURE_START_TIME, 0)),
-          ),
-          /*
-           * START event for touch 2:
-           * {
-           *   touch: 1,
-           *   touches: [touch0, touch1],
-           *   changed: [touch1]
-           * }
-           */
-          buildGestureEvent(
-              surfaceId = SURFACE_ID,
-              viewTag = TARGET_VIEW_ID,
-              locationX = 2f,
-              locationY = 1f,
-              time = GESTURE_START_TIME,
-              pointerId = 1,
-              touches =
-                  listOf(
-                      buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 1f, GESTURE_START_TIME, 0),
-                      buildGesture(SURFACE_ID, TARGET_VIEW_ID, 2f, 1f, GESTURE_START_TIME, 1),
-                  ),
-              changedTouches =
-                  listOf(buildGesture(SURFACE_ID, TARGET_VIEW_ID, 2f, 1f, GESTURE_START_TIME, 1)),
-          ),
-          /*
-           * MOVE event for touch 1:
-           * {
-           *   touch: 0,
-           *   touches: [touch0, touch1],
-           *   changed: [touch0, touch1]
-           * }
-           * {
-           *   touch: 1,
-           *   touches: [touch0, touch1],
-           *   changed: [touch0, touch1]
-           * }
-           */
-          buildGestureEvent(
-              surfaceId = SURFACE_ID,
-              viewTag = TARGET_VIEW_ID,
-              locationX = 1f,
-              locationY = 2f,
-              time = GESTURE_START_TIME,
-              pointerId = 0,
-              touches =
-                  listOf(
-                      buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 2f, GESTURE_START_TIME, 0),
-                      buildGesture(SURFACE_ID, TARGET_VIEW_ID, 2f, 1f, GESTURE_START_TIME, 1),
-                  ),
-              changedTouches =
-                  listOf(
-                      buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 2f, GESTURE_START_TIME, 0),
-                      buildGesture(SURFACE_ID, TARGET_VIEW_ID, 2f, 1f, GESTURE_START_TIME, 1),
-                  ),
-          ),
-          buildGestureEvent(
-              surfaceId = SURFACE_ID,
-              viewTag = TARGET_VIEW_ID,
-              locationX = 2f,
-              locationY = 1f,
-              time = GESTURE_START_TIME,
-              pointerId = 1,
-              touches =
-                  listOf(
-                      buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 2f, GESTURE_START_TIME, 0),
-                      buildGesture(SURFACE_ID, TARGET_VIEW_ID, 2f, 1f, GESTURE_START_TIME, 1),
-                  ),
-              changedTouches =
-                  listOf(
-                      buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 2f, GESTURE_START_TIME, 0),
-                      buildGesture(SURFACE_ID, TARGET_VIEW_ID, 2f, 1f, GESTURE_START_TIME, 1),
-                  ),
-          ),
-          /*
-           * UP event pointer 1:
-           * {
-           *   touch: 1,
-           *   touches: [touch0],
-           *   changed: [touch1]
-           * }
-           */
-          buildGestureEvent(
-              surfaceId = SURFACE_ID,
-              viewTag = TARGET_VIEW_ID,
-              locationX = 2f,
-              locationY = 1f,
-              time = GESTURE_START_TIME,
-              pointerId = 1,
-              touches =
-                  listOf(buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 2f, GESTURE_START_TIME, 0)),
-              changedTouches =
-                  listOf(buildGesture(SURFACE_ID, TARGET_VIEW_ID, 2f, 1f, GESTURE_START_TIME, 1)),
-          ),
-          /*
-           * UP event pointer 0:
-           * {
-           *   touch: 0,
-           *   touches: [],
-           *   changed: [touch0]
-           * }
-           */
-          buildGestureEvent(
-              surfaceId = SURFACE_ID,
-              viewTag = TARGET_VIEW_ID,
-              locationX = 1f,
-              locationY = 2f,
-              time = GESTURE_START_TIME,
-              pointerId = 0,
-              touches = emptyList(),
-              changedTouches =
-                  listOf(buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 2f, GESTURE_START_TIME, 0)),
-          ),
-      )
+  private val startPointerMoveUpExpectedSequence = listOf(
+      /*
+       * START event for touch 1:
+       * {
+       *   touch: 0,
+       *   touches: [touch1],
+       *   changed: [touch1]
+       * }
+       */
+      buildGestureEvent(
+          surfaceId = SURFACE_ID,
+          viewTag = TARGET_VIEW_ID,
+          locationX = 1f,
+          locationY = 1f,
+          time = GESTURE_START_TIME,
+          pointerId = 0,
+          touches = listOf(buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 1f, GESTURE_START_TIME, 0)),
+          changedTouches =
+              listOf(buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 1f, GESTURE_START_TIME, 0)),
+      ),
+      /*
+       * START event for touch 2:
+       * {
+       *   touch: 1,
+       *   touches: [touch0, touch1],
+       *   changed: [touch1]
+       * }
+       */
+      buildGestureEvent(
+          surfaceId = SURFACE_ID,
+          viewTag = TARGET_VIEW_ID,
+          locationX = 2f,
+          locationY = 1f,
+          time = GESTURE_START_TIME,
+          pointerId = 1,
+          touches =
+              listOf(
+                  buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 1f, GESTURE_START_TIME, 0),
+                  buildGesture(SURFACE_ID, TARGET_VIEW_ID, 2f, 1f, GESTURE_START_TIME, 1),
+              ),
+          changedTouches =
+              listOf(buildGesture(SURFACE_ID, TARGET_VIEW_ID, 2f, 1f, GESTURE_START_TIME, 1)),
+      ),
+      /*
+       * MOVE event for touch 1:
+       * {
+       *   touch: 0,
+       *   touches: [touch0, touch1],
+       *   changed: [touch0, touch1]
+       * }
+       * {
+       *   touch: 1,
+       *   touches: [touch0, touch1],
+       *   changed: [touch0, touch1]
+       * }
+       */
+      buildGestureEvent(
+          surfaceId = SURFACE_ID,
+          viewTag = TARGET_VIEW_ID,
+          locationX = 1f,
+          locationY = 2f,
+          time = GESTURE_START_TIME,
+          pointerId = 0,
+          touches =
+              listOf(
+                  buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 2f, GESTURE_START_TIME, 0),
+                  buildGesture(SURFACE_ID, TARGET_VIEW_ID, 2f, 1f, GESTURE_START_TIME, 1),
+              ),
+          changedTouches =
+              listOf(
+                  buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 2f, GESTURE_START_TIME, 0),
+                  buildGesture(SURFACE_ID, TARGET_VIEW_ID, 2f, 1f, GESTURE_START_TIME, 1),
+              ),
+      ),
+      buildGestureEvent(
+          surfaceId = SURFACE_ID,
+          viewTag = TARGET_VIEW_ID,
+          locationX = 2f,
+          locationY = 1f,
+          time = GESTURE_START_TIME,
+          pointerId = 1,
+          touches =
+              listOf(
+                  buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 2f, GESTURE_START_TIME, 0),
+                  buildGesture(SURFACE_ID, TARGET_VIEW_ID, 2f, 1f, GESTURE_START_TIME, 1),
+              ),
+          changedTouches =
+              listOf(
+                  buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 2f, GESTURE_START_TIME, 0),
+                  buildGesture(SURFACE_ID, TARGET_VIEW_ID, 2f, 1f, GESTURE_START_TIME, 1),
+              ),
+      ),
+      /*
+       * UP event pointer 1:
+       * {
+       *   touch: 1,
+       *   touches: [touch0],
+       *   changed: [touch1]
+       * }
+       */
+      buildGestureEvent(
+          surfaceId = SURFACE_ID,
+          viewTag = TARGET_VIEW_ID,
+          locationX = 2f,
+          locationY = 1f,
+          time = GESTURE_START_TIME,
+          pointerId = 1,
+          touches = listOf(buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 2f, GESTURE_START_TIME, 0)),
+          changedTouches =
+              listOf(buildGesture(SURFACE_ID, TARGET_VIEW_ID, 2f, 1f, GESTURE_START_TIME, 1)),
+      ),
+      /*
+       * UP event pointer 0:
+       * {
+       *   touch: 0,
+       *   touches: [],
+       *   changed: [touch0]
+       * }
+       */
+      buildGestureEvent(
+          surfaceId = SURFACE_ID,
+          viewTag = TARGET_VIEW_ID,
+          locationX = 1f,
+          locationY = 2f,
+          time = GESTURE_START_TIME,
+          pointerId = 0,
+          touches = emptyList(),
+          changedTouches =
+              listOf(buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 2f, GESTURE_START_TIME, 0)),
+      ),
+  )
 
   /** Events (2 pointer): START 1st -> START 2nd -> MOVE 1st -> CANCEL */
-  private val startMoveCancelSequence =
-      listOf(
-          createTouchEvent(
-              gestureTime = GESTURE_START_TIME,
-              action = MotionEvent.ACTION_DOWN,
-              pointerId = 0,
-              pointerIds = intArrayOf(0),
-              pointerCoords = arrayOf(pointerCoords(1f, 1f)),
-          ),
-          createTouchEvent(
-              gestureTime = GESTURE_START_TIME,
-              action = MotionEvent.ACTION_POINTER_DOWN,
-              pointerId = 1,
-              pointerIds = intArrayOf(0, 1),
-              pointerCoords = arrayOf(pointerCoords(1f, 1f), pointerCoords(2f, 1f)),
-          ),
-          createTouchEvent(
-              gestureTime = GESTURE_START_TIME,
-              action = MotionEvent.ACTION_MOVE,
-              pointerId = 0,
-              pointerIds = intArrayOf(0, 1),
-              pointerCoords = arrayOf(pointerCoords(1f, 2f), pointerCoords(2f, 1f)),
-          ),
-          createTouchEvent(
-              gestureTime = GESTURE_START_TIME,
-              action = MotionEvent.ACTION_CANCEL,
-              pointerId = 0,
-              pointerIds = intArrayOf(0, 1),
-              pointerCoords = arrayOf(pointerCoords(1f, 3f), pointerCoords(2f, 1f)),
-          ),
-      )
+  private val startMoveCancelSequence = listOf(
+      createTouchEvent(
+          gestureTime = GESTURE_START_TIME,
+          action = MotionEvent.ACTION_DOWN,
+          pointerId = 0,
+          pointerIds = intArrayOf(0),
+          pointerCoords = arrayOf(pointerCoords(1f, 1f)),
+      ),
+      createTouchEvent(
+          gestureTime = GESTURE_START_TIME,
+          action = MotionEvent.ACTION_POINTER_DOWN,
+          pointerId = 1,
+          pointerIds = intArrayOf(0, 1),
+          pointerCoords = arrayOf(pointerCoords(1f, 1f), pointerCoords(2f, 1f)),
+      ),
+      createTouchEvent(
+          gestureTime = GESTURE_START_TIME,
+          action = MotionEvent.ACTION_MOVE,
+          pointerId = 0,
+          pointerIds = intArrayOf(0, 1),
+          pointerCoords = arrayOf(pointerCoords(1f, 2f), pointerCoords(2f, 1f)),
+      ),
+      createTouchEvent(
+          gestureTime = GESTURE_START_TIME,
+          action = MotionEvent.ACTION_CANCEL,
+          pointerId = 0,
+          pointerIds = intArrayOf(0, 1),
+          pointerCoords = arrayOf(pointerCoords(1f, 3f), pointerCoords(2f, 1f)),
+      ),
+  )
 
   /** Expected values for [startMoveCancelSequence] */
-  private val startMoveCancelExpectedSequence =
-      listOf(
-          /*
-           * START event for touch 1:
-           * {
-           *   touch: 0,
-           *   touches: [touch1],
-           *   changed: [touch1]
-           * }
-           */
-          buildGestureEvent(
-              surfaceId = SURFACE_ID,
-              viewTag = TARGET_VIEW_ID,
-              locationX = 1f,
-              locationY = 1f,
-              time = GESTURE_START_TIME,
-              pointerId = 0,
-              touches =
-                  listOf(buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 1f, GESTURE_START_TIME, 0)),
-              changedTouches =
-                  listOf(buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 1f, GESTURE_START_TIME, 0)),
-          ),
-          /*
-           * START event for touch 2:
-           * {
-           *   touch: 1,
-           *   touches: [touch0, touch1],
-           *   changed: [touch1]
-           * }
-           */
-          buildGestureEvent(
-              surfaceId = SURFACE_ID,
-              viewTag = TARGET_VIEW_ID,
-              locationX = 2f,
-              locationY = 1f,
-              time = GESTURE_START_TIME,
-              pointerId = 1,
-              touches =
-                  listOf(
-                      buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 1f, GESTURE_START_TIME, 0),
-                      buildGesture(SURFACE_ID, TARGET_VIEW_ID, 2f, 1f, GESTURE_START_TIME, 1),
-                  ),
-              changedTouches =
-                  listOf(buildGesture(SURFACE_ID, TARGET_VIEW_ID, 2f, 1f, GESTURE_START_TIME, 1)),
-          ),
-          /*
-           * MOVE event for touch 1:
-           * {
-           *   touch: 0,
-           *   touches: [touch0, touch1],
-           *   changed: [touch0, touch1]
-           * }
-           * {
-           *   touch: 1,
-           *   touches: [touch0, touch1],
-           *   changed: [touch0, touch1]
-           * }
-           */
-          buildGestureEvent(
-              surfaceId = SURFACE_ID,
-              viewTag = TARGET_VIEW_ID,
-              locationX = 1f,
-              locationY = 2f,
-              time = GESTURE_START_TIME,
-              pointerId = 0,
-              touches =
-                  listOf(
-                      buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 2f, GESTURE_START_TIME, 0),
-                      buildGesture(SURFACE_ID, TARGET_VIEW_ID, 2f, 1f, GESTURE_START_TIME, 1),
-                  ),
-              changedTouches =
-                  listOf(
-                      buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 2f, GESTURE_START_TIME, 0),
-                      buildGesture(SURFACE_ID, TARGET_VIEW_ID, 2f, 1f, GESTURE_START_TIME, 1),
-                  ),
-          ),
-          buildGestureEvent(
-              SURFACE_ID,
-              TARGET_VIEW_ID,
-              2f,
-              1f,
-              GESTURE_START_TIME,
-              1,
+  private val startMoveCancelExpectedSequence = listOf(
+      /*
+       * START event for touch 1:
+       * {
+       *   touch: 0,
+       *   touches: [touch1],
+       *   changed: [touch1]
+       * }
+       */
+      buildGestureEvent(
+          surfaceId = SURFACE_ID,
+          viewTag = TARGET_VIEW_ID,
+          locationX = 1f,
+          locationY = 1f,
+          time = GESTURE_START_TIME,
+          pointerId = 0,
+          touches = listOf(buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 1f, GESTURE_START_TIME, 0)),
+          changedTouches =
+              listOf(buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 1f, GESTURE_START_TIME, 0)),
+      ),
+      /*
+       * START event for touch 2:
+       * {
+       *   touch: 1,
+       *   touches: [touch0, touch1],
+       *   changed: [touch1]
+       * }
+       */
+      buildGestureEvent(
+          surfaceId = SURFACE_ID,
+          viewTag = TARGET_VIEW_ID,
+          locationX = 2f,
+          locationY = 1f,
+          time = GESTURE_START_TIME,
+          pointerId = 1,
+          touches =
+              listOf(
+                  buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 1f, GESTURE_START_TIME, 0),
+                  buildGesture(SURFACE_ID, TARGET_VIEW_ID, 2f, 1f, GESTURE_START_TIME, 1),
+              ),
+          changedTouches =
+              listOf(buildGesture(SURFACE_ID, TARGET_VIEW_ID, 2f, 1f, GESTURE_START_TIME, 1)),
+      ),
+      /*
+       * MOVE event for touch 1:
+       * {
+       *   touch: 0,
+       *   touches: [touch0, touch1],
+       *   changed: [touch0, touch1]
+       * }
+       * {
+       *   touch: 1,
+       *   touches: [touch0, touch1],
+       *   changed: [touch0, touch1]
+       * }
+       */
+      buildGestureEvent(
+          surfaceId = SURFACE_ID,
+          viewTag = TARGET_VIEW_ID,
+          locationX = 1f,
+          locationY = 2f,
+          time = GESTURE_START_TIME,
+          pointerId = 0,
+          touches =
               listOf(
                   buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 2f, GESTURE_START_TIME, 0),
                   buildGesture(SURFACE_ID, TARGET_VIEW_ID, 2f, 1f, GESTURE_START_TIME, 1),
               ),
+          changedTouches =
               listOf(
                   buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 2f, GESTURE_START_TIME, 0),
                   buildGesture(SURFACE_ID, TARGET_VIEW_ID, 2f, 1f, GESTURE_START_TIME, 1),
               ),
+      ),
+      buildGestureEvent(
+          SURFACE_ID,
+          TARGET_VIEW_ID,
+          2f,
+          1f,
+          GESTURE_START_TIME,
+          1,
+          listOf(
+              buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 2f, GESTURE_START_TIME, 0),
+              buildGesture(SURFACE_ID, TARGET_VIEW_ID, 2f, 1f, GESTURE_START_TIME, 1),
           ),
-          /*
-           * CANCEL event:
-           * {
-           *   touch: 0,
-           *   touches: [],
-           *   changed: [touch0, touch1]
-           * }
-           * {
-           *   touch: 1,
-           *   touches: [],
-           *   changed: [touch0, touch1]
-           * }
-           */
-          buildGestureEvent(
-              surfaceId = SURFACE_ID,
-              viewTag = TARGET_VIEW_ID,
-              locationX = 1f,
-              locationY = 3f,
-              time = GESTURE_START_TIME,
-              pointerId = 0,
-              touches = emptyList(),
-              changedTouches =
-                  listOf(
-                      buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 3f, GESTURE_START_TIME, 0),
-                      buildGesture(SURFACE_ID, TARGET_VIEW_ID, 2f, 1f, GESTURE_START_TIME, 1),
-                  ),
+          listOf(
+              buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 2f, GESTURE_START_TIME, 0),
+              buildGesture(SURFACE_ID, TARGET_VIEW_ID, 2f, 1f, GESTURE_START_TIME, 1),
           ),
-          buildGestureEvent(
-              surfaceId = SURFACE_ID,
-              viewTag = TARGET_VIEW_ID,
-              locationX = 2f,
-              locationY = 1f,
-              time = GESTURE_START_TIME,
-              pointerId = 1,
-              touches = emptyList(),
-              changedTouches =
-                  listOf(
-                      buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 3f, GESTURE_START_TIME, 0),
-                      buildGesture(SURFACE_ID, TARGET_VIEW_ID, 2f, 1f, GESTURE_START_TIME, 1),
-                  ),
-          ),
-      )
+      ),
+      /*
+       * CANCEL event:
+       * {
+       *   touch: 0,
+       *   touches: [],
+       *   changed: [touch0, touch1]
+       * }
+       * {
+       *   touch: 1,
+       *   touches: [],
+       *   changed: [touch0, touch1]
+       * }
+       */
+      buildGestureEvent(
+          surfaceId = SURFACE_ID,
+          viewTag = TARGET_VIEW_ID,
+          locationX = 1f,
+          locationY = 3f,
+          time = GESTURE_START_TIME,
+          pointerId = 0,
+          touches = emptyList(),
+          changedTouches =
+              listOf(
+                  buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 3f, GESTURE_START_TIME, 0),
+                  buildGesture(SURFACE_ID, TARGET_VIEW_ID, 2f, 1f, GESTURE_START_TIME, 1),
+              ),
+      ),
+      buildGestureEvent(
+          surfaceId = SURFACE_ID,
+          viewTag = TARGET_VIEW_ID,
+          locationX = 2f,
+          locationY = 1f,
+          time = GESTURE_START_TIME,
+          pointerId = 1,
+          touches = emptyList(),
+          changedTouches =
+              listOf(
+                  buildGesture(SURFACE_ID, TARGET_VIEW_ID, 1f, 3f, GESTURE_START_TIME, 0),
+                  buildGesture(SURFACE_ID, TARGET_VIEW_ID, 2f, 1f, GESTURE_START_TIME, 1),
+              ),
+      ),
+  )
 
   private lateinit var eventDispatcher: EventDispatcher
   private lateinit var eventEmitter: FabricEventEmitter

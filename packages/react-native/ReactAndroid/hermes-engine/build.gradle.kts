@@ -80,11 +80,10 @@ val hermesBuildOutputFileTree =
 
 val hermesVersionProvider: Provider<String> = providers.provider {
   var hermesVersion = "250829098.0.0-stable"
-  val hermesVersionFile =
-      File(
-          reactNativeRootDir,
-          "sdks/.hermesv1version",
-      )
+  val hermesVersionFile = File(
+      reactNativeRootDir,
+      "sdks/.hermesv1version",
+  )
 
   if (hermesVersionFile.exists()) {
     hermesVersion = hermesVersionFile.readText()
@@ -150,19 +149,18 @@ fun configureBuildForHermesCommandLineArgs(
     jsiDir: File,
     enableDebugger: Boolean,
 ): List<String> {
-  var cmakeCommandLine =
-      windowsAwareCommandLine(
-          cmakeBinaryPath,
-          // Suppress all warnings as this is the Hermes build and we can't fix them.
-          "--log-level=ERROR",
-          "-Wno-dev",
-          "-S",
-          ".",
-          "-B",
-          hermesBuildDir.toString(),
-          "-DJSI_DIR=" + jsiDir.absolutePath,
-          "-DCMAKE_BUILD_TYPE=Release",
-      )
+  var cmakeCommandLine = windowsAwareCommandLine(
+      cmakeBinaryPath,
+      // Suppress all warnings as this is the Hermes build and we can't fix them.
+      "--log-level=ERROR",
+      "-Wno-dev",
+      "-S",
+      ".",
+      "-B",
+      hermesBuildDir.toString(),
+      "-DJSI_DIR=" + jsiDir.absolutePath,
+      "-DCMAKE_BUILD_TYPE=Release",
+  )
   if (enableDebugger) {
     cmakeCommandLine = cmakeCommandLine + "-DHERMES_ENABLE_DEBUGGER=True"
   }
@@ -174,16 +172,15 @@ fun configureBuildForHermesCommandLineArgs(
   return cmakeCommandLine
 }
 
-fun buildHermesCCommandLineArgs() =
-    listOf(
-        cmakeBinaryPath,
-        "--build",
-        hermesBuildDir.toString(),
-        "--target",
-        "hermesc",
-        "-j",
-        ndkBuildJobs,
-    )
+fun buildHermesCCommandLineArgs() = listOf(
+    cmakeBinaryPath,
+    "--build",
+    hermesBuildDir.toString(),
+    "--target",
+    "hermesc",
+    "-j",
+    ndkBuildJobs,
+)
 
 val configureBuildForHermes by
     tasks.registering(CustomExecTask::class) {

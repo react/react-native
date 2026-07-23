@@ -1973,9 +1973,9 @@ class VirtualizedList extends StateSafePureComponent<
     // Keep a viewport's worth of content around the last focused cell to allow
     // random navigation around it without any blanking. E.g. tabbing from one
     // focused item out of viewport to another.
-    if (
-      !(this._lastFocusedCellKey && this._cellRefs[this._lastFocusedCellKey])
-    ) {
+    if (!(
+      this._lastFocusedCellKey && this._cellRefs[this._lastFocusedCellKey]
+    )) {
       return [];
     }
 

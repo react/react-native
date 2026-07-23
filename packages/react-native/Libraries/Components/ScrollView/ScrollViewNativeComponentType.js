@@ -32,10 +32,7 @@ export type ScrollViewNativeProps = Readonly<{
   centerContent?: ?boolean,
   contentInset?: ?EdgeInsetsProp,
   contentInsetAdjustmentBehavior?: ?(
-    | 'automatic'
-    | 'scrollableAxes'
-    | 'never'
-    | 'always'
+    'automatic' | 'scrollableAxes' | 'never' | 'always'
   ),
   contentOffset?: ?PointProp,
   decelerationRate?: ?('fast' | 'normal' | number),

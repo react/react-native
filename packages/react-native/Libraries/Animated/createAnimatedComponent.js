@@ -34,20 +34,19 @@ type Builtin = (...ReadonlyArray<empty>) => unknown | Date | Error | RegExp;
 export type WithAnimatedValue<out T> = T extends Builtin | Nullable
   ? T
   : T extends Primitive
-    ?
-        | T
-        | AnimatedNode
-        | AnimatedAddition
-        | AnimatedSubtraction
-        | AnimatedDivision
-        | AnimatedMultiplication
-        | AnimatedModulo
-        | AnimatedDiffClamp
-        | AnimatedValue
-        | AnimatedInterpolation<number | string>
-        | AnimatedInterpolation<number>
-        | AnimatedInterpolation<string>
-        | AnimatedInterpolation<NativeColorValue>
+    ? | T
+      | AnimatedNode
+      | AnimatedAddition
+      | AnimatedSubtraction
+      | AnimatedDivision
+      | AnimatedMultiplication
+      | AnimatedModulo
+      | AnimatedDiffClamp
+      | AnimatedValue
+      | AnimatedInterpolation<number | string>
+      | AnimatedInterpolation<number>
+      | AnimatedInterpolation<string>
+      | AnimatedInterpolation<NativeColorValue>
     : T extends ReadonlyArray<infer P>
       ? ReadonlyArray<WithAnimatedValue<P>>
       : T extends {...}

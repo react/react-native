@@ -30,8 +30,8 @@ import type {
 
 import CdpDebugLogging from './CdpDebugLogging';
 import DeviceEventReporter from './DeviceEventReporter';
-import crypto from 'crypto';
 import invariant from 'invariant';
+import crypto from 'node:crypto';
 import WS from 'ws';
 
 const debug = require('debug')('Metro:InspectorProxy');

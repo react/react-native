@@ -14,6 +14,7 @@ import type AnimatedValue from '../nodes/AnimatedValue';
 import type AnimatedValueXY from '../nodes/AnimatedValueXY';
 import type {AnimationConfig, EndCallback} from './Animation';
 
+import {getCurrentAnimationTime} from '../AnimationTimingUtils';
 import AnimatedColor from '../nodes/AnimatedColor';
 import * as SpringConfig from '../SpringConfig';
 import Animation from './Animation';
@@ -211,7 +212,7 @@ export default class SpringAnimation extends Animation {
     this._lastPosition = this._startPosition;
 
     this._onUpdate = onUpdate;
-    this._lastTime = Date.now();
+    this._lastTime = getCurrentAnimationTime();
     this._frameTime = 0.0;
 
     if (previousAnimation instanceof SpringAnimation) {
@@ -274,7 +275,7 @@ export default class SpringAnimation extends Animation {
     // computation and will continue on the next frame. It's better to have it
     // running at faster speed than jumping to the end.
     const MAX_STEPS = 64;
-    let now = Date.now();
+    let now = getCurrentAnimationTime();
     if (now > this._lastTime + MAX_STEPS) {
       now = this._lastTime + MAX_STEPS;
     }

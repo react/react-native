@@ -120,8 +120,7 @@ export type UnionMembersComparisonResult = {
   }>,
 };
 export type MembersComparisonResult =
-  | EnumMembersComparisonResult
-  | UnionMembersComparisonResult;
+  EnumMembersComparisonResult | UnionMembersComparisonResult;
 export type NullableComparisonResult = {
   /* Four possible cases of change:
      void goes to T?   :: typeRefined !optionsReduced

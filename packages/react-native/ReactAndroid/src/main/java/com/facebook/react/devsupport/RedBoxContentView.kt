@@ -181,15 +181,14 @@ internal class RedBoxContentView(
     companion object {
       private val JSON: MediaType? = MediaType.parse("application/json; charset=utf-8")
 
-      private fun stackFrameToJson(frame: StackFrame) =
-          JSONObject(
-              mapOf(
-                  "file" to frame.file,
-                  "methodName" to frame.method,
-                  "lineNumber" to frame.line,
-                  "column" to frame.column,
-              )
+      private fun stackFrameToJson(frame: StackFrame) = JSONObject(
+          mapOf(
+              "file" to frame.file,
+              "methodName" to frame.method,
+              "lineNumber" to frame.line,
+              "column" to frame.column,
           )
+      )
     }
   }
 

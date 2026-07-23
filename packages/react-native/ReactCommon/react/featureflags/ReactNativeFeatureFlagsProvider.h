@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<14cafde581fa0fb72ffebb5e192040e8>>
+ * @generated SignedSource<<31a9106d7fbb65a6bf61b87e23ba93e0>>
  */
 
 /**
@@ -64,7 +64,6 @@ class ReactNativeFeatureFlagsProvider {
   virtual bool enableModuleArgumentNSNullConversionIOS() = 0;
   virtual bool enableMutationObserverByDefault() = 0;
   virtual bool enableNativeCSSParsing() = 0;
-  virtual bool enableNetworkEventReporting() = 0;
   virtual bool enablePreparedTextLayout() = 0;
   virtual bool enablePropsUpdateReconciliationAndroid() = 0;
   virtual bool enableRuntimeSchedulerQueueClearingOnError() = 0;
@@ -83,8 +82,8 @@ class ReactNativeFeatureFlagsProvider {
   virtual bool fuseboxAssertSingleHostState() = 0;
   virtual bool fuseboxEnabledRelease() = 0;
   virtual bool fuseboxFrameRecordingEnabled() = 0;
-  virtual bool fuseboxNetworkInspectionEnabled() = 0;
   virtual bool fuseboxScreenshotCaptureEnabled() = 0;
+  virtual bool fuseboxWebSocketEventsEnabled() = 0;
   virtual bool optimizedAnimatedPropUpdates() = 0;
   virtual bool overrideBySynchronousMountPropsAtMountingAndroid() = 0;
   virtual bool perfIssuesEnabled() = 0;

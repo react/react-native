@@ -9,10 +9,10 @@
  */
 
 import VirtualizedList from '../VirtualizedList';
+import {format} from 'node:util';
 import * as React from 'react';
 import {createElement, createRef} from 'react';
 import {act, create} from 'react-test-renderer';
-import {format} from 'util';
 
 jest.useFakeTimers();
 

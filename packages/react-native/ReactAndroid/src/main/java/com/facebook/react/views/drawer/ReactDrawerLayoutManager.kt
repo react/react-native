@@ -150,11 +150,10 @@ public class ReactDrawerLayoutManager :
     return true
   }
 
-  public override fun getCommandsMap(): Map<String, Int> =
-      mapOf(
-          COMMAND_OPEN_DRAWER to OPEN_DRAWER,
-          COMMAND_CLOSE_DRAWER to CLOSE_DRAWER,
-      )
+  public override fun getCommandsMap(): Map<String, Int> = mapOf(
+      COMMAND_OPEN_DRAWER to OPEN_DRAWER,
+      COMMAND_CLOSE_DRAWER to CLOSE_DRAWER,
+  )
 
   @Deprecated(
       message =

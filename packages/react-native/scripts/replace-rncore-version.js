@@ -10,10 +10,10 @@
 
 'use strict';
 
-const {spawnSync} = require('child_process');
-const fs = require('fs');
-const os = require('os');
-const path = require('path');
+const {spawnSync} = require('node:child_process');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
 const yargs = require('yargs');
 
 const LAST_BUILD_FILENAME = 'React-Core-prebuilt/.last_build_configuration';
@@ -99,17 +99,19 @@ function replaceRNCoreConfiguration(
       throw new Error(`tar extraction failed with exit code ${result.status}`);
     }
 
-    // Verify extraction produced the expected xcframework structure
+    // Verify extraction produced the expected xcframework structure. The
+    // module map now lives per-slice inside React.framework, so check the
+    // xcframework's Info.plist instead of a root Modules/module.modulemap.
     const xcfwPath = path.join(tmpExtractDir, 'React.xcframework');
-    const modulemapPath = path.join(xcfwPath, 'Modules', 'module.modulemap');
-    if (!fs.existsSync(modulemapPath)) {
+    const infoPlistPath = path.join(xcfwPath, 'Info.plist');
+    if (!fs.existsSync(infoPlistPath)) {
       throw new Error(
-        `Extraction verification failed: ${modulemapPath} not found`,
+        `Extraction verification failed: ${infoPlistPath} not found`,
       );
     }
 
-    // Delete all directories in finalLocation - not files, since we want to
-    // keep the React-VFS.yaml file
+    // Delete only directories in finalLocation (e.g. the React.xcframework) -
+    // not files, so any sibling files written during pod install are preserved.
     const dirs = fs
       .readdirSync(finalLocation, {withFileTypes: true})
       .filter(dirent => dirent.isDirectory());
@@ -144,6 +146,51 @@ function replaceRNCoreConfiguration(
         }
       }
     }
+
+    // The podspec prepare_command flattens ReactNativeHeaders' headers into a
+    // top-level Headers/ dir, but it does not re-run on a config swap. Mirror
+    // it here: re-flatten the headers (identical across slices) and drop the
+    // now-redundant xcframework so $(PODS_ROOT)/React-Core-prebuilt/Headers
+    // keeps resolving <react/...>, <yoga/...>, etc.
+    //
+    // Fail closed when the swapped-in tarball lacks ReactNativeHeaders: the
+    // directory purge above already deleted the previous Headers/, so
+    // continuing silently would leave the injected -fmodule-map-file flag
+    // dangling and break every <react/...> include only on a config switch —
+    // with no pointer to the version-skewed artifact that caused it.
+    const rnhXcfw = path.join(finalLocation, 'ReactNativeHeaders.xcframework');
+    if (!fs.existsSync(rnhXcfw)) {
+      throw new Error(
+        `ReactNativeHeaders.xcframework not found in the extracted tarball at ${finalLocation}. ` +
+          'The downloaded artifact predates the headers-spec layout (or is incomplete); ' +
+          'use a prebuilt tarball matching this react-native version.',
+      );
+    }
+    const slice = fs
+      .readdirSync(rnhXcfw, {withFileTypes: true})
+      .find(
+        dirent =>
+          dirent.isDirectory() &&
+          fs.existsSync(path.join(rnhXcfw, dirent.name.toString(), 'Headers')),
+      );
+    if (!slice) {
+      throw new Error(
+        `No slice with a Headers directory found inside ${rnhXcfw}.`,
+      );
+    }
+    const headersDest = path.join(finalLocation, 'Headers');
+    fs.rmSync(headersDest, {force: true, recursive: true});
+    const cpHeaders = spawnSync(
+      'cp',
+      ['-R', path.join(rnhXcfw, slice.name.toString(), 'Headers'), headersDest],
+      {stdio: 'inherit'},
+    );
+    if (cpHeaders.status !== 0) {
+      throw new Error(
+        `Flattening ReactNativeHeaders failed with exit code ${cpHeaders.status}`,
+      );
+    }
+    fs.rmSync(rnhXcfw, {force: true, recursive: true});
   } finally {
     // Clean up temp directory
     fs.rmSync(tmpDir, {force: true, recursive: true});
