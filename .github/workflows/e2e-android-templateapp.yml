@@ -56,9 +56,11 @@ jobs:
           MAVEN_LOCAL=/tmp/react-native-tmp/maven-local
           echo "Maven local path is $MAVEN_LOCAL"
 
-          # For stable branches, we want to use the stable branch of the template
-          # In all the other cases, we want to use "main"
-          BRANCH=${{ github.ref_name }}
+          # For stable branches, we want to use the stable branch of the template.
+          # In all the other cases, we want to use "main".
+          # On pull_request events, ref_name is "<pr-number>/merge", so use the
+          # PR base branch instead to keep targeting the matching template branch.
+          BRANCH=${{ github.base_ref || github.ref_name }}
           if ! [[ $BRANCH == *-stable* ]]; then
             BRANCH=main
           fi
