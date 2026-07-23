@@ -176,7 +176,7 @@
     "base64-js": "^1.5.1",
     "commander": "^12.0.0",
     "flow-enums-runtime": "^0.0.6",
-    "hermes-compiler": "250829098.0.14",
+    "hermes-compiler": "250829098.0.16",
     "invariant": "^2.2.4",
     "memoize-one": "^5.0.0",
     "metro-runtime": "^0.84.3",
