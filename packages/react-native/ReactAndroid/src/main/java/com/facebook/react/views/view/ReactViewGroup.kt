@@ -140,6 +140,10 @@ public open class ReactViewGroup public constructor(context: Context?) :
 
   public override var hitSlopRect: Rect? = null
   public override var pointerEvents: PointerEvents = PointerEvents.AUTO
+    set(value) {
+      field = value
+      ImportantForInteractionHelper.setImportantForInteraction(this, value, _overflow)
+    }
 
   public var axOrderList: MutableList<String>? = null
 
@@ -175,9 +179,9 @@ public open class ReactViewGroup public constructor(context: Context?) :
     allChildrenCount = 0
     clippingRect = null
     hitSlopRect = null
+    // pointerEvents setter reads _overflow, so _overflow must be assigned first.
     _overflow = Overflow.VISIBLE
     pointerEvents = PointerEvents.AUTO
-    ImportantForInteractionHelper.setImportantForInteraction(this, pointerEvents)
     childrenLayoutChangeListener = null
     onInterceptTouchEventListener = null
     needsOffscreenAlphaCompositing = false
@@ -828,6 +832,7 @@ public open class ReactViewGroup public constructor(context: Context?) :
         }
     set(overflow) {
       _overflow = Overflow.fromString(overflow)
+      ImportantForInteractionHelper.setImportantForInteraction(this, pointerEvents, _overflow)
       invalidate()
     }
 
