@@ -10,65 +10,79 @@
 
 'use strict';
 
-const {bundleCommand: bc} = require('@react-native/community-cli-plugin');
-const commander = require('commander');
+const {
+  bundleCommand: bundleCommandBase,
+  unstable_createBundleCommandParser,
+} = require('@react-native/community-cli-plugin');
 const {execSync} = require('node:child_process');
 
-// Commander 12.0.0 changes from the global to named export
-// $FlowFixMe[signature-verification-failure]
-const program = commander.program ?? commander;
+/*::
+type BundleOptions = {
+  configCmd?: string,
+  loadConfig?: string,
+  ...
+};
+*/
 
-program
-  .name(bc.name)
-  .description(bc.description ?? '')
-  .option(
-    '--config-cmd <string>',
-    'Command to generate a JSON project config',
-    'npx react-native config',
-  )
-  .option('--load-config <string>', 'JSON project config')
-  .option('--verbose', 'Additional logs', () => true, false)
-  .allowUnknownOption()
-  .action(async function handleAction() {
-    let config = null;
-    let options = program
-      .opts /*::<{
-      configCmd?: string,
-      loadConfig?: string,
-      verbose: boolean,
-      ...
-    }>*/
-      ();
-    if (options.loadConfig != null) {
-      config = JSON.parse(
-        options.loadConfig.replace(/^\W*'/, '').replace(/'\W*$/, ''),
-      );
-    } else if (options.configCmd != null) {
-      config = JSON.parse(
-        execSync(options.configCmd.trim(), {encoding: 'utf8'}),
-      );
-    }
+const baseOptions = [
+  {
+    name: '--config-cmd <string>',
+    description: 'Command to generate a JSON project config',
+    default: 'npx react-native config',
+  },
+  {
+    name: '--load-config <string>',
+    description: 'JSON project config',
+  },
+];
 
-    if (config == null) {
-      throw new Error('No config provided');
-    }
+const {
+  parser: bundleCommandParser,
+  baseHelpInformation: bundleCommandBaseHelp,
+} = unstable_createBundleCommandParser(baseOptions);
 
-    await bc.func(program.args, config, options);
-  });
+function formatOptions(
+  options /*: ReadonlyArray<Readonly<{description?: string, name: string, ...}>> */,
+) {
+  return options
+    .map(option => `  ${option.name.padEnd(35)} ${option.description ?? ''}`)
+    .join('\n');
+}
 
-if (bc.options != null) {
-  for (const o of bc.options) {
-    program.option(
-      o.name,
-      o.description ?? '',
-      o.parse ?? (value => value),
-      o.default,
-    );
+function printHelp() {
+  console.log(`${bundleCommandBaseHelp}
+Additional options:
+${formatOptions(baseOptions)}
+`);
+}
+
+async function main(argv /*: ReadonlyArray<string> */ = process.argv.slice(2)) {
+  if (argv.includes('--help')) {
+    printHelp();
+    return;
   }
+
+  bundleCommandParser.parse(argv, {from: 'user'});
+  const options = bundleCommandParser
+    .opts /*::<BundleOptions>*/
+    ();
+
+  let config = null;
+  if (options.loadConfig != null) {
+    config = JSON.parse(
+      options.loadConfig.replace(/^\W*'/, '').replace(/'\W*$/, ''),
+    );
+  } else if (options.configCmd != null) {
+    config = JSON.parse(execSync(options.configCmd.trim(), {encoding: 'utf8'}));
+  }
+
+  if (config == null) {
+    throw new Error('No config provided');
+  }
+
+  await bundleCommandBase.func(bundleCommandParser.args, config, options);
 }
 
 if (require.main === module) {
-  program.parse(process.argv);
+  void main();
 }
-
-module.exports = program;
