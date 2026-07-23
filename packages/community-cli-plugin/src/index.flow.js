@@ -12,6 +12,8 @@ export {
   default as bundleCommand,
   unstable_createBundleCommandParser,
 } from './commands/bundle';
+export {default as codegenCommand} from './commands/codegen';
+export {default as spmCommand} from './commands/spm';
 export {default as startCommand} from './commands/start';
 
 export {unstable_buildBundleWithConfig} from './commands/bundle/buildBundle';
