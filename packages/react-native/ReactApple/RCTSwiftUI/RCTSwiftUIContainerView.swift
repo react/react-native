@@ -29,6 +29,33 @@ import UIKit
     return hostingController?.view
   }
 
+  @objc public func attach(to parentViewController: UIViewController, in containerView: UIView) {
+    guard let hostingController else {
+      return
+    }
+
+    if hostingController.parent === parentViewController && hostingController.view.superview === containerView {
+      return
+    }
+
+    detachFromParentViewController()
+    parentViewController.addChild(hostingController)
+    containerView.addSubview(hostingController.view)
+    hostingController.didMove(toParent: parentViewController)
+  }
+
+  @objc public func detachFromParentViewController() {
+    guard let hostingController else {
+      return
+    }
+
+    if hostingController.parent != nil {
+      hostingController.willMove(toParent: nil)
+    }
+    hostingController.view.removeFromSuperview()
+    hostingController.removeFromParent()
+  }
+
   @objc public func contentView() -> UIView? {
     return containerViewModel.contentView
   }

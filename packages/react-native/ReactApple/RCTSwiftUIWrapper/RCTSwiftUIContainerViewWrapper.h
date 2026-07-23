@@ -21,6 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)updateHueRotate:(NSNumber *)degrees;
 - (void)updateContentView:(UIView *)view;
 - (UIView *_Nullable)hostingView;
+- (void)attachToParentViewController:(UIViewController *)parentViewController inContainerView:(UIView *)containerView;
+- (void)detachFromParentViewController;
 - (void)resetStyles;
 - (void)updateLayoutWithBounds:(CGRect)bounds;
 

@@ -23,6 +23,7 @@
 #import <React/RCTLocalizedString.h>
 #import <React/RCTLog.h>
 #import <React/RCTRadialGradient.h>
+#import <React/UIView+React.h>
 #import <react/featureflags/ReactNativeFeatureFlags.h>
 #import <react/renderer/components/view/ViewComponentDescriptor.h>
 #import <react/renderer/components/view/ViewEventEmitter.h>
@@ -726,6 +727,23 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
   _layoutMetrics = {};
 }
 
+- (void)updateSwiftUIWrapperAttachment
+{
+  if (_swiftUIWrapper == nullptr) {
+    return;
+  }
+
+  if (self.window == nil) {
+    [_swiftUIWrapper detachFromParentViewController];
+    return;
+  }
+
+  UIViewController *parentViewController = self.reactViewController;
+  if (parentViewController != nil) {
+    [_swiftUIWrapper attachToParentViewController:parentViewController inContainerView:self];
+  }
+}
+
 - (void)setPropKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN:(NSSet<NSString *> *_Nullable)props
 {
   _propKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN = props;
@@ -927,7 +945,7 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
       self.layer.mask = nil;
       [_swiftUIWrapper updateContentView:swiftUIContentView];
       [_swiftUIWrapper updateLayoutWithBounds:self.bounds];
-      [self addSubview:_swiftUIWrapper.hostingView];
+      [self updateSwiftUIWrapperAttachment];
 
       [self transferVisualPropertiesFromView:self toView:swiftUIContentView];
     }
@@ -944,7 +962,7 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
 
       [self transferVisualPropertiesFromView:swiftUIContentView toView:self];
 
-      [_swiftUIWrapper.hostingView removeFromSuperview];
+      [_swiftUIWrapper detachFromParentViewController];
       _swiftUIWrapper = nil;
     }
   }
@@ -1399,6 +1417,12 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
   if (ReactNativeFeatureFlags::enableAccessibilityOrder()) {
     [self updateAccessibilityElements];
   }
+}
+
+- (void)didMoveToWindow
+{
+  [super didMoveToWindow];
+  [self updateSwiftUIWrapperAttachment];
 }
 
 - (void)updateAccessibilityElements
