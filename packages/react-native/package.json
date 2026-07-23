@@ -114,6 +114,7 @@
     "scripts/react-native-xcode.sh",
     "scripts/setup-apple-spm.js",
     "scripts/spm",
+    "scripts/xcode/asset-catalog.sh",
     "scripts/xcode/ccache-clang.sh",
     "scripts/xcode/ccache-clang++.sh",
     "scripts/xcode/ccache.conf",

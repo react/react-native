@@ -1185,13 +1185,7 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
   }
 
   public fun setOverflow(overflow: String?) {
-    if (overflow == null) {
-      this.overflow = Overflow.VISIBLE
-    } else {
-      val parsedOverflow = Overflow.fromString(overflow)
-      this.overflow = parsedOverflow ?: Overflow.VISIBLE
-    }
-
+    this.overflow = Overflow.fromString(overflow)
     invalidate()
   }
 
