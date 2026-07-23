@@ -8,14 +8,22 @@
  * @format
  */
 
-import type {Command} from '@react-native-community/cli-types';
+import type {Command as CommunityCommand} from '@react-native-community/cli-types';
 
 import buildBundle from './buildBundle';
+import {Command} from 'commander';
 import path from 'node:path';
 
 export type {BundleCommandArgs} from './buildBundle';
 
-const bundleCommand: Command = {
+type CommandOption = Readonly<NonNullable<CommunityCommand['options']>[number]>;
+
+type BundleCommandParser = {
+  parser: Command,
+  baseHelpInformation: string,
+};
+
+const bundleCommand: CommunityCommand = {
   name: 'bundle',
   description: 'Build the bundle for the provided JavaScript entry file.',
   func: buildBundle,
@@ -122,5 +130,44 @@ const bundleCommand: Command = {
     },
   ],
 };
+
+function addOptions(
+  command: Command,
+  options: ReadonlyArray<CommandOption>,
+): void {
+  for (const option of options) {
+    const description = option.description ?? '';
+    const defaultValue =
+      typeof option.default === 'function' ? undefined : option.default;
+
+    if (option.parse != null) {
+      command.option(option.name, description, option.parse, defaultValue);
+    } else if (
+      typeof defaultValue === 'string' ||
+      typeof defaultValue === 'boolean' ||
+      Array.isArray(defaultValue)
+    ) {
+      command.option(option.name, description, defaultValue);
+    } else {
+      command.option(option.name, description);
+    }
+  }
+}
+
+export function unstable_createBundleCommandParser(
+  additionalOptions: ReadonlyArray<CommandOption> = [],
+): BundleCommandParser {
+  const parser = new Command()
+    .name(bundleCommand.name)
+    .description(bundleCommand.description ?? '')
+    .helpOption('--help', 'Display help for command')
+    .allowUnknownOption();
+
+  addOptions(parser, bundleCommand.options ?? []);
+  const baseHelpInformation = parser.helpInformation();
+  addOptions(parser, additionalOptions);
+
+  return {parser, baseHelpInformation};
+}
 
 export default bundleCommand;
