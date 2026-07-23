@@ -99,9 +99,6 @@ export function getDefaultConfig(projectRoot: string): ConfigT {
     watchFolders: [],
   };
 
-  // Set global hook so that the CLI can detect when this config has been loaded
-  global.__REACT_NATIVE_METRO_CONFIG_LOADED = true;
-
   const metroDefaults = getBaseConfig.getDefaultValues(projectRoot);
 
   return mergeConfig(metroDefaults, reactNativeDefaults, frameworkDefaults);
