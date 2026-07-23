@@ -108,7 +108,7 @@ internal class PreparedLayoutTextViewManager :
 
   @ReactProp(name = "overflow")
   fun setOverflow(view: PreparedLayoutTextView, overflow: String?): Unit {
-    view.overflow = overflow?.let { Overflow.fromString(it) } ?: Overflow.VISIBLE
+    view.overflow = Overflow.fromString(overflow)
   }
 
   @ReactProp(name = "accessible")

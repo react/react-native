@@ -379,10 +379,11 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
         if (overflow == null) {
           Overflow.SCROLL
         } else {
-          Overflow.fromString(overflow)
-              ?: if (ReactNativeFeatureFlags.enablePropsUpdateReconciliationAndroid())
-                  Overflow.VISIBLE
-              else Overflow.SCROLL
+          Overflow.fromString(
+              overflow,
+              if (ReactNativeFeatureFlags.enablePropsUpdateReconciliationAndroid()) Overflow.VISIBLE
+              else Overflow.SCROLL,
+          )
         }
     invalidate()
   }

@@ -673,13 +673,7 @@ public class ReactTextView extends AppCompatTextView implements ReactCompoundVie
   }
 
   public void setOverflow(@Nullable String overflow) {
-    if (overflow == null) {
-      mOverflow = Overflow.VISIBLE;
-    } else {
-      @Nullable Overflow parsedOverflow = Overflow.fromString(overflow);
-      mOverflow = parsedOverflow == null ? Overflow.VISIBLE : parsedOverflow;
-    }
-
+    mOverflow = Overflow.fromString(overflow);
     invalidate();
   }
 }
