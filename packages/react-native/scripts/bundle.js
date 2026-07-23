@@ -13,18 +13,10 @@
 const {bundleCommand: bc} = require('@react-native/community-cli-plugin');
 const commander = require('commander');
 const {execSync} = require('node:child_process');
-const {readFileSync} = require('node:fs');
-const path = require('node:path');
 
 // Commander 12.0.0 changes from the global to named export
 // $FlowFixMe[signature-verification-failure]
 const program = commander.program ?? commander;
-
-program.version(
-  JSON.parse(
-    readFileSync(path.resolve(__dirname, '..', 'package.json'), 'utf8'),
-  ).version,
-);
 
 program
   .name(bc.name)
