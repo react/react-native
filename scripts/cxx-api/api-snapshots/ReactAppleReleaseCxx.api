@@ -642,8 +642,6 @@ interface RCTAnimatedNode : public NSObject {
 
 interface RCTAppDelegate : public RCTDefaultReactNativeFactoryDelegate <UIApplicationDelegate> {
   public @property (assign) BOOL automaticallyLoadReactNativeWindow;
-  public @property (assign) RCTBridge* bridge;
-  public @property (assign) RCTSurfacePresenterBridgeAdapter* bridgeAdapter;
   public @property (strong) NSDictionary* initialProps;
   public @property (strong) NSString* moduleName;
   public @property (strong) RCTReactNativeFactory* reactNativeFactory;
@@ -1597,7 +1595,6 @@ interface RCTRadialGradient : public NSObject {
 interface RCTReactNativeFactory : public NSObject {
   public @property (assign) RCTBridge* bridge;
   public @property (assign) RCTDevMenuConfiguration* devMenuConfiguration;
-  public @property (assign) RCTSurfacePresenterBridgeAdapter* bridgeAdapter;
   public @property (strong) RCTBundleConfiguration* bundleConfiguration;
   public @property (strong) RCTRootViewFactory* rootViewFactory;
   public @property (weak) id<RCTReactNativeFactoryDelegate> delegate;
@@ -1670,9 +1667,7 @@ interface RCTRootView : public UIView {
 }
 
 interface RCTRootViewFactory : public NSObject {
-  public @property (strong) RCTBridge* bridge;
   public @property (strong) RCTHost* reactHost;
-  public @property (strong) RCTSurfacePresenterBridgeAdapter* bridgeAdapter;
   public virtual RCTHost* createReactHost:(NSDictionary* _Nullable launchOptions);
   public virtual RCTHost* createReactHost:bundleConfiguration:devMenuConfiguration:(NSDictionary* _Nullable launchOptions, RCTBundleConfiguration* bundleConfiguration, RCTDevMenuConfiguration* devMenuConfiguration);
   public virtual UIView* _Nonnull viewWithModuleName:(NSString* moduleName);
