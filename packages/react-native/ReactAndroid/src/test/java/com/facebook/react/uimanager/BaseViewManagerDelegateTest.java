@@ -12,8 +12,11 @@ import static org.mockito.Mockito.verify;
 
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactTestHelper;
+import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags;
+import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsForTests;
 import com.facebook.react.views.view.ReactViewGroup;
 import com.facebook.react.views.view.ReactViewManager;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,11 +30,19 @@ public class BaseViewManagerDelegateTest {
 
   @Before
   public void setUp() {
+    // Constructing a ReactViewGroup reads a native-backed feature flag; install the local
+    // (non-JNI) accessor so Robolectric doesn't try to load react_featureflagsjni.
+    ReactNativeFeatureFlagsForTests.INSTANCE.setUp();
     viewManager = mock(ReactViewManager.class);
     ReactApplicationContext context = ReactTestHelper.createCatalystContextForTest();
     ThemedReactContext themedReactContext = new ThemedReactContext(context, context, null, -1);
     view = new ReactViewGroup(themedReactContext);
     delegate = new BaseViewManagerDelegate<>(viewManager) {};
+  }
+
+  @After
+  public void tearDown() {
+    ReactNativeFeatureFlags.dangerouslyReset();
   }
 
   @Test
