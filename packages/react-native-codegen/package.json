@@ -1,6 +1,6 @@
 {
   "name": "@react-native/codegen",
-  "version": "0.86.1",
+  "version": "0.86.0",
   "description": "Code generation tools for React Native",
   "license": "MIT",
   "repository": {

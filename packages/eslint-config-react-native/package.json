@@ -1,6 +1,6 @@
 {
   "name": "@react-native/eslint-config",
-  "version": "0.86.1",
+  "version": "0.86.0",
   "description": "ESLint config for React Native",
   "license": "MIT",
   "repository": {
@@ -26,7 +26,7 @@
   "dependencies": {
     "@babel/core": "^7.25.2",
     "@babel/eslint-parser": "^7.25.1",
-    "@react-native/eslint-plugin": "0.86.1",
+    "@react-native/eslint-plugin": "0.86.0",
     "@typescript-eslint/eslint-plugin": "^8.36.0",
     "@typescript-eslint/parser": "^8.36.0",
     "eslint-config-prettier": "^8.5.0",

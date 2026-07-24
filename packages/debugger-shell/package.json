@@ -1,7 +1,7 @@
 {
   "name": "@react-native/debugger-shell",
   "productName": "React Native DevTools",
-  "version": "0.86.1",
+  "version": "0.86.0",
   "description": "Experimental debugger shell for React Native for use with @react-native/debugger-frontend",
   "keywords": [
     "react-native",

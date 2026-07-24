@@ -1,6 +1,6 @@
 {
   "name": "@react-native/jest-preset",
-  "version": "0.86.1",
+  "version": "0.86.0",
   "description": "Jest preset for React Native apps",
   "keywords": [
     "jest",
@@ -29,7 +29,7 @@
   ],
   "dependencies": {
     "@jest/create-cache-key-function": "^29.7.0",
-    "@react-native/js-polyfills": "0.86.1",
+    "@react-native/js-polyfills": "0.86.0",
     "babel-jest": "^29.7.0",
     "jest-environment-node": "^29.7.0",
     "regenerator-runtime": "^0.13.2"

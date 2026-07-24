@@ -1,6 +1,6 @@
 {
   "name": "@react-native/compatibility-check",
-  "version": "0.86.1",
+  "version": "0.86.0",
   "description": "Check a React Native app's boundary between JS and Native for incompatibilities",
   "license": "MIT",
   "repository": {
@@ -38,7 +38,7 @@
     "prepack": "node ../../scripts/build/prepack.js"
   },
   "dependencies": {
-    "@react-native/codegen": "0.86.1"
+    "@react-native/codegen": "0.86.0"
   },
   "devDependencies": {
     "flow-remove-types": "^2.237.2",

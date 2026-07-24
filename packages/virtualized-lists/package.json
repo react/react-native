@@ -1,6 +1,6 @@
 {
   "name": "@react-native/virtualized-lists",
-  "version": "0.86.1",
+  "version": "0.86.0",
   "description": "Virtualized lists for React Native.",
   "license": "MIT",
   "repository": {
@@ -53,7 +53,7 @@
   "peerDependencies": {
     "@types/react": "^19.2.0",
     "react": "*",
-    "react-native": "0.86.1"
+    "react-native": "0.86.0"
   },
   "peerDependenciesMeta": {
     "@types/react": {

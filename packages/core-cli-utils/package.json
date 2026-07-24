@@ -1,6 +1,6 @@
 {
   "name": "@react-native/core-cli-utils",
-  "version": "0.86.1",
+  "version": "0.86.0",
   "description": "React Native CLI library for Frameworks to build on",
   "license": "MIT",
   "keywords": [

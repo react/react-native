@@ -13,17 +13,17 @@
   },
   "dependencies": {
     "react": "19.2.3",
-    "react-native": "0.86.1"
+    "react-native": "0.86.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@babel/preset-env": "^7.25.3",
     "@babel/runtime": "^7.25.0",
-    "@react-native/babel-preset": "0.86.1",
-    "@react-native/core-cli-utils": "0.86.1",
-    "@react-native/eslint-config": "0.86.1",
-    "@react-native/metro-config": "0.86.1",
-    "@react-native/typescript-config": "0.86.1",
+    "@react-native/babel-preset": "0.86.0",
+    "@react-native/core-cli-utils": "0.86.0",
+    "@react-native/eslint-config": "0.86.0",
+    "@react-native/metro-config": "0.86.0",
+    "@react-native/typescript-config": "0.86.0",
     "@types/jest": "^29.5.14",
     "commander": "^12.0.0",
     "eslint": "^8.19.0",

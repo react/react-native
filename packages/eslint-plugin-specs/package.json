@@ -1,6 +1,6 @@
 {
   "name": "@react-native/eslint-plugin-specs",
-  "version": "0.86.1",
+  "version": "0.86.0",
   "description": "ESLint rules to validate NativeModule and Component Specs",
   "license": "MIT",
   "repository": {
@@ -26,7 +26,7 @@
   "dependencies": {
     "@babel/core": "^7.25.2",
     "@babel/plugin-transform-flow-strip-types": "^7.25.2",
-    "@react-native/codegen": "0.86.1",
+    "@react-native/codegen": "0.86.0",
     "make-dir": "^2.1.0",
     "pirates": "^4.0.1",
     "babel-plugin-syntax-hermes-parser": "0.36.0",
