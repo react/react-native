@@ -237,7 +237,12 @@ std::size_t Color::getUIColorHash() const
 
 Color Color::createSemanticColor(std::vector<std::string> &semanticItems)
 {
-  auto semanticColor = RCTPlatformColorFromSemanticItems(semanticItems);
+  UIColor *semanticColor = RCTPlatformColorFromSemanticItemsOrNil(semanticItems);
+  if (semanticColor == nil) {
+    // Undefined-color sentinel on a miss, distinct from a name that resolves to
+    // transparent (getColor() is still 0, preserving the old render).
+    return HostPlatformColor::UndefinedColor;
+  }
   return Color(wrapManagedObject(semanticColor));
 }
 
