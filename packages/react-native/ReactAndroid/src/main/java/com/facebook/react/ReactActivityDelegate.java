@@ -24,7 +24,6 @@ import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.common.LifecycleState;
 import com.facebook.react.devsupport.LocalNetworkPermissionUtil;
 import com.facebook.react.interfaces.fabric.ReactSurface;
-import com.facebook.react.internal.featureflags.ReactNativeNewArchitectureFeatureFlags;
 import com.facebook.react.modules.core.PermissionListener;
 import com.facebook.react.views.view.WindowUtilKt;
 import com.facebook.systrace.Systrace;
@@ -85,21 +84,6 @@ public class ReactActivityDelegate {
   }
 
   /**
-   * Get the {@link ReactNativeHost} used by this app with Bridge enabled. By default, assumes
-   * {@link Activity#getApplication()} is an instance of {@link ReactApplication} and calls {@link
-   * ReactApplication#getReactNativeHost()}. Override this method if your application class does not
-   * implement {@code ReactApplication} or you simply have a different mechanism for storing a
-   * {@code ReactNativeHost}, e.g. as a static field somewhere.
-   *
-   * @deprecated "Do not access {@link ReactNativeHost} directly. This class is going away in the
-   *     New Architecture. You should access {@link ReactHost} instead."
-   */
-  @Deprecated
-  protected ReactNativeHost getReactNativeHost() {
-    return ((ReactApplication) getPlainActivity().getApplication()).getReactNativeHost();
-  }
-
-  /**
    * Get the {@link ReactHost} used by this app with Bridgeless enabled. By default, assumes {@link
    * Activity#getApplication()} is an instance of {@link ReactApplication} and calls {@link
    * ReactApplication#getReactHost()}. Override this method if your application class does not
@@ -112,16 +96,6 @@ public class ReactActivityDelegate {
 
   protected @Nullable ReactDelegate getReactDelegate() {
     return mReactDelegate;
-  }
-
-  /**
-   * @deprecated @deprecated "Do not access {@link ReactInstanceManager} directly. This class is
-   *     going away in the New Architecture. You should access {@link ReactHost} instead."
-   * @noinspection deprecation
-   */
-  @Deprecated
-  public ReactInstanceManager getReactInstanceManager() {
-    return Objects.requireNonNull(mReactDelegate).getReactInstanceManager();
   }
 
   @Nullable
@@ -145,29 +119,9 @@ public class ReactActivityDelegate {
               }
             }
           }
-          if (ReactNativeNewArchitectureFeatureFlags.enableBridgelessArchitecture()) {
-            mReactDelegate =
-                new ReactDelegate(
-                    getPlainActivity(), getReactHost(), mainComponentName, launchOptions);
-          } else {
-            mReactDelegate =
-                new ReactDelegate(
-                    getPlainActivity(),
-                    getReactNativeHost(),
-                    mainComponentName,
-                    launchOptions,
-                    isFabricEnabled()) {
-                  @Override
-                  @Nullable
-                  protected ReactRootView createRootView() {
-                    ReactRootView rootView = ReactActivityDelegate.this.createRootView();
-                    if (rootView == null) {
-                      rootView = super.createRootView();
-                    }
-                    return rootView;
-                  }
-                };
-          }
+          mReactDelegate =
+              new ReactDelegate(
+                  getPlainActivity(), getReactHost(), mainComponentName, launchOptions);
           if (mainComponentName != null) {
             LocalNetworkPermissionUtil.requestLocalNetworkAccessIfNeeded(
                 getPlainActivity(), () -> loadApp(mainComponentName));
@@ -182,10 +136,6 @@ public class ReactActivityDelegate {
 
   public void setReactSurface(ReactSurface reactSurface) {
     Objects.requireNonNull(mReactDelegate).setReactSurface(reactSurface);
-  }
-
-  public void setReactRootView(ReactRootView reactRootView) {
-    Objects.requireNonNull(mReactDelegate).setReactRootView(reactRootView);
   }
 
   public void onUserLeaveHint() {
@@ -258,18 +208,9 @@ public class ReactActivityDelegate {
           }
         };
 
-    LifecycleState lifecycle;
-    if (isFabricEnabled()) {
-      ReactHost reactHost = getReactHost();
-      lifecycle = reactHost != null ? reactHost.getLifecycleState() : LifecycleState.BEFORE_CREATE;
-    } else {
-      ReactNativeHost reactNativeHost = getReactNativeHost();
-      if (!reactNativeHost.hasInstance()) {
-        lifecycle = LifecycleState.BEFORE_CREATE;
-      } else {
-        lifecycle = reactNativeHost.getReactInstanceManager().getLifecycleState();
-      }
-    }
+    ReactHost reactHost = getReactHost();
+    LifecycleState lifecycle =
+        reactHost != null ? reactHost.getLifecycleState() : LifecycleState.BEFORE_CREATE;
 
     // If the permission request didn't show a dialog to the user, we can call the callback
     // immediately.

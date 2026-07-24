@@ -167,16 +167,8 @@ public abstract class ReactActivity extends AppCompatActivity
     mDelegate.onConfigurationChanged(newConfig);
   }
 
-  protected final ReactNativeHost getReactNativeHost() {
-    return mDelegate.getReactNativeHost();
-  }
-
   protected ReactHost getReactHost() {
     return mDelegate.getReactHost();
-  }
-
-  protected final ReactInstanceManager getReactInstanceManager() {
-    return mDelegate.getReactInstanceManager();
   }
 
   protected final void loadApp(String appKey) {

@@ -15,7 +15,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import com.facebook.react.internal.featureflags.ReactNativeNewArchitectureFeatureFlags
 import com.facebook.react.modules.core.PermissionAwareActivity
 import com.facebook.react.modules.core.PermissionListener
 
@@ -32,53 +31,22 @@ public open class ReactFragment : Fragment(), PermissionAwareActivity {
     super.onCreate(savedInstanceState)
     var mainComponentName: String? = null
     var launchOptions: Bundle? = null
-    var fabricEnabled = false
     arguments?.let { args ->
       mainComponentName = args.getString(ARG_COMPONENT_NAME)
       launchOptions = args.getBundle(ARG_LAUNCH_OPTIONS)
-      fabricEnabled = args.getBoolean(ARG_FABRIC_ENABLED)
       @Suppress("DEPRECATION")
       disableHostLifecycleEvents = args.getBoolean(ARG_DISABLE_HOST_LIFECYCLE_EVENTS)
     }
     checkNotNull(mainComponentName) { "Cannot loadApp if component name is null" }
 
-    reactDelegate =
-        if (ReactNativeNewArchitectureFeatureFlags.enableBridgelessArchitecture()) {
-          ReactDelegate(requireActivity(), reactHost, mainComponentName, launchOptions)
-        } else {
-          @Suppress("DEPRECATION")
-          ReactDelegate(
-              requireActivity(),
-              reactNativeHost,
-              mainComponentName,
-              launchOptions,
-              fabricEnabled,
-          )
-        }
+    reactDelegate = ReactDelegate(requireActivity(), reactHost, mainComponentName, launchOptions)
   }
-
-  /**
-   * Get the [ReactNativeHost] used by this app. By default, assumes [Activity.getApplication] is an
-   * instance of [ReactApplication] and calls [ReactApplication.reactNativeHost]. Override this
-   * method if your application class does not implement `ReactApplication` or you simply have a
-   * different mechanism for storing a `ReactNativeHost`, e.g. as a static field somewhere.
-   */
-  @Suppress("DEPRECATION")
-  @Deprecated(
-      "You should not use ReactNativeHost directly in the New Architecture. Use ReactHost instead.",
-      ReplaceWith("reactHost"),
-  )
-  protected open val reactNativeHost: ReactNativeHost?
-    get() = (activity?.application as ReactApplication?)?.reactNativeHost
 
   /**
    * Get the [ReactHost] used by this app. By default, assumes [Activity.getApplication] is an
    * instance of [ReactApplication] and calls [ReactApplication.reactHost]. Override this method if
    * your application class does not implement `ReactApplication` or you simply have a different
    * mechanism for storing a `ReactHost`, e.g. as a static field somewhere.
-   *
-   * If you're using Old Architecture/Bridge Mode, this method should return null as [ReactHost] is
-   * a Bridgeless-only concept.
    */
   protected open val reactHost: ReactHost?
     get() = (activity?.application as ReactApplication?)?.reactHost

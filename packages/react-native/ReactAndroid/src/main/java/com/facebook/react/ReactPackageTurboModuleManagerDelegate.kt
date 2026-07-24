@@ -24,8 +24,7 @@ public abstract class ReactPackageTurboModuleManagerDelegate : TurboModuleManage
   private val moduleProviders = mutableListOf<ModuleProvider>()
   private val packageModuleInfos = mutableMapOf<ModuleProvider, Map<String, ReactModuleInfo>>()
   private val shouldEnableLegacyModuleInterop =
-      ReactNativeNewArchitectureFeatureFlags.enableBridgelessArchitecture() &&
-          ReactNativeNewArchitectureFeatureFlags.useTurboModuleInterop()
+      ReactNativeNewArchitectureFeatureFlags.useTurboModuleInterop()
 
   protected constructor(
       reactApplicationContext: ReactApplicationContext,

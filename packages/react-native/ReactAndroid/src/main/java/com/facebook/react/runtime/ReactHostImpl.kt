@@ -846,12 +846,6 @@ public class ReactHostImpl(
     }
 
     stateTracker.enterState("getOrCreateStartTask()", "Schedule")
-    if (ReactBuildConfig.DEBUG) {
-      Assertions.assertCondition(
-          ReactNativeNewArchitectureFeatureFlags.enableBridgelessArchitecture(),
-          "enableBridgelessArchitecture FeatureFlag must be set to start ReactNative.",
-      )
-    }
     if (ReactBuildConfig.UNSTABLE_ENABLE_MINIFY_LEGACY_ARCHITECTURE) {
       Assertions.assertCondition(
           !ReactNativeNewArchitectureFeatureFlags.useFabricInterop(),

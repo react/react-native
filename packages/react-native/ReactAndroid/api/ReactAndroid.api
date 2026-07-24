@@ -65,8 +65,6 @@ public abstract class com/facebook/react/ReactActivity : androidx/appcompat/app/
 	public fun getReactActivityDelegate ()Lcom/facebook/react/ReactActivityDelegate;
 	public fun getReactDelegate ()Lcom/facebook/react/ReactDelegate;
 	protected fun getReactHost ()Lcom/facebook/react/ReactHost;
-	protected final fun getReactInstanceManager ()Lcom/facebook/react/ReactInstanceManager;
-	protected final fun getReactNativeHost ()Lcom/facebook/react/ReactNativeHost;
 	public fun invokeDefaultOnBackPressed ()V
 	protected final fun loadApp (Ljava/lang/String;)V
 	public fun onActivityResult (IILandroid/content/Intent;)V
@@ -99,8 +97,6 @@ public class com/facebook/react/ReactActivityDelegate {
 	protected fun getReactActivity ()Lcom/facebook/react/ReactActivity;
 	protected fun getReactDelegate ()Lcom/facebook/react/ReactDelegate;
 	public fun getReactHost ()Lcom/facebook/react/ReactHost;
-	public fun getReactInstanceManager ()Lcom/facebook/react/ReactInstanceManager;
-	protected fun getReactNativeHost ()Lcom/facebook/react/ReactNativeHost;
 	protected fun isFabricEnabled ()Z
 	protected fun isWideColorGamutEnabled ()Z
 	protected fun loadApp (Ljava/lang/String;)V
@@ -119,7 +115,6 @@ public class com/facebook/react/ReactActivityDelegate {
 	public fun onUserLeaveHint ()V
 	public fun onWindowFocusChanged (Z)V
 	public fun requestPermissions ([Ljava/lang/String;ILcom/facebook/react/modules/core/PermissionListener;)V
-	public fun setReactRootView (Lcom/facebook/react/ReactRootView;)V
 	public fun setReactSurface (Lcom/facebook/react/interfaces/fabric/ReactSurface;)V
 }
 
@@ -130,14 +125,9 @@ public abstract interface class com/facebook/react/ReactApplication {
 
 public class com/facebook/react/ReactDelegate {
 	public fun <init> (Landroid/app/Activity;Lcom/facebook/react/ReactHost;Ljava/lang/String;Landroid/os/Bundle;)V
-	public fun <init> (Landroid/app/Activity;Lcom/facebook/react/ReactNativeHost;Ljava/lang/String;Landroid/os/Bundle;)V
-	public fun <init> (Landroid/app/Activity;Lcom/facebook/react/ReactNativeHost;Ljava/lang/String;Landroid/os/Bundle;Z)V
-	protected fun createRootView ()Lcom/facebook/react/ReactRootView;
 	public final fun getCurrentReactContext ()Lcom/facebook/react/bridge/ReactContext;
 	public final fun getReactHost ()Lcom/facebook/react/ReactHost;
-	public final fun getReactInstanceManager ()Lcom/facebook/react/ReactInstanceManager;
 	public final fun getReactRootView ()Lcom/facebook/react/ReactRootView;
-	protected final fun isFabricEnabled ()Z
 	public final fun loadApp ()V
 	public final fun loadApp (Ljava/lang/String;)V
 	public final fun onActivityResult (IILandroid/content/Intent;Z)V
@@ -152,7 +142,6 @@ public class com/facebook/react/ReactDelegate {
 	public final fun onUserLeaveHint ()V
 	public final fun onWindowFocusChanged (Z)V
 	public final fun reload ()V
-	public final fun setReactRootView (Lcom/facebook/react/ReactRootView;)V
 	public final fun setReactSurface (Lcom/facebook/react/interfaces/fabric/ReactSurface;)V
 	public final fun shouldShowDevMenuOrReload (ILandroid/view/KeyEvent;)Z
 	public final fun unloadApp ()V
@@ -170,7 +159,6 @@ public class com/facebook/react/ReactFragment : androidx/fragment/app/Fragment, 
 	public fun checkSelfPermission (Ljava/lang/String;)I
 	protected final fun getReactDelegate ()Lcom/facebook/react/ReactDelegate;
 	protected fun getReactHost ()Lcom/facebook/react/ReactHost;
-	protected fun getReactNativeHost ()Lcom/facebook/react/ReactNativeHost;
 	public fun onActivityResult (IILandroid/content/Intent;)V
 	public fun onBackPressed ()Z
 	public fun onCreate (Landroid/os/Bundle;)V
