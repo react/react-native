@@ -11,19 +11,19 @@
 import type {Config} from '@react-native-community/cli-types';
 import type {Reporter, TerminalReportableEvent, TerminalReporter} from 'metro';
 
-import createDevMiddlewareLogger from '../../utils/createDevMiddlewareLogger';
-import isDevServerRunning from '../../utils/isDevServerRunning';
-import loadMetroConfig from '../../utils/loadMetroConfig';
-import * as version from '../../utils/version';
+import loadMetroConfig from '../utils/loadMetroConfig';
 import attachKeyHandlers from './attachKeyHandlers';
-import {createDevServerMiddleware} from './middleware';
+import createDevMiddlewareLogger from './createDevMiddlewareLogger';
+import isDevServerRunning from './isDevServerRunning';
+import loadCommunityMiddleware from './loadCommunityMiddleware';
+import * as version from './version';
 import {createDevMiddleware} from '@react-native/dev-middleware';
 import * as Metro from 'metro';
 import path from 'node:path';
 import url from 'node:url';
 import {styleText} from 'node:util';
 
-export type StartCommandArgs = {
+export type DevServerOptions = {
   assetPlugins?: string[],
   cert?: string,
   customLogReporterPath?: string,
@@ -43,10 +43,10 @@ export type StartCommandArgs = {
   clientLogs: boolean,
 };
 
-async function runServer(
+async function runDevServer(
   _argv: Array<string>,
   cliConfig: Config,
-  args: StartCommandArgs,
+  args: DevServerOptions,
 ) {
   const metroConfig = await loadMetroConfig(cliConfig, {
     config: args.config,
@@ -107,12 +107,13 @@ async function runServer(
   const ReporterImpl = getReporterImpl(args.customLogReporterPath);
   const terminalReporter = new ReporterImpl(terminal);
 
+  const createCommunityMiddleware = loadCommunityMiddleware();
   const {
     middleware: communityMiddleware,
     websocketEndpoints: communityWebsocketEndpoints,
     messageSocketEndpoint,
     eventsSocketEndpoint,
-  } = createDevServerMiddleware({
+  } = createCommunityMiddleware({
     host: hostname,
     port,
     watchFolders,
@@ -186,4 +187,4 @@ function getReporterImpl(
   }
 }
 
-export default runServer;
+export default runDevServer;
