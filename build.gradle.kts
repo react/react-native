@@ -59,6 +59,7 @@ nexusPublishing {
     sonatype {
       username.set(sonatypeUsername)
       password.set(sonatypePassword)
+      stagingProfileId.set("com.facebook")
       nexusUrl.set(uri("https://ossrh-staging-api.central.sonatype.com/service/local/"))
       snapshotRepositoryUrl.set(uri("https://central.sonatype.com/repository/maven-snapshots/"))
     }
