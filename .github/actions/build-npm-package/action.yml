@@ -4,10 +4,6 @@ inputs:
   release-type:
     required: true
     description: The type of release we are building. It could be nightly, release or dry-run
-  gha-npm-token:
-    required: false
-    description: The GHA npm token, required only to publish to npm
-    default: ''
   gradle-cache-encryption-key:
     description: The encryption key needed to store the Gradle Configuration cache
 
@@ -38,6 +34,9 @@ runs:
         cache-encryption-key: ${{ inputs.gradle-cache-encryption-key }}
     - name: Setup node.js
       uses: ./.github/actions/setup-node
+      with:
+        node-version: '24'
+        registry-url: 'https://registry.npmjs.org'
     - name: Install dependencies
       uses: ./.github/actions/yarn-install
     - name: Build packages
@@ -46,12 +45,9 @@ runs:
     - name: Build types
       shell: bash
       run: yarn build-types --skip-snapshot
-    # Continue with publish steps
-    - name: Set npm credentials
-      if: ${{ inputs.release-type == 'release' ||
-        inputs.release-type == 'nightly' }}
-      shell: bash
-      run: echo "//registry.npmjs.org/:_authToken=${{ inputs.gha-npm-token }}" > ~/.npmrc
+    # `npm publish` below authenticates via npm Trusted Publishing (OIDC).
+    # The caller (the `publish-npm.yml` workflow) MUST grant `id-token: write`;
+    # this composite action runs inside that job.
     - name: Publish NPM
       shell: bash
       run: |

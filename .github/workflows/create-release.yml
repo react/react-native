@@ -28,21 +28,6 @@ jobs:
           token: ${{ secrets.REACT_NATIVE_BOT_GITHUB_TOKEN }}
           fetch-depth: 0
           fetch-tags: 'true'
-      - name: Verify NPM token
-        run: |
-          if [[ -z "$GHA_NPM_TOKEN" ]]; then
-            echo "⚠️ No NPM token found. Skipping validation."
-            exit 0
-          fi
-          echo "//registry.npmjs.org/:_authToken=$GHA_NPM_TOKEN" > ~/.npmrc
-          if ! npm whoami > /dev/null 2>&1; then
-            echo "❌ NPM token is invalid or expired. Aborting release."
-            exit 1
-          fi
-          echo "✅ NPM token is valid ($(npm whoami))"
-          rm -f ~/.npmrc
-        env:
-          GHA_NPM_TOKEN: ${{ secrets.GHA_NPM_TOKEN }}
       - name: Check if on stable branch
         id: check_stable_branch
         run: |
