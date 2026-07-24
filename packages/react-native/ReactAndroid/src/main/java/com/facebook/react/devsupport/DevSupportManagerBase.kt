@@ -71,7 +71,6 @@ import com.facebook.react.devsupport.interfaces.StackFrame
 import com.facebook.react.devsupport.perfmonitor.PerfMonitorDevHelper
 import com.facebook.react.devsupport.perfmonitor.PerfMonitorOverlayManager
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
-import com.facebook.react.internal.featureflags.ReactNativeNewArchitectureFeatureFlags
 import com.facebook.react.modules.core.RCTNativeAppEventEmitter
 import com.facebook.react.modules.debug.interfaces.DeveloperSettings
 import com.facebook.react.packagerconnection.RequestHandler
@@ -242,8 +241,7 @@ public abstract class DevSupportManagerBase(
           )
     }
     if (
-        ReactNativeNewArchitectureFeatureFlags.enableBridgelessArchitecture() &&
-            ReactNativeFeatureFlags.perfMonitorV2Enabled() &&
+        ReactNativeFeatureFlags.perfMonitorV2Enabled() &&
             reactInstanceDevHelper is PerfMonitorDevHelper
     ) {
       perfMonitorOverlayManager =

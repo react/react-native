@@ -17,7 +17,6 @@ import android.os.PowerManager
 import android.os.PowerManager.WakeLock
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.UiThreadUtil
-import com.facebook.react.internal.featureflags.ReactNativeNewArchitectureFeatureFlags
 import com.facebook.react.jstasks.HeadlessJsTaskConfig
 import com.facebook.react.jstasks.HeadlessJsTaskContext.Companion.getInstance
 import com.facebook.react.jstasks.HeadlessJsTaskEventListener
@@ -126,40 +125,21 @@ public abstract class HeadlessJsTaskService : Service(), HeadlessJsTaskEventList
 
   protected val reactContext: ReactContext?
     get() {
-      if (ReactNativeNewArchitectureFeatureFlags.enableBridgelessArchitecture()) {
-        val reactHost =
-            checkNotNull(reactHost) { "ReactHost is not initialized in New Architecture" }
-        return reactHost.currentReactContext
-      } else {
-        val reactInstanceManager = reactNativeHost.reactInstanceManager
-        return reactInstanceManager.currentReactContext
-      }
+      val reactHost = checkNotNull(reactHost) { "ReactHost is not initialized in New Architecture" }
+      return reactHost.currentReactContext
     }
 
   private fun createReactContextAndScheduleTask(taskConfig: HeadlessJsTaskConfig) {
-    if (ReactNativeNewArchitectureFeatureFlags.enableBridgelessArchitecture()) {
-      val reactHost = checkNotNull(reactHost)
-      reactHost.addReactInstanceEventListener(
-          object : ReactInstanceEventListener {
-            override fun onReactContextInitialized(context: ReactContext) {
-              invokeStartTask(context, taskConfig)
-              reactHost.removeReactInstanceEventListener(this)
-            }
+    val reactHost = checkNotNull(reactHost)
+    reactHost.addReactInstanceEventListener(
+        object : ReactInstanceEventListener {
+          override fun onReactContextInitialized(context: ReactContext) {
+            invokeStartTask(context, taskConfig)
+            reactHost.removeReactInstanceEventListener(this)
           }
-      )
-      reactHost.start()
-    } else {
-      val reactInstanceManager = reactNativeHost.reactInstanceManager
-      reactInstanceManager.addReactInstanceEventListener(
-          object : ReactInstanceEventListener {
-            override fun onReactContextInitialized(context: ReactContext) {
-              invokeStartTask(context, taskConfig)
-              reactInstanceManager.removeReactInstanceEventListener(this)
-            }
-          }
-      )
-      reactInstanceManager.createReactContextInBackground()
-    }
+        }
+    )
+    reactHost.start()
   }
 
   public companion object {
