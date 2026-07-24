@@ -5756,6 +5756,7 @@ class facebook::react::NativeAnimatedNodesManager : public std::enable_shared_fr
   public void dropAnimatedNode(facebook::react::Tag tag) noexcept;
   public void extractAnimatedNodeOffsetOp(facebook::react::Tag tag);
   public void flattenAnimatedNodeOffset(facebook::react::Tag tag);
+  public void flushAnimatedNodesCreatedAsync() noexcept;
   public void insertMutations(std::unordered_map<facebook::react::Tag, std::pair<facebook::react::ShadowNodeFamily::Weak, folly::dynamic>>& updates, facebook::react::AnimationMutations& mutations, facebook::react::AnimatedPropsBuilder& propsBuilder, bool hasLayoutUpdates = false);
   public void onManagedPropsRemoved(facebook::react::Tag tag) noexcept;
   public void onRender();

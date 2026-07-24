@@ -208,14 +208,14 @@ class NativeAnimatedNodesManager : public std::enable_shared_from_this<NativeAni
 
   bool isOnRenderThread() const noexcept;
 
+  void flushAnimatedNodesCreatedAsync() noexcept;
+
   void resolvePlatformColor(SurfaceId surfaceId, const RawValue &value, SharedColor &result) const;
 
  private:
   void stopRenderCallbackIfNeeded(bool isAsync) noexcept;
 
   bool onAnimationFrame(double timestamp);
-
-  void flushAnimatedNodesCreatedAsync() noexcept;
 
   bool isAnimationUpdateNeeded() const noexcept;
 
