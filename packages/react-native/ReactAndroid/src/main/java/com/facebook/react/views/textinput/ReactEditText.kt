@@ -140,7 +140,9 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
   private var didAttachToWindow = false
   private var selectTextOnFocus = false
   private var placeholder: String? = null
-  private var overflow = Overflow.VISIBLE
+  internal var overflow = Overflow.VISIBLE
+    private set
+
   private var wasMultiline = false
 
   public var stateWrapper: StateWrapper? = null

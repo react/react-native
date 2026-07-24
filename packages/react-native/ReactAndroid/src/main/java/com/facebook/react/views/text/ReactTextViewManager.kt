@@ -31,6 +31,7 @@ import com.facebook.react.uimanager.IViewManagerWithChildren
 import com.facebook.react.uimanager.LayoutShadowNode
 import com.facebook.react.uimanager.LengthPercentage
 import com.facebook.react.uimanager.LengthPercentageType
+import com.facebook.react.uimanager.PointerEvents
 import com.facebook.react.uimanager.ReactStylesDiffMap
 import com.facebook.react.uimanager.ReferenceStateWrapper
 import com.facebook.react.uimanager.StateWrapper
@@ -44,6 +45,7 @@ import com.facebook.react.uimanager.style.BorderStyle.Companion.fromString
 import com.facebook.react.uimanager.style.LogicalEdge
 import com.facebook.react.views.text.DefaultStyleValuesUtil.getDefaultTextColorHighlight
 import com.facebook.react.views.text.ReactTypefaceUtils.getFontWeightAdjustment
+import com.facebook.react.views.view.ImportantForInteractionHelper
 import java.util.HashMap
 
 /** View manager for `<Text>` nodes. */
@@ -236,6 +238,12 @@ public constructor(
   @ReactProp(name = "overflow")
   public fun setOverflow(view: ReactTextView, overflow: String?) {
     view.setOverflow(overflow)
+    ImportantForInteractionHelper.setImportantForInteraction(
+        view,
+        // <Text> has no pointerEvents prop, so it always behaves as AUTO.
+        PointerEvents.AUTO,
+        view.overflow,
+    )
   }
 
   @ReactProp(name = "accessible")

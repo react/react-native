@@ -62,6 +62,7 @@ import com.facebook.react.views.scroll.ReactScrollViewHelper.SNAP_ALIGNMENT_DISA
 import com.facebook.react.views.scroll.ReactScrollViewHelper.SNAP_ALIGNMENT_END
 import com.facebook.react.views.scroll.ReactScrollViewHelper.SNAP_ALIGNMENT_START
 import com.facebook.react.views.scroll.ReactScrollViewHelper.findNextFocusableView
+import com.facebook.react.views.view.ImportantForInteractionHelper
 import com.facebook.systrace.Systrace
 import kotlin.math.abs
 import kotlin.math.ceil
@@ -175,6 +176,11 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
   private var pendingContentOffsetX = UNSET_CONTENT_OFFSET
   private var pendingContentOffsetY = UNSET_CONTENT_OFFSET
   public open var pointerEvents: PointerEvents = PointerEvents.AUTO
+    set(value) {
+      field = value
+      ImportantForInteractionHelper.setImportantForInteraction(this, value, _overflow)
+    }
+
   private var contentView: View? = null
   private var maintainVisibleContentPositionHelper:
       MaintainVisibleScrollPositionHelper<ReactHorizontalScrollView>? =
@@ -425,6 +431,7 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
               else Overflow.SCROLL,
           )
         }
+    ImportantForInteractionHelper.setImportantForInteraction(this, pointerEvents, _overflow)
     invalidate()
   }
 

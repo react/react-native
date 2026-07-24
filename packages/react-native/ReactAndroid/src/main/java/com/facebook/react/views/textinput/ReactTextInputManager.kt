@@ -46,6 +46,7 @@ import com.facebook.react.uimanager.BaseViewManager
 import com.facebook.react.uimanager.LayoutShadowNode
 import com.facebook.react.uimanager.LengthPercentage
 import com.facebook.react.uimanager.LengthPercentageType
+import com.facebook.react.uimanager.PointerEvents
 import com.facebook.react.uimanager.ReactStylesDiffMap
 import com.facebook.react.uimanager.StateWrapper
 import com.facebook.react.uimanager.ThemedReactContext
@@ -73,6 +74,7 @@ import com.facebook.react.views.text.ReactTypefaceUtils.getFontWeightAdjustment
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontVariant
 import com.facebook.react.views.text.TextAttributeProps
 import com.facebook.react.views.text.TextLayoutManager
+import com.facebook.react.views.view.ImportantForInteractionHelper
 import java.util.LinkedList
 
 /** Manages instances of TextInput. */
@@ -882,6 +884,12 @@ public open class ReactTextInputManager public constructor() :
   @ReactProp(name = "overflow")
   public fun setOverflow(view: ReactEditText, overflow: String?) {
     view.setOverflow(overflow)
+    ImportantForInteractionHelper.setImportantForInteraction(
+        view,
+        // <TextInput> has no pointerEvents prop, so it always behaves as AUTO.
+        PointerEvents.AUTO,
+        view.overflow,
+    )
   }
 
   override fun onAfterUpdateTransaction(view: ReactEditText) {

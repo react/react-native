@@ -676,4 +676,8 @@ public class ReactTextView extends AppCompatTextView implements ReactCompoundVie
     mOverflow = Overflow.fromString(overflow);
     invalidate();
   }
+
+  /* package */ Overflow getOverflow() {
+    return mOverflow;
+  }
 }
