@@ -87,11 +87,19 @@ public open class IntentModule(reactContext: ReactApplicationContext) :
           override fun onHostResume() {
             reactApplicationContext.removeLifecycleEventListener(this)
             synchronized(this@IntentModule) {
-              for (pendingPromise in pendingOpenURLPromises) {
+              // Snapshot and clear the pending promises before draining them. If the current
+              // activity is still null at resume time (e.g. a deep link arriving mid
+              // activity-transition), getInitialURL re-enters waitForActivityAndGetInitialURL and
+              // adds back into pendingOpenURLPromises. Draining a copy keeps that re-queue from
+              // mutating the list being iterated, which previously threw
+              // ConcurrentModificationException. Re-queued promises land in the now-empty list and
+              // are picked up on the next resume.
+              val pendingPromises = ArrayList(pendingOpenURLPromises)
+              pendingOpenURLPromises.clear()
+              initialURLListener = null
+              for (pendingPromise in pendingPromises) {
                 getInitialURL(pendingPromise)
               }
-              initialURLListener = null
-              pendingOpenURLPromises.clear()
             }
           }
 
