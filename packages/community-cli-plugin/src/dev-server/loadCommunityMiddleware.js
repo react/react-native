@@ -11,8 +11,6 @@
 import type {Server} from 'connect';
 import type {TerminalReportableEvent} from 'metro';
 
-const debug = require('debug')('ReactNative:CommunityCliPlugin');
-
 type DevServerMiddlewareFactory = (params: {
   host?: string,
   port: number,
@@ -73,21 +71,12 @@ export default function loadCommunityMiddleware(): DevServerMiddlewareFactory {
     // `@react-native-community/cli` is an optional peer dependency of this
     // package, and should be a dev dependency of the host project (via the
     // community template's package.json).
-    const communityCliPath = require.resolve('@react-native-community/cli');
-
-    // Until https://github.com/react-native-community/cli/pull/2605 lands,
-    // we need to find `@react-native-community/cli-server-api` via
-    // `@react-native-community/cli`. Once that lands, we can simply
-    // require('@react-native-community/cli').
-    const communityCliServerApiPath = require.resolve(
-      '@react-native-community/cli-server-api',
-      {paths: [communityCliPath]},
-    );
-    // $FlowFixMe[unsupported-syntax] dynamic import
-    return require(communityCliServerApiPath).createDevServerMiddleware;
+    // $FlowFixMe[prop-missing]
+    // $FlowFixMe[untyped-import]
+    return require('@react-native-community/cli').createDevServerMiddleware;
   } catch {
-    debug(`⚠️ Unable to find @react-native-community/cli-server-api
-Starting the server without the community middleware.`);
+    console.warn(`⚠️ Unable to find @react-native-community/cli.
+Starting dev server without community middleware endpoints - some functionality may be broken.`);
     return communityMiddlewareFallback;
   }
 }
