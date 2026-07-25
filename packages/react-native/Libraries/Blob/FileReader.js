@@ -44,6 +44,7 @@ class FileReader extends EventTarget {
   _error: ?Error;
   _result: ?ReaderResult;
   _aborted: boolean = false;
+  _readId: number = 0;
 
   constructor() {
     super();
@@ -54,6 +55,15 @@ class FileReader extends EventTarget {
     this._readyState = EMPTY;
     this._error = null;
     this._result = null;
+  }
+
+  _startRead(): number {
+    this._aborted = false;
+    this._error = null;
+    this._result = null;
+    const readId = ++this._readId;
+    this._setReadyState(LOADING);
+    return readId;
   }
 
   _setReadyState(newState: ReadyState) {
@@ -67,24 +77,24 @@ class FileReader extends EventTarget {
       } else {
         this.dispatchEvent(new Event('load'));
       }
-      this.dispatchEvent(new Event('loadend'));
+      if (this._readyState !== LOADING) {
+        this.dispatchEvent(new Event('loadend'));
+      }
     }
   }
 
   readAsArrayBuffer(blob: ?Blob): void {
-    this._aborted = false;
-
     if (blob == null) {
       throw new TypeError(
         "Failed to execute 'readAsArrayBuffer' on 'FileReader': parameter 1 is not of type 'Blob'",
       );
     }
 
-    this._setReadyState(LOADING);
+    const readId = this._startRead();
 
     NativeFileReaderModule.readAsDataURL(blob.data).then(
       (text: string) => {
-        if (this._aborted) {
+        if (readId !== this._readId) {
           return;
         }
 
@@ -95,7 +105,7 @@ class FileReader extends EventTarget {
         this._setReadyState(DONE);
       },
       error => {
-        if (this._aborted) {
+        if (readId !== this._readId) {
           return;
         }
         this._error = error;
@@ -105,26 +115,24 @@ class FileReader extends EventTarget {
   }
 
   readAsDataURL(blob: ?Blob): void {
-    this._aborted = false;
-
     if (blob == null) {
       throw new TypeError(
         "Failed to execute 'readAsDataURL' on 'FileReader': parameter 1 is not of type 'Blob'",
       );
     }
 
-    this._setReadyState(LOADING);
+    const readId = this._startRead();
 
     NativeFileReaderModule.readAsDataURL(blob.data).then(
       (text: string) => {
-        if (this._aborted) {
+        if (readId !== this._readId) {
           return;
         }
         this._result = text;
         this._setReadyState(DONE);
       },
       error => {
-        if (this._aborted) {
+        if (readId !== this._readId) {
           return;
         }
         this._error = error;
@@ -134,26 +142,24 @@ class FileReader extends EventTarget {
   }
 
   readAsText(blob: ?Blob, encoding: string = 'UTF-8'): void {
-    this._aborted = false;
-
     if (blob == null) {
       throw new TypeError(
         "Failed to execute 'readAsText' on 'FileReader': parameter 1 is not of type 'Blob'",
       );
     }
 
-    this._setReadyState(LOADING);
+    const readId = this._startRead();
 
     NativeFileReaderModule.readAsText(blob.data, encoding).then(
       (text: string) => {
-        if (this._aborted) {
+        if (readId !== this._readId) {
           return;
         }
         this._result = text;
         this._setReadyState(DONE);
       },
       error => {
-        if (this._aborted) {
+        if (readId !== this._readId) {
           return;
         }
         this._error = error;
@@ -163,14 +169,12 @@ class FileReader extends EventTarget {
   }
 
   abort() {
-    this._aborted = true;
-    // only call onreadystatechange if there is something to abort, as per spec
-    if (this._readyState !== EMPTY && this._readyState !== DONE) {
-      this._reset();
+    this._result = null;
+    if (this._readyState === LOADING) {
+      this._aborted = true;
+      this._readId++;
       this._setReadyState(DONE);
     }
-    // Reset again after, in case modified in handler
-    this._reset();
   }
 
   get readyState(): ReadyState {
