@@ -122,5 +122,16 @@ describe('processTransformOrigin', () => {
       expect(processTransformOrigin('12.5px 7.5px')).toEqual([12.5, 7.5, 0]);
       expect(processTransformOrigin('.5% .5px')).toEqual(['.5%', 0.5, 0]);
     });
+    it('should preserve negative percentage and pixel values', () => {
+      expect(processTransformOrigin('-50.5% -30.2%')).toEqual([
+        '-50.5%',
+        '-30.2%',
+        0,
+      ]);
+      expect(processTransformOrigin('-12.5px -7.5px -2.5px')).toEqual([
+        -12.5, -7.5, -2.5,
+      ]);
+      expect(processTransformOrigin('-.5% -.5px')).toEqual(['-.5%', -0.5, 0]);
+    });
   });
 });
