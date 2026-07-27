@@ -7562,6 +7562,7 @@ struct facebook::react::NativeDrawable::Ripple {
   public std::optional<facebook::react::Float> alpha;
   public std::optional<facebook::react::Float> rippleRadius;
   public std::optional<facebook::react::SharedColor> color;
+  public std::optional<std::string> colorFallback;
   public std::optional<std::vector<std::string>> colorResourcePaths;
 }
 

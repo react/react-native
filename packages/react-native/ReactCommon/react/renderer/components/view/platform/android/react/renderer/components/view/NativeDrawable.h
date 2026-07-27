@@ -25,14 +25,21 @@ struct NativeDrawable {
   struct Ripple {
     std::optional<SharedColor> color{};
     std::optional<std::vector<std::string>> colorResourcePaths{};
+    std::optional<std::string> colorFallback{};
     std::optional<Float> rippleRadius{};
     bool borderless{false};
     std::optional<Float> alpha{};
 
     bool operator==(const Ripple &rhs) const
     {
-      return std::tie(this->color, this->colorResourcePaths, this->borderless, this->rippleRadius, this->alpha) ==
-          std::tie(rhs.color, rhs.colorResourcePaths, rhs.borderless, rhs.rippleRadius, rhs.alpha);
+      return std::tie(
+                 this->color,
+                 this->colorResourcePaths,
+                 this->colorFallback,
+                 this->borderless,
+                 this->rippleRadius,
+                 this->alpha) ==
+          std::tie(rhs.color, rhs.colorResourcePaths, rhs.colorFallback, rhs.borderless, rhs.rippleRadius, rhs.alpha);
     }
   };
 
@@ -87,14 +94,25 @@ static inline void fromRawValue(const PropsParserContext &context, const RawValu
 
     std::optional<SharedColor> parsedColor{};
     std::optional<std::vector<std::string>> parsedColorResourcePaths{};
+    std::optional<std::string> parsedColorFallback{};
     if (color != map.end()) {
-      if (color->second.hasType<std::unordered_map<std::string, std::vector<std::string>>>()) {
-        auto colorMap = (std::unordered_map<std::string, std::vector<std::string>>)color->second;
+      // The color object mixes an array (`resource_paths`) with an optional
+      // string (`fallback`), so read it as a map of RawValue rather than a map
+      // of vector<string> (which would assert on the string value).
+      bool handledAsResourcePaths = false;
+      if (color->second.hasType<std::unordered_map<std::string, RawValue>>()) {
+        auto colorMap = (std::unordered_map<std::string, RawValue>)color->second;
         auto pathsIt = colorMap.find("resource_paths");
-        if (pathsIt != colorMap.end()) {
-          parsedColorResourcePaths = pathsIt->second;
+        if (pathsIt != colorMap.end() && pathsIt->second.hasType<std::vector<std::string>>()) {
+          parsedColorResourcePaths = (std::vector<std::string>)pathsIt->second;
+          auto fallbackIt = colorMap.find("fallback");
+          if (fallbackIt != colorMap.end() && fallbackIt->second.hasType<std::string>()) {
+            parsedColorFallback = (std::string)fallbackIt->second;
+          }
+          handledAsResourcePaths = true;
         }
-      } else {
+      }
+      if (!handledAsResourcePaths) {
         SharedColor resolved;
         fromRawValue(context, color->second, resolved);
         if (resolved) {
@@ -114,6 +132,7 @@ static inline void fromRawValue(const PropsParserContext &context, const RawValu
             NativeDrawable::Ripple{
                 .color = parsedColor,
                 .colorResourcePaths = parsedColorResourcePaths,
+                .colorFallback = parsedColorFallback,
                 .rippleRadius = rippleRadius != map.end() && rippleRadius->second.hasType<Float>()
                     ? (Float)rippleRadius->second
                     : std::optional<Float>{},

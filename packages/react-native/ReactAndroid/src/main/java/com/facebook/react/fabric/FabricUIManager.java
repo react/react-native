@@ -565,12 +565,12 @@ public class FabricUIManager
             mTextEffectRegistry);
   }
 
-  public int getColor(int surfaceId, String[] resourcePaths) {
+  public @Nullable Integer getColor(int surfaceId, String[] resourcePaths) {
     ThemedReactContext context =
         mMountingManager.getSurfaceManagerEnforced(surfaceId, "getColor").getContext();
     // Surface may have been stopped
     if (context == null) {
-      return 0;
+      return null;
     }
 
     for (String resourcePath : resourcePaths) {
@@ -579,7 +579,9 @@ public class FabricUIManager
         return color;
       }
     }
-    return 0;
+    // Null (explicit miss), not 0, so native can tell an unresolved color from
+    // one that resolves to transparent black (ARGB 0).
+    return null;
   }
 
   /**
