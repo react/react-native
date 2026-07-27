@@ -14,6 +14,7 @@
 #import <React/NSTextStorage+FontScaling.h>
 #import <React/RCTUtils.h>
 #import <react/featureflags/ReactNativeFeatureFlags.h>
+#import <react/renderer/textlayoutmanager/TextMeasurementRounding.h>
 #import <react/utils/ManagedObjectWrapper.h>
 #import <react/utils/SimpleThreadSafeCache.h>
 
@@ -581,8 +582,11 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
     size.height = enumeratedLinesHeight;
   }
 
-  size = (CGSize){ceil(size.width * layoutContext.pointScaleFactor) / layoutContext.pointScaleFactor,
-                  ceil(size.height * layoutContext.pointScaleFactor) / layoutContext.pointScaleFactor};
+  facebook::react::Size roundedSize = facebook::react::internal_roundTextMeasurementToPixelGrid(
+      {.width = static_cast<facebook::react::Float>(size.width),
+       .height = static_cast<facebook::react::Float>(size.height)},
+      layoutContext.pointScaleFactor);
+  size = CGSize{roundedSize.width, roundedSize.height};
 
   NSRange visibleGlyphRange = [layoutManager glyphRangeForTextContainer:textContainer];
 
