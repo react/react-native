@@ -17,6 +17,7 @@ import {
   setEventHandlerAttribute,
 } from '../../src/private/webapis/dom/events/EventHandlerAttributes';
 import EventTarget from '../../src/private/webapis/dom/events/EventTarget';
+import DOMException from '../../src/private/webapis/errors/DOMException';
 import NativeFileReaderModule from './NativeFileReaderModule';
 import {toByteArray} from 'base64-js';
 
@@ -41,7 +42,7 @@ class FileReader extends EventTarget {
   DONE: number = DONE;
 
   _readyState: ReadyState;
-  _error: ?Error;
+  _error: ?DOMException;
   _result: ?ReaderResult;
   _aborted: boolean = false;
   _readId: number = 0;
@@ -57,7 +58,13 @@ class FileReader extends EventTarget {
     this._result = null;
   }
 
-  _startRead(): number {
+  _startRead(methodName: string): number {
+    if (this._readyState === LOADING) {
+      throw new DOMException(
+        `Failed to execute '${methodName}' on 'FileReader': The object is already busy reading Blobs.`,
+        'InvalidStateError',
+      );
+    }
     this._aborted = false;
     this._error = null;
     this._result = null;
@@ -69,7 +76,9 @@ class FileReader extends EventTarget {
   _setReadyState(newState: ReadyState) {
     this._readyState = newState;
     this.dispatchEvent(new Event('readystatechange'));
-    if (newState === DONE) {
+    if (newState === LOADING) {
+      this.dispatchEvent(new Event('loadstart'));
+    } else if (newState === DONE) {
       if (this._aborted) {
         this.dispatchEvent(new Event('abort'));
       } else if (this._error) {
@@ -83,6 +92,16 @@ class FileReader extends EventTarget {
     }
   }
 
+  _toDOMException(error: unknown): DOMException {
+    if (error instanceof DOMException) {
+      return error;
+    }
+    if (error instanceof Error) {
+      return new DOMException(error.message, 'NotReadableError');
+    }
+    return new DOMException(String(error), 'NotReadableError');
+  }
+
   readAsArrayBuffer(blob: ?Blob): void {
     if (blob == null) {
       throw new TypeError(
@@ -90,7 +109,7 @@ class FileReader extends EventTarget {
       );
     }
 
-    const readId = this._startRead();
+    const readId = this._startRead('readAsArrayBuffer');
 
     NativeFileReaderModule.readAsDataURL(blob.data).then(
       (text: string) => {
@@ -108,7 +127,7 @@ class FileReader extends EventTarget {
         if (readId !== this._readId) {
           return;
         }
-        this._error = error;
+        this._error = this._toDOMException(error);
         this._setReadyState(DONE);
       },
     );
@@ -121,7 +140,7 @@ class FileReader extends EventTarget {
       );
     }
 
-    const readId = this._startRead();
+    const readId = this._startRead('readAsDataURL');
 
     NativeFileReaderModule.readAsDataURL(blob.data).then(
       (text: string) => {
@@ -135,7 +154,7 @@ class FileReader extends EventTarget {
         if (readId !== this._readId) {
           return;
         }
-        this._error = error;
+        this._error = this._toDOMException(error);
         this._setReadyState(DONE);
       },
     );
@@ -148,7 +167,7 @@ class FileReader extends EventTarget {
       );
     }
 
-    const readId = this._startRead();
+    const readId = this._startRead('readAsText');
 
     NativeFileReaderModule.readAsText(blob.data, encoding).then(
       (text: string) => {
@@ -162,7 +181,7 @@ class FileReader extends EventTarget {
         if (readId !== this._readId) {
           return;
         }
-        this._error = error;
+        this._error = this._toDOMException(error);
         this._setReadyState(DONE);
       },
     );
@@ -181,7 +200,7 @@ class FileReader extends EventTarget {
     return this._readyState;
   }
 
-  get error(): ?Error {
+  get error(): ?DOMException {
     return this._error;
   }
 
