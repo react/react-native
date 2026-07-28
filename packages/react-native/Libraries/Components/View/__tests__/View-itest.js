@@ -643,59 +643,6 @@ describe('<View>', () => {
           ).toEqual(null);
         });
       });
-      describe('role', () => {
-        it('implicitly makes the view accessible', () => {
-          const root = Fantom.createRoot();
-
-          Fantom.runTask(() => {
-            root.render(<View role="button" />);
-          });
-
-          expect(
-            root.getRenderedOutput({props: ['accessible']}).toJSX(),
-          ).toEqual(<rn-view accessible="true" />);
-        });
-
-        it('does not make the view accessible for the "none" role', () => {
-          const root = Fantom.createRoot();
-
-          Fantom.runTask(() => {
-            root.render(<View role="none" collapsable={false} />);
-          });
-
-          expect(
-            root.getRenderedOutput({props: ['accessible']}).toJSX(),
-          ).toEqual(<rn-view />);
-        });
-
-        it('does not make the view accessible for the "presentation" role', () => {
-          const root = Fantom.createRoot();
-
-          Fantom.runTask(() => {
-            root.render(<View role="presentation" collapsable={false} />);
-          });
-
-          expect(
-            root.getRenderedOutput({props: ['accessible']}).toJSX(),
-          ).toEqual(<rn-view />);
-        });
-
-        it('does not override an explicit "accessible" prop', () => {
-          const root = Fantom.createRoot();
-
-          Fantom.runTask(() => {
-            root.render(
-              <View role="button" accessible={false} collapsable={false} />,
-            );
-          });
-
-          // `accessible={false}` is not propagated to the mounting layer (it is
-          // the default), so the implicit `role` behavior must not force it on.
-          expect(
-            root.getRenderedOutput({props: ['accessible']}).toJSX(),
-          ).toEqual(<rn-view />);
-        });
-      });
       describe('aria-label', () => {
         it('is mapped to accessibilityLabel', () => {
           const root = Fantom.createRoot();

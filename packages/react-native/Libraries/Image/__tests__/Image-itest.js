@@ -648,52 +648,6 @@ describe('<Image>', () => {
       });
     });
 
-    describe('role', () => {
-      it('implicitly marks the image accessible', () => {
-        const root = Fantom.createRoot();
-        Fantom.runTask(() => {
-          root.render(<Image role="button" source={LOGO_SOURCE} />);
-        });
-        expect(root.getRenderedOutput({props: ['accessible']}).toJSX()).toEqual(
-          <rn-image accessible="true" />,
-        );
-      });
-
-      it('does not mark the image accessible for the "none" role', () => {
-        const root = Fantom.createRoot();
-        Fantom.runTask(() => {
-          root.render(<Image role="none" source={LOGO_SOURCE} />);
-        });
-        expect(root.getRenderedOutput({props: ['accessible']}).toJSX()).toEqual(
-          <rn-image />,
-        );
-      });
-
-      it('does not mark the image accessible for the "presentation" role', () => {
-        const root = Fantom.createRoot();
-        Fantom.runTask(() => {
-          root.render(<Image role="presentation" source={LOGO_SOURCE} />);
-        });
-        expect(root.getRenderedOutput({props: ['accessible']}).toJSX()).toEqual(
-          <rn-image />,
-        );
-      });
-
-      it('does not override an explicit "accessible" prop', () => {
-        const root = Fantom.createRoot();
-        Fantom.runTask(() => {
-          root.render(
-            <Image role="button" accessible={false} source={LOGO_SOURCE} />,
-          );
-        });
-        // `accessible={false}` is not propagated to the mounting layer (it is
-        // the default), so the implicit `role` behavior must not force it on.
-        expect(root.getRenderedOutput({props: ['accessible']}).toJSX()).toEqual(
-          <rn-image />,
-        );
-      });
-    });
-
     component TestComponent(testID?: ?string, ...props: AccessibilityProps) {
       return <Image {...props} testID={testID} source={LOGO_SOURCE} />;
     }

@@ -83,16 +83,6 @@ component View(ref?: React.RefSetter<ViewInstance>, ...props: ViewProps) {
     resolvedProps.focusable = !tabIndex;
   }
 
-  // For web compatibility, a `role` implicitly makes the element accessible.
-  if (
-    resolvedProps.accessible == null &&
-    resolvedProps.role != null &&
-    resolvedProps.role !== 'none' &&
-    resolvedProps.role !== 'presentation'
-  ) {
-    resolvedProps.accessible = true;
-  }
-
   if (
     accessibilityState != null ||
     ariaBusy != null ||

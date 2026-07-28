@@ -168,23 +168,9 @@ let BaseImage: AbstractImageIOS = ({
     selected: ariaSelected ?? props.accessibilityState?.selected,
   };
 
-  let accessible;
-  if (ariaHidden === true) {
-    // In order for `aria-hidden` to work on iOS we must set `accessible` to
-    // false (`accessibilityElementsHidden` is not enough).
-    accessible = false;
-  } else if (props.alt !== undefined) {
-    accessible = true;
-  } else if (props.accessible != null) {
-    accessible = props.accessible;
-  } else if (
-    // For web compatibility, a `role` implicitly makes the element accessible.
-    props.role != null &&
-    props.role !== 'none' &&
-    props.role !== 'presentation'
-  ) {
-    accessible = true;
-  }
+  // In order for `aria-hidden` to work on iOS we must set `accessible` to false (`accessibilityElementsHidden` is not enough).
+  const accessible =
+    ariaHidden !== true && (props.alt !== undefined ? true : props.accessible);
   const accessibilityLabel = props['aria-label'] ?? props.accessibilityLabel;
 
   const actualRef = useWrapRefWithImageAttachedCallbacks(forwardedRef);
