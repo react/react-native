@@ -42,7 +42,9 @@
       "types": null,
       "default": "./Libraries/*.js"
     },
-    "./scripts/*": "./scripts/*",
+    "./scripts/*": "./scripts/*.js",
+    "./scripts/*.sh": "./scripts/*.sh",
+    "./scripts/*.rb": "./scripts/*.rb",
     "./asset-registry": {
       "types": null,
       "default": "./src/asset-registry.js"

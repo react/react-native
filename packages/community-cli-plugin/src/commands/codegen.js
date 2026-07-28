@@ -47,7 +47,7 @@ const codegenCommand: Command = {
     args: CodegenCommandArgs,
   ): void => {
     const generateArtifactsExecutor = require.resolve(
-      'react-native/scripts/codegen/generate-artifacts-executor',
+      'react-native/scripts/codegen/generate-artifacts-executor/index',
       {paths: [config.root]},
     );
     // $FlowFixMe[unsupported-syntax] dynamic require of a resolved path

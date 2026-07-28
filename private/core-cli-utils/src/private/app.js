@@ -187,7 +187,7 @@ const bundleApp = (
       'Check if SourceMap script available',
       () => {
         composeSourceMaps = getNodePackagePath(
-          'react-native/scripts/compose-source-maps.js',
+          'react-native/scripts/compose-source-maps',
         );
       },
     );
