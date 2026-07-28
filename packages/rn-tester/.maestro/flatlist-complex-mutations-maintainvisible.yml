@@ -6,44 +6,44 @@ appId: ${APP_ID}
 - setOrientation: portrait
 - waitForAnimationToEnd:
     timeout: 3000
-- assertVisible: "Components"
+- assertVisible: 'Components'
 - scrollUntilVisible:
     element:
-      id: "FlatList"
+      id: 'FlatList'
     direction: DOWN
     speed: 40
 - tapOn:
-    id: "FlatList"
+    id: 'FlatList'
 - scrollUntilVisible:
     element:
-      id: "maintainVisibleContentPosition"
+      id: 'maintainVisibleContentPosition'
     direction: DOWN
     speed: 40
 - tapOn:
-    id: "maintainVisibleContentPosition"
+    id: 'maintainVisibleContentPosition'
 # Scroll to offset 200
 - tapOn:
-    text: "ScrollToOffset 100"
+    text: 'ScrollToOffset 100'
 - waitForAnimationToEnd:
     timeout: 2000
 # Record offset before mutations
 - copyTextFrom:
-    id: "scroll-offset-display"
+    id: 'scroll-offset-display'
 - evalScript: ${output.offsetBefore = parseInt(maestro.copiedText.split(":")[1].trim())}
 # Add items at top and bottom (simulates complex mutations)
 - tapOn:
-    text: "Add 1 item at top"
+    text: 'Add 1 item at top'
 - waitForAnimationToEnd:
     timeout: 2000
 - tapOn:
-    text: "Add 1 item at bottom"
+    text: 'Add 1 item at bottom'
 - waitForAnimationToEnd:
     timeout: 2000
 # Record offset after mutations
 - copyTextFrom:
-    id: "scroll-offset-display"
+    id: 'scroll-offset-display'
 - evalScript: ${output.offsetAfter = parseInt(maestro.copiedText.split(":")[1].trim())}
 # Delta should be ~44px (only top prepend affects anchor)
 - assertTrue: ${output.offsetAfter - output.offsetBefore >= 42 && output.offsetAfter - output.offsetBefore <= 46}
 - tapOn:
-    text: "Reset"
+    text: 'Reset'

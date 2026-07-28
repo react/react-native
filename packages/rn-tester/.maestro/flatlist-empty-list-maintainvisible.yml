@@ -10,60 +10,60 @@ appId: ${APP_ID}
 - waitForAnimationToEnd:
     timeout: 3000
 # Find test
-- assertVisible: "Components"
+- assertVisible: 'Components'
 - scrollUntilVisible:
     element:
-      id: "FlatList"
+      id: 'FlatList'
     direction: DOWN
     speed: 40
 - tapOn:
-    id: "FlatList"
+    id: 'FlatList'
 - scrollUntilVisible:
     element:
-      id: "maintainVisibleContentPosition"
+      id: 'maintainVisibleContentPosition'
     direction: DOWN
     speed: 40
 - tapOn:
-    id: "maintainVisibleContentPosition"
+    id: 'maintainVisibleContentPosition'
 # Scroll to item 10
 - tapOn:
-    text: "ScrollToOffset 500"
+    text: 'ScrollToOffset 500'
 - waitForAnimationToEnd:
     timeout: 2000
 # Clear the list (empty list)
 - tapOn:
-    text: "Clear (empty list)"
+    text: 'Clear (empty list)'
 - waitForAnimationToEnd:
     timeout: 2000
 # Reset data (repopulate)
 - tapOn:
-    text: "Reset"
+    text: 'Reset'
 - waitForAnimationToEnd:
     timeout: 2000
 # Scroll to item 10 again and prepend — verify MVCP still works after empty
 - tapOn:
-    text: "ScrollToOffset 500"
+    text: 'ScrollToOffset 500'
 - waitForAnimationToEnd:
     timeout: 2000
 - copyTextFrom:
-    id: "scroll-offset-display"
+    id: 'scroll-offset-display'
 - evalScript: ${output.offsetBefore = parseInt(maestro.copiedText.split(":")[1].trim())}
 - tapOn:
-    text: "Add 1 item at top"
+    text: 'Add 1 item at top'
 - waitForAnimationToEnd:
     timeout: 2000
 - copyTextFrom:
-    id: "scroll-offset-display"
+    id: 'scroll-offset-display'
 - evalScript: ${output.offsetAfter = parseInt(maestro.copiedText.split(":")[1].trim())}
 - assertTrue: ${output.offsetAfter - output.offsetBefore >= 42 && output.offsetAfter - output.offsetBefore <= 46}
 - copyTextFrom:
-    id: "scroll-offset-display"
+    id: 'scroll-offset-display'
 - evalScript: ${output.offsetBefore = parseInt(maestro.copiedText.split(":")[1].trim())}
 - tapOn:
-    text: "Reset"
+    text: 'Reset'
 - waitForAnimationToEnd:
     timeout: 2000
 - copyTextFrom:
-    id: "scroll-offset-display"
+    id: 'scroll-offset-display'
 - evalScript: ${output.offsetAfter = parseInt(maestro.copiedText.split(":")[1].trim())}
 - assertTrue: ${output.offsetAfter >= 0 && output.offsetAfter <= 50}

@@ -8,51 +8,51 @@ appId: ${APP_ID}
 - waitForAnimationToEnd:
     timeout: 3000
 # Find test
-- assertVisible: "Components"
+- assertVisible: 'Components'
 - scrollUntilVisible:
     element:
-      id: "FlatList"
+      id: 'FlatList'
     direction: DOWN
     speed: 40
 - tapOn:
-    id: "FlatList"
+    id: 'FlatList'
 - scrollUntilVisible:
     element:
-      id: "maintainVisibleContentPosition"
+      id: 'maintainVisibleContentPosition'
     direction: DOWN
     speed: 40
 - tapOn:
-    id: "maintainVisibleContentPosition"
+    id: 'maintainVisibleContentPosition'
 # Enable throttle (500ms)
 - tapOn:
-    text: "Throttle: 16ms"
+    text: 'Throttle: 16ms'
 - waitForAnimationToEnd:
     timeout: 2000
 # Scroll to offset 100
 - tapOn:
-    text: "ScrollToOffset 100"
+    text: 'ScrollToOffset 100'
 - waitForAnimationToEnd:
     timeout: 2000
 # Prepend with throttle enabled
 - copyTextFrom:
-    id: "scroll-offset-display"
+    id: 'scroll-offset-display'
 - evalScript: ${output.offsetBefore = parseInt(maestro.copiedText.split(":")[1].trim())}
 - tapOn:
-    text: "Add 1 item at top"
+    text: 'Add 1 item at top'
 - waitForAnimationToEnd:
     timeout: 3000
 - copyTextFrom:
-    id: "scroll-offset-display"
+    id: 'scroll-offset-display'
 - evalScript: ${output.offsetAfter = parseInt(maestro.copiedText.split(":")[1].trim())}
 - assertTrue: ${output.offsetAfter - output.offsetBefore >= 42 && output.offsetAfter - output.offsetBefore <= 46}
 - copyTextFrom:
-    id: "scroll-offset-display"
+    id: 'scroll-offset-display'
 - evalScript: ${output.offsetBefore = parseInt(maestro.copiedText.split(":")[1].trim())}
 - tapOn:
-    text: "Reset"
+    text: 'Reset'
 - waitForAnimationToEnd:
     timeout: 2000
 - copyTextFrom:
-    id: "scroll-offset-display"
+    id: 'scroll-offset-display'
 - evalScript: ${output.offsetAfter = parseInt(maestro.copiedText.split(":")[1].trim())}
 - assertTrue: ${output.offsetAfter >= 0 && output.offsetAfter <= 50}

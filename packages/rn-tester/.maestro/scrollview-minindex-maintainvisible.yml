@@ -8,19 +8,19 @@ appId: ${APP_ID}
 - waitForAnimationToEnd:
     timeout: 3000
 # Find test
-- assertVisible: "Components"
+- assertVisible: 'Components'
 - scrollUntilVisible:
     element:
-      id: "ScrollViewMaintainVisibleContentPositionExample"
+      id: 'ScrollViewMaintainVisibleContentPositionExample'
     direction: DOWN
     speed: 80
 - tapOn:
-    id: "ScrollViewMaintainVisibleContentPositionExample"
+    id: 'ScrollViewMaintainVisibleContentPositionExample'
 - waitForAnimationToEnd:
     timeout: 2000
 # Set minIndexForVisible to 0
 - tapOn:
-    text: "minIndex: 0"
+    text: 'minIndex: 0'
 - waitForAnimationToEnd:
     timeout: 1000
 # Scroll down in ScrollView to reach item 10 area
@@ -32,36 +32,36 @@ appId: ${APP_ID}
     timeout: 2000
 # Prepend
 - copyTextFrom:
-    id: "scroll-offset-display"
+    id: 'scroll-offset-display'
 - evalScript: ${output.offsetBefore = parseInt(maestro.copiedText.split(":")[1].trim())}
 - tapOn:
-    text: "Add 1 item at top"
+    text: 'Add 1 item at top'
 - waitForAnimationToEnd:
     timeout: 2000
 - copyTextFrom:
-    id: "scroll-offset-display"
+    id: 'scroll-offset-display'
 - evalScript: ${output.offsetAfter = parseInt(maestro.copiedText.split(":")[1].trim())}
 - assertTrue: ${output.offsetAfter - output.offsetBefore >= 38 && output.offsetAfter - output.offsetBefore <= 44}
 # Multiple prepends
 - copyTextFrom:
-    id: "scroll-offset-display"
+    id: 'scroll-offset-display'
 - evalScript: ${output.offsetBefore = parseInt(maestro.copiedText.split(":")[1].trim())}
 - tapOn:
-    text: "Add 1 item at top"
+    text: 'Add 1 item at top'
 - waitForAnimationToEnd:
     timeout: 2000
 - copyTextFrom:
-    id: "scroll-offset-display"
+    id: 'scroll-offset-display'
 - evalScript: ${output.offsetAfter = parseInt(maestro.copiedText.split(":")[1].trim())}
 - assertTrue: ${output.offsetAfter - output.offsetBefore >= 38 && output.offsetAfter - output.offsetBefore <= 44}
 - copyTextFrom:
-    id: "scroll-offset-display"
+    id: 'scroll-offset-display'
 - evalScript: ${output.offsetBefore = parseInt(maestro.copiedText.split(":")[1].trim())}
 - tapOn:
-    text: "Reset"
+    text: 'Reset'
 - waitForAnimationToEnd:
     timeout: 2000
 - copyTextFrom:
-    id: "scroll-offset-display"
+    id: 'scroll-offset-display'
 - evalScript: ${output.offsetAfter = parseInt(maestro.copiedText.split(":")[1].trim())}
 - assertTrue: ${output.offsetAfter >= 0 && output.offsetAfter <= 50}

@@ -6,39 +6,39 @@ appId: ${APP_ID}
 - setOrientation: portrait
 - waitForAnimationToEnd:
     timeout: 3000
-- assertVisible: "Components"
+- assertVisible: 'Components'
 - scrollUntilVisible:
     element:
-      id: "FlatList"
+      id: 'FlatList'
     direction: DOWN
     speed: 40
 - tapOn:
-    id: "FlatList"
+    id: 'FlatList'
 - scrollUntilVisible:
     element:
-      id: "maintainVisibleContentPosition"
+      id: 'maintainVisibleContentPosition'
     direction: DOWN
     speed: 40
 - tapOn:
-    id: "maintainVisibleContentPosition"
+    id: 'maintainVisibleContentPosition'
 # Scroll to offset 200 (item 5 should be visible)
 - tapOn:
-    text: "ScrollToOffset 100"
+    text: 'ScrollToOffset 100'
 - waitForAnimationToEnd:
     timeout: 2000
 # Record offset before delete
 - copyTextFrom:
-    id: "scroll-offset-display"
+    id: 'scroll-offset-display'
 - evalScript: ${output.offsetBefore = parseInt(maestro.copiedText.split(":")[1].trim())}
 # Clear the list (simulates delete of all items including anchor)
 - tapOn:
-    text: "Clear (empty list)"
+    text: 'Clear (empty list)'
 - waitForAnimationToEnd:
     timeout: 2000
 # Reset to restore items
 - tapOn:
-    text: "Reset"
+    text: 'Reset'
 - waitForAnimationToEnd:
     timeout: 2000
 # Verify list is restored
-- assertVisible: "0"
+- assertVisible: '0'

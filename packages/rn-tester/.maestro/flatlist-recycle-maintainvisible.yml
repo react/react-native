@@ -9,65 +9,65 @@ appId: ${APP_ID}
 - waitForAnimationToEnd:
     timeout: 3000
 # Find test
-- assertVisible: "Components"
+- assertVisible: 'Components'
 - scrollUntilVisible:
     element:
-      id: "FlatList"
+      id: 'FlatList'
     direction: DOWN
     speed: 40
 - tapOn:
-    id: "FlatList"
+    id: 'FlatList'
 - scrollUntilVisible:
     element:
-      id: "maintainVisibleContentPosition"
+      id: 'maintainVisibleContentPosition'
     direction: DOWN
     speed: 40
 - tapOn:
-    id: "maintainVisibleContentPosition"
+    id: 'maintainVisibleContentPosition'
 # Enable recycling (windowSize=3)
 - tapOn:
-    text: "Recycle: OFF"
+    text: 'Recycle: OFF'
 - waitForAnimationToEnd:
     timeout: 3000
 # Scroll to offset 500
 - tapOn:
-    text: "ScrollToOffset 500"
+    text: 'ScrollToOffset 500'
 - waitForAnimationToEnd:
     timeout: 2000
 # Record offset before 50-item prepend
 - copyTextFrom:
-    id: "scroll-offset-display"
+    id: 'scroll-offset-display'
 - evalScript: ${output.offsetBefore = parseInt(maestro.copiedText.split(":")[1].trim())}
 # Prepend 50 items (delta should be ~2200px = 50 * 44)
 - tapOn:
-    text: "Add 50 items at top"
+    text: 'Add 50 items at top'
 - waitForAnimationToEnd:
     timeout: 3000
 - copyTextFrom:
-    id: "scroll-offset-display"
+    id: 'scroll-offset-display'
 - evalScript: ${output.offsetAfter = parseInt(maestro.copiedText.split(":")[1].trim())}
 - assertTrue: ${output.offsetAfter - output.offsetBefore >= 2100 && output.offsetAfter - output.offsetBefore <= 2300}
 # Prepend 1 item (delta should be ~44px)
 - copyTextFrom:
-    id: "scroll-offset-display"
+    id: 'scroll-offset-display'
 - evalScript: ${output.offsetBefore = parseInt(maestro.copiedText.split(":")[1].trim())}
 - tapOn:
-    text: "Add 1 item at top"
+    text: 'Add 1 item at top'
 - waitForAnimationToEnd:
     timeout: 2000
 - copyTextFrom:
-    id: "scroll-offset-display"
+    id: 'scroll-offset-display'
 - evalScript: ${output.offsetAfter = parseInt(maestro.copiedText.split(":")[1].trim())}
 - assertTrue: ${output.offsetAfter - output.offsetBefore >= 40 && output.offsetAfter - output.offsetBefore <= 48}
 # Reset
 - copyTextFrom:
-    id: "scroll-offset-display"
+    id: 'scroll-offset-display'
 - evalScript: ${output.offsetBefore = parseInt(maestro.copiedText.split(":")[1].trim())}
 - tapOn:
-    text: "Reset"
+    text: 'Reset'
 - waitForAnimationToEnd:
     timeout: 2000
 - copyTextFrom:
-    id: "scroll-offset-display"
+    id: 'scroll-offset-display'
 - evalScript: ${output.offsetAfter = parseInt(maestro.copiedText.split(":")[1].trim())}
 - assertTrue: ${output.offsetAfter >= 0 && output.offsetAfter <= 50}

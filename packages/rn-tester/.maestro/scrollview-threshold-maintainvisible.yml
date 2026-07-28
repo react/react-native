@@ -8,19 +8,19 @@ appId: ${APP_ID}
 - waitForAnimationToEnd:
     timeout: 3000
 # Find test
-- assertVisible: "Components"
+- assertVisible: 'Components'
 - scrollUntilVisible:
     element:
-      id: "ScrollViewMaintainVisibleContentPositionExample"
+      id: 'ScrollViewMaintainVisibleContentPositionExample'
     direction: DOWN
     speed: 80
 - tapOn:
-    id: "ScrollViewMaintainVisibleContentPositionExample"
+    id: 'ScrollViewMaintainVisibleContentPositionExample'
 - waitForAnimationToEnd:
     timeout: 2000
 # Disable threshold
 - tapOn:
-    text: "Threshold: OFF"
+    text: 'Threshold: OFF'
 - waitForAnimationToEnd:
     timeout: 1000
 # Scroll down in ScrollView to reach item 10 area
@@ -32,41 +32,41 @@ appId: ${APP_ID}
     timeout: 2000
 # Prepend without threshold
 - copyTextFrom:
-    id: "scroll-offset-display"
+    id: 'scroll-offset-display'
 - evalScript: ${output.offsetBefore = parseInt(maestro.copiedText.split(":")[1].trim())}
 - tapOn:
-    text: "Add 1 item at top"
+    text: 'Add 1 item at top'
 - waitForAnimationToEnd:
     timeout: 3000
 - copyTextFrom:
-    id: "scroll-offset-display"
+    id: 'scroll-offset-display'
 - evalScript: ${output.offsetAfter = parseInt(maestro.copiedText.split(":")[1].trim())}
 - assertTrue: ${output.offsetAfter - output.offsetBefore >= 38 && output.offsetAfter - output.offsetBefore <= 44}
 # Enable threshold
 - tapOn:
-    text: "Threshold: 100"
+    text: 'Threshold: 100'
 - waitForAnimationToEnd:
     timeout: 1000
 - copyTextFrom:
-    id: "scroll-offset-display"
+    id: 'scroll-offset-display'
 - evalScript: ${output.offsetBefore = parseInt(maestro.copiedText.split(":")[1].trim())}
 - tapOn:
-    text: "Reset"
+    text: 'Reset'
 - waitForAnimationToEnd:
     timeout: 2000
 - copyTextFrom:
-    id: "scroll-offset-display"
+    id: 'scroll-offset-display'
 - evalScript: ${output.offsetAfter = parseInt(maestro.copiedText.split(":")[1].trim())}
 - assertTrue: ${output.offsetAfter >= 0 && output.offsetAfter <= 50}
 # Prepend with threshold enabled (offset ~0 <= threshold 100, should scroll to top)
 - copyTextFrom:
-    id: "scroll-offset-display"
+    id: 'scroll-offset-display'
 - evalScript: ${output.offsetBefore = parseInt(maestro.copiedText.split(":")[1].trim())}
 - tapOn:
-    text: "Add 1 item at top"
+    text: 'Add 1 item at top'
 - waitForAnimationToEnd:
     timeout: 2000
 - copyTextFrom:
-    id: "scroll-offset-display"
+    id: 'scroll-offset-display'
 - evalScript: ${output.offsetAfter = parseInt(maestro.copiedText.split(":")[1].trim())}
 - assertTrue: ${output.offsetAfter <= 10}

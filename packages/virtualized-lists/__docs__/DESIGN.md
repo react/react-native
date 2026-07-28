@@ -765,8 +765,8 @@ the current implementation.
 ### 8.1 JS Cell Metrics — Orientation Change Handling
 
 The `_cellMetrics` Map stores per-cell layout info keyed by cell ID. When
-orientation changes, the metric coordinate system flips (horizontal ↔
-vertical), making all stored metrics invalid.
+orientation changes, the metric coordinate system flips (horizontal ↔ vertical),
+making all stored metrics invalid.
 
 **Why the Map must be cleared (not just counters):** Clearing `_cellMetrics` is
 necessary because the counters alone don't prevent stale entries from being

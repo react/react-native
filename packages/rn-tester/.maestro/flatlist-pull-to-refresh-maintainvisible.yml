@@ -6,29 +6,29 @@ appId: ${APP_ID}
 - setOrientation: portrait
 - waitForAnimationToEnd:
     timeout: 3000
-- assertVisible: "Components"
+- assertVisible: 'Components'
 - scrollUntilVisible:
     element:
-      id: "FlatList"
+      id: 'FlatList'
     direction: DOWN
     speed: 40
 - tapOn:
-    id: "FlatList"
+    id: 'FlatList'
 - scrollUntilVisible:
     element:
-      id: "maintainVisibleContentPosition"
+      id: 'maintainVisibleContentPosition'
     direction: DOWN
     speed: 40
 - tapOn:
-    id: "maintainVisibleContentPosition"
+    id: 'maintainVisibleContentPosition'
 # Scroll to offset 200
 - tapOn:
-    text: "ScrollToOffset 100"
+    text: 'ScrollToOffset 100'
 - waitForAnimationToEnd:
     timeout: 2000
 # Record offset before prepend
 - copyTextFrom:
-    id: "scroll-offset-display"
+    id: 'scroll-offset-display'
 - evalScript: ${output.offsetBefore = parseInt(maestro.copiedText.split(":")[1].trim())}
 # Scroll to top (simulates pull-to-refresh pull)
 - swipe:
@@ -39,14 +39,14 @@ appId: ${APP_ID}
     timeout: 2000
 # Add items at top (simulates refresh with new data)
 - tapOn:
-    text: "Add 1 item at top"
+    text: 'Add 1 item at top'
 - waitForAnimationToEnd:
     timeout: 2000
 # Record offset after prepend
 - copyTextFrom:
-    id: "scroll-offset-display"
+    id: 'scroll-offset-display'
 - evalScript: ${output.offsetAfter = parseInt(maestro.copiedText.split(":")[1].trim())}
 # Delta should be ~44px (one item with margin)
 - assertTrue: ${output.offsetAfter - output.offsetBefore >= 42 && output.offsetAfter - output.offsetBefore <= 46}
 - tapOn:
-    text: "Reset"
+    text: 'Reset'

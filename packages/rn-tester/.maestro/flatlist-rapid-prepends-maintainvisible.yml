@@ -9,56 +9,56 @@ appId: ${APP_ID}
 - waitForAnimationToEnd:
     timeout: 3000
 # Find test
-- assertVisible: "Components"
+- assertVisible: 'Components'
 - scrollUntilVisible:
     element:
-      id: "FlatList"
+      id: 'FlatList'
     direction: DOWN
     speed: 40
 - tapOn:
-    id: "FlatList"
+    id: 'FlatList'
 - scrollUntilVisible:
     element:
-      id: "maintainVisibleContentPosition"
+      id: 'maintainVisibleContentPosition'
     direction: DOWN
     speed: 40
 - tapOn:
-    id: "maintainVisibleContentPosition"
+    id: 'maintainVisibleContentPosition'
 # Scroll to offset 500
 - tapOn:
-    text: "ScrollToOffset 500"
+    text: 'ScrollToOffset 500'
 - waitForAnimationToEnd:
     timeout: 2000
 # Record offset before rapid prepends
 - copyTextFrom:
-    id: "scroll-offset-display"
+    id: 'scroll-offset-display'
 - evalScript: ${output.offsetBefore = parseInt(maestro.copiedText.split(":")[1].trim())}
 # Fire 5 rapid prepends without any waits between
 - tapOn:
-    text: "Add 50 items at top"
+    text: 'Add 50 items at top'
 - tapOn:
-    text: "Add 50 items at top"
+    text: 'Add 50 items at top'
 - tapOn:
-    text: "Add 50 items at top"
+    text: 'Add 50 items at top'
 - tapOn:
-    text: "Add 50 items at top"
+    text: 'Add 50 items at top'
 - tapOn:
-    text: "Add 50 items at top"
+    text: 'Add 50 items at top'
 # Wait for everything to settle (all mounts + MVCP corrections + layout)
 - waitForAnimationToEnd:
     timeout: 10000
 # Record offset after everything settles
 - copyTextFrom:
-    id: "scroll-offset-display"
+    id: 'scroll-offset-display'
 - evalScript: ${output.offsetAfter = parseInt(maestro.copiedText.split(":")[1].trim())}
 # Total delta should be approximately 50*5*44 = 11000px
 - assertTrue: ${output.offsetAfter - output.offsetBefore >= 10800 && output.offsetAfter - output.offsetBefore <= 11200}
 # Reset
 - tapOn:
-    text: "Reset"
+    text: 'Reset'
 - waitForAnimationToEnd:
     timeout: 2000
 - copyTextFrom:
-    id: "scroll-offset-display"
+    id: 'scroll-offset-display'
 - evalScript: ${output.offsetAfter = parseInt(maestro.copiedText.split(":")[1].trim())}
 - assertTrue: ${output.offsetAfter >= 0 && output.offsetAfter <= 50}
