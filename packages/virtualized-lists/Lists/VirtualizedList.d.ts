@@ -189,6 +189,14 @@ export interface VirtualizedListWithoutRenderItemProps<
   ListHeaderComponentStyle?: StyleProp<ViewStyle> | undefined;
 
   /**
+   * Each data item is rendered using this element, as an alternative to `renderItem`.
+   * Can be a React Component Class or a render function. In addition to the data provided
+   * to `renderItem`, this receives `index` and `separators` metadata.
+   */
+  ListItemComponent?:
+    React.ComponentType<any> | React.ReactElement | null | undefined;
+
+  /**
    * The default accessor functions assume this is an Array<{key: string}> but you can override
    * getItem, getItemCount, and keyExtractor to handle any type of index-based data.
    */
