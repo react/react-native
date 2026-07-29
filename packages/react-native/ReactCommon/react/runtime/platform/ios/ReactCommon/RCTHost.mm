@@ -537,10 +537,18 @@ class RCTHostHostTargetDelegate : public facebook::react::jsinspector_modern::Ho
              onProgress:(RCTSourceLoadProgressBlock)onProgress
              onComplete:(RCTSourceLoadBlock)loadCallback
 {
+  __weak RCTHost *weakSelf = self;
+  RCTSourceLoadBlock onComplete = ^(NSError *error, RCTSource *source) {
+    RCTHost *strongSelf = weakSelf;
+    if (strongSelf != nil && source != nil) {
+      strongSelf->_bundleManager.downloadedBundleFileURL = source.downloadedBundleFileURL;
+    }
+    loadCallback(error, source);
+  };
   if ([_hostDelegate respondsToSelector:@selector(loadBundleAtURL:onProgress:onComplete:)]) {
-    [_hostDelegate loadBundleAtURL:sourceURL onProgress:onProgress onComplete:loadCallback];
+    [_hostDelegate loadBundleAtURL:sourceURL onProgress:onProgress onComplete:onComplete];
   } else {
-    [RCTJavaScriptLoader loadBundleAtURL:sourceURL onProgress:onProgress onComplete:loadCallback];
+    [RCTJavaScriptLoader loadBundleAtURL:sourceURL onProgress:onProgress onComplete:onComplete];
   }
 }
 

@@ -68,6 +68,14 @@ NS_ENUM(NSInteger){
  */
 @property (nonatomic, readonly) NSInteger filesChangedCount;
 
+/**
+ * File URL of the downloaded bundle persisted to disk, from which self.data is
+ * memory-mapped. Only set when the bundle was fetched from a remote URL (e.g. the
+ * packager); nil when the bundle was loaded from a local file, in which case the
+ * bundle's location on disk is self.url.
+ */
+@property (strong, nonatomic, readonly) NSURL *downloadedBundleFileURL;
+
 @end
 
 typedef void (^RCTSourceLoadProgressBlock)(RCTLoadingProgress *progressData);
