@@ -230,11 +230,15 @@ class TouchableHighlightImpl extends React.Component<
     const {onBlur, onFocus, ...eventHandlersWithoutBlurAndFocus} =
       this.state.pressability.getEventHandlers();
 
+    // The `disabled` prop takes precedence over `aria-disabled`, which in turn
+    // takes precedence over `accessibilityState.disabled`. The remaining
+    // `aria-*` state props are forwarded to `View`, which merges them.
+    const disabled = this.props.disabled ?? this.props['aria-disabled'];
     const accessibilityState: ?AccessibilityState =
-      this.props.disabled != null
+      disabled != null
         ? {
             ...this.props.accessibilityState,
-            disabled: this.props.disabled,
+            disabled,
           }
         : this.props.accessibilityState;
 
@@ -260,6 +264,10 @@ class TouchableHighlightImpl extends React.Component<
         accessibilityLanguage={this.props.accessibilityLanguage}
         accessibilityRole={this.props.accessibilityRole}
         accessibilityState={accessibilityState}
+        aria-busy={this.props['aria-busy']}
+        aria-checked={this.props['aria-checked']}
+        aria-expanded={this.props['aria-expanded']}
+        aria-selected={this.props['aria-selected']}
         accessibilityValue={accessibilityValue}
         accessibilityActions={this.props.accessibilityActions}
         onAccessibilityAction={this.props.onAccessibilityAction}

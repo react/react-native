@@ -648,53 +648,11 @@ describe('<Image>', () => {
       });
     });
 
-    describe('aria-* accessibility state', () => {
-      (
-        [
-          [<Image aria-busy={true} accessible={true} />, 'busy:true'],
-          [<Image aria-disabled={true} accessible={true} />, 'disabled:true'],
-          [<Image aria-expanded={true} accessible={true} />, 'expanded:true'],
-          [<Image aria-selected={true} accessible={true} />, 'selected:true'],
-          [<Image aria-checked={true} accessible={true} />, 'checked:Checked'],
-        ] as const
-      ).forEach(([element, expected]) => {
-        it(`maps ${expected.split(':')[0]} into accessibilityState`, () => {
-          const root = Fantom.createRoot();
-
-          Fantom.runTask(() => {
-            root.render(element);
-          });
-
-          expect(
-            root
-              .getRenderedOutput({props: ['accessibilityState']})
-              .toJSONObject().props.accessibilityState,
-          ).toContain(expected);
-        });
-      });
-
-      it('takes precedence over the matching accessibilityState field', () => {
-        const root = Fantom.createRoot();
-
-        Fantom.runTask(() => {
-          root.render(
-            <Image
-              accessibilityState={{busy: false, disabled: true}}
-              aria-busy={true}
-              accessible={true}
-            />,
-          );
-        });
-
-        const accessibilityState = root
-          .getRenderedOutput({props: ['accessibilityState']})
-          .toJSONObject().props.accessibilityState;
-
-        expect(accessibilityState).toContain('busy:true');
-        // Fields not covered by an `aria-*` prop are preserved.
-        expect(accessibilityState).toContain('disabled:true');
-      });
-
+    describe('accessibilityState', () => {
+      // The `aria-*` to `accessibilityState` mapping is covered by
+      // `accessibilityPropsSuite`. This case cannot live there, because
+      // `Pressable` and `TouchableWithoutFeedback` always emit
+      // `accessibilityState`.
       it('is not set when no state props are provided', () => {
         const root = Fantom.createRoot();
 

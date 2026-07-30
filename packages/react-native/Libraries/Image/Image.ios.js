@@ -205,7 +205,7 @@ let BaseImage: AbstractImageIOS = ({
     // In order for `aria-hidden` to work on iOS we must set `accessible` to
     // false (`accessibilityElementsHidden` is not enough).
     resolvedProps.accessible = false;
-  } else if (alt !== undefined) {
+  } else if (alt != null) {
     resolvedProps.accessible = true;
   } else if (accessible != null) {
     resolvedProps.accessible = accessible;
