@@ -26,6 +26,7 @@
   ],
   "devDependencies": {
     "babel-plugin-syntax-hermes-parser": "0.37.0",
+    "flow-parser": "0.325.0",
     "flow-eslint": "0.325.0",
     "hermes-eslint": "0.37.0"
   },

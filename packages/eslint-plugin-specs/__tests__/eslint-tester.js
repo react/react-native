@@ -19,7 +19,7 @@ ESLintTester.setDefaultConfig({
     ecmaVersion: 6,
     sourceType: 'module',
     babelOptions: {
-      presets: [require.resolve('babel-plugin-syntax-hermes-parser')],
+      presets: [require.resolve('flow-parser/babel-plugin')],
     },
   },
 });

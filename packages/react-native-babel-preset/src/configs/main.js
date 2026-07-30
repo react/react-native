@@ -231,7 +231,7 @@ const getPreset = (src, options, babel) => {
       {
         plugins: [
           [
-            require('babel-plugin-syntax-hermes-parser'),
+            require('flow-parser/babel-plugin'),
             {
               parseLangTypes: 'flow',
               reactRuntimeTarget: '19',
