@@ -649,20 +649,84 @@ describe('<Image>', () => {
     });
 
     describe('accessibilityState', () => {
-      // The `aria-*` to `accessibilityState` mapping is covered by
-      // `accessibilityPropsSuite`. This case cannot live there, because
-      // `Pressable` and `TouchableWithoutFeedback` always emit
-      // `accessibilityState`.
+      function getAccessibilityState(element: React.MixedElement) {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(element);
+        });
+
+        return root
+          .getRenderedOutput({props: ['accessibilityState']})
+          .toJSONObject().props.accessibilityState;
+      }
+
       it('is not set when no state props are provided', () => {
         const root = Fantom.createRoot();
 
         Fantom.runTask(() => {
-          root.render(<Image accessible={true} />);
+          root.render(<Image />);
         });
 
         expect(
           root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
         ).toEqual(<rn-image />);
+      });
+
+      it('maps \'aria-busy\' to "busy"', () => {
+        expect(getAccessibilityState(<Image aria-busy={true} />)).toContain(
+          'busy:true',
+        );
+      });
+
+      it('maps \'aria-disabled\' to "disabled"', () => {
+        expect(getAccessibilityState(<Image aria-disabled={true} />)).toContain(
+          'disabled:true',
+        );
+      });
+
+      it('maps \'aria-expanded\' to "expanded"', () => {
+        expect(getAccessibilityState(<Image aria-expanded={true} />)).toContain(
+          'expanded:true',
+        );
+      });
+
+      it('maps \'aria-selected\' to "selected"', () => {
+        expect(getAccessibilityState(<Image aria-selected={true} />)).toContain(
+          'selected:true',
+        );
+      });
+
+      describe('maps \'aria-checked\' to "checked"', () => {
+        it('when set to true', () => {
+          expect(
+            getAccessibilityState(<Image aria-checked={true} />),
+          ).toContain('checked:Checked');
+        });
+
+        it('when set to false', () => {
+          expect(
+            getAccessibilityState(<Image aria-checked={false} />),
+          ).toContain('checked:Unchecked');
+        });
+
+        it("when set to 'mixed'", () => {
+          expect(
+            getAccessibilityState(<Image aria-checked="mixed" />),
+          ).toContain('checked:Mixed');
+        });
+      });
+
+      it('gives `aria-*` precedence over the matching field', () => {
+        const accessibilityState = getAccessibilityState(
+          <Image
+            accessibilityState={{busy: false, disabled: true}}
+            aria-busy={true}
+          />,
+        );
+
+        expect(accessibilityState).toContain('busy:true');
+        expect(accessibilityState).toContain('disabled:true');
       });
     });
 
