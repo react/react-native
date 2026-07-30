@@ -36,7 +36,7 @@ function requireModuleParser() {
         configFile: false,
         only: [/react-native-codegen\/src\//],
         plugins: [
-          require('babel-plugin-syntax-hermes-parser'),
+          require('flow-parser/babel-plugin'),
           require('@babel/plugin-transform-flow-strip-types').default,
         ],
       };
@@ -54,7 +54,7 @@ function requireModuleParser() {
         configFile: false,
         only: [/@react-native\/codegen\/lib\//],
         plugins: [
-          require('babel-plugin-syntax-hermes-parser'),
+          require('flow-parser/babel-plugin'),
           require('@babel/plugin-transform-flow-strip-types').default,
         ],
       };
