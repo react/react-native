@@ -266,13 +266,15 @@ internal object TextLayoutManager {
       val reactTag =
           if (fragment.contains(FR_KEY_REACT_TAG)) fragment.getInt(FR_KEY_REACT_TAG) else View.NO_ID
       if (fragment.contains(FR_KEY_IS_ATTACHMENT) && fragment.getBoolean(FR_KEY_IS_ATTACHMENT)) {
-        val width = PixelUtil.toPixelFromSP(fragment.getDouble(FR_KEY_WIDTH))
-        val height = PixelUtil.toPixelFromSP(fragment.getDouble(FR_KEY_HEIGHT))
         ops.add(
             SetSpanOperation(
                 sb.length - 1,
                 sb.length,
-                TextInlineViewPlaceholderSpan(reactTag, width.toInt(), height.toInt()),
+                TextInlineViewPlaceholderSpan(
+                    reactTag,
+                    inlineViewSizeToPixels(fragment.getDouble(FR_KEY_WIDTH)),
+                    inlineViewSizeToPixels(fragment.getDouble(FR_KEY_HEIGHT)),
+                ),
             )
         )
       } else if (end >= start) {
@@ -488,8 +490,8 @@ internal object TextLayoutManager {
         spannable.setSpan(
             TextInlineViewPlaceholderSpan(
                 fragment.reactTag,
-                PixelUtil.toPixelFromSP(fragment.width).toInt(),
-                PixelUtil.toPixelFromSP(fragment.height).toInt(),
+                inlineViewSizeToPixels(fragment.width),
+                inlineViewSizeToPixels(fragment.height),
             ),
             start,
             end,
@@ -653,6 +655,9 @@ internal object TextLayoutManager {
 
     return spannable
   }
+
+  private fun inlineViewSizeToPixels(size: Double): Int =
+      ceil(PixelUtil.toPixelFromDIP(size).toDouble()).toInt()
 
   @OptIn(UnstableReactNativeAPI::class)
   fun getOrCreateSpannableForText(

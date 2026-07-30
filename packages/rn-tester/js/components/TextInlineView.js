@@ -13,7 +13,10 @@
 import RNTesterText from '../components/RNTesterText';
 import * as React from 'react';
 import {useState} from 'react';
-import {Image, TouchableHighlight, View} from 'react-native';
+import {Image, StyleSheet, TouchableHighlight, View} from 'react-native';
+
+const SMALL_FONT_SCALE_INLINE_VIEW_WIDTH = 155;
+const SMALL_FONT_SCALE_INLINE_VIEW_HEIGHT = 32;
 
 function Basic(): React.Node {
   return (
@@ -105,6 +108,82 @@ function ClippedByText(): React.Node {
     </View>
   );
 }
+
+function SmallFontScale(): React.Node {
+  return (
+    <View>
+      <RNTesterText>
+        The blue inline view should keep its full 155dp width when Android
+        system font size is smaller than the default.
+      </RNTesterText>
+      <View style={styles.smallFontScaleContainer}>
+        <RNTesterText
+          testID="inline-view-small-font-scale"
+          style={styles.smallFontScaleLine}>
+          Prefix |{' '}
+          <View style={styles.smallFontScaleInlineView}>
+            <View style={styles.smallFontScaleInlineViewFill}>
+              <RNTesterText style={styles.smallFontScaleInlineViewText}>
+                Inline view
+              </RNTesterText>
+            </View>
+          </View>{' '}
+          | Suffix
+        </RNTesterText>
+      </View>
+      <View style={styles.smallFontScaleReference}>
+        <View style={styles.smallFontScaleReferenceBar} />
+        <RNTesterText style={styles.smallFontScaleReferenceText}>
+          Expected inline view width: 155dp
+        </RNTesterText>
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  smallFontScaleContainer: {
+    backgroundColor: 'lightgrey',
+    borderColor: 'darkgrey',
+    borderWidth: 1,
+    marginTop: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  smallFontScaleInlineView: {
+    height: SMALL_FONT_SCALE_INLINE_VIEW_HEIGHT,
+    width: SMALL_FONT_SCALE_INLINE_VIEW_WIDTH,
+  },
+  smallFontScaleInlineViewFill: {
+    alignItems: 'center',
+    backgroundColor: 'steelblue',
+    borderColor: 'navy',
+    borderWidth: 1,
+    height: SMALL_FONT_SCALE_INLINE_VIEW_HEIGHT,
+    justifyContent: 'center',
+    width: SMALL_FONT_SCALE_INLINE_VIEW_WIDTH,
+  },
+  smallFontScaleInlineViewText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  smallFontScaleLine: {
+    fontSize: 16,
+  },
+  smallFontScaleReference: {
+    marginTop: 8,
+  },
+  smallFontScaleReferenceBar: {
+    backgroundColor: 'steelblue',
+    height: 4,
+    width: SMALL_FONT_SCALE_INLINE_VIEW_WIDTH,
+  },
+  smallFontScaleReferenceText: {
+    fontSize: 12,
+    marginTop: 4,
+  },
+});
 
 function ChangeImageSize(): React.Node {
   const [width, setWidth] = useState(50);
@@ -203,6 +282,7 @@ module.exports = {
   Basic,
   NestedTexts,
   ClippedByText,
+  SmallFontScale,
   ChangeImageSize,
   ChangeViewSize,
   ChangeInnerViewSize,
