@@ -4818,6 +4818,27 @@ flow-enums-runtime@^0.0.6:
   resolved "https://registry.yarnpkg.com/flow-enums-runtime/-/flow-enums-runtime-0.0.6.tgz#5bb0cd1b0a3e471330f4d109039b7eba5cb3e787"
   integrity sha512-3PYnM29RFXwvAN6Pc/scUfkI7RwhQ/xqyLUyPNlXUp9S40zI8nup9tUSrTLSVnWGBN38FNiGWbwZOB6uR4OGdw==
 
+flow-eslint@0.325.0:
+  version "0.325.0"
+  resolved "https://registry.yarnpkg.com/flow-eslint/-/flow-eslint-0.325.0.tgz#6d0dc1aa973123373aecfd5e7a4fa68670eaf2a3"
+  integrity sha512-ne6v8HS254hYelmg9lX0I8S5rxtF9BdWPseQWqAnxcsVtiuzwf1x5byjvmfxbMT62awJcEDxGN9d8+dBzljVyw==
+  dependencies:
+    esrecurse "^4.3.0"
+    flow-estree "0.325.0"
+    flow-parser "0.325.0"
+
+flow-estree@0.325.0:
+  version "0.325.0"
+  resolved "https://registry.yarnpkg.com/flow-estree/-/flow-estree-0.325.0.tgz#07ed2568d312f2bfc926524d59d4b731541a52a9"
+  integrity sha512-HnYTpF6Al3YZpiPwket4x33V7iXSUgyqmtOz9FvgGBRKfBzZre/A3sRpXN1Jsq1VeRson1ToHJn+EosHemaPpQ==
+
+flow-parser@0.325.0:
+  version "0.325.0"
+  resolved "https://registry.yarnpkg.com/flow-parser/-/flow-parser-0.325.0.tgz#984a49a53609ff93e0c1f378ac8a211a00177590"
+  integrity sha512-3uJxDHNXuiNM5twT+tk0iIn8zdSkF67cmE/6SoWFbmxcX7BnI82qYeJSEhrfNnDx7TwhAVPnLqV7MCt+biVwZw==
+  dependencies:
+    flow-estree "0.325.0"
+
 flow-remove-types@^2.237.2:
   version "2.259.1"
   resolved "https://registry.yarnpkg.com/flow-remove-types/-/flow-remove-types-2.259.1.tgz#ee78962cbd73d85f0e94183b354c43399903c734"
@@ -4826,6 +4847,19 @@ flow-remove-types@^2.237.2:
     hermes-parser "0.25.1"
     pirates "^3.0.2"
     vlq "^0.2.1"
+
+flow-transform@0.325.0:
+  version "0.325.0"
+  resolved "https://registry.yarnpkg.com/flow-transform/-/flow-transform-0.325.0.tgz#7f2fcf777d68512ced1f0f6485fc36c00fa2fa13"
+  integrity sha512-RqIr/tNgnK5FeeHxozZL+QLXvXLOei0agcwcKLvzuwr8HbyzxUx3TshSCtpzux1bnV3PKZubb5XPsrJwYDH5XQ==
+  dependencies:
+    "@babel/code-frame" "^7.16.0"
+    esquery "^1.4.0"
+    flow-enums-runtime "^0.0.6"
+    flow-eslint "0.325.0"
+    flow-estree "0.325.0"
+    flow-parser "0.325.0"
+    string-width "4.2.3"
 
 for-each@^0.3.3:
   version "0.3.3"
