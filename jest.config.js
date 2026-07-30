@@ -27,7 +27,9 @@ module.exports = {
   },
   resolver: './packages/jest-preset/jest/resolver.js',
   moduleNameMapper: {
-    // `resolver.js` strips `exports`, so alias this subpath to its `src/` impl.
+    // `resolver.js` strips `exports`, so alias these subpaths to their `src/` impl.
+    '^react-native/react-private-interface$':
+      '<rootDir>/packages/react-native/src/react-private-interface.js',
     '^react-native/setup-env$':
       '<rootDir>/packages/react-native/src/setup-env.js',
   },

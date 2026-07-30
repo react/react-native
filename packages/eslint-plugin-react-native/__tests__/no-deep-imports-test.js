@@ -33,6 +33,8 @@ eslintTester.run('../no-deep-imports', rule, {
     "require('react-native/src/fb_internal/Foo')",
     "import 'react-native/setup-env';",
     "require('react-native/setup-env');",
+    "import {BatchedBridge} from 'react-native/react-private-interface';",
+    "require('react-native/react-private-interface');",
   ],
   invalid: [
     {
