@@ -14,8 +14,8 @@ const generate = require('@babel/generator').default;
 const {parse} = require('@babel/parser');
 const traverse = require('@babel/traverse').default;
 const t = require('@babel/types');
-const {createHash} = require('crypto');
 const debug = require('debug')('build-types:transforms:versionExportedApis');
+const {createHash} = require('node:crypto');
 
 /**
  * A visitor that annotates all exported types in the API snapshot with a

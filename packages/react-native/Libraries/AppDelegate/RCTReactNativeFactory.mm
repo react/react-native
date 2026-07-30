@@ -212,6 +212,13 @@ using namespace facebook::react;
   }
 }
 
+- (void)host:(RCTHost *)host didInitializeRuntime:(facebook::jsi::Runtime &)runtime
+{
+  if ([_delegate respondsToSelector:@selector(host:didInitializeRuntime:)]) {
+    [_delegate host:host didInitializeRuntime:runtime];
+  }
+}
+
 - (NSArray<NSString *> *)unstableModulesRequiringMainQueueSetup
 {
 #if RN_DISABLE_OSS_PLUGIN_HEADER

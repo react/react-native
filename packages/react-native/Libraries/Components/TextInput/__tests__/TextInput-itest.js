@@ -597,6 +597,33 @@ describe('<TextInput>', () => {
           'Command {type: "AndroidTextInput", nativeID: "text-input", name: "blur"}',
         ]);
       });
+
+      it('dispatches the blur command when a focused input is unmounted', () => {
+        const root = Fantom.createRoot();
+        const ref = createRef<HostInstance>();
+
+        Fantom.runTask(() => {
+          root.render(<TextInput nativeID="text-input" ref={ref} />);
+        });
+
+        const instance = nullthrows(ref.current);
+
+        Fantom.runTask(() => {
+          instance.focus();
+        });
+
+        root.takeMountingManagerLogs();
+
+        Fantom.runTask(() => {
+          // unmount TextInput
+          root.render(<></>);
+        });
+
+        expect(root.takeMountingManagerLogs()).toContain(
+          'Command {type: "AndroidTextInput", nativeID: "text-input", name: "blur"}',
+        );
+        expect(TextInput.State.currentlyFocusedInput()).toBe(null);
+      });
     });
 
     describe('clear()', () => {

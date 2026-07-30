@@ -19,27 +19,45 @@ class SPMManager
     log 'Cleaning old SPM dependencies from Pods project'
     clean_spm_dependencies_from_target(project, @dependencies_by_pod)
     log 'Adding SPM dependencies to Pods project'
+    flattened_pod_names = []
     @dependencies_by_pod.each do |pod_name, dependencies|
+      target = project.targets.find { |t| t.name == pod_name}
       dependencies.each do |spm_spec|
         log "Adding SPM dependency on product #{spm_spec[:products]}"
         add_spm_to_target(
           project,
-          project.targets.find { |t| t.name == pod_name},
+          target,
           spm_spec[:url],
           spm_spec[:requirement],
           spm_spec[:products]
         )
-        log " Adding workaround for Swift package not found issue"
-        target = project.targets.find { |t| t.name == pod_name}
-        target.build_configurations.each do |config|
-          target.build_settings(config.name)['SWIFT_INCLUDE_PATHS'] ||= ['$(inherited)']
-          search_path = '${SYMROOT}/${CONFIGURATION}${EFFECTIVE_PLATFORM_NAME}/'
-          unless target.build_settings(config.name)['SWIFT_INCLUDE_PATHS'].include?(search_path)
-            target.build_settings(config.name)['SWIFT_INCLUDE_PATHS'].push(search_path)
+        if target.product_type == 'com.apple.product-type.library.static'
+          # Xcode emits a package C-target's module map both into the shared
+          # products dir and into this pod's CONFIGURATION_BUILD_DIR, and both
+          # copies are unavoidably visible (the package swiftmodule serializes
+          # the products-root path) — clang hard-errors with "redefinition of
+          # module" on Xcode 26.3. Building the pod straight into the products
+          # root makes both paths the same file, and puts the package
+          # swiftmodule on the pod's default search path.
+          log " Building #{pod_name} into the shared products dir to avoid duplicate module maps"
+          target.build_configurations.each do |config|
+            target.build_settings(config.name)['CONFIGURATION_BUILD_DIR'] = '${PODS_CONFIGURATION_BUILD_DIR}'
+          end
+          flattened_pod_names << pod_name unless flattened_pod_names.include?(pod_name)
+        else
+          log " Adding workaround for Swift package not found issue"
+          target.build_configurations.each do |config|
+            target.build_settings(config.name)['SWIFT_INCLUDE_PATHS'] ||= ['$(inherited)']
+            search_path = '${SYMROOT}/${CONFIGURATION}${EFFECTIVE_PLATFORM_NAME}/'
+            unless target.build_settings(config.name)['SWIFT_INCLUDE_PATHS'].include?(search_path)
+              target.build_settings(config.name)['SWIFT_INCLUDE_PATHS'].push(search_path)
+            end
           end
         end
       end
     end
+
+    rewrite_aggregate_modulemap_references(installer, flattened_pod_names) unless flattened_pod_names.empty?
 
     unless @dependencies_by_pod.empty?
       log_warning "If you're using Xcode 15 or earlier you might need to close and reopen the Xcode workspace"
@@ -52,6 +70,32 @@ class SPMManager
   end
 
   private
+
+  # Flattening a pod's build dir moves its generated modulemap from
+  # "<Pod>/<Pod>.modulemap" to "<Pod>.modulemap"; the aggregate xcconfigs
+  # reference the old path via -fmodule-map-file. Must mutate the in-memory
+  # Config attributes — later post_install steps (NewArchitectureHelper) re-save
+  # the same Config objects and would clobber a plain file edit.
+  def rewrite_aggregate_modulemap_references(installer, pod_names)
+    installer.aggregate_targets.each do |aggregate_target|
+      aggregate_target.xcconfigs.each do |config_name, config_file|
+        %w[OTHER_CFLAGS OTHER_SWIFT_FLAGS].each do |key|
+          value = config_file.attributes[key]
+          next unless value
+
+          updated_value = pod_names.reduce(value) do |acc, pod_name|
+            acc.gsub(
+              "${PODS_CONFIGURATION_BUILD_DIR}/#{pod_name}/#{pod_name}.modulemap",
+              "${PODS_CONFIGURATION_BUILD_DIR}/#{pod_name}.modulemap"
+            )
+          end
+          config_file.attributes[key] = updated_value if updated_value != value
+        end
+
+        config_file.save_as(aggregate_target.xcconfig_path(config_name))
+      end
+    end
+  end
 
   # Creates a new object in the project with a UUID guaranteed not to collide
   # with any UUID already present in the project.

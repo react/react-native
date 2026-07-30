@@ -25,9 +25,9 @@
  * boundary.
  */
 
-const {execFileSync} = require('child_process');
-const fs = require('fs');
-const path = require('path');
+const {execFileSync} = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
 
 // APFS clonefile (-c) is a macOS-only cp flag; plain -R elsewhere (Linux CI
 // exercises these paths through the jest integration tests).

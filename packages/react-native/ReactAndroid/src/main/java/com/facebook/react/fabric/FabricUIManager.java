@@ -27,6 +27,7 @@ import android.view.accessibility.AccessibilityEvent;
 import androidx.annotation.AnyThread;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
+import androidx.annotation.VisibleForTesting;
 import androidx.core.view.ViewCompat.FocusDirection;
 import com.facebook.common.logging.FLog;
 import com.facebook.infer.annotation.Assertions;
@@ -65,6 +66,7 @@ import com.facebook.react.fabric.mounting.mountitems.DispatchCommandMountItem;
 import com.facebook.react.fabric.mounting.mountitems.MountItem;
 import com.facebook.react.fabric.mounting.mountitems.MountItemFactory;
 import com.facebook.react.fabric.mounting.mountitems.PrefetchResourcesMountItem;
+import com.facebook.react.fabric.mounting.mountitems.PullTransactionMountItem;
 import com.facebook.react.fabric.mounting.mountitems.SynchronousMountItem;
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags;
 import com.facebook.react.internal.featureflags.ReactNativeNewArchitectureFeatureFlags;
@@ -565,12 +567,12 @@ public class FabricUIManager
             mTextEffectRegistry);
   }
 
-  public int getColor(int surfaceId, String[] resourcePaths) {
+  public @Nullable Integer getColor(int surfaceId, String[] resourcePaths) {
     ThemedReactContext context =
         mMountingManager.getSurfaceManagerEnforced(surfaceId, "getColor").getContext();
     // Surface may have been stopped
     if (context == null) {
-      return 0;
+      return null;
     }
 
     for (String resourcePath : resourcePaths) {
@@ -579,7 +581,9 @@ public class FabricUIManager
         return color;
       }
     }
-    return 0;
+    // Null (explicit miss), not 0, so native can tell an unresolved color from
+    // one that resolves to transparent black (ARGB 0).
+    return null;
   }
 
   /**
@@ -934,7 +938,8 @@ public class FabricUIManager
       long layoutEndTime,
       long finishTransactionStartTime,
       long finishTransactionEndTime,
-      int affectedLayoutNodesCount) {
+      int affectedLayoutNodesCount,
+      boolean synchronous) {
     // When Binding.cpp calls scheduleMountItems during a commit phase, it always calls with
     // a BatchMountItem. No other sites call into this with a BatchMountItem, and Binding.cpp only
     // calls scheduleMountItems with a BatchMountItem.
@@ -948,8 +953,9 @@ public class FabricUIManager
     } else {
       shouldSchedule = mountItem != null;
     }
-    // In case of sync rendering, this could be called on the UI thread. Otherwise,
-    // it should ~always be called on the JS thread.
+    // In the push model, this is ~always called on the JS thread, or on the UI
+    // thread in case of sync rendering.
+    // In the pull model, this is always called on the UI thread, at pull time.
     for (UIManagerListener listener : mListeners) {
       listener.didScheduleMountItems(this);
     }
@@ -964,16 +970,22 @@ public class FabricUIManager
 
     if (shouldSchedule) {
       Assertions.assertNotNull(mountItem, "MountItem is null");
-      mMountItemDispatcher.addMountItem(mountItem);
-      if (UiThreadUtil.isOnUiThread()) {
-        Runnable runnable =
-            new GuardedRunnable(mReactApplicationContext) {
-              @Override
-              public void runGuarded() {
-                mMountItemDispatcher.tryDispatchMountItems();
-              }
-            };
-        runnable.run();
+      if (synchronous) {
+        // Pull model: we are already on the UI thread, inside the dispatcher's loop executing
+        // a PullTransactionMountItem. We don't schedule the item, we execute it directly.
+        mountItem.execute(mMountingManager);
+      } else {
+        mMountItemDispatcher.addMountItem(mountItem);
+        if (UiThreadUtil.isOnUiThread()) {
+          Runnable runnable =
+              new GuardedRunnable(mReactApplicationContext) {
+                @Override
+                public void runGuarded() {
+                  mMountItemDispatcher.tryDispatchMountItems();
+                }
+              };
+          runnable.run();
+        }
       }
     }
 
@@ -1006,6 +1018,26 @@ public class FabricUIManager
           layoutEndTime,
           affectedLayoutNodesCount);
       ReactMarker.logFabricMarker(ReactMarkerConstants.FABRIC_COMMIT_END, null, commitNumber);
+    }
+  }
+
+  /**
+   * Pull model: called from C++ via JNI (usually on the commit thread) to signal that a transaction
+   * is available for {@code surfaceId}. Enqueues a PullTransactionMountItem so the UI thread pulls
+   * and applies the transaction itself, preserving mount-item ordering.
+   */
+  @SuppressWarnings("unused")
+  @AnyThread
+  @ThreadConfined(ANY)
+  @VisibleForTesting
+  void onTransactionAvailable(int surfaceId) {
+    FabricUIManagerBinding binding = mBinding;
+    if (binding == null) {
+      return;
+    }
+    mMountItemDispatcher.addMountItem(new PullTransactionMountItem(surfaceId, binding));
+    if (UiThreadUtil.isOnUiThread()) {
+      mMountItemDispatcher.tryDispatchMountItems();
     }
   }
 

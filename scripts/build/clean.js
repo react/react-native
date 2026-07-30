@@ -12,9 +12,9 @@ require('../shared/babelRegister').registerForScript();
 
 const {BUILD_DIR, PACKAGES_DIR} = require('./build');
 const {buildConfig} = require('./config');
-const fs = require('fs');
-const path = require('path');
-const {parseArgs} = require('util');
+const fs = require('node:fs');
+const path = require('node:path');
+const {parseArgs} = require('node:util');
 
 const config = {
   options: {

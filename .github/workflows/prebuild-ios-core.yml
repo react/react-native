@@ -133,7 +133,7 @@ jobs:
         uses: actions/cache/restore@v5
         with:
           path: packages/react-native/.build/output/xcframeworks
-          key: v3-ios-core-xcframework-${{ matrix.flavor }}-${{ hashFiles('packages/react-native/Package.swift', 'packages/react-native/scripts/ios-prebuild/*.js', 'packages/react-native/scripts/ios-prebuild.js', 'packages/react-native/React/**/*', 'packages/react-native/ReactCommon/**/*', 'packages/react-native/Libraries/**/*') }}
+          key: v4-ios-core-xcframework-${{ matrix.flavor }}-${{ hashFiles('packages/react-native/Package.swift', 'packages/react-native/scripts/ios-prebuild/*.js', 'packages/react-native/scripts/ios-prebuild.js', 'packages/react-native/React/**/*', 'packages/react-native/ReactCommon/**/*', 'packages/react-native/Libraries/**/*') }}
       - name: Setup node.js
         if: steps.restore-ios-xcframework.outputs.cache-hit != 'true'
         uses: ./.github/actions/setup-node
@@ -175,6 +175,27 @@ jobs:
           tar -xzf /tmp/third-party/ReactNativeDependencies${{ matrix.flavor }}.xcframework.tar.gz -C /tmp/third-party/
           mkdir -p packages/react-native/third-party/
           mv /tmp/third-party/packages/react-native/third-party/ReactNativeDependencies.xcframework packages/react-native/third-party/ReactNativeDependencies.xcframework
+      - name: Set Hermes version
+        if: steps.restore-ios-xcframework.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          # Non-stable RN builds resolve Hermes from npm's latest-v1 dist-tag.
+          # TODO: rename 'latest-v1' to 'latest' once V1 is the only Hermes on npm.
+          # Stable builds use the version pinned in version.properties.
+          if [ "${{ inputs.use-hermes-prebuilt }}" == "true" ]; then
+            HERMES_VERSION="latest-v1"
+          else
+            HERMES_VERSION=$(sed -n 's/^HERMES_VERSION_NAME=//p' packages/react-native/sdks/hermes-engine/version.properties)
+          fi
+          echo "Using Hermes version: $HERMES_VERSION"
+          echo "HERMES_VERSION=$HERMES_VERSION" >> $GITHUB_ENV
+      - name: Stage Hermes headers
+        if: steps.restore-ios-xcframework.outputs.cache-hit != 'true'
+        working-directory: packages/react-native
+        env:
+          FLAVOR: ${{ matrix.flavor }}
+        run: |
+          node -e "require('./scripts/ios-prebuild/hermes').prepareHermesArtifactsAsync(require('./package.json').version, process.env.FLAVOR).then(()=>process.exit(0)).catch(e=>{console.error(e);process.exit(1)})"
       - name: Setup Keychain
         if: ${{ steps.restore-ios-xcframework.outputs.cache-hit != 'true' && env.REACT_ORG_CODE_SIGNING_P12_CERT != '' }}
         uses: apple-actions/import-codesign-certs@v3 # https://github.com/marketplace/actions/import-code-signing-certificates
@@ -185,12 +206,12 @@ jobs:
         if: ${{ steps.restore-ios-xcframework.outputs.cache-hit != 'true' && env.REACT_ORG_CODE_SIGNING_P12_CERT == '' }}
         run: |
           cd packages/react-native
-          node scripts/ios-prebuild -c -f "${{ matrix.flavor }}"
+          node scripts/ios-prebuild -c -f "${{ matrix.flavor }}" ${{ inputs.version-type != '' && '--require-hermes' || '' }}
       - name: Create and Sign XCFramework
         if: ${{ steps.restore-ios-xcframework.outputs.cache-hit != 'true' && env.REACT_ORG_CODE_SIGNING_P12_CERT != '' }}
         run: |
           cd packages/react-native
-          node scripts/ios-prebuild -c -f "${{ matrix.flavor }}" -i "React Org"
+          node scripts/ios-prebuild -c -f "${{ matrix.flavor }}" -i "React Org" ${{ inputs.version-type != '' && '--require-hermes' || '' }}
       - name: Verify composed headers
         if: steps.restore-ios-xcframework.outputs.cache-hit != 'true'
         run: |
@@ -200,7 +221,7 @@ jobs:
           # privileged-consumer/Expo fixtures). Catches consumer-facing header
           # regressions here instead of in downstream builds.
           cd packages/react-native
-          node scripts/ios-prebuild/headers-verify.js --flavor "${{ matrix.flavor }}"
+          node scripts/ios-prebuild/headers-verify.js --flavor "${{ matrix.flavor }}" ${{ inputs.version-type != '' && '--require-stamped-version' || '' }}
       - name: Compress and Rename XCFramework
         if: steps.restore-ios-xcframework.outputs.cache-hit != 'true'
         run: |
@@ -246,4 +267,4 @@ jobs:
             packages/react-native/.build/output/xcframeworks/ReactCore${{matrix.flavor}}.xcframework.tar.gz
             packages/react-native/.build/output/xcframeworks/ReactCore${{matrix.flavor}}.framework.dSYM.tar.gz
             packages/react-native/.build/output/xcframeworks/ReactNativeHeaders${{matrix.flavor}}.xcframework.tar.gz
-          key: v3-ios-core-xcframework-${{ matrix.flavor }}-${{ hashFiles('packages/react-native/Package.swift', 'packages/react-native/scripts/ios-prebuild/*.js', 'packages/react-native/scripts/ios-prebuild.js', 'packages/react-native/React/**/*', 'packages/react-native/ReactCommon/**/*', 'packages/react-native/Libraries/**/*') }}
+          key: v4-ios-core-xcframework-${{ matrix.flavor }}-${{ hashFiles('packages/react-native/Package.swift', 'packages/react-native/scripts/ios-prebuild/*.js', 'packages/react-native/scripts/ios-prebuild.js', 'packages/react-native/React/**/*', 'packages/react-native/ReactCommon/**/*', 'packages/react-native/Libraries/**/*') }}

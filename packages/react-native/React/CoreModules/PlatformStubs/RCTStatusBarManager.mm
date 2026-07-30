@@ -17,11 +17,17 @@
 
 RCT_EXPORT_MODULE()
 
-RCT_EXPORT_METHOD(getHeight : (RCTResponseSenderBlock)callback) {}
+- (void)getHeight:(RCTResponseSenderBlock)callback
+{
+}
 
-RCT_EXPORT_METHOD(setStyle : (NSString *)style animated : (BOOL)animated) {}
+- (void)setStyle:(NSString *)style animated:(BOOL)animated
+{
+}
 
-RCT_EXPORT_METHOD(setHidden : (BOOL)hidden withAnimation : (NSString *)withAnimation) {}
+- (void)setHidden:(BOOL)hidden withAnimation:(NSString *)withAnimation
+{
+}
 
 - (facebook::react::ModuleConstants<JS::NativeStatusBarManagerIOS::Constants>)getConstants
 {

@@ -91,10 +91,12 @@ RCT_EXPORT_MODULE()
   }
 }
 
-RCT_EXPORT_METHOD(
-    connect : (NSURL *)URL protocols : (NSArray *)protocols options : (JS::NativeWebSocketModule::SpecConnectOptions &)
-        options socketID : (double)socketID)
+- (void)connect:(NSString *)urlString
+      protocols:(NSArray *)protocols
+        options:(JS::NativeWebSocketModule::SpecConnectOptions &)options
+       socketID:(double)socketID
 {
+  NSURL *URL = [RCTConvert NSURL:urlString];
   if (URL == nil || URL.absoluteString.length == 0u) {
     RCTAssert(NO, @"RCTWebSocketModule: Invalid WebSocket URL passed to connect");
     [self sendEventWithName:@"websocketFailed" body:@{@"message" : @"Invalid WebSocket URL", @"id" : @(socketID)}];
@@ -167,14 +169,14 @@ RCT_EXPORT_METHOD(
   [webSocket open];
 }
 
-RCT_EXPORT_METHOD(send : (NSString *)message forSocketID : (double)socketID)
+- (void)send:(NSString *)message forSocketID:(double)socketID
 {
   SRWebSocket *webSocket = _sockets[@(socketID)];
   [RCTInspectorWebSocketReporter reportMessageSent:webSocket.inspectorRequestId message:message];
   [webSocket sendString:message error:nil];
 }
 
-RCT_EXPORT_METHOD(sendBinary : (NSString *)base64String forSocketID : (double)socketID)
+- (void)sendBinary:(NSString *)base64String forSocketID:(double)socketID
 {
   [self sendData:[[NSData alloc] initWithBase64EncodedString:base64String options:0] forSocketID:@(socketID)];
 }
@@ -186,12 +188,12 @@ RCT_EXPORT_METHOD(sendBinary : (NSString *)base64String forSocketID : (double)so
   [webSocket sendData:data error:nil];
 }
 
-RCT_EXPORT_METHOD(ping : (double)socketID)
+- (void)ping:(double)socketID
 {
   [_sockets[@(socketID)] sendPing:nil error:nil];
 }
 
-RCT_EXPORT_METHOD(close : (double)code reason : (NSString *)reason socketID : (double)socketID)
+- (void)close:(double)code reason:(NSString *)reason socketID:(double)socketID
 {
   [_sockets[@(socketID)] closeWithCode:code reason:reason];
   [_sockets removeObjectForKey:@(socketID)];

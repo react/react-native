@@ -10,7 +10,7 @@
 
 // $FlowFixMe[untyped-import] - Flow lib is not configured.
 import {ESLint} from 'eslint';
-import path from 'path';
+import path from 'node:path';
 
 const REPO_DIR = path.resolve(__dirname, '..', '..', '..');
 

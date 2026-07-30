@@ -10,8 +10,13 @@
 
 /*:: import type {BuildFlavor, MavenSubGroup} from './types'; */
 
-const {execSync} = require('child_process');
-const fs = require('fs');
+const {execSync} = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
+
+const MAVEN_CENTRAL_REPOSITORY = 'https://repo1.maven.org/maven2';
+const REACT_NATIVE_MAVEN_MIRROR_REPOSITORY =
+  'https://repo.reactnative.dev/maven2';
 
 /**
  * Creates a folder if it does not exist
@@ -26,6 +31,31 @@ function createFolderIfNotExists(folderPath /*:string*/) /*: string */ {
     }
   }
   return folderPath;
+}
+
+function findFirst(
+  dir /*: string */,
+  predicate /*: (name: string) => boolean */,
+  depth /*: number */,
+) /*: string | null */ {
+  if (depth <= 0 || !fs.existsSync(dir)) {
+    return null;
+  }
+  for (const entry of fs.readdirSync(dir, {withFileTypes: true})) {
+    // $FlowFixMe[incompatible-type] Dirent.name is string|Buffer in Flow but always string here
+    const full /*: string */ = path.join(dir, entry.name);
+    // $FlowFixMe[incompatible-type] Dirent.name is string|Buffer in Flow but always string here
+    if (predicate(entry.name)) {
+      return full;
+    }
+    if (entry.isDirectory()) {
+      const hit = findFirst(full, predicate, depth - 1);
+      if (hit != null) {
+        return hit;
+      }
+    }
+  }
+  return null;
 }
 
 function throwIfOnEden() {
@@ -102,9 +132,35 @@ async function computeNightlyTarballURL(
   return finalUrl;
 }
 
+function getMavenRepositoryUrls() /*: Array<string> */ {
+  // You can use the `ENTERPRISE_REPOSITORY` variable to customise the base url from which artifacts will be downloaded.
+  // The mirror's structure must be the same of the Maven repo the react-native core team publishes on Maven Central.
+  const enterpriseRepository = process.env.ENTERPRISE_REPOSITORY;
+  if (enterpriseRepository != null && enterpriseRepository !== '') {
+    return [enterpriseRepository.replace(/\/+$/, '')];
+  }
+
+  // Keep the React Native Maven mirror before Maven Central so cached artifacts are tried first
+  // and Maven Central remains the fallback.
+  return isReactNativeMavenMirrorEnabled()
+    ? [REACT_NATIVE_MAVEN_MIRROR_REPOSITORY, MAVEN_CENTRAL_REPOSITORY]
+    : [MAVEN_CENTRAL_REPOSITORY];
+}
+
+function isReactNativeMavenMirrorEnabled() /*: boolean */ {
+  const value = process.env.RCT_REACT_NATIVE_MAVEN_MIRROR_ENABLED;
+  if (value == null || value === '') {
+    return true;
+  }
+
+  return value.toLowerCase() !== 'false' && value !== '0';
+}
+
 module.exports = {
   createFolderIfNotExists,
+  findFirst,
   throwIfOnEden,
   createLogger,
   computeNightlyTarballURL,
+  getMavenRepositoryUrls,
 };

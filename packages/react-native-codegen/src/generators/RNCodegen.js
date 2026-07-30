@@ -35,8 +35,8 @@ const generateModuleJavaSpec = require('./modules/GenerateModuleJavaSpec.js');
 const generateModuleJniCpp = require('./modules/GenerateModuleJniCpp.js');
 const generateModuleJniH = require('./modules/GenerateModuleJniH.js');
 const generateModuleObjCpp = require('./modules/GenerateModuleObjCpp');
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const ALL_GENERATORS = {
   generateComponentDescriptorH: generateComponentDescriptorH.generate,

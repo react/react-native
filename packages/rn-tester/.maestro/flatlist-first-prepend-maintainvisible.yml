@@ -1,0 +1,49 @@
+# Test FlatList maintainVisibleContentPosition — first prepend only
+# Single prepend with fixed-height items: delta should be ~44px (40px height + 4px margin)
+appId: ${APP_ID}
+---
+- launchApp
+# Change to portrait
+- setOrientation: portrait
+- waitForAnimationToEnd:
+    timeout: 3000
+# Find test
+
+- assertVisible: 'Components'
+- scrollUntilVisible:
+    element:
+      id: 'FlatList'
+    direction: DOWN
+    speed: 40
+- tapOn:
+    id: 'FlatList'
+- scrollUntilVisible:
+    element:
+      id: 'maintainVisibleContentPosition'
+    direction: DOWN
+    speed: 40
+- tapOn:
+    id: 'maintainVisibleContentPosition'
+# Scroll to offset 500
+- tapOn:
+    text: 'ScrollToOffset 500'
+- waitForAnimationToEnd:
+    timeout: 2000
+# Record offset before prepend (element may be off-screen but still accessible)
+- copyTextFrom:
+    id: 'scroll-offset-display'
+- evalScript: ${output.offsetBefore = parseInt(maestro.copiedText.split(":")[1].trim())}
+# Add 1 item at top
+- tapOn:
+    text: 'Add 1 item at top'
+- waitForAnimationToEnd:
+    timeout: 2000
+# Record offset after prepend
+- copyTextFrom:
+    id: 'scroll-offset-display'
+- evalScript: ${output.offsetAfter = parseInt(maestro.copiedText.split(":")[1].trim())}
+# Verify delta is ~44px (40px height + 4px margin)
+- assertTrue: ${output.offsetAfter - output.offsetBefore >= 42 && output.offsetAfter - output.offsetBefore <= 46}
+# Reset
+- tapOn:
+    text: 'Reset'

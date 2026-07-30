@@ -76,7 +76,7 @@
  * the merge, so regeneration stays deterministic and idempotent.
  */
 
-const path = require('path');
+const path = require('node:path');
 
 /*:: import type {
   AutolinkedDep,
@@ -117,7 +117,7 @@ function discoverPlugins(
       );
     }
     const pluginPath = path.resolve(dep.root, rel);
-    let fn: unknown;
+    let fn /*: unknown */ = null;
     try {
       // $FlowFixMe[unsupported-syntax] dynamic require by computed path
       fn = require(pluginPath);
@@ -175,7 +175,7 @@ function invokePlugins(
   const seenFrameworkNames /*: Set<string> */ = new Set();
 
   for (const {depName, pluginPath, plugin} of plugins) {
-    let result: unknown;
+    let result /*: unknown */ = null;
     try {
       result = plugin(context);
     } catch (e) {

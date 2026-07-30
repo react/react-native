@@ -43,8 +43,8 @@ const {
   setScalarField,
 } = require('./spm-pbxproj');
 const {makeLogger, remotePackageConfig} = require('./spm-utils');
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 /*:: import type {
   FlavoredFrameworkManifestEntry,
@@ -1799,13 +1799,13 @@ function readGeneratedSourcesManifest(
   appRoot /*: string */,
 ) /*: Array<GeneratedSource> */ {
   const manifestPath = path.join(appRoot, SPM_GENERATED_SOURCES_MANIFEST);
-  let raw: string;
+  let raw /*: string */ = '';
   try {
     raw = fs.readFileSync(manifestPath, 'utf8');
   } catch {
     return [];
   }
-  let entries: unknown;
+  let entries /*: unknown */ = null;
   try {
     entries = JSON.parse(raw);
   } catch {
@@ -1860,7 +1860,7 @@ function readMarker(
 // build-time sync (sync-spm-autolinking.js, via readArtifactsVersionOverride
 // below) to call without pulling in any pbxproj-editing machinery at runtime.
 function findInjectedXcodeproj(appRoot /*: string */) /*: string | null */ {
-  let entries: Array<{name: string, isDirectory(): boolean}>;
+  let entries /*: Array<{name: string, isDirectory(): boolean}> */ = [];
   try {
     // $FlowFixMe[incompatible-type] Dirent typing
     entries = fs.readdirSync(appRoot, {withFileTypes: true});

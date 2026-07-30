@@ -10,10 +10,10 @@
 
 'use strict';
 
-const {spawnSync} = require('child_process');
-const fs = require('fs');
-const os = require('os');
-const path = require('path');
+const {spawnSync} = require('node:child_process');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
 const yargs = require('yargs');
 
 const LAST_BUILD_FILENAME = 'React-Core-prebuilt/.last_build_configuration';

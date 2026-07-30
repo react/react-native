@@ -322,7 +322,18 @@ RCT_EXPORT_METHOD(onFinishRemoteNotification : (NSString *)notificationId fetchR
  */
 RCT_EXPORT_METHOD(setApplicationIconBadgeNumber : (double)number)
 {
-  RCTSharedApplication().applicationIconBadgeNumber = number;
+  NSInteger badgeCount = (NSInteger)lround(number);
+  if (@available(iOS 16.0, *)) {
+    [UNUserNotificationCenter.currentNotificationCenter
+                setBadgeCount:badgeCount
+        withCompletionHandler:^(NSError *_Nullable error) {
+          if (error != nil) {
+            RCTLogWarn(@"Failed to set application icon badge number: %@", error);
+          }
+        }];
+  } else {
+    RCTSharedApplication().applicationIconBadgeNumber = badgeCount;
+  }
 }
 
 /**

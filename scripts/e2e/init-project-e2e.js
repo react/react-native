@@ -20,11 +20,11 @@ const {
   VERDACCIO_STORAGE_PATH,
   setupVerdaccio,
 } = require('./utils/verdaccio');
-const {execSync} = require('child_process');
-const fs = require('fs');
-const path = require('path');
+const {execSync} = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
+const {parseArgs, styleText} = require('node:util');
 const {popd, pushd} = require('shelljs');
-const {parseArgs, styleText} = require('util');
 
 const config = {
   options: {

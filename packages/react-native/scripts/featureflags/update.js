@@ -10,7 +10,7 @@
 
 import generateFiles from './generateFiles';
 import featureFlagDefinitions from './ReactNativeFeatureFlags.config';
-import path from 'path';
+import path from 'node:path';
 
 const REACT_NATIVE_PACKAGE_ROOT = path.join(__dirname, '..', '..');
 

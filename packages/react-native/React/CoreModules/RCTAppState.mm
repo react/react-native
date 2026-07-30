@@ -135,7 +135,7 @@ RCT_EXPORT_MODULE()
 /**
  * Get the current background/foreground state of the app
  */
-RCT_EXPORT_METHOD(getCurrentAppState : (RCTResponseSenderBlock)callback error : (__unused RCTResponseSenderBlock)error)
+- (void)getCurrentAppState:(RCTResponseSenderBlock)callback error:(__unused RCTResponseSenderBlock)error
 {
   callback(@[ @{@"app_state" : RCTCurrentAppState()} ]);
 }

@@ -57,10 +57,10 @@ const {
   makeLogger,
   sharedCacheDir,
 } = require('./spm-utils');
-const {execFileSync} = require('child_process');
-const fs = require('fs');
-const path = require('path');
-const stream = require('stream');
+const {execFileSync} = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
+const stream = require('node:stream');
 const yargs = require('yargs');
 
 const {log, warn, die} = makeLogger('download-spm-artifacts');
@@ -943,7 +943,7 @@ async function processArtifact(
     return localPath;
   };
 
-  let tarPath: string;
+  let tarPath /*: string */ = '';
   let fromShared = false;
   if (isLocalTarball) {
     tarPath = url;
@@ -970,7 +970,7 @@ async function processArtifact(
     onProgress(xcframeworkName, 0, 0, 0, false, 0);
   }
   const tmpExtractDir = path.join(outputDir, '.extract-tmp', label);
-  let xcfwPath: string;
+  let xcfwPath /*: string */ = '';
   try {
     xcfwPath = extractXCFramework(tarPath, tmpExtractDir);
   } catch (e) {
@@ -1349,7 +1349,7 @@ function validateArtifactsCache(
   if (!fs.existsSync(artifactsJsonPath)) {
     return `artifacts.json missing in ${artifactsDir}`;
   }
-  let json: {[string]: {xcframeworkPath: string, url: string}};
+  let json /*: {[string]: {xcframeworkPath: string, url: string}} */ = {};
   try {
     // $FlowFixMe[unclear-type] JSON.parse returns any
     const parsed /*: any */ = JSON.parse(

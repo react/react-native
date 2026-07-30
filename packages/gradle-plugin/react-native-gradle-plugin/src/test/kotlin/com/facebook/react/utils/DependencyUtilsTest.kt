@@ -13,6 +13,7 @@ import com.facebook.react.utils.DependencyUtils.configureRepositories
 import com.facebook.react.utils.DependencyUtils.exclusiveEnterpriseRepository
 import com.facebook.react.utils.DependencyUtils.getDependencySubstitutions
 import com.facebook.react.utils.DependencyUtils.isNightly
+import com.facebook.react.utils.DependencyUtils.isReactNativeMavenMirrorEnabled
 import com.facebook.react.utils.DependencyUtils.mavenRepoFromURI
 import com.facebook.react.utils.DependencyUtils.mavenRepoFromUrl
 import com.facebook.react.utils.DependencyUtils.readVersionAndGroupStrings
@@ -50,6 +51,22 @@ class DependencyUtilsTest {
   fun configureRepositories_containsMavenCentral() {
     val repositoryURI = URI.create("https://repo.maven.apache.org/maven2/")
     val project = createProject()
+
+    configureRepositories(project, false)
+
+    assertThat(
+            project.repositories.firstOrNull {
+              it is MavenArtifactRepository && it.url == repositoryURI
+            }
+        )
+        .isNotNull()
+  }
+
+  @Test
+  fun configureRepositories_withReactNativeMavenMirrorEnabled_containsMavenMirror() {
+    val repositoryURI = URI.create("https://repo.reactnative.dev/maven2")
+    val project = createProject()
+    project.extensions.extraProperties.set("react.internal.reactNativeMavenMirrorEnabled", "true")
 
     configureRepositories(project, false)
 
@@ -219,6 +236,107 @@ class DependencyUtilsTest {
           it is MavenArtifactRepository && it.url == mavenCentralURI
         }
     assertThat(indexOfLocalRepo < indexOfMavenCentral).isTrue()
+  }
+
+  @Test
+  fun configureRepositories_mavenMirrorHasHigherPriorityThanMavenCentral() {
+    val mavenMirrorURI = URI.create("https://repo.reactnative.dev/maven2")
+    val mavenCentralURI = URI.create("https://repo.maven.apache.org/maven2/")
+    val project = createProject()
+    project.extensions.extraProperties.set("react.internal.reactNativeMavenMirrorEnabled", "true")
+
+    configureRepositories(project, false)
+
+    val indexOfMavenMirror =
+        project.repositories.indexOfFirst {
+          it is MavenArtifactRepository && it.url == mavenMirrorURI
+        }
+    val indexOfMavenCentral =
+        project.repositories.indexOfFirst {
+          it is MavenArtifactRepository && it.url == mavenCentralURI
+        }
+    assertThat(indexOfMavenMirror < indexOfMavenCentral).isTrue()
+  }
+
+  @Test
+  fun configureRepositories_withProjectPropertySet_doesNotContainMavenMirror() {
+    val localMaven = tempFolder.newFolder("m2")
+    val mavenMirrorURI = URI.create("https://repo.reactnative.dev/maven2")
+    val project = createProject()
+    project.extensions.extraProperties.set("react.internal.mavenLocalRepo", localMaven.absolutePath)
+
+    configureRepositories(project, false)
+
+    assertThat(
+            project.repositories.firstOrNull {
+              it is MavenArtifactRepository && it.url == mavenMirrorURI
+            }
+        )
+        .isNull()
+  }
+
+  @Test
+  fun configureRepositories_byDefault_containsMavenMirror() {
+    val mavenMirrorURI = URI.create("https://repo.reactnative.dev/maven2")
+    val project = createProject()
+
+    configureRepositories(project, false)
+
+    assertThat(
+            project.repositories.firstOrNull {
+              it is MavenArtifactRepository && it.url == mavenMirrorURI
+            }
+        )
+        .isNotNull()
+  }
+
+  @Test
+  fun configureRepositories_withReactNativeMavenMirrorDisabled_doesNotContainMavenMirror() {
+    val mavenMirrorURI = URI.create("https://repo.reactnative.dev/maven2")
+    val project = createProject()
+    project.extensions.extraProperties.set("react.internal.reactNativeMavenMirrorEnabled", "false")
+
+    configureRepositories(project, false)
+
+    assertThat(
+            project.repositories.firstOrNull {
+              it is MavenArtifactRepository && it.url == mavenMirrorURI
+            }
+        )
+        .isNull()
+  }
+
+  @Test
+  fun isReactNativeMavenMirrorEnabled_withEnvironmentVariableEnabled_returnsTrue() {
+    val project = createProject()
+
+    assertThat(project.isReactNativeMavenMirrorEnabled("true")).isTrue()
+    assertThat(project.isReactNativeMavenMirrorEnabled("1")).isTrue()
+  }
+
+  @Test
+  fun isReactNativeMavenMirrorEnabled_withEnvironmentVariableDisabled_returnsFalse() {
+    val project = createProject()
+
+    assertThat(project.isReactNativeMavenMirrorEnabled("false")).isFalse()
+    assertThat(project.isReactNativeMavenMirrorEnabled("FALSE")).isFalse()
+    assertThat(project.isReactNativeMavenMirrorEnabled("0")).isFalse()
+  }
+
+  @Test
+  fun isReactNativeMavenMirrorEnabled_byDefault_returnsTrue() {
+    val project = createProject()
+
+    assertThat(project.isReactNativeMavenMirrorEnabled(null)).isTrue()
+    assertThat(project.isReactNativeMavenMirrorEnabled("")).isTrue()
+  }
+
+  @Test
+  fun isReactNativeMavenMirrorEnabled_withProjectProperty_ignoresEnvironmentVariable() {
+    val project = createProject()
+    project.extensions.extraProperties.set("react.internal.reactNativeMavenMirrorEnabled", "false")
+
+    assertThat(project.isReactNativeMavenMirrorEnabled("true")).isFalse()
   }
 
   @Test

@@ -16,6 +16,9 @@ export type SetupArgs = {
   // `debug/` and `release/` cache slots, each with artifacts.json.
   artifacts: string | null,
   skipCodegen: boolean,
+  // Overrides the autolinking config command; also settable via
+  // RCT_SPM_AUTOLINKING_CONFIG_COMMAND.
+  configCommand: Array<string> | null,
   // Artifact download policy: 'auto' fetches when missing, 'skip' never
   // fetches, 'force' clears the cache slot and re-downloads.
   downloadPolicy: 'auto' | 'skip' | 'force',

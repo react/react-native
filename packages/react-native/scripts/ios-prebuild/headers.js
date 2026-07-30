@@ -10,7 +10,7 @@
 
 const {PodspecExceptions} = require('./headers-config');
 const utils = require('./utils');
-const path = require('path');
+const path = require('node:path');
 const {globSync} = require('tinyglobby');
 
 const {createLogger} = utils;
@@ -63,7 +63,7 @@ function getHeaderFilesFromPodspecs(
     }
 
     // Open file and read content
-    const fileContent = require('fs').readFileSync(podspecPath, 'utf8');
+    const fileContent = require('node:fs').readFileSync(podspecPath, 'utf8');
 
     // Try to infer header_dir when it's a string literal.
     // We intentionally keep this simple and do not attempt to resolve Ruby variables.

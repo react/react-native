@@ -31,11 +31,25 @@ const {
   generateAutolinkingConfig,
   resolveDefaultConfigCommand,
 } = require('../generate-spm-autolinking-config');
-const fs = require('fs');
-const os = require('os');
-const path = require('path');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
 
 let tmpProjects = [];
+let originalConfigCommandEnv;
+
+beforeEach(() => {
+  originalConfigCommandEnv = process.env.RCT_SPM_AUTOLINKING_CONFIG_COMMAND;
+  delete process.env.RCT_SPM_AUTOLINKING_CONFIG_COMMAND;
+});
+
+afterEach(() => {
+  if (originalConfigCommandEnv == null) {
+    delete process.env.RCT_SPM_AUTOLINKING_CONFIG_COMMAND;
+  } else {
+    process.env.RCT_SPM_AUTOLINKING_CONFIG_COMMAND = originalConfigCommandEnv;
+  }
+});
 
 function makeTmpProject() {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'spm-autolink-config-'));
@@ -254,6 +268,97 @@ describe('generateAutolinkingConfig', () => {
       config: cfg,
       outputPath: autolinkingJsonPath(iosDir),
       rawJson: raw,
+    });
+  });
+
+  describe('config command override', () => {
+    it('uses the config command from RCT_SPM_AUTOLINKING_CONFIG_COMMAND', () => {
+      const {projectRoot, iosDir} = makeTmpProject();
+      const raw = JSON.stringify(fakeCliConfig(iosDir));
+      let receivedCommand = null;
+      process.env.RCT_SPM_AUTOLINKING_CONFIG_COMMAND = JSON.stringify([
+        'my-cli',
+        'config',
+      ]);
+
+      generateAutolinkingConfig({
+        projectRoot,
+        cliRunner: command => {
+          receivedCommand = command;
+          return {stdout: raw, stderr: '', exitCode: 0};
+        },
+      });
+
+      expect(receivedCommand).toEqual(['my-cli', 'config']);
+    });
+
+    it('prefers an explicit configCommand over the environment variable', () => {
+      const {projectRoot, iosDir} = makeTmpProject();
+      const raw = JSON.stringify(fakeCliConfig(iosDir));
+      let receivedCommand = null;
+      process.env.RCT_SPM_AUTOLINKING_CONFIG_COMMAND = JSON.stringify([
+        'environment',
+        'config',
+      ]);
+
+      generateAutolinkingConfig({
+        projectRoot,
+        configCommand: ['explicit', 'config'],
+        cliRunner: command => {
+          receivedCommand = command;
+          return {stdout: raw, stderr: '', exitCode: 0};
+        },
+      });
+
+      expect(receivedCommand).toEqual(['explicit', 'config']);
+    });
+
+    it('throws when the environment variable is not JSON', () => {
+      const {projectRoot} = makeTmpProject();
+      process.env.RCT_SPM_AUTOLINKING_CONFIG_COMMAND = 'not json';
+
+      expect(() =>
+        generateAutolinkingConfig({
+          projectRoot,
+          cliRunner: () => ({stdout: '{}', stderr: '', exitCode: 0}),
+        }),
+      ).toThrow(/RCT_SPM_AUTOLINKING_CONFIG_COMMAND/);
+    });
+
+    it.each(['[]', '[1,2]'])(
+      'throws when the environment variable is not a non-empty string array: %s',
+      rawConfigCommand => {
+        const {projectRoot} = makeTmpProject();
+        process.env.RCT_SPM_AUTOLINKING_CONFIG_COMMAND = rawConfigCommand;
+
+        expect(() =>
+          generateAutolinkingConfig({
+            projectRoot,
+            cliRunner: () => ({stdout: '{}', stderr: '', exitCode: 0}),
+          }),
+        ).toThrow(/RCT_SPM_AUTOLINKING_CONFIG_COMMAND/);
+      },
+    );
+
+    it('falls back to the default command when the environment variable is unset', () => {
+      const {projectRoot, iosDir} = makeTmpProject();
+      const raw = JSON.stringify(fakeCliConfig(iosDir));
+      let receivedCommand = null;
+
+      generateAutolinkingConfig({
+        projectRoot,
+        cliRunner: command => {
+          receivedCommand = command;
+          return {stdout: raw, stderr: '', exitCode: 0};
+        },
+      });
+
+      expect(receivedCommand).toEqual([
+        'npx',
+        '--no-install',
+        '@react-native-community/cli',
+        'config',
+      ]);
     });
   });
 });

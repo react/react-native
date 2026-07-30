@@ -9,9 +9,9 @@
  */
 
 import * as EnvironmentOptions from './EnvironmentOptions';
-import {spawn, spawnSync} from 'child_process';
-import fs from 'fs';
-import os from 'os';
+import {spawn, spawnSync} from 'node:child_process';
+import fs from 'node:fs';
+import os from 'node:os';
 // $FlowExpectedError[untyped-import]
 import {SourceMapConsumer} from 'source-map';
 

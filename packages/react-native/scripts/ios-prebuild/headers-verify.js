@@ -31,10 +31,15 @@
  *        every R9 textual Fabric header against ReactNativeHeaders.
  *     c. A Swift TU: `import React` + `RCTBridge.moduleRegistry` — the Expo
  *        Swift case, proving the R9 modular header is module-visible.
+ *     d. Swift C++-interop TUs that import React plus every importable module
+ *        declared by the composed ReactNativeHeaders module map, then the
+ *        shipped inspector umbrella as an isolated probe module, forcing
+ *        ClangImporter to instantiate imported C++ value-type special members.
  *
  * Usage:
  *   node scripts/ios-prebuild/headers-verify.js [--flavor Debug|Release]
  *        [--artifacts <dir>] [--skip-compile] [--update-baseline]
+ *        [--require-stamped-version]
  */
 
 const {computeInventory} = require('./headers-inventory');
@@ -44,10 +49,10 @@ const {
   renderReactModuleMap,
   renderUmbrellaHeader,
 } = require('./headers-spec');
-const {execFileSync} = require('child_process');
-const fs = require('fs');
-const os = require('os');
-const path = require('path');
+const {execFileSync} = require('node:child_process');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
 
 /*:: import type {HeadersSpecPlan} from './headers-spec'; */
 
@@ -62,6 +67,18 @@ const FOLLY_DEFINES = [
   '-DFOLLY_HAVE_CLOCK_GETTIME=1',
 ];
 const SIM_TARGET = 'arm64-apple-ios15.0-simulator';
+
+// This Objective-C app-bootstrap module is not importable with Swift C++
+// interop: its __cplusplus-only factory conformances cross-import React and
+// ReactCommon module members, which ClangImporter rejects for hidden
+// declarations and for re-reading the unguarded RCTComponentViewProtocol.h.
+// Any new exclusion must have its own explicit justification comment.
+const SWIFT_CXX_INTEROP_EXCLUDED_MODULES = new Set(['React_RCTAppDelegate']);
+const SWIFT_CXX_INTEROP_PROBE_MODULE = 'ReactNativeHeaders_CxxInteropProbe';
+const SWIFT_CXX_INTEROP_PROBE_TYPES = [
+  'facebook::react::jsinspector_modern::tracing::TraceRecordingState',
+  'facebook::react::jsinspector_modern::tracing::HostTracingProfile',
+];
 
 function log(msg /*: string */) {
   console.log(`[headers-verify] ${msg}`);
@@ -303,12 +320,49 @@ func _headersVerifyProbe(_ bridge: RCTBridge) {
 `;
 }
 
+/** Swift C++-interop fixture: every module shipped by ReactNativeHeaders. */
+function renderSwiftCxxInteropFixture(
+  moduleNames /*: Array<string> */,
+) /*: string */ {
+  return [
+    'import React',
+    ...moduleNames.map(name => `import ${name}`),
+    '',
+  ].join('\n');
+}
+
+function renderSwiftCxxInteropProbeFixture() /*: string */ {
+  return `import ${SWIFT_CXX_INTEROP_PROBE_MODULE}
+func _headersVerifyCxxValueProbe(
+  _ state: borrowing facebook.react.jsinspector_modern.tracing.TraceRecordingState
+) {
+  _ = state.mode
+}
+`;
+}
+
+function parseModuleNames(moduleMapPath /*: string */) /*: Array<string> */ {
+  const moduleMap = fs.readFileSync(moduleMapPath, 'utf8');
+  // Dotted submodule names may not be standalone-importable if the composed
+  // module map ever grows explicit submodules.
+  return Array.from(
+    moduleMap.matchAll(
+      /^\s*(?:explicit\s+)?(?:framework\s+)?module\s+([A-Za-z_][A-Za-z0-9_.]*)\s*\{/gm,
+    ),
+    match => match[1],
+  );
+}
+
 function xcrun(args /*: Array<string> */, what /*: string */) {
   try {
-    execFileSync('xcrun', args, {stdio: ['ignore', 'pipe', 'pipe']});
+    execFileSync('xcrun', args, {
+      stdio: ['ignore', 'pipe', 'pipe'],
+      maxBuffer: 64 * 1024 * 1024,
+    });
   } catch (e) {
+    const stdout = e.stdout != null ? String(e.stdout) : '';
     const stderr = e.stderr != null ? String(e.stderr) : String(e);
-    throw new Error(`${what} FAILED:\n${stderr}`);
+    throw new Error(`${what} FAILED:\n${stdout}${stderr}`);
   }
 }
 
@@ -405,9 +459,175 @@ function runCompileGates(
       'Swift gate (import React + RCTBridge.moduleRegistry)',
     );
     log('compile: Swift moduleRegistry fixture OK.');
+
+    const moduleMap = path.join(rnhHeaders, 'module.modulemap');
+    const moduleNames = parseModuleNames(moduleMap);
+    if (moduleNames.length === 0) {
+      throw new Error(
+        `No modules declared in composed module map: ${moduleMap}`,
+      );
+    }
+    const importableModuleNames = moduleNames.filter(
+      name => !SWIFT_CXX_INTEROP_EXCLUDED_MODULES.has(name),
+    );
+    // React_RCTAppDelegate is the only composed module that reaches the
+    // inspector C++ graph, but it cannot itself be imported in C++-interop
+    // mode (see the exclusion comment above). Wrap the shipped inspector
+    // umbrella in a temporary module so ClangImporter still checks that graph.
+    const cxxInteropProbeHeaders = path.join(tmp, 'rnh-cxx-interop-probe');
+    fs.cpSync(rnhHeaders, cxxInteropProbeHeaders, {
+      recursive: true,
+      filter: source => path.basename(source) !== 'module.modulemap',
+    });
+    const cxxInteropProbeHeader = path.join(tmp, 'cxx-interop-probe.h');
+    const cxxInteropCopyProbes = SWIFT_CXX_INTEROP_PROBE_TYPES.map(
+      (typeName, index) =>
+        `inline void probeCopy${index}(const ${typeName} &value) {\n` +
+        `  instantiateCopy(value);\n` +
+        `}\n`,
+    ).join('');
+    fs.writeFileSync(
+      cxxInteropProbeHeader,
+      `#include <jsinspector-modern/ReactCdp.h>\n` +
+        `#include <type_traits>\n` +
+        `namespace rn_headers_verify {\n` +
+        `template <typename T> void instantiateCopy(const T &value) {\n` +
+        `  if constexpr (std::is_copy_constructible_v<T>) {\n` +
+        `    T copy(value);\n` +
+        `    (void)copy;\n` +
+        `  }\n` +
+        `}\n` +
+        cxxInteropCopyProbes +
+        `}\n`,
+    );
+    const cxxInteropProbeModuleMap = path.join(
+      tmp,
+      'module-cxx-interop-probe.modulemap',
+    );
+    fs.writeFileSync(
+      cxxInteropProbeModuleMap,
+      `module ${SWIFT_CXX_INTEROP_PROBE_MODULE} {\n` +
+        `  header ${JSON.stringify(cxxInteropProbeHeader)}\n` +
+        `  export *\n` +
+        `}\n`,
+    );
+    const swiftCxxInterop = path.join(tmp, 'gate-swift-cxx-interop.swift');
+    fs.writeFileSync(
+      swiftCxxInterop,
+      renderSwiftCxxInteropFixture(importableModuleNames),
+    );
+    xcrun(
+      [
+        'swiftc',
+        '-typecheck',
+        '-cxx-interoperability-mode=default',
+        '-sdk',
+        sdk,
+        '-target',
+        SIM_TARGET,
+        '-module-cache-path',
+        path.join(tmp, 'mc-swift-cxx-interop'),
+        '-F',
+        reactSlice,
+        '-I',
+        rnhHeaders,
+        '-I',
+        depsHeaders,
+        '-Xcc',
+        '-std=c++20',
+        '-Xcc',
+        '-w',
+        '-Xcc',
+        `-fmodule-map-file=${moduleMap}`,
+        ...FOLLY_DEFINES.flatMap(flag => ['-Xcc', flag]),
+        swiftCxxInterop,
+      ],
+      'Swift C++-interop gate (React + importable ReactNativeHeaders modules)',
+    );
+
+    const swiftCxxInteropProbe = path.join(
+      tmp,
+      'gate-swift-cxx-interop-probe.swift',
+    );
+    fs.writeFileSync(swiftCxxInteropProbe, renderSwiftCxxInteropProbeFixture());
+    xcrun(
+      [
+        'swiftc',
+        '-typecheck',
+        '-cxx-interoperability-mode=default',
+        '-sdk',
+        sdk,
+        '-target',
+        SIM_TARGET,
+        '-module-cache-path',
+        path.join(tmp, 'mc-swift-cxx-interop-probe'),
+        '-I',
+        cxxInteropProbeHeaders,
+        '-I',
+        depsHeaders,
+        '-Xcc',
+        '-std=c++20',
+        '-Xcc',
+        '-w',
+        '-Xcc',
+        `-fmodule-map-file=${cxxInteropProbeModuleMap}`,
+        ...FOLLY_DEFINES.flatMap(flag => ['-Xcc', flag]),
+        swiftCxxInteropProbe,
+      ],
+      'Swift C++-interop gate (inspector value types)',
+    );
+    log(
+      `compile: Swift C++ interop React + ${importableModuleNames.length} ` +
+        `ReactNativeHeaders modules + inspector probes ` +
+        `[${SWIFT_CXX_INTEROP_PROBE_TYPES.join(', ')}] OK ` +
+        `(${moduleNames.length - importableModuleNames.length} excluded).`,
+    );
   } finally {
     fs.rmSync(tmp, {recursive: true, force: true});
   }
+}
+
+// ---------------------------------------------------------------------------
+// Version stamp gate
+// ---------------------------------------------------------------------------
+
+/**
+ * Release/nightly artifacts must not ship ReactNativeVersion.h with the
+ * 1000.0.0 dev sentinel: the compose step copies headers from the source
+ * tree, so a compose job that forgot to run set-rn-artifacts-version.js
+ * would silently publish a sentinel header, breaking every library that
+ * gates code on REACT_NATIVE_VERSION_MAJOR/MINOR.
+ */
+function verifyVersionStamp(artifactsDir /*: string */) /*: void */ {
+  const copies = [];
+  const walk = (dir /*: string */) => {
+    for (const entry of fs.readdirSync(dir, {withFileTypes: true})) {
+      const name = String(entry.name);
+      const full = path.join(dir, name);
+      if (entry.isDirectory()) {
+        walk(full);
+      } else if (name === 'ReactNativeVersion.h') {
+        copies.push(full);
+      }
+    }
+  };
+  walk(artifactsDir);
+  if (copies.length === 0) {
+    throw new Error(
+      `no ReactNativeVersion.h found under ${artifactsDir} — cannot verify the version stamp.`,
+    );
+  }
+  const unstamped = copies.filter(f =>
+    /REACT_NATIVE_VERSION_MAJOR\s+1000\b/.test(fs.readFileSync(f, 'utf8')),
+  );
+  if (unstamped.length > 0) {
+    throw new Error(
+      `ReactNativeVersion.h still contains the 1000.0.0 dev sentinel — run ` +
+        `scripts/releases/set-rn-artifacts-version.js before composing:\n  ` +
+        unstamped.join('\n  '),
+    );
+  }
+  log(`version stamp OK (${copies.length} copies checked).`);
 }
 
 // ---------------------------------------------------------------------------
@@ -419,11 +639,13 @@ function parseArgs(argv /*: Array<string> */) /*: {
   artifacts: ?string,
   skipCompile: boolean,
   updateBaseline: boolean,
+  requireStampedVersion: boolean,
 } */ {
   let flavor = 'Debug';
   let artifacts /*: ?string */ = null;
   let skipCompile = false;
   let updateBaseline = false;
+  let requireStampedVersion = false;
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === '--flavor') {
       flavor = argv[++i];
@@ -433,9 +655,17 @@ function parseArgs(argv /*: Array<string> */) /*: {
       skipCompile = true;
     } else if (argv[i] === '--update-baseline') {
       updateBaseline = true;
+    } else if (argv[i] === '--require-stamped-version') {
+      requireStampedVersion = true;
     }
   }
-  return {flavor, artifacts, skipCompile, updateBaseline};
+  return {
+    flavor,
+    artifacts,
+    skipCompile,
+    updateBaseline,
+    requireStampedVersion,
+  };
 }
 
 function main(argv /*:: ?: Array<string> */) /*: void */ {
@@ -460,6 +690,10 @@ function main(argv /*:: ?: Array<string> */) /*: void */ {
         `(node scripts/ios-prebuild -c -f ${args.flavor}).`,
     );
   }
+  if (args.requireStampedVersion) {
+    verifyVersionStamp(artifactsDir);
+  }
+
   const {reactSlice, rnhHeaders} = verifyStructural(plan, artifactsDir);
 
   if (args.skipCompile) {

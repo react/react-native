@@ -6,9 +6,11 @@
  */
 
 #include <algorithm>
+#include <array>
 #include <atomic>
 #include <cfloat>
 #include <cmath>
+#include <cstddef>
 #include <cstring>
 
 #include <yoga/Yoga.h>
@@ -34,6 +36,172 @@
 namespace facebook::yoga {
 
 std::atomic<uint32_t> gCurrentGenerationCount(0);
+
+static bool hasAutoHorizontalMargin(const Style& style) {
+  for (const auto direction : {Direction::LTR, Direction::RTL}) {
+    if (style.flexStartMarginIsAuto(FlexDirection::Row, direction) ||
+        style.flexEndMarginIsAuto(FlexDirection::Row, direction)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+static bool isColumnStretchEdge(
+    const yoga::Node* const owner,
+    const yoga::Node* const child) {
+  if (owner == nullptr || child == nullptr) {
+    return false;
+  }
+  const auto& ownerStyle = owner->style();
+  const auto& childStyle = child->style();
+  const auto childWidth = child->getProcessedDimension(Dimension::Width);
+  return ownerStyle.display() == Display::Flex &&
+      isColumn(ownerStyle.flexDirection()) &&
+      ownerStyle.flexWrap() == Wrap::NoWrap &&
+      childStyle.positionType() != PositionType::Absolute &&
+      !childStyle.aspectRatio().isDefined() &&
+      (childWidth.isAuto() || childWidth.isUndefined()) &&
+      !hasAutoHorizontalMargin(childStyle) &&
+      resolveChildAlignment(owner, child) == Align::Stretch;
+}
+
+static bool isInColumnStretchScrollSubtree(const yoga::Node* const node) {
+  auto current = node;
+  while (current != nullptr) {
+    auto owner = current->getOwner();
+    while (owner != nullptr && owner->style().display() == Display::Contents) {
+      owner = owner->getOwner();
+    }
+    if (owner == nullptr || !isColumnStretchEdge(owner, current)) {
+      return false;
+    }
+    if (owner->style().overflow() == Overflow::Scroll) {
+      return true;
+    }
+    current = owner;
+  }
+  return false;
+}
+
+static bool isNonZeroLength(const Style::Length& length) {
+  return length.isAuto() ||
+      (length.value().isDefined() && length.value().unwrap() != 0.0f);
+}
+
+static bool hasNonZeroVerticalSpacing(const Style& style) {
+  constexpr std::array<Edge, 4> verticalEdges = {
+      Edge::Top, Edge::Bottom, Edge::Vertical, Edge::All};
+  for (const auto edge : verticalEdges) {
+    if (isNonZeroLength(style.margin(edge)) ||
+        isNonZeroLength(style.padding(edge)) ||
+        isNonZeroLength(style.border(edge))) {
+      return true;
+    }
+  }
+  return false;
+}
+
+static bool hasPercentageLength(const Style& style) {
+  constexpr std::array<Edge, 9> edges = {
+      Edge::Left,
+      Edge::Top,
+      Edge::Right,
+      Edge::Bottom,
+      Edge::Start,
+      Edge::End,
+      Edge::Horizontal,
+      Edge::Vertical,
+      Edge::All};
+  for (const auto edge : edges) {
+    if (style.margin(edge).isPercent() || style.position(edge).isPercent() ||
+        style.padding(edge).isPercent() || style.border(edge).isPercent()) {
+      return true;
+    }
+  }
+
+  constexpr std::array<Dimension, 2> dimensions = {
+      Dimension::Width, Dimension::Height};
+  for (const auto dimension : dimensions) {
+    if (style.dimension(dimension).isPercent() ||
+        style.minDimension(dimension).isPercent() ||
+        style.maxDimension(dimension).isPercent()) {
+      return true;
+    }
+  }
+
+  return style.flexBasis().isPercent() ||
+      style.gap(Gutter::Column).isPercent() ||
+      style.gap(Gutter::Row).isPercent() || style.gap(Gutter::All).isPercent();
+}
+
+static bool hasNonZeroFlex(const yoga::Node& node) {
+  const auto& style = node.style();
+  const auto flex = style.flex();
+  const auto flexGrow = style.flexGrow();
+  const auto flexShrink = style.flexShrink();
+  const auto config = node.getConfig();
+  const bool canGrow = flexGrow.isDefined()
+      ? flexGrow.unwrap() != 0.0f
+      : flex.isDefined() && flex.unwrap() > 0.0f;
+  const bool canShrink = flexShrink.isDefined()
+      ? flexShrink.unwrap() != 0.0f
+      : (config != nullptr && config->useWebDefaults()) ||
+          (flex.isDefined() && flex.unwrap() < 0.0f);
+  return canGrow || canShrink;
+}
+
+static bool isHeightFitContentIndependent(const yoga::Node& node) {
+  const auto& style = node.style();
+  const auto height = style.dimension(Dimension::Height);
+  const auto flexBasis = style.flexBasis();
+  const bool hasRelativePercentPosition =
+      style.position(Edge::Top).isPercent() ||
+      style.position(Edge::Bottom).isPercent() ||
+      style.position(Edge::Vertical).isPercent() ||
+      style.position(Edge::All).isPercent();
+  return !node.hasMeasureFunc() && !node.hasMinContentMeasureFunc() &&
+      !node.hasBaselineFunc() && !node.isReferenceBaseline() &&
+      (height.isAuto() || height.isUndefined()) &&
+      style.minDimension(Dimension::Height).isUndefined() &&
+      style.maxDimension(Dimension::Height).isUndefined() &&
+      (flexBasis.isAuto() || flexBasis.isUndefined()) &&
+      !hasNonZeroFlex(node) && style.boxSizing() == BoxSizing::BorderBox &&
+      !style.aspectRatio().isDefined() &&
+      style.positionType() != PositionType::Absolute &&
+      style.overflow() != Overflow::Scroll &&
+      style.display() == Display::Flex && isColumn(style.flexDirection()) &&
+      style.alignItems() == Align::Stretch &&
+      (style.alignSelf() == Align::Auto ||
+       style.alignSelf() == Align::Stretch) &&
+      style.justifyContent() == Justify::FlexStart &&
+      style.flexWrap() == Wrap::NoWrap && !style.gap(Gutter::All).isDefined() &&
+      !style.gap(Gutter::Row).isDefined() && !hasRelativePercentPosition &&
+      !hasNonZeroVerticalSpacing(style) && !hasPercentageLength(style);
+}
+
+static bool canSkipHeightFitContent(const yoga::Node* const root) {
+  if (root == nullptr) {
+    return false;
+  }
+
+  constexpr std::size_t maxPendingNodes = 64;
+  std::array<const yoga::Node*, maxPendingNodes> stack{root};
+  std::size_t stackSize = 1;
+  while (stackSize > 0) {
+    const auto node = stack[--stackSize];
+    if (node == nullptr || !isHeightFitContentIndependent(*node)) {
+      return false;
+    }
+    for (const auto child : node->getLayoutChildren()) {
+      if (stackSize == stack.size()) {
+        return false;
+      }
+      stack[stackSize++] = child;
+    }
+  }
+  return true;
+}
 
 void constrainMaxSizeForMode(
     const yoga::Node* node,
@@ -98,12 +266,8 @@ static void computeFlexBasisForChild(
       node->getConfig()->isExperimentalFeatureEnabled(
           ExperimentalFeature::FixFlexBasisFitContent);
 
-  bool useResolvedFlexBasis =
+  const bool useResolvedFlexBasis =
       resolvedFlexBasis.isDefined() && yoga::isDefined(mainAxisSize);
-  if (fixFlexBasisFitContent && resolvedFlexBasis.isDefined() &&
-      resolvedFlexBasis.unwrap() > 0) {
-    useResolvedFlexBasis = true;
-  }
 
   if (useResolvedFlexBasis) {
     if (child->getLayout().computedFlexBasis.isUndefined() ||
@@ -175,32 +339,27 @@ static void computeFlexBasisForChild(
       }
     }
 
-    // For height in the main axis (column direction): when the
-    // FixFlexBasisFitContent feature is enabled, skip FitContent for
-    // non-measure container children inside scroll subtrees. This makes the
-    // flex basis independent of content-determined heights, preventing
-    // unnecessary re-measurement cascades when a sibling changes size in a
-    // ScrollView, while preserving viewport bounds for wrappers outside the
-    // scroll subtree.
-    //
-    // We only optimize the height (column) axis because text wrapping depends
-    // on width constraints propagating through container nodes. Removing
-    // FitContent from the width axis would cause text inside nested
-    // containers to stop wrapping.
-    bool applyHeightFitContent =
-        isMainAxisRow || node->style().overflow() != Overflow::Scroll;
+    // A zero-intrinsic-height column subtree has the same layout with an
+    // unbounded height, allowing its measurement cache to survive unrelated
+    // size changes elsewhere in a vertical scroll subtree.
+    const bool parentDoesNotScroll =
+        node != nullptr && node->style().overflow() != Overflow::Scroll;
+    bool applyHeightFitContent = isMainAxisRow || parentDoesNotScroll;
     if (fixFlexBasisFitContent) {
-      bool nodeHasScrollAncestor = false;
-      for (auto owner = node->getOwner(); owner != nullptr;
-           owner = owner->getOwner()) {
-        if (owner->style().overflow() == Overflow::Scroll) {
-          nodeHasScrollAncestor = true;
-          break;
-        }
+      const bool childHadOverflow = child != nullptr && child->isDirty() &&
+          child->getLayout().hadOverflow();
+      const bool hasHeightIndependentSubtree = node != nullptr &&
+          child != nullptr && !isMainAxisRow && parentDoesNotScroll &&
+          yoga::isUndefined(childHeight) && yoga::isDefined(height) &&
+          isColumnStretchEdge(node, child) &&
+          isInColumnStretchScrollSubtree(node) &&
+          canSkipHeightFitContent(child);
+      if (hasHeightIndependentSubtree && childHadOverflow) {
+        child->setLayoutHadOverflow(false);
       }
-      applyHeightFitContent = isMainAxisRow ||
-          ((child->hasMeasureFunc() || !nodeHasScrollAncestor) &&
-           node->style().overflow() != Overflow::Scroll);
+      if (hasHeightIndependentSubtree) {
+        applyHeightFitContent = false;
+      }
     }
     if (applyHeightFitContent && yoga::isUndefined(childHeight) &&
         yoga::isDefined(height)) {
@@ -1565,6 +1724,12 @@ static void calculateLayoutImpl(
   // Set the resolved resolution in the node's layout.
   const Direction direction = node->resolveDirection(ownerDirection);
   node->setLayoutDirection(direction);
+  const bool fixFlexBasisFitContent =
+      node->getConfig()->isExperimentalFeatureEnabled(
+          ExperimentalFeature::FixFlexBasisFitContent);
+  if (fixFlexBasisFitContent && performLayout) {
+    node->setLayoutHadOverflow(false);
+  }
 
   const FlexDirection flexRowDirection =
       resolveDirection(FlexDirection::Row, direction);
@@ -1680,9 +1845,9 @@ static void calculateLayoutImpl(
   // At this point we know we're going to perform work. Ensure that each child
   // has a mutable copy.
   node->cloneChildrenIfNeeded();
-  // Reset layout flags, as they could have changed.
-  node->setLayoutHadOverflow(false);
-
+  if (!fixFlexBasisFitContent || !performLayout) {
+    node->setLayoutHadOverflow(false);
+  }
   // Clean and update all display: contents nodes with a direct path to the
   // current node as they will not be traversed
   cleanupContentsNodesRecursively(node, performLayout);
@@ -1741,53 +1906,14 @@ static void calculateLayoutImpl(
 
   // STEP 3: DETERMINE FLEX BASIS FOR EACH ITEM
 
-  // When this node is measured with MaxContent (FixFlexBasisFitContent
-  // behavior), availableInnerHeight is NaN.
-  // To preserve percentage resolution for descendants, derive a definite
-  // owner-size from the parent-provided ownerHeight.
-  float ownerWidthForChildren = availableInnerWidth;
-  float ownerHeightForChildren = availableInnerHeight;
-
-  if (node->getConfig()->isExperimentalFeatureEnabled(
-          ExperimentalFeature::FixFlexBasisFitContent)) {
-    const auto* owner = node->getOwner();
-    const bool isChildOfScrollContainer =
-        owner != nullptr && owner->style().overflow() == Overflow::Scroll;
-
-    if (!isChildOfScrollContainer) {
-      if (yoga::isUndefined(ownerWidthForChildren) &&
-          yoga::isDefined(ownerWidth)) {
-        ownerWidthForChildren = calculateAvailableInnerDimension(
-            node,
-            direction,
-            Dimension::Width,
-            ownerWidth - marginAxisRow,
-            paddingAndBorderAxisRow,
-            ownerWidth,
-            ownerWidth);
-      }
-      if (yoga::isUndefined(ownerHeightForChildren) &&
-          yoga::isDefined(ownerHeight)) {
-        ownerHeightForChildren = calculateAvailableInnerDimension(
-            node,
-            direction,
-            Dimension::Height,
-            ownerHeight - marginAxisColumn,
-            paddingAndBorderAxisColumn,
-            ownerHeight,
-            ownerWidth);
-      }
-    }
-  }
-
   // Computed basis + margins + gap
   float totalMainDim = 0;
   totalMainDim += computeFlexBasisForChildren(
       node,
       availableInnerWidth,
       availableInnerHeight,
-      ownerWidthForChildren,
-      ownerHeightForChildren,
+      availableInnerWidth,
+      availableInnerHeight,
       widthSizingMode,
       heightSizingMode,
       direction,
@@ -2724,7 +2850,8 @@ void calculateLayout(
   // Increment the generation count. This will force the recursive routine to
   // visit all dirty nodes at least once. Subsequent visits will be skipped if
   // the input parameters don't change.
-  gCurrentGenerationCount.fetch_add(1, std::memory_order_relaxed);
+  const uint32_t currentGenerationCount =
+      gCurrentGenerationCount.fetch_add(1, std::memory_order_relaxed) + 1;
   node->processDimensions();
   const Direction direction = node->resolveDirection(ownerDirection);
   float width = YGUndefined;
@@ -2781,6 +2908,11 @@ void calculateLayout(
     heightSizingMode = yoga::isUndefined(height) ? SizingMode::MaxContent
                                                  : SizingMode::StretchFit;
   }
+  const uint32_t generationCount =
+      node->getConfig()->isExperimentalFeatureEnabled(
+          ExperimentalFeature::FixFlexBasisFitContent)
+      ? currentGenerationCount
+      : gCurrentGenerationCount.load(std::memory_order_relaxed);
   if (calculateLayoutInternal(
           node,
           width,
@@ -2794,7 +2926,7 @@ void calculateLayout(
           LayoutPassReason::kInitial,
           markerData,
           0, // tree root
-          gCurrentGenerationCount.load(std::memory_order_relaxed))) {
+          generationCount)) {
     node->setPosition(node->getLayout().direction(), ownerWidth, ownerHeight);
     roundLayoutResultsToPixelGrid(node, 0.0f, 0.0f);
   }

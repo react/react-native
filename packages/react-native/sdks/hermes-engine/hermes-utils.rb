@@ -7,6 +7,8 @@ require 'digest'
 
 HERMES_GITHUB_URL = "https://github.com/facebook/hermes.git"
 ENV_BUILD_FROM_SOURCE = "RCT_BUILD_HERMES_FROM_SOURCE"
+MAVEN_CENTRAL_REPOSITORY = "https://repo1.maven.org/maven2"
+REACT_NATIVE_MAVEN_MIRROR_REPOSITORY = "https://repo.reactnative.dev/maven2"
 
 module HermesEngineSourceType
     LOCAL_PREBUILT_TARBALL = :local_prebuilt_tarball
@@ -89,7 +91,7 @@ def force_build_from_stable_branch(react_native_path)
 end
 
 def release_artifact_exists(version)
-    return hermes_artifact_exists(release_tarball_url(version, :debug))
+    return release_tarball_urls(version, :debug).any? { |url| hermes_artifact_exists(url) }
 end
 
 def podspec_source(source_type, version, react_native_path)
@@ -190,17 +192,41 @@ def hermestag_file(react_native_path)
 end
 
 def release_tarball_url(version, build_type)
+    candidates = release_tarball_urls(version, build_type)
+    return candidates.find { |url| hermes_artifact_exists(url) } || candidates.first
+end
+
+def release_tarball_urls(version, build_type)
+    namespace = "com/facebook/hermes"
+    return maven_repository_urls().map { |maven_repo_url|
+        # Sample url from Maven:
+        # https://repo1.maven.org/maven2/com/facebook/hermes/hermes-ios/0.14.0/hermes-ios-0.14.0-hermes-ios-debug.tar.gz
+
+        # Sample url from mirror server:
+        # https://repo.reactnative.dev/maven2/com/facebook/hermes/hermes-ios/0.14.0/hermes-ios-0.14.0-hermes-ios-debug.tar.gz
+        "#{maven_repo_url}/#{namespace}/hermes-ios/#{version}/hermes-ios-#{version}-hermes-ios-#{build_type.to_s}.tar.gz"
+    }
+end
+
+def maven_repository_urls()
     ## You can use the `ENTERPRISE_REPOSITORY` variable to customise the base url from which artifacts will be downloaded.
     ## The mirror's structure must be the same of the Maven repo the react-native core team publishes on Maven Central.
-    maven_repo_url =
-        ENV['ENTERPRISE_REPOSITORY'] != nil && ENV['ENTERPRISE_REPOSITORY'] != "" ?
-        ENV['ENTERPRISE_REPOSITORY'] :
-        "https://repo1.maven.org/maven2"
+    if ENV['ENTERPRISE_REPOSITORY'] != nil && ENV['ENTERPRISE_REPOSITORY'] != ""
+        return [ENV['ENTERPRISE_REPOSITORY'].sub(/\/+$/, "")]
+    end
 
-    namespace = "com/facebook/hermes"
-    # Sample url from Maven:
-    # https://repo1.maven.org/maven2/com/facebook/hermes/hermes-ios/0.14.0/hermes-ios-0.14.0-hermes-ios-debug.tar.gz
-    return "#{maven_repo_url}/#{namespace}/hermes-ios/#{version}/hermes-ios-#{version}-hermes-ios-#{build_type.to_s}.tar.gz"
+    # Keep the React Native Maven mirror before Maven Central so cached artifacts are tried first
+    # and Maven Central remains the fallback.
+    return react_native_maven_mirror_enabled? ?
+        [REACT_NATIVE_MAVEN_MIRROR_REPOSITORY, MAVEN_CENTRAL_REPOSITORY] :
+        [MAVEN_CENTRAL_REPOSITORY]
+end
+
+def react_native_maven_mirror_enabled?()
+    value = ENV['RCT_REACT_NATIVE_MAVEN_MIRROR_ENABLED']
+    return true if value == nil || value == ""
+
+    value.downcase != "false" && value != "0"
 end
 
 def download_stable_hermes(react_native_path, version, configuration)

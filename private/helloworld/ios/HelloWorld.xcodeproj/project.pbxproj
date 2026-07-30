@@ -265,7 +265,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -e\n\nexport CONFIG_JSON=$(sed -e \"s|HELLOWORLD_PATH|$(realpath \"${SRCROOT}/../\")|g\" \"${SRCROOT}/../.react-native.config\")\n\nWITH_ENVIRONMENT=\"$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"$REACT_NATIVE_PATH/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n";
+			shellScript = "set -e\n\nexport CONFIG_JSON=$(sed -e \"s|HELLOWORLD_PATH|$(realpath \"${SRCROOT}/../\")|g\" -e \"s|REACT_NATIVE_PATH|$(realpath \"${REACT_NATIVE_PATH}\")|g\" \"${SRCROOT}/../.react-native.config\")\n\nWITH_ENVIRONMENT=\"$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"$REACT_NATIVE_PATH/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n";
 		};
 		A44ED3CC3037C88F69E3AF15 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;

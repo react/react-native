@@ -23,9 +23,22 @@ namespace facebook::react::jsinspector_modern::tracing {
  * messages.
  */
 struct HostTracingProfile {
+  HostTracingProfile() = default;
+
+  // Explicitly move-only: FrameTimingSequence and RuntimeSamplingProfile are
+  // not copyable, so the implicit copy constructor is ill-formed the moment it
+  // is instantiated. Plain C++ never instantiates it, but Swift's C++ interop
+  // does when these headers are reached from an imported module, turning it
+  // into a hard compile error (Xcode 26.3).
+  HostTracingProfile(const HostTracingProfile &) = delete;
+  HostTracingProfile &operator=(const HostTracingProfile &) = delete;
+  HostTracingProfile(HostTracingProfile &&) = default;
+  HostTracingProfile &operator=(HostTracingProfile &&) = default;
+  ~HostTracingProfile() = default;
+
   // The ID of the OS-level process that this Trace Recording is associated
   // with.
-  ProcessId processId;
+  ProcessId processId{};
 
   // The timestamp at which this Trace Recording started.
   HighResTimeStamp startTime;

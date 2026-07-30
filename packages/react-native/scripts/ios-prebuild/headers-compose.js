@@ -40,10 +40,10 @@ const {
   buildDepsHeadersXcframework,
   composeHeadersOnlyXcframework,
 } = require('./headers-xcframework');
-const {execFileSync} = require('child_process');
-const crypto = require('crypto');
-const fs = require('fs');
-const path = require('path');
+const {execFileSync} = require('node:child_process');
+const crypto = require('node:crypto');
+const fs = require('node:fs');
+const path = require('node:path');
 
 // APFS clonefile (-c) is a macOS-only cp flag; plain -R elsewhere (Linux CI
 // exercises these paths through the jest integration tests).
@@ -114,6 +114,7 @@ function stageEntries(
   stage /*: string */,
   entries /*: Array<SpecEntry> */,
   rnRoot /*: string */,
+  overlayDir /*: ?string */ = null,
 ) /*: void */ {
   for (const e of entries) {
     const dest = path.join(stage, e.relPath);
@@ -129,7 +130,24 @@ function stageEntries(
           `#import <${e.redirectTo}>\n`,
       );
     } else {
-      fs.copyFileSync(path.join(rnRoot, e.source), dest);
+      // ReactNativeVersion.h is the one shipped header STAMPED at build time:
+      // the slice job runs set-rn-artifacts-version before building, while the
+      // source tree keeps the 1000.0.0 dev sentinel. Take just this file's
+      // content from the built header tree (`overlayDir`, i.e. `.build/headers`)
+      // when present, so the compose ships the real version without re-stamping
+      // its own checkout. Every OTHER header is authoritative in the source
+      // tree (only the layout is spec-derived), so it always copies from
+      // source — never from a build tree that could be stale relative to it.
+      const isStamped = path.basename(e.source) === 'ReactNativeVersion.h';
+      const overlaySource =
+        isStamped && overlayDir != null
+          ? path.join(overlayDir, e.source)
+          : null;
+      const src =
+        overlaySource != null && fs.existsSync(overlaySource)
+          ? overlaySource
+          : path.join(rnRoot, e.source);
+      fs.copyFileSync(src, dest);
     }
   }
 }
@@ -145,11 +163,12 @@ function emitReactFrameworkHeaders(
   xcfwPath /*: string */,
   plan /*: HeadersSpecPlan */,
   rnRoot /*: string */,
+  overlayDir /*: ?string */ = null,
 ) /*: void */ {
   const stage = fs.mkdtempSync(
     path.join(path.dirname(xcfwPath), '.react-stage-'),
   );
-  stageEntries(stage, plan.react, rnRoot);
+  stageEntries(stage, plan.react, rnRoot, overlayDir);
   fs.writeFileSync(
     path.join(stage, 'React-umbrella.h'),
     renderUmbrellaHeader(plan.umbrella),
@@ -239,10 +258,11 @@ function buildReactNativeHeadersXcframework(
   // namespace so `<hermes/...>` resolves without per-library wiring. null
   // when unstaged — then `<hermes/...>` stays unavailable.
   hermesHeaders /*: ?string */ = null,
+  overlayDir /*: ?string */ = null,
 ) /*: string */ {
   // ---- stage headers ----
   const stage = fs.mkdtempSync(path.join(outDir, '.rnh-stage-'));
-  stageEntries(stage, plan.reactNativeHeaders, rnRoot);
+  stageEntries(stage, plan.reactNativeHeaders, rnRoot, overlayDir);
   // Hermes public headers (separate source from the deps namespaces — they
   // come from the hermes-ios tarball, not ReactNativeDependencies). Vend only
   // the `hermes/` namespace; `jsi/` is already provided elsewhere, so copying

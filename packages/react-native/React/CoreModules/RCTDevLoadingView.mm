@@ -244,16 +244,17 @@ RCT_EXPORT_MODULE()
   });
 }
 
-RCT_EXPORT_METHOD(
-    showMessage : (NSString *)message withColor : (NSNumber *__nonnull)color withBackgroundColor : (NSNumber *__nonnull)
-        backgroundColor withDismissButton : (NSNumber *)dismissButton)
+- (void)showMessage:(NSString *)message
+              withColor:(NSNumber *__nonnull)color
+    withBackgroundColor:(NSNumber *__nonnull)backgroundColor
+      withDismissButton:(NSNumber *)dismissButton
 {
   [self showMessage:message
                 color:[RCTConvert UIColor:color]
       backgroundColor:[RCTConvert UIColor:backgroundColor]
         dismissButton:[dismissButton boolValue]];
 }
-RCT_EXPORT_METHOD(hide)
+- (void)hide
 {
   if (!RCTDevLoadingViewGetEnabled()) {
     return;

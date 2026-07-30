@@ -8,7 +8,7 @@
  * @format
  */
 
-import net from 'net';
+import net from 'node:net';
 
 /**
  * Determine whether we can run the dev server.
@@ -33,6 +33,7 @@ export default async function isDevServerRunning(
       return 'not_running';
     }
 
+    // FIXME: Depends on @react-native-community/cli-server-api
     const statusResponse = await fetch(`${devServerUrl}/status`);
     const body = await statusResponse.text();
 

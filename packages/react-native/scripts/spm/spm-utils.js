@@ -10,9 +10,9 @@
 
 'use strict';
 
-const fs = require('fs');
-const os = require('os');
-const path = require('path');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
 
 /**
  * Creates a logger trio {log, warn, die} that prefixes messages with [name].
@@ -610,7 +610,7 @@ function runCodegenAndInstallTemplate(
     return;
   }
   logger.log('Running codegen...');
-  const {execSync} = require('child_process');
+  const {execSync} = require('node:child_process');
   const codegenArgs =
     `node "${codegenScript}" -p "${projectRoot}" -t ios` +
     (projectRoot !== appRoot ? ` -o "${appRoot}"` : '');

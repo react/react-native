@@ -32,8 +32,8 @@
 const {getHeaderFilesFromPodspecs} = require('./headers');
 // headers-spec.js requires only fs/path, so this cannot cycle.
 const {DEPS_NAMESPACES} = require('./headers-spec');
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 /*::
 type Identity = {

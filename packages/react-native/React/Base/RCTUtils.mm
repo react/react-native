@@ -13,6 +13,7 @@
 #import <objc/runtime.h>
 #import <zlib.h>
 #import <atomic>
+#import <vector>
 
 #import <UIKit/UIKit.h>
 
@@ -886,7 +887,8 @@ NSString *__nullable RCTHomePathForURL(NSURL *__nullable URL)
 static BOOL RCTIsImageAssetsPath(NSString *path)
 {
   NSString *extension = [path pathExtension];
-  return [extension isEqualToString:@"png"] || [extension isEqualToString:@"jpg"];
+  return
+      [extension isEqualToString:@"png"] || [extension isEqualToString:@"jpg"] || [extension isEqualToString:@"jpeg"];
 }
 
 BOOL RCTIsBundleAssetURL(NSURL *__nullable imageURL)
@@ -939,6 +941,115 @@ static NSBundle *bundleForPath(NSString *key)
   return bundleCache[key];
 }
 
+static BOOL RCTUseAssetCatalog(void)
+{
+  static BOOL useAssetCatalog = NO;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    useAssetCatalog = [[[NSBundle mainBundle] objectForInfoDictionaryKey:@"RCTUseAssetCatalog"] boolValue];
+  });
+  return useAssetCatalog;
+}
+
+// The bundle react-native-xcode.sh compiles packager image assets into
+// (RNAssets.bundle, an actool-compiled asset catalog inside the app).
+static NSBundle *__nullable RCTAssetCatalogBundle(void)
+{
+  static NSBundle *bundle;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    NSURL *bundleURL = [[NSBundle mainBundle] URLForResource:@"RNAssets" withExtension:@"bundle"];
+    if (bundleURL != nil) {
+      bundle = [NSBundle bundleWithURL:bundleURL];
+    }
+  });
+  return bundle;
+}
+
+NSString *__nullable RCTAssetCatalogNameForURL(NSURL *__nullable URL)
+{
+  // The "assets/" prefix the packager uses for all image assets. The CLI strips
+  // it from the identifiers it names the imagesets with.
+  constexpr NSUInteger assetsPrefixLength = sizeof("assets/") - 1;
+
+  NSString *path = RCTBundlePathForURL(URL);
+  // Packager assets always live under "assets/". Anything else (sub-bundles,
+  // CodePush/OTA assets outside the main bundle) is not in the catalog.
+  if (path == nil || ![path hasPrefix:@"assets/"]) {
+    return nil;
+  }
+
+  // Other packager assets (gif, webp, ...) are copied as plain files and must
+  // use the regular loader.
+  if (!RCTIsImageAssetsPath(path)) {
+    return nil;
+  }
+
+  // File system paths come back decomposed (NFD); restore the precomposed form
+  // the packager saw on disk so non-ASCII characters filter out the same way
+  // they do in the CLI's identifier.
+  path = path.precomposedStringWithCanonicalMapping;
+
+  const NSUInteger length = path.length;
+  unichar stackBuffer[256];
+  std::vector<unichar> heapBuffer;
+  unichar *chars = stackBuffer;
+  if (length > 256) {
+    heapBuffer.resize(length);
+    chars = heapBuffer.data();
+  }
+  [path getCharacters:chars range:NSMakeRange(0, length)];
+
+  // Strip the file extension (guaranteed present by RCTIsImageAssetsPath) and
+  // an optional "@<scale>x" suffix (integer or fractional, e.g. "@2x",
+  // "@1.5x"). The catalog stores a single imageset per image and resolves the
+  // scale by name at runtime, see
+  // https://developer.apple.com/documentation/xcode/managing-assets-with-asset-catalogs
+  NSUInteger end = length - 1;
+  while (end > assetsPrefixLength && chars[end] != '.') {
+    end--;
+  }
+  if (end > assetsPrefixLength && chars[end - 1] == 'x') {
+    // Walk back over "@<digits>(.<digits>)?" ending at the "x".
+    NSUInteger cursor = end - 1;
+    while (cursor > assetsPrefixLength && chars[cursor - 1] >= '0' && chars[cursor - 1] <= '9') {
+      cursor--;
+    }
+    if (cursor < end - 1) {
+      if (chars[cursor - 1] == '@') {
+        end = cursor - 1;
+      } else if (chars[cursor - 1] == '.') {
+        NSUInteger integerPart = cursor - 1;
+        while (integerPart > assetsPrefixLength && chars[integerPart - 1] >= '0' && chars[integerPart - 1] <= '9') {
+          integerPart--;
+        }
+        if (integerPart < cursor - 1 && chars[integerPart - 1] == '@') {
+          end = integerPart - 1;
+        }
+      }
+    }
+  }
+
+  // Build the identifier in place in a single pass: skip the "assets/" prefix,
+  // lowercase, encode the folder structure with "_" and drop anything that is
+  // not a valid identifier character, producing the same identifier as
+  // getResourceIdentifier in the CLI, which names the imagesets.
+  NSUInteger resultLength = 0;
+  for (NSUInteger i = assetsPrefixLength; i < end; i++) {
+    unichar c = chars[i];
+    if (c == '/') {
+      chars[resultLength++] = '_';
+    } else if ((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '_') {
+      chars[resultLength++] = c;
+    } else if (c >= 'A' && c <= 'Z') {
+      chars[resultLength++] = c + ('a' - 'A');
+    }
+  }
+
+  NSString *name = [NSString stringWithCharacters:chars length:resultLength];
+  return name;
+}
+
 UIImage *__nullable RCTImageFromLocalBundleAssetURL(NSURL *imageURL)
 {
   if (![imageURL.scheme isEqualToString:@"file"]) {
@@ -955,6 +1066,35 @@ UIImage *__nullable RCTImageFromLocalBundleAssetURL(NSURL *imageURL)
 
 UIImage *__nullable RCTImageFromLocalAssetURL(NSURL *imageURL)
 {
+  if (RCTUseAssetCatalog()) {
+    NSString *catalogName = RCTAssetCatalogNameForURL(imageURL);
+    if (catalogName != nil) {
+      // The app opted into the asset catalog and this is a packager asset, so it
+      // was compiled into RNAssets.bundle at build time. Trust the catalog and
+      // return directly, keeping the common path a single lookup with no
+      // filesystem fallback. Non-catalog assets (nil name) fall through below.
+      NSBundle *assetCatalogBundle = RCTAssetCatalogBundle();
+      if (assetCatalogBundle == nil) {
+        // Passing a nil bundle to imageNamed:inBundle: would silently search the
+        // main bundle instead, potentially resolving an unrelated app image.
+        RCTLogError(
+            @"RCTUseAssetCatalog is enabled but RNAssets.bundle was not found in the app. Image assets must be "
+             "bundled by react-native-xcode.sh, which compiles them into the app at build time. (loading %@)",
+            imageURL);
+        return nil;
+      }
+      UIImage *image = [UIImage imageNamed:catalogName inBundle:assetCatalogBundle compatibleWithTraitCollection:nil];
+      if (image == nil) {
+        RCTLogError(
+            @"Image \"%@\" (%@) was not found in the asset catalog. RCTUseAssetCatalog is enabled, "
+             "so image assets must be compiled into the app's RNAssets.bundle at build time.",
+            catalogName,
+            imageURL);
+      }
+      return image;
+    }
+  }
+
   NSString *imageName = RCTBundlePathForURL(imageURL);
 
   NSBundle *bundle = nil;

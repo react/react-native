@@ -13,7 +13,11 @@
 #import <react/renderer/components/AppSpecs/Props.h>
 #import <react/renderer/components/AppSpecs/RCTComponentViewHelpers.h>
 
+#if __has_include(<React/RCTFabricComponentsPlugins.h>)
+#import <React/RCTFabricComponentsPlugins.h>
+#else
 #import "RCTFabricComponentsPlugins.h"
+#endif
 
 using namespace facebook::react;
 

@@ -2289,6 +2289,7 @@ class facebook::react::NativeAnimatedNodesManager : public std::enable_shared_fr
   public void dropAnimatedNode(facebook::react::Tag tag) noexcept;
   public void extractAnimatedNodeOffsetOp(facebook::react::Tag tag);
   public void flattenAnimatedNodeOffset(facebook::react::Tag tag);
+  public void flushAnimatedNodesCreatedAsync() noexcept;
   public void insertMutations(std::unordered_map<facebook::react::Tag, std::pair<facebook::react::ShadowNodeFamily::Weak, folly::dynamic>>& updates, facebook::react::AnimationMutations& mutations, facebook::react::AnimatedPropsBuilder& propsBuilder, bool hasLayoutUpdates = false);
   public void onManagedPropsRemoved(facebook::react::Tag tag) noexcept;
   public void onRender();
@@ -8139,11 +8140,17 @@ struct facebook::react::jsinspector_modern::tracing::FrameTimingSequence {
 }
 
 struct facebook::react::jsinspector_modern::tracing::HostTracingProfile {
+  public HostTracingProfile() = default;
+  public HostTracingProfile(const facebook::react::jsinspector_modern::tracing::HostTracingProfile&) = delete;
+  public HostTracingProfile(facebook::react::jsinspector_modern::tracing::HostTracingProfile&&) = default;
   public facebook::react::HighResTimeStamp startTime;
+  public facebook::react::jsinspector_modern::tracing::HostTracingProfile& operator=(const facebook::react::jsinspector_modern::tracing::HostTracingProfile&) = delete;
+  public facebook::react::jsinspector_modern::tracing::HostTracingProfile& operator=(facebook::react::jsinspector_modern::tracing::HostTracingProfile&&) = default;
   public facebook::react::jsinspector_modern::tracing::ProcessId processId;
   public std::vector<facebook::react::jsinspector_modern::tracing::FrameTimingSequence> frameTimings;
   public std::vector<facebook::react::jsinspector_modern::tracing::InstanceTracingProfile> instanceTracingProfiles;
   public std::vector<facebook::react::jsinspector_modern::tracing::RuntimeSamplingProfile> runtimeSamplingProfiles;
+  public ~HostTracingProfile() = default;
 }
 
 struct facebook::react::jsinspector_modern::tracing::IdGenerator {
@@ -8236,12 +8243,17 @@ struct facebook::react::jsinspector_modern::tracing::TraceEventProfileChunk::CPU
 }
 
 struct facebook::react::jsinspector_modern::tracing::TraceRecordingState {
+  public TraceRecordingState(const facebook::react::jsinspector_modern::tracing::TraceRecordingState&) = delete;
   public TraceRecordingState(facebook::react::jsinspector_modern::tracing::Mode tracingMode, std::set<facebook::react::jsinspector_modern::tracing::Category> enabledCategories, std::optional<facebook::react::HighResDuration> windowSize = std::nullopt);
+  public TraceRecordingState(facebook::react::jsinspector_modern::tracing::TraceRecordingState&&) = default;
   public facebook::react::jsinspector_modern::tracing::Mode mode;
+  public facebook::react::jsinspector_modern::tracing::TraceRecordingState& operator=(const facebook::react::jsinspector_modern::tracing::TraceRecordingState&) = delete;
+  public facebook::react::jsinspector_modern::tracing::TraceRecordingState& operator=(facebook::react::jsinspector_modern::tracing::TraceRecordingState&&) = default;
   public std::optional<facebook::react::HighResDuration> windowSize;
   public std::set<facebook::react::jsinspector_modern::tracing::Category> enabledCategories;
   public std::vector<facebook::react::jsinspector_modern::tracing::InstanceTracingProfile> instanceTracingProfiles;
   public std::vector<facebook::react::jsinspector_modern::tracing::RuntimeSamplingProfile> runtimeSamplingProfiles;
+  public ~TraceRecordingState() = default;
 }
 
 template <typename T>

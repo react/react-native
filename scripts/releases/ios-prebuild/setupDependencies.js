@@ -15,17 +15,17 @@ const {
   SOURCE_FOLDER,
   TARGET_FOLDER,
 } = require('./constants');
-const {execSync} = require('child_process');
-const fs = require('fs');
-const path = require('path');
+const {execSync} = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
+const util = require('node:util');
 const {globSync} = require('tinyglobby');
-const util = require('util');
 
 /*::
 import type {Dependency} from './types';
 */
 
-const exec = util.promisify(require('child_process').exec);
+const exec = util.promisify(require('node:child_process').exec);
 
 /**
  * This function downloads, prepares and creates the structure for the dependencies

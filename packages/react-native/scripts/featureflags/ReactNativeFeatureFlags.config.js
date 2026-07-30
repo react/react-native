@@ -161,7 +161,7 @@ const definitions: FeatureFlagDefinitions = {
     enableAccessibilityOrder: {
       defaultValue: false,
       metadata: {
-        dateAdded: '2025-4-3',
+        dateAdded: '2025-04-03',
         description:
           'When enabled, the accessibilityOrder prop will propagate to native platforms and define the accessibility order.',
         expectedReleaseValue: true,
@@ -246,10 +246,11 @@ const definitions: FeatureFlagDefinitions = {
     enableDoubleMeasurementFixAndroid: {
       defaultValue: false,
       metadata: {
+        dateAdded: '2025-04-29',
         description:
           'When enabled a subset of components will avoid double measurement on Android.',
         expectedReleaseValue: true,
-        purpose: 'operational',
+        purpose: 'experimentation',
       },
       ossReleaseStage: 'none',
     },
@@ -359,6 +360,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    enableImageTransparentTintColor: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-07-17',
+        description:
+          'When enabled, Image `tintColor` is handled as a true optional: any defined color is applied as a tint — including `transparent` (alpha 0), which renders the image invisible — and an unset value clears a previously applied tint. When disabled, the prior behavior is preserved, where a transparent `tintColor` is treated as unassigned and the image renders untinted.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
     enableImmediateUpdateModeForContentOffsetChanges: {
       defaultValue: false,
       metadata: {
@@ -440,6 +452,17 @@ const definitions: FeatureFlagDefinitions = {
           'Enable NSNull conversion when handling module arguments on iOS',
         expectedReleaseValue: true,
         purpose: 'release',
+      },
+      ossReleaseStage: 'none',
+    },
+    enableMountingCoordinatorPullModelAndroid: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-07-14',
+        description:
+          'When enabled, Android mounts transactions with the pull model (like iOS): the commit thread no longer pulls and builds the mount batch in schedulerShouldRenderTransactions. Instead the UI thread pulls the transaction itself via a PullTransactionMountItem enqueued in the MountItemDispatcher, builds the IntBufferBatchMountItem, and applies it synchronously. Requires `enableAccumulatedUpdatesInRawPropsAndroid` to be enabled as well, since a single pull may collapse several commits into one diff and therefore needs complete accumulated rawProps; when used together with Props 2.0, also enable `enableExclusivePropsUpdateAndroid` and `enablePropsUpdateReconciliationAndroid`.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
       },
       ossReleaseStage: 'none',
     },
@@ -727,10 +750,9 @@ const definitions: FeatureFlagDefinitions = {
     preparedTextCacheSize: {
       defaultValue: 200,
       metadata: {
-        dateAdded: '2025-06-25',
         description: 'Number cached PreparedLayouts in TextLayoutManager cache',
         expectedReleaseValue: 200,
-        purpose: 'experimentation',
+        purpose: 'operational',
       },
       ossReleaseStage: 'none',
     },
@@ -857,7 +879,7 @@ const definitions: FeatureFlagDefinitions = {
         description:
           'Should this application enable the Fabric Interop Layer for Android? If yes, the application will behave so that it can accept non-Fabric components and render them on Fabric. This toggle is controlling extra logic such as custom event dispatching that are needed for the Fabric Interop Layer to work correctly.',
         expectedReleaseValue: false,
-        purpose: 'release',
+        purpose: 'operational',
       },
       ossReleaseStage: 'none',
     },
@@ -886,7 +908,7 @@ const definitions: FeatureFlagDefinitions = {
     useSharedAnimatedBackend: {
       defaultValue: false,
       metadata: {
-        dateAdded: '2025-08-2',
+        dateAdded: '2025-08-02',
         description: 'Use shared animation backend in C++ Animated',
         expectedReleaseValue: true,
         purpose: 'experimentation',
@@ -896,7 +918,7 @@ const definitions: FeatureFlagDefinitions = {
     useTraitHiddenOnAndroid: {
       defaultValue: false,
       metadata: {
-        dateAdded: '2025-10-9',
+        dateAdded: '2025-10-09',
         description: 'Use Trait::hidden on Android',
         expectedReleaseValue: true,
         purpose: 'experimentation',
@@ -917,11 +939,10 @@ const definitions: FeatureFlagDefinitions = {
     viewCullingOutsetRatio: {
       defaultValue: 0,
       metadata: {
-        dateAdded: '2025-09-18',
         description:
           'Outset the culling context frame with the provided ratio. The culling context frame size will be outset by width * ratio on the left and right, and height * ratio on the top and bottom.',
         expectedReleaseValue: 0,
-        purpose: 'experimentation',
+        purpose: 'operational',
       },
       ossReleaseStage: 'none',
     },

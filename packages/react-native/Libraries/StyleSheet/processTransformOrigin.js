@@ -12,7 +12,7 @@ import invariant from 'invariant';
 
 // Pre-compiled regex pattern for performance - avoids regex compilation on each call
 const TRANSFORM_ORIGIN_REGEX =
-  /(top|bottom|left|right|center|\d*\.?\d+(?:%|px)|0)/gi;
+  /(top|bottom|left|right|center|-?\d*\.?\d+(?:%|px)|0)/gi;
 
 const INDEX_X = 0;
 const INDEX_Y = 1;

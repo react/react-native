@@ -34,9 +34,9 @@ const ARTIFACT_CLASSIFIERS = [
 ];
 
 async function verifyArtifactsAreOnMaven(
-  version: string,
-  retries: number = MAX_RETRIES,
-): Promise<void> {
+  version /*: string */,
+  retries /*: number */ = MAX_RETRIES,
+) /*: Promise<void> */ {
   if (version.startsWith('v')) {
     version = version.substring(1);
   }

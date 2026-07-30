@@ -43,7 +43,7 @@ const {
   readPkgJsonInDirectory,
   readReactNativeConfig,
 } = require('./utils');
-const path = require('path');
+const path = require('node:path');
 
 /**
  * This function is the entry point for the codegen. It:
@@ -139,7 +139,7 @@ function execute(
           : path.join(outputPath, 'ReactCodegen');
 
       if (runReactNativeCodegen) {
-        const schemaInfos = generateSchemaInfos(libraries);
+        const schemaInfos = generateSchemaInfos(libraries, platform);
         generateNativeCode(
           reactCodegenOutputPath,
           schemaInfos.filter(schemaInfo =>

@@ -13,8 +13,8 @@ import type {GeneratorConfig, GeneratorOptions} from './types';
 import generateAndroidModules from './generateAndroidModules';
 import generateCommonCxxModules from './generateCommonCxxModules';
 import generateJavaScriptModules from './generateJavaScriptModules';
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 export default function generateFiles(
   generatorConfig: GeneratorConfig,

@@ -313,6 +313,14 @@ public class ReactTextView extends AppCompatTextView implements ReactCompoundVie
     }
   }
 
+  @Override
+  protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+    super.onSizeChanged(w, h, oldw, oldh);
+    if (mAdjustsFontSizeToFit && (w != oldw || h != oldh)) {
+      mShouldAdjustSpannableFontSize = true;
+    }
+  }
+
   public void setText(ReactTextUpdate update) {
     try (SystraceSection s = new SystraceSection("ReactTextView.setText(ReactTextUpdate)")) {
       // Android's TextView crashes when it tries to relayout if LayoutParams are
@@ -665,13 +673,11 @@ public class ReactTextView extends AppCompatTextView implements ReactCompoundVie
   }
 
   public void setOverflow(@Nullable String overflow) {
-    if (overflow == null) {
-      mOverflow = Overflow.VISIBLE;
-    } else {
-      @Nullable Overflow parsedOverflow = Overflow.fromString(overflow);
-      mOverflow = parsedOverflow == null ? Overflow.VISIBLE : parsedOverflow;
-    }
-
+    mOverflow = Overflow.fromString(overflow);
     invalidate();
+  }
+
+  /* package */ Overflow getOverflow() {
+    return mOverflow;
   }
 }

@@ -10,14 +10,12 @@
 
 import type {Command} from '@react-native-community/cli-types';
 
-import runServer from './runServer';
-import path from 'path';
-
-export type {StartCommandArgs} from './runServer';
+import runDevServer from '../dev-server/runDevServer';
+import path from 'node:path';
 
 const startCommand: Command = {
   name: 'start',
-  func: runServer,
+  func: runDevServer,
   description: 'Start the React Native development server.',
   options: [
     {

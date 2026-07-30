@@ -42,7 +42,9 @@
       "types": null,
       "default": "./Libraries/*.js"
     },
-    "./scripts/*": "./scripts/*",
+    "./scripts/*": "./scripts/*.js",
+    "./scripts/*.sh": "./scripts/*.sh",
+    "./scripts/*.rb": "./scripts/*.rb",
     "./asset-registry": {
       "types": null,
       "default": "./src/asset-registry.js"
@@ -114,6 +116,7 @@
     "scripts/react-native-xcode.sh",
     "scripts/setup-apple-spm.js",
     "scripts/spm",
+    "scripts/xcode/asset-catalog.sh",
     "scripts/xcode/ccache-clang.sh",
     "scripts/xcode/ccache-clang++.sh",
     "scripts/xcode/ccache.conf",
@@ -158,7 +161,6 @@
     "ansi-regex": "^5.0.0",
     "babel-plugin-syntax-hermes-parser": "0.37.0",
     "base64-js": "^1.5.1",
-    "commander": "^12.0.0",
     "flow-enums-runtime": "^0.0.6",
     "hermes-compiler": "0.0.0",
     "invariant": "^2.2.4",

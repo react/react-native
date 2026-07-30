@@ -226,16 +226,21 @@ class ReactNativeDependenciesUtils
     end
 
     def self.release_tarball_url(version, build_type)
-        ## You can use the `ENTERPRISE_REPOSITORY` ariable to customise the base url from which artifacts will be downloaded.
-        ## The mirror's structure must be the same of the Maven repo the react-native core team publishes on Maven Central.
-        maven_repo_url =
-            ENV['ENTERPRISE_REPOSITORY'] != nil && ENV['ENTERPRISE_REPOSITORY'] != "" ?
-            ENV['ENTERPRISE_REPOSITORY'] :
-            "https://repo1.maven.org/maven2"
+        candidates = release_tarball_urls(version, build_type)
+        return candidates.find { |url| artifact_exists(url) } || candidates.first
+    end
+
+    def self.release_tarball_urls(version, build_type)
         group = "com/facebook/react"
+
         # Sample url from Maven:
         # https://repo1.maven.org/maven2/com/facebook/react/react-native-artifacts/0.79.0-rc.0/react-native-artifacts-0.79.0-rc.0-reactnative-dependencies-debug.tar.gz
-        return "#{maven_repo_url}/#{group}/react-native-artifacts/#{version}/react-native-artifacts-#{version}-reactnative-dependencies-#{build_type.to_s}.tar.gz"
+
+        # Sample url from mirror server:
+        # https://repo.reactnative.dev/maven2/com/facebook/react/react-native-artifacts/0.79.0-rc.0/react-native-artifacts-0.79.0-rc.0-reactnative-dependencies-debug.tar.gz
+        return ReactNativePodsUtils.maven_repository_urls().map { |maven_repo_url|
+            "#{maven_repo_url}/#{group}/react-native-artifacts/#{version}/react-native-artifacts-#{version}-reactnative-dependencies-#{build_type.to_s}.tar.gz"
+        }
     end
 
     def self.nightly_tarball_url(version, build_type)
@@ -362,7 +367,7 @@ class ReactNativeDependenciesUtils
     end
 
     def self.release_artifact_exists(version)
-        return artifact_exists(release_tarball_url(version, :debug))
+        return release_tarball_urls(version, :debug).any? { |url| artifact_exists(url) }
     end
 
     def self.nightly_artifact_exists(version)

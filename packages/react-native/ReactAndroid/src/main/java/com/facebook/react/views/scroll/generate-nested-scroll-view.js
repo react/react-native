@@ -26,9 +26,9 @@
 
 'use strict';
 
-const crypto = require('crypto');
-const fs = require('fs');
-const path = require('path');
+const crypto = require('node:crypto');
+const fs = require('node:fs');
+const path = require('node:path');
 
 // SignedSource token - this placeholder gets replaced with the actual hash
 // Use string concatenation to avoid marking THIS script as generated

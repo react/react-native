@@ -1,0 +1,65 @@
+# Test FlatList maintainVisibleContentPosition with append (baseline)
+# Appending items should NOT affect scroll offset (delta ~0)
+appId: ${APP_ID}
+---
+- launchApp
+# Change to portrait
+- setOrientation: portrait
+- waitForAnimationToEnd:
+    timeout: 3000
+# Find test
+- assertVisible: 'Components'
+- scrollUntilVisible:
+    element:
+      id: 'FlatList'
+    direction: DOWN
+    speed: 40
+- tapOn:
+    id: 'FlatList'
+- scrollUntilVisible:
+    element:
+      id: 'maintainVisibleContentPosition'
+    direction: DOWN
+    speed: 40
+- tapOn:
+    id: 'maintainVisibleContentPosition'
+# Scroll to offset 500
+- tapOn:
+    text: 'ScrollToOffset 500'
+- waitForAnimationToEnd:
+    timeout: 2000
+# Append item (should NOT affect scroll offset)
+- copyTextFrom:
+    id: 'scroll-offset-display'
+- evalScript: ${output.offsetBefore = parseInt(maestro.copiedText.split(":")[1].trim())}
+- tapOn:
+    text: 'Add 1 item at bottom'
+- waitForAnimationToEnd:
+    timeout: 2000
+- copyTextFrom:
+    id: 'scroll-offset-display'
+- evalScript: ${output.offsetAfter = parseInt(maestro.copiedText.split(":")[1].trim())}
+- assertTrue: ${output.offsetAfter - output.offsetBefore >= -5 && output.offsetAfter - output.offsetBefore <= 5}
+# Multiple appends
+- copyTextFrom:
+    id: 'scroll-offset-display'
+- evalScript: ${output.offsetBefore = parseInt(maestro.copiedText.split(":")[1].trim())}
+- tapOn:
+    text: 'Add 1 item at bottom'
+- waitForAnimationToEnd:
+    timeout: 2000
+- copyTextFrom:
+    id: 'scroll-offset-display'
+- evalScript: ${output.offsetAfter = parseInt(maestro.copiedText.split(":")[1].trim())}
+- assertTrue: ${output.offsetAfter - output.offsetBefore >= -5 && output.offsetAfter - output.offsetBefore <= 5}
+- copyTextFrom:
+    id: 'scroll-offset-display'
+- evalScript: ${output.offsetBefore = parseInt(maestro.copiedText.split(":")[1].trim())}
+- tapOn:
+    text: 'Reset'
+- waitForAnimationToEnd:
+    timeout: 2000
+- copyTextFrom:
+    id: 'scroll-offset-display'
+- evalScript: ${output.offsetAfter = parseInt(maestro.copiedText.split(":")[1].trim())}
+- assertTrue: ${output.offsetAfter >= 0 && output.offsetAfter <= 50}

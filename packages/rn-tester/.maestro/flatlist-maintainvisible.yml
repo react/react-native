@@ -1,0 +1,128 @@
+# Test FlatList maintainVisibleContentPosition when items are prepended
+# Verifies the fix for #25239: FlatList should preserve scroll position
+# when items are prepended or inserted in the middle.
+#
+# Uses scroll offset delta checks to verify MVCP is working:
+# - Before prepend: record offset
+# - After prepend: record offset
+# - Delta should equal height of prepended items (~44px per item with margin)
+appId: ${APP_ID}
+---
+- launchApp
+# Change to portrait
+- setOrientation: portrait
+- waitForAnimationToEnd:
+    timeout: 3000
+# Find test
+- assertVisible: 'Components'
+- scrollUntilVisible:
+    element:
+      id: 'FlatList'
+    direction: DOWN
+    speed: 40
+- tapOn:
+    id: 'FlatList'
+- scrollUntilVisible:
+    element:
+      id: 'maintainVisibleContentPosition'
+    direction: DOWN
+    speed: 40
+- tapOn:
+    id: 'maintainVisibleContentPosition'
+# Scroll to offset 500
+- tapOn:
+    text: 'ScrollToOffset 500'
+- waitForAnimationToEnd:
+    timeout: 2000
+# Record offset before prepend
+- copyTextFrom:
+    id: 'scroll-offset-display'
+- evalScript: ${output.offsetBefore = parseInt(maestro.copiedText.split(":")[1].trim())}
+- tapOn:
+    text: 'Add 1 item at top'
+- waitForAnimationToEnd:
+    timeout: 2000
+# Verify delta is ~44px (one fixed-height item with margin)
+- copyTextFrom:
+    id: 'scroll-offset-display'
+- evalScript: ${output.offsetAfter = parseInt(maestro.copiedText.split(":")[1].trim())}
+- assertTrue: ${output.offsetAfter - output.offsetBefore >= 42 && output.offsetAfter - output.offsetBefore <= 46}
+# Test multiple rapid prepends - Add 50 items
+- copyTextFrom:
+    id: 'scroll-offset-display'
+- evalScript: ${output.offsetBefore = parseInt(maestro.copiedText.split(":")[1].trim())}
+- tapOn:
+    text: 'Add 50 items at top'
+- waitForAnimationToEnd:
+    timeout: 2000
+# Verify delta is ~2200px (50 items with margin)
+- copyTextFrom:
+    id: 'scroll-offset-display'
+- evalScript: ${output.offsetAfter = parseInt(maestro.copiedText.split(":")[1].trim())}
+- assertTrue: ${output.offsetAfter - output.offsetBefore >= 2180 && output.offsetAfter - output.offsetBefore <= 2220}
+- copyTextFrom:
+    id: 'scroll-offset-display'
+- evalScript: ${output.offsetBefore = parseInt(maestro.copiedText.split(":")[1].trim())}
+- tapOn:
+    text: 'Add 50 items at top'
+- waitForAnimationToEnd:
+    timeout: 2000
+- copyTextFrom:
+    id: 'scroll-offset-display'
+- evalScript: ${output.offsetAfter = parseInt(maestro.copiedText.split(":")[1].trim())}
+- assertTrue: ${output.offsetAfter - output.offsetBefore >= 2180 && output.offsetAfter - output.offsetBefore <= 2220}
+- copyTextFrom:
+    id: 'scroll-offset-display'
+- evalScript: ${output.offsetBefore = parseInt(maestro.copiedText.split(":")[1].trim())}
+- tapOn:
+    text: 'Add 50 items at top'
+- waitForAnimationToEnd:
+    timeout: 2000
+- copyTextFrom:
+    id: 'scroll-offset-display'
+- evalScript: ${output.offsetAfter = parseInt(maestro.copiedText.split(":")[1].trim())}
+- assertTrue: ${output.offsetAfter - output.offsetBefore >= 2180 && output.offsetAfter - output.offsetBefore <= 2220}
+- tapOn:
+    text: 'Reset'
+---
+# Test that user scroll is not interrupted during prepend
+appId: ${APP_ID}
+---
+- launchApp
+- assertVisible: 'Components'
+- scrollUntilVisible:
+    element:
+      id: 'FlatList'
+    direction: DOWN
+    speed: 40
+- tapOn:
+    id: 'FlatList'
+- scrollUntilVisible:
+    element:
+      id: 'maintainVisibleContentPosition'
+    direction: DOWN
+    speed: 40
+- tapOn:
+    id: 'maintainVisibleContentPosition'
+# Scroll to offset 500
+- tapOn:
+    text: 'ScrollToOffset 500'
+- waitForAnimationToEnd:
+    timeout: 2000
+- swipe:
+    start: 50%, 70%
+    end: 50%, 30%
+    speed: fast
+- copyTextFrom:
+    id: 'scroll-offset-display'
+- evalScript: ${output.offsetBefore = parseInt(maestro.copiedText.split(":")[1].trim())}
+- tapOn:
+    text: 'Add 1 item at top'
+- waitForAnimationToEnd:
+    timeout: 2000
+- copyTextFrom:
+    id: 'scroll-offset-display'
+- evalScript: ${output.offsetAfter = parseInt(maestro.copiedText.split(":")[1].trim())}
+- assertTrue: ${output.offsetAfter - output.offsetBefore >= 42 && output.offsetAfter - output.offsetBefore <= 46}
+- tapOn:
+    text: 'Reset'

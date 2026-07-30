@@ -139,6 +139,11 @@ RCT_EXTERN NSData *__nullable RCTDecompressGzipData(NSData *__nullable data, NSU
 // (or nil, if the URL does not specify a path within the main bundle)
 RCT_EXTERN NSString *__nullable RCTBundlePathForURL(NSURL *__nullable URL);
 
+// Returns the asset catalog image name for a packager asset URL, or nil if the
+// URL is not a main-bundle packager asset. The name matches the identifier the
+// CLI uses when generating the catalog (see assetPathUtils.getResourceIdentifier).
+RCT_EXTERN NSString *__nullable RCTAssetCatalogNameForURL(NSURL *__nullable URL);
+
 // Returns the Path of Library directory
 RCT_EXTERN NSString *__nullable RCTLibraryPath(void);
 

@@ -1,5 +1,53 @@
 # Changelog
 
+## v0.87.0-rc.3
+
+### Breaking
+
+#### iOS specific
+
+- Ship a version-stamped ReactNativeVersion.h in the prebuilt iOS core artifacts instead of the 1000.0.0 dev sentinel ([95df50034b](https://github.com/react/react-native/commit/95df50034ba5ce11f4b70bbb6bf692e3691297dc) by [@chrfalch](https://github.com/chrfalch))
+
+### Fixed
+
+- **Strict TypeScript API**: Optional property types are now widened to explicitly include `| undefined` for `exactOptionalPropertyTypes` compatibility ([0fc76bb527](https://github.com/react/react-native/commit/0fc76bb5278098649672e0407a3de580b8706fa4) by [@zeyap](https://github.com/zeyap))
+- Fix `parentNode`/`parentElement` returning the document instead of the containing element for `<Modal>` and other nested root host views, which severed capture/bubble event propagation to ancestors rendered above them ([e410ff5471](https://github.com/react/react-native/commit/e410ff547179f5c7ad198744f7be88117ccdef0c) by [@rubennorte](https://github.com/rubennorte))
+
+#### iOS specific
+
+- Fix Swift C++-interop build failure (implicit copy constructor of TraceRecordingState/HostTracingProfile) for libraries using cxx interop with prebuilt React Native core ([38611186f5](https://github.com/react/react-native/commit/38611186f5867bd578a269872986a5753c8b41fe) by [@chrfalch](https://github.com/chrfalch))
+
+
+## v0.87.0-rc.2
+
+### Breaking
+
+- **Runtime**: Remove the `SceneTracker` module from `Libraries/Utilities`, stop setting the active scene from `AppRegistry.runApplication`, and pass the app key as an optional second argument to `WrapperComponentProvider` ([bbb5be9b41](https://github.com/react/react-native/commit/bbb5be9b416efc9b1c365b08a0bcf932c14562ca) by [@rubennorte](https://github.com/rubennorte))
+
+#### iOS specific
+
+- **Build**: [0.87] Pick SwiftPM support chain (#57442, #57332, #57564) ([486df8d410](https://github.com/react/react-native/commit/486df8d410d73d7a1be3600c93a6cf7888532843) by [@cipolleschi](https://github.com/cipolleschi))
+
+### Changed
+
+#### iOS specific
+
+- **Build**: Prebuilt-deps mode: serve third-party headers from the ReactNativeDependencies pod itself and resolve community `s.dependency` on RCT-Folly/glog/boost/etc. via dependency-only facade pods ([a8156acf8b](https://github.com/react/react-native/commit/a8156acf8bbc9ee15901cf0d8935d73454768aa7) by [@chrfalch](https://github.com/chrfalch))
+- **Build**: Remove the Clang VFS overlay from prebuilt React Native Core; resolve headers via React.xcframework + a new headers-only ReactNativeHeaders.xcframework ([376bd0e464](https://github.com/react/react-native/commit/376bd0e464b7785b4bcf8673a96746ec8107f1eb) by [@chrfalch](https://github.com/chrfalch))
+
+### Fixed
+
+- **Runtime**: Fix app failing to initialize (`HMRClient.setup()` redbox) because the environment setup module was dropped from the bundle ([eb987ef550](https://github.com/react/react-native/commit/eb987ef5504d85ff862b5a679056157888c56960) by [@cipolleschi](https://github.com/cipolleschi))
+
+#### iOS specific
+
+- **Build**: Fix "redefinition of 'HighResDuration'" / "could not build module 'React'" when building Swift pods with C++ interop against the prebuilt React-Core artifact ([9847238e3f](https://github.com/react/react-native/commit/9847238e3fc2badce8eeea659c4990aba1366d9b) by [@chrfalch](https://github.com/chrfalch))
+- **Hermes**: Fix debug Hermes being silently embedded in Release builds after the hermes-engine pod is re-installed ([62a2b386c9](https://github.com/react/react-native/commit/62a2b386c91985a46ee048dfa6e2216ba42a7e89) by [@tjzel](https://github.com/tjzel))
+- **Build**: Fix "The project 'Pods' is damaged and cannot be opened" when a library uses `spm_dependency` and the generated UUID collides with an existing Pods project object ([1cdf784a06](https://github.com/react/react-native/commit/1cdf784a068e2ed16842b74c0b87b7ff7532fe03) by [@chrfalch](https://github.com/chrfalch))
+- **Build**: Ship React-Core's privacy manifest and localized strings (RCTI18nStrings) inside the prebuilt React.xcframework, so CocoaPods-prebuilt and SwiftPM apps include them ([77b75122ef](https://github.com/react/react-native/commit/77b75122ef9ed172012d7c6acb335f966d4ede79) by [@chrfalch](https://github.com/chrfalch))
+- **Build**: Fix "redefinition of module" build failure on Xcode 26.3 for pods using `spm_dependency` with prebuilt React Native core ([4a6620703c](https://github.com/react/react-native/commit/4a6620703c30b3f53917812720528684838d3bbf) by [@chrfalch](https://github.com/chrfalch))
+
+
 ## v0.87.0-rc.1
 
 ### Breaking
@@ -345,8 +393,23 @@
 
 #### Failed to parse
 
+## v0.86.2
 
+### Fixed
 
+- **Layout:** Fixed `display: contents` nodes having `hasNewLayout` set incorrectly ([36f69eff0d](https://github.com/react/react-native/commit/36f69eff0d11510f4f16075d9cfbbe474a0683be) by [@j-piasecki](https://github.com/j-piasecki))
+
+#### Android
+
+- **Runtime:** Use explicit `ReactInstanceManager.mHasStartedDestroyingLock` instead of using `ReactInstanceManager.mHasStartedDestroying` ([cdfba520fa](https://github.com/react/react-native/commit/cdfba520fa56a6b3dbb133d9c8060e4e698bc8a0) by [@jingjing2222](https://github.com/jingjing2222)) 
+- **Runtime:** Do not synchronize on `java.lang.Boolean`. ([@821045a24f](https://github.com/react/react-native/commit/821045a24f07f798351c72d23a01720a2123049d) by [Yqwed](https://github.com/yqwed))
+### Changed
+
+- **Hermes:** Bump Hermes V1 to 250829098.0.16 ([95538111bf](https://github.com/react/react-native/commit/95538111bf24b5d5269724714e415b38b6395d1a) by [@gabrieldonadel](https://github.com/gabrieldonadel))
+
+## v0.86.1
+
+- This release got burned because of an issue with Maven
 
 ## v0.86.0
 

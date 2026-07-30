@@ -14,15 +14,17 @@ const {
   detectStandardRnLayoutRedirect,
   ensureBothArtifactFlavors,
   findInjectedXcodeproj,
+  generateAutolinkingConfigOrFailClosed,
+  parseArgs,
   resolveAction,
   shouldAutoDeintegrate,
 } = require('../../setup-apple-spm');
 const {REQUIRED_ARTIFACTS} = require('../download-spm-artifacts');
 const {SPM_INJECTED_MARKER} = require('../generate-spm-xcodeproj');
-const {execFileSync} = require('child_process');
-const fs = require('fs');
-const os = require('os');
-const path = require('path');
+const {execFileSync} = require('node:child_process');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
 
 // Create an in-place-injected xcodeproj fixture: a directory carrying the
 // `.spm-injected.json` marker (what injectSpmIntoExistingXcodeproj writes).
@@ -58,6 +60,102 @@ function gitInitAndCommit(dir) {
   execFileSync('git', ['add', '-A'], opts);
   execFileSync('git', ['commit', '-m', 'init'], opts);
 }
+
+describe('parseArgs', () => {
+  it('parses --config-command as a JSON argv array', () => {
+    const args = parseArgs([
+      'update',
+      '--config-command',
+      '["a","b","config"]',
+    ]);
+
+    expect(args.action).toBe('update');
+    expect(args.configCommand).toEqual(['a', 'b', 'config']);
+  });
+
+  it('sets configCommand to null when --config-command is omitted', () => {
+    expect(parseArgs(['update']).configCommand).toBeNull();
+  });
+
+  it('throws for an invalid --config-command value', () => {
+    expect(() => parseArgs(['update', '--config-command', 'not json'])).toThrow(
+      /--config-command/,
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// generateAutolinkingConfigOrFailClosed — the fail-closed policy main() applies
+// to the autolinking config step. Swallowing a config-command error (the old
+// behavior) let the build proceed with a silently-empty Autolinked package that
+// only surfaced later as `unable to resolve module dependency`. A native-
+// module-free app does NOT hit the error path: its command exits 0 with valid
+// empty-dependency JSON and the generator returns normally.
+// ---------------------------------------------------------------------------
+
+describe('generateAutolinkingConfigOrFailClosed', () => {
+  let prevExitCode;
+  let warnSpy;
+
+  beforeEach(() => {
+    prevExitCode = process.exitCode;
+    warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    process.exitCode = prevExitCode;
+    jest.restoreAllMocks();
+  });
+
+  it('returns the config result and leaves the exit code untouched on success', () => {
+    const result = {
+      config: {},
+      outputPath: '/app/ios/autolinking.json',
+      rawJson: '{}',
+    };
+    const out = generateAutolinkingConfigOrFailClosed({
+      projectRoot: '/app',
+      generate: () => result,
+    });
+
+    expect(out).toBe(result);
+    expect(process.exitCode).not.toBe(2);
+  });
+
+  it('passes projectRoot and configCommand through to the generator', () => {
+    let received;
+    generateAutolinkingConfigOrFailClosed({
+      projectRoot: '/proj',
+      configCommand: ['my-cli', 'config'],
+      generate: opts => {
+        received = opts;
+        return {config: {}, outputPath: '', rawJson: ''};
+      },
+    });
+
+    expect(received).toEqual({
+      projectRoot: '/proj',
+      configCommand: ['my-cli', 'config'],
+    });
+  });
+
+  it('fails closed (null, exit 2, actionable error) when the config command errors', () => {
+    const out = generateAutolinkingConfigOrFailClosed({
+      projectRoot: '/app',
+      generate: () => {
+        throw new Error("'my-cli config' exited with status 1");
+      },
+    });
+
+    expect(out).toBeNull();
+    expect(process.exitCode).toBe(2);
+    const warnings = warnSpy.mock.calls.map(c => c.join(' ')).join('\n');
+    // Names the override so the next person can fix it...
+    expect(warnings).toMatch(/RCT_SPM_AUTOLINKING_CONFIG_COMMAND/);
+    // ...and preserves the underlying cause.
+    expect(warnings).toMatch(/exited with status 1/);
+  });
+});
 
 // ---------------------------------------------------------------------------
 // resolveAction — zero-arg default. Explicit action wins; otherwise `update`

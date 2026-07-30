@@ -1,0 +1,58 @@
+# Test FlatList maintainVisibleContentPosition in horizontal mode
+# Horizontal: items are 200px wide, delta should be ~204px (200px + 4px margin)
+appId: ${APP_ID}
+---
+- launchApp
+# Change to portrait
+- setOrientation: portrait
+- waitForAnimationToEnd:
+    timeout: 3000
+# Find test
+- assertVisible: 'Components'
+- scrollUntilVisible:
+    element:
+      id: 'FlatList'
+    direction: DOWN
+    speed: 40
+- tapOn:
+    id: 'FlatList'
+- scrollUntilVisible:
+    element:
+      id: 'maintainVisibleContentPosition'
+    direction: DOWN
+    speed: 40
+- tapOn:
+    id: 'maintainVisibleContentPosition'
+# Enable horizontal mode
+- tapOn:
+    text: 'Horizontal: OFF'
+- waitForAnimationToEnd:
+    timeout: 3000
+# Scroll to offset 500
+- tapOn:
+    text: 'ScrollToOffset 500'
+- waitForAnimationToEnd:
+    timeout: 2000
+# Prepend in horizontal mode
+- copyTextFrom:
+    id: 'scroll-offset-display'
+- evalScript: ${output.offsetBefore = parseInt(maestro.copiedText.split(":")[1].trim())}
+- tapOn:
+    text: 'Add 1 item at top'
+- waitForAnimationToEnd:
+    timeout: 2000
+- copyTextFrom:
+    id: 'scroll-offset-display'
+- evalScript: ${output.offsetAfter = parseInt(maestro.copiedText.split(":")[1].trim())}
+- assertTrue: ${output.offsetAfter - output.offsetBefore >= 202 && output.offsetAfter - output.offsetBefore <= 206}
+- copyTextFrom:
+    id: 'scroll-offset-display'
+- evalScript: ${output.offsetBefore = parseInt(maestro.copiedText.split(":")[1].trim())}
+- tapOn:
+    text: 'Reset'
+- waitForAnimationToEnd:
+    timeout: 2000
+- copyTextFrom:
+    id: 'scroll-offset-display'
+- evalScript: ${output.offsetAfter = parseInt(maestro.copiedText.split(":")[1].trim())}
+- assertTrue: ${output.offsetAfter >= 0 && output.offsetAfter <= 50}

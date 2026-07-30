@@ -105,16 +105,17 @@ class QueueingNativeMethodCallInvoker final : public NativeMethodCallInvoker {
 
 RCT_EXPORT_MODULE()
 
-RCT_EXPORT_SYNCHRONOUS_TYPED_METHOD(NSMutableData *, testMethodWhichMutatesArrayBuffer : (NSMutableData *)buffer)
+RCT_EXPORT_SYNCHRONOUS_TYPED_METHOD(NSMutableData *, testMethodWhichTransformsArrayBuffer : (NSData *)buffer)
 {
-  auto *bytes = static_cast<uint8_t *>(buffer.mutableBytes);
-  for (NSUInteger i = 0; i < buffer.length; ++i) {
+  NSMutableData *result = [buffer mutableCopy];
+  auto *bytes = static_cast<uint8_t *>(result.mutableBytes);
+  for (NSUInteger i = 0; i < result.length; ++i) {
     bytes[i] = static_cast<uint8_t>((i + 1) * 10);
   }
-  return buffer;
+  return result;
 }
 
-RCT_EXPORT_METHOD(testMethodWhichStoresArrayBuffer : (NSMutableData *)payload)
+RCT_EXPORT_METHOD(testMethodWhichStoresArrayBuffer : (NSData *)payload)
 {
   self.lastReceivedPayload = [payload copy];
 }
@@ -169,8 +170,8 @@ RCT_EXPORT_METHOD(
   auto result = module.invokeObjCMethod(
       *rt,
       ArrayBufferKind,
-      "testMethodWhichMutatesArrayBuffer",
-      @selector(testMethodWhichMutatesArrayBuffer:),
+      "testMethodWhichTransformsArrayBuffer",
+      @selector(testMethodWhichTransformsArrayBuffer:),
       args,
       1);
 

@@ -20,7 +20,7 @@ import type {
   Page,
   PageDescription,
 } from './types';
-import type {IncomingMessage, ServerResponse} from 'http';
+import type {IncomingMessage, ServerResponse} from 'node:http';
 
 import getBaseUrlFromRequest from '../utils/getBaseUrlFromRequest';
 import getDevToolsFrontendUrl from '../utils/getDevToolsFrontendUrl';

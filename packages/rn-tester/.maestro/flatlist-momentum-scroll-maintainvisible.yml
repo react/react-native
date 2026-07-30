@@ -1,0 +1,64 @@
+# Test FlatList maintainVisibleContentPosition — momentum scroll after prepend
+# Verifies that scroll position remains stable after momentum scroll completes
+# post-prepend. MVCP correction runs asynchronously in didMountItems.
+appId: ${APP_ID}
+---
+- launchApp
+# Change to portrait
+- setOrientation: portrait
+- waitForAnimationToEnd:
+    timeout: 3000
+# Find test
+- assertVisible: 'Components'
+- scrollUntilVisible:
+    element:
+      id: 'FlatList'
+    direction: DOWN
+    speed: 40
+- tapOn:
+    id: 'FlatList'
+- scrollUntilVisible:
+    element:
+      id: 'maintainVisibleContentPosition'
+    direction: DOWN
+    speed: 40
+- tapOn:
+    id: 'maintainVisibleContentPosition'
+# Scroll to offset 500
+- tapOn:
+    text: 'ScrollToOffset 500'
+- waitForAnimationToEnd:
+    timeout: 2000
+# Record offset before prepend
+- copyTextFrom:
+    id: 'scroll-offset-display'
+- evalScript: ${output.offsetBefore = parseInt(maestro.copiedText.split(":")[1].trim())}
+# Prepend 1 item
+- tapOn:
+    text: 'Add 1 item at top'
+- waitForAnimationToEnd:
+    timeout: 2000
+# Start momentum scroll (swipe up quickly)
+- swipe:
+    start: 50%, 70%
+    end: 50%, 20%
+    speed: fast
+# Wait for momentum to fully settle
+- waitForAnimationToEnd:
+    timeout: 5000
+# Record offset after momentum settles
+- copyTextFrom:
+    id: 'scroll-offset-display'
+- evalScript: ${output.offsetAfter = parseInt(maestro.copiedText.split(":")[1].trim())}
+# Verify position hasn't drifted — delta should still be ~44px
+# (MVCP correction applied before momentum started, position should be stable)
+- assertTrue: ${output.offsetAfter - output.offsetBefore >= 42 && output.offsetAfter - output.offsetBefore <= 46}
+# Reset
+- tapOn:
+    text: 'Reset'
+- waitForAnimationToEnd:
+    timeout: 2000
+- copyTextFrom:
+    id: 'scroll-offset-display'
+- evalScript: ${output.offsetAfter = parseInt(maestro.copiedText.split(":")[1].trim())}
+- assertTrue: ${output.offsetAfter >= 0 && output.offsetAfter <= 50}

@@ -12,9 +12,33 @@ require_relative "./jsengine.rb"
 
 # Utilities class for React Native Cocoapods
 class ReactNativePodsUtils
+    MAVEN_CENTRAL_REPOSITORY = "https://repo1.maven.org/maven2"
+    REACT_NATIVE_MAVEN_MIRROR_REPOSITORY = "https://repo.reactnative.dev/maven2"
+
     # URI::File.build validates path components as ASCII, so escape the filesystem path first.
     def self.local_file_uri(path)
         URI::File.build(path: URI::DEFAULT_PARSER.escape(path)).to_s
+    end
+
+    def self.maven_repository_urls()
+        ## You can use the `ENTERPRISE_REPOSITORY` variable to customise the base url from which artifacts will be downloaded.
+        ## The mirror's structure must be the same of the Maven repo the react-native core team publishes on Maven Central.
+        if ENV['ENTERPRISE_REPOSITORY'] != nil && ENV['ENTERPRISE_REPOSITORY'] != ""
+            return [ENV['ENTERPRISE_REPOSITORY'].sub(/\/+$/, "")]
+        end
+
+        # Keep the React Native Maven mirror before Maven Central so cached artifacts are tried first
+        # and Maven Central remains the fallback.
+        return react_native_maven_mirror_enabled? ?
+            [REACT_NATIVE_MAVEN_MIRROR_REPOSITORY, MAVEN_CENTRAL_REPOSITORY] :
+            [MAVEN_CENTRAL_REPOSITORY]
+    end
+
+    def self.react_native_maven_mirror_enabled?()
+        value = ENV['RCT_REACT_NATIVE_MAVEN_MIRROR_ENABLED']
+        return true if value == nil || value == ""
+
+        value.downcase != "false" && value != "0"
     end
 
     def self.warn_if_not_on_arm64

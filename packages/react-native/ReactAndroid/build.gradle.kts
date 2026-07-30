@@ -215,6 +215,8 @@ val preparePrefab by
                       Pair(File(buildDir, "third-party-ndk/glog/exported/").absolutePath, ""),
                       Pair("../ReactCommon/callinvoker/", ""),
                       Pair("../ReactCommon/cxxreact/", "cxxreact/"),
+                      // Exported because the public cxxreact/ErrorUtils.h includes it
+                      Pair("../ReactCommon/jserrorhandler/", "jserrorhandler/"),
                       Pair("../ReactCommon/react/bridging/", "react/bridging/"),
                       Pair("../ReactCommon/react/nativemodule/core/", ""),
                       Pair("../ReactCommon/react/nativemodule/core/platform/android/", ""),
@@ -623,16 +625,19 @@ android {
 
   sourceSets {
     named("main") {
-      res.directories.addAll(
-          listOf(
-              "src/main/res/devsupport",
-              "src/main/res/shell",
-              "src/main/res/views/alert",
-              "src/main/res/views/modal",
-              "src/main/res/views/uimanager",
-              "src/main/res/views/view",
-          )
-      )
+      res.directories.apply {
+        clear()
+        addAll(
+            listOf(
+                "src/main/res/devsupport",
+                "src/main/res/shell",
+                "src/main/res/views/alert",
+                "src/main/res/views/modal",
+                "src/main/res/views/uimanager",
+                "src/main/res/views/view",
+            )
+        )
+      }
     }
   }
 

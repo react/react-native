@@ -26,17 +26,17 @@ RCT_EXPORT_MODULE()
   return NO;
 }
 
-RCT_EXPORT_METHOD(allowRTL : (BOOL)value)
+- (void)allowRTL:(BOOL)value
 {
   [[RCTI18nUtil sharedInstance] allowRTL:value];
 }
 
-RCT_EXPORT_METHOD(forceRTL : (BOOL)value)
+- (void)forceRTL:(BOOL)value
 {
   [[RCTI18nUtil sharedInstance] forceRTL:value];
 }
 
-RCT_EXPORT_METHOD(swapLeftAndRightInRTL : (BOOL)value)
+- (void)swapLeftAndRightInRTL:(BOOL)value
 {
   [[RCTI18nUtil sharedInstance] swapLeftAndRightInRTL:value];
 }

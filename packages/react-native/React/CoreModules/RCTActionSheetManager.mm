@@ -76,9 +76,8 @@ RCT_EXPORT_MODULE()
   [parentViewController presentViewController:alertController animated:YES completion:nil];
 }
 
-RCT_EXPORT_METHOD(
-    showActionSheetWithOptions : (JS::NativeActionSheetManager::SpecShowActionSheetWithOptionsOptions &)
-        options callback : (RCTResponseSenderBlock)callback)
+- (void)showActionSheetWithOptions:(JS::NativeActionSheetManager::SpecShowActionSheetWithOptionsOptions &)options
+                          callback:(RCTResponseSenderBlock)callback
 {
   if (RCTRunningInAppExtension()) {
     RCTLogError(@"Unable to show action sheet from app extension");
@@ -219,7 +218,7 @@ RCT_EXPORT_METHOD(
   });
 }
 
-RCT_EXPORT_METHOD(dismissActionSheet)
+- (void)dismissActionSheet
 {
   if (_alertControllers.count == 0) {
     RCTLogWarn(@"Unable to dismiss action sheet");
@@ -232,10 +231,10 @@ RCT_EXPORT_METHOD(dismissActionSheet)
   });
 }
 
-RCT_EXPORT_METHOD(
-    showShareActionSheetWithOptions : (JS::NativeActionSheetManager::SpecShowShareActionSheetWithOptionsOptions &)
-        options failureCallback : (RCTResponseSenderBlock)failureCallback successCallback : (RCTResponseSenderBlock)
-            successCallback)
+- (void)showShareActionSheetWithOptions:
+            (JS::NativeActionSheetManager::SpecShowShareActionSheetWithOptionsOptions &)options
+                        failureCallback:(RCTResponseSenderBlock)failureCallback
+                        successCallback:(RCTResponseSenderBlock)successCallback
 {
   if (RCTRunningInAppExtension()) {
     RCTLogError(@"Unable to show action sheet from app extension");

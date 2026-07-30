@@ -8,7 +8,7 @@
  * @format
  */
 
-import * as path from 'path';
+import * as path from 'node:path';
 
 const {readHermesTag, setHermesTag} = require('../hermes-utils');
 // $FlowFixMe[untyped-import] (OSS) memfs
@@ -24,8 +24,8 @@ describe('hermes-utils', () => {
   beforeEach(() => {
     jest.resetModules();
 
-    jest.mock('fs', () => memfs().fs);
-    fs = require('fs');
+    jest.mock('node:fs', () => memfs().fs);
+    fs = require('node:fs');
 
     fs.mkdirSync(SDKS_DIR, {
       recursive: true,

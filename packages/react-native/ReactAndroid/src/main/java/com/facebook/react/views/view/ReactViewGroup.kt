@@ -140,6 +140,10 @@ public open class ReactViewGroup public constructor(context: Context?) :
 
   public override var hitSlopRect: Rect? = null
   public override var pointerEvents: PointerEvents = PointerEvents.AUTO
+    set(value) {
+      field = value
+      ImportantForInteractionHelper.setImportantForInteraction(this, value, _overflow)
+    }
 
   public var axOrderList: MutableList<String>? = null
 
@@ -175,9 +179,9 @@ public open class ReactViewGroup public constructor(context: Context?) :
     allChildrenCount = 0
     clippingRect = null
     hitSlopRect = null
+    // pointerEvents setter reads _overflow, so _overflow must be assigned first.
     _overflow = Overflow.VISIBLE
     pointerEvents = PointerEvents.AUTO
-    ImportantForInteractionHelper.setImportantForInteraction(this, pointerEvents)
     childrenLayoutChangeListener = null
     onInterceptTouchEventListener = null
     needsOffscreenAlphaCompositing = false
@@ -818,22 +822,17 @@ public open class ReactViewGroup public constructor(context: Context?) :
     }
   }
 
-  private var _overflow: Overflow? = null
+  private var _overflow: Overflow = Overflow.VISIBLE
   override var overflow: String?
     get() =
         when (_overflow) {
           Overflow.HIDDEN -> "hidden"
           Overflow.SCROLL -> "scroll"
           Overflow.VISIBLE -> "visible"
-          else -> null
         }
     set(overflow) {
-      _overflow =
-          if (overflow == null) {
-            Overflow.VISIBLE
-          } else {
-            Overflow.fromString(overflow)
-          }
+      _overflow = Overflow.fromString(overflow)
+      ImportantForInteractionHelper.setImportantForInteraction(this, pointerEvents, _overflow)
       invalidate()
     }
 
@@ -846,9 +845,7 @@ public open class ReactViewGroup public constructor(context: Context?) :
    */
   override fun getClipBounds(): Rect? {
     if (
-        ReactNativeFeatureFlags.syncAndroidClipBoundsWithOverflow() &&
-            _overflow != null &&
-            _overflow != Overflow.VISIBLE
+        ReactNativeFeatureFlags.syncAndroidClipBoundsWithOverflow() && _overflow != Overflow.VISIBLE
     ) {
       val rect = Rect()
       getPaddingBoxRect(this, rect)
@@ -860,9 +857,7 @@ public open class ReactViewGroup public constructor(context: Context?) :
   /** See [getClipBounds]. */
   override fun getClipBounds(outRect: Rect): Boolean {
     if (
-        ReactNativeFeatureFlags.syncAndroidClipBoundsWithOverflow() &&
-            _overflow != null &&
-            _overflow != Overflow.VISIBLE
+        ReactNativeFeatureFlags.syncAndroidClipBoundsWithOverflow() && _overflow != Overflow.VISIBLE
     ) {
       getPaddingBoxRect(this, outRect)
       return true

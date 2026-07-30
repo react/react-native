@@ -9,12 +9,24 @@
  */
 
 import VirtualizedList from '../VirtualizedList';
+import {format} from 'node:util';
 import * as React from 'react';
 import {createElement, createRef} from 'react';
 import {act, create} from 'react-test-renderer';
-import {format} from 'util';
 
 jest.useFakeTimers();
+
+function removeOwner(obj) {
+  if (obj === null || typeof obj !== 'object') return obj;
+  if (Array.isArray(obj)) return obj.map(removeOwner);
+
+  const result = {};
+  for (const key of Object.keys(obj)) {
+    if (key === '_owner') continue;
+    result[key] = removeOwner(obj[key]);
+  }
+  return result;
+}
 
 const skipTestSilenceLinter = it.skip;
 
@@ -233,7 +245,7 @@ describe('VirtualizedList', () => {
         />,
       );
     });
-    expect(component).toMatchSnapshot();
+    expect(removeOwner(component.toJSON())).toMatchSnapshot();
   });
 
   it('test getItem functionality where data is not an Array', async () => {
@@ -2471,6 +2483,9 @@ it('virtualizes away last focused index if item removed', async () => {
   expect(component).toMatchSnapshot();
 });
 
+// Trigger: Items inserted at beginning of data array. FlatList re-renders, native mounts new views at top.
+// Expected: Anchor view shifts downward by total height of prepended items. MVCP captures anchor's pre-mount frame,
+// computes delta = newFrame - oldFrame, adjusts contentOffset to keep anchor at same screen position.
 it('handles maintainVisibleContentPosition', async () => {
   const items = generateItems(20);
   const ITEM_HEIGHT = 10;
@@ -2531,6 +2546,8 @@ it('handles maintainVisibleContentPosition', async () => {
   expect(component).toMatchSnapshot();
 });
 
+// Trigger: Item at anchor position removed from data array.
+// Expected: Anchor shifts to next visible item. MVCP captures new anchor's frame, computes delta, adjusts scroll.
 it('handles maintainVisibleContentPosition when anchor moves before minIndexForVisible', async () => {
   const items = generateItems(20);
   const ITEM_HEIGHT = 10;
@@ -2576,6 +2593,288 @@ it('handles maintainVisibleContentPosition when anchor moves before minIndexForV
   });
 
   expect(component).toMatchSnapshot();
+});
+
+// Trigger: Multiple prepend operations in quick succession (no user interaction between batches).
+// The `pendingScrollUpdateCount` mechanism prevents render window adjustment during MVCP corrections.
+// Expected: Each prepend's delta applied sequentially. Anchor's final position after all prepends should be stable.
+it('handles multiple rapid prepends with maintainVisibleContentPosition', async () => {
+  const items = generateItems(20);
+  const ITEM_HEIGHT = 10;
+
+  let component;
+  await act(() => {
+    component = create(
+      <VirtualizedList
+        initialNumToRender={1}
+        windowSize={1}
+        maintainVisibleContentPosition={{minIndexForVisible: 0}}
+        {...baseItemProps(items)}
+        {...fixedHeightItemLayoutProps(ITEM_HEIGHT)}
+      />,
+    );
+  });
+
+  await act(() => {
+    simulateLayout(component, {
+      viewport: {width: 10, height: 50},
+      content: {width: 10, height: items.length * ITEM_HEIGHT},
+    });
+    simulateScroll(component, {x: 0, y: 50});
+    performAllBatches();
+  });
+
+  // First prepend: add 5 items at the start
+  const afterFirstPrepend = [...generateItems(5, items.length), ...items];
+  await act(() => {
+    component.update(
+      <VirtualizedList
+        initialNumToRender={1}
+        windowSize={1}
+        maintainVisibleContentPosition={{minIndexForVisible: 0}}
+        {...baseItemProps(afterFirstPrepend)}
+        {...fixedHeightItemLayoutProps(ITEM_HEIGHT)}
+      />,
+    );
+  });
+
+  await act(() => {
+    simulateContentLayout(component, {
+      width: 10,
+      height: afterFirstPrepend.length * ITEM_HEIGHT,
+    });
+    simulateScroll(component, {x: 0, y: 50 + 5 * ITEM_HEIGHT});
+    performAllBatches();
+  });
+
+  expect(component).toMatchSnapshot();
+
+  // Second prepend: add 3 more items at the start (rapid succession)
+  const afterSecondPrepend = [
+    ...generateItems(3, afterFirstPrepend.length),
+    ...afterFirstPrepend,
+  ];
+  await act(() => {
+    component.update(
+      <VirtualizedList
+        initialNumToRender={1}
+        windowSize={1}
+        maintainVisibleContentPosition={{minIndexForVisible: 0}}
+        {...baseItemProps(afterSecondPrepend)}
+        {...fixedHeightItemLayoutProps(ITEM_HEIGHT)}
+      />,
+    );
+  });
+
+  await act(() => {
+    simulateContentLayout(component, {
+      width: 10,
+      height: afterSecondPrepend.length * ITEM_HEIGHT,
+    });
+    simulateScroll(component, {x: 0, y: 50 + 8 * ITEM_HEIGHT});
+    performAllBatches();
+  });
+
+  expect(component).toMatchSnapshot();
+});
+
+// Trigger: Multiple prepends in quick succession.
+// Expected: Delta computation stays bounded — anchor index should not drift beyond expected range.
+it('maintainVisibleContentPosition delta stays bounded across consecutive updates', async () => {
+  const ITEM_HEIGHT = 10;
+  const VIEWPORT_HEIGHT = 50;
+
+  let component;
+  let currentItems = generateItems(20);
+
+  await act(() => {
+    component = create(
+      <VirtualizedList
+        initialNumToRender={1}
+        windowSize={1}
+        maintainVisibleContentPosition={{minIndexForVisible: 0}}
+        {...baseItemProps(currentItems)}
+        {...fixedHeightItemLayoutProps(ITEM_HEIGHT)}
+      />,
+    );
+  });
+
+  await act(() => {
+    simulateLayout(component, {
+      viewport: {width: 10, height: VIEWPORT_HEIGHT},
+      content: {width: 10, height: currentItems.length * ITEM_HEIGHT},
+    });
+    simulateScroll(component, {x: 0, y: 50});
+    performAllBatches();
+  });
+
+  const initialScrollY = 50;
+  const numPrepends = 5;
+  const itemsPerPrepend = 3;
+
+  const anchorBeforePrepend =
+    component.getInstance().state.cellsAroundViewport.first;
+
+  for (let i = 0; i < numPrepends; i++) {
+    currentItems = [
+      ...generateItems(itemsPerPrepend, currentItems.length),
+      ...currentItems,
+    ];
+
+    await act(() => {
+      component.update(
+        <VirtualizedList
+          initialNumToRender={1}
+          windowSize={1}
+          maintainVisibleContentPosition={{minIndexForVisible: 0}}
+          {...baseItemProps(currentItems)}
+          {...fixedHeightItemLayoutProps(ITEM_HEIGHT)}
+        />,
+      );
+    });
+
+    await act(() => {
+      simulateContentLayout(component, {
+        width: 10,
+        height: currentItems.length * ITEM_HEIGHT,
+      });
+      simulateScroll(component, {
+        x: 0,
+        y: initialScrollY + (i + 1) * itemsPerPrepend * ITEM_HEIGHT,
+      });
+      performAllBatches();
+    });
+  }
+
+  const instance = component.getInstance();
+  const anchorAfterPrepend = instance.state.cellsAroundViewport.first;
+  expect(anchorAfterPrepend).toBeGreaterThanOrEqual(anchorBeforePrepend);
+  expect(anchorAfterPrepend).toBeLessThanOrEqual(
+    anchorBeforePrepend + numPrepends * itemsPerPrepend,
+  );
+});
+
+// Trigger: Rapid prepends with minIndexForVisible > 0.
+// Expected: Only items at or beyond minIndexForVisible are considered for anchor selection.
+it('maintainVisibleContentPosition with minIndexForVisible > 0 handles rapid prepends', async () => {
+  const items = generateItems(20);
+  const ITEM_HEIGHT = 10;
+
+  let component;
+  await act(() => {
+    component = create(
+      <VirtualizedList
+        initialNumToRender={1}
+        windowSize={1}
+        maintainVisibleContentPosition={{minIndexForVisible: 5}}
+        {...baseItemProps(items)}
+        {...fixedHeightItemLayoutProps(ITEM_HEIGHT)}
+      />,
+    );
+  });
+
+  await act(() => {
+    simulateLayout(component, {
+      viewport: {width: 10, height: 50},
+      content: {width: 10, height: items.length * ITEM_HEIGHT},
+    });
+    simulateScroll(component, {x: 0, y: 50});
+    performAllBatches();
+  });
+
+  const anchorBeforePrepend =
+    component.getInstance().state.cellsAroundViewport.first;
+
+  // Prepend 10 items — the anchor (item 5) should still be visible
+  const afterPrepend = [...generateItems(10, items.length), ...items];
+  await act(() => {
+    component.update(
+      <VirtualizedList
+        initialNumToRender={1}
+        windowSize={1}
+        maintainVisibleContentPosition={{minIndexForVisible: 5}}
+        {...baseItemProps(afterPrepend)}
+        {...fixedHeightItemLayoutProps(ITEM_HEIGHT)}
+      />,
+    );
+  });
+
+  await act(() => {
+    simulateContentLayout(component, {
+      width: 10,
+      height: afterPrepend.length * ITEM_HEIGHT,
+    });
+    simulateScroll(component, {x: 0, y: 50 + 10 * ITEM_HEIGHT});
+    performAllBatches();
+  });
+
+  const anchorAfterPrepend =
+    component.getInstance().state.cellsAroundViewport.first;
+  expect(anchorAfterPrepend).toBeGreaterThanOrEqual(anchorBeforePrepend);
+  expect(anchorAfterPrepend).toBeLessThanOrEqual(anchorBeforePrepend + 10);
+});
+
+// Trigger: Vertically inverted FlatList (inverted={true}). Items rendered in reverse order.
+// Expected: Inverted mode uses CSS transforms (scaleY: -1) to flip visual order. Native subview order unchanged.
+// MVCP finds first subview whose bottom edge is below scroll offset — the visually-topmost visible item.
+it('maintainVisibleContentPosition with inverted VirtualizedList handles prepends', async () => {
+  const items = generateItems(20);
+  const ITEM_HEIGHT = 10;
+
+  let component;
+  await act(() => {
+    component = create(
+      <VirtualizedList
+        initialNumToRender={1}
+        windowSize={1}
+        inverted
+        maintainVisibleContentPosition={{minIndexForVisible: 0}}
+        {...baseItemProps(items)}
+        {...fixedHeightItemLayoutProps(ITEM_HEIGHT)}
+      />,
+    );
+  });
+
+  await act(() => {
+    simulateLayout(component, {
+      viewport: {width: 10, height: 50},
+      content: {width: 10, height: items.length * ITEM_HEIGHT},
+    });
+    simulateScroll(component, {x: 0, y: 50});
+    performAllBatches();
+  });
+
+  const anchorBeforePrepend =
+    component.getInstance().state.cellsAroundViewport.first;
+
+  // Prepend 10 items — in inverted mode, items are prepended to the visual top
+  const afterPrepend = [...generateItems(10, items.length), ...items];
+  await act(() => {
+    component.update(
+      <VirtualizedList
+        initialNumToRender={1}
+        windowSize={1}
+        inverted
+        maintainVisibleContentPosition={{minIndexForVisible: 0}}
+        {...baseItemProps(afterPrepend)}
+        {...fixedHeightItemLayoutProps(ITEM_HEIGHT)}
+      />,
+    );
+  });
+
+  await act(() => {
+    simulateContentLayout(component, {
+      width: 10,
+      height: afterPrepend.length * ITEM_HEIGHT,
+    });
+    simulateScroll(component, {x: 0, y: 50 + 10 * ITEM_HEIGHT});
+    performAllBatches();
+  });
+
+  const anchorAfterPrepend =
+    component.getInstance().state.cellsAroundViewport.first;
+  expect(anchorAfterPrepend).toBeGreaterThanOrEqual(anchorBeforePrepend);
+  expect(anchorAfterPrepend).toBeLessThanOrEqual(anchorBeforePrepend + 10);
 });
 
 function generateItems(count, startKey = 0) {

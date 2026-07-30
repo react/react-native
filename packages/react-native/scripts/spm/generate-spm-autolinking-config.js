@@ -16,6 +16,8 @@
  *
  * Invokes the React Native community CLI to produce its config and writes the
  * raw JSON to <project.ios.sourceDir>/build/generated/autolinking/autolinking.json.
+ * The config command can be overridden by `--config-command` or
+ * `RCT_SPM_AUTOLINKING_CONFIG_COMMAND`, in that order, before the default.
  *
  * No filtering or reshaping happens here — the downstream consumer
  * (generate-spm-autolinking.js) does its own iOS-only filtering when reading
@@ -25,9 +27,9 @@
  * external dep discovery.
  */
 
-const {spawnSync} = require('child_process');
-const fs = require('fs');
-const path = require('path');
+const {spawnSync} = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
 
 /*::
 import type {CliConfigJson} from './spm-types';
@@ -59,6 +61,32 @@ const FALLBACK_CONFIG_COMMAND = [
   '@react-native-community/cli',
   'config',
 ];
+
+function parseConfigCommandJson(
+  raw /*: string */,
+  source /*: string */,
+) /*: Array<string> */ {
+  let parsed;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    throw new Error(
+      `${source}: config command must be a JSON array of strings. Example: '["npx","@react-native-community/cli","config"]'`,
+    );
+  }
+
+  if (
+    !Array.isArray(parsed) ||
+    parsed.length === 0 ||
+    !parsed.every(value => typeof value === 'string' && value.length > 0)
+  ) {
+    throw new Error(
+      `${source}: config command must be a non-empty JSON array of non-empty strings`,
+    );
+  }
+
+  return parsed;
+}
 
 function resolveDefaultConfigCommand(
   projectRoot /*: string */,
@@ -94,6 +122,19 @@ function resolveDefaultConfigCommand(
   return FALLBACK_CONFIG_COMMAND;
 }
 
+// Env-var / default resolution for the autolinking config command. An explicit
+// `configCommand` (e.g. from `--config-command`) is handled upstream by
+// generateAutolinkingConfig's destructuring default, so it never reaches here —
+// this only decides between the env-var override and the built-in default.
+function resolveConfigCommand(projectRoot /*: string */) /*: Array<string> */ {
+  const raw = process.env.RCT_SPM_AUTOLINKING_CONFIG_COMMAND;
+  if (typeof raw === 'string' && raw.trim().length > 0) {
+    return parseConfigCommandJson(raw, 'RCT_SPM_AUTOLINKING_CONFIG_COMMAND');
+  }
+
+  return resolveDefaultConfigCommand(projectRoot);
+}
+
 function defaultCliRunner(
   command /*: Array<string> */,
   opts /*: {cwd: string} */,
@@ -116,7 +157,7 @@ function generateAutolinkingConfig(
 ) /*: GenerateAutolinkingConfigResult */ {
   const {
     projectRoot,
-    configCommand = resolveDefaultConfigCommand(projectRoot),
+    configCommand = resolveConfigCommand(projectRoot),
     cliRunner = defaultCliRunner,
   } = opts;
 
@@ -158,4 +199,9 @@ function generateAutolinkingConfig(
   return {config, outputPath: outPath, rawJson};
 }
 
-module.exports = {generateAutolinkingConfig, resolveDefaultConfigCommand};
+module.exports = {
+  generateAutolinkingConfig,
+  parseConfigCommandJson,
+  resolveConfigCommand,
+  resolveDefaultConfigCommand,
+};

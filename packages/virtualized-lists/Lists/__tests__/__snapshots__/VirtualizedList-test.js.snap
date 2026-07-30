@@ -984,13 +984,222 @@ exports[`VirtualizedList keeps sticky headers above viewport visualized 1`] = `
 `;
 
 exports[`VirtualizedList renders all the bells and whistles 1`] = `
-<RCTScrollView
-  ItemSeparatorComponent={[Function]}
-  ListEmptyComponent={[Function]}
-  ListFooterComponent={[Function]}
-  ListHeaderComponent={[Function]}
-  data={
-    Array [
+Object {
+  "children": Array [
+    Object {
+      "children": null,
+      "props": Object {},
+      "type": "RCTRefreshControl",
+    },
+    Object {
+      "children": Array [
+        Object {
+          "children": Array [
+            Object {
+              "children": null,
+              "props": Object {},
+              "type": "header",
+            },
+          ],
+          "props": Object {
+            "collapsable": false,
+            "onLayout": [Function],
+            "style": Object {
+              "transform": Array [
+                Object {
+                  "scaleY": -1,
+                },
+              ],
+            },
+          },
+          "type": "View",
+        },
+        Object {
+          "children": Array [
+            Object {
+              "children": null,
+              "props": Object {
+                "value": "0",
+              },
+              "type": "item",
+            },
+            Object {
+              "children": null,
+              "props": Object {},
+              "type": "separator",
+            },
+          ],
+          "props": Object {
+            "onFocusCapture": [Function],
+            "style": Array [
+              Object {
+                "flexDirection": "column-reverse",
+              },
+              Object {
+                "transform": Array [
+                  Object {
+                    "scaleY": -1,
+                  },
+                ],
+              },
+            ],
+          },
+          "type": "View",
+        },
+        Object {
+          "children": Array [
+            Object {
+              "children": null,
+              "props": Object {
+                "value": "1",
+              },
+              "type": "item",
+            },
+            Object {
+              "children": null,
+              "props": Object {},
+              "type": "separator",
+            },
+          ],
+          "props": Object {
+            "onFocusCapture": [Function],
+            "style": Array [
+              Object {
+                "flexDirection": "column-reverse",
+              },
+              Object {
+                "transform": Array [
+                  Object {
+                    "scaleY": -1,
+                  },
+                ],
+              },
+            ],
+          },
+          "type": "View",
+        },
+        Object {
+          "children": Array [
+            Object {
+              "children": null,
+              "props": Object {
+                "value": "2",
+              },
+              "type": "item",
+            },
+            Object {
+              "children": null,
+              "props": Object {},
+              "type": "separator",
+            },
+          ],
+          "props": Object {
+            "onFocusCapture": [Function],
+            "style": Array [
+              Object {
+                "flexDirection": "column-reverse",
+              },
+              Object {
+                "transform": Array [
+                  Object {
+                    "scaleY": -1,
+                  },
+                ],
+              },
+            ],
+          },
+          "type": "View",
+        },
+        Object {
+          "children": Array [
+            Object {
+              "children": null,
+              "props": Object {
+                "value": "3",
+              },
+              "type": "item",
+            },
+            Object {
+              "children": null,
+              "props": Object {},
+              "type": "separator",
+            },
+          ],
+          "props": Object {
+            "onFocusCapture": [Function],
+            "style": Array [
+              Object {
+                "flexDirection": "column-reverse",
+              },
+              Object {
+                "transform": Array [
+                  Object {
+                    "scaleY": -1,
+                  },
+                ],
+              },
+            ],
+          },
+          "type": "View",
+        },
+        Object {
+          "children": Array [
+            Object {
+              "children": null,
+              "props": Object {
+                "value": "4",
+              },
+              "type": "item",
+            },
+          ],
+          "props": Object {
+            "onFocusCapture": [Function],
+            "style": Array [
+              Object {
+                "flexDirection": "column-reverse",
+              },
+              Object {
+                "transform": Array [
+                  Object {
+                    "scaleY": -1,
+                  },
+                ],
+              },
+            ],
+          },
+          "type": "View",
+        },
+        Object {
+          "children": Array [
+            Object {
+              "children": null,
+              "props": Object {},
+              "type": "footer",
+            },
+          ],
+          "props": Object {
+            "onLayout": [Function],
+            "style": Object {
+              "transform": Array [
+                Object {
+                  "scaleY": -1,
+                },
+              ],
+            },
+          },
+          "type": "View",
+        },
+      ],
+      "props": Object {},
+      "type": "View",
+    },
+  ],
+  "props": Object {
+    "ItemSeparatorComponent": [Function],
+    "ListEmptyComponent": [Function],
+    "ListFooterComponent": [Function],
+    "ListHeaderComponent": [Function],
+    "data": Array [
       Object {
         "id": "0",
       },
@@ -1006,35 +1215,32 @@ exports[`VirtualizedList renders all the bells and whistles 1`] = `
       Object {
         "id": "4",
       },
-    ]
-  }
-  getItem={[Function]}
-  getItemCount={[Function]}
-  getItemLayout={[Function]}
-  invertStickyHeaders={true}
-  inverted={true}
-  isInvertedVirtualizedList={true}
-  keyExtractor={[Function]}
-  onContentSizeChange={[Function]}
-  onLayout={[Function]}
-  onMomentumScrollBegin={[Function]}
-  onMomentumScrollEnd={[Function]}
-  onRefresh={[MockFunction]}
-  onScroll={[Function]}
-  onScrollBeginDrag={[Function]}
-  onScrollEndDrag={[Function]}
-  refreshControl={
-    <RefreshControlMock
+    ],
+    "getItem": [Function],
+    "getItemCount": [Function],
+    "getItemLayout": [Function],
+    "invertStickyHeaders": true,
+    "inverted": true,
+    "isInvertedVirtualizedList": true,
+    "keyExtractor": [Function],
+    "maintainVisibleContentPosition": undefined,
+    "onContentSizeChange": [Function],
+    "onLayout": [Function],
+    "onMomentumScrollBegin": [Function],
+    "onMomentumScrollEnd": [Function],
+    "onRefresh": [MockFunction],
+    "onScroll": [Function],
+    "onScrollBeginDrag": [Function],
+    "onScrollEndDrag": [Function],
+    "refreshControl": <RefreshControlMock
       onRefresh={[MockFunction]}
       refreshing={false}
-    />
-  }
-  refreshing={false}
-  renderItem={[Function]}
-  scrollEventThrottle={0.0001}
-  stickyHeaderIndices={Array []}
-  style={
-    Array [
+    />,
+    "refreshing": false,
+    "renderItem": [Function],
+    "scrollEventThrottle": 0.0001,
+    "stickyHeaderIndices": Array [],
+    "style": Array [
       Object {
         "transform": Array [
           Object {
@@ -1043,151 +1249,10 @@ exports[`VirtualizedList renders all the bells and whistles 1`] = `
         ],
       },
       undefined,
-    ]
-  }
->
-  <RCTRefreshControl />
-  <View>
-    <View
-      collapsable={false}
-      onLayout={[Function]}
-      style={
-        Object {
-          "transform": Array [
-            Object {
-              "scaleY": -1,
-            },
-          ],
-        }
-      }
-    >
-      <header />
-    </View>
-    <View
-      onFocusCapture={[Function]}
-      style={
-        Array [
-          Object {
-            "flexDirection": "column-reverse",
-          },
-          Object {
-            "transform": Array [
-              Object {
-                "scaleY": -1,
-              },
-            ],
-          },
-        ]
-      }
-    >
-      <item
-        value="0"
-      />
-      <separator />
-    </View>
-    <View
-      onFocusCapture={[Function]}
-      style={
-        Array [
-          Object {
-            "flexDirection": "column-reverse",
-          },
-          Object {
-            "transform": Array [
-              Object {
-                "scaleY": -1,
-              },
-            ],
-          },
-        ]
-      }
-    >
-      <item
-        value="1"
-      />
-      <separator />
-    </View>
-    <View
-      onFocusCapture={[Function]}
-      style={
-        Array [
-          Object {
-            "flexDirection": "column-reverse",
-          },
-          Object {
-            "transform": Array [
-              Object {
-                "scaleY": -1,
-              },
-            ],
-          },
-        ]
-      }
-    >
-      <item
-        value="2"
-      />
-      <separator />
-    </View>
-    <View
-      onFocusCapture={[Function]}
-      style={
-        Array [
-          Object {
-            "flexDirection": "column-reverse",
-          },
-          Object {
-            "transform": Array [
-              Object {
-                "scaleY": -1,
-              },
-            ],
-          },
-        ]
-      }
-    >
-      <item
-        value="3"
-      />
-      <separator />
-    </View>
-    <View
-      onFocusCapture={[Function]}
-      style={
-        Array [
-          Object {
-            "flexDirection": "column-reverse",
-          },
-          Object {
-            "transform": Array [
-              Object {
-                "scaleY": -1,
-              },
-            ],
-          },
-        ]
-      }
-    >
-      <item
-        value="4"
-      />
-    </View>
-    <View
-      onLayout={[Function]}
-      style={
-        Object {
-          "transform": Array [
-            Object {
-              "scaleY": -1,
-            },
-          ],
-        }
-      }
-    >
-      <footer />
-    </View>
-  </View>
-</RCTScrollView>
+    ],
+  },
+  "type": "RCTScrollView",
+}
 `;
 
 exports[`VirtualizedList renders empty list 1`] = `
@@ -3918,6 +3983,369 @@ exports[`handles maintainVisibleContentPosition when anchor moves before minInde
       style={
         Object {
           "height": 150,
+        }
+      }
+    />
+  </View>
+</RCTScrollView>
+`;
+
+exports[`handles multiple rapid prepends with maintainVisibleContentPosition 1`] = `
+<RCTScrollView
+  data={
+    Array [
+      Object {
+        "key": 20,
+      },
+      Object {
+        "key": 21,
+      },
+      Object {
+        "key": 22,
+      },
+      Object {
+        "key": 23,
+      },
+      Object {
+        "key": 24,
+      },
+      Object {
+        "key": 0,
+      },
+      Object {
+        "key": 1,
+      },
+      Object {
+        "key": 2,
+      },
+      Object {
+        "key": 3,
+      },
+      Object {
+        "key": 4,
+      },
+      Object {
+        "key": 5,
+      },
+      Object {
+        "key": 6,
+      },
+      Object {
+        "key": 7,
+      },
+      Object {
+        "key": 8,
+      },
+      Object {
+        "key": 9,
+      },
+      Object {
+        "key": 10,
+      },
+      Object {
+        "key": 11,
+      },
+      Object {
+        "key": 12,
+      },
+      Object {
+        "key": 13,
+      },
+      Object {
+        "key": 14,
+      },
+      Object {
+        "key": 15,
+      },
+      Object {
+        "key": 16,
+      },
+      Object {
+        "key": 17,
+      },
+      Object {
+        "key": 18,
+      },
+      Object {
+        "key": 19,
+      },
+    ]
+  }
+  getItem={[Function]}
+  getItemCount={[Function]}
+  getItemLayout={[Function]}
+  initialNumToRender={1}
+  maintainVisibleContentPosition={
+    Object {
+      "minIndexForVisible": 0,
+    }
+  }
+  onContentSizeChange={[Function]}
+  onLayout={[Function]}
+  onMomentumScrollBegin={[Function]}
+  onMomentumScrollEnd={[Function]}
+  onScroll={[Function]}
+  onScrollBeginDrag={[Function]}
+  onScrollEndDrag={[Function]}
+  renderItem={[Function]}
+  scrollEventThrottle={0.0001}
+  stickyHeaderIndices={Array []}
+  windowSize={1}
+>
+  <View>
+    <View
+      onFocusCapture={[Function]}
+      style={null}
+    >
+      <MockCellItem
+        value={20}
+      />
+    </View>
+    <View
+      style={
+        Object {
+          "height": 80,
+        }
+      }
+    />
+    <View
+      onFocusCapture={[Function]}
+      style={null}
+    >
+      <MockCellItem
+        value={4}
+      />
+    </View>
+    <View
+      onFocusCapture={[Function]}
+      style={null}
+    >
+      <MockCellItem
+        value={5}
+      />
+    </View>
+    <View
+      onFocusCapture={[Function]}
+      style={null}
+    >
+      <MockCellItem
+        value={6}
+      />
+    </View>
+    <View
+      onFocusCapture={[Function]}
+      style={null}
+    >
+      <MockCellItem
+        value={7}
+      />
+    </View>
+    <View
+      onFocusCapture={[Function]}
+      style={null}
+    >
+      <MockCellItem
+        value={8}
+      />
+    </View>
+    <View
+      onFocusCapture={[Function]}
+      style={null}
+    >
+      <MockCellItem
+        value={9}
+      />
+    </View>
+    <View
+      style={
+        Object {
+          "height": 100,
+        }
+      }
+    />
+  </View>
+</RCTScrollView>
+`;
+
+exports[`handles multiple rapid prepends with maintainVisibleContentPosition 2`] = `
+<RCTScrollView
+  data={
+    Array [
+      Object {
+        "key": 25,
+      },
+      Object {
+        "key": 26,
+      },
+      Object {
+        "key": 27,
+      },
+      Object {
+        "key": 20,
+      },
+      Object {
+        "key": 21,
+      },
+      Object {
+        "key": 22,
+      },
+      Object {
+        "key": 23,
+      },
+      Object {
+        "key": 24,
+      },
+      Object {
+        "key": 0,
+      },
+      Object {
+        "key": 1,
+      },
+      Object {
+        "key": 2,
+      },
+      Object {
+        "key": 3,
+      },
+      Object {
+        "key": 4,
+      },
+      Object {
+        "key": 5,
+      },
+      Object {
+        "key": 6,
+      },
+      Object {
+        "key": 7,
+      },
+      Object {
+        "key": 8,
+      },
+      Object {
+        "key": 9,
+      },
+      Object {
+        "key": 10,
+      },
+      Object {
+        "key": 11,
+      },
+      Object {
+        "key": 12,
+      },
+      Object {
+        "key": 13,
+      },
+      Object {
+        "key": 14,
+      },
+      Object {
+        "key": 15,
+      },
+      Object {
+        "key": 16,
+      },
+      Object {
+        "key": 17,
+      },
+      Object {
+        "key": 18,
+      },
+      Object {
+        "key": 19,
+      },
+    ]
+  }
+  getItem={[Function]}
+  getItemCount={[Function]}
+  getItemLayout={[Function]}
+  initialNumToRender={1}
+  maintainVisibleContentPosition={
+    Object {
+      "minIndexForVisible": 0,
+    }
+  }
+  onContentSizeChange={[Function]}
+  onLayout={[Function]}
+  onMomentumScrollBegin={[Function]}
+  onMomentumScrollEnd={[Function]}
+  onScroll={[Function]}
+  onScrollBeginDrag={[Function]}
+  onScrollEndDrag={[Function]}
+  renderItem={[Function]}
+  scrollEventThrottle={0.0001}
+  stickyHeaderIndices={Array []}
+  windowSize={1}
+>
+  <View>
+    <View
+      onFocusCapture={[Function]}
+      style={null}
+    >
+      <MockCellItem
+        value={25}
+      />
+    </View>
+    <View
+      style={
+        Object {
+          "height": 110,
+        }
+      }
+    />
+    <View
+      onFocusCapture={[Function]}
+      style={null}
+    >
+      <MockCellItem
+        value={4}
+      />
+    </View>
+    <View
+      onFocusCapture={[Function]}
+      style={null}
+    >
+      <MockCellItem
+        value={5}
+      />
+    </View>
+    <View
+      onFocusCapture={[Function]}
+      style={null}
+    >
+      <MockCellItem
+        value={6}
+      />
+    </View>
+    <View
+      onFocusCapture={[Function]}
+      style={null}
+    >
+      <MockCellItem
+        value={7}
+      />
+    </View>
+    <View
+      onFocusCapture={[Function]}
+      style={null}
+    >
+      <MockCellItem
+        value={8}
+      />
+    </View>
+    <View
+      onFocusCapture={[Function]}
+      style={null}
+    >
+      <MockCellItem
+        value={9}
+      />
+    </View>
+    <View
+      style={
+        Object {
+          "height": 100,
         }
       }
     />

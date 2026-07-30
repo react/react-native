@@ -8,12 +8,10 @@
  * @format
  */
 
-// $FlowFixMe[cannot-resolve-module] libdef missing in RN OSS
-import type {Timeout} from 'timers';
+import type {Timeout} from 'node:timers';
 
-// $FlowFixMe[cannot-resolve-module] libdef missing in RN OSS
-import {setTimeout} from 'timers';
-import util from 'util';
+import {setTimeout} from 'node:timers';
+import util from 'node:util';
 
 const debug = require('debug')('Metro:InspectorProxy');
 const debugCDPMessages = require('debug')('Metro:InspectorProxyCDPMessages');

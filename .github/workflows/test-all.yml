@@ -325,7 +325,10 @@ jobs:
     if: |
       always() &&
       !contains(needs.*.result, 'failure') &&
-      !contains(needs.*.result, 'cancelled')
+      !contains(needs.*.result, 'cancelled') &&
+      (needs.build_android.result == 'success' ||
+        needs.prebuild_apple_dependencies.result == 'success' ||
+        needs.prebuild_react_native_core.result == 'success')
     container:
       image: reactnativecommunity/react-native-android:latest
       env:

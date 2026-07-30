@@ -19,7 +19,7 @@ import ReactNativeFeatureFlagsDefaultsKt from './templates/android/ReactNativeFe
 import ReactNativeFeatureFlagsLocalAccessorKt from './templates/android/ReactNativeFeatureFlagsLocalAccessor.kt-template';
 import ReactNativeFeatureFlagsOverrides from './templates/android/ReactNativeFeatureFlagsOverrides_RNOSS__Stage__Android.kt-template.js';
 import ReactNativeFeatureFlagsProviderKt from './templates/android/ReactNativeFeatureFlagsProvider.kt-template';
-import path from 'path';
+import path from 'node:path';
 
 export default function generateAndroidModules(
   generatorConfig: GeneratorConfig,

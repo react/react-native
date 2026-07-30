@@ -24,8 +24,8 @@
  *    framework-aware RCTLocalizedString loader resolves them via bundleForClass:.
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 const plist = require('plist');
 
 // Source roots whose pods compile into React.framework. third-party-podspecs is

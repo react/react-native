@@ -17,8 +17,8 @@ const {
   parseiOSAnnotations,
   writeFileSyncIfChanged,
 } = require('./utils');
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const THIRD_PARTY_COMPONENTS_H_TEMPLATE_PATH = path.join(
   TEMPLATES_FOLDER_PATH,

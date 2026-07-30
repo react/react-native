@@ -171,6 +171,13 @@ else
   EXTRA_ARGS+=("--config-cmd" "'$NODE_BINARY' $NODE_ARGS '$REACT_NATIVE_DIR/cli.js' config")
 fi
 
+# shellcheck source=/dev/null
+source "$REACT_NATIVE_DIR/scripts/xcode/asset-catalog.sh"
+ASSET_CATALOG_STAGING_DIR="$(asset_catalog_staging_dir)"
+if [[ -n "$ASSET_CATALOG_STAGING_DIR" ]]; then
+  EXTRA_ARGS+=("--asset-catalog-dest" "$ASSET_CATALOG_STAGING_DIR")
+fi
+
 # shellcheck disable=SC2086
 "$NODE_BINARY" $NODE_ARGS "$CLI_PATH" $BUNDLE_COMMAND \
   $CONFIG_ARG \
@@ -182,6 +189,8 @@ fi
   --assets-dest "$DEST" \
   "${EXTRA_ARGS[@]}" \
   $EXTRA_PACKAGER_ARGS
+
+asset_catalog_compile "$ASSET_CATALOG_STAGING_DIR"
 
 if [[ $USE_HERMES == false ]]; then
   cp "$BUNDLE_FILE" "$DEST/"

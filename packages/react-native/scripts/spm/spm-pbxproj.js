@@ -10,7 +10,7 @@
 
 'use strict';
 
-const crypto = require('crypto');
+const crypto = require('node:crypto');
 
 /**
  * Generate a deterministic 24-hex-character UUID from a seed string.

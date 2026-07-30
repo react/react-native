@@ -20,7 +20,7 @@ This will set a cookie named "wstest" on the response of any incoming request.
 `);
 
 const connect = require('connect');
-const http = require('http');
+const http = require('node:http');
 
 const app = connect();
 

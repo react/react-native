@@ -313,22 +313,22 @@ RCT_EXPORT_MODULE()
   return NO;
 }
 
-RCT_EXPORT_METHOD(reload)
+- (void)reload
 {
   RCTTriggerReloadCommandListeners(@"Unknown From JS");
 }
 
-RCT_EXPORT_METHOD(reloadWithReason : (NSString *)reason)
+- (void)reloadWithReason:(NSString *)reason
 {
   RCTTriggerReloadCommandListeners(reason);
 }
 
-RCT_EXPORT_METHOD(onFastRefresh)
+- (void)onFastRefresh
 {
   [self.bridge onFastRefresh];
 }
 
-RCT_EXPORT_METHOD(setIsShakeToShowDevMenuEnabled : (BOOL)enabled)
+- (void)setIsShakeToShowDevMenuEnabled:(BOOL)enabled
 {
   [self _updateSettingWithValue:@(enabled) forKey:kRCTDevSettingShakeToShowDevMenu];
 }
@@ -338,7 +338,7 @@ RCT_EXPORT_METHOD(setIsShakeToShowDevMenuEnabled : (BOOL)enabled)
   return _isShakeGestureEnabled && [[self settingForKey:kRCTDevSettingShakeToShowDevMenu] boolValue];
 }
 
-RCT_EXPORT_METHOD(setProfilingEnabled : (BOOL)enabled)
+- (void)setProfilingEnabled:(BOOL)enabled
 {
   [self _updateSettingWithValue:@(enabled) forKey:kRCTDevSettingProfilingEnabled];
   [self _profilingSettingDidChange];
@@ -368,7 +368,7 @@ RCT_EXPORT_METHOD(setProfilingEnabled : (BOOL)enabled)
   }
 }
 
-RCT_EXPORT_METHOD(setHotLoadingEnabled : (BOOL)enabled)
+- (void)setHotLoadingEnabled:(BOOL)enabled
 {
   if (self.isHotLoadingEnabled != enabled) {
     [self _updateSettingWithValue:@(enabled) forKey:kRCTDevSettingHotLoadingEnabled];
@@ -390,7 +390,7 @@ RCT_EXPORT_METHOD(setHotLoadingEnabled : (BOOL)enabled)
   return [[self settingForKey:kRCTDevSettingHotLoadingEnabled] boolValue];
 }
 
-RCT_EXPORT_METHOD(toggleElementInspector)
+- (void)toggleElementInspector
 {
   BOOL value = [[self settingForKey:kRCTDevSettingIsInspectorShown] boolValue];
   [self _updateSettingWithValue:@(!value) forKey:kRCTDevSettingIsInspectorShown];
@@ -403,7 +403,7 @@ RCT_EXPORT_METHOD(toggleElementInspector)
   }
 }
 
-RCT_EXPORT_METHOD(addMenuItem : (NSString *)title)
+- (void)addMenuItem:(NSString *)title
 {
   __weak __typeof(self) weakSelf = self;
   [(RCTDevMenu *)[self.moduleRegistry moduleForName:"DevMenu"]
@@ -494,7 +494,7 @@ RCT_EXPORT_METHOD(addMenuItem : (NSString *)title)
   }
 }
 
-RCT_EXPORT_METHOD(openDebugger)
+- (void)openDebugger
 {
 #if RCT_ENABLE_INSPECTOR
   [RCTInspectorDevServerHelper

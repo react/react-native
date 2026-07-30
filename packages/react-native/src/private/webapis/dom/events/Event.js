@@ -71,27 +71,35 @@ export default class Event {
   _timeStamp: number;
 
   // $FlowExpectedError[unsupported-syntax]
+  // $FlowFixMe[illegal-key]
   [COMPOSED_PATH_KEY]: boolean = [];
 
   // $FlowExpectedError[unsupported-syntax]
+  // $FlowFixMe[illegal-key]
   [CURRENT_TARGET_KEY]: EventTarget | null = null;
 
   // $FlowExpectedError[unsupported-syntax]
+  // $FlowFixMe[illegal-key]
   [EVENT_PHASE_KEY]: boolean = Event.NONE;
 
   // $FlowExpectedError[unsupported-syntax]
+  // $FlowFixMe[illegal-key]
   [IN_PASSIVE_LISTENER_FLAG_KEY]: boolean = false;
 
   // $FlowExpectedError[unsupported-syntax]
+  // $FlowFixMe[illegal-key]
   [IS_TRUSTED_KEY]: boolean = false;
 
   // $FlowExpectedError[unsupported-syntax]
+  // $FlowFixMe[illegal-key]
   [STOP_IMMEDIATE_PROPAGATION_FLAG_KEY]: boolean = false;
 
   // $FlowExpectedError[unsupported-syntax]
+  // $FlowFixMe[illegal-key]
   [STOP_PROPAGATION_FLAG_KEY]: boolean = false;
 
   // $FlowExpectedError[unsupported-syntax]
+  // $FlowFixMe[illegal-key]
   [TARGET_KEY]: EventTarget | null = null;
 
   constructor(type: string, options?: ?EventInit) {

@@ -65,7 +65,7 @@ RCT_EXPORT_MODULE()
  * The key from the `buttons` dictionary is passed back in the callback on click.
  * Buttons are displayed in the order they are specified.
  */
-RCT_EXPORT_METHOD(alertWithArgs : (JS::NativeAlertManager::Args &)args callback : (RCTResponseSenderBlock)callback)
+- (void)alertWithArgs:(JS::NativeAlertManager::Args &)args callback:(RCTResponseSenderBlock)callback
 {
   NSString *title = [RCTConvert NSString:args.title()];
   NSString *message = [RCTConvert NSString:args.message()];

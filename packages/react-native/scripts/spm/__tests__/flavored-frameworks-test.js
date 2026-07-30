@@ -14,13 +14,13 @@
 // Info.plists as JSON — plutil is macOS-only, so stand in with a portable
 // plist-parse for Linux CI. Module-level mock because the module destructures
 // `execFileSync` at require time (same pattern as the old swap-flavor-test).
-jest.mock('child_process', () => {
-  const actual = jest.requireActual('child_process');
+jest.mock('node:child_process', () => {
+  const actual = jest.requireActual('node:child_process');
   return {
     ...actual,
     execFileSync: (cmd, args, opts) => {
       if (cmd === 'plutil') {
-        const fsActual = require('fs');
+        const fsActual = require('node:fs');
         const plistActual = jest.requireActual('plist');
         const file = args[args.length - 1];
         return Buffer.from(
@@ -41,9 +41,9 @@ const {
   sdkConditionForSlice,
   transformReactModuleMap,
 } = require('../flavored-frameworks');
-const fs = require('fs');
-const os = require('os');
-const path = require('path');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
 const plist = require('plist');
 
 const BUILTINS = [

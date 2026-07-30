@@ -18,10 +18,11 @@
 
 using namespace facebook::react;
 
-inline static TextAlignment RCTResolveTextAlignment(TextAlignment textAlignment, LayoutDirection layoutDirection)
+inline static TextAlignment RCTResolveTextAlignment(TextAlignment textAlignment, bool isRTL)
 {
-  const bool isRTL = layoutDirection == LayoutDirection::RightToLeft;
   switch (textAlignment) {
+    case TextAlignment::Natural:
+      return isRTL ? TextAlignment::Right : TextAlignment::Left;
     case TextAlignment::Start:
       return isRTL ? TextAlignment::Right : TextAlignment::Left;
     case TextAlignment::End:
@@ -212,10 +213,10 @@ NSMutableDictionary<NSAttributedStringKey, id> *RCTNSTextAttributesFromTextAttri
   // Paragraph Style
   NSMutableParagraphStyle *paragraphStyle = [NSMutableParagraphStyle new];
   BOOL isParagraphStyleUsed = NO;
-  if (textAttributes.alignment.has_value()) {
-    TextAlignment textAlignment = RCTResolveTextAlignment(
-        textAttributes.alignment.value_or(TextAlignment::Natural),
-        textAttributes.layoutDirection.value_or(LayoutDirection::LeftToRight));
+  const bool isRTL = textAttributes.layoutDirection == LayoutDirection::RightToLeft;
+  if (textAttributes.alignment.has_value() || isRTL) {
+    TextAlignment textAlignment =
+        RCTResolveTextAlignment(textAttributes.alignment.value_or(TextAlignment::Natural), isRTL);
 
     paragraphStyle.alignment = RCTNSTextAlignmentFromTextAlignment(textAlignment);
     isParagraphStyleUsed = YES;

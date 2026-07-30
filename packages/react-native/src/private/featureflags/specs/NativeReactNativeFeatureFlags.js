@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<848355c91c5827383c35686d975ebb08>>
+ * @generated SignedSource<<721fb68d3038841ecd6bbaabafccd5cc>>
  * @flow strict
  * @noformat
  */
@@ -54,6 +54,7 @@ export interface Spec extends TurboModule {
   readonly enableIOSTextBaselineOffsetPerLine?: () => boolean;
   readonly enableIOSViewClipToPaddingBox?: () => boolean;
   readonly enableImagePrefetchingAndroid?: () => boolean;
+  readonly enableImageTransparentTintColor?: () => boolean;
   readonly enableImmediateUpdateModeForContentOffsetChanges?: () => boolean;
   readonly enableImperativeFocus?: () => boolean;
   readonly enableInteropViewManagerClassLookUpOptimizationIOS?: () => boolean;
@@ -62,6 +63,7 @@ export interface Spec extends TurboModule {
   readonly enableLayoutAnimationsOnAndroid?: () => boolean;
   readonly enableLayoutAnimationsOnIOS?: () => boolean;
   readonly enableModuleArgumentNSNullConversionIOS?: () => boolean;
+  readonly enableMountingCoordinatorPullModelAndroid?: () => boolean;
   readonly enableMutationObserverByDefault?: () => boolean;
   readonly enableNativeCSSParsing?: () => boolean;
   readonly enablePreparedTextLayout?: () => boolean;

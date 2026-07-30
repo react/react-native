@@ -302,11 +302,11 @@ function InternalTextInput(props: TextInputProps): React.Node {
       TextInputState.registerInput(inputRefValue);
 
       return () => {
-        TextInputState.unregisterInput(inputRefValue);
-
         if (TextInputState.currentlyFocusedInput() === inputRefValue) {
           nullthrows(inputRefValue).blur();
         }
+
+        TextInputState.unregisterInput(inputRefValue);
       };
     }
   }, []);

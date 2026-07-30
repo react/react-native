@@ -83,7 +83,7 @@ export default function processFilter(
           result.push(filterFunction);
         } else {
           // If any primitive is invalid then apply none of the filters. This is how
-          // web works and makes it clear that something is wrong becuase no
+          // web works and makes it clear that something is wrong because no
           // graphical effects are happening.
           return [];
         }
@@ -110,7 +110,7 @@ export default function processFilter(
           result.push(resultObject);
         } else {
           // If any primitive is invalid then apply none of the filters. This is how
-          // web works and makes it clear that something is wrong becuase no
+          // web works and makes it clear that something is wrong because no
           // graphical effects are happening.
           return [];
         }

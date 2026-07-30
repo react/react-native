@@ -14,7 +14,7 @@ import {
   getReactNativePackage,
   getWorkspaceRoot,
 } from '../../shared/monorepoUtils';
-import path from 'path';
+import path from 'node:path';
 import {globSync} from 'tinyglobby';
 
 describe('package manifests', () => {

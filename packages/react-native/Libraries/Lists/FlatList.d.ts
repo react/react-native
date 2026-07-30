@@ -161,6 +161,11 @@ export interface FlatListProps<ItemT> extends VirtualizedListProps<ItemT> {
    * @platform android
    */
   fadingEdgeLength?: number | {start: number; end: number} | undefined;
+
+  /**
+   * Enable an optimization to memoize the item renderer to prevent unnecessary rerenders.
+   */
+  strictMode?: boolean | undefined;
 }
 
 export abstract class FlatListComponent<

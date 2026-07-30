@@ -18,7 +18,7 @@
  * --yarnBinary [path] - path to yarn binary, defaults to yarn
  */
 
-const {execSync} = require('child_process');
+const {execSync} = require('node:child_process');
 const argv /*:Readonly<{
   maxWorkers?: number,
   jestBinary?: string,

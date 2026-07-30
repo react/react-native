@@ -55,6 +55,7 @@
  *                               must contain debug/ and release/ cache slots.
  *   [advanced] --download <auto|skip|force> Artifact policy (default: auto).
  *   [advanced] --skip-codegen   Skip the react-native codegen step.
+ *   [advanced] --config-command <json> Override the autolinking config command.
  *
  * Steps performed (add/update):
  *   1. react-native codegen → build/generated/ios/ + install SPM codegen template
@@ -83,6 +84,7 @@ const {
 } = require('./spm/generate-spm-autolinking');
 const {
   generateAutolinkingConfig,
+  parseConfigCommandJson,
 } = require('./spm/generate-spm-autolinking-config');
 const {main: generatePackage} = require('./spm/generate-spm-package');
 const {findSourcePath} = require('./spm/generate-spm-package');
@@ -107,10 +109,10 @@ const {
   remotePackageConfig,
   runCodegenAndInstallTemplate,
 } = require('./spm/spm-utils');
-const {execFileSync} = require('child_process');
-const fs = require('fs');
-const path = require('path');
-const readline = require('readline');
+const {execFileSync} = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
+const readline = require('node:readline');
 const yargs = require('yargs');
 
 const {log, warn: logError} = makeLogger('setup-apple-spm');
@@ -187,6 +189,11 @@ function parseArgs(argv /*: Array<string> */) /*: SetupArgs */ {
       default: false,
       describe: '[advanced] Skip the react-native codegen step',
     })
+    .option('config-command', {
+      type: 'string',
+      describe:
+        '[advanced] JSON array of the argv used to generate autolinking.json, overriding the default @react-native-community/cli config command. Also settable via RCT_SPM_AUTOLINKING_CONFIG_COMMAND. Example: \'["npx","expo-modules-autolinking","react-native-config","--json","--platform","ios"]\'',
+    })
     .usage(
       'Usage: $0 [action] [options]\n\nSets up Swift Package Manager support in a React Native app.',
     )
@@ -214,6 +221,10 @@ function parseArgs(argv /*: Array<string> */) /*: SetupArgs */ {
     version: parsed.version ?? null,
     artifacts: parsed.artifacts ?? null,
     skipCodegen: parsed['skip-codegen'],
+    configCommand:
+      parsed['config-command'] != null
+        ? parseConfigCommandJson(parsed['config-command'], '--config-command')
+        : null,
     downloadPolicy: parsed.download,
     productName: parsed['product-name'] ?? null,
     xcodeprojPath: parsed.xcodeproj ?? null,
@@ -892,6 +903,47 @@ function logNextSteps(
   log('To remove SPM later: `npx react-native spm deinit`');
 }
 
+// Generate autolinking.json, failing closed on a config-command error.
+//
+// generateAutolinkingConfig throws ONLY when the config command itself fails —
+// a non-zero exit, unparseable output, or a config missing
+// project.ios.sourceDir. Swallowing that (the old behavior) let the run proceed
+// and emit an empty Autolinked package, which only surfaced much later as an
+// inscrutable `unable to resolve module dependency` at build time. Instead we
+// set process.exitCode = 2 (a hard Xcode build-phase error, matching the
+// RemoteVersionError path) and return null so the caller stops.
+//
+// A genuinely native-module-free app does NOT reach the error path: its command
+// exits 0 with valid, empty-dependency JSON, so generateAutolinkingConfig
+// returns normally and the empty-package path downstream stays valid.
+function generateAutolinkingConfigOrFailClosed(
+  opts /*: {
+    projectRoot: string,
+    configCommand?: Array<string>,
+    generate?: typeof generateAutolinkingConfig,
+  } */,
+) /*: ?AutolinkingConfigResult */ {
+  const generate = opts.generate ?? generateAutolinkingConfig;
+  try {
+    return generate({
+      projectRoot: opts.projectRoot,
+      configCommand: opts.configCommand,
+    });
+  } catch (e) {
+    logError(
+      `Failed to generate autolinking.json: ${e.message}\n` +
+        'The autolinking config command failed. If this app replaces ' +
+        '@react-native-community/cli autolinking (e.g. an Expo app), set ' +
+        'RCT_SPM_AUTOLINKING_CONFIG_COMMAND (or pass --config-command) to a ' +
+        'JSON argv array whose command prints the React Native CLI config, ' +
+        'e.g. \'["npx","expo-modules-autolinking","react-native-config",' +
+        '"--json","--platform","ios"]\'.',
+    );
+    process.exitCode = 2;
+    return null;
+  }
+}
+
 async function main(argv /*:: ?: Array<string> */) /*: Promise<void> */ {
   let appRoot = process.cwd();
   const projectRoot = findProjectRoot(appRoot);
@@ -981,16 +1033,16 @@ async function main(argv /*:: ?: Array<string> */) /*: Promise<void> */ {
   let autolinkingConfigResult /*: ?AutolinkingConfigResult */ = null;
   if (needsCliConfig) {
     log('Generating autolinking.json (CLI config)...');
-    try {
-      autolinkingConfigResult = generateAutolinkingConfig({projectRoot});
-      log(
-        `Wrote ${path.relative(appRoot, autolinkingConfigResult.outputPath)}`,
-      );
-    } catch (e) {
-      logError(
-        `generate-spm-autolinking-config failed: ${e.message}. External native modules may not be discovered.`,
-      );
+    autolinkingConfigResult = generateAutolinkingConfigOrFailClosed({
+      projectRoot,
+      configCommand: args.configCommand ?? undefined,
+    });
+    if (autolinkingConfigResult == null) {
+      // Fail closed: the config command errored and the helper already set
+      // process.exitCode = 2. Stop rather than emit an empty Autolinked package.
+      return;
     }
+    log(`Wrote ${path.relative(appRoot, autolinkingConfigResult.outputPath)}`);
   }
   const reactNativeRoot = resolveReactNativeRoot(
     autolinkingConfigResult,
@@ -1159,6 +1211,8 @@ module.exports = {
   main,
   detectStandardRnLayoutRedirect,
   findInjectedXcodeproj,
+  generateAutolinkingConfigOrFailClosed,
+  parseArgs,
   resolveAction,
   shouldAutoDeintegrate,
   ensureBothArtifactFlavors,

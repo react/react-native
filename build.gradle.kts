@@ -53,8 +53,12 @@ val ndkPath by extra(System.getenv("ANDROID_NDK"))
 val ndkVersion by extra(System.getenv("ANDROID_NDK_VERSION") ?: libs.versions.ndkVersion.get())
 val sonatypeUsername = findProperty("SONATYPE_USERNAME")?.toString()
 val sonatypePassword = findProperty("SONATYPE_PASSWORD")?.toString()
+val sonatypeRepositoryDescription = findProperty("SONATYPE_REPOSITORY_DESCRIPTION")?.toString()
 
 nexusPublishing {
+  if (sonatypeRepositoryDescription != null) {
+    repositoryDescription.set(sonatypeRepositoryDescription)
+  }
   repositories {
     sonatype {
       username.set(sonatypeUsername)
