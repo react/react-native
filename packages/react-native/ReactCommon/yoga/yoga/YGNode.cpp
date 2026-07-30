@@ -279,17 +279,11 @@ size_t YGNodeGetChildCount(const YGNodeConstRef node) {
 }
 
 YGNodeRef YGNodeGetOwner(const YGNodeRef node) {
-  // The owner is returned verbatim as an opaque handle. It may hold a
-  // non-dereferenceable sentinel value, so it must not undergo a
-  // derived-to-base conversion that asserts pointer alignment/validity.
-  return reinterpret_cast<YGNodeRef>(resolveRef(node)->getOwner());
+  return resolveRef(node)->getOwner();
 }
 
 YGNodeRef YGNodeGetParent(const YGNodeRef node) {
-  // The owner is returned verbatim as an opaque handle. It may hold a
-  // non-dereferenceable sentinel value, so it must not undergo a
-  // derived-to-base conversion that asserts pointer alignment/validity.
-  return reinterpret_cast<YGNodeRef>(resolveRef(node)->getOwner());
+  return resolveRef(node)->getOwner();
 }
 
 void YGNodeSetConfig(YGNodeRef node, YGConfigRef config) {

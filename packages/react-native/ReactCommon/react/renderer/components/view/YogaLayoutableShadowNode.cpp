@@ -338,7 +338,7 @@ void YogaLayoutableShadowNode::updateYogaChildrenOwnersIfNeeded() {
   // initialised function-local static.
   // NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast)
   static auto* const kDetachedYogaNodeOwnerSentinel =
-      reinterpret_cast<yoga::Node*>(0xBADC0FFEE0DDF00DULL);
+      reinterpret_cast<yoga::Node*>(0xBADC0FFEE0DDF000ULL);
   // NOLINTEND(cppcoreguidelines-pro-type-reinterpret-cast)
   for (auto& childYogaNode : yogaNode_.getChildren()) {
     if (YGNodeGetOwner(childYogaNode) == &yogaNode_) {
