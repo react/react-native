@@ -75,6 +75,7 @@ function getInputFiles(appPath /*: string */, appPkgJson /*: $FlowFixMe */) {
   const list = String(execSync(findCommand))
     .trim()
     .split('\n')
+    .filter(Boolean)
     .sort()
     .map(filepath => `"\${PODS_ROOT}/${path.relative(xcodeproj, filepath)}"`)
     .join(',\n');
