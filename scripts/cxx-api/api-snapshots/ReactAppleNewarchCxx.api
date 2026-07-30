@@ -752,6 +752,7 @@ interface RCTBundleConfiguration : public NSObject {
 
 interface RCTBundleManager : public NSObject {
   public @property (assign) NSURL* bundleURL;
+  public @property (assign) NSURL* downloadedBundleFileURL;
   public @property (assign) RCTBundleConfiguration* bundleConfig;
   public virtual _Nullable instancetype initWithBundleConfig:(_Nullable RCTBundleConfiguration* bundleConfig);
   public virtual void resetBundleURL();
@@ -1818,6 +1819,7 @@ interface RCTSource : public NSObject {
   public @property (assign, readonly) NSInteger filesChangedCount;
   public @property (assign, readonly) NSUInteger length;
   public @property (strong, readonly) NSData* data;
+  public @property (strong, readonly) NSURL* downloadedBundleFileURL;
   public @property (strong, readonly) NSURL* url;
 }
 
