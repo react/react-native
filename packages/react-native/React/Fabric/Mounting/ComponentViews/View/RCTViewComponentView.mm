@@ -157,11 +157,18 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
     [_reactSubviews removeObjectAtIndex:index];
   } else {
     RCTAssert(
-        childComponentView.superview == self.currentContainerView,
-        @"Attempt to unmount a view which is mounted inside different view. (parent: %@, child: %@, index: %@)",
+        childComponentView.superview != nil,
+        @"Attempt to unmount a view which is not mounted. (parent: %@, child: %@, index: %@)",
         self,
         childComponentView,
         @(index));
+    RCTAssert(
+        childComponentView.superview == self.currentContainerView,
+        @"Attempt to unmount a view which is mounted inside a different view. (parent: %@, child: %@, index: %@, existing parent: %@)",
+        self,
+        childComponentView,
+        @(index),
+        @([childComponentView.superview tag]));
     RCTAssert(
         (self.currentContainerView.subviews.count > index) &&
             [self.currentContainerView.subviews objectAtIndex:index] == childComponentView,
@@ -174,6 +181,30 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
   }
 
   [childComponentView removeFromSuperview];
+}
+
+- (void)_updateRemoveClippedSubviewsState
+{
+  if (_removeClippedSubviews) {
+    // Toggled ON: populate _reactSubviews from the current view hierarchy.
+    // Actual clipping will happen on the next scroll event.
+    RCTAssert(
+        _reactSubviews.count == 0,
+        @"_reactSubviews should be empty when toggling removeClippedSubviews on. (view: %@, count: %@)",
+        self,
+        @(_reactSubviews.count));
+    if (self.currentContainerView.subviews.count > 0) {
+      _reactSubviews = [NSMutableArray arrayWithArray:self.currentContainerView.subviews];
+    }
+  } else {
+    // Toggled OFF: re-mount all children in the correct order, then clear the tracking array.
+    // addSubview: on an already-present child moves it to the front, so iterating in order
+    // produces the correct subview ordering.
+    for (UIView *view in _reactSubviews) {
+      [self.currentContainerView addSubview:view];
+    }
+    [_reactSubviews removeAllObjects];
+  }
 }
 
 - (void)updateClippedSubviewsWithClipRect:(CGRect)clipRect relativeToView:(UIView *)clipView
@@ -241,9 +272,7 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
   if (!ReactNativeFeatureFlags::enableViewCulling()) {
     if (oldViewProps.removeClippedSubviews != newViewProps.removeClippedSubviews) {
       _removeClippedSubviews = newViewProps.removeClippedSubviews;
-      if (_removeClippedSubviews && self.currentContainerView.subviews.count > 0) {
-        _reactSubviews = [NSMutableArray arrayWithArray:self.currentContainerView.subviews];
-      }
+      [self _updateRemoveClippedSubviewsState];
     }
   }
 
