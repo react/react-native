@@ -212,7 +212,7 @@ const transform /*: BabelTransformer['transform'] */ = ({
     !options.hermesParser
       ? parseSync(src, babelConfig)
       : // $FlowFixMe[incompatible-exact]
-        require('hermes-parser').parse(src, {
+        require('flow-parser').parse(src, {
           babel: true,
           reactRuntimeTarget: '19',
           sourceType: babelConfig.sourceType,

@@ -4,14 +4,7 @@ exports[`RN Codegen Flow Parser Fails with error message EMPTY_ENUM_NATIVE_MODUL
 
 exports[`RN Codegen Flow Parser Fails with error message MAP_WITH_EXTRA_KEYS_NATIVE_MODULE 1`] = `"Module NativeSampleTurboModule: 'ObjectTypeAnnotation' cannot contain both an indexer and properties."`;
 
-exports[`RN Codegen Flow Parser Fails with error message MIXED_VALUES_ENUM_NATIVE_MODULE 1`] = `
-"Syntax error in path/NativeSampleTurboModule.js: cannot use string initializer in number enum (19:2)
-  STR = 'str',
-  ^~~~~~~~~~~
-note: start of enum body (17:21)
-export enum SomeEnum {
-                     ^"
-`;
+exports[`RN Codegen Flow Parser Fails with error message MIXED_VALUES_ENUM_NATIVE_MODULE 1`] = `"Module NativeSampleTurboModule: Failed parsing the enum SomeEnum in NativeSampleTurboModule with the error: Enums can not be mixed- they all must be either blank, number, or string values."`;
 
 exports[`RN Codegen Flow Parser Fails with error message NATIVE_MODULES_WITH_ARRAY_BUFFER_IN_OBJECT_PROPERTY 1`] = `"Module NativeSampleTurboModule: Object property '[object Object]' cannot have type 'ArrayBuffer'."`;
 
@@ -27,15 +20,11 @@ exports[`RN Codegen Flow Parser Fails with error message NATIVE_MODULES_WITH_REA
 
 exports[`RN Codegen Flow Parser Fails with error message NATIVE_MODULES_WITH_UNNAMED_PARAMS 1`] = `"Module NativeSampleTurboModule: All function parameters must be named."`;
 
-exports[`RN Codegen Flow Parser Fails with error message NUMERIC_VALUES_ENUM_NATIVE_MODULE 1`] = `
-"Syntax error in path/NativeSampleTurboModule.js: 'true', 'false', 'string', 'number' or 'bigint' expected in enum member initializer (20:17)
-  SUBFACTORIAL = !5,
-  ~~~~~~~~~~~~~~~^"
-`;
+exports[`RN Codegen Flow Parser Fails with error message NUMERIC_VALUES_ENUM_NATIVE_MODULE 1`] = `"Syntax error in path/NativeSampleTurboModule.js: The enum member initializer for \`SUBFACTORIAL\` needs to be a literal (either a boolean, number, bigint, or string) in enum \`SomeEnum\`. (20:17)"`;
 
 exports[`RN Codegen Flow Parser Fails with error message TWO_NATIVE_EXTENDING_TURBO_MODULE 1`] = `"Module NativeSampleTurboModule: Every NativeModule spec file must declare exactly one NativeModule Flow interface. This file declares 2: 'Spec', and 'Spec2'. Please remove the extraneous Flow interface declarations."`;
 
-exports[`RN Codegen Flow Parser Fails with error message TWO_NATIVE_MODULES_EXPORTED_WITH_DEFAULT 1`] = `"Module NativeSampleTurboModule: No Flow interfaces extending TurboModule were detected in this NativeModule spec."`;
+exports[`RN Codegen Flow Parser Fails with error message TWO_NATIVE_MODULES_EXPORTED_WITH_DEFAULT 1`] = `"Syntax error in path/NativeSampleTurboModule.js: Duplicate export for \`default\` (19:7)"`;
 
 exports[`RN Codegen Flow Parser can generate fixture ANDROID_ONLY_NATIVE_MODULE 1`] = `
 "{
