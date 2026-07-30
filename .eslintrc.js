@@ -19,17 +19,17 @@ module.exports = {
 
   overrides: [
     // overriding the JS config from @react-native/eslint-config to ensure
-    // that we use hermes-eslint for all js files
+    // that we use flow-eslint for all js files
     {
       files: ['*.js', '*.js.flow', '*.jsx'],
-      parser: 'hermes-eslint',
+      parser: 'flow-eslint',
       rules: {
         '@react-native/monorepo/sort-imports': 'warn',
         'eslint-comments/no-unlimited-disable': 'off',
         'ft-flow/require-valid-file-annotation': ['error', 'always'],
         'no-extra-boolean-cast': 'off',
         'no-void': 'off',
-        // These rules are not required with hermes-eslint
+        // These rules are not required with flow-eslint
         'ft-flow/define-flow-type': 'off',
         'ft-flow/use-flow-type': 'off',
         // Flow handles these checks for us, so they aren't required
@@ -53,7 +53,7 @@ module.exports = {
         './packages/react-native/src/**/*.{js,flow}',
         './packages/assets-registry/registry.js',
       ],
-      parser: 'hermes-eslint',
+      parser: 'flow-eslint',
       rules: {
         '@react-native/monorepo/no-commonjs-exports': 'warn',
       },
