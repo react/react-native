@@ -519,10 +519,6 @@ const publicAPIMapping = {
     default: null,
     types: ['ErrorUtils'],
   },
-  'Libraries/ReactPrivate/ReactNativePrivateInterface': {
-    default: null,
-    types: ['PublicRootInstance', 'PublicTextInstance'],
-  },
 };
 
 module.exports = {

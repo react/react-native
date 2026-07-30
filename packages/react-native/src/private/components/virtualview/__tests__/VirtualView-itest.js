@@ -16,7 +16,7 @@ import type {HostInstance} from 'react-native';
 
 import isUnreachable from '../../../__tests__/utilities/isUnreachable';
 import {createShadowNodeReferenceCountingRef} from '../../../__tests__/utilities/ShadowNodeReferenceCounter';
-import {getNodeFromPublicInstance} from '../../../../../Libraries/ReactPrivate/ReactNativePrivateInterface';
+import {getNodeFromPublicInstance} from '../../../../../Libraries/ReactNative/ReactFabricPublicInstance/ReactFabricPublicInstance';
 import VirtualView, {_logs, VirtualViewMode} from '../VirtualView';
 import * as Fantom from '@react-native/fantom';
 import nullthrows from 'nullthrows';
