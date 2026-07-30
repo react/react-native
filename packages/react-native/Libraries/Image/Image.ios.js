@@ -103,6 +103,12 @@ async function queryCache(
   return NativeImageLoaderIOS.queryCache(urls);
 }
 
+const EMPTY_IMAGE_SOURCE = {
+  uri: undefined,
+  width: undefined,
+  height: undefined,
+};
+
 /**
  * A React component for displaying different types of images,
  * including network images, static resources, temporary local images, and
@@ -139,19 +145,16 @@ let BaseImage: AbstractImageIOS = ({
   ref?: React.RefSetter<ImageInstance>,
   ...ImageProps,
 }) => {
-  const resolvedSource = getImageSourcesFromImageProps({
-    crossOrigin,
-    height,
-    referrerPolicy,
-    source,
-    src,
-    srcSet,
-    width,
-  }) || {
-    uri: undefined,
-    width: undefined,
-    height: undefined,
-  };
+  const resolvedSource =
+    getImageSourcesFromImageProps({
+      crossOrigin,
+      height,
+      referrerPolicy,
+      source,
+      src,
+      srcSet,
+      width,
+    }) || EMPTY_IMAGE_SOURCE;
 
   let resolvedStyle: ImageStyleProp;
   let sources;
