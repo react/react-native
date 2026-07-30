@@ -25,7 +25,7 @@ const config: BabelCoreOptions = {
     ],
   ],
   plugins: [
-    require.resolve('babel-plugin-syntax-hermes-parser'),
+    require.resolve('flow-parser/babel-plugin'),
     [
       require.resolve('babel-plugin-transform-define'),
       {
