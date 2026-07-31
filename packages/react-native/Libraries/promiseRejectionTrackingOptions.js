@@ -8,11 +8,16 @@
  * @format
  */
 
-import typeof {enable} from 'promise/setimmediate/rejection-tracking';
-
 import ExceptionsManager from './Core/ExceptionsManager';
 
-const rejectionTrackingOptions: NonNullable<Parameters<enable>[0]> = {
+type RejectionTrackingOptions = {
+  whitelist?: ?Array<unknown>,
+  allRejections?: ?boolean,
+  onUnhandled?: ?(number, unknown) => void,
+  onHandled?: ?(number, unknown) => void,
+};
+
+const rejectionTrackingOptions: RejectionTrackingOptions = {
   allRejections: true,
   onHandled: id => {
     const warning =
