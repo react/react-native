@@ -94,7 +94,12 @@ abstract class BundleHermesCTask : DefaultTask() {
     runCommand(bundleCommand)
 
     if (hermesEnabled.get()) {
-      val detectedHermesCommand = detectOSAwareHermesCommand(root.get().asFile, hermesCommand.get())
+      val detectedHermesCommand =
+          detectOSAwareHermesCommand(
+              root.get().asFile,
+              hermesCommand.get(),
+              reactNativeDir.get().asFile,
+          )
       val bytecodeFile = File("${bundleFile}.hbc")
       val outputSourceMap = resolveOutputSourceMap(bundleAssetFilename)
       val compilerSourceMap = resolveCompilerSourceMap(bundleAssetFilename)

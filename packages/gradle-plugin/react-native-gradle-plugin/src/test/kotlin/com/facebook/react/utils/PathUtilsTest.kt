@@ -14,6 +14,7 @@ import com.facebook.react.tests.OsRule
 import com.facebook.react.tests.WithOs
 import java.io.File
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.gradle.process.ProcessExecutionException
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Assume.assumeTrue
@@ -163,10 +164,66 @@ class PathUtilsTest {
     assertThat(detectOSAwareHermesCommand(tempFolder.root, "")).isEqualTo(expected.toString())
   }
 
+  @Test
+  @WithOs(OS.MAC)
+  fun detectOSAwareHermesCommand_withHoistedHermescFromNPM() {
+    val projectRoot = tempFolder.newFolder("apps", "mobile")
+    val reactNativeDir = tempFolder.newFolder("node_modules", "react-native")
+    tempFolder.newFolder("node_modules/hermes-compiler/hermesc/osx-bin/")
+    val expected = tempFolder.newFile("node_modules/hermes-compiler/hermesc/osx-bin/hermesc")
+
+    assertThat(detectOSAwareHermesCommand(projectRoot, "", reactNativeDir))
+        .isEqualTo(expected.toString())
+  }
+
+  @Test
+  @WithOs(OS.MAC)
+  fun detectOSAwareHermesCommand_withLocalAndHoistedHermescFromNPM_prefersLocal() {
+    val projectRoot = tempFolder.newFolder("apps", "mobile")
+    val reactNativeDir = tempFolder.newFolder("node_modules", "react-native")
+    File(projectRoot, "node_modules/hermes-compiler/hermesc/osx-bin/").mkdirs()
+    val expected = File(projectRoot, "node_modules/hermes-compiler/hermesc/osx-bin/hermesc")
+    expected.createNewFile()
+    tempFolder.newFolder("node_modules/hermes-compiler/hermesc/osx-bin/")
+    tempFolder.newFile("node_modules/hermes-compiler/hermesc/osx-bin/hermesc")
+
+    assertThat(detectOSAwareHermesCommand(projectRoot, "", reactNativeDir))
+        .isEqualTo(expected.toString())
+  }
+
+  @Test
+  fun detectedHermesCommand_usesConfiguredReactNativeDirForHoistedHermescFromNPM() {
+    val project = ProjectBuilder.builder().build()
+    val extension = TestReactExtension(project)
+    val projectRoot = tempFolder.newFolder("apps", "mobile")
+    val reactNativeDir = tempFolder.newFolder("node_modules", "react-native")
+    extension.root.set(projectRoot)
+    extension.reactNativeDir.set(reactNativeDir)
+    tempFolder.newFolder("node_modules/hermes-compiler/hermesc/${getHermesOSBin()}/")
+    val expected = tempFolder.newFile("node_modules/hermes-compiler/hermesc/${getHermesOSBin()}/hermesc")
+
+    assertThat(detectedHermesCommand(extension)).isEqualTo(expected.toString())
+  }
+
   @Test(expected = IllegalStateException::class)
   @WithOs(OS.MAC)
   fun detectOSAwareHermesCommand_failsIfNotFound() {
     detectOSAwareHermesCommand(tempFolder.root, "")
+  }
+
+  @Test
+  @WithOs(OS.MAC)
+  fun detectOSAwareHermesCommand_whenHermescNotFound_reportsCheckedLocations() {
+    val projectRoot = tempFolder.newFolder("apps", "mobile")
+    val reactNativeDir = tempFolder.newFolder("node_modules", "react-native")
+
+    assertThatThrownBy { detectOSAwareHermesCommand(projectRoot, "", reactNativeDir) }
+        .isInstanceOf(IllegalStateException::class.java)
+        .hasMessageContaining("Couldn't determine Hermesc location.")
+        .hasMessageContaining("Checked:")
+        .hasMessageContaining("node_modules/hermes-compiler/hermesc/osx-bin/hermesc")
+        .hasMessageContaining("configured `reactNativeDir`")
+        .hasMessageNotContaining("node_modules/react-native/sdks/hermesc")
   }
 
   @Test
