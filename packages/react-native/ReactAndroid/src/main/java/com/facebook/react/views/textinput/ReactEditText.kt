@@ -37,9 +37,11 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.accessibility.AccessibilityNodeInfo
+import android.view.autofill.AutofillValue
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
 import android.view.inputmethod.InputMethodManager
+import androidx.annotation.RequiresApi
 import androidx.appcompat.widget.AppCompatEditText
 import androidx.core.graphics.withTranslation
 import androidx.core.util.Predicate
@@ -148,6 +150,12 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
   public var stateWrapper: StateWrapper? = null
   internal var disableTextDiffing: Boolean = false
   protected var isSettingTextFromState: Boolean = false
+
+  // TextView.autofill() sets the new text (notifying the TextWatchers) before it moves the
+  // cursor to the end of the text, so watchers reading the selection while an autofill is in
+  // progress would see a stale position.
+  internal var isBeingAutofilled: Boolean = false
+    private set
 
   private var eventDispatcher: EventDispatcher? = null
 
@@ -346,6 +354,16 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
   override fun setLineHeight(lineHeight: Int) {
     textAttributes.lineHeight = lineHeight.toFloat()
     // We don't call super.setLineHeight() because LineHeight is fully managed by ReactNative
+  }
+
+  @RequiresApi(Build.VERSION_CODES.O)
+  override fun autofill(value: AutofillValue) {
+    isBeingAutofilled = true
+    try {
+      super.autofill(value)
+    } finally {
+      isBeingAutofilled = false
+    }
   }
 
   override fun onScrollChanged(horiz: Int, vert: Int, oldHoriz: Int, oldVert: Int) {
