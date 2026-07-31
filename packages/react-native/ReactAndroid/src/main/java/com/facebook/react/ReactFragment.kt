@@ -15,7 +15,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import com.facebook.react.internal.featureflags.ReactNativeNewArchitectureFeatureFlags
 import com.facebook.react.modules.core.PermissionAwareActivity
 import com.facebook.react.modules.core.PermissionListener
 
@@ -30,31 +29,18 @@ public open class ReactFragment : Fragment(), PermissionAwareActivity {
 
   public override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+
     var mainComponentName: String? = null
     var launchOptions: Bundle? = null
-    var fabricEnabled = false
     arguments?.let { args ->
       mainComponentName = args.getString(ARG_COMPONENT_NAME)
       launchOptions = args.getBundle(ARG_LAUNCH_OPTIONS)
-      fabricEnabled = args.getBoolean(ARG_FABRIC_ENABLED)
       @Suppress("DEPRECATION")
       disableHostLifecycleEvents = args.getBoolean(ARG_DISABLE_HOST_LIFECYCLE_EVENTS)
     }
     checkNotNull(mainComponentName) { "Cannot loadApp if component name is null" }
 
-    reactDelegate =
-        if (ReactNativeNewArchitectureFeatureFlags.enableBridgelessArchitecture()) {
-          ReactDelegate(requireActivity(), reactHost, mainComponentName, launchOptions)
-        } else {
-          @Suppress("DEPRECATION")
-          ReactDelegate(
-              requireActivity(),
-              reactNativeHost,
-              mainComponentName,
-              launchOptions,
-              fabricEnabled,
-          )
-        }
+    reactDelegate = ReactDelegate(requireActivity(), reactHost, mainComponentName, launchOptions)
   }
 
   /**
@@ -176,7 +162,8 @@ public open class ReactFragment : Fragment(), PermissionAwareActivity {
   public class Builder {
     public var componentName: String? = null
     public var launchOptions: Bundle? = null
-    public var fabricEnabled: Boolean = false
+
+    @Deprecated("Fabric is always enabled") public var fabricEnabled: Boolean = true
 
     /**
      * Set the Component name for our React Native instance.
@@ -200,20 +187,19 @@ public open class ReactFragment : Fragment(), PermissionAwareActivity {
       return this
     }
 
-    public fun build(): ReactFragment = newInstance(componentName, launchOptions, fabricEnabled)
-
-    @Deprecated(
-        "You should not change call ReactFragment.setFabricEnabled. Instead enable the NewArchitecture for the whole application with newArchEnabled=true in your gradle.properties file"
-    )
+    @Deprecated("Fabric can no longer be disabled")
     public fun setFabricEnabled(fabricEnabled: Boolean): Builder {
-      this.fabricEnabled = fabricEnabled
       return this
     }
+
+    public fun build(): ReactFragment = newInstance(componentName, launchOptions)
   }
 
   public companion object {
     protected const val ARG_COMPONENT_NAME: String = "arg_component_name"
     protected const val ARG_LAUNCH_OPTIONS: String = "arg_launch_options"
+
+    @Deprecated("Fabric is always enabled")
     protected const val ARG_FABRIC_ENABLED: String = "arg_fabric_enabled"
 
     @Deprecated(
@@ -225,19 +211,17 @@ public open class ReactFragment : Fragment(), PermissionAwareActivity {
     /**
      * @param componentName The name of the react native component
      * @param launchOptions The launch options for the react native component
-     * @param fabricEnabled Flag to enable Fabric for ReactFragment
      * @return A new instance of fragment ReactFragment.
      */
     private fun newInstance(
         componentName: String?,
         launchOptions: Bundle?,
-        fabricEnabled: Boolean,
     ): ReactFragment {
       val args =
           Bundle().apply {
             putString(ARG_COMPONENT_NAME, componentName)
             putBundle(ARG_LAUNCH_OPTIONS, launchOptions)
-            putBoolean(ARG_FABRIC_ENABLED, fabricEnabled)
+            @Suppress("DEPRECATION") putBoolean(ARG_FABRIC_ENABLED, true)
           }
       return ReactFragment().apply { setArguments(args) }
     }
