@@ -46,6 +46,13 @@ class FileReader extends EventTarget {
   _result: ?ReaderResult;
   _aborted: boolean = false;
   _readId: number = 0;
+  // The blob being read must stay strongly referenced until the native read
+  // settles. Otherwise, if the caller drops its own reference (as
+  // whatwg-fetch does in `readBlobAsText`), the Blob can be garbage
+  // collected while the read is still in flight, and its BlobCollector
+  // finalizer deallocates the underlying native buffer, failing the read
+  // with "The specified blob is invalid".
+  _blob: ?Blob;
 
   constructor() {
     super();
@@ -56,6 +63,7 @@ class FileReader extends EventTarget {
     this._readyState = EMPTY;
     this._error = null;
     this._result = null;
+    this._blob = null;
   }
 
   _startRead(methodName: string): number {
@@ -110,12 +118,14 @@ class FileReader extends EventTarget {
     }
 
     const readId = this._startRead('readAsArrayBuffer');
+    this._blob = blob;
 
     NativeFileReaderModule.readAsDataURL(blob.data).then(
       (text: string) => {
         if (readId !== this._readId) {
           return;
         }
+        this._blob = null;
 
         const base64 = text.split(',')[1];
         const typedArray = toByteArray(base64);
@@ -127,6 +137,7 @@ class FileReader extends EventTarget {
         if (readId !== this._readId) {
           return;
         }
+        this._blob = null;
         this._error = this._toDOMException(error);
         this._setReadyState(DONE);
       },
@@ -141,12 +152,14 @@ class FileReader extends EventTarget {
     }
 
     const readId = this._startRead('readAsDataURL');
+    this._blob = blob;
 
     NativeFileReaderModule.readAsDataURL(blob.data).then(
       (text: string) => {
         if (readId !== this._readId) {
           return;
         }
+        this._blob = null;
         this._result = text;
         this._setReadyState(DONE);
       },
@@ -154,6 +167,7 @@ class FileReader extends EventTarget {
         if (readId !== this._readId) {
           return;
         }
+        this._blob = null;
         this._error = this._toDOMException(error);
         this._setReadyState(DONE);
       },
@@ -168,12 +182,14 @@ class FileReader extends EventTarget {
     }
 
     const readId = this._startRead('readAsText');
+    this._blob = blob;
 
     NativeFileReaderModule.readAsText(blob.data, encoding).then(
       (text: string) => {
         if (readId !== this._readId) {
           return;
         }
+        this._blob = null;
         this._result = text;
         this._setReadyState(DONE);
       },
@@ -181,6 +197,7 @@ class FileReader extends EventTarget {
         if (readId !== this._readId) {
           return;
         }
+        this._blob = null;
         this._error = this._toDOMException(error);
         this._setReadyState(DONE);
       },
@@ -192,6 +209,10 @@ class FileReader extends EventTarget {
     if (this._readyState === LOADING) {
       this._aborted = true;
       this._readId++;
+      // The abandoned read's callbacks bail out on the readId check without
+      // clearing _blob, so release it here — before dispatching the abort
+      // event, whose handler may start a new read that sets _blob again.
+      this._blob = null;
       this._setReadyState(DONE);
     }
   }

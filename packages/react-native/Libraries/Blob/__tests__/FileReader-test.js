@@ -275,4 +275,108 @@ describe('FileReader', function () {
     expect(() => reader.readAsText(null)).toThrow(TypeError);
     expect(reader.readyState).toBe(FileReader.EMPTY);
   });
+
+  it('should retain the blob until the read resolves', async () => {
+    let resolveRead: string => void = () => {};
+    const spy = jest
+      .spyOn(FileReaderModuleMock, 'readAsText')
+      .mockImplementation(
+        () =>
+          new Promise(resolve => {
+            resolveRead = resolve;
+          }),
+      );
+
+    const reader = new FileReader();
+    const blob = new Blob();
+    const loadend = new Promise<Event>(resolve => {
+      reader.onloadend = resolve;
+    });
+    reader.readAsText(blob);
+    // $FlowFixMe[prop-missing] - accessing private state for the test
+    expect(reader._blob).toBe(blob);
+
+    resolveRead('');
+    await loadend;
+    // $FlowFixMe[prop-missing] - accessing private state for the test
+    expect(reader._blob).toBe(null);
+
+    spy.mockRestore();
+  });
+
+  it('should release the blob when the read rejects', async () => {
+    let rejectRead: Error => void = () => {};
+    const spy = jest
+      .spyOn(FileReaderModuleMock, 'readAsText')
+      .mockImplementation(
+        () =>
+          new Promise((resolve, reject) => {
+            rejectRead = reject;
+          }),
+      );
+
+    const reader = new FileReader();
+    const blob = new Blob();
+    const loadend = new Promise<Event>(resolve => {
+      reader.onloadend = resolve;
+    });
+    reader.readAsText(blob);
+    // $FlowFixMe[prop-missing] - accessing private state for the test
+    expect(reader._blob).toBe(blob);
+
+    rejectRead(new Error('nope'));
+    await loadend;
+    // $FlowFixMe[prop-missing] - accessing private state for the test
+    expect(reader._blob).toBe(null);
+
+    spy.mockRestore();
+  });
+
+  it('should release the blob when a pending read is aborted', () => {
+    const spy = jest
+      .spyOn(FileReaderModuleMock, 'readAsText')
+      .mockImplementation(() => new Promise(() => {}));
+
+    const reader = new FileReader();
+    const blob = new Blob();
+    reader.readAsText(blob);
+    // $FlowFixMe[prop-missing] - accessing private state for the test
+    expect(reader._blob).toBe(blob);
+
+    reader.abort();
+    // $FlowFixMe[prop-missing] - accessing private state for the test
+    expect(reader._blob).toBe(null);
+
+    spy.mockRestore();
+  });
+
+  it('should keep retaining the new blob when a stale read settles after abort', async () => {
+    const resolvers: Array<(string) => void> = [];
+    const spy = jest
+      .spyOn(FileReaderModuleMock, 'readAsText')
+      .mockImplementation(
+        () =>
+          new Promise(resolve => {
+            resolvers.push(resolve);
+          }),
+      );
+
+    const reader = new FileReader();
+    const staleBlob = new Blob();
+    reader.readAsText(staleBlob);
+    reader.abort();
+
+    const newBlob = new Blob();
+    reader.readAsText(newBlob);
+    // $FlowFixMe[prop-missing] - accessing private state for the test
+    expect(reader._blob).toBe(newBlob);
+
+    // Settle the first (aborted) read; it must not drop the new blob.
+    resolvers[0]('');
+    await Promise.resolve();
+    // $FlowFixMe[prop-missing] - accessing private state for the test
+    expect(reader._blob).toBe(newBlob);
+
+    spy.mockRestore();
+  });
 });
