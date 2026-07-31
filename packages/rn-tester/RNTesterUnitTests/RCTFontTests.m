@@ -49,6 +49,25 @@
   }
 }
 
+- (void)testWeightFromFontName
+{
+  // "ExtraLight" and "UltraLight" name the same weight (OpenType usWeightClass 200).
+  {
+    UIFont *font = [UIFont fontWithName:@"HelveticaNeue-UltraLight" size:14];
+    XCTAssertEqual(RCTGetFontWeight(font), UIFontWeightUltraLight);
+  }
+#if !TARGET_OS_TV
+  {
+    UIFont *font = [UIFont fontWithName:@"Seravek-ExtraLight" size:14];
+    XCTAssertEqual(RCTGetFontWeight(font), UIFontWeightUltraLight);
+  }
+  {
+    UIFont *font = [UIFont fontWithName:@"Seravek-Light" size:14];
+    XCTAssertEqual(RCTGetFontWeight(font), UIFontWeightLight);
+  }
+#endif
+}
+
 - (void)testSize
 {
   {

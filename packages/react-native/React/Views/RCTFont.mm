@@ -24,6 +24,7 @@ RCTFontWeight RCTGetFontWeight(UIFont *font)
     weightSuffixes = @[
       @"normal",
       @"ultralight",
+      @"extralight",
       @"thin",
       @"light",
       @"regular",
@@ -38,6 +39,7 @@ RCTFontWeight RCTGetFontWeight(UIFont *font)
     ];
     fontWeights = @[
       @(UIFontWeightRegular),
+      @(UIFontWeightUltraLight),
       @(UIFontWeightUltraLight),
       @(UIFontWeightThin),
       @(UIFontWeightLight),
