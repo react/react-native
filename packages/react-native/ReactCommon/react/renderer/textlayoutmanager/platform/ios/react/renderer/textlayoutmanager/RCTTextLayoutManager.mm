@@ -11,6 +11,7 @@
 
 #import "RCTAttributedTextUtils.h"
 
+#import <CoreText/CoreText.h>
 #import <React/NSTextStorage+FontScaling.h>
 #import <React/RCTUtils.h>
 #import <react/featureflags/ReactNativeFeatureFlags.h>
@@ -568,6 +569,49 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
 
   if (textDidWrap) {
     size.width = textContainer.size.width;
+  }
+
+  // Grow width by per-line ink overshoot so italic glyphs aren't clipped.
+  __block CGFloat maxInkOvershoot = 0;
+  [layoutManager enumerateLineFragmentsForGlyphRange:glyphRange
+                                          usingBlock:^(
+                                              CGRect rect,
+                                              CGRect usedRect,
+                                              NSTextContainer *tc,
+                                              NSRange lineGlyphRange,
+                                              BOOL *stop) {
+                                            NSRange charRange =
+                                                [layoutManager characterRangeForGlyphRange:lineGlyphRange
+                                                                          actualGlyphRange:nil];
+                                            if (charRange.length == 0) {
+                                              return;
+                                            }
+
+                                            NSAttributedString *lineStr =
+                                                [textStorage attributedSubstringFromRange:charRange];
+                                            CTLineRef ctLine =
+                                                CTLineCreateWithAttributedString((__bridge CFAttributedStringRef)lineStr);
+                                            if (ctLine == NULL) {
+                                              return;
+                                            }
+
+                                            CGRect pathBounds =
+                                                CTLineGetBoundsWithOptions(ctLine, kCTLineBoundsUseGlyphPathBounds);
+                                            CGFloat advanceWidth =
+                                                (CGFloat)CTLineGetTypographicBounds(ctLine, NULL, NULL, NULL);
+                                            CFRelease(ctLine);
+
+                                            CGFloat rightOvershoot = CGRectGetMaxX(pathBounds) - advanceWidth;
+                                            CGFloat leftOvershoot = -CGRectGetMinX(pathBounds);
+                                            CGFloat lineOvershoot =
+                                                MAX((CGFloat)0, leftOvershoot) + MAX((CGFloat)0, rightOvershoot);
+                                            if (lineOvershoot > maxInkOvershoot) {
+                                              maxInkOvershoot = lineOvershoot;
+                                            }
+                                          }];
+
+  if (maxInkOvershoot > 0) {
+    size.width += maxInkOvershoot;
   }
 
   if (paragraphAttributes.maximumNumberOfLines != 0) {

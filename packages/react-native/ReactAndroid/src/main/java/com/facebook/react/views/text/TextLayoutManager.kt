@@ -9,6 +9,7 @@ package com.facebook.react.views.text
 
 import android.content.res.AssetManager
 import android.graphics.Color
+import android.graphics.Rect
 import android.graphics.Typeface
 import android.os.Build
 import android.text.BoringLayout
@@ -862,6 +863,12 @@ internal object TextLayoutManager {
       builder.setUseLineSpacingFromFallbacks(true)
     }
 
+    if (Build.VERSION.SDK_INT >= 35) {
+      try {
+        setUseBoundsForWidthMethod?.invoke(builder, true)
+      } catch (_: ReflectiveOperationException) {}
+    }
+
     return builder.build()
   }
 
@@ -1471,7 +1478,33 @@ internal object TextLayoutManager {
       return width
     }
 
-    return layout.width.toFloat()
+    // Grow width by per-line ink overshoot so italic glyphs aren't clipped.
+    val layoutWidth = layout.width.toFloat()
+    val paint = layout.paint
+    val bounds = Rect()
+    var maxLineOvershoot = 0f
+
+    for (lineIndex in 0 until calculatedLineCount) {
+      val lineStart = layout.getLineStart(lineIndex)
+      val lineEnd = layout.getLineEnd(lineIndex)
+      if (lineStart >= lineEnd) continue
+
+      paint.getTextBounds(text, lineStart, lineEnd, bounds)
+      val advanceWidth = layout.getLineWidth(lineIndex)
+
+      val rightOvershoot = bounds.right.toFloat() - advanceWidth
+      val leftOvershoot = -bounds.left.toFloat()
+      val lineOvershoot = maxOf(0f, leftOvershoot) + maxOf(0f, rightOvershoot)
+      if (lineOvershoot > maxLineOvershoot) {
+        maxLineOvershoot = lineOvershoot
+      }
+    }
+
+    return if (maxLineOvershoot > 0f) {
+      ceil(layoutWidth + maxLineOvershoot)
+    } else {
+      layoutWidth
+    }
   }
 
   private fun calculateHeight(
