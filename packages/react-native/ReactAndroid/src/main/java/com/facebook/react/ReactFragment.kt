@@ -44,27 +44,10 @@ public open class ReactFragment : Fragment(), PermissionAwareActivity {
   }
 
   /**
-   * Get the [ReactNativeHost] used by this app. By default, assumes [Activity.getApplication] is an
-   * instance of [ReactApplication] and calls [ReactApplication.reactNativeHost]. Override this
-   * method if your application class does not implement `ReactApplication` or you simply have a
-   * different mechanism for storing a `ReactNativeHost`, e.g. as a static field somewhere.
-   */
-  @Suppress("DEPRECATION")
-  @Deprecated(
-      "You should not use ReactNativeHost directly in the New Architecture. Use ReactHost instead.",
-      ReplaceWith("reactHost"),
-  )
-  protected open val reactNativeHost: ReactNativeHost?
-    get() = (activity?.application as ReactApplication?)?.reactNativeHost
-
-  /**
    * Get the [ReactHost] used by this app. By default, assumes [Activity.getApplication] is an
    * instance of [ReactApplication] and calls [ReactApplication.reactHost]. Override this method if
    * your application class does not implement `ReactApplication` or you simply have a different
    * mechanism for storing a `ReactHost`, e.g. as a static field somewhere.
-   *
-   * If you're using Old Architecture/Bridge Mode, this method should return null as [ReactHost] is
-   * a Bridgeless-only concept.
    */
   protected open val reactHost: ReactHost?
     get() = (activity?.application as ReactApplication?)?.reactHost

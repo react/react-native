@@ -113,7 +113,7 @@ public object DefaultNewArchitectureEntryPoint {
     ReactNativeFeatureFlags.override(featureFlags)
 
     privateTurboModulesEnabled = true
-    privateBridgelessEnabled = featureFlags.enableBridgelessArchitecture()
+    privateBridgelessEnabled = true
 
     val (isValid, errorMessage) =
         isConfigurationValid(

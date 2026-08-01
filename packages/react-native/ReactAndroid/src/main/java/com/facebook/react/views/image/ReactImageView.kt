@@ -49,8 +49,6 @@ import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.common.annotations.UnstableReactNativeAPI
 import com.facebook.react.common.annotations.VisibleForTesting
-import com.facebook.react.common.build.ReactBuildConfig
-import com.facebook.react.internal.featureflags.ReactNativeNewArchitectureFeatureFlags
 import com.facebook.react.modules.fresco.ImageCacheControl
 import com.facebook.react.modules.fresco.ReactNetworkImageRequest
 import com.facebook.react.uimanager.BackgroundStyleApplicator
@@ -61,7 +59,6 @@ import com.facebook.react.uimanager.PixelUtil.pxToDp
 import com.facebook.react.uimanager.UIManagerHelper
 import com.facebook.react.uimanager.style.BorderRadiusProp
 import com.facebook.react.uimanager.style.LogicalEdge
-import com.facebook.react.util.RNLog
 import com.facebook.react.views.image.ImageLoadEvent.Companion.createErrorEvent
 import com.facebook.react.views.image.ImageLoadEvent.Companion.createLoadEndEvent
 import com.facebook.react.views.image.ImageLoadEvent.Companion.createLoadEvent
@@ -282,7 +279,6 @@ public class ReactImageView(
       val cacheControl = computeCacheControl(source.getString("cache"))
       var imageSource = ImageSource(context, source.getString("uri"), cacheControl = cacheControl)
       if (Uri.EMPTY == imageSource.uri) {
-        warnImageSource(source.getString("uri"))
         imageSource = getTransparentBitmapImageSource(context)
       }
       tmpSources.add(imageSource)
@@ -298,7 +294,6 @@ public class ReactImageView(
             cacheControl,
         )
         if (Uri.EMPTY == imageSource.uri) {
-          warnImageSource(source.getString("uri"))
           imageSource = getTransparentBitmapImageSource(context)
         }
         tmpSources.add(imageSource)
@@ -587,23 +582,6 @@ public class ReactImageView(
       }
       return ResizeOptions(width, height)
     }
-
-  private fun warnImageSource(uri: String?) {
-    // TODO(T189014077): This code-path produces an infinite loop of js calls with logbox.
-    // This is an issue with Fabric view preallocation, react, and LogBox. Fix.
-    // The bug:
-    // 1. An app renders an <Image/>
-    // 2. Fabric preallocates <Image/>; sets a null src to ReactImageView (potential problem?).
-    // 3. ReactImageView detects the null src; displays a warning in LogBox (via this code).
-    // 3. LogBox renders an <Image/>, which fabric preallocates.
-    // 4. Rinse and repeat.
-    if (
-        ReactBuildConfig.DEBUG &&
-            !ReactNativeNewArchitectureFeatureFlags.enableBridgelessArchitecture()
-    ) {
-      RNLog.w(context as ReactContext, "ReactImageView: Image source \"$uri\" doesn't exist")
-    }
-  }
 
   private inner class TilePostprocessor : BasePostprocessor() {
     override fun process(

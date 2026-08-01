@@ -24,18 +24,6 @@ import com.facebook.react.common.build.ReactBuildConfig
 public object ReactNativeNewArchitectureFeatureFlags {
 
   @JvmStatic
-  public fun enableBridgelessArchitecture(): Boolean {
-    if (ReactBuildConfig.UNSTABLE_ENABLE_MINIFY_LEGACY_ARCHITECTURE) {
-      Assertions.assertCondition(
-          ReactNativeFeatureFlags.enableBridgelessArchitecture(),
-          "ReactNativeFeatureFlags.enableBridgelessArchitecture() should be set to TRUE when Strict Mode is enabled",
-      )
-      return true
-    }
-    return ReactNativeFeatureFlags.enableBridgelessArchitecture()
-  }
-
-  @JvmStatic
   public fun useFabricInterop(): Boolean {
     if (ReactBuildConfig.UNSTABLE_ENABLE_MINIFY_LEGACY_ARCHITECTURE) {
       Assertions.assertCondition(

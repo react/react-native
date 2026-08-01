@@ -49,7 +49,6 @@ import com.facebook.react.bridge.ReactSoftExceptionLogger.logSoftException
 import com.facebook.react.common.ReactConstants
 import com.facebook.react.common.build.ReactBuildConfig
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
-import com.facebook.react.internal.featureflags.ReactNativeNewArchitectureFeatureFlags
 import com.facebook.react.uimanager.BackgroundStyleApplicator.clipToPaddingBox
 import com.facebook.react.uimanager.BackgroundStyleApplicator.getBackgroundColor
 import com.facebook.react.uimanager.BackgroundStyleApplicator.getBorderColor
@@ -988,10 +987,7 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
   public override fun onConfigurationChanged(newConfig: Configuration) {
     super.onConfigurationChanged(newConfig)
 
-    if (
-        ReactNativeNewArchitectureFeatureFlags.enableBridgelessArchitecture() &&
-            ReactNativeFeatureFlags.enableFontScaleChangesUpdatingLayout()
-    ) {
+    if (ReactNativeFeatureFlags.enableFontScaleChangesUpdatingLayout()) {
       applyTextAttributes()
     }
   }
