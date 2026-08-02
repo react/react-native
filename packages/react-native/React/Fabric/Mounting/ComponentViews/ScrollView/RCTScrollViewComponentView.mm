@@ -360,9 +360,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   MAP_SCROLL_VIEW_PROP(showsHorizontalScrollIndicator);
   MAP_SCROLL_VIEW_PROP(showsVerticalScrollIndicator);
 
-  if (oldScrollViewProps.automaticallyAdjustKeyboardInsets != newScrollViewProps.automaticallyAdjustKeyboardInsets) {
-    _automaticallyAdjustKeyboardInsets = newScrollViewProps.automaticallyAdjustKeyboardInsets;
-  }
+  _automaticallyAdjustKeyboardInsets = newScrollViewProps.automaticallyAdjustKeyboardInsets;
 
   if (oldScrollViewProps.scrollIndicatorInsets != newScrollViewProps.scrollIndicatorInsets) {
     _scrollView.scrollIndicatorInsets = RCTUIEdgeInsetsFromEdgeInsets(newScrollViewProps.scrollIndicatorInsets);
@@ -690,6 +688,8 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   _state.reset();
 
   const auto &props = static_cast<const ScrollViewProps &>(*_props);
+  // Cancel keyboard animations before resetting the state they manage.
+  [_scrollView.layer removeAllAnimations];
   _scrollView.contentOffset = RCTCGPointFromPoint(props.contentOffset);
   // Reset zoom scale to default
   _scrollView.zoomScale = 1.0;
@@ -697,11 +697,13 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   // container frame after zoomScale reset (which may have mutated it in RTL).
   _contentSize = CGSizeZero;
   _scrollView.contentInset = RCTUIEdgeInsetsFromEdgeInsets(props.contentInset);
+  _scrollView.verticalScrollIndicatorInsets = RCTUIEdgeInsetsFromEdgeInsets(props.scrollIndicatorInsets);
   // We set the default behavior to "never" so that iOS
   // doesn't do weird things to UIScrollView insets automatically
   // and keeps it as an opt-in behavior.
   _scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
   _shouldUpdateContentInsetAdjustmentBehavior = YES;
+  _automaticallyAdjustKeyboardInsets = NO;
   _isUserTriggeredScrolling = NO;
   CGRect oldFrame = self.frame;
   self.frame = CGRectZero;
