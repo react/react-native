@@ -20,6 +20,7 @@ import com.facebook.drawee.backends.pipeline.Fresco
 import com.facebook.fbreact.specs.NativeImageLoaderAndroidSpec
 import com.facebook.imagepipeline.common.RotationOptions
 import com.facebook.imagepipeline.core.ImagePipeline
+import com.facebook.imagepipeline.image.CloseableImage
 import com.facebook.imagepipeline.image.EncodedImage
 import com.facebook.imagepipeline.request.ImageRequest
 import com.facebook.imagepipeline.request.ImageRequestBuilder
@@ -97,9 +98,7 @@ internal class ImageLoaderModule : NativeImageLoaderAndroidSpec, LifecycleEventL
         ImageRequestBuilder.newBuilderWithSource(source.uri)
             .setRotationOptions(RotationOptions.disableRotation())
             .build()
-    val dataSource: DataSource<CloseableReference<PooledByteBuffer>> =
-        this.imagePipeline.fetchEncodedImage(request, this.callerContext)
-    dataSource.subscribe(createSizeSubscriber(promise), CallerThreadExecutor.getInstance())
+    fetchImageSize(request, source.uri.scheme == "data", promise)
   }
 
   /**
@@ -127,10 +126,56 @@ internal class ImageLoaderModule : NativeImageLoaderAndroidSpec, LifecycleEventL
             .setRotationOptions(RotationOptions.disableRotation())
     val request: ImageRequest =
         ReactNetworkImageRequest.fromBuilderWithHeaders(imageRequestBuilder, headers)
+    fetchImageSize(request, source.uri.scheme == "data", promise)
+  }
+
+  private fun fetchImageSize(request: ImageRequest, isDataUri: Boolean, promise: Promise) {
+    if (isDataUri) {
+      val dataSource: DataSource<CloseableReference<CloseableImage>> =
+          this.imagePipeline.fetchDecodedImage(request, this.callerContext)
+      dataSource.subscribe(
+          createDecodedImageSizeSubscriber(promise),
+          CallerThreadExecutor.getInstance(),
+      )
+      return
+    }
+
     val dataSource: DataSource<CloseableReference<PooledByteBuffer>> =
         this.imagePipeline.fetchEncodedImage(request, this.callerContext)
     dataSource.subscribe(createSizeSubscriber(promise), CallerThreadExecutor.getInstance())
   }
+
+  private fun createDecodedImageSizeSubscriber(
+      promise: Promise
+  ): DataSubscriber<CloseableReference<CloseableImage>> =
+      object : BaseDataSubscriber<CloseableReference<CloseableImage>>() {
+        override fun onNewResultImpl(dataSource: DataSource<CloseableReference<CloseableImage>>) {
+          if (!dataSource.isFinished) {
+            return
+          }
+          val ref = dataSource.result
+          if (ref != null) {
+            try {
+              val image: CloseableImage = ref.get()
+              val sizes = buildReadableMap {
+                put("width", image.width)
+                put("height", image.height)
+              }
+              promise.resolve(sizes)
+            } catch (e: Exception) {
+              promise.reject(ERROR_GET_SIZE_FAILURE, e)
+            } finally {
+              CloseableReference.closeSafely(ref)
+            }
+          } else {
+            promise.reject(ERROR_GET_SIZE_FAILURE, "Failed to get the size of the image")
+          }
+        }
+
+        override fun onFailureImpl(dataSource: DataSource<CloseableReference<CloseableImage>>) {
+          promise.reject(ERROR_GET_SIZE_FAILURE, dataSource.failureCause)
+        }
+      }
 
   private fun createSizeSubscriber(
       promise: Promise
