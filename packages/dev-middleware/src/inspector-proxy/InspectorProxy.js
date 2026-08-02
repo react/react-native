@@ -334,6 +334,23 @@ export default class InspectorProxy implements InspectorProxyQueries {
     });
     // $FlowFixMe[value-as-type]
     wss.on('connection', async (socket: WS, req) => {
+      // Attached before the first await: this handler is async, so an error
+      // arriving while it is suspended would otherwise have no listener. In
+      // Node an 'error' event with no listener throws, which takes down the
+      // whole dev server over a single bad connection.
+      socket.on('error', error => {
+        this.#logger?.error(
+          'Error on device connection, closing it: %s',
+          error?.message ?? String(error),
+        );
+        // terminate() rather than close(): close() waits for a closing
+        // handshake, and a socket that failed mid-frame may never complete
+        // one, which would leak the connection instead.
+        try {
+          socket.terminate();
+        } catch {}
+      });
+
       const wssTimestamp = Date.now();
 
       const fallbackDeviceId = String(this.#deviceCounter++);
@@ -523,6 +540,23 @@ export default class InspectorProxy implements InspectorProxyQueries {
 
     // $FlowFixMe[value-as-type]
     wss.on('connection', async (socket: WS, req) => {
+      // Attached before the first await: this handler is async, so an error
+      // arriving while it is suspended would otherwise have no listener. In
+      // Node an 'error' event with no listener throws, which takes down the
+      // whole dev server over a single bad connection.
+      socket.on('error', error => {
+        this.#logger?.error(
+          'Error on debugger connection, closing it: %s',
+          error?.message ?? String(error),
+        );
+        // terminate() rather than close(): close() waits for a closing
+        // handshake, and a socket that failed mid-frame may never complete
+        // one, which would leak the connection instead.
+        try {
+          socket.terminate();
+        } catch {}
+      });
+
       const wssTimestamp = Date.now();
 
       const query = tryParseQueryParams(req.url);
