@@ -13,6 +13,9 @@
 const fixtures = require('../__fixtures__/fixtures');
 const {execute} = require('../generate-artifacts-executor');
 const {
+  generateRCTThirdPartyComponents,
+} = require('../generate-artifacts-executor/generateRCTThirdPartyComponents');
+const {
   extractSupportedApplePlatforms,
 } = require('../generate-artifacts-executor/generateSchemaInfos');
 const {
@@ -20,6 +23,7 @@ const {
   extractLibrariesFromJSON,
 } = require('../generate-artifacts-executor/utils');
 const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
 
 const rootPath = path.join(__dirname, '../../..');
@@ -173,6 +177,53 @@ describe('extractSupportedApplePlatforms', () => {
       tvos: true,
       visionos: false,
     });
+  });
+});
+
+describe('generateRCTThirdPartyComponents', () => {
+  it('crawls component libraries without an iOS config', () => {
+    const libraryPath = fs.mkdtempSync(
+      path.join(os.tmpdir(), 'react-native-codegen-'),
+    );
+    const outputDir = path.join(libraryPath, 'output');
+
+    fs.writeFileSync(
+      path.join(libraryPath, 'package.json'),
+      JSON.stringify({name: 'component-library'}),
+    );
+    fs.writeFileSync(
+      path.join(libraryPath, 'ExampleComponent.mm'),
+      `Class<RCTComponentViewProtocol> ExampleComponentCls(void) {
+  return RCTExampleComponent.class;
+}
+`,
+    );
+
+    try {
+      generateRCTThirdPartyComponents(
+        [
+          {
+            config: {
+              name: 'ComponentLibraryConfig',
+              type: 'components',
+              jsSrcsDir: 'src',
+            },
+            libraryPath,
+          },
+        ],
+        outputDir,
+      );
+
+      const generatedFile = fs.readFileSync(
+        path.join(outputDir, 'RCTThirdPartyComponentsProvider.mm'),
+        'utf8',
+      );
+      expect(generatedFile).toContain(
+        '@"ExampleComponent": NSClassFromString(@"RCTExampleComponent"), // component-library',
+      );
+    } finally {
+      fs.rmSync(libraryPath, {recursive: true, force: true});
+    }
   });
 });
 

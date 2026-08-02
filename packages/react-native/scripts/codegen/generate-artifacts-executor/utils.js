@@ -396,17 +396,17 @@ function parseiOSAnnotations(
   const map = {};
 
   for (const library of libraries) {
-    const iosConfig = library?.config?.ios;
-    if (!iosConfig) {
-      continue;
-    }
-
     const libraryName = getLibraryName(library);
     map[libraryName] = map[libraryName] || {
       library,
       modules: {},
       components: {},
     };
+
+    const iosConfig = library?.config?.ios;
+    if (!iosConfig) {
+      continue;
+    }
 
     const {modules, components} = iosConfig;
     if (modules) {
