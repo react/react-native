@@ -58,6 +58,7 @@ internal class FabricEventEmitter(private val uiManager: FabricUIManager) : RCTM
           category,
           false,
           eventTimestamp,
+          customCoalesceKey,
       )
     } finally {
       Systrace.endSection(Systrace.TRACE_TAG_REACT)

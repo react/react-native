@@ -23,6 +23,9 @@ class ShadowNodeFamily;
  * Represents ready-to-dispatch event object.
  */
 struct RawEvent {
+  using CoalescingKey = int;
+  static constexpr CoalescingKey DefaultCoalescingKey = 0;
+
   /*
    * Defines category of a native platform event. This is used to deduce types
    * of events for Concurrent Mode.
@@ -74,7 +77,8 @@ struct RawEvent {
       std::weak_ptr<const ShadowNodeFamily> shadowNodeFamily,
       Category category = Category::Unspecified,
       bool isUnique = false,
-      HighResTimeStamp eventStartTimeStamp = HighResTimeStamp::now());
+      HighResTimeStamp eventStartTimeStamp = HighResTimeStamp::now(),
+      CoalescingKey coalescingKey = DefaultCoalescingKey);
 
   std::string type;
   SharedEventPayload eventPayload;
@@ -83,6 +87,7 @@ struct RawEvent {
   Category category;
   EventTag loggingTag{0};
   bool isUnique{false};
+  CoalescingKey coalescingKey{DefaultCoalescingKey};
 
   // The timestamp for the event start time. This defaults to the current
   // time if not specified by the client (e.g., when MotionEvent was triggered

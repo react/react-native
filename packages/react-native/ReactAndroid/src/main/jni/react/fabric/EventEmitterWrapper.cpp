@@ -66,7 +66,8 @@ void EventEmitterWrapper::dispatchEventSynchronously(
 void EventEmitterWrapper::dispatchUniqueEvent(
     std::string eventName,
     NativeMap* payload,
-    jlong eventTimestamp) {
+    jlong eventTimestamp,
+    int customCoalesceKey) {
   // It is marginal, but possible for this to be constructed without a valid
   // EventEmitter. In those cases, make sure we noop/blackhole events instead of
   // crashing.
@@ -74,7 +75,8 @@ void EventEmitterWrapper::dispatchUniqueEvent(
     eventEmitter->dispatchUniqueEvent(
         std::move(eventName),
         (payload != nullptr) ? payload->consume() : folly::dynamic::object(),
-        highResTimeStampFromMillis(eventTimestamp));
+        highResTimeStampFromMillis(eventTimestamp),
+        customCoalesceKey);
   }
 }
 

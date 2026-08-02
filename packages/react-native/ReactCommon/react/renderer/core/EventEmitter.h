@@ -126,7 +126,19 @@ class EventEmitter {
 
   void dispatchUniqueEvent(std::string type, folly::dynamic &&payload, HighResTimeStamp eventTimestamp) const;
 
+  void dispatchUniqueEvent(
+      std::string type,
+      folly::dynamic &&payload,
+      HighResTimeStamp eventTimestamp,
+      RawEvent::CoalescingKey coalescingKey) const;
+
   void dispatchUniqueEvent(std::string type, SharedEventPayload payload, HighResTimeStamp eventTimestamp) const;
+
+  void dispatchUniqueEvent(
+      std::string type,
+      SharedEventPayload payload,
+      HighResTimeStamp eventTimestamp,
+      RawEvent::CoalescingKey coalescingKey) const;
 
  private:
   friend class UIManagerBinding;

@@ -10,12 +10,14 @@
 #include <jsi/jsi.h>
 #include <react/renderer/core/EventLogger.h>
 #include <react/renderer/core/EventPipe.h>
+#include <react/renderer/core/EventQueue.h>
 #include <react/renderer/core/EventQueueProcessor.h>
 #include <react/renderer/core/EventTarget.h>
 #include <react/renderer/core/InstanceHandle.h>
 #include <react/renderer/core/ShadowNodeFamily.h>
 #include <react/renderer/core/StatePipe.h>
 #include <react/renderer/core/ValueFactoryEventPayload.h>
+#include <react/renderer/runtimescheduler/RuntimeScheduler.h>
 
 #include <memory>
 #include <stdexcept>
@@ -62,6 +64,81 @@ class EventQueueProcessorTest : public testing::Test {
   std::unique_ptr<EventQueueProcessor> eventProcessor_;
   std::vector<std::string> eventTypes_;
   std::vector<ReactEventPriority> eventPriorities_;
+  ValueFactory dummyValueFactory_;
+};
+
+class NoopEventBeat final : public EventBeat {
+ public:
+  explicit NoopEventBeat(RuntimeScheduler& runtimeScheduler)
+      : EventBeat(std::make_shared<EventBeat::OwnerBox>(), runtimeScheduler) {}
+
+  void request() const override {}
+  void requestSynchronous() const override {}
+};
+
+class TestEventQueue final : public EventQueue {
+ public:
+  using EventQueue::EventQueue;
+
+  void flush(jsi::Runtime& runtime) const {
+    flushEvents(runtime);
+  }
+};
+
+class EventQueueCoalescingTest : public testing::Test {
+ protected:
+  void SetUp() override {
+    runtime_ = facebook::hermes::makeHermesRuntime();
+
+    RuntimeExecutor runtimeExecutor =
+        [](std::function<void(facebook::jsi::Runtime&)>&& /*callback*/) {};
+    runtimeScheduler_ = std::make_unique<RuntimeScheduler>(runtimeExecutor);
+  }
+
+  std::unique_ptr<TestEventQueue> createEventQueue() {
+    auto eventPipe = [this](
+                         jsi::Runtime& /*runtime*/,
+                         const EventTarget* /*eventTarget*/,
+                         const std::string& type,
+                         ReactEventPriority /*priority*/,
+                         const EventPayload& /*payload*/,
+                         HighResTimeStamp eventTimestamp) {
+      eventTypes_.push_back(type);
+      eventTimestamps_.push_back(eventTimestamp);
+    };
+
+    auto dummyEventPipeConclusion = [](jsi::Runtime&) {};
+    auto dummyStatePipe = [](const StateUpdate&) {};
+    auto mockEventLogger = std::make_shared<MockEventLogger>();
+
+    return std::make_unique<TestEventQueue>(
+        EventQueueProcessor(
+            eventPipe,
+            dummyEventPipeConclusion,
+            dummyStatePipe,
+            mockEventLogger),
+        std::make_unique<NoopEventBeat>(*runtimeScheduler_));
+  }
+
+  RawEvent createRawEvent(
+      std::string type,
+      RawEvent::CoalescingKey coalescingKey,
+      HighResTimeStamp eventTimestamp) {
+    return RawEvent(
+        std::move(type),
+        std::make_shared<ValueFactoryEventPayload>(dummyValueFactory_),
+        nullptr,
+        {},
+        RawEvent::Category::Continuous,
+        false,
+        eventTimestamp,
+        coalescingKey);
+  }
+
+  std::unique_ptr<facebook::hermes::HermesRuntime> runtime_;
+  std::unique_ptr<RuntimeScheduler> runtimeScheduler_;
+  std::vector<std::string> eventTypes_;
+  std::vector<HighResTimeStamp> eventTimestamps_;
   ValueFactory dummyValueFactory_;
 };
 
@@ -203,6 +280,44 @@ TEST_F(EventQueueProcessorTest, releasesEventTargetsWhenDispatchThrows) {
   // though dispatch threw, so the instance handle is no longer reachable
   // through the EventTarget.
   EXPECT_TRUE(eventTarget->getInstanceHandle(*runtime_).isNull());
+}
+
+TEST_F(EventQueueCoalescingTest, uniqueEventsWithSameCoalescingKeyCoalesce) {
+  auto eventQueue = createEventQueue();
+  auto firstTimestamp = HighResTimeStamp::fromDOMHighResTimeStamp(1);
+  auto secondTimestamp = HighResTimeStamp::fromDOMHighResTimeStamp(2);
+
+  eventQueue->enqueueUniqueEvent(
+      createRawEvent("topChange", 3, firstTimestamp));
+  eventQueue->enqueueUniqueEvent(
+      createRawEvent("topChange", 3, secondTimestamp));
+
+  eventQueue->flush(*runtime_);
+
+  ASSERT_EQ(eventTypes_.size(), 1);
+  EXPECT_EQ(eventTypes_[0], "topChange");
+  EXPECT_EQ(eventTimestamps_[0], secondTimestamp);
+}
+
+TEST_F(
+    EventQueueCoalescingTest,
+    uniqueEventsWithDifferentCoalescingKeysDoNotCoalesce) {
+  auto eventQueue = createEventQueue();
+  auto firstTimestamp = HighResTimeStamp::fromDOMHighResTimeStamp(1);
+  auto secondTimestamp = HighResTimeStamp::fromDOMHighResTimeStamp(2);
+
+  eventQueue->enqueueUniqueEvent(
+      createRawEvent("topChange", 3, firstTimestamp));
+  eventQueue->enqueueUniqueEvent(
+      createRawEvent("topChange", 4, secondTimestamp));
+
+  eventQueue->flush(*runtime_);
+
+  ASSERT_EQ(eventTypes_.size(), 2);
+  EXPECT_EQ(eventTypes_[0], "topChange");
+  EXPECT_EQ(eventTypes_[1], "topChange");
+  EXPECT_EQ(eventTimestamps_[0], firstTimestamp);
+  EXPECT_EQ(eventTimestamps_[1], secondTimestamp);
 }
 
 } // namespace facebook::react

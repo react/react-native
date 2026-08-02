@@ -48,8 +48,8 @@ class EventDispatcher {
 
   /*
    * Dispatches a raw event with asynchronous batched priority. Before the
-   * dispatch we make sure that no other RawEvent of same type and same target
-   * is on the queue.
+   * dispatch we make sure that no other RawEvent of same type, same target,
+   * and same coalescing key is on the queue.
    */
   void dispatchUniqueEvent(RawEvent &&rawEvent) const;
 

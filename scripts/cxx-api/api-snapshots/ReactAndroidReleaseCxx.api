@@ -2266,8 +2266,10 @@ class facebook::react::EventEmitter {
   public void dispatchUniqueEvent(std::string type, const facebook::react::ValueFactory& payloadFactory, facebook::react::HighResTimeStamp eventTimestamp) const;
   public void dispatchUniqueEvent(std::string type, facebook::react::SharedEventPayload payload) const;
   public void dispatchUniqueEvent(std::string type, facebook::react::SharedEventPayload payload, facebook::react::HighResTimeStamp eventTimestamp) const;
+  public void dispatchUniqueEvent(std::string type, facebook::react::SharedEventPayload payload, facebook::react::HighResTimeStamp eventTimestamp, facebook::react::RawEvent::CoalescingKey coalescingKey) const;
   public void dispatchUniqueEvent(std::string type, folly::dynamic&& payload) const;
   public void dispatchUniqueEvent(std::string type, folly::dynamic&& payload, facebook::react::HighResTimeStamp eventTimestamp) const;
+  public void dispatchUniqueEvent(std::string type, folly::dynamic&& payload, facebook::react::HighResTimeStamp eventTimestamp, facebook::react::RawEvent::CoalescingKey coalescingKey) const;
   public void setEnabled(bool enabled);
   public void setShadowNodeFamily(std::weak_ptr<const facebook::react::ShadowNodeFamily> shadowNodeFamily);
 }
@@ -2279,7 +2281,7 @@ class facebook::react::EventEmitterWrapper : public jni::HybridClass<facebook::r
   public static void registerNatives();
   public void dispatchEvent(std::string eventName, facebook::react::NativeMap* payload, int category, jlong eventTimestamp);
   public void dispatchEventSynchronously(std::string eventName, facebook::react::NativeMap* params, jlong eventTimestamp);
-  public void dispatchUniqueEvent(std::string eventName, facebook::react::NativeMap* payload, jlong eventTimestamp);
+  public void dispatchUniqueEvent(std::string eventName, facebook::react::NativeMap* payload, jlong eventTimestamp, int customCoalesceKey);
 }
 
 class facebook::react::EventListenerContainer {
@@ -7744,15 +7746,18 @@ struct facebook::react::RadialGradientSize::Dimensions {
 }
 
 struct facebook::react::RawEvent {
-  public RawEvent(std::string type, facebook::react::SharedEventPayload eventPayload, facebook::react::SharedEventTarget eventTarget, std::weak_ptr<const facebook::react::ShadowNodeFamily> shadowNodeFamily, facebook::react::RawEvent::Category category = facebook::react::RawEvent::Category::Unspecified, bool isUnique = false, facebook::react::HighResTimeStamp eventStartTimeStamp = facebook::react::HighResTimeStamp::now());
+  public RawEvent(std::string type, facebook::react::SharedEventPayload eventPayload, facebook::react::SharedEventTarget eventTarget, std::weak_ptr<const facebook::react::ShadowNodeFamily> shadowNodeFamily, facebook::react::RawEvent::Category category = facebook::react::RawEvent::Category::Unspecified, bool isUnique = false, facebook::react::HighResTimeStamp eventStartTimeStamp = facebook::react::HighResTimeStamp::now(), facebook::react::RawEvent::CoalescingKey coalescingKey = facebook::react::RawEvent::DefaultCoalescingKey);
   public bool isUnique;
   public facebook::react::EventTag loggingTag;
   public facebook::react::HighResTimeStamp eventStartTimeStamp;
   public facebook::react::RawEvent::Category category;
+  public facebook::react::RawEvent::CoalescingKey coalescingKey;
   public facebook::react::SharedEventPayload eventPayload;
   public facebook::react::SharedEventTarget eventTarget;
+  public static constexpr facebook::react::RawEvent::CoalescingKey DefaultCoalescingKey;
   public std::string type;
   public std::weak_ptr<const facebook::react::ShadowNodeFamily> shadowNodeFamily;
+  public using CoalescingKey = int;
 }
 
 enum facebook::react::RawEvent::Category {

@@ -47,7 +47,8 @@ class EventQueue {
 
   /*
    * Enqueues and (probably later) dispatches a given event.
-   * Deletes last RawEvent from the queue if it has the same type and target.
+   * Deletes last RawEvent from the queue if it has the same type, target, and
+   * coalescing key.
    * Can be called on any thread.
    */
   void enqueueUniqueEvent(RawEvent &&rawEvent) const;

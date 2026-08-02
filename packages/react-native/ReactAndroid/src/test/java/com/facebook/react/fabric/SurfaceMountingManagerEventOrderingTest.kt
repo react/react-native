@@ -167,7 +167,7 @@ class SurfaceMountingManagerEventOrderingTest {
     )
 
     verify(emitter, never()).dispatch(any(), any(), any(), any())
-    verify(emitter, never()).dispatchUnique(any(), any(), any())
+    verify(emitter, never()).dispatchUnique(any(), any(), any(), any())
     verifyNoMoreInteractions(emitter)
   }
 
@@ -179,8 +179,19 @@ class SurfaceMountingManagerEventOrderingTest {
 
     smm.dispatchEvent(reactTag, "topScroll", true, null, EventCategoryDef.UNSPECIFIED, 0L)
 
-    verify(emitter).dispatchUnique("topScroll", null, 0L)
+    verify(emitter).dispatchUnique("topScroll", null, 0L, 0)
     verify(emitter, never()).dispatch("topScroll", null, EventCategoryDef.UNSPECIFIED, 0L)
+  }
+
+  @Test
+  fun dispatchEvent_forwardsCoalescingKey_forCoalesceableEvents() {
+    val smm = startSurfaceWithView()
+    val emitter: EventEmitterWrapper = mock()
+    smm.updateEventEmitter(reactTag, emitter)
+
+    smm.dispatchEvent(reactTag, "topScroll", true, null, EventCategoryDef.UNSPECIFIED, 0L, 7)
+
+    verify(emitter).dispatchUnique("topScroll", null, 0L, 7)
   }
 
   @Test
@@ -192,7 +203,19 @@ class SurfaceMountingManagerEventOrderingTest {
     val emitter: EventEmitterWrapper = mock()
     smm.updateEventEmitter(reactTag, emitter)
 
-    verify(emitter).dispatchUnique("topScroll", null, 1L)
+    verify(emitter).dispatchUnique("topScroll", null, 1L, 0)
+  }
+
+  @Test
+  fun dispatchEvent_coalesceableEvents_drainedFromQueueForwardCoalescingKey() {
+    val smm = startSurfaceWithView()
+
+    smm.dispatchEvent(reactTag, "topScroll", true, null, EventCategoryDef.UNSPECIFIED, 1L, 9)
+
+    val emitter: EventEmitterWrapper = mock()
+    smm.updateEventEmitter(reactTag, emitter)
+
+    verify(emitter).dispatchUnique("topScroll", null, 1L, 9)
   }
 
   /** After a drain cycle, subsequent events should dispatch directly (fast path). */
@@ -308,7 +331,7 @@ class SurfaceMountingManagerEventOrderingTest {
 
     val ordered = inOrder(emitter)
     ordered.verify(emitter).dispatch("topChange", null, EventCategoryDef.UNSPECIFIED, 1L)
-    ordered.verify(emitter).dispatchUnique("topScroll", null, 2L)
+    ordered.verify(emitter).dispatchUnique("topScroll", null, 2L, 0)
     ordered.verify(emitter).dispatch("topFocus", null, EventCategoryDef.UNSPECIFIED, 3L)
   }
 

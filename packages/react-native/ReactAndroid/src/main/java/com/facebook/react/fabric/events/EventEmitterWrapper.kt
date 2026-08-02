@@ -40,6 +40,7 @@ internal class EventEmitterWrapper private constructor() : HybridClassBase() {
       eventName: String,
       params: NativeMap?,
       eventTimestamp: Long,
+      customCoalesceKey: Int,
   )
 
   /**
@@ -82,10 +83,29 @@ internal class EventEmitterWrapper private constructor() : HybridClassBase() {
    */
   @Synchronized
   fun dispatchUnique(eventName: String, params: WritableMap?, eventTimestamp: Long) {
+    dispatchUnique(eventName, params, eventTimestamp, 0)
+  }
+
+  /**
+   * Invokes the execution of the C++ EventEmitter. C++ will coalesce events sent to the same target
+   * with the same event name and coalescing key.
+   *
+   * @param eventName [String] name of the event to execute.
+   * @param params [WritableMap] payload of the event
+   * @param eventTimestamp timestamp when the event was triggered (in milliseconds since boot)
+   * @param customCoalesceKey key that determines which same-name events can coalesce together
+   */
+  @Synchronized
+  fun dispatchUnique(
+      eventName: String,
+      params: WritableMap?,
+      eventTimestamp: Long,
+      customCoalesceKey: Int,
+  ) {
     if (!isValid) {
       return
     }
-    dispatchUniqueEvent(eventName, params as NativeMap?, eventTimestamp)
+    dispatchUniqueEvent(eventName, params as NativeMap?, eventTimestamp, customCoalesceKey)
   }
 
   @Synchronized
