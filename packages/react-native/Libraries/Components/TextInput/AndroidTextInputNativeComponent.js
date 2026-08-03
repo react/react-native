@@ -615,6 +615,7 @@ export type AndroidTextInputNativeProps = Readonly<{
   includeFontPadding?: ?boolean,
   fontWeight?: ?string,
   fontFamily?: ?string,
+  fontVariationSettings?: ?string,
 
   /**
    * I cannot find where these are defined but JS complains without them.
@@ -714,6 +715,7 @@ export const __INTERNAL_VIEW_CONFIG: PartialViewConfig = {
     includeFontPadding: true,
     fontWeight: true,
     fontFamily: true,
+    fontVariationSettings: true,
     allowFontScaling: true,
     onSelectionChange: true,
     mostRecentEventCount: true,

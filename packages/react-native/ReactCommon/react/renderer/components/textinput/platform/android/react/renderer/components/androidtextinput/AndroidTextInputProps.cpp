@@ -323,6 +323,10 @@ folly::dynamic AndroidTextInputProps::getDynamic() const {
   props["includeFontPadding"] = includeFontPadding;
   props["fontWeight"] = fontWeight;
   props["fontFamily"] = fontFamily;
+  props["fontVariationSettings"] =
+      textAttributes.fontVariationSettings.has_value()
+      ? folly::dynamic(*textAttributes.fontVariationSettings)
+      : folly::dynamic(nullptr);
   props["cursorColor"] = toAndroidRepr(cursorColor);
   props["mostRecentEventCount"] = mostRecentEventCount;
   props["text"] = text;
@@ -620,6 +624,14 @@ folly::dynamic AndroidTextInputProps::getDiffProps(
 
   if (fontFamily != oldProps->fontFamily) {
     result["fontFamily"] = fontFamily;
+  }
+
+  if (textAttributes.fontVariationSettings !=
+      oldProps->textAttributes.fontVariationSettings) {
+    result["fontVariationSettings"] =
+        textAttributes.fontVariationSettings.has_value()
+        ? folly::dynamic(*textAttributes.fontVariationSettings)
+        : folly::dynamic(nullptr);
   }
 
   return result;

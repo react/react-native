@@ -256,6 +256,11 @@ public open class ReactTextInputManager public constructor() :
     view.fontFeatureSettings = parseFontVariant(fontVariant)
   }
 
+  @ReactProp(name = ViewProps.FONT_VARIATION_SETTINGS)
+  public fun setFontVariationSettings(view: ReactEditText, fontVariationSettings: String?) {
+    view.setReactFontVariationSettings(fontVariationSettings)
+  }
+
   @ReactProp(name = ViewProps.INCLUDE_FONT_PADDING, defaultBoolean = true)
   public fun setIncludeFontPadding(view: ReactEditText, includepad: Boolean) {
     view.includeFontPadding = includepad

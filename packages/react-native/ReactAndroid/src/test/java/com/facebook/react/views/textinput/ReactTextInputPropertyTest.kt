@@ -23,6 +23,7 @@ import android.util.DisplayMetrics
 import android.view.Gravity
 import android.view.View
 import android.view.inputmethod.EditorInfo
+import androidx.annotation.RequiresApi
 import androidx.autofill.HintConstants
 import androidx.core.content.res.ResourcesCompat.ID_NULL
 import com.facebook.react.bridge.BridgeReactContext
@@ -35,6 +36,7 @@ import com.facebook.react.uimanager.ReactStylesDiffMap
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.views.text.DefaultStyleValuesUtil.getDefaultTextColorHint
 import com.facebook.react.views.text.ReactTextUpdate
+import com.facebook.react.views.text.internal.span.CustomStyleSpan
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -495,6 +497,98 @@ class ReactTextInputPropertyTest {
     view.filters = filters
     manager.setMaxLength(view, null)
     assertThat(view.filters).isEqualTo(filters)
+  }
+
+  @Test
+  fun testFontVariationSettings() {
+    manager.updateProperties(view, buildStyles("fontVariationSettings", "'wght' 550"))
+    assertThat(view.parsedFontVariationSettings).isEqualTo("'wght' 550")
+
+    manager.updateProperties(view, buildStyles("fontVariationSettings", "invalid"))
+    assertThat(view.parsedFontVariationSettings).isNull()
+
+    manager.updateProperties(view, buildStyles("fontVariationSettings", "normal"))
+    assertThat(view.parsedFontVariationSettings).isEmpty()
+
+    manager.updateProperties(view, buildStyles("fontVariationSettings", ""))
+    assertThat(view.parsedFontVariationSettings).isEmpty()
+
+    manager.updateProperties(view, buildStyles("fontVariationSettings", null))
+    assertThat(view.parsedFontVariationSettings).isNull()
+  }
+
+  @Test
+  fun testFontVariationSettingsOverrideFontWeightRegardlessOfPropOrder() {
+    manager.updateProperties(
+        view,
+        buildStyles(
+            "fontVariationSettings",
+            "'wght' 450",
+            "fontWeight",
+            "700",
+        ),
+    )
+    assertThat(view.parsedFontVariationSettings).isEqualTo("'wght' 450")
+
+    manager.updateProperties(
+        view,
+        buildStyles(
+            "fontWeight",
+            "300",
+            "fontVariationSettings",
+            "'wght' 550",
+        ),
+    )
+    assertThat(view.parsedFontVariationSettings).isEqualTo("'wght' 550")
+  }
+
+  @RequiresApi(Build.VERSION_CODES.M)
+  @Test
+  fun testFontVariationSettingsStripOnlyEquivalentSpans() {
+    manager.updateProperties(
+        view,
+        buildStyles(
+            "fontFamily",
+            "sans-serif",
+            "fontVariationSettings",
+            "'wght' 550",
+        ),
+    )
+    val matchingSpan = CustomStyleSpan(
+        0,
+        400,
+        view.fontFeatureSettings,
+        "'wght' 550",
+        "sans-serif",
+        themedContext.assets,
+    )
+    val differingSpan = CustomStyleSpan(
+        0,
+        400,
+        view.fontFeatureSettings,
+        "'wght' 700",
+        "sans-serif",
+        themedContext.assets,
+    )
+    val textUpdate =
+        SpannableString("matching different").apply {
+          setSpan(matchingSpan, 0, 8, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+          setSpan(differingSpan, 9, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
+
+    view.maybeSetTextFromState(
+        ReactTextUpdate(
+            textUpdate,
+            0,
+            view.gravity and Gravity.HORIZONTAL_GRAVITY_MASK,
+            Layout.BREAK_STRATEGY_HIGH_QUALITY,
+            0,
+        )
+    )
+
+    val remainingSpans =
+        checkNotNull(view.text).getSpans(0, view.length(), CustomStyleSpan::class.java)
+    assertThat(remainingSpans).containsExactly(differingSpan)
   }
 
   @Test
