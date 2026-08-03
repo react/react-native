@@ -69,6 +69,8 @@ type ErrorExamples =
   | 'promiseAssert'
   | 'installJSIBindings';
 
+type AndroidExamples = 'requestSamplePermission';
+
 class SampleTurboModuleExample extends React.Component<{}, State> {
   static contextType: React.Context<RootTag> = RootTagContext;
   eventSubscriptions: EventSubscription[] = [];
@@ -176,8 +178,20 @@ class SampleTurboModuleExample extends React.Component<{}, State> {
     installJSIBindings: () => global.__SampleTurboModuleJSIBindings,
   };
 
+  // Kept out of `_tests` so that "Run all tests" does not raise a system permission dialog.
+  // $FlowFixMe[missing-local-annot]
+  _androidTests = {
+    requestSamplePermission: () => {
+      NativeSampleTurboModule.requestSamplePermission?.()
+        .then(isGranted =>
+          this._setResult('requestSamplePermission', isGranted),
+        )
+        .catch(e => this._setResult('requestSamplePermission', e.message));
+    },
+  };
+
   _setResult(
-    name: Examples | ErrorExamples,
+    name: Examples | ErrorExamples | AndroidExamples,
     result:
       | $FlowFixMe
       | void
@@ -291,6 +305,34 @@ class SampleTurboModuleExample extends React.Component<{}, State> {
             </View>
           )}
         />
+        {Platform.OS === 'android' && (
+          <>
+            <View style={styles.item}>
+              <RNTesterText style={styles.buttonTextLarge}>
+                Activity result tests (Android)
+              </RNTesterText>
+            </View>
+            <FlatList
+              // $FlowFixMe[incompatible-type]
+              data={Object.keys(this._androidTests)}
+              keyExtractor={item => item}
+              renderItem={({item}: {item: AndroidExamples, ...}) => (
+                <View style={styles.item}>
+                  <TouchableOpacity
+                    style={[styles.column, styles.button]}
+                    onPress={e => this._androidTests[item]()}>
+                    <RNTesterText style={styles.buttonText}>
+                      {item}
+                    </RNTesterText>
+                  </TouchableOpacity>
+                  <View style={[styles.column]}>
+                    {this._renderResult(item)}
+                  </View>
+                </View>
+              )}
+            />
+          </>
+        )}
         <View style={styles.item}>
           <RNTesterText style={styles.buttonTextLarge}>
             Report errors tests

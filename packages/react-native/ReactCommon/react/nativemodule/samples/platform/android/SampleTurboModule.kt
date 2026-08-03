@@ -7,11 +7,13 @@
 
 package com.facebook.fbreact.specs
 
+import android.Manifest
 import android.net.Uri
 import android.os.Build
 import android.util.DisplayMetrics
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import com.facebook.proguard.annotations.DoNotStrip
 import com.facebook.react.bridge.Arguments
@@ -36,6 +38,17 @@ public class SampleTurboModule(private val context: ReactApplicationContext) :
     NativeSampleTurboModuleSpec(context), TurboModuleWithJSIBindings {
 
   private var toast: Toast? = null
+
+  private var pendingPermissionPromise: Promise? = null
+
+  // Registered up-front against the ReactContext's own ActivityResultRegistry. This works even
+  // though SampleTurboModule is instantiated lazily, long after the host Activity has resumed.
+  private val permissionLauncher: ActivityResultLauncher<String> =
+      context.registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+          isGranted: Boolean ->
+        pendingPermissionPromise?.resolve(isGranted)
+        pendingPermissionPromise = null
+      }
 
   @DoNotStrip
   override fun getBool(arg: Boolean): Boolean {
@@ -279,6 +292,23 @@ public class SampleTurboModule(private val context: ReactApplicationContext) :
     } else {
       promise.reject("error", "Unable to obtain an image uri without current activity")
     }
+  }
+
+  /**
+   * Demonstrates requesting a runtime permission through the [ActivityResultRegistry] owned by
+   * [com.facebook.react.bridge.ReactContext], rather than through the current Activity. Unlike
+   * [getImageUrl], this needs no Activity to be present at registration time and no cast to
+   * [ComponentActivity].
+   */
+  @DoNotStrip
+  @Suppress("unused")
+  override fun requestSamplePermission(promise: Promise) {
+    if (pendingPermissionPromise != null) {
+      promise.reject("error", "A permission request is already in flight")
+      return
+    }
+    pendingPermissionPromise = promise
+    permissionLauncher.launch(Manifest.permission.CAMERA)
   }
 
   private fun log(method: String, input: Any?, output: Any?) {
