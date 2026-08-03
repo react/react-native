@@ -393,7 +393,23 @@ public class SampleTurboModule(private val context: ReactApplicationContext) :
     toast?.show()
   }
 
-  override fun invalidate(): Unit = Unit
+  override fun invalidate() {
+    // Reject anything still in flight: the JS context that made these calls is going away, so the
+    // results can never be delivered. Clearing the fields also lets the callbacks (which stay
+    // registered until the launchers are unregistered) tolerate a late result harmlessly.
+    pendingPermissionPromise?.reject(
+        "E_MODULE_INVALIDATED", "Permission request cancelled: SampleTurboModule was invalidated")
+    pendingPermissionPromise = null
+
+    pendingPickMediaPromise?.reject(
+        "E_MODULE_INVALIDATED", "Media pick cancelled: SampleTurboModule was invalidated")
+    pendingPickMediaPromise = null
+
+    pendingPickMultipleMediaPromise?.reject(
+        "E_MODULE_INVALIDATED", "Multiple media pick cancelled: SampleTurboModule was invalidated")
+    pendingPickMultipleMediaPromise = null
+    super.invalidate()
+  }
 
   override fun getName(): String {
     return NAME
