@@ -44,36 +44,52 @@ internal class ReactActivityResultCallerImpl(private val reactContext: ReactCont
     reactContext.addLifecycleEventListener(this)
   }
 
-  override fun <I, O> registerForActivityResult(
-      contract: ActivityResultContract<I, O>,
-      callback: ActivityResultCallback<O>,
-  ): ActivityResultLauncher<I> =
-      register(contract.javaClass.name, callback.javaClass.name, contract, callback)
+  private fun getOwnerId(owner: Any): String = owner.javaClass.name
 
   override fun <I, O> registerForActivityResult(
       owner: Any,
       contract: ActivityResultContract<I, O>,
       callback: ActivityResultCallback<O>,
-  ): ActivityResultLauncher<I> =
-      register(
-          "${owner.javaClass.name}:${contract.javaClass.name}",
-          owner.javaClass.name,
-          contract,
-          callback)
+  ): ActivityResultLauncher<I> {
+    val id = getOwnerId(owner)
+    return register(
+        key = "$id:${contract.javaClass.name}",
+        registrantDescription = id,
+        collisionHint =
+            "Register once and reuse the launcher, or pass a distinct key per launcher: " +
+                "registerForActivityResult(owner, \"someName\", contract, callback).",
+        contract = contract,
+        callback = callback)
+  }
+
+  override fun <I, O> registerForActivityResult(
+      owner: Any,
+      key: String,
+      contract: ActivityResultContract<I, O>,
+      callback: ActivityResultCallback<O>,
+  ): ActivityResultLauncher<I> {
+    val id = getOwnerId(owner)
+    return register(
+        key = "$id:${contract.javaClass.name}:$key",
+        registrantDescription = id,
+        collisionHint = "Pass a key that is unique among this owner's launchers of this contract.",
+        contract = contract,
+        callback = callback)
+  }
+
 
   @Synchronized
   private fun <I, O> register(
       key: String,
       registrantDescription: String,
+      collisionHint: String,
       contract: ActivityResultContract<I, O>,
       callback: ActivityResultCallback<O>,
   ): ActivityResultLauncher<I> {
     entries[key]?.let { existing ->
       throw IllegalStateException(
-          "A launcher is already registered for key '$key' (registered by " +
-              "${existing.registrantDescription}, now requested by $registrantDescription). " +
-              "Subclass the contract to get a distinct key, or use the " +
-              "registerForActivityResult(owner, contract, callback) overload.")
+          "${existing.registrantDescription} already registered a launcher for key '$key'. " +
+              collisionHint)
     }
     val launcher = DeferredActivityResultLauncher(key, contract) { unregister(key) }
     val entry = Entry(key, registrantDescription, contract, callback, launcher)

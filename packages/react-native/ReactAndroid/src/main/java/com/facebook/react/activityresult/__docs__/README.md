@@ -22,7 +22,9 @@ The API is `ReactContext.registerForActivityResult`, deliberately identical in
 shape to
 [`ComponentActivity.registerForActivityResult`](https://developer.android.com/training/basics/intents/result#register):
 same name, same `ActivityResultCallback<O>`, and it returns the real
-`androidx.activity.result.ActivityResultLauncher<I>`.
+`androidx.activity.result.ActivityResultLauncher<I>`. The one addition is a
+leading `owner` argument, which scopes the registration key — see
+[Registration keys and collisions](#registration-keys-and-collisions).
 
 ```kotlin
 class MyModule(private val context: ReactApplicationContext) :
@@ -34,6 +36,7 @@ class MyModule(private val context: ReactApplicationContext) :
   // long after the Activity exists, and registration is legal at any time.
   private val requestPermission =
       context.registerForActivityResult(
+          /* owner = */ this,
           ActivityResultContracts.RequestPermission()) { isGranted ->
         pendingPromise?.resolve(isGranted)
         pendingPromise = null
@@ -51,6 +54,7 @@ Stock AndroidX contracts work unchanged, with their own input and output types:
 ```kotlin
 private val pickMedia =
     context.registerForActivityResult(
+        /* owner = */ this,
         ActivityResultContracts.PickVisualMedia()) { uri: Uri? ->
       // null when the user dismissed the picker
     }
@@ -60,22 +64,61 @@ pickMedia.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
 
 ### Registration keys and collisions
 
-The registration key is the contract's fully-qualified class name, derived by
-core and never passed by the caller. Registering the same contract class twice
-on one `ReactContext` throws `IllegalStateException` at registration time,
-naming both registrants. Two ways to disambiguate:
-
-- **Subclass the contract** (preferred; see the parameterized-contract pattern
-  below) — the subclass has its own class name and therefore its own key.
-- **Use the owner overload** —
-  `context.registerForActivityResult(owner, contract, callback)` scopes the key
-  to `"<owner class>:<contract class>"`:
+Registrations are keyed by `"<owner class>:<contract class>"`, derived by core
+from the `owner` you pass. Because a class's fully-qualified name is globally
+unique, two unrelated libraries can both register a stock contract such as
+`GetContent` and never collide:
 
 ```kotlin
-private val getContent =
-    context.registerForActivityResult(
-        /* owner = */ this, ActivityResultContracts.GetContent()) { uri -> ... }
+// react-native-image-lib
+class ImageModule(ctx: ReactApplicationContext) : NativeImageModuleSpec(ctx) {
+  private val pick = ctx.registerForActivityResult(this, GetContent()) { uri -> }
+  // key = "com.rnimage.ImageModule:androidx...GetContent"
+}
+
+// react-native-doc-lib — same contract, different owner, no collision
+class DocModule(ctx: ReactApplicationContext) : NativeDocModuleSpec(ctx) {
+  private val pick = ctx.registerForActivityResult(this, GetContent()) { uri -> }
+  // key = "com.rndoc.DocModule:androidx...GetContent"
+}
 ```
+
+Pass a stable, long-lived `owner` — normally the module itself. An anonymous
+object or a per-call helper yields a synthetic name like `com.example.Foo$1`,
+which is fragile across builds and defeats re-association after process death.
+
+A collision still throws `IllegalStateException` at registration time, but with
+owner scoping it is only reachable from one owner's own code: registering the
+same contract class twice. The fix is the **extra-key overload**:
+
+```kotlin
+// Throws — same owner, same contract class, same key:
+private val pickAvatar = ctx.registerForActivityResult(this, GetContent()) { }
+private val pickBanner = ctx.registerForActivityResult(this, GetContent()) { }
+
+// Fix:
+private val pickAvatar = ctx.registerForActivityResult(this, "avatar", GetContent()) { }
+// key = "com.example.MyModule:androidx...GetContent:avatar"
+private val pickBanner = ctx.registerForActivityResult(this, "banner", GetContent()) { }
+// key = "com.example.MyModule:androidx...GetContent:banner"
+```
+
+The key you pass is **appended to** the owner-and-contract scope, not
+substituted for it, so it only has to be unique among that owner's launchers of
+that contract — and no choice of key can reintroduce a cross-library collision.
+It does still have to be stable across process death, so derive it from a
+constant rather than from runtime state.
+
+#### Why not auto-generated keys, like `ComponentActivity`?
+
+`ComponentActivity` can key registrations by an incrementing counter
+(`activity_rq#0`, `activity_rq#1`, …) because it registers in `onCreate`, in a
+deterministic order every time. React Native cannot: native modules are created
+lazily, in whatever order JS first touches them, so after process death
+`activity_rq#0` may belong to a _different_ module than it did before. A
+restored result would then be dispatched to the wrong callback and parsed with
+the wrong contract. Deriving the key from the owner and contract classes keeps
+it reproducible regardless of creation order.
 
 ### Parameterized contracts: passing values from JS per call
 
@@ -104,8 +147,10 @@ private class PickUpToMedia :
 launcher.launch(PickUpToMedia.Request(jsMaxItems, request))
 ```
 
-This is the pattern for _any_ per-call parameter, and it doubles as the
-collision fix since the subclass gets a distinct key.
+This is the pattern for _any_ per-call parameter. (It also happens to yield a
+distinct key, since the subclass has its own class name — but that is
+incidental; collisions are handled by owner scoping and the extra-key overload
+above.)
 
 ### Working examples
 
@@ -150,7 +195,7 @@ Behavioral notes for library authors:
   in-flight call (typically a `Promise`) died with the JS context. Design
   callbacks to tolerate firing with no pending state.
 - **`unregister()`** on the returned launcher removes the registration; the same
-  contract class can then be registered again.
+  key can then be registered again.
 
 ## 🔗 Relationship with other systems
 

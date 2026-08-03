@@ -22,30 +22,49 @@ import androidx.activity.result.contract.ActivityResultContract
  * including before any Activity exists -- and the returned launcher binds lazily to the real
  * registry once the host resumes.
  *
- * Registrations are keyed by the contract's fully-qualified class name. Registering the same
- * contract class twice throws an [IllegalStateException] at registration time; disambiguate by
- * subclassing the contract or using the [registerForActivityResult] overload that takes an `owner`.
+ * Every registration carries a key that must be unique within the `ReactContext` and stable across
+ * process death -- after the process is killed mid-flow, AndroidX replays the restored result to
+ * whichever registration reproduces the same key string. The default key is scoped to the caller
+ * (`"<owner class>:<contract class>"`), which is what lets two unrelated libraries both register a
+ * stock contract such as `ActivityResultContracts.GetContent` without colliding.
+ *
+ * A collision throws an [IllegalStateException] at registration time. With owner scoping this is
+ * only reachable when a single owner registers the same contract class twice; the fix is the
+ * overload that takes an extra `key`, which is appended to -- not substituted for -- the
+ * owner-and-contract scope, so a poorly chosen key can never reintroduce a cross-library collision.
  */
 internal interface ReactActivityResultCaller {
 
   /**
-   * Registers [contract] and returns a launcher for it. The registration key is the contract's
-   * fully-qualified class name.
+   * Registers [contract] under the key `"<owner class>:<contract class>"` and returns a launcher
+   * for it.
    *
-   * @throws IllegalStateException if a registration with the same key already exists
+   * [owner] should be a stable, long-lived object -- typically the native module itself. An
+   * anonymous object or a short-lived per-call helper yields a synthetic name such as
+   * `com.example.Foo$1`, which is fragile across builds and defeats re-association after process
+   * death.
+   *
+   * @throws IllegalStateException if [owner] already registered this contract class
    */
   fun <I, O> registerForActivityResult(
+      owner: Any,
       contract: ActivityResultContract<I, O>,
       callback: ActivityResultCallback<O>,
   ): ActivityResultLauncher<I>
 
   /**
-   * Same as [registerForActivityResult], but scopes the registration key to [owner]
-   * (`"<owner class>:<contract class>"`). Use this when two independent callers need the same
-   * stock contract class, or when registering from something other than a native module.
+   * Registers [contract] under the key `"<owner class>:<contract class>:<key>"`. Use this when one
+   * owner needs several launchers of the same contract class.
+   *
+   * [key] only has to be unique among [owner]'s registrations of this contract class -- the
+   * owner-and-contract scope is still applied -- but it must be stable across process death, so
+   * derive it from a constant rather than from runtime state.
+   *
+   * @throws IllegalStateException if [owner] already registered this contract class under [key]
    */
   fun <I, O> registerForActivityResult(
       owner: Any,
+      key: String,
       contract: ActivityResultContract<I, O>,
       callback: ActivityResultCallback<O>,
   ): ActivityResultLauncher<I>

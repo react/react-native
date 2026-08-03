@@ -49,7 +49,7 @@ public class SampleTurboModule(private val context: ReactApplicationContext) :
   // Registered up-front against the ReactContext's own ActivityResultRegistry. This works even
   // though SampleTurboModule is instantiated lazily, long after the host Activity has resumed.
   private val permissionLauncher: ActivityResultLauncher<String> =
-      context.registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+      context.registerForActivityResult(this, ActivityResultContracts.RequestPermission()) {
           isGranted: Boolean ->
         pendingPermissionPromise?.resolve(isGranted)
         pendingPermissionPromise = null
@@ -61,7 +61,8 @@ public class SampleTurboModule(private val context: ReactApplicationContext) :
   // (PickVisualMediaRequest) and a nullable output. See
   // https://developer.android.com/training/data-storage/shared/photo-picker
   private val pickMediaLauncher: ActivityResultLauncher<PickVisualMediaRequest> =
-      context.registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri: Uri? ->
+      context.registerForActivityResult(this, ActivityResultContracts.PickVisualMedia()) {
+          uri: Uri? ->
         pendingPickMediaPromise?.resolve(uri?.toString())
         pendingPickMediaPromise = null
       }
@@ -71,7 +72,7 @@ public class SampleTurboModule(private val context: ReactApplicationContext) :
   // Photo picker in multi-select mode, using the custom [PickUpToMedia] contract (see bottom of
   // this file) so the item limit can be passed per call from JS.
   private val pickMultipleMediaLauncher: ActivityResultLauncher<PickUpToMedia.Request> =
-      context.registerForActivityResult(PickUpToMedia()) { uris: List<Uri> ->
+      context.registerForActivityResult(this, PickUpToMedia()) { uris: List<Uri> ->
         val result: WritableArray = WritableNativeArray()
         uris.forEach { result.pushString(it.toString()) }
         pendingPickMultipleMediaPromise?.resolve(result)

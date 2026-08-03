@@ -16,11 +16,13 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Window;
+
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContract;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import com.facebook.common.logging.FLog;
 import com.facebook.infer.annotation.Assertions;
 import com.facebook.infer.annotation.ThreadConfined;
@@ -33,6 +35,7 @@ import com.facebook.react.common.LifecycleState;
 import com.facebook.react.common.build.ReactBuildConfig;
 import com.facebook.react.interfaces.ExtraWindowEventListener;
 import com.facebook.react.turbomodule.core.interfaces.CallInvokerHolder;
+
 import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -551,24 +554,35 @@ public abstract class ReactContext extends ContextWrapper {
    * MainActivity}. Registration is legal at any time; the returned launcher binds lazily once an
    * Activity is available, and a {@code launch} issued while unbound is queued and fired on bind.
    *
-   * <p>The registration key is the contract's fully-qualified class name; registering the same
-   * contract class twice throws {@link IllegalStateException}. Disambiguate by subclassing the
-   * contract or using {@link #registerForActivityResult(Object, ActivityResultContract,
-   * ActivityResultCallback)}.
-   */
-  public <I, O> ActivityResultLauncher<I> registerForActivityResult(
-      ActivityResultContract<I, O> contract, ActivityResultCallback<O> callback) {
-    return getActivityResultCaller().registerForActivityResult(contract, callback);
-  }
-
-  /**
-   * Same as {@link #registerForActivityResult(ActivityResultContract, ActivityResultCallback)},
-   * but scopes the registration key to {@code owner} so two callers can register the same contract
-   * class.
+   * <p>The registration key is {@code "<owner class>:<contract class>"}, so two unrelated libraries
+   * may both register a stock contract such as {@code ActivityResultContracts.GetContent} without
+   * colliding. {@code owner} should be a stable, long-lived object -- typically the native module
+   * itself -- because the key must be reproducible after process death. Registering the same
+   * contract class twice from one owner throws {@link IllegalStateException}; use {@link
+   * #registerForActivityResult(Object, String, ActivityResultContract, ActivityResultCallback)} in
+   * that case.
    */
   public <I, O> ActivityResultLauncher<I> registerForActivityResult(
       Object owner, ActivityResultContract<I, O> contract, ActivityResultCallback<O> callback) {
     return getActivityResultCaller().registerForActivityResult(owner, contract, callback);
+  }
+
+  /**
+   * Same as {@link #registerForActivityResult(Object, ActivityResultContract,
+   * ActivityResultCallback)}, but registers under {@code "<owner class>:<contract class>:<key>"}.
+   * Use this when one owner needs several launchers of the same contract class. {@code key} only
+   * has to be unique among {@code owner}'s registrations of this contract class -- the
+   * owner-and-contract scope is still applied -- but it must be stable across process death.
+   *
+   * @throws IllegalStateException if {@code owner} already registered this contract class under
+   *     {@code key}
+   */
+  public <I, O> ActivityResultLauncher<I> registerForActivityResult(
+      Object owner,
+      String key,
+      ActivityResultContract<I, O> contract,
+      ActivityResultCallback<O> callback) {
+    return getActivityResultCaller().registerForActivityResult(owner, key, contract, callback);
   }
 
   /**
