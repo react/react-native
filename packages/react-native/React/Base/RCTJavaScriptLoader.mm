@@ -332,7 +332,7 @@ static void attemptAsynchronousLoadOfBundleAtURL(
         }
 
         NSError *mappingError;
-        NSData *bundleData = [NSData dataWithContentsOfFile:downloadedBundleFileURL.path
+        NSData *bundleData = [NSData dataWithContentsOfURL:downloadedBundleFileURL
                                                     options:NSDataReadingMappedIfSafe
                                                       error:&mappingError];
         if (bundleData == nil) {
@@ -340,7 +340,7 @@ static void attemptAsynchronousLoadOfBundleAtURL(
           return;
         }
 
-        RCTSource *source = RCTSourceCreate(sourceURL, bundleData, bundleData.length);
+        RCTSource *source = RCTSourceCreate(sourceURL, bundleData, static_cast<int64_t>(bundleData.length));
         source->_downloadedBundleFileURL = downloadedBundleFileURL;
         parseHeaders(headers, source);
         onComplete(nil, source);
