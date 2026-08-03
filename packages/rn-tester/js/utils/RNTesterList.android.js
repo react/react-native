@@ -207,6 +207,11 @@ const APIs: Array<RNTesterModuleInfo> = (
       module: require('../examples/ContentURLAndroid/ContentURLAndroid'),
     },
     {
+      key: 'PhotoPickerAndroid',
+      category: 'Android',
+      module: require('../examples/PhotoPickerAndroid/PhotoPickerAndroid'),
+    },
+    {
       key: 'URLExample',
       category: 'Basic',
       module: require('../examples/Urls/UrlExample'),

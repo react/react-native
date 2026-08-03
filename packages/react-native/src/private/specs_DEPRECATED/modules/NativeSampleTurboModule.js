@@ -66,6 +66,11 @@ export interface Spec extends TurboModule {
   // Android-only
   readonly getImageUrl?: () => Promise<string | null>;
   readonly requestSamplePermission?: () => Promise<boolean>;
+  readonly pickMedia?: (mimeType: ?string) => Promise<string | null>;
+  readonly pickMultipleMedia?: (
+    mimeType: ?string,
+    maxItems: number,
+  ) => Promise<Array<string>>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>(

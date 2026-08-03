@@ -8,12 +8,17 @@
 package com.facebook.fbreact.specs
 
 import android.Manifest
+import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import android.provider.MediaStore
 import android.util.DisplayMetrics
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import com.facebook.proguard.annotations.DoNotStrip
 import com.facebook.react.bridge.Arguments
@@ -48,6 +53,29 @@ public class SampleTurboModule(private val context: ReactApplicationContext) :
           isGranted: Boolean ->
         pendingPermissionPromise?.resolve(isGranted)
         pendingPermissionPromise = null
+      }
+
+  private var pendingPickMediaPromise: Promise? = null
+
+  // Photo picker in single-select mode, demonstrating a contract with a typed input
+  // (PickVisualMediaRequest) and a nullable output. See
+  // https://developer.android.com/training/data-storage/shared/photo-picker
+  private val pickMediaLauncher: ActivityResultLauncher<PickVisualMediaRequest> =
+      context.registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri: Uri? ->
+        pendingPickMediaPromise?.resolve(uri?.toString())
+        pendingPickMediaPromise = null
+      }
+
+  private var pendingPickMultipleMediaPromise: Promise? = null
+
+  // Photo picker in multi-select mode, using the custom [PickUpToMedia] contract (see bottom of
+  // this file) so the item limit can be passed per call from JS.
+  private val pickMultipleMediaLauncher: ActivityResultLauncher<PickUpToMedia.Request> =
+      context.registerForActivityResult(PickUpToMedia()) { uris: List<Uri> ->
+        val result: WritableArray = WritableNativeArray()
+        uris.forEach { result.pushString(it.toString()) }
+        pendingPickMultipleMediaPromise?.resolve(result)
+        pendingPickMultipleMediaPromise = null
       }
 
   @DoNotStrip
@@ -311,6 +339,47 @@ public class SampleTurboModule(private val context: ReactApplicationContext) :
     permissionLauncher.launch(Manifest.permission.CAMERA)
   }
 
+  /**
+   * Maps the JS-provided mime type onto the photo picker's [VisualMediaType]: null selects images
+   * and videos, "image/&#42;" and "video/&#42;" restrict to one kind, and any other value is
+   * treated as a specific mime type (e.g. "image/gif").
+   */
+  private fun visualMediaType(mimeType: String?): ActivityResultContracts.PickVisualMedia.VisualMediaType =
+      when (mimeType) {
+        null -> ActivityResultContracts.PickVisualMedia.ImageAndVideo
+        "image/*" -> ActivityResultContracts.PickVisualMedia.ImageOnly
+        "video/*" -> ActivityResultContracts.PickVisualMedia.VideoOnly
+        else -> ActivityResultContracts.PickVisualMedia.SingleMimeType(mimeType)
+      }
+
+  @DoNotStrip
+  @Suppress("unused")
+  override fun pickMedia(mimeType: String?, promise: Promise) {
+    if (pendingPickMediaPromise != null) {
+      promise.reject("error", "A media pick is already in flight")
+      return
+    }
+    pendingPickMediaPromise = promise
+    pickMediaLauncher.launch(PickVisualMediaRequest(visualMediaType(mimeType)))
+  }
+
+  @DoNotStrip
+  @Suppress("unused")
+  override fun pickMultipleMedia(mimeType: String?, maxItems: Double, promise: Promise) {
+    if (pendingPickMultipleMediaPromise != null) {
+      promise.reject("error", "A media pick is already in flight")
+      return
+    }
+    val limit = maxItems.toInt()
+    if (limit < 2) {
+      promise.reject("error", "maxItems must be at least 2, got $limit")
+      return
+    }
+    pendingPickMultipleMediaPromise = promise
+    pickMultipleMediaLauncher.launch(
+        PickUpToMedia.Request(limit, PickVisualMediaRequest(visualMediaType(mimeType))))
+  }
+
   private fun log(method: String, input: Any?, output: Any?) {
     toast?.cancel()
     val message = StringBuilder("Method :")
@@ -335,4 +404,32 @@ public class SampleTurboModule(private val context: ReactApplicationContext) :
   public companion object {
     public const val NAME: String = "SampleTurboModule"
   }
+}
+
+/**
+ * Photo picker contract for multi-select with a per-call item limit. Stock
+ * [ActivityResultContracts.PickMultipleVisualMedia] fixes the limit in its constructor, i.e. at
+ * registration time -- but here the limit comes from JS per call. The AndroidX-idiomatic fix, which
+ * library authors should copy, is to subclass the contract and move the dynamic value into the
+ * contract's *input* type, where it becomes a [androidx.activity.result.ActivityResultLauncher.launch]
+ * argument. The subclass also gets its own registration key for free (keys are the contract's class
+ * name), so it never collides with a stock [ActivityResultContracts.PickMultipleVisualMedia]
+ * registered by someone else.
+ */
+private class PickUpToMedia :
+    ActivityResultContract<PickUpToMedia.Request, List<@JvmSuppressWildcards Uri>>() {
+  class Request(val maxItems: Int, val request: PickVisualMediaRequest)
+
+  // Only used to build/parse intents; its constructor limit is always overwritten below.
+  private val delegate = ActivityResultContracts.PickMultipleVisualMedia(2)
+
+  override fun createIntent(context: Context, input: Request): Intent =
+      delegate.createIntent(context, input.request).apply {
+        // Honored by the system photo picker. On the pre-picker ACTION_OPEN_DOCUMENT fallback
+        // only single-vs-multiple is distinguished, so treat the limit as best-effort there.
+        putExtra(MediaStore.EXTRA_PICK_IMAGES_MAX, input.maxItems)
+      }
+
+  override fun parseResult(resultCode: Int, intent: Intent?): List<Uri> =
+      delegate.parseResult(resultCode, intent)
 }
