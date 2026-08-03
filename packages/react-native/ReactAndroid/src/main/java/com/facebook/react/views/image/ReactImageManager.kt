@@ -12,13 +12,14 @@ import android.graphics.PorterDuff
 import com.facebook.common.logging.FLog
 import com.facebook.drawee.backends.pipeline.Fresco
 import com.facebook.drawee.controller.AbstractDraweeControllerBuilder
+import com.facebook.react.bridge.Dynamic
+import com.facebook.react.bridge.DynamicFromObject
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.common.ReactConstants
 import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.uimanager.BackgroundStyleApplicator
 import com.facebook.react.uimanager.LengthPercentage
-import com.facebook.react.uimanager.LengthPercentageType
 import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.ViewProps
@@ -171,13 +172,18 @@ public constructor(
               ViewProps.BORDER_BOTTOM_RIGHT_RADIUS,
               ViewProps.BORDER_BOTTOM_LEFT_RADIUS,
           ],
-      defaultFloat = Float.NaN,
+  )
+  public fun setBorderRadius(view: ReactImageView, index: Int, rawBorderRadius: Dynamic) {
+    val borderRadius = LengthPercentage.setFromDynamic(rawBorderRadius)
+    BackgroundStyleApplicator.setBorderRadius(view, BorderRadiusProp.values()[index], borderRadius)
+  }
+
+  @Deprecated(
+      "Don't use setBorderRadius(view, index, Float) as it was deprecated in React Native 0.87.0.",
+      ReplaceWith("setBorderRadius(view, index, DynamicFromObject(borderRadius))"),
   )
   public fun setBorderRadius(view: ReactImageView, index: Int, borderRadius: Float) {
-    val radius =
-        if (borderRadius.isNaN()) null
-        else LengthPercentage(borderRadius, LengthPercentageType.POINT)
-    BackgroundStyleApplicator.setBorderRadius(view, BorderRadiusProp.values()[index], radius)
+    setBorderRadius(view, index, DynamicFromObject(borderRadius))
   }
 
   @ReactProp(name = ViewProps.RESIZE_MODE)

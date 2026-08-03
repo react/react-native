@@ -5312,6 +5312,7 @@ public final class com/facebook/react/views/image/ReactImageManager : com/facebo
 	public final fun setBlurRadius (Lcom/facebook/react/views/image/ReactImageView;F)V
 	public final fun setBorderColor (Lcom/facebook/react/views/image/ReactImageView;Ljava/lang/Integer;)V
 	public final fun setBorderRadius (Lcom/facebook/react/views/image/ReactImageView;IF)V
+	public final fun setBorderRadius (Lcom/facebook/react/views/image/ReactImageView;ILcom/facebook/react/bridge/Dynamic;)V
 	public final fun setBorderWidth (Lcom/facebook/react/views/image/ReactImageView;F)V
 	public final fun setDefaultSource (Lcom/facebook/react/views/image/ReactImageView;Ljava/lang/String;)V
 	public final fun setFadeDuration (Lcom/facebook/react/views/image/ReactImageView;I)V

@@ -23,9 +23,13 @@ import com.facebook.react.bridge.JavaOnlyMap
 import com.facebook.react.bridge.ReactTestHelper.createMockCatalystInstance
 import com.facebook.react.common.ReactConstants
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsForTests
+import com.facebook.react.uimanager.BackgroundStyleApplicator
 import com.facebook.react.uimanager.DisplayMetricsHolder
+import com.facebook.react.uimanager.LengthPercentage
+import com.facebook.react.uimanager.LengthPercentageType
 import com.facebook.react.uimanager.ReactStylesDiffMap
 import com.facebook.react.uimanager.ThemedReactContext
+import com.facebook.react.uimanager.style.BorderRadiusProp
 import com.facebook.react.util.RNLog
 import com.facebook.react.views.imagehelper.ImageSource
 import com.facebook.soloader.SoLoader
@@ -140,6 +144,31 @@ class ReactImagePropertyTest {
     view.maybeUpdateView()
     assertThat(ImageSource.getTransparentBitmapImageSource(view.context))
         .isEqualTo(view.imageSource)
+  }
+
+  @Test
+  fun testBorderRadius() {
+    val viewManager = ReactImageManager()
+    val view = viewManager.createViewInstance(themeContext)
+
+    // Percentage border radii arrive as strings and must not crash the property updater
+    viewManager.updateProperties(view, buildStyles("borderRadius", "50%"))
+    assertThat(BackgroundStyleApplicator.getBorderRadius(view, BorderRadiusProp.BORDER_RADIUS))
+        .isEqualTo(LengthPercentage(50f, LengthPercentageType.PERCENT))
+
+    viewManager.updateProperties(view, buildStyles("borderRadius", 10.0))
+    assertThat(BackgroundStyleApplicator.getBorderRadius(view, BorderRadiusProp.BORDER_RADIUS))
+        .isEqualTo(LengthPercentage(10f, LengthPercentageType.POINT))
+
+    viewManager.updateProperties(view, buildStyles("borderTopLeftRadius", "25%"))
+    assertThat(
+            BackgroundStyleApplicator.getBorderRadius(view, BorderRadiusProp.BORDER_TOP_LEFT_RADIUS)
+        )
+        .isEqualTo(LengthPercentage(25f, LengthPercentageType.PERCENT))
+
+    viewManager.updateProperties(view, buildStyles("borderRadius", null))
+    assertThat(BackgroundStyleApplicator.getBorderRadius(view, BorderRadiusProp.BORDER_RADIUS))
+        .isNull()
   }
 
   @Test
