@@ -8,9 +8,11 @@
 package com.facebook.react.activityresult
 
 import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.ActivityResultRegistry
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.core.app.ActivityOptionsCompat
 import com.facebook.common.logging.FLog
+import com.facebook.react.bridge.UiThreadUtil
 import com.facebook.react.common.ReactConstants
 
 /**
@@ -18,6 +20,11 @@ import com.facebook.react.common.ReactConstants
  * available. It delegates to the real launcher once [bind] is called, and queues a single pending
  * [launch] issued while unbound, firing it on bind. [unbind] detaches it when the host Activity is
  * destroyed so that [ReactActivityResultCallerImpl] can rebind it against the next host's registry.
+ *
+ * [launch] and [unregister] are called off the UI thread but reach `@MainThread` registry methods,
+ * so both hop. [delegate] and [pendingLaunch] are therefore UI-thread only and need no lock. Note
+ * [launch] decides bound-vs-queue *inside* the hop: doing it before would let a concurrent [unbind]
+ * strand the launch on a dead registry.
  */
 internal class DeferredActivityResultLauncher<I>(
     private val key: String,
@@ -30,50 +37,58 @@ internal class DeferredActivityResultLauncher<I>(
   private class PendingLaunch<I>(val input: I, val options: ActivityOptionsCompat?)
 
   private var delegate: ActivityResultLauncher<I>? = null
+  private var boundRegistry: ActivityResultRegistry? = null
   private var pendingLaunch: PendingLaunch<I>? = null
 
-  @Synchronized
   override fun launch(input: I, options: ActivityOptionsCompat?) {
-    val boundDelegate = delegate
-    if (boundDelegate != null) {
-      boundDelegate.launch(input, options)
-    } else {
-      if (pendingLaunch != null) {
-        FLog.w(
-            ReactConstants.TAG,
-            "Launcher for '$key' was launched again before an Activity was available; " +
-                "replacing the previously queued launch.")
+    onUiThread {
+      val boundDelegate = delegate
+      if (boundDelegate != null) {
+        boundDelegate.launch(input, options)
+      } else {
+        if (pendingLaunch != null) {
+          FLog.w(
+              ReactConstants.TAG,
+              "Launcher for '$key' was launched again before an Activity was available; " +
+                  "replacing the previously queued launch.")
+        }
+        pendingLaunch = PendingLaunch(input, options)
       }
-      pendingLaunch = PendingLaunch(input, options)
     }
   }
 
-  @Synchronized
   override fun unregister() {
-    delegate?.unregister()
-    delegate = null
-    pendingLaunch = null
+    // Drop the registration first, so nothing rebinds this launcher while the hop is in flight.
     onUnregister()
+    onUiThread {
+      delegate?.unregister()
+      delegate = null
+      pendingLaunch = null
+    }
   }
 
-  /** Attaches the real launcher and fires any launch queued while unbound. */
-  @Synchronized
-  fun bind(launcher: ActivityResultLauncher<I>) {
+  /**
+   * Attaches [launcher], obtained from [registry], and fires any launch queued while unbound.
+   * [registry] is remembered so [isBoundTo] can tell whether a later host is a different one.
+   */
+  fun bind(registry: ActivityResultRegistry, launcher: ActivityResultLauncher<I>) {
+    UiThreadUtil.assertOnUiThread()
     delegate = launcher
+    boundRegistry = registry
     pendingLaunch?.let { pending ->
       pendingLaunch = null
       launcher.launch(pending.input, pending.options)
     }
   }
 
-  /** Detaches from a dying registry, keeping any queued launch for the next [bind]. */
-  @Synchronized
+  /** Detaches from the bound registry, keeping any queued launch for the next [bind]. */
   fun unbind() {
+    UiThreadUtil.assertOnUiThread()
     delegate?.unregister()
     delegate = null
+    boundRegistry = null
   }
 
-  @get:Synchronized
-  val isBound: Boolean
-    get() = delegate != null
+  /** Whether this launcher is already bound to [registry] specifically -- not merely to something. */
+  fun isBoundTo(registry: ActivityResultRegistry): Boolean = boundRegistry === registry
 }
