@@ -601,6 +601,12 @@ export interface TextStyle extends TextStyleIOS, TextStyleAndroid, ViewStyle {
     | 'heavy'
     | 'black'
     | undefined;
+  /**
+   * Specifies OpenType font variation axis values using CSS syntax. An empty
+   * string resets inherited variation settings. On Android, this requires API
+   * level 26 or later.
+   */
+  fontVariationSettings?: string | undefined;
   letterSpacing?: number | undefined;
   lineHeight?: number | undefined;
   textAlign?:
