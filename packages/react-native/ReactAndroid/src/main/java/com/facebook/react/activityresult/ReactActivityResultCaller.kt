@@ -26,7 +26,7 @@ import androidx.activity.result.contract.ActivityResultContract
  * contract class twice throws an [IllegalStateException] at registration time; disambiguate by
  * subclassing the contract or using the [registerForActivityResult] overload that takes an `owner`.
  */
-public interface ReactActivityResultCaller {
+internal interface ReactActivityResultCaller {
 
   /**
    * Registers [contract] and returns a launcher for it. The registration key is the contract's
@@ -34,7 +34,7 @@ public interface ReactActivityResultCaller {
    *
    * @throws IllegalStateException if a registration with the same key already exists
    */
-  public fun <I, O> registerForActivityResult(
+  fun <I, O> registerForActivityResult(
       contract: ActivityResultContract<I, O>,
       callback: ActivityResultCallback<O>,
   ): ActivityResultLauncher<I>
@@ -44,7 +44,7 @@ public interface ReactActivityResultCaller {
    * (`"<owner class>:<contract class>"`). Use this when two independent callers need the same
    * stock contract class, or when registering from something other than a native module.
    */
-  public fun <I, O> registerForActivityResult(
+  fun <I, O> registerForActivityResult(
       owner: Any,
       contract: ActivityResultContract<I, O>,
       callback: ActivityResultCallback<O>,

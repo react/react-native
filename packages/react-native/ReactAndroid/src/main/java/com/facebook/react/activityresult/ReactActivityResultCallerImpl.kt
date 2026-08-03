@@ -27,7 +27,7 @@ import com.facebook.react.common.ReactConstants
  * registry under the same keys, so AndroidX can re-associate a result that arrives after Activity
  * recreation.
  */
-public class ReactActivityResultCallerImpl(private val reactContext: ReactContext) :
+internal class ReactActivityResultCallerImpl(private val reactContext: ReactContext) :
     ReactActivityResultCaller, LifecycleEventListener {
 
   private class Entry<I, O>(

@@ -25,7 +25,6 @@ import com.facebook.common.logging.FLog;
 import com.facebook.infer.annotation.Assertions;
 import com.facebook.infer.annotation.ThreadConfined;
 import com.facebook.proguard.annotations.DoNotStrip;
-import com.facebook.react.activityresult.ReactActivityResultCaller;
 import com.facebook.react.activityresult.ReactActivityResultCallerImpl;
 import com.facebook.react.bridge.interop.InteropModuleRegistry;
 import com.facebook.react.bridge.queue.MessageQueueThread;
@@ -72,7 +71,7 @@ public abstract class ReactContext extends ContextWrapper {
   private @Nullable JSExceptionHandler mJSExceptionHandler;
   private @Nullable JSExceptionHandler mExceptionHandlerWrapper;
   private @Nullable WeakReference<Activity> mCurrentActivity;
-  private @Nullable ReactActivityResultCaller mActivityResultCaller;
+  private @Nullable ReactActivityResultCallerImpl mActivityResultCaller;
 
   // NOTE: When converted to Kotlin, this field should be made internal due to
   // visibility restriction on InteropModuleRegistry otherwise it will be exposed to the public API.
@@ -538,14 +537,7 @@ public abstract class ReactContext extends ContextWrapper {
     return mCurrentActivity.get();
   }
 
-  /**
-   * Get the {@link ReactActivityResultCaller} for this context, which lets a native module register
-   * an AndroidX {@code ActivityResultContract} against the host Activity's {@code
-   * ActivityResultRegistry} and receive results without any changes to the consumer's {@code
-   * MainActivity}. Registration is legal at any time; launchers bind lazily once an Activity is
-   * available.
-   */
-  public synchronized ReactActivityResultCaller getActivityResultCaller() {
+  private synchronized ReactActivityResultCallerImpl getActivityResultCaller() {
     if (mActivityResultCaller == null) {
       mActivityResultCaller = new ReactActivityResultCallerImpl(this);
     }
@@ -553,9 +545,16 @@ public abstract class ReactContext extends ContextWrapper {
   }
 
   /**
-   * Convenience for {@link ReactActivityResultCaller#registerForActivityResult(
-   * ActivityResultContract, ActivityResultCallback)}, mirroring {@code
-   * ComponentActivity.registerForActivityResult}.
+   * Registers an AndroidX {@code ActivityResultContract} against the host Activity's {@code
+   * ActivityResultRegistry} and returns a launcher for it, mirroring {@code
+   * ComponentActivity.registerForActivityResult}. Requires no changes to the consumer's {@code
+   * MainActivity}. Registration is legal at any time; the returned launcher binds lazily once an
+   * Activity is available, and a {@code launch} issued while unbound is queued and fired on bind.
+   *
+   * <p>The registration key is the contract's fully-qualified class name; registering the same
+   * contract class twice throws {@link IllegalStateException}. Disambiguate by subclassing the
+   * contract or using {@link #registerForActivityResult(Object, ActivityResultContract,
+   * ActivityResultCallback)}.
    */
   public <I, O> ActivityResultLauncher<I> registerForActivityResult(
       ActivityResultContract<I, O> contract, ActivityResultCallback<O> callback) {
@@ -563,9 +562,9 @@ public abstract class ReactContext extends ContextWrapper {
   }
 
   /**
-   * Convenience for {@link ReactActivityResultCaller#registerForActivityResult(Object,
-   * ActivityResultContract, ActivityResultCallback)}; scopes the registration key to {@code owner}
-   * so two callers can register the same contract class.
+   * Same as {@link #registerForActivityResult(ActivityResultContract, ActivityResultCallback)},
+   * but scopes the registration key to {@code owner} so two callers can register the same contract
+   * class.
    */
   public <I, O> ActivityResultLauncher<I> registerForActivityResult(
       Object owner, ActivityResultContract<I, O> contract, ActivityResultCallback<O> callback) {
