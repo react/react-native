@@ -14,7 +14,8 @@ struct SHRuntime;
 using SHUnitCreator = SHUnit* (*)();
 namespace hermes::vm {
 class GCExecTrace;
-}
+class RuntimeConfig;
+} // namespace hermes::vm
 
 namespace facebook::hermes {
 
@@ -77,6 +78,92 @@ struct JSI_EXPORT ISetEventLoopControl : public jsi::ICast {
 
  protected:
   ~ISetEventLoopControl() = default;
+};
+
+/// Integrator-provided interface used by the Worker implementation to load
+/// worker scripts by URL and to configure/initialize worker runtimes. The
+/// integrator implements this (deriving from jsi::ICast) and registers it via
+/// ISetWorkerSetup. Hermes never takes ownership of it and never frees it.
+/// Registering it on a runtime automatically propagates the same pointer to
+/// every worker runtime spawned from that one (transitively), and each worker
+/// thread captures it, so it must outlive that entire tree of workers -- i.e.
+/// stay valid until every worker (direct or nested) has been terminated and its
+/// thread joined -- not just the runtime it was registered on. Its methods may
+/// be called from worker threads and must be thread-safe.
+///
+/// URL semantics live entirely here: Hermes has no notion of URL, Blob, or
+/// fetch. `new Worker(url)` hands the URL string to resolveScript() and the
+/// integrator decides what it means (file path, packager URL, custom scheme).
+/// In particular, to support the standard web idiom
+/// `new Worker(URL.createObjectURL(new Blob([...])))`, the *host* provides Blob
+/// and URL.createObjectURL and backs `blob:` URLs with a resolveScript() that
+/// looks up the object-URL registry. (`data:` URLs are the one scheme Hermes
+/// can decode itself, opt-in via `new Worker(u, {allowData: true})`; everything
+/// else is the integrator's responsibility.)
+class JSI_EXPORT IWorkerSetup : public jsi::ICast {
+ public:
+  static constexpr jsi::UUID uuid{
+      0xba59a683,
+      0x17bd,
+      0x40aa,
+      0xa6b4,
+      0xd1448db59983};
+
+  /// Resolve \p url to worker script bytes, returned as an immutable
+  /// jsi::Buffer holding either precompiled Hermes bytecode or UTF-8 source
+  /// (the caller sniffs the magic number). The buffer may be memory-mapped or
+  /// otherwise externally owned; for bytecode it is referenced (not copied) for
+  /// the life of the worker runtime, so it must remain valid until the returned
+  /// shared_ptr is released. On failure returns nullptr and sets \p error to a
+  /// human-readable message. Called on the worker thread; must NOT perform
+  /// operations on the worker runtime.
+  virtual std::shared_ptr<const jsi::Buffer> resolveScript(
+      const std::string& url,
+      std::string& error) = 0;
+
+  /// Run one-time JS setup in a freshly created worker runtime \p rt, after the
+  /// standard extensions are installed and before the worker script runs.
+  /// Called on the worker thread. May throw jsi::JSError (routed to onerror).
+  virtual void initWorkerRuntime(jsi::Runtime& rt) = 0;
+
+  /// Adjust the RuntimeConfig used to create a worker runtime. \p config is
+  /// seeded with the Hermes default; the integrator may rebuild it in place
+  /// (e.g. `config = config.rebuild().withGCConfig(...).build();`). Called on
+  /// the constructor thread.
+  virtual void configureWorkerRuntime(::hermes::vm::RuntimeConfig& config) = 0;
+
+ protected:
+  ~IWorkerSetup() = default;
+};
+
+/// Interface for registering an IWorkerSetup on a Runtime. The stored
+/// pointer is opaque (jsi::ICast*) so additional provider capabilities can be
+/// added later as new cast interfaces without changing this ABI.
+struct JSI_EXPORT ISetWorkerSetup : public jsi::ICast {
+ public:
+  static constexpr jsi::UUID uuid{
+      0xc0174a1d,
+      0x73bd,
+      0x494a,
+      0xaa3c,
+      0x007f7965e31f};
+
+  /// Register \p provider. Must be called at most once, and before any Worker
+  /// is created on this runtime. \p provider is propagated to every worker
+  /// runtime created from this one (transitively) and captured by their worker
+  /// threads, so it must outlive all of them (until each has terminated and
+  /// joined); Hermes never frees it. Calling it more than once, or after a
+  /// Worker has been created, throws a std::logic_error.
+  virtual void setWorkerSetup(jsi::ICast* provider) = 0;
+
+  /// Return the provider previously registered via setWorkerSetup, or
+  /// nullptr. The result is an opaque jsi::ICast*; cast it to
+  /// IWorkerSetup (or a future provider interface) with
+  /// jsi::castInterface.
+  virtual jsi::ICast* getWorkerSetup() = 0;
+
+ protected:
+  ~ISetWorkerSetup() = default;
 };
 
 /// Interface for Hermes-specific runtime methods.The actual implementations of
