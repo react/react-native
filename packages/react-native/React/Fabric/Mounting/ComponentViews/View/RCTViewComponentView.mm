@@ -12,6 +12,8 @@
 #import <QuartzCore/QuartzCore.h>
 #import <objc/runtime.h>
 #import <ranges>
+#import <string_view>
+#import <unordered_set>
 
 #import <RCTSwiftUIWrapper/RCTSwiftUIContainerViewWrapper.h>
 #import <React/RCTAssert.h>
@@ -44,14 +46,61 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
 // interactivity through a grouping accessibility element (rather than the
 // underlying control) are otherwise skipped by the focus engine, leaving
 // keyboard-only users unable to reach them.
-static BOOL RCTViewIsInteractiveAccessibilityElement(UIView *view)
+//
+// The trait mask alone is not sufficient, because it is a lossy projection of
+// the role: `checkbox`, `radio`, `combobox`, `menuitem`, `spinbutton`, `tab`
+// and friends deliberately carry no interactive trait, since VoiceOver conveys
+// them through `accessibilityValue` instead. The role is therefore consulted
+// as well, otherwise those controls stay unreachable by keyboard.
+static BOOL RCTViewIsInteractiveAccessibilityElement(UIView *view, const ViewProps &props)
 {
   if (!view.isAccessibilityElement) {
     return NO;
   }
+
   UIAccessibilityTraits interactiveTraits = UIAccessibilityTraitButton | UIAccessibilityTraitLink |
       UIAccessibilityTraitSearchField | UIAccessibilityTraitKeyboardKey | UIAccessibilityTraitAdjustable;
-  return (view.accessibilityTraits & interactiveTraits) != 0;
+  if ((view.accessibilityTraits & interactiveTraits) != 0) {
+    return YES;
+  }
+
+  // `role` wins over the legacy `accessibilityRole` when both are set, matching
+  // how the traits themselves are resolved.
+  if (props.role != Role::None) {
+    static const std::unordered_set<Role> interactiveRoles{
+        Role::Button,
+        Role::Checkbox,
+        Role::Combobox,
+        Role::Link,
+        Role::Menuitem,
+        Role::Option,
+        Role::Radio,
+        Role::Searchbox,
+        Role::Slider,
+        Role::Spinbutton,
+        Role::Switch,
+        Role::Tab,
+        Role::Treeitem};
+    return interactiveRoles.contains(props.role);
+  }
+
+  static const std::unordered_set<std::string_view> interactiveAccessibilityRoles{
+      "adjustable",
+      "button",
+      "checkbox",
+      "combobox",
+      "dropdownlist",
+      "imagebutton",
+      "keyboardkey",
+      "link",
+      "menuitem",
+      "radio",
+      "search",
+      "spinbutton",
+      "switch",
+      "tab",
+      "togglebutton"};
+  return interactiveAccessibilityRoles.contains(props.accessibilityRole);
 }
 #endif
 
@@ -1508,7 +1557,7 @@ static NSString *RCTRecursiveAccessibilityLabel(UIView *view)
 - (BOOL)canBecomeFocused
 {
 #if !TARGET_OS_TV
-  return RCTViewIsInteractiveAccessibilityElement(self) || _focusable;
+  return _focusable || RCTViewIsInteractiveAccessibilityElement(self, static_cast<const ViewProps &>(*_props));
 #else
   return _focusable;
 #endif

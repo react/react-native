@@ -183,4 +183,58 @@ static Props::Shared makeViewProps(bool removeClippedSubviews)
   XCTAssertNil([view hitTest:CGPointMake(50, 50) withEvent:nil]);
 }
 
+#pragma mark - Full Keyboard Access focusability
+
+static RCTViewComponentView *makeViewWithRole(bool accessible, const std::string &accessibilityRole)
+{
+  RCTViewComponentView *view = [RCTViewComponentView new];
+  auto props = std::make_shared<ViewProps>();
+  props->accessible = accessible;
+  props->accessibilityRole = accessibilityRole;
+  [view updateProps:props oldProps:ViewShadowNode::defaultSharedProps()];
+  return view;
+}
+
+- (void)testInteractiveRolesWithoutUIKitTraitsAreKeyboardFocusable
+{
+  // These roles intentionally map to no interactive UIKit trait, because
+  // VoiceOver conveys them through accessibilityValue. They must still be
+  // reachable under Full Keyboard Access.
+  for (const std::string &role : {"checkbox", "radio", "combobox", "dropdownlist", "menuitem", "spinbutton", "tab"}) {
+    RCTViewComponentView *view = makeViewWithRole(true, role);
+    XCTAssertTrue(view.canBecomeFocused, @"role '%s' should be keyboard focusable", role.c_str());
+  }
+}
+
+- (void)testTraitBackedInteractiveRolesRemainKeyboardFocusable
+{
+  for (const std::string &role :
+       {"button", "togglebutton", "link", "search", "keyboardkey", "adjustable", "imagebutton", "switch"}) {
+    RCTViewComponentView *view = makeViewWithRole(true, role);
+    XCTAssertTrue(view.canBecomeFocused, @"role '%s' should be keyboard focusable", role.c_str());
+  }
+}
+
+- (void)testNonInteractiveRolesAreNotKeyboardFocusable
+{
+  for (const std::string &role : {"none", "text", "header", "image", "progressbar", "timer"}) {
+    RCTViewComponentView *view = makeViewWithRole(true, role);
+    XCTAssertFalse(view.canBecomeFocused, @"role '%s' should not be keyboard focusable", role.c_str());
+  }
+}
+
+- (void)testNonAccessibleViewIsNotKeyboardFocusable
+{
+  // An interactive role on a view opted out of accessibility must stay
+  // unreachable, otherwise the focus ring lands on an invisible element.
+  RCTViewComponentView *view = makeViewWithRole(false, "button");
+  XCTAssertFalse(view.canBecomeFocused);
+}
+
+- (void)testViewWithoutRoleIsNotKeyboardFocusable
+{
+  RCTViewComponentView *view = makeViewWithRole(true, "");
+  XCTAssertFalse(view.canBecomeFocused);
+}
+
 @end
