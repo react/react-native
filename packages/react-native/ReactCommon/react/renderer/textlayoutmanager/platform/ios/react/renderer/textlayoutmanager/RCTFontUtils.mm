@@ -10,6 +10,7 @@
 #import <CoreText/CoreText.h>
 #import <React/RCTFont+Private.h>
 #import <React/RCTFont.h>
+#import <React/RCTLog.h>
 
 #import <algorithm>
 #import <cmath>
@@ -248,6 +249,58 @@ static NSArray *RCTFontFeatures(RCTFontVariant fontVariant)
   return fontFeatures;
 }
 
+NSDictionary<NSNumber *, NSNumber *> *RCTParseFontVariationSettings(NSString *variationSettings)
+{
+  NSString *trimmedSettings =
+      [variationSettings stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+  if (trimmedSettings.length == 0 || [trimmedSettings isEqualToString:@"normal"]) {
+    return @{};
+  }
+
+  static NSRegularExpression *variationExpression;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    variationExpression =
+        [NSRegularExpression regularExpressionWithPattern:
+                                 @R"(\s*(['"])([ -~]{4})\1\s+([+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?)\s*(,|$))"
+                                                  options:0
+                                                    error:nil];
+  });
+
+  NSMutableDictionary<NSNumber *, NSNumber *> *variations = [NSMutableDictionary dictionary];
+  NSUInteger location = 0;
+  while (location < variationSettings.length) {
+    NSTextCheckingResult *match =
+        [variationExpression firstMatchInString:variationSettings
+                                        options:NSMatchingAnchored
+                                          range:NSMakeRange(location, variationSettings.length - location)];
+    if (match == nil || match.range.location != location) {
+      RCTLogWarn(@"Invalid fontVariationSettings value: %@", variationSettings);
+      return @{};
+    }
+
+    NSString *axis = [variationSettings substringWithRange:[match rangeAtIndex:2]];
+    uint32_t axisIdentifier = (uint32_t)[axis characterAtIndex:0] << 24 | (uint32_t)[axis characterAtIndex:1] << 16 |
+        (uint32_t)[axis characterAtIndex:2] << 8 | (uint32_t)[axis characterAtIndex:3];
+    NSString *valueString = [variationSettings substringWithRange:[match rangeAtIndex:3]];
+    double value = valueString.doubleValue;
+    if (!std::isfinite(value)) {
+      RCTLogWarn(@"Invalid fontVariationSettings value: %@", variationSettings);
+      return @{};
+    }
+    variations[@(axisIdentifier)] = @(value);
+
+    NSString *separator = [variationSettings substringWithRange:[match rangeAtIndex:4]];
+    location = NSMaxRange(match.range);
+    if ([separator isEqualToString:@","] && location == variationSettings.length) {
+      RCTLogWarn(@"Invalid fontVariationSettings value: %@", variationSettings);
+      return @{};
+    }
+  }
+
+  return variations;
+}
+
 static RCTDefaultFontResolver defaultFontResolver;
 
 void RCTSetDefaultFontResolver(RCTDefaultFontResolver handler)
@@ -278,7 +331,9 @@ static UIFont *RCTDefaultFontWithFontProperties(const RCTFontProperties &fontPro
 
   if (font == nil) {
     if (defaultFontResolver != nil) {
-      font = defaultFontResolver(fontProperties);
+      RCTFontProperties baseFontProperties = fontProperties;
+      baseFontProperties.variations = nil;
+      font = defaultFontResolver(baseFontProperties);
     }
 
     if (font == nil) {
@@ -399,6 +454,14 @@ UIFont *RCTFontWithFontProperties(RCTFontProperties fontProperties)
     NSArray *fontFeatures = RCTFontFeatures(fontProperties.variant);
     UIFontDescriptor *fontDescriptor = [font.fontDescriptor
         fontDescriptorByAddingAttributes:@{UIFontDescriptorFeatureSettingsAttribute : fontFeatures}];
+    font = [UIFont fontWithDescriptor:fontDescriptor size:effectiveFontSize];
+  }
+
+  NSDictionary<NSNumber *, NSNumber *> *variations = fontProperties.variations;
+  if (variations != nil) {
+    UIFontDescriptor *fontDescriptor = [font.fontDescriptor fontDescriptorByAddingAttributes:@{
+      (UIFontDescriptorAttributeName)kCTFontVariationAttribute : variations,
+    }];
     font = [UIFont fontWithDescriptor:fontDescriptor size:effectiveFontSize];
   }
 

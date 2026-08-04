@@ -5,13 +5,17 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#import <CoreText/CoreText.h>
 #import <Foundation/Foundation.h>
 #import <XCTest/XCTest.h>
 
 #import <react/renderer/textlayoutmanager/RCTAttributedTextUtils.h>
+#import <react/renderer/textlayoutmanager/RCTFontUtils.h>
 
 #include <react/renderer/attributedstring/conversions.h>
 #include <react/renderer/core/RawValue.h>
+
+#include <utility>
 
 using namespace facebook::react;
 
@@ -35,6 +39,88 @@ static NSTextAlignment NSTextAlignmentFromTextAlign(NSString *textAlign, LayoutD
   NSDictionary<NSAttributedStringKey, id> *attributes = RCTNSTextAttributesFromTextAttributes(textAttributes);
   NSParagraphStyle *paragraphStyle = attributes[NSParagraphStyleAttributeName];
   return paragraphStyle.alignment;
+}
+
+static UIFont *FontFromSettings(std::optional<std::string> settings, std::optional<FontWeight> weight = std::nullopt)
+{
+  TextAttributes textAttributes;
+  textAttributes.fontVariationSettings = std::move(settings);
+  textAttributes.fontWeight = weight;
+
+  NSDictionary<NSAttributedStringKey, id> *attributes = RCTNSTextAttributesFromTextAttributes(textAttributes);
+  return attributes[NSFontAttributeName];
+}
+
+static NSDictionary<NSNumber *, NSNumber *> *FontVariationsFromSettings(std::optional<std::string> settings)
+{
+  UIFont *font = FontFromSettings(std::move(settings));
+  return [font.fontDescriptor objectForKey:(UIFontDescriptorAttributeName)kCTFontVariationAttribute];
+}
+
+- (void)testFontVariationSettings
+{
+  NSDictionary<NSNumber *, NSNumber *> *variations = FontVariationsFromSettings("'wght' 550, \"opsz\" 18.5");
+
+  XCTAssertEqualObjects(variations[@(0x77676874)], @550);
+  XCTAssertEqualObjects(variations[@(0x6F70737A)], @18.5);
+}
+
+- (void)testFontVariationSettingsParser
+{
+  NSDictionary<NSNumber *, NSNumber *> *variations =
+      RCTParseFontVariationSettings(@"'a,bc' 1, \"wght\" -2.5e1, 'wght' 550");
+
+  XCTAssertEqualObjects(variations[@(0x612C6263)], @1);
+  XCTAssertEqualObjects(variations[@(0x77676874)], @550);
+}
+
+- (void)testFontVariationSettingsOverrideFontWeight
+{
+  UIFont *font = FontFromSettings("'wght' 450", FontWeight::Weight700);
+  NSDictionary<NSNumber *, NSNumber *> *variations =
+      [font.fontDescriptor objectForKey:(UIFontDescriptorAttributeName)kCTFontVariationAttribute];
+
+  XCTAssertEqualObjects(variations[@(0x77676874)], @450);
+}
+
+- (void)testInvalidFontVariationSettingsParserValues
+{
+  NSArray<NSString *> *invalidSettings = @[
+    @"'weight' 550",
+    @"'wght' 1e999",
+    @"'wght' NaN",
+    @"'wght' 550,",
+    @", 'wght' 550",
+    @"'wght' 550,, 'opsz' 18",
+  ];
+
+  for (NSString *settings in invalidSettings) {
+    XCTAssertEqual(RCTParseFontVariationSettings(settings).count, 0, @"%@ should be invalid", settings);
+  }
+}
+
+- (void)testInvalidFontVariationSettingsClearVariations
+{
+  NSDictionary<NSNumber *, NSNumber *> *variations = FontVariationsFromSettings("'weight' 550");
+  NSDictionary<NSNumber *, NSNumber *> *defaultVariations = FontVariationsFromSettings(std::nullopt);
+
+  XCTAssertEqualObjects(variations, defaultVariations);
+}
+
+- (void)testEmptyFontVariationSettingsClearVariations
+{
+  NSDictionary<NSNumber *, NSNumber *> *variations = FontVariationsFromSettings("");
+  NSDictionary<NSNumber *, NSNumber *> *defaultVariations = FontVariationsFromSettings(std::nullopt);
+
+  XCTAssertEqualObjects(variations, defaultVariations);
+}
+
+- (void)testNormalFontVariationSettingsClearVariations
+{
+  NSDictionary<NSNumber *, NSNumber *> *variations = FontVariationsFromSettings("normal");
+  NSDictionary<NSNumber *, NSNumber *> *defaultVariations = FontVariationsFromSettings(std::nullopt);
+
+  XCTAssertEqualObjects(variations, defaultVariations);
 }
 
 - (void)testTextAlignmentStartAndEndResolveWithLayoutDirection

@@ -3179,6 +3179,7 @@ struct RCTCornerRadii {
 struct RCTFontProperties {
   public CGFloat size;
   public CGFloat sizeMultiplier;
+  public NSDictionary<NSNumber*, NSNumber*>* _Nullable variations;
   public NSString* family;
   public RCTFontStyle style;
   public RCTFontVariant variant;

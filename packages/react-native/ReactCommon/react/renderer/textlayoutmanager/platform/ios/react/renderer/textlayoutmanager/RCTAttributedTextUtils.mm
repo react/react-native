@@ -154,6 +154,10 @@ inline static UIFont *RCTEffectiveFontFromTextAttributes(const TextAttributes &t
   fontProperties.weight = textAttributes.fontWeight.has_value()
       ? RCTUIFontWeightFromInteger((NSInteger)textAttributes.fontWeight.value())
       : NAN;
+  if (textAttributes.fontVariationSettings.has_value()) {
+    NSString *variationSettings = [NSString stringWithUTF8String:textAttributes.fontVariationSettings->c_str()];
+    fontProperties.variations = RCTParseFontVariationSettings(variationSettings);
+  }
   fontProperties.sizeMultiplier = RCTEffectiveFontSizeMultiplierFromTextAttributes(textAttributes);
 
   return RCTFontWithFontProperties(fontProperties);
