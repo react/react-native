@@ -20,6 +20,7 @@ import com.facebook.drawee.backends.pipeline.Fresco
 import com.facebook.fbreact.specs.NativeImageLoaderAndroidSpec
 import com.facebook.imagepipeline.common.RotationOptions
 import com.facebook.imagepipeline.core.ImagePipeline
+import com.facebook.imagepipeline.image.CloseableImage
 import com.facebook.imagepipeline.image.EncodedImage
 import com.facebook.imagepipeline.request.ImageRequest
 import com.facebook.imagepipeline.request.ImageRequestBuilder
@@ -93,6 +94,13 @@ internal class ImageLoaderModule : NativeImageLoaderAndroidSpec, LifecycleEventL
       resolveResourceSize(uriString, promise)
       return
     }
+    // Fast path: data: URIs are not supported by fetchEncodedImage's producer
+    // sequence (throws IllegalArgumentException). Route them through the decoded
+    // image pipeline which handles data: URIs via DataFetchProducer.
+    if ("data" == source.uri.scheme) {
+      resolveDecodedImageSize(source, promise)
+      return
+    }
     val request: ImageRequest =
         ImageRequestBuilder.newBuilderWithSource(source.uri)
             .setRotationOptions(RotationOptions.disableRotation())
@@ -120,6 +128,11 @@ internal class ImageLoaderModule : NativeImageLoaderAndroidSpec, LifecycleEventL
     // Fast path: resource drawables are resolved locally; headers are not applicable.
     if (source.isResource) {
       resolveResourceSize(uriString, promise)
+      return
+    }
+    // Fast path: data: URIs are self-contained; headers are not applicable.
+    if ("data" == source.uri.scheme) {
+      resolveDecodedImageSize(source, promise)
       return
     }
     val imageRequestBuilder: ImageRequestBuilder =
@@ -214,6 +227,59 @@ internal class ImageLoaderModule : NativeImageLoaderAndroidSpec, LifecycleEventL
           put("width", width)
           put("height", height)
         },
+    )
+  }
+
+  /**
+   * Resolve the size of a data: URI (or any URI unsupported by the encoded-image pipeline)
+   * by decoding the image through Fresco's decoded-image pipeline, which routes through
+   * DataFetchProducer and supports data: URIs.
+   */
+  private fun resolveDecodedImageSize(source: ImageSource, promise: Promise) {
+    val request: ImageRequest = ImageRequestBuilder.newBuilderWithSource(source.uri).build()
+    val dataSource: DataSource<CloseableReference<CloseableImage>> =
+        this.imagePipeline.fetchDecodedImage(request, this.callerContext)
+    dataSource.subscribe(
+        object : BaseDataSubscriber<CloseableReference<CloseableImage>>() {
+          override fun onNewResultImpl(
+              dataSource: DataSource<CloseableReference<CloseableImage>>
+          ) {
+            if (!dataSource.isFinished) {
+              return
+            }
+            val ref = dataSource.result
+            if (ref != null) {
+              try {
+                val image = ref.get()
+                val width = image.width
+                val height = image.height
+                if (width < 0 || height < 0) {
+                  promise.reject(ERROR_GET_SIZE_FAILURE, "Failed to get the size of the image")
+                  return
+                }
+                promise.resolve(
+                    buildReadableMap {
+                      put("width", width)
+                      put("height", height)
+                    },
+                )
+              } catch (e: Exception) {
+                promise.reject(ERROR_GET_SIZE_FAILURE, e)
+              } finally {
+                CloseableReference.closeSafely(ref)
+              }
+            } else {
+              promise.reject(ERROR_GET_SIZE_FAILURE, "Failed to get the size of the image")
+            }
+          }
+
+          override fun onFailureImpl(
+              dataSource: DataSource<CloseableReference<CloseableImage>>
+          ) {
+            promise.reject(ERROR_GET_SIZE_FAILURE, dataSource.failureCause)
+          }
+        },
+        CallerThreadExecutor.getInstance(),
     )
   }
 
