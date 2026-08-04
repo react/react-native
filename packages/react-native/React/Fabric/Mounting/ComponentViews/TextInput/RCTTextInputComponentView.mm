@@ -542,9 +542,20 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   RCTTextInputHandleCommand(self, commandName, args);
 }
 
+#if TARGET_OS_TV
+- (UIView *)viewToFocus
+{
+  return _backedTextInputView;
+}
+#endif
+
 - (void)focus
 {
+#if TARGET_OS_TV
+  [super focus];
+#else
   [_backedTextInputView becomeFirstResponder];
+#endif
 
   const auto &props = static_cast<const TextInputProps &>(*_props);
 

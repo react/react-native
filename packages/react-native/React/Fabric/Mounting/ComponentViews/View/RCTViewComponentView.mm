@@ -1799,9 +1799,15 @@ static NSString *RCTRecursiveAccessibilityLabel(UIView *view)
 }
 #endif
 
+- (UIView *)viewToFocus
+{
+  return self;
+}
+
 - (void)focus
 {
-  [self becomeFirstResponder];
+  UIView *viewToFocus = [self viewToFocus];
+  [viewToFocus becomeFirstResponder];
 
 #if TARGET_OS_TV
   RCTSurfaceHostingProxyRootView *rootView = [self containingRootView];
@@ -1809,7 +1815,7 @@ static NSString *RCTRecursiveAccessibilityLabel(UIView *view)
     return;
   }
 
-  rootView.reactPreferredFocusedView = self;
+  rootView.reactPreferredFocusedView = viewToFocus;
   [rootView setNeedsFocusUpdate];
   [rootView updateFocusIfNeeded];
 #endif
