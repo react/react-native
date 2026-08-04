@@ -488,6 +488,17 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
   if (oldViewProps.accessibilityTraits != newViewProps.accessibilityTraits) {
     self.accessibilityElement.accessibilityTraits =
         RCTUIAccessibilityTraitsFromAccessibilityTraits(newViewProps.accessibilityTraits);
+    // Re-apply Selected/NotEnabled from the current accessibilityState. The traits
+    // writer replaces the full bitmask (from role), which doesn't include state bits.
+    // On a recycled view, accessibilityState may not have changed (so its writer below
+    // won't fire), but the traits were just overwritten and need the state bits re-applied.
+    const auto accessibilityState = newViewProps.accessibilityState.value_or(AccessibilityState{});
+    if (accessibilityState.selected) {
+      self.accessibilityTraits |= UIAccessibilityTraitSelected;
+    }
+    if (accessibilityState.disabled) {
+      self.accessibilityTraits |= UIAccessibilityTraitNotEnabled;
+    }
   }
 
   // `accessibilityState`
