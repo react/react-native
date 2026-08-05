@@ -826,7 +826,8 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
       span.style == fontStyle &&
           span.fontFamily == fontFamily &&
           span.weight == fontWeight &&
-          span.fontFeatureSettings == fontFeatureSettings
+          span.fontFeatureSettings == fontFeatureSettings &&
+          span.fontVariationSettings == null
     }
   }
 
@@ -908,6 +909,7 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
               fontStyle,
               fontWeight,
               fontFeatureSettings,
+              null,
               fontFamily,
               context.assets,
               getFontWeightAdjustment(context),

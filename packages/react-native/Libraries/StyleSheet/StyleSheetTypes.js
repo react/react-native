@@ -1011,6 +1011,12 @@ type ____TextStyle_InternalBase = Readonly<{
    */
   fontWeight?: ____FontWeight_Internal,
   fontVariant?: ____FontVariantArray_Internal | string,
+  /**
+   * Specifies OpenType font variation axis values using CSS syntax. An empty
+   * string resets inherited variation settings. On Android, this requires API
+   * level 26 or later.
+   */
+  fontVariationSettings?: string,
   textShadowOffset?: Readonly<{
     width: number,
     height: number,
