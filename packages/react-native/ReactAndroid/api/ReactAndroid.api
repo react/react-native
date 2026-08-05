@@ -5012,6 +5012,163 @@ public final class com/facebook/react/util/RNLog {
 	public static final fun w (Lcom/facebook/react/bridge/ReactContext;Ljava/lang/String;)V
 }
 
+public class com/facebook/react/viewmanagers/ActivityIndicatorViewManagerDelegate : com/facebook/react/uimanager/BaseViewManagerDelegate {
+	public fun <init> (Lcom/facebook/react/uimanager/BaseViewManager;)V
+	public fun setProperty (Landroid/view/View;Ljava/lang/String;Ljava/lang/Object;)V
+}
+
+public abstract interface class com/facebook/react/viewmanagers/ActivityIndicatorViewManagerInterface : com/facebook/react/uimanager/ViewManagerWithGeneratedInterface {
+	public abstract fun setAnimating (Landroid/view/View;Z)V
+	public abstract fun setColor (Landroid/view/View;Ljava/lang/Integer;)V
+	public abstract fun setHidesWhenStopped (Landroid/view/View;Z)V
+	public abstract fun setSize (Landroid/view/View;Ljava/lang/String;)V
+}
+
+public class com/facebook/react/viewmanagers/AndroidDrawerLayoutManagerDelegate : com/facebook/react/uimanager/BaseViewManagerDelegate {
+	public fun <init> (Lcom/facebook/react/uimanager/BaseViewManager;)V
+	public fun receiveCommand (Landroid/view/View;Ljava/lang/String;Lcom/facebook/react/bridge/ReadableArray;)V
+	public fun setProperty (Landroid/view/View;Ljava/lang/String;Ljava/lang/Object;)V
+}
+
+public abstract interface class com/facebook/react/viewmanagers/AndroidDrawerLayoutManagerInterface : com/facebook/react/uimanager/ViewManagerWithGeneratedInterface {
+	public abstract fun closeDrawer (Landroid/view/View;)V
+	public abstract fun openDrawer (Landroid/view/View;)V
+	public abstract fun setDrawerBackgroundColor (Landroid/view/View;Ljava/lang/Integer;)V
+	public abstract fun setDrawerLockMode (Landroid/view/View;Ljava/lang/String;)V
+	public abstract fun setDrawerPosition (Landroid/view/View;Ljava/lang/String;)V
+	public abstract fun setDrawerWidth (Landroid/view/View;Ljava/lang/Float;)V
+	public abstract fun setKeyboardDismissMode (Landroid/view/View;Ljava/lang/String;)V
+	public abstract fun setStatusBarBackgroundColor (Landroid/view/View;Ljava/lang/Integer;)V
+}
+
+public class com/facebook/react/viewmanagers/AndroidHorizontalScrollContentViewManagerDelegate : com/facebook/react/uimanager/BaseViewManagerDelegate {
+	public fun <init> (Lcom/facebook/react/uimanager/BaseViewManager;)V
+	public fun setProperty (Landroid/view/View;Ljava/lang/String;Ljava/lang/Object;)V
+}
+
+public abstract interface class com/facebook/react/viewmanagers/AndroidHorizontalScrollContentViewManagerInterface : com/facebook/react/uimanager/ViewManagerWithGeneratedInterface {
+	public abstract fun setRemoveClippedSubviews (Landroid/view/View;Z)V
+}
+
+public class com/facebook/react/viewmanagers/AndroidProgressBarManagerDelegate : com/facebook/react/uimanager/BaseViewManagerDelegate {
+	public fun <init> (Lcom/facebook/react/uimanager/BaseViewManager;)V
+	public fun setProperty (Landroid/view/View;Ljava/lang/String;Ljava/lang/Object;)V
+}
+
+public abstract interface class com/facebook/react/viewmanagers/AndroidProgressBarManagerInterface : com/facebook/react/uimanager/ViewManagerWithGeneratedInterface {
+	public abstract fun setAnimating (Landroid/view/View;Z)V
+	public abstract fun setColor (Landroid/view/View;Ljava/lang/Integer;)V
+	public abstract fun setIndeterminate (Landroid/view/View;Z)V
+	public abstract fun setProgress (Landroid/view/View;D)V
+	public abstract fun setStyleAttr (Landroid/view/View;Ljava/lang/String;)V
+	public abstract fun setTestID (Landroid/view/View;Ljava/lang/String;)V
+	public abstract fun setTypeAttr (Landroid/view/View;Ljava/lang/String;)V
+}
+
+public class com/facebook/react/viewmanagers/AndroidSwipeRefreshLayoutManagerDelegate : com/facebook/react/uimanager/BaseViewManagerDelegate {
+	public fun <init> (Lcom/facebook/react/uimanager/BaseViewManager;)V
+	public fun receiveCommand (Landroid/view/View;Ljava/lang/String;Lcom/facebook/react/bridge/ReadableArray;)V
+	public fun setProperty (Landroid/view/View;Ljava/lang/String;Ljava/lang/Object;)V
+}
+
+public abstract interface class com/facebook/react/viewmanagers/AndroidSwipeRefreshLayoutManagerInterface : com/facebook/react/uimanager/ViewManagerWithGeneratedInterface {
+	public abstract fun setColors (Landroid/view/View;Lcom/facebook/react/bridge/ReadableArray;)V
+	public abstract fun setEnabled (Landroid/view/View;Z)V
+	public abstract fun setNativeRefreshing (Landroid/view/View;Z)V
+	public abstract fun setProgressBackgroundColor (Landroid/view/View;Ljava/lang/Integer;)V
+	public abstract fun setProgressViewOffset (Landroid/view/View;F)V
+	public abstract fun setRefreshing (Landroid/view/View;Z)V
+	public abstract fun setSize (Landroid/view/View;Ljava/lang/String;)V
+}
+
+public class com/facebook/react/viewmanagers/AndroidSwitchManagerDelegate : com/facebook/react/uimanager/BaseViewManagerDelegate {
+	public fun <init> (Lcom/facebook/react/uimanager/BaseViewManager;)V
+	public fun receiveCommand (Landroid/view/View;Ljava/lang/String;Lcom/facebook/react/bridge/ReadableArray;)V
+	public fun setProperty (Landroid/view/View;Ljava/lang/String;Ljava/lang/Object;)V
+}
+
+public abstract interface class com/facebook/react/viewmanagers/AndroidSwitchManagerInterface : com/facebook/react/uimanager/ViewManagerWithGeneratedInterface {
+	public abstract fun setDisabled (Landroid/view/View;Z)V
+	public abstract fun setEnabled (Landroid/view/View;Z)V
+	public abstract fun setNativeValue (Landroid/view/View;Z)V
+	public abstract fun setOn (Landroid/view/View;Z)V
+	public abstract fun setThumbColor (Landroid/view/View;Ljava/lang/Integer;)V
+	public abstract fun setThumbTintColor (Landroid/view/View;Ljava/lang/Integer;)V
+	public abstract fun setTrackColorForFalse (Landroid/view/View;Ljava/lang/Integer;)V
+	public abstract fun setTrackColorForTrue (Landroid/view/View;Ljava/lang/Integer;)V
+	public abstract fun setTrackTintColor (Landroid/view/View;Ljava/lang/Integer;)V
+	public abstract fun setValue (Landroid/view/View;Z)V
+}
+
+public class com/facebook/react/viewmanagers/DebuggingOverlayManagerDelegate : com/facebook/react/uimanager/BaseViewManagerDelegate {
+	public fun <init> (Lcom/facebook/react/uimanager/BaseViewManager;)V
+	public fun receiveCommand (Landroid/view/View;Ljava/lang/String;Lcom/facebook/react/bridge/ReadableArray;)V
+	public fun setProperty (Landroid/view/View;Ljava/lang/String;Ljava/lang/Object;)V
+}
+
+public abstract interface class com/facebook/react/viewmanagers/DebuggingOverlayManagerInterface : com/facebook/react/uimanager/ViewManagerWithGeneratedInterface {
+	public abstract fun clearElementsHighlights (Landroid/view/View;)V
+	public abstract fun highlightElements (Landroid/view/View;Lcom/facebook/react/bridge/ReadableArray;)V
+	public abstract fun highlightTraceUpdates (Landroid/view/View;Lcom/facebook/react/bridge/ReadableArray;)V
+}
+
+public class com/facebook/react/viewmanagers/ModalHostViewManagerDelegate : com/facebook/react/uimanager/BaseViewManagerDelegate {
+	public fun <init> (Lcom/facebook/react/uimanager/BaseViewManager;)V
+	public fun setProperty (Landroid/view/View;Ljava/lang/String;Ljava/lang/Object;)V
+}
+
+public abstract interface class com/facebook/react/viewmanagers/ModalHostViewManagerInterface : com/facebook/react/uimanager/ViewManagerWithGeneratedInterface {
+	public abstract fun setAllowSwipeDismissal (Landroid/view/View;Z)V
+	public abstract fun setAnimationType (Landroid/view/View;Ljava/lang/String;)V
+	public abstract fun setHardwareAccelerated (Landroid/view/View;Z)V
+	public abstract fun setIdentifier (Landroid/view/View;I)V
+	public abstract fun setNavigationBarTranslucent (Landroid/view/View;Z)V
+	public abstract fun setPresentationStyle (Landroid/view/View;Ljava/lang/String;)V
+	public abstract fun setStatusBarTranslucent (Landroid/view/View;Z)V
+	public abstract fun setSupportedOrientations (Landroid/view/View;Lcom/facebook/react/bridge/ReadableArray;)V
+	public abstract fun setTransparent (Landroid/view/View;Z)V
+	public abstract fun setVisible (Landroid/view/View;Z)V
+}
+
+public class com/facebook/react/viewmanagers/SafeAreaViewManagerDelegate : com/facebook/react/uimanager/BaseViewManagerDelegate {
+	public fun <init> (Lcom/facebook/react/uimanager/BaseViewManager;)V
+	public fun setProperty (Landroid/view/View;Ljava/lang/String;Ljava/lang/Object;)V
+}
+
+public abstract interface class com/facebook/react/viewmanagers/SafeAreaViewManagerInterface : com/facebook/react/uimanager/ViewManagerWithGeneratedInterface {
+}
+
+public class com/facebook/react/viewmanagers/UnimplementedNativeViewManagerDelegate : com/facebook/react/uimanager/BaseViewManagerDelegate {
+	public fun <init> (Lcom/facebook/react/uimanager/BaseViewManager;)V
+	public fun setProperty (Landroid/view/View;Ljava/lang/String;Ljava/lang/Object;)V
+}
+
+public abstract interface class com/facebook/react/viewmanagers/UnimplementedNativeViewManagerInterface : com/facebook/react/uimanager/ViewManagerWithGeneratedInterface {
+	public abstract fun setName (Landroid/view/View;Ljava/lang/String;)V
+}
+
+public class com/facebook/react/viewmanagers/VirtualViewExperimentalManagerDelegate : com/facebook/react/uimanager/BaseViewManagerDelegate {
+	public fun <init> (Lcom/facebook/react/uimanager/BaseViewManager;)V
+	public fun setProperty (Landroid/view/View;Ljava/lang/String;Ljava/lang/Object;)V
+}
+
+public abstract interface class com/facebook/react/viewmanagers/VirtualViewExperimentalManagerInterface : com/facebook/react/uimanager/ViewManagerWithGeneratedInterface {
+	public abstract fun setInitialHidden (Landroid/view/View;Z)V
+	public abstract fun setRemoveClippedSubviews (Landroid/view/View;Z)V
+	public abstract fun setRenderState (Landroid/view/View;I)V
+}
+
+public class com/facebook/react/viewmanagers/VirtualViewManagerDelegate : com/facebook/react/uimanager/BaseViewManagerDelegate {
+	public fun <init> (Lcom/facebook/react/uimanager/BaseViewManager;)V
+	public fun setProperty (Landroid/view/View;Ljava/lang/String;Ljava/lang/Object;)V
+}
+
+public abstract interface class com/facebook/react/viewmanagers/VirtualViewManagerInterface : com/facebook/react/uimanager/ViewManagerWithGeneratedInterface {
+	public abstract fun setInitialHidden (Landroid/view/View;Z)V
+	public abstract fun setRemoveClippedSubviews (Landroid/view/View;Z)V
+	public abstract fun setRenderState (Landroid/view/View;I)V
+}
+
 public final class com/facebook/react/views/drawer/ReactDrawerLayout : androidx/drawerlayout/widget/DrawerLayout, com/facebook/react/uimanager/HasChildPressedStateDelay {
 	public fun <init> (Lcom/facebook/react/bridge/ReactContext;)V
 	public fun getHasChildPressedStateDelay ()Ljava/lang/Boolean;
@@ -6204,6 +6361,7 @@ public class com/facebook/react/views/textinput/ReactTextInputManager : com/face
 	public final fun setFontSize (Lcom/facebook/react/views/textinput/ReactEditText;F)V
 	public final fun setFontStyle (Lcom/facebook/react/views/textinput/ReactEditText;Ljava/lang/String;)V
 	public final fun setFontVariant (Lcom/facebook/react/views/textinput/ReactEditText;Lcom/facebook/react/bridge/ReadableArray;)V
+	public final fun setFontVariationSettings (Lcom/facebook/react/views/textinput/ReactEditText;Ljava/lang/String;)V
 	public final fun setFontWeight (Lcom/facebook/react/views/textinput/ReactEditText;Ljava/lang/String;)V
 	public final fun setImportantForAutofill (Lcom/facebook/react/views/textinput/ReactEditText;Ljava/lang/String;)V
 	public final fun setIncludeFontPadding (Lcom/facebook/react/views/textinput/ReactEditText;Z)V

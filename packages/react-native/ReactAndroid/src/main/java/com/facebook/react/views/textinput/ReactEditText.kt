@@ -14,6 +14,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
+import android.graphics.Typeface
 import android.os.Build
 import android.os.Bundle
 import android.text.Editable
@@ -47,6 +48,7 @@ import androidx.core.view.ViewCompat
 import com.facebook.common.logging.FLog
 import com.facebook.react.bridge.ReactSoftExceptionLogger.logSoftException
 import com.facebook.react.common.ReactConstants
+import com.facebook.react.common.assets.ReactFontManager
 import com.facebook.react.common.build.ReactBuildConfig
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import com.facebook.react.internal.featureflags.ReactNativeNewArchitectureFeatureFlags
@@ -73,6 +75,7 @@ import com.facebook.react.views.text.ReactTextUpdate
 import com.facebook.react.views.text.ReactTypefaceUtils.applyStyles
 import com.facebook.react.views.text.ReactTypefaceUtils.getFontWeightAdjustment
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontStyle
+import com.facebook.react.views.text.ReactTypefaceUtils.parseFontVariationSettings
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.facebook.react.views.text.TextAttributes
 import com.facebook.react.views.text.TextLayoutManager
@@ -135,6 +138,9 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
   private var fontFamily: String? = null
   private var fontWeight = ReactConstants.UNSET
   private var fontStyle = ReactConstants.UNSET
+  internal var parsedFontVariationSettings: String? = null
+    private set
+
   private var autoFocus = false
   private var contextMenuHidden = false
   private var didAttachToWindow = false
@@ -646,6 +652,14 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
     }
   }
 
+  internal fun setReactFontVariationSettings(fontVariationSettings: String?) {
+    val newParsedFontVariationSettings = parseFontVariationSettings(fontVariationSettings)
+    if (newParsedFontVariationSettings != parsedFontVariationSettings) {
+      parsedFontVariationSettings = newParsedFontVariationSettings
+      typefaceDirty = true
+    }
+  }
+
   override fun setFontFeatureSettings(fontFeatureSettings: String?) {
     if (fontFeatureSettings != getFontFeatureSettings()) {
       super.setFontFeatureSettings(fontFeatureSettings)
@@ -662,6 +676,9 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
 
     val newTypeface = applyStyles(typeface, fontStyle, fontWeight, fontFamily, context.assets)
     typeface = newTypeface
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      super.setFontVariationSettings(parsedFontVariationSettings)
+    }
 
     // Match behavior of CustomStyleSpan and enable SUBPIXEL_TEXT_FLAG when setting anything
     // nonstandard
@@ -669,7 +686,8 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
         fontStyle != ReactConstants.UNSET ||
             fontWeight != ReactConstants.UNSET ||
             fontFamily != null ||
-            fontFeatureSettings != null
+            fontFeatureSettings != null ||
+            parsedFontVariationSettings != null
     paintFlags =
         if (enableSubpixelText) {
           paintFlags or Paint.SUBPIXEL_TEXT_FLAG
@@ -822,12 +840,16 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
       span.spacing == textAttributes.effectiveLetterSpacing
     }
 
+    val effectiveFontStyle = if (fontStyle == ReactConstants.UNSET) Typeface.NORMAL else fontStyle
+    val effectiveFontWeight =
+        if (fontWeight == ReactConstants.UNSET) ReactFontManager.TypefaceStyle.NORMAL
+        else fontWeight
     stripSpansOfKind(sb, CustomStyleSpan::class.java) { span: CustomStyleSpan ->
-      span.style == fontStyle &&
+      span.style == effectiveFontStyle &&
           span.fontFamily == fontFamily &&
-          span.weight == fontWeight &&
+          span.weight == effectiveFontWeight &&
           span.fontFeatureSettings == fontFeatureSettings &&
-          span.fontVariationSettings == null
+          span.fontVariationSettings == parsedFontVariationSettings
     }
   }
 
@@ -902,14 +924,15 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
         fontStyle != ReactConstants.UNSET ||
             fontWeight != ReactConstants.UNSET ||
             fontFamily != null ||
-            fontFeatureSettings != null
+            fontFeatureSettings != null ||
+            parsedFontVariationSettings != null
     ) {
       workingText.setSpan(
           CustomStyleSpan(
               fontStyle,
               fontWeight,
               fontFeatureSettings,
-              null,
+              parsedFontVariationSettings,
               fontFamily,
               context.assets,
               getFontWeightAdjustment(context),

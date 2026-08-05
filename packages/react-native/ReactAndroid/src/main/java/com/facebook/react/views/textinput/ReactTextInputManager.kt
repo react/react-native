@@ -256,6 +256,11 @@ public open class ReactTextInputManager public constructor() :
     view.fontFeatureSettings = parseFontVariant(fontVariant)
   }
 
+  @ReactProp(name = ViewProps.FONT_VARIATION_SETTINGS)
+  public fun setFontVariationSettings(view: ReactEditText, fontVariationSettings: String?) {
+    view.setReactFontVariationSettings(fontVariationSettings)
+  }
+
   @ReactProp(name = ViewProps.INCLUDE_FONT_PADDING, defaultBoolean = true)
   public fun setIncludeFontPadding(view: ReactEditText, includepad: Boolean) {
     view.includeFontPadding = includepad
@@ -894,9 +899,11 @@ public open class ReactTextInputManager public constructor() :
 
   override fun onAfterUpdateTransaction(view: ReactEditText) {
     super.onAfterUpdateTransaction(view)
-    view.maybeUpdateTypeface()
     reconcileAutoCapitalize(view)
     view.commitStagedInputType()
+    // setInputType() clears paint-level font variation settings, so update the typeface last to
+    // reapply any variation axes after the staged input type is committed.
+    view.maybeUpdateTypeface()
   }
 
   override fun addEventEmitters(reactContext: ThemedReactContext, editText: ReactEditText) {
