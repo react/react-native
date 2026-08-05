@@ -59,16 +59,6 @@ Scheduler::Scheduler(
   auto uiManager =
       std::make_shared<UIManager>(runtimeExecutor_, contextContainer_);
 
-  if (ReactNativeFeatureFlags::useSharedAnimatedBackend()) {
-    auto animationBackend = std::make_shared<AnimationBackend>(
-        schedulerToolbox.animationChoreographer, uiManager);
-
-    schedulerToolbox.animationChoreographer->setAnimationBackend(
-        animationBackend);
-
-    uiManager->unstable_setAnimationBackend(animationBackend);
-  }
-
   auto eventOwnerBox = std::make_shared<EventBeat::OwnerBox>();
   eventOwnerBox->owner = eventDispatcher_;
 
@@ -130,6 +120,19 @@ Scheduler::Scheduler(
 
   uiManager->setDelegate(this);
   uiManager->setComponentDescriptorRegistry(componentDescriptorRegistry_);
+
+  // Must come after `setDelegate`: the backend's constructor registers a
+  // surface-start callback, and `UIManager` silently drops those while it has
+  // no delegate.
+  if (ReactNativeFeatureFlags::useSharedAnimatedBackend()) {
+    auto animationBackend = std::make_shared<AnimationBackend>(
+        schedulerToolbox.animationChoreographer, uiManager);
+
+    schedulerToolbox.animationChoreographer->setAnimationBackend(
+        animationBackend);
+
+    uiManager->unstable_setAnimationBackend(animationBackend);
+  }
 
   auto bindingsExecutor =
       schedulerToolbox.bridgelessBindingsExecutor.has_value()
