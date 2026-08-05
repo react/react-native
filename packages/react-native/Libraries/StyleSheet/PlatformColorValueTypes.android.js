@@ -11,15 +11,27 @@
 import type {ProcessedColorValue} from './processColor';
 import type {NativeColorValue} from './StyleSheet';
 
+import parsePlatformColorArgs from './parsePlatformColorArgs';
+
 /** The actual type of the opaque NativeColorValue on Android platform */
 type LocalNativeColorValue = {
   resource_paths?: Array<string>,
+  fallback?: string,
 };
 
-export const PlatformColor = (...names: Array<string>): NativeColorValue => {
+export const PlatformColor = (
+  ...args: Array<string | {fallback: string}>
+): NativeColorValue => {
+  const {names, fallback} = parsePlatformColorArgs(args);
+  // Raw fallback (when present) is passed to native untouched and only parsed
+  // on a token miss.
+  const color: LocalNativeColorValue =
+    fallback == null
+      ? {resource_paths: names}
+      : {resource_paths: names, fallback};
   /* $FlowExpectedError[incompatible-type]
    * LocalNativeColorValue is the actual type of the opaque NativeColorValue on Android platform */
-  return {resource_paths: names} as LocalNativeColorValue;
+  return color as LocalNativeColorValue;
 };
 
 export const normalizeColorObject = (

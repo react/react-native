@@ -11,9 +11,12 @@
 import type {ProcessedColorValue} from './processColor';
 import type {ColorValue, NativeColorValue} from './StyleSheet';
 
+import parsePlatformColorArgs from './parsePlatformColorArgs';
+
 /** The actual type of the opaque NativeColorValue on iOS platform */
 type LocalNativeColorValue = {
   semantic?: Array<string>,
+  fallback?: string,
   dynamic?: {
     light: ?(ColorValue | ProcessedColorValue),
     dark: ?(ColorValue | ProcessedColorValue),
@@ -22,9 +25,16 @@ type LocalNativeColorValue = {
   },
 };
 
-export const PlatformColor = (...names: Array<string>): NativeColorValue => {
+export const PlatformColor = (
+  ...args: Array<string | {fallback: string}>
+): NativeColorValue => {
+  const {names, fallback} = parsePlatformColorArgs(args);
+  // Raw fallback (when present) is passed to native untouched and only parsed
+  // on a token miss.
+  const color: LocalNativeColorValue =
+    fallback == null ? {semantic: names} : {semantic: names, fallback};
   // $FlowExpectedError[incompatible-type] LocalNativeColorValue is the iOS LocalNativeColorValue type
-  return {semantic: names} as LocalNativeColorValue;
+  return color as LocalNativeColorValue;
 };
 
 export type DynamicColorIOSTuplePrivate = {
