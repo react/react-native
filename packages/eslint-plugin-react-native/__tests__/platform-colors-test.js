@@ -19,6 +19,8 @@ eslintTester.run('../platform-colors', rule, {
   valid: [
     "const color = PlatformColor('labelColor');",
     "const color = PlatformColor('controlAccentColor', 'controlColor');",
+    "const color = PlatformColor('labelColor', {fallback: '#FF0000'});",
+    "const color = PlatformColor('controlAccentColor', 'controlColor', {fallback: 'red'});",
     "const color = DynamicColorIOS({light: 'black', dark: 'white'});",
     "const color = DynamicColorIOS({light: PlatformColor('black'), dark: PlatformColor('white')});",
     "const color = DynamicColorIOS({light: PlatformColor('black'), dark: PlatformColor('white'), highContrastLight: PlatformColor('black'), highContrastDark: PlatformColor('white')});",
@@ -30,6 +32,26 @@ eslintTester.run('../platform-colors', rule, {
     },
     {
       code: "const labelColor = 'labelColor'; const color = PlatformColor(labelColor);",
+      errors: [{message: rule.meta.messages.platformColorArgTypes}],
+    },
+    {
+      code: "const raw = '#FF0000'; const color = PlatformColor('labelColor', {fallback: raw});",
+      errors: [{message: rule.meta.messages.platformColorArgTypes}],
+    },
+    {
+      code: "const color = PlatformColor({fallback: '#FF0000'}, 'labelColor');",
+      errors: [{message: rule.meta.messages.platformColorArgTypes}],
+    },
+    {
+      code: "const color = PlatformColor('labelColor', {fallback: '#FF0000', fallback: '#00FF00'});",
+      errors: [{message: rule.meta.messages.platformColorArgTypes}],
+    },
+    {
+      code: "const color = PlatformColor('labelColor', {fallback: '#FF0000', extra: 'red'});",
+      errors: [{message: rule.meta.messages.platformColorArgTypes}],
+    },
+    {
+      code: "const color = PlatformColor('labelColor', {['fallback']: '#FF0000'});",
       errors: [{message: rule.meta.messages.platformColorArgTypes}],
     },
     {
