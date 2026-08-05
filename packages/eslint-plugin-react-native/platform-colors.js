@@ -33,6 +33,21 @@ module.exports = {
       CallExpression: function (node) {
         if (node.callee.name === 'PlatformColor') {
           const args = node.arguments;
+          // Optional trailing {fallback: <literal>}: exactly one `fallback`
+          // property with a literal value, so it stays statically analyzable.
+          const isFallbackObject = arg =>
+            arg.type === 'ObjectExpression' &&
+            arg.properties.length === 1 &&
+            arg.properties.every(
+              property =>
+                property.type === 'Property' &&
+                // Reject computed keys (e.g. {['fallback']: ...}); only a plain
+                // identifier key keeps the object statically analyzable.
+                property.computed === false &&
+                property.key.type === 'Identifier' &&
+                property.key.name === 'fallback' &&
+                property.value.type === 'Literal',
+            );
           if (args.length === 0) {
             context.report({
               node,
@@ -40,7 +55,13 @@ module.exports = {
             });
             return;
           }
-          if (!args.every(arg => arg.type === 'Literal')) {
+          if (
+            !args.every(
+              (arg, index) =>
+                arg.type === 'Literal' ||
+                (index === args.length - 1 && isFallbackObject(arg)),
+            )
+          ) {
             context.report({
               node,
               messageId: 'platformColorArgTypes',
