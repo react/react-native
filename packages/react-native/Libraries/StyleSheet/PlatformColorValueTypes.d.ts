@@ -15,4 +15,6 @@ import {OpaqueColorValue} from './StyleSheet';
  *
  * @see https://reactnative.dev/docs/platformcolor#example
  */
-export function PlatformColor(...colors: string[]): OpaqueColorValue;
+export function PlatformColor(
+  ...colors: Array<string | {fallback: string}>
+): OpaqueColorValue;

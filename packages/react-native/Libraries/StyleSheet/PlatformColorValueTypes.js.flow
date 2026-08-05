@@ -18,7 +18,7 @@ import type {NativeColorValue} from './StyleSheet';
  * @see https://reactnative.dev/docs/platformcolor#example
  */
 declare export function PlatformColor(
-  ...names: Array<string>
+  ...names: Array<string | {fallback: string}>
 ): NativeColorValue;
 
 declare export function normalizeColorObject(
