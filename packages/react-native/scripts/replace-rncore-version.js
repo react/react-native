@@ -18,6 +18,11 @@ const yargs = require('yargs');
 
 const LAST_BUILD_FILENAME = 'React-Core-prebuilt/.last_build_configuration';
 
+// Stored in LAST_BUILD_FILENAME while the framework on disk is being swapped.
+// It is not a valid configuration, so a run that finds it knows the previous
+// swap did not finish and the flavor on disk cannot be trusted.
+const REPLACEMENT_IN_PROGRESS = 'in-progress';
+
 function validateBuildConfiguration(configuration /*: string */) {
   if (!['Debug', 'Release'].includes(configuration)) {
     throw new Error(`Invalid configuration ${configuration}`);
@@ -42,13 +47,24 @@ function shouldReplaceRnCoreConfiguration(configuration /*: string */) {
       );
       return false;
     }
+    // Anything else, including REPLACEMENT_IN_PROGRESS left by a swap that was
+    // cancelled or killed, means the flavor on disk is not the requested one or
+    // is unknown. Replace it.
+    return true;
   }
 
-  // Assumption: if there is no stored last build, we assume that it was build for debug.
-  if (!fileExists && configuration === 'Debug') {
+  // No marker means `pod install` has just laid the pod down and nothing has
+  // swapped it since, because a swap records REPLACEMENT_IN_PROGRESS before it
+  // touches the framework. The podspec source is always the debug tarball (see
+  // resolve_podspec_source in scripts/cocoapods/rncore.rb), so the flavor on
+  // disk is Debug and a Debug build has nothing to do.
+  if (configuration === 'Debug') {
     console.log(
       'No previous build detected, but Debug Configuration. No need to replace React-Core-prebuilt',
     );
+    // Record the assumption rather than leaving it implicit, so the state is
+    // readable and a later run never has to make it again.
+    updateLastBuildConfiguration(configuration);
     return false;
   }
 
@@ -130,6 +146,10 @@ function updateLastBuildConfiguration(configuration /*: string */) {
   fs.writeFileSync(LAST_BUILD_FILENAME, configuration);
 }
 
+function markReplacementInProgress() /*: void */ {
+  fs.writeFileSync(LAST_BUILD_FILENAME, REPLACEMENT_IN_PROGRESS);
+}
+
 function main(
   configuration /*: string */,
   version /*: string */,
@@ -142,6 +162,12 @@ function main(
     return;
   }
 
+  // Invalidate the marker before the framework is touched. A build cancelled
+  // between the swap and the update used to leave the marker naming a flavor
+  // that was no longer on disk, and every later build for that flavor then took
+  // the skip path and linked against the wrong core, which a clean does not
+  // undo. Recording the swap first makes an interrupted run recoverable.
+  markReplacementInProgress();
   replaceRNCoreConfiguration(configuration, version, podsRoot);
   updateLastBuildConfiguration(configuration);
   console.log('Done replacing React Native prebuilt');

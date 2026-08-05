@@ -19,6 +19,18 @@ const path = require('node:path');
 const VERSION = '0.87.0-test';
 const SLICE = 'ios-arm64_x86_64-simulator';
 const BINARY = path.join(SLICE, 'React.framework', 'React');
+const SCRIPT = require.resolve('../replace-rncore-version.js');
+const MARKER = path.join('React-Core-prebuilt', '.last_build_configuration');
+
+// Runs the script the way the "[RNCore] Replace React Native Core for the right
+// configuration" build phase does, from Pods/ and through the CLI entry point.
+function runScriptPhase(podsRoot, configuration) {
+  return execFileSync(
+    process.execPath,
+    [SCRIPT, '-c', configuration, '-r', VERSION, '-p', podsRoot],
+    {cwd: podsRoot, encoding: 'utf8'},
+  );
+}
 
 function writeFile(filePath, contents) {
   fs.mkdirSync(path.dirname(filePath), {recursive: true});
@@ -117,6 +129,73 @@ describe('replaceRNCoreConfiguration', () => {
     replaceRNCoreConfiguration('Release', VERSION, podsRoot);
 
     expect(fs.readFileSync(expoModuleMap, 'utf8')).toBe('module React {}\n');
+  });
+
+  // Regression tests for #57598. The marker used to be written only after the
+  // framework had already been replaced, so a build cancelled in between left it
+  // naming a flavor that was no longer on disk. Every later build for that
+  // flavor then took the "nothing to do" path and linked against the other
+  // configuration's core, which fails with undefined C++ symbols and which a
+  // clean does not undo because the pod directory survives it.
+  describe('marker bookkeeping', () => {
+    const marker = () => path.join(podsRoot, MARKER);
+    const binary = () =>
+      fs.readFileSync(path.join(pod, 'React.xcframework', BINARY), 'utf8');
+
+    it('records the configuration when it skips a fresh install', () => {
+      // `pod install` leaves the debug flavor and no marker, so a Debug build
+      // has nothing to swap. It still has to write down what is on disk,
+      // otherwise the state stays implicit and stays unverifiable.
+      expect(fs.existsSync(marker())).toBe(false);
+
+      runScriptPhase(podsRoot, 'Debug');
+
+      expect(fs.readFileSync(marker(), 'utf8')).toBe('Debug');
+      expect(binary()).toBe('binary-Debug');
+    });
+
+    it('invalidates the marker before it touches the framework', () => {
+      fs.writeFileSync(marker(), 'Debug');
+      // Drop the tarball so the Release run fails once it is already under way,
+      // standing in for a build cancelled part way through the swap.
+      fs.rmSync(
+        path.join(
+          podsRoot,
+          'ReactNativeCore-artifacts',
+          `reactnative-core-${VERSION.toLowerCase()}-release.tar.gz`,
+        ),
+      );
+
+      expect(() => runScriptPhase(podsRoot, 'Release')).toThrow();
+
+      // The marker must no longer claim Debug: the framework may already have
+      // been swapped, and a Debug build that trusts it would silently skip.
+      expect(fs.readFileSync(marker(), 'utf8')).not.toBe('Debug');
+    });
+
+    it('replaces the framework when the marker shows an unfinished swap', () => {
+      buildTarball(podsRoot, 'Debug');
+      // A swap that was interrupted: the Release flavor is on disk and the
+      // marker never got its final value.
+      replaceRNCoreConfiguration('Release', VERSION, podsRoot);
+      fs.writeFileSync(marker(), 'in-progress');
+      expect(binary()).toBe('binary-Release');
+
+      runScriptPhase(podsRoot, 'Debug');
+
+      expect(binary()).toBe('binary-Debug');
+      expect(fs.readFileSync(marker(), 'utf8')).toBe('Debug');
+    });
+
+    it('still skips when the marker already matches the configuration', () => {
+      fs.writeFileSync(marker(), 'Release');
+      const before = binary();
+
+      const output = runScriptPhase(podsRoot, 'Release');
+
+      expect(output).toContain('No need to replace React-Core-prebuilt');
+      expect(binary()).toBe(before);
+    });
   });
 
   it('fails when the tarball has no React.xcframework', () => {
