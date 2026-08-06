@@ -236,16 +236,38 @@ def download_stable_hermes(react_native_path, version, configuration)
     download_hermes_tarball(react_native_path, tarball_url, version, configuration)
 end
 
-def download_hermes_tarball(react_native_path, tarball_url, version, configuration)
-    destination_path = configuration == nil ?
-        "#{artifacts_dir()}/hermes-ios-#{version}.tar.gz" :
-        "#{artifacts_dir()}/hermes-ios-#{version}-#{configuration}.tar.gz"
+def shared_cache_dir()
+    return File.join(Dir.home, "Library", "Caches", "ReactNative")
+end
 
-    unless File.exist?(destination_path)
+def download_hermes_tarball(react_native_path, tarball_url, version, configuration)
+    filename = configuration == nil ?
+        "hermes-ios-#{version}.tar.gz" :
+        "hermes-ios-#{version}-#{configuration}.tar.gz"
+    destination_path = "#{artifacts_dir()}/#{filename}"
+
+    if File.exist?(destination_path)
+      hermes_log("Tarball #{filename} already exists in Pods. Skipping download.", :info)
+      return destination_path
+    end
+
+    `mkdir -p "#{artifacts_dir()}"`
+
+    cached_path = File.join(shared_cache_dir(), filename)
+    if File.exist?(cached_path)
+      hermes_log("Cache hit: copying #{filename} from shared cache (#{shared_cache_dir()})", :info)
+      FileUtils.cp(cached_path, destination_path)
+    else
+      hermes_log("Cache miss: downloading #{filename} from #{tarball_url}", :info)
       # Download to a temporary file first so we don't cache incomplete downloads.
       tmp_file = "#{artifacts_dir()}/hermes-ios.download"
-      `mkdir -p "#{artifacts_dir()}" && curl "#{tarball_url}" -Lo "#{tmp_file}" && mv "#{tmp_file}" "#{destination_path}"`
+      `curl "#{tarball_url}" -Lo "#{tmp_file}" && mv "#{tmp_file}" "#{destination_path}"`
+      # Save to shared cache for future use
+      `mkdir -p "#{shared_cache_dir()}"`
+      FileUtils.cp(destination_path, cached_path)
+      hermes_log("Saved #{filename} to shared cache (#{shared_cache_dir()})", :info)
     end
+
     return destination_path
 end
 

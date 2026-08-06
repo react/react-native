@@ -232,15 +232,36 @@ class ReactNativeDependenciesUtils
         return {:http => url}
     end
 
-    def self.download_rndeps_tarball(react_native_path, tarball_url, version, configuration)
-        destination_path = configuration == nil ?
-            "#{artifacts_dir()}/reactnative-dependencies-#{version}.tar.gz" :
-            "#{artifacts_dir()}/reactnative-dependencies-#{version}-#{configuration}.tar.gz"
+    def self.shared_cache_dir()
+        return File.join(Dir.home, "Library", "Caches", "ReactNative")
+    end
 
-        unless File.exist?(destination_path)
+    def self.download_rndeps_tarball(react_native_path, tarball_url, version, configuration)
+        filename = configuration == nil ?
+            "reactnative-dependencies-#{version}.tar.gz" :
+            "reactnative-dependencies-#{version}-#{configuration}.tar.gz"
+        destination_path = "#{artifacts_dir()}/#{filename}"
+
+        if File.exist?(destination_path)
+          rndeps_log("Tarball #{filename} already exists in Pods. Skipping download.")
+          return destination_path
+        end
+
+        `mkdir -p "#{artifacts_dir()}"`
+
+        cached_path = File.join(shared_cache_dir(), filename)
+        if File.exist?(cached_path)
+          rndeps_log("Cache hit: copying #{filename} from shared cache (#{shared_cache_dir()})")
+          FileUtils.cp(cached_path, destination_path)
+        else
+          rndeps_log("Cache miss: downloading #{filename} from #{tarball_url}")
           # Download to a temporary file first so we don't cache incomplete downloads.
           tmp_file = "#{artifacts_dir()}/reactnative-dependencies.download"
-          `mkdir -p "#{artifacts_dir()}" && curl "#{tarball_url}" -Lo "#{tmp_file}" && mv "#{tmp_file}" "#{destination_path}"`
+          `curl "#{tarball_url}" -Lo "#{tmp_file}" && mv "#{tmp_file}" "#{destination_path}"`
+          # Save to shared cache for future use
+          `mkdir -p "#{shared_cache_dir()}"`
+          FileUtils.cp(destination_path, cached_path)
+          rndeps_log("Saved #{filename} to shared cache (#{shared_cache_dir()})")
         end
 
         return destination_path
