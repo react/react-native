@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<57ec5f47418b3283caa251114ed07b3b>>
+ * @generated SignedSource<<b867e66497e61d6f82dfc8775775765d>>
  * @flow strict
  * @noformat
  */
@@ -91,6 +91,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   enableNativeCSSParsing: Getter<boolean>,
   enablePreparedTextLayout: Getter<boolean>,
   enablePropsUpdateReconciliationAndroid: Getter<boolean>,
+  enableRelaxedLinkRole: Getter<boolean>,
   enableRuntimeSchedulerQueueClearingOnError: Getter<boolean>,
   enableSchedulerDelegateInvalidation: Getter<boolean>,
   enableSwiftUIBasedFilters: Getter<boolean>,
@@ -378,6 +379,10 @@ export const enablePreparedTextLayout: Getter<boolean> = createNativeFlagGetter(
  * When enabled, Android will receive prop updates based on the differences between the last rendered shadow node and the last committed shadow node.
  */
 export const enablePropsUpdateReconciliationAndroid: Getter<boolean> = createNativeFlagGetter('enablePropsUpdateReconciliationAndroid', false);
+/**
+ * When enabled, inline text with a link-like role produces a ClickableSpan and appears in the TalkBack links rotor.
+ */
+export const enableRelaxedLinkRole: Getter<boolean> = createNativeFlagGetter('enableRelaxedLinkRole', false);
 /**
  * When enabled, RuntimeScheduler_Modern clears pending tasks and rendering updates before handling an error.
  */

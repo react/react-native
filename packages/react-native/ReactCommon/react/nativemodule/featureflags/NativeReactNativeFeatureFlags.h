@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<741340cf9c128417368324bb80501f18>>
+ * @generated SignedSource<<8a0aedeee32a1f7efb9b2589429d0e49>>
  */
 
 /**
@@ -121,6 +121,8 @@ class NativeReactNativeFeatureFlags
   bool enablePreparedTextLayout(jsi::Runtime& runtime);
 
   bool enablePropsUpdateReconciliationAndroid(jsi::Runtime& runtime);
+
+  bool enableRelaxedLinkRole(jsi::Runtime& runtime);
 
   bool enableRuntimeSchedulerQueueClearingOnError(jsi::Runtime& runtime);
 

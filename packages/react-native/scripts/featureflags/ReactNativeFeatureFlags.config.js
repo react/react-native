@@ -507,6 +507,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    enableRelaxedLinkRole: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-08-06',
+        description:
+          'When enabled, inline text with a link-like role produces a ClickableSpan and appears in the TalkBack links rotor.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
     enableRuntimeSchedulerQueueClearingOnError: {
       defaultValue: false,
       metadata: {

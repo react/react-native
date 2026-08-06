@@ -236,6 +236,21 @@ internal object TextLayoutManager {
     }
   }
 
+  private fun isRoleLinkLike(
+      role: ReactAccessibilityDelegate.Role?,
+      accessibilityRole: ReactAccessibilityDelegate.AccessibilityRole?,
+  ): Boolean {
+    if (!ReactNativeFeatureFlags.enableRelaxedLinkRole()) {
+      return if (role != null) (role == ReactAccessibilityDelegate.Role.LINK)
+      else (accessibilityRole == ReactAccessibilityDelegate.AccessibilityRole.LINK)
+    }
+
+    return role == ReactAccessibilityDelegate.Role.LINK ||
+        accessibilityRole == ReactAccessibilityDelegate.AccessibilityRole.LINK ||
+        role == ReactAccessibilityDelegate.Role.BUTTON ||
+        accessibilityRole == ReactAccessibilityDelegate.AccessibilityRole.BUTTON
+  }
+
   @OptIn(UnstableReactNativeAPI::class)
   private fun buildSpannableFromFragments(
       assets: AssetManager,
@@ -276,13 +291,7 @@ internal object TextLayoutManager {
             ),
         )
       } else if (end >= start) {
-        val roleIsLink =
-            if (textAttributes.role != null)
-                (textAttributes.role == ReactAccessibilityDelegate.Role.LINK)
-            else
-                (textAttributes.accessibilityRole ==
-                    ReactAccessibilityDelegate.AccessibilityRole.LINK)
-        if (roleIsLink) {
+        if (isRoleLinkLike(textAttributes.role, textAttributes.accessibilityRole)) {
           if (ReactNativeFeatureFlags.enablePreparedTextLayout()) {
             ops.add(SetSpanOperation(start, end, ReactLinkSpan(i)))
           } else {
@@ -496,14 +505,7 @@ internal object TextLayoutManager {
             spanFlags,
         )
       } else {
-        val roleIsLink =
-            if (fragment.props.role != null)
-                (fragment.props.role == ReactAccessibilityDelegate.Role.LINK)
-            else
-                (fragment.props.accessibilityRole ==
-                    ReactAccessibilityDelegate.AccessibilityRole.LINK)
-
-        if (roleIsLink) {
+        if (isRoleLinkLike(fragment.props.role, fragment.props.accessibilityRole)) {
           if (ReactNativeFeatureFlags.enablePreparedTextLayout()) {
             spannable.setSpan(ReactLinkSpan(i), start, end, spanFlags)
           } else {
