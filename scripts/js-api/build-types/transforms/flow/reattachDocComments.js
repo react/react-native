@@ -14,12 +14,12 @@ import type {
   ModuleDeclaration,
   Program,
   Statement,
-} from 'hermes-estree/dist';
-import type {TransformVisitor} from 'hermes-transform';
-import type {ParseResult} from 'hermes-transform/dist/transform/parse';
-import type {TransformASTResult} from 'hermes-transform/dist/transform/transformAST';
+} from 'flow-estree/dist';
+import type {TransformVisitor} from 'flow-transform';
+import type {ParseResult} from 'flow-transform/dist/transform/parse';
+import type {TransformASTResult} from 'flow-transform/dist/transform/transformAST';
 
-const {transformAST} = require('hermes-transform/dist/transform/transformAST');
+const {transformAST} = require('flow-transform/dist/transform/transformAST');
 
 type BodyNode = Statement | ModuleDeclaration;
 
@@ -177,15 +177,11 @@ function findDeclarationByName(
       return {statement, kind: declaration.type};
     }
 
-    // `declare const X` in `.js.flow` declaration files
+    // `DeclareVariable` is `declare const X` in `.js.flow` declaration files
     if (
-      declaration.type === 'DeclareVariable' &&
-      declaration.id.name === name
+      declaration.type === 'VariableDeclaration' ||
+      declaration.type === 'DeclareVariable'
     ) {
-      return {statement, kind: declaration.type};
-    }
-
-    if (declaration.type === 'VariableDeclaration') {
       for (const declarator of declaration.declarations) {
         if (
           declarator.id.type === 'Identifier' &&

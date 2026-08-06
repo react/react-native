@@ -9,13 +9,13 @@
  */
 
 import type {PluginObj} from '@babel/core';
-import type {ParseResult} from 'hermes-transform/dist/transform/parse';
-import type {TransformASTResult} from 'hermes-transform/dist/transform/transformAST';
+import type {ParseResult} from 'flow-transform/dist/transform/parse';
+import type {TransformASTResult} from 'flow-transform/dist/transform/transformAST';
 
 const getDependencies = require('./resolution/getDependencies');
 const applyBabelTransformsSeq = require('./utils/applyBabelTransformsSeq');
 const translate = require('flow-api-translator');
-const {parse, print} = require('hermes-transform');
+const {parse, print} = require('flow-transform');
 
 type PreTransformFn = ParseResult => Promise<TransformASTResult>;
 

@@ -40,8 +40,7 @@
     "source-map-support": "0.5.0"
   },
   "devDependencies": {
-    "flow-eslint": "0.325.0",
-    "hermes-eslint": "0.37.0"
+    "flow-eslint": "0.325.0"
   },
   "engines": {
     "node": "^22.13.0 || ^24.3.0 || >= 26.0.0"
