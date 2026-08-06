@@ -10,8 +10,6 @@
 
 import {useCallback, useRef} from 'react';
 
-type CallbackRef<T> = T => unknown;
-
 /**
  * Constructs a callback ref that provides similar semantics as `useEffect`. The
  * supplied `effect` callback will be called with non-null component instances.
@@ -28,7 +26,7 @@ type CallbackRef<T> = T => unknown;
  */
 export default function useRefEffect<TInstance>(
   effect: TInstance => (() => void) | void,
-): CallbackRef<TInstance | null> {
+): React.RefCallback<TInstance> {
   const cleanupRef = useRef<(() => void) | void>(undefined);
   return useCallback(
     (instance: null | TInstance) => {

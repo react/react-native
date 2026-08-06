@@ -35,11 +35,10 @@ type ReducedProps<TProps> = {
   collapsable: boolean,
   ...
 };
-type CallbackRef<T> = T => unknown;
 
 export type AnimatedPropsHook = <TProps extends {...}, TInstance>(
   props: TProps,
-) => [ReducedProps<TProps>, CallbackRef<TInstance | null>];
+) => [ReducedProps<TProps>, React.RefCallback<TInstance>];
 
 type UpdateCallback = () => void;
 
@@ -55,7 +54,7 @@ export default function createAnimatedPropsHook(
 
   return function useAnimatedProps<TProps extends {...}, TInstance>(
     props: TProps,
-  ): [ReducedProps<TProps>, CallbackRef<TInstance | null>] {
+  ): [ReducedProps<TProps>, React.RefCallback<TInstance>] {
     const [, scheduleUpdate] = useReducer<number, void>(count => count + 1, 0);
     const onUpdateRef = useRef<UpdateCallback | null>(null);
     const timerRef = useRef<TimeoutID | null>(null);
