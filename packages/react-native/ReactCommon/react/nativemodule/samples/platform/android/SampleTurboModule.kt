@@ -46,8 +46,8 @@ public class SampleTurboModule(private val context: ReactApplicationContext) :
 
   private var pendingPermissionPromise: Promise? = null
 
-  // Registered up-front against the ReactContext's own ActivityResultRegistry. This works even
-  // though SampleTurboModule is instantiated lazily, long after the host Activity has resumed.
+  // Registered up-front against the ReactContext, which is legal even though this module is
+  // instantiated lazily, long after the host Activity has resumed.
   private val permissionLauncher: ActivityResultLauncher<String> =
       context.registerForActivityResult(this, ActivityResultContracts.RequestPermission()) {
           isGranted: Boolean ->
@@ -382,12 +382,10 @@ public class SampleTurboModule(private val context: ReactApplicationContext) :
   }
 
   /**
-   * Starts a second, distinct Activity in the same task to exercise multi-Activity navigation.
-   * With two ReactActivities alive, the new one resumes *before* the old one is destroyed, and the
-   * old one's onHostDestroy is dropped entirely -- the exact ordering that forces
-   * [com.facebook.react.activityresult.ReactActivityResultCallerImpl] to rebind launchers to the
-   * current Activity's registry instead of staying attached to the previous (still-alive or dead)
-   * one. Launched by class name so this sample module needs no compile-time dependency on the app.
+   * Starts a second ReactActivity to exercise multi-Activity navigation: the launchers above must
+   * rebind to the new Activity's registry (it resumes while the old Activity is still alive).
+   * Launched by class name to avoid a compile-time dependency on the app; the data URI deep-links
+   * the new surface straight to the picker example via Linking.
    */
   @DoNotStrip
   @Suppress("unused")
@@ -397,8 +395,6 @@ public class SampleTurboModule(private val context: ReactApplicationContext) :
       Toast.makeText(context, "No current Activity to launch from", Toast.LENGTH_LONG).show()
       return
     }
-    // The data URI deep-links the new surface straight to the picker example via Linking; the
-    // explicit class name keeps this an in-app navigation regardless of intent filters.
     val intent =
         Intent(Intent.ACTION_VIEW, Uri.parse("rntester://example/PhotoPickerAndroid"))
             .setClassName(activity, "${activity.packageName}.RNTesterSecondActivity")
@@ -419,9 +415,8 @@ public class SampleTurboModule(private val context: ReactApplicationContext) :
   }
 
   override fun invalidate() {
-    // Reject anything still in flight: the JS context that made these calls is going away, so the
-    // results can never be delivered. Clearing the fields also lets the callbacks (which stay
-    // registered until the launchers are unregistered) tolerate a late result harmlessly.
+    // Reject anything still in flight: the JS context that made these calls is going away.
+    // Clearing the fields also lets the still-registered callbacks tolerate a late result.
     pendingPermissionPromise?.reject(
         "E_MODULE_INVALIDATED", "Permission request cancelled: SampleTurboModule was invalidated")
     pendingPermissionPromise = null
@@ -449,13 +444,9 @@ public class SampleTurboModule(private val context: ReactApplicationContext) :
 
 /**
  * Photo picker contract for multi-select with a per-call item limit. Stock
- * [ActivityResultContracts.PickMultipleVisualMedia] fixes the limit in its constructor, i.e. at
- * registration time -- but here the limit comes from JS per call. The AndroidX-idiomatic fix, which
- * library authors should copy, is to subclass the contract and move the dynamic value into the
- * contract's *input* type, where it becomes a [androidx.activity.result.ActivityResultLauncher.launch]
- * argument. The subclass also gets its own registration key for free (keys are the contract's class
- * name), so it never collides with a stock [ActivityResultContracts.PickMultipleVisualMedia]
- * registered by someone else.
+ * [ActivityResultContracts.PickMultipleVisualMedia] fixes the limit in its constructor, but here it
+ * comes from JS per call. So the contract is subclassed to carry the limit in its input type,
+ * the pattern library authors should copy for any contract parameter that comes from JS.
  */
 private class PickUpToMedia :
     ActivityResultContract<PickUpToMedia.Request, List<@JvmSuppressWildcards Uri>>() {

@@ -20,11 +20,9 @@ import com.facebook.react.common.ReactConstants
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * Runs [block] on the UI thread, inline if already there.
- *
- * [ActivityResultRegistry] is `@MainThread` and its key tables are unsynchronized. Nothing enforces
- * that at runtime, so an off-thread call corrupts them silently rather than throwing -- and RN
- * registers on the JS thread and launches on the native-modules thread.
+ * Runs [block] on the UI thread, inline if already there. [ActivityResultRegistry] is `@MainThread`
+ * but not enforced at runtime: an off-thread call corrupts it silently, and RN calls in from the JS
+ * and native-modules threads.
  */
 internal fun onUiThread(block: () -> Unit) {
   if (UiThreadUtil.isOnUiThread()) block() else UiThreadUtil.runOnUiThread(block)
@@ -33,36 +31,25 @@ internal fun onUiThread(block: () -> Unit) {
 /**
  * Default [ReactActivityResultCaller], owned by a [ReactContext].
  *
- * Registrations are accepted at any time -- native modules are created lazily, typically well after
- * the host Activity has resumed -- and bound to the current Activity's [ActivityResultRegistry]
- * either immediately (when an Activity is already available) or on the next `onHostResume`.
- * Registrations outlive any single Activity: keys stay stable, so AndroidX can re-associate a result
- * that arrives after Activity recreation.
+ * Registrations are accepted at any time and bound to the current Activity's
+ * [ActivityResultRegistry] immediately or on the next `onHostResume`. They outlive any single
+ * Activity: keys stay stable so AndroidX can re-associate a result after Activity recreation.
  *
- * ## Which registry a launcher is bound to
+ * Every `onHostResume` checks each launcher against the *current* registry, not just "already
+ * bound to something": with multi-Activity navigation the new Activity resumes before the old one
+ * is destroyed (whose onHostDestroy is dropped once `currentActivity` moves on), so a bound-only
+ * check would leave launchers attached to the previous Activity's dead registry.
  *
- * Every `onHostResume` reconciles each launcher against the *current* registry, rebinding it if it
- * is attached to a different one. It deliberately does not stop at "already bound to something":
- * with multi-Activity navigation the new Activity resumes before the old one is destroyed, and
- * `ReactHostImpl.onHostDestroy(activity)` drops the old Activity's destroy entirely once
- * `currentActivity` has moved on. A launcher that only checked "am I bound?" would stay attached to
- * the previous Activity's dead registry -- leaking it, and misrouting anything launched from the new
- * screen.
- *
- * ## Threading
- *
- * [entries] is concurrent and reachable from any thread. Everything that touches
- * [ActivityResultRegistry] goes through [onUiThread].
- *
- * Registration itself stays on the caller's thread, so the launcher is returned immediately and a
- * duplicate key throws from the frame that caused it. Only the registry call is hopped.
+ * Threading: [entries] is concurrent and reachable from any thread; everything touching the
+ * registry goes through [onUiThread]. Registration stays on the caller's thread so the launcher
+ * returns immediately and a duplicate key throws at the causing frame. Only the registry call
+ * moves to the UI thread.
  */
 internal class ReactActivityResultCallerImpl(private val reactContext: ReactContext) :
     ReactActivityResultCaller, LifecycleEventListener {
 
   private class Entry<I, O>(
       val key: String,
-      val registrantDescription: String,
       private val contract: ActivityResultContract<I, O>,
       private val callback: ActivityResultCallback<O>,
       val launcher: DeferredActivityResultLauncher<I>,
@@ -73,8 +60,8 @@ internal class ReactActivityResultCallerImpl(private val reactContext: ReactCont
      */
     fun bindTo(registry: ActivityResultRegistry) {
       if (launcher.isBoundTo(registry)) return
-      // Release the previous host's registry first: it may already be dead, and leaving the
-      // callback registered there leaks that Activity and misroutes anything launched from it.
+      // Release any previous (possibly dead) registry first; staying registered there leaks its
+      // Activity and sends launches to the wrong one.
       launcher.unbind()
       launcher.bind(registry, registry.register(key, contract, callback))
     }
@@ -86,17 +73,13 @@ internal class ReactActivityResultCallerImpl(private val reactContext: ReactCont
     reactContext.addLifecycleEventListener(this)
   }
 
-  private fun getOwnerId(owner: Any): String = owner.javaClass.name
-
   override fun <I, O> registerForActivityResult(
       owner: Any,
       contract: ActivityResultContract<I, O>,
       callback: ActivityResultCallback<O>,
   ): ActivityResultLauncher<I> {
-    val id = getOwnerId(owner)
     return register(
-        key = "$id:${contract.javaClass.name}",
-        registrantDescription = id,
+        key = "${owner.javaClass.name}:${contract.javaClass.name}",
         collisionHint =
             "Register once and reuse the launcher, or pass a distinct key per launcher: " +
                 "registerForActivityResult(owner, \"someName\", contract, callback).",
@@ -110,10 +93,8 @@ internal class ReactActivityResultCallerImpl(private val reactContext: ReactCont
       contract: ActivityResultContract<I, O>,
       callback: ActivityResultCallback<O>,
   ): ActivityResultLauncher<I> {
-    val id = getOwnerId(owner)
     return register(
-        key = "$id:${contract.javaClass.name}:$key",
-        registrantDescription = id,
+        key = "${owner.javaClass.name}:${contract.javaClass.name}:$key",
         collisionHint = "Pass a key that is unique among this owner's launchers of this contract.",
         contract = contract,
         callback = callback)
@@ -121,17 +102,15 @@ internal class ReactActivityResultCallerImpl(private val reactContext: ReactCont
 
   private fun <I, O> register(
       key: String,
-      registrantDescription: String,
       collisionHint: String,
       contract: ActivityResultContract<I, O>,
       callback: ActivityResultCallback<O>,
   ): ActivityResultLauncher<I> {
     val launcher = DeferredActivityResultLauncher(key, contract) { entries.remove(key) }
-    val entry = Entry(key, registrantDescription, contract, callback, launcher)
-    entries.putIfAbsent(key, entry)?.let { existing ->
+    val entry = Entry(key, contract, callback, launcher)
+    if (entries.putIfAbsent(key, entry) != null) {
       throw IllegalStateException(
-          "${existing.registrantDescription} already registered a launcher for key '$key'. " +
-              collisionHint)
+          "A launcher is already registered for key '$key'. $collisionHint")
     }
     onUiThread { currentRegistry()?.let { registry -> entry.bindTo(registry) } }
     return launcher
@@ -145,9 +124,8 @@ internal class ReactActivityResultCallerImpl(private val reactContext: ReactCont
   override fun onHostPause(): Unit = Unit
 
   override fun onHostDestroy() = onUiThread {
-    // Detach from the dying registry but keep the registrations: they rebind against the next host's
-    // registry under the same keys on the next onHostResume, which is how AndroidX re-associates a
-    // result that outlives the Activity.
+    // Detach from the dying registry but keep the registrations: they rebind under the same keys
+    // on the next onHostResume, which is how AndroidX re-associates a surviving result.
     entries.values.forEach { it.launcher.unbind() }
   }
 

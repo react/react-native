@@ -72,7 +72,7 @@ const PhotoPickerSingle = (): React.Node => {
  * The item limit is a per-call JS argument rather than a fixed native
  * constant. Native-side, this works by subclassing PickMultipleVisualMedia so
  * the limit travels in the contract's launch input instead of its constructor
- * (see PickUpToMedia in SampleTurboModule.kt) -- the pattern library authors
+ * (see PickUpToMedia in SampleTurboModule.kt), the pattern library authors
  * should use for any contract parameter that comes from JS.
  */
 const PhotoPickerMultiple = (): React.Node => {
@@ -114,19 +114,15 @@ const PhotoPickerMultiple = (): React.Node => {
 };
 
 /**
- * Regression check for multi-Activity navigation: the launchers above were
- * registered against the ReactContext and first bound to the Activity that
- * started the app. Opening the second Activity (which resumes while the first
- * one is still alive) must rebind them to the new Activity's registry — the
- * pickers on the newly opened screen should open from and deliver their
- * results to that screen. Going back and picking again checks rebinding in
- * the other direction.
+ * Regression check for multi-Activity navigation: opening the second Activity
+ * must rebind the ReactContext-registered launchers to its registry, so picks
+ * on each screen deliver their results to that screen.
  */
 const MultiActivity = (): React.Node => {
   return (
     <>
       <RNTesterText style={styles.uriText}>
-        Opens this same example in a second Activity. Pick an image there — the
+        Opens this same example in a second Activity. Pick an image there: the
         result must arrive on that screen. Then go back and pick here again.
       </RNTesterText>
       <View style={styles.row}>

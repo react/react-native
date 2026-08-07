@@ -16,15 +16,13 @@ import com.facebook.react.bridge.UiThreadUtil
 import com.facebook.react.common.ReactConstants
 
 /**
- * An [ActivityResultLauncher] handed out before the host Activity's `ActivityResultRegistry` is
- * available. It delegates to the real launcher once [bind] is called, and queues a single pending
- * [launch] issued while unbound, firing it on bind. [unbind] detaches it when the host Activity is
- * destroyed so that [ReactActivityResultCallerImpl] can rebind it against the next host's registry.
+ * An [ActivityResultLauncher] that may exist before any `ActivityResultRegistry` is available: it
+ * delegates to the real launcher once [bind] is called, queues a single [launch] issued while
+ * unbound (fired on bind), and can be [unbind]-ed and rebound against a new host's registry.
  *
- * [launch] and [unregister] are called off the UI thread but reach `@MainThread` registry methods,
- * so both hop. [delegate] and [pendingLaunch] are therefore UI-thread only and need no lock. Note
- * [launch] decides bound-vs-queue *inside* the hop: doing it before would let a concurrent [unbind]
- * strand the launch on a dead registry.
+ * [delegate] and [pendingLaunch] are only touched on the UI thread; [launch] and [unregister] get
+ * there via [onUiThread]. [launch] decides between delegating and queueing *on* the UI thread, so
+ * a concurrent [unbind] cannot leave it pointed at a dead registry.
  */
 internal class DeferredActivityResultLauncher<I>(
     private val key: String,
@@ -58,7 +56,7 @@ internal class DeferredActivityResultLauncher<I>(
   }
 
   override fun unregister() {
-    // Drop the registration first, so nothing rebinds this launcher while the hop is in flight.
+    // Drop the registration first so nothing rebinds this launcher in the meantime.
     onUnregister()
     onUiThread {
       delegate?.unregister()
@@ -68,8 +66,8 @@ internal class DeferredActivityResultLauncher<I>(
   }
 
   /**
-   * Attaches [launcher], obtained from [registry], and fires any launch queued while unbound.
-   * [registry] is remembered so [isBoundTo] can tell whether a later host is a different one.
+   * Attaches [launcher], obtained from [registry] (remembered for [isBoundTo]), and fires any
+   * queued launch.
    */
   fun bind(registry: ActivityResultRegistry, launcher: ActivityResultLauncher<I>) {
     UiThreadUtil.assertOnUiThread()
@@ -89,6 +87,6 @@ internal class DeferredActivityResultLauncher<I>(
     boundRegistry = null
   }
 
-  /** Whether this launcher is already bound to [registry] specifically -- not merely to something. */
+  /** Whether this launcher is bound to [registry] itself, not just to any registry. */
   fun isBoundTo(registry: ActivityResultRegistry): Boolean = boundRegistry === registry
 }

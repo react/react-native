@@ -548,19 +548,17 @@ public abstract class ReactContext extends ContextWrapper {
   }
 
   /**
-   * Registers an AndroidX {@code ActivityResultContract} against the host Activity's {@code
-   * ActivityResultRegistry} and returns a launcher for it, mirroring {@code
-   * ComponentActivity.registerForActivityResult}. Requires no changes to the consumer's {@code
-   * MainActivity}. Registration is legal at any time; the returned launcher binds lazily once an
-   * Activity is available, and a {@code launch} issued while unbound is queued and fired on bind.
+   * Registers an AndroidX {@code ActivityResultContract} and returns a launcher for it, mirroring
+   * {@code ComponentActivity.registerForActivityResult} but with no changes required to the
+   * consumer's {@code MainActivity}. Registration is legal at any time; the launcher binds lazily
+   * once an Activity is available, queueing a {@code launch} issued while unbound.
    *
-   * <p>The registration key is {@code "<owner class>:<contract class>"}, so two unrelated libraries
-   * may both register a stock contract such as {@code ActivityResultContracts.GetContent} without
-   * colliding. {@code owner} should be a stable, long-lived object -- typically the native module
-   * itself -- because the key must be reproducible after process death. Registering the same
-   * contract class twice from one owner throws {@link IllegalStateException}; use {@link
-   * #registerForActivityResult(Object, String, ActivityResultContract, ActivityResultCallback)} in
-   * that case.
+   * <p>The registration key is {@code "<owner class>:<contract class>"}, so {@code owner} should
+   * be a stable, long-lived object (typically the native module itself): the key must be
+   * reproducible after the process is killed and restored. Registering the same contract class
+   * twice from one owner
+   * throws {@link IllegalStateException}; use {@link #registerForActivityResult(Object, String,
+   * ActivityResultContract, ActivityResultCallback)} in that case.
    */
   public <I, O> ActivityResultLauncher<I> registerForActivityResult(
       Object owner, ActivityResultContract<I, O> contract, ActivityResultCallback<O> callback) {
@@ -571,8 +569,7 @@ public abstract class ReactContext extends ContextWrapper {
    * Same as {@link #registerForActivityResult(Object, ActivityResultContract,
    * ActivityResultCallback)}, but registers under {@code "<owner class>:<contract class>:<key>"}.
    * Use this when one owner needs several launchers of the same contract class. {@code key} only
-   * has to be unique among {@code owner}'s registrations of this contract class -- the
-   * owner-and-contract scope is still applied -- but it must be stable across process death.
+   * has to be unique among those, but must stay the same across process restarts.
    *
    * @throws IllegalStateException if {@code owner} already registered this contract class under
    *     {@code key}
