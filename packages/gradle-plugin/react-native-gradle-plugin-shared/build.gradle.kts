@@ -5,7 +5,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -15,17 +14,17 @@ plugins {
   alias(libs.plugins.ktfmt)
 }
 
-repositories { mavenCentral() }
+repositories {
+  google()
+  mavenCentral()
+}
 
 group = "com.facebook.react"
 
 dependencies {
+  implementation(project(":shared"))
   implementation(gradleApi())
-  implementation(libs.gson)
-  implementation(libs.guava)
-  testImplementation(libs.junit)
-  testImplementation(libs.assertj)
-  testImplementation(project(":shared-testutil"))
+  implementation(libs.android.gradle.plugin)
 }
 
 java { targetCompatibility = JavaVersion.VERSION_11 }
@@ -35,20 +34,9 @@ kotlin { jvmToolchain(17) }
 tasks.withType<KotlinCompile>().configureEach {
   compilerOptions {
     apiVersion.set(KotlinVersion.KOTLIN_2_0)
-    // See comment above on JDK 11 support
     jvmTarget.set(JvmTarget.JVM_11)
     allWarningsAsErrors.set(
         project.properties["enableWarningsAsErrors"]?.toString()?.toBoolean() ?: false
     )
-  }
-}
-
-tasks.withType<Test>().configureEach {
-  jvmArgs("--add-opens=java.base/java.lang=ALL-UNNAMED")
-  testLogging {
-    exceptionFormat = TestExceptionFormat.FULL
-    showExceptions = true
-    showCauses = true
-    showStackTraces = true
   }
 }

@@ -16,6 +16,8 @@ pluginManagement {
 plugins { id("org.gradle.toolchains.foojay-resolver-convention").version("1.0.0") }
 
 include(
+    ":react-native-gradle-plugin-shared",
+    ":react-native-library-plugin",
     ":react-native-gradle-plugin",
     ":settings-plugin",
     ":shared",

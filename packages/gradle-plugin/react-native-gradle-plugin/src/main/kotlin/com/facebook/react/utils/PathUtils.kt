@@ -10,11 +10,9 @@
 package com.facebook.react.utils
 
 import com.facebook.react.ReactExtension
-import com.facebook.react.model.ModelPackageJson
 import com.facebook.react.utils.Os.cliPath
 import java.io.File
 import org.gradle.api.Project
-import org.gradle.api.file.DirectoryProperty
 
 /**
  * Computes the entry file for React Native. The Algo follows this order:
@@ -194,47 +192,6 @@ internal fun getHermesOSBin(): String {
       "OS not recognized. Please set project.react.hermesCommand " +
           "to the path of a working Hermes compiler."
   )
-}
-
-internal fun projectPathToLibraryName(projectPath: String): String =
-    projectPath
-        .split(':', '-', '_', '.')
-        .joinToString("") { token -> token.replaceFirstChar { it.titlecase() } }
-        .plus("Spec")
-
-/**
- * Function to look for the relevant `package.json`. We first look in the parent folder of this
- * Gradle module (generally the case for library projects) or we fallback to looking into the `root`
- * folder of a React Native project (generally the case for app projects).
- */
-internal fun findPackageJsonFile(project: Project, rootProperty: DirectoryProperty): File? {
-  val inParent = project.file("../package.json")
-  if (inParent.exists()) {
-    return inParent
-  }
-
-  val fromExtension = rootProperty.file("package.json").orNull?.asFile
-  if (fromExtension?.exists() == true) {
-    return fromExtension
-  }
-
-  return null
-}
-
-/**
- * Function to look for the `package.json` and parse it. It returns a [ModelPackageJson] if found or
- * null others.
- *
- * Please note that this function access the [DirectoryProperty] parameter and calls .get() on them,
- * so calling this during apply() of the ReactPlugin is not recommended. It should be invoked inside
- * lazy lambdas or at execution time.
- */
-internal fun readPackageJsonFile(
-    project: Project,
-    rootProperty: DirectoryProperty,
-): ModelPackageJson? {
-  val packageJson = findPackageJsonFile(project, rootProperty)
-  return packageJson?.let { JsonUtils.fromPackageJson(it) }
 }
 
 private const val HERMES_COMPILER_NPM_DIR = "node_modules/hermes-compiler/hermesc/%OS-BIN%/"

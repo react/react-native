@@ -12,6 +12,8 @@ plugins {
 
 tasks.register("build") {
   dependsOn(
+      ":react-native-gradle-plugin-shared:build",
+      ":react-native-library-plugin:build",
       ":react-native-gradle-plugin:build",
       ":settings-plugin:build",
       ":shared-testutil:build",
@@ -21,6 +23,8 @@ tasks.register("build") {
 
 tasks.register("clean") {
   dependsOn(
+      ":react-native-gradle-plugin-shared:clean",
+      ":react-native-library-plugin:clean",
       ":react-native-gradle-plugin:clean",
       ":settings-plugin:clean",
       ":shared-testutil:clean",
@@ -30,6 +34,8 @@ tasks.register("clean") {
 
 tasks.named("ktfmtCheck") {
   dependsOn(
+      ":react-native-gradle-plugin-shared:ktfmtCheck",
+      ":react-native-library-plugin:ktfmtCheck",
       ":react-native-gradle-plugin:ktfmtCheck",
       ":settings-plugin:ktfmtCheck",
       ":shared-testutil:ktfmtCheck",
@@ -39,6 +45,8 @@ tasks.named("ktfmtCheck") {
 
 tasks.named("ktfmtFormat") {
   dependsOn(
+      ":react-native-gradle-plugin-shared:ktfmtFormat",
+      ":react-native-library-plugin:ktfmtFormat",
       ":react-native-gradle-plugin:ktfmtFormat",
       ":settings-plugin:ktfmtFormat",
       ":shared-testutil:ktfmtFormat",

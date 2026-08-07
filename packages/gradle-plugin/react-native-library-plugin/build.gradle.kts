@@ -23,13 +23,9 @@ repositories {
 
 gradlePlugin {
   plugins {
-    create("react") {
-      id = "com.facebook.react"
-      implementationClass = "com.facebook.react.ReactPlugin"
-    }
-    create("reactrootproject") {
-      id = "com.facebook.react.rootproject"
-      implementationClass = "com.facebook.react.ReactRootProjectPlugin"
+    create("reactlibrary") {
+      id = "com.facebook.react.library"
+      implementationClass = "com.facebook.react.ReactLibraryPlugin"
     }
   }
 }
@@ -41,24 +37,15 @@ dependencies {
   implementation(project(":shared"))
 
   implementation(gradleApi())
-
-  // The KGP/AGP version is defined by React Native Gradle plugin.
-  // Therefore we specify an implementation dep rather than a compileOnly.
   implementation(libs.kotlin.gradle.plugin)
   implementation(libs.android.gradle.plugin)
 
-  implementation(libs.gson)
-  implementation(libs.guava)
-  implementation(libs.javapoet)
-
   testImplementation(libs.junit)
   testImplementation(libs.assertj)
+  testImplementation(project(":react-native-gradle-plugin"))
   testImplementation(project(":shared-testutil"))
 }
 
-// We intentionally don't build for Java 17 as users will see a cryptic bytecode version
-// error first. Instead we produce a Java 11-compatible Gradle Plugin, so that AGP can print their
-// nice message showing that JDK 11 (or 17) is required first
 java { targetCompatibility = JavaVersion.VERSION_11 }
 
 kotlin { jvmToolchain(17) }
@@ -66,7 +53,6 @@ kotlin { jvmToolchain(17) }
 tasks.withType<KotlinCompile>().configureEach {
   compilerOptions {
     apiVersion.set(KotlinVersion.KOTLIN_2_0)
-    // See comment above on JDK 11 support
     jvmTarget.set(JvmTarget.JVM_11)
     allWarningsAsErrors.set(
         project.properties["enableWarningsAsErrors"]?.toString()?.toBoolean() ?: false

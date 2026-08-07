@@ -8,19 +8,14 @@
 package com.facebook.react.utils
 
 import com.android.build.api.variant.ApplicationAndroidComponentsExtension
-import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import com.facebook.react.ReactExtension
 import com.facebook.react.utils.ProjectUtils.isEdgeToEdgeEnabled
 import com.facebook.react.utils.ProjectUtils.isHermesEnabled
-import java.io.File
 import java.net.Inet4Address
 import java.net.NetworkInterface
-import javax.xml.parsers.DocumentBuilder
-import javax.xml.parsers.DocumentBuilderFactory
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.plugins.AppliedPlugin
-import org.w3c.dom.Element
 
 @Suppress("UnstableApiUsage")
 internal object AgpConfiguratorUtils {
@@ -75,12 +70,6 @@ internal object AgpConfiguratorUtils {
     project.pluginManager.withPlugin("com.android.library", action)
   }
 
-  fun configureBuildConfigFieldsForLibraries(project: Project) {
-    project.extensions.getByType(LibraryAndroidComponentsExtension::class.java).finalizeDsl { ext ->
-      ext.buildFeatures.buildConfig = true
-    }
-  }
-
   fun configureDevServerLocation(project: Project) {
     val devServerIp = project.properties["reactNativeDevServerIp"]?.toString() ?: getHostIpAddress()
     val devServerPort =
@@ -105,40 +94,9 @@ internal object AgpConfiguratorUtils {
     project.pluginManager.withPlugin("com.android.library", action)
   }
 
-  fun configureNamespaceForLibraries(project: Project) {
-    project.extensions.getByType(LibraryAndroidComponentsExtension::class.java).finalizeDsl { ext ->
-      if (ext.namespace == null) {
-        val manifestFile =
-            project.layout.projectDirectory.file("src/main/AndroidManifest.xml").asFile
-        manifestFile
-            .takeIf { it.exists() }
-            ?.let { file ->
-              getPackageNameFromManifest(file)?.let { packageName ->
-                ext.namespace = packageName
-              }
-            }
-      }
-    }
-  }
 }
 
 const val DEFAULT_DEV_SERVER_PORT = "8081"
-
-fun getPackageNameFromManifest(manifest: File): String? {
-  val factory: DocumentBuilderFactory = DocumentBuilderFactory.newInstance()
-  val builder: DocumentBuilder = factory.newDocumentBuilder()
-
-  try {
-    val xmlDocument = builder.parse(manifest)
-
-    val manifestElement = xmlDocument.getElementsByTagName("manifest").item(0) as? Element
-    val packageName = manifestElement?.getAttribute("package")
-
-    return if (packageName.isNullOrEmpty()) null else packageName
-  } catch (e: Exception) {
-    return null
-  }
-}
 
 internal fun getHostIpAddress(): String =
     NetworkInterface.getNetworkInterfaces()
