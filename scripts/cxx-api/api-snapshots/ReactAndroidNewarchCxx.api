@@ -523,6 +523,7 @@ static constexpr facebook::react::MapBuffer::Key facebook::react::TA_KEY_FONT_SI
 static constexpr facebook::react::MapBuffer::Key facebook::react::TA_KEY_FONT_SIZE_MULTIPLIER;
 static constexpr facebook::react::MapBuffer::Key facebook::react::TA_KEY_FONT_STYLE;
 static constexpr facebook::react::MapBuffer::Key facebook::react::TA_KEY_FONT_VARIANT;
+static constexpr facebook::react::MapBuffer::Key facebook::react::TA_KEY_FONT_VARIATION_SETTINGS;
 static constexpr facebook::react::MapBuffer::Key facebook::react::TA_KEY_FONT_WEIGHT;
 static constexpr facebook::react::MapBuffer::Key facebook::react::TA_KEY_FOREGROUND_COLOR;
 static constexpr facebook::react::MapBuffer::Key facebook::react::TA_KEY_IS_HIGHLIGHTED;
@@ -4829,6 +4830,7 @@ class facebook::react::TextAttributes : public facebook::react::DebugStringConve
   public std::optional<facebook::react::TextDecorationStyle> textDecorationStyle;
   public std::optional<facebook::react::TextTransform> textTransform;
   public std::optional<facebook::react::WritingDirection> baseWritingDirection;
+  public std::optional<std::string> fontVariationSettings;
   public std::string fontFamily;
   public std::vector<facebook::react::TextEffectInfo> textEffects;
   public void apply(facebook::react::TextAttributes textAttributes);

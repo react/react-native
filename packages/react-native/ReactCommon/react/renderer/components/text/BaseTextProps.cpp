@@ -67,6 +67,12 @@ static TextAttributes convertRawProp(
       "fontVariant",
       sourceTextAttributes.fontVariant,
       defaultTextAttributes.fontVariant);
+  textAttributes.fontVariationSettings = convertRawProp(
+      context,
+      rawProps,
+      "fontVariationSettings",
+      sourceTextAttributes.fontVariationSettings,
+      defaultTextAttributes.fontVariationSettings);
   textAttributes.allowFontScaling = convertRawProp(
       context,
       rawProps,
@@ -262,6 +268,12 @@ void BaseTextProps::setProp(
     REBUILD_FIELD_SWITCH_CASE(
         defaults, value, textAttributes, fontVariant, "fontVariant");
     REBUILD_FIELD_SWITCH_CASE(
+        defaults,
+        value,
+        textAttributes,
+        fontVariationSettings,
+        "fontVariationSettings");
+    REBUILD_FIELD_SWITCH_CASE(
         defaults, value, textAttributes, allowFontScaling, "allowFontScaling");
     REBUILD_FIELD_SWITCH_CASE(
         defaults,
@@ -390,6 +402,14 @@ void BaseTextProps::appendTextAttributesProps(
   if (textAttributes.fontVariant != oldProps->textAttributes.fontVariant) {
     result["fontVariant"] = textAttributes.fontVariant.has_value()
         ? toString(textAttributes.fontVariant.value())
+        : folly::dynamic(nullptr);
+  }
+
+  if (textAttributes.fontVariationSettings !=
+      oldProps->textAttributes.fontVariationSettings) {
+    result["fontVariationSettings"] =
+        textAttributes.fontVariationSettings.has_value()
+        ? folly::dynamic(*textAttributes.fontVariationSettings)
         : folly::dynamic(nullptr);
   }
 

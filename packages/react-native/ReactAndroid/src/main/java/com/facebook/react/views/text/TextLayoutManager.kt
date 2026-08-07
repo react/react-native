@@ -313,6 +313,7 @@ internal object TextLayoutManager {
         if (
             textAttributes.fontStyle != ReactConstants.UNSET ||
                 textAttributes.fontWeight != ReactConstants.UNSET ||
+                textAttributes.fontVariationSettings != null ||
                 textAttributes.fontFamily != null
         ) {
           ops.add(
@@ -323,6 +324,7 @@ internal object TextLayoutManager {
                       textAttributes.fontStyle,
                       textAttributes.fontWeight,
                       textAttributes.fontFeatureSettings,
+                      textAttributes.fontVariationSettings,
                       textAttributes.fontFamily,
                       assets,
                       fontWeightAdjustment,
@@ -547,6 +549,7 @@ internal object TextLayoutManager {
         if (
             fragment.props.fontStyle != ReactConstants.UNSET ||
                 fragment.props.fontWeight != ReactConstants.UNSET ||
+                fragment.props.fontVariationSettings != null ||
                 fragment.props.fontFamily != null
         ) {
           spannable.setSpan(
@@ -554,6 +557,7 @@ internal object TextLayoutManager {
                   fragment.props.fontStyle,
                   fragment.props.fontWeight,
                   fragment.props.fontFeatureSettings,
+                  fragment.props.fontVariationSettings,
                   fragment.props.fontFamily,
                   assets,
                   fontWeightAdjustment,
@@ -883,6 +887,7 @@ internal object TextLayoutManager {
     if (
         baseTextAttributes.fontStyle != ReactConstants.UNSET ||
             baseTextAttributes.fontWeight != ReactConstants.UNSET ||
+            baseTextAttributes.fontVariationSettings != null ||
             baseTextAttributes.fontFamily != null
     ) {
       val typeface =
@@ -912,6 +917,8 @@ internal object TextLayoutManager {
         paint.setTypeface(typeface)
       }
     }
+
+    ReactTypefaceUtils.applyFontVariationSettings(paint, baseTextAttributes.fontVariationSettings)
   }
 
   /**

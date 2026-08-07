@@ -48,6 +48,39 @@ TEST(TextLayoutManagerTest, maxFontSizeMultiplierAffectsLayoutCacheHash) {
       textAttributesHashLayoutWise(lhs), textAttributesHashLayoutWise(rhs));
 }
 
+TEST(TextLayoutManagerTest, fontVariationSettingsAffectLayoutCacheEquality) {
+  TextAttributes lhs;
+  TextAttributes rhs;
+
+  lhs.fontVariationSettings = "'wght' 400";
+  rhs.fontVariationSettings = "'wght' 700";
+
+  EXPECT_FALSE(areTextAttributesEquivalentLayoutWise(lhs, rhs));
+}
+
+TEST(TextLayoutManagerTest, fontVariationSettingsAffectLayoutCacheHash) {
+  TextAttributes lhs;
+  TextAttributes rhs;
+
+  lhs.fontVariationSettings = "'wght' 400";
+  rhs.fontVariationSettings = "'wght' 700";
+
+  EXPECT_NE(
+      textAttributesHashLayoutWise(lhs), textAttributesHashLayoutWise(rhs));
+}
+
+TEST(TextLayoutManagerTest, emptyFontVariationSettingsClearInheritedSettings) {
+  TextAttributes parent;
+  TextAttributes child;
+
+  parent.fontVariationSettings = "'wght' 700";
+  child.fontVariationSettings = "";
+  parent.apply(child);
+
+  EXPECT_TRUE(parent.fontVariationSettings.has_value());
+  EXPECT_TRUE(parent.fontVariationSettings->empty());
+}
+
 // Measurements are rounded to the pixel grid, so a measurement cached at one
 // pixel scale factor must not satisfy a lookup at another. Keys that differ
 // only by pointScaleFactor must compare unequal.

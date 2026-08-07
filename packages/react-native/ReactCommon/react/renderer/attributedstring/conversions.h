@@ -1142,6 +1142,7 @@ constexpr static MapBuffer::Key TA_KEY_TEXT_TRANSFORM = 27;
 constexpr static MapBuffer::Key TA_KEY_ALIGNMENT_VERTICAL = 28;
 constexpr static MapBuffer::Key TA_KEY_MAX_FONT_SIZE_MULTIPLIER = 29;
 constexpr static MapBuffer::Key TA_KEY_TEXT_EFFECTS = 30;
+constexpr static MapBuffer::Key TA_KEY_FONT_VARIATION_SETTINGS = 31;
 
 // Keys within each text effect entry MapBuffer
 constexpr static MapBuffer::Key TE_KEY_NAME = 0;
@@ -1289,6 +1290,9 @@ inline MapBuffer toMapBuffer(const TextAttributes &textAttributes)
   if (textAttributes.fontVariant.has_value()) {
     auto fontVariantMap = toMapBuffer(*textAttributes.fontVariant);
     builder.putMapBuffer(TA_KEY_FONT_VARIANT, fontVariantMap);
+  }
+  if (textAttributes.fontVariationSettings.has_value()) {
+    builder.putString(TA_KEY_FONT_VARIATION_SETTINGS, *textAttributes.fontVariationSettings);
   }
   if (textAttributes.allowFontScaling.has_value()) {
     builder.putBool(TA_KEY_ALLOW_FONT_SCALING, *textAttributes.allowFontScaling);

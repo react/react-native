@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<543b6175d2ce5e4ec68f1625f0c04095>>
+ * @generated SignedSource<<1ea0f64fa8acd99b50c7ef54da014b3e>>
  */
 
 /**
@@ -321,7 +321,7 @@ constructor(private val fpsListener: FpsListener? = null) :
     val child =
         scrollView.getChildAt(0)
             ?: throw RetryableMountingLayerException(
-                "scrollToEnd called on ScrollView without child"
+                "scrollToEnd called on ScrollView without child",
             )
 
     // ScrollView always has one child - the scrollable area
@@ -367,7 +367,7 @@ constructor(private val fpsListener: FpsListener? = null) :
     if (view.fadingEdgeLengthStart > 0 || view.fadingEdgeLengthEnd > 0) {
       view.isVerticalFadingEdgeEnabled = true
       view.setFadingEdgeLength(
-          Math.round(Math.max(view.fadingEdgeLengthStart, view.fadingEdgeLengthEnd).dpToPx())
+          Math.round(Math.max(view.fadingEdgeLengthStart, view.fadingEdgeLengthEnd).dpToPx()),
       )
     } else {
       view.isVerticalFadingEdgeEnabled = false
@@ -384,7 +384,7 @@ constructor(private val fpsListener: FpsListener? = null) :
   public fun setMaintainVisibleContentPosition(view: ReactNestedScrollView, value: ReadableMap?) {
     if (value != null) {
       view.setMaintainVisibleContentPosition(
-          MaintainVisibleScrollPositionHelper.Config.fromReadableMap(value)
+          MaintainVisibleScrollPositionHelper.Config.fromReadableMap(value),
       )
     } else {
       view.setMaintainVisibleContentPosition(null)

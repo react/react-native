@@ -4543,6 +4543,7 @@ public final class com/facebook/react/uimanager/ViewProps {
 	public static final field FONT_SIZE Ljava/lang/String;
 	public static final field FONT_STYLE Ljava/lang/String;
 	public static final field FONT_VARIANT Ljava/lang/String;
+	public static final field FONT_VARIATION_SETTINGS Ljava/lang/String;
 	public static final field FONT_WEIGHT Ljava/lang/String;
 	public static final field FOREGROUND_COLOR Ljava/lang/String;
 	public static final field GAP Ljava/lang/String;
@@ -6140,6 +6141,7 @@ public final class com/facebook/react/views/text/TextAttributeProps {
 	public static final field TA_KEY_FONT_SIZE_MULTIPLIER I
 	public static final field TA_KEY_FONT_STYLE I
 	public static final field TA_KEY_FONT_VARIANT I
+	public static final field TA_KEY_FONT_VARIATION_SETTINGS I
 	public static final field TA_KEY_FONT_WEIGHT I
 	public static final field TA_KEY_FOREGROUND_COLOR I
 	public static final field TA_KEY_IS_HIGHLIGHTED I
@@ -6170,6 +6172,7 @@ public final class com/facebook/react/views/text/TextAttributeProps {
 	public final fun getFontFeatureSettings ()Ljava/lang/String;
 	public final fun getFontSize ()I
 	public final fun getFontStyle ()I
+	public final fun getFontVariationSettings ()Ljava/lang/String;
 	public final fun getFontWeight ()I
 	public final fun getLayoutDirection ()I
 	public final fun getLetterSpacing ()F
