@@ -427,10 +427,13 @@ internal constructor(
     val parentView = parentViewState.view
     checkNotNull(parentView) { "Unable to find parentView for tag $parentTag" }
     if (parentView !is ViewGroup) {
-      val message =
-          "Unable to remove a view from a a non-ViewGroup ${parentView.javaClass.simpleName} when removing [$tag] from parent [$parentTag]"
-      FLog.e(TAG, message)
-      throw IllegalStateException(message)
+      ReactSoftExceptionLogger.logSoftException(
+          TAG,
+          ReactNoCrashSoftException(
+              "Unable to remove a view from a non-ViewGroup ${parentView.javaClass.simpleName} when removing [$tag] from parent [$parentTag]"
+          ),
+      )
+      return
     }
 
     if (SHOW_CHANGED_VIEW_HIERARCHIES) {
