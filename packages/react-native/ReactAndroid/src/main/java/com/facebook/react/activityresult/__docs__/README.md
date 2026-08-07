@@ -11,10 +11,24 @@ library-shipped transparent Activities.
 Before this existed, modules had to use `ActivityEventListener` with
 self-assigned int request codes: codes live in a global namespace with no
 coordination between libraries, results are broadcast so every listener filters,
-and intents are built and parsed by hand. On Android 14+ some contracts (e.g.
-Health Connect's permission contract) produce a synthetic intent that only an
-`ActivityResultRegistry` can service, so the classic `startActivityForResult`
-path fails with `ActivityNotFoundException` outright.
+and intents are built and parsed by hand. And going through AndroidX directly
+instead — calling `registerForActivityResult` on `getCurrentActivity()` — is a
+dead end: the lifecycle-observing overload crashes with
+
+```
+LifecycleOwner com.xxx.MainActivity@c3ccf41 is attempting to register while
+current state is RESUMED. LifecycleOwners must call register before they are
+STARTED.
+```
+
+because AndroidX only allows that overload before the Activity is `STARTED`,
+and native modules are created lazily, long after that. This is exactly the
+wall hit in
+[facebook/react-native#33639](https://github.com/facebook/react-native/issues/33639)
+(a Health Connect module, whose permission contract has no
+`startActivityForResult` equivalent); the only workaround offered there was to
+move the registration into the app's own `MainActivity`, which a library
+cannot ask of every consumer.
 
 ## 🚀 Usage
 
