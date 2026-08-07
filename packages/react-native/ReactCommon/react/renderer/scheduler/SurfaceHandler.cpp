@@ -64,8 +64,8 @@ void SurfaceHandler::start() const noexcept {
   if (!parameters.moduleName.empty()) {
     link_.uiManager->startSurface(
         std::move(shadowTree),
-        parameters.moduleName,
-        parameters.props,
+        std::move(parameters.moduleName),
+        std::move(parameters.props),
         parameters_.displayMode);
   } else {
     link_.uiManager->startEmptySurface(std::move(shadowTree));
@@ -118,8 +118,8 @@ void SurfaceHandler::setDisplayMode(DisplayMode displayMode) const noexcept {
 
     link_.uiManager->setSurfaceProps(
         parameters.surfaceId,
-        parameters.moduleName,
-        parameters.props,
+        std::move(parameters.moduleName),
+        std::move(parameters.props),
         parameters.displayMode);
 
     applyDisplayMode(displayMode);
@@ -164,8 +164,8 @@ void SurfaceHandler::setProps(const folly::dynamic& props) const noexcept {
     if (link_.status == Status::Running) {
       link_.uiManager->setSurfaceProps(
           parameters.surfaceId,
-          parameters.moduleName,
-          parameters.props,
+          std::move(parameters.moduleName),
+          std::move(parameters.props),
           parameters.displayMode);
     }
   }
