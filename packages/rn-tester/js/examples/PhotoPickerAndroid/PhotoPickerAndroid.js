@@ -113,6 +113,32 @@ const PhotoPickerMultiple = (): React.Node => {
   );
 };
 
+/**
+ * Regression check for multi-Activity navigation: the launchers above were
+ * registered against the ReactContext and first bound to the Activity that
+ * started the app. Opening the second Activity (which resumes while the first
+ * one is still alive) must rebind them to the new Activity's registry — the
+ * pickers on the newly opened screen should open from and deliver their
+ * results to that screen. Going back and picking again checks rebinding in
+ * the other direction.
+ */
+const MultiActivity = (): React.Node => {
+  return (
+    <>
+      <RNTesterText style={styles.uriText}>
+        Opens this same example in a second Activity. Pick an image there — the
+        result must arrive on that screen. Then go back and pick here again.
+      </RNTesterText>
+      <View style={styles.row}>
+        <PickerButton
+          label="Open in a second Activity"
+          onPress={() => getNativeSampleTurboModule().startSecondActivity?.()}
+        />
+      </View>
+    </>
+  );
+};
+
 function PickerButton(props: {label: string, onPress: () => unknown}) {
   return (
     <TouchableOpacity onPress={props.onPress} style={styles.buttonContainer}>
@@ -134,6 +160,9 @@ class PhotoPickerAndroidExample extends React.Component<{}, {}> {
             </RNTesterBlock>
             <RNTesterBlock title="Multi select (JS-controlled limit)">
               <PhotoPickerMultiple />
+            </RNTesterBlock>
+            <RNTesterBlock title="Multi-Activity navigation">
+              <MultiActivity />
             </RNTesterBlock>
           </>
         )}

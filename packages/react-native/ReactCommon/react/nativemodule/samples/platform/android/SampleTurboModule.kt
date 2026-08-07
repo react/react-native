@@ -381,6 +381,30 @@ public class SampleTurboModule(private val context: ReactApplicationContext) :
         PickUpToMedia.Request(limit, PickVisualMediaRequest(visualMediaType(mimeType))))
   }
 
+  /**
+   * Starts a second, distinct Activity in the same task to exercise multi-Activity navigation.
+   * With two ReactActivities alive, the new one resumes *before* the old one is destroyed, and the
+   * old one's onHostDestroy is dropped entirely -- the exact ordering that forces
+   * [com.facebook.react.activityresult.ReactActivityResultCallerImpl] to rebind launchers to the
+   * current Activity's registry instead of staying attached to the previous (still-alive or dead)
+   * one. Launched by class name so this sample module needs no compile-time dependency on the app.
+   */
+  @DoNotStrip
+  @Suppress("unused")
+  override fun startSecondActivity() {
+    val activity = context.currentActivity
+    if (activity == null) {
+      Toast.makeText(context, "No current Activity to launch from", Toast.LENGTH_LONG).show()
+      return
+    }
+    // The data URI deep-links the new surface straight to the picker example via Linking; the
+    // explicit class name keeps this an in-app navigation regardless of intent filters.
+    val intent =
+        Intent(Intent.ACTION_VIEW, Uri.parse("rntester://example/PhotoPickerAndroid"))
+            .setClassName(activity, "${activity.packageName}.RNTesterSecondActivity")
+    activity.startActivity(intent)
+  }
+
   private fun log(method: String, input: Any?, output: Any?) {
     toast?.cancel()
     val message = StringBuilder("Method :")

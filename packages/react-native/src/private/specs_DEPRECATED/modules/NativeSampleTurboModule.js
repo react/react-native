@@ -71,6 +71,7 @@ export interface Spec extends TurboModule {
     mimeType: ?string,
     maxItems: number,
   ) => Promise<Array<string>>;
+  readonly startSecondActivity?: () => void;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>(
