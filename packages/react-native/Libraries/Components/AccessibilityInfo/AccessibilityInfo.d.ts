@@ -124,6 +124,18 @@ export interface AccessibilityInfoStatic {
   isAccessibilityServiceEnabled(): Promise<boolean>;
 
   /**
+   * Query the enabled accessibility services.
+   *
+   * Returns a promise which resolves to an array of enabled accessibility
+   * service IDs (from `AccessibilityServiceInfo.getId()`).
+   *
+   * @platform android
+   */
+  getEnabledAccessibilityServices(
+    feedbackTypeFlags?: number,
+  ): Promise<Array<string>>;
+
+  /**
    * Add an event handler. Supported events:
    * - announcementFinished: iOS-only event. Fires when the screen reader has finished making an announcement.
    *                         The argument to the event handler is a dictionary with these keys:

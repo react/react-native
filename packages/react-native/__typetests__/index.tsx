@@ -1487,6 +1487,11 @@ AccessibilityInfo.getRecommendedTimeoutMillis(5000).then(timeoutMiles =>
     `AccessibilityInfo.getRecommendedTimeoutMillis => ${timeoutMiles}`,
   ),
 );
+AccessibilityInfo.getEnabledAccessibilityServices(1).then(services =>
+  console.log(
+    `AccessibilityInfo.getEnabledAccessibilityServices => ${services}`,
+  ),
+);
 
 AccessibilityInfo.addEventListener('accessibilityServiceChanged', isEnabled =>
   console.log(`AccessibilityInfo.accessibilityServiceChanged => ${isEnabled}`),

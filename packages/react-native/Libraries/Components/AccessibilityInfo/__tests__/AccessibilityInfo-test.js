@@ -104,6 +104,10 @@ let mockNativeAccessibilityManagerIOS: {
 };
 
 const ANDROID_RECOMMENDED_TIMEOUT = 6000;
+const ANDROID_ENABLED_SERVICES = [
+  'com.example.AccessibilityService1',
+  'com.example.AccessibilityService2',
+];
 const mockIsHighTextContrastEnabled = jest.fn(onSuccess => onSuccess(true));
 const mockIsGrayscaleEnabled = jest.fn(onSuccess => onSuccess(true));
 const mockIsInvertColorsEnabled = jest.fn(onSuccess => onSuccess(true));
@@ -112,6 +116,9 @@ const mockIsTouchExplorationEnabled = jest.fn(onSuccess => onSuccess(true));
 const mockIsAccessibilityServiceEnabled = jest.fn(onSuccess => onSuccess(true));
 const mockGetRecommendedTimeoutMillis = jest.fn((originalTimeout, onSuccess) =>
   onSuccess(ANDROID_RECOMMENDED_TIMEOUT),
+);
+const mockGetEnabledAccessibilityServices = jest.fn(
+  (feedbackTypeFlags, onSuccess) => onSuccess(ANDROID_ENABLED_SERVICES),
 );
 let mockNativeAccessibilityInfoAndroid: {
   isHighTextContrastEnabled: JestMockFn<
@@ -142,6 +149,13 @@ let mockNativeAccessibilityInfoAndroid: {
     [originalTimeout: number, onSuccess: (recommendedTimeout: number) => void],
     void,
   > | null,
+  getEnabledAccessibilityServices: JestMockFn<
+    [
+      feedbackTypeFlags: number,
+      onSuccess: (enabledServices: Array<string>) => void,
+    ],
+    void,
+  > | null,
 } = {
   isHighTextContrastEnabled: mockIsHighTextContrastEnabled,
   isGrayscaleEnabled: mockIsGrayscaleEnabled,
@@ -150,6 +164,7 @@ let mockNativeAccessibilityInfoAndroid: {
   isTouchExplorationEnabled: mockIsTouchExplorationEnabled,
   isAccessibilityServiceEnabled: mockIsAccessibilityServiceEnabled,
   getRecommendedTimeoutMillis: mockGetRecommendedTimeoutMillis,
+  getEnabledAccessibilityServices: mockGetEnabledAccessibilityServices,
 };
 
 jest.mock('../NativeAccessibilityManager', () => ({
@@ -789,6 +804,69 @@ describe('AccessibilityInfo', () => {
     });
   });
 
+  describe('getEnabledAccessibilityServices', () => {
+    describe('Android', () => {
+      it('should return the enabled accessibility service IDs', async () => {
+        /* $FlowFixMe[incompatible-type] */
+        Platform.OS = 'android';
+
+        const enabledServices =
+          await AccessibilityInfo.getEnabledAccessibilityServices();
+
+        expect(mockGetEnabledAccessibilityServices).toHaveBeenCalledWith(
+          -1,
+          expect.any(Function),
+        );
+        expect(enabledServices).toEqual(ANDROID_ENABLED_SERVICES);
+      });
+
+      it('should pass the provided feedbackTypeFlags to native', async () => {
+        /* $FlowFixMe[incompatible-type] */
+        Platform.OS = 'android';
+
+        await AccessibilityInfo.getEnabledAccessibilityServices(1);
+
+        expect(mockGetEnabledAccessibilityServices).toHaveBeenCalledWith(
+          1,
+          expect.any(Function),
+        );
+      });
+
+      it('should throw error if getEnabledAccessibilityServices is not available', async () => {
+        /* $FlowFixMe[incompatible-type] */
+        Platform.OS = 'android';
+
+        mockNativeAccessibilityInfoAndroid.getEnabledAccessibilityServices =
+          null;
+
+        const result: unknown =
+          await AccessibilityInfo.getEnabledAccessibilityServices().catch(
+            e => e,
+          );
+
+        invariant(
+          result instanceof Error,
+          'Expected getEnabledAccessibilityServices to reject',
+        );
+        expect(result.message).toEqual(
+          'NativeAccessibilityInfoAndroid.getEnabledAccessibilityServices is not available',
+        );
+      });
+    });
+
+    describe('iOS', () => {
+      it('should return an empty array', async () => {
+        /* $FlowFixMe[incompatible-type] */
+        Platform.OS = 'ios';
+
+        const enabledServices =
+          await AccessibilityInfo.getEnabledAccessibilityServices();
+
+        expect(enabledServices).toEqual([]);
+      });
+    });
+  });
+
   afterEach(() => {
     mockNativeAccessibilityManagerIOS = {
       getCurrentPrefersCrossFadeTransitionsState:
@@ -812,6 +890,7 @@ describe('AccessibilityInfo', () => {
       isTouchExplorationEnabled: mockIsTouchExplorationEnabled,
       isAccessibilityServiceEnabled: mockIsAccessibilityServiceEnabled,
       getRecommendedTimeoutMillis: mockGetRecommendedTimeoutMillis,
+      getEnabledAccessibilityServices: mockGetEnabledAccessibilityServices,
     };
     jest.requireMock('../NativeAccessibilityInfo').default =
       mockNativeAccessibilityInfoAndroid;
