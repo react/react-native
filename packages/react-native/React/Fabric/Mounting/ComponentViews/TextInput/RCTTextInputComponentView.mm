@@ -258,10 +258,18 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 
   if (newTextInputProps.traits.keyboardType != oldTextInputProps.traits.keyboardType) {
     _backedTextInputView.keyboardType = RCTUIKeyboardTypeFromKeyboardType(newTextInputProps.traits.keyboardType);
+    // Without the call to reloadInputViews, the keyboard will not change until the textInput field (the first
+    // responder) loses and regains focus. Matches the legacy-architecture behavior in RCTBaseTextInputView.
+    if (_backedTextInputView.isFirstResponder) {
+      [_backedTextInputView reloadInputViews];
+    }
   }
 
   if (newTextInputProps.traits.returnKeyType != oldTextInputProps.traits.returnKeyType) {
     _backedTextInputView.returnKeyType = RCTUIReturnKeyTypeFromReturnKeyType(newTextInputProps.traits.returnKeyType);
+    if (_backedTextInputView.isFirstResponder) {
+      [_backedTextInputView reloadInputViews];
+    }
   }
 
   if (newTextInputProps.traits.textContentType != oldTextInputProps.traits.textContentType) {
