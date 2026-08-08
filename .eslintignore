@@ -17,4 +17,6 @@ private/react-native-codegen-typescript-test/lib/**/*
 **/Pods/*
 **/*.macos.js
 **/*.windows.js
+# Internal-only variants (not synced to GitHub); owned by the central lint engine.
+**/*.fb.*
 **/__fixtures__/**

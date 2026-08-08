@@ -10,3 +10,7 @@ vendor
 packages/**/types_generated/
 
 packages/react-native-codegen/e2e/__test_fixtures__/modules/NativeEnumTurboModule.js
+
+# Internal-only *.fb.* variants are not synced to GitHub; they stay owned by the
+# central fbsource lint engine, so exclude them here to avoid dual ownership.
+**/*.fb.*

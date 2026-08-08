@@ -44,9 +44,10 @@ public constructor(
     public fun builder(): Builder = Builder()
 
     @JvmStatic
-    public fun createDefault(): ReactQueueConfigurationSpec = ReactQueueConfigurationSpec(
-        newBackgroundThreadSpec("native_modules"),
-        newBackgroundThreadSpec("js"),
-    )
+    public fun createDefault(): ReactQueueConfigurationSpec =
+        ReactQueueConfigurationSpec(
+            newBackgroundThreadSpec("native_modules"),
+            newBackgroundThreadSpec("js"),
+        )
   }
 }

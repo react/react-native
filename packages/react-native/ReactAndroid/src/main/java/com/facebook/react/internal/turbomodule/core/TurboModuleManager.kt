@@ -50,11 +50,12 @@ public class TurboModuleManager(
 
   @Suppress("NoHungarianNotation")
   @DoNotStrip
-  private val mHybridData: HybridData = initHybrid(
-      jsCallInvokerHolder as CallInvokerHolderImpl,
-      nativeMethodCallInvokerHolder as NativeMethodCallInvokerHolderImpl,
-      delegate,
-  )
+  private val mHybridData: HybridData =
+      initHybrid(
+          jsCallInvokerHolder as CallInvokerHolderImpl,
+          nativeMethodCallInvokerHolder as NativeMethodCallInvokerHolderImpl,
+          delegate,
+      )
 
   init {
 

@@ -325,11 +325,12 @@ internal class IntervalTree(private val horizontal: Boolean) : MutableCollection
               node.left == null -> node.right
               node.right == null -> node.left
               else -> {
-                val successor = findMin(
-                    requireNotNull(node.right) {
-                      "[IntervalTree] node.right must not be null when finding node's successor"
-                    },
-                )
+                val successor =
+                    findMin(
+                        requireNotNull(node.right) {
+                          "[IntervalTree] node.right must not be null when finding node's successor"
+                        },
+                    )
                 node.virtualView = successor.virtualView
                 node.interval = successor.interval
                 node.right = delete(node.right, successor)

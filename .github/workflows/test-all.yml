@@ -507,13 +507,36 @@ jobs:
         run: yarn run lint-markdown
       - name: ESLint
         shell: bash
-        run: ./.github/workflow-scripts/exec_swallow_error.sh yarn lint --format junit -o ./reports/junit/eslint/results.xml
+        run: yarn lint
       - name: Flow
         shell: bash
         run: yarn flow-check
       - name: TypeScript (legacy deep imports / manual types)
         shell: bash
         run: yarn test-typescript-legacy
+      - name: Lint runner self-test (file enumeration)
+        shell: bash
+        run: ./scripts/lint/selftest.sh
+      - name: clang-format (C/C++/Obj-C)
+        shell: bash
+        run: yarn run clang-format-check
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'zulu'
+      - name: ktfmt (Kotlin)
+        shell: bash
+        run: yarn run lint-kotlin-check
+      - name: Verify generated Kotlin is in sync with its generator
+        shell: bash
+        run: node packages/react-native/ReactAndroid/src/main/java/com/facebook/react/views/scroll/generate-nested-scroll-view.js --verify
+      - name: google-java-format (Java)
+        shell: bash
+        run: yarn run lint-java-check
+      - name: ufmt (Python)
+        shell: bash
+        run: yarn run lint-python-check
 
   test_js:
     runs-on: ubuntu-latest

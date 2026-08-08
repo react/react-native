@@ -1,0 +1,7 @@
+# Python formatting config for the repository's own formatter (`yarn lint-python`,
+# scripts/lint/pyfmt.sh), which runs ufmt = ruff-api formatter + usort import
+# sorting. This mirrors the fbsource `[xplat]` pyfmt config so internal and GitHub
+# produce byte-identical Python formatting under the GitHub-First lint migration.
+[tool.ufmt]
+formatter = "ruff-api"
+sorter = "usort"

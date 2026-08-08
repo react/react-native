@@ -333,9 +333,10 @@ internal object ViewManagersPropertyCache {
     // This is to include all the setters from parent classes. Once calculated the result will be
     // stored in CLASS_PROPS_CACHE so that we only scan for @ReactProp annotations once per class.
     @Suppress("UNCHECKED_CAST")
-    val props: MutableMap<String, PropSetter> = HashMap(
-        getNativePropSettersForViewManagerClass(cls.superclass as Class<out ViewManager<*, *>>),
-    )
+    val props: MutableMap<String, PropSetter> =
+        HashMap(
+            getNativePropSettersForViewManagerClass(cls.superclass as Class<out ViewManager<*, *>>),
+        )
     extractPropSettersFromViewManagerClassDefinition(cls, props)
     CLASS_PROPS_CACHE[cls] = props
     return props
