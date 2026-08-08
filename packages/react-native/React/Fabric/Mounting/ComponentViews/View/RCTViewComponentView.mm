@@ -255,15 +255,16 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
         childComponentView,
         @(index),
         @([childComponentView.superview tag]));
+    NSArray<UIView *> *containerSubviews = self.currentContainerView.subviews;
+    BOOL isIndexInBounds = index >= 0 && (NSUInteger)index < containerSubviews.count;
     RCTAssert(
-        (self.currentContainerView.subviews.count > index) &&
-            [self.currentContainerView.subviews objectAtIndex:index] == childComponentView,
+        isIndexInBounds && [containerSubviews objectAtIndex:index] == childComponentView,
         @"Attempt to unmount a view which has a different index. (parent: %@, child: %@, index: %@, actual index: %@, tag at index: %@)",
         self,
         childComponentView,
         @(index),
-        @([self.currentContainerView.subviews indexOfObject:childComponentView]),
-        @([[self.currentContainerView.subviews objectAtIndex:index] tag]));
+        @([containerSubviews indexOfObject:childComponentView]),
+        isIndexInBounds ? @([[containerSubviews objectAtIndex:index] tag]) : @"out of bounds");
   }
 
   [childComponentView removeFromSuperview];
