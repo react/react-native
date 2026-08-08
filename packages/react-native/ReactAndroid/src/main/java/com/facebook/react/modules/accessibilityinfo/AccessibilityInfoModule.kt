@@ -7,6 +7,7 @@
 
 package com.facebook.react.modules.accessibilityinfo
 
+import android.accessibilityservice.AccessibilityServiceInfo
 import android.content.ContentResolver
 import android.content.Context
 import android.database.ContentObserver
@@ -20,6 +21,7 @@ import com.facebook.react.bridge.Callback
 import com.facebook.react.bridge.LifecycleEventListener
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.UiThreadUtil
+import com.facebook.react.bridge.WritableNativeArray
 import com.facebook.react.module.annotations.ReactModule
 
 /**
@@ -176,6 +178,20 @@ internal class AccessibilityInfoModule(context: ReactApplicationContext) :
 
   override fun isAccessibilityServiceEnabled(successCallback: Callback) {
     successCallback.invoke(accessibilityServiceEnabled)
+  }
+
+  override fun getEnabledAccessibilityServices(
+      feedbackTypeFlags: Double,
+      successCallback: Callback,
+  ) {
+    val enabledServices =
+        accessibilityManager?.getEnabledAccessibilityServiceList(feedbackTypeFlags.toInt())
+            ?: emptyList<AccessibilityServiceInfo>()
+    val serviceIds = WritableNativeArray()
+    for (service in enabledServices) {
+      service.id?.let { serviceIds.pushString(it) }
+    }
+    successCallback.invoke(serviceIds)
   }
 
   private fun updateAndSendReduceMotionChangeEvent() {

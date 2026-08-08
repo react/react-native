@@ -34,6 +34,10 @@ export interface Spec extends TurboModule {
     mSec: number,
     onSuccess: (recommendedTimeoutMillis: number) => void,
   ) => void;
+  readonly getEnabledAccessibilityServices?: (
+    feedbackTypeFlags: number,
+    onSuccess: (enabledServices: Array<string>) => void,
+  ) => void;
   readonly isGrayscaleEnabled?: (
     onSuccess: (isGrayscaleEnabled: boolean) => void,
   ) => void;

@@ -373,6 +373,40 @@ const AccessibilityInfo = {
   },
 
   /**
+   * Query the enabled accessibility services.
+   *
+   * Returns a promise which resolves to an array of enabled accessibility
+   * service IDs (from `AccessibilityServiceInfo.getId()`).
+   *
+   * @platform android
+   */
+  getEnabledAccessibilityServices(
+    feedbackTypeFlags: number = -1,
+  ): Promise<Array<string>> {
+    if (Platform.OS === 'android') {
+      return new Promise((resolve, reject) => {
+        if (
+          NativeAccessibilityInfoAndroid != null &&
+          NativeAccessibilityInfoAndroid.getEnabledAccessibilityServices != null
+        ) {
+          NativeAccessibilityInfoAndroid.getEnabledAccessibilityServices(
+            feedbackTypeFlags,
+            resolve,
+          );
+        } else {
+          reject(
+            new Error(
+              'NativeAccessibilityInfoAndroid.getEnabledAccessibilityServices is not available',
+            ),
+          );
+        }
+      });
+    } else {
+      return Promise.resolve([]);
+    }
+  },
+
+  /**
    * Add an event handler. Supported events:
    *
    * - `reduceMotionChanged`: Fires when the state of the reduce motion toggle changes.
