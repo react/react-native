@@ -11,7 +11,7 @@
 package com.facebook.react.modules.network
 
 import okhttp3.MediaType
-import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import okio.Buffer
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
@@ -24,7 +24,7 @@ class ProgressRequestBodyTest {
     val progressUpdates = mutableListOf<ProgressUpdate>()
     val requestBody =
         ProgressRequestBody(
-            RequestBody.create(checkNotNull(MediaType.parse("application/octet-stream")), content),
+            content.toRequestBody(checkNotNull(MediaType.parse("application/octet-stream"))),
             ProgressListener { bytesWritten, contentLength, done ->
               progressUpdates.add(ProgressUpdate(bytesWritten, contentLength, done))
             },
