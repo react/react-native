@@ -59,7 +59,7 @@ internal class ProgressRequestBody(
 
           @Throws(IOException::class)
           override fun write(data: ByteArray, offset: Int, byteCount: Int) {
-            super.write(data, offset, byteCount)
+            out.write(data, offset, byteCount)
             count += byteCount.toLong()
             sendProgressUpdate()
           }
