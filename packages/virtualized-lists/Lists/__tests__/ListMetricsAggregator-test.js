@@ -986,6 +986,43 @@ describe('ListMetricsAggregator', () => {
     expect(listMetrics.getContentLength()).toBe(25);
   });
 
+  it('invalidates content length when list orientation changes', () => {
+    const listMetrics = new ListMetricsAggregator();
+    const verticalOrientation = {horizontal: false, rtl: false};
+    const horizontalOrientation = {horizontal: true, rtl: false};
+    const horizontalRtlOrientation = {horizontal: true, rtl: true};
+    const cellLayout = {height: 50, width: 100, x: 0, y: 0};
+
+    listMetrics.notifyListContentLayout({
+      layout: {height: 800, width: 400},
+      orientation: verticalOrientation,
+    });
+    expect(listMetrics.hasContentLength()).toBe(true);
+
+    listMetrics.notifyCellLayout({
+      cellIndex: 0,
+      cellKey: '0',
+      orientation: horizontalOrientation,
+      layout: cellLayout,
+    });
+    expect(listMetrics.hasContentLength()).toBe(false);
+
+    expect(() =>
+      listMetrics.notifyCellLayout({
+        cellIndex: 0,
+        cellKey: '0',
+        orientation: horizontalRtlOrientation,
+        layout: cellLayout,
+      }),
+    ).toThrow();
+
+    listMetrics.notifyListContentLayout({
+      layout: {height: 50, width: 500},
+      orientation: horizontalRtlOrientation,
+    });
+    expect(listMetrics.getContentLength()).toBe(500);
+  });
+
   it('requires contentLength to resolve RTL metrics', () => {
     const listMetrics = new ListMetricsAggregator();
     const orientation = {horizontal: true, rtl: true};
