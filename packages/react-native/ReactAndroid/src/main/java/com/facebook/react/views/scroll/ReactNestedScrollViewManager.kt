@@ -30,7 +30,6 @@ import com.facebook.react.uimanager.BackgroundStyleApplicator.setBorderRadius
 import com.facebook.react.uimanager.BackgroundStyleApplicator.setBorderStyle
 import com.facebook.react.uimanager.BackgroundStyleApplicator.setBorderWidth
 import com.facebook.react.uimanager.LengthPercentage
-import com.facebook.react.uimanager.LengthPercentageType
 import com.facebook.react.uimanager.PixelUtil.dpToPx
 import com.facebook.react.uimanager.PixelUtil.getDisplayMetricDensity
 import com.facebook.react.uimanager.PointerEvents.Companion.parsePointerEvents
@@ -255,14 +254,11 @@ constructor(private val fpsListener: FpsListener? = null) :
               ViewProps.BORDER_BOTTOM_RIGHT_RADIUS,
               ViewProps.BORDER_BOTTOM_LEFT_RADIUS,
           ],
-      defaultFloat = Float.NaN,
   )
-  public fun setBorderRadius(view: ReactNestedScrollView?, index: Int, borderRadius: Float) {
+  public fun setBorderRadius(view: ReactNestedScrollView?, index: Int, rawBorderRadius: Dynamic) {
     if (view != null) {
-      val radius =
-          if (borderRadius.isNaN()) null
-          else LengthPercentage(borderRadius, LengthPercentageType.POINT)
-      setBorderRadius(view, BorderRadiusProp.entries[index], radius)
+      val borderRadius = LengthPercentage.setFromDynamic(rawBorderRadius)
+      setBorderRadius(view, BorderRadiusProp.entries[index], borderRadius)
     }
   }
 

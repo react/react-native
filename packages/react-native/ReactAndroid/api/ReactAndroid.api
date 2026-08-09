@@ -5615,6 +5615,7 @@ public class com/facebook/react/views/scroll/ReactHorizontalScrollViewManager : 
 	public synthetic fun scrollToEnd (Ljava/lang/Object;Lcom/facebook/react/views/scroll/ReactScrollViewCommandHelper$ScrollToEndCommandData;)V
 	public final fun setBorderColor (Lcom/facebook/react/views/scroll/ReactHorizontalScrollView;ILjava/lang/Integer;)V
 	public final fun setBorderRadius (Lcom/facebook/react/views/scroll/ReactHorizontalScrollView;IF)V
+	public final fun setBorderRadius (Lcom/facebook/react/views/scroll/ReactHorizontalScrollView;ILcom/facebook/react/bridge/Dynamic;)V
 	public final fun setBorderStyle (Lcom/facebook/react/views/scroll/ReactHorizontalScrollView;Ljava/lang/String;)V
 	public final fun setBorderWidth (Lcom/facebook/react/views/scroll/ReactHorizontalScrollView;IF)V
 	public final fun setBottomFillColor (Lcom/facebook/react/views/scroll/ReactHorizontalScrollView;I)V
@@ -5910,6 +5911,7 @@ public class com/facebook/react/views/scroll/ReactScrollViewManager : com/facebo
 	public synthetic fun scrollToEnd (Ljava/lang/Object;Lcom/facebook/react/views/scroll/ReactScrollViewCommandHelper$ScrollToEndCommandData;)V
 	public final fun setBorderColor (Lcom/facebook/react/views/scroll/ReactScrollView;ILjava/lang/Integer;)V
 	public final fun setBorderRadius (Lcom/facebook/react/views/scroll/ReactScrollView;IF)V
+	public final fun setBorderRadius (Lcom/facebook/react/views/scroll/ReactScrollView;ILcom/facebook/react/bridge/Dynamic;)V
 	public final fun setBorderStyle (Lcom/facebook/react/views/scroll/ReactScrollView;Ljava/lang/String;)V
 	public final fun setBorderWidth (Lcom/facebook/react/views/scroll/ReactScrollView;IF)V
 	public final fun setBottomFillColor (Lcom/facebook/react/views/scroll/ReactScrollView;I)V
@@ -6105,6 +6107,7 @@ public class com/facebook/react/views/text/ReactTextViewManager : com/facebook/r
 	public final fun setAndroidHyphenationFrequency (Lcom/facebook/react/views/text/ReactTextView;Ljava/lang/String;)V
 	public final fun setBorderColor (Lcom/facebook/react/views/text/ReactTextView;ILjava/lang/Integer;)V
 	public final fun setBorderRadius (Lcom/facebook/react/views/text/ReactTextView;IF)V
+	public final fun setBorderRadius (Lcom/facebook/react/views/text/ReactTextView;ILcom/facebook/react/bridge/Dynamic;)V
 	public final fun setBorderStyle (Lcom/facebook/react/views/text/ReactTextView;Ljava/lang/String;)V
 	public final fun setBorderWidth (Lcom/facebook/react/views/text/ReactTextView;IF)V
 	public final fun setDataDetectorType (Lcom/facebook/react/views/text/ReactTextView;Ljava/lang/String;)V
@@ -6369,6 +6372,7 @@ public class com/facebook/react/views/textinput/ReactTextInputManager : com/face
 	public final fun setAutoFocus (Lcom/facebook/react/views/textinput/ReactEditText;Z)V
 	public final fun setBorderColor (Lcom/facebook/react/views/textinput/ReactEditText;ILjava/lang/Integer;)V
 	public final fun setBorderRadius (Lcom/facebook/react/views/textinput/ReactEditText;IF)V
+	public final fun setBorderRadius (Lcom/facebook/react/views/textinput/ReactEditText;ILcom/facebook/react/bridge/Dynamic;)V
 	public final fun setBorderStyle (Lcom/facebook/react/views/textinput/ReactEditText;Ljava/lang/String;)V
 	public final fun setBorderWidth (Lcom/facebook/react/views/textinput/ReactEditText;IF)V
 	public final fun setCaretHidden (Lcom/facebook/react/views/textinput/ReactEditText;Z)V
