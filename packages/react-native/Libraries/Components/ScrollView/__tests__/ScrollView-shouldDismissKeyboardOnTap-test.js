@@ -33,13 +33,14 @@ function fakeTapEvent(target: unknown) {
   return {target, nativeEvent: {touches: []}} as $FlowFixMe;
 }
 
+let testRenderer: $FlowFixMe = null;
+
 async function renderScrollView(props: ScrollViewProps) {
-  let testRenderer;
   await ReactTestRenderer.act(() => {
     testRenderer = ReactTestRenderer.create(<ScrollView {...props} />);
   });
 
-  const instance = (testRenderer as $FlowFixMe).root.find(
+  const instance = testRenderer.root.find(
     node => node.instance?._handleStartShouldSetResponder != null,
   ).instance as $FlowFixMe;
 
@@ -53,7 +54,14 @@ describe('shouldDismissKeyboardOnTap', () => {
     TextInputState.focusInput(fakeTextInput);
   });
 
-  afterEach(() => {
+  afterEach(async () => {
+    if (testRenderer != null) {
+      await ReactTestRenderer.act(() => {
+        testRenderer.unmount();
+      });
+      testRenderer = null;
+    }
+
     TextInputState.blurInput(fakeTextInput);
     TextInputState.unregisterInput(fakeTextInput);
   });
