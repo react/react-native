@@ -14,6 +14,7 @@ import {HostInstance} from '../../../types/public/ReactNativeTypes';
 import {ColorValue, StyleProp} from '../../StyleSheet/StyleSheet';
 import {ViewStyle} from '../../StyleSheet/StyleSheetTypes';
 import {
+  GestureResponderEvent,
   NativeSyntheticEvent,
   NativeTouchEvent,
 } from '../../Types/CoreEventTypes';
@@ -664,6 +665,15 @@ export interface ScrollViewProps
    * - 'handled', the keyboard will not dismiss automatically when the tap was handled by a children, (or captured by an ancestor).
    */
   keyboardShouldPersistTaps?: 'always' | 'never' | 'handled' | undefined;
+
+  /**
+   * Called when a tap would dismiss the keyboard in
+   * `keyboardShouldPersistTaps="handled"` mode. Components that handle
+   * touches outside of the responder system can return `false` to mark the
+   * tap as handled and keep the keyboard up.
+   */
+  shouldDismissKeyboardOnTap?:
+    ((event: GestureResponderEvent) => boolean) | undefined;
 
   /**
    * Called when scrollable content view of the ScrollView changes.

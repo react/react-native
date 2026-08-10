@@ -584,6 +584,13 @@ type ScrollViewBaseProps = Readonly<{
    */
   keyboardShouldPersistTaps?: ?('always' | 'never' | 'handled'),
   /**
+   * Called when a tap would dismiss the keyboard in
+   * `keyboardShouldPersistTaps="handled"` mode. Components that handle
+   * touches outside of the responder system can return `false` to mark the
+   * tap as handled and keep the keyboard up.
+   */
+  shouldDismissKeyboardOnTap?: ?(event: GestureResponderEvent) => boolean,
+  /**
    * When set, the scroll view will adjust the scroll position so that the first child that is
    * partially or fully visible and at or beyond `minIndexForVisible` will not change position.
    * This is useful for lists that are loading content in both directions, e.g. a chat thread,
@@ -1545,7 +1552,8 @@ class ScrollView extends React.Component<ScrollViewProps, ScrollViewState> {
     if (
       this.props.keyboardShouldPersistTaps === 'handled' &&
       this._keyboardIsDismissible() &&
-      e.target !== currentlyFocusedInput
+      e.target !== currentlyFocusedInput &&
+      this.props.shouldDismissKeyboardOnTap?.(e) !== false
     ) {
       return true;
     }
