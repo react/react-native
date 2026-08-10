@@ -114,6 +114,9 @@ RCT_EXPORT_MODULE(Appearance)
   UIUserInterfaceStyle userInterfaceStyle = [RCTConvert UIUserInterfaceStyle:style];
   NSMutableArray<UIWindow *> *windows = [NSMutableArray new];
   for (UIWindowScene *scene in RCTSharedApplication().connectedScenes) {
+    if (![scene isKindOfClass:[UIWindowScene class]]) {
+      continue;
+    }
     [windows addObjectsFromArray:scene.windows];
   }
 
