@@ -1104,8 +1104,15 @@ static float distributeFreeSpaceSecondPass(
       if (flexShrinkScaledFactor != 0) {
         float childSize = YGUndefined;
 
+        // Use a relative epsilon guard instead of exact equality: after the
+        // first pass removes all constrained items,
+        // totalFlexShrinkScaledFactors may be near-zero rather than exactly 0
+        // due to floating-point cancellation.  Dividing by a near-zero value
+        // produces a gigantic childSize that overwhelms the min/max clamp.
+        const float shrinkFactorMagnitude =
+            std::abs(flexLine.layout.totalFlexShrinkScaledFactors);
         if (yoga::isDefined(flexLine.layout.totalFlexShrinkScaledFactors) &&
-            flexLine.layout.totalFlexShrinkScaledFactors == 0) {
+            shrinkFactorMagnitude < 1e-6f) {
           childSize = childFlexBasis + flexShrinkScaledFactor;
         } else {
           childSize = childFlexBasis +
