@@ -78,6 +78,13 @@ internal class ReactActivityResultCallerImpl(private val reactContext: ReactCont
       contract: ActivityResultContract<I, O>,
       callback: ActivityResultCallback<O>,
   ): ActivityResultLauncher<I> {
+    if(owner::class.java.isAnonymousClass) {
+      throw IllegalArgumentException(
+        "ActivityResult owner must be a named class, but got an anonymous class. " +
+          "Pass an instance of a named class instead."
+      )
+    }
+
     return register(
         key = "${owner.javaClass.name}:${contract.javaClass.name}",
         collisionHint =
@@ -93,6 +100,13 @@ internal class ReactActivityResultCallerImpl(private val reactContext: ReactCont
       contract: ActivityResultContract<I, O>,
       callback: ActivityResultCallback<O>,
   ): ActivityResultLauncher<I> {
+    if(owner::class.java.isAnonymousClass) {
+      throw IllegalArgumentException(
+        "ActivityResult owner must be a named class, but got an anonymous class. " +
+          "Pass an instance of a named class instead."
+      )
+    }
+
     return register(
         key = "${owner.javaClass.name}:${contract.javaClass.name}:$key",
         collisionHint = "Pass a key that is unique among this owner's launchers of this contract.",
