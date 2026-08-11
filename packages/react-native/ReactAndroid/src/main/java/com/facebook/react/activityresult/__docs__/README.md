@@ -58,8 +58,8 @@ between builds, which breaks result delivery after the process is killed and
 restored, so passing one throws `IllegalArgumentException` at registration.
 
 The same stability concern applies to minification. If the app minifies class
-names (R8/ProGuard), the obfuscated name of the owner class is not guaranteed
-to be the same from one build to the next, so a result delivered after an app
+names (R8/ProGuard), the obfuscated name of the owner class is not guaranteed to
+be the same from one build to the next, so a result delivered after an app
 update can be dropped. Keep the owner class's name (for example with
 `-keepnames`) if results must survive across builds.
 
