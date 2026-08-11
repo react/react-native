@@ -44,40 +44,45 @@ public class SampleTurboModule(private val context: ReactApplicationContext) :
 
   private var toast: Toast? = null
 
+  private lateinit var permissionLauncher: ActivityResultLauncher<String>
   private var pendingPermissionPromise: Promise? = null
-
-  // Registered up-front against the ReactContext, which is legal even though this module is
-  // instantiated lazily, long after the host Activity has resumed.
-  private val permissionLauncher: ActivityResultLauncher<String> =
-      context.registerForActivityResult(this, ActivityResultContracts.RequestPermission()) {
-          isGranted: Boolean ->
-        pendingPermissionPromise?.resolve(isGranted)
-        pendingPermissionPromise = null
-      }
-
-  private var pendingPickMediaPromise: Promise? = null
 
   // Photo picker in single-select mode, demonstrating a contract with a typed input
   // (PickVisualMediaRequest) and a nullable output. See
   // https://developer.android.com/training/data-storage/shared/photo-picker
-  private val pickMediaLauncher: ActivityResultLauncher<PickVisualMediaRequest> =
-      context.registerForActivityResult(this, ActivityResultContracts.PickVisualMedia()) {
-          uri: Uri? ->
-        pendingPickMediaPromise?.resolve(uri?.toString())
-        pendingPickMediaPromise = null
-      }
-
-  private var pendingPickMultipleMediaPromise: Promise? = null
+  private lateinit var pickMediaLauncher: ActivityResultLauncher<PickVisualMediaRequest>
+  private var pendingPickMediaPromise: Promise? = null
 
   // Photo picker in multi-select mode, using the custom [PickUpToMedia] contract (see bottom of
   // this file) so the item limit can be passed per call from JS.
-  private val pickMultipleMediaLauncher: ActivityResultLauncher<PickUpToMedia.Request> =
-      context.registerForActivityResult(this, PickUpToMedia()) { uris: List<Uri> ->
-        val result: WritableArray = WritableNativeArray()
-        uris.forEach { result.pushString(it.toString()) }
-        pendingPickMultipleMediaPromise?.resolve(result)
-        pendingPickMultipleMediaPromise = null
-      }
+  private lateinit var pickMultipleMediaLauncher: ActivityResultLauncher<PickUpToMedia.Request>
+  private var pendingPickMultipleMediaPromise: Promise? = null
+
+  override fun initialize() {
+    super.initialize()
+
+    permissionLauncher =
+        context.registerForActivityResult(this, ActivityResultContracts.RequestPermission()) {
+            isGranted: Boolean ->
+          pendingPermissionPromise?.resolve(isGranted)
+          pendingPermissionPromise = null
+        }
+
+    pickMediaLauncher =
+        context.registerForActivityResult(this, ActivityResultContracts.PickVisualMedia()) {
+            uri: Uri? ->
+          pendingPickMediaPromise?.resolve(uri?.toString())
+          pendingPickMediaPromise = null
+        }
+
+    pickMultipleMediaLauncher =
+        context.registerForActivityResult(this, PickUpToMedia()) { uris: List<Uri> ->
+          val result: WritableArray = WritableNativeArray()
+          uris.forEach { result.pushString(it.toString()) }
+          pendingPickMultipleMediaPromise?.resolve(result)
+          pendingPickMultipleMediaPromise = null
+        }
+  }
 
   @DoNotStrip
   override fun getBool(arg: Boolean): Boolean {
@@ -345,7 +350,9 @@ public class SampleTurboModule(private val context: ReactApplicationContext) :
    * and videos, "image/&#42;" and "video/&#42;" restrict to one kind, and any other value is
    * treated as a specific mime type (e.g. "image/gif").
    */
-  private fun visualMediaType(mimeType: String?): ActivityResultContracts.PickVisualMedia.VisualMediaType =
+  private fun visualMediaType(
+      mimeType: String?
+  ): ActivityResultContracts.PickVisualMedia.VisualMediaType =
       when (mimeType) {
         null -> ActivityResultContracts.PickVisualMedia.ImageAndVideo
         "image/*" -> ActivityResultContracts.PickVisualMedia.ImageOnly
@@ -415,6 +422,10 @@ public class SampleTurboModule(private val context: ReactApplicationContext) :
   }
 
   override fun invalidate() {
+    permissionLauncher.unregister()
+    pickMediaLauncher.unregister()
+    pickMultipleMediaLauncher.unregister()
+
     // Reject anything still in flight: the JS context that made these calls is going away.
     // Clearing the fields also lets the still-registered callbacks tolerate a late result.
     pendingPermissionPromise?.reject(
@@ -445,8 +456,8 @@ public class SampleTurboModule(private val context: ReactApplicationContext) :
 /**
  * Photo picker contract for multi-select with a per-call item limit. Stock
  * [ActivityResultContracts.PickMultipleVisualMedia] fixes the limit in its constructor, but here it
- * comes from JS per call. So the contract is subclassed to carry the limit in its input type,
- * the pattern library authors should copy for any contract parameter that comes from JS.
+ * comes from JS per call. So the contract is subclassed to carry the limit in its input type, the
+ * pattern library authors should copy for any contract parameter that comes from JS.
  */
 private class PickUpToMedia :
     ActivityResultContract<PickUpToMedia.Request, List<@JvmSuppressWildcards Uri>>() {
