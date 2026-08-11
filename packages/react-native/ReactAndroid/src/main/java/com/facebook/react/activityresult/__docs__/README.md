@@ -52,9 +52,16 @@ Stock AndroidX contracts work unchanged, with their own input and output types
 
 Registrations are keyed by `"<owner class>:<contract class>"`, so two unrelated
 libraries can register the same stock contract without clashing. Pass a stable,
-long-lived `owner`, normally the module itself. An anonymous object gets a
-generated class name that can change between builds, which breaks result
-delivery after the process is killed and restored.
+long-lived `owner`, normally the module itself. Only named classes are allowed
+as owners: an anonymous object gets a generated class name that can change
+between builds, which breaks result delivery after the process is killed and
+restored, so passing one throws `IllegalArgumentException` at registration.
+
+The same stability concern applies to minification. If the app minifies class
+names (R8/ProGuard), the obfuscated name of the owner class is not guaranteed
+to be the same from one build to the next, so a result delivered after an app
+update can be dropped. Keep the owner class's name (for example with
+`-keepnames`) if results must survive across builds.
 
 Registering the same contract class twice from one owner throws
 `IllegalStateException`. In that case use the overload that takes a key:

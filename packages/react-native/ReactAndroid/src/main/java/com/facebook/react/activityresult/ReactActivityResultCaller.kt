@@ -28,10 +28,13 @@ internal interface ReactActivityResultCaller {
 
   /**
    * Registers [contract] under the key `"<owner class>:<contract class>"` and returns a launcher
-   * for it. [owner] should be a stable, long-lived object, typically the native module itself: an
-   * anonymous class's generated name can change between builds, which breaks result delivery
-   * after the process is killed and restored.
+   * for it. [owner] must be an instance of a named class — typically the native module itself.
+   * Anonymous classes are rejected because their generated names can change between builds, which
+   * breaks result delivery after the process is killed and restored. For the same reason, apps
+   * that minify class names (R8/ProGuard) should keep the owner class's name, since the key is not
+   * guaranteed to be stable between builds otherwise.
    *
+   * @throws IllegalArgumentException if [owner] is an instance of an anonymous class
    * @throws IllegalStateException if [owner] already registered this contract class
    */
   fun <I, O> registerForActivityResult(
@@ -44,7 +47,10 @@ internal interface ReactActivityResultCaller {
    * Registers [contract] under the key `"<owner class>:<contract class>:<key>"`. Use this when
    * one owner needs several launchers of the same contract class. [key] only has to be unique
    * among those, but must stay the same across process restarts, so derive it from a constant.
+   * [owner] carries the same requirements as the two-argument overload: it must be an instance of
+   * a named class.
    *
+   * @throws IllegalArgumentException if [owner] is an instance of an anonymous class
    * @throws IllegalStateException if [owner] already registered this contract class under [key]
    */
   fun <I, O> registerForActivityResult(
