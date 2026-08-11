@@ -37,6 +37,12 @@ export interface Spec extends TurboModule {
   readonly isGrayscaleEnabled?: (
     onSuccess: (isGrayscaleEnabled: boolean) => void,
   ) => void;
+  +getInstalledAccessibilityServices?: (
+    onSuccess: (services: Array<{id: string, name: string}>) => void,
+  ) => void;
+  +getEnabledAccessibilityServices?: (
+    onSuccess: (services: Array<{id: string, name: string}>) => void,
+  ) => void;
 }
 
 export default TurboModuleRegistry.get<Spec>('AccessibilityInfo') as ?Spec;

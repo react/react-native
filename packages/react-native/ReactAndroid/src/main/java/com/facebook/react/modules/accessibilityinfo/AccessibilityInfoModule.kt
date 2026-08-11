@@ -15,6 +15,10 @@ import android.os.Build
 import android.provider.Settings
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityManager
+import android.accessibilityservice.AccessibilityServiceInfo
+import com.facebook.react.bridge.Arguments
+import com.facebook.react.bridge.WritableArray
+import com.facebook.react.bridge.WritableMap
 import com.facebook.fbreact.specs.NativeAccessibilityInfoSpec
 import com.facebook.react.bridge.Callback
 import com.facebook.react.bridge.LifecycleEventListener
@@ -306,6 +310,42 @@ internal class AccessibilityInfoModule(context: ReactApplicationContext) :
             AccessibilityManager.FLAG_CONTENT_CONTROLS,
         ) ?: 0
     successCallback.invoke(recommendedTimeout)
+  }
+
+  override fun getInstalledAccessibilityServices(successCallback: Callback) {
+    val servicesList: WritableArray = Arguments.createArray()
+    if (accessibilityManager == null) {
+      successCallback.invoke(servicesList)
+      return
+    }
+
+    val installedServices = accessibilityManager.getInstalledAccessibilityServiceList()
+    for (service in installedServices) {
+      val serviceMap: WritableMap = Arguments.createMap()
+      serviceMap.putString("id", service.id)
+      serviceMap.putString("name", service.resolveInfo.loadLabel(reactApplicationContext.packageManager).toString())
+      servicesList.pushMap(serviceMap)
+    }
+    successCallback.invoke(servicesList)
+  }
+
+  override fun getEnabledAccessibilityServices(successCallback: Callback) {
+    val servicesList: WritableArray = Arguments.createArray()
+    if (accessibilityManager == null) {
+      successCallback.invoke(servicesList)
+      return
+    }
+
+    val enabledServices = accessibilityManager.getEnabledAccessibilityServiceList(
+      AccessibilityServiceInfo.FEEDBACK_ALL_MASK
+    )
+    for (service in enabledServices) {
+      val serviceMap: WritableMap = Arguments.createMap()
+      serviceMap.putString("id", service.id)
+      serviceMap.putString("name", service.resolveInfo.loadLabel(reactApplicationContext.packageManager).toString())
+      servicesList.pushMap(serviceMap)
+    }
+    successCallback.invoke(servicesList)
   }
 
   companion object {

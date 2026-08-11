@@ -48,6 +48,11 @@ type AccessibilityAnnouncementFinishedEventHandler = (
 type AccessibilityEventTypes =
   'click' | 'focus' | 'viewHoverEnter' | 'windowStateChange';
 
+type AccessibilityServiceInfo = {
+  id: string;
+  name: string;
+};
+
 /**
  * @see https://reactnative.dev/docs/accessibilityinfo
  */
@@ -179,6 +184,31 @@ export interface AccessibilityInfoStatic {
    * @platform android
    */
   getRecommendedTimeoutMillis: (originalTimeout: number) => Promise<number>;
+
+  /**
+   * Get a list of installed accessibility services.
+   *
+   * Returns a promise which resolves to an array of accessibility service objects.
+   * Each object contains:
+   * - `id`: The unique identifier of the accessibility service
+   * - `name`: The human-readable name of the accessibility service
+   *
+   * @platform android
+   */
+  getInstalledAccessibilityServices: () => Promise<Array<AccessibilityServiceInfo>>;
+
+  /**
+   * Get a list of enabled accessibility services.
+   *
+   * Returns a promise which resolves to an array of accessibility service objects.
+   * Each object contains:
+   * - `id`: The unique identifier of the accessibility service
+   * - `name`: The human-readable name of the accessibility service
+   *
+   * @platform android
+   */
+  getEnabledAccessibilityServices: () => Promise<Array<AccessibilityServiceInfo>>;
+
   sendAccessibilityEvent: (
     handle: HostInstance,
     eventType: AccessibilityEventTypes,
@@ -187,3 +217,4 @@ export interface AccessibilityInfoStatic {
 
 export const AccessibilityInfo: AccessibilityInfoStatic;
 export type AccessibilityInfo = AccessibilityInfoStatic;
+export type {AccessibilityServiceInfo};

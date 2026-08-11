@@ -57,6 +57,12 @@ const AccessibilityInfo = {
   getRecommendedTimeoutMillis: jest.fn(() =>
     Promise.resolve(false),
   ) as JestMockFn<$FlowFixMe, $FlowFixMe>,
+  getInstalledAccessibilityServices: jest.fn(() =>
+    Promise.resolve([]),
+  ) as JestMockFn<$FlowFixMe, $FlowFixMe>,
+  getEnabledAccessibilityServices: jest.fn(() =>
+    Promise.resolve([]),
+  ) as JestMockFn<$FlowFixMe, $FlowFixMe>,
 };
 
 export default AccessibilityInfo;

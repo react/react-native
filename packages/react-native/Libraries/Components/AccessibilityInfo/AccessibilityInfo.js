@@ -515,6 +515,62 @@ const AccessibilityInfo = {
       return Promise.resolve(originalTimeout);
     }
   },
+
+  /**
+   * Get a list of installed accessibility services. Android only.
+   *
+   * Returns a promise which resolves to an array of accessibility service objects.
+   * Each object contains:
+   * - `id`: The unique identifier of the accessibility service
+   * - `name`: The human-readable name of the accessibility service
+   *
+   * See https://reactnative.dev/docs/accessibilityinfo#getinstalledaccessibilityservices
+   */
+  getInstalledAccessibilityServices(): Promise<Array<{id: string, name: string}>> {
+    return new Promise((resolve, reject) => {
+      if (Platform.OS === 'android') {
+        if (NativeAccessibilityInfoAndroid?.getInstalledAccessibilityServices != null) {
+          NativeAccessibilityInfoAndroid.getInstalledAccessibilityServices(resolve);
+        } else {
+          reject(
+            new Error(
+              'NativeAccessibilityInfoAndroid.getInstalledAccessibilityServices is not available',
+            ),
+          );
+        }
+      } else {
+        resolve([]);
+      }
+    });
+  },
+
+  /**
+   * Get a list of enabled accessibility services. Android only.
+   *
+   * Returns a promise which resolves to an array of accessibility service objects.
+   * Each object contains:
+   * - `id`: The unique identifier of the accessibility service
+   * - `name`: The human-readable name of the accessibility service
+   *
+   * See https://reactnative.dev/docs/accessibilityinfo#getenabledaccessibilityservices
+   */
+  getEnabledAccessibilityServices(): Promise<Array<{id: string, name: string}>> {
+    return new Promise((resolve, reject) => {
+      if (Platform.OS === 'android') {
+        if (NativeAccessibilityInfoAndroid?.getEnabledAccessibilityServices != null) {
+          NativeAccessibilityInfoAndroid.getEnabledAccessibilityServices(resolve);
+        } else {
+          reject(
+            new Error(
+              'NativeAccessibilityInfoAndroid.getEnabledAccessibilityServices is not available',
+            ),
+          );
+        }
+      } else {
+        resolve([]);
+      }
+    });
+  },
 };
 
 export default AccessibilityInfo;
