@@ -126,6 +126,12 @@ RCT_EXPORT_MODULE()
                                                name:RCTBridgeWillInvalidateModulesNotification
                                              object:nil];
 
+  [self invalidateCachedConstants];
+}
+
+- (void)invalidateCachedConstants
+{
+  RCTAssertMainQueue();
   _constants = @{
     @"Dimensions" : [self _exportedDimensions],
     // Note:
@@ -244,20 +250,24 @@ static NSDictionary *RCTExportedDimensions(CGFloat fontScale)
 
 - (void)didReceiveNewContentSizeMultiplier
 {
-  __weak __typeof(self) weakSelf = self;
+  [self invalidateCachedConstants];
+  NSDictionary *nextInterfaceDimensions = _constants[@"Dimensions"];
+
   RCTModuleRegistry *moduleRegistry = _moduleRegistry;
   RCTExecuteOnMainQueue(^{
   // Report the event across the bridge.
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
     [[moduleRegistry moduleForName:"EventDispatcher"] sendDeviceEventWithName:@"didUpdateDimensions"
-                                                                         body:[weakSelf _exportedDimensions]];
+                                                                         body:nextInterfaceDimensions];
 #pragma clang diagnostic pop
   });
 }
 
 - (void)interfaceOrientationDidChange
 {
+  [self invalidateCachedConstants];
+
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   UIWindow *window = RCTKeyWindow();
   UIInterfaceOrientation nextOrientation = window.windowScene.interfaceOrientation;
@@ -279,8 +289,9 @@ static NSDictionary *RCTExportedDimensions(CGFloat fontScale)
   if ((isOrientationChanging || isResizingOrChangingToFullscreen) && RCTIsAppActive()) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    NSDictionary *nextInterfaceDimensions = _constants[@"Dimensions"];
     [[_moduleRegistry moduleForName:"EventDispatcher"] sendDeviceEventWithName:@"didUpdateDimensions"
-                                                                          body:[self _exportedDimensions]];
+                                                                          body:nextInterfaceDimensions];
     // We only want to track the current _currentInterfaceOrientation and _isFullscreen only
     // when it happens and only when it is published.
     _currentInterfaceOrientation = nextOrientation;
@@ -300,7 +311,8 @@ static NSDictionary *RCTExportedDimensions(CGFloat fontScale)
 
 - (void)_interfaceFrameDidChange
 {
-  NSDictionary *nextInterfaceDimensions = [self _exportedDimensions];
+  [self invalidateCachedConstants];
+  NSDictionary *nextInterfaceDimensions = _constants[@"Dimensions"];
 
   // update and publish the even only when the app is in active state
   if (!([nextInterfaceDimensions isEqual:_currentInterfaceDimensions]) && RCTIsAppActive()) {
