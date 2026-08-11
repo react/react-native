@@ -18,9 +18,9 @@ template <>
 inline constexpr MyType default_value<MyType> = MyType{};
 
 template <typename T>
-inline T *null_ptr = nullptr;
+inline T* null_ptr = nullptr;
 
 template <>
-inline MyType *null_ptr<MyType> = nullptr;
+inline MyType* null_ptr<MyType> = nullptr;
 
 } // namespace test

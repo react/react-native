@@ -41,10 +41,10 @@ namespace facebook::react {
 class FantomTimerRegistry : public PlatformTimerRegistry {
  public:
   FantomTimerRegistry() noexcept = default;
-  FantomTimerRegistry(const FantomTimerRegistry &) = delete;
-  FantomTimerRegistry(FantomTimerRegistry &&) = delete;
-  FantomTimerRegistry &operator=(const FantomTimerRegistry &) = delete;
-  FantomTimerRegistry &operator=(FantomTimerRegistry &&) = delete;
+  FantomTimerRegistry(const FantomTimerRegistry&) = delete;
+  FantomTimerRegistry(FantomTimerRegistry&&) = delete;
+  FantomTimerRegistry& operator=(const FantomTimerRegistry&) = delete;
+  FantomTimerRegistry& operator=(FantomTimerRegistry&&) = delete;
   ~FantomTimerRegistry() noexcept override = default;
 
   // PlatformTimerRegistry

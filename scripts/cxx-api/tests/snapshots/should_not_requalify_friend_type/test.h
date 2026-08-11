@@ -14,7 +14,7 @@ struct ShadowNode {};
 struct ComponentDescriptor {
   friend ShadowNode;
 
-  virtual void adopt(ShadowNode &shadowNode) const = 0;
+  virtual void adopt(ShadowNode& shadowNode) const = 0;
 };
 
 } // namespace test

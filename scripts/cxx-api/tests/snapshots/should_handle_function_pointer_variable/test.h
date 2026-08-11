@@ -12,7 +12,7 @@ namespace test {
 struct FunctionPointers {
   void (*simple)(int);
   int (*withReturn)(double, float);
-  void *(*returnsPointer)(const char *);
+  void* (*returnsPointer)(const char*);
 };
 
 } // namespace test

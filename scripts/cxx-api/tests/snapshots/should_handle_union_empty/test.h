@@ -9,7 +9,6 @@
 
 namespace test {
 
-union EmptyUnion {
-};
+union EmptyUnion {};
 
 } // namespace test

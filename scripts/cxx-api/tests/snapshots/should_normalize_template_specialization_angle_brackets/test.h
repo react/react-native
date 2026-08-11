@@ -8,21 +8,22 @@
 struct CSSMatrix {
   std::array<float, 6> values{};
 
-  constexpr bool operator==(const CSSMatrix &rhs) const = default;
+  constexpr bool operator==(const CSSMatrix& rhs) const = default;
 };
 
 template <>
 struct CSSDataTypeParser<CSSMatrix> {
-  static constexpr auto consumeFunctionBlock(const CSSFunctionBlock &func, CSSValueParser &parser)
-      -> std::optional<CSSMatrix>
-  {
+  static constexpr auto consumeFunctionBlock(
+      const CSSFunctionBlock& func,
+      CSSValueParser& parser) -> std::optional<CSSMatrix> {
     if (!iequals(func.name, "matrix")) {
       return {};
     }
 
     CSSMatrix matrix{};
     for (int i = 0; i < 6; i++) {
-      auto value = parser.parseNextValue<CSSNumber>(i == 0 ? CSSDelimiter::None : CSSDelimiter::Comma);
+      auto value = parser.parseNextValue<CSSNumber>(
+          i == 0 ? CSSDelimiter::None : CSSDelimiter::Comma);
       if (std::holds_alternative<std::monostate>(value)) {
         return {};
       }
@@ -37,8 +38,10 @@ struct CSSDataTypeParser<CSSMatrix> {
 template <typename ShadowNodeT>
 class ConcreteComponentDescriptor {};
 
-class AndroidSwitchComponentDescriptor : public ConcreteComponentDescriptor<AndroidSwitchShadowNode> {
+class AndroidSwitchComponentDescriptor
+    : public ConcreteComponentDescriptor<AndroidSwitchShadowNode> {
  public:
-  AndroidSwitchComponentDescriptor(const ComponentDescriptorParameters &parameters);
-  void adopt(ShadowNode &shadowNode) const;
+  AndroidSwitchComponentDescriptor(
+      const ComponentDescriptorParameters& parameters);
+  void adopt(ShadowNode& shadowNode) const;
 };

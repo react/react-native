@@ -21,16 +21,14 @@ class TesterAnimationChoreographer : public AnimationChoreographer {
   void pause() override;
   void runUITick(AnimationTimestamp timestamp);
 
-  AnimationTimestamp now() const override
-  {
+  AnimationTimestamp now() const override {
     if (clockProvider_) {
       return clockProvider_();
     }
     return AnimationChoreographer::now();
   }
 
-  void setClockProvider(std::function<AnimationTimestamp()> clockProvider)
-  {
+  void setClockProvider(std::function<AnimationTimestamp()> clockProvider) {
     clockProvider_ = std::move(clockProvider);
   }
 

@@ -12,8 +12,8 @@ namespace test {
 class Clss {
  public:
   constexpr Clss() = default;
-  constexpr Clss(const Clss &) = default;
-  constexpr Clss(Clss &&) = default;
+  constexpr Clss(const Clss&) = default;
+  constexpr Clss(Clss&&) = default;
   explicit constexpr Clss(int value);
 };
 

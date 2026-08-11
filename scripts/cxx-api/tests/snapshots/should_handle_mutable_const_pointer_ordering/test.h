@@ -11,9 +11,9 @@ namespace test {
 
 class Cache {
  public:
-  mutable int *mutablePtr;
-  const int *constPtr;
-  mutable const int *mutableConstPtr;
+  mutable int* mutablePtr;
+  const int* constPtr;
+  mutable const int* mutableConstPtr;
 };
 
 } // namespace test

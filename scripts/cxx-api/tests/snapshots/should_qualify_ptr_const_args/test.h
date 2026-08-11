@@ -11,6 +11,6 @@ namespace test {
 
 struct Node;
 
-void doSomething(const Node *const node, int x);
+void doSomething(const Node* const node, int x);
 
 } // namespace test

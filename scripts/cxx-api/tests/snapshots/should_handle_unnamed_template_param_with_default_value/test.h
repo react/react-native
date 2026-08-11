@@ -20,11 +20,11 @@ struct Value {
   template <
       typename T,
       typename = std::enable_if_t<
-          std::is_base_of<Symbol, T>::value || std::is_base_of<BigInt, T>::value || std::is_base_of<String, T>::value ||
+          std::is_base_of<Symbol, T>::value ||
+          std::is_base_of<BigInt, T>::value ||
+          std::is_base_of<String, T>::value ||
           std::is_base_of<Object, T>::value>>
-  /* implicit */ Value(T &&other)
-  {
-  }
+  /* implicit */ Value(T&& other) {}
 };
 
 } // namespace test

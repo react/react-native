@@ -20,8 +20,8 @@ struct MyType {
 namespace other {
 
 struct Consumer {
-  void process(const ::test::inner::MyType &param);
-  void processPtr(::test::inner::MyType *param);
+  void process(const ::test::inner::MyType& param);
+  void processPtr(::test::inner::MyType* param);
   ::test::inner::MyType create();
 };
 

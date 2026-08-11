@@ -15,12 +15,11 @@ class Callback;
 template <typename R, typename... Args>
 class Callback<R(Args...)> {
  public:
-  Callback(const Callback &) = delete;
-  Callback &operator=(const Callback &) = delete;
+  Callback(const Callback&) = delete;
+  Callback& operator=(const Callback&) = delete;
 
-  Callback(Callback &&other) noexcept {}
-  Callback &operator=(Callback &&other) noexcept
-  {
+  Callback(Callback&& other) noexcept {}
+  Callback& operator=(Callback&& other) noexcept {
     return *this;
   }
 

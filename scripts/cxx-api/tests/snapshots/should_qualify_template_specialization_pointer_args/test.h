@@ -19,10 +19,10 @@ class Wrapper {
 };
 
 template <>
-class Wrapper<MyType *> {
+class Wrapper<MyType*> {
  public:
-  void set(MyType *value);
-  MyType *get();
+  void set(MyType* value);
+  MyType* get();
 };
 
 } // namespace test

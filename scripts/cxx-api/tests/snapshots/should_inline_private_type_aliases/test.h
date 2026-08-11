@@ -16,7 +16,7 @@ class Clss {
   typedef void (*MyFunction)(MyType);
 
  public:
-  void test1(std::function<T> &&function);
+  void test1(std::function<T>&& function);
   void test2(MyType val) const;
   void test3(MyFunction val) const;
 };

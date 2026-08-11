@@ -22,14 +22,16 @@ class FantomImageLoader : public IImageLoader {
     std::optional<std::string> errorMessage;
   };
 
-  void setImageResponse(const std::string &uri, ImageResponse imageResponse);
-  void clearImage(const std::string &uri);
+  void setImageResponse(const std::string& uri, ImageResponse imageResponse);
+  void clearImage(const std::string& uri);
   void clearAllImages();
 
   // IImageLoader implementation
-  void loadImage(const std::string &uri, const IImageLoaderOnLoadCallback &&onLoad) override;
+  void loadImage(
+      const std::string& uri,
+      const IImageLoaderOnLoadCallback&& onLoad) override;
 
-  IImageLoader::CacheStatus getCacheStatus(const std::string &uri) override;
+  IImageLoader::CacheStatus getCacheStatus(const std::string& uri) override;
 
  private:
   std::unordered_map<std::string, ImageResponse> images_;

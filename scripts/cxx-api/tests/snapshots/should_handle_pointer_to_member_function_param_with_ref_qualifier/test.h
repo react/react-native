@@ -16,8 +16,14 @@ struct dynamic {};
 namespace test {
 
 template <typename R, typename... T>
-R jsArg(const folly::dynamic &arg, R (folly::dynamic::*asFoo)() const, const T &...desc);
+R jsArg(
+    const folly::dynamic& arg,
+    R (folly::dynamic::*asFoo)() const,
+    const T&... desc);
 template <typename R, typename... T>
-R jsArg(const folly::dynamic &arg, R (folly::dynamic::*asFoo)() const &, const T &...desc);
+R jsArg(
+    const folly::dynamic& arg,
+    R (folly::dynamic::*asFoo)() const&,
+    const T&... desc);
 
 } // namespace test

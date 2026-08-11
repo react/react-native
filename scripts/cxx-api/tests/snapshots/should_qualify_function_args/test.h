@@ -13,7 +13,7 @@ struct Param {};
 
 struct Container {
   void doSomething(Param p);
-  void doConst(const Param &p);
+  void doConst(const Param& p);
   void doMultiple(Param a, Param b, int x);
 };
 

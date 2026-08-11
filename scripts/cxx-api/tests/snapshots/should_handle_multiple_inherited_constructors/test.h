@@ -18,17 +18,24 @@ class ShadowNode {
 
 class ConcreteViewShadowNode : public ShadowNode {
  public:
-  ConcreteViewShadowNode(const ShadowNode &source, const Fragment &fragment);
-  ConcreteViewShadowNode(const Fragment &fragment, const Shared &family, Traits traits);
+  ConcreteViewShadowNode(const ShadowNode& source, const Fragment& fragment);
+  ConcreteViewShadowNode(
+      const Fragment& fragment,
+      const Shared& family,
+      Traits traits);
 };
 
 class BaseTextShadowNode : public ShadowNode {
  public:
-  BaseTextShadowNode(const ShadowNode &source, const Fragment &fragment);
-  BaseTextShadowNode(const Fragment &fragment, const Shared &family, Traits traits);
+  BaseTextShadowNode(const ShadowNode& source, const Fragment& fragment);
+  BaseTextShadowNode(
+      const Fragment& fragment,
+      const Shared& family,
+      Traits traits);
 };
 
-class ParagraphShadowNode : public ConcreteViewShadowNode, public BaseTextShadowNode {
+class ParagraphShadowNode : public ConcreteViewShadowNode,
+                            public BaseTextShadowNode {
  public:
   using BaseTextShadowNode::BaseTextShadowNode;
   using ConcreteViewShadowNode::ConcreteViewShadowNode;

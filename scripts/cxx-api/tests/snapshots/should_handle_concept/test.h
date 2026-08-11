@@ -15,8 +15,10 @@ namespace test {
 class CSSSyntaxParser;
 
 template <typename T, typename ReturnT = std::any>
-concept CSSParserSink = requires(CSSSyntaxParser &parser) {
-  { T::consume(parser) } -> std::convertible_to<ReturnT>;
-};
+concept CSSParserSink = requires(CSSSyntaxParser& parser) {
+                          {
+                            T::consume(parser)
+                            } -> std::convertible_to<ReturnT>;
+                        };
 
 } // namespace test

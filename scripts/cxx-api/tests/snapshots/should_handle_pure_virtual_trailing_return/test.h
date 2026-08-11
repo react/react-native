@@ -16,7 +16,7 @@ struct Method {};
 class Base {
  public:
   virtual auto getMethods() -> std::vector<Method> = 0;
-  virtual auto getName() -> const char * = 0;
+  virtual auto getName() -> const char* = 0;
 };
 
 } // namespace test

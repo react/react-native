@@ -15,13 +15,14 @@ namespace detail {
 
 template <typename T>
 struct is_dynamic {
-  using type = typename std::enable_if<std::is_assignable<folly::dynamic, T>::value, T>::type;
+  using type = typename std::
+      enable_if<std::is_assignable<folly::dynamic, T>::value, T>::type;
 };
 
 } // end namespace detail
 
 template <typename T>
-typename detail::is_dynamic<T>::type &jsArgAsDynamic(T &&args, size_t n);
+typename detail::is_dynamic<T>::type& jsArgAsDynamic(T&& args, size_t n);
 
 } // namespace react
 

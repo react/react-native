@@ -22,8 +22,8 @@ concept CSSParserSink = requires(CSSSyntaxParser &parser) {
 // clang-format on
 
 template <typename ReturnT, typename... VisitorsT>
-concept CSSUniqueComponentValueVisitors =
-    CSSSyntaxVisitorReturn<ReturnT> && (CSSComponentValueVisitor<VisitorsT, ReturnT> && ...) &&
+concept CSSUniqueComponentValueVisitors = CSSSyntaxVisitorReturn<ReturnT> &&
+    (CSSComponentValueVisitor<VisitorsT, ReturnT> && ...) &&
     ((CSSFunctionVisitor<VisitorsT, ReturnT> ? 1 : 0) + ... + 0) <= 1 &&
     ((CSSPreservedTokenVisitor<VisitorsT, ReturnT> ? 1 : 0) + ... + 0) <= 1 &&
     ((CSSSimpleBlockVisitor<VisitorsT, ReturnT> ? 1 : 0) + ... + 0) <= 1;

@@ -18,9 +18,9 @@ template <>
 MyType convert<MyType>(MyType value);
 
 template <typename T>
-void process(T *ptr);
+void process(T* ptr);
 
 template <>
-void process<MyType>(MyType *ptr);
+void process<MyType>(MyType* ptr);
 
 } // namespace test

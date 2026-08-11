@@ -22,10 +22,10 @@ class Container {
 };
 
 template <>
-class Container<const Outer<const Inner *> *> {
+class Container<const Outer<const Inner*>*> {
  public:
-  void set(const Outer<const Inner *> *value);
-  const Outer<const Inner *> *get();
+  void set(const Outer<const Inner*>* value);
+  const Outer<const Inner*>* get();
 };
 
 } // namespace test

@@ -13,7 +13,7 @@ class Base {
  public:
   Base() = default;
   Base(int test);
-  Base(const Base &other);
+  Base(const Base& other);
 };
 
 class Derived : public Base {

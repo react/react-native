@@ -13,13 +13,11 @@ namespace facebook::react {
 
 class StubClock {
  public:
-  static std::chrono::steady_clock::time_point now()
-  {
+  static std::chrono::steady_clock::time_point now() {
     return timePoint_;
   }
 
-  static void advanceTimeBy(std::chrono::steady_clock::duration duration)
-  {
+  static void advanceTimeBy(std::chrono::steady_clock::duration duration) {
     timePoint_ += duration;
   }
 
@@ -27,6 +25,7 @@ class StubClock {
   static std::chrono::steady_clock::time_point timePoint_;
 };
 
-std::chrono::steady_clock::time_point facebook::react::StubClock::timePoint_ = std::chrono::steady_clock::now();
+std::chrono::steady_clock::time_point facebook::react::StubClock::timePoint_ =
+    std::chrono::steady_clock::now();
 
 } // namespace facebook::react

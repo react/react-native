@@ -17,9 +17,9 @@ struct Result {};
 struct Container {
   std::function<void(Param)> simpleCallback;
   std::function<Result(Param, int)> processor;
-  std::function<void(const Param &, Result)> multiRef;
+  std::function<void(const Param&, Result)> multiRef;
   void (*fnPtr)(Param, int);
-  Result (*fnPtrReturn)(const Param &);
+  Result (*fnPtrReturn)(const Param&);
 };
 
 } // namespace test

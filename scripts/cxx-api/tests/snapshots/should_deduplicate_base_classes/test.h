@@ -22,7 +22,7 @@ template <typename>
 struct is_special : public false_type {};
 
 template <typename T>
-struct is_special<T *> : public true_type {};
+struct is_special<T*> : public true_type {};
 
 // Duplicate base class via Doxygen merging template-substituted bases.
 struct BaseA {};

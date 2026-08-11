@@ -12,7 +12,9 @@ namespace test {
 class Runtime {
  public:
   int data;
-  virtual void getStringData(void *ctx, void (*cb)(void *ctx, bool ascii, const void *data, size_t num));
+  virtual void getStringData(
+      void* ctx,
+      void (*cb)(void* ctx, bool ascii, const void* data, size_t num));
 };
 
 } // namespace test

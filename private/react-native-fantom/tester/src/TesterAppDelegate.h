@@ -30,25 +30,29 @@ class RunLoopObserverManager;
 
 class TesterAppDelegate {
  public:
-  TesterAppDelegate(const ReactInstanceConfig &reactInstanceConfig);
+  TesterAppDelegate(const ReactInstanceConfig& reactInstanceConfig);
   ~TesterAppDelegate();
 
   // TesterAppDelegate is not copyable or movable.
-  TesterAppDelegate(const TesterAppDelegate &) = delete;
-  TesterAppDelegate &operator=(const TesterAppDelegate &) = delete;
-  TesterAppDelegate(TesterAppDelegate &&) = delete;
-  TesterAppDelegate &operator=(TesterAppDelegate &&) = delete;
+  TesterAppDelegate(const TesterAppDelegate&) = delete;
+  TesterAppDelegate& operator=(const TesterAppDelegate&) = delete;
+  TesterAppDelegate(TesterAppDelegate&&) = delete;
+  TesterAppDelegate& operator=(TesterAppDelegate&&) = delete;
 
   // Loads the bundle, registering the Metro runtime and warm-up modules.
   // Does not run any tests.
-  void loadScript(const std::string &bundlePath, const std::string &sourcePath);
+  void loadScript(const std::string& bundlePath, const std::string& sourcePath);
 
   // Loads the bundle and then invokes `$$RunTests$$` to run the tests.
-  void loadScriptAndRunTests(const std::string &bundlePath, const std::string &sourcePath);
+  void loadScriptAndRunTests(
+      const std::string& bundlePath,
+      const std::string& sourcePath);
 
   // Evaluates a single JS snippet in the already-loaded runtime, in global
   // scope, and flushes the message queue. Used by interactive (REPL) mode.
-  void evaluateInteractiveChunk(const std::string &source, const std::string &sourceURL);
+  void evaluateInteractiveChunk(
+      const std::string& source,
+      const std::string& sourceURL);
 
   // Reads length-prefixed JS snippets from stdin and evaluates each one until
   // stdin is closed. Each frame is `<byteCount>\n` followed by exactly
@@ -59,7 +63,7 @@ class TesterAppDelegate {
   void openDebugger() const;
 
   void startSurface(
-      jsi::Runtime &runtime,
+      jsi::Runtime& runtime,
       float widthDp,
       float heightDp,
       SurfaceId surfaceId,
@@ -67,7 +71,11 @@ class TesterAppDelegate {
       float viewportOffsetX = 0.0f,
       float viewportOffsetY = 0.0f);
 
-  void updateSurfaceConstraints(SurfaceId surfaceId, float widthDp, float heightDp, float pointScaleFactor);
+  void updateSurfaceConstraints(
+      SurfaceId surfaceId,
+      float widthDp,
+      float heightDp,
+      float pointScaleFactor);
 
   void stopSurface(SurfaceId surfaceId);
 
@@ -105,11 +113,11 @@ class TesterAppDelegate {
 
   // Non-owning pointer to the JS runtime, captured after the script is loaded.
   // Used to evaluate snippets directly (outside the run loop) in REPL mode.
-  jsi::Runtime *runtime_{nullptr};
+  jsi::Runtime* runtime_{nullptr};
 
   // Owned by the TimerManager (inside the ReactInstance); this is a non-owning
   // pointer used to drive the deterministic timer mock from JS.
-  FantomTimerRegistry *timerRegistry_{nullptr};
+  FantomTimerRegistry* timerRegistry_{nullptr};
 };
 
 } // namespace facebook::react

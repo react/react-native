@@ -13,7 +13,7 @@ class ProviderRegistry;
 
 class Registry {
  public:
-  Registry(const ProviderRegistry &provider);
+  Registry(const ProviderRegistry& provider);
   bool hasItem(int handle) const;
 
  private:

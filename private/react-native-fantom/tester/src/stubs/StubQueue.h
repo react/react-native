@@ -16,9 +16,9 @@ namespace facebook::react {
 
 class StubQueue : public MessageQueueThread {
  public:
-  void runOnQueue(std::function<void()> &&func) override;
+  void runOnQueue(std::function<void()>&& func) override;
 
-  void runOnQueueSync(std::function<void()> &&runnable) override;
+  void runOnQueueSync(std::function<void()>&& runnable) override;
 
   void quitSynchronous() override;
 
