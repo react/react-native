@@ -192,24 +192,27 @@ static BOOL RCTIsIPhoneNotched()
 static NSDictionary *RCTExportedDimensions(CGFloat fontScale)
 {
   RCTAssertMainQueue();
-  UIScreen *mainScreen = UIScreen.mainScreen;
-  CGSize screenSize = mainScreen.bounds.size;
-  UIView *mainWindow = RCTKeyWindow();
+  UIWindow *mainWindow = RCTKeyWindow();
+  UIScreen *screen = mainWindow.screen;
+  if (screen == nil) {
+    screen = UIScreen.screens.firstObject;
+  }
+  CGSize screenSize = screen.bounds.size;
 
   // We fallback to screen size if a key window is not found.
-  CGSize windowSize = mainWindow ? mainWindow.bounds.size : screenSize;
+  CGSize windowSize = mainWindow != nil ? mainWindow.bounds.size : screenSize;
 
   NSDictionary<NSString *, NSNumber *> *dimsWindow = @{
     @"width" : @(windowSize.width),
     @"height" : @(windowSize.height),
-    @"scale" : @(mainScreen.scale),
+    @"scale" : @(screen.scale),
     @"fontScale" : @(fontScale)
   };
 
   NSDictionary<NSString *, NSNumber *> *dimsScreen = @{
     @"width" : @(screenSize.width),
     @"height" : @(screenSize.height),
-    @"scale" : @(mainScreen.scale),
+    @"scale" : @(screen.scale),
     @"fontScale" : @(fontScale)
   };
   return @{@"window" : dimsWindow, @"screen" : dimsScreen};
@@ -230,7 +233,7 @@ static NSDictionary *RCTExportedDimensions(CGFloat fontScale)
   RCTAssert(_moduleRegistry, @"Failed to get exported dimensions: RCTModuleRegistry is nil");
   RCTAccessibilityManager *accessibilityManager =
       (RCTAccessibilityManager *)[_moduleRegistry moduleForName:"AccessibilityManager"];
-  // TOOD(T225745315): For some reason, accessibilityManager is nil in some cases.
+  // TODO(T225745315): For some reason, accessibilityManager is nil in some cases.
   // We default the fontScale to 1.0 in this case. This should be okay: if we assume
   // that accessibilityManager will eventually become available, js will eventually
   // be updated with the correct fontScale.

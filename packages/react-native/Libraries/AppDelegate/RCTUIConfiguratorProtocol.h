@@ -20,8 +20,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * This method can be used to customize the rootView that is passed to React Native.
- * A typical example is to override this method in the AppDelegate to change the background color.
- * To achieve this, add in your `AppDelegate.mm`:
+ * Override on your `RCTReactNativeFactoryDelegate` (e.g. in AppDelegate, SceneDelegate, or
+ * `RCTAppDelegate` subclass). Example:
  * ```
  * - (void)customizeRootView:(RCTRootView *)rootView
  * {

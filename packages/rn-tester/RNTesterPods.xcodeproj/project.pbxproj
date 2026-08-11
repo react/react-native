@@ -15,6 +15,7 @@
 		3F4D148C63BBF774A25488A6 /* libPods-RNTesterIntegrationTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 93A243F0D4D5C54911E811C4 /* libPods-RNTesterIntegrationTests.a */; };
 		46C0FD761B0B9B1E8662B759 /* libPods-RNTesterUnitTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B312B0EEE90BA411618B015 /* libPods-RNTesterUnitTests.a */; };
 		5C60EB1C226440DB0018C04F /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 5C60EB1B226440DB0018C04F /* AppDelegate.mm */; };
+		79B29C2E2E607A99007612A5 /* SceneDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 79B29C2D2E607A99007612A5 /* SceneDelegate.mm */; };
 		8145AE06241172D900A3F8DA /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8145AE05241172D900A3F8DA /* LaunchScreen.storyboard */; };
 		832F45BB2A8A6E1F0097B4E6 /* SwiftTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832F45BA2A8A6E1F0097B4E6 /* SwiftTest.swift */; };
 		A975CA6C2C05EADF0043F72A /* RCTNetworkTaskTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A975CA6B2C05EADE0043F72A /* RCTNetworkTaskTests.m */; };
@@ -92,6 +93,8 @@
 		4C706D402EE4AF9BE838CBA9 /* libPods-RNTester.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-RNTester.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		51BC9297B6C3163C14532020 /* Pods-RNTester.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RNTester.release.xcconfig"; path = "Target Support Files/Pods-RNTester/Pods-RNTester.release.xcconfig"; sourceTree = "<group>"; };
 		5C60EB1B226440DB0018C04F /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AppDelegate.mm; path = RNTester/AppDelegate.mm; sourceTree = "<group>"; };
+		79B29C2C2E607A99007612A5 /* SceneDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SceneDelegate.h; path = RNTester/SceneDelegate.h; sourceTree = "<group>"; };
+		79B29C2D2E607A99007612A5 /* SceneDelegate.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = SceneDelegate.mm; path = RNTester/SceneDelegate.mm; sourceTree = "<group>"; };
 		8145AE05241172D900A3F8DA /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = RNTester/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		832F45BA2A8A6E1F0097B4E6 /* SwiftTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SwiftTest.swift; path = RNTester/SwiftTest.swift; sourceTree = "<group>"; };
 		93A243F0D4D5C54911E811C4 /* libPods-RNTesterIntegrationTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-RNTesterIntegrationTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -208,6 +211,8 @@
 				E771AEEA22B44E3100EA1189 /* Info.plist */,
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
 				5C60EB1B226440DB0018C04F /* AppDelegate.mm */,
+				79B29C2C2E607A99007612A5 /* SceneDelegate.h */,
+				79B29C2D2E607A99007612A5 /* SceneDelegate.mm */,
 				13B07FB71A68108700A75B9A /* main.m */,
 				832F45BA2A8A6E1F0097B4E6 /* SwiftTest.swift */,
 				2DDEF00F1F84BF7B00DBDF73 /* Images.xcassets */,
@@ -729,6 +734,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E62F11842A5C6584000BF1C8 /* UpdatePropertiesExampleView.mm in Sources */,
+				79B29C2E2E607A99007612A5 /* SceneDelegate.mm in Sources */,
 				E62F11832A5C6580000BF1C8 /* FlexibleSizeExampleView.mm in Sources */,
 				832F45BB2A8A6E1F0097B4E6 /* SwiftTest.swift in Sources */,
 				5C60EB1C226440DB0018C04F /* AppDelegate.mm in Sources */,

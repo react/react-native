@@ -637,8 +637,6 @@ interface RCTAnimatedNode : public NSObject {
 
 interface RCTAppDelegate : public RCTDefaultReactNativeFactoryDelegate <UIApplicationDelegate> {
   public @property (assign) BOOL automaticallyLoadReactNativeWindow;
-  public @property (assign) RCTBridge* bridge;
-  public @property (assign) RCTSurfacePresenterBridgeAdapter* bridgeAdapter;
   public @property (strong) NSDictionary* initialProps;
   public @property (strong) NSString* moduleName;
   public @property (strong) RCTReactNativeFactory* reactNativeFactory;
@@ -1365,6 +1363,8 @@ interface RCTLinkingManager : public RCTEventEmitter {
   public virtual static BOOL application:continueUserActivity:restorationHandler:(_Nonnull UIApplication* application, _Nonnull NSUserActivity* userActivity, _Nonnull void(^)(NSArray<id<UIUserActivityRestoring>>* _Nullable) restorationHandler);
   public virtual static BOOL application:openURL:options:(_Nonnull UIApplication* app, _Nonnull NSURL* URL, _Nonnull NSDictionary<UIApplicationOpenURLOptionsKey, id>* options);
   public virtual static BOOL application:openURL:sourceApplication:annotation:(_Nonnull UIApplication* application, _Nonnull NSURL* URL, _Nullable NSString* sourceApplication, _Nonnull id annotation);
+  public virtual static void scene:continueUserActivity:(_Nonnull UIScene* scene, _Nonnull NSUserActivity* userActivity);
+  public virtual static void scene:openURLContexts:(_Nonnull UIScene* scene, _Nonnull NSSet<UIOpenURLContext*>* URLContexts);
 }
 
 interface RCTLoadingProgress : public NSObject {
@@ -1589,14 +1589,16 @@ interface RCTRadialGradient : public NSObject {
 }
 
 interface RCTReactNativeFactory : public NSObject {
+  public @property (assign) RCTBridge* bridge;
   public @property (assign) RCTDevMenuConfiguration* devMenuConfiguration;
-  public @property (assign) RCTSurfacePresenterBridgeAdapter* bridgeAdapter;
   public @property (strong) RCTBundleConfiguration* bundleConfiguration;
   public @property (strong) RCTRootViewFactory* rootViewFactory;
   public @property (weak) id<RCTReactNativeFactoryDelegate> delegate;
   public virtual instancetype initWithDelegate:(id<RCTReactNativeFactoryDelegate> delegate);
   public virtual instancetype initWithDelegate:releaseLevel:(id<RCTReactNativeFactoryDelegate> delegate, RCTReleaseLevel releaseLevel);
   public virtual void startReactNativeWithModuleName:inWindow:(NSString* moduleName, UIWindow* _Nullable window);
+  public virtual void startReactNativeWithModuleName:inWindow:connectionOptions:(NSString* moduleName, UIWindow* _Nullable window, UISceneConnectionOptions* _Nullable connectionOptions);
+  public virtual void startReactNativeWithModuleName:inWindow:initialProperties:connectionOptions:(NSString* moduleName, UIWindow* _Nullable window, NSDictionary* _Nullable initialProperties, UISceneConnectionOptions* _Nullable connectionOptions);
   public virtual void startReactNativeWithModuleName:inWindow:initialProperties:launchOptions:(NSString* moduleName, UIWindow* _Nullable window, NSDictionary* _Nullable initialProperties, NSDictionary* _Nullable launchOptions);
   public virtual void startReactNativeWithModuleName:inWindow:launchOptions:(NSString* moduleName, UIWindow* _Nullable window, NSDictionary* _Nullable launchOptions);
 }
@@ -1661,9 +1663,7 @@ interface RCTRootView : public UIView {
 }
 
 interface RCTRootViewFactory : public NSObject {
-  public @property (strong) RCTBridge* bridge;
   public @property (strong) RCTHost* reactHost;
-  public @property (strong) RCTSurfacePresenterBridgeAdapter* bridgeAdapter;
   public virtual RCTHost* createReactHost:(NSDictionary* _Nullable launchOptions);
   public virtual RCTHost* createReactHost:bundleConfiguration:devMenuConfiguration:(NSDictionary* _Nullable launchOptions, RCTBundleConfiguration* bundleConfiguration, RCTDevMenuConfiguration* devMenuConfiguration);
   public virtual UIView* _Nonnull viewWithModuleName:(NSString* moduleName);

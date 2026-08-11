@@ -8,42 +8,12 @@
 #import "AppDelegate.h"
 
 #if !TARGET_OS_TV
+#import <React/RCTPushNotificationManager.h>
 #import <UserNotifications/UserNotifications.h>
 #endif
 
-#import <React/RCTBundleURLProvider.h>
-#import <React/RCTDefines.h>
-#import <React/RCTLinkingManager.h>
-#import <ReactCommon/RCTSampleTurboModule.h>
-#import <ReactCommon/RCTTurboModuleManager.h>
-
-#if !TARGET_OS_TV
-#import <React/RCTPushNotificationManager.h>
-#endif
-
-#import <NativeCxxModuleExample/NativeCxxModuleExample.h>
-#ifndef RN_DISABLE_OSS_PLUGIN_HEADER
-#import <RNTMyNativeViewComponentView.h>
-#endif
-
-#if __has_include(<ReactAppDependencyProvider/RCTAppDependencyProvider.h>)
-#define USE_OSS_CODEGEN 1
-#import <ReactAppDependencyProvider/RCTAppDependencyProvider.h>
-#else
-#define USE_OSS_CODEGEN 0
-#endif
-
-#if RCT_DEV_MENU
-#import <React/RCTDevMenu.h>
-#endif
-
-static NSString *kBundlePath = @"js/RNTesterApp.ios";
-
 #if !TARGET_OS_TV
 @interface AppDelegate () <UNUserNotificationCenterDelegate>
-@end
-#else
-@interface AppDelegate ()
 @end
 #endif
 
@@ -51,71 +21,10 @@ static NSString *kBundlePath = @"js/RNTesterApp.ios";
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-  self.reactNativeFactory = [[RCTReactNativeFactory alloc] initWithDelegate:self releaseLevel:[self releaseLevel]];
-#if USE_OSS_CODEGEN
-  self.dependencyProvider = [RCTAppDependencyProvider new];
-#endif
-
-#if RCT_DEV_MENU
-
-  RCTDevMenuConfiguration *devMenuConfiguration = [[RCTDevMenuConfiguration alloc] initWithDevMenuEnabled:true
-                                                                                      shakeGestureEnabled:true
-                                                                                 keyboardShortcutsEnabled:true];
-  [self.reactNativeFactory setDevMenuConfiguration:devMenuConfiguration];
-
-#endif
-
-  self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
-
-  [self.reactNativeFactory startReactNativeWithModuleName:@"RNTesterApp"
-                                                 inWindow:self.window
-                                        initialProperties:[self prepareInitialProps]
-                                            launchOptions:launchOptions];
-
 #if !TARGET_OS_TV
   [[UNUserNotificationCenter currentNotificationCenter] setDelegate:self];
 #endif
-
   return YES;
-}
-
-- (RCTReleaseLevel)releaseLevel
-{
-  return RCTReleaseLevel::Stable;
-}
-
-- (NSDictionary *)prepareInitialProps
-{
-  NSMutableDictionary *initProps = [NSMutableDictionary new];
-
-  NSString *_routeUri = [[NSUserDefaults standardUserDefaults] stringForKey:@"route"];
-  if (_routeUri) {
-    initProps[@"exampleFromAppetizeParams"] = [NSString stringWithFormat:@"rntester://example/%@Example", _routeUri];
-  }
-
-  return initProps;
-}
-
-- (NSURL *)sourceURLForBridge:(RCTBridge *)bridge
-{
-  return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:kBundlePath];
-}
-
-- (BOOL)application:(UIApplication *)app
-            openURL:(NSURL *)url
-            options:(NSDictionary<UIApplicationOpenURLOptionsKey, id> *)options
-{
-  return [RCTLinkingManager application:app openURL:url options:options];
-}
-
-- (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:(const std::string &)name
-                                                      jsInvoker:(std::shared_ptr<facebook::react::CallInvoker>)jsInvoker
-{
-  if (name == facebook::react::NativeCxxModuleExample::kModuleName) {
-    return std::make_shared<facebook::react::NativeCxxModuleExample>(jsInvoker);
-  }
-
-  return [super getTurboModule:name jsInvoker:jsInvoker];
 }
 
 #if !TARGET_OS_TV
@@ -163,26 +72,5 @@ static NSString *kBundlePath = @"js/RNTesterApp.ios";
   completionHandler();
 }
 #endif
-
-#pragma mark - RCTComponentViewFactoryComponentProvider
-
-#ifndef RN_DISABLE_OSS_PLUGIN_HEADER
-- (nonnull NSDictionary<NSString *, Class<RCTComponentViewProtocol>> *)thirdPartyFabricComponents
-{
-  NSMutableDictionary *dict = [super thirdPartyFabricComponents].mutableCopy;
-  if (!dict[@"RNTMyNativeView"]) {
-    dict[@"RNTMyNativeView"] = NSClassFromString(@"RNTMyNativeViewComponentView");
-  }
-  if (!dict[@"SampleNativeComponent"]) {
-    dict[@"SampleNativeComponent"] = NSClassFromString(@"RCTSampleNativeComponentComponentView");
-  }
-  return dict;
-}
-#endif
-
-- (NSURL *)bundleURL
-{
-  return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:kBundlePath];
-}
 
 @end

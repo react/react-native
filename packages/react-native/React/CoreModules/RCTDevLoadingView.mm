@@ -200,6 +200,9 @@ RCT_EXPORT_MODULE()
       } else {
         self->_window = [[UIWindow alloc] init];
       }
+
+      self->_window.frame = self->_window.windowScene.coordinateSpace.bounds;
+
 #if !TARGET_OS_TV
       self->_window.windowLevel = UIWindowLevelStatusBar + 1;
 #endif
@@ -240,7 +243,6 @@ RCT_EXPORT_MODULE()
     [NSLayoutConstraint activateConstraints:constraints];
 
     [self->_window layoutIfNeeded];
-    self->_window.frame = CGRectMake(0, 0, mainWindow.frame.size.width, self->_container.frame.size.height);
   });
 }
 
@@ -268,15 +270,15 @@ RCT_EXPORT_MODULE()
     const NSTimeInterval MIN_PRESENTED_TIME = 0.6;
     NSTimeInterval presentedTime = [[NSDate date] timeIntervalSinceDate:self->_showDate];
     NSTimeInterval delay = MAX(0, MIN_PRESENTED_TIME - presentedTime);
-    CGRect windowFrame = self->_window.frame;
+    CGFloat height = self->_container.bounds.size.height;
     [UIView animateWithDuration:0.25
         delay:delay
         options:0
         animations:^{
-          self->_window.frame = CGRectOffset(windowFrame, 0, -windowFrame.size.height);
+          self->_container.transform = CGAffineTransformMakeTranslation(0, -height);
         }
         completion:^(__unused BOOL finished) {
-          self->_window.frame = windowFrame;
+          self->_container.transform = CGAffineTransformIdentity;
           self->_window.hidden = YES;
           self->_window = nil;
           self->_container = nil;

@@ -407,9 +407,7 @@ void RCTProfileUnhookModules(RCTBridge *bridge)
           };
       RCTProfileControlsWindow.hidden = YES;
       dispatch_async(dispatch_get_main_queue(), ^{
-        [[[[RCTSharedApplication() delegate] window] rootViewController] presentViewController:activityViewController
-                                                                                      animated:YES
-                                                                                    completion:nil];
+        [[RCTKeyWindow() rootViewController] presentViewController:activityViewController animated:YES completion:nil];
       });
 #else
       RCTProfileControlsWindow.hidden = NO;

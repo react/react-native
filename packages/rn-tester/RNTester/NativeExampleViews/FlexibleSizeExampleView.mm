@@ -7,29 +7,39 @@
 
 #import "FlexibleSizeExampleView.h"
 
+#if __has_include(<React/RCTRootViewFactory.h>)
+#import <React/RCTRootViewFactory.h>
+#else
+#import <RCTRootViewFactory.h>
+#endif
 #import <React/RCTBridge.h>
 #import <React/RCTRootView.h>
 #import <React/RCTRootViewDelegate.h>
-#import <React/RCTViewManager.h>
 
-#import "AppDelegate.h"
+@interface FlexibleSizeExampleView () <RCTRootViewDelegate>
 
-@interface FlexibleSizeExampleViewManager : RCTViewManager
+- (instancetype)initWithFrame:(CGRect)frame rootViewFactory:(RCTRootViewFactory *)rootViewFactory;
 
 @end
 
-@implementation FlexibleSizeExampleViewManager
+@implementation FlexibleSizeExampleViewManager {
+  RCTRootViewFactory *_rootViewFactory;
+}
 
 RCT_EXPORT_MODULE();
 
-- (UIView *)view
+- (instancetype)initWithRootViewFactory:(RCTRootViewFactory *)rootViewFactory
 {
-  return [FlexibleSizeExampleView new];
+  if ((self = [super init]) != nil) {
+    _rootViewFactory = rootViewFactory;
+  }
+  return self;
 }
 
-@end
-
-@interface FlexibleSizeExampleView () <RCTRootViewDelegate>
+- (UIView *)view
+{
+  return [[FlexibleSizeExampleView alloc] initWithFrame:CGRectZero rootViewFactory:_rootViewFactory];
+}
 
 @end
 
@@ -41,13 +51,15 @@ RCT_EXPORT_MODULE();
 
 - (instancetype)initWithFrame:(CGRect)frame
 {
+  return [self initWithFrame:frame rootViewFactory:nil];
+}
+
+- (instancetype)initWithFrame:(CGRect)frame rootViewFactory:(RCTRootViewFactory *)rootViewFactory
+{
   if ((self = [super initWithFrame:frame])) {
     _sizeUpdated = NO;
 
-    AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
-
-    _resizableRootView = (RCTRootView *)[appDelegate.reactNativeFactory.rootViewFactory
-        viewWithModuleName:@"RootViewSizeFlexibilityExampleApp"];
+    _resizableRootView = (RCTRootView *)[rootViewFactory viewWithModuleName:@"RootViewSizeFlexibilityExampleApp"];
 
     [_resizableRootView setSizeFlexibility:RCTRootViewSizeFlexibilityHeight];
 
