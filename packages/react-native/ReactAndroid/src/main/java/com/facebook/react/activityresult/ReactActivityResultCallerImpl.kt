@@ -146,13 +146,10 @@ internal class ReactActivityResultCallerImpl(private val reactContext: ReactCont
   private fun currentRegistry(): ActivityResultRegistry? {
     val activity = reactContext.currentActivity ?: return null
     val owner = activity as? ActivityResultRegistryOwner
-    if (owner == null) {
-      FLog.w(
-          ReactConstants.TAG,
-          "Current Activity ${activity.javaClass.name} is not an ActivityResultRegistryOwner; " +
-              "ActivityResultContract launchers will stay queued until one is available.")
-      return null
-    }
+      ?: throw IllegalStateException(
+        "Current Activity ${activity.javaClass.name} is not an ActivityResultRegistryOwner; " +
+          "ActivityResultContract launchers cannot be registered."
+      )
     return owner.activityResultRegistry
   }
 }
