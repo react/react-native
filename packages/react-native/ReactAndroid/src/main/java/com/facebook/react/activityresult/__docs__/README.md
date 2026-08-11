@@ -142,7 +142,8 @@ Notes for library authors:
 - Register early, in a field initializer or the constructor. Only launching
   needs an Activity.
 - An Activity that is not an `ActivityResultRegistryOwner` cannot serve
-  launchers. They stay queued and a warning is logged.
+  launchers; binding to one throws `IllegalStateException`. In practice every
+  `ComponentActivity` (including `ReactActivity`) is a registry owner.
 - After the process is killed and restored, AndroidX redelivers a pending result
   under the same key, but any state your module held for the call (typically a
   `Promise`) is gone. Write callbacks so they tolerate firing with no pending
