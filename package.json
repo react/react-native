@@ -131,6 +131,7 @@
     "@xmldom/xmldom": "^0.8.13",
     "fast-xml-parser": "^4.5.6",
     "yaml": "^2.8.3",
-    "fast-uri": "^3.1.2"
+    "fast-uri": "^3.1.2",
+    "image-size": "npm:image-size-next@2.1.0"
   }
 }
