@@ -1,98 +1,6 @@
 # Changelog
 
-## v0.87.0-rc.4
-
-### Added
-
-#### iOS specific
-
-- **Build**: Fail closed with an actionable error when the SwiftPM autolinking config command fails, instead of silently emitting an empty Autolinked package ([a7ba4ce522](https://github.com/react/react-native/commit/a7ba4ce5224493067a5e767008c0bc0f309932c6) by [@chrfalch](https://github.com/chrfalch))
-
-### Fixed
-
-- **JavaScript API**: Extensionless `react-native/scripts/*` imports are now **mandated**; explicit `.js` import specifiers are rejected. ([97727ba67f](https://github.com/react/react-native/commit/97727ba67f1a4fbf5105f18bca695e272b48b836) by [@huntie](https://github.com/huntie))
-
-#### iOS specific
-
-- **Build**: Keep the prebuilt `Headers/` in place on a Debug/Release configuration switch so the React explicit module still resolves its module map ([df5e6f6a42](https://github.com/react/react-native/commit/df5e6f6a42eeaa431d9130aa185d0f3540aee961) by [@chrfalch](https://github.com/chrfalch))
-- **Build**: Write the prebuilt module-map flag to `OTHER_CPLUSPLUSFLAGS` so C++/ObjC++ sources resolve the relocated namespaces modularly ([14fe96ab51](https://github.com/react/react-native/commit/14fe96ab51554cac899ca49c8d50629aea421d54) by [@chrfalch](https://github.com/chrfalch))
-- **Build**: Prebuilt `ReactNativeHeaders.xcframework` now ships the Hermes public headers so consumers resolve `<hermes/...>` out of the box ([43b44ed7c3](https://github.com/react/react-native/commit/43b44ed7c30ebe331ba58ef841a89dcae37301d8) by [@chrfalch](https://github.com/chrfalch))
-
-## v0.87.0-rc.3
-
-### Breaking
-
-#### iOS specific
-
-- **Build**: Ship a version-stamped ReactNativeVersion.h in the prebuilt iOS core artifacts instead of the 1000.0.0 dev sentinel ([95df50034b](https://github.com/react/react-native/commit/95df50034ba5ce11f4b70bbb6bf692e3691297dc) by [@chrfalch](https://github.com/chrfalch))
-
-### Fixed
-
-- **DOM API**: Fix `parentNode`/`parentElement` returning the document instead of the containing element for `<Modal>` and other nested root host views, which severed capture/bubble event propagation to ancestors rendered above them ([e410ff5471](https://github.com/react/react-native/commit/e410ff547179f5c7ad198744f7be88117ccdef0c) by [@rubennorte](https://github.com/rubennorte))
-- **Strict TypeScript API**: Optional property types are now widened to explicitly include `| undefined` for `exactOptionalPropertyTypes` compatibility ([0fc76bb527](https://github.com/react/react-native/commit/0fc76bb5278098649672e0407a3de580b8706fa4) by [@zeyap](https://github.com/zeyap))
-
-#### iOS specific
-
-- **Build**: Fix Swift C++-interop build failure (implicit copy constructor of TraceRecordingState/HostTracingProfile) for libraries using cxx interop with prebuilt React Native core ([38611186f5](https://github.com/react/react-native/commit/38611186f5867bd578a269872986a5753c8b41fe) by [@chrfalch](https://github.com/chrfalch))
-
-
-## v0.87.0-rc.2
-
-### Breaking
-
-- **Runtime**: Remove the `SceneTracker` module from `Libraries/Utilities`, stop setting the active scene from `AppRegistry.runApplication`, and pass the app key as an optional second argument to `WrapperComponentProvider` ([bbb5be9b41](https://github.com/react/react-native/commit/bbb5be9b416efc9b1c365b08a0bcf932c14562ca) by [@rubennorte](https://github.com/rubennorte))
-
-#### iOS specific
-
-- **Build**: [0.87] Pick SwiftPM support chain (#57442, #57332, #57564) ([486df8d410](https://github.com/react/react-native/commit/486df8d410d73d7a1be3600c93a6cf7888532843) by [@cipolleschi](https://github.com/cipolleschi))
-
-### Changed
-
-#### iOS specific
-
-- **Build**: Prebuilt-deps mode: serve third-party headers from the ReactNativeDependencies pod itself and resolve community `s.dependency` on RCT-Folly/glog/boost/etc. via dependency-only facade pods ([a8156acf8b](https://github.com/react/react-native/commit/a8156acf8bbc9ee15901cf0d8935d73454768aa7) by [@chrfalch](https://github.com/chrfalch))
-- **Build**: Remove the Clang VFS overlay from prebuilt React Native Core; resolve headers via React.xcframework + a new headers-only ReactNativeHeaders.xcframework ([376bd0e464](https://github.com/react/react-native/commit/376bd0e464b7785b4bcf8673a96746ec8107f1eb) by [@chrfalch](https://github.com/chrfalch))
-
-### Fixed
-
-- **Runtime**: Fix app failing to initialize (`HMRClient.setup()` redbox) because the environment setup module was dropped from the bundle ([eb987ef550](https://github.com/react/react-native/commit/eb987ef5504d85ff862b5a679056157888c56960) by [@cipolleschi](https://github.com/cipolleschi))
-
-#### iOS specific
-
-- **Build**: Fix "redefinition of 'HighResDuration'" / "could not build module 'React'" when building Swift pods with C++ interop against the prebuilt React-Core artifact ([9847238e3f](https://github.com/react/react-native/commit/9847238e3fc2badce8eeea659c4990aba1366d9b) by [@chrfalch](https://github.com/chrfalch))
-- **Build**: Fix "The project 'Pods' is damaged and cannot be opened" when a library uses `spm_dependency` and the generated UUID collides with an existing Pods project object ([1cdf784a06](https://github.com/react/react-native/commit/1cdf784a068e2ed16842b74c0b87b7ff7532fe03) by [@chrfalch](https://github.com/chrfalch))
-- **Build**: Ship React-Core's privacy manifest and localized strings (RCTI18nStrings) inside the prebuilt React.xcframework, so CocoaPods-prebuilt and SwiftPM apps include them ([77b75122ef](https://github.com/react/react-native/commit/77b75122ef9ed172012d7c6acb335f966d4ede79) by [@chrfalch](https://github.com/chrfalch))
-- **Build**: Fix "redefinition of module" build failure on Xcode 26.3 for pods using `spm_dependency` with prebuilt React Native core ([4a6620703c](https://github.com/react/react-native/commit/4a6620703c30b3f53917812720528684838d3bbf) by [@chrfalch](https://github.com/chrfalch))
-- **Hermes**: Fix debug Hermes being silently embedded in Release builds after the hermes-engine pod is re-installed ([62a2b386c9](https://github.com/react/react-native/commit/62a2b386c91985a46ee048dfa6e2216ba42a7e89) by [@tjzel](https://github.com/tjzel))
-
-
-## v0.87.0-rc.1
-
-### Breaking
-
-- **JavaScript API**: The `Touchable` root export (undocumented) is removed. If you are extending `Touchable` as a type, please use `ViewProps` instead. ([6fbf3062f9](https://github.com/react/react-native/commit/6fbf3062f9085c93bcb35c6a61c76029abbc16a5) by [@huntie](https://github.com/huntie))
-- **JavaScript API**: `react-native/rn-get-polyfills` is removed — please use `react-native/js-polyfills` (package) ([b6a535afee](https://github.com/react/react-native/commit/b6a535afee1e099db00e62b904e3611f41227544) by [@huntie](https://github.com/huntie))
-- **Jest**: `react-native/jest-preset` is removed — all projects must now migrate to `react-native/jest-preset` (package) ([9ee21ddd9b](https://github.com/react/react-native/commit/9ee21ddd9b0d6b997709786fda4bd0b67be1ec7d) by [@huntie](https://github.com/huntie))
-- **Strict TypeScript API**: React Native's default JavaScript API is now the [Strict TypeScript API](https://reactnative.dev/docs/strict-typescript-api). Use `customConditions: ["react-native-legacy-deep-imports"]` to opt out. ([c948b61c05](https://github.com/react/react-native/commit/c948b61c051a2d5cfc79925e93eb49904db972c8) by [@huntie](https://github.com/huntie))
-
-
-### Added
-
-- **JavaScript API**: Deprecate `'react-native/Libraries/Core/InitializeCore'`. Use `'react-native/setup-env'` instead. ([bfa679f0ea](https://github.com/react/react-native/commit/bfa679f0ea5431c92894d236b8e414f2feb70280) by [@huntie](https://github.com/huntie))
-
-
-### Changed
-
-- **Metro**: Bump Metro to 0.87.0 ([0565bcdbab](https://github.com/react/react-native/commit/0565bcdbab05e2fb6208aa842721485eb89ffc7c) by [@robhogan](https://github.com/robhogan))
-
-
-### Fixed
-
-- **Runtime**: Fix apps failing to boot ("... not registered as callable") caused by core init not running. ([08c323346b](https://github.com/react/react-native/commit/08c323346be6c0fbbd70900d48435f977a78a1bb) by [@zeyap](https://github.com/zeyap))
-
-
-
-## v0.87.0-rc.0
+## v0.87.0
 
 ### Breaking
 
@@ -102,14 +10,19 @@
 - **Hermes**: Remove Legacy Hermes from C++ code ([f9476256bd](https://github.com/react/react-native/commit/f9476256bd1b5d56f46f79bb31a32e77e8e23fe6) by [@cipolleschi](https://github.com/cipolleschi))
 - **JavaScript API**: Deep imports to `'react-native/src/private/...'` have been restricted, and are no longer visible to TypeScript. These subpaths still exist, but do not have type coverage. ([142b6172a9](https://github.com/react/react-native/commit/142b6172a94ea178ed8d0fd9ffb03a64c4dd9676) by [@huntie](https://github.com/huntie))
 - **JavaScript API**: The `NativeDialogManagerAndroid` export is removed. ([a793d21a7e](https://github.com/react/react-native/commit/a793d21a7ebdea0e5a065190497a67619bdefa89) by [@huntie](https://github.com/huntie))
+- **JavaScript API**: The `Touchable` root export (undocumented) is removed. If you are extending `Touchable` as a type, please use `ViewProps` instead. ([6fbf3062f9](https://github.com/react/react-native/commit/6fbf3062f9085c93bcb35c6a61c76029abbc16a5) by [@huntie](https://github.com/huntie))
+- **JavaScript API**: `react-native/rn-get-polyfills` is removed — please use `react-native/js-polyfills` (package) ([b6a535afee](https://github.com/react/react-native/commit/b6a535afee1e099db00e62b904e3611f41227544) by [@huntie](https://github.com/huntie))
+- **Jest**: `react-native/jest-preset` is removed — all projects must now migrate to `react-native/jest-preset` (package) ([9ee21ddd9b](https://github.com/react/react-native/commit/9ee21ddd9b0d6b997709786fda4bd0b67be1ec7d) by [@huntie](https://github.com/huntie))
 - **Legacy Architecture**: Compile out RuntimeScheduler_Legacy under RCT_REMOVE_LEGACY_ARCH ([d205267a5f](https://github.com/react/react-native/commit/d205267a5fa96b343ef9860e9b2d209e5bc8832c) by [@christophpurrer](https://github.com/christophpurrer))
 - **LogBox**: Set max font scaling in `LogBox` to avoid layout breaking ([4aef2b0126](https://github.com/react/react-native/commit/4aef2b0126c22ab386c970a84d61a9ef2c4b3ddd) by [@pchalupa](https://github.com/pchalupa))
 - **Node**: Require Node.js >= 22.13.0 ([a0d39e7a9c](https://github.com/react/react-native/commit/a0d39e7a9c26446b6fe4af4ab7be00aa1c68ddca) by [@huntie](https://github.com/huntie))
 - **React Native DevTools**: Remove support for connecting to the standalone `react-devtools` package via WebSocket. Use React Native DevTools instead. ([f1971caa44](https://github.com/react/react-native/commit/f1971caa447a9d8f2f6185e99ceb45d512940e86) by [@huntie](https://github.com/huntie))
 - **Renderer**: Remove RawPropsKey prefix and suffix ([67381e157f](https://github.com/react/react-native/commit/67381e157faadd9f18db1ff8710d8d46c3c1dae5) by [@javache](https://github.com/javache))
+- **Runtime**: Remove the `SceneTracker` module from `Libraries/Utilities`, stop setting the active scene from `AppRegistry.runApplication`, and pass the app key as an optional second argument to `WrapperComponentProvider` ([bbb5be9b41](https://github.com/react/react-native/commit/bbb5be9b416efc9b1c365b08a0bcf932c14562ca) by [@rubennorte](https://github.com/rubennorte))
 - **ScrollView**: Remove deprecated boolean values support for `ScrollView` `keyboardShouldPersistTaps` ([5bf3e38db2](https://github.com/react/react-native/commit/5bf3e38db24cadfcd994c3da1a051c0bea4e7f02) by [@zoontek](https://github.com/zoontek))
 - **StatusBar**: Remove deprecated `StatusBar` `backgroundColor` / `translucent` / `networkActivityIndicatorVisible` props and `setBackgroundColor` / `setTranslucent` / `setNetworkActivityIndicatorVisible` methods ([6b45e579d6](https://github.com/react/react-native/commit/6b45e579d6c17e2ff43709812810b4a32ec81a40) by [@zoontek](https://github.com/zoontek))
 - **Strict TypeScript API**: Remove legacy `NativeMethods` and `NativeMethodsMixin` types ([b724611aec](https://github.com/react/react-native/commit/b724611aec382742ee52b8b2619eadc47bc14bc4) by [@huntie](https://github.com/huntie))
+- **Strict TypeScript API**: React Native's default JavaScript API is now the [Strict TypeScript API](https://reactnative.dev/docs/strict-typescript-api). Use `customConditions: ["react-native-legacy-deep-imports"]` to opt out. ([c948b61c05](https://github.com/react/react-native/commit/c948b61c051a2d5cfc79925e93eb49904db972c8) by [@huntie](https://github.com/huntie))
 
 #### Android specific
 
@@ -117,6 +30,8 @@
 
 #### iOS specific
 
+- **Build**: [0.87] Pick SwiftPM support chain (#57442, #57332, #57564) ([486df8d410](https://github.com/react/react-native/commit/486df8d410d73d7a1be3600c93a6cf7888532843) by [@cipolleschi](https://github.com/cipolleschi))
+- **Build**: Ship a version-stamped ReactNativeVersion.h in the prebuilt iOS core artifacts instead of the 1000.0.0 dev sentinel ([95df50034b](https://github.com/react/react-native/commit/95df50034ba5ce11f4b70bbb6bf692e3691297dc) by [@chrfalch](https://github.com/chrfalch))
 - **Legacy Architecture**: Remove depracted legacy architecture protocol APIs ([ad9936faf6](https://github.com/react/react-native/commit/ad9936faf666264bb03db8c6e7499c529fff3391) by [@christophpurrer](https://github.com/christophpurrer))
 - **Legacy Architecture**: Remove unused legacy architecture RCTAppSetupUtils methods ([40b16dca9f](https://github.com/react/react-native/commit/40b16dca9fa2b553350993f2a687cd6fc7365ec5) by [@christophpurrer](https://github.com/christophpurrer))
 - **Legacy Architecture**: Remove RCTBridge Functions from RCTReactNativeFactory Header ([75eaff4c03](https://github.com/react/react-native/commit/75eaff4c033c93819164808635f2cdca77cf8a3c) by [@christophpurrer](https://github.com/christophpurrer))
@@ -133,6 +48,7 @@
 - **Animated**: Remove `useNativeDriver` under featureflag animatedForceNativeDriver ([cffe14ff57](https://github.com/react/react-native/commit/cffe14ff57ce0e76601e9efde833700d6ba609af) by [@zeyap](https://github.com/zeyap))
 - **Animated**: Add `optimizedAnimatedPropUpdates` feature flag ([ed96b22af2](https://github.com/react/react-native/commit/ed96b22af2baea90b8ed418c2f30c1b0990c1845) by Bartlomiej Bloniarz)
 - **Assets**: Introduce `react-native/asset-utils` package (relocates Android path utils for libraries/frameworks) ([41d52189e2](https://github.com/react/react-native/commit/41d52189e2167c7edc12a719150c2796b33c0ba0) by [@huntie](https://github.com/huntie))
+- **JavaScript API**: Deprecate `'react-native/Libraries/Core/InitializeCore'`. Use `'react-native/setup-env'` instead. ([bfa679f0ea](https://github.com/react/react-native/commit/bfa679f0ea5431c92894d236b8e414f2feb70280) by [@huntie](https://github.com/huntie))
 - **Legacy Architecture**: Gate shared C++ and Android Java/Kotlin legacy view manager interop behind `RCT_REMOVE_LEGACY_COMPONENT_INTEROP` ([9885fe95ef](https://github.com/react/react-native/commit/9885fe95ef1e7fa08008434620a8c97c3c2b61da) by [@christophpurrer](https://github.com/christophpurrer))
 - **Legacy Architecture**: Gate legacy view manager interop behind `RCT_REMOVE_LEGACY_COMPONENT_INTEROP` ([8b959b46ea](https://github.com/react/react-native/commit/8b959b46ea6195ef2d0a77433d7915fc02797b11) by [@christophpurrer](https://github.com/christophpurrer))
 - **Legacy Architecture**: Gate legacy TurboModule interop behind `RCT_REMOVE_LEGACY_MODULE_INTEROP` ([3278f309e2](https://github.com/react/react-native/commit/3278f309e29fd957dad5f3fa029893013aa4db1c) by [@christophpurrer](https://github.com/christophpurrer))
@@ -166,6 +82,7 @@
 
 #### iOS specific
 
+- **Build**: Fail closed with an actionable error when the SwiftPM autolinking config command fails, instead of silently emitting an empty Autolinked package ([a7ba4ce522](https://github.com/react/react-native/commit/a7ba4ce5224493067a5e767008c0bc0f309932c6) by [@chrfalch](https://github.com/chrfalch))
 - **i18n**: Added comment to clarify why i18nManager.isRTL may not return the expected value ([e4a5ed3c6d](https://github.com/react/react-native/commit/e4a5ed3c6d6ad4f00652ab8202dda65f6fe40b92) by [@scarlac](https://github.com/scarlac))
 - **Native Modules**: Export `RCTDidInitializeModuleNotificationModuleKey` constant for `RCTDidInitializeModuleNotification` userInfo ([217ee52d4f](https://github.com/react/react-native/commit/217ee52d4f7a13af64a55ab4ff21fc7d70c23dd8) by Eapen George)
 - **Text**: Add `enableIOSCompressedTextFrameAdjustment` feature flag for `Text` rendering adjustments. ([b933d45276](https://github.com/react/react-native/commit/b933d45276ed82a8c504b6c856b7dd046f95aeb6) by [@sbuggay](https://github.com/sbuggay))
@@ -176,15 +93,22 @@
 
 - **Animated**: Enable Animated flush-queue debouncing (`animatedShouldDebounceQueueFlush`) by default ([5c197fb303](https://github.com/react/react-native/commit/5c197fb303ed0d975482757fefb7ed38349601b6) by [@zeyap](https://github.com/zeyap))
 - **Animated**: Flip cxxNativeAnimatedEnabled featureflag default to true ([fc7dc741d2](https://github.com/react/react-native/commit/fc7dc741d2b9dcdc36660d100a1b4ba420f8b725) by [@zeyap](https://github.com/zeyap))
+- **Animated**: Xplat/js/react-native-github/packages/react-native/ReactCommon/react/renderer/animated/drivers/DecayAnimationDriver.cpp ([69b58f308e](https://github.com/react/react-native/commit/69b58f308e4399c8b56feb9e283be2da8676890a) by generatedunixname1563563004708334)
 - **Build**: Fix missing VERSION_NATIVE_FB in commit artifacts ([c6f29a2173](https://github.com/react/react-native/commit/c6f29a21733377799cf8f39ec5351de941a9e58b) by [@javache](https://github.com/javache))
+- **C++**: Xplat/js/react-native-github/packages/react-native/ReactCommon/react/renderer/attributedstring/ParagraphAttributes.cpp ([ce057d6554](https://github.com/react/react-native/commit/ce057d6554b5ed44070336fa2353d7d6624eab92) by generatedunixname1563563004708334)
 - **Dependencies**: Replace `abort-controller` with fork version from react-native ([6f3375a140](https://github.com/react/react-native/commit/6f3375a140b10cffe9bed3dd72a017ece97bbbba) by [@retyui](https://github.com/retyui))
 - **Documentation**: Clarify Android AppState background API documentation. ([b09fce6db5](https://github.com/react/react-native/commit/b09fce6db5ce7d025546d84b91ecf201a86a494f) by [@federicobartoli](https://github.com/federicobartoli))
 - **DOM API**: Make `EventTarget` methods enumerable by spec ([25c25b3c7c](https://github.com/react/react-native/commit/25c25b3c7cc81c33c1c36fb371d3f94d00ff412e) by [@retyui](https://github.com/retyui))
+- **Flow**: Turn on `experimental.instance_t_objkit_fix` across fbsource roots ([71fee907fb](https://github.com/react/react-native/commit/71fee907fb9f75ecba210a9041cde7393c98697b) by [@SamChou19815](https://github.com/SamChou19815))
+- **Flow**: Transform readonly in xplatjs ([5fce2de800](https://github.com/react/react-native/commit/5fce2de80028e972951b2544be2082c951febb64) by [@marcoww6](https://github.com/marcoww6))
+- **Flow**: Fix a few readonly 10/n ([09fc0432d1](https://github.com/react/react-native/commit/09fc0432d1eb799c3c1c2ae2ef0dc3acb2944e35) by [@marcoww6](https://github.com/marcoww6))
+- **Flow**: Codemod `in/out` ([9f558a4d6a](https://github.com/react/react-native/commit/9f558a4d6a546f73babacb4de991116e19727a86) by [@marcoww6](https://github.com/marcoww6))
 - **Hermes**: Change default transform profile to 'hermes-stable' ([a2cd37f828](https://github.com/react/react-native/commit/a2cd37f828ad9338eeacd69a64d90c5c512035be) by [@retyui](https://github.com/retyui))
 - **Hermes**: Simplified build JS Hermes infrastructure for the Release ([d49aac6b65](https://github.com/react/react-native/commit/d49aac6b652d5b19bcd044c77905cac0c917fd85) by [@cipolleschi](https://github.com/cipolleschi))
 - **Hermes**: Bump Hermes V1 to 250829098.0.13 ([0175449606](https://github.com/react/react-native/commit/01754496066fb501a450fcb599a9d2929ac37c16) by [@robhogan](https://github.com/robhogan))
 - **IntersectionObserver**: Expose `IntersectionObserverEntry` as a global ([4deb32a507](https://github.com/react/react-native/commit/4deb32a507f15b447f264b27fb1d45dd3d3dfc44) by [@rubennorte](https://github.com/rubennorte))
 - **Metro**: Metro to 0.86.0 ([2b0107e0aa](https://github.com/react/react-native/commit/2b0107e0aaee7d035dbad2cece6134cb2454bb37) by [@robhogan](https://github.com/robhogan))
+- **Metro**: Bump Metro to 0.87.0 ([0565bcdbab](https://github.com/react/react-native/commit/0565bcdbab05e2fb6208aa842721485eb89ffc7c) by [@robhogan](https://github.com/robhogan))
 - **React Native DevTools**: Expose new options in the app menu ([24e370096e](https://github.com/react/react-native/commit/24e370096e4ee402d4b25dd8a7c7a6778bab4a93) by [@huntie](https://github.com/huntie))
 - **React Native DevTools**: Add macOS 26/27 app icon ([fa371d156d](https://github.com/react/react-native/commit/fa371d156db2d796a18c44624d28c397ef5837a7) by [@huntie](https://github.com/huntie))
 - **Runtime**: Make the `window` global non-writable and non-configurable, and the `navigator` global non-writable ([347f8d081e](https://github.com/react/react-native/commit/347f8d081eee8792ae23d87ae04be1cfc7b3fdcb) by [@rubennorte](https://github.com/rubennorte))
@@ -199,7 +123,11 @@
 #### Android specific
 
 - **Android SDK**: Set minCompileSdk to 34, libraries will have to specify a compileSdk of >= 34 in order to work with React Native ([29e5f954c7](https://github.com/react/react-native/commit/29e5f954c70a57d2d0feaa052b698fb95915a0a0) by [@cortinico](https://github.com/cortinico))
+- **Build**: Add license header to ProGuard files ([b3c0f3ce30](https://github.com/react/react-native/commit/b3c0f3ce301369c7e7f9ea8f7442940229946d61) by [@helfper](https://github.com/helfper))
 - **Gradle**: Gradle to 9.4.1 ([c0ee408c16](https://github.com/react/react-native/commit/c0ee408c163cd4e2e27dad7cbcdd59d97cf3d5a5) by [@leotm](https://github.com/leotm))
+- **i18n**: Translation auto-update for batch 3/64 on master ([9299204523](https://github.com/react/react-native/commit/9299204523bc5c4151c2d8972dd4669f81ecc751) by Intl Scheduler)
+- **i18n**: Translation auto-update for batch 3/64 on master ([10ec4ad01a](https://github.com/react/react-native/commit/10ec4ad01a10e2e5bd156eee18b5b56082d975de) by Intl Scheduler)
+- **i18n**: Translation auto-update for batch 2/64 on master ([a902d7402c](https://github.com/react/react-native/commit/a902d7402c241b0260121c0e8be72c691387cc1c) by Intl Scheduler)
 - **Kotlin**: Convert `ReactHorizontalScrollView` from Java to Kotlin ([5c680995bd](https://github.com/react/react-native/commit/5c680995bd416e2bb0f3ef892bd580f5c4527b18) by [@cortinico](https://github.com/cortinico))
 - **Kotlin**: Convert `ReactScrollView` and `ReactNestedScrollView` from Java to Kotlin ([9d65e6c497](https://github.com/react/react-native/commit/9d65e6c497686ab518618dcfb33758110ed41d6e) by [@cortinico](https://github.com/cortinico))
 - **Kotlin**: Migrate `ReactShadowNode` interface from Java to Kotlin ([f07c7cceee](https://github.com/react/react-native/commit/f07c7cceeed4148b9d1cfca6b1fb35d236ac4e87) by [@cortinico](https://github.com/cortinico))
@@ -209,10 +137,31 @@
 - **Kotlin**: Migrate `ReactNativeHost` from Java to Kotlin (no behavioral changes) ([7eb11331b6](https://github.com/react/react-native/commit/7eb11331b670b83fa7b7a7ae194313848d72d0e6) by [@cortinico](https://github.com/cortinico))
 - **Kotlin**: Bumped min Kotlin version to 2.0+ ([ec1e1ae054](https://github.com/react/react-native/commit/ec1e1ae054f598df73b8795040fae920719a4643) by [@cortinico](https://github.com/cortinico))
 - **Kotlin**: Bump Kotlin to 2.2.0 ([cb04956cde](https://github.com/react/react-native/commit/cb04956cdef16792e38cde443e03ba420c8efb5d) by [@cortinico](https://github.com/cortinico))
+- **Kotlin**: Daily `arc lint --take KTFMT` ([f9ba09d60e](https://github.com/react/react-native/commit/f9ba09d60ecb6362b695bb30d387a72a447dc790) by generatedunixname1430061942044674)
+- **Kotlin**: Make CustomEventNamesResolver a fun interface for SAM conversion ([df4cadc126](https://github.com/react/react-native/commit/df4cadc126690ff09ea653b2d02874b892e897f2) by [@cortinico](https://github.com/cortinico))
+- **Kotlin**: Migrate YogaWrap enum to Kotlin ([6e262624fc](https://github.com/react/react-native/commit/6e262624fcb3ccea694f47b9b3474aabdeaed29f) by [@cortinico](https://github.com/cortinico))
+- **Kotlin**: Migrate YogaUnit enum to Kotlin ([97cf21dd41](https://github.com/react/react-native/commit/97cf21dd41c7c2c111b9839e71d2cfc54239fd39) by [@cortinico](https://github.com/cortinico))
+- **Kotlin**: Migrate YogaPositionType enum to Kotlin ([d181829b9c](https://github.com/react/react-native/commit/d181829b9ce9fbed9655dbded41e54baae5ef3d7) by [@cortinico](https://github.com/cortinico))
+- **Kotlin**: Migrate YogaOverflow enum to Kotlin ([14c1d164d5](https://github.com/react/react-native/commit/14c1d164d53de189a97868e0fa3ff8e8e9e66f14) by [@cortinico](https://github.com/cortinico))
+- **Kotlin**: Migrate YogaNodeType enum to Kotlin ([bb137aa028](https://github.com/react/react-native/commit/bb137aa028990e7f6f8f4b1f82541ba758df8fac) by [@cortinico](https://github.com/cortinico))
+- **Kotlin**: Migrate YogaMeasureMode enum to Kotlin ([b7801f29c5](https://github.com/react/react-native/commit/b7801f29c50b5c71ab0e516e23d652b30f82c656) by [@cortinico](https://github.com/cortinico))
+- **Kotlin**: Migrate YogaLogLevel enum to Kotlin ([5d5350b1e4](https://github.com/react/react-native/commit/5d5350b1e48336bc669aa972ebf316df7f9809df) by [@cortinico](https://github.com/cortinico))
+- **Kotlin**: Migrate YogaJustify enum to Kotlin ([084a77631f](https://github.com/react/react-native/commit/084a77631f432eab1d007c59b91a07aef1cf75c8) by [@cortinico](https://github.com/cortinico))
+- **Kotlin**: Migrate YogaGutter enum to Kotlin ([26862a0251](https://github.com/react/react-native/commit/26862a0251b2acdfbade84da46753318a62c700d) by [@cortinico](https://github.com/cortinico))
+- **Kotlin**: Migrate YogaGridTrackType enum to Kotlin ([f1b488f5da](https://github.com/react/react-native/commit/f1b488f5dae2727472bedc9b65d901dbf20f20d5) by [@cortinico](https://github.com/cortinico))
+- **Kotlin**: Migrate YogaFlexDirection enum to Kotlin ([984621b212](https://github.com/react/react-native/commit/984621b212f803bc1db8abec877f2be6c1c45f54) by [@cortinico](https://github.com/cortinico))
+- **Kotlin**: Migrate YogaExperimentalFeature enum to Kotlin ([70ebd43a1a](https://github.com/react/react-native/commit/70ebd43a1a6c03e0fdaa7fea4e4d9bd1cc34eb41) by [@cortinico](https://github.com/cortinico))
+- **Kotlin**: Migrate YogaErrata enum to Kotlin ([d695a5cff4](https://github.com/react/react-native/commit/d695a5cff4a76674d60d835ce518c0e31709cdb1) by [@cortinico](https://github.com/cortinico))
+- **Kotlin**: Migrate YogaEdge enum to Kotlin ([2be96e8d92](https://github.com/react/react-native/commit/2be96e8d920ba09570931a09909dd18c6714ea83) by [@cortinico](https://github.com/cortinico))
+- **Kotlin**: Migrate YogaDisplay enum to Kotlin ([9580a54273](https://github.com/react/react-native/commit/9580a54273c8a4f726f88368a7adb34eaf535cae) by [@cortinico](https://github.com/cortinico))
+- **Kotlin**: Migrate YogaDimension enum to Kotlin ([2d2b9924e3](https://github.com/react/react-native/commit/2d2b9924e3a415f5aae311b71db323bf762a2bb3) by [@cortinico](https://github.com/cortinico))
+- **Kotlin**: Migrate YogaBoxSizing enum to Kotlin ([fe154568e5](https://github.com/react/react-native/commit/fe154568e55b21e87f4efe999d57cd403dd1b6b4) by [@cortinico](https://github.com/cortinico))
 - **ViewManagers**: Corrected nullability of `ViewManager#measure` ([63683f091c](https://github.com/react/react-native/commit/63683f091c7a2f01311ce05e73f7d7d9185113ee) by [@javache](https://github.com/javache))
 
 #### iOS specific
 
+- **Build**: Prebuilt-deps mode: serve third-party headers from the ReactNativeDependencies pod itself and resolve community `s.dependency` on RCT-Folly/glog/boost/etc. via dependency-only facade pods ([a8156acf8b](https://github.com/react/react-native/commit/a8156acf8bbc9ee15901cf0d8935d73454768aa7) by [@chrfalch](https://github.com/chrfalch))
+- **Build**: Remove the Clang VFS overlay from prebuilt React Native Core; resolve headers via React.xcframework + a new headers-only ReactNativeHeaders.xcframework ([376bd0e464](https://github.com/react/react-native/commit/376bd0e464b7785b4bcf8673a96746ec8107f1eb) by [@chrfalch](https://github.com/chrfalch))
 - **Native Modules**: Native modules listed in `unstableModulesRequiringMainQueueSetup` are now always initialized eagerly on the main queue during React Native init; the previous `enableEagerMainQueueModulesOnIOS` opt-in flag has been removed. ([36bec56b0b](https://github.com/react/react-native/commit/36bec56b0b6b2c385c1add41abcde347b0b34fb0) by [@javache](https://github.com/javache))
 - **Renderer**: Drain React-revision merges from a `BeforeWaiting` main run loop observer instead of dispatching each merge as a separate main-queue block ([d80377cd60](https://github.com/react/react-native/commit/d80377cd60df90ed8ebabdf15df67edd0dd1fc8f) by [@j-piasecki](https://github.com/j-piasecki))
 - **Runtime**: `RCTUnsafeExecuteOnMainQueueSync` and bridgeless sync runtime-thread calls now always use the coordinator implementation that pumps UI tasks while waiting for JS, eliminating a class of deadlocks. The previous opt-in flag has been removed. ([eaf770433a](https://github.com/react/react-native/commit/eaf770433a5e6d88e150d5da701460551f0f5603) by [@javache](https://github.com/javache))
@@ -232,10 +181,6 @@
 - **APIs**: Deprecate `DrawerLayoutAndroid`, use `react-native-drawer-layout` instead ([5c5e6cd8ce](https://github.com/react/react-native/commit/5c5e6cd8ce0bfb9c69ac39a1823872fc8eb8c40e) by [@zoontek](https://github.com/zoontek))
 - **New Architecture**: DefaultReactActivityDelegate's constructor taking new arch flags are deprecated ([935f8e5b7d](https://github.com/react/react-native/commit/935f8e5b7db7c197ad31d60dee008db22b43df5a) by [@javache](https://github.com/javache))
 - **UIManager**: Deprecate `UIBlock` interface and `UIManagerModule.addUIBlock`/`prependUIBlock` methods. Use `UIManagerListener` or View Commands instead. ([29a76918a9](https://github.com/react/react-native/commit/29a76918a988d4120dda5597575bf5be477a7635) by [@cortinico](https://github.com/cortinico))
-
-#### iOS specific
-
-
 
 ### Removed
 
@@ -273,8 +218,11 @@
 - **Blob**: Fix `Blob.slice()` for negative start offsets and inverted ranges ([b29dc966a4](https://github.com/react/react-native/commit/b29dc966a42fe3482afcadd28fa09db3310546d7) by [@durvesh1992](https://github.com/durvesh1992))
 - **Documentation**: Removed wrong changelog entry in 0.83.2 ([ef38ba4050](https://github.com/react/react-native/commit/ef38ba40507aca1c50778a3f94a51c4ee6ea191f) by [@chrfalch](https://github.com/chrfalch))
 - **DOM API**: Make `AbortSignal.any()` process its input signals in multiple passes to match the DOM specification ([1136e41bd8](https://github.com/react/react-native/commit/1136e41bd8911f0018d410f332b1253367290406) by [@rubennorte](https://github.com/rubennorte))
+- **DOM API**: Fix `parentNode`/`parentElement` returning the document instead of the containing element for `<Modal>` and other nested root host views, which severed capture/bubble event propagation to ancestors rendered above them ([e410ff5471](https://github.com/react/react-native/commit/e410ff547179f5c7ad198744f7be88117ccdef0c) by [@rubennorte](https://github.com/rubennorte))
+- **Events**: Fix use-after-free data race in EventEmitter.cpp ([5dea3b5e6c](https://github.com/react/react-native/commit/5dea3b5e6c01743a331105a031ab33e016e64b3a) by generatedunixname1383054420177565)
 - **FileReader**: Set `FileReader` `readyState` to `LOADING` during a read so `abort()` correctly emits `abort`/`loadend` ([c00813c6ee](https://github.com/react/react-native/commit/c00813c6eeee93ee98645747beed2605928f2330) by [@durvesh1992](https://github.com/durvesh1992))
 - **Image**: Parse Image srcSet density descriptors consistently ([e4cf0a1cc3](https://github.com/react/react-native/commit/e4cf0a1cc3d629916ff1331a48fd7eff65474f1b) by [@ya-nsh](https://github.com/ya-nsh))
+- **JavaScript API**: Extensionless `react-native/scripts/*` imports are now **mandated**; explicit `.js` import specifiers are rejected. ([97727ba67f](https://github.com/react/react-native/commit/97727ba67f1a4fbf5105f18bca695e272b48b836) by [@huntie](https://github.com/huntie))
 - **MapBuffer**: Avoid `memcpy(_, nullptr, 0)` UB in `MapBufferBuilder::build` for empty / scalar-only MapBuffers ([34ccf4f331](https://github.com/react/react-native/commit/34ccf4f331343ed21259808cb20c4b210912aff3) by [@javache](https://github.com/javache))
 - **Networking**: Base64-encode binary (arraybuffer/blob) response bodies in the C++ NetworkingModule so they are not corrupted when delivered to JS ([1127e54d53](https://github.com/react/react-native/commit/1127e54d539a0bc998ecc43104c7573190a87de1) by [@sathoshik](https://github.com/sathoshik))
 - **Pressable**: Fix hover out timeout stored in wrong variable in Pressability ([74b1a4d026](https://github.com/react/react-native/commit/74b1a4d026482e09103d44c5da81fb802202f0f9) by [@w3di](https://github.com/w3di))
@@ -284,9 +232,12 @@
 - **Renderer**: Fixed potential revision drop during merge ([c65845cde2](https://github.com/react/react-native/commit/c65845cde259807eb4892d0e37b80ca65be8c191) by [@j-piasecki](https://github.com/j-piasecki))
 - **Renderer**: Several view, text, scrollview, and accessibility props that the iterator-setter path silently dropped now propagate correctly through `setProp`: `automaticallyAdjustKeyboardInsets`, `dynamicTypeRamp`, `writingDirection`, `experimental_accessibilityOrder`, `transformOrigin`, and the full `borderCurves` cascaded set. ([15b1f5529a](https://github.com/react/react-native/commit/15b1f5529a45be6a1957de0f85b51c0f43ab91c6) by [@javache](https://github.com/javache))
 - **Runtime**: Fix missing format specifier in renderApplication invariant ([bc1a31fb16](https://github.com/react/react-native/commit/bc1a31fb16f0cf1ca92331499c6f2fa4e347dfbf) by [@w3di](https://github.com/w3di))
+- **Runtime**: Fix apps failing to boot ("... not registered as callable") caused by core init not running. ([08c323346b](https://github.com/react/react-native/commit/08c323346be6c0fbbd70900d48435f977a78a1bb) by [@zeyap](https://github.com/zeyap))
+- **Runtime**: Fix app failing to initialize (`HMRClient.setup()` redbox) because the environment setup module was dropped from the bundle ([eb987ef550](https://github.com/react/react-native/commit/eb987ef5504d85ff862b5a679056157888c56960) by [@cipolleschi](https://github.com/cipolleschi))
 - **Strict TypeScript API**: Add missing `textAlignVertical` prop on `<TextInput>` ([e04ff69ab3](https://github.com/react/react-native/commit/e04ff69ab37add0661b3e0a66f0c05917e0f2b8b) by [@huntie](https://github.com/huntie))
 - **Strict TypeScript API**: Add missing `pointerEvents` prop to `Text` component ([a2e042f76a](https://github.com/react/react-native/commit/a2e042f76a9aac30359deb0b06ae7f7db9f2be47) by [@huntie](https://github.com/huntie))
 - **Strict TypeScript API**: Update `getNativeScrollRef` return type across ScrollView, FlatList, and SectionList ([535b844680](https://github.com/react/react-native/commit/535b844680fdd05add3262f73c40c5f50f7bf329) by [@huntie](https://github.com/huntie))
+- **Strict TypeScript API**: Optional property types are now widened to explicitly include `| undefined` for `exactOptionalPropertyTypes` compatibility ([0fc76bb527](https://github.com/react/react-native/commit/0fc76bb5278098649672e0407a3de580b8706fa4) by [@zeyap](https://github.com/zeyap))
 - **Testing**: Fix asyncArrayBufferBorrowNativeBackedTest unconditional skip on Hermes ([9d54391814](https://github.com/react/react-native/commit/9d54391814a27032f4bc1a5e90bee147514be846) by [@christophpurrer](https://github.com/christophpurrer))
 - **Testing**: Re-enabled VirtualizedList "retains batch render region when an item is appended" tes ([c0bf1549c2](https://github.com/react/react-native/commit/c0bf1549c2bb5dc3a90ee7da293c7cf964ced119) by [@chicio](https://github.com/chicio))
 - **Text**: Fix text measurements being incorrectly reused across pixel density changes ([d53c7b52a6](https://github.com/react/react-native/commit/d53c7b52a6d21d78b822af91e817cd8b7d6ee3c8) by [@jehartzog](https://github.com/jehartzog))
@@ -341,8 +292,17 @@
 #### iOS specific
 
 - **Build**: Fix React-RCTAnimatedModuleProvider build by adding the missing Yoga dependency and a missing space between compiler flags ([08ef7b18d2](https://github.com/react/react-native/commit/08ef7b18d270914c59561873532b5d6d06c4d97b) by [@zoontek](https://github.com/zoontek))
+- **Build**: Fix "redefinition of 'HighResDuration'" / "could not build module 'React'" when building Swift pods with C++ interop against the prebuilt React-Core artifact ([9847238e3f](https://github.com/react/react-native/commit/9847238e3fc2badce8eeea659c4990aba1366d9b) by [@chrfalch](https://github.com/chrfalch))
+- **Build**: Fix "The project 'Pods' is damaged and cannot be opened" when a library uses `spm_dependency` and the generated UUID collides with an existing Pods project object ([1cdf784a06](https://github.com/react/react-native/commit/1cdf784a068e2ed16842b74c0b87b7ff7532fe03) by [@chrfalch](https://github.com/chrfalch))
+- **Build**: Ship React-Core's privacy manifest and localized strings (RCTI18nStrings) inside the prebuilt React.xcframework, so CocoaPods-prebuilt and SwiftPM apps include them ([77b75122ef](https://github.com/react/react-native/commit/77b75122ef9ed172012d7c6acb335f966d4ede79) by [@chrfalch](https://github.com/chrfalch))
+- **Build**: Fix "redefinition of module" build failure on Xcode 26.3 for pods using `spm_dependency` with prebuilt React Native core ([4a6620703c](https://github.com/react/react-native/commit/4a6620703c30b3f53917812720528684838d3bbf) by [@chrfalch](https://github.com/chrfalch))
+- **Build**: Fix Swift C++-interop build failure (implicit copy constructor of TraceRecordingState/HostTracingProfile) for libraries using cxx interop with prebuilt React Native core ([38611186f5](https://github.com/react/react-native/commit/38611186f5867bd578a269872986a5753c8b41fe) by [@chrfalch](https://github.com/chrfalch))
+- **Build**: Keep the prebuilt `Headers/` in place on a Debug/Release configuration switch so the React explicit module still resolves its module map ([df5e6f6a42](https://github.com/react/react-native/commit/df5e6f6a42eeaa431d9130aa185d0f3540aee961) by [@chrfalch](https://github.com/chrfalch))
+- **Build**: Write the prebuilt module-map flag to `OTHER_CPLUSPLUSFLAGS` so C++/ObjC++ sources resolve the relocated namespaces modularly ([14fe96ab51](https://github.com/react/react-native/commit/14fe96ab51554cac899ca49c8d50629aea421d54) by [@chrfalch](https://github.com/chrfalch))
+- **Build**: Prebuilt `ReactNativeHeaders.xcframework` now ships the Hermes public headers so consumers resolve `<hermes/...>` out of the box ([43b44ed7c3](https://github.com/react/react-native/commit/43b44ed7c30ebe331ba58ef841a89dcae37301d8) by [@chrfalch](https://github.com/chrfalch))
 - **Codegen**: Fix codegen script phase error logging in `script_phases.sh` ([f14207f9bd](https://github.com/react/react-native/commit/f14207f9bd83c42b0841d6157676a0477bc0b3b3) by [@fallintoplace](https://github.com/fallintoplace))
 - **Dev Menu**: Allow iOS apps with the dev menu enabled (`RCT_DEV_MENU`) to connect to Metro via "Change Bundle Location" ([94380cb4ad](https://github.com/react/react-native/commit/94380cb4ad18eba4164f44bd9a2c9afcef82db43) by [@fmacinator](https://github.com/fmacinator))
+- **Hermes**: Fix debug Hermes being silently embedded in Release builds after the hermes-engine pod is re-installed ([62a2b386c9](https://github.com/react/react-native/commit/62a2b386c91985a46ee048dfa6e2216ba42a7e89) by [@tjzel](https://github.com/tjzel))
 - **Image**: Fix a data race in `RCTImageLoader` loader and decoder lazy initialization that could crash with `EXC_BAD_ACCESS` ([7ed17c9d09](https://github.com/react/react-native/commit/7ed17c9d09e7d45bcaca8c0c7c4a495b58dcc69d) by Miklós Fazekas)
 - **Legacy Architecture**: Add missing `RCT_REMOVE_LEGACY_COMPONENT_INTEROP` guard to `LegacyViewManagerInteropComponentDescriptor` ([510cc0c5ec](https://github.com/react/react-native/commit/510cc0c5eccc0d921d9fcdeeb4d21ce9d57b6400) by [@christophpurrer](https://github.com/christophpurrer))
 - **LogBox**: Remove unsafe window manipulation in [RCTLogBoxView](vscode-file://vscode-app/c:/Users/agloryvimalabai/AppData/Local/Programs/Microsoft%20VS%20Code/0958016b2a/resources/app/out/vs/code/electron-browser/workbench/workbench.html) dealloc to prevent crash with SceneDelegate ([4f825d3469](https://github.com/react/react-native/commit/4f825d346924f71d80c98f4b7ba260f55ac06f52) by [@aswinandro](https://github.com/aswinandro))
@@ -357,56 +317,6 @@
 ### Security
 
 - **Dependencies**: Fix security vulnerabilities in `xmldom/xmldom`, `fast-xml-parser`, `yaml`, `fast-uri`, and `addressable` transitive dependencies ([284035b21d](https://github.com/react/react-native/commit/284035b21d94a0b2096b3aa3f39470747d191a57) by [@cortinico](https://github.com/cortinico))
-
-#### Android specific
-
-
-
-#### iOS specific
-
-
-
-### Unknown
-
-- **Animated**: Xplat/js/react-native-github/packages/react-native/ReactCommon/react/renderer/animated/drivers/DecayAnimationDriver.cpp ([69b58f308e](https://github.com/react/react-native/commit/69b58f308e4399c8b56feb9e283be2da8676890a) by generatedunixname1563563004708334)
-- **Build**: Add license header to ProGuard files ([b3c0f3ce30](https://github.com/react/react-native/commit/b3c0f3ce301369c7e7f9ea8f7442940229946d61) by [@helfper](https://github.com/helfper))
-- **C++**: Xplat/js/react-native-github/packages/react-native/ReactCommon/react/renderer/attributedstring/ParagraphAttributes.cpp ([ce057d6554](https://github.com/react/react-native/commit/ce057d6554b5ed44070336fa2353d7d6624eab92) by generatedunixname1563563004708334)
-- **Events**: Fix use-after-free data race in EventEmitter.cpp ([5dea3b5e6c](https://github.com/react/react-native/commit/5dea3b5e6c01743a331105a031ab33e016e64b3a) by generatedunixname1383054420177565)
-- **Flow**: Turn on `experimental.instance_t_objkit_fix` across fbsource roots ([71fee907fb](https://github.com/react/react-native/commit/71fee907fb9f75ecba210a9041cde7393c98697b) by [@SamChou19815](https://github.com/SamChou19815))
-- **Flow**: Transform readonly in xplatjs ([5fce2de800](https://github.com/react/react-native/commit/5fce2de80028e972951b2544be2082c951febb64) by [@marcoww6](https://github.com/marcoww6))
-- **Flow**: Fix a few readonly 10/n ([09fc0432d1](https://github.com/react/react-native/commit/09fc0432d1eb799c3c1c2ae2ef0dc3acb2944e35) by [@marcoww6](https://github.com/marcoww6))
-- **Flow**: Codemod `in/out` ([9f558a4d6a](https://github.com/react/react-native/commit/9f558a4d6a546f73babacb4de991116e19727a86) by [@marcoww6](https://github.com/marcoww6))
-- **Kotlin**: Daily `arc lint --take KTFMT` ([f9ba09d60e](https://github.com/react/react-native/commit/f9ba09d60ecb6362b695bb30d387a72a447dc790) by generatedunixname1430061942044674)
-
-#### Android Unknown
-
-- **i18n**: Translation auto-update for batch 3/64 on master ([9299204523](https://github.com/react/react-native/commit/9299204523bc5c4151c2d8972dd4669f81ecc751) by Intl Scheduler)
-- **i18n**: Translation auto-update for batch 3/64 on master ([10ec4ad01a](https://github.com/react/react-native/commit/10ec4ad01a10e2e5bd156eee18b5b56082d975de) by Intl Scheduler)
-- **i18n**: Translation auto-update for batch 2/64 on master ([a902d7402c](https://github.com/react/react-native/commit/a902d7402c241b0260121c0e8be72c691387cc1c) by Intl Scheduler)
-- **Kotlin**: Make CustomEventNamesResolver a fun interface for SAM conversion ([df4cadc126](https://github.com/react/react-native/commit/df4cadc126690ff09ea653b2d02874b892e897f2) by [@cortinico](https://github.com/cortinico))
-- **Kotlin**: Migrate YogaWrap enum to Kotlin ([6e262624fc](https://github.com/react/react-native/commit/6e262624fcb3ccea694f47b9b3474aabdeaed29f) by [@cortinico](https://github.com/cortinico))
-- **Kotlin**: Migrate YogaUnit enum to Kotlin ([97cf21dd41](https://github.com/react/react-native/commit/97cf21dd41c7c2c111b9839e71d2cfc54239fd39) by [@cortinico](https://github.com/cortinico))
-- **Kotlin**: Migrate YogaPositionType enum to Kotlin ([d181829b9c](https://github.com/react/react-native/commit/d181829b9ce9fbed9655dbded41e54baae5ef3d7) by [@cortinico](https://github.com/cortinico))
-- **Kotlin**: Migrate YogaOverflow enum to Kotlin ([14c1d164d5](https://github.com/react/react-native/commit/14c1d164d53de189a97868e0fa3ff8e8e9e66f14) by [@cortinico](https://github.com/cortinico))
-- **Kotlin**: Migrate YogaNodeType enum to Kotlin ([bb137aa028](https://github.com/react/react-native/commit/bb137aa028990e7f6f8f4b1f82541ba758df8fac) by [@cortinico](https://github.com/cortinico))
-- **Kotlin**: Migrate YogaMeasureMode enum to Kotlin ([b7801f29c5](https://github.com/react/react-native/commit/b7801f29c50b5c71ab0e516e23d652b30f82c656) by [@cortinico](https://github.com/cortinico))
-- **Kotlin**: Migrate YogaLogLevel enum to Kotlin ([5d5350b1e4](https://github.com/react/react-native/commit/5d5350b1e48336bc669aa972ebf316df7f9809df) by [@cortinico](https://github.com/cortinico))
-- **Kotlin**: Migrate YogaJustify enum to Kotlin ([084a77631f](https://github.com/react/react-native/commit/084a77631f432eab1d007c59b91a07aef1cf75c8) by [@cortinico](https://github.com/cortinico))
-- **Kotlin**: Migrate YogaGutter enum to Kotlin ([26862a0251](https://github.com/react/react-native/commit/26862a0251b2acdfbade84da46753318a62c700d) by [@cortinico](https://github.com/cortinico))
-- **Kotlin**: Migrate YogaGridTrackType enum to Kotlin ([f1b488f5da](https://github.com/react/react-native/commit/f1b488f5dae2727472bedc9b65d901dbf20f20d5) by [@cortinico](https://github.com/cortinico))
-- **Kotlin**: Migrate YogaFlexDirection enum to Kotlin ([984621b212](https://github.com/react/react-native/commit/984621b212f803bc1db8abec877f2be6c1c45f54) by [@cortinico](https://github.com/cortinico))
-- **Kotlin**: Migrate YogaExperimentalFeature enum to Kotlin ([70ebd43a1a](https://github.com/react/react-native/commit/70ebd43a1a6c03e0fdaa7fea4e4d9bd1cc34eb41) by [@cortinico](https://github.com/cortinico))
-- **Kotlin**: Migrate YogaErrata enum to Kotlin ([d695a5cff4](https://github.com/react/react-native/commit/d695a5cff4a76674d60d835ce518c0e31709cdb1) by [@cortinico](https://github.com/cortinico))
-- **Kotlin**: Migrate YogaEdge enum to Kotlin ([2be96e8d92](https://github.com/react/react-native/commit/2be96e8d920ba09570931a09909dd18c6714ea83) by [@cortinico](https://github.com/cortinico))
-- **Kotlin**: Migrate YogaDisplay enum to Kotlin ([9580a54273](https://github.com/react/react-native/commit/9580a54273c8a4f726f88368a7adb34eaf535cae) by [@cortinico](https://github.com/cortinico))
-- **Kotlin**: Migrate YogaDimension enum to Kotlin ([2d2b9924e3](https://github.com/react/react-native/commit/2d2b9924e3a415f5aae311b71db323bf762a2bb3) by [@cortinico](https://github.com/cortinico))
-- **Kotlin**: Migrate YogaBoxSizing enum to Kotlin ([fe154568e5](https://github.com/react/react-native/commit/fe154568e55b21e87f4efe999d57cd403dd1b6b4) by [@cortinico](https://github.com/cortinico))
-
-#### iOS Unknown
-
-
-
-#### Failed to parse
 
 ## v0.86.2
 
