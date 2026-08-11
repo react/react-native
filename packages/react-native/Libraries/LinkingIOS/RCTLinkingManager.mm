@@ -17,10 +17,16 @@
 
 static NSString *const kOpenURLNotification = @"RCTOpenURLNotification";
 
-static void postNotificationWithURL(NSURL *URL, id sender)
+static void postNotificationWithURL(NSURL *URL, id sender, NSDictionary *additionalInfo)
 {
-  NSDictionary<NSString *, id> *payload = @{@"url" : URL.absoluteString};
-  [[NSNotificationCenter defaultCenter] postNotificationName:kOpenURLNotification object:sender userInfo:payload];
+  NSMutableDictionary<NSString *, id> *payload = [@{@"url": URL.absoluteString} mutableCopy];
+  if (additionalInfo) {
+    [payload addEntriesFromDictionary:additionalInfo];
+  }
+
+  [[NSNotificationCenter defaultCenter] postNotificationName:kOpenURLNotification
+                                                      object:sender
+                                                    userInfo:payload];
 }
 
 @interface RCTLinkingManager () <NativeLinkingManagerSpec>
@@ -57,7 +63,7 @@ RCT_EXPORT_MODULE()
             openURL:(NSURL *)URL
             options:(NSDictionary<UIApplicationOpenURLOptionsKey, id> *)options
 {
-  postNotificationWithURL(URL, self);
+  postNotificationWithURL(URL, self, options);
   return YES;
 }
 
@@ -67,7 +73,11 @@ RCT_EXPORT_MODULE()
     sourceApplication:(NSString *)sourceApplication
            annotation:(id)annotation
 {
-  postNotificationWithURL(URL, self);
+  NSDictionary *options = @{
+    @"sourceApplication": RCTNullIfNil(sourceApplication),
+    @"annotation": RCTNullIfNil(annotation)
+  };
+  postNotificationWithURL(URL, self, options);
   return YES;
 }
 
@@ -77,8 +87,13 @@ RCT_EXPORT_MODULE()
 {
   // This can be nullish when launching an App Clip.
   if ([userActivity.activityType isEqualToString:NSUserActivityTypeBrowsingWeb] && userActivity.webpageURL != nil) {
-    NSDictionary *payload = @{@"url" : userActivity.webpageURL.absoluteString};
-    [[NSNotificationCenter defaultCenter] postNotificationName:kOpenURLNotification object:self userInfo:payload];
+    NSDictionary *options = @{
+      @"activityType": userActivity.activityType,
+      @"title": RCTNullIfNil(userActivity.title),
+      @"referrerURL": RCTNullIfNil(userActivity.referrerURL.absoluteString),
+      @"webpageURL": RCTNullIfNil(userActivity.webpageURL.absoluteString)
+    };
+    postNotificationWithURL(userActivity.webpageURL, self, options);
   }
   return YES;
 }
