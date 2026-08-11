@@ -31,28 +31,24 @@ class LazyVector {
   using size_type = std::int32_t;
   using convert_type = std::function<T(U)>;
 
-  static LazyVector<T, U> fromUnsafeRawValue(U v, size_type size, convert_type convert)
-  {
+  static LazyVector<T, U>
+  fromUnsafeRawValue(U v, size_type size, convert_type convert) {
     return {v, size, convert};
   }
 
-  U unsafeRawValue() const
-  {
+  U unsafeRawValue() const {
     return _v;
   }
 
-  bool empty() const
-  {
+  bool empty() const {
     return _size == 0;
   }
 
-  size_type size() const
-  {
+  size_type size() const {
     return _size;
   }
 
-  const_reference at(size_type pos) const
-  {
+  const_reference at(size_type pos) const {
 #ifndef _LIBCPP_NO_EXCEPTIONS
     if (!(pos < _size)) {
       throw std::out_of_range("out of range");
@@ -63,47 +59,41 @@ class LazyVector {
     return _convert(_v[pos]);
   }
 
-  const_reference operator[](size_type pos) const
-  {
+  const_reference operator[](size_type pos) const {
     assert(pos < _size);
     return _convert(_v[pos]);
   }
 
-  const_reference front() const
-  {
+  const_reference front() const {
     assert(_size);
     return (*this)[0];
   }
 
-  const_reference back() const
-  {
+  const_reference back() const {
     assert(_size);
     return (*this)[_size - 1];
   }
 
-  const_iterator begin() const
-  {
+  const_iterator begin() const {
     return const_iterator(_v, _convert, 0);
   }
 
-  const_iterator cbegin() const
-  {
+  const_iterator cbegin() const {
     return begin();
   }
 
-  const_iterator end() const
-  {
+  const_iterator end() const {
     return const_iterator(_v, _convert, _size);
   }
 
-  const_iterator cend() const
-  {
+  const_iterator cend() const {
     return end();
   }
 
  private:
   /** Wrapped vector */
-  LazyVector(U vector, size_type size, convert_type convert) : _v(vector), _size(size), _convert(convert) {}
+  LazyVector(U vector, size_type size, convert_type convert)
+      : _v(vector), _size(size), _convert(convert) {}
 
   U _v;
   size_type _size;

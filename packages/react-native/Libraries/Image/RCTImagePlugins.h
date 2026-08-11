@@ -26,7 +26,7 @@ extern "C" {
 #endif
 
 // RCTTurboModuleManagerDelegate should call this to resolve module classes.
-Class RCTImageClassProvider(const char *name);
+Class RCTImageClassProvider(const char* name);
 
 // Lookup functions
 Class RCTBundleAssetImageLoaderCls(void) __attribute__((used));

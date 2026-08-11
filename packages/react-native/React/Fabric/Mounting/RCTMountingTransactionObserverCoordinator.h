@@ -21,22 +21,25 @@ class RCTMountingTransactionObserverCoordinator final {
    * `componentViewDescriptor` does not listen the events.
    */
   void registerViewComponentDescriptor(
-      const RCTComponentViewDescriptor &componentViewDescriptor,
+      const RCTComponentViewDescriptor& componentViewDescriptor,
       facebook::react::SurfaceId surfaceId);
   void unregisterViewComponentDescriptor(
-      const RCTComponentViewDescriptor &componentViewDescriptor,
+      const RCTComponentViewDescriptor& componentViewDescriptor,
       facebook::react::SurfaceId surfaceId);
 
   /*
    * To be called from `RCTMountingManager`.
    */
   void notifyObserversMountingTransactionWillMount(
-      const facebook::react::MountingTransaction &transaction,
-      const facebook::react::SurfaceTelemetry &surfaceTelemetry) const;
+      const facebook::react::MountingTransaction& transaction,
+      const facebook::react::SurfaceTelemetry& surfaceTelemetry) const;
   void notifyObserversMountingTransactionDidMount(
-      const facebook::react::MountingTransaction &transaction,
-      const facebook::react::SurfaceTelemetry &surfaceTelemetry) const;
+      const facebook::react::MountingTransaction& transaction,
+      const facebook::react::SurfaceTelemetry& surfaceTelemetry) const;
 
  private:
-  std::unordered_map<facebook::react::SurfaceId, std::unordered_set<RCTComponentViewDescriptor>> registry_;
+  std::unordered_map<
+      facebook::react::SurfaceId,
+      std::unordered_set<RCTComponentViewDescriptor>>
+      registry_;
 };

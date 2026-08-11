@@ -26,7 +26,7 @@ extern "C" {
 #endif
 
 // RCTTurboModuleManagerDelegate should call this to resolve module classes.
-Class RCTLinkingClassProvider(const char *name);
+Class RCTLinkingClassProvider(const char* name);
 
 // Lookup functions
 Class RCTLinkingManagerCls(void) __attribute__((used));

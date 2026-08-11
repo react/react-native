@@ -40,7 +40,7 @@ extern
 
     NS_ASSUME_NONNULL_BEGIN
 
-    NSString *const RCTContentDidAppearNotification;
+        NSString *const RCTContentDidAppearNotification;
 
 /**
  * Native view used to host React-managed views within the app. Can be used just

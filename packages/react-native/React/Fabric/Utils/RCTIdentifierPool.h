@@ -14,13 +14,11 @@ namespace facebook::react {
 template <size_t size>
 class RCTIdentifierPool {
  public:
-  void enqueue(int index)
-  {
+  void enqueue(int index) {
     usage[index] = false;
   }
 
-  int dequeue()
-  {
+  int dequeue() {
     while (true) {
       if (!usage[lastIndex]) {
         usage[lastIndex] = true;
@@ -30,8 +28,7 @@ class RCTIdentifierPool {
     }
   }
 
-  void reset()
-  {
+  void reset() {
     for (int i = 0; i < size; i++) {
       usage[i] = false;
     }

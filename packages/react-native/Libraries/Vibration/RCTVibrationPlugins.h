@@ -26,7 +26,7 @@ extern "C" {
 #endif
 
 // RCTTurboModuleManagerDelegate should call this to resolve module classes.
-Class RCTVibrationClassProvider(const char *name);
+Class RCTVibrationClassProvider(const char* name);
 
 // Lookup functions
 Class RCTVibrationCls(void) __attribute__((used));

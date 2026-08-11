@@ -26,7 +26,7 @@ extern "C" {
 #endif
 
 // RCTTurboModuleManagerDelegate should call this to resolve module classes.
-Class RCTBlobClassProvider(const char *name);
+Class RCTBlobClassProvider(const char* name);
 
 // Lookup functions
 Class RCTBlobManagerCls(void) __attribute__((used));

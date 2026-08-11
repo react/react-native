@@ -26,7 +26,7 @@ extern "C" {
 #endif
 
 // RCTTurboModuleManagerDelegate should call this to resolve module classes.
-Class RCTAnimationClassProvider(const char *name);
+Class RCTAnimationClassProvider(const char* name);
 
 // Lookup functions
 Class RCTNativeAnimatedModuleCls(void) __attribute__((used));

@@ -21,23 +21,26 @@ namespace facebook::react::jsinspector_modern {
 /**
  * Glue between C++ and Objective-C for InspectorPackagerConnectionDelegate.
  */
-class RCTCxxInspectorPackagerConnectionDelegate : public InspectorPackagerConnectionDelegate {
+class RCTCxxInspectorPackagerConnectionDelegate
+    : public InspectorPackagerConnectionDelegate {
   class WebSocket : public IWebSocket {
    public:
-    WebSocket(RCTCxxInspectorWebSocketAdapter *adapter);
+    WebSocket(RCTCxxInspectorWebSocketAdapter* adapter);
     virtual void send(std::string_view message) override;
     virtual ~WebSocket() override;
 
    private:
-    RCTCxxInspectorWebSocketAdapter *const _adapter;
+    RCTCxxInspectorWebSocketAdapter* const _adapter;
   };
 
  public:
   virtual std::unique_ptr<IWebSocket> connectWebSocket(
-      const std::string &url,
+      const std::string& url,
       std::weak_ptr<IWebSocketDelegate> delegate) override;
 
-  virtual void scheduleCallback(std::function<void(void)> callback, std::chrono::milliseconds delayMs) override;
+  virtual void scheduleCallback(
+      std::function<void(void)> callback,
+      std::chrono::milliseconds delayMs) override;
 };
 } // namespace facebook::react::jsinspector_modern
 

@@ -44,9 +44,12 @@
  */
 
 #ifdef RCT_DEV
-#define RCT_MOCK_DEF(context, api) __typeof(__typeof(api) *) mockptr_##context##_##api = &api;
-#define RCT_MOCK_REF(context, api) extern __typeof(__typeof(api) *) mockptr_##context##_##api;
-#define RCT_MOCK_SET(context, api, mockapi) (mockptr_##context##_##api = &mockapi)
+#define RCT_MOCK_DEF(context, api) \
+  __typeof(__typeof(api)*) mockptr_##context##_##api = &api;
+#define RCT_MOCK_REF(context, api) \
+  extern __typeof(__typeof(api)*) mockptr_##context##_##api;
+#define RCT_MOCK_SET(context, api, mockapi) \
+  (mockptr_##context##_##api = &mockapi)
 #define RCT_MOCK_RESET(context, api) (mockptr_##context##_##api = &api)
 #define RCT_MOCK_USE(context, api) (*mockptr_##context##_##api)
 #else

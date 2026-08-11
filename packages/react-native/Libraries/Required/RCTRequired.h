@@ -44,22 +44,22 @@ struct RCTRequired {
   /// Pass-through constructor (allows for implicit conversion) for wrapped type
   /// T
   template <typename... Args>
-  RCTREQUIRED_INLINE RCTRequired(Args &&...args) : _t(std::forward<Args>(args)...)
-  {
+  RCTREQUIRED_INLINE RCTRequired(Args&&... args)
+      : _t(std::forward<Args>(args)...) {
     static_assert(
         sizeof...(Args) > 0,
         "Required struct member not initialized. Expand assert trace to see where this was triggered.");
   }
 
   RCTREQUIRED_INLINE
-  RCTRequired(const RCTRequired &) = default;
+  RCTRequired(const RCTRequired&) = default;
   RCTREQUIRED_INLINE
-  RCTRequired(RCTRequired &&) = default;
+  RCTRequired(RCTRequired&&) = default;
 
   RCTREQUIRED_INLINE
-  RCTRequired &operator=(const RCTRequired &) = default;
+  RCTRequired& operator=(const RCTRequired&) = default;
   RCTREQUIRED_INLINE
-  RCTRequired &operator=(RCTRequired &&) = default;
+  RCTRequired& operator=(RCTRequired&&) = default;
 
   RCTREQUIRED_INLINE
   ~RCTRequired() = default;
@@ -67,25 +67,21 @@ struct RCTRequired {
   /// Public accessor for private storage (Use when implicit conversion is
   /// impracticable)
   RCTREQUIRED_INLINE
-  const T &get() const
-  {
+  const T& get() const {
     return _t;
   }
   RCTREQUIRED_INLINE
-  T &get()
-  {
+  T& get() {
     return _t;
   }
 
   // Implicit conversion
   RCTREQUIRED_INLINE
-  operator T() const
-  {
+  operator T() const {
     return _t;
   }
   RCTREQUIRED_INLINE
-  operator T &()
-  {
+  operator T&() {
     return _t;
   }
 
