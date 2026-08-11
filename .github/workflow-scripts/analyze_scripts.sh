@@ -21,6 +21,6 @@ if [ -x "$(command -v shellcheck)" ]; then
     -exec sh -c 'shellcheck "$1"' -- {} \;
 
 else
-  echo 'shellcheck is not installed. See https://github.com/facebook/react-native/wiki/Development-Dependencies#shellcheck for instructions.'
+  echo 'shellcheck is not installed. Install it via your package manager, e.g. `brew install shellcheck`.'
   exit 1
 fi

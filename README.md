@@ -119,12 +119,6 @@ Read our [**Contributing Guide**][contribute] to learn about our development pro
 
 [contribute]: https://reactnative.dev/docs/contributing
 
-### [Open Source Roadmap][roadmap]
-
-You can learn more about our vision for React Native in the [**Roadmap**][roadmap].
-
-[roadmap]: https://github.com/facebook/react-native/wiki/Roadmap
-
 ### Good First Issues
 
 We have a list of [good first issues][gfi] that contain bugs which have a relatively limited scope. This is a great place to get started, gain experience, and get familiar with our contribution process.
