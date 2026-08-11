@@ -26,13 +26,13 @@ class DevServerHelper {
       std::string deviceName,
       std::string devServerHost,
       uint32_t devServerPort,
-      const HttpClientFactory &httpClientFactory,
+      const HttpClientFactory& httpClientFactory,
       JavaScriptModuleCallback javaScriptModuleCallback) noexcept;
   ~DevServerHelper() noexcept = default;
 
   std::future<std::string> downloadBundleResourceSync(
-      const std::string &jsBundleUrl,
-      DownloadProgressCallback &&downloadProgressCallback = nullptr);
+      const std::string& jsBundleUrl,
+      DownloadProgressCallback&& downloadProgressCallback = nullptr);
 
   std::string getInspectorUrl() const;
 
@@ -42,8 +42,7 @@ class DevServerHelper {
 
   void openDebugger() const;
 
-  void setSourcePath(const std::string &sourcePath)
-  {
+  void setSourcePath(const std::string& sourcePath) {
     sourcePath_ = sourcePath;
   }
 

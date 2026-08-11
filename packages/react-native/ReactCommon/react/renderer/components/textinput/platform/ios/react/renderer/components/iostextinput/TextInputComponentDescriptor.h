@@ -15,20 +15,19 @@ namespace facebook::react {
 /*
  * Descriptor for <TextInput> component.
  */
-class TextInputComponentDescriptor final : public ConcreteComponentDescriptor<TextInputShadowNode> {
+class TextInputComponentDescriptor final
+    : public ConcreteComponentDescriptor<TextInputShadowNode> {
  public:
-  TextInputComponentDescriptor(const ComponentDescriptorParameters &parameters)
+  TextInputComponentDescriptor(const ComponentDescriptorParameters& parameters)
       : ConcreteComponentDescriptor<TextInputShadowNode>(parameters),
-        textLayoutManager_(std::make_shared<TextLayoutManager>(contextContainer_))
-  {
-  }
+        textLayoutManager_(
+            std::make_shared<TextLayoutManager>(contextContainer_)) {}
 
  protected:
-  void adopt(ShadowNode &shadowNode) const override
-  {
+  void adopt(ShadowNode& shadowNode) const override {
     ConcreteComponentDescriptor::adopt(shadowNode);
 
-    auto &concreteShadowNode = static_cast<TextInputShadowNode &>(shadowNode);
+    auto& concreteShadowNode = static_cast<TextInputShadowNode&>(shadowNode);
     concreteShadowNode.setTextLayoutManager(textLayoutManager_);
   }
 

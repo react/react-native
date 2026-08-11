@@ -13,28 +13,33 @@
 
 namespace facebook::react {
 
-class DefaultEventTypesProvider : public jni::JavaClass<DefaultEventTypesProvider> {
+class DefaultEventTypesProvider
+    : public jni::JavaClass<DefaultEventTypesProvider> {
  public:
-  static constexpr const char *kJavaDescriptor =
+  static constexpr const char* kJavaDescriptor =
       "Lcom/facebook/react/uimanager/UIConstantsProviderBinding$DefaultEventTypesProvider;";
 
-  folly::dynamic getDefaultEventTypes() const
-  {
+  folly::dynamic getDefaultEventTypes() const {
     static auto method =
-        javaClassStatic()->getMethod<jni::alias_ref<NativeMap::jhybridobject>()>("getDefaultEventTypes");
+        javaClassStatic()
+            ->getMethod<jni::alias_ref<NativeMap::jhybridobject>()>(
+                "getDefaultEventTypes");
     return method(self())->cthis()->consume();
   }
 };
 
-class ConstantsForViewManagerProvider : public jni::JavaClass<ConstantsForViewManagerProvider> {
+class ConstantsForViewManagerProvider
+    : public jni::JavaClass<ConstantsForViewManagerProvider> {
  public:
-  static constexpr const char *kJavaDescriptor =
+  static constexpr const char* kJavaDescriptor =
       "Lcom/facebook/react/uimanager/UIConstantsProviderBinding$ConstantsForViewManagerProvider;";
 
-  folly::dynamic getConstantsForViewManager(const std::string &viewManagerName) const
-  {
-    static auto method = javaClassStatic()->getMethod<jni::alias_ref<NativeMap::jhybridobject>(const std::string &)>(
-        "getConstantsForViewManager");
+  folly::dynamic getConstantsForViewManager(
+      const std::string& viewManagerName) const {
+    static auto method =
+        javaClassStatic()
+            ->getMethod<jni::alias_ref<NativeMap::jhybridobject>(
+                const std::string&)>("getConstantsForViewManager");
     auto result = method(self(), viewManagerName);
     if (result == nullptr) {
       return nullptr;
@@ -45,25 +50,31 @@ class ConstantsForViewManagerProvider : public jni::JavaClass<ConstantsForViewMa
 
 class ConstantsProvider : public jni::JavaClass<ConstantsProvider> {
  public:
-  static constexpr const char *kJavaDescriptor =
+  static constexpr const char* kJavaDescriptor =
       "Lcom/facebook/react/uimanager/UIConstantsProviderBinding$ConstantsProvider;";
 
-  folly::dynamic getConstants() const
-  {
-    static auto method = javaClassStatic()->getMethod<jni::alias_ref<NativeMap::jhybridobject>()>("getConstants");
+  folly::dynamic getConstants() const {
+    static auto method =
+        javaClassStatic()
+            ->getMethod<jni::alias_ref<NativeMap::jhybridobject>()>(
+                "getConstants");
     return method(self())->cthis()->consume();
   }
 };
 
-class UIConstantsProviderBinding : public jni::JavaClass<UIConstantsProviderBinding> {
+class UIConstantsProviderBinding
+    : public jni::JavaClass<UIConstantsProviderBinding> {
  public:
-  static auto constexpr kJavaDescriptor = "Lcom/facebook/react/uimanager/UIConstantsProviderBinding;";
+  static auto constexpr kJavaDescriptor =
+      "Lcom/facebook/react/uimanager/UIConstantsProviderBinding;";
 
   static void install(
       jni::alias_ref<jclass> /* unused */,
       jni::alias_ref<JRuntimeExecutor::javaobject> runtimeExecutor,
-      jni::alias_ref<DefaultEventTypesProvider::javaobject> defaultExportableEventTypesProvider,
-      jni::alias_ref<ConstantsForViewManagerProvider::javaobject> constantsForViewManagerProvider,
+      jni::alias_ref<DefaultEventTypesProvider::javaobject>
+          defaultExportableEventTypesProvider,
+      jni::alias_ref<ConstantsForViewManagerProvider::javaobject>
+          constantsForViewManagerProvider,
       jni::alias_ref<ConstantsProvider::javaobject> constantsProvider);
 
   static void registerNatives();

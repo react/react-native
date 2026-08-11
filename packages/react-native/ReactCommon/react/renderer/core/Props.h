@@ -30,10 +30,11 @@ class Props : public virtual Sealable, public virtual DebugStringConvertible {
 
   Props() = default;
   Props(
-      const PropsParserContext &context,
-      const Props &sourceProps,
-      const RawProps &rawProps,
-      const std::function<bool(const std::string &)> &filterObjectKeys = nullptr);
+      const PropsParserContext& context,
+      const Props& sourceProps,
+      const RawProps& rawProps,
+      const std::function<bool(const std::string&)>& filterObjectKeys =
+          nullptr);
 
 #if RN_DEBUG_STRING_CONVERTIBLE
   virtual ~Props() override = default;
@@ -41,8 +42,8 @@ class Props : public virtual Sealable, public virtual DebugStringConvertible {
   virtual ~Props() = default;
 #endif
 
-  Props(const Props &other) = default;
-  Props &operator=(const Props &other) = delete;
+  Props(const Props& other) = default;
+  Props& operator=(const Props& other) = delete;
 
   /**
    * Set a prop value via iteration (see enableIterator above).
@@ -54,8 +55,11 @@ class Props : public virtual Sealable, public virtual DebugStringConvertible {
    * multiple times for different values in the hierarchy. For example, if
    * ViewProps uses "propX", Props may also use "propX".
    */
-  void
-  setProp(const PropsParserContext &context, RawPropsPropNameHash hash, const char *propName, const RawValue &value);
+  void setProp(
+      const PropsParserContext& context,
+      RawPropsPropNameHash hash,
+      const char* propName,
+      const RawValue& value);
 
   std::string nativeId;
 
@@ -63,14 +67,14 @@ class Props : public virtual Sealable, public virtual DebugStringConvertible {
   folly::dynamic rawProps = folly::dynamic::object();
 
   void initializeDynamicProps(
-      const Props &sourceProps,
-      const RawProps &rawProps,
-      [[maybe_unused]] const std::function<bool(const std::string &)> &filterObjectKeys = nullptr);
+      const Props& sourceProps,
+      const RawProps& rawProps,
+      [[maybe_unused]] const std::function<bool(const std::string&)>&
+          filterObjectKeys = nullptr);
 
   virtual ComponentName getDiffPropsImplementationTarget() const;
 
-  virtual folly::dynamic getDiffProps(const Props *prevProps) const
-  {
+  virtual folly::dynamic getDiffProps(const Props* prevProps) const {
     return folly::dynamic::object();
   }
 #endif
@@ -107,7 +111,8 @@ auto memberFunctionClass(T C::*) -> C;
  * fields would never be reached by the iterator-setter dispatch.
  */
 template <typename T>
-concept DeclaresOwnSetProp = std::is_same_v<decltype(detail::memberFunctionClass(&T::setProp)), T>;
+concept DeclaresOwnSetProp =
+    std::is_same_v<decltype(detail::memberFunctionClass(&T::setProp)), T>;
 
 /*
  * Internal: `T` exposes a `setProp(ctx, hash, name, value) -> void` callable
@@ -115,7 +120,11 @@ concept DeclaresOwnSetProp = std::is_same_v<decltype(detail::memberFunctionClass
  */
 template <typename T>
 concept HasSetProp = DeclaresOwnSetProp<T> &&
-    requires(T &t, const PropsParserContext &ctx, RawPropsPropNameHash hash, const char *name, const RawValue &value) {
+    requires(T& t,
+             const PropsParserContext& ctx,
+             RawPropsPropNameHash hash,
+             const char* name,
+             const RawValue& value) {
       { t.setProp(ctx, hash, name, value) } -> std::same_as<void>;
     };
 
@@ -144,6 +153,7 @@ concept HasSetProp = DeclaresOwnSetProp<T> &&
  * for that component regardless of the runtime flag.
  */
 template <typename T>
-concept HasIteratorSetterCtor = std::copy_constructible<T> && std::derived_from<T, Props> && HasSetProp<T>;
+concept HasIteratorSetterCtor =
+    std::copy_constructible<T> && std::derived_from<T, Props> && HasSetProp<T>;
 
 } // namespace facebook::react

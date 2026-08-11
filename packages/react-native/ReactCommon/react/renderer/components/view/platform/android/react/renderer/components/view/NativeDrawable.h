@@ -30,8 +30,7 @@ struct NativeDrawable {
     bool borderless{false};
     std::optional<Float> alpha{};
 
-    bool operator==(const Ripple &rhs) const
-    {
+    bool operator==(const Ripple& rhs) const {
       return std::tie(
                  this->color,
                  this->colorResourcePaths,
@@ -39,7 +38,13 @@ struct NativeDrawable {
                  this->borderless,
                  this->rippleRadius,
                  this->alpha) ==
-          std::tie(rhs.color, rhs.colorResourcePaths, rhs.colorFallback, rhs.borderless, rhs.rippleRadius, rhs.alpha);
+          std::tie(
+                 rhs.color,
+                 rhs.colorResourcePaths,
+                 rhs.colorFallback,
+                 rhs.borderless,
+                 rhs.rippleRadius,
+                 rhs.alpha);
     }
   };
 
@@ -47,8 +52,7 @@ struct NativeDrawable {
   Ripple ripple;
   Kind kind;
 
-  bool operator==(const NativeDrawable &rhs) const
-  {
+  bool operator==(const NativeDrawable& rhs) const {
     if (this->kind != rhs.kind) {
       return false;
     }
@@ -61,25 +65,29 @@ struct NativeDrawable {
     }
   }
 
-  bool operator!=(const NativeDrawable &rhs) const
-  {
+  bool operator!=(const NativeDrawable& rhs) const {
     return !(*this == rhs);
   }
 
   ~NativeDrawable() = default;
 };
 
-static inline void fromRawValue(const PropsParserContext &context, const RawValue &rawValue, NativeDrawable &result)
-{
+static inline void fromRawValue(
+    const PropsParserContext& context,
+    const RawValue& rawValue,
+    NativeDrawable& result) {
   auto map = (std::unordered_map<std::string, RawValue>)rawValue;
 
   auto typeIterator = map.find("type");
-  react_native_expect(typeIterator != map.end() && typeIterator->second.hasType<std::string>());
+  react_native_expect(
+      typeIterator != map.end() && typeIterator->second.hasType<std::string>());
   std::string type = (std::string)typeIterator->second;
 
   if (type == "ThemeAttrAndroid") {
     auto attrIterator = map.find("attribute");
-    react_native_expect(attrIterator != map.end() && attrIterator->second.hasType<std::string>());
+    react_native_expect(
+        attrIterator != map.end() &&
+        attrIterator->second.hasType<std::string>());
 
     result = NativeDrawable{
         .themeAttr = (std::string)attrIterator->second,
@@ -101,12 +109,15 @@ static inline void fromRawValue(const PropsParserContext &context, const RawValu
       // of vector<string> (which would assert on the string value).
       bool handledAsResourcePaths = false;
       if (color->second.hasType<std::unordered_map<std::string, RawValue>>()) {
-        auto colorMap = (std::unordered_map<std::string, RawValue>)color->second;
+        auto colorMap =
+            (std::unordered_map<std::string, RawValue>)color->second;
         auto pathsIt = colorMap.find("resource_paths");
-        if (pathsIt != colorMap.end() && pathsIt->second.hasType<std::vector<std::string>>()) {
+        if (pathsIt != colorMap.end() &&
+            pathsIt->second.hasType<std::vector<std::string>>()) {
           parsedColorResourcePaths = (std::vector<std::string>)pathsIt->second;
           auto fallbackIt = colorMap.find("fallback");
-          if (fallbackIt != colorMap.end() && fallbackIt->second.hasType<std::string>()) {
+          if (fallbackIt != colorMap.end() &&
+              fallbackIt->second.hasType<std::string>()) {
             parsedColorFallback = (std::string)fallbackIt->second;
           }
           handledAsResourcePaths = true;
@@ -133,11 +144,14 @@ static inline void fromRawValue(const PropsParserContext &context, const RawValu
                 .color = parsedColor,
                 .colorResourcePaths = parsedColorResourcePaths,
                 .colorFallback = parsedColorFallback,
-                .rippleRadius = rippleRadius != map.end() && rippleRadius->second.hasType<Float>()
+                .rippleRadius = rippleRadius != map.end() &&
+                        rippleRadius->second.hasType<Float>()
                     ? (Float)rippleRadius->second
                     : std::optional<Float>{},
-                .borderless =
-                    borderless != map.end() && borderless->second.hasType<bool>() ? (bool)borderless->second : false,
+                .borderless = borderless != map.end() &&
+                        borderless->second.hasType<bool>()
+                    ? (bool)borderless->second
+                    : false,
                 .alpha = parsedAlpha,
             },
         .kind = NativeDrawable::Kind::Ripple,

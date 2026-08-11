@@ -30,7 +30,9 @@ namespace facebook::react {
  */
 template <typename ShadowNodeT>
 class ConcreteComponentDescriptor : public ComponentDescriptor {
-  static_assert(std::is_base_of<ShadowNode, ShadowNodeT>::value, "ShadowNodeT must be a descendant of ShadowNode");
+  static_assert(
+      std::is_base_of<ShadowNode, ShadowNodeT>::value,
+      "ShadowNodeT must be a descendant of ShadowNode");
 
   using SharedShadowNodeT = std::shared_ptr<const ShadowNodeT>;
 
@@ -39,15 +41,15 @@ class ConcreteComponentDescriptor : public ComponentDescriptor {
   using ConcreteProps = typename ShadowNodeT::ConcreteProps;
   using SharedConcreteProps = typename ShadowNodeT::SharedConcreteProps;
   using ConcreteEventEmitter = typename ShadowNodeT::ConcreteEventEmitter;
-  using SharedConcreteEventEmitter = typename ShadowNodeT::SharedConcreteEventEmitter;
+  using SharedConcreteEventEmitter =
+      typename ShadowNodeT::SharedConcreteEventEmitter;
   using ConcreteState = typename ShadowNodeT::ConcreteState;
   using ConcreteStateData = typename ShadowNodeT::ConcreteState::Data;
 
   explicit ConcreteComponentDescriptor(
-      const ComponentDescriptorParameters &parameters,
-      RawPropsParser &&rawPropsParser = {})
-      : ComponentDescriptor(parameters, std::move(rawPropsParser))
-  {
+      const ComponentDescriptorParameters& parameters,
+      RawPropsParser&& rawPropsParser = {})
+      : ComponentDescriptor(parameters, std::move(rawPropsParser)) {
     // The parser's `keys_` / `nameToIndex_` are only consumed by
     // `RawProps::at()`, which is reached exclusively through the classic
     // per-field `convertRawProp` path. When `ConcreteProps` opts into the
@@ -62,35 +64,32 @@ class ConcreteComponentDescriptor : public ComponentDescriptor {
     }
   }
 
-  ComponentHandle getComponentHandle() const override
-  {
+  ComponentHandle getComponentHandle() const override {
     return ShadowNodeT::Handle();
   }
 
-  ComponentName getComponentName() const override
-  {
+  ComponentName getComponentName() const override {
     return ShadowNodeT::Name();
   }
 
-  ShadowNodeTraits getTraits() const override
-  {
+  ShadowNodeTraits getTraits() const override {
     return ShadowNodeT::BaseTraits();
   }
 
   std::shared_ptr<ShadowNode> createShadowNode(
-      const ShadowNodeFragment &fragment,
-      const ShadowNodeFamily::Shared &family) const override
-  {
-    auto shadowNode = std::make_shared<ShadowNodeT>(fragment, family, getTraits());
+      const ShadowNodeFragment& fragment,
+      const ShadowNodeFamily::Shared& family) const override {
+    auto shadowNode =
+        std::make_shared<ShadowNodeT>(fragment, family, getTraits());
 
     adopt(*shadowNode);
 
     return shadowNode;
   }
 
-  std::shared_ptr<ShadowNode> cloneShadowNode(const ShadowNode &sourceShadowNode, const ShadowNodeFragment &fragment)
-      const override
-  {
+  std::shared_ptr<ShadowNode> cloneShadowNode(
+      const ShadowNode& sourceShadowNode,
+      const ShadowNodeFragment& fragment) const override {
     auto shadowNode = std::make_shared<ShadowNodeT>(sourceShadowNode, fragment);
     shadowNode->completeClone(sourceShadowNode, fragment);
     sourceShadowNode.transferRuntimeShadowNodeReference(shadowNode, fragment);
@@ -100,16 +99,18 @@ class ConcreteComponentDescriptor : public ComponentDescriptor {
   }
 
   void appendChild(
-      const std::shared_ptr<const ShadowNode> &parentShadowNode,
-      const std::shared_ptr<const ShadowNode> &childShadowNode) const override
-  {
-    auto &concreteParentShadowNode = static_cast<const ShadowNodeT &>(*parentShadowNode);
-    const_cast<ShadowNodeT &>(concreteParentShadowNode).appendChild(childShadowNode);
+      const std::shared_ptr<const ShadowNode>& parentShadowNode,
+      const std::shared_ptr<const ShadowNode>& childShadowNode) const override {
+    auto& concreteParentShadowNode =
+        static_cast<const ShadowNodeT&>(*parentShadowNode);
+    const_cast<ShadowNodeT&>(concreteParentShadowNode)
+        .appendChild(childShadowNode);
   }
 
-  virtual Props::Shared cloneProps(const PropsParserContext &context, const Props::Shared &props, RawProps rawProps)
-      const override
-  {
+  virtual Props::Shared cloneProps(
+      const PropsParserContext& context,
+      const Props::Shared& props,
+      RawProps rawProps) const override {
     // Optimization:
     // Quite often nodes are constructed with default/empty props: the base
     // `props` object is `null` (there no base because it's not cloning) and the
@@ -133,8 +134,10 @@ class ConcreteComponentDescriptor : public ComponentDescriptor {
     //  - Classic (the fallback for any `ConcreteProps` that doesn't opt in,
     //    and the only path when the flag is off): parse + per-field
     //    `convertRawProp` via the 3-arg ctor.
-    constexpr bool kSupportsIteratorSetter = HasIteratorSetterCtor<ConcreteProps>;
-    const bool useIteratorSetter = kSupportsIteratorSetter && ReactNativeFeatureFlags::enableCppPropsIteratorSetter();
+    constexpr bool kSupportsIteratorSetter =
+        HasIteratorSetterCtor<ConcreteProps>;
+    const bool useIteratorSetter = kSupportsIteratorSetter &&
+        ReactNativeFeatureFlags::enableCppPropsIteratorSetter();
 
     std::shared_ptr<ConcreteProps> shadowNodeProps;
     if constexpr (kSupportsIteratorSetter) {
@@ -151,13 +154,16 @@ class ConcreteComponentDescriptor : public ComponentDescriptor {
     bool fallbackToDynamicRawPropsAccumulation = true;
     if (ReactNativeFeatureFlags::enableExclusivePropsUpdateAndroid() &&
         ReactNativeFeatureFlags::enableAccumulatedUpdatesInRawPropsAndroid()) {
-      // When exclusive props update is enabled, we only apply Props 1.5 processing
-      // (raw props merging) when Props 2.0 is not available.
+      // When exclusive props update is enabled, we only apply Props 1.5
+      // processing (raw props merging) when Props 2.0 is not available.
       if (ReactNativeFeatureFlags::enablePropsUpdateReconciliationAndroid()) {
         // Cast to base Props reference to safely call virtual method
-        const auto &baseProps = static_cast<const Props &>(*shadowNodeProps);
-        if (strcmp(ShadowNodeT::Name(), baseProps.getDiffPropsImplementationTarget()) == 0) {
-          // Props 2.0 supported for this component, Props 1.5 processing can be skipped
+        const auto& baseProps = static_cast<const Props&>(*shadowNodeProps);
+        if (strcmp(
+                ShadowNodeT::Name(),
+                baseProps.getDiffPropsImplementationTarget()) == 0) {
+          // Props 2.0 supported for this component, Props 1.5 processing can be
+          // skipped
           fallbackToDynamicRawPropsAccumulation = false;
         }
       }
@@ -169,28 +175,32 @@ class ConcreteComponentDescriptor : public ComponentDescriptor {
 
     if constexpr (kSupportsIteratorSetter) {
       if (useIteratorSetter) {
-        rawProps.forEachItem([&](std::string_view name, const RawValue &value) {
-          shadowNodeProps->setProp(context, RAW_PROPS_KEY_HASH(name), name.data(), value);
+        rawProps.forEachItem([&](std::string_view name, const RawValue& value) {
+          shadowNodeProps->setProp(
+              context, RAW_PROPS_KEY_HASH(name), name.data(), value);
         });
       }
     }
     return shadowNodeProps;
   };
 
-  virtual State::Shared createInitialState(const Props::Shared &props, const ShadowNodeFamily::Shared &family)
-      const override
-  {
+  virtual State::Shared createInitialState(
+      const Props::Shared& props,
+      const ShadowNodeFamily::Shared& family) const override {
     if (std::is_same<ConcreteStateData, StateData>::value) {
       // Default case: Returning `null` for nodes that don't use `State`.
       return nullptr;
     }
 
     return std::make_shared<ConcreteState>(
-        std::make_shared<const ConcreteStateData>(ConcreteShadowNode::initialStateData(props, family, *this)), family);
+        std::make_shared<const ConcreteStateData>(
+            ConcreteShadowNode::initialStateData(props, family, *this)),
+        family);
   }
 
-  virtual State::Shared createState(const ShadowNodeFamily &family, const StateData::Shared &data) const override
-  {
+  virtual State::Shared createState(
+      const ShadowNodeFamily& family,
+      const StateData::Shared& data) const override {
     if (std::is_same<ConcreteStateData, StateData>::value) {
       // Default case: Returning `null` for nodes that don't use `State`.
       return nullptr;
@@ -199,31 +209,37 @@ class ConcreteComponentDescriptor : public ComponentDescriptor {
     react_native_assert(data && "Provided `data` is nullptr.");
 
     return std::make_shared<const ConcreteState>(
-        std::static_pointer_cast<const ConcreteStateData>(data), *family.getMostRecentState());
+        std::static_pointer_cast<const ConcreteStateData>(data),
+        *family.getMostRecentState());
   }
 
-  ShadowNodeFamily::Shared createFamily(const ShadowNodeFamilyFragment &fragment) const override
-  {
+  ShadowNodeFamily::Shared createFamily(
+      const ShadowNodeFamilyFragment& fragment) const override {
     auto eventEmitter = std::make_shared<ConcreteEventEmitter>(
-        std::make_shared<EventTarget>(fragment.instanceHandle, fragment.surfaceId), eventDispatcher_);
-    auto family = std::make_shared<ShadowNodeFamily>(fragment, eventEmitter, eventDispatcher_, *this);
+        std::make_shared<EventTarget>(
+            fragment.instanceHandle, fragment.surfaceId),
+        eventDispatcher_);
+    auto family = std::make_shared<ShadowNodeFamily>(
+        fragment, eventEmitter, eventDispatcher_, *this);
     eventEmitter->setShadowNodeFamily(family);
     return family;
   }
 
  protected:
-  virtual void adopt(ShadowNode &shadowNode) const override
-  {
+  virtual void adopt(ShadowNode& shadowNode) const override {
     // Default implementation does nothing.
-    react_native_assert(shadowNode.getComponentHandle() == getComponentHandle());
+    react_native_assert(
+        shadowNode.getComponentHandle() == getComponentHandle());
   }
 };
 
 template <typename TManager>
-std::shared_ptr<TManager> getManagerByName(std::shared_ptr<const ContextContainer> &contextContainer, const char name[])
-{
+std::shared_ptr<TManager> getManagerByName(
+    std::shared_ptr<const ContextContainer>& contextContainer,
+    const char name[]) {
   if (contextContainer) {
-    if (auto manager = contextContainer->find<std::shared_ptr<TManager>>(name); manager.has_value()) {
+    if (auto manager = contextContainer->find<std::shared_ptr<TManager>>(name);
+        manager.has_value()) {
       return manager.value();
     }
   }

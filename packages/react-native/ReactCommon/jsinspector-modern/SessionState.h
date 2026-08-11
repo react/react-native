@@ -42,7 +42,8 @@ struct SessionState {
    * matching Chrome's behaviour (a binding not added by the current session
    * will not emit events on it).
    */
-  std::unordered_map<std::string, ExecutionContextSelectorSet> subscribedBindings;
+  std::unordered_map<std::string, ExecutionContextSelectorSet>
+      subscribedBindings;
 
   /**
    * A single script registered during this session using @cdp

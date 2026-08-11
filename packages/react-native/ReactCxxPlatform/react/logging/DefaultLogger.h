@@ -12,7 +12,8 @@
 
 namespace facebook::react {
 
-using Logger = std::function<void(const std::string &message, unsigned int logLevel)>;
+using Logger =
+    std::function<void(const std::string& message, unsigned int logLevel)>;
 
 Logger getDefaultLogger();
 

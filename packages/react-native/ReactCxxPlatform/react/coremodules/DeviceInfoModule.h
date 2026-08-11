@@ -12,9 +12,15 @@
 
 namespace facebook::react {
 
-using DisplayMetrics = NativeDeviceInfoDisplayMetrics<double, double, double, double>;
+using DisplayMetrics =
+    NativeDeviceInfoDisplayMetrics<double, double, double, double>;
 
-using DisplayMetricsAndroid = NativeDeviceInfoDisplayMetricsAndroid<double, double, double, double, double>;
+using DisplayMetricsAndroid = NativeDeviceInfoDisplayMetricsAndroid<
+    double,
+    double,
+    double,
+    double,
+    double>;
 
 using DimensionsPayload = NativeDeviceInfoDimensionsPayload<
     std::optional<DisplayMetrics>,
@@ -22,26 +28,33 @@ using DimensionsPayload = NativeDeviceInfoDimensionsPayload<
     std::optional<DisplayMetricsAndroid>,
     std::optional<DisplayMetricsAndroid>>;
 
-using DeviceInfoConstants =
-    NativeDeviceInfoDeviceInfoConstants<DimensionsPayload, std::optional<bool>, std::optional<bool>>;
+using DeviceInfoConstants = NativeDeviceInfoDeviceInfoConstants<
+    DimensionsPayload,
+    std::optional<bool>,
+    std::optional<bool>>;
 
 template <>
-struct Bridging<DisplayMetrics> : NativeDeviceInfoDisplayMetricsBridging<DisplayMetrics> {};
+struct Bridging<DisplayMetrics>
+    : NativeDeviceInfoDisplayMetricsBridging<DisplayMetrics> {};
 
 template <>
-struct Bridging<DisplayMetricsAndroid> : NativeDeviceInfoDisplayMetricsAndroidBridging<DisplayMetricsAndroid> {};
+struct Bridging<DisplayMetricsAndroid>
+    : NativeDeviceInfoDisplayMetricsAndroidBridging<DisplayMetricsAndroid> {};
 
 template <>
-struct Bridging<DimensionsPayload> : NativeDeviceInfoDimensionsPayloadBridging<DimensionsPayload> {};
+struct Bridging<DimensionsPayload>
+    : NativeDeviceInfoDimensionsPayloadBridging<DimensionsPayload> {};
 
 template <>
-struct Bridging<DeviceInfoConstants> : NativeDeviceInfoDeviceInfoConstantsBridging<DeviceInfoConstants> {};
+struct Bridging<DeviceInfoConstants>
+    : NativeDeviceInfoDeviceInfoConstantsBridging<DeviceInfoConstants> {};
 
 class DeviceInfoModule : public NativeDeviceInfoCxxSpec<DeviceInfoModule> {
  public:
-  explicit DeviceInfoModule(std::shared_ptr<CallInvoker> jsInvoker) : NativeDeviceInfoCxxSpec(jsInvoker) {}
+  explicit DeviceInfoModule(std::shared_ptr<CallInvoker> jsInvoker)
+      : NativeDeviceInfoCxxSpec(jsInvoker) {}
 
-  DeviceInfoConstants getConstants(jsi::Runtime &rt);
+  DeviceInfoConstants getConstants(jsi::Runtime& rt);
 };
 
 } // namespace facebook::react

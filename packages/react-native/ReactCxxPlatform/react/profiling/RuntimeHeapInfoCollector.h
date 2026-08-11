@@ -20,9 +20,9 @@ struct HeapInfo {
   int64_t numCollections{0};
 };
 
-inline std::ostream &operator<<(std::ostream &os, HeapInfo &heapInfo)
-{
-  os << "[heapInfo: allocatedBytes: " << heapInfo.allocatedBytes << ", heapSize: " << heapInfo.heapSize
+inline std::ostream& operator<<(std::ostream& os, HeapInfo& heapInfo) {
+  os << "[heapInfo: allocatedBytes: " << heapInfo.allocatedBytes
+     << ", heapSize: " << heapInfo.heapSize
      << ", numCollections: " << heapInfo.numCollections << "]";
   return os;
 }
@@ -31,12 +31,12 @@ class RuntimeHeapInfoCollector {
  public:
   RuntimeHeapInfoCollector(std::chrono::milliseconds intervalMs);
 
-  static std::unique_ptr<RuntimeHeapInfoCollector> create(std::chrono::milliseconds intervalMs);
+  static std::unique_ptr<RuntimeHeapInfoCollector> create(
+      std::chrono::milliseconds intervalMs);
 
-  void collectHeapInfo(jsi::Runtime &runtime);
+  void collectHeapInfo(jsi::Runtime& runtime);
 
-  HeapInfo getHeapInfo()
-  {
+  HeapInfo getHeapInfo() {
     return heapInfo_;
   }
 

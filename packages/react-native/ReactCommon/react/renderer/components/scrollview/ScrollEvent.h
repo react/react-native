@@ -34,10 +34,11 @@ struct ScrollEvent : public EventPayload {
   /*
    * EventPayload implementations
    */
-  jsi::Value asJSIValue(jsi::Runtime &runtime) const override;
+  jsi::Value asJSIValue(jsi::Runtime& runtime) const override;
   EventPayloadType getType() const override;
 
-  std::optional<double> extractValue(const std::vector<std::string> &path) const override;
+  std::optional<double> extractValue(
+      const std::vector<std::string>& path) const override;
 };
 
 struct ScrollEndDragEvent : public ScrollEvent {
@@ -46,23 +47,22 @@ struct ScrollEndDragEvent : public ScrollEvent {
 
   ScrollEndDragEvent() = default;
 
-  ScrollEndDragEvent(const ScrollEvent &scrollEvent) : ScrollEvent(scrollEvent), targetContentOffset({}), velocity({})
-  {
-  }
+  ScrollEndDragEvent(const ScrollEvent& scrollEvent)
+      : ScrollEvent(scrollEvent), targetContentOffset({}), velocity({}) {}
 
   folly::dynamic asDynamic() const;
 
   /*
    * EventPayload implementations
    */
-  jsi::Value asJSIValue(jsi::Runtime &runtime) const override;
+  jsi::Value asJSIValue(jsi::Runtime& runtime) const override;
 };
 
 #if RN_DEBUG_STRING_CONVERTIBLE
 
-std::string getDebugName(const ScrollEvent &scrollEvent);
+std::string getDebugName(const ScrollEvent& scrollEvent);
 std::vector<DebugStringConvertibleObject> getDebugProps(
-    const ScrollEvent &scrollEvent,
+    const ScrollEvent& scrollEvent,
     DebugStringConvertibleOptions options);
 
 #endif

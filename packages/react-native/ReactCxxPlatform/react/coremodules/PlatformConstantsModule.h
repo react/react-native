@@ -13,44 +13,49 @@
 namespace facebook::react {
 
 using ReactNativeVersionAndroid =
-    NativePlatformConstantsAndroidReactNativeVersionAndroid<int, int, int, std::optional<int>>;
+    NativePlatformConstantsAndroidReactNativeVersionAndroid<
+        int,
+        int,
+        int,
+        std::optional<int>>;
 
 template <>
 struct Bridging<ReactNativeVersionAndroid>
-    : NativePlatformConstantsAndroidReactNativeVersionAndroidBridging<ReactNativeVersionAndroid> {};
+    : NativePlatformConstantsAndroidReactNativeVersionAndroidBridging<
+          ReactNativeVersionAndroid> {};
 
-using PlatformConstantsAndroid = NativePlatformConstantsAndroidPlatformConstantsAndroid<
-    bool,
-    std::optional<bool>,
-    ReactNativeVersionAndroid,
-    int,
-    std::string,
-    std::string,
-    std::string,
-    std::string,
-    std::optional<std::string>,
-    std::string,
-    std::string,
-    std::string>;
+using PlatformConstantsAndroid =
+    NativePlatformConstantsAndroidPlatformConstantsAndroid<
+        bool,
+        std::optional<bool>,
+        ReactNativeVersionAndroid,
+        int,
+        std::string,
+        std::string,
+        std::string,
+        std::string,
+        std::optional<std::string>,
+        std::string,
+        std::string,
+        std::string>;
 
 template <>
 struct Bridging<PlatformConstantsAndroid>
-    : NativePlatformConstantsAndroidPlatformConstantsAndroidBridging<PlatformConstantsAndroid> {};
+    : NativePlatformConstantsAndroidPlatformConstantsAndroidBridging<
+          PlatformConstantsAndroid> {};
 
 // T159303412: [RN] Metro: Need support for new target platform
-class PlatformConstantsModule : public NativePlatformConstantsAndroidCxxSpec<PlatformConstantsModule> {
+class PlatformConstantsModule
+    : public NativePlatformConstantsAndroidCxxSpec<PlatformConstantsModule> {
  public:
   explicit PlatformConstantsModule(std::shared_ptr<CallInvoker> jsInvoker)
-      : NativePlatformConstantsAndroidCxxSpec(jsInvoker)
-  {
-  }
+      : NativePlatformConstantsAndroidCxxSpec(jsInvoker) {}
 
-  std::string getAndroidID(jsi::Runtime & /*rt*/)
-  {
+  std::string getAndroidID(jsi::Runtime& /*rt*/) {
     return "";
   }
 
-  PlatformConstantsAndroid getConstants(jsi::Runtime &rt);
+  PlatformConstantsAndroid getConstants(jsi::Runtime& rt);
 };
 
 } // namespace facebook::react

@@ -30,17 +30,19 @@ namespace facebook {
  */
 template <typename T>
 class UniquePtrFactory {
-  static_assert(std::has_virtual_destructor_v<T>, "T must have a virtual destructor");
+  static_assert(
+      std::has_virtual_destructor_v<T>,
+      "T must have a virtual destructor");
 
  public:
   /**
    * Creates a new object of type T, and returns a unique_ptr wrapping it.
    */
   template <typename... Args>
-  std::unique_ptr<T> make_unique(Args &&...args)
-  {
+  std::unique_ptr<T> make_unique(Args&&... args) {
     size_t index = objectPtrs_.size();
-    auto ptr = std::make_unique<Facade>(*this, index, std::forward<Args>(args)...);
+    auto ptr =
+        std::make_unique<Facade>(*this, index, std::forward<Args>(args)...);
     objectPtrs_.push_back(ptr.get());
     return ptr;
   }
@@ -50,17 +52,17 @@ class UniquePtrFactory {
    * function may only be used while the factory is alive.
    */
   template <typename... Args>
-  std::function<std::unique_ptr<T>(Args &&...)> lazily_make_unique()
-  {
-    return [this](Args &&...args) { return make_unique(std::forward<Args>(args)...); };
+  std::function<std::unique_ptr<T>(Args&&...)> lazily_make_unique() {
+    return [this](Args&&... args) {
+      return make_unique(std::forward<Args>(args)...);
+    };
   }
 
   /**
    * Returns a pointer to the `index`th object created by this factory,
    * or nullptr if the object has been destroyed (or not created yet).
    */
-  T *operator[](size_t index)
-  {
+  T* operator[](size_t index) {
     return index >= objectPtrs_.size() ? nullptr : objectPtrs_[index];
   }
 
@@ -68,8 +70,7 @@ class UniquePtrFactory {
    * Returns a pointer to the `index`th object created by this factory,
    * or nullptr if the object has been destroyed (or not created yet).
    */
-  const T *operator[](size_t index) const
-  {
+  const T* operator[](size_t index) const {
     return index >= objectPtrs_.size() ? nullptr : objectPtrs_[index];
   }
 
@@ -77,8 +78,7 @@ class UniquePtrFactory {
    * Returns the total number of objects created by this factory, including
    * those that have already been destroyed.
    */
-  size_t objectsVended() const
-  {
+  size_t objectsVended() const {
     return objectPtrs_.size();
   }
 
@@ -92,20 +92,19 @@ class UniquePtrFactory {
   class Facade : public T {
    public:
     template <typename... Args>
-    Facade(UniquePtrFactory &container, size_t index, Args &&...args)
-        : T(std::forward<Args>(args)...), container_(container), index_(index)
-    {
-    }
+    Facade(UniquePtrFactory& container, size_t index, Args&&... args)
+        : T(std::forward<Args>(args)...),
+          container_(container),
+          index_(index) {}
 
-    virtual ~Facade() override
-    {
+    virtual ~Facade() override {
       container_.objectPtrs_[index_] = nullptr;
     }
 
-    UniquePtrFactory &container_;
+    UniquePtrFactory& container_;
     size_t index_;
   };
-  std::vector<T *> objectPtrs_;
+  std::vector<T*> objectPtrs_;
 };
 
 } // namespace facebook

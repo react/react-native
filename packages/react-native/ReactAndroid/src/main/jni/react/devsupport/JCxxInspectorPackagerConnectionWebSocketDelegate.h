@@ -20,14 +20,17 @@ namespace facebook::react::jsinspector_modern {
  * IWebSocketDelegate to Java.
  */
 class JCxxInspectorPackagerConnectionWebSocketDelegate
-    : public jni::HybridClass<JCxxInspectorPackagerConnectionWebSocketDelegate> {
+    : public jni::HybridClass<
+          JCxxInspectorPackagerConnectionWebSocketDelegate> {
  public:
   static auto constexpr kJavaDescriptor =
       "Lcom/facebook/react/devsupport/CxxInspectorPackagerConnection$WebSocketDelegate;";
 
-  void didFailWithError(jni::alias_ref<jni::JInteger> posixCode, const std::string &error);
+  void didFailWithError(
+      jni::alias_ref<jni::JInteger> posixCode,
+      const std::string& error);
 
-  void didReceiveMessage(const std::string &message);
+  void didReceiveMessage(const std::string& message);
 
   void didOpen();
 
@@ -35,7 +38,8 @@ class JCxxInspectorPackagerConnectionWebSocketDelegate
 
   static void registerNatives();
 
-  JCxxInspectorPackagerConnectionWebSocketDelegate(std::weak_ptr<IWebSocketDelegate> cxxDelegate);
+  JCxxInspectorPackagerConnectionWebSocketDelegate(
+      std::weak_ptr<IWebSocketDelegate> cxxDelegate);
 
  private:
   friend HybridBase;

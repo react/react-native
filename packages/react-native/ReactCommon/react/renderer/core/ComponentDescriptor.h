@@ -46,14 +46,16 @@ class ComponentDescriptor {
    */
   using Flavor = std::shared_ptr<const void>;
 
-  explicit ComponentDescriptor(const ComponentDescriptorParameters &parameters, RawPropsParser &&rawPropsParser = {});
+  explicit ComponentDescriptor(
+      const ComponentDescriptorParameters& parameters,
+      RawPropsParser&& rawPropsParser = {});
 
   virtual ~ComponentDescriptor() = default;
 
   /*
    * Returns stored instance of `ContextContainer`.
    */
-  const std::shared_ptr<const ContextContainer> &getContextContainer() const;
+  const std::shared_ptr<const ContextContainer>& getContextContainer() const;
 
   /*
    * Returns `componentHandle` associated with particular kind of components.
@@ -77,22 +79,22 @@ class ComponentDescriptor {
    * Creates a new `ShadowNode` of a particular component type.
    */
   virtual std::shared_ptr<ShadowNode> createShadowNode(
-      const ShadowNodeFragment &fragment,
-      const ShadowNodeFamily::Shared &family) const = 0;
+      const ShadowNodeFragment& fragment,
+      const ShadowNodeFamily::Shared& family) const = 0;
 
   /*
    * Clones a `ShadowNode` with optionally new `props` and/or `children`.
    */
   virtual std::shared_ptr<ShadowNode> cloneShadowNode(
-      const ShadowNode &sourceShadowNode,
-      const ShadowNodeFragment &fragment) const = 0;
+      const ShadowNode& sourceShadowNode,
+      const ShadowNodeFragment& fragment) const = 0;
 
   /*
    * Appends (by mutating) a given `childShadowNode` to `parentShadowNode`.
    */
   virtual void appendChild(
-      const std::shared_ptr<const ShadowNode> &parentShadowNode,
-      const std::shared_ptr<const ShadowNode> &childShadowNode) const = 0;
+      const std::shared_ptr<const ShadowNode>& parentShadowNode,
+      const std::shared_ptr<const ShadowNode>& childShadowNode) const = 0;
 
   /*
    * Creates a new `Props` of a particular type with all values copied from
@@ -101,26 +103,32 @@ class ComponentDescriptor {
    * will be used.
    * Must return an object which is NOT pointer equal to `props`.
    */
-  virtual Props::Shared cloneProps(const PropsParserContext &context, const Props::Shared &props, RawProps rawProps)
-      const = 0;
+  virtual Props::Shared cloneProps(
+      const PropsParserContext& context,
+      const Props::Shared& props,
+      RawProps rawProps) const = 0;
 
   /*
    * Create an initial State object that represents (and contains) an initial
    * State's data which can be constructed based on initial Props.
    */
-  virtual State::Shared createInitialState(const Props::Shared &props, const ShadowNodeFamily::Shared &family)
-      const = 0;
+  virtual State::Shared createInitialState(
+      const Props::Shared& props,
+      const ShadowNodeFamily::Shared& family) const = 0;
 
   /*
    * Creates a new State object that represents (and contains) a new version of
    * State's data.
    */
-  virtual State::Shared createState(const ShadowNodeFamily &family, const StateData::Shared &data) const = 0;
+  virtual State::Shared createState(
+      const ShadowNodeFamily& family,
+      const StateData::Shared& data) const = 0;
 
   /*
    * Creates a shadow node family for particular node.
    */
-  virtual ShadowNodeFamily::Shared createFamily(const ShadowNodeFamilyFragment &fragment) const = 0;
+  virtual ShadowNodeFamily::Shared createFamily(
+      const ShadowNodeFamilyFragment& fragment) const = 0;
 
  protected:
   friend ShadowNode;
@@ -143,7 +151,7 @@ class ComponentDescriptor {
    *   - Set `ShadowNode`'s size from state in
    * `ModalHostViewComponentDescriptor`.
    */
-  virtual void adopt(ShadowNode &shadowNode) const = 0;
+  virtual void adopt(ShadowNode& shadowNode) const = 0;
 };
 
 /*

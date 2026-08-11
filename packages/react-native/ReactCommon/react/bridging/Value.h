@@ -16,8 +16,7 @@ namespace facebook::react {
 
 template <>
 struct Bridging<std::nullptr_t> {
-  static std::nullptr_t fromJs(jsi::Runtime &rt, const jsi::Value &value)
-  {
+  static std::nullptr_t fromJs(jsi::Runtime& rt, const jsi::Value& value) {
     if (value.isNull() || value.isUndefined()) {
       return nullptr;
     } else {
@@ -25,17 +24,17 @@ struct Bridging<std::nullptr_t> {
     }
   }
 
-  static std::nullptr_t toJs(jsi::Runtime & /*unused*/, std::nullptr_t)
-  {
+  static std::nullptr_t toJs(jsi::Runtime& /*unused*/, std::nullptr_t) {
     return nullptr;
   }
 };
 
 template <typename T>
 struct Bridging<std::optional<T>> {
-  static std::optional<T>
-  fromJs(jsi::Runtime &rt, const jsi::Value &value, const std::shared_ptr<CallInvoker> &jsInvoker)
-  {
+  static std::optional<T> fromJs(
+      jsi::Runtime& rt,
+      const jsi::Value& value,
+      const std::shared_ptr<CallInvoker>& jsInvoker) {
     if (value.isNull() || value.isUndefined()) {
       return {};
     }
@@ -43,17 +42,20 @@ struct Bridging<std::optional<T>> {
   }
 
   template <typename U>
-  static std::optional<T>
-  fromJs(jsi::Runtime &rt, const std::optional<U> &value, const std::shared_ptr<CallInvoker> &jsInvoker)
-  {
+  static std::optional<T> fromJs(
+      jsi::Runtime& rt,
+      const std::optional<U>& value,
+      const std::shared_ptr<CallInvoker>& jsInvoker) {
     if (value) {
       return bridging::fromJs<T>(rt, *value, jsInvoker);
     }
     return {};
   }
 
-  static jsi::Value toJs(jsi::Runtime &rt, const std::optional<T> &value, const std::shared_ptr<CallInvoker> &jsInvoker)
-  {
+  static jsi::Value toJs(
+      jsi::Runtime& rt,
+      const std::optional<T>& value,
+      const std::shared_ptr<CallInvoker>& jsInvoker) {
     if (value) {
       return bridging::toJs(rt, *value, jsInvoker);
     }
@@ -62,9 +64,13 @@ struct Bridging<std::optional<T>> {
 };
 
 template <typename T>
-struct Bridging<std::shared_ptr<T>, std::enable_if_t<!std::is_base_of_v<jsi::HostObject, T>>> {
-  static jsi::Value toJs(jsi::Runtime &rt, const std::shared_ptr<T> &ptr, const std::shared_ptr<CallInvoker> &jsInvoker)
-  {
+struct Bridging<
+    std::shared_ptr<T>,
+    std::enable_if_t<!std::is_base_of_v<jsi::HostObject, T>>> {
+  static jsi::Value toJs(
+      jsi::Runtime& rt,
+      const std::shared_ptr<T>& ptr,
+      const std::shared_ptr<CallInvoker>& jsInvoker) {
     if (ptr) {
       return bridging::toJs(rt, *ptr, jsInvoker);
     }
@@ -74,8 +80,10 @@ struct Bridging<std::shared_ptr<T>, std::enable_if_t<!std::is_base_of_v<jsi::Hos
 
 template <typename T>
 struct Bridging<std::unique_ptr<T>> {
-  static jsi::Value toJs(jsi::Runtime &rt, const std::unique_ptr<T> &ptr, const std::shared_ptr<CallInvoker> &jsInvoker)
-  {
+  static jsi::Value toJs(
+      jsi::Runtime& rt,
+      const std::unique_ptr<T>& ptr,
+      const std::shared_ptr<CallInvoker>& jsInvoker) {
     if (ptr) {
       return bridging::toJs(rt, *ptr, jsInvoker);
     }
@@ -85,9 +93,10 @@ struct Bridging<std::unique_ptr<T>> {
 
 template <typename T>
 struct Bridging<std::weak_ptr<T>> {
-  static jsi::Value
-  toJs(jsi::Runtime &rt, const std::weak_ptr<T> &weakPtr, const std::shared_ptr<CallInvoker> &jsInvoker)
-  {
+  static jsi::Value toJs(
+      jsi::Runtime& rt,
+      const std::weak_ptr<T>& weakPtr,
+      const std::shared_ptr<CallInvoker>& jsInvoker) {
     if (auto ptr = weakPtr.lock()) {
       return bridging::toJs(rt, *ptr, jsInvoker);
     }

@@ -21,7 +21,9 @@ class JsErrorHandler {
       std::string methodName;
       std::optional<int> lineNumber;
       std::optional<int> column;
-      friend std::ostream &operator<<(std::ostream &os, const StackFrame &frame);
+      friend std::ostream& operator<<(
+          std::ostream& os,
+          const StackFrame& frame);
     };
 
     std::string message;
@@ -32,17 +34,25 @@ class JsErrorHandler {
     int id;
     bool isFatal;
     jsi::Object extraData;
-    friend std::ostream &operator<<(std::ostream &os, const ProcessedError &error);
+    friend std::ostream& operator<<(
+        std::ostream& os,
+        const ProcessedError& error);
   };
 
-  using OnJsError = std::function<void(jsi::Runtime &runtime, const ProcessedError &error)>;
+  using OnJsError =
+      std::function<void(jsi::Runtime& runtime, const ProcessedError& error)>;
 
   explicit JsErrorHandler(OnJsError onJsError);
   ~JsErrorHandler();
 
-  void handleError(jsi::Runtime &runtime, jsi::JSError &error, bool isFatal, bool logToConsole = true);
+  void handleError(
+      jsi::Runtime& runtime,
+      jsi::JSError& error,
+      bool isFatal,
+      bool logToConsole = true);
   bool hasHandledFatalError();
-  void registerErrorListener(const std::function<void(jsi::Runtime &, jsi::Value)> &listener);
+  void registerErrorListener(
+      const std::function<void(jsi::Runtime&, jsi::Value)>& listener);
   void setRuntimeReady();
   bool isRuntimeReady();
   void notifyOfFatalError();
@@ -60,9 +70,13 @@ class JsErrorHandler {
   bool _hasHandledFatalError{};
   bool _isRuntimeReady{};
   std::shared_ptr<bool> _inErrorHandler;
-  std::vector<std::function<void(jsi::Runtime &, jsi::Value)>> _errorListeners;
+  std::vector<std::function<void(jsi::Runtime&, jsi::Value)>> _errorListeners;
 
-  void handleErrorWithCppPipeline(jsi::Runtime &runtime, jsi::JSError &error, bool isFatal, bool logToConsole);
+  void handleErrorWithCppPipeline(
+      jsi::Runtime& runtime,
+      jsi::JSError& error,
+      bool isFatal,
+      bool logToConsole);
 };
 
 } // namespace facebook::react

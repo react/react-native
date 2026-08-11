@@ -24,8 +24,7 @@ PERFETTO_DEFINE_CATEGORIES_IN_NAMESPACE(
 
 void initializePerfetto();
 
-inline uint64_t getCurrentPerfettoTimestamp()
-{
+inline uint64_t getCurrentPerfettoTimestamp() {
   return std::chrono::duration_cast<std::chrono::nanoseconds>(
              std::chrono::high_resolution_clock::now().time_since_epoch())
       .count();

@@ -11,10 +11,10 @@
 
 namespace facebook::react {
 
-class ReactNativeFeatureFlagsOverridesOSSStable : public ReactNativeFeatureFlagsDefaults {
+class ReactNativeFeatureFlagsOverridesOSSStable
+    : public ReactNativeFeatureFlagsDefaults {
  public:
-  bool useNativeViewConfigsInBridgelessMode() override
-  {
+  bool useNativeViewConfigsInBridgelessMode() override {
     return true;
   }
 };

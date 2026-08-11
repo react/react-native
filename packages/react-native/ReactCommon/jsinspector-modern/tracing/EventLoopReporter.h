@@ -22,10 +22,10 @@ struct EventLoopReporter {
  public:
   explicit EventLoopReporter(EventLoopPhase phase);
 
-  EventLoopReporter(const EventLoopReporter &) = delete;
-  EventLoopReporter(EventLoopReporter &&) = delete;
-  EventLoopReporter &operator=(const EventLoopReporter &) = delete;
-  EventLoopReporter &operator=(EventLoopReporter &&) = delete;
+  EventLoopReporter(const EventLoopReporter&) = delete;
+  EventLoopReporter(EventLoopReporter&&) = delete;
+  EventLoopReporter& operator=(const EventLoopReporter&) = delete;
+  EventLoopReporter& operator=(EventLoopReporter&&) = delete;
 
   ~EventLoopReporter();
 

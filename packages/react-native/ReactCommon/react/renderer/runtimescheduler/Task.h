@@ -23,12 +23,18 @@ class RuntimeScheduler_Legacy;
 class RuntimeScheduler_Modern;
 class TaskPriorityComparer;
 
-using RawCallback = std::function<void(jsi::Runtime &)>;
+using RawCallback = std::function<void(jsi::Runtime&)>;
 
 struct Task final : public jsi::NativeState {
-  Task(SchedulerPriority priority, jsi::Function &&callback, HighResTimeStamp expirationTime);
+  Task(
+      SchedulerPriority priority,
+      jsi::Function&& callback,
+      HighResTimeStamp expirationTime);
 
-  Task(SchedulerPriority priority, RawCallback &&callback, HighResTimeStamp expirationTime);
+  Task(
+      SchedulerPriority priority,
+      RawCallback&& callback,
+      HighResTimeStamp expirationTime);
 
  private:
 #ifndef RCT_REMOVE_LEGACY_ARCH
@@ -42,13 +48,14 @@ struct Task final : public jsi::NativeState {
   HighResTimeStamp expirationTime;
   uint64_t id;
 
-  jsi::Value execute(jsi::Runtime &runtime, bool didUserCallbackTimeout);
+  jsi::Value execute(jsi::Runtime& runtime, bool didUserCallbackTimeout);
 };
 
 class TaskPriorityComparer {
  public:
-  inline bool operator()(const std::shared_ptr<Task> &lhs, const std::shared_ptr<Task> &rhs)
-  {
+  inline bool operator()(
+      const std::shared_ptr<Task>& lhs,
+      const std::shared_ptr<Task>& rhs) {
     return lhs->expirationTime > rhs->expirationTime;
   }
 };

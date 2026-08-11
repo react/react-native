@@ -67,7 +67,7 @@ class InspectorPackagerConnectionDelegate {
    * state when created, and automatically disconnect when destroyed.
    */
   virtual std::unique_ptr<IWebSocket> connectWebSocket(
-      const std::string &url,
+      const std::string& url,
       std::weak_ptr<IWebSocketDelegate> delegate) = 0;
 
   /**
@@ -78,7 +78,9 @@ class InspectorPackagerConnectionDelegate {
    * further callbacks are being accepted, e.g. if the application is
    * terminating.
    */
-  virtual void scheduleCallback(std::function<void(void)> callback, std::chrono::milliseconds delayMs) = 0;
+  virtual void scheduleCallback(
+      std::function<void(void)> callback,
+      std::chrono::milliseconds delayMs) = 0;
 };
 
 } // namespace facebook::react::jsinspector_modern

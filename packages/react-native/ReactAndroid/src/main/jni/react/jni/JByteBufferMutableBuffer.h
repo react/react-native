@@ -24,27 +24,22 @@ namespace facebook::react {
 class JByteBufferMutableBuffer final : public jsi::MutableBuffer {
  public:
   explicit JByteBufferMutableBuffer(jni::alias_ref<jni::JByteBuffer> byteBuffer)
-      : byteBuffer_(jni::make_global(byteBuffer))
-  {
-  }
+      : byteBuffer_(jni::make_global(byteBuffer)) {}
 
-  ~JByteBufferMutableBuffer() override
-  {
+  ~JByteBufferMutableBuffer() override {
     jni::ThreadScope threadScope;
     byteBuffer_.reset();
   }
 
-  JByteBufferMutableBuffer(const JByteBufferMutableBuffer &) = delete;
-  JByteBufferMutableBuffer &operator=(const JByteBufferMutableBuffer &) = delete;
-  JByteBufferMutableBuffer(JByteBufferMutableBuffer &&) = delete;
-  JByteBufferMutableBuffer &operator=(JByteBufferMutableBuffer &&) = delete;
+  JByteBufferMutableBuffer(const JByteBufferMutableBuffer&) = delete;
+  JByteBufferMutableBuffer& operator=(const JByteBufferMutableBuffer&) = delete;
+  JByteBufferMutableBuffer(JByteBufferMutableBuffer&&) = delete;
+  JByteBufferMutableBuffer& operator=(JByteBufferMutableBuffer&&) = delete;
 
-  size_t size() const override
-  {
+  size_t size() const override {
     return byteBuffer_->getDirectSize();
   }
-  uint8_t *data() override
-  {
+  uint8_t* data() override {
     return byteBuffer_->getDirectBytes();
   }
 

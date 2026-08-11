@@ -40,13 +40,13 @@ struct CSSTransformOrigin {
   std::variant<CSSLength, CSSPercentage> y{};
   CSSLength z{};
 
-  constexpr bool operator==(const CSSTransformOrigin &rhs) const = default;
+  constexpr bool operator==(const CSSTransformOrigin& rhs) const = default;
 };
 
 template <>
 struct CSSDataTypeParser<CSSTransformOrigin> {
-  static constexpr auto consume(CSSValueParser &parser) -> std::optional<CSSTransformOrigin>
-  {
+  static constexpr auto consume(CSSValueParser& parser)
+      -> std::optional<CSSTransformOrigin> {
     //  [ left | center | right | top | bottom | <length-percentage> ]
     // |
     //   [ left | center | right | <length-percentage> ]
@@ -54,21 +54,27 @@ struct CSSDataTypeParser<CSSTransformOrigin> {
     // |
     //   [ [ center | left | right ] && [ center | top | bottom ] ] <length>?
 
-    auto firstValue = parser.parseNextValue<CSSLengthPercentage, CSSTransformOriginKeyword>();
+    auto firstValue =
+        parser.parseNextValue<CSSLengthPercentage, CSSTransformOriginKeyword>();
     if (std::holds_alternative<std::monostate>(firstValue)) {
       return {};
     }
 
-    auto secondValue = parser.parseNextValue<CSSLengthPercentage, CSSTransformOriginKeyword>(CSSDelimiter::Whitespace);
+    auto secondValue =
+        parser.parseNextValue<CSSLengthPercentage, CSSTransformOriginKeyword>(
+            CSSDelimiter::Whitespace);
 
     if (std::holds_alternative<std::monostate>(secondValue)) {
       return singleValue(firstValue);
     }
 
-    auto thirdValue = parser.parseNextValue<CSSLength>(CSSDelimiter::Whitespace);
+    auto thirdValue =
+        parser.parseNextValue<CSSLength>(CSSDelimiter::Whitespace);
 
-    if (std::holds_alternative<CSSLength>(firstValue) || std::holds_alternative<CSSPercentage>(firstValue) ||
-        std::holds_alternative<CSSLength>(secondValue) || std::holds_alternative<CSSPercentage>(secondValue)) {
+    if (std::holds_alternative<CSSLength>(firstValue) ||
+        std::holds_alternative<CSSPercentage>(firstValue) ||
+        std::holds_alternative<CSSLength>(secondValue) ||
+        std::holds_alternative<CSSPercentage>(secondValue)) {
       return xyLengthPercentageValue(firstValue, secondValue, thirdValue);
     }
 
@@ -85,8 +91,11 @@ struct CSSDataTypeParser<CSSTransformOrigin> {
 
  private:
   static constexpr CSSTransformOrigin singleValue(
-      const std::variant<std::monostate, CSSLength, CSSPercentage, CSSTransformOriginKeyword> &value)
-  {
+      const std::variant<
+          std::monostate,
+          CSSLength,
+          CSSPercentage,
+          CSSTransformOriginKeyword>& value) {
     CSSTransformOrigin result{};
 
     if (std::holds_alternative<CSSLength>(value)) {
@@ -97,11 +106,13 @@ struct CSSDataTypeParser<CSSTransformOrigin> {
       result.y = keywordPercentage(CSSTransformOriginKeyword::Center);
     } else if (std::holds_alternative<CSSTransformOriginKeyword>(value)) {
       if (isHorizontalKeyword(std::get<CSSTransformOriginKeyword>(value))) {
-        result.x = keywordPercentage(std::get<CSSTransformOriginKeyword>(value));
+        result.x =
+            keywordPercentage(std::get<CSSTransformOriginKeyword>(value));
         result.y = keywordPercentage(CSSTransformOriginKeyword::Center);
       } else {
         result.x = keywordPercentage(CSSTransformOriginKeyword::Center);
-        result.y = keywordPercentage(std::get<CSSTransformOriginKeyword>(value));
+        result.y =
+            keywordPercentage(std::get<CSSTransformOriginKeyword>(value));
       }
     }
 
@@ -109,10 +120,17 @@ struct CSSDataTypeParser<CSSTransformOrigin> {
   }
 
   static constexpr std::optional<CSSTransformOrigin> xyLengthPercentageValue(
-      const std::variant<std::monostate, CSSLength, CSSPercentage, CSSTransformOriginKeyword> &val1,
-      const std::variant<std::monostate, CSSLength, CSSPercentage, CSSTransformOriginKeyword> &val2,
-      const std::variant<std::monostate, CSSLength> &val3)
-  {
+      const std::variant<
+          std::monostate,
+          CSSLength,
+          CSSPercentage,
+          CSSTransformOriginKeyword>& val1,
+      const std::variant<
+          std::monostate,
+          CSSLength,
+          CSSPercentage,
+          CSSTransformOriginKeyword>& val2,
+      const std::variant<std::monostate, CSSLength>& val3) {
     CSSTransformOrigin result{};
 
     if (std::holds_alternative<CSSLength>(val1)) {
@@ -149,39 +167,42 @@ struct CSSDataTypeParser<CSSTransformOrigin> {
   static constexpr std::optional<CSSTransformOrigin> xyKeywordValue(
       CSSTransformOriginKeyword val1,
       CSSTransformOriginKeyword val2,
-      const std::variant<std::monostate, CSSLength> &val3)
-  {
+      const std::variant<std::monostate, CSSLength>& val3) {
     if (isHorizontalKeyword(val1) && isVerticalKeyword(val2)) {
       return CSSTransformOrigin{
           .x = keywordPercentage(val1),
           .y = keywordPercentage(val2),
-          .z = std::holds_alternative<CSSLength>(val3) ? std::get<CSSLength>(val3) : CSSLength{}};
+          .z = std::holds_alternative<CSSLength>(val3)
+              ? std::get<CSSLength>(val3)
+              : CSSLength{}};
     }
 
     if (isVerticalKeyword(val1) && isHorizontalKeyword(val2)) {
       return CSSTransformOrigin{
           .x = keywordPercentage(val2),
           .y = keywordPercentage(val1),
-          .z = std::holds_alternative<CSSLength>(val3) ? std::get<CSSLength>(val3) : CSSLength{}};
+          .z = std::holds_alternative<CSSLength>(val3)
+              ? std::get<CSSLength>(val3)
+              : CSSLength{}};
     }
 
     return {};
   }
 
-  static constexpr bool isHorizontalKeyword(CSSTransformOriginKeyword keyword)
-  {
-    return keyword == CSSTransformOriginKeyword::Left || keyword == CSSTransformOriginKeyword::Center ||
+  static constexpr bool isHorizontalKeyword(CSSTransformOriginKeyword keyword) {
+    return keyword == CSSTransformOriginKeyword::Left ||
+        keyword == CSSTransformOriginKeyword::Center ||
         keyword == CSSTransformOriginKeyword::Right;
   }
 
-  static constexpr bool isVerticalKeyword(CSSTransformOriginKeyword keyword)
-  {
-    return keyword == CSSTransformOriginKeyword::Top || keyword == CSSTransformOriginKeyword::Center ||
+  static constexpr bool isVerticalKeyword(CSSTransformOriginKeyword keyword) {
+    return keyword == CSSTransformOriginKeyword::Top ||
+        keyword == CSSTransformOriginKeyword::Center ||
         keyword == CSSTransformOriginKeyword::Bottom;
   }
 
-  static constexpr CSSPercentage keywordPercentage(CSSTransformOriginKeyword keyword)
-  {
+  static constexpr CSSPercentage keywordPercentage(
+      CSSTransformOriginKeyword keyword) {
     switch (keyword) {
       case CSSTransformOriginKeyword::Left:
         return CSSPercentage{0.0f};

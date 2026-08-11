@@ -69,13 +69,13 @@ namespace facebook::react {
 struct TraceSection {
  public:
   template <typename... ConvertsToStringPiece>
-  explicit TraceSection([[maybe_unused]] const char *name, [[maybe_unused]] ConvertsToStringPiece &&...args)
-  {
+  explicit TraceSection(
+      [[maybe_unused]] const char* name,
+      [[maybe_unused]] ConvertsToStringPiece&&... args) {
     TRACE_EVENT_BEGIN("react-native", perfetto::DynamicString{name}, args...);
   }
 
-  ~TraceSection()
-  {
+  ~TraceSection() {
     TRACE_EVENT_END("react-native");
   }
 };
@@ -84,10 +84,10 @@ using TraceSectionUnwrapped = TraceSection;
 struct ConcreteTraceSection {
  public:
   template <typename... ConvertsToStringPiece>
-  explicit ConcreteTraceSection(const char *name, ConvertsToStringPiece &&...args)
-      : m_section(TRACE_TAG_REACT, name, args...)
-  {
-  }
+  explicit ConcreteTraceSection(
+      const char* name,
+      ConvertsToStringPiece&&... args)
+      : m_section(TRACE_TAG_REACT, name, args...) {}
 
  private:
   fbsystrace::FbSystraceSection m_section;
@@ -97,9 +97,9 @@ using TraceSectionUnwrapped = ConcreteTraceSection;
 struct DummyTraceSection {
  public:
   template <typename... ConvertsToStringPiece>
-  explicit DummyTraceSection([[maybe_unused]] const char *name, [[maybe_unused]] ConvertsToStringPiece &&...args)
-  {
-  }
+  explicit DummyTraceSection(
+      [[maybe_unused]] const char* name,
+      [[maybe_unused]] ConvertsToStringPiece&&... args) {}
 };
 using TraceSectionUnwrapped = DummyTraceSection;
 #endif
@@ -110,14 +110,14 @@ using TraceSectionUnwrapped = DummyTraceSection;
  * In the case of WITH_LOOM_TRACE we don't use the signposts APIs because of the
  * templated type for TraceSection.
  */
-#if defined(__APPLE__) && OS_LOG_TARGET_HAS_10_15_FEATURES && !defined(WITH_LOOM_TRACE) && !defined(WITH_PERFETTO)
+#if defined(__APPLE__) && OS_LOG_TARGET_HAS_10_15_FEATURES && \
+    !defined(WITH_LOOM_TRACE) && !defined(WITH_PERFETTO)
 
 namespace systrace {
 
 template <typename T, typename = void>
 struct renderer {
-  static std::string render(const T &t)
-  {
+  static std::string render(const T& t) {
     std::ostringstream oss;
     oss << t;
     return oss.str();
@@ -125,19 +125,19 @@ struct renderer {
 };
 
 template <typename T>
-static auto render(const T &t) -> decltype(renderer<T>::render(std::declval<const T &>()))
-{
+static auto render(const T& t)
+    -> decltype(renderer<T>::render(std::declval<const T&>())) {
   return renderer<T>::render(t);
 }
 
 inline os_log_t instrumentsLogHandle = nullptr;
 
-static inline os_log_t getOrCreateInstrumentsLogHandle()
-{
+static inline os_log_t getOrCreateInstrumentsLogHandle() {
   static std::once_flag flag{};
   std::call_once(flag, []() {
     if (!instrumentsLogHandle) {
-      instrumentsLogHandle = os_log_create("dev.reactnative.instruments", OS_LOG_CATEGORY_DYNAMIC_TRACING);
+      instrumentsLogHandle = os_log_create(
+          "dev.reactnative.instruments", OS_LOG_CATEGORY_DYNAMIC_TRACING);
     }
   });
   return instrumentsLogHandle;
@@ -148,8 +148,8 @@ static inline os_log_t getOrCreateInstrumentsLogHandle()
 struct TraceSection {
  public:
   template <typename... ConvertsToStringPiece>
-  explicit TraceSection(const char *name, ConvertsToStringPiece &&...args) : systraceSectionUnwrapped_(name, args...)
-  {
+  explicit TraceSection(const char* name, ConvertsToStringPiece&&... args)
+      : systraceSectionUnwrapped_(name, args...) {
     os_log_t instrumentsLogHandle = systrace::getOrCreateInstrumentsLogHandle();
 
     // If the log isn't enabled, we don't want the performance overhead of the
@@ -168,14 +168,24 @@ struct TraceSection {
 
     signpostID_ = os_signpost_id_make_with_pointer(instrumentsLogHandle, this);
 
-    os_signpost_interval_begin(instrumentsLogHandle, signpostID_, "Systrace", "%s begin: %s", name, argsString.c_str());
+    os_signpost_interval_begin(
+        instrumentsLogHandle,
+        signpostID_,
+        "Systrace",
+        "%s begin: %s",
+        name,
+        argsString.c_str());
   }
 
-  ~TraceSection()
-  {
+  ~TraceSection() {
     // We don't need to gate on os_signpost_enabled here because it's already
     // checked in os_signpost_interval_end.
-    os_signpost_interval_end(systrace::instrumentsLogHandle, signpostID_, "Systrace", "%s end", name_.data());
+    os_signpost_interval_end(
+        systrace::instrumentsLogHandle,
+        signpostID_,
+        "Systrace",
+        "%s end",
+        name_.data());
   }
 
  private:

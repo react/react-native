@@ -51,27 +51,28 @@ class AnimationBackend : public UIManagerAnimationBackend {
   AnimationBackend(
       std::shared_ptr<AnimationChoreographer> animationChoreographer,
       std::shared_ptr<UIManager> uiManager);
-  void commitUpdates(SurfaceId surfaceId, SurfaceUpdates &surfaceUpdates);
-  void synchronouslyUpdateProps(const std::unordered_map<Tag, AnimatedProps> &updates);
-  void requestAsyncFlushForSurfaces(const std::set<SurfaceId> &surfaces);
+  void commitUpdates(SurfaceId surfaceId, SurfaceUpdates& surfaceUpdates);
+  void synchronouslyUpdateProps(
+      const std::unordered_map<Tag, AnimatedProps>& updates);
+  void requestAsyncFlushForSurfaces(const std::set<SurfaceId>& surfaces);
   void clearRegistry(SurfaceId surfaceId) override;
   void clearRegistryOnSurfaceStop(SurfaceId surfaceId) override;
   void registerJSInvoker(std::shared_ptr<CallInvoker> jsInvoker) override;
 
   void onAnimationFrame(AnimationTimestamp timestamp) override;
   void trigger() override;
-  void pushAnimationMutations(const Callback &callback) override;
-  CallbackId start(const Callback &callback) override;
+  void pushAnimationMutations(const Callback& callback) override;
+  CallbackId start(const Callback& callback) override;
   void stop(CallbackId callbackId) override;
 
  private:
   void unpackMutations(
-      AnimationMutations &mutations,
-      std::unordered_map<SurfaceId, SurfaceUpdates> &surfaceUpdates,
-      std::set<SurfaceId> &asyncFlushSurfaces);
+      AnimationMutations& mutations,
+      std::unordered_map<SurfaceId, SurfaceUpdates>& surfaceUpdates,
+      std::set<SurfaceId>& asyncFlushSurfaces);
   void applySurfaceUpdates(
-      std::unordered_map<SurfaceId, SurfaceUpdates> &surfaceUpdates,
-      const std::set<SurfaceId> &asyncFlushSurfaces);
+      std::unordered_map<SurfaceId, SurfaceUpdates>& surfaceUpdates,
+      const std::set<SurfaceId>& asyncFlushSurfaces);
   void applyMutations(AnimationMutations mutations);
   std::vector<CallbackWithId> callbacks;
   std::shared_ptr<AnimatedPropsRegistry> animatedPropsRegistry_;

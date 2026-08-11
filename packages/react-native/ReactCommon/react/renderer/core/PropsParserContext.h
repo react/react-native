@@ -18,17 +18,17 @@ namespace facebook::react {
 // It should be used as infrequently as possible - most props can and should
 // be parsed without any context.
 struct PropsParserContext {
-  PropsParserContext(const SurfaceId surfaceId, const ContextContainer &contextContainer)
-      : surfaceId(surfaceId), contextContainer(contextContainer)
-  {
-  }
+  PropsParserContext(
+      const SurfaceId surfaceId,
+      const ContextContainer& contextContainer)
+      : surfaceId(surfaceId), contextContainer(contextContainer) {}
 
   // Non-copyable
-  PropsParserContext(const PropsParserContext &) = delete;
-  PropsParserContext &operator=(const PropsParserContext &) = delete;
+  PropsParserContext(const PropsParserContext&) = delete;
+  PropsParserContext& operator=(const PropsParserContext&) = delete;
 
   const SurfaceId surfaceId;
-  const ContextContainer &contextContainer;
+  const ContextContainer& contextContainer;
 };
 
 } // namespace facebook::react

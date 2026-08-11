@@ -28,25 +28,33 @@ class ViewTransitionModule : public UIManagerViewTransitionDelegate,
  public:
   ~ViewTransitionModule() override;
 
-  void initialize(UIManager *uiManager, std::weak_ptr<ViewTransitionModule> weakThis);
+  void initialize(
+      UIManager* uiManager,
+      std::weak_ptr<ViewTransitionModule> weakThis);
 
 #pragma mark - UIManagerViewTransitionDelegate
 
-  // will be called when a view will transition. if a view already has a view-transition-name, it may not be called
-  // again until it's removed
-  void applyViewTransitionName(const ShadowNode &shadowNode, const std::string &name, const std::string &className)
-      override;
+  // will be called when a view will transition. if a view already has a
+  // view-transition-name, it may not be called again until it's removed
+  void applyViewTransitionName(
+      const ShadowNode& shadowNode,
+      const std::string& name,
+      const std::string& className) override;
 
   // creates a pseudo-element shadow node for a given transition name using the
   // captured old layout metrics
-  void createViewTransitionInstance(const std::string &name, Tag pseudoElementTag) override;
+  void createViewTransitionInstance(
+      const std::string& name,
+      Tag pseudoElementTag) override;
 
-  // if a viewTransitionName is cancelled, the element doesn't have view-transition-name and browser won't be taking
-  // snapshot
-  void cancelViewTransitionName(const ShadowNode &shadowNode, const std::string &name) override;
+  // if a viewTransitionName is cancelled, the element doesn't have
+  // view-transition-name and browser won't be taking snapshot
+  void cancelViewTransitionName(
+      const ShadowNode& shadowNode,
+      const std::string& name) override;
 
   // restore cancellation
-  void restoreViewTransitionName(const ShadowNode &shadowNode) override;
+  void restoreViewTransitionName(const ShadowNode& shadowNode) override;
 
   void startViewTransition(
       std::function<void()> mutationCallback,
@@ -57,18 +65,21 @@ class ViewTransitionModule : public UIManagerViewTransitionDelegate,
 
   void startViewTransitionEnd() override;
 
-  std::optional<ViewTransitionInstance> getViewTransitionInstance(const std::string &name, const std::string &pseudo)
-      override;
+  std::optional<ViewTransitionInstance> getViewTransitionInstance(
+      const std::string& name,
+      const std::string& pseudo) override;
 
 #pragma mark - UIManagerCommitHook
 
-  void commitHookWasRegistered(const UIManager & /*uiManager*/) noexcept override {}
-  void commitHookWasUnregistered(const UIManager & /*uiManager*/) noexcept override {}
+  void commitHookWasRegistered(
+      const UIManager& /*uiManager*/) noexcept override {}
+  void commitHookWasUnregistered(
+      const UIManager& /*uiManager*/) noexcept override {}
   RootShadowNode::Unshared shadowTreeWillCommit(
-      const ShadowTree &shadowTree,
-      const RootShadowNode::Shared &oldRootShadowNode,
-      const RootShadowNode::Unshared &newRootShadowNode,
-      const ShadowTreeCommitOptions &commitOptions) noexcept override;
+      const ShadowTree& shadowTree,
+      const RootShadowNode::Shared& oldRootShadowNode,
+      const RootShadowNode::Unshared& newRootShadowNode,
+      const ShadowTreeCommitOptions& commitOptions) noexcept override;
 
 #pragma mark - MountingOverrideDelegate
 
@@ -76,10 +87,11 @@ class ViewTransitionModule : public UIManagerViewTransitionDelegate,
   std::optional<MountingTransaction> pullTransaction(
       SurfaceId surfaceId,
       MountingTransaction::Number number,
-      const TransactionTelemetry &telemetry,
+      const TransactionTelemetry& telemetry,
       ShadowViewMutationList mutations) const override;
 
-  std::shared_ptr<const ShadowNode> findPseudoElementShadowNodeByTag(Tag tag) const override;
+  std::shared_ptr<const ShadowNode> findPseudoElementShadowNodeByTag(
+      Tag tag) const override;
 
   void suspendOnActiveViewTransition() override;
 
@@ -108,8 +120,8 @@ class ViewTransitionModule : public UIManagerViewTransitionDelegate,
   // registry of layout of old/new views
   std::unordered_map<std::string, AnimationKeyFrameView> oldLayout_{};
   std::unordered_map<std::string, AnimationKeyFrameView> newLayout_{};
-  // tag -> (names, transitionId) registry, populated during applyViewTransitionName
-  // Note that tag and name are not 1:1 mapping
+  // tag -> (names, transitionId) registry, populated during
+  // applyViewTransitionName Note that tag and name are not 1:1 mapping
   // - In some nested composition 2 names are mappped to the same tag
   // - tags of old and new views are mapped to the same name(s)
   struct NameRegistryEntry {
@@ -119,11 +131,15 @@ class ViewTransitionModule : public UIManagerViewTransitionDelegate,
   std::unordered_map<Tag, NameRegistryEntry> nameRegistry_{};
 
   // used for cancel/restore viewTransitionName
-  std::unordered_map<Tag, std::unordered_set<std::string>> cancelledNameRegistry_{};
+  std::unordered_map<Tag, std::unordered_set<std::string>>
+      cancelledNameRegistry_{};
 
-  // pseudo-element nodes keyed by transition name, appended to root children via UIManagerCommitHook
-  // TODO: T262559264 pseudo elements should be cleaned up as soon as transition animation ends
-  std::unordered_map<std::string, std::shared_ptr<const ShadowNode>> oldPseudoElementNodes_{};
+  // pseudo-element nodes keyed by transition name, appended to root children
+  // via UIManagerCommitHook
+  // TODO: T262559264 pseudo elements should be cleaned up as soon as transition
+  // animation ends
+  std::unordered_map<std::string, std::shared_ptr<const ShadowNode>>
+      oldPseudoElementNodes_{};
 
   struct InactivePseudoElement {
     std::shared_ptr<const ShadowNode> node;
@@ -135,14 +151,16 @@ class ViewTransitionModule : public UIManagerViewTransitionDelegate,
   // pseudo-element nodes created for entering nodes, to be copied into
   // oldPseudoElementNodes_ during the next applyViewTransitionName call.
   // Mutable because pullTransaction (const) needs to erase unmounted entries.
-  mutable std::unordered_map<std::string, std::unordered_map<Tag /* sourceTag */, InactivePseudoElement>>
+  mutable std::unordered_map<
+      std::string,
+      std::unordered_map<Tag /* sourceTag */, InactivePseudoElement>>
       oldPseudoElementNodesRepository_{};
 
-  LayoutMetrics captureLayoutMetricsFromRoot(const ShadowNode &shadowNode);
+  LayoutMetrics captureLayoutMetricsFromRoot(const ShadowNode& shadowNode);
 
   void applySnapshotsOnPseudoElementShadowNodes();
 
-  UIManager *uiManager_{nullptr};
+  UIManager* uiManager_{nullptr};
 
   bool transitionStarted_{false};
 
@@ -163,7 +181,8 @@ class ViewTransitionModule : public UIManagerViewTransitionDelegate,
 
   // Tracks animation IDs that must complete before onCompleteCallback_ fires.
   // Animations are registered via waitForTransitionAnimation (called from JS
-  // after connectAnimatedNodeToView) and removed via transitionAnimationFinished.
+  // after connectAnimatedNodeToView) and removed via
+  // transitionAnimationFinished.
   std::unordered_set<int> pendingAnimationIds_{};
   std::function<void()> onCompleteCallback_{nullptr};
 };

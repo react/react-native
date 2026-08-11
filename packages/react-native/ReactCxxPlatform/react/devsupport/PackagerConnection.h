@@ -24,13 +24,13 @@ class PackagerConnection {
   PackagerConnection(
       WebSocketClientFactory webSocketClientFactory,
       std::string packagerConnectionUrl,
-      LiveReloadCallback &&liveReloadCallback,
-      ShowDevMenuCallback &&showDevMenuCallback);
+      LiveReloadCallback&& liveReloadCallback,
+      ShowDevMenuCallback&& showDevMenuCallback);
   ~PackagerConnection() noexcept;
-  PackagerConnection(const PackagerConnection &other) = delete;
-  PackagerConnection &operator=(PackagerConnection &other) = delete;
-  PackagerConnection(PackagerConnection &&other) = delete;
-  PackagerConnection &operator=(PackagerConnection &&other) = delete;
+  PackagerConnection(const PackagerConnection& other) = delete;
+  PackagerConnection& operator=(PackagerConnection& other) = delete;
+  PackagerConnection(PackagerConnection&& other) = delete;
+  PackagerConnection& operator=(PackagerConnection&& other) = delete;
 
  private:
   void attemptConnection();

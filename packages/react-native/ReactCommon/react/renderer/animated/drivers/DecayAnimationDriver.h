@@ -22,7 +22,7 @@ class DecayAnimationDriver : public AnimationDriver {
       Tag animatedValueTag,
       std::optional<AnimationEndCallback> endCallback,
       folly::dynamic config,
-      NativeAnimatedNodesManager *manager);
+      NativeAnimatedNodesManager* manager);
 
  protected:
   bool update(double timeDeltaMs, bool restarting) override;

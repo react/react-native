@@ -16,12 +16,12 @@ namespace facebook::react::jsinspector_modern {
  * object, which can be referenced from JavaScript side for determining the
  * status of performance tracing.
  */
-void installTracingStateObserver(jsi::Runtime &runtime);
+void installTracingStateObserver(jsi::Runtime& runtime);
 
 /**
  * Emits the tracing state change to JavaScript by calling onTracingStateChange
  * on __TRACING_STATE_OBSERVER__.
  */
-void emitTracingStateObserverChange(jsi::Runtime &runtime, bool isTracing);
+void emitTracingStateObserverChange(jsi::Runtime& runtime, bool isTracing);
 
 } // namespace facebook::react::jsinspector_modern

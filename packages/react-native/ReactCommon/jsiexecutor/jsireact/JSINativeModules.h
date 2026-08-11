@@ -21,10 +21,11 @@ namespace facebook::react {
 /**
  * Holds and creates JS representations of the modules in ModuleRegistry
  */
-class [[deprecated("This API will be removed along with the legacy architecture.")]] JSINativeModules {
+class [[deprecated(
+    "This API will be removed along with the legacy architecture.")]] JSINativeModules {
  public:
   explicit JSINativeModules(std::shared_ptr<ModuleRegistry> moduleRegistry);
-  jsi::Value getModule(jsi::Runtime &rt, const jsi::PropNameID &name);
+  jsi::Value getModule(jsi::Runtime & rt, const jsi::PropNameID& name);
   void reset();
 
  private:
@@ -32,7 +33,8 @@ class [[deprecated("This API will be removed along with the legacy architecture.
   std::shared_ptr<ModuleRegistry> m_moduleRegistry;
   std::unordered_map<std::string, jsi::Object> m_objects;
 
-  std::optional<jsi::Object> createModule(jsi::Runtime &rt, const std::string &name);
+  std::optional<jsi::Object> createModule(
+      jsi::Runtime & rt, const std::string& name);
 };
 
 } // namespace facebook::react

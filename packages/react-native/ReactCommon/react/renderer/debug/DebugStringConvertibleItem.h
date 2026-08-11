@@ -20,7 +20,7 @@ namespace facebook::react {
 // in custom implementations of `getDebugChildren` and `getDebugProps`.
 class DebugStringConvertibleItem : public DebugStringConvertible {
  public:
-  DebugStringConvertibleItem(const DebugStringConvertibleItem &item) = default;
+  DebugStringConvertibleItem(const DebugStringConvertibleItem& item) = default;
 
   DebugStringConvertibleItem(
       std::string name = "",

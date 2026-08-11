@@ -18,18 +18,21 @@ namespace facebook::react {
 class StubViewTree {
  public:
   StubViewTree() = default;
-  StubViewTree(const ShadowView &shadowView);
+  StubViewTree(const ShadowView& shadowView);
 
-  void mutate(const ShadowViewMutationList &mutations);
+  void mutate(const ShadowViewMutationList& mutations);
 
-  void dispatchCommand(const ShadowView &shadowView, const std::string &commandName, const folly::dynamic &args);
+  void dispatchCommand(
+      const ShadowView& shadowView,
+      const std::string& commandName,
+      const folly::dynamic& args);
 
-  const StubView &getRootStubView() const;
+  const StubView& getRootStubView() const;
 
   /*
    * Returns a view with given tag.
    */
-  const StubView &getStubView(Tag tag) const;
+  const StubView& getStubView(Tag tag) const;
 
   /*
    * Returns the total amount of views in the tree.
@@ -41,8 +44,7 @@ class StubViewTree {
    */
   std::vector<std::string> takeMountingLogs();
 
-  bool hasTag(Tag tag) const
-  {
+  bool hasTag(Tag tag) const {
     return registry_.find(tag) != registry_.end();
   }
 
@@ -51,15 +53,15 @@ class StubViewTree {
   std::unordered_map<Tag, StubView::Shared> registry_{};
   std::vector<std::string> mountingLogs_{};
 
-  friend bool operator==(const StubViewTree &lhs, const StubViewTree &rhs);
+  friend bool operator==(const StubViewTree& lhs, const StubViewTree& rhs);
 
-  std::ostream &dumpTags(std::ostream &stream) const;
+  std::ostream& dumpTags(std::ostream& stream) const;
 
   std::string getNativeId(Tag tag);
-  std::string getNativeId(const ShadowView &shadowView);
-  void recordMutation(const ShadowViewMutation &mutation);
+  std::string getNativeId(const ShadowView& shadowView);
+  void recordMutation(const ShadowViewMutation& mutation);
 };
 
-bool operator==(const StubViewTree &lhs, const StubViewTree &rhs);
+bool operator==(const StubViewTree& lhs, const StubViewTree& rhs);
 
 } // namespace facebook::react

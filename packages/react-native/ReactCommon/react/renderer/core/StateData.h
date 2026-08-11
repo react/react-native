@@ -24,9 +24,8 @@ struct StateData final {
 
 #ifdef RN_SERIALIZABLE_STATE
   StateData() = default;
-  StateData(const StateData &previousState, folly::dynamic data) {}
-  folly::dynamic getDynamic() const
-  {
+  StateData(const StateData& previousState, folly::dynamic data) {}
+  folly::dynamic getDynamic() const {
     return {};
   }
 #endif

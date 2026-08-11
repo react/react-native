@@ -15,12 +15,18 @@
 
 namespace facebook::react {
 
-SharedColor parsePlatformColor(const ContextContainer &contextContainer, int32_t surfaceId, const RawValue &value);
+SharedColor parsePlatformColor(
+    const ContextContainer& contextContainer,
+    int32_t surfaceId,
+    const RawValue& value);
 
-inline void
-fromRawValue(const ContextContainer &contextContainer, int32_t surfaceId, const RawValue &value, SharedColor &result)
-{
-  fromRawValueShared(contextContainer, surfaceId, value, result, parsePlatformColor);
+inline void fromRawValue(
+    const ContextContainer& contextContainer,
+    int32_t surfaceId,
+    const RawValue& value,
+    SharedColor& result) {
+  fromRawValueShared(
+      contextContainer, surfaceId, value, result, parsePlatformColor);
 }
 
 } // namespace facebook::react

@@ -19,55 +19,65 @@
 
 namespace facebook::react {
 
-class IntersectionObserverManager final : public UIManagerMountHook,
-                                          public RuntimeSchedulerIntersectionObserverDelegate {
+class IntersectionObserverManager final
+    : public UIManagerMountHook,
+      public RuntimeSchedulerIntersectionObserverDelegate {
  public:
   IntersectionObserverManager();
 
   void observe(
       IntersectionObserverObserverId intersectionObserverId,
-      const std::optional<ShadowNodeFamily::Shared> &observationRootShadowNode,
-      const ShadowNodeFamily::Shared &shadowNode,
+      const std::optional<ShadowNodeFamily::Shared>& observationRootShadowNode,
+      const ShadowNodeFamily::Shared& shadowNode,
       std::vector<Float> thresholds,
       std::optional<std::vector<Float>> rootThresholds,
       std::optional<std::string> rootMargin,
-      const UIManager &uiManager);
+      const UIManager& uiManager);
 
-  void unobserve(IntersectionObserverObserverId intersectionObserverId, const ShadowNodeFamily::Shared &shadowNode);
+  void unobserve(
+      IntersectionObserverObserverId intersectionObserverId,
+      const ShadowNodeFamily::Shared& shadowNode);
 
   void connect(
-      RuntimeScheduler &runtimeScheduler,
-      UIManager &uiManager,
+      RuntimeScheduler& runtimeScheduler,
+      UIManager& uiManager,
       std::function<void()> notifyIntersectionObserversCallback);
 
-  void disconnect(RuntimeScheduler &runtimeScheduler, UIManager &uiManager);
+  void disconnect(RuntimeScheduler& runtimeScheduler, UIManager& uiManager);
 
   std::vector<IntersectionObserverEntry> takeRecords();
 
 #pragma mark - RuntimeSchedulerIntersectionObserverDelegate
 
   void updateIntersectionObservations(
-      const std::unordered_set<SurfaceId> &surfaceIdsWithPendingRenderingUpdates) override;
+      const std::unordered_set<SurfaceId>&
+          surfaceIdsWithPendingRenderingUpdates) override;
 
 #pragma mark - UIManagerMountHook
 
-  void shadowTreeDidMount(const RootShadowNode::Shared &rootShadowNode, HighResTimeStamp time) noexcept override;
+  void shadowTreeDidMount(
+      const RootShadowNode::Shared& rootShadowNode,
+      HighResTimeStamp time) noexcept override;
 
-  void shadowTreeDidUnmount(SurfaceId surfaceId, HighResTimeStamp time) noexcept override;
+  void shadowTreeDidUnmount(SurfaceId surfaceId, HighResTimeStamp time) noexcept
+      override;
 
  private:
-  mutable std::unordered_map<SurfaceId, std::vector<std::unique_ptr<IntersectionObserver>>> observersBySurfaceId_;
+  mutable std::unordered_map<
+      SurfaceId,
+      std::vector<std::unique_ptr<IntersectionObserver>>>
+      observersBySurfaceId_;
   mutable std::shared_mutex observersMutex_;
 
   // This is defined as a list of pointers to keep the ownership of the
   // observers in the map.
-  std::vector<IntersectionObserver *> observersPendingInitialization_;
+  std::vector<IntersectionObserver*> observersPendingInitialization_;
 
   // This is only accessed from the JS thread at the end of the event loop tick,
   // so it is safe to retain it as a raw pointer.
   // We need to retain it here because the RuntimeScheduler does not provide
   // it when calling `updateIntersectionObservations`.
-  const ShadowTreeRegistry *shadowTreeRegistry_{nullptr};
+  const ShadowTreeRegistry* shadowTreeRegistry_{nullptr};
 
   mutable std::function<void()> notifyIntersectionObserversCallback_;
 
@@ -82,9 +92,12 @@ class IntersectionObserverManager final : public UIManagerMountHook,
 
   // Equivalent to
   // https://w3c.github.io/IntersectionObserver/#update-intersection-observations-algo
-  void updateIntersectionObservations(SurfaceId surfaceId, const RootShadowNode *rootShadowNode, HighResTimeStamp time);
+  void updateIntersectionObservations(
+      SurfaceId surfaceId,
+      const RootShadowNode* rootShadowNode,
+      HighResTimeStamp time);
 
-  const IntersectionObserver &getRegisteredIntersectionObserver(
+  const IntersectionObserver& getRegisteredIntersectionObserver(
       SurfaceId surfaceId,
       IntersectionObserverObserverId observerId) const;
 };

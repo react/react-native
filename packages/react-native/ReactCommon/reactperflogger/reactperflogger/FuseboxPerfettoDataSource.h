@@ -19,28 +19,30 @@ namespace facebook::react {
  * trace) while we wait for Fusebox to be supported in release builds.
  * Once it's supported we'll probably want to deprecate this data source.
  */
-class FuseboxPerfettoDataSource : public perfetto::DataSource<FuseboxPerfettoDataSource> {
+class FuseboxPerfettoDataSource
+    : public perfetto::DataSource<FuseboxPerfettoDataSource> {
  public:
-  void OnSetup(const SetupArgs &) override {}
+  void OnSetup(const SetupArgs&) override {}
 
-  void OnStart(const StartArgs &) override;
+  void OnStart(const StartArgs&) override;
 
-  void OnFlush(const FlushArgs &) override;
+  void OnFlush(const FlushArgs&) override;
 
-  void OnStop(const StopArgs &a) override;
+  void OnStop(const StopArgs& a) override;
 
-  static void RegisterDataSource()
-  {
+  static void RegisterDataSource() {
     perfetto::DataSourceDescriptor dsd;
     dsd.set_name("com.facebook.react.fusebox.profiler");
     FuseboxPerfettoDataSource::Register(dsd);
   }
 
-  constexpr static perfetto::BufferExhaustedPolicy kBufferExhaustedPolicy = perfetto::BufferExhaustedPolicy::kStall;
+  constexpr static perfetto::BufferExhaustedPolicy kBufferExhaustedPolicy =
+      perfetto::BufferExhaustedPolicy::kStall;
 };
 
 } // namespace facebook::react
 
-PERFETTO_DECLARE_DATA_SOURCE_STATIC_MEMBERS(facebook::react::FuseboxPerfettoDataSource);
+PERFETTO_DECLARE_DATA_SOURCE_STATIC_MEMBERS(
+    facebook::react::FuseboxPerfettoDataSource);
 
 #endif // WITH_PERFETTO

@@ -44,8 +44,7 @@ struct NetworkResource {
   std::optional<uint32_t> httpStatusCode{};
   std::optional<std::string> netErrorName{};
   std::optional<Headers> headers{};
-  folly::dynamic toDynamic() const
-  {
+  folly::dynamic toDynamic() const {
     auto dynamicResource = folly::dynamic::object("success", success);
 
     if (success) { // stream IFF successful
@@ -66,7 +65,7 @@ struct NetworkResource {
 
     if (headers) { // Guaranteed if successful
       auto dynamicHeaders = folly::dynamic::object();
-      for (const auto &pair : *headers) {
+      for (const auto& pair : *headers) {
         dynamicHeaders(pair.first, pair.second);
       }
       dynamicResource("headers", std::move(dynamicHeaders));
@@ -81,8 +80,7 @@ struct IOReadResult {
   std::string data;
   bool eof;
   bool base64Encoded;
-  folly::dynamic toDynamic() const
-  {
+  folly::dynamic toDynamic() const {
     auto obj = folly::dynamic::object("data", data);
     obj("eof", eof);
     obj("base64Encoded", base64Encoded);
@@ -93,8 +91,7 @@ struct IOReadResult {
 struct GetResponseBodyResult {
   std::string body;
   bool base64Encoded;
-  folly::dynamic toDynamic() const
-  {
+  folly::dynamic toDynamic() const {
     folly::dynamic params = folly::dynamic::object;
     params["body"] = body;
     params["base64Encoded"] = base64Encoded;
@@ -109,10 +106,11 @@ struct GetResponseBodyResult {
 class NetworkRequestListener {
  public:
   NetworkRequestListener() = default;
-  NetworkRequestListener(const NetworkRequestListener &) = delete;
-  NetworkRequestListener &operator=(const NetworkRequestListener &) = delete;
-  NetworkRequestListener(NetworkRequestListener &&) noexcept = default;
-  NetworkRequestListener &operator=(NetworkRequestListener &&) noexcept = default;
+  NetworkRequestListener(const NetworkRequestListener&) = delete;
+  NetworkRequestListener& operator=(const NetworkRequestListener&) = delete;
+  NetworkRequestListener(NetworkRequestListener&&) noexcept = default;
+  NetworkRequestListener& operator=(NetworkRequestListener&&) noexcept =
+      default;
   virtual ~NetworkRequestListener() = default;
 
   /**
@@ -122,7 +120,7 @@ class NetworkRequestListener {
    * \param httpStatusCode The HTTP status code received.
    * \param headers Response headers as an unordered_map.
    */
-  virtual void onHeaders(uint32_t httpStatusCode, const Headers &headers) = 0;
+  virtual void onHeaders(uint32_t httpStatusCode, const Headers& headers) = 0;
 
   /**
    * To be called by the delegate on receipt of data chunks.
@@ -139,7 +137,7 @@ class NetworkRequestListener {
    * were not yet received), or as a CDP error in response to a subsequent
    * `IO.read`.
    */
-  virtual void onError(const std::string &message) = 0;
+  virtual void onError(const std::string& message) = 0;
 
   /**
    * To be called by the delegate on successful completion of the request.
@@ -165,10 +163,12 @@ class NetworkRequestListener {
 class LoadNetworkResourceDelegate {
  public:
   LoadNetworkResourceDelegate() = default;
-  LoadNetworkResourceDelegate(const LoadNetworkResourceDelegate &) = delete;
-  LoadNetworkResourceDelegate &operator=(const LoadNetworkResourceDelegate &) = delete;
-  LoadNetworkResourceDelegate(LoadNetworkResourceDelegate &&) noexcept = delete;
-  LoadNetworkResourceDelegate &operator=(LoadNetworkResourceDelegate &&) noexcept = delete;
+  LoadNetworkResourceDelegate(const LoadNetworkResourceDelegate&) = delete;
+  LoadNetworkResourceDelegate& operator=(const LoadNetworkResourceDelegate&) =
+      delete;
+  LoadNetworkResourceDelegate(LoadNetworkResourceDelegate&&) noexcept = delete;
+  LoadNetworkResourceDelegate& operator=(
+      LoadNetworkResourceDelegate&&) noexcept = delete;
   virtual ~LoadNetworkResourceDelegate() = default;
 
   /**
@@ -185,7 +185,7 @@ class LoadNetworkResourceDelegate {
    * called to abort any in-flight network operation that is no longer needed.
    */
   virtual void loadNetworkResource(
-      [[maybe_unused]] const LoadNetworkResourceRequest &params,
+      [[maybe_unused]] const LoadNetworkResourceRequest& params,
       [[maybe_unused]] ScopedExecutor<NetworkRequestListener> executor) = 0;
 };
 
@@ -207,23 +207,25 @@ class NetworkIOAgent {
    * processing incoming data or other events from network operations.
    */
   NetworkIOAgent(FrontendChannel frontendChannel, VoidExecutor executor)
-      : frontendChannel_(frontendChannel), executor_(executor), streams_(std::make_shared<StreamsMap>())
-  {
-  }
+      : frontendChannel_(frontendChannel),
+        executor_(executor),
+        streams_(std::make_shared<StreamsMap>()) {}
 
   ~NetworkIOAgent();
 
-  NetworkIOAgent(const NetworkIOAgent &) = delete;
-  NetworkIOAgent &operator=(const NetworkIOAgent &) = delete;
-  NetworkIOAgent(NetworkIOAgent &&) = delete;
-  NetworkIOAgent &operator=(NetworkIOAgent &&) = delete;
+  NetworkIOAgent(const NetworkIOAgent&) = delete;
+  NetworkIOAgent& operator=(const NetworkIOAgent&) = delete;
+  NetworkIOAgent(NetworkIOAgent&&) = delete;
+  NetworkIOAgent& operator=(NetworkIOAgent&&) = delete;
 
   /**
    * Handle a CDP request. The response will be sent over the provided
    * \c FrontendChannel synchronously or asynchronously.
    * \param req The parsed request.
    */
-  bool handleRequest(const cdp::PreparsedRequest &req, LoadNetworkResourceDelegate &delegate);
+  bool handleRequest(
+      const cdp::PreparsedRequest& req,
+      LoadNetworkResourceDelegate& delegate);
 
  private:
   /**
@@ -266,24 +268,26 @@ class NetworkIOAgent {
    * Does not catch exceptions thrown by the delegate (such as
    * NotImplementedException).
    */
-  void handleLoadNetworkResource(const cdp::PreparsedRequest &req, LoadNetworkResourceDelegate &delegate);
+  void handleLoadNetworkResource(
+      const cdp::PreparsedRequest& req,
+      LoadNetworkResourceDelegate& delegate);
 
   /**
    * Handle an IO.read CDP request. Emit a chunk of data from the stream, once
    * enough has been downloaded, or report an error.
    */
-  void handleIoRead(const cdp::PreparsedRequest &req);
+  void handleIoRead(const cdp::PreparsedRequest& req);
 
   /**
    * Handle an IO.close CDP request. Safely aborts any in-flight request.
    * Reports CDP ok if the stream is found, or a CDP error if not.
    */
-  void handleIoClose(const cdp::PreparsedRequest &req);
+  void handleIoClose(const cdp::PreparsedRequest& req);
 
   /**
    * Handle a Network.getResponseBody CDP request.
    */
-  void handleGetResponseBody(const cdp::PreparsedRequest &req);
+  void handleGetResponseBody(const cdp::PreparsedRequest& req);
 };
 
 } // namespace facebook::react::jsinspector_modern

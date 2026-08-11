@@ -15,19 +15,22 @@
 
 namespace facebook::react {
 
-class DevLoadingViewModule : public NativeDevLoadingViewCxxSpec<DevLoadingViewModule> {
+class DevLoadingViewModule
+    : public NativeDevLoadingViewCxxSpec<DevLoadingViewModule> {
  public:
-  DevLoadingViewModule(std::shared_ptr<CallInvoker> jsInvoker, std::weak_ptr<IDevUIDelegate> devUIDelegate);
+  DevLoadingViewModule(
+      std::shared_ptr<CallInvoker> jsInvoker,
+      std::weak_ptr<IDevUIDelegate> devUIDelegate);
 
   ~DevLoadingViewModule() override;
 
   void showMessage(
-      jsi::Runtime &rt,
-      const std::string &message,
+      jsi::Runtime& rt,
+      const std::string& message,
       std::optional<int32_t> textColor,
       std::optional<int32_t> backgroundColor,
       std::optional<bool> dismissButton);
-  void hide(jsi::Runtime &rt);
+  void hide(jsi::Runtime& rt);
 
  private:
   std::weak_ptr<IDevUIDelegate> devUIDelegate_;

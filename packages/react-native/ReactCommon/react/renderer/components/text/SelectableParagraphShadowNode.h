@@ -12,19 +12,18 @@
 namespace facebook::react {
 
 /*
- * ShadowNode for selectable Paragraph components, which may map to different native component than Paragraph.
+ * ShadowNode for selectable Paragraph components, which may map to different
+ * native component than Paragraph.
  */
 class SelectableParagraphShadowNode : public ParagraphShadowNode {
  public:
   using ParagraphShadowNode::ParagraphShadowNode;
 
-  static constexpr ComponentName Name()
-  {
+  static constexpr ComponentName Name() {
     return "SelectableParagraph";
   }
 
-  static ComponentHandle Handle()
-  {
+  static ComponentHandle Handle() {
     return ComponentHandle(Name());
   }
 };

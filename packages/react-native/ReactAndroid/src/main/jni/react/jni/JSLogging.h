@@ -11,6 +11,6 @@
 
 namespace facebook::react {
 
-void reactAndroidLoggingHook(const std::string &message, unsigned int logLevel);
+void reactAndroidLoggingHook(const std::string& message, unsigned int logLevel);
 
 } // namespace facebook::react

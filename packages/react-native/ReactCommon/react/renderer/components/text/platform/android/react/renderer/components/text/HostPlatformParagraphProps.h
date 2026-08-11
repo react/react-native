@@ -28,12 +28,15 @@ class HostPlatformParagraphProps : public BaseParagraphProps {
  public:
   HostPlatformParagraphProps() = default;
   HostPlatformParagraphProps(
-      const PropsParserContext &context,
-      const HostPlatformParagraphProps &sourceProps,
-      const RawProps &rawProps);
+      const PropsParserContext& context,
+      const HostPlatformParagraphProps& sourceProps,
+      const RawProps& rawProps);
 
-  void
-  setProp(const PropsParserContext &context, RawPropsPropNameHash hash, const char *propName, const RawValue &value);
+  void setProp(
+      const PropsParserContext& context,
+      RawPropsPropNameHash hash,
+      const char* propName,
+      const RawValue& value);
 
 #pragma mark - Props
 
@@ -49,7 +52,7 @@ class HostPlatformParagraphProps : public BaseParagraphProps {
 
 #ifdef RN_SERIALIZABLE_STATE
   ComponentName getDiffPropsImplementationTarget() const override;
-  folly::dynamic getDiffProps(const Props *prevProps) const override;
+  folly::dynamic getDiffProps(const Props* prevProps) const override;
 #endif
 };
 

@@ -33,22 +33,22 @@ class AttributedStringBox final {
   /*
    * Custom explicit constructors.
    */
-  explicit AttributedStringBox(const AttributedString &value);
+  explicit AttributedStringBox(const AttributedString& value);
   explicit AttributedStringBox(std::shared_ptr<void> opaquePointer);
 
   /*
    * Movable, Copyable, Assignable.
    */
-  AttributedStringBox(const AttributedStringBox &other) = default;
-  AttributedStringBox(AttributedStringBox &&other) noexcept;
-  AttributedStringBox &operator=(const AttributedStringBox &other) = default;
-  AttributedStringBox &operator=(AttributedStringBox &&other) noexcept;
+  AttributedStringBox(const AttributedStringBox& other) = default;
+  AttributedStringBox(AttributedStringBox&& other) noexcept;
+  AttributedStringBox& operator=(const AttributedStringBox& other) = default;
+  AttributedStringBox& operator=(AttributedStringBox&& other) noexcept;
 
   /*
    * Getters.
    */
   Mode getMode() const;
-  const AttributedString &getValue() const;
+  const AttributedString& getValue() const;
   std::shared_ptr<void> getOpaquePointer() const;
 
  private:
@@ -57,19 +57,21 @@ class AttributedStringBox final {
   std::shared_ptr<void> opaquePointer_;
 };
 
-bool operator==(const AttributedStringBox &lhs, const AttributedStringBox &rhs);
+bool operator==(const AttributedStringBox& lhs, const AttributedStringBox& rhs);
 
 } // namespace facebook::react
 
 template <>
 struct std::hash<facebook::react::AttributedStringBox> {
-  size_t operator()(const facebook::react::AttributedStringBox &attributedStringBox) const
-  {
+  size_t operator()(
+      const facebook::react::AttributedStringBox& attributedStringBox) const {
     switch (attributedStringBox.getMode()) {
       case facebook::react::AttributedStringBox::Mode::Value:
-        return std::hash<facebook::react::AttributedString>()(attributedStringBox.getValue());
+        return std::hash<facebook::react::AttributedString>()(
+            attributedStringBox.getValue());
       case facebook::react::AttributedStringBox::Mode::OpaquePointer:
-        return std::hash<std::shared_ptr<void>>()(attributedStringBox.getOpaquePointer());
+        return std::hash<std::shared_ptr<void>>()(
+            attributedStringBox.getOpaquePointer());
       default:
         react_native_assert(false && "Invalid AttributedStringBox::Mode");
         return 0;

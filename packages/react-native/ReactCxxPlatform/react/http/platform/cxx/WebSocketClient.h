@@ -18,20 +18,22 @@ class WebSocketClient : public IWebSocketClient {
  public:
   WebSocketClient() noexcept;
   ~WebSocketClient() override;
-  WebSocketClient(WebSocketClient &other) = delete;
-  WebSocketClient &operator=(WebSocketClient &other) = delete;
-  WebSocketClient(WebSocketClient &&other) = delete;
-  WebSocketClient &operator=(WebSocketClient &&other) = delete;
+  WebSocketClient(WebSocketClient& other) = delete;
+  WebSocketClient& operator=(WebSocketClient& other) = delete;
+  WebSocketClient(WebSocketClient&& other) = delete;
+  WebSocketClient& operator=(WebSocketClient&& other) = delete;
 
-  void setOnClosedCallback(OnClosedCallback &&callback) noexcept override;
+  void setOnClosedCallback(OnClosedCallback&& callback) noexcept override;
 
-  void setOnMessageCallback(OnMessageCallback &&callback) noexcept override;
+  void setOnMessageCallback(OnMessageCallback&& callback) noexcept override;
 
-  void connect(const std::string &url, OnConnectCallback &&onConnectCallback = nullptr) override;
+  void connect(
+      const std::string& url,
+      OnConnectCallback&& onConnectCallback = nullptr) override;
 
-  void close(const std::string &reason) override;
+  void close(const std::string& reason) override;
 
-  void send(const std::string &message) override;
+  void send(const std::string& message) override;
 
   void ping() override;
 

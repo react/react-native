@@ -35,7 +35,7 @@ class MountingTransaction final {
   MountingTransaction(
       SurfaceId surfaceId,
       Number number,
-      ShadowViewMutationList &&mutations,
+      ShadowViewMutationList&& mutations,
       TransactionTelemetry telemetry);
 
   /*
@@ -43,26 +43,28 @@ class MountingTransaction final {
    * Copying of MountingTransaction is expensive, so copy-constructor is
    * explicit and copy-assignment is deleted to prevent accidental copying.
    */
-  explicit MountingTransaction(const MountingTransaction &mountingTransaction) = default;
-  MountingTransaction &operator=(const MountingTransaction &other) = delete;
+  explicit MountingTransaction(const MountingTransaction& mountingTransaction) =
+      default;
+  MountingTransaction& operator=(const MountingTransaction& other) = delete;
 
   /*
    * Move semantic.
    */
-  MountingTransaction(MountingTransaction &&mountingTransaction) noexcept = default;
-  MountingTransaction &operator=(MountingTransaction &&other) = default;
+  MountingTransaction(MountingTransaction&& mountingTransaction) noexcept =
+      default;
+  MountingTransaction& operator=(MountingTransaction&& other) = default;
 
   /*
    * Returns a list of mutations that represent the transaction. The list can be
    * empty (theoretically).
    */
-  const ShadowViewMutationList &getMutations() const &;
+  const ShadowViewMutationList& getMutations() const&;
   ShadowViewMutationList getMutations() &&;
 
   /*
    * Returns telemetry associated with this transaction.
    */
-  TransactionTelemetry &getTelemetry() const;
+  TransactionTelemetry& getTelemetry() const;
 
   /*
    * Returns the id of the surface that the transaction belongs to.
@@ -81,7 +83,7 @@ class MountingTransaction final {
    * This is required for Android UI, which needs to separately apply
    * each ShadowTree mutation due to differences in props representation.
    */
-  void mergeWith(MountingTransaction &&transaction);
+  void mergeWith(MountingTransaction&& transaction);
 
  private:
   SurfaceId surfaceId_;

@@ -23,37 +23,38 @@ namespace facebook::react {
  */
 class TextLayoutManager {
  public:
-  TextLayoutManager(const std::shared_ptr<const ContextContainer> &contextContainer);
+  TextLayoutManager(
+      const std::shared_ptr<const ContextContainer>& contextContainer);
 
   /*
    * Not copyable.
    */
-  TextLayoutManager(const TextLayoutManager &) = delete;
-  TextLayoutManager &operator=(const TextLayoutManager &) = delete;
+  TextLayoutManager(const TextLayoutManager&) = delete;
+  TextLayoutManager& operator=(const TextLayoutManager&) = delete;
 
   /*
    * Not movable.
    */
-  TextLayoutManager(TextLayoutManager &&) = delete;
-  TextLayoutManager &operator=(TextLayoutManager &&) = delete;
+  TextLayoutManager(TextLayoutManager&&) = delete;
+  TextLayoutManager& operator=(TextLayoutManager&&) = delete;
 
   /*
    * Measures `attributedString` using native text rendering infrastructure.
    */
   TextMeasurement measure(
-      const AttributedStringBox &attributedStringBox,
-      const ParagraphAttributes &paragraphAttributes,
-      const TextLayoutContext &layoutContext,
-      const LayoutConstraints &layoutConstraints) const;
+      const AttributedStringBox& attributedStringBox,
+      const ParagraphAttributes& paragraphAttributes,
+      const TextLayoutContext& layoutContext,
+      const LayoutConstraints& layoutConstraints) const;
 
   /*
    * Measures lines of `attributedString` using native text rendering
    * infrastructure.
    */
   LinesMeasurements measureLines(
-      const AttributedStringBox &attributedStringBox,
-      const ParagraphAttributes &paragraphAttributes,
-      const Size &size) const;
+      const AttributedStringBox& attributedStringBox,
+      const ParagraphAttributes& paragraphAttributes,
+      const Size& size) const;
 
   /*
    * Returns an opaque pointer to platform-specific TextLayoutManager.

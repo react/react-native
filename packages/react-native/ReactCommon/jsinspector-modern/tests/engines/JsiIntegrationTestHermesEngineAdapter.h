@@ -26,19 +26,19 @@ namespace facebook::react::jsinspector_modern {
  */
 class JsiIntegrationTestHermesEngineAdapter {
  public:
-  explicit JsiIntegrationTestHermesEngineAdapter(folly::Executor &jsExecutor);
+  explicit JsiIntegrationTestHermesEngineAdapter(folly::Executor& jsExecutor);
 
   static InspectorFlagOverrides getInspectorFlagOverrides() noexcept;
 
-  RuntimeTargetDelegate &getRuntimeTargetDelegate();
+  RuntimeTargetDelegate& getRuntimeTargetDelegate();
 
-  jsi::Runtime &getRuntime() const noexcept;
+  jsi::Runtime& getRuntime() const noexcept;
 
   RuntimeExecutor getRuntimeExecutor() const noexcept;
 
  private:
   std::shared_ptr<facebook::hermes::HermesRuntime> runtime_;
-  folly::Executor &jsExecutor_;
+  folly::Executor& jsExecutor_;
   HermesRuntimeTargetDelegate runtimeTargetDelegate_;
 };
 

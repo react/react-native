@@ -18,16 +18,20 @@ class AnimatedMountingOverrideDelegate;
 class NativeAnimatedNodesManagerProvider {
  public:
   NativeAnimatedNodesManagerProvider(
-      NativeAnimatedNodesManager::StartOnRenderCallback startOnRenderCallback = nullptr,
-      NativeAnimatedNodesManager::StopOnRenderCallback stopOnRenderCallback = nullptr,
-      NativeAnimatedNodesManager::FrameRateListenerCallback frameRateListenerCallback = nullptr);
+      NativeAnimatedNodesManager::StartOnRenderCallback startOnRenderCallback =
+          nullptr,
+      NativeAnimatedNodesManager::StopOnRenderCallback stopOnRenderCallback =
+          nullptr,
+      NativeAnimatedNodesManager::FrameRateListenerCallback
+          frameRateListenerCallback = nullptr);
 
   std::shared_ptr<NativeAnimatedNodesManager> getOrCreate(
-      jsi::Runtime &runtime,
+      jsi::Runtime& runtime,
       std::shared_ptr<CallInvoker> jsInvoker);
 
   // Native Event Listeners
-  void addEventEmitterListener(const std::shared_ptr<EventEmitterListener> &listener);
+  void addEventEmitterListener(
+      const std::shared_ptr<EventEmitterListener>& listener);
 
   std::shared_ptr<EventEmitterListener> getEventEmitterListener();
 
@@ -38,18 +42,22 @@ class NativeAnimatedNodesManagerProvider {
   std::shared_ptr<EventEmitterListener> eventEmitterListener_;
 
   std::shared_ptr<UIManagerNativeAnimatedDelegate> nativeAnimatedDelegate_;
-  std::shared_ptr<AnimatedMountingOverrideDelegate> animatedMountingOverrideDelegate_;
+  std::shared_ptr<AnimatedMountingOverrideDelegate>
+      animatedMountingOverrideDelegate_;
 
   NativeAnimatedNodesManager::StartOnRenderCallback startOnRenderCallback_;
   NativeAnimatedNodesManager::StopOnRenderCallback stopOnRenderCallback_;
-  NativeAnimatedNodesManager::FrameRateListenerCallback frameRateListenerCallback_;
+  NativeAnimatedNodesManager::FrameRateListenerCallback
+      frameRateListenerCallback_;
 
   std::unique_ptr<MergedValueDispatcher> mergedValueDispatcher_;
 };
 
-class UIManagerNativeAnimatedDelegateImpl : public UIManagerNativeAnimatedDelegate {
+class UIManagerNativeAnimatedDelegateImpl
+    : public UIManagerNativeAnimatedDelegate {
  public:
-  explicit UIManagerNativeAnimatedDelegateImpl(std::weak_ptr<NativeAnimatedNodesManager> manager);
+  explicit UIManagerNativeAnimatedDelegateImpl(
+      std::weak_ptr<NativeAnimatedNodesManager> manager);
 
   void runAnimationFrame() override;
 

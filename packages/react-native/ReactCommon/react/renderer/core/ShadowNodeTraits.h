@@ -96,23 +96,19 @@ class ShadowNodeTraits {
   /*
    * Sets, unsets, and checks individual traits.
    */
-  inline void set(Trait trait)
-  {
+  inline void set(Trait trait) {
     traits_ = ShadowNodeTraits::Trait(traits_ | trait);
   }
 
-  inline void unset(Trait trait)
-  {
+  inline void unset(Trait trait) {
     traits_ = ShadowNodeTraits::Trait(traits_ & ~trait);
   }
 
-  inline bool check(Trait traits) const
-  {
+  inline bool check(Trait traits) const {
     return ShadowNodeTraits::Trait(traits_ & traits) == traits;
   }
 
-  inline Trait get() const
-  {
+  inline Trait get() const {
     return traits_;
   }
 

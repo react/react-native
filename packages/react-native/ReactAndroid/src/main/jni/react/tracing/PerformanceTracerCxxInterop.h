@@ -13,7 +13,8 @@
 
 namespace facebook::react {
 
-class TracingStateCallback : public facebook::jni::JavaClass<TracingStateCallback> {
+class TracingStateCallback
+    : public facebook::jni::JavaClass<TracingStateCallback> {
  public:
   static constexpr auto kJavaDescriptor =
       "Lcom/facebook/react/internal/tracing/PerformanceTracer$TracingStateCallback;";
@@ -21,9 +22,11 @@ class TracingStateCallback : public facebook::jni::JavaClass<TracingStateCallbac
   void onTracingStateChanged(bool isTracing) const;
 };
 
-class PerformanceTracerCxxInterop : public facebook::jni::JavaClass<PerformanceTracerCxxInterop> {
+class PerformanceTracerCxxInterop
+    : public facebook::jni::JavaClass<PerformanceTracerCxxInterop> {
  public:
-  static constexpr auto kJavaDescriptor = "Lcom/facebook/react/internal/tracing/PerformanceTracer;";
+  static constexpr auto kJavaDescriptor =
+      "Lcom/facebook/react/internal/tracing/PerformanceTracer;";
 
   static void reportMark(
       facebook::jni::alias_ref<PerformanceTracerCxxInterop> jthis,
@@ -47,7 +50,8 @@ class PerformanceTracerCxxInterop : public facebook::jni::JavaClass<PerformanceT
       facebook::jni::alias_ref<jstring> trackGroup,
       facebook::jni::alias_ref<jstring> color);
 
-  static jboolean isTracing(facebook::jni::alias_ref<PerformanceTracerCxxInterop> jthis);
+  static jboolean isTracing(
+      facebook::jni::alias_ref<PerformanceTracerCxxInterop> jthis);
 
   static jint subscribeToTracingStateChanges(
       facebook::jni::alias_ref<PerformanceTracerCxxInterop> jthis,

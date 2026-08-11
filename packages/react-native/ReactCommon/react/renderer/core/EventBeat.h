@@ -55,17 +55,20 @@ class EventBeat {
     std::weak_ptr<const void> owner;
   };
 
-  using Factory = std::function<std::unique_ptr<EventBeat>(std::shared_ptr<OwnerBox> ownerBox)>;
+  using Factory = std::function<std::unique_ptr<EventBeat>(
+      std::shared_ptr<OwnerBox> ownerBox)>;
 
-  using BeatCallback = std::function<void(jsi::Runtime &runtime)>;
+  using BeatCallback = std::function<void(jsi::Runtime& runtime)>;
 
-  explicit EventBeat(std::shared_ptr<OwnerBox> ownerBox, RuntimeScheduler &runtimeScheduler);
+  explicit EventBeat(
+      std::shared_ptr<OwnerBox> ownerBox,
+      RuntimeScheduler& runtimeScheduler);
 
   virtual ~EventBeat() = default;
 
   // not copyable
-  EventBeat(const EventBeat &other) = delete;
-  EventBeat &operator=(const EventBeat &other) = delete;
+  EventBeat(const EventBeat& other) = delete;
+  EventBeat& operator=(const EventBeat& other) = delete;
 
   /*
    * Communicates to the Beat that a consumer (for example EventQueue) is
@@ -144,7 +147,7 @@ class EventBeat {
   mutable std::atomic<bool> isEventBeatRequested_{false};
 
  private:
-  RuntimeScheduler &runtimeScheduler_;
+  RuntimeScheduler& runtimeScheduler_;
   mutable std::atomic<bool> isBeatCallbackScheduled_{false};
   mutable std::atomic<bool> isSynchronousRequested_{false};
 };

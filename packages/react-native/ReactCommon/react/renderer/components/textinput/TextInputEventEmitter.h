@@ -35,23 +35,25 @@ class TextInputEventEmitter : public ViewEventEmitter {
     int eventCount;
   };
 
-  void onFocus(const Metrics &textInputMetrics) const;
-  void onBlur(const Metrics &textInputMetrics) const;
-  void onChange(const Metrics &textInputMetrics) const;
-  void onContentSizeChange(const Metrics &textInputMetrics) const;
-  void onSelectionChange(const Metrics &textInputMetrics) const;
-  void onEndEditing(const Metrics &textInputMetrics) const;
-  void onSubmitEditing(const Metrics &textInputMetrics) const;
-  void onKeyPress(const KeyPressMetrics &keyPressMetrics) const;
-  void onScroll(const Metrics &textInputMetrics) const;
+  void onFocus(const Metrics& textInputMetrics) const;
+  void onBlur(const Metrics& textInputMetrics) const;
+  void onChange(const Metrics& textInputMetrics) const;
+  void onContentSizeChange(const Metrics& textInputMetrics) const;
+  void onSelectionChange(const Metrics& textInputMetrics) const;
+  void onEndEditing(const Metrics& textInputMetrics) const;
+  void onSubmitEditing(const Metrics& textInputMetrics) const;
+  void onKeyPress(const KeyPressMetrics& keyPressMetrics) const;
+  void onScroll(const Metrics& textInputMetrics) const;
 
  private:
   void dispatchTextInputEvent(
-      const std::string &name,
-      const Metrics &textInputMetrics,
+      const std::string& name,
+      const Metrics& textInputMetrics,
       bool includeSelectionState = false) const;
 
-  void dispatchTextInputContentSizeChangeEvent(const std::string &name, const Metrics &textInputMetrics) const;
+  void dispatchTextInputContentSizeChangeEvent(
+      const std::string& name,
+      const Metrics& textInputMetrics) const;
 };
 
 } // namespace facebook::react

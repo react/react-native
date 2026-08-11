@@ -15,11 +15,12 @@
 
 namespace facebook::react {
 
-class RunLoopObserverManager : std::enable_shared_from_this<RunLoopObserverManager> {
+class RunLoopObserverManager
+    : std::enable_shared_from_this<RunLoopObserverManager> {
  public:
   std::unique_ptr<EventBeat> createEventBeat(
       std::shared_ptr<EventBeat::OwnerBox> ownerBox,
-      RuntimeScheduler &runtimeScheduler);
+      RuntimeScheduler& runtimeScheduler);
 
   void onRender() const noexcept;
 

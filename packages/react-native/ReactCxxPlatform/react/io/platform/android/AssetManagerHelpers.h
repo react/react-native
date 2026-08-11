@@ -14,8 +14,8 @@
 
 namespace facebook::react {
 
-AAssetManager *getJavaAssetManager();
+AAssetManager* getJavaAssetManager();
 
-bool isDirectoryNotEmpty(const std::string &path);
+bool isDirectoryNotEmpty(const std::string& path);
 
 } // namespace facebook::react

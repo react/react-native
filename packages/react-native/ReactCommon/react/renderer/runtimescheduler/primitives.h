@@ -12,15 +12,17 @@
 
 namespace facebook::react {
 
-inline static jsi::Value valueFromTask(jsi::Runtime &runtime, std::shared_ptr<Task> task)
-{
+inline static jsi::Value valueFromTask(
+    jsi::Runtime& runtime,
+    std::shared_ptr<Task> task) {
   jsi::Object obj(runtime);
   obj.setNativeState(runtime, std::move(task));
   return obj;
 }
 
-inline static std::shared_ptr<Task> taskFromValue(jsi::Runtime &runtime, const jsi::Value &value)
-{
+inline static std::shared_ptr<Task> taskFromValue(
+    jsi::Runtime& runtime,
+    const jsi::Value& value) {
   if (value.isNull()) {
     return nullptr;
   }

@@ -49,13 +49,13 @@ class RawProps final {
   /*
    * Creates an object with given `runtime` and `value`.
    */
-  RawProps(jsi::Runtime &runtime, const jsi::Value &value) noexcept;
+  RawProps(jsi::Runtime& runtime, const jsi::Value& value) noexcept;
 
-  explicit RawProps(const RawProps &other) noexcept;
-  RawProps(RawProps &&other) noexcept = default;
+  explicit RawProps(const RawProps& other) noexcept;
+  RawProps(RawProps&& other) noexcept = default;
 
-  RawProps &operator=(const RawProps &other) noexcept = delete;
-  RawProps &operator=(RawProps &&other) noexcept = delete;
+  RawProps& operator=(const RawProps& other) noexcept = delete;
+  RawProps& operator=(RawProps&& other) noexcept = delete;
 
   /*
    * Creates an object with given `folly::dynamic` object.
@@ -65,7 +65,7 @@ class RawProps final {
    */
   explicit RawProps(folly::dynamic dynamic) noexcept;
 
-  void parse(const RawPropsParser &parser) noexcept;
+  void parse(const RawPropsParser& parser) noexcept;
 
   /*
    * Deprecated. Do not use.
@@ -79,7 +79,9 @@ class RawProps final {
    * The support for explicit conversion to `folly::dynamic` is deprecated and
    * will be removed as soon Android implementation does not need it.
    */
-  folly::dynamic toDynamic(const std::function<bool(const std::string &)> &filterObjectKeys = nullptr) const;
+  folly::dynamic toDynamic(
+      const std::function<bool(const std::string&)>& filterObjectKeys =
+          nullptr) const;
 
   /*
    * Returns `true` if the object is empty.
@@ -91,11 +93,12 @@ class RawProps final {
    * Returns a const unowning pointer to `RawValue` of a prop with a given name.
    * Returns `nullptr` if a prop with the given name does not exist.
    */
-  const RawValue *at(const char *name) const noexcept;
+  const RawValue* at(const char* name) const noexcept;
 
   // Deprecated: Use at(name) instead. This overload exists for backwards
   // compatibility with callers that pass prefix/suffix separately.
-  const RawValue *at(const char *name, const char *prefix, const char *suffix) const noexcept;
+  const RawValue* at(const char* name, const char* prefix, const char* suffix)
+      const noexcept;
 
   /*
    * Iterates the underlying source object and invokes `fn(name, value)` for
@@ -104,13 +107,13 @@ class RawProps final {
    * (no `folly::dynamic` materialization). For `Mode::Dynamic` it walks
    * `dynamic_.items()`. For `Mode::Empty` it is a no-op.
    *
-   * The callback signature is `void(std::string_view name, const RawValue &value)`.
-   * The view points into storage owned by `forEachItem` for the duration of
-   * the call and is null-terminated (i.e. `name.data()` is a valid C string).
+   * The callback signature is `void(std::string_view name, const RawValue
+   * &value)`. The view points into storage owned by `forEachItem` for the
+   * duration of the call and is null-terminated (i.e. `name.data()` is a valid
+   * C string).
    */
   template <typename Fn>
-  void forEachItem(Fn fn) const
-  {
+  void forEachItem(Fn fn) const {
     switch (mode_) {
       case Mode::Empty:
         return;
@@ -122,12 +125,13 @@ class RawProps final {
           auto name = names.getValueAtIndex(*runtime_, i).getString(*runtime_);
           auto propValue = object.getProperty(*runtime_, name);
           auto nameUtf8 = name.utf8(*runtime_);
-          fn(std::string_view{nameUtf8}, RawValue{*runtime_, std::move(propValue)});
+          fn(std::string_view{nameUtf8},
+             RawValue{*runtime_, std::move(propValue)});
         }
         return;
       }
       case Mode::Dynamic:
-        for (const auto &pair : dynamic_.items()) {
+        for (const auto& pair : dynamic_.items()) {
           fn(std::string_view{pair.first.getString()}, RawValue{pair.second});
         }
         return;
@@ -139,7 +143,7 @@ class RawProps final {
  private:
   friend class RawPropsParser;
 
-  mutable const RawPropsParser *parser_{nullptr};
+  mutable const RawPropsParser* parser_{nullptr};
 
   /*
    * Source artefacts:
@@ -149,7 +153,7 @@ class RawProps final {
   Mode mode_;
 
   // Case 1: Source data is represented as `jsi::Object`.
-  jsi::Runtime *runtime_{};
+  jsi::Runtime* runtime_{};
   jsi::Value value_;
 
   // Case 2: Source data is represented as `folly::dynamic`.
@@ -177,8 +181,10 @@ class RawProps final {
  * Java.
  */
 template <typename T>
-concept RawPropsFilterable = requires(RawProps &rawProps) {
-  { T::filterRawProps(rawProps) } -> std::same_as<void>;
-};
+concept RawPropsFilterable = requires(RawProps& rawProps) {
+                               {
+                                 T::filterRawProps(rawProps)
+                                 } -> std::same_as<void>;
+                             };
 
 } // namespace facebook::react

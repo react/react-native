@@ -17,13 +17,16 @@ class InstanceHandle {
  public:
   using Shared = std::shared_ptr<const InstanceHandle>;
 
-  InstanceHandle(jsi::Runtime &runtime, const jsi::Value &instanceHandle, Tag tag);
+  InstanceHandle(
+      jsi::Runtime& runtime,
+      const jsi::Value& instanceHandle,
+      Tag tag);
 
   /*
    * Creates and returns the `instanceHandle`.
    * Returns `null` if the `instanceHandle` is not retained at this moment.
    */
-  jsi::Value getInstanceHandle(jsi::Runtime &runtime) const;
+  jsi::Value getInstanceHandle(jsi::Runtime& runtime) const;
 
   /*
    * Deprecated. Do not use.

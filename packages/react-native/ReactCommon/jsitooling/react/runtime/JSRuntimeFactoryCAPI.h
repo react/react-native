@@ -14,7 +14,7 @@ extern "C" {
 /**
  JSRuntimeFactory pointer representation in C.
  */
-typedef void *JSRuntimeFactoryRef;
+typedef void* JSRuntimeFactoryRef;
 
 /**
  Function used to destroy instance of JSRuntimeFactory.

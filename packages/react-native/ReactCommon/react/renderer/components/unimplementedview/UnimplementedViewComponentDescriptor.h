@@ -16,7 +16,8 @@ namespace facebook::react {
 /*
  * Descriptor for <UnimplementedView> component.
  */
-class UnimplementedViewComponentDescriptor final : public ConcreteComponentDescriptor<UnimplementedViewShadowNode> {
+class UnimplementedViewComponentDescriptor final
+    : public ConcreteComponentDescriptor<UnimplementedViewShadowNode> {
  public:
   using ConcreteComponentDescriptor::ConcreteComponentDescriptor;
 
@@ -31,8 +32,10 @@ class UnimplementedViewComponentDescriptor final : public ConcreteComponentDescr
    * In addition to base implementation, stores a component name inside cloned
    * `Props` object.
    */
-  Props::Shared cloneProps(const PropsParserContext &context, const Props::Shared &props, RawProps rawProps)
-      const override;
+  Props::Shared cloneProps(
+      const PropsParserContext& context,
+      const Props::Shared& props,
+      RawProps rawProps) const override;
 };
 
 } // namespace facebook::react

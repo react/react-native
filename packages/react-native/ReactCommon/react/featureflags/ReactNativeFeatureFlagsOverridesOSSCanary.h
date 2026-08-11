@@ -23,9 +23,10 @@
 
 namespace facebook::react {
 
-class ReactNativeFeatureFlagsOverridesOSSCanary : public ReactNativeFeatureFlagsOverridesOSSStable {
+class ReactNativeFeatureFlagsOverridesOSSCanary
+    : public ReactNativeFeatureFlagsOverridesOSSStable {
  public:
-    ReactNativeFeatureFlagsOverridesOSSCanary() = default;
+  ReactNativeFeatureFlagsOverridesOSSCanary() = default;
 
   bool cxxNativeAnimatedEnabled() override {
     return true;

@@ -24,13 +24,17 @@ class HostPlatformViewProps : public BaseViewProps {
  public:
   HostPlatformViewProps() = default;
   HostPlatformViewProps(
-      const PropsParserContext &context,
-      const HostPlatformViewProps &sourceProps,
-      const RawProps &rawProps,
-      const std::function<bool(const std::string &)> &filterObjectKeys = nullptr);
+      const PropsParserContext& context,
+      const HostPlatformViewProps& sourceProps,
+      const RawProps& rawProps,
+      const std::function<bool(const std::string&)>& filterObjectKeys =
+          nullptr);
 
-  void
-  setProp(const PropsParserContext &context, RawPropsPropNameHash hash, const char *propName, const RawValue &value);
+  void setProp(
+      const PropsParserContext& context,
+      RawPropsPropNameHash hash,
+      const char* propName,
+      const RawValue& value);
 
 #pragma mark - Props
 
@@ -61,7 +65,7 @@ class HostPlatformViewProps : public BaseViewProps {
 
 #ifdef RN_SERIALIZABLE_STATE
   ComponentName getDiffPropsImplementationTarget() const override;
-  folly::dynamic getDiffProps(const Props *prevProps) const override;
+  folly::dynamic getDiffProps(const Props* prevProps) const override;
 #endif
 };
 

@@ -18,13 +18,14 @@ constexpr const char VirtualViewComponentName[] = "VirtualView";
 /*
  * `ShadowNode` for <VirtualView> component.
  */
-class VirtualViewShadowNode final
-    : public ConcreteViewShadowNode<VirtualViewComponentName, VirtualViewProps, VirtualViewEventEmitter> {
+class VirtualViewShadowNode final : public ConcreteViewShadowNode<
+                                        VirtualViewComponentName,
+                                        VirtualViewProps,
+                                        VirtualViewEventEmitter> {
  public:
   using ConcreteViewShadowNode::ConcreteViewShadowNode;
 
-  static ShadowNodeTraits BaseTraits()
-  {
+  static ShadowNodeTraits BaseTraits() {
     auto traits = ConcreteViewShadowNode::BaseTraits();
     // <VirtualView> has a side effect: it listens to scroll events.
     // It must not be culled, otherwise Fling will not work.

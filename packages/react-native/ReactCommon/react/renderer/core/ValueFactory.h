@@ -13,6 +13,6 @@
 
 namespace facebook::react {
 
-using ValueFactory = std::function<jsi::Value(jsi::Runtime &runtime)>;
+using ValueFactory = std::function<jsi::Value(jsi::Runtime& runtime)>;
 
 } // namespace facebook::react

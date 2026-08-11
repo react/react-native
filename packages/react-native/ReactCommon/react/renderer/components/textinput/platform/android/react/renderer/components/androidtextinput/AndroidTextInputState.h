@@ -31,18 +31,22 @@ class AndroidTextInputState final {
       : attributedStringBox(std::move(attributedStringBox)),
         reactTreeAttributedString(std::move(reactTreeAttributedString)),
         paragraphAttributes(std::move(paragraphAttributes)),
-        mostRecentEventCount(mostRecentEventCount)
-  {
-  }
+        mostRecentEventCount(mostRecentEventCount) {}
 
-  AndroidTextInputState(const AndroidTextInputState &previousState, const folly::dynamic &data)
+  AndroidTextInputState(
+      const AndroidTextInputState& previousState,
+      const folly::dynamic& data)
       : attributedStringBox(previousState.attributedStringBox),
         reactTreeAttributedString(previousState.reactTreeAttributedString),
         paragraphAttributes(previousState.paragraphAttributes),
-        mostRecentEventCount(data.getDefault("mostRecentEventCount", previousState.mostRecentEventCount).getInt()),
-        cachedAttributedStringId(data.getDefault("opaqueCacheId", previousState.cachedAttributedStringId).getInt())
-  {
-  }
+        mostRecentEventCount(data.getDefault(
+                                     "mostRecentEventCount",
+                                     previousState.mostRecentEventCount)
+                                 .getInt()),
+        cachedAttributedStringId(data.getDefault(
+                                         "opaqueCacheId",
+                                         previousState.cachedAttributedStringId)
+                                     .getInt()) {}
 
   folly::dynamic getDynamic() const;
   MapBuffer getMapBuffer() const;

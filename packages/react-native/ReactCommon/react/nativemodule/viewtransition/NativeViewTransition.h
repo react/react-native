@@ -20,18 +20,23 @@
 
 namespace facebook::react {
 
-class NativeViewTransition : public NativeViewTransitionCxxSpec<NativeViewTransition> {
+class NativeViewTransition
+    : public NativeViewTransitionCxxSpec<NativeViewTransition> {
  public:
   explicit NativeViewTransition(std::shared_ptr<CallInvoker> jsInvoker);
 
-  std::optional<jsi::Object>
-  getViewTransitionInstance(jsi::Runtime &rt, const std::string &name, const std::string &pseudo);
+  std::optional<jsi::Object> getViewTransitionInstance(
+      jsi::Runtime& rt,
+      const std::string& name,
+      const std::string& pseudo);
 
-  jsi::Value findPseudoElementShadowNodeByTag(jsi::Runtime &rt, double reactTag);
+  jsi::Value findPseudoElementShadowNodeByTag(
+      jsi::Runtime& rt,
+      double reactTag);
 
-  void waitForTransitionAnimation(jsi::Runtime &rt, double animationId);
+  void waitForTransitionAnimation(jsi::Runtime& rt, double animationId);
 
-  void transitionAnimationFinished(jsi::Runtime &rt, double animationId);
+  void transitionAnimationFinished(jsi::Runtime& rt, double animationId);
 };
 
 } // namespace facebook::react

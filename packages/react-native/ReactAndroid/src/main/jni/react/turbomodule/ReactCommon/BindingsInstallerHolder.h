@@ -13,18 +13,23 @@
 
 namespace facebook::react {
 
-class BindingsInstallerHolder : public jni::HybridClass<BindingsInstallerHolder> {
+class BindingsInstallerHolder
+    : public jni::HybridClass<BindingsInstallerHolder> {
  public:
-  static auto constexpr kJavaDescriptor = "Lcom/facebook/react/turbomodule/core/interfaces/BindingsInstallerHolder;";
-  using BindingsInstallFunc =
-      std::function<void(jsi::Runtime &runtime, const std::shared_ptr<CallInvoker> &callInvoker)>;
+  static auto constexpr kJavaDescriptor =
+      "Lcom/facebook/react/turbomodule/core/interfaces/BindingsInstallerHolder;";
+  using BindingsInstallFunc = std::function<void(
+      jsi::Runtime& runtime,
+      const std::shared_ptr<CallInvoker>& callInvoker)>;
 
-  void installBindings(jsi::Runtime &runtime, const std::shared_ptr<CallInvoker> &callInvoker);
+  void installBindings(
+      jsi::Runtime& runtime,
+      const std::shared_ptr<CallInvoker>& callInvoker);
 
  private:
   BindingsInstallerHolder(BindingsInstallFunc bindingsInstaller);
-  [[deprecated("Use 'BindingsInstallerHolder([](Runtime, CallInvoker) { ... })' instead")]]
-  BindingsInstallerHolder(std::function<void(jsi::Runtime &runtime)> oldBindingsInstaller);
+  [[deprecated("Use 'BindingsInstallerHolder([](Runtime, CallInvoker) { ... })' instead")]] BindingsInstallerHolder(
+      std::function<void(jsi::Runtime& runtime)> oldBindingsInstaller);
 
  private:
   friend HybridBase;

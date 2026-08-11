@@ -17,9 +17,11 @@ namespace facebook::react {
 /**
  * JNI test helper that wraps a real FabricMountingManager
  */
-class FabricMountingManagerTestHelper : public jni::HybridClass<FabricMountingManagerTestHelper> {
+class FabricMountingManagerTestHelper
+    : public jni::HybridClass<FabricMountingManagerTestHelper> {
  public:
-  static constexpr auto kJavaDescriptor = "Lcom/facebook/react/fabric/FabricMountingManagerTestHelper;";
+  static constexpr auto kJavaDescriptor =
+      "Lcom/facebook/react/fabric/FabricMountingManagerTestHelper;";
 
   void startSurface(jint surfaceId);
   void stopSurface(jint surfaceId);
@@ -32,7 +34,8 @@ class FabricMountingManagerTestHelper : public jni::HybridClass<FabricMountingMa
  private:
   friend HybridBase;
 
-  explicit FabricMountingManagerTestHelper(jni::alias_ref<JFabricUIManager::javaobject> jFabricUIManager);
+  explicit FabricMountingManagerTestHelper(
+      jni::alias_ref<JFabricUIManager::javaobject> jFabricUIManager);
 
   static void initHybrid(
       jni::alias_ref<jhybridobject> jobj,

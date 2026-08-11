@@ -11,8 +11,10 @@
 
 namespace facebook::react::CoreComponentsRegistry {
 
-std::shared_ptr<const ComponentDescriptorProviderRegistry> sharedProviderRegistry();
+std::shared_ptr<const ComponentDescriptorProviderRegistry>
+sharedProviderRegistry();
 
-void addCoreComponents(std::shared_ptr<const ComponentDescriptorProviderRegistry> registry);
+void addCoreComponents(
+    std::shared_ptr<const ComponentDescriptorProviderRegistry> registry);
 
 } // namespace facebook::react::CoreComponentsRegistry

@@ -28,18 +28,20 @@
 //                        when a consumer opts into the strict public API by
 //                        defining RN_STRICT_API.
 //
-//   RN_UMBRELLA_CONTEXT  Internal marker (implementation detail; consumers never
+//   RN_UMBRELLA_CONTEXT  Internal marker (implementation detail; consumers
+//   never
 //                        set it). A module umbrella defines it around its own
 //                        `#include`s to signal the blessed inclusion path:
 //                            #define RN_UMBRELLA_CONTEXT
 //                            #include <react/.../PublicHeaderA.h>
 //                            #include <react/.../PublicHeaderB.h>
 //                            #undef RN_UMBRELLA_CONTEXT
-//                        The `#undef` matters: it keeps the marker scoped to the
-//                        umbrella's includes so later *direct* includes in the
-//                        same translation unit are still caught.
+//                        The `#undef` matters: it keeps the marker scoped to
+//                        the umbrella's includes so later *direct* includes in
+//                        the same translation unit are still caught.
 //
-//   RN_BUILDING          Defined by React Native's own build targets so internal
+//   RN_BUILDING          Defined by React Native's own build targets so
+//   internal
 //                        sources may keep including the fine-grained headers
 //                        directly.
 //
@@ -47,7 +49,8 @@
 // re-evaluated on every inclusion so each direct include is checked.
 // =============================================================================
 
-#if defined(RN_STRICT_API) && !defined(RN_UMBRELLA_CONTEXT) && !defined(RN_BUILDING)
+#if defined(RN_STRICT_API) && !defined(RN_UMBRELLA_CONTEXT) && \
+    !defined(RN_BUILDING)
 #error \
     "Do not include this React Native header directly. Include the module's umbrella header <React/<Module>.h> instead."
 #endif

@@ -28,7 +28,7 @@ struct BufferEvent {
  */
 class FuseboxTracer {
  public:
-  FuseboxTracer(const FuseboxTracer &) = delete;
+  FuseboxTracer(const FuseboxTracer&) = delete;
 
   bool isTracing();
   // Verifies that tracing isn't started and starts tracing all in one step.
@@ -37,12 +37,16 @@ class FuseboxTracer {
   // Verifies that we're tracing and dumps the trace all in one step to avoid
   // TOCTOU bugs. Returns false if we're not tracing. No result callbacks
   // are expected in that scenario.
-  bool stopTracing(const std::function<void(const folly::dynamic &eventsChunk)> &resultCallback);
-  bool stopTracingAndWriteToFile(const std::string &path);
-  void
-  addEvent(const std::string_view &name, uint64_t start, uint64_t end, const std::optional<std::string_view> &track);
+  bool stopTracing(const std::function<void(const folly::dynamic& eventsChunk)>&
+                       resultCallback);
+  bool stopTracingAndWriteToFile(const std::string& path);
+  void addEvent(
+      const std::string_view& name,
+      uint64_t start,
+      uint64_t end,
+      const std::optional<std::string_view>& track);
 
-  static FuseboxTracer &getFuseboxTracer();
+  static FuseboxTracer& getFuseboxTracer();
 
  private:
   FuseboxTracer() {}

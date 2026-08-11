@@ -17,8 +17,9 @@ namespace facebook::react {
 class CallInvoker;
 class TurboModule;
 
-using TurboModuleProvider =
-    std::function<std::shared_ptr<TurboModule>(const std::string &name, const std::shared_ptr<CallInvoker> &jsInvoker)>;
+using TurboModuleProvider = std::function<std::shared_ptr<TurboModule>(
+    const std::string& name,
+    const std::shared_ptr<CallInvoker>& jsInvoker)>;
 
 using TurboModuleProviders = std::vector<TurboModuleProvider>;
 

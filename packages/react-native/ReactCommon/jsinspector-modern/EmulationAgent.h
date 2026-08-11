@@ -27,7 +27,9 @@ class EmulationAgent {
    * is attached to. The caller is responsible for ensuring that the
    * HostTargetDelegate and underlying HostTarget both outlive the agent.
    */
-  EmulationAgent(FrontendChannel frontendChannel, HostTargetController &hostTargetController);
+  EmulationAgent(
+      FrontendChannel frontendChannel,
+      HostTargetController& hostTargetController);
 
   /**
    * Handle a CDP request. The response will be sent over the provided
@@ -35,13 +37,13 @@ class EmulationAgent {
    * \param req The parsed request.
    * \returns true if the request was handled.
    */
-  bool handleRequest(const cdp::PreparsedRequest &req);
+  bool handleRequest(const cdp::PreparsedRequest& req);
 
  private:
-  void handleSetEmulatedMedia(const cdp::PreparsedRequest &req);
+  void handleSetEmulatedMedia(const cdp::PreparsedRequest& req);
 
   FrontendChannel frontendChannel_;
-  HostTargetController &hostTargetController_;
+  HostTargetController& hostTargetController_;
 };
 
 } // namespace facebook::react::jsinspector_modern

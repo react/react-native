@@ -24,7 +24,7 @@ namespace facebook::xplat {
 
 class JsArgumentException : public std::logic_error {
  public:
-  JsArgumentException(const std::string &msg) : std::logic_error(msg) {}
+  JsArgumentException(const std::string& msg) : std::logic_error(msg) {}
 };
 
 // This extracts a single argument by calling the given method pointer on it.
@@ -34,9 +34,15 @@ class JsArgumentException : public std::logic_error {
 // overload accepts ref-qualified member functions.
 
 template <typename R, typename... T>
-R jsArg(const folly::dynamic &arg, R (folly::dynamic::*asFoo)() const, const T &...desc);
+R jsArg(
+    const folly::dynamic& arg,
+    R (folly::dynamic::*asFoo)() const,
+    const T&... desc);
 template <typename R, typename... T>
-R jsArg(const folly::dynamic &arg, R (folly::dynamic::*asFoo)() const &, const T &...desc);
+R jsArg(
+    const folly::dynamic& arg,
+    R (folly::dynamic::*asFoo)() const&,
+    const T&... desc);
 
 // This is like jsArg, but a operates on a dynamic representing an array of
 // arguments.  The argument n is used both to index the array and build the
@@ -44,9 +50,15 @@ R jsArg(const folly::dynamic &arg, R (folly::dynamic::*asFoo)() const &, const T
 // used by the type-specific methods following.
 
 template <typename R>
-R jsArgN(const folly::dynamic &args, size_t n, R (folly::dynamic::*asFoo)() const);
+R jsArgN(
+    const folly::dynamic& args,
+    size_t n,
+    R (folly::dynamic::*asFoo)() const);
 template <typename R>
-R jsArgN(const folly::dynamic &args, size_t n, R (folly::dynamic::*asFoo)() const &);
+R jsArgN(
+    const folly::dynamic& args,
+    size_t n,
+    R (folly::dynamic::*asFoo)() const&);
 
 namespace detail {
 
@@ -56,7 +68,8 @@ namespace detail {
 // only for types compatible with folly::dynamic.
 template <typename T>
 struct is_dynamic {
-  using type = typename std::enable_if<std::is_assignable<folly::dynamic, T>::value, T>::type;
+  using type = typename std::
+      enable_if<std::is_assignable<folly::dynamic, T>::value, T>::type;
 };
 
 } // end namespace detail
@@ -66,45 +79,41 @@ struct is_dynamic {
 // Extract the n'th arg from the given dynamic, as a dynamic.  Throws a
 // JsArgumentException if there is no n'th arg in the input.
 template <typename T>
-typename detail::is_dynamic<T>::type &jsArgAsDynamic(T &&args, size_t n);
+typename detail::is_dynamic<T>::type& jsArgAsDynamic(T&& args, size_t n);
 
 // Extract the n'th arg from the given dynamic, as a dynamic Array.  Throws a
 // JsArgumentException if there is no n'th arg in the input, or it is not an
 // Array.
 template <typename T>
-typename detail::is_dynamic<T>::type &jsArgAsArray(T &&args, size_t n);
+typename detail::is_dynamic<T>::type& jsArgAsArray(T&& args, size_t n);
 
 // Extract the n'th arg from the given dynamic, as a dynamic Object.  Throws a
 // JsArgumentException if there is no n'th arg in the input, or it is not an
 // Object.
 template <typename T>
-typename detail::is_dynamic<T>::type &jsArgAsObject(T &&args, size_t n);
+typename detail::is_dynamic<T>::type& jsArgAsObject(T&& args, size_t n);
 
 // Extract the n'th arg from the given dynamic, as a bool.  Throws a
 // JsArgumentException if this fails for some reason.
-inline bool jsArgAsBool(const folly::dynamic &args, size_t n)
-{
+inline bool jsArgAsBool(const folly::dynamic& args, size_t n) {
   return jsArgN(args, n, &folly::dynamic::asBool);
 }
 
 // Extract the n'th arg from the given dynamic, as an integer.  Throws a
 // JsArgumentException if this fails for some reason.
-inline int64_t jsArgAsInt(const folly::dynamic &args, size_t n)
-{
+inline int64_t jsArgAsInt(const folly::dynamic& args, size_t n) {
   return jsArgN(args, n, &folly::dynamic::asInt);
 }
 
 // Extract the n'th arg from the given dynamic, as a double.  Throws a
 // JsArgumentException if this fails for some reason.
-inline double jsArgAsDouble(const folly::dynamic &args, size_t n)
-{
+inline double jsArgAsDouble(const folly::dynamic& args, size_t n) {
   return jsArgN(args, n, &folly::dynamic::asDouble);
 }
 
 // Extract the n'th arg from the given dynamic, as a string.  Throws a
 // JsArgumentException if this fails for some reason.
-inline std::string jsArgAsString(const folly::dynamic &args, size_t n)
-{
+inline std::string jsArgAsString(const folly::dynamic& args, size_t n) {
   return jsArgN(args, n, &folly::dynamic::asString);
 }
 

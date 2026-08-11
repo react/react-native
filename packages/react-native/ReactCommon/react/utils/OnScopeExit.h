@@ -14,18 +14,18 @@ namespace facebook::react {
 template <typename Lambda>
 class OnScopeExit {
  public:
-  explicit OnScopeExit(const Lambda &&lambda) noexcept : lambda_(std::move(lambda)) {}
+  explicit OnScopeExit(const Lambda&& lambda) noexcept
+      : lambda_(std::move(lambda)) {}
 
   // Non-movable
-  OnScopeExit(const OnScopeExit &) = delete;
-  OnScopeExit(OnScopeExit &&) = delete;
+  OnScopeExit(const OnScopeExit&) = delete;
+  OnScopeExit(OnScopeExit&&) = delete;
 
   // Non-copyable
-  OnScopeExit &operator=(const OnScopeExit &) = delete;
-  OnScopeExit &operator=(OnScopeExit &&) = delete;
+  OnScopeExit& operator=(const OnScopeExit&) = delete;
+  OnScopeExit& operator=(OnScopeExit&&) = delete;
 
-  ~OnScopeExit() noexcept
-  {
+  ~OnScopeExit() noexcept {
     lambda_();
   }
 

@@ -17,7 +17,10 @@ namespace facebook::react {
 
 class TrackingAnimatedNode final : public AnimatedNode {
  public:
-  TrackingAnimatedNode(Tag tag, const folly::dynamic &config, NativeAnimatedNodesManager &manager);
+  TrackingAnimatedNode(
+      Tag tag,
+      const folly::dynamic& config,
+      NativeAnimatedNodesManager& manager);
 
   void update() override;
 

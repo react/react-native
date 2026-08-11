@@ -41,9 +41,9 @@ class AttributedString : public Sealable, public DebugStringConvertible {
      * Returns whether the underlying text and attributes are equal,
      * disregarding layout or other information.
      */
-    bool isContentEqual(const Fragment &rhs) const;
+    bool isContentEqual(const Fragment& rhs) const;
 
-    bool operator==(const Fragment &rhs) const;
+    bool operator==(const Fragment& rhs) const;
   };
 
   class Range {
@@ -57,31 +57,31 @@ class AttributedString : public Sealable, public DebugStringConvertible {
   /*
    * Appends and prepends a `fragment` to the string.
    */
-  void appendFragment(Fragment &&fragment);
-  void prependFragment(Fragment &&fragment);
+  void appendFragment(Fragment&& fragment);
+  void prependFragment(Fragment&& fragment);
 
   /*
    * Sets attributes which would apply to hypothetical text not included in the
    * AttributedString.
    */
-  void setBaseTextAttributes(const TextAttributes &defaultAttributes);
+  void setBaseTextAttributes(const TextAttributes& defaultAttributes);
 
   /*
    * Returns a read-only reference to a list of fragments.
    */
-  const Fragments &getFragments() const;
+  const Fragments& getFragments() const;
 
   /*
    * Returns a reference to a list of fragments.
    */
-  Fragments &getFragments();
+  Fragments& getFragments();
 
   /*
    * Returns a string constructed from all strings in all fragments.
    */
   std::string getString() const;
 
-  const TextAttributes &getBaseTextAttributes() const;
+  const TextAttributes& getBaseTextAttributes() const;
 
   /*
    * Returns `true` if the string is empty (has no any fragments).
@@ -91,11 +91,11 @@ class AttributedString : public Sealable, public DebugStringConvertible {
   /**
    * Compares equality of TextAttributes of all Fragments on both sides.
    */
-  bool compareTextAttributesWithoutFrame(const AttributedString &rhs) const;
+  bool compareTextAttributesWithoutFrame(const AttributedString& rhs) const;
 
-  bool isContentEqual(const AttributedString &rhs) const;
+  bool isContentEqual(const AttributedString& rhs) const;
 
-  bool operator==(const AttributedString &rhs) const;
+  bool operator==(const AttributedString& rhs) const;
 
 #pragma mark - DebugStringConvertible
 
@@ -113,8 +113,8 @@ class AttributedString : public Sealable, public DebugStringConvertible {
 namespace std {
 template <>
 struct hash<facebook::react::AttributedString::Fragment> {
-  size_t operator()(const facebook::react::AttributedString::Fragment &fragment) const
-  {
+  size_t operator()(
+      const facebook::react::AttributedString::Fragment& fragment) const {
     return facebook::react::hash_combine(
         fragment.string,
         fragment.textAttributes,
@@ -125,12 +125,13 @@ struct hash<facebook::react::AttributedString::Fragment> {
 
 template <>
 struct hash<facebook::react::AttributedString> {
-  size_t operator()(const facebook::react::AttributedString &attributedString) const
-  {
+  size_t operator()(
+      const facebook::react::AttributedString& attributedString) const {
     auto seed = size_t{0};
 
-    facebook::react::hash_combine(seed, attributedString.getBaseTextAttributes());
-    for (const auto &fragment : attributedString.getFragments()) {
+    facebook::react::hash_combine(
+        seed, attributedString.getBaseTextAttributes());
+    for (const auto& fragment : attributedString.getFragments()) {
       facebook::react::hash_combine(seed, fragment);
     }
 

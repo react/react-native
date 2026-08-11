@@ -18,12 +18,13 @@ namespace facebook::react {
 
 template <typename... T>
 class AsyncPromise {
-  static_assert(sizeof...(T) <= 1, "AsyncPromise must have at most one argument");
+  static_assert(
+      sizeof...(T) <= 1,
+      "AsyncPromise must have at most one argument");
 
  public:
-  AsyncPromise(jsi::Runtime &rt, const std::shared_ptr<CallInvoker> &jsInvoker)
-      : state_(std::make_shared<SharedState>())
-  {
+  AsyncPromise(jsi::Runtime& rt, const std::shared_ptr<CallInvoker>& jsInvoker)
+      : state_(std::make_shared<SharedState>()) {
     auto constructor = rt.global().getPropertyAsFunction(rt, "Promise");
 
     auto promise = constructor.callAsConstructor(
@@ -31,21 +32,23 @@ class AsyncPromise {
         bridging::toJs(
             rt,
             // Safe to capture this since this is called synchronously.
-            [this](AsyncCallback<T...> resolve, const AsyncCallback<Error> &reject) {
+            [this](
+                AsyncCallback<T...> resolve,
+                const AsyncCallback<Error>& reject) {
               state_->resolve = std::move(resolve);
               state_->reject = std::move(reject);
             },
             jsInvoker));
 
-    auto promiseHolder = std::make_shared<PromiseHolder>(rt, promise.asObject(rt));
+    auto promiseHolder =
+        std::make_shared<PromiseHolder>(rt, promise.asObject(rt));
     LongLivedObjectCollection::get(rt).add(promiseHolder);
 
     // The shared state can retain the promise holder weakly now.
     state_->promiseHolder = promiseHolder;
   }
 
-  void resolve(T... value)
-  {
+  void resolve(T... value) {
     std::lock_guard<std::mutex> lock(state_->mutex);
 
     if (state_->resolve) {
@@ -55,8 +58,7 @@ class AsyncPromise {
     }
   }
 
-  void reject(Error error)
-  {
+  void reject(Error error) {
     std::lock_guard<std::mutex> lock(state_->mutex);
 
     if (state_->reject) {
@@ -66,8 +68,7 @@ class AsyncPromise {
     }
   }
 
-  jsi::Object get(jsi::Runtime &rt) const
-  {
+  jsi::Object get(jsi::Runtime& rt) const {
     if (auto holder = state_->promiseHolder.lock()) {
       return jsi::Value(rt, holder->promise).asObject(rt);
     } else {
@@ -77,14 +78,14 @@ class AsyncPromise {
 
  private:
   struct PromiseHolder : LongLivedObject {
-    PromiseHolder(jsi::Runtime &runtime, jsi::Object p) : LongLivedObject(runtime), promise(std::move(p)) {}
+    PromiseHolder(jsi::Runtime& runtime, jsi::Object p)
+        : LongLivedObject(runtime), promise(std::move(p)) {}
 
     jsi::Object promise;
   };
 
   struct SharedState {
-    ~SharedState()
-    {
+    ~SharedState() {
       if (auto holder = promiseHolder.lock()) {
         holder->allowRelease();
       }
@@ -101,8 +102,7 @@ class AsyncPromise {
 
 template <typename... T>
 struct Bridging<AsyncPromise<T...>> {
-  static jsi::Object toJs(jsi::Runtime &rt, const AsyncPromise<T...> &promise)
-  {
+  static jsi::Object toJs(jsi::Runtime& rt, const AsyncPromise<T...>& promise) {
     return promise.get(rt);
   }
 };

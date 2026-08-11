@@ -25,11 +25,11 @@ struct RectangleCorners {
   T bottomLeft{};
   T bottomRight{};
 
-  bool operator==(const RectangleCorners<T> &rhs) const noexcept = default;
+  bool operator==(const RectangleCorners<T>& rhs) const noexcept = default;
 
-  bool isUniform() const noexcept
-  {
-    return topLeft == topRight && topLeft == bottomLeft && topLeft == bottomRight;
+  bool isUniform() const noexcept {
+    return topLeft == topRight && topLeft == bottomLeft &&
+        topLeft == bottomRight;
   }
 };
 
@@ -44,9 +44,13 @@ namespace std {
 
 template <typename T>
 struct hash<facebook::react::RectangleCorners<T>> {
-  size_t operator()(const facebook::react::RectangleCorners<T> &corners) const noexcept
-  {
-    return facebook::react::hash_combine(corners.topLeft, corners.bottomLeft, corners.topRight, corners.bottomRight);
+  size_t operator()(
+      const facebook::react::RectangleCorners<T>& corners) const noexcept {
+    return facebook::react::hash_combine(
+        corners.topLeft,
+        corners.bottomLeft,
+        corners.topRight,
+        corners.bottomRight);
   }
 };
 

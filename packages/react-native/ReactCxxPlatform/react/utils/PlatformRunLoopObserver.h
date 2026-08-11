@@ -17,24 +17,22 @@ class PlatformRunLoopObserver;
 
 class PlatformRunLoopObserver : public RunLoopObserver {
  public:
-  PlatformRunLoopObserver(RunLoopObserver::Activity activities, const RunLoopObserver::WeakOwner &owner)
-      : RunLoopObserver(activities, owner)
-  {
-  }
+  PlatformRunLoopObserver(
+      RunLoopObserver::Activity activities,
+      const RunLoopObserver::WeakOwner& owner)
+      : RunLoopObserver(activities, owner) {}
   ~PlatformRunLoopObserver() override = default;
 
-  PlatformRunLoopObserver(PlatformRunLoopObserver &other) = delete;
-  PlatformRunLoopObserver &operator=(PlatformRunLoopObserver &other) = delete;
-  PlatformRunLoopObserver(PlatformRunLoopObserver &&other) = delete;
-  PlatformRunLoopObserver &operator=(PlatformRunLoopObserver &&other) = delete;
+  PlatformRunLoopObserver(PlatformRunLoopObserver& other) = delete;
+  PlatformRunLoopObserver& operator=(PlatformRunLoopObserver& other) = delete;
+  PlatformRunLoopObserver(PlatformRunLoopObserver&& other) = delete;
+  PlatformRunLoopObserver& operator=(PlatformRunLoopObserver&& other) = delete;
 
-  bool isOnRunLoopThread() const noexcept override
-  {
+  bool isOnRunLoopThread() const noexcept override {
     return false;
   }
 
-  void onRender() const noexcept
-  {
+  void onRender() const noexcept {
     if (auto owner = owner_.lock()) {
       activityDidChange(activities_);
     }

@@ -122,7 +122,7 @@
 #define HAVE___SYNC_VAL_COMPARE_AND_SWAP 1
 
 /* Define to the sub-directory in which libtool stores uninstalled libraries.
-   */
+ */
 #define LT_OBJDIR ".libs/"
 
 /* Name of package */
@@ -173,9 +173,8 @@
 
 /* Puts following code inside the Google namespace */
 #define _START_GOOGLE_NAMESPACE_ namespace google {
-
-
-/* TODO(vjn/dreiss): revisit these when use the android-21 (or newer) NDK platform. */
+/* TODO(vjn/dreiss): revisit these when use the android-21 (or newer) NDK
+ * platform. */
 #undef HAVE_SYSCALL_H
 #undef HAVE_SYS_SYSCALL_H
 #undef OS_LINUX

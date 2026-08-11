@@ -41,7 +41,8 @@ struct RuntimeSamplingProfile {
       GarbageCollector, /// Garbage collection frame.
     };
 
-    inline bool operator==(const SampleCallStackFrame &rhs) const noexcept = default;
+    inline bool operator==(const SampleCallStackFrame& rhs) const noexcept =
+        default;
 
     /// type of the call stack frame
     Kind kind;
@@ -67,18 +68,21 @@ struct RuntimeSamplingProfile {
   /// time.
   struct Sample {
    public:
-    Sample(uint64_t timestamp, ThreadId threadId, std::vector<SampleCallStackFrame> callStack)
-        : timestamp(timestamp), threadId(threadId), callStack(std::move(callStack))
-    {
-    }
+    Sample(
+        uint64_t timestamp,
+        ThreadId threadId,
+        std::vector<SampleCallStackFrame> callStack)
+        : timestamp(timestamp),
+          threadId(threadId),
+          callStack(std::move(callStack)) {}
 
     // Movable.
-    Sample &operator=(Sample &&) = default;
-    Sample(Sample &&) = default;
+    Sample& operator=(Sample&&) = default;
+    Sample(Sample&&) = default;
 
     // Not copyable.
-    Sample(const Sample &) = delete;
-    Sample &operator=(const Sample &) = delete;
+    Sample(const Sample&) = delete;
+    Sample& operator=(const Sample&) = delete;
 
     ~Sample() = default;
 
@@ -99,17 +103,15 @@ struct RuntimeSamplingProfile {
       : runtimeName(std::move(runtimeName)),
         processId(processId),
         samples(std::move(samples)),
-        rawRuntimeProfile(std::move(rawRuntimeProfile))
-  {
-  }
+        rawRuntimeProfile(std::move(rawRuntimeProfile)) {}
 
   // Movable.
-  RuntimeSamplingProfile &operator=(RuntimeSamplingProfile &&) = default;
-  RuntimeSamplingProfile(RuntimeSamplingProfile &&) = default;
+  RuntimeSamplingProfile& operator=(RuntimeSamplingProfile&&) = default;
+  RuntimeSamplingProfile(RuntimeSamplingProfile&&) = default;
 
   // Not copyable.
-  RuntimeSamplingProfile(const RuntimeSamplingProfile &) = delete;
-  RuntimeSamplingProfile &operator=(const RuntimeSamplingProfile &) = delete;
+  RuntimeSamplingProfile(const RuntimeSamplingProfile&) = delete;
+  RuntimeSamplingProfile& operator=(const RuntimeSamplingProfile&) = delete;
 
   ~RuntimeSamplingProfile() = default;
 

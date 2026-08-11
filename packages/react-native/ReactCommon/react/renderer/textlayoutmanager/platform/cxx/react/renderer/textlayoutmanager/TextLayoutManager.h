@@ -25,29 +25,30 @@ class TextLayoutManager;
  */
 class TextLayoutManager {
  public:
-  explicit TextLayoutManager(const std::shared_ptr<const ContextContainer> &contextContainer);
+  explicit TextLayoutManager(
+      const std::shared_ptr<const ContextContainer>& contextContainer);
   virtual ~TextLayoutManager() = default;
 
   /*
    * Not copyable.
    */
-  TextLayoutManager(const TextLayoutManager &) = delete;
-  TextLayoutManager &operator=(const TextLayoutManager &) = delete;
+  TextLayoutManager(const TextLayoutManager&) = delete;
+  TextLayoutManager& operator=(const TextLayoutManager&) = delete;
 
   /*
    * Not movable.
    */
-  TextLayoutManager(TextLayoutManager &&) = delete;
-  TextLayoutManager &operator=(TextLayoutManager &&) = delete;
+  TextLayoutManager(TextLayoutManager&&) = delete;
+  TextLayoutManager& operator=(TextLayoutManager&&) = delete;
 
   /*
    * Measures `attributedString` using native text rendering infrastructure.
    */
   virtual TextMeasurement measure(
-      const AttributedStringBox &attributedStringBox,
-      const ParagraphAttributes &paragraphAttributes,
-      const TextLayoutContext &layoutContext,
-      const LayoutConstraints &layoutConstraints) const;
+      const AttributedStringBox& attributedStringBox,
+      const ParagraphAttributes& paragraphAttributes,
+      const TextLayoutContext& layoutContext,
+      const LayoutConstraints& layoutConstraints) const;
 
  protected:
   std::shared_ptr<const ContextContainer> contextContainer_;

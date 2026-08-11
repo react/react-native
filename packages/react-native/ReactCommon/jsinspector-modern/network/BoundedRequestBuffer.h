@@ -40,14 +40,17 @@ class BoundedRequestBuffer {
    * \param base64Encoded True if the data is base64-encoded, false otherwise.
    * \return True if the response body was stored, false otherwise.
    */
-  bool put(const std::string &requestId, std::string_view data, bool base64Encoded) noexcept;
+  bool put(
+      const std::string& requestId,
+      std::string_view data,
+      bool base64Encoded) noexcept;
 
   /**
    * Retrieve a response preview by requestId.
    * \param requestId The unique identifier for the request.
    * \return A shared pointer to the request data if found, otherwise nullptr.
    */
-  std::shared_ptr<const ResponseBody> get(const std::string &requestId) const;
+  std::shared_ptr<const ResponseBody> get(const std::string& requestId) const;
 
   /**
    * Remove all entries from the buffer.
@@ -55,7 +58,8 @@ class BoundedRequestBuffer {
   void clear();
 
  private:
-  std::unordered_map<std::string, std::shared_ptr<const ResponseBody>> responses_;
+  std::unordered_map<std::string, std::shared_ptr<const ResponseBody>>
+      responses_;
   std::deque<std::string> order_;
   size_t currentSize_ = 0;
 };

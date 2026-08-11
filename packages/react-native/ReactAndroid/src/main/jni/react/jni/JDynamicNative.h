@@ -23,12 +23,12 @@ struct JDynamic : public jni::JavaClass<JDynamic> {
 
 class JDynamicNative : public jni::HybridClass<JDynamicNative, JDynamic> {
  public:
-  constexpr static auto kJavaDescriptor = "Lcom/facebook/react/bridge/DynamicNative;";
+  constexpr static auto kJavaDescriptor =
+      "Lcom/facebook/react/bridge/DynamicNative;";
 
   JDynamicNative(folly::dynamic payload) : payload_(std::move(payload)) {}
 
-  static void registerNatives()
-  {
+  static void registerNatives() {
     javaClassStatic()->registerNatives(
         {makeNativeMethod("isNullNative", JDynamicNative::isNullNative),
          makeNativeMethod("getTypeNative", JDynamicNative::getTypeNative),

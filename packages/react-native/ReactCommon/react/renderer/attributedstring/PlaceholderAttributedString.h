@@ -17,12 +17,14 @@ namespace facebook::react {
  * during measurement. Usages of this function should be replaced with
  * formatting based off of baseTextAttributes.
  */
-inline AttributedString ensurePlaceholderIfEmpty_DO_NOT_USE(const AttributedString &attributedString)
-{
+inline AttributedString ensurePlaceholderIfEmpty_DO_NOT_USE(
+    const AttributedString& attributedString) {
   if (attributedString.isEmpty()) {
     AttributedString placeholder{attributedString};
     placeholder.appendFragment(
-        {.string = "I", .textAttributes = attributedString.getBaseTextAttributes(), .parentShadowView = {}});
+        {.string = "I",
+         .textAttributes = attributedString.getBaseTextAttributes(),
+         .parentShadowView = {}});
     return placeholder;
   }
 

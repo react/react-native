@@ -37,12 +37,17 @@
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
-void react_native_assert_fail(const char *func, const char *file, int line, const char *expr);
+void react_native_assert_fail(
+    const char* func,
+    const char* file,
+    int line,
+    const char* expr);
 #ifdef __cplusplus
 }
 #endif // __cpusplus
 
-#define react_native_assert(e) ((e) ? (void)0 : react_native_assert_fail(__func__, __FILE__, __LINE__, #e))
+#define react_native_assert(e) \
+  ((e) ? (void)0 : react_native_assert_fail(__func__, __FILE__, __LINE__, #e))
 
 #else // __ANDROID__
 

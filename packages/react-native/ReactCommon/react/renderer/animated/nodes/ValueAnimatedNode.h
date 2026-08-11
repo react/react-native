@@ -21,7 +21,10 @@ using ValueListenerCallback = std::function<void(double)>;
 
 class ValueAnimatedNode : public AnimatedNode {
  public:
-  ValueAnimatedNode(Tag tag, const folly::dynamic &config, NativeAnimatedNodesManager &manager);
+  ValueAnimatedNode(
+      Tag tag,
+      const folly::dynamic& config,
+      NativeAnimatedNodesManager& manager);
   double getValue() const noexcept;
   double getRawValue() const noexcept;
   bool setRawValue(double value) noexcept;
@@ -29,10 +32,9 @@ class ValueAnimatedNode : public AnimatedNode {
   bool setOffset(double offset) noexcept;
   void flattenOffset() noexcept;
   void extractOffset() noexcept;
-  void setValueListener(ValueListenerCallback &&callback) noexcept;
+  void setValueListener(ValueListenerCallback&& callback) noexcept;
 
-  bool getIsColorValue() const noexcept
-  {
+  bool getIsColorValue() const noexcept {
     return isColorValue_;
   }
 
@@ -49,7 +51,10 @@ class ValueAnimatedNode : public AnimatedNode {
 
 class OperatorAnimatedNode : public ValueAnimatedNode {
  public:
-  OperatorAnimatedNode(Tag tag, const folly::dynamic &config, NativeAnimatedNodesManager &manager);
+  OperatorAnimatedNode(
+      Tag tag,
+      const folly::dynamic& config,
+      NativeAnimatedNodesManager& manager);
 
  protected:
   std::vector<Tag> inputNodes_{};

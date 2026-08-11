@@ -29,13 +29,18 @@ namespace facebook::react {
 enum class RadialGradientShape { Circle, Ellipse };
 
 struct RadialGradientSize {
-  enum class SizeKeyword { ClosestSide, FarthestSide, ClosestCorner, FarthestCorner };
+  enum class SizeKeyword {
+    ClosestSide,
+    FarthestSide,
+    ClosestCorner,
+    FarthestCorner
+  };
 
   struct Dimensions {
     ValueUnit x;
     ValueUnit y;
 
-    bool operator==(const Dimensions &other) const = default;
+    bool operator==(const Dimensions& other) const = default;
 
 #ifdef RN_SERIALIZABLE_STATE
     folly::dynamic toDynamic() const;
@@ -44,7 +49,7 @@ struct RadialGradientSize {
 
   std::variant<SizeKeyword, Dimensions> value;
 
-  bool operator==(const RadialGradientSize &other) const = default;
+  bool operator==(const RadialGradientSize& other) const = default;
 
 #ifdef RN_SERIALIZABLE_STATE
   folly::dynamic toDynamic() const;
@@ -57,7 +62,7 @@ struct RadialGradientPosition {
   std::optional<ValueUnit> right;
   std::optional<ValueUnit> bottom;
 
-  bool operator==(const RadialGradientPosition &other) const = default;
+  bool operator==(const RadialGradientPosition& other) const = default;
 
 #ifdef RN_SERIALIZABLE_STATE
   folly::dynamic toDynamic() const;
@@ -70,14 +75,14 @@ struct RadialGradient {
   RadialGradientPosition position;
   std::vector<ColorStop> colorStops;
 
-  bool operator==(const RadialGradient &other) const = default;
+  bool operator==(const RadialGradient& other) const = default;
 
 #ifdef RN_SERIALIZABLE_STATE
   folly::dynamic toDynamic() const;
 #endif
 
 #if RN_DEBUG_STRING_CONVERTIBLE
-  void toString(std::stringstream &ss) const;
+  void toString(std::stringstream& ss) const;
 #endif
 };
 }; // namespace facebook::react

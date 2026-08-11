@@ -27,13 +27,20 @@ enum class AnimationType {
   Keyboard = 32
 };
 
-enum class AnimationProperty { NotApplicable = 0, Opacity = 1, ScaleX = 2, ScaleY = 4, ScaleXY = 8 };
+enum class AnimationProperty {
+  NotApplicable = 0,
+  Opacity = 1,
+  ScaleX = 2,
+  ScaleY = 4,
+  ScaleXY = 8
+};
 
 // This corresponds exactly with JS.
 struct AnimationConfig {
   AnimationType animationType = AnimationType::None;
   AnimationProperty animationProperty = AnimationProperty::NotApplicable;
-  double duration = 0; // these are perhaps better represented as uint64_t, but they
+  double duration =
+      0; // these are perhaps better represented as uint64_t, but they
   // come from JS as doubles
   double delay = 0;
   Float springDamping = 0;

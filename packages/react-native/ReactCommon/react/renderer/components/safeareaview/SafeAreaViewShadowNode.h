@@ -20,8 +20,11 @@ extern const char SafeAreaViewComponentName[];
 /*
  * `ShadowNode` for <SafeAreaView> component.
  */
-class SafeAreaViewShadowNode final
-    : public ConcreteViewShadowNode<SafeAreaViewComponentName, SafeAreaViewProps, ViewEventEmitter, SafeAreaViewState> {
+class SafeAreaViewShadowNode final : public ConcreteViewShadowNode<
+                                         SafeAreaViewComponentName,
+                                         SafeAreaViewProps,
+                                         ViewEventEmitter,
+                                         SafeAreaViewState> {
   using ConcreteViewShadowNode::ConcreteViewShadowNode;
 };
 

@@ -41,11 +41,14 @@ class PerformanceObserverRegistry {
    * Delegates specified performance `entry` to all registered observers
    * in this registry.
    */
-  void queuePerformanceEntry(const PerformanceEntry &entry);
+  void queuePerformanceEntry(const PerformanceEntry& entry);
 
  private:
   mutable std::mutex observersMutex_;
-  std::set<std::shared_ptr<PerformanceObserver>, std::owner_less<std::shared_ptr<PerformanceObserver>>> observers_;
+  std::set<
+      std::shared_ptr<PerformanceObserver>,
+      std::owner_less<std::shared_ptr<PerformanceObserver>>>
+      observers_;
 };
 
 } // namespace facebook::react

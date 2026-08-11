@@ -15,7 +15,9 @@
 namespace facebook::react {
 
 template <typename GeneratorT, typename ValueT>
-concept CacheGeneratorFunction = std::invocable<GeneratorT> && std::same_as<std::invoke_result_t<GeneratorT>, ValueT>;
+concept CacheGeneratorFunction = std::invocable<GeneratorT> &&
+    std::same_as < std::invoke_result_t<GeneratorT>,
+ValueT > ;
 
 /*
  * Simple thread-safe LRU cache.
@@ -35,8 +37,8 @@ class SimpleThreadSafeCache {
    * generator function, stores it inside a cache and returns it.
    * Can be called from any thread.
    */
-  ValueT get(const KeyT &key, CacheGeneratorFunction<ValueT> auto generator) const
-  {
+  ValueT get(const KeyT& key, CacheGeneratorFunction<ValueT> auto generator)
+      const {
     return getMapIterator(key, std::move(generator))->second->second;
   }
 
@@ -46,9 +48,9 @@ class SimpleThreadSafeCache {
    * generator function, stores it inside a cache and returns it.
    * Can be called from any thread.
    */
-  std::pair<const KeyT *, const ValueT *> getWithKey(const KeyT &key, CacheGeneratorFunction<ValueT> auto generator)
-      const
-  {
+  std::pair<const KeyT*, const ValueT*> getWithKey(
+      const KeyT& key,
+      CacheGeneratorFunction<ValueT> auto generator) const {
     auto it = getMapIterator(key, std::move(generator));
     return std::make_pair(&it->first, &it->second->second);
   }
@@ -58,8 +60,7 @@ class SimpleThreadSafeCache {
    * If the value wasn't found in the cache, returns empty optional.
    * Can be called from any thread.
    */
-  std::optional<ValueT> get(const KeyT &key) const
-  {
+  std::optional<ValueT> get(const KeyT& key) const {
     std::lock_guard<std::mutex> lock(mutex_);
 
     if (auto it = map_.find(key); it != map_.end()) {
@@ -75,8 +76,9 @@ class SimpleThreadSafeCache {
   using EntryT = std::pair<KeyT, ValueT>;
   using iterator = typename std::list<EntryT>::iterator;
 
-  auto getMapIterator(const KeyT &key, CacheGeneratorFunction<ValueT> auto generator) const
-  {
+  auto getMapIterator(
+      const KeyT& key,
+      CacheGeneratorFunction<ValueT> auto generator) const {
     std::lock_guard<std::mutex> lock(mutex_);
 
     if (auto it = map_.find(key); it != map_.end()) {

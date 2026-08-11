@@ -8,5 +8,5 @@
 #include <functional>
 
 namespace facebook::react {
-void configurePlatformColorCacheInvalidationHook(std::function<void()> &&hook);
+void configurePlatformColorCacheInvalidationHook(std::function<void()>&& hook);
 } // namespace facebook::react

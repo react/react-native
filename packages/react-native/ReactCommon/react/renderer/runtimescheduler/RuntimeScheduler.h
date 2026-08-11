@@ -22,7 +22,8 @@ namespace facebook::react {
 using RuntimeSchedulerRenderingUpdate = std::function<void()>;
 using SurfaceId = int32_t;
 
-using RuntimeSchedulerTaskErrorHandler = std::function<void(jsi::Runtime &runtime, jsi::JSError &error)>;
+using RuntimeSchedulerTaskErrorHandler =
+    std::function<void(jsi::Runtime& runtime, jsi::JSError& error)>;
 
 extern const char RuntimeSchedulerKey[];
 
@@ -34,27 +35,39 @@ class RuntimeSchedulerBase : public facebook::hermes::IEventLoopControl {
 
   using facebook::hermes::IEventLoopControl::scheduleTask;
 
-  virtual void scheduleWork(RawCallback &&callback) noexcept = 0;
-  virtual void executeNowOnTheSameThread(RawCallback &&callback) = 0;
-  virtual std::shared_ptr<Task> scheduleTask(SchedulerPriority priority, jsi::Function &&callback) noexcept = 0;
-  virtual std::shared_ptr<Task> scheduleTask(SchedulerPriority priority, RawCallback &&callback) noexcept = 0;
+  virtual void scheduleWork(RawCallback&& callback) noexcept = 0;
+  virtual void executeNowOnTheSameThread(RawCallback&& callback) = 0;
+  virtual std::shared_ptr<Task> scheduleTask(
+      SchedulerPriority priority,
+      jsi::Function&& callback) noexcept = 0;
+  virtual std::shared_ptr<Task> scheduleTask(
+      SchedulerPriority priority,
+      RawCallback&& callback) noexcept = 0;
   virtual std::shared_ptr<Task> scheduleIdleTask(
-      jsi::Function &&callback,
-      HighResDuration timeout = timeoutForSchedulerPriority(SchedulerPriority::IdlePriority)) noexcept = 0;
+      jsi::Function&& callback,
+      HighResDuration timeout = timeoutForSchedulerPriority(
+          SchedulerPriority::IdlePriority)) noexcept = 0;
   virtual std::shared_ptr<Task> scheduleIdleTask(
-      RawCallback &&callback,
-      HighResDuration timeout = timeoutForSchedulerPriority(SchedulerPriority::IdlePriority)) noexcept = 0;
-  virtual void cancelTask(Task &task) noexcept = 0;
+      RawCallback&& callback,
+      HighResDuration timeout = timeoutForSchedulerPriority(
+          SchedulerPriority::IdlePriority)) noexcept = 0;
+  virtual void cancelTask(Task& task) noexcept = 0;
   virtual bool getShouldYield() noexcept = 0;
   virtual SchedulerPriority getCurrentPriorityLevel() const noexcept = 0;
   virtual HighResTimeStamp now() const noexcept = 0;
-  virtual void callExpiredTasks(jsi::Runtime &runtime) = 0;
-  virtual void scheduleRenderingUpdate(SurfaceId surfaceId, RuntimeSchedulerRenderingUpdate &&renderingUpdate) = 0;
-  virtual void setShadowTreeRevisionConsistencyManager(ShadowTreeRevisionConsistencyManager *provider) = 0;
-  virtual void setPerformanceEntryReporter(PerformanceEntryReporter *reporter) = 0;
-  virtual void setEventTimingDelegate(RuntimeSchedulerEventTimingDelegate *eventTimingDelegate) = 0;
+  virtual void callExpiredTasks(jsi::Runtime& runtime) = 0;
+  virtual void scheduleRenderingUpdate(
+      SurfaceId surfaceId,
+      RuntimeSchedulerRenderingUpdate&& renderingUpdate) = 0;
+  virtual void setShadowTreeRevisionConsistencyManager(
+      ShadowTreeRevisionConsistencyManager* provider) = 0;
+  virtual void setPerformanceEntryReporter(
+      PerformanceEntryReporter* reporter) = 0;
+  virtual void setEventTimingDelegate(
+      RuntimeSchedulerEventTimingDelegate* eventTimingDelegate) = 0;
   virtual void setIntersectionObserverDelegate(
-      RuntimeSchedulerIntersectionObserverDelegate *intersectionObserverDelegate) = 0;
+      RuntimeSchedulerIntersectionObserverDelegate*
+          intersectionObserverDelegate) = 0;
 };
 
 // This is a proxy for RuntimeScheduler implementation, which will be selected
@@ -69,19 +82,19 @@ class RuntimeScheduler final : public RuntimeSchedulerBase {
   /*
    * Not copyable.
    */
-  RuntimeScheduler(const RuntimeScheduler &) = delete;
-  RuntimeScheduler &operator=(const RuntimeScheduler &) = delete;
+  RuntimeScheduler(const RuntimeScheduler&) = delete;
+  RuntimeScheduler& operator=(const RuntimeScheduler&) = delete;
 
   /*
    * Not movable.
    */
-  RuntimeScheduler(RuntimeScheduler &&) = delete;
-  RuntimeScheduler &operator=(RuntimeScheduler &&) = delete;
+  RuntimeScheduler(RuntimeScheduler&&) = delete;
+  RuntimeScheduler& operator=(RuntimeScheduler&&) = delete;
 
-  void scheduleWork(RawCallback &&callback) noexcept override;
+  void scheduleWork(RawCallback&& callback) noexcept override;
 
   /// IEventLoopControl implementation, forwarded to the underlying fork.
-  void scheduleTask(const std::function<void()> &task) override;
+  void scheduleTask(const std::function<void()>& task) override;
 
   uint64_t registerTaskQueueSource() override;
 
@@ -94,7 +107,7 @@ class RuntimeScheduler final : public RuntimeSchedulerBase {
    * by dispatching a synchronous event via event emitter in your native
    * component.
    */
-  void executeNowOnTheSameThread(RawCallback &&callback) override;
+  void executeNowOnTheSameThread(RawCallback&& callback) override;
 
   /*
    * Adds a JavaScript callback to priority queue with given priority.
@@ -102,17 +115,23 @@ class RuntimeScheduler final : public RuntimeSchedulerBase {
    *
    * Thread synchronization must be enforced externally.
    */
-  std::shared_ptr<Task> scheduleTask(SchedulerPriority priority, jsi::Function &&callback) noexcept override;
+  std::shared_ptr<Task> scheduleTask(
+      SchedulerPriority priority,
+      jsi::Function&& callback) noexcept override;
 
-  std::shared_ptr<Task> scheduleTask(SchedulerPriority priority, RawCallback &&callback) noexcept override;
+  std::shared_ptr<Task> scheduleTask(
+      SchedulerPriority priority,
+      RawCallback&& callback) noexcept override;
 
   std::shared_ptr<Task> scheduleIdleTask(
-      jsi::Function &&callback,
-      HighResDuration timeout = timeoutForSchedulerPriority(SchedulerPriority::IdlePriority)) noexcept override;
+      jsi::Function&& callback,
+      HighResDuration timeout = timeoutForSchedulerPriority(
+          SchedulerPriority::IdlePriority)) noexcept override;
 
   std::shared_ptr<Task> scheduleIdleTask(
-      RawCallback &&callback,
-      HighResDuration timeout = timeoutForSchedulerPriority(SchedulerPriority::IdlePriority)) noexcept override;
+      RawCallback&& callback,
+      HighResDuration timeout = timeoutForSchedulerPriority(
+          SchedulerPriority::IdlePriority)) noexcept override;
 
   /*
    * Cancelled task will never be executed.
@@ -120,7 +139,7 @@ class RuntimeScheduler final : public RuntimeSchedulerBase {
    * Operates on JSI object.
    * Thread synchronization must be enforced externally.
    */
-  void cancelTask(Task &task) noexcept override;
+  void cancelTask(Task& task) noexcept override;
 
   /*
    * Return value indicates if host platform has a pending access to the
@@ -153,26 +172,33 @@ class RuntimeScheduler final : public RuntimeSchedulerBase {
    *
    * Thread synchronization must be enforced externally.
    */
-  void callExpiredTasks(jsi::Runtime &runtime) override;
+  void callExpiredTasks(jsi::Runtime& runtime) override;
 
-  void scheduleRenderingUpdate(SurfaceId surfaceId, RuntimeSchedulerRenderingUpdate &&renderingUpdate) override;
+  void scheduleRenderingUpdate(
+      SurfaceId surfaceId,
+      RuntimeSchedulerRenderingUpdate&& renderingUpdate) override;
 
   void setShadowTreeRevisionConsistencyManager(
-      ShadowTreeRevisionConsistencyManager *shadowTreeRevisionConsistencyManager) override;
+      ShadowTreeRevisionConsistencyManager*
+          shadowTreeRevisionConsistencyManager) override;
 
-  void setPerformanceEntryReporter(PerformanceEntryReporter *reporter) override;
+  void setPerformanceEntryReporter(PerformanceEntryReporter* reporter) override;
 
-  void setEventTimingDelegate(RuntimeSchedulerEventTimingDelegate *eventTimingDelegate) override;
+  void setEventTimingDelegate(
+      RuntimeSchedulerEventTimingDelegate* eventTimingDelegate) override;
 
   void setIntersectionObserverDelegate(
-      RuntimeSchedulerIntersectionObserverDelegate *intersectionObserverDelegate) override;
+      RuntimeSchedulerIntersectionObserverDelegate*
+          intersectionObserverDelegate) override;
 
  private:
   // Actual implementation, stored as a unique pointer to simplify memory
   // management.
   std::unique_ptr<RuntimeSchedulerBase> runtimeSchedulerImpl_;
 
-  static void handleTaskErrorDefault(jsi::Runtime &runtime, jsi::JSError &error);
+  static void handleTaskErrorDefault(
+      jsi::Runtime& runtime,
+      jsi::JSError& error);
 };
 
 } // namespace facebook::react

@@ -21,12 +21,10 @@ class PerformanceEntryReporterEventListener {
   virtual ~PerformanceEntryReporterEventListener() = default;
 
   virtual void onMeasureEntry(
-      const PerformanceMeasure & /*entry*/,
-      const std::optional<UserTimingDetailProvider> & /*detailProvider*/)
-  {
-  }
+      const PerformanceMeasure& /*entry*/,
+      const std::optional<UserTimingDetailProvider>& /*detailProvider*/) {}
 
-  virtual void onEventTimingEntry(const PerformanceEventTiming & /*entry*/) {}
+  virtual void onEventTimingEntry(const PerformanceEventTiming& /*entry*/) {}
 };
 
 } // namespace facebook::react

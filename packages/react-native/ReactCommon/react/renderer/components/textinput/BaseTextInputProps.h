@@ -22,12 +22,15 @@ class BaseTextInputProps : public ViewProps, public BaseTextProps {
  public:
   BaseTextInputProps() = default;
   BaseTextInputProps(
-      const PropsParserContext &context,
-      const BaseTextInputProps &sourceProps,
-      const RawProps &rawProps);
+      const PropsParserContext& context,
+      const BaseTextInputProps& sourceProps,
+      const RawProps& rawProps);
 
-  void
-  setProp(const PropsParserContext &context, RawPropsPropNameHash hash, const char *propName, const RawValue &value);
+  void setProp(
+      const PropsParserContext& context,
+      RawPropsPropNameHash hash,
+      const char* propName,
+      const RawValue& value);
 
   SubmitBehavior getNonDefaultSubmitBehavior() const;
 

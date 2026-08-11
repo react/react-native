@@ -12,6 +12,7 @@
 
 namespace facebook::react {
 
-using TextEffectComponentDescriptor = ConcreteComponentDescriptor<TextEffectShadowNode>;
+using TextEffectComponentDescriptor =
+    ConcreteComponentDescriptor<TextEffectShadowNode>;
 
 } // namespace facebook::react

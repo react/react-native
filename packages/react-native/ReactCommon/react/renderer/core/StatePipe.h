@@ -13,6 +13,6 @@
 
 namespace facebook::react {
 
-using StatePipe = std::function<void(const StateUpdate &stateUpdate)>;
+using StatePipe = std::function<void(const StateUpdate& stateUpdate)>;
 
 } // namespace facebook::react

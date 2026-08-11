@@ -21,13 +21,13 @@ namespace facebook::react {
 struct CSSAngle {
   float degrees{};
 
-  constexpr bool operator==(const CSSAngle &rhs) const = default;
+  constexpr bool operator==(const CSSAngle& rhs) const = default;
 };
 
 template <>
 struct CSSDataTypeParser<CSSAngle> {
-  static constexpr auto consumePreservedToken(const CSSPreservedToken &token) -> std::optional<CSSAngle>
-  {
+  static constexpr auto consumePreservedToken(const CSSPreservedToken& token)
+      -> std::optional<CSSAngle> {
     if (token.type() == CSSTokenType::Dimension) {
       if (auto unit = parseCSSAngleUnit(token.unit())) {
         return CSSAngle{canonicalize(token.numericValue(), *unit)};

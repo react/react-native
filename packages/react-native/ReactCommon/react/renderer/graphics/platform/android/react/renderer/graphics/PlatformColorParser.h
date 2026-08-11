@@ -26,18 +26,21 @@
 
 namespace facebook::react {
 
-inline size_t hashGetColourArguments(int32_t surfaceId, const std::vector<std::string> &resourcePaths)
-{
+inline size_t hashGetColourArguments(
+    int32_t surfaceId,
+    const std::vector<std::string>& resourcePaths) {
   size_t seed = std::hash<int32_t>{}(surfaceId);
-  for (const auto &path : resourcePaths) {
-    seed ^= std::hash<std::string>{}(path) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+  for (const auto& path : resourcePaths) {
+    seed ^=
+        std::hash<std::string>{}(path) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
   }
   return seed;
 }
 
-inline SharedColor
-parsePlatformColor(const ContextContainer &contextContainer, int32_t surfaceId, const RawValue &value)
-{
+inline SharedColor parsePlatformColor(
+    const ContextContainer& contextContainer,
+    int32_t surfaceId,
+    const RawValue& value) {
   Color color = 0;
   if (value.hasType<std::unordered_map<std::string, RawValue>>()) {
     // Mixed array + string values, so read as a map of RawValue (a map of
@@ -46,7 +49,8 @@ parsePlatformColor(const ContextContainer &contextContainer, int32_t surfaceId, 
 
     std::vector<std::string> resourcePaths;
     auto resourcePathsIt = map.find("resource_paths");
-    if (resourcePathsIt != map.end() && resourcePathsIt->second.hasType<std::vector<std::string>>()) {
+    if (resourcePathsIt != map.end() &&
+        resourcePathsIt->second.hasType<std::vector<std::string>>()) {
       resourcePaths = (std::vector<std::string>)resourcePathsIt->second;
     }
 
@@ -55,14 +59,18 @@ parsePlatformColor(const ContextContainer &contextContainer, int32_t surfaceId, 
       // Cache the (costly) JNI results. A cached nullopt is an explicit miss,
       // distinct from a path that resolves to transparent (ARGB 0).
       static std::mutex getColorCacheMutex;
-      static folly::EvictingCacheMap<size_t, std::optional<Color>> getColorCache(64);
+      static folly::EvictingCacheMap<size_t, std::optional<Color>>
+          getColorCache(64);
 
       // Listen for appearance changes, which should invalidate the cache
       static std::once_flag setupCacheInvalidation;
-      std::call_once(setupCacheInvalidation, configurePlatformColorCacheInvalidationHook, [&] {
-        std::scoped_lock lock(getColorCacheMutex);
-        getColorCache.clear();
-      });
+      std::call_once(
+          setupCacheInvalidation,
+          configurePlatformColorCacheInvalidationHook,
+          [&] {
+            std::scoped_lock lock(getColorCacheMutex);
+            getColorCache.clear();
+          });
 
       auto hash = hashGetColourArguments(surfaceId, resourcePaths);
       std::optional<Color> resolvedColor;
@@ -72,18 +80,23 @@ parsePlatformColor(const ContextContainer &contextContainer, int32_t surfaceId, 
         if (iterator != getColorCache.end()) {
           resolvedColor = iterator->second;
         } else {
-          const auto &fabricUIManager = contextContainer.at<jni::global_ref<jobject>>("FabricUIManager");
+          const auto& fabricUIManager =
+              contextContainer.at<jni::global_ref<jobject>>("FabricUIManager");
           // Boxed Integer: null is an explicit miss; a non-null value may be 0
           // (transparent black).
           static auto getColorFromJava =
-              fabricUIManager->getClass()->getMethod<jni::JInteger::javaobject(jint, jni::JArrayClass<jni::JString>)>(
-                  "getColor");
-          auto javaResourcePaths = jni::JArrayClass<jni::JString>::newArray(resourcePaths.size());
+              fabricUIManager->getClass()
+                  ->getMethod<jni::JInteger::javaobject(
+                      jint, jni::JArrayClass<jni::JString>)>("getColor");
+          auto javaResourcePaths =
+              jni::JArrayClass<jni::JString>::newArray(resourcePaths.size());
 
           for (int i = 0; i < resourcePaths.size(); i++) {
-            javaResourcePaths->setElement(i, *jni::make_jstring(resourcePaths[i]));
+            javaResourcePaths->setElement(
+                i, *jni::make_jstring(resourcePaths[i]));
           }
-          auto boxedColor = getColorFromJava(fabricUIManager, surfaceId, *javaResourcePaths);
+          auto boxedColor =
+              getColorFromJava(fabricUIManager, surfaceId, *javaResourcePaths);
           if (boxedColor) {
             resolvedColor = static_cast<Color>(boxedColor->value());
           }
@@ -100,10 +113,12 @@ parsePlatformColor(const ContextContainer &contextContainer, int32_t surfaceId, 
     // same parser iOS Fabric uses).
     if (!resolved) {
       auto fallbackIt = map.find("fallback");
-      if (fallbackIt != map.end() && fallbackIt->second.hasType<std::string>()) {
-        auto cssColor = parseCSSProperty<CSSColor>((std::string)fallbackIt->second);
+      if (fallbackIt != map.end() &&
+          fallbackIt->second.hasType<std::string>()) {
+        auto cssColor =
+            parseCSSProperty<CSSColor>((std::string)fallbackIt->second);
         if (std::holds_alternative<CSSColor>(cssColor)) {
-          const auto &c = std::get<CSSColor>(cssColor);
+          const auto& c = std::get<CSSColor>(cssColor);
           color = hostPlatformColorFromRGBA(c.r, c.g, c.b, c.a);
         }
       }
@@ -113,10 +128,13 @@ parsePlatformColor(const ContextContainer &contextContainer, int32_t surfaceId, 
   return color;
 }
 
-inline void
-fromRawValue(const ContextContainer &contextContainer, int32_t surfaceId, const RawValue &value, SharedColor &result)
-{
-  fromRawValueShared(contextContainer, surfaceId, value, result, parsePlatformColor);
+inline void fromRawValue(
+    const ContextContainer& contextContainer,
+    int32_t surfaceId,
+    const RawValue& value,
+    SharedColor& result) {
+  fromRawValueShared(
+      contextContainer, surfaceId, value, result, parsePlatformColor);
 }
 
 } // namespace facebook::react

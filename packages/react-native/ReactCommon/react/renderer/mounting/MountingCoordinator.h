@@ -37,7 +37,7 @@ class MountingCoordinator final {
    * The constructor is meant to be used only inside `ShadowTree`, and it's
    * `public` only to enable using with `std::make_shared<>`.
    */
-  MountingCoordinator(const ShadowTreeRevision &baseRevision);
+  MountingCoordinator(const ShadowTreeRevision& baseRevision);
 
   /*
    * Returns the id of the surface that the coordinator belongs to.
@@ -61,7 +61,8 @@ class MountingCoordinator final {
    * If this is `true`, then `hasPendingTransactions` will continue returning
    * `true` until `didPerformAsyncTransactions` is called.
    */
-  std::optional<MountingTransaction> pullTransaction(bool willPerformAsynchronously = false) const;
+  std::optional<MountingTransaction> pullTransaction(
+      bool willPerformAsynchronously = false) const;
 
   /*
    * This method is used to notify that transactions that weren't performed
@@ -92,7 +93,7 @@ class MountingCoordinator final {
    */
   bool waitForTransaction(std::chrono::duration<double> timeout) const;
 
-  const TelemetryController &getTelemetryController() const;
+  const TelemetryController& getTelemetryController() const;
 
   ShadowTreeRevision getBaseRevision() const;
 
@@ -101,7 +102,8 @@ class MountingCoordinator final {
    * `MountingOverrideDelegate` only.
    */
  public:
-  void setMountingOverrideDelegate(std::weak_ptr<const MountingOverrideDelegate> delegate) const;
+  void setMountingOverrideDelegate(
+      std::weak_ptr<const MountingOverrideDelegate> delegate) const;
 
   /*
    * Methods from this section are meant to be used by `ShadowTree` only.
@@ -130,7 +132,8 @@ class MountingCoordinator final {
   mutable std::optional<ShadowTreeRevision> lastRevision_{};
   mutable MountingTransaction::Number number_{0};
   mutable std::condition_variable signal_;
-  mutable std::vector<std::weak_ptr<const MountingOverrideDelegate>> mountingOverrideDelegates_;
+  mutable std::vector<std::weak_ptr<const MountingOverrideDelegate>>
+      mountingOverrideDelegates_;
 
   TelemetryController telemetryController_;
 

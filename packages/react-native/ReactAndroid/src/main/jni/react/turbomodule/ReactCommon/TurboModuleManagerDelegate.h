@@ -15,16 +15,18 @@
 
 namespace facebook::react {
 
-class TurboModuleManagerDelegate : public jni::HybridClass<TurboModuleManagerDelegate> {
+class TurboModuleManagerDelegate
+    : public jni::HybridClass<TurboModuleManagerDelegate> {
  public:
-  static auto constexpr kJavaDescriptor = "Lcom/facebook/react/internal/turbomodule/core/TurboModuleManagerDelegate;";
+  static auto constexpr kJavaDescriptor =
+      "Lcom/facebook/react/internal/turbomodule/core/TurboModuleManagerDelegate;";
 
   virtual std::shared_ptr<TurboModule> getTurboModule(
-      const std::string &name,
-      const JavaTurboModule::InitParams &params) = 0;
+      const std::string& name,
+      const JavaTurboModule::InitParams& params) = 0;
   virtual std::shared_ptr<TurboModule> getTurboModule(
-      const std::string &name,
-      const std::shared_ptr<CallInvoker> &jsInvoker) = 0;
+      const std::string& name,
+      const std::shared_ptr<CallInvoker>& jsInvoker) = 0;
 
  private:
   friend HybridBase;

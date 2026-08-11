@@ -31,11 +31,13 @@ struct LayoutContext;
 class LayoutableShadowNode : public ShadowNode {
  public:
   LayoutableShadowNode(
-      const ShadowNodeFragment &fragment,
-      const ShadowNodeFamily::Shared &family,
+      const ShadowNodeFragment& fragment,
+      const ShadowNodeFamily::Shared& family,
       ShadowNodeTraits traits);
 
-  LayoutableShadowNode(const ShadowNode &sourceShadowNode, const ShadowNodeFragment &fragment);
+  LayoutableShadowNode(
+      const ShadowNode& sourceShadowNode,
+      const ShadowNodeFragment& fragment);
 
   struct LayoutInspectingPolicy {
     bool includeTransform{true};
@@ -43,7 +45,7 @@ class LayoutableShadowNode : public ShadowNode {
     bool enableOverflowClipping{false};
   };
 
-  using UnsharedList = std::vector<LayoutableShadowNode *>;
+  using UnsharedList = std::vector<LayoutableShadowNode*>;
 
   /*
    * Returns layout metrics of a node represented as `descendantNodeFamily`
@@ -51,8 +53,8 @@ class LayoutableShadowNode : public ShadowNode {
    * transform for node if used as root.
    */
   static LayoutMetrics computeLayoutMetricsFromRoot(
-      const ShadowNodeFamily &descendantNodeFamily,
-      const LayoutableShadowNode &rootNode,
+      const ShadowNodeFamily& descendantNodeFamily,
+      const LayoutableShadowNode& rootNode,
       LayoutInspectingPolicy policy);
 
   /*
@@ -62,35 +64,43 @@ class LayoutableShadowNode : public ShadowNode {
    * tree.
    */
   static LayoutMetrics computeRelativeLayoutMetrics(
-      const ShadowNodeFamily &descendantNodeFamily,
-      const LayoutableShadowNode &ancestorNode,
+      const ShadowNodeFamily& descendantNodeFamily,
+      const LayoutableShadowNode& ancestorNode,
       LayoutInspectingPolicy policy);
 
   /*
    * Computes the layout metrics of a node relative to its specified ancestors.
    */
-  static LayoutMetrics computeRelativeLayoutMetrics(const AncestorList &ancestors, LayoutInspectingPolicy policy);
+  static LayoutMetrics computeRelativeLayoutMetrics(
+      const AncestorList& ancestors,
+      LayoutInspectingPolicy policy);
 
   /*
    * Performs layout of the tree starting from this node. Usually is being
    * called on the root node.
    * Default implementation does nothing.
    */
-  virtual void layoutTree(LayoutContext layoutContext, LayoutConstraints layoutConstraints) = 0;
+  virtual void layoutTree(
+      LayoutContext layoutContext,
+      LayoutConstraints layoutConstraints) = 0;
 
   /*
    * Measures the node (and node content, probably recursively) with
    * given constrains and relying on possible layout.
    * Default implementation returns zero size.
    */
-  virtual Size measureContent(const LayoutContext &layoutContext, const LayoutConstraints &layoutConstraints) const;
+  virtual Size measureContent(
+      const LayoutContext& layoutContext,
+      const LayoutConstraints& layoutConstraints) const;
 
   /*
    * Measures the node with given `layoutContext` and `layoutConstraints`.
    * The size of nested content and the padding should be included, the margin
    * should *not* be included. Default implementation returns zero size.
    */
-  virtual Size measure(const LayoutContext &layoutContext, const LayoutConstraints &layoutConstraints) const;
+  virtual Size measure(
+      const LayoutContext& layoutContext,
+      const LayoutConstraints& layoutConstraints) const;
 
   /*
    * Computes layout recursively.
@@ -137,7 +147,9 @@ class LayoutableShadowNode : public ShadowNode {
    * Returns the ShadowNode that is rendered at the Point received as a
    * parameter.
    */
-  static std::shared_ptr<const ShadowNode> findNodeAtPoint(const std::shared_ptr<const ShadowNode> &node, Point point);
+  static std::shared_ptr<const ShadowNode> findNodeAtPoint(
+      const std::shared_ptr<const ShadowNode>& node,
+      Point point);
 
   /*
    * Clean or Dirty layout state:
@@ -150,7 +162,7 @@ class LayoutableShadowNode : public ShadowNode {
   /*
    * Unifed methods to access text layout metrics.
    */
-  virtual Float baseline(const LayoutContext &layoutContext, Size size) const;
+  virtual Float baseline(const LayoutContext& layoutContext, Size size) const;
 
   virtual bool canBeTouchTarget() const;
   virtual bool canChildrenBeTouchTarget() const;

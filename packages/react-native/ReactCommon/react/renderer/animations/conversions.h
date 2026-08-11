@@ -14,8 +14,8 @@
 
 namespace facebook::react {
 
-static inline std::optional<AnimationType> parseAnimationType(std::string param)
-{
+static inline std::optional<AnimationType> parseAnimationType(
+    std::string param) {
   if (param == "spring") {
     return AnimationType::Spring;
   }
@@ -39,8 +39,8 @@ static inline std::optional<AnimationType> parseAnimationType(std::string param)
   return {};
 }
 
-static inline std::optional<AnimationProperty> parseAnimationProperty(std::string param)
-{
+static inline std::optional<AnimationProperty> parseAnimationProperty(
+    std::string param) {
   if (param == "opacity") {
     return AnimationProperty::Opacity;
   }
@@ -58,9 +58,10 @@ static inline std::optional<AnimationProperty> parseAnimationProperty(std::strin
   return {};
 }
 
-static inline std::optional<AnimationConfig>
-parseAnimationConfig(const folly::dynamic &config, double defaultDuration, bool parsePropertyType)
-{
+static inline std::optional<AnimationConfig> parseAnimationConfig(
+    const folly::dynamic& config,
+    double defaultDuration,
+    bool parsePropertyType) {
   if (config.empty() || !config.isObject()) {
     return AnimationConfig{
         .animationType = AnimationType::Linear,
@@ -78,12 +79,14 @@ parseAnimationConfig(const folly::dynamic &config, double defaultDuration, bool 
   }
   const auto animationTypeParam = typeIt->second;
   if (animationTypeParam.empty() || !animationTypeParam.isString()) {
-    LOG(ERROR) << "Error parsing animation config: could not unwrap field `type`";
+    LOG(ERROR)
+        << "Error parsing animation config: could not unwrap field `type`";
     return {};
   }
   const auto animationType = parseAnimationType(animationTypeParam.asString());
   if (!animationType) {
-    LOG(ERROR) << "Error parsing animation config: could not parse field `type`";
+    LOG(ERROR)
+        << "Error parsing animation config: could not parse field `type`";
     return {};
   }
 
@@ -91,17 +94,21 @@ parseAnimationConfig(const folly::dynamic &config, double defaultDuration, bool 
   if (parsePropertyType) {
     const auto propertyIt = config.find("property");
     if (propertyIt == config.items().end()) {
-      LOG(ERROR) << "Error parsing animation config: could not find field `property`";
+      LOG(ERROR)
+          << "Error parsing animation config: could not find field `property`";
       return {};
     }
     const auto animationPropertyParam = propertyIt->second;
     if (animationPropertyParam.empty() || !animationPropertyParam.isString()) {
-      LOG(ERROR) << "Error parsing animation config: could not unwrap field `property`";
+      LOG(ERROR)
+          << "Error parsing animation config: could not unwrap field `property`";
       return {};
     }
-    const auto animationPropertyParsed = parseAnimationProperty(animationPropertyParam.asString());
+    const auto animationPropertyParsed =
+        parseAnimationProperty(animationPropertyParam.asString());
     if (!animationPropertyParsed) {
-      LOG(ERROR) << "Error parsing animation config: could not parse field `property`";
+      LOG(ERROR)
+          << "Error parsing animation config: could not parse field `property`";
       return {};
     }
     animationProperty = *animationPropertyParsed;
@@ -117,7 +124,8 @@ parseAnimationConfig(const folly::dynamic &config, double defaultDuration, bool 
     if (durationIt->second.isDouble()) {
       duration = durationIt->second.asDouble();
     } else {
-      LOG(ERROR) << "Error parsing animation config: field `duration` must be a number";
+      LOG(ERROR)
+          << "Error parsing animation config: field `duration` must be a number";
       return {};
     }
   }
@@ -127,17 +135,20 @@ parseAnimationConfig(const folly::dynamic &config, double defaultDuration, bool 
     if (delayIt->second.isDouble()) {
       delay = delayIt->second.asDouble();
     } else {
-      LOG(ERROR) << "Error parsing animation config: field `delay` must be a number";
+      LOG(ERROR)
+          << "Error parsing animation config: field `delay` must be a number";
       return {};
     }
   }
 
   const auto springDampingIt = config.find("springDamping");
-  if (springDampingIt != config.items().end() && springDampingIt->second.isDouble()) {
+  if (springDampingIt != config.items().end() &&
+      springDampingIt->second.isDouble()) {
     if (springDampingIt->second.isDouble()) {
       springDamping = (Float)springDampingIt->second.asDouble();
     } else {
-      LOG(ERROR) << "Error parsing animation config: field `springDamping` must be a number";
+      LOG(ERROR)
+          << "Error parsing animation config: field `springDamping` must be a number";
       return {};
     }
   }
@@ -147,7 +158,8 @@ parseAnimationConfig(const folly::dynamic &config, double defaultDuration, bool 
     if (initialVelocityIt->second.isDouble()) {
       initialVelocity = (Float)initialVelocityIt->second.asDouble();
     } else {
-      LOG(ERROR) << "Error parsing animation config: field `initialVelocity` must be a number";
+      LOG(ERROR)
+          << "Error parsing animation config: field `initialVelocity` must be a number";
       return {};
     }
   }
@@ -162,8 +174,8 @@ parseAnimationConfig(const folly::dynamic &config, double defaultDuration, bool 
 }
 
 // Parse animation config from JS
-static inline std::optional<LayoutAnimationConfig> parseLayoutAnimationConfig(const folly::dynamic &config)
-{
+static inline std::optional<LayoutAnimationConfig> parseLayoutAnimationConfig(
+    const folly::dynamic& config) {
   if (config.empty() || !config.isObject()) {
     return {};
   }

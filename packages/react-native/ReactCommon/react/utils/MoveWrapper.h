@@ -78,42 +78,37 @@ class MoveWrapper {
   MoveWrapper() = default;
 
   /// Move a value in.
-  explicit MoveWrapper(T &&t) : value(std::move(t)) {}
+  explicit MoveWrapper(T&& t) : value(std::move(t)) {}
 
   /// copy is move
-  MoveWrapper(const MoveWrapper &other) : value(std::move(other.value)) {}
+  MoveWrapper(const MoveWrapper& other) : value(std::move(other.value)) {}
 
   /// move is also move
-  MoveWrapper(MoveWrapper &&other) noexcept : value(std::move(other.value)) {}
+  MoveWrapper(MoveWrapper&& other) noexcept : value(std::move(other.value)) {}
 
-  const T &operator*() const
-  {
+  const T& operator*() const {
     return value;
   }
-  T &operator*()
-  {
+  T& operator*() {
     return value;
   }
 
-  const T *operator->() const
-  {
+  const T* operator->() const {
     return &value;
   }
-  T *operator->()
-  {
+  T* operator->() {
     return &value;
   }
 
   /// move the value out (sugar for std::move(*moveWrapper))
-  T &&move()
-  {
+  T&& move() {
     return std::move(value);
   }
 
   // If you want these you're probably doing it wrong, though they'd be
   // easy enough to implement
-  MoveWrapper &operator=(const MoveWrapper &) = delete;
-  MoveWrapper &operator=(MoveWrapper &&) = delete;
+  MoveWrapper& operator=(const MoveWrapper&) = delete;
+  MoveWrapper& operator=(MoveWrapper&&) = delete;
 
  private:
   mutable T value;
@@ -123,8 +118,7 @@ class MoveWrapper {
 /// is already quite transparent in its intent, this will work for lvalues as
 /// if you had wrapped them in std::move.
 template <class T, class T0 = typename std::remove_reference<T>::type>
-MoveWrapper<T0> makeMoveWrapper(T &&t)
-{
+MoveWrapper<T0> makeMoveWrapper(T&& t) {
   return MoveWrapper<T0>(std::forward<T0>(t));
 }
 

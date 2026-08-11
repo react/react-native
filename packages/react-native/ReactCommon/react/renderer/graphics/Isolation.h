@@ -18,8 +18,8 @@ enum class Isolation {
   Isolate,
 };
 
-inline std::optional<Isolation> isolationFromString(std::string_view isolationSetting)
-{
+inline std::optional<Isolation> isolationFromString(
+    std::string_view isolationSetting) {
   if (isolationSetting == "auto") {
     return Isolation::Auto;
   } else if (isolationSetting == "isolate") {

@@ -18,10 +18,10 @@ namespace facebook::react::jsinspector_modern {
  */
 class InspectorFlags {
  public:
-  static InspectorFlags &getInstance();
+  static InspectorFlags& getInstance();
 
-  InspectorFlags(const InspectorFlags &) = delete;
-  InspectorFlags &operator=(const InspectorFlags &) = delete;
+  InspectorFlags(const InspectorFlags&) = delete;
+  InspectorFlags& operator=(const InspectorFlags&) = delete;
 
   /**
    * Flag determining if the inspector backend should strictly assert that only
@@ -75,7 +75,7 @@ class InspectorFlags {
     bool fuseboxEnabled;
     bool isProfilingBuild;
     bool perfIssuesEnabled;
-    bool operator==(const Values &) const = default;
+    bool operator==(const Values&) const = default;
   };
 
   InspectorFlags() = default;
@@ -86,7 +86,7 @@ class InspectorFlags {
   mutable bool inconsistentFlagsStateLogged_{false};
   bool fuseboxDisabledForTest_{false};
 
-  const Values &loadFlagsAndAssertUnchanged() const;
+  const Values& loadFlagsAndAssertUnchanged() const;
 };
 
 } // namespace facebook::react::jsinspector_modern

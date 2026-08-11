@@ -40,9 +40,13 @@ struct Body {
 using OnUploadProgress = std::function<void(int64_t progress, int64_t size)>;
 using OnResponse = std::function<void(uint16_t responseCode, Headers headers)>;
 using OnBody = std::function<void(std::unique_ptr<folly::IOBuf> body)>;
-using OnBodyIncremental = std::function<int64_t(int64_t progress, int64_t total, std::unique_ptr<folly::IOBuf> body)>;
+using OnBodyIncremental = std::function<int64_t(
+    int64_t progress,
+    int64_t total,
+    std::unique_ptr<folly::IOBuf> body)>;
 using OnBodyProgress = std::function<void(int64_t loaded, int64_t total)>;
-using OnResponseComplete = std::function<void(std::string error, bool timeoutError)>;
+using OnResponseComplete =
+    std::function<void(std::string error, bool timeoutError)>;
 
 struct NetworkCallbacks {
   OnUploadProgress onUploadProgress{nullptr};
@@ -67,11 +71,11 @@ struct IHttpClient {
   virtual ~IHttpClient() = default;
 
   virtual std::unique_ptr<http::IRequestToken> sendRequest(
-      http::NetworkCallbacks &&callback,
-      const std::string &method,
-      const std::string &url,
-      const http::Headers &headers = {},
-      const http::Body &body = {},
+      http::NetworkCallbacks&& callback,
+      const std::string& method,
+      const std::string& url,
+      const http::Headers& headers = {},
+      const http::Body& body = {},
       uint32_t timeout = 0,
       std::optional<std::string> loggingId = std::nullopt) = 0;
 };

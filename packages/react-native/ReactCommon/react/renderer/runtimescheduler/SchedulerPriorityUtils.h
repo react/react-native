@@ -14,13 +14,13 @@
 
 namespace facebook::react {
 
-static constexpr std::underlying_type<SchedulerPriority>::type serialize(SchedulerPriority schedulerPriority)
-{
-  return static_cast<std::underlying_type<SchedulerPriority>::type>(schedulerPriority);
+static constexpr std::underlying_type<SchedulerPriority>::type serialize(
+    SchedulerPriority schedulerPriority) {
+  return static_cast<std::underlying_type<SchedulerPriority>::type>(
+      schedulerPriority);
 }
 
-static inline SchedulerPriority fromRawValue(double value)
-{
+static inline SchedulerPriority fromRawValue(double value) {
   switch ((int)value) {
     case 1:
       return SchedulerPriority::ImmediatePriority;
@@ -38,8 +38,8 @@ static inline SchedulerPriority fromRawValue(double value)
   }
 }
 
-static inline HighResDuration timeoutForSchedulerPriority(SchedulerPriority schedulerPriority) noexcept
-{
+static inline HighResDuration timeoutForSchedulerPriority(
+    SchedulerPriority schedulerPriority) noexcept {
   switch (schedulerPriority) {
     case SchedulerPriority::ImmediatePriority:
       return HighResDuration::fromChrono(std::chrono::milliseconds(0));

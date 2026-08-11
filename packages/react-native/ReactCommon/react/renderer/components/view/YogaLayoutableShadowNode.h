@@ -34,13 +34,17 @@ class YogaLayoutableShadowNode : public LayoutableShadowNode {
 #pragma mark - Constructors
 
   YogaLayoutableShadowNode(
-      const ShadowNodeFragment &fragment,
-      const ShadowNodeFamily::Shared &family,
+      const ShadowNodeFragment& fragment,
+      const ShadowNodeFamily::Shared& family,
       ShadowNodeTraits traits);
 
-  YogaLayoutableShadowNode(const ShadowNode &sourceShadowNode, const ShadowNodeFragment &fragment);
+  YogaLayoutableShadowNode(
+      const ShadowNode& sourceShadowNode,
+      const ShadowNodeFragment& fragment);
 
-  void completeClone(const ShadowNode &sourceShadowNode, const ShadowNodeFragment &fragment) override;
+  void completeClone(
+      const ShadowNode& sourceShadowNode,
+      const ShadowNodeFragment& fragment) override;
 
 #pragma mark - Mutating Methods
 
@@ -50,10 +54,10 @@ class YogaLayoutableShadowNode : public LayoutableShadowNode {
    */
   void enableMeasurement();
 
-  void appendChild(const std::shared_ptr<const ShadowNode> &child) override;
+  void appendChild(const std::shared_ptr<const ShadowNode>& child) override;
   void replaceChild(
-      const ShadowNode &oldChild,
-      const std::shared_ptr<const ShadowNode> &newChild,
+      const ShadowNode& oldChild,
+      const std::shared_ptr<const ShadowNode>& newChild,
       size_t suggestedIndex = SIZE_MAX) override;
 
   void updateYogaChildren();
@@ -81,7 +85,9 @@ class YogaLayoutableShadowNode : public LayoutableShadowNode {
    * Computes layout using Yoga layout engine.
    * See `LayoutableShadowNode` for more details.
    */
-  void layoutTree(LayoutContext layoutContext, LayoutConstraints layoutConstraints) override;
+  void layoutTree(
+      LayoutContext layoutContext,
+      LayoutConstraints layoutConstraints) override;
 
   void layout(LayoutContext layoutContext) override;
 
@@ -92,8 +98,9 @@ class YogaLayoutableShadowNode : public LayoutableShadowNode {
    * Subclasses which provide MeasurableYogaNode may override to signal that a
    * new ShadowNode revision does not need to invalidate existing measurements.
    */
-  virtual bool shouldNewRevisionDirtyMeasurement(const ShadowNode &sourceShadowNode, const ShadowNodeFragment &fragment)
-      const;
+  virtual bool shouldNewRevisionDirtyMeasurement(
+      const ShadowNode& sourceShadowNode,
+      const ShadowNodeFragment& fragment) const;
 
   /*
    * Yoga config associated (only) with this particular node.
@@ -114,14 +121,14 @@ class YogaLayoutableShadowNode : public LayoutableShadowNode {
    * Return true if child's yogaNode's owner is this->yogaNode_. Otherwise
    * returns false.
    */
-  bool doesOwn(const YogaLayoutableShadowNode &child) const;
+  bool doesOwn(const YogaLayoutableShadowNode& child) const;
 
   /*
    * Appends a Yoga node to the Yoga node associated with this node.
    * The method does *not* do anything besides that (no cloning or `owner` field
    * adjustment).
    */
-  void appendYogaChild(const YogaLayoutableShadowNode::Shared &childNode);
+  void appendYogaChild(const YogaLayoutableShadowNode::Shared& childNode);
 
   /*
    * Makes the child node with a given `index` (and Yoga node associated with) a
@@ -134,8 +141,11 @@ class YogaLayoutableShadowNode : public LayoutableShadowNode {
    * ShadowTree has been constructed, but before it has been is laid out or
    * committed.
    */
-  void
-  configureYogaTree(float pointScaleFactor, Float fontSizeMultiplier, YGErrata defaultErrata, bool swapLeftAndRight);
+  void configureYogaTree(
+      float pointScaleFactor,
+      Float fontSizeMultiplier,
+      YGErrata defaultErrata,
+      bool swapLeftAndRight);
 
   /**
    * Return an errata based on a `layoutConformance` prop if given, otherwise
@@ -146,19 +156,27 @@ class YogaLayoutableShadowNode : public LayoutableShadowNode {
   /**
    * Replcaes a child with a mutable clone of itself, returning the clone.
    */
-  YogaLayoutableShadowNode &cloneChildInPlace(size_t layoutableChildIndex);
+  YogaLayoutableShadowNode& cloneChildInPlace(size_t layoutableChildIndex);
 
-  static yoga::Config &initializeYogaConfig(yoga::Config &config, YGConfigConstRef previousConfig = nullptr);
-  static YGNodeRef
-  yogaNodeCloneCallbackConnector(YGNodeConstRef oldYogaNode, YGNodeConstRef parentYogaNode, size_t childIndex);
+  static yoga::Config& initializeYogaConfig(
+      yoga::Config& config,
+      YGConfigConstRef previousConfig = nullptr);
+  static YGNodeRef yogaNodeCloneCallbackConnector(
+      YGNodeConstRef oldYogaNode,
+      YGNodeConstRef parentYogaNode,
+      size_t childIndex);
   static YGSize yogaNodeMeasureCallbackConnector(
       YGNodeConstRef yogaNode,
       float width,
       YGMeasureMode widthMode,
       float height,
       YGMeasureMode heightMode);
-  static float yogaNodeBaselineCallbackConnector(YGNodeConstRef yogaNode, float width, float height);
-  static YogaLayoutableShadowNode &shadowNodeFromContext(YGNodeConstRef yogaNode);
+  static float yogaNodeBaselineCallbackConnector(
+      YGNodeConstRef yogaNode,
+      float width,
+      float height);
+  static YogaLayoutableShadowNode& shadowNodeFromContext(
+      YGNodeConstRef yogaNode);
 
 #pragma mark - RTL Legacy Autoflip
 
@@ -195,7 +213,9 @@ class YogaLayoutableShadowNode : public LayoutableShadowNode {
    * Combine a base yoga::Style with aliased properties which should be
    * flattened into it. E.g. reconciling "marginInlineStart" and "marginStart".
    */
-  static yoga::Style applyAliasedProps(const yoga::Style &baseStyle, const YogaStylableProps &props);
+  static yoga::Style applyAliasedProps(
+      const yoga::Style& baseStyle,
+      const YogaStylableProps& props);
 
 #pragma mark - Consistency Ensuring Helpers
 

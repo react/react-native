@@ -25,8 +25,7 @@ namespace facebook::react {
 template <class T>
 class CircularBuffer {
  public:
-  explicit CircularBuffer(size_t maxSize) : maxSize_(maxSize)
-  {
+  explicit CircularBuffer(size_t maxSize) : maxSize_(maxSize) {
     entries_.reserve(maxSize_);
   }
 
@@ -37,8 +36,7 @@ class CircularBuffer {
    * buffer reached the max allowed size, in which case `true` is returned. If
    * no items were overridden `false` is returned.
    */
-  bool add(const T &el)
-  {
+  bool add(const T& el) {
     if (entries_.size() < maxSize_) {
       // Haven't reached max buffer size yet, just add and grow the buffer
       entries_.emplace_back(el);
@@ -51,18 +49,15 @@ class CircularBuffer {
     }
   }
 
-  T &operator[](size_t idx)
-  {
+  T& operator[](size_t idx) {
     return entries_[(position_ + idx) % entries_.size()];
   }
 
-  size_t size() const
-  {
+  size_t size() const {
     return entries_.size();
   }
 
-  void clear()
-  {
+  void clear() {
     entries_.clear();
     position_ = 0;
   }
@@ -70,13 +65,12 @@ class CircularBuffer {
   /**
    * Clears buffer entries by predicate
    */
-  void clear(std::function<bool(const T &)> predicate)
-  {
+  void clear(std::function<bool(const T&)> predicate) {
     std::vector<T> entries;
 
     entries.reserve(maxSize_);
     for (size_t i = 0; i < entries_.size(); i++) {
-      T &el = entries_[(i + position_) % entries_.size()];
+      T& el = entries_[(i + position_) % entries_.size()];
       if (predicate(el)) {
         continue;
       }
@@ -91,8 +85,7 @@ class CircularBuffer {
   /**
    * Retrieves buffer entries, whether consumed or not
    */
-  std::vector<T> getEntries() const
-  {
+  std::vector<T> getEntries() const {
     std::vector<T> res;
     getEntries(res);
     return res;
@@ -101,25 +94,27 @@ class CircularBuffer {
   /**
    * Retrieves buffer entries, whether consumed or not, with predicate
    */
-  std::vector<T> getEntries(std::function<bool(const T &)> predicate) const
-  {
+  std::vector<T> getEntries(std::function<bool(const T&)> predicate) const {
     std::vector<T> res;
     getEntries(res, predicate);
     return res;
   }
 
-  void getEntries(std::vector<T> &res) const
-  {
+  void getEntries(std::vector<T>& res) const {
     const size_t oldSize = res.size();
     res.resize(oldSize + entries_.size());
-    std::copy(entries_.begin() + position_, entries_.end(), res.begin() + oldSize);
-    std::copy(entries_.begin(), entries_.begin() + position_, res.begin() + oldSize + entries_.size() - position_);
+    std::copy(
+        entries_.begin() + position_, entries_.end(), res.begin() + oldSize);
+    std::copy(
+        entries_.begin(),
+        entries_.begin() + position_,
+        res.begin() + oldSize + entries_.size() - position_);
   }
 
-  void getEntries(std::vector<T> &res, std::function<bool(const T &)> predicate) const
-  {
+  void getEntries(std::vector<T>& res, std::function<bool(const T&)> predicate)
+      const {
     for (size_t i = 0; i < entries_.size(); i++) {
-      const T &el = entries_[(i + position_) % entries_.size()];
+      const T& el = entries_[(i + position_) % entries_.size()];
       if (predicate(el)) {
         res.push_back(el);
       }

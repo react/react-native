@@ -19,13 +19,12 @@ namespace HostPlatformColor {
 constexpr facebook::react::Color UndefinedColor = 0;
 }
 
-inline Color hostPlatformColorFromRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
-{
+inline Color
+hostPlatformColorFromRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
   return (a & 0xff) << 24 | (r & 0xff) << 16 | (g & 0xff) << 8 | (b & 0xff);
 }
 
-inline Color hostPlatformColorFromComponents(ColorComponents components)
-{
+inline Color hostPlatformColorFromComponents(ColorComponents components) {
   float ratio = 255;
   return hostPlatformColorFromRGBA(
       static_cast<uint8_t>(std::round(components.red * ratio)),
@@ -34,33 +33,27 @@ inline Color hostPlatformColorFromComponents(ColorComponents components)
       static_cast<uint8_t>(std::round(components.alpha * ratio)));
 }
 
-inline float alphaFromHostPlatformColor(Color color)
-{
+inline float alphaFromHostPlatformColor(Color color) {
   return static_cast<float>((color >> 24) & 0xff);
 }
 
-inline float redFromHostPlatformColor(Color color)
-{
+inline float redFromHostPlatformColor(Color color) {
   return static_cast<float>((color >> 16) & 0xff);
 }
 
-inline float greenFromHostPlatformColor(Color color)
-{
+inline float greenFromHostPlatformColor(Color color) {
   return static_cast<float>((color >> 8) & 0xff);
 }
 
-inline float blueFromHostPlatformColor(Color color)
-{
+inline float blueFromHostPlatformColor(Color color) {
   return static_cast<uint8_t>((color >> 0) & 0xff);
 }
 
-inline bool hostPlatformColorIsColorMeaningful(Color color) noexcept
-{
+inline bool hostPlatformColorIsColorMeaningful(Color color) noexcept {
   return alphaFromHostPlatformColor(color) > 0;
 }
 
-inline ColorComponents colorComponentsFromHostPlatformColor(Color color)
-{
+inline ColorComponents colorComponentsFromHostPlatformColor(Color color) {
   float ratio = 255;
   return ColorComponents{
       .red = static_cast<float>(redFromHostPlatformColor(color)) / ratio,

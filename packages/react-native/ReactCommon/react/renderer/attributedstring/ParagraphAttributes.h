@@ -82,7 +82,7 @@ class ParagraphAttributes : public DebugStringConvertible {
    */
   std::optional<TextAlignmentVertical> textAlignVertical{};
 
-  bool operator==(const ParagraphAttributes &rhs) const;
+  bool operator==(const ParagraphAttributes& rhs) const;
 
 #pragma mark - DebugStringConvertible
 
@@ -97,8 +97,8 @@ namespace std {
 
 template <>
 struct hash<facebook::react::ParagraphAttributes> {
-  size_t operator()(const facebook::react::ParagraphAttributes &attributes) const
-  {
+  size_t operator()(
+      const facebook::react::ParagraphAttributes& attributes) const {
     return facebook::react::hash_combine(
         attributes.maximumNumberOfLines,
         attributes.ellipsizeMode,

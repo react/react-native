@@ -52,8 +52,7 @@ struct PreparsedRequest {
   /**
    * Equality operator, useful for unit tests
    */
-  inline bool operator==(const PreparsedRequest &rhs) const
-  {
+  inline bool operator==(const PreparsedRequest& rhs) const {
     return id == rhs.id && method == rhs.method && params == rhs.params;
   }
 
@@ -93,7 +92,10 @@ using ParseError = folly::json::parse_error;
  * \param code Integer code from cdp::ErrorCode.
  * \param message Optional, brief human-readable error message.
  */
-std::string jsonError(std::optional<RequestId> id, ErrorCode code, std::optional<std::string> message = std::nullopt);
+std::string jsonError(
+    std::optional<RequestId> id,
+    ErrorCode code,
+    std::optional<std::string> message = std::nullopt);
 
 /**
  * Returns a JSON-formatted string representing a successful response.
@@ -103,7 +105,9 @@ std::string jsonError(std::optional<RequestId> id, ErrorCode code, std::optional
  * \param id The id of the request that this response corresponds to.
  * \param result Result payload, defaulting to {}.
  */
-std::string jsonResult(RequestId id, const folly::dynamic &result = folly::dynamic::object());
+std::string jsonResult(
+    RequestId id,
+    const folly::dynamic& result = folly::dynamic::object());
 
 /**
  * Returns a JSON-formatted string representing a unilateral notification.
@@ -113,7 +117,9 @@ std::string jsonResult(RequestId id, const folly::dynamic &result = folly::dynam
  * \param method Notification (aka "event") method.
  * \param params Optional payload object.
  */
-std::string jsonNotification(const std::string &method, std::optional<folly::dynamic> params = std::nullopt);
+std::string jsonNotification(
+    const std::string& method,
+    std::optional<folly::dynamic> params = std::nullopt);
 
 /**
  * Returns a JSON-formatted string representing a request.
@@ -124,6 +130,9 @@ std::string jsonNotification(const std::string &method, std::optional<folly::dyn
  * \param method Requested method.
  * \param params Optional payload object.
  */
-std::string jsonRequest(RequestId id, const std::string &method, std::optional<folly::dynamic> params = std::nullopt);
+std::string jsonRequest(
+    RequestId id,
+    const std::string& method,
+    std::optional<folly::dynamic> params = std::nullopt);
 
 } // namespace facebook::react::jsinspector_modern::cdp

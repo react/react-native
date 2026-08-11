@@ -15,7 +15,7 @@ namespace facebook::react {
 
 class MockSurfaceHandler : public SurfaceHandler {
  public:
-  MockSurfaceHandler() : SurfaceHandler("moduleName", 0) {};
+  MockSurfaceHandler() : SurfaceHandler("moduleName", 0){};
 
   MOCK_METHOD(void, setDisplayMode, (DisplayMode), (const, noexcept));
   MOCK_METHOD(SurfaceId, getSurfaceId, (), (const, noexcept));

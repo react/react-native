@@ -15,20 +15,26 @@
 
 namespace facebook::react {
 
-class DefaultComponentsRegistry : public facebook::jni::JavaClass<DefaultComponentsRegistry> {
+class DefaultComponentsRegistry
+    : public facebook::jni::JavaClass<DefaultComponentsRegistry> {
  public:
-  constexpr static auto kJavaDescriptor = "Lcom/facebook/react/defaults/DefaultComponentsRegistry;";
+  constexpr static auto kJavaDescriptor =
+      "Lcom/facebook/react/defaults/DefaultComponentsRegistry;";
 
   static void registerNatives();
 
-  static std::function<void(std::shared_ptr<const ComponentDescriptorProviderRegistry>)>
+  static std::function<void(
+      std::shared_ptr<const ComponentDescriptorProviderRegistry>)>
       registerComponentDescriptorsFromEntryPoint;
 
-  static std::function<void(std::shared_ptr<const ComponentDescriptorProviderRegistry>)>
+  static std::function<void(
+      std::shared_ptr<const ComponentDescriptorProviderRegistry>)>
       registerCodegenComponentDescriptorsFromEntryPoint;
 
  private:
-  static void setRegistryRunction(jni::alias_ref<jclass> /*unused*/, ComponentFactory *delegate);
+  static void setRegistryRunction(
+      jni::alias_ref<jclass> /*unused*/,
+      ComponentFactory* delegate);
 };
 
 } // namespace facebook::react

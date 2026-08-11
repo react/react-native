@@ -23,9 +23,10 @@ namespace facebook::react {
  * retain ownership of them.
  */
 struct ShadowNodeFragment {
-  const Props::Shared &props = propsPlaceholder();
-  const std::shared_ptr<const std::vector<std::shared_ptr<const ShadowNode>>> &children = childrenPlaceholder();
-  const State::Shared &state = statePlaceholder();
+  const Props::Shared& props = propsPlaceholder();
+  const std::shared_ptr<const std::vector<std::shared_ptr<const ShadowNode>>>&
+      children = childrenPlaceholder();
+  const State::Shared& state = statePlaceholder();
   const bool runtimeShadowNodeReference = true;
 
   /*
@@ -33,9 +34,11 @@ struct ShadowNodeFragment {
    * Use as default arguments as an indication that the field does not need to
    * be changed.
    */
-  static const Props::Shared &propsPlaceholder();
-  static const std::shared_ptr<const std::vector<std::shared_ptr<const ShadowNode>>> &childrenPlaceholder();
-  static const State::Shared &statePlaceholder();
+  static const Props::Shared& propsPlaceholder();
+  static const std::shared_ptr<
+      const std::vector<std::shared_ptr<const ShadowNode>>>&
+  childrenPlaceholder();
+  static const State::Shared& statePlaceholder();
 };
 
 } // namespace facebook::react

@@ -15,8 +15,8 @@ namespace facebook::react {
  * Helper for constructing a JWeakReference. \see JWeakReference.h in fbjni.
  */
 template <typename T>
-inline jni::local_ref<jni::JWeakReference<T>> makeJWeakReference(jni::alias_ref<T> ref)
-{
+inline jni::local_ref<jni::JWeakReference<T>> makeJWeakReference(
+    jni::alias_ref<T> ref) {
   return jni::JWeakReference<T>::newInstance(ref);
 }
 

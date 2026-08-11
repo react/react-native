@@ -44,19 +44,18 @@ class AnimatedNode {
       folly::dynamic config,
       // TODO: T190028913 maybe pass in strongly typed data when constructing
       // AnimatedNode
-      NativeAnimatedNodesManager &manager,
+      NativeAnimatedNodesManager& manager,
       AnimatedNodeType type);
 
   // Detach Node
   virtual ~AnimatedNode() = default;
 
-  AnimatedNode(AnimatedNode &&) noexcept = default;
-  AnimatedNode &operator=(AnimatedNode &&) noexcept = default;
-  AnimatedNode(const AnimatedNode &) = default;
-  AnimatedNode &operator=(const AnimatedNode &) = default;
+  AnimatedNode(AnimatedNode&&) noexcept = default;
+  AnimatedNode& operator=(AnimatedNode&&) noexcept = default;
+  AnimatedNode(const AnimatedNode&) = default;
+  AnimatedNode& operator=(const AnimatedNode&) = default;
 
-  Tag tag() const noexcept
-  {
+  Tag tag() const noexcept {
     return tag_;
   }
 
@@ -64,25 +63,23 @@ class AnimatedNode {
 
   void removeChild(Tag tag);
 
-  const std::unordered_set<Tag> &getChildren() const noexcept
-  {
+  const std::unordered_set<Tag>& getChildren() const noexcept {
     return children_;
   }
 
-  AnimatedNodeType type() const noexcept
-  {
+  AnimatedNodeType type() const noexcept {
     return type_;
   }
 
-  const folly::dynamic &getConfig() const noexcept
-  {
+  const folly::dynamic& getConfig() const noexcept {
     return config_;
   }
 
 #ifdef REACT_NATIVE_DEBUG
-  std::string debugID() const
-  {
-    return (getConfig().count("debugID") != 0u) ? getConfig()["debugID"].asString() : "";
+  std::string debugID() const {
+    return (getConfig().count("debugID") != 0u)
+        ? getConfig()["debugID"].asString()
+        : "";
   }
 #endif
 
@@ -91,7 +88,8 @@ class AnimatedNode {
   virtual void onDetachedFromNode(Tag /*animatedNodeTag*/) {}
   virtual void onAttachToNode(Tag /*animatedNodeTag*/) {}
 
-  static std::optional<AnimatedNodeType> getNodeTypeByName(const std::string &nodeTypeName);
+  static std::optional<AnimatedNodeType> getNodeTypeByName(
+      const std::string& nodeTypeName);
 
   int activeIncomingNodes = 0;
   int bfsColor = 0;
@@ -99,9 +97,9 @@ class AnimatedNode {
   static constexpr int INITIAL_BFS_COLOR = 0;
 
  protected:
-  AnimatedNode *getChildNode(Tag tag);
+  AnimatedNode* getChildNode(Tag tag);
   Tag tag_{0};
-  NativeAnimatedNodesManager *manager_;
+  NativeAnimatedNodesManager* manager_;
   AnimatedNodeType type_;
   std::unordered_set<Tag> children_{};
 

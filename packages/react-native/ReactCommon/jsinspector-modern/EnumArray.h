@@ -18,23 +18,23 @@ namespace facebook::react::jsinspector_modern {
  * Requires that the enum class has a kMaxValue member.
  */
 template <class IndexType, class ValueType>
-  requires std::is_enum_v<IndexType> && std::is_same_v<std::underlying_type_t<IndexType>, int> &&
-    requires { IndexType::kMaxValue; } && (static_cast<int>(IndexType::kMaxValue) < std::numeric_limits<int>::max())
+  requires std::is_enum_v<IndexType> &&
+    std::is_same_v<
+               std::underlying_type_t<IndexType>,
+               int>&& requires { IndexType::kMaxValue; } &&
+    (static_cast<int>(IndexType::kMaxValue) < std::numeric_limits<int>::max())
 
-class EnumArray {
+        class EnumArray {
  public:
-  constexpr ValueType &operator[](IndexType i)
-  {
+  constexpr ValueType& operator[](IndexType i) {
     return array_[static_cast<int>(i)];
   }
 
-  constexpr const ValueType &operator[](IndexType i) const
-  {
+  constexpr const ValueType& operator[](IndexType i) const {
     return array_[static_cast<int>(i)];
   }
 
-  constexpr int size() const
-  {
+  constexpr int size() const {
     return size_;
   }
 

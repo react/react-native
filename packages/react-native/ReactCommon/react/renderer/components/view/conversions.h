@@ -52,9 +52,10 @@ namespace facebook::react {
  * values have special "no limit" meaning in Yoga, therefore ` YGUndefined`
  * usually corresponds to `Infinity` value.
  */
-inline Float floatFromYogaFloat(float value)
-{
-  static_assert(YGUndefined != YGUndefined, "The code of this function assumes that YGUndefined is NaN.");
+inline Float floatFromYogaFloat(float value) {
+  static_assert(
+      YGUndefined != YGUndefined,
+      "The code of this function assumes that YGUndefined is NaN.");
   if (std::isnan(value) /* means: `value == YGUndefined` */) {
     return std::numeric_limits<Float>::infinity();
   }
@@ -62,8 +63,7 @@ inline Float floatFromYogaFloat(float value)
   return (Float)value;
 }
 
-inline float yogaFloatFromFloat(Float value)
-{
+inline float yogaFloatFromFloat(Float value) {
   if (!std::isfinite(value)) {
     return YGUndefined;
   }
@@ -81,8 +81,7 @@ inline float yogaFloatFromFloat(Float value)
  * which usually has some special corresponding representation for an empty
  * value.
  */
-inline Float floatFromYogaOptionalFloat(yoga::FloatOptional value)
-{
+inline Float floatFromYogaOptionalFloat(yoga::FloatOptional value) {
   if (value.isUndefined()) {
     return std::numeric_limits<Float>::quiet_NaN();
   }
@@ -90,8 +89,7 @@ inline Float floatFromYogaOptionalFloat(yoga::FloatOptional value)
   return floatFromYogaFloat(value.unwrap());
 }
 
-inline yoga::FloatOptional yogaOptionalFloatFromFloat(Float value)
-{
+inline yoga::FloatOptional yogaOptionalFloatFromFloat(Float value) {
   if (std::isnan(value)) {
     return yoga::FloatOptional();
   }
@@ -100,21 +98,22 @@ inline yoga::FloatOptional yogaOptionalFloatFromFloat(Float value)
 }
 
 inline std::optional<Float> optionalFloatFromYogaValue(
-    const yoga::Style::Length &length,
-    std::optional<Float> base = {})
-{
+    const yoga::Style::Length& length,
+    std::optional<Float> base = {}) {
   if (length.isPoints()) {
     return floatFromYogaOptionalFloat(length.value());
   } else if (length.isPercent()) {
-    return base.has_value() ? std::optional<Float>(base.value() * floatFromYogaOptionalFloat(length.value()))
-                            : std::optional<Float>();
+    return base.has_value()
+        ? std::optional<Float>(
+              base.value() * floatFromYogaOptionalFloat(length.value()))
+        : std::optional<Float>();
   } else {
     return {};
   }
 }
 
-static inline PositionType positionTypeFromYogaPositionType(yoga::PositionType positionType)
-{
+static inline PositionType positionTypeFromYogaPositionType(
+    yoga::PositionType positionType) {
   switch (positionType) {
     case yoga::PositionType::Static:
       return PositionType::Static;
@@ -125,8 +124,7 @@ static inline PositionType positionTypeFromYogaPositionType(yoga::PositionType p
   }
 }
 
-inline DisplayType displayTypeFromYGDisplay(YGDisplay display)
-{
+inline DisplayType displayTypeFromYGDisplay(YGDisplay display) {
   switch (display) {
     case YGDisplayNone:
       return DisplayType::None;
@@ -139,8 +137,7 @@ inline DisplayType displayTypeFromYGDisplay(YGDisplay display)
   }
 }
 
-inline LayoutMetrics layoutMetricsFromYogaNode(yoga::Node &yogaNode)
-{
+inline LayoutMetrics layoutMetricsFromYogaNode(yoga::Node& yogaNode) {
   auto layoutMetrics = LayoutMetrics{};
 
   layoutMetrics.frame = Rect{
@@ -159,23 +156,30 @@ inline LayoutMetrics layoutMetricsFromYogaNode(yoga::Node &yogaNode)
       floatFromYogaFloat(YGNodeLayoutGetBorder(&yogaNode, YGEdgeBottom))};
 
   layoutMetrics.contentInsets = EdgeInsets{
-      layoutMetrics.borderWidth.left + floatFromYogaFloat(YGNodeLayoutGetPadding(&yogaNode, YGEdgeLeft)),
-      layoutMetrics.borderWidth.top + floatFromYogaFloat(YGNodeLayoutGetPadding(&yogaNode, YGEdgeTop)),
-      layoutMetrics.borderWidth.right + floatFromYogaFloat(YGNodeLayoutGetPadding(&yogaNode, YGEdgeRight)),
-      layoutMetrics.borderWidth.bottom + floatFromYogaFloat(YGNodeLayoutGetPadding(&yogaNode, YGEdgeBottom))};
+      layoutMetrics.borderWidth.left +
+          floatFromYogaFloat(YGNodeLayoutGetPadding(&yogaNode, YGEdgeLeft)),
+      layoutMetrics.borderWidth.top +
+          floatFromYogaFloat(YGNodeLayoutGetPadding(&yogaNode, YGEdgeTop)),
+      layoutMetrics.borderWidth.right +
+          floatFromYogaFloat(YGNodeLayoutGetPadding(&yogaNode, YGEdgeRight)),
+      layoutMetrics.borderWidth.bottom +
+          floatFromYogaFloat(YGNodeLayoutGetPadding(&yogaNode, YGEdgeBottom))};
 
-  layoutMetrics.displayType = displayTypeFromYGDisplay(YGNodeStyleGetDisplay(&yogaNode));
+  layoutMetrics.displayType =
+      displayTypeFromYGDisplay(YGNodeStyleGetDisplay(&yogaNode));
 
-  layoutMetrics.positionType = positionTypeFromYogaPositionType(yogaNode.style().positionType());
+  layoutMetrics.positionType =
+      positionTypeFromYogaPositionType(yogaNode.style().positionType());
 
-  layoutMetrics.layoutDirection = YGNodeLayoutGetDirection(&yogaNode) == YGDirectionRTL ? LayoutDirection::RightToLeft
-                                                                                        : LayoutDirection::LeftToRight;
+  layoutMetrics.layoutDirection =
+      YGNodeLayoutGetDirection(&yogaNode) == YGDirectionRTL
+      ? LayoutDirection::RightToLeft
+      : LayoutDirection::LeftToRight;
 
   return layoutMetrics;
 }
 
-inline YGDirection yogaDirectionFromLayoutDirection(LayoutDirection direction)
-{
+inline YGDirection yogaDirectionFromLayoutDirection(LayoutDirection direction) {
   switch (direction) {
     case LayoutDirection::Undefined:
       return YGDirectionInherit;
@@ -186,8 +190,10 @@ inline YGDirection yogaDirectionFromLayoutDirection(LayoutDirection direction)
   }
 }
 
-inline void fromRawValue(const PropsParserContext &context, const RawValue &value, yoga::Direction &result)
-{
+inline void fromRawValue(
+    const PropsParserContext& context,
+    const RawValue& value,
+    yoga::Direction& result) {
   result = yoga::Direction::Inherit;
   react_native_expect(value.hasType<std::string>());
   if (!value.hasType<std::string>()) {
@@ -209,8 +215,10 @@ inline void fromRawValue(const PropsParserContext &context, const RawValue &valu
   LOG(ERROR) << "Could not parse yoga::Direction: " << stringValue;
 }
 
-inline void fromRawValue(const PropsParserContext &context, const RawValue &value, yoga::FlexDirection &result)
-{
+inline void fromRawValue(
+    const PropsParserContext& context,
+    const RawValue& value,
+    yoga::FlexDirection& result) {
   result = yoga::FlexDirection::Column;
   react_native_expect(value.hasType<std::string>());
   if (!value.hasType<std::string>()) {
@@ -236,8 +244,10 @@ inline void fromRawValue(const PropsParserContext &context, const RawValue &valu
   LOG(ERROR) << "Could not parse yoga::FlexDirection: " << stringValue;
 }
 
-inline void fromRawValue(const PropsParserContext & /*context*/, const RawValue &value, yoga::BoxSizing &result)
-{
+inline void fromRawValue(
+    const PropsParserContext& /*context*/,
+    const RawValue& value,
+    yoga::BoxSizing& result) {
   result = yoga::BoxSizing::BorderBox;
   react_native_expect(value.hasType<std::string>());
   if (!value.hasType<std::string>()) {
@@ -256,8 +266,10 @@ inline void fromRawValue(const PropsParserContext & /*context*/, const RawValue 
   LOG(ERROR) << "Could not parse yoga::BoxSizing: " << stringValue;
 }
 
-inline void fromRawValue(const PropsParserContext &context, const RawValue &value, yoga::Justify &result)
-{
+inline void fromRawValue(
+    const PropsParserContext& context,
+    const RawValue& value,
+    yoga::Justify& result) {
   result = yoga::Justify::FlexStart;
   react_native_expect(value.hasType<std::string>());
   if (!value.hasType<std::string>()) {
@@ -291,8 +303,10 @@ inline void fromRawValue(const PropsParserContext &context, const RawValue &valu
   LOG(ERROR) << "Could not parse yoga::Justify: " << stringValue;
 }
 
-inline void fromRawValue(const PropsParserContext &context, const RawValue &value, yoga::Align &result)
-{
+inline void fromRawValue(
+    const PropsParserContext& context,
+    const RawValue& value,
+    yoga::Align& result) {
   result = yoga::Align::Stretch;
   react_native_expect(value.hasType<std::string>());
   if (!value.hasType<std::string>()) {
@@ -339,8 +353,10 @@ inline void fromRawValue(const PropsParserContext &context, const RawValue &valu
   react_native_expect(false);
 }
 
-inline void fromRawValue(const PropsParserContext &context, const RawValue &value, yoga::PositionType &result)
-{
+inline void fromRawValue(
+    const PropsParserContext& context,
+    const RawValue& value,
+    yoga::PositionType& result) {
   result = yoga::PositionType::Relative;
   react_native_expect(value.hasType<std::string>());
   if (!value.hasType<std::string>()) {
@@ -362,8 +378,10 @@ inline void fromRawValue(const PropsParserContext &context, const RawValue &valu
   LOG(ERROR) << "Could not parse yoga::PositionType: " << stringValue;
 }
 
-inline void fromRawValue(const PropsParserContext &context, const RawValue &value, yoga::Wrap &result)
-{
+inline void fromRawValue(
+    const PropsParserContext& context,
+    const RawValue& value,
+    yoga::Wrap& result) {
   result = yoga::Wrap::NoWrap;
   react_native_expect(value.hasType<std::string>());
   if (!value.hasType<std::string>()) {
@@ -385,8 +403,10 @@ inline void fromRawValue(const PropsParserContext &context, const RawValue &valu
   LOG(ERROR) << "Could not parse yoga::Wrap: " << stringValue;
 }
 
-inline void fromRawValue(const PropsParserContext &context, const RawValue &value, yoga::Overflow &result)
-{
+inline void fromRawValue(
+    const PropsParserContext& context,
+    const RawValue& value,
+    yoga::Overflow& result) {
   result = yoga::Overflow::Visible;
   react_native_expect(value.hasType<std::string>());
   if (!value.hasType<std::string>()) {
@@ -409,8 +429,10 @@ inline void fromRawValue(const PropsParserContext &context, const RawValue &valu
   react_native_expect(false);
 }
 
-inline void fromRawValue(const PropsParserContext &context, const RawValue &value, yoga::Display &result)
-{
+inline void fromRawValue(
+    const PropsParserContext& context,
+    const RawValue& value,
+    yoga::Display& result) {
   result = yoga::Display::Flex;
   react_native_expect(value.hasType<std::string>());
   if (!value.hasType<std::string>()) {
@@ -432,8 +454,10 @@ inline void fromRawValue(const PropsParserContext &context, const RawValue &valu
   LOG(ERROR) << "Could not parse yoga::Display: " << stringValue;
 }
 
-inline void fromRawValue(const PropsParserContext & /*context*/, const RawValue &value, yoga::Style::SizeLength &result)
-{
+inline void fromRawValue(
+    const PropsParserContext& /*context*/,
+    const RawValue& value,
+    yoga::Style::SizeLength& result) {
   if (value.hasType<Float>()) {
     result = yoga::StyleSizeLength::points((float)value);
     return;
@@ -454,10 +478,12 @@ inline void fromRawValue(const PropsParserContext & /*context*/, const RawValue 
     } else {
       auto parsed = parseCSSProperty<CSSNumber, CSSPercentage>(stringValue);
       if (std::holds_alternative<CSSPercentage>(parsed)) {
-        result = yoga::StyleSizeLength::percent(std::get<CSSPercentage>(parsed).value);
+        result = yoga::StyleSizeLength::percent(
+            std::get<CSSPercentage>(parsed).value);
         return;
       } else if (std::holds_alternative<CSSNumber>(parsed)) {
-        result = yoga::StyleSizeLength::points(std::get<CSSNumber>(parsed).value);
+        result =
+            yoga::StyleSizeLength::points(std::get<CSSNumber>(parsed).value);
         return;
       }
     }
@@ -465,8 +491,10 @@ inline void fromRawValue(const PropsParserContext & /*context*/, const RawValue 
   result = yoga::StyleSizeLength::undefined();
 }
 
-inline void fromRawValue(const PropsParserContext &context, const RawValue &value, yoga::Style::Length &result)
-{
+inline void fromRawValue(
+    const PropsParserContext& context,
+    const RawValue& value,
+    yoga::Style::Length& result) {
   if (value.hasType<Float>()) {
     result = yoga::StyleLength::points((float)value);
     return;
@@ -478,7 +506,8 @@ inline void fromRawValue(const PropsParserContext &context, const RawValue &valu
     } else {
       auto parsed = parseCSSProperty<CSSNumber, CSSPercentage>(stringValue);
       if (std::holds_alternative<CSSPercentage>(parsed)) {
-        result = yoga::StyleLength::percent(std::get<CSSPercentage>(parsed).value);
+        result =
+            yoga::StyleLength::percent(std::get<CSSPercentage>(parsed).value);
         return;
       } else if (std::holds_alternative<CSSNumber>(parsed)) {
         result = yoga::StyleLength::points(std::get<CSSNumber>(parsed).value);
@@ -489,24 +518,31 @@ inline void fromRawValue(const PropsParserContext &context, const RawValue &valu
   result = yoga::StyleLength::undefined();
 }
 
-inline void fromRawValue(const PropsParserContext &context, const RawValue &value, YGValue &result)
-{
+inline void fromRawValue(
+    const PropsParserContext& context,
+    const RawValue& value,
+    YGValue& result) {
   yoga::Style::Length length{};
   fromRawValue(context, value, length);
   result = (YGValue)length;
 }
 
-inline void fromRawValue(const PropsParserContext &context, const RawValue &value, yoga::FloatOptional &result)
-{
-  result = value.hasType<float>() ? yoga::FloatOptional((float)value) : yoga::FloatOptional();
+inline void fromRawValue(
+    const PropsParserContext& context,
+    const RawValue& value,
+    yoga::FloatOptional& result) {
+  result = value.hasType<float>() ? yoga::FloatOptional((float)value)
+                                  : yoga::FloatOptional();
 }
 
-inline yoga::FloatOptional convertAspectRatio(const PropsParserContext & /*context*/, const RawValue &value)
-{
+inline yoga::FloatOptional convertAspectRatio(
+    const PropsParserContext& /*context*/,
+    const RawValue& value) {
   if (value.hasType<float>()) {
     return yoga::FloatOptional((float)value);
   }
-  if (ReactNativeFeatureFlags::enableNativeCSSParsing() && value.hasType<std::string>()) {
+  if (ReactNativeFeatureFlags::enableNativeCSSParsing() &&
+      value.hasType<std::string>()) {
     auto ratio = parseCSSProperty<CSSRatio>((std::string)value);
     if (std::holds_alternative<CSSRatio>(ratio)) {
       auto r = std::get<CSSRatio>(ratio);
@@ -518,8 +554,7 @@ inline yoga::FloatOptional convertAspectRatio(const PropsParserContext & /*conte
   return {};
 }
 
-inline std::optional<Float> toRadians(const RawValue &value)
-{
+inline std::optional<Float> toRadians(const RawValue& value) {
   if (value.hasType<Float>()) {
     return (Float)value;
   }
@@ -529,14 +564,14 @@ inline std::optional<Float> toRadians(const RawValue &value)
 
   auto angle = parseCSSProperty<CSSAngle>((std::string)value);
   if (std::holds_alternative<CSSAngle>(angle)) {
-    return static_cast<float>(std::get<CSSAngle>(angle).degrees * M_PI / 180.0f);
+    return static_cast<float>(
+        std::get<CSSAngle>(angle).degrees * M_PI / 180.0f);
   }
 
   return {};
 }
 
-inline ValueUnit toValueUnit(const RawValue &value)
-{
+inline ValueUnit toValueUnit(const RawValue& value) {
   if (value.hasType<Float>()) {
     return ValueUnit((Float)value, UnitType::Point);
   }
@@ -552,13 +587,15 @@ inline ValueUnit toValueUnit(const RawValue &value)
   return {};
 }
 
-inline void fromRawValue(const PropsParserContext & /*context*/, const RawValue &value, ValueUnit &result)
-{
+inline void fromRawValue(
+    const PropsParserContext& /*context*/,
+    const RawValue& value,
+    ValueUnit& result) {
   result = toValueUnit(value);
 }
 
-inline ValueUnit cssLengthPercentageToValueUnit(const std::variant<CSSLength, CSSPercentage> &value)
-{
+inline ValueUnit cssLengthPercentageToValueUnit(
+    const std::variant<CSSLength, CSSPercentage>& value) {
   if (std::holds_alternative<CSSLength>(value)) {
     auto len = std::get<CSSLength>(value);
     if (len.unit != CSSLengthUnit::Px) {
@@ -570,37 +607,49 @@ inline ValueUnit cssLengthPercentageToValueUnit(const std::variant<CSSLength, CS
   }
 }
 
-inline std::optional<TransformOperation> fromCSSTransformFunction(const CSSTransformFunction &cssTransform)
-{
+inline std::optional<TransformOperation> fromCSSTransformFunction(
+    const CSSTransformFunction& cssTransform) {
   constexpr auto Zero = ValueUnit(0, UnitType::Point);
   constexpr auto One = ValueUnit(1, UnitType::Point);
 
   return std::visit(
-      [&](auto &&func) -> std::optional<TransformOperation> {
+      [&](auto&& func) -> std::optional<TransformOperation> {
         using T = std::decay_t<decltype(func)>;
 
         if constexpr (std::is_same_v<T, CSSRotate>) {
           auto radians = static_cast<float>(func.degrees * M_PI / 180.0f);
           return TransformOperation{
-              .type = TransformOperationType::Rotate, .x = Zero, .y = Zero, .z = ValueUnit(radians, UnitType::Point)};
+              .type = TransformOperationType::Rotate,
+              .x = Zero,
+              .y = Zero,
+              .z = ValueUnit(radians, UnitType::Point)};
         }
 
         if constexpr (std::is_same_v<T, CSSRotateX>) {
           auto radians = static_cast<float>(func.degrees * M_PI / 180.0f);
           return TransformOperation{
-              .type = TransformOperationType::Rotate, .x = ValueUnit(radians, UnitType::Point), .y = Zero, .z = Zero};
+              .type = TransformOperationType::Rotate,
+              .x = ValueUnit(radians, UnitType::Point),
+              .y = Zero,
+              .z = Zero};
         }
 
         if constexpr (std::is_same_v<T, CSSRotateY>) {
           auto radians = static_cast<float>(func.degrees * M_PI / 180.0f);
           return TransformOperation{
-              .type = TransformOperationType::Rotate, .x = Zero, .y = ValueUnit(radians, UnitType::Point), .z = Zero};
+              .type = TransformOperationType::Rotate,
+              .x = Zero,
+              .y = ValueUnit(radians, UnitType::Point),
+              .z = Zero};
         }
 
         if constexpr (std::is_same_v<T, CSSRotateZ>) {
           auto radians = static_cast<float>(func.degrees * M_PI / 180.0f);
           return TransformOperation{
-              .type = TransformOperationType::Rotate, .x = Zero, .y = Zero, .z = ValueUnit(radians, UnitType::Point)};
+              .type = TransformOperationType::Rotate,
+              .x = Zero,
+              .y = Zero,
+              .z = ValueUnit(radians, UnitType::Point)};
         }
 
         if constexpr (std::is_same_v<T, CSSTranslate>) {
@@ -609,7 +658,11 @@ inline std::optional<TransformOperation> fromCSSTransformFunction(const CSSTrans
           if (!x || !y) {
             return std::nullopt;
           }
-          return TransformOperation{.type = TransformOperationType::Translate, .x = x, .y = y, .z = Zero};
+          return TransformOperation{
+              .type = TransformOperationType::Translate,
+              .x = x,
+              .y = y,
+              .z = Zero};
         }
 
         if constexpr (std::is_same_v<T, CSSTranslateX>) {
@@ -617,7 +670,11 @@ inline std::optional<TransformOperation> fromCSSTransformFunction(const CSSTrans
           if (!x) {
             return std::nullopt;
           }
-          return TransformOperation{.type = TransformOperationType::Translate, .x = x, .y = Zero, .z = Zero};
+          return TransformOperation{
+              .type = TransformOperationType::Translate,
+              .x = x,
+              .y = Zero,
+              .z = Zero};
         }
 
         if constexpr (std::is_same_v<T, CSSTranslateY>) {
@@ -625,7 +682,11 @@ inline std::optional<TransformOperation> fromCSSTransformFunction(const CSSTrans
           if (!y) {
             return std::nullopt;
           }
-          return TransformOperation{.type = TransformOperationType::Translate, .x = Zero, .y = y, .z = Zero};
+          return TransformOperation{
+              .type = TransformOperationType::Translate,
+              .x = Zero,
+              .y = y,
+              .z = Zero};
         }
 
         if constexpr (std::is_same_v<T, CSSTranslate3D>) {
@@ -635,7 +696,10 @@ inline std::optional<TransformOperation> fromCSSTransformFunction(const CSSTrans
             return std::nullopt;
           }
           return TransformOperation{
-              .type = TransformOperationType::Translate, .x = x, .y = y, .z = ValueUnit(func.z.value, UnitType::Point)};
+              .type = TransformOperationType::Translate,
+              .x = x,
+              .y = y,
+              .z = ValueUnit(func.z.value, UnitType::Point)};
         }
 
         if constexpr (std::is_same_v<T, CSSScale>) {
@@ -648,24 +712,36 @@ inline std::optional<TransformOperation> fromCSSTransformFunction(const CSSTrans
 
         if constexpr (std::is_same_v<T, CSSScaleX>) {
           return TransformOperation{
-              .type = TransformOperationType::Scale, .x = ValueUnit(func.value, UnitType::Point), .y = One, .z = One};
+              .type = TransformOperationType::Scale,
+              .x = ValueUnit(func.value, UnitType::Point),
+              .y = One,
+              .z = One};
         }
 
         if constexpr (std::is_same_v<T, CSSScaleY>) {
           return TransformOperation{
-              .type = TransformOperationType::Scale, .x = One, .y = ValueUnit(func.value, UnitType::Point), .z = One};
+              .type = TransformOperationType::Scale,
+              .x = One,
+              .y = ValueUnit(func.value, UnitType::Point),
+              .z = One};
         }
 
         if constexpr (std::is_same_v<T, CSSSkewX>) {
           auto radians = static_cast<float>(func.degrees * M_PI / 180.0f);
           return TransformOperation{
-              .type = TransformOperationType::Skew, .x = ValueUnit(radians, UnitType::Point), .y = Zero, .z = Zero};
+              .type = TransformOperationType::Skew,
+              .x = ValueUnit(radians, UnitType::Point),
+              .y = Zero,
+              .z = Zero};
         }
 
         if constexpr (std::is_same_v<T, CSSSkewY>) {
           auto radians = static_cast<float>(func.degrees * M_PI / 180.0f);
           return TransformOperation{
-              .type = TransformOperationType::Skew, .x = Zero, .y = ValueUnit(radians, UnitType::Point), .z = Zero};
+              .type = TransformOperationType::Skew,
+              .x = Zero,
+              .y = ValueUnit(radians, UnitType::Point),
+              .z = Zero};
         }
 
         if constexpr (std::is_same_v<T, CSSPerspective>) {
@@ -680,14 +756,20 @@ inline std::optional<TransformOperation> fromCSSTransformFunction(const CSSTrans
         }
 
         if constexpr (std::is_same_v<T, CSSMatrix>) {
-          return TransformOperation{.type = TransformOperationType::Arbitrary, .x = Zero, .y = Zero, .z = Zero};
+          return TransformOperation{
+              .type = TransformOperationType::Arbitrary,
+              .x = Zero,
+              .y = Zero,
+              .z = Zero};
         }
       },
       cssTransform);
 }
 
-inline void parseProcessedTransform(const PropsParserContext & /*context*/, const RawValue &value, Transform &result)
-{
+inline void parseProcessedTransform(
+    const PropsParserContext& /*context*/,
+    const RawValue& value,
+    Transform& result) {
   auto transformMatrix = Transform{};
   react_native_expect(value.hasType<std::vector<RawValue>>());
   if (!value.hasType<std::vector<RawValue>>()) {
@@ -696,13 +778,14 @@ inline void parseProcessedTransform(const PropsParserContext & /*context*/, cons
   }
 
   auto configurations = static_cast<std::vector<RawValue>>(value);
-  for (const auto &configuration : configurations) {
+  for (const auto& configuration : configurations) {
     if (!configuration.hasType<std::unordered_map<std::string, RawValue>>()) {
       result = {};
       return;
     }
 
-    auto configurationPair = static_cast<std::unordered_map<std::string, RawValue>>(configuration);
+    auto configurationPair =
+        static_cast<std::unordered_map<std::string, RawValue>>(configuration);
     if (configurationPair.size() != 1) {
       result = {};
       return;
@@ -710,7 +793,7 @@ inline void parseProcessedTransform(const PropsParserContext & /*context*/, cons
 
     auto pair = configurationPair.begin();
     auto operation = pair->first;
-    auto &parameters = pair->second;
+    auto& parameters = pair->second;
     auto Zero = ValueUnit(0, UnitType::Point);
     auto One = ValueUnit(1, UnitType::Point);
 
@@ -764,20 +847,22 @@ inline void parseProcessedTransform(const PropsParserContext & /*context*/, cons
         transformMatrix.matrix[14] = 0;
         transformMatrix.matrix[15] = numbers[8];
       }
-      transformMatrix.operations.push_back(
-          TransformOperation{.type = TransformOperationType::Arbitrary, .x = Zero, .y = Zero, .z = Zero});
+      transformMatrix.operations.push_back(TransformOperation{
+          .type = TransformOperationType::Arbitrary,
+          .x = Zero,
+          .y = Zero,
+          .z = Zero});
     } else if (operation == "perspective") {
       if (!parameters.hasType<Float>()) {
         result = {};
         return;
       }
 
-      transformMatrix.operations.push_back(
-          TransformOperation{
-              .type = TransformOperationType::Perspective,
-              .x = ValueUnit((Float)parameters, UnitType::Point),
-              .y = Zero,
-              .z = Zero});
+      transformMatrix.operations.push_back(TransformOperation{
+          .type = TransformOperationType::Perspective,
+          .x = ValueUnit((Float)parameters, UnitType::Point),
+          .y = Zero,
+          .z = Zero});
     } else if (operation == "rotateX") {
       auto radians = toRadians(parameters);
       if (!radians.has_value()) {
@@ -785,9 +870,11 @@ inline void parseProcessedTransform(const PropsParserContext & /*context*/, cons
         return;
       }
 
-      transformMatrix.operations.push_back(
-          TransformOperation{
-              .type = TransformOperationType::Rotate, .x = ValueUnit(*radians, UnitType::Point), .y = Zero, .z = Zero});
+      transformMatrix.operations.push_back(TransformOperation{
+          .type = TransformOperationType::Rotate,
+          .x = ValueUnit(*radians, UnitType::Point),
+          .y = Zero,
+          .z = Zero});
     } else if (operation == "rotateY") {
       auto radians = toRadians(parameters);
       if (!radians.has_value()) {
@@ -795,9 +882,11 @@ inline void parseProcessedTransform(const PropsParserContext & /*context*/, cons
         return;
       }
 
-      transformMatrix.operations.push_back(
-          TransformOperation{
-              .type = TransformOperationType::Rotate, .x = Zero, .y = ValueUnit(*radians, UnitType::Point), .z = Zero});
+      transformMatrix.operations.push_back(TransformOperation{
+          .type = TransformOperationType::Rotate,
+          .x = Zero,
+          .y = ValueUnit(*radians, UnitType::Point),
+          .z = Zero});
     } else if (operation == "rotateZ" || operation == "rotate") {
       auto radians = toRadians(parameters);
       if (!radians.has_value()) {
@@ -805,9 +894,11 @@ inline void parseProcessedTransform(const PropsParserContext & /*context*/, cons
         return;
       }
 
-      transformMatrix.operations.push_back(
-          TransformOperation{
-              .type = TransformOperationType::Rotate, .x = Zero, .y = Zero, .z = ValueUnit(*radians, UnitType::Point)});
+      transformMatrix.operations.push_back(TransformOperation{
+          .type = TransformOperationType::Rotate,
+          .x = Zero,
+          .y = Zero,
+          .z = ValueUnit(*radians, UnitType::Point)});
     } else if (operation == "scale") {
       if (!parameters.hasType<Float>()) {
         result = {};
@@ -815,44 +906,44 @@ inline void parseProcessedTransform(const PropsParserContext & /*context*/, cons
       }
 
       auto number = ValueUnit((Float)parameters, UnitType::Point);
-      transformMatrix.operations.push_back(
-          TransformOperation{.type = TransformOperationType::Scale, .x = number, .y = number, .z = number});
+      transformMatrix.operations.push_back(TransformOperation{
+          .type = TransformOperationType::Scale,
+          .x = number,
+          .y = number,
+          .z = number});
     } else if (operation == "scaleX") {
       if (!parameters.hasType<Float>()) {
         result = {};
         return;
       }
 
-      transformMatrix.operations.push_back(
-          TransformOperation{
-              .type = TransformOperationType::Scale,
-              .x = ValueUnit((Float)parameters, UnitType::Point),
-              .y = One,
-              .z = One});
+      transformMatrix.operations.push_back(TransformOperation{
+          .type = TransformOperationType::Scale,
+          .x = ValueUnit((Float)parameters, UnitType::Point),
+          .y = One,
+          .z = One});
     } else if (operation == "scaleY") {
       if (!parameters.hasType<Float>()) {
         result = {};
         return;
       }
 
-      transformMatrix.operations.push_back(
-          TransformOperation{
-              .type = TransformOperationType::Scale,
-              .x = One,
-              .y = ValueUnit((Float)parameters, UnitType::Point),
-              .z = One});
+      transformMatrix.operations.push_back(TransformOperation{
+          .type = TransformOperationType::Scale,
+          .x = One,
+          .y = ValueUnit((Float)parameters, UnitType::Point),
+          .z = One});
     } else if (operation == "scaleZ") {
       if (!parameters.hasType<Float>()) {
         result = {};
         return;
       }
 
-      transformMatrix.operations.push_back(
-          TransformOperation{
-              .type = TransformOperationType::Scale,
-              .x = One,
-              .y = One,
-              .z = ValueUnit((Float)parameters, UnitType::Point)});
+      transformMatrix.operations.push_back(TransformOperation{
+          .type = TransformOperationType::Scale,
+          .x = One,
+          .y = One,
+          .z = ValueUnit((Float)parameters, UnitType::Point)});
     } else if (operation == "translate") {
       if (!parameters.hasType<std::vector<RawValue>>()) {
         result = {};
@@ -877,8 +968,11 @@ inline void parseProcessedTransform(const PropsParserContext & /*context*/, cons
         return;
       }
 
-      transformMatrix.operations.push_back(
-          TransformOperation{.type = TransformOperationType::Translate, .x = valueX, .y = valueY, .z = Zero});
+      transformMatrix.operations.push_back(TransformOperation{
+          .type = TransformOperationType::Translate,
+          .x = valueX,
+          .y = valueY,
+          .z = Zero});
     } else if (operation == "translateX") {
       auto valueX = toValueUnit(parameters);
       if (!valueX) {
@@ -886,8 +980,11 @@ inline void parseProcessedTransform(const PropsParserContext & /*context*/, cons
         return;
       }
 
-      transformMatrix.operations.push_back(
-          TransformOperation{.type = TransformOperationType::Translate, .x = valueX, .y = Zero, .z = Zero});
+      transformMatrix.operations.push_back(TransformOperation{
+          .type = TransformOperationType::Translate,
+          .x = valueX,
+          .y = Zero,
+          .z = Zero});
     } else if (operation == "translateY") {
       auto valueY = toValueUnit(parameters);
       if (!valueY) {
@@ -895,8 +992,11 @@ inline void parseProcessedTransform(const PropsParserContext & /*context*/, cons
         return;
       }
 
-      transformMatrix.operations.push_back(
-          TransformOperation{.type = TransformOperationType::Translate, .x = Zero, .y = valueY, .z = Zero});
+      transformMatrix.operations.push_back(TransformOperation{
+          .type = TransformOperationType::Translate,
+          .x = Zero,
+          .y = valueY,
+          .z = Zero});
     } else if (operation == "skewX") {
       auto radians = toRadians(parameters);
       if (!radians.has_value()) {
@@ -904,9 +1004,11 @@ inline void parseProcessedTransform(const PropsParserContext & /*context*/, cons
         return;
       }
 
-      transformMatrix.operations.push_back(
-          TransformOperation{
-              .type = TransformOperationType::Skew, .x = ValueUnit(*radians, UnitType::Point), .y = Zero, .z = Zero});
+      transformMatrix.operations.push_back(TransformOperation{
+          .type = TransformOperationType::Skew,
+          .x = ValueUnit(*radians, UnitType::Point),
+          .y = Zero,
+          .z = Zero});
     } else if (operation == "skewY") {
       auto radians = toRadians(parameters);
       if (!radians.has_value()) {
@@ -914,17 +1016,20 @@ inline void parseProcessedTransform(const PropsParserContext & /*context*/, cons
         return;
       }
 
-      transformMatrix.operations.push_back(
-          TransformOperation{
-              .type = TransformOperationType::Skew, .x = Zero, .y = ValueUnit(*radians, UnitType::Point), .z = Zero});
+      transformMatrix.operations.push_back(TransformOperation{
+          .type = TransformOperationType::Skew,
+          .x = Zero,
+          .y = ValueUnit(*radians, UnitType::Point),
+          .z = Zero});
     }
   }
 
   result = transformMatrix;
 }
 
-inline void parseUnprocessedTransformString(const std::string &value, Transform &result)
-{
+inline void parseUnprocessedTransformString(
+    const std::string& value,
+    Transform& result) {
   auto transformList = parseCSSProperty<CSSTransformList>(value);
   if (!std::holds_alternative<CSSTransformList>(transformList)) {
     result = {};
@@ -932,9 +1037,9 @@ inline void parseUnprocessedTransformString(const std::string &value, Transform 
   }
 
   auto transformMatrix = Transform{};
-  const auto &cssFuncs = std::get<CSSTransformList>(transformList);
+  const auto& cssFuncs = std::get<CSSTransformList>(transformList);
   transformMatrix.operations.reserve(cssFuncs.size());
-  for (const auto &cssFunc : cssFuncs) {
+  for (const auto& cssFunc : cssFuncs) {
     auto op = fromCSSTransformFunction(cssFunc);
     if (!op.has_value()) {
       result = {};
@@ -944,7 +1049,7 @@ inline void parseUnprocessedTransformString(const std::string &value, Transform 
     if (op->type == TransformOperationType::Arbitrary) {
       // CSSMatrix: expand 6-value 2D matrix to 4x4 matrix
       if (std::holds_alternative<CSSMatrix>(cssFunc)) {
-        const auto &m = std::get<CSSMatrix>(cssFunc);
+        const auto& m = std::get<CSSMatrix>(cssFunc);
         transformMatrix.matrix[0] = m.values[0];
         transformMatrix.matrix[1] = m.values[1];
         transformMatrix.matrix[2] = 0;
@@ -970,8 +1075,10 @@ inline void parseUnprocessedTransformString(const std::string &value, Transform 
   result = transformMatrix;
 }
 
-inline void parseUnprocessedTransform(const PropsParserContext &context, const RawValue &value, Transform &result)
-{
+inline void parseUnprocessedTransform(
+    const PropsParserContext& context,
+    const RawValue& value,
+    Transform& result) {
   if (value.hasType<std::string>()) {
     parseUnprocessedTransformString((std::string)value, result);
   } else {
@@ -979,8 +1086,10 @@ inline void parseUnprocessedTransform(const PropsParserContext &context, const R
   }
 }
 
-inline void fromRawValue(const PropsParserContext &context, const RawValue &value, Transform &result)
-{
+inline void fromRawValue(
+    const PropsParserContext& context,
+    const RawValue& value,
+    Transform& result) {
   if (ReactNativeFeatureFlags::enableNativeCSSParsing()) {
     parseUnprocessedTransform(context, value, result);
   } else {
@@ -988,9 +1097,10 @@ inline void fromRawValue(const PropsParserContext &context, const RawValue &valu
   }
 }
 
-inline void
-parseProcessedTransformOrigin(const PropsParserContext & /*context*/, const RawValue &value, TransformOrigin &result)
-{
+inline void parseProcessedTransformOrigin(
+    const PropsParserContext& /*context*/,
+    const RawValue& value,
+    TransformOrigin& result) {
   if (!value.hasType<std::vector<RawValue>>()) {
     result = {};
     return;
@@ -1023,15 +1133,16 @@ parseProcessedTransformOrigin(const PropsParserContext & /*context*/, const RawV
   result = transformOrigin;
 }
 
-inline void parseUnprocessedTransformOriginString(const std::string &value, TransformOrigin &result)
-{
+inline void parseUnprocessedTransformOriginString(
+    const std::string& value,
+    TransformOrigin& result) {
   auto cssOrigin = parseCSSProperty<CSSTransformOrigin>(value);
   if (!std::holds_alternative<CSSTransformOrigin>(cssOrigin)) {
     result = {};
     return;
   }
 
-  const auto &origin = std::get<CSSTransformOrigin>(cssOrigin);
+  const auto& origin = std::get<CSSTransformOrigin>(cssOrigin);
   TransformOrigin transformOrigin;
 
   auto x = cssLengthPercentageToValueUnit(origin.x);
@@ -1053,9 +1164,10 @@ inline void parseUnprocessedTransformOriginString(const std::string &value, Tran
   result = transformOrigin;
 }
 
-inline void
-parseUnprocessedTransformOrigin(const PropsParserContext &context, const RawValue &value, TransformOrigin &result)
-{
+inline void parseUnprocessedTransformOrigin(
+    const PropsParserContext& context,
+    const RawValue& value,
+    TransformOrigin& result) {
   if (value.hasType<std::string>()) {
     parseUnprocessedTransformOriginString((std::string)value, result);
   } else {
@@ -1063,8 +1175,10 @@ parseUnprocessedTransformOrigin(const PropsParserContext &context, const RawValu
   }
 }
 
-inline void fromRawValue(const PropsParserContext &context, const RawValue &value, TransformOrigin &result)
-{
+inline void fromRawValue(
+    const PropsParserContext& context,
+    const RawValue& value,
+    TransformOrigin& result) {
   if (ReactNativeFeatureFlags::enableNativeCSSParsing()) {
     parseUnprocessedTransformOrigin(context, value, result);
   } else {
@@ -1072,8 +1186,10 @@ inline void fromRawValue(const PropsParserContext &context, const RawValue &valu
   }
 }
 
-inline void fromRawValue(const PropsParserContext &context, const RawValue &value, PointerEventsMode &result)
-{
+inline void fromRawValue(
+    const PropsParserContext& context,
+    const RawValue& value,
+    PointerEventsMode& result) {
   result = PointerEventsMode::Auto;
   react_native_expect(value.hasType<std::string>());
   if (!value.hasType<std::string>()) {
@@ -1100,8 +1216,7 @@ inline void fromRawValue(const PropsParserContext &context, const RawValue &valu
   react_native_expect(false);
 }
 
-inline std::string toString(PointerEventsMode value)
-{
+inline std::string toString(PointerEventsMode value) {
   switch (value) {
     case PointerEventsMode::Auto:
       return "auto";
@@ -1114,8 +1229,10 @@ inline std::string toString(PointerEventsMode value)
   }
 }
 
-inline void fromRawValue(const PropsParserContext &context, const RawValue &value, BackfaceVisibility &result)
-{
+inline void fromRawValue(
+    const PropsParserContext& context,
+    const RawValue& value,
+    BackfaceVisibility& result) {
   result = BackfaceVisibility::Auto;
   react_native_expect(value.hasType<std::string>());
   if (!value.hasType<std::string>()) {
@@ -1138,8 +1255,10 @@ inline void fromRawValue(const PropsParserContext &context, const RawValue &valu
   react_native_expect(false);
 }
 
-inline void fromRawValue(const PropsParserContext &context, const RawValue &value, BorderCurve &result)
-{
+inline void fromRawValue(
+    const PropsParserContext& context,
+    const RawValue& value,
+    BorderCurve& result) {
   result = BorderCurve::Circular;
   react_native_expect(value.hasType<std::string>());
   if (!value.hasType<std::string>()) {
@@ -1158,8 +1277,10 @@ inline void fromRawValue(const PropsParserContext &context, const RawValue &valu
   react_native_expect(false);
 }
 
-inline void fromRawValue(const PropsParserContext &context, const RawValue &value, BorderStyle &result)
-{
+inline void fromRawValue(
+    const PropsParserContext& context,
+    const RawValue& value,
+    BorderStyle& result) {
   result = BorderStyle::Solid;
   react_native_expect(value.hasType<std::string>());
   if (!value.hasType<std::string>()) {
@@ -1182,8 +1303,10 @@ inline void fromRawValue(const PropsParserContext &context, const RawValue &valu
   react_native_expect(false);
 }
 
-inline void fromRawValue(const PropsParserContext &context, const RawValue &value, OutlineStyle &result)
-{
+inline void fromRawValue(
+    const PropsParserContext& context,
+    const RawValue& value,
+    OutlineStyle& result) {
   result = OutlineStyle::Solid;
   react_native_expect(value.hasType<std::string>());
   if (!value.hasType<std::string>()) {
@@ -1206,8 +1329,10 @@ inline void fromRawValue(const PropsParserContext &context, const RawValue &valu
   react_native_expect(false);
 }
 
-inline void fromRawValue(const PropsParserContext &context, const RawValue &value, Cursor &result)
-{
+inline void fromRawValue(
+    const PropsParserContext& context,
+    const RawValue& value,
+    Cursor& result) {
   result = Cursor::Auto;
   react_native_expect(value.hasType<std::string>());
   if (!value.hasType<std::string>()) {
@@ -1362,8 +1487,10 @@ inline void fromRawValue(const PropsParserContext &context, const RawValue &valu
   react_native_expect(false);
 }
 
-inline void fromRawValue(const PropsParserContext & /*context*/, const RawValue &value, LayoutConformance &result)
-{
+inline void fromRawValue(
+    const PropsParserContext& /*context*/,
+    const RawValue& value,
+    LayoutConformance& result) {
   react_native_expect(value.hasType<std::string>());
   result = LayoutConformance::Strict;
   if (!value.hasType<std::string>()) {
@@ -1381,8 +1508,10 @@ inline void fromRawValue(const PropsParserContext & /*context*/, const RawValue 
   }
 }
 
-inline void fromRawValue(const PropsParserContext & /*context*/, const RawValue &value, BlendMode &result)
-{
+inline void fromRawValue(
+    const PropsParserContext& /*context*/,
+    const RawValue& value,
+    BlendMode& result) {
   react_native_expect(value.hasType<std::string>());
   result = BlendMode::Normal;
   if (!value.hasType<std::string>()) {
@@ -1400,9 +1529,10 @@ inline void fromRawValue(const PropsParserContext & /*context*/, const RawValue 
   result = blendMode.value();
 }
 
-inline void
-fromRawValue(const PropsParserContext & /*context*/, const RawValue &value, std::vector<BackgroundSize> &result)
-{
+inline void fromRawValue(
+    const PropsParserContext& /*context*/,
+    const RawValue& value,
+    std::vector<BackgroundSize>& result) {
   react_native_expect(value.hasType<std::vector<RawValue>>());
   if (!value.hasType<std::vector<RawValue>>()) {
     result = {};
@@ -1412,7 +1542,7 @@ fromRawValue(const PropsParserContext & /*context*/, const RawValue &value, std:
   std::vector<BackgroundSize> backgroundSizes{};
   auto rawBackgroundSizes = static_cast<std::vector<RawValue>>(value);
 
-  for (const auto &rawBackgroundSizeValue : rawBackgroundSizes) {
+  for (const auto& rawBackgroundSizeValue : rawBackgroundSizes) {
     if (rawBackgroundSizeValue.hasType<std::string>()) {
       auto sizeStr = (std::string)rawBackgroundSizeValue;
       if (sizeStr == "cover") {
@@ -1420,14 +1550,17 @@ fromRawValue(const PropsParserContext & /*context*/, const RawValue &value, std:
       } else if (sizeStr == "contain") {
         backgroundSizes.emplace_back(BackgroundSizeKeyword::Contain);
       }
-    } else if (rawBackgroundSizeValue.hasType<std::unordered_map<std::string, RawValue>>()) {
-      auto sizeMap = static_cast<std::unordered_map<std::string, RawValue>>(rawBackgroundSizeValue);
+    } else if (rawBackgroundSizeValue
+                   .hasType<std::unordered_map<std::string, RawValue>>()) {
+      auto sizeMap = static_cast<std::unordered_map<std::string, RawValue>>(
+          rawBackgroundSizeValue);
 
       BackgroundSizeLengthPercentage sizeLengthPercentage;
 
       auto xIt = sizeMap.find("x");
       if (xIt != sizeMap.end()) {
-        if (xIt->second.hasType<std::string>() && (std::string)(xIt->second) == "auto") {
+        if (xIt->second.hasType<std::string>() &&
+            (std::string)(xIt->second) == "auto") {
           sizeLengthPercentage.x = std::monostate{};
         } else {
           auto valueUnit = toValueUnit(xIt->second);
@@ -1439,7 +1572,8 @@ fromRawValue(const PropsParserContext & /*context*/, const RawValue &value, std:
 
       auto yIt = sizeMap.find("y");
       if (yIt != sizeMap.end()) {
-        if (yIt->second.hasType<std::string>() && (std::string)(yIt->second) == "auto") {
+        if (yIt->second.hasType<std::string>() &&
+            (std::string)(yIt->second) == "auto") {
           sizeLengthPercentage.y = std::monostate{};
         } else {
           auto valueUnit = toValueUnit(yIt->second);
@@ -1456,9 +1590,10 @@ fromRawValue(const PropsParserContext & /*context*/, const RawValue &value, std:
   result = backgroundSizes;
 }
 
-inline void
-fromRawValue(const PropsParserContext & /*context*/, const RawValue &value, std::vector<BackgroundPosition> &result)
-{
+inline void fromRawValue(
+    const PropsParserContext& /*context*/,
+    const RawValue& value,
+    std::vector<BackgroundPosition>& result) {
   react_native_expect(value.hasType<std::vector<RawValue>>());
   if (!value.hasType<std::vector<RawValue>>()) {
     result = {};
@@ -1468,9 +1603,11 @@ fromRawValue(const PropsParserContext & /*context*/, const RawValue &value, std:
   std::vector<BackgroundPosition> backgroundPositions{};
   auto rawBackgroundPositions = static_cast<std::vector<RawValue>>(value);
 
-  for (const auto &rawBackgroundPositionValue : rawBackgroundPositions) {
-    if (rawBackgroundPositionValue.hasType<std::unordered_map<std::string, RawValue>>()) {
-      auto positionMap = static_cast<std::unordered_map<std::string, RawValue>>(rawBackgroundPositionValue);
+  for (const auto& rawBackgroundPositionValue : rawBackgroundPositions) {
+    if (rawBackgroundPositionValue
+            .hasType<std::unordered_map<std::string, RawValue>>()) {
+      auto positionMap = static_cast<std::unordered_map<std::string, RawValue>>(
+          rawBackgroundPositionValue);
 
       BackgroundPosition backgroundPosition;
 
@@ -1513,9 +1650,10 @@ fromRawValue(const PropsParserContext & /*context*/, const RawValue &value, std:
   result = backgroundPositions;
 }
 
-inline void
-fromRawValue(const PropsParserContext & /*context*/, const RawValue &value, std::vector<BackgroundRepeat> &result)
-{
+inline void fromRawValue(
+    const PropsParserContext& /*context*/,
+    const RawValue& value,
+    std::vector<BackgroundRepeat>& result) {
   react_native_expect(value.hasType<std::vector<RawValue>>());
   if (!value.hasType<std::vector<RawValue>>()) {
     result = {};
@@ -1525,9 +1663,11 @@ fromRawValue(const PropsParserContext & /*context*/, const RawValue &value, std:
   std::vector<BackgroundRepeat> backgroundRepeats{};
   auto rawBackgroundRepeats = static_cast<std::vector<RawValue>>(value);
 
-  for (const auto &rawBackgroundRepeatValue : rawBackgroundRepeats) {
-    if (rawBackgroundRepeatValue.hasType<std::unordered_map<std::string, RawValue>>()) {
-      auto repeatMap = static_cast<std::unordered_map<std::string, RawValue>>(rawBackgroundRepeatValue);
+  for (const auto& rawBackgroundRepeatValue : rawBackgroundRepeats) {
+    if (rawBackgroundRepeatValue
+            .hasType<std::unordered_map<std::string, RawValue>>()) {
+      auto repeatMap = static_cast<std::unordered_map<std::string, RawValue>>(
+          rawBackgroundRepeatValue);
 
       BackgroundRepeat backgroundRepeat;
 
@@ -1566,8 +1706,10 @@ fromRawValue(const PropsParserContext & /*context*/, const RawValue &value, std:
   result = backgroundRepeats;
 }
 
-inline void fromRawValue(const PropsParserContext & /*context*/, const RawValue &value, Isolation &result)
-{
+inline void fromRawValue(
+    const PropsParserContext& /*context*/,
+    const RawValue& value,
+    Isolation& result) {
   react_native_expect(value.hasType<std::string>());
   result = Isolation::Auto;
   if (!value.hasType<std::string>()) {
@@ -1587,8 +1729,7 @@ inline void fromRawValue(const PropsParserContext & /*context*/, const RawValue 
 
 #if RN_DEBUG_STRING_CONVERTIBLE
 template <size_t N>
-inline std::string toString(const std::array<float, N> vec)
-{
+inline std::string toString(const std::array<float, N> vec) {
   std::string s;
 
   s.append("{");
@@ -1601,48 +1742,39 @@ inline std::string toString(const std::array<float, N> vec)
   return s;
 }
 
-inline std::string toString(const yoga::Direction &value)
-{
+inline std::string toString(const yoga::Direction& value) {
   return YGDirectionToString(yoga::unscopedEnum(value));
 }
 
-inline std::string toString(const yoga::FlexDirection &value)
-{
+inline std::string toString(const yoga::FlexDirection& value) {
   return YGFlexDirectionToString(yoga::unscopedEnum(value));
 }
 
-inline std::string toString(const yoga::Justify &value)
-{
+inline std::string toString(const yoga::Justify& value) {
   return YGJustifyToString(yoga::unscopedEnum(value));
 }
 
-inline std::string toString(const yoga::Align &value)
-{
+inline std::string toString(const yoga::Align& value) {
   return YGAlignToString(yoga::unscopedEnum(value));
 }
 
-inline std::string toString(const yoga::PositionType &value)
-{
+inline std::string toString(const yoga::PositionType& value) {
   return YGPositionTypeToString(yoga::unscopedEnum(value));
 }
 
-inline std::string toString(const yoga::Wrap &value)
-{
+inline std::string toString(const yoga::Wrap& value) {
   return YGWrapToString(yoga::unscopedEnum(value));
 }
 
-inline std::string toString(const yoga::Overflow &value)
-{
+inline std::string toString(const yoga::Overflow& value) {
   return YGOverflowToString(yoga::unscopedEnum(value));
 }
 
-inline std::string toString(const yoga::Display &value)
-{
+inline std::string toString(const yoga::Display& value) {
   return YGDisplayToString(yoga::unscopedEnum(value));
 }
 
-inline std::string toString(const yoga::Style::Length &length)
-{
+inline std::string toString(const yoga::Style::Length& length) {
   if (length.isUndefined()) {
     return "undefined";
   } else if (length.isAuto()) {
@@ -1656,8 +1788,7 @@ inline std::string toString(const yoga::Style::Length &length)
   }
 }
 
-inline std::string toString(const yoga::Style::SizeLength &length)
-{
+inline std::string toString(const yoga::Style::SizeLength& length) {
   if (length.isUndefined()) {
     return "undefined";
   } else if (length.isAuto()) {
@@ -1677,8 +1808,7 @@ inline std::string toString(const yoga::Style::SizeLength &length)
   }
 }
 
-inline std::string toString(const yoga::FloatOptional &value)
-{
+inline std::string toString(const yoga::FloatOptional& value) {
   if (value.isUndefined()) {
     return "undefined";
   }
@@ -1686,8 +1816,7 @@ inline std::string toString(const yoga::FloatOptional &value)
   return toString(value.unwrap());
 }
 
-inline std::string toString(const LayoutConformance &value)
-{
+inline std::string toString(const LayoutConformance& value) {
   switch (value) {
     case LayoutConformance::Strict:
       return "strict";
@@ -1696,22 +1825,24 @@ inline std::string toString(const LayoutConformance &value)
   }
 }
 
-inline std::string toString(const std::array<Float, 16> &m)
-{
+inline std::string toString(const std::array<Float, 16>& m) {
   std::string result;
-  result += "[ " + toString(m[0]) + " " + toString(m[1]) + " " + toString(m[2]) + " " + toString(m[3]) + " ]\n";
-  result += "[ " + toString(m[4]) + " " + toString(m[5]) + " " + toString(m[6]) + " " + toString(m[7]) + " ]\n";
-  result += "[ " + toString(m[8]) + " " + toString(m[9]) + " " + toString(m[10]) + " " + toString(m[11]) + " ]\n";
-  result += "[ " + toString(m[12]) + " " + toString(m[13]) + " " + toString(m[14]) + " " + toString(m[15]) + " ]";
+  result += "[ " + toString(m[0]) + " " + toString(m[1]) + " " +
+      toString(m[2]) + " " + toString(m[3]) + " ]\n";
+  result += "[ " + toString(m[4]) + " " + toString(m[5]) + " " +
+      toString(m[6]) + " " + toString(m[7]) + " ]\n";
+  result += "[ " + toString(m[8]) + " " + toString(m[9]) + " " +
+      toString(m[10]) + " " + toString(m[11]) + " ]\n";
+  result += "[ " + toString(m[12]) + " " + toString(m[13]) + " " +
+      toString(m[14]) + " " + toString(m[15]) + " ]";
   return result;
 }
 
-inline std::string toString(const Transform &transform)
-{
+inline std::string toString(const Transform& transform) {
   std::string result = "[";
   bool first = true;
 
-  for (const auto &operation : transform.operations) {
+  for (const auto& operation : transform.operations) {
     if (!first) {
       result += ", ";
     }
@@ -1723,17 +1854,23 @@ inline std::string toString(const Transform &transform)
         break;
       }
       case TransformOperationType::Rotate: {
-        if (operation.x.value != 0 && operation.y.value == 0 && operation.z.value == 0) {
+        if (operation.x.value != 0 && operation.y.value == 0 &&
+            operation.z.value == 0) {
           result += R"({"rotateX": ")" + toString(operation.x.value) + "rad\"}";
-        } else if (operation.x.value == 0 && operation.y.value != 0 && operation.z.value == 0) {
+        } else if (
+            operation.x.value == 0 && operation.y.value != 0 &&
+            operation.z.value == 0) {
           result += R"({"rotateY": ")" + toString(operation.y.value) + "rad\"}";
-        } else if (operation.x.value == 0 && operation.y.value == 0 && operation.z.value != 0) {
+        } else if (
+            operation.x.value == 0 && operation.y.value == 0 &&
+            operation.z.value != 0) {
           result += R"({"rotateZ": ")" + toString(operation.z.value) + "rad\"}";
         }
         break;
       }
       case TransformOperationType::Scale: {
-        if (operation.x.value == operation.y.value && operation.x.value == operation.z.value) {
+        if (operation.x.value == operation.y.value &&
+            operation.x.value == operation.z.value) {
           result += "{\"scale\": " + toString(operation.x.value) + "}";
         } else if (operation.y.value == 1 && operation.z.value == 1) {
           result += "{\"scaleX\": " + toString(operation.x.value) + "}";
@@ -1745,9 +1882,11 @@ inline std::string toString(const Transform &transform)
         break;
       }
       case TransformOperationType::Translate: {
-        if (operation.x.value != 0 && operation.y.value != 0 && operation.z.value == 0) {
+        if (operation.x.value != 0 && operation.y.value != 0 &&
+            operation.z.value == 0) {
           result += "{\"translate\": [";
-          result += toString(operation.x.value) + ", " + toString(operation.y.value);
+          result +=
+              toString(operation.x.value) + ", " + toString(operation.y.value);
           result += "]}";
         } else if (operation.x.value != 0 && operation.y.value == 0) {
           result += "{\"translateX\": " + toString(operation.x.value) + "}";

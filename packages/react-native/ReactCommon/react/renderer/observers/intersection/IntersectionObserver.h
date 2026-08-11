@@ -28,7 +28,8 @@ struct MarginValue {
 // "top right bottom left" where each value is either "Npx" or "N%"
 // The string is already validated and normalized by JS.
 // Returns a vector of 4 MarginValue structures (top, right, bottom, left).
-std::vector<MarginValue> parseNormalizedRootMargin(const std::string &marginStr);
+std::vector<MarginValue> parseNormalizedRootMargin(
+    const std::string& marginStr);
 
 struct IntersectionObserverEntry {
   IntersectionObserverObserverId intersectionObserverId;
@@ -39,9 +40,10 @@ struct IntersectionObserverEntry {
   bool isIntersectingAboveThresholds;
   HighResTimeStamp time;
 
-  bool sameShadowNodeFamily(const ShadowNodeFamily &otherShadowNodeFamily) const
-  {
-    return std::addressof(*shadowNodeFamily) == std::addressof(otherShadowNodeFamily);
+  bool sameShadowNodeFamily(
+      const ShadowNodeFamily& otherShadowNodeFamily) const {
+    return std::addressof(*shadowNodeFamily) ==
+        std::addressof(otherShadowNodeFamily);
   }
 };
 
@@ -58,39 +60,37 @@ class IntersectionObserver {
   // Partially equivalent to
   // https://w3c.github.io/IntersectionObserver/#update-intersection-observations-algo
   std::optional<IntersectionObserverEntry> updateIntersectionObservation(
-      const RootShadowNode &rootShadowNode,
+      const RootShadowNode& rootShadowNode,
       HighResTimeStamp time);
 
-  std::optional<IntersectionObserverEntry> updateIntersectionObservationForSurfaceUnmount(HighResTimeStamp time);
+  std::optional<IntersectionObserverEntry>
+  updateIntersectionObservationForSurfaceUnmount(HighResTimeStamp time);
 
-  IntersectionObserverObserverId getIntersectionObserverId() const
-  {
+  IntersectionObserverObserverId getIntersectionObserverId() const {
     return intersectionObserverId_;
   }
 
-  ShadowNodeFamily::Shared getTargetShadowNodeFamily() const
-  {
+  ShadowNodeFamily::Shared getTargetShadowNodeFamily() const {
     return targetShadowNodeFamily_;
   }
 
-  std::vector<Float> getThresholds() const
-  {
+  std::vector<Float> getThresholds() const {
     return thresholds_;
   }
 
  private:
   std::optional<IntersectionObserverEntry> setIntersectingState(
-      const Rect &rootBoundingRect,
-      const Rect &targetBoundingRect,
-      const Rect &intersectionRect,
+      const Rect& rootBoundingRect,
+      const Rect& targetBoundingRect,
+      const Rect& intersectionRect,
       Float threshold,
       Float rootThreshold,
       HighResTimeStamp time);
 
   std::optional<IntersectionObserverEntry> setNotIntersectingState(
-      const Rect &rootBoundingRect,
-      const Rect &targetBoundingRect,
-      const Rect &intersectionRect,
+      const Rect& rootBoundingRect,
+      const Rect& targetBoundingRect,
+      const Rect& intersectionRect,
       HighResTimeStamp time);
 
   IntersectionObserverObserverId intersectionObserverId_;
@@ -100,7 +100,8 @@ class IntersectionObserver {
   std::optional<std::vector<Float>> rootThresholds_;
   // Parsed and expanded rootMargin values (top, right, bottom, left)
   std::vector<MarginValue> rootMargins_;
-  mutable IntersectionObserverState state_ = IntersectionObserverState::Initial();
+  mutable IntersectionObserverState state_ =
+      IntersectionObserverState::Initial();
 };
 
 } // namespace facebook::react

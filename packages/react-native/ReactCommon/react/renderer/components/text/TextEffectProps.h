@@ -16,14 +16,17 @@ namespace facebook::react {
 class TextEffectProps : public Props {
  public:
   TextEffectProps() = default;
-  TextEffectProps(const PropsParserContext &context, const TextEffectProps &sourceProps, const RawProps &rawProps);
+  TextEffectProps(
+      const PropsParserContext& context,
+      const TextEffectProps& sourceProps,
+      const RawProps& rawProps);
 
   std::string effectName;
   folly::dynamic effectProps;
 
 #ifdef RN_SERIALIZABLE_STATE
   ComponentName getDiffPropsImplementationTarget() const override;
-  folly::dynamic getDiffProps(const Props *prevProps) const override;
+  folly::dynamic getDiffProps(const Props* prevProps) const override;
 #endif
 };
 

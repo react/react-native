@@ -79,7 +79,8 @@ class MapBuffer {
     uint16_t type;
     uint64_t data;
 
-    Bucket(Key key, uint16_t type, uint64_t data) : key(key), type(type), data(data) {}
+    Bucket(Key key, uint16_t type, uint64_t data)
+        : key(key), type(type), data(data) {}
   };
 #pragma pack(pop)
 
@@ -102,27 +103,27 @@ class MapBuffer {
     // Homogeneous arrays of raw elements stored contiguously in the dynamic
     // data section. Unlike Map, they carry no per-element key/type overhead, so
     // a batch of N values costs ~N*elementSize bytes instead of N*12-byte
-    // buckets. The bucket value packs [offset][byteLength]; the element count is
-    // recovered as byteLength / elementSize.
+    // buckets. The bucket value packs [offset][byteLength]; the element count
+    // is recovered as byteLength / elementSize.
     IntBuffer = 6,
     DoubleBuffer = 7,
     // A homogeneous, ordered array of nested MapBuffers. The bucket value packs
-    // [offset][byteLength] for the whole list region; within it each child stays
-    // framed as [int32 childSize][child bytes]. Distinct from `Map` so that a
-    // list of MapBuffers is self-describing (a single Map and a list are
+    // [offset][byteLength] for the whole list region; within it each child
+    // stays framed as [int32 childSize][child bytes]. Distinct from `Map` so
+    // that a list of MapBuffers is self-describing (a single Map and a list are
     // byte-distinct in payload but previously shared the `Map` type tag).
     MapBufferList = 8,
   };
 
   explicit MapBuffer(std::vector<uint8_t> data);
 
-  MapBuffer(const MapBuffer &buffer) = delete;
+  MapBuffer(const MapBuffer& buffer) = delete;
 
-  MapBuffer &operator=(const MapBuffer &other) = delete;
+  MapBuffer& operator=(const MapBuffer& other) = delete;
 
-  MapBuffer(MapBuffer &&buffer) = default;
+  MapBuffer(MapBuffer&& buffer) = default;
 
-  MapBuffer &operator=(MapBuffer &&other) = default;
+  MapBuffer& operator=(MapBuffer&& other) = default;
 
   int32_t getInt(MapBuffer::Key key) const;
 
@@ -145,7 +146,7 @@ class MapBuffer {
 
   size_t size() const;
 
-  const uint8_t *data() const;
+  const uint8_t* data() const;
 
   uint16_t count() const;
 

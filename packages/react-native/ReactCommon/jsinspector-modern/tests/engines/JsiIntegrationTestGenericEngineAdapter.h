@@ -26,19 +26,19 @@ namespace facebook::react::jsinspector_modern {
  */
 class JsiIntegrationTestGenericEngineAdapter {
  public:
-  explicit JsiIntegrationTestGenericEngineAdapter(folly::Executor &jsExecutor);
+  explicit JsiIntegrationTestGenericEngineAdapter(folly::Executor& jsExecutor);
 
   static InspectorFlagOverrides getInspectorFlagOverrides() noexcept;
 
-  RuntimeTargetDelegate &getRuntimeTargetDelegate();
+  RuntimeTargetDelegate& getRuntimeTargetDelegate();
 
-  jsi::Runtime &getRuntime() const noexcept;
+  jsi::Runtime& getRuntime() const noexcept;
 
   RuntimeExecutor getRuntimeExecutor() const noexcept;
 
  private:
   std::unique_ptr<jsi::Runtime> runtime_;
-  folly::Executor &jsExecutor_;
+  folly::Executor& jsExecutor_;
   jsinspector_modern::FallbackRuntimeTargetDelegate runtimeTargetDelegate_;
 };
 

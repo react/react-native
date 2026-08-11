@@ -13,31 +13,39 @@
 namespace facebook::react {
 
 struct JMountItem : public jni::JavaClass<JMountItem> {
-  static constexpr auto kJavaDescriptor = "Lcom/facebook/react/fabric/mounting/mountitems/MountItem;";
+  static constexpr auto kJavaDescriptor =
+      "Lcom/facebook/react/fabric/mounting/mountitems/MountItem;";
 };
 
 struct CppMountItem final {
 #pragma mark - Designated Initializers
 
-  static CppMountItem CreateMountItem(const ShadowView &shadowView);
+  static CppMountItem CreateMountItem(const ShadowView& shadowView);
 
-  static CppMountItem DeleteMountItem(const ShadowView &shadowView);
+  static CppMountItem DeleteMountItem(const ShadowView& shadowView);
 
-  static CppMountItem InsertMountItem(Tag parentTag, const ShadowView &shadowView, int index);
+  static CppMountItem
+  InsertMountItem(Tag parentTag, const ShadowView& shadowView, int index);
 
-  static CppMountItem RemoveMountItem(Tag parentTag, const ShadowView &shadowView, int index);
+  static CppMountItem
+  RemoveMountItem(Tag parentTag, const ShadowView& shadowView, int index);
 
-  static CppMountItem UpdatePropsMountItem(const ShadowView &oldShadowView, const ShadowView &newShadowView);
+  static CppMountItem UpdatePropsMountItem(
+      const ShadowView& oldShadowView,
+      const ShadowView& newShadowView);
 
-  static CppMountItem UpdateStateMountItem(const ShadowView &shadowView);
+  static CppMountItem UpdateStateMountItem(const ShadowView& shadowView);
 
-  static CppMountItem UpdateLayoutMountItem(const ShadowView &shadowView, Tag parentTag);
+  static CppMountItem UpdateLayoutMountItem(
+      const ShadowView& shadowView,
+      Tag parentTag);
 
-  static CppMountItem UpdateEventEmitterMountItem(const ShadowView &shadowView);
+  static CppMountItem UpdateEventEmitterMountItem(const ShadowView& shadowView);
 
-  static CppMountItem UpdatePaddingMountItem(const ShadowView &shadowView);
+  static CppMountItem UpdatePaddingMountItem(const ShadowView& shadowView);
 
-  static CppMountItem UpdateOverflowInsetMountItem(const ShadowView &shadowView);
+  static CppMountItem UpdateOverflowInsetMountItem(
+      const ShadowView& shadowView);
 
 #pragma mark - Type
 

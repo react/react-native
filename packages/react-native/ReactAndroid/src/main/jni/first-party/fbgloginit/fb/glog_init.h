@@ -11,6 +11,6 @@
 
 namespace facebook::gloginit {
 
-void initialize(const char *tag = "ReactNativeJNI");
+void initialize(const char* tag = "ReactNativeJNI");
 
 }

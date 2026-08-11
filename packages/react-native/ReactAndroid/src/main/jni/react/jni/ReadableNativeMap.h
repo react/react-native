@@ -21,19 +21,24 @@ namespace facebook::react {
 struct WritableNativeMap;
 
 struct ReadableMap : jni::JavaClass<ReadableMap> {
-  static auto constexpr kJavaDescriptor = "Lcom/facebook/react/bridge/ReadableMap;";
+  static auto constexpr kJavaDescriptor =
+      "Lcom/facebook/react/bridge/ReadableMap;";
 };
 
-void addDynamicToJArray(jni::local_ref<jni::JArrayClass<jobject>> jarray, jint index, const folly::dynamic &dyn);
+void addDynamicToJArray(
+    jni::local_ref<jni::JArrayClass<jobject>> jarray,
+    jint index,
+    const folly::dynamic& dyn);
 
 struct ReadableNativeMap : jni::HybridClass<ReadableNativeMap, NativeMap> {
-  static auto constexpr kJavaDescriptor = "Lcom/facebook/react/bridge/ReadableNativeMap;";
+  static auto constexpr kJavaDescriptor =
+      "Lcom/facebook/react/bridge/ReadableNativeMap;";
 
   jni::local_ref<jni::JArrayClass<jstring>> importKeys();
   jni::local_ref<jni::JArrayClass<jobject>> importValues();
   jni::local_ref<jni::JArrayClass<jobject>> importTypes();
   std::optional<folly::dynamic> keys_;
-  static jni::local_ref<jhybridobject> createWithContents(folly::dynamic &&map);
+  static jni::local_ref<jhybridobject> createWithContents(folly::dynamic&& map);
 
   static void mapException(std::exception_ptr ex);
   static void registerNatives();

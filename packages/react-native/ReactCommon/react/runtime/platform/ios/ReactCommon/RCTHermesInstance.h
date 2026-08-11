@@ -13,24 +13,25 @@ namespace facebook::react {
 
 class MessageQueueThread;
 
-using CrashManagerProvider = std::function<std::shared_ptr<::hermes::vm::CrashManager>()>;
+using CrashManagerProvider =
+    std::function<std::shared_ptr<::hermes::vm::CrashManager>()>;
 
 // ObjC++ wrapper for HermesInstance.cpp
 class RCTHermesInstance : public JSRuntimeFactory {
  public:
   RCTHermesInstance() : RCTHermesInstance(nullptr, false) {}
   RCTHermesInstance(CrashManagerProvider crashManagerProvider)
-      : RCTHermesInstance(std::move(crashManagerProvider), false)
-  {
-  }
-  RCTHermesInstance(CrashManagerProvider crashManagerProvider, bool allocInOldGenBeforeTTI)
-      : _crashManagerProvider(std::move(crashManagerProvider)), _allocInOldGenBeforeTTI(allocInOldGenBeforeTTI)
-  {
-  }
+      : RCTHermesInstance(std::move(crashManagerProvider), false) {}
+  RCTHermesInstance(
+      CrashManagerProvider crashManagerProvider,
+      bool allocInOldGenBeforeTTI)
+      : _crashManagerProvider(std::move(crashManagerProvider)),
+        _allocInOldGenBeforeTTI(allocInOldGenBeforeTTI) {}
 
-  std::unique_ptr<JSRuntime> createJSRuntime(std::shared_ptr<MessageQueueThread> msgQueueThread) noexcept override;
+  std::unique_ptr<JSRuntime> createJSRuntime(
+      std::shared_ptr<MessageQueueThread> msgQueueThread) noexcept override;
 
-  ~RCTHermesInstance() override {};
+  ~RCTHermesInstance() override{};
 
  private:
   CrashManagerProvider _crashManagerProvider;

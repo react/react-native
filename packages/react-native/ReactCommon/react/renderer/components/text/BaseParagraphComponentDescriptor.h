@@ -13,28 +13,28 @@
 
 namespace facebook::react {
 
-constexpr const char *const TextLayoutManagerKey = "TextLayoutManager";
+constexpr const char* const TextLayoutManagerKey = "TextLayoutManager";
 
 template <typename ShadowNodeT>
-class BaseParagraphComponentDescriptor : public ConcreteComponentDescriptor<ShadowNodeT> {
+class BaseParagraphComponentDescriptor
+    : public ConcreteComponentDescriptor<ShadowNodeT> {
  public:
-  explicit BaseParagraphComponentDescriptor(const ComponentDescriptorParameters &parameters)
+  explicit BaseParagraphComponentDescriptor(
+      const ComponentDescriptorParameters& parameters)
       : ConcreteComponentDescriptor<ShadowNodeT>(parameters),
-        textLayoutManager_(getManagerByName<TextLayoutManager>(this->contextContainer_, TextLayoutManagerKey))
-  {
-  }
+        textLayoutManager_(getManagerByName<TextLayoutManager>(
+            this->contextContainer_,
+            TextLayoutManagerKey)) {}
 
-  ComponentName getComponentName() const override
-  {
+  ComponentName getComponentName() const override {
     return ShadowNodeT::Name();
   }
 
  protected:
-  void adopt(ShadowNode &shadowNode) const override
-  {
+  void adopt(ShadowNode& shadowNode) const override {
     ConcreteComponentDescriptor<ShadowNodeT>::adopt(shadowNode);
 
-    auto &paragraphShadowNode = static_cast<ShadowNodeT &>(shadowNode);
+    auto& paragraphShadowNode = static_cast<ShadowNodeT&>(shadowNode);
 
     // `ParagraphShadowNode` uses `TextLayoutManager` to measure text content
     // and communicate text rendering metrics to mounting layer.

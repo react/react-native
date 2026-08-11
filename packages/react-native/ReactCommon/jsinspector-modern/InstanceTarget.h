@@ -33,10 +33,10 @@ class HostTargetTraceRecording;
 class InstanceTargetDelegate {
  public:
   InstanceTargetDelegate() = default;
-  InstanceTargetDelegate(const InstanceTargetDelegate &) = delete;
-  InstanceTargetDelegate(InstanceTargetDelegate &&) = delete;
-  InstanceTargetDelegate &operator=(const InstanceTargetDelegate &) = delete;
-  InstanceTargetDelegate &operator=(InstanceTargetDelegate &&) = delete;
+  InstanceTargetDelegate(const InstanceTargetDelegate&) = delete;
+  InstanceTargetDelegate(InstanceTargetDelegate&&) = delete;
+  InstanceTargetDelegate& operator=(const InstanceTargetDelegate&) = delete;
+  InstanceTargetDelegate& operator=(InstanceTargetDelegate&&) = delete;
 
   virtual ~InstanceTargetDelegate();
 };
@@ -58,16 +58,18 @@ class InstanceTarget : public EnableExecutorFromThis<InstanceTarget> {
    */
   static std::shared_ptr<InstanceTarget> create(
       std::shared_ptr<ExecutionContextManager> executionContextManager,
-      InstanceTargetDelegate &delegate,
+      InstanceTargetDelegate& delegate,
       VoidExecutor executor);
 
-  InstanceTarget(const InstanceTarget &) = delete;
-  InstanceTarget(InstanceTarget &&) = delete;
-  InstanceTarget &operator=(const InstanceTarget &) = delete;
-  InstanceTarget &operator=(InstanceTarget &&) = delete;
+  InstanceTarget(const InstanceTarget&) = delete;
+  InstanceTarget(InstanceTarget&&) = delete;
+  InstanceTarget& operator=(const InstanceTarget&) = delete;
+  InstanceTarget& operator=(InstanceTarget&&) = delete;
   ~InstanceTarget();
 
-  std::shared_ptr<InstanceAgent> createAgent(const FrontendChannel &channel, SessionState &sessionState);
+  std::shared_ptr<InstanceAgent> createAgent(
+      const FrontendChannel& channel,
+      SessionState& sessionState);
 
   /**
    * Creates a new InstanceTracingAgent.
@@ -78,14 +80,17 @@ class InstanceTarget : public EnableExecutorFromThis<InstanceTarget> {
    *
    * \param state A reference to the state of the active trace recording.
    */
-  std::shared_ptr<InstanceTracingAgent> createTracingAgent(tracing::TraceRecordingState &state);
+  std::shared_ptr<InstanceTracingAgent> createTracingAgent(
+      tracing::TraceRecordingState& state);
 
   /**
    * Registers a JS runtime with this InstanceTarget. \returns a reference to
    * the created RuntimeTarget, which is owned by the \c InstanceTarget. All the
    * requirements of \c RuntimeTarget::create must be met.
    */
-  RuntimeTarget &registerRuntime(RuntimeTargetDelegate &delegate, RuntimeExecutor executor);
+  RuntimeTarget& registerRuntime(
+      RuntimeTargetDelegate& delegate,
+      RuntimeExecutor executor);
 
   /**
    * Unregisters a JS runtime from this InstanceTarget. This destroys the \c
@@ -94,7 +99,7 @@ class InstanceTarget : public EnableExecutorFromThis<InstanceTarget> {
    * continue to be used as long as JavaScript execution continues in the
    * runtime.
    */
-  void unregisterRuntime(RuntimeTarget &runtime);
+  void unregisterRuntime(RuntimeTarget& runtime);
 
  private:
   /**
@@ -105,9 +110,11 @@ class InstanceTarget : public EnableExecutorFromThis<InstanceTarget> {
    * The caller is responsible for ensuring that the delegate outlives this
    * object.
    */
-  InstanceTarget(std::shared_ptr<ExecutionContextManager> executionContextManager, InstanceTargetDelegate &delegate);
+  InstanceTarget(
+      std::shared_ptr<ExecutionContextManager> executionContextManager,
+      InstanceTargetDelegate& delegate);
 
-  InstanceTargetDelegate &delegate_;
+  InstanceTargetDelegate& delegate_;
   std::shared_ptr<RuntimeTarget> currentRuntime_{nullptr};
   WeakList<InstanceAgent> agents_;
   std::shared_ptr<ExecutionContextManager> executionContextManager_;

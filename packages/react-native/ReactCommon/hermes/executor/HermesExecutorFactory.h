@@ -13,21 +13,24 @@
 
 namespace facebook::react {
 
-class [[deprecated("This API will be removed along with the legacy architecture.")]] HermesExecutorFactory
+class [[deprecated(
+    "This API will be removed along with the legacy architecture.")]] HermesExecutorFactory
     : public JSExecutorFactory {
  public:
   explicit HermesExecutorFactory(
       JSIExecutor::RuntimeInstaller runtimeInstaller,
-      const JSIScopedTimeoutInvoker &timeoutInvoker = JSIExecutor::defaultTimeoutInvoker,
+      const JSIScopedTimeoutInvoker& timeoutInvoker =
+          JSIExecutor::defaultTimeoutInvoker,
       ::hermes::vm::RuntimeConfig runtimeConfig = defaultRuntimeConfig())
-      : runtimeInstaller_(runtimeInstaller), timeoutInvoker_(timeoutInvoker), runtimeConfig_(std::move(runtimeConfig))
-  {
+      : runtimeInstaller_(runtimeInstaller),
+        timeoutInvoker_(timeoutInvoker),
+        runtimeConfig_(std::move(runtimeConfig)) {
     assert(timeoutInvoker_ && "Should not have empty timeoutInvoker");
   }
 
   void setEnableDebugger(bool enableDebugger);
 
-  void setDebuggerName(const std::string &debuggerName);
+  void setDebuggerName(const std::string& debuggerName);
 
   std::unique_ptr<JSExecutor> createJSExecutor(
       std::shared_ptr<ExecutorDelegate> delegate,
@@ -43,18 +46,20 @@ class [[deprecated("This API will be removed along with the legacy architecture.
   std::string debuggerName_ = "Hermes React Native";
 };
 
-class [[deprecated("This API will be removed along with the legacy architecture.")]] HermesExecutor
+class [[deprecated(
+    "This API will be removed along with the legacy architecture.")]] HermesExecutor
     : public JSIExecutor {
  public:
   HermesExecutor(
       std::shared_ptr<jsi::Runtime> runtime,
       std::shared_ptr<ExecutorDelegate> delegate,
       std::shared_ptr<MessageQueueThread> jsQueue,
-      const JSIScopedTimeoutInvoker &timeoutInvoker,
+      const JSIScopedTimeoutInvoker& timeoutInvoker,
       RuntimeInstaller runtimeInstaller,
-      hermes::HermesRuntime &hermesRuntime);
+      hermes::HermesRuntime& hermesRuntime);
 
-  jsinspector_modern::RuntimeTargetDelegate &getRuntimeTargetDelegate() override;
+  jsinspector_modern::RuntimeTargetDelegate& getRuntimeTargetDelegate()
+      override;
 
  private:
   JSIScopedTimeoutInvoker timeoutInvoker_;

@@ -12,9 +12,9 @@
 
 namespace facebook::react {
 
-static inline JsErrorHandler::OnJsError getDefaultOnJsErrorFunc()
-{
-  return [](jsi::Runtime & /*runtime*/, const JsErrorHandler::ProcessedError &error) {
+static inline JsErrorHandler::OnJsError getDefaultOnJsErrorFunc() {
+  return [](jsi::Runtime& /*runtime*/,
+            const JsErrorHandler::ProcessedError& error) {
     LOG(ERROR) << "[onJsError called]: " << error << std::endl;
   };
 }

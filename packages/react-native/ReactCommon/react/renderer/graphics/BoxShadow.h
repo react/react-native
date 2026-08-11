@@ -13,7 +13,7 @@
 namespace facebook::react {
 
 struct BoxShadow {
-  bool operator==(const BoxShadow &other) const = default;
+  bool operator==(const BoxShadow& other) const = default;
 
   Float offsetX{};
   Float offsetY{};
@@ -23,8 +23,7 @@ struct BoxShadow {
   bool inset{};
 
 #ifdef RN_SERIALIZABLE_STATE
-  folly::dynamic toDynamic() const
-  {
+  folly::dynamic toDynamic() const {
     folly::dynamic result = folly::dynamic::object();
     result["offsetX"] = offsetX;
     result["offsetY"] = offsetY;
@@ -38,8 +37,7 @@ struct BoxShadow {
 };
 
 #ifdef RN_SERIALIZABLE_STATE
-inline folly::dynamic toDynamic(const BoxShadow &boxShadow)
-{
+inline folly::dynamic toDynamic(const BoxShadow& boxShadow) {
   return boxShadow.toDynamic();
 }
 #endif

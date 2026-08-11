@@ -29,8 +29,7 @@ constexpr uint16_t MAX_UNIQUE_NODES_PER_CHUNK = 50;
 
 struct IdGenerator {
  public:
-  uint32_t getNext()
-  {
+  uint32_t getNext() {
     return ++counter_;
   }
 
@@ -58,19 +57,21 @@ class RuntimeSamplingProfileTraceEventSerializer {
    * that can be sent in a single ProfileChunk trace event.
    */
   static void serializeAndDispatch(
-      RuntimeSamplingProfile &&profile,
-      IdGenerator &profileIdGenerator,
+      RuntimeSamplingProfile&& profile,
+      IdGenerator& profileIdGenerator,
       HighResTimeStamp tracingStartTime,
-      const std::function<void(folly::dynamic &&traceEventsChunk)> &dispatchCallback,
+      const std::function<void(folly::dynamic&& traceEventsChunk)>&
+          dispatchCallback,
       uint16_t traceEventChunkSize,
       uint16_t profileChunkSize = PROFILE_CHUNK_SIZE,
       uint16_t maxUniqueNodesPerChunk = MAX_UNIQUE_NODES_PER_CHUNK);
 
   static void serializeAndDispatch(
-      std::vector<RuntimeSamplingProfile> &&profiles,
-      IdGenerator &profileIdGenerator,
+      std::vector<RuntimeSamplingProfile>&& profiles,
+      IdGenerator& profileIdGenerator,
       HighResTimeStamp tracingStartTime,
-      const std::function<void(folly::dynamic &&traceEventsChunk)> &dispatchCallback,
+      const std::function<void(folly::dynamic&& traceEventsChunk)>&
+          dispatchCallback,
       uint16_t traceEventChunkSize,
       uint16_t profileChunkSize = PROFILE_CHUNK_SIZE,
       uint16_t maxUniqueNodesPerChunk = MAX_UNIQUE_NODES_PER_CHUNK);

@@ -18,10 +18,12 @@ class TurboModuleWithJSIBindings {
  public:
   virtual ~TurboModuleWithJSIBindings() = default;
 
-  static void installJSIBindings(const std::shared_ptr<TurboModule> &cxxModule, jsi::Runtime &runtime);
+  static void installJSIBindings(
+      const std::shared_ptr<TurboModule>& cxxModule,
+      jsi::Runtime& runtime);
 
  private:
-  virtual void installJSIBindingsWithRuntime(jsi::Runtime &runtime) = 0;
+  virtual void installJSIBindingsWithRuntime(jsi::Runtime& runtime) = 0;
 };
 
 } // namespace facebook::react

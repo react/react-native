@@ -28,15 +28,17 @@ class RawPropsParser final {
    * To be used by `ConcreteComponentDescriptor` only.
    */
   RawPropsParser() = default;
-  [[deprecated]] explicit RawPropsParser(bool /* ignored */) : RawPropsParser() {}
+  [[deprecated]] explicit RawPropsParser(bool /* ignored */)
+      : RawPropsParser() {}
 
   /*
    * To be used by `ConcreteComponentDescriptor` only.
    */
   template <typename PropsT>
-  void prepare() noexcept
-  {
-    static_assert(std::is_base_of<Props, PropsT>::value, "PropsT must be a descendant of Props");
+  void prepare() noexcept {
+    static_assert(
+        std::is_base_of<Props, PropsT>::value,
+        "PropsT must be a descendant of Props");
     RawProps emptyRawProps{};
 
     // Create a stub parser context.
@@ -60,7 +62,7 @@ class RawPropsParser final {
   /*
    * To be used by `RawProps` only.
    */
-  void preparse(const RawProps &rawProps) const noexcept;
+  void preparse(const RawProps& rawProps) const noexcept;
 
   /*
    * Non-generic part of `prepare`.
@@ -70,7 +72,8 @@ class RawPropsParser final {
   /*
    * To be used by `RawProps` only.
    */
-  const RawValue *at(const RawProps &rawProps, std::string_view key) const noexcept;
+  const RawValue* at(const RawProps& rawProps, std::string_view key)
+      const noexcept;
 
   mutable std::vector<std::string_view> keys_{};
   mutable RawPropsKeyMap nameToIndex_{};

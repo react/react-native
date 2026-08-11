@@ -34,14 +34,16 @@ class MessageQueueThread;
 class ModuleRegistry;
 class RAMBundleRegistry;
 
-struct [[deprecated("This API will be removed along with the legacy architecture.")]] InstanceCallback {
+struct [[deprecated(
+    "This API will be removed along with the legacy architecture.")]] InstanceCallback {
   virtual ~InstanceCallback() = default;
   virtual void onBatchComplete() {}
   virtual void incrementPendingJSCalls() {}
   virtual void decrementPendingJSCalls() {}
 };
 
-class RN_EXPORT [[deprecated("This API will be removed along with the legacy architecture.")]] Instance
+class RN_EXPORT [[deprecated(
+    "This API will be removed along with the legacy architecture.")]] Instance
     : private jsinspector_modern::InstanceTargetDelegate {
  public:
   ~Instance() override;
@@ -50,31 +52,36 @@ class RN_EXPORT [[deprecated("This API will be removed along with the legacy arc
       std::shared_ptr<JSExecutorFactory> jsef,
       std::shared_ptr<MessageQueueThread> jsQueue,
       std::shared_ptr<ModuleRegistry> moduleRegistry,
-      jsinspector_modern::HostTarget *inspectorTarget = nullptr);
+      jsinspector_modern::HostTarget* inspectorTarget = nullptr);
 
   void initializeRuntime();
 
   void setSourceURL(std::string sourceURL);
 
-  void loadScriptFromString(std::unique_ptr<const JSBigString> string, std::string sourceURL, bool loadSynchronously);
+  void loadScriptFromString(
+      std::unique_ptr<const JSBigString> string,
+      std::string sourceURL,
+      bool loadSynchronously);
   void loadRAMBundle(
       std::unique_ptr<RAMBundleRegistry> bundleRegistry,
       std::unique_ptr<const JSBigString> startupScript,
       std::string startupScriptSourceURL,
       bool loadSynchronously);
   bool supportsProfiling();
-  void setGlobalVariable(std::string propName, std::unique_ptr<const JSBigString> jsonValue);
-  void *getJavaScriptContext();
+  void setGlobalVariable(
+      std::string propName, std::unique_ptr<const JSBigString> jsonValue);
+  void* getJavaScriptContext();
   bool isInspectable();
   bool isBatchActive();
-  void callJSFunction(std::string &&module, std::string &&method, folly::dynamic &&params);
-  void callJSCallback(uint64_t callbackId, folly::dynamic &&params);
+  void callJSFunction(
+      std::string && module, std::string && method, folly::dynamic && params);
+  void callJSCallback(uint64_t callbackId, folly::dynamic && params);
 
   // This method is experimental, and may be modified or removed.
-  void registerBundle(uint32_t bundleId, const std::string &bundlePath);
+  void registerBundle(uint32_t bundleId, const std::string& bundlePath);
 
-  const ModuleRegistry &getModuleRegistry() const;
-  ModuleRegistry &getModuleRegistry();
+  const ModuleRegistry& getModuleRegistry() const;
+  ModuleRegistry& getModuleRegistry();
 
   void handleMemoryPressure(int pressureLevel);
 
@@ -129,7 +136,7 @@ class RN_EXPORT [[deprecated("This API will be removed along with the legacy arc
   void unregisterFromInspector();
 
  private:
-  void callNativeModules(folly::dynamic &&calls, bool isEndOfBatch);
+  void callNativeModules(folly::dynamic && calls, bool isEndOfBatch);
   void loadBundle(
       std::unique_ptr<RAMBundleRegistry> bundleRegistry,
       std::unique_ptr<const JSBigString> startupScript,
@@ -154,19 +161,21 @@ class RN_EXPORT [[deprecated("This API will be removed along with the legacy arc
     bool m_shouldBuffer = true;
     std::list<CallFunc> m_workBuffer;
 
-    void scheduleAsync(CallFunc &&work) noexcept;
+    void scheduleAsync(CallFunc&& work) noexcept;
 
    public:
-    void setNativeToJsBridgeAndFlushCalls(std::weak_ptr<NativeToJsBridge> nativeToJsBridge);
-    void invokeAsync(CallFunc &&work) noexcept override;
-    void invokeSync(CallFunc &&work) override;
+    void setNativeToJsBridgeAndFlushCalls(
+        std::weak_ptr<NativeToJsBridge> nativeToJsBridge);
+    void invokeAsync(CallFunc&& work) noexcept override;
+    void invokeSync(CallFunc&& work) override;
   };
 
-  std::shared_ptr<JSCallInvoker> jsCallInvoker_ = std::make_shared<JSCallInvoker>();
+  std::shared_ptr<JSCallInvoker> jsCallInvoker_ =
+      std::make_shared<JSCallInvoker>();
 
-  jsinspector_modern::HostTarget *parentInspectorTarget_{nullptr};
-  jsinspector_modern::InstanceTarget *inspectorTarget_{nullptr};
-  jsinspector_modern::RuntimeTarget *runtimeInspectorTarget_{nullptr};
+  jsinspector_modern::HostTarget* parentInspectorTarget_{nullptr};
+  jsinspector_modern::InstanceTarget* inspectorTarget_{nullptr};
+  jsinspector_modern::RuntimeTarget* runtimeInspectorTarget_{nullptr};
 };
 
 } // namespace facebook::react

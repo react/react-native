@@ -24,33 +24,33 @@ class DevSettingsModule : public NativeDevSettingsCxxSpec<DevSettingsModule> {
       LiveReloadCallback liveReloadCallback)
       : NativeDevSettingsCxxSpec(jsInvoker),
         devServerHelper_(std::move(devServerHelper)),
-        liveReloadCallback_(std::move(liveReloadCallback))
-  {
-  }
+        liveReloadCallback_(std::move(liveReloadCallback)) {}
 
-  void reload(jsi::Runtime &rt);
+  void reload(jsi::Runtime& rt);
 
-  void reloadWithReason(jsi::Runtime &rt, const std::string &reason);
+  void reloadWithReason(jsi::Runtime& rt, const std::string& reason);
 
-  void onFastRefresh(jsi::Runtime &rt);
+  void onFastRefresh(jsi::Runtime& rt);
 
-  void setHotLoadingEnabled(jsi::Runtime &rt, bool isHotLoadingEnabled);
+  void setHotLoadingEnabled(jsi::Runtime& rt, bool isHotLoadingEnabled);
 
-  void setIsDebuggingRemotely(jsi::Runtime &rt, bool isDebuggingRemotelyEnabled);
+  void setIsDebuggingRemotely(
+      jsi::Runtime& rt,
+      bool isDebuggingRemotelyEnabled);
 
-  void setProfilingEnabled(jsi::Runtime &rt, bool isProfilingEnabled);
+  void setProfilingEnabled(jsi::Runtime& rt, bool isProfilingEnabled);
 
-  void toggleElementInspector(jsi::Runtime &rt);
+  void toggleElementInspector(jsi::Runtime& rt);
 
-  void addMenuItem(jsi::Runtime &rt, const std::string &title);
+  void addMenuItem(jsi::Runtime& rt, const std::string& title);
 
-  void setIsShakeToShowDevMenuEnabled(jsi::Runtime &rt, bool enabled);
+  void setIsShakeToShowDevMenuEnabled(jsi::Runtime& rt, bool enabled);
 
-  void openDebugger(jsi::Runtime &rt);
+  void openDebugger(jsi::Runtime& rt);
 
-  void addListener(jsi::Runtime &rt, const std::string &eventName);
+  void addListener(jsi::Runtime& rt, const std::string& eventName);
 
-  void removeListeners(jsi::Runtime &rt, double count);
+  void removeListeners(jsi::Runtime& rt, double count);
 
  private:
   std::weak_ptr<DevServerHelper> devServerHelper_;

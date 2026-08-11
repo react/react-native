@@ -44,39 +44,35 @@ enum class CSSTokenType {
 class CSSToken {
  public:
   explicit constexpr CSSToken(CSSTokenType type) : type_(type) {}
-  constexpr CSSToken(CSSTokenType type, std::string_view value) : type_{type}, stringValue_{value} {}
-  constexpr CSSToken(CSSTokenType type, float value) : type_{type}, numericValue_{value} {}
+  constexpr CSSToken(CSSTokenType type, std::string_view value)
+      : type_{type}, stringValue_{value} {}
+  constexpr CSSToken(CSSTokenType type, float value)
+      : type_{type}, numericValue_{value} {}
   constexpr CSSToken(CSSTokenType type, float value, std::string_view unit)
-      : type_{type}, numericValue_{value}, unit_{unit}
-  {
-  }
+      : type_{type}, numericValue_{value}, unit_{unit} {}
 
-  constexpr CSSToken(const CSSToken &other) = default;
-  constexpr CSSToken(CSSToken &&other) = default;
-  constexpr CSSToken &operator=(const CSSToken &other) = default;
-  constexpr CSSToken &operator=(CSSToken &&other) = default;
+  constexpr CSSToken(const CSSToken& other) = default;
+  constexpr CSSToken(CSSToken&& other) = default;
+  constexpr CSSToken& operator=(const CSSToken& other) = default;
+  constexpr CSSToken& operator=(CSSToken&& other) = default;
 
-  constexpr CSSTokenType type() const
-  {
+  constexpr CSSTokenType type() const {
     return type_;
   }
 
-  constexpr std::string_view stringValue() const
-  {
+  constexpr std::string_view stringValue() const {
     return stringValue_;
   }
 
-  constexpr float numericValue() const
-  {
+  constexpr float numericValue() const {
     return numericValue_;
   }
 
-  constexpr std::string_view unit() const
-  {
+  constexpr std::string_view unit() const {
     return unit_;
   }
 
-  constexpr bool operator==(const CSSToken &other) const = default;
+  constexpr bool operator==(const CSSToken& other) const = default;
 
  private:
   CSSTokenType type_;

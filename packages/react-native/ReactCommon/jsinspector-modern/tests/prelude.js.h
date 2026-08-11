@@ -9,7 +9,8 @@
  * @format
  */
 
-/* eslint-disable no-shadow, eqeqeq, curly, no-unused-vars, no-void, no-control-regex  */
+/* eslint-disable no-shadow, eqeqeq, curly, no-unused-vars, no-void,
+ * no-control-regex  */
 
 #pragma once
 

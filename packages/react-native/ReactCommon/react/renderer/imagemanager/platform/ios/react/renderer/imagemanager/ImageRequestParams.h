@@ -18,7 +18,7 @@ class ImageRequestParams {
 
   Float blurRadius{};
 
-  bool operator==(const ImageRequestParams &rhs) const = default;
+  bool operator==(const ImageRequestParams& rhs) const = default;
 };
 
 } // namespace facebook::react

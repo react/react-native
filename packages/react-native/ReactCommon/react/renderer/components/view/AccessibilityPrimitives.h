@@ -36,13 +36,15 @@ enum class AccessibilityTraits : uint32_t {
   TabBar = (1 << 17),
 };
 
-constexpr enum AccessibilityTraits operator|(const enum AccessibilityTraits lhs, const enum AccessibilityTraits rhs)
-{
+constexpr enum AccessibilityTraits operator|(
+    const enum AccessibilityTraits lhs,
+    const enum AccessibilityTraits rhs) {
   return (enum AccessibilityTraits)((uint32_t)lhs | (uint32_t)rhs);
 }
 
-constexpr enum AccessibilityTraits operator&(const enum AccessibilityTraits lhs, const enum AccessibilityTraits rhs)
-{
+constexpr enum AccessibilityTraits operator&(
+    const enum AccessibilityTraits lhs,
+    const enum AccessibilityTraits rhs) {
   return (enum AccessibilityTraits)((uint32_t)lhs & (uint32_t)rhs);
 }
 
@@ -51,8 +53,9 @@ struct AccessibilityAction {
   std::optional<std::string> label{};
 };
 
-inline static bool operator==(const AccessibilityAction &lhs, const AccessibilityAction &rhs)
-{
+inline static bool operator==(
+    const AccessibilityAction& lhs,
+    const AccessibilityAction& rhs) {
   return lhs.name == rhs.name && lhs.label == rhs.label;
 }
 
@@ -65,18 +68,21 @@ struct AccessibilityState {
   CheckedState checked{CheckedState::None};
 };
 
-constexpr bool operator==(const AccessibilityState &lhs, const AccessibilityState &rhs)
-{
-  return lhs.disabled == rhs.disabled && lhs.selected == rhs.selected && lhs.checked == rhs.checked &&
-      lhs.busy == rhs.busy && lhs.expanded == rhs.expanded;
+constexpr bool operator==(
+    const AccessibilityState& lhs,
+    const AccessibilityState& rhs) {
+  return lhs.disabled == rhs.disabled && lhs.selected == rhs.selected &&
+      lhs.checked == rhs.checked && lhs.busy == rhs.busy &&
+      lhs.expanded == rhs.expanded;
 }
 
 struct AccessibilityLabelledBy {
   std::vector<std::string> value{};
 };
 
-inline static bool operator==(const AccessibilityLabelledBy &lhs, const AccessibilityLabelledBy &rhs)
-{
+inline static bool operator==(
+    const AccessibilityLabelledBy& lhs,
+    const AccessibilityLabelledBy& rhs) {
   return lhs.value == rhs.value;
 }
 
@@ -87,9 +93,11 @@ struct AccessibilityValue {
   std::optional<std::string> text{};
 };
 
-constexpr bool operator==(const AccessibilityValue &lhs, const AccessibilityValue &rhs)
-{
-  return lhs.min == rhs.min && lhs.max == rhs.max && lhs.now == rhs.now && lhs.text == rhs.text;
+constexpr bool operator==(
+    const AccessibilityValue& lhs,
+    const AccessibilityValue& rhs) {
+  return lhs.min == rhs.min && lhs.max == rhs.max && lhs.now == rhs.now &&
+      lhs.text == rhs.text;
 }
 
 enum class ImportantForAccessibility : uint8_t {

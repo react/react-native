@@ -17,11 +17,12 @@ namespace facebook::react {
 
 class SurfaceHandlerBinding : public jni::HybridClass<SurfaceHandlerBinding> {
  public:
-  constexpr static const char *const kJavaDescriptor = "Lcom/facebook/react/fabric/SurfaceHandlerBinding;";
+  constexpr static const char* const kJavaDescriptor =
+      "Lcom/facebook/react/fabric/SurfaceHandlerBinding;";
 
   static void registerNatives();
 
-  SurfaceHandlerBinding(SurfaceId surfaceId, const std::string &moduleName);
+  SurfaceHandlerBinding(SurfaceId surfaceId, const std::string& moduleName);
 
   void setDisplayMode(jint mode);
 
@@ -42,14 +43,17 @@ class SurfaceHandlerBinding : public jni::HybridClass<SurfaceHandlerBinding> {
       jfloat pixelDensity,
       jfloat fontScale);
 
-  void setProps(NativeMap *props);
+  void setProps(NativeMap* props);
 
-  const SurfaceHandler &getSurfaceHandler();
+  const SurfaceHandler& getSurfaceHandler();
 
  private:
   const SurfaceHandler surfaceHandler_;
 
-  static void initHybrid(jni::alias_ref<jhybridobject> jobj, jint surfaceId, jni::alias_ref<jstring> moduleName);
+  static void initHybrid(
+      jni::alias_ref<jhybridobject> jobj,
+      jint surfaceId,
+      jni::alias_ref<jstring> moduleName);
 };
 
 } // namespace facebook::react

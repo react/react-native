@@ -24,7 +24,7 @@ class TransactionTelemetry final {
   /*
    * Thread-local Telemetry instance
    */
-  static TransactionTelemetry *threadLocalTelemetry();
+  static TransactionTelemetry* threadLocalTelemetry();
 
   TransactionTelemetry();
   TransactionTelemetry(std::function<TelemetryTimePoint()> now);

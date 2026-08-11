@@ -23,14 +23,15 @@ class SafeAreaViewState final {
 #ifdef ANDROID
   SafeAreaViewState() = default;
 
-  SafeAreaViewState(const SafeAreaViewState & /*previousState*/, folly::dynamic data)
-      : padding(
-            EdgeInsets{
-                (Float)data["left"].getDouble(),
-                (Float)data["top"].getDouble(),
-                (Float)data["right"].getDouble(),
-                (Float)data["bottom"].getDouble(),
-            }) {};
+  SafeAreaViewState(
+      const SafeAreaViewState& /*previousState*/,
+      folly::dynamic data)
+      : padding(EdgeInsets{
+            (Float)data["left"].getDouble(),
+            (Float)data["top"].getDouble(),
+            (Float)data["right"].getDouble(),
+            (Float)data["bottom"].getDouble(),
+        }){};
 
   folly::dynamic getDynamic() const;
 #endif

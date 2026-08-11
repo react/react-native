@@ -19,10 +19,10 @@ namespace facebook::react {
  * An exception that it is expected we should be able to recover from.
  */
 struct RecoverableError : public std::exception {
-  explicit RecoverableError(const std::string &what_) : m_what{"facebook::react::Recoverable: " + what_} {}
+  explicit RecoverableError(const std::string& what_)
+      : m_what{"facebook::react::Recoverable: " + what_} {}
 
-  virtual const char *what() const noexcept override
-  {
+  virtual const char* what() const noexcept override {
     return m_what.c_str();
   }
 
@@ -33,11 +33,10 @@ struct RecoverableError : public std::exception {
    * `act` routine into a recoverable error with the same message.
    */
   template <typename E>
-  inline static void runRethrowingAsRecoverable(std::function<void()> act)
-  {
+  inline static void runRethrowingAsRecoverable(std::function<void()> act) {
     try {
       act();
-    } catch (const E &err) {
+    } catch (const E& err) {
       throw RecoverableError(err.what());
     }
   }

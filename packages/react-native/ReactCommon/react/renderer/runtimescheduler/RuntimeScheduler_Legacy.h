@@ -29,19 +29,19 @@ class RuntimeScheduler_Legacy final : public RuntimeSchedulerBase {
   /*
    * Not copyable.
    */
-  RuntimeScheduler_Legacy(const RuntimeScheduler_Legacy &) = delete;
-  RuntimeScheduler_Legacy &operator=(const RuntimeScheduler_Legacy &) = delete;
+  RuntimeScheduler_Legacy(const RuntimeScheduler_Legacy&) = delete;
+  RuntimeScheduler_Legacy& operator=(const RuntimeScheduler_Legacy&) = delete;
 
   /*
    * Not movable.
    */
-  RuntimeScheduler_Legacy(RuntimeScheduler_Legacy &&) = delete;
-  RuntimeScheduler_Legacy &operator=(RuntimeScheduler_Legacy &&) = delete;
+  RuntimeScheduler_Legacy(RuntimeScheduler_Legacy&&) = delete;
+  RuntimeScheduler_Legacy& operator=(RuntimeScheduler_Legacy&&) = delete;
 
-  void scheduleWork(RawCallback &&callback) noexcept override;
+  void scheduleWork(RawCallback&& callback) noexcept override;
 
   /// IEventLoopControl implementation. No-op for legacy scheduler.
-  void scheduleTask(const std::function<void()> &task) override;
+  void scheduleTask(const std::function<void()>& task) override;
   uint64_t registerTaskQueueSource() override;
   void unregisterTaskQueueSource(uint64_t sourceId) override;
 
@@ -52,7 +52,7 @@ class RuntimeScheduler_Legacy final : public RuntimeSchedulerBase {
    * by dispatching a synchronous event via event emitter in your native
    * component.
    */
-  void executeNowOnTheSameThread(RawCallback &&callback) override;
+  void executeNowOnTheSameThread(RawCallback&& callback) override;
 
   /*
    * Adds a JavaScript callback to priority queue with given priority.
@@ -60,25 +60,31 @@ class RuntimeScheduler_Legacy final : public RuntimeSchedulerBase {
    *
    * Thread synchronization must be enforced externally.
    */
-  std::shared_ptr<Task> scheduleTask(SchedulerPriority priority, jsi::Function &&callback) noexcept override;
+  std::shared_ptr<Task> scheduleTask(
+      SchedulerPriority priority,
+      jsi::Function&& callback) noexcept override;
 
-  std::shared_ptr<Task> scheduleTask(SchedulerPriority priority, RawCallback &&callback) noexcept override;
+  std::shared_ptr<Task> scheduleTask(
+      SchedulerPriority priority,
+      RawCallback&& callback) noexcept override;
 
   /*
    * Adds a JavaScript callback to the idle queue with the given timeout.
    * Triggers workloop if needed.
    */
   std::shared_ptr<Task> scheduleIdleTask(
-      jsi::Function &&callback,
-      HighResDuration timeout = timeoutForSchedulerPriority(SchedulerPriority::IdlePriority)) noexcept override;
+      jsi::Function&& callback,
+      HighResDuration timeout = timeoutForSchedulerPriority(
+          SchedulerPriority::IdlePriority)) noexcept override;
 
   /*
    * Adds a custom callback to the idle queue with the given timeout.
    * Triggers workloop if needed.
    */
   std::shared_ptr<Task> scheduleIdleTask(
-      RawCallback &&callback,
-      HighResDuration timeout = timeoutForSchedulerPriority(SchedulerPriority::IdlePriority)) noexcept override;
+      RawCallback&& callback,
+      HighResDuration timeout = timeoutForSchedulerPriority(
+          SchedulerPriority::IdlePriority)) noexcept override;
 
   /*
    * Cancelled task will never be executed.
@@ -86,7 +92,7 @@ class RuntimeScheduler_Legacy final : public RuntimeSchedulerBase {
    * Operates on JSI object.
    * Thread synchronization must be enforced externally.
    */
-  void cancelTask(Task &task) noexcept override;
+  void cancelTask(Task& task) noexcept override;
 
   /*
    * Return value indicates if host platform has a pending access to the
@@ -119,22 +125,32 @@ class RuntimeScheduler_Legacy final : public RuntimeSchedulerBase {
    *
    * Thread synchronization must be enforced externally.
    */
-  void callExpiredTasks(jsi::Runtime &runtime) override;
+  void callExpiredTasks(jsi::Runtime& runtime) override;
 
-  void scheduleRenderingUpdate(SurfaceId surfaceId, RuntimeSchedulerRenderingUpdate &&renderingUpdate) override;
+  void scheduleRenderingUpdate(
+      SurfaceId surfaceId,
+      RuntimeSchedulerRenderingUpdate&& renderingUpdate) override;
 
   void setShadowTreeRevisionConsistencyManager(
-      ShadowTreeRevisionConsistencyManager *shadowTreeRevisionConsistencyManager) override;
+      ShadowTreeRevisionConsistencyManager*
+          shadowTreeRevisionConsistencyManager) override;
 
-  void setPerformanceEntryReporter(PerformanceEntryReporter *performanceEntryReporter) override;
+  void setPerformanceEntryReporter(
+      PerformanceEntryReporter* performanceEntryReporter) override;
 
-  void setEventTimingDelegate(RuntimeSchedulerEventTimingDelegate *eventTimingDelegate) override;
+  void setEventTimingDelegate(
+      RuntimeSchedulerEventTimingDelegate* eventTimingDelegate) override;
 
   void setIntersectionObserverDelegate(
-      RuntimeSchedulerIntersectionObserverDelegate *intersectionObserverDelegate) override;
+      RuntimeSchedulerIntersectionObserverDelegate*
+          intersectionObserverDelegate) override;
 
  private:
-  std::priority_queue<std::shared_ptr<Task>, std::vector<std::shared_ptr<Task>>, TaskPriorityComparer> taskQueue_;
+  std::priority_queue<
+      std::shared_ptr<Task>,
+      std::vector<std::shared_ptr<Task>>,
+      TaskPriorityComparer>
+      taskQueue_;
 
   const RuntimeExecutor runtimeExecutor_;
   SchedulerPriority currentPriority_{SchedulerPriority::NormalPriority};
@@ -146,7 +162,7 @@ class RuntimeScheduler_Legacy final : public RuntimeSchedulerBase {
 
   std::atomic_bool isSynchronous_{false};
 
-  void startWorkLoop(jsi::Runtime &runtime);
+  void startWorkLoop(jsi::Runtime& runtime);
 
   /*
    * Schedules a work loop unless it has been already scheduled
@@ -154,7 +170,10 @@ class RuntimeScheduler_Legacy final : public RuntimeSchedulerBase {
    */
   void scheduleWorkLoopIfNecessary();
 
-  void executeTask(jsi::Runtime &runtime, const std::shared_ptr<Task> &task, bool didUserCallbackTimeout);
+  void executeTask(
+      jsi::Runtime& runtime,
+      const std::shared_ptr<Task>& task,
+      bool didUserCallbackTimeout);
 
   /*
    * Returns a time point representing the current point in time. May be called
@@ -173,7 +192,8 @@ class RuntimeScheduler_Legacy final : public RuntimeSchedulerBase {
    */
   std::atomic_bool isPerformingWork_{false};
 
-  std::atomic<ShadowTreeRevisionConsistencyManager *> shadowTreeRevisionConsistencyManager_{nullptr};
+  std::atomic<ShadowTreeRevisionConsistencyManager*>
+      shadowTreeRevisionConsistencyManager_{nullptr};
 
   RuntimeSchedulerTaskErrorHandler onTaskError_;
 };

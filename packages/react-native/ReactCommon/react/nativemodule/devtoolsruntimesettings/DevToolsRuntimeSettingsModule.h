@@ -12,13 +12,16 @@
 namespace facebook::react {
 
 class DevToolsRuntimeSettingsModule
-    : public NativeReactDevToolsRuntimeSettingsModuleCxxSpec<DevToolsRuntimeSettingsModule> {
+    : public NativeReactDevToolsRuntimeSettingsModuleCxxSpec<
+          DevToolsRuntimeSettingsModule> {
  public:
   DevToolsRuntimeSettingsModule(std::shared_ptr<CallInvoker> jsInvoker);
 
-  void setReloadAndProfileConfig(jsi::Runtime &rt, NativePartialReloadAndProfileConfig config);
+  void setReloadAndProfileConfig(
+      jsi::Runtime& rt,
+      NativePartialReloadAndProfileConfig config);
 
-  NativeReloadAndProfileConfig getReloadAndProfileConfig(jsi::Runtime &rt);
+  NativeReloadAndProfileConfig getReloadAndProfileConfig(jsi::Runtime& rt);
 };
 
 } // namespace facebook::react

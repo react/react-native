@@ -20,7 +20,8 @@ class RuntimeSchedulerEventTimingDelegate {
 
   virtual void dispatchPendingEventTimingEntries(
       HighResTimeStamp taskEndTime,
-      const std::unordered_set<SurfaceId> &surfaceIdsWithPendingRenderingUpdates) = 0;
+      const std::unordered_set<SurfaceId>&
+          surfaceIdsWithPendingRenderingUpdates) = 0;
 };
 
 } // namespace facebook::react

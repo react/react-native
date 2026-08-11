@@ -26,8 +26,9 @@ class CdpPerfIssuesReporter : public PerformanceEntryReporterEventListener {
  public:
   explicit CdpPerfIssuesReporter(RuntimeExecutor runtimeExecutor);
 
-  void onMeasureEntry(const PerformanceMeasure &entry, const std::optional<UserTimingDetailProvider> &detailProvider)
-      override;
+  void onMeasureEntry(
+      const PerformanceMeasure& entry,
+      const std::optional<UserTimingDetailProvider>& detailProvider) override;
 
  private:
   const RuntimeExecutor runtimeExecutor_{};

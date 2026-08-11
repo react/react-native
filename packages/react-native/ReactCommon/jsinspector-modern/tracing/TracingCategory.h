@@ -25,8 +25,7 @@ enum class Category {
   Screenshot, /*         disabled-by-default-devtools.screenshot     */
 };
 
-inline std::string tracingCategoryToString(const Category &category)
-{
+inline std::string tracingCategoryToString(const Category& category) {
   switch (category) {
     case Category::Timeline:
       return "devtools.timeline";
@@ -47,8 +46,8 @@ inline std::string tracingCategoryToString(const Category &category)
   }
 }
 
-inline std::optional<Category> getTracingCategoryFromString(const std::string &str)
-{
+inline std::optional<Category> getTracingCategoryFromString(
+    const std::string& str) {
   if (str == "blink.user_timing") {
     return Category::UserTiming;
   } else if (str == "devtools.timeline") {
@@ -69,13 +68,13 @@ inline std::optional<Category> getTracingCategoryFromString(const std::string &s
 }
 
 /**
- * The Trace Event could have multiple categories, but this is extremely rare case.
+ * The Trace Event could have multiple categories, but this is extremely rare
+ * case.
  */
 using Categories = folly::small_vector<Category, 1>;
 
 // { Timeline, UserTiming } => "devtools.timeline,blink.user_timing"
-inline std::string serializeTracingCategories(const Categories &categories)
-{
+inline std::string serializeTracingCategories(const Categories& categories) {
   if (categories.size() == 1) {
     return tracingCategoryToString(categories.front());
   }
@@ -91,8 +90,8 @@ inline std::string serializeTracingCategories(const Categories &categories)
 }
 
 // { Timeline, UserTiming } => "devtools.timeline,blink.user_timing"
-inline std::string serializeTracingCategories(const std::set<Category> &categories)
-{
+inline std::string serializeTracingCategories(
+    const std::set<Category>& categories) {
   std::string serializedValue;
 
   auto current = categories.begin();
@@ -109,8 +108,8 @@ inline std::string serializeTracingCategories(const std::set<Category> &categori
 }
 
 // "devtools.timeline,blink.user_timing" => { Timeline, UserTiming }
-inline std::set<Category> parseSerializedTracingCategories(const std::string &serializedCategories)
-{
+inline std::set<Category> parseSerializedTracingCategories(
+    const std::string& serializedCategories) {
   std::set<Category> categories;
   if (serializedCategories.empty()) {
     return categories;

@@ -13,23 +13,19 @@ namespace facebook::react {
 
 class StubClock {
  public:
-  HighResTimeStamp getNow() const
-  {
+  HighResTimeStamp getNow() const {
     return timePoint_;
   }
 
-  void setTimePoint(HighResTimeStamp timePoint)
-  {
+  void setTimePoint(HighResTimeStamp timePoint) {
     timePoint_ = timePoint;
   }
 
-  HighResTimeStamp getTimePoint()
-  {
+  HighResTimeStamp getTimePoint() {
     return timePoint_;
   }
 
-  void advanceTimeBy(HighResDuration duration)
-  {
+  void advanceTimeBy(HighResDuration duration) {
     timePoint_ += duration;
   }
 

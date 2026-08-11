@@ -12,16 +12,15 @@
 namespace facebook::react::traits {
 
 template <typename ExpectedT>
-static constexpr bool containsType()
-{
+static constexpr bool containsType() {
   return false;
 }
 
 template <typename ExpectedT, typename FirstT, typename... RestT>
-static constexpr bool containsType()
-{
+static constexpr bool containsType() {
   if constexpr (sizeof...(RestT) > 0) {
-    return std::is_same_v<ExpectedT, FirstT> || containsType<ExpectedT, RestT...>();
+    return std::is_same_v<ExpectedT, FirstT> ||
+        containsType<ExpectedT, RestT...>();
   } else {
     return std::is_same_v<ExpectedT, FirstT>;
   }

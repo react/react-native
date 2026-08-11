@@ -25,16 +25,21 @@ class IntersectionObserverState {
   static IntersectionObserverState Initial();
   static IntersectionObserverState NotIntersecting();
   static IntersectionObserverState Intersecting(Float threshold);
-  static IntersectionObserverState Intersecting(Float threshold, Float rootThreshold);
+  static IntersectionObserverState Intersecting(
+      Float threshold,
+      Float rootThreshold);
 
   bool isIntersecting() const;
 
-  bool operator==(const IntersectionObserverState &other) const;
+  bool operator==(const IntersectionObserverState& other) const;
 
  private:
   explicit IntersectionObserverState(IntersectionObserverStateType state);
 
-  IntersectionObserverState(IntersectionObserverStateType state, Float threshold, Float rootThreshold);
+  IntersectionObserverState(
+      IntersectionObserverStateType state,
+      Float threshold,
+      Float rootThreshold);
 
   IntersectionObserverStateType state_;
 

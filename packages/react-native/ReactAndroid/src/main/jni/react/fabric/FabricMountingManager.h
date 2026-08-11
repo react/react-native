@@ -22,17 +22,18 @@ struct ShadowView;
 
 class FabricMountingManager final {
  public:
-  FabricMountingManager(jni::global_ref<JFabricUIManager::javaobject> &javaUIManager);
-  FabricMountingManager(const FabricMountingManager &) = delete;
+  FabricMountingManager(
+      jni::global_ref<JFabricUIManager::javaobject>& javaUIManager);
+  FabricMountingManager(const FabricMountingManager&) = delete;
   ~FabricMountingManager();
 
   void onSurfaceStart(SurfaceId surfaceId);
 
   void onSurfaceStop(SurfaceId surfaceId);
 
-  void maybePreallocateShadowNode(const ShadowNode &shadowNode);
+  void maybePreallocateShadowNode(const ShadowNode& shadowNode);
 
-  void destroyUnmountedShadowNode(const ShadowNodeFamily &family);
+  void destroyUnmountedShadowNode(const ShadowNodeFamily& family);
 
   /*
    * Drains preallocatedViewsQueue_ by calling preallocateShadowView on each
@@ -45,7 +46,7 @@ class FabricMountingManager final {
    * allocatedViewRegistry_ so that executeMount skips the redundant Create
    * mount item for this tag.
    */
-  void preallocateShadowView(const ShadowView &shadowView);
+  void preallocateShadowView(const ShadowView& shadowView);
 
   /*
    * Returns true if the given tag is registered in allocatedViewRegistry_
@@ -64,7 +65,9 @@ class FabricMountingManager final {
    * In the pull model (`synchronous` = true) the batch is
    * applied immediately on the calling (UI) thread.
    */
-  void executeMount(const MountingTransaction &transaction, bool synchronous = false);
+  void executeMount(
+      const MountingTransaction& transaction,
+      bool synchronous = false);
 
   /*
    * Pull model: notify Java that a transaction is available for `surfaceId` so
@@ -72,17 +75,27 @@ class FabricMountingManager final {
    */
   void onTransactionAvailable(SurfaceId surfaceId);
 
-  void dispatchCommand(const ShadowView &shadowView, const std::string &commandName, const folly::dynamic &args);
+  void dispatchCommand(
+      const ShadowView& shadowView,
+      const std::string& commandName,
+      const folly::dynamic& args);
 
-  void sendAccessibilityEvent(const ShadowView &shadowView, const std::string &eventType);
+  void sendAccessibilityEvent(
+      const ShadowView& shadowView,
+      const std::string& eventType);
 
-  void setIsJSResponder(const ShadowView &shadowView, bool isJSResponder, bool blockNativeResponder);
+  void setIsJSResponder(
+      const ShadowView& shadowView,
+      bool isJSResponder,
+      bool blockNativeResponder);
 
   void onAnimationStarted();
 
   void onAllAnimationsComplete();
 
-  void synchronouslyUpdateViewOnUIThread(Tag viewTag, const folly::dynamic &props);
+  void synchronouslyUpdateViewOnUIThread(
+      Tag viewTag,
+      const folly::dynamic& props);
 
   void captureViewSnapshot(Tag tag, SurfaceId surfaceId);
 
@@ -109,7 +122,8 @@ class FabricMountingManager final {
    */
   std::vector<ShadowView> preallocatedViewsQueue_{};
 
-  std::unordered_map<SurfaceId, std::unordered_set<Tag>> allocatedViewRegistry_{};
+  std::unordered_map<SurfaceId, std::unordered_set<Tag>>
+      allocatedViewRegistry_{};
   std::recursive_mutex allocatedViewsMutex_;
 };
 

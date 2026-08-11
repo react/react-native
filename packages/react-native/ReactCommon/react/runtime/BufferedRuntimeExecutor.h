@@ -17,14 +17,13 @@ namespace facebook::react {
 
 class BufferedRuntimeExecutor {
  public:
-  using Work = std::function<void(jsi::Runtime &runtime)>;
+  using Work = std::function<void(jsi::Runtime& runtime)>;
 
   // A utility structure to track pending work in the order of when they arrive.
   struct BufferedWork {
     uint64_t index_;
     Work work_;
-    bool operator<(const BufferedWork &rhs) const
-    {
+    bool operator<(const BufferedWork& rhs) const {
       // Higher index has lower priority, so this inverted comparison puts
       // the smaller index on top of the queue.
       return index_ > rhs.index_;
@@ -33,7 +32,7 @@ class BufferedRuntimeExecutor {
 
   BufferedRuntimeExecutor(RuntimeExecutor runtimeExecutor);
 
-  void execute(Work &&callback);
+  void execute(Work&& callback);
 
   // Flush buffered JS calls and then diable JS buffering
   void flush();

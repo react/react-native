@@ -18,7 +18,10 @@
 namespace facebook::react {
 class ColorAnimatedNode final : public AnimatedNode {
  public:
-  ColorAnimatedNode(Tag tag, const folly::dynamic &config, NativeAnimatedNodesManager &manager);
+  ColorAnimatedNode(
+      Tag tag,
+      const folly::dynamic& config,
+      NativeAnimatedNodesManager& manager);
 
   void update() override;
 

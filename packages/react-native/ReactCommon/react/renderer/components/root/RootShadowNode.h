@@ -26,15 +26,15 @@ extern const char RootComponentName[];
  * props which represent external layout constraints and context of the
  * shadow tree.
  */
-class RootShadowNode final : public ConcreteViewShadowNode<RootComponentName, RootProps> {
+class RootShadowNode final
+    : public ConcreteViewShadowNode<RootComponentName, RootProps> {
  public:
   using ConcreteViewShadowNode::ConcreteViewShadowNode;
 
   using Shared = std::shared_ptr<const RootShadowNode>;
   using Unshared = std::shared_ptr<RootShadowNode>;
 
-  static ShadowNodeTraits BaseTraits()
-  {
+  static ShadowNodeTraits BaseTraits() {
     auto traits = ConcreteViewShadowNode::BaseTraits();
     traits.set(ShadowNodeTraits::Trait::RootNodeKind);
     return traits;
@@ -44,15 +44,16 @@ class RootShadowNode final : public ConcreteViewShadowNode<RootComponentName, Ro
    * Layouts the shadow tree if needed.
    * Returns `false` if the three is already laid out.
    */
-  bool layoutIfNeeded(std::vector<const LayoutableShadowNode *> *affectedNodes = {});
+  bool layoutIfNeeded(
+      std::vector<const LayoutableShadowNode*>* affectedNodes = {});
 
   /*
    * Clones the node with given `layoutConstraints` and `layoutContext`.
    */
   RootShadowNode::Unshared clone(
-      const PropsParserContext &propsParserContext,
-      const LayoutConstraints &layoutConstraints,
-      const LayoutContext &layoutContext) const;
+      const PropsParserContext& propsParserContext,
+      const LayoutConstraints& layoutConstraints,
+      const LayoutContext& layoutContext) const;
 
   Transform getTransform() const override;
 

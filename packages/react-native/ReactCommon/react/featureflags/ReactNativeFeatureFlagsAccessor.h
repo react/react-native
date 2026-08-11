@@ -148,7 +148,8 @@ class ReactNativeFeatureFlagsAccessor {
   std::atomic<std::optional<bool>> enableAndroidTextMeasurementOptimizations_;
   std::atomic<std::optional<bool>> enableBridgelessArchitecture_;
   std::atomic<std::optional<bool>> enableCppPropsIteratorSetter_;
-  std::atomic<std::optional<bool>> enableCustomFocusSearchOnClippedElementsAndroid_;
+  std::atomic<std::optional<bool>>
+      enableCustomFocusSearchOnClippedElementsAndroid_;
   std::atomic<std::optional<bool>> enableDestroyShadowTreeRevisionAsync_;
   std::atomic<std::optional<bool>> enableDoubleMeasurementFixAndroid_;
   std::atomic<std::optional<bool>> enableEagerRootViewAttachment_;
@@ -162,9 +163,11 @@ class ReactNativeFeatureFlagsAccessor {
   std::atomic<std::optional<bool>> enableIOSViewClipToPaddingBox_;
   std::atomic<std::optional<bool>> enableImagePrefetchingAndroid_;
   std::atomic<std::optional<bool>> enableImageTransparentTintColor_;
-  std::atomic<std::optional<bool>> enableImmediateUpdateModeForContentOffsetChanges_;
+  std::atomic<std::optional<bool>>
+      enableImmediateUpdateModeForContentOffsetChanges_;
   std::atomic<std::optional<bool>> enableImperativeFocus_;
-  std::atomic<std::optional<bool>> enableInteropViewManagerClassLookUpOptimizationIOS_;
+  std::atomic<std::optional<bool>>
+      enableInteropViewManagerClassLookUpOptimizationIOS_;
   std::atomic<std::optional<bool>> enableIntersectionObserverByDefault_;
   std::atomic<std::optional<bool>> enableKeyEvents_;
   std::atomic<std::optional<bool>> enableLayoutAnimationsOnAndroid_;
@@ -186,7 +189,8 @@ class ReactNativeFeatureFlagsAccessor {
   std::atomic<std::optional<bool>> enableViewRecyclingForView_;
   std::atomic<std::optional<bool>> enableVirtualViewContainerStateExperimental_;
   std::atomic<std::optional<bool>> fixDifferentiatorParentTagForUnflattenCase_;
-  std::atomic<std::optional<bool>> fixMappingOfEventPrioritiesBetweenFabricAndReact_;
+  std::atomic<std::optional<bool>>
+      fixMappingOfEventPrioritiesBetweenFabricAndReact_;
   std::atomic<std::optional<bool>> fixYogaFlexBasisFitContentInMainAxis_;
   std::atomic<std::optional<bool>> fuseboxAssertSingleHostState_;
   std::atomic<std::optional<bool>> fuseboxEnabledRelease_;
@@ -194,20 +198,24 @@ class ReactNativeFeatureFlagsAccessor {
   std::atomic<std::optional<bool>> fuseboxScreenshotCaptureEnabled_;
   std::atomic<std::optional<bool>> fuseboxWebSocketEventsEnabled_;
   std::atomic<std::optional<bool>> optimizedAnimatedPropUpdates_;
-  std::atomic<std::optional<bool>> overrideBySynchronousMountPropsAtMountingAndroid_;
+  std::atomic<std::optional<bool>>
+      overrideBySynchronousMountPropsAtMountingAndroid_;
   std::atomic<std::optional<bool>> perfIssuesEnabled_;
   std::atomic<std::optional<bool>> perfMonitorV2Enabled_;
   std::atomic<std::optional<double>> preparedTextCacheSize_;
   std::atomic<std::optional<bool>> preventShadowTreeCommitExhaustion_;
   std::atomic<std::optional<bool>> redBoxV2Android_;
   std::atomic<std::optional<bool>> redBoxV2IOS_;
-  std::atomic<std::optional<bool>> shouldPressibilityUseW3CPointerEventsForHover_;
-  std::atomic<std::optional<bool>> shouldTriggerResponderTransferOnScrollAndroid_;
+  std::atomic<std::optional<bool>>
+      shouldPressibilityUseW3CPointerEventsForHover_;
+  std::atomic<std::optional<bool>>
+      shouldTriggerResponderTransferOnScrollAndroid_;
   std::atomic<std::optional<bool>> skipActivityIdentityAssertionOnHostPause_;
   std::atomic<std::optional<bool>> syncAndroidClipBoundsWithOverflow_;
   std::atomic<std::optional<bool>> traceTurboModulePromiseRejectionsOnAndroid_;
   std::atomic<std::optional<bool>> updateRuntimeShadowNodeReferencesOnCommit_;
-  std::atomic<std::optional<bool>> updateRuntimeShadowNodeReferencesOnCommitThread_;
+  std::atomic<std::optional<bool>>
+      updateRuntimeShadowNodeReferencesOnCommitThread_;
   std::atomic<std::optional<bool>> useAlwaysAvailableJSErrorHandling_;
   std::atomic<std::optional<bool>> useFabricInterop_;
   std::atomic<std::optional<bool>> useNativeViewConfigsInBridgelessMode_;

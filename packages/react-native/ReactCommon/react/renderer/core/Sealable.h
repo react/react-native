@@ -49,8 +49,7 @@ namespace facebook::react {
 class Sealable {
  public:
   inline void seal() const {}
-  inline bool getSealed() const
-  {
+  inline bool getSealed() const {
     return true;
   }
   inline void ensureUnsealed() const {}
@@ -62,11 +61,11 @@ class Sealable {
 class Sealable {
  public:
   Sealable();
-  Sealable(const Sealable &other);
-  Sealable(Sealable &&other) noexcept;
+  Sealable(const Sealable& other);
+  Sealable(Sealable&& other) noexcept;
   ~Sealable() noexcept;
-  Sealable &operator=(const Sealable &other);
-  Sealable &operator=(Sealable &&other) noexcept;
+  Sealable& operator=(const Sealable& other);
+  Sealable& operator=(Sealable&& other) noexcept;
 
   /*
    * Seals the object. This operation is irreversible;

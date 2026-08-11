@@ -20,7 +20,8 @@
 
 namespace facebook::react {
 
-using PerformanceObserverEntryTypeFilter = std::unordered_set<PerformanceEntryType>;
+using PerformanceObserverEntryTypeFilter =
+    std::unordered_set<PerformanceEntryType>;
 using PerformanceObserverCallback = std::function<void()>;
 
 /**
@@ -52,7 +53,8 @@ struct PerformanceObserverObserveSingleOptions {
  * Entries are pushed to the observer by the `PerformanceEntryReporter` class,
  * through the `PerformanceObserverRegistry` class which acts as a central hub.
  */
-class PerformanceObserver : public std::enable_shared_from_this<PerformanceObserver> {
+class PerformanceObserver
+    : public std::enable_shared_from_this<PerformanceObserver> {
  private:
   struct PrivateUseCreateMethod {
     explicit PrivateUseCreateMethod() = default;
@@ -61,17 +63,15 @@ class PerformanceObserver : public std::enable_shared_from_this<PerformanceObser
  public:
   explicit PerformanceObserver(
       PrivateUseCreateMethod /*unused*/,
-      PerformanceObserverRegistry &registry,
-      PerformanceObserverCallback &&callback)
-      : registry_(registry), callback_(std::move(callback))
-  {
-  }
+      PerformanceObserverRegistry& registry,
+      PerformanceObserverCallback&& callback)
+      : registry_(registry), callback_(std::move(callback)) {}
 
   static std::shared_ptr<PerformanceObserver> create(
-      PerformanceObserverRegistry &registry,
-      PerformanceObserverCallback &&callback)
-  {
-    return std::make_shared<PerformanceObserver>(PrivateUseCreateMethod(), registry, std::move(callback));
+      PerformanceObserverRegistry& registry,
+      PerformanceObserverCallback&& callback) {
+    return std::make_shared<PerformanceObserver>(
+        PrivateUseCreateMethod(), registry, std::move(callback));
   }
 
   ~PerformanceObserver() = default;
@@ -79,7 +79,7 @@ class PerformanceObserver : public std::enable_shared_from_this<PerformanceObser
   /**
    * Append entry to the buffer if this observer should handle this entry.
    */
-  void handleEntry(const PerformanceEntry &entry);
+  void handleEntry(const PerformanceEntry& entry);
 
   /**
    * Returns current observer buffer and clears it.
@@ -96,7 +96,9 @@ class PerformanceObserver : public std::enable_shared_from_this<PerformanceObser
    * calls to this methods remove any previous watch configuration (as per
    * spec).
    */
-  void observe(PerformanceEntryType type, PerformanceObserverObserveSingleOptions options = {});
+  void observe(
+      PerformanceEntryType type,
+      PerformanceObserverObserveSingleOptions options = {});
 
   /**
    * Configures the observer to watch for specified entry type.
@@ -121,7 +123,7 @@ class PerformanceObserver : public std::enable_shared_from_this<PerformanceObser
  private:
   void scheduleFlushBuffer();
 
-  PerformanceObserverRegistry &registry_;
+  PerformanceObserverRegistry& registry_;
   PerformanceObserverCallback callback_;
   PerformanceObserverEntryTypeFilter observedTypes_;
 
@@ -133,8 +135,9 @@ class PerformanceObserver : public std::enable_shared_from_this<PerformanceObser
   bool requiresDroppedEntries_ = false;
 };
 
-inline bool operator==(const PerformanceObserver &lhs, const PerformanceObserver &rhs)
-{
+inline bool operator==(
+    const PerformanceObserver& lhs,
+    const PerformanceObserver& rhs) {
   return &lhs == &rhs;
 }
 

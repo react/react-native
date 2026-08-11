@@ -17,8 +17,8 @@ namespace facebook::react {
  */
 class InputAccessoryState final {
  public:
-  InputAccessoryState() {};
-  InputAccessoryState(Size viewportSize_) : viewportSize(viewportSize_) {};
+  InputAccessoryState(){};
+  InputAccessoryState(Size viewportSize_) : viewportSize(viewportSize_){};
 
   const Size viewportSize{};
 };

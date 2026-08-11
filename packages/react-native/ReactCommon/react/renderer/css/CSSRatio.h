@@ -24,22 +24,23 @@ struct CSSRatio {
   float numerator{};
   float denominator{};
 
-  constexpr bool operator==(const CSSRatio &rhs) const = default;
+  constexpr bool operator==(const CSSRatio& rhs) const = default;
 
-  constexpr bool isDegenerate() const
-  {
+  constexpr bool isDegenerate() const {
     // If either number in the <ratio> is 0 or infinite, it represents a
     // degenerate ratio (and, generally, won’t do anything).
     // https://www.w3.org/TR/css-values-4/#ratios
-    return numerator == 0.0f || numerator == std::numeric_limits<float>::infinity() || denominator == 0.0f ||
+    return numerator == 0.0f ||
+        numerator == std::numeric_limits<float>::infinity() ||
+        denominator == 0.0f ||
         denominator == std::numeric_limits<float>::infinity();
   }
 };
 
 template <>
 struct CSSDataTypeParser<CSSRatio> {
-  static constexpr auto consume(CSSValueParser &parser) -> std::optional<CSSRatio>
-  {
+  static constexpr auto consume(CSSValueParser& parser)
+      -> std::optional<CSSRatio> {
     // <ratio> = <number [0,∞]> [ / <number [0,∞]> ]?
     // https://www.w3.org/TR/css-values-4/#ratio
     auto numerator = parser.parseNextValue<CSSNumber>();
@@ -50,9 +51,12 @@ struct CSSDataTypeParser<CSSRatio> {
     auto numeratorValue = std::get<CSSNumber>(numerator).value;
     if (numeratorValue >= 0) {
       auto denominator = parser.peekNextValue<CSSNumber>(CSSDelimiter::Solidus);
-      if (std::holds_alternative<CSSNumber>(denominator) && std::get<CSSNumber>(denominator).value >= 0) {
+      if (std::holds_alternative<CSSNumber>(denominator) &&
+          std::get<CSSNumber>(denominator).value >= 0) {
         parser.parseNextValue<CSSNumber>(CSSDelimiter::Solidus);
-        return CSSRatio{.numerator = numeratorValue, .denominator = std::get<CSSNumber>(denominator).value};
+        return CSSRatio{
+            .numerator = numeratorValue,
+            .denominator = std::get<CSSNumber>(denominator).value};
       }
 
       return CSSRatio{.numerator = numeratorValue, .denominator = 1.0f};

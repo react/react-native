@@ -16,13 +16,13 @@ class InspectorThread {
  public:
   InspectorThread() noexcept = default;
   virtual ~InspectorThread() = default;
-  InspectorThread(const InspectorThread &other) = delete;
-  InspectorThread &operator=(InspectorThread &other) = delete;
-  InspectorThread(InspectorThread &&other) = delete;
-  InspectorThread &operator=(InspectorThread &&other) = delete;
+  InspectorThread(const InspectorThread& other) = delete;
+  InspectorThread& operator=(InspectorThread& other) = delete;
+  InspectorThread(InspectorThread&& other) = delete;
+  InspectorThread& operator=(InspectorThread&& other) = delete;
 
   virtual void invokeElsePost(
-      TaskDispatchThread::TaskFn &&callback,
+      TaskDispatchThread::TaskFn&& callback,
       std::chrono::milliseconds delayMs = std::chrono::milliseconds(0)) = 0;
 };
 

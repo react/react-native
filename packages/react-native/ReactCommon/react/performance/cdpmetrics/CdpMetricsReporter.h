@@ -27,7 +27,7 @@ class CdpMetricsReporter : public PerformanceEntryReporterEventListener {
  public:
   explicit CdpMetricsReporter(RuntimeExecutor runtimeExecutor);
 
-  void onEventTimingEntry(const PerformanceEventTiming &entry) override;
+  void onEventTimingEntry(const PerformanceEventTiming& entry) override;
 
  private:
   const RuntimeExecutor runtimeExecutor_{};

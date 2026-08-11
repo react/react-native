@@ -32,13 +32,17 @@ class BaseViewProps : public YogaStylableProps, public AccessibilityProps {
  public:
   BaseViewProps() = default;
   BaseViewProps(
-      const PropsParserContext &context,
-      const BaseViewProps &sourceProps,
-      const RawProps &rawProps,
-      const std::function<bool(const std::string &)> &filterObjectKeys = nullptr);
+      const PropsParserContext& context,
+      const BaseViewProps& sourceProps,
+      const RawProps& rawProps,
+      const std::function<bool(const std::string&)>& filterObjectKeys =
+          nullptr);
 
-  void
-  setProp(const PropsParserContext &context, RawPropsPropNameHash hash, const char *propName, const RawValue &value);
+  void setProp(
+      const PropsParserContext& context,
+      RawPropsPropNameHash hash,
+      const char* propName,
+      const RawValue& value);
 
 #pragma mark - Props
 
@@ -112,12 +116,14 @@ class BaseViewProps : public YogaStylableProps, public AccessibilityProps {
 #pragma mark - Convenience Methods
 
   CascadedBorderWidths getBorderWidths() const;
-  BorderMetrics resolveBorderMetrics(const LayoutMetrics &layoutMetrics) const;
-  Transform resolveTransform(const LayoutMetrics &layoutMetrics) const;
+  BorderMetrics resolveBorderMetrics(const LayoutMetrics& layoutMetrics) const;
+  Transform resolveTransform(const LayoutMetrics& layoutMetrics) const;
   bool getClipsContentToBounds() const;
 
-  static Transform
-  resolveTransform(const Size &frameSize, const Transform &transform, const TransformOrigin &transformOrigin);
+  static Transform resolveTransform(
+      const Size& frameSize,
+      const Transform& transform,
+      const TransformOrigin& transformOrigin);
 
 #if RN_DEBUG_STRING_CONVERTIBLE
   SharedDebugStringConvertibleList getDebugProps() const override;

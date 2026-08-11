@@ -17,10 +17,11 @@ namespace facebook::react {
 
 class AdditionAnimatedNode final : public OperatorAnimatedNode {
  public:
-  AdditionAnimatedNode(Tag tag, const folly::dynamic &config, NativeAnimatedNodesManager &manager)
-      : OperatorAnimatedNode(tag, config, manager)
-  {
-  }
+  AdditionAnimatedNode(
+      Tag tag,
+      const folly::dynamic& config,
+      NativeAnimatedNodesManager& manager)
+      : OperatorAnimatedNode(tag, config, manager) {}
 
   void update() override;
 };

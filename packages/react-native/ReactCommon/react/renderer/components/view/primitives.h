@@ -69,19 +69,16 @@ struct ViewEvents {
     PointerUpCapture = 37,
   };
 
-  constexpr bool operator[](const Offset offset) const
-  {
+  constexpr bool operator[](const Offset offset) const {
     return bits[static_cast<std::size_t>(offset)];
   }
 
-  std::bitset<64>::reference operator[](const Offset offset)
-  {
+  std::bitset<64>::reference operator[](const Offset offset) {
     return bits[static_cast<std::size_t>(offset)];
   }
 };
 
-inline static bool operator==(const ViewEvents &lhs, const ViewEvents &rhs)
-{
+inline static bool operator==(const ViewEvents& lhs, const ViewEvents& rhs) {
   return lhs.bits == rhs.bits;
 }
 
@@ -97,7 +94,7 @@ struct CornerRadii {
   float vertical{0.0f};
   float horizontal{0.0f};
 
-  bool operator==(const CornerRadii &other) const = default;
+  bool operator==(const CornerRadii& other) const = default;
 };
 
 enum class Cursor : uint8_t {
@@ -159,26 +156,29 @@ struct CascadedRectangleEdges {
   OptionalT blockStart{};
   OptionalT blockEnd{};
 
-  Counterpart resolve(bool isRTL, T defaults) const
-  {
+  Counterpart resolve(bool isRTL, T defaults) const {
     const auto leadingEdge = isRTL ? end : start;
     const auto trailingEdge = isRTL ? start : end;
-    const auto horizontalOrAllOrDefault = horizontal.value_or(all.value_or(defaults));
-    const auto verticalOrAllOrDefault = vertical.value_or(all.value_or(defaults));
+    const auto horizontalOrAllOrDefault =
+        horizontal.value_or(all.value_or(defaults));
+    const auto verticalOrAllOrDefault =
+        vertical.value_or(all.value_or(defaults));
 
     return {
         /* .left = */
         left.value_or(leadingEdge.value_or(horizontalOrAllOrDefault)),
         /* .top = */
-        blockStart.value_or(block.value_or(top.value_or(verticalOrAllOrDefault))),
+        blockStart.value_or(
+            block.value_or(top.value_or(verticalOrAllOrDefault))),
         /* .right = */
         right.value_or(trailingEdge.value_or(horizontalOrAllOrDefault)),
         /* .bottom = */
-        blockEnd.value_or(block.value_or(bottom.value_or(verticalOrAllOrDefault))),
+        blockEnd.value_or(
+            block.value_or(bottom.value_or(verticalOrAllOrDefault))),
     };
   }
 
-  bool operator==(const CascadedRectangleEdges<T> &rhs) const = default;
+  bool operator==(const CascadedRectangleEdges<T>& rhs) const = default;
 };
 
 template <typename T>
@@ -200,8 +200,7 @@ struct CascadedRectangleCorners {
   OptionalT startEnd{};
   OptionalT startStart{};
 
-  Counterpart resolve(bool isRTL, T defaults) const
-  {
+  Counterpart resolve(bool isRTL, T defaults) const {
     const auto logicalTopStart = topStart ? topStart : startStart;
     const auto logicalTopEnd = topEnd ? topEnd : startEnd;
     const auto logicalBottomStart = bottomStart ? bottomStart : endStart;
@@ -213,7 +212,8 @@ struct CascadedRectangleCorners {
     const auto bottomTrailing = isRTL ? logicalBottomStart : logicalBottomEnd;
 
     return {
-        /* .topLeft = */ topLeft.value_or(topLeading.value_or(all.value_or(defaults))),
+        /* .topLeft = */ topLeft.value_or(
+            topLeading.value_or(all.value_or(defaults))),
         /* .topRight = */
         topRight.value_or(topTrailing.value_or(all.value_or(defaults))),
         /* .bottomLeft = */
@@ -223,7 +223,7 @@ struct CascadedRectangleCorners {
     };
   }
 
-  bool operator==(const CascadedRectangleCorners<T> &rhs) const = default;
+  bool operator==(const CascadedRectangleCorners<T>& rhs) const = default;
 };
 
 using BorderWidths = RectangleEdges<Float>;
@@ -245,12 +245,12 @@ struct BorderMetrics {
   BorderCurves borderCurves{};
   BorderStyles borderStyles{};
 
-  bool operator==(const BorderMetrics &rhs) const = default;
+  bool operator==(const BorderMetrics& rhs) const = default;
 };
 
-inline bool areBorderRadiiCircular(const BorderRadii &borderRadii)
-{
-  return borderRadii.isUniform() && borderRadii.topLeft.horizontal == borderRadii.topLeft.vertical;
+inline bool areBorderRadiiCircular(const BorderRadii& borderRadii) {
+  return borderRadii.isUniform() &&
+      borderRadii.topLeft.horizontal == borderRadii.topLeft.vertical;
 }
 
 } // namespace facebook::react

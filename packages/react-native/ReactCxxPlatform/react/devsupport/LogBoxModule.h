@@ -13,12 +13,14 @@
 namespace facebook::react {
 class LogBoxModule : public NativeLogBoxCxxSpec<LogBoxModule> {
  public:
-  LogBoxModule(std::shared_ptr<CallInvoker> jsInvoker, std::shared_ptr<SurfaceDelegate> surfaceDelegate);
+  LogBoxModule(
+      std::shared_ptr<CallInvoker> jsInvoker,
+      std::shared_ptr<SurfaceDelegate> surfaceDelegate);
   ~LogBoxModule() override;
 
-  void show(jsi::Runtime &rt);
+  void show(jsi::Runtime& rt);
 
-  void hide(jsi::Runtime &rt);
+  void hide(jsi::Runtime& rt);
 
  private:
   std::shared_ptr<SurfaceDelegate> surfaceDelegate_;

@@ -18,54 +18,46 @@ namespace facebook::react {
 
 class BridgingTest : public ::testing::Test {
  public:
-  BridgingTest(BridgingTest &other) = delete;
-  BridgingTest &operator=(BridgingTest &other) = delete;
-  BridgingTest(BridgingTest &&other) = delete;
-  BridgingTest &operator=(BridgingTest &&other) = delete;
+  BridgingTest(BridgingTest& other) = delete;
+  BridgingTest& operator=(BridgingTest& other) = delete;
+  BridgingTest(BridgingTest&& other) = delete;
+  BridgingTest& operator=(BridgingTest&& other) = delete;
 
  protected:
   BridgingTest()
-      : runtime(
-            hermes::makeHermesRuntime(
-                ::hermes::vm::RuntimeConfig::Builder()
-                    // Make promises work with Hermes microtasks.
-                    .withMicrotaskQueue(true)
-                    .build())),
+      : runtime(hermes::makeHermesRuntime(
+            ::hermes::vm::RuntimeConfig::Builder()
+                // Make promises work with Hermes microtasks.
+                .withMicrotaskQueue(true)
+                .build())),
         rt(*runtime),
-        invoker(std::make_shared<TestCallInvoker>(*runtime))
-  {
-  }
+        invoker(std::make_shared<TestCallInvoker>(*runtime)) {}
 
-  ~BridgingTest() override
-  {
+  ~BridgingTest() override {
     LongLivedObjectCollection::get(rt).clear();
   }
 
-  void TearDown() override
-  {
+  void TearDown() override {
     flushQueue();
 
     // After flushing the invoker queue, we shouldn't leak memory.
     EXPECT_EQ(0, LongLivedObjectCollection::get(rt).size());
   }
 
-  jsi::Value eval(const std::string &js)
-  {
+  jsi::Value eval(const std::string& js) {
     return rt.global().getPropertyAsFunction(rt, "eval").call(rt, js);
   }
 
-  jsi::Function function(const std::string &js)
-  {
+  jsi::Function function(const std::string& js) {
     return eval(("(" + js + ")").c_str()).getObject(rt).getFunction(rt);
   }
 
-  void flushQueue()
-  {
+  void flushQueue() {
     invoker->flushQueue();
   }
 
   std::shared_ptr<jsi::Runtime> runtime;
-  jsi::Runtime &rt;
+  jsi::Runtime& rt;
   std::shared_ptr<TestCallInvoker> invoker;
 };
 

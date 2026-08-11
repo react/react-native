@@ -19,17 +19,23 @@
 
 namespace facebook::react {
 
-class JHermesInstance : public jni::HybridClass<JHermesInstance, JJSRuntimeFactory> {
+class JHermesInstance
+    : public jni::HybridClass<JHermesInstance, JJSRuntimeFactory> {
  public:
-  static constexpr auto kJavaDescriptor = "Lcom/facebook/react/runtime/hermes/HermesInstance;";
+  static constexpr auto kJavaDescriptor =
+      "Lcom/facebook/react/runtime/hermes/HermesInstance;";
 
-  static jni::local_ref<jhybriddata> initHybrid(jni::alias_ref<jclass> /* unused */, bool allocInOldGenBeforeTTI);
+  static jni::local_ref<jhybriddata> initHybrid(
+      jni::alias_ref<jclass> /* unused */,
+      bool allocInOldGenBeforeTTI);
 
   static void registerNatives();
 
-  JHermesInstance(bool allocInOldGenBeforeTTI) : allocInOldGenBeforeTTI_(allocInOldGenBeforeTTI) {};
+  JHermesInstance(bool allocInOldGenBeforeTTI)
+      : allocInOldGenBeforeTTI_(allocInOldGenBeforeTTI){};
 
-  std::unique_ptr<JSRuntime> createJSRuntime(std::shared_ptr<MessageQueueThread> msgQueueThread) noexcept;
+  std::unique_ptr<JSRuntime> createJSRuntime(
+      std::shared_ptr<MessageQueueThread> msgQueueThread) noexcept;
 
   ~JHermesInstance() {}
 

@@ -46,9 +46,9 @@ class RuntimeAgent final {
    */
   RuntimeAgent(
       FrontendChannel frontendChannel,
-      RuntimeTargetController &targetController,
+      RuntimeTargetController& targetController,
       ExecutionContextDescription executionContextDescription,
-      SessionState &sessionState,
+      SessionState& sessionState,
       std::unique_ptr<RuntimeAgentDelegate> delegate);
 
   ~RuntimeAgent();
@@ -63,14 +63,16 @@ class RuntimeAgent final {
    * to the request (with either a success or error message). False if the
    * agent expects another agent to respond to the request instead.
    */
-  bool handleRequest(const cdp::PreparsedRequest &req);
+  bool handleRequest(const cdp::PreparsedRequest& req);
 
-  inline const ExecutionContextDescription &getExecutionContextDescription() const
-  {
+  inline const ExecutionContextDescription& getExecutionContextDescription()
+      const {
     return executionContextDescription_;
   }
 
-  void notifyBindingCalled(const std::string &bindingName, const std::string &payload);
+  void notifyBindingCalled(
+      const std::string& bindingName,
+      const std::string& payload);
 
   /**
    * Called by RuntimeTarget when JS calls __notifyFastRefreshComplete().
@@ -92,8 +94,8 @@ class RuntimeAgent final {
 
  private:
   FrontendChannel frontendChannel_;
-  RuntimeTargetController &targetController_;
-  SessionState &sessionState_;
+  RuntimeTargetController& targetController_;
+  SessionState& sessionState_;
   const std::unique_ptr<RuntimeAgentDelegate> delegate_;
   const ExecutionContextDescription executionContextDescription_;
 };
@@ -108,12 +110,14 @@ class RuntimeAgent final {
  */
 class RuntimeTracingAgent : public tracing::TargetTracingAgent {
  public:
-  explicit RuntimeTracingAgent(tracing::TraceRecordingState &state, RuntimeTargetController &targetController);
+  explicit RuntimeTracingAgent(
+      tracing::TraceRecordingState& state,
+      RuntimeTargetController& targetController);
 
   ~RuntimeTracingAgent();
 
  private:
-  RuntimeTargetController &targetController_;
+  RuntimeTargetController& targetController_;
 };
 
 } // namespace facebook::react::jsinspector_modern

@@ -20,13 +20,13 @@ namespace facebook::react {
 struct CSSPercentage {
   float value{};
 
-  constexpr bool operator==(const CSSPercentage &rhs) const = default;
+  constexpr bool operator==(const CSSPercentage& rhs) const = default;
 };
 
 template <>
 struct CSSDataTypeParser<CSSPercentage> {
-  static constexpr auto consumePreservedToken(const CSSPreservedToken &token) -> std::optional<CSSPercentage>
-  {
+  static constexpr auto consumePreservedToken(const CSSPreservedToken& token)
+      -> std::optional<CSSPercentage> {
     if (token.type() == CSSTokenType::Percentage) {
       return CSSPercentage{token.numericValue()};
     }

@@ -19,10 +19,9 @@ namespace facebook::react {
  * (e.g., "50%").
  */
 inline void serializeTransformOperationValue(
-    const std::string &operationName,
-    const ValueUnit &valueUnit,
-    folly::dynamic &resultArray)
-{
+    const std::string& operationName,
+    const ValueUnit& valueUnit,
+    folly::dynamic& resultArray) {
   folly::dynamic result = folly::dynamic::object();
   if (valueUnit.unit == UnitType::Percent) {
     result[operationName] = std::to_string(valueUnit.value) + "%";
@@ -33,27 +32,28 @@ inline void serializeTransformOperationValue(
 }
 
 inline void serializeTransformAxis(
-    const TransformOperation &operation,
-    const std::string &operationName,
+    const TransformOperation& operation,
+    const std::string& operationName,
     float defaultValue,
-    folly::dynamic &resultTranslateArray)
-{
+    folly::dynamic& resultTranslateArray) {
   if (operation.x.value != defaultValue) {
-    serializeTransformOperationValue(operationName + "X", operation.x, resultTranslateArray);
+    serializeTransformOperationValue(
+        operationName + "X", operation.x, resultTranslateArray);
   }
   if (operation.y.value != defaultValue) {
-    serializeTransformOperationValue(operationName + "Y", operation.y, resultTranslateArray);
+    serializeTransformOperationValue(
+        operationName + "Y", operation.y, resultTranslateArray);
   }
   if (operation.z.value != defaultValue) {
-    serializeTransformOperationValue(operationName + "Z", operation.z, resultTranslateArray);
+    serializeTransformOperationValue(
+        operationName + "Z", operation.z, resultTranslateArray);
   }
 }
 
 inline void updateTransformProps(
-    const Transform &transform,
-    const TransformOperation &operation,
-    folly::dynamic &resultTranslateArray)
-{
+    const Transform& transform,
+    const TransformOperation& operation,
+    folly::dynamic& resultTranslateArray) {
   // See serialization rules in:
   // react-native-github/packages/react-native/ReactCommon/react/renderer/components/view/conversions.h?lines=592
   std::string operationName;
@@ -61,9 +61,11 @@ inline void updateTransformProps(
     case TransformOperationType::Scale:
       operationName = "scale";
       if (operation.x == operation.y && operation.x == operation.z) {
-        serializeTransformOperationValue(operationName, operation.x, resultTranslateArray);
+        serializeTransformOperationValue(
+            operationName, operation.x, resultTranslateArray);
       } else {
-        serializeTransformAxis(operation, operationName, 1.0f, resultTranslateArray);
+        serializeTransformAxis(
+            operation, operationName, 1.0f, resultTranslateArray);
       }
       return;
     case TransformOperationType::Translate:

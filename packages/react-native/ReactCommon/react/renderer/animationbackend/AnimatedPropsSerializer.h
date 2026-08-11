@@ -12,6 +12,6 @@
 
 namespace facebook::react::animationbackend {
 
-folly::dynamic packAnimatedProps(const AnimatedProps &animatedProps);
+folly::dynamic packAnimatedProps(const AnimatedProps& animatedProps);
 
 } // namespace facebook::react::animationbackend

@@ -19,8 +19,7 @@ namespace facebook::react::jsinspector_modern {
  *
  * \param buffer Buffer to operate on - will be resized if necessary.
  */
-inline void truncateToValidUTF8(std::vector<char> &buffer)
-{
+inline void truncateToValidUTF8(std::vector<char>& buffer) {
   const auto length = buffer.size();
   // Ensure we don't cut a UTF-8 code point in the middle by removing any
   // trailing bytes representing an incomplete UTF-8 code point.
@@ -32,7 +31,8 @@ inline void truncateToValidUTF8(std::vector<char> &buffer)
     int continuationBytes = 0;
     // Find the first byte of the UTF-8 code point (topmost bits 11) and count
     // the number of continuation bytes following it.
-    while ((buffer[length - continuationBytes - 1] & 0b11000000) != 0b11000000) {
+    while ((buffer[length - continuationBytes - 1] & 0b11000000) !=
+           0b11000000) {
       continuationBytes++;
       if (continuationBytes > 3 || continuationBytes >= length - 1) {
         throw std::runtime_error("Invalid UTF-8 sequence");
@@ -46,7 +46,8 @@ inline void truncateToValidUTF8(std::vector<char> &buffer)
     // by a 0.
     char mask = static_cast<char>(0b11111000 << (3 - continuationBytes));
     char expectedBitsAfterMask = static_cast<char>(mask << 1);
-    if (continuationBytes == 0 || (firstByteOfSequence & mask) != expectedBitsAfterMask) {
+    if (continuationBytes == 0 ||
+        (firstByteOfSequence & mask) != expectedBitsAfterMask) {
       // Remove the trailing continuation bytes, if any, and the first byte.
       buffer.resize(length - (continuationBytes + 1));
     }

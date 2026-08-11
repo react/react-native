@@ -20,7 +20,10 @@
 namespace facebook::react {
 class PropsAnimatedNode final : public AnimatedNode {
  public:
-  PropsAnimatedNode(Tag tag, const folly::dynamic &config, NativeAnimatedNodesManager &manager);
+  PropsAnimatedNode(
+      Tag tag,
+      const folly::dynamic& config,
+      NativeAnimatedNodesManager& manager);
 
   // Only called when `useSharedAnimatedBackend`==true
   void connectToShadowNodeFamily(ShadowNodeFamily::Weak shadowNodeFamily);
@@ -30,18 +33,15 @@ class PropsAnimatedNode final : public AnimatedNode {
   void disconnectFromView(Tag viewTag);
   void restoreDefaultValues();
 
-  Tag connectedViewTag() const
-  {
+  Tag connectedViewTag() const {
     return connectedViewTag_;
   }
 
-  SurfaceId connectedRootTag() const
-  {
+  SurfaceId connectedRootTag() const {
     return connectedRootTag_;
   }
 
-  folly::dynamic props()
-  {
+  folly::dynamic props() {
     std::lock_guard<std::mutex> lock(propsMutex_);
     return props_;
   }

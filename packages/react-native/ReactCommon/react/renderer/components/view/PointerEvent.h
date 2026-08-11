@@ -119,15 +119,15 @@ struct PointerEvent : public EventPayload {
   /*
    * EventPayload implementations
    */
-  jsi::Value asJSIValue(jsi::Runtime &runtime) const override;
+  jsi::Value asJSIValue(jsi::Runtime& runtime) const override;
   EventPayloadType getType() const override;
 };
 
 #if RN_DEBUG_STRING_CONVERTIBLE
 
-std::string getDebugName(const PointerEvent &pointerEvent);
+std::string getDebugName(const PointerEvent& pointerEvent);
 std::vector<DebugStringConvertibleObject> getDebugProps(
-    const PointerEvent &pointerEvent,
+    const PointerEvent& pointerEvent,
     DebugStringConvertibleOptions options);
 
 #endif

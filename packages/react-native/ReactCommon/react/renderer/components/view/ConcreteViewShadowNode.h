@@ -23,7 +23,7 @@ namespace facebook::react {
  * For example: <Paragraph>, <Image>, but not <Text>, <RawText>.
  */
 template <
-    const char *concreteComponentName,
+    const char* concreteComponentName,
     typename ViewPropsT = ViewProps,
     typename ViewEventEmitterT = ViewEventEmitter,
     typename StateDataT = StateData>
@@ -34,7 +34,9 @@ class ConcreteViewShadowNode : public ConcreteShadowNode<
                                    ViewPropsT,
                                    ViewEventEmitterT,
                                    StateDataT> {
-  static_assert(std::is_base_of<ViewProps, ViewPropsT>::value, "ViewPropsT must be a descendant of ViewProps");
+  static_assert(
+      std::is_base_of<ViewProps, ViewPropsT>::value,
+      "ViewPropsT must be a descendant of ViewProps");
   static_assert(
       std::is_base_of<YogaStylableProps, ViewPropsT>::value,
       "ViewPropsT must be a descendant of YogaStylableProps");
@@ -43,21 +45,25 @@ class ConcreteViewShadowNode : public ConcreteShadowNode<
       "ViewPropsT must be a descendant of AccessibilityProps");
 
  public:
-  using BaseShadowNode =
-      ConcreteShadowNode<concreteComponentName, YogaLayoutableShadowNode, ViewPropsT, ViewEventEmitterT, StateDataT>;
+  using BaseShadowNode = ConcreteShadowNode<
+      concreteComponentName,
+      YogaLayoutableShadowNode,
+      ViewPropsT,
+      ViewEventEmitterT,
+      StateDataT>;
 
   ConcreteViewShadowNode(
-      const ShadowNodeFragment &fragment,
-      const ShadowNodeFamily::Shared &family,
+      const ShadowNodeFragment& fragment,
+      const ShadowNodeFamily::Shared& family,
       ShadowNodeTraits traits)
-      : BaseShadowNode(fragment, family, traits)
-  {
+      : BaseShadowNode(fragment, family, traits) {
     initialize();
   }
 
-  ConcreteViewShadowNode(const ShadowNode &sourceShadowNode, const ShadowNodeFragment &fragment)
-      : BaseShadowNode(sourceShadowNode, fragment)
-  {
+  ConcreteViewShadowNode(
+      const ShadowNode& sourceShadowNode,
+      const ShadowNodeFragment& fragment)
+      : BaseShadowNode(sourceShadowNode, fragment) {
     initialize();
   }
 
@@ -65,8 +71,7 @@ class ConcreteViewShadowNode : public ConcreteShadowNode<
 
   using BaseShadowNode::BaseShadowNode;
 
-  static ShadowNodeTraits BaseTraits()
-  {
+  static ShadowNodeTraits BaseTraits() {
     auto traits = BaseShadowNode::BaseTraits();
     traits.set(ShadowNodeTraits::Trait::ViewKind);
     traits.set(ShadowNodeTraits::Trait::FormsStackingContext);
@@ -74,28 +79,28 @@ class ConcreteViewShadowNode : public ConcreteShadowNode<
     return traits;
   }
 
-  Transform getTransform() const override
-  {
+  Transform getTransform() const override {
     auto layoutMetrics = BaseShadowNode::getLayoutMetrics();
     return BaseShadowNode::getConcreteProps().resolveTransform(layoutMetrics);
   }
 
-  bool canBeTouchTarget() const override
-  {
-    auto pointerEvents = BaseShadowNode::getConcreteProps().ViewProps::pointerEvents;
-    return pointerEvents == PointerEventsMode::Auto || pointerEvents == PointerEventsMode::BoxOnly;
+  bool canBeTouchTarget() const override {
+    auto pointerEvents =
+        BaseShadowNode::getConcreteProps().ViewProps::pointerEvents;
+    return pointerEvents == PointerEventsMode::Auto ||
+        pointerEvents == PointerEventsMode::BoxOnly;
   }
 
-  bool canChildrenBeTouchTarget() const override
-  {
-    auto pointerEvents = BaseShadowNode::getConcreteProps().ViewProps::pointerEvents;
-    return pointerEvents == PointerEventsMode::Auto || pointerEvents == PointerEventsMode::BoxNone;
+  bool canChildrenBeTouchTarget() const override {
+    auto pointerEvents =
+        BaseShadowNode::getConcreteProps().ViewProps::pointerEvents;
+    return pointerEvents == PointerEventsMode::Auto ||
+        pointerEvents == PointerEventsMode::BoxNone;
   }
 
  private:
-  void initialize() noexcept
-  {
-    auto &props = BaseShadowNode::getConcreteProps();
+  void initialize() noexcept {
+    auto& props = BaseShadowNode::getConcreteProps();
 
     if (props.yogaStyle.display() == yoga::Display::None) {
       BaseShadowNode::traits_.set(ShadowNodeTraits::Trait::Hidden);
@@ -110,7 +115,9 @@ class ConcreteViewShadowNode : public ConcreteShadowNode<
       BaseShadowNode::orderIndex_ = 0;
     }
 
-    bool isKeyboardFocusable = HostPlatformViewTraitsInitializer::isKeyboardFocusable(props) || props.accessible;
+    bool isKeyboardFocusable =
+        HostPlatformViewTraitsInitializer::isKeyboardFocusable(props) ||
+        props.accessible;
 
     if (isKeyboardFocusable) {
       BaseShadowNode::traits_.set(ShadowNodeTraits::Trait::KeyboardFocusable);

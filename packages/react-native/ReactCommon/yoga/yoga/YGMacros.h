@@ -55,42 +55,42 @@
 #endif
 
 #ifdef __cplusplus
-#define YG_DEFINE_ENUM_FLAG_OPERATORS(name)                       \
-  extern "C++" {                                                  \
-  constexpr name operator~(name a) {                              \
-    return static_cast<name>(                                     \
-        ~static_cast<std::underlying_type<name>::type>(a));       \
-  }                                                               \
-  constexpr name operator|(name a, name b) {                      \
-    return static_cast<name>(                                     \
-        static_cast<std::underlying_type<name>::type>(a) |        \
-        static_cast<std::underlying_type<name>::type>(b));        \
-  }                                                               \
-  constexpr name operator&(name a, name b) {                      \
-    return static_cast<name>(                                     \
-        static_cast<std::underlying_type<name>::type>(a) &        \
-        static_cast<std::underlying_type<name>::type>(b));        \
-  }                                                               \
-  constexpr name operator^(name a, name b) {                      \
-    return static_cast<name>(                                     \
-        static_cast<std::underlying_type<name>::type>(a) ^        \
-        static_cast<std::underlying_type<name>::type>(b));        \
-  }                                                               \
-  inline name& operator|=(name& a, name b) {                      \
-    return reinterpret_cast<name&>(                               \
-        reinterpret_cast<std::underlying_type<name>::type&>(a) |= \
-        static_cast<std::underlying_type<name>::type>(b));        \
-  }                                                               \
-  inline name& operator&=(name& a, name b) {                      \
-    return reinterpret_cast<name&>(                               \
-        reinterpret_cast<std::underlying_type<name>::type&>(a) &= \
-        static_cast<std::underlying_type<name>::type>(b));        \
-  }                                                               \
-  inline name& operator^=(name& a, name b) {                      \
-    return reinterpret_cast<name&>(                               \
-        reinterpret_cast<std::underlying_type<name>::type&>(a) ^= \
-        static_cast<std::underlying_type<name>::type>(b));        \
-  }                                                               \
+#define YG_DEFINE_ENUM_FLAG_OPERATORS(name)                                                                           \
+  extern "C++" {                                                                                                      \
+  constexpr name operator~(name a)                                                                                    \
+  {                                                                                                                   \
+    return static_cast<name>(~static_cast<std::underlying_type<name>::type>(a));                                      \
+  }                                                                                                                   \
+  constexpr name operator|(name a, name b)                                                                            \
+  {                                                                                                                   \
+    return static_cast<name>(                                                                                         \
+        static_cast<std::underlying_type<name>::type>(a) | static_cast<std::underlying_type<name>::type>(b));         \
+  }                                                                                                                   \
+  constexpr name operator&(name a, name b)                                                                            \
+  {                                                                                                                   \
+    return static_cast<name>(                                                                                         \
+        static_cast<std::underlying_type<name>::type>(a) & static_cast<std::underlying_type<name>::type>(b));         \
+  }                                                                                                                   \
+  constexpr name operator^(name a, name b)                                                                            \
+  {                                                                                                                   \
+    return static_cast<name>(                                                                                         \
+        static_cast<std::underlying_type<name>::type>(a) ^ static_cast<std::underlying_type<name>::type>(b));         \
+  }                                                                                                                   \
+  inline name &operator|=(name &a, name b)                                                                            \
+  {                                                                                                                   \
+    return reinterpret_cast<name &>(                                                                                  \
+        reinterpret_cast<std::underlying_type<name>::type &>(a) |= static_cast<std::underlying_type<name>::type>(b)); \
+  }                                                                                                                   \
+  inline name &operator&=(name &a, name b)                                                                            \
+  {                                                                                                                   \
+    return reinterpret_cast<name &>(                                                                                  \
+        reinterpret_cast<std::underlying_type<name>::type &>(a) &= static_cast<std::underlying_type<name>::type>(b)); \
+  }                                                                                                                   \
+  inline name &operator^=(name &a, name b)                                                                            \
+  {                                                                                                                   \
+    return reinterpret_cast<name &>(                                                                                  \
+        reinterpret_cast<std::underlying_type<name>::type &>(a) ^= static_cast<std::underlying_type<name>::type>(b)); \
+  }                                                                                                                   \
   }
 #else
 #define YG_DEFINE_ENUM_FLAG_OPERATORS(name)
@@ -98,4 +98,4 @@
 
 #define YG_ENUM_DECL(NAME, ...)                               \
   typedef YG_ENUM_BEGIN(NAME){__VA_ARGS__} YG_ENUM_END(NAME); \
-  YG_EXPORT const char* NAME##ToString(NAME);
+  YG_EXPORT const char *NAME##ToString(NAME);

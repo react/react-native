@@ -18,7 +18,8 @@ class RuntimeSchedulerIntersectionObserverDelegate {
   virtual ~RuntimeSchedulerIntersectionObserverDelegate() = default;
 
   virtual void updateIntersectionObservations(
-      const std::unordered_set<SurfaceId> &surfaceIdsWithPendingRenderingUpdates) = 0;
+      const std::unordered_set<SurfaceId>&
+          surfaceIdsWithPendingRenderingUpdates) = 0;
 };
 
 } // namespace facebook::react

@@ -21,13 +21,14 @@ extern const char AndroidSwitchComponentName[];
 /*
  * `ShadowNode` for <AndroidSwitch> component.
  */
-class AndroidSwitchShadowNode final
-    : public ConcreteViewShadowNode<AndroidSwitchComponentName, AndroidSwitchProps, AndroidSwitchEventEmitter> {
+class AndroidSwitchShadowNode final : public ConcreteViewShadowNode<
+                                          AndroidSwitchComponentName,
+                                          AndroidSwitchProps,
+                                          AndroidSwitchEventEmitter> {
  public:
   using ConcreteViewShadowNode::ConcreteViewShadowNode;
 
-  static ShadowNodeTraits BaseTraits()
-  {
+  static ShadowNodeTraits BaseTraits() {
     auto traits = ConcreteViewShadowNode::BaseTraits();
     traits.set(ShadowNodeTraits::Trait::LeafYogaNode);
     traits.set(ShadowNodeTraits::Trait::MeasurableYogaNode);
@@ -36,11 +37,14 @@ class AndroidSwitchShadowNode final
 
   // Associates a shared `AndroidSwitchMeasurementsManager` with the node.
   void setAndroidSwitchMeasurementsManager(
-      const std::shared_ptr<AndroidSwitchMeasurementsManager> &measurementsManager);
+      const std::shared_ptr<AndroidSwitchMeasurementsManager>&
+          measurementsManager);
 
 #pragma mark - LayoutableShadowNode
 
-  Size measureContent(const LayoutContext &layoutContext, const LayoutConstraints &layoutConstraints) const override;
+  Size measureContent(
+      const LayoutContext& layoutContext,
+      const LayoutConstraints& layoutConstraints) const override;
 
  private:
   std::shared_ptr<AndroidSwitchMeasurementsManager> measurementsManager_;

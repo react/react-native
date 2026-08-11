@@ -20,11 +20,19 @@ using ViewShadowNodeProps = ViewProps;
 /*
  * `ShadowNode` for <View> component.
  */
-class ViewShadowNode final : public ConcreteViewShadowNode<ViewComponentName, ViewProps, ViewEventEmitter> {
+class ViewShadowNode final : public ConcreteViewShadowNode<
+                                 ViewComponentName,
+                                 ViewProps,
+                                 ViewEventEmitter> {
  public:
-  ViewShadowNode(const ShadowNodeFragment &fragment, const ShadowNodeFamily::Shared &family, ShadowNodeTraits traits);
+  ViewShadowNode(
+      const ShadowNodeFragment& fragment,
+      const ShadowNodeFamily::Shared& family,
+      ShadowNodeTraits traits);
 
-  ViewShadowNode(const ShadowNode &sourceShadowNode, const ShadowNodeFragment &fragment);
+  ViewShadowNode(
+      const ShadowNode& sourceShadowNode,
+      const ShadowNodeFragment& fragment);
 
  private:
   void initialize() noexcept;

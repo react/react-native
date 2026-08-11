@@ -46,8 +46,10 @@ class RawPropsKeyMap final {
     char name[kPropNameLengthHardCap];
   };
 
-  static bool shouldFirstOneBeBeforeSecondOne(const Item &lhs, const Item &rhs) noexcept;
-  static bool hasSameName(const Item &lhs, const Item &rhs) noexcept;
+  static bool shouldFirstOneBeBeforeSecondOne(
+      const Item& lhs,
+      const Item& rhs) noexcept;
+  static bool hasSameName(const Item& lhs, const Item& rhs) noexcept;
 
   std::vector<Item> items_{};
   std::vector<RawPropsPropNameLength> buckets_{};

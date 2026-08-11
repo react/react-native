@@ -12,8 +12,7 @@
 
 namespace facebook::react {
 
-inline const std::unordered_set<std::string> &getDirectManipulationAllowlist()
-{
+inline const std::unordered_set<std::string>& getDirectManipulationAllowlist() {
   /**
    * Direct manipulation eligible styles allowed by the NativeAnimated JS
    * implementation. Keep in sync with

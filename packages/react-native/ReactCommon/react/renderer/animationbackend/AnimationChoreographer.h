@@ -13,8 +13,8 @@
 namespace facebook::react {
 
 /*
- * This class serves as an interface for native animation frame scheduling that can be used as abstraction in
- * ReactCxxPlatform.
+ * This class serves as an interface for native animation frame scheduling that
+ * can be used as abstraction in ReactCxxPlatform.
  */
 class AnimationChoreographer {
  public:
@@ -22,16 +22,16 @@ class AnimationChoreographer {
 
   virtual void resume() = 0;
   virtual void pause() = 0;
-  virtual AnimationTimestamp now() const
-  {
-    return HighResTimeStamp::now().toChronoSteadyClockTimePoint().time_since_epoch();
+  virtual AnimationTimestamp now() const {
+    return HighResTimeStamp::now()
+        .toChronoSteadyClockTimePoint()
+        .time_since_epoch();
   }
-  void setAnimationBackend(std::weak_ptr<UIManagerAnimationBackend> animationBackend)
-  {
+  void setAnimationBackend(
+      std::weak_ptr<UIManagerAnimationBackend> animationBackend) {
     animationBackend_ = animationBackend;
   }
-  void onAnimationFrame(AnimationTimestamp timestamp) const
-  {
+  void onAnimationFrame(AnimationTimestamp timestamp) const {
     if (auto animationBackend = animationBackend_.lock()) {
       animationBackend->onAnimationFrame(timestamp);
     }

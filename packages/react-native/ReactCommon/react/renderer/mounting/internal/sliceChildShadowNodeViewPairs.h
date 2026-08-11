@@ -43,11 +43,11 @@ using ViewNodePairScope = std::deque<ShadowViewNodePair>;
  * flattened view hierarchy. The V2 version preserves nodes even if they do
  * not form views and their children are flattened.
  */
-std::vector<ShadowViewNodePair *> sliceChildShadowNodeViewPairs(
-    const ShadowViewNodePair &shadowNodePair,
-    ViewNodePairScope &viewNodePairScope,
+std::vector<ShadowViewNodePair*> sliceChildShadowNodeViewPairs(
+    const ShadowViewNodePair& shadowNodePair,
+    ViewNodePairScope& viewNodePairScope,
     bool allowFlattened,
     Point layoutOffset,
-    const CullingContext &cullingContext);
+    const CullingContext& cullingContext);
 
 } // namespace facebook::react

@@ -31,12 +31,15 @@ namespace facebook::react {
  * only by RCTTextLayoutManager.mm, and the `internal_` prefix keeps it out of
  * the public C++ API snapshot.
  */
-inline Size internal_roundTextMeasurementToPixelGrid(Size size, Float pointScaleFactor)
-{
+inline Size internal_roundTextMeasurementToPixelGrid(
+    Size size,
+    Float pointScaleFactor) {
   constexpr auto kEpsilon = static_cast<Float>(0.001);
   return Size{
-      .width = std::ceil((size.width + kEpsilon) * pointScaleFactor) / pointScaleFactor,
-      .height = std::ceil((size.height + kEpsilon) * pointScaleFactor) / pointScaleFactor,
+      .width = std::ceil((size.width + kEpsilon) * pointScaleFactor) /
+          pointScaleFactor,
+      .height = std::ceil((size.height + kEpsilon) * pointScaleFactor) /
+          pointScaleFactor,
   };
 }
 

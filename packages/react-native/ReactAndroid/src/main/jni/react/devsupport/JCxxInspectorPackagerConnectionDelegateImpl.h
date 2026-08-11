@@ -28,31 +28,39 @@ namespace facebook::react::jsinspector_modern {
 struct JCxxInspectorPackagerConnectionDelegateImpl
     : public jni::JavaClass<JCxxInspectorPackagerConnectionDelegateImpl> {
  public:
-  static auto constexpr kJavaDescriptor = "Lcom/facebook/react/devsupport/CxxInspectorPackagerConnection$DelegateImpl;";
+  static auto constexpr kJavaDescriptor =
+      "Lcom/facebook/react/devsupport/CxxInspectorPackagerConnection$DelegateImpl;";
 
   std::unique_ptr<InspectorPackagerConnectionDelegate> wrapInUniquePtr();
 
   // InspectorPackagerConnectionDelegate methods (mirrored)
 
-  std::unique_ptr<IWebSocket> connectWebSocket(const std::string &url, std::weak_ptr<IWebSocketDelegate> delegate);
+  std::unique_ptr<IWebSocket> connectWebSocket(
+      const std::string& url,
+      std::weak_ptr<IWebSocketDelegate> delegate);
 
-  void scheduleCallback(std::function<void(void)> callback, std::chrono::milliseconds delayMs);
+  void scheduleCallback(
+      std::function<void(void)> callback,
+      std::chrono::milliseconds delayMs);
 
  private:
   class RefWrapper;
 };
 
-class JCxxInspectorPackagerConnectionDelegateImpl::RefWrapper : public InspectorPackagerConnectionDelegate {
+class JCxxInspectorPackagerConnectionDelegateImpl::RefWrapper
+    : public InspectorPackagerConnectionDelegate {
  public:
   explicit RefWrapper(jni::alias_ref<javaobject> jDelegate);
 
   // InspectorPackagerConnectionDelegate methods
 
   virtual std::unique_ptr<IWebSocket> connectWebSocket(
-      const std::string &url,
+      const std::string& url,
       std::weak_ptr<IWebSocketDelegate> delegate) override;
 
-  virtual void scheduleCallback(std::function<void(void)> callback, std::chrono::milliseconds delayMs) override;
+  virtual void scheduleCallback(
+      std::function<void(void)> callback,
+      std::chrono::milliseconds delayMs) override;
 
  private:
   jni::global_ref<javaobject> jDelegate_;

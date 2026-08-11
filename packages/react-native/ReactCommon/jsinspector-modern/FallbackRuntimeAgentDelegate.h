@@ -29,7 +29,7 @@ class FallbackRuntimeAgentDelegate : public RuntimeAgentDelegate {
    */
   FallbackRuntimeAgentDelegate(
       FrontendChannel frontendChannel,
-      const SessionState &sessionState,
+      const SessionState& sessionState,
       std::string engineDescription);
 
   /**
@@ -40,7 +40,7 @@ class FallbackRuntimeAgentDelegate : public RuntimeAgentDelegate {
    * to the request (with either a success or error message). False if the
    * agent expects another agent to respond to the request instead.
    */
-  bool handleRequest(const cdp::PreparsedRequest &req) override;
+  bool handleRequest(const cdp::PreparsedRequest& req) override;
 
  private:
   /**

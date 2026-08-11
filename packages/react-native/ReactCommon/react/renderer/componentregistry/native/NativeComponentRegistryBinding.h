@@ -17,12 +17,15 @@ namespace facebook::react {
  * An app/platform-specific provider function to determine if a component
  * is registered in the native platform.
  */
-using HasComponentProviderFunctionType = std::function<bool(const std::string &name)>;
+using HasComponentProviderFunctionType =
+    std::function<bool(const std::string& name)>;
 
 /*
  * Installs HasComponentProviderFunction into JavaScript runtime.
  * Thread synchronization must be enforced externally.
  */
-void bindHasComponentProvider(jsi::Runtime &runtime, HasComponentProviderFunctionType &&provider);
+void bindHasComponentProvider(
+    jsi::Runtime& runtime,
+    HasComponentProviderFunctionType&& provider);
 
 } // namespace facebook::react

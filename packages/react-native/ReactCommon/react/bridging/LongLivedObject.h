@@ -32,9 +32,9 @@ class LongLivedObject {
   virtual void allowRelease();
 
  protected:
-  explicit LongLivedObject(jsi::Runtime &runtime) : runtime_(runtime) {}
+  explicit LongLivedObject(jsi::Runtime& runtime) : runtime_(runtime) {}
   virtual ~LongLivedObject() = default;
-  jsi::Runtime &runtime_;
+  jsi::Runtime& runtime_;
 };
 
 /**
@@ -42,14 +42,14 @@ class LongLivedObject {
  */
 class LongLivedObjectCollection {
  public:
-  static LongLivedObjectCollection &get(jsi::Runtime &runtime);
+  static LongLivedObjectCollection& get(jsi::Runtime& runtime);
 
   LongLivedObjectCollection() = default;
-  LongLivedObjectCollection(const LongLivedObjectCollection &) = delete;
-  void operator=(const LongLivedObjectCollection &) = delete;
+  LongLivedObjectCollection(const LongLivedObjectCollection&) = delete;
+  void operator=(const LongLivedObjectCollection&) = delete;
 
   void add(std::shared_ptr<LongLivedObject> o);
-  void remove(const LongLivedObject *o);
+  void remove(const LongLivedObject* o);
   void clear();
   size_t size() const;
 

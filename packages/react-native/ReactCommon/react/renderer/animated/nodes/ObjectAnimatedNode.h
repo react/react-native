@@ -19,15 +19,20 @@ namespace facebook::react {
 
 class ObjectAnimatedNode final : public AnimatedNode {
  public:
-  ObjectAnimatedNode(Tag tag, const folly::dynamic &config, NativeAnimatedNodesManager &manager);
-  void collectViewUpdates(std::string propKey, folly::dynamic &props);
+  ObjectAnimatedNode(
+      Tag tag,
+      const folly::dynamic& config,
+      NativeAnimatedNodesManager& manager);
+  void collectViewUpdates(std::string propKey, folly::dynamic& props);
 
  private:
-  folly::dynamic collectViewUpdatesObjectHelper(const folly::dynamic &value) const;
+  folly::dynamic collectViewUpdatesObjectHelper(
+      const folly::dynamic& value) const;
 
-  folly::dynamic collectViewUpdatesArrayHelper(const folly::dynamic &value) const;
+  folly::dynamic collectViewUpdatesArrayHelper(
+      const folly::dynamic& value) const;
 
-  folly::dynamic getValueProp(const folly::dynamic &prop) const;
+  folly::dynamic getValueProp(const folly::dynamic& prop) const;
 };
 
 } // namespace facebook::react

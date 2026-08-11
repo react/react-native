@@ -14,7 +14,8 @@ namespace facebook::react {
 
 class JRuntimeExecutor : public jni::HybridClass<JRuntimeExecutor> {
  public:
-  static auto constexpr kJavaDescriptor = "Lcom/facebook/react/bridge/RuntimeExecutor;";
+  static auto constexpr kJavaDescriptor =
+      "Lcom/facebook/react/bridge/RuntimeExecutor;";
 
   RuntimeExecutor get();
 

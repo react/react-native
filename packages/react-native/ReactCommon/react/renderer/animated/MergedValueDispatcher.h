@@ -21,8 +21,9 @@ namespace facebook::react {
  */
 class MergedValueDispatcher {
  public:
-  using DispatchFunction = std::function<void(std::function<void()> &&)>;
-  using MergedValueFunction = std::function<void(std::unordered_map<Tag, folly::dynamic> &&tagToProps)>;
+  using DispatchFunction = std::function<void(std::function<void()>&&)>;
+  using MergedValueFunction =
+      std::function<void(std::unordered_map<Tag, folly::dynamic>&& tagToProps)>;
 
   /**
    * Creates a MergedValueDispatcher with the given dispatch function.
@@ -32,7 +33,9 @@ class MergedValueDispatcher {
    * @param latestValueFunction - function that will be called on the target
    * thread with all values merged.
    */
-  explicit MergedValueDispatcher(DispatchFunction dispatchFunction, MergedValueFunction mergedValueFunction);
+  explicit MergedValueDispatcher(
+      DispatchFunction dispatchFunction,
+      MergedValueFunction mergedValueFunction);
 
   /**
    * Dispatches the given value. If a dispatch is already pending, this will
@@ -40,7 +43,7 @@ class MergedValueDispatcher {
    *
    * @param value - value to be dispatched.
    */
-  void dispatch(const std::unordered_map<Tag, folly::dynamic> &value);
+  void dispatch(const std::unordered_map<Tag, folly::dynamic>& value);
 
  private:
   DispatchFunction dispatchFunction_;

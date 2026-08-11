@@ -124,7 +124,8 @@ enum class CSSKeyword : uint8_t {
  */
 template <typename T>
 concept CSSKeywordSet =
-    std::is_enum_v<T> && std::is_same_v<std::underlying_type_t<T>, std::underlying_type_t<CSSKeyword>>;
+    std::is_enum_v<T> && std::is_same_v < std::underlying_type_t<T>,
+std::underlying_type_t < CSSKeyword >> ;
 
 /**
  * CSS-wide keywords.
@@ -254,8 +255,7 @@ CSS_DEFINE_KEYWORD(WrapReverse, "wrap-reverse")
  * in the keyword-set, or CSS-wide keywords.
  */
 template <CSSKeywordSet KeywordT>
-constexpr std::optional<KeywordT> parseCSSKeyword(std::string_view ident)
-{
+constexpr std::optional<KeywordT> parseCSSKeyword(std::string_view ident) {
   switch (fnv1aLowercase(ident)) {
     CSS_HANDLE_KEYWORD(Absolute)
     CSS_HANDLE_KEYWORD(At)
@@ -361,8 +361,8 @@ constexpr std::optional<KeywordT> parseCSSKeyword(std::string_view ident)
 
 template <CSSKeywordSet KeywordT>
 struct CSSDataTypeParser<KeywordT> {
-  static constexpr auto consumePreservedToken(const CSSPreservedToken &token) -> std::optional<KeywordT>
-  {
+  static constexpr auto consumePreservedToken(const CSSPreservedToken& token)
+      -> std::optional<KeywordT> {
     if (token.type() == CSSTokenType::Ident) {
       return parseCSSKeyword<KeywordT>(token.stringValue());
     }

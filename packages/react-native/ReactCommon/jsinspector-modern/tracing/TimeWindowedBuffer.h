@@ -19,22 +19,24 @@ namespace facebook::react::jsinspector_modern::tracing {
 /**
  * The currentBufferStartTime_ is initialized once first element is pushed.
  */
-constexpr HighResTimeStamp kCurrentBufferStartTimeUninitialized = HighResTimeStamp::min();
+constexpr HighResTimeStamp kCurrentBufferStartTimeUninitialized =
+    HighResTimeStamp::min();
 
 template <typename T>
 class TimeWindowedBuffer {
  public:
-  using TimestampAccessor = std::function<HighResTimeStamp(const T &)>;
+  using TimestampAccessor = std::function<HighResTimeStamp(const T&)>;
 
-  TimeWindowedBuffer() : timestampAccessor_(std::nullopt), windowSize_(std::nullopt) {}
+  TimeWindowedBuffer()
+      : timestampAccessor_(std::nullopt), windowSize_(std::nullopt) {}
 
-  TimeWindowedBuffer(TimestampAccessor timestampAccessor, HighResDuration windowSize)
-      : timestampAccessor_(std::move(timestampAccessor)), windowSize_(windowSize)
-  {
-  }
+  TimeWindowedBuffer(
+      TimestampAccessor timestampAccessor,
+      HighResDuration windowSize)
+      : timestampAccessor_(std::move(timestampAccessor)),
+        windowSize_(windowSize) {}
 
-  void push(const T &element)
-  {
+  void push(const T& element) {
     if (timestampAccessor_) {
       auto timestamp = (*timestampAccessor_)(element);
       enqueueElement(element, timestamp);
@@ -43,8 +45,7 @@ class TimeWindowedBuffer {
     }
   }
 
-  void push(T &&element)
-  {
+  void push(T&& element) {
     if (timestampAccessor_) {
       auto timestamp = (*timestampAccessor_)(element);
       enqueueElement(std::move(element), timestamp);
@@ -53,8 +54,7 @@ class TimeWindowedBuffer {
     }
   }
 
-  void clear()
-  {
+  void clear() {
     primaryBuffer_.clear();
     alternativeBuffer_.clear();
     currentBufferIndex_ = BufferIndex::Primary;
@@ -63,19 +63,20 @@ class TimeWindowedBuffer {
 
   /**
    * Forces immediate removal of elements that are outside the time window.
-   * The right boundary of the window is the reference timestamp passed as an argument.
+   * The right boundary of the window is the reference timestamp passed as an
+   * argument.
    */
-  std::vector<T> pruneExpiredAndExtract(HighResTimeStamp windowRightBoundary = HighResTimeStamp::now())
-  {
+  std::vector<T> pruneExpiredAndExtract(
+      HighResTimeStamp windowRightBoundary = HighResTimeStamp::now()) {
     std::vector<T> result;
 
-    for (auto &wrappedElement : getPreviousBuffer()) {
+    for (auto& wrappedElement : getPreviousBuffer()) {
       if (isInsideTimeWindow(wrappedElement, windowRightBoundary)) {
         result.push_back(std::move(wrappedElement.element));
       }
     }
 
-    for (auto &wrappedElement : getCurrentBuffer()) {
+    for (auto& wrappedElement : getCurrentBuffer()) {
       if (isInsideTimeWindow(wrappedElement, windowRightBoundary)) {
         result.push_back(std::move(wrappedElement.element));
       }
@@ -93,25 +94,26 @@ class TimeWindowedBuffer {
     HighResTimeStamp timestamp;
   };
 
-  std::vector<TimestampedElement> &getCurrentBuffer()
-  {
-    return currentBufferIndex_ == BufferIndex::Primary ? primaryBuffer_ : alternativeBuffer_;
+  std::vector<TimestampedElement>& getCurrentBuffer() {
+    return currentBufferIndex_ == BufferIndex::Primary ? primaryBuffer_
+                                                       : alternativeBuffer_;
   }
 
-  std::vector<TimestampedElement> &getPreviousBuffer()
-  {
-    return currentBufferIndex_ == BufferIndex::Primary ? alternativeBuffer_ : primaryBuffer_;
+  std::vector<TimestampedElement>& getPreviousBuffer() {
+    return currentBufferIndex_ == BufferIndex::Primary ? alternativeBuffer_
+                                                       : primaryBuffer_;
   }
 
-  void enqueueElement(const T &element, HighResTimeStamp timestamp)
-  {
+  void enqueueElement(const T& element, HighResTimeStamp timestamp) {
     if (windowSize_) {
       if (currentBufferStartTime_ == kCurrentBufferStartTimeUninitialized) {
         currentBufferStartTime_ = timestamp;
       } else if (timestamp > currentBufferStartTime_ + *windowSize_) {
-        // We moved past the current buffer. We need to switch the other buffer as current.
-        currentBufferIndex_ =
-            currentBufferIndex_ == BufferIndex::Primary ? BufferIndex::Alternative : BufferIndex::Primary;
+        // We moved past the current buffer. We need to switch the other buffer
+        // as current.
+        currentBufferIndex_ = currentBufferIndex_ == BufferIndex::Primary
+            ? BufferIndex::Alternative
+            : BufferIndex::Primary;
         getCurrentBuffer().clear();
         currentBufferStartTime_ = timestamp;
       }
@@ -120,15 +122,16 @@ class TimeWindowedBuffer {
     getCurrentBuffer().push_back({element, timestamp});
   }
 
-  void enqueueElement(T &&element, HighResTimeStamp timestamp)
-  {
+  void enqueueElement(T&& element, HighResTimeStamp timestamp) {
     if (windowSize_) {
       if (currentBufferStartTime_ == kCurrentBufferStartTimeUninitialized) {
         currentBufferStartTime_ = timestamp;
       } else if (timestamp > currentBufferStartTime_ + *windowSize_) {
-        // We moved past the current buffer. We need to switch the other buffer as current.
-        currentBufferIndex_ =
-            currentBufferIndex_ == BufferIndex::Primary ? BufferIndex::Alternative : BufferIndex::Primary;
+        // We moved past the current buffer. We need to switch the other buffer
+        // as current.
+        currentBufferIndex_ = currentBufferIndex_ == BufferIndex::Primary
+            ? BufferIndex::Alternative
+            : BufferIndex::Primary;
         getCurrentBuffer().clear();
         currentBufferStartTime_ = timestamp;
       }
@@ -137,13 +140,15 @@ class TimeWindowedBuffer {
     getCurrentBuffer().push_back({std::move(element), timestamp});
   }
 
-  bool isInsideTimeWindow(const TimestampedElement &element, HighResTimeStamp windowRightBoundary) const
-  {
+  bool isInsideTimeWindow(
+      const TimestampedElement& element,
+      HighResTimeStamp windowRightBoundary) const {
     if (!windowSize_) {
       return true;
     }
 
-    return element.timestamp >= windowRightBoundary - *windowSize_ && element.timestamp <= windowRightBoundary;
+    return element.timestamp >= windowRightBoundary - *windowSize_ &&
+        element.timestamp <= windowRightBoundary;
   }
 
   std::optional<TimestampAccessor> timestampAccessor_;
@@ -152,7 +157,8 @@ class TimeWindowedBuffer {
   std::vector<TimestampedElement> primaryBuffer_;
   std::vector<TimestampedElement> alternativeBuffer_;
   BufferIndex currentBufferIndex_ = BufferIndex::Primary;
-  HighResTimeStamp currentBufferStartTime_{kCurrentBufferStartTimeUninitialized};
+  HighResTimeStamp currentBufferStartTime_{
+      kCurrentBufferStartTimeUninitialized};
 };
 
 } // namespace facebook::react::jsinspector_modern::tracing

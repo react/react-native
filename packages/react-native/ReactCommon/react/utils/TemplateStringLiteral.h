@@ -19,13 +19,12 @@ namespace facebook::react {
  */
 template <size_t N>
 struct TemplateStringLiteral {
-  /* implicit */ constexpr TemplateStringLiteral(const char (&str)[N])
-  { // NOLINT(modernize-avoid-c-arrays)
+  /* implicit */ constexpr TemplateStringLiteral(
+      const char (&str)[N]) { // NOLINT(modernize-avoid-c-arrays)
     std::copy_n(str, N, value.data());
   }
 
-  constexpr operator std::string_view() const
-  {
+  constexpr operator std::string_view() const {
     return {value.begin(), value.end() - 1};
   }
 

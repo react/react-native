@@ -18,12 +18,15 @@ class HostPlatformScrollViewProps : public BaseScrollViewProps {
  public:
   HostPlatformScrollViewProps() = default;
   HostPlatformScrollViewProps(
-      const PropsParserContext &context,
-      const HostPlatformScrollViewProps &sourceProps,
-      const RawProps &rawProps);
+      const PropsParserContext& context,
+      const HostPlatformScrollViewProps& sourceProps,
+      const RawProps& rawProps);
 
-  void
-  setProp(const PropsParserContext &context, RawPropsPropNameHash hash, const char *propName, const RawValue &value);
+  void setProp(
+      const PropsParserContext& context,
+      RawPropsPropNameHash hash,
+      const char* propName,
+      const RawValue& value);
 
 #pragma mark - Props
 
@@ -40,7 +43,7 @@ class HostPlatformScrollViewProps : public BaseScrollViewProps {
 #endif
 
   ComponentName getDiffPropsImplementationTarget() const override;
-  folly::dynamic getDiffProps(const Props *prevProps) const override;
+  folly::dynamic getDiffProps(const Props* prevProps) const override;
 };
 
 } // namespace facebook::react

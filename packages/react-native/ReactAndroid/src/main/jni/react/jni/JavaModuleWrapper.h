@@ -20,9 +20,11 @@ namespace facebook::react {
 class Instance;
 class MessageQueueThread;
 
-struct [[deprecated("This API will be removed along with the legacy architecture.")]] JMethodDescriptor
+struct [[deprecated(
+    "This API will be removed along with the legacy architecture.")]] JMethodDescriptor
     : public jni::JavaClass<JMethodDescriptor> {
-  static constexpr auto kJavaDescriptor = "Lcom/facebook/react/bridge/JavaModuleWrapper$MethodDescriptor;";
+  static constexpr auto kJavaDescriptor =
+      "Lcom/facebook/react/bridge/JavaModuleWrapper$MethodDescriptor;";
 
   jni::local_ref<JReflectMethod::javaobject> getMethod() const;
   std::string getSignature() const;
@@ -30,33 +32,39 @@ struct [[deprecated("This API will be removed along with the legacy architecture
   std::string getType() const;
 };
 
-struct [[deprecated("This API will be removed along with the legacy architecture.")]] JavaModuleWrapper
+struct [[deprecated(
+    "This API will be removed along with the legacy architecture.")]] JavaModuleWrapper
     : jni::JavaClass<JavaModuleWrapper> {
-  static constexpr auto kJavaDescriptor = "Lcom/facebook/react/bridge/JavaModuleWrapper;";
+  static constexpr auto kJavaDescriptor =
+      "Lcom/facebook/react/bridge/JavaModuleWrapper;";
 
-  jni::local_ref<JBaseJavaModule::javaobject> getModule()
-  {
+  jni::local_ref<JBaseJavaModule::javaobject> getModule() {
     // This is the call which causes a lazy Java module to actually be
     // created.
-    static auto getModule = javaClassStatic()->getMethod<JBaseJavaModule::javaobject()>("getModule");
+    static auto getModule =
+        javaClassStatic()->getMethod<JBaseJavaModule::javaobject()>(
+            "getModule");
     return getModule(self());
   }
 
-  std::string getName() const
-  {
+  std::string getName() const {
     static auto getName = javaClassStatic()->getMethod<jstring()>("getName");
     return getName(self())->toStdString();
   }
 
-  jni::local_ref<jni::JList<JMethodDescriptor::javaobject>::javaobject> getMethodDescriptors()
-  {
+  jni::local_ref<jni::JList<JMethodDescriptor::javaobject>::javaobject>
+  getMethodDescriptors() {
     static auto getMethods =
-        getClass()->getMethod<jni::JList<JMethodDescriptor::javaobject>::javaobject()>("getMethodDescriptors");
+        getClass()
+            ->getMethod<
+                jni::JList<JMethodDescriptor::javaobject>::javaobject()>(
+                "getMethodDescriptors");
     return getMethods(self());
   }
 };
 
-class [[deprecated("This API will be removed along with the legacy architecture.")]] JavaNativeModule
+class [[deprecated(
+    "This API will be removed along with the legacy architecture.")]] JavaNativeModule
     : public NativeModule {
  public:
   JavaNativeModule(
@@ -65,16 +73,16 @@ class [[deprecated("This API will be removed along with the legacy architecture.
       std::shared_ptr<MessageQueueThread> messageQueueThread)
       : instance_(std::move(instance)),
         wrapper_(make_global(wrapper)),
-        messageQueueThread_(std::move(messageQueueThread))
-  {
-  }
+        messageQueueThread_(std::move(messageQueueThread)) {}
 
   std::string getName() override;
   std::string getSyncMethodName(unsigned int reactMethodId) override;
   folly::dynamic getConstants() override;
   std::vector<MethodDescriptor> getMethods() override;
-  void invoke(unsigned int reactMethodId, folly::dynamic &&params, int callId) override;
-  MethodCallResult callSerializableNativeHook(unsigned int reactMethodId, folly::dynamic &&params) override;
+  void invoke(unsigned int reactMethodId, folly::dynamic&& params, int callId)
+      override;
+  MethodCallResult callSerializableNativeHook(
+      unsigned int reactMethodId, folly::dynamic&& params) override;
 
  private:
   std::weak_ptr<Instance> instance_;

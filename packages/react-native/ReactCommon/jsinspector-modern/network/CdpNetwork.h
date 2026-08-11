@@ -45,8 +45,11 @@ struct Response {
    * Convenience function to construct a `Response` from the generic
    * `ResponseInfo` input object.
    */
-  static Response
-  fromInputParams(const std::string &url, uint16_t status, const Headers &headers, int encodedDataLength);
+  static Response fromInputParams(
+      const std::string& url,
+      uint16_t status,
+      const Headers& headers,
+      int encodedDataLength);
 
   folly::dynamic toDynamic() const;
 };
@@ -150,7 +153,9 @@ struct WebSocketResponse {
    * Convenience function to construct a `WebSocketResponse` from generic
    * input params, deriving the status text.
    */
-  static WebSocketResponse fromInputParams(uint16_t status, const Headers &headers);
+  static WebSocketResponse fromInputParams(
+      uint16_t status,
+      const Headers& headers);
 
   folly::dynamic toDynamic() const;
 };
@@ -234,6 +239,6 @@ struct WebSocketClosedParams {
  *
  * https://chromedevtools.github.io/devtools-protocol/tot/Network/#type-ResourceType
  */
-std::string resourceTypeFromMimeType(const std::string &mimeType);
+std::string resourceTypeFromMimeType(const std::string& mimeType);
 
 } // namespace facebook::react::jsinspector_modern::cdp::network

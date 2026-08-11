@@ -30,8 +30,7 @@ class AndroidTextInputShadowNode final : public ConcreteViewShadowNode<
  public:
   using ConcreteViewShadowNode::ConcreteViewShadowNode;
 
-  static ShadowNodeTraits BaseTraits()
-  {
+  static ShadowNodeTraits BaseTraits() {
     auto traits = ConcreteViewShadowNode::BaseTraits();
     traits.set(ShadowNodeTraits::Trait::LeafYogaNode);
     traits.set(ShadowNodeTraits::Trait::MeasurableYogaNode);
@@ -44,40 +43,47 @@ class AndroidTextInputShadowNode final : public ConcreteViewShadowNode<
    * `TextInputShadowNode` uses the manager to measure text content
    * and construct `TextInputState` objects.
    */
-  void setTextLayoutManager(std::shared_ptr<const TextLayoutManager> textLayoutManager);
+  void setTextLayoutManager(
+      std::shared_ptr<const TextLayoutManager> textLayoutManager);
 
  protected:
-  Size measureContent(const LayoutContext &layoutContext, const LayoutConstraints &layoutConstraints) const override;
+  Size measureContent(
+      const LayoutContext& layoutContext,
+      const LayoutConstraints& layoutConstraints) const override;
 
   void layout(LayoutContext layoutContext) override;
 
-  Float baseline(const LayoutContext &layoutContext, Size size) const override;
+  Float baseline(const LayoutContext& layoutContext, Size size) const override;
 
   std::shared_ptr<const TextLayoutManager> textLayoutManager_;
 
   /*
    * Determines the constraints to use while measure the underlying text
    */
-  LayoutConstraints getTextConstraints(const LayoutConstraints &layoutConstraints) const;
+  LayoutConstraints getTextConstraints(
+      const LayoutConstraints& layoutConstraints) const;
 
  private:
   /*
    * Creates a `State` object (with `AttributedText` and
    * `TextLayoutManager`) if needed.
    */
-  void updateStateIfNeeded(const LayoutContext &layoutContext);
+  void updateStateIfNeeded(const LayoutContext& layoutContext);
 
   /*
    * Returns a `AttributedString` which represents text content of the node.
    */
-  AttributedString getAttributedString(const LayoutContext &layoutContext) const;
+  AttributedString getAttributedString(
+      const LayoutContext& layoutContext) const;
 
   /**
    * Get the most up-to-date attributed string for measurement and State.
    */
-  AttributedString getMostRecentAttributedString(const LayoutContext &layoutContext) const;
+  AttributedString getMostRecentAttributedString(
+      const LayoutContext& layoutContext) const;
 
-  AttributedString getPlaceholderAttributedString(const LayoutContext &layoutContext) const;
+  AttributedString getPlaceholderAttributedString(
+      const LayoutContext& layoutContext) const;
 };
 
 } // namespace facebook::react

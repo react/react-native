@@ -22,9 +22,10 @@ namespace facebook::react {
  * Each app must provide an implementation of the static class method which
  * should register its specific set of supported components.
  */
-using ComponentRegistryFactory = std::function<SharedComponentDescriptorRegistry(
-    const EventDispatcher::Weak &eventDispatcher,
-    const std::shared_ptr<const ContextContainer> &contextContainer)>;
+using ComponentRegistryFactory =
+    std::function<SharedComponentDescriptorRegistry(
+        const EventDispatcher::Weak& eventDispatcher,
+        const std::shared_ptr<const ContextContainer>& contextContainer)>;
 
 ComponentRegistryFactory getDefaultComponentRegistryFactory();
 

@@ -22,7 +22,8 @@ namespace facebook::react {
  */
 class JavaTimerRegistry : public PlatformTimerRegistry {
  public:
-  JavaTimerRegistry(jni::global_ref<JJavaTimerManager::javaobject> javaTimerManager);
+  JavaTimerRegistry(
+      jni::global_ref<JJavaTimerManager::javaobject> javaTimerManager);
 
 #pragma mark - PlatformTimerRegistry
 

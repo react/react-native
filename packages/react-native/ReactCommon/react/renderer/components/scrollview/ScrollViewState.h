@@ -23,7 +23,10 @@ namespace facebook::react {
  */
 class ScrollViewState final {
  public:
-  ScrollViewState(Point contentOffset, Rect contentBoundingRect, int scrollAwayPaddingTop);
+  ScrollViewState(
+      Point contentOffset,
+      Rect contentBoundingRect,
+      int scrollAwayPaddingTop);
   ScrollViewState() = default;
 
   Point contentOffset;
@@ -44,14 +47,16 @@ class ScrollViewState final {
   Size getContentSize() const;
 
 #ifdef RN_SERIALIZABLE_STATE
-  ScrollViewState(const ScrollViewState &previousState, folly::dynamic data)
-      : contentOffset({(Float)data["contentOffsetLeft"].getDouble(), (Float)data["contentOffsetTop"].getDouble()}),
+  ScrollViewState(const ScrollViewState& previousState, folly::dynamic data)
+      : contentOffset(
+            {(Float)data["contentOffsetLeft"].getDouble(),
+             (Float)data["contentOffsetTop"].getDouble()}),
         contentBoundingRect({}),
-        scrollAwayPaddingTop((Float)data["scrollAwayPaddingTop"].getDouble()) {};
+        scrollAwayPaddingTop((Float)data["scrollAwayPaddingTop"].getDouble()){};
 
-  folly::dynamic getDynamic() const
-  {
-    return folly::dynamic::object("contentOffsetLeft", contentOffset.x)("contentOffsetTop", contentOffset.y)(
+  folly::dynamic getDynamic() const {
+    return folly::dynamic::object("contentOffsetLeft", contentOffset.x)(
+        "contentOffsetTop", contentOffset.y)(
         "scrollAwayPaddingTop", scrollAwayPaddingTop);
   };
 #endif

@@ -42,7 +42,9 @@ class SurfaceTelemetry final {
    * Incorporate data from given transaction telemetry into aggregated data
    * for the Surface.
    */
-  void incorporate(const TransactionTelemetry &telemetry, int numberOfMutations);
+  void incorporate(
+      const TransactionTelemetry& telemetry,
+      int numberOfMutations);
 
  private:
   TelemetryDuration layoutTime_{};

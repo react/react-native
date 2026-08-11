@@ -15,8 +15,7 @@ namespace facebook::react {
 /**
  * constexpr check for case insensitive equality of two strings.
  */
-constexpr bool iequals(std::string_view a, std::string_view b)
-{
+constexpr bool iequals(std::string_view a, std::string_view b) {
   if (a.size() != b.size()) {
     return false;
   }

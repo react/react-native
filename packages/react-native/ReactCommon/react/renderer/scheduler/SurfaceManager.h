@@ -27,7 +27,7 @@ namespace facebook::react {
  */
 class SurfaceManager final {
  public:
-  explicit SurfaceManager(const Scheduler &scheduler) noexcept;
+  explicit SurfaceManager(const Scheduler& scheduler) noexcept;
   ~SurfaceManager() noexcept;
 
   /* SurfaceProps contain information about running surfaces */
@@ -43,10 +43,10 @@ class SurfaceManager final {
 
   void startSurface(
       SurfaceId surfaceId,
-      const std::string &moduleName,
-      const folly::dynamic &props,
-      const LayoutConstraints &layoutConstraints = {},
-      const LayoutContext &layoutContext = {}) noexcept;
+      const std::string& moduleName,
+      const folly::dynamic& props,
+      const LayoutConstraints& layoutConstraints = {},
+      const LayoutContext& layoutContext = {}) noexcept;
 
   void stopSurface(SurfaceId surfaceId) noexcept;
 
@@ -56,25 +56,29 @@ class SurfaceManager final {
 
   std::unordered_set<SurfaceId> getRunningSurfaces() const noexcept;
 
-  std::optional<SurfaceManager::SurfaceProps> getSurfaceProps(SurfaceId surfaceId) const noexcept;
+  std::optional<SurfaceManager::SurfaceProps> getSurfaceProps(
+      SurfaceId surfaceId) const noexcept;
 
   Size measureSurface(
       SurfaceId surfaceId,
-      const LayoutConstraints &layoutConstraints,
-      const LayoutContext &layoutContext) const noexcept;
+      const LayoutConstraints& layoutConstraints,
+      const LayoutContext& layoutContext) const noexcept;
 
   void constraintSurfaceLayout(
       SurfaceId surfaceId,
-      const LayoutConstraints &layoutConstraints,
-      const LayoutContext &layoutContext) const noexcept;
+      const LayoutConstraints& layoutConstraints,
+      const LayoutContext& layoutContext) const noexcept;
 
-  std::shared_ptr<const MountingCoordinator> findMountingCoordinator(SurfaceId surfaceId) const noexcept;
+  std::shared_ptr<const MountingCoordinator> findMountingCoordinator(
+      SurfaceId surfaceId) const noexcept;
 
  private:
-  void visit(SurfaceId surfaceId, const std::function<void(const SurfaceHandler &surfaceHandler)> &callback)
+  void visit(
+      SurfaceId surfaceId,
+      const std::function<void(const SurfaceHandler& surfaceHandler)>& callback)
       const noexcept;
 
-  const Scheduler &scheduler_;
+  const Scheduler& scheduler_;
   mutable std::shared_mutex mutex_; // Protects `registry_`.
   std::unordered_map<SurfaceId, SurfaceHandler> registry_{};
 };

@@ -16,12 +16,14 @@ namespace facebook::react {
 
 class AndroidProgressBarMeasurementsManager {
  public:
-  AndroidProgressBarMeasurementsManager(const std::shared_ptr<const ContextContainer> &contextContainer)
-      : contextContainer_(contextContainer)
-  {
-  }
+  AndroidProgressBarMeasurementsManager(
+      const std::shared_ptr<const ContextContainer>& contextContainer)
+      : contextContainer_(contextContainer) {}
 
-  Size measure(SurfaceId surfaceId, const AndroidProgressBarProps &props, LayoutConstraints layoutConstraints) const;
+  Size measure(
+      SurfaceId surfaceId,
+      const AndroidProgressBarProps& props,
+      LayoutConstraints layoutConstraints) const;
 
  private:
   const std::shared_ptr<const ContextContainer> contextContainer_;

@@ -17,12 +17,14 @@ namespace facebook::react {
  * Builds a ShadowView tree from given root ShadowNode using custom built-in
  * implementation (*without* using Differentiator).
  */
-StubViewTree buildStubViewTreeWithoutUsingDifferentiator(const ShadowNode &rootShadowNode);
+StubViewTree buildStubViewTreeWithoutUsingDifferentiator(
+    const ShadowNode& rootShadowNode);
 
 /*
  * Builds a ShadowView tree from given root ShadowNode using Differentiator by
  * generating mutation instructions between empty and final trees.
  */
-StubViewTree buildStubViewTreeUsingDifferentiator(const ShadowNode &rootShadowNode);
+StubViewTree buildStubViewTreeUsingDifferentiator(
+    const ShadowNode& rootShadowNode);
 
 } // namespace facebook::react

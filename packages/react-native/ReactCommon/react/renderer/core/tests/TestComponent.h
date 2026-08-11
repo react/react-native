@@ -29,10 +29,9 @@ struct TestState {
   TestState() = default;
 
 #ifdef ANDROID
-  TestState(const TestState &previousState, folly::dynamic &&data) {};
+  TestState(const TestState& previousState, folly::dynamic&& data){};
 
-  folly::dynamic getDynamic() const
-  {
+  folly::dynamic getDynamic() const {
     return {};
   }
 #endif
@@ -45,10 +44,11 @@ class TestProps : public ViewProps {
  public:
   TestProps() = default;
 
-  TestProps(const PropsParserContext &context, const TestProps &sourceProps, const RawProps &rawProps)
-      : ViewProps(context, sourceProps, rawProps)
-  {
-  }
+  TestProps(
+      const PropsParserContext& context,
+      const TestProps& sourceProps,
+      const RawProps& rawProps)
+      : ViewProps(context, sourceProps, rawProps) {}
 };
 
 using SharedTestProps = std::shared_ptr<const TestProps>;
@@ -57,26 +57,30 @@ class TestShadowNode;
 
 using SharedTestShadowNode = std::shared_ptr<const TestShadowNode>;
 
-class TestShadowNode final : public ConcreteViewShadowNode<TestComponentName, TestProps, ViewEventEmitter, TestState> {
+class TestShadowNode final : public ConcreteViewShadowNode<
+                                 TestComponentName,
+                                 TestProps,
+                                 ViewEventEmitter,
+                                 TestState> {
  public:
   using ConcreteViewShadowNode::ConcreteViewShadowNode;
 
   Transform _transform{Transform::Identity()};
 
-  Transform getTransform() const override
-  {
+  Transform getTransform() const override {
     return _transform;
   }
 
   facebook::react::Point _contentOriginOffset{};
 
-  facebook::react::Point getContentOriginOffset(bool /*includeTransform*/) const override
-  {
+  facebook::react::Point getContentOriginOffset(
+      bool /*includeTransform*/) const override {
     return _contentOriginOffset;
   }
 };
 
-class TestComponentDescriptor : public ConcreteComponentDescriptor<TestShadowNode> {
+class TestComponentDescriptor
+    : public ConcreteComponentDescriptor<TestShadowNode> {
  public:
   using ConcreteComponentDescriptor::ConcreteComponentDescriptor;
 };

@@ -9,6 +9,6 @@
 
 namespace facebook::react::LowPriorityExecutor {
 
-void execute(std::function<void()> &&workItem);
+void execute(std::function<void()>&& workItem);
 
 } // namespace facebook::react::LowPriorityExecutor

@@ -29,21 +29,21 @@ class HostTracingProfileSerializer {
    * \p chunkCallback.
    */
   static void emitAsDataCollectedChunks(
-      HostTracingProfile &&hostTracingProfile,
-      const std::function<void(folly::dynamic &&chunk)> &chunkCallback,
+      HostTracingProfile&& hostTracingProfile,
+      const std::function<void(folly::dynamic&& chunk)>& chunkCallback,
       size_t maxChunkBytes,
       uint16_t profileTraceEventsChunkSize);
 
   static void emitPerformanceTraceEvents(
-      std::vector<TraceEvent> &&events,
-      const std::function<void(folly::dynamic &&chunk)> &chunkCallback,
+      std::vector<TraceEvent>&& events,
+      const std::function<void(folly::dynamic&& chunk)>& chunkCallback,
       size_t maxChunkBytes);
 
   static void emitFrameTimings(
-      std::vector<FrameTimingSequence> &&frameTimings,
+      std::vector<FrameTimingSequence>&& frameTimings,
       ProcessId processId,
       HighResTimeStamp recordingStartTimestamp,
-      const std::function<void(folly::dynamic &&chunk)> &chunkCallback,
+      const std::function<void(folly::dynamic&& chunk)>& chunkCallback,
       size_t maxChunkBytes);
 };
 

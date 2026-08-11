@@ -26,10 +26,10 @@ class MockTimerRegistry : public react::PlatformTimerRegistry {
 
 class MockMessageQueueThread : public react::MessageQueueThread {
  public:
-  void runOnQueue(std::function<void()> &&func) override;
+  void runOnQueue(std::function<void()>&& func) override;
 
   // Unused
-  void runOnQueueSync(std::function<void()> &&callback) override;
+  void runOnQueueSync(std::function<void()>&& callback) override;
 
   // Unused
   void quitSynchronous() override;
@@ -48,10 +48,9 @@ class MockMessageQueueThread : public react::MessageQueueThread {
 
 class ErrorUtils : public jsi::HostObject {
  public:
-  jsi::Value get(jsi::Runtime &rt, const jsi::PropNameID &name) override;
+  jsi::Value get(jsi::Runtime& rt, const jsi::PropNameID& name) override;
 
-  void reportFatalError(jsi::JSError &&error)
-  {
+  void reportFatalError(jsi::JSError&& error) {
     errors_.push_back(std::move(error));
   }
 

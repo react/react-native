@@ -16,7 +16,8 @@ namespace facebook::react {
 
 class NativeMap : public jni::HybridClass<NativeMap> {
  public:
-  static auto constexpr kJavaDescriptor = "Lcom/facebook/react/bridge/NativeMap;";
+  static auto constexpr kJavaDescriptor =
+      "Lcom/facebook/react/bridge/NativeMap;";
 
   jni::local_ref<jstring> toString();
 
@@ -34,14 +35,13 @@ class NativeMap : public jni::HybridClass<NativeMap> {
   friend HybridBase;
 
   template <class Dyn>
-  explicit NativeMap(Dyn &&map) : isConsumed(false), map_(std::forward<Dyn>(map))
-  {
-  }
+  explicit NativeMap(Dyn&& map)
+      : isConsumed(false), map_(std::forward<Dyn>(map)) {}
 
   void throwIfConsumed();
 
-  NativeMap(const NativeMap &) = delete;
-  NativeMap &operator=(const NativeMap &) = delete;
+  NativeMap(const NativeMap&) = delete;
+  NativeMap& operator=(const NativeMap&) = delete;
 };
 
 } // namespace facebook::react

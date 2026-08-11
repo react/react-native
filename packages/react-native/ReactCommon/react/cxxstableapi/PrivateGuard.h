@@ -21,8 +21,8 @@
 //
 // See <react/cxxstableapi/UmbrellaGuard.h> for the full `RN_*` macro contract.
 // In short:
-//   RN_STRICT_API  Consumer opt-in master switch; the guard is inert without it.
-//   RN_BUILDING    Set by React Native's own build.
+//   RN_STRICT_API  Consumer opt-in master switch; the guard is inert without
+//   it. RN_BUILDING    Set by React Native's own build.
 //
 // This header is intentionally NOT `#pragma once`-guarded: it must be
 // re-evaluated on every inclusion so each direct include is checked.

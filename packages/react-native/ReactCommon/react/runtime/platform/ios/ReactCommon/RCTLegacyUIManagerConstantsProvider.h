@@ -17,7 +17,7 @@ namespace facebook::react {
  * to implement UIManager.getConstants in bridgeless mode. The constants object
  * contains view configs for every legacy native component.
  */
-void installLegacyUIManagerConstantsProviderBinding(jsi::Runtime &runtime);
+void installLegacyUIManagerConstantsProviderBinding(jsi::Runtime& runtime);
 } // namespace facebook::react
 
 #endif // RCT_REMOVE_LEGACY_COMPONENT_INTEROP

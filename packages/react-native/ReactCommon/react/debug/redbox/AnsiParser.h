@@ -27,9 +27,9 @@ struct AnsiSpan {
  * Parse ANSI escape sequences in text and produce a list of styled spans.
  * Uses the Afterglow color theme (matching LogBox's AnsiHighlight.js).
  */
-std::vector<AnsiSpan> parseAnsi(const std::string &text);
+std::vector<AnsiSpan> parseAnsi(const std::string& text);
 
 /** Strip all ANSI escape sequences from text. */
-std::string stripAnsi(const std::string &text);
+std::string stripAnsi(const std::string& text);
 
 } // namespace facebook::react::unstable_redbox

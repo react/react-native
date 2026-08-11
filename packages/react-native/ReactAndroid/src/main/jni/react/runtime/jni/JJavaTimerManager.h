@@ -15,7 +15,8 @@
 namespace facebook::react {
 
 struct JJavaTimerManager : jni::JavaClass<JJavaTimerManager> {
-  static auto constexpr kJavaDescriptor = "Lcom/facebook/react/modules/core/JavaTimerManager;";
+  static auto constexpr kJavaDescriptor =
+      "Lcom/facebook/react/modules/core/JavaTimerManager;";
 
   void createTimer(uint32_t timerID, double duration, bool repeat);
 

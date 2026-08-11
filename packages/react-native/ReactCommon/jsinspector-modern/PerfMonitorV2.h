@@ -27,15 +27,16 @@ struct PerfIssuePayload {
  */
 class PerfMonitorUpdateHandler {
  public:
-  explicit PerfMonitorUpdateHandler(HostTargetDelegate &delegate) : delegate_(delegate) {}
+  explicit PerfMonitorUpdateHandler(HostTargetDelegate& delegate)
+      : delegate_(delegate) {}
 
   /**
    * Handle a new "__react_native_perf_issues_reporter" message.
    */
-  void handlePerfIssueAdded(const std::string &message);
+  void handlePerfIssueAdded(const std::string& message);
 
  private:
-  HostTargetDelegate &delegate_;
+  HostTargetDelegate& delegate_;
 };
 
 } // namespace facebook::react::jsinspector_modern

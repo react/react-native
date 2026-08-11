@@ -19,11 +19,13 @@ extern const char ImageManagerKey[];
 /*
  * Descriptor for <Image> component.
  */
-class ImageComponentDescriptor final : public ConcreteComponentDescriptor<ImageShadowNode> {
+class ImageComponentDescriptor final
+    : public ConcreteComponentDescriptor<ImageShadowNode> {
  public:
-  explicit ImageComponentDescriptor(const ComponentDescriptorParameters &parameters);
+  explicit ImageComponentDescriptor(
+      const ComponentDescriptorParameters& parameters);
 
-  void adopt(ShadowNode &shadowNode) const override;
+  void adopt(ShadowNode& shadowNode) const override;
 
  private:
   const std::shared_ptr<ImageManager> imageManager_;

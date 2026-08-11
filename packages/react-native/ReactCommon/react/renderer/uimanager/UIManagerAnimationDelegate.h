@@ -23,17 +23,18 @@ class UIManagerAnimationDelegate {
    * TODO: need SurfaceId here
    */
   virtual void uiManagerDidConfigureNextLayoutAnimation(
-      jsi::Runtime &runtime,
-      const RawValue &config,
-      const jsi::Value &successCallback,
-      const jsi::Value &failureCallback) const = 0;
+      jsi::Runtime& runtime,
+      const RawValue& config,
+      const jsi::Value& successCallback,
+      const jsi::Value& failureCallback) const = 0;
 
   /**
    * Set ComponentDescriptor registry.
    *
    * @param componentDescriptorRegistry the registry of componentDescriptors
    */
-  virtual void setComponentDescriptorRegistry(const SharedComponentDescriptorRegistry &componentDescriptorRegistry) = 0;
+  virtual void setComponentDescriptorRegistry(
+      const SharedComponentDescriptorRegistry& componentDescriptorRegistry) = 0;
 
   /**
    * Only needed on Android to drive animations.

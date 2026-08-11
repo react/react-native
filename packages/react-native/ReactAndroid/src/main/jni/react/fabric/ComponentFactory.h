@@ -17,14 +17,16 @@ class Instance;
 
 class ComponentFactory : public jni::HybridClass<ComponentFactory> {
  public:
-  constexpr static const char *const kJavaDescriptor = "Lcom/facebook/react/fabric/ComponentFactory;";
+  constexpr static const char* const kJavaDescriptor =
+      "Lcom/facebook/react/fabric/ComponentFactory;";
 
   static void registerNatives();
 
   ComponentRegistryFactory buildRegistryFunction;
 
  private:
-  static jni::local_ref<jhybriddata> initHybrid(jni::alias_ref<jclass> /*unused*/);
+  static jni::local_ref<jhybriddata> initHybrid(
+      jni::alias_ref<jclass> /*unused*/);
 };
 
 } // namespace facebook::react

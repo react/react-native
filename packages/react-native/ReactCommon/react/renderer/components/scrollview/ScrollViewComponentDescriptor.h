@@ -12,6 +12,7 @@
 
 namespace facebook::react {
 
-using ScrollViewComponentDescriptor = ConcreteComponentDescriptor<ScrollViewShadowNode>;
+using ScrollViewComponentDescriptor =
+    ConcreteComponentDescriptor<ScrollViewShadowNode>;
 
 } // namespace facebook::react

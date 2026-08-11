@@ -22,12 +22,12 @@ struct EventPayload {
   virtual ~EventPayload() = default;
 
   EventPayload() = default;
-  EventPayload(const EventPayload &) = default;
-  EventPayload &operator=(const EventPayload &) = default;
-  EventPayload(EventPayload &&) = default;
-  EventPayload &operator=(EventPayload &&) = default;
+  EventPayload(const EventPayload&) = default;
+  EventPayload& operator=(const EventPayload&) = default;
+  EventPayload(EventPayload&&) = default;
+  EventPayload& operator=(EventPayload&&) = default;
 
-  virtual jsi::Value asJSIValue(jsi::Runtime &runtime) const = 0;
+  virtual jsi::Value asJSIValue(jsi::Runtime& runtime) const = 0;
 
   /**
    * Reports the type of the event payload for efficient downcasting.
@@ -42,8 +42,8 @@ struct EventPayload {
    * be used in conjunction with listeners on EventEmitters to do
    * things like drive native animations.
    */
-  virtual std::optional<double> extractValue(const std::vector<std::string> & /* path */) const
-  {
+  virtual std::optional<double> extractValue(
+      const std::vector<std::string>& /* path */) const {
     return std::nullopt;
   }
 };

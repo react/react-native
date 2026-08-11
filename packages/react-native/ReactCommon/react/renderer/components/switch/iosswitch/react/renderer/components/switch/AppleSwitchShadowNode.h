@@ -18,13 +18,14 @@ extern const char AppleSwitchComponentName[];
 /*
  * `ShadowNode` for <IOSSwitch> component.
  */
-class SwitchShadowNode final
-    : public ConcreteViewShadowNode<AppleSwitchComponentName, SwitchProps, SwitchEventEmitter> {
+class SwitchShadowNode final : public ConcreteViewShadowNode<
+                                   AppleSwitchComponentName,
+                                   SwitchProps,
+                                   SwitchEventEmitter> {
  public:
   using ConcreteViewShadowNode::ConcreteViewShadowNode;
 
-  static ShadowNodeTraits BaseTraits()
-  {
+  static ShadowNodeTraits BaseTraits() {
     auto traits = ConcreteViewShadowNode::BaseTraits();
     traits.set(ShadowNodeTraits::Trait::LeafYogaNode);
     traits.set(ShadowNodeTraits::Trait::MeasurableYogaNode);
@@ -33,7 +34,9 @@ class SwitchShadowNode final
 
 #pragma mark - LayoutableShadowNode
 
-  Size measureContent(const LayoutContext &layoutContext, const LayoutConstraints &layoutConstraints) const override;
+  Size measureContent(
+      const LayoutContext& layoutContext,
+      const LayoutConstraints& layoutConstraints) const override;
 };
 
 } // namespace facebook::react

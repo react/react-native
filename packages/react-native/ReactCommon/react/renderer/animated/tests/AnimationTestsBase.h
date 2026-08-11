@@ -22,15 +22,14 @@ class AnimationTestsBase : public testing::Test {
   AnimationTestsBase() = default;
 
  protected:
-  void initNodesManager() noexcept
-  {
+  void initNodesManager() noexcept {
     nodesManager_.reset();
     nodesManager_ = std::make_shared<NativeAnimatedNodesManager>(
-        [this](Tag reactTag, const folly::dynamic &changedProps) {
+        [this](Tag reactTag, const folly::dynamic& changedProps) {
           lastUpdatedNodeTag = reactTag;
           lastCommittedProps = changedProps;
         },
-        [this](const std::unordered_map<Tag, folly::dynamic> &nodesProps) {
+        [this](const std::unordered_map<Tag, folly::dynamic>& nodesProps) {
           if (!nodesProps.empty()) {
             lastUpdatedNodeTag = nodesProps.begin()->first;
             lastCommittedProps = nodesProps.begin()->second;
@@ -40,13 +39,11 @@ class AnimationTestsBase : public testing::Test {
     NativeAnimatedNodesManager::isOnRenderThread_ = true;
   }
 
-  bool nodeNeedsUpdate(Tag nodeTag) const
-  {
+  bool nodeNeedsUpdate(Tag nodeTag) const {
     return nodesManager_->updatedNodeTags_.contains(nodeTag);
   }
 
-  void runAnimationFrame(double timestamp)
-  {
+  void runAnimationFrame(double timestamp) {
     nodesManager_->onAnimationFrame(timestamp);
   }
 

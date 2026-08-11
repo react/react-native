@@ -17,17 +17,19 @@ namespace facebook::react::jsinspector_modern {
 
 class ConsoleTaskOrchestrator {
  public:
-  static ConsoleTaskOrchestrator &getInstance();
+  static ConsoleTaskOrchestrator& getInstance();
 
   ~ConsoleTaskOrchestrator() = default;
 
-  ConsoleTaskOrchestrator(const ConsoleTaskOrchestrator &) = delete;
-  ConsoleTaskOrchestrator &operator=(const ConsoleTaskOrchestrator &) = delete;
+  ConsoleTaskOrchestrator(const ConsoleTaskOrchestrator&) = delete;
+  ConsoleTaskOrchestrator& operator=(const ConsoleTaskOrchestrator&) = delete;
 
-  ConsoleTaskOrchestrator(ConsoleTaskOrchestrator &&) = delete;
-  ConsoleTaskOrchestrator &operator=(ConsoleTaskOrchestrator &&) = delete;
+  ConsoleTaskOrchestrator(ConsoleTaskOrchestrator&&) = delete;
+  ConsoleTaskOrchestrator& operator=(ConsoleTaskOrchestrator&&) = delete;
 
-  void scheduleTask(ConsoleTaskId taskId, std::weak_ptr<ConsoleTaskContext> taskContext);
+  void scheduleTask(
+      ConsoleTaskId taskId,
+      std::weak_ptr<ConsoleTaskContext> taskContext);
   void cancelTask(ConsoleTaskId taskId);
 
   void startTask(ConsoleTaskId taskId);

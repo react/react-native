@@ -12,8 +12,7 @@ namespace facebook::react {
 /**
  * constexpr version of tolower
  */
-constexpr char toLower(char c)
-{
+constexpr char toLower(char c) {
   if (c >= 'A' && c <= 'Z') {
     return static_cast<char>(c + 32);
   }

@@ -29,29 +29,31 @@ template <typename... Args>
 class PerformanceTracerSection {
  public:
   explicit PerformanceTracerSection(
-      const char *name,
-      const char *track = nullptr,
-      const char *trackGroup = nullptr,
-      const char *color = nullptr,
+      const char* name,
+      const char* track = nullptr,
+      const char* trackGroup = nullptr,
+      const char* color = nullptr,
       Args... args) noexcept
-      : name_(name), track_(track), trackGroup_(trackGroup), color_(color), args_(std::move(args)...)
-  {
+      : name_(name),
+        track_(track),
+        trackGroup_(trackGroup),
+        color_(color),
+        args_(std::move(args)...) {
     static_assert(
         sizeof...(Args) % 2 == 0,
         "PerformanceTracerSection expects an even number of variadic args representing [name, value] pairs.");
   }
 
   // Non-movable
-  PerformanceTracerSection(const PerformanceTracerSection &) = delete;
-  PerformanceTracerSection(PerformanceTracerSection &&) = delete;
+  PerformanceTracerSection(const PerformanceTracerSection&) = delete;
+  PerformanceTracerSection(PerformanceTracerSection&&) = delete;
 
   // Non-copyable
-  PerformanceTracerSection &operator=(const PerformanceTracerSection &) = delete;
-  PerformanceTracerSection &operator=(PerformanceTracerSection &&) = delete;
+  PerformanceTracerSection& operator=(const PerformanceTracerSection&) = delete;
+  PerformanceTracerSection& operator=(PerformanceTracerSection&&) = delete;
 
-  ~PerformanceTracerSection() noexcept
-  {
-    auto &tracer = PerformanceTracer::getInstance();
+  ~PerformanceTracerSection() noexcept {
+    auto& tracer = PerformanceTracer::getInstance();
     if (!tracer.isTracing()) {
       return;
     }
@@ -62,10 +64,11 @@ class PerformanceTracerSection {
     if constexpr (sizeof...(Args) > 0) {
       auto properties = folly::dynamic::array();
       std::apply(
-          [&](const auto &...elems) {
+          [&](const auto&... elems) {
             size_t idx = 0;
-            (((idx % 2 == 0) ? properties.push_back(folly::dynamic::array(elems))
-                             : properties[properties.size() - 1].push_back(elems),
+            (((idx % 2 == 0)
+                  ? properties.push_back(folly::dynamic::array(elems))
+                  : properties[properties.size() - 1].push_back(elems),
               ++idx),
              ...);
           },
@@ -89,7 +92,11 @@ class PerformanceTracerSection {
       folly::dynamic detail = folly::dynamic::object();
       detail["devtools"] = std::move(devtools);
 
-      tracer.reportMeasure(std::string(name_), startTime_, endTime - startTime_, std::move(detail));
+      tracer.reportMeasure(
+          std::string(name_),
+          startTime_,
+          endTime - startTime_,
+          std::move(detail));
     } else {
       tracer.reportTimeStamp(
           std::string(name_),
@@ -97,16 +104,17 @@ class PerformanceTracerSection {
           endTime,
           track_ != nullptr ? std::optional{track_} : std::nullopt,
           trackGroup_ != nullptr ? std::optional{trackGroup_} : std::nullopt,
-          color_ != nullptr ? getConsoleTimeStampColorFromString(color_) : std::nullopt);
+          color_ != nullptr ? getConsoleTimeStampColorFromString(color_)
+                            : std::nullopt);
     }
   }
 
  private:
   HighResTimeStamp startTime_{HighResTimeStamp::now()};
   std::string_view name_;
-  const char *track_;
-  const char *trackGroup_;
-  const char *color_;
+  const char* track_;
+  const char* trackGroup_;
+  const char* color_;
   std::tuple<Args...> args_;
 };
 

@@ -34,7 +34,7 @@ enum ReactMarkerId {
   REACT_INSTANCE_INIT_STOP
 };
 
-using LogTaggedMarker = std::function<void(ReactMarkerId, const char *tag)>;
+using LogTaggedMarker = std::function<void(ReactMarkerId, const char* tag)>;
 using LogTaggedMarkerBridgeless = LogTaggedMarker;
 
 #ifndef RN_EXPORT
@@ -44,21 +44,18 @@ using LogTaggedMarkerBridgeless = LogTaggedMarker;
 /// Thread-safe holder for a LogTaggedMarker callback. Reads and writes are
 /// internally synchronized, so callers do not need external locking.
 struct RN_EXPORT AtomicLogTaggedMarker {
-  AtomicLogTaggedMarker &operator=(LogTaggedMarker marker)
-  {
+  AtomicLogTaggedMarker& operator=(LogTaggedMarker marker) {
     std::unique_lock lock(mutex_);
     impl_ = std::move(marker);
     return *this;
   }
 
-  explicit operator bool() const noexcept
-  {
+  explicit operator bool() const noexcept {
     std::shared_lock lock(mutex_);
     return static_cast<bool>(impl_);
   }
 
-  void operator()(ReactMarkerId markerId, const char *tag) const
-  {
+  void operator()(ReactMarkerId markerId, const char* tag) const {
     std::shared_lock lock(mutex_);
     if (impl_) {
       impl_(markerId, tag);
@@ -73,21 +70,21 @@ struct RN_EXPORT AtomicLogTaggedMarker {
 extern RN_EXPORT AtomicLogTaggedMarker logTaggedMarkerImpl;
 
 extern RN_EXPORT void logMarker(ReactMarkerId markerId);
-extern RN_EXPORT void logTaggedMarker(ReactMarkerId markerId, const char *tag);
-[[deprecated("Use logMarker instead")]]
-extern RN_EXPORT void logMarkerBridgeless(ReactMarkerId markerId);
-[[deprecated("Use logTaggedMarker instead")]]
-extern RN_EXPORT void logTaggedMarkerBridgeless(ReactMarkerId markerId, const char *tag);
+extern RN_EXPORT void logTaggedMarker(ReactMarkerId markerId, const char* tag);
+[[deprecated("Use logMarker instead")]] extern RN_EXPORT void
+logMarkerBridgeless(ReactMarkerId markerId);
+[[deprecated("Use logTaggedMarker instead")]] extern RN_EXPORT void
+logTaggedMarkerBridgeless(ReactMarkerId markerId, const char* tag);
 
 struct ReactMarkerEvent {
   const ReactMarkerId markerId;
-  const char *tag;
+  const char* tag;
   double time;
 };
 
 class RN_EXPORT StartupLogger {
  public:
-  static StartupLogger &getInstance();
+  static StartupLogger& getInstance();
 
   void logStartupEvent(ReactMarkerId markerId, double markerTime);
   void reset();
@@ -98,8 +95,8 @@ class RN_EXPORT StartupLogger {
 
  private:
   StartupLogger() = default;
-  StartupLogger(const StartupLogger &) = delete;
-  StartupLogger &operator=(const StartupLogger &) = delete;
+  StartupLogger(const StartupLogger&) = delete;
+  StartupLogger& operator=(const StartupLogger&) = delete;
 
   double appStartupStartTime = std::nan("");
   double appStartupEndTime = std::nan("");

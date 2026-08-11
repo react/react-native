@@ -22,14 +22,15 @@ class SpringAnimationDriver : public AnimationDriver {
       Tag animatedValueTag,
       std::optional<AnimationEndCallback> endCallback,
       folly::dynamic config,
-      NativeAnimatedNodesManager *manager);
+      NativeAnimatedNodesManager* manager);
 
  protected:
   bool update(double timeDeltaMs, bool restarting) override;
 
  private:
   std::tuple<float, double> getValueAndVelocityForTime(double time) const;
-  bool isAtRest(double currentVelocity, double currentValue, double endValue) const;
+  bool isAtRest(double currentVelocity, double currentValue, double endValue)
+      const;
   bool isOvershooting(double currentValue) const;
 
   double springStiffness_{0};

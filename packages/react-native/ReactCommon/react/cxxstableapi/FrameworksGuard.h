@@ -22,14 +22,15 @@
 //   RN_STRICT_API        Consumer opt-in master switch; the guard is inert
 //                        without it.
 //   RN_ALLOW_FRAMEWORKS  Consumer opt-out acknowledging framework-tier usage.
-//   RN_UMBRELLA_CONTEXT  Internal marker set by an umbrella around its includes.
-//   RN_BUILDING          Set by React Native's own build.
+//   RN_UMBRELLA_CONTEXT  Internal marker set by an umbrella around its
+//   includes. RN_BUILDING          Set by React Native's own build.
 //
 // This header is intentionally NOT `#pragma once`-guarded: it must be
 // re-evaluated on every inclusion so each direct include is checked.
 // =============================================================================
 
-#if defined(RN_STRICT_API) && !defined(RN_ALLOW_FRAMEWORKS) && !defined(RN_UMBRELLA_CONTEXT) && !defined(RN_BUILDING)
+#if defined(RN_STRICT_API) && !defined(RN_ALLOW_FRAMEWORKS) && \
+    !defined(RN_UMBRELLA_CONTEXT) && !defined(RN_BUILDING)
 #warning \
     "This is a 'for frameworks' React Native API, intended for framework authors rather than app code. Include it via the module umbrella <React/<Module>.h>, or define RN_ALLOW_FRAMEWORKS to acknowledge framework-tier usage and silence this warning."
 #endif

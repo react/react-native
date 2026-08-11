@@ -24,12 +24,13 @@ namespace facebook::react {
  */
 class ImageState final {
  public:
-  ImageState(const ImageSource &imageSource, ImageRequest imageRequest, const ImageRequestParams &imageRequestParams)
+  ImageState(
+      const ImageSource& imageSource,
+      ImageRequest imageRequest,
+      const ImageRequestParams& imageRequestParams)
       : imageSource_(imageSource),
         imageRequest_(std::make_shared<ImageRequest>(std::move(imageRequest))),
-        imageRequestParams_(imageRequestParams)
-  {
-  }
+        imageRequestParams_(imageRequestParams) {}
 
   /*
    * Returns stored ImageSource object.
@@ -40,20 +41,20 @@ class ImageState final {
    * Exposes for reading stored `ImageRequest` object.
    * `ImageRequest` object cannot be copied or moved from `ImageLocalData`.
    */
-  const ImageRequest &getImageRequest() const;
+  const ImageRequest& getImageRequest() const;
 
   /*
    * Returns stored ImageRequestParams object.
    */
-  const ImageRequestParams &getImageRequestParams() const;
+  const ImageRequestParams& getImageRequestParams() const;
 #ifdef ANDROID
-  ImageState(const ImageState &previousState, folly::dynamic data) : imageRequestParams_{} {};
+  ImageState(const ImageState& previousState, folly::dynamic data)
+      : imageRequestParams_{} {};
 
   /*
    * Empty implementation for Android because it doesn't use this class.
    */
-  folly::dynamic getDynamic() const
-  {
+  folly::dynamic getDynamic() const {
     return {};
   };
 #endif

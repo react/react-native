@@ -19,13 +19,16 @@ namespace facebook::react {
  */
 class LayoutEventEmitter final : public UIManagerCommitHook {
  public:
-  void commitHookWasRegistered(const UIManager & /*uiManager*/) noexcept override {}
-  void commitHookWasUnregistered(const UIManager & /*uiManager*/) noexcept override {}
+  void commitHookWasRegistered(
+      const UIManager& /*uiManager*/) noexcept override {}
+  void commitHookWasUnregistered(
+      const UIManager& /*uiManager*/) noexcept override {}
 
   void shadowTreeDidCommit(
-      const ShadowTree &shadowTree,
-      const RootShadowNode::Shared &rootShadowNode,
-      const std::vector<const LayoutableShadowNode *> &affectedLayoutableNodes) noexcept override;
+      const ShadowTree& shadowTree,
+      const RootShadowNode::Shared& rootShadowNode,
+      const std::vector<const LayoutableShadowNode*>&
+          affectedLayoutableNodes) noexcept override;
 };
 
 } // namespace facebook::react

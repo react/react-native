@@ -22,7 +22,10 @@ using SharedRawTextProps = std::shared_ptr<const RawTextProps>;
 class RawTextProps : public Props {
  public:
   RawTextProps() = default;
-  RawTextProps(const PropsParserContext &context, const RawTextProps &sourceProps, const RawProps &rawProps);
+  RawTextProps(
+      const PropsParserContext& context,
+      const RawTextProps& sourceProps,
+      const RawProps& rawProps);
 
 #pragma mark - Props
 
@@ -36,7 +39,7 @@ class RawTextProps : public Props {
 
 #ifdef RN_SERIALIZABLE_STATE
   ComponentName getDiffPropsImplementationTarget() const override;
-  folly::dynamic getDiffProps(const Props *prevProps) const override;
+  folly::dynamic getDiffProps(const Props* prevProps) const override;
 #endif
 };
 

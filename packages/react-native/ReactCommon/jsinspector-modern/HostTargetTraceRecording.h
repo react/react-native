@@ -35,25 +35,23 @@ namespace facebook::react::jsinspector_modern {
 class HostTargetTraceRecording {
  public:
   HostTargetTraceRecording(
-      HostTarget &hostTarget,
+      HostTarget& hostTarget,
       tracing::Mode tracingMode,
       std::set<tracing::Category> enabledCategories,
       std::optional<HighResDuration> windowSize = std::nullopt);
 
-  inline bool isBackgroundInitiated() const
-  {
+  inline bool isBackgroundInitiated() const {
     return tracingMode_ == tracing::Mode::Background;
   }
 
-  inline bool isUserInitiated() const
-  {
+  inline bool isUserInitiated() const {
     return tracingMode_ == tracing::Mode::CDP;
   }
 
   /**
    * Updates the current traced Instance for this recording.
    */
-  void setTracedInstance(InstanceTarget *instanceTarget);
+  void setTracedInstance(InstanceTarget* instanceTarget);
 
   /**
    * Starts the recording.
@@ -70,9 +68,11 @@ class HostTargetTraceRecording {
   tracing::HostTracingProfile stop();
 
   /**
-   * Adds the frame timing sequence to the current state of this trace recording.
+   * Adds the frame timing sequence to the current state of this trace
+   * recording.
    *
-   * The caller guarantees the protection from data races. This is protected by the tracing mutex in HostTarget.
+   * The caller guarantees the protection from data races. This is protected by
+   * the tracing mutex in HostTarget.
    */
   void recordFrameTimings(tracing::FrameTimingSequence frameTimingSequence);
 
@@ -80,7 +80,7 @@ class HostTargetTraceRecording {
   /**
    * The Host for which this Trace Recording is going to happen.
    */
-  HostTarget &hostTarget_;
+  HostTarget& hostTarget_;
 
   /**
    * The mode in which this trace recording was initialized.

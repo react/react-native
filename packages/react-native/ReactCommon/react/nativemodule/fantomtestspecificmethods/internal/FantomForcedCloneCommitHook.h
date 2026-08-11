@@ -14,14 +14,16 @@
 namespace facebook::react {
 
 struct FantomForcedCloneCommitHook : public UIManagerCommitHook {
-  void commitHookWasRegistered(const UIManager & /*uiManager*/) noexcept override;
+  void commitHookWasRegistered(
+      const UIManager& /*uiManager*/) noexcept override;
 
-  void commitHookWasUnregistered(const UIManager & /*uiManager*/) noexcept override;
+  void commitHookWasUnregistered(
+      const UIManager& /*uiManager*/) noexcept override;
 
   RootShadowNode::Unshared shadowTreeWillCommit(
-      const ShadowTree &shadowTree,
-      const std::shared_ptr<const RootShadowNode> &oldRootShadowNode,
-      const RootShadowNode::Unshared &newRootShadowNode) noexcept override;
+      const ShadowTree& shadowTree,
+      const std::shared_ptr<const RootShadowNode>& oldRootShadowNode,
+      const RootShadowNode::Unshared& newRootShadowNode) noexcept override;
 };
 
 } // namespace facebook::react

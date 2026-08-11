@@ -28,9 +28,9 @@ namespace detail {
 template <typename DataT, TemplateStringLiteral Name>
   requires(std::is_same_v<decltype(DataT::amount), float>)
 struct CSSFilterSimpleAmountParser {
-  static constexpr auto consumeFunctionBlock(const CSSFunctionBlock &func, CSSValueParser &parser)
-      -> std::optional<DataT>
-  {
+  static constexpr auto consumeFunctionBlock(
+      const CSSFunctionBlock& func,
+      CSSValueParser& parser) -> std::optional<DataT> {
     if (!iequals(func.name, Name)) {
       return {};
     }
@@ -60,20 +60,22 @@ struct CSSFilterSimpleAmountParser {
 struct CSSBlurFilter {
   CSSLength amount{};
 
-  constexpr bool operator==(const CSSBlurFilter &rhs) const = default;
+  constexpr bool operator==(const CSSBlurFilter& rhs) const = default;
 };
 
 template <>
 struct CSSDataTypeParser<CSSBlurFilter> {
-  static constexpr auto consumeFunctionBlock(const CSSFunctionBlock &func, CSSValueParser &parser)
-      -> std::optional<CSSBlurFilter>
-  {
+  static constexpr auto consumeFunctionBlock(
+      const CSSFunctionBlock& func,
+      CSSValueParser& parser) -> std::optional<CSSBlurFilter> {
     if (!iequals(func.name, "blur")) {
       return {};
     }
 
     auto len = parser.parseNextValue<CSSLength>();
-    return CSSBlurFilter{std::holds_alternative<CSSLength>(len) ? std::get<CSSLength>(len) : CSSLength{}};
+    return CSSBlurFilter{
+        std::holds_alternative<CSSLength>(len) ? std::get<CSSLength>(len)
+                                               : CSSLength{}};
   }
 };
 
@@ -85,12 +87,13 @@ static_assert(CSSDataType<CSSBlurFilter>);
 struct CSSBrightnessFilter {
   float amount{1.0f};
 
-  constexpr bool operator==(const CSSBrightnessFilter &rhs) const = default;
+  constexpr bool operator==(const CSSBrightnessFilter& rhs) const = default;
 };
 
 template <>
 struct CSSDataTypeParser<CSSBrightnessFilter>
-    : public detail::CSSFilterSimpleAmountParser<CSSBrightnessFilter, "brightness"> {};
+    : public detail::
+          CSSFilterSimpleAmountParser<CSSBrightnessFilter, "brightness"> {};
 
 static_assert(CSSDataType<CSSBrightnessFilter>);
 
@@ -100,12 +103,13 @@ static_assert(CSSDataType<CSSBrightnessFilter>);
 struct CSSContrastFilter {
   float amount{1.0f};
 
-  constexpr bool operator==(const CSSContrastFilter &rhs) const = default;
+  constexpr bool operator==(const CSSContrastFilter& rhs) const = default;
 };
 
 template <>
 struct CSSDataTypeParser<CSSContrastFilter>
-    : public detail::CSSFilterSimpleAmountParser<CSSContrastFilter, "contrast"> {};
+    : public detail::
+          CSSFilterSimpleAmountParser<CSSContrastFilter, "contrast"> {};
 
 static_assert(CSSDataType<CSSContrastFilter>);
 
@@ -118,14 +122,14 @@ struct CSSDropShadowFilter {
   CSSLength standardDeviation{};
   CSSColor color{};
 
-  constexpr bool operator==(const CSSDropShadowFilter &rhs) const = default;
+  constexpr bool operator==(const CSSDropShadowFilter& rhs) const = default;
 };
 
 template <>
 struct CSSDataTypeParser<CSSDropShadowFilter> {
-  static constexpr auto consumeFunctionBlock(const CSSFunctionBlock &func, CSSValueParser &parser)
-      -> std::optional<CSSDropShadowFilter>
-  {
+  static constexpr auto consumeFunctionBlock(
+      const CSSFunctionBlock& func,
+      CSSValueParser& parser) -> std::optional<CSSDropShadowFilter> {
     if (!iequals(func.name, "drop-shadow")) {
       return {};
     }
@@ -147,7 +151,8 @@ struct CSSDataTypeParser<CSSDropShadowFilter> {
       }
     }
 
-    auto secondVal = parser.parseNextValue<CSSColor, CSSLength>(CSSDelimiter::Whitespace);
+    auto secondVal =
+        parser.parseNextValue<CSSColor, CSSLength>(CSSDelimiter::Whitespace);
     if (std::holds_alternative<CSSColor>(secondVal)) {
       if (color.has_value()) {
         return {};
@@ -173,22 +178,27 @@ struct CSSDataTypeParser<CSSDropShadowFilter> {
   }
 
  private:
-  static constexpr std::optional<std::array<CSSLength, 3>> parseLengths(CSSLength offsetX, CSSValueParser &parser)
-  {
+  static constexpr std::optional<std::array<CSSLength, 3>> parseLengths(
+      CSSLength offsetX,
+      CSSValueParser& parser) {
     auto offsetY = parser.parseNextValue<CSSLength>(CSSDelimiter::Whitespace);
     if (!std::holds_alternative<CSSLength>(offsetY)) {
       return {};
     }
 
-    auto standardDeviation = parser.parseNextValue<CSSLength>(CSSDelimiter::Whitespace);
-    if (std::holds_alternative<CSSLength>(standardDeviation) && std::get<CSSLength>(standardDeviation).value < 0.0f) {
+    auto standardDeviation =
+        parser.parseNextValue<CSSLength>(CSSDelimiter::Whitespace);
+    if (std::holds_alternative<CSSLength>(standardDeviation) &&
+        std::get<CSSLength>(standardDeviation).value < 0.0f) {
       return {};
     }
 
     return std::array<CSSLength, 3>{
         offsetX,
         std::get<CSSLength>(offsetY),
-        std::holds_alternative<CSSLength>(standardDeviation) ? std::get<CSSLength>(standardDeviation) : CSSLength{}};
+        std::holds_alternative<CSSLength>(standardDeviation)
+            ? std::get<CSSLength>(standardDeviation)
+            : CSSLength{}};
   }
 };
 
@@ -200,12 +210,13 @@ static_assert(CSSDataType<CSSDropShadowFilter>);
 struct CSSGrayscaleFilter {
   float amount{1.0f};
 
-  constexpr bool operator==(const CSSGrayscaleFilter &rhs) const = default;
+  constexpr bool operator==(const CSSGrayscaleFilter& rhs) const = default;
 };
 
 template <>
 struct CSSDataTypeParser<CSSGrayscaleFilter>
-    : public detail::CSSFilterSimpleAmountParser<CSSGrayscaleFilter, "grayscale"> {};
+    : public detail::
+          CSSFilterSimpleAmountParser<CSSGrayscaleFilter, "grayscale"> {};
 
 static_assert(CSSDataType<CSSGrayscaleFilter>);
 
@@ -215,20 +226,23 @@ static_assert(CSSDataType<CSSGrayscaleFilter>);
 struct CSSHueRotateFilter {
   float degrees{};
 
-  constexpr bool operator==(const CSSHueRotateFilter &rhs) const = default;
+  constexpr bool operator==(const CSSHueRotateFilter& rhs) const = default;
 };
 
 template <>
 struct CSSDataTypeParser<CSSHueRotateFilter> {
-  static constexpr auto consumeFunctionBlock(const CSSFunctionBlock &func, CSSValueParser &parser)
-      -> std::optional<CSSHueRotateFilter>
-  {
+  static constexpr auto consumeFunctionBlock(
+      const CSSFunctionBlock& func,
+      CSSValueParser& parser) -> std::optional<CSSHueRotateFilter> {
     if (!iequals(func.name, "hue-rotate")) {
       return {};
     }
 
     auto angle = parser.parseNextValue<CSSAngle, CSSZero>();
-    return CSSHueRotateFilter{std::holds_alternative<CSSAngle>(angle) ? std::get<CSSAngle>(angle).degrees : 0.0f};
+    return CSSHueRotateFilter{
+        std::holds_alternative<CSSAngle>(angle)
+            ? std::get<CSSAngle>(angle).degrees
+            : 0.0f};
   }
 };
 
@@ -240,11 +254,12 @@ static_assert(CSSDataType<CSSHueRotateFilter>);
 struct CSSInvertFilter {
   float amount{1.0f};
 
-  constexpr bool operator==(const CSSInvertFilter &rhs) const = default;
+  constexpr bool operator==(const CSSInvertFilter& rhs) const = default;
 };
 
 template <>
-struct CSSDataTypeParser<CSSInvertFilter> : public detail::CSSFilterSimpleAmountParser<CSSInvertFilter, "invert"> {};
+struct CSSDataTypeParser<CSSInvertFilter>
+    : public detail::CSSFilterSimpleAmountParser<CSSInvertFilter, "invert"> {};
 
 static_assert(CSSDataType<CSSInvertFilter>);
 
@@ -254,11 +269,13 @@ static_assert(CSSDataType<CSSInvertFilter>);
 struct CSSOpacityFilter {
   float amount{1.0f};
 
-  constexpr bool operator==(const CSSOpacityFilter &rhs) const = default;
+  constexpr bool operator==(const CSSOpacityFilter& rhs) const = default;
 };
 
 template <>
-struct CSSDataTypeParser<CSSOpacityFilter> : public detail::CSSFilterSimpleAmountParser<CSSOpacityFilter, "opacity"> {};
+struct CSSDataTypeParser<CSSOpacityFilter>
+    : public detail::CSSFilterSimpleAmountParser<CSSOpacityFilter, "opacity"> {
+};
 
 static_assert(CSSDataType<CSSOpacityFilter>);
 
@@ -268,12 +285,13 @@ static_assert(CSSDataType<CSSOpacityFilter>);
 struct CSSSaturateFilter {
   float amount{1.0f};
 
-  constexpr bool operator==(const CSSSaturateFilter &rhs) const = default;
+  constexpr bool operator==(const CSSSaturateFilter& rhs) const = default;
 };
 
 template <>
 struct CSSDataTypeParser<CSSSaturateFilter>
-    : public detail::CSSFilterSimpleAmountParser<CSSSaturateFilter, "saturate"> {};
+    : public detail::
+          CSSFilterSimpleAmountParser<CSSSaturateFilter, "saturate"> {};
 
 static_assert(CSSDataType<CSSSaturateFilter>);
 
@@ -283,11 +301,12 @@ static_assert(CSSDataType<CSSSaturateFilter>);
 struct CSSSepiaFilter {
   float amount{1.0f};
 
-  constexpr bool operator==(const CSSSepiaFilter &rhs) const = default;
+  constexpr bool operator==(const CSSSepiaFilter& rhs) const = default;
 };
 
 template <>
-struct CSSDataTypeParser<CSSSepiaFilter> : public detail::CSSFilterSimpleAmountParser<CSSSepiaFilter, "sepia"> {};
+struct CSSDataTypeParser<CSSSepiaFilter>
+    : public detail::CSSFilterSimpleAmountParser<CSSSepiaFilter, "sepia"> {};
 
 static_assert(CSSDataType<CSSSepiaFilter>);
 

@@ -12,7 +12,7 @@
 
 namespace facebook::react {
 
-jobject getApplication(JNIEnv *env);
+jobject getApplication(JNIEnv* env);
 
 jni::alias_ref<jni::AContext> getContext();
 

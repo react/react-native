@@ -20,26 +20,27 @@ namespace facebook::react::jsinspector_modern::tracing {
 
 /**
  * The global state for the given Trace Recording.
- * Shared with Tracing Agents, which could use it to stash the corresponding target profiles during reloads.
+ * Shared with Tracing Agents, which could use it to stash the corresponding
+ * target profiles during reloads.
  */
 struct TraceRecordingState {
   TraceRecordingState(
       tracing::Mode tracingMode,
       std::set<tracing::Category> enabledCategories,
       std::optional<HighResDuration> windowSize = std::nullopt)
-      : mode(tracingMode), enabledCategories(std::move(enabledCategories)), windowSize(windowSize)
-  {
-  }
+      : mode(tracingMode),
+        enabledCategories(std::move(enabledCategories)),
+        windowSize(windowSize) {}
 
   // Explicitly move-only: RuntimeSamplingProfile is not copyable, so the
   // implicit copy constructor is ill-formed the moment it is instantiated.
   // Plain C++ never instantiates it, but Swift's C++ interop (ClangImporter)
   // does when a consumer imports these headers as part of a module, turning
   // it into a hard compile error (Xcode 26.3).
-  TraceRecordingState(const TraceRecordingState &) = delete;
-  TraceRecordingState &operator=(const TraceRecordingState &) = delete;
-  TraceRecordingState(TraceRecordingState &&) = default;
-  TraceRecordingState &operator=(TraceRecordingState &&) = default;
+  TraceRecordingState(const TraceRecordingState&) = delete;
+  TraceRecordingState& operator=(const TraceRecordingState&) = delete;
+  TraceRecordingState(TraceRecordingState&&) = default;
+  TraceRecordingState& operator=(TraceRecordingState&&) = default;
   ~TraceRecordingState() = default;
 
   // The mode of this Trace Recording.

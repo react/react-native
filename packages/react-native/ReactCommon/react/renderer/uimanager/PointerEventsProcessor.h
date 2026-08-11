@@ -34,44 +34,55 @@ struct ActivePointer {
 };
 
 using DispatchEvent = std::function<void(
-    const ShadowNode &targetNode,
-    const std::string &type,
+    const ShadowNode& targetNode,
+    const std::string& type,
     ReactEventPriority priority,
-    const EventPayload &payload)>;
+    const EventPayload& payload)>;
 
 using PointerIdentifier = int32_t;
-using CaptureTargetOverrideRegistry = std::unordered_map<PointerIdentifier, std::weak_ptr<const ShadowNode>>;
+using CaptureTargetOverrideRegistry =
+    std::unordered_map<PointerIdentifier, std::weak_ptr<const ShadowNode>>;
 
-using ActivePointerRegistry = std::unordered_map<PointerIdentifier, ActivePointer>;
-using PointerHoverTrackerRegistry = std::unordered_map<PointerIdentifier, PointerHoverTracker::Unique>;
+using ActivePointerRegistry =
+    std::unordered_map<PointerIdentifier, ActivePointer>;
+using PointerHoverTrackerRegistry =
+    std::unordered_map<PointerIdentifier, PointerHoverTracker::Unique>;
 
 class PointerEventsProcessor final {
  public:
-  static std::shared_ptr<const ShadowNode> getShadowNodeFromEventTarget(jsi::Runtime &runtime, EventTarget *target);
+  static std::shared_ptr<const ShadowNode> getShadowNodeFromEventTarget(
+      jsi::Runtime& runtime,
+      EventTarget* target);
 
   void interceptPointerEvent(
-      const std::shared_ptr<const ShadowNode> &target,
-      const std::string &type,
+      const std::shared_ptr<const ShadowNode>& target,
+      const std::string& type,
       ReactEventPriority priority,
-      const PointerEvent &event,
-      const DispatchEvent &eventDispatcher,
-      const UIManager &uiManager);
+      const PointerEvent& event,
+      const DispatchEvent& eventDispatcher,
+      const UIManager& uiManager);
 
-  void setPointerCapture(PointerIdentifier pointerId, const std::shared_ptr<const ShadowNode> &shadowNode);
-  void releasePointerCapture(PointerIdentifier pointerId, const ShadowNode *shadowNode);
-  bool hasPointerCapture(PointerIdentifier pointerId, const ShadowNode *shadowNode);
+  void setPointerCapture(
+      PointerIdentifier pointerId,
+      const std::shared_ptr<const ShadowNode>& shadowNode);
+  void releasePointerCapture(
+      PointerIdentifier pointerId,
+      const ShadowNode* shadowNode);
+  bool hasPointerCapture(
+      PointerIdentifier pointerId,
+      const ShadowNode* shadowNode);
 
  private:
-  ActivePointer *getActivePointer(PointerIdentifier pointerId);
+  ActivePointer* getActivePointer(PointerIdentifier pointerId);
 
-  void registerActivePointer(const PointerEvent &event);
-  void updateActivePointer(const PointerEvent &event);
-  void unregisterActivePointer(const PointerEvent &event);
+  void registerActivePointer(const PointerEvent& event);
+  void updateActivePointer(const PointerEvent& event);
+  void unregisterActivePointer(const PointerEvent& event);
 
   void processPendingPointerCapture(
-      const PointerEvent &event,
-      const DispatchEvent &eventDispatcher,
-      const UIManager &uiManager);
+      const PointerEvent& event,
+      const DispatchEvent& eventDispatcher,
+      const UIManager& uiManager);
 
   ActivePointerRegistry activePointers_;
 
@@ -89,10 +100,10 @@ class PointerEventsProcessor final {
    * screen entirely)
    */
   void handleIncomingPointerEventOnNode(
-      const PointerEvent &event,
-      const std::shared_ptr<const ShadowNode> &targetNode,
-      const DispatchEvent &eventDispatcher,
-      const UIManager &uiManager);
+      const PointerEvent& event,
+      const std::shared_ptr<const ShadowNode>& targetNode,
+      const DispatchEvent& eventDispatcher,
+      const UIManager& uiManager);
 
   PointerHoverTrackerRegistry previousHoverTrackersPerPointer_;
 };

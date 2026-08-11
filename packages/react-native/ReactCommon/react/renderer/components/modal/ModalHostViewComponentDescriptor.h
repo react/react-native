@@ -17,27 +17,36 @@ namespace facebook::react {
  * Descriptor for <ModalHostView> component.
  */
 
-class ModalHostViewComponentDescriptor final : public ConcreteComponentDescriptor<ModalHostViewShadowNode> {
+class ModalHostViewComponentDescriptor final
+    : public ConcreteComponentDescriptor<ModalHostViewShadowNode> {
  public:
   using ConcreteComponentDescriptor::ConcreteComponentDescriptor;
 
-  void adopt(ShadowNode &shadowNode) const override
-  {
-    auto &layoutableShadowNode = static_cast<YogaLayoutableShadowNode &>(shadowNode);
-    auto &stateData = static_cast<const ModalHostViewShadowNode::ConcreteState &>(*shadowNode.getState()).getData();
+  void adopt(ShadowNode& shadowNode) const override {
+    auto& layoutableShadowNode =
+        static_cast<YogaLayoutableShadowNode&>(shadowNode);
+    auto& stateData =
+        static_cast<const ModalHostViewShadowNode::ConcreteState&>(
+            *shadowNode.getState())
+            .getData();
 
-    layoutableShadowNode.setSize(Size{.width = stateData.screenSize.width, .height = stateData.screenSize.height});
+    layoutableShadowNode.setSize(Size{
+        .width = stateData.screenSize.width,
+        .height = stateData.screenSize.height});
     layoutableShadowNode.setPositionType(YGPositionTypeAbsolute);
 
     ConcreteComponentDescriptor::adopt(shadowNode);
   }
 
 #ifdef ANDROID
-  State::Shared createInitialState(const Props::Shared &props, const ShadowNodeFamily::Shared &family) const override;
+  State::Shared createInitialState(
+      const Props::Shared& props,
+      const ShadowNodeFamily::Shared& family) const override;
 #endif // ANDROID
 
  private:
-  constexpr static auto UIManagerJavaDescriptor = "com/facebook/react/fabric/FabricUIManager";
+  constexpr static auto UIManagerJavaDescriptor =
+      "com/facebook/react/fabric/FabricUIManager";
 };
 
 } // namespace facebook::react

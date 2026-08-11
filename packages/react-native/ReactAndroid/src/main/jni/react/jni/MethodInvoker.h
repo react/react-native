@@ -19,24 +19,27 @@ namespace facebook::react {
 
 class Instance;
 
-struct [[deprecated("This API will be removed along with the legacy architecture.")]] JReflectMethod
+struct [[deprecated(
+    "This API will be removed along with the legacy architecture.")]] JReflectMethod
     : public jni::JavaClass<JReflectMethod> {
   static constexpr auto kJavaDescriptor = "Ljava/lang/reflect/Method;";
 
-  jmethodID getMethodID()
-  {
+  jmethodID getMethodID() {
     auto id = jni::Environment::current()->FromReflectedMethod(self());
     jni::throwPendingJniExceptionAsCppException();
     return id;
   }
 };
 
-struct [[deprecated("This API will be removed along with the legacy architecture.")]] JBaseJavaModule
+struct [[deprecated(
+    "This API will be removed along with the legacy architecture.")]] JBaseJavaModule
     : public jni::JavaClass<JBaseJavaModule> {
-  static constexpr auto kJavaDescriptor = "Lcom/facebook/react/bridge/BaseJavaModule;";
+  static constexpr auto kJavaDescriptor =
+      "Lcom/facebook/react/bridge/BaseJavaModule;";
 };
 
-class [[deprecated("This API will be removed along with the legacy architecture.")]] MethodInvoker {
+class [[deprecated(
+    "This API will be removed along with the legacy architecture.")]] MethodInvoker {
  public:
   MethodInvoker(
       jni::alias_ref<JReflectMethod::javaobject> method,
@@ -46,14 +49,13 @@ class [[deprecated("This API will be removed along with the legacy architecture.
       bool isSync);
 
   MethodCallResult invoke(
-      std::weak_ptr<Instance> &instance,
+      std::weak_ptr<Instance> & instance,
       jni::alias_ref<JBaseJavaModule::javaobject> module,
-      const folly::dynamic &params);
+      const folly::dynamic& params);
 
   std::string getMethodName() const;
 
-  bool isSyncHook() const
-  {
+  bool isSyncHook() const {
     return isSync_;
   }
 

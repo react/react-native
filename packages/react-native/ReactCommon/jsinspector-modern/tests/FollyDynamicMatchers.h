@@ -17,8 +17,9 @@ namespace facebook {
 namespace folly_dynamic_matchers_utils {
 
 std::string as_string(std::string value);
-std::string as_string(const folly::dynamic &value);
-std::string explain_error(folly::dynamic::json_pointer_resolution_error<const folly::dynamic> error);
+std::string as_string(const folly::dynamic& value);
+std::string explain_error(
+    folly::dynamic::json_pointer_resolution_error<const folly::dynamic> error);
 
 } // namespace folly_dynamic_matchers_utils
 
@@ -31,11 +32,11 @@ std::string explain_error(folly::dynamic::json_pointer_resolution_error<const fo
 MATCHER_P(
     JsonParsed,
     innerMatcher,
-    std::string{"parsed as JSON "} + testing::DescribeMatcher<folly::dynamic>(innerMatcher, negation))
-{
+    std::string{"parsed as JSON "} +
+        testing::DescribeMatcher<folly::dynamic>(innerMatcher, negation)) {
   using namespace ::testing;
   using namespace folly_dynamic_matchers_utils;
-  const auto &json = arg;
+  const auto& json = arg;
   folly::dynamic parsed = folly::parseJson(as_string(json));
   return ExplainMatchResult(innerMatcher, parsed, result_listener);
 }
@@ -44,10 +45,14 @@ MATCHER_P(
  * Given a folly::dynamic argument, asserts that it is deeply equal to the
  * result of parsing the given JSON string.
  */
-MATCHER_P(JsonEq, expected, std::string{"deeply equals "} + folly::toPrettyJson(folly::parseJson(expected)))
-{
+MATCHER_P(
+    JsonEq,
+    expected,
+    std::string{"deeply equals "} +
+        folly::toPrettyJson(folly::parseJson(expected))) {
   using namespace ::testing;
-  return ExplainMatchResult(JsonParsed(Eq(folly::parseJson(expected))), arg, result_listener);
+  return ExplainMatchResult(
+      JsonParsed(Eq(folly::parseJson(expected))), arg, result_listener);
 }
 
 /**
@@ -58,15 +63,17 @@ MATCHER_P2(
     AtJsonPtr,
     jsonPointer,
     innerMatcher,
-    std::string{"value at "} + jsonPointer + " " + testing::DescribeMatcher<folly::dynamic>(innerMatcher, negation))
-{
+    std::string{"value at "} + jsonPointer + " " +
+        testing::DescribeMatcher<folly::dynamic>(innerMatcher, negation)) {
   using namespace ::testing;
   using namespace folly_dynamic_matchers_utils;
   auto resolved_ptr = arg.try_get_ptr(folly::json_pointer::parse(jsonPointer));
   if (resolved_ptr.hasValue()) {
-    return ExplainMatchResult(innerMatcher, *resolved_ptr.value().value, result_listener);
+    return ExplainMatchResult(
+        innerMatcher, *resolved_ptr.value().value, result_listener);
   }
-  *result_listener << "has no value at " << jsonPointer << " because of error: " << explain_error(resolved_ptr.error());
+  *result_listener << "has no value at " << jsonPointer << " because of error: "
+                   << explain_error(resolved_ptr.error());
   return false;
 }
 
@@ -77,8 +84,8 @@ MATCHER_P2(
 MATCHER_P(
     DynamicString,
     innerMatcher,
-    std::string{"string value "} + testing::DescribeMatcher<std::string>(innerMatcher, negation))
-{
+    std::string{"string value "} +
+        testing::DescribeMatcher<std::string>(innerMatcher, negation)) {
   using namespace ::testing;
   using namespace folly_dynamic_matchers_utils;
   if (!arg.isString()) {
@@ -93,8 +100,7 @@ MATCHER_P(
  * string. Not technically specific to GMock, but convenient to have in a test
  * suite.
  */
-inline folly::dynamic operator""_json(const char *s, size_t n)
-{
+inline folly::dynamic operator""_json(const char* s, size_t n) {
   return folly::parseJson(std::string{s, n});
 }
 

@@ -15,13 +15,17 @@
 
 namespace facebook::react {
 
-class InspectorNetworkRequestListener : public jni::HybridClass<InspectorNetworkRequestListener> {
+class InspectorNetworkRequestListener
+    : public jni::HybridClass<InspectorNetworkRequestListener> {
  public:
-  static constexpr auto kJavaDescriptor = "Lcom/facebook/react/devsupport/inspector/InspectorNetworkRequestListener;";
+  static constexpr auto kJavaDescriptor =
+      "Lcom/facebook/react/devsupport/inspector/InspectorNetworkRequestListener;";
 
   static void registerNatives();
 
-  void onHeaders(jint httpStatusCode, jni::alias_ref<jni::JMap<jstring, jstring>> headers);
+  void onHeaders(
+      jint httpStatusCode,
+      jni::alias_ref<jni::JMap<jstring, jstring>> headers);
   void onData(jni::alias_ref<jstring> data);
   void onError(jni::alias_ref<jstring> message);
   void onCompletion();
@@ -30,9 +34,11 @@ class InspectorNetworkRequestListener : public jni::HybridClass<InspectorNetwork
   friend HybridBase;
 
   InspectorNetworkRequestListener(
-      jsinspector_modern::ScopedExecutor<jsinspector_modern::NetworkRequestListener> executor);
+      jsinspector_modern::ScopedExecutor<
+          jsinspector_modern::NetworkRequestListener> executor);
 
-  jsinspector_modern::ScopedExecutor<jsinspector_modern::NetworkRequestListener> executor_;
+  jsinspector_modern::ScopedExecutor<jsinspector_modern::NetworkRequestListener>
+      executor_;
 };
 
 } // namespace facebook::react

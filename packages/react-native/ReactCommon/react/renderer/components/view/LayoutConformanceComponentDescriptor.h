@@ -12,6 +12,7 @@
 
 namespace facebook::react {
 
-using LayoutConformanceComponentDescriptor = ConcreteComponentDescriptor<LayoutConformanceShadowNode>;
+using LayoutConformanceComponentDescriptor =
+    ConcreteComponentDescriptor<LayoutConformanceShadowNode>;
 
 } // namespace facebook::react

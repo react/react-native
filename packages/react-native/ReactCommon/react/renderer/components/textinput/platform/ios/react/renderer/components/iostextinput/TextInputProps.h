@@ -23,7 +23,10 @@ namespace facebook::react {
 class TextInputProps final : public BaseTextInputProps {
  public:
   TextInputProps() = default;
-  TextInputProps(const PropsParserContext &context, const TextInputProps &sourceProps, const RawProps &rawProps);
+  TextInputProps(
+      const PropsParserContext& context,
+      const TextInputProps& sourceProps,
+      const RawProps& rawProps);
 
 #pragma mark - Props
   const TextInputTraits traits{};

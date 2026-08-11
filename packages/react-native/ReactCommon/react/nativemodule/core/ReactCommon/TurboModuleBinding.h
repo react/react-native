@@ -31,18 +31,22 @@ class TurboModuleBinding final {
    * TurboModuleProviderFunctionTypeWithRuntime instead.
    * Remove after React Native 0.84 is released.
    */
-  [[deprecated("Use the overload that takes TurboModuleProviderFunctionTypeWithRuntime instead")]]
-  static void install(
-      jsi::Runtime &runtime,
-      TurboModuleProviderFunctionType &&moduleProvider,
-      TurboModuleProviderFunctionType &&legacyModuleProvider = nullptr,
-      std::shared_ptr<LongLivedObjectCollection> longLivedObjectCollection = nullptr);
+  [[deprecated(
+      "Use the overload that takes TurboModuleProviderFunctionTypeWithRuntime instead")]] static void
+  install(
+      jsi::Runtime& runtime,
+      TurboModuleProviderFunctionType&& moduleProvider,
+      TurboModuleProviderFunctionType&& legacyModuleProvider = nullptr,
+      std::shared_ptr<LongLivedObjectCollection> longLivedObjectCollection =
+          nullptr);
 
   static void install(
-      jsi::Runtime &runtime,
-      TurboModuleProviderFunctionTypeWithRuntime &&moduleProvider,
-      TurboModuleProviderFunctionTypeWithRuntime &&legacyModuleProvider = nullptr,
-      std::shared_ptr<LongLivedObjectCollection> longLivedObjectCollection = nullptr);
+      jsi::Runtime& runtime,
+      TurboModuleProviderFunctionTypeWithRuntime&& moduleProvider,
+      TurboModuleProviderFunctionTypeWithRuntime&& legacyModuleProvider =
+          nullptr,
+      std::shared_ptr<LongLivedObjectCollection> longLivedObjectCollection =
+          nullptr);
 
   ~TurboModuleBinding();
 
@@ -50,17 +54,18 @@ class TurboModuleBinding final {
   friend BridgelessNativeModuleProxy;
 
   TurboModuleBinding(
-      jsi::Runtime &runtime,
-      TurboModuleProviderFunctionTypeWithRuntime &&moduleProvider,
+      jsi::Runtime& runtime,
+      TurboModuleProviderFunctionTypeWithRuntime&& moduleProvider,
       std::shared_ptr<LongLivedObjectCollection> longLivedObjectCollection);
 
   /**
    * A lookup function exposed to JS to get an instance of a TurboModule
    * for the given name.
    */
-  jsi::Value getModule(jsi::Runtime &runtime, const std::string &moduleName) const;
+  jsi::Value getModule(jsi::Runtime& runtime, const std::string& moduleName)
+      const;
 
-  jsi::Runtime &runtime_;
+  jsi::Runtime& runtime_;
   TurboModuleProviderFunctionTypeWithRuntime moduleProvider_;
   std::shared_ptr<LongLivedObjectCollection> longLivedObjectCollection_;
 };

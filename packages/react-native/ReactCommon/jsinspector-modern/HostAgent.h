@@ -38,16 +38,16 @@ class HostAgent final {
    * \param executor A void executor to be used by async-aware handlers.
    */
   HostAgent(
-      const FrontendChannel &frontendChannel,
-      HostTargetController &targetController,
+      const FrontendChannel& frontendChannel,
+      HostTargetController& targetController,
       HostTargetMetadata hostMetadata,
-      SessionState &sessionState,
+      SessionState& sessionState,
       VoidExecutor executor);
 
-  HostAgent(const HostAgent &) = delete;
-  HostAgent(HostAgent &&) = delete;
-  HostAgent &operator=(const HostAgent &) = delete;
-  HostAgent &operator=(HostAgent &&) = delete;
+  HostAgent(const HostAgent&) = delete;
+  HostAgent(HostAgent&&) = delete;
+  HostAgent& operator=(const HostAgent&) = delete;
+  HostAgent& operator=(HostAgent&&) = delete;
 
   ~HostAgent();
 
@@ -56,7 +56,7 @@ class HostAgent final {
    * \c FrontendChannel synchronously or asynchronously.
    * \param req The parsed request.
    */
-  void handleRequest(const cdp::PreparsedRequest &req);
+  void handleRequest(const cdp::PreparsedRequest& req);
 
   /**
    * Replace the current InstanceAgent with the given one and notify the
@@ -98,12 +98,12 @@ class HostAgent final {
  */
 class HostTracingAgent : tracing::TargetTracingAgent {
  public:
-  explicit HostTracingAgent(tracing::TraceRecordingState &state);
+  explicit HostTracingAgent(tracing::TraceRecordingState& state);
 
   /**
    * Registers the InstanceTarget with this tracing agent.
    */
-  void setTracedInstance(InstanceTarget *instanceTarget);
+  void setTracedInstance(InstanceTarget* instanceTarget);
 
  private:
   std::shared_ptr<InstanceTracingAgent> instanceTracingAgent_{nullptr};

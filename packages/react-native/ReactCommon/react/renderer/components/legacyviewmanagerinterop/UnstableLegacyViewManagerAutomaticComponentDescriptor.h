@@ -17,16 +17,16 @@
 namespace facebook::react {
 
 class UnstableLegacyViewManagerAutomaticComponentDescriptor final
-    : public ConcreteComponentDescriptor<LegacyViewManagerAndroidInteropShadowNode> {
+    : public ConcreteComponentDescriptor<
+          LegacyViewManagerAndroidInteropShadowNode> {
  public:
   using ConcreteComponentDescriptor::ConcreteComponentDescriptor;
 
   UnstableLegacyViewManagerAutomaticComponentDescriptor(
-      const ComponentDescriptorParameters &parameters,
+      const ComponentDescriptorParameters& parameters,
       std::string legacyComponentName)
-      : ConcreteComponentDescriptor(parameters), legacyComponentName_(std::move(legacyComponentName))
-  {
-  }
+      : ConcreteComponentDescriptor(parameters),
+        legacyComponentName_(std::move(legacyComponentName)) {}
 
   ComponentHandle getComponentHandle() const override;
   ComponentName getComponentName() const override;

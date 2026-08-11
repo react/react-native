@@ -18,9 +18,11 @@ struct BackgroundPosition {
   std::optional<ValueUnit> right;
   std::optional<ValueUnit> bottom;
 
-  BackgroundPosition() : top(ValueUnit{0.0f, UnitType::Point}), left(ValueUnit{0.0f, UnitType::Point}) {}
+  BackgroundPosition()
+      : top(ValueUnit{0.0f, UnitType::Point}),
+        left(ValueUnit{0.0f, UnitType::Point}) {}
 
-  bool operator==(const BackgroundPosition &other) const = default;
+  bool operator==(const BackgroundPosition& other) const = default;
 };
 
 } // namespace facebook::react

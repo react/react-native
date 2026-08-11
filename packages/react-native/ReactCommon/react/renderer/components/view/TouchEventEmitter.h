@@ -43,8 +43,14 @@ class TouchEventEmitter : public EventEmitter {
   void onLostPointerCapture(PointerEvent event) const;
 
  private:
-  void dispatchTouchEvent(std::string type, TouchEvent event, RawEvent::Category category) const;
-  void dispatchPointerEvent(std::string type, PointerEvent event, RawEvent::Category category) const;
+  void dispatchTouchEvent(
+      std::string type,
+      TouchEvent event,
+      RawEvent::Category category) const;
+  void dispatchPointerEvent(
+      std::string type,
+      PointerEvent event,
+      RawEvent::Category category) const;
 };
 
 } // namespace facebook::react

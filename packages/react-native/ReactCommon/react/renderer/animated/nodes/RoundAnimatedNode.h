@@ -23,7 +23,10 @@ namespace facebook::react {
  */
 class RoundAnimatedNode : public ValueAnimatedNode {
  public:
-  RoundAnimatedNode(Tag tag, const folly::dynamic &config, NativeAnimatedNodesManager &manager);
+  RoundAnimatedNode(
+      Tag tag,
+      const folly::dynamic& config,
+      NativeAnimatedNodesManager& manager);
 
   void update() override;
 

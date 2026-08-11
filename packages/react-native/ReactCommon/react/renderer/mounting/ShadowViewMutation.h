@@ -39,44 +39,55 @@ struct ShadowViewMutation final {
   /**
    * Creates and returns an `Insert` mutation.
    */
-  static ShadowViewMutation InsertMutation(Tag parentTag, ShadowView childShadowView, int index);
+  static ShadowViewMutation
+  InsertMutation(Tag parentTag, ShadowView childShadowView, int index);
 
   /**
    * Creates and returns an `Insert` mutation.
    * @deprecated Pass parentTag instead of parentShadowView.
    */
-  static ShadowViewMutation InsertMutation(const ShadowView &parentShadowView, ShadowView childShadowView, int index)
-  {
+  static ShadowViewMutation InsertMutation(
+      const ShadowView& parentShadowView,
+      ShadowView childShadowView,
+      int index) {
     return InsertMutation(parentShadowView.tag, childShadowView, index);
   }
 
   /**
    * Creates and returns a `Remove` mutation.
    */
-  static ShadowViewMutation RemoveMutation(Tag parentTag, ShadowView childShadowView, int index);
+  static ShadowViewMutation
+  RemoveMutation(Tag parentTag, ShadowView childShadowView, int index);
 
   /**
    * Creates and returns a `Remove` mutation.
    * @deprecated Pass parentTag instead of parentShadowView.
    */
-  static ShadowViewMutation RemoveMutation(const ShadowView &parentShadowView, ShadowView childShadowView, int index)
-  {
+  static ShadowViewMutation RemoveMutation(
+      const ShadowView& parentShadowView,
+      ShadowView childShadowView,
+      int index) {
     return RemoveMutation(parentShadowView.tag, childShadowView, index);
   }
 
   /**
    * Creates and returns an `Update` mutation.
    */
-  static ShadowViewMutation UpdateMutation(ShadowView oldChildShadowView, ShadowView newChildShadowView, Tag parentTag);
+  static ShadowViewMutation UpdateMutation(
+      ShadowView oldChildShadowView,
+      ShadowView newChildShadowView,
+      Tag parentTag);
 
   /**
    * Creates and returns an `Update` mutation.
    * @deprecated Pass parentTag instead of parentShadowView.
    */
-  static ShadowViewMutation
-  UpdateMutation(ShadowView oldChildShadowView, ShadowView newChildShadowView, const ShadowView &parentShadowView)
-  {
-    return UpdateMutation(oldChildShadowView, newChildShadowView, parentShadowView.tag);
+  static ShadowViewMutation UpdateMutation(
+      ShadowView oldChildShadowView,
+      ShadowView newChildShadowView,
+      const ShadowView& parentShadowView) {
+    return UpdateMutation(
+        oldChildShadowView, newChildShadowView, parentShadowView.tag);
   }
 
 #pragma mark - Type
@@ -105,16 +116,21 @@ struct ShadowViewMutation final {
   bool mutatedViewIsVirtual() const;
 
  private:
-  ShadowViewMutation(Type type, Tag parentTag, ShadowView oldChildShadowView, ShadowView newChildShadowView, int index);
+  ShadowViewMutation(
+      Type type,
+      Tag parentTag,
+      ShadowView oldChildShadowView,
+      ShadowView newChildShadowView,
+      int index);
 };
 
 using ShadowViewMutationList = std::vector<ShadowViewMutation>;
 
 #if RN_DEBUG_STRING_CONVERTIBLE
 
-std::string getDebugName(const ShadowViewMutation &mutation);
+std::string getDebugName(const ShadowViewMutation& mutation);
 std::vector<DebugStringConvertibleObject> getDebugProps(
-    const ShadowViewMutation &mutation,
+    const ShadowViewMutation& mutation,
     DebugStringConvertibleOptions options);
 
 #endif

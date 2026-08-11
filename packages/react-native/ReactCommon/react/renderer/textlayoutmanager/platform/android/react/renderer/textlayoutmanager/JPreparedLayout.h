@@ -13,7 +13,8 @@ namespace facebook::react {
 
 class JPreparedLayout : public jni::JavaClass<JPreparedLayout> {
  public:
-  static auto constexpr kJavaDescriptor = "Lcom/facebook/react/views/text/PreparedLayout;";
+  static auto constexpr kJavaDescriptor =
+      "Lcom/facebook/react/views/text/PreparedLayout;";
 };
 
 } // namespace facebook::react

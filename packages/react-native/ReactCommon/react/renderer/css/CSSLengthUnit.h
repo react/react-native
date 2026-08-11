@@ -68,8 +68,8 @@ enum class CSSLengthUnit : uint8_t {
 /**
  * Parses a unit from a dimension token into a CSS length unit.
  */
-constexpr std::optional<CSSLengthUnit> parseCSSLengthUnit(std::string_view unit)
-{
+constexpr std::optional<CSSLengthUnit> parseCSSLengthUnit(
+    std::string_view unit) {
   switch (fnv1aLowercase(unit)) {
     case fnv1a("cap"):
       return CSSLengthUnit::Cap;

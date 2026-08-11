@@ -28,7 +28,7 @@ namespace facebook::react {
 struct TextEffectInfo {
   std::string name;
   folly::dynamic props;
-  bool operator==(const TextEffectInfo &) const = default;
+  bool operator==(const TextEffectInfo&) const = default;
 };
 
 class TextAttributes;
@@ -104,7 +104,7 @@ class TextAttributes : public DebugStringConvertible {
 
 #pragma mark - Operators
 
-  bool operator==(const TextAttributes &rhs) const;
+  bool operator==(const TextAttributes& rhs) const;
 
 #pragma mark - DebugStringConvertible
 
@@ -119,18 +119,17 @@ namespace std {
 
 template <>
 struct hash<facebook::react::TextEffectInfo> {
-  size_t operator()(const facebook::react::TextEffectInfo &info) const
-  {
+  size_t operator()(const facebook::react::TextEffectInfo& info) const {
     return facebook::react::hash_combine(info.name, info.props);
   }
 };
 
 template <>
 struct hash<facebook::react::TextAttributes> {
-  size_t operator()(const facebook::react::TextAttributes &textAttributes) const
-  {
+  size_t operator()(
+      const facebook::react::TextAttributes& textAttributes) const {
     size_t textEffectsHash = 0;
-    for (const auto &effect : textAttributes.textEffects) {
+    for (const auto& effect : textAttributes.textEffects) {
       facebook::react::hash_combine(textEffectsHash, effect);
     }
     return facebook::react::hash_combine(

@@ -37,51 +37,43 @@ class SafeReleaseJniRef {
  public:
   SafeReleaseJniRef() = default;
   /* explicit */ SafeReleaseJniRef(RefT ref) : ref_(std::move(ref)) {}
-  SafeReleaseJniRef(const SafeReleaseJniRef &other) = default;
-  SafeReleaseJniRef(SafeReleaseJniRef &&other) = default;
-  SafeReleaseJniRef &operator=(const SafeReleaseJniRef &other) = default;
-  SafeReleaseJniRef &operator=(SafeReleaseJniRef &&other) = default;
+  SafeReleaseJniRef(const SafeReleaseJniRef& other) = default;
+  SafeReleaseJniRef(SafeReleaseJniRef&& other) = default;
+  SafeReleaseJniRef& operator=(const SafeReleaseJniRef& other) = default;
+  SafeReleaseJniRef& operator=(SafeReleaseJniRef&& other) = default;
 
-  ~SafeReleaseJniRef()
-  {
+  ~SafeReleaseJniRef() {
     if (ref_) {
       ensureThreadDurationJNIEnvAttached();
       ref_.reset();
     }
   }
 
-  operator bool() const noexcept
-  {
+  operator bool() const noexcept {
     return (bool)ref_;
   }
 
-  T &operator*() noexcept
-  {
+  T& operator*() noexcept {
     return *ref_;
   }
 
-  T *operator->() noexcept
-  {
+  T* operator->() noexcept {
     return &*ref_;
   }
 
-  const T &operator*() const noexcept
-  {
+  const T& operator*() const noexcept {
     return *ref_;
   }
 
-  const T *operator->() const noexcept
-  {
+  const T* operator->() const noexcept {
     return &*ref_;
   }
 
-  operator RefT() const
-  {
+  operator RefT() const {
     return ref_;
   }
 
-  RefT::javaobject get() const
-  {
+  RefT::javaobject get() const {
     return ref_.get();
   }
 

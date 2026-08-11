@@ -14,7 +14,8 @@ namespace facebook::react {
 /*
  * Descriptor for <Paragraph> component.
  */
-class ParagraphComponentDescriptor final : public BaseParagraphComponentDescriptor<ParagraphShadowNode> {
+class ParagraphComponentDescriptor final
+    : public BaseParagraphComponentDescriptor<ParagraphShadowNode> {
  public:
   using BaseParagraphComponentDescriptor::BaseParagraphComponentDescriptor;
 };

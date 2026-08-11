@@ -19,7 +19,7 @@ class NativeMicrotasks : public NativeMicrotasksCxxSpec<NativeMicrotasks> {
  public:
   NativeMicrotasks(std::shared_ptr<CallInvoker> jsInvoker);
 
-  void queueMicrotask(jsi::Runtime &runtime, jsi::Function callback);
+  void queueMicrotask(jsi::Runtime& runtime, jsi::Function callback);
 };
 
 } // namespace facebook::react

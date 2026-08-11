@@ -69,85 +69,110 @@ class CxxModule {
 
     std::function<folly::dynamic(folly::dynamic)> syncFunc;
 
-    const char *getType()
-    {
+    const char* getType() {
       assert(func || syncFunc);
       return func ? (isPromise ? "promise" : "async") : "sync";
     }
 
     // std::function/lambda ctors
 
-    Method(std::string aname, std::function<void()> &&afunc)
-        : name(std::move(aname)), callbacks(0), isPromise(false), func(std::bind(std::move(afunc)))
-    {
-    }
-
-    Method(std::string aname, std::function<void(folly::dynamic)> &&afunc)
+    Method(std::string aname, std::function<void()>&& afunc)
         : name(std::move(aname)),
           callbacks(0),
           isPromise(false),
-          func(std::bind(std::move(afunc), std::placeholders::_1))
-    {
-    }
+          func(std::bind(std::move(afunc))) {}
 
-    Method(std::string aname, std::function<void(folly::dynamic, Callback)> &&afunc)
+    Method(std::string aname, std::function<void(folly::dynamic)>&& afunc)
+        : name(std::move(aname)),
+          callbacks(0),
+          isPromise(false),
+          func(std::bind(std::move(afunc), std::placeholders::_1)) {}
+
+    Method(
+        std::string aname,
+        std::function<void(folly::dynamic, Callback)>&& afunc)
         : name(std::move(aname)),
           callbacks(1),
           isPromise(false),
-          func(std::bind(std::move(afunc), std::placeholders::_1, std::placeholders::_2))
-    {
-    }
+          func(std::bind(
+              std::move(afunc),
+              std::placeholders::_1,
+              std::placeholders::_2)) {}
 
-    Method(std::string aname, std::function<void(folly::dynamic, Callback, Callback)> &&afunc)
-        : name(std::move(aname)), callbacks(2), isPromise(true), func(std::move(afunc))
-    {
-    }
+    Method(
+        std::string aname,
+        std::function<void(folly::dynamic, Callback, Callback)>&& afunc)
+        : name(std::move(aname)),
+          callbacks(2),
+          isPromise(true),
+          func(std::move(afunc)) {}
 
-    Method(std::string aname, std::function<void(folly::dynamic, Callback, Callback)> &&afunc, AsyncTagType /*unused*/)
-        : name(std::move(aname)), callbacks(2), isPromise(false), func(std::move(afunc))
-    {
-    }
+    Method(
+        std::string aname,
+        std::function<void(folly::dynamic, Callback, Callback)>&& afunc,
+        AsyncTagType /*unused*/)
+        : name(std::move(aname)),
+          callbacks(2),
+          isPromise(false),
+          func(std::move(afunc)) {}
 
     // method pointer ctors
 
     template <typename T>
-    Method(std::string aname, T *t, void (T::*method)())
-        : name(std::move(aname)), callbacks(0), isPromise(false), func(std::bind(method, t))
-    {
-    }
+    Method(std::string aname, T* t, void (T::*method)())
+        : name(std::move(aname)),
+          callbacks(0),
+          isPromise(false),
+          func(std::bind(method, t)) {}
 
     template <typename T>
-    Method(std::string aname, T *t, void (T::*method)(folly::dynamic))
-        : name(std::move(aname)), callbacks(0), isPromise(false), func(std::bind(method, t, std::placeholders::_1))
-    {
-    }
+    Method(std::string aname, T* t, void (T::*method)(folly::dynamic))
+        : name(std::move(aname)),
+          callbacks(0),
+          isPromise(false),
+          func(std::bind(method, t, std::placeholders::_1)) {}
 
     template <typename T>
-    Method(std::string aname, T *t, void (T::*method)(folly::dynamic, Callback))
+    Method(std::string aname, T* t, void (T::*method)(folly::dynamic, Callback))
         : name(std::move(aname)),
           callbacks(1),
           isPromise(false),
-          func(std::bind(method, t, std::placeholders::_1, std::placeholders::_2))
-    {
-    }
+          func(std::bind(
+              method,
+              t,
+              std::placeholders::_1,
+              std::placeholders::_2)) {}
 
     template <typename T>
-    Method(std::string aname, T *t, void (T::*method)(folly::dynamic, Callback, Callback))
+    Method(
+        std::string aname,
+        T* t,
+        void (T::*method)(folly::dynamic, Callback, Callback))
         : name(std::move(aname)),
           callbacks(2),
           isPromise(true),
-          func(std::bind(method, t, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3))
-    {
-    }
+          func(std::bind(
+              method,
+              t,
+              std::placeholders::_1,
+              std::placeholders::_2,
+              std::placeholders::_3)) {}
 
     template <typename T>
-    Method(std::string aname, T *t, void (T::*method)(folly::dynamic, Callback, Callback), AsyncTagType /*unused*/)
+    Method(
+        std::string aname,
+        T* t,
+        void (T::*method)(folly::dynamic, Callback, Callback),
+        AsyncTagType /*unused*/)
         : name(std::move(aname)),
           callbacks(2),
           isPromise(false),
-          func(std::bind(method, t, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3))
-    {
-    }
+          func(std::bind(
+              method,
+              t,
+              std::placeholders::_1,
+              std::placeholders::_2,
+              std::placeholders::_3)) {}
 
     // sync std::function/lambda ctors
 
@@ -155,18 +180,25 @@ class CxxModule {
     // I am not sure if this is a runtime/compiler bug, or a
     // limitation I do not understand.
 
-    Method(std::string aname, std::function<folly::dynamic()> &&afunc, SyncTagType /*unused*/)
+    Method(
+        std::string aname,
+        std::function<folly::dynamic()>&& afunc,
+        SyncTagType /*unused*/)
         : name(std::move(aname)),
           callbacks(0),
           isPromise(false),
-          syncFunc([afunc = std::move(afunc)](const folly::dynamic &) { return afunc(); })
-    {
-    }
+          syncFunc([afunc = std::move(afunc)](const folly::dynamic&) {
+            return afunc();
+          }) {}
 
-    Method(std::string aname, std::function<folly::dynamic(folly::dynamic)> &&afunc, SyncTagType /*unused*/)
-        : name(std::move(aname)), callbacks(0), isPromise(false), syncFunc(std::move(afunc))
-    {
-    }
+    Method(
+        std::string aname,
+        std::function<folly::dynamic(folly::dynamic)>&& afunc,
+        SyncTagType /*unused*/)
+        : name(std::move(aname)),
+          callbacks(0),
+          isPromise(false),
+          syncFunc(std::move(afunc)) {}
   };
 
   /**
@@ -185,8 +217,7 @@ class CxxModule {
    * Each entry in the map will be exported as a property to JS.  The
    * key is the property name, and the value can be anything.
    */
-  virtual auto getConstants() -> std::map<std::string, folly::dynamic>
-  {
+  virtual auto getConstants() -> std::map<std::string, folly::dynamic> {
     return {};
   };
 
@@ -198,8 +229,7 @@ class CxxModule {
   /**
    *  Called during the construction of CxxNativeModule.
    */
-  void setInstance(std::weak_ptr<react::Instance> instance)
-  {
+  void setInstance(std::weak_ptr<react::Instance> instance) {
     instance_ = instance;
   }
 
@@ -209,8 +239,7 @@ class CxxModule {
    * such as `callJSFunction`, allowing them to communicate back to JS outside
    * of the regular callbacks.
    */
-  std::weak_ptr<react::Instance> getInstance()
-  {
+  std::weak_ptr<react::Instance> getInstance() {
     return instance_;
   }
 

@@ -13,28 +13,30 @@
 
 namespace facebook::react {
 
-class HermesPerfettoDataSource : public perfetto::DataSource<HermesPerfettoDataSource> {
+class HermesPerfettoDataSource
+    : public perfetto::DataSource<HermesPerfettoDataSource> {
  public:
-  void OnSetup(const SetupArgs &) override {}
+  void OnSetup(const SetupArgs&) override {}
 
-  void OnStart(const StartArgs &) override;
+  void OnStart(const StartArgs&) override;
 
-  void OnFlush(const FlushArgs &) override;
+  void OnFlush(const FlushArgs&) override;
 
-  void OnStop(const StopArgs &a) override;
+  void OnStop(const StopArgs& a) override;
 
-  static void RegisterDataSource()
-  {
+  static void RegisterDataSource() {
     perfetto::DataSourceDescriptor dsd;
     dsd.set_name("com.facebook.hermes.profiler");
     HermesPerfettoDataSource::Register(dsd);
   }
 
-  constexpr static perfetto::BufferExhaustedPolicy kBufferExhaustedPolicy = perfetto::BufferExhaustedPolicy::kStall;
+  constexpr static perfetto::BufferExhaustedPolicy kBufferExhaustedPolicy =
+      perfetto::BufferExhaustedPolicy::kStall;
 };
 
 } // namespace facebook::react
 
-PERFETTO_DECLARE_DATA_SOURCE_STATIC_MEMBERS(facebook::react::HermesPerfettoDataSource);
+PERFETTO_DECLARE_DATA_SOURCE_STATIC_MEMBERS(
+    facebook::react::HermesPerfettoDataSource);
 
 #endif // WITH_PERFETTO

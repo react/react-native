@@ -48,11 +48,12 @@ class HermesRuntimeAgentDelegate : public RuntimeAgentDelegate {
    */
   HermesRuntimeAgentDelegate(
       FrontendChannel frontendChannel,
-      SessionState &sessionState,
-      std::unique_ptr<RuntimeAgentDelegate::ExportedState> previouslyExportedState,
-      const ExecutionContextDescription &executionContextDescription,
-      hermes::HermesRuntime &runtime,
-      HermesRuntimeTargetDelegate &runtimeTargetDelegate,
+      SessionState& sessionState,
+      std::unique_ptr<RuntimeAgentDelegate::ExportedState>
+          previouslyExportedState,
+      const ExecutionContextDescription& executionContextDescription,
+      hermes::HermesRuntime& runtime,
+      HermesRuntimeTargetDelegate& runtimeTargetDelegate,
       RuntimeExecutor runtimeExecutor);
 
   /**
@@ -63,9 +64,10 @@ class HermesRuntimeAgentDelegate : public RuntimeAgentDelegate {
    * to the request (with either a success or error message). False if the
    * agent expects another agent to respond to the request instead.
    */
-  bool handleRequest(const cdp::PreparsedRequest &req) override;
+  bool handleRequest(const cdp::PreparsedRequest& req) override;
 
-  std::unique_ptr<RuntimeAgentDelegate::ExportedState> getExportedState() override;
+  std::unique_ptr<RuntimeAgentDelegate::ExportedState> getExportedState()
+      override;
 
  private:
   class Impl;
@@ -76,5 +78,6 @@ class HermesRuntimeAgentDelegate : public RuntimeAgentDelegate {
 } // namespace facebook::react::jsinspector_modern
 
 #else
-#error "HERMES_ENABLE_DEBUGGER must be enabled to use HermesRuntimeAgentDelegate."
+#error \
+    "HERMES_ENABLE_DEBUGGER must be enabled to use HermesRuntimeAgentDelegate."
 #endif // HERMES_ENABLE_DEBUGGER

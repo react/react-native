@@ -32,9 +32,9 @@ struct ParsedError {
  * C++ port of parseLogBoxException from parseLogBoxLog.js.
  */
 ParsedError parseErrorMessage(
-    const std::string &message,
-    const std::string &name = "",
-    const std::string &componentStack = "",
+    const std::string& message,
+    const std::string& name = "",
+    const std::string& componentStack = "",
     bool isFatal = true);
 
 } // namespace facebook::react::unstable_redbox

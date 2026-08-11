@@ -14,18 +14,15 @@ namespace facebook::react {
 
 class AndroidAnimationChoreographer : public AnimationChoreographer {
  public:
-  void resume() override
-  {
+  void resume() override {
     active_.store(true);
   }
 
-  void pause() override
-  {
+  void pause() override {
     active_.store(false);
   }
 
-  void onAnimationFrameIfActive(AnimationTimestamp timestamp) const
-  {
+  void onAnimationFrameIfActive(AnimationTimestamp timestamp) const {
     if (active_.load()) {
       onAnimationFrame(timestamp);
     }

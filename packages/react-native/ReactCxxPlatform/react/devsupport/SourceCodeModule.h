@@ -16,16 +16,17 @@ namespace facebook::react {
 using SourceCodeConstants = NativeSourceCodeSourceCodeConstants<std::string>;
 
 template <>
-struct Bridging<SourceCodeConstants> : NativeSourceCodeSourceCodeConstantsBridging<SourceCodeConstants> {};
+struct Bridging<SourceCodeConstants>
+    : NativeSourceCodeSourceCodeConstantsBridging<SourceCodeConstants> {};
 
 class SourceCodeModule : public NativeSourceCodeCxxSpec<SourceCodeModule> {
  public:
-  explicit SourceCodeModule(std::shared_ptr<CallInvoker> jsInvoker, std::string sourceURL = "")
-      : NativeSourceCodeCxxSpec(jsInvoker), sourceURL_(std::move(sourceURL))
-  {
-  }
+  explicit SourceCodeModule(
+      std::shared_ptr<CallInvoker> jsInvoker,
+      std::string sourceURL = "")
+      : NativeSourceCodeCxxSpec(jsInvoker), sourceURL_(std::move(sourceURL)) {}
 
-  SourceCodeConstants getConstants(jsi::Runtime &rt);
+  SourceCodeConstants getConstants(jsi::Runtime& rt);
 
  private:
   std::string sourceURL_;

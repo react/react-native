@@ -16,7 +16,7 @@
 
 namespace facebook::react {
 
-using OnMutations = std::function<void(std::vector<MutationRecord> &)>;
+using OnMutations = std::function<void(std::vector<MutationRecord>&)>;
 
 class MutationObserverManager final : public UIManagerCommitHook {
  public:
@@ -26,35 +26,38 @@ class MutationObserverManager final : public UIManagerCommitHook {
       MutationObserverId mutationObserverId,
       std::shared_ptr<const ShadowNode> shadowNode,
       bool observeSubtree,
-      const UIManager &uiManager);
+      const UIManager& uiManager);
 
   void unobserveAll(MutationObserverId mutationObserverId);
 
-  void connect(UIManager &uiManager, OnMutations &&onMutations);
+  void connect(UIManager& uiManager, OnMutations&& onMutations);
 
-  void disconnect(UIManager &uiManager);
+  void disconnect(UIManager& uiManager);
 
 #pragma mark - UIManagerCommitHook
 
-  void commitHookWasRegistered(const UIManager &uiManager) noexcept override;
-  void commitHookWasUnregistered(const UIManager &uiManager) noexcept override;
+  void commitHookWasRegistered(const UIManager& uiManager) noexcept override;
+  void commitHookWasUnregistered(const UIManager& uiManager) noexcept override;
 
   RootShadowNode::Unshared shadowTreeWillCommit(
-      const ShadowTree &shadowTree,
-      const RootShadowNode::Shared &oldRootShadowNode,
-      const RootShadowNode::Unshared &newRootShadowNode,
-      const ShadowTree::CommitOptions &commitOptions) noexcept override;
+      const ShadowTree& shadowTree,
+      const RootShadowNode::Shared& oldRootShadowNode,
+      const RootShadowNode::Unshared& newRootShadowNode,
+      const ShadowTree::CommitOptions& commitOptions) noexcept override;
 
  private:
-  std::unordered_map<SurfaceId, std::unordered_map<MutationObserverId, MutationObserver>> observersBySurfaceId_;
+  std::unordered_map<
+      SurfaceId,
+      std::unordered_map<MutationObserverId, MutationObserver>>
+      observersBySurfaceId_;
 
   OnMutations onMutations_;
   bool commitHookRegistered_{};
 
   void runMutationObservations(
-      const ShadowTree &shadowTree,
-      const RootShadowNode &oldRootShadowNode,
-      const RootShadowNode &newRootShadowNode);
+      const ShadowTree& shadowTree,
+      const RootShadowNode& oldRootShadowNode,
+      const RootShadowNode& newRootShadowNode);
 };
 
 } // namespace facebook::react

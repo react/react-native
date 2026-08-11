@@ -16,16 +16,23 @@ namespace facebook::react {
 
 class JReactMarker : public facebook::jni::JavaClass<JReactMarker> {
  public:
-  static constexpr auto kJavaDescriptor = "Lcom/facebook/react/bridge/ReactMarker;";
+  static constexpr auto kJavaDescriptor =
+      "Lcom/facebook/react/bridge/ReactMarker;";
   static void registerNatives();
   static void setLogPerfMarkerIfNeeded();
 
  private:
-  static void logMarker(const std::string &marker);
-  static void logMarker(const std::string &marker, const std::string &tag);
-  static void logMarker(const std::string &marker, const std::string &tag, int instanceKey);
-  static void logPerfMarker(ReactMarker::ReactMarkerId markerId, const char *tag);
-  static void nativeLogMarker(jni::alias_ref<jclass> /* unused */, const std::string &markerNameStr, jlong markerTime);
+  static void logMarker(const std::string& marker);
+  static void logMarker(const std::string& marker, const std::string& tag);
+  static void
+  logMarker(const std::string& marker, const std::string& tag, int instanceKey);
+  static void logPerfMarker(
+      ReactMarker::ReactMarkerId markerId,
+      const char* tag);
+  static void nativeLogMarker(
+      jni::alias_ref<jclass> /* unused */,
+      const std::string& markerNameStr,
+      jlong markerTime);
 };
 
 } // namespace facebook::react

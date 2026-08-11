@@ -16,12 +16,12 @@ namespace facebook::react {
 
 class NativeArray : public jni::HybridClass<NativeArray> {
  public:
-  static auto constexpr *kJavaDescriptor = "Lcom/facebook/react/bridge/NativeArray;";
+  static auto constexpr* kJavaDescriptor =
+      "Lcom/facebook/react/bridge/NativeArray;";
 
   jni::local_ref<jstring> toString();
 
-  const folly::dynamic &getArray() const
-  {
+  const folly::dynamic& getArray() const {
     return array_;
   }
 
@@ -39,16 +39,16 @@ class NativeArray : public jni::HybridClass<NativeArray> {
   friend HybridBase;
 
   template <class Dyn>
-  explicit NativeArray(Dyn &&array) : isConsumed(false), array_(std::forward<Dyn>(array))
-  {
+  explicit NativeArray(Dyn&& array)
+      : isConsumed(false), array_(std::forward<Dyn>(array)) {
     assertInternalType();
   }
 
   void assertInternalType();
   void throwIfConsumed();
 
-  NativeArray(const NativeArray &) = delete;
-  NativeArray &operator=(const NativeArray &) = delete;
+  NativeArray(const NativeArray&) = delete;
+  NativeArray& operator=(const NativeArray&) = delete;
 };
 
 } // namespace facebook::react

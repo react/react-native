@@ -13,11 +13,15 @@
 
 namespace facebook::react {
 
-class JReactExceptionManager : public facebook::jni::JavaClass<JReactExceptionManager> {
+class JReactExceptionManager
+    : public facebook::jni::JavaClass<JReactExceptionManager> {
  public:
-  static auto constexpr kJavaDescriptor = "Lcom/facebook/react/interfaces/exceptionmanager/ReactJsExceptionHandler;";
+  static auto constexpr kJavaDescriptor =
+      "Lcom/facebook/react/interfaces/exceptionmanager/ReactJsExceptionHandler;";
 
-  void reportJsException(jsi::Runtime &runtime, const JsErrorHandler::ProcessedError &error);
+  void reportJsException(
+      jsi::Runtime& runtime,
+      const JsErrorHandler::ProcessedError& error);
 };
 
 } // namespace facebook::react

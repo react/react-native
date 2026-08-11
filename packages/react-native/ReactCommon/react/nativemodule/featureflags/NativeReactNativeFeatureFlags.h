@@ -28,11 +28,13 @@
 namespace facebook::react {
 
 class NativeReactNativeFeatureFlags
-    : public NativeReactNativeFeatureFlagsCxxSpec<NativeReactNativeFeatureFlags> {
+    : public NativeReactNativeFeatureFlagsCxxSpec<
+          NativeReactNativeFeatureFlags> {
  public:
   NativeReactNativeFeatureFlags(std::shared_ptr<CallInvoker> jsInvoker);
 
-  static constexpr std::string_view kModuleName = "NativeReactNativeFeatureFlagsCxx";
+  static constexpr std::string_view kModuleName =
+      "NativeReactNativeFeatureFlagsCxx";
 
   bool commonTestFlag(jsi::Runtime& runtime);
 
@@ -100,7 +102,8 @@ class NativeReactNativeFeatureFlags
 
   bool enableImperativeFocus(jsi::Runtime& runtime);
 
-  bool enableInteropViewManagerClassLookUpOptimizationIOS(jsi::Runtime& runtime);
+  bool enableInteropViewManagerClassLookUpOptimizationIOS(
+      jsi::Runtime& runtime);
 
   bool enableIntersectionObserverByDefault(jsi::Runtime& runtime);
 

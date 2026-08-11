@@ -20,11 +20,14 @@ extern const char TextComponentName[];
 
 using TextEventEmitter = TouchEventEmitter;
 
-class TextShadowNode : public ConcreteShadowNode<TextComponentName, ShadowNode, TextProps, TextEventEmitter>,
+class TextShadowNode : public ConcreteShadowNode<
+                           TextComponentName,
+                           ShadowNode,
+                           TextProps,
+                           TextEventEmitter>,
                        public BaseTextShadowNode {
  public:
-  static ShadowNodeTraits BaseTraits()
-  {
+  static ShadowNodeTraits BaseTraits() {
     auto traits = ConcreteShadowNode::BaseTraits();
 #ifdef ANDROID
     traits.set(ShadowNodeTraits::Trait::FormsView);
@@ -35,11 +38,17 @@ class TextShadowNode : public ConcreteShadowNode<TextComponentName, ShadowNode, 
   using ConcreteShadowNode::ConcreteShadowNode;
 
 #ifdef ANDROID
-  using BaseShadowNode = ConcreteShadowNode<TextComponentName, ShadowNode, TextProps, TextEventEmitter>;
+  using BaseShadowNode = ConcreteShadowNode<
+      TextComponentName,
+      ShadowNode,
+      TextProps,
+      TextEventEmitter>;
 
-  TextShadowNode(const ShadowNodeFragment &fragment, const ShadowNodeFamily::Shared &family, ShadowNodeTraits traits)
-      : BaseShadowNode(fragment, family, traits), BaseTextShadowNode()
-  {
+  TextShadowNode(
+      const ShadowNodeFragment& fragment,
+      const ShadowNodeFamily::Shared& family,
+      ShadowNodeTraits traits)
+      : BaseShadowNode(fragment, family, traits), BaseTextShadowNode() {
     orderIndex_ = std::numeric_limits<decltype(orderIndex_)>::max();
   }
 #endif

@@ -20,47 +20,46 @@ class CallInvoker;
 // Helper for passing jsi::Function arg to other methods.
 class CallbackWrapper : public LongLivedObject {
  private:
-  CallbackWrapper(jsi::Function &&callback, jsi::Runtime &runtime, std::shared_ptr<CallInvoker> jsInvoker)
-      : LongLivedObject(runtime), callback_(std::move(callback)), jsInvoker_(std::move(jsInvoker))
-  {
-  }
+  CallbackWrapper(
+      jsi::Function&& callback,
+      jsi::Runtime& runtime,
+      std::shared_ptr<CallInvoker> jsInvoker)
+      : LongLivedObject(runtime),
+        callback_(std::move(callback)),
+        jsInvoker_(std::move(jsInvoker)) {}
 
   jsi::Function callback_;
   std::shared_ptr<CallInvoker> jsInvoker_;
 
  public:
-  static std::weak_ptr<CallbackWrapper>
-  createWeak(jsi::Function &&callback, jsi::Runtime &runtime, std::shared_ptr<CallInvoker> jsInvoker)
-  {
-    auto wrapper =
-        std::shared_ptr<CallbackWrapper>(new CallbackWrapper(std::move(callback), runtime, std::move(jsInvoker)));
+  static std::weak_ptr<CallbackWrapper> createWeak(
+      jsi::Function&& callback,
+      jsi::Runtime& runtime,
+      std::shared_ptr<CallInvoker> jsInvoker) {
+    auto wrapper = std::shared_ptr<CallbackWrapper>(new CallbackWrapper(
+        std::move(callback), runtime, std::move(jsInvoker)));
     LongLivedObjectCollection::get(runtime).add(wrapper);
     return wrapper;
   }
 
   // Delete the enclosed jsi::Function
-  void destroy()
-  {
+  void destroy() {
     allowRelease();
   }
 
-  jsi::Function &callback() noexcept
-  {
+  jsi::Function& callback() noexcept {
     return callback_;
   }
 
-  jsi::Runtime &runtime() noexcept
-  {
+  jsi::Runtime& runtime() noexcept {
     return runtime_;
   }
 
-  CallInvoker &jsInvoker() noexcept
-  {
+  CallInvoker& jsInvoker() noexcept {
     return *(jsInvoker_);
   }
 
-  std::shared_ptr<CallInvoker> jsInvokerPtr() noexcept
-  {
+  std::shared_ptr<CallInvoker> jsInvokerPtr() noexcept {
     return jsInvoker_;
   }
 };

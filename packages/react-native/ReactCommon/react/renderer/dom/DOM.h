@@ -61,54 +61,72 @@ struct DOMBorderWidthRounded {
 };
 
 std::shared_ptr<const ShadowNode> getParentNode(
-    const RootShadowNode::Shared &currentRevision,
-    const ShadowNode &shadowNode);
+    const RootShadowNode::Shared& currentRevision,
+    const ShadowNode& shadowNode);
 
 std::shared_ptr<const ShadowNode> getElementById(
-    const std::shared_ptr<const ShadowNode> &currentRevision,
-    const std::string &id);
+    const std::shared_ptr<const ShadowNode>& currentRevision,
+    const std::string& id);
 
 std::vector<std::shared_ptr<const ShadowNode>> getChildNodes(
-    const RootShadowNode::Shared &currentRevision,
-    const ShadowNode &shadowNode);
+    const RootShadowNode::Shared& currentRevision,
+    const ShadowNode& shadowNode);
 
-bool isConnected(const RootShadowNode::Shared &currentRevision, const ShadowNode &shadowNode);
+bool isConnected(
+    const RootShadowNode::Shared& currentRevision,
+    const ShadowNode& shadowNode);
 
 uint_fast16_t compareDocumentPosition(
-    const RootShadowNode::Shared &currentRevision,
-    const ShadowNode &shadowNode,
-    const ShadowNode &otherShadowNode);
+    const RootShadowNode::Shared& currentRevision,
+    const ShadowNode& shadowNode,
+    const ShadowNode& otherShadowNode);
 
-std::string getTextContent(const RootShadowNode::Shared &currentRevision, const ShadowNode &shadowNode);
+std::string getTextContent(
+    const RootShadowNode::Shared& currentRevision,
+    const ShadowNode& shadowNode);
 
 DOMRect getBoundingClientRect(
-    const RootShadowNode::Shared &currentRevision,
-    const ShadowNode &shadowNode,
+    const RootShadowNode::Shared& currentRevision,
+    const ShadowNode& shadowNode,
     bool includeTransform);
 
-DOMOffset getOffset(const RootShadowNode::Shared &currentRevision, const ShadowNode &shadowNode);
+DOMOffset getOffset(
+    const RootShadowNode::Shared& currentRevision,
+    const ShadowNode& shadowNode);
 
-DOMPoint getScrollPosition(const RootShadowNode::Shared &currentRevision, const ShadowNode &shadowNode);
+DOMPoint getScrollPosition(
+    const RootShadowNode::Shared& currentRevision,
+    const ShadowNode& shadowNode);
 
-DOMSizeRounded getScrollSize(const RootShadowNode::Shared &currentRevision, const ShadowNode &shadowNode);
+DOMSizeRounded getScrollSize(
+    const RootShadowNode::Shared& currentRevision,
+    const ShadowNode& shadowNode);
 
-DOMSizeRounded getInnerSize(const RootShadowNode::Shared &currentRevision, const ShadowNode &shadowNode);
+DOMSizeRounded getInnerSize(
+    const RootShadowNode::Shared& currentRevision,
+    const ShadowNode& shadowNode);
 
-DOMBorderWidthRounded getBorderWidth(const RootShadowNode::Shared &currentRevision, const ShadowNode &shadowNode);
+DOMBorderWidthRounded getBorderWidth(
+    const RootShadowNode::Shared& currentRevision,
+    const ShadowNode& shadowNode);
 
-std::string getTagName(const ShadowNode &shadowNode);
+std::string getTagName(const ShadowNode& shadowNode);
 
 // Non-standard methods from React Native
 
-RNMeasureRect measure(const RootShadowNode::Shared &currentRevision, const ShadowNode &shadowNode);
+RNMeasureRect measure(
+    const RootShadowNode::Shared& currentRevision,
+    const ShadowNode& shadowNode);
 
-DOMRect measureInWindow(const RootShadowNode::Shared &currentRevision, const ShadowNode &shadowNode);
+DOMRect measureInWindow(
+    const RootShadowNode::Shared& currentRevision,
+    const ShadowNode& shadowNode);
 
 // This method returns an optional to signal to go through the error callback
 // instead of going through the success callback with an empty DOMRect.
 std::optional<DOMRect> measureLayout(
-    const RootShadowNode::Shared &currentRevision,
-    const ShadowNode &shadowNode,
-    const ShadowNode &relativeToShadowNode);
+    const RootShadowNode::Shared& currentRevision,
+    const ShadowNode& shadowNode,
+    const ShadowNode& relativeToShadowNode);
 
 } // namespace facebook::react::dom

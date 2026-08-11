@@ -39,8 +39,7 @@ enum class ConsoleTimeStampColor {
   Error,
 };
 
-inline std::string consoleTimeStampColorToString(ConsoleTimeStampColor color)
-{
+inline std::string consoleTimeStampColorToString(ConsoleTimeStampColor color) {
   switch (color) {
     case ConsoleTimeStampColor::Primary:
       return "primary";
@@ -69,8 +68,8 @@ inline std::string consoleTimeStampColorToString(ConsoleTimeStampColor color)
   }
 };
 
-inline std::optional<ConsoleTimeStampColor> getConsoleTimeStampColorFromString(const std::string &str)
-{
+inline std::optional<ConsoleTimeStampColor> getConsoleTimeStampColorFromString(
+    const std::string& str) {
   if (str == "primary") {
     return ConsoleTimeStampColor::Primary;
   } else if (str == "primary-light") {
@@ -98,6 +97,8 @@ inline std::optional<ConsoleTimeStampColor> getConsoleTimeStampColorFromString(c
   }
 };
 
-std::optional<folly::dynamic> getConsoleTimeStampDetailFromObject(jsi::Runtime &runtime, const jsi::Value &detailValue);
+std::optional<folly::dynamic> getConsoleTimeStampDetailFromObject(
+    jsi::Runtime& runtime,
+    const jsi::Value& detailValue);
 
 }; // namespace facebook::react::jsinspector_modern::tracing

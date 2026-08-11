@@ -19,13 +19,17 @@ class YogaStylableProps : public Props {
  public:
   YogaStylableProps() = default;
   YogaStylableProps(
-      const PropsParserContext &context,
-      const YogaStylableProps &sourceProps,
-      const RawProps &rawProps,
-      const std::function<bool(const std::string &)> &filterObjectKeys = nullptr);
+      const PropsParserContext& context,
+      const YogaStylableProps& sourceProps,
+      const RawProps& rawProps,
+      const std::function<bool(const std::string&)>& filterObjectKeys =
+          nullptr);
 
-  void
-  setProp(const PropsParserContext &context, RawPropsPropNameHash hash, const char *propName, const RawValue &value);
+  void setProp(
+      const PropsParserContext& context,
+      RawPropsPropNameHash hash,
+      const char* propName,
+      const RawValue& value);
 
 #pragma mark - Props
   yoga::Style yogaStyle{};
@@ -67,9 +71,9 @@ class YogaStylableProps : public Props {
 
  private:
   void convertRawPropAliases(
-      const PropsParserContext &context,
-      const YogaStylableProps &sourceProps,
-      const RawProps &rawProps);
+      const PropsParserContext& context,
+      const YogaStylableProps& sourceProps,
+      const RawProps& rawProps);
 };
 
 } // namespace facebook::react

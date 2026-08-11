@@ -30,7 +30,10 @@ class TracingAgent {
    * is attached to. The caller is responsible for ensuring that the
    * HostTargetDelegate and underlying HostTarget both outlive the agent.
    */
-  TracingAgent(FrontendChannel frontendChannel, SessionState &sessionState, HostTargetController &hostTargetController);
+  TracingAgent(
+      FrontendChannel frontendChannel,
+      SessionState& sessionState,
+      HostTargetController& hostTargetController);
 
   ~TracingAgent();
 
@@ -39,7 +42,7 @@ class TracingAgent {
    * \c FrontendChannel synchronously or asynchronously.
    * \param req The parsed request.
    */
-  bool handleRequest(const cdp::PreparsedRequest &req);
+  bool handleRequest(const cdp::PreparsedRequest& req);
 
  private:
   /**
@@ -47,9 +50,9 @@ class TracingAgent {
    */
   FrontendChannel frontendChannel_;
 
-  SessionState &sessionState_;
+  SessionState& sessionState_;
 
-  HostTargetController &hostTargetController_;
+  HostTargetController& hostTargetController_;
 };
 
 } // namespace facebook::react::jsinspector_modern

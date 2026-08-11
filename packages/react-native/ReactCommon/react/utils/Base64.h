@@ -15,17 +15,19 @@ namespace facebook::react {
 namespace {
 // Vendored from Folly
 // https://github.com/facebook/folly/blob/v2024.07.08.00/folly/detail/base64_detail/Base64Scalar.h
-constexpr char kBase64Charset[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+constexpr char kBase64Charset[] =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-constexpr char kBase64URLCharset[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+constexpr char kBase64URLCharset[] =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 
 template <bool isURL>
 struct Base64ScalarImpl {
-  static constexpr const char *kCharset = isURL ? kBase64URLCharset : kBase64Charset;
+  static constexpr const char* kCharset =
+      isURL ? kBase64URLCharset : kBase64Charset;
 
   // 0, 1 or 2 bytes
-  static constexpr char *encodeTail(const char *f, const char *l, char *o)
-  {
+  static constexpr char* encodeTail(const char* f, const char* l, char* o) {
     if (f == l) {
       return o;
     }
@@ -57,8 +59,7 @@ struct Base64ScalarImpl {
     return o;
   }
 
-  static constexpr char *encode(const char *f, const char *l, char *o)
-  {
+  static constexpr char* encode(const char* f, const char* l, char* o) {
     while ((l - f) >= 3) {
       std::uint8_t aaab = f[0];
       std::uint8_t bbcc = f[1];
@@ -83,14 +84,12 @@ struct Base64ScalarImpl {
 };
 
 // https://github.com/facebook/folly/blob/v2024.07.08.00/folly/detail/base64_detail/Base64Common.h#L24
-constexpr std::size_t base64EncodedSize(std::size_t inSize)
-{
+constexpr std::size_t base64EncodedSize(std::size_t inSize) {
   return ((inSize + 2) / 3) * 4;
 }
 } // namespace
 
-inline std::string base64Encode(const std::string_view s)
-{
+inline std::string base64Encode(const std::string_view s) {
   std::string res(base64EncodedSize(s.size()), '\0');
   Base64ScalarImpl<false>::encode(s.data(), s.data() + s.size(), res.data());
   return res;

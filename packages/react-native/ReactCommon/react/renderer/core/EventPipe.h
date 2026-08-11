@@ -20,13 +20,13 @@
 namespace facebook::react {
 
 using EventPipe = std::function<void(
-    jsi::Runtime &runtime,
-    EventTarget *eventTarget,
-    const std::string &type,
+    jsi::Runtime& runtime,
+    EventTarget* eventTarget,
+    const std::string& type,
     ReactEventPriority priority,
-    const EventPayload &payload,
+    const EventPayload& payload,
     HighResTimeStamp eventTimestamp)>;
 
-using EventPipeConclusion = std::function<void(jsi::Runtime &runtime)>;
+using EventPipeConclusion = std::function<void(jsi::Runtime& runtime)>;
 
 } // namespace facebook::react

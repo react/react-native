@@ -18,16 +18,18 @@ class PerformanceEntryKeyedBuffer : public PerformanceEntryBuffer {
  public:
   PerformanceEntryKeyedBuffer() = default;
 
-  void add(const PerformanceEntry &entry) override;
+  void add(const PerformanceEntry& entry) override;
 
-  void getEntries(std::vector<PerformanceEntry> &target) const override;
+  void getEntries(std::vector<PerformanceEntry>& target) const override;
 
-  void getEntries(std::vector<PerformanceEntry> &target, const std::string &name) const override;
+  void getEntries(
+      std::vector<PerformanceEntry>& target,
+      const std::string& name) const override;
 
   void clear() override;
-  void clear(const std::string &name) override;
+  void clear(const std::string& name) override;
 
-  std::optional<PerformanceEntry> find(const std::string &name) const;
+  std::optional<PerformanceEntry> find(const std::string& name) const;
 
  private:
   std::unordered_map<std::string, std::vector<PerformanceEntry>> entryMap_{};

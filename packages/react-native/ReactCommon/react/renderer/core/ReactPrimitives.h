@@ -33,7 +33,7 @@ using ComponentHandle = int64_t;
  * String identifier for components used for addressing them from
  * JavaScript side.
  */
-using ComponentName = const char *;
+using ComponentName = const char*;
 
 /*
  * Defines how visual side effects (views, images, text, and so on) are

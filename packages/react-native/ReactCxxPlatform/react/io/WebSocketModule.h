@@ -21,31 +21,40 @@ class IWebSocketClient;
 class WebSocketModule : public NativeWebSocketModuleCxxSpec<WebSocketModule>,
                         public std::enable_shared_from_this<WebSocketModule> {
  public:
-  WebSocketModule(std::shared_ptr<CallInvoker> jsInvoker, WebSocketClientFactory webSocketClientFactory);
+  WebSocketModule(
+      std::shared_ptr<CallInvoker> jsInvoker,
+      WebSocketClientFactory webSocketClientFactory);
   ~WebSocketModule() override;
-  WebSocketModule(const WebSocketModule &other) = delete;
-  WebSocketModule &operator=(WebSocketModule &other) = delete;
-  WebSocketModule(WebSocketModule &&other) = delete;
-  WebSocketModule &operator=(WebSocketModule &&other) = delete;
+  WebSocketModule(const WebSocketModule& other) = delete;
+  WebSocketModule& operator=(WebSocketModule& other) = delete;
+  WebSocketModule(WebSocketModule&& other) = delete;
+  WebSocketModule& operator=(WebSocketModule&& other) = delete;
 
   void connect(
-      jsi::Runtime &rt,
-      const std::string &url,
-      const std::optional<std::vector<std::string>> &protocols,
+      jsi::Runtime& rt,
+      const std::string& url,
+      const std::optional<std::vector<std::string>>& protocols,
       jsi::Object options,
       int32_t socketID);
 
-  void send(jsi::Runtime &rt, const std::string &message, int32_t socketID);
+  void send(jsi::Runtime& rt, const std::string& message, int32_t socketID);
 
-  void sendBinary(jsi::Runtime &rt, const std::string &base64String, int32_t socketID);
+  void sendBinary(
+      jsi::Runtime& rt,
+      const std::string& base64String,
+      int32_t socketID);
 
-  void ping(jsi::Runtime &rt, int32_t socketID);
+  void ping(jsi::Runtime& rt, int32_t socketID);
 
-  void close(jsi::Runtime &rt, int32_t code, const std::string &reason, int32_t socketID);
+  void close(
+      jsi::Runtime& rt,
+      int32_t code,
+      const std::string& reason,
+      int32_t socketID);
 
-  void addListener(jsi::Runtime &rt, const std::string &eventName);
+  void addListener(jsi::Runtime& rt, const std::string& eventName);
 
-  void removeListeners(jsi::Runtime &rt, int32_t count);
+  void removeListeners(jsi::Runtime& rt, int32_t count);
 
  private:
   WebSocketClientFactory webSocketClientFactory_;

@@ -31,7 +31,7 @@ class EventDispatcher {
   using Weak = std::weak_ptr<const EventDispatcher>;
 
   EventDispatcher(
-      const EventQueueProcessor &eventProcessor,
+      const EventQueueProcessor& eventProcessor,
       std::unique_ptr<EventBeat> eventBeat,
       StatePipe statePipe,
       std::weak_ptr<EventLogger> eventLogger);
@@ -39,7 +39,7 @@ class EventDispatcher {
   /*
    * Dispatches a raw event with given priority using event-delivery pipe.
    */
-  void dispatchEvent(RawEvent &&rawEvent) const;
+  void dispatchEvent(RawEvent&& rawEvent) const;
 
   /*
    * Experimental API exposed to support EventEmitter::experimental_flushSync.
@@ -51,12 +51,14 @@ class EventDispatcher {
    * dispatch we make sure that no other RawEvent of same type and same target
    * is on the queue.
    */
-  void dispatchUniqueEvent(RawEvent &&rawEvent) const;
+  void dispatchUniqueEvent(RawEvent&& rawEvent) const;
 
   /*
    * Dispatches a state update with given priority.
    */
-  void dispatchStateUpdate(StateUpdate &&stateUpdate, EventQueue::UpdateMode updateMode) const;
+  void dispatchStateUpdate(
+      StateUpdate&& stateUpdate,
+      EventQueue::UpdateMode updateMode) const;
 
 #pragma mark - Event listeners
   /*
@@ -67,7 +69,8 @@ class EventDispatcher {
   /*
    * Removes provided event listener to the event dispatcher.
    */
-  void removeListener(const std::shared_ptr<const EventListener> &listener) const;
+  void removeListener(
+      const std::shared_ptr<const EventListener>& listener) const;
 
  private:
   EventQueue eventQueue_;

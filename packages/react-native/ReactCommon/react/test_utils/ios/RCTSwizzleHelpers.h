@@ -11,6 +11,9 @@
 
 RCT_EXTERN_C_BEGIN
 
-void RCTSwizzleInstanceSelector(Class targetClass, Class swizzleClass, SEL selector);
+void RCTSwizzleInstanceSelector(
+    Class targetClass,
+    Class swizzleClass,
+    SEL selector);
 
 RCT_EXTERN_C_END

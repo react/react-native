@@ -18,16 +18,20 @@ class UIManagerViewTransitionDelegate {
  public:
   virtual ~UIManagerViewTransitionDelegate() = default;
 
-  virtual void
-  applyViewTransitionName(const ShadowNode &shadowNode, const std::string &name, const std::string &className)
-  {
-  }
+  virtual void applyViewTransitionName(
+      const ShadowNode& shadowNode,
+      const std::string& name,
+      const std::string& className) {}
 
-  virtual void createViewTransitionInstance(const std::string & /*name*/, Tag /*pseudoElementTag*/) {}
+  virtual void createViewTransitionInstance(
+      const std::string& /*name*/,
+      Tag /*pseudoElementTag*/) {}
 
-  virtual void cancelViewTransitionName(const ShadowNode &shadowNode, const std::string &name) {}
+  virtual void cancelViewTransitionName(
+      const ShadowNode& shadowNode,
+      const std::string& name) {}
 
-  virtual void restoreViewTransitionName(const ShadowNode &shadowNode) {}
+  virtual void restoreViewTransitionName(const ShadowNode& shadowNode) {}
 
   /*
    * Start a view transition. mutationCallback and onReadyCallback MUST be
@@ -37,9 +41,7 @@ class UIManagerViewTransitionDelegate {
   virtual void startViewTransition(
       std::function<void()> mutationCallback,
       std::function<void()> onReadyCallback,
-      std::function<void()> onCompleteCallback)
-  {
-  }
+      std::function<void()> onCompleteCallback) {}
 
   virtual void startViewTransitionReadyFinished() {}
 
@@ -54,19 +56,18 @@ class UIManagerViewTransitionDelegate {
   };
 
   virtual std::optional<ViewTransitionInstance> getViewTransitionInstance(
-      const std::string &name,
-      const std::string &pseudo)
-  {
+      const std::string& name,
+      const std::string& pseudo) {
     return std::nullopt;
   }
 
   // Similar to UIManager::findShadowNodeByTag, but searches all direct children
   // of the root node (where pseudo-element nodes live) rather than just the
-  // first child. Pseudo-element nodes are appended as additional children of the
-  // root node, rather than inserted into the main React tree, to avoid
+  // first child. Pseudo-element nodes are appended as additional children of
+  // the root node, rather than inserted into the main React tree, to avoid
   // disrupting the user-created component tree.
-  virtual std::shared_ptr<const ShadowNode> findPseudoElementShadowNodeByTag(Tag /*tag*/) const
-  {
+  virtual std::shared_ptr<const ShadowNode> findPseudoElementShadowNodeByTag(
+      Tag /*tag*/) const {
     return nullptr;
   }
 

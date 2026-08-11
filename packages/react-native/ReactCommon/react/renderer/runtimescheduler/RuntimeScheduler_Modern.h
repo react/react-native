@@ -28,14 +28,14 @@ class RuntimeScheduler_Modern final : public RuntimeSchedulerBase {
   /*
    * Not copyable.
    */
-  RuntimeScheduler_Modern(const RuntimeScheduler_Modern &) = delete;
-  RuntimeScheduler_Modern &operator=(const RuntimeScheduler_Modern &) = delete;
+  RuntimeScheduler_Modern(const RuntimeScheduler_Modern&) = delete;
+  RuntimeScheduler_Modern& operator=(const RuntimeScheduler_Modern&) = delete;
 
   /*
    * Not movable.
    */
-  RuntimeScheduler_Modern(RuntimeScheduler_Modern &&) = delete;
-  RuntimeScheduler_Modern &operator=(RuntimeScheduler_Modern &&) = delete;
+  RuntimeScheduler_Modern(RuntimeScheduler_Modern&&) = delete;
+  RuntimeScheduler_Modern& operator=(RuntimeScheduler_Modern&&) = delete;
 
   /*
    * Alias for scheduleTask with immediate priority.
@@ -43,11 +43,11 @@ class RuntimeScheduler_Modern final : public RuntimeSchedulerBase {
    * To be removed when we finish testing this implementation.
    * All callers should use scheduleTask with the right priority after that.
    */
-  void scheduleWork(RawCallback &&callback) noexcept override;
+  void scheduleWork(RawCallback&& callback) noexcept override;
 
   /// IEventLoopControl implementation. \p task is always scheduled as an idle
   /// task.
-  void scheduleTask(const std::function<void()> &task) override;
+  void scheduleTask(const std::function<void()>& task) override;
 
   uint64_t registerTaskQueueSource() override;
 
@@ -60,35 +60,41 @@ class RuntimeScheduler_Modern final : public RuntimeSchedulerBase {
    * by dispatching a synchronous event via event emitter in your native
    * component.
    */
-  void executeNowOnTheSameThread(RawCallback &&callback) override;
+  void executeNowOnTheSameThread(RawCallback&& callback) override;
 
   /*
    * Adds a JavaScript callback to the priority queue with the given priority.
    * Triggers event loop if needed.
    */
-  std::shared_ptr<Task> scheduleTask(SchedulerPriority priority, jsi::Function &&callback) noexcept override;
+  std::shared_ptr<Task> scheduleTask(
+      SchedulerPriority priority,
+      jsi::Function&& callback) noexcept override;
 
   /*
    * Adds a custom callback to the priority queue with the given priority.
    * Triggers event loop if needed.
    */
-  std::shared_ptr<Task> scheduleTask(SchedulerPriority priority, RawCallback &&callback) noexcept override;
+  std::shared_ptr<Task> scheduleTask(
+      SchedulerPriority priority,
+      RawCallback&& callback) noexcept override;
 
   /*
    * Adds a JavaScript callback to the idle queue with the given timeout.
    * Triggers event loop if needed.
    */
   std::shared_ptr<Task> scheduleIdleTask(
-      jsi::Function &&callback,
-      HighResDuration customTimeout = timeoutForSchedulerPriority(SchedulerPriority::IdlePriority)) noexcept override;
+      jsi::Function&& callback,
+      HighResDuration customTimeout = timeoutForSchedulerPriority(
+          SchedulerPriority::IdlePriority)) noexcept override;
 
   /*
    * Adds a custom callback to the idle queue with the given timeout.
    * Triggers event loop if needed.
    */
   std::shared_ptr<Task> scheduleIdleTask(
-      RawCallback &&callback,
-      HighResDuration customTimeout = timeoutForSchedulerPriority(SchedulerPriority::IdlePriority)) noexcept override;
+      RawCallback&& callback,
+      HighResDuration customTimeout = timeoutForSchedulerPriority(
+          SchedulerPriority::IdlePriority)) noexcept override;
 
   /*
    * Cancelled task will never be executed.
@@ -96,7 +102,7 @@ class RuntimeScheduler_Modern final : public RuntimeSchedulerBase {
    * Operates on JSI object.
    * Thread synchronization must be enforced externally.
    */
-  void cancelTask(Task &task) noexcept override;
+  void cancelTask(Task& task) noexcept override;
 
   /*
    * Return value indicates if host platform has a pending access to the
@@ -131,7 +137,7 @@ class RuntimeScheduler_Modern final : public RuntimeSchedulerBase {
    *
    * TODO remove when we add support for microtasks
    */
-  void callExpiredTasks(jsi::Runtime &runtime) override;
+  void callExpiredTasks(jsi::Runtime& runtime) override;
 
   /**
    * Schedules a function that notifies or applies UI changes in the host
@@ -139,17 +145,23 @@ class RuntimeScheduler_Modern final : public RuntimeSchedulerBase {
    * event loop. If the step is not enabled, the function is executed
    * immediately.
    */
-  void scheduleRenderingUpdate(SurfaceId surfaceId, RuntimeSchedulerRenderingUpdate &&renderingUpdate) override;
+  void scheduleRenderingUpdate(
+      SurfaceId surfaceId,
+      RuntimeSchedulerRenderingUpdate&& renderingUpdate) override;
 
   void setShadowTreeRevisionConsistencyManager(
-      ShadowTreeRevisionConsistencyManager *shadowTreeRevisionConsistencyManager) override;
+      ShadowTreeRevisionConsistencyManager*
+          shadowTreeRevisionConsistencyManager) override;
 
-  void setPerformanceEntryReporter(PerformanceEntryReporter *performanceEntryReporter) override;
+  void setPerformanceEntryReporter(
+      PerformanceEntryReporter* performanceEntryReporter) override;
 
-  void setEventTimingDelegate(RuntimeSchedulerEventTimingDelegate *eventTimingDelegate) override;
+  void setEventTimingDelegate(
+      RuntimeSchedulerEventTimingDelegate* eventTimingDelegate) override;
 
   void setIntersectionObserverDelegate(
-      RuntimeSchedulerIntersectionObserverDelegate *intersectionObserverDelegate) override;
+      RuntimeSchedulerIntersectionObserverDelegate*
+          intersectionObserverDelegate) override;
 
  private:
   /// Monotonic counter handing out IDs for IEventLoopControl task queue
@@ -158,9 +170,13 @@ class RuntimeScheduler_Modern final : public RuntimeSchedulerBase {
 
   std::atomic<uint_fast8_t> syncTaskRequests_{0};
 
-  std::priority_queue<std::shared_ptr<Task>, std::vector<std::shared_ptr<Task>>, TaskPriorityComparer> taskQueue_;
+  std::priority_queue<
+      std::shared_ptr<Task>,
+      std::vector<std::shared_ptr<Task>>,
+      TaskPriorityComparer>
+      taskQueue_;
 
-  Task *currentTask_{};
+  Task* currentTask_{};
   HighResTimeStamp lastYieldingOpportunity_;
   HighResDuration longestPeriodWithoutYieldingOpportunity_;
 
@@ -175,7 +191,7 @@ class RuntimeScheduler_Modern final : public RuntimeSchedulerBase {
   SchedulerPriority currentPriority_{SchedulerPriority::NormalPriority};
 
   void scheduleEventLoop();
-  void runEventLoop(jsi::Runtime &runtime);
+  void runEventLoop(jsi::Runtime& runtime);
 
   std::shared_ptr<Task> selectTask();
 
@@ -187,20 +203,24 @@ class RuntimeScheduler_Modern final : public RuntimeSchedulerBase {
    * In the future, this will include other steps in the Web event loop, like
    * updating the UI in native, executing resize observer callbacks, etc.
    */
-  void runEventLoopTick(jsi::Runtime &runtime, Task &task);
+  void runEventLoopTick(jsi::Runtime& runtime, Task& task);
 
-  void executeTask(jsi::Runtime &runtime, Task &task, bool didUserCallbackTimeout);
+  void
+  executeTask(jsi::Runtime& runtime, Task& task, bool didUserCallbackTimeout);
 
   void updateRendering(HighResTimeStamp taskEndTime);
 
-  void handleTaskError(jsi::Runtime &runtime, jsi::JSError &error);
+  void handleTaskError(jsi::Runtime& runtime, jsi::JSError& error);
 
   void clearQueues();
 
   bool performingMicrotaskCheckpoint_{false};
-  void performMicrotaskCheckpoint(jsi::Runtime &runtime);
+  void performMicrotaskCheckpoint(jsi::Runtime& runtime);
 
-  void reportLongTasks(const Task &task, HighResTimeStamp startTime, HighResTimeStamp endTime);
+  void reportLongTasks(
+      const Task& task,
+      HighResTimeStamp startTime,
+      HighResTimeStamp endTime);
 
   /*
    * Returns a time point representing the current point in time. May be called
@@ -220,11 +240,14 @@ class RuntimeScheduler_Modern final : public RuntimeSchedulerBase {
   // TODO(T227212654) eventTimingDelegate_ is only set once during startup, so
   // the real fix here would be to delay runEventLoop until
   // setEventTimingDelegate.
-  std::atomic<ShadowTreeRevisionConsistencyManager *> shadowTreeRevisionConsistencyManager_{nullptr};
-  std::atomic<RuntimeSchedulerEventTimingDelegate *> eventTimingDelegate_{nullptr};
+  std::atomic<ShadowTreeRevisionConsistencyManager*>
+      shadowTreeRevisionConsistencyManager_{nullptr};
+  std::atomic<RuntimeSchedulerEventTimingDelegate*> eventTimingDelegate_{
+      nullptr};
 
-  PerformanceEntryReporter *performanceEntryReporter_{nullptr};
-  RuntimeSchedulerIntersectionObserverDelegate *intersectionObserverDelegate_{nullptr};
+  PerformanceEntryReporter* performanceEntryReporter_{nullptr};
+  RuntimeSchedulerIntersectionObserverDelegate* intersectionObserverDelegate_{
+      nullptr};
 
   RuntimeSchedulerTaskErrorHandler onTaskError_;
 };

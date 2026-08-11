@@ -28,7 +28,8 @@ constexpr size_t EVENT_BUFFER_SIZE = 150;
 constexpr size_t LONG_TASK_BUFFER_SIZE = 200;
 constexpr size_t RESOURCE_TIMING_BUFFER_SIZE = 250;
 
-constexpr HighResDuration LONG_TASK_DURATION_THRESHOLD = HighResDuration::fromMilliseconds(50);
+constexpr HighResDuration LONG_TASK_DURATION_THRESHOLD =
+    HighResDuration::fromMilliseconds(50);
 
 class PerformanceEntryReporter {
  public:
@@ -38,56 +39,67 @@ class PerformanceEntryReporter {
   // the same thread.
   // TODO: Consider passing it as a parameter to the corresponding modules at
   // creation time instead of having the singleton.
-  static std::shared_ptr<PerformanceEntryReporter> &getInstance();
+  static std::shared_ptr<PerformanceEntryReporter>& getInstance();
 
-  PerformanceObserverRegistry &getObserverRegistry()
-  {
+  PerformanceObserverRegistry& getObserverRegistry() {
     return *observerRegistry_;
   }
 
   std::vector<PerformanceEntry> getEntries() const;
-  void getEntries(std::vector<PerformanceEntry> &dest) const;
+  void getEntries(std::vector<PerformanceEntry>& dest) const;
 
-  std::vector<PerformanceEntry> getEntries(PerformanceEntryType entryType) const;
-  void getEntries(std::vector<PerformanceEntry> &dest, PerformanceEntryType entryType) const;
+  std::vector<PerformanceEntry> getEntries(
+      PerformanceEntryType entryType) const;
+  void getEntries(
+      std::vector<PerformanceEntry>& dest,
+      PerformanceEntryType entryType) const;
 
-  std::vector<PerformanceEntry> getEntries(PerformanceEntryType entryType, const std::string &entryName) const;
-  void getEntries(std::vector<PerformanceEntry> &dest, PerformanceEntryType entryType, const std::string &entryName)
-      const;
+  std::vector<PerformanceEntry> getEntries(
+      PerformanceEntryType entryType,
+      const std::string& entryName) const;
+  void getEntries(
+      std::vector<PerformanceEntry>& dest,
+      PerformanceEntryType entryType,
+      const std::string& entryName) const;
 
   void clearEntries();
   void clearEntries(PerformanceEntryType entryType);
-  void clearEntries(PerformanceEntryType entryType, const std::string &entryName);
+  void clearEntries(
+      PerformanceEntryType entryType,
+      const std::string& entryName);
 
-  void addEventListener(PerformanceEntryReporterEventListener *listener);
-  void removeEventListener(PerformanceEntryReporterEventListener *listener);
+  void addEventListener(PerformanceEntryReporterEventListener* listener);
+  void removeEventListener(PerformanceEntryReporterEventListener* listener);
 
   static std::vector<PerformanceEntryType> getSupportedEntryTypes();
 
   uint32_t getDroppedEntriesCount(PerformanceEntryType type) const noexcept;
 
-  const std::unordered_map<std::string, uint32_t> &getEventCounts() const
-  {
+  const std::unordered_map<std::string, uint32_t>& getEventCounts() const {
     return eventCounts_;
   }
 
   void clearEventCounts();
 
-  std::optional<HighResTimeStamp> getMarkTime(const std::string &markName) const;
+  std::optional<HighResTimeStamp> getMarkTime(
+      const std::string& markName) const;
 
   using UserTimingDetailProvider = std::function<folly::dynamic()>;
 
-  void
-  reportMark(const std::string &name, HighResTimeStamp startTime, UserTimingDetailProvider &&detailProvider = nullptr);
+  void reportMark(
+      const std::string& name,
+      HighResTimeStamp startTime,
+      UserTimingDetailProvider&& detailProvider = nullptr);
 
   void reportMeasure(
-      const std::string &name,
+      const std::string& name,
       HighResTimeStamp startTime,
       HighResDuration duration,
-      const std::optional<UserTimingDetailProvider> &detailProvider = std::nullopt);
+      const std::optional<UserTimingDetailProvider>& detailProvider =
+          std::nullopt);
 
   void reportEvent(
-      const std::string &name,
+      const std::string& name,
       HighResTimeStamp startTime,
       HighResDuration duration,
       HighResTimeStamp processingStart,
@@ -98,7 +110,7 @@ class PerformanceEntryReporter {
   void reportLongTask(HighResTimeStamp startTime, HighResDuration duration);
 
   void reportResourceTiming(
-      const std::string &url,
+      const std::string& url,
       HighResTimeStamp fetchStart,
       HighResTimeStamp requestStart,
       std::optional<HighResTimeStamp> connectStart,
@@ -106,7 +118,7 @@ class PerformanceEntryReporter {
       HighResTimeStamp responseStart,
       HighResTimeStamp responseEnd,
       int responseStatus,
-      const std::string &contentType,
+      const std::string& contentType,
       int encodedBodySize,
       int decodedBodySize);
 
@@ -116,17 +128,18 @@ class PerformanceEntryReporter {
   mutable std::shared_mutex buffersMutex_;
   PerformanceEntryCircularBuffer eventBuffer_{EVENT_BUFFER_SIZE};
   PerformanceEntryCircularBuffer longTaskBuffer_{LONG_TASK_BUFFER_SIZE};
-  PerformanceEntryCircularBuffer resourceTimingBuffer_{RESOURCE_TIMING_BUFFER_SIZE};
+  PerformanceEntryCircularBuffer resourceTimingBuffer_{
+      RESOURCE_TIMING_BUFFER_SIZE};
   PerformanceEntryKeyedBuffer markBuffer_;
   PerformanceEntryKeyedBuffer measureBuffer_;
 
   std::unordered_map<std::string, uint32_t> eventCounts_;
 
   mutable std::shared_mutex listenersMutex_;
-  std::vector<PerformanceEntryReporterEventListener *> eventListeners_{};
+  std::vector<PerformanceEntryReporterEventListener*> eventListeners_{};
 
-  const inline PerformanceEntryBuffer &getBuffer(PerformanceEntryType entryType) const
-  {
+  const inline PerformanceEntryBuffer& getBuffer(
+      PerformanceEntryType entryType) const {
     switch (entryType) {
       case PerformanceEntryType::EVENT:
         return eventBuffer_;
@@ -145,8 +158,7 @@ class PerformanceEntryReporter {
     }
   }
 
-  inline PerformanceEntryBuffer &getBufferRef(PerformanceEntryType entryType)
-  {
+  inline PerformanceEntryBuffer& getBufferRef(PerformanceEntryType entryType) {
     switch (entryType) {
       case PerformanceEntryType::EVENT:
         return eventBuffer_;
@@ -165,14 +177,17 @@ class PerformanceEntryReporter {
     }
   }
 
-  void traceMark(const PerformanceMark &entry, UserTimingDetailProvider &&detailProvider) const;
-  void traceMeasure(const PerformanceMeasure &entry, const std::optional<UserTimingDetailProvider> &detailProvider)
-      const;
+  void traceMark(
+      const PerformanceMark& entry,
+      UserTimingDetailProvider&& detailProvider) const;
+  void traceMeasure(
+      const PerformanceMeasure& entry,
+      const std::optional<UserTimingDetailProvider>& detailProvider) const;
   void traceResourceTiming(
-      const PerformanceResourceTiming &entry,
-      const std::optional<std::string> &devtoolsRequestId,
-      const std::optional<std::string> &requestMethod,
-      const std::optional<std::string> &resourceType) const;
+      const PerformanceResourceTiming& entry,
+      const std::optional<std::string>& devtoolsRequestId,
+      const std::optional<std::string>& requestMethod,
+      const std::optional<std::string>& resourceType) const;
 };
 
 } // namespace facebook::react

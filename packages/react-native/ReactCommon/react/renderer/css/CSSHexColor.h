@@ -20,8 +20,7 @@ enum class HexColorType {
   Short,
 };
 
-constexpr uint8_t hexToNumeric(std::string_view hex, HexColorType hexType)
-{
+constexpr uint8_t hexToNumeric(std::string_view hex, HexColorType hexType) {
   int result = 0;
   for (char c : hex) {
     int value = 0;
@@ -41,16 +40,15 @@ constexpr uint8_t hexToNumeric(std::string_view hex, HexColorType hexType)
   }
 }
 
-constexpr bool isHexDigit(char c)
-{
+constexpr bool isHexDigit(char c) {
   return (c >= '0' && c <= '9') || (toLower(c) >= 'a' && toLower(c) <= 'f');
 }
 
-constexpr bool isValidHexColor(std::string_view hex)
-{
+constexpr bool isValidHexColor(std::string_view hex) {
   // The syntax of a <hex-color> is a <hash-token> token whose value consists
   // of 3, 4, 6, or 8 hexadecimal digits.
-  if (hex.size() != 3 && hex.size() != 4 && hex.size() != 6 && hex.size() != 8) {
+  if (hex.size() != 3 && hex.size() != 4 && hex.size() != 6 &&
+      hex.size() != 8) {
     return false;
   }
 
@@ -70,8 +68,8 @@ constexpr bool isValidHexColor(std::string_view hex)
  * https://www.w3.org/TR/css-color-4/#hex-color
  */
 template <typename CSSColor>
-constexpr std::optional<CSSColor> parseCSSHexColor(std::string_view hexColorValue)
-{
+constexpr std::optional<CSSColor> parseCSSHexColor(
+    std::string_view hexColorValue) {
   if (detail::isValidHexColor(hexColorValue)) {
     if (hexColorValue.length() == 3) {
       return CSSColor{
@@ -84,7 +82,8 @@ constexpr std::optional<CSSColor> parseCSSHexColor(std::string_view hexColorValu
           hexToNumeric(hexColorValue.substr(0, 1), detail::HexColorType::Short),
           hexToNumeric(hexColorValue.substr(1, 1), detail::HexColorType::Short),
           hexToNumeric(hexColorValue.substr(2, 1), detail::HexColorType::Short),
-          hexToNumeric(hexColorValue.substr(3, 1), detail::HexColorType::Short)};
+          hexToNumeric(
+              hexColorValue.substr(3, 1), detail::HexColorType::Short)};
     } else if (hexColorValue.length() == 6) {
       return CSSColor{
           hexToNumeric(hexColorValue.substr(0, 2), detail::HexColorType::Long),

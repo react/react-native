@@ -36,25 +36,27 @@ template <typename Executor>
 class InspectorPackagerConnectionTestBase : public testing::Test {
  protected:
   InspectorPackagerConnectionTestBase()
-      : packagerConnection_(
-            InspectorPackagerConnection{
-                "ws://mock-host:12345",
-                "my-device",
-                "my-app",
-                packagerConnectionDelegates_.make_unique(asyncExecutor_)})
-  {
-    auto makeSocket = webSockets_.lazily_make_unique<const std::string &, std::weak_ptr<IWebSocketDelegate>>();
-    ON_CALL(*packagerConnectionDelegate(), connectWebSocket(testing::_, testing::_))
-        .WillByDefault([makeSocket](auto &&...args) {
+      : packagerConnection_(InspectorPackagerConnection{
+            "ws://mock-host:12345",
+            "my-device",
+            "my-app",
+            packagerConnectionDelegates_.make_unique(asyncExecutor_)}) {
+    auto makeSocket = webSockets_.lazily_make_unique<
+        const std::string&,
+        std::weak_ptr<IWebSocketDelegate>>();
+    ON_CALL(
+        *packagerConnectionDelegate(), connectWebSocket(testing::_, testing::_))
+        .WillByDefault([makeSocket](auto&&... args) {
           auto socket = makeSocket(std::forward<decltype(args)>(args)...);
           socket->getDelegate().didOpen();
           return std::move(socket);
         });
-    EXPECT_CALL(*packagerConnectionDelegate(), connectWebSocket(testing::_, testing::_)).Times(testing::AnyNumber());
+    EXPECT_CALL(
+        *packagerConnectionDelegate(), connectWebSocket(testing::_, testing::_))
+        .Times(testing::AnyNumber());
   }
 
-  void TearDown() override
-  {
+  void TearDown() override {
     // Forcibly clean up all pages currently registered with the inspector in
     // order to isolate state between tests. NOTE: Using TearDown instead of a
     // destructor so that we can use FAIL() etc.
@@ -69,20 +71,21 @@ class InspectorPackagerConnectionTestBase : public testing::Test {
         EXPECT_CALL(*localConnections_[i], disconnect());
       }
     }
-    for (auto &page : pages) {
+    for (auto& page : pages) {
       getInspectorInstance().removePage(page.id);
     }
     if (!pages.empty() && (liveConnectionCount != 0)) {
       if (!::testing::Test::HasFailure()) {
-        FAIL() << "Test case ended with " << liveConnectionCount << " open connection(s) and " << pages.size()
-               << " registered page(s). You must manually call removePage for each page.";
+        FAIL()
+            << "Test case ended with " << liveConnectionCount
+            << " open connection(s) and " << pages.size()
+            << " registered page(s). You must manually call removePage for each page.";
       }
     }
     ::testing::Test::TearDown();
   }
 
-  MockInspectorPackagerConnectionDelegate *packagerConnectionDelegate()
-  {
+  MockInspectorPackagerConnectionDelegate* packagerConnectionDelegate() {
     // We only create one PackagerConnectionDelegate per test.
     EXPECT_EQ(packagerConnectionDelegates_.objectsVended(), 1);
     return packagerConnectionDelegates_[0];
@@ -90,7 +93,8 @@ class InspectorPackagerConnectionTestBase : public testing::Test {
 
   Executor asyncExecutor_;
 
-  UniquePtrFactory<MockInspectorPackagerConnectionDelegate> packagerConnectionDelegates_;
+  UniquePtrFactory<MockInspectorPackagerConnectionDelegate>
+      packagerConnectionDelegates_;
   /**
    * webSockets_ will hold the WebSocket instance(s) owned by
    * packagerConnection_ while also allowing us to access them during
@@ -118,17 +122,18 @@ class InspectorPackagerConnectionTestBase : public testing::Test {
  * Standard test fixture that uses QueuedImmediateExecutor.
  * Work scheduled on the executor is run immediately inline.
  */
-using InspectorPackagerConnectionTest = InspectorPackagerConnectionTestBase<folly::QueuedImmediateExecutor>;
+using InspectorPackagerConnectionTest =
+    InspectorPackagerConnectionTestBase<folly::QueuedImmediateExecutor>;
 
 /**
  * Test fixture that uses ManualExecutor.
  * Work scheduled on the executor is *not* run automatically; it must be
  * manually advanced in the body of the test.
  */
-class InspectorPackagerConnectionTestAsync : public InspectorPackagerConnectionTestBase<folly::ManualExecutor> {
+class InspectorPackagerConnectionTestAsync
+    : public InspectorPackagerConnectionTestBase<folly::ManualExecutor> {
  public:
-  void TearDown() override
-  {
+  void TearDown() override {
     // Assert there are no pending tasks on the ManualExecutor.
     auto tasksCleared = asyncExecutor_.clear();
     EXPECT_EQ(tasksCleared, 0)

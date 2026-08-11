@@ -34,14 +34,12 @@ class ImageSource {
   CacheStategy cache = CacheStategy::Default;
   std::vector<std::pair<std::string, std::string>> headers{};
 
-  bool operator==(const ImageSource &rhs) const
-  {
+  bool operator==(const ImageSource& rhs) const {
     return std::tie(this->type, this->uri) == std::tie(rhs.type, rhs.uri);
   }
 
 #ifdef RN_SERIALIZABLE_STATE
-  folly::dynamic toDynamic() const
-  {
+  folly::dynamic toDynamic() const {
     folly::dynamic imageSourceResult = folly::dynamic::object();
     switch (type) {
       case ImageSource::Type::Remote:
@@ -85,7 +83,7 @@ class ImageSource {
     }
 
     folly::dynamic headersObject = folly::dynamic::object();
-    for (const auto &header : headers) {
+    for (const auto& header : headers) {
       headersObject[header.first] = header.second;
     }
     imageSourceResult["headers"] = headersObject;
@@ -95,30 +93,41 @@ class ImageSource {
 #endif
 
 #if RN_DEBUG_STRING_CONVERTIBLE
-  SharedDebugStringConvertibleList getDebugProps(const std::string &prefix) const
-  {
+  SharedDebugStringConvertibleList getDebugProps(
+      const std::string& prefix) const {
     ImageSource imageSource{};
 
     SharedDebugStringConvertibleList headersList;
-    for (const auto &header : headers) {
-      headersList.push_back(debugStringConvertibleItem(prefix + "-header-" + header.first, header.second));
+    for (const auto& header : headers) {
+      headersList.push_back(debugStringConvertibleItem(
+          prefix + "-header-" + header.first, header.second));
     }
 
     return headersList +
         SharedDebugStringConvertibleList{
-            debugStringConvertibleItem(prefix + "-type", toString(type), toString(imageSource.type)),
+            debugStringConvertibleItem(
+                prefix + "-type", toString(type), toString(imageSource.type)),
             debugStringConvertibleItem(prefix + "-uri", uri, imageSource.uri),
-            debugStringConvertibleItem(prefix + "-bundle", bundle, imageSource.bundle),
-            debugStringConvertibleItem(prefix + "-scale", scale, imageSource.scale),
-            debugStringConvertibleItem(prefix + "-size", react::toString(size), react::toString(imageSource.size)),
-            debugStringConvertibleItem(prefix + "-body", body, imageSource.body),
-            debugStringConvertibleItem(prefix + "-method", method, imageSource.method),
-            debugStringConvertibleItem(prefix + "-cache", toString(cache), toString(imageSource.cache)),
+            debugStringConvertibleItem(
+                prefix + "-bundle", bundle, imageSource.bundle),
+            debugStringConvertibleItem(
+                prefix + "-scale", scale, imageSource.scale),
+            debugStringConvertibleItem(
+                prefix + "-size",
+                react::toString(size),
+                react::toString(imageSource.size)),
+            debugStringConvertibleItem(
+                prefix + "-body", body, imageSource.body),
+            debugStringConvertibleItem(
+                prefix + "-method", method, imageSource.method),
+            debugStringConvertibleItem(
+                prefix + "-cache",
+                toString(cache),
+                toString(imageSource.cache)),
         };
   }
 
-  std::string toString(const Type &typeValue) const
-  {
+  std::string toString(const Type& typeValue) const {
     switch (typeValue) {
       case ImageSource::Type::Invalid:
         return "invalid";
@@ -132,8 +141,7 @@ class ImageSource {
     }
   }
 
-  std::string toString(const CacheStategy &cacheValue) const
-  {
+  std::string toString(const CacheStategy& cacheValue) const {
     switch (cacheValue) {
       case ImageSource::CacheStategy::Default:
         return "default";
@@ -152,8 +160,7 @@ class ImageSource {
 };
 
 #ifdef RN_SERIALIZABLE_STATE
-inline folly::dynamic toDynamic(const ImageSource &imageSource)
-{
+inline folly::dynamic toDynamic(const ImageSource& imageSource) {
   return imageSource.toDynamic();
 }
 #endif

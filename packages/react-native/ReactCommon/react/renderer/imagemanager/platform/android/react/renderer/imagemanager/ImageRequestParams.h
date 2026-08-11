@@ -44,9 +44,7 @@ class ImageRequestParams {
         progressiveRenderingEnabled(progressiveRenderingEnabled),
         loadingIndicatorSource(std::move(loadingIndicatorSource)),
         analyticTag(std::move(analyticTag)),
-        size(size)
-  {
-  }
+        size(size) {}
 
   Float blurRadius{};
   ImageSource defaultSource{};
@@ -62,7 +60,7 @@ class ImageRequestParams {
   std::string analyticTag{};
   Size size{};
 
-  bool operator==(const ImageRequestParams &rhs) const = default;
+  bool operator==(const ImageRequestParams& rhs) const = default;
 };
 
 struct ImageRequestItem {

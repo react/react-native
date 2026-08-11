@@ -25,8 +25,7 @@ namespace facebook::react {
 
 namespace detail {
 
-constexpr uint8_t clamp255Component(float f)
-{
+constexpr uint8_t clamp255Component(float f) {
   // Implementations should honor the precision of the channel as authored or
   // calculated wherever possible. If this is not possible, the channel should
   // be rounded towards +∞.
@@ -36,8 +35,8 @@ constexpr uint8_t clamp255Component(float f)
   return static_cast<uint8_t>(std::clamp(ceiled, 0, 255));
 }
 
-constexpr std::optional<float> normalizeNumberComponent(const std::variant<std::monostate, CSSNumber> &component)
-{
+constexpr std::optional<float> normalizeNumberComponent(
+    const std::variant<std::monostate, CSSNumber>& component) {
   if (std::holds_alternative<CSSNumber>(component)) {
     return std::get<CSSNumber>(component).value;
   }
@@ -45,19 +44,18 @@ constexpr std::optional<float> normalizeNumberComponent(const std::variant<std::
   return {};
 }
 
-constexpr uint8_t clampAlpha(std::optional<float> alpha)
-{
-  return alpha.has_value() ? clamp255Component(*alpha * 255.0f) : static_cast<uint8_t>(255u);
+constexpr uint8_t clampAlpha(std::optional<float> alpha) {
+  return alpha.has_value() ? clamp255Component(*alpha * 255.0f)
+                           : static_cast<uint8_t>(255u);
 }
 
-inline float normalizeHue(float hue)
-{
+inline float normalizeHue(float hue) {
   auto rem = std::remainder(hue, 360.0f);
   return (rem < 0 ? rem + 360 : rem) / 360.0f;
 }
 
-inline std::optional<float> normalizeHueComponent(const std::variant<std::monostate, CSSNumber, CSSAngle> &component)
-{
+inline std::optional<float> normalizeHueComponent(
+    const std::variant<std::monostate, CSSNumber, CSSAngle>& component) {
   if (std::holds_alternative<CSSNumber>(component)) {
     return normalizeHue(std::get<CSSNumber>(component).value);
   } else if (std::holds_alternative<CSSAngle>(component)) {
@@ -67,8 +65,7 @@ inline std::optional<float> normalizeHueComponent(const std::variant<std::monost
   return {};
 }
 
-constexpr float hueToRgb(float p, float q, float t)
-{
+constexpr float hueToRgb(float p, float q, float t) {
   if (t < 0.0f) {
     t += 1.0f;
   }
@@ -87,8 +84,8 @@ constexpr float hueToRgb(float p, float q, float t)
   return p;
 }
 
-inline std::tuple<uint8_t, uint8_t, uint8_t> hslToRgb(float h, float s, float l)
-{
+inline std::tuple<uint8_t, uint8_t, uint8_t>
+hslToRgb(float h, float s, float l) {
   s = std::clamp(s / 100.0f, 0.0f, 1.0f);
   l = std::clamp(l / 100.0f, 0.0f, 1.0f);
 
@@ -106,8 +103,8 @@ inline std::tuple<uint8_t, uint8_t, uint8_t> hslToRgb(float h, float s, float l)
   };
 }
 
-inline std::tuple<uint8_t, uint8_t, uint8_t> hwbToRgb(float h, float w, float b)
-{
+inline std::tuple<uint8_t, uint8_t, uint8_t>
+hwbToRgb(float h, float w, float b) {
   w = std::clamp(w / 100.0f, 0.0f, 1.0f);
   b = std::clamp(b / 100.0f, 0.0f, 1.0f);
 
@@ -132,11 +129,13 @@ inline std::tuple<uint8_t, uint8_t, uint8_t> hwbToRgb(float h, float w, float b)
 }
 
 template <typename... ComponentT>
-  requires((std::is_same_v<CSSNumber, ComponentT> || std::is_same_v<CSSPercentage, ComponentT>) && ...)
+  requires(
+      (std::is_same_v<CSSNumber, ComponentT> ||
+       std::is_same_v<CSSPercentage, ComponentT>) &&
+      ...)
 constexpr std::optional<float> normalizeComponent(
-    const std::variant<std::monostate, ComponentT...> &component,
-    float baseValue)
-{
+    const std::variant<std::monostate, ComponentT...>& component,
+    float baseValue) {
   if constexpr (traits::containsType<CSSPercentage, ComponentT...>()) {
     if (std::holds_alternative<CSSPercentage>(component)) {
       return std::get<CSSPercentage>(component).value / 100.0f * baseValue;
@@ -153,8 +152,7 @@ constexpr std::optional<float> normalizeComponent(
 }
 
 template <CSSDataType... FirstComponentAllowedTypesT>
-constexpr bool isLegacyColorFunction(CSSValueParser &parser)
-{
+constexpr bool isLegacyColorFunction(CSSValueParser& parser) {
   auto saved = parser.syntaxParser();
   auto next = parser.parseNextValue<FirstComponentAllowedTypesT...>();
   if (std::holds_alternative<std::monostate>(next)) {
@@ -174,8 +172,8 @@ constexpr bool isLegacyColorFunction(CSSValueParser &parser)
  * https://www.w3.org/TR/css-color-4/#typedef-legacy-rgb-syntax
  */
 template <typename CSSColor>
-constexpr std::optional<CSSColor> parseLegacyRgbFunction(CSSValueParser &parser)
-{
+constexpr std::optional<CSSColor> parseLegacyRgbFunction(
+    CSSValueParser& parser) {
   auto rawRed = parser.parseNextValue<CSSNumber, CSSPercentage>();
   bool usesNumber = std::holds_alternative<CSSNumber>(rawRed);
 
@@ -184,19 +182,27 @@ constexpr std::optional<CSSColor> parseLegacyRgbFunction(CSSValueParser &parser)
     return {};
   }
 
-  auto green = usesNumber ? normalizeNumberComponent(parser.parseNextValue<CSSNumber>(CSSDelimiter::Comma))
-                          : normalizeComponent(parser.parseNextValue<CSSPercentage>(CSSDelimiter::Comma), 255.0f);
+  auto green = usesNumber
+      ? normalizeNumberComponent(
+            parser.parseNextValue<CSSNumber>(CSSDelimiter::Comma))
+      : normalizeComponent(
+            parser.parseNextValue<CSSPercentage>(CSSDelimiter::Comma), 255.0f);
   if (!green.has_value()) {
     return {};
   }
 
-  auto blue = usesNumber ? normalizeNumberComponent(parser.parseNextValue<CSSNumber>(CSSDelimiter::Comma))
-                         : normalizeComponent(parser.parseNextValue<CSSPercentage>(CSSDelimiter::Comma), 255.0f);
+  auto blue = usesNumber
+      ? normalizeNumberComponent(
+            parser.parseNextValue<CSSNumber>(CSSDelimiter::Comma))
+      : normalizeComponent(
+            parser.parseNextValue<CSSPercentage>(CSSDelimiter::Comma), 255.0f);
   if (!blue.has_value()) {
     return {};
   }
 
-  auto alpha = normalizeComponent(parser.parseNextValue<CSSNumber, CSSPercentage>(CSSDelimiter::Comma), 1.0f);
+  auto alpha = normalizeComponent(
+      parser.parseNextValue<CSSNumber, CSSPercentage>(CSSDelimiter::Comma),
+      1.0f);
 
   return CSSColor{
       .r = clamp255Component(*red),
@@ -212,25 +218,32 @@ constexpr std::optional<CSSColor> parseLegacyRgbFunction(CSSValueParser &parser)
  * https://www.w3.org/TR/css-color-4/#typedef-modern-rgb-syntax
  */
 template <typename CSSColor>
-constexpr std::optional<CSSColor> parseModernRgbFunction(CSSValueParser &parser)
-{
-  auto red = normalizeComponent(parser.parseNextValue<CSSNumber, CSSPercentage>(), 255.0f);
+constexpr std::optional<CSSColor> parseModernRgbFunction(
+    CSSValueParser& parser) {
+  auto red = normalizeComponent(
+      parser.parseNextValue<CSSNumber, CSSPercentage>(), 255.0f);
   if (!red.has_value()) {
     return {};
   }
 
-  auto green = normalizeComponent(parser.parseNextValue<CSSNumber, CSSPercentage>(CSSDelimiter::Whitespace), 255.0f);
+  auto green = normalizeComponent(
+      parser.parseNextValue<CSSNumber, CSSPercentage>(CSSDelimiter::Whitespace),
+      255.0f);
   if (!green.has_value()) {
     return {};
   }
 
-  auto blue = normalizeComponent(parser.parseNextValue<CSSNumber, CSSPercentage>(CSSDelimiter::Whitespace), 255.0f);
+  auto blue = normalizeComponent(
+      parser.parseNextValue<CSSNumber, CSSPercentage>(CSSDelimiter::Whitespace),
+      255.0f);
   if (!blue.has_value()) {
     return {};
   }
 
-  auto alpha =
-      normalizeComponent(parser.parseNextValue<CSSNumber, CSSPercentage>(CSSDelimiter::SolidusOrWhitespace), 1.0f);
+  auto alpha = normalizeComponent(
+      parser.parseNextValue<CSSNumber, CSSPercentage>(
+          CSSDelimiter::SolidusOrWhitespace),
+      1.0f);
 
   return CSSColor{
       .r = clamp255Component(*red),
@@ -245,8 +258,7 @@ constexpr std::optional<CSSColor> parseModernRgbFunction(CSSValueParser &parser)
  * https://www.w3.org/TR/css-color-4/#funcdef-rgb
  */
 template <typename CSSColor>
-constexpr std::optional<CSSColor> parseRgbFunction(CSSValueParser &parser)
-{
+constexpr std::optional<CSSColor> parseRgbFunction(CSSValueParser& parser) {
   if (isLegacyColorFunction<CSSNumber, CSSPercentage>(parser)) {
     return parseLegacyRgbFunction<CSSColor>(parser);
   } else {
@@ -260,24 +272,27 @@ constexpr std::optional<CSSColor> parseRgbFunction(CSSValueParser &parser)
  * https://www.w3.org/TR/css-color-4/#typedef-legacy-hsl-syntax
  */
 template <typename CSSColor>
-inline std::optional<CSSColor> parseLegacyHslFunction(CSSValueParser &parser)
-{
+inline std::optional<CSSColor> parseLegacyHslFunction(CSSValueParser& parser) {
   auto h = normalizeHueComponent(parser.parseNextValue<CSSNumber, CSSAngle>());
   if (!h.has_value()) {
     return {};
   }
 
-  auto s = normalizeComponent(parser.parseNextValue<CSSPercentage>(CSSDelimiter::Comma), 100.0f);
+  auto s = normalizeComponent(
+      parser.parseNextValue<CSSPercentage>(CSSDelimiter::Comma), 100.0f);
   if (!s.has_value()) {
     return {};
   }
 
-  auto l = normalizeComponent(parser.parseNextValue<CSSPercentage>(CSSDelimiter::Comma), 100.0f);
+  auto l = normalizeComponent(
+      parser.parseNextValue<CSSPercentage>(CSSDelimiter::Comma), 100.0f);
   if (!l.has_value()) {
     return {};
   }
 
-  auto a = normalizeComponent(parser.parseNextValue<CSSNumber, CSSPercentage>(CSSDelimiter::Comma), 1.0f);
+  auto a = normalizeComponent(
+      parser.parseNextValue<CSSNumber, CSSPercentage>(CSSDelimiter::Comma),
+      1.0f);
 
   auto [r, g, b] = hslToRgb(*h, *s, *l);
 
@@ -294,24 +309,30 @@ inline std::optional<CSSColor> parseLegacyHslFunction(CSSValueParser &parser)
  * it is valid. https://www.w3.org/TR/css-color-4/#typedef-modern-hsl-syntax
  */
 template <typename CSSColor>
-inline std::optional<CSSColor> parseModernHslFunction(CSSValueParser &parser)
-{
+inline std::optional<CSSColor> parseModernHslFunction(CSSValueParser& parser) {
   auto h = normalizeHueComponent(parser.parseNextValue<CSSNumber, CSSAngle>());
   if (!h.has_value()) {
     return {};
   }
 
-  auto s = normalizeComponent(parser.parseNextValue<CSSNumber, CSSPercentage>(CSSDelimiter::Whitespace), 100.0f);
+  auto s = normalizeComponent(
+      parser.parseNextValue<CSSNumber, CSSPercentage>(CSSDelimiter::Whitespace),
+      100.0f);
   if (!s.has_value()) {
     return {};
   }
 
-  auto l = normalizeComponent(parser.parseNextValue<CSSNumber, CSSPercentage>(CSSDelimiter::Whitespace), 100.0f);
+  auto l = normalizeComponent(
+      parser.parseNextValue<CSSNumber, CSSPercentage>(CSSDelimiter::Whitespace),
+      100.0f);
   if (!l.has_value()) {
     return {};
   }
 
-  auto a = normalizeComponent(parser.parseNextValue<CSSNumber, CSSPercentage>(CSSDelimiter::SolidusOrWhitespace), 1.0f);
+  auto a = normalizeComponent(
+      parser.parseNextValue<CSSNumber, CSSPercentage>(
+          CSSDelimiter::SolidusOrWhitespace),
+      1.0f);
 
   auto [r, g, b] = hslToRgb(*h, *s, *l);
 
@@ -328,8 +349,7 @@ inline std::optional<CSSColor> parseModernHslFunction(CSSValueParser &parser)
  * https://www.w3.org/TR/css-color-4/#funcdef-hsl
  */
 template <typename CSSColor>
-inline std::optional<CSSColor> parseHslFunction(CSSValueParser &parser)
-{
+inline std::optional<CSSColor> parseHslFunction(CSSValueParser& parser) {
   if (isLegacyColorFunction<CSSNumber, CSSAngle>(parser)) {
     return parseLegacyHslFunction<CSSColor>(parser);
   } else {
@@ -342,24 +362,30 @@ inline std::optional<CSSColor> parseHslFunction(CSSValueParser &parser)
  * https://www.w3.org/TR/css-color-4/#funcdef-hwb
  */
 template <typename CSSColor>
-inline std::optional<CSSColor> parseHwbFunction(CSSValueParser &parser)
-{
+inline std::optional<CSSColor> parseHwbFunction(CSSValueParser& parser) {
   auto h = normalizeHueComponent(parser.parseNextValue<CSSNumber, CSSAngle>());
   if (!h.has_value()) {
     return {};
   }
 
-  auto w = normalizeComponent(parser.parseNextValue<CSSNumber, CSSPercentage>(CSSDelimiter::Whitespace), 100.0f);
+  auto w = normalizeComponent(
+      parser.parseNextValue<CSSNumber, CSSPercentage>(CSSDelimiter::Whitespace),
+      100.0f);
   if (!w.has_value()) {
     return {};
   }
 
-  auto b = normalizeComponent(parser.parseNextValue<CSSNumber, CSSPercentage>(CSSDelimiter::Whitespace), 100.0f);
+  auto b = normalizeComponent(
+      parser.parseNextValue<CSSNumber, CSSPercentage>(CSSDelimiter::Whitespace),
+      100.0f);
   if (!b.has_value()) {
     return {};
   }
 
-  auto a = normalizeComponent(parser.parseNextValue<CSSNumber, CSSPercentage>(CSSDelimiter::SolidusOrWhitespace), 1.0f);
+  auto a = normalizeComponent(
+      parser.parseNextValue<CSSNumber, CSSPercentage>(
+          CSSDelimiter::SolidusOrWhitespace),
+      1.0f);
 
   auto [red, green, blue] = hwbToRgb(*h, *w, *b);
 
@@ -379,8 +405,9 @@ inline std::optional<CSSColor> parseHwbFunction(CSSValueParser &parser)
  * https://www.w3.org/TR/css-color-4/#typedef-color-function
  */
 template <typename CSSColor>
-constexpr std::optional<CSSColor> parseCSSColorFunction(std::string_view colorFunction, CSSValueParser &parser)
-{
+constexpr std::optional<CSSColor> parseCSSColorFunction(
+    std::string_view colorFunction,
+    CSSValueParser& parser) {
   switch (fnv1aLowercase(colorFunction)) {
     // CSS Color Module Level 4 treats the alpha variants of functions as the
     // same as non-alpha variants (alpha is optional for both).

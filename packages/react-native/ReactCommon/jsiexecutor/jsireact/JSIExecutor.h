@@ -47,20 +47,22 @@ namespace facebook::react {
 //           return "someBigWork, param " + std::to_string(param);
 //       })
 //
-using JSIScopedTimeoutInvoker =
-    std::function<void(const std::function<void()> &invokee, std::function<std::string()> errorMessageProducer)>;
+using JSIScopedTimeoutInvoker = std::function<void(
+    const std::function<void()>& invokee,
+    std::function<std::string()> errorMessageProducer)>;
 
-class [[deprecated("JSBigString implements jsi::Buffer directly")]] BigStringBuffer : public jsi::Buffer {
+class [[deprecated(
+    "JSBigString implements jsi::Buffer directly")]] BigStringBuffer
+    : public jsi::Buffer {
  public:
-  BigStringBuffer(std::unique_ptr<const JSBigString> script) : script_(std::move(script)) {}
+  BigStringBuffer(std::unique_ptr<const JSBigString> script)
+      : script_(std::move(script)) {}
 
-  size_t size() const override
-  {
+  size_t size() const override {
     return script_->size();
   }
 
-  const uint8_t *data() const override
-  {
+  const uint8_t* data() const override {
     return script_->data();
   }
 
@@ -68,35 +70,45 @@ class [[deprecated("JSBigString implements jsi::Buffer directly")]] BigStringBuf
   std::unique_ptr<const JSBigString> script_;
 };
 
-class [[deprecated("This API will be removed along with the legacy architecture.")]] JSIExecutor : public JSExecutor {
+class [[deprecated(
+    "This API will be removed along with the legacy architecture.")]] JSIExecutor
+    : public JSExecutor {
  public:
-  using RuntimeInstaller = std::function<void(jsi::Runtime &runtime)>;
+  using RuntimeInstaller = std::function<void(jsi::Runtime & runtime)>;
 
   JSIExecutor(
       std::shared_ptr<jsi::Runtime> runtime,
       std::shared_ptr<ExecutorDelegate> delegate,
-      const JSIScopedTimeoutInvoker &timeoutInvoker,
+      const JSIScopedTimeoutInvoker& timeoutInvoker,
       RuntimeInstaller runtimeInstaller);
   void initializeRuntime() override;
-  void loadBundle(std::unique_ptr<const JSBigString> script, std::string sourceURL) override;
+  void loadBundle(
+      std::unique_ptr<const JSBigString> script, std::string sourceURL)
+      override;
 #ifndef RCT_REMOVE_LEGACY_ARCH
   void setBundleRegistry(std::unique_ptr<RAMBundleRegistry> r) override;
 #endif // RCT_REMOVE_LEGACY_ARCH
-  void registerBundle(uint32_t bundleId, const std::string &bundlePath) override;
-  void callFunction(const std::string &moduleId, const std::string &methodId, const folly::dynamic &arguments) override;
-  void invokeCallback(double callbackId, const folly::dynamic &arguments) override;
-  void setGlobalVariable(std::string propName, std::unique_ptr<const JSBigString> jsonValue) override;
+  void registerBundle(uint32_t bundleId, const std::string& bundlePath)
+      override;
+  void callFunction(
+      const std::string& moduleId,
+      const std::string& methodId,
+      const folly::dynamic& arguments) override;
+  void invokeCallback(double callbackId, const folly::dynamic& arguments)
+      override;
+  void setGlobalVariable(
+      std::string propName, std::unique_ptr<const JSBigString> jsonValue)
+      override;
   std::string getDescription() override;
-  void *getJavaScriptContext() override;
+  void* getJavaScriptContext() override;
   bool isInspectable() override;
   void handleMemoryPressure(int pressureLevel) override;
 
   // An implementation of JSIScopedTimeoutInvoker that simply runs the
   // invokee, with no timeout.
   static void defaultTimeoutInvoker(
-      const std::function<void()> &invokee,
-      std::function<std::string()> errorMessageProducer)
-  {
+      const std::function<void()>& invokee,
+      std::function<std::string()> errorMessageProducer) {
     (void)errorMessageProducer;
     invokee();
   }
@@ -108,10 +120,10 @@ class [[deprecated("This API will be removed along with the legacy architecture.
   class NativeModuleProxy;
 
   void bindBridge();
-  void callNativeModules(const jsi::Value &queue, bool isEndOfBatch);
-  jsi::Value nativeCallSyncHook(const jsi::Value *args, size_t count);
-  jsi::Value nativeRequire(const jsi::Value *args, size_t count);
-  jsi::Value globalEvalWithSourceUrl(const jsi::Value *args, size_t count);
+  void callNativeModules(const jsi::Value& queue, bool isEndOfBatch);
+  jsi::Value nativeCallSyncHook(const jsi::Value* args, size_t count);
+  jsi::Value nativeRequire(const jsi::Value* args, size_t count);
+  jsi::Value globalEvalWithSourceUrl(const jsi::Value* args, size_t count);
 
   std::shared_ptr<jsi::Runtime> runtime_;
   std::shared_ptr<ExecutorDelegate> delegate_;

@@ -12,9 +12,10 @@
 
 namespace facebook::react {
 
-using Logger = std::function<void(const std::string &message, unsigned int logLevel)>;
-void bindNativeLogger(jsi::Runtime &runtime, Logger logger);
+using Logger =
+    std::function<void(const std::string& message, unsigned int logLevel)>;
+void bindNativeLogger(jsi::Runtime& runtime, Logger logger);
 
-void bindNativePerformanceNow(jsi::Runtime &runtime);
+void bindNativePerformanceNow(jsi::Runtime& runtime);
 
 } // namespace facebook::react

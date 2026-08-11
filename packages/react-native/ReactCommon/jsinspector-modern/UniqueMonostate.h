@@ -18,24 +18,24 @@ namespace facebook::react::jsinspector_modern {
  */
 template <size_t key>
 struct UniqueMonostate {
-  constexpr bool operator==(const UniqueMonostate<key> & /*unused*/) const noexcept
-  {
+  constexpr bool operator==(
+      const UniqueMonostate<key>& /*unused*/) const noexcept {
     return true;
   }
-  constexpr bool operator<(const UniqueMonostate<key> & /*unused*/) const noexcept
-  {
+  constexpr bool operator<(
+      const UniqueMonostate<key>& /*unused*/) const noexcept {
     return false;
   }
-  constexpr bool operator>(const UniqueMonostate<key> & /*unused*/) const noexcept
-  {
+  constexpr bool operator>(
+      const UniqueMonostate<key>& /*unused*/) const noexcept {
     return false;
   }
-  constexpr bool operator<=(const UniqueMonostate<key> & /*unused*/) const noexcept
-  {
+  constexpr bool operator<=(
+      const UniqueMonostate<key>& /*unused*/) const noexcept {
     return true;
   }
-  constexpr bool operator>=(const UniqueMonostate<key> & /*unused*/) const noexcept
-  {
+  constexpr bool operator>=(
+      const UniqueMonostate<key>& /*unused*/) const noexcept {
     return true;
   }
 };
@@ -46,8 +46,9 @@ namespace std {
 
 template <size_t key>
 struct hash<::facebook::react::jsinspector_modern::UniqueMonostate<key>> {
-  size_t operator()(const ::facebook::react::jsinspector_modern::UniqueMonostate<key> & /*unused*/) const noexcept
-  {
+  size_t operator()(
+      const ::facebook::react::jsinspector_modern::UniqueMonostate<
+          key>& /*unused*/) const noexcept {
     return key;
   }
 };

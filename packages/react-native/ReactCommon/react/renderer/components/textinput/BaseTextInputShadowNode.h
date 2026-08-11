@@ -25,8 +25,7 @@
 
 namespace facebook::react {
 
-inline ShadowView shadowViewFromShadowNode(const ShadowNode &shadowNode)
-{
+inline ShadowView shadowViewFromShadowNode(const ShadowNode& shadowNode) {
   auto shadowView = ShadowView{shadowNode};
   // Clearing `props` and `state` (which we don't use) allows avoiding retain
   // cycles.
@@ -38,17 +37,27 @@ inline ShadowView shadowViewFromShadowNode(const ShadowNode &shadowNode)
 /*
  * Base `ShadowNode` for <TextInput> component.
  */
-template <const char *concreteComponentName, typename ViewPropsT, typename ViewEventEmitterT, typename StateDataT>
-class BaseTextInputShadowNode
-    : public ConcreteViewShadowNode<concreteComponentName, ViewPropsT, ViewEventEmitterT, StateDataT>,
-      public BaseTextShadowNode {
+template <
+    const char* concreteComponentName,
+    typename ViewPropsT,
+    typename ViewEventEmitterT,
+    typename StateDataT>
+class BaseTextInputShadowNode : public ConcreteViewShadowNode<
+                                    concreteComponentName,
+                                    ViewPropsT,
+                                    ViewEventEmitterT,
+                                    StateDataT>,
+                                public BaseTextShadowNode {
  public:
-  using BaseShadowNode = ConcreteViewShadowNode<concreteComponentName, ViewPropsT, ViewEventEmitterT, StateDataT>;
+  using BaseShadowNode = ConcreteViewShadowNode<
+      concreteComponentName,
+      ViewPropsT,
+      ViewEventEmitterT,
+      StateDataT>;
 
   using BaseShadowNode::ConcreteViewShadowNode;
 
-  static ShadowNodeTraits BaseTraits()
-  {
+  static ShadowNodeTraits BaseTraits() {
     auto traits = BaseShadowNode::BaseTraits();
     traits.set(ShadowNodeTraits::Trait::LeafYogaNode);
     traits.set(ShadowNodeTraits::Trait::MeasurableYogaNode);
@@ -61,16 +70,17 @@ class BaseTextInputShadowNode
    * `TextInputShadowNode` uses the manager to measure text content
    * and construct `TextInputState` objects.
    */
-  void setTextLayoutManager(std::shared_ptr<const TextLayoutManager> textLayoutManager)
-  {
+  void setTextLayoutManager(
+      std::shared_ptr<const TextLayoutManager> textLayoutManager) {
     Sealable::ensureUnsealed();
     textLayoutManager_ = std::move(textLayoutManager);
   }
 
  protected:
-  Size measureContent(const LayoutContext &layoutContext, const LayoutConstraints &layoutConstraints) const override
-  {
-    const auto &props = BaseShadowNode::getConcreteProps();
+  Size measureContent(
+      const LayoutContext& layoutContext,
+      const LayoutConstraints& layoutConstraints) const override {
+    const auto& props = BaseShadowNode::getConcreteProps();
     auto textConstraints = getTextConstraints(layoutConstraints);
 
     TextLayoutContext textLayoutContext{
@@ -88,15 +98,13 @@ class BaseTextInputShadowNode
     return layoutConstraints.clamp(textSize);
   }
 
-  void layout(LayoutContext layoutContext) override
-  {
+  void layout(LayoutContext layoutContext) override {
     updateStateIfNeeded(layoutContext);
     BaseShadowNode::layout(layoutContext);
   }
 
-  Float baseline(const LayoutContext &layoutContext, Size size) const override
-  {
-    const auto &props = BaseShadowNode::getConcreteProps();
+  Float baseline(const LayoutContext& layoutContext, Size size) const override {
+    const auto& props = BaseShadowNode::getConcreteProps();
     auto attributedString = getAttributedString(layoutContext);
 
     if (attributedString.isEmpty()) {
@@ -106,17 +114,22 @@ class BaseTextInputShadowNode
     // Yoga expects a baseline relative to the Node's border-box edge instead of
     // the content, so we need to adjust by the padding and border widths, which
     // have already been set by the time of baseline alignment
-    auto top = YGNodeLayoutGetBorder(&(YogaLayoutableShadowNode::yogaNode_), YGEdgeTop) +
-        YGNodeLayoutGetPadding(&(YogaLayoutableShadowNode::yogaNode_), YGEdgeTop);
+    auto top = YGNodeLayoutGetBorder(
+                   &(YogaLayoutableShadowNode::yogaNode_), YGEdgeTop) +
+        YGNodeLayoutGetPadding(
+                   &(YogaLayoutableShadowNode::yogaNode_), YGEdgeTop);
 
     AttributedStringBox attributedStringBox{attributedString};
 
     if constexpr (TextLayoutManagerExtended::supportsLineMeasurement()) {
-      auto lines = TextLayoutManagerExtended(*textLayoutManager_)
-                       .measureLines(attributedStringBox, props.paragraphAttributes, size);
+      auto lines =
+          TextLayoutManagerExtended(*textLayoutManager_)
+              .measureLines(
+                  attributedStringBox, props.paragraphAttributes, size);
       return LineMeasurement::baseline(lines) + top;
     } else {
-      LOG(WARNING) << "Baseline alignment is not supported by the current platform";
+      LOG(WARNING)
+          << "Baseline alignment is not supported by the current platform";
       return top;
     }
   }
@@ -124,8 +137,8 @@ class BaseTextInputShadowNode
   /*
    * Determines the constraints to use while measure the underlying text
    */
-  LayoutConstraints getTextConstraints(const LayoutConstraints &layoutConstraints) const
-  {
+  LayoutConstraints getTextConstraints(
+      const LayoutConstraints& layoutConstraints) const {
     if (BaseShadowNode::getConcreteProps().multiline) {
       return layoutConstraints;
     } else {
@@ -151,42 +164,42 @@ class BaseTextInputShadowNode
   /*
    * Creates a `State` object if needed.
    */
-  void updateStateIfNeeded(const LayoutContext &layoutContext)
-  {
+  void updateStateIfNeeded(const LayoutContext& layoutContext) {
     Sealable::ensureUnsealed();
-    const auto &stateData = BaseShadowNode::getStateData();
-    const auto &reactTreeAttributedString = getAttributedString(layoutContext);
+    const auto& stateData = BaseShadowNode::getStateData();
+    const auto& reactTreeAttributedString = getAttributedString(layoutContext);
 
-    if (stateData.reactTreeAttributedString.isContentEqual(reactTreeAttributedString)) {
+    if (stateData.reactTreeAttributedString.isContentEqual(
+            reactTreeAttributedString)) {
       return;
     }
 
-    const auto &props = BaseShadowNode::getConcreteProps();
-    BaseShadowNode::setStateData(
-        TextInputState{
-            AttributedStringBox{reactTreeAttributedString},
-            reactTreeAttributedString,
-            props.paragraphAttributes,
-            props.mostRecentEventCount});
+    const auto& props = BaseShadowNode::getConcreteProps();
+    BaseShadowNode::setStateData(TextInputState{
+        AttributedStringBox{reactTreeAttributedString},
+        reactTreeAttributedString,
+        props.paragraphAttributes,
+        props.mostRecentEventCount});
   }
 
   /*
    * Returns a `AttributedString` which represents text content of the node.
    */
-  AttributedString getAttributedString(const LayoutContext &layoutContext) const
-  {
-    const auto &props = BaseShadowNode::getConcreteProps();
-    const auto textAttributes = props.getEffectiveTextAttributes(layoutContext.fontSizeMultiplier);
+  AttributedString getAttributedString(
+      const LayoutContext& layoutContext) const {
+    const auto& props = BaseShadowNode::getConcreteProps();
+    const auto textAttributes =
+        props.getEffectiveTextAttributes(layoutContext.fontSizeMultiplier);
 
     AttributedString attributedString;
-    attributedString.appendFragment(
-        AttributedString::Fragment{
-            .string = props.text,
-            .textAttributes = textAttributes,
-            .parentShadowView = shadowViewFromShadowNode(*this)});
+    attributedString.appendFragment(AttributedString::Fragment{
+        .string = props.text,
+        .textAttributes = textAttributes,
+        .parentShadowView = shadowViewFromShadowNode(*this)});
 
     auto attachments = BaseTextShadowNode::Attachments{};
-    BaseTextShadowNode::buildAttributedString(textAttributes, *this, attributedString, attachments);
+    BaseTextShadowNode::buildAttributedString(
+        textAttributes, *this, attributedString, attachments);
     attributedString.setBaseTextAttributes(textAttributes);
     return attributedString;
   }
@@ -196,22 +209,27 @@ class BaseTextInputShadowNode
    * be used for measuring purposes. It might contain actual text value,
    * placeholder value or some character that represents the size of the font.
    */
-  AttributedStringBox attributedStringBoxToMeasure(const LayoutContext &layoutContext) const
-  {
+  AttributedStringBox attributedStringBoxToMeasure(
+      const LayoutContext& layoutContext) const {
     bool meaningfulState = BaseShadowNode::getState() &&
-        BaseShadowNode::getState()->getRevision() != State::initialRevisionValue &&
-        BaseShadowNode::getStateData().reactTreeAttributedString.getBaseTextAttributes().fontSizeMultiplier ==
-            layoutContext.fontSizeMultiplier;
+        BaseShadowNode::getState()->getRevision() !=
+            State::initialRevisionValue &&
+        BaseShadowNode::getStateData()
+                .reactTreeAttributedString.getBaseTextAttributes()
+                .fontSizeMultiplier == layoutContext.fontSizeMultiplier;
     if (meaningfulState) {
-      const auto &stateData = BaseShadowNode::getStateData();
+      const auto& stateData = BaseShadowNode::getStateData();
       auto attributedStringBox = stateData.attributedStringBox;
-      if (attributedStringBox.getMode() == AttributedStringBox::Mode::OpaquePointer ||
+      if (attributedStringBox.getMode() ==
+              AttributedStringBox::Mode::OpaquePointer ||
           !attributedStringBox.getValue().isEmpty()) {
         return stateData.attributedStringBox;
       }
     }
 
-    auto attributedString = meaningfulState ? AttributedString{} : getAttributedString(layoutContext);
+    auto attributedString = meaningfulState
+        ? AttributedString{}
+        : getAttributedString(layoutContext);
 
     if (attributedString.isEmpty()) {
       attributedString = getPlaceholderAttributedString(layoutContext);
@@ -219,12 +237,13 @@ class BaseTextInputShadowNode
     return AttributedStringBox{attributedString};
   }
 
-  AttributedString getPlaceholderAttributedString(const LayoutContext &layoutContext) const
-  {
-    const auto &props = BaseShadowNode::getConcreteProps();
+  AttributedString getPlaceholderAttributedString(
+      const LayoutContext& layoutContext) const {
+    const auto& props = BaseShadowNode::getConcreteProps();
 
     AttributedString attributedString;
-    attributedString.setBaseTextAttributes(props.getEffectiveTextAttributes(layoutContext.fontSizeMultiplier));
+    attributedString.setBaseTextAttributes(
+        props.getEffectiveTextAttributes(layoutContext.fontSizeMultiplier));
 
     if (!props.placeholder.empty()) {
       attributedString.appendFragment(

@@ -14,13 +14,11 @@ namespace facebook::react {
 
 template <>
 struct Bridging<folly::dynamic> {
-  static folly::dynamic fromJs(jsi::Runtime &rt, const jsi::Value &value)
-  {
+  static folly::dynamic fromJs(jsi::Runtime& rt, const jsi::Value& value) {
     return jsi::dynamicFromValue(rt, value);
   }
 
-  static jsi::Value toJs(jsi::Runtime &rt, const folly::dynamic &value)
-  {
+  static jsi::Value toJs(jsi::Runtime& rt, const folly::dynamic& value) {
     return jsi::valueFromDynamic(rt, value);
   }
 };

@@ -11,8 +11,8 @@ namespace facebook::react {
 
 struct DefaultTurboModules {
   static std::shared_ptr<TurboModule> getTurboModule(
-      const std::string &name,
-      const std::shared_ptr<CallInvoker> &jsInvoker);
+      const std::string& name,
+      const std::shared_ptr<CallInvoker>& jsInvoker);
 };
 
 } // namespace facebook::react

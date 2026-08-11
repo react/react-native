@@ -61,8 +61,7 @@ typedef NSURL *_Nullable (^RCTHostBundleURLProvider)(void);
 @end
 
 // `RCTHostRuntimeDelegate` has been merged into `RCTHostDelegate` in 0.84
-[[deprecated("Use 'RCTHostDelegate' instead")]]
-@protocol RCTHostRuntimeDelegate<NSObject>
+[[deprecated("Use 'RCTHostDelegate' instead")]] @protocol RCTHostRuntimeDelegate<NSObject>
 
 - (void)host:(RCTHost *)host
     didInitializeRuntime:(facebook::jsi::Runtime &)runtime

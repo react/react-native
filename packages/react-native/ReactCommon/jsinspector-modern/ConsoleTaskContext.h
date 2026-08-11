@@ -27,46 +27,47 @@ class ConsoleTaskId {
   ConsoleTaskId() = default;
   ~ConsoleTaskId() = default;
 
-  ConsoleTaskId(const ConsoleTaskId &) = default;
-  ConsoleTaskId &operator=(const ConsoleTaskId &) = default;
+  ConsoleTaskId(const ConsoleTaskId&) = default;
+  ConsoleTaskId& operator=(const ConsoleTaskId&) = default;
 
-  ConsoleTaskId(ConsoleTaskId &&) = default;
-  ConsoleTaskId &operator=(ConsoleTaskId &&) = default;
+  ConsoleTaskId(ConsoleTaskId&&) = default;
+  ConsoleTaskId& operator=(ConsoleTaskId&&) = default;
 
-  bool operator==(const ConsoleTaskId &) const = default;
-  inline operator bool() const
-  {
+  bool operator==(const ConsoleTaskId&) const = default;
+  inline operator bool() const {
     return (bool)id_;
   }
 
-  explicit inline operator void *() const
-  {
+  explicit inline operator void*() const {
     return id_;
   }
 
  private:
-  explicit inline ConsoleTaskId(void *id) : id_(id)
-  {
+  explicit inline ConsoleTaskId(void* id) : id_(id) {
     assert(id_ != nullptr);
   }
 
-  void *id_{nullptr};
+  void* id_{nullptr};
 
   friend class ConsoleTaskContext;
 };
 
-class ConsoleTaskContext : public std::enable_shared_from_this<ConsoleTaskContext> {
+class ConsoleTaskContext
+    : public std::enable_shared_from_this<ConsoleTaskContext> {
  public:
-  ConsoleTaskContext(jsi::Runtime &runtime, RuntimeTargetDelegate &runtimeTargetDelegate, std::string name);
+  ConsoleTaskContext(
+      jsi::Runtime& runtime,
+      RuntimeTargetDelegate& runtimeTargetDelegate,
+      std::string name);
   ~ConsoleTaskContext();
 
   // Can't be moved or copied: the address of `ConsoleTaskContext` is used to
   // identify this task and all corresponding invocations.
-  ConsoleTaskContext(const ConsoleTaskContext &) = delete;
-  ConsoleTaskContext &operator=(const ConsoleTaskContext &) = delete;
+  ConsoleTaskContext(const ConsoleTaskContext&) = delete;
+  ConsoleTaskContext& operator=(const ConsoleTaskContext&) = delete;
 
-  ConsoleTaskContext(ConsoleTaskContext &&) = delete;
-  ConsoleTaskContext &operator=(ConsoleTaskContext &&) = delete;
+  ConsoleTaskContext(ConsoleTaskContext&&) = delete;
+  ConsoleTaskContext& operator=(ConsoleTaskContext&&) = delete;
 
   /**
    * Unique identifier that is calculated based on the address of
@@ -83,9 +84,9 @@ class ConsoleTaskContext : public std::enable_shared_from_this<ConsoleTaskContex
   void schedule();
 
  private:
-  RuntimeTargetDelegate &runtimeTargetDelegate_;
+  RuntimeTargetDelegate& runtimeTargetDelegate_;
   std::string name_;
-  ConsoleTaskOrchestrator &orchestrator_;
+  ConsoleTaskOrchestrator& orchestrator_;
   std::unique_ptr<StackTrace> stackTrace_;
 };
 
@@ -94,9 +95,9 @@ class ConsoleTaskContext : public std::enable_shared_from_this<ConsoleTaskContex
 namespace std {
 template <>
 struct hash<facebook::react::jsinspector_modern::ConsoleTaskId> {
-  size_t operator()(const facebook::react::jsinspector_modern::ConsoleTaskId &id) const
-  {
-    return std::hash<void *>{}(static_cast<void *>(id));
+  size_t operator()(
+      const facebook::react::jsinspector_modern::ConsoleTaskId& id) const {
+    return std::hash<void*>{}(static_cast<void*>(id));
   }
 };
 } // namespace std

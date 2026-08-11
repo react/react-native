@@ -23,10 +23,15 @@ class MessageQueueThread;
 
 typedef void (*WarnOnUsageLogger)(std::string message);
 
-[[deprecated("This API will be removed along with the legacy architecture.")]]
-std::function<void(folly::dynamic)> makeCallback(std::weak_ptr<Instance> instance, const folly::dynamic &callbackId);
+[[deprecated(
+    "This API will be removed along with the legacy architecture.")]] std::
+    function<void(folly::dynamic)>
+    makeCallback(
+        std::weak_ptr<Instance> instance,
+        const folly::dynamic& callbackId);
 
-class RN_EXPORT [[deprecated("This API will be removed along with the legacy architecture.")]] CxxNativeModule
+class RN_EXPORT [[deprecated(
+    "This API will be removed along with the legacy architecture.")]] CxxNativeModule
     : public NativeModule {
  public:
   CxxNativeModule(
@@ -34,16 +39,19 @@ class RN_EXPORT [[deprecated("This API will be removed along with the legacy arc
       std::string name,
       xplat::module::CxxModule::Provider provider,
       std::shared_ptr<MessageQueueThread> messageQueueThread)
-      : instance_(instance), name_(std::move(name)), provider_(provider), messageQueueThread_(messageQueueThread)
-  {
-  }
+      : instance_(instance),
+        name_(std::move(name)),
+        provider_(provider),
+        messageQueueThread_(messageQueueThread) {}
 
   std::string getName() override;
   std::string getSyncMethodName(unsigned int methodId) override;
   std::vector<MethodDescriptor> getMethods() override;
   folly::dynamic getConstants() override;
-  void invoke(unsigned int reactMethodId, folly::dynamic &&params, int callId) override;
-  MethodCallResult callSerializableNativeHook(unsigned int hookId, folly::dynamic &&args) override;
+  void invoke(unsigned int reactMethodId, folly::dynamic&& params, int callId)
+      override;
+  MethodCallResult callSerializableNativeHook(
+      unsigned int hookId, folly::dynamic&& args) override;
 
   static void setShouldWarnOnUse(bool value);
 
@@ -56,7 +64,8 @@ class RN_EXPORT [[deprecated("This API will be removed along with the legacy arc
   std::shared_ptr<MessageQueueThread> messageQueueThread_;
   std::unique_ptr<xplat::module::CxxModule> module_;
   std::vector<xplat::module::CxxModule::Method> methods_;
-  void emitWarnIfWarnOnUsage(const std::string &method_name, const std::string &module_name);
+  void emitWarnIfWarnOnUsage(
+      const std::string& method_name, const std::string& module_name);
 
   static bool shouldWarnOnUse_;
 };

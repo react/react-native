@@ -30,7 +30,7 @@ struct TextLayoutContext {
    */
   SurfaceId surfaceId{-1};
 
-  bool operator==(const TextLayoutContext &rhs) const = default;
+  bool operator==(const TextLayoutContext& rhs) const = default;
 };
 
 } // namespace facebook::react

@@ -20,12 +20,15 @@ class BaseScrollViewProps : public ViewProps {
  public:
   BaseScrollViewProps() = default;
   BaseScrollViewProps(
-      const PropsParserContext &context,
-      const BaseScrollViewProps &sourceProps,
-      const RawProps &rawProps);
+      const PropsParserContext& context,
+      const BaseScrollViewProps& sourceProps,
+      const RawProps& rawProps);
 
-  void
-  setProp(const PropsParserContext &context, RawPropsPropNameHash hash, const char *propName, const RawValue &value);
+  void setProp(
+      const PropsParserContext& context,
+      RawPropsPropNameHash hash,
+      const char* propName,
+      const RawValue& value);
 
 #pragma mark - Props
 
@@ -43,7 +46,8 @@ class BaseScrollViewProps : public ViewProps {
   bool directionalLockEnabled{};
   ScrollViewIndicatorStyle indicatorStyle{};
   ScrollViewKeyboardDismissMode keyboardDismissMode{};
-  std::optional<ScrollViewMaintainVisibleContentPosition> maintainVisibleContentPosition{};
+  std::optional<ScrollViewMaintainVisibleContentPosition>
+      maintainVisibleContentPosition{};
   Float maximumZoomScale{1.0f};
   Float minimumZoomScale{1.0f};
   bool scrollEnabled{true};
@@ -65,7 +69,8 @@ class BaseScrollViewProps : public ViewProps {
   std::vector<Float> snapToOffsets{};
   bool snapToStart{true};
   bool snapToEnd{true};
-  ContentInsetAdjustmentBehavior contentInsetAdjustmentBehavior{ContentInsetAdjustmentBehavior::Never};
+  ContentInsetAdjustmentBehavior contentInsetAdjustmentBehavior{
+      ContentInsetAdjustmentBehavior::Never};
   bool scrollToOverflowEnabled{false};
   bool isInvertedVirtualizedList{false};
 

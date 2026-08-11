@@ -21,13 +21,16 @@ struct LayoutConformanceProps final : public YogaStylableProps {
 
   LayoutConformanceProps() = default;
   LayoutConformanceProps(
-      const PropsParserContext &context,
-      const LayoutConformanceProps &sourceProps,
-      const RawProps &rawProps)
+      const PropsParserContext& context,
+      const LayoutConformanceProps& sourceProps,
+      const RawProps& rawProps)
       : YogaStylableProps(context, sourceProps, rawProps),
-        mode{convertRawProp(context, rawProps, "mode", mode, LayoutConformance::Strict)}
-  {
-  }
+        mode{convertRawProp(
+            context,
+            rawProps,
+            "mode",
+            mode,
+            LayoutConformance::Strict)} {}
 };
 
 } // namespace facebook::react

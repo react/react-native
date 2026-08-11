@@ -21,15 +21,16 @@ namespace facebook::react {
  * This component is part of the Fabric Interop Layer and is subject to future
  * changes (hence the "Unstable" prefix).
  */
-template <const char *concreteComponentName>
+template <const char* concreteComponentName>
 class UnstableLegacyViewManagerInteropComponentDescriptor
-    : public ConcreteComponentDescriptor<ConcreteViewShadowNode<concreteComponentName, ViewProps>> {
+    : public ConcreteComponentDescriptor<
+          ConcreteViewShadowNode<concreteComponentName, ViewProps>> {
  public:
   UnstableLegacyViewManagerInteropComponentDescriptor<concreteComponentName>(
-      const ComponentDescriptorParameters &parameters)
-      : ConcreteComponentDescriptor<ConcreteViewShadowNode<concreteComponentName, ViewProps>>(parameters)
-  {
-  }
+      const ComponentDescriptorParameters& parameters)
+      : ConcreteComponentDescriptor<
+            ConcreteViewShadowNode<concreteComponentName, ViewProps>>(
+            parameters) {}
 
  private:
 };

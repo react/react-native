@@ -17,11 +17,12 @@ class CallInvoker;
 
 class CxxReactPackage : public jni::HybridClass<CxxReactPackage> {
  public:
-  static auto constexpr kJavaDescriptor = "Lcom/facebook/react/runtime/cxxreactpackage/CxxReactPackage;";
+  static auto constexpr kJavaDescriptor =
+      "Lcom/facebook/react/runtime/cxxreactpackage/CxxReactPackage;";
 
   virtual std::shared_ptr<TurboModule> getModule(
-      const std::string &name,
-      const std::shared_ptr<CallInvoker> &jsInvoker) = 0;
+      const std::string& name,
+      const std::shared_ptr<CallInvoker>& jsInvoker) = 0;
 
  private:
   friend HybridBase;

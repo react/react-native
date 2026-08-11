@@ -18,10 +18,16 @@ namespace facebook::react {
 class ImageProps final : public ViewProps {
  public:
   ImageProps() = default;
-  ImageProps(const PropsParserContext &context, const ImageProps &sourceProps, const RawProps &rawProps);
+  ImageProps(
+      const PropsParserContext& context,
+      const ImageProps& sourceProps,
+      const RawProps& rawProps);
 
-  void
-  setProp(const PropsParserContext &context, RawPropsPropNameHash hash, const char *propName, const RawValue &value);
+  void setProp(
+      const PropsParserContext& context,
+      RawPropsPropNameHash hash,
+      const char* propName,
+      const RawValue& value);
 
 #pragma mark - Props
 
@@ -42,7 +48,7 @@ class ImageProps final : public ViewProps {
 
 #ifdef RN_SERIALIZABLE_STATE
   ComponentName getDiffPropsImplementationTarget() const override;
-  folly::dynamic getDiffProps(const Props *prevProps) const override;
+  folly::dynamic getDiffProps(const Props* prevProps) const override;
 #endif
 
 #if RN_DEBUG_STRING_CONVERTIBLE

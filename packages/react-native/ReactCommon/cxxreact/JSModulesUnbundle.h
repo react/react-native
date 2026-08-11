@@ -15,7 +15,8 @@
 
 namespace facebook::react {
 
-class [[deprecated("This API will be removed along with the legacy architecture.")]] JSModulesUnbundle {
+class [[deprecated(
+    "This API will be removed along with the legacy architecture.")]] JSModulesUnbundle {
   /**
    * Represents the set of JavaScript modules that the application consists of.
    * The source code of each module can be retrieved by module ID.
@@ -28,9 +29,8 @@ class [[deprecated("This API will be removed along with the legacy architecture.
    public:
     using std::out_of_range::out_of_range;
     explicit ModuleNotFound(uint32_t moduleId)
-        : std::out_of_range::out_of_range("Module not found: " + std::to_string(moduleId))
-    {
-    }
+        : std::out_of_range::out_of_range(
+              "Module not found: " + std::to_string(moduleId)) {}
   };
   struct Module {
     std::string name;
@@ -41,7 +41,7 @@ class [[deprecated("This API will be removed along with the legacy architecture.
   virtual Module getModule(uint32_t moduleId) const = 0;
 
  private:
-  JSModulesUnbundle(const JSModulesUnbundle &) = delete;
+  JSModulesUnbundle(const JSModulesUnbundle&) = delete;
 };
 
 } // namespace facebook::react

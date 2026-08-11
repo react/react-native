@@ -15,12 +15,15 @@ namespace facebook::react {
 /*
  * Descriptor for <SafeAreaView> component.
  */
-class SafeAreaViewComponentDescriptor final : public ConcreteComponentDescriptor<SafeAreaViewShadowNode> {
+class SafeAreaViewComponentDescriptor final
+    : public ConcreteComponentDescriptor<SafeAreaViewShadowNode> {
   using ConcreteComponentDescriptor::ConcreteComponentDescriptor;
-  void adopt(ShadowNode &shadowNode) const override
-  {
-    auto &layoutableShadowNode = static_cast<YogaLayoutableShadowNode &>(shadowNode);
-    auto &stateData = static_cast<const SafeAreaViewShadowNode::ConcreteState &>(*shadowNode.getState()).getData();
+  void adopt(ShadowNode& shadowNode) const override {
+    auto& layoutableShadowNode =
+        static_cast<YogaLayoutableShadowNode&>(shadowNode);
+    auto& stateData = static_cast<const SafeAreaViewShadowNode::ConcreteState&>(
+                          *shadowNode.getState())
+                          .getData();
     layoutableShadowNode.setPadding(stateData.padding);
 
     ConcreteComponentDescriptor::adopt(shadowNode);

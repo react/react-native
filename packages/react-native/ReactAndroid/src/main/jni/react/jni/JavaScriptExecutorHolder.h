@@ -14,18 +14,20 @@
 
 namespace facebook::react {
 
-class [[deprecated("This API will be removed along with the legacy architecture.")]] JavaScriptExecutorHolder
+class [[deprecated(
+    "This API will be removed along with the legacy architecture.")]] JavaScriptExecutorHolder
     : public jni::HybridClass<JavaScriptExecutorHolder> {
  public:
-  static constexpr auto kJavaDescriptor = "Lcom/facebook/react/bridge/JavaScriptExecutor;";
+  static constexpr auto kJavaDescriptor =
+      "Lcom/facebook/react/bridge/JavaScriptExecutor;";
 
-  std::shared_ptr<JSExecutorFactory> getExecutorFactory()
-  {
+  std::shared_ptr<JSExecutorFactory> getExecutorFactory() {
     return mExecutorFactory;
   }
 
  protected:
-  JavaScriptExecutorHolder(std::shared_ptr<JSExecutorFactory> factory) : mExecutorFactory(factory) {}
+  JavaScriptExecutorHolder(std::shared_ptr<JSExecutorFactory> factory)
+      : mExecutorFactory(factory) {}
 
  private:
   std::shared_ptr<JSExecutorFactory> mExecutorFactory;

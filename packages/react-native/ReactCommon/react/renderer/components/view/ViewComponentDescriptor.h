@@ -12,12 +12,11 @@
 
 namespace facebook::react {
 
-class ViewComponentDescriptor : public ConcreteComponentDescriptor<ViewShadowNode> {
+class ViewComponentDescriptor
+    : public ConcreteComponentDescriptor<ViewShadowNode> {
  public:
-  ViewComponentDescriptor(const ComponentDescriptorParameters &parameters)
-      : ConcreteComponentDescriptor<ViewShadowNode>(parameters)
-  {
-  }
+  ViewComponentDescriptor(const ComponentDescriptorParameters& parameters)
+      : ConcreteComponentDescriptor<ViewShadowNode>(parameters) {}
 };
 
 } // namespace facebook::react

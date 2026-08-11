@@ -19,21 +19,31 @@
 
 namespace facebook::react {
 
-inline ComponentBuilder simpleComponentBuilder(std::shared_ptr<const ContextContainer> contextContainer = nullptr)
-{
+inline ComponentBuilder simpleComponentBuilder(
+    std::shared_ptr<const ContextContainer> contextContainer = nullptr) {
   ComponentDescriptorProviderRegistry componentDescriptorProviderRegistry{};
   auto eventDispatcher = EventDispatcher::Shared{};
-  auto componentDescriptorRegistry = componentDescriptorProviderRegistry.createComponentDescriptorRegistry(
-      ComponentDescriptorParameters{
-          .eventDispatcher = eventDispatcher, .contextContainer = std::move(contextContainer), .flavor = nullptr});
+  auto componentDescriptorRegistry =
+      componentDescriptorProviderRegistry.createComponentDescriptorRegistry(
+          ComponentDescriptorParameters{
+              .eventDispatcher = eventDispatcher,
+              .contextContainer = std::move(contextContainer),
+              .flavor = nullptr});
 
-  componentDescriptorProviderRegistry.add(concreteComponentDescriptorProvider<RootComponentDescriptor>());
-  componentDescriptorProviderRegistry.add(concreteComponentDescriptorProvider<ViewComponentDescriptor>());
-  componentDescriptorProviderRegistry.add(concreteComponentDescriptorProvider<ScrollViewComponentDescriptor>());
-  componentDescriptorProviderRegistry.add(concreteComponentDescriptorProvider<ParagraphComponentDescriptor>());
-  componentDescriptorProviderRegistry.add(concreteComponentDescriptorProvider<TextComponentDescriptor>());
-  componentDescriptorProviderRegistry.add(concreteComponentDescriptorProvider<RawTextComponentDescriptor>());
-  componentDescriptorProviderRegistry.add(concreteComponentDescriptorProvider<ModalHostViewComponentDescriptor>());
+  componentDescriptorProviderRegistry.add(
+      concreteComponentDescriptorProvider<RootComponentDescriptor>());
+  componentDescriptorProviderRegistry.add(
+      concreteComponentDescriptorProvider<ViewComponentDescriptor>());
+  componentDescriptorProviderRegistry.add(
+      concreteComponentDescriptorProvider<ScrollViewComponentDescriptor>());
+  componentDescriptorProviderRegistry.add(
+      concreteComponentDescriptorProvider<ParagraphComponentDescriptor>());
+  componentDescriptorProviderRegistry.add(
+      concreteComponentDescriptorProvider<TextComponentDescriptor>());
+  componentDescriptorProviderRegistry.add(
+      concreteComponentDescriptorProvider<RawTextComponentDescriptor>());
+  componentDescriptorProviderRegistry.add(
+      concreteComponentDescriptorProvider<ModalHostViewComponentDescriptor>());
 
   return ComponentBuilder{componentDescriptorRegistry};
 }

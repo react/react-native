@@ -23,20 +23,20 @@ namespace facebook::react {
  */
 class ImageManager {
  public:
-  ImageManager(const std::shared_ptr<const ContextContainer> &contextContainer);
+  ImageManager(const std::shared_ptr<const ContextContainer>& contextContainer);
   virtual ~ImageManager();
 
   virtual ImageRequest requestImage(
-      const ImageSource &imageSource,
+      const ImageSource& imageSource,
       SurfaceId surfaceId,
-      const ImageRequestParams &imageRequestParams = {},
+      const ImageRequestParams& imageRequestParams = {},
       Tag tag = {}) const;
 
  private:
 #ifdef ANDROID
   std::shared_ptr<const ContextContainer> contextContainer_{};
 #endif
-  void *self_{};
+  void* self_{};
 };
 
 } // namespace facebook::react

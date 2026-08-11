@@ -23,9 +23,10 @@
 
 namespace facebook::react {
 
-class ReactNativeFeatureFlagsOverridesOSSExperimental : public ReactNativeFeatureFlagsOverridesOSSCanary {
+class ReactNativeFeatureFlagsOverridesOSSExperimental
+    : public ReactNativeFeatureFlagsOverridesOSSCanary {
  public:
-    ReactNativeFeatureFlagsOverridesOSSExperimental() = default;
+  ReactNativeFeatureFlagsOverridesOSSExperimental() = default;
 
   bool enableFlexboxAutoMinSizeInStrictMode() override {
     return true;

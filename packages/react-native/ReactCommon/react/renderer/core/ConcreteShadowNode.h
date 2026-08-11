@@ -34,7 +34,9 @@ class ConcreteShadowNode : public BaseShadowNodeT {
   static_assert(
       std::is_base_of<ShadowNode, BaseShadowNodeT>::value,
       "BaseShadowNodeT must be a descendant of ShadowNode");
-  static_assert(std::is_base_of<Props, PropsT>::value, "PropsT must be a descendant of Props");
+  static_assert(
+      std::is_base_of<Props, PropsT>::value,
+      "PropsT must be a descendant of Props");
 
  protected:
   using ShadowNode::props_;
@@ -52,13 +54,11 @@ class ConcreteShadowNode : public BaseShadowNodeT {
   using ConcreteState = ConcreteState<StateDataT>;
   using ConcreteStateData = StateDataT;
 
-  static ComponentName Name()
-  {
+  static ComponentName Name() {
     return ComponentName(concreteComponentName);
   }
 
-  static ComponentHandle Handle()
-  {
+  static ComponentHandle Handle() {
     return ComponentHandle(concreteComponentName);
   }
 
@@ -66,8 +66,7 @@ class ConcreteShadowNode : public BaseShadowNodeT {
    * A set of traits associated with a particular class.
    * Reimplement in subclasses to declare class-specific traits.
    */
-  static ShadowNodeTraits BaseTraits()
-  {
+  static ShadowNodeTraits BaseTraits() {
     return BaseShadowNodeT::BaseTraits();
   }
 
@@ -78,11 +77,15 @@ class ConcreteShadowNode : public BaseShadowNodeT {
    * iterator-setter path is disabled (per-class via the
    * `HasIteratorSetterCtor` concept, or globally via the runtime flag).
    */
-  static UnsharedConcreteProps
-  Props(const PropsParserContext &context, const RawProps &rawProps, const Props::Shared &baseProps = nullptr)
-  {
+  static UnsharedConcreteProps Props(
+      const PropsParserContext& context,
+      const RawProps& rawProps,
+      const Props::Shared& baseProps = nullptr) {
     return std::make_shared<PropsT>(
-        context, baseProps ? static_cast<const PropsT &>(*baseProps) : *defaultSharedProps(), rawProps);
+        context,
+        baseProps ? static_cast<const PropsT&>(*baseProps)
+                  : *defaultSharedProps(),
+        rawProps);
   }
 
   /*
@@ -92,36 +95,36 @@ class ConcreteShadowNode : public BaseShadowNodeT {
    * `PropsT::setProp`. Available when `PropsT` satisfies
    * `HasIteratorSetterCtor`.
    */
-  static UnsharedConcreteProps Props(const Props::Shared &baseProps)
-  {
-    return std::make_shared<PropsT>(baseProps ? static_cast<const PropsT &>(*baseProps) : *defaultSharedProps());
+  static UnsharedConcreteProps Props(const Props::Shared& baseProps) {
+    return std::make_shared<PropsT>(
+        baseProps ? static_cast<const PropsT&>(*baseProps)
+                  : *defaultSharedProps());
   }
 
 #ifdef RN_SERIALIZABLE_STATE
   static void initializeDynamicProps(
       UnsharedConcreteProps props,
-      const RawProps &rawProps,
-      const Props::Shared &baseProps = nullptr)
-  {
+      const RawProps& rawProps,
+      const Props::Shared& baseProps = nullptr) {
     if (baseProps) {
-      props->initializeDynamicProps(static_cast<const PropsT &>(*baseProps), rawProps);
+      props->initializeDynamicProps(
+          static_cast<const PropsT&>(*baseProps), rawProps);
     } else {
       props->initializeDynamicProps(*defaultSharedProps(), rawProps);
     }
   }
 #endif
 
-  static const SharedConcreteProps &defaultSharedProps()
-  {
-    static const SharedConcreteProps defaultSharedProps = std::make_shared<const PropsT>();
+  static const SharedConcreteProps& defaultSharedProps() {
+    static const SharedConcreteProps defaultSharedProps =
+        std::make_shared<const PropsT>();
     return defaultSharedProps;
   }
 
   static ConcreteStateData initialStateData(
-      const Props::Shared & /*props*/,
-      const ShadowNodeFamily::Shared & /*family*/,
-      const ComponentDescriptor & /*componentDescriptor*/)
-  {
+      const Props::Shared& /*props*/,
+      const ShadowNodeFamily::Shared& /*family*/,
+      const ComponentDescriptor& /*componentDescriptor*/) {
     return {};
   }
 
@@ -129,19 +132,19 @@ class ConcreteShadowNode : public BaseShadowNodeT {
    * Returns a concrete props object associated with the node.
    * Thread-safe after the node is sealed.
    */
-  const ConcreteProps &getConcreteProps() const
-  {
-    react_native_assert(BaseShadowNodeT::props_ && "Props must not be `nullptr`.");
-    return static_cast<const ConcreteProps &>(*props_);
+  const ConcreteProps& getConcreteProps() const {
+    react_native_assert(
+        BaseShadowNodeT::props_ && "Props must not be `nullptr`.");
+    return static_cast<const ConcreteProps&>(*props_);
   }
 
   /*
    * Returns a concrete props object associated with the node, as a shared_ptr.
    * Thread-safe after the node is sealed.
    */
-  const std::shared_ptr<const ConcreteProps> &getConcreteSharedProps() const
-  {
-    react_native_assert(BaseShadowNodeT::props_ && "Props must not be `nullptr`.");
+  const std::shared_ptr<const ConcreteProps>& getConcreteSharedProps() const {
+    react_native_assert(
+        BaseShadowNodeT::props_ && "Props must not be `nullptr`.");
     return std::static_pointer_cast<const ConcreteProps>(props_);
   }
 
@@ -149,29 +152,28 @@ class ConcreteShadowNode : public BaseShadowNodeT {
    * Returns a concrete event emitter object associated with the node.
    * Thread-safe after the node is sealed.
    */
-  const ConcreteEventEmitter &getConcreteEventEmitter() const
-  {
-    return static_cast<const ConcreteEventEmitter &>(*BaseShadowNodeT::getEventEmitter());
+  const ConcreteEventEmitter& getConcreteEventEmitter() const {
+    return static_cast<const ConcreteEventEmitter&>(
+        *BaseShadowNodeT::getEventEmitter());
   }
 
   /*
    * Returns a concrete state data associated with the node.
    * Thread-safe after the node is sealed.
    */
-  const ConcreteStateData &getStateData() const
-  {
+  const ConcreteStateData& getStateData() const {
     react_native_assert(state_ && "State must not be `nullptr`.");
-    return static_cast<const ConcreteState *>(state_.get())->getData();
+    return static_cast<const ConcreteState*>(state_.get())->getData();
   }
 
   /*
    * Creates and assigns a new state object containing given state data.
    * Can be called only before the node is sealed (usually during construction).
    */
-  void setStateData(ConcreteStateData &&data)
-  {
+  void setStateData(ConcreteStateData&& data) {
     Sealable::ensureUnsealed();
-    state_ = std::make_shared<const ConcreteState>(std::make_shared<const ConcreteStateData>(std::move(data)), *state_);
+    state_ = std::make_shared<const ConcreteState>(
+        std::make_shared<const ConcreteStateData>(std::move(data)), *state_);
   }
 };
 

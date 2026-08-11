@@ -22,9 +22,10 @@
 
 namespace facebook::react {
 
-inline void
-parseProcessedBoxShadow(const PropsParserContext &context, const RawValue &value, std::vector<BoxShadow> &result)
-{
+inline void parseProcessedBoxShadow(
+    const PropsParserContext& context,
+    const RawValue& value,
+    std::vector<BoxShadow>& result) {
   react_native_expect(value.hasType<std::vector<RawValue>>());
   if (!value.hasType<std::vector<RawValue>>()) {
     result = {};
@@ -33,8 +34,9 @@ parseProcessedBoxShadow(const PropsParserContext &context, const RawValue &value
 
   std::vector<BoxShadow> boxShadows{};
   auto rawBoxShadows = static_cast<std::vector<RawValue>>(value);
-  for (const auto &rawBoxShadow : rawBoxShadows) {
-    bool isMap = rawBoxShadow.hasType<std::unordered_map<std::string, RawValue>>();
+  for (const auto& rawBoxShadow : rawBoxShadows) {
+    bool isMap =
+        rawBoxShadow.hasType<std::unordered_map<std::string, RawValue>>();
     react_native_expect(isMap);
     if (!isMap) {
       // If any box shadow is malformed then we should not apply any of them
@@ -43,7 +45,8 @@ parseProcessedBoxShadow(const PropsParserContext &context, const RawValue &value
       return;
     }
 
-    auto rawBoxShadowMap = static_cast<std::unordered_map<std::string, RawValue>>(rawBoxShadow);
+    auto rawBoxShadowMap =
+        static_cast<std::unordered_map<std::string, RawValue>>(rawBoxShadow);
     BoxShadow boxShadow{};
     auto offsetX = rawBoxShadowMap.find("offsetX");
     react_native_expect(offsetX != rawBoxShadowMap.end());
@@ -103,7 +106,11 @@ parseProcessedBoxShadow(const PropsParserContext &context, const RawValue &value
 
     auto color = rawBoxShadowMap.find("color");
     if (color != rawBoxShadowMap.end()) {
-      fromRawValue(context.contextContainer, context.surfaceId, color->second, boxShadow.color);
+      fromRawValue(
+          context.contextContainer,
+          context.surfaceId,
+          color->second,
+          boxShadow.color);
     }
 
     boxShadows.push_back(boxShadow);
@@ -112,11 +119,12 @@ parseProcessedBoxShadow(const PropsParserContext &context, const RawValue &value
   result = boxShadows;
 }
 
-inline std::optional<BoxShadow> fromCSSShadow(const CSSShadow &cssShadow)
-{
+inline std::optional<BoxShadow> fromCSSShadow(const CSSShadow& cssShadow) {
   // TODO: handle non-px values
-  if (cssShadow.offsetX.unit != CSSLengthUnit::Px || cssShadow.offsetY.unit != CSSLengthUnit::Px ||
-      cssShadow.blurRadius.unit != CSSLengthUnit::Px || cssShadow.spreadDistance.unit != CSSLengthUnit::Px) {
+  if (cssShadow.offsetX.unit != CSSLengthUnit::Px ||
+      cssShadow.offsetY.unit != CSSLengthUnit::Px ||
+      cssShadow.blurRadius.unit != CSSLengthUnit::Px ||
+      cssShadow.spreadDistance.unit != CSSLengthUnit::Px) {
     return {};
   }
 
@@ -130,15 +138,16 @@ inline std::optional<BoxShadow> fromCSSShadow(const CSSShadow &cssShadow)
   };
 }
 
-inline void parseUnprocessedBoxShadowString(std::string &&value, std::vector<BoxShadow> &result)
-{
+inline void parseUnprocessedBoxShadowString(
+    std::string&& value,
+    std::vector<BoxShadow>& result) {
   auto boxShadowList = parseCSSProperty<CSSShadowList>((std::string)value);
   if (!std::holds_alternative<CSSShadowList>(boxShadowList)) {
     result = {};
     return;
   }
 
-  for (const auto &cssShadow : std::get<CSSShadowList>(boxShadowList)) {
+  for (const auto& cssShadow : std::get<CSSShadowList>(boxShadowList)) {
     if (auto boxShadow = fromCSSShadow(cssShadow)) {
       result.push_back(*boxShadow);
     } else {
@@ -148,8 +157,9 @@ inline void parseUnprocessedBoxShadowString(std::string &&value, std::vector<Box
   }
 }
 
-inline std::optional<BoxShadow> parseBoxShadowRawValue(const PropsParserContext &context, const RawValue &value)
-{
+inline std::optional<BoxShadow> parseBoxShadowRawValue(
+    const PropsParserContext& context,
+    const RawValue& value) {
   if (!value.hasType<std::unordered_map<std::string, RawValue>>()) {
     return {};
   }
@@ -225,11 +235,10 @@ inline std::optional<BoxShadow> parseBoxShadowRawValue(const PropsParserContext 
 }
 
 inline void parseUnprocessedBoxShadowList(
-    const PropsParserContext &context,
-    std::vector<RawValue> &&value,
-    std::vector<BoxShadow> &result)
-{
-  for (const auto &rawValue : value) {
+    const PropsParserContext& context,
+    std::vector<RawValue>&& value,
+    std::vector<BoxShadow>& result) {
+  for (const auto& rawValue : value) {
     if (auto boxShadow = parseBoxShadowRawValue(context, rawValue)) {
       result.push_back(*boxShadow);
     } else {
@@ -239,20 +248,24 @@ inline void parseUnprocessedBoxShadowList(
   }
 }
 
-inline void
-parseUnprocessedBoxShadow(const PropsParserContext &context, const RawValue &value, std::vector<BoxShadow> &result)
-{
+inline void parseUnprocessedBoxShadow(
+    const PropsParserContext& context,
+    const RawValue& value,
+    std::vector<BoxShadow>& result) {
   if (value.hasType<std::string>()) {
     parseUnprocessedBoxShadowString((std::string)value, result);
   } else if (value.hasType<std::vector<RawValue>>()) {
-    parseUnprocessedBoxShadowList(context, (std::vector<RawValue>)value, result);
+    parseUnprocessedBoxShadowList(
+        context, (std::vector<RawValue>)value, result);
   } else {
     result = {};
   }
 }
 
-inline void fromRawValue(const PropsParserContext &context, const RawValue &value, std::vector<BoxShadow> &result)
-{
+inline void fromRawValue(
+    const PropsParserContext& context,
+    const RawValue& value,
+    std::vector<BoxShadow>& result) {
   if (ReactNativeFeatureFlags::enableNativeCSSParsing()) {
     parseUnprocessedBoxShadow(context, value, result);
   } else {

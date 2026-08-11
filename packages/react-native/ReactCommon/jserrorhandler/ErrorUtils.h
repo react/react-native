@@ -11,6 +11,9 @@
 
 namespace facebook::react {
 
-void handleJSError(jsi::Runtime &runtime, const jsi::JSError &error, bool isFatal);
+void handleJSError(
+    jsi::Runtime& runtime,
+    const jsi::JSError& error,
+    bool isFatal);
 
 } // namespace facebook::react

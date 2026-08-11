@@ -18,9 +18,9 @@ namespace facebook::react {
  * Payload of PointerEvent sent from android native via JNI.
  */
 struct DynamicPointerEvent : public DynamicEventPayload {
-  explicit DynamicPointerEvent(folly::dynamic &&payload);
+  explicit DynamicPointerEvent(folly::dynamic&& payload);
 
-  const std::optional<std::vector<Tag>> &getHitPathForEventListener() const;
+  const std::optional<std::vector<Tag>>& getHitPathForEventListener() const;
 
  private:
   std::optional<std::vector<Tag>> hitPathForEventListener_;

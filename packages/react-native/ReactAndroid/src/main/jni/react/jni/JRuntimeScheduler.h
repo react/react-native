@@ -14,7 +14,8 @@ namespace facebook::react {
 
 class JRuntimeScheduler : public jni::HybridClass<JRuntimeScheduler> {
  public:
-  static auto constexpr kJavaDescriptor = "Lcom/facebook/react/bridge/RuntimeScheduler;";
+  static auto constexpr kJavaDescriptor =
+      "Lcom/facebook/react/bridge/RuntimeScheduler;";
 
   std::weak_ptr<RuntimeScheduler> get();
 

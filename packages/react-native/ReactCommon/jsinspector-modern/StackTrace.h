@@ -19,8 +19,7 @@ class StackTrace {
   /**
    * Constructs an empty stack trace.
    */
-  static inline std::unique_ptr<StackTrace> empty()
-  {
+  static inline std::unique_ptr<StackTrace> empty() {
     return std::make_unique<StackTrace>();
   }
 
@@ -29,10 +28,10 @@ class StackTrace {
    */
   StackTrace() = default;
 
-  StackTrace(const StackTrace &) = delete;
-  StackTrace &operator=(const StackTrace &) = delete;
-  StackTrace(StackTrace &&) = delete;
-  StackTrace &operator=(StackTrace &&) = delete;
+  StackTrace(const StackTrace&) = delete;
+  StackTrace& operator=(const StackTrace&) = delete;
+  StackTrace(StackTrace&&) = delete;
+  StackTrace& operator=(StackTrace&&) = delete;
 
   virtual ~StackTrace() = default;
 };

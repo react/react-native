@@ -25,16 +25,20 @@ class FallbackRuntimeTargetDelegate : public RuntimeTargetDelegate {
 
   std::unique_ptr<RuntimeAgentDelegate> createAgentDelegate(
       FrontendChannel channel,
-      SessionState &sessionState,
-      std::unique_ptr<RuntimeAgentDelegate::ExportedState> previouslyExportedState,
-      const ExecutionContextDescription &executionContextDescription,
+      SessionState& sessionState,
+      std::unique_ptr<RuntimeAgentDelegate::ExportedState>
+          previouslyExportedState,
+      const ExecutionContextDescription& executionContextDescription,
       RuntimeExecutor runtimeExecutor) override;
 
-  void addConsoleMessage(jsi::Runtime &runtime, ConsoleMessage message) override;
+  void addConsoleMessage(jsi::Runtime& runtime, ConsoleMessage message)
+      override;
 
   bool supportsConsole() const override;
 
-  std::unique_ptr<StackTrace> captureStackTrace(jsi::Runtime &runtime, size_t framesToSkip) override;
+  std::unique_ptr<StackTrace> captureStackTrace(
+      jsi::Runtime& runtime,
+      size_t framesToSkip) override;
 
   void enableSamplingProfiler() override;
 
@@ -42,7 +46,8 @@ class FallbackRuntimeTargetDelegate : public RuntimeTargetDelegate {
 
   tracing::RuntimeSamplingProfile collectSamplingProfile() override;
 
-  std::optional<folly::dynamic> serializeStackTrace(const StackTrace &stackTrace) override;
+  std::optional<folly::dynamic> serializeStackTrace(
+      const StackTrace& stackTrace) override;
 
  private:
   std::string engineDescription_;

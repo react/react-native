@@ -29,28 +29,27 @@ class SharedFunction {
   using T = void(ArgumentT...);
 
   struct Pair {
-    Pair(std::function<T> &&function) : function(std::move(function)) {}
+    Pair(std::function<T>&& function) : function(std::move(function)) {}
     std::function<T> function;
     std::shared_mutex mutex{};
   };
 
  public:
-  SharedFunction(std::function<T> &&function = nullptr) : pair_(std::make_shared<Pair>(std::move(function))) {}
+  SharedFunction(std::function<T>&& function = nullptr)
+      : pair_(std::make_shared<Pair>(std::move(function))) {}
 
-  SharedFunction(const SharedFunction &other) = default;
-  SharedFunction(SharedFunction &&other) noexcept = default;
+  SharedFunction(const SharedFunction& other) = default;
+  SharedFunction(SharedFunction&& other) noexcept = default;
 
-  SharedFunction &operator=(const SharedFunction &other) = default;
-  SharedFunction &operator=(SharedFunction &&other) noexcept = default;
+  SharedFunction& operator=(const SharedFunction& other) = default;
+  SharedFunction& operator=(SharedFunction&& other) noexcept = default;
 
-  void assign(std::function<T> function) const
-  {
+  void assign(std::function<T> function) const {
     std::unique_lock lock(pair_->mutex);
     pair_->function = function;
   }
 
-  void operator()(ArgumentT... args) const
-  {
+  void operator()(ArgumentT... args) const {
     std::shared_lock lock(pair_->mutex);
     if (pair_->function) {
       pair_->function(args...);

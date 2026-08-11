@@ -22,13 +22,13 @@ struct CSSLength {
   float value{};
   CSSLengthUnit unit{CSSLengthUnit::Px};
 
-  constexpr bool operator==(const CSSLength &rhs) const = default;
+  constexpr bool operator==(const CSSLength& rhs) const = default;
 };
 
 template <>
 struct CSSDataTypeParser<CSSLength> {
-  static constexpr auto consumePreservedToken(const CSSPreservedToken &token) -> std::optional<CSSLength>
-  {
+  static constexpr auto consumePreservedToken(const CSSPreservedToken& token)
+      -> std::optional<CSSLength> {
     switch (token.type()) {
       case CSSTokenType::Dimension:
         if (auto unit = parseCSSLengthUnit(token.unit())) {
@@ -42,7 +42,8 @@ struct CSSDataTypeParser<CSSLength> {
         // property (such as line-height), it must parse as a <number>.
         // https://www.w3.org/TR/css-values-4/#lengths
         if (token.numericValue() == 0) {
-          return CSSLength{.value = token.numericValue(), .unit = CSSLengthUnit::Px};
+          return CSSLength{
+              .value = token.numericValue(), .unit = CSSLengthUnit::Px};
         }
         break;
       default:

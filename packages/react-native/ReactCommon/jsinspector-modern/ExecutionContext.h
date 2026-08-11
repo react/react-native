@@ -31,7 +31,7 @@ class ExecutionContextSelector {
   /**
    * Returns true iff this selector matches \c context.
    */
-  bool matches(const ExecutionContextDescription &context) const noexcept;
+  bool matches(const ExecutionContextDescription& context) const noexcept;
 
   /**
    * Returns a new selector that matches only the given execution context ID.
@@ -49,14 +49,15 @@ class ExecutionContextSelector {
   static ExecutionContextSelector all();
 
   ExecutionContextSelector() = delete;
-  ExecutionContextSelector(const ExecutionContextSelector &other) = default;
-  ExecutionContextSelector(ExecutionContextSelector &&other) noexcept = default;
-  ExecutionContextSelector &operator=(const ExecutionContextSelector &other) = default;
-  ExecutionContextSelector &operator=(ExecutionContextSelector &&other) noexcept = default;
+  ExecutionContextSelector(const ExecutionContextSelector& other) = default;
+  ExecutionContextSelector(ExecutionContextSelector&& other) noexcept = default;
+  ExecutionContextSelector& operator=(const ExecutionContextSelector& other) =
+      default;
+  ExecutionContextSelector& operator=(
+      ExecutionContextSelector&& other) noexcept = default;
   ~ExecutionContextSelector() = default;
 
-  inline bool operator==(const ExecutionContextSelector &other) const noexcept
-  {
+  inline bool operator==(const ExecutionContextSelector& other) const noexcept {
     return value_ == other.value_;
   }
 
@@ -74,16 +75,20 @@ class ExecutionContextSelector {
 
   using Representation = std::variant<AllContexts, ContextId, ContextName>;
 
-  explicit inline ExecutionContextSelector(Representation &&r) : value_(r) {}
+  explicit inline ExecutionContextSelector(Representation&& r) : value_(r) {}
 
   Representation value_;
 
-  friend struct std::hash<facebook::react::jsinspector_modern::ExecutionContextSelector>;
+  friend struct std::hash<
+      facebook::react::jsinspector_modern::ExecutionContextSelector>;
 };
 
-using ExecutionContextSelectorSet = std::unordered_set<ExecutionContextSelector>;
+using ExecutionContextSelectorSet =
+    std::unordered_set<ExecutionContextSelector>;
 
-bool matchesAny(const ExecutionContextDescription &context, const ExecutionContextSelectorSet &selectors);
+bool matchesAny(
+    const ExecutionContextDescription& context,
+    const ExecutionContextSelectorSet& selectors);
 
 } // namespace facebook::react::jsinspector_modern
 
@@ -91,9 +96,12 @@ namespace std {
 
 template <>
 struct hash<::facebook::react::jsinspector_modern::ExecutionContextSelector> {
-  size_t operator()(const ::facebook::react::jsinspector_modern::ExecutionContextSelector &selector) const
-  {
-    return hash<::facebook::react::jsinspector_modern::ExecutionContextSelector::Representation>{}(selector.value_);
+  size_t operator()(
+      const ::facebook::react::jsinspector_modern::ExecutionContextSelector&
+          selector) const {
+    return hash<::facebook::react::jsinspector_modern::
+                    ExecutionContextSelector::Representation>{}(
+        selector.value_);
   }
 };
 

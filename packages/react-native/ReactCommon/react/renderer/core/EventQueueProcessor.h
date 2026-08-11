@@ -25,8 +25,8 @@ class EventQueueProcessor {
       StatePipe statePipe,
       std::weak_ptr<EventLogger> eventLogger);
 
-  void flushEvents(jsi::Runtime &runtime, std::vector<RawEvent> &&events) const;
-  void flushStateUpdates(std::vector<StateUpdate> &&states) const;
+  void flushEvents(jsi::Runtime& runtime, std::vector<RawEvent>&& events) const;
+  void flushStateUpdates(std::vector<StateUpdate>&& states) const;
 
  private:
   const EventPipe eventPipe_;

@@ -29,7 +29,9 @@ class HermesRuntimeTargetDelegate : public RuntimeTargetDelegate {
   /**
    * Creates a HermesRuntimeTargetDelegate for the given runtime.
    */
-  explicit HermesRuntimeTargetDelegate(std::shared_ptr<jsi::Runtime> runtime, hermes::HermesRuntime &hermesRuntime);
+  explicit HermesRuntimeTargetDelegate(
+      std::shared_ptr<jsi::Runtime> runtime,
+      hermes::HermesRuntime& hermesRuntime);
 
   ~HermesRuntimeTargetDelegate() override;
 
@@ -37,22 +39,28 @@ class HermesRuntimeTargetDelegate : public RuntimeTargetDelegate {
 
   std::unique_ptr<jsinspector_modern::RuntimeAgentDelegate> createAgentDelegate(
       jsinspector_modern::FrontendChannel frontendChannel,
-      jsinspector_modern::SessionState &sessionState,
-      std::unique_ptr<jsinspector_modern::RuntimeAgentDelegate::ExportedState> previouslyExportedState,
-      const jsinspector_modern::ExecutionContextDescription &executionContextDescription,
+      jsinspector_modern::SessionState& sessionState,
+      std::unique_ptr<jsinspector_modern::RuntimeAgentDelegate::ExportedState>
+          previouslyExportedState,
+      const jsinspector_modern::ExecutionContextDescription&
+          executionContextDescription,
       RuntimeExecutor runtimeExecutor) override;
 
-  void addConsoleMessage(jsi::Runtime &runtime, ConsoleMessage message) override;
+  void addConsoleMessage(jsi::Runtime& runtime, ConsoleMessage message)
+      override;
 
   bool supportsConsole() const override;
 
-  std::unique_ptr<StackTrace> captureStackTrace(jsi::Runtime &runtime, size_t framesToSkip) override;
+  std::unique_ptr<StackTrace> captureStackTrace(
+      jsi::Runtime& runtime,
+      size_t framesToSkip) override;
 
   void enableSamplingProfiler() override;
   void disableSamplingProfiler() override;
   tracing::RuntimeSamplingProfile collectSamplingProfile() override;
 
-  std::optional<folly::dynamic> serializeStackTrace(const StackTrace &stackTrace) override;
+  std::optional<folly::dynamic> serializeStackTrace(
+      const StackTrace& stackTrace) override;
 
  private:
   // We use the private implementation idiom to ensure this class has the same
@@ -66,7 +74,7 @@ class HermesRuntimeTargetDelegate : public RuntimeTargetDelegate {
 #ifdef HERMES_ENABLE_DEBUGGER
   friend class HermesRuntimeAgentDelegate;
 
-  hermes::cdp::CDPDebugAPI &getCDPDebugAPI();
+  hermes::cdp::CDPDebugAPI& getCDPDebugAPI();
 #endif
 
   std::unique_ptr<Impl> impl_;

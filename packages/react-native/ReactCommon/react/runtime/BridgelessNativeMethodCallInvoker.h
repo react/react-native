@@ -15,9 +15,13 @@ namespace facebook::react {
 
 class BridgelessNativeMethodCallInvoker : public NativeMethodCallInvoker {
  public:
-  explicit BridgelessNativeMethodCallInvoker(std::shared_ptr<MessageQueueThread> messageQueueThread);
-  void invokeAsync(const std::string &methodName, NativeMethodCallFunc &&func) noexcept override;
-  void invokeSync(const std::string &methodName, NativeMethodCallFunc &&func) override;
+  explicit BridgelessNativeMethodCallInvoker(
+      std::shared_ptr<MessageQueueThread> messageQueueThread);
+  void invokeAsync(
+      const std::string& methodName,
+      NativeMethodCallFunc&& func) noexcept override;
+  void invokeSync(const std::string& methodName, NativeMethodCallFunc&& func)
+      override;
 
  private:
   std::shared_ptr<MessageQueueThread> messageQueueThread_;

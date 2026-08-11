@@ -21,7 +21,7 @@ class MessageQueueThread;
  */
 class JSRuntime {
  public:
-  virtual jsi::Runtime &getRuntime() noexcept = 0;
+  virtual jsi::Runtime& getRuntime() noexcept = 0;
 
   virtual ~JSRuntime() = default;
 
@@ -30,7 +30,7 @@ class JSRuntime {
    * this JSRuntime. This reference must remain valid for the duration of the
    * JSRuntime's lifetime.
    */
-  virtual jsinspector_modern::RuntimeTargetDelegate &getRuntimeTargetDelegate();
+  virtual jsinspector_modern::RuntimeTargetDelegate& getRuntimeTargetDelegate();
 
   /**
    * Run initialize work that must happen on the runtime's JS thread. Used for
@@ -45,7 +45,8 @@ class JSRuntime {
    * Initialized by \c getRuntimeTargetDelegate if not overridden, and then
    * never changes.
    */
-  std::optional<jsinspector_modern::FallbackRuntimeTargetDelegate> runtimeTargetDelegate_;
+  std::optional<jsinspector_modern::FallbackRuntimeTargetDelegate>
+      runtimeTargetDelegate_;
 };
 
 /**
@@ -53,7 +54,8 @@ class JSRuntime {
  */
 class JSRuntimeFactory {
  public:
-  virtual std::unique_ptr<JSRuntime> createJSRuntime(std::shared_ptr<MessageQueueThread> msgQueueThread) noexcept = 0;
+  virtual std::unique_ptr<JSRuntime> createJSRuntime(
+      std::shared_ptr<MessageQueueThread> msgQueueThread) noexcept = 0;
 
   virtual ~JSRuntimeFactory() = default;
 };
@@ -63,7 +65,7 @@ class JSRuntimeFactory {
  */
 class JSIRuntimeHolder : public JSRuntime {
  public:
-  jsi::Runtime &getRuntime() noexcept override;
+  jsi::Runtime& getRuntime() noexcept override;
 
   explicit JSIRuntimeHolder(std::unique_ptr<jsi::Runtime> runtime);
 

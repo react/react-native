@@ -18,21 +18,20 @@ struct BackgroundSizeLengthPercentage {
 
   BackgroundSizeLengthPercentage() : x(std::monostate{}), y(std::monostate{}) {}
 
-  bool isXAuto() const
-  {
+  bool isXAuto() const {
     return std::holds_alternative<std::monostate>(x);
   }
-  bool isYAuto() const
-  {
+  bool isYAuto() const {
     return std::holds_alternative<std::monostate>(y);
   }
 
-  bool operator==(const BackgroundSizeLengthPercentage &other) const = default;
+  bool operator==(const BackgroundSizeLengthPercentage& other) const = default;
 };
 
 enum class BackgroundSizeKeyword { Cover, Contain };
 
 // https://www.w3.org/TR/css-backgrounds-3/#background-size
-using BackgroundSize = std::variant<BackgroundSizeKeyword, BackgroundSizeLengthPercentage>;
+using BackgroundSize =
+    std::variant<BackgroundSizeKeyword, BackgroundSizeLengthPercentage>;
 
 } // namespace facebook::react

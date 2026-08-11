@@ -19,6 +19,7 @@ namespace facebook::react {
  * instead of storing a pointer to the Runtime itself, which makes it more
  * difficult to ensure that the Runtime is being accessed safely.
  */
-using RuntimeExecutor = std::function<void(std::function<void(jsi::Runtime &runtime)> &&callback)>;
+using RuntimeExecutor =
+    std::function<void(std::function<void(jsi::Runtime& runtime)>&& callback)>;
 
 } // namespace facebook::react

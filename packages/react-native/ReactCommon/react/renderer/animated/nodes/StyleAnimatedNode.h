@@ -18,11 +18,13 @@
 namespace facebook::react {
 class StyleAnimatedNode final : public AnimatedNode {
  public:
-  StyleAnimatedNode(Tag tag, const folly::dynamic &config, NativeAnimatedNodesManager &manager);
-  void collectViewUpdates(folly::dynamic &props);
+  StyleAnimatedNode(
+      Tag tag,
+      const folly::dynamic& config,
+      NativeAnimatedNodesManager& manager);
+  void collectViewUpdates(folly::dynamic& props);
 
-  bool isLayoutStyleUpdated() const noexcept
-  {
+  bool isLayoutStyleUpdated() const noexcept {
     return layoutStyleUpdated_;
   }
 

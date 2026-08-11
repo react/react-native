@@ -17,8 +17,11 @@ extern const char TextEffectComponentName[];
 
 using TextEffectEventEmitter = TouchEventEmitter;
 
-class TextEffectShadowNode
-    : public ConcreteShadowNode<TextEffectComponentName, ShadowNode, TextEffectProps, TextEffectEventEmitter> {
+class TextEffectShadowNode : public ConcreteShadowNode<
+                                 TextEffectComponentName,
+                                 ShadowNode,
+                                 TextEffectProps,
+                                 TextEffectEventEmitter> {
  public:
   using ConcreteShadowNode::ConcreteShadowNode;
 };

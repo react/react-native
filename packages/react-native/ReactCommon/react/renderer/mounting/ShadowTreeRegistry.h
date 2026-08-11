@@ -28,7 +28,7 @@ class ShadowTreeRegistry final {
    * The ownership of the instance is also transferred to the registry.
    * Can be called from any thread.
    */
-  void add(std::unique_ptr<ShadowTree> &&shadowTree) const;
+  void add(std::unique_ptr<ShadowTree>&& shadowTree) const;
 
   /*
    * Removes a `ShadowTree` instance with given `surfaceId` from the registry
@@ -47,18 +47,23 @@ class ShadowTreeRegistry final {
    * `surfaceId`, otherwise returns `false` without calling the `callback`.
    * Can be called from any thread.
    */
-  bool visit(SurfaceId surfaceId, const std::function<void(const ShadowTree &shadowTree)> &callback) const;
+  bool visit(
+      SurfaceId surfaceId,
+      const std::function<void(const ShadowTree& shadowTree)>& callback) const;
 
   /*
    * Enumerates all stored shadow trees.
    * Set `stop` to `true` to interrupt the enumeration.
    * Can be called from any thread.
    */
-  void enumerate(const std::function<void(const ShadowTree &shadowTree, bool &stop)> &callback) const;
+  void enumerate(
+      const std::function<void(const ShadowTree& shadowTree, bool& stop)>&
+          callback) const;
 
  private:
   mutable std::shared_mutex mutex_;
-  mutable std::unordered_map<SurfaceId, std::unique_ptr<ShadowTree>> registry_; // Protected by `mutex_`.
+  mutable std::unordered_map<SurfaceId, std::unique_ptr<ShadowTree>>
+      registry_; // Protected by `mutex_`.
 };
 
 } // namespace facebook::react

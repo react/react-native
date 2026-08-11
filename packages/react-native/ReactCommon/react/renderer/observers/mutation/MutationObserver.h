@@ -27,45 +27,49 @@ class MutationObserver {
   explicit MutationObserver(MutationObserverId mutationObserverId);
 
   // delete copy constructor
-  MutationObserver(const MutationObserver &) = delete;
+  MutationObserver(const MutationObserver&) = delete;
 
   // delete copy assignment
-  MutationObserver &operator=(const MutationObserver &) = delete;
+  MutationObserver& operator=(const MutationObserver&) = delete;
 
   // allow move constructor
-  MutationObserver(MutationObserver &&) = default;
+  MutationObserver(MutationObserver&&) = default;
 
   // allow move assignment
-  MutationObserver &operator=(MutationObserver &&) = default;
+  MutationObserver& operator=(MutationObserver&&) = default;
 
-  void observe(std::shared_ptr<const ShadowNodeFamily> targetShadowNodeFamily, bool observeSubtree);
+  void observe(
+      std::shared_ptr<const ShadowNodeFamily> targetShadowNodeFamily,
+      bool observeSubtree);
 
   void recordMutations(
-      const RootShadowNode &oldRootShadowNode,
-      const RootShadowNode &newRootShadowNode,
-      std::vector<MutationRecord> &recordedMutations) const;
+      const RootShadowNode& oldRootShadowNode,
+      const RootShadowNode& newRootShadowNode,
+      std::vector<MutationRecord>& recordedMutations) const;
 
  private:
   MutationObserverId mutationObserverId_;
-  std::vector<std::shared_ptr<const ShadowNodeFamily>> deeplyObservedShadowNodeFamilies_;
-  std::vector<std::shared_ptr<const ShadowNodeFamily>> shallowlyObservedShadowNodeFamilies_;
+  std::vector<std::shared_ptr<const ShadowNodeFamily>>
+      deeplyObservedShadowNodeFamilies_;
+  std::vector<std::shared_ptr<const ShadowNodeFamily>>
+      shallowlyObservedShadowNodeFamilies_;
 
-  using SetOfShadowNodePointers = std::unordered_set<const ShadowNode *>;
+  using SetOfShadowNodePointers = std::unordered_set<const ShadowNode*>;
 
   void recordMutationsInTarget(
-      const ShadowNodeFamily &targetShadowNodeFamily,
-      const RootShadowNode &oldRootShadowNode,
-      const RootShadowNode &newRootShadowNode,
+      const ShadowNodeFamily& targetShadowNodeFamily,
+      const RootShadowNode& oldRootShadowNode,
+      const RootShadowNode& newRootShadowNode,
       bool observeSubtree,
-      std::vector<MutationRecord> &recordedMutations,
-      SetOfShadowNodePointers &processedNodes) const;
+      std::vector<MutationRecord>& recordedMutations,
+      SetOfShadowNodePointers& processedNodes) const;
 
   void recordMutationsInSubtrees(
-      const std::shared_ptr<const ShadowNode> &oldNode,
-      const std::shared_ptr<const ShadowNode> &newNode,
+      const std::shared_ptr<const ShadowNode>& oldNode,
+      const std::shared_ptr<const ShadowNode>& newNode,
       bool observeSubtree,
-      std::vector<MutationRecord> &recordedMutations,
-      SetOfShadowNodePointers &processedNodes) const;
+      std::vector<MutationRecord>& recordedMutations,
+      SetOfShadowNodePointers& processedNodes) const;
 };
 
 } // namespace facebook::react

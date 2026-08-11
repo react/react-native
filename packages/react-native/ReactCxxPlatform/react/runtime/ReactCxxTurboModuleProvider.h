@@ -27,7 +27,8 @@ class ReactCxxTurboModuleProvider final {
       TurboModuleProviders turboModuleProviders,
       std::shared_ptr<CallInvoker> jsInvoker,
       JsErrorHandler::OnJsError onJsError,
-      std::shared_ptr<NativeAnimatedNodesManagerProvider> animatedNodesManagerProvider = nullptr,
+      std::shared_ptr<NativeAnimatedNodesManagerProvider>
+          animatedNodesManagerProvider = nullptr,
       std::shared_ptr<DevServerHelper> devServerHelper = nullptr,
       std::shared_ptr<IDevUIDelegate> devUIDelegate = nullptr,
       std::shared_ptr<SurfaceDelegate> logBoxSurfaceDelegate = nullptr,
@@ -36,13 +37,14 @@ class ReactCxxTurboModuleProvider final {
       std::function<void()> liveReloadCallback = nullptr,
       std::shared_ptr<std::string> sourceURL = nullptr);
 
-  std::shared_ptr<TurboModule> operator()(const std::string &name) const;
+  std::shared_ptr<TurboModule> operator()(const std::string& name) const;
 
  private:
   TurboModuleProviders turboModuleProviders_;
   std::shared_ptr<CallInvoker> jsInvoker_;
   JsErrorHandler::OnJsError onJsError_;
-  std::shared_ptr<NativeAnimatedNodesManagerProvider> animatedNodesManagerProvider_;
+  std::shared_ptr<NativeAnimatedNodesManagerProvider>
+      animatedNodesManagerProvider_;
   std::shared_ptr<DevServerHelper> devServerHelper_;
   std::shared_ptr<IDevUIDelegate> devUIDelegate_;
   std::shared_ptr<SurfaceDelegate> logBoxSurfaceDelegate_;

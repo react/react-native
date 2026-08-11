@@ -21,13 +21,13 @@ namespace facebook::react {
  * https://www.w3.org/TR/css-values-4/#zero-value
  */
 struct CSSZero {
-  constexpr bool operator==(const CSSZero &rhs) const = default;
+  constexpr bool operator==(const CSSZero& rhs) const = default;
 };
 
 template <>
 struct CSSDataTypeParser<CSSZero> {
-  static constexpr auto consumePreservedToken(const CSSPreservedToken &token) -> std::optional<CSSZero>
-  {
+  static constexpr auto consumePreservedToken(const CSSPreservedToken& token)
+      -> std::optional<CSSZero> {
     if (token.type() == CSSTokenType::Number && token.numericValue() == 0) {
       return CSSZero{};
     }

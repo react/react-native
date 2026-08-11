@@ -43,9 +43,13 @@ enum class NullValueStrategy {
  * represent a dictionary. It updates `source` with key/value pairs from
  * `patch`.
  */
-folly::dynamic
-mergeDynamicProps(const folly::dynamic &source, const folly::dynamic &patch, NullValueStrategy nullValueStrategy);
+folly::dynamic mergeDynamicProps(
+    const folly::dynamic& source,
+    const folly::dynamic& patch,
+    NullValueStrategy nullValueStrategy);
 
-folly::dynamic diffDynamicProps(const folly::dynamic &oldProps, const folly::dynamic &newProps);
+folly::dynamic diffDynamicProps(
+    const folly::dynamic& oldProps,
+    const folly::dynamic& newProps);
 
 } // namespace facebook::react

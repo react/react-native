@@ -25,7 +25,9 @@ namespace facebook::react {
  */
 class ImageResponseObserverCoordinator {
  public:
-  ImageResponseObserverCoordinator(SharedFunction<> resumeFunction, SharedFunction<> cancelationFunction);
+  ImageResponseObserverCoordinator(
+      SharedFunction<> resumeFunction,
+      SharedFunction<> cancelationFunction);
 
   /*
    * Interested parties may observe the image response.
@@ -37,24 +39,28 @@ class ImageResponseObserverCoordinator {
   /*
    * Interested parties may stop observing the image response.
    */
-  void removeObserver(const std::shared_ptr<const ImageResponseObserver> &observer) const;
+  void removeObserver(
+      const std::shared_ptr<const ImageResponseObserver>& observer) const;
 
   /*
    * Platform-specific image loader will call this method with progress updates.
    */
-  void nativeImageResponseProgress(float progress, int64_t loaded, int64_t total) const;
+  void nativeImageResponseProgress(
+      float progress,
+      int64_t loaded,
+      int64_t total) const;
 
   /*
    * Platform-specific image loader will call this method with a completed image
    * response.
    */
-  void nativeImageResponseComplete(const ImageResponse &imageResponse) const;
+  void nativeImageResponseComplete(const ImageResponse& imageResponse) const;
 
   /*
    * Platform-specific image loader will call this method in case of any
    * failures.
    */
-  void nativeImageResponseFailed(const ImageLoadError &loadError) const;
+  void nativeImageResponseFailed(const ImageLoadError& loadError) const;
 
  private:
   /*

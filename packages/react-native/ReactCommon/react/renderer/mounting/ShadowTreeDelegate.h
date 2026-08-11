@@ -27,10 +27,10 @@ class ShadowTreeDelegate {
    * Returning a `nullptr` cancels the commit.
    */
   virtual RootShadowNode::Unshared shadowTreeWillCommit(
-      const ShadowTree &shadowTree,
-      const RootShadowNode::Shared &oldRootShadowNode,
-      const RootShadowNode::Unshared &newRootShadowNode,
-      const ShadowTreeCommitOptions &commitOptions) const = 0;
+      const ShadowTree& shadowTree,
+      const RootShadowNode::Shared& oldRootShadowNode,
+      const RootShadowNode::Unshared& newRootShadowNode,
+      const ShadowTreeCommitOptions& commitOptions) const = 0;
 
   /*
    * Called right after Shadow Tree commit a new state of the tree.
@@ -42,24 +42,25 @@ class ShadowTreeDelegate {
   /*
    * Called right after Shadow Tree commits a new React revision of the tree.
    */
-  virtual void shadowTreeDidFinishReactCommit(const ShadowTree &shadowTree) const = 0;
+  virtual void shadowTreeDidFinishReactCommit(
+      const ShadowTree& shadowTree) const = 0;
 
   /*
    * Called right after Shadow Tree promotes a React revision of the tree to
    * be merged.
    */
-  virtual void shadowTreeDidPromoteReactRevision(const ShadowTree &shadowTree) const = 0;
+  virtual void shadowTreeDidPromoteReactRevision(
+      const ShadowTree& shadowTree) const = 0;
 
   /*
    * Called right after a Shadow Tree commits a new tree, reporting the nodes
    * whose layout changed in this commit.
    */
   virtual void shadowTreeDidCommit(
-      const ShadowTree & /*shadowTree*/,
-      const RootShadowNode::Shared & /*rootShadowNode*/,
-      const std::vector<const LayoutableShadowNode *> & /*affectedLayoutableNodes*/) const
-  {
-  }
+      const ShadowTree& /*shadowTree*/,
+      const RootShadowNode::Shared& /*rootShadowNode*/,
+      const std::vector<
+          const LayoutableShadowNode*>& /*affectedLayoutableNodes*/) const {}
 
   virtual ~ShadowTreeDelegate() noexcept = default;
 };

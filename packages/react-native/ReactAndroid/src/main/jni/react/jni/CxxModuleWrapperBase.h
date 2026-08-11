@@ -12,7 +12,8 @@
 namespace facebook::react {
 
 struct JNativeModule : jni::JavaClass<JNativeModule> {
-  constexpr static const char *const kJavaDescriptor = "Lcom/facebook/react/bridge/NativeModule;";
+  constexpr static const char* const kJavaDescriptor =
+      "Lcom/facebook/react/bridge/NativeModule;";
 };
 
 } // namespace facebook::react

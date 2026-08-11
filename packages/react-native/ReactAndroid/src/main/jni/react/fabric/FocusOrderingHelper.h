@@ -22,17 +22,17 @@ enum class FocusDirection {
 class FocusOrderingHelper {
  public:
   static void traverseAndUpdateNextFocusableElement(
-      const std::shared_ptr<const ShadowNode> &parentShadowNode,
-      const std::shared_ptr<const ShadowNode> &focusedShadowNode,
-      const std::shared_ptr<const ShadowNode> &currNode,
+      const std::shared_ptr<const ShadowNode>& parentShadowNode,
+      const std::shared_ptr<const ShadowNode>& focusedShadowNode,
+      const std::shared_ptr<const ShadowNode>& currNode,
       FocusDirection focusDirection,
-      const UIManager &uimanager,
+      const UIManager& uimanager,
       Rect sourceRect,
-      std::optional<Rect> &nextRect,
-      std::shared_ptr<const ShadowNode> &nextNode);
+      std::optional<Rect>& nextRect,
+      std::shared_ptr<const ShadowNode>& nextNode);
 
   static std::shared_ptr<const ShadowNode> findShadowNodeByTagRecursively(
-      const std::shared_ptr<const ShadowNode> &parentShadowNode,
+      const std::shared_ptr<const ShadowNode>& parentShadowNode,
       Tag tag);
 
   static std::optional<FocusDirection> resolveFocusDirection(int direction);

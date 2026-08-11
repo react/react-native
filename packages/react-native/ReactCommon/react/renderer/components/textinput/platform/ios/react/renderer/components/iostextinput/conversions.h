@@ -13,8 +13,10 @@
 
 namespace facebook::react {
 
-inline void fromRawValue(const PropsParserContext &context, const RawValue &value, AutocapitalizationType &result)
-{
+inline void fromRawValue(
+    const PropsParserContext& context,
+    const RawValue& value,
+    AutocapitalizationType& result) {
   auto string = (std::string)value;
   if (string == "none") {
     result = AutocapitalizationType::None;
@@ -35,8 +37,10 @@ inline void fromRawValue(const PropsParserContext &context, const RawValue &valu
   result = AutocapitalizationType::None;
 }
 
-inline void fromRawValue(const PropsParserContext &context, const RawValue &value, KeyboardAppearance &result)
-{
+inline void fromRawValue(
+    const PropsParserContext& context,
+    const RawValue& value,
+    KeyboardAppearance& result) {
   auto string = (std::string)value;
   if (string == "default") {
     result = KeyboardAppearance::Default;
@@ -53,8 +57,10 @@ inline void fromRawValue(const PropsParserContext &context, const RawValue &valu
   result = KeyboardAppearance::Default;
 }
 
-inline void fromRawValue(const PropsParserContext &context, const RawValue &value, ReturnKeyType &result)
-{
+inline void fromRawValue(
+    const PropsParserContext& context,
+    const RawValue& value,
+    ReturnKeyType& result) {
   auto string = (std::string)value;
   if (string == "default") {
     result = ReturnKeyType::Default;
@@ -119,9 +125,10 @@ inline void fromRawValue(const PropsParserContext &context, const RawValue &valu
   result = ReturnKeyType::Default;
 }
 
-inline void
-fromRawValue(const PropsParserContext &context, const RawValue &value, TextInputAccessoryVisibilityMode &result)
-{
+inline void fromRawValue(
+    const PropsParserContext& context,
+    const RawValue& value,
+    TextInputAccessoryVisibilityMode& result) {
   auto string = (std::string)value;
   if (string == "never") {
     result = TextInputAccessoryVisibilityMode::Never;
@@ -142,8 +149,10 @@ fromRawValue(const PropsParserContext &context, const RawValue &value, TextInput
   result = TextInputAccessoryVisibilityMode::Never;
 }
 
-inline void fromRawValue(const PropsParserContext &context, const RawValue &value, KeyboardType &result)
-{
+inline void fromRawValue(
+    const PropsParserContext& context,
+    const RawValue& value,
+    KeyboardType& result) {
   auto string = (std::string)value;
   if (string == "default") {
     result = KeyboardType::Default;

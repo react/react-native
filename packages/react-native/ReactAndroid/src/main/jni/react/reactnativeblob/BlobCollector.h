@@ -27,13 +27,14 @@ class BlobCollector : public jsi::HostObject {
 
 class BlobModuleJSIBindings : public jni::JavaClass<BlobModuleJSIBindings> {
  public:
-  static constexpr const char *kJavaDescriptor = "Lcom/facebook/react/modules/blob/BlobModule;";
+  static constexpr const char* kJavaDescriptor =
+      "Lcom/facebook/react/modules/blob/BlobModule;";
 
   static void registerNatives();
 
  private:
-  static jni::local_ref<BindingsInstallerHolder::javaobject> getBindingsInstaller(
-      jni::alias_ref<BlobModuleJSIBindings> jobj);
+  static jni::local_ref<BindingsInstallerHolder::javaobject>
+  getBindingsInstaller(jni::alias_ref<BlobModuleJSIBindings> jobj);
 };
 
 } // namespace facebook::react

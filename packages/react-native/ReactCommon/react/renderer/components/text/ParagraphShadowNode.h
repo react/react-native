@@ -26,21 +26,25 @@ extern const char ParagraphComponentName[];
  * containing and displaying text. Text content is represented as nested <Text>
  * and <RawText> components.
  */
-class ParagraphShadowNode
-    : public ConcreteViewShadowNode<ParagraphComponentName, ParagraphProps, ParagraphEventEmitter, ParagraphState>,
-      public BaseTextShadowNode {
+class ParagraphShadowNode : public ConcreteViewShadowNode<
+                                ParagraphComponentName,
+                                ParagraphProps,
+                                ParagraphEventEmitter,
+                                ParagraphState>,
+                            public BaseTextShadowNode {
  public:
   using ConcreteViewShadowNode::ConcreteViewShadowNode;
 
   ParagraphShadowNode(
-      const ShadowNodeFragment &fragment,
-      const ShadowNodeFamily::Shared &family,
+      const ShadowNodeFragment& fragment,
+      const ShadowNodeFamily::Shared& family,
       ShadowNodeTraits traits);
 
-  ParagraphShadowNode(const ShadowNode &sourceShadowNode, const ShadowNodeFragment &fragment);
+  ParagraphShadowNode(
+      const ShadowNode& sourceShadowNode,
+      const ShadowNodeFragment& fragment);
 
-  static ShadowNodeTraits BaseTraits()
-  {
+  static ShadowNodeTraits BaseTraits() {
     auto traits = ConcreteViewShadowNode::BaseTraits();
     traits.set(ShadowNodeTraits::Trait::LeafYogaNode);
     traits.set(ShadowNodeTraits::Trait::MeasurableYogaNode);
@@ -62,15 +66,18 @@ class ParagraphShadowNode
    * `ParagraphShadowNode` uses the manager to measure text content
    * and construct `ParagraphState` objects.
    */
-  void setTextLayoutManager(std::shared_ptr<const TextLayoutManager> textLayoutManager);
+  void setTextLayoutManager(
+      std::shared_ptr<const TextLayoutManager> textLayoutManager);
 
 #pragma mark - LayoutableShadowNode
 
   void layout(LayoutContext layoutContext) override;
 
-  Size measureContent(const LayoutContext &layoutContext, const LayoutConstraints &layoutConstraints) const override;
+  Size measureContent(
+      const LayoutContext& layoutContext,
+      const LayoutConstraints& layoutConstraints) const override;
 
-  Float baseline(const LayoutContext &layoutContext, Size size) const override;
+  Float baseline(const LayoutContext& layoutContext, Size size) const override;
 
   /*
    * Internal representation of the nested content of the node in a format
@@ -84,41 +91,44 @@ class ParagraphShadowNode
   };
 
  protected:
-  bool shouldNewRevisionDirtyMeasurement(const ShadowNode &sourceShadowNode, const ShadowNodeFragment &fragment)
-      const override;
+  bool shouldNewRevisionDirtyMeasurement(
+      const ShadowNode& sourceShadowNode,
+      const ShadowNodeFragment& fragment) const override;
 
  private:
   void initialize() noexcept;
   /*
    * Builds (if needed) and returns a reference to a `Content` object.
    */
-  const Content &getContent(const LayoutContext &layoutContext) const;
+  const Content& getContent(const LayoutContext& layoutContext) const;
 
   /*
    * Builds and returns a `Content` object with given `layoutConstraints`.
    */
   Content getContentWithMeasuredAttachments(
-      const LayoutContext &layoutContext,
-      const LayoutConstraints &layoutConstraints) const;
+      const LayoutContext& layoutContext,
+      const LayoutConstraints& layoutConstraints) const;
 
   /*
    * Creates a `State` object (with `AttributedText` and
    * `TextLayoutManager`) if needed.
    */
   template <typename ParagraphStateT>
-  void updateStateIfNeeded(const Content &content, const MeasuredPreparedTextLayout &layout);
+  void updateStateIfNeeded(
+      const Content& content,
+      const MeasuredPreparedTextLayout& layout);
 
   /*
    * Creates a `State` object (with `AttributedText` and
    * `TextLayoutManager`) if needed.
    */
-  void updateStateIfNeeded(const Content &content);
+  void updateStateIfNeeded(const Content& content);
 
   /**
    * Returns any previously prepared layout, generated for measurement, which
    * may be used, given the currently assigned layout to the ShadowNode
    */
-  MeasuredPreparedTextLayout *findUsableLayout();
+  MeasuredPreparedTextLayout* findUsableLayout();
 
   /**
    * Returns the final measure of the content frame, before layout rounding

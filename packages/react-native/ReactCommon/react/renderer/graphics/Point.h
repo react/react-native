@@ -19,51 +19,45 @@ struct Point {
   Float x{0};
   Float y{0};
 
-  inline Point &operator+=(const Point &point) noexcept
-  {
+  inline Point& operator+=(const Point& point) noexcept {
     x += point.x;
     y += point.y;
     return *this;
   }
 
-  inline Point &operator-=(const Point &point) noexcept
-  {
+  inline Point& operator-=(const Point& point) noexcept {
     x -= point.x;
     y -= point.y;
     return *this;
   }
 
-  inline Point &operator*=(const Point &point) noexcept
-  {
+  inline Point& operator*=(const Point& point) noexcept {
     x *= point.x;
     y *= point.y;
     return *this;
   }
 
-  inline Point operator+(const Point &rhs) const noexcept
-  {
+  inline Point operator+(const Point& rhs) const noexcept {
     return {
         .x = this->x + rhs.x,
         .y = this->y + rhs.y,
     };
   }
-  inline Point operator-(const Point &rhs) const noexcept
-  {
+  inline Point operator-(const Point& rhs) const noexcept {
     return {
         .x = this->x - rhs.x,
         .y = this->y - rhs.y,
     };
   }
 
-  inline Point operator-() const noexcept
-  {
+  inline Point operator-() const noexcept {
     return {
         .x = -x,
         .y = -y,
     };
   }
 
-  inline bool operator==(const Point &rhs) const = default;
+  inline bool operator==(const Point& rhs) const = default;
 };
 
 } // namespace facebook::react
@@ -72,8 +66,7 @@ namespace std {
 
 template <>
 struct hash<facebook::react::Point> {
-  inline size_t operator()(const facebook::react::Point &point) const noexcept
-  {
+  inline size_t operator()(const facebook::react::Point& point) const noexcept {
     return facebook::react::hash_combine(point.x, point.y);
   }
 };

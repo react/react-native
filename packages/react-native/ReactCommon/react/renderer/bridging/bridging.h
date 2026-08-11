@@ -15,8 +15,9 @@ namespace facebook::react {
 
 template <>
 struct Bridging<std::shared_ptr<const ShadowNode>> {
-  static std::shared_ptr<const ShadowNode> fromJs(jsi::Runtime &rt, const jsi::Value &jsiValue)
-  {
+  static std::shared_ptr<const ShadowNode> fromJs(
+      jsi::Runtime& rt,
+      const jsi::Value& jsiValue) {
     auto object = jsiValue.asObject(rt);
 
     // Using `jsi::NativeState` instead of `ShadowNodeWrapper` to avoid  doing a
@@ -28,16 +29,20 @@ struct Bridging<std::shared_ptr<const ShadowNode>> {
     }
 
     auto nativeState = object.getNativeState<jsi::NativeState>(rt);
-    auto shadowNodeWrapper = std::dynamic_pointer_cast<ShadowNodeWrapper>(nativeState);
-    if (shadowNodeWrapper == nullptr || shadowNodeWrapper->shadowNode == nullptr) {
-      throw jsi::JSINativeException("Value state is nullptr, expected a ShadowNode reference");
+    auto shadowNodeWrapper =
+        std::dynamic_pointer_cast<ShadowNodeWrapper>(nativeState);
+    if (shadowNodeWrapper == nullptr ||
+        shadowNodeWrapper->shadowNode == nullptr) {
+      throw jsi::JSINativeException(
+          "Value state is nullptr, expected a ShadowNode reference");
     }
 
     return shadowNodeWrapper->shadowNode;
   }
 
-  static jsi::Value toJs(jsi::Runtime &rt, const std::shared_ptr<const ShadowNode> &value)
-  {
+  static jsi::Value toJs(
+      jsi::Runtime& rt,
+      const std::shared_ptr<const ShadowNode>& value) {
     jsi::Object obj(rt);
     obj.setNativeState(rt, std::make_shared<ShadowNodeWrapper>(value));
     return obj;

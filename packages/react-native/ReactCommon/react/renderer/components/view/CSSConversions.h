@@ -20,19 +20,19 @@
 
 namespace facebook::react {
 
-inline SharedColor fromCSSColor(const CSSColor &cssColor)
-{
-  return hostPlatformColorFromRGBA(cssColor.r, cssColor.g, cssColor.b, cssColor.a);
+inline SharedColor fromCSSColor(const CSSColor& cssColor) {
+  return hostPlatformColorFromRGBA(
+      cssColor.r, cssColor.g, cssColor.b, cssColor.a);
 }
 
-inline std::optional<Float> coerceAmount(const RawValue &value)
-{
+inline std::optional<Float> coerceAmount(const RawValue& value) {
   if (value.hasType<Float>()) {
     return (Float)value;
   }
 
   if (value.hasType<std::string>()) {
-    auto cssVal = parseCSSProperty<CSSNumber, CSSPercentage>((std::string)value);
+    auto cssVal =
+        parseCSSProperty<CSSNumber, CSSPercentage>((std::string)value);
     if (std::holds_alternative<CSSNumber>(cssVal)) {
       return std::get<CSSNumber>(cssVal).value;
     } else if (std::holds_alternative<CSSPercentage>(cssVal)) {
@@ -42,8 +42,7 @@ inline std::optional<Float> coerceAmount(const RawValue &value)
   return {};
 }
 
-inline std::optional<Float> coerceAngle(const RawValue &value)
-{
+inline std::optional<Float> coerceAngle(const RawValue& value) {
   if (value.hasType<Float>()) {
     return (Float)value;
   }
@@ -57,8 +56,9 @@ inline std::optional<Float> coerceAngle(const RawValue &value)
   return {};
 }
 
-inline SharedColor coerceColor(const RawValue &value, const PropsParserContext &context)
-{
+inline SharedColor coerceColor(
+    const RawValue& value,
+    const PropsParserContext& context) {
   if (value.hasType<std::string>()) {
     auto cssColor = parseCSSProperty<CSSColor>((std::string)value);
     if (!std::holds_alternative<CSSColor>(cssColor)) {
@@ -72,8 +72,7 @@ inline SharedColor coerceColor(const RawValue &value, const PropsParserContext &
   return color;
 }
 
-inline std::optional<Float> coerceLength(const RawValue &value)
-{
+inline std::optional<Float> coerceLength(const RawValue& value) {
   if (value.hasType<Float>()) {
     return (Float)value;
   }

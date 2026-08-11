@@ -28,11 +28,13 @@ class PerformanceEntryBuffer {
   explicit PerformanceEntryBuffer() = default;
   virtual ~PerformanceEntryBuffer() = default;
 
-  virtual void add(const PerformanceEntry &entry) = 0;
-  virtual void getEntries(std::vector<PerformanceEntry> &target) const = 0;
-  virtual void getEntries(std::vector<PerformanceEntry> &target, const std::string &name) const = 0;
+  virtual void add(const PerformanceEntry& entry) = 0;
+  virtual void getEntries(std::vector<PerformanceEntry>& target) const = 0;
+  virtual void getEntries(
+      std::vector<PerformanceEntry>& target,
+      const std::string& name) const = 0;
   virtual void clear() = 0;
-  virtual void clear(const std::string &name) = 0;
+  virtual void clear(const std::string& name) = 0;
 };
 
 } // namespace facebook::react

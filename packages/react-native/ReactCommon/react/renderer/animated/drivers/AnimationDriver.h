@@ -29,23 +29,20 @@ class AnimationDriver {
       Tag animatedValueTag,
       std::optional<AnimationEndCallback> endCallback,
       folly::dynamic config,
-      NativeAnimatedNodesManager *manager);
+      NativeAnimatedNodesManager* manager);
   virtual ~AnimationDriver() = default;
   void startAnimation();
   void stopAnimation(bool ignoreCompletedHandlers = false);
 
-  inline int getId() const noexcept
-  {
+  inline int getId() const noexcept {
     return id_;
   }
 
-  inline Tag getAnimatedValueTag() const noexcept
-  {
+  inline Tag getAnimatedValueTag() const noexcept {
     return animatedValueTag_;
   }
 
-  bool getIsComplete() const noexcept
-  {
+  bool getIsComplete() const noexcept {
     return isComplete_;
   }
 
@@ -54,22 +51,21 @@ class AnimationDriver {
   virtual void updateConfig(folly::dynamic config);
 
 #ifdef REACT_NATIVE_DEBUG
-  std::string debugID() const
-  {
-    return (config_.count("debugID") != 0u) ? config_["debugID"].asString() : "";
+  std::string debugID() const {
+    return (config_.count("debugID") != 0u) ? config_["debugID"].asString()
+                                            : "";
   }
 #endif
 
-  static std::optional<AnimationDriverType> getDriverTypeByName(const std::string &driverTypeName);
+  static std::optional<AnimationDriverType> getDriverTypeByName(
+      const std::string& driverTypeName);
 
  protected:
-  virtual bool update(double /*timeDeltaMs*/, bool /*restarting*/)
-  {
+  virtual bool update(double /*timeDeltaMs*/, bool /*restarting*/) {
     return true;
   }
 
-  void markNodeUpdated(Tag tag)
-  {
+  void markNodeUpdated(Tag tag) {
     manager_->updatedNodeTags_.insert(tag);
   }
 
@@ -77,7 +73,7 @@ class AnimationDriver {
   int id_{0};
   Tag animatedValueTag_{}; // Tag of a ValueAnimatedNode
   int iterations_{0};
-  NativeAnimatedNodesManager *manager_;
+  NativeAnimatedNodesManager* manager_;
 
   bool isComplete_{false};
   int currentIteration_{0};

@@ -25,12 +25,14 @@ namespace facebook::react {
 
 class NativeModule;
 
-struct [[deprecated("This API will be removed along with the legacy architecture.")]] ModuleConfig {
+struct [[deprecated(
+    "This API will be removed along with the legacy architecture.")]] ModuleConfig {
   size_t index;
   folly::dynamic config;
 };
 
-class RN_EXPORT [[deprecated("This API will be removed along with the legacy architecture.")]] ModuleRegistry {
+class RN_EXPORT [[deprecated(
+    "This API will be removed along with the legacy architecture.")]] ModuleRegistry {
  public:
   // not implemented:
   // onBatchComplete: see
@@ -39,20 +41,28 @@ class RN_EXPORT [[deprecated("This API will be removed along with the legacy arc
   // notifyCatalystInstanceInitialized: this is really only used by view-related
   // code notifyCatalystInstanceDestroy: use RAII instead
 
-  using ModuleNotFoundCallback = std::function<bool(const std::string &name)>;
+  using ModuleNotFoundCallback = std::function<bool(const std::string& name)>;
 
-  ModuleRegistry(std::vector<std::unique_ptr<NativeModule>> modules, ModuleNotFoundCallback callback = nullptr);
+  ModuleRegistry(
+      std::vector<std::unique_ptr<NativeModule>> modules,
+      ModuleNotFoundCallback callback = nullptr);
   void registerModules(std::vector<std::unique_ptr<NativeModule>> modules);
 
   std::vector<std::string> moduleNames();
 
-  std::optional<ModuleConfig> getConfig(const std::string &name);
+  std::optional<ModuleConfig> getConfig(const std::string& name);
 
-  void callNativeMethod(unsigned int moduleId, unsigned int methodId, folly::dynamic &&params, int callId);
-  MethodCallResult callSerializableNativeHook(unsigned int moduleId, unsigned int methodId, folly::dynamic &&params);
+  void callNativeMethod(
+      unsigned int moduleId,
+      unsigned int methodId,
+      folly::dynamic&& params,
+      int callId);
+  MethodCallResult callSerializableNativeHook(
+      unsigned int moduleId, unsigned int methodId, folly::dynamic&& params);
 
   std::string getModuleName(unsigned int moduleId);
-  std::string getModuleSyncMethodName(unsigned int moduleId, unsigned int methodId);
+  std::string getModuleSyncMethodName(
+      unsigned int moduleId, unsigned int methodId);
 
  private:
   // This is always populated

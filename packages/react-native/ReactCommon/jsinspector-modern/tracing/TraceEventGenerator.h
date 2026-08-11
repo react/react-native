@@ -19,8 +19,8 @@
 namespace facebook::react::jsinspector_modern::tracing {
 
 /**
- * This class encapsulates the logic for generating canonical trace events that will be serialized and sent as part of
- * Tracing.dataCollected CDP message.
+ * This class encapsulates the logic for generating canonical trace events that
+ * will be serialized and sent as part of Tracing.dataCollected CDP message.
  */
 class TraceEventGenerator {
  public:
@@ -51,7 +51,7 @@ class TraceEventGenerator {
   static TraceEvent createScreenshotEvent(
       FrameSequenceId frameSequenceId,
       int sourceId,
-      std::vector<uint8_t> &&snapshot,
+      std::vector<uint8_t>&& snapshot,
       HighResTimeStamp expectedDisplayTime,
       ProcessId processId,
       ThreadId threadId);

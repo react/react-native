@@ -23,31 +23,32 @@ namespace facebook::react {
  */
 class ScopedShadowTreeRevisionLock {
  public:
-  explicit ScopedShadowTreeRevisionLock(ShadowTreeRevisionConsistencyManager *consistencyManager) noexcept
-      : consistencyManager_(consistencyManager)
-  {
+  explicit ScopedShadowTreeRevisionLock(
+      ShadowTreeRevisionConsistencyManager* consistencyManager) noexcept
+      : consistencyManager_(consistencyManager) {
     if (consistencyManager_ != nullptr) {
       consistencyManager_->lockRevisions();
     }
   }
 
   // Non-movable
-  ScopedShadowTreeRevisionLock(const ScopedShadowTreeRevisionLock &) = delete;
-  ScopedShadowTreeRevisionLock(ScopedShadowTreeRevisionLock &&) = delete;
+  ScopedShadowTreeRevisionLock(const ScopedShadowTreeRevisionLock&) = delete;
+  ScopedShadowTreeRevisionLock(ScopedShadowTreeRevisionLock&&) = delete;
 
   // Non-copyable
-  ScopedShadowTreeRevisionLock &operator=(const ScopedShadowTreeRevisionLock &) = delete;
-  ScopedShadowTreeRevisionLock &operator=(ScopedShadowTreeRevisionLock &&) = delete;
+  ScopedShadowTreeRevisionLock& operator=(const ScopedShadowTreeRevisionLock&) =
+      delete;
+  ScopedShadowTreeRevisionLock& operator=(ScopedShadowTreeRevisionLock&&) =
+      delete;
 
-  ~ScopedShadowTreeRevisionLock() noexcept
-  {
+  ~ScopedShadowTreeRevisionLock() noexcept {
     if (consistencyManager_ != nullptr) {
       consistencyManager_->unlockRevisions();
     }
   }
 
  private:
-  ShadowTreeRevisionConsistencyManager *consistencyManager_;
+  ShadowTreeRevisionConsistencyManager* consistencyManager_;
 };
 
 } // namespace facebook::react

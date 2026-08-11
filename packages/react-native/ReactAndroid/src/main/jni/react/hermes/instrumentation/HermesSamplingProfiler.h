@@ -17,10 +17,13 @@ namespace jni = ::facebook::jni;
 
 class HermesSamplingProfiler : public jni::JavaClass<HermesSamplingProfiler> {
  public:
-  constexpr static auto kJavaDescriptor = "Lcom/facebook/hermes/instrumentation/HermesSamplingProfiler;";
+  constexpr static auto kJavaDescriptor =
+      "Lcom/facebook/hermes/instrumentation/HermesSamplingProfiler;";
   static void enable(jni::alias_ref<jclass> /*unused*/);
   static void disable(jni::alias_ref<jclass> /*unused*/);
-  static void dumpSampledTraceToFile(jni::alias_ref<jclass> /*unused*/, const std::string &filename);
+  static void dumpSampledTraceToFile(
+      jni::alias_ref<jclass> /*unused*/,
+      const std::string& filename);
 
   static void registerNatives();
 

@@ -17,21 +17,25 @@ namespace facebook::react {
 
 using CallbackHandle = jsi::Object;
 
-using NativeRequestIdleCallbackOptions = NativeIdleCallbacksRequestIdleCallbackOptions<std::optional<HighResDuration>>;
+using NativeRequestIdleCallbackOptions =
+    NativeIdleCallbacksRequestIdleCallbackOptions<
+        std::optional<HighResDuration>>;
 
 template <>
 struct Bridging<NativeRequestIdleCallbackOptions>
-    : NativeIdleCallbacksRequestIdleCallbackOptionsBridging<NativeRequestIdleCallbackOptions> {};
+    : NativeIdleCallbacksRequestIdleCallbackOptionsBridging<
+          NativeRequestIdleCallbackOptions> {};
 
-class NativeIdleCallbacks : public NativeIdleCallbacksCxxSpec<NativeIdleCallbacks> {
+class NativeIdleCallbacks
+    : public NativeIdleCallbacksCxxSpec<NativeIdleCallbacks> {
  public:
   NativeIdleCallbacks(std::shared_ptr<CallInvoker> jsInvoker);
 
   CallbackHandle requestIdleCallback(
-      jsi::Runtime &runtime,
-      SyncCallback<void(jsi::Object)> &&callback,
+      jsi::Runtime& runtime,
+      SyncCallback<void(jsi::Object)>&& callback,
       std::optional<NativeRequestIdleCallbackOptions> options);
-  void cancelIdleCallback(jsi::Runtime &runtime, jsi::Object handle);
+  void cancelIdleCallback(jsi::Runtime& runtime, jsi::Object handle);
 };
 
 } // namespace facebook::react

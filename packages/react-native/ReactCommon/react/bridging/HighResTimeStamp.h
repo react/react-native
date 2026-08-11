@@ -14,26 +14,26 @@ namespace facebook::react {
 
 template <>
 struct Bridging<HighResTimeStamp> {
-  static HighResTimeStamp fromJs(jsi::Runtime & /*rt*/, const jsi::Value &jsiValue)
-  {
+  static HighResTimeStamp fromJs(
+      jsi::Runtime& /*rt*/,
+      const jsi::Value& jsiValue) {
     return HighResTimeStamp::fromDOMHighResTimeStamp(jsiValue.asNumber());
   }
 
-  static double toJs(jsi::Runtime & /*rt*/, const HighResTimeStamp &value)
-  {
+  static double toJs(jsi::Runtime& /*rt*/, const HighResTimeStamp& value) {
     return value.toDOMHighResTimeStamp();
   }
 };
 
 template <>
 struct Bridging<HighResDuration> {
-  static HighResDuration fromJs(jsi::Runtime & /*rt*/, const jsi::Value &jsiValue)
-  {
+  static HighResDuration fromJs(
+      jsi::Runtime& /*rt*/,
+      const jsi::Value& jsiValue) {
     return HighResDuration::fromDOMHighResTimeStamp(jsiValue.asNumber());
   }
 
-  static double toJs(jsi::Runtime & /*rt*/, const HighResDuration &value)
-  {
+  static double toJs(jsi::Runtime& /*rt*/, const HighResDuration& value) {
     return value.toDOMHighResTimeStamp();
   }
 };

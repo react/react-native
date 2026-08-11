@@ -16,14 +16,13 @@ namespace facebook::react {
 /*
  * Descriptor for <Switch> component.
  */
-class SwitchComponentDescriptor final : public ConcreteComponentDescriptor<SwitchShadowNode> {
+class SwitchComponentDescriptor final
+    : public ConcreteComponentDescriptor<SwitchShadowNode> {
  public:
-  SwitchComponentDescriptor(const ComponentDescriptorParameters &parameters) : ConcreteComponentDescriptor(parameters)
-  {
-  }
+  SwitchComponentDescriptor(const ComponentDescriptorParameters& parameters)
+      : ConcreteComponentDescriptor(parameters) {}
 
-  void adopt(ShadowNode &shadowNode) const override
-  {
+  void adopt(ShadowNode& shadowNode) const override {
     ConcreteComponentDescriptor::adopt(shadowNode);
   }
 };

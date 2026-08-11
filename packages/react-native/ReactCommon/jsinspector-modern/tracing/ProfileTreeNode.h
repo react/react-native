@@ -34,35 +34,31 @@ class ProfileTreeNode {
       CodeType codeType,
       RuntimeSamplingProfile::SampleCallStackFrame callFrame,
       uint32_t parentId = NO_PARENT)
-      : id_(id), codeType_(codeType), parentId_(parentId), callFrame_(std::move(callFrame))
-  {
-  }
+      : id_(id),
+        codeType_(codeType),
+        parentId_(parentId),
+        callFrame_(std::move(callFrame)) {}
 
-  uint32_t getId() const
-  {
+  uint32_t getId() const {
     return id_;
   }
 
-  CodeType getCodeType() const
-  {
+  CodeType getCodeType() const {
     return codeType_;
   }
 
-  inline bool hasParent() const
-  {
+  inline bool hasParent() const {
     return parentId_ != NO_PARENT;
   }
 
-  uint32_t getParentId() const
-  {
+  uint32_t getParentId() const {
     return parentId_;
   }
 
   /**
    * \return call frame information that is represented by this node.
    */
-  const RuntimeSamplingProfile::SampleCallStackFrame &getCallFrame() const
-  {
+  const RuntimeSamplingProfile::SampleCallStackFrame& getCallFrame() const {
     return callFrame_;
   }
 
@@ -70,12 +66,12 @@ class ProfileTreeNode {
    * \return a pointer if the node already contains a child with the same
    * codeType and callFrame, nullptr otherwise.
    */
-  ProfileTreeNode *getIfAlreadyExists(
+  ProfileTreeNode* getIfAlreadyExists(
       CodeType childCodeType,
-      const RuntimeSamplingProfile::SampleCallStackFrame &childCallFrame)
-  {
-    for (auto &existingChild : children_) {
-      if (existingChild.getCodeType() == childCodeType && existingChild.getCallFrame() == childCallFrame) {
+      const RuntimeSamplingProfile::SampleCallStackFrame& childCallFrame) {
+    for (auto& existingChild : children_) {
+      if (existingChild.getCodeType() == childCodeType &&
+          existingChild.getCallFrame() == childCallFrame) {
         return &existingChild;
       }
     }
@@ -87,10 +83,12 @@ class ProfileTreeNode {
    * Creates a ProfileTreeNode and links it as a child to this node.
    * \return a pointer to the child node.
    */
-  ProfileTreeNode *
-  addChild(uint32_t childId, CodeType childCodeType, RuntimeSamplingProfile::SampleCallStackFrame childCallFrame)
-  {
-    return &children_.emplace_back(childId, childCodeType, std::move(childCallFrame), id_);
+  ProfileTreeNode* addChild(
+      uint32_t childId,
+      CodeType childCodeType,
+      RuntimeSamplingProfile::SampleCallStackFrame childCallFrame) {
+    return &children_.emplace_back(
+        childId, childCodeType, std::move(childCallFrame), id_);
   }
 
  private:

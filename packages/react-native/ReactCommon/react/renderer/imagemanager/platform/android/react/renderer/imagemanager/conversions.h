@@ -40,8 +40,7 @@ constexpr MapBuffer::Key IS_KEY_VIEW_WIDTH = 16;
 constexpr MapBuffer::Key IS_KEY_VIEW_HEIGHT = 17;
 constexpr MapBuffer::Key IS_KEY_CACHE_CONTROL = 18;
 
-inline std::string cacheStrategyToString(ImageSource::CacheStategy cache)
-{
+inline std::string cacheStrategyToString(ImageSource::CacheStategy cache) {
   switch (cache) {
     case ImageSource::CacheStategy::Reload:
       return "reload";
@@ -55,46 +54,66 @@ inline std::string cacheStrategyToString(ImageSource::CacheStategy cache)
   }
 }
 
-inline void serializeImageSource(MapBufferBuilder &builder, const ImageSource &imageSource)
-{
+inline void serializeImageSource(
+    MapBufferBuilder& builder,
+    const ImageSource& imageSource) {
   builder.putString(IS_KEY_URI, imageSource.uri);
-  builder.putInt(IS_KEY_IMAGE_WIDTH, static_cast<int32_t>(imageSource.size.width));
-  builder.putInt(IS_KEY_IMAGE_HEIGHT, static_cast<int32_t>(imageSource.size.height));
-  builder.putString(IS_KEY_CACHE_CONTROL, cacheStrategyToString(imageSource.cache));
+  builder.putInt(
+      IS_KEY_IMAGE_WIDTH, static_cast<int32_t>(imageSource.size.width));
+  builder.putInt(
+      IS_KEY_IMAGE_HEIGHT, static_cast<int32_t>(imageSource.size.height));
+  builder.putString(
+      IS_KEY_CACHE_CONTROL, cacheStrategyToString(imageSource.cache));
 }
 
-inline void serializeImageRequestParams(MapBufferBuilder &builder, const ImageRequestParams &imageRequestParams)
-{
-  builder.putInt(IS_KEY_VIEW_WIDTH, static_cast<int32_t>(imageRequestParams.size.width));
-  builder.putInt(IS_KEY_VIEW_HEIGHT, static_cast<int32_t>(imageRequestParams.size.height));
+inline void serializeImageRequestParams(
+    MapBufferBuilder& builder,
+    const ImageRequestParams& imageRequestParams) {
+  builder.putInt(
+      IS_KEY_VIEW_WIDTH, static_cast<int32_t>(imageRequestParams.size.width));
+  builder.putInt(
+      IS_KEY_VIEW_HEIGHT, static_cast<int32_t>(imageRequestParams.size.height));
   builder.putString(IS_KEY_DEFAULT_SRC, imageRequestParams.defaultSource.uri);
-  builder.putInt(IS_KEY_RESIZE_MODE, to_underlying(imageRequestParams.resizeMode));
+  builder.putInt(
+      IS_KEY_RESIZE_MODE, to_underlying(imageRequestParams.resizeMode));
   builder.putString(IS_KEY_RESIZE_METHOD, imageRequestParams.resizeMethod);
   builder.putDouble(IS_KEY_BLUR_RADIUS, imageRequestParams.blurRadius);
-  builder.putDouble(IS_KEY_RESIZE_MULTIPLIER, imageRequestParams.resizeMultiplier);
-  builder.putBool(IS_KEY_SHOULD_NOTIFY_LOAD_EVENTS, imageRequestParams.shouldNotifyLoadEvents);
+  builder.putDouble(
+      IS_KEY_RESIZE_MULTIPLIER, imageRequestParams.resizeMultiplier);
+  builder.putBool(
+      IS_KEY_SHOULD_NOTIFY_LOAD_EVENTS,
+      imageRequestParams.shouldNotifyLoadEvents);
   if (isColorMeaningful(imageRequestParams.overlayColor)) {
-    builder.putInt(IS_KEY_OVERLAY_COLOR, toAndroidRepr(imageRequestParams.overlayColor));
+    builder.putInt(
+        IS_KEY_OVERLAY_COLOR, toAndroidRepr(imageRequestParams.overlayColor));
   }
   if (ReactNativeFeatureFlags::enableImageTransparentTintColor()) {
     if (imageRequestParams.tintColor.has_value()) {
-      builder.putInt(IS_KEY_TINT_COLOR, toAndroidRepr(imageRequestParams.tintColor.value()));
+      builder.putInt(
+          IS_KEY_TINT_COLOR,
+          toAndroidRepr(imageRequestParams.tintColor.value()));
     }
   } else {
     // pre-`std::optional` behavior
-    SharedColor tintColor = imageRequestParams.tintColor.value_or(SharedColor{});
+    SharedColor tintColor =
+        imageRequestParams.tintColor.value_or(SharedColor{});
     if (isColorMeaningful(tintColor)) {
       builder.putInt(IS_KEY_TINT_COLOR, toAndroidRepr(tintColor));
     }
   }
-  builder.putInt(IS_KEY_FADE_DURATION, static_cast<int32_t>(imageRequestParams.fadeDuration));
-  builder.putBool(IS_KEY_PROGRESSIVE_RENDERING_ENABLED, imageRequestParams.progressiveRenderingEnabled);
-  builder.putString(IS_KEY_LOADING_INDICATOR_SRC, imageRequestParams.loadingIndicatorSource.uri);
+  builder.putInt(
+      IS_KEY_FADE_DURATION,
+      static_cast<int32_t>(imageRequestParams.fadeDuration));
+  builder.putBool(
+      IS_KEY_PROGRESSIVE_RENDERING_ENABLED,
+      imageRequestParams.progressiveRenderingEnabled);
+  builder.putString(
+      IS_KEY_LOADING_INDICATOR_SRC,
+      imageRequestParams.loadingIndicatorSource.uri);
   builder.putString(IS_KEY_ANALYTIC_TAG, imageRequestParams.analyticTag);
 }
 
-inline MapBuffer serializeImageRequest(const ImageRequestItem &item)
-{
+inline MapBuffer serializeImageRequest(const ImageRequestItem& item) {
   auto builder = MapBufferBuilder();
   serializeImageSource(builder, item.imageSource);
   serializeImageRequestParams(builder, item.imageRequestParams);
@@ -104,11 +123,11 @@ inline MapBuffer serializeImageRequest(const ImageRequestItem &item)
 
 } // namespace
 
-inline MapBuffer serializeImageRequests(const std::vector<ImageRequestItem> &items)
-{
+inline MapBuffer serializeImageRequests(
+    const std::vector<ImageRequestItem>& items) {
   std::vector<MapBuffer> mapBufferList;
   mapBufferList.reserve(items.size());
-  for (const auto &item : items) {
+  for (const auto& item : items) {
     mapBufferList.emplace_back(serializeImageRequest(item));
   }
   MapBufferBuilder builder;

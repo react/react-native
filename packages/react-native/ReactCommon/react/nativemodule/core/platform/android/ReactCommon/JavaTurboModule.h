@@ -18,11 +18,14 @@
 namespace facebook::react {
 
 struct JTurboModule : jni::JavaClass<JTurboModule> {
-  static auto constexpr kJavaDescriptor = "Lcom/facebook/react/turbomodule/core/interfaces/TurboModule;";
+  static auto constexpr kJavaDescriptor =
+      "Lcom/facebook/react/turbomodule/core/interfaces/TurboModule;";
 };
 
-struct JTurboModuleWithJSIBindings : jni::JavaClass<JTurboModuleWithJSIBindings> {
-  static auto constexpr kJavaDescriptor = "Lcom/facebook/react/turbomodule/core/interfaces/TurboModuleWithJSIBindings;";
+struct JTurboModuleWithJSIBindings
+    : jni::JavaClass<JTurboModuleWithJSIBindings> {
+  static auto constexpr kJavaDescriptor =
+      "Lcom/facebook/react/turbomodule/core/interfaces/TurboModuleWithJSIBindings;";
 };
 
 class JSI_EXPORT JavaTurboModule : public TurboModule {
@@ -35,23 +38,23 @@ class JSI_EXPORT JavaTurboModule : public TurboModule {
     std::shared_ptr<NativeMethodCallInvoker> nativeMethodCallInvoker;
   };
 
-  JavaTurboModule(const InitParams &params);
+  JavaTurboModule(const InitParams& params);
   virtual ~JavaTurboModule();
 
   jsi::Value invokeJavaMethod(
-      jsi::Runtime &runtime,
+      jsi::Runtime& runtime,
       TurboModuleMethodValueKind valueKind,
-      const std::string &methodName,
-      const std::string &methodSignature,
-      const jsi::Value *args,
+      const std::string& methodName,
+      const std::string& methodSignature,
+      const jsi::Value* args,
       size_t argCount,
-      jmethodID &cachedMethodID);
+      jmethodID& cachedMethodID);
 
  protected:
   void configureEventEmitterCallback();
 
-  [[deprecated]] void setEventEmitterCallback(jni::alias_ref<jobject> /*unused*/)
-  {
+  [[deprecated]] void setEventEmitterCallback(
+      jni::alias_ref<jobject> /*unused*/) {
     configureEventEmitterCallback();
   }
 

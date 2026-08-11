@@ -18,7 +18,8 @@ using SharedShadowNodeFamily = std::shared_ptr<const ShadowNodeFamily>;
 
 class StateUpdate {
  public:
-  using Callback = std::function<StateData::Shared(const StateData::Shared &data)>;
+  using Callback =
+      std::function<StateData::Shared(const StateData::Shared& data)>;
   using FailureCallback = std::function<void()>;
 
   SharedShadowNodeFamily family;

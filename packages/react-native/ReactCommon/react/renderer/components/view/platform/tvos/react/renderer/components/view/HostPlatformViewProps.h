@@ -16,12 +16,15 @@ class HostPlatformViewProps : public BaseViewProps {
  public:
   HostPlatformViewProps() = default;
   HostPlatformViewProps(
-      const PropsParserContext &context,
-      const HostPlatformViewProps &sourceProps,
-      const RawProps &rawProps);
+      const PropsParserContext& context,
+      const HostPlatformViewProps& sourceProps,
+      const RawProps& rawProps);
 
-  void
-  setProp(const PropsParserContext &context, RawPropsPropNameHash hash, const char *propName, const RawValue &value);
+  void setProp(
+      const PropsParserContext& context,
+      RawPropsPropNameHash hash,
+      const char* propName,
+      const RawValue& value);
 
   bool focusable{false};
 };

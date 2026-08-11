@@ -46,7 +46,7 @@ struct ResourceTimingData {
  */
 class NetworkReporter {
  public:
-  static NetworkReporter &getInstance();
+  static NetworkReporter& getInstance();
 
   /**
    * Returns whether network tracking over CDP is currently enabled.
@@ -64,10 +64,10 @@ class NetworkReporter {
    * https://w3c.github.io/resource-timing/#dom-performanceresourcetiming-requeststart
    */
   void reportRequestStart(
-      const std::string &requestId,
-      const RequestInfo &requestInfo,
+      const std::string& requestId,
+      const RequestInfo& requestInfo,
       int encodedDataLength,
-      const std::optional<ResponseInfo> &redirectResponse);
+      const std::optional<ResponseInfo>& redirectResponse);
 
   /**
    * Report timestamp for sending the network request, and (in a debug build)
@@ -81,7 +81,9 @@ class NetworkReporter {
    *
    * https://w3c.github.io/resource-timing/#dom-performanceresourcetiming-connectstart
    */
-  void reportConnectionTiming(const std::string &requestId, const std::optional<Headers> &headers);
+  void reportConnectionTiming(
+      const std::string& requestId,
+      const std::optional<Headers>& headers);
 
   /**
    * Report when HTTP response headers have been received, corresponding to
@@ -93,7 +95,10 @@ class NetworkReporter {
    *
    * https://w3c.github.io/resource-timing/#dom-performanceresourcetiming-responsestart
    */
-  void reportResponseStart(const std::string &requestId, const ResponseInfo &responseInfo, int encodedDataLength);
+  void reportResponseStart(
+      const std::string& requestId,
+      const ResponseInfo& responseInfo,
+      int encodedDataLength);
 
   /**
    * Report when additional chunks of the response body have been received.
@@ -101,7 +106,10 @@ class NetworkReporter {
    * Corresponds to `Network.dataReceived` in CDP (used for progress bar
    * rendering).
    */
-  void reportDataReceived(const std::string &requestId, int dataLength, const std::optional<int> &encodedDataLength);
+  void reportDataReceived(
+      const std::string& requestId,
+      int dataLength,
+      const std::optional<int>& encodedDataLength);
 
   /**
    * Report when a network request is complete and we are no longer receiving
@@ -113,14 +121,14 @@ class NetworkReporter {
    *
    * https://w3c.github.io/resource-timing/#dom-performanceresourcetiming-responseend
    */
-  void reportResponseEnd(const std::string &requestId, int encodedDataLength);
+  void reportResponseEnd(const std::string& requestId, int encodedDataLength);
 
   /**
    * Report when a network request has failed.
    *
    * Corresponds to `Network.loadingFailed` in CDP.
    */
-  void reportRequestFailed(const std::string &requestId, bool cancelled) const;
+  void reportRequestFailed(const std::string& requestId, bool cancelled) const;
 
   /**
    * Report that a WebSocket connection is about to be created.
@@ -129,7 +137,9 @@ class NetworkReporter {
    * reported to CDP only and have no Web Performance counterpart — in a
    * production (non dev or profiling) build, this method is a no-op.
    */
-  void reportWebSocketCreated(const std::string &requestId, const std::string &url) const;
+  void reportWebSocketCreated(
+      const std::string& requestId,
+      const std::string& url) const;
 
   /**
    * Report that a WebSocket handshake (HTTP upgrade) request is about to be
@@ -138,7 +148,9 @@ class NetworkReporter {
    * Corresponds to `Network.webSocketWillSendHandshakeRequest` in CDP. In a
    * production (non dev or profiling) build, this method is a no-op.
    */
-  void reportWebSocketWillSendHandshakeRequest(const std::string &requestId, const Headers &headers) const;
+  void reportWebSocketWillSendHandshakeRequest(
+      const std::string& requestId,
+      const Headers& headers) const;
 
   /**
    * Report that a WebSocket handshake response was received and the
@@ -148,9 +160,9 @@ class NetworkReporter {
    * production (non dev or profiling) build, this method is a no-op.
    */
   void reportWebSocketHandshakeResponseReceived(
-      const std::string &requestId,
+      const std::string& requestId,
       uint16_t statusCode,
-      const Headers &headers) const;
+      const Headers& headers) const;
 
   /**
    * Report a WebSocket message sent over an open connection. `payloadData`
@@ -160,7 +172,10 @@ class NetworkReporter {
    * Corresponds to `Network.webSocketFrameSent` in CDP. In a production
    * (non dev or profiling) build, this method is a no-op.
    */
-  void reportWebSocketMessageSent(const std::string &requestId, const std::string &payloadData, bool isBinary) const;
+  void reportWebSocketMessageSent(
+      const std::string& requestId,
+      const std::string& payloadData,
+      bool isBinary) const;
 
   /**
    * Report a WebSocket message received over an open connection.
@@ -170,8 +185,10 @@ class NetworkReporter {
    * Corresponds to `Network.webSocketFrameReceived` in CDP. In a production
    * (non dev or profiling) build, this method is a no-op.
    */
-  void reportWebSocketMessageReceived(const std::string &requestId, const std::string &payloadData, bool isBinary)
-      const;
+  void reportWebSocketMessageReceived(
+      const std::string& requestId,
+      const std::string& payloadData,
+      bool isBinary) const;
 
   /**
    * Report that a WebSocket connection was closed, whether cleanly or due to
@@ -180,7 +197,7 @@ class NetworkReporter {
    * Corresponds to `Network.webSocketClosed` in CDP. In a production (non dev
    * or profiling) build, this method is a no-op.
    */
-  void reportWebSocketClosed(const std::string &requestId) const;
+  void reportWebSocketClosed(const std::string& requestId) const;
 
   /**
    * Store the fetched response body for a text or image network response.
@@ -192,12 +209,15 @@ class NetworkReporter {
    *
    * Should be called after checking \ref NetworkReporter::isDebuggingEnabled.
    */
-  void storeResponseBody(const std::string &requestId, std::string_view body, bool base64Encoded);
+  void storeResponseBody(
+      const std::string& requestId,
+      std::string_view body,
+      bool base64Encoded);
 
  private:
   NetworkReporter() = default;
-  NetworkReporter(const NetworkReporter &) = delete;
-  NetworkReporter &operator=(const NetworkReporter &) = delete;
+  NetworkReporter(const NetworkReporter&) = delete;
+  NetworkReporter& operator=(const NetworkReporter&) = delete;
   ~NetworkReporter() = default;
 
   std::unordered_map<std::string, ResourceTimingData> perfTimingsBuffer_{};

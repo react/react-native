@@ -17,11 +17,10 @@ namespace facebook::react {
 #if defined(WITH_LOOM_TRACE)
 #define SystraceSection TraceSection
 #else
-struct [[deprecated("Use TraceSection")]] SystraceSection : public TraceSection {
+struct [[deprecated("Use TraceSection")]] SystraceSection : public TraceSection{
   template <typename... ConvertsToStringPiece>
-  explicit SystraceSection(const char *name, ConvertsToStringPiece &&...args) : TraceSection(name, args...)
-  {
-  }
+  explicit SystraceSection(const char* name, ConvertsToStringPiece&&... args) :
+      TraceSection(name, args...){}
 };
 #endif
 

@@ -37,9 +37,10 @@ enum class ReactEventPriority {
   Idle,
 };
 
-static constexpr std::underlying_type<ReactEventPriority>::type serialize(ReactEventPriority reactEventPriority)
-{
-  return static_cast<std::underlying_type<ReactEventPriority>::type>(reactEventPriority);
+static constexpr std::underlying_type<ReactEventPriority>::type serialize(
+    ReactEventPriority reactEventPriority) {
+  return static_cast<std::underlying_type<ReactEventPriority>::type>(
+      reactEventPriority);
 }
 
 } // namespace facebook::react

@@ -24,15 +24,15 @@ class ConsoleTask {
   explicit ConsoleTask(std::shared_ptr<ConsoleTaskContext> taskContext);
   ~ConsoleTask();
 
-  ConsoleTask(const ConsoleTask &) = default;
-  ConsoleTask &operator=(const ConsoleTask &) = delete;
+  ConsoleTask(const ConsoleTask&) = default;
+  ConsoleTask& operator=(const ConsoleTask&) = delete;
 
-  ConsoleTask(ConsoleTask &&) = default;
-  ConsoleTask &operator=(ConsoleTask &&) = delete;
+  ConsoleTask(ConsoleTask&&) = default;
+  ConsoleTask& operator=(ConsoleTask&&) = delete;
 
  private:
   std::shared_ptr<ConsoleTaskContext> taskContext_;
-  ConsoleTaskOrchestrator &orchestrator_;
+  ConsoleTaskOrchestrator& orchestrator_;
 };
 
 } // namespace facebook::react::jsinspector_modern

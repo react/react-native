@@ -20,18 +20,15 @@ class TimeSeries {
     int idxFrom2{0};
     int idxTo2{0};
 
-    int size() const
-    {
+    int size() const {
       return (idxTo1 - idxFrom1) + (idxTo2 - idxFrom2);
     }
 
-    bool isEmpty() const
-    {
+    bool isEmpty() const {
       return size() == 0;
     }
 
-    bool isContinuous() const
-    {
+    bool isContinuous() const {
       return idxTo2 - idxFrom2 == 0;
     }
   };
@@ -42,10 +39,9 @@ class TimeSeries {
 
   TimeSeries(int capacity = DEFAULT_CAPACITY);
 
-  bool operator==(const TimeSeries &rhs) const;
+  bool operator==(const TimeSeries& rhs) const;
 
-  int getCapacity() const
-  {
+  int getCapacity() const {
     return static_cast<int>(times_.capacity());
   }
   void setCapacity(int capacity);
@@ -54,31 +50,26 @@ class TimeSeries {
 
   int findHistoryPointIndex(double t, Bound bound = Bound::Lower) const;
 
-  int getNumPoints() const
-  {
+  int getNumPoints() const {
     return static_cast<int>(times_.size());
   }
 
-  double &valueAtIndex(int idx)
-  {
+  double& valueAtIndex(int idx) {
     const int numPoints = getNumPoints();
     return values_[(idx + position_) % numPoints];
   }
 
-  double &timeAtIndex(int idx)
-  {
+  double& timeAtIndex(int idx) {
     const int numPoints = getNumPoints();
     return times_[(idx + position_) % numPoints];
   }
 
-  double valueAtIndex(int idx) const
-  {
+  double valueAtIndex(int idx) const {
     const int numPoints = getNumPoints();
     return values_[(idx + position_) % numPoints];
   }
 
-  double timeAtIndex(int idx) const
-  {
+  double timeAtIndex(int idx) const {
     const int numPoints = getNumPoints();
     return times_[(idx + position_) % numPoints];
   }
@@ -90,7 +81,8 @@ class TimeSeries {
   double getValue(double time) const;
 
   double getPercentile(unsigned int percentile) const;
-  double getPercentile(unsigned int percentile, double timeFrom, double timeTo) const;
+  double getPercentile(unsigned int percentile, double timeFrom, double timeTo)
+      const;
 
   double getAverage() const;
   double getAverage(double timeFrom, double timeTo) const;
@@ -109,8 +101,10 @@ class TimeSeries {
   double getMaxTime() const;
   double getMinTime() const;
 
-  friend std::ostream &operator<<(std::ostream &os, const TimeSeries &ts);
-  friend std::ostream &operator<<(std::ostream &os, const TimeSeries::Range &range);
+  friend std::ostream& operator<<(std::ostream& os, const TimeSeries& ts);
+  friend std::ostream& operator<<(
+      std::ostream& os,
+      const TimeSeries::Range& range);
 
  private:
   std::vector<double> times_;
@@ -121,11 +115,11 @@ class TimeSeries {
   Range findHistoryPointRange(double timeFrom, double timeTo) const;
   Range wholeRange() const;
 
-  double getPercentile(unsigned int percentile, const Range &range) const;
-  double getAverage(const Range &range) const;
-  double getMax(const Range &range) const;
-  double getMin(const Range &range) const;
-  double getSum(const Range &range) const;
+  double getPercentile(unsigned int percentile, const Range& range) const;
+  double getAverage(const Range& range) const;
+  double getMax(const Range& range) const;
+  double getMin(const Range& range) const;
+  double getSum(const Range& range) const;
 };
 
 } // namespace facebook::react

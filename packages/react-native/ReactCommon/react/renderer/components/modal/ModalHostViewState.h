@@ -25,13 +25,15 @@ class ModalHostViewState final {
   using Shared = std::shared_ptr<const ModalHostViewState>;
 
   ModalHostViewState() : screenSize(ModalHostViewScreenSize()) {}
-  ModalHostViewState(Size screenSize_) : screenSize(screenSize_) {};
+  ModalHostViewState(Size screenSize_) : screenSize(screenSize_){};
 
 #ifdef RN_SERIALIZABLE_STATE
-  ModalHostViewState(const ModalHostViewState &previousState, folly::dynamic data)
-      : screenSize(
-            Size{.width = (Float)data["screenWidth"].getDouble(), .height = (Float)data["screenHeight"].getDouble()}) {
-        };
+  ModalHostViewState(
+      const ModalHostViewState& previousState,
+      folly::dynamic data)
+      : screenSize(Size{
+            .width = (Float)data["screenWidth"].getDouble(),
+            .height = (Float)data["screenHeight"].getDouble()}){};
 #endif
 
   const Size screenSize{};

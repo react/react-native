@@ -18,14 +18,17 @@ class AnimationBackendCommitHook : public UIManagerCommitHook {
   std::shared_ptr<AnimatedPropsRegistry> animatedPropsRegistry_;
 
  public:
-  AnimationBackendCommitHook(UIManager &uiManager, std::shared_ptr<AnimatedPropsRegistry> animatedPropsRegistry);
+  AnimationBackendCommitHook(
+      UIManager& uiManager,
+      std::shared_ptr<AnimatedPropsRegistry> animatedPropsRegistry);
   RootShadowNode::Unshared shadowTreeWillCommit(
-      const ShadowTree &shadowTree,
-      const RootShadowNode::Shared &oldRootShadowNode,
-      const RootShadowNode::Unshared &newRootShadowNode,
-      const ShadowTreeCommitOptions &commitOptions) noexcept override;
-  void commitHookWasRegistered(const UIManager &uiManager) noexcept override {}
-  void commitHookWasUnregistered(const UIManager &uiManager) noexcept override {}
+      const ShadowTree& shadowTree,
+      const RootShadowNode::Shared& oldRootShadowNode,
+      const RootShadowNode::Unshared& newRootShadowNode,
+      const ShadowTreeCommitOptions& commitOptions) noexcept override;
+  void commitHookWasRegistered(const UIManager& uiManager) noexcept override {}
+  void commitHookWasUnregistered(const UIManager& uiManager) noexcept override {
+  }
 };
 
 } // namespace facebook::react

@@ -33,7 +33,8 @@ struct ReactInstanceConfig {
   // When unset, a default thread-based PlatformTimerRegistryImpl is used. This
   // is a seam for tests (e.g. Fantom) to inject a deterministic, mockable timer
   // registry.
-  std::function<std::unique_ptr<PlatformTimerRegistry>()> platformTimerRegistryFactory{nullptr};
+  std::function<std::unique_ptr<PlatformTimerRegistry>()>
+      platformTimerRegistryFactory{nullptr};
 };
 
 } // namespace facebook::react

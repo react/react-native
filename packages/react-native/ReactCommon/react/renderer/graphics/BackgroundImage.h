@@ -15,12 +15,11 @@ namespace facebook::react {
 using BackgroundImage = std::variant<LinearGradient, RadialGradient>;
 
 #ifdef RN_SERIALIZABLE_STATE
-folly::dynamic toDynamic(const BackgroundImage &backgroundImage);
+folly::dynamic toDynamic(const BackgroundImage& backgroundImage);
 #endif
 
 #if RN_DEBUG_STRING_CONVERTIBLE
-inline std::string toString(std::vector<BackgroundImage> &value)
-{
+inline std::string toString(std::vector<BackgroundImage>& value) {
   std::stringstream ss;
 
   ss << "[";
@@ -29,7 +28,7 @@ inline std::string toString(std::vector<BackgroundImage> &value)
       ss << ", ";
     }
 
-    const auto &backgroundImage = value[i];
+    const auto& backgroundImage = value[i];
     if (std::holds_alternative<LinearGradient>(backgroundImage)) {
       std::get<LinearGradient>(backgroundImage).toString(ss);
     } else if (std::holds_alternative<RadialGradient>(backgroundImage)) {

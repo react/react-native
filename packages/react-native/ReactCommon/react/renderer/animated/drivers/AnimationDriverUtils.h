@@ -30,8 +30,7 @@ inline double interpolate(
     double outputMin,
     double outputMax,
     std::string_view extrapolateLeft,
-    std::string_view extrapolateRight)
-{
+    std::string_view extrapolateRight) {
   auto result = inputValue;
 
   // Extrapolate
@@ -58,7 +57,8 @@ inline double interpolate(
     return outputMax;
   }
 
-  return outputMin + (outputMax - outputMin) * (result - inputMin) / (inputMax - inputMin);
+  return outputMin +
+      (outputMax - outputMin) * (result - inputMin) / (inputMax - inputMin);
 }
 
 } // namespace facebook::react

@@ -16,27 +16,25 @@ namespace facebook::react {
 
 template <>
 struct Bridging<std::string> {
-  static std::string fromJs(jsi::Runtime &rt, const jsi::String &value)
-  {
+  static std::string fromJs(jsi::Runtime& rt, const jsi::String& value) {
     return value.utf8(rt);
   }
 
-  static jsi::String toJs(jsi::Runtime &rt, const std::string &value)
-  {
+  static jsi::String toJs(jsi::Runtime& rt, const std::string& value) {
     return jsi::String::createFromUtf8(rt, value);
   }
 };
 
 template <>
 struct Bridging<std::string_view> {
-  static jsi::String toJs(jsi::Runtime &rt, std::string_view value)
-  {
-    return jsi::String::createFromUtf8(rt, reinterpret_cast<const uint8_t *>(value.data()), value.length());
+  static jsi::String toJs(jsi::Runtime& rt, std::string_view value) {
+    return jsi::String::createFromUtf8(
+        rt, reinterpret_cast<const uint8_t*>(value.data()), value.length());
   }
 };
 
 template <>
-struct Bridging<const char *> : Bridging<std::string_view> {};
+struct Bridging<const char*> : Bridging<std::string_view> {};
 
 template <size_t N>
 struct Bridging<char[N]> : Bridging<std::string_view> {};

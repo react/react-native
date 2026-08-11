@@ -20,11 +20,13 @@
 
 namespace facebook::react {
 
-using ToggleDebuggerOverlayFn = std::function<void(bool, std::function<void()> &&)>;
+using ToggleDebuggerOverlayFn =
+    std::function<void(bool, std::function<void()>&&)>;
 
 using LiveReloadCallbackFn = std::function<void()>;
 
-class Inspector : public InspectorThread, public std::enable_shared_from_this<Inspector> {
+class Inspector : public InspectorThread,
+                  public std::enable_shared_from_this<Inspector> {
  public:
   Inspector(
       std::string appName,
@@ -32,23 +34,24 @@ class Inspector : public InspectorThread, public std::enable_shared_from_this<In
       WebSocketClientFactory webSocketClientFactory,
       HttpClientFactory httpClientFactory) noexcept;
   ~Inspector() noexcept override;
-  Inspector(const Inspector &other) = delete;
-  Inspector &operator=(Inspector &other) = delete;
-  Inspector(Inspector &&other) = delete;
-  Inspector &operator=(Inspector &&other) = delete;
+  Inspector(const Inspector& other) = delete;
+  Inspector& operator=(Inspector& other) = delete;
+  Inspector(Inspector&& other) = delete;
+  Inspector& operator=(Inspector&& other) = delete;
 
-  void connectDebugger(const std::string &inspectorUrl) noexcept;
+  void connectDebugger(const std::string& inspectorUrl) noexcept;
 
   void ensureHostTarget(
-      LiveReloadCallbackFn &&liveReloadCallbackFn,
-      ToggleDebuggerOverlayFn &&toggleDebuggerOverlayFn) noexcept;
+      LiveReloadCallbackFn&& liveReloadCallbackFn,
+      ToggleDebuggerOverlayFn&& toggleDebuggerOverlayFn) noexcept;
 
   std::shared_ptr<jsinspector_modern::HostTarget> inspectorTarget() const;
 
  private:
   void invokeElsePost(
-      TaskDispatchThread::TaskFn &&callback,
-      std::chrono::milliseconds delayMs = std::chrono::milliseconds::zero()) override;
+      TaskDispatchThread::TaskFn&& callback,
+      std::chrono::milliseconds delayMs =
+          std::chrono::milliseconds::zero()) override;
 
   TaskDispatchThread taskDispatchThread_{"InspectorThread"};
   std::string appName_;
@@ -58,7 +61,8 @@ class Inspector : public InspectorThread, public std::enable_shared_from_this<In
   std::shared_ptr<jsinspector_modern::HostTargetDelegate> hostDelegate_;
   std::shared_ptr<jsinspector_modern::HostTarget> target_;
   std::optional<int32_t> pageId_;
-  std::unique_ptr<jsinspector_modern::InspectorPackagerConnection> packagerConnection_;
+  std::unique_ptr<jsinspector_modern::InspectorPackagerConnection>
+      packagerConnection_;
 };
 
 } // namespace facebook::react

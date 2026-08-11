@@ -15,10 +15,9 @@ namespace facebook::react {
 
 class AndroidSwitchMeasurementsManager {
  public:
-  AndroidSwitchMeasurementsManager(const std::shared_ptr<const ContextContainer> &contextContainer)
-      : contextContainer_(contextContainer)
-  {
-  }
+  AndroidSwitchMeasurementsManager(
+      const std::shared_ptr<const ContextContainer>& contextContainer)
+      : contextContainer_(contextContainer) {}
 
   Size measure(SurfaceId surfaceId, LayoutConstraints layoutConstraints) const;
 

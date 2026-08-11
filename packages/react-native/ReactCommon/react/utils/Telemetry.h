@@ -30,13 +30,13 @@ using TelemetryDuration = std::chrono::nanoseconds;
 /*
  * Represents a time point which never happens.
  */
-static const TelemetryTimePoint kTelemetryUndefinedTimePoint = TelemetryTimePoint::max();
+static const TelemetryTimePoint kTelemetryUndefinedTimePoint =
+    TelemetryTimePoint::max();
 
 /*
  * Returns a time point representing the current point in time.
  */
-static inline TelemetryTimePoint telemetryTimePointNow()
-{
+static inline TelemetryTimePoint telemetryTimePointNow() {
   return TelemetryClock::now();
 }
 
@@ -45,23 +45,28 @@ static inline TelemetryTimePoint telemetryTimePointNow()
  * point to a given time point. The epoch starting time point is not specified
  * but stays the same for an application run.
  */
-static inline int64_t telemetryTimePointToMilliseconds(TelemetryTimePoint timePoint)
-{
-  return std::chrono::duration_cast<std::chrono::milliseconds>(timePoint - TelemetryTimePoint{}).count();
+static inline int64_t telemetryTimePointToMilliseconds(
+    TelemetryTimePoint timePoint) {
+  return std::chrono::duration_cast<std::chrono::milliseconds>(
+             timePoint - TelemetryTimePoint{})
+      .count();
 }
 
 /*
  * Returns a number of seconds that passed from "Steady Clock" epoch starting
  * time point to a given time point.
  */
-static inline double telemetryTimePointToSteadyClockSeconds(TelemetryTimePoint timePoint)
-{
+static inline double telemetryTimePointToSteadyClockSeconds(
+    TelemetryTimePoint timePoint) {
   static_assert(
-      std::is_same<decltype(timePoint), std::chrono::steady_clock::time_point>::value,
+      std::is_same<decltype(timePoint), std::chrono::steady_clock::time_point>::
+          value,
       "`TelemetryClock` must be `std::chrono::steady_clock` to make the "
       "following implementation work correctly.");
 
-  auto nanoseconds = std::chrono::duration_cast<std::chrono::nanoseconds>(timePoint.time_since_epoch()).count();
+  auto nanoseconds = std::chrono::duration_cast<std::chrono::nanoseconds>(
+                         timePoint.time_since_epoch())
+                         .count();
   return (double)nanoseconds / 1.0e9;
 }
 
@@ -73,8 +78,7 @@ template <
     typename SourceTimePointT,
     typename DestnationClockT = typename DestinationTimePointT::clock,
     typename SourceClockT = typename SourceTimePointT::clock>
-DestinationTimePointT clockCast(SourceTimePointT timePoint)
-{
+DestinationTimePointT clockCast(SourceTimePointT timePoint) {
   auto sourseClockNow = SourceClockT::now();
   auto destinationClockNow = DestnationClockT::now();
   return std::chrono::time_point_cast<typename DestnationClockT::duration>(
@@ -84,9 +88,10 @@ DestinationTimePointT clockCast(SourceTimePointT timePoint)
 /*
  * Returns a number of milliseconds that represents the given duration object.
  */
-static inline int64_t telemetryDurationToMilliseconds(TelemetryDuration duration)
-{
-  return std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+static inline int64_t telemetryDurationToMilliseconds(
+    TelemetryDuration duration) {
+  return std::chrono::duration_cast<std::chrono::milliseconds>(duration)
+      .count();
 }
 
 } // namespace facebook::react

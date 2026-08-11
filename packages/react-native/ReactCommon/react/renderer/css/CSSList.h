@@ -28,17 +28,20 @@ struct CSSList<AllowedTypesT, Delimeter> : public std::vector<AllowedTypesT> {};
 
 template <CSSMaybeCompoundDataType AllowedTypeT, CSSDelimiter Delimeter>
 struct CSSDataTypeParser<CSSList<AllowedTypeT, Delimeter>> {
-  static inline auto consume(CSSValueParser &parser) -> std::optional<CSSList<AllowedTypeT, Delimeter>>
-  {
+  static inline auto consume(CSSValueParser& parser)
+      -> std::optional<CSSList<AllowedTypeT, Delimeter>> {
     CSSList<AllowedTypeT, Delimeter> result;
-    for (auto nextValue = parser.parseNextValue<AllowedTypeT>(); !std::holds_alternative<std::monostate>(nextValue);
+    for (auto nextValue = parser.parseNextValue<AllowedTypeT>();
+         !std::holds_alternative<std::monostate>(nextValue);
          nextValue = parser.parseNextValue<AllowedTypeT>(Delimeter)) {
       // Copy from the variant of possible values to the element (either the
       // concrete type, or a variant of compound types which exlcudes the
       // possibility of std::monostate for parse error)
       std::visit(
-          [&](auto &&v) {
-            if constexpr (!std::is_same_v<std::remove_cvref_t<decltype(v)>, std::monostate>) {
+          [&](auto&& v) {
+            if constexpr (!std::is_same_v<
+                              std::remove_cvref_t<decltype(v)>,
+                              std::monostate>) {
               result.push_back(std::forward<decltype(v)>(v));
             }
           },
@@ -67,6 +70,7 @@ using CSSCommaSeparatedList = CSSList<AllowedTypeT, CSSDelimiter::Comma>;
  * https://www.w3.org/TR/css-values-4/#component-combinators
  */
 template <CSSMaybeCompoundDataType AllowedTypeT>
-using CSSWhitespaceSeparatedList = CSSList<AllowedTypeT, CSSDelimiter::Whitespace>;
+using CSSWhitespaceSeparatedList =
+    CSSList<AllowedTypeT, CSSDelimiter::Whitespace>;
 
 } // namespace facebook::react

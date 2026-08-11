@@ -12,6 +12,7 @@
 
 namespace facebook::react {
 
-using RawTextComponentDescriptor = ConcreteComponentDescriptor<RawTextShadowNode>;
+using RawTextComponentDescriptor =
+    ConcreteComponentDescriptor<RawTextShadowNode>;
 
 } // namespace facebook::react

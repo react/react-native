@@ -20,8 +20,7 @@ namespace facebook::react {
  * https://www.w3.org/TR/css-color-4/#named-colors
  */
 template <typename CSSColor>
-constexpr std::optional<CSSColor> parseCSSNamedColor(std::string_view name)
-{
+constexpr std::optional<CSSColor> parseCSSNamedColor(std::string_view name) {
   switch (fnv1aLowercase(name)) {
     case fnv1a("aliceblue"):
       return CSSColor{240, 248, 255, 255};

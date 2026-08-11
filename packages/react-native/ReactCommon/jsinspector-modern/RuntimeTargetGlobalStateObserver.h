@@ -24,10 +24,10 @@ namespace facebook::react::jsinspector_modern {
  *   "onSessionStatusChange").
  */
 void installGlobalStateObserver(
-    jsi::Runtime &runtime,
-    const char *globalName,
-    const char *statusProperty,
-    const char *callbackName);
+    jsi::Runtime& runtime,
+    const char* globalName,
+    const char* statusProperty,
+    const char* callbackName);
 
 /**
  * Emits a state change to an installed global state observer by calling its
@@ -37,6 +37,10 @@ void installGlobalStateObserver(
  * @param callbackName The name of the state change callback.
  * @param value The new boolean state value.
  */
-void emitGlobalStateObserverChange(jsi::Runtime &runtime, const char *globalName, const char *callbackName, bool value);
+void emitGlobalStateObserverChange(
+    jsi::Runtime& runtime,
+    const char* globalName,
+    const char* callbackName,
+    bool value);
 
 } // namespace facebook::react::jsinspector_modern

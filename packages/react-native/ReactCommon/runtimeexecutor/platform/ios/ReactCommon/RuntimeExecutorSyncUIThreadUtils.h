@@ -18,18 +18,18 @@ namespace facebook::react {
  * `RuntimeExecutor`, and blocks on its completion.
  */
 void executeSynchronouslyOnSameThread_CAN_DEADLOCK(
-    const RuntimeExecutor &runtimeExecutor,
-    std::function<void(jsi::Runtime &)> &&runtimeWork);
+    const RuntimeExecutor& runtimeExecutor,
+    std::function<void(jsi::Runtime&)>&& runtimeWork);
 
 template <typename DataT>
 inline static DataT executeSynchronouslyOnSameThread_CAN_DEADLOCK(
-    const RuntimeExecutor &runtimeExecutor,
-    std::function<DataT(jsi::Runtime &)> &&runtimeWork)
-{
+    const RuntimeExecutor& runtimeExecutor,
+    std::function<DataT(jsi::Runtime&)>&& runtimeWork) {
   DataT data;
 
   executeSynchronouslyOnSameThread_CAN_DEADLOCK(
-      runtimeExecutor, [&](jsi::Runtime &runtime) { data = runtimeWork(runtime); });
+      runtimeExecutor,
+      [&](jsi::Runtime& runtime) { data = runtimeWork(runtime); });
 
   return data;
 }

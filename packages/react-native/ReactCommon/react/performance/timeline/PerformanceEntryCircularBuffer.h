@@ -17,13 +17,15 @@ class PerformanceEntryCircularBuffer : public PerformanceEntryBuffer {
   explicit PerformanceEntryCircularBuffer(size_t size) : buffer_(size) {}
   ~PerformanceEntryCircularBuffer() override = default;
 
-  void add(const PerformanceEntry &entry) override;
+  void add(const PerformanceEntry& entry) override;
 
-  void getEntries(std::vector<PerformanceEntry> &target) const override;
-  void getEntries(std::vector<PerformanceEntry> &target, const std::string &name) const override;
+  void getEntries(std::vector<PerformanceEntry>& target) const override;
+  void getEntries(
+      std::vector<PerformanceEntry>& target,
+      const std::string& name) const override;
 
   void clear() override;
-  void clear(const std::string &name) override;
+  void clear(const std::string& name) override;
 
  private:
   CircularBuffer<PerformanceEntry> buffer_;

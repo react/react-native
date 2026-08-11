@@ -27,7 +27,8 @@ using StackFrame = NativeExceptionsManagerStackFrame<
     std::optional<bool>>;
 
 template <>
-struct Bridging<StackFrame> : NativeExceptionsManagerStackFrameBridging<StackFrame> {};
+struct Bridging<StackFrame>
+    : NativeExceptionsManagerStackFrameBridging<StackFrame> {};
 
 // extraData is `?Object` on the JS side and callers routinely populate it with
 // non-string values (e.g. jsBuild as a number, nested Error-decorated objects
@@ -45,29 +46,42 @@ using ExceptionData = NativeExceptionsManagerExceptionData<
     std::optional<folly::dynamic>>;
 
 template <>
-struct Bridging<ExceptionData> : NativeExceptionsManagerExceptionDataBridging<ExceptionData> {};
+struct Bridging<ExceptionData>
+    : NativeExceptionsManagerExceptionDataBridging<ExceptionData> {};
 
-class NativeExceptionsManager : public NativeExceptionsManagerCxxSpec<NativeExceptionsManager> {
+class NativeExceptionsManager
+    : public NativeExceptionsManagerCxxSpec<NativeExceptionsManager> {
  public:
-  NativeExceptionsManager(JsErrorHandler::OnJsError onJsError, std::shared_ptr<CallInvoker> jsInvoker)
-      : NativeExceptionsManagerCxxSpec(jsInvoker), onJsError_(std::move(onJsError))
-  {
-  }
+  NativeExceptionsManager(
+      JsErrorHandler::OnJsError onJsError,
+      std::shared_ptr<CallInvoker> jsInvoker)
+      : NativeExceptionsManagerCxxSpec(jsInvoker),
+        onJsError_(std::move(onJsError)) {}
 
-  void reportFatalException(jsi::Runtime &rt, std::string message, std::vector<StackFrame> stack, int32_t exceptionId);
+  void reportFatalException(
+      jsi::Runtime& rt,
+      std::string message,
+      std::vector<StackFrame> stack,
+      int32_t exceptionId);
 
-  void reportSoftException(jsi::Runtime &rt, std::string message, std::vector<StackFrame> stack, int32_t exceptionId);
+  void reportSoftException(
+      jsi::Runtime& rt,
+      std::string message,
+      std::vector<StackFrame> stack,
+      int32_t exceptionId);
 
-  void reportException(jsi::Runtime &runtime, const ExceptionData &data);
+  void reportException(jsi::Runtime& runtime, const ExceptionData& data);
 
-  void updateExceptionMessage(jsi::Runtime &rt, jsi::String message, jsi::Array stack, double exceptionId)
-  {
+  void updateExceptionMessage(
+      jsi::Runtime& rt,
+      jsi::String message,
+      jsi::Array stack,
+      double exceptionId) {
     // This method is not in modern React Native:
     // https://github.com/search?q=repo%3Afacebook%2Freact-native+updateExceptionMessage&type=code
   }
 
-  void dismissRedbox(jsi::Runtime &rt)
-  {
+  void dismissRedbox(jsi::Runtime& rt) {
     // Redbox is not supported at this time, LogBox is:
     // https://reactnative.dev/blog/2020/07/06/version-0.63
   }

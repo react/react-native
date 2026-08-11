@@ -21,8 +21,8 @@ class NativeCPUTime : public NativeCPUTimeCxxSpec<NativeCPUTime> {
  public:
   explicit NativeCPUTime(std::shared_ptr<CallInvoker> jsInvoker);
 
-  double getCPUTimeNanos(jsi::Runtime &runtime);
-  bool hasAccurateCPUTimeNanosForBenchmarks(jsi::Runtime &runtime);
+  double getCPUTimeNanos(jsi::Runtime& runtime);
+  bool hasAccurateCPUTimeNanosForBenchmarks(jsi::Runtime& runtime);
 };
 
 } // namespace facebook::react

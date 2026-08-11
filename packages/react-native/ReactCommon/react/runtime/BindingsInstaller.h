@@ -13,8 +13,7 @@ namespace facebook::react {
 
 class BindingsInstaller {
  public:
-  virtual ReactInstance::BindingsInstallFunc getBindingsInstallFunc()
-  {
+  virtual ReactInstance::BindingsInstallFunc getBindingsInstallFunc() {
     return nullptr;
   }
 };

@@ -21,15 +21,18 @@ extern const char ScrollViewComponentName[];
 /*
  * `ShadowNode` for <ScrollView> component.
  */
-class ScrollViewShadowNode final
-    : public ConcreteViewShadowNode<ScrollViewComponentName, ScrollViewProps, ScrollViewEventEmitter, ScrollViewState> {
+class ScrollViewShadowNode final : public ConcreteViewShadowNode<
+                                       ScrollViewComponentName,
+                                       ScrollViewProps,
+                                       ScrollViewEventEmitter,
+                                       ScrollViewState> {
  public:
   using ConcreteViewShadowNode::ConcreteViewShadowNode;
 
   static ScrollViewState initialStateData(
-      const Props::Shared &props,
-      const ShadowNodeFamily::Shared &family,
-      const ComponentDescriptor &componentDescriptor);
+      const Props::Shared& props,
+      const ShadowNodeFamily::Shared& family,
+      const ComponentDescriptor& componentDescriptor);
 
 #pragma mark - LayoutableShadowNode
 

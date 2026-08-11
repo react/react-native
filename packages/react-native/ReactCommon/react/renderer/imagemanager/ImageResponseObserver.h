@@ -19,9 +19,10 @@ class ImageResponseObserver {
  public:
   virtual ~ImageResponseObserver() noexcept = default;
 
-  virtual void didReceiveProgress(float progress, int64_t loaded, int64_t total) const = 0;
-  virtual void didReceiveImage(const ImageResponse &imageResponse) const = 0;
-  virtual void didReceiveFailure(const ImageLoadError &error) const = 0;
+  virtual void didReceiveProgress(float progress, int64_t loaded, int64_t total)
+      const = 0;
+  virtual void didReceiveImage(const ImageResponse& imageResponse) const = 0;
+  virtual void didReceiveFailure(const ImageLoadError& error) const = 0;
 };
 
 } // namespace facebook::react
