@@ -114,6 +114,11 @@ class ReactPlugin : Plugin<Project> {
 
     // Library Only Configuration
     project.pluginManager.withPlugin("com.android.library") {
+      project.logger.warn(
+          "WARNING: Using ${ReactPluginIds.REACT_APP_PLUGIN} with Android library project " +
+              "'${project.name}' is deprecated and will be removed in a future release. " +
+              "Please use the ${ReactPluginIds.REACT_LIBRARY_PLUGIN} plugin instead."
+      )
       applyKotlinAndroidPluginIfNeeded(project)
       ReactLibraryConfigurator.configure(project, extension, rootExtension)
     }
