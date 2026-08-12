@@ -96,6 +96,7 @@ class NewArchitectureHelper
                 .concat(ReactNativePodsUtils.create_header_search_path_for_frameworks("PODS_CONFIGURATION_BUILD_DIR", "React-ImageManager", "React_ImageManager", []))
                 .concat(ReactNativePodsUtils.create_header_search_path_for_frameworks("PODS_CONFIGURATION_BUILD_DIR", "React-rendererdebug", "React_rendererdebug", []))
                 .concat(ReactNativePodsUtils.create_header_search_path_for_frameworks("PODS_CONFIGURATION_BUILD_DIR", "React-renderercss", "React_renderercss", []))
+                .concat(ReactNativePodsUtils.create_header_search_path_for_frameworks("PODS_CONFIGURATION_BUILD_DIR", "React-cxxstableapi", "React_cxxstableapi", []))
                 .each { |search_path|
                     header_search_paths << "\"#{search_path}\""
                 }
@@ -132,6 +133,7 @@ class NewArchitectureHelper
         spec.dependency "React-rendererdebug"
         spec.dependency 'React-jsi'
         spec.dependency 'React-renderercss'
+        spec.dependency 'React-cxxstableapi'
 
         depend_on_js_engine(spec)
         add_rn_third_party_dependencies(spec)
