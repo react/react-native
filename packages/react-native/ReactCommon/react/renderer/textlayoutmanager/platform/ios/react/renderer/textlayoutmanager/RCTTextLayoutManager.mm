@@ -399,17 +399,22 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
                                      .size = facebook::react::Size{
                                          .width = usedRect.size.width, .height = usedRect.size.height}};
 
-                                 CGFloat baseline = [layoutManager locationForGlyphAtIndex:range.location].y;
+                                 CGFloat ascender = font.ascender;
+                                 CGFloat descender = fabs(font.descender);
+                                 CGFloat textHeight = ascender + descender;
+                                 CGFloat leading = usedRect.size.height - textHeight;
+                                 CGFloat adjustedAscender = ascender + round(leading / 2.0);
+                                 CGFloat adjustedDescender = descender + (leading - round(leading / 2.0));
                                  const char *renderedUTF8 = [renderedString UTF8String];
                                  auto line = LineMeasurement{
                                      std::string(renderedUTF8 != nullptr ? renderedUTF8 : ""),
                                      rect,
-                                     overallRect.size.height - baseline,
+                                     adjustedDescender,
                                      font.capHeight,
-                                     baseline,
+                                     adjustedAscender,
                                      font.xHeight};
                                  blockParagraphLines->push_back(line);
-                               }];
+                              }];
   return paragraphLines;
 }
 
