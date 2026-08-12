@@ -143,7 +143,10 @@ jsi::Value convertObjCObjectToJSIValue(jsi::Runtime &runtime, id value)
 
 static NSString *convertJSIStringToNSString(jsi::Runtime &runtime, const jsi::String &value)
 {
-  return [NSString stringWithUTF8String:value.utf8(runtime).c_str()];
+  auto utf8 = value.utf8(runtime);
+  return [[NSString alloc] initWithBytes:utf8.data()
+                                  length:utf8.size()
+                                encoding:NSUTF8StringEncoding] ?: @"";
 }
 
 static NSArray *convertJSIArrayToNSArray(

@@ -406,8 +406,10 @@ JNIArgs convertJSIArgsToJNIArgs(
         throw JavaTurboModuleArgumentConversionException(
             "string", argIndex, methodName, arg, &rt);
       }
-      jarg->l = makeGlobalIfNecessary(
-          env->NewStringUTF(arg->getString(rt).utf8(rt).c_str()));
+      auto utf16 = rt.utf16(arg->getString(rt));
+      jarg->l = makeGlobalIfNecessary(env->NewString(
+          reinterpret_cast<const jchar*>(utf16.data()),
+          static_cast<jsize>(utf16.size())));
     } else if (type == "Lcom/facebook/react/bridge/Callback;") {
       if (!(arg->isObject() && arg->getObject(rt).isFunction(rt))) {
         throw JavaTurboModuleArgumentConversionException(
@@ -785,11 +787,14 @@ jsi::Value JavaTurboModule::invokeJavaMethod(
 
       jsi::Value returnValue = jsi::Value::null();
       if (returnString != nullptr) {
-        const char* js = env->GetStringUTFChars(returnString, nullptr);
-        std::string result = js;
-        env->ReleaseStringUTFChars(returnString, js);
-        returnValue =
-            jsi::Value(runtime, jsi::String::createFromUtf8(runtime, result));
+        jsize length = env->GetStringLength(returnString);
+        const jchar* chars = env->GetStringChars(returnString, nullptr);
+        auto jsiString = jsi::String::createFromUtf16(
+            runtime,
+            reinterpret_cast<const char16_t*>(chars),
+            static_cast<size_t>(length));
+        env->ReleaseStringChars(returnString, chars);
+        returnValue = jsi::Value(runtime, jsiString);
       }
 
       TMPL::syncMethodCallReturnConversionEnd(moduleName, methodName);

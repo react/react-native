@@ -34,7 +34,9 @@ inline NSString *RCTNSStringFromString(
     const std::string &string,
     const NSStringEncoding &encoding = NSUTF8StringEncoding)
 {
-  return [NSString stringWithCString:string.c_str() encoding:encoding] ?: @"";
+  return [[NSString alloc] initWithBytes:string.data()
+                                  length:string.size()
+                                encoding:encoding] ?: @"";
 }
 
 inline NSString *_Nullable RCTNSStringFromStringNilIfEmpty(
@@ -46,7 +48,14 @@ inline NSString *_Nullable RCTNSStringFromStringNilIfEmpty(
 
 inline std::string RCTStringFromNSString(NSString *string)
 {
-  return std::string{string.UTF8String ?: ""};
+  if (!string) {
+    return "";
+  }
+  NSData *data = [string dataUsingEncoding:NSUTF8StringEncoding];
+  if (!data) {
+    return "";
+  }
+  return std::string{(const char *)data.bytes, data.length};
 }
 
 inline UIColor *_Nullable RCTUIColorFromSharedColor(const facebook::react::SharedColor &sharedColor)
