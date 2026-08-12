@@ -160,4 +160,6 @@ Pod::Spec.new do |s|
                               "react/renderer/textlayoutmanager/platform/cxx"
     ss.header_dir           = "react/renderer/textlayoutmanager"
   end
+
+  mark_as_react_native_build(s)
 end

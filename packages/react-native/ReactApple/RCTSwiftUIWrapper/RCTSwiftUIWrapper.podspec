@@ -34,4 +34,5 @@ Pod::Spec.new do |s|
     "SWIFT_VERSION" => "5.0",
   }
 
+  mark_as_react_native_build(s)
 end

@@ -27,4 +27,6 @@ Pod::Spec.new do |s|
   s.source                 = source
   s.source_files           = podspec_sources("**/*.{cpp,h}", "**/*.h")
   s.header_dir             = "ReactCommon"
+
+  mark_as_react_native_build(s)
 end

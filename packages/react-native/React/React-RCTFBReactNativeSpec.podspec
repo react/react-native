@@ -92,4 +92,6 @@ fi
       EOS
     }
   ]
+
+  mark_as_react_native_build(s)
 end

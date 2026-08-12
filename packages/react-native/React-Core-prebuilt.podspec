@@ -103,4 +103,6 @@ Pod::Spec.new do |s|
 
     s.script_phase = script_phase
   end
+
+  mark_as_react_native_build(s)
 end

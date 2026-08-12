@@ -104,6 +104,29 @@ class ReactNativePodsUtils
         self.add_build_settings_to_pod(installer, "GCC_PREPROCESSOR_DEFINITIONS", "REACT_NATIVE_DEBUGGER_ENABLED_DEVONLY=1", "React-networking", :debug)
     end
 
+    # The react/cxxstableapi guards turn a direct include of a fine-grained React Native
+    # header into an error for consumers that opt into RN_STRICT_API. React Native's own
+    # sources are exempt via RN_BUILDING, so every first-party pod defines it. Third-party
+    # pods must never get it, or they would silently opt out of the guards.
+    #
+    # This merges into pod_target_xcconfig as it stands when called, so call it after the
+    # spec has set its own xcconfig — in practice, last in the spec block.
+    def self.add_rn_building_definition(spec)
+        current_config = spec.to_hash["pod_target_xcconfig"] || {}
+        definitions = current_config["GCC_PREPROCESSOR_DEFINITIONS"] || "$(inherited)"
+
+        if definitions.is_a?(Array)
+            definitions = definitions.join(" ")
+        end
+
+        definitions = "$(inherited)" if definitions.strip.empty?
+
+        return if definitions.include?("RN_BUILDING=1")
+
+        current_config["GCC_PREPROCESSOR_DEFINITIONS"] = "#{definitions.strip()} RN_BUILDING=1".strip()
+        spec.pod_target_xcconfig = current_config
+    end
+
     def self.turn_off_resource_bundle_react_core(installer)
         # this is needed for Xcode 14, see more details here https://github.com/facebook/react-native/issues/34673
         # we should be able to remove this once CocoaPods catches up to it, see more details here https://github.com/CocoaPods/CocoaPods/issues/11402

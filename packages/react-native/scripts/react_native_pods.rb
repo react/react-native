@@ -312,6 +312,20 @@ def resolve_use_frameworks(spec, header_mappings_dir: nil, module_name: nil)
   ReactNativePodsUtils.resolve_use_frameworks(spec, :header_mappings_dir => header_mappings_dir, :module_name => module_name)
 end
 
+# Mark a spec as part of React Native's own build by defining RN_BUILDING for it. The
+# react/cxxstableapi guards use it to stay inert for React Native's internal sources,
+# which keep including the fine-grained headers the guards fence off from consumers.
+# Only first-party React Native pods may call this.
+#
+# Call it last in the spec block: it merges into GCC_PREPROCESSOR_DEFINITIONS as
+# pod_target_xcconfig stands at call time, so a later assignment would drop it.
+#
+# Parameters:
+# - spec: the spec to modify
+def mark_as_react_native_build(spec)
+  ReactNativePodsUtils.add_rn_building_definition(spec)
+end
+
 # Add a dependency to a spec, making sure that the HEADER_SERACH_PATHS are set properly.
 # This function automate the requirement to specify the HEADER_SEARCH_PATHS which was error prone
 # and hard to pull out properly to begin with.

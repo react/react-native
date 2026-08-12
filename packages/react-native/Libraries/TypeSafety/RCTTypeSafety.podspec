@@ -36,4 +36,6 @@ Pod::Spec.new do |s|
   s.dependency "FBLazyVector", version
   s.dependency "RCTRequired", version
   s.dependency "React-Core", version
+
+  mark_as_react_native_build(s)
 end

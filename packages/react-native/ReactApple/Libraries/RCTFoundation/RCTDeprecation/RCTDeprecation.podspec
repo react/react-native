@@ -22,4 +22,6 @@ Pod::Spec.new do |s|
       "CLANG_CXX_LANGUAGE_STANDARD" => rct_cxx_language_standard()
     }
     s.compiler_flags         = "-Wnullable-to-nonnull-conversion -Wnullability-completeness"
+
+    mark_as_react_native_build(s)
   end

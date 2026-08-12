@@ -236,4 +236,6 @@ Pod::Spec.new do |s|
     ss.source_files         = podspec_sources("react/renderer/viewtransition/**/*.{m,mm,cpp,h}", "react/renderer/viewtransition/**/*.h")
     ss.header_dir           = "react/renderer/viewtransition"
   end
+
+  mark_as_react_native_build(s)
 end

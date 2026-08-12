@@ -64,4 +64,5 @@ Pod::Spec.new do |s|
   add_dependency(s, "React-runtimeexecutor", :additional_framework_paths => ["platform/ios"])
   add_dependency(s, "React-graphics", :additional_framework_paths => ["react/renderer/graphics/platform/ios"])
 
+  mark_as_react_native_build(s)
 end

@@ -921,6 +921,48 @@ class UtilsTests < Test::Unit::TestCase
         ], result)
     end
 
+    # ================================= #
+    # TEST - Add RN_BUILDING definition #
+    # ================================= #
+    def test_addRNBuildingDefinition_whenNoDefinitions_addsThem
+        spec = SpecMock.new
+
+        ReactNativePodsUtils.add_rn_building_definition(spec)
+
+        assert_equal({"GCC_PREPROCESSOR_DEFINITIONS" => "$(inherited) RN_BUILDING=1"}, spec.to_hash["pod_target_xcconfig"])
+    end
+
+    def test_addRNBuildingDefinition_whenOtherDefinitions_addsThemPreservingTheOthers
+        spec = SpecMock.new
+        spec.pod_target_xcconfig["GCC_PREPROCESSOR_DEFINITIONS"] = "$(inherited) SOME_FLAG=1"
+        spec.pod_target_xcconfig["CLANG_CXX_LANGUAGE_STANDARD"] = "c++20"
+
+        ReactNativePodsUtils.add_rn_building_definition(spec)
+
+        assert_equal({
+            "GCC_PREPROCESSOR_DEFINITIONS" => "$(inherited) SOME_FLAG=1 RN_BUILDING=1",
+            "CLANG_CXX_LANGUAGE_STANDARD" => "c++20"
+        }, spec.to_hash["pod_target_xcconfig"])
+    end
+
+    def test_addRNBuildingDefinition_whenDefinitionsAreAnArray_joinsThem
+        spec = SpecMock.new
+        spec.pod_target_xcconfig["GCC_PREPROCESSOR_DEFINITIONS"] = ["$(inherited)", "SOME_FLAG=1"]
+
+        ReactNativePodsUtils.add_rn_building_definition(spec)
+
+        assert_equal({"GCC_PREPROCESSOR_DEFINITIONS" => "$(inherited) SOME_FLAG=1 RN_BUILDING=1"}, spec.to_hash["pod_target_xcconfig"])
+    end
+
+    def test_addRNBuildingDefinition_whenCalledTwice_addsItOnce
+        spec = SpecMock.new
+
+        ReactNativePodsUtils.add_rn_building_definition(spec)
+        ReactNativePodsUtils.add_rn_building_definition(spec)
+
+        assert_equal({"GCC_PREPROCESSOR_DEFINITIONS" => "$(inherited) RN_BUILDING=1"}, spec.to_hash["pod_target_xcconfig"])
+    end
+
     # ===================== #
     # TEST - Add Dependency #
     # ===================== #

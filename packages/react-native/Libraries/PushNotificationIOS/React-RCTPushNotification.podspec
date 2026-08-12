@@ -50,4 +50,6 @@ Pod::Spec.new do |s|
   add_dependency(s, "React-NativeModulesApple")
 
   add_rncore_dependency(s)
+
+  mark_as_react_native_build(s)
 end

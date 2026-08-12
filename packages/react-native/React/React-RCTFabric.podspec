@@ -109,4 +109,6 @@ Pod::Spec.new do |s|
     test_spec.source_files = podspec_sources("Tests/**/*.{mm}", "")
     test_spec.framework = "XCTest"
   end
+
+  mark_as_react_native_build(s)
 end

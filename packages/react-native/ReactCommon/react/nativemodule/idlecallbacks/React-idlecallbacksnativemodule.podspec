@@ -53,4 +53,5 @@ Pod::Spec.new do |s|
   add_dependency(s, "React-RCTFBReactNativeSpec")
   add_dependency(s, "React-runtimeexecutor", :additional_framework_paths => ["platform/ios"])
 
+  mark_as_react_native_build(s)
 end

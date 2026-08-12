@@ -42,4 +42,6 @@ Pod::Spec.new do |s|
   add_dependency(s, "React-debug")
 
   s.resource_bundles = {'React-timing_privacy' => 'PrivacyInfo.xcprivacy'}
+
+  mark_as_react_native_build(s)
 end

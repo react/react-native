@@ -40,4 +40,5 @@ Pod::Spec.new do |s|
 
   resolve_use_frameworks(s, header_mappings_dir: "../../..", module_name: "React_rendererconsistency")
 
+  mark_as_react_native_build(s)
 end

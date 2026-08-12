@@ -60,4 +60,6 @@ Pod::Spec.new do |s|
   add_dependency(s, "React-RCTFBReactNativeSpec")
   add_dependency(s, "React-featureflags")
   add_dependency(s, "React-featureflagsnativemodule")
+
+  mark_as_react_native_build(s)
 end

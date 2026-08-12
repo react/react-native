@@ -53,4 +53,6 @@ Pod::Spec.new do |s|
 
   s.dependency "React-jsinspector"
   add_dependency(s, "React-jsitooling", :framework_name => "JSITooling")
+
+  mark_as_react_native_build(s)
 end

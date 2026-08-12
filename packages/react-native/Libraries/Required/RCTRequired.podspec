@@ -27,4 +27,6 @@ Pod::Spec.new do |s|
   s.source                 = source
   s.source_files           = podspec_sources("**/*.{c,h,m,mm,cpp}", "**/*.h")
   s.header_dir             = "RCTRequired"
+
+  mark_as_react_native_build(s)
 end
