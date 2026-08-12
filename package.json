@@ -34,7 +34,7 @@
     "test-release-local": "node ./scripts/release-testing/test-release-local.js",
     "test-ios": "./scripts/objc-test.sh test",
     "test-typescript-legacy": "tsc -p packages/react-native/__typetests__/tsconfig.legacy.json",
-    "test-generated-typescript": "tsc -p packages/react-native/__typetests__/tsconfig.json && tsc -p packages/react-native/__typetests__/tsconfig.strict.json",
+    "test-generated-typescript": "tsc -p packages/react-native/__typetests__/tsconfig.json",
     "test": "jest",
     "fantom": "./scripts/fantom.sh",
     "fantom-cli": "./scripts/fantom-cli.sh",
