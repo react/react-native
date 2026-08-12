@@ -348,6 +348,15 @@ class ReactAccessibilityDelegateTest {
   }
 
   @Test
+  fun testAccessibilityRole_fromValue_tabbar_resolvesInsteadOfThrowing() {
+    val role = ReactAccessibilityDelegate.AccessibilityRole.fromValue("tabbar")
+
+    assertThat(role).isEqualTo(ReactAccessibilityDelegate.AccessibilityRole.TABBAR)
+    assertThat(ReactAccessibilityDelegate.AccessibilityRole.getValue(role))
+        .isEqualTo("android.view.View")
+  }
+
+  @Test
   fun testPerformAccessibilityAction_collapseAction_fromAccessibilityActions() {
     val accessibilityActions = JavaOnlyArray()
     val action =
