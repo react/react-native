@@ -11,16 +11,20 @@
 'use strict';
 
 const {
+  cleanupDanglingPodsWorkspaceRef,
   detectStandardRnLayoutRedirect,
   determineVersion,
   ensureBothArtifactFlavors,
   findInjectedXcodeproj,
   generateAutolinkingConfigOrFailClosed,
   parseArgs,
+  removeDanglingPodsFileRef,
   resolveAction,
   resolveConfigCommandToPin,
   resolveExplicitConfigCommand,
   shouldAutoDeintegrate,
+  stripReactNativeFromPodfile,
+  withAutomaticPodsInstallationDisabled,
 } = require('../../setup-apple-spm');
 const {REQUIRED_ARTIFACTS} = require('../download-spm-artifacts');
 const {SPM_INJECTED_MARKER} = require('../generate-spm-xcodeproj');
@@ -560,6 +564,297 @@ describe('shouldAutoDeintegrate', () => {
     // conversion only touches the pbxproj + Podfile, which stay clean.
     fs.writeFileSync(path.join(tempDir, 'package-lock.json'), '{}');
     expect(shouldAutoDeintegrate(tempDir, xcodeproj)).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// stripReactNativeFromPodfile — removes the RN Podfile DSL calls, including
+// multi-line argument lists (the stock template's `use_react_native!(...)`
+// spans several lines), without corrupting the rest of the Podfile.
+// ---------------------------------------------------------------------------
+
+describe('stripReactNativeFromPodfile', () => {
+  it('strips a single-line call', () => {
+    const podfile =
+      "target 'MyApp' do\n  use_react_native!\nend\n";
+    expect(stripReactNativeFromPodfile(podfile)).toBe(
+      "target 'MyApp' do\nend\n",
+    );
+  });
+
+  it('strips a multi-line call with a parenthesized argument list', () => {
+    const podfile =
+      "target 'HelloWorld' do\n" +
+      '  config = use_native_modules!\n' +
+      '\n' +
+      '  use_react_native!(\n' +
+      '    :path => "../../../packages/react-native",\n' +
+      '    # An absolute path to your application root.\n' +
+      '    :app_path => "#{Pod::Config.instance.installation_root}/.."\n' +
+      '  )\n' +
+      '\n' +
+      "  target 'HelloWorldTests' do\n" +
+      '    inherit! :complete\n' +
+      '  end\n' +
+      'end\n';
+    const stripped = stripReactNativeFromPodfile(podfile);
+    expect(stripped).not.toMatch(/use_react_native!/);
+    expect(stripped).not.toMatch(/:app_path/);
+    expect(stripped).not.toMatch(/^\s*\)\s*$/m);
+    expect(stripped).toBe(
+      "target 'HelloWorld' do\n" +
+        '  config = \n' +
+        '\n' +
+        "  target 'HelloWorldTests' do\n" +
+        '    inherit! :complete\n' +
+        '  end\n' +
+        'end\n',
+    );
+  });
+
+  it('strips `prepare_react_native_project!` on its own line', () => {
+    const podfile =
+      'platform :ios, min_ios_version_supported\n' +
+      'prepare_react_native_project!\n' +
+      '\n' +
+      "target 'MyApp' do\nend\n";
+    expect(stripReactNativeFromPodfile(podfile)).toBe(
+      'platform :ios, min_ios_version_supported\n' +
+        '\n' +
+        "target 'MyApp' do\nend\n",
+    );
+  });
+
+  it('leaves an unrelated Podfile untouched', () => {
+    const podfile = "target 'MyApp' do\n  pod 'MBProgressHUD'\nend\n";
+    expect(stripReactNativeFromPodfile(podfile)).toBe(podfile);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// withAutomaticPodsInstallationDisabled — sets
+// project.ios.automaticPodsInstallation to false in react-native.config.js,
+// inserting `project` / `ios` / the key itself as needed. Left `true` (the
+// CLI default), a future `react-native run-ios` silently re-runs CocoaPods
+// and re-breaks the SPM package graph.
+// ---------------------------------------------------------------------------
+
+describe('withAutomaticPodsInstallationDisabled', () => {
+  it('inserts a project.ios block into an empty config', () => {
+    expect(withAutomaticPodsInstallationDisabled('module.exports = {};\n')).toBe(
+      'module.exports = {\n' +
+        '  project: {\n' +
+        '    ios: {\n' +
+        '      automaticPodsInstallation: false,\n' +
+        '    },\n' +
+        '  },\n' +
+        '};\n',
+    );
+  });
+
+  it('inserts a project.ios block ahead of existing keys', () => {
+    const config =
+      'module.exports = {\n' +
+      '  dependencies: {\n' +
+      '    foo: {},\n' +
+      '  },\n' +
+      '};\n';
+    expect(withAutomaticPodsInstallationDisabled(config)).toBe(
+      'module.exports = {\n' +
+        '  project: {\n' +
+        '    ios: {\n' +
+        '      automaticPodsInstallation: false,\n' +
+        '    },\n' +
+        '  },\n' +
+        '  dependencies: {\n' +
+        '    foo: {},\n' +
+        '  },\n' +
+        '};\n',
+    );
+  });
+
+  it('inserts an ios block into an existing project with no ios key', () => {
+    const config =
+      'module.exports = {\n' +
+      '  project: {\n' +
+      "    android: {\n      sourceDir: './android',\n    },\n" +
+      '  },\n' +
+      '};\n';
+    expect(withAutomaticPodsInstallationDisabled(config)).toBe(
+      'module.exports = {\n' +
+        '  project: {\n' +
+        '    ios: {\n' +
+        '      automaticPodsInstallation: false,\n' +
+        '    },\n' +
+        "    android: {\n      sourceDir: './android',\n    },\n" +
+        '  },\n' +
+        '};\n',
+    );
+  });
+
+  it('inserts the key into an existing project.ios block', () => {
+    const config =
+      'module.exports = {\n' +
+      '  project: {\n' +
+      "    ios: {\n      sourceDir: './ios',\n    },\n" +
+      '  },\n' +
+      '};\n';
+    expect(withAutomaticPodsInstallationDisabled(config)).toBe(
+      'module.exports = {\n' +
+        '  project: {\n' +
+        '    ios: {\n' +
+        '      automaticPodsInstallation: false,\n' +
+        "      sourceDir: './ios',\n" +
+        '    },\n' +
+        '  },\n' +
+        '};\n',
+    );
+  });
+
+  it('flips an existing `true` to `false`', () => {
+    const config =
+      'module.exports = {\n' +
+      '  project: {\n' +
+      '    ios: {\n      automaticPodsInstallation: true,\n    },\n' +
+      '  },\n' +
+      '};\n';
+    expect(withAutomaticPodsInstallationDisabled(config)).toBe(
+      'module.exports = {\n' +
+        '  project: {\n' +
+        '    ios: {\n      automaticPodsInstallation: false,\n    },\n' +
+        '  },\n' +
+        '};\n',
+    );
+  });
+
+  it('is a no-op when already `false`', () => {
+    const config =
+      'module.exports = {\n' +
+      '  project: {\n' +
+      '    ios: {\n      automaticPodsInstallation: false,\n    },\n' +
+      '  },\n' +
+      '};\n';
+    expect(withAutomaticPodsInstallationDisabled(config)).toBe(config);
+  });
+
+  it('returns null for an unrecognized config shape', () => {
+    expect(
+      withAutomaticPodsInstallationDisabled('export default { project: {} };\n'),
+    ).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// removeDanglingPodsFileRef — strips the `group:Pods/Pods.xcodeproj` FileRef
+// `pod install` adds to contents.xcworkspacedata. `pod deintegrate` doesn't
+// touch the workspace, so left alone this is a permanent red/missing row in
+// Xcode's workspace navigator.
+// ---------------------------------------------------------------------------
+
+describe('removeDanglingPodsFileRef', () => {
+  it('removes the Pods.xcodeproj FileRef, leaving the app project ref intact', () => {
+    const xml =
+      '<?xml version="1.0" encoding="UTF-8"?>\n' +
+      '<Workspace\n' +
+      '   version = "1.0">\n' +
+      '   <FileRef\n' +
+      '      location = "group:HelloWorld.xcodeproj">\n' +
+      '   </FileRef>\n' +
+      '   <FileRef\n' +
+      '      location = "group:Pods/Pods.xcodeproj">\n' +
+      '   </FileRef>\n' +
+      '</Workspace>\n';
+    expect(removeDanglingPodsFileRef(xml)).toBe(
+      '<?xml version="1.0" encoding="UTF-8"?>\n' +
+        '<Workspace\n' +
+        '   version = "1.0">\n' +
+        '   <FileRef\n' +
+        '      location = "group:HelloWorld.xcodeproj">\n' +
+        '   </FileRef>\n' +
+        '</Workspace>\n',
+    );
+  });
+
+  it('is a no-op when there is no Pods.xcodeproj reference', () => {
+    const xml =
+      '<?xml version="1.0" encoding="UTF-8"?>\n' +
+      '<Workspace\n' +
+      '   version = "1.0">\n' +
+      '   <FileRef\n' +
+      '      location = "group:HelloWorld.xcodeproj">\n' +
+      '   </FileRef>\n' +
+      '</Workspace>\n';
+    expect(removeDanglingPodsFileRef(xml)).toBe(xml);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// cleanupDanglingPodsWorkspaceRef — the safety-gated wrapper `add
+// --deintegrate` calls: only rewrites contents.xcworkspacedata when
+// Pods/Pods.xcodeproj is actually gone from disk, so a still-valid
+// side-by-side CocoaPods integration is never disturbed.
+// ---------------------------------------------------------------------------
+
+describe('cleanupDanglingPodsWorkspaceRef', () => {
+  let appRoot;
+  beforeEach(() => {
+    appRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'spm-workspace-'));
+  });
+  afterEach(() => {
+    fs.rmSync(appRoot, {recursive: true, force: true});
+  });
+
+  function mkWorkspace(root, name) {
+    const dir = path.join(root, name);
+    fs.mkdirSync(dir, {recursive: true});
+    fs.writeFileSync(
+      path.join(dir, 'contents.xcworkspacedata'),
+      '<?xml version="1.0" encoding="UTF-8"?>\n' +
+        '<Workspace\n' +
+        '   version = "1.0">\n' +
+        '   <FileRef\n' +
+        `      location = "group:${path.basename(name, '.xcworkspace')}.xcodeproj">\n` +
+        '   </FileRef>\n' +
+        '   <FileRef\n' +
+        '      location = "group:Pods/Pods.xcodeproj">\n' +
+        '   </FileRef>\n' +
+        '</Workspace>\n',
+    );
+    return dir;
+  }
+
+  it('removes the dangling ref when Pods.xcodeproj is gone from disk', () => {
+    const xcodeprojPath = mkXcodeproj(appRoot, 'MyApp.xcodeproj');
+    const workspace = mkWorkspace(appRoot, 'MyApp.xcworkspace');
+    expect(cleanupDanglingPodsWorkspaceRef(appRoot, xcodeprojPath)).toBe(true);
+    const data = fs.readFileSync(
+      path.join(workspace, 'contents.xcworkspacedata'),
+      'utf8',
+    );
+    expect(data).not.toMatch(/Pods\.xcodeproj/);
+  });
+
+  it('leaves the ref alone when Pods.xcodeproj still exists on disk', () => {
+    const xcodeprojPath = mkXcodeproj(appRoot, 'MyApp.xcodeproj');
+    const workspace = mkWorkspace(appRoot, 'MyApp.xcworkspace');
+    fs.mkdirSync(path.join(appRoot, 'Pods', 'Pods.xcodeproj'), {
+      recursive: true,
+    });
+    expect(cleanupDanglingPodsWorkspaceRef(appRoot, xcodeprojPath)).toBe(
+      false,
+    );
+    const data = fs.readFileSync(
+      path.join(workspace, 'contents.xcworkspacedata'),
+      'utf8',
+    );
+    expect(data).toMatch(/Pods\.xcodeproj/);
+  });
+
+  it('is a no-op when there is no .xcworkspace', () => {
+    const xcodeprojPath = mkXcodeproj(appRoot, 'MyApp.xcodeproj');
+    expect(cleanupDanglingPodsWorkspaceRef(appRoot, xcodeprojPath)).toBe(
+      false,
+    );
   });
 });
 
