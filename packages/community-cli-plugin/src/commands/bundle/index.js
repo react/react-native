@@ -98,8 +98,8 @@ const bundleCommand: CommunityCommand = {
     {
       name: '--unstable-transform-profile <string>',
       description:
-        'Experimental, transform JS for a specific JS engine. Currently supported: hermes, hermes-canary, default',
-      default: 'default',
+        'Experimental, transform JS for a specific JS engine. Currently supported: hermes-stable, hermes-canary, default',
+      default: 'hermes-stable',
     },
     {
       name: '--asset-catalog-dest [string]',
