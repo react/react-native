@@ -5,14 +5,122 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#include <array>
+
 #include <gtest/gtest.h>
 
 #include <react/renderer/attributedstring/conversions.h>
 #include <react/renderer/components/view/BoxShadowPropsConversions.h>
 #include <react/renderer/components/view/FilterPropsConversions.h>
+#include <react/renderer/components/view/accessibilityPropsConversions.h>
 #include <react/renderer/components/view/conversions.h>
 
 namespace facebook::react {
+
+TEST(ConversionsTest, accessibility_roles_round_trip) {
+  struct AccessibilityRoleTestCase {
+    AccessibilityRole role;
+    const char* name;
+  };
+
+  constexpr std::array accessibilityRoles{
+      AccessibilityRoleTestCase{
+          .role = AccessibilityRole::None, .name = "none"},
+      AccessibilityRoleTestCase{
+          .role = AccessibilityRole::Button, .name = "button"},
+      AccessibilityRoleTestCase{
+          .role = AccessibilityRole::Dropdownlist, .name = "dropdownlist"},
+      AccessibilityRoleTestCase{
+          .role = AccessibilityRole::Togglebutton, .name = "togglebutton"},
+      AccessibilityRoleTestCase{
+          .role = AccessibilityRole::Link, .name = "link"},
+      AccessibilityRoleTestCase{
+          .role = AccessibilityRole::Search, .name = "search"},
+      AccessibilityRoleTestCase{
+          .role = AccessibilityRole::Image, .name = "image"},
+      AccessibilityRoleTestCase{
+          .role = AccessibilityRole::Keyboardkey, .name = "keyboardkey"},
+      AccessibilityRoleTestCase{
+          .role = AccessibilityRole::Text, .name = "text"},
+      AccessibilityRoleTestCase{
+          .role = AccessibilityRole::Adjustable, .name = "adjustable"},
+      AccessibilityRoleTestCase{
+          .role = AccessibilityRole::Imagebutton, .name = "imagebutton"},
+      AccessibilityRoleTestCase{
+          .role = AccessibilityRole::Header, .name = "header"},
+      AccessibilityRoleTestCase{
+          .role = AccessibilityRole::Summary, .name = "summary"},
+      AccessibilityRoleTestCase{
+          .role = AccessibilityRole::Alert, .name = "alert"},
+      AccessibilityRoleTestCase{
+          .role = AccessibilityRole::Checkbox, .name = "checkbox"},
+      AccessibilityRoleTestCase{
+          .role = AccessibilityRole::Combobox, .name = "combobox"},
+      AccessibilityRoleTestCase{
+          .role = AccessibilityRole::Menu, .name = "menu"},
+      AccessibilityRoleTestCase{
+          .role = AccessibilityRole::Menubar, .name = "menubar"},
+      AccessibilityRoleTestCase{
+          .role = AccessibilityRole::Menuitem, .name = "menuitem"},
+      AccessibilityRoleTestCase{
+          .role = AccessibilityRole::Progressbar, .name = "progressbar"},
+      AccessibilityRoleTestCase{
+          .role = AccessibilityRole::Radio, .name = "radio"},
+      AccessibilityRoleTestCase{
+          .role = AccessibilityRole::Radiogroup, .name = "radiogroup"},
+      AccessibilityRoleTestCase{
+          .role = AccessibilityRole::Scrollbar, .name = "scrollbar"},
+      AccessibilityRoleTestCase{
+          .role = AccessibilityRole::Spinbutton, .name = "spinbutton"},
+      AccessibilityRoleTestCase{
+          .role = AccessibilityRole::Switch, .name = "switch"},
+      AccessibilityRoleTestCase{.role = AccessibilityRole::Tab, .name = "tab"},
+      AccessibilityRoleTestCase{
+          .role = AccessibilityRole::Tabbar, .name = "tabbar"},
+      AccessibilityRoleTestCase{
+          .role = AccessibilityRole::Tablist, .name = "tablist"},
+      AccessibilityRoleTestCase{
+          .role = AccessibilityRole::Timer, .name = "timer"},
+      AccessibilityRoleTestCase{
+          .role = AccessibilityRole::List, .name = "list"},
+      AccessibilityRoleTestCase{
+          .role = AccessibilityRole::Toolbar, .name = "toolbar"},
+      AccessibilityRoleTestCase{
+          .role = AccessibilityRole::Grid, .name = "grid"},
+      AccessibilityRoleTestCase{
+          .role = AccessibilityRole::Pager, .name = "pager"},
+      AccessibilityRoleTestCase{
+          .role = AccessibilityRole::Scrollview, .name = "scrollview"},
+      AccessibilityRoleTestCase{
+          .role = AccessibilityRole::Horizontalscrollview,
+          .name = "horizontalscrollview"},
+      AccessibilityRoleTestCase{
+          .role = AccessibilityRole::Viewgroup, .name = "viewgroup"},
+      AccessibilityRoleTestCase{
+          .role = AccessibilityRole::Webview, .name = "webview"},
+      AccessibilityRoleTestCase{
+          .role = AccessibilityRole::Drawerlayout, .name = "drawerlayout"},
+      AccessibilityRoleTestCase{
+          .role = AccessibilityRole::Slidingdrawer, .name = "slidingdrawer"},
+      AccessibilityRoleTestCase{
+          .role = AccessibilityRole::Iconmenu, .name = "iconmenu"},
+  };
+  static_assert(
+      accessibilityRoles.size() ==
+      static_cast<size_t>(AccessibilityRole::Iconmenu) + 1);
+
+  const PropsParserContext context{-1, ContextContainer{}};
+  for (const auto& [role, name] : accessibilityRoles) {
+    SCOPED_TRACE(name);
+    EXPECT_EQ(toString(role), name);
+
+    AccessibilityRole parsedRole = role == AccessibilityRole::None
+        ? AccessibilityRole::Button
+        : AccessibilityRole::None;
+    fromRawValue(context, RawValue{folly::dynamic(name)}, parsedRole);
+    EXPECT_EQ(parsedRole, role);
+  }
+}
 
 TEST(ConversionsTest, unprocessed_box_shadow_string) {
   RawValue value{
