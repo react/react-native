@@ -7,6 +7,7 @@
 
 package com.facebook.react
 
+import com.facebook.react.utils.KotlinPluginUtils.applyKotlinAndroidPluginIfNeeded
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
@@ -23,6 +24,7 @@ class ReactLibraryPlugin : Plugin<Project> {
     val rootExtension = ReactPluginUtils.createPrivateReactExtension(project)
 
     project.pluginManager.withPlugin("com.android.library") {
+      applyKotlinAndroidPluginIfNeeded(project)
       ReactLibraryConfigurator.configure(project, extension, rootExtension)
     }
   }

@@ -53,6 +53,16 @@ class ReactLibraryPluginTest {
   }
 
   @Test
+  fun apply_withBuiltInKotlinSupport_doesNotApplyKotlinAndroidPlugin() {
+    val project = ProjectBuilder.builder().withProjectDir(tempFolder.newFolder("library")).build()
+
+    project.plugins.apply("com.android.library")
+    project.plugins.apply("com.facebook.react.library")
+
+    assertThat(project.pluginManager.hasPlugin("kotlin-android")).isFalse()
+  }
+
+  @Test
   fun apply_afterReactPlugin_fails() {
     val project = ProjectBuilder.builder().build()
     project.plugins.apply("com.facebook.react")

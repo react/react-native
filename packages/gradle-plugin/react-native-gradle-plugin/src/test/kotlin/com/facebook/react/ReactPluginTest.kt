@@ -31,6 +31,7 @@ class ReactPluginTest {
     assertThat(project.tasks.findByName("generateCodegenSchemaFromJavaScript")).isNotNull()
     assertThat(project.tasks.findByName("generateCodegenArtifactsFromSchema")).isNotNull()
     assertThat(project.tasks.findByName("createBundleDebugJsAndAssets")).isNull()
+    assertThat(project.pluginManager.hasPlugin("kotlin-android")).isFalse()
   }
 
   @Test

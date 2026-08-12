@@ -24,6 +24,7 @@ import com.facebook.react.utils.DependencyUtils.configureRepositories
 import com.facebook.react.utils.DependencyUtils.readVersionAndGroupStrings
 import com.facebook.react.utils.JdkConfiguratorUtils.configureJavaToolChains
 import com.facebook.react.utils.JsonUtils
+import com.facebook.react.utils.KotlinPluginUtils.applyKotlinAndroidPluginIfNeeded
 import com.facebook.react.utils.NdkConfiguratorUtils.configureReactNativeNdk
 import com.facebook.react.utils.ProjectUtils.needsCodegenFromPackageJson
 import com.facebook.react.utils.PropertyUtils
@@ -113,6 +114,7 @@ class ReactPlugin : Plugin<Project> {
 
     // Library Only Configuration
     project.pluginManager.withPlugin("com.android.library") {
+      applyKotlinAndroidPluginIfNeeded(project)
       ReactLibraryConfigurator.configure(project, extension, rootExtension)
     }
   }
