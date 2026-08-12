@@ -23,6 +23,7 @@ const {
   resolveCacheSlotVersion,
   resolveHermesArtifact,
   resolveLatestV1Version,
+  resolveLocalHermesCompilerVersion,
   resolveNightlyVersion,
   resolveRNCoreArtifact,
   resolveRNDepsArtifact,
@@ -95,6 +96,34 @@ function routerFetch(routes /*: {[string]: any} */) {
 // artifact at the RN nightly version (which won't exist on Maven).
 // ---------------------------------------------------------------------------
 
+// Creates a scratch dir with (optionally) a `node_modules/hermes-compiler`
+// package inside it, mimicking a real project root for
+// resolveLocalHermesCompilerVersion()'s require.resolve({paths: [rnRoot]}).
+function makeFakeRnRoot(hermesCompilerVersion /*: ?string */) /*: string */ {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'rn-root-'));
+  if (hermesCompilerVersion != null) {
+    const pkgDir = path.join(root, 'node_modules', 'hermes-compiler');
+    fs.mkdirSync(pkgDir, {recursive: true});
+    fs.writeFileSync(
+      path.join(pkgDir, 'package.json'),
+      JSON.stringify({name: 'hermes-compiler', version: hermesCompilerVersion}),
+    );
+  }
+  return root;
+}
+
+describe('resolveLocalHermesCompilerVersion', () => {
+  it('reads the version from the locally installed hermes-compiler package', () => {
+    const root = makeFakeRnRoot('0.13.7');
+    expect(resolveLocalHermesCompilerVersion(root)).toBe('0.13.7');
+  });
+
+  it('returns null when hermes-compiler is not installed', () => {
+    const root = makeFakeRnRoot(null);
+    expect(resolveLocalHermesCompilerVersion(root)).toBeNull();
+  });
+});
+
 describe('resolveHermesArtifact', () => {
   let origFetch;
   let origHermesEnv;
@@ -122,43 +151,64 @@ describe('resolveHermesArtifact', () => {
   }
 
   describe('default behavior (no HERMES_VERSION set)', () => {
-    it('resolves to the latest-v1 hermes-compiler dist-tag, NOT the RN version', async () => {
+    it('uses the locally pinned hermes-compiler version, without hitting npm', async () => {
+      const rnRoot = makeFakeRnRoot('0.13.7');
+      mockFetch({
+        'hermes-ios/0.13.7/hermes-ios-0.13.7': {ok: true},
+      });
+      const result = await resolveHermesArtifact(
+        '0.87.0-nightly-20260519-58cd1bf58',
+        'debug',
+        null,
+        rnRoot,
+      );
+      expect(result.version).toBe('0.13.7');
+      expect(result.url).toContain('/0.13.7/');
+      // Must resolve straight from node_modules — no npm registry round trip.
+      expect(globalThis.fetch).not.toHaveBeenCalledWith(
+        expect.stringContaining('registry.npmjs.org'),
+        expect.anything(),
+      );
+    });
+
+    it('ignores rawVersion (the RN --version arg) when HERMES_VERSION is unset', async () => {
+      const rnRoot = makeFakeRnRoot('0.13.7');
+      mockFetch({
+        'hermes-ios/0.13.7/hermes-ios-0.13.7': {ok: true},
+      });
+      // Caller passes the original RN --version verbatim; hermes should
+      // still use the locally pinned version instead of using this.
+      const result = await resolveHermesArtifact(
+        '0.87.0-nightly-20260519-58cd1bf58',
+        'debug',
+        '0.87.0-nightly-20260519-58cd1bf58',
+        rnRoot,
+      );
+      expect(result.version).toBe('0.13.7');
+      expect(result.url).not.toContain('20260519');
+    });
+
+    it('falls back to the latest-v1 npm dist-tag when hermes-compiler is not locally installed', async () => {
+      const rnRoot = makeFakeRnRoot(null);
       mockFetch({
         'hermes-compiler/latest-v1': {json: {version: '0.13.0'}},
-        // Pretend the release URL exists once we ask for 0.13.0.
         'hermes-ios/0.13.0/hermes-ios-0.13.0': {ok: true},
       });
       const result = await resolveHermesArtifact(
         '0.87.0-nightly-20260519-58cd1bf58',
         'debug',
         null,
+        rnRoot,
       );
       expect(result.version).toBe('0.13.0');
       expect(result.url).toContain('/0.13.0/');
-      // The RN nightly hash MUST NOT leak into the hermes URL.
-      expect(result.url).not.toContain('20260519');
-    });
-
-    it('ignores rawVersion (the RN --version arg) when HERMES_VERSION is unset', async () => {
-      mockFetch({
-        'hermes-compiler/latest-v1': {json: {version: '0.13.0'}},
-        'hermes-ios/0.13.0/hermes-ios-0.13.0': {ok: true},
-      });
-      // Caller passes the original RN --version verbatim; hermes should
-      // still default to latest-v1 instead of using this.
-      const result = await resolveHermesArtifact(
-        '0.87.0-nightly-20260519-58cd1bf58',
-        'debug',
-        '0.87.0-nightly-20260519-58cd1bf58',
-      );
-      expect(result.version).toBe('0.13.0');
-      expect(result.url).not.toContain('20260519');
     });
   });
 
   describe('HERMES_VERSION escape hatches', () => {
-    it('HERMES_VERSION=<literal-version> uses it verbatim', async () => {
+    it('HERMES_VERSION=<literal-version> uses it verbatim, even with a local package installed', async () => {
       process.env.HERMES_VERSION = '0.13.5';
+      const rnRoot = makeFakeRnRoot('0.13.7');
       mockFetch({
         'hermes-ios/0.13.5/hermes-ios-0.13.5': {ok: true},
       });
@@ -166,13 +216,15 @@ describe('resolveHermesArtifact', () => {
         '0.87.0-nightly-anything',
         'debug',
         null,
+        rnRoot,
       );
       expect(result.version).toBe('0.13.5');
       expect(result.url).toContain('/0.13.5/');
     });
 
-    it('HERMES_VERSION=latest-v1 resolves via npm dist-tag', async () => {
+    it('HERMES_VERSION=latest-v1 resolves via npm dist-tag, even with a local package installed', async () => {
       process.env.HERMES_VERSION = 'latest-v1';
+      const rnRoot = makeFakeRnRoot('0.13.7');
       mockFetch({
         'hermes-compiler/latest-v1': {json: {version: '0.13.0'}},
         'hermes-ios/0.13.0/hermes-ios-0.13.0': {ok: true},
@@ -181,12 +233,14 @@ describe('resolveHermesArtifact', () => {
         '0.87.0-nightly-anything',
         'debug',
         null,
+        rnRoot,
       );
       expect(result.version).toBe('0.13.0');
     });
 
     it('HERMES_VERSION=nightly resolves hermes-compiler@nightly from npm', async () => {
       process.env.HERMES_VERSION = 'nightly';
+      const rnRoot = makeFakeRnRoot(null);
       mockFetch({
         'hermes-compiler/nightly': {json: {version: '0.14.0-nightly-abc'}},
         'hermes-ios/0.14.0-nightly-abc/hermes-ios-0.14.0-nightly-abc': {
@@ -197,12 +251,14 @@ describe('resolveHermesArtifact', () => {
         '0.87.0-nightly-anything',
         'debug',
         null,
+        rnRoot,
       );
       expect(result.version).toBe('0.14.0-nightly-abc');
     });
 
     it('falls back to the hermes snapshot URL when the release is missing', async () => {
       process.env.HERMES_VERSION = '0.13.5';
+      const rnRoot = makeFakeRnRoot(null);
       globalThis.fetch = jest.fn(async (url, opts) => {
         if (opts && opts.method === 'HEAD') {
           return {status: 404};
@@ -215,7 +271,12 @@ describe('resolveHermesArtifact', () => {
             '<buildNumber>2</buildNumber></metadata>',
         };
       });
-      const result = await resolveHermesArtifact('0.87.0', 'debug', null);
+      const result = await resolveHermesArtifact(
+        '0.87.0',
+        'debug',
+        null,
+        rnRoot,
+      );
       expect(result.url).toContain('maven-snapshots');
       expect(result.url).toContain('hermes-ios-debug.tar.gz');
     });
