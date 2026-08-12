@@ -29,12 +29,12 @@
   "main": "./index.js",
   "exports": {
     ".": {
-      "react-native-legacy-deep-imports": "./types/index.d.ts",
+      "react-native-legacy-deep-imports": "./types_DEPRECATED/index.d.ts",
       "types": "./types_generated/index.d.ts",
       "default": "./index.js"
     },
     "./Libraries/*": {
-      "react-native-legacy-deep-imports": "./Libraries/*.d.ts",
+      "react-native-legacy-deep-imports": "./types_DEPRECATED/Libraries/*.d.ts",
       "types": null,
       "default": "./Libraries/*.js"
     },
@@ -128,7 +128,7 @@
     "src",
     "!src/private/testing",
     "third-party-podspecs",
-    "types",
+    "types_DEPRECATED",
     "types_generated",
     "!**/__docs__/**",
     "!**/__fixtures__/**",

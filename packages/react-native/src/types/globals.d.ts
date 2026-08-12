@@ -7,7 +7,7 @@
  * @format
  */
 
-import type {ErrorUtils} from '../../Libraries/vendor/core/ErrorUtils';
+import type {ErrorUtils} from './ErrorUtils';
 
 declare global {
   interface NodeRequire {
