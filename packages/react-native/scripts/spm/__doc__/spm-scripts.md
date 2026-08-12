@@ -209,6 +209,14 @@ configuration selects Release. Selection uses only generated build settings and
 standard macOS tools: builds do not run Node, mutate symlinks, regenerate the
 package graph, or require a second build.
 
+Those same debug-flavored configurations also get
+`SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG"` — the only thing
+that makes Swift's `#if DEBUG` true (`GCC_PREPROCESSOR_DEFINITIONS` reaches
+C/ObjC/C++ only), and what `AppDelegate.swift`'s `bundleURL()` branches on to
+load from Metro instead of a bundled `main.jsbundle`. CocoaPods injects it at
+`pod install` time, so this keeps SwiftPM apps at parity. An existing value is
+left alone.
+
 ## What to commit
 
 | Path | Commit? | Why |

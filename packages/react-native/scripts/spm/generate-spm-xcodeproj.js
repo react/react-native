@@ -1093,6 +1093,25 @@ const INJECTED_ARRAY_SETTINGS = [
   },
 ];
 
+// Array build settings injected only into debug-flavored configurations.
+//
+// Swift's `#if DEBUG` is gated by SWIFT_ACTIVE_COMPILATION_CONDITIONS, NOT by
+// GCC_PREPROCESSOR_DEFINITIONS (which only reaches C/ObjC/C++). The app
+// template does not commit the setting: CocoaPods injects it at `pod install`
+// time (react_native_post_install → set_build_setting
+// SWIFT_ACTIVE_COMPILATION_CONDITIONS = ["$(inherited)", "DEBUG"] on Debug).
+// An SPM app never runs CocoaPods, so without this `#if DEBUG` is false even
+// in a Debug build — AppDelegate.swift's `bundleURL()` skips the Metro URL,
+// falls back to a main.jsbundle that a Debug build never produced, and the app
+// dies at launch with "No script url provided … unsanitizedScriptURLString =
+// (null)" while Metro is running right there.
+//
+// Paired with RN_SPM_FLAVOR via flavorForBuildConfiguration, so a config that
+// links the debug xcframeworks also compiles its Swift with DEBUG.
+const DEBUG_ARRAY_SETTINGS = [
+  {key: 'SWIFT_ACTIVE_COMPILATION_CONDITIONS', values: ['DEBUG']},
+];
+
 /** The XCBuildConfiguration UUIDs of a target (via its buildConfigurationList). */
 function targetBuildConfigUuids(
   text /*: string */,
@@ -1687,6 +1706,28 @@ function resolveHermesCliPathSetting(
   }
 }
 
+/** Strip the surrounding plist quotes from a build-setting token, if any. */
+function unquotePlist(s /*: string */) /*: string */ {
+  return s.replace(/^"/, '').replace(/"$/, '');
+}
+
+/**
+ * The individual values a build setting already carries, unquoted — for both
+ * shapes a pbxproj uses: the array form Xcode writes for a multi-value setting
+ * (`("$(inherited)", DEBUG)`) and the scalar form the app template and
+ * hand-edits use (`"$(inherited) DEBUG"`). Membership, not substring: the
+ * latter would read `MY_DEBUG_FLAG` as `DEBUG` already being set and silently
+ * skip the injection.
+ */
+function buildSettingValueTokens(value /*: string */) /*: Set<string> */ {
+  return new Set(
+    value
+      .split(/[\s,()]+/)
+      .filter(Boolean)
+      .map(unquotePlist),
+  );
+}
+
 function mergeReactBuildSettings(
   input /*: string */,
   configUuid /*: string */,
@@ -1732,6 +1773,9 @@ function mergeReactBuildSettings(
   const createdScalars /*: Array<string> */ = [];
   const arraySettings = [
     ...INJECTED_ARRAY_SETTINGS,
+    ...(flavorForBuildConfiguration(configurationName) === 'debug'
+      ? DEBUG_ARRAY_SETTINGS
+      : []),
     ...frameworkArrayBuildSettings(flavoredFrameworks),
   ];
   for (const {key, values} of arraySettings) {
@@ -1743,10 +1787,17 @@ function mergeReactBuildSettings(
     if (existing == null) {
       createdArrayKeys.push(key);
     } else {
-      const fresh = values.filter(v => !existing.value.includes(v));
-      if (fresh.length > 0) {
-        appendedArrayValues[key] = fresh;
+      const present = buildSettingValueTokens(existing.value);
+      const fresh = values.filter(v => !present.has(unquotePlist(v)));
+      if (fresh.length === 0) {
+        // Nothing to add. Skip addArrayStringValues entirely: its dedupe is by
+        // EXACT array member, so a value the user carries in the scalar form
+        // (`SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG"`) would
+        // otherwise be promoted to an array and re-appended — an edit `deinit`
+        // has no record of and so could never reverse.
+        continue;
       }
+      appendedArrayValues[key] = fresh;
     }
     text = addArrayStringValues(text, d, key, values);
   }

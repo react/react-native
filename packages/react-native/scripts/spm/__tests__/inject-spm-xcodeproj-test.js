@@ -31,6 +31,32 @@ const PODS = PLAIN.replace(
   'AA0000000000000000000901 /* Debug */ = {\n\t\t\tisa = XCBuildConfiguration;\n\t\t\tbaseConfigurationReference = BB0000000000000000000001 /* Pods-MyApp.debug.xcconfig */;\n\t\t\tbuildSettings = {',
 );
 
+// The app target's two XCBuildConfiguration UUIDs in the fixture.
+const APP_DEBUG_CONFIG = 'AA0000000000000000000901';
+const APP_RELEASE_CONFIG = 'AA00000000000000000000A2';
+
+const DEBUG_CONFIG_HEAD =
+  'AA0000000000000000000901 /* Debug */ = {\n\t\t\tisa = XCBuildConfiguration;\n\t\t\tbuildSettings = {';
+
+// Seed the app target's Debug config with a SWIFT_ACTIVE_COMPILATION_CONDITIONS
+// the user already had, in the scalar form Xcode and the app template write.
+function withDebugCondition(text, value) {
+  return text.replace(
+    DEBUG_CONFIG_HEAD,
+    `${DEBUG_CONFIG_HEAD}\n\t\t\t\tSWIFT_ACTIVE_COMPILATION_CONDITIONS = ${value};`,
+  );
+}
+
+// One XCBuildConfiguration's buildSettings dict, by config UUID. Build settings
+// hold only scalars and `( … )` arrays, so the first `};` closes the dict.
+function buildSettingsOf(text, configUuid) {
+  const open = text.indexOf(
+    'buildSettings = {',
+    text.indexOf(`${configUuid} /*`),
+  );
+  return text.slice(open, text.indexOf('};', open));
+}
+
 const RN_PATH = '../node_modules/react-native';
 
 // Absolute, mirroring resolveHermesCliPathSetting (a `..`-relative path through
@@ -216,6 +242,40 @@ describe('injectSpmIntoPbxproj — Tier 2 (build settings + phase)', () => {
   it('omits HERMES_CLI_PATH when hermesc could not be resolved', () => {
     const {text} = inject(PLAIN, null, null);
     expect(text).not.toContain('HERMES_CLI_PATH');
+  });
+
+  // Swift's `#if DEBUG` — which AppDelegate.swift's bundleURL() uses to pick the
+  // Metro URL — is gated by this setting alone. CocoaPods injects it at `pod
+  // install`; an SPM app has to get it here or a Debug build looks for a
+  // main.jsbundle it never built.
+  it('sets SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG on the debug config only', () => {
+    const {text} = inject(PLAIN);
+    const debugSettings = buildSettingsOf(text, APP_DEBUG_CONFIG);
+    expect(debugSettings).toMatch(
+      /SWIFT_ACTIVE_COMPILATION_CONDITIONS = \(\s*"\$\(inherited\)",\s*DEBUG,\s*\)/,
+    );
+    expect(buildSettingsOf(text, APP_RELEASE_CONFIG)).not.toContain(
+      'SWIFT_ACTIVE_COMPILATION_CONDITIONS',
+    );
+  });
+
+  it('leaves a config that already sets DEBUG (scalar form) untouched', () => {
+    const {text} = inject(withDebugCondition(PLAIN, '"$(inherited) DEBUG"'));
+    // Not promoted to an array, not re-appended — DEBUG is already there.
+    expect(buildSettingsOf(text, APP_DEBUG_CONFIG)).toContain(
+      'SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";',
+    );
+    expect(text.match(/\bDEBUG\b/g)).toHaveLength(1);
+  });
+
+  it("adds DEBUG alongside the user's own compilation conditions", () => {
+    const {text} = inject(
+      withDebugCondition(PLAIN, '"$(inherited) MY_DEBUG_UI"'),
+    );
+    // MY_DEBUG_UI must not be mistaken for DEBUG by a substring check.
+    const debugSettings = buildSettingsOf(text, APP_DEBUG_CONFIG);
+    expect(debugSettings).toContain('"$(inherited) MY_DEBUG_UI"');
+    expect(debugSettings).toMatch(/^\s*DEBUG,$/m);
   });
 
   it('prepends the Sync SPM Autolinking build phase', () => {

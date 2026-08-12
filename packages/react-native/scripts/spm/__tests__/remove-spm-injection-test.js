@@ -190,6 +190,38 @@ describe('removeSpmInjection — the surgical inverse of add', () => {
     expect(fs.existsSync(schemePath)).toBe(false);
   });
 
+  // A Debug config that already carries DEBUG gets no edit at all, so there is
+  // nothing for the marker to record — and nothing left behind. Injecting into
+  // the scalar form regardless (addArrayStringValues dedupes by exact array
+  // member, which the scalar never matches) would promote it to an array the
+  // marker has no record of, and deinit would strand it.
+  it('leaves a Debug config that already sets DEBUG alone, add through deinit', () => {
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp();
+    const head =
+      'AA0000000000000000000901 /* Debug */ = {\n\t\t\tisa = XCBuildConfiguration;\n\t\t\tbuildSettings = {';
+    fs.writeFileSync(
+      path.join(xcodeprojPath, 'project.pbxproj'),
+      PLAIN.replace(
+        head,
+        `${head}\n\t\t\t\tSWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";`,
+      ),
+      'utf8',
+    );
+    const before = pbxprojOf(xcodeprojPath);
+
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+    });
+    expect(pbxprojOf(xcodeprojPath)).toContain(
+      'SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";',
+    );
+
+    expect(removeSpmInjection({appRoot, xcodeprojPath}).status).toBe('removed');
+    expect(pbxprojOf(xcodeprojPath)).toBe(before);
+  });
+
   it('preserves an unrelated edit made to the pbxproj after add', () => {
     const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp();
 
