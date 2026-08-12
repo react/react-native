@@ -71,6 +71,7 @@ export interface Dimensions {
       window: ScaledSize;
       screen: ScaledSize;
     }) => void,
+    options?: {once?: true | undefined; signal?: AbortSignal | undefined},
   ): EmitterSubscription;
 }
 

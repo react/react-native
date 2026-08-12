@@ -163,6 +163,13 @@ function testDimensions() {
     dimensionsListener,
   );
   subscription.remove();
+
+  Dimensions.addEventListener('change', dimensionsListener, {
+    once: true,
+  });
+  Dimensions.addEventListener('change', dimensionsListener, {
+    signal: AbortSignal.timeout(5000),
+  });
 }
 
 function TextUseWindowDimensions() {
