@@ -20,6 +20,7 @@ const {
   hermesReleaseUrls,
   mavenRepositoryUrls,
   reactNativeMavenMirrorEnabled,
+  readPinnedHermesVersion,
   resolveCacheSlotVersion,
   resolveHermesArtifact,
   resolveLatestV1Version,
@@ -88,21 +89,51 @@ function routerFetch(routes /*: {[string]: any} */) {
 }
 
 // ---------------------------------------------------------------------------
-// resolveHermesArtifact — hermes uses its own version space, decoupled from
-// React Native's nightly cadence. The default behavior mirrors RN's
-// CocoaPods prebuild (HERMES_VERSION='latest-v1'): resolve via the
-// hermes-compiler npm dist-tag instead of trying to download a hermes-ios
-// artifact at the RN nightly version (which won't exist on Maven).
+// readPinnedHermesVersion / resolveHermesArtifact — hermes uses its own
+// version space, decoupled from React Native's nightly cadence. By default,
+// resolution reads the version pinned in sdks/hermes-engine/version.properties
+// (the same file CocoaPods' hermes-engine.podspec reads via
+// sdks/hermes-engine/hermes-utils.rb), so SPM and CocoaPods land on the same
+// Hermes build for a given react-native release. It falls back to the
+// hermes-compiler `latest-v1` npm dist-tag only when that file is missing.
 // ---------------------------------------------------------------------------
+
+describe('readPinnedHermesVersion', () => {
+  let tempDir;
+
+  beforeEach(() => {
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'spm-hermes-pin-'));
+  });
+
+  afterEach(() => {
+    fs.rmSync(tempDir, {recursive: true, force: true});
+  });
+
+  it('reads HERMES_VERSION_NAME from sdks/hermes-engine/version.properties', () => {
+    const propsDir = path.join(tempDir, 'sdks', 'hermes-engine');
+    fs.mkdirSync(propsDir, {recursive: true});
+    fs.writeFileSync(
+      path.join(propsDir, 'version.properties'),
+      'HERMES_VERSION_NAME=260318099.0.1\n',
+    );
+    expect(readPinnedHermesVersion(tempDir)).toBe('260318099.0.1');
+  });
+
+  it('returns null when version.properties does not exist', () => {
+    expect(readPinnedHermesVersion(tempDir)).toBe(null);
+  });
+});
 
 describe('resolveHermesArtifact', () => {
   let origFetch;
   let origHermesEnv;
+  let tempDir;
 
   beforeEach(() => {
     origFetch = globalThis.fetch;
     origHermesEnv = process.env.HERMES_VERSION;
     delete process.env.HERMES_VERSION;
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'spm-hermes-resolve-'));
   });
 
   afterEach(() => {
@@ -112,6 +143,7 @@ describe('resolveHermesArtifact', () => {
     } else {
       delete process.env.HERMES_VERSION;
     }
+    fs.rmSync(tempDir, {recursive: true, force: true});
   });
 
   // Mock fetch with a router: each entry's key is a URL substring; the value
@@ -121,44 +153,69 @@ describe('resolveHermesArtifact', () => {
     globalThis.fetch = routerFetch(routes);
   }
 
+  function writePinnedVersion(version /*: string */) {
+    const propsDir = path.join(tempDir, 'sdks', 'hermes-engine');
+    fs.mkdirSync(propsDir, {recursive: true});
+    fs.writeFileSync(
+      path.join(propsDir, 'version.properties'),
+      `HERMES_VERSION_NAME=${version}\n`,
+    );
+  }
+
   describe('default behavior (no HERMES_VERSION set)', () => {
-    it('resolves to the latest-v1 hermes-compiler dist-tag, NOT the RN version', async () => {
+    it('resolves to the version pinned in version.properties, NOT the RN version', async () => {
+      writePinnedVersion('260318099.0.1');
+      mockFetch({
+        'hermes-ios/260318099.0.1/hermes-ios-260318099.0.1': {ok: true},
+      });
+      const result = await resolveHermesArtifact(
+        '0.87.0-nightly-20260519-58cd1bf58',
+        'debug',
+        null,
+        tempDir,
+      );
+      expect(result.version).toBe('260318099.0.1');
+      expect(result.url).toContain('/260318099.0.1/');
+      // The RN nightly hash MUST NOT leak into the hermes URL.
+      expect(result.url).not.toContain('20260519');
+    });
+
+    it('ignores rawVersion (the RN --version arg)', async () => {
+      writePinnedVersion('260318099.0.1');
+      mockFetch({
+        'hermes-ios/260318099.0.1/hermes-ios-260318099.0.1': {ok: true},
+      });
+      // Caller passes the original RN --version verbatim; hermes should
+      // still resolve from version.properties instead of using this.
+      const result = await resolveHermesArtifact(
+        '0.87.0-nightly-20260519-58cd1bf58',
+        'debug',
+        '0.87.0-nightly-20260519-58cd1bf58',
+        tempDir,
+      );
+      expect(result.version).toBe('260318099.0.1');
+      expect(result.url).not.toContain('20260519');
+    });
+
+    it('falls back to the latest-v1 hermes-compiler dist-tag when version.properties is missing', async () => {
       mockFetch({
         'hermes-compiler/latest-v1': {json: {version: '0.13.0'}},
-        // Pretend the release URL exists once we ask for 0.13.0.
         'hermes-ios/0.13.0/hermes-ios-0.13.0': {ok: true},
       });
       const result = await resolveHermesArtifact(
         '0.87.0-nightly-20260519-58cd1bf58',
         'debug',
         null,
+        tempDir,
       );
       expect(result.version).toBe('0.13.0');
-      expect(result.url).toContain('/0.13.0/');
-      // The RN nightly hash MUST NOT leak into the hermes URL.
-      expect(result.url).not.toContain('20260519');
-    });
-
-    it('ignores rawVersion (the RN --version arg) when HERMES_VERSION is unset', async () => {
-      mockFetch({
-        'hermes-compiler/latest-v1': {json: {version: '0.13.0'}},
-        'hermes-ios/0.13.0/hermes-ios-0.13.0': {ok: true},
-      });
-      // Caller passes the original RN --version verbatim; hermes should
-      // still default to latest-v1 instead of using this.
-      const result = await resolveHermesArtifact(
-        '0.87.0-nightly-20260519-58cd1bf58',
-        'debug',
-        '0.87.0-nightly-20260519-58cd1bf58',
-      );
-      expect(result.version).toBe('0.13.0');
-      expect(result.url).not.toContain('20260519');
     });
   });
 
   describe('HERMES_VERSION escape hatches', () => {
-    it('HERMES_VERSION=<literal-version> uses it verbatim', async () => {
+    it('HERMES_VERSION=<literal-version> uses it verbatim, even when version.properties is pinned', async () => {
       process.env.HERMES_VERSION = '0.13.5';
+      writePinnedVersion('260318099.0.1');
       mockFetch({
         'hermes-ios/0.13.5/hermes-ios-0.13.5': {ok: true},
       });
@@ -166,13 +223,15 @@ describe('resolveHermesArtifact', () => {
         '0.87.0-nightly-anything',
         'debug',
         null,
+        tempDir,
       );
       expect(result.version).toBe('0.13.5');
       expect(result.url).toContain('/0.13.5/');
     });
 
-    it('HERMES_VERSION=latest-v1 resolves via npm dist-tag', async () => {
+    it('HERMES_VERSION=latest-v1 resolves via npm dist-tag, even when version.properties is pinned', async () => {
       process.env.HERMES_VERSION = 'latest-v1';
+      writePinnedVersion('260318099.0.1');
       mockFetch({
         'hermes-compiler/latest-v1': {json: {version: '0.13.0'}},
         'hermes-ios/0.13.0/hermes-ios-0.13.0': {ok: true},
@@ -181,6 +240,7 @@ describe('resolveHermesArtifact', () => {
         '0.87.0-nightly-anything',
         'debug',
         null,
+        tempDir,
       );
       expect(result.version).toBe('0.13.0');
     });
@@ -197,6 +257,7 @@ describe('resolveHermesArtifact', () => {
         '0.87.0-nightly-anything',
         'debug',
         null,
+        tempDir,
       );
       expect(result.version).toBe('0.14.0-nightly-abc');
     });
@@ -215,7 +276,12 @@ describe('resolveHermesArtifact', () => {
             '<buildNumber>2</buildNumber></metadata>',
         };
       });
-      const result = await resolveHermesArtifact('0.87.0', 'debug', null);
+      const result = await resolveHermesArtifact(
+        '0.87.0',
+        'debug',
+        null,
+        tempDir,
+      );
       expect(result.url).toContain('maven-snapshots');
       expect(result.url).toContain('hermes-ios-debug.tar.gz');
     });

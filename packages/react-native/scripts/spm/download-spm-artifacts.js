@@ -337,6 +337,35 @@ async function resolveCacheSlotVersion(
   }
 }
 
+const DEFAULT_RN_ROOT = path.resolve(__dirname, '../..');
+
+/**
+ * Reads the Hermes version pinned for this react-native install from
+ * sdks/hermes-engine/version.properties (HERMES_VERSION_NAME=<version>).
+ * CocoaPods' hermes-engine.podspec reads this same file (via
+ * sdks/hermes-engine/hermes-utils.rb) to pick the Hermes build it downloads,
+ * so defaulting to it here keeps SPM on the same Hermes build as CocoaPods
+ * for a given react-native release, instead of drifting to whatever is
+ * newest on npm's `latest-v1` dist-tag at install time.
+ */
+function readPinnedHermesVersion(
+  rnRoot /*: string */ = DEFAULT_RN_ROOT,
+) /*: string | null */ {
+  const propsPath = path.join(
+    rnRoot,
+    'sdks',
+    'hermes-engine',
+    'version.properties',
+  );
+  if (!fs.existsSync(propsPath)) {
+    return null;
+  }
+  const match = fs
+    .readFileSync(propsPath, 'utf8')
+    .match(/^HERMES_VERSION_NAME=(.+)$/m);
+  return match != null ? match[1].trim() : null;
+}
+
 async function resolveLatestV1Version() /*: Promise<string> */ {
   log('  Resolving latest-v1 Hermes from npm...');
   // $FlowFixMe[incompatible-call] global fetch not in Flow stubs
@@ -454,26 +483,36 @@ async function resolveRNDepsArtifact(
 
 /**
  * Returns {url, version} for Hermes. Hermes uses its own version space
- * decoupled from React Native's nightly cadence — RN's `hermes-compiler`
- * npm package publishes a `latest-v1` dist-tag that always resolves to a
- * binary that's been built and uploaded to Maven. Our default mirrors RN's
- * CocoaPods prebuild path (see scripts/ios-prebuild/hermes.js):
- *
- *   HERMES_VERSION unset       → 'latest-v1' dist-tag
- *   HERMES_VERSION=latest-v1   → same (explicit)
- *   HERMES_VERSION=nightly     → hermes-compiler@nightly dist-tag
- *   HERMES_VERSION=<literal>   → use that version verbatim
- *
- * Note: rnVersion / rawVersion are intentionally not consulted. There is no
+ * decoupled from React Native's nightly cadence, so rnVersion / rawVersion
+ * are intentionally not consulted for the RN-nightly-hash case: there is no
  * guarantee a hermes-ios artifact exists for any given RN nightly hash —
  * tying them together produces 404s like #(repro case from spikes/MyApp).
+ *
+ * Default resolution order (when HERMES_VERSION is unset):
+ *   1. sdks/hermes-engine/version.properties (HERMES_VERSION_NAME) — the
+ *      exact Hermes build this react-native install was pinned to and
+ *      tested against. This mirrors what CocoaPods' hermes-engine.podspec
+ *      reads (see sdks/hermes-engine/hermes-utils.rb), so SPM and CocoaPods
+ *      resolve to the same Hermes build for a given react-native release
+ *      instead of SPM drifting to whatever is newest upstream.
+ *   2. If that file is missing, fall back to the hermes-compiler
+ *      `latest-v1` npm dist-tag.
+ *
+ *   HERMES_VERSION=latest-v1   → force the npm dist-tag lookup
+ *   HERMES_VERSION=nightly     → hermes-compiler@nightly dist-tag
+ *   HERMES_VERSION=<literal>   → use that version verbatim
  */
 async function resolveHermesArtifact(
   rnVersion /*: string */,
   flavor /*: string */,
   rawVersion /*: string | null */,
+  rnRoot /*: string */ = DEFAULT_RN_ROOT,
 ) /*: Promise<ResolvedArtifact> */ {
-  let version = process.env.HERMES_VERSION ?? 'latest-v1';
+  let version = process.env.HERMES_VERSION;
+
+  if (version == null) {
+    version = readPinnedHermesVersion(rnRoot) ?? 'latest-v1';
+  }
 
   if (version === 'nightly') {
     version = await resolveNightlyVersion('hermes-compiler');
@@ -1178,7 +1217,7 @@ async function main(argv /*:: ?: Array<string> */) /*: Promise<void> */ {
       label: 'hermes',
       name: 'hermes-engine',
       resolve: () =>
-        resolveHermesArtifact(resolvedRnVersion, flavor, rawVersion),
+        resolveHermesArtifact(resolvedRnVersion, flavor, rawVersion, rnRoot),
       sharedName: (v /*: string */) => `hermes-ios-${v}-${flavor}.tar.gz`,
     },
   ];
@@ -1461,6 +1500,7 @@ module.exports = {
   resolveSnapshotUrl,
   resolveNightlyVersion,
   resolveLatestV1Version,
+  readPinnedHermesVersion,
   resolveRNCoreArtifact,
   resolveRNDepsArtifact,
   exists,
