@@ -1300,24 +1300,45 @@ class VirtualizedList extends StateSafePureComponent<
           JSON.stringify(props.refreshing ?? 'undefined') +
           '`',
       );
+
+      // When the list is inverted, the scaleY: -1 transform causes the
+      // RefreshControl to appear at the visual bottom instead of the visual
+      // top (see https://github.com/react/react-native/issues/17553).
+      // We use progressViewOffset to reposition the refresh indicator at the
+      // visual top of the list. The offset is the visible height/width of the
+      // scroll view so the indicator moves from the physical top (visual
+      // bottom) to the physical bottom (visual top).
+      const progressViewOffset =
+        props.isInvertedVirtualizedList &&
+        props.progressViewOffset == null &&
+        this._scrollMetrics.visibleLength > 0
+          ? this._scrollMetrics.visibleLength
+          : props.progressViewOffset;
+
+      const refreshControl =
+        props.refreshControl == null ? (
+          <RefreshControl
+            // $FlowFixMe[incompatible-type]
+            refreshing={props.refreshing}
+            onRefresh={onRefresh}
+            progressViewOffset={progressViewOffset}
+          />
+        ) : props.isInvertedVirtualizedList &&
+          // $FlowFixMe[prop-missing] props may not have progressViewOffset
+          props.refreshControl.props?.progressViewOffset == null &&
+          this._scrollMetrics.visibleLength > 0 &&
+          props.progressViewOffset == null ? (
+          cloneElement(props.refreshControl, {
+            progressViewOffset: this._scrollMetrics.visibleLength,
+          })
+        ) : (
+          props.refreshControl
+        );
+
       return (
         // $FlowFixMe[prop-missing] Invalid prop usage
         // $FlowFixMe[incompatible-use]
-        <ScrollView
-          {...props}
-          refreshControl={
-            props.refreshControl == null ? (
-              <RefreshControl
-                // $FlowFixMe[incompatible-type]
-                refreshing={props.refreshing}
-                onRefresh={onRefresh}
-                progressViewOffset={props.progressViewOffset}
-              />
-            ) : (
-              props.refreshControl
-            )
-          }
-        />
+        <ScrollView {...props} refreshControl={refreshControl} />
       );
     } else {
       // $FlowFixMe[prop-missing] Invalid prop usage
