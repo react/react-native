@@ -28,6 +28,7 @@ const {
   restoreAutomaticPodsInstallation,
   shouldAutoDeintegrate,
   stripReactNativeFromPodfile,
+  stripStockPostInstallBlock,
   withAutomaticPodsInstallationDisabled,
   withAutomaticPodsInstallationEnabled,
 } = require('../../setup-apple-spm');
@@ -656,12 +657,13 @@ describe('stripReactNativeFromPodfile', () => {
     expect(stripReactNativeFromPodfile(podfile)).toBe(podfile);
   });
 
-  it('the stock template, once stripped, still needs `post_install` removed by hand — podfileHasRnIntegration says so', () => {
-    // Full stock react-native init Podfile shape, including the post_install
-    // block that references the (now-removed) use_native_modules! return
-    // value. stripReactNativeFromPodfile intentionally doesn't try to strip
-    // that block — its shape is too open-ended — so podfileHasRnIntegration
-    // must still flag the leftover `react_native_post_install` call.
+  it('the full stock template ends up with no leftover RN integration once both strips run', () => {
+    // Full stock react-native init Podfile shape. stripReactNativeFromPodfile
+    // removes the use_native_modules!/use_react_native! calls;
+    // stripStockPostInstallBlock (run after it, as runDeintegrate does) then
+    // removes the now-dangling post_install block, since its body is exactly
+    // one react_native_post_install(...) call. podfileHasRnIntegration should
+    // find nothing left to warn about.
     const podfile =
       "target 'HelloWorld' do\n" +
       '  config = use_native_modules!\n' +
@@ -679,22 +681,100 @@ describe('stripReactNativeFromPodfile', () => {
       '    )\n' +
       '  end\n' +
       'end\n';
-    const stripped = stripReactNativeFromPodfile(podfile);
+    const stripped = stripStockPostInstallBlock(
+      stripReactNativeFromPodfile(podfile),
+    );
     expect(stripped).not.toMatch(/use_react_native!/);
     expect(stripped).not.toMatch(/use_native_modules!/);
-    // The post_install block (and its react_native_post_install call) is
-    // left in place on purpose.
-    expect(stripped).toMatch(/react_native_post_install/);
+    expect(stripped).not.toMatch(/post_install/);
+    expect(stripped).not.toMatch(/react_native_post_install/);
+    expect(stripped).toBe("target 'HelloWorld' do\n\n\nend\n");
 
     const appRoot = fs.mkdtempSync(
       path.join(os.tmpdir(), 'spm-podfile-leftover-'),
     );
     try {
       fs.writeFileSync(path.join(appRoot, 'Podfile'), stripped, 'utf8');
-      expect(podfileHasRnIntegration(appRoot)).toBe(true);
+      expect(podfileHasRnIntegration(appRoot)).toBe(false);
     } finally {
       fs.rmSync(appRoot, {recursive: true, force: true});
     }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// stripStockPostInstallBlock — removes the stock template's `post_install do
+// |installer| react_native_post_install(...) end` block, but ONLY when its
+// body is exactly that one call. A customized block is left alone, since we
+// can't tell what else inside it matters.
+// ---------------------------------------------------------------------------
+
+describe('stripStockPostInstallBlock', () => {
+  it('removes the stock block (multi-line call, trailing arg)', () => {
+    const podfile =
+      "target 'HelloWorld' do\n" +
+      '  post_install do |installer|\n' +
+      '    react_native_post_install(\n' +
+      '      installer,\n' +
+      '      config[:reactNativePath],\n' +
+      '      :mac_catalyst_enabled => false\n' +
+      '    )\n' +
+      '  end\n' +
+      'end\n';
+    expect(stripStockPostInstallBlock(podfile)).toBe(
+      "target 'HelloWorld' do\nend\n",
+    );
+  });
+
+  it('removes the stock block (single-line call)', () => {
+    const podfile =
+      "target 'HelloWorld' do\n" +
+      '  post_install do |installer|\n' +
+      '    react_native_post_install(installer, config[:reactNativePath])\n' +
+      '  end\n' +
+      'end\n';
+    expect(stripStockPostInstallBlock(podfile)).toBe(
+      "target 'HelloWorld' do\nend\n",
+    );
+  });
+
+  it('leaves a customized block (extra statement before the call) untouched', () => {
+    const podfile =
+      "target 'HelloWorld' do\n" +
+      '  post_install do |installer|\n' +
+      '    installer.pods_project.targets.each do |target|\n' +
+      '      flipper_post_install(installer)\n' +
+      '    end\n' +
+      '    react_native_post_install(installer, config[:reactNativePath])\n' +
+      '  end\n' +
+      'end\n';
+    expect(stripStockPostInstallBlock(podfile)).toBe(podfile);
+  });
+
+  it('leaves a customized block (extra statement after the call) untouched', () => {
+    const podfile =
+      "target 'HelloWorld' do\n" +
+      '  post_install do |installer|\n' +
+      '    react_native_post_install(installer, config[:reactNativePath])\n' +
+      '    my_other_post_install_hook(installer)\n' +
+      '  end\n' +
+      'end\n';
+    expect(stripStockPostInstallBlock(podfile)).toBe(podfile);
+  });
+
+  it('leaves a Podfile with no post_install block untouched', () => {
+    const podfile = "target 'MyApp' do\n  pod 'MBProgressHUD'\nend\n";
+    expect(stripStockPostInstallBlock(podfile)).toBe(podfile);
+  });
+
+  it('leaves a post_install block that does not call react_native_post_install untouched', () => {
+    const podfile =
+      "target 'MyApp' do\n" +
+      '  post_install do |installer|\n' +
+      '    some_other_hook(installer)\n' +
+      '  end\n' +
+      'end\n';
+    expect(stripStockPostInstallBlock(podfile)).toBe(podfile);
   });
 });
 

@@ -648,13 +648,14 @@ function podfileHasRnIntegration(appRoot /*: string */) /*: boolean */ {
   if (!fs.existsSync(podfilePath)) {
     return false;
   }
-  // react_native_post_install is included because a stock template's
-  // `post_install do |installer| react_native_post_install(installer,
-  // config[:reactNativePath]) end` block references the removed
-  // use_native_modules! return value — stripReactNativeFromPodfile
-  // intentionally doesn't try to remove that block (its shape is too open-
-  // ended to strip safely), so this is what surfaces "you still have to
-  // finish cleaning up the Podfile by hand" to the user.
+  // react_native_post_install is included because a CUSTOMIZED post_install
+  // block — anything beyond the stock template's single
+  // react_native_post_install(...) call — is left alone by
+  // stripStockPostInstallBlock on purpose (its shape is too open-ended to
+  // safely strip more of it), so this is what surfaces "you still have to
+  // finish cleaning up the Podfile by hand" to the user in that case.
+  // The stock shape itself is now fully removed by stripReactNativeFromPodfile
+  // + stripStockPostInstallBlock, so it never reaches this check.
   return /use_react_native!|use_native_modules!|prepare_react_native_project!|react_native_post_install/.test(
     fs.readFileSync(podfilePath, 'utf8'),
   );
@@ -730,12 +731,9 @@ function escapeRegExp(s /*: string */) /*: string */ {
 // removing it outright, since Ruby folds a dangling `lhs =` into whatever
 // statement follows (e.g. `config = \n\npost_install do ... end` becomes
 // `config = (post_install do ... end)`), corrupting unrelated code instead
-// of just losing the `config` binding. Anything that then references
-// `config` (e.g. a stock `post_install` block calling
-// `react_native_post_install(installer, config[:reactNativePath])`) is
-// intentionally NOT stripped here — its shape is too open-ended to remove
-// safely — but podfileHasRnIntegration still detects the leftover
-// react_native_post_install call and warns.
+// of just losing the `config` binding. The stock template's `post_install`
+// block (which references `config`) is a separate, narrower case — see
+// stripStockPostInstallBlock, below.
 function stripReactNativeFromPodfile(contents /*: string */) /*: string */ {
   let text = contents;
   for (const name of RN_PODFILE_CALLS) {
@@ -780,6 +778,84 @@ function stripReactNativeFromPodfile(contents /*: string */) /*: string */ {
     text = out;
   }
   return text;
+}
+
+// Strips the stock template's
+//   post_install do |installer|
+//     react_native_post_install(
+//       installer,
+//       config[:reactNativePath],
+//       :mac_catalyst_enabled => false
+//     )
+//   end
+// — but ONLY when the block's entire body is exactly one
+// react_native_post_install(...) call (whitespace aside). That call is the
+// one thing stripReactNativeFromPodfile's removal of `use_native_modules!`
+// breaks (it references the now-gone `config`), so this is safe to remove
+// unconditionally in that exact shape.
+//
+// A customized block — anything else inside it, another statement before or
+// after the call, extra hooks a user added — is left completely alone: we
+// can't tell what else in there matters, so guessing would risk losing user
+// logic. podfileHasRnIntegration still flags the leftover
+// react_native_post_install call in that case, so the user knows to finish
+// the cleanup by hand.
+function stripStockPostInstallBlock(contents /*: string */) /*: string */ {
+  const re = /^([ \t]*)post_install\s+do\s*\|\s*installer\s*\|/gm;
+  let out = '';
+  let i = 0;
+  let m;
+  while ((m = re.exec(contents))) {
+    const statementStart = m.index;
+    let cursor = re.lastIndex;
+    while (cursor < contents.length && /\s/.test(contents[cursor])) cursor++;
+    const callMatch = /^react_native_post_install\s*\(/.exec(
+      contents.slice(cursor),
+    );
+    if (callMatch == null) {
+      continue; // Not the stock shape — leave the whole block alone.
+    }
+    const parenStart = cursor + callMatch[0].length - 1;
+    let depth = 0;
+    let callEnd = -1;
+    for (let p = parenStart; p < contents.length; p++) {
+      if (contents[p] === '(') depth++;
+      else if (contents[p] === ')') {
+        depth--;
+        if (depth === 0) {
+          callEnd = p + 1;
+          break;
+        }
+      }
+    }
+    if (callEnd === -1) {
+      continue; // Unbalanced parens — bail out rather than guess.
+    }
+    let afterCall = callEnd;
+    while (afterCall < contents.length && /\s/.test(contents[afterCall])) {
+      afterCall++;
+    }
+    const nextChar = contents[afterCall + 3];
+    if (
+      contents.slice(afterCall, afterCall + 3) !== 'end' ||
+      (nextChar != null && /\w/.test(nextChar))
+    ) {
+      continue; // Something else follows the call inside the block.
+    }
+    let end = afterCall + 3;
+    // If the rest of the line (after `end`) is blank, drop the trailing
+    // newline too, so we don't leave an empty line behind.
+    let lineEnd = contents.indexOf('\n', end);
+    if (lineEnd === -1) lineEnd = contents.length;
+    if (contents.slice(end, lineEnd).trim() === '') {
+      end = lineEnd < contents.length ? lineEnd + 1 : lineEnd;
+    }
+    out += contents.slice(i, statementStart);
+    i = end;
+    re.lastIndex = end;
+  }
+  out += contents.slice(i);
+  return out;
 }
 
 // Replaces the contents of `//` and `/* */` comments with spaces (same
@@ -1350,7 +1426,9 @@ function runDeintegrate(
   const podfilePath = path.join(appRoot, 'Podfile');
   if (fs.existsSync(podfilePath)) {
     const orig = fs.readFileSync(podfilePath, 'utf8');
-    const stripped = stripReactNativeFromPodfile(orig);
+    const stripped = stripStockPostInstallBlock(
+      stripReactNativeFromPodfile(orig),
+    );
     if (stripped !== orig) {
       fs.writeFileSync(podfilePath, stripped, 'utf8');
       log('Stripped React Native integration from Podfile.');
@@ -1947,6 +2025,7 @@ module.exports = {
   removeDanglingPodsFileRef,
   shouldAutoDeintegrate,
   stripReactNativeFromPodfile,
+  stripStockPostInstallBlock,
   podfileHasRnIntegration,
   withAutomaticPodsInstallationDisabled,
   withAutomaticPodsInstallationEnabled,
