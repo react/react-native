@@ -364,6 +364,8 @@ jobs:
         GRADLE_OPTS: '-Dorg.gradle.daemon=false'
         ORG_GRADLE_PROJECT_SIGNING_PWD: ${{ secrets.ORG_GRADLE_PROJECT_SIGNING_PWD }}
         ORG_GRADLE_PROJECT_SIGNING_KEY: ${{ secrets.ORG_GRADLE_PROJECT_SIGNING_KEY }}
+        # Maestro Cloud Android devices require an APK containing arm64-v8a.
+        ORG_GRADLE_PROJECT_enableUniversalApk: 'true'
         REACT_NATIVE_DOWNLOADS_DIR: /opt/react-native-downloads
     steps:
       - name: Checkout
@@ -406,14 +408,14 @@ jobs:
         run: |
           test -n "$MAESTRO_CLOUD_API_KEY"
           test -n "$MAESTRO_CLOUD_PROJECT_ID"
-          test -f /tmp/rntester-android/app-x86-release.apk
+          test -f /tmp/rntester-android/app-universal-release.apk
           test -z "$(find packages/rn-tester/.maestro -type l -print -quit)"
       - name: Run flows on Maestro Cloud
         uses: mobile-dev-inc/action-maestro-cloud@5759506b4ec7ee0a1ece4b7e6574bba2b282f241 # v3.0.1
         with:
           api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
           project-id: ${{ secrets.MAESTRO_CLOUD_PROJECT_ID }}
-          app-file: /tmp/rntester-android/app-x86-release.apk
+          app-file: /tmp/rntester-android/app-universal-release.apk
           workspace: packages/rn-tester/.maestro
           branch: ${{ github.head_ref || github.ref_name }}
           name: RNTester Android - ${{ github.event.pull_request.title || github.event.head_commit.message }}
