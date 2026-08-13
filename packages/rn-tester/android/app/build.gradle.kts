@@ -120,7 +120,8 @@ android {
   splits {
     abi {
       isEnable = true
-      isUniversalApk = false
+      isUniversalApk =
+          providers.gradleProperty("enableUniversalApk").getOrElse("false").toBoolean()
       reset()
       include(*reactNativeArchitectures().toTypedArray())
     }
