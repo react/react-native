@@ -58,6 +58,14 @@ add_react_third_party_ndk_subdir(fast_float)
 add_react_third_party_ndk_subdir(fmt)
 add_react_third_party_ndk_subdir(folly)
 
+# Marks everything added below as React Native's own build, so the
+# react/cxxstableapi guards let internal sources keep including the
+# fine-grained headers they fence off from consumers. Deliberately declared
+# after the third-party subdirectories so it never reaches them, and this
+# project never compiles app or third-party module code (those build against
+# the prefab artifacts through ReactNative-application.cmake).
+add_compile_definitions(RN_BUILDING)
+
 # Common targets
 add_react_common_subdir(yoga)
 add_react_common_subdir(runtimeexecutor)
