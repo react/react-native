@@ -25,7 +25,7 @@ Pod::Spec.new do |s|
   s.author                 = "Meta Platforms, Inc. and its affiliates"
   s.platforms              = min_supported_versions
   s.source                 = source
-  s.source_files           = podspec_sources("*.h", "*.h")
+  s.source_files           = podspec_sources("*.{cpp,h}", "*.h")
   s.header_dir             = "react/cxxstableapi"
   s.pod_target_xcconfig    = { "CLANG_CXX_LANGUAGE_STANDARD" => rct_cxx_language_standard(),
                                "DEFINES_MODULE" => "YES" }
