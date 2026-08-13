@@ -88,6 +88,7 @@ jobs:
             debugger_shell:
               - 'packages/debugger-shell/**'
               - 'scripts/debugger-shell/**'
+
   prebuild_apple_dependencies:
     needs: check_code_changes
     if: |
@@ -161,55 +162,6 @@ jobs:
           # test_ios_rntester_dynamic_frameworks).
           use-prebuilds: true
           flavor: ${{ matrix.flavor }}
-
-  test_maestro_cloud_ios:
-    name: Maestro Cloud iOS RNTester
-    needs: test_ios_rntester
-    if: |
-      needs.test_ios_rntester.result == 'success' &&
-      (
-        (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
-        (
-          github.event_name == 'pull_request' &&
-          github.event.pull_request.head.repo.full_name == github.repository &&
-          github.actor != 'dependabot[bot]'
-        )
-      )
-    runs-on: ubuntu-latest
-    timeout-minutes: 75
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-        with:
-          persist-credentials: false
-      - name: Download RNTester app
-        uses: actions/download-artifact@v7
-        with:
-          name: RNTesterApp-NewArch-Release
-          path: /tmp/RNTesterBuild/RNTester.app
-      - name: Validate Maestro Cloud inputs
-        env:
-          MAESTRO_CLOUD_API_KEY: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
-          MAESTRO_CLOUD_PROJECT_ID: ${{ vars.MAESTRO_CLOUD_PROJECT_ID }}
-        run: |
-          test -n "$MAESTRO_CLOUD_API_KEY"
-          test -n "$MAESTRO_CLOUD_PROJECT_ID"
-          test -d /tmp/RNTesterBuild/RNTester.app
-          test -z "$(find packages/rn-tester/.maestro -type l -print -quit)"
-      - name: Run flows on Maestro Cloud
-        uses: mobile-dev-inc/action-maestro-cloud@5759506b4ec7ee0a1ece4b7e6574bba2b282f241 # v3.0.1
-        with:
-          api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
-          project-id: ${{ vars.MAESTRO_CLOUD_PROJECT_ID }}
-          app-file: /tmp/RNTesterBuild/RNTester.app
-          workspace: packages/rn-tester/.maestro
-          branch: ${{ github.head_ref || github.ref_name }}
-          name: RNTester iOS - ${{ github.event.pull_request.title || github.event.head_commit.message }}
-          exclude-tags: android-only
-          env: |
-            APP_ID=com.meta.RNTester.localDevelopment
-          maestro-cli-version: 2.6.1
-          timeout: 60
 
   test_e2e_ios_rntester:
     needs: test_ios_rntester
@@ -373,54 +325,6 @@ jobs:
         with:
           release-type: ${{ needs.set_release_type.outputs.RELEASE_TYPE }}
           gradle-cache-encryption-key: ${{ secrets.GRADLE_CACHE_ENCRYPTION_KEY }}
-
-  test_maestro_cloud_android:
-    name: Maestro Cloud Android RNTester
-    needs: build_android
-    if: |
-      needs.build_android.result == 'success' &&
-      (
-        (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
-        (
-          github.event_name == 'pull_request' &&
-          github.event.pull_request.head.repo.full_name == github.repository &&
-          github.actor != 'dependabot[bot]'
-        )
-      )
-    runs-on: ubuntu-latest
-    timeout-minutes: 75
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-        with:
-          persist-credentials: false
-      - name: Download RNTester APK
-        uses: actions/download-artifact@v7
-        with:
-          name: rntester-release
-          path: /tmp/rntester-android
-      - name: Validate Maestro Cloud inputs
-        env:
-          MAESTRO_CLOUD_API_KEY: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
-          MAESTRO_CLOUD_PROJECT_ID: ${{ vars.MAESTRO_CLOUD_PROJECT_ID }}
-        run: |
-          test -n "$MAESTRO_CLOUD_API_KEY"
-          test -n "$MAESTRO_CLOUD_PROJECT_ID"
-          test -f /tmp/rntester-android/app-x86-release.apk
-          test -z "$(find packages/rn-tester/.maestro -type l -print -quit)"
-      - name: Run flows on Maestro Cloud
-        uses: mobile-dev-inc/action-maestro-cloud@5759506b4ec7ee0a1ece4b7e6574bba2b282f241 # v3.0.1
-        with:
-          api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
-          project-id: ${{ vars.MAESTRO_CLOUD_PROJECT_ID }}
-          app-file: /tmp/rntester-android/app-x86-release.apk
-          workspace: packages/rn-tester/.maestro
-          branch: ${{ github.head_ref || github.ref_name }}
-          name: RNTester Android - ${{ github.event.pull_request.title || github.event.head_commit.message }}
-          env: |
-            APP_ID=com.facebook.react.uiapp
-          maestro-cli-version: 2.6.1
-          timeout: 60
 
   test_e2e_android_rntester:
     needs: build_android
