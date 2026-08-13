@@ -638,20 +638,10 @@ export interface TextStyle extends TextStyleIOS, TextStyleAndroid, ViewStyle {
  * Image style
  * @see https://reactnative.dev/docs/image#style
  */
-export interface ImageStyle extends FlexStyle, ShadowStyleIOS, TransformsStyle {
+export interface ImageStyle extends Omit<ViewStyle, 'overflow'> {
   resizeMode?: ImageResizeMode | undefined;
-  backfaceVisibility?: 'visible' | 'hidden' | undefined;
-  borderBottomLeftRadius?: AnimatableNumericValue | string | undefined;
-  borderBottomRightRadius?: AnimatableNumericValue | string | undefined;
-  backgroundColor?: ColorValue | undefined;
-  borderColor?: ColorValue | undefined;
-  borderRadius?: AnimatableNumericValue | string | undefined;
-  borderTopLeftRadius?: AnimatableNumericValue | string | undefined;
-  borderTopRightRadius?: AnimatableNumericValue | string | undefined;
   overflow?: 'visible' | 'hidden' | undefined;
   overlayColor?: ColorValue | undefined;
   tintColor?: ColorValue | undefined;
-  opacity?: AnimatableNumericValue | undefined;
   objectFit?: 'cover' | 'contain' | 'fill' | 'scale-down' | 'none' | undefined;
-  cursor?: CursorValue | undefined;
 }
