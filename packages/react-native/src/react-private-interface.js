@@ -48,6 +48,7 @@ import type {DangerouslyImpreciseStyleProp} from '../Libraries/StyleSheet/StyleS
 import typeof deepFreezeAndThrowOnMutationInDev from '../Libraries/Utilities/deepFreezeAndThrowOnMutationInDev';
 import typeof deepDiffer from '../Libraries/Utilities/differ/deepDiffer';
 import typeof Platform from '../Libraries/Utilities/Platform';
+import typeof * as ReactNativeFeatureFlags from './private/featureflags/ReactNativeFeatureFlags';
 import typeof dispatchNativeEvent from './private/renderer/events/dispatchNativeEvent';
 import typeof CustomEvent from './private/webapis/dom/events/CustomEvent';
 
@@ -68,6 +69,9 @@ module.exports = {
   },
   get RCTEventEmitter(): RCTEventEmitter {
     return require('../Libraries/EventEmitter/RCTEventEmitter').default;
+  },
+  get ReactNativeFeatureFlags(): ReactNativeFeatureFlags {
+    return require('./private/featureflags/ReactNativeFeatureFlags');
   },
   get ReactNativeViewConfigRegistry(): ReactNativeViewConfigRegistry {
     return require('../Libraries/Renderer/shims/ReactNativeViewConfigRegistry');
