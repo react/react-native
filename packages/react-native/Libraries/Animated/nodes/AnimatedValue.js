@@ -124,6 +124,10 @@ export default class AnimatedValue extends AnimatedWithChildren {
       });
     }
     this.stopAnimation();
+    // Stop listening to native value updates before the native node is
+    // dropped by `super.__detach()`. This releases the subscription this node
+    // owns without discarding listeners registered by the caller.
+    this._updateSubscription?.remove();
     super.__detach();
   }
 

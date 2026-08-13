@@ -286,6 +286,65 @@ describe('Native Animated', () => {
       });
       expect(listener).toHaveBeenCalledTimes(4);
     });
+
+    it('should stop listening to native updates on unmount, but keep listeners', async () => {
+      const {Animated, NativeAnimatedHelper} = importModules();
+
+      const value1 = new Animated.Value(0, {useNativeDriver: true});
+      const listener = jest.fn();
+      value1.addListener(listener);
+
+      const tag = value1.__getNativeTag();
+      expect(
+        NativeAnimatedModule.startListeningToAnimatedNodeValue,
+      ).toHaveBeenCalledWith(tag);
+
+      const root = await create(<Animated.View style={{opacity: value1}} />);
+      await unmount(root);
+      jest.runAllTicks();
+
+      // The subscription this node owns is released before the native node is
+      // dropped.
+      expect(
+        NativeAnimatedModule.stopListeningToAnimatedNodeValue,
+      ).toHaveBeenCalledWith(tag);
+      expect(NativeAnimatedModule.dropAnimatedNode).toHaveBeenCalledWith(tag);
+      NativeAnimatedHelper.nativeEventEmitter.emit('onAnimatedValueUpdate', {
+        value: 42,
+        tag,
+      });
+      expect(listener).not.toHaveBeenCalled();
+
+      // The caller's listener is not discarded.
+      expect(value1.hasListeners()).toBe(true);
+    });
+
+    it('should resume delivering native updates when remounted', async () => {
+      const {Animated, NativeAnimatedHelper} = importModules();
+
+      const value1 = new Animated.Value(0, {useNativeDriver: true});
+      const listener = jest.fn();
+      value1.addListener(listener);
+
+      const root = await create(<Animated.View style={{opacity: value1}} />);
+      await unmount(root);
+      jest.runAllTicks();
+
+      await create(<Animated.View style={{opacity: value1}} />);
+      jest.runAllTicks();
+
+      const tag = value1.__getNativeTag();
+      expect(
+        NativeAnimatedModule.startListeningToAnimatedNodeValue,
+      ).toHaveBeenCalledWith(tag);
+
+      NativeAnimatedHelper.nativeEventEmitter.emit('onAnimatedValueUpdate', {
+        value: 42,
+        tag,
+      });
+      expect(listener).toBeCalledWith({value: 42});
+      expect(listener).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe('Animated Events', () => {

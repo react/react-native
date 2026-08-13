@@ -49,7 +49,12 @@ export default class AnimatedNode {
 
   __attach(): void {}
   __detach(): void {
-    this.removeAllListeners();
+    // NOTE: Listeners registered with `addListener` are owned by the caller,
+    // not by this node. An `Animated.Value` can outlive every component that
+    // uses it, so detaching from the graph must not remove them. Subclasses
+    // are responsible for tearing down any listening state they own (e.g.
+    // `AnimatedValue` stops listening to native value updates) before the
+    // native node is dropped below.
     if (this.__isNative && this.__nativeTag != null) {
       NativeAnimatedHelper.API.dropAnimatedNode(this.__nativeTag);
       this.__nativeTag = undefined;
