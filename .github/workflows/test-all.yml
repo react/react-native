@@ -190,7 +190,7 @@ jobs:
       - name: Validate Maestro Cloud inputs
         env:
           MAESTRO_CLOUD_API_KEY: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
-          MAESTRO_CLOUD_PROJECT_ID: ${{ vars.MAESTRO_CLOUD_PROJECT_ID }}
+          MAESTRO_CLOUD_PROJECT_ID: ${{ secrets.MAESTRO_CLOUD_PROJECT_ID }}
         run: |
           test -n "$MAESTRO_CLOUD_API_KEY"
           test -n "$MAESTRO_CLOUD_PROJECT_ID"
@@ -200,7 +200,7 @@ jobs:
         uses: mobile-dev-inc/action-maestro-cloud@5759506b4ec7ee0a1ece4b7e6574bba2b282f241 # v3.0.1
         with:
           api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
-          project-id: ${{ vars.MAESTRO_CLOUD_PROJECT_ID }}
+          project-id: ${{ secrets.MAESTRO_CLOUD_PROJECT_ID }}
           app-file: /tmp/RNTesterBuild/RNTester.app
           workspace: packages/rn-tester/.maestro
           branch: ${{ github.head_ref || github.ref_name }}
@@ -402,7 +402,7 @@ jobs:
       - name: Validate Maestro Cloud inputs
         env:
           MAESTRO_CLOUD_API_KEY: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
-          MAESTRO_CLOUD_PROJECT_ID: ${{ vars.MAESTRO_CLOUD_PROJECT_ID }}
+          MAESTRO_CLOUD_PROJECT_ID: ${{ secrets.MAESTRO_CLOUD_PROJECT_ID }}
         run: |
           test -n "$MAESTRO_CLOUD_API_KEY"
           test -n "$MAESTRO_CLOUD_PROJECT_ID"
@@ -412,7 +412,7 @@ jobs:
         uses: mobile-dev-inc/action-maestro-cloud@5759506b4ec7ee0a1ece4b7e6574bba2b282f241 # v3.0.1
         with:
           api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
-          project-id: ${{ vars.MAESTRO_CLOUD_PROJECT_ID }}
+          project-id: ${{ secrets.MAESTRO_CLOUD_PROJECT_ID }}
           app-file: /tmp/rntester-android/app-x86-release.apk
           workspace: packages/rn-tester/.maestro
           branch: ${{ github.head_ref || github.ref_name }}
