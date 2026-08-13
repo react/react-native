@@ -2877,6 +2877,83 @@ it('maintainVisibleContentPosition with inverted VirtualizedList handles prepend
   expect(anchorAfterPrepend).toBeLessThanOrEqual(anchorBeforePrepend + 10);
 });
 
+it('handles rapid prepends with coalesced scroll event (regression for #53542)', async () => {
+  const items = generateItems(20);
+  const ITEM_HEIGHT = 10;
+
+  let component;
+  await act(() => {
+    component = create(
+      <VirtualizedList
+        initialNumToRender={1}
+        windowSize={1}
+        maintainVisibleContentPosition={{minIndexForVisible: 0}}
+        {...baseItemProps(items)}
+        {...fixedHeightItemLayoutProps(ITEM_HEIGHT)}
+      />,
+    );
+  });
+
+  await act(() => {
+    simulateLayout(component, {
+      viewport: {width: 10, height: 50},
+      content: {width: 10, height: items.length * ITEM_HEIGHT},
+    });
+    simulateScroll(component, {x: 0, y: 50});
+    performAllBatches();
+  });
+
+  const afterFirstPrepend = [...generateItems(5, items.length), ...items];
+  const afterSecondPrepend = [
+    ...generateItems(3, afterFirstPrepend.length),
+    ...afterFirstPrepend,
+  ];
+
+  // Two rapid prepends WITHOUT intermediate scroll (coalesced native event)
+  await act(() => {
+    component.update(
+      <VirtualizedList
+        initialNumToRender={1}
+        windowSize={1}
+        maintainVisibleContentPosition={{minIndexForVisible: 0}}
+        {...baseItemProps(afterFirstPrepend)}
+        {...fixedHeightItemLayoutProps(ITEM_HEIGHT)}
+      />,
+    );
+  });
+
+  await act(() => {
+    component.update(
+      <VirtualizedList
+        initialNumToRender={1}
+        windowSize={1}
+        maintainVisibleContentPosition={{minIndexForVisible: 0}}
+        {...baseItemProps(afterSecondPrepend)}
+        {...fixedHeightItemLayoutProps(ITEM_HEIGHT)}
+      />,
+    );
+  });
+
+  // Only ONE coalesced scroll event for both prepends (delta 8*ITEM_HEIGHT)
+  // This simulates EventQueue coalescing: dispatchUniqueEvent replaces previous scroll
+  // Previously: pending 0→1→2, scroll 2→1 (still blocked). Now: 0→1→1→0 (unblocked)
+  await act(() => {
+    simulateContentLayout(component, {
+      width: 10,
+      height: afterSecondPrepend.length * ITEM_HEIGHT,
+    });
+    simulateScroll(component, {x: 0, y: 50 + 8 * ITEM_HEIGHT});
+    performAllBatches();
+  });
+
+  // Pending should be 0, not 1 – this fails on main before fix
+  expect(component.getInstance().state.pendingScrollUpdateCount).toBe(0);
+  expect(component.getInstance().state.firstVisibleItemKey).not.toBeNull();
+  expect(
+    component.getInstance().state.cellsAroundViewport.first,
+  ).toBeGreaterThanOrEqual(0);
+});
+
 function generateItems(count, startKey = 0) {
   return Array(count)
     .fill()
