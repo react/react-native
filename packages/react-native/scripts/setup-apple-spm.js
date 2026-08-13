@@ -10,7 +10,7 @@
 
 'use strict';
 
-/*:: import type {CliConfigJson, SetupArgs} from './spm/spm-types'; */
+/*:: import type {AutomaticPodsInstallationResult, CliConfigJson, SetupArgs} from './spm/spm-types'; */
 
 /**
  * setup-apple-spm.js – Entry point for setting up Swift Package Manager support
@@ -648,7 +648,14 @@ function podfileHasRnIntegration(appRoot /*: string */) /*: boolean */ {
   if (!fs.existsSync(podfilePath)) {
     return false;
   }
-  return /use_react_native!|use_native_modules!|prepare_react_native_project!/.test(
+  // react_native_post_install is included because a stock template's
+  // `post_install do |installer| react_native_post_install(installer,
+  // config[:reactNativePath]) end` block references the removed
+  // use_native_modules! return value — stripReactNativeFromPodfile
+  // intentionally doesn't try to remove that block (its shape is too open-
+  // ended to strip safely), so this is what surfaces "you still have to
+  // finish cleaning up the Podfile by hand" to the user.
+  return /use_react_native!|use_native_modules!|prepare_react_native_project!|react_native_post_install/.test(
     fs.readFileSync(podfilePath, 'utf8'),
   );
 }
@@ -701,6 +708,10 @@ const RN_PODFILE_CALLS = [
   'prepare_react_native_project!',
 ];
 
+function escapeRegExp(s /*: string */) /*: string */ {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 // Strip every occurrence of the RN Podfile calls above, including their
 // argument list when the call spans multiple lines, e.g. the stock template's
 //   use_react_native!(
@@ -709,32 +720,46 @@ const RN_PODFILE_CALLS = [
 //   )
 // A plain line-filter only removes the opening line and leaves the argument
 // lines + closing paren behind, producing a syntactically broken Podfile.
-// Only strips the call's own line(s); doesn't touch surrounding code, so a
-// call assigned to a variable (`config = use_native_modules!(...)`) keeps its
-// line but loses the call — matching prior (single-line) behavior.
+//
+// Only matches the call at statement position — start of line (whitespace
+// only), optionally preceded by a simple `lhs = ` assignment target — so a
+// mention inside a comment (`# use_react_native! does X`) or embedded in
+// other code is left untouched. When the call IS the entire assignment
+// (`config = use_native_modules!(...)`), the `lhs = ` is consumed too and
+// the whole line is dropped: leaving `config = ` behind is worse than
+// removing it outright, since Ruby folds a dangling `lhs =` into whatever
+// statement follows (e.g. `config = \n\npost_install do ... end` becomes
+// `config = (post_install do ... end)`), corrupting unrelated code instead
+// of just losing the `config` binding. Anything that then references
+// `config` (e.g. a stock `post_install` block calling
+// `react_native_post_install(installer, config[:reactNativePath])`) is
+// intentionally NOT stripped here — its shape is too open-ended to remove
+// safely — but podfileHasRnIntegration still detects the leftover
+// react_native_post_install call and warns.
 function stripReactNativeFromPodfile(contents /*: string */) /*: string */ {
   let text = contents;
   for (const name of RN_PODFILE_CALLS) {
+    const re = new RegExp(
+      '^([ \\t]*)((?:[A-Za-z_$][\\w$]*\\s*=\\s*)?)' + escapeRegExp(name),
+      'gm',
+    );
     let out = '';
     let i = 0;
-    while (i < text.length) {
-      const idx = text.indexOf(name, i);
-      if (idx === -1) {
-        out += text.slice(i);
-        break;
-      }
-      out += text.slice(i, idx);
-      let end = idx + name.length;
+    let m;
+    while ((m = re.exec(text))) {
+      const statementStart = m.index;
+      const callNameStart = statementStart + m[1].length + m[2].length;
+      let end = callNameStart + name.length;
       let k = end;
       while (k < text.length && (text[k] === ' ' || text[k] === '\t')) k++;
       if (text[k] === '(') {
         let depth = 0;
-        for (let m = k; m < text.length; m++) {
-          if (text[m] === '(') depth++;
-          else if (text[m] === ')') {
+        for (let p = k; p < text.length; p++) {
+          if (text[p] === '(') depth++;
+          else if (text[p] === ')') {
             depth--;
             if (depth === 0) {
-              end = m + 1;
+              end = p + 1;
               break;
             }
           }
@@ -747,25 +772,55 @@ function stripReactNativeFromPodfile(contents /*: string */) /*: string */ {
       if (text.slice(end, lineEnd).trim() === '') {
         end = lineEnd < text.length ? lineEnd + 1 : lineEnd;
       }
-      // If everything before the call on its line is just indentation, drop
-      // that indentation too, so we don't leave a whitespace-only line.
-      const lineStart = out.lastIndexOf('\n') + 1;
-      if (out.slice(lineStart).trim() === '') {
-        out = out.slice(0, lineStart);
-      }
+      out += text.slice(i, statementStart);
       i = end;
+      re.lastIndex = end;
     }
+    out += text.slice(i);
     text = out;
   }
   return text;
 }
 
+// Replaces the contents of `//` and `/* */` comments with spaces (same
+// length, newlines preserved) so the brace/key scanning below isn't thrown
+// off by a stray `}` or keyword sitting inside a comment. Only used for
+// *finding* positions — every read/write below still slices the original
+// text, so indices computed against the masked string stay valid.
+function maskJsComments(text /*: string */) /*: string */ {
+  let out = '';
+  let i = 0;
+  while (i < text.length) {
+    if (text[i] === '/' && text[i + 1] === '/') {
+      let j = i;
+      while (j < text.length && text[j] !== '\n') j++;
+      out += ' '.repeat(j - i);
+      i = j;
+      continue;
+    }
+    if (text[i] === '/' && text[i + 1] === '*') {
+      let j = text.indexOf('*/', i + 2);
+      j = j === -1 ? text.length : j + 2;
+      out += text.slice(i, j).replace(/[^\n]/g, ' ');
+      i = j;
+      continue;
+    }
+    out += text[i];
+    i++;
+  }
+  return out;
+}
+
 // Finds the matching `}` for the `{` at `openIdx`, or null if unbalanced.
-function matchingBrace(text /*: string */, openIdx /*: number */) /*: number | null */ {
+// `masked` must be the same length as the real text (see maskJsComments).
+function matchingBrace(
+  masked /*: string */,
+  openIdx /*: number */,
+) /*: number | null */ {
   let depth = 0;
-  for (let i = openIdx; i < text.length; i++) {
-    if (text[i] === '{') depth++;
-    else if (text[i] === '}') {
+  for (let i = openIdx; i < masked.length; i++) {
+    if (masked[i] === '{') depth++;
+    else if (masked[i] === '}') {
       depth--;
       if (depth === 0) return i;
     }
@@ -773,31 +828,67 @@ function matchingBrace(text /*: string */, openIdx /*: number */) /*: number | n
   return null;
 }
 
-// Finds `key: {` within `[start, end)`, but only occurrences at brace-depth 0
-// relative to `start` — i.e. a direct property of the object being scanned,
-// not a same-named key nested inside some other property's value. Returns
-// the `{...}` range of that key's object value, or null if absent.
+// Finds `key: {` (or `'key': {` / `"key": {`) within `[start, end)`, but only
+// occurrences at brace-depth 0 relative to `start` — i.e. a direct property
+// of the object being scanned, not a same-named key nested inside some other
+// property's value, and not a longer identifier that merely contains `key`.
+// Returns the `{...}` range of that key's object value, or null if absent.
+// `masked` must be the same length as the real text (see maskJsComments).
 function findTopLevelKeyObjectRange(
-  text /*: string */,
+  masked /*: string */,
   key /*: string */,
   start /*: number */,
   end /*: number */,
 ) /*: {open: number, close: number} | null */ {
-  const re = new RegExp('\\b' + key + '\\s*:\\s*{', 'g');
+  const re = new RegExp('(?<![\\w$])[\'"]?' + key + '[\'"]?\\s*:\\s*{', 'g');
   re.lastIndex = start;
   let m;
-  while ((m = re.exec(text)) && m.index < end) {
+  while ((m = re.exec(masked)) && m.index < end) {
     let depth = 0;
     for (let i = start; i < m.index; i++) {
-      if (text[i] === '{') depth++;
-      else if (text[i] === '}') depth--;
+      if (masked[i] === '{') depth++;
+      else if (masked[i] === '}') depth--;
     }
     if (depth === 0) {
       const openIdx = m.index + m[0].length - 1;
-      const closeIdx = matchingBrace(text, openIdx);
+      const closeIdx = matchingBrace(masked, openIdx);
       if (closeIdx != null && closeIdx <= end) {
         return {open: openIdx, close: closeIdx};
       }
+    }
+  }
+  return null;
+}
+
+// Finds a scalar `key: <value>` (or quoted-key variant) within `[start, end)`
+// at brace-depth 0 relative to `start` — same top-level-only semantics as
+// findTopLevelKeyObjectRange, but for a non-object value like `true`/`false`.
+// Returns the match bounds in the real text and the trimmed value text, or
+// null if absent. `masked` must be the same length as the real text.
+function findTopLevelScalarValue(
+  masked /*: string */,
+  key /*: string */,
+  start /*: number */,
+  end /*: number */,
+) /*: {matchStart: number, matchEnd: number, value: string} | null */ {
+  const re = new RegExp(
+    '(?<![\\w$])[\'"]?' + key + '[\'"]?\\s*:\\s*([^,}\\n]+)',
+    'g',
+  );
+  re.lastIndex = start;
+  let m;
+  while ((m = re.exec(masked)) && m.index < end) {
+    let depth = 0;
+    for (let i = start; i < m.index; i++) {
+      if (masked[i] === '{') depth++;
+      else if (masked[i] === '}') depth--;
+    }
+    if (depth === 0) {
+      return {
+        matchStart: m.index,
+        matchEnd: m.index + m[0].length,
+        value: m[1].trim(),
+      };
     }
   }
   return null;
@@ -826,69 +917,281 @@ function insertFirstProperty(
   );
 }
 
-// Sets `project.ios.automaticPodsInstallation` to `false` in the contents of
-// a react-native.config.js, inserting whichever of `project` / `ios` /
-// `automaticPodsInstallation` are missing. Returns null when `contents`
-// doesn't look like a plain `module.exports = {...}` object literal — the
-// caller should warn instead of risking a corrupt rewrite.
-function withAutomaticPodsInstallationDisabled(
+// Reads the value at project.ios.<key> out of a react-native.config.js's
+// `module.exports = {...}` object literal, scoped the same way
+// withAutomaticPodsInstallationDisabled writes it. Returns null when the
+// path isn't found or the file isn't a recognized plain object literal —
+// callers use that to distinguish "absent" from "not parseable".
+function readProjectIosScalar(
   contents /*: string */,
+  key /*: string */,
 ) /*: string | null */ {
-  if (/automaticPodsInstallation\s*:\s*false\b/.test(contents)) {
-    return contents;
-  }
-  if (/automaticPodsInstallation\s*:\s*true\b/.test(contents)) {
-    return contents.replace(
-      /automaticPodsInstallation\s*:\s*true\b/,
-      'automaticPodsInstallation: false',
-    );
-  }
-  const exportsMatch = /module\.exports\s*=\s*{/.exec(contents);
+  const masked = maskJsComments(contents);
+  const exportsMatch = /module\.exports\s*=\s*{/.exec(masked);
   if (!exportsMatch) {
     return null;
   }
   const exportsOpen = exportsMatch.index + exportsMatch[0].length - 1;
-  const exportsClose = matchingBrace(contents, exportsOpen);
+  const exportsClose = matchingBrace(masked, exportsOpen);
   if (exportsClose == null) {
     return null;
   }
-
   const projectRange = findTopLevelKeyObjectRange(
-    contents,
+    masked,
     'project',
     exportsOpen + 1,
     exportsClose,
   );
   if (projectRange == null) {
-    return insertFirstProperty(
-      contents,
-      exportsOpen,
-      '  ',
-      'project: {\n    ios: {\n      automaticPodsInstallation: false,\n    },\n  }',
-    );
+    return null;
   }
-
   const iosRange = findTopLevelKeyObjectRange(
-    contents,
+    masked,
     'ios',
     projectRange.open + 1,
     projectRange.close,
   );
   if (iosRange == null) {
-    return insertFirstProperty(
-      contents,
-      projectRange.open,
-      '    ',
-      'ios: {\n      automaticPodsInstallation: false,\n    }',
-    );
+    return null;
+  }
+  const found = findTopLevelScalarValue(
+    masked,
+    key,
+    iosRange.open + 1,
+    iosRange.close,
+  );
+  return found?.value ?? null;
+}
+
+// Sets `project.ios.automaticPodsInstallation` to `false` in the contents of
+// a react-native.config.js, inserting whichever of `project` / `ios` /
+// `automaticPodsInstallation` are missing. All scanning is scoped to
+// `project.ios` specifically (never a bare whole-file search), so a comment
+// or an unrelated `automaticPodsInstallation` under a different key can't
+// produce a false "already disabled" / silent no-op. Returns null when
+// `contents` doesn't look like a plain `module.exports = {...}` object
+// literal, or when the edit's result can't be verified afterward — either
+// way the caller should warn instead of risking a corrupt or ineffective
+// rewrite.
+function withAutomaticPodsInstallationDisabled(
+  contents /*: string */,
+) /*: string | null */ {
+  const masked = maskJsComments(contents);
+  const exportsMatch = /module\.exports\s*=\s*{/.exec(masked);
+  if (!exportsMatch) {
+    return null;
+  }
+  const exportsOpen = exportsMatch.index + exportsMatch[0].length - 1;
+  const exportsClose = matchingBrace(masked, exportsOpen);
+  if (exportsClose == null) {
+    return null;
   }
 
-  return insertFirstProperty(
-    contents,
-    iosRange.open,
-    '      ',
-    'automaticPodsInstallation: false',
+  const projectRange = findTopLevelKeyObjectRange(
+    masked,
+    'project',
+    exportsOpen + 1,
+    exportsClose,
   );
+
+  let updated;
+  if (projectRange == null) {
+    updated = insertFirstProperty(
+      contents,
+      exportsOpen,
+      '  ',
+      'project: {\n    ios: {\n      automaticPodsInstallation: false,\n    },\n  }',
+    );
+  } else {
+    const iosRange = findTopLevelKeyObjectRange(
+      masked,
+      'ios',
+      projectRange.open + 1,
+      projectRange.close,
+    );
+    if (iosRange == null) {
+      updated = insertFirstProperty(
+        contents,
+        projectRange.open,
+        '    ',
+        'ios: {\n      automaticPodsInstallation: false,\n    }',
+      );
+    } else {
+      const existing = findTopLevelScalarValue(
+        masked,
+        'automaticPodsInstallation',
+        iosRange.open + 1,
+        iosRange.close,
+      );
+      if (existing == null) {
+        updated = insertFirstProperty(
+          contents,
+          iosRange.open,
+          '      ',
+          'automaticPodsInstallation: false',
+        );
+      } else if (existing.value === 'false') {
+        return contents;
+      } else if (existing.value === 'true') {
+        updated =
+          contents.slice(0, existing.matchStart) +
+          'automaticPodsInstallation: false' +
+          contents.slice(existing.matchEnd);
+      } else {
+        // Some other expression (a variable, a ternary, ...) — don't guess.
+        return null;
+      }
+    }
+  }
+
+  // Verify the edit actually took at the expected path before trusting it —
+  // cheap insurance against a scanning edge case we didn't anticipate
+  // producing a duplicate key or a value that isn't actually reachable.
+  return readProjectIosScalar(updated, 'automaticPodsInstallation') === 'false'
+    ? updated
+    : null;
+}
+
+// Inverse of the 'edited' branch above: flips project.ios.automaticPodsInstallation
+// from `false` back to `true`. Used by `spm deinit` to restore what
+// `--deintegrate` changed. Returns null when the value isn't `false` at that
+// scope anymore (hand-edited since) — the caller should leave it alone.
+function withAutomaticPodsInstallationEnabled(
+  contents /*: string */,
+) /*: string | null */ {
+  const masked = maskJsComments(contents);
+  const exportsMatch = /module\.exports\s*=\s*{/.exec(masked);
+  if (!exportsMatch) {
+    return null;
+  }
+  const exportsOpen = exportsMatch.index + exportsMatch[0].length - 1;
+  const exportsClose = matchingBrace(masked, exportsOpen);
+  if (exportsClose == null) {
+    return null;
+  }
+  const projectRange = findTopLevelKeyObjectRange(
+    masked,
+    'project',
+    exportsOpen + 1,
+    exportsClose,
+  );
+  if (projectRange == null) {
+    return null;
+  }
+  const iosRange = findTopLevelKeyObjectRange(
+    masked,
+    'ios',
+    projectRange.open + 1,
+    projectRange.close,
+  );
+  if (iosRange == null) {
+    return null;
+  }
+  const existing = findTopLevelScalarValue(
+    masked,
+    'automaticPodsInstallation',
+    iosRange.open + 1,
+    iosRange.close,
+  );
+  if (existing == null || existing.value !== 'false') {
+    return null;
+  }
+  return (
+    contents.slice(0, existing.matchStart) +
+    'automaticPodsInstallation: true' +
+    contents.slice(existing.matchEnd)
+  );
+}
+
+// The exact contents disableAutomaticPodsInstallation writes when it creates
+// a fresh react-native.config.js. Used by restoreAutomaticPodsInstallation to
+// recognize "nobody touched this since we created it" before deleting it.
+const CREATED_RN_CONFIG_CONTENTS =
+  'module.exports = {\n' +
+  '  project: {\n' +
+  '    ios: {\n' +
+  '      automaticPodsInstallation: false,\n' +
+  '    },\n' +
+  '  },\n' +
+  '};\n';
+
+// Undoes disableAutomaticPodsInstallation, using the marker's record of
+// exactly what it did. Called by `spm deinit` so `automaticPodsInstallation`
+// doesn't stay silently `false` after CocoaPods is back in charge — the same
+// "record every mutation, undo exactly that" contract removeSpmInjection
+// applies to the pbxproj (see generate-spm-xcodeproj.js).
+function restoreAutomaticPodsInstallation(
+  result /*: ?AutomaticPodsInstallationResult */,
+) /*: void */ {
+  if (result == null || result.kind === 'unrecognized') {
+    return;
+  }
+  if (result.kind === 'already-disabled') {
+    // We made no edit (it was already `false` before --deintegrate ran) —
+    // nothing to restore.
+    return;
+  }
+  if (result.kind === 'created') {
+    if (
+      fs.existsSync(result.configPath) &&
+      fs.readFileSync(result.configPath, 'utf8') === CREATED_RN_CONFIG_CONTENTS
+    ) {
+      fs.rmSync(result.configPath, {force: true});
+      log(
+        `Removed ${path.basename(result.configPath)} (created by \`spm add --deintegrate\`).`,
+      );
+    } else {
+      log(
+        '\x1b[33mNote: react-native.config.js has changed since `spm add ' +
+          '--deintegrate` created it — leaving it in place. Remove ' +
+          '`automaticPodsInstallation: false` yourself if you want ' +
+          'CocoaPods to auto-install again.\x1b[0m',
+      );
+    }
+    return;
+  }
+  // result.kind === 'edited'
+  if (!fs.existsSync(result.configPath)) {
+    return;
+  }
+  const orig = fs.readFileSync(result.configPath, 'utf8');
+  const restored = withAutomaticPodsInstallationEnabled(orig);
+  if (restored == null) {
+    log(
+      "\x1b[33mNote: couldn't automatically restore automaticPodsInstallation " +
+        'in react-native.config.js — it may have changed since `spm add ' +
+        '--deintegrate` disabled it. Set `project.ios.automaticPodsInstallation` ' +
+        'back to `true` yourself if you want CocoaPods to auto-install ' +
+        'again.\x1b[0m',
+    );
+    return;
+  }
+  fs.writeFileSync(result.configPath, restored, 'utf8');
+  log('Re-enabled `automaticPodsInstallation` in react-native.config.js.');
+}
+
+// Search order @react-native-community/cli-config's cosmiconfig setup uses
+// (readConfigFromDisk.js's `searchPlaces`) — checked so we detect whichever
+// config file the CLI would actually load instead of creating a second
+// `react-native.config.js` that silently shadows a real `.ts` / `.cjs` /
+// `.mjs` config the project already has.
+const RN_CONFIG_SEARCH_PLACES = [
+  'react-native.config.js',
+  'react-native.config.cjs',
+  'react-native.config.ts',
+  'react-native.config.mjs',
+];
+
+function findExistingReactNativeConfig(
+  projectRoot /*: string */,
+) /*: string | null */ {
+  for (const name of RN_CONFIG_SEARCH_PLACES) {
+    const p = path.join(projectRoot, name);
+    if (fs.existsSync(p)) {
+      return p;
+    }
+  }
+  return null;
 }
 
 // Disables automatic `pod install` on future `react-native run-ios` /
@@ -898,75 +1201,76 @@ function withAutomaticPodsInstallationDisabled(
 // CLI silently re-runs CocoaPods on the next build and re-breaks the SPM
 // package graph, the same class of problem `podfileHasRnIntegration` warns
 // about for the Podfile itself.
-function disableAutomaticPodsInstallation(appRoot /*: string */) /*: void */ {
-  const configPath = path.join(appRoot, 'react-native.config.js');
-  if (!fs.existsSync(configPath)) {
-    fs.writeFileSync(
-      configPath,
-      'module.exports = {\n' +
-        '  project: {\n' +
-        '    ios: {\n' +
-        '      automaticPodsInstallation: false,\n' +
-        '    },\n' +
-        '  },\n' +
-        '};\n',
-      'utf8',
-    );
+//
+// `projectRoot` — NOT `appRoot` — because that's the only directory the CLI's
+// cosmiconfig lookup ever searches (readConfigFromDisk.js resolves
+// searchPlaces against, and sets `stopDir` to, the project root). Writing
+// next to the .xcodeproj (`appRoot`, which is `<projectRoot>/ios` for a
+// standard app layout) would produce a file nothing reads.
+function disableAutomaticPodsInstallation(
+  projectRoot /*: string */,
+) /*: AutomaticPodsInstallationResult */ {
+  const existing = findExistingReactNativeConfig(projectRoot);
+
+  if (existing == null) {
+    const configPath = path.join(projectRoot, 'react-native.config.js');
+    fs.writeFileSync(configPath, CREATED_RN_CONFIG_CONTENTS, 'utf8');
     log(
       'Created react-native.config.js with `automaticPodsInstallation: false`.',
     );
-    return;
+    return {kind: 'created', configPath};
   }
-  const orig = fs.readFileSync(configPath, 'utf8');
+
+  if (path.extname(existing) !== '.js') {
+    log(
+      `\x1b[33mNote: found ${path.basename(existing)} — couldn't ` +
+        'automatically disable automaticPodsInstallation in a non-.js ' +
+        'config. Set `project.ios.automaticPodsInstallation` to `false` ' +
+        'yourself, or a future `pod install` will re-break the SPM ' +
+        'package graph.\x1b[0m',
+    );
+    return {kind: 'unrecognized', configPath: existing};
+  }
+
+  const orig = fs.readFileSync(existing, 'utf8');
   const updated = withAutomaticPodsInstallationDisabled(orig);
   if (updated == null) {
     log(
       "\x1b[33mNote: couldn't automatically disable automaticPodsInstallation " +
-        "in react-native.config.js (unrecognized format). Set `project.ios." +
+        'in react-native.config.js (unrecognized format). Set `project.ios.' +
         'automaticPodsInstallation` to `false` yourself, or a future `pod ' +
         'install` will re-break the SPM package graph.\x1b[0m',
     );
-    return;
+    return {kind: 'unrecognized', configPath: existing};
   }
-  if (updated !== orig) {
-    fs.writeFileSync(configPath, updated, 'utf8');
-    log('Disabled `automaticPodsInstallation` in react-native.config.js.');
+  if (updated === orig) {
+    return {kind: 'already-disabled', configPath: existing};
   }
+  fs.writeFileSync(existing, updated, 'utf8');
+  log('Disabled `automaticPodsInstallation` in react-native.config.js.');
+  return {kind: 'edited', configPath: existing};
 }
 
 // Locate the .xcworkspace CocoaPods manages alongside the .xcodeproj — same
 // basename by convention (what `pod install` creates), falling back to the
-// single *.xcworkspace in appRoot when the basenames don't line up. Returns
-// null when there's no workspace at all (never `pod install`-ed) or when the
-// fallback scan is ambiguous.
-function findXcworkspace(
-  appRoot /*: string */,
-  xcodeprojPath /*: string */,
-) /*: string | null */ {
+// single *.xcworkspace alongside the .xcodeproj when the basenames don't
+// line up. Both the sibling check and the fallback scan look in the SAME
+// directory (the .xcodeproj's own directory, not appRoot) — those differ
+// when `--xcodeproj` points into a subdirectory of appRoot, and scanning
+// appRoot in that case would miss the workspace that's actually there (or
+// find an unrelated one). Returns null when there's no workspace at all
+// (never `pod install`-ed) or when the fallback scan is ambiguous.
+function findXcworkspace(xcodeprojPath /*: string */) /*: string | null */ {
+  const dir = path.dirname(xcodeprojPath);
   const sibling = path.join(
-    path.dirname(xcodeprojPath),
+    dir,
     path.basename(xcodeprojPath, '.xcodeproj') + '.xcworkspace',
   );
   if (fs.existsSync(sibling)) {
     return sibling;
   }
-  const names /*: Array<string> */ = [];
-  let entries /*: Array<{name: string, isDirectory(): boolean}> */ = [];
-  try {
-    // $FlowFixMe[incompatible-type] Dirent typing
-    entries = fs.readdirSync(appRoot, {withFileTypes: true});
-  } catch {
-    return null;
-  }
-  for (const entry of entries) {
-    if (!entry.isDirectory()) continue;
-    // $FlowFixMe[incompatible-type] Dirent.name is string|Buffer in Flow stubs
-    const name /*: string */ = entry.name;
-    if (name.endsWith('.xcworkspace')) {
-      names.push(name);
-    }
-  }
-  return names.length === 1 ? path.join(appRoot, names[0]) : null;
+  const names = listSubdirsWithSuffix(dir, '.xcworkspace');
+  return names.length === 1 ? path.join(dir, names[0]) : null;
 }
 
 // Strip the `group:Pods/Pods.xcodeproj` FileRef CocoaPods adds to the
@@ -977,9 +1281,15 @@ function findXcworkspace(
 // `pod deintegrate` removes the Pods project/integration but doesn't touch
 // the workspace, so this reference dangles — Xcode shows a permanent red,
 // missing Pods.xcodeproj row in the workspace navigator otherwise.
+// Matches any <FileRef> whose `location` attribute ENDS in
+// `Pods/Pods.xcodeproj`, regardless of the container prefix (`group:`,
+// `container:`, ...), a nested path (`group:ios/Pods/Pods.xcodeproj`), or
+// attribute order — this file is machine-generated by Xcode/CocoaPods with a
+// stable shape, but pinning to one exact prefix/ordering is needless
+// fragility for a location value that's really just being suffix-matched.
 function removeDanglingPodsFileRef(xml /*: string */) /*: string */ {
   return xml.replace(
-    /[ \t]*<FileRef\s+location\s*=\s*"group:Pods\/Pods\.xcodeproj"\s*(?:\/>|>\s*<\/FileRef>)\r?\n?/g,
+    /[ \t]*<FileRef\b[^>]*\blocation\s*=\s*"[^"]*Pods\/Pods\.xcodeproj"[^>]*(?:\/>|>\s*<\/FileRef>)\r?\n?/g,
     '',
   );
 }
@@ -995,7 +1305,7 @@ function cleanupDanglingPodsWorkspaceRef(
   if (fs.existsSync(path.join(appRoot, 'Pods', 'Pods.xcodeproj'))) {
     return false;
   }
-  const workspacePath = findXcworkspace(appRoot, xcodeprojPath);
+  const workspacePath = findXcworkspace(xcodeprojPath);
   if (workspacePath == null) {
     return false;
   }
@@ -1015,7 +1325,15 @@ function cleanupDanglingPodsWorkspaceRef(
 // Run `pod deintegrate` then strip React Native from the Podfile (leaving any
 // non-RN pods). Requires CocoaPods on PATH (fail-loud otherwise). Flag-gated ⇒
 // no prompt ⇒ CI-safe.
-function runDeintegrate(appRoot /*: string */) /*: void */ {
+//
+// `appRoot` is where `pod`/the Podfile live; `projectRoot` (the package.json
+// directory, which differs from appRoot for a standard `<projectRoot>/ios`
+// layout) is where react-native.config.js lives — see
+// disableAutomaticPodsInstallation.
+function runDeintegrate(
+  appRoot /*: string */,
+  projectRoot /*: string */,
+) /*: {automaticPodsInstallation: AutomaticPodsInstallationResult} */ {
   try {
     execFileSync('pod', ['--version'], {stdio: 'ignore'});
   } catch {
@@ -1039,7 +1357,36 @@ function runDeintegrate(appRoot /*: string */) /*: void */ {
     }
   }
 
-  disableAutomaticPodsInstallation(appRoot);
+  return {
+    automaticPodsInstallation: disableAutomaticPodsInstallation(projectRoot),
+  };
+}
+
+// Directory entry names (not full paths) of the immediate subdirectories of
+// `dir` whose name ends with `suffix` — e.g. every `*.xcodeproj` or
+// `*.xcworkspace` package (both are directories on disk) directly inside
+// `dir`. Returns [] if `dir` doesn't exist / isn't readable.
+function listSubdirsWithSuffix(
+  dir /*: string */,
+  suffix /*: string */,
+) /*: Array<string> */ {
+  const names /*: Array<string> */ = [];
+  let entries /*: Array<{name: string, isDirectory(): boolean}> */ = [];
+  try {
+    // $FlowFixMe[incompatible-type] Dirent typing
+    entries = fs.readdirSync(dir, {withFileTypes: true});
+  } catch {
+    return names;
+  }
+  for (const entry of entries) {
+    if (!entry.isDirectory()) continue;
+    // $FlowFixMe[incompatible-type] Dirent.name is string|Buffer in Flow stubs
+    const name /*: string */ = entry.name;
+    if (name.endsWith(suffix)) {
+      names.push(name);
+    }
+  }
+  return names;
 }
 
 // Pick the .xcodeproj to inject into: --xcodeproj override > a prior in-place
@@ -1059,20 +1406,7 @@ function resolveInjectionTarget(
   if (injected != null) {
     return {path: injected};
   }
-  const names /*: Array<string> */ = [];
-  let entries /*: Array<{name: string, isDirectory(): boolean}> */ = [];
-  try {
-    // $FlowFixMe[incompatible-type] Dirent typing
-    entries = fs.readdirSync(appRoot, {withFileTypes: true});
-  } catch {}
-  for (const entry of entries) {
-    if (!entry.isDirectory()) continue;
-    // $FlowFixMe[incompatible-type] Dirent.name is string|Buffer in Flow stubs
-    const name /*: string */ = entry.name;
-    if (name.endsWith('.xcodeproj')) {
-      names.push(name);
-    }
-  }
+  const names = listSubdirsWithSuffix(appRoot, '.xcodeproj');
   if (names.length === 0) {
     return {
       error:
@@ -1097,6 +1431,7 @@ function resolveInjectionTarget(
 async function setupXcodeproj(
   args /*: SetupArgs */,
   appRoot /*: string */,
+  projectRoot /*: string */,
   reactNativeRoot /*: string */,
   action /*: string */,
 ) /*: Promise<void> */ {
@@ -1114,8 +1449,17 @@ async function setupXcodeproj(
   // would always look dirty and trigger a spurious confirmation prompt.
   const cleanBeforeEdits = gitTrackedAndClean(appRoot, pbxprojPath);
 
+  // Preserved across the `if` so it can be threaded into the marker below —
+  // only recorded on runs that actually deintegrate; `update` runs without
+  // `--deintegrate` pass `null` and injectSpmIntoExistingXcodeproj keeps
+  // whatever a prior `add --deintegrate` recorded.
+  let automaticPodsInstallation /*: ?AutomaticPodsInstallationResult */ = null;
+
   if (args.deintegrate) {
-    runDeintegrate(appRoot);
+    automaticPodsInstallation = runDeintegrate(
+      appRoot,
+      projectRoot,
+    ).automaticPodsInstallation;
     // `pod deintegrate` strips the build integration but can leave an empty
     // `Pods` group in the navigator — remove it so the converted project is
     // visually clean.
@@ -1181,6 +1525,7 @@ async function setupXcodeproj(
     // generate-spm-xcodeproj.js).
     artifactsVersionOverride: args.version ?? null,
     configCommand: resolveConfigCommandToPin(args),
+    automaticPodsInstallation,
   });
   if (result.status !== 'injected') {
     logError(`SPM injection failed: ${result.reason}`);
@@ -1382,6 +1727,9 @@ async function main(argv /*:: ?: Array<string> */) /*: Promise<void> */ {
         ? `Removed SPM packages from ${path.basename(xcodeprojPath)}.`
         : 'No SPM injection found — nothing to remove.',
     );
+    if (result.status === 'removed') {
+      restoreAutomaticPodsInstallation(result.automaticPodsInstallation);
+    }
     return;
   }
 
@@ -1567,7 +1915,7 @@ async function main(argv /*:: ?: Array<string> */) /*: Promise<void> */ {
   // Xcodeproj setup: in-place injection into the existing project (the only
   // strategy — no rename, no from-scratch; git is the safety net).
   try {
-    await setupXcodeproj(args, appRoot, reactNativeRoot, action);
+    await setupXcodeproj(args, appRoot, projectRoot, reactNativeRoot, action);
   } catch (e) {
     logError(`xcodeproj setup failed: ${e.message}`);
     if (process.exitCode == null) {
@@ -1599,6 +1947,11 @@ module.exports = {
   removeDanglingPodsFileRef,
   shouldAutoDeintegrate,
   stripReactNativeFromPodfile,
+  podfileHasRnIntegration,
   withAutomaticPodsInstallationDisabled,
+  withAutomaticPodsInstallationEnabled,
+  disableAutomaticPodsInstallation,
+  restoreAutomaticPodsInstallation,
+  findExistingReactNativeConfig,
   ensureBothArtifactFlavors,
 };

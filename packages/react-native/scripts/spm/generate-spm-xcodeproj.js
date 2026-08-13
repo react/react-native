@@ -55,6 +55,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 /*:: import type {
+  AutomaticPodsInstallationResult,
   FlavoredFrameworkManifestEntry,
   PluginScriptPhase,
   XcframeworkSlice,
@@ -2240,7 +2241,7 @@ function readScriptPhasesManifest(
  */
 function readMarker(
   xcodeprojPath /*: string */,
-) /*: ?{generatedSources?: {[string]: Array<string>}, scriptPhases?: {[string]: string}, artifactsVersionOverride?: ?string, configCommand?: ?Array<string>, buildSettingChanges?: Array<BuildSettingChange>, createdArrayFields?: Array<CreatedArrayField>, scheme?: {file?: ?string, created?: ?boolean}, ...} */ {
+) /*: ?{generatedSources?: {[string]: Array<string>}, scriptPhases?: {[string]: string}, artifactsVersionOverride?: ?string, configCommand?: ?Array<string>, automaticPodsInstallation?: ?AutomaticPodsInstallationResult, buildSettingChanges?: Array<BuildSettingChange>, createdArrayFields?: Array<CreatedArrayField>, scheme?: {file?: ?string, created?: ?boolean}, ...} */ {
   const markerPath = path.join(xcodeprojPath, SPM_INJECTED_MARKER);
   try {
     // $FlowFixMe[incompatible-return] JSON.parse returns any
@@ -2361,7 +2362,7 @@ function mergeCreatedArrayFields(
  * when the project can't be safely edited (caller surfaces it; fail-loud).
  */
 function injectSpmIntoExistingXcodeproj(
-  opts /*: {appRoot: string, reactNativeRoot: string, xcodeprojPath: string, appName?: ?string, artifactsVersionOverride?: ?string, configCommand?: ?Array<string>} */,
+  opts /*: {appRoot: string, reactNativeRoot: string, xcodeprojPath: string, appName?: ?string, artifactsVersionOverride?: ?string, configCommand?: ?Array<string>, automaticPodsInstallation?: ?AutomaticPodsInstallationResult} */,
 ) /*: {status: 'injected', target: string} | {status: 'refused', reason: string} */ {
   const {appRoot, reactNativeRoot, xcodeprojPath} = opts;
   const pbxprojPath = path.join(xcodeprojPath, 'project.pbxproj');
@@ -2500,6 +2501,16 @@ function injectSpmIntoExistingXcodeproj(
   // the whole marker, this field with it.
   const configCommand = opts.configCommand ?? prevMarker?.configCommand ?? null;
 
+  // Same set-or-preserve contract: only an `add --deintegrate` run computes
+  // this (setup-apple-spm.js's runDeintegrate); a later `update` without
+  // `--deintegrate` passes null and must not forget what the deintegrate run
+  // recorded. Read back by `spm deinit` (removeSpmInjection, below) to
+  // restore project.ios.automaticPodsInstallation.
+  const automaticPodsInstallation =
+    opts.automaticPodsInstallation ??
+    prevMarker?.automaticPodsInstallation ??
+    null;
+
   // Marker: idempotency signal + the exact, reversible record of every edit so
   // `deinit` (removeSpmInjection) can undo precisely what was added.
   writeIfChanged(
@@ -2523,6 +2534,7 @@ function injectSpmIntoExistingXcodeproj(
         scriptPhases: scriptPhaseUuids,
         artifactsVersionOverride,
         configCommand,
+        automaticPodsInstallation,
         scheme: {
           file: schemeResult.file,
           // Sticky — see mergeCreatedArrayFields for why a later sync cannot
@@ -2691,7 +2703,7 @@ function removeRecordedBuildSettings(
  */
 function removeSpmInjection(
   opts /*: {appRoot: string, xcodeprojPath: string} */,
-) /*: {status: 'removed', target: string} | {status: 'absent'} */ {
+) /*: {status: 'removed', target: string, automaticPodsInstallation: ?AutomaticPodsInstallationResult} | {status: 'absent'} */ {
   const {appRoot, xcodeprojPath} = opts;
   const markerPath = path.join(xcodeprojPath, SPM_INJECTED_MARKER);
   if (!fs.existsSync(markerPath)) {
@@ -2770,7 +2782,11 @@ function removeSpmInjection(
 
   // 4. Drop the marker — the project is no longer SPM-injected.
   fs.rmSync(markerPath, {force: true});
-  return {status: 'removed', target: marker.target};
+  return {
+    status: 'removed',
+    target: marker.target,
+    automaticPodsInstallation: marker.automaticPodsInstallation ?? null,
+  };
 }
 
 module.exports = {

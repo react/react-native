@@ -34,6 +34,17 @@ export type SetupArgs = {
   yes: boolean,
 };
 
+// How `disableAutomaticPodsInstallation` (setup-apple-spm.js) left
+// project.ios.automaticPodsInstallation in react-native.config.js, recorded
+// in the `.spm-injected.json` marker so `spm deinit`
+// (removeSpmInjection/generate-spm-xcodeproj.js) can undo exactly this and
+// nothing else.
+export type AutomaticPodsInstallationResult =
+  | {kind: 'created', configPath: string}
+  | {kind: 'edited', configPath: string}
+  | {kind: 'already-disabled', configPath: string}
+  | {kind: 'unrecognized', configPath: string};
+
 export type DownloadArgs = {
   version: string | null,
   flavor: string,

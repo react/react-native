@@ -14,17 +14,22 @@ const {
   cleanupDanglingPodsWorkspaceRef,
   detectStandardRnLayoutRedirect,
   determineVersion,
+  disableAutomaticPodsInstallation,
   ensureBothArtifactFlavors,
+  findExistingReactNativeConfig,
   findInjectedXcodeproj,
   generateAutolinkingConfigOrFailClosed,
   parseArgs,
+  podfileHasRnIntegration,
   removeDanglingPodsFileRef,
   resolveAction,
   resolveConfigCommandToPin,
   resolveExplicitConfigCommand,
+  restoreAutomaticPodsInstallation,
   shouldAutoDeintegrate,
   stripReactNativeFromPodfile,
   withAutomaticPodsInstallationDisabled,
+  withAutomaticPodsInstallationEnabled,
 } = require('../../setup-apple-spm');
 const {REQUIRED_ARTIFACTS} = require('../download-spm-artifacts');
 const {SPM_INJECTED_MARKER} = require('../generate-spm-xcodeproj');
@@ -575,14 +580,13 @@ describe('shouldAutoDeintegrate', () => {
 
 describe('stripReactNativeFromPodfile', () => {
   it('strips a single-line call', () => {
-    const podfile =
-      "target 'MyApp' do\n  use_react_native!\nend\n";
+    const podfile = "target 'MyApp' do\n  use_react_native!\nend\n";
     expect(stripReactNativeFromPodfile(podfile)).toBe(
       "target 'MyApp' do\nend\n",
     );
   });
 
-  it('strips a multi-line call with a parenthesized argument list', () => {
+  it('strips a multi-line call with a parenthesized argument list, consuming the enclosing assignment', () => {
     const podfile =
       "target 'HelloWorld' do\n" +
       '  config = use_native_modules!\n' +
@@ -601,9 +605,14 @@ describe('stripReactNativeFromPodfile', () => {
     expect(stripped).not.toMatch(/use_react_native!/);
     expect(stripped).not.toMatch(/:app_path/);
     expect(stripped).not.toMatch(/^\s*\)\s*$/m);
+    // The `config = ` assignment is dropped along with the call — leaving it
+    // behind would let Ruby fold it into the next statement (the blank line,
+    // then `target 'HelloWorldTests' do ... end` would become the RHS of
+    // `config =`), which is worse than losing the `config` binding outright.
+    expect(stripped).not.toMatch(/config\s*=\s*$/m);
     expect(stripped).toBe(
       "target 'HelloWorld' do\n" +
-        '  config = \n' +
+        '\n' +
         '\n' +
         "  target 'HelloWorldTests' do\n" +
         '    inherit! :complete\n' +
@@ -629,6 +638,64 @@ describe('stripReactNativeFromPodfile', () => {
     const podfile = "target 'MyApp' do\n  pod 'MBProgressHUD'\nend\n";
     expect(stripReactNativeFromPodfile(podfile)).toBe(podfile);
   });
+
+  it('leaves a call mentioned inside a comment untouched', () => {
+    const podfile =
+      "target 'MyApp' do\n" +
+      '  # use_react_native! does a lot of setup, see the docs\n' +
+      "  pod 'MBProgressHUD'\n" +
+      'end\n';
+    expect(stripReactNativeFromPodfile(podfile)).toBe(podfile);
+  });
+
+  it('leaves a call embedded in other code (not at statement position) untouched', () => {
+    const podfile =
+      "target 'MyApp' do\n" +
+      "  puts 'about to call use_react_native!'\n" +
+      'end\n';
+    expect(stripReactNativeFromPodfile(podfile)).toBe(podfile);
+  });
+
+  it('the stock template, once stripped, still needs `post_install` removed by hand — podfileHasRnIntegration says so', () => {
+    // Full stock react-native init Podfile shape, including the post_install
+    // block that references the (now-removed) use_native_modules! return
+    // value. stripReactNativeFromPodfile intentionally doesn't try to strip
+    // that block — its shape is too open-ended — so podfileHasRnIntegration
+    // must still flag the leftover `react_native_post_install` call.
+    const podfile =
+      "target 'HelloWorld' do\n" +
+      '  config = use_native_modules!\n' +
+      '\n' +
+      '  use_react_native!(\n' +
+      '    :path => config[:reactNativePath],\n' +
+      '    :app_path => "#{Pod::Config.instance.installation_root}/.."\n' +
+      '  )\n' +
+      '\n' +
+      '  post_install do |installer|\n' +
+      '    react_native_post_install(\n' +
+      '      installer,\n' +
+      '      config[:reactNativePath],\n' +
+      '      :mac_catalyst_enabled => false\n' +
+      '    )\n' +
+      '  end\n' +
+      'end\n';
+    const stripped = stripReactNativeFromPodfile(podfile);
+    expect(stripped).not.toMatch(/use_react_native!/);
+    expect(stripped).not.toMatch(/use_native_modules!/);
+    // The post_install block (and its react_native_post_install call) is
+    // left in place on purpose.
+    expect(stripped).toMatch(/react_native_post_install/);
+
+    const appRoot = fs.mkdtempSync(
+      path.join(os.tmpdir(), 'spm-podfile-leftover-'),
+    );
+    try {
+      fs.writeFileSync(path.join(appRoot, 'Podfile'), stripped, 'utf8');
+      expect(podfileHasRnIntegration(appRoot)).toBe(true);
+    } finally {
+      fs.rmSync(appRoot, {recursive: true, force: true});
+    }
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -641,7 +708,9 @@ describe('stripReactNativeFromPodfile', () => {
 
 describe('withAutomaticPodsInstallationDisabled', () => {
   it('inserts a project.ios block into an empty config', () => {
-    expect(withAutomaticPodsInstallationDisabled('module.exports = {};\n')).toBe(
+    expect(
+      withAutomaticPodsInstallationDisabled('module.exports = {};\n'),
+    ).toBe(
       'module.exports = {\n' +
         '  project: {\n' +
         '    ios: {\n' +
@@ -739,8 +808,303 @@ describe('withAutomaticPodsInstallationDisabled', () => {
 
   it('returns null for an unrecognized config shape', () => {
     expect(
-      withAutomaticPodsInstallationDisabled('export default { project: {} };\n'),
+      withAutomaticPodsInstallationDisabled(
+        'export default { project: {} };\n',
+      ),
     ).toBeNull();
+  });
+
+  it('is not confused by a `}` inside a comment when locating project.ios', () => {
+    // A naive brace-depth scan over raw text sees this `}` and thinks
+    // `project`'s object closed one line early, so `ios: {` looks like a
+    // sibling of `project` instead of nested inside it — inserting a
+    // duplicate `ios` key ahead of the real one instead of editing it.
+    const config =
+      'module.exports = {\n' +
+      '  project: {\n' +
+      '    // closes the } block\n' +
+      "    ios: {sourceDir: './ios'},\n" +
+      '  },\n' +
+      '};\n';
+    const updated = withAutomaticPodsInstallationDisabled(config);
+    expect(updated).not.toBeNull();
+    // Exactly one `ios:` object — a duplicate would mean the scanner treated
+    // the `}` in the comment as closing `project` early.
+    expect((updated ?? '').match(/ios:\s*{/g)).toHaveLength(1);
+    expect(updated).toContain('automaticPodsInstallation: false');
+    // The original sourceDir survives in the SAME ios block — a duplicate-key
+    // insertion ahead of the real `ios: {` would have orphaned it instead.
+    expect(updated).toMatch(
+      /ios:\s*{\s*automaticPodsInstallation: false,\s*sourceDir: '\.\/ios'},/,
+    );
+  });
+
+  it('matches a quoted `project` key', () => {
+    const config = "module.exports = {\n  'project': {},\n};\n";
+    const updated = withAutomaticPodsInstallationDisabled(config);
+    expect(updated).not.toBeNull();
+    expect(updated).toContain('automaticPodsInstallation: false');
+    expect((updated ?? '').match(/project['"]?\s*:\s*{/g)).toHaveLength(1);
+  });
+
+  it('a commented-out `automaticPodsInstallation: false,` does not count as already disabled', () => {
+    const config =
+      'module.exports = {\n' +
+      '  project: {\n' +
+      '    ios: {\n' +
+      '      // automaticPodsInstallation: false,\n' +
+      "      sourceDir: './ios',\n" +
+      '    },\n' +
+      '  },\n' +
+      '};\n';
+    const updated = withAutomaticPodsInstallationDisabled(config);
+    expect(updated).not.toBeNull();
+    // The real (uncommented) key must actually be inserted, not skipped
+    // because a commented-out mention of the key was mistaken for it.
+    expect(updated).toMatch(/^\s*automaticPodsInstallation: false,$/m);
+  });
+
+  it('an `automaticPodsInstallation` set under an unrelated key does not count as already disabled', () => {
+    const config =
+      'module.exports = {\n' +
+      '  dependencies: {\n' +
+      '    foo: {\n' +
+      '      automaticPodsInstallation: false,\n' +
+      '    },\n' +
+      '  },\n' +
+      '};\n';
+    const updated = withAutomaticPodsInstallationDisabled(config);
+    expect(updated).not.toBeNull();
+    expect(updated).toMatch(
+      /project:\s*{\s*ios:\s*{\s*automaticPodsInstallation: false,/,
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// withAutomaticPodsInstallationEnabled — the inverse used by `spm deinit` to
+// restore project.ios.automaticPodsInstallation after --deintegrate disabled
+// it.
+// ---------------------------------------------------------------------------
+
+describe('withAutomaticPodsInstallationEnabled', () => {
+  it('flips an existing `false` back to `true`', () => {
+    const config =
+      'module.exports = {\n' +
+      '  project: {\n' +
+      '    ios: {\n      automaticPodsInstallation: false,\n    },\n' +
+      '  },\n' +
+      '};\n';
+    expect(withAutomaticPodsInstallationEnabled(config)).toBe(
+      'module.exports = {\n' +
+        '  project: {\n' +
+        '    ios: {\n      automaticPodsInstallation: true,\n    },\n' +
+        '  },\n' +
+        '};\n',
+    );
+  });
+
+  it('returns null when the value is no longer `false` (hand-edited since)', () => {
+    const config =
+      'module.exports = {\n' +
+      '  project: {\n' +
+      '    ios: {\n      automaticPodsInstallation: true,\n    },\n' +
+      '  },\n' +
+      '};\n';
+    expect(withAutomaticPodsInstallationEnabled(config)).toBeNull();
+  });
+
+  it('returns null when project.ios is absent', () => {
+    expect(
+      withAutomaticPodsInstallationEnabled('module.exports = {};\n'),
+    ).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// findExistingReactNativeConfig / disableAutomaticPodsInstallation —
+// disableAutomaticPodsInstallation must write to projectRoot (the only
+// directory @react-native-community/cli-config's cosmiconfig lookup
+// searches), never to appRoot, and must never create a second
+// react-native.config.js that shadows an existing .ts/.cjs/.mjs config.
+// ---------------------------------------------------------------------------
+
+describe('findExistingReactNativeConfig', () => {
+  let projectRoot;
+
+  beforeEach(() => {
+    projectRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'spm-rnconfig-'));
+  });
+
+  afterEach(() => {
+    fs.rmSync(projectRoot, {recursive: true, force: true});
+  });
+
+  it('returns null when no config file exists', () => {
+    expect(findExistingReactNativeConfig(projectRoot)).toBeNull();
+  });
+
+  it('finds react-native.config.js', () => {
+    const p = path.join(projectRoot, 'react-native.config.js');
+    fs.writeFileSync(p, 'module.exports = {};\n');
+    expect(findExistingReactNativeConfig(projectRoot)).toBe(p);
+  });
+
+  it('finds a .ts config when there is no .js config', () => {
+    const p = path.join(projectRoot, 'react-native.config.ts');
+    fs.writeFileSync(p, 'export default {};\n');
+    expect(findExistingReactNativeConfig(projectRoot)).toBe(p);
+  });
+
+  it('finds a .cjs config when there is no .js config', () => {
+    const p = path.join(projectRoot, 'react-native.config.cjs');
+    fs.writeFileSync(p, 'module.exports = {};\n');
+    expect(findExistingReactNativeConfig(projectRoot)).toBe(p);
+  });
+});
+
+describe('disableAutomaticPodsInstallation', () => {
+  let projectRoot;
+
+  beforeEach(() => {
+    projectRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'spm-disable-pods-'));
+  });
+
+  afterEach(() => {
+    fs.rmSync(projectRoot, {recursive: true, force: true});
+  });
+
+  it('creates react-native.config.js in projectRoot when none exists', () => {
+    const result = disableAutomaticPodsInstallation(projectRoot);
+    expect(result.kind).toBe('created');
+    const configPath = path.join(projectRoot, 'react-native.config.js');
+    expect(result.configPath).toBe(configPath);
+    expect(fs.existsSync(configPath)).toBe(true);
+    expect(fs.readFileSync(configPath, 'utf8')).toContain(
+      'automaticPodsInstallation: false',
+    );
+  });
+
+  it('edits an existing react-native.config.js in place', () => {
+    const configPath = path.join(projectRoot, 'react-native.config.js');
+    fs.writeFileSync(
+      configPath,
+      'module.exports = {\n  project: { ios: {} },\n};\n',
+    );
+    const result = disableAutomaticPodsInstallation(projectRoot);
+    expect(result.kind).toBe('edited');
+    expect(result.configPath).toBe(configPath);
+    expect(fs.readFileSync(configPath, 'utf8')).toContain(
+      'automaticPodsInstallation: false',
+    );
+  });
+
+  it('reports already-disabled without rewriting the file', () => {
+    const configPath = path.join(projectRoot, 'react-native.config.js');
+    const contents =
+      'module.exports = {\n' +
+      '  project: { ios: { automaticPodsInstallation: false } },\n' +
+      '};\n';
+    fs.writeFileSync(configPath, contents);
+    const before = fs.statSync(configPath).mtimeMs;
+    const result = disableAutomaticPodsInstallation(projectRoot);
+    expect(result.kind).toBe('already-disabled');
+    expect(fs.readFileSync(configPath, 'utf8')).toBe(contents);
+    expect(fs.statSync(configPath).mtimeMs).toBe(before);
+  });
+
+  it('does NOT create a second config when a .ts config already exists (no shadowing)', () => {
+    const tsPath = path.join(projectRoot, 'react-native.config.ts');
+    fs.writeFileSync(tsPath, 'export default { dependencies: {} };\n');
+    const result = disableAutomaticPodsInstallation(projectRoot);
+    expect(result.kind).toBe('unrecognized');
+    expect(result.configPath).toBe(tsPath);
+    expect(
+      fs.existsSync(path.join(projectRoot, 'react-native.config.js')),
+    ).toBe(false);
+    // The .ts file itself is left completely untouched.
+    expect(fs.readFileSync(tsPath, 'utf8')).toBe(
+      'export default { dependencies: {} };\n',
+    );
+  });
+
+  it('writes next to package.json (projectRoot), not the .xcodeproj directory (appRoot)', () => {
+    // Regression test for the standard `<projectRoot>/ios` layout: appRoot
+    // (where the .xcodeproj lives) and projectRoot (where package.json and
+    // react-native.config.js live) are different directories.
+    const appRoot = path.join(projectRoot, 'ios');
+    fs.mkdirSync(appRoot, {recursive: true});
+    disableAutomaticPodsInstallation(projectRoot);
+    expect(
+      fs.existsSync(path.join(projectRoot, 'react-native.config.js')),
+    ).toBe(true);
+    expect(fs.existsSync(path.join(appRoot, 'react-native.config.js'))).toBe(
+      false,
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// restoreAutomaticPodsInstallation — the `spm deinit` counterpart, driven by
+// the AutomaticPodsInstallationResult recorded in the .spm-injected.json
+// marker by disableAutomaticPodsInstallation.
+// ---------------------------------------------------------------------------
+
+describe('restoreAutomaticPodsInstallation', () => {
+  let projectRoot;
+
+  beforeEach(() => {
+    projectRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'spm-restore-pods-'));
+  });
+
+  afterEach(() => {
+    fs.rmSync(projectRoot, {recursive: true, force: true});
+  });
+
+  it('removes the file it created, if untouched since', () => {
+    const result = disableAutomaticPodsInstallation(projectRoot);
+    expect(result.kind).toBe('created');
+    restoreAutomaticPodsInstallation(result);
+    expect(fs.existsSync(result.configPath)).toBe(false);
+  });
+
+  it('leaves a created file in place if the user has since edited it', () => {
+    const result = disableAutomaticPodsInstallation(projectRoot);
+    expect(result.kind).toBe('created');
+    fs.appendFileSync(result.configPath, '// a note the user added\n');
+    restoreAutomaticPodsInstallation(result);
+    expect(fs.existsSync(result.configPath)).toBe(true);
+  });
+
+  it('flips an edited file back to `true`', () => {
+    const configPath = path.join(projectRoot, 'react-native.config.js');
+    fs.writeFileSync(
+      configPath,
+      'module.exports = {\n  project: { ios: { sourceDir: "./ios" } },\n};\n',
+    );
+    const result = disableAutomaticPodsInstallation(projectRoot);
+    expect(result.kind).toBe('edited');
+    restoreAutomaticPodsInstallation(result);
+    expect(fs.readFileSync(configPath, 'utf8')).toContain(
+      'automaticPodsInstallation: true',
+    );
+  });
+
+  it('is a no-op for already-disabled (we made no edit to undo)', () => {
+    const configPath = path.join(projectRoot, 'react-native.config.js');
+    const contents =
+      'module.exports = {\n' +
+      '  project: { ios: { automaticPodsInstallation: false } },\n' +
+      '};\n';
+    fs.writeFileSync(configPath, contents);
+    const result = disableAutomaticPodsInstallation(projectRoot);
+    expect(result.kind).toBe('already-disabled');
+    restoreAutomaticPodsInstallation(result);
+    expect(fs.readFileSync(configPath, 'utf8')).toBe(contents);
+  });
+
+  it('is a no-op for null (deintegrate never ran)', () => {
+    expect(() => restoreAutomaticPodsInstallation(null)).not.toThrow();
   });
 });
 
@@ -785,6 +1149,27 @@ describe('removeDanglingPodsFileRef', () => {
       '   </FileRef>\n' +
       '</Workspace>\n';
     expect(removeDanglingPodsFileRef(xml)).toBe(xml);
+  });
+
+  it('matches a `container:` prefix and a nested path, not just `group:Pods/Pods.xcodeproj`', () => {
+    const xml =
+      '<?xml version="1.0" encoding="UTF-8"?>\n' +
+      '<Workspace\n' +
+      '   version = "1.0">\n' +
+      '   <FileRef\n' +
+      '      location = "group:HelloWorld.xcodeproj">\n' +
+      '   </FileRef>\n' +
+      '   <FileRef location = "container:ios/Pods/Pods.xcodeproj"/>\n' +
+      '</Workspace>\n';
+    expect(removeDanglingPodsFileRef(xml)).toBe(
+      '<?xml version="1.0" encoding="UTF-8"?>\n' +
+        '<Workspace\n' +
+        '   version = "1.0">\n' +
+        '   <FileRef\n' +
+        '      location = "group:HelloWorld.xcodeproj">\n' +
+        '   </FileRef>\n' +
+        '</Workspace>\n',
+    );
   });
 });
 
@@ -840,9 +1225,7 @@ describe('cleanupDanglingPodsWorkspaceRef', () => {
     fs.mkdirSync(path.join(appRoot, 'Pods', 'Pods.xcodeproj'), {
       recursive: true,
     });
-    expect(cleanupDanglingPodsWorkspaceRef(appRoot, xcodeprojPath)).toBe(
-      false,
-    );
+    expect(cleanupDanglingPodsWorkspaceRef(appRoot, xcodeprojPath)).toBe(false);
     const data = fs.readFileSync(
       path.join(workspace, 'contents.xcworkspacedata'),
       'utf8',
@@ -852,9 +1235,7 @@ describe('cleanupDanglingPodsWorkspaceRef', () => {
 
   it('is a no-op when there is no .xcworkspace', () => {
     const xcodeprojPath = mkXcodeproj(appRoot, 'MyApp.xcodeproj');
-    expect(cleanupDanglingPodsWorkspaceRef(appRoot, xcodeprojPath)).toBe(
-      false,
-    );
+    expect(cleanupDanglingPodsWorkspaceRef(appRoot, xcodeprojPath)).toBe(false);
   });
 });
 

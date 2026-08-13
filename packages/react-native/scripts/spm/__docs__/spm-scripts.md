@@ -42,13 +42,27 @@ day-to-day dependency changes. **On a fresh clone or CI checkout, run
 `spm add` injects into a project that is **not** CocoaPods-integrated. On a
 CocoaPods app it fails loud and points you at `--deintegrate`, which:
 
-1. runs `pod deintegrate` — removes CocoaPods integration from the `.xcodeproj`
-   (Pods references, `[CP]` build phases, xcconfig links). Your `Podfile` is
-   left on disk.
-2. strips **only** the React Native directives (`use_react_native!`,
-   `use_native_modules!`, `prepare_react_native_project!`) from the Podfile —
-   every other line, **including your own `pod '…'` entries, is preserved**.
-3. injects SwiftPM into the `.xcodeproj`.
+1. runs `pod deintegrate` — removes CocoaPods integration from the
+   `.xcodeproj` (Pods references, `[CP]` build phases, xcconfig links). Your
+   `Podfile` is left on disk.
+2. strips the React Native directives (`use_react_native!`,
+   `use_native_modules!`, `prepare_react_native_project!`) from the Podfile,
+   and — only when it's exactly the stock template's shape — the
+   `post_install do |installer| react_native_post_install(...) end` block
+   that calls them. Every other line, **including your own `pod '…'` entries
+   and any customization you've made to `post_install`, is preserved**. A
+   customized `post_install` block is left in place (its shape is too
+   open-ended to strip safely beyond the exact stock call); if you keep
+   non-RN pods and run `pod install`, remove it by hand first — `spm add`
+   (and `pod install` failing) will remind you it's still there.
+3. sets `project.ios.automaticPodsInstallation` to `false` in
+   `react-native.config.js` (creating the file if it doesn't exist). Left
+   `true` (the default), the next `react-native run-ios`/`build-ios` silently
+   re-runs CocoaPods and re-breaks the SwiftPM package graph.
+4. removes the dangling `Pods/Pods.xcodeproj` reference from the
+   `.xcworkspace`, if `pod deintegrate` left one — otherwise Xcode shows a
+   permanent red, missing row in the workspace navigator.
+5. injects SwiftPM into the `.xcodeproj`.
 
 React Native now comes from SwiftPM; no pods are linked yet (deintegrate removed
 the integration).
@@ -66,6 +80,11 @@ pod install     # re-integrates the remaining (non-RN) pods; (re)creates the .xc
 Then **open the `.xcworkspace`** (not the `.xcodeproj`): the workspace includes
 the SwiftPM-injected project, so React Native resolves through SwiftPM and your
 other pods through CocoaPods, together.
+
+> **Automatic pod installs are deliberately off.** `--deintegrate` sets
+> `automaticPodsInstallation: false` so `react-native run-ios`/`build-ios`
+> won't silently `pod install` and re-break the SwiftPM package graph. Run
+> `pod install` yourself whenever you change the non-RN pods above.
 
 > **Do not re-add `use_react_native!`.** React Native must be provided by
 > _either_ SwiftPM _or_ CocoaPods, never both — they share `build/generated/`,
@@ -229,7 +248,9 @@ Paths are relative to the Xcode project directory (`ios/`) unless noted.
 | `MyApp.xcodeproj/xcshareddata/xcschemes/*.xcscheme` | `add`, `update`     | The sync pre-action is added to the scheme that builds your target; a shared scheme is created if there is none. Commit this or teammates lose the pre-action.                                                                                                         | Yes — the scheme is deleted if `add` created it, otherwise only the pre-action is stripped |
 | `.gitignore`                                        | `add` only          | Created if absent, else appended: a `# SPM – auto-generated at build time` block adding `Package.resolved`, `build/generated/`, `build/xcframeworks/`, `.build/`.                                                                                                      | **No** — the block is left behind                                                          |
 | `Podfile`                                           | `add --deintegrate` | Only the React Native directives (`use_react_native!`, `use_native_modules!`, `prepare_react_native_project!`) are stripped. Your own `pod '…'` lines are preserved.                                                                                                   | **No** — re-add the directives yourself to go back to CocoaPods                            |
-| `Pods/`, `Pods-*.xcconfig`, `[CP]` phases           | `add --deintegrate` | Removed by `pod deintegrate`. The `.xcworkspace` referencing them is left on disk.                                                                                                                                                                                     | **No** — run `pod install` to restore                                                      |
+| `Pods/`, `Pods-*.xcconfig`, `[CP]` phases           | `add --deintegrate` | Removed by `pod deintegrate`.                                                                                                                                                                                                                                          | **No** — run `pod install` to restore                                                      |
+| `MyApp.xcworkspace/contents.xcworkspacedata`        | `add --deintegrate` | The dangling `Pods/Pods.xcodeproj` reference `pod deintegrate` leaves behind is removed (otherwise Xcode shows a permanent red, missing row).                                                                                                                          | Yes — restored byte-for-byte, if untouched since (see [Removing / resetting](#removing--resetting)) |
+| `react-native.config.js`                            | `add --deintegrate` | `project.ios.automaticPodsInstallation` is set to `false` (creating the file if it doesn't exist), so a build never silently re-runs `pod install` and re-breaks the SwiftPM package graph.                                                                          | Yes — restored byte-for-byte, if untouched since (see [Removing / resetting](#removing--resetting)) |
 
 The two pinned settings are the `--version` pin (`artifactsVersionOverride`, see
 [Pinning the React Native version](#pinning-the-react-native-version)) and the
@@ -453,6 +474,17 @@ To remove SwiftPM entirely, use `deinit` (the inverse of `add`):
 react-native spm deinit   # surgically removes everything `add` injected
 pod install               # then, to restore CocoaPods
 ```
+
+If `--deintegrate` set `automaticPodsInstallation: false` (see above),
+`deinit` restores `react-native.config.js` to its exact state from before
+`--deintegrate` touched it — deleting the file if `--deintegrate` created it,
+or reverting the edit byte-for-byte otherwise. Same for the dangling
+`Pods/Pods.xcodeproj` workspace reference `--deintegrate` removed: `deinit`
+puts it back byte-for-byte (React Native needs a real reference there again
+once `pod install`, above, reintegrates CocoaPods). Either restoration is
+skipped — leaving your changes alone, with a warning — if the file has been
+touched since `--deintegrate` edited it, so `deinit` never clobbers something
+you did afterward.
 
 To reset the regenerable build state (without un-injecting), just delete the
 gitignored dirs and re-run:
