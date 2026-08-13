@@ -342,6 +342,58 @@ describe('onUpdate', function () {
     });
   });
 
+  it('minimumViewTime ignores stale viewability updates', function () {
+    const helper = new ViewabilityHelper({
+      minimumViewTime: 350,
+      viewAreaCoveragePercentThreshold: 0,
+    });
+    rowFrames = {
+      a: {y: 0, height: 200},
+      b: {y: 200, height: 200},
+    };
+    data = [{key: 'a'}, {key: 'b'}];
+    const onViewableItemsChanged = jest.fn();
+    helper.onUpdate(
+      props,
+      0,
+      200,
+      // $FlowFixMe[incompatible-type] - Invalid `ListMetricsAggregator`.
+      {getCellMetrics},
+      createViewToken,
+      onViewableItemsChanged,
+    );
+    helper.onUpdate(
+      props,
+      0,
+      400,
+      // $FlowFixMe[incompatible-type] - Invalid `ListMetricsAggregator`.
+      {getCellMetrics},
+      createViewToken,
+      onViewableItemsChanged,
+    );
+
+    jest.runAllTimers();
+
+    expect(onViewableItemsChanged.mock.calls).toEqual([
+      [
+        {
+          changed: [
+            {isViewable: true, key: 'a'},
+            {isViewable: true, key: 'b'},
+          ],
+          viewabilityConfig: {
+            minimumViewTime: 350,
+            viewAreaCoveragePercentThreshold: 0,
+          },
+          viewableItems: [
+            {isViewable: true, key: 'a'},
+            {isViewable: true, key: 'b'},
+          ],
+        },
+      ],
+    ]);
+  });
+
   it('minimumViewTime skips briefly visible items', function () {
     const helper = new ViewabilityHelper({
       minimumViewTime: 350,

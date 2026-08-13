@@ -680,6 +680,12 @@ describe('<FlatList>', () => {
 
         timers.advanceTimersByTime(200);
 
+        // The first timer represents an intermediate viewport snapshot and
+        // must not publish after the final visible set supersedes it.
+        expect(onViewableItemsChanged).not.toHaveBeenCalled();
+
+        timers.advanceTimersByTime(200);
+
         expect(onViewableItemsChanged).toHaveBeenCalled();
       } finally {
         timers.uninstall();
