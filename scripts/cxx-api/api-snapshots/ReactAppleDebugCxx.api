@@ -13087,6 +13087,8 @@ class facebook::react::jsinspector_modern::tracing::TargetTracingAgent {
 }
 
 class facebook::react::jsinspector_modern::tracing::TraceEventGenerator {
+  public static facebook::react::jsinspector_modern::tracing::TraceEvent createIdleBeginFrameEvent(facebook::react::jsinspector_modern::tracing::FrameSequenceId sequenceId, int layerTreeId, facebook::react::HighResTimeStamp timestamp, facebook::react::jsinspector_modern::tracing::ProcessId processId, facebook::react::jsinspector_modern::tracing::ThreadId threadId);
+  public static facebook::react::jsinspector_modern::tracing::TraceEvent createNeedsBeginFrameChangedEvent(int layerTreeId, facebook::react::HighResTimeStamp timestamp, facebook::react::jsinspector_modern::tracing::ProcessId processId, facebook::react::jsinspector_modern::tracing::ThreadId threadId);
   public static facebook::react::jsinspector_modern::tracing::TraceEvent createScreenshotEvent(facebook::react::jsinspector_modern::tracing::FrameSequenceId frameSequenceId, int sourceId, std::vector<uint8_t>&& snapshot, facebook::react::HighResTimeStamp expectedDisplayTime, facebook::react::jsinspector_modern::tracing::ProcessId processId, facebook::react::jsinspector_modern::tracing::ThreadId threadId);
   public static facebook::react::jsinspector_modern::tracing::TraceEvent createSetLayerTreeIdEvent(std::string frame, int layerTreeId, facebook::react::jsinspector_modern::tracing::ProcessId processId, facebook::react::jsinspector_modern::tracing::ThreadId threadId, facebook::react::HighResTimeStamp timestamp);
   public static std::pair<facebook::react::jsinspector_modern::tracing::TraceEvent, facebook::react::jsinspector_modern::tracing::TraceEvent> createFrameTimingsEvents(facebook::react::jsinspector_modern::tracing::FrameSequenceId sequenceId, int layerTreeId, facebook::react::HighResTimeStamp beginTimestamp, facebook::react::HighResTimeStamp endTimestamp, facebook::react::jsinspector_modern::tracing::ProcessId processId, facebook::react::jsinspector_modern::tracing::ThreadId threadId);
@@ -13147,7 +13149,8 @@ struct facebook::react::jsinspector_modern::tracing::EventLoopReporter {
 
 struct facebook::react::jsinspector_modern::tracing::FrameTimingSequence {
   public FrameTimingSequence() = delete;
-  public FrameTimingSequence(facebook::react::jsinspector_modern::tracing::FrameSequenceId id, facebook::react::jsinspector_modern::tracing::ThreadId threadId, facebook::react::HighResTimeStamp beginTimestamp, facebook::react::HighResTimeStamp endTimestamp, std::optional<std::vector<uint8_t>> screenshot = std::nullopt);
+  public FrameTimingSequence(facebook::react::jsinspector_modern::tracing::FrameSequenceId id, facebook::react::jsinspector_modern::tracing::ThreadId threadId, facebook::react::HighResTimeStamp beginTimestamp, facebook::react::HighResTimeStamp endTimestamp, std::optional<std::vector<uint8_t>> screenshot = std::nullopt, facebook::react::HighResDuration vsyncInterval = facebook::react::HighResDuration::zero());
+  public facebook::react::HighResDuration vsyncInterval;
   public facebook::react::HighResTimeStamp beginTimestamp;
   public facebook::react::HighResTimeStamp endTimestamp;
   public facebook::react::jsinspector_modern::tracing::FrameSequenceId id;
