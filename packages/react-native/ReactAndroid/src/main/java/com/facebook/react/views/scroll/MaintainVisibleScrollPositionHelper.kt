@@ -83,6 +83,7 @@ internal class MaintainVisibleScrollPositionHelper<ScrollViewT>(
       return
     }
     isListening = false
+    firstVisibleViewRef = null
     uIManager.removeUIManagerEventListener(this)
   }
 
@@ -125,6 +126,12 @@ internal class MaintainVisibleScrollPositionHelper<ScrollViewT>(
     val contentView = contentView ?: return
 
     val currentScroll = if (horizontal) scrollView.scrollX else scrollView.scrollY
+    var firstVisibleView: View? = null
+    // We cannot assume that the views will be in position order because of things like z-index
+    // which will change the order of views in their parent. This means we need to iterate through
+    // the full children array and find the view with the smallest position that is bigger than
+    // the scroll position.
+    var firstVisibleViewPosition = Float.MAX_VALUE
     for (i in config.minIndexForVisible until contentView.childCount) {
       val child = contentView.getChildAt(i)
 
@@ -132,14 +139,21 @@ internal class MaintainVisibleScrollPositionHelper<ScrollViewT>(
       val position = if (horizontal) child.x + child.width else child.y + child.height
 
       // If the child is partially visible or this is the last child, select it as the anchor.
-      if (position > currentScroll || i == contentView.childCount - 1) {
-        firstVisibleViewRef = WeakReference(child)
-        val frame = Rect()
-        child.getHitRect(frame)
-        prevFirstVisibleFrame = frame
-        break
+      if ((position > currentScroll && position < firstVisibleViewPosition) ||
+          (firstVisibleView == null && i == contentView.childCount - 1)) {
+        firstVisibleView = child
+        firstVisibleViewPosition = position
       }
     }
+
+    if (firstVisibleView == null) {
+      return
+    }
+
+    firstVisibleViewRef = WeakReference(firstVisibleView)
+    val frame = Rect()
+    firstVisibleView.getHitRect(frame)
+    prevFirstVisibleFrame = frame
   }
 
   // UIManagerListener
