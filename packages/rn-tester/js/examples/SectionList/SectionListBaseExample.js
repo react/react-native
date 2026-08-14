@@ -68,6 +68,7 @@ type Props = Readonly<{
   // $FlowFixMe[unclear-type]
   exampleProps: Partial<React.ElementConfig<typeof SectionList<any>>>,
   onTest?: ?() => void,
+  testContainerTestID?: ?string,
   testLabel?: ?string,
   testOutput?: ?string,
   children?: ?React.Node,
@@ -88,7 +89,9 @@ const SectionListBaseExample: component(
   return (
     <View style={styles.container}>
       {props.testOutput != null ? (
-        <View testID="test_container" style={styles.testContainer}>
+        <View
+          testID={props.testContainerTestID ?? 'test_container'}
+          style={styles.testContainer}>
           <Text style={styles.output} numberOfLines={1} testID="output">
             {props.testOutput}
           </Text>

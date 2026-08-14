@@ -504,6 +504,57 @@ describe('VirtualizedList', () => {
     );
   });
 
+  it('does not report horizontal items after the list collapses vertically', async () => {
+    const data = [{key: 'i1'}];
+    const onViewableItemsChanged = jest.fn();
+    const viewabilityConfig = {
+      minimumViewTime: 1000,
+      viewAreaCoveragePercentThreshold: 100,
+    };
+    let component;
+    await act(() => {
+      component = create(
+        <VirtualizedList
+          data={data}
+          getItem={(items, index) => items[index]}
+          getItemCount={items => items.length}
+          getItemLayout={(items, index) => ({
+            index,
+            length: 100,
+            offset: index * 100,
+          })}
+          horizontal={true}
+          onViewableItemsChanged={onViewableItemsChanged}
+          renderItem={({item}) => <item value={item.key} />}
+          viewabilityConfig={viewabilityConfig}
+        />,
+      );
+    });
+
+    const instance = component.getInstance();
+    await act(async () => {
+      instance._onLayout({
+        nativeEvent: {layout: {height: 100, width: 300}, zoomScale: 1},
+      });
+      instance._onScroll({
+        timeStamp: 1000,
+        nativeEvent: {
+          contentInset: {bottom: 0, left: 0, right: 0, top: 0},
+          contentOffset: {x: 0, y: 0},
+          contentSize: {height: 100, width: 300},
+          layoutMeasurement: {height: 100, width: 300},
+          zoomScale: 1,
+        },
+      });
+      instance._onLayout({
+        nativeEvent: {layout: {height: 0, width: 300}, zoomScale: 1},
+      });
+      await jest.runAllTimersAsync();
+    });
+
+    expect(onViewableItemsChanged).not.toHaveBeenCalled();
+  });
+
   it('getScrollRef for case where it returns a ScrollView', async () => {
     const listRef = createRef(null);
 
