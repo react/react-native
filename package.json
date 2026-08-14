@@ -68,7 +68,6 @@
     "ansi-regex": "^5.0.0",
     "ansi-styles": "^4.2.1",
     "babel-plugin-minify-dead-code-elimination": "^0.5.2",
-    "babel-plugin-syntax-hermes-parser": "0.37.0",
     "babel-plugin-transform-define": "^2.1.4",
     "babel-plugin-transform-flow-enums": "^0.0.2",
     "clang-format": "^1.8.0",

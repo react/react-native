@@ -45,7 +45,6 @@
     "@babel/plugin-transform-nullish-coalescing-operator": "^7.24.7",
     "@babel/plugin-transform-optional-chaining": "^7.24.8",
     "@babel/preset-env": "^7.25.3",
-    "babel-plugin-syntax-hermes-parser": "0.37.0",
     "flow-estree": "0.327.0",
     "micromatch": "^4.0.4",
     "prettier": "3.9.4",

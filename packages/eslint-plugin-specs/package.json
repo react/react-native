@@ -35,7 +35,6 @@
     "@react-native/codegen": "0.87.0-main",
     "make-dir": "^2.1.0",
     "pirates": "^4.0.1",
-    "babel-plugin-syntax-hermes-parser": "0.37.0",
     "flow-parser": "0.327.0",
     "source-map-support": "0.5.0"
   },
