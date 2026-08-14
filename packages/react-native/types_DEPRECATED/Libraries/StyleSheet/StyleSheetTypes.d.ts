@@ -559,6 +559,8 @@ export interface TextStyleAndroid extends ViewStyle {
 }
 
 // @see https://reactnative.dev/docs/text#style
+export type FontVariationSettings = string | Readonly<Record<string, number>>;
+
 export interface TextStyle extends TextStyleIOS, TextStyleAndroid, ViewStyle {
   color?: ColorValue | undefined;
   fontFamily?: string | undefined;
@@ -602,11 +604,12 @@ export interface TextStyle extends TextStyleIOS, TextStyleAndroid, ViewStyle {
     | 'black'
     | undefined;
   /**
-   * Specifies OpenType font variation axis values using CSS syntax. An empty
-   * string resets inherited variation settings. On Android, this requires API
-   * level 26 or later.
+   * Specifies OpenType font variation axis values using CSS syntax or an
+   * object keyed by four-character axis tags. An empty string or object resets
+   * inherited variation settings. On Android, this requires API level 26 or
+   * later.
    */
-  fontVariationSettings?: string | undefined;
+  fontVariationSettings?: FontVariationSettings | undefined;
   letterSpacing?: number | undefined;
   lineHeight?: number | undefined;
   textAlign?:

@@ -24,7 +24,10 @@ import type {TextInputNativeCommands} from './TextInputNativeCommands';
 
 import * as NativeComponentRegistry from '../../NativeComponent/NativeComponentRegistry';
 import codegenNativeCommands from '../../Utilities/codegenNativeCommands';
-import {colorAttribute} from '../View/ReactNativeStyleAttributes';
+import {
+  colorAttribute,
+  fontVariationSettingsAttribute,
+} from '../View/ReactNativeStyleAttributes';
 
 export type KeyboardType =
   // Cross Platform
@@ -715,7 +718,7 @@ export const __INTERNAL_VIEW_CONFIG: PartialViewConfig = {
     includeFontPadding: true,
     fontWeight: true,
     fontFamily: true,
-    fontVariationSettings: true,
+    fontVariationSettings: fontVariationSettingsAttribute,
     allowFontScaling: true,
     onSelectionChange: true,
     mostRecentEventCount: true,

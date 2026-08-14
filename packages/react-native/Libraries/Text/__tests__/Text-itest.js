@@ -52,6 +52,44 @@ describe('<Text>', () => {
       });
     });
 
+    describe('fontVariationSettings', () => {
+      it('serializes object settings', () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(
+            <Text style={{fontVariationSettings: {wght: 552.5, opsz: 17.25}}}>
+              {TEST_TEXT}
+            </Text>,
+          );
+        });
+
+        expect(
+          root.getRenderedOutput({props: ['fontVariationSettings']}).toJSX(),
+        ).toEqual(
+          <rn-paragraph fontVariationSettings="'opsz' 17.25, 'wght' 552.5">
+            {TEST_TEXT}
+          </rn-paragraph>,
+        );
+      });
+
+      it('serializes an empty object as an explicit clear', () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(
+            <Text style={{fontVariationSettings: {}}}>{TEST_TEXT}</Text>,
+          );
+        });
+
+        expect(
+          root.getRenderedOutput({props: ['fontVariationSettings']}).toJSX(),
+        ).toEqual(
+          <rn-paragraph fontVariationSettings="">{TEST_TEXT}</rn-paragraph>,
+        );
+      });
+    });
+
     describe('adjustsFontSizeToFit', () => {
       it(`can be set to "true"`, () => {
         const root = Fantom.createRoot();
