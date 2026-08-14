@@ -679,7 +679,7 @@ const definitions: FeatureFlagDefinitions = {
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
-      ossReleaseStage: 'experimental',
+      ossReleaseStage: 'canary',
     },
     fuseboxScreenshotCaptureEnabled: {
       defaultValue: true,

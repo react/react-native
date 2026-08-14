@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<630f900c13eb68232717fc28528253e2>>
+ * @generated SignedSource<<7341b28bb77aeeec670051149faeae04>>
  */
 
 /**
@@ -36,10 +36,6 @@ class ReactNativeFeatureFlagsOverridesOSSExperimental : public ReactNativeFeatur
   }
 
   bool enableSchedulerDelegateInvalidation() override {
-    return true;
-  }
-
-  bool fuseboxFrameRecordingEnabled() override {
     return true;
   }
 

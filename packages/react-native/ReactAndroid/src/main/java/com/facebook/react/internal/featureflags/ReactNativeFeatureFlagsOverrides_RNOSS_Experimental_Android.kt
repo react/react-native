@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<41f83a9921de88f659ddc22172344226>>
+ * @generated SignedSource<<7103d9c2fa3e2f152ce60b5dff12c0e4>>
  */
 
 /**
@@ -28,8 +28,6 @@ public open class ReactNativeFeatureFlagsOverrides_RNOSS_Experimental_Android : 
   override fun enableRuntimeSchedulerQueueClearingOnError(): Boolean = true
 
   override fun enableSchedulerDelegateInvalidation(): Boolean = true
-
-  override fun fuseboxFrameRecordingEnabled(): Boolean = true
 
   override fun preventShadowTreeCommitExhaustion(): Boolean = true
 
