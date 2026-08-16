@@ -666,6 +666,14 @@ static RCTImageLoaderCancellationBlock RCTLoadImageURLFromLoader(
                                                 size:size
                                                scale:scale
                                           resizeMode:resizeMode];
+        if (!image) {
+          // Prefetched images are cached at their original size. Reuse that
+          // entry for subsequent requests, which may specify a concrete size.
+          image = [[strongSelf imageCache] imageForUrl:request.URL.absoluteString
+                                                  size:CGSizeZero
+                                                 scale:1
+                                            resizeMode:RCTResizeModeStretch];
+        }
       }
 
       if (image) {
@@ -1133,6 +1141,11 @@ static RCTImageLoaderCancellationBlock RCTLoadImageURLFromLoader(
         } else {
           results[urlRequest.URL.absoluteString] = @"disk/memory";
         }
+      } else if ([[self imageCache] imageForUrl:urlRequest.URL.absoluteString
+                                           size:CGSizeZero
+                                          scale:1
+                                     resizeMode:RCTResizeModeStretch]) {
+        results[urlRequest.URL.absoluteString] = @"memory";
       }
     }
   }
