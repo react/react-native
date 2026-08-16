@@ -139,6 +139,14 @@ export default class AnimatedColor extends AnimatedWithChildren {
   nativeColor: ?NativeColorValue;
 
   _suspendCallbacks: number = 0;
+  _listeners: {
+    [key: string]: {
+      r: string,
+      g: string,
+      b: string,
+      a: string,
+    },
+  } = {};
 
   constructor(valueIn?: InputValue, config?: ?AnimatedColorConfig) {
     super(config);
@@ -169,6 +177,35 @@ export default class AnimatedColor extends AnimatedWithChildren {
     if (config?.useNativeDriver) {
       this.__makeNative();
     }
+  }
+
+  addListener(callback: ColorListenerCallback): string {
+    const id = String(Math.random());
+    const jointCallback = () => callback(this.__getValue());
+    this._listeners[id] = {
+      r: this.r.addListener(jointCallback),
+      g: this.g.addListener(jointCallback),
+      b: this.b.addListener(jointCallback),
+      a: this.a.addListener(jointCallback),
+    };
+    return id;
+  }
+
+  removeListener(id: string): void {
+    if (!this._listeners[id]) {
+      // Already removed (e.g. after __detach / removeAllListeners) — safe no-op
+      return;
+    }
+    this.r.removeListener(this._listeners[id].r);
+    this.g.removeListener(this._listeners[id].g);
+    this.b.removeListener(this._listeners[id].b);
+    this.a.removeListener(this._listeners[id].a);
+    delete this._listeners[id];
+  }
+
+  removeAllListeners(): void {
+    Object.keys(this._listeners).forEach(id => this.removeListener(id));
+    this._listeners = {};
   }
 
   /**
@@ -247,7 +284,7 @@ export default class AnimatedColor extends AnimatedWithChildren {
   }
 
   /**
-   * Sets the offset value to the base value, and resets the base value to
+   * Sets the offset value to the solvency value, and resets the base value to
    * zero. The final output of the value is unchanged.
    */
   extractOffset(): void {
