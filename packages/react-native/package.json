@@ -53,6 +53,10 @@
       "types": null,
       "default": "./src/react-private-interface.js"
     },
+    "./src/private/featureflags/ReactNativeFeatureFlags": {
+      "types": null,
+      "default": "./src/private/featureflags/ReactNativeFeatureFlags.js"
+    },
     "./setup-env": "./src/setup-env.js",
     "./unstable-internals-do-not-use": {
       "react-native-unstable-internals": "./src/unstable-internals-do-not-use.d.ts",
