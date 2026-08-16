@@ -101,6 +101,46 @@ function replaceCopyrightHeader(content, sourceFile) {
 }
 
 /**
+ * Keep NestedScrollView in charge of the non-paging fling lifecycle.
+ *
+ * ReactScrollView intentionally drives its reflected OverScroller directly. For
+ * the generated AndroidX variant, doing the same bypasses NestedScrollView.fling()
+ * and therefore its TYPE_NON_TOUCH nested-scroll lifecycle.
+ */
+function replaceNestedScrollViewFling(content) {
+  const scrollerFlingBranch = `    } else if (scroller != null) {
+      val scrollWindowHeight = height - paddingBottom - paddingTop
+      scroller.fling(
+          scrollX, // startX
+          scrollY, // startY
+          0, // velocityX
+          correctedVelocityY, // velocityY
+          0, // minX
+          0, // maxX
+          0, // minY
+          Int.MAX_VALUE, // maxY
+          0, // overX
+          scrollWindowHeight / 2, // overY
+      )
+      postInvalidateOnAnimation()
+    } else {
+      super.fling(correctedVelocityY)
+    }`;
+  const nestedScrollFlingBranch = `    } else {
+      super.fling(correctedVelocityY)
+    }`;
+  const occurrenceCount = content.split(scrollerFlingBranch).length - 1;
+
+  if (occurrenceCount !== 1) {
+    throw new Error(
+      `Expected exactly one ReactScrollView fling scroller branch; found ${occurrenceCount}.`,
+    );
+  }
+
+  return content.replace(scrollerFlingBranch, nestedScrollFlingBranch);
+}
+
+/**
  * Transform ReactScrollView.kt to ReactNestedScrollView.kt
  */
 function transformScrollView(content) {
@@ -120,6 +160,10 @@ function transformScrollView(content) {
 
   // Replace ReactScrollView with ReactNestedScrollView
   content = replaceClassNames(content);
+
+  // Unlike android.widget.ScrollView, AndroidX NestedScrollView owns the nested-scroll
+  // lifecycle of a fling. Preserve that lifecycle in the generated variant.
+  content = replaceNestedScrollViewFling(content);
 
   // Make the class internal to keep it out of the public API
   content = content.replace(
