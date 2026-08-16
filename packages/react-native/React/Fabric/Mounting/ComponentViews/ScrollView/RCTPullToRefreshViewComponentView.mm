@@ -120,7 +120,9 @@ using namespace facebook::react;
   if (_recycled || newConcreteProps.refreshing != oldConcreteProps.refreshing) {
     if (newConcreteProps.refreshing) {
       [self beginRefreshingProgrammatically];
-    } else {
+    } else if (!_recycled) {
+      // A newly initialized UIRefreshControl is already idle. Calling endRefreshing before it is attached to the
+      // scroll view prevents pull-to-refresh haptics from being restored after the component view is recycled.
       [_refreshControl endRefreshing];
     }
   }
