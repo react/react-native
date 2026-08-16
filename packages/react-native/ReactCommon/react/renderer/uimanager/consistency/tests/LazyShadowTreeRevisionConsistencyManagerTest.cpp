@@ -60,6 +60,7 @@ class LazyShadowTreeRevisionConsistencyManagerTest : public ::testing::Test {
         surfaceId,
         layoutConstraints_,
         layoutContext_,
+        ColorScheme::Light,
         shadowTreeDelegate_,
         contextContainer_);
   }

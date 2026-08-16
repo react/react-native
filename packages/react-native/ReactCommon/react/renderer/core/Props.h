@@ -59,6 +59,12 @@ class Props : public virtual Sealable, public virtual DebugStringConvertible {
 
   std::string nativeId;
 
+  /*
+   * The parsed `styleConditions` prop (conditional/media-query styles) plus
+   * its current resolution state.
+   */
+  std::shared_ptr<const struct StyleConditionData> styleConditionData{};
+
 #ifdef RN_SERIALIZABLE_STATE
   folly::dynamic rawProps = folly::dynamic::object();
 

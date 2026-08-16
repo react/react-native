@@ -11,6 +11,7 @@
 import type {AttributeConfiguration} from '../../Renderer/shims/ReactNativeTypes';
 
 import flattenStyle from '../../StyleSheet/flattenStyle';
+import {processStyleConditionsInStyleProp} from '../../StyleSheet/processStyleConditions';
 import deepDiffer from '../../Utilities/differ/deepDiffer';
 
 const emptyObject = {};
@@ -155,6 +156,20 @@ function diffNestedProperty(
     return updatePayload;
   }
 
+  // process style conditions
+  if (validAttributesAllowStyleConditions(validAttributes)) {
+    const processedPrevProp = processStyleConditionsInStyleProp(prevProp);
+    const processedNextProp = processStyleConditionsInStyleProp(nextProp);
+    if (processedPrevProp !== prevProp || processedNextProp !== nextProp) {
+      return diffProperties(
+        updatePayload,
+        normalizeProcessedStylePropForDiff(processedPrevProp),
+        normalizeProcessedStylePropForDiff(processedNextProp),
+        validAttributes,
+      );
+    }
+  }
+
   if (!prevProp || !nextProp) {
     if (nextProp) {
       return addNestedProperty(updatePayload, nextProp, validAttributes);
@@ -208,6 +223,16 @@ function clearNestedProperty(
 ): null | Object {
   if (!prevProp) {
     return updatePayload;
+  }
+
+  // process style conditions
+  if (validAttributesAllowStyleConditions(validAttributes)) {
+    const processedPrevProp = processStyleConditionsInStyleProp(prevProp);
+    if (processedPrevProp !== prevProp) {
+      prevProp = normalizeProcessedStylePropForDiff(
+        processedPrevProp,
+      ) as $FlowFixMe as NestedNode;
+    }
   }
 
   if (!Array.isArray(prevProp)) {
@@ -418,6 +443,21 @@ function addNestedProperty(
   props: Object,
   validAttributes: AttributeConfiguration,
 ): null | Object {
+  if (props === null || typeof props !== 'object') {
+    return payload;
+  }
+
+  // process style conditions
+  if (validAttributesAllowStyleConditions(validAttributes)) {
+    const processedProps = processStyleConditionsInStyleProp(props);
+    if (processedProps !== props) {
+      if (processedProps === null || typeof processedProps !== 'object') {
+        return payload;
+      }
+      props = processedProps as Object;
+    }
+  }
+
   // Flatten nested style props.
   if (Array.isArray(props)) {
     for (let i = 0; i < props.length; i++) {
@@ -508,4 +548,22 @@ export function diff(
     nextProps,
     validAttributes,
   );
+}
+
+function validAttributesAllowStyleConditions(
+  validAttributes: AttributeConfiguration,
+): boolean {
+  return validAttributes.styleConditions != null;
+}
+
+function normalizeProcessedStylePropForDiff(prop: unknown): Object {
+  if (prop === null || typeof prop !== 'object') {
+    return emptyObject;
+  }
+
+  if (Array.isArray(prop)) {
+    return flattenStyle(prop) ?? emptyObject;
+  }
+
+  return prop;
 }

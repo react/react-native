@@ -116,6 +116,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (const facebook::react::SurfaceHandler &)surfaceHandler;
 
+/**
+ * Applies the interface color scheme resolved from `traitCollection` (or the
+ * key window's scheme when `nil`, which honors `Appearance.setColorScheme`
+ * window overrides) so conditional (`@media (prefers-color-scheme)`) styles
+ * re-resolve natively. Must be called on the main queue.
+ */
+- (void)updateColorSchemeWithTraitCollection:(nullable UITraitCollection *)traitCollection;
+
 @end
 
 @interface RCTFabricSurface (Deprecated)

@@ -101,6 +101,7 @@ ShadowNode::ShadowNode(
   }
 
   propagateUncullableTraitsFromChildren();
+  propagateStyleConditionsTrait();
 
   // The first node of the family gets its state committed automatically.
   family_->setMostRecentState(state_);
@@ -131,6 +132,7 @@ ShadowNode::ShadowNode(
     }
     propagateUncullableTraitsFromChildren();
   }
+  propagateStyleConditionsTrait();
 }
 
 std::shared_ptr<ShadowNode> ShadowNode::clone(
@@ -254,6 +256,11 @@ void ShadowNode::appendChild(const std::shared_ptr<const ShadowNode>& child) {
 
   child->family_->setParent(family_);
   propagateUncullableTraitsFromChildren();
+
+  if (child->getTraits().check(
+          ShadowNodeTraits::Trait::HasStyleConditionsInSubtree)) {
+    traits_.set(ShadowNodeTraits::Trait::HasStyleConditionsInSubtree);
+  }
 }
 
 void ShadowNode::replaceChild(
@@ -275,6 +282,7 @@ void ShadowNode::replaceChild(
     // replacing in place using the index.
     if (children.at(suggestedIndex).get() == &oldChild) {
       children[suggestedIndex] = newChild;
+      propagateStyleConditionsTrait();
       return;
     }
   }
@@ -282,6 +290,7 @@ void ShadowNode::replaceChild(
   for (size_t index = 0; index < size; index++) {
     if (children.at(index).get() == &oldChild) {
       children[index] = newChild;
+      propagateStyleConditionsTrait();
       return;
     }
   }
@@ -298,6 +307,23 @@ void ShadowNode::cloneChildrenIfShared() {
   traits_.unset(ShadowNodeTraits::Trait::ChildrenAreShared);
   children_ = std::make_shared<std::vector<std::shared_ptr<const ShadowNode>>>(
       *children_);
+}
+
+void ShadowNode::propagateStyleConditionsTrait() {
+  // this node carries conditional (media-query) styles.
+  if (props_ && props_->styleConditionData != nullptr) {
+    traits_.set(ShadowNodeTraits::Trait::HasStyleConditionsInSubtree);
+    return;
+  }
+  // Otherwise, inherit from any descendant.
+  for (const auto& child : *children_) {
+    if (child->getTraits().check(
+            ShadowNodeTraits::Trait::HasStyleConditionsInSubtree)) {
+      traits_.set(ShadowNodeTraits::Trait::HasStyleConditionsInSubtree);
+      return;
+    }
+  }
+  traits_.unset(ShadowNodeTraits::Trait::HasStyleConditionsInSubtree);
 }
 
 void ShadowNode::propagateUncullableTraitsFromChildren() {

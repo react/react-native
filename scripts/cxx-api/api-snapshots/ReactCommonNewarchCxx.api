@@ -179,6 +179,7 @@ constexpr facebook::react::HighResDuration facebook::react::DEFAULT_DURATION_THR
 constexpr facebook::react::HighResDuration facebook::react::LONG_TASK_DURATION_THRESHOLD;
 constexpr facebook::react::ReactNativeVersionType facebook::react::ReactNativeVersion;
 constexpr float facebook::react::kDefaultEpsilon;
+constexpr int32_t facebook::react::kNoMatchingCondition;
 constexpr size_t facebook::react::EVENT_BUFFER_SIZE;
 constexpr size_t facebook::react::LONG_TASK_BUFFER_SIZE;
 constexpr size_t facebook::react::RESOURCE_TIMING_BUFFER_SIZE;
@@ -323,6 +324,7 @@ using facebook::react::SharedViewEventEmitter = std::shared_ptr<const facebook::
 using facebook::react::SharedViewProps = std::shared_ptr<const facebook::react::ViewProps>;
 using facebook::react::SnapshotMap = std::unordered_map<facebook::react::Tag, std::unique_ptr<facebook::react::PropsSnapshot>>;
 using facebook::react::StatePipe = std::function<void(const facebook::react::StateUpdate& stateUpdate)>;
+using facebook::react::StyleConditionResolution = std::vector<int32_t>;
 using facebook::react::SurfaceId = int32_t;
 using facebook::react::Tag = int32_t;
 using facebook::react::TelemetryClock = std::chrono::steady_clock;
@@ -439,6 +441,7 @@ concept facebook::react::TextLayoutManagerWithPreparedTextLayout = requires(
 Float facebook::react::floatFromYogaFloat(float value);
 Float facebook::react::floatFromYogaOptionalFloat(facebook::yoga::FloatOptional value);
 YGDirection facebook::react::yogaDirectionFromLayoutDirection(facebook::react::LayoutDirection direction);
+bool facebook::react::anyConditionMatches(const facebook::react::StyleConditionResolution& resolution);
 bool facebook::react::areAttributedStringFragmentsEquivalentDisplayWise(const facebook::react::AttributedString::Fragment& lhs, const facebook::react::AttributedString::Fragment& rhs);
 bool facebook::react::areAttributedStringFragmentsEquivalentLayoutWise(const facebook::react::AttributedString::Fragment& lhs, const facebook::react::AttributedString::Fragment& rhs);
 bool facebook::react::areAttributedStringsEquivalentDisplayWise(const facebook::react::AttributedString& lhs, const facebook::react::AttributedString& rhs);
@@ -487,6 +490,7 @@ facebook::react::SharedColor facebook::react::fromCSSColor(const facebook::react
 facebook::react::SharedColor facebook::react::whiteColor();
 facebook::react::Size facebook::react::ModalHostViewScreenSize(void);
 facebook::react::Size facebook::react::yogaMeassureToSize(int64_t value);
+facebook::react::StyleConditionResolution facebook::react::evaluateStyleConditions(const std::vector<facebook::react::StyleConditionProp>& styleConditionProps, facebook::react::ColorScheme colorScheme, facebook::react::Orientation orientation);
 facebook::react::SurfaceId facebook::react::getNextRootViewTag() noexcept;
 facebook::react::TurboModuleMethodValueKind facebook::react::getTurboModuleMethodValueKind(facebook::jsi::Runtime& rt, const facebook::jsi::Value* value);
 facebook::react::ValueUnit facebook::react::cssLengthPercentageToValueUnit(const std::variant<facebook::react::CSSLength, facebook::react::CSSPercentage>& value);
@@ -497,6 +501,7 @@ float facebook::react::ceil(float value) noexcept;
 float facebook::react::floor(float value) noexcept;
 float facebook::react::round(float value) noexcept;
 float facebook::react::yogaFloatFromFloat(Float value);
+folly::dynamic facebook::react::buildStyleConditionPatch(const std::vector<facebook::react::StyleConditionProp>& styleConditionProps, const facebook::react::StyleConditionResolution& resolution);
 folly::dynamic facebook::react::diffDynamicProps(const folly::dynamic& oldProps, const folly::dynamic& newProps);
 folly::dynamic facebook::react::mergeDynamicProps(const folly::dynamic& source, const folly::dynamic& patch, facebook::react::NullValueStrategy nullValueStrategy);
 folly::dynamic facebook::react::toDynamic(const facebook::react::SubmitBehavior& value);
@@ -526,6 +531,7 @@ std::optional<facebook::react::FontVariant> facebook::react::fontVariantFromCSSF
 std::optional<facebook::react::Isolation> facebook::react::isolationFromString(std::string_view isolationSetting);
 std::optional<facebook::react::TransformOperation> facebook::react::fromCSSTransformFunction(const facebook::react::CSSTransformFunction& cssTransform);
 std::pair<Float, Float> facebook::react::calculateAnimationProgress(uint64_t now, const facebook::react::LayoutAnimation& animation, const facebook::react::AnimationConfig& mutationConfig);
+std::shared_ptr<const facebook::react::ShadowNode> facebook::react::resolveStyleConditionsInSubtree(const std::shared_ptr<const facebook::react::ShadowNode>& node, facebook::react::ColorScheme colorScheme, facebook::react::Orientation orientation, const facebook::react::PropsParserContext& propsParserContext);
 std::string facebook::react::base64Encode(const std::string_view s);
 std::string facebook::react::componentNameByReactViewName(std::string viewName);
 std::string facebook::react::generateRandomUuidString();
@@ -672,6 +678,7 @@ void facebook::react::fromRawValue(const facebook::react::PropsParserContext& co
 void facebook::react::fromRawValue(const facebook::react::PropsParserContext& context, const facebook::react::RawValue& value, facebook::yoga::PositionType& result);
 void facebook::react::fromRawValue(const facebook::react::PropsParserContext& context, const facebook::react::RawValue& value, facebook::yoga::Style::Length& result);
 void facebook::react::fromRawValue(const facebook::react::PropsParserContext& context, const facebook::react::RawValue& value, facebook::yoga::Wrap& result);
+void facebook::react::fromRawValue(const facebook::react::PropsParserContext& context, const facebook::react::RawValue& value, std::shared_ptr<const facebook::react::StyleConditionData>& result);
 void facebook::react::fromRawValue(const facebook::react::PropsParserContext& context, const facebook::react::RawValue& value, std::vector<facebook::react::BackgroundImage>& result);
 void facebook::react::fromRawValue(const facebook::react::PropsParserContext& context, const facebook::react::RawValue& value, std::vector<facebook::react::BoxShadow>& result);
 void facebook::react::fromRawValue(const facebook::react::PropsParserContext& context, const facebook::react::RawValue& value, std::vector<facebook::react::FilterFunction>& result);
@@ -1314,6 +1321,7 @@ class facebook::react::ComponentDescriptor {
   public using Unique = std::unique_ptr<const facebook::react::ComponentDescriptor>;
   public virtual facebook::react::ComponentHandle getComponentHandle() const = 0;
   public virtual facebook::react::ComponentName getComponentName() const = 0;
+  public virtual facebook::react::Props::Shared applyStyleConditionResolution(const facebook::react::PropsParserContext& context, const facebook::react::Props::Shared& props, const facebook::react::StyleConditionResolution& resolution) const;
   public virtual facebook::react::Props::Shared cloneProps(const facebook::react::PropsParserContext& context, const facebook::react::Props::Shared& props, facebook::react::RawProps rawProps) const = 0;
   public virtual facebook::react::ShadowNodeFamily::Shared createFamily(const facebook::react::ShadowNodeFamilyFragment& fragment) const = 0;
   public virtual facebook::react::ShadowNodeTraits getTraits() const = 0;
@@ -2657,6 +2665,7 @@ class facebook::react::Props : public virtual facebook::react::Sealable, public 
   public Props(const facebook::react::Props& other) = default;
   public Props(const facebook::react::PropsParserContext& context, const facebook::react::Props& sourceProps, const facebook::react::RawProps& rawProps, const std::function<bool(const std::string&)>& filterObjectKeys = nullptr);
   public facebook::react::Props& operator=(const facebook::react::Props& other) = delete;
+  public std::shared_ptr<const struct facebook::react::StyleConditionData> styleConditionData;
   public std::string nativeId;
   public using Shared = std::shared_ptr<const facebook::react::Props>;
   public virtual ~Props() = default;
@@ -2773,8 +2782,9 @@ class facebook::react::ReactPerfettoLogger {
 
 class facebook::react::RootProps : public facebook::react::HostPlatformViewProps {
   public RootProps() = default;
-  public RootProps(const facebook::react::PropsParserContext& context, const facebook::react::RootProps& sourceProps, const facebook::react::LayoutConstraints& layoutConstraints, const facebook::react::LayoutContext& layoutContext);
+  public RootProps(const facebook::react::PropsParserContext& context, const facebook::react::RootProps& sourceProps, const facebook::react::LayoutConstraints& layoutConstraints, const facebook::react::LayoutContext& layoutContext, facebook::react::ColorScheme colorScheme);
   public RootProps(const facebook::react::PropsParserContext& context, const facebook::react::RootProps& sourceProps, const facebook::react::RawProps& rawProps);
+  public facebook::react::ColorScheme colorScheme;
   public facebook::react::LayoutConstraints layoutConstraints;
   public facebook::react::LayoutContext layoutContext;
 }
@@ -2784,6 +2794,7 @@ class facebook::react::RootShadowNode : public facebook::react::ConcreteViewShad
   public RootShadowNode(const facebook::react::ShadowNodeFragment& fragment, const facebook::react::ShadowNodeFamily::Shared& family, facebook::react::ShadowNodeTraits traits);
   public bool layoutIfNeeded(std::vector<const facebook::react::LayoutableShadowNode*>* affectedNodes = {});
   public facebook::react::RootShadowNode::Unshared clone(const facebook::react::PropsParserContext& propsParserContext, const facebook::react::LayoutConstraints& layoutConstraints, const facebook::react::LayoutContext& layoutContext) const;
+  public facebook::react::RootShadowNode::Unshared clone(const facebook::react::PropsParserContext& propsParserContext, facebook::react::ColorScheme colorScheme) const;
   public static facebook::react::ShadowNodeTraits BaseTraits();
   public using Shared = std::shared_ptr<const facebook::react::RootShadowNode>;
   public using Unshared = std::shared_ptr<facebook::react::RootShadowNode>;
@@ -3133,6 +3144,7 @@ enum facebook::react::ShadowNodeTraits::Trait : int32_t {
   ForceFlattenView,
   FormsStackingContext,
   FormsView,
+  HasStyleConditionsInSubtree,
   Hidden,
   KeyboardFocusable,
   LeafYogaNode,
@@ -3145,7 +3157,7 @@ enum facebook::react::ShadowNodeTraits::Trait : int32_t {
 }
 
 class facebook::react::ShadowTree {
-  public ShadowTree(facebook::react::SurfaceId surfaceId, const facebook::react::LayoutConstraints& layoutConstraints, const facebook::react::LayoutContext& layoutContext, const facebook::react::ShadowTreeDelegate& delegate, const facebook::react::ContextContainer& contextContainer);
+  public ShadowTree(facebook::react::SurfaceId surfaceId, const facebook::react::LayoutConstraints& layoutConstraints, const facebook::react::LayoutContext& layoutContext, facebook::react::ColorScheme colorScheme, const facebook::react::ShadowTreeDelegate& delegate, const facebook::react::ContextContainer& contextContainer);
   public facebook::react::CommitMode getCommitMode() const;
   public facebook::react::CommitStatus commit(const facebook::react::ShadowTreeCommitTransaction& transaction, const facebook::react::ShadowTree::CommitOptions& commitOptions) const;
   public facebook::react::CommitStatus tryCommit(const facebook::react::ShadowTreeCommitTransaction& transaction, const facebook::react::ShadowTree::CommitOptions& commitOptions) const;
@@ -3274,6 +3286,7 @@ class facebook::react::SurfaceHandler {
   public virtual void setDisplayMode(facebook::react::DisplayMode displayMode) const noexcept;
   public virtual ~SurfaceHandler() noexcept;
   public void constraintLayout(const facebook::react::LayoutConstraints& layoutConstraints, const facebook::react::LayoutContext& layoutContext) const;
+  public void setColorScheme(facebook::react::ColorScheme colorScheme) const;
   public void setContextContainer(std::shared_ptr<const facebook::react::ContextContainer> contextContainer) const noexcept;
   public void setProps(const folly::dynamic& props) const noexcept;
   public void setSurfaceId(facebook::react::SurfaceId surfaceId) const noexcept;
@@ -4295,6 +4308,11 @@ enum facebook::react::CSSWideKeyword : std::underlying_type_t<facebook::react::C
   Unset,
 }
 
+enum facebook::react::ColorScheme : uint8_t {
+  Dark,
+  Light,
+}
+
 enum facebook::react::ColorSpace {
   DisplayP3,
   sRGB,
@@ -4525,6 +4543,11 @@ enum facebook::react::LineBreakStrategy {
 enum facebook::react::NullValueStrategy {
   Ignore,
   Override,
+}
+
+enum facebook::react::Orientation : uint8_t {
+  Landscape,
+  Portrait,
 }
 
 enum facebook::react::OutlineStyle : uint8_t {
@@ -5566,6 +5589,12 @@ struct facebook::react::MeasuredPreparedTextLayout {
   public facebook::react::detail::TextLayoutManagerExtended::PreparedTextLayout preparedTextLayout;
 }
 
+struct facebook::react::MediaQueryCondition {
+  public bool operator==(const facebook::react::MediaQueryCondition& other) const = default;
+  public std::optional<facebook::react::ColorScheme> colorScheme;
+  public std::optional<facebook::react::Orientation> orientation;
+}
+
 struct facebook::react::MutationRecord {
   public facebook::react::MutationObserverId mutationObserverId;
   public std::shared_ptr<const facebook::react::ShadowNode> targetShadowNode;
@@ -5959,6 +5988,22 @@ struct facebook::react::StateData {
   public using Shared = std::shared_ptr<const void>;
 }
 
+struct facebook::react::StyleCondition {
+  public facebook::react::MediaQueryCondition query;
+  public folly::dynamic value;
+}
+
+struct facebook::react::StyleConditionData {
+  public facebook::react::StyleConditionResolution resolution;
+  public std::shared_ptr<const facebook::react::Props> unpatchedProps;
+  public std::shared_ptr<const std::vector<facebook::react::StyleConditionProp>> styleConditionProps;
+}
+
+struct facebook::react::StyleConditionProp {
+  public std::string property;
+  public std::vector<facebook::react::StyleCondition> conditions;
+}
+
 struct facebook::react::SurfaceContext {
   public std::unordered_map<facebook::react::Tag, std::unique_ptr<facebook::react::PropsSnapshot>> map;
   public std::unordered_map<facebook::react::Tag, std::unique_ptr<facebook::react::PropsSnapshot>> pendingMap;
@@ -6319,6 +6364,7 @@ class facebook::react::ConcreteComponentDescriptor : public facebook::react::Com
   public using SharedConcreteProps = typename ShadowNodeT::SharedConcreteProps;
   public virtual facebook::react::ComponentHandle getComponentHandle() const override;
   public virtual facebook::react::ComponentName getComponentName() const override;
+  public virtual facebook::react::Props::Shared applyStyleConditionResolution(const facebook::react::PropsParserContext& context, const facebook::react::Props::Shared& props, const facebook::react::StyleConditionResolution& resolution) const override;
   public virtual facebook::react::Props::Shared cloneProps(const facebook::react::PropsParserContext& context, const facebook::react::Props::Shared& props, facebook::react::RawProps rawProps) const override;
   public virtual facebook::react::ShadowNodeFamily::Shared createFamily(const facebook::react::ShadowNodeFamilyFragment& fragment) const override;
   public virtual facebook::react::ShadowNodeTraits getTraits() const override;

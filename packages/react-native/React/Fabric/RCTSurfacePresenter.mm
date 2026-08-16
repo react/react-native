@@ -115,6 +115,11 @@ class ReactRevisionMergeRunLoopObserverDelegate final : public RunLoopObserver::
                                              selector:@selector(_applicationWillTerminate)
                                                  name:UIApplicationWillTerminateNotification
                                                object:nil];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(_userInterfaceStyleDidChange:)
+                                                 name:RCTUserInterfaceStyleDidChangeNotification
+                                               object:nil];
   }
 
   return self;
@@ -328,6 +333,17 @@ class ReactRevisionMergeRunLoopObserverDelegate final : public RunLoopObserver::
 - (void)_applicationWillTerminate
 {
   [self suspend];
+}
+
+- (void)_userInterfaceStyleDidChange:(NSNotification *)notification
+{
+  UITraitCollection *traitCollection =
+      notification.userInfo[RCTUserInterfaceStyleDidChangeNotificationTraitCollectionKey];
+  [_surfaceRegistry enumerateWithBlock:^(NSEnumerator<RCTFabricSurface *> *enumerator) {
+    for (RCTFabricSurface *surface in enumerator) {
+      [surface updateColorSchemeWithTraitCollection:traitCollection];
+    }
+  }];
 }
 
 #pragma mark - RCTSchedulerDelegate

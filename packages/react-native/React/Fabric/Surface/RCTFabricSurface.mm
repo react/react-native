@@ -104,6 +104,12 @@ using namespace facebook::react;
   RCTExecuteOnMainQueue(^{
     [self->_surfacePresenter.mountingManager attachSurfaceToView:self.view
                                                        surfaceId:self->_surfaceHandler->getSurfaceId()];
+
+    // Seed the color scheme, so the
+    // initial root (and first commit) resolve conditional
+    // (`@media (prefers-color-scheme)`) styles against the real scheme.
+    [self updateColorSchemeWithTraitCollection:nil];
+
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INTERACTIVE, 0), ^{
       self->_surfaceHandler->start();
       [self _propagateStageChange];
@@ -128,6 +134,17 @@ using namespace facebook::react;
     [self->_surfacePresenter.mountingManager detachSurfaceFromView:self.view
                                                          surfaceId:self->_surfaceHandler->getSurfaceId()];
   });
+}
+
+- (void)updateColorSchemeWithTraitCollection:(UITraitCollection *)traitCollection
+{
+  RCTAssertMainQueue();
+  // When no trait collection is provided, resolve from the
+  // key window, so the seed agrees with `useColorScheme()`
+  UITraitCollection *effectiveTraitCollection =
+      traitCollection ?: RCTKeyWindow().traitCollection ?: UITraitCollection.currentTraitCollection;
+  BOOL isDark = effectiveTraitCollection.userInterfaceStyle == UIUserInterfaceStyleDark;
+  _surfaceHandler->setColorScheme(isDark ? ColorScheme::Dark : ColorScheme::Light);
 }
 
 #pragma mark - Immutable Properties (no need to enforce synchronization)

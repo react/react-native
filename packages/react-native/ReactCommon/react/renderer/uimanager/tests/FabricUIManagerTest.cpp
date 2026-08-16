@@ -91,6 +91,7 @@ class FabricUIManagerTest : public ::testing::Test {
         surfaceId_,
         LayoutConstraints{},
         LayoutContext{},
+        ColorScheme::Light,
         *uiManager_,
         *contextContainer_);
 

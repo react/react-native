@@ -12,6 +12,8 @@ import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
 import type {AttributeConfiguration} from '../../../Renderer/shims/ReactNativeTypes';
 
+const ReactNativeStyleAttributes =
+  require('../../../Components/View/ReactNativeStyleAttributes').default;
 const {create, diff} = require('../ReactNativeAttributePayload');
 
 describe('ReactNativeAttributePayload.create', () => {
@@ -491,5 +493,148 @@ describe('ReactNativeAttributePayload.diff', () => {
       ),
     ).toEqual({a: nextFunction});
     expect(process).toBeCalled();
+  });
+});
+
+describe('ReactNativeAttributePayload conditional (media-query) styles', () => {
+  const validAttributes: AttributeConfiguration = {
+    style: ReactNativeStyleAttributes,
+  };
+
+  it('create: inlines the default and collects a styleConditions payload', () => {
+    expect(
+      create(
+        {
+          style: {
+            width: {default: 100, '@media (orientation: landscape)': 300},
+          },
+        },
+        validAttributes,
+      ),
+    ).toEqual({
+      width: 100,
+      styleConditions: {
+        width: [{query: {orientation: 'landscape'}, value: 300}],
+      },
+    });
+  });
+
+  it('create: runs each condition value through its property processor', () => {
+    const backgroundColorConfig = ReactNativeStyleAttributes.backgroundColor;
+    const processBackgroundColor =
+      typeof backgroundColorConfig === 'object' &&
+      typeof backgroundColorConfig.process === 'function'
+        ? backgroundColorConfig.process
+        : (value: unknown) => value;
+
+    expect(
+      create(
+        {
+          style: {
+            backgroundColor: {
+              default: 'red',
+              '@media (prefers-color-scheme: dark)': 'black',
+            },
+          },
+        },
+        validAttributes,
+      ),
+    ).toEqual({
+      backgroundColor: processBackgroundColor('red'),
+      styleConditions: {
+        backgroundColor: [
+          {
+            query: {colorScheme: 'dark'},
+            value: processBackgroundColor('black'),
+          },
+        ],
+      },
+    });
+  });
+
+  it('create: flattens before hoisting so array precedence is respected', () => {
+    expect(
+      create(
+        {
+          style: [
+            {width: {default: 100, '@media (orientation: landscape)': 300}},
+            {width: 200},
+          ],
+        },
+        validAttributes,
+      ),
+    ).toEqual({width: 200});
+
+    // A later conditional value wins -> its conditions survive.
+    expect(
+      create(
+        {
+          style: [
+            {width: 200},
+            {width: {default: 100, '@media (orientation: landscape)': 300}},
+          ],
+        },
+        validAttributes,
+      ),
+    ).toEqual({
+      width: 100,
+      styleConditions: {
+        width: [{query: {orientation: 'landscape'}, value: 300}],
+      },
+    });
+  });
+
+  it('diff: adds styleConditions when a conditional value appears', () => {
+    expect(
+      diff(
+        {style: {width: 100}},
+        {
+          style: {
+            width: {default: 100, '@media (orientation: landscape)': 300},
+          },
+        },
+        validAttributes,
+      ),
+    ).toEqual({
+      styleConditions: {
+        width: [{query: {orientation: 'landscape'}, value: 300}],
+      },
+    });
+  });
+
+  it('diff: clears styleConditions (null) when the conditional value is removed', () => {
+    expect(
+      diff(
+        {
+          style: {
+            width: {default: 100, '@media (orientation: landscape)': 300},
+          },
+        },
+        {style: {width: 100}},
+        validAttributes,
+      ),
+    ).toEqual({styleConditions: null});
+  });
+
+  it('diff: emits updated styleConditions when a condition value changes', () => {
+    expect(
+      diff(
+        {
+          style: {
+            width: {default: 100, '@media (orientation: landscape)': 300},
+          },
+        },
+        {
+          style: {
+            width: {default: 100, '@media (orientation: landscape)': 400},
+          },
+        },
+        validAttributes,
+      ),
+    ).toEqual({
+      styleConditions: {
+        width: [{query: {orientation: 'landscape'}, value: 400}],
+      },
+    });
   });
 });

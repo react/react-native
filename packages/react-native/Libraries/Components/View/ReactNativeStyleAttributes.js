@@ -20,6 +20,7 @@ import processBoxShadow from '../../StyleSheet/processBoxShadow';
 import processColor from '../../StyleSheet/processColor';
 import processFilter from '../../StyleSheet/processFilter';
 import processFontVariant from '../../StyleSheet/processFontVariant';
+import {processStyleConditionsProp} from '../../StyleSheet/processStyleConditions';
 import processTransform from '../../StyleSheet/processTransform';
 import processTransformOrigin from '../../StyleSheet/processTransformOrigin';
 import sizesDiffer from '../../Utilities/differ/sizesDiffer';
@@ -283,6 +284,11 @@ const ReactNativeStyleAttributes: {[string]: AnyAttributeType, ...} = {
   resizeMode: true,
   tintColor: colorAttribute,
   objectFit: true,
+
+  /**
+   * Conditional (media-query) styles.
+   */
+  styleConditions: {process: processStyleConditionsProp},
 };
 
 export default ReactNativeStyleAttributes;

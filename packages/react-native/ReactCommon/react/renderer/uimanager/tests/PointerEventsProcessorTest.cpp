@@ -177,6 +177,7 @@ class PointerEventsProcessorTest : public ::testing::Test {
         surfaceId_,
         layoutConstraints,
         layoutContext,
+        ColorScheme::Light,
         *uiManager_,
         *contextContainer);
     shadowTree->commit(

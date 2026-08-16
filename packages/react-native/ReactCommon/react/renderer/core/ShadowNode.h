@@ -254,6 +254,15 @@ class ShadowNode : public Sealable, public DebugStringConvertible, public jsi::N
   void propagateUncullableTraitsFromChildren();
 
   /*
+   * Recomputes the `HasStyleConditionsInSubtree` trait from this node's own
+   * props (non-null `styleConditionData`) and its children's traits. Must run
+   * whenever props or children change so that `resolveStyleConditionsInSubtree`
+   * can prune whole subtrees and skip the whole tree at the root when no
+   * conditional styles are present.
+   */
+  void propagateStyleConditionsTrait();
+
+  /*
    * Transfer the runtime reference to this `ShadowNode` to a new instance,
    * updating the reference to point to the new `ShadowNode` referencing it.
    */

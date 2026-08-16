@@ -7,6 +7,7 @@
 
 #include "Props.h"
 
+#include <react/renderer/core/StyleConditionData.h>
 #include <react/renderer/core/propsConversions.h>
 
 #include <react/featureflags/ReactNativeFeatureFlags.h>
@@ -26,7 +27,14 @@ Props::Props(
           rawProps,
           "nativeID",
           sourceProps.nativeId,
-          {})) {}
+          {})) {
+  styleConditionData = convertRawProp(
+      context,
+      rawProps,
+      "styleConditions",
+      sourceProps.styleConditionData,
+      {});
+}
 
 void Props::setProp(
     const PropsParserContext& context,
@@ -36,6 +44,9 @@ void Props::setProp(
   switch (hash) {
     case CONSTEXPR_RAW_PROPS_KEY_HASH("nativeID"):
       fromRawValue(context, value, nativeId, {});
+      return;
+    case CONSTEXPR_RAW_PROPS_KEY_HASH("styleConditions"):
+      fromRawValue(context, value, styleConditionData);
       return;
   }
 }

@@ -43,7 +43,11 @@ RootShadowNode::Unshared RootShadowNode::clone(
     const LayoutConstraints& layoutConstraints,
     const LayoutContext& layoutContext) const {
   auto props = std::make_shared<const RootProps>(
-      propsParserContext, getConcreteProps(), layoutConstraints, layoutContext);
+      propsParserContext,
+      getConcreteProps(),
+      layoutConstraints,
+      layoutContext,
+      getConcreteProps().colorScheme);
   auto newRootShadowNode = std::make_shared<RootShadowNode>(
       *this,
       ShadowNodeFragment{
@@ -55,6 +59,24 @@ RootShadowNode::Unshared RootShadowNode::clone(
   }
 
   return newRootShadowNode;
+}
+
+RootShadowNode::Unshared RootShadowNode::clone(
+    const PropsParserContext& propsParserContext,
+    ColorScheme colorScheme) const {
+  // Color scheme does not affect layout, so the layout inputs are preserved and
+  // the clone is not marked dirty.
+  auto props = std::make_shared<const RootProps>(
+      propsParserContext,
+      getConcreteProps(),
+      getConcreteProps().layoutConstraints,
+      getConcreteProps().layoutContext,
+      colorScheme);
+  return std::make_shared<RootShadowNode>(
+      *this,
+      ShadowNodeFragment{
+          /* .props = */ props,
+      });
 }
 
 void RootShadowNode::setInstanceHandle(

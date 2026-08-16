@@ -54,6 +54,13 @@ class RootShadowNode final : public ConcreteViewShadowNode<RootComponentName, Ro
       const LayoutConstraints &layoutConstraints,
       const LayoutContext &layoutContext) const;
 
+  /*
+   * Clones the node with a given `colorScheme`, preserving its layout inputs.
+   */
+  RootShadowNode::Unshared clone(
+      const PropsParserContext &propsParserContext,
+      ColorScheme colorScheme) const;
+
   Transform getTransform() const override;
 
   void setInstanceHandle(InstanceHandle::Shared instanceHandle) const;

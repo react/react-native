@@ -91,6 +91,14 @@ class ShadowNodeTraits {
     // **Deprecated**: This trait is deprecated and will be removed in a future
     // version of React Native.
     DirtyYogaNode = 1 << 14,
+
+    // Indicates that this node or one of its descendants carries conditional
+    // (media-query) style values (i.e. non-null `Props::styleConditionData`), so
+    // `resolveStyleConditionsInSubtree` must visit its subtree; a node without
+    // this trait has an entire subtree free of conditional styles and can be
+    // skipped, including skipping the whole tree at the root. Recomputed from
+    // props and children on construction; must not be set directly.
+    HasStyleConditionsInSubtree = 1 << 15,
   };
 
   /*

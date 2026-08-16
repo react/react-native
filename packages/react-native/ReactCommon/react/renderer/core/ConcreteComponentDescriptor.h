@@ -14,6 +14,7 @@
 #include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/renderer/core/ComponentDescriptor.h>
 #include <react/renderer/core/EventDispatcher.h>
+#include <react/renderer/core/StyleConditionData.h>
 #include <react/renderer/core/Props.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/core/ShadowNode.h>
@@ -123,59 +124,48 @@ class ConcreteComponentDescriptor : public ComponentDescriptor {
       ShadowNodeT::filterRawProps(rawProps);
     }
 
-    // Two construction paths:
-    //  - Iterator-setter (only available when `ConcreteProps` satisfies
-    //    `HasIteratorSetterCtor` AND the runtime flag is on): copy-construct
-    //    from sourceProps, then walk rawProps in-place via `forEachItem` and
-    //    route each entry through `setProp`. Skips both
-    //    `RawProps::parse(parser)` and the `folly::dynamic` materialization
-    //    that the legacy path needed.
-    //  - Classic (the fallback for any `ConcreteProps` that doesn't opt in,
-    //    and the only path when the flag is off): parse + per-field
-    //    `convertRawProp` via the 3-arg ctor.
-    constexpr bool kSupportsIteratorSetter = HasIteratorSetterCtor<ConcreteProps>;
-    const bool useIteratorSetter = kSupportsIteratorSetter && ReactNativeFeatureFlags::enableCppPropsIteratorSetter();
+    // Parse updates over the unpatched base, not the (possibly patched)
+    // `props`, otherwise a matched conditional value (by commit hook) would bake in as a base
+    // value and never revert, since JS never re-sends unchanged properties.
+    const auto &sourceProps = props && props->styleConditionData &&
+            props->styleConditionData->unpatchedProps
+        ? props->styleConditionData->unpatchedProps
+        : props;
 
-    std::shared_ptr<ConcreteProps> shadowNodeProps;
-    if constexpr (kSupportsIteratorSetter) {
-      if (useIteratorSetter) {
-        shadowNodeProps = ShadowNodeT::Props(props);
-      }
-    }
-    if (!useIteratorSetter) {
-      rawProps.parse(rawPropsParser_);
-      shadowNodeProps = ShadowNodeT::Props(context, rawProps, props);
-    }
-
-#ifdef RN_SERIALIZABLE_STATE
-    bool fallbackToDynamicRawPropsAccumulation = true;
-    if (ReactNativeFeatureFlags::enableExclusivePropsUpdateAndroid() &&
-        ReactNativeFeatureFlags::enableAccumulatedUpdatesInRawPropsAndroid()) {
-      // When exclusive props update is enabled, we only apply Props 1.5 processing
-      // (raw props merging) when Props 2.0 is not available.
-      if (ReactNativeFeatureFlags::enablePropsUpdateReconciliationAndroid()) {
-        // Cast to base Props reference to safely call virtual method
-        const auto &baseProps = static_cast<const Props &>(*shadowNodeProps);
-        if (strcmp(ShadowNodeT::Name(), baseProps.getDiffPropsImplementationTarget()) == 0) {
-          // Props 2.0 supported for this component, Props 1.5 processing can be skipped
-          fallbackToDynamicRawPropsAccumulation = false;
-        }
-      }
-    }
-    if (fallbackToDynamicRawPropsAccumulation) {
-      ShadowNodeT::initializeDynamicProps(shadowNodeProps, rawProps, props);
-    }
-#endif
-
-    if constexpr (kSupportsIteratorSetter) {
-      if (useIteratorSetter) {
-        rawProps.forEachItem([&](std::string_view name, const RawValue &value) {
-          shadowNodeProps->setProp(context, RAW_PROPS_KEY_HASH(name), name.data(), value);
-        });
-      }
-    }
-    return shadowNodeProps;
+    return parseShadowNodeProps(context, rawProps, sourceProps);
   };
+
+  Props::Shared applyStyleConditionResolution(
+      const PropsParserContext &context,
+      const Props::Shared &props,
+      const StyleConditionResolution &resolution) const override
+  {
+    const auto &data = props->styleConditionData;
+    if (!data || !data->styleConditionProps || resolution == data->resolution) {
+      // Not a conditional node, or the resolution is already applied.
+      return props;
+    }
+
+    // Always patch from the clean base, never from an already-patched props,
+    // so `unpatchedProps` stays a single hop to the true original.
+    const auto &baseProps = data->unpatchedProps ? data->unpatchedProps : props;
+
+    if (!anyConditionMatches(resolution)) {
+      // No condition matches: the base already carries every inline default
+      // (and an all-default resolution), so it is the resolved props.
+      return baseProps;
+    }
+
+    auto patch = buildStyleConditionPatch(*data->styleConditionProps, resolution);
+    auto patchRawProps = RawProps(std::move(patch));
+
+    auto newProps = parseShadowNodeProps(context, patchRawProps, baseProps);
+    newProps->styleConditionData = std::make_shared<const StyleConditionData>(StyleConditionData{
+        .styleConditionProps = data->styleConditionProps,
+        .resolution = resolution,
+        .unpatchedProps = baseProps});
+    return newProps;
+  }
 
   virtual State::Shared createInitialState(const Props::Shared &props, const ShadowNodeFamily::Shared &family)
       const override
@@ -216,6 +206,69 @@ class ConcreteComponentDescriptor : public ComponentDescriptor {
   {
     // Default implementation does nothing.
     react_native_assert(shadowNode.getComponentHandle() == getComponentHandle());
+  }
+
+ private:
+  /*
+   * Constructs a typed props object by applying `rawProps` on top of
+   * `sourceProps`, via one of two paths:
+   *  - Iterator-setter (only available when `ConcreteProps` satisfies
+   *    `HasIteratorSetterCtor` AND the runtime flag is on): copy-construct
+   *    from sourceProps, then walk rawProps in-place via `forEachItem` and
+   *    route each entry through `setProp`. Skips both
+   *    `RawProps::parse(parser)` and the `folly::dynamic` materialization
+   *    that the legacy path needed.
+   *  - Classic (the fallback for any `ConcreteProps` that doesn't opt in,
+   *    and the only path when the flag is off): parse + per-field
+   *    `convertRawProp` via the 3-arg ctor.
+   */
+  typename ShadowNodeT::UnsharedConcreteProps parseShadowNodeProps(
+      const PropsParserContext &context,
+      RawProps &rawProps,
+      const Props::Shared &sourceProps) const
+  {
+    constexpr bool kSupportsIteratorSetter = HasIteratorSetterCtor<ConcreteProps>;
+    const bool useIteratorSetter = kSupportsIteratorSetter && ReactNativeFeatureFlags::enableCppPropsIteratorSetter();
+
+    std::shared_ptr<ConcreteProps> shadowNodeProps;
+    if constexpr (kSupportsIteratorSetter) {
+      if (useIteratorSetter) {
+        shadowNodeProps = ShadowNodeT::Props(sourceProps);
+      }
+    }
+    if (!useIteratorSetter) {
+      rawProps.parse(rawPropsParser_);
+      shadowNodeProps = ShadowNodeT::Props(context, rawProps, sourceProps);
+    }
+
+#ifdef RN_SERIALIZABLE_STATE
+    bool fallbackToDynamicRawPropsAccumulation = true;
+    if (ReactNativeFeatureFlags::enableExclusivePropsUpdateAndroid() &&
+        ReactNativeFeatureFlags::enableAccumulatedUpdatesInRawPropsAndroid()) {
+      // When exclusive props update is enabled, we only apply Props 1.5 processing
+      // (raw props merging) when Props 2.0 is not available.
+      if (ReactNativeFeatureFlags::enablePropsUpdateReconciliationAndroid()) {
+        // Cast to base Props reference to safely call virtual method
+        const auto &baseProps = static_cast<const Props &>(*shadowNodeProps);
+        if (strcmp(ShadowNodeT::Name(), baseProps.getDiffPropsImplementationTarget()) == 0) {
+          // Props 2.0 supported for this component, Props 1.5 processing can be skipped
+          fallbackToDynamicRawPropsAccumulation = false;
+        }
+      }
+    }
+    if (fallbackToDynamicRawPropsAccumulation) {
+      ShadowNodeT::initializeDynamicProps(shadowNodeProps, rawProps, sourceProps);
+    }
+#endif
+
+    if constexpr (kSupportsIteratorSetter) {
+      if (useIteratorSetter) {
+        rawProps.forEachItem([&](std::string_view name, const RawValue &value) {
+          shadowNodeProps->setProp(context, RAW_PROPS_KEY_HASH(name), name.data(), value);
+        });
+      }
+    }
+    return shadowNodeProps;
   }
 };
 

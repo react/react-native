@@ -9,6 +9,7 @@
 
 #include <react/renderer/core/EventDispatcher.h>
 #include <react/renderer/core/InstanceHandle.h>
+#include <react/renderer/core/StyleConditionPrimitives.h>
 #include <react/renderer/core/Props.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/core/RawPropsParser.h>
@@ -103,6 +104,19 @@ class ComponentDescriptor {
    */
   virtual Props::Shared cloneProps(const PropsParserContext &context, const Props::Shared &props, RawProps rawProps)
       const = 0;
+
+  /*
+   * Re-resolves the conditional (media-query) props of `props` for the given
+   * resolution. Returns `props` unchanged if the
+   * resolution is already applied.
+   */
+  virtual Props::Shared applyStyleConditionResolution(
+      const PropsParserContext &context,
+      const Props::Shared &props,
+      const StyleConditionResolution &resolution) const
+  {
+    return props;
+  }
 
   /*
    * Create an initial State object that represents (and contains) an initial

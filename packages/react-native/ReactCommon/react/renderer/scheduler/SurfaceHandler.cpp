@@ -56,6 +56,7 @@ void SurfaceHandler::start() const noexcept {
       parameters.surfaceId,
       parameters.layoutConstraints,
       parameters.layoutContext,
+      parameters.colorScheme,
       *link_.uiManager,
       *parameters.contextContainer);
 
@@ -244,6 +245,36 @@ void SurfaceHandler::constraintLayout(
         [&](const RootShadowNode& oldRootShadowNode) {
           return oldRootShadowNode.clone(
               propsParserContext, layoutConstraints, layoutContext);
+        },
+        {/* default commit options */});
+  }
+}
+
+void SurfaceHandler::setColorScheme(ColorScheme colorScheme) const {
+  TraceSection s("SurfaceHandler::setColorScheme");
+  {
+    std::unique_lock lock(parametersMutex_);
+    if (parameters_.colorScheme == colorScheme) {
+      return;
+    }
+    parameters_.colorScheme = colorScheme;
+  }
+
+  {
+    std::shared_lock lock(linkMutex_);
+
+    if (link_.status != Status::Running) {
+      return;
+    }
+
+    PropsParserContext propsParserContext{
+        parameters_.surfaceId, *parameters_.contextContainer};
+
+    react_native_assert(
+        link_.shadowTree && "`link_.shadowTree` must not be null.");
+    link_.shadowTree->commit(
+        [&](const RootShadowNode& oldRootShadowNode) {
+          return oldRootShadowNode.clone(propsParserContext, colorScheme);
         },
         {/* default commit options */});
   }

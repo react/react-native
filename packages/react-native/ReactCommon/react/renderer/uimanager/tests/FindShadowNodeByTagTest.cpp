@@ -115,6 +115,7 @@ class FindShadowNodeByTagTest : public ::testing::Test {
         surfaceId_,
         layoutConstraints,
         layoutContext,
+        ColorScheme::Light,
         *uiManager_,
         *contextContainer_);
 

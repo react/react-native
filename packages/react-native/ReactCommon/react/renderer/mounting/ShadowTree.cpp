@@ -13,6 +13,7 @@
 #include <react/renderer/components/root/RootComponentDescriptor.h>
 #include <react/renderer/core/LayoutContext.h>
 #include <react/renderer/core/LayoutPrimitives.h>
+#include <react/renderer/core/StyleConditionResolver.h>
 #include <react/renderer/mounting/ShadowTreeRevision.h>
 #include <react/renderer/mounting/ShadowViewMutation.h>
 #include <react/renderer/telemetry/TransactionTelemetry.h>
@@ -20,10 +21,23 @@
 
 #include "ShadowTreeDelegate.h"
 
+#include <cmath>
+
 namespace facebook::react {
 
 namespace {
 const int MAX_COMMIT_ATTEMPTS_BEFORE_LOCKING = 3;
+
+#ifndef __ANDROID__
+// The orientation for `@media (orientation)` is derived from the
+// surface's own viewport
+Orientation orientationOf(const RootShadowNode& rootShadowNode) {
+  auto size = rootShadowNode.getConcreteProps().layoutConstraints.maximumSize;
+  bool isLandscape = std::isfinite(size.width) && std::isfinite(size.height) &&
+      size.width > size.height;
+  return isLandscape ? Orientation::Landscape : Orientation::Portrait;
+}
+#endif
 
 std::string getShadowTreeCommitSourceName(ShadowTreeCommitSource source) {
   switch (source) {
@@ -226,9 +240,12 @@ ShadowTree::ShadowTree(
     SurfaceId surfaceId,
     const LayoutConstraints& layoutConstraints,
     const LayoutContext& layoutContext,
+    ColorScheme colorScheme,
     const ShadowTreeDelegate& delegate,
     const ContextContainer& contextContainer)
-    : surfaceId_(surfaceId), delegate_(delegate) {
+    : surfaceId_(surfaceId),
+      delegate_(delegate),
+      contextContainer_(contextContainer) {
   static RootComponentDescriptor globalRootComponentDescriptor(
       ComponentDescriptorParameters{
           .eventDispatcher = EventDispatcher::Shared{},
@@ -239,7 +256,8 @@ ShadowTree::ShadowTree(
       PropsParserContext{surfaceId, contextContainer},
       *RootShadowNode::defaultSharedProps(),
       layoutConstraints,
-      layoutContext);
+      layoutContext,
+      colorScheme);
 
   auto family = globalRootComponentDescriptor.createFamily(
       {.tag = surfaceId, .surfaceId = surfaceId, .instanceHandle = nullptr});
@@ -404,6 +422,24 @@ CommitStatus ShadowTree::tryCommit(
   if (!newRootShadowNode) {
     return CommitStatus::Cancelled;
   }
+
+// Gate it on Android until conditional styles are supported there.
+#ifndef __ANDROID__
+  // Resolve conditional (media-query) styles against the environment carried
+  // by the root (color scheme on `RootProps`, orientation from the viewport)
+  {
+    PropsParserContext propsParserContext{surfaceId_, contextContainer_};
+    auto resolved = resolveStyleConditionsInSubtree(
+        newRootShadowNode,
+        newRootShadowNode->getConcreteProps().colorScheme,
+        orientationOf(*newRootShadowNode),
+        propsParserContext);
+    if (resolved != newRootShadowNode) {
+      newRootShadowNode = std::static_pointer_cast<RootShadowNode>(
+          std::const_pointer_cast<ShadowNode>(resolved));
+    }
+  }
+#endif
 
   // Layout nodes.
   std::vector<const LayoutableShadowNode*> affectedLayoutableNodes{};

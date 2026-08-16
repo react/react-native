@@ -325,6 +325,11 @@ const APIs: Array<RNTesterModuleInfo> = (
       module: require('../examples/LinearGradient/LinearGradientExample'),
     },
     {
+      key: 'MediaQueriesExample',
+      category: 'UI',
+      module: require('../examples/MediaQueries/MediaQueriesExample'),
+    },
+    {
       key: 'RadialGradientExample',
       category: 'UI',
       module: require('../examples/RadialGradient/RadialGradientExample'),
