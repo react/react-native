@@ -43,12 +43,18 @@ Pod::Spec.new do |s|
   s.platforms              = min_supported_versions
   s.source                 = source
   s.source_files         = podspec_sources("react/renderer/components/image/**/*.{m,mm,cpp,h}", "react/renderer/components/image/**/*.h")
-  s.exclude_files        = "react/renderer/components/image/tests"
+  s.exclude_files        = ["react/renderer/components/image/tests", "react/renderer/components/image/React"]
   s.header_dir           = "react/renderer/components/image"
   s.pod_target_xcconfig = { "USE_HEADERMAP" => "YES",
                             "CLANG_CXX_LANGUAGE_STANDARD" => rct_cxx_language_standard(),
                             "HEADER_SEARCH_PATHS" => header_search_path.join(" ")
                           }
+
+  s.subspec "ImageUmbrella" do |ss|
+    ss.source_files        = "react/renderer/components/image/React/*.h"
+    ss.header_dir          = "React"
+    ss.header_mappings_dir = "react/renderer/components/image/React"
+  end
 
   resolve_use_frameworks(s, header_mappings_dir: './', module_name: "React_FabricImage")
 
@@ -60,6 +66,7 @@ Pod::Spec.new do |s|
   s.dependency "React-featureflags"
   s.dependency "React-utils"
   s.dependency "Yoga"
+  s.dependency "React-cxxstableapi"
 
   add_dependency(s, "React-ImageManager", :additional_framework_paths => [
     "react/renderer/components/view/platform/cxx",
