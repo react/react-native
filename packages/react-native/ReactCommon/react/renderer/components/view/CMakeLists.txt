@@ -30,6 +30,7 @@ target_link_libraries(rrc_view
         glog_init
         jsi
         logger
+        react_cxxstableapi
         react_debug
         react_renderer_core
         react_renderer_css

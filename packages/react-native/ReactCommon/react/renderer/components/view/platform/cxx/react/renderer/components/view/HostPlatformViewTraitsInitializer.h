@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <react/renderer/components/view/ViewProps.h>
 #include <react/renderer/core/ShadowNodeTraits.h>
 

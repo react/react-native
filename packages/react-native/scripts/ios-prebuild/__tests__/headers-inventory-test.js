@@ -56,6 +56,47 @@ describe('scanHeader include classification', () => {
       {token: 'b.h', cxxGuarded: true},
     ]);
   });
+
+  test('includes for non-iOS platforms are ignored', () => {
+    const src = [
+      '#ifdef ANDROID',
+      '#include <android/only.h>',
+      '#endif',
+      '#if defined(TARGET_OS_OSX) && TARGET_OS_OSX',
+      '#include <macos/only.h>',
+      '#endif',
+      '#if defined(USE_WINUI_FABRIC)',
+      '#include <windows/only.h>',
+      '#endif',
+      '#include <ios/available.h>',
+      '',
+    ].join('\n');
+    expect(scanHeader(src).includes).toEqual([
+      {token: 'ios/available.h', cxxGuarded: false},
+    ]);
+  });
+
+  test('#else after a non-iOS platform guard is scanned', () => {
+    const src = [
+      '#ifdef ANDROID',
+      '#include <android/only.h>',
+      '#else',
+      '#include <ios/available.h>',
+      '#endif',
+      '',
+    ].join('\n');
+    expect(scanHeader(src).includes).toEqual([
+      {token: 'ios/available.h', cxxGuarded: false},
+    ]);
+  });
+
+  test('unknown platform conditions remain conservatively scanned', () => {
+    const src =
+      '#ifdef UNKNOWN_PLATFORM\n#include <maybe/available.h>\n#endif\n';
+    expect(scanHeader(src).includes).toEqual([
+      {token: 'maybe/available.h', cxxGuarded: false},
+    ]);
+  });
 });
 
 describe('scanHeader C++ / ObjC surface detection', () => {

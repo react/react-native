@@ -114,6 +114,12 @@ const PodspecExceptions /*: {[key: string]: PodSpecConfiguration} */ = {
           },
 
           {
+            name: 'viewUmbrella',
+            headerPatterns: ['react/renderer/components/view/React/*.h'],
+            headerDir: 'React',
+          },
+
+          {
             name: 'scrollview',
             headerPatterns: ['react/renderer/components/scrollview/**/*.h'],
             headerDir: 'react/renderer/components/scrollview',
