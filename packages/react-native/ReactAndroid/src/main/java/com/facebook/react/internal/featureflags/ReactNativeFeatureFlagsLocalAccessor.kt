@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<9ae32c46a5a6310ef96eb91c9ea5b12e>>
+ * @generated SignedSource<<675f3186fc6ae8d242dd6785cbb123cf>>
  */
 
 /**
@@ -67,6 +67,7 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
   private var enableNativeCSSParsingCache: Boolean? = null
   private var enablePreparedTextLayoutCache: Boolean? = null
   private var enablePropsUpdateReconciliationAndroidCache: Boolean? = null
+  private var enableRelaxedLinkRoleCache: Boolean? = null
   private var enableRuntimeSchedulerQueueClearingOnErrorCache: Boolean? = null
   private var enableSchedulerDelegateInvalidationCache: Boolean? = null
   private var enableSwiftUIBasedFiltersCache: Boolean? = null
@@ -538,6 +539,16 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
       cached = currentProvider.enablePropsUpdateReconciliationAndroid()
       accessedFeatureFlags.add("enablePropsUpdateReconciliationAndroid")
       enablePropsUpdateReconciliationAndroidCache = cached
+    }
+    return cached
+  }
+
+  override fun enableRelaxedLinkRole(): Boolean {
+    var cached = enableRelaxedLinkRoleCache
+    if (cached == null) {
+      cached = currentProvider.enableRelaxedLinkRole()
+      accessedFeatureFlags.add("enableRelaxedLinkRole")
+      enableRelaxedLinkRoleCache = cached
     }
     return cached
   }

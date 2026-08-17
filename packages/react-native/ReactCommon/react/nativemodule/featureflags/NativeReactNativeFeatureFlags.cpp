@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<9c49f2c73941bd43c3a2ab68eb561b6e>>
+ * @generated SignedSource<<91d16da08640a13288354cfd7f76dc84>>
  */
 
 /**
@@ -257,6 +257,11 @@ bool NativeReactNativeFeatureFlags::enablePreparedTextLayout(
 bool NativeReactNativeFeatureFlags::enablePropsUpdateReconciliationAndroid(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::enablePropsUpdateReconciliationAndroid();
+}
+
+bool NativeReactNativeFeatureFlags::enableRelaxedLinkRole(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::enableRelaxedLinkRole();
 }
 
 bool NativeReactNativeFeatureFlags::enableRuntimeSchedulerQueueClearingOnError(

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<a629be7af38470ec0cff8391dad1ee1e>>
+ * @generated SignedSource<<9bdf848a6d63e53f73570aebe566ddbd>>
  */
 
 /**
@@ -430,6 +430,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::enablePropsUpdateReconciliationAndroid();
+  }
+
+  bool enableRelaxedLinkRole() override {
+    auto value = values_["enableRelaxedLinkRole"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::enableRelaxedLinkRole();
   }
 
   bool enableRuntimeSchedulerQueueClearingOnError() override {

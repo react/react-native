@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<196ba25b807fd064ca6150c7d2cd741c>>
+ * @generated SignedSource<<5989be950dd342f750fd18652dd63534>>
  */
 
 /**
@@ -253,6 +253,11 @@ class ReactNativeFeatureFlags {
    * When enabled, Android will receive prop updates based on the differences between the last rendered shadow node and the last committed shadow node.
    */
   RN_EXPORT static bool enablePropsUpdateReconciliationAndroid();
+
+  /**
+   * When enabled, inline text with a link-like role produces a ClickableSpan and appears in the TalkBack links rotor.
+   */
+  RN_EXPORT static bool enableRelaxedLinkRole();
 
   /**
    * When enabled, RuntimeScheduler_Modern clears pending tasks and rendering updates before handling an error.

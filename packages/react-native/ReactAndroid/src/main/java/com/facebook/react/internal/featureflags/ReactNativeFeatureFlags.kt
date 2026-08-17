@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<2fc347cdb33327437d29e5fd91e24011>>
+ * @generated SignedSource<<09455266e2f609cf7874d35018493dbd>>
  */
 
 /**
@@ -287,6 +287,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun enablePropsUpdateReconciliationAndroid(): Boolean = accessor.enablePropsUpdateReconciliationAndroid()
+
+  /**
+   * When enabled, inline text with a link-like role produces a ClickableSpan and appears in the TalkBack links rotor.
+   */
+  @JvmStatic
+  public fun enableRelaxedLinkRole(): Boolean = accessor.enableRelaxedLinkRole()
 
   /**
    * When enabled, RuntimeScheduler_Modern clears pending tasks and rendering updates before handling an error.

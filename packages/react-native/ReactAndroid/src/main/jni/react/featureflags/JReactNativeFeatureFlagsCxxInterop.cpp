@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<28de1e205f30135e96d5cb94a902faec>>
+ * @generated SignedSource<<8cea4c9c393c9deee077f778c4c4a152>>
  */
 
 /**
@@ -294,6 +294,12 @@ class ReactNativeFeatureFlagsJavaProvider
   bool enablePropsUpdateReconciliationAndroid() override {
     static const auto method =
         getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enablePropsUpdateReconciliationAndroid");
+    return method(javaProvider_);
+  }
+
+  bool enableRelaxedLinkRole() override {
+    static const auto method =
+        getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enableRelaxedLinkRole");
     return method(javaProvider_);
   }
 
@@ -780,6 +786,11 @@ bool JReactNativeFeatureFlagsCxxInterop::enablePropsUpdateReconciliationAndroid(
   return ReactNativeFeatureFlags::enablePropsUpdateReconciliationAndroid();
 }
 
+bool JReactNativeFeatureFlagsCxxInterop::enableRelaxedLinkRole(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
+  return ReactNativeFeatureFlags::enableRelaxedLinkRole();
+}
+
 bool JReactNativeFeatureFlagsCxxInterop::enableRuntimeSchedulerQueueClearingOnError(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
   return ReactNativeFeatureFlags::enableRuntimeSchedulerQueueClearingOnError();
@@ -1160,6 +1171,9 @@ void JReactNativeFeatureFlagsCxxInterop::registerNatives() {
       makeNativeMethod(
         "enablePropsUpdateReconciliationAndroid",
         JReactNativeFeatureFlagsCxxInterop::enablePropsUpdateReconciliationAndroid),
+      makeNativeMethod(
+        "enableRelaxedLinkRole",
+        JReactNativeFeatureFlagsCxxInterop::enableRelaxedLinkRole),
       makeNativeMethod(
         "enableRuntimeSchedulerQueueClearingOnError",
         JReactNativeFeatureFlagsCxxInterop::enableRuntimeSchedulerQueueClearingOnError),
