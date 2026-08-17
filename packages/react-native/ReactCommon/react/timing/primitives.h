@@ -62,8 +62,19 @@ class HighResDuration {
   // @see https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp
   static constexpr HighResDuration fromDOMHighResTimeStamp(double units)
   {
-    auto nanoseconds = static_cast<int64_t>(units * 1e6);
-    return fromNanoseconds(nanoseconds);
+    double nanoseconds = units * 1e6;
+    // Both the conversion to milliseconds and the multiplication back are
+    // inexact, so `nanoseconds` often lands just below the original count.
+    // Rounding to the nearest nanosecond (rather than truncating towards zero)
+    // is what makes the round trip through a DOMHighResTimeStamp lossless.
+    auto result = static_cast<int64_t>(nanoseconds);
+    auto remainder = nanoseconds - static_cast<double>(result);
+    if (remainder >= 0.5) {
+      result++;
+    } else if (remainder <= -0.5) {
+      result--;
+    }
+    return fromNanoseconds(result);
   }
 
   // @see https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp
@@ -227,8 +238,9 @@ class HighResTimeStamp {
   // @see https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp
   static constexpr HighResTimeStamp fromDOMHighResTimeStamp(double units)
   {
-    auto nanoseconds = static_cast<int64_t>(units * 1e6);
-    return HighResTimeStamp(std::chrono::steady_clock::time_point(std::chrono::nanoseconds(nanoseconds)));
+    return HighResTimeStamp(
+        std::chrono::steady_clock::time_point(
+            static_cast<std::chrono::steady_clock::duration>(HighResDuration::fromDOMHighResTimeStamp(units))));
   }
 
   // @see https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp
