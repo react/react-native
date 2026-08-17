@@ -196,6 +196,11 @@ val preparePrefab by
                           "react/renderer/components/text/",
                       ),
                       Pair(
+                          "../ReactCommon/react/renderer/components/text/React/",
+                          "React/",
+                      ),
+                      Pair("../ReactCommon/react/renderer/components/text/platform/android/", ""),
+                      Pair(
                           "../ReactCommon/react/renderer/attributedstring",
                           "react/renderer/attributedstring",
                       ),
