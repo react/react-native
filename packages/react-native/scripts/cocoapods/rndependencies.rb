@@ -49,7 +49,7 @@ def add_rn_third_party_dependencies(s)
         header_search_paths << "$(PODS_ROOT)/RCT-Folly"
 
         # uniq so a second call on the same spec can't duplicate entries.
-        current_pod_target_xcconfig["HEADER_SEARCH_PATHS"] = header_search_paths.uniq
+        current_pod_target_xcconfig["HEADER_SEARCH_PATHS"] = header_search_paths.uniq.map { |path| path =~ /\s/ ? "\"#{path}\"" : path }
     else
         # Prebuilt-deps mode: this pod SELF-SERVES the third-party headers from its
         # own xcframework (incl. SocketRocket - sole supplier in this mode). See
@@ -65,7 +65,7 @@ def add_rn_third_party_dependencies(s)
         header_search_paths << "$(PODS_ROOT)/ReactNativeDependencies/Headers"
 
         # uniq so a second call on the same spec can't duplicate entries.
-        current_pod_target_xcconfig["HEADER_SEARCH_PATHS"] = header_search_paths.uniq
+        current_pod_target_xcconfig["HEADER_SEARCH_PATHS"] = header_search_paths.uniq.map { |path| path =~ /\s/ ? "\"#{path}\"" : path }
     end
 
     s.pod_target_xcconfig = current_pod_target_xcconfig
