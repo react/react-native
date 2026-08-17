@@ -172,6 +172,10 @@ val preparePrefab by
                           "../ReactCommon/react/renderer/components/view/",
                           "react/renderer/components/view/",
                       ),
+                      Pair(
+                          "../ReactCommon/react/renderer/components/view/React/",
+                          "React/",
+                      ),
                       Pair("../ReactCommon/react/renderer/components/view/platform/android/", ""),
                       // rrc_root
                       Pair(

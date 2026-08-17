@@ -128,9 +128,9 @@ const SDK_PREFIXES = new Set([
 /**
  * Scans a header's text line by line, tracking the preprocessor-conditional
  * stack just enough to know whether a line is only compiled under
- * `__cplusplus`. Returns the include list and language-marker observations.
- * Heuristic by design: nested #if logic beyond __cplusplus is treated as
- * "other" and ignored.
+ * `__cplusplus` or is unreachable in the iOS packaged layout. Returns the
+ * include list and language-marker observations. Heuristic by design: unknown
+ * #if logic is treated as "other" and scanned conservatively.
  */
 function scanHeader(text /*: string */) /*: {
   includes: Array<IncludeRef>,
@@ -143,9 +143,28 @@ function scanHeader(text /*: string */) /*: {
   let hasUnguardedCxx = false;
   let hasGuardedCxx = false;
 
-  // Stack frames: 'cpp' (only under __cplusplus), 'notcpp', 'other'.
-  const stack /*: Array<'cpp' | 'notcpp' | 'other'> */ = [];
+  // Stack frames: 'cpp' (only under __cplusplus), 'notcpp', 'inactive'
+  // (known to be excluded from an iOS build), or 'other'.
+  const stack /*: Array<'cpp' | 'notcpp' | 'inactive' | 'other'> */ = [];
   const inCxxOnly = () => stack.includes('cpp');
+  const isInactive = () => stack.includes('inactive');
+  const isKnownInactiveIosCondition = (
+    directive /*: string */,
+    expression /*: string */,
+  ) /*: boolean */ => {
+    const trimmed = expression.trim();
+    if (directive === 'ifdef') {
+      return trimmed === 'ANDROID' || trimmed === 'USE_WINUI_FABRIC';
+    }
+    if (directive !== 'if' && directive !== 'elif') {
+      return false;
+    }
+    return (
+      /^defined\s+(?:ANDROID|USE_WINUI_FABRIC)$/.test(trimmed) ||
+      /^defined\s*\(\s*(?:ANDROID|USE_WINUI_FABRIC)\s*\)$/.test(trimmed) ||
+      /^defined\s*\(\s*TARGET_OS_OSX\s*\)\s*&&\s*TARGET_OS_OSX$/.test(trimmed)
+    );
+  };
 
   const includeRe = /^\s*#\s*(?:include|import)\s+(?:<([^>]+)>|"([^"]+)")/;
   const objcRe =
@@ -183,10 +202,14 @@ function scanHeader(text /*: string */) /*: {
       const mentionsCpp = /__cplusplus/.test(rest);
       if (directive === 'ifdef' || directive === 'if') {
         stack.push(
-          mentionsCpp &&
-            !/!\s*defined|defined\s*\(\s*__cplusplus\s*\)\s*==\s*0/.test(rest)
-            ? 'cpp'
-            : 'other',
+          isKnownInactiveIosCondition(directive, rest)
+            ? 'inactive'
+            : mentionsCpp &&
+                !/!\s*defined|defined\s*\(\s*__cplusplus\s*\)\s*==\s*0/.test(
+                  rest,
+                )
+              ? 'cpp'
+              : 'other',
         );
       } else if (directive === 'ifndef') {
         stack.push(mentionsCpp ? 'notcpp' : 'other');
@@ -197,10 +220,20 @@ function scanHeader(text /*: string */) /*: {
         );
       } else if (directive === 'elif') {
         stack.pop();
-        stack.push(mentionsCpp ? 'cpp' : 'other');
+        stack.push(
+          isKnownInactiveIosCondition(directive, rest)
+            ? 'inactive'
+            : mentionsCpp
+              ? 'cpp'
+              : 'other',
+        );
       } else if (directive === 'endif') {
         stack.pop();
       }
+      continue;
+    }
+
+    if (isInactive()) {
       continue;
     }
 

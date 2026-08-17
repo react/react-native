@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <react/renderer/components/view/PointerEvent.h>
 #include <react/renderer/components/view/TouchEvent.h>
 #include <react/renderer/core/EventEmitter.h>
