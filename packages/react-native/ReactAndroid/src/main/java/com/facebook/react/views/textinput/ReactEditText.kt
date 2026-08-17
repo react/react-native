@@ -857,9 +857,9 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
         if (fontWeight == ReactConstants.UNSET) ReactFontManager.TypefaceStyle.NORMAL
         else fontWeight
     stripSpansOfKind(sb, CustomStyleSpan::class.java) { span: CustomStyleSpan ->
-      span.style == effectiveFontStyle &&
+      span.effectiveStyle == effectiveFontStyle &&
           span.fontFamily == fontFamily &&
-          span.weight == effectiveFontWeight &&
+          span.effectiveWeight == effectiveFontWeight &&
           span.fontFeatureSettings == fontFeatureSettings &&
           span.fontVariationSettings == parsedFontVariationSettings
     }

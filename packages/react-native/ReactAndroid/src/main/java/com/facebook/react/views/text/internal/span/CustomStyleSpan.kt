@@ -26,21 +26,38 @@ import com.facebook.react.views.text.ReactTypefaceUtils
  * If the right font is not found in the assets folder CustomStyleSpan will fallback on the most
  * appropriate default typeface depending on the style. Fonts are retrieved and cached using the
  * [ReactFontManager]
+ *
+ * Construct this with named arguments. Several parameters share a type — three `String?` and two
+ * `Boolean` — so a transposed pair compiles cleanly and misrenders silently. Kotlin cannot enforce
+ * naming at the call site, so the convention is the only guard.
  */
 internal class CustomStyleSpan(
-    private val privateStyle: Int,
-    private val privateWeight: Int,
+    private val fontStyle: Int,
+    private val fontWeight: Int,
     val fontFeatureSettings: String?,
     val fontVariationSettings: String?,
     val fontFamily: String?,
     private val assetManager: AssetManager,
     private val fontWeightAdjustment: Int = 0,
 ) : MetricAffectingSpan(), ReactSpan {
+  /**
+   * [fontStyle] with [ReactConstants.UNSET] resolved to the face that is actually drawn.
+   *
+   * The unresolved value is what reaches the typeface lookup, which reads [ReactConstants.UNSET] as
+   * "take this axis from the other one" — an unset weight becomes bold when the style carries the
+   * bold bit. Resolving in place would lose that, so the two values are kept apart.
+   */
+  val effectiveStyle: Int = if (fontStyle == ReactConstants.UNSET) Typeface.NORMAL else fontStyle
+
+  /** [fontWeight] with [ReactConstants.UNSET] resolved to the weight that is actually drawn. */
+  val effectiveWeight: Int =
+      if (fontWeight == ReactConstants.UNSET) ReactFontManager.TypefaceStyle.NORMAL else fontWeight
+
   override fun updateDrawState(ds: TextPaint) {
     apply(
         ds,
-        privateStyle,
-        privateWeight,
+        fontStyle,
+        fontWeight,
         fontFeatureSettings,
         fontVariationSettings,
         fontFamily,
@@ -52,8 +69,8 @@ internal class CustomStyleSpan(
   override fun updateMeasureState(paint: TextPaint) {
     apply(
         paint,
-        privateStyle,
-        privateWeight,
+        fontStyle,
+        fontWeight,
         fontFeatureSettings,
         fontVariationSettings,
         fontFamily,
@@ -61,22 +78,6 @@ internal class CustomStyleSpan(
         fontWeightAdjustment,
     )
   }
-
-  val style: Int
-    get() =
-        if (privateStyle == ReactConstants.UNSET) {
-          Typeface.NORMAL
-        } else {
-          privateStyle
-        }
-
-  val weight: Int
-    get() =
-        if (privateWeight == ReactConstants.UNSET) {
-          ReactFontManager.TypefaceStyle.NORMAL
-        } else {
-          privateWeight
-        }
 
   companion object {
     private fun apply(
