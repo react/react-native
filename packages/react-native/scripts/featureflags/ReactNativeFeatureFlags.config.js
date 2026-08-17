@@ -393,6 +393,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    enableInteractableResponderViews: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-08-07',
+        description:
+          'Android views that declare a gesture-responder handler (e.g. PanResponder) register a no-op touch listener so they can be recognized as interactable.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
     enableInteropViewManagerClassLookUpOptimizationIOS: {
       defaultValue: false,
       metadata: {

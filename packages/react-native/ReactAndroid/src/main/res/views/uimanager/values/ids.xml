@@ -82,4 +82,7 @@
 
   <!-- tag is used to store important_for_interaction state -->
   <item type="id" name="important_for_interaction"/>
+
+  <!-- tag marks that BaseViewManager installed the no-op touch listener -->
+  <item type="id" name="noop_touch_listener"/>
 </resources>

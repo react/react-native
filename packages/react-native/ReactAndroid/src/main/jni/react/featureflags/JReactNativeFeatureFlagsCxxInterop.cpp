@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<28de1e205f30135e96d5cb94a902faec>>
+ * @generated SignedSource<<d961f98c7fe7188d3d8dc1905969a6c4>>
  */
 
 /**
@@ -228,6 +228,12 @@ class ReactNativeFeatureFlagsJavaProvider
   bool enableImperativeFocus() override {
     static const auto method =
         getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enableImperativeFocus");
+    return method(javaProvider_);
+  }
+
+  bool enableInteractableResponderViews() override {
+    static const auto method =
+        getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enableInteractableResponderViews");
     return method(javaProvider_);
   }
 
@@ -725,6 +731,11 @@ bool JReactNativeFeatureFlagsCxxInterop::enableImperativeFocus(
   return ReactNativeFeatureFlags::enableImperativeFocus();
 }
 
+bool JReactNativeFeatureFlagsCxxInterop::enableInteractableResponderViews(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
+  return ReactNativeFeatureFlags::enableInteractableResponderViews();
+}
+
 bool JReactNativeFeatureFlagsCxxInterop::enableInteropViewManagerClassLookUpOptimizationIOS(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
   return ReactNativeFeatureFlags::enableInteropViewManagerClassLookUpOptimizationIOS();
@@ -1127,6 +1138,9 @@ void JReactNativeFeatureFlagsCxxInterop::registerNatives() {
       makeNativeMethod(
         "enableImperativeFocus",
         JReactNativeFeatureFlagsCxxInterop::enableImperativeFocus),
+      makeNativeMethod(
+        "enableInteractableResponderViews",
+        JReactNativeFeatureFlagsCxxInterop::enableInteractableResponderViews),
       makeNativeMethod(
         "enableInteropViewManagerClassLookUpOptimizationIOS",
         JReactNativeFeatureFlagsCxxInterop::enableInteropViewManagerClassLookUpOptimizationIOS),

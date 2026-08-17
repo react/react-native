@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<1ef72233f02973021b83bd2e2aa1f69b>>
+ * @generated SignedSource<<f2f7056ba727479213f1a0a18d70ee3b>>
  */
 
 /**
@@ -91,6 +91,8 @@ public object ReactNativeFeatureFlagsCxxInterop {
   @DoNotStrip @JvmStatic public external fun enableImmediateUpdateModeForContentOffsetChanges(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enableImperativeFocus(): Boolean
+
+  @DoNotStrip @JvmStatic public external fun enableInteractableResponderViews(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enableInteropViewManagerClassLookUpOptimizationIOS(): Boolean
 

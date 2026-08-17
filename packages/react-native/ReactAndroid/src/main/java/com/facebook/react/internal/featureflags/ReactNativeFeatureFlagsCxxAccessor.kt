@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<a506d2515fce404e19bd61099cc60117>>
+ * @generated SignedSource<<3adaf496717c56f69757170a5b8208c0>>
  */
 
 /**
@@ -52,6 +52,7 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
   private var enableImageTransparentTintColorCache: Boolean? = null
   private var enableImmediateUpdateModeForContentOffsetChangesCache: Boolean? = null
   private var enableImperativeFocusCache: Boolean? = null
+  private var enableInteractableResponderViewsCache: Boolean? = null
   private var enableInteropViewManagerClassLookUpOptimizationIOSCache: Boolean? = null
   private var enableIntersectionObserverByDefaultCache: Boolean? = null
   private var enableKeyEventsCache: Boolean? = null
@@ -392,6 +393,15 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
     if (cached == null) {
       cached = ReactNativeFeatureFlagsCxxInterop.enableImperativeFocus()
       enableImperativeFocusCache = cached
+    }
+    return cached
+  }
+
+  override fun enableInteractableResponderViews(): Boolean {
+    var cached = enableInteractableResponderViewsCache
+    if (cached == null) {
+      cached = ReactNativeFeatureFlagsCxxInterop.enableInteractableResponderViews()
+      enableInteractableResponderViewsCache = cached
     }
     return cached
   }

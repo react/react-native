@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<1a1d47f2d85404c776e55db40f7dbc6e>>
+ * @generated SignedSource<<4392a0cc206a741ac53a14dba50de3e8>>
  */
 
 /**
@@ -86,6 +86,8 @@ public interface ReactNativeFeatureFlagsProvider {
   @DoNotStrip public fun enableImmediateUpdateModeForContentOffsetChanges(): Boolean
 
   @DoNotStrip public fun enableImperativeFocus(): Boolean
+
+  @DoNotStrip public fun enableInteractableResponderViews(): Boolean
 
   @DoNotStrip public fun enableInteropViewManagerClassLookUpOptimizationIOS(): Boolean
 
