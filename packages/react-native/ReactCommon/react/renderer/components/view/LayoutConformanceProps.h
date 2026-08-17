@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <react/renderer/components/view/YogaStylableProps.h>
 #include <react/renderer/components/view/propsConversions.h>
 

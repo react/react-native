@@ -42,6 +42,7 @@ Pod::Spec.new do |s|
   s.dependency "React-logger"
   s.dependency "React-Core"
   s.dependency "React-debug"
+  s.dependency "React-cxxstableapi"
   s.dependency "React-featureflags"
   s.dependency "React-runtimescheduler"
   s.dependency "React-cxxreact"
@@ -136,6 +137,12 @@ Pod::Spec.new do |s|
       sss.dependency             "Yoga"
       sss.source_files         = podspec_sources(["react/renderer/components/view/*.{m,mm,cpp,h}", "react/renderer/components/view/platform/cxx/**/*.{m,mm,cpp,h}"], ["react/renderer/components/view/*.{h}", "react/renderer/components/view/platform/cxx/**/*.{h}"])
       sss.header_dir           = "react/renderer/components/view"
+    end
+
+    ss.subspec "viewUmbrella" do |sss|
+      sss.source_files         = "react/renderer/components/view/React/*.h"
+      sss.header_dir           = "React"
+      sss.header_mappings_dir  = "react/renderer/components/view/React"
     end
 
     ss.subspec "scrollview" do |sss|
