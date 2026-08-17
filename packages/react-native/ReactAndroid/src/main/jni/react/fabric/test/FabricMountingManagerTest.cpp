@@ -32,32 +32,24 @@ namespace facebook::react {
  * `allocatedViewsMutex_`; they never call into Java. That is what makes them
  * unit-testable here.
  *
- * NOTE: `~FabricMountingManager()` calls `jni::ThreadScope::WithClassLoader`,
- * which throws `std::runtime_error` when no JavaVM has been attached (see
- * `xplat/spectrum/androidLibs/fbjni/cxx/fbjni/detail/Environment.h`). Because
- * no JVM is available in this host-side test, the manager instance is
- * intentionally never destroyed: each test allocates a single
- * `FabricMountingManager` on the heap and wraps it in a `std::shared_ptr`
- * with a no-op deleter. The resulting per-test leak is bounded (one ~100-byte
- * instance) and does not cross test boundaries.
+ * `react/fabric:jni` is an Android-only native library, so this target is
+ * built as a JNI instrumentation test: the gtest binary is packaged into an
+ * APK and executed on a device/emulator. A JavaVM is therefore attached, which
+ * `~FabricMountingManager()` requires — it calls
+ * `jni::ThreadScope::WithClassLoader`, which throws `std::runtime_error` when
+ * fbjni has not been initialized (see
+ * `xplat/spectrum/androidLibs/fbjni/cxx/fbjni/detail/Environment.h`).
  */
 class FabricMountingManagerTest : public ::testing::Test {
  protected:
-  // Returns a `FabricMountingManager` whose destructor is suppressed.
-  // See the class-level note above for why this is necessary.
-  static std::shared_ptr<FabricMountingManager> makeManager() {
-    // `jni::global_ref<>` default-constructs to an empty (null) reference,
-    // so no JNI calls are performed during construction. The empty
-    // reference is safe to copy into the manager because the
-    // surface-registry methods under test never dereference
-    // `javaUIManager_`.
-    auto* emptyRef = new jni::global_ref<JFabricUIManager::javaobject>();
-    auto* raw = new FabricMountingManager(*emptyRef);
-    // `emptyRef` is intentionally leaked: resetting it would also engage
-    // `WithClassLoader`, which requires an attached JavaVM.
-    return {raw, [](FabricMountingManager* /*unused*/) noexcept {
-              // No-op deleter: see class-level note.
-            }};
+  // An empty (null) reference: `jni::global_ref<>` default-constructs to null,
+  // so no JNI call happens when it is created, copied into the manager, or
+  // released. The surface-registry methods under test never dereference
+  // `javaUIManager_`.
+  jni::global_ref<JFabricUIManager::javaobject> emptyUIManager_;
+
+  std::unique_ptr<FabricMountingManager> makeManager() {
+    return std::make_unique<FabricMountingManager>(emptyUIManager_);
   }
 };
 
