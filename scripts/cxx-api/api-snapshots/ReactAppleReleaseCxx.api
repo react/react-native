@@ -3193,6 +3193,13 @@ struct RCTFontProperties {
   public UIFontWeight weight;
 }
 
+struct RCTLayerCornerConfiguration {
+  public CACornerMask maskedCorners;
+  public CGFloat cornerRadius;
+  public bool hasRoundedCorner;
+  public facebook::react::BorderCurve cornerCurve;
+}
+
 struct RCTLayoutContext {
   public CGPoint absolutePosition;
   public __unsafe_unretained NSHashTable<NSString*>* _Nonnull other;

@@ -1051,6 +1051,13 @@ const styles = StyleSheet.create({
   flex: {
     flex: 1,
   },
+  imageWithUniformButNoneCircularBorderRadius: {
+    width: 200,
+    height: 100,
+    borderRadius: '50%',
+    borderWidth: 4,
+    borderColor: 'blue',
+  },
   imageWithBorderRadius: {
     borderRadius: 5,
   },
@@ -1460,6 +1467,10 @@ exports.examples = [
     render: function (): React.Node {
       return (
         <View style={styles.horizontal} testID="border-radius-example">
+          <Image
+            style={styles.imageWithUniformButNoneCircularBorderRadius}
+            source={fullImage}
+          />
           <Image
             style={[styles.base, styles.imageWithBorderRadius]}
             source={fullImage}
