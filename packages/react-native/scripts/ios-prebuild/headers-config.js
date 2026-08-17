@@ -359,6 +359,12 @@ const PodspecExceptions /*: {[key: string]: PodSpecConfiguration} */ = {
           },
 
           {
+            name: 'textUmbrella',
+            headerPatterns: ['react/renderer/components/text/React/*.h'],
+            headerDir: 'React',
+          },
+
+          {
             name: 'iostextinput',
             headerPatterns: [
               'react/renderer/components/textinput/*.h',

@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <react/renderer/attributedstring/TextAttributes.h>
 #include <react/renderer/components/text/BaseTextProps.h>
 #include <react/renderer/core/Props.h>

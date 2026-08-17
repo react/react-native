@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include <glog/logging.h>
 
 #include <react/renderer/attributedstring/AttributedString.h>

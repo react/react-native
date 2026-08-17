@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include <react/renderer/components/iostextinput/TextInputProps.h>
 #include <react/renderer/components/textinput/BaseTextInputShadowNode.h>
 #include <react/renderer/components/textinput/TextInputEventEmitter.h>

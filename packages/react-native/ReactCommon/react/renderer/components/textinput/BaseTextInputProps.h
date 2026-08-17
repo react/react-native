@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include <react/renderer/attributedstring/ParagraphAttributes.h>
 #include <react/renderer/components/text/BaseTextProps.h>
 #include <react/renderer/components/textinput/basePrimitives.h>
