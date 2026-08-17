@@ -1053,6 +1053,7 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
   }
 
   const auto borderMetrics = _props->resolveBorderMetrics(_layoutMetrics);
+  BOOL const borderRadiiCircular = areBorderRadiiCircular(borderMetrics.borderRadii);
 
   // Stage 1. Shadow Path
   BOOL const layerHasShadow = layer.shadowOpacity > 0 && CGColorGetAlpha(layer.shadowColor) > 0;
@@ -1109,7 +1110,7 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
   const bool useCoreAnimationBorderRendering =
       borderMetrics.borderColors.isUniform() && borderMetrics.borderWidths.isUniform() &&
       borderMetrics.borderStyles.isUniform() && borderMetrics.borderStyles.left == BorderStyle::Solid &&
-      areBorderRadiiCircular(borderMetrics.borderRadii) &&
+      borderRadiiCircular &&
       (
           // iOS draws borders in front of the content whereas CSS draws them behind
           // the content. For this reason, only use iOS border drawing when clipping
@@ -1191,7 +1192,7 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
     _outlineLayer.frame = CGRectInset(
         layer.bounds, -_props->outlineOffset - _props->outlineWidth, -_props->outlineOffset - _props->outlineWidth);
 
-    if (areBorderRadiiCircular(borderMetrics.borderRadii) && borderMetrics.borderRadii.topLeft.horizontal == 0) {
+    if (borderRadiiCircular && borderMetrics.borderRadii.topLeft.horizontal == 0) {
       UIColor *outlineColor = RCTUIColorFromSharedColor(_props->outlineColor);
       _outlineLayer.borderWidth = _props->outlineWidth;
       _outlineLayer.borderColor = outlineColor.CGColor;
@@ -1367,7 +1368,7 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
   if (self.currentContainerView.clipsToBounds) {
     BOOL clipToPaddingBox = ReactNativeFeatureFlags::enableIOSViewClipToPaddingBox();
     if (!clipToPaddingBox) {
-      if (areBorderRadiiCircular(borderMetrics.borderRadii)) {
+      if (borderRadiiCircular) {
         self.currentContainerView.layer.cornerRadius = borderMetrics.borderRadii.topLeft.horizontal;
       } else {
         CALayer *maskLayer =
@@ -1377,20 +1378,26 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
         self.currentContainerView.layer.mask = maskLayer;
       }
 
-      for (UIView *subview in self.currentContainerView.subviews) {
-        if ([subview isKindOfClass:[UIImageView class]]) {
-          RCTCornerInsets cornerInsets = RCTGetCornerInsets(
-              RCTCornerRadiiFromBorderRadii(borderMetrics.borderRadii),
-              RCTUIEdgeInsetsFromEdgeInsets(borderMetrics.borderWidths));
+      if (!borderRadiiCircular &&
+          (borderMetrics.borderColors.left || borderMetrics.borderColors.right || borderMetrics.borderColors.top ||
+           borderMetrics.borderColors.bottom)) {
+        for (UIView *subview in self.currentContainerView.subviews) {
+          if ([subview isKindOfClass:[UIImageView class]]) {
+            RCTCornerInsets cornerInsets = RCTGetCornerInsets(
+                RCTCornerRadiiFromBorderRadii(borderMetrics.borderRadii),
+                RCTUIEdgeInsetsFromEdgeInsets(borderMetrics.borderWidths));
 
-          // If the subview is an image view, we have to apply the mask directly to the image view's layer,
-          // otherwise the image might overflow with the border radius.
-          subview.layer.mask = [self createMaskLayer:subview.bounds cornerInsets:cornerInsets];
+            // If the subview is an image view, we have to apply the mask directly to the image view's layer,
+            // otherwise the image might overflow with the border radius.
+            // Applying a mask is rendering wise expensive so we only apply it when needed, which is only
+            // for none uniform border radii (that are actually visible by color).
+            subview.layer.mask = [self createMaskLayer:subview.bounds cornerInsets:cornerInsets];
+          }
         }
       }
     } else if (
         !borderMetrics.borderWidths.isUniform() || borderMetrics.borderWidths.left != 0 ||
-        !areBorderRadiiCircular(borderMetrics.borderRadii)) {
+        !borderRadiiCircular) {
       CALayer *maskLayer = [self createMaskLayer:RCTCGRectFromRect(_layoutMetrics.getPaddingFrame())
                                     cornerInsets:RCTGetCornerInsets(
                                                      RCTCornerRadiiFromBorderRadii(borderMetrics.borderRadii),

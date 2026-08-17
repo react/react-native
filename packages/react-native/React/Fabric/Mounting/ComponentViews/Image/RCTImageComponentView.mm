@@ -33,7 +33,6 @@ using namespace facebook::react;
     _props = defaultProps;
 
     _imageView = [RCTUIImageViewAnimated new];
-    _imageView.clipsToBounds = YES;
     _imageView.contentMode = RCTContentModeFromImageResizeMode(defaultProps->resizeMode);
     _imageView.layer.minificationFilter = kCAFilterTrilinear;
     _imageView.layer.magnificationFilter = kCAFilterTrilinear;
