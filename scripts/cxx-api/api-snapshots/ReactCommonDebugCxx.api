@@ -1640,10 +1640,10 @@ class facebook::react::HighResDuration {
   public constexpr int64_t toNanoseconds() const;
   public constexpr operator std::chrono::steady_clock::duration() const;
   public static constexpr facebook::react::HighResDuration fromChrono(std::chrono::steady_clock::duration chronoDuration);
-  public static constexpr facebook::react::HighResDuration fromDOMHighResTimeStamp(double units);
   public static constexpr facebook::react::HighResDuration fromMilliseconds(int64_t units);
   public static constexpr facebook::react::HighResDuration fromNanoseconds(int64_t units);
   public static constexpr facebook::react::HighResDuration zero();
+  public static facebook::react::HighResDuration fromDOMHighResTimeStamp(double units);
 }
 
 class facebook::react::HighResTimeStamp {
@@ -1659,10 +1659,10 @@ class facebook::react::HighResTimeStamp {
   public constexpr facebook::react::HighResTimeStamp& operator-=(const facebook::react::HighResDuration& rhs);
   public constexpr std::chrono::steady_clock::time_point toChronoSteadyClockTimePoint() const;
   public static constexpr facebook::react::HighResTimeStamp fromChronoSteadyClockTimePoint(std::chrono::steady_clock::time_point chronoTimePoint);
-  public static constexpr facebook::react::HighResTimeStamp fromDOMHighResTimeStamp(double units);
   public static constexpr facebook::react::HighResTimeStamp max() noexcept;
   public static constexpr facebook::react::HighResTimeStamp min() noexcept;
   public static facebook::react::HighResDuration unsafeOriginFromUnixTimeStamp() noexcept;
+  public static facebook::react::HighResTimeStamp fromDOMHighResTimeStamp(double units);
   public static facebook::react::HighResTimeStamp now() noexcept;
   public static void setTimeStampProviderForTesting(std::function<std::chrono::steady_clock::time_point()>&& timeStampProvider);
 }

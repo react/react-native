@@ -5,6 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#include <chrono>
 #include <span>
 #include <utility>
 
@@ -955,17 +956,29 @@ TEST_F(BridgingTest, asyncArrayBufferBridgingTest) {
 }
 
 TEST_F(BridgingTest, highResTimeStampTest) {
-  HighResTimeStamp timestamp = HighResTimeStamp::now();
-  EXPECT_EQ(
-      timestamp,
-      bridging::fromJs<HighResTimeStamp>(
-          rt, bridging::toJs(rt, timestamp), invoker));
+  // Nanosecond counts that are not a whole number of milliseconds, spanning the
+  // magnitudes a monotonic clock reports (seconds to weeks since boot). Fixed
+  // values are used instead of `HighResTimeStamp::now()` so that the precision
+  // of the round trip does not depend on the uptime of the host running this
+  // test.
+  for (int64_t nanoseconds :
+       {1LL, 999'999LL, 1'000'001LL, 12'345'678'901LL, 537'648'854'729'250LL}) {
+    auto timestamp = HighResTimeStamp::fromChronoSteadyClockTimePoint(
+        std::chrono::steady_clock::time_point(
+            std::chrono::nanoseconds(nanoseconds)));
+    EXPECT_EQ(
+        timestamp,
+        bridging::fromJs<HighResTimeStamp>(
+            rt, bridging::toJs(rt, timestamp), invoker))
+        << "timestamp of " << nanoseconds << "ns did not round trip";
 
-  auto duration = HighResDuration::fromNanoseconds(1);
-  EXPECT_EQ(
-      duration,
-      bridging::fromJs<HighResDuration>(
-          rt, bridging::toJs(rt, duration), invoker));
+    auto duration = HighResDuration::fromNanoseconds(nanoseconds);
+    EXPECT_EQ(
+        duration,
+        bridging::fromJs<HighResDuration>(
+            rt, bridging::toJs(rt, duration), invoker))
+        << "duration of " << nanoseconds << "ns did not round trip";
+  }
 
   EXPECT_EQ(1.0, bridging::toJs(rt, HighResDuration::fromNanoseconds(1e6)));
   EXPECT_EQ(
