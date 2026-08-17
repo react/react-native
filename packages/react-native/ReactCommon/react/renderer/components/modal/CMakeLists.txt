@@ -25,6 +25,7 @@ target_link_libraries(rrc_modal
         folly_runtime
         glog_init
         react_codegen_rncore
+        react_cxxstableapi
         react_renderer_componentregistry
         react_renderer_core
         react_renderer_debug

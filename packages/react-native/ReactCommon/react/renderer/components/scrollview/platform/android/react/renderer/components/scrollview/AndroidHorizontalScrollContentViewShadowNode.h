@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <react/renderer/components/scrollview/ScrollViewEventEmitter.h>
 #include <react/renderer/components/scrollview/ScrollViewState.h>
 #include <react/renderer/components/view/ConcreteViewShadowNode.h>
