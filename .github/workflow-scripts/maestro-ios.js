@@ -23,25 +23,28 @@ node maestro-android.js <path to app> <app_id> <maestro_flow> <flavor> <working_
 ==============
 `;
 
-const args = process.argv.slice(2);
-
-if (args.length !== 6) {
-  throw new Error(`Invalid number of arguments.\n${usage}`);
-}
-
-const APP_PATH = args[0];
-const APP_ID = args[1];
-const MAESTRO_FLOW = args[2];
-const JS_ENGINE = args[3];
-const IS_DEBUG = args[4] === 'Debug';
-const WORKING_DIRECTORY = args[5];
-
 const MAX_ATTEMPTS = 5;
 
-function launchSimulator(simulatorName) {
-  console.log(`Launching simulator ${simulatorName}`);
+function findAvailableSimulator() {
+  const output = childProcess.execSync(
+    'xcrun simctl list devices available -j',
+  );
+  const devices = Object.values(JSON.parse(String(output)).devices)
+    .flat()
+    .reverse();
+  const simulator = devices.find(device => /^iPhone .* Pro$/.test(device.name));
+
+  if (simulator == null) {
+    throw new Error('Unable to find an available iPhone Pro simulator');
+  }
+
+  return simulator;
+}
+
+function launchSimulator(simulator) {
+  console.log(`Launching simulator ${simulator.name} (${simulator.udid})`);
   try {
-    childProcess.execSync(`xcrun simctl boot "${simulatorName}"`);
+    childProcess.execSync(`xcrun simctl boot "${simulator.udid}"`);
   } catch (error) {
     if (
       !error.message.includes('Unable to boot device in current state: Booted')
@@ -54,14 +57,6 @@ function launchSimulator(simulatorName) {
 function installAppOnSimulator(appPath) {
   console.log(`Installing app at path ${appPath}`);
   childProcess.execSync(`xcrun simctl install booted "${appPath}"`);
-}
-
-function extractSimulatorUDID() {
-  console.log('Retrieving device UDID');
-  const command = `xcrun simctl list devices booted -j | jq -r '[.devices[]] | add | first | .udid'`;
-  const udid = String(childProcess.execSync(command)).trim();
-  console.log(`UDID is ${udid}`);
-  return udid;
 }
 
 function bringSimulatorInForeground() {
@@ -151,26 +146,42 @@ function executeTestsWithRetries(
   }
 }
 
-async function main() {
+async function main(args = process.argv.slice(2)) {
+  if (args.length !== 6) {
+    throw new Error(`Invalid number of arguments.\n${usage}`);
+  }
+
+  const appPath = args[0];
+  const appId = args[1];
+  const maestroFlow = args[2];
+  const jsengine = args[3];
+  const isDebug = args[4] === 'Debug';
+  const workingDirectory = args[5];
+
   console.info('\n==============================');
   console.info('Running tests for iOS with the following parameters:');
-  console.info(`APP_PATH: ${APP_PATH}`);
-  console.info(`APP_ID: ${APP_ID}`);
-  console.info(`MAESTRO_FLOW: ${MAESTRO_FLOW}`);
-  console.info(`JS_ENGINE: ${JS_ENGINE}`);
-  console.info(`IS_DEBUG: ${IS_DEBUG}`);
-  console.info(`WORKING_DIRECTORY: ${WORKING_DIRECTORY}`);
+  console.info(`APP_PATH: ${appPath}`);
+  console.info(`APP_ID: ${appId}`);
+  console.info(`MAESTRO_FLOW: ${maestroFlow}`);
+  console.info(`JS_ENGINE: ${jsengine}`);
+  console.info(`IS_DEBUG: ${isDebug}`);
+  console.info(`WORKING_DIRECTORY: ${workingDirectory}`);
   console.info('==============================\n');
 
-  const simulatorName = 'iPhone 16 Pro';
-  launchSimulator(simulatorName);
-  installAppOnSimulator(APP_PATH);
-  const udid = extractSimulatorUDID();
+  const simulator = findAvailableSimulator();
+  launchSimulator(simulator);
+  installAppOnSimulator(appPath);
   bringSimulatorInForeground();
-  await launchAppOnSimulator(APP_ID, udid, IS_DEBUG);
-  executeTestsWithRetries(APP_ID, udid, MAESTRO_FLOW, JS_ENGINE, 1);
+  await launchAppOnSimulator(appId, simulator.udid, isDebug);
+  executeTestsWithRetries(appId, simulator.udid, maestroFlow, jsengine, 1);
   console.log('Test finished');
   process.exit(0);
 }
 
-main();
+if (require.main === module) {
+  main();
+}
+
+module.exports = {
+  findAvailableSimulator,
+};

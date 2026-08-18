@@ -16,7 +16,7 @@ on:
 
 jobs:
   test:
-    runs-on: macos-15-large
+    runs-on: macos-26-large
     outputs:
       status: ${{ steps.report-status.outputs.status }}
     strategy:
@@ -35,8 +35,6 @@ jobs:
           path: /tmp/RNTesterBuild/RNTester.app
       - name: Check downloaded folder content
         run: ls -lR /tmp/RNTesterBuild
-      - name: Setup xcode
-        uses: ./.github/actions/setup-xcode
       - name: Run E2E Tests
         id: run-tests
         continue-on-error: true
