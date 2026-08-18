@@ -3180,19 +3180,19 @@ declare type NativeScrollVelocity = {
   readonly y: number
 }
 declare type NativeSyntheticEvent<T> = {
-  readonly bubbles: boolean | undefined
-  readonly cancelable: boolean | undefined
+  readonly bubbles: boolean
+  readonly cancelable: boolean
   readonly currentTarget: HostInstance | number
-  readonly defaultPrevented: boolean | undefined
+  readonly defaultPrevented: boolean
   readonly dispatchConfig: {
     readonly registrationName: string
   }
-  readonly eventPhase: number | undefined
-  readonly isTrusted: boolean | undefined
+  readonly eventPhase: number
+  readonly isTrusted: boolean
   readonly nativeEvent: T
   readonly target: (number | undefined) | HostInstance
   readonly timeStamp: number
-  readonly type: string | undefined
+  readonly type: string
   readonly isDefaultPrevented: () => boolean
   readonly isPropagationStopped: () => boolean
   readonly persist: () => void
