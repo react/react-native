@@ -35,7 +35,29 @@ class TraceEventGenerator {
       HighResTimeStamp timestamp);
 
   /**
-   * Creates canonical "BeginFrame", "Commit", "DrawFrame" trace events.
+   * Creates a "NeedsBeginFrameChanged" trace event to mark the start of an
+   * idle frame period.
+   */
+  static TraceEvent createNeedsBeginFrameChangedEvent(
+      int layerTreeId,
+      HighResTimeStamp timestamp,
+      ProcessId processId,
+      ThreadId threadId);
+
+  /**
+   * Creates a single "BeginFrame" trace event for an idle frame (no
+   * DrawFrame). Chrome DevTools renders a BeginFrame without a corresponding
+   * DrawFrame as an "Idle frame" in the Frames track.
+   */
+  static TraceEvent createIdleBeginFrameEvent(
+      FrameSequenceId sequenceId,
+      int layerTreeId,
+      HighResTimeStamp timestamp,
+      ProcessId processId,
+      ThreadId threadId);
+
+  /**
+   * Creates canonical "BeginFrame", "DrawFrame" trace events.
    */
   static std::pair<TraceEvent, TraceEvent> createFrameTimingsEvents(
       FrameSequenceId sequenceId,

@@ -129,13 +129,12 @@ internal class ViewTransitionSnapshotManager(
     // and the partial result gets stretched to fill the pseudo-element.
     val windowWidth = window.decorView.width
     val windowHeight = window.decorView.height
-    val clampedRect =
-        Rect(
-            viewRect.left.coerceAtLeast(0),
-            viewRect.top.coerceAtLeast(0),
-            viewRect.right.coerceAtMost(windowWidth),
-            viewRect.bottom.coerceAtMost(windowHeight),
-        )
+    val clampedRect = Rect(
+        viewRect.left.coerceAtLeast(0),
+        viewRect.top.coerceAtLeast(0),
+        viewRect.right.coerceAtMost(windowWidth),
+        viewRect.bottom.coerceAtMost(windowHeight),
+    )
 
     if (clampedRect.isEmpty) {
       // Entirely off-screen — nothing to capture.

@@ -1186,6 +1186,11 @@ const styles = StyleSheet.create({
     borderColor: 'red',
     backgroundColor: 'yellow',
   },
+  borderRadiusPercentage: {
+    borderWidth: 4,
+    borderRadius: '50%',
+    borderColor: 'green',
+  },
   boxShadow: {
     margin: 10,
   },
@@ -1252,6 +1257,41 @@ exports.title = 'Image';
 exports.category = 'Basic';
 exports.description =
   'Base component for displaying different types of images.';
+
+component BoxShadowExample() {
+  const [loadedImageCount, setLoadedImageCount] = useState(0);
+  const onLoad = () => setLoadedImageCount(count => count + 1);
+
+  return (
+    <View
+      style={styles.horizontal}
+      testID={loadedImageCount >= 3 ? 'box-shadow-example' : undefined}>
+      <Image
+        onLoad={onLoad}
+        style={[styles.base, styles.boxShadow, styles.boxShadowWithBackground]}
+        source={smallImage}
+      />
+      <Image
+        onLoad={onLoad}
+        style={[
+          styles.base,
+          styles.boxShadow,
+          styles.boxShadowMultiOutsetInset,
+        ]}
+        source={smallImage}
+      />
+      <Image
+        onLoad={onLoad}
+        style={[
+          styles.base,
+          styles.boxShadow,
+          styles.boxShadowAsymetricallyRounded,
+        ]}
+        source={fullImage}
+      />
+    </View>
+  );
+}
 
 exports.examples = [
   {
@@ -1448,6 +1488,10 @@ exports.examples = [
             style={[styles.base, styles.borderRadius5]}
             source={fullImage}
           />
+          <Image
+            style={[styles.base, styles.borderRadiusPercentage]}
+            source={fullImage}
+          />
         </View>
       );
     },
@@ -1479,34 +1523,7 @@ exports.examples = [
     title: 'Box Shadow',
     name: 'box-shadow',
     render: function (): React.Node {
-      return (
-        <View style={styles.horizontal} testID="box-shadow-example">
-          <Image
-            style={[
-              styles.base,
-              styles.boxShadow,
-              styles.boxShadowWithBackground,
-            ]}
-            source={smallImage}
-          />
-          <Image
-            style={[
-              styles.base,
-              styles.boxShadow,
-              styles.boxShadowMultiOutsetInset,
-            ]}
-            source={smallImage}
-          />
-          <Image
-            style={[
-              styles.base,
-              styles.boxShadow,
-              styles.boxShadowAsymetricallyRounded,
-            ]}
-            source={fullImage}
-          />
-        </View>
-      );
+      return <BoxShadowExample />;
     },
   },
   {

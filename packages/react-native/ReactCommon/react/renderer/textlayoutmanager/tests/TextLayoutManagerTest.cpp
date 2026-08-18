@@ -7,7 +7,10 @@
 
 #include <gtest/gtest.h>
 
+#include <cmath>
+
 #include <react/renderer/textlayoutmanager/TextMeasureCache.h>
+#include <react/renderer/textlayoutmanager/TextMeasurementRounding.h>
 
 using namespace facebook::react;
 
@@ -43,6 +46,39 @@ TEST(TextLayoutManagerTest, maxFontSizeMultiplierAffectsLayoutCacheHash) {
 
   EXPECT_NE(
       textAttributesHashLayoutWise(lhs), textAttributesHashLayoutWise(rhs));
+}
+
+TEST(TextLayoutManagerTest, fontVariationSettingsAffectLayoutCacheEquality) {
+  TextAttributes lhs;
+  TextAttributes rhs;
+
+  lhs.fontVariationSettings = "'wght' 400";
+  rhs.fontVariationSettings = "'wght' 700";
+
+  EXPECT_FALSE(areTextAttributesEquivalentLayoutWise(lhs, rhs));
+}
+
+TEST(TextLayoutManagerTest, fontVariationSettingsAffectLayoutCacheHash) {
+  TextAttributes lhs;
+  TextAttributes rhs;
+
+  lhs.fontVariationSettings = "'wght' 400";
+  rhs.fontVariationSettings = "'wght' 700";
+
+  EXPECT_NE(
+      textAttributesHashLayoutWise(lhs), textAttributesHashLayoutWise(rhs));
+}
+
+TEST(TextLayoutManagerTest, emptyFontVariationSettingsClearInheritedSettings) {
+  TextAttributes parent;
+  TextAttributes child;
+
+  parent.fontVariationSettings = "'wght' 700";
+  child.fontVariationSettings = "";
+  parent.apply(child);
+
+  EXPECT_TRUE(parent.fontVariationSettings.has_value());
+  EXPECT_TRUE(parent.fontVariationSettings->empty());
 }
 
 // Measurements are rounded to the pixel grid, so a measurement cached at one
@@ -96,4 +132,48 @@ TEST(TextLayoutManagerTest, pointScaleFactorAffectsPreparedTextCacheHash) {
   EXPECT_NE(
       std::hash<PreparedTextCacheKey>{}(lhs),
       std::hash<PreparedTextCacheKey>{}(rhs));
+}
+
+// Tests for internal_roundTextMeasurementToPixelGrid (the pixel-grid rounding
+// used by text measurement). A small epsilon is added before ceil so a
+// dimension that lands exactly on a pixel boundary gains one physical pixel of
+// slack (avoiding double->float->Yoga precision from clipping the last line or
+// trailing glyph), while dimensions with sub-pixel headroom are left untouched.
+// pointScaleFactor 3 (an @3x screen) is used so one physical pixel is 1/3 pt.
+// These lock in the behavior of D7074168 / PR #54260 in the new architecture,
+// with the unit coverage that change lacked.
+namespace {
+constexpr Float kScale = 3.0;
+long heightInPixels(Size raw) {
+  return std::lround(
+      internal_roundTextMeasurementToPixelGrid(raw, kScale).height * kScale);
+}
+long widthInPixels(Size raw) {
+  return std::lround(
+      internal_roundTextMeasurementToPixelGrid(raw, kScale).width * kScale);
+}
+} // namespace
+
+// Height exactly on a pixel boundary gains one extra physical pixel (60 -> 61)
+// so the final line is not clipped after layout rounding.
+TEST(TextMeasurementRoundingTest, addsSlackWhenHeightOnPixelBoundary) {
+  EXPECT_EQ(heightInPixels(Size{100.0, 20.0}), 61);
+}
+
+// Width exactly on a pixel boundary likewise gains one extra physical pixel so
+// the trailing glyph is not clipped (matches the legacy both-dimensions fix).
+TEST(TextMeasurementRoundingTest, addsSlackWhenWidthOnPixelBoundary) {
+  EXPECT_EQ(widthInPixels(Size{20.0, 100.0}), 61);
+}
+
+// Height with sub-pixel headroom must NOT be inflated: 20.1pt -> 60.3px ->
+// 61px, never 62. The epsilon only nudges boundary values, so text is not made
+// taller than needed.
+TEST(TextMeasurementRoundingTest, doesNotInflateHeightWithSubpixelHeadroom) {
+  EXPECT_EQ(heightInPixels(Size{100.0, 20.1}), 61);
+}
+
+// Width with sub-pixel headroom must NOT be inflated either: 20.1pt -> 61px.
+TEST(TextMeasurementRoundingTest, doesNotInflateWidthWithSubpixelHeadroom) {
+  EXPECT_EQ(widthInPixels(Size{20.1, 100.0}), 61);
 }

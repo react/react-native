@@ -10,9 +10,9 @@
 
 'use strict';
 
-import type {Program as ESTreeProgram} from 'hermes-estree';
+import type {Program as ESTreeProgram} from 'flow-estree';
 
-const hermesParser = require('hermes-parser');
+const flowParser = require('flow-parser');
 
 function parseFlowAndThrowErrors(
   code: string,
@@ -20,7 +20,7 @@ function parseFlowAndThrowErrors(
 ): ESTreeProgram {
   let ast;
   try {
-    ast = hermesParser.parse(code, {
+    ast = flowParser.parse(code, {
       // Produce an ESTree-compliant AST
       babel: false,
       // Parse Flow without a pragma

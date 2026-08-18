@@ -34,6 +34,47 @@ namespace facebook::react::jsinspector_modern::tracing {
   };
 }
 
+/* static */ TraceEvent TraceEventGenerator::createNeedsBeginFrameChangedEvent(
+    int layerTreeId,
+    HighResTimeStamp timestamp,
+    ProcessId processId,
+    ThreadId threadId) {
+  folly::dynamic data = folly::dynamic::object("needsBeginFrame", 1);
+
+  return TraceEvent{
+      .name = "NeedsBeginFrameChanged",
+      .cat = {Category::Frame},
+      .ph = 'I',
+      .ts = timestamp,
+      .pid = processId,
+      .s = 't',
+      .tid = threadId,
+      .args = folly::dynamic::object("layerTreeId", layerTreeId)(
+          "data", std::move(data)),
+  };
+}
+
+/* static */ TraceEvent TraceEventGenerator::createIdleBeginFrameEvent(
+    FrameSequenceId sequenceId,
+    int layerTreeId,
+    HighResTimeStamp timestamp,
+    ProcessId processId,
+    ThreadId threadId) {
+  folly::dynamic args = folly::dynamic::object("frameSeqId", sequenceId)(
+      "layerTreeId", layerTreeId);
+
+  return TraceEvent{
+      .name = "BeginFrame",
+      .cat = {Category::Frame},
+      .ph = 'I',
+      .ts = timestamp,
+      .pid = processId,
+      .s = 't',
+      .tid = threadId,
+      .args = std::move(args),
+  };
+}
+
 /* static */ std::pair<TraceEvent, TraceEvent>
 TraceEventGenerator::createFrameTimingsEvents(
     uint64_t sequenceId,

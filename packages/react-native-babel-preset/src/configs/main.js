@@ -48,6 +48,18 @@ function getTransformProfile(caller) {
   return caller?.unstable_transformProfile ?? 'hermes-stable';
 }
 
+// The target platform, currently only used for platform inlining.
+function getPlatform(caller) {
+  return caller?.platform ?? null;
+}
+
+// Boolean, whether to inline `Platform`. Separate from `platform` (string)
+// because a platform already reaches the preset and may be used for other
+// purposes.
+function getInlinePlatform(caller) {
+  return caller?.inlinePlatform ?? false;
+}
+
 // use `this.foo = bar` instead of `this.defineProperty('foo', ...)`
 const loose = true;
 
@@ -56,6 +68,11 @@ const getPreset = (src, options, babel) => {
     options?.unstable_transformProfile ?? babel?.caller(getTransformProfile);
 
   const dev = options?.dev ?? babel?.env('development') ?? false;
+
+  const platform = options?.platform ?? babel?.caller(getPlatform);
+
+  const inlinePlatform =
+    options?.inlinePlatform ?? babel?.caller(getInlinePlatform) ?? false;
 
   // Hermes V1 uses more optimised transform profiles. There is currently no
   // difference between stable and canary, but canary may in future be used to
@@ -102,6 +119,16 @@ const getPreset = (src, options, babel) => {
 
   const extraPlugins = [];
   const firstPartyPlugins = [];
+
+  // Inline `Platform.OS` and `Platform.select(...)` for provably React
+  // Native-owned `Platform` imports. This must run before the CommonJS module
+  // transform below (and before Metro's own import lowering when
+  // `disableImportExportTransform` is set), while the source-level import that
+  // proves provenance is still intact. It is a no-op when `platform` is null or
+  // the empty string.
+  if (inlinePlatform) {
+    extraPlugins.push([require('../inline-platform-plugin'), {platform}]);
+  }
 
   if (!options.useTransformReactJSXExperimental) {
     extraPlugins.push([
@@ -231,7 +258,7 @@ const getPreset = (src, options, babel) => {
       {
         plugins: [
           [
-            require('babel-plugin-syntax-hermes-parser'),
+            require('flow-parser/babel-plugin'),
             {
               parseLangTypes: 'flow',
               reactRuntimeTarget: '19',

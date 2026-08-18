@@ -8,15 +8,16 @@
  * @format
  */
 
-const {createLogger} = require('./utils');
-const {execSync} = require('child_process');
-const fs = require('fs');
-const path = require('path');
-const stream = require('stream');
-const {promisify} = require('util');
+const {createLogger, getMavenRepositoryUrls} = require('./utils');
+const {execSync} = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
+const stream = require('node:stream');
+const {promisify} = require('node:util');
 
 const pipeline = promisify(stream.pipeline);
 const hermesLog = createLogger('Hermes');
+const artifactExistenceCache /*: Map<string, boolean> */ = new Map();
 
 /*::
 import type {BuildFlavor, Destination, Platform} from './types';
@@ -187,16 +188,40 @@ function hermesEngineTarballEnvvarDefined() /*: boolean */ {
   return !!process.env.HERMES_ENGINE_TARBALL_PATH;
 }
 
-function getTarballUrl(
+async function getTarballUrl(
   version /*: string */,
   buildType /*: BuildFlavor */,
-) /*: string */ {
-  // You can use the `ENTERPRISE_REPOSITORY` ariable to customise the base url from which artifacts will be downloaded.
-  // The mirror's structure must be the same of the Maven repo the react-native core team publishes on Maven Central.
-  const mavenRepoUrl =
-    process.env.ENTERPRISE_REPOSITORY ?? 'https://repo1.maven.org/maven2';
+) /*: Promise<string> */ {
+  const existingUrl = await findExistingTarballUrl(version, buildType);
+  if (existingUrl != null) {
+    return existingUrl;
+  }
+
+  return getTarballUrls(version, buildType)[0];
+}
+
+async function findExistingTarballUrl(
+  version /*: string */,
+  buildType /*: BuildFlavor */,
+) /*: Promise<?string> */ {
+  const candidates = getTarballUrls(version, buildType);
+  for (const url of candidates) {
+    if (await hermesArtifactExists(url)) {
+      return url;
+    }
+  }
+  return null;
+}
+
+function getTarballUrls(
+  version /*: string */,
+  buildType /*: BuildFlavor */,
+) /*: Array<string> */ {
   const namespace = 'com/facebook/hermes';
-  return `${mavenRepoUrl}/${namespace}/hermes-ios/${version}/hermes-ios-${version}-hermes-ios-${buildType.toLowerCase()}.tar.gz`;
+  return getMavenRepositoryUrls().map(
+    mavenRepoUrl =>
+      `${mavenRepoUrl}/${namespace}/hermes-ios/${version}/hermes-ios-${version}-hermes-ios-${buildType.toLowerCase()}.tar.gz`,
+  );
 }
 
 /**
@@ -205,13 +230,21 @@ function getTarballUrl(
 async function hermesArtifactExists(
   tarballUrl /*: string */,
 ) /*: Promise<boolean> */ {
+  const cached = artifactExistenceCache.get(tarballUrl);
+  if (cached != null) {
+    return cached;
+  }
+
   try {
     const response /*: Response */ = await fetch(tarballUrl, {
       method: 'HEAD',
     });
 
-    return response.status === 200;
+    const exists = response.status === 200;
+    artifactExistenceCache.set(tarballUrl, exists);
+    return exists;
   } catch (e) {
+    artifactExistenceCache.set(tarballUrl, false);
     return false;
   }
 }
@@ -228,8 +261,7 @@ async function hermesSourceType(
     return HermesEngineSourceTypes.LOCAL_PREBUILT_TARBALL;
   }
 
-  const tarballUrl = getTarballUrl(version, buildType);
-  if (await hermesArtifactExists(tarballUrl)) {
+  if ((await findExistingTarballUrl(version, buildType)) != null) {
     hermesLog(`Using download prebuild ${buildType} tarball`);
     return HermesEngineSourceTypes.DOWNLOAD_PREBUILD_TARBALL;
   }
@@ -278,7 +310,7 @@ async function downloadPrebuildTarball(
   buildType /*: BuildFlavor */,
   artifactsPath /*: string*/,
 ) /*: Promise<string> */ {
-  const url = getTarballUrl(version, buildType);
+  const url = await getTarballUrl(version, buildType);
   hermesLog(`Using release tarball from URL: ${url}`);
   return downloadStableHermes(version, buildType, artifactsPath);
 }
@@ -288,7 +320,7 @@ async function downloadStableHermes(
   buildType /*: BuildFlavor */,
   artifactsPath /*: string */,
 ) /*: Promise<string> */ {
-  const tarballUrl = getTarballUrl(version, buildType);
+  const tarballUrl = await getTarballUrl(version, buildType);
   return downloadHermesTarball(tarballUrl, version, buildType, artifactsPath);
 }
 

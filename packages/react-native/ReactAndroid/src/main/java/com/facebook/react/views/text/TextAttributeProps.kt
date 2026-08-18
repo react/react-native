@@ -25,6 +25,7 @@ import com.facebook.react.uimanager.ReactStylesDiffMap
 import com.facebook.react.uimanager.ViewProps
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontStyle
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontVariant
+import com.facebook.react.views.text.ReactTypefaceUtils.parseFontVariationSettings
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import kotlin.math.ceil
 
@@ -151,6 +152,10 @@ public class TextAttributeProps private constructor() {
 
   /** @see android.graphics.Paint.setFontFeatureSettings */
   public var fontFeatureSettings: String? = null
+    private set
+
+  /** @see android.graphics.Paint.setFontVariationSettings */
+  public var fontVariationSettings: String? = null
     private set
 
   @Deprecated("Use lineHeight instead", ReplaceWith("lineHeight"))
@@ -396,6 +401,7 @@ public class TextAttributeProps private constructor() {
     public const val TA_KEY_TEXT_TRANSFORM: Int = 27
     public const val TA_KEY_MAX_FONT_SIZE_MULTIPLIER: Int = 29
     public const val TA_KEY_TEXT_EFFECTS: Int = 30
+    public const val TA_KEY_FONT_VARIATION_SETTINGS: Int = 31
     private const val TE_KEY_NAME: Int = 0
     private const val TE_KEY_PROPS: Int = 1
 
@@ -433,6 +439,8 @@ public class TextAttributeProps private constructor() {
           TA_KEY_FONT_WEIGHT -> result.setFontWeight(entry.stringValue)
           TA_KEY_FONT_STYLE -> result.setFontStyle(entry.stringValue)
           TA_KEY_FONT_VARIANT -> result.setFontVariant(entry.mapBufferValue)
+          TA_KEY_FONT_VARIATION_SETTINGS ->
+              result.fontVariationSettings = parseFontVariationSettings(entry.stringValue)
           TA_KEY_ALLOW_FONT_SCALING -> result.allowFontScaling = entry.booleanValue
           TA_KEY_LETTER_SPACING -> result.letterSpacing = entry.doubleValue.toFloat()
           TA_KEY_LINE_HEIGHT -> result.lineHeight = entry.doubleValue.toFloat()
@@ -464,7 +472,7 @@ public class TextAttributeProps private constructor() {
                       props =
                           if (effectMap.contains(TE_KEY_PROPS)) effectMap.getString(TE_KEY_PROPS)
                           else null,
-                  )
+                  ),
               )
             }
             result.textEffects = list
@@ -500,6 +508,8 @@ public class TextAttributeProps private constructor() {
       result.setFontWeight(getStringProp(props, ViewProps.FONT_WEIGHT))
       result.setFontStyle(getStringProp(props, ViewProps.FONT_STYLE))
       result.setFontVariant(getArrayProp(props, ViewProps.FONT_VARIANT))
+      result.fontVariationSettings =
+          parseFontVariationSettings(getStringProp(props, ViewProps.FONT_VARIATION_SETTINGS))
       result.includeFontPadding = getBooleanProp(props, ViewProps.INCLUDE_FONT_PADDING, true)
       result.setTextDecorationLine(getStringProp(props, ViewProps.TEXT_DECORATION_LINE))
       result.textDecorationColor =
@@ -507,7 +517,7 @@ public class TextAttributeProps private constructor() {
       result.textDecorationStyle =
           TextDecorationStyle.fromString(getStringProp(props, "textDecorationStyle"))
       result.setTextShadowOffset(
-          if (props.hasKey(PROP_SHADOW_OFFSET)) props.getMap(PROP_SHADOW_OFFSET) else null
+          if (props.hasKey(PROP_SHADOW_OFFSET)) props.getMap(PROP_SHADOW_OFFSET) else null,
       )
       result.textShadowRadius = getFloatProp(props, PROP_SHADOW_RADIUS, 1f)
       result.textShadowColor = getIntProp(props, PROP_SHADOW_COLOR, DEFAULT_TEXT_SHADOW_COLOR)

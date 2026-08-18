@@ -19,10 +19,10 @@ import type {Experiments} from '../types/Experiments';
 import type {Logger} from '../types/Logger';
 import type {ReadonlyURL} from '../types/ReadonlyURL';
 import type {NextHandleFunction} from 'connect';
-import type {IncomingMessage, ServerResponse} from 'http';
+import type {IncomingMessage, ServerResponse} from 'node:http';
 
 import getDevToolsFrontendUrl from '../utils/getDevToolsFrontendUrl';
-import {createHash} from 'crypto';
+import {createHash} from 'node:crypto';
 
 const LEGACY_SYNTHETIC_PAGE_TITLE =
   'React Native Experimental (Improved Chrome Reloads)';

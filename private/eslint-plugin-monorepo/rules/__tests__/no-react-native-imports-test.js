@@ -22,7 +22,7 @@ const RN_PACKAGE_DIRECTORY = path.resolve(
 );
 
 const ruleTester = new RuleTester({
-  parser: require.resolve('hermes-eslint'),
+  parser: require.resolve('flow-eslint'),
   parserOptions: {
     ecmaVersion: 6,
     sourceType: 'module',

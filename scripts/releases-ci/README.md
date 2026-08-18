@@ -14,6 +14,12 @@ Prepares files within the `react-native` package and template for the target rel
 
 Prepares release artifacts and publishes the `react-native` package to npm.
 
+### `cleanup-maven-staging-repositories`
+
+Drops Sonatype staging repositories that exactly match the description in
+`ORG_GRADLE_PROJECT_SONATYPE_REPOSITORY_DESCRIPTION`, along with any associated
+unpublished Central Portal deployments.
+
 ### `publish-updated-packages`
 
 Publishes all updated packages (excluding `react-native`) to npm. Triggered when a commit on a release branch contains `#publish-packages-to-npm`.

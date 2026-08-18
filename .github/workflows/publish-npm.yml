@@ -30,6 +30,10 @@ on:
 permissions:
   contents: read
 
+env:
+  # Stable across partial reruns so later jobs can find the repository created by build_android.
+  ORG_GRADLE_PROJECT_SONATYPE_REPOSITORY_DESCRIPTION: 'react-native:${{ github.ref_name }}:github-run-${{ github.run_id }}'
+
 jobs:
   # ─── Determine what kind of publish this is ──────────────────────
   determine_mode:
@@ -86,11 +90,10 @@ jobs:
       use-hermes-prebuilt: ${{ needs.determine_mode.outputs.mode == 'nightly' }}
       version-type: ${{ needs.determine_mode.outputs.mode == 'nightly' && 'nightly' || '' }}
 
-  # ─── Android build (nightly only — releases handle this in the
-  #     build-npm-package action's Gradle step) ─────────────────────
+  # ─── Android build (release + nightly) ───────────────────────────
   build_android:
     needs: [determine_mode]
-    if: needs.determine_mode.outputs.mode == 'nightly'
+    if: needs.determine_mode.outputs.mode == 'release' || needs.determine_mode.outputs.mode == 'nightly'
     runs-on: ubuntu-latest
     container:
       image: reactnativecommunity/react-native-android:latest
@@ -108,10 +111,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+      - name: Setup node.js for staging cleanup
+        if: needs.determine_mode.outputs.mode == 'release'
+        uses: ./.github/actions/setup-node
+      - name: Drop stale Android staging repository
+        if: needs.determine_mode.outputs.mode == 'release'
+        run: node ./scripts/releases-ci/cleanup-maven-staging-repositories.js
       - name: Build Android
         uses: ./.github/actions/build-android
         with:
-          release-type: nightly
+          release-type: ${{ needs.determine_mode.outputs.release-type }}
           gradle-cache-encryption-key: ${{ secrets.GRADLE_CACHE_ENCRYPTION_KEY }}
 
   # ─── Build + Publish: react-native + all @react-native/* packages
@@ -124,16 +133,14 @@ jobs:
         prebuild_apple_dependencies,
         prebuild_react_native_core,
       ]
-    # For nightly, also wait on build_android. Use always() so this
-    # job isn't skipped when build_android is skipped (release mode).
-    # The explicit status checks below handle the real gating.
+    # Use always() so the explicit status checks below control the gating.
     if: |
       always() &&
       (needs.determine_mode.outputs.mode == 'release' || needs.determine_mode.outputs.mode == 'nightly') &&
       needs.determine_mode.result == 'success' &&
+      needs.build_android.result == 'success' &&
       needs.prebuild_apple_dependencies.result == 'success' &&
-      needs.prebuild_react_native_core.result == 'success' &&
-      (needs.determine_mode.outputs.mode == 'release' || needs.build_android.result == 'success')
+      needs.prebuild_react_native_core.result == 'success'
     runs-on: ubuntu-latest
     environment: npm-publish
     # `id-token: write` is required so the npm CLI can mint the OIDC
@@ -168,6 +175,28 @@ jobs:
         with:
           release-type: ${{ needs.determine_mode.outputs.release-type }}
           gradle-cache-encryption-key: ${{ secrets.GRADLE_CACHE_ENCRYPTION_KEY }}
+
+  # ─── Release-only: remove an unclosed Android staging repository
+  #     whenever the gated publish job does not complete successfully ─
+  cleanup_android_staging_repository:
+    needs: [determine_mode, build_android, publish_react_native]
+    if: |
+      always() &&
+      needs.determine_mode.result == 'success' &&
+      needs.determine_mode.outputs.mode == 'release' &&
+      needs.build_android.result != 'skipped' &&
+      needs.publish_react_native.result != 'success'
+    runs-on: ubuntu-latest
+    env:
+      ORG_GRADLE_PROJECT_SONATYPE_USERNAME: ${{ secrets.ORG_GRADLE_PROJECT_SONATYPE_USERNAME }}
+      ORG_GRADLE_PROJECT_SONATYPE_PASSWORD: ${{ secrets.ORG_GRADLE_PROJECT_SONATYPE_PASSWORD }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup node.js
+        uses: ./.github/actions/setup-node
+      - name: Drop Android staging repository
+        run: node ./scripts/releases-ci/cleanup-maven-staging-repositories.js
 
   # ─── Publish bumped monorepo packages (main/stable push) ─────────
   publish_bumped_packages:

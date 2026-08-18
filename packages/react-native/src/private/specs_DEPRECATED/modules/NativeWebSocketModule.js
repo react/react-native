@@ -16,7 +16,10 @@ export interface Spec extends TurboModule {
   readonly connect: (
     url: string,
     protocols: ?Array<string>,
-    options: {headers?: Object},
+    options: {
+      headers?: Object,
+      unstable_devToolsRequestId?: string,
+    },
     socketID: number,
   ) => void;
   readonly send: (message: string, forSocketID: number) => void;

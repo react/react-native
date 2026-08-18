@@ -16,8 +16,8 @@ import type {ExecaPromise} from 'execa';
 const {task} = require('./utils');
 const debug = require('debug');
 const execa = require('execa');
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const log = debug('core-cli-utils');
 
@@ -187,7 +187,7 @@ const bundleApp = (
       'Check if SourceMap script available',
       () => {
         composeSourceMaps = getNodePackagePath(
-          'react-native/scripts/compose-source-maps.js',
+          'react-native/scripts/compose-source-maps',
         );
       },
     );

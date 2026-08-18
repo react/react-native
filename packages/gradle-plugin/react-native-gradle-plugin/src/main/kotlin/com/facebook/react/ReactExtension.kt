@@ -208,7 +208,7 @@ abstract class ReactExtension @Inject constructor(val project: Project) {
             } else {
               buildTypes.forEach { buildType ->
                 result.add(
-                    (dependencyConfiguration ?: "${buildType}Implementation") to ":$nameCleansed"
+                    (dependencyConfiguration ?: "${buildType}Implementation") to ":$nameCleansed",
                 )
               }
             }

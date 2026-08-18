@@ -12,8 +12,10 @@ import android.graphics.PorterDuff
 import com.facebook.common.logging.FLog
 import com.facebook.drawee.backends.pipeline.Fresco
 import com.facebook.drawee.controller.AbstractDraweeControllerBuilder
+import com.facebook.react.bridge.Dynamic
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
+import com.facebook.react.bridge.ReadableType
 import com.facebook.react.common.ReactConstants
 import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.uimanager.BackgroundStyleApplicator
@@ -53,7 +55,7 @@ public constructor(
       replaceWith =
           ReplaceWith(
               expression =
-                  "ReactImageManager(draweeControllerBuilder, globalImageLoadListener, callerContextFactory)"
+                  "ReactImageManager(draweeControllerBuilder, globalImageLoadListener, callerContextFactory)",
           ),
   )
   public constructor(
@@ -73,7 +75,7 @@ public constructor(
       replaceWith =
           ReplaceWith(
               expression =
-                  "ReactImageManager(draweeControllerBuilder, globalImageLoadListener, callerContextFactory)"
+                  "ReactImageManager(draweeControllerBuilder, globalImageLoadListener, callerContextFactory)",
           ),
   )
   public constructor(
@@ -127,21 +129,49 @@ public constructor(
           callerContextFactory.getOrCreateCallerContext(
               (view.context as ThemedReactContext).moduleName,
               analyticTag,
-          )
+          ),
       )
     }
   }
 
   @ReactProp(name = "defaultSource")
+  public fun setDefaultSource(view: ReactImageView, source: Dynamic) {
+    view.setDefaultSource(imageSourceUri(source))
+  }
+
+  @Deprecated(
+      "Retained only for binary/source compatibility; the defaultSource prop is now delivered " +
+          "through the Dynamic overload.",
+  )
   public fun setDefaultSource(view: ReactImageView, source: String?) {
     view.setDefaultSource(source)
   }
 
   // In JS this is Image.props.loadingIndicatorSource.uri
   @ReactProp(name = "loadingIndicatorSrc")
+  public fun setLoadingIndicatorSource(view: ReactImageView, source: Dynamic) {
+    view.setLoadingIndicatorSource(imageSourceUri(source))
+  }
+
+  @Deprecated(
+      "Retained only for binary/source compatibility; the loadingIndicatorSrc prop is now " +
+          "delivered through the Dynamic overload.",
+  )
   public fun setLoadingIndicatorSource(view: ReactImageView, source: String?) {
     view.setLoadingIndicatorSource(source)
   }
+
+  /**
+   * The legacy raw-props path delivers these props as a plain uri string, but the Props 2.0 diffing
+   * path (`ImageProps::getDiffProps`) serializes the full ImageSource object. Accept both formats
+   * so either pipeline (and either side of a JS/native version skew) keeps working.
+   */
+  private fun imageSourceUri(source: Dynamic): String? =
+      when (source.type) {
+        ReadableType.String -> source.asString()
+        ReadableType.Map -> source.asMap()?.getString("uri")
+        else -> null
+      }
 
   @ReactProp(name = "borderColor", customType = "Color")
   public fun setBorderColor(view: ReactImageView, borderColor: Int?) {
@@ -171,9 +201,20 @@ public constructor(
               ViewProps.BORDER_BOTTOM_RIGHT_RADIUS,
               ViewProps.BORDER_BOTTOM_LEFT_RADIUS,
           ],
-      defaultFloat = Float.NaN,
+  )
+  public fun setBorderRadius(view: ReactImageView, index: Int, rawBorderRadius: Dynamic) {
+    val borderRadius = LengthPercentage.setFromDynamic(rawBorderRadius)
+    BackgroundStyleApplicator.setBorderRadius(view, BorderRadiusProp.values()[index], borderRadius)
+  }
+
+  @Deprecated(
+      "Don't use setBorderRadius(view, index, Float) as it was deprecated in React Native 0.88.0.",
   )
   public fun setBorderRadius(view: ReactImageView, index: Int, borderRadius: Float) {
+    // Keep a direct body rather than routing a Float through DynamicFromObject:
+    // DynamicFromObject(Float).asDouble() throws (boxed Float cannot cast to
+    // Double), and setFromDynamic would not map NaN back to null the way the
+    // original Float path did.
     val radius =
         if (borderRadius.isNaN()) null
         else LengthPercentage(borderRadius, LengthPercentageType.POINT)

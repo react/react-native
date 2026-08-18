@@ -1070,7 +1070,7 @@ class NativeAnimatedNodeTraversalTest {
 
     whenever(uiManagerMock.constants).thenAnswer {
       mapOf(
-          "customDirectEventTypes" to mapOf("onScroll" to mapOf("registrationName" to "onScroll"))
+          "customDirectEventTypes" to mapOf("onScroll" to mapOf("registrationName" to "onScroll")),
       )
     }
 

@@ -10,16 +10,21 @@
 
 /*:: import type {BuildFlavor} from './types'; */
 
-const {computeNightlyTarballURL, createLogger} = require('./utils');
-const {execSync} = require('child_process');
-const fs = require('fs');
-const path = require('path');
-const stream = require('stream');
-const {promisify} = require('util');
+const {
+  computeNightlyTarballURL,
+  createLogger,
+  getMavenRepositoryUrls,
+} = require('./utils');
+const {execSync} = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
+const stream = require('node:stream');
+const {promisify} = require('node:util');
 
 const pipeline = promisify(stream.pipeline);
 
 const dependencyLog = createLogger('ReactNativeDependencies');
+const artifactExistenceCache /*: Map<string, boolean> */ = new Map();
 
 /**
  * Downloads ReactNativeDependencies artifacts from the specified version and build type. If you want to specify a specific
@@ -92,6 +97,36 @@ async function prepareReactNativeDependenciesArtifactsAsync(
     stdio: 'inherit',
   });
 
+  // The headers-only ReactNativeDependenciesHeaders.xcframework sidecar ships
+  // alongside the binary in the same tarball — it is what serves the deps
+  // namespaces to SwiftPM (the binary is framework-type; its root Headers/ is
+  // invisible to binaryTargets). Absent only in pre-sidecar tarballs (pinned
+  // RN_DEP_VERSION): CocoaPods still works (the pod flattens the binary's
+  // root Headers/), SwiftPM consumers regain it via ensureHeadersLayout.
+  //
+  // Slice coverage: this tarball sidecar carries ALL slices the deps prebuild
+  // produced. The ensureHeadersLayout fallback (headers-compose.js) rebuilds it
+  // from DEFAULT_STUB_SLICES (ios + ios-simulator only) — sufficient for a
+  // SwiftPM iOS build, which is the only supported SPM target today. The two
+  // paths therefore agree on the iOS slices; the fallback simply omits the
+  // extra slices (catalyst/tvos/...) that no SPM consumer needs yet. Headers
+  // are slice-uniform, so a consumer never sees divergent content per slice.
+  const headersSidecarSource = path.join(
+    path.dirname(xcframeworkSource),
+    'ReactNativeDependenciesHeaders.xcframework',
+  );
+  if (fs.existsSync(headersSidecarSource)) {
+    execSync(`cp -R "${headersSidecarSource}" "${artifactsPath}"`, {
+      stdio: 'inherit',
+    });
+  } else {
+    dependencyLog(
+      'ReactNativeDependenciesHeaders.xcframework not present in the tarball ' +
+        '(pre-sidecar artifact) — continuing with the binary xcframework only.',
+      'warning',
+    );
+  }
+
   // Delete the tarball after extraction
   if (!process.env.HERMES_ENGINE_TARBALL_PATH) {
     fs.unlinkSync(localPath);
@@ -161,6 +196,13 @@ function checkExistingVersion(
       dependencyLog(
         `React Native Dependencies found on disk at: ${artifactsPath}.\nNo version file has been found. We are going to use it anyway, but there might be some unexpected behaviors.`,
       );
+      // Honor the message above: an artifact without a version marker is a
+      // locally-staged one (e.g. a freshly composed deps build). Use it as-is.
+      // NOTE: this returns BEFORE the version.txt write below, so a
+      // locally-staged artifact never gains a marker — every later run re-hits
+      // this branch. That is intentional (don't clobber a hand-staged build),
+      // but downstream code must not assume version.txt exists here.
+      return true;
     }
   } else {
     dependencyLog('React Native Dependencies not found on disk');
@@ -178,16 +220,40 @@ function checkExistingVersion(
   return false;
 }
 
-function getTarballUrl(
+async function getTarballUrl(
   version /*: string */,
   buildType /*: BuildFlavor */,
-) /*: string */ {
-  // You can use the `ENTERPRISE_REPOSITORY` ariable to customise the base url from which artifacts will be downloaded.
-  // The mirror's structure must be the same of the Maven repo the react-native core team publishes on Maven Central.
-  const mavenRepoUrl =
-    process.env.ENTERPRISE_REPOSITORY ?? 'https://repo1.maven.org/maven2';
+) /*: Promise<string> */ {
+  const existingUrl = await findExistingTarballUrl(version, buildType);
+  if (existingUrl != null) {
+    return existingUrl;
+  }
+
+  return getTarballUrls(version, buildType)[0];
+}
+
+async function findExistingTarballUrl(
+  version /*: string */,
+  buildType /*: BuildFlavor */,
+) /*: Promise<?string> */ {
+  const candidates = getTarballUrls(version, buildType);
+  for (const url of candidates) {
+    if (await reactNativeDependenciesArtifactExists(url)) {
+      return url;
+    }
+  }
+  return null;
+}
+
+function getTarballUrls(
+  version /*: string */,
+  buildType /*: BuildFlavor */,
+) /*: Array<string> */ {
   const namespace = 'com/facebook/react';
-  return `${mavenRepoUrl}/${namespace}/react-native-artifacts/${version}/react-native-artifacts-${version}-reactnative-dependencies-${buildType.toLowerCase()}.tar.gz`;
+  return getMavenRepositoryUrls().map(
+    mavenRepoUrl =>
+      `${mavenRepoUrl}/${namespace}/react-native-artifacts/${version}/react-native-artifacts-${version}-reactnative-dependencies-${buildType.toLowerCase()}.tar.gz`,
+  );
 }
 
 async function getNightlyTarballUrl(
@@ -212,13 +278,21 @@ async function getNightlyTarballUrl(
 async function reactNativeDependenciesArtifactExists(
   tarballUrl /*: string */,
 ) /*: Promise<boolean> */ {
+  const cached = artifactExistenceCache.get(tarballUrl);
+  if (cached != null) {
+    return cached;
+  }
+
   try {
     const response /*: Response */ = await fetch(tarballUrl, {
       method: 'HEAD',
     });
 
-    return response.status === 200;
+    const exists = response.status === 200;
+    artifactExistenceCache.set(tarballUrl, exists);
+    return exists;
   } catch (e) {
+    artifactExistenceCache.set(tarballUrl, false);
     return false;
   }
 }
@@ -230,8 +304,7 @@ async function reactNativeDependenciesSourceType(
   version /*: string */,
   buildType /*: BuildFlavor */,
 ) /*: Promise<ReactNativeDependenciesEngineSourceType> */ {
-  const tarballUrl = getTarballUrl(version, buildType);
-  if (await reactNativeDependenciesArtifactExists(tarballUrl)) {
+  if ((await findExistingTarballUrl(version, buildType)) != null) {
     dependencyLog(`Using download prebuild ${buildType} tarball`);
     return ReactNativeDependenciesEngineSourceTypes.DOWNLOAD_PREBUILD_TARBALL;
   }
@@ -273,7 +346,7 @@ async function downloadPrebuildTarball(
   buildType /*: BuildFlavor */,
   artifactsPath /*: string*/,
 ) /*: Promise<string> */ {
-  const url = getTarballUrl(version, buildType);
+  const url = await getTarballUrl(version, buildType);
   dependencyLog(`Using release tarball from URL: ${url}`);
   return downloadStableReactNativeDependencies(
     version,
@@ -302,7 +375,7 @@ async function downloadStableReactNativeDependencies(
   buildType /*: BuildFlavor */,
   artifactsPath /*: string */,
 ) /*: Promise<string> */ {
-  const tarballUrl = getTarballUrl(version, buildType);
+  const tarballUrl = await getTarballUrl(version, buildType);
   return downloadReactNativeDependenciesTarball(
     tarballUrl,
     version,

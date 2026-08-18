@@ -9,7 +9,7 @@ package com.facebook.react.bridge
 
 /** Constants used by ReactMarker. */
 public enum class ReactMarkerConstants(
-    @get:JvmName("hasMatchingNameMarker") public val hasMatchingNameMarker: Boolean = false
+    @get:JvmName("hasMatchingNameMarker") public val hasMatchingNameMarker: Boolean = false,
 ) {
   APP_STARTUP_START(true),
   APP_STARTUP_END(true),

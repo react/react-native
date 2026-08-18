@@ -14,6 +14,31 @@
 
 namespace facebook::react {
 
+// Derive accessibilityTraits from the resolved role and accessibilityState
+// members. This makes accessibilityTraits the single source of truth.
+// See: github.com/facebook/react-native/issues/57515
+static AccessibilityTraits deriveAccessibilityTraits(
+    Role role,
+    const std::string& accessibilityRole,
+    const std::optional<AccessibilityState>& accessibilityState) {
+  AccessibilityTraits traits = AccessibilityTraits::None;
+  if (role != Role::None) {
+    fromString(toString(role), traits);
+  } else if (!accessibilityRole.empty()) {
+    fromString(accessibilityRole, traits);
+  }
+
+  const auto state = accessibilityState.value_or(AccessibilityState{});
+  if (state.selected) {
+    traits = traits | AccessibilityTraits::Selected;
+  }
+  if (state.disabled) {
+    traits = traits | AccessibilityTraits::NotEnabled;
+  }
+
+  return traits;
+}
+
 AccessibilityProps::AccessibilityProps(
     const PropsParserContext& context,
     const AccessibilityProps& sourceProps,
@@ -146,18 +171,10 @@ AccessibilityProps::AccessibilityProps(
           ImportantForAccessibility::Auto)),
       testId(
           convertRawProp(context, rawProps, "testID", sourceProps.testId, "")) {
-  // It is a (severe!) perf deoptimization to request props out-of-order.
-  // Thus, since we need to request the same prop twice here
-  // (accessibilityRole) we "must" do them subsequently here to prevent
-  // a regression. It is reasonable to ask if the `at` function can be improved;
-  // it probably can, but this is a fairly rare edge-case that (1) is easy-ish
-  // to work around here, and (2) would require very careful work to address
-  // this case and not regress the more common cases.
+  // It is a (severe!) perf deoptimization to request props out-of-order, so
+  // these two lookups stay adjacent and in this order.
   auto* accessibilityRoleValue = rawProps.at("accessibilityRole");
   auto* roleValue = rawProps.at("role");
-
-  auto* precedentRoleValue =
-      roleValue != nullptr ? roleValue : accessibilityRoleValue;
 
   if (accessibilityRoleValue == nullptr ||
       !accessibilityRoleValue->hasValue()) {
@@ -172,11 +189,8 @@ AccessibilityProps::AccessibilityProps(
     fromRawValue(context, *roleValue, role);
   }
 
-  if (precedentRoleValue == nullptr || !precedentRoleValue->hasValue()) {
-    accessibilityTraits = sourceProps.accessibilityTraits;
-  } else {
-    fromRawValue(context, *precedentRoleValue, accessibilityTraits);
-  }
+  accessibilityTraits =
+      deriveAccessibilityTraits(role, accessibilityRole, accessibilityState);
 }
 
 void AccessibilityProps::setProp(
@@ -188,39 +202,48 @@ void AccessibilityProps::setProp(
 
   switch (hash) {
     RAW_SET_PROP_SWITCH_CASE_BASIC(accessible);
-    RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityState);
-    RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityLabel);
-    RAW_SET_PROP_SWITCH_CASE(
-        accessibilityOrder, "experimental_accessibilityOrder");
-    RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityLabelledBy);
-    RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityLiveRegion);
-    RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityHint);
-    RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityLanguage);
-    RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityShowsLargeContentViewer);
-    RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityLargeContentTitle);
-    RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityValue);
-    RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityActions);
-    RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityViewIsModal);
-    RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityElementsHidden);
-    RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityIgnoresInvertColors);
-    RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityRespondsToUserInteraction);
-    RAW_SET_PROP_SWITCH_CASE_BASIC(onAccessibilityTap);
-    RAW_SET_PROP_SWITCH_CASE_BASIC(onAccessibilityMagicTap);
-    RAW_SET_PROP_SWITCH_CASE_BASIC(onAccessibilityEscape);
-    RAW_SET_PROP_SWITCH_CASE_BASIC(onAccessibilityAction);
-    RAW_SET_PROP_SWITCH_CASE_BASIC(importantForAccessibility);
-    RAW_SET_PROP_SWITCH_CASE_BASIC(role);
-    RAW_SET_PROP_SWITCH_CASE(testId, "testID");
+    case CONSTEXPR_RAW_PROPS_KEY_HASH("accessibilityState"): {
+      fromRawValue(
+          context, value, accessibilityState, defaults.accessibilityState);
+      accessibilityTraits = deriveAccessibilityTraits(
+          role, accessibilityRole, accessibilityState);
+      return;
+    }
+      RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityLabel);
+      RAW_SET_PROP_SWITCH_CASE(
+          accessibilityOrder, "experimental_accessibilityOrder");
+      RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityLabelledBy);
+      RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityLiveRegion);
+      RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityHint);
+      RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityLanguage);
+      RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityShowsLargeContentViewer);
+      RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityLargeContentTitle);
+      RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityValue);
+      RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityActions);
+      RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityViewIsModal);
+      RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityElementsHidden);
+      RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityIgnoresInvertColors);
+      RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityRespondsToUserInteraction);
+      RAW_SET_PROP_SWITCH_CASE_BASIC(onAccessibilityTap);
+      RAW_SET_PROP_SWITCH_CASE_BASIC(onAccessibilityMagicTap);
+      RAW_SET_PROP_SWITCH_CASE_BASIC(onAccessibilityEscape);
+      RAW_SET_PROP_SWITCH_CASE_BASIC(onAccessibilityAction);
+      RAW_SET_PROP_SWITCH_CASE_BASIC(importantForAccessibility);
+    case CONSTEXPR_RAW_PROPS_KEY_HASH("role"): {
+      fromRawValue(context, value, role, defaults.role);
+      accessibilityTraits = deriveAccessibilityTraits(
+          role, accessibilityRole, accessibilityState);
+      return;
+    }
+      RAW_SET_PROP_SWITCH_CASE(testId, "testID");
     case CONSTEXPR_RAW_PROPS_KEY_HASH("accessibilityRole"): {
-      AccessibilityTraits traits = AccessibilityTraits::None;
       std::string roleString;
       if (value.hasValue()) {
-        fromRawValue(context, value, traits);
         fromRawValue(context, value, roleString);
       }
-
-      accessibilityTraits = traits;
       accessibilityRole = roleString;
+      accessibilityTraits = deriveAccessibilityTraits(
+          role, accessibilityRole, accessibilityState);
       return;
     }
   }

@@ -115,20 +115,20 @@ class TimingModuleTest {
     idlePostFrameCallbackHandler = PostFrameCallbackHandler()
 
     whenever(
-            reactChoreographerMock.postFrameCallback(
-                MockCompat.eq(CallbackType.TIMERS_EVENTS),
-                MockCompat.any<FrameCallback>(),
-            )
-        )
+        reactChoreographerMock.postFrameCallback(
+            MockCompat.eq(CallbackType.TIMERS_EVENTS),
+            MockCompat.any<FrameCallback>(),
+        ),
+    )
         .thenAnswer {
           return@thenAnswer postFrameCallbackHandler.answer(it)
         }
     whenever(
-            reactChoreographerMock.postFrameCallback(
-                MockCompat.eq(CallbackType.IDLE_EVENT),
-                MockCompat.any<FrameCallback>(),
-            )
-        )
+        reactChoreographerMock.postFrameCallback(
+            MockCompat.eq(CallbackType.IDLE_EVENT),
+            MockCompat.any<FrameCallback>(),
+        ),
+    )
         .thenAnswer {
           return@thenAnswer idlePostFrameCallbackHandler.answer(it)
         }
@@ -137,10 +137,12 @@ class TimingModuleTest {
     jsTimersMock = mock<JSTimers>()
     doReturn(jsTimersMock).`when`(reactContext).getJSModule(JSTimers::class.java)
     doReturn(mock<AppRegistry>()).`when`(reactContext).getJSModule(AppRegistry::class.java)
-    doAnswer({ invocation ->
+    doAnswer(
+        { invocation ->
           (invocation.arguments[0] as Runnable).run()
           return@doAnswer true
-        })
+        },
+    )
         .`when`(reactContext)
         .runOnJSQueueThread(MockCompat.any<Runnable>())
 

@@ -7,6 +7,8 @@
 
 #include "RCTLegacyUIManagerConstantsProvider.h"
 
+#ifndef RCT_REMOVE_LEGACY_COMPONENT_INTEROP
+
 #import <React/RCTBridge+Private.h>
 #import <React/RCTComponentData.h>
 #import <React/RCTUIManager.h>
@@ -41,3 +43,5 @@ void installLegacyUIManagerConstantsProviderBinding(jsi::Runtime &runtime)
   LegacyUIManagerConstantsProviderBinding::install(runtime, "getConstants", getConstants);
 }
 } // namespace facebook::react
+
+#endif // RCT_REMOVE_LEGACY_COMPONENT_INTEROP

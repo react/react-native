@@ -12,8 +12,8 @@ import type {XcodeBuildSettings} from './xcode';
 import type {Result} from 'execa';
 
 import execa from 'execa';
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 export type IOSDevice = {
   lastBootedAt: Date,

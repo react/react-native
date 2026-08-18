@@ -92,7 +92,7 @@ bool isRootShadowNode(const ShadowNode& shadowNode) {
 NativeDOM::NativeDOM(std::shared_ptr<CallInvoker> jsInvoker)
     : NativeDOMCxxSpec(std::move(jsInvoker)) {}
 
-#pragma mark - Methods from the `Node` interface (for `ReadOnlyNode`).
+#pragma mark - Methods from the Node interface (for ReadOnlyNode).
 
 double NativeDOM::compareDocumentPosition(
     jsi::Runtime& rt,
@@ -119,7 +119,7 @@ double NativeDOM::compareDocumentPosition(
 
       if (isRootShadowNode(*otherShadowNode)) {
         // If the other is a root node, we just need to check if it is its
-        // `documentElement`
+        // documentElement
         return (surfaceId == otherShadowNode->getSurfaceId())
             ? dom::DOCUMENT_POSITION_CONTAINED_BY |
                 dom::DOCUMENT_POSITION_FOLLOWING
@@ -198,15 +198,21 @@ jsi::Value NativeDOM::getParentNode(
   }
 
   auto shadowNode = getShadowNode(rt, nativeNodeReference);
-  if (isRootShadowNode(*shadowNode)) {
-    // The parent of the root node is the document.
-    return jsi::Value{shadowNode->getSurfaceId()};
-  }
 
   auto currentRevision =
       getCurrentShadowTreeRevision(rt, shadowNode->getSurfaceId());
   if (currentRevision == nullptr) {
     return jsi::Value::undefined();
+  }
+
+  // The parent of the surface's root node is the document. Only the actual
+  // root node qualifies: nested nodes that carry the `RootNodeKind` trait
+  // (e.g. <Modal>, portals/overlays) still have a real parent in the shadow
+  // tree and must report it. Otherwise capture/bubble event propagation is
+  // silently severed at that boundary (a listener on an ancestor rendered
+  // above the modal would never receive descendant focus/blur, etc.).
+  if (ShadowNode::sameFamily(*currentRevision, *shadowNode)) {
+    return jsi::Value{shadowNode->getSurfaceId()};
   }
 
   auto parentShadowNode = dom::getParentNode(currentRevision, *shadowNode);
@@ -232,7 +238,7 @@ bool NativeDOM::isConnected(jsi::Runtime& rt, jsi::Value nativeNodeReference) {
   return dom::isConnected(currentRevision, *shadowNode);
 }
 
-#pragma mark - Methods from the `Element` interface (for `ReactNativeElement`).
+#pragma mark - Methods from the Element interface (for ReactNativeElement).
 
 std::tuple<
     /* topWidth: */ int,
@@ -358,7 +364,7 @@ void NativeDOM::setPointerCapture(
       static_cast<PointerIdentifier>(pointerId), shadowNode);
 }
 
-#pragma mark - Methods from the `HTMLElement` interface (for `ReactNativeElement`).
+#pragma mark - Methods from the HTMLElement interface (for ReactNativeElement).
 
 std::tuple<
     /* offsetParent: */ jsi::Value,
@@ -401,7 +407,7 @@ jsi::Value NativeDOM::linkRootNode(
   return Bridging<std::shared_ptr<const ShadowNode>>::toJs(rt, currentRevision);
 }
 
-#pragma mark - Legacy layout APIs (for `ReactNativeElement`).
+#pragma mark - Legacy layout APIs (for ReactNativeElement).
 
 void NativeDOM::measure(
     jsi::Runtime& rt,
@@ -466,7 +472,7 @@ void NativeDOM::measureLayout(
   onSuccess(rect.x, rect.y, rect.width, rect.height);
 }
 
-#pragma mark - Legacy direct manipulation APIs (for `ReactNativeElement`).
+#pragma mark - Legacy direct manipulation APIs (for ReactNativeElement).
 
 void NativeDOM::setNativeProps(
     jsi::Runtime& rt,

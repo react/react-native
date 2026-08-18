@@ -44,7 +44,7 @@ class PointerEventsProcessorTest : public ::testing::Test {
         componentDescriptorProviderRegistry.createComponentDescriptorRegistry(
             ComponentDescriptorParameters{
                 .eventDispatcher = eventDispatcher,
-                .contextContainer = std::move(contextContainer),
+                .contextContainer = contextContainer,
                 .flavor = nullptr});
 
     componentDescriptorProviderRegistry.add(

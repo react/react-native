@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<5c36c0a5e9e67b43016ab02eab0ecd8f>>
+ * @generated SignedSource<<eb9958ddc04dd1cd8d1add366f5f7741>>
  */
 
 /**
@@ -51,7 +51,7 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun enableAndroidTextMeasurementOptimizations(): Boolean = false
 
-  override fun enableBridgelessArchitecture(): Boolean = false
+  override fun enableBridgelessArchitecture(): Boolean = true
 
   override fun enableCppPropsIteratorSetter(): Boolean = false
 
@@ -81,6 +81,8 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun enableImagePrefetchingAndroid(): Boolean = false
 
+  override fun enableImageTransparentTintColor(): Boolean = false
+
   override fun enableImmediateUpdateModeForContentOffsetChanges(): Boolean = false
 
   override fun enableImperativeFocus(): Boolean = false
@@ -97,11 +99,11 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun enableModuleArgumentNSNullConversionIOS(): Boolean = false
 
+  override fun enableMountingCoordinatorPullModelAndroid(): Boolean = false
+
   override fun enableMutationObserverByDefault(): Boolean = false
 
   override fun enableNativeCSSParsing(): Boolean = false
-
-  override fun enableNetworkEventReporting(): Boolean = true
 
   override fun enablePreparedTextLayout(): Boolean = false
 
@@ -139,9 +141,9 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun fuseboxFrameRecordingEnabled(): Boolean = false
 
-  override fun fuseboxNetworkInspectionEnabled(): Boolean = true
+  override fun fuseboxScreenshotCaptureEnabled(): Boolean = true
 
-  override fun fuseboxScreenshotCaptureEnabled(): Boolean = false
+  override fun fuseboxWebSocketEventsEnabled(): Boolean = false
 
   override fun optimizedAnimatedPropUpdates(): Boolean = false
 

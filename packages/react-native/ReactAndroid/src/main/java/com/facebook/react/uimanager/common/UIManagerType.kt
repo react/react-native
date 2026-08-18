@@ -30,7 +30,7 @@ public annotation class UIManagerType {
      * @deprecated Use [LEGACY] instead.
      */
     @Deprecated(
-        "UIManagerType.DEFAULT will be deleted in the next release of React Native. Use [LEGACY] instead."
+        "UIManagerType.DEFAULT will be deleted in the next release of React Native. Use [LEGACY] instead.",
     )
     public const val DEFAULT: Int = 1
 

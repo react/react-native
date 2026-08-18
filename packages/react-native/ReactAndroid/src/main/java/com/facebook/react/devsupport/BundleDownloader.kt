@@ -101,7 +101,7 @@ public class BundleDownloader public constructor(private val client: OkHttpClien
                 downloadBundleFromURLCall = null
                 val url = call.request().url().toString()
                 callback.onFailure(
-                    makeGeneric(url, "Could not connect to development server.", "URL: $url", e)
+                    makeGeneric(url, "Could not connect to development server.", "URL: $url", e),
                 )
               }
 
@@ -150,13 +150,13 @@ public class BundleDownloader public constructor(private val client: OkHttpClien
                               "Development server response body was empty.",
                               "URL: $url",
                               null,
-                          )
+                          ),
                       )
                     }
                   }
                 }
               }
-            }
+            },
         )
   }
 
@@ -182,8 +182,8 @@ public class BundleDownloader public constructor(private val client: OkHttpClien
 
 
                     """
-                  .trimIndent())
-          )
+                  .trimIndent()),
+          ),
       )
       return
     }
@@ -253,7 +253,7 @@ public class BundleDownloader public constructor(private val client: OkHttpClien
                   )
                 }
               }
-            }
+            },
         )
 
     if (!completed) {
@@ -268,8 +268,8 @@ public class BundleDownloader public constructor(private val client: OkHttpClien
 
 
                     """
-                  .trimIndent())
-          )
+                  .trimIndent()),
+          ),
       )
     }
   }

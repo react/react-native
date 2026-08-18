@@ -18,8 +18,10 @@ import android.text.style.ReplacementSpan
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
+import android.view.ViewGroup
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.get
+import com.facebook.react.views.text.internal.span.ReactAbsoluteSizeSpan
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -44,6 +46,57 @@ class ReactTextViewTest {
 
     assertThat(firstVisiblePixelY(bitmap)).isGreaterThanOrEqualTo(lineHeight)
   }
+
+  @Test
+  fun adjustsFontSizeToFitRecalculatesWhenContainerHeightShrinks() {
+    val width = 200
+    val tallHeight = 200
+    val shortHeight = 20
+    val largeFontSize = 40
+
+    val text = SpannableString("Hello")
+    text.setSpan(
+        ReactAbsoluteSizeSpan(largeFontSize),
+        0,
+        text.length,
+        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+    )
+
+    val view = TestReactTextView(RuntimeEnvironment.getApplication())
+    view.layoutParams =
+        ViewGroup.LayoutParams(
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+        )
+    view.setTextColor(Color.BLACK)
+    view.setMinimumFontSize(4f)
+    view.setNumberOfLines(0)
+    view.setAdjustFontSizeToFit(true)
+    view.setSpanned(text)
+    view.text = text
+
+    layoutAndDraw(view, width, tallHeight)
+    val fontSizeWhenTall = largestAbsoluteSizeSpan(text)
+
+    // Shrinking the container must retrigger the font recalculation, otherwise the
+    // stale large font is drawn into the smaller container and gets clipped.
+    layoutAndDraw(view, width, shortHeight)
+    val fontSizeWhenShort = largestAbsoluteSizeSpan(text)
+
+    assertThat(fontSizeWhenShort).isLessThan(fontSizeWhenTall)
+  }
+
+  private fun layoutAndDraw(view: TestReactTextView, width: Int, height: Int) {
+    view.measure(
+        View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
+        View.MeasureSpec.makeMeasureSpec(height, View.MeasureSpec.EXACTLY),
+    )
+    view.layout(0, 0, width, height)
+    view.drawTextForTest(Canvas(createBitmap(width, height)))
+  }
+
+  private fun largestAbsoluteSizeSpan(text: Spanned): Int =
+      text.getSpans(0, text.length, ReactAbsoluteSizeSpan::class.java).maxOfOrNull { it.size } ?: 0
 
   private fun drawReactTextViewWithOverflow(overflow: String?): Bitmap {
     return drawReactTextViewWithOverflow(overflow, lineHeight = 24, viewHeight = 24, gravity = null)

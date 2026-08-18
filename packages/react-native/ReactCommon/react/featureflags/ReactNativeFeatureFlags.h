@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<5c7e2061344bf998e5fc6b621af2ff45>>
+ * @generated SignedSource<<196ba25b807fd064ca6150c7d2cd741c>>
  */
 
 /**
@@ -185,6 +185,11 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool enableImagePrefetchingAndroid();
 
   /**
+   * When enabled, Image `tintColor` is handled as a true optional: any defined color is applied as a tint — including `transparent` (alpha 0), which renders the image invisible — and an unset value clears a previously applied tint. When disabled, the prior behavior is preserved, where a transparent `tintColor` is treated as unassigned and the image renders untinted.
+   */
+  RN_EXPORT static bool enableImageTransparentTintColor();
+
+  /**
    * Dispatches state updates for content offset changes synchronously on the main thread.
    */
   RN_EXPORT static bool enableImmediateUpdateModeForContentOffsetChanges();
@@ -225,6 +230,11 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool enableModuleArgumentNSNullConversionIOS();
 
   /**
+   * When enabled, Android mounts transactions with the pull model (like iOS): the commit thread no longer pulls and builds the mount batch in schedulerShouldRenderTransactions. Instead the UI thread pulls the transaction itself via a PullTransactionMountItem enqueued in the MountItemDispatcher, builds the IntBufferBatchMountItem, and applies it synchronously. Requires `enableAccumulatedUpdatesInRawPropsAndroid` to be enabled as well, since a single pull may collapse several commits into one diff and therefore needs complete accumulated rawProps; when used together with Props 2.0, also enable `enableExclusivePropsUpdateAndroid` and `enablePropsUpdateReconciliationAndroid`.
+   */
+  RN_EXPORT static bool enableMountingCoordinatorPullModelAndroid();
+
+  /**
    * Enables the MutationObserver Web API in React Native.
    */
   RN_EXPORT static bool enableMutationObserverByDefault();
@@ -233,11 +243,6 @@ class ReactNativeFeatureFlags {
    * Parse CSS strings using the Fabric CSS parser instead of ViewConfig processing
    */
   RN_EXPORT static bool enableNativeCSSParsing();
-
-  /**
-   * Enable network event reporting hooks in each native platform through `NetworkReporter` (Web Perf APIs + CDP). This flag should be combined with `fuseboxNetworkInspectionEnabled` to enable Network CDP debugging.
-   */
-  RN_EXPORT static bool enableNetworkEventReporting();
 
   /**
    * Enables caching text layout artifacts for later reuse
@@ -330,14 +335,14 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool fuseboxFrameRecordingEnabled();
 
   /**
-   * Enable network inspection support in the React Native DevTools CDP backend. Requires `enableBridgelessArchitecture`. This flag is global and should not be changed across React Host lifetimes.
-   */
-  RN_EXPORT static bool fuseboxNetworkInspectionEnabled();
-
-  /**
    * Enable Page.captureScreenshot CDP method support in the React Native DevTools CDP backend. This flag is global and should not be changed across React Host lifetimes.
    */
   RN_EXPORT static bool fuseboxScreenshotCaptureEnabled();
+
+  /**
+   * Enable reporting of WebSocket network events (`Network.webSocket*` CDP events) to the React Native DevTools CDP backend.
+   */
+  RN_EXPORT static bool fuseboxWebSocketEventsEnabled();
 
   /**
    * When enabled, uses optimized platform-specific paths to apply animated props synchronously. On Android, this uses a batched int/double buffer protocol with a single JNI call. On iOS, this passes AnimatedProps directly through the delegate chain and applies them via cloneProps, avoiding the folly::dynamic round-trip.

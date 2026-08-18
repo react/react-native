@@ -25,7 +25,7 @@ RCT_EXPORT_MODULE()
   AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
 }
 
-RCT_EXPORT_METHOD(vibrate : (double)pattern)
+- (void)vibrate:(double)pattern
 {
   [self vibrate];
 }
@@ -36,12 +36,12 @@ RCT_EXPORT_METHOD(vibrate : (double)pattern)
   return std::make_shared<facebook::react::NativeVibrationSpecJSI>(params);
 }
 
-RCT_EXPORT_METHOD(vibrateByPattern : (NSArray *)pattern repeat : (double)repeat)
+- (void)vibrateByPattern:(NSArray *)pattern repeat:(double)repeat
 {
   RCTLogError(@"Vibration.vibrateByPattern does not have an iOS implementation");
 }
 
-RCT_EXPORT_METHOD(cancel)
+- (void)cancel
 {
   RCTLogError(@"Vibration.cancel does not have an iOS implementation");
 }

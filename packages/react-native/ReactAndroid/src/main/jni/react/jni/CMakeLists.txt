@@ -23,6 +23,7 @@ include(${REACT_ANDROID_DIR}/src/main/jni/first-party/jni-lib-merge/SoMerging-ut
 add_library(
         reactnativejni_common
         OBJECT
+          JArrayBuffer.cpp
           JDynamicNative.cpp
           JReactMarker.cpp
           NativeArray.cpp
@@ -38,7 +39,7 @@ add_library(
 target_merge_so(reactnativejni_common)
 target_include_directories(reactnativejni_common PUBLIC ../../)
 
-target_link_libraries(reactnativejni_common fbjni folly_runtime react_cxxreact rrc_view)
+target_link_libraries(reactnativejni_common fbjni folly_runtime react_bridging react_cxxreact rrc_view)
 target_compile_reactnative_options(reactnativejni_common PRIVATE)
 target_compile_options(reactnativejni_common PRIVATE -Wno-unused-lambda-capture)
 

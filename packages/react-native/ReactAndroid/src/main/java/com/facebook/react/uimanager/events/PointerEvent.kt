@@ -61,7 +61,7 @@ internal class PointerEvent private constructor() : Event<PointerEvent>() {
           TAG,
           IllegalStateException(
               "Cannot dispatch a Pointer that has no MotionEvent; the PointerEvent has been" +
-                  " recycled"
+                  " recycled",
           ),
       )
       return
@@ -256,7 +256,7 @@ internal class PointerEvent private constructor() : Event<PointerEvent>() {
       logSoftException(
           TAG,
           IllegalStateException(
-              "Cannot dispatch a Pointer that has no MotionEvent; the PointerEvent has been recycled"
+              "Cannot dispatch a Pointer that has no MotionEvent; the PointerEvent has been recycled",
           ),
       )
       return

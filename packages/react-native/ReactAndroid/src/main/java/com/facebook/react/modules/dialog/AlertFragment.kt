@@ -105,7 +105,7 @@ public class AlertFragment : DialogFragment, DialogInterface.OnClickListener {
 
       val accessibleTitle: TextView =
           Assertions.assertNotNull<TextView>(
-              titleContainer.findViewById<TextView>(R.id.alert_title)
+              titleContainer.findViewById<TextView>(R.id.alert_title),
           )
       accessibleTitle.text = titleText
       accessibleTitle.isFocusable = true

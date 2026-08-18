@@ -23,7 +23,7 @@ import com.facebook.react.devsupport.interfaces.DevSupportManager
 import com.facebook.react.devsupport.interfaces.PausedInDebuggerOverlayManager
 
 internal class PausedInDebuggerOverlayDialogManager(
-    private val contextSupplier: Supplier<Context?>
+    private val contextSupplier: Supplier<Context?>,
 ) : PausedInDebuggerOverlayManager {
   private var pausedInDebuggerDialog: Dialog? = null
 

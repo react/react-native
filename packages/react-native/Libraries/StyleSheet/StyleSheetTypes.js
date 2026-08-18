@@ -540,12 +540,7 @@ type ____LayoutStyle_Internal = Readonly<{
    *  for more details.
    */
   alignSelf?:
-    | 'auto'
-    | 'flex-start'
-    | 'flex-end'
-    | 'center'
-    | 'stretch'
-    | 'baseline',
+    'auto' | 'flex-start' | 'flex-end' | 'center' | 'stretch' | 'baseline',
 
   /** `alignContent` controls how rows align in the cross direction,
    *  overriding the `alignContent` of the parent.
@@ -736,10 +731,7 @@ type LinearGradientValue = {
 };
 
 type RadialExtent =
-  | 'closest-corner'
-  | 'closest-side'
-  | 'farthest-corner'
-  | 'farthest-side';
+  'closest-corner' | 'closest-side' | 'farthest-corner' | 'farthest-side';
 export type RadialGradientPosition =
   | {
       top: number | string,
@@ -785,10 +777,7 @@ export type BackgroundSizeValue = {
 };
 
 export type BackgroundRepeatKeyword =
-  | 'repeat'
-  | 'space'
-  | 'round'
-  | 'no-repeat';
+  'repeat' | 'space' | 'round' | 'no-repeat';
 
 export type BackgroundPositionValue =
   | {
@@ -906,8 +895,7 @@ export type ____ViewStyle_InternalBase = Readonly<{
   experimental_backgroundImage?: ReadonlyArray<BackgroundImageValue> | string,
   experimental_backgroundSize?: ReadonlyArray<BackgroundSizeValue> | string,
   experimental_backgroundPosition?:
-    | ReadonlyArray<BackgroundPositionValue>
-    | string,
+    ReadonlyArray<BackgroundPositionValue> | string,
   experimental_backgroundRepeat?: ReadonlyArray<BackgroundRepeatValue> | string,
   isolation?: 'auto' | 'isolate',
 }>;
@@ -1011,6 +999,9 @@ export type ____FontVariant_Internal =
 export type ____FontVariantArray_Internal =
   ReadonlyArray<____FontVariant_Internal>;
 
+export type ____FontVariationSettings_Internal =
+  string | Readonly<{[axis: string]: number}>;
+
 type ____TextStyle_InternalBase = Readonly<{
   color?: ____ColorValue_Internal,
   fontFamily?: string,
@@ -1023,6 +1014,13 @@ type ____TextStyle_InternalBase = Readonly<{
    */
   fontWeight?: ____FontWeight_Internal,
   fontVariant?: ____FontVariantArray_Internal | string,
+  /**
+   * Specifies OpenType font variation axis values using CSS syntax or an
+   * object keyed by four-character axis tags. An empty string or object resets
+   * inherited variation settings. On Android, this requires API level 26 or
+   * later.
+   */
+  fontVariationSettings?: ____FontVariationSettings_Internal,
   textShadowOffset?: Readonly<{
     width: number,
     height: number,
@@ -1032,20 +1030,11 @@ type ____TextStyle_InternalBase = Readonly<{
   letterSpacing?: number,
   lineHeight?: number,
   textAlign?:
-    | 'auto'
-    | 'left'
-    | 'right'
-    | 'center'
-    | 'justify'
-    | 'start'
-    | 'end',
+    'auto' | 'left' | 'right' | 'center' | 'justify' | 'start' | 'end',
   textAlignVertical?: 'auto' | 'top' | 'bottom' | 'center',
   includeFontPadding?: boolean,
   textDecorationLine?:
-    | 'none'
-    | 'underline'
-    | 'line-through'
-    | 'underline line-through',
+    'none' | 'underline' | 'line-through' | 'underline line-through',
   textDecorationStyle?: 'solid' | 'double' | 'dotted' | 'dashed' | 'wavy',
   textDecorationColor?: ____ColorValue_Internal,
   textTransform?: 'none' | 'capitalize' | 'uppercase' | 'lowercase',
@@ -1093,12 +1082,7 @@ export type ____DangerouslyImpreciseStyle_Internal = Readonly<{
 }>;
 
 export type StyleProp<out T> =
-  | null
-  | void
-  | T
-  | false
-  | ''
-  | ReadonlyArray<StyleProp<T>>;
+  null | void | T | false | '' | ReadonlyArray<StyleProp<T>>;
 
 export type ____DangerouslyImpreciseStyleProp_Internal = StyleProp<
   Partial<____DangerouslyImpreciseStyle_Internal>,

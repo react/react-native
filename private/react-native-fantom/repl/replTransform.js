@@ -8,9 +8,9 @@
  * @format
  */
 
-import type {ESNode, Program} from 'hermes-estree';
+import type {ESNode, Program} from 'flow-estree';
 
-import {parse} from 'hermes-parser';
+import {parse} from 'flow-parser';
 
 export type TransformResult = {
   code: string,

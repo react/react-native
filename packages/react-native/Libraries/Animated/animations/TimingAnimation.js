@@ -16,6 +16,7 @@ import type AnimatedValueXY from '../nodes/AnimatedValueXY';
 import type {AnimationConfig, EndCallback} from './Animation';
 
 import * as ReactNativeFeatureFlags from '../../../src/private/featureflags/ReactNativeFeatureFlags';
+import {getCurrentAnimationTime} from '../AnimationTimingUtils';
 import AnimatedColor from '../nodes/AnimatedColor';
 import Animation from './Animation';
 
@@ -126,7 +127,7 @@ export default class TimingAnimation extends Animation {
     }
 
     const start = () => {
-      this._startTime = Date.now();
+      this._startTime = getCurrentAnimationTime();
 
       const useNativeDriver = this.__startAnimationIfNative(animatedValue);
       // TODO: T274006331 - Remove js-only animation once shared backend is fully rolled out
@@ -150,7 +151,7 @@ export default class TimingAnimation extends Animation {
   }
 
   onUpdate(): void {
-    const now = Date.now();
+    const now = getCurrentAnimationTime();
     if (now >= this._startTime + this._duration) {
       if (this._duration === 0) {
         this._onUpdate(this._toValue);

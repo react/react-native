@@ -92,7 +92,7 @@ internal class ReactModalHostManager :
     if (dispatcher != null) {
       view.onRequestCloseListener = OnRequestCloseListener {
         dispatcher.dispatchEvent(
-            RequestCloseEvent(UIManagerHelper.getSurfaceId(reactContext), view.id)
+            RequestCloseEvent(UIManagerHelper.getSurfaceId(reactContext), view.id),
         )
       }
       view.onShowListener = OnShowListener {

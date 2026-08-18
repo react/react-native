@@ -11,6 +11,13 @@ import PackageDescription
 
 let BUILD_FROM_SOURCE = false
 
+// Removing the legacy TurboModule and component interop layers is opt-in while those
+// layers are still supported. Both will default to on in a future React Native release.
+let REMOVE_LEGACY_MODULE_INTEROP =
+  ProcessInfo.processInfo.environment["RCT_REMOVE_LEGACY_MODULE_INTEROP"] == "1"
+let REMOVE_LEGACY_COMPONENT_INTEROP =
+  ProcessInfo.processInfo.environment["RCT_REMOVE_LEGACY_COMPONENT_INTEROP"] == "1"
+
 /**
  This is the `Package.swift` file that allows to build React Native core using Swift PM.
  To build React Native, you need to follow these steps:
@@ -948,6 +955,14 @@ extension Target {
         CXXSetting.headerSearchPath(relativeSearchPath(numOfSlash + 1, ".build/headers/React")),
       ]
 
+    let legacyInteropDefines: [CXXSetting] =
+      (REMOVE_LEGACY_MODULE_INTEROP ? [.define("RCT_REMOVE_LEGACY_MODULE_INTEROP", to: "1")] : [])
+      + (REMOVE_LEGACY_COMPONENT_INTEROP ? [.define("RCT_REMOVE_LEGACY_COMPONENT_INTEROP", to: "1")] : [])
+
+    // Every target built through this factory is React Native's own, so RN_BUILDING
+    // keeps the react/cxxstableapi guards inert for internal sources. cxxSettings are
+    // per-target and are not inherited by packages that depend on React, so this does
+    // not exempt consumers from the guards.
     let cxxSettings =
       [
         .unsafeFlags(["-std=c++20"]),
@@ -956,7 +971,8 @@ extension Target {
         .define("USE_HERMES", to: "1"),
         .define("RCT_REMOVE_LEGACY_ARCH", to: "1"),
         .define("HERMES_V1_ENABLED", to: "1"),
-      ] + defines + cxxCommonHeaderPaths
+        .define("RN_BUILDING", to: "1"),
+      ] + legacyInteropDefines + defines + cxxCommonHeaderPaths
 
     return .target(
       name: name,

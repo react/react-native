@@ -148,7 +148,7 @@ class GenerateCodegenArtifactsTaskTest {
                   }
               }
               """
-                  .trimIndent()
+                  .trimIndent(),
           )
         }
 
@@ -178,7 +178,7 @@ class GenerateCodegenArtifactsTaskTest {
                   }
               }
               """
-                  .trimIndent()
+                  .trimIndent(),
           )
         }
 

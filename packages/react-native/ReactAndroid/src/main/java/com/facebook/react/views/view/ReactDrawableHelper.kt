@@ -44,12 +44,12 @@ public object ReactDrawableHelper {
       val attr =
           drawableDescriptionDict.getString("attribute")
               ?: throw JSApplicationIllegalArgumentException(
-                  "JS description missing 'attribute' field"
+                  "JS description missing 'attribute' field",
               )
       val attrId = getAttrId(context, attr)
       if (!context.theme.resolveAttribute(attrId, resolveOutValue, true)) {
         throw JSApplicationIllegalArgumentException(
-            "Attribute $attr with id $attrId couldn't be resolved into a drawable"
+            "Attribute $attr with id $attrId couldn't be resolved into a drawable",
         )
       }
       val drawable = getDefaultThemeDrawable(context)
@@ -145,7 +145,7 @@ public object ReactDrawableHelper {
         context.resources.getColor(resolveOutValue.resourceId, context.theme)
       } else {
         throw JSApplicationIllegalArgumentException(
-            "Attribute colorControlHighlight couldn't be resolved into a drawable"
+            "Attribute colorControlHighlight couldn't be resolved into a drawable",
         )
       }
 

@@ -18,12 +18,11 @@ public class ReactScrollViewCommandHelper {
     public const val COMMAND_FLASH_SCROLL_INDICATORS: Int = 3
 
     @JvmStatic
-    public fun getCommandsMap(): Map<String, Int> =
-        hashMapOf(
-            "scrollTo" to COMMAND_SCROLL_TO,
-            "scrollToEnd" to COMMAND_SCROLL_TO_END,
-            "flashScrollIndicators" to COMMAND_FLASH_SCROLL_INDICATORS,
-        )
+    public fun getCommandsMap(): Map<String, Int> = hashMapOf(
+        "scrollTo" to COMMAND_SCROLL_TO,
+        "scrollToEnd" to COMMAND_SCROLL_TO_END,
+        "flashScrollIndicators" to COMMAND_FLASH_SCROLL_INDICATORS,
+    )
 
     @JvmStatic
     public fun <T> receiveCommand(
@@ -40,7 +39,7 @@ public class ReactScrollViewCommandHelper {
         COMMAND_FLASH_SCROLL_INDICATORS -> viewManager.flashScrollIndicators(scrollView)
         else ->
             throw IllegalArgumentException(
-                "Unsupported command $commandType received by ${viewManager::class.java.simpleName}."
+                "Unsupported command $commandType received by ${viewManager::class.java.simpleName}.",
             )
       }
     }
@@ -60,7 +59,7 @@ public class ReactScrollViewCommandHelper {
         "flashScrollIndicators" -> viewManager.flashScrollIndicators(scrollView)
         else ->
             throw IllegalArgumentException(
-                "Unsupported command $commandType received by ${viewManager::class.java.simpleName}."
+                "Unsupported command $commandType received by ${viewManager::class.java.simpleName}.",
             )
       }
     }

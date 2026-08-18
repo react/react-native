@@ -11,7 +11,7 @@
 'use strict';
 
 const {ParserError} = require('./errors');
-const path = require('path');
+const path = require('node:path');
 
 export type TypeDeclarationMap = {[declarationName: string]: $FlowFixMe};
 
@@ -177,22 +177,18 @@ function isModuleRegistryCall(node: $FlowFixMe): boolean {
   }
 
   const memberExpression = callExpression.callee;
-  if (
-    !(
-      memberExpression.object.type === 'Identifier' &&
-      memberExpression.object.name === 'TurboModuleRegistry'
-    )
-  ) {
+  if (!(
+    memberExpression.object.type === 'Identifier' &&
+    memberExpression.object.name === 'TurboModuleRegistry'
+  )) {
     return false;
   }
 
-  if (
-    !(
-      memberExpression.property.type === 'Identifier' &&
-      (memberExpression.property.name === 'get' ||
-        memberExpression.property.name === 'getEnforcing')
-    )
-  ) {
+  if (!(
+    memberExpression.property.type === 'Identifier' &&
+    (memberExpression.property.name === 'get' ||
+      memberExpression.property.name === 'getEnforcing')
+  )) {
     return false;
   }
 

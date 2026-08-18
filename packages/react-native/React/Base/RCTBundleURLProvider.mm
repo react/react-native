@@ -19,13 +19,14 @@ NSString *const RCTBundleURLProviderUpdatedNotification = @"RCTBundleURLProvider
 
 const NSUInteger kRCTBundleURLProviderDefaultPort = RCT_METRO_PORT;
 
-#if RCT_DEV_MENU | RCT_PACKAGER_LOADING_FUNCTIONALITY
+// Declared unconditionally so out-of-tree callers link in every configuration,
+// same shape as RCTDevLoadingViewSetEnabled. Reads stay gated below, so this is
+// a no-op when packager support is compiled out.
 static BOOL kRCTAllowPackagerAccess = YES;
 void RCTBundleURLProviderAllowPackagerServerAccess(BOOL allowed)
 {
   kRCTAllowPackagerAccess = allowed;
 }
-#endif
 static NSString *const kRCTPackagerSchemeKey = @"RCT_packager_scheme";
 static NSString *const kRCTJsLocationKey = @"RCT_jsLocation";
 static NSString *const kRCTEnableDevKey = @"RCT_enableDev";

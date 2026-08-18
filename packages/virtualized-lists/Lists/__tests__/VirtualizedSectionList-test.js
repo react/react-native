@@ -18,6 +18,18 @@ const VirtualizedSectionList = require('../VirtualizedSectionList').default;
 const React = require('react');
 const ReactTestRenderer = require('react-test-renderer');
 
+function removeOwner(obj: unknown): unknown {
+  if (obj === null || typeof obj !== 'object') return obj;
+  if (Array.isArray(obj)) return obj.map(removeOwner);
+
+  const result: {[string]: unknown} = {};
+  for (const key of Object.keys(obj)) {
+    if (key === '_owner') continue;
+    result[key] = removeOwner(obj[key]);
+  }
+  return result;
+}
+
 describe('VirtualizedSectionList', () => {
   it('renders simple list', async () => {
     let component;
@@ -122,7 +134,8 @@ describe('VirtualizedSectionList', () => {
         />,
       );
     });
-    expect(component).toMatchSnapshot();
+    // $FlowFixMe[incompatible-use] component is assigned before use inside act()
+    expect(removeOwner(component.toJSON())).toMatchSnapshot();
   });
 
   it('handles separators correctly', async () => {

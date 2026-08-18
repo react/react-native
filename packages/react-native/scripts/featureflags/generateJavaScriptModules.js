@@ -14,7 +14,7 @@ import NativeReactNativeFeatureFlagsCPP from './templates/js/NativeReactNativeFe
 import NativeReactNativeFeatureFlagsH from './templates/js/NativeReactNativeFeatureFlags.h-template';
 import NativeReactNativeFeatureFlagsJS from './templates/js/NativeReactNativeFeatureFlags.js-template';
 import ReactNativeFeatureFlagsJS from './templates/js/ReactNativeFeatureFlags.js-template';
-import path from 'path';
+import path from 'node:path';
 
 export default function generateCommonCxxModules(
   generatorConfig: GeneratorConfig,

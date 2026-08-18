@@ -10,8 +10,8 @@
 
 const sortPropertiesVisitor = require('../sortProperties');
 const babel = require('@babel/core');
-const {promises: fs} = require('fs');
-const path = require('path');
+const {promises: fs} = require('node:fs');
+const path = require('node:path');
 
 async function translate(code: string): Promise<string> {
   const result = await babel.transformAsync(code, {

@@ -54,4 +54,6 @@ Pod::Spec.new do |s|
   add_rncore_dependency(s)
 
   add_dependency(s, "React-debug")
+
+  mark_as_react_native_build(s)
 end

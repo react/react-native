@@ -378,26 +378,39 @@ void ReactInstance::registerSegment(
     const std::string& segmentPath) {
   LOG(WARNING) << "Starting to run ReactInstance::registerSegment with segment "
                << segmentId;
-  runtimeScheduler_->scheduleWork([=](jsi::Runtime& runtime) {
-    TraceSection s("ReactInstance::registerSegment");
-    auto tag = std::to_string(segmentId);
-    auto script = JSBigFileString::fromPath(segmentPath);
-    if (script->size() == 0) {
-      throw std::invalid_argument(
-          "Empty segment registered with ID " + tag + " from " + segmentPath);
-    }
-
-    ReactMarker::logTaggedMarker(
-        ReactMarker::REGISTER_JS_SEGMENT_START, tag.c_str());
-    LOG(WARNING) << "Starting to evaluate segment " << segmentId
-                 << " in ReactInstance::registerSegment";
-    runtime.evaluateJavaScript(
-        std::move(script), getSyntheticBundlePath(segmentId));
-    LOG(WARNING) << "Finished evaluating segment " << segmentId
-                 << " in ReactInstance::registerSegment";
-    ReactMarker::logTaggedMarker(
-        ReactMarker::REGISTER_JS_SEGMENT_STOP, tag.c_str());
-  });
+  // Build the segment buffer off the JS thread: there's no need to block the
+  // JS thread on file I/O. The segment lives in an OS-purgeable /
+  // LRU-evictable on-demand cache and can already be gone by the time we get
+  // here, in which case fromPath throws. Catch it and return early so a
+  // missing segment degrades gracefully instead of surfacing as an unhandled
+  // exception.
+  std::shared_ptr<const JSBigFileString> script;
+  try {
+    script = JSBigFileString::fromPath(segmentPath);
+  } catch (const std::exception& e) {
+    LOG(ERROR) << "ReactInstance::registerSegment - could not load segment "
+               << segmentId << " from " << segmentPath << ": " << e.what();
+    return;
+  }
+  if (script->size() == 0) {
+    throw std::invalid_argument(
+        "Empty segment registered with ID " + std::to_string(segmentId) +
+        " from " + segmentPath);
+  }
+  runtimeScheduler_->scheduleWork(
+      [script = std::move(script), segmentId](jsi::Runtime& runtime) {
+        TraceSection s("ReactInstance::registerSegment");
+        auto tag = std::to_string(segmentId);
+        ReactMarker::logTaggedMarker(
+            ReactMarker::REGISTER_JS_SEGMENT_START, tag.c_str());
+        LOG(WARNING) << "Starting to evaluate segment " << segmentId
+                     << " in ReactInstance::registerSegment";
+        runtime.evaluateJavaScript(script, getSyntheticBundlePath(segmentId));
+        LOG(WARNING) << "Finished evaluating segment " << segmentId
+                     << " in ReactInstance::registerSegment";
+        ReactMarker::logTaggedMarker(
+            ReactMarker::REGISTER_JS_SEGMENT_STOP, tag.c_str());
+      });
 }
 
 namespace {

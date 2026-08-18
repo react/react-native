@@ -52,7 +52,7 @@ internal class LogBoxDialogSurfaceDelegate(private val devSupportManager: DevSup
     if (context == null || context.isFinishing) {
       e(
           "Unable to launch logbox because react activity " +
-              "is not available, here is the error that logbox would've displayed: "
+              "is not available, here is the error that logbox would've displayed: ",
       )
       return
     }

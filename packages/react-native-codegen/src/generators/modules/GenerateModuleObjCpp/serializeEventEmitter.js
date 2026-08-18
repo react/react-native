@@ -78,20 +78,28 @@ function EventEmitterHeaderTemplate(
 function EventEmitterImplementationTemplate(
   eventEmitter: NativeModuleEventEmitterShape,
 ): string {
+  // _eventEmitterCallback is installed by the generated SpecJSI constructor,
+  // which runs when JS first looks the module up. Emitting before that would
+  // call an empty std::function, so the emitted code no-ops instead. The local
+  // copy is for readability; it does not synchronize against a concurrent
+  // install.
   return `- (void)emit${toPascalCase(eventEmitter.name)}${
     eventEmitter.typeAnnotation.typeAnnotation.type !== 'VoidTypeAnnotation'
       ? `:(${getEventEmitterTypeObjCType(eventEmitter)})value`
       : ''
   }
 {
-  _eventEmitterCallback("${eventEmitter.name}", ${
-    eventEmitter.typeAnnotation.typeAnnotation.type !== 'VoidTypeAnnotation'
-      ? eventEmitter.typeAnnotation.typeAnnotation.type !==
-        'BooleanTypeAnnotation'
-        ? 'value'
-        : '[NSNumber numberWithBool:value]'
-      : 'nil'
-  });
+  auto eventEmitterCallback = _eventEmitterCallback;
+  if (eventEmitterCallback) {
+    eventEmitterCallback("${eventEmitter.name}", ${
+      eventEmitter.typeAnnotation.typeAnnotation.type !== 'VoidTypeAnnotation'
+        ? eventEmitter.typeAnnotation.typeAnnotation.type !==
+          'BooleanTypeAnnotation'
+          ? 'value'
+          : '[NSNumber numberWithBool:value]'
+        : 'nil'
+    });
+  }
 }`;
 }
 

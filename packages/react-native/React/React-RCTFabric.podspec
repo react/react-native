@@ -100,6 +100,7 @@ Pod::Spec.new do |s|
   add_dependency(s, "React-networking", :framework_name => 'React_networking')
   add_dependency(s, "React-renderercss")
   add_dependency(s, "React-RCTFBReactNativeSpec")
+  add_dependency(s, "React-cxxstableapi")
 
   depend_on_js_engine(s)
   add_rn_third_party_dependencies(s)
@@ -109,4 +110,6 @@ Pod::Spec.new do |s|
     test_spec.source_files = podspec_sources("Tests/**/*.{mm}", "")
     test_spec.framework = "XCTest"
   end
+
+  mark_as_react_native_build(s)
 end

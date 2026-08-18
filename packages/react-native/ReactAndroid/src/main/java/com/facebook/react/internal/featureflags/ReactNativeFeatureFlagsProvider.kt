@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<8b5a9f8966d9f096b7fa4f7020db1f34>>
+ * @generated SignedSource<<1a1d47f2d85404c776e55db40f7dbc6e>>
  */
 
 /**
@@ -81,6 +81,8 @@ public interface ReactNativeFeatureFlagsProvider {
 
   @DoNotStrip public fun enableImagePrefetchingAndroid(): Boolean
 
+  @DoNotStrip public fun enableImageTransparentTintColor(): Boolean
+
   @DoNotStrip public fun enableImmediateUpdateModeForContentOffsetChanges(): Boolean
 
   @DoNotStrip public fun enableImperativeFocus(): Boolean
@@ -97,11 +99,11 @@ public interface ReactNativeFeatureFlagsProvider {
 
   @DoNotStrip public fun enableModuleArgumentNSNullConversionIOS(): Boolean
 
+  @DoNotStrip public fun enableMountingCoordinatorPullModelAndroid(): Boolean
+
   @DoNotStrip public fun enableMutationObserverByDefault(): Boolean
 
   @DoNotStrip public fun enableNativeCSSParsing(): Boolean
-
-  @DoNotStrip public fun enableNetworkEventReporting(): Boolean
 
   @DoNotStrip public fun enablePreparedTextLayout(): Boolean
 
@@ -139,9 +141,9 @@ public interface ReactNativeFeatureFlagsProvider {
 
   @DoNotStrip public fun fuseboxFrameRecordingEnabled(): Boolean
 
-  @DoNotStrip public fun fuseboxNetworkInspectionEnabled(): Boolean
-
   @DoNotStrip public fun fuseboxScreenshotCaptureEnabled(): Boolean
+
+  @DoNotStrip public fun fuseboxWebSocketEventsEnabled(): Boolean
 
   @DoNotStrip public fun optimizedAnimatedPropUpdates(): Boolean
 

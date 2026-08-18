@@ -10,8 +10,8 @@
 
 'use strict';
 
-const {spawnSync} = require('child_process');
-const fs = require('fs');
+const {spawnSync} = require('node:child_process');
+const fs = require('node:fs');
 const yargs = require('yargs');
 
 const LAST_BUILD_FILENAME = 'ReactNativeDependencies/.last_build_configuration';

@@ -12,8 +12,8 @@
 require('../../shared/babelRegister').registerForScript();
 
 const {diffApiSnapshot} = require('./diffApiSnapshot');
-const fs = require('fs');
-const {parseArgs} = require('util');
+const fs = require('node:fs');
+const {parseArgs} = require('node:util');
 
 const config = {
   allowPositionals: true,

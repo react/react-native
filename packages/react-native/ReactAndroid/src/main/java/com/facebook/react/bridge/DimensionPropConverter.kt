@@ -20,7 +20,7 @@ internal class DimensionPropConverter {
         is String -> YogaValue.parse(value)
         else ->
             throw JSApplicationCausedNativeException(
-                "DimensionValue: the value must be a number or string."
+                "DimensionValue: the value must be a number or string.",
             )
       }
     }

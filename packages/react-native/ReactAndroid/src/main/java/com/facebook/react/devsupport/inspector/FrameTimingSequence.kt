@@ -13,4 +13,5 @@ internal data class FrameTimingSequence(
     val beginTimestamp: Long,
     val endTimestamp: Long,
     val screenshot: ByteArray? = null,
+    val vsyncIntervalNanos: Long = 0,
 )

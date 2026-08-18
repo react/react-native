@@ -746,12 +746,259 @@ exports[`VirtualizedSectionList handles separators correctly 4`] = `
 `;
 
 exports[`VirtualizedSectionList renders all the bells and whistles 1`] = `
-<RCTScrollView
-  ListEmptyComponent={[Function]}
-  ListFooterComponent={[Function]}
-  ListHeaderComponent={[Function]}
-  data={
-    Array [
+Object {
+  "children": Array [
+    Object {
+      "children": null,
+      "props": Object {},
+      "type": "RCTRefreshControl",
+    },
+    Object {
+      "children": Array [
+        Object {
+          "children": Array [
+            Object {
+              "children": null,
+              "props": Object {},
+              "type": "header",
+            },
+          ],
+          "props": Object {
+            "collapsable": false,
+            "onLayout": [Function],
+            "style": Object {
+              "transform": Array [
+                Object {
+                  "scaleY": -1,
+                },
+              ],
+            },
+          },
+          "type": "View",
+        },
+        Object {
+          "children": null,
+          "props": Object {
+            "onFocusCapture": [Function],
+            "style": Array [
+              Object {
+                "flexDirection": "column-reverse",
+              },
+              Object {
+                "transform": Array [
+                  Object {
+                    "scaleY": -1,
+                  },
+                ],
+              },
+            ],
+          },
+          "type": "View",
+        },
+        Object {
+          "children": Array [
+            Object {
+              "children": null,
+              "props": Object {},
+              "type": "separator",
+            },
+            Object {
+              "children": null,
+              "props": Object {
+                "value": "0",
+              },
+              "type": "item",
+            },
+          ],
+          "props": Object {
+            "onFocusCapture": [Function],
+            "style": Array [
+              Object {
+                "flexDirection": "column-reverse",
+              },
+              Object {
+                "transform": Array [
+                  Object {
+                    "scaleY": -1,
+                  },
+                ],
+              },
+            ],
+          },
+          "type": "View",
+        },
+        Object {
+          "children": Array [
+            Object {
+              "children": null,
+              "props": Object {},
+              "type": "separator",
+            },
+            Object {
+              "children": null,
+              "props": Object {
+                "value": "1",
+              },
+              "type": "item",
+            },
+          ],
+          "props": Object {
+            "onFocusCapture": [Function],
+            "style": Array [
+              Object {
+                "flexDirection": "column-reverse",
+              },
+              Object {
+                "transform": Array [
+                  Object {
+                    "scaleY": -1,
+                  },
+                ],
+              },
+            ],
+          },
+          "type": "View",
+        },
+        Object {
+          "children": Array [
+            Object {
+              "children": null,
+              "props": Object {},
+              "type": "separator",
+            },
+            Object {
+              "children": null,
+              "props": Object {
+                "value": "2",
+              },
+              "type": "item",
+            },
+          ],
+          "props": Object {
+            "onFocusCapture": [Function],
+            "style": Array [
+              Object {
+                "flexDirection": "column-reverse",
+              },
+              Object {
+                "transform": Array [
+                  Object {
+                    "scaleY": -1,
+                  },
+                ],
+              },
+            ],
+          },
+          "type": "View",
+        },
+        Object {
+          "children": Array [
+            Object {
+              "children": null,
+              "props": Object {},
+              "type": "separator",
+            },
+            Object {
+              "children": null,
+              "props": Object {
+                "value": "3",
+              },
+              "type": "item",
+            },
+          ],
+          "props": Object {
+            "onFocusCapture": [Function],
+            "style": Array [
+              Object {
+                "flexDirection": "column-reverse",
+              },
+              Object {
+                "transform": Array [
+                  Object {
+                    "scaleY": -1,
+                  },
+                ],
+              },
+            ],
+          },
+          "type": "View",
+        },
+        Object {
+          "children": Array [
+            Object {
+              "children": null,
+              "props": Object {
+                "value": "4",
+              },
+              "type": "item",
+            },
+          ],
+          "props": Object {
+            "onFocusCapture": [Function],
+            "style": Array [
+              Object {
+                "flexDirection": "column-reverse",
+              },
+              Object {
+                "transform": Array [
+                  Object {
+                    "scaleY": -1,
+                  },
+                ],
+              },
+            ],
+          },
+          "type": "View",
+        },
+        Object {
+          "children": null,
+          "props": Object {
+            "onFocusCapture": [Function],
+            "style": Array [
+              Object {
+                "flexDirection": "column-reverse",
+              },
+              Object {
+                "transform": Array [
+                  Object {
+                    "scaleY": -1,
+                  },
+                ],
+              },
+            ],
+          },
+          "type": "View",
+        },
+        Object {
+          "children": Array [
+            Object {
+              "children": null,
+              "props": Object {},
+              "type": "footer",
+            },
+          ],
+          "props": Object {
+            "onLayout": [Function],
+            "style": Object {
+              "transform": Array [
+                Object {
+                  "scaleY": -1,
+                },
+              ],
+            },
+          },
+          "type": "View",
+        },
+      ],
+      "props": Object {},
+      "type": "View",
+    },
+  ],
+  "props": Object {
+    "ListEmptyComponent": [Function],
+    "ListFooterComponent": [Function],
+    "ListHeaderComponent": [Function],
+    "data": Array [
       Object {
         "data": Array [
           Object {
@@ -772,35 +1019,33 @@ exports[`VirtualizedSectionList renders all the bells and whistles 1`] = `
         ],
         "title": "s1",
       },
-    ]
-  }
-  getItem={[Function]}
-  getItemCount={[Function]}
-  getItemLayout={[Function]}
-  invertStickyHeaders={true}
-  inverted={true}
-  isInvertedVirtualizedList={true}
-  keyExtractor={[Function]}
-  onContentSizeChange={[Function]}
-  onLayout={[Function]}
-  onMomentumScrollBegin={[Function]}
-  onMomentumScrollEnd={[Function]}
-  onRefresh={[MockFunction]}
-  onScroll={[Function]}
-  onScrollBeginDrag={[Function]}
-  onScrollEndDrag={[Function]}
-  refreshControl={
-    <RefreshControlMock
+    ],
+    "getItem": [Function],
+    "getItemCount": [Function],
+    "getItemLayout": [Function],
+    "invertStickyHeaders": true,
+    "inverted": true,
+    "isInvertedVirtualizedList": true,
+    "keyExtractor": [Function],
+    "maintainVisibleContentPosition": undefined,
+    "onContentSizeChange": [Function],
+    "onLayout": [Function],
+    "onMomentumScrollBegin": [Function],
+    "onMomentumScrollEnd": [Function],
+    "onRefresh": [MockFunction],
+    "onScroll": [Function],
+    "onScrollBeginDrag": [Function],
+    "onScrollEndDrag": [Function],
+    "onViewableItemsChanged": undefined,
+    "refreshControl": <RefreshControlMock
       onRefresh={[MockFunction]}
       refreshing={false}
-    />
-  }
-  refreshing={false}
-  renderItem={[Function]}
-  scrollEventThrottle={0.0001}
-  stickyHeaderIndices={Array []}
-  style={
-    Array [
+    />,
+    "refreshing": false,
+    "renderItem": [Function],
+    "scrollEventThrottle": 0.0001,
+    "stickyHeaderIndices": Array [],
+    "style": Array [
       Object {
         "transform": Array [
           Object {
@@ -809,185 +1054,10 @@ exports[`VirtualizedSectionList renders all the bells and whistles 1`] = `
         ],
       },
       undefined,
-    ]
-  }
->
-  <RCTRefreshControl />
-  <View>
-    <View
-      collapsable={false}
-      onLayout={[Function]}
-      style={
-        Object {
-          "transform": Array [
-            Object {
-              "scaleY": -1,
-            },
-          ],
-        }
-      }
-    >
-      <header />
-    </View>
-    <View
-      onFocusCapture={[Function]}
-      style={
-        Array [
-          Object {
-            "flexDirection": "column-reverse",
-          },
-          Object {
-            "transform": Array [
-              Object {
-                "scaleY": -1,
-              },
-            ],
-          },
-        ]
-      }
-    />
-    <View
-      onFocusCapture={[Function]}
-      style={
-        Array [
-          Object {
-            "flexDirection": "column-reverse",
-          },
-          Object {
-            "transform": Array [
-              Object {
-                "scaleY": -1,
-              },
-            ],
-          },
-        ]
-      }
-    >
-      <separator />
-      <item
-        value="0"
-      />
-    </View>
-    <View
-      onFocusCapture={[Function]}
-      style={
-        Array [
-          Object {
-            "flexDirection": "column-reverse",
-          },
-          Object {
-            "transform": Array [
-              Object {
-                "scaleY": -1,
-              },
-            ],
-          },
-        ]
-      }
-    >
-      <separator />
-      <item
-        value="1"
-      />
-    </View>
-    <View
-      onFocusCapture={[Function]}
-      style={
-        Array [
-          Object {
-            "flexDirection": "column-reverse",
-          },
-          Object {
-            "transform": Array [
-              Object {
-                "scaleY": -1,
-              },
-            ],
-          },
-        ]
-      }
-    >
-      <separator />
-      <item
-        value="2"
-      />
-    </View>
-    <View
-      onFocusCapture={[Function]}
-      style={
-        Array [
-          Object {
-            "flexDirection": "column-reverse",
-          },
-          Object {
-            "transform": Array [
-              Object {
-                "scaleY": -1,
-              },
-            ],
-          },
-        ]
-      }
-    >
-      <separator />
-      <item
-        value="3"
-      />
-    </View>
-    <View
-      onFocusCapture={[Function]}
-      style={
-        Array [
-          Object {
-            "flexDirection": "column-reverse",
-          },
-          Object {
-            "transform": Array [
-              Object {
-                "scaleY": -1,
-              },
-            ],
-          },
-        ]
-      }
-    >
-      <item
-        value="4"
-      />
-    </View>
-    <View
-      onFocusCapture={[Function]}
-      style={
-        Array [
-          Object {
-            "flexDirection": "column-reverse",
-          },
-          Object {
-            "transform": Array [
-              Object {
-                "scaleY": -1,
-              },
-            ],
-          },
-        ]
-      }
-    />
-    <View
-      onLayout={[Function]}
-      style={
-        Object {
-          "transform": Array [
-            Object {
-              "scaleY": -1,
-            },
-          ],
-        }
-      }
-    >
-      <footer />
-    </View>
-  </View>
-</RCTScrollView>
+    ],
+  },
+  "type": "RCTScrollView",
+}
 `;
 
 exports[`VirtualizedSectionList renders empty list 1`] = `

@@ -7,12 +7,12 @@
  * @noformat
  * @nolint
  * @flow
- * @generated SignedSource<<cf323fc5ca893bab5669c7d321660412>>
+ * @generated SignedSource<<8b6b4d01340cfba2de5eabc3936dfbdd>>
  */
 
 'use strict';
 
-import {BatchedBridge} from 'react-native/Libraries/ReactPrivate/ReactNativePrivateInterface';
+import {BatchedBridge} from 'react-native/react-private-interface';
 
 import type {ReactFabricType} from './ReactNativeTypes';
 

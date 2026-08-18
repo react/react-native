@@ -73,7 +73,7 @@ internal object TurboModuleInteropUtils {
               createJniSignature(moduleName, methodName, paramClasses, returnType),
               createJSIReturnKind(moduleName, methodName, paramClasses, returnType),
               getJsArgCount(moduleName, methodName, paramClasses),
-          )
+          ),
       )
     }
 
@@ -300,7 +300,7 @@ internal object TurboModuleInteropUtils {
         moduleName: String,
         message: String,
     ) : super(
-        ("Unable to parse @ReactMethod annotations from native module: ${moduleName}. Details: ${message}")
+        ("Unable to parse @ReactMethod annotations from native module: ${moduleName}. Details: ${message}"),
     )
 
     constructor(
@@ -308,7 +308,7 @@ internal object TurboModuleInteropUtils {
         methodName: String,
         message: String,
     ) : super(
-        ("Unable to parse @ReactMethod annotation from native module method: ${moduleName}.${methodName}(). Details: ${message}")
+        ("Unable to parse @ReactMethod annotation from native module method: ${moduleName}.${methodName}(). Details: ${message}"),
     )
   }
 }

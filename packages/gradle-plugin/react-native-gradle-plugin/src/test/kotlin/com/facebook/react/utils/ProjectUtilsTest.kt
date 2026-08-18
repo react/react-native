@@ -128,7 +128,7 @@ class ProjectUtilsTest {
             "codegenConfig": {}
           }
           """
-              .trimIndent()
+              .trimIndent(),
       )
     }
     extension.root.set(tempFolder.root)
@@ -147,7 +147,7 @@ class ProjectUtilsTest {
             "name": "a-library"
           }
           """
-              .trimIndent()
+              .trimIndent(),
       )
     }
     extension.root.set(tempFolder.root)

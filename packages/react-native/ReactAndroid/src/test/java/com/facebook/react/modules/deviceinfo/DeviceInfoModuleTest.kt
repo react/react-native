@@ -62,7 +62,7 @@ import org.robolectric.annotation.Config
             ShadowNativeMap::class,
             ShadowWritableNativeMap::class,
             ShadowReadableNativeMap::class,
-        ]
+        ],
 )
 class DeviceInfoModuleTest : TestCase() {
 
@@ -236,7 +236,7 @@ class DeviceInfoModuleTest : TestCase() {
         object : WindowMetricsCalculatorDecorator {
           override fun decorate(calculator: WindowMetricsCalculator): WindowMetricsCalculator =
               target
-        }
+        },
     )
     try {
       block()

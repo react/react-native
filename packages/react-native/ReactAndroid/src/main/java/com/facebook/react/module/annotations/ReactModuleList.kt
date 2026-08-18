@@ -22,5 +22,5 @@ public annotation class ReactModuleList(
      *
      * @return List of Native modules in the package.
      */
-    public val nativeModules: Array<KClass<out NativeModule>>
+    public val nativeModules: Array<KClass<out NativeModule>>,
 )

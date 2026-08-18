@@ -18,10 +18,11 @@
 
 using namespace facebook::react;
 
-inline static TextAlignment RCTResolveTextAlignment(TextAlignment textAlignment, LayoutDirection layoutDirection)
+inline static TextAlignment RCTResolveTextAlignment(TextAlignment textAlignment, bool isRTL)
 {
-  const bool isRTL = layoutDirection == LayoutDirection::RightToLeft;
   switch (textAlignment) {
+    case TextAlignment::Natural:
+      return isRTL ? TextAlignment::Right : TextAlignment::Left;
     case TextAlignment::Start:
       return isRTL ? TextAlignment::Right : TextAlignment::Left;
     case TextAlignment::End:
@@ -153,6 +154,10 @@ inline static UIFont *RCTEffectiveFontFromTextAttributes(const TextAttributes &t
   fontProperties.weight = textAttributes.fontWeight.has_value()
       ? RCTUIFontWeightFromInteger((NSInteger)textAttributes.fontWeight.value())
       : NAN;
+  if (textAttributes.fontVariationSettings.has_value()) {
+    NSString *variationSettings = [NSString stringWithUTF8String:textAttributes.fontVariationSettings->c_str()];
+    fontProperties.variations = RCTParseFontVariationSettings(variationSettings);
+  }
   fontProperties.sizeMultiplier = RCTEffectiveFontSizeMultiplierFromTextAttributes(textAttributes);
 
   return RCTFontWithFontProperties(fontProperties);
@@ -212,10 +217,10 @@ NSMutableDictionary<NSAttributedStringKey, id> *RCTNSTextAttributesFromTextAttri
   // Paragraph Style
   NSMutableParagraphStyle *paragraphStyle = [NSMutableParagraphStyle new];
   BOOL isParagraphStyleUsed = NO;
-  if (textAttributes.alignment.has_value()) {
-    TextAlignment textAlignment = RCTResolveTextAlignment(
-        textAttributes.alignment.value_or(TextAlignment::Natural),
-        textAttributes.layoutDirection.value_or(LayoutDirection::LeftToRight));
+  const bool isRTL = textAttributes.layoutDirection == LayoutDirection::RightToLeft;
+  if (textAttributes.alignment.has_value() || isRTL) {
+    TextAlignment textAlignment =
+        RCTResolveTextAlignment(textAttributes.alignment.value_or(TextAlignment::Natural), isRTL);
 
     paragraphStyle.alignment = RCTNSTextAlignmentFromTextAlignment(textAlignment);
     isParagraphStyleUsed = YES;
@@ -412,7 +417,10 @@ static NSMutableAttributedString *RCTNSAttributedStringFragmentFromFragment(
 
     return [[NSMutableAttributedString attributedStringWithAttachment:attachment] mutableCopy];
   } else {
-    NSString *string = [NSString stringWithUTF8String:fragment.string.c_str()];
+    NSString *decoded = [[NSString alloc] initWithBytes:fragment.string.data()
+                                                 length:fragment.string.size()
+                                               encoding:NSUTF8StringEncoding];
+    NSString *string = decoded != nil ? decoded : @"";
 
     if (fragment.textAttributes.textTransform.has_value()) {
       auto textTransform = fragment.textAttributes.textTransform.value();

@@ -190,7 +190,7 @@ public object MatrixMathHelper {
     rotationDegrees[0] = roundTo3Places(-atan2(row[2][1], row[2][2]) * conv)
     rotationDegrees[1] =
         roundTo3Places(
-            -atan2(-row[2][0], sqrt(row[2][1] * row[2][1] + row[2][2] * row[2][2])) * conv
+            -atan2(-row[2][0], sqrt(row[2][1] * row[2][1] + row[2][2] * row[2][2])) * conv,
         )
     rotationDegrees[2] = roundTo3Places(-atan2(row[1][0], row[0][0]) * conv)
   }

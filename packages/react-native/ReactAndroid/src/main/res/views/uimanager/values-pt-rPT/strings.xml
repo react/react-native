@@ -9,7 +9,7 @@
     <string name="header_description" gender="unknown">Título</string>
     <string name="alert_description" gender="unknown">Aviso</string>
     <string name="combobox_description" gender="unknown">Caixa de combinação</string>
-    <string name="menubar_description" gender="unknown">Barra do menu</string>
+    <string name="menubar_description" gender="unknown">Barra de menus</string>
     <string name="menuitem_description" gender="unknown">Item do menu</string>
     <string name="progressbar_description" gender="unknown">Barra de progresso</string>
     <string name="radiogroup_description" gender="unknown">Grupo de opções</string>

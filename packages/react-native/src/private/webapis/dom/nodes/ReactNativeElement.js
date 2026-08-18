@@ -286,6 +286,7 @@ class ReactNativeElement extends ReadOnlyElement {
   // avoids the `getEventTypePropName(eventType, isCapture)` hash lookup per
   // ancestor per phase.
   // $FlowExpectedError[unsupported-syntax]
+  // $FlowFixMe[illegal-key]
   [EVENT_TARGET_GET_DECLARATIVE_LISTENER_KEY](
     event: Event,
     isCapture: boolean,

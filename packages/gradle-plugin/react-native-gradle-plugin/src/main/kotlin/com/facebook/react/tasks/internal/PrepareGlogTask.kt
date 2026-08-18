@@ -61,7 +61,7 @@ abstract class PrepareGlogTask : DefaultTask() {
                         "ac_cv___attribute___noreturn" to "__attribute__ ((noreturn))",
                         "ac_cv___attribute___printf_4_5" to
                             "__attribute__((__format__ (__printf__, 4, 5)))",
-                    )
+                    ),
             ),
             ReplaceTokens::class.java,
         )

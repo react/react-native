@@ -37,4 +37,6 @@ Pod::Spec.new do |s|
     ss.exclude_files        = "redbox/tests/**/*.{cpp,h}"
     ss.header_dir           = "react/debug/redbox"
   end
+
+  mark_as_react_native_build(s)
 end

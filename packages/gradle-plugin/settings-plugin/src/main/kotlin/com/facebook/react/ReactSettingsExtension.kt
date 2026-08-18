@@ -158,7 +158,9 @@ abstract class ReactSettingsExtension @Inject constructor(val settings: Settings
           logger.error(message)
           if (cacheJsonConfig.length() != 0L) {
             logger.error(
-                cacheJsonConfig.readText().substring(0, min(1024, cacheJsonConfig.length().toInt()))
+                cacheJsonConfig
+                    .readText()
+                    .substring(0, min(1024, cacheJsonConfig.length().toInt())),
             )
           }
           cacheJsonConfig.delete()

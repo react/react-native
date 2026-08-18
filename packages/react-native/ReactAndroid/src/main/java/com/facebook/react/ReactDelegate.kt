@@ -57,7 +57,7 @@ public open class ReactDelegate {
    * used for New Architecture.
    */
   @Deprecated(
-      "Use one of the other constructors instead to account for New Architecture. Deprecated since 0.75.0"
+      "Use one of the other constructors instead to account for New Architecture. Deprecated since 0.75.0",
   )
   public constructor(
       activity: Activity,
@@ -118,7 +118,7 @@ public open class ReactDelegate {
   public fun onHostResume() {
     if (activity !is DefaultHardwareBackBtnHandler) {
       throw ClassCastException(
-          "Host Activity `${activity.javaClass.simpleName}` does not implement DefaultHardwareBackBtnHandler"
+          "Host Activity `${activity.javaClass.simpleName}` does not implement DefaultHardwareBackBtnHandler",
       )
     }
     if (
@@ -409,7 +409,7 @@ public open class ReactDelegate {
   }
 
   @Deprecated(
-      "Do not access [ReactInstanceManager] directly. This class is going away in the New Architecture. You should use [ReactHost] instead."
+      "Do not access [ReactInstanceManager] directly. This class is going away in the New Architecture. You should use [ReactHost] instead.",
   )
   public fun getReactInstanceManager(): ReactInstanceManager {
     val nonNullReactNativeHost =

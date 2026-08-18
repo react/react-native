@@ -6,6 +6,7 @@
  */
 
 #include <fbjni/fbjni.h>
+#include "JArrayBuffer.h"
 #include "JCallback.h"
 #include "JDynamicNative.h"
 #include "JReactMarker.h"
@@ -18,6 +19,7 @@ namespace facebook::react {
 
 extern "C" JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
   return facebook::jni::initialize(vm, [] {
+    JArrayBuffer::registerNatives();
     JCxxCallbackImpl::registerNatives();
     JDynamicNative::registerNatives();
     JReactMarker::registerNatives();

@@ -54,7 +54,7 @@ class ReactPropAnnotationSetterTest {
 
   @Suppress("UNUSED_PARAMETER", "DEPRECATION")
   private inner class ViewManagerUnderTest(
-      val viewManagerUpdatesReceiver: ViewManagerUpdatesReceiver
+      val viewManagerUpdatesReceiver: ViewManagerUpdatesReceiver,
   ) : ViewManager<View, ReactShadowNode<*>>() {
     override fun getName() = "RedpandasLivestreamVideoView"
 

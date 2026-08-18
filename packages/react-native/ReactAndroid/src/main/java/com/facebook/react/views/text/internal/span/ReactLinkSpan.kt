@@ -44,7 +44,7 @@ internal class ReactLinkSpan(val fragmentIndex: Int) : ClickableSpan(), ReactSpa
     val reactTag = preparedLayout.reactTags[fragmentIndex]
     val eventDispatcher = UIManagerHelper.getEventDispatcher(context)
     eventDispatcher?.dispatchEvent(
-        ViewGroupClickEvent(UIManagerHelper.getSurfaceId(context), reactTag)
+        ViewGroupClickEvent(UIManagerHelper.getSurfaceId(context), reactTag),
     )
   }
 

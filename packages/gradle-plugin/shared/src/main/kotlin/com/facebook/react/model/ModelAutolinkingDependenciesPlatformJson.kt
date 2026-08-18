@@ -8,5 +8,5 @@
 package com.facebook.react.model
 
 data class ModelAutolinkingDependenciesPlatformJson(
-    val android: ModelAutolinkingDependenciesPlatformAndroidJson?
+    val android: ModelAutolinkingDependenciesPlatformAndroidJson?,
 )

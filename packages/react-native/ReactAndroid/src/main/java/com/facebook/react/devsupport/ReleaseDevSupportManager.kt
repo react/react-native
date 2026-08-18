@@ -135,11 +135,11 @@ public open class ReleaseDevSupportManager : DevSupportManager {
   public override fun registerErrorCustomizer(errorCustomizer: ErrorCustomizer): Unit = Unit
 
   public override fun processErrorCustomizers(
-      errorInfo: Pair<String, Array<StackFrame>>
+      errorInfo: Pair<String, Array<StackFrame>>,
   ): Pair<String, Array<StackFrame>> = errorInfo
 
   public override fun setPackagerLocationCustomizer(
-      packagerLocationCustomizer: PackagerLocationCustomizer
+      packagerLocationCustomizer: PackagerLocationCustomizer,
   ): Unit = Unit
 
   public override fun handleException(e: Exception) {

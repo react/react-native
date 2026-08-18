@@ -314,4 +314,48 @@ describe('Event', () => {
       );
     });
   });
+
+  describe('cancelBubble', () => {
+    it('defaults to false', () => {
+      const event = new Event('custom');
+
+      expect(event.cancelBubble).toBe(false);
+    });
+
+    it('stops propagation when set to true', () => {
+      const event = new Event('custom');
+
+      event.cancelBubble = true;
+
+      expect(event.cancelBubble).toBe(true);
+    });
+
+    it('is a no-op when set to false', () => {
+      const event = new Event('custom');
+
+      event.cancelBubble = false;
+      expect(event.cancelBubble).toBe(false);
+
+      // Setting it back to false does not reset a previously set flag.
+      event.cancelBubble = true;
+      event.cancelBubble = false;
+      expect(event.cancelBubble).toBe(true);
+    });
+
+    it('reflects stopPropagation()', () => {
+      const event = new Event('custom');
+
+      event.stopPropagation();
+
+      expect(event.cancelBubble).toBe(true);
+    });
+
+    it('reflects stopImmediatePropagation()', () => {
+      const event = new Event('custom');
+
+      event.stopImmediatePropagation();
+
+      expect(event.cancelBubble).toBe(true);
+    });
+  });
 });

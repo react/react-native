@@ -9,7 +9,7 @@
  */
 
 const {setVersion} = require('../set-version');
-const path = require('path');
+const path = require('node:path');
 
 jest.mock('../../shared/consts', () => ({
   REPO_ROOT: path.join(__dirname, '__fixtures__', 'set-version'),
@@ -51,9 +51,9 @@ describe('setVersion', () => {
   });
 
   beforeAll(() => {
-    jest.mock('fs', () => {
+    jest.mock('node:fs', () => {
       // $FlowFixMe[underconstrained-implicit-instantiation]
-      const originalFs = jest.requireActual('fs');
+      const originalFs = jest.requireActual('node:fs');
 
       return {
         ...originalFs,

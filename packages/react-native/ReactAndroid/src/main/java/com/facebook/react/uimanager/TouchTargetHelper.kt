@@ -355,25 +355,23 @@ public object TouchTargetHelper {
       }
       PointerEvents.BOX_ONLY -> {
         // This view may be the target, its children don't matter
-        val targetView =
-            findTouchTargetView(
-                eventCoords,
-                view,
-                EnumSet.of(TouchTargetReturnType.SELF),
-                pathAccumulator,
-            )
+        val targetView = findTouchTargetView(
+            eventCoords,
+            view,
+            EnumSet.of(TouchTargetReturnType.SELF),
+            pathAccumulator,
+        )
         targetView?.let { pathAccumulator?.add(ViewTarget(view.id, view)) }
         targetView
       }
       PointerEvents.BOX_NONE -> {
         // This view can't be the target, but its children might.
-        val targetView =
-            findTouchTargetView(
-                eventCoords,
-                view,
-                EnumSet.of(TouchTargetReturnType.CHILD),
-                pathAccumulator,
-            )
+        val targetView = findTouchTargetView(
+            eventCoords,
+            view,
+            EnumSet.of(TouchTargetReturnType.CHILD),
+            pathAccumulator,
+        )
 
         if (targetView != null) {
           pathAccumulator?.add(ViewTarget(view.id, view))
@@ -412,13 +410,12 @@ public object TouchTargetHelper {
           return view
         }
 
-        val result =
-            findTouchTargetView(
-                eventCoords,
-                view,
-                EnumSet.of(TouchTargetReturnType.SELF, TouchTargetReturnType.CHILD),
-                pathAccumulator,
-            )
+        val result = findTouchTargetView(
+            eventCoords,
+            view,
+            EnumSet.of(TouchTargetReturnType.SELF, TouchTargetReturnType.CHILD),
+            pathAccumulator,
+        )
         result?.let { pathAccumulator?.add(ViewTarget(view.id, view)) }
         result
       }

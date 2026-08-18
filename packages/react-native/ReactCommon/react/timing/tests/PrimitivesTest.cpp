@@ -7,9 +7,20 @@
 
 #include <gtest/gtest.h>
 
+#include <array>
+
 #include "../primitives.h"
 
 namespace facebook::react {
+
+// Nanosecond counts that are not a whole number of milliseconds, spanning the
+// magnitudes a monotonic clock reports (seconds to weeks since boot).
+constexpr std::array<int64_t, 5> kRoundTripNanoseconds{
+    1,
+    999'999,
+    1'000'001,
+    12'345'678'901,
+    537'648'854'729'250};
 
 TEST(HighResDuration, CorrectlyConvertsToDOMHighResTimeStamp) {
   EXPECT_EQ(
@@ -28,6 +39,48 @@ TEST(HighResDuration, CorrectlyConvertsToDOMHighResTimeStamp) {
   EXPECT_EQ(HighResDuration::fromMilliseconds(0).toDOMHighResTimeStamp(), 0);
   EXPECT_EQ(
       HighResDuration::fromMilliseconds(10).toDOMHighResTimeStamp(), 10.0);
+}
+
+TEST(HighResDuration, CorrectlyConvertsFromDOMHighResTimeStamp) {
+  EXPECT_EQ(
+      HighResDuration::fromDOMHighResTimeStamp(0.00001).toNanoseconds(), 10);
+  EXPECT_EQ(
+      HighResDuration::fromDOMHighResTimeStamp(1.000001).toNanoseconds(),
+      1000001);
+  EXPECT_EQ(
+      HighResDuration::fromDOMHighResTimeStamp(-1.000001).toNanoseconds(),
+      -1000001);
+  EXPECT_EQ(HighResDuration::fromDOMHighResTimeStamp(0).toNanoseconds(), 0);
+}
+
+TEST(HighResDuration, RoundTripsThroughDOMHighResTimeStamp) {
+  // A DOMHighResTimeStamp is a double holding milliseconds, so converting back
+  // to nanoseconds has to round: neither conversion is exact, and truncating
+  // would drop a nanosecond whenever the result lands just below the original
+  // value.
+  for (int64_t nanoseconds : kRoundTripNanoseconds) {
+    for (int64_t signedNanoseconds : {nanoseconds, -nanoseconds}) {
+      auto duration = HighResDuration::fromNanoseconds(signedNanoseconds);
+      EXPECT_EQ(
+          HighResDuration::fromDOMHighResTimeStamp(
+              duration.toDOMHighResTimeStamp()),
+          duration)
+          << "duration of " << signedNanoseconds << "ns did not round trip";
+    }
+  }
+}
+
+TEST(HighResTimeStamp, RoundTripsThroughDOMHighResTimeStamp) {
+  for (int64_t nanoseconds : kRoundTripNanoseconds) {
+    auto timestamp = HighResTimeStamp::fromChronoSteadyClockTimePoint(
+        std::chrono::steady_clock::time_point(
+            std::chrono::nanoseconds(nanoseconds)));
+    EXPECT_EQ(
+        HighResTimeStamp::fromDOMHighResTimeStamp(
+            timestamp.toDOMHighResTimeStamp()),
+        timestamp)
+        << "timestamp of " << nanoseconds << "ns did not round trip";
+  }
 }
 
 TEST(HighResDuration, ComparisonOperators) {

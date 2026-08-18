@@ -450,6 +450,7 @@ function runTest(): Array<TestCaseResult> {
     NativeFantom.startJSSamplingProfiler();
   } catch (e) {
     console.error('Could not start JS sampling profiler', e);
+    throw e;
   }
 
   try {

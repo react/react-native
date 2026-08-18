@@ -17,9 +17,16 @@
   ],
   "bugs": "https://github.com/react/react-native/issues",
   "main": "index.js",
+  "files": [
+    "README.md",
+    "index.js",
+    "no-deep-imports.js",
+    "platform-colors.js",
+    "utils.js"
+  ],
   "devDependencies": {
-    "babel-plugin-syntax-hermes-parser": "0.36.1",
-    "hermes-eslint": "0.36.1"
+    "flow-parser": "0.327.0",
+    "flow-eslint": "0.327.0"
   },
   "engines": {
     "node": "^22.13.0 || ^24.3.0 || >= 26.0.0"

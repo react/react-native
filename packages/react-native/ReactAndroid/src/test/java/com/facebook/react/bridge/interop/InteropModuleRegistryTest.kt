@@ -78,7 +78,7 @@ class InteropModuleRegistryTest {
     ReactNativeFeatureFlags.override(
         object : ReactNativeFeatureFlagsDefaults() {
           override fun useFabricInterop(): Boolean = useFabricInterop
-        }
+        },
     )
   }
 }

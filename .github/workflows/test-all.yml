@@ -155,6 +155,12 @@ jobs:
         uses: ./.github/actions/test-ios-rntester
         with:
           use-frameworks: ${{ matrix.frameworks }}
+          # Consume the prebuilt artifacts in the dynamic-frameworks cells too:
+          # prebuilt + use_frameworks is the config of the 2026-07-03
+          # SocketRocket dual-copy regression, previously covered by no lane
+          # (source-built dynamic frameworks stay covered by
+          # test_ios_rntester_dynamic_frameworks).
+          use-prebuilds: true
           flavor: ${{ matrix.flavor }}
 
   test_e2e_ios_rntester:
@@ -195,6 +201,40 @@ jobs:
     uses: ./.github/workflows/e2e-ios-templateapp.yml
     with:
       fail-on-error: true
+    secrets: inherit
+
+  test_ios_spm_rntester:
+    needs:
+      [
+        prebuild_apple_dependencies,
+        prebuild_react_native_core,
+        check_code_changes,
+      ]
+    if: ${{ needs.prebuild_react_native_core.result == 'success' && needs.check_code_changes.outputs.should_test_ios == 'true' }}
+    uses: ./.github/workflows/test-ios-spm-rntester.yml
+    secrets: inherit
+
+  test_ios_spm_helloworld:
+    needs:
+      [
+        prebuild_apple_dependencies,
+        prebuild_react_native_core,
+        check_code_changes,
+      ]
+    if: ${{ needs.prebuild_react_native_core.result == 'success' && needs.check_code_changes.outputs.should_test_ios == 'true' }}
+    uses: ./.github/workflows/test-ios-spm-helloworld.yml
+    secrets: inherit
+
+  test_ios_spm_newapp:
+    needs:
+      [
+        build_npm_package,
+        prebuild_apple_dependencies,
+        prebuild_react_native_core,
+        check_code_changes,
+      ]
+    if: ${{ needs.prebuild_react_native_core.result == 'success' && needs.build_npm_package.result == 'success' && needs.check_code_changes.outputs.should_test_ios == 'true' }}
+    uses: ./.github/workflows/test-ios-spm-newapp.yml
     secrets: inherit
 
   test_e2e_android_templateapp:
@@ -319,7 +359,10 @@ jobs:
     if: |
       always() &&
       !contains(needs.*.result, 'failure') &&
-      !contains(needs.*.result, 'cancelled')
+      !contains(needs.*.result, 'cancelled') &&
+      (needs.build_android.result == 'success' ||
+        needs.prebuild_apple_dependencies.result == 'success' ||
+        needs.prebuild_react_native_core.result == 'success')
     container:
       image: reactnativecommunity/react-native-android:latest
       env:
@@ -453,9 +496,6 @@ jobs:
         uses: ./.github/actions/setup-node
       - name: Install dependencies
         uses: ./.github/actions/yarn-install
-      - name: Lint file structure
-        shell: bash
-        run: ./.github/workflow-scripts/lint_files.sh
       - name: Run shellcheck
         shell: bash
         run: ./.github/workflow-scripts/analyze_scripts.sh
@@ -471,9 +511,9 @@ jobs:
       - name: Flow
         shell: bash
         run: yarn flow-check
-      - name: TypeScript
+      - name: TypeScript (legacy deep imports / manual types)
         shell: bash
-        run: yarn test-typescript
+        run: yarn test-typescript-legacy
 
   test_js:
     runs-on: ubuntu-latest

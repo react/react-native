@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include <react/renderer/attributedstring/AttributedString.h>
 #include <react/renderer/components/view/ViewEventEmitter.h>
 

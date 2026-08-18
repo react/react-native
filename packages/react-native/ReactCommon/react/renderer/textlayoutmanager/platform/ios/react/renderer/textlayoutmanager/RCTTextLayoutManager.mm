@@ -14,6 +14,7 @@
 #import <React/NSTextStorage+FontScaling.h>
 #import <React/RCTUtils.h>
 #import <react/featureflags/ReactNativeFeatureFlags.h>
+#import <react/renderer/textlayoutmanager/TextMeasurementRounding.h>
 #import <react/utils/ManagedObjectWrapper.h>
 #import <react/utils/SimpleThreadSafeCache.h>
 
@@ -399,9 +400,11 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
                                          .width = usedRect.size.width, .height = usedRect.size.height}};
 
                                  CGFloat baseline = [layoutManager locationForGlyphAtIndex:range.location].y;
-                                 const char *renderedUTF8 = [renderedString UTF8String];
+                                 NSData *renderedData = [renderedString dataUsingEncoding:NSUTF8StringEncoding];
                                  auto line = LineMeasurement{
-                                     std::string(renderedUTF8 != nullptr ? renderedUTF8 : ""),
+                                     std::string(
+                                         renderedData != nil ? static_cast<const char *>(renderedData.bytes) : "",
+                                         renderedData != nil ? renderedData.length : 0),
                                      rect,
                                      overallRect.size.height - baseline,
                                      font.capHeight,
@@ -581,8 +584,11 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
     size.height = enumeratedLinesHeight;
   }
 
-  size = (CGSize){ceil(size.width * layoutContext.pointScaleFactor) / layoutContext.pointScaleFactor,
-                  ceil(size.height * layoutContext.pointScaleFactor) / layoutContext.pointScaleFactor};
+  facebook::react::Size roundedSize = facebook::react::internal_roundTextMeasurementToPixelGrid(
+      {.width = static_cast<facebook::react::Float>(size.width),
+       .height = static_cast<facebook::react::Float>(size.height)},
+      layoutContext.pointScaleFactor);
+  size = CGSize{roundedSize.width, roundedSize.height};
 
   NSRange visibleGlyphRange = [layoutManager glyphRangeForTextContainer:textContainer];
 

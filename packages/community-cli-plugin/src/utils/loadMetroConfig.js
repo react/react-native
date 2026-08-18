@@ -14,7 +14,6 @@ import type {MetroConfig} from 'metro';
 import {CLIError} from './errors';
 import {reactNativePlatformResolver} from './metroPlatformResolver';
 import {loadConfig, resolveConfig} from 'metro';
-import path from 'path';
 
 const debug = require('debug')('ReactNative:CommunityCliPlugin');
 
@@ -25,7 +24,6 @@ export type {Config};
 
 export type ConfigLoadingContext = Readonly<{
   root: Config['root'],
-  reactNativePath: Config['reactNativePath'],
   platforms: Config['platforms'],
   ...
 }>;
@@ -63,9 +61,7 @@ function getCommunityCliDefaultConfig(
       // We can include multiple copies of setup-env here because Metro will
       // only add ones that are already part of the bundle
       getModulesRunBeforeMainModule: () => [
-        // NOTE: ctx.reactNativePath is an absolute path, therefore we need to
-        // reference setup-env.js here by exact path specifier.
-        require.resolve(path.join(ctx.reactNativePath, 'src/setup-env.js'), {
+        require.resolve('react-native/setup-env', {
           paths: [ctx.root],
         }),
         ...outOfTreePlatforms.map(platform =>
@@ -100,8 +96,6 @@ export default async function loadMetroConfig(
 
   // Get the RN defaults before our customisations
   const defaultConfig = RNMetroConfig.getDefaultConfig(ctx.root);
-  // Unflag the config as being loaded - it must be loaded again in userland.
-  global.__REACT_NATIVE_METRO_CONFIG_LOADED = false;
 
   // Add our defaults to `@react-native/metro-config` before the user config
   // loads them.
@@ -123,20 +117,6 @@ export default async function loadMetroConfig(
 
   debug(`Reading Metro config from ${projectConfig.filepath}`);
 
-  if (!global.__REACT_NATIVE_METRO_CONFIG_LOADED) {
-    const warning = `
-=================================================================================================
-From React Native 0.73, your project's Metro config should extend '@react-native/metro-config'
-or it will fail to build. Please copy the template at:
-https://github.com/react-native-community/template/blob/main/template/metro.config.js
-This warning will be removed in future (https://github.com/facebook/metro/issues/1018).
-=================================================================================================
-    `;
-
-    for (const line of warning.trim().split('\n')) {
-      console.warn(line);
-    }
-  }
   return loadConfig({
     cwd,
     ...options,

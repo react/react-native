@@ -2661,6 +2661,25 @@ const ARRAY_BUFFER_NATIVE_MODULE: SchemaType = {
               ],
             },
           },
+        ],
+      },
+      moduleName: 'SampleTurboModule',
+    },
+  },
+};
+
+// Promise<ArrayBuffer> is only supported by C++ (Cxx) TurboModules (see
+// throwIfUnsupportedPromiseArrayBuffer), so this fixture is excluded on both
+// Android and iOS. It keeps C++ codegen coverage for the async-return case.
+const ARRAY_BUFFER_PROMISE_NATIVE_MODULE: SchemaType = {
+  modules: {
+    NativeSampleTurboModule: {
+      type: 'NativeModule',
+      aliasMap: {},
+      enumMap: {},
+      spec: {
+        eventEmitters: [],
+        methods: [
           {
             name: 'promiseArrayBuffer',
             optional: false,
@@ -2678,7 +2697,7 @@ const ARRAY_BUFFER_NATIVE_MODULE: SchemaType = {
         ],
       },
       moduleName: 'SampleTurboModule',
-      excludedPlatforms: ['android'],
+      excludedPlatforms: ['android', 'iOS'],
     },
   },
 };
@@ -2877,6 +2896,7 @@ const STRING_LITERALS: SchemaType = {
 
 module.exports = {
   array_buffer_native_module: ARRAY_BUFFER_NATIVE_MODULE,
+  array_buffer_promise_native_module: ARRAY_BUFFER_PROMISE_NATIVE_MODULE,
   complex_objects: COMPLEX_OBJECTS,
   two_modules_different_files: TWO_MODULES_DIFFERENT_FILES,
   empty_native_modules: EMPTY_NATIVE_MODULES,

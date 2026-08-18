@@ -18,13 +18,12 @@ internal class PerftestDevSupportManager(
     applicationContext: Context,
 ) : ReleaseDevSupportManager() {
 
-  override val devSettings: DeveloperSettings =
-      DevInternalSettings(
-          applicationContext,
-          object : DevInternalSettings.Listener {
-            override fun onInternalSettingsChanged() = Unit
-          },
-      )
+  override val devSettings: DeveloperSettings = DevInternalSettings(
+      applicationContext,
+      object : DevInternalSettings.Listener {
+        override fun onInternalSettingsChanged() = Unit
+      },
+  )
 
   private val devServerHelper: DevServerHelper =
       DevServerHelper(devSettings, applicationContext, devSettings.packagerConnectionSettings)

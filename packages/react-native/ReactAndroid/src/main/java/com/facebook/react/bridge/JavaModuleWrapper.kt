@@ -123,7 +123,7 @@ internal class JavaModuleWrapper(
   fun invoke(methodId: Int, parameters: ReadableNativeArray) {
     throw UnsupportedOperationException(
         "JavaModuleWrapper.invoke() is no longer supported. " +
-            "Use TurboModule interop instead (ReactNativeFeatureFlags.useTurboModuleInterop)."
+            "Use TurboModule interop instead (ReactNativeFeatureFlags.useTurboModuleInterop).",
     )
   }
 

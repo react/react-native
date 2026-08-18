@@ -100,14 +100,15 @@ public class Task<TResult> : TaskInterface<TResult> {
       }
 
   /** Turns a Task<T> into a Task<Void>, dropping any result */
-  public fun makeVoid(): Task<Void> =
-      continueWithTask({ task ->
+  public fun makeVoid(): Task<Void> = continueWithTask(
+      { task ->
         when {
           task.isCancelled() -> cancelled()
           task.isFaulted() -> forError(task.getError())
           else -> TASK_NULL
         }
-      })
+      },
+  )
 
   /**
    * Adds a continuation that will be scheduled using the executor, returning a new task that
@@ -125,7 +126,7 @@ public class Task<TResult> : TaskInterface<TResult> {
       completed = this.isCompleted()
       if (!completed) {
         continuations.add(
-            Continuation { task -> completeImmediately(tcs, continuation, task, executor) }
+            Continuation { task -> completeImmediately(tcs, continuation, task, executor) },
         )
       }
     }
@@ -150,7 +151,7 @@ public class Task<TResult> : TaskInterface<TResult> {
       completed = this.isCompleted()
       if (!completed) {
         continuations.add(
-            Continuation { task -> completeAfterTask(tcs, continuation, task, executor) }
+            Continuation { task -> completeAfterTask(tcs, continuation, task, executor) },
         )
       }
     }
@@ -167,17 +168,16 @@ public class Task<TResult> : TaskInterface<TResult> {
   public fun <TContinuationResult> onSuccess(
       continuation: Continuation<TResult, TContinuationResult>,
       executor: Executor = IMMEDIATE_EXECUTOR,
-  ): Task<TContinuationResult> =
-      continueWithTask(
-          { task ->
-            when {
-              task.isCancelled() -> cancelled()
-              task.isFaulted() -> forError(task.getError())
-              else -> task.continueWith(continuation)
-            }
-          },
-          executor,
-      )
+  ): Task<TContinuationResult> = continueWithTask(
+      { task ->
+        when {
+          task.isCancelled() -> cancelled()
+          task.isFaulted() -> forError(task.getError())
+          else -> task.continueWith(continuation)
+        }
+      },
+      executor,
+  )
 
   /**
    * Runs a continuation when a task completes successfully, forwarding along [java.lang.Exception]s
@@ -186,17 +186,16 @@ public class Task<TResult> : TaskInterface<TResult> {
   public fun <TContinuationResult> onSuccessTask(
       continuation: Continuation<TResult, Task<TContinuationResult>>,
       executor: Executor = IMMEDIATE_EXECUTOR,
-  ): Task<TContinuationResult> =
-      continueWithTask(
-          { task ->
-            when {
-              task.isCancelled() -> cancelled()
-              task.isFaulted() -> forError(task.getError())
-              else -> task.continueWithTask(continuation)
-            }
-          },
-          executor,
-      )
+  ): Task<TContinuationResult> = continueWithTask(
+      { task ->
+        when {
+          task.isCancelled() -> cancelled()
+          task.isFaulted() -> forError(task.getError())
+          else -> task.continueWithTask(continuation)
+        }
+      },
+      executor,
+  )
 
   private fun runContinuations() =
       synchronized(lock) {
@@ -395,13 +394,15 @@ public class Task<TResult> : TaskInterface<TResult> {
             if (result == null) {
               tcs.setResult(null)
             } else {
-              result.continueWith({ task ->
-                when {
-                  task.isCancelled() -> tcs.setCancelled()
-                  task.isFaulted() -> tcs.setError(task.getError())
-                  else -> tcs.setResult(task.getResult())
-                }
-              })
+              result.continueWith(
+                  { task ->
+                    when {
+                      task.isCancelled() -> tcs.setCancelled()
+                      task.isFaulted() -> tcs.setError(task.getError())
+                      else -> tcs.setResult(task.getResult())
+                    }
+                  },
+              )
             }
           } catch (e: CancellationException) {
             tcs.setCancelled()

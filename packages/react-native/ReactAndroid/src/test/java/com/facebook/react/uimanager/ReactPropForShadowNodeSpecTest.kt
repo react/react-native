@@ -59,82 +59,82 @@ class ReactPropForShadowNodeSpecTest {
   @Test(expected = RuntimeException::class)
   fun testMethodWithWrongNumberOfParams() {
     BaseViewManager(
-            object : ReactShadowNodeImpl() {
-                  @Suppress("UNUSED_PARAMETER")
-                  @ReactProp(name = "prop")
-                  fun setterWithIncorrectNumberOfArgs(value: Boolean, anotherValue: Int) = Unit
-                }
-                .javaClass
-        )
+        object : ReactShadowNodeImpl() {
+              @Suppress("UNUSED_PARAMETER")
+              @ReactProp(name = "prop")
+              fun setterWithIncorrectNumberOfArgs(value: Boolean, anotherValue: Int) = Unit
+            }
+            .javaClass,
+    )
         .nativeProps
   }
 
   @Test(expected = RuntimeException::class)
   fun testMethodWithTooFewParams() {
     BaseViewManager(
-            object : ReactShadowNodeImpl() {
-                  @ReactProp(name = "prop") fun setterWithNoArgs() = Unit
-                }
-                .javaClass
-        )
+        object : ReactShadowNodeImpl() {
+              @ReactProp(name = "prop") fun setterWithNoArgs() = Unit
+            }
+            .javaClass,
+    )
         .nativeProps
   }
 
   @Test(expected = RuntimeException::class)
   fun testUnsupportedValueType() {
     BaseViewManager(
-            object : ReactShadowNodeImpl() {
-                  @Suppress("UNUSED_PARAMETER")
-                  @ReactProp(name = "prop")
-                  fun setterWithMap(value: Map<*, *>) = Unit
-                }
-                .javaClass
-        )
+        object : ReactShadowNodeImpl() {
+              @Suppress("UNUSED_PARAMETER")
+              @ReactProp(name = "prop")
+              fun setterWithMap(value: Map<*, *>) = Unit
+            }
+            .javaClass,
+    )
         .nativeProps
   }
 
   @Test(expected = RuntimeException::class)
   fun testGroupInvalidNumberOfParams() {
     BaseViewManager(
-            object : ReactShadowNodeImpl() {
-                  @Suppress("UNUSED_PARAMETER")
-                  @ReactPropGroup(names = ["prop1", "prop2"])
-                  fun setterWithTooManyParams(index: Int, value: Float, boolean: Boolean) = Unit
-                }
-                .javaClass
-        )
+        object : ReactShadowNodeImpl() {
+              @Suppress("UNUSED_PARAMETER")
+              @ReactPropGroup(names = ["prop1", "prop2"])
+              fun setterWithTooManyParams(index: Int, value: Float, boolean: Boolean) = Unit
+            }
+            .javaClass,
+    )
         .nativeProps
   }
 
   @Test(expected = RuntimeException::class)
   fun testGroupTooFewParams() {
     BaseViewManager(
-            object : ReactShadowNodeImpl() {
-                  @Suppress("UNUSED_PARAMETER")
-                  @ReactPropGroup(names = ["props1", "prop2"])
-                  fun setterWithTooFewParams(index: Int) = Unit
-                }
-                .javaClass
-        )
+        object : ReactShadowNodeImpl() {
+              @Suppress("UNUSED_PARAMETER")
+              @ReactPropGroup(names = ["props1", "prop2"])
+              fun setterWithTooFewParams(index: Int) = Unit
+            }
+            .javaClass,
+    )
         .nativeProps
   }
 
   @Test(expected = RuntimeException::class)
   fun testGroupNoIndexParam() {
     BaseViewManager(
-            object : ReactShadowNodeImpl() {
-                  @Suppress("UNUSED_PARAMETER")
-                  @ReactPropGroup(names = ["prop1", "prop2"])
-                  fun setterWithNoIndexParam(value: Float, boolean: Boolean) = Unit
-                }
-                .javaClass
-        )
+        object : ReactShadowNodeImpl() {
+              @Suppress("UNUSED_PARAMETER")
+              @ReactPropGroup(names = ["prop1", "prop2"])
+              fun setterWithNoIndexParam(value: Float, boolean: Boolean) = Unit
+            }
+            .javaClass,
+    )
         .nativeProps
   }
 
   companion object {
     private class BaseViewManager(
-        private val shadowNodeClass: Class<out ReactShadowNode<ReactShadowNodeImpl>>
+        private val shadowNodeClass: Class<out ReactShadowNode<ReactShadowNodeImpl>>,
     ) : ViewManager<View, ReactShadowNode<*>>() {
       override fun getName(): String = "IgnoredName"
 

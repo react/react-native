@@ -143,7 +143,7 @@ internal object ColorStopUtils {
   // Algorithm is referred from Blink engine
   // [source](https://github.com/chromium/chromium/blob/a296b1bad6dc1ed9d751b7528f7ca2134227b828/third_party/blink/renderer/core/css/css_gradient_value.cc#L240).
   private fun processColorTransitionHints(
-      originalStops: Array<ProcessedColorStop>
+      originalStops: Array<ProcessedColorStop>,
   ): List<ProcessedColorStop> {
     val colorStops = originalStops.toMutableList()
     var indexOffset = 0

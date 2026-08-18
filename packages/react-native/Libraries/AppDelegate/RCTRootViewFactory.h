@@ -184,11 +184,6 @@ typedef void (^RCTLoadSourceForBridgeBlock)(RCTBridge *bridge, RCTSourceLoadBloc
  */
 @interface RCTRootViewFactory : NSObject
 
-#if !defined(RCT_REMOVE_LEGACY_ARCH)
-@property (nonatomic, strong, nullable) RCTBridge *bridge;
-@property (nonatomic, strong, nullable) RCTSurfacePresenterBridgeAdapter *bridgeAdapter;
-#endif
-
 @property (nonatomic, strong, nullable) RCTHost *reactHost;
 
 - (instancetype)initWithConfiguration:(RCTRootViewFactoryConfiguration *)configuration

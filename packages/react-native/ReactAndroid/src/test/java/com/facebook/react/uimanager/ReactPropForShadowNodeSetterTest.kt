@@ -67,7 +67,7 @@ class ReactPropForShadowNodeSetterTest {
   }
 
   private inner class ShadowViewUnderTest(
-      val viewManagerUpdatesReceiver: ViewManagerUpdatesReceiver
+      val viewManagerUpdatesReceiver: ViewManagerUpdatesReceiver,
   ) : ReactShadowNodeImpl() {
 
     init {

@@ -12,15 +12,16 @@
 
 const CodegenUtils = require('../codegen-utils');
 const {codegenLog} = require('./utils');
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 const {globSync} = require('tinyglobby');
 
 function generateSchemaInfos(
   libraries /*: ReadonlyArray<$FlowFixMe> */,
+  platform /*: string */,
 ) /*: Array<$FlowFixMe> */ {
   // $FlowFixMe[incompatible-type]
-  return libraries.map(generateSchemaInfo);
+  return libraries.map(library => generateSchemaInfo(library, platform));
 }
 
 function generateSchemaInfo(

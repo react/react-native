@@ -50,4 +50,6 @@ Pod::Spec.new do |s|
   if use_hermes()
     s.dependency 'hermes-engine'
   end
+
+  mark_as_react_native_build(s)
 end

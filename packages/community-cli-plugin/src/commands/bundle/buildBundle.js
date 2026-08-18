@@ -14,10 +14,10 @@ import type {RunBuildOptions} from 'metro';
 import loadMetroConfig from '../../utils/loadMetroConfig';
 import parseKeyValueParamArray from '../../utils/parseKeyValueParamArray';
 import saveAssets from './saveAssets';
-import {promises as fs} from 'fs';
 import {runBuild} from 'metro';
-import path from 'path';
-import {styleText} from 'util';
+import {promises as fs} from 'node:fs';
+import path from 'node:path';
+import {styleText} from 'node:util';
 
 type HydratedMetroConfig = Awaited<ReturnType<typeof loadMetroConfig>>;
 

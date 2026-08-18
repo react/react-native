@@ -25,7 +25,7 @@ namespace facebook::react {
  * exercised by the Robolectric / instrumentation tests that run against a
  * real JVM.
  *
- * The one branch that can be validated host-side without an attached JavaVM
+ * The one branch that can be validated without calling into Java at all
  * is `buildNativeModuleList`'s null-collection guard: when the incoming
  * `alias_ref<JCollection<...>>` is a null reference, the function must
  * short-circuit and return an empty vector rather than dereferencing the
@@ -47,7 +47,7 @@ namespace facebook::react {
  * bring-up paths that legitimately pass no legacy Java modules). Because
  * the crash would only surface once the process actually reaches this
  * code with a null collection, catching it here — instead of relying on
- * a device-side smoke test — is the earliest signal available.
+ * an app-level smoke test — is the earliest signal available.
  *
  * The `Instance` weak_ptr and `MessageQueueThread` shared_ptr are supplied
  * as empty on purpose: the guard runs before either is dereferenced, so

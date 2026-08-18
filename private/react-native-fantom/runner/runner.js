@@ -61,13 +61,13 @@ import {
   symbolicateJSTrace,
   symbolicateStackTrace,
 } from './utils';
-import fs from 'fs';
 // $FlowExpectedError[untyped-import]
 import {formatResultsErrors} from 'jest-message-util';
 import {SnapshotState, buildSnapshotResolver} from 'jest-snapshot';
+import fs from 'node:fs';
+import path from 'node:path';
+import readline from 'node:readline';
 import nullthrows from 'nullthrows';
-import path from 'path';
-import readline from 'readline';
 
 const TEST_BUILD_OUTPUT_PATH = getTestBuildOutputPath();
 fs.mkdirSync(TEST_BUILD_OUTPUT_PATH, {recursive: true});

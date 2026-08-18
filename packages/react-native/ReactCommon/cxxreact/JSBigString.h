@@ -140,6 +140,11 @@ class RN_EXPORT JSBigFileString : public JSBigString {
   size_t size() const override;
   int fd() const;
 
+  // Throws std::runtime_error when the file at sourceURL cannot be opened or
+  // read (e.g. it is missing). Callers that load files which may legitimately
+  // be gone at load time (such as an OS-purgeable / LRU-evictable cache) must
+  // catch this and degrade gracefully rather than let it surface as an
+  // unhandled exception.
   static std::unique_ptr<const JSBigFileString> fromPath(const std::string &sourceURL);
 
  private:

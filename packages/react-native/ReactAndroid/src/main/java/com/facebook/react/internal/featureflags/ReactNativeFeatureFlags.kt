@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<c9e8eeefc709e1246577d67155300906>>
+ * @generated SignedSource<<2fc347cdb33327437d29e5fd91e24011>>
  */
 
 /**
@@ -205,6 +205,12 @@ public object ReactNativeFeatureFlags {
   public fun enableImagePrefetchingAndroid(): Boolean = accessor.enableImagePrefetchingAndroid()
 
   /**
+   * When enabled, Image `tintColor` is handled as a true optional: any defined color is applied as a tint — including `transparent` (alpha 0), which renders the image invisible — and an unset value clears a previously applied tint. When disabled, the prior behavior is preserved, where a transparent `tintColor` is treated as unassigned and the image renders untinted.
+   */
+  @JvmStatic
+  public fun enableImageTransparentTintColor(): Boolean = accessor.enableImageTransparentTintColor()
+
+  /**
    * Dispatches state updates for content offset changes synchronously on the main thread.
    */
   @JvmStatic
@@ -253,6 +259,12 @@ public object ReactNativeFeatureFlags {
   public fun enableModuleArgumentNSNullConversionIOS(): Boolean = accessor.enableModuleArgumentNSNullConversionIOS()
 
   /**
+   * When enabled, Android mounts transactions with the pull model (like iOS): the commit thread no longer pulls and builds the mount batch in schedulerShouldRenderTransactions. Instead the UI thread pulls the transaction itself via a PullTransactionMountItem enqueued in the MountItemDispatcher, builds the IntBufferBatchMountItem, and applies it synchronously. Requires `enableAccumulatedUpdatesInRawPropsAndroid` to be enabled as well, since a single pull may collapse several commits into one diff and therefore needs complete accumulated rawProps; when used together with Props 2.0, also enable `enableExclusivePropsUpdateAndroid` and `enablePropsUpdateReconciliationAndroid`.
+   */
+  @JvmStatic
+  public fun enableMountingCoordinatorPullModelAndroid(): Boolean = accessor.enableMountingCoordinatorPullModelAndroid()
+
+  /**
    * Enables the MutationObserver Web API in React Native.
    */
   @JvmStatic
@@ -263,12 +275,6 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun enableNativeCSSParsing(): Boolean = accessor.enableNativeCSSParsing()
-
-  /**
-   * Enable network event reporting hooks in each native platform through `NetworkReporter` (Web Perf APIs + CDP). This flag should be combined with `fuseboxNetworkInspectionEnabled` to enable Network CDP debugging.
-   */
-  @JvmStatic
-  public fun enableNetworkEventReporting(): Boolean = accessor.enableNetworkEventReporting()
 
   /**
    * Enables caching text layout artifacts for later reuse
@@ -379,16 +385,16 @@ public object ReactNativeFeatureFlags {
   public fun fuseboxFrameRecordingEnabled(): Boolean = accessor.fuseboxFrameRecordingEnabled()
 
   /**
-   * Enable network inspection support in the React Native DevTools CDP backend. Requires `enableBridgelessArchitecture`. This flag is global and should not be changed across React Host lifetimes.
-   */
-  @JvmStatic
-  public fun fuseboxNetworkInspectionEnabled(): Boolean = accessor.fuseboxNetworkInspectionEnabled()
-
-  /**
    * Enable Page.captureScreenshot CDP method support in the React Native DevTools CDP backend. This flag is global and should not be changed across React Host lifetimes.
    */
   @JvmStatic
   public fun fuseboxScreenshotCaptureEnabled(): Boolean = accessor.fuseboxScreenshotCaptureEnabled()
+
+  /**
+   * Enable reporting of WebSocket network events (`Network.webSocket*` CDP events) to the React Native DevTools CDP backend.
+   */
+  @JvmStatic
+  public fun fuseboxWebSocketEventsEnabled(): Boolean = accessor.fuseboxWebSocketEventsEnabled()
 
   /**
    * When enabled, uses optimized platform-specific paths to apply animated props synchronously. On Android, this uses a batched int/double buffer protocol with a single JNI call. On iOS, this passes AnimatedProps directly through the delegate chain and applies them via cloneProps, avoiding the folly::dynamic round-trip.

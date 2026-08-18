@@ -8,12 +8,12 @@
  * @format
  */
 
-import type {ESNode, TypeAnnotationType} from 'hermes-estree';
-import type {TransformVisitor} from 'hermes-transform';
-import type {ParseResult} from 'hermes-transform/dist/transform/parse';
-import type {TransformASTResult} from 'hermes-transform/dist/transform/transformAST';
+import type {ESNode, TypeAnnotationType} from 'flow-estree';
+import type {TransformVisitor} from 'flow-transform';
+import type {ParseResult} from 'flow-transform/dist/transform/parse';
+import type {TransformASTResult} from 'flow-transform/dist/transform/transformAST';
 
-const {transformAST} = require('hermes-transform/dist/transform/transformAST');
+const {transformAST} = require('flow-transform/dist/transform/transformAST');
 
 function isInsideObjectTypeProperty(node: TypeAnnotationType) {
   let current: ESNode = node;

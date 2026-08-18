@@ -15,7 +15,7 @@ public abstract class JavaScriptExecutor
 protected constructor(
     // fbjni looks for the exact name "mHybridData":
     // https://github.com/facebookincubator/fbjni/blob/7b7efda0d49b956acf1d3307510e3c73fc55b404/cxx/fbjni/detail/Hybrid.h#L310
-    @Suppress("NoHungarianNotation") private val mHybridData: HybridData
+    @Suppress("NoHungarianNotation") private val mHybridData: HybridData,
 ) {
   /**
    * Close this executor and cleanup any resources that it was using. No further calls are expected

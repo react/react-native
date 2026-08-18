@@ -51,6 +51,9 @@ export interface Spec extends TurboModule {
   readonly getUnsafeObject: (arg: UnsafeObject) => UnsafeObject;
   readonly getRootTag: (arg: RootTag) => RootTag;
   readonly getValue: (x: number, y: string, z: Object) => Object;
+  readonly getArrayBuffer: (buffer: ArrayBuffer) => ArrayBuffer;
+  readonly createNativeBuffer: (size: number) => ArrayBuffer;
+  readonly processAsyncBuffer: (payload: ArrayBuffer) => Promise<number>;
   readonly getValueWithCallback: (callback: (value: string) => void) => void;
   readonly getValueWithPromise: (error: boolean) => Promise<string>;
   readonly voidFuncThrows?: () => void;

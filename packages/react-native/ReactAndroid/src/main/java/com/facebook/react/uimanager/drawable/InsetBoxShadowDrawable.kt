@@ -85,13 +85,12 @@ internal class InsetBoxShadowDrawable(
     val computedBorderRadii = computeBorderRadii()
     val computedBorderInsets = computeBorderInsets()
 
-    val paddingBoxRect =
-        RectF(
-            bounds.left + (computedBorderInsets?.left ?: 0f),
-            bounds.top + (computedBorderInsets?.top ?: 0f),
-            bounds.right - (computedBorderInsets?.right ?: 0f),
-            bounds.bottom - (computedBorderInsets?.bottom ?: 0f),
-        )
+    val paddingBoxRect = RectF(
+        bounds.left + (computedBorderInsets?.left ?: 0f),
+        bounds.top + (computedBorderInsets?.top ?: 0f),
+        bounds.right - (computedBorderInsets?.right ?: 0f),
+        bounds.bottom - (computedBorderInsets?.bottom ?: 0f),
+    )
     val paddingBoxRadii = computedBorderRadii?.let {
       floatArrayOf(
           innerRadius(it.topLeft.horizontal, computedBorderInsets?.left),
@@ -131,7 +130,7 @@ internal class InsetBoxShadowDrawable(
     canvas.save().let { saveCount ->
       if (paddingBoxRadii != null) {
         canvas.clipPath(
-            Path().apply { addRoundRect(paddingBoxRect, paddingBoxRadii, Path.Direction.CW) }
+            Path().apply { addRoundRect(paddingBoxRect, paddingBoxRadii, Path.Direction.CW) },
         )
 
         val innerRadii =

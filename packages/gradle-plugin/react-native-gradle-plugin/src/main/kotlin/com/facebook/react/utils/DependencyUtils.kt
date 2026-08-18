@@ -15,6 +15,8 @@ import com.facebook.react.utils.PropertyUtils.INCLUDE_JITPACK_REPOSITORY_DEFAULT
 import com.facebook.react.utils.PropertyUtils.INTERNAL_HERMES_PUBLISHING_GROUP
 import com.facebook.react.utils.PropertyUtils.INTERNAL_HERMES_VERSION_NAME
 import com.facebook.react.utils.PropertyUtils.INTERNAL_REACT_NATIVE_MAVEN_LOCAL_REPO
+import com.facebook.react.utils.PropertyUtils.INTERNAL_REACT_NATIVE_MAVEN_MIRROR_ENABLED
+import com.facebook.react.utils.PropertyUtils.INTERNAL_REACT_NATIVE_MAVEN_MIRROR_ENABLED_DEFAULT
 import com.facebook.react.utils.PropertyUtils.INTERNAL_REACT_PUBLISHING_GROUP
 import com.facebook.react.utils.PropertyUtils.INTERNAL_USE_HERMES_NIGHTLY
 import com.facebook.react.utils.PropertyUtils.INTERNAL_VERSION_NAME
@@ -27,6 +29,8 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository
 
 internal object DependencyUtils {
+  private const val REACT_NATIVE_MAVEN_MIRROR_URL = "https://repo.reactnative.dev/maven2"
+  private const val REACT_NATIVE_MAVEN_MIRROR_ENABLED_ENV = "RCT_REACT_NATIVE_MAVEN_MIRROR_ENABLED"
 
   internal data class Coordinates(
       val versionString: String,
@@ -47,7 +51,7 @@ internal object DependencyUtils {
     val exclusiveEnterpriseRepository = project.rootProject.exclusiveEnterpriseRepository()
     if (exclusiveEnterpriseRepository != null) {
       project.logger.lifecycle(
-          "Replacing ALL Maven Repositories with: $exclusiveEnterpriseRepository"
+          "Replacing ALL Maven Repositories with: $exclusiveEnterpriseRepository",
       )
     }
 
@@ -73,6 +77,19 @@ internal object DependencyUtils {
           // We add the snapshot for users on nightlies.
           mavenRepoFromUrl("https://central.sonatype.com/repository/maven-snapshots/") { repo ->
             repo.content { it.excludeGroup("org.webkit") }
+          }
+        }
+        // The React Native Maven mirror must be added before Maven Central so it can serve cached
+        // artifacts first, while Maven Central remains the fallback.
+        if (
+            !hasProperty(INTERNAL_REACT_NATIVE_MAVEN_LOCAL_REPO) &&
+                isReactNativeMavenMirrorEnabled()
+        ) {
+          mavenRepoFromUrl(REACT_NATIVE_MAVEN_MIRROR_URL) { repo ->
+            repo.content { content ->
+              content.includeGroupByRegex("com\\.facebook\\.react.*")
+              content.includeGroupByRegex("com\\.facebook\\.hermes.*")
+            }
           }
         }
         repositories.mavenCentral { repo ->
@@ -136,7 +153,7 @@ internal object DependencyUtils {
           // Contributors only: The hermes-engine version is forced only if the user has
           // not opted into using nightlies for local development.
           configuration.resolutionStrategy.force(
-              "${coordinates.hermesGroupString}:hermes-android:${coordinates.hermesVersionString}"
+              "${coordinates.hermesGroupString}:hermes-android:${coordinates.hermesVersionString}",
           )
         }
       }
@@ -154,21 +171,21 @@ internal object DependencyUtils {
             "com.facebook.react:react-native",
             "${coordinates.reactGroupString}:react-android:${coordinates.versionString}",
             "The react-native artifact was deprecated in favor of react-android due to https://github.com/facebook/react-native/issues/35210.",
-        )
+        ),
     )
     dependencySubstitution.add(
         Triple(
             "com.facebook.react:hermes-engine",
             hermesVersionString,
             "The hermes-engine artifact was deprecated in favor of hermes-android due to https://github.com/facebook/react-native/issues/35210.",
-        )
+        ),
     )
     dependencySubstitution.add(
         Triple(
             "com.facebook.react:hermes-android",
             hermesVersionString,
             "The hermes-android artifact was moved to com.facebook.hermes publishing group.",
-        )
+        ),
     )
     if (coordinates.reactGroupString != DEFAULT_INTERNAL_REACT_PUBLISHING_GROUP) {
       dependencySubstitution.add(
@@ -176,14 +193,14 @@ internal object DependencyUtils {
               "com.facebook.react:react-android",
               "${coordinates.reactGroupString}:react-android:${coordinates.versionString}",
               "The react-android dependency was modified to use the correct Maven group.",
-          )
+          ),
       )
       dependencySubstitution.add(
           Triple(
               "com.facebook.react:hermes-android",
               hermesVersionString,
               "The hermes-android dependency was modified to use the correct Maven group.",
-          )
+          ),
       )
     }
     if (coordinates.hermesGroupString != DEFAULT_INTERNAL_HERMES_PUBLISHING_GROUP) {
@@ -192,7 +209,7 @@ internal object DependencyUtils {
               "com.facebook.hermes:hermes-android",
               hermesVersionString,
               "The hermes-android dependency was modified to use the correct Maven group.",
-          )
+          ),
       )
     }
     return dependencySubstitution
@@ -269,6 +286,19 @@ internal object DependencyUtils {
         hasProperty(INCLUDE_JITPACK_REPOSITORY) ->
             property(INCLUDE_JITPACK_REPOSITORY).toString().toBoolean()
         else -> INCLUDE_JITPACK_REPOSITORY_DEFAULT
+      }
+
+  internal fun Project.isReactNativeMavenMirrorEnabled(
+      environmentValue: String? = System.getenv(REACT_NATIVE_MAVEN_MIRROR_ENABLED_ENV),
+  ): Boolean =
+      when {
+        hasProperty(INTERNAL_REACT_NATIVE_MAVEN_MIRROR_ENABLED) -> {
+          val value = property(INTERNAL_REACT_NATIVE_MAVEN_MIRROR_ENABLED).toString()
+          !value.equals("false", ignoreCase = true) && value != "0"
+        }
+        !environmentValue.isNullOrEmpty() ->
+            !environmentValue.equals("false", ignoreCase = true) && environmentValue != "0"
+        else -> INTERNAL_REACT_NATIVE_MAVEN_MIRROR_ENABLED_DEFAULT
       }
 
   internal fun String.isNightly(): Boolean = this.startsWith("0.0.0") || "-nightly-" in this

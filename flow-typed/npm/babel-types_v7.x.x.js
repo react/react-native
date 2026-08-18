@@ -8,3251 +8,3251 @@
  * @flow strict
  */
 
-declare type BabelNodeBaseComment = {
-  value: string;
-  start: number;
-  end: number;
-  loc: BabelNodeSourceLocation;
-};
-
-declare type BabelNodeCommentBlock = {
-  ...BabelNodeBaseComment;
-  type: "CommentBlock";
-};
-
-declare type BabelNodeCommentLine ={
-  ...BabelNodeBaseComment,
-  type: "CommentLine";
-};
-
-declare type BabelNodeComment = BabelNodeCommentBlock | BabelNodeCommentLine;
-
-declare type BabelNodeSourceLocation = {
-  start: {
-    line: number;
-    column: number;
-  };
-
-  end: {
-    line: number;
-    column: number;
-  };
-};
-
-
-declare type BabelNodeArrayExpression = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ArrayExpression";
-  elements?: Array<null | BabelNodeExpression | BabelNodeSpreadElement>;
-};
-
-declare type BabelNodeAssignmentExpression = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "AssignmentExpression";
-  operator: string;
-  left: BabelNodeLVal | BabelNodeOptionalMemberExpression;
-  right: BabelNodeExpression;
-};
-
-declare type BabelNodeBinaryExpression = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "BinaryExpression";
-  operator: "+" | "-" | "/" | "%" | "*" | "**" | "&" | "|" | ">>" | ">>>" | "<<" | "^" | "==" | "===" | "!=" | "!==" | "in" | "instanceof" | ">" | "<" | ">=" | "<=" | "|>";
-  left: BabelNodeExpression | BabelNodePrivateName;
-  right: BabelNodeExpression;
-};
-
-declare type BabelNodeInterpreterDirective = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "InterpreterDirective";
-  value: string;
-};
-
-declare type BabelNodeDirective = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "Directive";
-  value: BabelNodeDirectiveLiteral;
-};
-
-declare type BabelNodeDirectiveLiteral = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "DirectiveLiteral";
-  value: string;
-};
-
-declare type BabelNodeBlockStatement = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "BlockStatement";
-  body: Array<BabelNodeStatement>;
-  directives?: Array<BabelNodeDirective>;
-};
-
-declare type BabelNodeBreakStatement = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "BreakStatement";
-  label?: BabelNodeIdentifier;
-};
-
-declare type BabelNodeCallExpression = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "CallExpression";
-  callee: BabelNodeExpression | BabelNodeSuper | BabelNodeV8IntrinsicIdentifier;
-  arguments: Array<BabelNodeExpression | BabelNodeSpreadElement | BabelNodeArgumentPlaceholder>;
-  optional?: boolean;
-  typeArguments?: BabelNodeTypeParameterInstantiation;
-  typeParameters?: BabelNodeTSTypeParameterInstantiation;
-};
-
-declare type BabelNodeCatchClause = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "CatchClause";
-  param?: BabelNodeIdentifier | BabelNodeArrayPattern | BabelNodeObjectPattern;
-  body: BabelNodeBlockStatement;
-};
-
-declare type BabelNodeConditionalExpression = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ConditionalExpression";
-  test: BabelNodeExpression;
-  consequent: BabelNodeExpression;
-  alternate: BabelNodeExpression;
-};
-
-declare type BabelNodeContinueStatement = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ContinueStatement";
-  label?: BabelNodeIdentifier;
-};
-
-declare type BabelNodeDebuggerStatement = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "DebuggerStatement";
-};
-
-declare type BabelNodeDoWhileStatement = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "DoWhileStatement";
-  test: BabelNodeExpression;
-  body: BabelNodeStatement;
-};
-
-declare type BabelNodeEmptyStatement = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "EmptyStatement";
-};
-
-declare type BabelNodeExpressionStatement = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ExpressionStatement";
-  expression: BabelNodeExpression;
-};
-
-declare type BabelNodeFile = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "File";
-  program: BabelNodeProgram;
-  comments?: Array<BabelNodeCommentBlock | BabelNodeCommentLine>;
-  tokens?: Array<any>;
-};
-
-declare type BabelNodeForInStatement = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ForInStatement";
-  left: BabelNodeVariableDeclaration | BabelNodeLVal;
-  right: BabelNodeExpression;
-  body: BabelNodeStatement;
-};
-
-declare type BabelNodeForStatement = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ForStatement";
-  init?: BabelNodeVariableDeclaration | BabelNodeExpression;
-  test?: BabelNodeExpression;
-  update?: BabelNodeExpression;
-  body: BabelNodeStatement;
-};
-
-declare type BabelNodeFunctionDeclaration = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "FunctionDeclaration";
-  id?: BabelNodeIdentifier;
-  params: Array<BabelNodeFunctionParameter>;
-  body: BabelNodeBlockStatement;
-  generator?: boolean;
-  async?: boolean;
-  declare?: boolean;
-  predicate?: BabelNodeDeclaredPredicate | BabelNodeInferredPredicate;
-  returnType?: BabelNodeTypeAnnotation | BabelNodeTSTypeAnnotation | BabelNodeNoop;
-  typeParameters?: BabelNodeTypeParameterDeclaration | BabelNodeTSTypeParameterDeclaration | BabelNodeNoop;
-};
-
-declare type BabelNodeFunctionExpression = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "FunctionExpression";
-  id?: BabelNodeIdentifier;
-  params: Array<BabelNodeFunctionParameter>;
-  body: BabelNodeBlockStatement;
-  generator?: boolean;
-  async?: boolean;
-  predicate?: BabelNodeDeclaredPredicate | BabelNodeInferredPredicate;
-  returnType?: BabelNodeTypeAnnotation | BabelNodeTSTypeAnnotation | BabelNodeNoop;
-  typeParameters?: BabelNodeTypeParameterDeclaration | BabelNodeTSTypeParameterDeclaration | BabelNodeNoop;
-};
-
-declare type BabelNodeIdentifier = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "Identifier";
-  name: string;
-  decorators?: Array<BabelNodeDecorator>;
-  optional?: boolean;
-  typeAnnotation?: BabelNodeTypeAnnotation | BabelNodeTSTypeAnnotation | BabelNodeNoop;
-};
-
-declare type BabelNodeIfStatement = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "IfStatement";
-  test: BabelNodeExpression;
-  consequent: BabelNodeStatement;
-  alternate?: BabelNodeStatement;
-};
-
-declare type BabelNodeLabeledStatement = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "LabeledStatement";
-  label: BabelNodeIdentifier;
-  body: BabelNodeStatement;
-};
-
-declare type BabelNodeStringLiteral = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "StringLiteral";
-  value: string;
-};
-
-declare type BabelNodeNumericLiteral = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "NumericLiteral";
-  value: number;
-};
-
-declare type BabelNodeNullLiteral = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "NullLiteral";
-};
-
-declare type BabelNodeBooleanLiteral = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "BooleanLiteral";
-  value: boolean;
-};
-
-declare type BabelNodeRegExpLiteral = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "RegExpLiteral";
-  pattern: string;
-  flags?: string;
-};
-
-declare type BabelNodeLogicalExpression = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "LogicalExpression";
-  operator: "||" | "&&" | "??";
-  left: BabelNodeExpression;
-  right: BabelNodeExpression;
-};
-
-declare type BabelNodeMemberExpression = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "MemberExpression";
-  object: BabelNodeExpression | BabelNodeSuper;
-  property: BabelNodeExpression | BabelNodeIdentifier | BabelNodePrivateName;
-  computed?: boolean;
-  optional?: boolean;
-};
-
-declare type BabelNodeNewExpression = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "NewExpression";
-  callee: BabelNodeExpression | BabelNodeSuper | BabelNodeV8IntrinsicIdentifier;
-  arguments: Array<BabelNodeExpression | BabelNodeSpreadElement | BabelNodeArgumentPlaceholder>;
-  optional?: boolean;
-  typeArguments?: BabelNodeTypeParameterInstantiation;
-  typeParameters?: BabelNodeTSTypeParameterInstantiation;
-};
-
-declare type BabelNodeProgram = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "Program";
-  body: Array<BabelNodeStatement>;
-  directives?: Array<BabelNodeDirective>;
-  sourceType?: "script" | "module";
-  interpreter?: BabelNodeInterpreterDirective;
-};
-
-declare type BabelNodeObjectExpression = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ObjectExpression";
-  properties: Array<BabelNodeObjectMethod | BabelNodeObjectProperty | BabelNodeSpreadElement>;
-};
-
-declare type BabelNodeObjectMethod = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ObjectMethod";
-  kind?: "method" | "get" | "set";
-  key: BabelNodeExpression | BabelNodeIdentifier | BabelNodeStringLiteral | BabelNodeNumericLiteral | BabelNodeBigIntLiteral;
-  params: Array<BabelNodeFunctionParameter>;
-  body: BabelNodeBlockStatement;
-  computed?: boolean;
-  generator?: boolean;
-  async?: boolean;
-  decorators?: Array<BabelNodeDecorator>;
-  returnType?: BabelNodeTypeAnnotation | BabelNodeTSTypeAnnotation | BabelNodeNoop;
-  typeParameters?: BabelNodeTypeParameterDeclaration | BabelNodeTSTypeParameterDeclaration | BabelNodeNoop;
-};
-
-declare type BabelNodeObjectProperty = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ObjectProperty";
-  key: BabelNodeExpression | BabelNodeIdentifier | BabelNodeStringLiteral | BabelNodeNumericLiteral | BabelNodeBigIntLiteral | BabelNodeDecimalLiteral | BabelNodePrivateName;
-  value: BabelNodeExpression | BabelNodePatternLike;
-  computed?: boolean;
-  shorthand?: boolean;
-  decorators?: Array<BabelNodeDecorator>;
-};
-
-declare type BabelNodeRestElement = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "RestElement";
-  argument: BabelNodeIdentifier | BabelNodeArrayPattern | BabelNodeObjectPattern | BabelNodeMemberExpression | BabelNodeTSAsExpression | BabelNodeTSSatisfiesExpression | BabelNodeTSTypeAssertion | BabelNodeTSNonNullExpression | BabelNodeRestElement | BabelNodeAssignmentPattern;
-  decorators?: Array<BabelNodeDecorator>;
-  optional?: boolean;
-  typeAnnotation?: BabelNodeTypeAnnotation | BabelNodeTSTypeAnnotation | BabelNodeNoop;
-};
-
-declare type BabelNodeReturnStatement = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ReturnStatement";
-  argument?: BabelNodeExpression;
-};
-
-declare type BabelNodeSequenceExpression = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "SequenceExpression";
-  expressions: Array<BabelNodeExpression>;
-};
-
-declare type BabelNodeParenthesizedExpression = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ParenthesizedExpression";
-  expression: BabelNodeExpression;
-};
-
-declare type BabelNodeSwitchCase = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "SwitchCase";
-  test?: BabelNodeExpression;
-  consequent: Array<BabelNodeStatement>;
-};
-
-declare type BabelNodeSwitchStatement = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "SwitchStatement";
-  discriminant: BabelNodeExpression;
-  cases: Array<BabelNodeSwitchCase>;
-};
-
-declare type BabelNodeThisExpression = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ThisExpression";
-};
-
-declare type BabelNodeThrowStatement = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ThrowStatement";
-  argument: BabelNodeExpression;
-};
-
-declare type BabelNodeTryStatement = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TryStatement";
-  block: BabelNodeBlockStatement;
-  handler?: BabelNodeCatchClause;
-  finalizer?: BabelNodeBlockStatement;
-};
-
-declare type BabelNodeUnaryExpression = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "UnaryExpression";
-  operator: "void" | "throw" | "delete" | "!" | "+" | "-" | "~" | "typeof";
-  argument: BabelNodeExpression;
-  prefix?: boolean;
-};
-
-declare type BabelNodeUpdateExpression = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "UpdateExpression";
-  operator: "++" | "--";
-  argument: BabelNodeExpression;
-  prefix?: boolean;
-};
-
-declare type BabelNodeVariableDeclaration = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "VariableDeclaration";
-  kind: "var" | "let" | "const" | "using" | "await using";
-  declarations: Array<BabelNodeVariableDeclarator>;
-  declare?: boolean;
-};
-
-declare type BabelNodeVariableDeclarator = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "VariableDeclarator";
-  id: BabelNodeLVal | BabelNodeVoidPattern;
-  init?: BabelNodeExpression;
-  definite?: boolean;
-};
-
-declare type BabelNodeWhileStatement = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "WhileStatement";
-  test: BabelNodeExpression;
-  body: BabelNodeStatement;
-};
-
-declare type BabelNodeWithStatement = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "WithStatement";
-  object: BabelNodeExpression;
-  body: BabelNodeStatement;
-};
-
-declare type BabelNodeAssignmentPattern = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "AssignmentPattern";
-  left: BabelNodeIdentifier | BabelNodeObjectPattern | BabelNodeArrayPattern | BabelNodeMemberExpression | BabelNodeTSAsExpression | BabelNodeTSSatisfiesExpression | BabelNodeTSTypeAssertion | BabelNodeTSNonNullExpression;
-  right: BabelNodeExpression;
-  decorators?: Array<BabelNodeDecorator>;
-  optional?: boolean;
-  typeAnnotation?: BabelNodeTypeAnnotation | BabelNodeTSTypeAnnotation | BabelNodeNoop;
-};
-
-declare type BabelNodeArrayPattern = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ArrayPattern";
-  elements: Array<null | BabelNodePatternLike>;
-  decorators?: Array<BabelNodeDecorator>;
-  optional?: boolean;
-  typeAnnotation?: BabelNodeTypeAnnotation | BabelNodeTSTypeAnnotation | BabelNodeNoop;
-};
-
-declare type BabelNodeArrowFunctionExpression = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ArrowFunctionExpression";
-  params: Array<BabelNodeFunctionParameter>;
-  body: BabelNodeBlockStatement | BabelNodeExpression;
-  async?: boolean;
-  expression: boolean;
-  generator?: boolean;
-  predicate?: BabelNodeDeclaredPredicate | BabelNodeInferredPredicate;
-  returnType?: BabelNodeTypeAnnotation | BabelNodeTSTypeAnnotation | BabelNodeNoop;
-  typeParameters?: BabelNodeTypeParameterDeclaration | BabelNodeTSTypeParameterDeclaration | BabelNodeNoop;
-};
-
-declare type BabelNodeClassBody = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ClassBody";
-  body: Array<BabelNodeClassMethod | BabelNodeClassPrivateMethod | BabelNodeClassProperty | BabelNodeClassPrivateProperty | BabelNodeClassAccessorProperty | BabelNodeTSDeclareMethod | BabelNodeTSIndexSignature | BabelNodeStaticBlock>;
-};
-
-declare type BabelNodeClassExpression = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ClassExpression";
-  id?: BabelNodeIdentifier;
-  superClass?: BabelNodeExpression;
-  body: BabelNodeClassBody;
-  decorators?: Array<BabelNodeDecorator>;
-  implements?: Array<BabelNodeTSExpressionWithTypeArguments | BabelNodeClassImplements>;
-  mixins?: BabelNodeInterfaceExtends;
-  superTypeParameters?: BabelNodeTypeParameterInstantiation | BabelNodeTSTypeParameterInstantiation;
-  typeParameters?: BabelNodeTypeParameterDeclaration | BabelNodeTSTypeParameterDeclaration | BabelNodeNoop;
-};
-
-declare type BabelNodeClassDeclaration = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ClassDeclaration";
-  id?: BabelNodeIdentifier;
-  superClass?: BabelNodeExpression;
-  body: BabelNodeClassBody;
-  decorators?: Array<BabelNodeDecorator>;
-  abstract?: boolean;
-  declare?: boolean;
-  implements?: Array<BabelNodeTSExpressionWithTypeArguments | BabelNodeClassImplements>;
-  mixins?: BabelNodeInterfaceExtends;
-  superTypeParameters?: BabelNodeTypeParameterInstantiation | BabelNodeTSTypeParameterInstantiation;
-  typeParameters?: BabelNodeTypeParameterDeclaration | BabelNodeTSTypeParameterDeclaration | BabelNodeNoop;
-};
-
-declare type BabelNodeExportAllDeclaration = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ExportAllDeclaration";
-  source: BabelNodeStringLiteral;
-  attributes?: Array<BabelNodeImportAttribute>;
-  assertions?: Array<BabelNodeImportAttribute>;
-  exportKind?: "type" | "value";
-};
-
-declare type BabelNodeExportDefaultDeclaration = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ExportDefaultDeclaration";
-  declaration: BabelNodeTSDeclareFunction | BabelNodeFunctionDeclaration | BabelNodeClassDeclaration | BabelNodeExpression;
-  exportKind?: "value";
-};
-
-declare type BabelNodeExportNamedDeclaration = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ExportNamedDeclaration";
-  declaration?: BabelNodeDeclaration;
-  specifiers?: Array<BabelNodeExportSpecifier | BabelNodeExportDefaultSpecifier | BabelNodeExportNamespaceSpecifier>;
-  source?: BabelNodeStringLiteral;
-  attributes?: Array<BabelNodeImportAttribute>;
-  assertions?: Array<BabelNodeImportAttribute>;
-  exportKind?: "type" | "value";
-};
-
-declare type BabelNodeExportSpecifier = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ExportSpecifier";
-  local: BabelNodeIdentifier;
-  exported: BabelNodeIdentifier | BabelNodeStringLiteral;
-  exportKind?: "type" | "value";
-};
-
-declare type BabelNodeForOfStatement = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ForOfStatement";
-  left: BabelNodeVariableDeclaration | BabelNodeLVal;
-  right: BabelNodeExpression;
-  body: BabelNodeStatement;
-  await?: boolean;
-};
-
-declare type BabelNodeImportDeclaration = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ImportDeclaration";
-  specifiers: Array<BabelNodeImportSpecifier | BabelNodeImportDefaultSpecifier | BabelNodeImportNamespaceSpecifier>;
-  source: BabelNodeStringLiteral;
-  attributes?: Array<BabelNodeImportAttribute>;
-  assertions?: Array<BabelNodeImportAttribute>;
-  importKind?: "type" | "typeof" | "value";
-  module?: boolean;
-  phase?: "source" | "defer";
-};
-
-declare type BabelNodeImportDefaultSpecifier = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ImportDefaultSpecifier";
-  local: BabelNodeIdentifier;
-};
-
-declare type BabelNodeImportNamespaceSpecifier = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ImportNamespaceSpecifier";
-  local: BabelNodeIdentifier;
-};
-
-declare type BabelNodeImportSpecifier = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ImportSpecifier";
-  local: BabelNodeIdentifier;
-  imported: BabelNodeIdentifier | BabelNodeStringLiteral;
-  importKind?: "type" | "typeof" | "value";
-};
-
-declare type BabelNodeImportExpression = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ImportExpression";
-  source: BabelNodeExpression;
-  options?: BabelNodeExpression;
-  phase?: "source" | "defer";
-};
-
-declare type BabelNodeMetaProperty = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "MetaProperty";
-  meta: BabelNodeIdentifier;
-  property: BabelNodeIdentifier;
-};
-
-declare type BabelNodeClassMethod = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ClassMethod";
-  kind?: "get" | "set" | "method" | "constructor";
-  key: BabelNodeIdentifier | BabelNodeStringLiteral | BabelNodeNumericLiteral | BabelNodeBigIntLiteral | BabelNodeExpression;
-  params: Array<BabelNodeFunctionParameter | BabelNodeTSParameterProperty>;
-  body: BabelNodeBlockStatement;
-  computed?: boolean;
-  static?: boolean;
-  generator?: boolean;
-  async?: boolean;
-  abstract?: boolean;
-  access?: "public" | "private" | "protected";
-  accessibility?: "public" | "private" | "protected";
-  decorators?: Array<BabelNodeDecorator>;
-  optional?: boolean;
-  override?: boolean;
-  returnType?: BabelNodeTypeAnnotation | BabelNodeTSTypeAnnotation | BabelNodeNoop;
-  typeParameters?: BabelNodeTypeParameterDeclaration | BabelNodeTSTypeParameterDeclaration | BabelNodeNoop;
-};
-
-declare type BabelNodeObjectPattern = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ObjectPattern";
-  properties: Array<BabelNodeRestElement | BabelNodeObjectProperty>;
-  decorators?: Array<BabelNodeDecorator>;
-  optional?: boolean;
-  typeAnnotation?: BabelNodeTypeAnnotation | BabelNodeTSTypeAnnotation | BabelNodeNoop;
-};
-
-declare type BabelNodeSpreadElement = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "SpreadElement";
-  argument: BabelNodeExpression;
-};
-
-declare type BabelNodeSuper = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "Super";
-};
-
-declare type BabelNodeTaggedTemplateExpression = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TaggedTemplateExpression";
-  tag: BabelNodeExpression;
-  quasi: BabelNodeTemplateLiteral;
-  typeParameters?: BabelNodeTypeParameterInstantiation | BabelNodeTSTypeParameterInstantiation;
-};
-
-declare type BabelNodeTemplateElement = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TemplateElement";
-  value: any;
-  tail?: boolean;
-};
-
-declare type BabelNodeTemplateLiteral = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TemplateLiteral";
-  quasis: Array<BabelNodeTemplateElement>;
-  expressions: Array<BabelNodeExpression | BabelNodeTSType>;
-};
-
-declare type BabelNodeYieldExpression = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "YieldExpression";
-  argument?: BabelNodeExpression;
-  delegate?: boolean;
-};
-
-declare type BabelNodeAwaitExpression = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "AwaitExpression";
-  argument: BabelNodeExpression;
-};
-
-declare type BabelNodeImport = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "Import";
-};
-
-declare type BabelNodeBigIntLiteral = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "BigIntLiteral";
-  value: string;
-};
-
-declare type BabelNodeExportNamespaceSpecifier = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ExportNamespaceSpecifier";
-  exported: BabelNodeIdentifier;
-};
-
-declare type BabelNodeOptionalMemberExpression = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "OptionalMemberExpression";
-  object: BabelNodeExpression;
-  property: BabelNodeExpression | BabelNodeIdentifier;
-  computed?: boolean;
-  optional: boolean;
-};
-
-declare type BabelNodeOptionalCallExpression = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "OptionalCallExpression";
-  callee: BabelNodeExpression;
-  arguments: Array<BabelNodeExpression | BabelNodeSpreadElement | BabelNodeArgumentPlaceholder>;
-  optional: boolean;
-  typeArguments?: BabelNodeTypeParameterInstantiation;
-  typeParameters?: BabelNodeTSTypeParameterInstantiation;
-};
-
-declare type BabelNodeClassProperty = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ClassProperty";
-  key: BabelNodeIdentifier | BabelNodeStringLiteral | BabelNodeNumericLiteral | BabelNodeBigIntLiteral | BabelNodeExpression;
-  value?: BabelNodeExpression;
-  typeAnnotation?: BabelNodeTypeAnnotation | BabelNodeTSTypeAnnotation | BabelNodeNoop;
-  decorators?: Array<BabelNodeDecorator>;
-  computed?: boolean;
-  static?: boolean;
-  abstract?: boolean;
-  accessibility?: "public" | "private" | "protected";
-  declare?: boolean;
-  definite?: boolean;
-  optional?: boolean;
-  override?: boolean;
-  readonly?: boolean;
-  variance?: BabelNodeVariance;
-};
-
-declare type BabelNodeClassAccessorProperty = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ClassAccessorProperty";
-  key: BabelNodeIdentifier | BabelNodeStringLiteral | BabelNodeNumericLiteral | BabelNodeBigIntLiteral | BabelNodeExpression | BabelNodePrivateName;
-  value?: BabelNodeExpression;
-  typeAnnotation?: BabelNodeTypeAnnotation | BabelNodeTSTypeAnnotation | BabelNodeNoop;
-  decorators?: Array<BabelNodeDecorator>;
-  computed?: boolean;
-  static?: boolean;
-  abstract?: boolean;
-  accessibility?: "public" | "private" | "protected";
-  declare?: boolean;
-  definite?: boolean;
-  optional?: boolean;
-  override?: boolean;
-  readonly?: boolean;
-  variance?: BabelNodeVariance;
-};
-
-declare type BabelNodeClassPrivateProperty = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ClassPrivateProperty";
-  key: BabelNodePrivateName;
-  value?: BabelNodeExpression;
-  decorators?: Array<BabelNodeDecorator>;
-  static?: boolean;
-  definite?: boolean;
-  optional?: boolean;
-  readonly?: boolean;
-  typeAnnotation?: BabelNodeTypeAnnotation | BabelNodeTSTypeAnnotation | BabelNodeNoop;
-  variance?: BabelNodeVariance;
-};
-
-declare type BabelNodeClassPrivateMethod = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ClassPrivateMethod";
-  kind?: "get" | "set" | "method";
-  key: BabelNodePrivateName;
-  params: Array<BabelNodeFunctionParameter | BabelNodeTSParameterProperty>;
-  body: BabelNodeBlockStatement;
-  static?: boolean;
-  abstract?: boolean;
-  access?: "public" | "private" | "protected";
-  accessibility?: "public" | "private" | "protected";
-  async?: boolean;
-  computed?: boolean;
-  decorators?: Array<BabelNodeDecorator>;
-  generator?: boolean;
-  optional?: boolean;
-  override?: boolean;
-  returnType?: BabelNodeTypeAnnotation | BabelNodeTSTypeAnnotation | BabelNodeNoop;
-  typeParameters?: BabelNodeTypeParameterDeclaration | BabelNodeTSTypeParameterDeclaration | BabelNodeNoop;
-};
-
-declare type BabelNodePrivateName = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "PrivateName";
-  id: BabelNodeIdentifier;
-};
-
-declare type BabelNodeStaticBlock = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "StaticBlock";
-  body: Array<BabelNodeStatement>;
-};
-
-declare type BabelNodeImportAttribute = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ImportAttribute";
-  key: BabelNodeIdentifier | BabelNodeStringLiteral;
-  value: BabelNodeStringLiteral;
-};
-
-declare type BabelNodeAnyTypeAnnotation = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "AnyTypeAnnotation";
-};
-
-declare type BabelNodeArrayTypeAnnotation = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ArrayTypeAnnotation";
-  elementType: BabelNodeFlowType;
-};
-
-declare type BabelNodeBooleanTypeAnnotation = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "BooleanTypeAnnotation";
-};
-
-declare type BabelNodeBooleanLiteralTypeAnnotation = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "BooleanLiteralTypeAnnotation";
-  value: boolean;
-};
-
-declare type BabelNodeNullLiteralTypeAnnotation = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "NullLiteralTypeAnnotation";
-};
-
-declare type BabelNodeClassImplements = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ClassImplements";
-  id: BabelNodeIdentifier;
-  typeParameters?: BabelNodeTypeParameterInstantiation;
-};
-
-declare type BabelNodeDeclareClass = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "DeclareClass";
-  id: BabelNodeIdentifier;
-  typeParameters?: BabelNodeTypeParameterDeclaration;
-  extends?: Array<BabelNodeInterfaceExtends>;
-  body: BabelNodeObjectTypeAnnotation;
-  implements?: Array<BabelNodeClassImplements>;
-  mixins?: Array<BabelNodeInterfaceExtends>;
-};
-
-declare type BabelNodeDeclareFunction = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "DeclareFunction";
-  id: BabelNodeIdentifier;
-  predicate?: BabelNodeDeclaredPredicate;
-};
-
-declare type BabelNodeDeclareInterface = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "DeclareInterface";
-  id: BabelNodeIdentifier;
-  typeParameters?: BabelNodeTypeParameterDeclaration;
-  extends?: Array<BabelNodeInterfaceExtends>;
-  body: BabelNodeObjectTypeAnnotation;
-};
-
-declare type BabelNodeDeclareModule = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "DeclareModule";
-  id: BabelNodeIdentifier | BabelNodeStringLiteral;
-  body: BabelNodeBlockStatement;
-  kind?: "CommonJS" | "ES";
-};
-
-declare type BabelNodeDeclareModuleExports = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "DeclareModuleExports";
-  typeAnnotation: BabelNodeTypeAnnotation;
-};
-
-declare type BabelNodeDeclareTypeAlias = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "DeclareTypeAlias";
-  id: BabelNodeIdentifier;
-  typeParameters?: BabelNodeTypeParameterDeclaration;
-  right: BabelNodeFlowType;
-};
-
-declare type BabelNodeDeclareOpaqueType = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "DeclareOpaqueType";
-  id: BabelNodeIdentifier;
-  typeParameters?: BabelNodeTypeParameterDeclaration;
-  supertype?: BabelNodeFlowType;
-  impltype?: BabelNodeFlowType;
-};
-
-declare type BabelNodeDeclareVariable = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "DeclareVariable";
-  id: BabelNodeIdentifier;
-};
-
-declare type BabelNodeDeclareExportDeclaration = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "DeclareExportDeclaration";
-  declaration?: BabelNodeFlow;
-  specifiers?: Array<BabelNodeExportSpecifier | BabelNodeExportNamespaceSpecifier>;
-  source?: BabelNodeStringLiteral;
-  attributes?: Array<BabelNodeImportAttribute>;
-  assertions?: Array<BabelNodeImportAttribute>;
-  default?: boolean;
-};
-
-declare type BabelNodeDeclareExportAllDeclaration = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "DeclareExportAllDeclaration";
-  source: BabelNodeStringLiteral;
-  attributes?: Array<BabelNodeImportAttribute>;
-  assertions?: Array<BabelNodeImportAttribute>;
-  exportKind?: "type" | "value";
-};
-
-declare type BabelNodeDeclaredPredicate = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "DeclaredPredicate";
-  value: BabelNodeFlow;
-};
-
-declare type BabelNodeExistsTypeAnnotation = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ExistsTypeAnnotation";
-};
-
-declare type BabelNodeFunctionTypeAnnotation = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "FunctionTypeAnnotation";
-  typeParameters?: BabelNodeTypeParameterDeclaration;
-  params: Array<BabelNodeFunctionTypeParam>;
-  rest?: BabelNodeFunctionTypeParam;
-  returnType: BabelNodeFlowType;
-  this?: BabelNodeFunctionTypeParam;
-};
-
-declare type BabelNodeFunctionTypeParam = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "FunctionTypeParam";
-  name?: BabelNodeIdentifier;
-  typeAnnotation: BabelNodeFlowType;
-  optional?: boolean;
-};
-
-declare type BabelNodeGenericTypeAnnotation = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "GenericTypeAnnotation";
-  id: BabelNodeIdentifier | BabelNodeQualifiedTypeIdentifier;
-  typeParameters?: BabelNodeTypeParameterInstantiation;
-};
-
-declare type BabelNodeInferredPredicate = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "InferredPredicate";
-};
-
-declare type BabelNodeInterfaceExtends = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "InterfaceExtends";
-  id: BabelNodeIdentifier | BabelNodeQualifiedTypeIdentifier;
-  typeParameters?: BabelNodeTypeParameterInstantiation;
-};
-
-declare type BabelNodeInterfaceDeclaration = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "InterfaceDeclaration";
-  id: BabelNodeIdentifier;
-  typeParameters?: BabelNodeTypeParameterDeclaration;
-  extends?: Array<BabelNodeInterfaceExtends>;
-  body: BabelNodeObjectTypeAnnotation;
-};
-
-declare type BabelNodeInterfaceTypeAnnotation = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "InterfaceTypeAnnotation";
-  extends?: Array<BabelNodeInterfaceExtends>;
-  body: BabelNodeObjectTypeAnnotation;
-};
-
-declare type BabelNodeIntersectionTypeAnnotation = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "IntersectionTypeAnnotation";
-  types: Array<BabelNodeFlowType>;
-};
-
-declare type BabelNodeMixedTypeAnnotation = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "MixedTypeAnnotation";
-};
-
-declare type BabelNodeEmptyTypeAnnotation = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "EmptyTypeAnnotation";
-};
-
-declare type BabelNodeNullableTypeAnnotation = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "NullableTypeAnnotation";
-  typeAnnotation: BabelNodeFlowType;
-};
-
-declare type BabelNodeNumberLiteralTypeAnnotation = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "NumberLiteralTypeAnnotation";
-  value: number;
-};
-
-declare type BabelNodeNumberTypeAnnotation = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "NumberTypeAnnotation";
-};
-
-declare type BabelNodeObjectTypeAnnotation = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ObjectTypeAnnotation";
-  properties: Array<BabelNodeObjectTypeProperty | BabelNodeObjectTypeSpreadProperty>;
-  indexers?: Array<BabelNodeObjectTypeIndexer>;
-  callProperties?: Array<BabelNodeObjectTypeCallProperty>;
-  internalSlots?: Array<BabelNodeObjectTypeInternalSlot>;
-  exact?: boolean;
-  inexact?: boolean;
-};
-
-declare type BabelNodeObjectTypeInternalSlot = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ObjectTypeInternalSlot";
-  id: BabelNodeIdentifier;
-  value: BabelNodeFlowType;
-  optional: boolean;
-  static: boolean;
-  method: boolean;
-};
-
-declare type BabelNodeObjectTypeCallProperty = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ObjectTypeCallProperty";
-  value: BabelNodeFlowType;
-  static: boolean;
-};
-
-declare type BabelNodeObjectTypeIndexer = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ObjectTypeIndexer";
-  id?: BabelNodeIdentifier;
-  key: BabelNodeFlowType;
-  value: BabelNodeFlowType;
-  variance?: BabelNodeVariance;
-  static: boolean;
-};
-
-declare type BabelNodeObjectTypeProperty = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ObjectTypeProperty";
-  key: BabelNodeIdentifier | BabelNodeStringLiteral;
-  value: BabelNodeFlowType;
-  variance?: BabelNodeVariance;
-  kind: "init" | "get" | "set";
-  method: boolean;
-  optional: boolean;
-  proto: boolean;
-  static: boolean;
-};
-
-declare type BabelNodeObjectTypeSpreadProperty = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ObjectTypeSpreadProperty";
-  argument: BabelNodeFlowType;
-};
-
-declare type BabelNodeOpaqueType = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "OpaqueType";
-  id: BabelNodeIdentifier;
-  typeParameters?: BabelNodeTypeParameterDeclaration;
-  supertype?: BabelNodeFlowType;
-  impltype: BabelNodeFlowType;
-};
-
-declare type BabelNodeQualifiedTypeIdentifier = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "QualifiedTypeIdentifier";
-  id: BabelNodeIdentifier;
-  qualification: BabelNodeIdentifier | BabelNodeQualifiedTypeIdentifier;
-};
-
-declare type BabelNodeStringLiteralTypeAnnotation = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "StringLiteralTypeAnnotation";
-  value: string;
-};
-
-declare type BabelNodeStringTypeAnnotation = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "StringTypeAnnotation";
-};
-
-declare type BabelNodeSymbolTypeAnnotation = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "SymbolTypeAnnotation";
-};
-
-declare type BabelNodeThisTypeAnnotation = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ThisTypeAnnotation";
-};
-
-declare type BabelNodeTupleTypeAnnotation = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TupleTypeAnnotation";
-  types: Array<BabelNodeFlowType>;
-};
-
-declare type BabelNodeTypeofTypeAnnotation = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TypeofTypeAnnotation";
-  argument: BabelNodeFlowType;
-};
-
-declare type BabelNodeTypeAlias = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TypeAlias";
-  id: BabelNodeIdentifier;
-  typeParameters?: BabelNodeTypeParameterDeclaration;
-  right: BabelNodeFlowType;
-};
-
-declare type BabelNodeTypeAnnotation = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TypeAnnotation";
-  typeAnnotation: BabelNodeFlowType;
-};
-
-declare type BabelNodeTypeCastExpression = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TypeCastExpression";
-  expression: BabelNodeExpression;
-  typeAnnotation: BabelNodeTypeAnnotation;
-};
-
-declare type BabelNodeTypeParameter = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TypeParameter";
-  bound?: BabelNodeTypeAnnotation;
-  default?: BabelNodeFlowType;
-  variance?: BabelNodeVariance;
-  name: string;
-};
-
-declare type BabelNodeTypeParameterDeclaration = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TypeParameterDeclaration";
-  params: Array<BabelNodeTypeParameter>;
-};
-
-declare type BabelNodeTypeParameterInstantiation = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TypeParameterInstantiation";
-  params: Array<BabelNodeFlowType>;
-};
-
-declare type BabelNodeUnionTypeAnnotation = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "UnionTypeAnnotation";
-  types: Array<BabelNodeFlowType>;
-};
-
-declare type BabelNodeVariance = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "Variance";
-  kind: "minus" | "plus";
-};
-
-declare type BabelNodeVoidTypeAnnotation = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "VoidTypeAnnotation";
-};
-
-declare type BabelNodeEnumDeclaration = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "EnumDeclaration";
-  id: BabelNodeIdentifier;
-  body: BabelNodeEnumBooleanBody | BabelNodeEnumNumberBody | BabelNodeEnumStringBody | BabelNodeEnumSymbolBody;
-};
-
-declare type BabelNodeEnumBooleanBody = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "EnumBooleanBody";
-  members: Array<BabelNodeEnumBooleanMember>;
-  explicitType: boolean;
-  hasUnknownMembers: boolean;
-};
-
-declare type BabelNodeEnumNumberBody = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "EnumNumberBody";
-  members: Array<BabelNodeEnumNumberMember>;
-  explicitType: boolean;
-  hasUnknownMembers: boolean;
-};
-
-declare type BabelNodeEnumStringBody = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "EnumStringBody";
-  members: Array<BabelNodeEnumStringMember | BabelNodeEnumDefaultedMember>;
-  explicitType: boolean;
-  hasUnknownMembers: boolean;
-};
-
-declare type BabelNodeEnumSymbolBody = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "EnumSymbolBody";
-  members: Array<BabelNodeEnumDefaultedMember>;
-  hasUnknownMembers: boolean;
-};
-
-declare type BabelNodeEnumBooleanMember = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "EnumBooleanMember";
-  id: BabelNodeIdentifier;
-  init: BabelNodeBooleanLiteral;
-};
-
-declare type BabelNodeEnumNumberMember = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "EnumNumberMember";
-  id: BabelNodeIdentifier;
-  init: BabelNodeNumericLiteral;
-};
-
-declare type BabelNodeEnumStringMember = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "EnumStringMember";
-  id: BabelNodeIdentifier;
-  init: BabelNodeStringLiteral;
-};
-
-declare type BabelNodeEnumDefaultedMember = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "EnumDefaultedMember";
-  id: BabelNodeIdentifier;
-};
-
-declare type BabelNodeIndexedAccessType = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "IndexedAccessType";
-  objectType: BabelNodeFlowType;
-  indexType: BabelNodeFlowType;
-};
-
-declare type BabelNodeOptionalIndexedAccessType = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "OptionalIndexedAccessType";
-  objectType: BabelNodeFlowType;
-  indexType: BabelNodeFlowType;
-  optional: boolean;
-};
-
-declare type BabelNodeJSXAttribute = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "JSXAttribute";
-  name: BabelNodeJSXIdentifier | BabelNodeJSXNamespacedName;
-  value?: BabelNodeJSXElement | BabelNodeJSXFragment | BabelNodeStringLiteral | BabelNodeJSXExpressionContainer;
-};
-
-declare type BabelNodeJSXClosingElement = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "JSXClosingElement";
-  name: BabelNodeJSXIdentifier | BabelNodeJSXMemberExpression | BabelNodeJSXNamespacedName;
-};
-
-declare type BabelNodeJSXElement = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "JSXElement";
-  openingElement: BabelNodeJSXOpeningElement;
-  closingElement?: BabelNodeJSXClosingElement;
-  children: Array<BabelNodeJSXText | BabelNodeJSXExpressionContainer | BabelNodeJSXSpreadChild | BabelNodeJSXElement | BabelNodeJSXFragment>;
-  selfClosing?: boolean;
-};
-
-declare type BabelNodeJSXEmptyExpression = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "JSXEmptyExpression";
-};
-
-declare type BabelNodeJSXExpressionContainer = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "JSXExpressionContainer";
-  expression: BabelNodeExpression | BabelNodeJSXEmptyExpression;
-};
-
-declare type BabelNodeJSXSpreadChild = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "JSXSpreadChild";
-  expression: BabelNodeExpression;
-};
-
-declare type BabelNodeJSXIdentifier = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "JSXIdentifier";
-  name: string;
-};
-
-declare type BabelNodeJSXMemberExpression = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "JSXMemberExpression";
-  object: BabelNodeJSXMemberExpression | BabelNodeJSXIdentifier;
-  property: BabelNodeJSXIdentifier;
-};
-
-declare type BabelNodeJSXNamespacedName = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "JSXNamespacedName";
-  namespace: BabelNodeJSXIdentifier;
-  name: BabelNodeJSXIdentifier;
-};
-
-declare type BabelNodeJSXOpeningElement = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "JSXOpeningElement";
-  name: BabelNodeJSXIdentifier | BabelNodeJSXMemberExpression | BabelNodeJSXNamespacedName;
-  attributes: Array<BabelNodeJSXAttribute | BabelNodeJSXSpreadAttribute>;
-  selfClosing?: boolean;
-  typeArguments?: BabelNodeTypeParameterInstantiation;
-  typeParameters?: BabelNodeTSTypeParameterInstantiation;
-};
-
-declare type BabelNodeJSXSpreadAttribute = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "JSXSpreadAttribute";
-  argument: BabelNodeExpression;
-};
-
-declare type BabelNodeJSXText = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "JSXText";
-  value: string;
-};
-
-declare type BabelNodeJSXFragment = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "JSXFragment";
-  openingFragment: BabelNodeJSXOpeningFragment;
-  closingFragment: BabelNodeJSXClosingFragment;
-  children: Array<BabelNodeJSXText | BabelNodeJSXExpressionContainer | BabelNodeJSXSpreadChild | BabelNodeJSXElement | BabelNodeJSXFragment>;
-};
-
-declare type BabelNodeJSXOpeningFragment = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "JSXOpeningFragment";
-};
-
-declare type BabelNodeJSXClosingFragment = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "JSXClosingFragment";
-};
-
-declare type BabelNodeNoop = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "Noop";
-};
-
-declare type BabelNodePlaceholder = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "Placeholder";
-  expectedNode: "Identifier" | "StringLiteral" | "Expression" | "Statement" | "Declaration" | "BlockStatement" | "ClassBody" | "Pattern";
-  name: BabelNodeIdentifier;
-  decorators?: Array<BabelNodeDecorator>;
-  optional?: boolean;
-  typeAnnotation?: BabelNodeTypeAnnotation | BabelNodeTSTypeAnnotation | BabelNodeNoop;
-};
-
-declare type BabelNodeV8IntrinsicIdentifier = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "V8IntrinsicIdentifier";
-  name: string;
-};
-
-declare type BabelNodeArgumentPlaceholder = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ArgumentPlaceholder";
-};
-
-declare type BabelNodeBindExpression = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "BindExpression";
-  object: BabelNodeExpression;
-  callee: BabelNodeExpression;
-};
-
-declare type BabelNodeDecorator = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "Decorator";
-  expression: BabelNodeExpression;
-};
-
-declare type BabelNodeDoExpression = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "DoExpression";
-  body: BabelNodeBlockStatement;
-  async?: boolean;
-};
-
-declare type BabelNodeExportDefaultSpecifier = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ExportDefaultSpecifier";
-  exported: BabelNodeIdentifier;
-};
-
-declare type BabelNodeRecordExpression = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "RecordExpression";
-  properties: Array<BabelNodeObjectProperty | BabelNodeSpreadElement>;
-};
-
-declare type BabelNodeTupleExpression = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TupleExpression";
-  elements?: Array<BabelNodeExpression | BabelNodeSpreadElement>;
-};
-
-declare type BabelNodeDecimalLiteral = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "DecimalLiteral";
-  value: string;
-};
-
-declare type BabelNodeModuleExpression = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "ModuleExpression";
-  body: BabelNodeProgram;
-};
-
-declare type BabelNodeTopicReference = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TopicReference";
-};
-
-declare type BabelNodePipelineTopicExpression = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "PipelineTopicExpression";
-  expression: BabelNodeExpression;
-};
-
-declare type BabelNodePipelineBareFunction = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "PipelineBareFunction";
-  callee: BabelNodeExpression;
-};
-
-declare type BabelNodePipelinePrimaryTopicReference = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "PipelinePrimaryTopicReference";
-};
-
-declare type BabelNodeVoidPattern = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "VoidPattern";
-};
-
-declare type BabelNodeTSParameterProperty = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSParameterProperty";
-  parameter: BabelNodeIdentifier | BabelNodeAssignmentPattern;
-  accessibility?: "public" | "private" | "protected";
-  decorators?: Array<BabelNodeDecorator>;
-  override?: boolean;
-  readonly?: boolean;
-};
-
-declare type BabelNodeTSDeclareFunction = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSDeclareFunction";
-  id?: BabelNodeIdentifier;
-  typeParameters?: BabelNodeTSTypeParameterDeclaration | BabelNodeNoop;
-  params: Array<BabelNodeFunctionParameter>;
-  returnType?: BabelNodeTSTypeAnnotation | BabelNodeNoop;
-  async?: boolean;
-  declare?: boolean;
-  generator?: boolean;
-};
-
-declare type BabelNodeTSDeclareMethod = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSDeclareMethod";
-  decorators?: Array<BabelNodeDecorator>;
-  key: BabelNodeIdentifier | BabelNodeStringLiteral | BabelNodeNumericLiteral | BabelNodeBigIntLiteral | BabelNodeExpression;
-  typeParameters?: BabelNodeTSTypeParameterDeclaration | BabelNodeNoop;
-  params: Array<BabelNodeFunctionParameter | BabelNodeTSParameterProperty>;
-  returnType?: BabelNodeTSTypeAnnotation | BabelNodeNoop;
-  abstract?: boolean;
-  access?: "public" | "private" | "protected";
-  accessibility?: "public" | "private" | "protected";
-  async?: boolean;
-  computed?: boolean;
-  generator?: boolean;
-  kind?: "get" | "set" | "method" | "constructor";
-  optional?: boolean;
-  override?: boolean;
-  static?: boolean;
-};
-
-declare type BabelNodeTSQualifiedName = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSQualifiedName";
-  left: BabelNodeTSEntityName;
-  right: BabelNodeIdentifier;
-};
-
-declare type BabelNodeTSCallSignatureDeclaration = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSCallSignatureDeclaration";
-  typeParameters?: BabelNodeTSTypeParameterDeclaration;
-  parameters: Array<BabelNodeArrayPattern | BabelNodeIdentifier | BabelNodeObjectPattern | BabelNodeRestElement>;
-  typeAnnotation?: BabelNodeTSTypeAnnotation;
-};
-
-declare type BabelNodeTSConstructSignatureDeclaration = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSConstructSignatureDeclaration";
-  typeParameters?: BabelNodeTSTypeParameterDeclaration;
-  parameters: Array<BabelNodeArrayPattern | BabelNodeIdentifier | BabelNodeObjectPattern | BabelNodeRestElement>;
-  typeAnnotation?: BabelNodeTSTypeAnnotation;
-};
-
-declare type BabelNodeTSPropertySignature = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSPropertySignature";
-  key: BabelNodeExpression;
-  typeAnnotation?: BabelNodeTSTypeAnnotation;
-  computed?: boolean;
-  kind?: "get" | "set";
-  optional?: boolean;
-  readonly?: boolean;
-};
-
-declare type BabelNodeTSMethodSignature = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSMethodSignature";
-  key: BabelNodeExpression;
-  typeParameters?: BabelNodeTSTypeParameterDeclaration;
-  parameters: Array<BabelNodeArrayPattern | BabelNodeIdentifier | BabelNodeObjectPattern | BabelNodeRestElement>;
-  typeAnnotation?: BabelNodeTSTypeAnnotation;
-  computed?: boolean;
-  kind: "method" | "get" | "set";
-  optional?: boolean;
-};
-
-declare type BabelNodeTSIndexSignature = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSIndexSignature";
-  parameters: Array<BabelNodeIdentifier>;
-  typeAnnotation?: BabelNodeTSTypeAnnotation;
-  readonly?: boolean;
-  static?: boolean;
-};
-
-declare type BabelNodeTSAnyKeyword = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSAnyKeyword";
-};
-
-declare type BabelNodeTSBooleanKeyword = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSBooleanKeyword";
-};
-
-declare type BabelNodeTSBigIntKeyword = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSBigIntKeyword";
-};
-
-declare type BabelNodeTSIntrinsicKeyword = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSIntrinsicKeyword";
-};
-
-declare type BabelNodeTSNeverKeyword = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSNeverKeyword";
-};
-
-declare type BabelNodeTSNullKeyword = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSNullKeyword";
-};
-
-declare type BabelNodeTSNumberKeyword = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSNumberKeyword";
-};
-
-declare type BabelNodeTSObjectKeyword = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSObjectKeyword";
-};
-
-declare type BabelNodeTSStringKeyword = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSStringKeyword";
-};
-
-declare type BabelNodeTSSymbolKeyword = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSSymbolKeyword";
-};
-
-declare type BabelNodeTSUndefinedKeyword = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSUndefinedKeyword";
-};
-
-declare type BabelNodeTSUnknownKeyword = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSUnknownKeyword";
-};
-
-declare type BabelNodeTSVoidKeyword = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSVoidKeyword";
-};
-
-declare type BabelNodeTSThisType = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSThisType";
-};
-
-declare type BabelNodeTSFunctionType = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSFunctionType";
-  typeParameters?: BabelNodeTSTypeParameterDeclaration;
-  parameters: Array<BabelNodeArrayPattern | BabelNodeIdentifier | BabelNodeObjectPattern | BabelNodeRestElement>;
-  typeAnnotation?: BabelNodeTSTypeAnnotation;
-};
-
-declare type BabelNodeTSConstructorType = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSConstructorType";
-  typeParameters?: BabelNodeTSTypeParameterDeclaration;
-  parameters: Array<BabelNodeArrayPattern | BabelNodeIdentifier | BabelNodeObjectPattern | BabelNodeRestElement>;
-  typeAnnotation?: BabelNodeTSTypeAnnotation;
-  abstract?: boolean;
-};
-
-declare type BabelNodeTSTypeReference = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSTypeReference";
-  typeName: BabelNodeTSEntityName;
-  typeParameters?: BabelNodeTSTypeParameterInstantiation;
-};
-
-declare type BabelNodeTSTypePredicate = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSTypePredicate";
-  parameterName: BabelNodeIdentifier | BabelNodeTSThisType;
-  typeAnnotation?: BabelNodeTSTypeAnnotation;
-  asserts?: boolean;
-};
-
-declare type BabelNodeTSTypeQuery = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSTypeQuery";
-  exprName: BabelNodeTSEntityName | BabelNodeTSImportType;
-  typeParameters?: BabelNodeTSTypeParameterInstantiation;
-};
-
-declare type BabelNodeTSTypeLiteral = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSTypeLiteral";
-  members: Array<BabelNodeTSTypeElement>;
-};
-
-declare type BabelNodeTSArrayType = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSArrayType";
-  elementType: BabelNodeTSType;
-};
-
-declare type BabelNodeTSTupleType = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSTupleType";
-  elementTypes: Array<BabelNodeTSType | BabelNodeTSNamedTupleMember>;
-};
-
-declare type BabelNodeTSOptionalType = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSOptionalType";
-  typeAnnotation: BabelNodeTSType;
-};
-
-declare type BabelNodeTSRestType = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSRestType";
-  typeAnnotation: BabelNodeTSType;
-};
-
-declare type BabelNodeTSNamedTupleMember = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSNamedTupleMember";
-  label: BabelNodeIdentifier;
-  elementType: BabelNodeTSType;
-  optional?: boolean;
-};
-
-declare type BabelNodeTSUnionType = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSUnionType";
-  types: Array<BabelNodeTSType>;
-};
-
-declare type BabelNodeTSIntersectionType = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSIntersectionType";
-  types: Array<BabelNodeTSType>;
-};
-
-declare type BabelNodeTSConditionalType = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSConditionalType";
-  checkType: BabelNodeTSType;
-  extendsType: BabelNodeTSType;
-  trueType: BabelNodeTSType;
-  falseType: BabelNodeTSType;
-};
-
-declare type BabelNodeTSInferType = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSInferType";
-  typeParameter: BabelNodeTSTypeParameter;
-};
-
-declare type BabelNodeTSParenthesizedType = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSParenthesizedType";
-  typeAnnotation: BabelNodeTSType;
-};
-
-declare type BabelNodeTSTypeOperator = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSTypeOperator";
-  typeAnnotation: BabelNodeTSType;
-  operator?: string;
-};
-
-declare type BabelNodeTSIndexedAccessType = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSIndexedAccessType";
-  objectType: BabelNodeTSType;
-  indexType: BabelNodeTSType;
-};
-
-declare type BabelNodeTSMappedType = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSMappedType";
-  typeParameter: BabelNodeTSTypeParameter;
-  typeAnnotation?: BabelNodeTSType;
-  nameType?: BabelNodeTSType;
-  optional?: true | false | "+" | "-";
-  readonly?: true | false | "+" | "-";
-};
-
-declare type BabelNodeTSTemplateLiteralType = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSTemplateLiteralType";
-  quasis: Array<BabelNodeTemplateElement>;
-  types: Array<BabelNodeTSType>;
-};
-
-declare type BabelNodeTSLiteralType = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSLiteralType";
-  literal: BabelNodeNumericLiteral | BabelNodeStringLiteral | BabelNodeBooleanLiteral | BabelNodeBigIntLiteral | BabelNodeTemplateLiteral | BabelNodeUnaryExpression;
-};
-
-declare type BabelNodeTSExpressionWithTypeArguments = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSExpressionWithTypeArguments";
-  expression: BabelNodeTSEntityName;
-  typeParameters?: BabelNodeTSTypeParameterInstantiation;
-};
-
-declare type BabelNodeTSInterfaceDeclaration = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSInterfaceDeclaration";
-  id: BabelNodeIdentifier;
-  typeParameters?: BabelNodeTSTypeParameterDeclaration;
-  extends?: Array<BabelNodeTSExpressionWithTypeArguments>;
-  body: BabelNodeTSInterfaceBody;
-  declare?: boolean;
-};
-
-declare type BabelNodeTSInterfaceBody = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSInterfaceBody";
-  body: Array<BabelNodeTSTypeElement>;
-};
-
-declare type BabelNodeTSTypeAliasDeclaration = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSTypeAliasDeclaration";
-  id: BabelNodeIdentifier;
-  typeParameters?: BabelNodeTSTypeParameterDeclaration;
-  typeAnnotation: BabelNodeTSType;
-  declare?: boolean;
-};
-
-declare type BabelNodeTSInstantiationExpression = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSInstantiationExpression";
-  expression: BabelNodeExpression;
-  typeParameters?: BabelNodeTSTypeParameterInstantiation;
-};
-
-declare type BabelNodeTSAsExpression = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSAsExpression";
-  expression: BabelNodeExpression;
-  typeAnnotation: BabelNodeTSType;
-};
-
-declare type BabelNodeTSSatisfiesExpression = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSSatisfiesExpression";
-  expression: BabelNodeExpression;
-  typeAnnotation: BabelNodeTSType;
-};
-
-declare type BabelNodeTSTypeAssertion = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSTypeAssertion";
-  typeAnnotation: BabelNodeTSType;
-  expression: BabelNodeExpression;
-};
-
-declare type BabelNodeTSEnumBody = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSEnumBody";
-  members: Array<BabelNodeTSEnumMember>;
-};
-
-declare type BabelNodeTSEnumDeclaration = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSEnumDeclaration";
-  id: BabelNodeIdentifier;
-  members: Array<BabelNodeTSEnumMember>;
-  body?: BabelNodeTSEnumBody;
-  const?: boolean;
-  declare?: boolean;
-  initializer?: BabelNodeExpression;
-};
-
-declare type BabelNodeTSEnumMember = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSEnumMember";
-  id: BabelNodeIdentifier | BabelNodeStringLiteral;
-  initializer?: BabelNodeExpression;
-};
-
-declare type BabelNodeTSModuleDeclaration = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSModuleDeclaration";
-  id: BabelNodeIdentifier | BabelNodeStringLiteral;
-  body: BabelNodeTSModuleBlock | BabelNodeTSModuleDeclaration;
-  declare?: boolean;
-  global?: boolean;
-  kind: "global" | "module" | "namespace";
-};
-
-declare type BabelNodeTSModuleBlock = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSModuleBlock";
-  body: Array<BabelNodeStatement>;
-};
-
-declare type BabelNodeTSImportType = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSImportType";
-  argument: BabelNodeStringLiteral;
-  qualifier?: BabelNodeTSEntityName;
-  typeParameters?: BabelNodeTSTypeParameterInstantiation;
-  options?: BabelNodeObjectExpression;
-};
-
-declare type BabelNodeTSImportEqualsDeclaration = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSImportEqualsDeclaration";
-  id: BabelNodeIdentifier;
-  moduleReference: BabelNodeTSEntityName | BabelNodeTSExternalModuleReference;
-  importKind?: "type" | "value";
-  isExport: boolean;
-};
-
-declare type BabelNodeTSExternalModuleReference = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSExternalModuleReference";
-  expression: BabelNodeStringLiteral;
-};
-
-declare type BabelNodeTSNonNullExpression = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSNonNullExpression";
-  expression: BabelNodeExpression;
-};
-
-declare type BabelNodeTSExportAssignment = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSExportAssignment";
-  expression: BabelNodeExpression;
-};
-
-declare type BabelNodeTSNamespaceExportDeclaration = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSNamespaceExportDeclaration";
-  id: BabelNodeIdentifier;
-};
-
-declare type BabelNodeTSTypeAnnotation = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSTypeAnnotation";
-  typeAnnotation: BabelNodeTSType;
-};
-
-declare type BabelNodeTSTypeParameterInstantiation = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSTypeParameterInstantiation";
-  params: Array<BabelNodeTSType>;
-};
-
-declare type BabelNodeTSTypeParameterDeclaration = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSTypeParameterDeclaration";
-  params: Array<BabelNodeTSTypeParameter>;
-};
-
-declare type BabelNodeTSTypeParameter = {
-  leadingComments?: Array<BabelNodeComment>;
-  innerComments?: Array<BabelNodeComment>;
-  trailingComments?: Array<BabelNodeComment>;
-  start: ?number;
-  end: ?number;
-  loc: ?BabelNodeSourceLocation,
-  type: "TSTypeParameter";
-  constraint?: BabelNodeTSType;
-  default?: BabelNodeTSType;
-  name: string;
-  const?: boolean;
-  in?: boolean;
-  out?: boolean;
-};
-
-declare type BabelNode = BabelNodeArrayExpression | BabelNodeAssignmentExpression | BabelNodeBinaryExpression | BabelNodeInterpreterDirective | BabelNodeDirective | BabelNodeDirectiveLiteral | BabelNodeBlockStatement | BabelNodeBreakStatement | BabelNodeCallExpression | BabelNodeCatchClause | BabelNodeConditionalExpression | BabelNodeContinueStatement | BabelNodeDebuggerStatement | BabelNodeDoWhileStatement | BabelNodeEmptyStatement | BabelNodeExpressionStatement | BabelNodeFile | BabelNodeForInStatement | BabelNodeForStatement | BabelNodeFunctionDeclaration | BabelNodeFunctionExpression | BabelNodeIdentifier | BabelNodeIfStatement | BabelNodeLabeledStatement | BabelNodeStringLiteral | BabelNodeNumericLiteral | BabelNodeNullLiteral | BabelNodeBooleanLiteral | BabelNodeRegExpLiteral | BabelNodeLogicalExpression | BabelNodeMemberExpression | BabelNodeNewExpression | BabelNodeProgram | BabelNodeObjectExpression | BabelNodeObjectMethod | BabelNodeObjectProperty | BabelNodeRestElement | BabelNodeReturnStatement | BabelNodeSequenceExpression | BabelNodeParenthesizedExpression | BabelNodeSwitchCase | BabelNodeSwitchStatement | BabelNodeThisExpression | BabelNodeThrowStatement | BabelNodeTryStatement | BabelNodeUnaryExpression | BabelNodeUpdateExpression | BabelNodeVariableDeclaration | BabelNodeVariableDeclarator | BabelNodeWhileStatement | BabelNodeWithStatement | BabelNodeAssignmentPattern | BabelNodeArrayPattern | BabelNodeArrowFunctionExpression | BabelNodeClassBody | BabelNodeClassExpression | BabelNodeClassDeclaration | BabelNodeExportAllDeclaration | BabelNodeExportDefaultDeclaration | BabelNodeExportNamedDeclaration | BabelNodeExportSpecifier | BabelNodeForOfStatement | BabelNodeImportDeclaration | BabelNodeImportDefaultSpecifier | BabelNodeImportNamespaceSpecifier | BabelNodeImportSpecifier | BabelNodeImportExpression | BabelNodeMetaProperty | BabelNodeClassMethod | BabelNodeObjectPattern | BabelNodeSpreadElement | BabelNodeSuper | BabelNodeTaggedTemplateExpression | BabelNodeTemplateElement | BabelNodeTemplateLiteral | BabelNodeYieldExpression | BabelNodeAwaitExpression | BabelNodeImport | BabelNodeBigIntLiteral | BabelNodeExportNamespaceSpecifier | BabelNodeOptionalMemberExpression | BabelNodeOptionalCallExpression | BabelNodeClassProperty | BabelNodeClassAccessorProperty | BabelNodeClassPrivateProperty | BabelNodeClassPrivateMethod | BabelNodePrivateName | BabelNodeStaticBlock | BabelNodeImportAttribute | BabelNodeAnyTypeAnnotation | BabelNodeArrayTypeAnnotation | BabelNodeBooleanTypeAnnotation | BabelNodeBooleanLiteralTypeAnnotation | BabelNodeNullLiteralTypeAnnotation | BabelNodeClassImplements | BabelNodeDeclareClass | BabelNodeDeclareFunction | BabelNodeDeclareInterface | BabelNodeDeclareModule | BabelNodeDeclareModuleExports | BabelNodeDeclareTypeAlias | BabelNodeDeclareOpaqueType | BabelNodeDeclareVariable | BabelNodeDeclareExportDeclaration | BabelNodeDeclareExportAllDeclaration | BabelNodeDeclaredPredicate | BabelNodeExistsTypeAnnotation | BabelNodeFunctionTypeAnnotation | BabelNodeFunctionTypeParam | BabelNodeGenericTypeAnnotation | BabelNodeInferredPredicate | BabelNodeInterfaceExtends | BabelNodeInterfaceDeclaration | BabelNodeInterfaceTypeAnnotation | BabelNodeIntersectionTypeAnnotation | BabelNodeMixedTypeAnnotation | BabelNodeEmptyTypeAnnotation | BabelNodeNullableTypeAnnotation | BabelNodeNumberLiteralTypeAnnotation | BabelNodeNumberTypeAnnotation | BabelNodeObjectTypeAnnotation | BabelNodeObjectTypeInternalSlot | BabelNodeObjectTypeCallProperty | BabelNodeObjectTypeIndexer | BabelNodeObjectTypeProperty | BabelNodeObjectTypeSpreadProperty | BabelNodeOpaqueType | BabelNodeQualifiedTypeIdentifier | BabelNodeStringLiteralTypeAnnotation | BabelNodeStringTypeAnnotation | BabelNodeSymbolTypeAnnotation | BabelNodeThisTypeAnnotation | BabelNodeTupleTypeAnnotation | BabelNodeTypeofTypeAnnotation | BabelNodeTypeAlias | BabelNodeTypeAnnotation | BabelNodeTypeCastExpression | BabelNodeTypeParameter | BabelNodeTypeParameterDeclaration | BabelNodeTypeParameterInstantiation | BabelNodeUnionTypeAnnotation | BabelNodeVariance | BabelNodeVoidTypeAnnotation | BabelNodeEnumDeclaration | BabelNodeEnumBooleanBody | BabelNodeEnumNumberBody | BabelNodeEnumStringBody | BabelNodeEnumSymbolBody | BabelNodeEnumBooleanMember | BabelNodeEnumNumberMember | BabelNodeEnumStringMember | BabelNodeEnumDefaultedMember | BabelNodeIndexedAccessType | BabelNodeOptionalIndexedAccessType | BabelNodeJSXAttribute | BabelNodeJSXClosingElement | BabelNodeJSXElement | BabelNodeJSXEmptyExpression | BabelNodeJSXExpressionContainer | BabelNodeJSXSpreadChild | BabelNodeJSXIdentifier | BabelNodeJSXMemberExpression | BabelNodeJSXNamespacedName | BabelNodeJSXOpeningElement | BabelNodeJSXSpreadAttribute | BabelNodeJSXText | BabelNodeJSXFragment | BabelNodeJSXOpeningFragment | BabelNodeJSXClosingFragment | BabelNodeNoop | BabelNodePlaceholder | BabelNodeV8IntrinsicIdentifier | BabelNodeArgumentPlaceholder | BabelNodeBindExpression | BabelNodeDecorator | BabelNodeDoExpression | BabelNodeExportDefaultSpecifier | BabelNodeRecordExpression | BabelNodeTupleExpression | BabelNodeDecimalLiteral | BabelNodeModuleExpression | BabelNodeTopicReference | BabelNodePipelineTopicExpression | BabelNodePipelineBareFunction | BabelNodePipelinePrimaryTopicReference | BabelNodeVoidPattern | BabelNodeTSParameterProperty | BabelNodeTSDeclareFunction | BabelNodeTSDeclareMethod | BabelNodeTSQualifiedName | BabelNodeTSCallSignatureDeclaration | BabelNodeTSConstructSignatureDeclaration | BabelNodeTSPropertySignature | BabelNodeTSMethodSignature | BabelNodeTSIndexSignature | BabelNodeTSAnyKeyword | BabelNodeTSBooleanKeyword | BabelNodeTSBigIntKeyword | BabelNodeTSIntrinsicKeyword | BabelNodeTSNeverKeyword | BabelNodeTSNullKeyword | BabelNodeTSNumberKeyword | BabelNodeTSObjectKeyword | BabelNodeTSStringKeyword | BabelNodeTSSymbolKeyword | BabelNodeTSUndefinedKeyword | BabelNodeTSUnknownKeyword | BabelNodeTSVoidKeyword | BabelNodeTSThisType | BabelNodeTSFunctionType | BabelNodeTSConstructorType | BabelNodeTSTypeReference | BabelNodeTSTypePredicate | BabelNodeTSTypeQuery | BabelNodeTSTypeLiteral | BabelNodeTSArrayType | BabelNodeTSTupleType | BabelNodeTSOptionalType | BabelNodeTSRestType | BabelNodeTSNamedTupleMember | BabelNodeTSUnionType | BabelNodeTSIntersectionType | BabelNodeTSConditionalType | BabelNodeTSInferType | BabelNodeTSParenthesizedType | BabelNodeTSTypeOperator | BabelNodeTSIndexedAccessType | BabelNodeTSMappedType | BabelNodeTSTemplateLiteralType | BabelNodeTSLiteralType | BabelNodeTSExpressionWithTypeArguments | BabelNodeTSInterfaceDeclaration | BabelNodeTSInterfaceBody | BabelNodeTSTypeAliasDeclaration | BabelNodeTSInstantiationExpression | BabelNodeTSAsExpression | BabelNodeTSSatisfiesExpression | BabelNodeTSTypeAssertion | BabelNodeTSEnumBody | BabelNodeTSEnumDeclaration | BabelNodeTSEnumMember | BabelNodeTSModuleDeclaration | BabelNodeTSModuleBlock | BabelNodeTSImportType | BabelNodeTSImportEqualsDeclaration | BabelNodeTSExternalModuleReference | BabelNodeTSNonNullExpression | BabelNodeTSExportAssignment | BabelNodeTSNamespaceExportDeclaration | BabelNodeTSTypeAnnotation | BabelNodeTSTypeParameterInstantiation | BabelNodeTSTypeParameterDeclaration | BabelNodeTSTypeParameter;
-declare type BabelNodeStandardized = BabelNodeArrayExpression | BabelNodeAssignmentExpression | BabelNodeBinaryExpression | BabelNodeInterpreterDirective | BabelNodeDirective | BabelNodeDirectiveLiteral | BabelNodeBlockStatement | BabelNodeBreakStatement | BabelNodeCallExpression | BabelNodeCatchClause | BabelNodeConditionalExpression | BabelNodeContinueStatement | BabelNodeDebuggerStatement | BabelNodeDoWhileStatement | BabelNodeEmptyStatement | BabelNodeExpressionStatement | BabelNodeFile | BabelNodeForInStatement | BabelNodeForStatement | BabelNodeFunctionDeclaration | BabelNodeFunctionExpression | BabelNodeIdentifier | BabelNodeIfStatement | BabelNodeLabeledStatement | BabelNodeStringLiteral | BabelNodeNumericLiteral | BabelNodeNullLiteral | BabelNodeBooleanLiteral | BabelNodeRegExpLiteral | BabelNodeLogicalExpression | BabelNodeMemberExpression | BabelNodeNewExpression | BabelNodeProgram | BabelNodeObjectExpression | BabelNodeObjectMethod | BabelNodeObjectProperty | BabelNodeRestElement | BabelNodeReturnStatement | BabelNodeSequenceExpression | BabelNodeParenthesizedExpression | BabelNodeSwitchCase | BabelNodeSwitchStatement | BabelNodeThisExpression | BabelNodeThrowStatement | BabelNodeTryStatement | BabelNodeUnaryExpression | BabelNodeUpdateExpression | BabelNodeVariableDeclaration | BabelNodeVariableDeclarator | BabelNodeWhileStatement | BabelNodeWithStatement | BabelNodeAssignmentPattern | BabelNodeArrayPattern | BabelNodeArrowFunctionExpression | BabelNodeClassBody | BabelNodeClassExpression | BabelNodeClassDeclaration | BabelNodeExportAllDeclaration | BabelNodeExportDefaultDeclaration | BabelNodeExportNamedDeclaration | BabelNodeExportSpecifier | BabelNodeForOfStatement | BabelNodeImportDeclaration | BabelNodeImportDefaultSpecifier | BabelNodeImportNamespaceSpecifier | BabelNodeImportSpecifier | BabelNodeImportExpression | BabelNodeMetaProperty | BabelNodeClassMethod | BabelNodeObjectPattern | BabelNodeSpreadElement | BabelNodeSuper | BabelNodeTaggedTemplateExpression | BabelNodeTemplateElement | BabelNodeTemplateLiteral | BabelNodeYieldExpression | BabelNodeAwaitExpression | BabelNodeImport | BabelNodeBigIntLiteral | BabelNodeExportNamespaceSpecifier | BabelNodeOptionalMemberExpression | BabelNodeOptionalCallExpression | BabelNodeClassProperty | BabelNodeClassAccessorProperty | BabelNodeClassPrivateProperty | BabelNodeClassPrivateMethod | BabelNodePrivateName | BabelNodeStaticBlock | BabelNodeImportAttribute;
-declare type BabelNodeExpression = BabelNodeArrayExpression | BabelNodeAssignmentExpression | BabelNodeBinaryExpression | BabelNodeCallExpression | BabelNodeConditionalExpression | BabelNodeFunctionExpression | BabelNodeIdentifier | BabelNodeStringLiteral | BabelNodeNumericLiteral | BabelNodeNullLiteral | BabelNodeBooleanLiteral | BabelNodeRegExpLiteral | BabelNodeLogicalExpression | BabelNodeMemberExpression | BabelNodeNewExpression | BabelNodeObjectExpression | BabelNodeSequenceExpression | BabelNodeParenthesizedExpression | BabelNodeThisExpression | BabelNodeUnaryExpression | BabelNodeUpdateExpression | BabelNodeArrowFunctionExpression | BabelNodeClassExpression | BabelNodeImportExpression | BabelNodeMetaProperty | BabelNodeSuper | BabelNodeTaggedTemplateExpression | BabelNodeTemplateLiteral | BabelNodeYieldExpression | BabelNodeAwaitExpression | BabelNodeImport | BabelNodeBigIntLiteral | BabelNodeOptionalMemberExpression | BabelNodeOptionalCallExpression | BabelNodeTypeCastExpression | BabelNodeJSXElement | BabelNodeJSXFragment | BabelNodeBindExpression | BabelNodeDoExpression | BabelNodeRecordExpression | BabelNodeTupleExpression | BabelNodeDecimalLiteral | BabelNodeModuleExpression | BabelNodeTopicReference | BabelNodePipelineTopicExpression | BabelNodePipelineBareFunction | BabelNodePipelinePrimaryTopicReference | BabelNodeTSInstantiationExpression | BabelNodeTSAsExpression | BabelNodeTSSatisfiesExpression | BabelNodeTSTypeAssertion | BabelNodeTSNonNullExpression;
-declare type BabelNodeBinary = BabelNodeBinaryExpression | BabelNodeLogicalExpression;
-declare type BabelNodeScopable = BabelNodeBlockStatement | BabelNodeCatchClause | BabelNodeDoWhileStatement | BabelNodeForInStatement | BabelNodeForStatement | BabelNodeFunctionDeclaration | BabelNodeFunctionExpression | BabelNodeProgram | BabelNodeObjectMethod | BabelNodeSwitchStatement | BabelNodeWhileStatement | BabelNodeArrowFunctionExpression | BabelNodeClassExpression | BabelNodeClassDeclaration | BabelNodeForOfStatement | BabelNodeClassMethod | BabelNodeClassPrivateMethod | BabelNodeStaticBlock | BabelNodeTSModuleBlock;
-declare type BabelNodeBlockParent = BabelNodeBlockStatement | BabelNodeCatchClause | BabelNodeDoWhileStatement | BabelNodeForInStatement | BabelNodeForStatement | BabelNodeFunctionDeclaration | BabelNodeFunctionExpression | BabelNodeProgram | BabelNodeObjectMethod | BabelNodeSwitchStatement | BabelNodeWhileStatement | BabelNodeArrowFunctionExpression | BabelNodeForOfStatement | BabelNodeClassMethod | BabelNodeClassPrivateMethod | BabelNodeStaticBlock | BabelNodeTSModuleBlock;
-declare type BabelNodeBlock = BabelNodeBlockStatement | BabelNodeProgram | BabelNodeTSModuleBlock;
-declare type BabelNodeStatement = BabelNodeBlockStatement | BabelNodeBreakStatement | BabelNodeContinueStatement | BabelNodeDebuggerStatement | BabelNodeDoWhileStatement | BabelNodeEmptyStatement | BabelNodeExpressionStatement | BabelNodeForInStatement | BabelNodeForStatement | BabelNodeFunctionDeclaration | BabelNodeIfStatement | BabelNodeLabeledStatement | BabelNodeReturnStatement | BabelNodeSwitchStatement | BabelNodeThrowStatement | BabelNodeTryStatement | BabelNodeVariableDeclaration | BabelNodeWhileStatement | BabelNodeWithStatement | BabelNodeClassDeclaration | BabelNodeExportAllDeclaration | BabelNodeExportDefaultDeclaration | BabelNodeExportNamedDeclaration | BabelNodeForOfStatement | BabelNodeImportDeclaration | BabelNodeDeclareClass | BabelNodeDeclareFunction | BabelNodeDeclareInterface | BabelNodeDeclareModule | BabelNodeDeclareModuleExports | BabelNodeDeclareTypeAlias | BabelNodeDeclareOpaqueType | BabelNodeDeclareVariable | BabelNodeDeclareExportDeclaration | BabelNodeDeclareExportAllDeclaration | BabelNodeInterfaceDeclaration | BabelNodeOpaqueType | BabelNodeTypeAlias | BabelNodeEnumDeclaration | BabelNodeTSDeclareFunction | BabelNodeTSInterfaceDeclaration | BabelNodeTSTypeAliasDeclaration | BabelNodeTSEnumDeclaration | BabelNodeTSModuleDeclaration | BabelNodeTSImportEqualsDeclaration | BabelNodeTSExportAssignment | BabelNodeTSNamespaceExportDeclaration;
-declare type BabelNodeTerminatorless = BabelNodeBreakStatement | BabelNodeContinueStatement | BabelNodeReturnStatement | BabelNodeThrowStatement | BabelNodeYieldExpression | BabelNodeAwaitExpression;
-declare type BabelNodeCompletionStatement = BabelNodeBreakStatement | BabelNodeContinueStatement | BabelNodeReturnStatement | BabelNodeThrowStatement;
-declare type BabelNodeConditional = BabelNodeConditionalExpression | BabelNodeIfStatement;
-declare type BabelNodeLoop = BabelNodeDoWhileStatement | BabelNodeForInStatement | BabelNodeForStatement | BabelNodeWhileStatement | BabelNodeForOfStatement;
-declare type BabelNodeWhile = BabelNodeDoWhileStatement | BabelNodeWhileStatement;
-declare type BabelNodeExpressionWrapper = BabelNodeExpressionStatement | BabelNodeParenthesizedExpression | BabelNodeTypeCastExpression;
-declare type BabelNodeFor = BabelNodeForInStatement | BabelNodeForStatement | BabelNodeForOfStatement;
-declare type BabelNodeForXStatement = BabelNodeForInStatement | BabelNodeForOfStatement;
-declare type BabelNodeFunction = BabelNodeFunctionDeclaration | BabelNodeFunctionExpression | BabelNodeObjectMethod | BabelNodeArrowFunctionExpression | BabelNodeClassMethod | BabelNodeClassPrivateMethod;
-declare type BabelNodeFunctionParent = BabelNodeFunctionDeclaration | BabelNodeFunctionExpression | BabelNodeObjectMethod | BabelNodeArrowFunctionExpression | BabelNodeClassMethod | BabelNodeClassPrivateMethod | BabelNodeStaticBlock | BabelNodeTSModuleBlock;
-declare type BabelNodePureish = BabelNodeFunctionDeclaration | BabelNodeFunctionExpression | BabelNodeStringLiteral | BabelNodeNumericLiteral | BabelNodeNullLiteral | BabelNodeBooleanLiteral | BabelNodeRegExpLiteral | BabelNodeArrowFunctionExpression | BabelNodeBigIntLiteral | BabelNodeDecimalLiteral;
-declare type BabelNodeDeclaration = BabelNodeFunctionDeclaration | BabelNodeVariableDeclaration | BabelNodeClassDeclaration | BabelNodeExportAllDeclaration | BabelNodeExportDefaultDeclaration | BabelNodeExportNamedDeclaration | BabelNodeImportDeclaration | BabelNodeDeclareClass | BabelNodeDeclareFunction | BabelNodeDeclareInterface | BabelNodeDeclareModule | BabelNodeDeclareModuleExports | BabelNodeDeclareTypeAlias | BabelNodeDeclareOpaqueType | BabelNodeDeclareVariable | BabelNodeDeclareExportDeclaration | BabelNodeDeclareExportAllDeclaration | BabelNodeInterfaceDeclaration | BabelNodeOpaqueType | BabelNodeTypeAlias | BabelNodeEnumDeclaration | BabelNodeTSDeclareFunction | BabelNodeTSInterfaceDeclaration | BabelNodeTSTypeAliasDeclaration | BabelNodeTSEnumDeclaration | BabelNodeTSModuleDeclaration | BabelNodeTSImportEqualsDeclaration;
-declare type BabelNodeFunctionParameter = BabelNodeIdentifier | BabelNodeRestElement | BabelNodeAssignmentPattern | BabelNodeArrayPattern | BabelNodeObjectPattern | BabelNodeVoidPattern;
-declare type BabelNodePatternLike = BabelNodeIdentifier | BabelNodeMemberExpression | BabelNodeRestElement | BabelNodeAssignmentPattern | BabelNodeArrayPattern | BabelNodeObjectPattern | BabelNodeVoidPattern | BabelNodeTSAsExpression | BabelNodeTSSatisfiesExpression | BabelNodeTSTypeAssertion | BabelNodeTSNonNullExpression;
-declare type BabelNodeLVal = BabelNodeIdentifier | BabelNodeMemberExpression | BabelNodeRestElement | BabelNodeAssignmentPattern | BabelNodeArrayPattern | BabelNodeObjectPattern | BabelNodeTSParameterProperty | BabelNodeTSAsExpression | BabelNodeTSSatisfiesExpression | BabelNodeTSTypeAssertion | BabelNodeTSNonNullExpression;
-declare type BabelNodeTSEntityName = BabelNodeIdentifier | BabelNodeTSQualifiedName;
-declare type BabelNodeLiteral = BabelNodeStringLiteral | BabelNodeNumericLiteral | BabelNodeNullLiteral | BabelNodeBooleanLiteral | BabelNodeRegExpLiteral | BabelNodeTemplateLiteral | BabelNodeBigIntLiteral | BabelNodeDecimalLiteral;
-declare type BabelNodeImmutable = BabelNodeStringLiteral | BabelNodeNumericLiteral | BabelNodeNullLiteral | BabelNodeBooleanLiteral | BabelNodeBigIntLiteral | BabelNodeJSXAttribute | BabelNodeJSXClosingElement | BabelNodeJSXElement | BabelNodeJSXExpressionContainer | BabelNodeJSXSpreadChild | BabelNodeJSXOpeningElement | BabelNodeJSXText | BabelNodeJSXFragment | BabelNodeJSXOpeningFragment | BabelNodeJSXClosingFragment | BabelNodeDecimalLiteral;
-declare type BabelNodeUserWhitespacable = BabelNodeObjectMethod | BabelNodeObjectProperty | BabelNodeObjectTypeInternalSlot | BabelNodeObjectTypeCallProperty | BabelNodeObjectTypeIndexer | BabelNodeObjectTypeProperty | BabelNodeObjectTypeSpreadProperty;
-declare type BabelNodeMethod = BabelNodeObjectMethod | BabelNodeClassMethod | BabelNodeClassPrivateMethod;
-declare type BabelNodeObjectMember = BabelNodeObjectMethod | BabelNodeObjectProperty;
-declare type BabelNodeProperty = BabelNodeObjectProperty | BabelNodeClassProperty | BabelNodeClassAccessorProperty | BabelNodeClassPrivateProperty;
-declare type BabelNodeUnaryLike = BabelNodeUnaryExpression | BabelNodeSpreadElement;
-declare type BabelNodePattern = BabelNodeAssignmentPattern | BabelNodeArrayPattern | BabelNodeObjectPattern | BabelNodeVoidPattern;
-declare type BabelNodeClass = BabelNodeClassExpression | BabelNodeClassDeclaration;
-declare type BabelNodeImportOrExportDeclaration = BabelNodeExportAllDeclaration | BabelNodeExportDefaultDeclaration | BabelNodeExportNamedDeclaration | BabelNodeImportDeclaration;
-declare type BabelNodeExportDeclaration = BabelNodeExportAllDeclaration | BabelNodeExportDefaultDeclaration | BabelNodeExportNamedDeclaration;
-declare type BabelNodeModuleSpecifier = BabelNodeExportSpecifier | BabelNodeImportDefaultSpecifier | BabelNodeImportNamespaceSpecifier | BabelNodeImportSpecifier | BabelNodeExportNamespaceSpecifier | BabelNodeExportDefaultSpecifier;
-declare type BabelNodeAccessor = BabelNodeClassAccessorProperty;
-declare type BabelNodePrivate = BabelNodeClassPrivateProperty | BabelNodeClassPrivateMethod | BabelNodePrivateName;
-declare type BabelNodeFlow = BabelNodeAnyTypeAnnotation | BabelNodeArrayTypeAnnotation | BabelNodeBooleanTypeAnnotation | BabelNodeBooleanLiteralTypeAnnotation | BabelNodeNullLiteralTypeAnnotation | BabelNodeClassImplements | BabelNodeDeclareClass | BabelNodeDeclareFunction | BabelNodeDeclareInterface | BabelNodeDeclareModule | BabelNodeDeclareModuleExports | BabelNodeDeclareTypeAlias | BabelNodeDeclareOpaqueType | BabelNodeDeclareVariable | BabelNodeDeclareExportDeclaration | BabelNodeDeclareExportAllDeclaration | BabelNodeDeclaredPredicate | BabelNodeExistsTypeAnnotation | BabelNodeFunctionTypeAnnotation | BabelNodeFunctionTypeParam | BabelNodeGenericTypeAnnotation | BabelNodeInferredPredicate | BabelNodeInterfaceExtends | BabelNodeInterfaceDeclaration | BabelNodeInterfaceTypeAnnotation | BabelNodeIntersectionTypeAnnotation | BabelNodeMixedTypeAnnotation | BabelNodeEmptyTypeAnnotation | BabelNodeNullableTypeAnnotation | BabelNodeNumberLiteralTypeAnnotation | BabelNodeNumberTypeAnnotation | BabelNodeObjectTypeAnnotation | BabelNodeObjectTypeInternalSlot | BabelNodeObjectTypeCallProperty | BabelNodeObjectTypeIndexer | BabelNodeObjectTypeProperty | BabelNodeObjectTypeSpreadProperty | BabelNodeOpaqueType | BabelNodeQualifiedTypeIdentifier | BabelNodeStringLiteralTypeAnnotation | BabelNodeStringTypeAnnotation | BabelNodeSymbolTypeAnnotation | BabelNodeThisTypeAnnotation | BabelNodeTupleTypeAnnotation | BabelNodeTypeofTypeAnnotation | BabelNodeTypeAlias | BabelNodeTypeAnnotation | BabelNodeTypeCastExpression | BabelNodeTypeParameter | BabelNodeTypeParameterDeclaration | BabelNodeTypeParameterInstantiation | BabelNodeUnionTypeAnnotation | BabelNodeVariance | BabelNodeVoidTypeAnnotation | BabelNodeEnumDeclaration | BabelNodeEnumBooleanBody | BabelNodeEnumNumberBody | BabelNodeEnumStringBody | BabelNodeEnumSymbolBody | BabelNodeEnumBooleanMember | BabelNodeEnumNumberMember | BabelNodeEnumStringMember | BabelNodeEnumDefaultedMember | BabelNodeIndexedAccessType | BabelNodeOptionalIndexedAccessType;
-declare type BabelNodeFlowType = BabelNodeAnyTypeAnnotation | BabelNodeArrayTypeAnnotation | BabelNodeBooleanTypeAnnotation | BabelNodeBooleanLiteralTypeAnnotation | BabelNodeNullLiteralTypeAnnotation | BabelNodeExistsTypeAnnotation | BabelNodeFunctionTypeAnnotation | BabelNodeGenericTypeAnnotation | BabelNodeInterfaceTypeAnnotation | BabelNodeIntersectionTypeAnnotation | BabelNodeMixedTypeAnnotation | BabelNodeEmptyTypeAnnotation | BabelNodeNullableTypeAnnotation | BabelNodeNumberLiteralTypeAnnotation | BabelNodeNumberTypeAnnotation | BabelNodeObjectTypeAnnotation | BabelNodeStringLiteralTypeAnnotation | BabelNodeStringTypeAnnotation | BabelNodeSymbolTypeAnnotation | BabelNodeThisTypeAnnotation | BabelNodeTupleTypeAnnotation | BabelNodeTypeofTypeAnnotation | BabelNodeUnionTypeAnnotation | BabelNodeVoidTypeAnnotation | BabelNodeIndexedAccessType | BabelNodeOptionalIndexedAccessType;
-declare type BabelNodeFlowBaseAnnotation = BabelNodeAnyTypeAnnotation | BabelNodeBooleanTypeAnnotation | BabelNodeNullLiteralTypeAnnotation | BabelNodeMixedTypeAnnotation | BabelNodeEmptyTypeAnnotation | BabelNodeNumberTypeAnnotation | BabelNodeStringTypeAnnotation | BabelNodeSymbolTypeAnnotation | BabelNodeThisTypeAnnotation | BabelNodeVoidTypeAnnotation;
-declare type BabelNodeFlowDeclaration = BabelNodeDeclareClass | BabelNodeDeclareFunction | BabelNodeDeclareInterface | BabelNodeDeclareModule | BabelNodeDeclareModuleExports | BabelNodeDeclareTypeAlias | BabelNodeDeclareOpaqueType | BabelNodeDeclareVariable | BabelNodeDeclareExportDeclaration | BabelNodeDeclareExportAllDeclaration | BabelNodeInterfaceDeclaration | BabelNodeOpaqueType | BabelNodeTypeAlias;
-declare type BabelNodeFlowPredicate = BabelNodeDeclaredPredicate | BabelNodeInferredPredicate;
-declare type BabelNodeEnumBody = BabelNodeEnumBooleanBody | BabelNodeEnumNumberBody | BabelNodeEnumStringBody | BabelNodeEnumSymbolBody;
-declare type BabelNodeEnumMember = BabelNodeEnumBooleanMember | BabelNodeEnumNumberMember | BabelNodeEnumStringMember | BabelNodeEnumDefaultedMember;
-declare type BabelNodeJSX = BabelNodeJSXAttribute | BabelNodeJSXClosingElement | BabelNodeJSXElement | BabelNodeJSXEmptyExpression | BabelNodeJSXExpressionContainer | BabelNodeJSXSpreadChild | BabelNodeJSXIdentifier | BabelNodeJSXMemberExpression | BabelNodeJSXNamespacedName | BabelNodeJSXOpeningElement | BabelNodeJSXSpreadAttribute | BabelNodeJSXText | BabelNodeJSXFragment | BabelNodeJSXOpeningFragment | BabelNodeJSXClosingFragment;
-declare type BabelNodeMiscellaneous = BabelNodeNoop | BabelNodePlaceholder | BabelNodeV8IntrinsicIdentifier;
-declare type BabelNodeTypeScript = BabelNodeTSParameterProperty | BabelNodeTSDeclareFunction | BabelNodeTSDeclareMethod | BabelNodeTSQualifiedName | BabelNodeTSCallSignatureDeclaration | BabelNodeTSConstructSignatureDeclaration | BabelNodeTSPropertySignature | BabelNodeTSMethodSignature | BabelNodeTSIndexSignature | BabelNodeTSAnyKeyword | BabelNodeTSBooleanKeyword | BabelNodeTSBigIntKeyword | BabelNodeTSIntrinsicKeyword | BabelNodeTSNeverKeyword | BabelNodeTSNullKeyword | BabelNodeTSNumberKeyword | BabelNodeTSObjectKeyword | BabelNodeTSStringKeyword | BabelNodeTSSymbolKeyword | BabelNodeTSUndefinedKeyword | BabelNodeTSUnknownKeyword | BabelNodeTSVoidKeyword | BabelNodeTSThisType | BabelNodeTSFunctionType | BabelNodeTSConstructorType | BabelNodeTSTypeReference | BabelNodeTSTypePredicate | BabelNodeTSTypeQuery | BabelNodeTSTypeLiteral | BabelNodeTSArrayType | BabelNodeTSTupleType | BabelNodeTSOptionalType | BabelNodeTSRestType | BabelNodeTSNamedTupleMember | BabelNodeTSUnionType | BabelNodeTSIntersectionType | BabelNodeTSConditionalType | BabelNodeTSInferType | BabelNodeTSParenthesizedType | BabelNodeTSTypeOperator | BabelNodeTSIndexedAccessType | BabelNodeTSMappedType | BabelNodeTSTemplateLiteralType | BabelNodeTSLiteralType | BabelNodeTSExpressionWithTypeArguments | BabelNodeTSInterfaceDeclaration | BabelNodeTSInterfaceBody | BabelNodeTSTypeAliasDeclaration | BabelNodeTSInstantiationExpression | BabelNodeTSAsExpression | BabelNodeTSSatisfiesExpression | BabelNodeTSTypeAssertion | BabelNodeTSEnumBody | BabelNodeTSEnumDeclaration | BabelNodeTSEnumMember | BabelNodeTSModuleDeclaration | BabelNodeTSModuleBlock | BabelNodeTSImportType | BabelNodeTSImportEqualsDeclaration | BabelNodeTSExternalModuleReference | BabelNodeTSNonNullExpression | BabelNodeTSExportAssignment | BabelNodeTSNamespaceExportDeclaration | BabelNodeTSTypeAnnotation | BabelNodeTSTypeParameterInstantiation | BabelNodeTSTypeParameterDeclaration | BabelNodeTSTypeParameter;
-declare type BabelNodeTSTypeElement = BabelNodeTSCallSignatureDeclaration | BabelNodeTSConstructSignatureDeclaration | BabelNodeTSPropertySignature | BabelNodeTSMethodSignature | BabelNodeTSIndexSignature;
-declare type BabelNodeTSType = BabelNodeTSAnyKeyword | BabelNodeTSBooleanKeyword | BabelNodeTSBigIntKeyword | BabelNodeTSIntrinsicKeyword | BabelNodeTSNeverKeyword | BabelNodeTSNullKeyword | BabelNodeTSNumberKeyword | BabelNodeTSObjectKeyword | BabelNodeTSStringKeyword | BabelNodeTSSymbolKeyword | BabelNodeTSUndefinedKeyword | BabelNodeTSUnknownKeyword | BabelNodeTSVoidKeyword | BabelNodeTSThisType | BabelNodeTSFunctionType | BabelNodeTSConstructorType | BabelNodeTSTypeReference | BabelNodeTSTypePredicate | BabelNodeTSTypeQuery | BabelNodeTSTypeLiteral | BabelNodeTSArrayType | BabelNodeTSTupleType | BabelNodeTSOptionalType | BabelNodeTSRestType | BabelNodeTSUnionType | BabelNodeTSIntersectionType | BabelNodeTSConditionalType | BabelNodeTSInferType | BabelNodeTSParenthesizedType | BabelNodeTSTypeOperator | BabelNodeTSIndexedAccessType | BabelNodeTSMappedType | BabelNodeTSTemplateLiteralType | BabelNodeTSLiteralType | BabelNodeTSExpressionWithTypeArguments | BabelNodeTSImportType;
-declare type BabelNodeTSBaseType = BabelNodeTSAnyKeyword | BabelNodeTSBooleanKeyword | BabelNodeTSBigIntKeyword | BabelNodeTSIntrinsicKeyword | BabelNodeTSNeverKeyword | BabelNodeTSNullKeyword | BabelNodeTSNumberKeyword | BabelNodeTSObjectKeyword | BabelNodeTSStringKeyword | BabelNodeTSSymbolKeyword | BabelNodeTSUndefinedKeyword | BabelNodeTSUnknownKeyword | BabelNodeTSVoidKeyword | BabelNodeTSThisType | BabelNodeTSTemplateLiteralType | BabelNodeTSLiteralType;
-declare type BabelNodeModuleDeclaration = BabelNodeExportAllDeclaration | BabelNodeExportDefaultDeclaration | BabelNodeExportNamedDeclaration | BabelNodeImportDeclaration;
-
 declare module "@babel/types" {
+  declare type BabelNodeBaseComment = {
+    value: string;
+    start: number;
+    end: number;
+    loc: BabelNodeSourceLocation;
+  };
+
+  declare type BabelNodeCommentBlock = {
+    ...BabelNodeBaseComment;
+    type: "CommentBlock";
+  };
+
+  declare type BabelNodeCommentLine ={
+    ...BabelNodeBaseComment,
+    type: "CommentLine";
+  };
+
+  declare type BabelNodeComment = BabelNodeCommentBlock | BabelNodeCommentLine;
+
+  declare type BabelNodeSourceLocation = {
+    start: {
+      line: number;
+      column: number;
+    };
+
+    end: {
+      line: number;
+      column: number;
+    };
+  };
+
+
+  declare type BabelNodeArrayExpression = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ArrayExpression";
+    elements?: Array<null | BabelNodeExpression | BabelNodeSpreadElement>;
+  };
+
+  declare type BabelNodeAssignmentExpression = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "AssignmentExpression";
+    operator: string;
+    left: BabelNodeLVal | BabelNodeOptionalMemberExpression;
+    right: BabelNodeExpression;
+  };
+
+  declare type BabelNodeBinaryExpression = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "BinaryExpression";
+    operator: "+" | "-" | "/" | "%" | "*" | "**" | "&" | "|" | ">>" | ">>>" | "<<" | "^" | "==" | "===" | "!=" | "!==" | "in" | "instanceof" | ">" | "<" | ">=" | "<=" | "|>";
+    left: BabelNodeExpression | BabelNodePrivateName;
+    right: BabelNodeExpression;
+  };
+
+  declare type BabelNodeInterpreterDirective = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "InterpreterDirective";
+    value: string;
+  };
+
+  declare type BabelNodeDirective = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "Directive";
+    value: BabelNodeDirectiveLiteral;
+  };
+
+  declare type BabelNodeDirectiveLiteral = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "DirectiveLiteral";
+    value: string;
+  };
+
+  declare type BabelNodeBlockStatement = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "BlockStatement";
+    body: Array<BabelNodeStatement>;
+    directives?: Array<BabelNodeDirective>;
+  };
+
+  declare type BabelNodeBreakStatement = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "BreakStatement";
+    label?: BabelNodeIdentifier;
+  };
+
+  declare type BabelNodeCallExpression = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "CallExpression";
+    callee: BabelNodeExpression | BabelNodeSuper | BabelNodeV8IntrinsicIdentifier;
+    arguments: Array<BabelNodeExpression | BabelNodeSpreadElement | BabelNodeArgumentPlaceholder>;
+    optional?: boolean;
+    typeArguments?: BabelNodeTypeParameterInstantiation;
+    typeParameters?: BabelNodeTSTypeParameterInstantiation;
+  };
+
+  declare type BabelNodeCatchClause = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "CatchClause";
+    param?: BabelNodeIdentifier | BabelNodeArrayPattern | BabelNodeObjectPattern;
+    body: BabelNodeBlockStatement;
+  };
+
+  declare type BabelNodeConditionalExpression = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ConditionalExpression";
+    test: BabelNodeExpression;
+    consequent: BabelNodeExpression;
+    alternate: BabelNodeExpression;
+  };
+
+  declare type BabelNodeContinueStatement = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ContinueStatement";
+    label?: BabelNodeIdentifier;
+  };
+
+  declare type BabelNodeDebuggerStatement = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "DebuggerStatement";
+  };
+
+  declare type BabelNodeDoWhileStatement = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "DoWhileStatement";
+    test: BabelNodeExpression;
+    body: BabelNodeStatement;
+  };
+
+  declare type BabelNodeEmptyStatement = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "EmptyStatement";
+  };
+
+  declare type BabelNodeExpressionStatement = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ExpressionStatement";
+    expression: BabelNodeExpression;
+  };
+
+  declare type BabelNodeFile = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "File";
+    program: BabelNodeProgram;
+    comments?: Array<BabelNodeCommentBlock | BabelNodeCommentLine>;
+    tokens?: Array<any>;
+  };
+
+  declare type BabelNodeForInStatement = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ForInStatement";
+    left: BabelNodeVariableDeclaration | BabelNodeLVal;
+    right: BabelNodeExpression;
+    body: BabelNodeStatement;
+  };
+
+  declare type BabelNodeForStatement = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ForStatement";
+    init?: BabelNodeVariableDeclaration | BabelNodeExpression;
+    test?: BabelNodeExpression;
+    update?: BabelNodeExpression;
+    body: BabelNodeStatement;
+  };
+
+  declare type BabelNodeFunctionDeclaration = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "FunctionDeclaration";
+    id?: BabelNodeIdentifier;
+    params: Array<BabelNodeFunctionParameter>;
+    body: BabelNodeBlockStatement;
+    generator?: boolean;
+    async?: boolean;
+    declare?: boolean;
+    predicate?: BabelNodeDeclaredPredicate | BabelNodeInferredPredicate;
+    returnType?: BabelNodeTypeAnnotation | BabelNodeTSTypeAnnotation | BabelNodeNoop;
+    typeParameters?: BabelNodeTypeParameterDeclaration | BabelNodeTSTypeParameterDeclaration | BabelNodeNoop;
+  };
+
+  declare type BabelNodeFunctionExpression = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "FunctionExpression";
+    id?: BabelNodeIdentifier;
+    params: Array<BabelNodeFunctionParameter>;
+    body: BabelNodeBlockStatement;
+    generator?: boolean;
+    async?: boolean;
+    predicate?: BabelNodeDeclaredPredicate | BabelNodeInferredPredicate;
+    returnType?: BabelNodeTypeAnnotation | BabelNodeTSTypeAnnotation | BabelNodeNoop;
+    typeParameters?: BabelNodeTypeParameterDeclaration | BabelNodeTSTypeParameterDeclaration | BabelNodeNoop;
+  };
+
+  declare type BabelNodeIdentifier = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "Identifier";
+    name: string;
+    decorators?: Array<BabelNodeDecorator>;
+    optional?: boolean;
+    typeAnnotation?: BabelNodeTypeAnnotation | BabelNodeTSTypeAnnotation | BabelNodeNoop;
+  };
+
+  declare type BabelNodeIfStatement = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "IfStatement";
+    test: BabelNodeExpression;
+    consequent: BabelNodeStatement;
+    alternate?: BabelNodeStatement;
+  };
+
+  declare type BabelNodeLabeledStatement = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "LabeledStatement";
+    label: BabelNodeIdentifier;
+    body: BabelNodeStatement;
+  };
+
+  declare type BabelNodeStringLiteral = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "StringLiteral";
+    value: string;
+  };
+
+  declare type BabelNodeNumericLiteral = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "NumericLiteral";
+    value: number;
+  };
+
+  declare type BabelNodeNullLiteral = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "NullLiteral";
+  };
+
+  declare type BabelNodeBooleanLiteral = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "BooleanLiteral";
+    value: boolean;
+  };
+
+  declare type BabelNodeRegExpLiteral = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "RegExpLiteral";
+    pattern: string;
+    flags?: string;
+  };
+
+  declare type BabelNodeLogicalExpression = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "LogicalExpression";
+    operator: "||" | "&&" | "??";
+    left: BabelNodeExpression;
+    right: BabelNodeExpression;
+  };
+
+  declare type BabelNodeMemberExpression = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "MemberExpression";
+    object: BabelNodeExpression | BabelNodeSuper;
+    property: BabelNodeExpression | BabelNodeIdentifier | BabelNodePrivateName;
+    computed?: boolean;
+    optional?: boolean;
+  };
+
+  declare type BabelNodeNewExpression = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "NewExpression";
+    callee: BabelNodeExpression | BabelNodeSuper | BabelNodeV8IntrinsicIdentifier;
+    arguments: Array<BabelNodeExpression | BabelNodeSpreadElement | BabelNodeArgumentPlaceholder>;
+    optional?: boolean;
+    typeArguments?: BabelNodeTypeParameterInstantiation;
+    typeParameters?: BabelNodeTSTypeParameterInstantiation;
+  };
+
+  declare type BabelNodeProgram = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "Program";
+    body: Array<BabelNodeStatement>;
+    directives?: Array<BabelNodeDirective>;
+    sourceType?: "script" | "module";
+    interpreter?: BabelNodeInterpreterDirective;
+  };
+
+  declare type BabelNodeObjectExpression = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ObjectExpression";
+    properties: Array<BabelNodeObjectMethod | BabelNodeObjectProperty | BabelNodeSpreadElement>;
+  };
+
+  declare type BabelNodeObjectMethod = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ObjectMethod";
+    kind?: "method" | "get" | "set";
+    key: BabelNodeExpression | BabelNodeIdentifier | BabelNodeStringLiteral | BabelNodeNumericLiteral | BabelNodeBigIntLiteral;
+    params: Array<BabelNodeFunctionParameter>;
+    body: BabelNodeBlockStatement;
+    computed?: boolean;
+    generator?: boolean;
+    async?: boolean;
+    decorators?: Array<BabelNodeDecorator>;
+    returnType?: BabelNodeTypeAnnotation | BabelNodeTSTypeAnnotation | BabelNodeNoop;
+    typeParameters?: BabelNodeTypeParameterDeclaration | BabelNodeTSTypeParameterDeclaration | BabelNodeNoop;
+  };
+
+  declare type BabelNodeObjectProperty = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ObjectProperty";
+    key: BabelNodeExpression | BabelNodeIdentifier | BabelNodeStringLiteral | BabelNodeNumericLiteral | BabelNodeBigIntLiteral | BabelNodeDecimalLiteral | BabelNodePrivateName;
+    value: BabelNodeExpression | BabelNodePatternLike;
+    computed?: boolean;
+    shorthand?: boolean;
+    decorators?: Array<BabelNodeDecorator>;
+  };
+
+  declare type BabelNodeRestElement = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "RestElement";
+    argument: BabelNodeIdentifier | BabelNodeArrayPattern | BabelNodeObjectPattern | BabelNodeMemberExpression | BabelNodeTSAsExpression | BabelNodeTSSatisfiesExpression | BabelNodeTSTypeAssertion | BabelNodeTSNonNullExpression | BabelNodeRestElement | BabelNodeAssignmentPattern;
+    decorators?: Array<BabelNodeDecorator>;
+    optional?: boolean;
+    typeAnnotation?: BabelNodeTypeAnnotation | BabelNodeTSTypeAnnotation | BabelNodeNoop;
+  };
+
+  declare type BabelNodeReturnStatement = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ReturnStatement";
+    argument?: BabelNodeExpression;
+  };
+
+  declare type BabelNodeSequenceExpression = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "SequenceExpression";
+    expressions: Array<BabelNodeExpression>;
+  };
+
+  declare type BabelNodeParenthesizedExpression = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ParenthesizedExpression";
+    expression: BabelNodeExpression;
+  };
+
+  declare type BabelNodeSwitchCase = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "SwitchCase";
+    test?: BabelNodeExpression;
+    consequent: Array<BabelNodeStatement>;
+  };
+
+  declare type BabelNodeSwitchStatement = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "SwitchStatement";
+    discriminant: BabelNodeExpression;
+    cases: Array<BabelNodeSwitchCase>;
+  };
+
+  declare type BabelNodeThisExpression = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ThisExpression";
+  };
+
+  declare type BabelNodeThrowStatement = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ThrowStatement";
+    argument: BabelNodeExpression;
+  };
+
+  declare type BabelNodeTryStatement = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TryStatement";
+    block: BabelNodeBlockStatement;
+    handler?: BabelNodeCatchClause;
+    finalizer?: BabelNodeBlockStatement;
+  };
+
+  declare type BabelNodeUnaryExpression = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "UnaryExpression";
+    operator: "void" | "throw" | "delete" | "!" | "+" | "-" | "~" | "typeof";
+    argument: BabelNodeExpression;
+    prefix?: boolean;
+  };
+
+  declare type BabelNodeUpdateExpression = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "UpdateExpression";
+    operator: "++" | "--";
+    argument: BabelNodeExpression;
+    prefix?: boolean;
+  };
+
+  declare type BabelNodeVariableDeclaration = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "VariableDeclaration";
+    kind: "var" | "let" | "const" | "using" | "await using";
+    declarations: Array<BabelNodeVariableDeclarator>;
+    declare?: boolean;
+  };
+
+  declare type BabelNodeVariableDeclarator = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "VariableDeclarator";
+    id: BabelNodeLVal | BabelNodeVoidPattern;
+    init?: BabelNodeExpression;
+    definite?: boolean;
+  };
+
+  declare type BabelNodeWhileStatement = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "WhileStatement";
+    test: BabelNodeExpression;
+    body: BabelNodeStatement;
+  };
+
+  declare type BabelNodeWithStatement = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "WithStatement";
+    object: BabelNodeExpression;
+    body: BabelNodeStatement;
+  };
+
+  declare type BabelNodeAssignmentPattern = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "AssignmentPattern";
+    left: BabelNodeIdentifier | BabelNodeObjectPattern | BabelNodeArrayPattern | BabelNodeMemberExpression | BabelNodeTSAsExpression | BabelNodeTSSatisfiesExpression | BabelNodeTSTypeAssertion | BabelNodeTSNonNullExpression;
+    right: BabelNodeExpression;
+    decorators?: Array<BabelNodeDecorator>;
+    optional?: boolean;
+    typeAnnotation?: BabelNodeTypeAnnotation | BabelNodeTSTypeAnnotation | BabelNodeNoop;
+  };
+
+  declare type BabelNodeArrayPattern = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ArrayPattern";
+    elements: Array<null | BabelNodePatternLike>;
+    decorators?: Array<BabelNodeDecorator>;
+    optional?: boolean;
+    typeAnnotation?: BabelNodeTypeAnnotation | BabelNodeTSTypeAnnotation | BabelNodeNoop;
+  };
+
+  declare type BabelNodeArrowFunctionExpression = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ArrowFunctionExpression";
+    params: Array<BabelNodeFunctionParameter>;
+    body: BabelNodeBlockStatement | BabelNodeExpression;
+    async?: boolean;
+    expression: boolean;
+    generator?: boolean;
+    predicate?: BabelNodeDeclaredPredicate | BabelNodeInferredPredicate;
+    returnType?: BabelNodeTypeAnnotation | BabelNodeTSTypeAnnotation | BabelNodeNoop;
+    typeParameters?: BabelNodeTypeParameterDeclaration | BabelNodeTSTypeParameterDeclaration | BabelNodeNoop;
+  };
+
+  declare type BabelNodeClassBody = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ClassBody";
+    body: Array<BabelNodeClassMethod | BabelNodeClassPrivateMethod | BabelNodeClassProperty | BabelNodeClassPrivateProperty | BabelNodeClassAccessorProperty | BabelNodeTSDeclareMethod | BabelNodeTSIndexSignature | BabelNodeStaticBlock>;
+  };
+
+  declare type BabelNodeClassExpression = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ClassExpression";
+    id?: BabelNodeIdentifier;
+    superClass?: BabelNodeExpression;
+    body: BabelNodeClassBody;
+    decorators?: Array<BabelNodeDecorator>;
+    implements?: Array<BabelNodeTSExpressionWithTypeArguments | BabelNodeClassImplements>;
+    mixins?: BabelNodeInterfaceExtends;
+    superTypeParameters?: BabelNodeTypeParameterInstantiation | BabelNodeTSTypeParameterInstantiation;
+    typeParameters?: BabelNodeTypeParameterDeclaration | BabelNodeTSTypeParameterDeclaration | BabelNodeNoop;
+  };
+
+  declare type BabelNodeClassDeclaration = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ClassDeclaration";
+    id?: BabelNodeIdentifier;
+    superClass?: BabelNodeExpression;
+    body: BabelNodeClassBody;
+    decorators?: Array<BabelNodeDecorator>;
+    abstract?: boolean;
+    declare?: boolean;
+    implements?: Array<BabelNodeTSExpressionWithTypeArguments | BabelNodeClassImplements>;
+    mixins?: BabelNodeInterfaceExtends;
+    superTypeParameters?: BabelNodeTypeParameterInstantiation | BabelNodeTSTypeParameterInstantiation;
+    typeParameters?: BabelNodeTypeParameterDeclaration | BabelNodeTSTypeParameterDeclaration | BabelNodeNoop;
+  };
+
+  declare type BabelNodeExportAllDeclaration = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ExportAllDeclaration";
+    source: BabelNodeStringLiteral;
+    attributes?: Array<BabelNodeImportAttribute>;
+    assertions?: Array<BabelNodeImportAttribute>;
+    exportKind?: "type" | "value";
+  };
+
+  declare type BabelNodeExportDefaultDeclaration = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ExportDefaultDeclaration";
+    declaration: BabelNodeTSDeclareFunction | BabelNodeFunctionDeclaration | BabelNodeClassDeclaration | BabelNodeExpression;
+    exportKind?: "value";
+  };
+
+  declare type BabelNodeExportNamedDeclaration = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ExportNamedDeclaration";
+    declaration?: BabelNodeDeclaration;
+    specifiers?: Array<BabelNodeExportSpecifier | BabelNodeExportDefaultSpecifier | BabelNodeExportNamespaceSpecifier>;
+    source?: BabelNodeStringLiteral;
+    attributes?: Array<BabelNodeImportAttribute>;
+    assertions?: Array<BabelNodeImportAttribute>;
+    exportKind?: "type" | "value";
+  };
+
+  declare type BabelNodeExportSpecifier = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ExportSpecifier";
+    local: BabelNodeIdentifier;
+    exported: BabelNodeIdentifier | BabelNodeStringLiteral;
+    exportKind?: "type" | "value";
+  };
+
+  declare type BabelNodeForOfStatement = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ForOfStatement";
+    left: BabelNodeVariableDeclaration | BabelNodeLVal;
+    right: BabelNodeExpression;
+    body: BabelNodeStatement;
+    await?: boolean;
+  };
+
+  declare type BabelNodeImportDeclaration = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ImportDeclaration";
+    specifiers: Array<BabelNodeImportSpecifier | BabelNodeImportDefaultSpecifier | BabelNodeImportNamespaceSpecifier>;
+    source: BabelNodeStringLiteral;
+    attributes?: Array<BabelNodeImportAttribute>;
+    assertions?: Array<BabelNodeImportAttribute>;
+    importKind?: "type" | "typeof" | "value";
+    module?: boolean;
+    phase?: "source" | "defer";
+  };
+
+  declare type BabelNodeImportDefaultSpecifier = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ImportDefaultSpecifier";
+    local: BabelNodeIdentifier;
+  };
+
+  declare type BabelNodeImportNamespaceSpecifier = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ImportNamespaceSpecifier";
+    local: BabelNodeIdentifier;
+  };
+
+  declare type BabelNodeImportSpecifier = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ImportSpecifier";
+    local: BabelNodeIdentifier;
+    imported: BabelNodeIdentifier | BabelNodeStringLiteral;
+    importKind?: "type" | "typeof" | "value";
+  };
+
+  declare type BabelNodeImportExpression = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ImportExpression";
+    source: BabelNodeExpression;
+    options?: BabelNodeExpression;
+    phase?: "source" | "defer";
+  };
+
+  declare type BabelNodeMetaProperty = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "MetaProperty";
+    meta: BabelNodeIdentifier;
+    property: BabelNodeIdentifier;
+  };
+
+  declare type BabelNodeClassMethod = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ClassMethod";
+    kind?: "get" | "set" | "method" | "constructor";
+    key: BabelNodeIdentifier | BabelNodeStringLiteral | BabelNodeNumericLiteral | BabelNodeBigIntLiteral | BabelNodeExpression;
+    params: Array<BabelNodeFunctionParameter | BabelNodeTSParameterProperty>;
+    body: BabelNodeBlockStatement;
+    computed?: boolean;
+    static?: boolean;
+    generator?: boolean;
+    async?: boolean;
+    abstract?: boolean;
+    access?: "public" | "private" | "protected";
+    accessibility?: "public" | "private" | "protected";
+    decorators?: Array<BabelNodeDecorator>;
+    optional?: boolean;
+    override?: boolean;
+    returnType?: BabelNodeTypeAnnotation | BabelNodeTSTypeAnnotation | BabelNodeNoop;
+    typeParameters?: BabelNodeTypeParameterDeclaration | BabelNodeTSTypeParameterDeclaration | BabelNodeNoop;
+  };
+
+  declare type BabelNodeObjectPattern = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ObjectPattern";
+    properties: Array<BabelNodeRestElement | BabelNodeObjectProperty>;
+    decorators?: Array<BabelNodeDecorator>;
+    optional?: boolean;
+    typeAnnotation?: BabelNodeTypeAnnotation | BabelNodeTSTypeAnnotation | BabelNodeNoop;
+  };
+
+  declare type BabelNodeSpreadElement = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "SpreadElement";
+    argument: BabelNodeExpression;
+  };
+
+  declare type BabelNodeSuper = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "Super";
+  };
+
+  declare type BabelNodeTaggedTemplateExpression = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TaggedTemplateExpression";
+    tag: BabelNodeExpression;
+    quasi: BabelNodeTemplateLiteral;
+    typeParameters?: BabelNodeTypeParameterInstantiation | BabelNodeTSTypeParameterInstantiation;
+  };
+
+  declare type BabelNodeTemplateElement = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TemplateElement";
+    value: any;
+    tail?: boolean;
+  };
+
+  declare type BabelNodeTemplateLiteral = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TemplateLiteral";
+    quasis: Array<BabelNodeTemplateElement>;
+    expressions: Array<BabelNodeExpression | BabelNodeTSType>;
+  };
+
+  declare type BabelNodeYieldExpression = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "YieldExpression";
+    argument?: BabelNodeExpression;
+    delegate?: boolean;
+  };
+
+  declare type BabelNodeAwaitExpression = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "AwaitExpression";
+    argument: BabelNodeExpression;
+  };
+
+  declare type BabelNodeImport = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "Import";
+  };
+
+  declare type BabelNodeBigIntLiteral = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "BigIntLiteral";
+    value: string;
+  };
+
+  declare type BabelNodeExportNamespaceSpecifier = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ExportNamespaceSpecifier";
+    exported: BabelNodeIdentifier;
+  };
+
+  declare type BabelNodeOptionalMemberExpression = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "OptionalMemberExpression";
+    object: BabelNodeExpression;
+    property: BabelNodeExpression | BabelNodeIdentifier;
+    computed?: boolean;
+    optional: boolean;
+  };
+
+  declare type BabelNodeOptionalCallExpression = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "OptionalCallExpression";
+    callee: BabelNodeExpression;
+    arguments: Array<BabelNodeExpression | BabelNodeSpreadElement | BabelNodeArgumentPlaceholder>;
+    optional: boolean;
+    typeArguments?: BabelNodeTypeParameterInstantiation;
+    typeParameters?: BabelNodeTSTypeParameterInstantiation;
+  };
+
+  declare type BabelNodeClassProperty = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ClassProperty";
+    key: BabelNodeIdentifier | BabelNodeStringLiteral | BabelNodeNumericLiteral | BabelNodeBigIntLiteral | BabelNodeExpression;
+    value?: BabelNodeExpression;
+    typeAnnotation?: BabelNodeTypeAnnotation | BabelNodeTSTypeAnnotation | BabelNodeNoop;
+    decorators?: Array<BabelNodeDecorator>;
+    computed?: boolean;
+    static?: boolean;
+    abstract?: boolean;
+    accessibility?: "public" | "private" | "protected";
+    declare?: boolean;
+    definite?: boolean;
+    optional?: boolean;
+    override?: boolean;
+    readonly?: boolean;
+    variance?: BabelNodeVariance;
+  };
+
+  declare type BabelNodeClassAccessorProperty = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ClassAccessorProperty";
+    key: BabelNodeIdentifier | BabelNodeStringLiteral | BabelNodeNumericLiteral | BabelNodeBigIntLiteral | BabelNodeExpression | BabelNodePrivateName;
+    value?: BabelNodeExpression;
+    typeAnnotation?: BabelNodeTypeAnnotation | BabelNodeTSTypeAnnotation | BabelNodeNoop;
+    decorators?: Array<BabelNodeDecorator>;
+    computed?: boolean;
+    static?: boolean;
+    abstract?: boolean;
+    accessibility?: "public" | "private" | "protected";
+    declare?: boolean;
+    definite?: boolean;
+    optional?: boolean;
+    override?: boolean;
+    readonly?: boolean;
+    variance?: BabelNodeVariance;
+  };
+
+  declare type BabelNodeClassPrivateProperty = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ClassPrivateProperty";
+    key: BabelNodePrivateName;
+    value?: BabelNodeExpression;
+    decorators?: Array<BabelNodeDecorator>;
+    static?: boolean;
+    definite?: boolean;
+    optional?: boolean;
+    readonly?: boolean;
+    typeAnnotation?: BabelNodeTypeAnnotation | BabelNodeTSTypeAnnotation | BabelNodeNoop;
+    variance?: BabelNodeVariance;
+  };
+
+  declare type BabelNodeClassPrivateMethod = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ClassPrivateMethod";
+    kind?: "get" | "set" | "method";
+    key: BabelNodePrivateName;
+    params: Array<BabelNodeFunctionParameter | BabelNodeTSParameterProperty>;
+    body: BabelNodeBlockStatement;
+    static?: boolean;
+    abstract?: boolean;
+    access?: "public" | "private" | "protected";
+    accessibility?: "public" | "private" | "protected";
+    async?: boolean;
+    computed?: boolean;
+    decorators?: Array<BabelNodeDecorator>;
+    generator?: boolean;
+    optional?: boolean;
+    override?: boolean;
+    returnType?: BabelNodeTypeAnnotation | BabelNodeTSTypeAnnotation | BabelNodeNoop;
+    typeParameters?: BabelNodeTypeParameterDeclaration | BabelNodeTSTypeParameterDeclaration | BabelNodeNoop;
+  };
+
+  declare type BabelNodePrivateName = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "PrivateName";
+    id: BabelNodeIdentifier;
+  };
+
+  declare type BabelNodeStaticBlock = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "StaticBlock";
+    body: Array<BabelNodeStatement>;
+  };
+
+  declare type BabelNodeImportAttribute = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ImportAttribute";
+    key: BabelNodeIdentifier | BabelNodeStringLiteral;
+    value: BabelNodeStringLiteral;
+  };
+
+  declare type BabelNodeAnyTypeAnnotation = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "AnyTypeAnnotation";
+  };
+
+  declare type BabelNodeArrayTypeAnnotation = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ArrayTypeAnnotation";
+    elementType: BabelNodeFlowType;
+  };
+
+  declare type BabelNodeBooleanTypeAnnotation = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "BooleanTypeAnnotation";
+  };
+
+  declare type BabelNodeBooleanLiteralTypeAnnotation = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "BooleanLiteralTypeAnnotation";
+    value: boolean;
+  };
+
+  declare type BabelNodeNullLiteralTypeAnnotation = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "NullLiteralTypeAnnotation";
+  };
+
+  declare type BabelNodeClassImplements = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ClassImplements";
+    id: BabelNodeIdentifier;
+    typeParameters?: BabelNodeTypeParameterInstantiation;
+  };
+
+  declare type BabelNodeDeclareClass = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "DeclareClass";
+    id: BabelNodeIdentifier;
+    typeParameters?: BabelNodeTypeParameterDeclaration;
+    extends?: Array<BabelNodeInterfaceExtends>;
+    body: BabelNodeObjectTypeAnnotation;
+    implements?: Array<BabelNodeClassImplements>;
+    mixins?: Array<BabelNodeInterfaceExtends>;
+  };
+
+  declare type BabelNodeDeclareFunction = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "DeclareFunction";
+    id: BabelNodeIdentifier;
+    predicate?: BabelNodeDeclaredPredicate;
+  };
+
+  declare type BabelNodeDeclareInterface = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "DeclareInterface";
+    id: BabelNodeIdentifier;
+    typeParameters?: BabelNodeTypeParameterDeclaration;
+    extends?: Array<BabelNodeInterfaceExtends>;
+    body: BabelNodeObjectTypeAnnotation;
+  };
+
+  declare type BabelNodeDeclareModule = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "DeclareModule";
+    id: BabelNodeIdentifier | BabelNodeStringLiteral;
+    body: BabelNodeBlockStatement;
+    kind?: "CommonJS" | "ES";
+  };
+
+  declare type BabelNodeDeclareModuleExports = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "DeclareModuleExports";
+    typeAnnotation: BabelNodeTypeAnnotation;
+  };
+
+  declare type BabelNodeDeclareTypeAlias = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "DeclareTypeAlias";
+    id: BabelNodeIdentifier;
+    typeParameters?: BabelNodeTypeParameterDeclaration;
+    right: BabelNodeFlowType;
+  };
+
+  declare type BabelNodeDeclareOpaqueType = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "DeclareOpaqueType";
+    id: BabelNodeIdentifier;
+    typeParameters?: BabelNodeTypeParameterDeclaration;
+    supertype?: BabelNodeFlowType;
+    impltype?: BabelNodeFlowType;
+  };
+
+  declare type BabelNodeDeclareVariable = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "DeclareVariable";
+    id: BabelNodeIdentifier;
+  };
+
+  declare type BabelNodeDeclareExportDeclaration = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "DeclareExportDeclaration";
+    declaration?: BabelNodeFlow;
+    specifiers?: Array<BabelNodeExportSpecifier | BabelNodeExportNamespaceSpecifier>;
+    source?: BabelNodeStringLiteral;
+    attributes?: Array<BabelNodeImportAttribute>;
+    assertions?: Array<BabelNodeImportAttribute>;
+    default?: boolean;
+  };
+
+  declare type BabelNodeDeclareExportAllDeclaration = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "DeclareExportAllDeclaration";
+    source: BabelNodeStringLiteral;
+    attributes?: Array<BabelNodeImportAttribute>;
+    assertions?: Array<BabelNodeImportAttribute>;
+    exportKind?: "type" | "value";
+  };
+
+  declare type BabelNodeDeclaredPredicate = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "DeclaredPredicate";
+    value: BabelNodeFlow;
+  };
+
+  declare type BabelNodeExistsTypeAnnotation = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ExistsTypeAnnotation";
+  };
+
+  declare type BabelNodeFunctionTypeAnnotation = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "FunctionTypeAnnotation";
+    typeParameters?: BabelNodeTypeParameterDeclaration;
+    params: Array<BabelNodeFunctionTypeParam>;
+    rest?: BabelNodeFunctionTypeParam;
+    returnType: BabelNodeFlowType;
+    this?: BabelNodeFunctionTypeParam;
+  };
+
+  declare type BabelNodeFunctionTypeParam = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "FunctionTypeParam";
+    name?: BabelNodeIdentifier;
+    typeAnnotation: BabelNodeFlowType;
+    optional?: boolean;
+  };
+
+  declare type BabelNodeGenericTypeAnnotation = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "GenericTypeAnnotation";
+    id: BabelNodeIdentifier | BabelNodeQualifiedTypeIdentifier;
+    typeParameters?: BabelNodeTypeParameterInstantiation;
+  };
+
+  declare type BabelNodeInferredPredicate = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "InferredPredicate";
+  };
+
+  declare type BabelNodeInterfaceExtends = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "InterfaceExtends";
+    id: BabelNodeIdentifier | BabelNodeQualifiedTypeIdentifier;
+    typeParameters?: BabelNodeTypeParameterInstantiation;
+  };
+
+  declare type BabelNodeInterfaceDeclaration = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "InterfaceDeclaration";
+    id: BabelNodeIdentifier;
+    typeParameters?: BabelNodeTypeParameterDeclaration;
+    extends?: Array<BabelNodeInterfaceExtends>;
+    body: BabelNodeObjectTypeAnnotation;
+  };
+
+  declare type BabelNodeInterfaceTypeAnnotation = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "InterfaceTypeAnnotation";
+    extends?: Array<BabelNodeInterfaceExtends>;
+    body: BabelNodeObjectTypeAnnotation;
+  };
+
+  declare type BabelNodeIntersectionTypeAnnotation = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "IntersectionTypeAnnotation";
+    types: Array<BabelNodeFlowType>;
+  };
+
+  declare type BabelNodeMixedTypeAnnotation = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "MixedTypeAnnotation";
+  };
+
+  declare type BabelNodeEmptyTypeAnnotation = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "EmptyTypeAnnotation";
+  };
+
+  declare type BabelNodeNullableTypeAnnotation = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "NullableTypeAnnotation";
+    typeAnnotation: BabelNodeFlowType;
+  };
+
+  declare type BabelNodeNumberLiteralTypeAnnotation = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "NumberLiteralTypeAnnotation";
+    value: number;
+  };
+
+  declare type BabelNodeNumberTypeAnnotation = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "NumberTypeAnnotation";
+  };
+
+  declare type BabelNodeObjectTypeAnnotation = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ObjectTypeAnnotation";
+    properties: Array<BabelNodeObjectTypeProperty | BabelNodeObjectTypeSpreadProperty>;
+    indexers?: Array<BabelNodeObjectTypeIndexer>;
+    callProperties?: Array<BabelNodeObjectTypeCallProperty>;
+    internalSlots?: Array<BabelNodeObjectTypeInternalSlot>;
+    exact?: boolean;
+    inexact?: boolean;
+  };
+
+  declare type BabelNodeObjectTypeInternalSlot = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ObjectTypeInternalSlot";
+    id: BabelNodeIdentifier;
+    value: BabelNodeFlowType;
+    optional: boolean;
+    static: boolean;
+    method: boolean;
+  };
+
+  declare type BabelNodeObjectTypeCallProperty = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ObjectTypeCallProperty";
+    value: BabelNodeFlowType;
+    static: boolean;
+  };
+
+  declare type BabelNodeObjectTypeIndexer = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ObjectTypeIndexer";
+    id?: BabelNodeIdentifier;
+    key: BabelNodeFlowType;
+    value: BabelNodeFlowType;
+    variance?: BabelNodeVariance;
+    static: boolean;
+  };
+
+  declare type BabelNodeObjectTypeProperty = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ObjectTypeProperty";
+    key: BabelNodeIdentifier | BabelNodeStringLiteral;
+    value: BabelNodeFlowType;
+    variance?: BabelNodeVariance;
+    kind: "init" | "get" | "set";
+    method: boolean;
+    optional: boolean;
+    proto: boolean;
+    static: boolean;
+  };
+
+  declare type BabelNodeObjectTypeSpreadProperty = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ObjectTypeSpreadProperty";
+    argument: BabelNodeFlowType;
+  };
+
+  declare type BabelNodeOpaqueType = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "OpaqueType";
+    id: BabelNodeIdentifier;
+    typeParameters?: BabelNodeTypeParameterDeclaration;
+    supertype?: BabelNodeFlowType;
+    impltype: BabelNodeFlowType;
+  };
+
+  declare type BabelNodeQualifiedTypeIdentifier = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "QualifiedTypeIdentifier";
+    id: BabelNodeIdentifier;
+    qualification: BabelNodeIdentifier | BabelNodeQualifiedTypeIdentifier;
+  };
+
+  declare type BabelNodeStringLiteralTypeAnnotation = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "StringLiteralTypeAnnotation";
+    value: string;
+  };
+
+  declare type BabelNodeStringTypeAnnotation = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "StringTypeAnnotation";
+  };
+
+  declare type BabelNodeSymbolTypeAnnotation = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "SymbolTypeAnnotation";
+  };
+
+  declare type BabelNodeThisTypeAnnotation = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ThisTypeAnnotation";
+  };
+
+  declare type BabelNodeTupleTypeAnnotation = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TupleTypeAnnotation";
+    types: Array<BabelNodeFlowType>;
+  };
+
+  declare type BabelNodeTypeofTypeAnnotation = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TypeofTypeAnnotation";
+    argument: BabelNodeFlowType;
+  };
+
+  declare type BabelNodeTypeAlias = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TypeAlias";
+    id: BabelNodeIdentifier;
+    typeParameters?: BabelNodeTypeParameterDeclaration;
+    right: BabelNodeFlowType;
+  };
+
+  declare type BabelNodeTypeAnnotation = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TypeAnnotation";
+    typeAnnotation: BabelNodeFlowType;
+  };
+
+  declare type BabelNodeTypeCastExpression = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TypeCastExpression";
+    expression: BabelNodeExpression;
+    typeAnnotation: BabelNodeTypeAnnotation;
+  };
+
+  declare type BabelNodeTypeParameter = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TypeParameter";
+    bound?: BabelNodeTypeAnnotation;
+    default?: BabelNodeFlowType;
+    variance?: BabelNodeVariance;
+    name: string;
+  };
+
+  declare type BabelNodeTypeParameterDeclaration = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TypeParameterDeclaration";
+    params: Array<BabelNodeTypeParameter>;
+  };
+
+  declare type BabelNodeTypeParameterInstantiation = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TypeParameterInstantiation";
+    params: Array<BabelNodeFlowType>;
+  };
+
+  declare type BabelNodeUnionTypeAnnotation = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "UnionTypeAnnotation";
+    types: Array<BabelNodeFlowType>;
+  };
+
+  declare type BabelNodeVariance = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "Variance";
+    kind: "minus" | "plus";
+  };
+
+  declare type BabelNodeVoidTypeAnnotation = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "VoidTypeAnnotation";
+  };
+
+  declare type BabelNodeEnumDeclaration = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "EnumDeclaration";
+    id: BabelNodeIdentifier;
+    body: BabelNodeEnumBooleanBody | BabelNodeEnumNumberBody | BabelNodeEnumStringBody | BabelNodeEnumSymbolBody;
+  };
+
+  declare type BabelNodeEnumBooleanBody = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "EnumBooleanBody";
+    members: Array<BabelNodeEnumBooleanMember>;
+    explicitType: boolean;
+    hasUnknownMembers: boolean;
+  };
+
+  declare type BabelNodeEnumNumberBody = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "EnumNumberBody";
+    members: Array<BabelNodeEnumNumberMember>;
+    explicitType: boolean;
+    hasUnknownMembers: boolean;
+  };
+
+  declare type BabelNodeEnumStringBody = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "EnumStringBody";
+    members: Array<BabelNodeEnumStringMember | BabelNodeEnumDefaultedMember>;
+    explicitType: boolean;
+    hasUnknownMembers: boolean;
+  };
+
+  declare type BabelNodeEnumSymbolBody = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "EnumSymbolBody";
+    members: Array<BabelNodeEnumDefaultedMember>;
+    hasUnknownMembers: boolean;
+  };
+
+  declare type BabelNodeEnumBooleanMember = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "EnumBooleanMember";
+    id: BabelNodeIdentifier;
+    init: BabelNodeBooleanLiteral;
+  };
+
+  declare type BabelNodeEnumNumberMember = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "EnumNumberMember";
+    id: BabelNodeIdentifier;
+    init: BabelNodeNumericLiteral;
+  };
+
+  declare type BabelNodeEnumStringMember = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "EnumStringMember";
+    id: BabelNodeIdentifier;
+    init: BabelNodeStringLiteral;
+  };
+
+  declare type BabelNodeEnumDefaultedMember = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "EnumDefaultedMember";
+    id: BabelNodeIdentifier;
+  };
+
+  declare type BabelNodeIndexedAccessType = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "IndexedAccessType";
+    objectType: BabelNodeFlowType;
+    indexType: BabelNodeFlowType;
+  };
+
+  declare type BabelNodeOptionalIndexedAccessType = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "OptionalIndexedAccessType";
+    objectType: BabelNodeFlowType;
+    indexType: BabelNodeFlowType;
+    optional: boolean;
+  };
+
+  declare type BabelNodeJSXAttribute = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "JSXAttribute";
+    name: BabelNodeJSXIdentifier | BabelNodeJSXNamespacedName;
+    value?: BabelNodeJSXElement | BabelNodeJSXFragment | BabelNodeStringLiteral | BabelNodeJSXExpressionContainer;
+  };
+
+  declare type BabelNodeJSXClosingElement = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "JSXClosingElement";
+    name: BabelNodeJSXIdentifier | BabelNodeJSXMemberExpression | BabelNodeJSXNamespacedName;
+  };
+
+  declare type BabelNodeJSXElement = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "JSXElement";
+    openingElement: BabelNodeJSXOpeningElement;
+    closingElement?: BabelNodeJSXClosingElement;
+    children: Array<BabelNodeJSXText | BabelNodeJSXExpressionContainer | BabelNodeJSXSpreadChild | BabelNodeJSXElement | BabelNodeJSXFragment>;
+    selfClosing?: boolean;
+  };
+
+  declare type BabelNodeJSXEmptyExpression = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "JSXEmptyExpression";
+  };
+
+  declare type BabelNodeJSXExpressionContainer = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "JSXExpressionContainer";
+    expression: BabelNodeExpression | BabelNodeJSXEmptyExpression;
+  };
+
+  declare type BabelNodeJSXSpreadChild = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "JSXSpreadChild";
+    expression: BabelNodeExpression;
+  };
+
+  declare type BabelNodeJSXIdentifier = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "JSXIdentifier";
+    name: string;
+  };
+
+  declare type BabelNodeJSXMemberExpression = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "JSXMemberExpression";
+    object: BabelNodeJSXMemberExpression | BabelNodeJSXIdentifier;
+    property: BabelNodeJSXIdentifier;
+  };
+
+  declare type BabelNodeJSXNamespacedName = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "JSXNamespacedName";
+    namespace: BabelNodeJSXIdentifier;
+    name: BabelNodeJSXIdentifier;
+  };
+
+  declare type BabelNodeJSXOpeningElement = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "JSXOpeningElement";
+    name: BabelNodeJSXIdentifier | BabelNodeJSXMemberExpression | BabelNodeJSXNamespacedName;
+    attributes: Array<BabelNodeJSXAttribute | BabelNodeJSXSpreadAttribute>;
+    selfClosing?: boolean;
+    typeArguments?: BabelNodeTypeParameterInstantiation;
+    typeParameters?: BabelNodeTSTypeParameterInstantiation;
+  };
+
+  declare type BabelNodeJSXSpreadAttribute = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "JSXSpreadAttribute";
+    argument: BabelNodeExpression;
+  };
+
+  declare type BabelNodeJSXText = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "JSXText";
+    value: string;
+  };
+
+  declare type BabelNodeJSXFragment = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "JSXFragment";
+    openingFragment: BabelNodeJSXOpeningFragment;
+    closingFragment: BabelNodeJSXClosingFragment;
+    children: Array<BabelNodeJSXText | BabelNodeJSXExpressionContainer | BabelNodeJSXSpreadChild | BabelNodeJSXElement | BabelNodeJSXFragment>;
+  };
+
+  declare type BabelNodeJSXOpeningFragment = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "JSXOpeningFragment";
+  };
+
+  declare type BabelNodeJSXClosingFragment = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "JSXClosingFragment";
+  };
+
+  declare type BabelNodeNoop = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "Noop";
+  };
+
+  declare type BabelNodePlaceholder = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "Placeholder";
+    expectedNode: "Identifier" | "StringLiteral" | "Expression" | "Statement" | "Declaration" | "BlockStatement" | "ClassBody" | "Pattern";
+    name: BabelNodeIdentifier;
+    decorators?: Array<BabelNodeDecorator>;
+    optional?: boolean;
+    typeAnnotation?: BabelNodeTypeAnnotation | BabelNodeTSTypeAnnotation | BabelNodeNoop;
+  };
+
+  declare type BabelNodeV8IntrinsicIdentifier = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "V8IntrinsicIdentifier";
+    name: string;
+  };
+
+  declare type BabelNodeArgumentPlaceholder = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ArgumentPlaceholder";
+  };
+
+  declare type BabelNodeBindExpression = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "BindExpression";
+    object: BabelNodeExpression;
+    callee: BabelNodeExpression;
+  };
+
+  declare type BabelNodeDecorator = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "Decorator";
+    expression: BabelNodeExpression;
+  };
+
+  declare type BabelNodeDoExpression = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "DoExpression";
+    body: BabelNodeBlockStatement;
+    async?: boolean;
+  };
+
+  declare type BabelNodeExportDefaultSpecifier = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ExportDefaultSpecifier";
+    exported: BabelNodeIdentifier;
+  };
+
+  declare type BabelNodeRecordExpression = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "RecordExpression";
+    properties: Array<BabelNodeObjectProperty | BabelNodeSpreadElement>;
+  };
+
+  declare type BabelNodeTupleExpression = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TupleExpression";
+    elements?: Array<BabelNodeExpression | BabelNodeSpreadElement>;
+  };
+
+  declare type BabelNodeDecimalLiteral = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "DecimalLiteral";
+    value: string;
+  };
+
+  declare type BabelNodeModuleExpression = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "ModuleExpression";
+    body: BabelNodeProgram;
+  };
+
+  declare type BabelNodeTopicReference = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TopicReference";
+  };
+
+  declare type BabelNodePipelineTopicExpression = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "PipelineTopicExpression";
+    expression: BabelNodeExpression;
+  };
+
+  declare type BabelNodePipelineBareFunction = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "PipelineBareFunction";
+    callee: BabelNodeExpression;
+  };
+
+  declare type BabelNodePipelinePrimaryTopicReference = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "PipelinePrimaryTopicReference";
+  };
+
+  declare type BabelNodeVoidPattern = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "VoidPattern";
+  };
+
+  declare type BabelNodeTSParameterProperty = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSParameterProperty";
+    parameter: BabelNodeIdentifier | BabelNodeAssignmentPattern;
+    accessibility?: "public" | "private" | "protected";
+    decorators?: Array<BabelNodeDecorator>;
+    override?: boolean;
+    readonly?: boolean;
+  };
+
+  declare type BabelNodeTSDeclareFunction = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSDeclareFunction";
+    id?: BabelNodeIdentifier;
+    typeParameters?: BabelNodeTSTypeParameterDeclaration | BabelNodeNoop;
+    params: Array<BabelNodeFunctionParameter>;
+    returnType?: BabelNodeTSTypeAnnotation | BabelNodeNoop;
+    async?: boolean;
+    declare?: boolean;
+    generator?: boolean;
+  };
+
+  declare type BabelNodeTSDeclareMethod = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSDeclareMethod";
+    decorators?: Array<BabelNodeDecorator>;
+    key: BabelNodeIdentifier | BabelNodeStringLiteral | BabelNodeNumericLiteral | BabelNodeBigIntLiteral | BabelNodeExpression;
+    typeParameters?: BabelNodeTSTypeParameterDeclaration | BabelNodeNoop;
+    params: Array<BabelNodeFunctionParameter | BabelNodeTSParameterProperty>;
+    returnType?: BabelNodeTSTypeAnnotation | BabelNodeNoop;
+    abstract?: boolean;
+    access?: "public" | "private" | "protected";
+    accessibility?: "public" | "private" | "protected";
+    async?: boolean;
+    computed?: boolean;
+    generator?: boolean;
+    kind?: "get" | "set" | "method" | "constructor";
+    optional?: boolean;
+    override?: boolean;
+    static?: boolean;
+  };
+
+  declare type BabelNodeTSQualifiedName = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSQualifiedName";
+    left: BabelNodeTSEntityName;
+    right: BabelNodeIdentifier;
+  };
+
+  declare type BabelNodeTSCallSignatureDeclaration = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSCallSignatureDeclaration";
+    typeParameters?: BabelNodeTSTypeParameterDeclaration;
+    parameters: Array<BabelNodeArrayPattern | BabelNodeIdentifier | BabelNodeObjectPattern | BabelNodeRestElement>;
+    typeAnnotation?: BabelNodeTSTypeAnnotation;
+  };
+
+  declare type BabelNodeTSConstructSignatureDeclaration = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSConstructSignatureDeclaration";
+    typeParameters?: BabelNodeTSTypeParameterDeclaration;
+    parameters: Array<BabelNodeArrayPattern | BabelNodeIdentifier | BabelNodeObjectPattern | BabelNodeRestElement>;
+    typeAnnotation?: BabelNodeTSTypeAnnotation;
+  };
+
+  declare type BabelNodeTSPropertySignature = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSPropertySignature";
+    key: BabelNodeExpression;
+    typeAnnotation?: BabelNodeTSTypeAnnotation;
+    computed?: boolean;
+    kind?: "get" | "set";
+    optional?: boolean;
+    readonly?: boolean;
+  };
+
+  declare type BabelNodeTSMethodSignature = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSMethodSignature";
+    key: BabelNodeExpression;
+    typeParameters?: BabelNodeTSTypeParameterDeclaration;
+    parameters: Array<BabelNodeArrayPattern | BabelNodeIdentifier | BabelNodeObjectPattern | BabelNodeRestElement>;
+    typeAnnotation?: BabelNodeTSTypeAnnotation;
+    computed?: boolean;
+    kind: "method" | "get" | "set";
+    optional?: boolean;
+  };
+
+  declare type BabelNodeTSIndexSignature = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSIndexSignature";
+    parameters: Array<BabelNodeIdentifier>;
+    typeAnnotation?: BabelNodeTSTypeAnnotation;
+    readonly?: boolean;
+    static?: boolean;
+  };
+
+  declare type BabelNodeTSAnyKeyword = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSAnyKeyword";
+  };
+
+  declare type BabelNodeTSBooleanKeyword = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSBooleanKeyword";
+  };
+
+  declare type BabelNodeTSBigIntKeyword = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSBigIntKeyword";
+  };
+
+  declare type BabelNodeTSIntrinsicKeyword = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSIntrinsicKeyword";
+  };
+
+  declare type BabelNodeTSNeverKeyword = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSNeverKeyword";
+  };
+
+  declare type BabelNodeTSNullKeyword = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSNullKeyword";
+  };
+
+  declare type BabelNodeTSNumberKeyword = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSNumberKeyword";
+  };
+
+  declare type BabelNodeTSObjectKeyword = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSObjectKeyword";
+  };
+
+  declare type BabelNodeTSStringKeyword = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSStringKeyword";
+  };
+
+  declare type BabelNodeTSSymbolKeyword = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSSymbolKeyword";
+  };
+
+  declare type BabelNodeTSUndefinedKeyword = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSUndefinedKeyword";
+  };
+
+  declare type BabelNodeTSUnknownKeyword = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSUnknownKeyword";
+  };
+
+  declare type BabelNodeTSVoidKeyword = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSVoidKeyword";
+  };
+
+  declare type BabelNodeTSThisType = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSThisType";
+  };
+
+  declare type BabelNodeTSFunctionType = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSFunctionType";
+    typeParameters?: BabelNodeTSTypeParameterDeclaration;
+    parameters: Array<BabelNodeArrayPattern | BabelNodeIdentifier | BabelNodeObjectPattern | BabelNodeRestElement>;
+    typeAnnotation?: BabelNodeTSTypeAnnotation;
+  };
+
+  declare type BabelNodeTSConstructorType = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSConstructorType";
+    typeParameters?: BabelNodeTSTypeParameterDeclaration;
+    parameters: Array<BabelNodeArrayPattern | BabelNodeIdentifier | BabelNodeObjectPattern | BabelNodeRestElement>;
+    typeAnnotation?: BabelNodeTSTypeAnnotation;
+    abstract?: boolean;
+  };
+
+  declare type BabelNodeTSTypeReference = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSTypeReference";
+    typeName: BabelNodeTSEntityName;
+    typeParameters?: BabelNodeTSTypeParameterInstantiation;
+  };
+
+  declare type BabelNodeTSTypePredicate = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSTypePredicate";
+    parameterName: BabelNodeIdentifier | BabelNodeTSThisType;
+    typeAnnotation?: BabelNodeTSTypeAnnotation;
+    asserts?: boolean;
+  };
+
+  declare type BabelNodeTSTypeQuery = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSTypeQuery";
+    exprName: BabelNodeTSEntityName | BabelNodeTSImportType;
+    typeParameters?: BabelNodeTSTypeParameterInstantiation;
+  };
+
+  declare type BabelNodeTSTypeLiteral = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSTypeLiteral";
+    members: Array<BabelNodeTSTypeElement>;
+  };
+
+  declare type BabelNodeTSArrayType = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSArrayType";
+    elementType: BabelNodeTSType;
+  };
+
+  declare type BabelNodeTSTupleType = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSTupleType";
+    elementTypes: Array<BabelNodeTSType | BabelNodeTSNamedTupleMember>;
+  };
+
+  declare type BabelNodeTSOptionalType = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSOptionalType";
+    typeAnnotation: BabelNodeTSType;
+  };
+
+  declare type BabelNodeTSRestType = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSRestType";
+    typeAnnotation: BabelNodeTSType;
+  };
+
+  declare type BabelNodeTSNamedTupleMember = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSNamedTupleMember";
+    label: BabelNodeIdentifier;
+    elementType: BabelNodeTSType;
+    optional?: boolean;
+  };
+
+  declare type BabelNodeTSUnionType = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSUnionType";
+    types: Array<BabelNodeTSType>;
+  };
+
+  declare type BabelNodeTSIntersectionType = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSIntersectionType";
+    types: Array<BabelNodeTSType>;
+  };
+
+  declare type BabelNodeTSConditionalType = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSConditionalType";
+    checkType: BabelNodeTSType;
+    extendsType: BabelNodeTSType;
+    trueType: BabelNodeTSType;
+    falseType: BabelNodeTSType;
+  };
+
+  declare type BabelNodeTSInferType = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSInferType";
+    typeParameter: BabelNodeTSTypeParameter;
+  };
+
+  declare type BabelNodeTSParenthesizedType = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSParenthesizedType";
+    typeAnnotation: BabelNodeTSType;
+  };
+
+  declare type BabelNodeTSTypeOperator = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSTypeOperator";
+    typeAnnotation: BabelNodeTSType;
+    operator?: string;
+  };
+
+  declare type BabelNodeTSIndexedAccessType = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSIndexedAccessType";
+    objectType: BabelNodeTSType;
+    indexType: BabelNodeTSType;
+  };
+
+  declare type BabelNodeTSMappedType = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSMappedType";
+    typeParameter: BabelNodeTSTypeParameter;
+    typeAnnotation?: BabelNodeTSType;
+    nameType?: BabelNodeTSType;
+    optional?: true | false | "+" | "-";
+    readonly?: true | false | "+" | "-";
+  };
+
+  declare type BabelNodeTSTemplateLiteralType = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSTemplateLiteralType";
+    quasis: Array<BabelNodeTemplateElement>;
+    types: Array<BabelNodeTSType>;
+  };
+
+  declare type BabelNodeTSLiteralType = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSLiteralType";
+    literal: BabelNodeNumericLiteral | BabelNodeStringLiteral | BabelNodeBooleanLiteral | BabelNodeBigIntLiteral | BabelNodeTemplateLiteral | BabelNodeUnaryExpression;
+  };
+
+  declare type BabelNodeTSExpressionWithTypeArguments = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSExpressionWithTypeArguments";
+    expression: BabelNodeTSEntityName;
+    typeParameters?: BabelNodeTSTypeParameterInstantiation;
+  };
+
+  declare type BabelNodeTSInterfaceDeclaration = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSInterfaceDeclaration";
+    id: BabelNodeIdentifier;
+    typeParameters?: BabelNodeTSTypeParameterDeclaration;
+    extends?: Array<BabelNodeTSExpressionWithTypeArguments>;
+    body: BabelNodeTSInterfaceBody;
+    declare?: boolean;
+  };
+
+  declare type BabelNodeTSInterfaceBody = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSInterfaceBody";
+    body: Array<BabelNodeTSTypeElement>;
+  };
+
+  declare type BabelNodeTSTypeAliasDeclaration = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSTypeAliasDeclaration";
+    id: BabelNodeIdentifier;
+    typeParameters?: BabelNodeTSTypeParameterDeclaration;
+    typeAnnotation: BabelNodeTSType;
+    declare?: boolean;
+  };
+
+  declare type BabelNodeTSInstantiationExpression = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSInstantiationExpression";
+    expression: BabelNodeExpression;
+    typeParameters?: BabelNodeTSTypeParameterInstantiation;
+  };
+
+  declare type BabelNodeTSAsExpression = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSAsExpression";
+    expression: BabelNodeExpression;
+    typeAnnotation: BabelNodeTSType;
+  };
+
+  declare type BabelNodeTSSatisfiesExpression = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSSatisfiesExpression";
+    expression: BabelNodeExpression;
+    typeAnnotation: BabelNodeTSType;
+  };
+
+  declare type BabelNodeTSTypeAssertion = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSTypeAssertion";
+    typeAnnotation: BabelNodeTSType;
+    expression: BabelNodeExpression;
+  };
+
+  declare type BabelNodeTSEnumBody = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSEnumBody";
+    members: Array<BabelNodeTSEnumMember>;
+  };
+
+  declare type BabelNodeTSEnumDeclaration = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSEnumDeclaration";
+    id: BabelNodeIdentifier;
+    members: Array<BabelNodeTSEnumMember>;
+    body?: BabelNodeTSEnumBody;
+    const?: boolean;
+    declare?: boolean;
+    initializer?: BabelNodeExpression;
+  };
+
+  declare type BabelNodeTSEnumMember = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSEnumMember";
+    id: BabelNodeIdentifier | BabelNodeStringLiteral;
+    initializer?: BabelNodeExpression;
+  };
+
+  declare type BabelNodeTSModuleDeclaration = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSModuleDeclaration";
+    id: BabelNodeIdentifier | BabelNodeStringLiteral;
+    body: BabelNodeTSModuleBlock | BabelNodeTSModuleDeclaration;
+    declare?: boolean;
+    global?: boolean;
+    kind: "global" | "module" | "namespace";
+  };
+
+  declare type BabelNodeTSModuleBlock = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSModuleBlock";
+    body: Array<BabelNodeStatement>;
+  };
+
+  declare type BabelNodeTSImportType = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSImportType";
+    argument: BabelNodeStringLiteral;
+    qualifier?: BabelNodeTSEntityName;
+    typeParameters?: BabelNodeTSTypeParameterInstantiation;
+    options?: BabelNodeObjectExpression;
+  };
+
+  declare type BabelNodeTSImportEqualsDeclaration = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSImportEqualsDeclaration";
+    id: BabelNodeIdentifier;
+    moduleReference: BabelNodeTSEntityName | BabelNodeTSExternalModuleReference;
+    importKind?: "type" | "value";
+    isExport: boolean;
+  };
+
+  declare type BabelNodeTSExternalModuleReference = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSExternalModuleReference";
+    expression: BabelNodeStringLiteral;
+  };
+
+  declare type BabelNodeTSNonNullExpression = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSNonNullExpression";
+    expression: BabelNodeExpression;
+  };
+
+  declare type BabelNodeTSExportAssignment = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSExportAssignment";
+    expression: BabelNodeExpression;
+  };
+
+  declare type BabelNodeTSNamespaceExportDeclaration = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSNamespaceExportDeclaration";
+    id: BabelNodeIdentifier;
+  };
+
+  declare type BabelNodeTSTypeAnnotation = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSTypeAnnotation";
+    typeAnnotation: BabelNodeTSType;
+  };
+
+  declare type BabelNodeTSTypeParameterInstantiation = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSTypeParameterInstantiation";
+    params: Array<BabelNodeTSType>;
+  };
+
+  declare type BabelNodeTSTypeParameterDeclaration = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSTypeParameterDeclaration";
+    params: Array<BabelNodeTSTypeParameter>;
+  };
+
+  declare type BabelNodeTSTypeParameter = {
+    leadingComments?: Array<BabelNodeComment>;
+    innerComments?: Array<BabelNodeComment>;
+    trailingComments?: Array<BabelNodeComment>;
+    start: ?number;
+    end: ?number;
+    loc: ?BabelNodeSourceLocation,
+    type: "TSTypeParameter";
+    constraint?: BabelNodeTSType;
+    default?: BabelNodeTSType;
+    name: string;
+    const?: boolean;
+    in?: boolean;
+    out?: boolean;
+  };
+
+  declare type BabelNode = BabelNodeArrayExpression | BabelNodeAssignmentExpression | BabelNodeBinaryExpression | BabelNodeInterpreterDirective | BabelNodeDirective | BabelNodeDirectiveLiteral | BabelNodeBlockStatement | BabelNodeBreakStatement | BabelNodeCallExpression | BabelNodeCatchClause | BabelNodeConditionalExpression | BabelNodeContinueStatement | BabelNodeDebuggerStatement | BabelNodeDoWhileStatement | BabelNodeEmptyStatement | BabelNodeExpressionStatement | BabelNodeFile | BabelNodeForInStatement | BabelNodeForStatement | BabelNodeFunctionDeclaration | BabelNodeFunctionExpression | BabelNodeIdentifier | BabelNodeIfStatement | BabelNodeLabeledStatement | BabelNodeStringLiteral | BabelNodeNumericLiteral | BabelNodeNullLiteral | BabelNodeBooleanLiteral | BabelNodeRegExpLiteral | BabelNodeLogicalExpression | BabelNodeMemberExpression | BabelNodeNewExpression | BabelNodeProgram | BabelNodeObjectExpression | BabelNodeObjectMethod | BabelNodeObjectProperty | BabelNodeRestElement | BabelNodeReturnStatement | BabelNodeSequenceExpression | BabelNodeParenthesizedExpression | BabelNodeSwitchCase | BabelNodeSwitchStatement | BabelNodeThisExpression | BabelNodeThrowStatement | BabelNodeTryStatement | BabelNodeUnaryExpression | BabelNodeUpdateExpression | BabelNodeVariableDeclaration | BabelNodeVariableDeclarator | BabelNodeWhileStatement | BabelNodeWithStatement | BabelNodeAssignmentPattern | BabelNodeArrayPattern | BabelNodeArrowFunctionExpression | BabelNodeClassBody | BabelNodeClassExpression | BabelNodeClassDeclaration | BabelNodeExportAllDeclaration | BabelNodeExportDefaultDeclaration | BabelNodeExportNamedDeclaration | BabelNodeExportSpecifier | BabelNodeForOfStatement | BabelNodeImportDeclaration | BabelNodeImportDefaultSpecifier | BabelNodeImportNamespaceSpecifier | BabelNodeImportSpecifier | BabelNodeImportExpression | BabelNodeMetaProperty | BabelNodeClassMethod | BabelNodeObjectPattern | BabelNodeSpreadElement | BabelNodeSuper | BabelNodeTaggedTemplateExpression | BabelNodeTemplateElement | BabelNodeTemplateLiteral | BabelNodeYieldExpression | BabelNodeAwaitExpression | BabelNodeImport | BabelNodeBigIntLiteral | BabelNodeExportNamespaceSpecifier | BabelNodeOptionalMemberExpression | BabelNodeOptionalCallExpression | BabelNodeClassProperty | BabelNodeClassAccessorProperty | BabelNodeClassPrivateProperty | BabelNodeClassPrivateMethod | BabelNodePrivateName | BabelNodeStaticBlock | BabelNodeImportAttribute | BabelNodeAnyTypeAnnotation | BabelNodeArrayTypeAnnotation | BabelNodeBooleanTypeAnnotation | BabelNodeBooleanLiteralTypeAnnotation | BabelNodeNullLiteralTypeAnnotation | BabelNodeClassImplements | BabelNodeDeclareClass | BabelNodeDeclareFunction | BabelNodeDeclareInterface | BabelNodeDeclareModule | BabelNodeDeclareModuleExports | BabelNodeDeclareTypeAlias | BabelNodeDeclareOpaqueType | BabelNodeDeclareVariable | BabelNodeDeclareExportDeclaration | BabelNodeDeclareExportAllDeclaration | BabelNodeDeclaredPredicate | BabelNodeExistsTypeAnnotation | BabelNodeFunctionTypeAnnotation | BabelNodeFunctionTypeParam | BabelNodeGenericTypeAnnotation | BabelNodeInferredPredicate | BabelNodeInterfaceExtends | BabelNodeInterfaceDeclaration | BabelNodeInterfaceTypeAnnotation | BabelNodeIntersectionTypeAnnotation | BabelNodeMixedTypeAnnotation | BabelNodeEmptyTypeAnnotation | BabelNodeNullableTypeAnnotation | BabelNodeNumberLiteralTypeAnnotation | BabelNodeNumberTypeAnnotation | BabelNodeObjectTypeAnnotation | BabelNodeObjectTypeInternalSlot | BabelNodeObjectTypeCallProperty | BabelNodeObjectTypeIndexer | BabelNodeObjectTypeProperty | BabelNodeObjectTypeSpreadProperty | BabelNodeOpaqueType | BabelNodeQualifiedTypeIdentifier | BabelNodeStringLiteralTypeAnnotation | BabelNodeStringTypeAnnotation | BabelNodeSymbolTypeAnnotation | BabelNodeThisTypeAnnotation | BabelNodeTupleTypeAnnotation | BabelNodeTypeofTypeAnnotation | BabelNodeTypeAlias | BabelNodeTypeAnnotation | BabelNodeTypeCastExpression | BabelNodeTypeParameter | BabelNodeTypeParameterDeclaration | BabelNodeTypeParameterInstantiation | BabelNodeUnionTypeAnnotation | BabelNodeVariance | BabelNodeVoidTypeAnnotation | BabelNodeEnumDeclaration | BabelNodeEnumBooleanBody | BabelNodeEnumNumberBody | BabelNodeEnumStringBody | BabelNodeEnumSymbolBody | BabelNodeEnumBooleanMember | BabelNodeEnumNumberMember | BabelNodeEnumStringMember | BabelNodeEnumDefaultedMember | BabelNodeIndexedAccessType | BabelNodeOptionalIndexedAccessType | BabelNodeJSXAttribute | BabelNodeJSXClosingElement | BabelNodeJSXElement | BabelNodeJSXEmptyExpression | BabelNodeJSXExpressionContainer | BabelNodeJSXSpreadChild | BabelNodeJSXIdentifier | BabelNodeJSXMemberExpression | BabelNodeJSXNamespacedName | BabelNodeJSXOpeningElement | BabelNodeJSXSpreadAttribute | BabelNodeJSXText | BabelNodeJSXFragment | BabelNodeJSXOpeningFragment | BabelNodeJSXClosingFragment | BabelNodeNoop | BabelNodePlaceholder | BabelNodeV8IntrinsicIdentifier | BabelNodeArgumentPlaceholder | BabelNodeBindExpression | BabelNodeDecorator | BabelNodeDoExpression | BabelNodeExportDefaultSpecifier | BabelNodeRecordExpression | BabelNodeTupleExpression | BabelNodeDecimalLiteral | BabelNodeModuleExpression | BabelNodeTopicReference | BabelNodePipelineTopicExpression | BabelNodePipelineBareFunction | BabelNodePipelinePrimaryTopicReference | BabelNodeVoidPattern | BabelNodeTSParameterProperty | BabelNodeTSDeclareFunction | BabelNodeTSDeclareMethod | BabelNodeTSQualifiedName | BabelNodeTSCallSignatureDeclaration | BabelNodeTSConstructSignatureDeclaration | BabelNodeTSPropertySignature | BabelNodeTSMethodSignature | BabelNodeTSIndexSignature | BabelNodeTSAnyKeyword | BabelNodeTSBooleanKeyword | BabelNodeTSBigIntKeyword | BabelNodeTSIntrinsicKeyword | BabelNodeTSNeverKeyword | BabelNodeTSNullKeyword | BabelNodeTSNumberKeyword | BabelNodeTSObjectKeyword | BabelNodeTSStringKeyword | BabelNodeTSSymbolKeyword | BabelNodeTSUndefinedKeyword | BabelNodeTSUnknownKeyword | BabelNodeTSVoidKeyword | BabelNodeTSThisType | BabelNodeTSFunctionType | BabelNodeTSConstructorType | BabelNodeTSTypeReference | BabelNodeTSTypePredicate | BabelNodeTSTypeQuery | BabelNodeTSTypeLiteral | BabelNodeTSArrayType | BabelNodeTSTupleType | BabelNodeTSOptionalType | BabelNodeTSRestType | BabelNodeTSNamedTupleMember | BabelNodeTSUnionType | BabelNodeTSIntersectionType | BabelNodeTSConditionalType | BabelNodeTSInferType | BabelNodeTSParenthesizedType | BabelNodeTSTypeOperator | BabelNodeTSIndexedAccessType | BabelNodeTSMappedType | BabelNodeTSTemplateLiteralType | BabelNodeTSLiteralType | BabelNodeTSExpressionWithTypeArguments | BabelNodeTSInterfaceDeclaration | BabelNodeTSInterfaceBody | BabelNodeTSTypeAliasDeclaration | BabelNodeTSInstantiationExpression | BabelNodeTSAsExpression | BabelNodeTSSatisfiesExpression | BabelNodeTSTypeAssertion | BabelNodeTSEnumBody | BabelNodeTSEnumDeclaration | BabelNodeTSEnumMember | BabelNodeTSModuleDeclaration | BabelNodeTSModuleBlock | BabelNodeTSImportType | BabelNodeTSImportEqualsDeclaration | BabelNodeTSExternalModuleReference | BabelNodeTSNonNullExpression | BabelNodeTSExportAssignment | BabelNodeTSNamespaceExportDeclaration | BabelNodeTSTypeAnnotation | BabelNodeTSTypeParameterInstantiation | BabelNodeTSTypeParameterDeclaration | BabelNodeTSTypeParameter;
+  declare type BabelNodeStandardized = BabelNodeArrayExpression | BabelNodeAssignmentExpression | BabelNodeBinaryExpression | BabelNodeInterpreterDirective | BabelNodeDirective | BabelNodeDirectiveLiteral | BabelNodeBlockStatement | BabelNodeBreakStatement | BabelNodeCallExpression | BabelNodeCatchClause | BabelNodeConditionalExpression | BabelNodeContinueStatement | BabelNodeDebuggerStatement | BabelNodeDoWhileStatement | BabelNodeEmptyStatement | BabelNodeExpressionStatement | BabelNodeFile | BabelNodeForInStatement | BabelNodeForStatement | BabelNodeFunctionDeclaration | BabelNodeFunctionExpression | BabelNodeIdentifier | BabelNodeIfStatement | BabelNodeLabeledStatement | BabelNodeStringLiteral | BabelNodeNumericLiteral | BabelNodeNullLiteral | BabelNodeBooleanLiteral | BabelNodeRegExpLiteral | BabelNodeLogicalExpression | BabelNodeMemberExpression | BabelNodeNewExpression | BabelNodeProgram | BabelNodeObjectExpression | BabelNodeObjectMethod | BabelNodeObjectProperty | BabelNodeRestElement | BabelNodeReturnStatement | BabelNodeSequenceExpression | BabelNodeParenthesizedExpression | BabelNodeSwitchCase | BabelNodeSwitchStatement | BabelNodeThisExpression | BabelNodeThrowStatement | BabelNodeTryStatement | BabelNodeUnaryExpression | BabelNodeUpdateExpression | BabelNodeVariableDeclaration | BabelNodeVariableDeclarator | BabelNodeWhileStatement | BabelNodeWithStatement | BabelNodeAssignmentPattern | BabelNodeArrayPattern | BabelNodeArrowFunctionExpression | BabelNodeClassBody | BabelNodeClassExpression | BabelNodeClassDeclaration | BabelNodeExportAllDeclaration | BabelNodeExportDefaultDeclaration | BabelNodeExportNamedDeclaration | BabelNodeExportSpecifier | BabelNodeForOfStatement | BabelNodeImportDeclaration | BabelNodeImportDefaultSpecifier | BabelNodeImportNamespaceSpecifier | BabelNodeImportSpecifier | BabelNodeImportExpression | BabelNodeMetaProperty | BabelNodeClassMethod | BabelNodeObjectPattern | BabelNodeSpreadElement | BabelNodeSuper | BabelNodeTaggedTemplateExpression | BabelNodeTemplateElement | BabelNodeTemplateLiteral | BabelNodeYieldExpression | BabelNodeAwaitExpression | BabelNodeImport | BabelNodeBigIntLiteral | BabelNodeExportNamespaceSpecifier | BabelNodeOptionalMemberExpression | BabelNodeOptionalCallExpression | BabelNodeClassProperty | BabelNodeClassAccessorProperty | BabelNodeClassPrivateProperty | BabelNodeClassPrivateMethod | BabelNodePrivateName | BabelNodeStaticBlock | BabelNodeImportAttribute;
+  declare type BabelNodeExpression = BabelNodeArrayExpression | BabelNodeAssignmentExpression | BabelNodeBinaryExpression | BabelNodeCallExpression | BabelNodeConditionalExpression | BabelNodeFunctionExpression | BabelNodeIdentifier | BabelNodeStringLiteral | BabelNodeNumericLiteral | BabelNodeNullLiteral | BabelNodeBooleanLiteral | BabelNodeRegExpLiteral | BabelNodeLogicalExpression | BabelNodeMemberExpression | BabelNodeNewExpression | BabelNodeObjectExpression | BabelNodeSequenceExpression | BabelNodeParenthesizedExpression | BabelNodeThisExpression | BabelNodeUnaryExpression | BabelNodeUpdateExpression | BabelNodeArrowFunctionExpression | BabelNodeClassExpression | BabelNodeImportExpression | BabelNodeMetaProperty | BabelNodeSuper | BabelNodeTaggedTemplateExpression | BabelNodeTemplateLiteral | BabelNodeYieldExpression | BabelNodeAwaitExpression | BabelNodeImport | BabelNodeBigIntLiteral | BabelNodeOptionalMemberExpression | BabelNodeOptionalCallExpression | BabelNodeTypeCastExpression | BabelNodeJSXElement | BabelNodeJSXFragment | BabelNodeBindExpression | BabelNodeDoExpression | BabelNodeRecordExpression | BabelNodeTupleExpression | BabelNodeDecimalLiteral | BabelNodeModuleExpression | BabelNodeTopicReference | BabelNodePipelineTopicExpression | BabelNodePipelineBareFunction | BabelNodePipelinePrimaryTopicReference | BabelNodeTSInstantiationExpression | BabelNodeTSAsExpression | BabelNodeTSSatisfiesExpression | BabelNodeTSTypeAssertion | BabelNodeTSNonNullExpression;
+  declare type BabelNodeBinary = BabelNodeBinaryExpression | BabelNodeLogicalExpression;
+  declare type BabelNodeScopable = BabelNodeBlockStatement | BabelNodeCatchClause | BabelNodeDoWhileStatement | BabelNodeForInStatement | BabelNodeForStatement | BabelNodeFunctionDeclaration | BabelNodeFunctionExpression | BabelNodeProgram | BabelNodeObjectMethod | BabelNodeSwitchStatement | BabelNodeWhileStatement | BabelNodeArrowFunctionExpression | BabelNodeClassExpression | BabelNodeClassDeclaration | BabelNodeForOfStatement | BabelNodeClassMethod | BabelNodeClassPrivateMethod | BabelNodeStaticBlock | BabelNodeTSModuleBlock;
+  declare type BabelNodeBlockParent = BabelNodeBlockStatement | BabelNodeCatchClause | BabelNodeDoWhileStatement | BabelNodeForInStatement | BabelNodeForStatement | BabelNodeFunctionDeclaration | BabelNodeFunctionExpression | BabelNodeProgram | BabelNodeObjectMethod | BabelNodeSwitchStatement | BabelNodeWhileStatement | BabelNodeArrowFunctionExpression | BabelNodeForOfStatement | BabelNodeClassMethod | BabelNodeClassPrivateMethod | BabelNodeStaticBlock | BabelNodeTSModuleBlock;
+  declare type BabelNodeBlock = BabelNodeBlockStatement | BabelNodeProgram | BabelNodeTSModuleBlock;
+  declare type BabelNodeStatement = BabelNodeBlockStatement | BabelNodeBreakStatement | BabelNodeContinueStatement | BabelNodeDebuggerStatement | BabelNodeDoWhileStatement | BabelNodeEmptyStatement | BabelNodeExpressionStatement | BabelNodeForInStatement | BabelNodeForStatement | BabelNodeFunctionDeclaration | BabelNodeIfStatement | BabelNodeLabeledStatement | BabelNodeReturnStatement | BabelNodeSwitchStatement | BabelNodeThrowStatement | BabelNodeTryStatement | BabelNodeVariableDeclaration | BabelNodeWhileStatement | BabelNodeWithStatement | BabelNodeClassDeclaration | BabelNodeExportAllDeclaration | BabelNodeExportDefaultDeclaration | BabelNodeExportNamedDeclaration | BabelNodeForOfStatement | BabelNodeImportDeclaration | BabelNodeDeclareClass | BabelNodeDeclareFunction | BabelNodeDeclareInterface | BabelNodeDeclareModule | BabelNodeDeclareModuleExports | BabelNodeDeclareTypeAlias | BabelNodeDeclareOpaqueType | BabelNodeDeclareVariable | BabelNodeDeclareExportDeclaration | BabelNodeDeclareExportAllDeclaration | BabelNodeInterfaceDeclaration | BabelNodeOpaqueType | BabelNodeTypeAlias | BabelNodeEnumDeclaration | BabelNodeTSDeclareFunction | BabelNodeTSInterfaceDeclaration | BabelNodeTSTypeAliasDeclaration | BabelNodeTSEnumDeclaration | BabelNodeTSModuleDeclaration | BabelNodeTSImportEqualsDeclaration | BabelNodeTSExportAssignment | BabelNodeTSNamespaceExportDeclaration;
+  declare type BabelNodeTerminatorless = BabelNodeBreakStatement | BabelNodeContinueStatement | BabelNodeReturnStatement | BabelNodeThrowStatement | BabelNodeYieldExpression | BabelNodeAwaitExpression;
+  declare type BabelNodeCompletionStatement = BabelNodeBreakStatement | BabelNodeContinueStatement | BabelNodeReturnStatement | BabelNodeThrowStatement;
+  declare type BabelNodeConditional = BabelNodeConditionalExpression | BabelNodeIfStatement;
+  declare type BabelNodeLoop = BabelNodeDoWhileStatement | BabelNodeForInStatement | BabelNodeForStatement | BabelNodeWhileStatement | BabelNodeForOfStatement;
+  declare type BabelNodeWhile = BabelNodeDoWhileStatement | BabelNodeWhileStatement;
+  declare type BabelNodeExpressionWrapper = BabelNodeExpressionStatement | BabelNodeParenthesizedExpression | BabelNodeTypeCastExpression;
+  declare type BabelNodeFor = BabelNodeForInStatement | BabelNodeForStatement | BabelNodeForOfStatement;
+  declare type BabelNodeForXStatement = BabelNodeForInStatement | BabelNodeForOfStatement;
+  declare type BabelNodeFunction = BabelNodeFunctionDeclaration | BabelNodeFunctionExpression | BabelNodeObjectMethod | BabelNodeArrowFunctionExpression | BabelNodeClassMethod | BabelNodeClassPrivateMethod;
+  declare type BabelNodeFunctionParent = BabelNodeFunctionDeclaration | BabelNodeFunctionExpression | BabelNodeObjectMethod | BabelNodeArrowFunctionExpression | BabelNodeClassMethod | BabelNodeClassPrivateMethod | BabelNodeStaticBlock | BabelNodeTSModuleBlock;
+  declare type BabelNodePureish = BabelNodeFunctionDeclaration | BabelNodeFunctionExpression | BabelNodeStringLiteral | BabelNodeNumericLiteral | BabelNodeNullLiteral | BabelNodeBooleanLiteral | BabelNodeRegExpLiteral | BabelNodeArrowFunctionExpression | BabelNodeBigIntLiteral | BabelNodeDecimalLiteral;
+  declare type BabelNodeDeclaration = BabelNodeFunctionDeclaration | BabelNodeVariableDeclaration | BabelNodeClassDeclaration | BabelNodeExportAllDeclaration | BabelNodeExportDefaultDeclaration | BabelNodeExportNamedDeclaration | BabelNodeImportDeclaration | BabelNodeDeclareClass | BabelNodeDeclareFunction | BabelNodeDeclareInterface | BabelNodeDeclareModule | BabelNodeDeclareModuleExports | BabelNodeDeclareTypeAlias | BabelNodeDeclareOpaqueType | BabelNodeDeclareVariable | BabelNodeDeclareExportDeclaration | BabelNodeDeclareExportAllDeclaration | BabelNodeInterfaceDeclaration | BabelNodeOpaqueType | BabelNodeTypeAlias | BabelNodeEnumDeclaration | BabelNodeTSDeclareFunction | BabelNodeTSInterfaceDeclaration | BabelNodeTSTypeAliasDeclaration | BabelNodeTSEnumDeclaration | BabelNodeTSModuleDeclaration | BabelNodeTSImportEqualsDeclaration;
+  declare type BabelNodeFunctionParameter = BabelNodeIdentifier | BabelNodeRestElement | BabelNodeAssignmentPattern | BabelNodeArrayPattern | BabelNodeObjectPattern | BabelNodeVoidPattern;
+  declare type BabelNodePatternLike = BabelNodeIdentifier | BabelNodeMemberExpression | BabelNodeRestElement | BabelNodeAssignmentPattern | BabelNodeArrayPattern | BabelNodeObjectPattern | BabelNodeVoidPattern | BabelNodeTSAsExpression | BabelNodeTSSatisfiesExpression | BabelNodeTSTypeAssertion | BabelNodeTSNonNullExpression;
+  declare type BabelNodeLVal = BabelNodeIdentifier | BabelNodeMemberExpression | BabelNodeRestElement | BabelNodeAssignmentPattern | BabelNodeArrayPattern | BabelNodeObjectPattern | BabelNodeTSParameterProperty | BabelNodeTSAsExpression | BabelNodeTSSatisfiesExpression | BabelNodeTSTypeAssertion | BabelNodeTSNonNullExpression;
+  declare type BabelNodeTSEntityName = BabelNodeIdentifier | BabelNodeTSQualifiedName;
+  declare type BabelNodeLiteral = BabelNodeStringLiteral | BabelNodeNumericLiteral | BabelNodeNullLiteral | BabelNodeBooleanLiteral | BabelNodeRegExpLiteral | BabelNodeTemplateLiteral | BabelNodeBigIntLiteral | BabelNodeDecimalLiteral;
+  declare type BabelNodeImmutable = BabelNodeStringLiteral | BabelNodeNumericLiteral | BabelNodeNullLiteral | BabelNodeBooleanLiteral | BabelNodeBigIntLiteral | BabelNodeJSXAttribute | BabelNodeJSXClosingElement | BabelNodeJSXElement | BabelNodeJSXExpressionContainer | BabelNodeJSXSpreadChild | BabelNodeJSXOpeningElement | BabelNodeJSXText | BabelNodeJSXFragment | BabelNodeJSXOpeningFragment | BabelNodeJSXClosingFragment | BabelNodeDecimalLiteral;
+  declare type BabelNodeUserWhitespacable = BabelNodeObjectMethod | BabelNodeObjectProperty | BabelNodeObjectTypeInternalSlot | BabelNodeObjectTypeCallProperty | BabelNodeObjectTypeIndexer | BabelNodeObjectTypeProperty | BabelNodeObjectTypeSpreadProperty;
+  declare type BabelNodeMethod = BabelNodeObjectMethod | BabelNodeClassMethod | BabelNodeClassPrivateMethod;
+  declare type BabelNodeObjectMember = BabelNodeObjectMethod | BabelNodeObjectProperty;
+  declare type BabelNodeProperty = BabelNodeObjectProperty | BabelNodeClassProperty | BabelNodeClassAccessorProperty | BabelNodeClassPrivateProperty;
+  declare type BabelNodeUnaryLike = BabelNodeUnaryExpression | BabelNodeSpreadElement;
+  declare type BabelNodePattern = BabelNodeAssignmentPattern | BabelNodeArrayPattern | BabelNodeObjectPattern | BabelNodeVoidPattern;
+  declare type BabelNodeClass = BabelNodeClassExpression | BabelNodeClassDeclaration;
+  declare type BabelNodeImportOrExportDeclaration = BabelNodeExportAllDeclaration | BabelNodeExportDefaultDeclaration | BabelNodeExportNamedDeclaration | BabelNodeImportDeclaration;
+  declare type BabelNodeExportDeclaration = BabelNodeExportAllDeclaration | BabelNodeExportDefaultDeclaration | BabelNodeExportNamedDeclaration;
+  declare type BabelNodeModuleSpecifier = BabelNodeExportSpecifier | BabelNodeImportDefaultSpecifier | BabelNodeImportNamespaceSpecifier | BabelNodeImportSpecifier | BabelNodeExportNamespaceSpecifier | BabelNodeExportDefaultSpecifier;
+  declare type BabelNodeAccessor = BabelNodeClassAccessorProperty;
+  declare type BabelNodePrivate = BabelNodeClassPrivateProperty | BabelNodeClassPrivateMethod | BabelNodePrivateName;
+  declare type BabelNodeFlow = BabelNodeAnyTypeAnnotation | BabelNodeArrayTypeAnnotation | BabelNodeBooleanTypeAnnotation | BabelNodeBooleanLiteralTypeAnnotation | BabelNodeNullLiteralTypeAnnotation | BabelNodeClassImplements | BabelNodeDeclareClass | BabelNodeDeclareFunction | BabelNodeDeclareInterface | BabelNodeDeclareModule | BabelNodeDeclareModuleExports | BabelNodeDeclareTypeAlias | BabelNodeDeclareOpaqueType | BabelNodeDeclareVariable | BabelNodeDeclareExportDeclaration | BabelNodeDeclareExportAllDeclaration | BabelNodeDeclaredPredicate | BabelNodeExistsTypeAnnotation | BabelNodeFunctionTypeAnnotation | BabelNodeFunctionTypeParam | BabelNodeGenericTypeAnnotation | BabelNodeInferredPredicate | BabelNodeInterfaceExtends | BabelNodeInterfaceDeclaration | BabelNodeInterfaceTypeAnnotation | BabelNodeIntersectionTypeAnnotation | BabelNodeMixedTypeAnnotation | BabelNodeEmptyTypeAnnotation | BabelNodeNullableTypeAnnotation | BabelNodeNumberLiteralTypeAnnotation | BabelNodeNumberTypeAnnotation | BabelNodeObjectTypeAnnotation | BabelNodeObjectTypeInternalSlot | BabelNodeObjectTypeCallProperty | BabelNodeObjectTypeIndexer | BabelNodeObjectTypeProperty | BabelNodeObjectTypeSpreadProperty | BabelNodeOpaqueType | BabelNodeQualifiedTypeIdentifier | BabelNodeStringLiteralTypeAnnotation | BabelNodeStringTypeAnnotation | BabelNodeSymbolTypeAnnotation | BabelNodeThisTypeAnnotation | BabelNodeTupleTypeAnnotation | BabelNodeTypeofTypeAnnotation | BabelNodeTypeAlias | BabelNodeTypeAnnotation | BabelNodeTypeCastExpression | BabelNodeTypeParameter | BabelNodeTypeParameterDeclaration | BabelNodeTypeParameterInstantiation | BabelNodeUnionTypeAnnotation | BabelNodeVariance | BabelNodeVoidTypeAnnotation | BabelNodeEnumDeclaration | BabelNodeEnumBooleanBody | BabelNodeEnumNumberBody | BabelNodeEnumStringBody | BabelNodeEnumSymbolBody | BabelNodeEnumBooleanMember | BabelNodeEnumNumberMember | BabelNodeEnumStringMember | BabelNodeEnumDefaultedMember | BabelNodeIndexedAccessType | BabelNodeOptionalIndexedAccessType;
+  declare type BabelNodeFlowType = BabelNodeAnyTypeAnnotation | BabelNodeArrayTypeAnnotation | BabelNodeBooleanTypeAnnotation | BabelNodeBooleanLiteralTypeAnnotation | BabelNodeNullLiteralTypeAnnotation | BabelNodeExistsTypeAnnotation | BabelNodeFunctionTypeAnnotation | BabelNodeGenericTypeAnnotation | BabelNodeInterfaceTypeAnnotation | BabelNodeIntersectionTypeAnnotation | BabelNodeMixedTypeAnnotation | BabelNodeEmptyTypeAnnotation | BabelNodeNullableTypeAnnotation | BabelNodeNumberLiteralTypeAnnotation | BabelNodeNumberTypeAnnotation | BabelNodeObjectTypeAnnotation | BabelNodeStringLiteralTypeAnnotation | BabelNodeStringTypeAnnotation | BabelNodeSymbolTypeAnnotation | BabelNodeThisTypeAnnotation | BabelNodeTupleTypeAnnotation | BabelNodeTypeofTypeAnnotation | BabelNodeUnionTypeAnnotation | BabelNodeVoidTypeAnnotation | BabelNodeIndexedAccessType | BabelNodeOptionalIndexedAccessType;
+  declare type BabelNodeFlowBaseAnnotation = BabelNodeAnyTypeAnnotation | BabelNodeBooleanTypeAnnotation | BabelNodeNullLiteralTypeAnnotation | BabelNodeMixedTypeAnnotation | BabelNodeEmptyTypeAnnotation | BabelNodeNumberTypeAnnotation | BabelNodeStringTypeAnnotation | BabelNodeSymbolTypeAnnotation | BabelNodeThisTypeAnnotation | BabelNodeVoidTypeAnnotation;
+  declare type BabelNodeFlowDeclaration = BabelNodeDeclareClass | BabelNodeDeclareFunction | BabelNodeDeclareInterface | BabelNodeDeclareModule | BabelNodeDeclareModuleExports | BabelNodeDeclareTypeAlias | BabelNodeDeclareOpaqueType | BabelNodeDeclareVariable | BabelNodeDeclareExportDeclaration | BabelNodeDeclareExportAllDeclaration | BabelNodeInterfaceDeclaration | BabelNodeOpaqueType | BabelNodeTypeAlias;
+  declare type BabelNodeFlowPredicate = BabelNodeDeclaredPredicate | BabelNodeInferredPredicate;
+  declare type BabelNodeEnumBody = BabelNodeEnumBooleanBody | BabelNodeEnumNumberBody | BabelNodeEnumStringBody | BabelNodeEnumSymbolBody;
+  declare type BabelNodeEnumMember = BabelNodeEnumBooleanMember | BabelNodeEnumNumberMember | BabelNodeEnumStringMember | BabelNodeEnumDefaultedMember;
+  declare type BabelNodeJSX = BabelNodeJSXAttribute | BabelNodeJSXClosingElement | BabelNodeJSXElement | BabelNodeJSXEmptyExpression | BabelNodeJSXExpressionContainer | BabelNodeJSXSpreadChild | BabelNodeJSXIdentifier | BabelNodeJSXMemberExpression | BabelNodeJSXNamespacedName | BabelNodeJSXOpeningElement | BabelNodeJSXSpreadAttribute | BabelNodeJSXText | BabelNodeJSXFragment | BabelNodeJSXOpeningFragment | BabelNodeJSXClosingFragment;
+  declare type BabelNodeMiscellaneous = BabelNodeNoop | BabelNodePlaceholder | BabelNodeV8IntrinsicIdentifier;
+  declare type BabelNodeTypeScript = BabelNodeTSParameterProperty | BabelNodeTSDeclareFunction | BabelNodeTSDeclareMethod | BabelNodeTSQualifiedName | BabelNodeTSCallSignatureDeclaration | BabelNodeTSConstructSignatureDeclaration | BabelNodeTSPropertySignature | BabelNodeTSMethodSignature | BabelNodeTSIndexSignature | BabelNodeTSAnyKeyword | BabelNodeTSBooleanKeyword | BabelNodeTSBigIntKeyword | BabelNodeTSIntrinsicKeyword | BabelNodeTSNeverKeyword | BabelNodeTSNullKeyword | BabelNodeTSNumberKeyword | BabelNodeTSObjectKeyword | BabelNodeTSStringKeyword | BabelNodeTSSymbolKeyword | BabelNodeTSUndefinedKeyword | BabelNodeTSUnknownKeyword | BabelNodeTSVoidKeyword | BabelNodeTSThisType | BabelNodeTSFunctionType | BabelNodeTSConstructorType | BabelNodeTSTypeReference | BabelNodeTSTypePredicate | BabelNodeTSTypeQuery | BabelNodeTSTypeLiteral | BabelNodeTSArrayType | BabelNodeTSTupleType | BabelNodeTSOptionalType | BabelNodeTSRestType | BabelNodeTSNamedTupleMember | BabelNodeTSUnionType | BabelNodeTSIntersectionType | BabelNodeTSConditionalType | BabelNodeTSInferType | BabelNodeTSParenthesizedType | BabelNodeTSTypeOperator | BabelNodeTSIndexedAccessType | BabelNodeTSMappedType | BabelNodeTSTemplateLiteralType | BabelNodeTSLiteralType | BabelNodeTSExpressionWithTypeArguments | BabelNodeTSInterfaceDeclaration | BabelNodeTSInterfaceBody | BabelNodeTSTypeAliasDeclaration | BabelNodeTSInstantiationExpression | BabelNodeTSAsExpression | BabelNodeTSSatisfiesExpression | BabelNodeTSTypeAssertion | BabelNodeTSEnumBody | BabelNodeTSEnumDeclaration | BabelNodeTSEnumMember | BabelNodeTSModuleDeclaration | BabelNodeTSModuleBlock | BabelNodeTSImportType | BabelNodeTSImportEqualsDeclaration | BabelNodeTSExternalModuleReference | BabelNodeTSNonNullExpression | BabelNodeTSExportAssignment | BabelNodeTSNamespaceExportDeclaration | BabelNodeTSTypeAnnotation | BabelNodeTSTypeParameterInstantiation | BabelNodeTSTypeParameterDeclaration | BabelNodeTSTypeParameter;
+  declare type BabelNodeTSTypeElement = BabelNodeTSCallSignatureDeclaration | BabelNodeTSConstructSignatureDeclaration | BabelNodeTSPropertySignature | BabelNodeTSMethodSignature | BabelNodeTSIndexSignature;
+  declare type BabelNodeTSType = BabelNodeTSAnyKeyword | BabelNodeTSBooleanKeyword | BabelNodeTSBigIntKeyword | BabelNodeTSIntrinsicKeyword | BabelNodeTSNeverKeyword | BabelNodeTSNullKeyword | BabelNodeTSNumberKeyword | BabelNodeTSObjectKeyword | BabelNodeTSStringKeyword | BabelNodeTSSymbolKeyword | BabelNodeTSUndefinedKeyword | BabelNodeTSUnknownKeyword | BabelNodeTSVoidKeyword | BabelNodeTSThisType | BabelNodeTSFunctionType | BabelNodeTSConstructorType | BabelNodeTSTypeReference | BabelNodeTSTypePredicate | BabelNodeTSTypeQuery | BabelNodeTSTypeLiteral | BabelNodeTSArrayType | BabelNodeTSTupleType | BabelNodeTSOptionalType | BabelNodeTSRestType | BabelNodeTSUnionType | BabelNodeTSIntersectionType | BabelNodeTSConditionalType | BabelNodeTSInferType | BabelNodeTSParenthesizedType | BabelNodeTSTypeOperator | BabelNodeTSIndexedAccessType | BabelNodeTSMappedType | BabelNodeTSTemplateLiteralType | BabelNodeTSLiteralType | BabelNodeTSExpressionWithTypeArguments | BabelNodeTSImportType;
+  declare type BabelNodeTSBaseType = BabelNodeTSAnyKeyword | BabelNodeTSBooleanKeyword | BabelNodeTSBigIntKeyword | BabelNodeTSIntrinsicKeyword | BabelNodeTSNeverKeyword | BabelNodeTSNullKeyword | BabelNodeTSNumberKeyword | BabelNodeTSObjectKeyword | BabelNodeTSStringKeyword | BabelNodeTSSymbolKeyword | BabelNodeTSUndefinedKeyword | BabelNodeTSUnknownKeyword | BabelNodeTSVoidKeyword | BabelNodeTSThisType | BabelNodeTSTemplateLiteralType | BabelNodeTSLiteralType;
+  declare type BabelNodeModuleDeclaration = BabelNodeExportAllDeclaration | BabelNodeExportDefaultDeclaration | BabelNodeExportNamedDeclaration | BabelNodeImportDeclaration;
+
   declare export function arrayExpression(elements?: Array<null | BabelNodeExpression | BabelNodeSpreadElement>): BabelNodeArrayExpression;
   declare export function assignmentExpression(operator: string, left: BabelNodeLVal | BabelNodeOptionalMemberExpression, right: BabelNodeExpression): BabelNodeAssignmentExpression;
   declare export function binaryExpression(operator: "+" | "-" | "/" | "%" | "*" | "**" | "&" | "|" | ">>" | ">>>" | "<<" | "^" | "==" | "===" | "!=" | "!==" | "in" | "instanceof" | ">" | "<" | ">=" | "<=" | "|>", left: BabelNodeExpression | BabelNodePrivateName, right: BabelNodeExpression): BabelNodeBinaryExpression;

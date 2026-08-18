@@ -97,7 +97,7 @@ public interface DevSupportManager : JSExceptionHandler {
   public fun registerErrorCustomizer(errorCustomizer: ErrorCustomizer)
 
   public fun processErrorCustomizers(
-      errorInfo: Pair<String, Array<StackFrame>>
+      errorInfo: Pair<String, Array<StackFrame>>,
   ): Pair<String, Array<StackFrame>>
 
   public fun setPackagerLocationCustomizer(packagerLocationCustomizer: PackagerLocationCustomizer)

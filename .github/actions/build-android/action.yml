@@ -62,9 +62,10 @@ runs:
           export HERMES_PREBUILT_FLAG="ORG_GRADLE_PROJECT_react.internal.useHermesNightly=true"
           TASKS="publishAllToMavenTempLocal publishAndroidToSonatype build"
         else
-          # release: we want to build all archs (default)
+          # release: build all archs and close the repository so that Sonatype can validate it.
+          # Releasing to Maven Central happens only after the Apple builds succeed.
           export HERMES_PREBUILT_FLAG="ORG_GRADLE_PROJECT_react.internal.useHermesStable=true"
-          TASKS="publishAllToMavenTempLocal publishAndroidToSonatype build"
+          TASKS="publishAllToMavenTempLocal publishAndroidToSonatype closeSonatypeStagingRepository build"
         fi
         env "$HERMES_PREBUILT_FLAG" ./gradlew $TASKS -PenableWarningsAsErrors=true
     - name: Save Android ccache

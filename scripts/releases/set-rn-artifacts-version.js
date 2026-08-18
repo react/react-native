@@ -15,9 +15,9 @@ import type {BuildType, Version} from './utils/version-utils';
 const {getNpmInfo} = require('../releases/utils/npm-utils');
 const {REPO_ROOT} = require('../shared/consts');
 const {parseVersion, validateBuildType} = require('./utils/version-utils');
-const {promises: fs} = require('fs');
-const path = require('path');
-const {parseArgs} = require('util');
+const {promises: fs} = require('node:fs');
+const path = require('node:path');
+const {parseArgs} = require('node:util');
 
 const GRADLE_FILE_PATH = path.join(
   REPO_ROOT,

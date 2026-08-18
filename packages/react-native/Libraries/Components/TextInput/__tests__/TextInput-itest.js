@@ -10,12 +10,13 @@
 
 import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
+import type {HostInstance} from 'react-native';
+
 import * as Fantom from '@react-native/fantom';
 import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {createRef, useEffect, useLayoutEffect, useRef} from 'react';
 import {TextInput} from 'react-native';
-import ReactNativeElement from 'react-native/src/private/webapis/dom/nodes/ReactNativeElement';
 
 describe('<TextInput>', () => {
   describe('props', () => {
@@ -43,7 +44,7 @@ describe('<TextInput>', () => {
     describe('onChange', () => {
       it('is called when the change native event is dispatched', () => {
         const root = Fantom.createRoot();
-        const nodeRef = createRef<React.ElementRef<typeof TextInput>>();
+        const nodeRef = createRef<HostInstance>();
         const onChange = jest.fn();
 
         Fantom.runTask(() => {
@@ -74,7 +75,7 @@ describe('<TextInput>', () => {
     describe('onChangeText', () => {
       it('is called when the change native event is dispatched', () => {
         const root = Fantom.createRoot();
-        const nodeRef = createRef<React.ElementRef<typeof TextInput>>();
+        const nodeRef = createRef<HostInstance>();
         const onChangeText = jest.fn();
 
         Fantom.runTask(() => {
@@ -98,7 +99,7 @@ describe('<TextInput>', () => {
     describe('onFocus', () => {
       it('is called when the focus native event is dispatched', () => {
         const root = Fantom.createRoot();
-        const nodeRef = createRef<React.ElementRef<typeof TextInput>>();
+        const nodeRef = createRef<HostInstance>();
 
         let focusEvent = jest.fn();
 
@@ -124,7 +125,7 @@ describe('<TextInput>', () => {
     describe('onBlur', () => {
       it('is called when the blur native event is dispatched', () => {
         const root = Fantom.createRoot();
-        const nodeRef = createRef<React.ElementRef<typeof TextInput>>();
+        const nodeRef = createRef<HostInstance>();
 
         let blurEvent = jest.fn();
 
@@ -144,6 +145,113 @@ describe('<TextInput>', () => {
         Fantom.runWorkLoop();
 
         expect(blurEvent).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    describe('onSelectionChange', () => {
+      it('is called with the updated selection', () => {
+        const root = Fantom.createRoot();
+        const nodeRef = createRef<HostInstance>();
+        const onSelectionChange = jest.fn();
+
+        Fantom.runTask(() => {
+          root.render(
+            <TextInput
+              onSelectionChange={event => {
+                onSelectionChange(event.nativeEvent);
+              }}
+              ref={nodeRef}>
+              hello world
+            </TextInput>,
+          );
+        });
+
+        Fantom.dispatchNativeEvent(nodeRef, 'selectionChange', {
+          selection: {start: 2, end: 5},
+        });
+
+        expect(onSelectionChange).toHaveBeenCalledTimes(1);
+        const [entry] = onSelectionChange.mock.lastCall;
+        expect(entry.selection).toEqual({start: 2, end: 5});
+      });
+    });
+
+    describe('onSubmitEditing', () => {
+      it('is called when the submit native event is dispatched', () => {
+        const root = Fantom.createRoot();
+        const nodeRef = createRef<HostInstance>();
+        const onSubmitEditing = jest.fn();
+
+        Fantom.runTask(() => {
+          root.render(
+            <TextInput
+              onSubmitEditing={event => {
+                onSubmitEditing(event.nativeEvent);
+              }}
+              ref={nodeRef}
+            />,
+          );
+        });
+
+        Fantom.dispatchNativeEvent(nodeRef, 'submitEditing', {
+          text: 'submitted text',
+        });
+
+        expect(onSubmitEditing).toHaveBeenCalledTimes(1);
+        const [entry] = onSubmitEditing.mock.lastCall;
+        expect(entry.text).toEqual('submitted text');
+      });
+    });
+
+    describe('onKeyPress', () => {
+      it('is called with the pressed key', () => {
+        const root = Fantom.createRoot();
+        const nodeRef = createRef<HostInstance>();
+        const onKeyPress = jest.fn();
+
+        Fantom.runTask(() => {
+          root.render(
+            <TextInput
+              onKeyPress={event => {
+                onKeyPress(event.nativeEvent);
+              }}
+              ref={nodeRef}
+            />,
+          );
+        });
+
+        Fantom.dispatchNativeEvent(nodeRef, 'keyPress', {key: 'a'});
+
+        expect(onKeyPress).toHaveBeenCalledTimes(1);
+        const [entry] = onKeyPress.mock.lastCall;
+        expect(entry.key).toEqual('a');
+      });
+    });
+
+    describe('onEndEditing', () => {
+      it('is called when the end editing native event is dispatched', () => {
+        const root = Fantom.createRoot();
+        const nodeRef = createRef<HostInstance>();
+        const onEndEditing = jest.fn();
+
+        Fantom.runTask(() => {
+          root.render(
+            <TextInput
+              onEndEditing={event => {
+                onEndEditing(event.nativeEvent);
+              }}
+              ref={nodeRef}
+            />,
+          );
+        });
+
+        Fantom.dispatchNativeEvent(nodeRef, 'endEditing', {
+          text: 'final text',
+        });
+
+        expect(onEndEditing).toHaveBeenCalledTimes(1);
+        const [entry] = onEndEditing.mock.lastCall;
+        expect(entry.text).toEqual('final text');
       });
     });
 
@@ -282,7 +390,7 @@ describe('<TextInput>', () => {
 
   describe('ref', () => {
     it('is an element node', () => {
-      const ref = createRef<React.ElementRef<typeof TextInput>>();
+      const ref = createRef<HostInstance>();
 
       const root = Fantom.createRoot();
 
@@ -290,7 +398,7 @@ describe('<TextInput>', () => {
         root.render(<TextInput ref={ref} />);
       });
 
-      expect(ref.current).toBeInstanceOf(ReactNativeElement);
+      expect(ref.current).toBeInstanceOf(HTMLElement);
     });
 
     it('provides additional methods: clear, isFocused, getNativeRef, setSelection', () => {
@@ -311,7 +419,7 @@ describe('<TextInput>', () => {
     describe('focus()', () => {
       it('dispatches the focus command', () => {
         const root = Fantom.createRoot();
-        const ref = createRef<React.ElementRef<typeof TextInput>>();
+        const ref = createRef<HostInstance>();
 
         Fantom.runTask(() => {
           root.render(<TextInput nativeID="text-input" ref={ref} />);
@@ -448,7 +556,7 @@ describe('<TextInput>', () => {
     describe('blur()', () => {
       it('does NOT dispatch any commands if the input is NOT focused', () => {
         const root = Fantom.createRoot();
-        const ref = createRef<React.ElementRef<typeof TextInput>>();
+        const ref = createRef<HostInstance>();
 
         Fantom.runTask(() => {
           root.render(<TextInput nativeID="text-input" ref={ref} />);
@@ -467,7 +575,7 @@ describe('<TextInput>', () => {
 
       it('does dispatches the blur command if the input is focused', () => {
         const root = Fantom.createRoot();
-        const ref = createRef<React.ElementRef<typeof TextInput>>();
+        const ref = createRef<HostInstance>();
 
         Fantom.runTask(() => {
           root.render(<TextInput nativeID="text-input" ref={ref} />);
@@ -488,6 +596,33 @@ describe('<TextInput>', () => {
         expect(root.takeMountingManagerLogs()).toEqual([
           'Command {type: "AndroidTextInput", nativeID: "text-input", name: "blur"}',
         ]);
+      });
+
+      it('dispatches the blur command when a focused input is unmounted', () => {
+        const root = Fantom.createRoot();
+        const ref = createRef<HostInstance>();
+
+        Fantom.runTask(() => {
+          root.render(<TextInput nativeID="text-input" ref={ref} />);
+        });
+
+        const instance = nullthrows(ref.current);
+
+        Fantom.runTask(() => {
+          instance.focus();
+        });
+
+        root.takeMountingManagerLogs();
+
+        Fantom.runTask(() => {
+          // unmount TextInput
+          root.render(<></>);
+        });
+
+        expect(root.takeMountingManagerLogs()).toContain(
+          'Command {type: "AndroidTextInput", nativeID: "text-input", name: "blur"}',
+        );
+        expect(TextInput.State.currentlyFocusedInput()).toBe(null);
       });
     });
 

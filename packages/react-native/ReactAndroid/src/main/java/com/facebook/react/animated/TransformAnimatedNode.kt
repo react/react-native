@@ -60,7 +60,7 @@ internal class TransformAnimatedNode(
                   throw IllegalArgumentException(
                       "Unsupported type of node used as a transform child " +
                           "node " +
-                          node.javaClass
+                          node.javaClass,
                   )
                 }
               } else {

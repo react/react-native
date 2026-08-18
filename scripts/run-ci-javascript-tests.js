@@ -18,7 +18,7 @@
  * --yarnBinary [path] - path to yarn binary, defaults to yarn
  */
 
-const {execSync} = require('child_process');
+const {execSync} = require('node:child_process');
 const argv /*:Readonly<{
   maxWorkers?: number,
   jestBinary?: string,
@@ -81,7 +81,7 @@ try {
   );
 
   describe('Test: TypeScript tests');
-  execAndLog(`${YARN_BINARY} run test-typescript`);
+  execAndLog(`${YARN_BINARY} run test-typescript-legacy`);
 } catch (e) {
   if (e instanceof ExecError) {
     console.error(e.message);

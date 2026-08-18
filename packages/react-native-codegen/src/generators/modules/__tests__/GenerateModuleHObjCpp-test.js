@@ -10,6 +10,8 @@
 
 'use strict';
 
+import type {SchemaType} from '../../../CodegenSchema';
+
 const fixtures = require('../__test_fixtures__/fixtures.js');
 const generator = require('../GenerateModuleObjCpp');
 
@@ -31,4 +33,42 @@ describe('GenerateModuleHObjCpp', () => {
         ).toMatchSnapshot();
       });
     });
+
+  it('throws for a method returning Promise<ArrayBuffer> (unsupported on iOS)', () => {
+    const schema: SchemaType = {
+      modules: {
+        NativeSampleTurboModule: {
+          type: 'NativeModule',
+          aliasMap: {},
+          enumMap: {},
+          spec: {
+            eventEmitters: [],
+            methods: [
+              {
+                name: 'getAsyncBuffer',
+                optional: false,
+                typeAnnotation: {
+                  type: 'FunctionTypeAnnotation',
+                  returnTypeAnnotation: {
+                    type: 'PromiseTypeAnnotation',
+                    elementType: {type: 'ArrayBufferTypeAnnotation'},
+                  },
+                  params: [],
+                },
+              },
+            ],
+          },
+          moduleName: 'SampleTurboModule',
+        },
+      },
+    };
+    expect(() =>
+      generator.generate(
+        'array_buffer_promise_throws',
+        schema,
+        'com.facebook.fbreact.specs',
+        false,
+      ),
+    ).toThrow(/Promise<ArrayBuffer> is not supported/);
+  });
 });

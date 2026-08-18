@@ -74,25 +74,25 @@ internal class RNTesterApplication : Application(), ReactApplication {
                                   ),
                           )
                         }
-                  }
+                  },
               )
               add(
                   object : ReactPackage, ViewManagerOnDemandReactPackage {
-                    override fun getViewManagerNames(reactContext: ReactApplicationContext) =
-                        listOf(
-                            "RNTMyNativeView",
-                            "RNTMyLegacyNativeView",
-                            "RNTReportFullyDrawnView",
-                        )
+                    override fun getViewManagerNames(
+                        reactContext: ReactApplicationContext,
+                    ) = listOf(
+                        "RNTMyNativeView",
+                        "RNTMyLegacyNativeView",
+                        "RNTReportFullyDrawnView",
+                    )
 
                     override fun createViewManagers(
-                        reactContext: ReactApplicationContext
-                    ): List<ViewManager<*, *>> =
-                        listOf(
-                            MyNativeViewManager(),
-                            MyLegacyViewManager(reactContext),
-                            ReportFullyDrawnViewManager(),
-                        )
+                        reactContext: ReactApplicationContext,
+                    ): List<ViewManager<*, *>> = listOf(
+                        MyNativeViewManager(),
+                        MyLegacyViewManager(reactContext),
+                        ReportFullyDrawnViewManager(),
+                    )
 
                     override fun createViewManager(
                         reactContext: ReactApplicationContext,
@@ -104,7 +104,7 @@ internal class RNTesterApplication : Application(), ReactApplication {
                           "RNTReportFullyDrawnView" -> ReportFullyDrawnViewManager()
                           else -> null
                         }
-                  }
+                  },
               )
             }
 

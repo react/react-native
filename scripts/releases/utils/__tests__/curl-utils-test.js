@@ -11,7 +11,7 @@
 'use strict';
 
 const {getWithCurl} = require('../curl-utils');
-const http = require('http');
+const http = require('node:http');
 
 let server, serverUrl;
 

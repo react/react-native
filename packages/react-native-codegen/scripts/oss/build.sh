@@ -24,7 +24,12 @@ fi
 YARN_BINARY="${YARN_BINARY:-$YARN_OR_NPM}"
 
 # mv command to use when copying files into the working directory
-EDEN_SAFE_MV="mv"
+SAFE_MV="mv"
+
+# Detect if we are on a VirtioFS volume via Apple Virtualization.framework
+if [[ "$OSTYPE" == "darwin"* ]] && /sbin/mount | /usr/bin/awk -v dev="$(/bin/df -P "$CODEGEN_DIR" | /usr/bin/awk 'NR==2 {print $1}')" '$1 == dev && /AppleVirtIOFS/ { found=1 } END { exit !found }'; then
+  SAFE_MV="/bin/cp -R -X"
+fi
 
 if [ -x "$(command -v eden)" ]; then
   pushd "$THIS_DIR"
@@ -32,7 +37,7 @@ if [ -x "$(command -v eden)" ]; then
   # Detect if we are in an EdenFS checkout with `eden info` (we ignore the output as it creates noise on CI/IDE logs)
   # Also be sure to use /bin/cp in case users have GNU coreutils installed which is incompatible with -X
   if [[ "$OSTYPE" == "darwin"* ]] && eden info 2>/dev/null; then
-    EDEN_SAFE_MV="/bin/cp -R -X"
+    SAFE_MV="/bin/cp -R -X"
   fi
 
   popd >/dev/null
@@ -71,7 +76,7 @@ else
 
   popd >/dev/null
 
-  $EDEN_SAFE_MV "$TMP_DIR/lib" "$CODEGEN_DIR"
-  $EDEN_SAFE_MV "$TMP_DIR/node_modules" "$CODEGEN_DIR"
+  $SAFE_MV "$TMP_DIR/lib" "$CODEGEN_DIR"
+  $SAFE_MV "$TMP_DIR/node_modules" "$CODEGEN_DIR"
   rm -rf "$TMP_DIR"
 fi

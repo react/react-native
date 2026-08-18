@@ -199,8 +199,7 @@ export type DecelerationRateType = 'fast' | 'normal' | number;
 export type ScrollResponderType = ScrollViewImperativeMethods;
 
 export interface ScrollViewInstance
-  extends HostInstance,
-    ScrollViewImperativeMethods {}
+  extends HostInstance, ScrollViewImperativeMethods {}
 
 type InnerViewInstance = React.ElementRef<typeof View>;
 
@@ -394,10 +393,7 @@ export type ScrollViewPropsIOS = Readonly<{
    * @platform ios
    */
   contentInsetAdjustmentBehavior?: ?(
-    | 'automatic'
-    | 'scrollableAxes'
-    | 'never'
-    | 'always'
+    'automatic' | 'scrollableAxes' | 'never' | 'always'
   ),
 }>;
 
@@ -569,9 +565,11 @@ type ScrollViewBaseProps = Readonly<{
    *
    * @default `'none'`
    */
-  keyboardDismissMode?: ?// default
-  // cross-platform
-  ('none' | 'on-drag' | 'interactive'), // ios only
+  keyboardDismissMode?: ?(
+    // default
+    // cross-platform
+    'none' | 'on-drag' | 'interactive'
+  ), // ios only
   /**
    * Determines when the keyboard should stay visible after a tap.
    *

@@ -13,6 +13,7 @@
 import type {
   NativeModuleAliasMap,
   NativeModuleObjectTypeAnnotation,
+  NativeModuleReturnTypeAnnotation,
   NativeModuleSchema,
   NativeModuleTypeAnnotation,
   Nullable,
@@ -77,9 +78,50 @@ function isArrayRecursiveMember(
   );
 }
 
+// Platform-native (Java/Kotlin and ObjC) TurboModules copy ArrayBuffer
+// arguments and return ArrayBuffers zero-copy from synchronous methods, but
+// `Promise<ArrayBuffer>` is not part of their contract.
+//
+// On Android it cannot work: the resolve path serializes through
+// folly::dynamic, which cannot carry raw bytes. On iOS the resolve path is a
+// direct ObjC->jsi conversion that would in fact produce an ArrayBuffer for an
+// NSMutableData, so the limitation there is not technical — the guard is
+// applied to ObjC as well to keep one cross-platform contract, so a spec that
+// compiles for iOS cannot fail to build for Android.
+//
+// Reject `Promise<ArrayBuffer>` at codegen time for both native platforms so
+// the unsupported case surfaces as a build error rather than a runtime failure
+// or a silent iOS/Android divergence.
+function throwIfUnsupportedPromiseArrayBuffer(
+  methodName: string,
+  nullableReturnTypeAnnotation: Nullable<NativeModuleReturnTypeAnnotation>,
+): void {
+  const [returnTypeAnnotation] =
+    unwrapNullable<NativeModuleReturnTypeAnnotation>(
+      nullableReturnTypeAnnotation,
+    );
+  if (returnTypeAnnotation.type !== 'PromiseTypeAnnotation') {
+    return;
+  }
+  let elementType = returnTypeAnnotation.elementType;
+  if (elementType.type === 'NullableTypeAnnotation') {
+    elementType = elementType.typeAnnotation;
+  }
+  if (elementType.type === 'ArrayBufferTypeAnnotation') {
+    throw new Error(
+      `Unsupported return type for method "${methodName}": Promise<ArrayBuffer> is not ` +
+        'supported for Android (Java/Kotlin) or iOS (ObjC) TurboModules. Use a C++ ' +
+        '(Cxx) TurboModule, return the ArrayBuffer from a synchronous method, or resolve ' +
+        'the Promise with a different type. ArrayBuffer is still supported as a method ' +
+        'argument and as a synchronous return value on all platforms.',
+    );
+  }
+}
+
 module.exports = {
   createAliasResolver,
   getModules,
   isDirectRecursiveMember,
   isArrayRecursiveMember,
+  throwIfUnsupportedPromiseArrayBuffer,
 };

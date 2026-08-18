@@ -26,6 +26,7 @@ const {
 } = require('../../../parsers/parsers-commons');
 const {wrapOptional} = require('../../TypeUtils/Objective-C');
 const {capitalize, parseValidUnionType} = require('../../Utils');
+const {throwIfUnsupportedPromiseArrayBuffer} = require('../Utils');
 const {getNamespacedStructName} = require('./Utils');
 const invariant = require('invariant');
 
@@ -102,6 +103,11 @@ function serializeMethod(
       structParamRecords.push({paramIndex: index, structName});
     }
   });
+
+  throwIfUnsupportedPromiseArrayBuffer(
+    methodName,
+    propertyTypeAnnotation.returnTypeAnnotation,
+  );
 
   // Unwrap returnTypeAnnotation, so we check if the return type is Promise
   // TODO(T76719514): Disallow nullable PromiseTypeAnnotations
@@ -221,7 +227,7 @@ function getParamObjCType(
       return notStruct(wrapOptional('NSArray *', !nullable));
     }
     case 'ArrayBufferTypeAnnotation': {
-      return notStruct(wrapOptional('NSMutableData *', !nullable));
+      return notStruct(wrapOptional('RCTArrayBuffer *', !nullable));
     }
   }
 
@@ -392,7 +398,7 @@ function getReturnObjCType(
     case 'GenericObjectTypeAnnotation':
       return wrapOptional('NSDictionary *', isRequired);
     case 'ArrayBufferTypeAnnotation':
-      return wrapOptional('NSMutableData *', isRequired);
+      return wrapOptional('RCTArrayBuffer *', isRequired);
     default:
       typeAnnotation.type as 'MixedTypeAnnotation';
       throw new Error(

@@ -74,10 +74,7 @@ export type TouchableWithoutFeedbackProps = Readonly<
      */
     id?: string,
     importantForAccessibility?: ?(
-      | 'auto'
-      | 'yes'
-      | 'no'
-      | 'no-hide-descendants'
+      'auto' | 'yes' | 'no' | 'no-hide-descendants'
     ),
     nativeID?: ?string,
     onAccessibilityAction?: ?(event: AccessibilityActionEvent) => unknown,

@@ -91,7 +91,7 @@ public object DefaultNewArchitectureEntryPoint {
     when (releaseLevel) {
       ReleaseLevel.EXPERIMENTAL -> {
         ReactNativeFeatureFlags.override(
-            ReactNativeFeatureFlagsOverrides_RNOSS_Experimental_Android()
+            ReactNativeFeatureFlagsOverrides_RNOSS_Experimental_Android(),
         )
       }
       ReleaseLevel.CANARY -> {

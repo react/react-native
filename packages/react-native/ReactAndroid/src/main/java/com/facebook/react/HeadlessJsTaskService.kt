@@ -145,7 +145,7 @@ public abstract class HeadlessJsTaskService : Service(), HeadlessJsTaskEventList
               invokeStartTask(context, taskConfig)
               reactHost.removeReactInstanceEventListener(this)
             }
-          }
+          },
       )
       reactHost.start()
     } else {
@@ -156,7 +156,7 @@ public abstract class HeadlessJsTaskService : Service(), HeadlessJsTaskEventList
               invokeStartTask(context, taskConfig)
               reactInstanceManager.removeReactInstanceEventListener(this)
             }
-          }
+          },
       )
       reactInstanceManager.createReactContextInBackground()
     }

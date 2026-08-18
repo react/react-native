@@ -26,7 +26,7 @@ class PrepareBoostTaskTest {
     assertThatThrownBy { task.taskAction() }
         .isInstanceOf(IllegalStateException::class.java)
         .hasMessage(
-            "Cannot query the value of task ':PrepareBoostTask' property 'boostVersion' because it has no value available."
+            "Cannot query the value of task ':PrepareBoostTask' property 'boostVersion' because it has no value available.",
         )
   }
 

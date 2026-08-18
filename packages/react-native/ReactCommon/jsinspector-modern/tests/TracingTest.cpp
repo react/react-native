@@ -37,7 +37,15 @@ class TracingTest : public TracingTestBase<
 TEST_F(TracingTest, EnablesSamplingProfilerOnlyCategoryIsSpecified) {
   InSequence s;
 
+  const auto runSamplingWorkload = [this]() {
+    eval(R"(
+      const start = Date.now();
+      while (Date.now() - start < 10) {}
+    )");
+  };
+
   startTracing({});
+  runSamplingWorkload();
   auto allTraceEvents = endTracingAndCollectEvents();
 
   EXPECT_THAT(
@@ -47,6 +55,7 @@ TEST_F(TracingTest, EnablesSamplingProfilerOnlyCategoryIsSpecified) {
           AtJsonPtr("/cat", "disabled-by-default-v8.cpu_profiler")))));
 
   startTracing({tracing::Category::JavaScriptSampling});
+  runSamplingWorkload();
   allTraceEvents = endTracingAndCollectEvents();
 
   EXPECT_THAT(

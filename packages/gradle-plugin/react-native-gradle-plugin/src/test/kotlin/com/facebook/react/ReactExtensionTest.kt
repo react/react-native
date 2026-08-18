@@ -20,15 +20,14 @@ class ReactExtensionTest {
 
   @Test
   fun getGradleDependenciesToApply_withEmptyFile_returnsEmptyMap() {
-    val validJsonFile =
-        createJsonFile(
-            """
-            {
-              "reactNativeVersion": "1000.0.0"
-            }
-            """
-                .trimIndent()
-        )
+    val validJsonFile = createJsonFile(
+        """
+        {
+          "reactNativeVersion": "1000.0.0"
+        }
+        """
+            .trimIndent(),
+    )
 
     val deps = getGradleDependenciesToApply(validJsonFile)
     assertThat(deps).isEmpty()
@@ -36,27 +35,26 @@ class ReactExtensionTest {
 
   @Test
   fun getGradleDependenciesToApply_withOneDependency_returnsValidDep() {
-    val validJsonFile =
-        createJsonFile(
-            """
-            {
-              "reactNativeVersion": "1000.0.0",
-              "dependencies": {
-                "@react-native/oss-library-example": {
-                  "root": "./node_modules/@react-native/oss-library-example",
-                  "name": "@react-native/oss-library-example",
-                  "platforms": {
-                    "android": {
-                      "sourceDir": "src/main/java",
-                      "packageImportPath": "com.facebook.react"
-                    }
-                  }
+    val validJsonFile = createJsonFile(
+        """
+        {
+          "reactNativeVersion": "1000.0.0",
+          "dependencies": {
+            "@react-native/oss-library-example": {
+              "root": "./node_modules/@react-native/oss-library-example",
+              "name": "@react-native/oss-library-example",
+              "platforms": {
+                "android": {
+                  "sourceDir": "src/main/java",
+                  "packageImportPath": "com.facebook.react"
                 }
               }
             }
-            """
-                .trimIndent()
-        )
+          }
+        }
+        """
+            .trimIndent(),
+    )
 
     val deps = getGradleDependenciesToApply(validJsonFile)
     assertThat(deps).containsExactly("implementation" to ":react-native_oss-library-example")
@@ -64,28 +62,27 @@ class ReactExtensionTest {
 
   @Test
   fun getGradleDependenciesToApply_withDependencyConfiguration_returnsValidConfiguration() {
-    val validJsonFile =
-        createJsonFile(
-            """
-            {
-              "reactNativeVersion": "1000.0.0",
-              "dependencies": {
-                "@react-native/oss-library-example": {
-                  "root": "./node_modules/@react-native/oss-library-example",
-                  "name": "@react-native/oss-library-example",
-                  "platforms": {
-                    "android": {
-                      "sourceDir": "src/main/java",
-                      "packageImportPath": "com.facebook.react",
-                      "dependencyConfiguration": "compileOnly"
-                    }
-                  }
+    val validJsonFile = createJsonFile(
+        """
+        {
+          "reactNativeVersion": "1000.0.0",
+          "dependencies": {
+            "@react-native/oss-library-example": {
+              "root": "./node_modules/@react-native/oss-library-example",
+              "name": "@react-native/oss-library-example",
+              "platforms": {
+                "android": {
+                  "sourceDir": "src/main/java",
+                  "packageImportPath": "com.facebook.react",
+                  "dependencyConfiguration": "compileOnly"
                 }
               }
             }
-            """
-                .trimIndent()
-        )
+          }
+        }
+        """
+            .trimIndent(),
+    )
 
     val deps = getGradleDependenciesToApply(validJsonFile)
     assertThat(deps).containsExactly("compileOnly" to ":react-native_oss-library-example")
@@ -93,28 +90,27 @@ class ReactExtensionTest {
 
   @Test
   fun getGradleDependenciesToApply_withBuildTypes_returnsValidConfiguration() {
-    val validJsonFile =
-        createJsonFile(
-            """
-            {
-              "reactNativeVersion": "1000.0.0",
-              "dependencies": {
-                "@react-native/oss-library-example": {
-                  "root": "./node_modules/@react-native/oss-library-example",
-                  "name": "@react-native/oss-library-example",
-                  "platforms": {
-                    "android": {
-                      "sourceDir": "src/main/java",
-                      "packageImportPath": "com.facebook.react",
-                      "buildTypes": ["debug", "release"]
-                    }
-                  }
+    val validJsonFile = createJsonFile(
+        """
+        {
+          "reactNativeVersion": "1000.0.0",
+          "dependencies": {
+            "@react-native/oss-library-example": {
+              "root": "./node_modules/@react-native/oss-library-example",
+              "name": "@react-native/oss-library-example",
+              "platforms": {
+                "android": {
+                  "sourceDir": "src/main/java",
+                  "packageImportPath": "com.facebook.react",
+                  "buildTypes": ["debug", "release"]
                 }
               }
             }
-            """
-                .trimIndent()
-        )
+          }
+        }
+        """
+            .trimIndent(),
+    )
 
     val deps = getGradleDependenciesToApply(validJsonFile)
     assertThat(deps)
@@ -126,37 +122,36 @@ class ReactExtensionTest {
 
   @Test
   fun getGradleDependenciesToApply_withMultipleDependencies_returnsValidConfiguration() {
-    val validJsonFile =
-        createJsonFile(
-            """
-            {
-              "reactNativeVersion": "1000.0.0",
-              "dependencies": {
-                "@react-native/oss-library-example": {
-                  "root": "./node_modules/@react-native/oss-library-example",
-                  "name": "@react-native/oss-library-example",
-                  "platforms": {
-                    "android": {
-                      "sourceDir": "src/main/java",
-                      "packageImportPath": "com.facebook.react"
-                    }
-                  }
-                },
-                "@react-native/another-library-for-testing": {
-                  "root": "./node_modules/@react-native/another-library-for-testing",
-                  "name": "@react-native/another-library-for-testing",
-                  "platforms": {
-                    "android": {
-                      "sourceDir": "src/main/java",
-                      "packageImportPath": "com.facebook.react"
-                    }
-                  }
+    val validJsonFile = createJsonFile(
+        """
+        {
+          "reactNativeVersion": "1000.0.0",
+          "dependencies": {
+            "@react-native/oss-library-example": {
+              "root": "./node_modules/@react-native/oss-library-example",
+              "name": "@react-native/oss-library-example",
+              "platforms": {
+                "android": {
+                  "sourceDir": "src/main/java",
+                  "packageImportPath": "com.facebook.react"
+                }
+              }
+            },
+            "@react-native/another-library-for-testing": {
+              "root": "./node_modules/@react-native/another-library-for-testing",
+              "name": "@react-native/another-library-for-testing",
+              "platforms": {
+                "android": {
+                  "sourceDir": "src/main/java",
+                  "packageImportPath": "com.facebook.react"
                 }
               }
             }
-            """
-                .trimIndent()
-        )
+          }
+        }
+        """
+            .trimIndent(),
+    )
 
     val deps = getGradleDependenciesToApply(validJsonFile)
     assertThat(deps)
@@ -168,30 +163,29 @@ class ReactExtensionTest {
 
   @Test
   fun getGradleDependenciesToApply_withiOSOnlyLibrary_returnsEmptyDepsMap() {
-    val validJsonFile =
-        createJsonFile(
-            """
-            {
-              "reactNativeVersion": "1000.0.0",
-              "dependencies": {
-                "@react-native/oss-library-example": {
-                  "root": "./node_modules/@react-native/oss-library-example",
-                  "name": "@react-native/oss-library-example",
-                  "platforms": {
-                    "ios": {
-                      "podspecPath": "./node_modules/@react-native/oss-library-example/oss-library-example.podspec",
-                      "version": "0.0.0",
-                      "configurations": [],
-                      "scriptPhases": []
-                    },
-                    "android": null
-                  }
-                }
+    val validJsonFile = createJsonFile(
+        """
+        {
+          "reactNativeVersion": "1000.0.0",
+          "dependencies": {
+            "@react-native/oss-library-example": {
+              "root": "./node_modules/@react-native/oss-library-example",
+              "name": "@react-native/oss-library-example",
+              "platforms": {
+                "ios": {
+                  "podspecPath": "./node_modules/@react-native/oss-library-example/oss-library-example.podspec",
+                  "version": "0.0.0",
+                  "configurations": [],
+                  "scriptPhases": []
+                },
+                "android": null
               }
             }
-            """
-                .trimIndent()
-        )
+          }
+        }
+        """
+            .trimIndent(),
+    )
 
     val deps = getGradleDependenciesToApply(validJsonFile)
     assertThat(deps).isEmpty()
@@ -199,38 +193,37 @@ class ReactExtensionTest {
 
   @Test
   fun getGradleDependenciesToApply_withIsPureCxxDeps_filtersCorrectly() {
-    val validJsonFile =
-        createJsonFile(
-            """
-            {
-              "reactNativeVersion": "1000.0.0",
-              "dependencies": {
-                "@react-native/oss-library-example": {
-                  "root": "./node_modules/@react-native/android-example",
-                  "name": "@react-native/android-example",
-                  "platforms": {
-                    "android": {
-                      "sourceDir": "src/main/java",
-                      "packageImportPath": "com.facebook.react"
-                    }
-                  }
-                },
-                "@react-native/another-library-for-testing": {
-                  "root": "./node_modules/@react-native/cxx-testing",
-                  "name": "@react-native/cxx-testing",
-                  "platforms": {
-                    "android": {
-                      "sourceDir": "src/main/java",
-                      "packageImportPath": "com.facebook.react",
-                      "isPureCxxDependency": true
-                    }
-                  }
+    val validJsonFile = createJsonFile(
+        """
+        {
+          "reactNativeVersion": "1000.0.0",
+          "dependencies": {
+            "@react-native/oss-library-example": {
+              "root": "./node_modules/@react-native/android-example",
+              "name": "@react-native/android-example",
+              "platforms": {
+                "android": {
+                  "sourceDir": "src/main/java",
+                  "packageImportPath": "com.facebook.react"
+                }
+              }
+            },
+            "@react-native/another-library-for-testing": {
+              "root": "./node_modules/@react-native/cxx-testing",
+              "name": "@react-native/cxx-testing",
+              "platforms": {
+                "android": {
+                  "sourceDir": "src/main/java",
+                  "packageImportPath": "com.facebook.react",
+                  "isPureCxxDependency": true
                 }
               }
             }
-            """
-                .trimIndent()
-        )
+          }
+        }
+        """
+            .trimIndent(),
+    )
 
     val deps = getGradleDependenciesToApply(validJsonFile)
     assertThat(deps).containsExactly("implementation" to ":react-native_android-example")

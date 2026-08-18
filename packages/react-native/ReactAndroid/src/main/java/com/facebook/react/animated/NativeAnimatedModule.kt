@@ -389,7 +389,7 @@ public class NativeAnimatedModule(reactContext: ReactApplicationContext) :
       ReactSoftExceptionLogger.logSoftException(
           NAME,
           RuntimeException(
-              "initializeLifecycleEventListenersForViewTag could not get NativeAnimatedNodesManager"
+              "initializeLifecycleEventListenersForViewTag could not get NativeAnimatedNodesManager",
           ),
       )
     }
@@ -433,7 +433,7 @@ public class NativeAnimatedModule(reactContext: ReactApplicationContext) :
             }
             animatedNodesManager.createAnimatedNode(tag, config)
           }
-        }
+        },
     )
   }
 
@@ -451,7 +451,7 @@ public class NativeAnimatedModule(reactContext: ReactApplicationContext) :
             }
             animatedNodesManager.updateAnimatedNodeConfig(tag, config)
           }
-        }
+        },
     )
   }
 
@@ -480,7 +480,7 @@ public class NativeAnimatedModule(reactContext: ReactApplicationContext) :
             }
             animatedNodesManager.startListeningToAnimatedNodeValue(tag, listener)
           }
-        }
+        },
     )
   }
 
@@ -498,7 +498,7 @@ public class NativeAnimatedModule(reactContext: ReactApplicationContext) :
             }
             animatedNodesManager.stopListeningToAnimatedNodeValue(tag)
           }
-        }
+        },
     )
   }
 
@@ -516,7 +516,7 @@ public class NativeAnimatedModule(reactContext: ReactApplicationContext) :
             }
             animatedNodesManager.dropAnimatedNode(tag)
           }
-        }
+        },
     )
   }
 
@@ -534,7 +534,7 @@ public class NativeAnimatedModule(reactContext: ReactApplicationContext) :
             }
             animatedNodesManager.setAnimatedNodeValue(tag, value)
           }
-        }
+        },
     )
   }
 
@@ -552,7 +552,7 @@ public class NativeAnimatedModule(reactContext: ReactApplicationContext) :
             }
             animatedNodesManager.setAnimatedNodeOffset(tag, value)
           }
-        }
+        },
     )
   }
 
@@ -570,7 +570,7 @@ public class NativeAnimatedModule(reactContext: ReactApplicationContext) :
             }
             animatedNodesManager.flattenAnimatedNodeOffset(tag)
           }
-        }
+        },
     )
   }
 
@@ -588,7 +588,7 @@ public class NativeAnimatedModule(reactContext: ReactApplicationContext) :
             }
             animatedNodesManager.extractAnimatedNodeOffset(tag)
           }
-        }
+        },
     )
   }
 
@@ -617,7 +617,7 @@ public class NativeAnimatedModule(reactContext: ReactApplicationContext) :
                 endCallback,
             )
           }
-        }
+        },
     )
   }
 
@@ -635,7 +635,7 @@ public class NativeAnimatedModule(reactContext: ReactApplicationContext) :
             }
             animatedNodesManager.stopAnimation(animationId)
           }
-        }
+        },
     )
   }
 
@@ -657,7 +657,7 @@ public class NativeAnimatedModule(reactContext: ReactApplicationContext) :
             }
             animatedNodesManager.connectAnimatedNodes(parentNodeTag, childNodeTag)
           }
-        }
+        },
     )
   }
 
@@ -679,7 +679,7 @@ public class NativeAnimatedModule(reactContext: ReactApplicationContext) :
             }
             animatedNodesManager.disconnectAnimatedNodes(parentNodeTag, childNodeTag)
           }
-        }
+        },
     )
   }
 
@@ -706,7 +706,7 @@ public class NativeAnimatedModule(reactContext: ReactApplicationContext) :
             }
             animatedNodesManager.connectAnimatedNodeToView(animatedNodeTag, viewTag)
           }
-        }
+        },
     )
   }
 
@@ -731,7 +731,7 @@ public class NativeAnimatedModule(reactContext: ReactApplicationContext) :
             }
             animatedNodesManager.disconnectAnimatedNodeFromView(animatedNodeTag, viewTag)
           }
-        }
+        },
     )
   }
 
@@ -749,7 +749,7 @@ public class NativeAnimatedModule(reactContext: ReactApplicationContext) :
             }
             animatedNodesManager.restoreDefaultValues(animatedNodeTag)
           }
-        }
+        },
     )
   }
 
@@ -779,7 +779,7 @@ public class NativeAnimatedModule(reactContext: ReactApplicationContext) :
             }
             animatedNodesManager.addAnimatedEventToView(viewTag, eventName, eventMapping)
           }
-        }
+        },
     )
   }
 
@@ -808,7 +808,7 @@ public class NativeAnimatedModule(reactContext: ReactApplicationContext) :
             }
             animatedNodesManager.removeAnimatedEventFromView(viewTag, eventName, animatedValueTag)
           }
-        }
+        },
     )
   }
 
@@ -827,7 +827,7 @@ public class NativeAnimatedModule(reactContext: ReactApplicationContext) :
           override fun execute(animatedNodesManager: NativeAnimatedNodesManager) {
             animatedNodesManager.getValue(animatedValueNodeTag, callback)
           }
-        }
+        },
     )
   }
 
@@ -1027,7 +1027,7 @@ public class NativeAnimatedModule(reactContext: ReactApplicationContext) :
               }
             }
           }
-        }
+        },
     )
     finishOperationBatch()
   }

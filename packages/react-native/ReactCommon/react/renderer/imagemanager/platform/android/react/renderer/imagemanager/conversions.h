@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/renderer/core/graphicsConversions.h>
 #include <react/renderer/imagemanager/ImageRequestParams.h>
 #include <react/renderer/imagemanager/primitives.h>
@@ -75,8 +76,16 @@ inline void serializeImageRequestParams(MapBufferBuilder &builder, const ImageRe
   if (isColorMeaningful(imageRequestParams.overlayColor)) {
     builder.putInt(IS_KEY_OVERLAY_COLOR, toAndroidRepr(imageRequestParams.overlayColor));
   }
-  if (isColorMeaningful(imageRequestParams.tintColor)) {
-    builder.putInt(IS_KEY_TINT_COLOR, toAndroidRepr(imageRequestParams.tintColor));
+  if (ReactNativeFeatureFlags::enableImageTransparentTintColor()) {
+    if (imageRequestParams.tintColor.has_value()) {
+      builder.putInt(IS_KEY_TINT_COLOR, toAndroidRepr(imageRequestParams.tintColor.value()));
+    }
+  } else {
+    // pre-`std::optional` behavior
+    SharedColor tintColor = imageRequestParams.tintColor.value_or(SharedColor{});
+    if (isColorMeaningful(tintColor)) {
+      builder.putInt(IS_KEY_TINT_COLOR, toAndroidRepr(tintColor));
+    }
   }
   builder.putInt(IS_KEY_FADE_DURATION, static_cast<int32_t>(imageRequestParams.fadeDuration));
   builder.putBool(IS_KEY_PROGRESSIVE_RENDERING_ENABLED, imageRequestParams.progressiveRenderingEnabled);

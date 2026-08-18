@@ -26,11 +26,11 @@ fun getListReactAndroidProperty(name: String) = reactAndroidProperties.getProper
 
 apiValidation {
   ignoredPackages.addAll(
-      getListReactAndroidProperty("binaryCompatibilityValidator.ignoredPackages")
+      getListReactAndroidProperty("binaryCompatibilityValidator.ignoredPackages"),
   )
   ignoredClasses.addAll(getListReactAndroidProperty("binaryCompatibilityValidator.ignoredClasses"))
   nonPublicMarkers.addAll(
-      getListReactAndroidProperty("binaryCompatibilityValidator.nonPublicMarkers")
+      getListReactAndroidProperty("binaryCompatibilityValidator.nonPublicMarkers"),
   )
   validationDisabled =
       reactAndroidProperties
@@ -53,8 +53,12 @@ val ndkPath by extra(System.getenv("ANDROID_NDK"))
 val ndkVersion by extra(System.getenv("ANDROID_NDK_VERSION") ?: libs.versions.ndkVersion.get())
 val sonatypeUsername = findProperty("SONATYPE_USERNAME")?.toString()
 val sonatypePassword = findProperty("SONATYPE_PASSWORD")?.toString()
+val sonatypeRepositoryDescription = findProperty("SONATYPE_REPOSITORY_DESCRIPTION")?.toString()
 
 nexusPublishing {
+  if (sonatypeRepositoryDescription != null) {
+    repositoryDescription.set(sonatypeRepositoryDescription)
+  }
   repositories {
     sonatype {
       username.set(sonatypeUsername)
@@ -82,12 +86,12 @@ tasks.register("clean", Delete::class.java) {
   delete(rootProject.file("./packages/react-native/sdks/download/"))
   delete(rootProject.file("./packages/react-native/sdks/hermes/"))
   delete(
-      rootProject.file("./packages/react-native/ReactAndroid/src/main/jni/prebuilt/lib/arm64-v8a/")
+      rootProject.file("./packages/react-native/ReactAndroid/src/main/jni/prebuilt/lib/arm64-v8a/"),
   )
   delete(
       rootProject.file(
-          "./packages/react-native/ReactAndroid/src/main/jni/prebuilt/lib/armeabi-v7a/"
-      )
+          "./packages/react-native/ReactAndroid/src/main/jni/prebuilt/lib/armeabi-v7a/",
+      ),
   )
   delete(rootProject.file("./packages/react-native/ReactAndroid/src/main/jni/prebuilt/lib/x86/"))
   delete(rootProject.file("./packages/react-native/ReactAndroid/src/main/jni/prebuilt/lib/x86_64/"))
@@ -133,7 +137,7 @@ if (project.findProperty("react.internal.useHermesStable")?.toString()?.toBoolea
 
   if (hermesCompilerVersion == "0.0.0") {
     throw RuntimeException(
-        "Trying to use Hermes Nightly but hermes-compiler version is not specified"
+        "Trying to use Hermes Nightly but hermes-compiler version is not specified",
     )
   }
 
@@ -152,7 +156,7 @@ if (project.findProperty("react.internal.useHermesStable")?.toString()?.toBoolea
       That's fine for local development, but you should not commit this change.
       ********************************************************************************
       """
-          .trimIndent()
+          .trimIndent(),
   )
 }
 
@@ -188,17 +192,16 @@ listOf("ktfmtCheck", "ktfmtFormat").forEach { taskName ->
 
 allprojects {
   // Apply exclusions for specific files that should not be formatted
-  val excludePatterns =
-      listOf(
-          "**/build/**",
-          "**/hermes-engine/**",
-          "**/internal/featureflags/**",
-          "**/systeminfo/ReactNativeVersion.kt",
-      )
+  val excludePatterns = listOf(
+      "**/build/**",
+      "**/hermes-engine/**",
+      "**/internal/featureflags/**",
+      "**/systeminfo/ReactNativeVersion.kt",
+  )
   listOf(
-          com.ncorti.ktfmt.gradle.tasks.KtfmtCheckTask::class,
-          com.ncorti.ktfmt.gradle.tasks.KtfmtFormatTask::class,
-      )
+      com.ncorti.ktfmt.gradle.tasks.KtfmtCheckTask::class,
+      com.ncorti.ktfmt.gradle.tasks.KtfmtFormatTask::class,
+  )
       .forEach { tasks.withType(it) { exclude(excludePatterns) } }
 
   // Disable the problematic ktfmt script tasks due to symbolic link issues in subprojects

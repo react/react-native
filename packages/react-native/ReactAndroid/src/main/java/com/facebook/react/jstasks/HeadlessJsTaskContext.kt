@@ -76,7 +76,7 @@ public class HeadlessJsTaskContext private constructor(reactContext: ReactContex
         )
     check(
         !(reactContext.lifecycleState == LifecycleState.RESUMED &&
-            !taskConfig.isAllowedInForeground)
+            !taskConfig.isAllowedInForeground),
     ) {
       "Tried to start task ${taskConfig.taskKey} while in foreground, but this is not allowed."
     }
@@ -117,14 +117,13 @@ public class HeadlessJsTaskContext private constructor(reactContext: ReactContex
     }
 
     removeTimeout(taskId)
-    val taskConfig =
-        HeadlessJsTaskConfig(
-            sourceTaskConfig.taskKey,
-            sourceTaskConfig.data,
-            sourceTaskConfig.timeout,
-            sourceTaskConfig.isAllowedInForeground,
-            retryPolicy.update(),
-        )
+    val taskConfig = HeadlessJsTaskConfig(
+        sourceTaskConfig.taskKey,
+        sourceTaskConfig.data,
+        sourceTaskConfig.timeout,
+        sourceTaskConfig.isAllowedInForeground,
+        retryPolicy.update(),
+    )
 
     val retryAttempt = Runnable { startTask(taskConfig, taskId) }
 

@@ -16,10 +16,7 @@ import type {
 } from './PerformanceEntry';
 
 import {PerformanceEntry} from './PerformanceEntry';
-import MaybeNativePerformance from './specs/NativePerformance';
-import nullthrows from 'nullthrows';
-
-const NativePerformance = nullthrows(MaybeNativePerformance);
+import NativePerformance from './specs/NativePerformance';
 
 export type PerformanceEventTimingJSON = {
   ...PerformanceEntryJSON,

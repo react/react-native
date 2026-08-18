@@ -107,10 +107,9 @@ public class BlobModule(reactContext: ReactApplicationContext) :
           }
 
           val blob = checkNotNull(map.getMap("blob"))
-          val bytes =
-              checkNotNull(
-                  resolve(blob.getString("blobId"), blob.getInt("offset"), blob.getInt("size"))
-              )
+          val bytes = checkNotNull(
+              resolve(blob.getString("blobId"), blob.getInt("offset"), blob.getInt("size")),
+          )
 
           return RequestBody.create(MediaType.parse(type), bytes)
         }

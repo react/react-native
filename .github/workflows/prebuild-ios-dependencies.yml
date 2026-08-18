@@ -130,7 +130,7 @@ jobs:
         with:
           path: |
             packages/react-native/third-party/
-          key: v3-ios-dependencies-xcframework-${{ matrix.flavor }}-${{ hashfiles('scripts/releases/ios-prebuild/configuration.js') }}
+          key: v5-ios-dependencies-xcframework-${{ matrix.flavor }}-${{ hashfiles('scripts/releases/ios-prebuild/configuration.js', 'scripts/releases/ios-prebuild/compose-framework.js', 'packages/react-native/scripts/ios-prebuild/headers-xcframework.js', 'packages/react-native/scripts/ios-prebuild/headers-spec.js') }}
       # If cache hit, we already have our binary. We don't need to do anything.
       - name: Yarn Install
         if: steps.restore-xcframework.outputs.cache-hit != 'true'
@@ -164,7 +164,13 @@ jobs:
         if: steps.restore-xcframework.outputs.cache-hit != 'true'
         run: |
           tar -cz -f packages/react-native/third-party/ReactNativeDependencies${{ matrix.flavor }}.xcframework.tar.gz \
-            packages/react-native/third-party/ReactNativeDependencies.xcframework
+            packages/react-native/third-party/ReactNativeDependencies.xcframework \
+            packages/react-native/third-party/ReactNativeDependenciesHeaders.xcframework
+      - name: Compress Headers Sidecar XCFramework
+        if: steps.restore-xcframework.outputs.cache-hit != 'true'
+        run: |
+          tar -cz -f packages/react-native/third-party/ReactNativeDependenciesHeaders${{ matrix.flavor }}.xcframework.tar.gz \
+            packages/react-native/third-party/ReactNativeDependenciesHeaders.xcframework
       - name: Show Symbol folder content
         if: steps.restore-xcframework.outputs.cache-hit != 'true'
         run: ls -lR packages/react-native/third-party/Symbols
@@ -179,6 +185,11 @@ jobs:
         with:
           name: ReactNativeDependencies${{ matrix.flavor }}.xcframework.tar.gz
           path: packages/react-native/third-party/ReactNativeDependencies${{ matrix.flavor }}.xcframework.tar.gz
+      - name: Upload Headers Sidecar XCFramework Artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: ReactNativeDependenciesHeaders${{ matrix.flavor }}.xcframework.tar.gz
+          path: packages/react-native/third-party/ReactNativeDependenciesHeaders${{ matrix.flavor }}.xcframework.tar.gz
       - name: Upload dSYM Artifact
         uses: actions/upload-artifact@v6
         with:
@@ -191,5 +202,6 @@ jobs:
         with:
           path: |
             packages/react-native/third-party/ReactNativeDependencies${{ matrix.flavor }}.xcframework.tar.gz
+            packages/react-native/third-party/ReactNativeDependenciesHeaders${{ matrix.flavor }}.xcframework.tar.gz
             packages/react-native/third-party/ReactNativeDependencies${{ matrix.flavor }}.framework.dSYM.tar.gz
-          key: v3-ios-dependencies-xcframework-${{ matrix.flavor }}-${{ hashfiles('scripts/releases/ios-prebuild/configuration.js') }}
+          key: v5-ios-dependencies-xcframework-${{ matrix.flavor }}-${{ hashfiles('scripts/releases/ios-prebuild/configuration.js', 'scripts/releases/ios-prebuild/compose-framework.js', 'packages/react-native/scripts/ios-prebuild/headers-xcframework.js', 'packages/react-native/scripts/ios-prebuild/headers-spec.js') }}

@@ -18,14 +18,13 @@ import com.facebook.react.module.annotations.ReactModule
 @ReactModule(name = NativeSourceCodeSpec.NAME)
 public class SourceCodeModule(reactContext: ReactApplicationContext) :
     NativeSourceCodeSpec(reactContext) {
-  protected override fun getTypedExportedConstants(): Map<String, Any> =
-      mapOf(
-          "scriptURL" to
-              Assertions.assertNotNull<String>(
-                  reactApplicationContext.getSourceURL(),
-                  "No source URL loaded, have you initialised the instance?",
-              )
-      )
+  protected override fun getTypedExportedConstants(): Map<String, Any> = mapOf(
+      "scriptURL" to
+          Assertions.assertNotNull<String>(
+              reactApplicationContext.getSourceURL(),
+              "No source URL loaded, have you initialised the instance?",
+          ),
+  )
 
   public companion object {
     public const val NAME: String = NativeSourceCodeSpec.NAME

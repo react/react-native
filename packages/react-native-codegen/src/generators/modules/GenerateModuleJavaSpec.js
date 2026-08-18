@@ -25,7 +25,11 @@ import type {AliasResolver} from './Utils';
 const {unwrapNullable} = require('../../parsers/parsers-commons');
 const {wrapOptional} = require('../TypeUtils/Java');
 const {parseValidUnionType, toPascalCase} = require('../Utils');
-const {createAliasResolver, getModules} = require('./Utils');
+const {
+  createAliasResolver,
+  getModules,
+  throwIfUnsupportedPromiseArrayBuffer,
+} = require('./Utils');
 
 type FilesOutput = Map<string, string>;
 
@@ -78,16 +82,25 @@ function EventEmitterTemplate(
   eventEmitter: NativeModuleEventEmitterShape,
   imports: Set<string>,
 ): string {
+  imports.add('com.facebook.react.bridge.CxxCallbackImpl');
+  // mEventEmitterCallback is set from JNI by configureEventEmitterCallback(),
+  // which the generated SpecJSI constructor calls when JS first looks the module
+  // up. Emitting before that would hit a null field, so the emitted code no-ops
+  // instead. The local is for readability: reference reads are already atomic,
+  // and the field is never reset to null.
   return `  protected final void emit${toPascalCase(eventEmitter.name)}(${
     eventEmitter.typeAnnotation.typeAnnotation.type !== 'VoidTypeAnnotation'
       ? `${translateEventEmitterTypeToJavaType(eventEmitter, imports)} value`
       : ''
   }) {
-    mEventEmitterCallback.invoke("${eventEmitter.name}"${
-      eventEmitter.typeAnnotation.typeAnnotation.type !== 'VoidTypeAnnotation'
-        ? ', value'
-        : ''
-    });
+    CxxCallbackImpl eventEmitterCallback = mEventEmitterCallback;
+    if (eventEmitterCallback != null) {
+      eventEmitterCallback.invoke("${eventEmitter.name}"${
+        eventEmitter.typeAnnotation.typeAnnotation.type !== 'VoidTypeAnnotation'
+          ? ', value'
+          : ''
+      });
+    }
   }`;
 }
 
@@ -170,6 +183,7 @@ function translateEventEmitterTypeToJavaType(
     case 'FloatTypeAnnotation':
     case 'Int32TypeAnnotation':
     case 'VoidTypeAnnotation':
+    case 'ArrayBufferTypeAnnotation':
       // TODO: Add support for these types
       throw new Error(
         `Unsupported eventType for ${eventEmitter.name}. Found: ${eventEmitter.typeAnnotation.typeAnnotation.type}`,
@@ -268,9 +282,8 @@ function translateFunctionParamToJavaType(
       imports.add('com.facebook.react.bridge.Callback');
       return wrapOptional('Callback', isRequired);
     case 'ArrayBufferTypeAnnotation':
-      throw new Error(
-        `${createErrorMessage(realTypeAnnotation.type)} ArrayBuffer is only supported for C++ TurboModules.`,
-      );
+      imports.add('com.facebook.react.bridge.ArrayBuffer');
+      return wrapOptional('ArrayBuffer', isRequired);
     default:
       realTypeAnnotation.type as 'MixedTypeAnnotation';
       throw new Error(createErrorMessage(realTypeAnnotation.type));
@@ -366,9 +379,8 @@ function translateFunctionReturnTypeToJavaType(
       imports.add('com.facebook.react.bridge.WritableArray');
       return wrapOptional('WritableArray', isRequired);
     case 'ArrayBufferTypeAnnotation':
-      throw new Error(
-        `${createErrorMessage(realTypeAnnotation.type)} ArrayBuffer is only supported for C++ TurboModules.`,
-      );
+      imports.add('com.facebook.react.bridge.ArrayBuffer');
+      return wrapOptional('ArrayBuffer', isRequired);
     default:
       realTypeAnnotation.type as 'MixedTypeAnnotation';
       throw new Error(createErrorMessage(realTypeAnnotation.type));
@@ -452,9 +464,7 @@ function getFalsyReturnStatementFromReturnType(
     case 'ArrayTypeAnnotation':
       return 'return null;';
     case 'ArrayBufferTypeAnnotation':
-      throw new Error(
-        `${createErrorMessage(realTypeAnnotation.type)} ArrayBuffer is only supported for C++ TurboModules.`,
-      );
+      return 'return null;';
     default:
       realTypeAnnotation.type as 'MixedTypeAnnotation';
       throw new Error(createErrorMessage(realTypeAnnotation.type));
@@ -588,6 +598,11 @@ module.exports = {
           unwrapNullable<NativeModuleFunctionTypeAnnotation>(
             method.typeAnnotation,
           );
+
+        throwIfUnsupportedPromiseArrayBuffer(
+          method.name,
+          methodTypeAnnotation.returnTypeAnnotation,
+        );
 
         // Handle return type
         const translatedReturnType = translateFunctionReturnTypeToJavaType(

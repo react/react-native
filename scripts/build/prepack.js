@@ -10,8 +10,8 @@
 
 require('../shared/babelRegister').registerForScript();
 
-const {promises: fs} = require('fs');
-const path = require('path');
+const {promises: fs} = require('node:fs');
+const path = require('node:path');
 
 // "prepack" script to prepare JavaScript packages for publishing.
 //

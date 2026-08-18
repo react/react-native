@@ -1,0 +1,84 @@
+# Test FlatList maintainVisibleContentPosition with view recycling in inverted mode
+# Items are 40px tall + 4px margin = 44px each
+# With windowSize=3, only ~3 pages of items are rendered
+# In inverted mode, items display in reverse order but MVCP delta behavior is the same
+appId: ${APP_ID}
+---
+- launchApp
+# Change to portrait
+- setOrientation: portrait
+- waitForAnimationToEnd:
+    timeout: 3000
+# Find test
+- assertVisible: 'Components'
+- scrollUntilVisible:
+    element:
+      id: 'FlatList'
+    direction: DOWN
+    speed: 40
+- tapOn:
+    id: 'FlatList'
+- scrollUntilVisible:
+    element:
+      id: 'maintainVisibleContentPosition'
+    direction: DOWN
+    speed: 40
+- tapOn:
+    id: 'maintainVisibleContentPosition'
+# Enable inverted mode
+- tapOn:
+    text: 'Inverted: OFF'
+- waitForAnimationToEnd:
+    timeout: 1000
+# Enable recycling (windowSize=3)
+- tapOn:
+    text: 'Recycle: OFF'
+- waitForAnimationToEnd:
+    timeout: 3000
+# Scroll to offset 100 (within initial 20-item range)
+- tapOn:
+    text: 'ScrollToOffset 100'
+- waitForAnimationToEnd:
+    timeout: 2000
+# Record offset before 50-item prepend
+- copyTextFrom:
+    id: 'scroll-offset-display'
+- evalScript: ${output.offsetBefore = parseInt(maestro.copiedText.split(":")[1].trim())}
+# Prepend 50 items (delta should be ~2200px = 50 * 44)
+- tapOn:
+    text: 'Add 50 items at top'
+- waitForAnimationToEnd:
+    timeout: 3000
+- copyTextFrom:
+    id: 'scroll-offset-display'
+- evalScript: ${output.offsetAfter = parseInt(maestro.copiedText.split(":")[1].trim())}
+- assertTrue: ${output.offsetAfter - output.offsetBefore >= 2100 && output.offsetAfter - output.offsetBefore <= 2300}
+# Scroll to offset 500 (now within range after 70 items)
+- tapOn:
+    text: 'ScrollToOffset 500'
+- waitForAnimationToEnd:
+    timeout: 2000
+# Prepend 1 item (delta should be ~44px)
+- copyTextFrom:
+    id: 'scroll-offset-display'
+- evalScript: ${output.offsetBefore = parseInt(maestro.copiedText.split(":")[1].trim())}
+- tapOn:
+    text: 'Add 1 item at top'
+- waitForAnimationToEnd:
+    timeout: 2000
+- copyTextFrom:
+    id: 'scroll-offset-display'
+- evalScript: ${output.offsetAfter = parseInt(maestro.copiedText.split(":")[1].trim())}
+- assertTrue: ${output.offsetAfter - output.offsetBefore >= 40 && output.offsetAfter - output.offsetBefore <= 48}
+# Reset
+- copyTextFrom:
+    id: 'scroll-offset-display'
+- evalScript: ${output.offsetBefore = parseInt(maestro.copiedText.split(":")[1].trim())}
+- tapOn:
+    text: 'Reset'
+- waitForAnimationToEnd:
+    timeout: 2000
+- copyTextFrom:
+    id: 'scroll-offset-display'
+- evalScript: ${output.offsetAfter = parseInt(maestro.copiedText.split(":")[1].trim())}
+- assertTrue: ${output.offsetAfter >= 0 && output.offsetAfter <= 50}

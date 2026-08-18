@@ -8,10 +8,10 @@
  * @format
  */
 
-import {execSync, spawn} from 'child_process';
 import debug from 'debug';
-import {existsSync} from 'fs';
-import path from 'path';
+import {execSync, spawn} from 'node:child_process';
+import {existsSync} from 'node:fs';
+import path from 'node:path';
 
 const logWatchman = debug('helloworld:cli:watchman');
 

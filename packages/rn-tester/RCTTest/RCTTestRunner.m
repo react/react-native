@@ -183,7 +183,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)init)
     }
     batchedBridge = [bridge batchedBridge];
 
-    UIViewController *vc = RCTSharedApplication().delegate.window.rootViewController;
+    UIViewController *vc = RCTKeyWindow().rootViewController;
     vc.view = [UIView new];
 
     RCTTestModule *testModule = [bridge moduleForClass:[RCTTestModule class]];

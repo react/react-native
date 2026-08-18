@@ -68,6 +68,7 @@ Pod::Spec.new do |s|
     add_dependency(ss, "React-debug")
     add_dependency(ss, "React-rendererdebug")
     add_dependency(ss, "React-utils")
+    add_dependency(ss, "React-cxxstableapi")
     add_dependency(ss, "React-graphics", :additional_framework_paths => ["react/renderer/graphics/platform/ios"])
     add_dependency(ss, "React-Fabric", :additional_framework_paths => [
       "react/renderer/components/view/platform/cxx",
@@ -92,4 +93,6 @@ fi
       EOS
     }
   ]
+
+  mark_as_react_native_build(s)
 end

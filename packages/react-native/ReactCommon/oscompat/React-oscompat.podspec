@@ -28,4 +28,6 @@ Pod::Spec.new do |s|
   s.source_files           = podspec_sources("*.{cpp,h}", "*.{h}")
   s.pod_target_xcconfig    = { "HEADER_SEARCH_PATHS" => "" }
   s.header_dir             = "oscompat"
+
+  mark_as_react_native_build(s)
 end

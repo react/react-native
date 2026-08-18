@@ -125,6 +125,7 @@ inline bool areTextAttributesEquivalentLayoutWise(const TextAttributes &lhs, con
              lhs.fontWeight,
              lhs.fontStyle,
              lhs.fontVariant,
+             lhs.fontVariationSettings,
              lhs.allowFontScaling,
              lhs.dynamicTypeRamp,
              lhs.alignment) ==
@@ -133,6 +134,7 @@ inline bool areTextAttributesEquivalentLayoutWise(const TextAttributes &lhs, con
              rhs.fontWeight,
              rhs.fontStyle,
              rhs.fontVariant,
+             rhs.fontVariationSettings,
              rhs.allowFontScaling,
              rhs.dynamicTypeRamp,
              rhs.alignment) &&
@@ -152,6 +154,7 @@ inline size_t textAttributesHashLayoutWise(const TextAttributes &textAttributes)
       textAttributes.fontWeight,
       textAttributes.fontStyle,
       textAttributes.fontVariant,
+      textAttributes.fontVariationSettings,
       textAttributes.allowFontScaling,
       textAttributes.maxFontSizeMultiplier,
       textAttributes.dynamicTypeRamp,

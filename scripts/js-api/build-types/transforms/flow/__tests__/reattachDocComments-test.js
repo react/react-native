@@ -9,7 +9,7 @@
  */
 
 const reattachDocComments = require('../reattachDocComments');
-const {parse, print} = require('hermes-transform');
+const {parse, print} = require('flow-transform');
 
 const prettierOptions = {parser: 'babel'};
 

@@ -41,7 +41,7 @@ constructor(
    * [HeadlessJsTaskConfig] with `false` for `allowedInBackground`.
    */
   public constructor(
-      source: HeadlessJsTaskConfig
+      source: HeadlessJsTaskConfig,
   ) : this(
       source.taskKey,
       source.data.copy(),

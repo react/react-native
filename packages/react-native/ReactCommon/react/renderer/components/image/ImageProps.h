@@ -31,7 +31,7 @@ class ImageProps final : public ViewProps {
   ImageResizeMode resizeMode{ImageResizeMode::Stretch};
   Float blurRadius{};
   EdgeInsets capInsets{};
-  SharedColor tintColor{};
+  std::optional<SharedColor> tintColor{};
   std::string internal_analyticTag{};
   std::string resizeMethod{"auto"};
   Float resizeMultiplier{1.f};

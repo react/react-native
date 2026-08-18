@@ -13,12 +13,7 @@
 
 declare module 'execa' {
   declare type StdIoOption =
-    | 'pipe'
-    | 'ipc'
-    | 'ignore'
-    | 'inherit'
-    | stream$Stream
-    | number;
+    'pipe' | 'ipc' | 'ignore' | 'inherit' | stream$Stream | number;
 
   declare type CommonOptions = {
     argv0?: string,
@@ -74,8 +69,7 @@ declare module 'execa' {
   };
 
   declare interface ExecaPromise
-    extends Promise<Result>,
-      child_process$ChildProcess {}
+    extends Promise<Result>, child_process$ChildProcess {}
 
   declare interface ExecaError extends ErrnoError {
     stdout: string;

@@ -14,15 +14,15 @@
 RCT_EXTERN NSString *_Nonnull const RCTBundleURLProviderUpdatedNotification;
 RCT_EXTERN const NSUInteger kRCTBundleURLProviderDefaultPort;
 
-#if RCT_DEV_MENU | RCT_PACKAGER_LOADING_FUNCTIONALITY
 /**
  * Allow/disallow accessing the packager server for various runtime scenario.
  * For instance, if a test run should never access the packager, disable it
  * by calling this function before initializing React Native (RCTBridge etc).
- * By default the access is enabled.
+ * By default the access is enabled. When packager support is compiled out
+ * (neither RCT_DEV_MENU nor RCT_PACKAGER_LOADING_FUNCTIONALITY is set),
+ * calling this function is a no-op.
  */
 RCT_EXTERN void RCTBundleURLProviderAllowPackagerServerAccess(BOOL allowed);
-#endif
 
 NS_ASSUME_NONNULL_BEGIN
 

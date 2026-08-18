@@ -57,7 +57,7 @@ public class JavaScriptModuleRegistry {
         for (method in moduleInterface.declaredMethods) {
           if (!methodNames.add(method.name)) {
             throw AssertionError(
-                "Method overloading is unsupported: ${moduleInterface.name}#${method.name}"
+                "Method overloading is unsupported: ${moduleInterface.name}#${method.name}",
             )
           }
         }

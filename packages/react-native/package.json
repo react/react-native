@@ -27,28 +27,38 @@
     "react-native": "cli.js"
   },
   "main": "./index.js",
-  "types": "types",
   "exports": {
     ".": {
-      "react-native-strict-api": "./types_generated/index.d.ts",
-      "types": "./types/index.d.ts",
+      "react-native-legacy-deep-imports": "./types_DEPRECATED/index.d.ts",
+      "types": "./types_generated/index.d.ts",
       "default": "./index.js"
     },
     "./Libraries/*": {
-      "react-native-strict-api": null,
-      "types": "./Libraries/*.d.ts",
+      "react-native-legacy-deep-imports": "./types_DEPRECATED/Libraries/*.d.ts",
+      "types": null,
       "default": "./Libraries/*.js"
     },
     "./Libraries/*.js": {
-      "react-native-strict-api": null,
+      "types": null,
       "default": "./Libraries/*.js"
     },
-    "./scripts/*": "./scripts/*",
+    "./scripts/*": "./scripts/*.js",
+    "./scripts/*.sh": "./scripts/*.sh",
+    "./scripts/*.rb": "./scripts/*.rb",
     "./asset-registry": {
       "types": null,
       "default": "./src/asset-registry.js"
     },
+    "./react-private-interface": {
+      "types": null,
+      "default": "./src/react-private-interface.js"
+    },
     "./setup-env": "./src/setup-env.js",
+    "./unstable-internals-do-not-use": {
+      "react-native-unstable-internals": "./src/unstable-internals-do-not-use.d.ts",
+      "types": null,
+      "default": "./src/unstable-internals-do-not-use.js"
+    },
     "./src/fb_internal/*": "./src/fb_internal/*",
     "./package.json": "./package.json"
   },
@@ -104,6 +114,9 @@
     "scripts/react_native_pods_utils/script_phases.sh",
     "scripts/react_native_pods.rb",
     "scripts/react-native-xcode.sh",
+    "scripts/setup-apple-spm.js",
+    "scripts/spm",
+    "scripts/xcode/asset-catalog.sh",
     "scripts/xcode/ccache-clang.sh",
     "scripts/xcode/ccache-clang++.sh",
     "scripts/xcode/ccache.conf",
@@ -115,7 +128,7 @@
     "src",
     "!src/private/testing",
     "third-party-podspecs",
-    "types",
+    "types_DEPRECATED",
     "types_generated",
     "!**/__docs__/**",
     "!**/__fixtures__/**",
@@ -146,15 +159,14 @@
     "@react-native/virtualized-lists": "0.87.0-main",
     "anser": "^1.4.9",
     "ansi-regex": "^5.0.0",
-    "babel-plugin-syntax-hermes-parser": "0.36.1",
+    "flow-parser": "0.327.0",
     "base64-js": "^1.5.1",
-    "commander": "^12.0.0",
     "flow-enums-runtime": "^0.0.6",
     "hermes-compiler": "0.0.0",
     "invariant": "^2.2.4",
     "memoize-one": "^5.0.0",
-    "metro-runtime": "^0.86.0",
-    "metro-source-map": "^0.86.0",
+    "metro-runtime": "^0.87.0",
+    "metro-source-map": "^0.87.0",
     "nullthrows": "^1.1.1",
     "pretty-format": "^29.7.0",
     "promise": "^8.3.0",

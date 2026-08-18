@@ -6,15 +6,47 @@
 require 'shellwords'
 require 'digest'
 require 'uri'
+require 'net/http'
 
 require_relative "./helpers.rb"
 require_relative "./jsengine.rb"
 
 # Utilities class for React Native Cocoapods
 class ReactNativePodsUtils
+    MAVEN_CENTRAL_REPOSITORY = "https://repo1.maven.org/maven2"
+    REACT_NATIVE_MAVEN_MIRROR_REPOSITORY = "https://repo.reactnative.dev/maven2"
+
+    # Opt-in removal of the legacy TurboModule and component interop layers. Both are
+    # off by default and will become the default in a future React Native release.
+    LEGACY_INTEROP_REMOVAL_FLAGS = [
+        'RCT_REMOVE_LEGACY_MODULE_INTEROP',
+        'RCT_REMOVE_LEGACY_COMPONENT_INTEROP',
+    ]
+
     # URI::File.build validates path components as ASCII, so escape the filesystem path first.
     def self.local_file_uri(path)
         URI::File.build(path: URI::DEFAULT_PARSER.escape(path)).to_s
+    end
+
+    def self.maven_repository_urls()
+        ## You can use the `ENTERPRISE_REPOSITORY` variable to customise the base url from which artifacts will be downloaded.
+        ## The mirror's structure must be the same of the Maven repo the react-native core team publishes on Maven Central.
+        if ENV['ENTERPRISE_REPOSITORY'] != nil && ENV['ENTERPRISE_REPOSITORY'] != ""
+            return [ENV['ENTERPRISE_REPOSITORY'].sub(/\/+$/, "")]
+        end
+
+        # Keep the React Native Maven mirror before Maven Central so cached artifacts are tried first
+        # and Maven Central remains the fallback.
+        return react_native_maven_mirror_enabled? ?
+            [REACT_NATIVE_MAVEN_MIRROR_REPOSITORY, MAVEN_CENTRAL_REPOSITORY] :
+            [MAVEN_CENTRAL_REPOSITORY]
+    end
+
+    def self.react_native_maven_mirror_enabled?()
+        value = ENV['RCT_REACT_NATIVE_MAVEN_MIRROR_ENABLED']
+        return true if value == nil || value == ""
+
+        value.downcase != "false" && value != "0"
     end
 
     def self.warn_if_not_on_arm64
@@ -70,6 +102,29 @@ class ReactNativePodsUtils
         self.add_build_settings_to_pod(installer, "GCC_PREPROCESSOR_DEFINITIONS", "REACT_NATIVE_DEBUGGER_ENABLED_DEVONLY=1", "React-jsinspectornetwork", :debug)
         self.add_build_settings_to_pod(installer, "GCC_PREPROCESSOR_DEFINITIONS", "REACT_NATIVE_DEBUGGER_ENABLED_DEVONLY=1", "React-RCTNetwork", :debug)
         self.add_build_settings_to_pod(installer, "GCC_PREPROCESSOR_DEFINITIONS", "REACT_NATIVE_DEBUGGER_ENABLED_DEVONLY=1", "React-networking", :debug)
+    end
+
+    # The react/cxxstableapi guards turn a direct include of a fine-grained React Native
+    # header into an error for consumers that opt into RN_STRICT_API. React Native's own
+    # sources are exempt via RN_BUILDING, so every first-party pod defines it. Third-party
+    # pods must never get it, or they would silently opt out of the guards.
+    #
+    # This merges into pod_target_xcconfig as it stands when called, so call it after the
+    # spec has set its own xcconfig — in practice, last in the spec block.
+    def self.add_rn_building_definition(spec)
+        current_config = spec.to_hash["pod_target_xcconfig"] || {}
+        definitions = current_config["GCC_PREPROCESSOR_DEFINITIONS"] || "$(inherited)"
+
+        if definitions.is_a?(Array)
+            definitions = definitions.join(" ")
+        end
+
+        definitions = "$(inherited)" if definitions.strip.empty?
+
+        return if definitions.include?("RN_BUILDING=1")
+
+        current_config["GCC_PREPROCESSOR_DEFINITIONS"] = "#{definitions.strip()} RN_BUILDING=1".strip()
+        spec.pod_target_xcconfig = current_config
     end
 
     def self.turn_off_resource_bundle_react_core(installer)
@@ -337,6 +392,7 @@ class ReactNativePodsUtils
                     .concat(ReactNativePodsUtils.create_header_search_path_for_frameworks("PODS_CONFIGURATION_BUILD_DIR", "React-graphics", "React_graphics", ["react/renderer/graphics/platform/ios"]))
                     .concat(ReactNativePodsUtils.create_header_search_path_for_frameworks("PODS_CONFIGURATION_BUILD_DIR", "React-featureflags", "React_featureflags", []))
                     .concat(ReactNativePodsUtils.create_header_search_path_for_frameworks("PODS_CONFIGURATION_BUILD_DIR", "React-renderercss", "React_renderercss", []))
+                    .concat(ReactNativePodsUtils.create_header_search_path_for_frameworks("PODS_CONFIGURATION_BUILD_DIR", "React-cxxstableapi", "React_cxxstableapi", []))
                     .each{ |search_path|
                         header_search_paths = self.add_search_path_if_not_included(header_search_paths, search_path)
                     }
@@ -478,6 +534,23 @@ class ReactNativePodsUtils
                 self.remove_flag_in_config(config, flag, configuration: configuration)
             end
             project.save()
+        end
+    end
+
+    # The macros gate declarations in public headers (RCTBridge.h, RCTBridgeModule.h), so
+    # they are applied to the whole project rather than to React Native's pods alone.
+    def self.set_legacy_interop_removal_flags(installer, build_rncore_from_source:)
+        LEGACY_INTEROP_REMOVAL_FLAGS.each do |flag|
+            if ENV[flag] == '1'
+                self.add_compiler_flag_to_project(installer, "-D#{flag}=1")
+                unless build_rncore_from_source
+                    Pod::UI.warn("#{flag}=1 only prunes your app's headers while using the prebuilt " \
+                        "React.xcframework. Set RCT_USE_PREBUILT_RNCORE=0 to also compile React Native " \
+                        "without the legacy interop layer.")
+                end
+            else
+                self.remove_compiler_flag_from_project(installer, "-D#{flag}=1")
+            end
         end
     end
 
@@ -731,6 +804,47 @@ class ReactNativePodsUtils
         if header_mappings_dir != nil && ReactNativeCoreUtils.build_rncore_from_source()
             spec.header_mappings_dir = header_mappings_dir
         end
+    end
+
+    # ============================ #
+    # Network request memoization  #
+    # ============================ #
+    # CocoaPods evaluates the prebuilt podspecs several times during a single
+    # `pod install`, and every evaluation re-resolves the artifact URLs from
+    # scratch: existence probes against the mirror/Maven Central and nightly
+    # metadata lookups. The answers should not change within one install, so
+    # each request is issued at most once per process and then served from
+    # these in-memory caches.
+    @@artifact_exists_cache = {}
+    @@get_response_cache = {}
+
+    # Memoized existence probe (HTTP HEAD) for a prebuilt artifact URL.
+    # Only conclusive answers are cached. If curl never got an HTTP status
+    # (DNS failure, no route, ...) the probe is left uncached so that a
+    # transient hiccup doesn't permanently mark the artifact as missing.
+    def self.artifact_exists?(tarball_url)
+        unless @@artifact_exists_cache.key?(tarball_url)
+            # -L is used to follow redirects, useful for the nightlies
+            # The url is wrapped in quotes to avoid escaping & and ?.
+            http_code = `curl -o /dev/null --silent -Iw '%{http_code}' -L "#{tarball_url}"`
+            return false if !$?.success? || http_code == "000"
+            @@artifact_exists_cache[tarball_url] = (http_code == "200")
+        end
+        return @@artifact_exists_cache[tarball_url]
+    end
+
+    # Memoized HTTP GET for small metadata lookups (Maven snapshot metadata).
+    # Returns the Net::HTTPResponse. Only successful responses are cached:
+    # raised network errors propagate uncached, and non-2xx responses (a
+    # transient 5xx, a 404) are returned without being stored, so a later
+    # call within the same process can retry.
+    def self.memoized_get_response(url)
+        unless @@get_response_cache.key?(url)
+            response = Net::HTTP.get_response(URI(url))
+            return response unless response.is_a?(Net::HTTPSuccess)
+            @@get_response_cache[url] = response
+        end
+        return @@get_response_cache[url]
     end
 
     # ==================== #

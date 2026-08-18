@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<b4ad11ddb9d9beb0a8b3ae326d45dd97>>
+ * @generated SignedSource<<535898dd9498c65f30d56122c06b408b>>
  */
 
 /**
@@ -117,6 +117,9 @@ class JReactNativeFeatureFlagsCxxInterop
   static bool enableImagePrefetchingAndroid(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
+  static bool enableImageTransparentTintColor(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
+
   static bool enableImmediateUpdateModeForContentOffsetChanges(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
@@ -141,13 +144,13 @@ class JReactNativeFeatureFlagsCxxInterop
   static bool enableModuleArgumentNSNullConversionIOS(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
+  static bool enableMountingCoordinatorPullModelAndroid(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
+
   static bool enableMutationObserverByDefault(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool enableNativeCSSParsing(
-    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
-
-  static bool enableNetworkEventReporting(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool enablePreparedTextLayout(
@@ -204,10 +207,10 @@ class JReactNativeFeatureFlagsCxxInterop
   static bool fuseboxFrameRecordingEnabled(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
-  static bool fuseboxNetworkInspectionEnabled(
+  static bool fuseboxScreenshotCaptureEnabled(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
-  static bool fuseboxScreenshotCaptureEnabled(
+  static bool fuseboxWebSocketEventsEnabled(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool optimizedAnimatedPropUpdates(

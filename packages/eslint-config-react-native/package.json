@@ -23,6 +23,7 @@
     ".": "./index.js",
     "./flat": "./flat.js"
   },
+  "files": ["README.md", "flat.js", "index.js", "shared.js"],
   "dependencies": {
     "@babel/core": "^7.25.2",
     "@babel/eslint-parser": "^7.25.1",

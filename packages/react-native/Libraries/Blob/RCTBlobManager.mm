@@ -148,7 +148,7 @@ RCT_EXPORT_MODULE(BlobModule)
   [_blobs removeObjectForKey:blobId];
 }
 
-RCT_EXPORT_METHOD(addNetworkingHandler)
+- (void)addNetworkingHandler
 {
   RCTNetworking *const networking = [_moduleRegistry moduleForName:"Networking"];
 
@@ -164,32 +164,29 @@ RCT_EXPORT_METHOD(addNetworkingHandler)
   });
 }
 
-RCT_EXPORT_METHOD(addWebSocketHandler : (double)socketID)
+- (void)addWebSocketHandler:(double)socketID
 {
   dispatch_async(((RCTWebSocketModule *)[_moduleRegistry moduleForName:"WebSocketModule"]).methodQueue, ^{
-    [[self->_moduleRegistry moduleForName:"WebSocketModule"] setContentHandler:self
-                                                                   forSocketID:[NSNumber numberWithDouble:socketID]];
+    [[self->_moduleRegistry moduleForName:"WebSocketModule"] setContentHandler:self forSocketID:@(socketID)];
   });
 }
 
-RCT_EXPORT_METHOD(removeWebSocketHandler : (double)socketID)
+- (void)removeWebSocketHandler:(double)socketID
 {
   dispatch_async(((RCTWebSocketModule *)[_moduleRegistry moduleForName:"WebSocketModule"]).methodQueue, ^{
-    [[self->_moduleRegistry moduleForName:"WebSocketModule"] setContentHandler:nil
-                                                                   forSocketID:[NSNumber numberWithDouble:socketID]];
+    [[self->_moduleRegistry moduleForName:"WebSocketModule"] setContentHandler:nil forSocketID:@(socketID)];
   });
 }
 
 // @lint-ignore FBOBJCUNTYPEDCOLLECTION1
-RCT_EXPORT_METHOD(sendOverSocket : (NSDictionary *)blob socketID : (double)socketID)
+- (void)sendOverSocket:(NSDictionary *)blob socketID:(double)socketID
 {
   dispatch_async(((RCTWebSocketModule *)[_moduleRegistry moduleForName:"WebSocketModule"]).methodQueue, ^{
-    [[self->_moduleRegistry moduleForName:"WebSocketModule"] sendData:[self resolve:blob]
-                                                          forSocketID:[NSNumber numberWithDouble:socketID]];
+    [[self->_moduleRegistry moduleForName:"WebSocketModule"] sendData:[self resolve:blob] forSocketID:@(socketID)];
   });
 }
 
-RCT_EXPORT_METHOD(createFromParts : (NSArray<NSDictionary<NSString *, id> *> *)parts withId : (NSString *)blobId)
+- (void)createFromParts:(NSArray<NSDictionary<NSString *, id> *> *)parts withId:(NSString *)blobId
 {
   NSMutableData *data = [NSMutableData new];
   for (NSDictionary<NSString *, id> *part in parts) {
@@ -211,7 +208,7 @@ RCT_EXPORT_METHOD(createFromParts : (NSArray<NSDictionary<NSString *, id> *> *)p
   });
 }
 
-RCT_EXPORT_METHOD(release : (NSString *)blobId)
+- (void)release:(NSString *)blobId
 {
   dispatch_async(_methodQueue, ^{
     [self remove:blobId];

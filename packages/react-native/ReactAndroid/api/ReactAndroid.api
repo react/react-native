@@ -537,6 +537,28 @@ public final class com/facebook/react/bridge/Arguments {
 	public static final fun toList (Lcom/facebook/react/bridge/ReadableArray;)Ljava/util/ArrayList;
 }
 
+public final class com/facebook/react/bridge/ArrayBuffer : com/facebook/jni/HybridClassBase {
+	public static final field Companion Lcom/facebook/react/bridge/ArrayBuffer$Companion;
+	public fun <init> (I)V
+	public synthetic fun <init> (Ljava/nio/ByteBuffer;ZLkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public static final fun arrayBufferWithCopiedBytes (Lcom/facebook/react/bridge/ArrayBuffer;)Lcom/facebook/react/bridge/ArrayBuffer;
+	public static final fun arrayBufferWithCopiedBytes (Ljava/nio/ByteBuffer;)Lcom/facebook/react/bridge/ArrayBuffer;
+	public static final fun arrayBufferWithCopiedBytes ([B)Lcom/facebook/react/bridge/ArrayBuffer;
+	public static final fun arrayBufferWithLength (I)Lcom/facebook/react/bridge/ArrayBuffer;
+	public static final fun arrayBufferWithOwnedBytes (Ljava/nio/ByteBuffer;)Lcom/facebook/react/bridge/ArrayBuffer;
+	public final fun getBytes ()Ljava/nio/ByteBuffer;
+	public final fun getSize ()I
+	public final fun isOwningBytes ()Z
+}
+
+public final class com/facebook/react/bridge/ArrayBuffer$Companion {
+	public final fun arrayBufferWithCopiedBytes (Lcom/facebook/react/bridge/ArrayBuffer;)Lcom/facebook/react/bridge/ArrayBuffer;
+	public final fun arrayBufferWithCopiedBytes (Ljava/nio/ByteBuffer;)Lcom/facebook/react/bridge/ArrayBuffer;
+	public final fun arrayBufferWithCopiedBytes ([B)Lcom/facebook/react/bridge/ArrayBuffer;
+	public final fun arrayBufferWithLength (I)Lcom/facebook/react/bridge/ArrayBuffer;
+	public final fun arrayBufferWithOwnedBytes (Ljava/nio/ByteBuffer;)Lcom/facebook/react/bridge/ArrayBuffer;
+}
+
 public final class com/facebook/react/bridge/AssertionException : java/lang/RuntimeException {
 	public fun <init> (Ljava/lang/String;)V
 }
@@ -2252,7 +2274,7 @@ public class com/facebook/react/fabric/FabricUIManager : com/facebook/react/brid
 	public fun dispatchCommand (IILjava/lang/String;Lcom/facebook/react/bridge/ReadableArray;)V
 	public fun dispatchCommand (ILjava/lang/String;Lcom/facebook/react/bridge/ReadableArray;)V
 	public fun findNextFocusableElement (III)Ljava/lang/Integer;
-	public fun getColor (I[Ljava/lang/String;)I
+	public fun getColor (I[Ljava/lang/String;)Ljava/lang/Integer;
 	public fun getEventDispatcher ()Lcom/facebook/react/uimanager/events/EventDispatcher;
 	public fun getPerformanceCounters ()Ljava/util/Map;
 	public fun getRelativeAncestorList (II)[I
@@ -3630,6 +3652,7 @@ public final class com/facebook/react/uimanager/ReactAccessibilityDelegate$Acces
 	public static final field SUMMARY Lcom/facebook/react/uimanager/ReactAccessibilityDelegate$AccessibilityRole;
 	public static final field SWITCH Lcom/facebook/react/uimanager/ReactAccessibilityDelegate$AccessibilityRole;
 	public static final field TAB Lcom/facebook/react/uimanager/ReactAccessibilityDelegate$AccessibilityRole;
+	public static final field TABBAR Lcom/facebook/react/uimanager/ReactAccessibilityDelegate$AccessibilityRole;
 	public static final field TABLIST Lcom/facebook/react/uimanager/ReactAccessibilityDelegate$AccessibilityRole;
 	public static final field TEXT Lcom/facebook/react/uimanager/ReactAccessibilityDelegate$AccessibilityRole;
 	public static final field TIMER Lcom/facebook/react/uimanager/ReactAccessibilityDelegate$AccessibilityRole;
@@ -4543,6 +4566,7 @@ public final class com/facebook/react/uimanager/ViewProps {
 	public static final field FONT_SIZE Ljava/lang/String;
 	public static final field FONT_STYLE Ljava/lang/String;
 	public static final field FONT_VARIANT Ljava/lang/String;
+	public static final field FONT_VARIATION_SETTINGS Ljava/lang/String;
 	public static final field FONT_WEIGHT Ljava/lang/String;
 	public static final field FOREGROUND_COLOR Ljava/lang/String;
 	public static final field GAP Ljava/lang/String;
@@ -5312,12 +5336,15 @@ public final class com/facebook/react/views/image/ReactImageManager : com/facebo
 	public final fun setBlurRadius (Lcom/facebook/react/views/image/ReactImageView;F)V
 	public final fun setBorderColor (Lcom/facebook/react/views/image/ReactImageView;Ljava/lang/Integer;)V
 	public final fun setBorderRadius (Lcom/facebook/react/views/image/ReactImageView;IF)V
+	public final fun setBorderRadius (Lcom/facebook/react/views/image/ReactImageView;ILcom/facebook/react/bridge/Dynamic;)V
 	public final fun setBorderWidth (Lcom/facebook/react/views/image/ReactImageView;F)V
+	public final fun setDefaultSource (Lcom/facebook/react/views/image/ReactImageView;Lcom/facebook/react/bridge/Dynamic;)V
 	public final fun setDefaultSource (Lcom/facebook/react/views/image/ReactImageView;Ljava/lang/String;)V
 	public final fun setFadeDuration (Lcom/facebook/react/views/image/ReactImageView;I)V
 	public final fun setHeaders (Lcom/facebook/react/views/image/ReactImageView;Lcom/facebook/react/bridge/ReadableMap;)V
 	public final fun setInternal_AnalyticsTag (Lcom/facebook/react/views/image/ReactImageView;Ljava/lang/String;)V
 	public final fun setLoadHandlersRegistered (Lcom/facebook/react/views/image/ReactImageView;Z)V
+	public final fun setLoadingIndicatorSource (Lcom/facebook/react/views/image/ReactImageView;Lcom/facebook/react/bridge/Dynamic;)V
 	public final fun setLoadingIndicatorSource (Lcom/facebook/react/views/image/ReactImageView;Ljava/lang/String;)V
 	public final fun setOverlayColor (Lcom/facebook/react/views/image/ReactImageView;Ljava/lang/Integer;)V
 	public final fun setProgressiveRenderingEnabled (Lcom/facebook/react/views/image/ReactImageView;Z)V
@@ -5770,6 +5797,7 @@ public final class com/facebook/react/views/scroll/ReactScrollViewHelper {
 	public static final fun emitScrollBeginDragEvent (Landroid/view/ViewGroup;)V
 	public static final fun emitScrollEndDragEvent (Landroid/view/ViewGroup;FF)V
 	public static final fun emitScrollEvent (Landroid/view/ViewGroup;FF)V
+	public static final fun emitScrollEventNoThrottle (Landroid/view/ViewGroup;FF)V
 	public static final fun emitScrollMomentumBeginEvent (Landroid/view/ViewGroup;II)V
 	public static final fun emitScrollMomentumEndEvent (Landroid/view/ViewGroup;)V
 	public static final fun findNextFocusableView (Landroid/view/ViewGroup;Landroid/view/View;I)Landroid/view/View;
@@ -6029,6 +6057,7 @@ public class com/facebook/react/views/text/ReactTextView : androidx/appcompat/wi
 	public final fun onFocusChanged (ZILandroid/graphics/Rect;)V
 	protected fun onLayout (ZIIII)V
 	protected fun onMeasure (II)V
+	protected fun onSizeChanged (IIII)V
 	public fun reactTagForTouch (FF)I
 	public fun setAdjustFontSizeToFit (Z)V
 	public fun setBackgroundColor (I)V
@@ -6135,6 +6164,7 @@ public final class com/facebook/react/views/text/TextAttributeProps {
 	public static final field TA_KEY_FONT_SIZE_MULTIPLIER I
 	public static final field TA_KEY_FONT_STYLE I
 	public static final field TA_KEY_FONT_VARIANT I
+	public static final field TA_KEY_FONT_VARIATION_SETTINGS I
 	public static final field TA_KEY_FONT_WEIGHT I
 	public static final field TA_KEY_FOREGROUND_COLOR I
 	public static final field TA_KEY_IS_HIGHLIGHTED I
@@ -6165,6 +6195,7 @@ public final class com/facebook/react/views/text/TextAttributeProps {
 	public final fun getFontFeatureSettings ()Ljava/lang/String;
 	public final fun getFontSize ()I
 	public final fun getFontStyle ()I
+	public final fun getFontVariationSettings ()Ljava/lang/String;
 	public final fun getFontWeight ()I
 	public final fun getLayoutDirection ()I
 	public final fun getLetterSpacing ()F
@@ -6353,6 +6384,7 @@ public class com/facebook/react/views/textinput/ReactTextInputManager : com/face
 	public final fun setFontSize (Lcom/facebook/react/views/textinput/ReactEditText;F)V
 	public final fun setFontStyle (Lcom/facebook/react/views/textinput/ReactEditText;Ljava/lang/String;)V
 	public final fun setFontVariant (Lcom/facebook/react/views/textinput/ReactEditText;Lcom/facebook/react/bridge/ReadableArray;)V
+	public final fun setFontVariationSettings (Lcom/facebook/react/views/textinput/ReactEditText;Ljava/lang/String;)V
 	public final fun setFontWeight (Lcom/facebook/react/views/textinput/ReactEditText;Ljava/lang/String;)V
 	public final fun setImportantForAutofill (Lcom/facebook/react/views/textinput/ReactEditText;Ljava/lang/String;)V
 	public final fun setIncludeFontPadding (Lcom/facebook/react/views/textinput/ReactEditText;Z)V

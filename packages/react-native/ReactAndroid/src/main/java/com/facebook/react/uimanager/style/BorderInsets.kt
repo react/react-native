@@ -27,10 +27,10 @@ internal class BorderInsets {
    * Sets the border width for a specific logical edge.
    *
    * @param edge The logical edge to set
-   * @param width The border width in pixels, or null to clear
+   * @param width The border width in pixels, or null or NaN to clear
    */
   fun setBorderWidth(edge: LogicalEdge, width: Float?) {
-    edgeInsets[edge.ordinal] = width
+    edgeInsets[edge.ordinal] = width?.takeUnless { it.isNaN() }
   }
 
   /**

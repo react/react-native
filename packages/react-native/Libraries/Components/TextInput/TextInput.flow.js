@@ -171,36 +171,20 @@ export type KeyboardTypeIOS =
 export type KeyboardTypeAndroid = 'visible-password';
 
 export type KeyboardTypeOptions =
-  | KeyboardType
-  | KeyboardTypeIOS
-  | KeyboardTypeAndroid;
+  KeyboardType | KeyboardTypeIOS | KeyboardTypeAndroid;
 
 export type InputModeOptions =
-  | 'none'
-  | 'text'
-  | 'decimal'
-  | 'numeric'
-  | 'tel'
-  | 'search'
-  | 'email'
-  | 'url';
+  'none' | 'text' | 'decimal' | 'numeric' | 'tel' | 'search' | 'email' | 'url';
 
 export type ReturnKeyType = 'done' | 'go' | 'next' | 'search' | 'send';
 
 export type ReturnKeyTypeIOS =
-  | 'default'
-  | 'emergency-call'
-  | 'google'
-  | 'join'
-  | 'route'
-  | 'yahoo';
+  'default' | 'emergency-call' | 'google' | 'join' | 'route' | 'yahoo';
 
 export type ReturnKeyTypeAndroid = 'none' | 'previous';
 
 export type ReturnKeyTypeOptions =
-  | ReturnKeyType
-  | ReturnKeyTypeIOS
-  | ReturnKeyTypeAndroid;
+  ReturnKeyType | ReturnKeyTypeIOS | ReturnKeyTypeAndroid;
 
 export type SubmitBehavior = 'submit' | 'blurAndSubmit' | 'newline';
 
@@ -261,9 +245,7 @@ export type EnterKeyHintTypeIOS = 'enter';
 export type EnterKeyHintType = 'done' | 'go' | 'next' | 'search' | 'send';
 
 export type EnterKeyHintTypeOptions =
-  | EnterKeyHintType
-  | EnterKeyHintTypeAndroid
-  | EnterKeyHintTypeIOS;
+  EnterKeyHintType | EnterKeyHintTypeAndroid | EnterKeyHintTypeIOS;
 
 type PasswordRules = string;
 
@@ -306,8 +288,7 @@ export type TextInputIOSProps = Readonly<{
    * @platform ios
    */
   dataDetectorTypes?:
-    | ?DataDetectorTypesType
-    | ReadonlyArray<DataDetectorTypesType>,
+    ?DataDetectorTypesType | ReadonlyArray<DataDetectorTypesType>,
 
   /**
    * If `true`, the keyboard disables the return key when there is no text and
@@ -385,12 +366,7 @@ export type TextInputIOSProps = Readonly<{
    * @platform ios
    */
   lineBreakModeIOS?: ?(
-    | 'wordWrapping'
-    | 'char'
-    | 'clip'
-    | 'head'
-    | 'middle'
-    | 'tail'
+    'wordWrapping' | 'char' | 'clip' | 'head' | 'middle' | 'tail'
   ),
 
   /**
@@ -447,11 +423,7 @@ export type TextInputAndroidProps = Readonly<{
    * - `yesExcludeDescendants` - this view is important for autofill but its children aren't
    */
   importantForAutofill?: ?(
-    | 'auto'
-    | 'no'
-    | 'noExcludeDescendants'
-    | 'yes'
-    | 'yesExcludeDescendants'
+    'auto' | 'no' | 'noExcludeDescendants' | 'yes' | 'yesExcludeDescendants'
   ),
 
   /**

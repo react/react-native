@@ -36,7 +36,7 @@ internal class ReactTextSelectionWatcher(private val editText: ReactEditText) : 
 
     if (previousSelectionStart != realStart || previousSelectionEnd != realEnd) {
       eventDispatcher?.dispatchEvent(
-          ReactTextInputSelectionEvent(surfaceId, editText.id, realStart, realEnd)
+          ReactTextInputSelectionEvent(surfaceId, editText.id, realStart, realEnd),
       )
 
       previousSelectionStart = realStart

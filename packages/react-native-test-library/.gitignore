@@ -1,0 +1,11 @@
+# Generated SPM artifacts (written by setup-ios-spm.js's earlier in-place
+# layout). The current autolinker emits these under the consumer app's
+# build/generated/autolinking/ tree instead, so any copy that lands here is
+# stale and should not be committed.
+Package.swift
+Package.resolved
+include/
+
+# SwiftPM caches
+.build/
+.swiftpm/

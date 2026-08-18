@@ -169,21 +169,20 @@ public class Spacing(private val defaultValue: Float, private val spacing: Float
     /** Spacing type that represents the block start direction (top). E.g. `marginBlockStart`. */
     public const val BLOCK_START: Int = 11
 
-    private val flagsMap =
-        intArrayOf(
-            1, /*LEFT*/
-            2, /*TOP*/
-            4, /*RIGHT*/
-            8, /*BOTTOM*/
-            16, /*START*/
-            32, /*END*/
-            64, /*HORIZONTAL*/
-            128, /*VERTICAL*/
-            256, /*ALL*/
-            512, /*BLOCK*/
-            1024, /*BLOCK_END*/
-            2048,
-        )
+    private val flagsMap = intArrayOf(
+        1, /*LEFT*/
+        2, /*TOP*/
+        4, /*RIGHT*/
+        8, /*BOTTOM*/
+        16, /*START*/
+        32, /*END*/
+        64, /*HORIZONTAL*/
+        128, /*VERTICAL*/
+        256, /*ALL*/
+        512, /*BLOCK*/
+        1024, /*BLOCK_END*/
+        2048,
+    )
 
     private fun newFullSpacingArray(): FloatArray {
       return floatArrayOf(

@@ -69,15 +69,14 @@ internal class MyNativeViewManager :
     view.setBackgroundColor(backgroundColor)
   }
 
-  override fun getExportedCustomBubblingEventTypeConstants(): Map<String, Any> =
-      mapOf(
-          "topIntArrayChanged" to
-              mapOf(
-                  "phasedRegistrationNames" to
-                      mapOf(
-                          "bubbled" to "onIntArrayChanged",
-                          "captured" to "onIntArrayChangedCapture",
-                      )
-              )
-      )
+  override fun getExportedCustomBubblingEventTypeConstants(): Map<String, Any> = mapOf(
+      "topIntArrayChanged" to
+          mapOf(
+              "phasedRegistrationNames" to
+                  mapOf(
+                      "bubbled" to "onIntArrayChanged",
+                      "captured" to "onIntArrayChangedCapture",
+                  ),
+          ),
+  )
 }

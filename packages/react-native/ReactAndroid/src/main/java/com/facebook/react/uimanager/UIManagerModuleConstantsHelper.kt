@@ -36,16 +36,15 @@ internal object UIManagerModuleConstantsHelper {
           mapOf(
               "ViewManagerNames" to ArrayList<String?>(resolver.getViewManagerNames()),
               "LazyViewManagersEnabled" to true,
-          )
+          ),
       )
 
   @JvmStatic
   val defaultExportableEventTypes: Map<String, Any>
-    get() =
-        mapOf(
-            BUBBLING_EVENTS_KEY to UIManagerModuleConstants.bubblingEventTypeConstants,
-            DIRECT_EVENTS_KEY to UIManagerModuleConstants.directEventTypeConstants,
-        )
+    get() = mapOf(
+        BUBBLING_EVENTS_KEY to UIManagerModuleConstants.bubblingEventTypeConstants,
+        DIRECT_EVENTS_KEY to UIManagerModuleConstants.directEventTypeConstants,
+    )
 
   private fun validateDirectEventNames(
       viewManagerName: String,
@@ -111,14 +110,13 @@ internal object UIManagerModuleConstantsHelper {
     for (viewManager in viewManagers) {
       val viewManagerName = viewManager.getName()
 
-      val viewManagerConstants: MutableMap<*, *> =
-          createConstantsForViewManager(
-              viewManager,
-              null,
-              null,
-              allBubblingEventTypes,
-              allDirectEventTypes,
-          )
+      val viewManagerConstants: MutableMap<*, *> = createConstantsForViewManager(
+          viewManager,
+          null,
+          null,
+          allBubblingEventTypes,
+          allDirectEventTypes,
+      )
       if (!viewManagerConstants.isEmpty()) {
         constants[viewManagerName] = viewManagerConstants
       }
@@ -191,7 +189,7 @@ internal object UIManagerModuleConstantsHelper {
 
   @VisibleForTesting
   internal fun normalizeEventTypes(
-      eventsToNormalize: MutableMap<String, Any>
+      eventsToNormalize: MutableMap<String, Any>,
   ): MutableMap<String, Any> {
     var events = eventsToNormalize
     val keysToNormalize: MutableSet<String> = hashSetOf()

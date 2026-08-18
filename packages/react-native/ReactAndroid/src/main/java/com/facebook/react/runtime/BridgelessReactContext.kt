@@ -77,12 +77,12 @@ internal class BridgelessReactContext(context: Context, private val reactHost: R
 
   @OptIn(FrameworkAPI::class)
   @Deprecated(
-      "This method is deprecated in the New Architecture. You should not be invoking directly as we're going to remove it in the future."
+      "This method is deprecated in the New Architecture. You should not be invoking directly as we're going to remove it in the future.",
   )
   override fun getCatalystInstance(): CatalystInstance {
     if (ReactBuildConfig.UNSTABLE_ENABLE_MINIFY_LEGACY_ARCHITECTURE) {
       throw UnsupportedOperationException(
-          "CatalystInstance is not supported when Bridgeless mode is enabled."
+          "CatalystInstance is not supported when Bridgeless mode is enabled.",
       )
     }
     Log.w(
@@ -94,7 +94,7 @@ internal class BridgelessReactContext(context: Context, private val reactHost: R
   }
 
   @Deprecated(
-      "This API has been deprecated due to naming consideration, please use hasActiveReactInstance() instead"
+      "This API has been deprecated due to naming consideration, please use hasActiveReactInstance() instead",
   )
   override fun hasActiveCatalystInstance(): Boolean = hasActiveReactInstance()
 
@@ -102,7 +102,7 @@ internal class BridgelessReactContext(context: Context, private val reactHost: R
   override fun isBridgeless(): Boolean = true
 
   @Deprecated(
-      "This API has been deprecated due to naming consideration, please use hasReactInstance() instead"
+      "This API has been deprecated due to naming consideration, please use hasReactInstance() instead",
   )
   override fun hasCatalystInstance(): Boolean = false
 
@@ -137,7 +137,7 @@ internal class BridgelessReactContext(context: Context, private val reactHost: R
         logSoftException(
             TAG,
             IllegalArgumentException(
-                "getJSModule(RCTEventEmitter) is not recommended in the new architecture and will stop working with interop disabled. Please use UIManagerHelper.getEventDispatcher instead"
+                "getJSModule(RCTEventEmitter) is not recommended in the new architecture and will stop working with interop disabled. Please use UIManagerHelper.getEventDispatcher instead",
             ),
         )
       }

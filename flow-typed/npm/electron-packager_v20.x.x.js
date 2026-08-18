@@ -49,21 +49,14 @@ declare module '@electron/packager' {
     ProductName?: string,
     InternalName?: string,
     'requested-execution-level'?:
-      | 'asInvoker'
-      | 'highestAvailable'
-      | 'requireAdministrator',
+      'asInvoker' | 'highestAvailable' | 'requireAdministrator',
     'application-manifest'?: string,
   }>;
 
   declare export type WindowsSignOptions = $FlowFixMe;
 
   declare export type OfficialArch =
-    | 'ia32'
-    | 'x64'
-    | 'armv7l'
-    | 'arm64'
-    | 'mips64el'
-    | 'universal';
+    'ia32' | 'x64' | 'armv7l' | 'arm64' | 'mips64el' | 'universal';
 
   declare export type OfficialPlatform = 'linux' | 'win32' | 'darwin' | 'mas';
 

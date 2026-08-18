@@ -12,6 +12,8 @@
 #import <QuartzCore/QuartzCore.h>
 #import <objc/runtime.h>
 #import <ranges>
+#import <string_view>
+#import <unordered_set>
 
 #import <RCTSwiftUIWrapper/RCTSwiftUIContainerViewWrapper.h>
 #import <React/RCTAssert.h>
@@ -21,6 +23,7 @@
 #import <React/RCTConversions.h>
 #import <React/RCTLinearGradient.h>
 #import <React/RCTLocalizedString.h>
+#import <React/RCTLog.h>
 #import <React/RCTRadialGradient.h>
 #import <react/featureflags/ReactNativeFeatureFlags.h>
 #import <react/renderer/components/view/ViewComponentDescriptor.h>
@@ -36,6 +39,70 @@
 using namespace facebook::react;
 
 const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
+
+#if !TARGET_OS_TV
+// iOS Full Keyboard Access only focuses a view when it is an accessibility
+// element that also exposes an interactive trait. Views that surface their
+// interactivity through a grouping accessibility element (rather than the
+// underlying control) are otherwise skipped by the focus engine, leaving
+// keyboard-only users unable to reach them.
+//
+// The trait mask alone is not sufficient, because it is a lossy projection of
+// the role: `checkbox`, `radio`, `combobox`, `menuitem`, `spinbutton`, `tab`
+// and friends deliberately carry no interactive trait, since VoiceOver conveys
+// them through `accessibilityValue` instead. The role is therefore consulted
+// as well, otherwise those controls stay unreachable by keyboard.
+static BOOL RCTViewIsInteractiveAccessibilityElement(UIView *view, const ViewProps &props)
+{
+  if (!view.isAccessibilityElement) {
+    return NO;
+  }
+
+  UIAccessibilityTraits interactiveTraits = UIAccessibilityTraitButton | UIAccessibilityTraitLink |
+      UIAccessibilityTraitSearchField | UIAccessibilityTraitKeyboardKey | UIAccessibilityTraitAdjustable;
+  if ((view.accessibilityTraits & interactiveTraits) != 0) {
+    return YES;
+  }
+
+  // `role` wins over the legacy `accessibilityRole` when both are set, matching
+  // how the traits themselves are resolved.
+  if (props.role != Role::None) {
+    static const std::unordered_set<Role> interactiveRoles{
+        Role::Button,
+        Role::Checkbox,
+        Role::Combobox,
+        Role::Link,
+        Role::Menuitem,
+        Role::Option,
+        Role::Radio,
+        Role::Searchbox,
+        Role::Slider,
+        Role::Spinbutton,
+        Role::Switch,
+        Role::Tab,
+        Role::Treeitem};
+    return interactiveRoles.contains(props.role);
+  }
+
+  static const std::unordered_set<std::string_view> interactiveAccessibilityRoles{
+      "adjustable",
+      "button",
+      "checkbox",
+      "combobox",
+      "dropdownlist",
+      "imagebutton",
+      "keyboardkey",
+      "link",
+      "menuitem",
+      "radio",
+      "search",
+      "spinbutton",
+      "switch",
+      "tab",
+      "togglebutton"};
+  return interactiveAccessibilityRoles.contains(props.accessibilityRole);
+}
+#endif
 
 @implementation RCTViewComponentView {
   UIColor *_backgroundColor;
@@ -188,15 +255,18 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
         childComponentView,
         @(index),
         @([childComponentView.superview tag]));
+#ifndef NS_BLOCK_ASSERTIONS
+    NSArray<UIView *> *containerSubviews = self.currentContainerView.subviews;
+    BOOL isIndexInBounds = index >= 0 && (NSUInteger)index < containerSubviews.count;
     RCTAssert(
-        (self.currentContainerView.subviews.count > index) &&
-            [self.currentContainerView.subviews objectAtIndex:index] == childComponentView,
+        isIndexInBounds && [containerSubviews objectAtIndex:index] == childComponentView,
         @"Attempt to unmount a view which has a different index. (parent: %@, child: %@, index: %@, actual index: %@, tag at index: %@)",
         self,
         childComponentView,
         @(index),
-        @([self.currentContainerView.subviews indexOfObject:childComponentView]),
-        @([[self.currentContainerView.subviews objectAtIndex:index] tag]));
+        @([containerSubviews indexOfObject:childComponentView]),
+        isIndexInBounds ? @([[containerSubviews objectAtIndex:index] tag]) : @"out of bounds");
+#endif
   }
 
   [childComponentView removeFromSuperview];
@@ -472,18 +542,6 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
         RCTUIAccessibilityTraitsFromAccessibilityTraits(newViewProps.accessibilityTraits);
   }
 
-  // `accessibilityState`
-  if (oldViewProps.accessibilityState != newViewProps.accessibilityState) {
-    self.accessibilityTraits &= ~(UIAccessibilityTraitNotEnabled | UIAccessibilityTraitSelected);
-    const auto accessibilityState = newViewProps.accessibilityState.value_or(AccessibilityState{});
-    if (accessibilityState.selected) {
-      self.accessibilityTraits |= UIAccessibilityTraitSelected;
-    }
-    if (accessibilityState.disabled) {
-      self.accessibilityTraits |= UIAccessibilityTraitNotEnabled;
-    }
-  }
-
   // `accessibilityIgnoresInvertColors`
   if (oldViewProps.accessibilityIgnoresInvertColors != newViewProps.accessibilityIgnoresInvertColors) {
     self.accessibilityIgnoresInvertColors = newViewProps.accessibilityIgnoresInvertColors;
@@ -722,7 +780,7 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
   _isJSResponder = NO;
   _removeClippedSubviews = NO;
   _reactSubviews = [NSMutableArray new];
-  _layoutMetrics = {};
+  _layoutMetrics = EmptyLayoutMetrics;
 }
 
 - (void)setPropKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN:(NSSet<NSString *> *_Nullable)props
@@ -1009,6 +1067,13 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
     } else {
       // Can't accurately calculate box shadow, so fall back to pixel-based shadow.
       layer.shadowPath = nil;
+
+      RCTLogAdvice(
+          @"View #%ld of type %@ has a shadow set but cannot calculate "
+           "shadow efficiently. Consider setting a solid background color to "
+           "fix this or applying the shadow to a more specific component.",
+          (long)self.tag,
+          [self class]);
     }
   } else {
     layer.shadowPath = nil;
@@ -1482,7 +1547,11 @@ static NSString *RCTRecursiveAccessibilityLabel(UIView *view)
 
 - (BOOL)canBecomeFocused
 {
+#if !TARGET_OS_TV
+  return _focusable || RCTViewIsInteractiveAccessibilityElement(self, static_cast<const ViewProps &>(*_props));
+#else
   return _focusable;
+#endif
 }
 
 - (BOOL)isAccessibilityElement
@@ -1770,9 +1839,15 @@ static NSString *RCTRecursiveAccessibilityLabel(UIView *view)
 }
 #endif
 
+- (UIView *)viewToFocus
+{
+  return self;
+}
+
 - (void)focus
 {
-  [self becomeFirstResponder];
+  UIView *viewToFocus = [self viewToFocus];
+  [viewToFocus becomeFirstResponder];
 
 #if TARGET_OS_TV
   RCTSurfaceHostingProxyRootView *rootView = [self containingRootView];
@@ -1780,7 +1855,7 @@ static NSString *RCTRecursiveAccessibilityLabel(UIView *view)
     return;
   }
 
-  rootView.reactPreferredFocusedView = self;
+  rootView.reactPreferredFocusedView = viewToFocus;
   [rootView setNeedsFocusUpdate];
   [rootView updateFocusIfNeeded];
 #endif

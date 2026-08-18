@@ -38,7 +38,8 @@ void updateMountedFlag(
   // Runtime shadow node references are updated during the React revision
   // commits so that JS can access layout data from the merged tree.
   bool shouldUpdateRuntimeReference =
-      (commitSource == ShadowTreeCommitSource::React &&
+      ((commitSource == ShadowTreeCommitSource::React ||
+        commitSource == ShadowTreeCommitSource::AnimationEndSync) &&
        ReactNativeFeatureFlags::updateRuntimeShadowNodeReferencesOnCommit()) ||
       (ReactNativeFeatureFlags::
            updateRuntimeShadowNodeReferencesOnCommitThread() &&

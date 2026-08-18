@@ -43,24 +43,22 @@ class UIManagerModuleConstantsHelperTest {
   @Suppress("UNCHECKED_CAST")
   @Test
   fun normalizeEventTypes_withNestedObjects_doesNotLoseThem() {
-    val nestedObjects =
-        mutableMapOf<String, Any>(
-            "onColorChanged" to
-                mutableMapOf<String, Any>(
-                    "phasedRegistrationNames" to
-                        mutableMapOf<String, Any>(
-                            "bubbled" to "onColorChanged",
-                            "captured" to "onColorChangedCapture",
-                        )
-                )
-        )
-    val result =
-        checkNotNull(
-            UIManagerModuleConstantsHelper.normalizeEventTypes(nestedObjects)
-                as Map<String, Map<String, Map<String, String>>>
-        ) {
-          "returned map was null"
-        }
+    val nestedObjects = mutableMapOf<String, Any>(
+        "onColorChanged" to
+            mutableMapOf<String, Any>(
+                "phasedRegistrationNames" to
+                    mutableMapOf<String, Any>(
+                        "bubbled" to "onColorChanged",
+                        "captured" to "onColorChangedCapture",
+                    ),
+            ),
+    )
+    val result = checkNotNull(
+        UIManagerModuleConstantsHelper.normalizeEventTypes(nestedObjects)
+            as Map<String, Map<String, Map<String, String>>>,
+    ) {
+      "returned map was null"
+    }
     verifyNestedObjects(result, "topColorChanged")
     verifyNestedObjects(result, "onColorChanged")
   }

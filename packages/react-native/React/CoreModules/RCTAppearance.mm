@@ -109,11 +109,14 @@ RCT_EXPORT_MODULE(Appearance)
   return std::make_shared<NativeAppearanceSpecJSI>(params);
 }
 
-RCT_EXPORT_METHOD(setColorScheme : (NSString *)style)
+- (void)setColorScheme:(NSString *)style
 {
   UIUserInterfaceStyle userInterfaceStyle = [RCTConvert UIUserInterfaceStyle:style];
   NSMutableArray<UIWindow *> *windows = [NSMutableArray new];
   for (UIWindowScene *scene in RCTSharedApplication().connectedScenes) {
+    if (![scene respondsToSelector:@selector(windows)]) {
+      continue;
+    }
     [windows addObjectsFromArray:scene.windows];
   }
 

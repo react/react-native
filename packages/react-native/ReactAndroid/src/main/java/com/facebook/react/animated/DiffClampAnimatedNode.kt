@@ -26,7 +26,7 @@ internal class DiffClampAnimatedNode(
       val animatedNode = nativeAnimatedNodesManager.getNodeById(inputNodeTag)
       if (animatedNode == null || animatedNode !is ValueAnimatedNode) {
         throw JSApplicationCausedNativeException(
-            "Illegal node ID set as an input for Animated.DiffClamp node"
+            "Illegal node ID set as an input for Animated.DiffClamp node",
         )
       }
       return animatedNode.getValue()

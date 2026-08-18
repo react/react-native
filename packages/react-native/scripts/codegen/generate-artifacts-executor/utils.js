@@ -14,9 +14,9 @@ const {
   CORE_LIBRARIES_WITH_OUTPUT_FOLDER,
   REACT_NATIVE,
 } = require('./constants');
-const {execSync} = require('child_process');
-const fs = require('fs');
-const path = require('path');
+const {execSync} = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
 
 function pkgJsonIncludesGeneratedCode(
   pkgJson /*: $FlowFixMe */,
@@ -396,17 +396,17 @@ function parseiOSAnnotations(
   const map = {};
 
   for (const library of libraries) {
-    const iosConfig = library?.config?.ios;
-    if (!iosConfig) {
-      continue;
-    }
-
     const libraryName = getLibraryName(library);
     map[libraryName] = map[libraryName] || {
       library,
       modules: {},
       components: {},
     };
+
+    const iosConfig = library?.config?.ios;
+    if (!iosConfig) {
+      continue;
+    }
 
     const {modules, components} = iosConfig;
     if (modules) {

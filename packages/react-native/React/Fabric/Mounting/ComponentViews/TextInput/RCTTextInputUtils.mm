@@ -25,6 +25,7 @@ void RCTCopyBackedTextInput(
   toTextInput.attributedText = RCTSanitizeAttributedString(fromTextInput.attributedText);
   toTextInput.placeholder = fromTextInput.placeholder;
   toTextInput.placeholderColor = fromTextInput.placeholderColor;
+  toTextInput.tintColor = fromTextInput.tintColor;
   toTextInput.textContainerInset = fromTextInput.textContainerInset;
   toTextInput.inputAccessoryView = fromTextInput.inputAccessoryView;
   toTextInput.textInputDelegate = fromTextInput.textInputDelegate;

@@ -99,7 +99,7 @@ public class VirtualViewEventEmitter(
             targetRect,
             thresholdRect,
             synchronous,
-        )
+        ),
     )
   }
 }

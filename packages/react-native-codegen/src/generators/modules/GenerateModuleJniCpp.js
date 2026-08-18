@@ -24,7 +24,11 @@ import type {AliasResolver} from './Utils';
 
 const {unwrapNullable} = require('../../parsers/parsers-commons');
 const {parseValidUnionType} = require('../Utils');
-const {createAliasResolver, getModules} = require('./Utils');
+const {
+  createAliasResolver,
+  getModules,
+  throwIfUnsupportedPromiseArrayBuffer,
+} = require('./Utils');
 
 type FilesOutput = Map<string, string>;
 
@@ -35,7 +39,8 @@ type JSReturnType =
   | 'NumberKind'
   | 'PromiseKind'
   | 'ObjectKind'
-  | 'ArrayKind';
+  | 'ArrayKind'
+  | 'ArrayBufferKind';
 
 const HostFunctionTemplate = ({
   hasteModuleName,
@@ -217,7 +222,7 @@ function translateReturnTypeToKind(
     case 'ArrayTypeAnnotation':
       return 'ArrayKind';
     case 'ArrayBufferTypeAnnotation':
-      throw new Error('ArrayBuffer is only supported for C++ TurboModules.');
+      return 'ArrayBufferKind';
     default:
       realTypeAnnotation.type as 'MixedTypeAnnotation';
       throw new Error(
@@ -306,7 +311,7 @@ function translateParamTypeToJniType(
     case 'FunctionTypeAnnotation':
       return 'Lcom/facebook/react/bridge/Callback;';
     case 'ArrayBufferTypeAnnotation':
-      throw new Error('ArrayBuffer is only supported for C++ TurboModules.');
+      return 'Lcom/facebook/react/bridge/ArrayBuffer;';
     default:
       realTypeAnnotation.type as 'MixedTypeAnnotation';
       throw new Error(
@@ -392,7 +397,7 @@ function translateReturnTypeToJniType(
     case 'ArrayTypeAnnotation':
       return 'Lcom/facebook/react/bridge/WritableArray;';
     case 'ArrayBufferTypeAnnotation':
-      throw new Error('ArrayBuffer is only supported for C++ TurboModules.');
+      return 'Lcom/facebook/react/bridge/ArrayBuffer;';
     default:
       realTypeAnnotation.type as 'MixedTypeAnnotation';
       throw new Error(
@@ -447,6 +452,8 @@ function translateMethodForImplementation(
   const [propertyTypeAnnotation] =
     unwrapNullable<NativeModuleFunctionTypeAnnotation>(property.typeAnnotation);
   const {returnTypeAnnotation} = propertyTypeAnnotation;
+
+  throwIfUnsupportedPromiseArrayBuffer(property.name, returnTypeAnnotation);
 
   if (
     property.name === 'getConstants' &&

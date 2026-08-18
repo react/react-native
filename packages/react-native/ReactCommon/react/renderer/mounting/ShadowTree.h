@@ -161,8 +161,6 @@ class ShadowTree final {
 
   void mount(ShadowTreeRevision revision, bool mountSynchronously) const;
 
-  void emitLayoutEvents(std::vector<const LayoutableShadowNode *> &affectedLayoutableNodes) const;
-
   void scheduleReactRevisionPromotion() const;
 
   const SurfaceId surfaceId_;

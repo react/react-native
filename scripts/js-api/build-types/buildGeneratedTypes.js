@@ -13,10 +13,10 @@ const {ENTRY_POINT, IGNORE_PATTERNS, TYPES_OUTPUT_DIR} = require('../config');
 const getRequireStack = require('./resolution/getRequireStack');
 const translatedModuleTemplate = require('./templates/translatedModule.d.ts-template');
 const translateSourceFile = require('./translateSourceFile');
-const {promises: fs, watch: fsWatch} = require('fs');
 const micromatch = require('micromatch');
-const path = require('path');
-const {styleText} = require('util');
+const {promises: fs, watch: fsWatch} = require('node:fs');
+const path = require('node:path');
+const {styleText} = require('node:util');
 
 /**
  * Build generated TypeScript types for react-native.
@@ -55,26 +55,10 @@ async function buildGeneratedTypes(): Promise<Set<string>> {
     }
   }
 
-  await Promise.all([
-    fs.copyFile(
-      path.join(__dirname, 'templates', 'tsconfig.json'),
-      path.join(
-        PACKAGES_DIR,
-        'react-native',
-        TYPES_OUTPUT_DIR,
-        'tsconfig.json',
-      ),
-    ),
-    fs.copyFile(
-      path.join(__dirname, 'templates', 'tsconfig.test.json'),
-      path.join(
-        PACKAGES_DIR,
-        'react-native',
-        TYPES_OUTPUT_DIR,
-        'tsconfig.test.json',
-      ),
-    ),
-  ]);
+  await fs.copyFile(
+    path.join(__dirname, 'templates', 'tsconfig.json'),
+    path.join(PACKAGES_DIR, 'react-native', TYPES_OUTPUT_DIR, 'tsconfig.json'),
+  );
 
   if (allErrors.length > 0) {
     console.error(

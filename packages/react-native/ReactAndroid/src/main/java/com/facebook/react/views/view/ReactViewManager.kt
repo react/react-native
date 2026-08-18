@@ -46,19 +46,18 @@ public open class ReactViewManager : ReactClippingViewManager<ReactViewGroup>() 
   public companion object {
     public const val REACT_CLASS: String = ViewProps.VIEW_CLASS_NAME
 
-    private val SPACING_TYPES =
-        intArrayOf(
-            Spacing.ALL,
-            Spacing.LEFT,
-            Spacing.RIGHT,
-            Spacing.TOP,
-            Spacing.BOTTOM,
-            Spacing.START,
-            Spacing.END,
-            Spacing.BLOCK,
-            Spacing.BLOCK_END,
-            Spacing.BLOCK_START,
-        )
+    private val SPACING_TYPES = intArrayOf(
+        Spacing.ALL,
+        Spacing.LEFT,
+        Spacing.RIGHT,
+        Spacing.TOP,
+        Spacing.BOTTOM,
+        Spacing.START,
+        Spacing.END,
+        Spacing.BLOCK,
+        Spacing.BLOCK_END,
+        Spacing.BLOCK_START,
+    )
     private const val CMD_HOTSPOT_UPDATE = 1
     private const val CMD_SET_PRESSED = 2
     private const val HOTSPOT_UPDATE_KEY = "hotspotUpdate"
@@ -250,7 +249,7 @@ public open class ReactViewManager : ReactClippingViewManager<ReactViewGroup>() 
               ViewProps.BORDER_END_START_RADIUS,
               ViewProps.BORDER_START_END_RADIUS,
               ViewProps.BORDER_START_START_RADIUS,
-          ]
+          ],
   )
   public open fun setBorderRadius(view: ReactViewGroup, index: Int, rawBorderRadius: Dynamic) {
     val borderRadius = LengthPercentage.setFromDynamic(rawBorderRadius)
@@ -308,7 +307,6 @@ public open class ReactViewManager : ReactClippingViewManager<ReactViewGroup>() 
   @ReactProp(name = ViewProps.POINTER_EVENTS)
   public open fun setPointerEvents(view: ReactViewGroup, pointerEventsStr: String?) {
     view.pointerEvents = PointerEvents.parsePointerEvents(pointerEventsStr)
-    ImportantForInteractionHelper.setImportantForInteraction(view, view.pointerEvents)
   }
 
   @ReactProp(name = "nativeBackgroundAndroid")
@@ -388,7 +386,7 @@ public open class ReactViewManager : ReactClippingViewManager<ReactViewGroup>() 
       view.setOnClickListener {
         val eventDispatcher = UIManagerHelper.getEventDispatcher(view.context as ReactContext)
         eventDispatcher?.dispatchEvent(
-            ViewGroupClickEvent(UIManagerHelper.getSurfaceId(view.context), view.id)
+            ViewGroupClickEvent(UIManagerHelper.getSurfaceId(view.context), view.id),
         )
       }
 
@@ -459,7 +457,7 @@ public open class ReactViewManager : ReactClippingViewManager<ReactViewGroup>() 
   private fun handleSetPressed(root: ReactViewGroup, args: ReadableArray?) {
     if (args == null || args.size() != 1) {
       throw JSApplicationIllegalArgumentException(
-          "Illegal number of arguments for 'setPressed' command"
+          "Illegal number of arguments for 'setPressed' command",
       )
     }
     root.isPressed = args.getBoolean(0)
@@ -468,7 +466,7 @@ public open class ReactViewManager : ReactClippingViewManager<ReactViewGroup>() 
   private fun handleHotspotUpdate(root: ReactViewGroup, args: ReadableArray?) {
     if (args == null || args.size() != 2) {
       throw JSApplicationIllegalArgumentException(
-          "Illegal number of arguments for 'updateHotspot' command"
+          "Illegal number of arguments for 'updateHotspot' command",
       )
     }
 

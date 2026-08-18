@@ -79,7 +79,7 @@ public object ResourceDrawableIdHelper {
    */
   @Deprecated("Use .instance instead, this API is for backward compat", ReplaceWith("instance"))
   @JvmName(
-      "DEPRECATED\$getInstance"
+      "DEPRECATED\$getInstance",
   ) // We intentionally don't want to expose this accessor to Java.
   public fun getInstance(): ResourceDrawableIdHelper = this
 }

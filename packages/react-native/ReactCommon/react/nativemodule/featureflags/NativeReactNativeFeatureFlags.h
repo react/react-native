@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<86a4b76371a4005f7083c3806d53cc87>>
+ * @generated SignedSource<<741340cf9c128417368324bb80501f18>>
  */
 
 /**
@@ -94,6 +94,8 @@ class NativeReactNativeFeatureFlags
 
   bool enableImagePrefetchingAndroid(jsi::Runtime& runtime);
 
+  bool enableImageTransparentTintColor(jsi::Runtime& runtime);
+
   bool enableImmediateUpdateModeForContentOffsetChanges(jsi::Runtime& runtime);
 
   bool enableImperativeFocus(jsi::Runtime& runtime);
@@ -110,11 +112,11 @@ class NativeReactNativeFeatureFlags
 
   bool enableModuleArgumentNSNullConversionIOS(jsi::Runtime& runtime);
 
+  bool enableMountingCoordinatorPullModelAndroid(jsi::Runtime& runtime);
+
   bool enableMutationObserverByDefault(jsi::Runtime& runtime);
 
   bool enableNativeCSSParsing(jsi::Runtime& runtime);
-
-  bool enableNetworkEventReporting(jsi::Runtime& runtime);
 
   bool enablePreparedTextLayout(jsi::Runtime& runtime);
 
@@ -152,9 +154,9 @@ class NativeReactNativeFeatureFlags
 
   bool fuseboxFrameRecordingEnabled(jsi::Runtime& runtime);
 
-  bool fuseboxNetworkInspectionEnabled(jsi::Runtime& runtime);
-
   bool fuseboxScreenshotCaptureEnabled(jsi::Runtime& runtime);
+
+  bool fuseboxWebSocketEventsEnabled(jsi::Runtime& runtime);
 
   bool optimizedAnimatedPropUpdates(jsi::Runtime& runtime);
 

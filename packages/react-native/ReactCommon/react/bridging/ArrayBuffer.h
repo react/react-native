@@ -140,15 +140,6 @@ class AsyncArrayBuffer {
     return buffer_;
   }
 
- private:
-  explicit AsyncArrayBuffer(std::shared_ptr<jsi::MutableBuffer> buffer) noexcept : buffer_{std::move(buffer)} {}
-
-  static AsyncArrayBuffer copyBytes(jsi::Runtime &rt, const jsi::ArrayBuffer &buffer)
-  {
-    auto bytes = std::span(buffer.data(rt), buffer.size(rt));
-    return wrap(std::vector<uint8_t>(bytes.begin(), bytes.end()));
-  }
-
   // Best-effort detached check. jsi::ArrayBuffer::detached relies on the JS-level
   // `detached` property, which some runtimes (e.g. Hermes) don't implement and
   // signal by throwing. In that case we silently skip the check rather than
@@ -164,6 +155,15 @@ class AsyncArrayBuffer {
     if (detached) {
       throw jsi::JSError(rt, std::string(callerName) + ": ArrayBuffer is detached");
     }
+  }
+
+ private:
+  explicit AsyncArrayBuffer(std::shared_ptr<jsi::MutableBuffer> buffer) noexcept : buffer_{std::move(buffer)} {}
+
+  static AsyncArrayBuffer copyBytes(jsi::Runtime &rt, const jsi::ArrayBuffer &buffer)
+  {
+    auto bytes = std::span(buffer.data(rt), buffer.size(rt));
+    return wrap(std::vector<uint8_t>(bytes.begin(), bytes.end()));
   }
 
   std::shared_ptr<jsi::MutableBuffer> buffer_;

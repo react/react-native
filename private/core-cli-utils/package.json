@@ -11,7 +11,7 @@
     "./version.js": "./src/public/version.js"
   },
   "dependencies": {
-    "metro-babel-register": "^0.86.0"
+    "metro-babel-register": "^0.87.0"
   },
   "devDependencies": {},
   "engines": {

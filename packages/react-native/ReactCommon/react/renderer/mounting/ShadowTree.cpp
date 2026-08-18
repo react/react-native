@@ -11,7 +11,6 @@
 #include <jsinspector-modern/tracing/PerformanceTracerSection.h>
 #include <react/debug/react_native_assert.h>
 #include <react/renderer/components/root/RootComponentDescriptor.h>
-#include <react/renderer/components/view/ViewShadowNode.h>
 #include <react/renderer/core/LayoutContext.h>
 #include <react/renderer/core/LayoutPrimitives.h>
 #include <react/renderer/mounting/ShadowTreeRevision.h>
@@ -347,7 +346,8 @@ CommitStatus ShadowTree::tryCommit(
       getShadowTreeCommitSourceName(commitOptions.source));
 
   auto isReactBranch = ReactNativeFeatureFlags::enableFabricCommitBranching() &&
-      commitOptions.source == CommitSource::React;
+      (commitOptions.source == CommitSource::React ||
+       commitOptions.source == CommitSource::AnimationEndSync);
 
   // Commits on the JS branch are never synchronous.
   react_native_assert(!isReactBranch || !commitOptions.mountSynchronously);
@@ -462,7 +462,8 @@ CommitStatus ShadowTree::tryCommit(
     }
   }
 
-  emitLayoutEvents(affectedLayoutableNodes);
+  delegate_.shadowTreeDidCommit(
+      *this, newRevision.rootShadowNode, affectedLayoutableNodes);
 
   if (isReactBranch) {
     scheduleReactRevisionPromotion();
@@ -631,25 +632,6 @@ void ShadowTree::commitEmptyTree() const {
             });
       },
       {/* default commit options */});
-}
-
-void ShadowTree::emitLayoutEvents(
-    std::vector<const LayoutableShadowNode*>& affectedLayoutableNodes) const {
-  TraceSection s(
-      "ShadowTree::emitLayoutEvents",
-      "affectedLayoutableNodes",
-      affectedLayoutableNodes.size());
-
-  for (const auto* layoutableNode : affectedLayoutableNodes) {
-    if (auto viewProps =
-            dynamic_cast<const ViewProps*>(layoutableNode->getProps().get())) {
-      if (viewProps->onLayout) {
-        static_cast<const BaseViewEventEmitter&>(
-            *layoutableNode->getEventEmitter())
-            .onLayout(layoutableNode->getLayoutMetrics());
-      }
-    }
-  }
 }
 
 void ShadowTree::notifyDelegatesOfUpdates() const {

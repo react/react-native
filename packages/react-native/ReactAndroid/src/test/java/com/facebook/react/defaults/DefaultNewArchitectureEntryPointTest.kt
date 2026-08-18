@@ -23,7 +23,7 @@ class DefaultNewArchitectureEntryPointTest {
     assertThat(isValid).isFalse()
     assertThat(errorMessage)
         .isEqualTo(
-            "You cannot load React Native with the New Architecture disabled. Please use DefaultNewArchitectureEntryPoint.load() instead of DefaultNewArchitectureEntryPoint.load(turboModulesEnabled=false, fabricEnabled=false, bridgelessEnabled=false)"
+            "You cannot load React Native with the New Architecture disabled. Please use DefaultNewArchitectureEntryPoint.load() instead of DefaultNewArchitectureEntryPoint.load(turboModulesEnabled=false, fabricEnabled=false, bridgelessEnabled=false)",
         )
   }
 
@@ -38,7 +38,7 @@ class DefaultNewArchitectureEntryPointTest {
     assertThat(isValid).isFalse()
     assertThat(errorMessage)
         .isEqualTo(
-            "You cannot load React Native with the New Architecture disabled. Please use DefaultNewArchitectureEntryPoint.load() instead of DefaultNewArchitectureEntryPoint.load(turboModulesEnabled=true, fabricEnabled=true, bridgelessEnabled=false)"
+            "You cannot load React Native with the New Architecture disabled. Please use DefaultNewArchitectureEntryPoint.load() instead of DefaultNewArchitectureEntryPoint.load(turboModulesEnabled=true, fabricEnabled=true, bridgelessEnabled=false)",
         )
   }
 
@@ -53,7 +53,7 @@ class DefaultNewArchitectureEntryPointTest {
     assertThat(isValid).isFalse()
     assertThat(errorMessage)
         .isEqualTo(
-            "You cannot load React Native with the New Architecture disabled. Please use DefaultNewArchitectureEntryPoint.load() instead of DefaultNewArchitectureEntryPoint.load(turboModulesEnabled=true, fabricEnabled=false, bridgelessEnabled=false)"
+            "You cannot load React Native with the New Architecture disabled. Please use DefaultNewArchitectureEntryPoint.load() instead of DefaultNewArchitectureEntryPoint.load(turboModulesEnabled=true, fabricEnabled=false, bridgelessEnabled=false)",
         )
   }
 
@@ -79,7 +79,7 @@ class DefaultNewArchitectureEntryPointTest {
     assertThat(isValid).isFalse()
     assertThat(errorMessage)
         .isEqualTo(
-            "You cannot load React Native with the New Architecture disabled. Please use DefaultNewArchitectureEntryPoint.load() instead of DefaultNewArchitectureEntryPoint.load(turboModulesEnabled=false, fabricEnabled=true, bridgelessEnabled=false)"
+            "You cannot load React Native with the New Architecture disabled. Please use DefaultNewArchitectureEntryPoint.load() instead of DefaultNewArchitectureEntryPoint.load(turboModulesEnabled=false, fabricEnabled=true, bridgelessEnabled=false)",
         )
   }
 
@@ -94,7 +94,7 @@ class DefaultNewArchitectureEntryPointTest {
     assertThat(isValid).isFalse()
     assertThat(errorMessage)
         .isEqualTo(
-            "You cannot load React Native with the New Architecture disabled. Please use DefaultNewArchitectureEntryPoint.load() instead of DefaultNewArchitectureEntryPoint.load(turboModulesEnabled=false, fabricEnabled=true, bridgelessEnabled=true)"
+            "You cannot load React Native with the New Architecture disabled. Please use DefaultNewArchitectureEntryPoint.load() instead of DefaultNewArchitectureEntryPoint.load(turboModulesEnabled=false, fabricEnabled=true, bridgelessEnabled=true)",
         )
   }
 
@@ -109,7 +109,7 @@ class DefaultNewArchitectureEntryPointTest {
     assertThat(isValid).isFalse()
     assertThat(errorMessage)
         .isEqualTo(
-            "You cannot load React Native with the New Architecture disabled. Please use DefaultNewArchitectureEntryPoint.load() instead of DefaultNewArchitectureEntryPoint.load(turboModulesEnabled=true, fabricEnabled=false, bridgelessEnabled=true)"
+            "You cannot load React Native with the New Architecture disabled. Please use DefaultNewArchitectureEntryPoint.load() instead of DefaultNewArchitectureEntryPoint.load(turboModulesEnabled=true, fabricEnabled=false, bridgelessEnabled=true)",
         )
   }
 }

@@ -14,7 +14,6 @@ import {
   customBubblingEventTypes,
   customDirectEventTypes,
 } from '../../../../Libraries/Renderer/shims/ReactNativeViewConfigRegistry';
-import * as ReactNativeFeatureFlags from '../../featureflags/ReactNativeFeatureFlags';
 import {
   setBubbledPropName,
   setCapturedPropName,
@@ -62,13 +61,11 @@ export default function dispatchNativeEvent(
         bubbleConfig.phasedRegistrationNames.skipBubbling !== true;
 
       // A "direct" event is one registered only in the direct-event config
-      // (e.g. `onLayout`): it neither bubbles nor captures. When the feature
-      // flag is enabled, tag it so the EventTarget dispatch takes the fast
-      // target-only path. Note that bubbling events with `skipBubbling` (e.g.
-      // `onPointerEnter`) still have a capture phase and are NOT direct.
+      // (e.g. `onLayout`): it neither bubbles nor captures. Tag it so the
+      // EventTarget dispatch takes the fast target-only path. Note that
+      // bubbling events with `skipBubbling` (e.g. `onPointerEnter`) still have
+      // a capture phase and are NOT direct.
       const isDirect = bubbleConfig == null && directConfig != null;
-      const rnIsDirect =
-        isDirect && ReactNativeFeatureFlags.enableDirectEventsInEventTarget();
 
       const eventType = topLevelTypeToEventType(type);
       const options: {
@@ -78,7 +75,7 @@ export default function dispatchNativeEvent(
       } = {
         bubbles,
         cancelable: true,
-        rnIsDirect,
+        rnIsDirect: isDirect,
       };
 
       // Preserve the native event timestamp for backwards compatibility.

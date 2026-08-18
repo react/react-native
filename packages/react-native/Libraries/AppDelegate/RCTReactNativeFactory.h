@@ -58,6 +58,15 @@ typedef NS_ENUM(NSInteger, RCTReleaseLevel) { Canary, Experimental, Stable };
 
 @interface RCTReactNativeFactory : NSObject
 
+/**
+ * Bootstrap entrypoints:
+ * - **AppDelegate path**: `startReactNativeWithModuleName:inWindow:launchOptions:` — call from
+ *   `application:didFinishLaunchingWithOptions:` or `RCTAppDelegate`.
+ * - **SceneDelegate path**: `startReactNativeWithModuleName:inWindow:connectionOptions:` — call from
+ *   `scene:willConnectToSession:options:` in your app-owned `SceneDelegate` (subclass
+ *   `RCTDefaultReactNativeFactoryDelegate` and conform to `UIWindowSceneDelegate`).
+ */
+
 - (instancetype)initWithDelegate:(id<RCTReactNativeFactoryDelegate>)delegate;
 
 - (instancetype)initWithDelegate:(id<RCTReactNativeFactoryDelegate>)delegate releaseLevel:(RCTReleaseLevel)releaseLevel;
@@ -73,9 +82,33 @@ typedef NS_ENUM(NSInteger, RCTReleaseLevel) { Canary, Experimental, Stable };
                      initialProperties:(NSDictionary *_Nullable)initialProperties
                          launchOptions:(NSDictionary *_Nullable)launchOptions;
 
+/**
+ * SceneDelegate entrypoint to start a React Native instance with the specified module name, window, and connection
+ * options for linking and user activity information. Only the first item in `URLContexts` and `userActivities` is used.
+ * @param moduleName name of the JS module to load
+ * @param window the window to launch in
+ * @param connectionOptions the scene's connection options
+ */
+- (void)startReactNativeWithModuleName:(NSString *)moduleName
+                              inWindow:(UIWindow *_Nullable)window
+                     connectionOptions:(UISceneConnectionOptions *_Nullable)connectionOptions;
+
+/**
+ * SceneDelegate entrypoint to start a React Native instance with the specified module name, window, initial properties,
+ * and connection options. Only the first item in `URLContexts` and `userActivities` is used.
+ * @param moduleName name of the JS module to load
+ * @param window the window to launch in
+ * @param initialProperties the initial root properties
+ * @param connectionOptions the scene's connection options
+ */
+- (void)startReactNativeWithModuleName:(NSString *)moduleName
+                              inWindow:(UIWindow *_Nullable)window
+                     initialProperties:(NSDictionary *_Nullable)initialProperties
+                     connectionOptions:(UISceneConnectionOptions *_Nullable)connectionOptions;
+
 #if !defined(RCT_REMOVE_LEGACY_ARCH)
-@property (nonatomic, nullable) RCTSurfacePresenterBridgeAdapter *bridgeAdapter __attribute__((
-    deprecated("The bridgeAdapter is deprecated and will be removed when removing the legacy architecture.")));
+@property (nonatomic, nullable) RCTBridge *bridge
+    __attribute__((deprecated("The bridge is deprecated and will be removed when removing the legacy architecture.")));
 #endif
 
 @property (nonatomic, strong, nonnull) RCTRootViewFactory *rootViewFactory;

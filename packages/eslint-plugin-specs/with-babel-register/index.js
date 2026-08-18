@@ -11,8 +11,8 @@
 const diskCache = require('./disk-cache');
 const babel = require('@babel/core');
 const {DEFAULT_EXTENSIONS, OptionManager} = require('@babel/core');
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 const {addHook} = require('pirates');
 const sourceMapSupport = require('source-map-support');
 

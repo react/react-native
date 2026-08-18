@@ -70,7 +70,7 @@ public open class IntentModule(reactContext: ReactApplicationContext) :
       promise.resolve(initialURL)
     } catch (e: Exception) {
       promise.reject(
-          JSApplicationIllegalArgumentException("Could not get the initial URL : ${e.message}")
+          JSApplicationIllegalArgumentException("Could not get the initial URL : ${e.message}"),
       )
     }
   }
@@ -87,11 +87,15 @@ public open class IntentModule(reactContext: ReactApplicationContext) :
           override fun onHostResume() {
             reactApplicationContext.removeLifecycleEventListener(this)
             synchronized(this@IntentModule) {
-              for (pendingPromise in pendingOpenURLPromises) {
+              // getInitialURL can re-enter and re-add to pendingOpenURLPromises when the activity
+              // is still null at resume, so drain a snapshot (after clearing the list and listener)
+              // to avoid mutating the list being iterated (ConcurrentModificationException).
+              val pendingPromises = ArrayList(pendingOpenURLPromises)
+              pendingOpenURLPromises.clear()
+              initialURLListener = null
+              for (pendingPromise in pendingPromises) {
                 getInitialURL(pendingPromise)
               }
-              initialURLListener = null
-              pendingOpenURLPromises.clear()
             }
           }
 
@@ -123,7 +127,7 @@ public open class IntentModule(reactContext: ReactApplicationContext) :
       promise.resolve(true)
     } catch (e: Exception) {
       promise.reject(
-          JSApplicationIllegalArgumentException("Could not open URL '${url}': ${e.message}")
+          JSApplicationIllegalArgumentException("Could not open URL '${url}': ${e.message}"),
       )
     }
   }
@@ -151,8 +155,8 @@ public open class IntentModule(reactContext: ReactApplicationContext) :
     } catch (e: Exception) {
       promise.reject(
           JSApplicationIllegalArgumentException(
-              "Could not check if URL '${url}' can be opened: ${e.message}"
-          )
+              "Could not check if URL '${url}' can be opened: ${e.message}",
+          ),
       )
     }
   }
@@ -179,7 +183,7 @@ public open class IntentModule(reactContext: ReactApplicationContext) :
       promise.resolve(true)
     } catch (e: Exception) {
       promise.reject(
-          JSApplicationIllegalArgumentException("Could not open the Settings: ${e.message}")
+          JSApplicationIllegalArgumentException("Could not open the Settings: ${e.message}"),
       )
     }
   }
@@ -205,7 +209,7 @@ public open class IntentModule(reactContext: ReactApplicationContext) :
     val packageManager = reactApplicationContext.packageManager
     if (packageManager == null || intent.resolveActivity(packageManager) == null) {
       promise.reject(
-          JSApplicationIllegalArgumentException("Could not launch Intent with action $action.")
+          JSApplicationIllegalArgumentException("Could not launch Intent with action $action."),
       )
       return
     }
@@ -233,7 +237,7 @@ public open class IntentModule(reactContext: ReactApplicationContext) :
             }
             else -> {
               promise.reject(
-                  JSApplicationIllegalArgumentException("Extra type for $name not supported.")
+                  JSApplicationIllegalArgumentException("Extra type for $name not supported."),
               )
               return
             }

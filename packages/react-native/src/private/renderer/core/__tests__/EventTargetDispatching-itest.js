@@ -6,7 +6,6 @@
  *
  * @fantom_flags enableNativeEventTargetEventDispatching:*
  * @fantom_flags enableImperativeEvents:*
- * @fantom_flags enableDirectEventsInEventTarget:*
  * @flow strict-local
  * @format
  */
@@ -1730,94 +1729,51 @@ const {isOSS} = Fantom.getConstants();
         ).toBe(0);
       });
 
-      (ReactNativeFeatureFlags.enableDirectEventsInEventTarget()
-        ? it
-        : it.skip)(
-        'restricts the event path to the target (AT_TARGET only, no ancestor capture listeners)',
-        () => {
-          const root = Fantom.createRoot();
-          const childRef = React.createRef<React.ElementRef<typeof View>>();
-          const ancestorCapture = jest.fn();
-          let observedPhase: number | null = null;
-          let observedPathLength: number | null = null;
-          let observedCurrentIsTarget: boolean | null = null;
+      it('restricts the event path to the target (AT_TARGET only, no ancestor capture listeners)', () => {
+        const root = Fantom.createRoot();
+        const childRef = React.createRef<React.ElementRef<typeof View>>();
+        const ancestorCapture = jest.fn();
+        let observedPhase: number | null = null;
+        let observedPathLength: number | null = null;
+        let observedCurrentIsTarget: boolean | null = null;
 
-          const handler = jest.fn((e: $FlowFixMe) => {
-            observedPhase = e.eventPhase;
-            observedPathLength = e.composedPath().length;
-            observedCurrentIsTarget = e.currentTarget === childRef.current;
-          });
+        const handler = jest.fn((e: $FlowFixMe) => {
+          observedPhase = e.eventPhase;
+          observedPathLength = e.composedPath().length;
+          observedCurrentIsTarget = e.currentTarget === childRef.current;
+        });
 
-          Fantom.runTask(() => {
-            root.render(createNestedViewsWithLayout(5, childRef, () => {}));
-          });
+        Fantom.runTask(() => {
+          root.render(createNestedViewsWithLayout(5, childRef, () => {}));
+        });
 
-          asEventTarget(childRef.current).addEventListener('layout', handler);
-          asEventTarget(root.document.documentElement).addEventListener(
-            'layout',
-            ancestorCapture,
-            {capture: true},
-          );
-          Fantom.flushAllNativeEvents();
+        asEventTarget(childRef.current).addEventListener('layout', handler);
+        asEventTarget(root.document.documentElement).addEventListener(
+          'layout',
+          ancestorCapture,
+          {capture: true},
+        );
+        Fantom.flushAllNativeEvents();
 
-          const ancestorCaptureBefore = ancestorCapture.mock.calls.length;
+        const ancestorCaptureBefore = ancestorCapture.mock.calls.length;
 
-          Fantom.dispatchNativeEvent(
-            childRef,
-            'onLayout',
-            {layout: {x: 0, y: 0, width: 100, height: 50}},
-            {category: Fantom.NativeEventCategory.Discrete},
-          );
+        Fantom.dispatchNativeEvent(
+          childRef,
+          'onLayout',
+          {layout: {x: 0, y: 0, width: 100, height: 50}},
+          {category: Fantom.NativeEventCategory.Discrete},
+        );
 
-          expect(handler).toHaveBeenCalled();
-          expect(observedPhase).toBe(Event.AT_TARGET);
-          // Event path is just the target node.
-          expect(observedPathLength).toBe(1);
-          expect(observedCurrentIsTarget).toBe(true);
-          // With the fast path, the capture phase does not traverse ancestors.
-          expect(
-            ancestorCapture.mock.calls.length - ancestorCaptureBefore,
-          ).toBe(0);
-        },
-      );
-
-      (ReactNativeFeatureFlags.enableDirectEventsInEventTarget()
-        ? it.skip
-        : it)(
-        'without the fast path, the capture phase still traverses ancestors for direct events',
-        () => {
-          const root = Fantom.createRoot();
-          const childRef = React.createRef<React.ElementRef<typeof View>>();
-          const ancestorCapture = jest.fn();
-
-          Fantom.runTask(() => {
-            root.render(createNestedViewsWithLayout(5, childRef, () => {}));
-          });
-
-          asEventTarget(root.document.documentElement).addEventListener(
-            'layout',
-            ancestorCapture,
-            {capture: true},
-          );
-          Fantom.flushAllNativeEvents();
-
-          const ancestorCaptureBefore = ancestorCapture.mock.calls.length;
-
-          Fantom.dispatchNativeEvent(
-            childRef,
-            'onLayout',
-            {layout: {x: 0, y: 0, width: 100, height: 50}},
-            {category: Fantom.NativeEventCategory.Discrete},
-          );
-
-          // The DOM dispatch algorithm runs the capture phase over every
-          // ancestor even for non-bubbling events, so the ancestor capture
-          // listener fires.
-          expect(
-            ancestorCapture.mock.calls.length - ancestorCaptureBefore,
-          ).toBe(1);
-        },
-      );
+        expect(handler).toHaveBeenCalled();
+        expect(observedPhase).toBe(Event.AT_TARGET);
+        // Event path is just the target node.
+        expect(observedPathLength).toBe(1);
+        expect(observedCurrentIsTarget).toBe(true);
+        // With the fast path, the capture phase does not traverse ancestors.
+        expect(ancestorCapture.mock.calls.length - ancestorCaptureBefore).toBe(
+          0,
+        );
+      });
     });
   },
 );

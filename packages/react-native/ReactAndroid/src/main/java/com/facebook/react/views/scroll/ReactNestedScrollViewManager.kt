@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<d321b1f5f7a34b5717cb7ef5300dda96>>
+ * @generated SignedSource<<1ea0f64fa8acd99b50c7ef54da014b3e>>
  */
 
 /**
@@ -321,7 +321,7 @@ constructor(private val fpsListener: FpsListener? = null) :
     val child =
         scrollView.getChildAt(0)
             ?: throw RetryableMountingLayerException(
-                "scrollToEnd called on ScrollView without child"
+                "scrollToEnd called on ScrollView without child",
             )
 
     // ScrollView always has one child - the scrollable area
@@ -367,7 +367,7 @@ constructor(private val fpsListener: FpsListener? = null) :
     if (view.fadingEdgeLengthStart > 0 || view.fadingEdgeLengthEnd > 0) {
       view.isVerticalFadingEdgeEnabled = true
       view.setFadingEdgeLength(
-          Math.round(Math.max(view.fadingEdgeLengthStart, view.fadingEdgeLengthEnd).dpToPx())
+          Math.round(Math.max(view.fadingEdgeLengthStart, view.fadingEdgeLengthEnd).dpToPx()),
       )
     } else {
       view.isVerticalFadingEdgeEnabled = false
@@ -384,7 +384,7 @@ constructor(private val fpsListener: FpsListener? = null) :
   public fun setMaintainVisibleContentPosition(view: ReactNestedScrollView, value: ReadableMap?) {
     if (value != null) {
       view.setMaintainVisibleContentPosition(
-          MaintainVisibleScrollPositionHelper.Config.fromReadableMap(value)
+          MaintainVisibleScrollPositionHelper.Config.fromReadableMap(value),
       )
     } else {
       view.setMaintainVisibleContentPosition(null)
@@ -450,17 +450,15 @@ constructor(private val fpsListener: FpsListener? = null) :
   public companion object {
     public const val REACT_CLASS: String = "RCTScrollView"
 
-    public fun createExportedCustomDirectEventTypeConstants(): Map<String, Any> =
-        mapOf(
-            getJSEventName(ScrollEventType.SCROLL) to mapOf("registrationName" to "onScroll"),
-            getJSEventName(ScrollEventType.BEGIN_DRAG) to
-                mapOf("registrationName" to "onScrollBeginDrag"),
-            getJSEventName(ScrollEventType.END_DRAG) to
-                mapOf("registrationName" to "onScrollEndDrag"),
-            getJSEventName(ScrollEventType.MOMENTUM_BEGIN) to
-                mapOf("registrationName" to "onMomentumScrollBegin"),
-            getJSEventName(ScrollEventType.MOMENTUM_END) to
-                mapOf("registrationName" to "onMomentumScrollEnd"),
-        )
+    public fun createExportedCustomDirectEventTypeConstants(): Map<String, Any> = mapOf(
+        getJSEventName(ScrollEventType.SCROLL) to mapOf("registrationName" to "onScroll"),
+        getJSEventName(ScrollEventType.BEGIN_DRAG) to
+            mapOf("registrationName" to "onScrollBeginDrag"),
+        getJSEventName(ScrollEventType.END_DRAG) to mapOf("registrationName" to "onScrollEndDrag"),
+        getJSEventName(ScrollEventType.MOMENTUM_BEGIN) to
+            mapOf("registrationName" to "onMomentumScrollBegin"),
+        getJSEventName(ScrollEventType.MOMENTUM_END) to
+            mapOf("registrationName" to "onMomentumScrollEnd"),
+    )
   }
 }

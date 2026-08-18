@@ -379,6 +379,10 @@ inline static void updateNativeDrawableProp(
         }
         folly::dynamic platformColorMap = folly::dynamic::object();
         platformColorMap["resource_paths"] = resourcePaths;
+        if (nativeDrawableValue.ripple.colorFallback.has_value()) {
+          platformColorMap["fallback"] =
+              nativeDrawableValue.ripple.colorFallback.value();
+        }
         nativeDrawableResult["color"] = platformColorMap;
       } else {
         nativeDrawableResult["color"] =

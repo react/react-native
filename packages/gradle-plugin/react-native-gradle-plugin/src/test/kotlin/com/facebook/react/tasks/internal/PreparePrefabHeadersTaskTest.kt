@@ -55,7 +55,7 @@ class PreparePrefabHeadersTaskTest {
         createTestTask<PreparePrefabHeadersTask>(project = project) {
           it.outputDir.set(outputDir)
           it.input.set(
-              listOf(PrefabPreprocessingEntry("sample_library", "input/" to expectedPrefix))
+              listOf(PrefabPreprocessingEntry("sample_library", "input/" to expectedPrefix)),
           )
         }
 
@@ -77,7 +77,7 @@ class PreparePrefabHeadersTaskTest {
         createTestTask<PreparePrefabHeadersTask>(project = project) {
           it.outputDir.set(outputDir)
           it.input.set(
-              listOf(PrefabPreprocessingEntry("sample_library", "input/" to expectedPrefix))
+              listOf(PrefabPreprocessingEntry("sample_library", "input/" to expectedPrefix)),
           )
         }
 
@@ -104,7 +104,7 @@ class PreparePrefabHeadersTaskTest {
                       "sample_library",
                       listOf("input/component1/" to "", "input/component2/" to ""),
                   ),
-              )
+              ),
           )
         }
 
@@ -128,7 +128,7 @@ class PreparePrefabHeadersTaskTest {
               listOf(
                   PrefabPreprocessingEntry("libraryone", "input/lib1/" to ""),
                   PrefabPreprocessingEntry("librarytwo", "input/lib2/" to ""),
-              )
+              ),
           )
         }
 
@@ -159,7 +159,7 @@ class PreparePrefabHeadersTaskTest {
                       "librarytwo",
                       listOf("input/lib2/" to "", "input/shared/" to "shared/"),
                   ),
-              )
+              ),
           )
         }
 

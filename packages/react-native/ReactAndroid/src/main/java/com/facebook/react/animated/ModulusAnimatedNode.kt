@@ -25,7 +25,7 @@ internal class ModulusAnimatedNode(
       nodeValue = (animatedNodeValue % modulus + modulus) % modulus
     } else {
       throw JSApplicationCausedNativeException(
-          "Illegal node ID set as an input for Animated.modulus node"
+          "Illegal node ID set as an input for Animated.modulus node",
       )
     }
   }

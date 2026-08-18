@@ -16,7 +16,7 @@ import com.facebook.react.module.annotations.ReactModule
 
 /** Native module for JS timer execution. Timers fire on frame boundaries. */
 @Deprecated(
-    "TimingModule is part of the legacy architecture and will be removed in a future React Native release."
+    "TimingModule is part of the legacy architecture and will be removed in a future React Native release.",
 )
 @ReactModule(name = NativeTimingSpec.NAME)
 public class TimingModule(

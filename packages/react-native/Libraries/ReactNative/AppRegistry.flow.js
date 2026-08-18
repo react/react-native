@@ -44,5 +44,6 @@ export type Registry = {
 };
 export type WrapperComponentProvider = (
   appParameters: Object,
+  appKey?: string,
 ) => React.ComponentType<any>;
 export type RootViewStyleProvider = (appParameters: Object) => ViewStyleProp;

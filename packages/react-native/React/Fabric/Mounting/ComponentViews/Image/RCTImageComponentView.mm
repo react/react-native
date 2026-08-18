@@ -11,9 +11,11 @@
 #import <React/RCTConversions.h>
 #import <React/RCTImageBlurUtils.h>
 #import <React/RCTImageResponseObserverProxy.h>
+#import <react/featureflags/ReactNativeFeatureFlags.h>
 #import <react/renderer/components/image/ImageComponentDescriptor.h>
 #import <react/renderer/components/image/ImageEventEmitter.h>
 #import <react/renderer/components/image/ImageProps.h>
+#import <react/renderer/graphics/Color.h>
 #import <react/renderer/imagemanager/ImageRequest.h>
 #import <react/renderer/imagemanager/RCTImagePrimitivesConversions.h>
 
@@ -63,7 +65,15 @@ using namespace facebook::react;
 
   // `tintColor`
   if (oldImageProps.tintColor != newImageProps.tintColor) {
-    _imageView.tintColor = RCTUIColorFromSharedColor(newImageProps.tintColor);
+    if (ReactNativeFeatureFlags::enableImageTransparentTintColor()) {
+      if (newImageProps.tintColor.has_value()) {
+        _imageView.tintColor = RCTUIColorFromSharedColor(newImageProps.tintColor.value());
+      } else {
+        _imageView.tintColor = nil;
+      }
+    } else {
+      _imageView.tintColor = RCTUIColorFromSharedColor(newImageProps.tintColor.value_or(SharedColor{}));
+    }
   }
 
   [super updateProps:props oldProps:oldProps];

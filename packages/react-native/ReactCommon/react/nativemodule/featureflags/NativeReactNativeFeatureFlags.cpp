@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<1e26f8dc1f474475c0a4d6be79aedb24>>
+ * @generated SignedSource<<9c49f2c73941bd43c3a2ab68eb561b6e>>
  */
 
 /**
@@ -189,6 +189,11 @@ bool NativeReactNativeFeatureFlags::enableImagePrefetchingAndroid(
   return ReactNativeFeatureFlags::enableImagePrefetchingAndroid();
 }
 
+bool NativeReactNativeFeatureFlags::enableImageTransparentTintColor(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::enableImageTransparentTintColor();
+}
+
 bool NativeReactNativeFeatureFlags::enableImmediateUpdateModeForContentOffsetChanges(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::enableImmediateUpdateModeForContentOffsetChanges();
@@ -229,6 +234,11 @@ bool NativeReactNativeFeatureFlags::enableModuleArgumentNSNullConversionIOS(
   return ReactNativeFeatureFlags::enableModuleArgumentNSNullConversionIOS();
 }
 
+bool NativeReactNativeFeatureFlags::enableMountingCoordinatorPullModelAndroid(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::enableMountingCoordinatorPullModelAndroid();
+}
+
 bool NativeReactNativeFeatureFlags::enableMutationObserverByDefault(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::enableMutationObserverByDefault();
@@ -237,11 +247,6 @@ bool NativeReactNativeFeatureFlags::enableMutationObserverByDefault(
 bool NativeReactNativeFeatureFlags::enableNativeCSSParsing(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::enableNativeCSSParsing();
-}
-
-bool NativeReactNativeFeatureFlags::enableNetworkEventReporting(
-    jsi::Runtime& /*runtime*/) {
-  return ReactNativeFeatureFlags::enableNetworkEventReporting();
 }
 
 bool NativeReactNativeFeatureFlags::enablePreparedTextLayout(
@@ -334,14 +339,14 @@ bool NativeReactNativeFeatureFlags::fuseboxFrameRecordingEnabled(
   return ReactNativeFeatureFlags::fuseboxFrameRecordingEnabled();
 }
 
-bool NativeReactNativeFeatureFlags::fuseboxNetworkInspectionEnabled(
-    jsi::Runtime& /*runtime*/) {
-  return ReactNativeFeatureFlags::fuseboxNetworkInspectionEnabled();
-}
-
 bool NativeReactNativeFeatureFlags::fuseboxScreenshotCaptureEnabled(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::fuseboxScreenshotCaptureEnabled();
+}
+
+bool NativeReactNativeFeatureFlags::fuseboxWebSocketEventsEnabled(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::fuseboxWebSocketEventsEnabled();
 }
 
 bool NativeReactNativeFeatureFlags::optimizedAnimatedPropUpdates(

@@ -93,6 +93,9 @@ RCT_EXTERN UIApplication *__nullable RCTSharedApplication(void);
 // or view controller
 RCT_EXTERN UIWindow *__nullable RCTKeyWindow(void);
 
+// Is this app a SceneDelegate app?
+RCT_EXTERN BOOL RCTIsSceneDelegateApp(void);
+
 // Returns the presented view controller, useful if you need
 // e.g. to present a modal view controller or alert over it
 RCT_EXTERN UIViewController *__nullable RCTPresentedViewController(void);
@@ -138,6 +141,11 @@ RCT_EXTERN NSData *__nullable RCTDecompressGzipData(NSData *__nullable data, NSU
 // Returns the relative path within the main bundle for an absolute URL
 // (or nil, if the URL does not specify a path within the main bundle)
 RCT_EXTERN NSString *__nullable RCTBundlePathForURL(NSURL *__nullable URL);
+
+// Returns the asset catalog image name for a packager asset URL, or nil if the
+// URL is not a main-bundle packager asset. The name matches the identifier the
+// CLI uses when generating the catalog (see assetPathUtils.getResourceIdentifier).
+RCT_EXTERN NSString *__nullable RCTAssetCatalogNameForURL(NSURL *__nullable URL);
 
 // Returns the Path of Library directory
 RCT_EXTERN NSString *__nullable RCTLibraryPath(void);

@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <react/renderer/components/view/conversions.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/core/propsConversions.h>

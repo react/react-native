@@ -150,11 +150,10 @@ public class ReactDrawerLayoutManager :
     return true
   }
 
-  public override fun getCommandsMap(): Map<String, Int> =
-      mapOf(
-          COMMAND_OPEN_DRAWER to OPEN_DRAWER,
-          COMMAND_CLOSE_DRAWER to CLOSE_DRAWER,
-      )
+  public override fun getCommandsMap(): Map<String, Int> = mapOf(
+      COMMAND_OPEN_DRAWER to OPEN_DRAWER,
+      COMMAND_CLOSE_DRAWER to CLOSE_DRAWER,
+  )
 
   @Deprecated(
       message =
@@ -172,14 +171,13 @@ public class ReactDrawerLayoutManager :
     }
   }
 
-  public override fun getExportedViewConstants(): Map<String, Any> =
-      mapOf(
-          DRAWER_POSITION to
-              mapOf(
-                  DRAWER_POSITION_LEFT to Gravity.START,
-                  DRAWER_POSITION_RIGHT to Gravity.END,
-              )
-      )
+  public override fun getExportedViewConstants(): Map<String, Any> = mapOf(
+      DRAWER_POSITION to
+          mapOf(
+              DRAWER_POSITION_LEFT to Gravity.START,
+              DRAWER_POSITION_RIGHT to Gravity.END,
+          ),
+  )
 
   public override fun getExportedCustomDirectEventTypeConstants(): Map<String, Any> {
     val eventTypeConstants = super.getExportedCustomDirectEventTypeConstants() ?: mutableMapOf()
@@ -202,7 +200,7 @@ public class ReactDrawerLayoutManager :
     }
     if (index != 0 && index != 1) {
       throw JSApplicationIllegalArgumentException(
-          "The only valid indices for drawer's child are 0 or 1. Got $index instead."
+          "The only valid indices for drawer's child are 0 or 1. Got $index instead.",
       )
     }
     parent.addView(child, index)
@@ -217,25 +215,25 @@ public class ReactDrawerLayoutManager :
   ) : DrawerListener {
     override fun onDrawerSlide(view: View, v: Float) {
       eventDispatcher.dispatchEvent(
-          DrawerSlideEvent(UIManagerHelper.getSurfaceId(drawerLayout), drawerLayout.id, v)
+          DrawerSlideEvent(UIManagerHelper.getSurfaceId(drawerLayout), drawerLayout.id, v),
       )
     }
 
     override fun onDrawerOpened(view: View) {
       eventDispatcher.dispatchEvent(
-          DrawerOpenedEvent(UIManagerHelper.getSurfaceId(drawerLayout), drawerLayout.id)
+          DrawerOpenedEvent(UIManagerHelper.getSurfaceId(drawerLayout), drawerLayout.id),
       )
     }
 
     override fun onDrawerClosed(view: View) {
       eventDispatcher.dispatchEvent(
-          DrawerClosedEvent(UIManagerHelper.getSurfaceId(drawerLayout), drawerLayout.id)
+          DrawerClosedEvent(UIManagerHelper.getSurfaceId(drawerLayout), drawerLayout.id),
       )
     }
 
     override fun onDrawerStateChanged(i: Int) {
       eventDispatcher.dispatchEvent(
-          DrawerStateChangedEvent(UIManagerHelper.getSurfaceId(drawerLayout), drawerLayout.id, i)
+          DrawerStateChangedEvent(UIManagerHelper.getSurfaceId(drawerLayout), drawerLayout.id, i),
       )
     }
   }

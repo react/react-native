@@ -105,7 +105,7 @@ public class DevToolsReactPerfLogger : FabricMarkerListener {
   }
 
   public fun removeDevToolsReactPerfLoggerListener(
-      listener: DevToolsReactPerfLoggerListener
+      listener: DevToolsReactPerfLoggerListener,
   ): Unit {
     devToolsReactPerfLoggerListeners.remove(listener)
   }

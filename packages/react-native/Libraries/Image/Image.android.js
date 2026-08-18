@@ -139,7 +139,6 @@ const EMPTY_IMAGE_SOURCE = {
 let BaseImage: AbstractImageAndroid = ({
   ref: forwardedRef,
   alt,
-  accessible,
   'aria-labelledby': ariaLabelledBy,
   'aria-busy': ariaBusy,
   'aria-checked': ariaChecked,
@@ -148,8 +147,6 @@ let BaseImage: AbstractImageAndroid = ({
   'aria-hidden': ariaHidden,
   'aria-label': ariaLabel,
   'aria-selected': ariaSelected,
-  accessibilityLabel,
-  accessibilityLabelledBy,
   accessibilityState,
   defaultSource,
   loadingIndicatorSource,
@@ -172,7 +169,7 @@ let BaseImage: AbstractImageAndroid = ({
   ref?: React.RefSetter<ImageInstance>,
   ...ImageProps,
 }) => {
-  let source_ =
+  let resolvedSource =
     getImageSourcesFromImageProps({
       crossOrigin,
       referrerPolicy,
@@ -201,29 +198,29 @@ let BaseImage: AbstractImageAndroid = ({
     ...React.PropsOf<ImageViewNativeComponent>,
   };
 
-  if (Array.isArray(source_)) {
+  if (Array.isArray(resolvedSource)) {
     const {
       headers: sourceHeaders,
       width: sourceWidth,
       height: sourceHeight,
-    } = source_[0];
+    } = resolvedSource[0];
     if (sourceHeaders != null) {
       nativeProps.headers = sourceHeaders;
     }
     // Default to the first source's width and height if only one is provided
     nativeProps.style = [
-      source_.length === 1 && {width: sourceWidth, height: sourceHeight},
+      resolvedSource.length === 1 && {width: sourceWidth, height: sourceHeight},
       styles.base,
       style,
     ];
-    nativeProps.source = source_;
+    nativeProps.source = resolvedSource;
   } else {
     const {
       uri,
       width: sourceWidth,
       height: sourceHeight,
       headers: sourceHeaders,
-    } = source_;
+    } = resolvedSource;
     if (uri === '') {
       console.warn('source.uri should not be an empty string');
     }
@@ -235,7 +232,7 @@ let BaseImage: AbstractImageAndroid = ({
       styles.base,
       style,
     ];
-    nativeProps.source = [source_];
+    nativeProps.source = [resolvedSource];
   }
 
   if (onLoadStart != null) {
@@ -266,24 +263,19 @@ let BaseImage: AbstractImageAndroid = ({
     nativeProps.loadingIndicatorSrc = loadingIndicatorSource_.uri;
   }
 
+  // Maintain pre-existing order, accessibilityLabel takes priority over alt
   if (ariaLabel != null) {
     nativeProps.accessibilityLabel = ariaLabel;
-  } else if (accessibilityLabel != null) {
-    nativeProps.accessibilityLabel = accessibilityLabel;
-  } else if (alt != null) {
+  } else if (alt != null && nativeProps.accessibilityLabel == null) {
     nativeProps.accessibilityLabel = alt;
   }
 
   if (ariaLabelledBy != null) {
     nativeProps.accessibilityLabelledBy = ariaLabelledBy;
-  } else if (accessibilityLabelledBy != null) {
-    nativeProps.accessibilityLabelledBy = accessibilityLabelledBy;
   }
 
   if (alt != null) {
     nativeProps.accessible = true;
-  } else if (accessible != null) {
-    nativeProps.accessible = accessible;
   }
 
   if (

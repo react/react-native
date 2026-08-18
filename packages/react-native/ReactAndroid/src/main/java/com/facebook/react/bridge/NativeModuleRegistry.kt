@@ -42,7 +42,7 @@ public class NativeModuleRegistry(
 
   /** Adds any new modules to the current module registry */
   @JvmName(
-      "registerModules"
+      "registerModules",
   ) // This is needed till there are Java Consumer of this API inside React
   // Native
   internal fun registerModules(newRegister: NativeModuleRegistry) {
@@ -62,7 +62,7 @@ public class NativeModuleRegistry(
   }
 
   @JvmName(
-      "notifyJSInstanceDestroy"
+      "notifyJSInstanceDestroy",
   ) // This is needed till there are Java Consumer of this API inside
   // React Native
   internal fun notifyJSInstanceDestroy() {
@@ -82,7 +82,7 @@ public class NativeModuleRegistry(
   internal fun notifyJSInstanceInitialized() {
     reactApplicationContext.assertOnNativeModulesQueueThread(
         "From version React Native v0.44, " +
-            "native modules are explicitly not initialized on the UI thread."
+            "native modules are explicitly not initialized on the UI thread.",
     )
     logMarker(ReactMarkerConstants.NATIVE_MODULE_INITIALIZE_START)
     beginSection(Systrace.TRACE_TAG_REACT, "NativeModuleRegistry_notifyJSInstanceInitialized")

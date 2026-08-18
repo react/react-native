@@ -8,7 +8,7 @@
  * @noflow
  */
 
-const fs = require('fs');
+const fs = require('node:fs');
 
 /**
  * script to prepare package for publish.

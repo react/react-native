@@ -46,6 +46,7 @@ import com.facebook.react.uimanager.BaseViewManager
 import com.facebook.react.uimanager.LayoutShadowNode
 import com.facebook.react.uimanager.LengthPercentage
 import com.facebook.react.uimanager.LengthPercentageType
+import com.facebook.react.uimanager.PointerEvents
 import com.facebook.react.uimanager.ReactStylesDiffMap
 import com.facebook.react.uimanager.StateWrapper
 import com.facebook.react.uimanager.ThemedReactContext
@@ -73,6 +74,7 @@ import com.facebook.react.views.text.ReactTypefaceUtils.getFontWeightAdjustment
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontVariant
 import com.facebook.react.views.text.TextAttributeProps
 import com.facebook.react.views.text.TextLayoutManager
+import com.facebook.react.views.view.ImportantForInteractionHelper
 import java.util.LinkedList
 
 /** Manages instances of TextInput. */
@@ -103,7 +105,7 @@ public open class ReactTextInputManager public constructor() :
   override fun createShadowNodeInstance(): LayoutShadowNode = LayoutShadowNode()
 
   public fun createShadowNodeInstance(
-      reactTextViewManagerCallback: ReactTextViewManagerCallback?
+      reactTextViewManagerCallback: ReactTextViewManagerCallback?,
   ): LayoutShadowNode = LayoutShadowNode()
 
   override fun getShadowNodeClass(): Class<out LayoutShadowNode> = LayoutShadowNode::class.java
@@ -119,19 +121,19 @@ public open class ReactTextInputManager public constructor() :
                         mapOf(
                             "bubbled" to "onSubmitEditing",
                             "captured" to "onSubmitEditingCapture",
-                        )
+                        ),
                 ),
             "topEndEditing" to
                 mapOf(
                     "phasedRegistrationNames" to
-                        mapOf("bubbled" to "onEndEditing", "captured" to "onEndEditingCapture")
+                        mapOf("bubbled" to "onEndEditing", "captured" to "onEndEditingCapture"),
                 ),
             "topKeyPress" to
                 mapOf(
                     "phasedRegistrationNames" to
-                        mapOf("bubbled" to "onKeyPress", "captured" to "onKeyPressCapture")
+                        mapOf("bubbled" to "onKeyPress", "captured" to "onKeyPressCapture"),
                 ),
-        )
+        ),
     )
     return eventTypeConstants
   }
@@ -140,7 +142,7 @@ public open class ReactTextInputManager public constructor() :
     val baseEventTypeConstants = super.getExportedCustomDirectEventTypeConstants()
     val eventTypeConstants = baseEventTypeConstants ?: mutableMapOf()
     eventTypeConstants.putAll(
-        mapOf(getJSEventName(ScrollEventType.SCROLL) to mapOf("registrationName" to "onScroll"))
+        mapOf(getJSEventName(ScrollEventType.SCROLL) to mapOf("registrationName" to "onScroll")),
     )
     return eventTypeConstants
   }
@@ -252,6 +254,11 @@ public open class ReactTextInputManager public constructor() :
   @ReactProp(name = ViewProps.FONT_VARIANT)
   public fun setFontVariant(view: ReactEditText, fontVariant: ReadableArray?) {
     view.fontFeatureSettings = parseFontVariant(fontVariant)
+  }
+
+  @ReactProp(name = ViewProps.FONT_VARIATION_SETTINGS)
+  public fun setFontVariationSettings(view: ReactEditText, fontVariationSettings: String?) {
+    view.setReactFontVariationSettings(fontVariationSettings)
   }
 
   @ReactProp(name = ViewProps.INCLUDE_FONT_PADDING, defaultBoolean = true)
@@ -506,7 +513,7 @@ public open class ReactTextInputManager public constructor() :
             TAG,
             IllegalStateException(
                 "Could not get default text color from View Context: " +
-                    (if (c != null) c.javaClass.canonicalName else "null")
+                    (if (c != null) c.javaClass.canonicalName else "null"),
             ),
         )
       }
@@ -882,13 +889,21 @@ public open class ReactTextInputManager public constructor() :
   @ReactProp(name = "overflow")
   public fun setOverflow(view: ReactEditText, overflow: String?) {
     view.setOverflow(overflow)
+    ImportantForInteractionHelper.setImportantForInteraction(
+        view,
+        // <TextInput> has no pointerEvents prop, so it always behaves as AUTO.
+        PointerEvents.AUTO,
+        view.overflow,
+    )
   }
 
   override fun onAfterUpdateTransaction(view: ReactEditText) {
     super.onAfterUpdateTransaction(view)
-    view.maybeUpdateTypeface()
     reconcileAutoCapitalize(view)
     view.commitStagedInputType()
+    // setInputType() clears paint-level font variation settings, so update the typeface last to
+    // reapply any variation axes after the staged input type is committed.
+    view.maybeUpdateTypeface()
   }
 
   override fun addEventEmitters(reactContext: ThemedReactContext, editText: ReactEditText) {
@@ -905,7 +920,7 @@ public open class ReactTextInputManager public constructor() :
       } else {
         eventDispatcher?.dispatchEvent(BlurEvent(surfaceId, editText.id))
         eventDispatcher?.dispatchEvent(
-            ReactTextInputEndEditingEvent(surfaceId, editText.id, editText.text.toString())
+            ReactTextInputEndEditingEvent(surfaceId, editText.id, editText.text.toString()),
         )
       }
     }
@@ -931,7 +946,7 @@ public open class ReactTextInputManager public constructor() :
                   reactContext.surfaceId,
                   editText.id,
                   editText.text.toString(),
-              )
+              ),
           )
         }
 
@@ -959,16 +974,15 @@ public open class ReactTextInputManager public constructor() :
     }
   }
 
-  override fun getExportedViewConstants(): Map<String, Any> =
-      mapOf(
-          "AutoCapitalizationType" to
-              mapOf(
-                  "none" to 0,
-                  "characters" to InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS,
-                  "words" to InputType.TYPE_TEXT_FLAG_CAP_WORDS,
-                  "sentences" to InputType.TYPE_TEXT_FLAG_CAP_SENTENCES,
-              )
-      )
+  override fun getExportedViewConstants(): Map<String, Any> = mapOf(
+      "AutoCapitalizationType" to
+          mapOf(
+              "none" to 0,
+              "characters" to InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS,
+              "words" to InputType.TYPE_TEXT_FLAG_CAP_WORDS,
+              "sentences" to InputType.TYPE_TEXT_FLAG_CAP_SENTENCES,
+          ),
+  )
 
   override fun setPadding(view: ReactEditText, left: Int, top: Int, right: Int, bottom: Int) {
     view.setPadding(left, top, right, bottom)
@@ -1026,7 +1040,7 @@ public open class ReactTextInputManager public constructor() :
 
     val textBreakStrategy =
         TextAttributeProps.getTextBreakStrategy(
-            paragraphAttributes.getString(TextLayoutManager.PA_KEY_TEXT_BREAK_STRATEGY.toInt())
+            paragraphAttributes.getString(TextLayoutManager.PA_KEY_TEXT_BREAK_STRATEGY.toInt()),
         )
     val currentJustificationMode =
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
@@ -1058,60 +1072,58 @@ public open class ReactTextInputManager public constructor() :
     // private const val TX_STATE_KEY_HASH: Short = 2
     private const val TX_STATE_KEY_MOST_RECENT_EVENT_COUNT: Short = 3
 
-    private val REACT_PROPS_AUTOFILL_HINTS_MAP: Map<String, String> =
-        mapOf(
-            "2fa-app-otp" to HintConstants.AUTOFILL_HINT_2FA_APP_OTP,
-            "birthdate-day" to HintConstants.AUTOFILL_HINT_BIRTH_DATE_DAY,
-            "birthdate-full" to HintConstants.AUTOFILL_HINT_BIRTH_DATE_FULL,
-            "birthdate-month" to HintConstants.AUTOFILL_HINT_BIRTH_DATE_MONTH,
-            "birthdate-year" to HintConstants.AUTOFILL_HINT_BIRTH_DATE_YEAR,
-            "cc-csc" to HintConstants.AUTOFILL_HINT_CREDIT_CARD_SECURITY_CODE,
-            "cc-exp" to HintConstants.AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_DATE,
-            "cc-exp-day" to HintConstants.AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_DAY,
-            "cc-exp-month" to HintConstants.AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_MONTH,
-            "cc-exp-year" to HintConstants.AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_YEAR,
-            "cc-number" to HintConstants.AUTOFILL_HINT_CREDIT_CARD_NUMBER,
-            "email" to HintConstants.AUTOFILL_HINT_EMAIL_ADDRESS,
-            "email-otp" to HintConstants.AUTOFILL_HINT_EMAIL_OTP,
-            "flight-confirmation-code" to HintConstants.AUTOFILL_HINT_FLIGHT_CONFIRMATION_CODE,
-            "flight-number" to HintConstants.AUTOFILL_HINT_FLIGHT_NUMBER,
-            "gender" to HintConstants.AUTOFILL_HINT_GENDER,
-            "gift-card-number" to HintConstants.AUTOFILL_HINT_GIFT_CARD_NUMBER,
-            "gift-card-pin" to HintConstants.AUTOFILL_HINT_GIFT_CARD_PIN,
-            "loyalty-account-number" to HintConstants.AUTOFILL_HINT_LOYALTY_ACCOUNT_NUMBER,
-            "name" to HintConstants.AUTOFILL_HINT_PERSON_NAME,
-            "name-family" to HintConstants.AUTOFILL_HINT_PERSON_NAME_FAMILY,
-            "name-given" to HintConstants.AUTOFILL_HINT_PERSON_NAME_GIVEN,
-            "name-middle" to HintConstants.AUTOFILL_HINT_PERSON_NAME_MIDDLE,
-            "name-middle-initial" to HintConstants.AUTOFILL_HINT_PERSON_NAME_MIDDLE_INITIAL,
-            "name-prefix" to HintConstants.AUTOFILL_HINT_PERSON_NAME_PREFIX,
-            "name-suffix" to HintConstants.AUTOFILL_HINT_PERSON_NAME_SUFFIX,
-            "password" to HintConstants.AUTOFILL_HINT_PASSWORD,
-            "password-new" to HintConstants.AUTOFILL_HINT_NEW_PASSWORD,
-            "postal-address" to HintConstants.AUTOFILL_HINT_POSTAL_ADDRESS,
-            "postal-address-country" to HintConstants.AUTOFILL_HINT_POSTAL_ADDRESS_COUNTRY,
-            "postal-address-dependent-locality" to
-                HintConstants.AUTOFILL_HINT_POSTAL_ADDRESS_DEPENDENT_LOCALITY,
-            "postal-address-extended" to
-                HintConstants.AUTOFILL_HINT_POSTAL_ADDRESS_EXTENDED_ADDRESS,
-            "postal-address-extended-postal-code" to
-                HintConstants.AUTOFILL_HINT_POSTAL_ADDRESS_EXTENDED_POSTAL_CODE,
-            "postal-address-locality" to HintConstants.AUTOFILL_HINT_POSTAL_ADDRESS_LOCALITY,
-            "postal-address-region" to HintConstants.AUTOFILL_HINT_POSTAL_ADDRESS_REGION,
-            "postal-address-unit" to HintConstants.AUTOFILL_HINT_POSTAL_ADDRESS_APT_NUMBER,
-            "postal-code" to HintConstants.AUTOFILL_HINT_POSTAL_CODE,
-            "promo-code" to HintConstants.AUTOFILL_HINT_PROMO_CODE,
-            "street-address" to HintConstants.AUTOFILL_HINT_POSTAL_ADDRESS_STREET_ADDRESS,
-            "sms-otp" to HintConstants.AUTOFILL_HINT_SMS_OTP,
-            "tel" to HintConstants.AUTOFILL_HINT_PHONE_NUMBER,
-            "tel-country-code" to HintConstants.AUTOFILL_HINT_PHONE_COUNTRY_CODE,
-            "tel-national" to HintConstants.AUTOFILL_HINT_PHONE_NATIONAL,
-            "tel-device" to HintConstants.AUTOFILL_HINT_PHONE_NUMBER_DEVICE,
-            "upi-vpa" to HintConstants.AUTOFILL_HINT_UPI_VPA,
-            "wifi-password" to HintConstants.AUTOFILL_HINT_WIFI_PASSWORD,
-            "username" to HintConstants.AUTOFILL_HINT_USERNAME,
-            "username-new" to HintConstants.AUTOFILL_HINT_NEW_USERNAME,
-        )
+    private val REACT_PROPS_AUTOFILL_HINTS_MAP: Map<String, String> = mapOf(
+        "2fa-app-otp" to HintConstants.AUTOFILL_HINT_2FA_APP_OTP,
+        "birthdate-day" to HintConstants.AUTOFILL_HINT_BIRTH_DATE_DAY,
+        "birthdate-full" to HintConstants.AUTOFILL_HINT_BIRTH_DATE_FULL,
+        "birthdate-month" to HintConstants.AUTOFILL_HINT_BIRTH_DATE_MONTH,
+        "birthdate-year" to HintConstants.AUTOFILL_HINT_BIRTH_DATE_YEAR,
+        "cc-csc" to HintConstants.AUTOFILL_HINT_CREDIT_CARD_SECURITY_CODE,
+        "cc-exp" to HintConstants.AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_DATE,
+        "cc-exp-day" to HintConstants.AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_DAY,
+        "cc-exp-month" to HintConstants.AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_MONTH,
+        "cc-exp-year" to HintConstants.AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_YEAR,
+        "cc-number" to HintConstants.AUTOFILL_HINT_CREDIT_CARD_NUMBER,
+        "email" to HintConstants.AUTOFILL_HINT_EMAIL_ADDRESS,
+        "email-otp" to HintConstants.AUTOFILL_HINT_EMAIL_OTP,
+        "flight-confirmation-code" to HintConstants.AUTOFILL_HINT_FLIGHT_CONFIRMATION_CODE,
+        "flight-number" to HintConstants.AUTOFILL_HINT_FLIGHT_NUMBER,
+        "gender" to HintConstants.AUTOFILL_HINT_GENDER,
+        "gift-card-number" to HintConstants.AUTOFILL_HINT_GIFT_CARD_NUMBER,
+        "gift-card-pin" to HintConstants.AUTOFILL_HINT_GIFT_CARD_PIN,
+        "loyalty-account-number" to HintConstants.AUTOFILL_HINT_LOYALTY_ACCOUNT_NUMBER,
+        "name" to HintConstants.AUTOFILL_HINT_PERSON_NAME,
+        "name-family" to HintConstants.AUTOFILL_HINT_PERSON_NAME_FAMILY,
+        "name-given" to HintConstants.AUTOFILL_HINT_PERSON_NAME_GIVEN,
+        "name-middle" to HintConstants.AUTOFILL_HINT_PERSON_NAME_MIDDLE,
+        "name-middle-initial" to HintConstants.AUTOFILL_HINT_PERSON_NAME_MIDDLE_INITIAL,
+        "name-prefix" to HintConstants.AUTOFILL_HINT_PERSON_NAME_PREFIX,
+        "name-suffix" to HintConstants.AUTOFILL_HINT_PERSON_NAME_SUFFIX,
+        "password" to HintConstants.AUTOFILL_HINT_PASSWORD,
+        "password-new" to HintConstants.AUTOFILL_HINT_NEW_PASSWORD,
+        "postal-address" to HintConstants.AUTOFILL_HINT_POSTAL_ADDRESS,
+        "postal-address-country" to HintConstants.AUTOFILL_HINT_POSTAL_ADDRESS_COUNTRY,
+        "postal-address-dependent-locality" to
+            HintConstants.AUTOFILL_HINT_POSTAL_ADDRESS_DEPENDENT_LOCALITY,
+        "postal-address-extended" to HintConstants.AUTOFILL_HINT_POSTAL_ADDRESS_EXTENDED_ADDRESS,
+        "postal-address-extended-postal-code" to
+            HintConstants.AUTOFILL_HINT_POSTAL_ADDRESS_EXTENDED_POSTAL_CODE,
+        "postal-address-locality" to HintConstants.AUTOFILL_HINT_POSTAL_ADDRESS_LOCALITY,
+        "postal-address-region" to HintConstants.AUTOFILL_HINT_POSTAL_ADDRESS_REGION,
+        "postal-address-unit" to HintConstants.AUTOFILL_HINT_POSTAL_ADDRESS_APT_NUMBER,
+        "postal-code" to HintConstants.AUTOFILL_HINT_POSTAL_CODE,
+        "promo-code" to HintConstants.AUTOFILL_HINT_PROMO_CODE,
+        "street-address" to HintConstants.AUTOFILL_HINT_POSTAL_ADDRESS_STREET_ADDRESS,
+        "sms-otp" to HintConstants.AUTOFILL_HINT_SMS_OTP,
+        "tel" to HintConstants.AUTOFILL_HINT_PHONE_NUMBER,
+        "tel-country-code" to HintConstants.AUTOFILL_HINT_PHONE_COUNTRY_CODE,
+        "tel-national" to HintConstants.AUTOFILL_HINT_PHONE_NATIONAL,
+        "tel-device" to HintConstants.AUTOFILL_HINT_PHONE_NUMBER_DEVICE,
+        "upi-vpa" to HintConstants.AUTOFILL_HINT_UPI_VPA,
+        "wifi-password" to HintConstants.AUTOFILL_HINT_WIFI_PASSWORD,
+        "username" to HintConstants.AUTOFILL_HINT_USERNAME,
+        "username-new" to HintConstants.AUTOFILL_HINT_NEW_USERNAME,
+    )
 
     private const val FOCUS_TEXT_INPUT = 1
     private const val BLUR_TEXT_INPUT = 2

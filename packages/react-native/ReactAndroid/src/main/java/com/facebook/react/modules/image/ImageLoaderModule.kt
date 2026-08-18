@@ -133,7 +133,7 @@ internal class ImageLoaderModule : NativeImageLoaderAndroidSpec, LifecycleEventL
   }
 
   private fun createSizeSubscriber(
-      promise: Promise
+      promise: Promise,
   ): DataSubscriber<CloseableReference<PooledByteBuffer>> =
       object : BaseDataSubscriber<CloseableReference<PooledByteBuffer>>() {
         override fun onNewResultImpl(dataSource: DataSource<CloseableReference<PooledByteBuffer>>) {
@@ -213,7 +213,7 @@ internal class ImageLoaderModule : NativeImageLoaderAndroidSpec, LifecycleEventL
         buildReadableMap {
           put("width", width)
           put("height", height)
-        }
+        },
     )
   }
 

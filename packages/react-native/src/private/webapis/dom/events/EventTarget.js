@@ -224,6 +224,7 @@ export default class EventTarget {
    * which is `AT_TARGET` during both passes through the target node.
    */
   // $FlowExpectedError[unsupported-syntax]
+  // $FlowFixMe[illegal-key]
   [EVENT_TARGET_GET_DECLARATIVE_LISTENER_KEY](
     event: Event,
     isCapture: boolean,
@@ -239,6 +240,7 @@ export default class EventTarget {
    * (see https://dom.spec.whatwg.org/#get-the-parent).
    */
   // $FlowExpectedError[unsupported-syntax]
+  // $FlowFixMe[illegal-key]
   [EVENT_TARGET_GET_THE_PARENT_KEY](): EventTarget | null {
     return null;
   }
@@ -249,6 +251,7 @@ export default class EventTarget {
    * canceled (i.e. `event.defaultPrevented`), otherwise `true`.
    */
   // $FlowExpectedError[unsupported-syntax]
+  // $FlowFixMe[illegal-key]
   [INTERNAL_DISPATCH_METHOD_KEY](
     event: Event,
     rethrowListenerErrors?: boolean,

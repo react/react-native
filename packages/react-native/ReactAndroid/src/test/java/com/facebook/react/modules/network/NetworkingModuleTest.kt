@@ -17,10 +17,9 @@ import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.WritableArray
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.common.network.OkHttpCallUtil
-import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
-import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsDefaults
-import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsForTests
 import com.facebook.testutils.shadows.ShadowArguments
+import com.facebook.testutils.shadows.ShadowInspectorNetworkReporter
+import com.facebook.testutils.shadows.ShadowSoLoader
 import java.io.IOException
 import java.io.InputStream
 import java.nio.charset.StandardCharsets
@@ -54,7 +53,10 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
 /** Tests [NetworkingModule] */
-@Config(shadows = [ShadowArguments::class])
+@Config(
+    shadows =
+        [ShadowArguments::class, ShadowSoLoader::class, ShadowInspectorNetworkReporter::class],
+)
 @RunWith(RobolectricTestRunner::class)
 class NetworkingModuleTest {
 
@@ -77,13 +79,6 @@ class NetworkingModuleTest {
 
     context = mock()
     whenever(context.hasActiveReactInstance()).thenReturn(true)
-
-    ReactNativeFeatureFlagsForTests.setUp()
-    ReactNativeFeatureFlags.override(
-        object : ReactNativeFeatureFlagsDefaults() {
-          override fun enableNetworkEventReporting(): Boolean = false
-        }
-    )
 
     networkingModule = NetworkingModule(context, "", httpClient, null)
 
@@ -225,11 +220,10 @@ class NetworkingModuleTest {
 
   @Test
   fun testHeaders() {
-    val headers =
-        listOf(
-            JavaOnlyArray.of("Accept", "text/plain"),
-            JavaOnlyArray.of("User-Agent", "React test agent/1.0"),
-        )
+    val headers = listOf(
+        JavaOnlyArray.of("Accept", "text/plain"),
+        JavaOnlyArray.of("User-Agent", "React test agent/1.0"),
+    )
 
     networkingModule.sendRequest(
         "GET",
@@ -371,12 +365,11 @@ class NetworkingModuleTest {
   @Test
   fun testMultipartPostRequestHeaders() {
     setupRequestBodyUtil()
-    val headers =
-        listOf(
-            JavaOnlyArray.of("Accept", "text/plain"),
-            JavaOnlyArray.of("User-Agent", "React test agent/1.0"),
-            JavaOnlyArray.of("content-type", "multipart/form-data"),
-        )
+    val headers = listOf(
+        JavaOnlyArray.of("Accept", "text/plain"),
+        JavaOnlyArray.of("User-Agent", "React test agent/1.0"),
+        JavaOnlyArray.of("content-type", "multipart/form-data"),
+    )
 
     val body = JavaOnlyMap()
     val formData = JavaOnlyArray()
@@ -459,7 +452,7 @@ class NetworkingModuleTest {
                     "content-disposition",
                     "filename=\"测试photo.jpg\"; filename*=utf-8''%E6%B5%8B%E8%AF%95photo.jpg",
                 ),
-            )
+            ),
         ),
     )
 

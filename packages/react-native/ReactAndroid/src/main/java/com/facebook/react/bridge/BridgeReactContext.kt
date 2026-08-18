@@ -73,7 +73,7 @@ public open class BridgeReactContext(context: Context) : ReactApplicationContext
   private fun raiseCatalystInstanceMissingException() {
     throw IllegalStateException(
         if (mDestroyed) LATE_NATIVE_MODULE_EXCEPTION_MESSAGE
-        else EARLY_NATIVE_MODULE_EXCEPTION_MESSAGE
+        else EARLY_NATIVE_MODULE_EXCEPTION_MESSAGE,
     )
   }
 

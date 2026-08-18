@@ -214,7 +214,7 @@ public open class JavaTimerManager(
       if (driftTime > 60000) {
         javaScriptTimerExecutor.emitTimeDriftWarning(
             "Debugger and device times have drifted by more than 60s. Please correct this by " +
-                "running adb shell \"date `date +%m%d%H%M%Y.%S`\" on your debugger machine."
+                "running adb shell \"date `date +%m%d%H%M%Y.%S`\" on your debugger machine.",
         )
       }
     }

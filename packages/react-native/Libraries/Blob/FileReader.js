@@ -17,6 +17,7 @@ import {
   setEventHandlerAttribute,
 } from '../../src/private/webapis/dom/events/EventHandlerAttributes';
 import EventTarget from '../../src/private/webapis/dom/events/EventTarget';
+import DOMException from '../../src/private/webapis/errors/DOMException';
 import NativeFileReaderModule from './NativeFileReaderModule';
 import {toByteArray} from 'base64-js';
 
@@ -41,9 +42,15 @@ class FileReader extends EventTarget {
   DONE: number = DONE;
 
   _readyState: ReadyState;
-  _error: ?Error;
+  _error: ?DOMException;
   _result: ?ReaderResult;
   _aborted: boolean = false;
+  _readId: number = 0;
+  // Keep the Blob strongly referenced until the native read settles. If the
+  // caller drops its own reference the Blob can be GC'd mid-read. Its
+  // BlobCollector finalizer then frees the native buffer and the read fails
+  // with "The specified blob is invalid".
+  _blob: ?Blob;
 
   constructor() {
     super();
@@ -54,12 +61,30 @@ class FileReader extends EventTarget {
     this._readyState = EMPTY;
     this._error = null;
     this._result = null;
+    this._blob = null;
+  }
+
+  _startRead(methodName: string): number {
+    if (this._readyState === LOADING) {
+      throw new DOMException(
+        `Failed to execute '${methodName}' on 'FileReader': The object is already busy reading Blobs.`,
+        'InvalidStateError',
+      );
+    }
+    this._aborted = false;
+    this._error = null;
+    this._result = null;
+    const readId = ++this._readId;
+    this._setReadyState(LOADING);
+    return readId;
   }
 
   _setReadyState(newState: ReadyState) {
     this._readyState = newState;
     this.dispatchEvent(new Event('readystatechange'));
-    if (newState === DONE) {
+    if (newState === LOADING) {
+      this.dispatchEvent(new Event('loadstart'));
+    } else if (newState === DONE) {
       if (this._aborted) {
         this.dispatchEvent(new Event('abort'));
       } else if (this._error) {
@@ -67,26 +92,43 @@ class FileReader extends EventTarget {
       } else {
         this.dispatchEvent(new Event('load'));
       }
-      this.dispatchEvent(new Event('loadend'));
+      if (this._readyState !== LOADING) {
+        this.dispatchEvent(new Event('loadend'));
+      }
     }
   }
 
-  readAsArrayBuffer(blob: ?Blob): void {
-    this._aborted = false;
+  _toDOMException(error: unknown): DOMException {
+    if (error instanceof DOMException) {
+      return error;
+    }
+    if (error instanceof Error) {
+      return new DOMException(error.message, 'NotReadableError');
+    }
+    return new DOMException(String(error), 'NotReadableError');
+  }
 
+  readAsArrayBuffer(blob: ?Blob): void {
     if (blob == null) {
       throw new TypeError(
         "Failed to execute 'readAsArrayBuffer' on 'FileReader': parameter 1 is not of type 'Blob'",
       );
     }
 
-    this._setReadyState(LOADING);
+    const readId = this._startRead('readAsArrayBuffer');
+    // Skip if this read is no longer current: a synchronous loadstart or
+    // readystatechange handler may have aborted or started another read during
+    // _startRead, so setting _blob here would leak or clobber the newer read's.
+    if (readId === this._readId) {
+      this._blob = blob;
+    }
 
     NativeFileReaderModule.readAsDataURL(blob.data).then(
       (text: string) => {
-        if (this._aborted) {
+        if (readId !== this._readId) {
           return;
         }
+        this._blob = null;
 
         const base64 = text.split(',')[1];
         const typedArray = toByteArray(base64);
@@ -95,89 +137,98 @@ class FileReader extends EventTarget {
         this._setReadyState(DONE);
       },
       error => {
-        if (this._aborted) {
+        if (readId !== this._readId) {
           return;
         }
-        this._error = error;
+        this._blob = null;
+        this._error = this._toDOMException(error);
         this._setReadyState(DONE);
       },
     );
   }
 
   readAsDataURL(blob: ?Blob): void {
-    this._aborted = false;
-
     if (blob == null) {
       throw new TypeError(
         "Failed to execute 'readAsDataURL' on 'FileReader': parameter 1 is not of type 'Blob'",
       );
     }
 
-    this._setReadyState(LOADING);
+    const readId = this._startRead('readAsDataURL');
+    if (readId === this._readId) {
+      this._blob = blob;
+    }
 
     NativeFileReaderModule.readAsDataURL(blob.data).then(
       (text: string) => {
-        if (this._aborted) {
+        if (readId !== this._readId) {
           return;
         }
+        this._blob = null;
         this._result = text;
         this._setReadyState(DONE);
       },
       error => {
-        if (this._aborted) {
+        if (readId !== this._readId) {
           return;
         }
-        this._error = error;
+        this._blob = null;
+        this._error = this._toDOMException(error);
         this._setReadyState(DONE);
       },
     );
   }
 
   readAsText(blob: ?Blob, encoding: string = 'UTF-8'): void {
-    this._aborted = false;
-
     if (blob == null) {
       throw new TypeError(
         "Failed to execute 'readAsText' on 'FileReader': parameter 1 is not of type 'Blob'",
       );
     }
 
-    this._setReadyState(LOADING);
+    const readId = this._startRead('readAsText');
+    if (readId === this._readId) {
+      this._blob = blob;
+    }
 
     NativeFileReaderModule.readAsText(blob.data, encoding).then(
       (text: string) => {
-        if (this._aborted) {
+        if (readId !== this._readId) {
           return;
         }
+        this._blob = null;
         this._result = text;
         this._setReadyState(DONE);
       },
       error => {
-        if (this._aborted) {
+        if (readId !== this._readId) {
           return;
         }
-        this._error = error;
+        this._blob = null;
+        this._error = this._toDOMException(error);
         this._setReadyState(DONE);
       },
     );
   }
 
   abort() {
-    this._aborted = true;
-    // only call onreadystatechange if there is something to abort, as per spec
-    if (this._readyState !== EMPTY && this._readyState !== DONE) {
-      this._reset();
+    this._result = null;
+    if (this._readyState === LOADING) {
+      this._aborted = true;
+      this._readId++;
+      // The abandoned read's callbacks bail out on the readId check without
+      // clearing _blob, so release it here, before dispatching the abort event
+      // whose handler may start a new read that sets _blob again.
+      this._blob = null;
       this._setReadyState(DONE);
     }
-    // Reset again after, in case modified in handler
-    this._reset();
   }
 
   get readyState(): ReadyState {
     return this._readyState;
   }
 
-  get error(): ?Error {
+  get error(): ?DOMException {
     return this._error;
   }
 

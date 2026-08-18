@@ -136,7 +136,7 @@ internal class OutsetBoxShadowDrawable(
               ),
               Path.Direction.CW,
           )
-        }
+        },
     )
 
     canvas.drawPath(

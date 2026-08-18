@@ -17,16 +17,15 @@ class MultipartStreamReaderTest {
 
   @Test
   fun testSimpleCase() {
-    val response: ByteString =
-        encodeUtf8(
-            "preamble, should be ignored\r\n" +
-                "--sample_boundary\r\n" +
-                "Content-Type: application/json; charset=utf-8\r\n" +
-                "Content-Length: 2\r\n\r\n" +
-                "{}\r\n" +
-                "--sample_boundary--\r\n" +
-                "epilogue, should be ignored"
-        )
+    val response: ByteString = encodeUtf8(
+        "preamble, should be ignored\r\n" +
+            "--sample_boundary\r\n" +
+            "Content-Type: application/json; charset=utf-8\r\n" +
+            "Content-Length: 2\r\n\r\n" +
+            "{}\r\n" +
+            "--sample_boundary--\r\n" +
+            "epilogue, should be ignored",
+    )
 
     val source = Buffer()
     source.write(response)
@@ -56,18 +55,17 @@ class MultipartStreamReaderTest {
 
   @Test
   fun testMultipleParts() {
-    val response: ByteString =
-        encodeUtf8(
-            "preamble, should be ignored\r\n" +
-                "--sample_boundary\r\n" +
-                "1\r\n" +
-                "--sample_boundary\r\n" +
-                "2\r\n" +
-                "--sample_boundary\r\n" +
-                "3\r\n" +
-                "--sample_boundary--\r\n" +
-                "epilogue, should be ignored"
-        )
+    val response: ByteString = encodeUtf8(
+        "preamble, should be ignored\r\n" +
+            "--sample_boundary\r\n" +
+            "1\r\n" +
+            "--sample_boundary\r\n" +
+            "2\r\n" +
+            "--sample_boundary\r\n" +
+            "3\r\n" +
+            "--sample_boundary--\r\n" +
+            "epilogue, should be ignored",
+    )
 
     val source = Buffer()
     source.write(response)
@@ -111,16 +109,15 @@ class MultipartStreamReaderTest {
 
   @Test
   fun testNoCloseDelimiter() {
-    val response: ByteString =
-        encodeUtf8(
-            "preamble, should be ignored\r\n" +
-                "--sample_boundary\r\n" +
-                "Content-Type: application/json; charset=utf-8\r\n" +
-                "Content-Length: 2\r\n\r\n" +
-                "{}\r\n" +
-                "--sample_boundary\r\n" +
-                "incomplete message..."
-        )
+    val response: ByteString = encodeUtf8(
+        "preamble, should be ignored\r\n" +
+            "--sample_boundary\r\n" +
+            "Content-Type: application/json; charset=utf-8\r\n" +
+            "Content-Length: 2\r\n\r\n" +
+            "{}\r\n" +
+            "--sample_boundary\r\n" +
+            "incomplete message...",
+    )
 
     val source = Buffer()
     source.write(response)
@@ -137,19 +134,18 @@ class MultipartStreamReaderTest {
 
   @Test
   fun testListenerDoesNotNeedToFullyReadBody() {
-    val response: ByteString =
-        encodeUtf8(
-            "preamble\r\n" +
-                "--sample_boundary\r\n" +
-                "Content-Type: text/plain\r\n" +
-                "Content-Length: 4\r\n\r\n" +
-                "ABCD\r\n" +
-                "--sample_boundary\r\n" +
-                "Content-Type: text/plain\r\n" +
-                "Content-Length: 1\r\n\r\n" +
-                "Z\r\n" +
-                "--sample_boundary--\r\n"
-        )
+    val response: ByteString = encodeUtf8(
+        "preamble\r\n" +
+            "--sample_boundary\r\n" +
+            "Content-Type: text/plain\r\n" +
+            "Content-Length: 4\r\n\r\n" +
+            "ABCD\r\n" +
+            "--sample_boundary\r\n" +
+            "Content-Type: text/plain\r\n" +
+            "Content-Length: 1\r\n\r\n" +
+            "Z\r\n" +
+            "--sample_boundary--\r\n",
+    )
 
     val source = Buffer().apply { write(response) }
     val reader = MultipartStreamReader(source, "sample_boundary")
@@ -182,15 +178,14 @@ class MultipartStreamReaderTest {
 
   @Test
   fun testHeaderNamesAreCaseInsensitive() {
-    val response: ByteString =
-        encodeUtf8(
-            "preamble\r\n" +
-                "--sample_boundary\r\n" +
-                "content-type: application/json\r\n" +
-                "content-length: 2\r\n\r\n" +
-                "{}\r\n" +
-                "--sample_boundary--\r\n"
-        )
+    val response: ByteString = encodeUtf8(
+        "preamble\r\n" +
+            "--sample_boundary\r\n" +
+            "content-type: application/json\r\n" +
+            "content-length: 2\r\n\r\n" +
+            "{}\r\n" +
+            "--sample_boundary--\r\n",
+    )
 
     val source = Buffer().apply { write(response) }
     val reader = MultipartStreamReader(source, "sample_boundary")

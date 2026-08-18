@@ -21,9 +21,13 @@ const {
   FIRST_PARTY_DOTSLASH_FILES,
 } = require('./write-dotslash-release-asset-urls');
 const {Octokit} = require('@octokit/rest');
+const path = require('node:path');
+const {parseArgs} = require('node:util');
 const nullthrows = require('nullthrows');
-const path = require('path');
-const {parseArgs} = require('util');
+
+// Upload POSTs are not preserved when GitHub redirects from the former owner.
+const GITHUB_OWNER = 'react';
+const GITHUB_REPO = 'react-native';
 
 /*::
 import type {DotSlashProvider, DotSlashHttpProvider, DotSlashArtifactInfo} from './utils/dotslash-utils';
@@ -138,8 +142,8 @@ async function getReleaseAssetMap(
   octokit /*: IOctokit */,
 ) /*: Promise<ReleaseAssetMap> */ {
   const existingAssets = await octokit.repos.listReleaseAssets({
-    owner: 'facebook',
-    repo: 'react-native',
+    owner: GITHUB_OWNER,
+    repo: GITHUB_REPO,
     release_id: releaseId,
   });
   return new Map(existingAssets.data.map(asset => [asset.name, asset]));
@@ -305,8 +309,8 @@ async function maybeDeleteExistingReleaseAsset(
   }
   console.log(`[${name}] Deleting existing release asset...`);
   await octokit.repos.deleteReleaseAsset({
-    owner: 'facebook',
-    repo: 'react-native',
+    owner: GITHUB_OWNER,
+    repo: GITHUB_REPO,
     asset_id: existingAsset.id,
   });
 }
@@ -360,8 +364,8 @@ async function uploadAndVerifyReleaseAsset(
   const {
     data: {browser_download_url},
   } = await octokit.repos.uploadReleaseAsset({
-    owner: 'facebook',
-    repo: 'react-native',
+    owner: GITHUB_OWNER,
+    repo: GITHUB_REPO,
     release_id: releaseId,
     name,
     data,

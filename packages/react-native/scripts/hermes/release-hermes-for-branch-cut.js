@@ -16,12 +16,12 @@ const {
   updateHermesRuntimeDependenciesVersions,
 } = require('../../../../scripts/releases/utils/hermes-utils');
 const {setHermesTag} = require('./hermes-utils');
-const {execSync} = require('child_process');
-const fs = require('fs');
 // $FlowFixMe[untyped-import]
 const inquirer = require('inquirer');
-const os = require('os');
-const path = require('path');
+const {execSync} = require('node:child_process');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
 const {exit} = require('shelljs');
 const yargs = require('yargs');
 

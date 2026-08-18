@@ -33,13 +33,14 @@
   "dependencies": {
     "@react-native/asset-utils": "0.87.0-main",
     "@react-native/dev-middleware": "0.87.0-main",
+    "commander": "^12.0.0",
     "debug": "^4.4.0",
     "invariant": "^2.2.4",
-    "metro": "^0.86.0",
+    "metro": "^0.87.0",
     "semver": "^7.1.3"
   },
   "devDependencies": {
-    "metro-resolver": "^0.86.0"
+    "metro-resolver": "^0.87.0"
   },
   "peerDependencies": {
     "@react-native-community/cli": "*",

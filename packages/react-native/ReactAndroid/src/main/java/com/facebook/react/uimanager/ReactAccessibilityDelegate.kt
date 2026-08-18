@@ -75,7 +75,7 @@ public open class ReactAccessibilityDelegate( // The View this delegate is attac
       val accessibilityStateExpanded = host.getTag(R.id.accessibility_state_expanded) as Boolean
       info.addAction(
           if (accessibilityStateExpanded) AccessibilityNodeInfoCompat.ACTION_COLLAPSE
-          else AccessibilityNodeInfoCompat.ACTION_EXPAND
+          else AccessibilityNodeInfoCompat.ACTION_EXPAND,
       )
     }
     val accessibilityRole = AccessibilityRole.fromViewTag(host)
@@ -234,7 +234,7 @@ public open class ReactAccessibilityDelegate( // The View this delegate is attac
         val uiManager = getUIManager(reactContext, UIManagerType.FABRIC)
         if (uiManager != null) {
           uiManager.eventDispatcher.dispatchEvent(
-              AccessibilityActionEvent(eventData, surfaceId, reactTag)
+              AccessibilityActionEvent(eventData, surfaceId, reactTag),
           )
         }
       } else {
@@ -437,6 +437,7 @@ public open class ReactAccessibilityDelegate( // The View this delegate is attac
     SPINBUTTON,
     SWITCH,
     TAB,
+    TABBAR,
     TABLIST,
     TIMER,
     LIST,
@@ -491,6 +492,7 @@ public open class ReactAccessibilityDelegate( // The View this delegate is attac
           RADIOGROUP,
           SCROLLBAR,
           TAB,
+          TABBAR,
           TABLIST,
           TIMER,
           TOOLBAR -> "android.view.View"
@@ -560,15 +562,14 @@ public open class ReactAccessibilityDelegate( // The View this delegate is attac
   public companion object {
     public const val TOP_ACCESSIBILITY_ACTION_EVENT: String = "topAccessibilityAction"
 
-    private val actionIdMap =
-        mapOf<String, Int>(
-            "activate" to AccessibilityActionCompat.ACTION_CLICK.id,
-            "longpress" to AccessibilityActionCompat.ACTION_LONG_CLICK.id,
-            "increment" to AccessibilityActionCompat.ACTION_SCROLL_FORWARD.id,
-            "decrement" to AccessibilityActionCompat.ACTION_SCROLL_BACKWARD.id,
-            "expand" to AccessibilityActionCompat.ACTION_EXPAND.id,
-            "collapse" to AccessibilityActionCompat.ACTION_COLLAPSE.id,
-        )
+    private val actionIdMap = mapOf<String, Int>(
+        "activate" to AccessibilityActionCompat.ACTION_CLICK.id,
+        "longpress" to AccessibilityActionCompat.ACTION_LONG_CLICK.id,
+        "increment" to AccessibilityActionCompat.ACTION_SCROLL_FORWARD.id,
+        "decrement" to AccessibilityActionCompat.ACTION_SCROLL_BACKWARD.id,
+        "expand" to AccessibilityActionCompat.ACTION_EXPAND.id,
+        "collapse" to AccessibilityActionCompat.ACTION_COLLAPSE.id,
+    )
 
     private const val TAG = "ReactAccessibilityDelegate"
     private var customActionCounter = 0x3f000000

@@ -7,7 +7,7 @@
  * @format
  */
 
-import type {ErrorUtils} from '../../Libraries/vendor/core/ErrorUtils';
+import type {ErrorUtils} from './ErrorUtils';
 
 declare global {
   interface NodeRequire {
@@ -124,6 +124,15 @@ declare global {
 
   function cancelAnimationFrame(handle: number | null | undefined): void;
   function requestAnimationFrame(callback: (time: number) => void): number;
+
+  function requestIdleCallback(
+    callback: (deadline: {
+      didTimeout: boolean;
+      timeRemaining: () => number;
+    }) => void,
+    options?: {timeout?: number | undefined},
+  ): number;
+  function cancelIdleCallback(handle: number | null | undefined): void;
 
   function fetchBundle(
     bundleId: number,

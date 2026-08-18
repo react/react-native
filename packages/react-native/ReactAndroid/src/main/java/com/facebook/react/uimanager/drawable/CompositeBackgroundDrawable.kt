@@ -69,7 +69,7 @@ internal class CompositeBackgroundDrawable(
             feedbackUnderlay,
             innerShadows,
             outline,
-        )
+        ),
     ) {
 
   init {
@@ -80,7 +80,7 @@ internal class CompositeBackgroundDrawable(
   }
 
   fun withNewBackgroundImage(
-      backgroundImage: BackgroundImageDrawable?
+      backgroundImage: BackgroundImageDrawable?,
   ): CompositeBackgroundDrawable {
     return CompositeBackgroundDrawable(
         context,

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<5ae6b1a0bfa9d680aa61685dbacd69d2>>
+ * @generated SignedSource<<a506d2515fce404e19bd61099cc60117>>
  */
 
 /**
@@ -49,6 +49,7 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
   private var enableIOSTextBaselineOffsetPerLineCache: Boolean? = null
   private var enableIOSViewClipToPaddingBoxCache: Boolean? = null
   private var enableImagePrefetchingAndroidCache: Boolean? = null
+  private var enableImageTransparentTintColorCache: Boolean? = null
   private var enableImmediateUpdateModeForContentOffsetChangesCache: Boolean? = null
   private var enableImperativeFocusCache: Boolean? = null
   private var enableInteropViewManagerClassLookUpOptimizationIOSCache: Boolean? = null
@@ -57,9 +58,9 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
   private var enableLayoutAnimationsOnAndroidCache: Boolean? = null
   private var enableLayoutAnimationsOnIOSCache: Boolean? = null
   private var enableModuleArgumentNSNullConversionIOSCache: Boolean? = null
+  private var enableMountingCoordinatorPullModelAndroidCache: Boolean? = null
   private var enableMutationObserverByDefaultCache: Boolean? = null
   private var enableNativeCSSParsingCache: Boolean? = null
-  private var enableNetworkEventReportingCache: Boolean? = null
   private var enablePreparedTextLayoutCache: Boolean? = null
   private var enablePropsUpdateReconciliationAndroidCache: Boolean? = null
   private var enableRuntimeSchedulerQueueClearingOnErrorCache: Boolean? = null
@@ -78,8 +79,8 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
   private var fuseboxAssertSingleHostStateCache: Boolean? = null
   private var fuseboxEnabledReleaseCache: Boolean? = null
   private var fuseboxFrameRecordingEnabledCache: Boolean? = null
-  private var fuseboxNetworkInspectionEnabledCache: Boolean? = null
   private var fuseboxScreenshotCaptureEnabledCache: Boolean? = null
+  private var fuseboxWebSocketEventsEnabledCache: Boolean? = null
   private var optimizedAnimatedPropUpdatesCache: Boolean? = null
   private var overrideBySynchronousMountPropsAtMountingAndroidCache: Boolean? = null
   private var perfIssuesEnabledCache: Boolean? = null
@@ -368,6 +369,15 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
     return cached
   }
 
+  override fun enableImageTransparentTintColor(): Boolean {
+    var cached = enableImageTransparentTintColorCache
+    if (cached == null) {
+      cached = ReactNativeFeatureFlagsCxxInterop.enableImageTransparentTintColor()
+      enableImageTransparentTintColorCache = cached
+    }
+    return cached
+  }
+
   override fun enableImmediateUpdateModeForContentOffsetChanges(): Boolean {
     var cached = enableImmediateUpdateModeForContentOffsetChangesCache
     if (cached == null) {
@@ -440,6 +450,15 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
     return cached
   }
 
+  override fun enableMountingCoordinatorPullModelAndroid(): Boolean {
+    var cached = enableMountingCoordinatorPullModelAndroidCache
+    if (cached == null) {
+      cached = ReactNativeFeatureFlagsCxxInterop.enableMountingCoordinatorPullModelAndroid()
+      enableMountingCoordinatorPullModelAndroidCache = cached
+    }
+    return cached
+  }
+
   override fun enableMutationObserverByDefault(): Boolean {
     var cached = enableMutationObserverByDefaultCache
     if (cached == null) {
@@ -454,15 +473,6 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
     if (cached == null) {
       cached = ReactNativeFeatureFlagsCxxInterop.enableNativeCSSParsing()
       enableNativeCSSParsingCache = cached
-    }
-    return cached
-  }
-
-  override fun enableNetworkEventReporting(): Boolean {
-    var cached = enableNetworkEventReportingCache
-    if (cached == null) {
-      cached = ReactNativeFeatureFlagsCxxInterop.enableNetworkEventReporting()
-      enableNetworkEventReportingCache = cached
     }
     return cached
   }
@@ -629,20 +639,20 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
     return cached
   }
 
-  override fun fuseboxNetworkInspectionEnabled(): Boolean {
-    var cached = fuseboxNetworkInspectionEnabledCache
-    if (cached == null) {
-      cached = ReactNativeFeatureFlagsCxxInterop.fuseboxNetworkInspectionEnabled()
-      fuseboxNetworkInspectionEnabledCache = cached
-    }
-    return cached
-  }
-
   override fun fuseboxScreenshotCaptureEnabled(): Boolean {
     var cached = fuseboxScreenshotCaptureEnabledCache
     if (cached == null) {
       cached = ReactNativeFeatureFlagsCxxInterop.fuseboxScreenshotCaptureEnabled()
       fuseboxScreenshotCaptureEnabledCache = cached
+    }
+    return cached
+  }
+
+  override fun fuseboxWebSocketEventsEnabled(): Boolean {
+    var cached = fuseboxWebSocketEventsEnabledCache
+    if (cached == null) {
+      cached = ReactNativeFeatureFlagsCxxInterop.fuseboxWebSocketEventsEnabled()
+      fuseboxWebSocketEventsEnabledCache = cached
     }
     return cached
   }

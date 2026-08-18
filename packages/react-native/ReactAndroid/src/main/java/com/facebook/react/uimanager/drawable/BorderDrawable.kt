@@ -137,26 +137,24 @@ internal class BorderDrawable(
 
   @Deprecated("Deprecated in Java")
   override fun getOpacity(): Int {
-    val maxBorderAlpha =
-        maxOf(
-            (Color.alpha(multiplyColorAlpha(computedBorderColors.left, borderAlpha))),
-            (Color.alpha(multiplyColorAlpha(computedBorderColors.top, borderAlpha))),
-            (Color.alpha(multiplyColorAlpha(computedBorderColors.right, borderAlpha))),
-            (Color.alpha(multiplyColorAlpha(computedBorderColors.bottom, borderAlpha))),
-        )
+    val maxBorderAlpha = maxOf(
+        (Color.alpha(multiplyColorAlpha(computedBorderColors.left, borderAlpha))),
+        (Color.alpha(multiplyColorAlpha(computedBorderColors.top, borderAlpha))),
+        (Color.alpha(multiplyColorAlpha(computedBorderColors.right, borderAlpha))),
+        (Color.alpha(multiplyColorAlpha(computedBorderColors.bottom, borderAlpha))),
+    )
 
     // If the highest alpha value of all border edges is 0, then the drawable is TRANSPARENT.
     if (maxBorderAlpha == 0) {
       return PixelFormat.TRANSPARENT
     }
 
-    val minBorderAlpha =
-        minOf(
-            (Color.alpha(multiplyColorAlpha(computedBorderColors.left, borderAlpha))),
-            (Color.alpha(multiplyColorAlpha(computedBorderColors.top, borderAlpha))),
-            (Color.alpha(multiplyColorAlpha(computedBorderColors.right, borderAlpha))),
-            (Color.alpha(multiplyColorAlpha(computedBorderColors.bottom, borderAlpha))),
-        )
+    val minBorderAlpha = minOf(
+        (Color.alpha(multiplyColorAlpha(computedBorderColors.left, borderAlpha))),
+        (Color.alpha(multiplyColorAlpha(computedBorderColors.top, borderAlpha))),
+        (Color.alpha(multiplyColorAlpha(computedBorderColors.right, borderAlpha))),
+        (Color.alpha(multiplyColorAlpha(computedBorderColors.bottom, borderAlpha))),
+    )
 
     /*
      * If the lowest alpha value of all border edges is 255, then the drawable is OPAQUE.
@@ -243,17 +241,16 @@ internal class BorderDrawable(
       val top = bounds.top
 
       // Check for fast path to border drawing.
-      val fastBorderColor =
-          fastBorderCompatibleColorOrZero(
-              borderLeft,
-              borderTop,
-              borderRight,
-              borderBottom,
-              computedBorderColors.left,
-              computedBorderColors.top,
-              computedBorderColors.right,
-              computedBorderColors.bottom,
-          )
+      val fastBorderColor = fastBorderCompatibleColorOrZero(
+          borderLeft,
+          borderTop,
+          borderRight,
+          borderBottom,
+          computedBorderColors.left,
+          computedBorderColors.top,
+          computedBorderColors.right,
+          computedBorderColors.bottom,
+      )
       if (fastBorderColor != 0) {
         if (Color.alpha(fastBorderColor) != 0) {
           // Border color is not transparent.

@@ -84,16 +84,15 @@ class FabricMountingManagerInstrumentationTest {
       index: Int,
       componentName: String = "RCTView",
   ): IntBufferBatchMountItem {
-    val intBuffer =
-        intArrayOf(
-            IntBufferBatchMountItem.INSTRUCTION_CREATE,
-            reactTag,
-            1,
-            IntBufferBatchMountItem.INSTRUCTION_INSERT,
-            reactTag,
-            parentTag,
-            index,
-        )
+    val intBuffer = intArrayOf(
+        IntBufferBatchMountItem.INSTRUCTION_CREATE,
+        reactTag,
+        1,
+        IntBufferBatchMountItem.INSTRUCTION_INSERT,
+        reactTag,
+        parentTag,
+        index,
+    )
     val objBuffer = arrayOf<Any?>(componentName, JavaOnlyMap.of(), null, null)
     return IntBufferBatchMountItem(surfaceId, intBuffer, objBuffer, 1)
   }
@@ -175,22 +174,21 @@ class FabricMountingManagerInstrumentationTest {
     initialMount.execute(mountingManager)
     assertThat(smm.getView(42)).isNotNull()
 
-    val intBuffer =
-        intArrayOf(
-            IntBufferBatchMountItem.INSTRUCTION_REMOVE,
-            42,
-            surfaceId,
-            0,
-            IntBufferBatchMountItem.INSTRUCTION_DELETE,
-            42,
-            IntBufferBatchMountItem.INSTRUCTION_CREATE,
-            42,
-            1,
-            IntBufferBatchMountItem.INSTRUCTION_INSERT,
-            42,
-            surfaceId,
-            0,
-        )
+    val intBuffer = intArrayOf(
+        IntBufferBatchMountItem.INSTRUCTION_REMOVE,
+        42,
+        surfaceId,
+        0,
+        IntBufferBatchMountItem.INSTRUCTION_DELETE,
+        42,
+        IntBufferBatchMountItem.INSTRUCTION_CREATE,
+        42,
+        1,
+        IntBufferBatchMountItem.INSTRUCTION_INSERT,
+        42,
+        surfaceId,
+        0,
+    )
     val objBuffer = arrayOf<Any?>("RCTView", JavaOnlyMap.of(), null, null)
     val batchMount = IntBufferBatchMountItem(surfaceId, intBuffer, objBuffer, 2)
     batchMount.execute(mountingManager)

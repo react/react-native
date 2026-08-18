@@ -49,4 +49,6 @@ Pod::Spec.new do |s|
 
   s.dependency "ReactCommon/turbomodule/core"
   add_dependency(s, "React-RCTFBReactNativeSpec")
+
+  mark_as_react_native_build(s)
 end

@@ -40,10 +40,9 @@ public object RootViewUtil {
       // When not in edge-to-edge mode, subtract the top system bar insets so the offset is
       // relative to the content area (below the status bar / cutout).
       ViewCompat.getRootWindowInsets(v)?.apply {
-        val insets =
-            getInsets(
-                WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.displayCutout()
-            )
+        val insets = getInsets(
+            WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.displayCutout(),
+        )
 
         locationInWindow[0] -= insets.left
         locationInWindow[1] -= insets.top

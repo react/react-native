@@ -37,7 +37,7 @@ class AgpConfiguratorUtilsTest {
               <manifest xmlns:android="http://schemas.android.com/apk/res/android">
               </manifest>
               """
-                  .trimIndent()
+                  .trimIndent(),
           )
         }
 
@@ -56,7 +56,7 @@ class AgpConfiguratorUtilsTest {
               <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.facebook.react" >
               </manifest>
               """
-                  .trimIndent()
+                  .trimIndent(),
           )
         }
 

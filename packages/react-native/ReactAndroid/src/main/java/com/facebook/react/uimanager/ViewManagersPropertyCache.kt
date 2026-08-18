@@ -322,7 +322,7 @@ internal object ViewManagersPropertyCache {
    */
   @JvmStatic
   internal fun getNativePropSettersForViewManagerClass(
-      cls: Class<out ViewManager<*, *>>
+      cls: Class<out ViewManager<*, *>>,
   ): Map<String, PropSetter> {
     if (cls == ViewManager::class.java) {
       return EMPTY_PROPS_MAP
@@ -333,10 +333,9 @@ internal object ViewManagersPropertyCache {
     // This is to include all the setters from parent classes. Once calculated the result will be
     // stored in CLASS_PROPS_CACHE so that we only scan for @ReactProp annotations once per class.
     @Suppress("UNCHECKED_CAST")
-    val props: MutableMap<String, PropSetter> =
-        HashMap(
-            getNativePropSettersForViewManagerClass(cls.superclass as Class<out ViewManager<*, *>>)
-        )
+    val props: MutableMap<String, PropSetter> = HashMap(
+        getNativePropSettersForViewManagerClass(cls.superclass as Class<out ViewManager<*, *>>),
+    )
     extractPropSettersFromViewManagerClassDefinition(cls, props)
     CLASS_PROPS_CACHE[cls] = props
     return props
@@ -349,7 +348,7 @@ internal object ViewManagersPropertyCache {
    */
   @JvmStatic
   internal fun getNativePropSettersForShadowNodeClass(
-      cls: Class<out ReactShadowNode<*>>
+      cls: Class<out ReactShadowNode<*>>,
   ): Map<String, PropSetter> {
     for (iface in cls.interfaces) {
       if (iface == ReactShadowNode::class.java) {
@@ -402,7 +401,7 @@ internal object ViewManagersPropertyCache {
         ReadableMap::class.java -> MapPropSetter(annotation, method)
         else ->
             throw RuntimeException(
-                "Unrecognized type: $propTypeClass for method: ${method.declaringClass.name}#${method.name}"
+                "Unrecognized type: $propTypeClass for method: ${method.declaringClass.name}#${method.name}",
             )
       }
 
@@ -446,7 +445,7 @@ internal object ViewManagersPropertyCache {
           }
       else ->
           throw RuntimeException(
-              "Unrecognized type: $propTypeClass for method: ${method.declaringClass.name}#${method.name}"
+              "Unrecognized type: $propTypeClass for method: ${method.declaringClass.name}#${method.name}",
           )
     }
   }
@@ -464,7 +463,7 @@ internal object ViewManagersPropertyCache {
         }
         if (!View::class.java.isAssignableFrom(paramTypes[0])) {
           throw RuntimeException(
-              "First param should be a view subclass to be updated: ${cls.name}#${method.name}"
+              "First param should be a view subclass to be updated: ${cls.name}#${method.name}",
           )
         }
         props[annotation.name] = createPropSetter(annotation, method, paramTypes[1])
@@ -475,17 +474,17 @@ internal object ViewManagersPropertyCache {
         val paramTypes = method.parameterTypes
         if (paramTypes.size != 3) {
           throw RuntimeException(
-              "Wrong number of args for group prop setter: ${cls.name}#${method.name}"
+              "Wrong number of args for group prop setter: ${cls.name}#${method.name}",
           )
         }
         if (!View::class.java.isAssignableFrom(paramTypes[0])) {
           throw RuntimeException(
-              "First param should be a view subclass to be updated: ${cls.name}#${method.name}"
+              "First param should be a view subclass to be updated: ${cls.name}#${method.name}",
           )
         }
         if (paramTypes[1] != Int::class.javaPrimitiveType) {
           throw RuntimeException(
-              "Second argument should be property index: ${cls.name}#${method.name}"
+              "Second argument should be property index: ${cls.name}#${method.name}",
           )
         }
         createPropSetters(groupAnnotation, method, paramTypes[2], props)
@@ -512,12 +511,12 @@ internal object ViewManagersPropertyCache {
         val paramTypes = method.parameterTypes
         if (paramTypes.size != 2) {
           throw RuntimeException(
-              "Wrong number of args for group prop setter: ${cls.name}#${method.name}"
+              "Wrong number of args for group prop setter: ${cls.name}#${method.name}",
           )
         }
         if (paramTypes[0] != Int::class.javaPrimitiveType) {
           throw RuntimeException(
-              "Second argument should be property index: ${cls.name}#${method.name}"
+              "Second argument should be property index: ${cls.name}#${method.name}",
           )
         }
         createPropSetters(groupAnnotation, method, paramTypes[1], props)

@@ -52,7 +52,7 @@ class JSPackagerClientTest {
     val client = getClient(createRequestHandler("methodValue", handler))
 
     client.onMessage(
-        """{"version": 2, "id": "idValue", "method": "methodValue", "params": "paramsValue"}"""
+        """{"version": 2, "id": "idValue", "method": "methodValue", "params": "paramsValue"}""",
     )
     verify(handler, never()).onNotification(any())
     verify(handler).onRequest(eq("paramsValue"), any())

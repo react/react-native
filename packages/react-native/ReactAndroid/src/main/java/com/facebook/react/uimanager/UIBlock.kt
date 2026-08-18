@@ -16,6 +16,6 @@ package com.facebook.react.uimanager
 @Deprecated("Use UIManagerListener or View Commands instead")
 public fun interface UIBlock {
   public fun execute(
-      @Suppress("DEPRECATION") nativeViewHierarchyManager: NativeViewHierarchyManager
+      @Suppress("DEPRECATION") nativeViewHierarchyManager: NativeViewHierarchyManager,
   )
 }

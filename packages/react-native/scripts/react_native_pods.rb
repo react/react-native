@@ -21,6 +21,8 @@ require_relative './cocoapods/helpers.rb'
 require_relative './cocoapods/privacy_manifest_utils.rb'
 require_relative './cocoapods/spm.rb'
 require_relative './cocoapods/rncore.rb'
+require_relative './cocoapods/rncore_facades.rb'
+require_relative './cocoapods/rndeps_facades.rb'
 # Importing to expose use_native_modules!
 require_relative './cocoapods/autolinking.rb'
 
@@ -50,6 +52,28 @@ def prepare_react_native_project!
   install! 'cocoapods', :deterministic_uuids => false, :warn_for_unused_master_specs_repo => false
 
   ReactNativePodsUtils.create_xcode_env_if_missing
+end
+
+# Declares a React core pod, choosing source vs prebuilt facade. In prebuilt
+# mode, pods in the RNCoreFacades manifest are installed as dependency-only
+# facades (no source/headers) so they can't shadow the prebuilt artifact; their
+# code + headers come from React-Core-prebuilt. Everything else (and the whole
+# source build) is unaffected. See cocoapods/rncore_facades.rb.
+def rncore_pod(name, **opts)
+  base = name.split('/').first
+  if !ReactNativeCoreUtils.build_rncore_from_source() && RNCoreFacades.facade?(base)
+    # Install as a LOCAL pod (`:path`) from the generated facade directory, so
+    # CocoaPods never fetches the placeholder git source (a `:podspec` external
+    # source would). Both the pod and any subspec declaration point at the SAME
+    # directory, so CocoaPods sees one consistent source for the name (a bare
+    # subspec declaration would otherwise default to the spec repo and conflict).
+    # Preserve the caller's options (e.g. :modular_headers) but replace :path with
+    # the facade directory.
+    facade_opts = opts.reject { |k, _| k == :path }
+    pod name, **facade_opts, :path => RNCoreFacades.facade_path(base)
+  else
+    pod name, **opts
+  end
 end
 
 # Function that setup all the react native dependencies
@@ -94,6 +118,10 @@ def use_react_native! (
   # Make `REMOVE_LEGACY_ARCH` enabled by default. This will build React Native
   # excluding the legacy arch unless the user turns this flag off explicitly.
   ENV['RCT_REMOVE_LEGACY_ARCH'] = ENV['RCT_REMOVE_LEGACY_ARCH'] == '0' ? '0' : '1'
+  # Removing the legacy TurboModule and component interop layers is opt-in while those
+  # layers are still supported. Both will default to 1 in a future React Native release.
+  ENV['RCT_REMOVE_LEGACY_MODULE_INTEROP'] = ENV['RCT_REMOVE_LEGACY_MODULE_INTEROP'] == '1' ? '1' : '0'
+  ENV['RCT_REMOVE_LEGACY_COMPONENT_INTEROP'] = ENV['RCT_REMOVE_LEGACY_COMPONENT_INTEROP'] == '1' ? '1' : '0'
 
   ReactNativePodsUtils.check_minimum_required_xcode()
 
@@ -123,19 +151,25 @@ def use_react_native! (
   # Update ReactNativeCoreUtils so that we can easily switch between source and prebuilt
   ReactNativeCoreUtils.setup_rncore(prefix, react_native_version)
 
+  # In prebuilt mode, generate the facade podspecs the core pods are installed as
+  # (instead of their source podspecs) so they don't ship shadowing headers.
+  unless ReactNativeCoreUtils.build_rncore_from_source()
+    RNCoreFacades.generate(react_native_path, Pod::Config.instance.installation_root, react_native_version, min_ios_version_supported)
+  end
+
   Pod::UI.puts "Configuring the target with the New Architecture\n"
 
   # The Pods which should be included in all projects
-  pod 'FBLazyVector', :path => "#{prefix}/Libraries/FBLazyVector"
-  pod 'RCTRequired', :path => "#{prefix}/Libraries/Required"
+  rncore_pod 'FBLazyVector', :path => "#{prefix}/Libraries/FBLazyVector"
+  rncore_pod 'RCTRequired', :path => "#{prefix}/Libraries/Required"
   pod 'RCTTypeSafety', :path => "#{prefix}/Libraries/TypeSafety", :modular_headers => true
   pod 'React', :path => "#{prefix}/"
   if !ReactNativeCoreUtils.build_rncore_from_source()
     pod 'React-Core-prebuilt', :podspec => "#{prefix}/React-Core-prebuilt.podspec", :modular_headers => true
   end
-  pod 'React-Core', :path => "#{prefix}/"
+  rncore_pod 'React-Core', :path => "#{prefix}/"
   pod 'React-CoreModules', :path => "#{prefix}/React/CoreModules"
-  pod 'React-RCTRuntime', :path => "#{prefix}/React/Runtime"
+  rncore_pod 'React-RCTRuntime', :path => "#{prefix}/React/Runtime"
   pod 'React-RCTAppDelegate', :path => "#{prefix}/Libraries/AppDelegate"
   pod 'React-RCTActionSheet', :path => "#{prefix}/Libraries/ActionSheetIOS"
   pod 'React-RCTAnimation', :path => "#{prefix}/Libraries/NativeAnimation"
@@ -146,7 +180,7 @@ def use_react_native! (
   pod 'React-RCTSettings', :path => "#{prefix}/Libraries/Settings"
   pod 'React-RCTText', :path => "#{prefix}/Libraries/Text"
   pod 'React-RCTVibration', :path => "#{prefix}/Libraries/Vibration"
-  pod 'React-Core/RCTWebSocket', :path => "#{prefix}/"
+  rncore_pod 'React-Core/RCTWebSocket', :path => "#{prefix}/"
   pod 'React-cxxreact', :path => "#{prefix}/ReactCommon/cxxreact"
   pod 'React-cxxstableapi', :path => "#{prefix}/ReactCommon/react/cxxstableapi"
   pod 'React-debug', :path => "#{prefix}/ReactCommon/react/debug"
@@ -164,7 +198,7 @@ def use_react_native! (
   pod 'React-Mapbuffer', :path => "#{prefix}/ReactCommon"
   pod 'React-bridging', :path => "#{prefix}/ReactCommon/react/bridging", :modular_headers => true
   pod 'React-jserrorhandler', :path => "#{prefix}/ReactCommon/jserrorhandler"
-  pod 'RCTDeprecation', :path => "#{prefix}/ReactApple/Libraries/RCTFoundation/RCTDeprecation"
+  rncore_pod 'RCTDeprecation', :path => "#{prefix}/ReactApple/Libraries/RCTFoundation/RCTDeprecation"
   pod 'React-RCTFBReactNativeSpec', :path => "#{prefix}/React"
   pod 'React-jsi', :path => "#{prefix}/ReactCommon/jsi"
   pod 'RCTSwiftUI', :path => "#{prefix}/ReactApple/RCTSwiftUI"
@@ -197,7 +231,7 @@ def use_react_native! (
   pod 'React-logger', :path => "#{prefix}/ReactCommon/logger"
   pod 'ReactCommon/turbomodule/core', :path => "#{prefix}/ReactCommon", :modular_headers => true
   pod 'React-NativeModulesApple', :path => "#{prefix}/ReactCommon/react/nativemodule/core/platform/ios", :modular_headers => true
-  pod 'Yoga', :path => "#{prefix}/ReactCommon/yoga", :modular_headers => true
+  rncore_pod 'Yoga', :path => "#{prefix}/ReactCommon/yoga", :modular_headers => true
   setup_fabric!(:react_native_path => prefix)
   setup_bridgeless!(:react_native_path => prefix, :use_hermes => hermes_enabled)
 
@@ -213,6 +247,17 @@ def use_react_native! (
     # Install prebuilt React Native Core and React Native Dependencies
     ReactNativeCoreUtils.rncore_log("Using React Native Core and React Native Dependencies prebuilt versions.")
     pod 'ReactNativeDependencies', :podspec => "#{prefix}/third-party-podspecs/ReactNativeDependencies.podspec", :modular_headers => true
+
+    # Facades: community pods' hardcoded s.dependency "RCT-Folly"/"glog"/... must
+    # resolve locally instead of from trunk. See __docs__/prebuilt-deps.md.
+    RNDepsFacades.generate(react_native_path, Pod::Config.instance.installation_root, min_ios_version_supported)
+    pod 'DoubleConversion', :path => RNDepsFacades.facade_path('DoubleConversion')
+    pod 'glog', :path => RNDepsFacades.facade_path('glog')
+    pod 'boost', :path => RNDepsFacades.facade_path('boost')
+    pod 'fast_float', :path => RNDepsFacades.facade_path('fast_float')
+    pod 'fmt', :path => RNDepsFacades.facade_path('fmt')
+    pod 'RCT-Folly', :path => RNDepsFacades.facade_path('RCT-Folly')
+    pod 'SocketRocket', :path => RNDepsFacades.facade_path('SocketRocket')
 
     if !ReactNativeCoreUtils.build_rncore_from_source()
       pod 'React-Core-prebuilt', :podspec => "#{prefix}/React-Core-prebuilt.podspec", :modular_headers => true
@@ -265,6 +310,20 @@ end
 # - module_name: the name of the module when exposed to swift
 def resolve_use_frameworks(spec, header_mappings_dir: nil, module_name: nil)
   ReactNativePodsUtils.resolve_use_frameworks(spec, :header_mappings_dir => header_mappings_dir, :module_name => module_name)
+end
+
+# Mark a spec as part of React Native's own build by defining RN_BUILDING for it. The
+# react/cxxstableapi guards use it to stay inert for React Native's internal sources,
+# which keep including the fine-grained headers the guards fence off from consumers.
+# Only first-party React Native pods may call this.
+#
+# Call it last in the spec block: it merges into GCC_PREPROCESSOR_DEFINITIONS as
+# pod_target_xcconfig stands at call time, so a later assignment would drop it.
+#
+# Parameters:
+# - spec: the spec to modify
+def mark_as_react_native_build(spec)
+  ReactNativePodsUtils.add_rn_building_definition(spec)
 end
 
 # Add a dependency to a spec, making sure that the HEADER_SERACH_PATHS are set properly.
@@ -563,22 +622,35 @@ def react_native_post_install(
     ReactNativePodsUtils.remove_compiler_flag_from_project(installer, "-DRCT_REMOVE_LEGACY_ARCH=1")
   end
 
+  ReactNativePodsUtils.set_legacy_interop_removal_flags(
+    installer,
+    build_rncore_from_source: ReactNativeCoreUtils.build_rncore_from_source()
+  )
+
   ReactNativePodsUtils.set_ccache_compiler_and_linker_build_settings(installer, react_native_path, ccache_enabled)
   ReactNativePodsUtils.updateOSDeploymentTarget(installer)
   ReactNativePodsUtils.set_dynamic_frameworks_flags(installer)
   ReactNativePodsUtils.add_ndebug_flag_to_pods_in_release(installer)
 
   if !ReactNativeCoreUtils.build_rncore_from_source()
-    # In XCode 26 we need to revert the new setting SWIFT_ENABLE_EXPLICIT_MODULES when building
-    # with precompiled binaries.
-    ReactNativePodsUtils.set_build_setting(installer, build_setting: "SWIFT_ENABLE_EXPLICIT_MODULES", value: "NO")
+    # The Xcode-26 SWIFT_ENABLE_EXPLICIT_MODULES=NO workaround (#53457) is removed:
+    # the modular ReactNativeHeaders layout + React-Core-prebuilt module-map
+    # activation + header-less facades let the React module precompile cleanly with
+    # explicit modules ON (verified cold-DD green), so the override is unnecessary.
 
-    # Process the VFS overlay for prebuilt React Native Core - this is done as part of the post install so
-    # that we can update paths based on the final location of the Pods installation.
-    ReactNativeCoreUtils.process_vfs_overlay()
-
-    # Configure xcconfig for prebuilt usage (VFS overlay, header paths, cleanup redundant paths)
+    # Make the prebuilt React.xcframework headers resolvable from aggregate (main app)
+    # and third-party pod targets that don't go through add_rncore_dependency. The headers
+    # are served directly from the xcframework's headers-spec layout — no clang VFS overlay.
     ReactNativeCoreUtils.configure_aggregate_xcconfig(installer)
+  end
+
+  if !ReactNativeDependenciesUtils.build_react_native_deps_from_source()
+    # Prebuilt-deps mode: make the deps artifact headers (folly/glog/...)
+    # resolvable from the aggregate and every pod target, mirroring the rncore
+    # injection above. ReactNativeHeaders is pure-RN, so the flattened
+    # ReactNativeDependencies/Headers dir is the single global home of the
+    # third-party namespaces (see scripts/cocoapods/__docs__/prebuilt-deps.md).
+    ReactNativeDependenciesUtils.configure_aggregate_xcconfig(installer)
   end
 
   SPM.apply_on_post_install(installer)

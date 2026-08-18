@@ -36,24 +36,23 @@ class JsonUtilsTest {
 
   @Test
   fun fromPackageJson_withOldJsonConfig_returnsAnEmptyLibrary() {
-    val oldJsonConfig =
-        createJsonFile(
-            """
-            {
-              "name": "yet another npm package",
-              "codegenConfig": {
-                "libraries": [
-                  {
-                    "name": "an awesome library",
-                    "jsSrcsDir": "../js/",
-                    "android": {}
-                  }
-                ]
+    val oldJsonConfig = createJsonFile(
+        """
+        {
+          "name": "yet another npm package",
+          "codegenConfig": {
+            "libraries": [
+              {
+                "name": "an awesome library",
+                "jsSrcsDir": "../js/",
+                "android": {}
               }
-            }
-            """
-                .trimIndent()
-        )
+            ]
+          }
+        }
+        """
+            .trimIndent(),
+    )
 
     val parsed = JsonUtils.fromPackageJson(oldJsonConfig)!!
 
@@ -64,25 +63,24 @@ class JsonUtilsTest {
 
   @Test
   fun fromPackageJson_withValidJson_parsesCorrectly() {
-    val validJson =
-        createJsonFile(
-            """
-            {
-              "name": "yet another npm package",
-              "codegenConfig": {
-                "name": "an awesome library",
-                "jsSrcsDir": "../js/",
-                "android": {
-                  "javaPackageName": "com.awesome.library"
-                },
-                "ios": {
-                  "other ios only keys": "which are ignored during parsing"
-                }
-              }
+    val validJson = createJsonFile(
+        """
+        {
+          "name": "yet another npm package",
+          "codegenConfig": {
+            "name": "an awesome library",
+            "jsSrcsDir": "../js/",
+            "android": {
+              "javaPackageName": "com.awesome.library"
+            },
+            "ios": {
+              "other ios only keys": "which are ignored during parsing"
             }
-            """
-                .trimIndent()
-        )
+          }
+        }
+        """
+            .trimIndent(),
+    )
 
     val parsed = JsonUtils.fromPackageJson(validJson)!!
 
@@ -110,15 +108,14 @@ class JsonUtilsTest {
 
   @Test
   fun fromReactNativePackageJson_withValidJson_parsesJsonCorrectly() {
-    val validJson =
-        createJsonFile(
-            """
-            {
-              "version": "1000.0.0"
-            }
-            """
-                .trimIndent()
-        )
+    val validJson = createJsonFile(
+        """
+        {
+          "version": "1000.0.0"
+        }
+        """
+            .trimIndent(),
+    )
     val parsed = JsonUtils.fromPackageJson(validJson)!!
 
     assertThat("1000.0.0").isEqualTo(parsed.version)
@@ -133,15 +130,14 @@ class JsonUtilsTest {
 
   @Test
   fun fromAutolinkingConfigJson_withSimpleJson_returnsIt() {
-    val validJson =
-        createJsonFile(
-            """
-            {
-              "reactNativeVersion": "1000.0.0"
-            }
-            """
-                .trimIndent()
-        )
+    val validJson = createJsonFile(
+        """
+        {
+          "reactNativeVersion": "1000.0.0"
+        }
+        """
+            .trimIndent(),
+    )
     val parsed = JsonUtils.fromAutolinkingConfigJson(validJson)!!
 
     assertThat("1000.0.0").isEqualTo(parsed.reactNativeVersion)
@@ -149,36 +145,35 @@ class JsonUtilsTest {
 
   @Test
   fun fromAutolinkingConfigJson_withProjectSpecified_canParseIt() {
-    val validJson =
-        createJsonFile(
-            """
-            {
-              "reactNativeVersion": "1000.0.0",
-              "project": {
-                "ios": {
-                  "sourceDir": "./packages/rn-tester",
-                  "xcodeProject": {
-                    "name": "RNTesterPods.xcworkspace",
-                    "isWorkspace": true
-                  },
-                  "automaticPodsInstallation": false
-                },
-                "android": {
-                  "sourceDir": "./packages/rn-tester",
-                  "appName": "RN-Tester",
-                  "packageName": "com.facebook.react.uiapp",
-                  "applicationId": "com.facebook.react.uiapp",
-                  "mainActivity": ".RNTesterActivity",
-                  "watchModeCommandParams": [
-                    "--mode HermesDebug"
-                  ],
-                  "dependencyConfiguration": "implementation"
-                }
-              }
+    val validJson = createJsonFile(
+        """
+        {
+          "reactNativeVersion": "1000.0.0",
+          "project": {
+            "ios": {
+              "sourceDir": "./packages/rn-tester",
+              "xcodeProject": {
+                "name": "RNTesterPods.xcworkspace",
+                "isWorkspace": true
+              },
+              "automaticPodsInstallation": false
+            },
+            "android": {
+              "sourceDir": "./packages/rn-tester",
+              "appName": "RN-Tester",
+              "packageName": "com.facebook.react.uiapp",
+              "applicationId": "com.facebook.react.uiapp",
+              "mainActivity": ".RNTesterActivity",
+              "watchModeCommandParams": [
+                "--mode HermesDebug"
+              ],
+              "dependencyConfiguration": "implementation"
             }
-            """
-                .trimIndent()
-        )
+          }
+        }
+        """
+            .trimIndent(),
+    )
     val parsed = JsonUtils.fromAutolinkingConfigJson(validJson)!!
 
     assertThat("./packages/rn-tester").isEqualTo(parsed.project!!.android!!.sourceDir)
@@ -194,40 +189,39 @@ class JsonUtilsTest {
   @Test
   fun fromAutolinkingConfigJson_withInfoLogs_sanitizeAndParseIt() {
     @Suppress("JsonStandardCompliance")
-    val validJson =
-        createJsonFile(
-            """
+    val validJson = createJsonFile(
+        """
 
-            > AwesomeProject@0.0.1 npx
-            > rnc-cli config
+        > AwesomeProject@0.0.1 npx
+        > rnc-cli config
 
-             {
-              "reactNativeVersion": "1000.0.0",
-              "project": {
-                "ios": {
-                  "sourceDir": "./packages/rn-tester",
-                  "xcodeProject": {
-                    "name": "RNTesterPods.xcworkspace",
-                    "isWorkspace": true
-                  },
-                  "automaticPodsInstallation": false
-                },
-                "android": {
-                  "sourceDir": "./packages/rn-tester",
-                  "appName": "RN-Tester",
-                  "packageName": "com.facebook.react.uiapp",
-                  "applicationId": "com.facebook.react.uiapp",
-                  "mainActivity": ".RNTesterActivity",
-                  "watchModeCommandParams": [
-                    "--mode HermesDebug"
-                  ],
-                  "dependencyConfiguration": "implementation"
-                }
-              }
-            } 
-            """
-                .trimIndent()
-        )
+         {
+          "reactNativeVersion": "1000.0.0",
+          "project": {
+            "ios": {
+              "sourceDir": "./packages/rn-tester",
+              "xcodeProject": {
+                "name": "RNTesterPods.xcworkspace",
+                "isWorkspace": true
+              },
+              "automaticPodsInstallation": false
+            },
+            "android": {
+              "sourceDir": "./packages/rn-tester",
+              "appName": "RN-Tester",
+              "packageName": "com.facebook.react.uiapp",
+              "applicationId": "com.facebook.react.uiapp",
+              "mainActivity": ".RNTesterActivity",
+              "watchModeCommandParams": [
+                "--mode HermesDebug"
+              ],
+              "dependencyConfiguration": "implementation"
+            }
+          }
+        } 
+        """
+            .trimIndent(),
+    )
     val parsed = JsonUtils.fromAutolinkingConfigJson(validJson)!!
 
     assertThat("./packages/rn-tester").isEqualTo(parsed.project!!.android!!.sourceDir)
@@ -242,45 +236,44 @@ class JsonUtilsTest {
 
   @Test
   fun fromAutolinkingConfigJson_withDependenciesSpecified_canParseIt() {
-    val validJson =
-        createJsonFile(
-            """
-            {
-              "reactNativeVersion": "1000.0.0",
-              "dependencies": {
-                "@react-native/oss-library-example": {
-                  "root": "./node_modules/@react-native/oss-library-example",
-                  "name": "@react-native/oss-library-example",
-                  "platforms": {
-                    "ios": {
-                      "podspecPath": "./node_modules/@react-native/oss-library-example/OSSLibraryExample.podspec",
-                      "version": "0.0.1",
-                      "configurations": [],
-                      "scriptPhases": []
-                    },
-                    "android": {
-                      "sourceDir": "./node_modules/@react-native/oss-library-example/android",
-                      "packageImportPath": "import com.facebook.react.osslibraryexample.OSSLibraryExamplePackage;",
-                      "packageInstance": "new OSSLibraryExamplePackage()",
-                      "buildTypes": ["staging", "debug", "release"],
-                      "libraryName": "OSSLibraryExampleSpec",
-                      "componentDescriptors": [
-                        "SampleNativeComponentComponentDescriptor"
-                      ],
-                      "cmakeListsPath": "./node_modules/@react-native/oss-library-example/android/build/generated/source/codegen/jni/CMakeLists.txt",
-                      "cxxModuleCMakeListsModuleName": null,
-                      "cxxModuleCMakeListsPath": null,
-                      "cxxModuleHeaderName": null,
-                      "dependencyConfiguration": "implementation",
-                      "isPureCxxDependency": false
-                    }
-                  }
+    val validJson = createJsonFile(
+        """
+        {
+          "reactNativeVersion": "1000.0.0",
+          "dependencies": {
+            "@react-native/oss-library-example": {
+              "root": "./node_modules/@react-native/oss-library-example",
+              "name": "@react-native/oss-library-example",
+              "platforms": {
+                "ios": {
+                  "podspecPath": "./node_modules/@react-native/oss-library-example/OSSLibraryExample.podspec",
+                  "version": "0.0.1",
+                  "configurations": [],
+                  "scriptPhases": []
+                },
+                "android": {
+                  "sourceDir": "./node_modules/@react-native/oss-library-example/android",
+                  "packageImportPath": "import com.facebook.react.osslibraryexample.OSSLibraryExamplePackage;",
+                  "packageInstance": "new OSSLibraryExamplePackage()",
+                  "buildTypes": ["staging", "debug", "release"],
+                  "libraryName": "OSSLibraryExampleSpec",
+                  "componentDescriptors": [
+                    "SampleNativeComponentComponentDescriptor"
+                  ],
+                  "cmakeListsPath": "./node_modules/@react-native/oss-library-example/android/build/generated/source/codegen/jni/CMakeLists.txt",
+                  "cxxModuleCMakeListsModuleName": null,
+                  "cxxModuleCMakeListsPath": null,
+                  "cxxModuleHeaderName": null,
+                  "dependencyConfiguration": "implementation",
+                  "isPureCxxDependency": false
                 }
               }
             }
-            """
-                .trimIndent()
-        )
+          }
+        }
+        """
+            .trimIndent(),
+    )
     val parsed = JsonUtils.fromAutolinkingConfigJson(validJson)!!
 
     assertThat("./node_modules/@react-native/oss-library-example")
@@ -294,86 +287,86 @@ class JsonUtilsTest {
             parsed.dependencies!!["@react-native/oss-library-example"]!!
                 .platforms!!
                 .android!!
-                .sourceDir
+                .sourceDir,
         )
     assertThat("import com.facebook.react.osslibraryexample.OSSLibraryExamplePackage;")
         .isEqualTo(
             parsed.dependencies!!["@react-native/oss-library-example"]!!
                 .platforms!!
                 .android!!
-                .packageImportPath
+                .packageImportPath,
         )
     assertThat("new OSSLibraryExamplePackage()")
         .isEqualTo(
             parsed.dependencies!!["@react-native/oss-library-example"]!!
                 .platforms!!
                 .android!!
-                .packageInstance
+                .packageInstance,
         )
     assertThat(listOf("staging", "debug", "release"))
         .isEqualTo(
             parsed.dependencies!!["@react-native/oss-library-example"]!!
                 .platforms!!
                 .android!!
-                .buildTypes
+                .buildTypes,
         )
     assertThat("OSSLibraryExampleSpec")
         .isEqualTo(
             parsed.dependencies!!["@react-native/oss-library-example"]!!
                 .platforms!!
                 .android!!
-                .libraryName
+                .libraryName,
         )
     assertThat(listOf("SampleNativeComponentComponentDescriptor"))
         .isEqualTo(
             parsed.dependencies!!["@react-native/oss-library-example"]!!
                 .platforms!!
                 .android!!
-                .componentDescriptors
+                .componentDescriptors,
         )
     assertThat(
-            "./node_modules/@react-native/oss-library-example/android/build/generated/source/codegen/jni/CMakeLists.txt"
-        )
+        "./node_modules/@react-native/oss-library-example/android/build/generated/source/codegen/jni/CMakeLists.txt",
+    )
         .isEqualTo(
             parsed.dependencies!!["@react-native/oss-library-example"]!!
                 .platforms!!
                 .android!!
-                .cmakeListsPath
+                .cmakeListsPath,
         )
     assertThat(
-            parsed.dependencies!!["@react-native/oss-library-example"]!!
-                .platforms!!
-                .android!!
-                .cxxModuleHeaderName
-        )
+        parsed.dependencies!!["@react-native/oss-library-example"]!!
+            .platforms!!
+            .android!!
+            .cxxModuleHeaderName,
+    )
         .isNull()
     assertThat(
-            parsed.dependencies!!["@react-native/oss-library-example"]!!
-                .platforms!!
-                .android!!
-                .cxxModuleCMakeListsPath
-        )
+        parsed.dependencies!!["@react-native/oss-library-example"]!!
+            .platforms!!
+            .android!!
+            .cxxModuleCMakeListsPath,
+    )
         .isNull()
     assertThat(
-            parsed.dependencies!!["@react-native/oss-library-example"]!!
-                .platforms!!
-                .android!!
-                .cxxModuleCMakeListsModuleName
-        )
+        parsed.dependencies!!["@react-native/oss-library-example"]!!
+            .platforms!!
+            .android!!
+            .cxxModuleCMakeListsModuleName,
+    )
         .isNull()
     assertThat("implementation")
         .isEqualTo(
             parsed.dependencies!!["@react-native/oss-library-example"]!!
                 .platforms!!
                 .android!!
-                .dependencyConfiguration
+                .dependencyConfiguration,
         )
     assertThat(
-            parsed.dependencies!!["@react-native/oss-library-example"]!!
-                .platforms!!
-                .android!!
-                .isPureCxxDependency!!
-        )
+        parsed.dependencies!!["@react-native/oss-library-example"]!!
+            .platforms!!
+            .android!!
+            .isPureCxxDependency!!,
+    )
         .isFalse()
   }
 

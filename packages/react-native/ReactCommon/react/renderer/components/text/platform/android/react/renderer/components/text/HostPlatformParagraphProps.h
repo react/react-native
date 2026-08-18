@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <limits>
 #include <memory>
 #include <optional>

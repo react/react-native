@@ -172,6 +172,10 @@ val preparePrefab by
                           "../ReactCommon/react/renderer/components/view/",
                           "react/renderer/components/view/",
                       ),
+                      Pair(
+                          "../ReactCommon/react/renderer/components/view/React/",
+                          "React/",
+                      ),
                       Pair("../ReactCommon/react/renderer/components/view/platform/android/", ""),
                       // rrc_root
                       Pair(
@@ -191,6 +195,11 @@ val preparePrefab by
                           "../ReactCommon/react/renderer/components/text/",
                           "react/renderer/components/text/",
                       ),
+                      Pair(
+                          "../ReactCommon/react/renderer/components/text/React/",
+                          "React/",
+                      ),
+                      Pair("../ReactCommon/react/renderer/components/text/platform/android/", ""),
                       Pair(
                           "../ReactCommon/react/renderer/attributedstring",
                           "react/renderer/attributedstring",
@@ -215,6 +224,8 @@ val preparePrefab by
                       Pair(File(buildDir, "third-party-ndk/glog/exported/").absolutePath, ""),
                       Pair("../ReactCommon/callinvoker/", ""),
                       Pair("../ReactCommon/cxxreact/", "cxxreact/"),
+                      // Exported because the public cxxreact/ErrorUtils.h includes it
+                      Pair("../ReactCommon/jserrorhandler/", "jserrorhandler/"),
                       Pair("../ReactCommon/react/bridging/", "react/bridging/"),
                       Pair("../ReactCommon/react/nativemodule/core/", ""),
                       Pair("../ReactCommon/react/nativemodule/core/platform/android/", ""),
@@ -286,7 +297,7 @@ val preparePrefab by
                   // hermes_executor
                   Pair("../ReactCommon/hermes/inspector-modern/", "hermes/inspector-modern/"),
               ),
-          )
+          ),
       )
       outputDir.set(prefabHeadersDir)
     }
@@ -301,7 +312,7 @@ val downloadBoost by
     tasks.registering(Download::class) {
       dependsOn(createNativeDepsDirectories)
       src(
-          "https://archives.boost.io/release/${BOOST_VERSION.replace("_", ".")}/source/boost_${BOOST_VERSION}.tar.gz"
+          "https://archives.boost.io/release/${BOOST_VERSION.replace("_", ".")}/source/boost_${BOOST_VERSION}.tar.gz",
       )
       onlyIfModified(true)
       overwrite(false)
@@ -325,7 +336,7 @@ val downloadDoubleConversion by
     tasks.registering(Download::class) {
       dependsOn(createNativeDepsDirectories)
       src(
-          "https://github.com/google/double-conversion/archive/v${DOUBLE_CONVERSION_VERSION}.tar.gz"
+          "https://github.com/google/double-conversion/archive/v${DOUBLE_CONVERSION_VERSION}.tar.gz",
       )
       onlyIfModified(true)
       overwrite(false)
@@ -463,7 +474,7 @@ val buildCodegenCLI by
           fileTree(codegenDir) {
             include("lib/**/*.js")
             include("lib/**/*.js.flow")
-          }
+          },
       )
       rootProjectName.set(rootProject.name)
     }
@@ -618,21 +629,24 @@ android {
   tasks.getByName("generateCodegenSchemaFromJavaScript").dependsOn(buildCodegenCLI)
   prepareKotlinBuildScriptModel.dependsOn("preBuild")
   prepareKotlinBuildScriptModel.dependsOn(
-      ":packages:react-native:ReactAndroid:hermes-engine:preBuild"
+      ":packages:react-native:ReactAndroid:hermes-engine:preBuild",
   )
 
   sourceSets {
     named("main") {
-      res.directories.addAll(
-          listOf(
-              "src/main/res/devsupport",
-              "src/main/res/shell",
-              "src/main/res/views/alert",
-              "src/main/res/views/modal",
-              "src/main/res/views/uimanager",
-              "src/main/res/views/view",
-          )
-      )
+      res.directories.apply {
+        clear()
+        addAll(
+            listOf(
+                "src/main/res/devsupport",
+                "src/main/res/shell",
+                "src/main/res/views/alert",
+                "src/main/res/views/modal",
+                "src/main/res/views/uimanager",
+                "src/main/res/views/view",
+            ),
+        )
+      }
     }
   }
 

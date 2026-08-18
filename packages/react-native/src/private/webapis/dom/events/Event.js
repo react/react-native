@@ -33,6 +33,7 @@ import {
   getEventPhase,
   getInPassiveListenerFlag,
   getIsTrusted,
+  getStopPropagationFlag,
   getTarget,
   setStopImmediatePropagationFlag,
   setStopPropagationFlag,
@@ -70,27 +71,35 @@ export default class Event {
   _timeStamp: number;
 
   // $FlowExpectedError[unsupported-syntax]
+  // $FlowFixMe[illegal-key]
   [COMPOSED_PATH_KEY]: boolean = [];
 
   // $FlowExpectedError[unsupported-syntax]
+  // $FlowFixMe[illegal-key]
   [CURRENT_TARGET_KEY]: EventTarget | null = null;
 
   // $FlowExpectedError[unsupported-syntax]
+  // $FlowFixMe[illegal-key]
   [EVENT_PHASE_KEY]: boolean = Event.NONE;
 
   // $FlowExpectedError[unsupported-syntax]
+  // $FlowFixMe[illegal-key]
   [IN_PASSIVE_LISTENER_FLAG_KEY]: boolean = false;
 
   // $FlowExpectedError[unsupported-syntax]
+  // $FlowFixMe[illegal-key]
   [IS_TRUSTED_KEY]: boolean = false;
 
   // $FlowExpectedError[unsupported-syntax]
+  // $FlowFixMe[illegal-key]
   [STOP_IMMEDIATE_PROPAGATION_FLAG_KEY]: boolean = false;
 
   // $FlowExpectedError[unsupported-syntax]
+  // $FlowFixMe[illegal-key]
   [STOP_PROPAGATION_FLAG_KEY]: boolean = false;
 
   // $FlowExpectedError[unsupported-syntax]
+  // $FlowFixMe[illegal-key]
   [TARGET_KEY]: EventTarget | null = null;
 
   constructor(type: string, options?: ?EventInit) {
@@ -142,6 +151,22 @@ export default class Event {
 
   get cancelable(): boolean {
     return this._cancelable;
+  }
+
+  /**
+   * Historical alias for the stop-propagation flag. Reading it returns whether
+   * `stopPropagation()` has been called (or `cancelBubble` has been set to
+   * `true`). Setting it to `true` stops propagation; setting it to `false` is a
+   * no-op. See https://dom.spec.whatwg.org/#dom-event-cancelbubble.
+   */
+  get cancelBubble(): boolean {
+    return getStopPropagationFlag(this);
+  }
+
+  set cancelBubble(value: boolean) {
+    if (value) {
+      setStopPropagationFlag(this, true);
+    }
   }
 
   get composed(): boolean {

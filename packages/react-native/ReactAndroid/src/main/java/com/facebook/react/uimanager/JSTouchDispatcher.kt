@@ -116,7 +116,7 @@ public class JSTouchDispatcher(private val viewGroup: ViewGroup) {
               targetCoordinates[0],
               targetCoordinates[1],
               touchEventCoalescingKeyHelper,
-          )
+          ),
       )
     } else if (childIsHandlingNativeGesture) {
       // If the touch was intercepted by a child, we've already sent a cancel event to JS for this
@@ -145,7 +145,7 @@ public class JSTouchDispatcher(private val viewGroup: ViewGroup) {
               targetCoordinates[0],
               targetCoordinates[1],
               touchEventCoalescingKeyHelper,
-          )
+          ),
       )
       sweepActiveTouchForTag(surfaceId, targetTag, reactContext)
       targetTag = -1
@@ -163,7 +163,7 @@ public class JSTouchDispatcher(private val viewGroup: ViewGroup) {
               targetCoordinates[0],
               targetCoordinates[1],
               touchEventCoalescingKeyHelper,
-          )
+          ),
       )
     } else if (action == MotionEvent.ACTION_POINTER_DOWN) {
       // New pointer goes down, this can only happen after ACTION_DOWN is sent for the first pointer
@@ -177,7 +177,7 @@ public class JSTouchDispatcher(private val viewGroup: ViewGroup) {
               targetCoordinates[0],
               targetCoordinates[1],
               touchEventCoalescingKeyHelper,
-          )
+          ),
       )
     } else if (action == MotionEvent.ACTION_POINTER_UP) {
       // Exactly one of the pointers goes up
@@ -191,7 +191,7 @@ public class JSTouchDispatcher(private val viewGroup: ViewGroup) {
               targetCoordinates[0],
               targetCoordinates[1],
               touchEventCoalescingKeyHelper,
-          )
+          ),
       )
     } else if (action == MotionEvent.ACTION_CANCEL) {
       if (touchEventCoalescingKeyHelper.hasCoalescingKey(ev.downTime)) {
@@ -270,7 +270,7 @@ public class JSTouchDispatcher(private val viewGroup: ViewGroup) {
                 targetCoordinates[0],
                 targetCoordinates[1],
                 touchEventCoalescingKeyHelper,
-            )
+            ),
         )
   }
 }

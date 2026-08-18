@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <react/renderer/graphics/Color.h>
 #include <react/renderer/graphics/RectangleCorners.h>
 #include <react/renderer/graphics/RectangleEdges.h>

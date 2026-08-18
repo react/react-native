@@ -210,7 +210,7 @@ internal class PreparedLayoutTextView(context: Context) : ViewGroup(context), Re
     val layout = checkNotNull(preparedLayout).layout
     if (start < 0 || end > layout.text.length || start >= end) {
       throw IllegalArgumentException(
-          "setSelection start and end are not in valid range. start: $start, end: $end, text length: ${layout.text.length}"
+          "setSelection start and end are not in valid range. start: $start, end: $end, text length: ${layout.text.length}",
       )
     }
 

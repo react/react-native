@@ -13,7 +13,7 @@
 
 // $FlowFixMe[untyped-import]
 const {name} = require('./package.json');
-const {styleText} = require('util');
+const {styleText} = require('node:util');
 
 const deprecated = () => {
   throw new Error(

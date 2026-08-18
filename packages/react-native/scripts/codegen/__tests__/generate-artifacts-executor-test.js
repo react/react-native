@@ -13,14 +13,18 @@
 const fixtures = require('../__fixtures__/fixtures');
 const {execute} = require('../generate-artifacts-executor');
 const {
+  generateRCTThirdPartyComponents,
+} = require('../generate-artifacts-executor/generateRCTThirdPartyComponents');
+const {
   extractSupportedApplePlatforms,
 } = require('../generate-artifacts-executor/generateSchemaInfos');
 const {
   cleanupEmptyFilesAndFolders,
   extractLibrariesFromJSON,
 } = require('../generate-artifacts-executor/utils');
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
 
 const rootPath = path.join(__dirname, '../../..');
 
@@ -176,6 +180,53 @@ describe('extractSupportedApplePlatforms', () => {
   });
 });
 
+describe('generateRCTThirdPartyComponents', () => {
+  it('crawls component libraries without an iOS config', () => {
+    const libraryPath = fs.mkdtempSync(
+      path.join(os.tmpdir(), 'react-native-codegen-'),
+    );
+    const outputDir = path.join(libraryPath, 'output');
+
+    fs.writeFileSync(
+      path.join(libraryPath, 'package.json'),
+      JSON.stringify({name: 'component-library'}),
+    );
+    fs.writeFileSync(
+      path.join(libraryPath, 'ExampleComponent.mm'),
+      `Class<RCTComponentViewProtocol> ExampleComponentCls(void) {
+  return RCTExampleComponent.class;
+}
+`,
+    );
+
+    try {
+      generateRCTThirdPartyComponents(
+        [
+          {
+            config: {
+              name: 'ComponentLibraryConfig',
+              type: 'components',
+              jsSrcsDir: 'src',
+            },
+            libraryPath,
+          },
+        ],
+        outputDir,
+      );
+
+      const generatedFile = fs.readFileSync(
+        path.join(outputDir, 'RCTThirdPartyComponentsProvider.mm'),
+        'utf8',
+      );
+      expect(generatedFile).toContain(
+        '@"ExampleComponent": NSClassFromString(@"RCTExampleComponent"), // component-library',
+      );
+    } finally {
+      fs.rmSync(libraryPath, {recursive: true, force: true});
+    }
+  });
+});
+
 describe('delete empty files and folders', () => {
   beforeEach(() => {
     jest.resetModules();
@@ -186,7 +237,7 @@ describe('delete empty files and folders', () => {
     let statSyncInvocationCount = 0;
     let rmSyncInvocationCount = 0;
     let rmdirSyncInvocationCount = 0;
-    jest.mock('fs', () => ({
+    jest.mock('node:fs', () => ({
       statSync: filepath => {
         statSyncInvocationCount += 1;
         expect(filepath).toBe(targetFilepath);
@@ -221,7 +272,7 @@ describe('delete empty files and folders', () => {
     let rmSyncInvocationCount = 0;
     let rmdirSyncInvocationCount = 0;
 
-    jest.mock('fs', () => ({
+    jest.mock('node:fs', () => ({
       statSync: filepath => {
         statSyncInvocationCount += 1;
         expect(filepath).toBe(targetFilepath);
@@ -256,7 +307,7 @@ describe('delete empty files and folders', () => {
     let rmSyncInvocationCount = 0;
     let rmdirSyncInvocationCount = 0;
 
-    jest.mock('fs', () => ({
+    jest.mock('node:fs', () => ({
       statSync: filepath => {
         statSyncInvocationCount += 1;
         expect(filepath).toBe(targetFolder);
@@ -306,7 +357,7 @@ describe('delete empty files and folders', () => {
     let rmdirSyncInvocation = [];
     let readdirInvocation = [];
 
-    jest.mock('fs', () => ({
+    jest.mock('node:fs', () => ({
       statSync: filepath => {
         statSyncInvocation.push(filepath);
 
@@ -357,7 +408,7 @@ describe('delete empty files and folders', () => {
     let rmdirSyncInvocation = [];
     let readdirInvocation = [];
 
-    jest.mock('fs', () => ({
+    jest.mock('node:fs', () => ({
       statSync: filepath => {
         statSyncInvocation.push(filepath);
 
@@ -416,7 +467,7 @@ describe('findFilesWithExtension', () => {
   it('skips hidden files and folders', () => {
     const targetFolder = '/project/ios';
 
-    jest.mock('fs', () => ({
+    jest.mock('node:fs', () => ({
       readdirSync: dirPath => {
         if (dirPath === targetFolder) {
           return ['.hidden', '.git', 'visible.mm'];
@@ -443,7 +494,7 @@ describe('findFilesWithExtension', () => {
     const pnpmFolder = path.join(targetFolder, '.pnpm');
     const packageFolder = path.join(pnpmFolder, 'some-package');
 
-    jest.mock('fs', () => ({
+    jest.mock('node:fs', () => ({
       readdirSync: dirPath => {
         if (dirPath === targetFolder) {
           return ['.pnpm', '.hidden'];
@@ -479,7 +530,7 @@ describe('findFilesWithExtension', () => {
     // like ~/.jenkins/workspace/ or /.hidden-ci/builds/
     const targetFolder = '/.jenkins/workspace/my-project/ios';
 
-    jest.mock('fs', () => ({
+    jest.mock('node:fs', () => ({
       readdirSync: dirPath => {
         if (dirPath === targetFolder) {
           return ['Components'];
@@ -505,5 +556,43 @@ describe('findFilesWithExtension', () => {
     expect(result).toEqual([
       path.join(targetFolder, 'Components', 'MyComponent.mm'),
     ]);
+  });
+});
+
+describe('generateSchemaInfos', () => {
+  beforeEach(() => {
+    jest.resetModules();
+  });
+
+  it('forwards the platform (not the array map index) to combineSchemasInFileList', () => {
+    const mockCombineSchemasInFileList = jest.fn(
+      (_files: ReadonlyArray<string>, _platform: string) => ({}),
+    );
+    jest.mock('../codegen-utils', () => ({
+      getCombineJSToSchema: () => ({
+        combineSchemasInFileList: mockCombineSchemasInFileList,
+      }),
+    }));
+    // Avoid touching the filesystem for podspec discovery.
+    jest.mock('tinyglobby', () => ({globSync: () => []}));
+
+    const {
+      generateSchemaInfos,
+    } = require('../generate-artifacts-executor/generateSchemaInfos');
+
+    const libraries = [
+      {config: {name: 'LibA', jsSrcsDir: 'src'}, libraryPath: '/tmp/libA'},
+      {config: {name: 'LibB', jsSrcsDir: 'src'}, libraryPath: '/tmp/libB'},
+    ];
+
+    generateSchemaInfos(libraries, 'ios');
+
+    // Regression guard: previously `libraries.map(generateSchemaInfo)` handed the
+    // array index to generateSchemaInfo as the platform. Every call must receive
+    // the real platform string instead.
+    expect(mockCombineSchemasInFileList).toHaveBeenCalledTimes(2);
+    for (const call of mockCombineSchemasInFileList.mock.calls) {
+      expect(call[1]).toBe('ios');
+    }
   });
 });

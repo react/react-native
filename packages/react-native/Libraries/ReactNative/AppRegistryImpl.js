@@ -22,7 +22,6 @@ import type {
   WrapperComponentProvider,
 } from './AppRegistry.flow';
 
-import SceneTracker from '../Utilities/SceneTracker';
 import DeprecatedPerformanceLoggerStub from './DeprecatedPerformanceLoggerStub';
 import {coerceDisplayMode} from './DisplayMode';
 import HeadlessJsTaskError from './HeadlessJsTaskError';
@@ -105,7 +104,8 @@ export function registerComponent(
       initialProps: appParameters.initialProps,
       rootTag: appParameters.rootTag,
       WrapperComponent:
-        wrapperComponentProvider && wrapperComponentProvider(appParameters),
+        wrapperComponentProvider &&
+        wrapperComponentProvider(appParameters, appKey),
       rootViewStyle:
         rootViewStyleProvider && rootViewStyleProvider(appParameters),
       isLogBox: appKey === 'LogBox',
@@ -212,7 +212,6 @@ export function runApplication(
       "* A module failed to load due to an error and `AppRegistry.registerComponent` wasn't called.",
   );
 
-  SceneTracker.setActiveScene({name: appKey});
   runnables[appKey](appParameters, coerceDisplayMode(displayMode));
 }
 

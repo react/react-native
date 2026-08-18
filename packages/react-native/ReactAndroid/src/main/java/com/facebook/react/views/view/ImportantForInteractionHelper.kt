@@ -9,7 +9,9 @@ package com.facebook.react.views.view
 
 import android.view.View
 import com.facebook.react.R
+import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import com.facebook.react.uimanager.PointerEvents
+import com.facebook.react.uimanager.style.Overflow
 
 /**
  * Helper class for managing the important_for_interaction view tag. This tag determines how a view
@@ -28,6 +30,8 @@ internal object ImportantForInteractionHelper {
   /** CSS pointer-events: auto heuristics. */
   const val IMPORTANT_FOR_INTERACTION_AUTO_CSSPOINTEREVENTSAUTO: Int = 0x8
 
+  const val IMPORTANT_FOR_INTERACTION_DONT_CLIP_DESCENDANTS: Int = 0x10
+
   /**
    * Sets the important_for_interaction tag on a view based on the given [PointerEvents] value.
    *
@@ -37,9 +41,11 @@ internal object ImportantForInteractionHelper {
    *
    * @param view The view to set the tag on
    * @param pointerEvents The pointer events value to convert and set
+   * @param overflow The overflow value; descendants are not clipped when it is [Overflow.VISIBLE]
    */
   @JvmStatic
-  fun setImportantForInteraction(view: View, pointerEvents: PointerEvents) {
+  fun setImportantForInteraction(view: View, pointerEvents: PointerEvents, overflow: Overflow) {
+    if (!ReactNativeFeatureFlags.syncAndroidClipBoundsWithOverflow()) return
     val value =
         when (pointerEvents) {
           PointerEvents.AUTO -> IMPORTANT_FOR_INTERACTION_AUTO_CSSPOINTEREVENTSAUTO
@@ -49,7 +55,9 @@ internal object ImportantForInteractionHelper {
               IMPORTANT_FOR_INTERACTION_AUTO_CSSPOINTEREVENTSAUTO or
                   IMPORTANT_FOR_INTERACTION_EXCLUDE_DESCENDANTS
           PointerEvents.BOX_NONE -> IMPORTANT_FOR_INTERACTION_NO
-        }
+        } or
+            (if (overflow == Overflow.VISIBLE) IMPORTANT_FOR_INTERACTION_DONT_CLIP_DESCENDANTS
+            else 0)
     view.setTag(R.id.important_for_interaction, value)
   }
 }

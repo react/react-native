@@ -132,8 +132,10 @@ export class AbortSignal extends EventTarget {
   }
 
   // $FlowExpectedError[unsupported-syntax]
+  // $FlowFixMe[illegal-key]
   [ABORTED_KEY]: boolean = false;
   // $FlowExpectedError[unsupported-syntax]
+  // $FlowFixMe[illegal-key]
   [REASON_KEY]: unknown;
 
   /**

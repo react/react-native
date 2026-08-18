@@ -39,7 +39,7 @@ internal object BackwardCompatUtils {
 
             ********************************************************************************
             """
-                .trimIndent()
+                .trimIndent(),
         )
       }
     }

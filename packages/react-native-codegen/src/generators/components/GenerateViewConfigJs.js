@@ -15,6 +15,11 @@ import type {
   PropTypeAnnotation,
 } from '../../CodegenSchema';
 import type {SchemaType} from '../../CodegenSchema';
+import type {
+  ObjectMethod as BabelNodeObjectMethod,
+  ObjectProperty as BabelNodeObjectProperty,
+  SpreadElement as BabelNodeSpreadElement,
+} from '@babel/types';
 
 const core = require('@babel/core');
 

@@ -305,7 +305,7 @@ RCT_EXPORT_MODULE()
   [self sendEventWithName:@"remoteNotificationRegistrationError" body:errorDetails];
 }
 
-RCT_EXPORT_METHOD(onFinishRemoteNotification : (NSString *)notificationId fetchResult : (NSString *)fetchResult)
+- (void)onFinishRemoteNotification:(NSString *)notificationId fetchResult:(NSString *)fetchResult
 {
   UIBackgroundFetchResult result = [RCTConvert UIBackgroundFetchResult:fetchResult];
   RCTRemoteNotificationCallback completionHandler = self.remoteNotificationCallbacks[notificationId];
@@ -320,22 +320,33 @@ RCT_EXPORT_METHOD(onFinishRemoteNotification : (NSString *)notificationId fetchR
 /**
  * Update the application icon badge number on the home screen
  */
-RCT_EXPORT_METHOD(setApplicationIconBadgeNumber : (double)number)
+- (void)setApplicationIconBadgeNumber:(double)number
 {
-  RCTSharedApplication().applicationIconBadgeNumber = number;
+  NSInteger badgeCount = (NSInteger)lround(number);
+  if (@available(iOS 16.0, *)) {
+    [UNUserNotificationCenter.currentNotificationCenter
+                setBadgeCount:badgeCount
+        withCompletionHandler:^(NSError *_Nullable error) {
+          if (error != nil) {
+            RCTLogWarn(@"Failed to set application icon badge number: %@", error);
+          }
+        }];
+  } else {
+    RCTSharedApplication().applicationIconBadgeNumber = badgeCount;
+  }
 }
 
 /**
  * Get the current application icon badge number on the home screen
  */
-RCT_EXPORT_METHOD(getApplicationIconBadgeNumber : (RCTResponseSenderBlock)callback)
+- (void)getApplicationIconBadgeNumber:(RCTResponseSenderBlock)callback
 {
   callback(@[ @(RCTSharedApplication().applicationIconBadgeNumber) ]);
 }
 
-RCT_EXPORT_METHOD(
-    requestPermissions : (JS::NativePushNotificationManagerIOS::SpecRequestPermissionsPermission &)
-        permissions resolve : (RCTPromiseResolveBlock)resolve reject : (RCTPromiseRejectBlock)reject)
+- (void)requestPermissions:(JS::NativePushNotificationManagerIOS::SpecRequestPermissionsPermission &)permissions
+                   resolve:(RCTPromiseResolveBlock)resolve
+                    reject:(RCTPromiseRejectBlock)reject
 {
   if (RCTRunningInAppExtension()) {
     reject(
@@ -378,12 +389,12 @@ RCT_EXPORT_METHOD(
                     }];
 }
 
-RCT_EXPORT_METHOD(abandonPermissions)
+- (void)abandonPermissions
 {
   [RCTSharedApplication() unregisterForRemoteNotifications];
 }
 
-RCT_EXPORT_METHOD(checkPermissions : (RCTResponseSenderBlock)callback)
+- (void)checkPermissions:(RCTResponseSenderBlock)callback
 {
   if (RCTRunningInAppExtension()) {
     callback(@[ RCTSettingsDictForUNNotificationSettings(NO, NO, NO, NO, NO, NO, UNAuthorizationStatusNotDetermined) ]);
@@ -433,7 +444,7 @@ static inline NSDictionary *RCTSettingsDictForUNNotificationSettings(
   };
 }
 
-RCT_EXPORT_METHOD(presentLocalNotification : (JS::NativePushNotificationManagerIOS::Notification &)notification)
+- (void)presentLocalNotification:(JS::NativePushNotificationManagerIOS::Notification &)notification
 {
   NSDictionary<NSString *, id> *notificationDict = [RCTConvert NSDictionaryForNotification:notification];
   UNNotificationContent *content = [RCTConvert UNNotificationContent:notificationDict];
@@ -447,7 +458,7 @@ RCT_EXPORT_METHOD(presentLocalNotification : (JS::NativePushNotificationManagerI
   [center addNotificationRequest:request withCompletionHandler:nil];
 }
 
-RCT_EXPORT_METHOD(scheduleLocalNotification : (JS::NativePushNotificationManagerIOS::Notification &)notification)
+- (void)scheduleLocalNotification:(JS::NativePushNotificationManagerIOS::Notification &)notification
 {
   NSDictionary<NSString *, id> *notificationDict = [RCTConvert NSDictionaryForNotification:notification];
   UNNotificationContent *content = [RCTConvert UNNotificationContent:notificationDict];
@@ -475,7 +486,7 @@ RCT_EXPORT_METHOD(scheduleLocalNotification : (JS::NativePushNotificationManager
   [center addNotificationRequest:request withCompletionHandler:nil];
 }
 
-RCT_EXPORT_METHOD(cancelAllLocalNotifications)
+- (void)cancelAllLocalNotifications
 {
   [[UNUserNotificationCenter currentNotificationCenter]
       getPendingNotificationRequestsWithCompletionHandler:^(NSArray<UNNotificationRequest *> *requests) {
@@ -488,9 +499,10 @@ RCT_EXPORT_METHOD(cancelAllLocalNotifications)
       }];
 }
 
-RCT_EXPORT_METHOD(cancelLocalNotifications : (NSDictionary<NSString *, id> *)userInfo)
+- (void)cancelLocalNotifications:(NSDictionary *)userInfoRaw
 {
 #if !TARGET_OS_TV
+  NSDictionary<NSString *, id> *userInfo = [RCTConvert NSDictionary:userInfoRaw];
   UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
   [center getPendingNotificationRequestsWithCompletionHandler:^(NSArray<UNNotificationRequest *> *_Nonnull requests) {
     NSMutableArray<NSString *> *notificationIdentifiersToCancel = [NSMutableArray new];
@@ -518,8 +530,7 @@ RCT_EXPORT_METHOD(cancelLocalNotifications : (NSDictionary<NSString *, id> *)use
 #endif
 }
 
-RCT_EXPORT_METHOD(
-    getInitialNotification : (RCTPromiseResolveBlock)resolve reject : (__unused RCTPromiseRejectBlock)reject)
+- (void)getInitialNotification:(RCTPromiseResolveBlock)resolve reject:(__unused RCTPromiseRejectBlock)reject
 {
   // The user actioned a local or remote notification to launch the app. Notification is represented by UNNotification.
   // Set this property in the implementation of
@@ -542,7 +553,7 @@ RCT_EXPORT_METHOD(
   resolve((id)kCFNull);
 }
 
-RCT_EXPORT_METHOD(getScheduledLocalNotifications : (RCTResponseSenderBlock)callback)
+- (void)getScheduledLocalNotifications:(RCTResponseSenderBlock)callback
 {
   UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
   [center getPendingNotificationRequestsWithCompletionHandler:^(NSArray<UNNotificationRequest *> *_Nonnull requests) {
@@ -554,7 +565,7 @@ RCT_EXPORT_METHOD(getScheduledLocalNotifications : (RCTResponseSenderBlock)callb
   }];
 }
 
-RCT_EXPORT_METHOD(removeAllDeliveredNotifications)
+- (void)removeAllDeliveredNotifications
 {
 #if !TARGET_OS_TV
   UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
@@ -562,15 +573,16 @@ RCT_EXPORT_METHOD(removeAllDeliveredNotifications)
 #endif
 }
 
-RCT_EXPORT_METHOD(removeDeliveredNotifications : (NSArray<NSString *> *)identifiers)
+- (void)removeDeliveredNotifications:(NSArray *)identifiersRaw
 {
 #if !TARGET_OS_TV
+  NSArray<NSString *> *identifiers = [RCTConvert NSStringArray:identifiersRaw];
   UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
   [center removeDeliveredNotificationsWithIdentifiers:identifiers];
 #endif
 }
 
-RCT_EXPORT_METHOD(getDeliveredNotifications : (RCTResponseSenderBlock)callback)
+- (void)getDeliveredNotifications:(RCTResponseSenderBlock)callback
 {
 #if !TARGET_OS_TV
   UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
@@ -587,7 +599,7 @@ RCT_EXPORT_METHOD(getDeliveredNotifications : (RCTResponseSenderBlock)callback)
 #endif
 }
 
-RCT_EXPORT_METHOD(getAuthorizationStatus : (RCTResponseSenderBlock)callback)
+- (void)getAuthorizationStatus:(RCTResponseSenderBlock)callback
 {
   UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
   [center getNotificationSettingsWithCompletionHandler:^(UNNotificationSettings *_Nonnull settings) {

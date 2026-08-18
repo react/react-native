@@ -18,7 +18,7 @@ public object MeasureSpecAssertions {
     if (widthMode == View.MeasureSpec.UNSPECIFIED || heightMode == View.MeasureSpec.UNSPECIFIED) {
       throw IllegalStateException(
           "A catalyst view must have an explicit width and height given to it. This should " +
-              "normally happen as part of the standard catalyst UI framework."
+              "normally happen as part of the standard catalyst UI framework.",
       )
     }
   }

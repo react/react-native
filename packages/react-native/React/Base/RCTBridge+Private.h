@@ -11,8 +11,10 @@
 @class RCTModuleData;
 @protocol RCTJavaScriptExecutor;
 
+#if !defined(RCT_REMOVE_LEGACY_MODULE_INTEROP) || !defined(RCT_REMOVE_LEGACY_COMPONENT_INTEROP)
 RCT_EXTERN NSArray<Class> *RCTGetModuleClasses(void);
 RCT_EXTERN void RCTRegisterModule(Class);
+#endif // !defined(RCT_REMOVE_LEGACY_MODULE_INTEROP) || !defined(RCT_REMOVE_LEGACY_COMPONENT_INTEROP)
 
 @interface RCTBridge ()
 

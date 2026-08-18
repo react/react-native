@@ -39,7 +39,7 @@ public interface ReactPackage {
 
   /** @return a list of view managers that should be registered with [UIManager] */
   public fun createViewManagers(
-      reactContext: ReactApplicationContext
+      reactContext: ReactApplicationContext,
   ): List<ViewManager<in Nothing, in Nothing>>
 
   /**

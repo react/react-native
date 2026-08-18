@@ -11,6 +11,12 @@
 
 import type {BaseVisitorState} from './visitorState';
 import type {NodePath} from '@babel/traverse';
+import type {
+  Comment as BabelNodeComment,
+  TSPropertySignature as BabelNodeTSPropertySignature,
+  TSType as BabelNodeTSType,
+  TSTypeAnnotation as BabelNodeTSTypeAnnotation,
+} from '@babel/types';
 
 import {replaceWithCleanup} from './utils';
 

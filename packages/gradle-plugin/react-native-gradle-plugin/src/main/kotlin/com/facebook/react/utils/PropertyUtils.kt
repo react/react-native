@@ -62,6 +62,11 @@ object PropertyUtils {
    */
   const val INTERNAL_REACT_NATIVE_MAVEN_LOCAL_REPO = "react.internal.mavenLocalRepo"
 
+  /** Internal property that controls the React Native Maven mirror, which is enabled by default. */
+  const val INTERNAL_REACT_NATIVE_MAVEN_MIRROR_ENABLED =
+      "react.internal.reactNativeMavenMirrorEnabled"
+  const val INTERNAL_REACT_NATIVE_MAVEN_MIRROR_ENABLED_DEFAULT = true
+
   /**
    * Internal property used to specify where the Windows Bash executable is located. This is useful
    * for contributors who are running Windows on their machine.
