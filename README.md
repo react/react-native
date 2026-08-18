@@ -45,7 +45,7 @@ in JavaScript, rendered with native code.
 - **Developer Velocity.** See local changes in seconds. Changes to JavaScript code are applied with Fast Refresh, without rebuilding the native app.
 - **Extend it yourself.** Native Modules let you call platform code directly from JavaScript, synchronously and type-safe — or reach for [thousands of existing libraries](https://reactnative.directory/).
 
-React Native is developed and supported by many companies and individual core contributors. Find out more in our [ecosystem overview](https://github.com/react/react-native/blob/HEAD/ECOSYSTEM.md).
+React Native is developed and supported by many companies and individual core contributors. Find out more on the [React Foundation website](https://react.foundation/).
 
 ## Building your first React Native app
 
