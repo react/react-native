@@ -154,8 +154,10 @@ RCT_EXPORT_MODULE()
   // The key window is looked up again instead of trusting the one captured in -init: when the host
   // app creates its window after this module is built, that capture is nil, the KVO below is never
   // installed, and app activation is left as the only trigger for a dimensions update.
+  // A nil key window means there is nothing to observe yet (backgrounded app, scene transition);
+  // keeping the current observer is better than dropping it until the next trigger comes along.
   UIWindow *keyWindow = RCTKeyWindow();
-  if (keyWindow == _applicationWindow) {
+  if (keyWindow == nil || keyWindow == _applicationWindow) {
     return;
   }
 
