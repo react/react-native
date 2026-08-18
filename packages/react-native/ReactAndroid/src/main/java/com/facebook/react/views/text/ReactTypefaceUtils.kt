@@ -18,7 +18,6 @@ import com.facebook.common.logging.FLog
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.common.ReactConstants
 import com.facebook.react.common.assets.ReactFontManager
-import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import kotlin.math.max
 import kotlin.math.min
 
@@ -125,10 +124,7 @@ public object ReactTypefaceUtils {
 
   @JvmStatic
   public fun getFontWeightAdjustment(context: Context): Int =
-      if (
-          Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
-              ReactNativeFeatureFlags.enableAndroidFontWeightAdjustment()
-      ) {
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         context.resources.configuration.fontWeightAdjustment
       } else {
         0

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<196ba25b807fd064ca6150c7d2cd741c>>
+ * @generated SignedSource<<242e9297345bfe821b4550c24d89c2ba>>
  */
 
 /**
@@ -98,11 +98,6 @@ class ReactNativeFeatureFlags {
    * When enabled, Android will accumulate updates in rawProps to reduce the number of mounting instructions for cascading re-renders.
    */
   RN_EXPORT static bool enableAccumulatedUpdatesInRawPropsAndroid();
-
-  /**
-   * When enabled, Android Text measurement and rendering respects the system Bold text accessibility setting via `Configuration.fontWeightAdjustment`.
-   */
-  RN_EXPORT static bool enableAndroidFontWeightAdjustment();
 
   /**
    * Enables various optimizations throughout the path of measuring text on Android.

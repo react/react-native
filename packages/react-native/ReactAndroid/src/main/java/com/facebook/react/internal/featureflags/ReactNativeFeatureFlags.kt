@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<2fc347cdb33327437d29e5fd91e24011>>
+ * @generated SignedSource<<e46c13b3f084d06567a69b3a0a09d536>>
  */
 
 /**
@@ -101,12 +101,6 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun enableAccumulatedUpdatesInRawPropsAndroid(): Boolean = accessor.enableAccumulatedUpdatesInRawPropsAndroid()
-
-  /**
-   * When enabled, Android Text measurement and rendering respects the system Bold text accessibility setting via `Configuration.fontWeightAdjustment`.
-   */
-  @JvmStatic
-  public fun enableAndroidFontWeightAdjustment(): Boolean = accessor.enableAndroidFontWeightAdjustment()
 
   /**
    * Enables various optimizations throughout the path of measuring text on Android.
