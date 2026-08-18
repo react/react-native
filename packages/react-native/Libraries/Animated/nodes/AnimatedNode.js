@@ -13,7 +13,7 @@ import type {PlatformConfig} from '../AnimatedPlatformConfig';
 import NativeAnimatedHelper from '../../../src/private/animated/NativeAnimatedHelper';
 import invariant from 'invariant';
 
-type ValueListenerCallback = (state: {value: number, ...}) => unknown;
+export type ValueListenerCallback = (state: {value: number}) => unknown;
 
 export type AnimatedNodeConfig = Readonly<{
   debugID?: string,
