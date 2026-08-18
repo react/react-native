@@ -3892,6 +3892,8 @@ template <typename T>
 void facebook::react::fromRawValue(const facebook::react::PropsParserContext&, const facebook::react::RawValue& rawValue, T& result);
 template <typename TManager>
 std::shared_ptr<TManager> facebook::react::getManagerByName(std::shared_ptr<const facebook::react::ContextContainer>& contextContainer, const char name[]);
+template <typename... Ts>
+void facebook::react::hash_combine_optionals(std::size_t& seed, const std::optional<Ts> &... optionals);
 uint8_t facebook::react::alphaFromColor(facebook::react::SharedColor color) noexcept;
 uint8_t facebook::react::blueFromColor(facebook::react::SharedColor color) noexcept;
 uint8_t facebook::react::greenFromColor(facebook::react::SharedColor color) noexcept;

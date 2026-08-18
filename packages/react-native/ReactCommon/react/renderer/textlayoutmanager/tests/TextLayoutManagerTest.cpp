@@ -7,6 +7,7 @@
 
 #include <gtest/gtest.h>
 
+#include <array>
 #include <cmath>
 
 #include <react/renderer/textlayoutmanager/TextMeasureCache.h>
@@ -79,6 +80,122 @@ TEST(TextLayoutManagerTest, emptyFontVariationSettingsClearInheritedSettings) {
 
   EXPECT_TRUE(parent.fontVariationSettings.has_value());
   EXPECT_TRUE(parent.fontVariationSettings->empty());
+}
+
+TEST(TextLayoutManagerTest, everyLayoutAttributeAffectsEqualityAndHash) {
+  TextAttributes baseline;
+  baseline.fontFamily = "Inter";
+  baseline.fontSize = 16;
+  baseline.fontSizeMultiplier = 1;
+  baseline.maxFontSizeMultiplier = 2;
+  baseline.letterSpacing = 0.5;
+  baseline.lineHeight = 20;
+  baseline.fontWeight = FontWeight::Weight400;
+  baseline.fontStyle = FontStyle::Normal;
+  baseline.fontVariant = FontVariant::Default;
+  baseline.fontVariationSettings = "'wght' 400";
+  baseline.allowFontScaling = true;
+  baseline.dynamicTypeRamp = DynamicTypeRamp::Body;
+  baseline.alignment = TextAlignment::Natural;
+
+  struct TestCase {
+    const char* name;
+    void (*mutate)(TextAttributes&);
+  };
+  const std::array<TestCase, 13> testCases{{
+      {.name = "fontFamily",
+       .mutate =
+           [](TextAttributes& attributes) {
+             attributes.fontFamily = "Roboto";
+           }},
+      {.name = "fontSize",
+       .mutate = [](TextAttributes& attributes) { attributes.fontSize = 17; }},
+      {.name = "fontSizeMultiplier",
+       .mutate =
+           [](TextAttributes& attributes) {
+             attributes.fontSizeMultiplier = 1.5;
+           }},
+      {.name = "maxFontSizeMultiplier",
+       .mutate =
+           [](TextAttributes& attributes) {
+             attributes.maxFontSizeMultiplier = 3;
+           }},
+      {.name = "letterSpacing",
+       .mutate =
+           [](TextAttributes& attributes) { attributes.letterSpacing = 1; }},
+      {.name = "lineHeight",
+       .mutate =
+           [](TextAttributes& attributes) { attributes.lineHeight = 24; }},
+      {.name = "fontWeight",
+       .mutate =
+           [](TextAttributes& attributes) {
+             attributes.fontWeight = FontWeight::Weight700;
+           }},
+      {.name = "fontStyle",
+       .mutate =
+           [](TextAttributes& attributes) {
+             attributes.fontStyle = FontStyle::Italic;
+           }},
+      {.name = "fontVariant",
+       .mutate =
+           [](TextAttributes& attributes) {
+             attributes.fontVariant = FontVariant::SmallCaps;
+           }},
+      {.name = "fontVariationSettings",
+       .mutate =
+           [](TextAttributes& attributes) {
+             attributes.fontVariationSettings = "'wght' 700";
+           }},
+      {.name = "allowFontScaling",
+       .mutate =
+           [](TextAttributes& attributes) {
+             attributes.allowFontScaling = false;
+           }},
+      {.name = "dynamicTypeRamp",
+       .mutate =
+           [](TextAttributes& attributes) {
+             attributes.dynamicTypeRamp = DynamicTypeRamp::Headline;
+           }},
+      {.name = "alignment",
+       .mutate =
+           [](TextAttributes& attributes) {
+             attributes.alignment = TextAlignment::Center;
+           }},
+  }};
+
+  for (const auto& testCase : testCases) {
+    SCOPED_TRACE(testCase.name);
+    auto changed = baseline;
+    testCase.mutate(changed);
+
+    EXPECT_FALSE(areTextAttributesEquivalentLayoutWise(baseline, changed));
+    EXPECT_NE(
+        textAttributesHashLayoutWise(baseline),
+        textAttributesHashLayoutWise(changed));
+  }
+}
+
+TEST(TextLayoutManagerTest, equivalentPopulatedLayoutAttributesHashEqually) {
+  TextAttributes lhs;
+  lhs.fontFamily = "Inter";
+  lhs.fontSize = 16;
+  lhs.fontSizeMultiplier = 1;
+  lhs.maxFontSizeMultiplier = 2;
+  lhs.letterSpacing = 0.5;
+  lhs.lineHeight = 20;
+  lhs.fontWeight = FontWeight::Weight400;
+  lhs.fontStyle = FontStyle::Italic;
+  lhs.fontVariant = FontVariant::SmallCaps;
+  lhs.fontVariationSettings = "'wght' 400";
+  lhs.allowFontScaling = true;
+  lhs.dynamicTypeRamp = DynamicTypeRamp::Body;
+  lhs.alignment = TextAlignment::Center;
+
+  auto rhs = lhs;
+
+  EXPECT_TRUE(areTextAttributesEquivalentLayoutWise(lhs, rhs));
+  EXPECT_EQ(
+      textAttributesHashLayoutWise(lhs), textAttributesHashLayoutWise(rhs));
 }
 
 // Measurements are rounded to the pixel grid, so a measurement cached at one
