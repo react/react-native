@@ -140,6 +140,28 @@ RCT_EXPORT_MODULE()
     // Use <SafeAreaView> instead.
     @"isIPhoneX_deprecated" : @(RCTIsIPhoneNotched()),
   };
+
+  [self _observeKeyWindowIfNeeded];
+}
+
+- (void)_observeKeyWindowIfNeeded
+{
+  RCTAssertMainQueue();
+  if (_invalidated) {
+    return;
+  }
+
+  // The key window is looked up again instead of trusting the one captured in -init: when the host
+  // app creates its window after this module is built, that capture is nil, the KVO below is never
+  // installed, and app activation is left as the only trigger for a dimensions update.
+  UIWindow *keyWindow = RCTKeyWindow();
+  if (keyWindow == _applicationWindow) {
+    return;
+  }
+
+  [_applicationWindow removeObserver:self forKeyPath:kFrameKeyPath];
+  _applicationWindow = keyWindow;
+  [_applicationWindow addObserver:self forKeyPath:kFrameKeyPath options:NSKeyValueObservingOptionNew context:nil];
 }
 
 - (void)invalidate
@@ -314,6 +336,8 @@ static NSDictionary *RCTExportedDimensions(CGFloat fontScale)
 
 - (void)_interfaceFrameDidChange
 {
+  [self _observeKeyWindowIfNeeded];
+
   [self invalidateCachedConstants];
   NSDictionary *nextInterfaceDimensions = _constants[@"Dimensions"];
 
