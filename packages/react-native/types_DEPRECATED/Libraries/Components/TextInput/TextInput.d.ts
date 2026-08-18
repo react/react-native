@@ -440,7 +440,7 @@ export type TextInputFocusEvent = NativeSyntheticEvent<TextInputFocusEventData>;
  */
 export interface TextInputScrollEventData {
   contentOffset: {x: number; y: number};
-  responderIgnoreScroll?: boolean;
+  responderIgnoreScroll?: boolean | undefined;
 }
 
 /**
