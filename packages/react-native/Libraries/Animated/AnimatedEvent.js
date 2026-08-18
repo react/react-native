@@ -197,7 +197,7 @@ export class AnimatedEvent {
     this._attachedEvent && this._attachedEvent.detach();
   }
 
-  __getHandler(): any | ((...args: any) => void) {
+  __getHandler(): (...args: any) => void {
     if (this.__isNative) {
       if (__DEV__) {
         let validatedMapping = false;

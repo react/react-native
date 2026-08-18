@@ -369,7 +369,7 @@ describe('Native Animated', () => {
       const value = new Animated.Value(0);
       value.__makeNative();
       const listener = jest.fn();
-      const event = Animated.event([{nativeEvent: {foo: value}}], {
+      const event = new Animated.Event([{nativeEvent: {foo: value}}], {
         useNativeDriver: true,
         listener,
       });

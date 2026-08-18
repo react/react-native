@@ -576,10 +576,14 @@ function unforkEventImpl(
   }
 }
 
-const eventImpl = function <T>(
+// NOTE: With `useNativeDriver: true` this returns an `AnimatedEvent` instance
+// rather than a callable handler. That object is only ever meant to be handed
+// straight back to an animated component's event prop, so the declared type
+// describes the handler shape both branches are consumed as.
+const eventImpl: <T>(
   argMapping: ReadonlyArray<?Mapping>,
   config: EventConfig<T>,
-): any {
+) => (...args: Array<any>) => void = function (argMapping, config): any {
   const animatedEvent = new AnimatedEvent(argMapping, config);
   if (animatedEvent.__isNative) {
     return animatedEvent;
