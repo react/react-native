@@ -18,70 +18,70 @@
 // $FlowFixMe[libdef-override]
 declare var global: {
   // setUpGlobals
-  +window: typeof global,
-  +self: typeof global,
-  +process: {
-    +env: {
-      +NODE_ENV: 'development' | 'production',
+  readonly window: typeof global,
+  readonly self: typeof global,
+  readonly process: {
+    readonly env: {
+      readonly NODE_ENV: 'development' | 'production',
     },
-    +argv?: ReadonlyArray<string>,
+    readonly argv?: ReadonlyArray<string>,
   },
 
   // setUpPerformance
-  +performance: Performance,
+  readonly performance: Performance,
 
   // setUpXHR
-  +XMLHttpRequest: typeof XMLHttpRequest,
-  +FormData: typeof FormData,
-  +fetch: typeof fetch,
-  +Headers: typeof Headers,
-  +Request: typeof Request,
-  +Response: typeof Response,
-  +WebSocket: typeof WebSocket,
-  +Blob: typeof Blob,
-  +File: typeof File,
-  +FileReader: typeof FileReader,
-  +URL: typeof URL,
-  +URLSearchParams: typeof URLSearchParams,
-  +AbortController: typeof AbortController,
-  +AbortSignal: typeof AbortSignal,
+  readonly XMLHttpRequest: typeof XMLHttpRequest,
+  readonly FormData: typeof FormData,
+  readonly fetch: typeof fetch,
+  readonly Headers: typeof Headers,
+  readonly Request: typeof Request,
+  readonly Response: typeof Response,
+  readonly WebSocket: typeof WebSocket,
+  readonly Blob: typeof Blob,
+  readonly File: typeof File,
+  readonly FileReader: typeof FileReader,
+  readonly URL: typeof URL,
+  readonly URLSearchParams: typeof URLSearchParams,
+  readonly AbortController: typeof AbortController,
+  readonly AbortSignal: typeof AbortSignal,
 
   // setUpAlert
-  +alert: typeof alert,
+  readonly alert: typeof alert,
 
   // setUpNavigator
-  +navigator: {
-    +product: 'ReactNative',
-    +appName?: ?string,
+  readonly navigator: {
+    readonly product: 'ReactNative',
+    readonly appName?: ?string,
     ...
   },
 
   // setUpTimers
-  +setInterval: typeof setInterval,
-  +clearInterval: typeof clearInterval,
-  +setTimeout: typeof setTimeout,
-  +clearTimeout: typeof clearTimeout,
-  +requestAnimationFrame: typeof requestAnimationFrame,
-  +cancelAnimationFrame: typeof cancelAnimationFrame,
-  +requestIdleCallback: typeof requestIdleCallback,
-  +cancelIdleCallback: typeof cancelIdleCallback,
-  +queueMicrotask: typeof queueMicrotask,
-  +setImmediate: typeof setImmediate,
-  +clearImmediate: typeof clearImmediate,
+  readonly setInterval: typeof setInterval,
+  readonly clearInterval: typeof clearInterval,
+  readonly setTimeout: typeof setTimeout,
+  readonly clearTimeout: typeof clearTimeout,
+  readonly requestAnimationFrame: typeof requestAnimationFrame,
+  readonly cancelAnimationFrame: typeof cancelAnimationFrame,
+  readonly requestIdleCallback: typeof requestIdleCallback,
+  readonly cancelIdleCallback: typeof cancelIdleCallback,
+  readonly queueMicrotask: typeof queueMicrotask,
+  readonly setImmediate: typeof setImmediate,
+  readonly clearImmediate: typeof clearImmediate,
 
   // Polyfills
-  +console: typeof console,
+  readonly console: typeof console,
 
   // JavaScript environments specific
-  +HermesInternal: ?$HermesInternalType,
+  readonly HermesInternal: ?$HermesInternalType,
 
   // Internal-specific
-  +__DEV__?: boolean,
-  +RN$Bridgeless?: boolean,
+  readonly __DEV__?: boolean,
+  readonly RN$Bridgeless?: boolean,
 
   // setupDOM
-  +DOMRect: typeof DOMRect,
-  +DOMRectReadOnly: typeof DOMRectReadOnly,
+  readonly DOMRect: typeof DOMRect,
+  readonly DOMRectReadOnly: typeof DOMRectReadOnly,
 
   // Undeclared properties are implicitly `any`.
   [string | symbol]: any,

@@ -393,10 +393,10 @@ declare module '@babel/traverse' {
     constructor(path: NodePath<>): Scope;
     path: NodePath<>;
     block: BabelNode;
-    +labels: Map<string, NodePath<>>;
-    +parentBlock: BabelNode;
-    +parent: Scope;
-    +hub: HubInterface;
+    readonly labels: Map<string, NodePath<>>;
+    readonly parentBlock: BabelNode;
+    readonly parent: Scope;
+    readonly hub: HubInterface;
     bindings?: {[name: string]: Binding};
     references?: {[name: string]: boolean};
     globals?: {[name: string]: BabelNode};
@@ -599,7 +599,7 @@ declare module '@babel/traverse' {
 
   declare type Opts = {...};
 
-  declare export class NodePath<+TNode extends BabelNode = BabelNode> {
+  declare export class NodePath<out TNode extends BabelNode = BabelNode> {
     parent: BabelNode;
     hub: HubInterface;
     contexts: Array<TraversalContext>;
@@ -608,7 +608,7 @@ declare module '@babel/traverse' {
     shouldStop: boolean;
     removed: boolean;
     state: unknown;
-    +opts: Readonly<TraverseOptions<unknown>> | null;
+    readonly opts: Readonly<TraverseOptions<unknown>> | null;
     skipKeys: null | {[key: string]: boolean};
     parentPath: ?NodePath<>;
     context: TraversalContext;
@@ -621,7 +621,7 @@ declare module '@babel/traverse' {
      * work with `NodePath`, e.g. that passing `NodePath<CallExpression>` to a
      * `NodePath<Node> works.
      */
-    +node: TNode;
+    readonly node: TNode;
 
     parentKey: string;
     scope: Scope;
@@ -1731,20 +1731,20 @@ declare module '@babel/traverse' {
     // END GENERATED NODE PATH METHODS
   }
 
-  declare export type VisitNodeFunction<-TNode extends BabelNode, TState> = (
+  declare export type VisitNodeFunction<in TNode extends BabelNode, TState> = (
     path: NodePath<TNode>,
     state: TState,
   ) => void;
 
   declare export type VisitNodeObject<
-    -TNode extends BabelNode,
+    in TNode extends BabelNode,
     TState,
   > = Partial<{
     enter(path: NodePath<TNode>, state: TState): void,
     exit(path: NodePath<TNode>, state: TState): void,
   }>;
 
-  declare export type VisitNode<-TNode extends BabelNode, TState> =
+  declare export type VisitNode<in TNode extends BabelNode, TState> =
     VisitNodeFunction<TNode, TState> | VisitNodeObject<TNode, TState>;
 
   declare export type Visitor<TState = void> = Readonly<{
@@ -2202,10 +2202,10 @@ declare module '@babel/traverse' {
       parentPath?: ?NodePath<BabelNode>,
     ): void,
 
-    +cache: Cache,
-    +visitors: Visitors,
-    +verify: Visitors['verify'],
-    +explode: Visitors['explode'],
+    readonly cache: Cache,
+    readonly visitors: Visitors,
+    readonly verify: Visitors['verify'],
+    readonly explode: Visitors['explode'],
 
     cheap<TOptions>(
       node: BabelNode,

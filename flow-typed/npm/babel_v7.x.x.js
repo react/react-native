@@ -454,13 +454,13 @@ declare module '@babel/core' {
   };
 
   declare export class ConfigItem {
-    +value: PluginObj<unknown> | (() => PluginObj<unknown>);
-    +options: EntryOptions;
-    +dirname: string;
-    +name: string | void;
-    +file: {
-      +request: string,
-      +resolved: string,
+    readonly value: PluginObj<unknown> | (() => PluginObj<unknown>);
+    readonly options: EntryOptions;
+    readonly dirname: string;
+    readonly name: string | void;
+    readonly file: {
+      readonly request: string,
+      readonly resolved: string,
     } | void;
 
     constructor(descriptor: UnloadedDescriptor): ConfigItem;
@@ -1110,12 +1110,12 @@ declare module '@babel/core' {
   declare type ValidatedOptions = BabelCoreOptions;
 
   declare class PartialConfig {
-    +options: Readonly<ValidatedOptions>;
-    +babelrc: string | void;
-    +babelignore: string | void;
-    +config: string | void;
-    +files: ReadonlySet<string>;
-    +fileHandling: 'ignored' | 'transpile' | 'unsupported';
+    readonly options: Readonly<ValidatedOptions>;
+    readonly babelrc: string | void;
+    readonly babelignore: string | void;
+    readonly config: string | void;
+    readonly files: ReadonlySet<string>;
+    readonly fileHandling: 'ignored' | 'transpile' | 'unsupported';
 
     constructor(options: ValidatedOptions): PartialConfig;
 
