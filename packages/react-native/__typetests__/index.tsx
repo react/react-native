@@ -391,6 +391,9 @@ processColor(Symbol('test'));
 const testNativeSyntheticEvent = <T extends {}>(
   e: NativeSyntheticEvent<T>,
 ): void => {
+  const baseEvent: React.BaseSyntheticEvent = e;
+  baseEvent.preventDefault();
+
   e.isDefaultPrevented();
   e.preventDefault();
   e.isPropagationStopped();
