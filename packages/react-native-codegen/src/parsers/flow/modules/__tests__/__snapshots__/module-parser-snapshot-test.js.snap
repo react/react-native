@@ -845,6 +845,62 @@ exports[`RN Codegen Flow Parser can generate fixture NAMESPACED_NATIVE_MODULE_WI
 }"
 `;
 
+exports[`RN Codegen Flow Parser can generate fixture NAMESPACED_NATIVE_MODULE_WITH_LOCAL_TYPE_ALIASES 1`] = `
+"{
+  'modules': {
+    'NativeSampleTurboModule': {
+      'type': 'NativeModule',
+      'aliasMap': {},
+      'enumMap': {},
+      'spec': {
+        'eventEmitters': [],
+        'methods': [
+          {
+            'name': 'getDouble',
+            'optional': false,
+            'typeAnnotation': {
+              'type': 'FunctionTypeAnnotation',
+              'returnTypeAnnotation': {
+                'type': 'DoubleTypeAnnotation'
+              },
+              'params': [
+                {
+                  'name': 'arg',
+                  'optional': false,
+                  'typeAnnotation': {
+                    'type': 'DoubleTypeAnnotation'
+                  }
+                }
+              ]
+            }
+          },
+          {
+            'name': 'getFloat',
+            'optional': false,
+            'typeAnnotation': {
+              'type': 'FunctionTypeAnnotation',
+              'returnTypeAnnotation': {
+                'type': 'FloatTypeAnnotation'
+              },
+              'params': [
+                {
+                  'name': 'arg',
+                  'optional': false,
+                  'typeAnnotation': {
+                    'type': 'FloatTypeAnnotation'
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      'moduleName': 'SampleTurboModule'
+    }
+  }
+}"
+`;
+
 exports[`RN Codegen Flow Parser can generate fixture NAMESPACED_NATIVE_MODULE_WITH_UNSAFE_OBJECT 1`] = `
 "{
   'modules': {

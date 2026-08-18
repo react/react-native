@@ -418,6 +418,7 @@ class FlowParser implements Parser {
     let typeResolutionStatus: TypeResolutionStatus = {
       successful: false,
     };
+    const resolvedTypeAliases = new Set<string>();
 
     for (;;) {
       if (node.type === 'NullableTypeAnnotation') {
@@ -430,11 +431,21 @@ class FlowParser implements Parser {
         break;
       }
 
-      const typeAnnotationName = this.getTypeAnnotationName(node);
-      const resolvedTypeAnnotation = types[typeAnnotationName];
-      if (resolvedTypeAnnotation == null) {
+      // A qualified name (e.g. CodegenTypes.Double) refers to a namespace
+      // member, not to the local type alias of the same unqualified name.
+      if (node.id.type === 'QualifiedTypeIdentifier') {
         break;
       }
+
+      const typeAnnotationName = this.getTypeAnnotationName(node);
+      const resolvedTypeAnnotation = types[typeAnnotationName];
+      if (
+        resolvedTypeAnnotation == null ||
+        resolvedTypeAliases.has(typeAnnotationName)
+      ) {
+        break;
+      }
+      resolvedTypeAliases.add(typeAnnotationName);
       const {typeAnnotation: typeAnnotationNode, typeResolutionStatus: status} =
         handleGenericTypeAnnotation(node, resolvedTypeAnnotation, this);
       typeResolutionStatus = status;
