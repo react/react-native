@@ -53,6 +53,7 @@ class TextLayoutManager {
   LinesMeasurements measureLines(
       const AttributedStringBox &attributedStringBox,
       const ParagraphAttributes &paragraphAttributes,
+      const TextLayoutContext &layoutContext,
       const Size &size) const;
 
   /*

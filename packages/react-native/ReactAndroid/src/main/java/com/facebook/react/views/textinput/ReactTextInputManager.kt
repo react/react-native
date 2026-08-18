@@ -46,6 +46,7 @@ import com.facebook.react.uimanager.BaseViewManager
 import com.facebook.react.uimanager.LayoutShadowNode
 import com.facebook.react.uimanager.LengthPercentage
 import com.facebook.react.uimanager.LengthPercentageType
+import com.facebook.react.uimanager.PixelUtil
 import com.facebook.react.uimanager.PointerEvents
 import com.facebook.react.uimanager.ReactStylesDiffMap
 import com.facebook.react.uimanager.StateWrapper
@@ -1036,6 +1037,7 @@ public open class ReactTextInputManager public constructor() :
             getFontWeightAdjustment(view.context),
             attributedString,
             reactTextViewManagerCallback,
+            PixelUtil.displayMetricsOf(view.context),
         )
 
     val textBreakStrategy =

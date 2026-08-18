@@ -34,6 +34,7 @@ Size AndroidTextInputShadowNode::measureContent(
 
   TextLayoutContext textLayoutContext{
       .pointScaleFactor = layoutContext.pointScaleFactor,
+      .fontSizeMultiplier = layoutContext.fontSizeMultiplier,
       .surfaceId = getSurfaceId(),
   };
 
@@ -93,9 +94,15 @@ Float AndroidTextInputShadowNode::baseline(
       YGNodeLayoutGetPadding(&yogaNode_, YGEdgeTop);
 
   AttributedStringBox attributedStringBox{attributedString};
+  TextLayoutContext textLayoutContext{
+      .pointScaleFactor = layoutContext.pointScaleFactor,
+      .fontSizeMultiplier = layoutContext.fontSizeMultiplier,
+      .surfaceId = getSurfaceId(),
+  };
   return LineMeasurement::baseline(textLayoutManager_->measureLines(
              attributedStringBox,
              getConcreteProps().paragraphAttributes,
+             textLayoutContext,
              size)) +
       top;
 }

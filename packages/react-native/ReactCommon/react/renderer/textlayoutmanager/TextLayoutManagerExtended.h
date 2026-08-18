@@ -59,7 +59,7 @@ class TextLayoutManagerExtended {
   {
     return requires(TextLayoutManagerT textLayoutManager) {
       {
-        textLayoutManager.measureLines(AttributedStringBox{}, ParagraphAttributes{}, Size{})
+        textLayoutManager.measureLines(AttributedStringBox{}, ParagraphAttributes{}, TextLayoutContext{}, Size{})
       } -> std::same_as<LinesMeasurements>;
     };
   }
@@ -76,10 +76,11 @@ class TextLayoutManagerExtended {
   LinesMeasurements measureLines(
       const AttributedStringBox &attributedStringBox,
       const ParagraphAttributes &paragraphAttributes,
+      const TextLayoutContext &layoutContext,
       const Size &size)
   {
     if constexpr (supportsLineMeasurement()) {
-      return textLayoutManager_.measureLines(attributedStringBox, paragraphAttributes, size);
+      return textLayoutManager_.measureLines(attributedStringBox, paragraphAttributes, layoutContext, size);
     }
     LOG(FATAL) << "Platform TextLayoutManager does not support measureLines";
   }

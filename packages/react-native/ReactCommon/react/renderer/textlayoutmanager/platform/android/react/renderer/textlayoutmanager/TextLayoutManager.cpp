@@ -47,7 +47,9 @@ Size measureText(
     float maxWidth,
     float minHeight,
     float maxHeight,
-    jfloatArray attachmentPositions) {
+    jfloatArray attachmentPositions,
+    float pointScaleFactor,
+    float fontSizeMultiplier) {
   const jni::global_ref<jobject>& fabricUIManager =
       contextContainer->at<jni::global_ref<jobject>>("FabricUIManager");
 
@@ -60,7 +62,9 @@ Size measureText(
               jfloat,
               jfloat,
               jfloat,
-              jfloatArray)>("measureText");
+              jfloatArray,
+              jfloat,
+              jfloat)>("measureText");
 
   auto attributedStringBuffer =
       JReadableMapBuffer::createWithContents(std::move(attributedString));
@@ -75,7 +79,9 @@ Size measureText(
       maxWidth,
       minHeight,
       maxHeight,
-      attachmentPositions));
+      attachmentPositions,
+      pointScaleFactor,
+      fontSizeMultiplier));
 }
 
 TextMeasurement doMeasure(
@@ -108,7 +114,9 @@ TextMeasurement doMeasure(
       maximumSize.width,
       minimumSize.height,
       maximumSize.height,
-      attachmentPositions);
+      attachmentPositions,
+      layoutContext.pointScaleFactor,
+      layoutContext.fontSizeMultiplier);
 
   jfloat* attachmentDataElements =
       env->GetFloatArrayElements(attachmentPositions, nullptr /*isCopy*/);
@@ -194,7 +202,8 @@ TextMeasurement TextLayoutManager::measure(
             {.attributedString = attributedString,
              .paragraphAttributes = paragraphAttributes,
              .layoutConstraints = layoutConstraints,
-             .pointScaleFactor = layoutContext.pointScaleFactor},
+             .pointScaleFactor = layoutContext.pointScaleFactor,
+             .fontSizeMultiplier = layoutContext.fontSizeMultiplier},
             std::move(measureText));
 
   measurement.size = layoutConstraints.clamp(measurement.size);
@@ -224,7 +233,9 @@ TextMeasurement TextLayoutManager::measureCachedSpannableById(
       maximumSize.width,
       minimumSize.height,
       maximumSize.height,
-      attachmentPositions);
+      attachmentPositions,
+      layoutContext.pointScaleFactor,
+      layoutContext.fontSizeMultiplier);
 
   // Clean up allocated ref - it still takes up space in the JNI ref table even
   // though it's 0 length
@@ -239,6 +250,7 @@ TextMeasurement TextLayoutManager::measureCachedSpannableById(
 LinesMeasurements TextLayoutManager::measureLines(
     const AttributedStringBox& attributedStringBox,
     const ParagraphAttributes& paragraphAttributes,
+    const TextLayoutContext& layoutContext,
     const Size& size) const {
   react_native_assert(
       attributedStringBox.getMode() == AttributedStringBox::Mode::Value);
@@ -253,6 +265,8 @@ LinesMeasurements TextLayoutManager::measureLines(
                 JReadableMapBuffer::javaobject,
                 JReadableMapBuffer::javaobject,
                 jfloat,
+                jfloat,
+                jfloat,
                 jfloat)>("measureLines");
 
     auto attributedStringMB =
@@ -265,7 +279,9 @@ LinesMeasurements TextLayoutManager::measureLines(
         attributedStringMB.get(),
         paragraphAttributesMB.get(),
         size.width,
-        size.height);
+        size.height,
+        layoutContext.pointScaleFactor,
+        layoutContext.fontSizeMultiplier);
 
     auto dynamicArray = cthis(array)->consume();
     LinesMeasurements lineMeasurements;
@@ -288,7 +304,9 @@ LinesMeasurements TextLayoutManager::measureLines(
       : lineMeasureCache_.get(
             {.attributedString = attributedString,
              .paragraphAttributes = paragraphAttributes,
-             .size = size},
+             .size = size,
+             .pointScaleFactor = layoutContext.pointScaleFactor,
+             .fontSizeMultiplier = layoutContext.fontSizeMultiplier},
             std::move(doMeasureLines));
 }
 
@@ -305,6 +323,8 @@ TextLayoutManager::PreparedTextLayout TextLayoutManager::prepareLayout(
               jfloat,
               jfloat,
               jfloat,
+              jfloat,
+              jfloat,
               jfloat)>("prepareTextLayout");
 
   static auto reusePreparedLayoutWithNewReactTags =
@@ -317,7 +337,8 @@ TextLayoutManager::PreparedTextLayout TextLayoutManager::prepareLayout(
       {.attributedString = attributedString,
        .paragraphAttributes = paragraphAttributes,
        .layoutConstraints = layoutConstraints,
-       .pointScaleFactor = layoutContext.pointScaleFactor},
+       .pointScaleFactor = layoutContext.pointScaleFactor,
+       .fontSizeMultiplier = layoutContext.fontSizeMultiplier},
       [&]() {
         const auto& fabricUIManager =
             contextContainer_->at<jni::global_ref<jobject>>("FabricUIManager");
@@ -336,7 +357,9 @@ TextLayoutManager::PreparedTextLayout TextLayoutManager::prepareLayout(
             minimumSize.width,
             maximumSize.width,
             minimumSize.height,
-            maximumSize.height))};
+            maximumSize.height,
+            layoutContext.pointScaleFactor,
+            layoutContext.fontSizeMultiplier))};
       });
 
   // PreparedTextCacheKey allows equality of layouts which are the same

@@ -70,6 +70,9 @@ class TextMeasureCacheKey final {
   // are rounded to the pixel grid. Two otherwise-identical measures at different
   // densities are not interchangeable, so the scale factor is part of the key.
   Float pointScaleFactor{};
+  // `sp` units are resolved against the system font scale on some platforms, so
+  // two measures at the same density but different font scales differ too.
+  Float fontSizeMultiplier{};
 };
 
 // The Key type that is used for Line Measure Cache.
@@ -80,6 +83,8 @@ class LineMeasureCacheKey final {
   AttributedString attributedString{};
   ParagraphAttributes paragraphAttributes{};
   Size size{};
+  Float pointScaleFactor{};
+  Float fontSizeMultiplier{};
 };
 
 /**
@@ -94,6 +99,7 @@ class PreparedTextCacheKey final {
   // A prepared layout is rounded to the pixel grid, so it is only reusable at
   // the pixel scale factor it was laid out at.
   Float pointScaleFactor{};
+  Float fontSizeMultiplier{};
 };
 
 /*
@@ -263,20 +269,24 @@ inline bool operator==(const TextMeasureCacheKey &lhs, const TextMeasureCacheKey
 {
   return areAttributedStringsEquivalentLayoutWise(lhs.attributedString, rhs.attributedString) &&
       lhs.paragraphAttributes == rhs.paragraphAttributes && lhs.layoutConstraints == rhs.layoutConstraints &&
-      floatEquality(lhs.pointScaleFactor, rhs.pointScaleFactor);
+      floatEquality(lhs.pointScaleFactor, rhs.pointScaleFactor) &&
+      floatEquality(lhs.fontSizeMultiplier, rhs.fontSizeMultiplier);
 }
 
 inline bool operator==(const LineMeasureCacheKey &lhs, const LineMeasureCacheKey &rhs)
 {
   return areAttributedStringsEquivalentLayoutWise(lhs.attributedString, rhs.attributedString) &&
-      lhs.paragraphAttributes == rhs.paragraphAttributes && lhs.size == rhs.size;
+      lhs.paragraphAttributes == rhs.paragraphAttributes && lhs.size == rhs.size &&
+      floatEquality(lhs.pointScaleFactor, rhs.pointScaleFactor) &&
+      floatEquality(lhs.fontSizeMultiplier, rhs.fontSizeMultiplier);
 }
 
 inline bool operator==(const PreparedTextCacheKey &lhs, const PreparedTextCacheKey &rhs)
 {
   return areAttributedStringsEquivalentDisplayWise(lhs.attributedString, rhs.attributedString) &&
       lhs.paragraphAttributes == rhs.paragraphAttributes && lhs.layoutConstraints == rhs.layoutConstraints &&
-      floatEquality(lhs.pointScaleFactor, rhs.pointScaleFactor);
+      floatEquality(lhs.pointScaleFactor, rhs.pointScaleFactor) &&
+      floatEquality(lhs.fontSizeMultiplier, rhs.fontSizeMultiplier);
 }
 
 } // namespace facebook::react
@@ -291,7 +301,8 @@ struct hash<facebook::react::TextMeasureCacheKey> {
         attributedStringHashLayoutWise(key.attributedString),
         key.paragraphAttributes,
         key.layoutConstraints,
-        key.pointScaleFactor);
+        key.pointScaleFactor,
+        key.fontSizeMultiplier);
   }
 };
 
@@ -300,7 +311,11 @@ struct hash<facebook::react::LineMeasureCacheKey> {
   size_t operator()(const facebook::react::LineMeasureCacheKey &key) const
   {
     return facebook::react::hash_combine(
-        attributedStringHashLayoutWise(key.attributedString), key.paragraphAttributes, key.size);
+        attributedStringHashLayoutWise(key.attributedString),
+        key.paragraphAttributes,
+        key.size,
+        key.pointScaleFactor,
+        key.fontSizeMultiplier);
   }
 };
 
@@ -312,7 +327,8 @@ struct hash<facebook::react::PreparedTextCacheKey> {
         attributedStringHashDisplayWise(key.attributedString),
         key.paragraphAttributes,
         key.layoutConstraints,
-        key.pointScaleFactor);
+        key.pointScaleFactor,
+        key.fontSizeMultiplier);
   }
 };
 

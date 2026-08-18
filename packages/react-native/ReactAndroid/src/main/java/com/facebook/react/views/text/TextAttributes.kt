@@ -7,8 +7,10 @@
 
 package com.facebook.react.views.text
 
+import android.util.DisplayMetrics
 import com.facebook.common.logging.FLog
 import com.facebook.react.common.ReactConstants
+import com.facebook.react.uimanager.DisplayMetricsHolder
 import com.facebook.react.uimanager.PixelUtil
 import com.facebook.react.uimanager.ViewDefaults
 
@@ -19,7 +21,19 @@ import com.facebook.react.uimanager.ViewDefaults
  * the rendered aka effective value. For example, to figure out the rendered/effective font size,
  * you need to take into account the fontSize, maxFontSizeMultiplier, and allowFontScaling props.
  */
-public class TextAttributes {
+public class TextAttributes
+@JvmOverloads
+constructor(
+    /**
+     * The metrics `sp` and `dp` values are resolved against, or `null` to fall back to the
+     * process-wide [DisplayMetricsHolder]. Views should pass the metrics of their own context so
+     * that text on a secondary display is sized for that display; see [PixelUtil.displayMetricsOf].
+     */
+    private val displayMetrics: DisplayMetrics? = null,
+) {
+  private val metrics: DisplayMetrics
+    get() = displayMetrics ?: DisplayMetricsHolder.getScreenDisplayMetrics()
+
   public var allowFontScaling: Boolean = true
   public var fontSize: Float = Float.NaN
   public var lineHeight: Float = Float.NaN
@@ -29,7 +43,7 @@ public class TextAttributes {
   @JvmField internal var textTransform: TextTransform = TextTransform.UNSET
 
   public fun applyChild(child: TextAttributes): TextAttributes {
-    val result = TextAttributes()
+    val result = TextAttributes(displayMetrics)
 
     // allowFontScaling is always determined by the root Text
     // component so don't allow the child to overwrite it.
@@ -66,10 +80,12 @@ public class TextAttributes {
     get() {
       val fontSize = if (!fontSize.isNaN()) fontSize else ViewDefaults.FONT_SIZE_SP
       return if (allowFontScaling) {
-        Math.ceil(PixelUtil.toPixelFromSP(fontSize, effectiveMaxFontSizeMultiplier).toDouble())
+        Math.ceil(
+            PixelUtil.toPixelFromSP(fontSize, effectiveMaxFontSizeMultiplier, metrics).toDouble(),
+        )
             .toInt()
       } else {
-        Math.ceil(PixelUtil.toPixelFromDIP(fontSize).toDouble()).toInt()
+        Math.ceil(PixelUtil.toPixelFromDIP(fontSize, metrics).toDouble()).toInt()
       }
     }
 
@@ -80,8 +96,9 @@ public class TextAttributes {
       }
 
       val lineHeight: Float =
-          if (allowFontScaling) PixelUtil.toPixelFromSP(lineHeight, effectiveMaxFontSizeMultiplier)
-          else PixelUtil.toPixelFromDIP(lineHeight)
+          if (allowFontScaling)
+              PixelUtil.toPixelFromSP(lineHeight, effectiveMaxFontSizeMultiplier, metrics)
+          else PixelUtil.toPixelFromDIP(lineHeight, metrics)
 
       // Take into account the requested line height
       // and the height of the inline images.
@@ -98,8 +115,8 @@ public class TextAttributes {
 
       val letterSpacingPixels: Float =
           if (allowFontScaling)
-              PixelUtil.toPixelFromSP(letterSpacing, effectiveMaxFontSizeMultiplier)
-          else PixelUtil.toPixelFromDIP(letterSpacing)
+              PixelUtil.toPixelFromSP(letterSpacing, effectiveMaxFontSizeMultiplier, metrics)
+          else PixelUtil.toPixelFromDIP(letterSpacing, metrics)
 
       // `letterSpacingPixels` and `getEffectiveFontSize` are both in pixels,
       // yielding an accurate em value.

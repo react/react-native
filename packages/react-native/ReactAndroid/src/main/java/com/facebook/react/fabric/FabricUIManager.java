@@ -21,6 +21,7 @@ import static com.facebook.react.uimanager.UIManagerHelper.PADDING_TOP_INDEX;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Point;
+import android.util.DisplayMetrics;
 import android.os.SystemClock;
 import android.view.View;
 import android.view.accessibility.AccessibilityEvent;
@@ -105,6 +106,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -184,6 +186,13 @@ public class FabricUIManager
   private final ViewManagerRegistry mViewManagerRegistry;
 
   private final TextEffectRegistry mTextEffectRegistry = new TextEffectRegistry();
+
+  /**
+   * Memoizes the {@link DisplayMetrics} synthesized for each distinct (pointScaleFactor, fontScale)
+   * pair seen during measurement. In practice this holds one entry per display the app has surfaces
+   * on, but text measurement is hot enough that allocating per call is worth avoiding.
+   */
+  private final Map<Long, DisplayMetrics> mSurfaceDisplayMetricsCache = new ConcurrentHashMap<>();
 
   private final BatchEventDispatchedListener mBatchEventDispatchedListener;
 
@@ -550,8 +559,11 @@ public class FabricUIManager
       ReadableMapBuffer attributedString,
       ReadableMapBuffer paragraphAttributes,
       float width,
-      float height) {
+      float height,
+      float pointScaleFactor,
+      float fontScale) {
     ViewManager textViewManager = mViewManagerRegistry.get(ReactTextViewManager.REACT_CLASS);
+    DisplayMetrics metrics = surfaceDisplayMetrics(pointScaleFactor, fontScale);
 
     return (NativeArray)
         TextLayoutManager.measureLines(
@@ -559,12 +571,40 @@ public class FabricUIManager
             ReactTypefaceUtils.getFontWeightAdjustment(mReactApplicationContext),
             attributedString,
             paragraphAttributes,
-            PixelUtil.toPixelFromDIP(width),
-            PixelUtil.toPixelFromDIP(height),
+            PixelUtil.toPixelFromDIP(width, metrics),
+            PixelUtil.toPixelFromDIP(height, metrics),
             textViewManager instanceof ReactTextViewManagerCallback
                 ? (ReactTextViewManagerCallback) textViewManager
                 : null,
-            mTextEffectRegistry);
+            mTextEffectRegistry,
+            metrics);
+  }
+
+  /**
+   * The {@link DisplayMetrics} text should be measured against for the surface currently being laid
+   * out.
+   *
+   * <p>{@code pointScaleFactor} and {@code fontScale} originate from the surface's {@code
+   * LayoutContext}, which {@link com.facebook.react.runtime.ReactSurfaceImpl} derives from the
+   * Activity's resources — i.e. from the display the surface is actually on. {@link
+   * DisplayMetricsHolder} in contrast always describes the device's primary display, so on a
+   * secondary display (Samsung DeX, desktop mode, an external monitor, a freeform window) the two
+   * disagree and text is measured at one scale but mounted at another.
+   */
+  private DisplayMetrics surfaceDisplayMetrics(float pointScaleFactor, float fontScale) {
+    if (!ReactNativeFeatureFlags.enablePerSurfaceTextScaleAndroid()) {
+      return DisplayMetricsHolder.getScreenDisplayMetrics();
+    }
+
+    long key = (((long) Float.floatToRawIntBits(pointScaleFactor)) << 32) | (Float.floatToRawIntBits(fontScale) & 0xFFFFFFFFL);
+    DisplayMetrics cached = mSurfaceDisplayMetricsCache.get(key);
+    if (cached != null) {
+      return cached;
+    }
+
+    DisplayMetrics metrics = PixelUtil.displayMetricsFor(pointScaleFactor, fontScale);
+    DisplayMetrics existing = mSurfaceDisplayMetricsCache.putIfAbsent(key, metrics);
+    return existing != null ? existing : metrics;
   }
 
   public @Nullable Integer getColor(int surfaceId, String[] resourcePaths) {
@@ -639,24 +679,28 @@ public class FabricUIManager
       float maxWidth,
       float minHeight,
       float maxHeight,
-      @Nullable float[] attachmentsPositions) {
+      @Nullable float[] attachmentsPositions,
+      float pointScaleFactor,
+      float fontScale) {
 
     ViewManager textViewManager = mViewManagerRegistry.get(ReactTextViewManager.REACT_CLASS);
+    DisplayMetrics metrics = surfaceDisplayMetrics(pointScaleFactor, fontScale);
 
     return TextLayoutManager.measureText(
         mReactApplicationContext.getAssets(),
         ReactTypefaceUtils.getFontWeightAdjustment(mReactApplicationContext),
         attributedString,
         paragraphAttributes,
-        getYogaSize(minWidth, maxWidth),
+        getYogaSize(minWidth, maxWidth, metrics),
         getYogaMeasureMode(minWidth, maxWidth),
-        getYogaSize(minHeight, maxHeight),
+        getYogaSize(minHeight, maxHeight, metrics),
         getYogaMeasureMode(minHeight, maxHeight),
         textViewManager instanceof ReactTextViewManagerCallback
             ? (ReactTextViewManagerCallback) textViewManager
             : null,
         attachmentsPositions,
-        mTextEffectRegistry);
+        mTextEffectRegistry,
+        metrics);
   }
 
   @AnyThread
@@ -668,22 +712,26 @@ public class FabricUIManager
       float minWidth,
       float maxWidth,
       float minHeight,
-      float maxHeight) {
+      float maxHeight,
+      float pointScaleFactor,
+      float fontScale) {
     ViewManager textViewManager = mViewManagerRegistry.get(ReactTextViewManager.REACT_CLASS);
+    DisplayMetrics metrics = surfaceDisplayMetrics(pointScaleFactor, fontScale);
 
     return TextLayoutManager.createPreparedLayout(
         mReactApplicationContext.getAssets(),
         ReactTypefaceUtils.getFontWeightAdjustment(mReactApplicationContext),
         attributedString,
         paragraphAttributes,
-        getYogaSize(minWidth, maxWidth),
+        getYogaSize(minWidth, maxWidth, metrics),
         getYogaMeasureMode(minWidth, maxWidth),
-        getYogaSize(minHeight, maxHeight),
+        getYogaSize(minHeight, maxHeight, metrics),
         getYogaMeasureMode(minHeight, maxHeight),
         textViewManager instanceof ReactTextViewManagerCallback
             ? (ReactTextViewManagerCallback) textViewManager
             : null,
-        mTextEffectRegistry);
+        mTextEffectRegistry,
+        metrics);
   }
 
   @AnyThread
@@ -697,7 +745,8 @@ public class FabricUIManager
         preparedLayout.getVerticalOffset(),
         reactTags,
         preparedLayout.getTextBreakStrategy(),
-        preparedLayout.getJustificationMode());
+        preparedLayout.getJustificationMode(),
+        preparedLayout.getDisplayMetrics());
   }
 
   @AnyThread
@@ -709,11 +758,15 @@ public class FabricUIManager
       float maxWidth,
       float minHeight,
       float maxHeight) {
+    // A prepared layout is in physical pixels of the display it was laid out on, so its constraints
+    // have to be converted with the metrics it was prepared with rather than the primary display's.
+    DisplayMetrics metrics = preparedLayout.getDisplayMetrics();
+
     return TextLayoutManager.measurePreparedLayout(
         preparedLayout,
-        getYogaSize(minWidth, maxWidth),
+        getYogaSize(minWidth, maxWidth, metrics),
         getYogaMeasureMode(minWidth, maxWidth),
-        getYogaSize(minHeight, maxHeight),
+        getYogaSize(minHeight, maxHeight, metrics),
         getYogaMeasureMode(minHeight, maxHeight));
   }
 

@@ -10,6 +10,7 @@ package com.facebook.react.views.text
 import android.os.Build
 import android.text.Layout
 import android.text.TextUtils.TruncateAt
+import android.util.DisplayMetrics
 import android.util.LayoutDirection
 import android.view.Gravity
 import com.facebook.common.logging.FLog
@@ -17,8 +18,8 @@ import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.common.ReactConstants
 import com.facebook.react.common.mapbuffer.MapBuffer
-import com.facebook.react.uimanager.PixelUtil.toPixelFromDIP
-import com.facebook.react.uimanager.PixelUtil.toPixelFromSP
+import com.facebook.react.uimanager.DisplayMetricsHolder
+import com.facebook.react.uimanager.PixelUtil
 import com.facebook.react.uimanager.ReactAccessibilityDelegate
 import com.facebook.react.uimanager.ReactAccessibilityDelegate.AccessibilityRole
 import com.facebook.react.uimanager.ReactStylesDiffMap
@@ -32,7 +33,23 @@ import kotlin.math.ceil
 // TODO: T63643819 refactor naming of TextAttributeProps to make explicit that this represents
 // TextAttributes and not TextProps. As part of this refactor extract methods that don't belong to
 // TextAttributeProps (e.g. TextAlign)
-public class TextAttributeProps private constructor() {
+public class TextAttributeProps
+private constructor(
+    /**
+     * The metrics `sp` and `dp` attributes are resolved against.
+     *
+     * This is the density of the display the surface is on, which is not necessarily the density of
+     * the device's primary display that [DisplayMetricsHolder] tracks.
+     */
+    private val displayMetrics: DisplayMetrics,
+) {
+  private fun toPixelFromSP(value: Float, maxFontScale: Float = Float.NaN): Float =
+      PixelUtil.toPixelFromSP(value, maxFontScale, displayMetrics)
+
+  private fun toPixelFromDIP(value: Float): Float = PixelUtil.toPixelFromDIP(value, displayMetrics)
+
+  private fun toPixelFromDIP(value: Double): Float = toPixelFromDIP(value.toFloat())
+
   public var lineHeight: Float = Float.NaN
     private set(value) {
       lineHeightInput = value
@@ -422,8 +439,17 @@ public class TextAttributeProps private constructor() {
     private const val DEFAULT_HYPHENATION_FREQUENCY = Layout.HYPHENATION_FREQUENCY_NONE
 
     /** Build a TextAttributeProps using data from the [MapBuffer] received as a parameter. */
-    public fun fromMapBuffer(props: MapBuffer): TextAttributeProps {
-      val result = TextAttributeProps()
+    @JvmStatic
+    public fun fromMapBuffer(props: MapBuffer): TextAttributeProps =
+        fromMapBuffer(props, DisplayMetricsHolder.getScreenDisplayMetrics())
+
+    /**
+     * Build a TextAttributeProps whose `sp`/`dp` attributes are resolved against [displayMetrics]
+     * rather than the process-wide [DisplayMetricsHolder].
+     */
+    @JvmStatic
+    public fun fromMapBuffer(props: MapBuffer, displayMetrics: DisplayMetrics): TextAttributeProps {
+      val result = TextAttributeProps(displayMetrics)
 
       // TODO T83483191: Review constants that are not being set!
       val iterator = props.iterator()
@@ -487,8 +513,20 @@ public class TextAttributeProps private constructor() {
       return result
     }
 
-    public fun fromReadableMap(props: ReactStylesDiffMap): TextAttributeProps {
-      val result = TextAttributeProps()
+    @JvmStatic
+    public fun fromReadableMap(props: ReactStylesDiffMap): TextAttributeProps =
+        fromReadableMap(props, DisplayMetricsHolder.getScreenDisplayMetrics())
+
+    /**
+     * Build a TextAttributeProps whose `sp`/`dp` attributes are resolved against [displayMetrics]
+     * rather than the process-wide [DisplayMetricsHolder].
+     */
+    @JvmStatic
+    public fun fromReadableMap(
+        props: ReactStylesDiffMap,
+        displayMetrics: DisplayMetrics,
+    ): TextAttributeProps {
+      val result = TextAttributeProps(displayMetrics)
       result.setNumberOfLines(getIntProp(props, ViewProps.NUMBER_OF_LINES, ReactConstants.UNSET))
       result.lineHeight = getFloatProp(props, ViewProps.LINE_HEIGHT, ReactConstants.UNSET.toFloat())
       result.letterSpacing = getFloatProp(props, ViewProps.LETTER_SPACING, Float.NaN)

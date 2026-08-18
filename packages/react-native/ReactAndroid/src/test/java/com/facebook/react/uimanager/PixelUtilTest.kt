@@ -157,6 +157,44 @@ class PixelUtilTest {
     assertThat(abs(result - expected)).isLessThan(0.1f)
   }
 
+  // A surface can live on a display whose density differs from the primary display's, which is
+  // what DisplayMetricsHolder tracks. The explicit-metrics overloads must ignore the holder
+  // entirely so that measurement follows the surface.
+  @Test
+  fun explicitMetricsOverloads_ignoreTheHolder() {
+    val holderMetrics = DisplayMetrics()
+    holderMetrics.density = 3.0f
+    holderMetrics.scaledDensity = 3.0f
+    DisplayMetricsHolder.setScreenDisplayMetrics(holderMetrics)
+
+    val surfaceMetrics = PixelUtil.displayMetricsFor(density = 1.5f, fontScale = 1.0f)
+
+    assertThat(PixelUtil.toPixelFromDIP(16f, surfaceMetrics)).isEqualTo(24f)
+    assertThat(PixelUtil.toPixelFromSP(16f, Float.NaN, surfaceMetrics)).isEqualTo(24f)
+    assertThat(PixelUtil.toDIPFromPixel(24f, surfaceMetrics)).isEqualTo(16f)
+
+    // The holder-backed overloads are unaffected.
+    assertThat(PixelUtil.toPixelFromDIP(16f)).isEqualTo(48f)
+  }
+
+  @Test
+  fun displayMetricsFor_appliesFontScaleToScaledDensity() {
+    val metrics = PixelUtil.displayMetricsFor(density = 2.0f, fontScale = 1.3f)
+
+    assertThat(metrics.density).isEqualTo(2.0f)
+    assertThat(abs(metrics.scaledDensity - 2.6f)).isLessThan(0.001f)
+    // 16sp at density 2.0 and font scale 1.3 => 41.6px
+    assertThat(abs(PixelUtil.toPixelFromSP(16f, Float.NaN, metrics) - 41.6f)).isLessThan(0.01f)
+  }
+
+  @Test
+  fun toPixelFromSP_withExplicitMetrics_respectsMaxFontScale() {
+    val metrics = PixelUtil.displayMetricsFor(density = 1.5f, fontScale = 2.0f)
+
+    // Unclamped this would be 16 * 1.5 * 2.0 = 48px; maxFontScale 1.5 caps it at 16 * 1.5 * 1.5.
+    assertThat(abs(PixelUtil.toPixelFromSP(16f, 1.5f, metrics) - 36f)).isLessThan(0.01f)
+  }
+
   @Test
   fun initDisplayMetrics_preservesFontScale() {
     // Create a context with custom configuration

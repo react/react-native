@@ -21,15 +21,28 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.get
+import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsForTests
+import com.facebook.react.uimanager.DisplayMetricsHolder
 import com.facebook.react.views.text.internal.span.ReactAbsoluteSizeSpan
+import com.facebook.testutils.shadows.ShadowNativeLoader
+import com.facebook.testutils.shadows.ShadowSoLoader
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
+import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
+@Config(shadows = [ShadowSoLoader::class, ShadowNativeLoader::class])
 class ReactTextViewTest {
+
+  @Before
+  fun setUp() {
+    ReactNativeFeatureFlagsForTests.setUp()
+    DisplayMetricsHolder.initDisplayMetricsIfNotInitialized(RuntimeEnvironment.getApplication())
+  }
 
   @Test
   fun drawsGlyphInkOutsideLineHeightWhenOverflowIsVisible() {

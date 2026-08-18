@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<134ddac03c568b9e0c4bc50bbdfa99a3>>
+ * @generated SignedSource<<3501dbf8d9f12382711c5a33519e15e4>>
  */
 
 /**
@@ -184,6 +184,10 @@ bool ReactNativeFeatureFlags::enableMutationObserverByDefault() {
 
 bool ReactNativeFeatureFlags::enableNativeCSSParsing() {
   return getAccessor().enableNativeCSSParsing();
+}
+
+bool ReactNativeFeatureFlags::enablePerSurfaceTextScaleAndroid() {
+  return getAccessor().enablePerSurfaceTextScaleAndroid();
 }
 
 bool ReactNativeFeatureFlags::enablePreparedTextLayout() {

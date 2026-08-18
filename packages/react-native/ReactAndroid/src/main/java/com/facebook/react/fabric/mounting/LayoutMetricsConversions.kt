@@ -7,6 +7,7 @@
 
 package com.facebook.react.fabric.mounting
 
+import android.util.DisplayMetrics
 import android.view.View.MeasureSpec
 import com.facebook.react.uimanager.PixelUtil.dpToPx
 import com.facebook.yoga.YogaMeasureMode
@@ -38,6 +39,20 @@ internal interface LayoutMetricsConversions {
           Float.POSITIVE_INFINITY
         } else {
           maxSize.dpToPx()
+        }
+
+    /**
+     * Same as [getYogaSize], but converts using [metrics] rather than the process-wide
+     * [com.facebook.react.uimanager.DisplayMetricsHolder], which always tracks the primary display.
+     */
+    @JvmStatic
+    fun getYogaSize(minSize: Float, maxSize: Float, metrics: DisplayMetrics): Float =
+        if (minSize == maxSize) {
+          maxSize.dpToPx(metrics)
+        } else if (maxSize.isInfinite()) {
+          Float.POSITIVE_INFINITY
+        } else {
+          maxSize.dpToPx(metrics)
         }
 
     @JvmStatic

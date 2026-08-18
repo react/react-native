@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<e46c13b3f084d06567a69b3a0a09d536>>
+ * @generated SignedSource<<c8d224003a4600641b8f3e4dc8ba3f78>>
  */
 
 /**
@@ -269,6 +269,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun enableNativeCSSParsing(): Boolean = accessor.enableNativeCSSParsing()
+
+  /**
+   * Measures and mounts text using the density of the display the surface is on, instead of the process-wide DisplayMetricsHolder (which always tracks the primary display).
+   */
+  @JvmStatic
+  public fun enablePerSurfaceTextScaleAndroid(): Boolean = accessor.enablePerSurfaceTextScaleAndroid()
 
   /**
    * Enables caching text layout artifacts for later reuse

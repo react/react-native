@@ -25,6 +25,13 @@ struct TextLayoutContext {
    */
   Float pointScaleFactor{1.0};
 
+  /*
+   * The system font scale of the display the surface is attached to. Mirrors
+   * `LayoutContext::fontSizeMultiplier` and is needed alongside
+   * `pointScaleFactor` by platforms that resolve `sp` units themselves.
+   */
+  Float fontSizeMultiplier{1.0};
+
   /**
    * The ID of the surface being laid out
    */

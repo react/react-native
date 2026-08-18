@@ -21,6 +21,7 @@ import com.facebook.common.logging.FLog
 import com.facebook.react.R
 import com.facebook.react.common.ReactConstants
 import com.facebook.react.common.annotations.UnstableReactNativeAPI
+import com.facebook.react.common.build.ReactBuildConfig
 import com.facebook.react.common.mapbuffer.MapBuffer
 import com.facebook.react.internal.SystraceSection
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
@@ -31,6 +32,7 @@ import com.facebook.react.uimanager.IViewManagerWithChildren
 import com.facebook.react.uimanager.LayoutShadowNode
 import com.facebook.react.uimanager.LengthPercentage
 import com.facebook.react.uimanager.LengthPercentageType
+import com.facebook.react.uimanager.PixelUtil
 import com.facebook.react.uimanager.PointerEvents
 import com.facebook.react.uimanager.ReactStylesDiffMap
 import com.facebook.react.uimanager.ReferenceStateWrapper
@@ -165,6 +167,7 @@ public constructor(
             attributedString,
             reactTextViewManagerCallback,
             TextEffectRegistry.current,
+            PixelUtil.displayMetricsOf(view.context),
         )
     view.setSpanned(spanned)
 
@@ -201,6 +204,20 @@ public constructor(
     val layout = preparedLayout.layout
     val text = layout.text
     val spanned = if (text is Spannable) text else SpannableString(text)
+
+    if (ReactBuildConfig.DEBUG) {
+      val mountDensity = PixelUtil.displayMetricsOf(view.context).density
+      if (preparedLayout.displayMetrics.density != mountDensity) {
+        FLog.w(
+            ReactConstants.TAG,
+            "Text was laid out at density %f but is being mounted on a display of density %f. " +
+                "It will render at the wrong size until the surface is laid out again.",
+            preparedLayout.displayMetrics.density,
+            mountDensity,
+        )
+      }
+    }
+
     view.setSpanned(spanned)
     view.setPreparedLayout(preparedLayout)
 

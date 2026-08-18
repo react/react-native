@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<5ecdd21f249024be531c56f95fe4abfc>>
+ * @generated SignedSource<<70893e30b4e990611676a28171f1d7f8>>
  */
 
 /**
@@ -115,6 +115,8 @@ class NativeReactNativeFeatureFlags
   bool enableMutationObserverByDefault(jsi::Runtime& runtime);
 
   bool enableNativeCSSParsing(jsi::Runtime& runtime);
+
+  bool enablePerSurfaceTextScaleAndroid(jsi::Runtime& runtime);
 
   bool enablePreparedTextLayout(jsi::Runtime& runtime);
 

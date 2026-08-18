@@ -475,6 +475,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    enablePerSurfaceTextScaleAndroid: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-08-12',
+        description:
+          'Measures and mounts text using the density of the display the surface is on, instead of the process-wide DisplayMetricsHolder (which always tracks the primary display).',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
     enablePreparedTextLayout: {
       defaultValue: false,
       metadata: {

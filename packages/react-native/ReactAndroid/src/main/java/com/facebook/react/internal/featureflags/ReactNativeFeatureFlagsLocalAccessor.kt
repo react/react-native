@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<7159c0be9e1044361603d06061b571f6>>
+ * @generated SignedSource<<f85a7042fbbe45753ec6baf912b2076b>>
  */
 
 /**
@@ -64,6 +64,7 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
   private var enableMountingCoordinatorPullModelAndroidCache: Boolean? = null
   private var enableMutationObserverByDefaultCache: Boolean? = null
   private var enableNativeCSSParsingCache: Boolean? = null
+  private var enablePerSurfaceTextScaleAndroidCache: Boolean? = null
   private var enablePreparedTextLayoutCache: Boolean? = null
   private var enablePropsUpdateReconciliationAndroidCache: Boolean? = null
   private var enableRuntimeSchedulerQueueClearingOnErrorCache: Boolean? = null
@@ -507,6 +508,16 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
       cached = currentProvider.enableNativeCSSParsing()
       accessedFeatureFlags.add("enableNativeCSSParsing")
       enableNativeCSSParsingCache = cached
+    }
+    return cached
+  }
+
+  override fun enablePerSurfaceTextScaleAndroid(): Boolean {
+    var cached = enablePerSurfaceTextScaleAndroidCache
+    if (cached == null) {
+      cached = currentProvider.enablePerSurfaceTextScaleAndroid()
+      accessedFeatureFlags.add("enablePerSurfaceTextScaleAndroid")
+      enablePerSurfaceTextScaleAndroidCache = cached
     }
     return cached
   }

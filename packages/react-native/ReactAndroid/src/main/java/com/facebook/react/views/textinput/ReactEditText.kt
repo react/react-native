@@ -62,6 +62,7 @@ import com.facebook.react.uimanager.BackgroundStyleApplicator.setBorderStyle
 import com.facebook.react.uimanager.BackgroundStyleApplicator.setBorderWidth
 import com.facebook.react.uimanager.LengthPercentage
 import com.facebook.react.uimanager.LengthPercentageType
+import com.facebook.react.uimanager.PixelUtil
 import com.facebook.react.uimanager.PixelUtil.toDIPFromPixel
 import com.facebook.react.uimanager.ReactAccessibilityDelegate
 import com.facebook.react.uimanager.StateWrapper
@@ -220,7 +221,7 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
       keyListener = InternalKeyListener()
     }
     scrollWatcher = null
-    textAttributes = TextAttributes()
+    textAttributes = TextAttributes(PixelUtil.displayMetricsOf(context))
 
     applyTextAttributes()
 

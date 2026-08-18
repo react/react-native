@@ -77,6 +77,7 @@ class BaseTextInputShadowNode
 
     TextLayoutContext textLayoutContext{
         .pointScaleFactor = layoutContext.pointScaleFactor,
+        .fontSizeMultiplier = layoutContext.fontSizeMultiplier,
         .surfaceId = BaseShadowNode::getSurfaceId(),
     };
     auto textSize = textLayoutManager_
@@ -113,9 +114,15 @@ class BaseTextInputShadowNode
 
     AttributedStringBox attributedStringBox{attributedString};
 
+    TextLayoutContext textLayoutContext{
+        .pointScaleFactor = layoutContext.pointScaleFactor,
+        .fontSizeMultiplier = layoutContext.fontSizeMultiplier,
+        .surfaceId = BaseShadowNode::getSurfaceId(),
+    };
+
     if constexpr (TextLayoutManagerExtended::supportsLineMeasurement()) {
       auto lines = TextLayoutManagerExtended(*textLayoutManager_)
-                       .measureLines(attributedStringBox, props.paragraphAttributes, size);
+                       .measureLines(attributedStringBox, props.paragraphAttributes, textLayoutContext, size);
       return LineMeasurement::baseline(lines) + top;
     } else {
       LOG(WARNING) << "Baseline alignment is not supported by the current platform";

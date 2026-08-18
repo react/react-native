@@ -8,6 +8,7 @@
 package com.facebook.react.views.text
 
 import android.text.Layout
+import android.util.DisplayMetrics
 import com.facebook.proguard.annotations.DoNotStrip
 
 /**
@@ -22,4 +23,9 @@ internal class PreparedLayout(
     val reactTags: IntArray,
     val textBreakStrategy: Int,
     val justificationMode: Int,
+    /**
+     * The metrics the layout was laid out against. A prepared layout is in physical pixels of a
+     * specific display, so measuring it must convert back with the same metrics.
+     */
+    val displayMetrics: DisplayMetrics,
 )

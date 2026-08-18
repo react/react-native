@@ -235,6 +235,7 @@ Size ParagraphShadowNode::measureContent(
 
   TextLayoutContext textLayoutContext{
       .pointScaleFactor = layoutContext.pointScaleFactor,
+      .fontSizeMultiplier = layoutContext.fontSizeMultiplier,
       .surfaceId = getSurfaceId(),
   };
 
@@ -282,13 +283,20 @@ Float ParagraphShadowNode::baseline(
   auto content =
       getContentWithMeasuredAttachments(layoutContext, layoutConstraints);
 
+  TextLayoutContext textLayoutContext{
+      .pointScaleFactor = layoutContext.pointScaleFactor,
+      .fontSizeMultiplier = layoutContext.fontSizeMultiplier,
+      .surfaceId = getSurfaceId(),
+  };
   AttributedStringBox attributedStringBox{content.attributedString};
 
   if constexpr (TextLayoutManagerExtended::supportsLineMeasurement()) {
-    auto lines =
-        TextLayoutManagerExtended(*textLayoutManager_)
-            .measureLines(
-                attributedStringBox, content.paragraphAttributes, size);
+    auto lines = TextLayoutManagerExtended(*textLayoutManager_)
+                     .measureLines(
+                         attributedStringBox,
+                         content.paragraphAttributes,
+                         textLayoutContext,
+                         size);
     return LineMeasurement::baseline(lines);
   } else {
     LOG(WARNING)
@@ -344,6 +352,7 @@ void ParagraphShadowNode::layout(LayoutContext layoutContext) {
 
   TextLayoutContext textLayoutContext{
       .pointScaleFactor = layoutContext.pointScaleFactor,
+      .fontSizeMultiplier = layoutContext.fontSizeMultiplier,
       .surfaceId = getSurfaceId(),
   };
   AttributedStringBox attributedStringBox{content.attributedString};
@@ -353,7 +362,10 @@ void ParagraphShadowNode::layout(LayoutContext layoutContext) {
       auto linesMeasurements =
           TextLayoutManagerExtended(*textLayoutManager_)
               .measureLines(
-                  attributedStringBox, content.paragraphAttributes, size);
+                  attributedStringBox,
+                  content.paragraphAttributes,
+                  textLayoutContext,
+                  size);
       getConcreteEventEmitter().onTextLayout(linesMeasurements);
     } else {
       LOG(WARNING) << "onTextLayout is not supported by the current platform";

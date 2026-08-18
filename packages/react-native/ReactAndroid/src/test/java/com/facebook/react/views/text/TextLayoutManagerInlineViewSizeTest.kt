@@ -5,47 +5,34 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-@file:Suppress("DEPRECATION")
-
 package com.facebook.react.views.text
 
-import android.util.DisplayMetrics
-import com.facebook.react.uimanager.DisplayMetricsHolder
+import com.facebook.react.uimanager.PixelUtil
+import com.facebook.testutils.shadows.ShadowNativeLoader
+import com.facebook.testutils.shadows.ShadowSoLoader
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.After
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
+@Config(shadows = [ShadowSoLoader::class, ShadowNativeLoader::class])
 class TextLayoutManagerInlineViewSizeTest {
 
-  @After
-  fun tearDown() {
-    DisplayMetricsHolder.setScreenDisplayMetrics(null)
+  // The size arrives from the shadow node in dp, so the system font scale must not apply to it.
+  @Test
+  fun `inline view attachment size does not shrink with small font scale`() {
+    val metrics = PixelUtil.displayMetricsFor(density = 1f, fontScale = 0.85f)
+
+    assertThat(TextLayoutManager.inlineViewSizeToPixels(155.0, metrics)).isEqualTo(155)
   }
 
+  // A fractional pixel size would leave the inline view a hair short of its box.
   @Test
-  fun `inline view attachment width does not shrink with small font scale`() {
-    DisplayMetricsHolder.setScreenDisplayMetrics(
-        DisplayMetrics().apply {
-          density = 1f
-          scaledDensity = 0.85f
-        },
-    )
+  fun `inline view attachment size is rounded up to the pixel grid`() {
+    val metrics = PixelUtil.displayMetricsFor(density = 1f, fontScale = 1f)
 
-    assertThat(TextLayoutManager.inlineViewSizeToPixels(155.0)).isEqualTo(155)
-  }
-
-  @Test
-  fun `inline view attachment width is rounded up to the pixel grid`() {
-    DisplayMetricsHolder.setScreenDisplayMetrics(
-        DisplayMetrics().apply {
-          density = 1f
-          scaledDensity = 1f
-        },
-    )
-
-    assertThat(TextLayoutManager.inlineViewSizeToPixels(132.1)).isEqualTo(133)
+    assertThat(TextLayoutManager.inlineViewSizeToPixels(132.1, metrics)).isEqualTo(133)
   }
 }

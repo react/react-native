@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<61f9b401feac95e40506403aec82a4f9>>
+ * @generated SignedSource<<94fb856e4a1c96466a7fef2ca135eed2>>
  * @flow strict
  * @noformat
  */
@@ -88,6 +88,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   enableMountingCoordinatorPullModelAndroid: Getter<boolean>,
   enableMutationObserverByDefault: Getter<boolean>,
   enableNativeCSSParsing: Getter<boolean>,
+  enablePerSurfaceTextScaleAndroid: Getter<boolean>,
   enablePreparedTextLayout: Getter<boolean>,
   enablePropsUpdateReconciliationAndroid: Getter<boolean>,
   enableRuntimeSchedulerQueueClearingOnError: Getter<boolean>,
@@ -365,6 +366,10 @@ export const enableMutationObserverByDefault: Getter<boolean> = createNativeFlag
  * Parse CSS strings using the Fabric CSS parser instead of ViewConfig processing
  */
 export const enableNativeCSSParsing: Getter<boolean> = createNativeFlagGetter('enableNativeCSSParsing', false);
+/**
+ * Measures and mounts text using the density of the display the surface is on, instead of the process-wide DisplayMetricsHolder (which always tracks the primary display).
+ */
+export const enablePerSurfaceTextScaleAndroid: Getter<boolean> = createNativeFlagGetter('enablePerSurfaceTextScaleAndroid', false);
 /**
  * Enables caching text layout artifacts for later reuse
  */

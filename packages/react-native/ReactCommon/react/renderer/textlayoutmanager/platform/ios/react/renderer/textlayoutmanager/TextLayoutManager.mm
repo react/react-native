@@ -103,6 +103,7 @@ TextMeasurement TextLayoutManager::measure(
 LinesMeasurements TextLayoutManager::measureLines(
     const AttributedStringBox &attributedStringBox,
     const ParagraphAttributes &paragraphAttributes,
+    const TextLayoutContext &layoutContext,
     const Size &size) const
 {
   react_native_assert(attributedStringBox.getMode() == AttributedStringBox::Mode::Value);
@@ -111,7 +112,12 @@ LinesMeasurements TextLayoutManager::measureLines(
   RCTTextLayoutManager *textLayoutManager = (RCTTextLayoutManager *)unwrapManagedObject(nativeTextLayoutManager_);
 
   auto measurement = lineMeasureCache_.get(
-      {.attributedString = attributedString, .paragraphAttributes = paragraphAttributes, .size = size}, [&]() {
+      {.attributedString = attributedString,
+       .paragraphAttributes = paragraphAttributes,
+       .size = size,
+       .pointScaleFactor = layoutContext.pointScaleFactor,
+       .fontSizeMultiplier = layoutContext.fontSizeMultiplier},
+      [&]() {
         auto measurement = [textLayoutManager getLinesForAttributedString:attributedString
                                                       paragraphAttributes:paragraphAttributes
                                                                      size:{size.width, size.height}];

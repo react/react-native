@@ -9,7 +9,9 @@ package com.facebook.react.views.text
 
 import android.view.Gravity
 import com.facebook.react.bridge.JavaOnlyMap
+import com.facebook.react.common.mapbuffer.WritableMapBuffer
 import com.facebook.react.uimanager.DisplayMetricsHolder
+import com.facebook.react.uimanager.PixelUtil
 import com.facebook.react.uimanager.ReactStylesDiffMap
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.After
@@ -82,6 +84,54 @@ class TextAttributePropsTest {
   fun textAlignEndUsesEndSide() {
     assertThat(textAlignment("end", isRTL = false)).isEqualTo(Gravity.RIGHT)
     assertThat(textAlignment("end", isRTL = true)).isEqualTo(Gravity.LEFT)
+  }
+
+  // A surface on a secondary display is laid out at that display's density, while
+  // DisplayMetricsHolder keeps describing the primary display. Attributes must follow the metrics
+  // they are given, otherwise text is measured at one scale and drawn at another.
+  @Test
+  fun fromMapBuffer_resolvesFontSizeAgainstSuppliedMetrics() {
+    DisplayMetricsHolder.setScreenDisplayMetrics(
+        PixelUtil.displayMetricsFor(density = 3.0f, fontScale = 1.0f),
+    )
+    val surfaceMetrics = PixelUtil.displayMetricsFor(density = 1.5f, fontScale = 1.0f)
+
+    val props =
+        WritableMapBuffer()
+            .put(TextAttributeProps.TA_KEY_FONT_SIZE, 16.0)
+            .put(TextAttributeProps.TA_KEY_ALLOW_FONT_SCALING, true)
+
+    assertThat(TextAttributeProps.fromMapBuffer(props, surfaceMetrics).fontSize).isEqualTo(24)
+    // Unqualified, it still follows the holder.
+    assertThat(TextAttributeProps.fromMapBuffer(props).fontSize).isEqualTo(48)
+  }
+
+  // TA_KEY_MAX_FONT_SIZE_MULTIPLIER (29) is parsed after TA_KEY_FONT_SIZE (4) and re-runs
+  // setFontSize, so the metrics have to be in place before parsing begins, not applied afterwards.
+  @Test
+  fun fromMapBuffer_appliesSuppliedMetricsWhenMaxFontSizeMultiplierReTriggersFontSize() {
+    val surfaceMetrics = PixelUtil.displayMetricsFor(density = 1.5f, fontScale = 3.0f)
+
+    val props =
+        WritableMapBuffer()
+            .put(TextAttributeProps.TA_KEY_FONT_SIZE, 16.0)
+            .put(TextAttributeProps.TA_KEY_ALLOW_FONT_SCALING, true)
+            .put(TextAttributeProps.TA_KEY_MAX_FONT_SIZE_MULTIPLIER, 2.0)
+
+    // Font scale 3.0 is clamped to the 2.0 multiplier: 16 * 1.5 * 2.0 = 48.
+    assertThat(TextAttributeProps.fromMapBuffer(props, surfaceMetrics).fontSize).isEqualTo(48)
+  }
+
+  @Test
+  fun fromMapBuffer_ignoresFontScaleWhenFontScalingIsDisabled() {
+    val surfaceMetrics = PixelUtil.displayMetricsFor(density = 1.5f, fontScale = 2.0f)
+
+    val props =
+        WritableMapBuffer()
+            .put(TextAttributeProps.TA_KEY_FONT_SIZE, 16.0)
+            .put(TextAttributeProps.TA_KEY_ALLOW_FONT_SCALING, false)
+
+    assertThat(TextAttributeProps.fromMapBuffer(props, surfaceMetrics).fontSize).isEqualTo(24)
   }
 
   private fun textAlignment(textAlign: String, isRTL: Boolean): Int {

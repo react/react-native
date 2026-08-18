@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<22d7dca08f80de2497d0643ae9a92bd3>>
+ * @generated SignedSource<<5c4ee1f9d215a76fffc2a9416d666a65>>
  */
 
 /**
@@ -403,6 +403,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::enableNativeCSSParsing();
+  }
+
+  bool enablePerSurfaceTextScaleAndroid() override {
+    auto value = values_["enablePerSurfaceTextScaleAndroid"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::enablePerSurfaceTextScaleAndroid();
   }
 
   bool enablePreparedTextLayout() override {

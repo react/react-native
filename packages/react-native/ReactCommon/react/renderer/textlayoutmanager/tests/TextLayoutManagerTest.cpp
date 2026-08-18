@@ -134,6 +134,60 @@ TEST(TextLayoutManagerTest, pointScaleFactorAffectsPreparedTextCacheHash) {
       std::hash<PreparedTextCacheKey>{}(rhs));
 }
 
+// `sp` units are resolved against the system font scale on some platforms, so
+// the font scale participates in the cache keys the same way the pixel scale
+// factor does.
+TEST(TextLayoutManagerTest, fontSizeMultiplierAffectsTextMeasureCacheEquality) {
+  TextMeasureCacheKey lhs;
+  TextMeasureCacheKey rhs;
+
+  lhs.fontSizeMultiplier = 1.0;
+  rhs.fontSizeMultiplier = 1.3;
+  EXPECT_FALSE(lhs == rhs);
+
+  rhs.fontSizeMultiplier = 1.0;
+  EXPECT_TRUE(lhs == rhs);
+}
+
+TEST(TextLayoutManagerTest, fontSizeMultiplierAffectsTextMeasureCacheHash) {
+  TextMeasureCacheKey lhs;
+  TextMeasureCacheKey rhs;
+
+  lhs.fontSizeMultiplier = 1.0;
+  rhs.fontSizeMultiplier = 1.3;
+
+  EXPECT_NE(
+      std::hash<TextMeasureCacheKey>{}(lhs),
+      std::hash<TextMeasureCacheKey>{}(rhs));
+}
+
+TEST(TextLayoutManagerTest, scaleAffectsLineMeasureCacheEquality) {
+  LineMeasureCacheKey lhs;
+  LineMeasureCacheKey rhs;
+
+  lhs.pointScaleFactor = 3.0;
+  rhs.pointScaleFactor = 1.5;
+  EXPECT_FALSE(lhs == rhs);
+
+  rhs.pointScaleFactor = 3.0;
+  EXPECT_TRUE(lhs == rhs);
+
+  rhs.fontSizeMultiplier = 1.3;
+  EXPECT_FALSE(lhs == rhs);
+}
+
+TEST(TextLayoutManagerTest, fontSizeMultiplierAffectsPreparedTextCacheEquality) {
+  PreparedTextCacheKey lhs;
+  PreparedTextCacheKey rhs;
+
+  lhs.fontSizeMultiplier = 1.0;
+  rhs.fontSizeMultiplier = 1.3;
+  EXPECT_FALSE(lhs == rhs);
+
+  rhs.fontSizeMultiplier = 1.0;
+  EXPECT_TRUE(lhs == rhs);
+}
+
 // Tests for internal_roundTextMeasurementToPixelGrid (the pixel-grid rounding
 // used by text measurement). A small epsilon is added before ceil so a
 // dimension that lands exactly on a pixel boundary gains one physical pixel of

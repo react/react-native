@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<242e9297345bfe821b4550c24d89c2ba>>
+ * @generated SignedSource<<f4652b6b2004b24913e18d1d75078833>>
  */
 
 /**
@@ -238,6 +238,11 @@ class ReactNativeFeatureFlags {
    * Parse CSS strings using the Fabric CSS parser instead of ViewConfig processing
    */
   RN_EXPORT static bool enableNativeCSSParsing();
+
+  /**
+   * Measures and mounts text using the density of the display the surface is on, instead of the process-wide DisplayMetricsHolder (which always tracks the primary display).
+   */
+  RN_EXPORT static bool enablePerSurfaceTextScaleAndroid();
 
   /**
    * Enables caching text layout artifacts for later reuse
