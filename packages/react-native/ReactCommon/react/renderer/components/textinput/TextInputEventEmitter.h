@@ -27,6 +27,7 @@ class TextInputEventEmitter : public ViewEventEmitter {
     int eventCount;
     Size layoutMeasurement;
     Float zoomScale;
+    bool responderIgnoreScroll{false};
     Tag target;
   };
 

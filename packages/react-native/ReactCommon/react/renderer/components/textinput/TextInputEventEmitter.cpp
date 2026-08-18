@@ -86,6 +86,9 @@ static jsi::Value textInputMetricsScrollPayload(
       "zoomScale",
       textInputMetrics.zoomScale != 0.0f ? textInputMetrics.zoomScale : 1);
 
+  payload.setProperty(
+      runtime, "responderIgnoreScroll", textInputMetrics.responderIgnoreScroll);
+
   return payload;
 };
 

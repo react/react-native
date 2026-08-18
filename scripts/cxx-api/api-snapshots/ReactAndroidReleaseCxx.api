@@ -5022,6 +5022,7 @@ struct facebook::react::TextInputEventEmitter::KeyPressMetrics {
 }
 
 struct facebook::react::TextInputEventEmitter::Metrics {
+  public bool responderIgnoreScroll;
   public facebook::react::AttributedString::Range selectionRange;
   public facebook::react::EdgeInsets contentInset;
   public facebook::react::Float zoomScale;

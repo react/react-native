@@ -530,7 +530,9 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
   if (_eventEmitter) {
-    static_cast<const TextInputEventEmitter &>(*_eventEmitter).onScroll([self _textInputMetrics]);
+    auto metrics = [self _textInputMetrics];
+    metrics.responderIgnoreScroll = !(scrollView.isDragging || scrollView.isDecelerating);
+    static_cast<const TextInputEventEmitter &>(*_eventEmitter).onScroll(metrics);
   }
 }
 
