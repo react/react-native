@@ -8,7 +8,10 @@
  * @format
  */
 
-import {getAndroidResourceFolderName} from '../AndroidPathUtils';
+import {
+  getAndroidResourceFolderName,
+  getAndroidResourceIdentifier,
+} from '../AndroidPathUtils';
 
 const DRAWABLE_ASSET = {
   httpServerLocation: '/assets/',
@@ -68,5 +71,37 @@ describe('getAndroidResourceFolderName', () => {
     expect(getAndroidResourceFolderName(NON_DRAWABLE_ASSET, 0.75)).toBe('raw');
     expect(getAndroidResourceFolderName(NON_DRAWABLE_ASSET, 1)).toBe('raw');
     expect(getAndroidResourceFolderName(NON_DRAWABLE_ASSET, 1.25)).toBe('raw');
+  });
+});
+
+describe('getAndroidResourceIdentifier', () => {
+  test('encodes folder structure in the resource name', () => {
+    expect(
+      getAndroidResourceIdentifier({
+        httpServerLocation: '/assets/images/icons',
+        name: 'search',
+        type: 'png',
+      }),
+    ).toBe('images_icons_search');
+  });
+
+  test('normalizes resource names to Android identifier characters', () => {
+    expect(
+      getAndroidResourceIdentifier({
+        httpServerLocation: '/assets/images',
+        name: 'My Icon@2x',
+        type: 'png',
+      }),
+    ).toBe('images_myicon2x');
+  });
+
+  test('removes generated asset path prefixes', () => {
+    expect(
+      getAndroidResourceIdentifier({
+        httpServerLocation: '/assetsunstable_path/packages/app',
+        name: 'logo',
+        type: 'png',
+      }),
+    ).toBe('packages_app_logo');
   });
 });
