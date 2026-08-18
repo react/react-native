@@ -16,7 +16,7 @@ on:
 
 jobs:
   test:
-    runs-on: macos-15-large
+    runs-on: macos-26-large
     outputs:
       status: ${{ steps.report-status.outputs.status }}
     strategy:
@@ -26,8 +26,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-      - name: Setup xcode
-        uses: ./.github/actions/setup-xcode
       - name: Setup node.js
         uses: ./.github/actions/setup-node
       - name: Run yarn
