@@ -297,7 +297,9 @@ class IntervalExample extends React.Component<
     return (
       <View>
         <TimerTester
-          ref={ref => (this._timerTester = ref)}
+          ref={ref => {
+            this._timerTester = ref;
+          }}
           dt={25}
           type="setInterval"
         />

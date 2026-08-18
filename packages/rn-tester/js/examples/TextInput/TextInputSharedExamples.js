@@ -563,7 +563,9 @@ class SelectionExample extends React.Component<
             onChangeText={value => this.setState({value})}
             // $FlowFixMe[method-unbinding] added when improving typing for this parameters
             onSelectionChange={this.onSelectionChange.bind(this)}
-            ref={textInput => (this._textInput = textInput)}
+            ref={textInput => {
+              this._textInput = textInput;
+            }}
             selection={this.props.imperative ? undefined : this.state.selection}
             style={this.props.style}
             value={this.state.value}
