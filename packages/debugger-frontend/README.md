@@ -36,3 +36,5 @@ node scripts/debugger-frontend/sync-and-build --branch 0.73-stable
 ```
 
 By default, this will clone and build from [react/react-native-devtools-frontend](https://github.com/react/react-native-devtools-frontend).
+
+The updated files are committed on completion, with a generated summary and changelog of the synced revisions.
