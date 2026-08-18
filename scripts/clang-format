@@ -1,0 +1,77 @@
+#!/usr/bin/env dotslash
+
+// Copyright (c) Meta Platforms, Inc. and affiliates.
+//
+// This source code is licensed under the MIT license found in the
+// LICENSE file in the root directory of this source tree.
+
+{
+  "name": "clang-format 21.1.2",
+  "platforms": {
+    "linux-aarch64": {
+      "size": 1725525,
+      "hash": "sha256",
+      "digest": "f66d2bcf98df1373df6ab4544a2b881e9816985b606e1144e4c77dc8ac87b826",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://files.pythonhosted.org/packages/c5/83/61fadfa8d62a288d778e0a1ad2f73b01abca64574ee34c5d6d078e0821da/clang_format-21.1.2-py2.py3-none-manylinux_2_26_aarch64.manylinux_2_28_aarch64.whl"
+        }
+      ],
+      "format": "zip",
+      "path": "clang_format/data/bin/clang-format"
+    },
+    "linux-x86_64": {
+      "size": 1805060,
+      "hash": "sha256",
+      "digest": "6d7caf74fe89154258ddfd63984c98ffe902ef98f013ac517178fc44d72861ff",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://files.pythonhosted.org/packages/fb/ac/3c04772acc0257f5730e83adb542b2603c1a62d1315010ab593a980af404/clang_format-21.1.2-py2.py3-none-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl"
+        }
+      ],
+      "format": "zip",
+      "path": "clang_format/data/bin/clang-format"
+    },
+    "macos-aarch64": {
+      "size": 1458874,
+      "hash": "sha256",
+      "digest": "fc034652dee24583633177d800bc9deebcc9c65eb7ab53b25bbd0fbd443392a9",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://files.pythonhosted.org/packages/ba/90/b8230efcff90a8543da3fb7fc09d7077afebaba019eceb1686d4db94cac3/clang_format-21.1.2-py2.py3-none-macosx_11_0_arm64.whl"
+        }
+      ],
+      "format": "zip",
+      "path": "clang_format/data/bin/clang-format"
+    },
+    "macos-x86_64": {
+      "size": 1440163,
+      "hash": "sha256",
+      "digest": "00498efb43d60d7ac4195362009a79936d26145a9a90cdfa7a6013a62ab3c40c",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://files.pythonhosted.org/packages/7d/97/0bb5a6866dfb5f55f7e6ca79466cb0b0081fccbc9f57887949ff23b5c38a/clang_format-21.1.2-py2.py3-none-macosx_10_9_x86_64.whl"
+        }
+      ],
+      "format": "zip",
+      "path": "clang_format/data/bin/clang-format"
+    },
+    "windows-x86_64": {
+      "size": 1426244,
+      "hash": "sha256",
+      "digest": "c98e195a50c0fa40bb058449511b1b681ca7ad553579aa32425f0cfeca8d81ce",
+      "providers": [
+        {
+          "type": "http",
+          "url": "https://files.pythonhosted.org/packages/fe/0d/3b9c6a41a9eed2d45431d91c0e8608da315cd44d0c24c517bfb686db4b6b/clang_format-21.1.2-py2.py3-none-win_amd64.whl"
+        }
+      ],
+      "format": "zip",
+      "path": "clang_format/data/bin/clang-format.exe"
+    }
+  }
+}
