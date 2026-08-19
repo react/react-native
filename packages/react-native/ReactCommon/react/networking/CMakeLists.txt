@@ -18,6 +18,7 @@ target_include_directories(react_networking PUBLIC ${REACT_COMMON_DIR})
 target_link_libraries(react_networking
         folly_runtime
         jsinspector_network
+        react_featureflags
         jsinspector_tracing
         react_performance_timeline
         react_timing)

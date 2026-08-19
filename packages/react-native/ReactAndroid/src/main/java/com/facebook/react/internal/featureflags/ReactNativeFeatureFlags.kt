@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<d5bab65a116d6f6d3415c5c8a2f08db9>>
+ * @generated SignedSource<<80263dac03f7cac44cbdec968e8b75e4>>
  */
 
 /**
@@ -383,6 +383,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun fuseboxFrameRecordingEnabled(): Boolean = accessor.fuseboxFrameRecordingEnabled()
+
+  /**
+   * Enable simulated network throttling (Network.emulateNetworkConditions) in the React Native DevTools CDP backend.
+   */
+  @JvmStatic
+  public fun fuseboxNetworkThrottlingEnabled(): Boolean = accessor.fuseboxNetworkThrottlingEnabled()
 
   /**
    * Enable Page.captureScreenshot CDP method support in the React Native DevTools CDP backend. This flag is global and should not be changed across React Host lifetimes.
