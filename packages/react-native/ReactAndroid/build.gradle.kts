@@ -258,6 +258,8 @@ val preparePrefab by
                       Pair("src/main/jni/react/jni", "react/jni/"),
                       // react_cxxreactpackage
                       Pair("src/main/jni/react/runtime/cxxreactpackage", ""),
+                      // react_networking
+                      Pair("../ReactCommon/react/networking/", "react/networking/"),
                       // react_performance_timeline
                       Pair(
                           "../ReactCommon/react/performance/timeline/",

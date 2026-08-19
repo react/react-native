@@ -39,8 +39,13 @@ struct ResourceTimingData {
 };
 
 /**
- * [Experimental] An interface for reporting network events to the modern
- * debugger server and Web Performance APIs.
+ * An interface for reporting network events to the modern debugger server and
+ * Web Performance APIs.
+ *
+ * This is the integration point for networking stacks, including third-party
+ * replacements for React Native's networking modules.
+ *
+ * This is an unstable API. Its exact location and shape may change over time.
  *
  * In a production (non dev or profiling) build, CDP reporting is disabled.
  */
