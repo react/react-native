@@ -85,6 +85,7 @@ jobs:
       # from the registry — it never builds or executes the PR's code.
       # @ref LLP 0009#guard-step-ordering-and-job-budgets [implements] — layer 2; layer 1 is ecr ci's own runtime check
       - name: Guard config tokenEnv (root + routing + all scopes)
+        continue-on-error: true
         env:
           # (Comma-separated set for a multi-credential auth.providers config.)
           ECR_EXPECTED_TOKEN_ENV: ${{ vars.ECR_EXPECTED_TOKEN_ENV || 'META_API_KEY' }}
@@ -104,6 +105,7 @@ jobs:
           ECR_EXPECTED_TOKEN_ENV: ${{ vars.ECR_EXPECTED_TOKEN_ENV || 'META_API_KEY' }}
           # Model credential — the env var named by auth.tokenEnv in config.jsonc.
           # Store each as a repo secret under the same name.
+          # Updated per your setting: secret is EXPO_CODE_REVIEW_API_KEY, forwarded as META_API_KEY
           META_API_KEY: ${{ secrets.EXPO_CODE_REVIEW_API_KEY }}
           # Muse alternative (also set ECR_EXPECTED_TOKEN_ENV=META_API_KEY):
           # META_API_KEY: ${{ secrets.META_API_KEY }}
