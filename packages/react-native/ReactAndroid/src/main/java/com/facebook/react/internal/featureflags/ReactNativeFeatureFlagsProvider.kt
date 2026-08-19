@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<998a99e804cf713c8ce8adafa1b1b83b>>
+ * @generated SignedSource<<61e3f1e7a355ac90bf87875a2144bf02>>
  */
 
 /**
@@ -140,6 +140,8 @@ public interface ReactNativeFeatureFlagsProvider {
   @DoNotStrip public fun fuseboxEnabledRelease(): Boolean
 
   @DoNotStrip public fun fuseboxFrameRecordingEnabled(): Boolean
+
+  @DoNotStrip public fun fuseboxNetworkThrottlingEnabled(): Boolean
 
   @DoNotStrip public fun fuseboxScreenshotCaptureEnabled(): Boolean
 

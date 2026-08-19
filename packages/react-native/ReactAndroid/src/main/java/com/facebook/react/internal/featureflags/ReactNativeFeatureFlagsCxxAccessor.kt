@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<331c699ee09143bbb98a81857cb2659c>>
+ * @generated SignedSource<<1cac5c34715e5a4fa1076ad1293fd7a1>>
  */
 
 /**
@@ -79,6 +79,7 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
   private var fuseboxAssertSingleHostStateCache: Boolean? = null
   private var fuseboxEnabledReleaseCache: Boolean? = null
   private var fuseboxFrameRecordingEnabledCache: Boolean? = null
+  private var fuseboxNetworkThrottlingEnabledCache: Boolean? = null
   private var fuseboxScreenshotCaptureEnabledCache: Boolean? = null
   private var fuseboxWebSocketEventsEnabledCache: Boolean? = null
   private var optimizedAnimatedPropUpdatesCache: Boolean? = null
@@ -635,6 +636,15 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
     if (cached == null) {
       cached = ReactNativeFeatureFlagsCxxInterop.fuseboxFrameRecordingEnabled()
       fuseboxFrameRecordingEnabledCache = cached
+    }
+    return cached
+  }
+
+  override fun fuseboxNetworkThrottlingEnabled(): Boolean {
+    var cached = fuseboxNetworkThrottlingEnabledCache
+    if (cached == null) {
+      cached = ReactNativeFeatureFlagsCxxInterop.fuseboxNetworkThrottlingEnabled()
+      fuseboxNetworkThrottlingEnabledCache = cached
     }
     return cached
   }

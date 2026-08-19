@@ -41,6 +41,10 @@ bool InspectorFlags::getIsProfilingBuild() const {
   return loadFlagsAndAssertUnchanged().isProfilingBuild;
 }
 
+bool InspectorFlags::getNetworkThrottlingEnabled() const {
+  return loadFlagsAndAssertUnchanged().networkThrottlingEnabled;
+}
+
 bool InspectorFlags::getPerfIssuesEnabled() const {
   return loadFlagsAndAssertUnchanged().perfIssuesEnabled;
 }
@@ -77,6 +81,8 @@ const InspectorFlags::Values& InspectorFlags::loadFlagsAndAssertUnchanged()
 #else
           false,
 #endif
+      .networkThrottlingEnabled =
+          ReactNativeFeatureFlags::fuseboxNetworkThrottlingEnabled(),
       .perfIssuesEnabled = ReactNativeFeatureFlags::perfIssuesEnabled(),
   };
 

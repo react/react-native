@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<c65d5fea853b54322321f86c1d5ce440>>
+ * @generated SignedSource<<cc693386674be32169122a779bc23b87>>
  */
 
 /**
@@ -153,6 +153,8 @@ class NativeReactNativeFeatureFlags
   bool fuseboxEnabledRelease(jsi::Runtime& runtime);
 
   bool fuseboxFrameRecordingEnabled(jsi::Runtime& runtime);
+
+  bool fuseboxNetworkThrottlingEnabled(jsi::Runtime& runtime);
 
   bool fuseboxScreenshotCaptureEnabled(jsi::Runtime& runtime);
 
