@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <glog/logging.h>
 #include <react/renderer/components/modal/ModalHostViewShadowNode.h>
 #include <react/renderer/core/ConcreteComponentDescriptor.h>

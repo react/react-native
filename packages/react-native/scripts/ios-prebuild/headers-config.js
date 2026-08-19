@@ -101,8 +101,17 @@ const PodspecExceptions /*: {[key: string]: PodSpecConfiguration} */ = {
           {
             name: 'root',
             headerPatterns: ['react/renderer/components/root/**/*.h'],
-            excludePatterns: ['react/renderer/components/root/tests'],
+            excludePatterns: [
+              'react/renderer/components/root/tests',
+              'react/renderer/components/root/React',
+            ],
             headerDir: 'react/renderer/components/root',
+          },
+
+          {
+            name: 'rootUmbrella',
+            headerPatterns: ['react/renderer/components/root/React/*.h'],
+            headerDir: 'React',
           },
           {
             name: 'view',
@@ -126,7 +135,14 @@ const PodspecExceptions /*: {[key: string]: PodSpecConfiguration} */ = {
             excludePatterns: [
               'react/renderer/components/scrollview/tests',
               'react/renderer/components/scrollview/platform/android',
+              'react/renderer/components/scrollview/React',
             ],
+          },
+
+          {
+            name: 'scrollviewUmbrella',
+            headerPatterns: ['react/renderer/components/scrollview/React/*.h'],
+            headerDir: 'React',
           },
 
           {
@@ -330,6 +346,12 @@ const PodspecExceptions /*: {[key: string]: PodSpecConfiguration} */ = {
             headerPatterns: ['react/renderer/components/modal/*.h'],
             excludePatterns: ['react/renderer/components/modal/tests'],
             headerDir: 'react/renderer/components/modal',
+          },
+
+          {
+            name: 'modalUmbrella',
+            headerPatterns: ['react/renderer/components/modal/React/*.h'],
+            headerDir: 'React',
           },
 
           {

@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <react/renderer/components/scrollview/AndroidHorizontalScrollContentViewShadowNode.h>
 #include <react/renderer/core/ConcreteComponentDescriptor.h>
 
