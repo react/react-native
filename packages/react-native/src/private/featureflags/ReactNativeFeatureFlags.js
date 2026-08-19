@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<bafad194115f60dcf22f64015fe64856>>
+ * @generated SignedSource<<9067c22a27ea55f2a8211e547f51a96a>>
  * @flow strict
  * @noformat
  */
@@ -449,7 +449,7 @@ export const fuseboxScreenshotCaptureEnabled: Getter<boolean> = createNativeFlag
 /**
  * Enable reporting of WebSocket network events (`Network.webSocket*` CDP events) to the React Native DevTools CDP backend.
  */
-export const fuseboxWebSocketEventsEnabled: Getter<boolean> = createNativeFlagGetter('fuseboxWebSocketEventsEnabled', false);
+export const fuseboxWebSocketEventsEnabled: Getter<boolean> = createNativeFlagGetter('fuseboxWebSocketEventsEnabled', true);
 /**
  * When enabled, uses optimized platform-specific paths to apply animated props synchronously. On Android, this uses a batched int/double buffer protocol with a single JNI call. On iOS, this passes AnimatedProps directly through the delegate chain and applies them via cloneProps, avoiding the folly::dynamic round-trip.
  */
