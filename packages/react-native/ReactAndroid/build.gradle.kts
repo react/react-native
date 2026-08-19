@@ -167,6 +167,10 @@ val preparePrefab by
                           "../ReactCommon/react/renderer/components/image/",
                           "react/renderer/components/image/",
                       ),
+                      Pair(
+                          "../ReactCommon/react/renderer/components/image/React/",
+                          "React/",
+                      ),
                       // rrc_view
                       Pair(
                           "../ReactCommon/react/renderer/components/view/",
