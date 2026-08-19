@@ -7,6 +7,7 @@
 
 #include "TextAttributes.h"
 
+#include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/renderer/attributedstring/conversions.h>
 #include <react/renderer/core/conversions.h>
 #include <react/renderer/core/graphicsConversions.h>
@@ -113,10 +114,18 @@ void TextAttributes::apply(TextAttributes textAttributes) {
   layoutDirection = textAttributes.layoutDirection.has_value()
       ? textAttributes.layoutDirection
       : layoutDirection;
-  accessibilityRole = textAttributes.accessibilityRole.has_value()
-      ? textAttributes.accessibilityRole
-      : accessibilityRole;
-  role = textAttributes.role.has_value() ? textAttributes.role : role;
+  if (ReactNativeFeatureFlags::enableAliasedTextRoleInheritance()) {
+    if (textAttributes.role.has_value() ||
+        textAttributes.accessibilityRole.has_value()) {
+      role = textAttributes.role;
+      accessibilityRole = textAttributes.accessibilityRole;
+    }
+  } else {
+    accessibilityRole = textAttributes.accessibilityRole.has_value()
+        ? textAttributes.accessibilityRole
+        : accessibilityRole;
+    role = textAttributes.role.has_value() ? textAttributes.role : role;
+  }
   textEffects = !textAttributes.textEffects.empty() ? textAttributes.textEffects
                                                     : textEffects;
 }
