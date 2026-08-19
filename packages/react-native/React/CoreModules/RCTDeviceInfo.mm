@@ -277,16 +277,23 @@ static NSDictionary *RCTExportedDimensions(CGFloat fontScale)
 
 - (void)didReceiveNewContentSizeMultiplier
 {
-  [self invalidateCachedConstants];
-  NSDictionary *nextInterfaceDimensions = _constants[@"Dimensions"];
-
-  RCTModuleRegistry *moduleRegistry = _moduleRegistry;
+  // This notification can arrive off the main thread (RCTAccessibilityManager has no methodQueue,
+  // so a JS setAccessibilityContentSizeMultipliers call posts it synchronously on the module
+  // queue), while the possible key-window KVO registration must happen on main.
+  __weak __typeof(self) weakSelf = self;
   RCTExecuteOnMainQueue(^{
-  // Report the event across the bridge.
+    __typeof(self) strongSelf = weakSelf;
+    if (!strongSelf) {
+      return;
+    }
+    [strongSelf invalidateCachedConstants];
+    NSDictionary *nextInterfaceDimensions = strongSelf->_constants[@"Dimensions"];
+
+    // Report the event across the bridge.
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    [[moduleRegistry moduleForName:"EventDispatcher"] sendDeviceEventWithName:@"didUpdateDimensions"
-                                                                         body:nextInterfaceDimensions];
+    [[strongSelf->_moduleRegistry moduleForName:"EventDispatcher"] sendDeviceEventWithName:@"didUpdateDimensions"
+                                                                                      body:nextInterfaceDimensions];
 #pragma clang diagnostic pop
   });
 }
@@ -338,8 +345,6 @@ static NSDictionary *RCTExportedDimensions(CGFloat fontScale)
 
 - (void)_interfaceFrameDidChange
 {
-  [self _observeKeyWindowIfNeeded];
-
   [self invalidateCachedConstants];
   NSDictionary *nextInterfaceDimensions = _constants[@"Dimensions"];
 
