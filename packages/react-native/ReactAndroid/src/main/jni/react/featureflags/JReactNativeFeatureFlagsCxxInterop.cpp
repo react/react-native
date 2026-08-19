@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<7513432f85b9832654814f381b13fe97>>
+ * @generated SignedSource<<1ffa383ec45a8a72e6f7580c88dc779e>>
  */
 
 /**
@@ -390,6 +390,12 @@ class ReactNativeFeatureFlagsJavaProvider
   bool fuseboxFrameRecordingEnabled() override {
     static const auto method =
         getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("fuseboxFrameRecordingEnabled");
+    return method(javaProvider_);
+  }
+
+  bool fuseboxNetworkThrottlingEnabled() override {
+    static const auto method =
+        getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("fuseboxNetworkThrottlingEnabled");
     return method(javaProvider_);
   }
 
@@ -860,6 +866,11 @@ bool JReactNativeFeatureFlagsCxxInterop::fuseboxFrameRecordingEnabled(
   return ReactNativeFeatureFlags::fuseboxFrameRecordingEnabled();
 }
 
+bool JReactNativeFeatureFlagsCxxInterop::fuseboxNetworkThrottlingEnabled(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
+  return ReactNativeFeatureFlags::fuseboxNetworkThrottlingEnabled();
+}
+
 bool JReactNativeFeatureFlagsCxxInterop::fuseboxScreenshotCaptureEnabled(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
   return ReactNativeFeatureFlags::fuseboxScreenshotCaptureEnabled();
@@ -1208,6 +1219,9 @@ void JReactNativeFeatureFlagsCxxInterop::registerNatives() {
       makeNativeMethod(
         "fuseboxFrameRecordingEnabled",
         JReactNativeFeatureFlagsCxxInterop::fuseboxFrameRecordingEnabled),
+      makeNativeMethod(
+        "fuseboxNetworkThrottlingEnabled",
+        JReactNativeFeatureFlagsCxxInterop::fuseboxNetworkThrottlingEnabled),
       makeNativeMethod(
         "fuseboxScreenshotCaptureEnabled",
         JReactNativeFeatureFlagsCxxInterop::fuseboxScreenshotCaptureEnabled),
