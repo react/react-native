@@ -15,13 +15,15 @@ import type {
 
 import SectionListBaseExample from './SectionListBaseExample';
 import * as React from 'react';
-import {useRef, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 
 const BASE_VIEWABILITY_CONFIG = {
   minimumViewTime: 1000,
   viewAreaCoveragePercentThreshold: 100,
 };
+const VIEWABILITY_OBSERVATION_TIME_MS =
+  BASE_VIEWABILITY_CONFIG.minimumViewTime * 2;
 
 export function SectionList_BaseOnViewableItemsChanged(props: {
   offScreen?: ?boolean,
@@ -30,7 +32,28 @@ export function SectionList_BaseOnViewableItemsChanged(props: {
   waitForInteraction?: ?boolean,
 }): React.Node {
   const {offScreen, horizontal, useScrollRefScroll, waitForInteraction} = props;
+  const [observationComplete, setObservationComplete] = useState(false);
   const [output, setOutput] = useState('');
+  const observationTimeoutRef = useRef<?TimeoutID>(null);
+  useEffect(() => {
+    return () => {
+      if (observationTimeoutRef.current != null) {
+        clearTimeout(observationTimeoutRef.current);
+      }
+    };
+  }, []);
+  const onListLayout =
+    offScreen === true
+      ? () => {
+          if (observationTimeoutRef.current != null) {
+            clearTimeout(observationTimeoutRef.current);
+          }
+          setObservationComplete(false);
+          observationTimeoutRef.current = setTimeout(() => {
+            setObservationComplete(true);
+          }, VIEWABILITY_OBSERVATION_TIME_MS);
+        }
+      : undefined;
   const viewabilityConfig: ViewabilityConfig = {
     ...BASE_VIEWABILITY_CONFIG,
     waitForInteraction: waitForInteraction ?? false,
@@ -49,6 +72,7 @@ export function SectionList_BaseOnViewableItemsChanged(props: {
       ),
     viewabilityConfig,
     horizontal,
+    onLayout: onListLayout,
   };
   const ref = useRef<any>(null);
   const onTest =
@@ -63,6 +87,11 @@ export function SectionList_BaseOnViewableItemsChanged(props: {
       ref={ref}
       exampleProps={exampleProps}
       onTest={onTest}
+      testContainerTestID={
+        observationComplete
+          ? 'viewability_observation_complete'
+          : 'test_container'
+      }
       testOutput={output}>
       {offScreen === true ? <View style={styles.offScreen} /> : null}
     </SectionListBaseExample>

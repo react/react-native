@@ -1242,6 +1242,7 @@ class VirtualizedList extends StateSafePureComponent<
   _hasWarned: {[string]: boolean} = {};
   _headerLength = 0;
   _hiPriInProgress: boolean = false; // flag to prevent infinite hiPri cell limit update
+  _hasZeroArea: boolean = false;
   _indicesToKeys: Map<number, string> = new Map();
   _lastFocusedCellKey: ?string = null;
   _nestedChildLists: ChildListCollection<VirtualizedList> =
@@ -1420,6 +1421,9 @@ class VirtualizedList extends StateSafePureComponent<
   }
 
   _onLayout = (e: LayoutChangeEvent) => {
+    const hadZeroArea = this._hasZeroArea;
+    const {height, width} = e.nativeEvent.layout;
+    this._hasZeroArea = height === 0 || width === 0;
     if (this._isNestedWithSameOrientation()) {
       // Need to adjust our scroll metrics to be relative to our containing
       // VirtualizedList before we can make claims about list item viewability
@@ -1431,6 +1435,9 @@ class VirtualizedList extends StateSafePureComponent<
     }
     this.props.onLayout && this.props.onLayout(e);
     this._scheduleCellsToRenderUpdate();
+    if (hadZeroArea !== this._hasZeroArea) {
+      this._updateViewableItems(this.props, this.state.cellsAroundViewport);
+    }
     this._maybeCallOnEdgeReached();
   };
 
@@ -2029,14 +2036,14 @@ class VirtualizedList extends StateSafePureComponent<
   ) {
     // If we have any pending scroll updates it means that the scroll metrics
     // are out of date and we should not call any of the visibility callbacks.
-    if (this.state.pendingScrollUpdateCount > 0) {
+    if (this.state.pendingScrollUpdateCount > 0 && !this._hasZeroArea) {
       return;
     }
     this._viewabilityTuples.forEach(tuple => {
       tuple.viewabilityHelper.onUpdate(
         props,
         this._scrollMetrics.offset,
-        this._scrollMetrics.visibleLength,
+        this._hasZeroArea ? 0 : this._scrollMetrics.visibleLength,
         this._listMetrics,
         this._createViewToken,
         tuple.onViewableItemsChanged,
