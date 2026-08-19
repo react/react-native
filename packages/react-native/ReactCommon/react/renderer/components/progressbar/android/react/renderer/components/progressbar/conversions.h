@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/PrivateGuard.h>
+
 #include <folly/dynamic.h>
 #include <react/renderer/components/FBReactNativeSpec/Props.h>
 #include <react/renderer/core/propsConversions.h>

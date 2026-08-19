@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/PrivateGuard.h>
+
 #include <react/renderer/components/safeareaview/SafeAreaViewShadowNode.h>
 #include <react/renderer/core/ConcreteComponentDescriptor.h>
 

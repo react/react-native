@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/PrivateGuard.h>
+
 #include <react/renderer/core/graphicsConversions.h>
 #include <react/renderer/graphics/Float.h>
 

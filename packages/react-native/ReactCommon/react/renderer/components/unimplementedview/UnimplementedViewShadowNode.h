@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/PrivateGuard.h>
+
 #include <react/renderer/components/unimplementedview/UnimplementedViewProps.h>
 #include <react/renderer/components/view/ConcreteViewShadowNode.h>
 
