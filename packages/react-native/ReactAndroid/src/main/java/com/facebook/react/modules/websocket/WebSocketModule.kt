@@ -6,6 +6,7 @@
  */
 
 @file:Suppress("DEPRECATION_ERROR") // Conflicting okhttp versions
+@file:OptIn(UnstableReactNativeAPI::class)
 
 package com.facebook.react.modules.websocket
 
@@ -19,6 +20,7 @@ import com.facebook.react.bridge.ReadableType
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.bridge.buildReadableMap
 import com.facebook.react.common.ReactConstants
+import com.facebook.react.common.annotations.UnstableReactNativeAPI
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.modules.network.CustomClientBuilder
