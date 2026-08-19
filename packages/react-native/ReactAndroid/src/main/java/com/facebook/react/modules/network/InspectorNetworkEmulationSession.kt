@@ -8,17 +8,22 @@
 package com.facebook.react.modules.network
 
 import com.facebook.proguard.annotations.DoNotStripAny
+import com.facebook.react.common.annotations.UnstableReactNativeAPI
 import com.facebook.soloader.SoLoader
 import java.io.IOException
 
 /**
  * [Experimental] An interface to the simulated network throttling engine for CDP debugging
- * (`Network.emulateNetworkConditions`).
+ * (`Network.emulateNetworkConditions`), for networking stacks that cannot use
+ * [InspectorNetworkEmulationInterceptor] (e.g. non-OkHttp clients).
  *
- * This is a helper class wrapping `facebook::react::jsinspector_modern::NetworkThrottler`.
+ * This is a helper class wrapping `facebook::react::jsinspector_modern::NetworkThrottler`, and is a
+ * supported (experimental) integration point for third-party networking stacks that replace React
+ * Native's networking modules.
  */
 @DoNotStripAny
-internal object InspectorNetworkEmulationSession {
+@UnstableReactNativeAPI
+public object InspectorNetworkEmulationSession {
   init {
     SoLoader.loadLibrary("react_devsupportjni")
   }
@@ -27,13 +32,13 @@ internal object InspectorNetworkEmulationSession {
    * Whether offline network emulation is active. Callers should fail new requests with a network
    * error without touching the network.
    */
-  @JvmStatic external fun isOffline(): Boolean
+  @JvmStatic public external fun isOffline(): Boolean
 
   /** Whether any throttling behavior (latency or throughput) is active. */
-  @JvmStatic external fun isThrottling(): Boolean
+  @JvmStatic public external fun isThrottling(): Boolean
 
   /** Create an opaque token identifying one request's throttled operations. */
-  @JvmStatic external fun createRecordToken(): Long
+  @JvmStatic public external fun createRecordToken(): Long
 
   /**
    * Block the calling thread until the throttling engine releases the operation.
@@ -49,5 +54,10 @@ internal object InspectorNetworkEmulationSession {
    */
   @JvmStatic
   @Throws(IOException::class)
-  external fun awaitThrottle(token: Long, bytes: Long, sendEndAgeMs: Double, isStart: Boolean): Long
+  public external fun awaitThrottle(
+      token: Long,
+      bytes: Long,
+      sendEndAgeMs: Double,
+      isStart: Boolean,
+  ): Long
 }

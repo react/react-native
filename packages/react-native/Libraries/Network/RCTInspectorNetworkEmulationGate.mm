@@ -8,14 +8,13 @@
 #import "RCTInspectorNetworkEmulationGate.h"
 
 #ifdef REACT_NATIVE_DEBUGGER_ENABLED
-#import <react/featureflags/ReactNativeFeatureFlags.h>
-
-#import <jsinspector-modern/network/NetworkThrottler.h>
+#import <react/networking/NetworkEmulationSession.h>
 
 #import <deque>
+#import <memory>
 #import <mutex>
 
-using facebook::react::jsinspector_modern::NetworkThrottler;
+using facebook::react::NetworkEmulationSession;
 
 namespace {
 
@@ -43,20 +42,14 @@ struct PendingEvent {
   bool _awaitingRelease;
   bool _failed;
   bool _cancelled;
-  int64_t _byteDebt;
-  uint64_t _token;
-  NetworkThrottler::TimePoint _sendEnd;
+  std::unique_ptr<NetworkEmulationSession> _session;
 #endif
 }
 
 + (BOOL)isActive
 {
 #ifdef REACT_NATIVE_DEBUGGER_ENABLED
-  if (!facebook::react::ReactNativeFeatureFlags::fuseboxNetworkThrottlingEnabled()) {
-    return NO;
-  }
-  auto &throttler = NetworkThrottler::getInstance();
-  return throttler.isThrottling() || throttler.isOffline();
+  return NetworkEmulationSession::isActive();
 #else
   return NO;
 #endif
@@ -65,8 +58,7 @@ struct PendingEvent {
 + (BOOL)isOffline
 {
 #ifdef REACT_NATIVE_DEBUGGER_ENABLED
-  return facebook::react::ReactNativeFeatureFlags::fuseboxNetworkThrottlingEnabled() &&
-      NetworkThrottler::getInstance().isOffline();
+  return NetworkEmulationSession::isOffline();
 #else
   return NO;
 #endif
@@ -78,8 +70,7 @@ struct PendingEvent {
 #ifdef REACT_NATIVE_DEBUGGER_ENABLED
     _deliveryQueue = deliveryQueue;
     _onDisconnected = onDisconnected;
-    _token = NetworkThrottler::getInstance().createRecordToken();
-    _sendEnd = NetworkThrottler::Clock::now();
+    _session = std::make_unique<NetworkEmulationSession>();
 #endif
   }
   return self;
@@ -89,8 +80,7 @@ struct PendingEvent {
 
 - (void)noteRequestSent
 {
-  std::lock_guard<std::mutex> lock(_mutex);
-  _sendEnd = NetworkThrottler::Clock::now();
+  _session->noteRequestSent();
 }
 
 - (void)throttleResponseDelivery:(dispatch_block_t)deliver
@@ -104,11 +94,10 @@ struct PendingEvent {
 {
   // Re-chunk into packet-sized increments while download throttling is
   // active, so progress feels like a slow network rather than one long stall.
-  auto &throttler = NetworkThrottler::getInstance();
   std::lock_guard<std::mutex> lock(_mutex);
   NSUInteger offset = 0;
   while (offset < data.length) {
-    auto chunkLength = (NSUInteger)throttler.getReadBufLen((int64_t)(data.length - offset));
+    auto chunkLength = (NSUInteger)_session->recommendedReadLength((int64_t)(data.length - offset));
     NSData *chunk = [data subdataWithRange:NSMakeRange(offset, chunkLength)];
     _pendingEvents.push_back(PendingEvent{
         ^{
@@ -133,7 +122,7 @@ offset += chunkLength;
   std::lock_guard<std::mutex> lock(_mutex);
   _cancelled = true;
   _pendingEvents.clear();
-  NetworkThrottler::getInstance().stopThrottle(_token);
+  _session->cancel();
 }
 
 /**
@@ -152,44 +141,38 @@ offset += chunkLength;
       continue;
     }
 
-    _byteDebt += event.bytes;
-
     dispatch_block_t deliver = event.deliver;
-    auto result = NetworkThrottler::getInstance().startThrottle(
-        _token,
-        _byteDebt,
-        _sendEnd,
-        event.isStart == YES,
-        /* isUpload */ false,
-        [self, deliver](bool disconnected, int64_t newDebt) {
-          // NOTE: `self` is captured strongly: the throttling engine owns the
-          // gate until the record fires or is removed via `stopThrottle`. The
-          // real request may complete (and the request handler release its
-          // reference) before the gated events are delivered.
-          //
-          // Invoked from an arbitrary thread. Bounce to the delivery queue
-          // before taking the gate lock, so the throttling engine never
-          // blocks on gate mutexes.
-          dispatch_async(self->_deliveryQueue, ^{
-            [self handleRelease:deliver disconnected:disconnected newDebt:newDebt];
-          });
-        });
+    // NOTE: `self` is captured strongly: the emulation session owns the
+    // callback (and with it, the gate) until the operation is released or
+    // cancelled. The real request may complete (and the request handler
+    // release its reference) before the gated events are delivered.
+    //
+    // Invoked from an arbitrary thread. Bounce to the delivery queue before
+    // taking the gate lock, so the throttling engine never blocks on gate
+    // mutexes.
+    auto callback = [self, deliver](bool disconnected) {
+      dispatch_async(self->_deliveryQueue, ^{
+        [self handleRelease:deliver disconnected:disconnected];
+      });
+    };
+    auto result = event.isStart ? _session->throttleHeaders(std::move(callback))
+                                : _session->throttleBody(event.bytes, std::move(callback));
 
     switch (result) {
-      case NetworkThrottler::StartResult::PassThrough:
+      case NetworkEmulationSession::Result::PassThrough:
         dispatch_async(_deliveryQueue, deliver);
         break;
-      case NetworkThrottler::StartResult::Disconnected:
+      case NetworkEmulationSession::Result::Disconnected:
         [self failLocked];
         return;
-      case NetworkThrottler::StartResult::Pending:
+      case NetworkEmulationSession::Result::Pending:
         _awaitingRelease = true;
         return;
     }
   }
 }
 
-- (void)handleRelease:(dispatch_block_t)deliver disconnected:(bool)disconnected newDebt:(int64_t)newDebt
+- (void)handleRelease:(dispatch_block_t)deliver disconnected:(bool)disconnected
 {
   BOOL shouldDeliver = NO;
   {
@@ -198,7 +181,6 @@ offset += chunkLength;
     if (_cancelled || _failed) {
       return;
     }
-    _byteDebt = newDebt;
     if (disconnected) {
       [self failLocked];
     } else {

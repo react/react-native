@@ -21,8 +21,12 @@ NS_ASSUME_NONNULL_BEGIN
  * increments while download throttling is active.
  *
  * This is a helper class wrapping
- * `facebook::react::jsinspector_modern::NetworkThrottler`. In a production
- * (non dev or profiling) build, throttling is never active.
+ * `facebook::react::NetworkEmulationSession`, and is a supported
+ * (experimental) integration point for third-party networking stacks that
+ * replace React Native's networking modules. Report the request's CDP events
+ * (`RCTInspectorNetworkReporter`) from the delivery blocks, so the DevTools
+ * waterfall reflects the emulated timings. In a production (non dev or
+ * profiling) build, throttling is never active.
  */
 @interface RCTInspectorNetworkEmulationGate : NSObject
 

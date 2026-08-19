@@ -9,6 +9,7 @@
 
 package com.facebook.react.modules.network
 
+import com.facebook.react.common.annotations.UnstableReactNativeAPI
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import java.io.IOException
 import java.net.UnknownHostException
@@ -28,8 +29,13 @@ import okio.Okio
  * and the response body is delivered in packet-sized (1500 byte) reads gated on the shared
  * throttling engine. When offline emulation is active, requests fail with an [UnknownHostException]
  * without touching the network.
+ *
+ * This is a supported (experimental) integration point for third-party OkHttp-based networking
+ * stacks that replace React Native's networking modules: add it via `OkHttpClient.Builder`'s
+ * `addInterceptor` on your own client.
  */
-internal class InspectorNetworkEmulationInterceptor : Interceptor {
+@UnstableReactNativeAPI
+public class InspectorNetworkEmulationInterceptor : Interceptor {
   @Throws(IOException::class)
   override fun intercept(chain: Interceptor.Chain): Response {
     if (!ReactNativeFeatureFlags.fuseboxNetworkThrottlingEnabled()) {

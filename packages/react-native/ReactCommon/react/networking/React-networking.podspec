@@ -43,6 +43,7 @@ Pod::Spec.new do |s|
   end
   add_dependency(s, "React-jsinspectornetwork", :framework_name => 'jsinspector_modernnetwork')
   add_dependency(s, "React-jsinspectortracing", :framework_name => 'jsinspector_moderntracing')
+  add_dependency(s, "React-featureflags")
   s.dependency "React-performancetimeline"
   s.dependency "React-timing"
 

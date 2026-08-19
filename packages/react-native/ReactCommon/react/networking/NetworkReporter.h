@@ -42,6 +42,9 @@ struct ResourceTimingData {
  * [Experimental] An interface for reporting network events to the modern
  * debugger server and Web Performance APIs.
  *
+ * To also participate in simulated network conditions
+ * (`Network.emulateNetworkConditions`), see `NetworkEmulationSession`.
+ *
  * In a production (non dev or profiling) build, CDP reporting is disabled.
  */
 class NetworkReporter {
