@@ -1238,6 +1238,17 @@ interface RCTInputAccessoryComponentView : public RCTViewComponentView {
 interface RCTInputAccessoryContentView : public UIView {
 }
 
+interface RCTInspectorNetworkEmulationGate : public NSObject {
+  public virtual instancetype initWithDeliveryQueue:onDisconnected:(dispatch_queue_t deliveryQueue, dispatch_block_t onDisconnected);
+  public virtual static BOOL isActive();
+  public virtual static BOOL isOffline();
+  public virtual void cancel();
+  public virtual void noteRequestSent();
+  public virtual void throttleCompletionDelivery:(dispatch_block_t deliver);
+  public virtual void throttleDataDelivery:deliver:(NSData* data, void(^)(NSData* chunk) deliver);
+  public virtual void throttleResponseDelivery:(dispatch_block_t deliver);
+}
+
 interface RCTInspectorNetworkHelper : public NSObject {
   public virtual instancetype init();
   public virtual void loadNetworkResourceWithParams:executor:(const RCTInspectorLoadNetworkResourceRequest& params, RCTInspectorNetworkExecutor executor);
@@ -12711,6 +12722,7 @@ class facebook::react::jsinspector_modern::InspectorFlags {
   public bool getFrameRecordingEnabled() const;
   public bool getFuseboxEnabled() const;
   public bool getIsProfilingBuild() const;
+  public bool getNetworkThrottlingEnabled() const;
   public bool getPerfIssuesEnabled() const;
   public bool getScreenshotCaptureEnabled() const;
   public facebook::react::jsinspector_modern::InspectorFlags& operator=(const facebook::react::jsinspector_modern::InspectorFlags&) = delete;
@@ -12838,6 +12850,35 @@ class facebook::react::jsinspector_modern::NetworkRequestListener {
   public virtual void onHeaders(uint32_t httpStatusCode, const facebook::react::jsinspector_modern::Headers& headers) = 0;
   public virtual void setCancelFunction(std::function<void()> cancelFunction) = 0;
   public virtual ~NetworkRequestListener() = default;
+}
+
+class facebook::react::jsinspector_modern::NetworkThrottler {
+  public NetworkThrottler(const facebook::react::jsinspector_modern::NetworkThrottler&) = delete;
+  public NetworkThrottler(facebook::react::jsinspector_modern::NetworkThrottler::ClockFunction clock);
+  public bool isOffline() const;
+  public bool isThrottling() const;
+  public facebook::react::jsinspector_modern::NetworkConditions getConditions() const;
+  public facebook::react::jsinspector_modern::NetworkThrottler& operator=(const facebook::react::jsinspector_modern::NetworkThrottler&) = delete;
+  public facebook::react::jsinspector_modern::NetworkThrottler::StartResult startThrottle(uint64_t token, int64_t bytes, facebook::react::jsinspector_modern::NetworkThrottler::TimePoint sendEnd, bool isStart, bool isUpload, facebook::react::jsinspector_modern::NetworkThrottler::ThrottleCallback callback);
+  public int64_t getReadBufLen(int64_t bufLen) const;
+  public static constexpr int64_t kPacketSize;
+  public static facebook::react::jsinspector_modern::NetworkThrottler& getInstance();
+  public std::optional<facebook::react::jsinspector_modern::NetworkThrottler::TimePoint> getTimerDeadlineForTest() const;
+  public uint64_t createRecordToken();
+  public using Clock = std::chrono::steady_clock;
+  public using ClockFunction = std::function<facebook::react::jsinspector_modern::NetworkThrottler::TimePoint()>;
+  public using ThrottleCallback = std::function<void(bool disconnected, int64_t bytes)>;
+  public using TimePoint = facebook::react::jsinspector_modern::NetworkThrottler::Clock::time_point;
+  public void onTimerFired();
+  public void stopThrottle(uint64_t token);
+  public void updateConditions(const facebook::react::jsinspector_modern::NetworkConditions& conditions);
+  public ~NetworkThrottler();
+}
+
+enum facebook::react::jsinspector_modern::NetworkThrottler::StartResult {
+  Disconnected,
+  PassThrough,
+  Pending,
 }
 
 class facebook::react::jsinspector_modern::NotImplementedException : public std::exception {
@@ -13030,6 +13071,14 @@ struct facebook::react::jsinspector_modern::InspectorTargetCapabilities {
 
 struct facebook::react::jsinspector_modern::LoadNetworkResourceRequest {
   public std::string url;
+}
+
+struct facebook::react::jsinspector_modern::NetworkConditions {
+  public bool isThrottling() const;
+  public bool offline;
+  public double downloadThroughputBps;
+  public double latencyMs;
+  public double uploadThroughputBps;
 }
 
 struct facebook::react::jsinspector_modern::NetworkResource {

@@ -51,6 +51,12 @@ class InspectorFlags {
   bool getFrameRecordingEnabled() const;
 
   /**
+   * Flag determining if simulated network throttling
+   * (Network.emulateNetworkConditions) is enabled.
+   */
+  bool getNetworkThrottlingEnabled() const;
+
+  /**
    * Flag determining if the V2 in-app Performance Monitor is enabled.
    */
   bool getPerfIssuesEnabled() const;
@@ -74,6 +80,7 @@ class InspectorFlags {
     bool frameRecordingEnabled;
     bool fuseboxEnabled;
     bool isProfilingBuild;
+    bool networkThrottlingEnabled;
     bool perfIssuesEnabled;
     bool operator==(const Values &) const = default;
   };

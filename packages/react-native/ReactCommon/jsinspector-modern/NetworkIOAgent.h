@@ -284,6 +284,11 @@ class NetworkIOAgent {
    * Handle a Network.getResponseBody CDP request.
    */
   void handleGetResponseBody(const cdp::PreparsedRequest &req);
+
+  /**
+   * Handle a Network.emulateNetworkConditions CDP request.
+   */
+  void handleEmulateNetworkConditions(const cdp::PreparsedRequest &req);
 };
 
 } // namespace facebook::react::jsinspector_modern

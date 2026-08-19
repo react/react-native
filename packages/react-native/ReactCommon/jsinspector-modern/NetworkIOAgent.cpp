@@ -11,6 +11,7 @@
 #include "Utf8.h"
 
 #include <jsinspector-modern/network/NetworkHandler.h>
+#include <jsinspector-modern/network/NetworkThrottler.h>
 #include <react/utils/Base64.h>
 
 #include <sstream>
@@ -305,7 +306,56 @@ bool NetworkIOAgent::handleRequest(
     return true;
   }
 
+  // @cdp Network.emulateNetworkConditions support is experimental.
+  if (req.method == "Network.emulateNetworkConditions" &&
+      InspectorFlags::getInstance().getNetworkThrottlingEnabled()) {
+    handleEmulateNetworkConditions(req);
+    return true;
+  }
+
   return false;
+}
+
+void NetworkIOAgent::handleEmulateNetworkConditions(
+    const cdp::PreparsedRequest& req) {
+  long long requestId = req.id;
+  if (!req.params.isObject()) {
+    frontendChannel_(
+        cdp::jsonError(
+            requestId,
+            cdp::ErrorCode::InvalidParams,
+            "Invalid params: not an object."));
+    return;
+  }
+  if ((req.params.count("offline") == 0u) ||
+      !req.params.at("offline").isBool()) {
+    frontendChannel_(
+        cdp::jsonError(
+            requestId,
+            cdp::ErrorCode::InvalidParams,
+            "Invalid params: offline is missing or not a boolean."));
+    return;
+  }
+
+  auto numberParam = [&](const char* key) -> double {
+    auto it = req.params.find(key);
+    return it != req.params.items().end() && it->second.isNumber()
+        ? it->second.asDouble()
+        : 0;
+  };
+
+  // NOTE: packetLoss, packetQueueLength, packetReordering (WebRTC-only in
+  // Chrome) and connectionType are accepted and ignored. Negative throughput
+  // and latency values mean "no limit" and are normalized to 0.
+  NetworkThrottler::getInstance().updateConditions(
+      NetworkConditions{
+          .offline = req.params.at("offline").asBool(),
+          .latencyMs = numberParam("latency"),
+          .downloadThroughputBps = numberParam("downloadThroughput"),
+          .uploadThroughputBps = numberParam("uploadThroughput"),
+      });
+
+  frontendChannel_(cdp::jsonResult(requestId));
 }
 
 void NetworkIOAgent::handleLoadNetworkResource(

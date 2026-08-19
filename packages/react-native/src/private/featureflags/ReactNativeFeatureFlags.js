@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<bafad194115f60dcf22f64015fe64856>>
+ * @generated SignedSource<<1fb6bb69e323c1dded71cb37d12f0502>>
  * @flow strict
  * @noformat
  */
@@ -107,6 +107,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   fuseboxAssertSingleHostState: Getter<boolean>,
   fuseboxEnabledRelease: Getter<boolean>,
   fuseboxFrameRecordingEnabled: Getter<boolean>,
+  fuseboxNetworkThrottlingEnabled: Getter<boolean>,
   fuseboxScreenshotCaptureEnabled: Getter<boolean>,
   fuseboxWebSocketEventsEnabled: Getter<boolean>,
   optimizedAnimatedPropUpdates: Getter<boolean>,
@@ -442,6 +443,10 @@ export const fuseboxEnabledRelease: Getter<boolean> = createNativeFlagGetter('fu
  * Enable frame timings and screenshots support in the React Native DevTools CDP backend. This flag is global and should not be changed across React Host lifetimes.
  */
 export const fuseboxFrameRecordingEnabled: Getter<boolean> = createNativeFlagGetter('fuseboxFrameRecordingEnabled', false);
+/**
+ * Enable simulated network throttling (Network.emulateNetworkConditions) in the React Native DevTools CDP backend.
+ */
+export const fuseboxNetworkThrottlingEnabled: Getter<boolean> = createNativeFlagGetter('fuseboxNetworkThrottlingEnabled', false);
 /**
  * Enable Page.captureScreenshot CDP method support in the React Native DevTools CDP backend. This flag is global and should not be changed across React Host lifetimes.
  */
