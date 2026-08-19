@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<c08fb696ba1dc5b90155163ca690f218>>
+ * @generated SignedSource<<f610474335cc0a13f2556dbe49b58c32>>
  */
 
 /**
@@ -91,6 +91,7 @@ class ReactNativeFeatureFlagsAccessor {
   bool fuseboxAssertSingleHostState();
   bool fuseboxEnabledRelease();
   bool fuseboxFrameRecordingEnabled();
+  bool fuseboxNetworkThrottlingEnabled();
   bool fuseboxScreenshotCaptureEnabled();
   bool fuseboxWebSocketEventsEnabled();
   bool optimizedAnimatedPropUpdates();
@@ -130,7 +131,7 @@ class ReactNativeFeatureFlagsAccessor {
   std::unique_ptr<ReactNativeFeatureFlagsProvider> currentProvider_;
   bool wasOverridden_;
 
-  std::array<std::atomic<const char*>, 87> accessedFeatureFlags_;
+  std::array<std::atomic<const char*>, 88> accessedFeatureFlags_;
 
   std::atomic<std::optional<bool>> commonTestFlag_;
   std::atomic<std::optional<bool>> cdpInteractionMetricsEnabled_;
@@ -191,6 +192,7 @@ class ReactNativeFeatureFlagsAccessor {
   std::atomic<std::optional<bool>> fuseboxAssertSingleHostState_;
   std::atomic<std::optional<bool>> fuseboxEnabledRelease_;
   std::atomic<std::optional<bool>> fuseboxFrameRecordingEnabled_;
+  std::atomic<std::optional<bool>> fuseboxNetworkThrottlingEnabled_;
   std::atomic<std::optional<bool>> fuseboxScreenshotCaptureEnabled_;
   std::atomic<std::optional<bool>> fuseboxWebSocketEventsEnabled_;
   std::atomic<std::optional<bool>> optimizedAnimatedPropUpdates_;
