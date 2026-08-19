@@ -64,7 +64,7 @@
   //   "trigger": "label" — review only PRs labeled `label` (or `label:<agent>`).
   // The `skipLabel` is write-gated (only maintainers can add labels), so a PR
   // author can't opt their own PR out.
-  "review": { "trigger": "all", "label": "ai-review", "skipLabel": "ai-review:skip" },
+  "review": { "trigger": "label", "label": "ai-review", "skipLabel": "ai-review:skip" },
 
   // A maintainer comment containing this marker skips the CI review.
   "breakGlass": { "marker": "/skip-review" },
