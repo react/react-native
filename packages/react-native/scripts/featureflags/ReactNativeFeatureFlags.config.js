@@ -679,6 +679,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'canary',
     },
+    fuseboxNetworkThrottlingEnabled: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-07-13',
+        description:
+          'Enable simulated network throttling (Network.emulateNetworkConditions) in the React Native DevTools CDP backend.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
     fuseboxScreenshotCaptureEnabled: {
       defaultValue: true,
       metadata: {

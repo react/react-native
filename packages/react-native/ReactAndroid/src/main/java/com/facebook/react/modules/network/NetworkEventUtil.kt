@@ -6,6 +6,7 @@
  */
 
 @file:Suppress("DEPRECATION_ERROR") // Conflicting okhttp versions
+@file:OptIn(UnstableReactNativeAPI::class)
 
 package com.facebook.react.modules.network
 
@@ -15,6 +16,7 @@ import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.bridge.buildReadableArray
+import com.facebook.react.common.annotations.UnstableReactNativeAPI
 import java.io.IOException
 import java.net.SocketTimeoutException
 import okhttp3.Headers

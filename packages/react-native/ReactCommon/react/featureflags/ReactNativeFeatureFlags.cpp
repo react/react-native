@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<acec83211036df307dd8711e96fcb80c>>
+ * @generated SignedSource<<75002029ba92161ef3db5fdd58d9d287>>
  */
 
 /**
@@ -260,6 +260,10 @@ bool ReactNativeFeatureFlags::fuseboxEnabledRelease() {
 
 bool ReactNativeFeatureFlags::fuseboxFrameRecordingEnabled() {
   return getAccessor().fuseboxFrameRecordingEnabled();
+}
+
+bool ReactNativeFeatureFlags::fuseboxNetworkThrottlingEnabled() {
+  return getAccessor().fuseboxNetworkThrottlingEnabled();
 }
 
 bool ReactNativeFeatureFlags::fuseboxScreenshotCaptureEnabled() {
