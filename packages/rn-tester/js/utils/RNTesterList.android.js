@@ -362,6 +362,12 @@ const APIs: Array<RNTesterModuleInfo> = (
       module: require('../examples/Vibration/VibrationExample'),
     },
     {
+      key: 'NetworkThrottlingExample',
+      category: 'Basic',
+      module: require('../examples/NetworkThrottling/NetworkThrottlingExample')
+        .default,
+    },
+    {
       key: 'WebSocketExample',
       category: 'Basic',
       module: require('../examples/WebSocket/WebSocketExample'),
