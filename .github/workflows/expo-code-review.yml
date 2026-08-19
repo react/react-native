@@ -104,7 +104,7 @@ jobs:
           ECR_EXPECTED_TOKEN_ENV: ${{ vars.ECR_EXPECTED_TOKEN_ENV || 'META_API_KEY' }}
           # Model credential — the env var named by auth.tokenEnv in config.jsonc.
           # Store each as a repo secret under the same name.
-          META_API_KEY: ${{ secrets.META_API_KEY }}
+          META_API_KEY: ${{ secrets.EXPO_CODE_REVIEW_API_KEY }}
           # Muse alternative (also set ECR_EXPECTED_TOKEN_ENV=META_API_KEY):
           # META_API_KEY: ${{ secrets.META_API_KEY }}
           # Optional search-only credential for trusted platform documentation research.
