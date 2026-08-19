@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<e437a03ac130e2f24a857a64b3677490>>
+ * @generated SignedSource<<e85eed6a07d00c458ea2fd7e194a9458>>
  */
 
 /**
@@ -333,6 +333,11 @@ class ReactNativeFeatureFlags {
    * Enable frame timings and screenshots support in the React Native DevTools CDP backend. This flag is global and should not be changed across React Host lifetimes.
    */
   RN_EXPORT static bool fuseboxFrameRecordingEnabled();
+
+  /**
+   * Enable simulated network throttling (Network.emulateNetworkConditions) in the React Native DevTools CDP backend.
+   */
+  RN_EXPORT static bool fuseboxNetworkThrottlingEnabled();
 
   /**
    * Enable Page.captureScreenshot CDP method support in the React Native DevTools CDP backend. This flag is global and should not be changed across React Host lifetimes.
