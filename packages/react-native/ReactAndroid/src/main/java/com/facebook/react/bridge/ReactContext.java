@@ -16,12 +16,18 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Window;
+
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContract;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import com.facebook.common.logging.FLog;
 import com.facebook.infer.annotation.Assertions;
 import com.facebook.infer.annotation.ThreadConfined;
 import com.facebook.proguard.annotations.DoNotStrip;
+import com.facebook.react.activityresult.ReactActivityResultCallerImpl;
 import com.facebook.react.bridge.interop.InteropModuleRegistry;
 import com.facebook.react.bridge.queue.MessageQueueThread;
 import com.facebook.react.bridge.queue.ReactQueueConfiguration;
@@ -29,6 +35,7 @@ import com.facebook.react.common.LifecycleState;
 import com.facebook.react.common.build.ReactBuildConfig;
 import com.facebook.react.interfaces.ExtraWindowEventListener;
 import com.facebook.react.turbomodule.core.interfaces.CallInvokerHolder;
+
 import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -67,6 +74,7 @@ public abstract class ReactContext extends ContextWrapper {
   private @Nullable JSExceptionHandler mJSExceptionHandler;
   private @Nullable JSExceptionHandler mExceptionHandlerWrapper;
   private @Nullable WeakReference<Activity> mCurrentActivity;
+  private @Nullable ReactActivityResultCallerImpl mActivityResultCaller;
 
   // NOTE: When converted to Kotlin, this field should be made internal due to
   // visibility restriction on InteropModuleRegistry otherwise it will be exposed to the public API.
@@ -530,6 +538,48 @@ public abstract class ReactContext extends ContextWrapper {
       return null;
     }
     return mCurrentActivity.get();
+  }
+
+  private synchronized ReactActivityResultCallerImpl getActivityResultCaller() {
+    if (mActivityResultCaller == null) {
+      mActivityResultCaller = new ReactActivityResultCallerImpl(this);
+    }
+    return mActivityResultCaller;
+  }
+
+  /**
+   * Registers an AndroidX {@code ActivityResultContract} and returns a launcher for it, mirroring
+   * {@code ComponentActivity.registerForActivityResult} but with no changes required to the
+   * consumer's {@code MainActivity}. Registration is legal at any time; the launcher binds lazily
+   * once an Activity is available, queueing a {@code launch} issued while unbound.
+   *
+   * <p>The registration key is {@code "<owner class>:<contract class>"}, so {@code owner} should
+   * be a stable, long-lived object (typically the native module itself): the key must be
+   * reproducible after the process is killed and restored. Registering the same contract class
+   * twice from one owner
+   * throws {@link IllegalStateException}; use {@link #registerForActivityResult(Object, String,
+   * ActivityResultContract, ActivityResultCallback)} in that case.
+   */
+  public <I, O> ActivityResultLauncher<I> registerForActivityResult(
+      Object owner, ActivityResultContract<I, O> contract, ActivityResultCallback<O> callback) {
+    return getActivityResultCaller().registerForActivityResult(owner, contract, callback);
+  }
+
+  /**
+   * Same as {@link #registerForActivityResult(Object, ActivityResultContract,
+   * ActivityResultCallback)}, but registers under {@code "<owner class>:<contract class>:<key>"}.
+   * Use this when one owner needs several launchers of the same contract class. {@code key} only
+   * has to be unique among those, but must stay the same across process restarts.
+   *
+   * @throws IllegalStateException if {@code owner} already registered this contract class under
+   *     {@code key}
+   */
+  public <I, O> ActivityResultLauncher<I> registerForActivityResult(
+      Object owner,
+      String key,
+      ActivityResultContract<I, O> contract,
+      ActivityResultCallback<O> callback) {
+    return getActivityResultCaller().registerForActivityResult(owner, key, contract, callback);
   }
 
   /**
