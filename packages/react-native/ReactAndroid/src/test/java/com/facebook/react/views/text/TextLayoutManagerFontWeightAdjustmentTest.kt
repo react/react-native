@@ -11,6 +11,7 @@ import android.graphics.Paint
 import android.graphics.Typeface
 import android.os.Build
 import android.text.TextPaint
+import android.widget.TextView
 import androidx.annotation.RequiresApi
 import com.facebook.react.bridge.JavaOnlyMap
 import com.facebook.react.uimanager.DisplayMetricsHolder
@@ -55,13 +56,14 @@ class TextLayoutManagerFontWeightAdjustmentTest {
         textAttributes,
         RuntimeEnvironment.getApplication().assets,
         FONT_WEIGHT_ADJUSTMENT_BOLD_TEXT,
+        RuntimeEnvironment.getApplication(),
     )
 
     assertThat(paint.typeface).isNotNull
   }
 
   @Test
-  fun `plain text paint keeps default typeface unset without font weight adjustment`() {
+  fun `plain text paint uses rendering TextView default typeface without font weight adjustment`() {
     val paint = TextPaint(TextPaint.ANTI_ALIAS_FLAG)
     val textAttributes = TextAttributeProps.fromReadableMap(ReactStylesDiffMap(JavaOnlyMap()))
 
@@ -70,9 +72,15 @@ class TextLayoutManagerFontWeightAdjustmentTest {
         textAttributes,
         RuntimeEnvironment.getApplication().assets,
         0,
+        RuntimeEnvironment.getApplication(),
     )
 
-    assertThat(paint.typeface).isNull()
+    // Matches the typeface the rendering TextView (ReactTextView) would use, so
+    // measurement and rendering stay in sync even when the system default font is
+    // replaced (e.g. a bold system font).
+    assertThat(paint.typeface)
+        .isNotNull
+        .isEqualTo(TextView(RuntimeEnvironment.getApplication()).typeface)
   }
 
   @Test
@@ -88,6 +96,7 @@ class TextLayoutManagerFontWeightAdjustmentTest {
         textAttributes,
         RuntimeEnvironment.getApplication().assets,
         0,
+        RuntimeEnvironment.getApplication(),
     )
 
     assertThat(paint.fontVariationSettings).isNull()
