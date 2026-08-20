@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/PrivateGuard.h>
+
 #include <react/debug/react_native_assert.h>
 #include <react/renderer/components/inputaccessory/InputAccessoryShadowNode.h>
 #include <react/renderer/core/ConcreteComponentDescriptor.h>

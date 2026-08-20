@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/PrivateGuard.h>
+
 #include "AndroidSwitchMeasurementsManager.h"
 
 #include <react/renderer/components/FBReactNativeSpec/EventEmitters.h>
