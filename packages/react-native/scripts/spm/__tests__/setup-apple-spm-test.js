@@ -876,6 +876,32 @@ describe('withAutomaticPodsInstallationDisabled', () => {
     );
   });
 
+  it('preserves a trailing inline comment when flipping the LAST property in the object (no trailing comma)', () => {
+    // No trailing comma after `true` — the greediest-legal match for the
+    // value runs up to the newline, which (before the fix) swallowed the
+    // masked `// keep manual for now` comment into the replaced span and
+    // deleted it.
+    const config =
+      'module.exports = {\n' +
+      '  project: {\n' +
+      '    ios: {\n' +
+      '      sourceDir: "./ios",\n' +
+      '      automaticPodsInstallation: true // keep manual for now\n' +
+      '    },\n' +
+      '  },\n' +
+      '};\n';
+    expect(withAutomaticPodsInstallationDisabled(config)).toBe(
+      'module.exports = {\n' +
+        '  project: {\n' +
+        '    ios: {\n' +
+        '      sourceDir: "./ios",\n' +
+        '      automaticPodsInstallation: false // keep manual for now\n' +
+        '    },\n' +
+        '  },\n' +
+        '};\n',
+    );
+  });
+
   it('is a no-op when already `false`', () => {
     const config =
       'module.exports = {\n' +

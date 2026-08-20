@@ -970,6 +970,15 @@ function findTopLevelKeyObjectRange(
 // findTopLevelKeyObjectRange, but for a non-object value like `true`/`false`.
 // Returns the match bounds in the real text and the trimmed value text, or
 // null if absent. `masked` must be the same length as the real text.
+//
+// `matchEnd` is trimmed back to the end of the VALUE TOKEN itself, not the
+// raw regex match: when this is the object's last property (no trailing
+// comma), `[^,}\n]+` runs all the way to the newline, which — since
+// maskJsCommentsAndStringValues replaces a trailing `// comment` with
+// same-length spaces rather than removing it — swallows that masked comment
+// into the match. A caller that slices `matchEnd..` out of the REAL
+// (unmasked) text to replace the value would otherwise delete the user's
+// comment along with it.
 function findTopLevelScalarValue(
   masked /*: string */,
   key /*: string */,
@@ -989,10 +998,12 @@ function findTopLevelScalarValue(
       else if (masked[i] === '}') depth--;
     }
     if (depth === 0) {
+      const rawValue = m[1];
+      const trailingWhitespace = rawValue.length - rawValue.trimEnd().length;
       return {
         matchStart: m.index,
-        matchEnd: m.index + m[0].length,
-        value: m[1].trim(),
+        matchEnd: m.index + m[0].length - trailingWhitespace,
+        value: rawValue.trim(),
       };
     }
   }
