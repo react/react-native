@@ -56,6 +56,7 @@ const path = require('node:path');
 
 /*:: import type {
   AutomaticPodsInstallationResult,
+  DanglingPodsWorkspaceRefResult,
   FlavoredFrameworkManifestEntry,
   PluginScriptPhase,
   XcframeworkSlice,
@@ -2241,7 +2242,7 @@ function readScriptPhasesManifest(
  */
 function readMarker(
   xcodeprojPath /*: string */,
-) /*: ?{generatedSources?: {[string]: Array<string>}, scriptPhases?: {[string]: string}, artifactsVersionOverride?: ?string, configCommand?: ?Array<string>, automaticPodsInstallation?: ?AutomaticPodsInstallationResult, buildSettingChanges?: Array<BuildSettingChange>, createdArrayFields?: Array<CreatedArrayField>, scheme?: {file?: ?string, created?: ?boolean}, ...} */ {
+) /*: ?{generatedSources?: {[string]: Array<string>}, scriptPhases?: {[string]: string}, artifactsVersionOverride?: ?string, configCommand?: ?Array<string>, automaticPodsInstallation?: ?AutomaticPodsInstallationResult, removedDanglingPodsWorkspaceRef?: ?DanglingPodsWorkspaceRefResult, buildSettingChanges?: Array<BuildSettingChange>, createdArrayFields?: Array<CreatedArrayField>, scheme?: {file?: ?string, created?: ?boolean}, ...} */ {
   const markerPath = path.join(xcodeprojPath, SPM_INJECTED_MARKER);
   try {
     // $FlowFixMe[incompatible-return] JSON.parse returns any
@@ -2362,7 +2363,7 @@ function mergeCreatedArrayFields(
  * when the project can't be safely edited (caller surfaces it; fail-loud).
  */
 function injectSpmIntoExistingXcodeproj(
-  opts /*: {appRoot: string, reactNativeRoot: string, xcodeprojPath: string, appName?: ?string, artifactsVersionOverride?: ?string, configCommand?: ?Array<string>, automaticPodsInstallation?: ?AutomaticPodsInstallationResult} */,
+  opts /*: {appRoot: string, reactNativeRoot: string, xcodeprojPath: string, appName?: ?string, artifactsVersionOverride?: ?string, configCommand?: ?Array<string>, automaticPodsInstallation?: ?AutomaticPodsInstallationResult, removedDanglingPodsWorkspaceRef?: ?DanglingPodsWorkspaceRefResult} */,
 ) /*: {status: 'injected', target: string} | {status: 'refused', reason: string} */ {
   const {appRoot, reactNativeRoot, xcodeprojPath} = opts;
   const pbxprojPath = path.join(xcodeprojPath, 'project.pbxproj');
@@ -2527,6 +2528,20 @@ function injectSpmIntoExistingXcodeproj(
     ? ranThisTime
     : (prevMarker?.automaticPodsInstallation ?? ranThisTime ?? null);
 
+  // Same non-clobbering contract as automaticPodsInstallation above, for the
+  // dangling `Pods/Pods.xcodeproj` workspace reference
+  // cleanupDanglingPodsWorkspaceRef removes (setup-apple-spm.js), carrying
+  // the before/after snapshot `spm deinit` restores. A repeat `--deintegrate`
+  // run finds nothing left to remove (the first run already removed it) and
+  // reports null — that must not overwrite an earlier non-null record, or
+  // `spm deinit` loses the snapshot needed to restore it. Only a non-null
+  // result (this run actually removed something) replaces the record; null
+  // preserves whatever was already there.
+  const removedDanglingPodsWorkspaceRef =
+    opts.removedDanglingPodsWorkspaceRef ??
+    prevMarker?.removedDanglingPodsWorkspaceRef ??
+    null;
+
   // Marker: idempotency signal + the exact, reversible record of every edit so
   // `deinit` (removeSpmInjection) can undo precisely what was added.
   writeIfChanged(
@@ -2551,6 +2566,7 @@ function injectSpmIntoExistingXcodeproj(
         artifactsVersionOverride,
         configCommand,
         automaticPodsInstallation,
+        removedDanglingPodsWorkspaceRef,
         scheme: {
           file: schemeResult.file,
           // Sticky — see mergeCreatedArrayFields for why a later sync cannot
@@ -2719,7 +2735,7 @@ function removeRecordedBuildSettings(
  */
 function removeSpmInjection(
   opts /*: {appRoot: string, xcodeprojPath: string} */,
-) /*: {status: 'removed', target: string, automaticPodsInstallation: ?AutomaticPodsInstallationResult} | {status: 'absent'} */ {
+) /*: {status: 'removed', target: string, automaticPodsInstallation: ?AutomaticPodsInstallationResult, removedDanglingPodsWorkspaceRef: ?DanglingPodsWorkspaceRefResult} | {status: 'absent'} */ {
   const {appRoot, xcodeprojPath} = opts;
   const markerPath = path.join(xcodeprojPath, SPM_INJECTED_MARKER);
   if (!fs.existsSync(markerPath)) {
@@ -2802,6 +2818,8 @@ function removeSpmInjection(
     status: 'removed',
     target: marker.target,
     automaticPodsInstallation: marker.automaticPodsInstallation ?? null,
+    removedDanglingPodsWorkspaceRef:
+      marker.removedDanglingPodsWorkspaceRef ?? null,
   };
 }
 

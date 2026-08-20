@@ -26,6 +26,7 @@ const {
   resolveConfigCommandToPin,
   resolveExplicitConfigCommand,
   restoreAutomaticPodsInstallation,
+  restoreDanglingPodsWorkspaceRef,
   shouldAutoDeintegrate,
   stripReactNativeFromPodfile,
   stripStockPostInstallBlock,
@@ -1330,15 +1331,20 @@ describe('cleanupDanglingPodsWorkspaceRef', () => {
     return dir;
   }
 
-  it('removes the dangling ref when Pods.xcodeproj is gone from disk', () => {
+  it('removes the dangling ref when Pods.xcodeproj is gone from disk, returning a before/after snapshot', () => {
     const xcodeprojPath = mkXcodeproj(appRoot, 'MyApp.xcodeproj');
     const workspace = mkWorkspace(appRoot, 'MyApp.xcworkspace');
-    expect(cleanupDanglingPodsWorkspaceRef(appRoot, xcodeprojPath)).toBe(true);
-    const data = fs.readFileSync(
-      path.join(workspace, 'contents.xcworkspacedata'),
-      'utf8',
-    );
+    const dataPath = path.join(workspace, 'contents.xcworkspacedata');
+    const before = fs.readFileSync(dataPath, 'utf8');
+
+    const result = cleanupDanglingPodsWorkspaceRef(appRoot, xcodeprojPath);
+    expect(result).not.toBeNull();
+    expect(result?.dataPath).toBe(dataPath);
+    expect(result?.before).toBe(before);
+
+    const data = fs.readFileSync(dataPath, 'utf8');
     expect(data).not.toMatch(/Pods\.xcodeproj/);
+    expect(result?.after).toBe(data);
   });
 
   it('leaves the ref alone when Pods.xcodeproj still exists on disk', () => {
@@ -1347,7 +1353,7 @@ describe('cleanupDanglingPodsWorkspaceRef', () => {
     fs.mkdirSync(path.join(appRoot, 'Pods', 'Pods.xcodeproj'), {
       recursive: true,
     });
-    expect(cleanupDanglingPodsWorkspaceRef(appRoot, xcodeprojPath)).toBe(false);
+    expect(cleanupDanglingPodsWorkspaceRef(appRoot, xcodeprojPath)).toBeNull();
     const data = fs.readFileSync(
       path.join(workspace, 'contents.xcworkspacedata'),
       'utf8',
@@ -1357,7 +1363,84 @@ describe('cleanupDanglingPodsWorkspaceRef', () => {
 
   it('is a no-op when there is no .xcworkspace', () => {
     const xcodeprojPath = mkXcodeproj(appRoot, 'MyApp.xcodeproj');
-    expect(cleanupDanglingPodsWorkspaceRef(appRoot, xcodeprojPath)).toBe(false);
+    expect(cleanupDanglingPodsWorkspaceRef(appRoot, xcodeprojPath)).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// restoreDanglingPodsWorkspaceRef — the `spm deinit` counterpart, driven by
+// the before/after snapshot cleanupDanglingPodsWorkspaceRef recorded. React
+// Native needs a real Pods.xcodeproj reference again once CocoaPods is
+// reintegrated (`pod install`), so this puts it straight back rather than
+// leaving the user to rediscover it's missing.
+// ---------------------------------------------------------------------------
+
+describe('restoreDanglingPodsWorkspaceRef', () => {
+  let appRoot;
+  beforeEach(() => {
+    appRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'spm-workspace-restore-'));
+  });
+  afterEach(() => {
+    fs.rmSync(appRoot, {recursive: true, force: true});
+  });
+
+  function mkWorkspace(root, name) {
+    const dir = path.join(root, name);
+    fs.mkdirSync(dir, {recursive: true});
+    fs.writeFileSync(
+      path.join(dir, 'contents.xcworkspacedata'),
+      '<?xml version="1.0" encoding="UTF-8"?>\n' +
+        '<Workspace\n' +
+        '   version = "1.0">\n' +
+        '   <FileRef\n' +
+        `      location = "group:${path.basename(name, '.xcworkspace')}.xcodeproj">\n` +
+        '   </FileRef>\n' +
+        '   <FileRef\n' +
+        '      location = "group:Pods/Pods.xcodeproj">\n' +
+        '   </FileRef>\n' +
+        '</Workspace>\n',
+    );
+    return dir;
+  }
+
+  it('restores the reference byte-for-byte when untouched since', () => {
+    const xcodeprojPath = mkXcodeproj(appRoot, 'MyApp.xcodeproj');
+    mkWorkspace(appRoot, 'MyApp.xcworkspace');
+    const result = cleanupDanglingPodsWorkspaceRef(appRoot, xcodeprojPath);
+    expect(result).not.toBeNull();
+
+    restoreDanglingPodsWorkspaceRef(result);
+    expect(fs.readFileSync(result?.dataPath ?? '', 'utf8')).toBe(
+      result?.before,
+    );
+  });
+
+  it('leaves the file alone if it has changed since (does not clobber a later edit)', () => {
+    const xcodeprojPath = mkXcodeproj(appRoot, 'MyApp.xcodeproj');
+    mkWorkspace(appRoot, 'MyApp.xcworkspace');
+    const result = cleanupDanglingPodsWorkspaceRef(appRoot, xcodeprojPath);
+    expect(result).not.toBeNull();
+
+    const dataPath = result?.dataPath ?? '';
+    const editedSince = fs.readFileSync(dataPath, 'utf8') + '<!-- edited -->\n';
+    fs.writeFileSync(dataPath, editedSince, 'utf8');
+
+    restoreDanglingPodsWorkspaceRef(result);
+    expect(fs.readFileSync(dataPath, 'utf8')).toBe(editedSince);
+  });
+
+  it('is a no-op for null (nothing was removed)', () => {
+    expect(() => restoreDanglingPodsWorkspaceRef(null)).not.toThrow();
+  });
+
+  it('is a no-op when the workspace file no longer exists', () => {
+    const xcodeprojPath = mkXcodeproj(appRoot, 'MyApp.xcodeproj');
+    const workspace = mkWorkspace(appRoot, 'MyApp.xcworkspace');
+    const result = cleanupDanglingPodsWorkspaceRef(appRoot, xcodeprojPath);
+    expect(result).not.toBeNull();
+
+    fs.rmSync(workspace, {recursive: true, force: true});
+    expect(() => restoreDanglingPodsWorkspaceRef(result)).not.toThrow();
   });
 });
 

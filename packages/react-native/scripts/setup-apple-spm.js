@@ -10,7 +10,7 @@
 
 'use strict';
 
-/*:: import type {AutomaticPodsInstallationResult, CliConfigJson, SetupArgs} from './spm/spm-types'; */
+/*:: import type {AutomaticPodsInstallationResult, CliConfigJson, DanglingPodsWorkspaceRefResult, SetupArgs} from './spm/spm-types'; */
 
 /**
  * setup-apple-spm.js – Entry point for setting up Swift Package Manager support
@@ -1422,28 +1422,57 @@ function removeDanglingPodsFileRef(xml /*: string */) /*: string */ {
 // reference when Pods/Pods.xcodeproj is actually gone from disk, so a
 // side-by-side non-RN CocoaPods integration is never disturbed. No-op when
 // the workspace, its contents.xcworkspacedata, or the reference is absent.
+// Returns the before/after snapshot of contents.xcworkspacedata when it
+// actually removed something (null otherwise), so `spm deinit` can restore
+// it byte-for-byte — see restoreDanglingPodsWorkspaceRef.
 function cleanupDanglingPodsWorkspaceRef(
   appRoot /*: string */,
   xcodeprojPath /*: string */,
-) /*: boolean */ {
+) /*: ?DanglingPodsWorkspaceRefResult */ {
   if (fs.existsSync(path.join(appRoot, 'Pods', 'Pods.xcodeproj'))) {
-    return false;
+    return null;
   }
   const workspacePath = findXcworkspace(xcodeprojPath);
   if (workspacePath == null) {
-    return false;
+    return null;
   }
   const dataPath = path.join(workspacePath, 'contents.xcworkspacedata');
   if (!fs.existsSync(dataPath)) {
-    return false;
+    return null;
   }
   const orig = fs.readFileSync(dataPath, 'utf8');
   const cleaned = removeDanglingPodsFileRef(orig);
   if (cleaned === orig) {
-    return false;
+    return null;
   }
   fs.writeFileSync(dataPath, cleaned, 'utf8');
-  return true;
+  return {dataPath, before: orig, after: cleaned};
+}
+
+// Undoes cleanupDanglingPodsWorkspaceRef, using the marker's before/after
+// snapshot. Called by `spm deinit` — React Native needs a real
+// Pods.xcodeproj reference again once CocoaPods is reintegrated (`pod
+// install`, which `deinit`'s own docs tell the user to run next), so this
+// puts the reference straight back rather than leaving the user to
+// rediscover it's missing. Only restores when the file still matches
+// `after` exactly (nothing else has edited it since); otherwise leaves it
+// alone and warns, same safety contract as restoreAutomaticPodsInstallation.
+function restoreDanglingPodsWorkspaceRef(
+  result /*: ?DanglingPodsWorkspaceRefResult */,
+) /*: void */ {
+  if (result == null || !fs.existsSync(result.dataPath)) {
+    return;
+  }
+  if (fs.readFileSync(result.dataPath, 'utf8') !== result.after) {
+    log(
+      '\x1b[33mNote: contents.xcworkspacedata has changed since `spm add ' +
+        '--deintegrate` removed the dangling Pods.xcodeproj reference — ' +
+        "leaving it as-is. Re-run `pod install` if it's missing.\x1b[0m",
+    );
+    return;
+  }
+  fs.writeFileSync(result.dataPath, result.before, 'utf8');
+  log('Restored the Pods.xcodeproj reference in the .xcworkspace.');
 }
 
 // Run `pod deintegrate` then strip React Native from the Podfile (leaving any
@@ -1580,6 +1609,11 @@ async function setupXcodeproj(
   // `--deintegrate` pass `null` and injectSpmIntoExistingXcodeproj keeps
   // whatever a prior `add --deintegrate` recorded.
   let automaticPodsInstallation /*: ?AutomaticPodsInstallationResult */ = null;
+  // Same reasoning, for cleanupDanglingPodsWorkspaceRef below: `null` means
+  // "didn't run `--deintegrate` this time, or nothing needed removing";
+  // non-null means "removed a reference, here's the before/after snapshot".
+  let removedDanglingPodsWorkspaceRef /*: ?DanglingPodsWorkspaceRefResult */ =
+    null;
 
   if (args.deintegrate) {
     automaticPodsInstallation = runDeintegrate(
@@ -1592,7 +1626,11 @@ async function setupXcodeproj(
     if (cleanupLeftoverPodsGroup(xcodeprojPath)) {
       log('Removed the leftover empty `Pods` group from the project.');
     }
-    if (cleanupDanglingPodsWorkspaceRef(appRoot, xcodeprojPath)) {
+    removedDanglingPodsWorkspaceRef = cleanupDanglingPodsWorkspaceRef(
+      appRoot,
+      xcodeprojPath,
+    );
+    if (removedDanglingPodsWorkspaceRef != null) {
       log(
         'Removed the dangling Pods.xcodeproj reference from the .xcworkspace.',
       );
@@ -1652,6 +1690,7 @@ async function setupXcodeproj(
     artifactsVersionOverride: args.version ?? null,
     configCommand: resolveConfigCommandToPin(args),
     automaticPodsInstallation,
+    removedDanglingPodsWorkspaceRef,
   });
   if (result.status !== 'injected') {
     logError(`SPM injection failed: ${result.reason}`);
@@ -1855,6 +1894,7 @@ async function main(argv /*:: ?: Array<string> */) /*: Promise<void> */ {
     );
     if (result.status === 'removed') {
       restoreAutomaticPodsInstallation(result.automaticPodsInstallation);
+      restoreDanglingPodsWorkspaceRef(result.removedDanglingPodsWorkspaceRef);
     }
     return;
   }
@@ -2070,6 +2110,7 @@ module.exports = {
   resolveConfigCommandToPin,
   resolveExplicitConfigCommand,
   cleanupDanglingPodsWorkspaceRef,
+  restoreDanglingPodsWorkspaceRef,
   removeDanglingPodsFileRef,
   shouldAutoDeintegrate,
   stripReactNativeFromPodfile,

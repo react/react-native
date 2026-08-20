@@ -1184,6 +1184,104 @@ describe('automaticPodsInstallation marker field', () => {
 });
 
 // ---------------------------------------------------------------------------
+// removedDanglingPodsWorkspaceRef marker field — same non-clobbering
+// set-or-preserve contract as automaticPodsInstallation above, and for the
+// same reason: a repeat `--deintegrate` run finds nothing left to remove
+// (the first run already removed it) and reports null, which must not erase
+// the earlier before/after snapshot `spm deinit` needs to restore the
+// reference.
+// ---------------------------------------------------------------------------
+describe('removedDanglingPodsWorkspaceRef marker field', () => {
+  const SNAPSHOT = {
+    dataPath: '/app/MyApp.xcworkspace/contents.xcworkspacedata',
+    before: '<Workspace>...Pods.xcodeproj...</Workspace>',
+    after: '<Workspace>...</Workspace>',
+  };
+
+  it('records a snapshot from the first --deintegrate run', () => {
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp();
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+      removedDanglingPodsWorkspaceRef: SNAPSHOT,
+    });
+    expect(readMarker(xcodeprojPath).removedDanglingPodsWorkspaceRef).toEqual(
+      SNAPSHOT,
+    );
+  });
+
+  it('defaults to null when --deintegrate has never run', () => {
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp();
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+    });
+    expect(
+      readMarker(xcodeprojPath).removedDanglingPodsWorkspaceRef,
+    ).toBeNull();
+  });
+
+  it('a repeat --deintegrate run (nothing left to remove) does NOT clobber the earlier snapshot', () => {
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp();
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+      removedDanglingPodsWorkspaceRef: SNAPSHOT,
+    });
+    // Second `--deintegrate` run: the reference is already gone (this run
+    // removed it), so cleanupDanglingPodsWorkspaceRef now returns null.
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+      removedDanglingPodsWorkspaceRef: null,
+    });
+    expect(readMarker(xcodeprojPath).removedDanglingPodsWorkspaceRef).toEqual(
+      SNAPSHOT,
+    );
+  });
+
+  it('a later `update` (no --deintegrate) preserves the prior snapshot', () => {
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp();
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+      removedDanglingPodsWorkspaceRef: SNAPSHOT,
+    });
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+    });
+    expect(readMarker(xcodeprojPath).removedDanglingPodsWorkspaceRef).toEqual(
+      SNAPSHOT,
+    );
+  });
+
+  it('deinit surfaces the preserved snapshot after a repeat --deintegrate run', () => {
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp();
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+      removedDanglingPodsWorkspaceRef: SNAPSHOT,
+    });
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+      removedDanglingPodsWorkspaceRef: null,
+    });
+    const removed = removeSpmInjection({appRoot, xcodeprojPath});
+    expect(removed.removedDanglingPodsWorkspaceRef).toEqual(SNAPSHOT);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // readArtifactsVersionOverride — pure fs read, used by setup-apple-spm.js's
 // determineVersion to prefer a pinned version over the one derived from
 // node_modules/react-native/package.json.

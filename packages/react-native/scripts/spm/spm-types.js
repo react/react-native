@@ -56,6 +56,20 @@ export type AutomaticPodsInstallationResult =
   | {kind: 'already-disabled', configPath: string}
   | {kind: 'unrecognized', configPath: string};
 
+// The dangling `Pods/Pods.xcodeproj` FileRef cleanupDanglingPodsWorkspaceRef
+// (setup-apple-spm.js) removed from a .xcworkspace's
+// contents.xcworkspacedata, recorded in the `.spm-injected.json` marker so
+// `spm deinit` (restoreDanglingPodsWorkspaceRef) can restore it byte-for-byte
+// — React Native needs a real Pods.xcodeproj reference again once CocoaPods
+// is reintegrated via `pod install`. Same before/after-snapshot approach as
+// AutomaticPodsInstallationResult's 'edited' case, for the same reason: only
+// restore when nothing else has touched the file since.
+export type DanglingPodsWorkspaceRefResult = {
+  dataPath: string,
+  before: string,
+  after: string,
+};
+
 export type DownloadArgs = {
   version: string | null,
   flavor: string,
