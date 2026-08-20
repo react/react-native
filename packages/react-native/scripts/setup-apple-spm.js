@@ -858,12 +858,23 @@ function stripStockPostInstallBlock(contents /*: string */) /*: string */ {
   return out;
 }
 
-// Replaces the contents of `//` and `/* */` comments with spaces (same
+// Replaces the contents of `//` and `/* */` comments, AND of string-literal
+// VALUES (not string-literal object keys — see below), with spaces (same
 // length, newlines preserved) so the brace/key scanning below isn't thrown
-// off by a stray `}` or keyword sitting inside a comment. Only used for
+// off by a stray `}`/`{` or a keyword-looking substring sitting inside a
+// comment or a value like `sourceDir: "{PODS_ROOT}/.."`. Only used for
 // *finding* positions — every read/write below still slices the original
-// text, so indices computed against the masked string stay valid.
-function maskJsComments(text /*: string */) /*: string */ {
+// text, so indices computed against the masked string stay valid (masking
+// never changes length; a multi-line string/comment keeps its newlines).
+//
+// A string is masked as a VALUE unless the first non-whitespace character
+// after its closing quote is `:` — that shape is a quoted object key
+// (`'ios': {...}`), and its text must stay visible so a caller matching a
+// specific key by name (e.g. `ios`) still finds it. Comments and strings are
+// each consumed atomically in one pass, so `//` inside a string can't be
+// mistaken for a comment, and a quote inside a comment can't be mistaken for
+// a string.
+function maskJsCommentsAndStringValues(text /*: string */) /*: string */ {
   let out = '';
   let i = 0;
   while (i < text.length) {
@@ -881,6 +892,23 @@ function maskJsComments(text /*: string */) /*: string */ {
       i = j;
       continue;
     }
+    if (text[i] === '"' || text[i] === "'" || text[i] === '`') {
+      const quote = text[i];
+      let j = i + 1;
+      while (j < text.length && text[j] !== quote) {
+        if (text[j] === '\\') j++;
+        j++;
+      }
+      j = Math.min(j + 1, text.length);
+      let k = j;
+      while (k < text.length && /\s/.test(text[k])) k++;
+      out +=
+        text[k] === ':'
+          ? text.slice(i, j)
+          : text.slice(i, j).replace(/[^\n]/g, ' ');
+      i = j;
+      continue;
+    }
     out += text[i];
     i++;
   }
@@ -888,7 +916,7 @@ function maskJsComments(text /*: string */) /*: string */ {
 }
 
 // Finds the matching `}` for the `{` at `openIdx`, or null if unbalanced.
-// `masked` must be the same length as the real text (see maskJsComments).
+// `masked` must be the same length as the real text (see maskJsCommentsAndStringValues).
 function matchingBrace(
   masked /*: string */,
   openIdx /*: number */,
@@ -909,7 +937,8 @@ function matchingBrace(
 // of the object being scanned, not a same-named key nested inside some other
 // property's value, and not a longer identifier that merely contains `key`.
 // Returns the `{...}` range of that key's object value, or null if absent.
-// `masked` must be the same length as the real text (see maskJsComments).
+// `masked` must be the same length as the real text (see
+// maskJsCommentsAndStringValues).
 function findTopLevelKeyObjectRange(
   masked /*: string */,
   key /*: string */,
@@ -970,6 +999,37 @@ function findTopLevelScalarValue(
   return null;
 }
 
+// True when `key:` (or quoted-key variant) appears at brace-depth 0 within
+// [start, end), regardless of what its value looks like — an object
+// literal, a scalar, an identifier reference, a function call, ... Used to
+// tell "this key is absent" (safe to insert a brand-new one) apart from
+// "this key exists but not in the `{...}` shape we recognize" (unsafe: JS
+// object literals let the LAST duplicate key win, so inserting a second
+// `key: {...}` ahead of an unrecognized existing one would be silently
+// overridden by it — success would be reported while nothing actually
+// changed). `masked` must be the same length as the real text.
+function findTopLevelKeyExists(
+  masked /*: string */,
+  key /*: string */,
+  start /*: number */,
+  end /*: number */,
+) /*: boolean */ {
+  const re = new RegExp('(?<![\\w$])[\'"]?' + key + '[\'"]?\\s*:', 'g');
+  re.lastIndex = start;
+  let m;
+  while ((m = re.exec(masked)) && m.index < end) {
+    let depth = 0;
+    for (let i = start; i < m.index; i++) {
+      if (masked[i] === '{') depth++;
+      else if (masked[i] === '}') depth--;
+    }
+    if (depth === 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
 // Inserts `propertyText` (no trailing comma/newline) as the first property of
 // the object whose `{` is at `openIdx`, matching the existing content's
 // line-break style so we don't smash an empty `{}` and a populated object
@@ -1002,7 +1062,7 @@ function readProjectIosScalar(
   contents /*: string */,
   key /*: string */,
 ) /*: string | null */ {
-  const masked = maskJsComments(contents);
+  const masked = maskJsCommentsAndStringValues(contents);
   const exportsMatch = /module\.exports\s*=\s*{/.exec(masked);
   if (!exportsMatch) {
     return null;
@@ -1044,15 +1104,22 @@ function readProjectIosScalar(
 // `automaticPodsInstallation` are missing. All scanning is scoped to
 // `project.ios` specifically (never a bare whole-file search), so a comment
 // or an unrelated `automaticPodsInstallation` under a different key can't
-// produce a false "already disabled" / silent no-op. Returns null when
-// `contents` doesn't look like a plain `module.exports = {...}` object
-// literal, or when the edit's result can't be verified afterward — either
-// way the caller should warn instead of risking a corrupt or ineffective
-// rewrite.
+// produce a false "already disabled" / silent no-op. A brace or keyword
+// embedded in an unrelated string VALUE is similarly masked out (see
+// maskJsCommentsAndStringValues) so it can't throw off brace-depth counting.
+// And before inserting a new `project: {...}` or `ios: {...}`, we check that
+// the key isn't ALREADY present in some other shape (findTopLevelKeyExists)
+// — inserting a duplicate would be silently shadowed by the real one (JS
+// object literals let the last duplicate key win), reporting success for an
+// edit that changed nothing. Returns null when `contents` doesn't look like
+// a plain `module.exports = {...}` object literal, when `project`/`ios`
+// exists but isn't safely extensible, or when the edit's result can't be
+// verified afterward — either way the caller should warn instead of risking
+// a corrupt or ineffective rewrite.
 function withAutomaticPodsInstallationDisabled(
   contents /*: string */,
 ) /*: string | null */ {
-  const masked = maskJsComments(contents);
+  const masked = maskJsCommentsAndStringValues(contents);
   const exportsMatch = /module\.exports\s*=\s*{/.exec(masked);
   if (!exportsMatch) {
     return null;
@@ -1072,6 +1139,16 @@ function withAutomaticPodsInstallationDisabled(
 
   let updated;
   if (projectRange == null) {
+    // `project` exists but isn't a `{...}` object literal we recognize (e.g.
+    // `project: someHelper()`) — inserting a second `project: {...}` ahead
+    // of it would be silently shadowed by the real one (last duplicate key
+    // wins), so refuse rather than report success for an edit that does
+    // nothing.
+    if (
+      findTopLevelKeyExists(masked, 'project', exportsOpen + 1, exportsClose)
+    ) {
+      return null;
+    }
     updated = insertFirstProperty(
       contents,
       exportsOpen,
@@ -1086,6 +1163,19 @@ function withAutomaticPodsInstallationDisabled(
       projectRange.close,
     );
     if (iosRange == null) {
+      // Same reasoning as above, one level down: `ios` exists (e.g.
+      // `ios: iosConfig`, a variable reference) but not as a `{...}` we can
+      // extend.
+      if (
+        findTopLevelKeyExists(
+          masked,
+          'ios',
+          projectRange.open + 1,
+          projectRange.close,
+        )
+      ) {
+        return null;
+      }
       updated = insertFirstProperty(
         contents,
         projectRange.open,
@@ -1135,7 +1225,7 @@ function withAutomaticPodsInstallationDisabled(
 function withAutomaticPodsInstallationEnabled(
   contents /*: string */,
 ) /*: string | null */ {
-  const masked = maskJsComments(contents);
+  const masked = maskJsCommentsAndStringValues(contents);
   const exportsMatch = /module\.exports\s*=\s*{/.exec(masked);
   if (!exportsMatch) {
     return null;

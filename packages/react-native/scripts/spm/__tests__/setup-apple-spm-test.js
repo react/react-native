@@ -959,6 +959,53 @@ describe('withAutomaticPodsInstallationDisabled', () => {
       /project:\s*{\s*ios:\s*{\s*automaticPodsInstallation: false,/,
     );
   });
+
+  it('refuses (returns null) rather than insert a duplicate `ios` key when `ios` is a variable reference', () => {
+    // `ios: iosConfig` isn't a `{...}` object literal we can extend.
+    // Inserting a second `ios: {...}` ahead of it would be silently
+    // shadowed at runtime by the real `iosConfig` value (JS lets the last
+    // duplicate key win) — the file would look edited but
+    // automaticPodsInstallation would still resolve to nothing.
+    const config =
+      'const iosConfig = {sourceDir: "./ios"};\n' +
+      'module.exports = {\n' +
+      '  project: {\n' +
+      '    ios: iosConfig,\n' +
+      '  },\n' +
+      '};\n';
+    expect(withAutomaticPodsInstallationDisabled(config)).toBeNull();
+  });
+
+  it('refuses (returns null) rather than insert a duplicate `project` key when `project` is a function call', () => {
+    const config =
+      'module.exports = {\n' + '  project: getProjectConfig(),\n' + '};\n';
+    expect(withAutomaticPodsInstallationDisabled(config)).toBeNull();
+  });
+
+  it('is not confused by a brace inside an unrelated string value', () => {
+    // A naive brace-depth scan over raw text sees this stray `{` and thinks
+    // depth never returns to 0 where it should, throwing off where `ios` is
+    // found relative to `project`.
+    const config =
+      'module.exports = {\n' +
+      '  project: {\n' +
+      '    ios: {\n' +
+      '      sourceDir: "{not a real brace",\n' +
+      '      automaticPodsInstallation: true,\n' +
+      '    },\n' +
+      '  },\n' +
+      '};\n';
+    expect(withAutomaticPodsInstallationDisabled(config)).toBe(
+      'module.exports = {\n' +
+        '  project: {\n' +
+        '    ios: {\n' +
+        '      sourceDir: "{not a real brace",\n' +
+        '      automaticPodsInstallation: false,\n' +
+        '    },\n' +
+        '  },\n' +
+        '};\n',
+    );
+  });
 });
 
 // ---------------------------------------------------------------------------
