@@ -1604,6 +1604,37 @@ async function setupXcodeproj(
   // would always look dirty and trigger a spurious confirmation prompt.
   const cleanBeforeEdits = gitTrackedAndClean(appRoot, pbxprojPath);
 
+  // Confirm BEFORE any mutation. `pod deintegrate`, the Podfile strip, the
+  // react-native.config.js edit, and the workspace cleanup below are only
+  // reversible via git (for the pbxproj — Podfile/config.js/workspace are
+  // plain fs writes, not even that) or the .spm-injected.json marker, which
+  // isn't written until injectSpmIntoExistingXcodeproj succeeds at the very
+  // end. Asking only right before that last step — after deintegrate had
+  // already run — meant declining still left `pod deintegrate` executed and
+  // its file edits on disk, with no record of any of it. The prompt exists
+  // to prevent exactly that kind of unrecoverable surprise, so it has to
+  // gate everything this function does, not just the pbxproj injection.
+  const clean = cleanBeforeEdits;
+  if (clean === false && !args.yes) {
+    const proceed = await promptYesNo(
+      `${path.basename(xcodeprojPath)} has uncommitted changes and no ` +
+        `backup is made (git is the only undo). ${
+          args.deintegrate ? 'Deintegrate CocoaPods and inject' : 'Inject'
+        } SPM packages anyway?`,
+      false,
+    );
+    if (!proceed) {
+      log('Aborted. Commit or stash the project, then re-run `spm add`.');
+      process.exitCode = 1;
+      throw new Error('In-place injection declined (dirty working tree)');
+    }
+  } else if (clean === null) {
+    log(
+      `\x1b[33mNote: ${path.basename(xcodeprojPath)} is not in a git ` +
+        `repo — no backup is made before in-place injection.\x1b[0m`,
+    );
+  }
+
   // Preserved across the `if` so it can be threaded into the marker below —
   // only recorded on runs that actually deintegrate; `update` runs without
   // `--deintegrate` pass `null` and injectSpmIntoExistingXcodeproj keeps
@@ -1638,6 +1669,9 @@ async function setupXcodeproj(
   }
 
   // Preflight: a still-CocoaPods-integrated pbxproj is the real build-breaker.
+  // (Only reachable here without --deintegrate, or if `pod deintegrate`
+  // itself failed to fully strip the target's Pods.xcconfig layering — the
+  // confirmation above already ran either way, so this doesn't skip it.)
   if (pbxprojUsesCocoaPods(xcodeprojPath)) {
     logError(
       `${path.basename(xcodeprojPath)} is CocoaPods-integrated. Re-run ` +
@@ -1653,28 +1687,6 @@ async function setupXcodeproj(
       '\x1b[33mNote: your Podfile still declares React Native integration. ' +
         'Remove it and avoid `pod install`, or it will re-break the SPM ' +
         'package graph.\x1b[0m',
-    );
-  }
-
-  // No backup is made — git is the safety net. Refuse on a dirty/untracked
-  // pbxproj (as it was BEFORE any deintegrate edits) unless --yes, so a bad
-  // inject is always `git checkout`-able.
-  const clean = cleanBeforeEdits;
-  if (clean === false && !args.yes) {
-    const proceed = await promptYesNo(
-      `${path.basename(xcodeprojPath)} has uncommitted changes and no ` +
-        `backup is made (git is the only undo). Inject SPM packages anyway?`,
-      false,
-    );
-    if (!proceed) {
-      log('Aborted. Commit or stash the project, then re-run `spm add`.');
-      process.exitCode = 1;
-      throw new Error('In-place injection declined (dirty working tree)');
-    }
-  } else if (clean === null) {
-    log(
-      `\x1b[33mNote: ${path.basename(xcodeprojPath)} is not in a git ` +
-        `repo — no backup is made before in-place injection.\x1b[0m`,
     );
   }
 
@@ -1694,6 +1706,23 @@ async function setupXcodeproj(
   });
   if (result.status !== 'injected') {
     logError(`SPM injection failed: ${result.reason}`);
+    if (args.deintegrate) {
+      // No .spm-injected.json marker exists to `deinit` from — injection
+      // never got far enough to write one — so this is the only guidance
+      // the user gets. `pod deintegrate` and the Podfile/config.js/workspace
+      // edits already happened and are only git-reversible for the pbxproj;
+      // the other two are plain fs writes.
+      logError(
+        '`pod deintegrate` already ran, and the Podfile / ' +
+          'react-native.config.js / .xcworkspace edits above are already on ' +
+          "disk — CocoaPods integration is gone, but SPM wasn't injected. " +
+          'Fix the issue above, then re-run `spm add --deintegrate`: each ' +
+          'of those steps is a no-op the second time, so it resumes cleanly ' +
+          'from here. To fully back out instead, `git checkout` the ' +
+          'pbxproj/Podfile and manually undo the react-native.config.js / ' +
+          '.xcworkspace edits.',
+      );
+    }
     process.exitCode = 1;
     throw new Error(result.reason);
   }
