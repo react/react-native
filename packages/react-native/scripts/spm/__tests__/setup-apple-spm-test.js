@@ -30,7 +30,6 @@ const {
   stripReactNativeFromPodfile,
   stripStockPostInstallBlock,
   withAutomaticPodsInstallationDisabled,
-  withAutomaticPodsInstallationEnabled,
 } = require('../../setup-apple-spm');
 const {REQUIRED_ARTIFACTS} = require('../download-spm-artifacts');
 const {SPM_INJECTED_MARKER} = require('../generate-spm-xcodeproj');
@@ -1009,46 +1008,6 @@ describe('withAutomaticPodsInstallationDisabled', () => {
 });
 
 // ---------------------------------------------------------------------------
-// withAutomaticPodsInstallationEnabled — the inverse used by `spm deinit` to
-// restore project.ios.automaticPodsInstallation after --deintegrate disabled
-// it.
-// ---------------------------------------------------------------------------
-
-describe('withAutomaticPodsInstallationEnabled', () => {
-  it('flips an existing `false` back to `true`', () => {
-    const config =
-      'module.exports = {\n' +
-      '  project: {\n' +
-      '    ios: {\n      automaticPodsInstallation: false,\n    },\n' +
-      '  },\n' +
-      '};\n';
-    expect(withAutomaticPodsInstallationEnabled(config)).toBe(
-      'module.exports = {\n' +
-        '  project: {\n' +
-        '    ios: {\n      automaticPodsInstallation: true,\n    },\n' +
-        '  },\n' +
-        '};\n',
-    );
-  });
-
-  it('returns null when the value is no longer `false` (hand-edited since)', () => {
-    const config =
-      'module.exports = {\n' +
-      '  project: {\n' +
-      '    ios: {\n      automaticPodsInstallation: true,\n    },\n' +
-      '  },\n' +
-      '};\n';
-    expect(withAutomaticPodsInstallationEnabled(config)).toBeNull();
-  });
-
-  it('returns null when project.ios is absent', () => {
-    expect(
-      withAutomaticPodsInstallationEnabled('module.exports = {};\n'),
-    ).toBeNull();
-  });
-});
-
-// ---------------------------------------------------------------------------
 // findExistingReactNativeConfig / disableAutomaticPodsInstallation —
 // disableAutomaticPodsInstallation must write to projectRoot (the only
 // directory @react-native-community/cli-config's cosmiconfig lookup
@@ -1203,7 +1162,42 @@ describe('restoreAutomaticPodsInstallation', () => {
     expect(fs.existsSync(result.configPath)).toBe(true);
   });
 
-  it('flips an edited file back to `true`', () => {
+  it('restores byte-for-byte when automaticPodsInstallation was originally ABSENT — does not leave `automaticPodsInstallation: true` behind', () => {
+    // Regression test: automaticPodsInstallation was never in this file.
+    // disableAutomaticPodsInstallation INSERTS the property (still `kind:
+    // 'edited'`, same as flipping an existing `true`) — restoring by
+    // "set the value back to `true`" would leave a property behind that
+    // never existed. Restoring the pre-edit snapshot must remove it
+    // entirely, reproducing the file exactly as it was.
+    const configPath = path.join(projectRoot, 'react-native.config.js');
+    const original =
+      'module.exports = {\n  project: { ios: { sourceDir: "./ios" } },\n};\n';
+    fs.writeFileSync(configPath, original);
+    const result = disableAutomaticPodsInstallation(projectRoot);
+    expect(result.kind).toBe('edited');
+    // Sanity: the edit really did insert the property (else this test
+    // wouldn't be exercising the case it's meant to).
+    expect(fs.readFileSync(configPath, 'utf8')).toContain(
+      'automaticPodsInstallation: false',
+    );
+    restoreAutomaticPodsInstallation(result);
+    expect(fs.readFileSync(configPath, 'utf8')).toBe(original);
+  });
+
+  it('restores byte-for-byte when automaticPodsInstallation was originally `true`', () => {
+    const configPath = path.join(projectRoot, 'react-native.config.js');
+    const original =
+      'module.exports = {\n' +
+      '  project: { ios: { automaticPodsInstallation: true, sourceDir: "./ios" } },\n' +
+      '};\n';
+    fs.writeFileSync(configPath, original);
+    const result = disableAutomaticPodsInstallation(projectRoot);
+    expect(result.kind).toBe('edited');
+    restoreAutomaticPodsInstallation(result);
+    expect(fs.readFileSync(configPath, 'utf8')).toBe(original);
+  });
+
+  it('leaves an edited file in place if the user has since edited it (does not overwrite their change)', () => {
     const configPath = path.join(projectRoot, 'react-native.config.js');
     fs.writeFileSync(
       configPath,
@@ -1211,10 +1205,11 @@ describe('restoreAutomaticPodsInstallation', () => {
     );
     const result = disableAutomaticPodsInstallation(projectRoot);
     expect(result.kind).toBe('edited');
+    const userEdited =
+      fs.readFileSync(configPath, 'utf8') + '// a note the user added\n';
+    fs.writeFileSync(configPath, userEdited);
     restoreAutomaticPodsInstallation(result);
-    expect(fs.readFileSync(configPath, 'utf8')).toContain(
-      'automaticPodsInstallation: true',
-    );
+    expect(fs.readFileSync(configPath, 'utf8')).toBe(userEdited);
   });
 
   it('is a no-op for already-disabled (we made no edit to undo)', () => {

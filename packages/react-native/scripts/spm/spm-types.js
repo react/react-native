@@ -39,9 +39,20 @@ export type SetupArgs = {
 // in the `.spm-injected.json` marker so `spm deinit`
 // (removeSpmInjection/generate-spm-xcodeproj.js) can undo exactly this and
 // nothing else.
+//
+// 'edited' carries a full before/after snapshot rather than just "flip
+// false back to true": the edit that produced `after` might have been
+// inserting `automaticPodsInstallation` where it was previously absent
+// (rather than flipping an existing `true`), and might have inserted a
+// wrapping `project`/`ios` object too — restoring by "set it back to
+// `true`" would leave a property (and possibly a whole object) behind that
+// never existed in the file to begin with. Reverting to the exact `before`
+// snapshot is correct regardless of which case produced `after`, as long as
+// nothing else has touched the file since (checked by comparing its current
+// contents to `after` before restoring — see restoreAutomaticPodsInstallation).
 export type AutomaticPodsInstallationResult =
   | {kind: 'created', configPath: string}
-  | {kind: 'edited', configPath: string}
+  | {kind: 'edited', configPath: string, before: string, after: string}
   | {kind: 'already-disabled', configPath: string}
   | {kind: 'unrecognized', configPath: string};
 

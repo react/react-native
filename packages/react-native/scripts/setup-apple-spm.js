@@ -1218,57 +1218,6 @@ function withAutomaticPodsInstallationDisabled(
     : null;
 }
 
-// Inverse of the 'edited' branch above: flips project.ios.automaticPodsInstallation
-// from `false` back to `true`. Used by `spm deinit` to restore what
-// `--deintegrate` changed. Returns null when the value isn't `false` at that
-// scope anymore (hand-edited since) — the caller should leave it alone.
-function withAutomaticPodsInstallationEnabled(
-  contents /*: string */,
-) /*: string | null */ {
-  const masked = maskJsCommentsAndStringValues(contents);
-  const exportsMatch = /module\.exports\s*=\s*{/.exec(masked);
-  if (!exportsMatch) {
-    return null;
-  }
-  const exportsOpen = exportsMatch.index + exportsMatch[0].length - 1;
-  const exportsClose = matchingBrace(masked, exportsOpen);
-  if (exportsClose == null) {
-    return null;
-  }
-  const projectRange = findTopLevelKeyObjectRange(
-    masked,
-    'project',
-    exportsOpen + 1,
-    exportsClose,
-  );
-  if (projectRange == null) {
-    return null;
-  }
-  const iosRange = findTopLevelKeyObjectRange(
-    masked,
-    'ios',
-    projectRange.open + 1,
-    projectRange.close,
-  );
-  if (iosRange == null) {
-    return null;
-  }
-  const existing = findTopLevelScalarValue(
-    masked,
-    'automaticPodsInstallation',
-    iosRange.open + 1,
-    iosRange.close,
-  );
-  if (existing == null || existing.value !== 'false') {
-    return null;
-  }
-  return (
-    contents.slice(0, existing.matchStart) +
-    'automaticPodsInstallation: true' +
-    contents.slice(existing.matchEnd)
-  );
-}
-
 // The exact contents disableAutomaticPodsInstallation writes when it creates
 // a fresh react-native.config.js. Used by restoreAutomaticPodsInstallation to
 // recognize "nobody touched this since we created it" before deleting it.
@@ -1316,24 +1265,33 @@ function restoreAutomaticPodsInstallation(
     }
     return;
   }
-  // result.kind === 'edited'
+  // result.kind === 'edited'. Restore the exact pre-edit snapshot rather
+  // than trying to reverse-engineer the specific edit (e.g. "set the value
+  // back to `true`") — the edit might have been INSERTING the property
+  // where it was previously absent (rather than flipping an existing
+  // `true`), and might have inserted a wrapping `project`/`ios` object too.
+  // "Flip it back to `true`" would leave those newly-created bits behind;
+  // writing back `before` verbatim restores whichever shape the file
+  // actually had. Only restore if the file still matches `after` exactly —
+  // otherwise something else has edited it since, and guessing risks
+  // clobbering that edit.
   if (!fs.existsSync(result.configPath)) {
     return;
   }
-  const orig = fs.readFileSync(result.configPath, 'utf8');
-  const restored = withAutomaticPodsInstallationEnabled(orig);
-  if (restored == null) {
+  if (fs.readFileSync(result.configPath, 'utf8') !== result.after) {
     log(
-      "\x1b[33mNote: couldn't automatically restore automaticPodsInstallation " +
-        'in react-native.config.js — it may have changed since `spm add ' +
-        '--deintegrate` disabled it. Set `project.ios.automaticPodsInstallation` ' +
-        'back to `true` yourself if you want CocoaPods to auto-install ' +
-        'again.\x1b[0m',
+      '\x1b[33mNote: react-native.config.js has changed since `spm add ' +
+        '--deintegrate` disabled automaticPodsInstallation — leaving it in ' +
+        'place. Set `project.ios.automaticPodsInstallation` back to `true` ' +
+        "(or remove the property, if it wasn't there originally) yourself " +
+        'if you want CocoaPods to auto-install again.\x1b[0m',
     );
     return;
   }
-  fs.writeFileSync(result.configPath, restored, 'utf8');
-  log('Re-enabled `automaticPodsInstallation` in react-native.config.js.');
+  fs.writeFileSync(result.configPath, result.before, 'utf8');
+  log(
+    'Restored react-native.config.js to its state before `spm add --deintegrate`.',
+  );
 }
 
 // Search order @react-native-community/cli-config's cosmiconfig setup uses
@@ -1414,7 +1372,7 @@ function disableAutomaticPodsInstallation(
   }
   fs.writeFileSync(existing, updated, 'utf8');
   log('Disabled `automaticPodsInstallation` in react-native.config.js.');
-  return {kind: 'edited', configPath: existing};
+  return {kind: 'edited', configPath: existing, before: orig, after: updated};
 }
 
 // Locate the .xcworkspace CocoaPods manages alongside the .xcodeproj — same
@@ -2118,7 +2076,6 @@ module.exports = {
   stripStockPostInstallBlock,
   podfileHasRnIntegration,
   withAutomaticPodsInstallationDisabled,
-  withAutomaticPodsInstallationEnabled,
   disableAutomaticPodsInstallation,
   restoreAutomaticPodsInstallation,
   findExistingReactNativeConfig,
