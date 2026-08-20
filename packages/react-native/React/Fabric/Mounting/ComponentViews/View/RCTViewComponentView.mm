@@ -1191,7 +1191,10 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
     _outlineLayer.frame = CGRectInset(
         layer.bounds, -_props->outlineOffset - _props->outlineWidth, -_props->outlineOffset - _props->outlineWidth);
 
-    if (areBorderRadiiCircular(borderMetrics.borderRadii) && borderMetrics.borderRadii.topLeft.horizontal == 0) {
+    // Core Animation can only draw solid contours, so dotted and dashed outlines
+    // have to be drawn with Core Graphics, the same way non-solid borders are.
+    if (_props->outlineStyle == OutlineStyle::Solid && areBorderRadiiCircular(borderMetrics.borderRadii) &&
+        borderMetrics.borderRadii.topLeft.horizontal == 0) {
       UIColor *outlineColor = RCTUIColorFromSharedColor(_props->outlineColor);
       _outlineLayer.borderWidth = _props->outlineWidth;
       _outlineLayer.borderColor = outlineColor.CGColor;

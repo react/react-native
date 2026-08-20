@@ -541,6 +541,33 @@ function BoxShadowExample(): React.Node {
   );
 }
 
+function OutlineStyleExample({
+  outlineStyle,
+  borderRadius,
+  label,
+}: {
+  outlineStyle: 'solid' | 'dashed' | 'dotted',
+  borderRadius: number,
+  label: string,
+}): React.Node {
+  return (
+    <View style={{alignItems: 'center', gap: 8}}>
+      <View
+        style={{
+          width: 50,
+          height: 50,
+          backgroundColor: 'lightgray',
+          borderRadius,
+          outlineWidth: 3,
+          outlineColor: 'purple',
+          outlineStyle,
+        }}
+      />
+      <RNTesterText style={{fontSize: 11}}>{label}</RNTesterText>
+    </View>
+  );
+}
+
 function OutlineExample(): React.Node {
   const defaultStyleSize = {width: 50, height: 50};
 
@@ -664,6 +691,36 @@ function OutlineExample(): React.Node {
             outlineColor: 'orange',
           },
         ]}
+      />
+      <OutlineStyleExample
+        outlineStyle="solid"
+        borderRadius={0}
+        label="square solid"
+      />
+      <OutlineStyleExample
+        outlineStyle="dashed"
+        borderRadius={0}
+        label="square dashed"
+      />
+      <OutlineStyleExample
+        outlineStyle="dotted"
+        borderRadius={0}
+        label="square dotted"
+      />
+      <OutlineStyleExample
+        outlineStyle="solid"
+        borderRadius={12}
+        label="rounded solid"
+      />
+      <OutlineStyleExample
+        outlineStyle="dashed"
+        borderRadius={12}
+        label="rounded dashed"
+      />
+      <OutlineStyleExample
+        outlineStyle="dotted"
+        borderRadius={12}
+        label="rounded dotted"
       />
     </View>
   );

@@ -9,6 +9,7 @@
 #import <XCTest/XCTest.h>
 #import <react/renderer/components/view/ViewProps.h>
 #import <react/renderer/components/view/ViewShadowNode.h>
+#import <react/renderer/graphics/Color.h>
 
 using namespace facebook::react;
 
@@ -235,6 +236,49 @@ static RCTViewComponentView *makeViewWithRole(bool accessible, const std::string
 {
   RCTViewComponentView *view = makeViewWithRole(true, "");
   XCTAssertFalse(view.canBecomeFocused);
+}
+
+#pragma mark - outline style on square corners (#57841)
+
+static RCTViewComponentView *makeViewWithOutlineStyle(OutlineStyle outlineStyle)
+{
+  RCTViewComponentView *view = [RCTViewComponentView new];
+  view.frame = CGRectMake(0, 0, 100, 100);
+
+  auto props = std::make_shared<ViewProps>();
+  props->outlineWidth = 8;
+  props->outlineColor = colorFromRGBA(255, 165, 0, 255);
+  props->outlineStyle = outlineStyle;
+
+  [view updateProps:props oldProps:ViewShadowNode::defaultSharedProps()];
+  [view finalizeUpdates:RNComponentViewUpdateMaskProps];
+
+  return view;
+}
+
+- (void)testSquareSolidOutlineUsesCoreAnimationBorder
+{
+  // Solid outlines keep the cheaper Core Animation path.
+  RCTViewComponentView *view = makeViewWithOutlineStyle(OutlineStyle::Solid);
+  CALayer *outlineLayer = [view valueForKey:@"_outlineLayer"];
+
+  XCTAssertNotNil(outlineLayer);
+  XCTAssertEqualWithAccuracy(outlineLayer.borderWidth, 8.0, 0.001);
+  XCTAssertNil(outlineLayer.contents);
+}
+
+- (void)testSquareDottedAndDashedOutlinesAreDrawnWithCoreGraphics
+{
+  // A view without border radii used to take the Core Animation path, which can
+  // only render solid contours, so `outlineStyle` was silently dropped.
+  for (OutlineStyle outlineStyle : {OutlineStyle::Dotted, OutlineStyle::Dashed}) {
+    RCTViewComponentView *view = makeViewWithOutlineStyle(outlineStyle);
+    CALayer *outlineLayer = [view valueForKey:@"_outlineLayer"];
+
+    XCTAssertNotNil(outlineLayer);
+    XCTAssertEqualWithAccuracy(outlineLayer.borderWidth, 0.0, 0.001);
+    XCTAssertNotNil(outlineLayer.contents);
+  }
 }
 
 @end
