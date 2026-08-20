@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <folly/dynamic.h>
 #include <react/renderer/core/EventPayload.h>
 #include <react/renderer/debug/DebugStringConvertible.h>

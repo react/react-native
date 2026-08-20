@@ -128,8 +128,14 @@ Pod::Spec.new do |s|
   s.subspec "components" do |ss|
     ss.subspec "root" do |sss|
       sss.source_files         = podspec_sources("react/renderer/components/root/**/*.{m,mm,cpp,h}", "react/renderer/components/root/**/*.{h}")
-      sss.exclude_files        = "react/renderer/components/root/tests"
+      sss.exclude_files        = ["react/renderer/components/root/tests", "react/renderer/components/root/React"]
       sss.header_dir           = "react/renderer/components/root"
+    end
+
+    ss.subspec "rootUmbrella" do |sss|
+      sss.source_files         = "react/renderer/components/root/React/*.h"
+      sss.header_dir           = "React"
+      sss.header_mappings_dir  = "react/renderer/components/root/React"
     end
 
     ss.subspec "view" do |sss|
@@ -148,7 +154,13 @@ Pod::Spec.new do |s|
     ss.subspec "scrollview" do |sss|
       sss.source_files         = podspec_sources("react/renderer/components/scrollview/**/*.{m,mm,cpp,h}", "react/renderer/components/scrollview/**/*.{h}")
       sss.header_dir           = "react/renderer/components/scrollview"
-      sss.exclude_files        = "react/renderer/components/scrollview/tests", "react/renderer/components/scrollview/platform/android"
+      sss.exclude_files        = "react/renderer/components/scrollview/tests", "react/renderer/components/scrollview/platform/android", "react/renderer/components/scrollview/React"
+    end
+
+    ss.subspec "scrollviewUmbrella" do |sss|
+      sss.source_files         = "react/renderer/components/scrollview/React/*.h"
+      sss.header_dir           = "React"
+      sss.header_mappings_dir  = "react/renderer/components/scrollview/React"
     end
 
     ss.subspec "legacyviewmanagerinterop" do |sss|

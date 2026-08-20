@@ -186,6 +186,10 @@ val preparePrefab by
                           "../ReactCommon/react/renderer/components/root/",
                           "react/renderer/components/root/",
                       ),
+                      Pair(
+                          "../ReactCommon/react/renderer/components/root/React/",
+                          "React/",
+                      ),
                       // runtimeexecutor
                       Pair("../ReactCommon/runtimeexecutor/", ""),
                       // react_renderer_textlayoutmanager
