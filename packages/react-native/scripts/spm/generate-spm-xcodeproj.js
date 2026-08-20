@@ -2501,15 +2501,31 @@ function injectSpmIntoExistingXcodeproj(
   // the whole marker, this field with it.
   const configCommand = opts.configCommand ?? prevMarker?.configCommand ?? null;
 
-  // Same set-or-preserve contract: only an `add --deintegrate` run computes
-  // this (setup-apple-spm.js's runDeintegrate); a later `update` without
-  // `--deintegrate` passes null and must not forget what the deintegrate run
-  // recorded. Read back by `spm deinit` (removeSpmInjection, below) to
-  // restore project.ios.automaticPodsInstallation.
-  const automaticPodsInstallation =
-    opts.automaticPodsInstallation ??
-    prevMarker?.automaticPodsInstallation ??
-    null;
+  // Only an `add --deintegrate` run computes this (setup-apple-spm.js's
+  // runDeintegrate); a later `update` without `--deintegrate` passes null
+  // and must not forget what a prior deintegrate run recorded. Read back by
+  // `spm deinit` (removeSpmInjection, below) to restore
+  // project.ios.automaticPodsInstallation.
+  //
+  // Unlike the plain set-or-preserve fields above, a non-null result here
+  // does NOT always mean "overwrite": 'created'/'edited' are the only kinds
+  // that represent an actual write THIS run made, so those are the only
+  // ones allowed to replace the record. 'already-disabled' (already false
+  // before this run touched it) and 'unrecognized' (couldn't parse the
+  // file) both mean "no write happened" — on a repeat `--deintegrate` run,
+  // the file is already false BECAUSE a prior run created/edited it, so a
+  // naive `??` here would replace that 'created'/'edited' record with
+  // 'already-disabled' and silently turn `deinit` into a no-op, leaving
+  // automaticPodsInstallation stuck at `false` forever. Preserve the prior
+  // record whenever this run made no write; only fall back to the current
+  // (non-mutating) result when there's no prior record to preserve.
+  const ranThisTime = opts.automaticPodsInstallation;
+  const thisRunWroteTheFile =
+    ranThisTime != null &&
+    (ranThisTime.kind === 'created' || ranThisTime.kind === 'edited');
+  const automaticPodsInstallation = thisRunWroteTheFile
+    ? ranThisTime
+    : (prevMarker?.automaticPodsInstallation ?? ranThisTime ?? null);
 
   // Marker: idempotency signal + the exact, reversible record of every edit so
   // `deinit` (removeSpmInjection) can undo precisely what was added.
