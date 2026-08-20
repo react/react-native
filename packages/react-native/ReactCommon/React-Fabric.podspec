@@ -250,6 +250,12 @@ Pod::Spec.new do |s|
     ss.header_dir           = "react/renderer/uimanager"
   end
 
+  s.subspec "uimanagerUmbrella" do |ss|
+    ss.source_files         = "react/renderer/uimanager/React/*.h"
+    ss.header_dir           = "React"
+    ss.header_mappings_dir  = "react/renderer/uimanager/React"
+  end
+
   s.subspec "leakchecker" do |ss|
     ss.source_files         = podspec_sources("react/renderer/leakchecker/**/*.{cpp,h}", "react/renderer/leakchecker/**/*.h")
     ss.exclude_files        = "react/renderer/leakchecker/tests"

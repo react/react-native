@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <react/renderer/core/ShadowNode.h>
 #include <react/renderer/graphics/Float.h>
 #include <functional>

@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <folly/dynamic.h>
 #include <jsi/JSIDynamic.h>
 #include <jsi/jsi.h>

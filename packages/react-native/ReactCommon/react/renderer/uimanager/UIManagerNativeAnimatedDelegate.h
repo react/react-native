@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <jsi/jsi.h>
 
 #include <react/renderer/componentregistry/ComponentDescriptorFactory.h>

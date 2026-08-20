@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <ReactCommon/CallInvoker.h>
 #include <react/renderer/core/ReactPrimitives.h>
 #include <chrono>
