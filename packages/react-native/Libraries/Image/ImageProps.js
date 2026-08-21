@@ -327,6 +327,7 @@ export type ImagePropsBase = Readonly<{
   children?: empty,
 }>;
 
+/** @build-types emit-as-interface react-native-web compatibility */
 export type ImageProps = Readonly<{
   ...ImagePropsIOS,
   ...ImagePropsAndroid,

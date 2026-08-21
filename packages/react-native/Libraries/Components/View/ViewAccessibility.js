@@ -349,6 +349,7 @@ export type AccessibilityPropsIOS = Readonly<{
   accessibilityRespondsToUserInteraction?: ?boolean,
 }>;
 
+/** @build-types emit-as-interface react-native-web compatibility */
 export type AccessibilityProps = Readonly<{
   ...AccessibilityPropsAndroid,
   ...AccessibilityPropsIOS,

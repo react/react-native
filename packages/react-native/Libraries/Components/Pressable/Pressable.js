@@ -32,6 +32,7 @@ export type PressableInstance = HostInstance;
 
 export type {PressableAndroidRippleConfig};
 
+/** @build-types emit-as-interface react-native-web compatibility */
 export type PressableStateCallbackType = Readonly<{
   pressed: boolean,
 }>;
