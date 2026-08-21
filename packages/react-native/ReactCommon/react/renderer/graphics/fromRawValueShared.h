@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 namespace facebook::react {
 using parsePlatformColorFn = SharedColor (*)(const ContextContainer &, int32_t, const RawValue &);
 

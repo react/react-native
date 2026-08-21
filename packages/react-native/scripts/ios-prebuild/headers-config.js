@@ -504,6 +504,18 @@ const PodspecExceptions /*: {[key: string]: PodSpecConfiguration} */ = {
       },
     ],
   },
+  'ReactCommon/react/renderer/graphics/React-graphics.podspec': {
+    name: 'React-graphics',
+    headerPatterns: ['*.h', 'platform/ios/**/*.h'],
+    headerDir: 'react/renderer/graphics',
+    subSpecs: [
+      {
+        name: 'GraphicsUmbrella',
+        headerPatterns: ['React/*.h'],
+        headerDir: 'React',
+      },
+    ],
+  },
   'React-Core.podspec': {
     name: 'React-Core',
     headerPatterns: [],

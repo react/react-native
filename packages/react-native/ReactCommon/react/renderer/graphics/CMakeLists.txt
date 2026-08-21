@@ -29,6 +29,7 @@ target_link_libraries(react_renderer_graphics
         glog
         ${fbjni}
         folly_runtime
+        react_cxxstableapi
         react_debug
         react_renderer_debug
         react_utils
