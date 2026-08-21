@@ -19,6 +19,8 @@ import AnimatedInterpolation from './AnimatedInterpolation';
 import AnimatedWithChildren from './AnimatedWithChildren';
 
 export default class AnimatedModulo extends AnimatedWithChildren {
+  __isNativeValueNode: boolean = true;
+
   _a: AnimatedNode;
   _modulus: number;
 

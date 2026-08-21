@@ -379,3 +379,115 @@ describe('composition nodes: native driver, interpolation and detach', () => {
     });
   }
 });
+
+// Regression test for https://github.com/facebook/react-native/issues/49719.
+// Listeners attached to a node *derived* from an `Animated.Value` (an operator
+// or an interpolation) must keep firing, on both drivers. On the native driver
+// the value is computed natively, so the derived node has to subscribe to
+// native updates for its own tag rather than relying on the JS graph.
+describe('addListener on derived value nodes', () => {
+  const derivedNodes = [
+    {
+      name: 'Animated.add',
+      make: (base: Animated.Value) => Animated.add(base, 10),
+      expected: 60,
+    },
+    {
+      name: 'Animated.subtract',
+      make: (base: Animated.Value) => Animated.subtract(base, 10),
+      expected: 40,
+    },
+    {
+      name: 'Animated.multiply',
+      make: (base: Animated.Value) => Animated.multiply(base, 2),
+      expected: 100,
+    },
+    {
+      name: 'Animated.divide',
+      make: (base: Animated.Value) => Animated.divide(base, 2),
+      expected: 25,
+    },
+    {
+      name: 'Animated.modulo',
+      make: (base: Animated.Value) => Animated.modulo(base, 7),
+      expected: 50 % 7,
+    },
+    {
+      name: 'interpolate',
+      make: (base: Animated.Value) =>
+        base.interpolate({inputRange: [0, 50], outputRange: [0, 500]}),
+      expected: 500,
+    },
+  ];
+
+  for (const useNativeDriver of [false, true]) {
+    const driverName = useNativeDriver ? 'native driver' : 'JS driver';
+
+    for (const {name, make, expected} of derivedNodes) {
+      it(`${name} notifies its listeners on the ${driverName}`, () => {
+        let base: ?Animated.Value;
+        let node: ?Animated.Node;
+
+        function MyApp() {
+          const value = useAnimatedValue(0);
+          base = value;
+          node = make(value);
+          return (
+            <Animated.View
+              style={[
+                {width: 100, height: 100},
+                {transform: [{translateX: node}]},
+              ]}
+            />
+          );
+        }
+
+        const root = Fantom.createRoot();
+        Fantom.runTask(() => {
+          root.render(<MyApp />);
+        });
+
+        // The listener is attached before the node is made native, so this also
+        // covers the subscription being created from `__makeNative`.
+        const values: Array<number> = [];
+        const listenerId = nullthrows(node).addListener(state => {
+          values.push(state.value);
+        });
+
+        let animation: ?Animated.CompositeAnimation;
+        Fantom.runTask(() => {
+          animation = Animated.timing(nullthrows(base), {
+            toValue: 50,
+            duration: 100,
+            useNativeDriver,
+          });
+          animation.start();
+        });
+        Fantom.unstable_produceFramesForDuration(200);
+        Fantom.runWorkLoop();
+
+        expect(values.length).toBeGreaterThan(0);
+        expect(values[values.length - 1]).toBeCloseTo(expected, 0);
+
+        // Removing the listener stops the updates.
+        nullthrows(node).removeListener(listenerId);
+        const countAfterRemoval = values.length;
+        Fantom.runTask(() => {
+          nullthrows(base).setValue(0);
+        });
+        Fantom.unstable_produceFramesForDuration(32);
+        Fantom.runWorkLoop();
+        expect(values.length).toBe(countAfterRemoval);
+
+        Fantom.runTask(() => {
+          nullthrows(animation).stop();
+        });
+        Fantom.runTask(() => {
+          root.render(<Animated.View style={{width: 1, height: 1}} />);
+        });
+        Fantom.unstable_produceFramesForDuration(16);
+        Fantom.runWorkLoop();
+      });
+    }
+  }
+});

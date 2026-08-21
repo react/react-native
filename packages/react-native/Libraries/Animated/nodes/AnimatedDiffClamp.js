@@ -19,6 +19,8 @@ import AnimatedInterpolation from './AnimatedInterpolation';
 import AnimatedWithChildren from './AnimatedWithChildren';
 
 export default class AnimatedDiffClamp extends AnimatedWithChildren {
+  __isNativeValueNode: boolean = true;
+
   _a: AnimatedNode;
   _min: number;
   _max: number;

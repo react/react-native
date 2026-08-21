@@ -8,6 +8,7 @@
  * @format
  */
 
+import type {EventSubscription} from '../../vendor/emitter/EventEmitter';
 import type {PlatformConfig} from '../AnimatedPlatformConfig';
 
 import NativeAnimatedHelper from '../../../src/private/animated/NativeAnimatedHelper';
@@ -54,7 +55,12 @@ export default class AnimatedNode {
       this.removeAllListeners();
     }
     if (this.__isNative && this.__nativeTag != null) {
-      NativeAnimatedHelper.API.dropAnimatedNode(this.__nativeTag);
+      const nativeTag = this.__nativeTag;
+      // The subscription must not outlive the native tag it observes. Any
+      // listeners kept around are re-subscribed by `__makeNative` if this node
+      // is attached again.
+      this.__updateSubscription?.remove();
+      NativeAnimatedHelper.API.dropAnimatedNode(nativeTag);
       this.__nativeTag = undefined;
     }
   }
@@ -73,6 +79,19 @@ export default class AnimatedNode {
   __nativeTag: ?number = undefined;
   __disableBatchingForNativeCreate: ?boolean = undefined;
 
+  /**
+   * Whether the native node backing this one holds a number, and therefore
+   * supports `startListeningToAnimatedNodeValue`. That native module method
+   * only accepts tags of "value" nodes (`ValueAnimatedNode` on Android and in
+   * C++, `RCTValueAnimatedNode` on iOS); passing any other tag throws on
+   * Android and is a no-op elsewhere.
+   *
+   * Subclasses backed by a non-value native node — props, style, transform,
+   * object, tracking and color — must leave this `false`.
+   */
+  __isNativeValueNode: boolean = false;
+  __updateSubscription: ?EventSubscription = null;
+
   __makeNative(platformConfig: ?PlatformConfig): void {
     // Subclasses are expected to set `__isNative` to true before this.
     invariant(
@@ -81,6 +100,9 @@ export default class AnimatedNode {
     );
 
     this._platformConfig = platformConfig;
+    if (this._listeners.size > 0) {
+      this.__ensureUpdateSubscriptionExists();
+    }
   }
 
   /**
@@ -93,6 +115,9 @@ export default class AnimatedNode {
   addListener(callback: (value: any) => unknown): string {
     const id = String(_uniqueId++);
     this._listeners.set(id, callback);
+    if (this.__isNative) {
+      this.__ensureUpdateSubscriptionExists();
+    }
     return id;
   }
 
@@ -104,6 +129,9 @@ export default class AnimatedNode {
    */
   removeListener(id: string): void {
     this._listeners.delete(id);
+    if (this.__isNative && this._listeners.size === 0) {
+      this.__updateSubscription?.remove();
+    }
   }
 
   /**
@@ -113,14 +141,53 @@ export default class AnimatedNode {
    */
   removeAllListeners(): void {
     this._listeners.clear();
+    if (this.__isNative) {
+      this.__updateSubscription?.remove();
+    }
   }
 
   hasListeners(): boolean {
     return this._listeners.size > 0;
   }
 
-  __onAnimatedValueUpdateReceived(value: number, offset: number): void {
-    this.__callListeners(value + offset);
+  /**
+   * Subscribes to native updates of this node's value, so that listeners keep
+   * firing for natively driven animations. No-op for nodes that are not backed
+   * by a native "value" node.
+   */
+  __ensureUpdateSubscriptionExists(): void {
+    if (!this.__isNativeValueNode || this.__updateSubscription != null) {
+      return;
+    }
+    const nativeTag = this.__getNativeTag();
+    NativeAnimatedHelper.API.startListeningToAnimatedNodeValue(nativeTag);
+    const subscription: EventSubscription =
+      NativeAnimatedHelper.nativeEventEmitter.addListener(
+        'onAnimatedValueUpdate',
+        data => {
+          if (data.tag === nativeTag) {
+            this.__onAnimatedValueUpdateReceived(data.value, data.offset);
+          }
+        },
+      );
+
+    this.__updateSubscription = {
+      remove: () => {
+        // Only this function assigns to `this.__updateSubscription`.
+        if (this.__updateSubscription == null) {
+          return;
+        }
+        this.__updateSubscription = null;
+        subscription.remove();
+        NativeAnimatedHelper.API.stopListeningToAnimatedNodeValue(nativeTag);
+      },
+    };
+  }
+
+  // NOTE: `offset` is omitted by backends that do not track one separately
+  // (e.g. the C++ backend), in which case it is already folded into `value`.
+  __onAnimatedValueUpdateReceived(value: number, offset?: ?number): void {
+    this.__callListeners(value + (offset ?? 0));
   }
 
   __callListeners(value: number): void {

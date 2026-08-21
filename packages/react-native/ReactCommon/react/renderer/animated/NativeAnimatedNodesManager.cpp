@@ -51,6 +51,33 @@ struct NodesQueueItem {
   bool connectedToFinishedAnimation;
 };
 
+// Whether `type` is backed by a `ValueAnimatedNode` subclass, i.e. whether the
+// node holds a number that can be observed. Kept exhaustive (no `default`) so
+// that adding a node type is a compile error until it is classified here.
+bool isValueNodeType(AnimatedNodeType type) noexcept {
+  switch (type) {
+    case AnimatedNodeType::Value:
+    case AnimatedNodeType::Interpolation:
+    case AnimatedNodeType::Addition:
+    case AnimatedNodeType::Subtraction:
+    case AnimatedNodeType::Division:
+    case AnimatedNodeType::Multiplication:
+    case AnimatedNodeType::Modulus:
+    case AnimatedNodeType::Diffclamp:
+    case AnimatedNodeType::Round:
+      return true;
+    case AnimatedNodeType::Style:
+    case AnimatedNodeType::Props:
+    case AnimatedNodeType::Transform:
+    case AnimatedNodeType::Tracking:
+    case AnimatedNodeType::Color:
+    case AnimatedNodeType::Object:
+      return false;
+  }
+  // Unreachable: the switch above is exhaustive.
+  return false;
+}
+
 void mergeObjects(folly::dynamic& out, const folly::dynamic& objectToMerge) {
   react_native_assert(objectToMerge.isObject());
   if (out.isObject() && !out.empty()) {
@@ -921,8 +948,8 @@ void NativeAnimatedNodesManager::resolvePlatformColor(
 void NativeAnimatedNodesManager::startListeningToAnimatedNodeValue(
     Tag tag,
     ValueListenerCallback&& callback) noexcept {
-  if (auto iter = animatedNodes_.find(tag); iter != animatedNodes_.end() &&
-      iter->second->type() == AnimatedNodeType::Value) {
+  if (auto iter = animatedNodes_.find(tag);
+      iter != animatedNodes_.end() && isValueNodeType(iter->second->type())) {
     static_cast<ValueAnimatedNode*>(iter->second.get())
         ->setValueListener(std::move(callback));
   } else {
@@ -933,8 +960,8 @@ void NativeAnimatedNodesManager::startListeningToAnimatedNodeValue(
 
 void NativeAnimatedNodesManager::stopListeningToAnimatedNodeValue(
     Tag tag) noexcept {
-  if (auto iter = animatedNodes_.find(tag); iter != animatedNodes_.end() &&
-      iter->second->type() == AnimatedNodeType::Value) {
+  if (auto iter = animatedNodes_.find(tag);
+      iter != animatedNodes_.end() && isValueNodeType(iter->second->type())) {
     static_cast<ValueAnimatedNode*>(iter->second.get())
         ->setValueListener(nullptr);
   } else {

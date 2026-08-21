@@ -444,6 +444,8 @@ function sampleEasingStops(
 export default class AnimatedInterpolation<
   OutputT extends InterpolationConfigSupportedOutputType,
 > extends AnimatedWithChildren {
+  __isNativeValueNode: boolean = true;
+
   _parent: AnimatedNode;
   _config: InterpolationConfigType<OutputT>;
   _interpolation: ?(input: number) => OutputT;

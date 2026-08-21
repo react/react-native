@@ -12,6 +12,7 @@
 #include <react/renderer/animated/nodes/ObjectAnimatedNode.h>
 #include <react/renderer/core/ReactRootViewTagGenerator.h>
 #include <react/renderer/graphics/Color.h>
+#include <vector>
 
 namespace facebook::react {
 
@@ -252,6 +253,85 @@ TEST_F(AnimatedNodeTests, RoundAnimatedNodeUsesNearestConfigKey) {
   // 12.6 rounded to nearest 5.0 should be 15.0 (since round(12.6/5) * 5 = 3 *
   // 5)
   EXPECT_DOUBLE_EQ(nodesManager_->getValue(roundTag).value(), 15.0);
+}
+
+TEST_F(AnimatedNodeTests, StartListeningToDerivedValueNode) {
+  // Every node that derives from ValueAnimatedNode holds an observable number,
+  // so `startListeningToAnimatedNodeValue` must accept it — not only nodes of
+  // type "value". See https://github.com/facebook/react-native/issues/49719.
+  initNodesManager();
+
+  auto rootTag = getNextRootViewTag();
+
+  auto valueTag = ++rootTag;
+  auto addendTag = ++rootTag;
+  auto additionTag = ++rootTag;
+
+  nodesManager_->createAnimatedNode(
+      valueTag,
+      folly::dynamic::object("type", "value")("value", 0)("offset", 0));
+  nodesManager_->createAnimatedNode(
+      addendTag,
+      folly::dynamic::object("type", "value")("value", 10)("offset", 0));
+  nodesManager_->createAnimatedNode(
+      additionTag,
+      folly::dynamic::object("type", "addition")(
+          "input", folly::dynamic::array(valueTag, addendTag)));
+  nodesManager_->connectAnimatedNodes(valueTag, additionTag);
+  nodesManager_->connectAnimatedNodes(addendTag, additionTag);
+
+  std::vector<double> observedValues;
+  nodesManager_->startListeningToAnimatedNodeValue(
+      additionTag,
+      [&observedValues](double value) { observedValues.push_back(value); });
+
+  runAnimationFrame(0);
+
+  nodesManager_->setAnimatedNodeValue(valueTag, 32);
+  runAnimationFrame(0);
+
+  ASSERT_FALSE(observedValues.empty());
+  EXPECT_DOUBLE_EQ(observedValues.back(), 42);
+
+  nodesManager_->stopListeningToAnimatedNodeValue(additionTag);
+
+  const auto countAfterStop = observedValues.size();
+  nodesManager_->setAnimatedNodeValue(valueTag, 0);
+  runAnimationFrame(0);
+
+  EXPECT_EQ(observedValues.size(), countAfterStop);
+}
+
+TEST_F(AnimatedNodeTests, StartListeningToNonValueNodeIsIgnored) {
+  // Nodes that do not hold a number cannot be observed. Registering a listener
+  // on one must be a no-op rather than an unchecked cast.
+  initNodesManager();
+
+  auto rootTag = getNextRootViewTag();
+
+  auto valueTag = ++rootTag;
+  auto transformTag = ++rootTag;
+
+  nodesManager_->createAnimatedNode(
+      valueTag,
+      folly::dynamic::object("type", "value")("value", 1)("offset", 0));
+  nodesManager_->createAnimatedNode(
+      transformTag,
+      folly::dynamic::object("type", "transform")(
+          "transforms",
+          folly::dynamic::array(
+              folly::dynamic::object("type", "animated")(
+                  "property", "translateX")("nodeTag", valueTag))));
+  nodesManager_->connectAnimatedNodes(valueTag, transformTag);
+
+  bool called = false;
+  nodesManager_->startListeningToAnimatedNodeValue(
+      transformTag, [&called](double /*value*/) { called = true; });
+
+  nodesManager_->setAnimatedNodeValue(valueTag, 5);
+  runAnimationFrame(0);
+
+  EXPECT_FALSE(called);
 }
 
 TEST_F(AnimatedNodeTests, SetOffsetReturnsFalseWhenUnchanged) {

@@ -20,6 +20,8 @@ import AnimatedValue from './AnimatedValue';
 import AnimatedWithChildren from './AnimatedWithChildren';
 
 export default class AnimatedDivision extends AnimatedWithChildren {
+  __isNativeValueNode: boolean = true;
+
   _a: AnimatedNode;
   _b: AnimatedNode;
   _warnedAboutDivideByZero: boolean = false;
