@@ -259,6 +259,18 @@ internal object ViewManagersPropertyCache {
     }
   }
 
+  private class BoxedFloatPropSetter(prop: ReactProp, setter: Method) :
+      PropSetter(prop, "number", setter) {
+
+    override fun getValueOrDefault(value: Any?, context: Context): Any? {
+      if (value != null) {
+        // All numbers from JS are Doubles which can't be simply cast to Float
+        return if (value is Double) value.toFloat() else value as Float
+      }
+      return null
+    }
+  }
+
   private class BoxedIntPropSetter : PropSetter {
 
     constructor(prop: ReactProp, setter: Method) : super(prop, "number", setter)
@@ -391,6 +403,7 @@ internal object ViewManagersPropertyCache {
             DoublePropSetter(annotation, method, annotation.defaultDouble)
         String::class.java -> StringPropSetter(annotation, method)
         java.lang.Boolean::class.java -> BoxedBooleanPropSetter(annotation, method)
+        java.lang.Float::class.java -> BoxedFloatPropSetter(annotation, method)
         java.lang.Integer::class.java ->
             if ("Color" == annotation.customType) {
               BoxedColorPropSetter(annotation, method)

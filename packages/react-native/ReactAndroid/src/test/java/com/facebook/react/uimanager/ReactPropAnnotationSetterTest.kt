@@ -39,6 +39,8 @@ class ReactPropAnnotationSetterTest {
 
     fun onBoxedBooleanSetterCalled(value: Boolean?)
 
+    fun onBoxedFloatSetterCalled(value: Float?)
+
     fun onBoxedIntSetterCalled(value: Int?)
 
     fun onArraySetterCalled(value: ReadableArray?)
@@ -126,6 +128,11 @@ class ReactPropAnnotationSetterTest {
     @ReactProp(name = "boxedIntProp")
     fun setBoxedIntProp(v: View?, value: Int?) {
       viewManagerUpdatesReceiver.onBoxedIntSetterCalled(value)
+    }
+
+    @ReactProp(name = "boxedFloatProp")
+    fun setBoxedFloatProp(v: View?, value: Float?) {
+      viewManagerUpdatesReceiver.onBoxedFloatSetterCalled(value)
     }
 
     @ReactProp(name = "arrayProp")
@@ -310,6 +317,22 @@ class ReactPropAnnotationSetterTest {
     Mockito.reset(updatesReceiverMock)
     viewManager.updateProperties(targetView, buildStyles("boxedIntProp", null))
     Mockito.verify(updatesReceiverMock).onBoxedIntSetterCalled(null)
+    Mockito.verifyNoMoreInteractions(updatesReceiverMock)
+    Mockito.reset(updatesReceiverMock)
+  }
+
+  @Test
+  fun testBoxedFloatSetter() {
+    viewManager.updateProperties(targetView, buildStyles("boxedFloatProp", 3.5))
+    Mockito.verify(updatesReceiverMock).onBoxedFloatSetterCalled(3.5f)
+    Mockito.verifyNoMoreInteractions(updatesReceiverMock)
+    Mockito.reset(updatesReceiverMock)
+    viewManager.updateProperties(targetView, buildStyles("boxedFloatProp", -7.0))
+    Mockito.verify(updatesReceiverMock).onBoxedFloatSetterCalled(-7.0f)
+    Mockito.verifyNoMoreInteractions(updatesReceiverMock)
+    Mockito.reset(updatesReceiverMock)
+    viewManager.updateProperties(targetView, buildStyles("boxedFloatProp", null))
+    Mockito.verify(updatesReceiverMock).onBoxedFloatSetterCalled(null)
     Mockito.verifyNoMoreInteractions(updatesReceiverMock)
     Mockito.reset(updatesReceiverMock)
   }
