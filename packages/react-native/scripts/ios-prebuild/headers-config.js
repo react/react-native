@@ -504,6 +504,19 @@ const PodspecExceptions /*: {[key: string]: PodSpecConfiguration} */ = {
       },
     ],
   },
+  'ReactCommon/callinvoker/React-callinvoker.podspec': {
+    name: 'React-callinvoker',
+    headerPatterns: ['**/*.h'],
+    excludePatterns: ['React/**'],
+    headerDir: 'ReactCommon',
+    subSpecs: [
+      {
+        name: 'CallInvokerUmbrella',
+        headerPatterns: ['React/*.h'],
+        headerDir: 'React',
+      },
+    ],
+  },
   'ReactCommon/react/renderer/graphics/React-graphics.podspec': {
     name: 'React-graphics',
     headerPatterns: ['*.h', 'platform/ios/**/*.h'],

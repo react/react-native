@@ -16,6 +16,12 @@ else
   source[:tag] = "v#{version}"
 end
 
+header_search_paths = []
+
+if ENV['USE_FRAMEWORKS']
+  header_search_paths << "\"$(PODS_TARGET_SRCROOT)/..\"" # ReactCommon, for <react/cxxstableapi/...>
+end
+
 Pod::Spec.new do |s|
   s.name                   = "React-callinvoker"
   s.version                = version
@@ -26,7 +32,17 @@ Pod::Spec.new do |s|
   s.platforms              = min_supported_versions
   s.source                 = source
   s.source_files           = podspec_sources("**/*.{cpp,h}", "**/*.h")
+  s.exclude_files          = "React"
+  s.pod_target_xcconfig    = { "HEADER_SEARCH_PATHS" => header_search_paths.join(' ') }
   s.header_dir             = "ReactCommon"
+
+  s.subspec "CallInvokerUmbrella" do |ss|
+    ss.source_files        = "React/*.h"
+    ss.header_dir          = "React"
+    ss.header_mappings_dir = "React"
+  end
+
+  s.dependency "React-cxxstableapi"
 
   mark_as_react_native_build(s)
 end
