@@ -11,6 +11,7 @@ import android.content.Context
 import android.view.View
 import com.facebook.common.logging.FLog
 import com.facebook.react.bridge.ColorPropConverter
+import com.facebook.react.bridge.DimensionPropConverter
 import com.facebook.react.bridge.Dynamic
 import com.facebook.react.bridge.DynamicFromObject
 import com.facebook.react.bridge.JSApplicationIllegalArgumentException
@@ -18,6 +19,7 @@ import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.uimanager.annotations.ReactProp
 import com.facebook.react.uimanager.annotations.ReactPropGroup
+import com.facebook.yoga.YogaValue
 import java.lang.reflect.Method
 
 /**
@@ -190,6 +192,15 @@ internal object ViewManagersPropertyCache {
       }
       return ColorPropConverter.getColor(value, context)
     }
+  }
+
+  private class DimensionPropSetter(prop: ReactProp, setter: Method) :
+      PropSetter(prop, "mixed", setter) {
+
+    // A DimensionValue arrives from JS as either a number (points) or a string
+    // (e.g. "100%"), and is nullable, so the conversion is delegated wholesale.
+    override fun getValueOrDefault(value: Any?, context: Context): Any? =
+        DimensionPropConverter.getDimension(value)
   }
 
   private class BooleanPropSetter(
@@ -399,6 +410,7 @@ internal object ViewManagersPropertyCache {
             }
         ReadableArray::class.java -> ArrayPropSetter(annotation, method)
         ReadableMap::class.java -> MapPropSetter(annotation, method)
+        YogaValue::class.java -> DimensionPropSetter(annotation, method)
         else ->
             throw RuntimeException(
                 "Unrecognized type: $propTypeClass for method: ${method.declaringClass.name}#${method.name}",
