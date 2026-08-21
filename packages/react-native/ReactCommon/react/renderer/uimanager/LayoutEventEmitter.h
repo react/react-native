@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <react/renderer/uimanager/UIManagerCommitHook.h>
 
 namespace facebook::react {

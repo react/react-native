@@ -18,6 +18,7 @@ target_link_libraries(react_renderer_uimanager
         folly_runtime
         jsi
         react_cxxreact
+        react_cxxstableapi
         react_debug
         react_featureflags
         react_renderer_componentregistry

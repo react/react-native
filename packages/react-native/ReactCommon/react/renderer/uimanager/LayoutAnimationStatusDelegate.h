@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 namespace facebook::react {
 
 class LayoutAnimationStatusDelegate {
