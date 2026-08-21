@@ -204,6 +204,11 @@ const APIs: Array<RNTesterModuleInfo> = (
       module: require('../examples/AppState/AppStateExample'),
     },
     {
+      key: 'BlobExample',
+      category: 'Basic',
+      module: require('../examples/Blob/BlobExample'),
+    },
+    {
       key: 'URLExample',
       category: 'Basic',
       module: require('../examples/Urls/UrlExample'),

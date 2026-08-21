@@ -99,6 +99,7 @@ class QueueingNativeMethodCallInvoker final : public NativeMethodCallInvoker {
 @interface RCTTestArrayBufferTurboModule : NSObject <RCTBridgeModule>
 
 @property (nonatomic, copy) NSData *lastReceivedPayload;
+@property (nonatomic, copy) NSArray<RCTArrayBuffer *> *storedArrayBufferArrayElements;
 @property (nonatomic, assign) BOOL sawAliasedBytes;
 @property (nonatomic, assign) BOOL sawUnownedBytes;
 
@@ -156,6 +157,71 @@ RCT_EXPORT_MODULE()
   }
 
   resolve(createIntegerSequenceBuffer(static_cast<NSUInteger>(size)));
+}
+
+- (NSNumber *)testMethodWhichSumsArrayBufferArray:(NSArray<RCTArrayBuffer *> *)buffers
+{
+  uint64_t checksum = 0;
+  for (id value in buffers) {
+    if (![value isKindOfClass:[RCTArrayBuffer class]]) {
+      continue;
+    }
+
+    RCTArrayBuffer *buffer = (RCTArrayBuffer *)value;
+    const auto *bytes = static_cast<const uint8_t *>(buffer.mutableBytes);
+    if (bytes == nullptr) {
+      continue;
+    }
+
+    std::span<const uint8_t> byteSpan(bytes, static_cast<size_t>(buffer.length));
+    for (auto byte : byteSpan) {
+      checksum += byte;
+    }
+  }
+  return @(checksum);
+}
+
+- (NSNumber *)testMethodWhichChecksArrayBufferArrayAliasing:(NSArray<RCTArrayBuffer *> *)buffers
+{
+  self.sawAliasedBytes = NO;
+  self.sawUnownedBytes = NO;
+  if (buffers.count == 0) {
+    return @(YES);
+  }
+
+  BOOL allAliased = YES;
+  BOOL allUnowned = YES;
+  for (id value in buffers) {
+    if (![value isKindOfClass:[RCTArrayBuffer class]]) {
+      continue;
+    }
+
+    RCTArrayBuffer *buffer = (RCTArrayBuffer *)value;
+    auto *bytes = static_cast<uint8_t *>(buffer.mutableBytes);
+    if (bytes != nullptr && buffer.length > 0) {
+      bytes[0] = 77;
+      if (bytes[0] != 77) {
+        allAliased = NO;
+      }
+    }
+    if (buffer.isOwningBytes) {
+      allUnowned = NO;
+    }
+  }
+  self.sawAliasedBytes = allAliased;
+  self.sawUnownedBytes = allUnowned;
+  return @(YES);
+}
+
+- (void)testMethodWhichStoresArrayBufferArrayElements:(NSArray *)buffers
+{
+  NSMutableArray<RCTArrayBuffer *> *stored = [NSMutableArray array];
+  for (id value in buffers) {
+    if ([value isKindOfClass:[RCTArrayBuffer class]]) {
+      [stored addObject:(RCTArrayBuffer *)value];
+    }
+  }
+  self.storedArrayBufferArrayElements = stored;
 }
 
 @end
@@ -496,6 +562,191 @@ RCT_EXPORT_MODULE()
   XCTAssertEqual(resolvedBytes[1], 1);
   XCTAssertEqual(resolvedBytes[2], 2);
   XCTAssertEqual(resolvedBytes[3], 3);
+}
+
+- (void)testSyncArrayBufferArrayRoundTrip
+{
+  auto hermesRuntime = createHermesRuntime();
+  facebook::jsi::Runtime *rt = hermesRuntime.get();
+  auto *instance = [RCTTestArrayBufferTurboModule new];
+
+  ObjCTurboModule::InitParams params = {
+      .moduleName = "TestModule",
+      .instance = instance,
+      .jsInvoker = nullptr,
+      .nativeMethodCallInvoker = std::make_shared<ImmediateNativeMethodCallInvoker>(),
+      .isSyncModule = false,
+  };
+  ObjCTurboModule module(params);
+
+  auto jsArray = rt->global()
+                     .getPropertyAsFunction(*rt, "eval")
+                     .call(*rt, "[new Uint8Array([1, 2]).buffer, new Uint8Array([3]).buffer]")
+                     .asObject(*rt)
+                     .getArray(*rt);
+  facebook::jsi::Value args[1] = {facebook::jsi::Value(*rt, jsArray)};
+
+  auto result = module.invokeObjCMethod(
+      *rt,
+      NumberKind,
+      "testMethodWhichSumsArrayBufferArray",
+      @selector(testMethodWhichSumsArrayBufferArray:),
+      args,
+      1);
+
+  XCTAssertTrue(result.isNumber());
+  XCTAssertEqual(result.getNumber(), 7.0);
+}
+
+- (void)testEmptyArrayBufferArrayRoundTrip
+{
+  auto hermesRuntime = createHermesRuntime();
+  facebook::jsi::Runtime *rt = hermesRuntime.get();
+  auto *instance = [RCTTestArrayBufferTurboModule new];
+
+  ObjCTurboModule::InitParams params = {
+      .moduleName = "TestModule",
+      .instance = instance,
+      .jsInvoker = nullptr,
+      .nativeMethodCallInvoker = std::make_shared<ImmediateNativeMethodCallInvoker>(),
+      .isSyncModule = false,
+  };
+  ObjCTurboModule module(params);
+
+  auto jsArray = rt->global().getPropertyAsFunction(*rt, "eval").call(*rt, "[]").asObject(*rt).getArray(*rt);
+  facebook::jsi::Value args[1] = {facebook::jsi::Value(*rt, jsArray)};
+
+  auto result = module.invokeObjCMethod(
+      *rt,
+      NumberKind,
+      "testMethodWhichSumsArrayBufferArray",
+      @selector(testMethodWhichSumsArrayBufferArray:),
+      args,
+      1);
+
+  XCTAssertTrue(result.isNumber());
+  XCTAssertEqual(result.getNumber(), 0.0);
+}
+
+- (void)testNonArrayBufferElementsInArrayBufferArrayAreIgnored
+{
+  auto hermesRuntime = createHermesRuntime();
+  facebook::jsi::Runtime *rt = hermesRuntime.get();
+  auto *instance = [RCTTestArrayBufferTurboModule new];
+
+  ObjCTurboModule::InitParams params = {
+      .moduleName = "TestModule",
+      .instance = instance,
+      .jsInvoker = nullptr,
+      .nativeMethodCallInvoker = std::make_shared<ImmediateNativeMethodCallInvoker>(),
+      .isSyncModule = false,
+  };
+  ObjCTurboModule module(params);
+
+  auto jsArray =
+      rt->global().getPropertyAsFunction(*rt, "eval").call(*rt, "[1, 2, 3]").asObject(*rt).getArray(*rt);
+  facebook::jsi::Value args[1] = {facebook::jsi::Value(*rt, jsArray)};
+
+  auto result = module.invokeObjCMethod(
+      *rt,
+      NumberKind,
+      "testMethodWhichSumsArrayBufferArray",
+      @selector(testMethodWhichSumsArrayBufferArray:),
+      args,
+      1);
+
+  XCTAssertTrue(result.isNumber());
+  XCTAssertEqual(result.getNumber(), 0.0);
+}
+
+// Every JS-heap element in a sync Array<ArrayBuffer> argument must alias its source buffer, not just
+// the first one.
+- (void)testJSBackedArrayBufferArrayElementsAreNotCopiedDuringTheCall
+{
+  auto hermesRuntime = createHermesRuntime();
+  facebook::jsi::Runtime *rt = hermesRuntime.get();
+  auto *instance = [RCTTestArrayBufferTurboModule new];
+
+  ObjCTurboModule::InitParams params = {
+      .moduleName = "TestModule",
+      .instance = instance,
+      .jsInvoker = nullptr,
+      .nativeMethodCallInvoker = std::make_shared<ImmediateNativeMethodCallInvoker>(),
+      .isSyncModule = false,
+  };
+  ObjCTurboModule module(params);
+
+  auto firstSourceBuffer = rt->global()
+                               .getPropertyAsFunction(*rt, "eval")
+                               .call(*rt, "new Uint8Array([1, 2, 3]).buffer")
+                               .asObject(*rt)
+                               .getArrayBuffer(*rt);
+  auto secondSourceBuffer = rt->global()
+                                .getPropertyAsFunction(*rt, "eval")
+                                .call(*rt, "new Uint8Array([4, 5]).buffer")
+                                .asObject(*rt)
+                                .getArrayBuffer(*rt);
+  auto jsArray = facebook::jsi::Array(*rt, 2);
+  jsArray.setValueAtIndex(*rt, 0, facebook::jsi::Value(*rt, firstSourceBuffer));
+  jsArray.setValueAtIndex(*rt, 1, facebook::jsi::Value(*rt, secondSourceBuffer));
+  facebook::jsi::Value args[1] = {facebook::jsi::Value(*rt, jsArray)};
+
+  module.invokeObjCMethod(
+      *rt,
+      NumberKind,
+      "testMethodWhichChecksArrayBufferArrayAliasing",
+      @selector(testMethodWhichChecksArrayBufferArrayAliasing:),
+      args,
+      1);
+
+  XCTAssertTrue(instance.sawAliasedBytes, @"Every element must alias its JS ArrayBuffer's bytes");
+  XCTAssertTrue(instance.sawUnownedBytes, @"JS-heap elements in a sync call must not own their bytes");
+  XCTAssertEqual(
+      bytesFromArrayBuffer(*rt, firstSourceBuffer)[0], 77, @"The native write must land on the first JS ArrayBuffer");
+  XCTAssertEqual(
+      bytesFromArrayBuffer(*rt, secondSourceBuffer)[0],
+      77,
+      @"The native write must land on the second JS ArrayBuffer");
+}
+
+// RCTArrayBuffer has no invalidate(). Unlike Android, retaining an element past a sync call does not
+// throw — the wrapper still exposes the same pointer. Document the gap here rather than asserting
+// Android-style post-return revocation.
+- (void)testStoredJSBackedArrayBufferArrayElementsRemainAccessibleAfterSyncCallReturns
+{
+  auto hermesRuntime = createHermesRuntime();
+  facebook::jsi::Runtime *rt = hermesRuntime.get();
+  auto *instance = [RCTTestArrayBufferTurboModule new];
+
+  ObjCTurboModule::InitParams params = {
+      .moduleName = "TestModule",
+      .instance = instance,
+      .jsInvoker = nullptr,
+      .nativeMethodCallInvoker = std::make_shared<ImmediateNativeMethodCallInvoker>(),
+      .isSyncModule = false,
+  };
+  ObjCTurboModule module(params);
+
+  auto jsArray = rt->global()
+                     .getPropertyAsFunction(*rt, "eval")
+                     .call(*rt, "[new Uint8Array([1, 2]).buffer, new Uint8Array([3]).buffer]")
+                     .asObject(*rt)
+                     .getArray(*rt);
+  facebook::jsi::Value args[1] = {facebook::jsi::Value(*rt, jsArray)};
+
+  module.invokeObjCMethod(
+      *rt,
+      VoidKind,
+      "testMethodWhichStoresArrayBufferArrayElements",
+      @selector(testMethodWhichStoresArrayBufferArrayElements:),
+      args,
+      1);
+
+  XCTAssertEqual(instance.storedArrayBufferArrayElements.count, 2u);
+  for (RCTArrayBuffer *buffer in instance.storedArrayBufferArrayElements) {
+    XCTAssertFalse(buffer.isOwningBytes);
+    XCTAssertNotNil(buffer.mutableBytes);
+  }
 }
 
 @end

@@ -39,6 +39,7 @@ Pod::Spec.new do |s|
                                "HEADER_SEARCH_PATHS" => header_search_paths.join(' ')
                              }
 
+  s.dependency "RCTTypeSafety"
   s.dependency "React-jsi"
   s.dependency "React-Core/RCTBlobHeaders"
   s.dependency "React-Core/RCTWebSocket"

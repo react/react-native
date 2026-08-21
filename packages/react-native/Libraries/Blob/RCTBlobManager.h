@@ -5,6 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#import <React/RCTArrayBuffer.h>
 #import <React/RCTBridge.h>
 #import <React/RCTBridgeModule.h>
 #import <React/RCTInitializing.h>
@@ -22,10 +23,14 @@
 
 - (NSData *)resolve:(NSString *)blobId offset:(NSInteger)offset size:(NSInteger)size;
 
+- (RCTArrayBuffer *)resolveBuffer:(NSString *)blobId offset:(NSInteger)offset size:(NSInteger)size;
+
 - (NSData *)resolveURL:(NSURL *)url;
 
 - (void)remove:(NSString *)blobId;
 
-- (void)createFromParts:(NSArray<NSDictionary<NSString *, id> *> *)parts withId:(NSString *)blobId;
+- (void)createFromParts:(NSArray<NSDictionary<NSString *, id> *> *)parts
+            binaryParts:(NSArray<RCTArrayBuffer *> *)binaryParts
+                 withId:(NSString *)blobId;
 
 @end

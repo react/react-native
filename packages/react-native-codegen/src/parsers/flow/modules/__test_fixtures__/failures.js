@@ -350,6 +350,295 @@ export default TurboModuleRegistry.getEnforcing<Spec>('SampleTurboModule');
 
 `;
 
+const NATIVE_MODULE_WITH_NESTED_ARRAY_BUFFER_PARAM = `
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @flow strict-local
+ * @format
+ */
+
+'use strict';
+
+import type {TurboModule} from '../RCTExport';
+import * as TurboModuleRegistry from '../TurboModuleRegistry';
+
+export interface Spec extends TurboModule {
+  +nested: (v: Array<Array<ArrayBuffer>>) => void;
+}
+
+export default TurboModuleRegistry.getEnforcing<Spec>('SampleTurboModule');
+
+`;
+
+const NATIVE_MODULE_WITH_ARRAY_BUFFER_ARRAY_IN_OBJECT_PARAM = `
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @flow strict-local
+ * @format
+ */
+
+'use strict';
+
+import type {TurboModule} from '../RCTExport';
+import * as TurboModuleRegistry from '../TurboModuleRegistry';
+
+export interface Spec extends TurboModule {
+  +objArg: (v: {buffers: Array<ArrayBuffer>}) => void;
+}
+
+export default TurboModuleRegistry.getEnforcing<Spec>('SampleTurboModule');
+
+`;
+
+const NATIVE_MODULE_WITH_ARRAY_BUFFER_ARRAY_RETURN = `
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @flow strict-local
+ * @format
+ */
+
+'use strict';
+
+import type {TurboModule} from '../RCTExport';
+import * as TurboModuleRegistry from '../TurboModuleRegistry';
+
+export interface Spec extends TurboModule {
+  +getBuffers: () => Array<ArrayBuffer>;
+}
+
+export default TurboModuleRegistry.getEnforcing<Spec>('SampleTurboModule');
+
+`;
+
+const NATIVE_MODULE_WITH_NESTED_ARRAY_BUFFER_RETURN = `
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @flow strict-local
+ * @format
+ */
+
+'use strict';
+
+import type {TurboModule} from '../RCTExport';
+import * as TurboModuleRegistry from '../TurboModuleRegistry';
+
+export interface Spec extends TurboModule {
+  +retNested: () => Array<Array<ArrayBuffer>>;
+}
+
+export default TurboModuleRegistry.getEnforcing<Spec>('SampleTurboModule');
+
+`;
+
+const NATIVE_MODULE_WITH_ARRAY_BUFFER_ARRAY_IN_OBJECT_RETURN = `
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @flow strict-local
+ * @format
+ */
+
+'use strict';
+
+import type {TurboModule} from '../RCTExport';
+import * as TurboModuleRegistry from '../TurboModuleRegistry';
+
+export interface Spec extends TurboModule {
+  +retObj: () => {buffers: Array<ArrayBuffer>};
+}
+
+export default TurboModuleRegistry.getEnforcing<Spec>('SampleTurboModule');
+
+`;
+
+const NATIVE_MODULE_WITH_ARRAY_BUFFER_ARRAY_PROMISE_RETURN = `
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @flow strict-local
+ * @format
+ */
+
+'use strict';
+
+import type {TurboModule} from '../RCTExport';
+import * as TurboModuleRegistry from '../TurboModuleRegistry';
+
+export interface Spec extends TurboModule {
+  +getAsyncBuffers: () => Promise<Array<ArrayBuffer>>;
+}
+
+export default TurboModuleRegistry.getEnforcing<Spec>('SampleTurboModule');
+
+`;
+
+const NATIVE_MODULE_WITH_ARRAY_BUFFER_ARRAY_IN_PROMISE_OBJECT = `
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @flow strict-local
+ * @format
+ */
+
+'use strict';
+
+import type {TurboModule} from '../RCTExport';
+import * as TurboModuleRegistry from '../TurboModuleRegistry';
+
+export interface Spec extends TurboModule {
+  +retPromiseObj: () => Promise<{buffers: Array<ArrayBuffer>}>;
+}
+
+export default TurboModuleRegistry.getEnforcing<Spec>('SampleTurboModule');
+
+`;
+
+const NATIVE_MODULE_WITH_NULLABLE_ARRAY_BUFFER_ELEMENT_PARAM = `
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @flow strict-local
+ * @format
+ */
+
+'use strict';
+
+import type {TurboModule} from '../RCTExport';
+import * as TurboModuleRegistry from '../TurboModuleRegistry';
+
+export interface Spec extends TurboModule {
+  +nullableElements: (values: Array<?ArrayBuffer>) => number;
+}
+
+export default TurboModuleRegistry.getEnforcing<Spec>('SampleTurboModule');
+
+`;
+
+const NATIVE_MODULE_WITH_ARRAY_BUFFER_ARRAY_IN_CALLBACK_PARAM = `
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @flow strict-local
+ * @format
+ */
+
+'use strict';
+
+import type {TurboModule} from '../RCTExport';
+import * as TurboModuleRegistry from '../TurboModuleRegistry';
+
+export interface Spec extends TurboModule {
+  +withCallback: (cb: (bufs: Array<ArrayBuffer>) => void) => void;
+}
+
+export default TurboModuleRegistry.getEnforcing<Spec>('SampleTurboModule');
+
+`;
+
+const NATIVE_MODULE_WITH_ARRAY_BUFFER_ARRAY_IN_CALLBACK_RETURN = `
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @flow strict-local
+ * @format
+ */
+
+'use strict';
+
+import type {TurboModule} from '../RCTExport';
+import * as TurboModuleRegistry from '../TurboModuleRegistry';
+
+export interface Spec extends TurboModule {
+  +withCallbackReturn: (cb: () => Array<ArrayBuffer>) => void;
+}
+
+export default TurboModuleRegistry.getEnforcing<Spec>('SampleTurboModule');
+
+`;
+
+const NATIVE_MODULE_WITH_NESTED_ARRAY_BUFFER_ARRAY_IN_CALLBACK = `
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @flow strict-local
+ * @format
+ */
+
+'use strict';
+
+import type {TurboModule} from '../RCTExport';
+import * as TurboModuleRegistry from '../TurboModuleRegistry';
+
+export interface Spec extends TurboModule {
+  +nestedCallback: (cb: (x: {buffers: Array<ArrayBuffer>}) => void) => void;
+}
+
+export default TurboModuleRegistry.getEnforcing<Spec>('SampleTurboModule');
+
+`;
+
+const NATIVE_MODULE_WITH_ARRAY_BUFFER_ARRAY_IN_EVENT_EMITTER = `
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @flow strict-local
+ * @format
+ */
+
+'use strict';
+
+import type {TurboModule} from '../RCTExport';
+import type {EventEmitter} from '../CodegenTypes';
+import * as TurboModuleRegistry from '../TurboModuleRegistry';
+
+export interface Spec extends TurboModule {
+  +onBuffers: EventEmitter<Array<ArrayBuffer>>;
+}
+
+export default TurboModuleRegistry.getEnforcing<Spec>('SampleTurboModule');
+
+`;
+
 module.exports = {
   NATIVE_MODULES_WITH_READ_ONLY_OBJECT_NO_TYPE_FOR_CONTENT,
   NATIVE_MODULES_WITH_UNNAMED_PARAMS,
@@ -364,4 +653,16 @@ module.exports = {
   NUMERIC_VALUES_ENUM_NATIVE_MODULE,
   MAP_WITH_EXTRA_KEYS_NATIVE_MODULE,
   NATIVE_MODULES_WITH_ARRAY_BUFFER_IN_OBJECT_PROPERTY,
+  NATIVE_MODULE_WITH_NESTED_ARRAY_BUFFER_PARAM,
+  NATIVE_MODULE_WITH_ARRAY_BUFFER_ARRAY_IN_OBJECT_PARAM,
+  NATIVE_MODULE_WITH_ARRAY_BUFFER_ARRAY_RETURN,
+  NATIVE_MODULE_WITH_NESTED_ARRAY_BUFFER_RETURN,
+  NATIVE_MODULE_WITH_ARRAY_BUFFER_ARRAY_IN_OBJECT_RETURN,
+  NATIVE_MODULE_WITH_ARRAY_BUFFER_ARRAY_PROMISE_RETURN,
+  NATIVE_MODULE_WITH_ARRAY_BUFFER_ARRAY_IN_PROMISE_OBJECT,
+  NATIVE_MODULE_WITH_NULLABLE_ARRAY_BUFFER_ELEMENT_PARAM,
+  NATIVE_MODULE_WITH_ARRAY_BUFFER_ARRAY_IN_CALLBACK_PARAM,
+  NATIVE_MODULE_WITH_ARRAY_BUFFER_ARRAY_IN_CALLBACK_RETURN,
+  NATIVE_MODULE_WITH_NESTED_ARRAY_BUFFER_ARRAY_IN_CALLBACK,
+  NATIVE_MODULE_WITH_ARRAY_BUFFER_ARRAY_IN_EVENT_EMITTER,
 };

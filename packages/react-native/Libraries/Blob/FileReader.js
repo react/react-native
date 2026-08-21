@@ -19,7 +19,6 @@ import {
 import EventTarget from '../../src/private/webapis/dom/events/EventTarget';
 import DOMException from '../../src/private/webapis/errors/DOMException';
 import NativeFileReaderModule from './NativeFileReaderModule';
-import {toByteArray} from 'base64-js';
 
 type ReadyState =
   | 0 // EMPTY
@@ -123,17 +122,14 @@ class FileReader extends EventTarget {
       this._blob = blob;
     }
 
-    NativeFileReaderModule.readAsDataURL(blob.data).then(
-      (text: string) => {
+    NativeFileReaderModule.readAsArrayBuffer(blob.data).then(
+      (buffer: ArrayBuffer) => {
         if (readId !== this._readId) {
           return;
         }
         this._blob = null;
 
-        const base64 = text.split(',')[1];
-        const typedArray = toByteArray(base64);
-
-        this._result = typedArray.buffer;
+        this._result = buffer;
         this._setReadyState(DONE);
       },
       error => {

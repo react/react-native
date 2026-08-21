@@ -7,6 +7,7 @@
 
 #import <XCTest/XCTest.h>
 
+#import <React/RCTArrayBuffer.h>
 #import <React/RCTBlobManager.h>
 #import <React/RCTMockDef.h>
 
@@ -99,7 +100,7 @@ static void dispatch_async_mock([[maybe_unused]] dispatch_queue_t queue, dispatc
   NSString *resultId = [NSUUID UUID].UUIDString;
   NSArray<id> *parts = @[ blob, string ];
 
-  [_module createFromParts:parts withId:resultId];
+  [_module createFromParts:parts binaryParts:@[] withId:resultId];
 
   NSMutableData *expectedData = [NSMutableData new];
   [expectedData appendData:_data];
@@ -110,6 +111,104 @@ static void dispatch_async_mock([[maybe_unused]] dispatch_queue_t queue, dispatc
   XCTAssertTrue([expectedData isEqualToData:result]);
 
   RCT_MOCK_RESET(RCTBlobManager, dispatch_async);
+}
+
+- (void)testCreateFromPartsWithBinaryParts
+{
+  RCT_MOCK_SET(RCTBlobManager, dispatch_async, dispatch_async_mock);
+
+  NSString *stringData = @"A";
+  NSDictionary<NSString *, id> *string = @{
+    @"data" : stringData,
+    @"type" : @"string",
+  };
+
+  uint8_t binaryBytes[] = {66, 67};
+  NSData *binaryData = [NSData dataWithBytes:binaryBytes length:sizeof(binaryBytes)];
+  RCTArrayBuffer *binaryBuffer = [RCTArrayBuffer arrayBufferWithCopiedBytes:binaryData.bytes length:binaryData.length];
+  NSDictionary<NSString *, id> *binaryPart = @{
+    @"data" : @0,
+    @"type" : @"binaryPart",
+  };
+
+  NSDictionary<NSString *, id> *blobData = @{
+    @"blobId" : _blobId,
+    @"offset" : @0,
+    @"size" : @(_data.length),
+  };
+  NSDictionary<NSString *, id> *blob = @{
+    @"data" : blobData,
+    @"type" : @"blob",
+  };
+
+  NSString *resultId = [NSUUID UUID].UUIDString;
+  NSArray<id> *parts = @[ string, binaryPart, blob ];
+
+  [_module createFromParts:parts binaryParts:@[ binaryBuffer ] withId:resultId];
+
+  NSMutableData *expectedData = [NSMutableData new];
+  [expectedData appendData:[stringData dataUsingEncoding:NSUTF8StringEncoding]];
+  [expectedData appendData:binaryData];
+  [expectedData appendData:_data];
+
+  NSData *result = [_module resolve:resultId offset:0 size:expectedData.length];
+  XCTAssertTrue([expectedData isEqualToData:result]);
+
+  RCT_MOCK_RESET(RCTBlobManager, dispatch_async);
+}
+
+- (void)testCreateFromPartsWithOutOfRangeBinaryPartIndex
+{
+  NSDictionary<NSString *, id> *binaryPart = @{
+    @"data" : @3,
+    @"type" : @"binaryPart",
+  };
+  NSString *resultId = [NSUUID UUID].UUIDString;
+
+  XCTAssertThrows([_module createFromParts:@[ binaryPart ] binaryParts:@[] withId:resultId]);
+}
+
+- (void)testCreateFromPartsWithInvalidBinaryPartType
+{
+  NSDictionary<NSString *, id> *binaryPart = @{
+    @"data" : @0,
+    @"type" : @"binaryPart",
+  };
+  NSString *resultId = [NSUUID UUID].UUIDString;
+
+  XCTAssertThrows([_module createFromParts:@[ binaryPart ] binaryParts:@[ [NSNull null] ] withId:resultId]);
+}
+
+- (void)testResolveBufferReturnsIndependentCopy
+{
+  RCTArrayBuffer *buffer = [_module resolveBuffer:_blobId offset:0 size:_data.length];
+  XCTAssertNotNil(buffer);
+  XCTAssertEqual(buffer.length, _data.length);
+
+  uint8_t originalFirst = ((const uint8_t *)_data.bytes)[0];
+  ((uint8_t *)buffer.mutableBytes)[0] = (uint8_t)(originalFirst + 1);
+
+  NSData *stored = [_module resolve:_blobId offset:0 size:_data.length];
+  XCTAssertTrue([_data isEqualToData:stored]);
+  XCTAssertEqual(((const uint8_t *)stored.bytes)[0], originalFirst);
+}
+
+- (void)testResolveBufferUnknownIdReturnsNil
+{
+  XCTAssertNil([_module resolveBuffer:@"no-such-id" offset:0 size:4]);
+}
+
+- (void)testResolveBufferWithOffsetAndSize
+{
+  NSInteger offset = 10;
+  NSInteger size = 20;
+  RCTArrayBuffer *buffer = [_module resolveBuffer:_blobId offset:offset size:size];
+  XCTAssertNotNil(buffer);
+  XCTAssertEqual(buffer.length, (NSUInteger)size);
+
+  NSData *expected = [_data subdataWithRange:NSMakeRange((NSUInteger)offset, (NSUInteger)size)];
+  NSData *actual = [NSData dataWithBytes:buffer.mutableBytes length:buffer.length];
+  XCTAssertTrue([expected isEqualToData:actual]);
 }
 
 @end

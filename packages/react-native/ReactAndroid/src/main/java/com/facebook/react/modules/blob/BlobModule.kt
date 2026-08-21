@@ -15,6 +15,7 @@ import android.webkit.MimeTypeMap
 import com.facebook.fbreact.specs.NativeBlobModuleSpec
 import com.facebook.proguard.annotations.DoNotStrip
 import com.facebook.react.bridge.Arguments
+import com.facebook.react.bridge.ArrayBuffer
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
@@ -31,10 +32,6 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.nio.ByteBuffer
-import java.nio.charset.Charset
-import java.util.ArrayList
-import java.util.Arrays
-import java.util.HashMap
 import java.util.UUID
 import okhttp3.MediaType
 import okhttp3.RequestBody
@@ -190,7 +187,7 @@ public class BlobModule(reactContext: ReactApplicationContext) :
         newSize = data.size - offset
       }
       if (offset > 0 || newSize != data.size) {
-        return Arrays.copyOfRange(data, offset, offset + newSize)
+        return data.copyOfRange(offset, offset + newSize)
       }
       return data
     }
@@ -198,6 +195,25 @@ public class BlobModule(reactContext: ReactApplicationContext) :
 
   public fun resolve(blob: ReadableMap): ByteArray? {
     return resolve(blob.getString("blobId"), blob.getInt("offset"), blob.getInt("size"))
+  }
+
+  /**
+   * Returns a newly allocated [ArrayBuffer] holding a copy of the requested range, or null if the
+   * blob is unknown.
+   *
+   * The copy is required: the returned buffer is handed to JS as an ArrayBuffer, and Blobs are
+   * immutable per the W3C File API — JS must not be able to write through to blob storage.
+   */
+  public fun resolveBuffer(blobId: String?, offset: Int, size: Int): ArrayBuffer? {
+    synchronized(blobs) {
+      val data = blobs[blobId] ?: return null
+      val length = if (size == -1) data.size - offset else size
+      val copy = ArrayBuffer(length)
+      val dest = copy.bytes
+      dest.put(data, offset, length)
+      dest.rewind()
+      return copy
+    }
   }
 
   @Throws(IOException::class)
@@ -295,33 +311,52 @@ public class BlobModule(reactContext: ReactApplicationContext) :
     }
   }
 
-  public override fun createFromParts(parts: ReadableArray, blobId: String) {
-    var totalBlobSize = 0
-    val partList = ArrayList<ByteArray>(parts.size())
+  /** A read-only window onto stored blob bytes, without copying them. */
+  private fun wrapBlob(blobId: String?, offset: Int, size: Int): ByteBuffer {
+    synchronized(blobs) {
+      val data = checkNotNull(blobs[blobId]) { "Invalid blob: $blobId" }
+      val length = if (size == -1) data.size - offset else size
+      return ByteBuffer.wrap(data, offset, length)
+    }
+  }
+
+  public override fun createFromParts(
+      parts: ReadableArray,
+      binaryParts: Array<ArrayBuffer>,
+      blobId: String,
+  ) {
+    val chunks = ArrayList<ByteBuffer>(parts.size())
 
     for (i in 0 until parts.size()) {
       val part = checkNotNull(parts.getMap(i))
-      val type = checkNotNull(part.getString("type"))
-      when (type) {
+      when (val type = checkNotNull(part.getString("type"))) {
         "blob" -> {
           val blob = checkNotNull(part.getMap("data"))
-          totalBlobSize += blob.getInt("size")
-          partList.add(i, checkNotNull(resolve(blob)))
+          chunks.add(
+              wrapBlob(
+                  blob.getString("blobId"),
+                  blob.getInt("offset"),
+                  blob.getInt("size"),
+              )
+          )
         }
         "string" -> {
           val data = checkNotNull(part.getString("data"))
-          val bytes = data.toByteArray(Charset.forName("UTF-8"))
-          totalBlobSize += bytes.size
-          partList.add(i, bytes)
+          chunks.add(ByteBuffer.wrap(data.toByteArray(Charsets.UTF_8)))
         }
-        else -> throw IllegalArgumentException("Invalid type for blob: ${part.getString("type")}")
+        "binaryPart" -> {
+          val index = part.getInt("data")
+          require(index in binaryParts.indices) {
+            "Invalid binaryPart index $index for blob: ${binaryParts.size} binary parts provided"
+          }
+          chunks.add(binaryParts[index].bytes.duplicate())
+        }
+        else -> throw IllegalArgumentException("Invalid type for blob: $type")
       }
     }
 
-    val buffer = ByteBuffer.allocate(totalBlobSize)
-    for (bytes in partList) {
-      buffer.put(bytes)
-    }
+    val buffer = ByteBuffer.allocate(chunks.sumOf { it.remaining() })
+    chunks.forEach { buffer.put(it) }
     store(buffer.array(), blobId)
   }
 

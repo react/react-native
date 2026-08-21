@@ -151,6 +151,117 @@ describe('FileReader', function () {
     expect(new TextDecoder().decode(ab)).toBe('42');
   });
 
+  // The FileReaderModule mock always resolves with these bytes, regardless of
+  // the blob it is handed.
+  const MOCK_READ_RESULT = [52, 50];
+
+  it('resolves result with the ArrayBuffer the native module returns', async () => {
+    const reader = new FileReader();
+
+    await new Promise<Event>(resolve => {
+      reader.onloadend = resolve;
+      reader.readAsArrayBuffer(new Blob());
+    });
+
+    expect(reader.readyState).toBe(FileReader.DONE);
+    expect(reader.result).toBeInstanceOf(ArrayBuffer);
+    const result = reader.result;
+    if (!(result instanceof ArrayBuffer)) {
+      throw new Error('expected ArrayBuffer');
+    }
+    expect(Array.from(new Uint8Array(result))).toEqual(MOCK_READ_RESULT);
+  });
+
+  it('throws a TypeError when readAsArrayBuffer is given null', () => {
+    const reader = new FileReader();
+    expect(() => reader.readAsArrayBuffer(null)).toThrow(TypeError);
+    expect(reader.readyState).toBe(FileReader.EMPTY);
+  });
+
+  it('should abort a pending ArrayBuffer read without firing load', async () => {
+    const reader = new FileReader();
+    let loaded = false;
+    reader.onload = () => {
+      loaded = true;
+    };
+    reader.readAsArrayBuffer(new Blob());
+    reader.abort();
+
+    expect(reader.readyState).toBe(FileReader.DONE);
+    expect(reader.result).toBe(null);
+
+    await Promise.resolve();
+    expect(loaded).toBe(false);
+    expect(reader.result).toBe(null);
+  });
+
+  it('should discard a stale ArrayBuffer result when a newer read is current', async () => {
+    const resolvers: Array<(ArrayBuffer) => void> = [];
+    const spy = jest
+      .spyOn(FileReaderModuleMock, 'readAsArrayBuffer')
+      .mockImplementation(
+        () =>
+          new Promise(resolve => {
+            resolvers.push(resolve);
+          }),
+      );
+
+    const reader = new FileReader();
+    let loaded = false;
+    reader.onload = () => {
+      loaded = true;
+    };
+
+    reader.readAsArrayBuffer(new Blob());
+    reader.abort();
+    expect(reader.result).toBe(null);
+
+    const done = new Promise<Event>(resolve => {
+      reader.onloadend = resolve;
+    });
+    reader.readAsArrayBuffer(new Blob());
+
+    // Stale first read settles with different bytes; the readId guard must drop it.
+    resolvers[0](Uint8Array.from([9, 9, 9]).buffer);
+    await Promise.resolve();
+    expect(reader.readyState).toBe(FileReader.LOADING);
+    expect(reader.result).toBe(null);
+    expect(loaded).toBe(false);
+
+    resolvers[1](Uint8Array.from([52, 50]).buffer);
+    await done;
+    expect(reader.readyState).toBe(FileReader.DONE);
+    expect(reader.result).toBeInstanceOf(ArrayBuffer);
+    const result = reader.result;
+    if (!(result instanceof ArrayBuffer)) {
+      throw new Error('expected ArrayBuffer');
+    }
+    expect(Array.from(new Uint8Array(result))).toEqual([52, 50]);
+    expect(loaded).toBe(true);
+
+    spy.mockRestore();
+  });
+
+  it('rejects a failed ArrayBuffer read with a NotReadableError DOMException', async () => {
+    const spy = jest
+      .spyOn(FileReaderModuleMock, 'readAsArrayBuffer')
+      .mockRejectedValue(new Error('The specified blob is invalid'));
+
+    const reader = new FileReader();
+    await new Promise<Event>(resolve => {
+      reader.onloadend = resolve;
+      reader.readAsArrayBuffer(new Blob());
+    });
+
+    expect(reader.readyState).toBe(FileReader.DONE);
+    expect(reader.result).toBe(null);
+    expect(reader.error).not.toBe(null);
+    expect(reader.error?.message).toBe('The specified blob is invalid');
+    expect(reader.error?.name).toBe('NotReadableError');
+
+    spy.mockRestore();
+  });
+
   it('fires lifecycle events in spec order for a successful read', async () => {
     const reader = new FileReader();
     const events: Array<string> = [];

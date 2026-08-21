@@ -10,7 +10,7 @@
 
 'use strict';
 
-import type {BlobData, BlobOptions} from './BlobTypes';
+import type {BlobData, BlobOptions, BlobPart} from './BlobTypes';
 
 /**
  * Opaque JS representation of some binary data in native.
@@ -54,10 +54,10 @@ class Blob {
 
   /**
    * Constructor for JS consumers.
-   * Currently we only support creating Blobs from other Blobs.
+   * Accepts `Blob`, string, `ArrayBuffer`, and `ArrayBufferView` parts.
    * Reference: https://developer.mozilla.org/en-US/docs/Web/API/Blob/Blob
    */
-  constructor(parts: Array<Blob | string> = [], options?: BlobOptions) {
+  constructor(parts: Array<BlobPart> = [], options?: BlobOptions) {
     const BlobManager = require('./BlobManager').default;
     this.data = BlobManager.createFromParts(parts, options).data;
   }

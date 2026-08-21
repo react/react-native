@@ -10,7 +10,7 @@
 
 'use strict';
 
-import type {BlobOptions} from './BlobTypes';
+import type {BlobOptions, BlobPart} from './BlobTypes';
 
 import Blob from './Blob';
 
@@ -23,11 +23,7 @@ class File extends Blob {
   /**
    * Constructor for JS consumers.
    */
-  constructor(
-    parts: Array<Blob | string>,
-    name: string,
-    options?: BlobOptions,
-  ) {
+  constructor(parts: Array<BlobPart>, name: string, options?: BlobOptions) {
     invariant(
       parts != null && name != null,
       'Failed to construct `File`: Must pass both `parts` and `name` arguments.',

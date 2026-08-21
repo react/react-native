@@ -17,9 +17,14 @@ jest.mock('../../BatchedBridge/NativeModules', () => ({
   },
 }));
 
+const MockBlobModule = require('../__mocks__/BlobModule').default;
 const Blob = require('../Blob').default;
 
 describe('Blob', function () {
+  beforeEach(() => {
+    MockBlobModule.createFromParts.mockClear();
+  });
+
   it('should create empty blob', () => {
     const blob = new Blob();
     expect(blob).toBeInstanceOf(Blob);
@@ -56,6 +61,86 @@ describe('Blob', function () {
         global.Buffer.byteLength(textC, 'UTF-8'),
     );
     expect(blob.type).toBe('');
+  });
+
+  it('should send array buffer and typed array parts as binary parts', () => {
+    const bytes = Uint8Array.from([10, 20, 30, 40]);
+    const blob = new Blob([bytes.buffer, bytes.subarray(1, 3)]);
+
+    expect(blob.size).toBe(6);
+
+    const [parts, binaryParts] = MockBlobModule.createFromParts.mock.calls[0];
+
+    expect(parts).toEqual([
+      {type: 'binaryPart', data: 0},
+      {type: 'binaryPart', data: 1},
+    ]);
+    expect(binaryParts.map(b => Array.from(new Uint8Array(b)))).toEqual([
+      [10, 20, 30, 40],
+      [20, 30],
+    ]);
+  });
+
+  it('should preserve part ordering across mixed types', () => {
+    const inner = new Blob(['D']);
+    MockBlobModule.createFromParts.mockClear();
+
+    const blob = new Blob(['A', Uint8Array.from([66, 67]), inner]);
+    expect(blob.size).toBe(4);
+
+    const [parts, binaryParts] = MockBlobModule.createFromParts.mock.calls[0];
+
+    expect(parts).toEqual([
+      {type: 'string', data: 'A'},
+      {type: 'binaryPart', data: 0},
+      {type: 'blob', data: inner.data},
+    ]);
+    expect(binaryParts.map(b => Array.from(new Uint8Array(b)))).toEqual([
+      [66, 67],
+    ]);
+  });
+
+  it('should handle empty array buffer parts', () => {
+    expect(new Blob([new ArrayBuffer(0)]).size).toBe(0);
+  });
+
+  it('should count Float64Array and DataView parts in bytes', () => {
+    const f64 = new Float64Array([1.5, 2.5, 3.5]);
+    expect(new Blob([f64]).size).toBe(24);
+    expect(new Blob([new DataView(f64.buffer, 8, 8)]).size).toBe(8);
+  });
+
+  it('should treat a detached ArrayBuffer as an empty blob part', () => {
+    const ab = new ArrayBuffer(8);
+    // $FlowFixMe[cannot-resolve-name] Node's structuredClone is not in RN's Flow libs.
+    structuredClone(ab, {transfer: [ab]});
+    const blob = new Blob([ab]);
+    expect(blob.size).toBe(0);
+  });
+
+  it('should treat a detached ArrayBufferView as an empty blob part', () => {
+    const ab = new ArrayBuffer(8);
+    const view = new Uint8Array(ab, 2, 4);
+    // $FlowFixMe[cannot-resolve-name] Node's structuredClone is not in RN's Flow libs.
+    structuredClone(ab, {transfer: [ab]});
+    const blob = new Blob([view]);
+    expect(blob.size).toBe(0);
+  });
+
+  it('stringifies parts that are neither Blob nor BufferSource (W3C: USVString)', () => {
+    // $FlowExpectedError[incompatible-type]
+    expect(new Blob([42]).size).toBe(2);
+    // $FlowExpectedError[incompatible-type]
+    expect(new Blob([null]).size).toBe(4);
+    // $FlowExpectedError[incompatible-type]
+    expect(new Blob([undefined]).size).toBe(9);
+    // $FlowExpectedError[incompatible-type]
+    expect(new Blob([{}]).size).toBe(15);
+    // $FlowExpectedError[incompatible-type]
+    expect(new Blob([new String('abc')]).size).toBe(3); // eslint-disable-line no-new-wrappers
+
+    const [parts] = MockBlobModule.createFromParts.mock.calls[0];
+    expect(parts).toEqual([{type: 'string', data: '42'}]);
   });
 
   it('should slice a blob', () => {

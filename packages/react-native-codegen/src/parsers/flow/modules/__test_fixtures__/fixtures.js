@@ -1034,6 +1034,7 @@ export interface Spec extends TurboModule {
   +voidArrayBuffer: (arg: ArrayBuffer) => void;
   +voidNullableArrayBuffer: (arg: ?ArrayBuffer) => void;
   +promiseArrayBuffer: () => Promise<ArrayBuffer>;
+  +arrayBufferArray: (values: Array<ArrayBuffer>) => number;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('SampleTurboModule');

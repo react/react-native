@@ -1038,6 +1038,7 @@ export interface Spec extends TurboModule {
   readonly voidArrayBuffer: (arg: ArrayBuffer) => void;
   readonly voidNullableArrayBuffer: (arg: ArrayBuffer | null) => void;
   readonly promiseArrayBuffer: () => Promise<ArrayBuffer>;
+  readonly arrayBufferArray: (values: Array<ArrayBuffer>) => number;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('SampleTurboModule');

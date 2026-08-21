@@ -52,6 +52,29 @@ public class FileReaderModule(reactContext: ReactApplicationContext) :
     }
   }
 
+  public override fun readAsArrayBuffer(blob: ReadableMap, promise: Promise) {
+    val blobModule = getBlobModule("readAsArrayBuffer")
+
+    if (blobModule == null) {
+      promise.reject(IllegalStateException("Could not get BlobModule from ReactApplicationContext"))
+      return
+    }
+
+    val blobId = blob.getString("blobId")
+    if (blobId == null) {
+      promise.reject(ERROR_INVALID_BLOB, "The specified blob does not contain a blobId")
+      return
+    }
+
+    val buffer = blobModule.resolveBuffer(blobId, blob.getInt("offset"), blob.getInt("size"))
+    if (buffer == null) {
+      promise.reject(ERROR_INVALID_BLOB, "The specified blob is invalid")
+      return
+    }
+
+    promise.resolve(buffer)
+  }
+
   public override fun readAsDataURL(blob: ReadableMap, promise: Promise) {
     val blobModule = getBlobModule("readAsDataURL")
 

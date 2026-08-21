@@ -8,9 +8,12 @@
  * @format
  */
 
-const BlobModule = {
-  createFromParts() {},
-  release() {},
+const BlobModule: {
+  createFromParts: JestMockFn<[Array<{...}>, Array<ArrayBuffer>, string], void>,
+  release: JestMockFn<[string], void>,
+} = {
+  createFromParts: jest.fn(),
+  release: jest.fn(),
 };
 
 export default BlobModule;

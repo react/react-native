@@ -9,7 +9,8 @@
  */
 
 import typeof BlobT from './Blob';
-import type {BlobCollector, BlobData, BlobOptions} from './BlobTypes';
+import type {BlobCollector, BlobData, BlobOptions, BlobPart} from './BlobTypes';
+import type {BlobPart as NativeBlobPart} from './NativeBlobModule';
 
 import NativeBlobModule from './NativeBlobModule';
 import invariant from 'invariant';
@@ -59,44 +60,66 @@ class BlobManager {
   /**
    * Create blob from existing array of blobs.
    */
-  static createFromParts(
-    parts: Array<Blob | string>,
-    options?: BlobOptions,
-  ): Blob {
+  static createFromParts(parts: Array<BlobPart>, options?: BlobOptions): Blob {
     invariant(NativeBlobModule, 'NativeBlobModule is available.');
-
     const blobId = uuidv4();
-    const items = parts.map(part => {
-      if (part instanceof ArrayBuffer || ArrayBuffer.isView(part)) {
-        throw new Error(
-          "Creating blobs from 'ArrayBuffer' and 'ArrayBufferView' are not supported",
-        );
-      }
-      if (part instanceof Blob) {
-        return {
-          data: part.data,
-          type: 'blob',
-        };
-      } else {
-        return {
-          data: String(part),
-          type: 'string',
-        };
-      }
-    });
-    const size = items.reduce((acc, curr) => {
-      if (curr.type === 'string') {
-        /* $FlowFixMe[incompatible-type] Natural Inference rollout. See
-         * https://fburl.com/workplace/6291gfvu */
-        return acc + global.unescape(encodeURI(curr.data)).length;
-      } else {
-        /* $FlowFixMe[prop-missing] Natural Inference rollout. See
-         * https://fburl.com/workplace/6291gfvu */
-        return acc + curr.data.size;
-      }
-    }, 0);
+    const binaryParts: Array<ArrayBuffer> = [];
+    let size = 0;
 
-    NativeBlobModule.createFromParts(items, blobId);
+    const nativeParts: Array<NativeBlobPart> = [];
+
+    for (const part of parts) {
+      if (part instanceof Blob) {
+        size += part.size;
+        nativeParts.push({type: 'blob', data: part.data});
+        continue;
+      }
+
+      if (
+        typeof part !== 'string' &&
+        (part instanceof ArrayBuffer || ArrayBuffer.isView(part))
+      ) {
+        const byteSize = part.byteLength;
+        size += byteSize;
+
+        // A detached or empty buffer contributes no bytes, and `slice` throws on
+        // a detached buffer — so there is nothing to send.
+        if (byteSize === 0) {
+          continue;
+        }
+
+        const index = binaryParts.length;
+        // Forwarded without copying here. A JS-heap `ArrayBuffer` is copied
+        // during argument conversion, because `createFromParts` is asynchronous
+        // — see `convertJSIArrayBufferToJArrayBuffer` and
+        // `convertJSIArrayBufferToRCTArrayBuffer`. A native-backed one is
+        // aliased instead, per the TurboModule zero-copy contract, so it is
+        // snapshotted only once the call reaches the module thread.
+        //
+        // A whole buffer therefore goes as-is; only a partial view is sliced,
+        // because the wire format carries whole buffers.
+        let source: ArrayBuffer;
+        if (part instanceof ArrayBuffer) {
+          source = part;
+        } else {
+          const buffer = part.buffer;
+          const byteOffset = part.byteOffset;
+          source =
+            byteOffset === 0 && byteSize === buffer.byteLength
+              ? buffer
+              : buffer.slice(byteOffset, byteOffset + byteSize);
+        }
+        binaryParts.push(source);
+        nativeParts.push({type: 'binaryPart', data: index});
+        continue;
+      }
+
+      const text = String(part);
+      size += global.unescape(encodeURI(text)).length;
+      nativeParts.push({type: 'string', data: text});
+    }
+
+    NativeBlobModule.createFromParts(nativeParts, binaryParts, blobId);
 
     return BlobManager.createFromOptions({
       blobId,

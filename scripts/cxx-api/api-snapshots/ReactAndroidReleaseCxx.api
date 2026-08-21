@@ -2825,6 +2825,11 @@ class facebook::react::JByteBufferMutableBuffer : public facebook::jsi::MutableB
   public ~JByteBufferMutableBuffer() override;
 }
 
+class facebook::react::JCxxArrayBufferCallbackImpl : public jni::HybridClass<facebook::react::JCxxArrayBufferCallbackImpl, facebook::react::JCallback> {
+  public static constexpr auto kJavaDescriptor;
+  public static void registerNatives();
+}
+
 class facebook::react::JCxxCallbackImpl : public jni::HybridClass<facebook::react::JCxxCallbackImpl, facebook::react::JCallback> {
   public static constexpr auto kJavaDescriptor;
   public static void registerNatives();
@@ -3100,7 +3105,7 @@ class facebook::react::JavaTurboModule : public facebook::react::TurboModule {
   protected void configureEventEmitterCallback();
   protected void setEventEmitterCallback(jni::alias_ref<jobject>);
   public JavaTurboModule(const facebook::react::JavaTurboModule::InitParams& params);
-  public facebook::jsi::Value invokeJavaMethod(facebook::jsi::Runtime& runtime, facebook::react::TurboModuleMethodValueKind valueKind, const std::string& methodName, const std::string& methodSignature, const facebook::jsi::Value* args, size_t argCount, jmethodID& cachedMethodID);
+  public facebook::jsi::Value invokeJavaMethod(facebook::jsi::Runtime& runtime, facebook::react::TurboModuleMethodValueKind valueKind, const std::string& methodName, const std::string& methodSignature, const facebook::jsi::Value* args, size_t argCount, jmethodID& cachedMethodID, bool promiseResolveSupportsArrayBuffer = false);
   public virtual ~JavaTurboModule();
 }
 
@@ -8543,6 +8548,28 @@ struct facebook::react::NativeIntersectionObserverNativeIntersectionObserverEntr
 }
 
 template <typename P0, typename P1, typename P2, typename P3, typename P4, typename P5>
+struct facebook::react::NativeBlobModuleBlobDescriptor {
+  public P0 blobId;
+  public P1 offset;
+  public P2 size;
+  public P3 name;
+  public P4 type;
+  public P5 lastModified;
+  public bool operator==(const facebook::react::NativeBlobModuleBlobDescriptor& other) const;
+}
+
+template <typename P0, typename P1, typename P2, typename P3, typename P4, typename P5>
+struct facebook::react::NativeFileReaderModuleBlobDescriptor {
+  public P0 blobId;
+  public P1 offset;
+  public P2 size;
+  public P3 name;
+  public P4 type;
+  public P5 lastModified;
+  public bool operator==(const facebook::react::NativeFileReaderModuleBlobDescriptor& other) const;
+}
+
+template <typename P0, typename P1, typename P2, typename P3, typename P4, typename P5>
 struct facebook::react::NativeIntersectionObserverNativeIntersectionObserverObserveOptions {
   public P0 intersectionObserverId;
   public P1 rootShadowNode;
@@ -8707,6 +8734,27 @@ struct facebook::react::NativeAnimatedTurboModuleEventMapping {
   public P0 nativeEventPath;
   public P1 animatedValueTag;
   public bool operator==(const facebook::react::NativeAnimatedTurboModuleEventMapping& other) const;
+}
+
+template <typename P0, typename P1>
+struct facebook::react::NativeBlobModuleBlobBinaryPart {
+  public P0 type;
+  public P1 data;
+  public bool operator==(const facebook::react::NativeBlobModuleBlobBinaryPart& other) const;
+}
+
+template <typename P0, typename P1>
+struct facebook::react::NativeBlobModuleBlobReferencePart {
+  public P0 type;
+  public P1 data;
+  public bool operator==(const facebook::react::NativeBlobModuleBlobReferencePart& other) const;
+}
+
+template <typename P0, typename P1>
+struct facebook::react::NativeBlobModuleBlobStringPart {
+  public P0 type;
+  public P1 data;
+  public bool operator==(const facebook::react::NativeBlobModuleBlobStringPart& other) const;
 }
 
 template <typename P0, typename P1>
@@ -9298,6 +9346,34 @@ struct facebook::react::NativeAppStateAppStateConstantsBridging {
 }
 
 template <typename T>
+struct facebook::react::NativeBlobModuleBlobBinaryPartBridging {
+  public static T fromJs(facebook::jsi::Runtime& rt, const facebook::jsi::Object& value, const std::shared_ptr<facebook::react::CallInvoker>& jsInvoker);
+  public static T types;
+  public static facebook::jsi::Object toJs(facebook::jsi::Runtime& rt, const T& value, const std::shared_ptr<facebook::react::CallInvoker>& jsInvoker);
+}
+
+template <typename T>
+struct facebook::react::NativeBlobModuleBlobDescriptorBridging {
+  public static T fromJs(facebook::jsi::Runtime& rt, const facebook::jsi::Object& value, const std::shared_ptr<facebook::react::CallInvoker>& jsInvoker);
+  public static T types;
+  public static facebook::jsi::Object toJs(facebook::jsi::Runtime& rt, const T& value, const std::shared_ptr<facebook::react::CallInvoker>& jsInvoker);
+}
+
+template <typename T>
+struct facebook::react::NativeBlobModuleBlobReferencePartBridging {
+  public static T fromJs(facebook::jsi::Runtime& rt, const facebook::jsi::Object& value, const std::shared_ptr<facebook::react::CallInvoker>& jsInvoker);
+  public static T types;
+  public static facebook::jsi::Object toJs(facebook::jsi::Runtime& rt, const T& value, const std::shared_ptr<facebook::react::CallInvoker>& jsInvoker);
+}
+
+template <typename T>
+struct facebook::react::NativeBlobModuleBlobStringPartBridging {
+  public static T fromJs(facebook::jsi::Runtime& rt, const facebook::jsi::Object& value, const std::shared_ptr<facebook::react::CallInvoker>& jsInvoker);
+  public static T types;
+  public static facebook::jsi::Object toJs(facebook::jsi::Runtime& rt, const T& value, const std::shared_ptr<facebook::react::CallInvoker>& jsInvoker);
+}
+
+template <typename T>
 struct facebook::react::NativeBlobModuleConstantsBridging {
   public static T fromJs(facebook::jsi::Runtime& rt, const facebook::jsi::Object& value, const std::shared_ptr<facebook::react::CallInvoker>& jsInvoker);
   public static T types;
@@ -9348,6 +9424,13 @@ struct facebook::react::NativeExceptionsManagerExceptionDataBridging {
 
 template <typename T>
 struct facebook::react::NativeExceptionsManagerStackFrameBridging {
+  public static T fromJs(facebook::jsi::Runtime& rt, const facebook::jsi::Object& value, const std::shared_ptr<facebook::react::CallInvoker>& jsInvoker);
+  public static T types;
+  public static facebook::jsi::Object toJs(facebook::jsi::Runtime& rt, const T& value, const std::shared_ptr<facebook::react::CallInvoker>& jsInvoker);
+}
+
+template <typename T>
+struct facebook::react::NativeFileReaderModuleBlobDescriptorBridging {
   public static T fromJs(facebook::jsi::Runtime& rt, const facebook::jsi::Object& value, const std::shared_ptr<facebook::react::CallInvoker>& jsInvoker);
   public static T types;
   public static facebook::jsi::Object toJs(facebook::jsi::Runtime& rt, const T& value, const std::shared_ptr<facebook::react::CallInvoker>& jsInvoker);

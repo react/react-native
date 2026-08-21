@@ -5,13 +5,12 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include <cstring>
 #include <limits>
 #include <memory>
+#include <optional>
 #include <string>
 
 #include <cxxreact/TraceSection.h>
-#include <fbjni/ByteBuffer.h>
 #include <fbjni/fbjni.h>
 #include <glog/logging.h>
 #include <jsi/jsi.h>
@@ -24,6 +23,7 @@
 #include <react/debug/react_native_assert.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/jni/JArrayBuffer.h>
+#include <react/jni/JArrayBufferCallback.h>
 #include <react/jni/JDynamicNative.h>
 #include <react/jni/NativeMap.h>
 #include <react/jni/ReadableNativeMap.h>
@@ -134,20 +134,37 @@ jsi::Value createRejectionError(jsi::Runtime& rt, const folly::dynamic& args) {
   return jsError;
 }
 
-auto createJavaCallback(
-    jsi::Runtime& rt,
-    jsi::Function&& function,
-    std::shared_ptr<CallInvoker> jsInvoker) {
-  std::optional<AsyncCallback<>> callback(
-      {rt, std::move(function), std::move(jsInvoker)});
-  return JCxxCallbackImpl::newObjectCxxArgs(
-      [callback = std::move(callback)](folly::dynamic args) mutable {
-        if (!callback) {
-          LOG(FATAL) << "Callback arg cannot be called more than once";
-          return;
-        }
-        callback->call([args = std::move(args)](
-                           jsi::Runtime& rt, jsi::Function& jsFunction) {
+class OnceCallback {
+  std::optional<AsyncCallback<>> callback_;
+
+ public:
+  OnceCallback(
+      jsi::Runtime& rt,
+      jsi::Function function,
+      std::shared_ptr<CallInvoker> jsInvoker)
+      : callback_(
+            AsyncCallback<>(rt, std::move(function), std::move(jsInvoker))) {}
+
+  OnceCallback(const OnceCallback&) = delete;
+  OnceCallback& operator=(const OnceCallback&) = delete;
+  OnceCallback(OnceCallback&&) = default;
+  OnceCallback& operator=(OnceCallback&&) = default;
+
+  template <typename F>
+  void call(const char* what, F&& invoke) {
+    if (!callback_) {
+      LOG(FATAL) << what << " cannot be called more than once";
+      return;
+    }
+    callback_->call(std::forward<F>(invoke));
+    callback_ = std::nullopt;
+  }
+
+  void callWithArgs(const char* what, folly::dynamic&& args) noexcept {
+    call(
+        what,
+        [args = std::move(args)](
+            jsi::Runtime& rt, jsi::Function& jsFunction) mutable {
           std::vector<jsi::Value> jsArgs;
           jsArgs.reserve(args.size());
           for (const auto& val : args) {
@@ -155,27 +172,135 @@ auto createJavaCallback(
           }
           jsFunction.call(rt, (const jsi::Value*)jsArgs.data(), jsArgs.size());
         });
-        callback = std::nullopt;
-      });
+  }
+};
+
+template <typename JavaCallbackImpl, typename Handler>
+jni::local_ref<JCallback::javaobject> makeJavaOnceCallback(
+    jsi::Runtime& rt,
+    jsi::Function function,
+    std::shared_ptr<CallInvoker> jsInvoker,
+    Handler handler) {
+  auto once = std::make_shared<OnceCallback>(
+      rt, std::move(function), std::move(jsInvoker));
+  return jni::static_ref_cast<JCallback::javaobject>(
+      JavaCallbackImpl::newObjectCxxArgs(
+          [once = std::move(once),
+           handler = std::move(handler)](auto&&... args) mutable {
+            handler(*once, std::forward<decltype(args)>(args)...);
+          }));
 }
 
-auto createJavaRejectCallback(
+jni::local_ref<JCallback::javaobject> createJavaCallback(
     jsi::Runtime& rt,
     jsi::Function&& function,
     std::shared_ptr<CallInvoker> jsInvoker) {
-  std::optional<AsyncCallback<>> callback(
-      {rt, std::move(function), std::move(jsInvoker)});
-  return JCxxCallbackImpl::newObjectCxxArgs(
-      [callback = std::move(callback)](folly::dynamic args) mutable {
-        if (!callback) {
-          LOG(FATAL) << "Callback arg cannot be called more than once";
+  return makeJavaOnceCallback<JCxxCallbackImpl>(
+      rt,
+      std::move(function),
+      std::move(jsInvoker),
+      [](OnceCallback& once, folly::dynamic args) {
+        once.callWithArgs("Callback arg", std::move(args));
+      });
+}
+
+jni::local_ref<JCallback::javaobject> createJavaArrayBufferCallback(
+    jsi::Runtime& rt,
+    jsi::Function&& resolveFunction,
+    jsi::Function&& rejectFunction,
+    std::shared_ptr<CallInvoker> jsInvoker) {
+  auto rejectMisuse =
+      std::make_shared<OnceCallback>(rt, std::move(rejectFunction), jsInvoker);
+  return makeJavaOnceCallback<JCxxArrayBufferCallbackImpl>(
+      rt,
+      std::move(resolveFunction),
+      std::move(jsInvoker),
+      [rejectMisuse = std::move(rejectMisuse)](
+          OnceCallback& once,
+          jni::alias_ref<JArrayBuffer::javaobject> arrayBuffer,
+          jni::alias_ref<jni::JString> error) {
+        auto reject = [&rejectMisuse](std::string message) {
+          rejectMisuse->call(
+              "Promise reject",
+              [message = "Invalid Promise<ArrayBuffer> resolution: " +
+                   std::move(message)](
+                  jsi::Runtime& rt, jsi::Function& jsFunction) {
+                jsFunction.call(rt, createJSRuntimeError(rt, message));
+              });
+        };
+
+        if (error) {
+          reject(error->toStdString());
           return;
         }
-        callback->call([args = std::move(args)](
-                           jsi::Runtime& rt, jsi::Function& jsFunction) {
-          jsFunction.call(rt, createRejectionError(rt, args));
-        });
-        callback = std::nullopt;
+
+        // Kotlin has already rejected anything but null or an owning
+        // ArrayBuffer, and invalidate() never revokes an owning buffer, so the
+        // peer's bytes are still there and can go to JS unchanged. hasBytes()
+        // is re-checked anyway: mutableBuffer() throws without it, and letting
+        // a std::runtime_error escape a JNI frame is a poor way to find out
+        // that the two sides ever disagreed about ownership.
+        std::shared_ptr<jsi::MutableBuffer> buffer;
+        if (arrayBuffer) {
+          auto* peer = arrayBuffer->cthis();
+          if (peer == nullptr) {
+            reject("ArrayBuffer has no native peer.");
+            return;
+          }
+          if (!peer->hasBytes()) {
+            reject(
+                "the bytes of this ArrayBuffer are no longer valid. Copy them "
+                "with ArrayBuffer.arrayBufferWithCopiedBytes() to resolve with "
+                "them later.");
+            return;
+          }
+          buffer = peer->mutableBuffer();
+        }
+
+        once.call(
+            "Promise resolve",
+            [buffer = std::move(buffer)](
+                jsi::Runtime& rt, jsi::Function& jsFunction) {
+              if (!buffer) {
+                jsFunction.call(rt, jsi::Value::null());
+                return;
+              }
+              jsFunction.call(rt, jsi::Value(jsi::ArrayBuffer(rt, buffer)));
+            });
+      });
+}
+
+jni::local_ref<JCallback::javaobject> createJavaResolveCallback(
+    jsi::Runtime& rt,
+    jsi::Function&& resolveFunction,
+    jsi::Function&& rejectFunction,
+    std::shared_ptr<CallInvoker> jsInvoker,
+    bool promiseResolveSupportsArrayBuffer) {
+  return promiseResolveSupportsArrayBuffer
+      ? createJavaArrayBufferCallback(
+            rt,
+            std::move(resolveFunction),
+            std::move(rejectFunction),
+            std::move(jsInvoker))
+      : createJavaCallback(
+            rt, std::move(resolveFunction), std::move(jsInvoker));
+}
+
+jni::local_ref<JCallback::javaobject> createJavaRejectCallback(
+    jsi::Runtime& rt,
+    jsi::Function&& function,
+    std::shared_ptr<CallInvoker> jsInvoker) {
+  return makeJavaOnceCallback<JCxxCallbackImpl>(
+      rt,
+      std::move(function),
+      std::move(jsInvoker),
+      [](OnceCallback& once, folly::dynamic args) {
+        once.call(
+            "Promise reject",
+            [args = std::move(args)](
+                jsi::Runtime& rt, jsi::Function& jsFunction) {
+              jsFunction.call(rt, createRejectionError(rt, args));
+            });
       });
 }
 
@@ -302,6 +427,67 @@ std::vector<std::string> getMethodArgTypesFromSignature(
 int32_t getUniqueId() {
   static int32_t counter = 0;
   return counter++;
+}
+
+jni::local_ref<JArrayBuffer::javaobject> convertJSIArrayBufferToJArrayBuffer(
+    jsi::Runtime& rt,
+    const jsi::Value* arg,
+    int argIndex,
+    const std::string& methodName,
+    bool isSyncInvocation,
+    std::vector<jni::local_ref<JArrayBuffer::javaobject>>* borrowedBuffers) {
+  if (!(arg->isObject() && arg->getObject(rt).isArrayBuffer(rt))) {
+    throw JavaTurboModuleArgumentConversionException(
+        "ArrayBuffer", argIndex, methodName, arg, &rt);
+  }
+
+  auto arrayBuffer = arg->getObject(rt).getArrayBuffer(rt);
+  AsyncArrayBuffer::throwIfDetached(
+      rt, arrayBuffer, "JavaTurboModule::convertJSIArgsToJNIArgs");
+
+  auto size = arrayBuffer.size(rt);
+  if (size > static_cast<size_t>(std::numeric_limits<jint>::max())) {
+    throw jsi::JSError(
+        rt,
+        "JavaTurboModule::convertJSIArgsToJNIArgs: ArrayBuffer exceeds maximum size.");
+  }
+
+  // Runtimes without a native buffer for this ArrayBuffer return nullptr,
+  // but the Static Hermes tracing runtime throws instead, and argument
+  // conversion runs outside any std::exception handler. Treat a failed
+  // probe as "no native buffer" so a traced session copies the bytes rather
+  // than aborting the process.
+  std::shared_ptr<jsi::MutableBuffer> mutableBuffer;
+  try {
+    mutableBuffer = arrayBuffer.tryGetMutableBuffer(rt);
+  } catch (const std::exception&) {
+    mutableBuffer = nullptr;
+  }
+
+  bool borrowsJSBytes = false;
+  auto jArrayBuffer = [&]() {
+    // Backed by a native buffer: alias it and retain its owner, so the
+    // bytes stay valid for as long as the module holds the ArrayBuffer.
+    if (mutableBuffer) {
+      return JArrayBuffer::createOwning(std::move(mutableBuffer));
+    }
+
+    // JS heap bytes on a synchronous call: lend them for the duration of
+    // the call.
+    if (isSyncInvocation) {
+      borrowsJSBytes = true;
+      return JArrayBuffer::createUnowned(arrayBuffer.data(rt), size);
+    }
+
+    // JS heap bytes that outlive the call: copy.
+    return JArrayBuffer::createOwned(arrayBuffer.data(rt), size);
+  }();
+
+  if (borrowsJSBytes) {
+    borrowedBuffers->push_back(jni::make_local(jArrayBuffer));
+  }
+
+  return jArrayBuffer;
 }
 
 // fbjni already does this conversion, but since we are using plain JNI, this
@@ -460,57 +646,53 @@ JNIArgs convertJSIArgsToJNIArgs(
       auto jParams = JDynamicNative::newObjectCxxArgs(dynamicFromValue);
       jarg->l = makeGlobalIfNecessary(jParams.release());
     } else if (type == "Lcom/facebook/react/bridge/ArrayBuffer;") {
-      if (!(arg->isObject() && arg->getObject(rt).isArrayBuffer(rt))) {
+      auto jArrayBuffer = convertJSIArrayBufferToJArrayBuffer(
+          rt,
+          arg,
+          argIndex,
+          methodName,
+          isSyncInvocation,
+          &jniArgs.borrowedBuffers);
+      jarg->l = makeGlobalIfNecessary(jArrayBuffer.release());
+    } else if (type == "[Lcom/facebook/react/bridge/ArrayBuffer;") {
+      if (!(arg->isObject() && arg->getObject(rt).isArray(rt))) {
         throw JavaTurboModuleArgumentConversionException(
-            "ArrayBuffer", argIndex, methodName, arg, &rt);
+            "Array<ArrayBuffer>", argIndex, methodName, arg, &rt);
       }
 
-      auto arrayBuffer = arg->getObject(rt).getArrayBuffer(rt);
-      AsyncArrayBuffer::throwIfDetached(
-          rt, arrayBuffer, "JavaTurboModule::convertJSIArgsToJNIArgs");
-
-      auto size = arrayBuffer.size(rt);
-      if (size > static_cast<size_t>(std::numeric_limits<jint>::max())) {
+      auto jsArray = arg->getObject(rt).getArray(rt);
+      auto arraySize = jsArray.size(rt);
+      if (arraySize > static_cast<size_t>(std::numeric_limits<jint>::max())) {
         throw jsi::JSError(
             rt,
-            "JavaTurboModule::convertJSIArgsToJNIArgs: ArrayBuffer exceeds maximum size.");
+            "JavaTurboModule::convertJSIArgsToJNIArgs: Array<ArrayBuffer> exceeds maximum size.");
       }
 
-      // Runtimes without a native buffer for this ArrayBuffer return nullptr,
-      // but the Static Hermes tracing runtime throws instead, and argument
-      // conversion runs outside any std::exception handler. Treat a failed
-      // probe as "no native buffer" so a traced session copies the bytes rather
-      // than aborting the process.
-      std::shared_ptr<jsi::MutableBuffer> mutableBuffer;
-      try {
-        mutableBuffer = arrayBuffer.tryGetMutableBuffer(rt);
-      } catch (const std::exception&) {
-        mutableBuffer = nullptr;
-      }
+      auto result =
+          jni::JArrayClass<JArrayBuffer::javaobject>::newArray(arraySize);
 
-      bool borrowsJSBytes = false;
-      auto jArrayBuffer = [&]() {
-        // Backed by a native buffer: alias it and retain its owner, so the
-        // bytes stay valid for as long as the module holds the ArrayBuffer.
-        if (mutableBuffer) {
-          return JArrayBuffer::createOwning(std::move(mutableBuffer));
+      for (size_t i = 0; i < arraySize; i++) {
+        auto element = jsArray.getValueAtIndex(rt, i);
+        try {
+          auto jArrayBuffer = convertJSIArrayBufferToJArrayBuffer(
+              rt,
+              &element,
+              argIndex,
+              methodName,
+              isSyncInvocation,
+              &jniArgs.borrowedBuffers);
+          result->setElement(i, jArrayBuffer.get());
+        } catch (const JavaTurboModuleArgumentConversionException&) {
+          throw JavaTurboModuleArgumentConversionException(
+              "ArrayBuffer at index " + std::to_string(i),
+              argIndex,
+              methodName,
+              &element,
+              &rt);
         }
-
-        // JS heap bytes on a synchronous call: lend them for the duration of
-        // the call.
-        if (isSyncInvocation) {
-          borrowsJSBytes = true;
-          return JArrayBuffer::createUnowned(arrayBuffer.data(rt), size);
-        }
-
-        // JS heap bytes that outlive the call: copy.
-        return JArrayBuffer::createOwned(arrayBuffer.data(rt), size);
-      }();
-
-      if (borrowsJSBytes) {
-        jniArgs.borrowedBuffers.push_back(jni::make_local(jArrayBuffer));
       }
-      jarg->l = makeGlobalIfNecessary(jArrayBuffer.release());
+
+      jarg->l = makeGlobalIfNecessary(result.release());
     } else {
       throw JavaTurboModuleInvalidArgumentTypeException(
           type, argIndex, methodName);
@@ -595,7 +777,11 @@ jsi::Value JavaTurboModule::invokeJavaMethod(
     const std::string& methodSignature,
     const jsi::Value* args,
     size_t argCount,
-    jmethodID& methodID) {
+    jmethodID& methodID,
+    bool promiseResolveSupportsArrayBuffer) {
+  react_native_assert(
+      !promiseResolveSupportsArrayBuffer || valueKind == PromiseKind);
+
   const char* methodName = methodNameStr.c_str();
   const char* moduleName = name_.c_str();
 
@@ -959,10 +1145,12 @@ jsi::Value JavaTurboModule::invokeJavaMethod(
                     args[1].getObject(runtime).getFunction(runtime),
                     jsInvoker_);
 
-                auto resolve = createJavaCallback(
+                auto resolve = createJavaResolveCallback(
                     runtime,
                     args[0].getObject(runtime).getFunction(runtime),
-                    jsInvoker_);
+                    args[1].getObject(runtime).getFunction(runtime),
+                    jsInvoker_,
+                    promiseResolveSupportsArrayBuffer);
                 auto reject = createJavaRejectCallback(
                     runtime,
                     args[1].getObject(runtime).getFunction(runtime),

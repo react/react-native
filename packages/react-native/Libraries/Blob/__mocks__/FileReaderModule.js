@@ -9,6 +9,9 @@
  */
 
 const FileReaderModule = {
+  async readAsArrayBuffer(): Promise<ArrayBuffer> {
+    return Uint8Array.from([52, 50]).buffer;
+  },
   async readAsText(): Promise<string> {
     return '';
   },

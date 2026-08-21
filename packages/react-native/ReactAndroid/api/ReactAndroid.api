@@ -2500,7 +2500,7 @@ public final class com/facebook/react/modules/blob/BlobModule : com/facebook/fbr
 	public fun <init> (Lcom/facebook/react/bridge/ReactApplicationContext;)V
 	public fun addNetworkingHandler ()V
 	public fun addWebSocketHandler (D)V
-	public fun createFromParts (Lcom/facebook/react/bridge/ReadableArray;Ljava/lang/String;)V
+	public fun createFromParts (Lcom/facebook/react/bridge/ReadableArray;[Lcom/facebook/react/bridge/ArrayBuffer;Ljava/lang/String;)V
 	public fun getBindingsInstaller ()Lcom/facebook/react/turbomodule/core/interfaces/BindingsInstallerHolder;
 	public final fun getLengthOfBlob (Ljava/lang/String;)J
 	public fun getTypedExportedConstants ()Ljava/util/Map;
@@ -2510,6 +2510,7 @@ public final class com/facebook/react/modules/blob/BlobModule : com/facebook/fbr
 	public final fun resolve (Landroid/net/Uri;)[B
 	public final fun resolve (Lcom/facebook/react/bridge/ReadableMap;)[B
 	public final fun resolve (Ljava/lang/String;II)[B
+	public final fun resolveBuffer (Ljava/lang/String;II)Lcom/facebook/react/bridge/ArrayBuffer;
 	public fun sendOverSocket (Lcom/facebook/react/bridge/ReadableMap;D)V
 	public final fun store ([B)Ljava/lang/String;
 	public final fun store ([BLjava/lang/String;)V
@@ -2532,6 +2533,7 @@ public final class com/facebook/react/modules/blob/BlobProvider : android/conten
 public final class com/facebook/react/modules/blob/FileReaderModule : com/facebook/fbreact/specs/NativeFileReaderModuleSpec {
 	public static final field Companion Lcom/facebook/react/modules/blob/FileReaderModule$Companion;
 	public fun <init> (Lcom/facebook/react/bridge/ReactApplicationContext;)V
+	public fun readAsArrayBuffer (Lcom/facebook/react/bridge/ReadableMap;Lcom/facebook/react/bridge/Promise;)V
 	public fun readAsDataURL (Lcom/facebook/react/bridge/ReadableMap;Lcom/facebook/react/bridge/Promise;)V
 	public fun readAsText (Lcom/facebook/react/bridge/ReadableMap;Ljava/lang/String;Lcom/facebook/react/bridge/Promise;)V
 }

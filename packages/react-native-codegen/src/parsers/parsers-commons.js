@@ -54,6 +54,8 @@ const {
   throwIfMoreThanOneModuleRegistryCalls,
   throwIfPropertyValueTypeIsUnsupported,
   throwIfTypeAliasIsNotInterface,
+  throwIfUnsupportedArrayBufferArrayUsage,
+  throwIfUnsupportedArrayBufferArrayUsageInEventEmitter,
   throwIfUnsupportedFunctionParamTypeAnnotationParserError,
   throwIfUnsupportedFunctionReturnTypeAnnotationParserError,
   throwIfUntypedModule,
@@ -466,23 +468,32 @@ function buildPropertySchema(
     parser,
   );
 
+  const functionTypeAnnotation = translateFunctionTypeAnnotation(
+    hasteModuleName,
+    value,
+    types,
+    aliasMap,
+    enumMap,
+    tryParse,
+    cxxOnly,
+    translateTypeAnnotation,
+    parser,
+  );
+
+  if (!cxxOnly) {
+    throwIfUnsupportedArrayBufferArrayUsage(
+      hasteModuleName,
+      property,
+      methodName,
+      functionTypeAnnotation,
+      aliasMap,
+    );
+  }
+
   return {
     name: methodName,
     optional: Boolean(property.optional),
-    typeAnnotation: wrapNullable(
-      nullable,
-      translateFunctionTypeAnnotation(
-        hasteModuleName,
-        value,
-        types,
-        aliasMap,
-        enumMap,
-        tryParse,
-        cxxOnly,
-        translateTypeAnnotation,
-        parser,
-      ),
-    ),
+    typeAnnotation: wrapNullable(nullable, functionTypeAnnotation),
   };
 }
 
@@ -550,6 +561,16 @@ function buildEventEmitterSchema(
     cxxOnly,
     parser,
   );
+
+  if (!cxxOnly) {
+    throwIfUnsupportedArrayBufferArrayUsageInEventEmitter(
+      hasteModuleName,
+      property,
+      eventemitterName,
+      eventTypeAnnotation,
+      aliasMap,
+    );
+  }
 
   return {
     name: eventemitterName,
