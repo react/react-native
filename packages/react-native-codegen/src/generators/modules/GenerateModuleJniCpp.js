@@ -24,11 +24,7 @@ import type {AliasResolver} from './Utils';
 
 const {unwrapNullable} = require('../../parsers/parsers-commons');
 const {parseValidUnionType} = require('../Utils');
-const {
-  createAliasResolver,
-  getModules,
-  throwIfUnsupportedPromiseArrayBuffer,
-} = require('./Utils');
+const {createAliasResolver, getModules} = require('./Utils');
 
 type FilesOutput = Map<string, string>;
 
@@ -47,15 +43,20 @@ const HostFunctionTemplate = ({
   propertyName,
   jniSignature,
   jsReturnType,
+  promiseResolveSupportsArrayBuffer,
 }: Readonly<{
   hasteModuleName: string,
   propertyName: string,
   jniSignature: string,
   jsReturnType: JSReturnType,
+  promiseResolveSupportsArrayBuffer: boolean,
 }>) => {
+  const promiseResolveSupportsArrayBufferArg = promiseResolveSupportsArrayBuffer
+    ? ', true'
+    : '';
   return `static facebook::jsi::Value __hostFunction_${hasteModuleName}SpecJSI_${propertyName}(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
   static jmethodID cachedMethodId = nullptr;
-  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, ${jsReturnType}, "${propertyName}", "${jniSignature}", args, count, cachedMethodId);
+  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, ${jsReturnType}, "${propertyName}", "${jniSignature}", args, count, cachedMethodId${promiseResolveSupportsArrayBufferArg});
 }`;
 };
 
@@ -406,6 +407,23 @@ function translateReturnTypeToJniType(
   }
 }
 
+function doesPromiseResolveSupportArrayBuffer(
+  nullableReturnTypeAnnotation: Nullable<NativeModuleReturnTypeAnnotation>,
+): boolean {
+  const [returnTypeAnnotation] =
+    unwrapNullable<NativeModuleReturnTypeAnnotation>(
+      nullableReturnTypeAnnotation,
+    );
+  if (returnTypeAnnotation.type !== 'PromiseTypeAnnotation') {
+    return false;
+  }
+
+  let elementType = returnTypeAnnotation.elementType;
+  [elementType] = unwrapNullable(elementType);
+
+  return elementType.type === 'ArrayBufferTypeAnnotation';
+}
+
 function translateMethodTypeToJniSignature(
   property: NativeModulePropertyShape,
   resolveAlias: AliasResolver,
@@ -453,8 +471,6 @@ function translateMethodForImplementation(
     unwrapNullable<NativeModuleFunctionTypeAnnotation>(property.typeAnnotation);
   const {returnTypeAnnotation} = propertyTypeAnnotation;
 
-  throwIfUnsupportedPromiseArrayBuffer(property.name, returnTypeAnnotation);
-
   if (
     property.name === 'getConstants' &&
     returnTypeAnnotation.type === 'ObjectTypeAnnotation' &&
@@ -468,6 +484,8 @@ function translateMethodForImplementation(
     propertyName: property.name,
     jniSignature: translateMethodTypeToJniSignature(property, resolveAlias),
     jsReturnType: translateReturnTypeToKind(returnTypeAnnotation, resolveAlias),
+    promiseResolveSupportsArrayBuffer:
+      doesPromiseResolveSupportArrayBuffer(returnTypeAnnotation),
   });
 }
 

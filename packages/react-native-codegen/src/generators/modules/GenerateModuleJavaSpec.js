@@ -25,11 +25,7 @@ import type {AliasResolver} from './Utils';
 const {unwrapNullable} = require('../../parsers/parsers-commons');
 const {wrapOptional} = require('../TypeUtils/Java');
 const {parseValidUnionType, toPascalCase} = require('../Utils');
-const {
-  createAliasResolver,
-  getModules,
-  throwIfUnsupportedPromiseArrayBuffer,
-} = require('./Utils');
+const {createAliasResolver, getModules} = require('./Utils');
 
 type FilesOutput = Map<string, string>;
 
@@ -598,11 +594,6 @@ module.exports = {
           unwrapNullable<NativeModuleFunctionTypeAnnotation>(
             method.typeAnnotation,
           );
-
-        throwIfUnsupportedPromiseArrayBuffer(
-          method.name,
-          methodTypeAnnotation.returnTypeAnnotation,
-        );
 
         // Handle return type
         const translatedReturnType = translateFunctionReturnTypeToJavaType(

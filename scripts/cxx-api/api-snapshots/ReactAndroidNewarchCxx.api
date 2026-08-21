@@ -2786,6 +2786,11 @@ class facebook::react::JByteBufferMutableBuffer : public facebook::jsi::MutableB
   public ~JByteBufferMutableBuffer() override;
 }
 
+class facebook::react::JCxxArrayBufferCallbackImpl : public jni::HybridClass<facebook::react::JCxxArrayBufferCallbackImpl, facebook::react::JCallback> {
+  public static constexpr auto kJavaDescriptor;
+  public static void registerNatives();
+}
+
 class facebook::react::JCxxCallbackImpl : public jni::HybridClass<facebook::react::JCxxCallbackImpl, facebook::react::JCallback> {
   public static constexpr auto kJavaDescriptor;
   public static void registerNatives();
@@ -3022,7 +3027,7 @@ class facebook::react::JavaTurboModule : public facebook::react::TurboModule {
   protected void configureEventEmitterCallback();
   protected void setEventEmitterCallback(jni::alias_ref<jobject>);
   public JavaTurboModule(const facebook::react::JavaTurboModule::InitParams& params);
-  public facebook::jsi::Value invokeJavaMethod(facebook::jsi::Runtime& runtime, facebook::react::TurboModuleMethodValueKind valueKind, const std::string& methodName, const std::string& methodSignature, const facebook::jsi::Value* args, size_t argCount, jmethodID& cachedMethodID);
+  public facebook::jsi::Value invokeJavaMethod(facebook::jsi::Runtime& runtime, facebook::react::TurboModuleMethodValueKind valueKind, const std::string& methodName, const std::string& methodSignature, const facebook::jsi::Value* args, size_t argCount, jmethodID& cachedMethodID, bool promiseResolveSupportsArrayBuffer = false);
   public virtual ~JavaTurboModule();
 }
 

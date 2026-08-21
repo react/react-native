@@ -8,6 +8,7 @@
 #include <cstring>
 #include <limits>
 #include <memory>
+#include <optional>
 #include <string>
 
 #include <cxxreact/TraceSection.h>
@@ -24,6 +25,7 @@
 #include <react/debug/react_native_assert.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/jni/JArrayBuffer.h>
+#include <react/jni/JArrayBufferCallback.h>
 #include <react/jni/JDynamicNative.h>
 #include <react/jni/NativeMap.h>
 #include <react/jni/ReadableNativeMap.h>
@@ -134,20 +136,37 @@ jsi::Value createRejectionError(jsi::Runtime& rt, const folly::dynamic& args) {
   return jsError;
 }
 
-auto createJavaCallback(
-    jsi::Runtime& rt,
-    jsi::Function&& function,
-    std::shared_ptr<CallInvoker> jsInvoker) {
-  std::optional<AsyncCallback<>> callback(
-      {rt, std::move(function), std::move(jsInvoker)});
-  return JCxxCallbackImpl::newObjectCxxArgs(
-      [callback = std::move(callback)](folly::dynamic args) mutable {
-        if (!callback) {
-          LOG(FATAL) << "Callback arg cannot be called more than once";
-          return;
-        }
-        callback->call([args = std::move(args)](
-                           jsi::Runtime& rt, jsi::Function& jsFunction) {
+class OnceCallback {
+  std::optional<AsyncCallback<>> callback_;
+
+ public:
+  OnceCallback(
+      jsi::Runtime& rt,
+      jsi::Function function,
+      std::shared_ptr<CallInvoker> jsInvoker)
+      : callback_(
+            AsyncCallback<>(rt, std::move(function), std::move(jsInvoker))) {}
+
+  OnceCallback(const OnceCallback&) = delete;
+  OnceCallback& operator=(const OnceCallback&) = delete;
+  OnceCallback(OnceCallback&&) = default;
+  OnceCallback& operator=(OnceCallback&&) = default;
+
+  template <typename F>
+  void call(const char* what, F&& invoke) {
+    if (!callback_) {
+      LOG(FATAL) << what << " cannot be called more than once";
+      return;
+    }
+    callback_->call(std::forward<F>(invoke));
+    callback_ = std::nullopt;
+  }
+
+  void callWithArgs(const char* what, folly::dynamic&& args) noexcept {
+    call(
+        what,
+        [args = std::move(args)](
+            jsi::Runtime& rt, jsi::Function& jsFunction) mutable {
           std::vector<jsi::Value> jsArgs;
           jsArgs.reserve(args.size());
           for (const auto& val : args) {
@@ -155,27 +174,135 @@ auto createJavaCallback(
           }
           jsFunction.call(rt, (const jsi::Value*)jsArgs.data(), jsArgs.size());
         });
-        callback = std::nullopt;
-      });
+  }
+};
+
+template <typename JavaCallbackImpl, typename Handler>
+jni::local_ref<JCallback::javaobject> makeJavaOnceCallback(
+    jsi::Runtime& rt,
+    jsi::Function function,
+    std::shared_ptr<CallInvoker> jsInvoker,
+    Handler handler) {
+  auto once = std::make_shared<OnceCallback>(
+      rt, std::move(function), std::move(jsInvoker));
+  return jni::static_ref_cast<JCallback::javaobject>(
+      JavaCallbackImpl::newObjectCxxArgs(
+          [once = std::move(once),
+           handler = std::move(handler)](auto&&... args) mutable {
+            handler(*once, std::forward<decltype(args)>(args)...);
+          }));
 }
 
-auto createJavaRejectCallback(
+jni::local_ref<JCallback::javaobject> createJavaCallback(
     jsi::Runtime& rt,
     jsi::Function&& function,
     std::shared_ptr<CallInvoker> jsInvoker) {
-  std::optional<AsyncCallback<>> callback(
-      {rt, std::move(function), std::move(jsInvoker)});
-  return JCxxCallbackImpl::newObjectCxxArgs(
-      [callback = std::move(callback)](folly::dynamic args) mutable {
-        if (!callback) {
-          LOG(FATAL) << "Callback arg cannot be called more than once";
+  return makeJavaOnceCallback<JCxxCallbackImpl>(
+      rt,
+      std::move(function),
+      std::move(jsInvoker),
+      [](OnceCallback& once, folly::dynamic args) {
+        once.callWithArgs("Callback arg", std::move(args));
+      });
+}
+
+jni::local_ref<JCallback::javaobject> createJavaArrayBufferCallback(
+    jsi::Runtime& rt,
+    jsi::Function&& resolveFunction,
+    jsi::Function&& rejectFunction,
+    std::shared_ptr<CallInvoker> jsInvoker) {
+  auto rejectMisuse =
+      std::make_shared<OnceCallback>(rt, std::move(rejectFunction), jsInvoker);
+  return makeJavaOnceCallback<JCxxArrayBufferCallbackImpl>(
+      rt,
+      std::move(resolveFunction),
+      std::move(jsInvoker),
+      [rejectMisuse = std::move(rejectMisuse)](
+          OnceCallback& once,
+          jni::alias_ref<JArrayBuffer::javaobject> arrayBuffer,
+          jni::alias_ref<jni::JString> error) {
+        auto reject = [&rejectMisuse](std::string message) {
+          rejectMisuse->call(
+              "Promise reject",
+              [message = "Invalid Promise<ArrayBuffer> resolution: " +
+                   std::move(message)](
+                  jsi::Runtime& rt, jsi::Function& jsFunction) {
+                jsFunction.call(rt, createJSRuntimeError(rt, message));
+              });
+        };
+
+        if (error) {
+          reject(error->toStdString());
           return;
         }
-        callback->call([args = std::move(args)](
-                           jsi::Runtime& rt, jsi::Function& jsFunction) {
-          jsFunction.call(rt, createRejectionError(rt, args));
-        });
-        callback = std::nullopt;
+
+        // Kotlin has already rejected anything but null or an owning
+        // ArrayBuffer, and invalidate() never revokes an owning buffer, so the
+        // peer's bytes are still there and can go to JS unchanged. hasBytes()
+        // is re-checked anyway: mutableBuffer() throws without it, and letting
+        // a std::runtime_error escape a JNI frame is a poor way to find out
+        // that the two sides ever disagreed about ownership.
+        std::shared_ptr<jsi::MutableBuffer> buffer;
+        if (arrayBuffer) {
+          auto* peer = arrayBuffer->cthis();
+          if (peer == nullptr) {
+            reject("ArrayBuffer has no native peer.");
+            return;
+          }
+          if (!peer->hasBytes()) {
+            reject(
+                "the bytes of this ArrayBuffer are no longer valid. Copy them "
+                "with ArrayBuffer.arrayBufferWithCopiedBytes() to resolve with "
+                "them later.");
+            return;
+          }
+          buffer = peer->mutableBuffer();
+        }
+
+        once.call(
+            "Promise resolve",
+            [buffer = std::move(buffer)](
+                jsi::Runtime& rt, jsi::Function& jsFunction) {
+              if (!buffer) {
+                jsFunction.call(rt, jsi::Value::null());
+                return;
+              }
+              jsFunction.call(rt, jsi::Value(jsi::ArrayBuffer(rt, buffer)));
+            });
+      });
+}
+
+jni::local_ref<JCallback::javaobject> createJavaResolveCallback(
+    jsi::Runtime& rt,
+    jsi::Function&& resolveFunction,
+    jsi::Function&& rejectFunction,
+    std::shared_ptr<CallInvoker> jsInvoker,
+    bool promiseResolveSupportsArrayBuffer) {
+  return promiseResolveSupportsArrayBuffer
+      ? createJavaArrayBufferCallback(
+            rt,
+            std::move(resolveFunction),
+            std::move(rejectFunction),
+            std::move(jsInvoker))
+      : createJavaCallback(
+            rt, std::move(resolveFunction), std::move(jsInvoker));
+}
+
+jni::local_ref<JCallback::javaobject> createJavaRejectCallback(
+    jsi::Runtime& rt,
+    jsi::Function&& function,
+    std::shared_ptr<CallInvoker> jsInvoker) {
+  return makeJavaOnceCallback<JCxxCallbackImpl>(
+      rt,
+      std::move(function),
+      std::move(jsInvoker),
+      [](OnceCallback& once, folly::dynamic args) {
+        once.call(
+            "Promise reject",
+            [args = std::move(args)](
+                jsi::Runtime& rt, jsi::Function& jsFunction) {
+              jsFunction.call(rt, createRejectionError(rt, args));
+            });
       });
 }
 
@@ -595,7 +722,11 @@ jsi::Value JavaTurboModule::invokeJavaMethod(
     const std::string& methodSignature,
     const jsi::Value* args,
     size_t argCount,
-    jmethodID& methodID) {
+    jmethodID& methodID,
+    bool promiseResolveSupportsArrayBuffer) {
+  react_native_assert(
+      !promiseResolveSupportsArrayBuffer || valueKind == PromiseKind);
+
   const char* methodName = methodNameStr.c_str();
   const char* moduleName = name_.c_str();
 
@@ -959,10 +1090,12 @@ jsi::Value JavaTurboModule::invokeJavaMethod(
                     args[1].getObject(runtime).getFunction(runtime),
                     jsInvoker_);
 
-                auto resolve = createJavaCallback(
+                auto resolve = createJavaResolveCallback(
                     runtime,
                     args[0].getObject(runtime).getFunction(runtime),
-                    jsInvoker_);
+                    args[1].getObject(runtime).getFunction(runtime),
+                    jsInvoker_,
+                    promiseResolveSupportsArrayBuffer);
                 auto reject = createJavaRejectCallback(
                     runtime,
                     args[1].getObject(runtime).getFunction(runtime),

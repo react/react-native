@@ -54,6 +54,7 @@ export interface Spec extends TurboModule {
   readonly getArrayBuffer: (buffer: ArrayBuffer) => ArrayBuffer;
   readonly createNativeBuffer: (size: number) => ArrayBuffer;
   readonly processAsyncBuffer: (payload: ArrayBuffer) => Promise<number>;
+  readonly getAsyncBuffer: (size: number) => Promise<ArrayBuffer>;
   readonly getValueWithCallback: (callback: (value: string) => void) => void;
   readonly getValueWithPromise: (error: boolean) => Promise<string>;
   readonly voidFuncThrows?: () => void;
