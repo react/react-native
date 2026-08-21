@@ -232,6 +232,12 @@ const PodspecExceptions /*: {[key: string]: PodSpecConfiguration} */ = {
       },
 
       {
+        name: 'uimanagerUmbrella',
+        headerPatterns: ['react/renderer/uimanager/React/*.h'],
+        headerDir: 'React',
+      },
+
+      {
         name: 'leakchecker',
         headerPatterns: ['react/renderer/leakchecker/**/*.h'],
         excludePatterns: ['react/renderer/leakchecker/tests'],
