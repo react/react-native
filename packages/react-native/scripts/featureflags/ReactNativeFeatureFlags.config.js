@@ -180,6 +180,16 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    enableAliasedTextRoleInheritance: {
+      defaultValue: true,
+      metadata: {
+        description:
+          'When enabled, a text fragment that sets either `role` or `accessibilityRole` (the two are aliases) always replaces both inherited values.',
+        expectedReleaseValue: true,
+        purpose: 'release',
+      },
+      ossReleaseStage: 'none',
+    },
     enableAndroidTextMeasurementOptimizations: {
       defaultValue: false,
       metadata: {

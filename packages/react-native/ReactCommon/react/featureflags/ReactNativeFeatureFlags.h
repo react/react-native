@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<e437a03ac130e2f24a857a64b3677490>>
+ * @generated SignedSource<<41032de66002cb246765c16882df529f>>
  */
 
 /**
@@ -98,6 +98,11 @@ class ReactNativeFeatureFlags {
    * When enabled, Android will accumulate updates in rawProps to reduce the number of mounting instructions for cascading re-renders.
    */
   RN_EXPORT static bool enableAccumulatedUpdatesInRawPropsAndroid();
+
+  /**
+   * When enabled, a text fragment that sets either `role` or `accessibilityRole` (the two are aliases) always replaces both inherited values.
+   */
+  RN_EXPORT static bool enableAliasedTextRoleInheritance();
 
   /**
    * Enables various optimizations throughout the path of measuring text on Android.

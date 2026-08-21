@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<fbab08ee89a2969b45034a45b6425581>>
+ * @generated SignedSource<<3fa2c47a6af376374b8caf2835beb2a3>>
  * @flow strict
  * @noformat
  */
@@ -61,6 +61,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   disableViewPreallocationAndroid: Getter<boolean>,
   enableAccessibilityOrder: Getter<boolean>,
   enableAccumulatedUpdatesInRawPropsAndroid: Getter<boolean>,
+  enableAliasedTextRoleInheritance: Getter<boolean>,
   enableAndroidTextMeasurementOptimizations: Getter<boolean>,
   enableBridgelessArchitecture: Getter<boolean>,
   enableCppPropsIteratorSetter: Getter<boolean>,
@@ -260,6 +261,10 @@ export const enableAccessibilityOrder: Getter<boolean> = createNativeFlagGetter(
  * When enabled, Android will accumulate updates in rawProps to reduce the number of mounting instructions for cascading re-renders.
  */
 export const enableAccumulatedUpdatesInRawPropsAndroid: Getter<boolean> = createNativeFlagGetter('enableAccumulatedUpdatesInRawPropsAndroid', false);
+/**
+ * When enabled, a text fragment that sets either `role` or `accessibilityRole` (the two are aliases) always replaces both inherited values.
+ */
+export const enableAliasedTextRoleInheritance: Getter<boolean> = createNativeFlagGetter('enableAliasedTextRoleInheritance', true);
 /**
  * Enables various optimizations throughout the path of measuring text on Android.
  */

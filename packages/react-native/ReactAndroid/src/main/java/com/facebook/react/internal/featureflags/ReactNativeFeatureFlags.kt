@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<d5bab65a116d6f6d3415c5c8a2f08db9>>
+ * @generated SignedSource<<4c99c06bfbb07f74ff5063cc6385212f>>
  */
 
 /**
@@ -101,6 +101,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun enableAccumulatedUpdatesInRawPropsAndroid(): Boolean = accessor.enableAccumulatedUpdatesInRawPropsAndroid()
+
+  /**
+   * When enabled, a text fragment that sets either `role` or `accessibilityRole` (the two are aliases) always replaces both inherited values.
+   */
+  @JvmStatic
+  public fun enableAliasedTextRoleInheritance(): Boolean = accessor.enableAliasedTextRoleInheritance()
 
   /**
    * Enables various optimizations throughout the path of measuring text on Android.
