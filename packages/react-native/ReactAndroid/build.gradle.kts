@@ -233,6 +233,7 @@ val preparePrefab by
                       Pair(File(buildDir, "third-party-ndk/folly/").absolutePath, ""),
                       Pair(File(buildDir, "third-party-ndk/glog/exported/").absolutePath, ""),
                       Pair("../ReactCommon/callinvoker/", ""),
+                      Pair("../ReactCommon/callinvoker/React/", "React/"),
                       Pair("../ReactCommon/cxxreact/", "cxxreact/"),
                       // Exported because the public cxxreact/ErrorUtils.h includes it
                       Pair("../ReactCommon/jserrorhandler/", "jserrorhandler/"),
