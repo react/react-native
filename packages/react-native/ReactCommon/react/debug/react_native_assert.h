@@ -20,6 +20,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include "flags.h"
 
 #undef react_native_assert

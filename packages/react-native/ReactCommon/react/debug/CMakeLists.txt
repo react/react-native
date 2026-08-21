@@ -14,7 +14,7 @@ add_library(react_debug OBJECT ${react_debug_SRC} ${react_debug_redbox_SRC})
 
 target_include_directories(react_debug PUBLIC ${REACT_COMMON_DIR})
 
-target_link_libraries(react_debug folly_runtime)
+target_link_libraries(react_debug folly_runtime react_cxxstableapi)
 
 if(ANDROID)
   target_link_libraries(react_debug log)

@@ -16,6 +16,12 @@ else
   source[:tag] = "v#{version}"
 end
 
+header_search_paths = []
+
+if ENV['USE_FRAMEWORKS']
+  header_search_paths << "\"$(PODS_TARGET_SRCROOT)/../..\"" # ReactCommon, for <react/cxxstableapi/...>
+end
+
 Pod::Spec.new do |s|
   s.name                   = "React-debug"
   s.version                = version
@@ -28,15 +34,24 @@ Pod::Spec.new do |s|
   s.source_files           = podspec_sources("*.{cpp,h}", "*.h")
   s.header_dir             = "react/debug"
   s.pod_target_xcconfig    = { "CLANG_CXX_LANGUAGE_STANDARD" => rct_cxx_language_standard(),
-                               "DEFINES_MODULE" => "YES" }
+                               "DEFINES_MODULE" => "YES",
+                               "HEADER_SEARCH_PATHS" => header_search_paths.join(' ') }
 
   resolve_use_frameworks(s, header_mappings_dir: "../..", module_name: "React_debug")
+
+  s.subspec "DebugUmbrella" do |ss|
+    ss.source_files         = "React/*.h"
+    ss.header_dir           = "React"
+    ss.header_mappings_dir  = "React"
+  end
 
   s.subspec "redbox" do |ss|
     ss.source_files         = podspec_sources("redbox/*.{cpp,h}", "redbox/*.h")
     ss.exclude_files        = "redbox/tests/**/*.{cpp,h}"
     ss.header_dir           = "react/debug/redbox"
   end
+
+  s.dependency "React-cxxstableapi"
 
   mark_as_react_native_build(s)
 end

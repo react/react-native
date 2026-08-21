@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 //
 // Preprocessor flags which control whether code meant for debugging the
 // internals of React Native is included in the build. E.g. debug assertions.
