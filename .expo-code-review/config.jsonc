@@ -1,17 +1,13 @@
 // @ref LLP 0009#config-and-prompt-templates — root config: agent roster by filename, phase-1 defaults, auth
 {
-  // Default model for every agent. Anthropic models run through the Claude Code
-  // CLI engine (`claude -p`), inferred per agent from the model id — see `auth`
-  // below for the credential. Override per-agent via frontmatter in the agent's
-  // markdown, or at runtime with the REVIEWER_MODEL env var
-  // (e.g. REVIEWER_MODEL=anthropic/claude-haiku-4-5).
+  // Default model for every reviewer and the coordinator. Keep roles unpinned so
+  // one setting controls the complete Muse review. REVIEWER_MODEL may override it.
   "model": "meta/muse-spark-1.2",
 
   // Agents: every markdown file in agents/ is one reviewer (id = filename).
   // Add or remove files to change the roster — no list needed here.
   // shared.md (prepended to every agent + coordinator) and coordinator.md are
-  // reserved filenames. Per-agent overrides go in each file's YAML frontmatter,
-  // e.g. `---\nmodel: anthropic/claude-opus-5\n---`.
+  // reserved filenames. Per-agent frontmatter declares role metadata only.
 
   // @ref LLP 0009#config-and-prompt-templates [implements] — suggestions off by default, not a schema limit
   "policy": {
@@ -24,7 +20,7 @@
   // *.min.js, *.map, __snapshots__/*.snap, @generated markers).
   "noise": { "additionalIgnores": [] },
 
-  // Optional bounded platform research (ROOT-ONLY; off by default). Reviewer and
+  // Bounded platform research (ROOT-ONLY). Reviewer and
   // cross-file passes can call ECR's bundled MCP for exact API-symbol searches and
   // supported documentation URLs. The MCP uses fixed provider allowlists and audits
   // every call. It runs behind a wrapper that rebuilds its environment from an
@@ -41,12 +37,12 @@
   // request per provider plus a page fetch per candidate. timeoutMs is the MCP's own
   // end-to-end deadline per call. Every passage is fetched live from the allowlist;
   // there is no offline index.
-  // "research": {
-  //   "enabled": true,
-  //   "maxQueries": 8,
-  //   "resultsPerQuery": 2,
-  //   "timeoutMs": 30000
-  // },
+  "research": {
+    "enabled": true,
+    "maxQueries": 8,
+    "resultsPerQuery": 2,
+    "timeoutMs": 30000
+  },
 
   // Large diffs are split into focused chunks by changed-line count, plus a
   // cross-cutting pass for multi-file issues. Diffs under maxChangedLines are one
@@ -72,42 +68,8 @@
   // HTML marker used to find + update the single PR comment. Keep it stable.
   "commentTag": "expo-ai-code-reviewer",
 
-  // How model credentials are provided. Default: Anthropic via the Claude Code
-  // CLI. Anthropic models always run through that CLI — the engine is inferred
-  // per agent from the `anthropic/…` model id, so this entry only supplies the
-  // credential. In CI the tokenEnv holds the review credential (an `sk-ant-oat…`
-  // token minted by `claude setup-token`, or an `sk-ant-api…` Console key — the
-  // CLI reads either); locally an active `claude` login is enough, and the entry
-  // could even be omitted. ECR_EXPECTED_TOKEN_ENV (repo variable / workflow
-  // fallback) must equal this tokenEnv. `ecr setup-auth` walks you through it.
-  //
-  // Other providers run through OpenCode:
-  //   "api-key": tokenEnv names the env var holding a provider API key. In CI,
-  //              store the key as a repo secret and pass it under that env var.
-  //   "auth": { "mode": "api-key", "provider": "openai", "tokenEnv": "OPENAI_API_KEY" }
-  //
-  //   Muse Spark via the public Meta Model API Responses endpoint:
-  //   set models to `meta/muse-spark-1.2` and configure:
-  //   "auth": { "providers": {
-  //     "meta": { "mode": "api-key", "tokenEnv": "META_API_KEY" }
-  //   } }
-  //   Map META_API_KEY in the workflows and set ECR_EXPECTED_TOKEN_ENV to match.
-  //
-  //   ChatGPT/Codex subscription ("oauth"): tokenEnv holds the ACCESS token from
-  //   an `opencode auth login` ChatGPT sign-in — `ecr setup-auth` extracts it.
-  //   NEVER share the refresh token: it is single-use and dies on first rotation.
-  //   "auth": { "providers": {
-  //     "openai": { "mode": "oauth", "tokenEnv": "CODEX_OAUTH_ACCESS_TOKEN" }
-  //   } }
-  //
-  // MIXING engines is supported: the engine is inferred per agent from its model,
-  // so this anthropic entry may coexist with an openai (or any other) OpenCode
-  // provider — an `anthropic/…` agent runs through the Claude Code CLI while an
-  // `openai/…` agent runs through OpenCode, in the SAME run:
-  //   "auth": { "providers": {
-  //     "anthropic": { "tokenEnv": "CLAUDE_CODE_REVIEW_SHARED_API_TOKEN" },
-  //     "openai":    { "mode": "oauth", "tokenEnv": "CODEX_OAUTH_ACCESS_TOKEN" }
-  //   } }
+  // Muse Spark uses the public Meta Model API. ECR_EXPECTED_TOKEN_ENV and the
+  // workflow mapping must both remain META_API_KEY.
   "auth": {
     "providers": {
       "meta": { "mode": "api-key", "tokenEnv": "META_API_KEY" }
