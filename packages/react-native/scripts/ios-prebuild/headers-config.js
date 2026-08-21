@@ -466,6 +466,22 @@ const PodspecExceptions /*: {[key: string]: PodSpecConfiguration} */ = {
       },
     ],
   },
+  'ReactCommon/React-Mapbuffer.podspec': {
+    name: 'React-Mapbuffer',
+    headerPatterns: ['react/renderer/mapbuffer/**/*.h'],
+    excludePatterns: [
+      'react/renderer/mapbuffer/tests',
+      'react/renderer/mapbuffer/React',
+    ],
+    headerDir: 'react/renderer/mapbuffer',
+    subSpecs: [
+      {
+        name: 'MapBufferUmbrella',
+        headerPatterns: ['react/renderer/mapbuffer/React/*.h'],
+        headerDir: 'React',
+      },
+    ],
+  },
   'ReactCommon/React-FabricImage.podspec': {
     name: 'React-FabricImage',
     headerPatterns: ['react/renderer/components/image/**/*.h'],

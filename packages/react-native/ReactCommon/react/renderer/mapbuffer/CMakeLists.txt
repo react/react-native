@@ -11,6 +11,6 @@ file(GLOB react_renderer_mapbuffer_SRC CONFIGURE_DEPENDS *.cpp)
 add_library(react_renderer_mapbuffer OBJECT ${react_renderer_mapbuffer_SRC})
 
 target_include_directories(react_renderer_mapbuffer PUBLIC ${REACT_COMMON_DIR})
-target_link_libraries(react_renderer_mapbuffer glog glog_init react_debug)
+target_link_libraries(react_renderer_mapbuffer glog glog_init react_cxxstableapi react_debug)
 target_compile_reactnative_options(react_renderer_mapbuffer PRIVATE)
 target_compile_options(react_renderer_mapbuffer PRIVATE -Wpedantic)

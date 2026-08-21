@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
 #include <react/debug/react_native_assert.h>
 
 #include <glog/logging.h>
