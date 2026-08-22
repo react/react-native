@@ -48,6 +48,7 @@ inline const std::unordered_set<std::string> &getDirectManipulationAllowlist()
       "borderStartStartRadius",
       "elevation",
       "opacity",
+      "filter",
       "transform",
       "zIndex",
       /* ios styles */

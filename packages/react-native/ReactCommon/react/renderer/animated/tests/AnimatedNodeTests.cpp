@@ -7,6 +7,7 @@
 
 #include "AnimationTestsBase.h"
 
+#include <react/renderer/animated/internal/NativeAnimatedAllowlist.h>
 #include <react/renderer/animated/nodes/ColorAnimatedNode.h>
 #include <react/renderer/animated/nodes/ObjectAnimatedNode.h>
 #include <react/renderer/core/ReactRootViewTagGenerator.h>
@@ -330,6 +331,63 @@ TEST_F(AnimatedNodeTests, ObjectAnimatedNode) {
   EXPECT_EQ(collectedProps["test"][1]["rotate3d"]["y"], 0);
   EXPECT_EQ(collectedProps["test"][1]["rotate3d"]["angle"], "180deg");
   EXPECT_EQ(collectedProps["test"][2]["scale3d"], 4);
+}
+
+// Styles that Animated supports and that do not participate in layout must be
+// direct-manipulation eligible; anything absent from this set is treated as a
+// layout update by StyleAnimatedNode and forced through a Fabric commit.
+// Keep in sync with SUPPORTED_STYLES in
+// packages/react-native/Libraries/Animated/NativeAnimatedAllowlist.js.
+TEST_F(AnimatedNodeTests, directManipulationAllowlistCoversNonLayoutStyles) {
+  const auto& allowlist = getDirectManipulationAllowlist();
+
+  for (const auto& style :
+       {"backgroundColor",
+        "borderBottomColor",
+        "borderColor",
+        "borderEndColor",
+        "borderLeftColor",
+        "borderRightColor",
+        "borderStartColor",
+        "borderTopColor",
+        "color",
+        "tintColor",
+        "borderBottomEndRadius",
+        "borderBottomLeftRadius",
+        "borderBottomRightRadius",
+        "borderBottomStartRadius",
+        "borderEndEndRadius",
+        "borderEndStartRadius",
+        "borderRadius",
+        "borderTopEndRadius",
+        "borderTopLeftRadius",
+        "borderTopRightRadius",
+        "borderTopStartRadius",
+        "borderStartEndRadius",
+        "borderStartStartRadius",
+        "elevation",
+        "opacity",
+        "filter",
+        "transform",
+        "zIndex",
+        "shadowOpacity",
+        "shadowRadius",
+        "scaleX",
+        "scaleY",
+        "translateX",
+        "translateY"}) {
+    EXPECT_EQ(allowlist.count(style), 1u)
+        << style
+        << " is animatable and does not affect layout, so it must be "
+           "direct-manipulation eligible";
+  }
+
+  // Layout styles must stay out, so they keep going through Fabric.
+  for (const auto& style :
+       {"width", "height", "margin", "padding", "flex", "top", "gap"}) {
+    EXPECT_EQ(allowlist.count(style), 0u)
+        << style << " affects layout and must not be direct-manipulated";
+  }
 }
 
 } // namespace facebook::react
