@@ -21,6 +21,7 @@ describe('binaryToBase64', () => {
   it('should encode an ArrayBuffer', () => {
     const bytes = new TextEncoder().encode('Test string');
 
+    // $FlowFixMe[incompatible-type]
     expect(decodeBase64(binaryToBase64(bytes.buffer))).toEqual(
       Array.from(bytes),
     );

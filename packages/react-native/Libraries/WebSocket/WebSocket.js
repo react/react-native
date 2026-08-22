@@ -246,6 +246,7 @@ class WebSocket extends EventTarget {
         let data: Blob | BlobData | ArrayBuffer | string = ev.data;
         switch (ev.type) {
           case 'binary':
+            // $FlowFixMe[incompatible-type]
             data = base64.toByteArray(ev.data).buffer;
             break;
           case 'blob':

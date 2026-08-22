@@ -133,6 +133,7 @@ class FileReader extends EventTarget {
         const base64 = text.split(',')[1];
         const typedArray = toByteArray(base64);
 
+        // $FlowFixMe[incompatible-type]
         this._result = typedArray.buffer;
         this._setReadyState(DONE);
       },
