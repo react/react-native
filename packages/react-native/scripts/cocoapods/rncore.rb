@@ -573,8 +573,8 @@ class ReactNativeCoreUtils
 
         rncore_log("Configuring xcconfig for prebuilt React Native Core...")
 
-        vfs_overlay_flag = " -ivfsoverlay \"#{vfs_overlay_path}\""
-        swift_vfs_overlay_flag = " -Xcc -ivfsoverlay -Xcc \"#{vfs_overlay_path}\""
+        vfs_overlay_flag = " -ivfsoverlay \"$(PODS_ROOT)/React-Core-prebuilt/React-VFS.yaml\""
+        swift_vfs_overlay_flag = " -Xcc -ivfsoverlay -Xcc \"$(PODS_ROOT)/React-Core-prebuilt/React-VFS.yaml\""
 
         # Add flags to aggregate target xcconfigs (these are used by the main app target)
         installer.aggregate_targets.each do |aggregate_target|
