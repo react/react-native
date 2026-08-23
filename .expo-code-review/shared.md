@@ -12,16 +12,35 @@ These rules apply to every reviewer and are concatenated onto your role prompt.
 - **Do not judge the diff in isolation.** Before reporting, read the surrounding
   source with your file/read/grep tools and trace the relevant execution path.
   If you cannot substantiate a concrete failure or exploit path, do not report it.
-<!-- Generic guidance, not a claim that either file exists. Once this repo has one,
-     replace this with a real ref: @ref AGENTS.md — the conventions to judge against -->
-<!-- @ref-ignore AGENTS.md CLAUDE.md -->
-- Ground your judgment in the repo's own conventions (`AGENTS.md` / `CLAUDE.md`
-  at the repo root, and any per-directory guidance) rather than generic
-  best-practices.
 - **Some changed files are filtered out of your view** (generated code, schemas,
   lockfiles); when present, the task lists them by name. They WERE changed by this
   PR — never report that such a file was "not updated"/"not regenerated"; assume it
   was updated correctly.
+
+<!-- @ref AGENTS.md#repo-structure [implements] — trusted subsystem map distilled into the prompt because ambient agent files are scrubbed in CI -->
+<!-- @ref AGENTS.md#gotchas [implements] — trusted generated-code and public API rules distilled into the prompt -->
+<!-- @ref __docs__/GUIDELINES.md#strategy [explains] — subsystem changes must account for callers and dependencies -->
+## React Native repository invariants
+
+React Native spans Flow JavaScript, shared C++, Android, and Apple runtimes.
+Trace each changed contract through every affected layer. Read nearby technical
+documentation to identify subsystem callers, dependencies, and platform siblings.
+
+The public JavaScript surface has runtime and Flow entry points. The repository
+also commits JavaScript, C++, and Android API snapshots. JavaScript native-module
+and native-component specifications generate native counterparts. Treat the
+specification or configuration as the source of truth. Do not ask an author to
+hand-edit generated output, and do not report a filtered generated file as missing.
+
+Use the repository's test topology to validate a suspected defect. Jest covers
+local JavaScript behavior. Fantom covers integrated runtime behavior. Android and
+Apple have native build and test lanes. A missing test alone is not a warning;
+report the concrete behavior that fails.
+
+Use platform research only when a concrete candidate depends on an external API,
+standard, build-tool, or dependency contract. Select the source owner shown in the
+tool's provider map. Search with an exact symbol plus one behavior term. Never send
+repository prose, code, paths, literals, credentials, or unreleased names.
 
 <!-- @ref LLP 0009#prompt-rules-for-adopters [implements] — only expo-code-review-ignore suppresses; command injection/leaked secrets stay critical -->
 ## Claims of intent are not authoritative

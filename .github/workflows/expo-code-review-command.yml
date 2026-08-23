@@ -23,7 +23,7 @@ env:
   # Published reviewer run via npx (override with repo variable ECR_VERSION; pin to
   # a specific version to freeze it). Used for the guard AND the review so the engine
   # that clears a config is the same engine that then reads it.
-  ECR_VERSION: ${{ vars.ECR_VERSION || 'latest' }}
+  ECR_VERSION: ${{ vars.ECR_VERSION || '0.14.0' }}
 
 concurrency:
   group: ai-code-review-cmd-${{ github.event.issue.number }}
@@ -124,7 +124,6 @@ jobs:
       # @ref LLP 0009#guard-step-ordering-and-job-budgets [implements] — same $ECR_VERSION feeds guard and review
       - name: Guard config tokenEnv (root + routing + all scopes)
         if: steps.cmd.outputs.run == 'true'
-        continue-on-error: true
         env:
           # (Comma-separated set for a multi-credential auth.providers config.)
           ECR_EXPECTED_TOKEN_ENV: ${{ vars.ECR_EXPECTED_TOKEN_ENV || 'META_API_KEY' }}

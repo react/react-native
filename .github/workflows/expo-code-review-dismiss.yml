@@ -19,8 +19,7 @@ permissions:
 
 env:
   # Published reviewer run via npx (override with repo variable ECR_VERSION).
-  # Floor at 0.2.3 — the first version that ships `ecr dismiss`/`undismiss`.
-  ECR_VERSION: ${{ vars.ECR_VERSION || '^0.2.3' }}
+  ECR_VERSION: ${{ vars.ECR_VERSION || '0.14.0' }}
 
 concurrency:
   group: ai-code-review-dismiss-${{ github.event.issue.number }}

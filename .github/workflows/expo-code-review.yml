@@ -22,16 +22,15 @@ jobs:
       # Version of the published engine used for BOTH the guard and the review, so
       # the guard that clears a config is the same engine that then reads it. Override
       # with repo variable ECR_VERSION; pin to a specific version to freeze it.
-      ECR_VERSION: ${{ vars.ECR_VERSION || 'latest' }}
-    # Trigger policy lives in .expo-code-review/config.jsonc (review.trigger); `ecr ci`
-    # self-gates on it (and honors the ai-review:skip label). This coarse gate just
-    # avoids spinning up a runner for a PR that explicitly opted out. Uses the array
-    # form of contains() for an EXACT label match ("ai-review:skip" is not "ai-review").
-    # Prefer to gate entirely here instead? Set config trigger to "label" and replace
-    # the line below with, e.g.:
-    #   if: contains(github.event.pull_request.labels.*.name, 'ai-review')
-    # @ref LLP 0009#guard-step-ordering-and-job-budgets [explains] — spin-up avoidance only; real policy is config.jsonc review.trigger
-    if: ${{ !contains(github.event.pull_request.labels.*.name, 'ai-review:skip') }}
+      ECR_VERSION: ${{ vars.ECR_VERSION || '0.14.0' }}
+    # Auto-review only labeled same-repository branches. GitHub withholds the model
+    # secret and write token from fork pull_request jobs; maintainers can use /review
+    # for forks through the base-context issue_comment workflow.
+    # @ref LLP 0009#guard-step-ordering-and-job-budgets [explains] — exact label and fork gates avoid guaranteed no-op runners
+    if: >-
+      contains(github.event.pull_request.labels.*.name, 'ai-review') &&
+      !contains(github.event.pull_request.labels.*.name, 'ai-review:skip') &&
+      github.event.pull_request.head.repo.full_name == github.repository
     # Backstop so a stalled review fails fast instead of hanging. This is the ONE cap
     # with no soft landing (GitHub hard-kills the job and nothing is posted), so keep
     # margin over the worst-case internal chain: the passes budget
@@ -85,7 +84,6 @@ jobs:
       # from the registry — it never builds or executes the PR's code.
       # @ref LLP 0009#guard-step-ordering-and-job-budgets [implements] — layer 2; layer 1 is ecr ci's own runtime check
       - name: Guard config tokenEnv (root + routing + all scopes)
-        continue-on-error: true
         env:
           # (Comma-separated set for a multi-credential auth.providers config.)
           ECR_EXPECTED_TOKEN_ENV: ${{ vars.ECR_EXPECTED_TOKEN_ENV || 'META_API_KEY' }}
