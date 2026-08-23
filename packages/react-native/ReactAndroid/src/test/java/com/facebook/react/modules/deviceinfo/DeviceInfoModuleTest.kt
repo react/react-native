@@ -208,6 +208,26 @@ class DeviceInfoModuleTest : TestCase() {
     }
   }
 
+  @Test
+  fun getWindowDisplayMetrics_fallsBackWhenWindowMetricsApiIsMissing() {
+    val activity = mock<Activity>()
+    doReturn(activity).whenever(reactContext).currentActivity
+
+    val calculator = mock<WindowMetricsCalculator>()
+    whenever(calculator.computeCurrentWindowMetrics(activity))
+        .thenThrow(NoSuchMethodError("WindowMetrics.getDensity()"))
+
+    withWindowMetricsCalculator(calculator) {
+      val resourceMetrics = reactContext.resources.displayMetrics
+      val metrics = deviceInfoModule.getWindowDisplayMetrics()
+
+      assertThat(metrics.widthPixels).isEqualTo(resourceMetrics.widthPixels)
+      assertThat(metrics.heightPixels).isEqualTo(resourceMetrics.heightPixels)
+      assertThat(metrics.density).isEqualTo(resourceMetrics.density)
+      assertThat(metrics.densityDpi).isEqualTo(resourceMetrics.densityDpi)
+    }
+  }
+
   private fun givenDisplayMetricsHolderContains(fakeDisplayMetrics: WritableMap?) {
     doReturn(fakeDisplayMetrics).whenever(deviceInfoModule).getDisplayMetricsWritableMap()
   }
