@@ -17,12 +17,12 @@ declare module 'node-fetch' {
   import type {Readable} from 'stream';
 
   declare type AbortSignal = {
-    +aborted: boolean,
-    +onabort: (event?: {...}) => void,
+    readonly aborted: boolean,
+    readonly onabort: (event?: {...}) => void,
 
-    +addEventListener: (name: string, cb: () => unknown) => void,
-    +removeEventListener: (name: string, cb: () => unknown) => void,
-    +dispatchEvent: (event: {...}) => void,
+    readonly addEventListener: (name: string, cb: () => unknown) => void,
+    readonly removeEventListener: (name: string, cb: () => unknown) => void,
+    readonly dispatchEvent: (event: {...}) => void,
     ...
   };
 

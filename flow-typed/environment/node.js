@@ -458,18 +458,18 @@ declare class child_process$ChildProcessTyped<
   TStdout extends stream$Readable | null,
   TStderr extends stream$Readable | null,
 > extends events$EventEmitter {
-  +stdin: TStdin;
-  +stdout: TStdout;
-  +stderr: TStderr;
-  +channel: unknown;
-  +stdio: [TStdin, TStdout, TStderr, ...];
-  +killed: boolean;
-  +pid: number;
-  +connected: boolean;
-  +exitCode: number | null;
-  +signalCode: string | null;
-  +spawnargs: Array<string>;
-  +spawnfile: string;
+  readonly stdin: TStdin;
+  readonly stdout: TStdout;
+  readonly stderr: TStderr;
+  readonly channel: unknown;
+  readonly stdio: [TStdin, TStdout, TStderr, ...];
+  readonly killed: boolean;
+  readonly pid: number;
+  readonly connected: boolean;
+  readonly exitCode: number | null;
+  readonly signalCode: string | null;
+  readonly spawnargs: Array<string>;
+  readonly spawnfile: string;
   disconnect(): void;
   kill(signal?: string | number): boolean;
   send(
@@ -965,11 +965,11 @@ type crypto$key =
     };
 
 declare class crypto$KeyObject {
-  +asymmetricKeyType?:
+  readonly asymmetricKeyType?:
     'rsa' | 'rsa-pss' | 'dsa' | 'ec' | 'ed25519' | 'ed448' | 'x25519' | 'x448';
-  +asymmetricKeySize?: number;
-  +symmetricKeySize?: number;
-  +type: 'secret' | 'public' | 'private';
+  readonly asymmetricKeySize?: number;
+  readonly symmetricKeySize?: number;
+  readonly type: 'secret' | 'public' | 'private';
 
   export(
     options: Readonly<{
@@ -990,22 +990,22 @@ declare class crypto$KeyObject {
 declare class crypto$X509Certificate {
   constructor(buffer: string | Buffer | $TypedArray | DataView): void;
 
-  +ca: boolean;
-  +fingerprint: string;
-  +fingerprint256: string;
-  +fingerprint512: string;
-  +issuer: string;
-  +issuerCertificate?: crypto$X509Certificate;
-  +keyUsage: Array<string>;
-  +publicKey: crypto$KeyObject;
-  +raw: Buffer;
-  +serialNumber: string;
-  +subject: string;
-  +subjectAltName: string;
-  +validFrom: string;
-  +validTo: string;
-  +validFromDate: Date;
-  +validToDate: Date;
+  readonly ca: boolean;
+  readonly fingerprint: string;
+  readonly fingerprint256: string;
+  readonly fingerprint512: string;
+  readonly issuer: string;
+  readonly issuerCertificate?: crypto$X509Certificate;
+  readonly keyUsage: Array<string>;
+  readonly publicKey: crypto$KeyObject;
+  readonly raw: Buffer;
+  readonly serialNumber: string;
+  readonly subject: string;
+  readonly subjectAltName: string;
+  readonly validFrom: string;
+  readonly validTo: string;
+  readonly validFromDate: Date;
+  readonly validToDate: Date;
 
   checkEmail(
     email: string,
@@ -2277,7 +2277,7 @@ declare module 'fs' {
     ...
   };
   declare class Dir {
-    +path: string;
+    readonly path: string;
     close(): Promise<void>;
     closeSync(): void;
     read(): Promise<?Dirent>;
@@ -2572,7 +2572,7 @@ type http$agentOptions = {
   ...
 };
 
-declare class http$Agent<+SocketT = net$Socket> {
+declare class http$Agent<out SocketT = net$Socket> {
   constructor(options: http$agentOptions): void;
   destroy(): void;
   // $FlowFixMe[incompatible-variance]
@@ -2610,11 +2610,11 @@ declare class http$IncomingMessage<
 }
 
 declare class http$ClientRequest<
-  +SocketT = net$Socket,
+  out SocketT = net$Socket,
 > extends stream$Writable {
   abort(): void;
   aborted: boolean;
-  +connection: SocketT | null;
+  readonly connection: SocketT | null;
   flushHeaders(): void;
   getHeader(name: string): string;
   removeHeader(name: string): void;
@@ -2622,7 +2622,7 @@ declare class http$ClientRequest<
   setNoDelay(noDelay?: boolean): void;
   setSocketKeepAlive(enable?: boolean, initialDelay?: number): void;
   setTimeout(msecs: number, callback?: Function): void;
-  +socket: SocketT | null;
+  readonly socket: SocketT | null;
 }
 
 declare class http$ServerResponse extends stream$Writable {
@@ -3197,18 +3197,18 @@ declare module 'perf_hooks' {
     | 'resource';
 
   declare export interface Histogram {
-    +count: number;
-    +countBigInt: bigint;
-    +exceeds: number;
-    +exceedsBigInt: bigint;
-    +max: number;
-    +maxBigInt: bigint;
-    +mean: number;
-    +min: number;
-    +minBigInt: bigint;
-    +stddev: number;
-    +percentiles: Map<number, number>;
-    +percentilesBigInt: Map<number, bigint>;
+    readonly count: number;
+    readonly countBigInt: bigint;
+    readonly exceeds: number;
+    readonly exceedsBigInt: bigint;
+    readonly max: number;
+    readonly maxBigInt: bigint;
+    readonly mean: number;
+    readonly min: number;
+    readonly minBigInt: bigint;
+    readonly stddev: number;
+    readonly percentiles: Map<number, number>;
+    readonly percentilesBigInt: Map<number, bigint>;
     percentile(percentile: number): number;
     percentileBigInt(percentile: number): bigint;
     reset(): void;
@@ -3225,58 +3225,58 @@ declare module 'perf_hooks' {
   }
 
   declare export class PerformanceEntry {
-    +duration: number;
-    +entryType: EntryType;
-    +name: string;
-    +startTime: number;
-    +detail?: unknown;
+    readonly duration: number;
+    readonly entryType: EntryType;
+    readonly name: string;
+    readonly startTime: number;
+    readonly detail?: unknown;
     toJSON(): unknown;
   }
 
   declare export class PerformanceMark<T = unknown> extends PerformanceEntry {
-    +entryType: 'mark';
-    +duration: 0;
-    +detail?: T;
+    readonly entryType: 'mark';
+    readonly duration: 0;
+    readonly detail?: T;
   }
 
   declare export class PerformanceMeasure<
     T = unknown,
   > extends PerformanceEntry {
-    +entryType: 'measure';
-    +detail?: T;
+    readonly entryType: 'measure';
+    readonly detail?: T;
   }
 
   declare export class PerformanceNodeEntry extends PerformanceEntry {
-    +entryType: 'node';
+    readonly entryType: 'node';
   }
 
   declare export class PerformanceNodeTiming extends PerformanceEntry {
-    +entryType: 'node';
-    +bootstrapComplete: number;
-    +environment: number;
-    +idleTime: number;
-    +loopExit: number;
-    +loopStart: number;
-    +nodeStart: number;
-    +v8Start: number;
+    readonly entryType: 'node';
+    readonly bootstrapComplete: number;
+    readonly environment: number;
+    readonly idleTime: number;
+    readonly loopExit: number;
+    readonly loopStart: number;
+    readonly nodeStart: number;
+    readonly v8Start: number;
   }
 
   declare export class PerformanceResourceTiming extends PerformanceEntry {
-    +entryType: 'resource';
-    +connectEnd: number;
-    +connectStart: number;
-    +decodedBodySize: number;
-    +domainLookupEnd: number;
-    +domainLookupStart: number;
-    +encodedBodySize: number;
-    +fetchStart: number;
-    +redirectEnd: number;
-    +redirectStart: number;
-    +requestStart: number;
-    +responseEnd: number;
-    +secureConnectionStart: number;
-    +transferSize: number;
-    +workerStart: number;
+    readonly entryType: 'resource';
+    readonly connectEnd: number;
+    readonly connectStart: number;
+    readonly decodedBodySize: number;
+    readonly domainLookupEnd: number;
+    readonly domainLookupStart: number;
+    readonly encodedBodySize: number;
+    readonly fetchStart: number;
+    readonly redirectEnd: number;
+    readonly redirectStart: number;
+    readonly requestStart: number;
+    readonly responseEnd: number;
+    readonly secureConnectionStart: number;
+    readonly transferSize: number;
+    readonly workerStart: number;
   }
 
   declare export class PerformanceObserverEntryList {
@@ -3305,9 +3305,9 @@ declare module 'perf_hooks' {
   }
 
   declare export type EventLoopUtilization = {
-    +utilization: number,
-    +idle: number,
-    +active: number,
+    readonly utilization: number,
+    readonly idle: number,
+    readonly active: number,
   };
 
   declare export type PerformanceMarkOptions<T = unknown> = Readonly<{
@@ -3342,10 +3342,10 @@ declare module 'perf_hooks' {
       startMarkOrOptions?: string | PerformanceMeasureOptions<T>,
       endMark?: string,
     ): PerformanceMeasure<T>;
-    +nodeTiming: PerformanceNodeTiming;
+    readonly nodeTiming: PerformanceNodeTiming;
     now(): number;
     setResourceTimingBufferSize(maxSize: number): void;
-    +timeOrigin: number;
+    readonly timeOrigin: number;
     timerify<TArgs extends Iterable<unknown>, TReturn>(
       fn: (...TArgs) => TReturn,
       options?: Readonly<{histogram?: RecordableHistogram}>,
@@ -3471,7 +3471,7 @@ declare module 'node:sqlite' {
       ...anonymousParameters: ReadonlyArray<SupportedValueType>
     ): Array<any>;
 
-    +expandedSQL: string;
+    readonly expandedSQL: string;
 
     get(...anonymousParameters: ReadonlyArray<SupportedValueType>): any;
     get(
@@ -3498,7 +3498,7 @@ declare module 'node:sqlite' {
     setAllowBareNamedParameters(enabled: boolean): void;
     setReadBigInts(enabled: boolean): void;
 
-    +sourceSQL: string;
+    readonly sourceSQL: string;
   }
 
   declare export class DatabaseSync {
@@ -3529,9 +3529,9 @@ declare module 'node:sqlite' {
   }
 
   declare export var constants: {|
-    +SQLITE_CHANGESET_OMIT: number,
-    +SQLITE_CHANGESET_REPLACE: number,
-    +SQLITE_CHANGESET_ABORT: number,
+    readonly SQLITE_CHANGESET_OMIT: number,
+    readonly SQLITE_CHANGESET_REPLACE: number,
+    readonly SQLITE_CHANGESET_ABORT: number,
   |};
 }
 
@@ -3868,8 +3868,8 @@ declare module 'stream' {
   ): stream$Stream;
 
   declare interface StreamPipelineOptions {
-    +signal?: AbortSignal;
-    +end?: boolean;
+    readonly signal?: AbortSignal;
+    readonly end?: boolean;
   }
 
   declare type StreamPromise = {
@@ -4203,17 +4203,17 @@ declare module 'tls' {
 }
 
 type url$urlObject = {
-  +href?: string,
-  +protocol?: string | null,
-  +slashes?: boolean | null,
-  +auth?: string | null,
-  +hostname?: string | null,
-  +port?: string | number | null,
-  +host?: string | null,
-  +pathname?: string | null,
-  +search?: string | null,
-  +query?: Object | null,
-  +hash?: string | null,
+  readonly href?: string,
+  readonly protocol?: string | null,
+  readonly slashes?: boolean | null,
+  readonly auth?: string | null,
+  readonly hostname?: string | null,
+  readonly port?: string | number | null,
+  readonly host?: string | null,
+  readonly pathname?: string | null,
+  readonly search?: string | null,
+  readonly query?: Object | null,
+  readonly hash?: string | null,
   ...
 };
 
@@ -4385,13 +4385,13 @@ declare module 'url' {
     host: string;
     hostname: string;
     href: string;
-    +origin: string;
+    readonly origin: string;
     password: string;
     pathname: string;
     port: string;
     protocol: string;
     search: string;
-    +searchParams: URLSearchParams;
+    readonly searchParams: URLSearchParams;
     username: string;
     toString(): string;
     toJSON(): string;
@@ -4437,15 +4437,15 @@ declare module 'url' {
       options?: Readonly<{ignoreCase?: boolean}>,
     ): void;
 
-    +hasRegExpGroups: boolean;
-    +hash: string;
-    +hostname: string;
-    +password: string;
-    +pathname: string;
-    +port: string;
-    +protocol: string;
-    +search: string;
-    +username: string;
+    readonly hasRegExpGroups: boolean;
+    readonly hash: string;
+    readonly hostname: string;
+    readonly password: string;
+    readonly pathname: string;
+    readonly port: string;
+    readonly protocol: string;
+    readonly search: string;
+    readonly username: string;
 
     exec(
       input?: string | url$URLPatternInit,
@@ -4544,7 +4544,7 @@ declare module 'util' {
   declare function stripVTControlCharacters(str: string): string;
 
   declare function parseArgs<
-    TOptions extends {+[string]: util$ParseArgsOption} = {},
+    TOptions extends {readonly [string]: util$ParseArgsOption} = {},
   >(config: {
     args?: Array<string>,
     options?: TOptions,
@@ -4600,8 +4600,8 @@ declare module 'util' {
     constructor(input: string): void;
     type: string;
     subtype: string;
-    +essence: string;
-    +params: MIMEParams;
+    readonly essence: string;
+    readonly params: MIMEParams;
     toString(): string;
   }
 
@@ -5734,8 +5734,8 @@ declare module 'worker_threads' {
   declare var workerData: any;
 
   declare class MessageChannel {
-    +port1: MessagePort;
-    +port2: MessagePort;
+    readonly port1: MessagePort;
+    readonly port2: MessagePort;
   }
 
   declare class MessagePort extends events$EventEmitter {
@@ -5804,10 +5804,10 @@ declare module 'worker_threads' {
   |};
 
   declare class Worker extends events$EventEmitter {
-    +stdin: stream$Writable | null;
-    +stdout: stream$Readable;
-    +stderr: stream$Readable;
-    +threadId: number;
+    readonly stdin: stream$Writable | null;
+    readonly stdout: stream$Readable;
+    readonly stderr: stream$Readable;
+    readonly threadId: number;
 
     constructor(filename: string, options?: WorkerOptions): void;
 

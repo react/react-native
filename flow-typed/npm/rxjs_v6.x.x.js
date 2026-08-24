@@ -32,7 +32,7 @@ declare interface rxjs$Unsubscribable {
 declare type rxjs$TeardownLogic = rxjs$Unsubscribable | Function | void;
 declare interface rxjs$SubscriptionLike extends rxjs$Unsubscribable {
   unsubscribe(): void;
-  +closed: boolean;
+  readonly closed: boolean;
 }
 declare type rxjs$SubscribableOrPromise<T> =
   | rxjs$Subscribable<T>
@@ -59,27 +59,27 @@ declare type rxjs$InteropObservable<T> = {
 /** OBSERVER INTERFACES */
 declare interface rxjs$NextObserver<T> {
   closed?: boolean;
-  +next: (value: T) => void;
-  +error?: (err: any) => void;
-  +complete?: () => void;
+  readonly next: (value: T) => void;
+  readonly error?: (err: any) => void;
+  readonly complete?: () => void;
 }
 declare interface rxjs$ErrorObserver<T> {
   closed?: boolean;
-  +next?: (value: T) => void;
-  +error: (err: any) => void;
-  +complete?: () => void;
+  readonly next?: (value: T) => void;
+  readonly error: (err: any) => void;
+  readonly complete?: () => void;
 }
 declare interface rxjs$CompletionObserver<T> {
   closed?: boolean;
-  +next?: (value: T) => void;
-  +error?: (err: any) => void;
-  +complete: () => void;
+  readonly next?: (value: T) => void;
+  readonly error?: (err: any) => void;
+  readonly complete: () => void;
 }
 declare interface rxjs$PartialObserver<T> {
   closed?: boolean;
-  +next?: (value: T) => void;
-  +error?: (err: any) => void;
-  +complete?: () => void;
+  readonly next?: (value: T) => void;
+  readonly error?: (err: any) => void;
+  readonly complete?: () => void;
 }
 declare interface rxjs$Observer<T> {
   closed?: boolean;
@@ -1734,7 +1734,7 @@ declare module 'rxjs' {
 
   declare class BehaviorSubject<T> extends rxjs$Subject<T> {
     constructor(_value: T): void;
-    +value: T;
+    readonly value: T;
     // @deprecated  This is an internal implementation detail, do not use.
     _subscribe(subscriber: rxjs$Subscriber<T>): rxjs$Subscription;
     getValue(): T;
@@ -1812,7 +1812,7 @@ declare module 'rxjs' {
   declare interface ObjectUnsubscribedError extends Error {}
 
   declare interface UnsubscriptionError extends Error {
-    +errors: any[];
+    readonly errors: any[];
   }
 
   declare interface TimeoutError extends Error {}

@@ -344,9 +344,9 @@ declare module 'commander' {
   declare export class Command {
     args: string[];
     processedArgs: any[];
-    +commands: $ReadOnlyArray<Command>;
-    +options: $ReadOnlyArray<Option>;
-    +registeredArguments: $ReadOnlyArray<Argument>;
+    readonly commands: $ReadOnlyArray<Command>;
+    readonly options: $ReadOnlyArray<Option>;
+    readonly registeredArguments: $ReadOnlyArray<Argument>;
     parent: Command | null;
     constructor(name?: string): this;
 

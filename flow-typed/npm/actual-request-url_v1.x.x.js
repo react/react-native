@@ -10,14 +10,14 @@
 
 declare module 'actual-request-url' {
   declare interface ActualRequestUrl$Sock {
-    +encrypted?: boolean;
-    +localPort?: number;
+    readonly encrypted?: boolean;
+    readonly localPort?: number;
   }
 
   declare export interface Req {
-    +url?: string | URL | null;
-    +headers?: Object;
-    +socket?: ActualRequestUrl$Sock;
+    readonly url?: string | URL | null;
+    readonly headers?: Object;
+    readonly socket?: ActualRequestUrl$Sock;
   }
 
   declare function actualRequestUrl(req: Req): URL | null;
