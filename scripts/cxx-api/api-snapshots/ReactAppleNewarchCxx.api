@@ -2505,6 +2505,7 @@ protocol NativeSampleTurboModuleSpec : public NSObjectRCTBridgeModule, public RC
   public virtual NSDictionary* getObjectThrows:(NSDictionary* arg);
   public virtual NSDictionary* getUnsafeObject:(NSDictionary* arg);
   public virtual NSDictionary* getValue:y:z:(double x, NSString* y, NSDictionary* z);
+  public virtual NSNumber* arrayBufferArray:(NSArray<RCTArrayBuffer*>* values);
   public virtual NSNumber* getBool:(BOOL arg);
   public virtual NSNumber* getEnum:(double arg);
   public virtual NSNumber* getNumber:(double arg);
@@ -2514,6 +2515,7 @@ protocol NativeSampleTurboModuleSpec : public NSObjectRCTBridgeModule, public RC
   public virtual RCTArrayBuffer* getArrayBuffer:(RCTArrayBuffer* buffer);
   public virtual facebook::react::ModuleConstants<JS::NativeSampleTurboModule::Constants> constantsToExport();
   public virtual facebook::react::ModuleConstants<JS::NativeSampleTurboModule::Constants> getConstants();
+  public virtual void getAsyncBuffer:resolve:reject:(double size, RCTPromiseResolveBlock resolve, RCTPromiseRejectBlock reject);
   public virtual void getImageUrl:reject:(RCTPromiseResolveBlock resolve, RCTPromiseRejectBlock reject);
   public virtual void getValueWithCallback:(RCTResponseSenderBlock callback);
   public virtual void getValueWithPromise:resolve:reject:(BOOL error, RCTPromiseResolveBlock resolve, RCTPromiseRejectBlock reject);

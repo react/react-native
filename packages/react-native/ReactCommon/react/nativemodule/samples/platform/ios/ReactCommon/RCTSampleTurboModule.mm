@@ -16,6 +16,7 @@
 #import <ReactCommon/RCTTurboModuleWithJSIBindings.h>
 #import <UIKit/UIKit.h>
 
+#include <cmath>
 #include <span>
 
 using namespace facebook::react;
@@ -174,6 +175,41 @@ RCT_EXPORT_MODULE()
                     reject:(RCTPromiseRejectBlock)reject
 {
   resolve(@(payload.length));
+}
+
+// Resolving a Promise with an owning RCTArrayBuffer hands JS the same bytes
+// without copying them; the buffer keeps them alive for as long as JS holds the
+// ArrayBuffer.
+- (void)getAsyncBuffer:(double)size resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
+{
+  if (!std::isfinite(size) || size < 0 || size > (double)NSUIntegerMax) {
+    reject(@"invalid_size", [NSString stringWithFormat:@"getAsyncBuffer: invalid size %g", size], nil);
+    return;
+  }
+
+  RCTArrayBuffer *buffer = [RCTArrayBuffer arrayBufferWithLength:(NSUInteger)size];
+  std::span<uint8_t> byteSpan(static_cast<uint8_t *>(buffer.mutableBytes), static_cast<size_t>(buffer.length));
+  for (size_t i = 0; i < byteSpan.size(); i++) {
+    byteSpan[i] = static_cast<uint8_t>(i + 1);
+  }
+  resolve(buffer);
+}
+
+- (NSNumber *)arrayBufferArray:(NSArray<RCTArrayBuffer *> *)values
+{
+  uint64_t checksum = 0;
+  for (RCTArrayBuffer *value in values) {
+    const auto *bytes = static_cast<const uint8_t *>(value.mutableBytes);
+    if (bytes == nullptr) {
+      continue;
+    }
+
+    std::span<const uint8_t> byteSpan(bytes, static_cast<size_t>(value.length));
+    for (auto byte : byteSpan) {
+      checksum += byte;
+    }
+  }
+  return @(checksum);
 }
 
 - (void)getValueWithCallback:(RCTResponseSenderBlock)callback

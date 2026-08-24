@@ -213,6 +213,31 @@ class UnsupportedArrayElementTypeAnnotationParserError extends ParserError {
   }
 }
 
+class UnsupportedArrayBufferArrayUsageParserError extends ParserError {
+  constructor(
+    nativeModuleName: string,
+    methodAST: $FlowFixMe,
+    methodName: string,
+    position: string,
+  ) {
+    super(
+      nativeModuleName,
+      methodAST,
+      `'Array<ArrayBuffer>' is only supported as a top-level parameter, but '${methodName}' uses it in a ${position}.`,
+    );
+  }
+}
+
+class UnsupportedNullableArrayBufferElementParserError extends ParserError {
+  constructor(nativeModuleName: string, ast: $FlowFixMe, contextName: string) {
+    super(
+      nativeModuleName,
+      ast,
+      `'Array<ArrayBuffer>' does not support nullable elements. Change '${contextName}' to use 'Array<ArrayBuffer>' instead of 'Array<?ArrayBuffer>'.`,
+    );
+  }
+}
+
 /**
  * Object parsing errors
  */
@@ -448,6 +473,8 @@ module.exports = {
   ModuleInterfaceNotFoundParserError,
   MoreThanOneModuleInterfaceParserError,
   UnnamedFunctionParamParserError,
+  UnsupportedArrayBufferArrayUsageParserError,
+  UnsupportedNullableArrayBufferElementParserError,
   UnsupportedArrayElementTypeAnnotationParserError,
   UnsupportedGenericParserError,
   UnsupportedTypeAnnotationParserError,

@@ -161,13 +161,15 @@ static NSArray *convertJSIArrayToNSArray(
     jsi::Runtime &runtime,
     const jsi::Array &value,
     const std::shared_ptr<CallInvoker> &jsInvoker,
-    BOOL useNSNull)
+    BOOL useNSNull,
+    BOOL mustCopyBytes)
 {
   size_t size = value.size(runtime);
   NSMutableArray *result = [NSMutableArray new];
   for (size_t i = 0; i < size; i++) {
     // Insert kCFNull when it's `undefined` value to preserve the indices.
-    id convertedObject = convertJSIValueToObjCObject(runtime, value.getValueAtIndex(runtime, i), jsInvoker, useNSNull);
+    id convertedObject =
+        convertJSIValueToObjCObject(runtime, value.getValueAtIndex(runtime, i), jsInvoker, useNSNull, mustCopyBytes);
     [result addObject:(convertedObject != nullptr) ? convertedObject : (id)kCFNull];
   }
   return result;
@@ -177,7 +179,8 @@ static NSDictionary *convertJSIObjectToNSDictionary(
     jsi::Runtime &runtime,
     const jsi::Object &value,
     const std::shared_ptr<CallInvoker> &jsInvoker,
-    BOOL useNSNull)
+    BOOL useNSNull,
+    BOOL mustCopyBytes)
 {
   jsi::Array propertyNames = value.getPropertyNames(runtime);
   size_t size = propertyNames.size(runtime);
@@ -185,7 +188,7 @@ static NSDictionary *convertJSIObjectToNSDictionary(
   for (size_t i = 0; i < size; i++) {
     jsi::String name = propertyNames.getValueAtIndex(runtime, i).getString(runtime);
     NSString *k = convertJSIStringToNSString(runtime, name);
-    id v = convertJSIValueToObjCObject(runtime, value.getProperty(runtime, name), jsInvoker, useNSNull);
+    id v = convertJSIValueToObjCObject(runtime, value.getProperty(runtime, name), jsInvoker, useNSNull, mustCopyBytes);
     if (v != nullptr) {
       result[k] = v;
     }
@@ -264,7 +267,7 @@ id convertJSIValueToObjCObject(
   if (value.isObject()) {
     jsi::Object o = value.getObject(runtime);
     if (o.isArray(runtime)) {
-      return convertJSIArrayToNSArray(runtime, o.getArray(runtime), jsInvoker, useNSNull);
+      return convertJSIArrayToNSArray(runtime, o.getArray(runtime), jsInvoker, useNSNull, mustCopyBytes);
     }
     if (o.isFunction(runtime)) {
       return convertJSIFunctionToCallback(runtime, o.getFunction(runtime), jsInvoker);
@@ -272,7 +275,7 @@ id convertJSIValueToObjCObject(
     if (o.isArrayBuffer(runtime)) {
       return convertJSIArrayBufferToRCTArrayBuffer(runtime, o.getArrayBuffer(runtime), mustCopyBytes);
     }
-    return convertJSIObjectToNSDictionary(runtime, o, jsInvoker, useNSNull);
+    return convertJSIObjectToNSDictionary(runtime, o, jsInvoker, useNSNull, mustCopyBytes);
   }
 
   throw jsi::JSError(runtime, "Unsupported jsi::Value kind");

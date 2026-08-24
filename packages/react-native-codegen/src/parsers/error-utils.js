@@ -10,7 +10,11 @@
 
 'use strict';
 
-import type {NativeModuleTypeAnnotation} from '../CodegenSchema';
+import type {
+  NativeModuleAliasMap,
+  NativeModuleFunctionTypeAnnotation,
+  NativeModuleTypeAnnotation,
+} from '../CodegenSchema';
 import type {TypeDeclarationMap} from '../parsers/utils';
 import type {ParserType} from './errors';
 import type {Parser} from './parser';
@@ -24,12 +28,14 @@ const {
   ModuleInterfaceNotFoundParserError,
   MoreThanOneModuleInterfaceParserError,
   MoreThanOneModuleRegistryCallsParserError,
+  UnsupportedArrayBufferArrayUsageParserError,
   UnsupportedArrayElementTypeAnnotationParserError,
   UnsupportedFunctionParamTypeAnnotationParserError,
   UnsupportedFunctionReturnTypeAnnotationParserError,
   UnsupportedModuleEventEmitterPropertyParserError,
   UnsupportedModuleEventEmitterTypePropertyParserError,
   UnsupportedModulePropertyParserError,
+  UnsupportedNullableArrayBufferElementParserError,
   UnsupportedObjectPropertyValueTypeAnnotationParserError,
   UntypedModuleRegistryCallParserError,
   UnusedModuleInterfaceParserError,
@@ -268,6 +274,181 @@ function throwIfUnsupportedFunctionParamTypeAnnotationParserError(
   );
 }
 
+/**
+ * `Array<ArrayBuffer>` is only implemented as a top-level method parameter.
+ * Reject it everywhere else - nested arrays, object properties, return types,
+ * Promise resolutions, callback parameters, and event payloads - so codegen
+ * cannot silently emit an untyped array.
+ *
+ * This validates the translated schema instead of adding `ArrayBuffer` to
+ * `UnsupportedArrayElementTypes`, because `translateArrayTypeAnnotation`
+ * swallows element-level errors and degrades to `Array<any>`. A blocklist entry
+ * would therefore reject nothing, and quietly produce an untyped array instead.
+ *
+ * C++ TurboModules (`cxxOnly`) skip this guard: `Array<ArrayBuffer>` degrades
+ * to a plain `jsi::Array` there, which is intentional.
+ */
+function rejectUnsupportedArrayBufferArrayInTypeAnnotation(
+  hasteModuleName: string,
+  ast: $FlowFixMe,
+  name: string,
+  typeAnnotation: $FlowFixMe,
+  position: string,
+  aliasMap: {...NativeModuleAliasMap},
+): void {
+  const seenAliases: Set<string> = new Set();
+
+  function unwrap(annotation: $FlowFixMe): $FlowFixMe {
+    return annotation != null && annotation.type === 'NullableTypeAnnotation'
+      ? unwrap(annotation.typeAnnotation)
+      : annotation;
+  }
+
+  function isArrayBufferArray(annotation: $FlowFixMe): boolean {
+    if (annotation == null || annotation.type !== 'ArrayTypeAnnotation') {
+      return false;
+    }
+    const elementType = unwrap(annotation.elementType);
+    return (
+      elementType != null && elementType.type === 'ArrayBufferTypeAnnotation'
+    );
+  }
+
+  function rejectNullableArrayBufferElement(
+    arrayTypeAnnotation: $FlowFixMe,
+  ): void {
+    const elementType = arrayTypeAnnotation.elementType;
+    if (
+      elementType != null &&
+      elementType.type === 'NullableTypeAnnotation' &&
+      elementType.typeAnnotation != null &&
+      elementType.typeAnnotation.type === 'ArrayBufferTypeAnnotation'
+    ) {
+      throw new UnsupportedNullableArrayBufferElementParserError(
+        hasteModuleName,
+        ast,
+        name,
+      );
+    }
+  }
+
+  function reject(annotation: $FlowFixMe, currentPosition: string): void {
+    const unwrapped = unwrap(annotation);
+    if (unwrapped == null) {
+      return;
+    }
+
+    if (unwrapped.type === 'ArrayTypeAnnotation') {
+      rejectNullableArrayBufferElement(unwrapped);
+    }
+
+    if (isArrayBufferArray(unwrapped)) {
+      throw new UnsupportedArrayBufferArrayUsageParserError(
+        hasteModuleName,
+        ast,
+        name,
+        currentPosition,
+      );
+    }
+
+    switch (unwrapped.type) {
+      case 'ArrayTypeAnnotation':
+        return reject(unwrapped.elementType, currentPosition);
+      case 'PromiseTypeAnnotation':
+        return reject(unwrapped.elementType, 'resolution type');
+      case 'GenericObjectTypeAnnotation':
+        return reject(unwrapped.dictionaryValueType, currentPosition);
+      case 'ObjectTypeAnnotation':
+        for (const property of unwrapped.properties || []) {
+          reject(property.typeAnnotation, currentPosition);
+        }
+        return;
+      case 'UnionTypeAnnotation':
+        for (const member of unwrapped.types || []) {
+          reject(member, currentPosition);
+        }
+        return;
+      case 'TypeAliasTypeAnnotation':
+        if (seenAliases.has(unwrapped.name)) {
+          return;
+        }
+        seenAliases.add(unwrapped.name);
+        return reject(aliasMap[unwrapped.name], currentPosition);
+      case 'FunctionTypeAnnotation':
+        for (const param of unwrapped.params || []) {
+          reject(param.typeAnnotation, 'callback parameter type');
+        }
+        return reject(unwrapped.returnTypeAnnotation, 'callback return type');
+    }
+  }
+
+  reject(typeAnnotation, position);
+}
+
+function isNonNullableArrayBufferArray(annotation: $FlowFixMe): boolean {
+  return (
+    annotation != null &&
+    annotation.type === 'ArrayTypeAnnotation' &&
+    annotation.elementType != null &&
+    annotation.elementType.type === 'ArrayBufferTypeAnnotation'
+  );
+}
+
+function throwIfUnsupportedArrayBufferArrayUsage(
+  hasteModuleName: string,
+  methodAST: $FlowFixMe,
+  methodName: string,
+  functionTypeAnnotation: NativeModuleFunctionTypeAnnotation,
+  aliasMap: {...NativeModuleAliasMap},
+): void {
+  function unwrapParam(annotation: $FlowFixMe): $FlowFixMe {
+    return annotation != null && annotation.type === 'NullableTypeAnnotation'
+      ? unwrapParam(annotation.typeAnnotation)
+      : annotation;
+  }
+
+  for (const param of functionTypeAnnotation.params) {
+    const unwrappedParam = unwrapParam(param.typeAnnotation);
+    if (isNonNullableArrayBufferArray(unwrappedParam)) {
+      continue;
+    }
+    rejectUnsupportedArrayBufferArrayInTypeAnnotation(
+      hasteModuleName,
+      methodAST,
+      methodName,
+      param.typeAnnotation,
+      'parameter type',
+      aliasMap,
+    );
+  }
+
+  rejectUnsupportedArrayBufferArrayInTypeAnnotation(
+    hasteModuleName,
+    methodAST,
+    methodName,
+    functionTypeAnnotation.returnTypeAnnotation,
+    'return type',
+    aliasMap,
+  );
+}
+
+function throwIfUnsupportedArrayBufferArrayUsageInEventEmitter(
+  hasteModuleName: string,
+  propertyAST: $FlowFixMe,
+  eventName: string,
+  eventTypeAnnotation: NativeModuleTypeAnnotation,
+  aliasMap: {...NativeModuleAliasMap},
+): void {
+  rejectUnsupportedArrayBufferArrayInTypeAnnotation(
+    hasteModuleName,
+    propertyAST,
+    eventName,
+    eventTypeAnnotation,
+    'event payload type',
+    aliasMap,
+  );
+}
+
 function throwIfArrayElementTypeAnnotationIsUnsupported(
   hasteModuleName: string,
   flowElementType: $FlowFixMe,
@@ -278,7 +459,6 @@ function throwIfArrayElementTypeAnnotationIsUnsupported(
     FunctionTypeAnnotation: 'FunctionTypeAnnotation',
     VoidTypeAnnotation: 'void',
     PromiseTypeAnnotation: 'Promise',
-    ArrayBufferTypeAnnotation: 'ArrayBuffer',
     // TODO: Added as a work-around for now until TupleTypeAnnotation are fully supported in both flow and TS
     // Right now they are partially treated as UnionTypeAnnotation
     // UnionTypeAnnotation: 'UnionTypeAnnotation',
@@ -422,6 +602,8 @@ module.exports = {
   throwIfMoreThanOneModuleInterfaceParserError,
   throwIfUnsupportedFunctionParamTypeAnnotationParserError,
   throwIfArrayElementTypeAnnotationIsUnsupported,
+  throwIfUnsupportedArrayBufferArrayUsage,
+  throwIfUnsupportedArrayBufferArrayUsageInEventEmitter,
   throwIfIncorrectModuleRegistryCallArgument,
   throwIfPartialNotAnnotatingTypeParameter,
   throwIfPartialWithMoreParameter,

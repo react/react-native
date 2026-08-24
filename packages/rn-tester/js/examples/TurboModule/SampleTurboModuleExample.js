@@ -53,6 +53,8 @@ type Examples =
   | 'getArrayBuffer'
   | 'createNativeBuffer'
   | 'processAsyncBuffer'
+  | 'getAsyncBuffer'
+  | 'arrayBufferArray'
   | 'promise'
   | 'rejectPromise'
   | 'voidFunc'
@@ -109,6 +111,18 @@ class SampleTurboModuleExample extends React.Component<{}, State> {
       NativeSampleTurboModule.processAsyncBuffer(
         new Uint8Array([1, 2, 3]).buffer,
       ).then(length => this._setResult('processAsyncBuffer', length)),
+    getAsyncBuffer: () =>
+      NativeSampleTurboModule.getAsyncBuffer(4).then(buffer =>
+        this._setResult('getAsyncBuffer', Array.from(new Uint8Array(buffer))),
+      ),
+    arrayBufferArray: () => {
+      const checksum = NativeSampleTurboModule.arrayBufferArray([
+        new Uint8Array([1, 2, 3]).buffer,
+        new Uint8Array([4, 5]).buffer,
+        new ArrayBuffer(0),
+      ]);
+      return {checksum, isExpected: checksum === 15};
+    },
     getBool: () => NativeSampleTurboModule.getBool(true),
     getConstants: () => NativeSampleTurboModule.getConstants(),
     getEnum: () =>
