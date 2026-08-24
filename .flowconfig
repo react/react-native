@@ -1,33 +1,33 @@
 [ignore]
 ; Ignore build cache folder
-glob:packages/react-native/sdks/**
+packages/react-native/sdks/**
 
 ; Ignore fb_internal modules
-glob:packages/react-native/src/fb_internal/**
+packages/react-native/src/fb_internal/**
 
 ; Ignore the codegen e2e tests
-glob:packages/react-native-codegen/e2e/__test_fixtures__/modules/NativeEnumTurboModule.js
+packages/react-native-codegen/e2e/__test_fixtures__/modules/NativeEnumTurboModule.js
 
 ; Ignore "BUCK" generated dirs
-glob:.buckd/**
+.buckd/**
 
 ; Ignore other platform suffixes
-glob:**/*.macos.js
-glob:**/*.windows.js
+**/*.macos.js
+**/*.windows.js
 
-glob:**/node_modules/resolve/test/resolver/malformed_package_json/package.json
+**/node_modules/resolve/test/resolver/malformed_package_json/package.json
 
 ; Checked-in build output
-glob:packages/debugger-frontend/dist/**
+packages/debugger-frontend/dist/**
 
 ; Generated build output
-glob:packages/*/dist/**
+packages/*/dist/**
 
 ; helloworld
-glob:private/helloworld/ios/Pods/**
+private/helloworld/ios/Pods/**
 
 ; Ignore rn-tester Pods
-glob:packages/rn-tester/Pods/**
+packages/rn-tester/Pods/**
 
 [untyped]
 .*/node_modules/@react-native-community/cli/.*/.*
