@@ -36,3 +36,14 @@ TEST(ColorTest, testColorConversion) {
     EXPECT_EQ(std::round(colorComponents.blue * 10) / 10.f, 0);
   }
 }
+
+TEST(ColorTest, testTransparentColorIsDistinctFromUndefined) {
+  using namespace facebook::react;
+
+  SharedColor undefinedColor;
+  auto transparentColor = clearColor();
+
+  EXPECT_FALSE(undefinedColor);
+  EXPECT_TRUE(transparentColor);
+  EXPECT_NE(undefinedColor, transparentColor);
+}

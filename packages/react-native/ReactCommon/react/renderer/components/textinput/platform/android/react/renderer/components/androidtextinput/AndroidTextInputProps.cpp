@@ -138,7 +138,7 @@ AndroidTextInputProps::AndroidTextInputProps(
           "textTransform",
           sourceProps.textTransform,
           {})),
-      color(0 /*convertRawProp(context, rawProps, "color", sourceProps.color, {0})*/),
+      color(/*convertRawProp(context, rawProps, "color", sourceProps.color, {})*/),
       letterSpacing(convertRawProp(context, rawProps,
           "letterSpacing",
           sourceProps.letterSpacing,

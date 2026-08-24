@@ -168,7 +168,7 @@ AttributedString AndroidTextInputShadowNode::getAttributedString(
   // Don't propagate the background color of the TextInput onto the attributed
   // string. Android tries to render shadow of the background alongside the
   // shadow of the text which results in weird artifacts.
-  childTextAttributes.backgroundColor = HostPlatformColor::UndefinedColor;
+  childTextAttributes.backgroundColor = SharedColor{};
 
   auto attributedString = AttributedString{};
   auto attachments = BaseTextShadowNode::Attachments{};

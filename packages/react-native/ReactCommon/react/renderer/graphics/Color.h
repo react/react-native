@@ -29,9 +29,9 @@ namespace facebook::react {
  */
 class SharedColor {
  public:
-  SharedColor() : color_(HostPlatformColor::UndefinedColor) {}
+  SharedColor() : color_(HostPlatformColor::UndefinedColor), isDefined_(false) {}
 
-  SharedColor(Color color) : color_(color) {}
+  SharedColor(Color color) : color_(color), isDefined_(true) {}
 
   Color &operator*()
   {
@@ -45,23 +45,26 @@ class SharedColor {
 
   bool operator==(const SharedColor &otherColor) const
   {
-    return color_ == otherColor.color_;
+    return color_ == otherColor.color_ && isDefined_ == otherColor.isDefined_;
   }
 
   bool operator!=(const SharedColor &otherColor) const
   {
-    return color_ != otherColor.color_;
+    return !(*this == otherColor);
   }
 
   operator bool() const
   {
-    return color_ != HostPlatformColor::UndefinedColor;
+    return isDefined_;
   }
 
   std::string toString() const noexcept;
 
  private:
   Color color_;
+  // Android represents both transparent black and UndefinedColor as ARGB 0.
+  // Track presence separately so prop reconciliation can distinguish them.
+  bool isDefined_;
 };
 
 bool isColorMeaningful(const SharedColor &color) noexcept;
@@ -91,6 +94,7 @@ template <>
 struct std::hash<facebook::react::SharedColor> {
   size_t operator()(const facebook::react::SharedColor &color) const
   {
-    return std::hash<facebook::react::Color>{}(*color);
+    auto seed = std::hash<facebook::react::Color>{}(*color);
+    return seed ^ (std::hash<bool>{}(static_cast<bool>(color)) + 0x9e3779b9 + (seed << 6) + (seed >> 2));
   }
 };
