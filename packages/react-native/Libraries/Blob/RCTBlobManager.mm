@@ -178,26 +178,75 @@ RCT_EXPORT_MODULE(BlobModule)
   });
 }
 
-// @lint-ignore FBOBJCUNTYPEDCOLLECTION1
-- (void)sendOverSocket:(NSDictionary *)blob socketID:(double)socketID
+- (void)sendOverSocket:(JS::NativeBlobModule::BlobDescriptor &)blob socketID:(double)socketID
 {
+  NSString *blobId = blob.blobId();
+  NSInteger offset = (NSInteger)blob.offset();
+  NSInteger size = (NSInteger)blob.size();
+
   dispatch_async(((RCTWebSocketModule *)[_moduleRegistry moduleForName:"WebSocketModule"]).methodQueue, ^{
-    [[self->_moduleRegistry moduleForName:"WebSocketModule"] sendData:[self resolve:blob] forSocketID:@(socketID)];
+    [[self->_moduleRegistry moduleForName:"WebSocketModule"] sendData:[self resolve:blobId offset:offset size:size]
+                                                          forSocketID:@(socketID)];
   });
 }
 
-- (void)createFromParts:(NSArray<NSDictionary<NSString *, id> *> *)parts withId:(NSString *)blobId
+- (void)appendBlobRange:(NSDictionary<NSString *, id> *)blobDescriptor toData:(NSMutableData *)destination
+{
+  NSString *blobId = [RCTConvert NSString:blobDescriptor[@"blobId"]];
+  NSInteger offset = [RCTConvert NSInteger:blobDescriptor[@"offset"]];
+  NSInteger size = [RCTConvert NSInteger:blobDescriptor[@"size"]];
+
+  NSData *stored;
+  {
+    std::lock_guard<std::mutex> lock(_blobsMutex);
+    stored = _blobs[blobId];
+  }
+
+  if (!stored) {
+    [NSException raise:@"Invalid blob ID" format:@"blob %@ not found", blobId];
+    return;
+  }
+
+  NSInteger length = size == -1 ? (NSInteger)stored.length - offset : size;
+  if (offset < 0 || length < 0 || offset + length > (NSInteger)stored.length) {
+    [NSException raise:@"Invalid blob range"
+                format:@"offset %ld, length %ld exceeds blob size %lu",
+                       (long)offset,
+                       (long)length,
+                       (unsigned long)stored.length];
+    return;
+  }
+
+  [destination appendBytes:(const uint8_t *)stored.bytes + offset length:(NSUInteger)length];
+}
+
+- (void)createFromParts:(NSArray<NSDictionary<NSString *, id> *> *)parts
+            binaryParts:(NSArray<RCTArrayBuffer *> *)binaryParts
+                 withId:(NSString *)blobId
 {
   NSMutableData *data = [NSMutableData new];
   for (NSDictionary<NSString *, id> *part in parts) {
     NSString *type = [RCTConvert NSString:part[@"type"]];
 
     if ([type isEqualToString:@"blob"]) {
-      NSData *partData = [self resolve:part[@"data"]];
-      [data appendData:partData];
+      [self appendBlobRange:part[@"data"] toData:data];
     } else if ([type isEqualToString:@"string"]) {
       NSData *partData = [[RCTConvert NSString:part[@"data"]] dataUsingEncoding:NSUTF8StringEncoding];
       [data appendData:partData];
+    } else if ([type isEqualToString:@"binaryPart"]) {
+      NSInteger index = [RCTConvert NSInteger:part[@"data"]];
+      if (index < 0 || index >= (NSInteger)binaryParts.count) {
+        [NSException raise:@"Invalid binary part index for blob"
+                    format:@"%ld is out of range for %lu binary parts", (long)index, (unsigned long)binaryParts.count];
+      }
+      RCTArrayBuffer *binaryPart = binaryParts[index];
+      if (![binaryPart isKindOfClass:[RCTArrayBuffer class]]) {
+        [NSException raise:@"Invalid binary part for blob"
+                    format:@"binary part %ld is %@, expected RCTArrayBuffer", (long)index, [binaryPart class]];
+      }
+      if (binaryPart.length > 0) {
+        [data appendBytes:binaryPart.mutableBytes length:binaryPart.length];
+      }
     } else {
       [NSException raise:@"Invalid type for blob" format:@"%@ is invalid", type];
     }

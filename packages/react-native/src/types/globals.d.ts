@@ -174,7 +174,7 @@ declare global {
 
   var Blob: {
     prototype: Blob;
-    new (blobParts?: Array<Blob | string>, options?: BlobOptions): Blob;
+    new (blobParts?: BlobPart[], options?: BlobOptions): Blob;
   };
 
   interface FilePropertyBag extends BlobPropertyBag {

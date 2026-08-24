@@ -45,7 +45,8 @@ class JSI_EXPORT JavaTurboModule : public TurboModule {
       const std::string &methodSignature,
       const jsi::Value *args,
       size_t argCount,
-      jmethodID &cachedMethodID);
+      jmethodID &cachedMethodID,
+      bool promiseResolveSupportsArrayBuffer = false);
 
  protected:
   void configureEventEmitterCallback();

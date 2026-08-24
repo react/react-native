@@ -59,6 +59,7 @@ package com.facebook.fbreact.specs;
 
 import com.facebook.proguard.annotations.DoNotStrip;
 import com.facebook.react.bridge.ArrayBuffer;
+import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
@@ -89,12 +90,22 @@ public abstract class NativeSampleTurboModuleSpec extends ReactContextBaseJavaMo
   @ReactMethod
   @DoNotStrip
   public abstract void voidNullableArrayBuffer(@Nullable ArrayBuffer arg);
+
+  @ReactMethod
+  @DoNotStrip
+  public abstract void promiseArrayBuffer(Promise promise);
+
+  @ReactMethod
+  @DoNotStrip
+  public abstract void promiseNullableArrayBuffer(Promise promise);
+
+  @ReactMethod(isBlockingSynchronousMethod = true)
+  @DoNotStrip
+  public abstract double arrayBufferArray(ArrayBuffer[] values);
 }
 ",
 }
 `;
-
-exports[`GenerateModuleJavaSpec can generate fixture array_buffer_promise_native_module 1`] = `Map {}`;
 
 exports[`GenerateModuleJavaSpec can generate fixture complex_objects 1`] = `
 Map {

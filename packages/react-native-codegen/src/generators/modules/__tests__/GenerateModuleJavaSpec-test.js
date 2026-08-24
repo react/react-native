@@ -10,8 +10,6 @@
 
 'use strict';
 
-import type {SchemaType} from '../../../CodegenSchema';
-
 const fixtures = require('../__test_fixtures__/fixtures.js');
 const generator = require('../GenerateModuleJavaSpec.js');
 
@@ -32,36 +30,59 @@ describe('GenerateModuleJavaSpec', () => {
       });
     });
 
-  it('throws for a method returning Promise<ArrayBuffer> (unsupported on Android)', () => {
-    const schema: SchemaType = {
+  it('generates ArrayBuffer[] for a top-level Array<ArrayBuffer> parameter', () => {
+    const output = generator.generate(
+      'array_buffer_native_module',
+      fixtures.array_buffer_native_module,
+      'com.facebook.fbreact.specs',
+    );
+    expect([...output.values()].join('\n')).toContain('ArrayBuffer[] values');
+  });
+
+  it('does not generate ArrayBuffer[] when array element type is nullable', () => {
+    const schema: $FlowFixMe = {
       modules: {
         NativeSampleTurboModule: {
           type: 'NativeModule',
           aliasMap: {},
           enumMap: {},
+          moduleName: 'SampleTurboModule',
           spec: {
             eventEmitters: [],
             methods: [
               {
-                name: 'getAsyncBuffer',
+                name: 'nullableElements',
                 optional: false,
                 typeAnnotation: {
                   type: 'FunctionTypeAnnotation',
-                  returnTypeAnnotation: {
-                    type: 'PromiseTypeAnnotation',
-                    elementType: {type: 'ArrayBufferTypeAnnotation'},
-                  },
-                  params: [],
+                  returnTypeAnnotation: {type: 'NumberTypeAnnotation'},
+                  params: [
+                    {
+                      name: 'values',
+                      optional: false,
+                      typeAnnotation: {
+                        type: 'ArrayTypeAnnotation',
+                        elementType: {
+                          type: 'NullableTypeAnnotation',
+                          typeAnnotation: {type: 'ArrayBufferTypeAnnotation'},
+                        },
+                      },
+                    },
+                  ],
                 },
               },
             ],
           },
-          moduleName: 'SampleTurboModule',
         },
       },
     };
-    expect(() =>
-      generator.generate('array_buffer_promise_throws', schema),
-    ).toThrow(/Promise<ArrayBuffer> is not supported/);
+    const output = generator.generate(
+      'nullable_array_buffer_elements',
+      schema,
+      'com.facebook.fbreact.specs',
+    );
+    const contents = [...output.values()].join('\n');
+    expect(contents).toContain('nullableElements(ReadableArray values)');
+    expect(contents).not.toMatch(/nullableElements\(ArrayBuffer\[\] values\)/);
   });
 });

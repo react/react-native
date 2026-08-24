@@ -30,6 +30,7 @@ const {
   throwIfPartialNotAnnotatingTypeParameter,
   throwIfPartialWithMoreParameter,
   throwIfTypeAliasIsNotInterface,
+  throwIfUnsupportedArrayBufferArrayUsage,
   throwIfUnsupportedFunctionParamTypeAnnotationParserError,
   throwIfUnsupportedFunctionReturnTypeAnnotationParserError,
   throwIfUntypedModule,
@@ -822,6 +823,353 @@ describe('throwIfArrayElementTypeAnnotationIsUnsupported', () => {
         'StringTypeAnnotation',
       );
     }).not.toThrow(UnsupportedArrayElementTypeAnnotationParserError);
+  });
+
+  it('does not throw the error if the type is ArrayBufferTypeAnnotation', () => {
+    expect(() => {
+      throwIfArrayElementTypeAnnotationIsUnsupported(
+        moduleName,
+        undefined,
+        'Array',
+        'ArrayBufferTypeAnnotation',
+      );
+    }).not.toThrow(UnsupportedArrayElementTypeAnnotationParserError);
+  });
+});
+
+describe('throwIfUnsupportedArrayBufferArrayUsage', () => {
+  const arrayBufferArray = {
+    type: 'ArrayTypeAnnotation',
+    elementType: {type: 'ArrayBufferTypeAnnotation'},
+  };
+  const objectWithArrayBufferArray = {
+    type: 'ObjectTypeAnnotation',
+    properties: [
+      {
+        name: 'buffers',
+        optional: false,
+        typeAnnotation: arrayBufferArray,
+      },
+    ],
+  };
+
+  const moduleName = 'moduleName';
+
+  function check(
+    methodName: string,
+    functionTypeAnnotation: $FlowFixMe,
+    aliasMap: $FlowFixMe = {},
+  ): void {
+    throwIfUnsupportedArrayBufferArrayUsage(
+      moduleName,
+      null,
+      methodName,
+      functionTypeAnnotation,
+      aliasMap,
+    );
+  }
+
+  it('does not throw for a top-level Array<ArrayBuffer> parameter', () => {
+    expect(() => {
+      check('arrayBufferArray', {
+        type: 'FunctionTypeAnnotation',
+        returnTypeAnnotation: {type: 'VoidTypeAnnotation'},
+        params: [
+          {
+            name: 'values',
+            optional: false,
+            typeAnnotation: arrayBufferArray,
+          },
+        ],
+      });
+    }).not.toThrow();
+  });
+
+  it('throws for a nested Array<Array<ArrayBuffer>> parameter', () => {
+    expect(() => {
+      check('nested', {
+        type: 'FunctionTypeAnnotation',
+        returnTypeAnnotation: {type: 'VoidTypeAnnotation'},
+        params: [
+          {
+            name: 'v',
+            optional: false,
+            typeAnnotation: {
+              type: 'ArrayTypeAnnotation',
+              elementType: arrayBufferArray,
+            },
+          },
+        ],
+      });
+    }).toThrow(
+      "Module moduleName: 'Array<ArrayBuffer>' is only supported as a top-level parameter, but 'nested' uses it in a parameter type.",
+    );
+  });
+
+  it('throws for a parameter object with an Array<ArrayBuffer> property', () => {
+    expect(() => {
+      check('objArg', {
+        type: 'FunctionTypeAnnotation',
+        returnTypeAnnotation: {type: 'VoidTypeAnnotation'},
+        params: [
+          {
+            name: 'v',
+            optional: false,
+            typeAnnotation: objectWithArrayBufferArray,
+          },
+        ],
+      });
+    }).toThrow(
+      "Module moduleName: 'Array<ArrayBuffer>' is only supported as a top-level parameter, but 'objArg' uses it in a parameter type.",
+    );
+  });
+
+  it('throws for a method returning Array<ArrayBuffer>', () => {
+    expect(() => {
+      check('getBuffers', {
+        type: 'FunctionTypeAnnotation',
+        returnTypeAnnotation: arrayBufferArray,
+        params: [],
+      });
+    }).toThrow(
+      "Module moduleName: 'Array<ArrayBuffer>' is only supported as a top-level parameter, but 'getBuffers' uses it in a return type.",
+    );
+  });
+
+  it('throws for a method returning Array<Array<ArrayBuffer>>', () => {
+    expect(() => {
+      check('retNested', {
+        type: 'FunctionTypeAnnotation',
+        returnTypeAnnotation: {
+          type: 'ArrayTypeAnnotation',
+          elementType: arrayBufferArray,
+        },
+        params: [],
+      });
+    }).toThrow(
+      "Module moduleName: 'Array<ArrayBuffer>' is only supported as a top-level parameter, but 'retNested' uses it in a return type.",
+    );
+  });
+
+  it('throws for a method returning an object with an Array<ArrayBuffer> property', () => {
+    expect(() => {
+      check('retObj', {
+        type: 'FunctionTypeAnnotation',
+        returnTypeAnnotation: objectWithArrayBufferArray,
+        params: [],
+      });
+    }).toThrow(
+      "Module moduleName: 'Array<ArrayBuffer>' is only supported as a top-level parameter, but 'retObj' uses it in a return type.",
+    );
+  });
+
+  it('throws for a method returning Promise<Array<ArrayBuffer>>', () => {
+    expect(() => {
+      check('getAsyncBuffers', {
+        type: 'FunctionTypeAnnotation',
+        returnTypeAnnotation: {
+          type: 'PromiseTypeAnnotation',
+          elementType: arrayBufferArray,
+        },
+        params: [],
+      });
+    }).toThrow(
+      "Module moduleName: 'Array<ArrayBuffer>' is only supported as a top-level parameter, but 'getAsyncBuffers' uses it in a resolution type.",
+    );
+  });
+
+  it('throws for a method returning Promise<object with Array<ArrayBuffer>>', () => {
+    expect(() => {
+      check('retPromiseObj', {
+        type: 'FunctionTypeAnnotation',
+        returnTypeAnnotation: {
+          type: 'PromiseTypeAnnotation',
+          elementType: objectWithArrayBufferArray,
+        },
+        params: [],
+      });
+    }).toThrow(
+      "Module moduleName: 'Array<ArrayBuffer>' is only supported as a top-level parameter, but 'retPromiseObj' uses it in a resolution type.",
+    );
+  });
+
+  it('resolves aliases when looking for Array<ArrayBuffer>', () => {
+    expect(() => {
+      check(
+        'aliasedArg',
+        {
+          type: 'FunctionTypeAnnotation',
+          returnTypeAnnotation: {type: 'VoidTypeAnnotation'},
+          params: [
+            {
+              name: 'v',
+              optional: false,
+              typeAnnotation: {
+                type: 'TypeAliasTypeAnnotation',
+                name: 'Payload',
+              },
+            },
+          ],
+        },
+        {Payload: objectWithArrayBufferArray},
+      );
+    }).toThrow(
+      "Module moduleName: 'Array<ArrayBuffer>' is only supported as a top-level parameter, but 'aliasedArg' uses it in a parameter type.",
+    );
+  });
+
+  it('does not infinitely recurse on a self-referential alias', () => {
+    const selfReferential = {
+      type: 'ObjectTypeAnnotation',
+      properties: [
+        {
+          name: 'next',
+          optional: true,
+          typeAnnotation: {type: 'TypeAliasTypeAnnotation', name: 'Node'},
+        },
+      ],
+    };
+    expect(() => {
+      check(
+        'recursive',
+        {
+          type: 'FunctionTypeAnnotation',
+          returnTypeAnnotation: {type: 'VoidTypeAnnotation'},
+          params: [
+            {
+              name: 'v',
+              optional: false,
+              typeAnnotation: {type: 'TypeAliasTypeAnnotation', name: 'Node'},
+            },
+          ],
+        },
+        {Node: selfReferential},
+      );
+    }).not.toThrow();
+  });
+
+  it('throws for Array<?ArrayBuffer> parameter elements', () => {
+    expect(() => {
+      check('nullableElements', {
+        type: 'FunctionTypeAnnotation',
+        returnTypeAnnotation: {type: 'VoidTypeAnnotation'},
+        params: [
+          {
+            name: 'values',
+            optional: false,
+            typeAnnotation: {
+              type: 'ArrayTypeAnnotation',
+              elementType: {
+                type: 'NullableTypeAnnotation',
+                typeAnnotation: {type: 'ArrayBufferTypeAnnotation'},
+              },
+            },
+          },
+        ],
+      });
+    }).toThrow(
+      "Module moduleName: 'Array<ArrayBuffer>' does not support nullable elements. Change 'nullableElements' to use 'Array<ArrayBuffer>' instead of 'Array<?ArrayBuffer>'.",
+    );
+  });
+
+  it('does not throw for ?Array<ArrayBuffer> parameter', () => {
+    expect(() => {
+      check('nullableArray', {
+        type: 'FunctionTypeAnnotation',
+        returnTypeAnnotation: {type: 'VoidTypeAnnotation'},
+        params: [
+          {
+            name: 'values',
+            optional: false,
+            typeAnnotation: {
+              type: 'NullableTypeAnnotation',
+              typeAnnotation: {
+                type: 'ArrayTypeAnnotation',
+                elementType: {type: 'ArrayBufferTypeAnnotation'},
+              },
+            },
+          },
+        ],
+      });
+    }).not.toThrow();
+  });
+
+  it('throws for Array<ArrayBuffer> in a callback parameter type', () => {
+    expect(() => {
+      check('withCallback', {
+        type: 'FunctionTypeAnnotation',
+        returnTypeAnnotation: {type: 'VoidTypeAnnotation'},
+        params: [
+          {
+            name: 'cb',
+            optional: false,
+            typeAnnotation: {
+              type: 'FunctionTypeAnnotation',
+              returnTypeAnnotation: {type: 'VoidTypeAnnotation'},
+              params: [
+                {
+                  name: 'bufs',
+                  optional: false,
+                  typeAnnotation: arrayBufferArray,
+                },
+              ],
+            },
+          },
+        ],
+      });
+    }).toThrow(
+      "Module moduleName: 'Array<ArrayBuffer>' is only supported as a top-level parameter, but 'withCallback' uses it in a callback parameter type.",
+    );
+  });
+
+  it('throws for Array<ArrayBuffer> in a callback return type', () => {
+    expect(() => {
+      check('withCallbackReturn', {
+        type: 'FunctionTypeAnnotation',
+        returnTypeAnnotation: {type: 'VoidTypeAnnotation'},
+        params: [
+          {
+            name: 'cb',
+            optional: false,
+            typeAnnotation: {
+              type: 'FunctionTypeAnnotation',
+              returnTypeAnnotation: arrayBufferArray,
+              params: [],
+            },
+          },
+        ],
+      });
+    }).toThrow(
+      "Module moduleName: 'Array<ArrayBuffer>' is only supported as a top-level parameter, but 'withCallbackReturn' uses it in a callback return type.",
+    );
+  });
+
+  it('throws for Array<ArrayBuffer> nested in a callback object parameter', () => {
+    expect(() => {
+      check('nestedCallback', {
+        type: 'FunctionTypeAnnotation',
+        returnTypeAnnotation: {type: 'VoidTypeAnnotation'},
+        params: [
+          {
+            name: 'cb',
+            optional: false,
+            typeAnnotation: {
+              type: 'FunctionTypeAnnotation',
+              returnTypeAnnotation: {type: 'VoidTypeAnnotation'},
+              params: [
+                {
+                  name: 'x',
+                  optional: false,
+                  typeAnnotation: objectWithArrayBufferArray,
+                },
+              ],
+            },
+          },
+        ],
+      });
+    }).toThrow(
+      "Module moduleName: 'Array<ArrayBuffer>' is only supported as a top-level parameter, but 'nestedCallback' uses it in a callback parameter type.",
+    );
   });
 });
 

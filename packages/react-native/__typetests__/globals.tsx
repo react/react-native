@@ -209,6 +209,9 @@ const blobA = new Blob();
 const textA = 'i \u2665 dogs';
 
 const blob = new Blob([blobA, textA]);
+const blobFromArrayBuffer = new Blob([new ArrayBuffer(8)]);
+const blobFromTypedArray = new Blob([new Uint8Array([1, 2, 3])]);
+const blobFromMixed = new Blob(['text', new ArrayBuffer(4), new Blob([])]);
 
 const reader = new FileReader();
 

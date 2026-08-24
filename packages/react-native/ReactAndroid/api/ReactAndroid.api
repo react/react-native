@@ -2500,7 +2500,7 @@ public final class com/facebook/react/modules/blob/BlobModule : com/facebook/fbr
 	public fun <init> (Lcom/facebook/react/bridge/ReactApplicationContext;)V
 	public fun addNetworkingHandler ()V
 	public fun addWebSocketHandler (D)V
-	public fun createFromParts (Lcom/facebook/react/bridge/ReadableArray;Ljava/lang/String;)V
+	public fun createFromParts (Lcom/facebook/react/bridge/ReadableArray;[Lcom/facebook/react/bridge/ArrayBuffer;Ljava/lang/String;)V
 	public fun getBindingsInstaller ()Lcom/facebook/react/turbomodule/core/interfaces/BindingsInstallerHolder;
 	public final fun getLengthOfBlob (Ljava/lang/String;)J
 	public fun getTypedExportedConstants ()Ljava/util/Map;

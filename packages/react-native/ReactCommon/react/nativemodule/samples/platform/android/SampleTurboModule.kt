@@ -186,6 +186,44 @@ public class SampleTurboModule(private val context: ReactApplicationContext) :
     promise.resolve((payload?.size ?: 0).toDouble())
   }
 
+  // Resolving with an owning ArrayBuffer hands JS the same bytes without
+  // copying them; the ArrayBuffer keeps them alive for as long as JS can reach
+  // them.
+  @DoNotStrip
+  @Suppress("unused")
+  override fun getAsyncBuffer(size: Double, promise: Promise) {
+    if (!size.isFinite() || size < 0.0 || size > Int.MAX_VALUE.toDouble()) {
+      promise.reject(
+          "invalid_size",
+          "getAsyncBuffer: size must be a finite value in [0, ${Int.MAX_VALUE}], got $size")
+      return
+    }
+    val buffer = ArrayBuffer(size.toInt())
+    val bytes = buffer.bytes
+    for (i in 0 until bytes.capacity()) {
+      bytes.put(i, (i + 1).toByte())
+    }
+    log("getAsyncBuffer", size, buffer)
+    promise.resolve(buffer)
+  }
+
+  // Every element borrows the bytes of the matching JS ArrayBuffer for the duration of this
+  // synchronous call, so they are read here and never retained. Summing every byte proves the
+  // whole array crossed the boundary, not just its shape.
+  @DoNotStrip
+  @Suppress("unused")
+  override fun arrayBufferArray(values: Array<ArrayBuffer>): Double {
+    var checksum = 0L
+    for (value in values) {
+      val bytes = value.bytes
+      for (i in 0 until bytes.capacity()) {
+        checksum += (bytes.get(i).toInt() and 0xFF).toLong()
+      }
+    }
+    log("arrayBufferArray", values.size, checksum)
+    return checksum.toDouble()
+  }
+
   @DoNotStrip
   @Suppress("unused")
   override fun getValueWithCallback(callback: Callback?) {

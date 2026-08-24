@@ -14,13 +14,32 @@ import * as TurboModuleRegistry from '../../../../Libraries/TurboModule/TurboMod
 
 export type Constants = {BLOB_URI_SCHEME: ?string, BLOB_URI_HOST: ?string};
 
+type BlobDescriptor = {
+  blobId: string,
+  offset: number,
+  size: number,
+  name?: string,
+  type?: string,
+  lastModified?: number,
+  ...
+};
+
+type BlobStringPart = {type: 'string', data: string, ...};
+type BlobReferencePart = {type: 'blob', data: BlobDescriptor, ...};
+type BlobBinaryPart = {type: 'binaryPart', data: number, ...};
+export type BlobPart = BlobReferencePart | BlobStringPart | BlobBinaryPart;
+
 export interface Spec extends TurboModule {
   readonly getConstants: () => Constants;
   readonly addNetworkingHandler: () => void;
   readonly addWebSocketHandler: (id: number) => void;
   readonly removeWebSocketHandler: (id: number) => void;
-  readonly sendOverSocket: (blob: Object, socketID: number) => void;
-  readonly createFromParts: (parts: Array<Object>, withId: string) => void;
+  readonly sendOverSocket: (blob: BlobDescriptor, socketID: number) => void;
+  readonly createFromParts: (
+    parts: ReadonlyArray<BlobPart>,
+    binaryParts: ReadonlyArray<ArrayBuffer>,
+    withId: string,
+  ) => void;
   readonly release: (blobId: string) => void;
 }
 
@@ -46,11 +65,15 @@ if (NativeModule != null) {
     removeWebSocketHandler(id: number): void {
       NativeModule.removeWebSocketHandler(id);
     },
-    sendOverSocket(blob: Object, socketID: number): void {
+    sendOverSocket(blob: BlobDescriptor, socketID: number): void {
       NativeModule.sendOverSocket(blob, socketID);
     },
-    createFromParts(parts: Array<Object>, withId: string): void {
-      NativeModule.createFromParts(parts, withId);
+    createFromParts(
+      parts: ReadonlyArray<BlobPart>,
+      binaryParts: ReadonlyArray<ArrayBuffer>,
+      withId: string,
+    ): void {
+      NativeModule.createFromParts(parts, binaryParts, withId);
     },
     release(blobId: string): void {
       NativeModule.release(blobId);

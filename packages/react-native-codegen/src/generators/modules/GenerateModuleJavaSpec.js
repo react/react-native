@@ -28,7 +28,7 @@ const {parseValidUnionType, toPascalCase} = require('../Utils');
 const {
   createAliasResolver,
   getModules,
-  throwIfUnsupportedPromiseArrayBuffer,
+  isArrayBufferElementType,
 } = require('./Utils');
 
 type FilesOutput = Map<string, string>;
@@ -276,6 +276,10 @@ function translateFunctionParamToJavaType(
       imports.add('com.facebook.react.bridge.ReadableMap');
       return wrapOptional('ReadableMap', isRequired);
     case 'ArrayTypeAnnotation':
+      if (isArrayBufferElementType(realTypeAnnotation.elementType)) {
+        imports.add('com.facebook.react.bridge.ArrayBuffer');
+        return wrapOptional('ArrayBuffer[]', isRequired);
+      }
       imports.add('com.facebook.react.bridge.ReadableArray');
       return wrapOptional('ReadableArray', isRequired);
     case 'FunctionTypeAnnotation':
@@ -598,11 +602,6 @@ module.exports = {
           unwrapNullable<NativeModuleFunctionTypeAnnotation>(
             method.typeAnnotation,
           );
-
-        throwIfUnsupportedPromiseArrayBuffer(
-          method.name,
-          methodTypeAnnotation.returnTypeAnnotation,
-        );
 
         // Handle return type
         const translatedReturnType = translateFunctionReturnTypeToJavaType(

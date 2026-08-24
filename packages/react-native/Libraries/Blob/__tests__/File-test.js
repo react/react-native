@@ -86,4 +86,10 @@ describe('File', function () {
     // $FlowExpectedError[incompatible-type]
     expect(() => new File([])).toThrow();
   });
+
+  it('should create file from array buffer parts', () => {
+    const file = new File([new Uint8Array([1, 2, 3]).buffer], 'a.bin');
+    expect(file.size).toBe(3);
+    expect(file.name).toBe('a.bin');
+  });
 });
