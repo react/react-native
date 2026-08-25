@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<764568389a1ae8675638104ab3d96d4d>>
+ * @generated SignedSource<<dc6298e569276bf047951a8e4105aa96>>
  */
 
 /**
@@ -28,10 +28,6 @@ class ReactNativeFeatureFlagsOverridesOSSExperimental : public ReactNativeFeatur
     ReactNativeFeatureFlagsOverridesOSSExperimental() = default;
 
   bool enableFlexboxAutoMinSizeInStrictMode() override {
-    return true;
-  }
-
-  bool enableSchedulerDelegateInvalidation() override {
     return true;
   }
 

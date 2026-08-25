@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<9bdc0e5397839b38c408db16dd2fffdc>>
+ * @generated SignedSource<<0774261e9f27a2df5005e11317556f83>>
  * @flow strict
  * @noformat
  */
@@ -92,7 +92,6 @@ export type ReactNativeFeatureFlags = Readonly<{
   enablePreparedTextLayout: Getter<boolean>,
   enablePropsUpdateReconciliationAndroid: Getter<boolean>,
   enableResizeObserverByDefault: Getter<boolean>,
-  enableSchedulerDelegateInvalidation: Getter<boolean>,
   enableSwiftUIBasedFilters: Getter<boolean>,
   enableViewCulling: Getter<boolean>,
   enableViewRecycling: Getter<boolean>,
@@ -383,10 +382,6 @@ export const enablePropsUpdateReconciliationAndroid: Getter<boolean> = createNat
  * Enables the ResizeObserver Web API in React Native.
  */
 export const enableResizeObserverByDefault: Getter<boolean> = createNativeFlagGetter('enableResizeObserverByDefault', false);
-/**
- * Gates a defensive guard around Scheduler::uiManagerDidDispatchCommand and uiManagerDidFinishTransaction that prevents queued rendering-update lambdas from dereferencing the SchedulerDelegate after it has been destroyed (use-after-free).
- */
-export const enableSchedulerDelegateInvalidation: Getter<boolean> = createNativeFlagGetter('enableSchedulerDelegateInvalidation', false);
 /**
  * When enabled, it will use SwiftUI for filter effects like blur on iOS.
  */

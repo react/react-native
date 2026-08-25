@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<2365c1d552f84ca44c789ced558679f5>>
+ * @generated SignedSource<<3605df96fad767e3ec3957d7305ef926>>
  */
 
 /**
@@ -67,7 +67,6 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
   private var enablePreparedTextLayoutCache: Boolean? = null
   private var enablePropsUpdateReconciliationAndroidCache: Boolean? = null
   private var enableResizeObserverByDefaultCache: Boolean? = null
-  private var enableSchedulerDelegateInvalidationCache: Boolean? = null
   private var enableSwiftUIBasedFiltersCache: Boolean? = null
   private var enableViewCullingCache: Boolean? = null
   private var enableViewRecyclingCache: Boolean? = null
@@ -537,16 +536,6 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
       cached = currentProvider.enableResizeObserverByDefault()
       accessedFeatureFlags.add("enableResizeObserverByDefault")
       enableResizeObserverByDefaultCache = cached
-    }
-    return cached
-  }
-
-  override fun enableSchedulerDelegateInvalidation(): Boolean {
-    var cached = enableSchedulerDelegateInvalidationCache
-    if (cached == null) {
-      cached = currentProvider.enableSchedulerDelegateInvalidation()
-      accessedFeatureFlags.add("enableSchedulerDelegateInvalidation")
-      enableSchedulerDelegateInvalidationCache = cached
     }
     return cached
   }

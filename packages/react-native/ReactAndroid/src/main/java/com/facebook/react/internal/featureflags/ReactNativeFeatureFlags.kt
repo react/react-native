@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<59766885e05931a728d63cec89fd6103>>
+ * @generated SignedSource<<ffaf7abad8f9b217cc16e28ee9270b40>>
  */
 
 /**
@@ -287,12 +287,6 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun enableResizeObserverByDefault(): Boolean = accessor.enableResizeObserverByDefault()
-
-  /**
-   * Gates a defensive guard around Scheduler::uiManagerDidDispatchCommand and uiManagerDidFinishTransaction that prevents queued rendering-update lambdas from dereferencing the SchedulerDelegate after it has been destroyed (use-after-free).
-   */
-  @JvmStatic
-  public fun enableSchedulerDelegateInvalidation(): Boolean = accessor.enableSchedulerDelegateInvalidation()
 
   /**
    * When enabled, it will use SwiftUI for filter effects like blur on iOS.

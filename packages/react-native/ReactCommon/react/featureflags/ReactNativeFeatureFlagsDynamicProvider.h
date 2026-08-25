@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<30b0399ab09d2d273c465bfa950a5a15>>
+ * @generated SignedSource<<9c0b6df9433a5696f5eacf47713b9040>>
  */
 
 /**
@@ -430,15 +430,6 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::enableResizeObserverByDefault();
-  }
-
-  bool enableSchedulerDelegateInvalidation() override {
-    auto value = values_["enableSchedulerDelegateInvalidation"];
-    if (!value.isNull()) {
-      return value.getBool();
-    }
-
-    return ReactNativeFeatureFlagsDefaults::enableSchedulerDelegateInvalidation();
   }
 
   bool enableSwiftUIBasedFilters() override {
