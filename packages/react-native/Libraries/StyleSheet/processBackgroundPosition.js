@@ -219,16 +219,28 @@ const parseBackgroundPositionCSSString = (
       if (value1 == null || value2 == null) {
         return [];
       }
-      if (keyword1 === 'left') {
-        left = value1;
-      } else if (keyword1 === 'right') {
-        right = value1;
-      }
-
-      if (keyword2 === 'top') {
-        top = value2;
-      } else if (keyword2 === 'bottom') {
-        bottom = value2;
+      const assignPosition = (
+        keyword: string,
+        value: string | number,
+      ): boolean => {
+        if (keyword === 'left') {
+          left = value;
+        } else if (keyword === 'right') {
+          right = value;
+        } else if (keyword === 'top') {
+          top = value;
+        } else if (keyword === 'bottom') {
+          bottom = value;
+        } else {
+          return false;
+        }
+        return true;
+      };
+      if (
+        !assignPosition(keyword1, value1) ||
+        !assignPosition(keyword2, value2)
+      ) {
+        return [];
       }
     }
 

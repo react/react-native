@@ -287,6 +287,12 @@ describe('processBackgroundPosition', () => {
     ]);
   });
 
+  it('should parse vertical position before horizontal position', () => {
+    expect(processBackgroundPosition('top 75% left 25%')).toEqual([
+      {top: '75%', left: '25%'},
+    ]);
+  });
+
   // Test multiple background positions (comma-separated)
   it('should parse multiple background positions', () => {
     expect(processBackgroundPosition('left top, right bottom')).toEqual([
