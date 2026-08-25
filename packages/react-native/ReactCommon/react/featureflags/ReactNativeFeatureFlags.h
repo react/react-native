@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<e437a03ac130e2f24a857a64b3677490>>
+ * @generated SignedSource<<7c7d9b2eb64ecf6b5bd61ff0cc2bb70e>>
  */
 
 /**
@@ -253,11 +253,6 @@ class ReactNativeFeatureFlags {
    * Enables the ResizeObserver Web API in React Native.
    */
   RN_EXPORT static bool enableResizeObserverByDefault();
-
-  /**
-   * When enabled, RuntimeScheduler_Modern clears pending tasks and rendering updates before handling an error.
-   */
-  RN_EXPORT static bool enableRuntimeSchedulerQueueClearingOnError();
 
   /**
    * Gates a defensive guard around Scheduler::uiManagerDidDispatchCommand and uiManagerDidFinishTransaction that prevents queued rendering-update lambdas from dereferencing the SchedulerDelegate after it has been destroyed (use-after-free).

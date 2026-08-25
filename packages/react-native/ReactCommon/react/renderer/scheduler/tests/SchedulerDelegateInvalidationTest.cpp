@@ -198,9 +198,6 @@ class TestExecutorQueue {
 
 // Feature flags relevant to this test:
 //   - enableSchedulerDelegateInvalidation: the token guard under test.
-//   - enableRuntimeSchedulerQueueClearingOnError: a RuntimeScheduler_Modern
-//     fallback that drops queued work before host error handling tears down the
-//     delegate.
 //   - enableBridgelessArchitecture: forced ON so the Scheduler picks
 //     RuntimeScheduler_Modern. Modern queues rendering updates in
 //     pendingRenderingUpdates_ and drains them at end-of-tick, which is the
@@ -208,17 +205,10 @@ class TestExecutorQueue {
 //     scheduleRenderingUpdate inline, collapsing the window we want to test.
 class TestFeatureFlags : public ReactNativeFeatureFlagsDefaults {
  public:
-  explicit TestFeatureFlags(
-      bool guardEnabled,
-      bool queueClearingOnErrorEnabled = false)
-      : guardEnabled_(guardEnabled),
-        queueClearingOnErrorEnabled_(queueClearingOnErrorEnabled) {}
+  explicit TestFeatureFlags(bool guardEnabled) : guardEnabled_(guardEnabled) {}
 
   bool enableBridgelessArchitecture() override {
     return true;
-  }
-  bool enableRuntimeSchedulerQueueClearingOnError() override {
-    return queueClearingOnErrorEnabled_;
   }
   bool enableSchedulerDelegateInvalidation() override {
     return guardEnabled_;
@@ -226,7 +216,6 @@ class TestFeatureFlags : public ReactNativeFeatureFlagsDefaults {
 
  private:
   bool guardEnabled_;
-  bool queueClearingOnErrorEnabled_;
 };
 
 // Builds a ComponentRegistryFactory with just the descriptors needed for the
@@ -253,10 +242,9 @@ ComponentRegistryFactory makeComponentRegistryFactory() {
 // a real Scheduler and drive uiManagerDidFinishTransaction end-to-end.
 class SchedulerDelegateInvalidationTest : public ::testing::Test {
  protected:
-  void setUp(bool guardEnabled, bool queueClearingOnErrorEnabled = false) {
+  void setUp(bool guardEnabled) {
     ReactNativeFeatureFlags::override(
-        std::make_unique<TestFeatureFlags>(
-            guardEnabled, queueClearingOnErrorEnabled));
+        std::make_unique<TestFeatureFlags>(guardEnabled));
 
     runtime_ = facebook::hermes::makeHermesRuntime(
         ::hermes::vm::RuntimeConfig::Builder()
@@ -502,19 +490,17 @@ TEST_F(
 }
 
 // ---------------------------------------------------------------------------
-// Test 3 — JS-throw-initiated teardown, guard DISABLED but runtime-scheduler
-// queue clearing ENABLED.
+// Test 3 — JS-throw-initiated teardown, guard DISABLED.
 //
 // Same cascade as Test 2 but with the scheduler invalidation guard OFF. The
 // runtime scheduler clears pendingRenderingUpdates_ before onTaskError tears
-// down the delegate, so the later tick has no stale delegate lambda to drain.
+// down the delegate, so the later tick has no stale delegate lambda to drain
+// even without the guard.
 // ---------------------------------------------------------------------------
 TEST_F(
     SchedulerDelegateInvalidationTest,
-    GuardDisabled_QueueClearingOnError_JSThrowInitiatedTeardownIsSafe) {
-  setUp(
-      /*guardEnabled=*/false,
-      /*queueClearingOnErrorEnabled=*/true);
+    GuardDisabled_JSThrowInitiatedTeardownIsSafe) {
+  setUp(/*guardEnabled=*/false);
 
   scheduler_->uiManagerDidFinishTransaction(
       coordinator_, /*mountSynchronously=*/false);
@@ -533,39 +519,35 @@ TEST_F(
 }
 
 // ---------------------------------------------------------------------------
-// Test 4 — JS-throw-initiated teardown, guard DISABLED.
+// Test 4 — The window the guard still closes: a delegate dropped and
+// destroyed with no error involved.
 //
-// Same cascade as Test 2 but with the guard OFF. The previously-enqueued
-// lambda has no working token check, so when the rendering-update drain
-// runs after teardown it dereferences the destroyed delegate.
-//
-// EXPECT_DEATH catches the abort: either RecordingDelegate's magic-sentinel
-// ASSERT_EQ inside schedulerShouldRenderTransactions trips, or ASan reports
-// heap-use-after-free on the vptr load before our assertion runs.
+// Retargeted from a JS-throw trigger, which can no longer reach this race:
+// handleTaskError clears pendingRenderingUpdates_ before the host error
+// handler runs, so the queue is already empty by the time the delegate goes
+// away (Test 3). A plain setDelegate swap never reaches handleTaskError, so
+// with the guard OFF the lambda enqueued in (a) still holds a raw pointer to
+// freed memory when the queue drains in (c).
 // ---------------------------------------------------------------------------
 #if GTEST_HAS_DEATH_TEST
 TEST_F(
     SchedulerDelegateInvalidationTest,
-    GuardDisabled_JSThrowInitiatedTeardownIsUAF) {
+    GuardDisabled_DelegateDestroyedWithoutError_IsUAF) {
   EXPECT_DEATH(
       {
         setUp(/*guardEnabled=*/false);
 
-        // (a) Pre-throw transaction: lambda lands in
-        // pendingRenderingUpdates_.
+        // (a) Enqueue a rendering-update lambda capturing delegate_ raw.
         scheduler_->uiManagerDidFinishTransaction(
             coordinator_, /*mountSynchronously=*/false);
 
-        // (b) Uncaught JS throw → onTaskError → teardown drops the delegate.
-        // (c) Note: with guard DISABLED, setDelegate(nullptr) does NOT flip
-        // the invalidation token — Scheduler::setDelegate gates that branch
-        // on the feature flag — so the pending lambda has no signal that
-        // the delegate is going away.
-        scheduleJSThrowingTask();
-        executorQueue_->flush();
+        // (b) Host swaps the delegate out and destroys it. No JS throw, so
+        // nothing clears the rendering-update queue. With the guard ON,
+        // setDelegate would flip the invalidation token here.
+        scheduler_->setDelegate(nullptr);
+        delegate_.reset();
 
-        // (d) Drain the pending rendering update. The lambda dereferences
-        // the destroyed delegate → UAF.
+        // (c) Drain — the lambda dereferences the destroyed delegate.
         runOneEventLoopTick();
       },
       "");
@@ -605,34 +587,7 @@ TEST_F(
 }
 
 // ---------------------------------------------------------------------------
-// Test 6 — Same race as Test 3, but enqueued via
-// Scheduler::uiManagerDidDispatchCommand. Guard OFF → lambda dereferences
-// the destroyed delegate → UAF caught by the magic sentinel inside
-// schedulerDidDispatchCommand or by ASan on the vptr load.
-// ---------------------------------------------------------------------------
-#if GTEST_HAS_DEATH_TEST
-TEST_F(
-    SchedulerDelegateInvalidationTest,
-    GuardDisabled_DispatchCommandLambda_JSThrowInitiatedTeardownIsUAF) {
-  EXPECT_DEATH(
-      {
-        setUp(/*guardEnabled=*/false);
-        ASSERT_NE(rootShadowNode_, nullptr);
-
-        scheduler_->uiManagerDidDispatchCommand(
-            rootShadowNode_, "scrollTo", folly::dynamic::array());
-
-        scheduleJSThrowingTask();
-        executorQueue_->flush();
-
-        runOneEventLoopTick();
-      },
-      "");
-}
-#endif
-
-// ---------------------------------------------------------------------------
-// Test 7 — Architectural assertion: surface-shutdown alone does NOT drain
+// Test 6 — Architectural assertion: surface-shutdown alone does NOT drain
 // pendingRenderingUpdates_ in RuntimeScheduler_Modern.
 //
 // This is the explicit refutation of the implicit reading "if the host just

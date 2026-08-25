@@ -10,7 +10,6 @@
 #include <ReactCommon/RuntimeExecutorSyncUIThreadUtils.h>
 #include <cxxreact/TraceSection.h>
 #include <jsinspector-modern/tracing/EventLoopReporter.h>
-#include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/renderer/consistency/ScopedShadowTreeRevisionLock.h>
 #include <react/timing/primitives.h>
 #include <react/utils/OnScopeExit.h>
@@ -498,9 +497,7 @@ void RuntimeScheduler_Modern::reportLongTasks(
 void RuntimeScheduler_Modern::handleTaskError(
     jsi::Runtime& runtime,
     jsi::JSError& error) {
-  if (ReactNativeFeatureFlags::enableRuntimeSchedulerQueueClearingOnError()) {
-    clearQueues();
-  }
+  clearQueues();
 
   onTaskError_(runtime, error);
 }

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<d5bab65a116d6f6d3415c5c8a2f08db9>>
+ * @generated SignedSource<<59766885e05931a728d63cec89fd6103>>
  */
 
 /**
@@ -287,12 +287,6 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun enableResizeObserverByDefault(): Boolean = accessor.enableResizeObserverByDefault()
-
-  /**
-   * When enabled, RuntimeScheduler_Modern clears pending tasks and rendering updates before handling an error.
-   */
-  @JvmStatic
-  public fun enableRuntimeSchedulerQueueClearingOnError(): Boolean = accessor.enableRuntimeSchedulerQueueClearingOnError()
 
   /**
    * Gates a defensive guard around Scheduler::uiManagerDidDispatchCommand and uiManagerDidFinishTransaction that prevents queued rendering-update lambdas from dereferencing the SchedulerDelegate after it has been destroyed (use-after-free).

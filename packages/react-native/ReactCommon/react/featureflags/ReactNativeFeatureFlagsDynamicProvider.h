@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<340aadae79b8e4f77daa915e9ab397a1>>
+ * @generated SignedSource<<30b0399ab09d2d273c465bfa950a5a15>>
  */
 
 /**
@@ -430,15 +430,6 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::enableResizeObserverByDefault();
-  }
-
-  bool enableRuntimeSchedulerQueueClearingOnError() override {
-    auto value = values_["enableRuntimeSchedulerQueueClearingOnError"];
-    if (!value.isNull()) {
-      return value.getBool();
-    }
-
-    return ReactNativeFeatureFlagsDefaults::enableRuntimeSchedulerQueueClearingOnError();
   }
 
   bool enableSchedulerDelegateInvalidation() override {

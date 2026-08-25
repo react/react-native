@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<9689c541fa98ffbaf9f5d83077ab1208>>
+ * @generated SignedSource<<357799e6db7d4644f73a79845104b3d4>>
  */
 
 /**
@@ -157,9 +157,6 @@ class JReactNativeFeatureFlagsCxxInterop
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool enableResizeObserverByDefault(
-    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
-
-  static bool enableRuntimeSchedulerQueueClearingOnError(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool enableSchedulerDelegateInvalidation(
