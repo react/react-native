@@ -377,7 +377,7 @@ folly::dynamic HostPlatformScrollViewProps::getDiffProps(
   }
 
   if (endFillColor != oldProps->endFillColor) {
-    result["endFillColor"] = *endFillColor;
+    result["endFillColor"] = static_cast<int32_t>(*endFillColor);
   }
 
   return result;

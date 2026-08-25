@@ -38,8 +38,7 @@ inline size_t hashGetColourArguments(int32_t surfaceId, const std::vector<std::s
 inline SharedColor
 parsePlatformColor(const ContextContainer &contextContainer, int32_t surfaceId, const RawValue &value)
 {
-  Color color = 0;
-  bool resolved = false;
+  Color color{};
   if (value.hasType<std::unordered_map<std::string, RawValue>>()) {
     // Mixed array + string values, so read as a map of RawValue (a map of
     // vector<string> would assert on the fallback string).
@@ -51,6 +50,7 @@ parsePlatformColor(const ContextContainer &contextContainer, int32_t surfaceId, 
       resourcePaths = (std::vector<std::string>)resourcePathsIt->second;
     }
 
+    bool resolved = false;
     if (!resourcePaths.empty()) {
       // Cache the (costly) JNI results. A cached nullopt is an explicit miss,
       // distinct from a path that resolves to transparent (ARGB 0).
@@ -105,13 +105,12 @@ parsePlatformColor(const ContextContainer &contextContainer, int32_t surfaceId, 
         if (std::holds_alternative<CSSColor>(cssColor)) {
           const auto &c = std::get<CSSColor>(cssColor);
           color = hostPlatformColorFromRGBA(c.r, c.g, c.b, c.a);
-          resolved = true;
         }
       }
     }
   }
 
-  return resolved ? SharedColor{color} : SharedColor{};
+  return color;
 }
 
 inline void

@@ -17,6 +17,11 @@ namespace facebook::react {
 
 #ifdef RN_SERIALIZABLE_STATE
 
+inline folly::dynamic toDynamic(uint32_t value)
+{
+  return value;
+}
+
 inline folly::dynamic toDynamic(const std::vector<bool> &arrayValue)
 {
   folly::dynamic resultArray = folly::dynamic::array();

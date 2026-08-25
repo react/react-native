@@ -73,10 +73,10 @@ SharedColor parsePlatformColor(const ContextContainer &contextContainer, int32_t
     auto items = (std::unordered_map<std::string, RawValue>)value;
     if (items.find("semantic") != items.end() && items.at("semantic").hasType<std::vector<std::string>>()) {
       auto semanticItems = (std::vector<std::string>)items.at("semantic");
-      auto semanticPlatformColor = Color::createSemanticColor(semanticItems);
+      auto semanticColor = SharedColor(Color::createSemanticColor(semanticItems));
       // The sentinel (null UIColor) means a true miss; apply the fallback only
       // then, not when a name resolves to transparent.
-      if (semanticPlatformColor == HostPlatformColor::UndefinedColor) {
+      if (!semanticColor) {
         if (items.find("fallback") != items.end() && items.at("fallback").hasType<std::string>()) {
           auto fallbackColor = fallbackColorFromString((std::string)items.at("fallback"));
           // has_value(), not != 0, so a transparent fallback is kept.
@@ -87,7 +87,7 @@ SharedColor parsePlatformColor(const ContextContainer &contextContainer, int32_t
         // Miss with no usable fallback: clearColor, never leaking the sentinel.
         return clearColor();
       }
-      return SharedColor(semanticPlatformColor);
+      return semanticColor;
     } else if (
         items.find("dynamic") != items.end() &&
         items.at("dynamic").hasType<std::unordered_map<std::string, RawValue>>()) {

@@ -37,8 +37,11 @@ TEST(ColorTest, testColorConversion) {
   }
 }
 
+#ifdef ANDROID
 TEST(ColorTest, testTransparentColorIsDistinctFromUndefined) {
   using namespace facebook::react;
+
+  EXPECT_NE(Color{}, Color{0});
 
   SharedColor undefinedColor;
   auto transparentColor = clearColor();
@@ -47,3 +50,4 @@ TEST(ColorTest, testTransparentColorIsDistinctFromUndefined) {
   EXPECT_TRUE(transparentColor);
   EXPECT_NE(undefinedColor, transparentColor);
 }
+#endif

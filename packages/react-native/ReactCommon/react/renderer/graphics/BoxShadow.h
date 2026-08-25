@@ -30,7 +30,7 @@ struct BoxShadow {
     result["offsetY"] = offsetY;
     result["blurRadius"] = blurRadius;
     result["spreadDistance"] = spreadDistance;
-    result["color"] = *color;
+    result["color"] = static_cast<int32_t>(*color);
     result["inset"] = inset;
     return result;
   }

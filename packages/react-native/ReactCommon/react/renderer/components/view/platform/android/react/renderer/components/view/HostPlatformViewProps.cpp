@@ -309,7 +309,8 @@ static void updateBorderColorPropValue(
     const std::optional<SharedColor>& newColor,
     const std::optional<SharedColor>& oldColor) {
   if (newColor != oldColor) {
-    result[propName] = newColor.has_value() ? *newColor.value() : NULL;
+    result[propName] =
+        newColor.has_value() ? static_cast<int32_t>(*newColor.value()) : NULL;
   }
 }
 
@@ -502,11 +503,11 @@ folly::dynamic HostPlatformViewProps::getDiffProps(
   }
 
   if (backgroundColor != oldProps->backgroundColor) {
-    result["backgroundColor"] = *backgroundColor;
+    result["backgroundColor"] = static_cast<int32_t>(*backgroundColor);
   }
 
   if (outlineColor != oldProps->outlineColor) {
-    result["outlineColor"] = *outlineColor;
+    result["outlineColor"] = static_cast<int32_t>(*outlineColor);
   }
 
   if (outlineOffset != oldProps->outlineOffset) {
@@ -532,7 +533,7 @@ folly::dynamic HostPlatformViewProps::getDiffProps(
   }
 
   if (shadowColor != oldProps->shadowColor) {
-    result["shadowColor"] = *shadowColor;
+    result["shadowColor"] = static_cast<int32_t>(*shadowColor);
   }
 
   if (shadowOpacity != oldProps->shadowOpacity) {

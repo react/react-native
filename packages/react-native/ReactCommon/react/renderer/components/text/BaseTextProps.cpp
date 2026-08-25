@@ -369,7 +369,7 @@ void BaseTextProps::appendTextAttributesProps(
     const BaseTextProps* oldProps) const {
   if (textAttributes.foregroundColor !=
       oldProps->textAttributes.foregroundColor) {
-    result["color"] = *textAttributes.foregroundColor;
+    result["color"] = static_cast<int32_t>(*textAttributes.foregroundColor);
   }
 
   if (textAttributes.fontFamily != oldProps->textAttributes.fontFamily) {
@@ -480,7 +480,8 @@ void BaseTextProps::appendTextAttributesProps(
 
   if (textAttributes.textDecorationColor !=
       oldProps->textAttributes.textDecorationColor) {
-    result["textDecorationColor"] = *textAttributes.textDecorationColor;
+    result["textDecorationColor"] =
+        static_cast<int32_t>(*textAttributes.textDecorationColor);
   }
 
   if (textAttributes.textDecorationLineType !=
@@ -514,7 +515,8 @@ void BaseTextProps::appendTextAttributesProps(
 
   if (textAttributes.textShadowColor !=
       oldProps->textAttributes.textShadowColor) {
-    result["textShadowColor"] = *textAttributes.textShadowColor;
+    result["textShadowColor"] =
+        static_cast<int32_t>(*textAttributes.textShadowColor);
   }
 
   if (textAttributes.isHighlighted != oldProps->textAttributes.isHighlighted) {
@@ -549,7 +551,8 @@ void BaseTextProps::appendTextAttributesProps(
 
   if (textAttributes.backgroundColor !=
       oldProps->textAttributes.backgroundColor) {
-    result["backgroundColor"] = *textAttributes.backgroundColor;
+    result["backgroundColor"] =
+        static_cast<int32_t>(*textAttributes.backgroundColor);
   }
 }
 

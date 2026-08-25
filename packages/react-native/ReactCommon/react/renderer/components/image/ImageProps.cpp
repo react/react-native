@@ -210,7 +210,7 @@ folly::dynamic ImageProps::getDiffProps(const Props* prevProps) const {
     // unset.
     if (tintColor != oldProps->tintColor) {
       if (tintColor.has_value()) {
-        result["tintColor"] = *tintColor.value();
+        result["tintColor"] = static_cast<int32_t>(*tintColor.value());
       } else {
         result["tintColor"] = folly::dynamic(nullptr);
       }
@@ -221,7 +221,7 @@ folly::dynamic ImageProps::getDiffProps(const Props* prevProps) const {
     SharedColor prevTintColorValue =
         oldProps->tintColor.value_or(SharedColor{});
     if (tintColorValue != prevTintColorValue) {
-      result["tintColor"] = *tintColorValue;
+      result["tintColor"] = static_cast<int32_t>(*tintColorValue);
     }
   }
 
@@ -242,7 +242,7 @@ folly::dynamic ImageProps::getDiffProps(const Props* prevProps) const {
   }
 
   if (overlayColor != oldProps->overlayColor) {
-    result["overlayColor"] = *overlayColor;
+    result["overlayColor"] = static_cast<int32_t>(*overlayColor);
   }
 
   if (fadeDuration != oldProps->fadeDuration) {
