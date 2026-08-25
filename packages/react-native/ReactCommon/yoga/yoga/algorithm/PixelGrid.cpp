@@ -128,6 +128,9 @@ void roundLayoutResultsToPixelGrid(
   }
 
   for (yoga::Node* child : node->getChildren()) {
+    if (child->getOwner() != node) {
+      continue;
+    }
     roundLayoutResultsToPixelGrid(child, absoluteNodeLeft, absoluteNodeTop);
   }
 }
