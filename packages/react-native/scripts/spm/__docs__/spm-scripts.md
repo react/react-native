@@ -329,10 +329,10 @@ build phase calls — a fine trade for not having to remember a command.
 > and fetches the artifacts itself during normal package resolution. Until then,
 > the one-time setup run is required on clean machines.
 
-## Local Native Modules
+## App-local native modules
 
-Modules not discovered via autolinking can be declared in
-`react-native.config.js`:
+Native code that lives in the app itself, rather than in an npm package, is
+declared in `react-native.config.js`:
 
 ```js
 module.exports = {
@@ -340,17 +340,65 @@ module.exports = {
     modules: [
       {
         name: 'MyNativeModule',
-        path: 'ios/MyNativeModule', // relative to app root
+        path: 'ios/MyNativeModule', // relative to the app root
         exclude: ['*.podspec'], // optional
+        sources: ['**/*.{h,m,mm}'], // optional
       },
     ],
   },
 };
 ```
 
-Each entry becomes a target in `build/generated/autolinking/Package.swift`.
-Sources outside `build/generated/autolinking/` are automatically mirrored with
-file-level symlinks.
+### Why it is a separate mechanism
+
+Autolinking only visits installed npm packages, so a directory with no
+`package.json` is never discovered — it has to be named somewhere, and this is
+where. Each entry becomes its own SwiftPM target with React Native's headers
+already wired up: `<React/…>` resolves inside the module, and the module's own
+headers resolve as `#import <MyNativeModule/MyHeader.h>` from the app and from
+other modules.
+
+By design, the entry needs no podspec and no `Package.swift` — app-local native
+code is not required to carry either. If the module ships a hand-written
+`Package.swift`, then React Native generates nothing and uses the Package.swift
+as-is.
+
+| Field     | Meaning                                                                                                                                                                                                                                                                                                           |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`    | The target's name and its header prefix. A valid Swift identifier, not [reserved](#names-react-native-reserves), and not already taken by another module or an autolinked library.                                                                                                                                |
+| `path`    | The module's directory, relative to the app root.                                                                                                                                                                                                                                                                 |
+| `exclude` | Paths inside `path` to keep out of the target, like a podspec's `exclude_files`. It also supports directories with a trailing `/`.                                                                                                                                                                                |
+| `sources` | Glob allowlist replacing automatic discovery, like a podspec's `source_files`. Without it, every `.h/.m/.mm/.c/.cpp/.swift` file under `path` is compiled, minus `exclude` and the directories the autolinker always skips (`android/`, `test/`, `tests/`, `__tests__/`, `__mocks__/`, `jest/`, `node_modules/`). |
+
+Names must be unique because wrapper directories are keyed by name: two entries
+resolving to one name — or an entry matching an autolinked library — would share
+a directory, and the losing module would silently not be built. So a clash fails
+the build with a rename instruction instead.
+
+### App Modules vs Libraries
+
+`spm.modules` is read from the app's own `react-native.config.js` only — entries
+in a dependency's config are ignored, so a library cannot declare its native
+code this way. A library ships its own `Package.swift`, or has one scaffolded
+from its podspec — see
+[community packages without a `Package.swift`](#community-packages-without-a-packageswift).
+
+### Limits
+
+- **Modules reach one app target.** Each entry is still its own SwiftPM target —
+  the limit is which targets can use them. `spm add` attaches the `Autolinked`
+  aggregate to a single app target (`--productName` picks it when the project
+  has several), and only that target sees the modules. Declare as many entries
+  as you like; they all arrive through that one aggregate. Known gap:
+  rn-tester's test targets (`RNTesterUnitTests`, `RNTesterIntegrationTests`) get
+  their own pods under CocoaPods, and `spm.modules` has no equivalent for them
+  yet.
+- **One language per module.** SwiftPM cannot mix Swift and Objective-C/C++ in
+  one target; a module that does fails the build. Split it per language, or ship
+  a hand-written `Package.swift` with a target for each.
+- **No third-party Swift packages.** Add those in Xcode (File → Add Package
+  Dependencies…); React Native does not need to know. Pods you keep are still
+  [installed by CocoaPods](#keeping-non-rn-pods).
 
 ## Dependencies between libraries
 
@@ -390,6 +438,103 @@ module.exports = {dependency: {platforms: {ios: {}}}, spm: {name: 'worklets'}};
 
 If the config fails to load, a warning names the file and the reason — the `spm`
 settings in it are ignored rather than silently applied.
+
+## Library authors: your library's Swift name
+
+Every autolinked library becomes one SwiftPM target, whose name is also its
+header prefix (`#import <SwiftName/MyHeader.h>`). The name is derived from the
+npm package name unless the library overrides it.
+
+### How the name is derived
+
+The scope is dropped, the rest is split on runs of non-alphanumeric characters,
+each part gets its first character upper-cased, and the parts are joined.
+Existing casing is kept (`RNWorklets` stays `RNWorklets`).
+
+| npm package             | Swift name            |
+| ----------------------- | --------------------- |
+| `react-native-worklets` | `ReactNativeWorklets` |
+| `@react-native/foo`     | `Foo`                 |
+| `@scope/common`         | `Common`              |
+| `@scope/react-native`   | `ReactNative`         |
+
+The last row is the surprise: dropping the scope makes `@scope/react-native`
+derive `ReactNative`, a [reserved name](#names-react-native-reserves). A scoped
+package then gets its scope back — the target becomes `ScopeReactNative`, and
+the build logs the rewrite. The same borrow settles a
+[collision between two libraries](#when-two-libraries-derive-the-same-name), so
+neither case needs an override.
+
+### Overriding it with `spm.name`
+
+Set `spm.name` in the library's **own** `react-native.config.js`:
+
+```js
+// react-native-worklets/react-native.config.js
+module.exports = {
+  dependency: {platforms: {ios: {}}},
+  spm: {name: 'worklets'},
+};
+```
+
+The value must start with a letter or underscore and may contain only letters,
+digits, underscores and hyphens. Set it when:
+
+- **The derived name is reserved** and your package is unscoped — see below.
+- **Your headers use a different prefix** (a podspec `s.header_dir` unlike the
+  derived name): `react-native-worklets` derives `ReactNativeWorklets` but ships
+  headers as `<worklets/…>`, so it sets `spm.name: 'worklets'` to keep
+  consumers' `#import <worklets/...>` lines resolving.
+
+### Names React Native reserves
+
+React Native registers these names for its own package and products, so no
+library's target may end up with one of them (matched case-insensitively). They
+are also refused to an app's own `spm.modules` entries.
+
+| Name                             | What it is                  |
+| -------------------------------- | --------------------------- |
+| `ReactNative`                    | The React Native package    |
+| `React-GeneratedCode`            | The per-app codegen package |
+| `Autolinked`                     | The autolinking aggregator  |
+| `ReactHeaders`                   | Product                     |
+| `ReactNativeHeaders`             | Product                     |
+| `ReactNativeDependenciesHeaders` | Product                     |
+| `ReactAppHeaders`                | Product                     |
+| `ReactCodegen`                   | Product                     |
+| `ReactAppDependencyProvider`     | Product                     |
+
+A scoped package that derives a reserved name is auto-corrected by
+[borrowing its scope](#how-the-name-is-derived). When the scope cannot help, the
+build fails, naming the package and `spm.name` as the fix:
+
+- **An unscoped package** — no scope to borrow.
+- **An `spm.name` you set yourself** — your explicit choice is never rewritten.
+- **A scope-prefixed name that is itself reserved.**
+
+### When two libraries derive the same name
+
+Dropping the scope also makes `@a/foo` and `@b/foo` both derive `Foo`. Every
+scoped library in the group gets its scope prepended, and each rewrite is logged
+— neither author has to do anything:
+
+| npm packages                                 | Swift names     |
+| -------------------------------------------- | --------------- |
+| `@a/foo` + `@b/foo`                          | `AFoo` + `BFoo` |
+| `@a/foo` + `foo`                             | `AFoo` + `Foo`  |
+| `@a/foo` (with `spm.name: 'Foo'`) + `@b/foo` | `Foo` + `BFoo`  |
+
+Two kinds of member never move: an unscoped package (no scope to borrow) and an
+explicit `spm.name` (your choice wins). If a borrowed name is itself taken
+(`AFoo` while a package `a-foo` is installed too) or
+[reserved](#names-react-native-reserves), the build fails and one library must
+set `spm.name`.
+
+### Ship the config file
+
+`react-native.config.js` must be in your package's npm `files` allowlist. If it
+isn't published, consumers get the derived name instead of your override, and
+the mismatch only shows up as a build error in their app.
 
 ## Self-managed community packages
 
