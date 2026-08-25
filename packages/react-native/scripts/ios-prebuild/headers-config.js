@@ -370,13 +370,6 @@ const PodspecExceptions /*: {[key: string]: PodSpecConfiguration} */ = {
           },
 
           {
-            name: 'safeareaview',
-            headerPatterns: ['react/renderer/components/safeareaview/**/*.h'],
-            excludePatterns: ['react/renderer/components/safeareaview/tests'],
-            headerDir: 'react/renderer/components/safeareaview',
-          },
-
-          {
             name: 'scrollview',
             headerPatterns: [
               'react/renderer/components/scrollview/*.h',

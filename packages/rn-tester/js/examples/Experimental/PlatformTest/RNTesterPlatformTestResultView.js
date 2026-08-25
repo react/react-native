@@ -25,7 +25,6 @@ import {
   KeyboardAvoidingView,
   Modal,
   Platform,
-  SafeAreaView,
   StyleSheet,
   Switch,
   Text,
@@ -33,6 +32,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import SafeAreaView from 'react-native/src/private/components/safeareaview/SafeAreaView';
 
 const DISPLAY_STATUS_MAPPING: {[PlatformTestResultStatus]: string} = {
   PASS: 'Pass',

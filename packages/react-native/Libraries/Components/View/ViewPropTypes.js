@@ -23,6 +23,7 @@ import type {
   LayoutRectangle,
   MouseEvent,
   PointerEvent,
+  SafeAreaInsetsChangeEvent,
 } from '../../Types/CoreEventTypes';
 import type {
   AccessibilityActionEvent,
@@ -62,6 +63,32 @@ type DirectEventProps = Readonly<{
    * See https://reactnative.dev/docs/view#onlayout
    */
   onLayout?: ?(event: LayoutChangeEvent) => unknown,
+
+  /**
+   * Invoked when the part of this view that is covered by the system UI
+   * (status bar, navigation bar, home indicator, display cutouts, ...)
+   * changes, with:
+   *
+   * `{nativeEvent: {insets: {top, right, bottom, left}, frame: {x, y, width, height}}}`
+   *
+   * `insets` are relative to this view: an inset is only non-zero for the part
+   * of the view that actually overlaps the system UI. `frame` is the position
+   * of the view at the time of the event, relative to its enclosing view
+   * controller on iOS and to the window on Android; it does not trigger the
+   * event on its own, so it can be stale while the view moves without its
+   * insets changing.
+   *
+   * The event is dispatched synchronously, so the rendering it schedules is
+   * applied in the same frame the insets changed in.
+   *
+   * Setting this prop makes the view observe safe area changes; views without
+   * it are unaffected.
+   *
+   * @experimental
+   */
+  experimental_onSafeAreaInsetsChange?: ?(
+    event: SafeAreaInsetsChangeEvent,
+  ) => unknown,
 
   /**
    * When `accessible` is `true`, the system will invoke this function when the

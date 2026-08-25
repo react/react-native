@@ -25,6 +25,7 @@
 #import <React/RCTLocalizedString.h>
 #import <React/RCTLog.h>
 #import <React/RCTRadialGradient.h>
+#import <React/RCTUtils.h>
 #import <react/featureflags/ReactNativeFeatureFlags.h>
 #import <react/renderer/components/view/ViewComponentDescriptor.h>
 #import <react/renderer/components/view/ViewEventEmitter.h>
@@ -122,6 +123,11 @@ static BOOL RCTViewIsInteractiveAccessibilityElement(UIView *view, const ViewPro
   NSMutableSet<NSString *> *_accessibilityOrderNativeIDs;
   RCTSwiftUIContainerViewWrapper *_swiftUIWrapper;
   BOOL _focusable;
+  // The insets sent with the last `onSafeAreaInsetsChange` event, or nil if
+  // none was sent yet. A pointer because almost no view observes the safe
+  // area: the views that do pay for a small box, every other view only for
+  // the pointer.
+  NSValue *_lastSentSafeAreaInsets;
 }
 
 #ifdef RCT_DYNAMIC_FRAMEWORKS
@@ -438,6 +444,15 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
         -newViewProps.hitSlop.right};
   }
 
+  // `onSafeAreaInsetsChange`. Scheduled whenever the prop is set, not only on
+  // its transitions: recycled views keep their last props, so `oldViewProps`
+  // of a freshly reused view is not a reliable baseline.
+  if (newViewProps.onSafeAreaInsetsChange) {
+    [self setNeedsLayout];
+  } else if (oldViewProps.onSafeAreaInsetsChange) {
+    _lastSentSafeAreaInsets = nil;
+  }
+
   // `overflow`
   if (oldViewProps.getClipsContentToBounds() != newViewProps.getClipsContentToBounds()) {
     self.currentContainerView.clipsToBounds = newViewProps.getClipsContentToBounds();
@@ -720,6 +735,105 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
   }
 }
 
+#pragma mark - Safe area insets
+
+// The view controller the view is hosted in, which is the coordinate space
+// `frame` is reported in. Modals and other view controllers are positioned
+// independently of the window, so the window is not a usable reference.
+static UIViewController *RCTParentViewControllerOfView(UIView *view)
+{
+  UIResponder *responder = view.nextResponder;
+  while (responder != nil) {
+    if ([responder isKindOfClass:[UIViewController class]]) {
+      return (UIViewController *)responder;
+    }
+    responder = responder.nextResponder;
+  }
+  return nil;
+}
+
+static BOOL RCTEdgeInsetsEqualWithThreshold(UIEdgeInsets lhs, UIEdgeInsets rhs, CGFloat threshold)
+{
+  return ABS(lhs.left - rhs.left) <= threshold && ABS(lhs.top - rhs.top) <= threshold &&
+      ABS(lhs.right - rhs.right) <= threshold && ABS(lhs.bottom - rhs.bottom) <= threshold;
+}
+
+// The event is only ever emitted from `layoutSubviews`; everything that might
+// have changed the insets merely marks the view as needing layout. This defers
+// the emit out of arbitrary call contexts — in particular out of
+// `updateProps`, which runs inside the mounting transaction where
+// synchronously re-entering React is not safe — while keeping it in the same
+// frame: the layout pass runs before the frame is displayed.
+- (void)_safeAreaInsetsMayHaveChanged
+{
+  if (!_eventEmitter) {
+    return;
+  }
+
+  // The view has not been mounted or laid out yet, so the insets we would
+  // compute are not the ones the view ends up with.
+  if (self.window == nil || CGSizeEqualToSize(self.bounds.size, CGSizeZero)) {
+    return;
+  }
+
+  // Only a change of the insets triggers an event. The frame is part of the
+  // payload but not of the trigger: a view that moves without its overlap with
+  // the system UI changing stays silent, which is what makes observing views
+  // safe to place inside scroll views.
+  UIEdgeInsets insets = self.safeAreaInsets;
+  if (_lastSentSafeAreaInsets != nil &&
+      RCTEdgeInsetsEqualWithThreshold(insets, _lastSentSafeAreaInsets.UIEdgeInsetsValue, 1.0 / RCTScreenScale())) {
+    return;
+  }
+
+  UIView *referenceView = RCTParentViewControllerOfView(self).view ?: self.window;
+  CGRect frame = [self convertRect:self.bounds toView:referenceView];
+
+  _lastSentSafeAreaInsets = [NSValue valueWithUIEdgeInsets:insets];
+
+  static_cast<const ViewEventEmitter &>(*_eventEmitter)
+      .onSafeAreaInsetsChange(
+          EdgeInsets{
+              .left = (Float)insets.left,
+              .top = (Float)insets.top,
+              .right = (Float)insets.right,
+              .bottom = (Float)insets.bottom},
+          RCTRectFromCGRect(frame));
+}
+
+// The prop is checked here rather than inside the helper so that views which
+// do not use it only pay for a branch on a prop they already have in hand.
+- (BOOL)_observesSafeAreaInsets
+{
+  return static_cast<const ViewProps &>(*_props).onSafeAreaInsetsChange;
+}
+
+- (void)safeAreaInsetsDidChange
+{
+  [super safeAreaInsetsDidChange];
+  if ([self _observesSafeAreaInsets]) {
+    [self setNeedsLayout];
+  }
+}
+
+- (void)didMoveToWindow
+{
+  [super didMoveToWindow];
+  if ([self _observesSafeAreaInsets]) {
+    [self setNeedsLayout];
+  }
+}
+
+- (void)layoutSubviews
+{
+  [super layoutSubviews];
+  // Both the insets and the frame depend on where the view sits in the window,
+  // so moving or resizing it changes them without UIKit notifying us.
+  if ([self _observesSafeAreaInsets]) {
+    [self _safeAreaInsetsMayHaveChanged];
+  }
+}
+
 - (BOOL)isJSResponder
 {
   return _isJSResponder;
@@ -775,6 +889,7 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
   _filterLayer = nil;
   [self clearExistingBackgroundImageLayers];
 
+  _lastSentSafeAreaInsets = nil;
   _propKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN = nil;
   _eventEmitter.reset();
   _isJSResponder = NO;

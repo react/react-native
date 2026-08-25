@@ -18,7 +18,7 @@ import type {
 import type {ViewStyleProp} from '../../../../../Libraries/StyleSheet/StyleSheet';
 import type {ReactDevToolsAgent} from '../../../../../Libraries/Types/ReactDevToolsTypes';
 
-import SafeAreaView from '../../../components/safeareaview/SafeAreaView_INTERNAL_DO_NOT_USE';
+import SafeAreaView from '../../../components/safeareaview/SafeAreaView';
 import * as React from 'react';
 
 const View = require('../../../../../Libraries/Components/View/View').default;
