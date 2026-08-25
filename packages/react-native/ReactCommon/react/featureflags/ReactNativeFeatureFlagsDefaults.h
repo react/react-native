@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<0dcc09eb60ab85de9bc72410e93c2a1c>>
+ * @generated SignedSource<<374da5049c71e475cb3e5c2bfed87c9c>>
  */
 
 /**
@@ -200,7 +200,7 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool enableRuntimeSchedulerQueueClearingOnError() override {
-    return false;
+    return true;
   }
 
   bool enableSchedulerDelegateInvalidation() override {

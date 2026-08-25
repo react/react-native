@@ -1826,6 +1826,8 @@ TEST_P(RuntimeSchedulerTest, errorInResizeObservationsDoesNotStopUpdate) {
     return;
   }
 
+  setUpFeatureFlags(/*enableRuntimeSchedulerQueueClearingOnError=*/true);
+
   StubResizeObserverDelegate resizeObserverDelegate;
   resizeObserverDelegate.onRunResizeObservations = [](jsi::Runtime& runtime) {
     throw jsi::JSError(runtime, "Test error");
@@ -1848,6 +1850,9 @@ TEST_P(RuntimeSchedulerTest, errorInResizeObservationsDoesNotStopUpdate) {
 
   // Delivering observations to JS synchronously happens outside the error
   // boundary of the task, so the step handles the error itself and carries on.
+  // In particular the error must not be routed through `handleTaskError`:
+  // that clears the pending rendering updates this same step is about to
+  // drain, and `didRunRenderingUpdate` below would be false.
   EXPECT_EQ(stubErrorUtils_->getReportFatalCallCount(), 1);
   EXPECT_EQ(resizeObserverDelegate.callCount, 1);
   EXPECT_EQ(intersectionObserverDelegate.callCount, 1);

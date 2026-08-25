@@ -370,16 +370,19 @@ void RuntimeScheduler_Modern::updateRendering(
   // internally; this call site stays a single invocation per tick.
   if (resizeObserverDelegate_ != nullptr) {
     // This delivers the observations to JS synchronously, so it is outside the
-    // error boundary of `executeTask`. Handle errors the same way here, so a
-    // throwing observer callback can't abort the remaining steps below.
+    // error boundary of `executeTask`. Report the error without going through
+    // `handleTaskError`: we are already inside the "update the rendering" step,
+    // so clearing the queues here would drop the pending rendering updates this
+    // step is about to drain, and a throwing observer callback would abort the
+    // remaining steps below.
     try {
       resizeObserverDelegate_->runResizeObservations(runtime);
     } catch (jsi::JSError& error) {
-      handleTaskError(runtime, error);
+      onTaskError_(runtime, error);
     } catch (std::exception& ex) {
       jsi::JSError error(
           runtime, std::string("Non-JS exception: ") + ex.what());
-      handleTaskError(runtime, error);
+      onTaskError_(runtime, error);
     }
   }
 

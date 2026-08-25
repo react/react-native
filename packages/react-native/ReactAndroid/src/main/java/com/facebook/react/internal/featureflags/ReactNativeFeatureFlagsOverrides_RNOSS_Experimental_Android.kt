@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<7103d9c2fa3e2f152ce60b5dff12c0e4>>
+ * @generated SignedSource<<29904c9a4e11c71f7657c49f3f45a32f>>
  */
 
 /**
@@ -24,8 +24,6 @@ public open class ReactNativeFeatureFlagsOverrides_RNOSS_Experimental_Android : 
   // but that is more expensive than just duplicating the defaults here.
 
   override fun enableFlexboxAutoMinSizeInStrictMode(): Boolean = true
-
-  override fun enableRuntimeSchedulerQueueClearingOnError(): Boolean = true
 
   override fun enableSchedulerDelegateInvalidation(): Boolean = true
 
