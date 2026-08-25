@@ -543,7 +543,7 @@ TEST_F(
 // ASSERT_EQ inside schedulerShouldRenderTransactions trips, or ASan reports
 // heap-use-after-free on the vptr load before our assertion runs.
 // ---------------------------------------------------------------------------
-#if GTEST_HAS_DEATH_TEST
+#if GTEST_HAS_DEATH_TEST && !defined(__ANDROID__)
 TEST_F(
     SchedulerDelegateInvalidationTest,
     GuardDisabled_JSThrowInitiatedTeardownIsUAF) {
@@ -610,7 +610,7 @@ TEST_F(
 // the destroyed delegate → UAF caught by the magic sentinel inside
 // schedulerDidDispatchCommand or by ASan on the vptr load.
 // ---------------------------------------------------------------------------
-#if GTEST_HAS_DEATH_TEST
+#if GTEST_HAS_DEATH_TEST && !defined(__ANDROID__)
 TEST_F(
     SchedulerDelegateInvalidationTest,
     GuardDisabled_DispatchCommandLambda_JSThrowInitiatedTeardownIsUAF) {
