@@ -42,6 +42,97 @@ describe('processBackgroundImage', () => {
     ]);
   });
 
+  it('should process a conic gradient string', () => {
+    const result = processBackgroundImage(
+      'conic-gradient(from 45deg at 25% 75%, red 0deg, blue .5turn, red 100%)',
+    );
+
+    expect(result).toEqual([
+      {
+        type: 'conic-gradient',
+        from: 45,
+        position: {left: '25%', top: '75%'},
+        colorStops: [
+          {color: processColor('red'), position: '0%'},
+          {color: processColor('blue'), position: '50%'},
+          {color: processColor('red'), position: '100%'},
+        ],
+      },
+    ]);
+  });
+
+  it('should process a conic gradient with four-value position', () => {
+    expect(
+      processBackgroundImage(
+        'conic-gradient(at top 20px left 10px, red, blue)',
+      ),
+    ).toEqual([
+      {
+        type: 'conic-gradient',
+        from: 0,
+        position: {top: 20, left: 10},
+        colorStops: [
+          {color: processColor('red'), position: null},
+          {color: processColor('blue'), position: null},
+        ],
+      },
+    ]);
+  });
+
+  it('should process conic gradient object syntax', () => {
+    const input: ReadonlyArray<BackgroundImageValue> = [
+      {
+        type: 'conic-gradient',
+        from: '0.25turn',
+        position: {top: '50%', left: '50%'},
+        colorStops: [
+          {color: 'red', positions: ['0deg', '90deg']},
+          {color: 'blue', positions: ['90deg', '360deg']},
+        ],
+      },
+    ];
+
+    expect(processBackgroundImage(input)).toEqual([
+      {
+        type: 'conic-gradient',
+        from: 90,
+        position: {top: '50%', left: '50%'},
+        colorStops: [
+          {color: processColor('red'), position: '0%'},
+          {color: processColor('red'), position: '25%'},
+          {color: processColor('blue'), position: '25%'},
+          {color: processColor('blue'), position: '100%'},
+        ],
+      },
+    ]);
+  });
+
+  it('should reject invalid conic gradient object stops', () => {
+    expect(
+      processBackgroundImage([
+        {
+          type: 'conic-gradient',
+          colorStops: [{color: 'red'}],
+        },
+      ]),
+    ).toEqual([]);
+
+    const numericStop = [
+      {
+        type: 'conic-gradient',
+        colorStops: [{color: 'red', positions: [50]}, {color: 'blue'}],
+      },
+    ];
+    // $FlowFixMe[incompatible-type] - verifies runtime validation.
+    expect(processBackgroundImage(numericStop)).toEqual([]);
+  });
+
+  it('should reject conic gradient length color stops', () => {
+    expect(processBackgroundImage('conic-gradient(red 10px, blue)')).toEqual(
+      [],
+    );
+  });
+
   it('should process a diagonal linear gradient', () => {
     const input = 'linear-gradient(to bottom right, red, blue)';
     const result = processBackgroundImage(input);
