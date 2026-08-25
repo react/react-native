@@ -654,6 +654,174 @@ class NetworkingModuleTest {
     assertThat(completionArgs.getInt(0)).isEqualTo(1)
     assertThat(completionArgs.isNull(1)).isTrue()
   }
+
+  // ----- User-Agent parity (issue 284) -----
+
+  @Test
+  fun testDefaultUserAgentNullFallbackUsesPackageName() {
+    // Pass null defaultUserAgent with a mock context that has no PackageManager details.
+    // The fallback should not crash and should synthesise a value or return null gracefully.
+    val mockPm = mock<android.content.pm.PackageManager>()
+    val appInfo = android.content.pm.ApplicationInfo()
+    whenever(mockPm.getApplicationLabel(appInfo)).thenReturn("MyApp")
+    // Internal helper directly — null packageInfo => appName only
+    val dummyModule = NetworkingModule(context, "__test__", httpClient, null)
+    val uaNoVersion =
+        dummyModule.createDefaultUserAgentInternal(mockPm, "com.example", null, appInfo)
+    assertThat(uaNoVersion).isEqualTo("MyApp")
+
+    // With version available => AppName/Version
+    val pkgInfo = android.content.pm.PackageInfo()
+    pkgInfo.versionName = "1.2.3"
+    val uaWithVersion =
+        dummyModule.createDefaultUserAgentInternal(mockPm, "com.example", pkgInfo, appInfo)
+    assertThat(uaWithVersion).isEqualTo("MyApp/1.2.3")
+  }
+
+  @Test
+  fun testDefaultUserAgentNullPackageManagerReturnsNull() {
+    val dummyModule = NetworkingModule(context, "__test__", httpClient, null)
+    assertThat(dummyModule.createDefaultUserAgentInternal(null, "com.example", null, null)).isNull()
+    assertThat(dummyModule.createDefaultUserAgentInternal(mock(), null, null, null)).isNull()
+  }
+
+  @Test
+  fun testBlankAppLabelFallsBackToPackageNameNotVersionOnly() {
+    // A blank application label must not produce a version-only User-Agent (e.g. "1.2.3").
+    // Fall back to the package name so the UA always carries a product identifier.
+    val mockPm = mock<android.content.pm.PackageManager>()
+    val appInfo = android.content.pm.ApplicationInfo()
+    whenever(mockPm.getApplicationLabel(appInfo)).thenReturn("")
+    val pkgInfo = android.content.pm.PackageInfo()
+    pkgInfo.versionName = "1.2.3"
+    val dummyModule = NetworkingModule(context, "__test__", httpClient, null)
+    assertThat(dummyModule.createDefaultUserAgentInternal(mockPm, "com.example", pkgInfo, appInfo))
+        .isEqualTo("com.example/1.2.3")
+  }
+
+  @Test
+  fun testUserAgentLabelWhitespaceIsSanitized() {
+    // Spaces (and other non-token chars) in the human-readable label would violate the RFC 7231
+    // product-token syntax; they must be stripped so the UA is well-formed.
+    val mockPm = mock<android.content.pm.PackageManager>()
+    val appInfo = android.content.pm.ApplicationInfo()
+    whenever(mockPm.getApplicationLabel(appInfo)).thenReturn("My Cool App")
+    val pkgInfo = android.content.pm.PackageInfo()
+    pkgInfo.versionName = "1.2.3"
+    val dummyModule = NetworkingModule(context, "__test__", httpClient, null)
+    assertThat(dummyModule.createDefaultUserAgentInternal(mockPm, "com.example", pkgInfo, appInfo))
+        .isEqualTo("MyCoolApp/1.2.3")
+  }
+
+  @Test
+  fun testUserAgentNonAsciiCharsStrippedFromLabel() {
+    // Non-ASCII characters (accents, symbols like (c)/(R), emoji) would make OkHttp's Headers.add()
+    // throw on every request; they must be dropped, leaving the ASCII remainder.
+    val mockPm = mock<android.content.pm.PackageManager>()
+    val appInfo = android.content.pm.ApplicationInfo()
+    whenever(mockPm.getApplicationLabel(appInfo)).thenReturn("Caf\u00e9\u00ae")
+    val pkgInfo = android.content.pm.PackageInfo()
+    pkgInfo.versionName = "2.0"
+    val dummyModule = NetworkingModule(context, "__test__", httpClient, null)
+    assertThat(dummyModule.createDefaultUserAgentInternal(mockPm, "com.example", pkgInfo, appInfo))
+        .isEqualTo("Caf/2.0")
+  }
+
+  @Test
+  fun testUserAgentAllNonAsciiLabelFallsBackToPackageName() {
+    // A label with no token-safe characters at all must fall back to the package name rather than
+    // producing an empty product token.
+    val mockPm = mock<android.content.pm.PackageManager>()
+    val appInfo = android.content.pm.ApplicationInfo()
+    whenever(mockPm.getApplicationLabel(appInfo)).thenReturn("\u65e5\u672c\u8a9e\u30a2\u30d7\u30ea")
+    val pkgInfo = android.content.pm.PackageInfo()
+    pkgInfo.versionName = "1.2.3"
+    val dummyModule = NetworkingModule(context, "__test__", httpClient, null)
+    assertThat(dummyModule.createDefaultUserAgentInternal(mockPm, "com.example", pkgInfo, appInfo))
+        .isEqualTo("com.example/1.2.3")
+  }
+
+  @Test
+  fun testUserAgentVersionNameIsSanitized() {
+    // versionName is developer-controlled and may contain spaces/parentheses/non-ASCII; sanitize it
+    // to a token too. If nothing usable remains, the UA is just the app name.
+    val mockPm = mock<android.content.pm.PackageManager>()
+    val appInfo = android.content.pm.ApplicationInfo()
+    whenever(mockPm.getApplicationLabel(appInfo)).thenReturn("MyApp")
+    val pkgInfo = android.content.pm.PackageInfo()
+    pkgInfo.versionName = "1.0 (\u03b2)"
+    val dummyModule = NetworkingModule(context, "__test__", httpClient, null)
+    assertThat(dummyModule.createDefaultUserAgentInternal(mockPm, "com.example", pkgInfo, appInfo))
+        .isEqualTo("MyApp/1.0")
+  }
+
+  @Test
+  fun testNullDefaultUserAgentStillSendsHeadersGracefully() {
+    // When PackageManager lookups fail, no User-Agent is injected — request still succeeds
+    // with whatever headers JS supplied (empty here).
+    val nullUaContext = mock<ReactApplicationContext>()
+    whenever(nullUaContext.hasActiveReactInstance()).thenReturn(true)
+    whenever(nullUaContext.applicationContext).thenReturn(null)
+    whenever(nullUaContext.packageName).thenReturn("com.nonexistent")
+    whenever(nullUaContext.packageManager).thenReturn(null)
+    // applicationContext is null so createDefaultUserAgent receives the ReactApplicationContext
+    // itself which has null packageManager => defaultUserAgent == null
+    val moduleWithNullUa = NetworkingModule(nullUaContext, null, httpClient, null)
+    assertThat(moduleWithNullUa.getDefaultUserAgentForTest()).isNull()
+
+    moduleWithNullUa.sendRequest(
+        "GET",
+        "http://somedomain/foo",
+        0.0,
+        JavaOnlyArray.of(),
+        null,
+        "text",
+        true,
+        0.0,
+        false,
+    )
+    with(requestArgumentCaptor) {
+      verify(httpClient).newCall(capture())
+      // No User-Agent injected when fallback returns null
+      assertThat(firstValue.headers().size()).isEqualTo(0)
+    }
+  }
+
+  @Test
+  fun testDefaultUserAgentInjectedIntoRequest() {
+    // End-to-end: with a null supplied UA and a context that exposes an app label + version,
+    // the constructor fallback must synthesise "AppName/Version" AND that value must be injected
+    // into the outgoing request's User-Agent header. This is the actual issue #284 behaviour.
+    val ctx = mock<ReactApplicationContext>()
+    whenever(ctx.hasActiveReactInstance()).thenReturn(true)
+    whenever(ctx.applicationContext).thenReturn(null) // fall back to ctx itself
+    whenever(ctx.packageName).thenReturn("com.example")
+    val pm = mock<android.content.pm.PackageManager>()
+    val appInfo = android.content.pm.ApplicationInfo()
+    val pkgInfo = android.content.pm.PackageInfo().apply { versionName = "1.2.3" }
+    whenever(ctx.packageManager).thenReturn(pm)
+    whenever(pm.getPackageInfo("com.example", 0)).thenReturn(pkgInfo)
+    whenever(pm.getApplicationInfo("com.example", 0)).thenReturn(appInfo)
+    whenever(pm.getApplicationLabel(appInfo)).thenReturn("MyApp")
+
+    val module = NetworkingModule(ctx, null, httpClient, null) // null => fallback runs
+    module.sendRequest(
+        "GET",
+        "http://somedomain/foo",
+        0.0,
+        JavaOnlyArray.of(),
+        null,
+        "text",
+        true,
+        0.0,
+        false,
+    )
+
+    with(requestArgumentCaptor) {
+      verify(httpClient).newCall(capture())
+      assertThat(firstValue.header("User-Agent")).isEqualTo("MyApp/1.2.3")
+    }
+  }
 }
 
 private val FORM = MediaType.get("multipart/form-data")
