@@ -40,6 +40,8 @@ Pod::Spec.new do |s|
 
   resolve_use_frameworks(s, header_mappings_dir: "../../..", module_name: "React_performancecdpmetrics")
 
+  s.dependency "React-cxxstableapi"
+
   add_dependency(s, "React-runtimeexecutor", :additional_framework_paths => ["platform/ios"])
   s.dependency "React-jsi"
   s.dependency "React-performancetimeline"
