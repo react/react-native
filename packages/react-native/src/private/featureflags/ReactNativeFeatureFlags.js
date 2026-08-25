@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<fbab08ee89a2969b45034a45b6425581>>
+ * @generated SignedSource<<2adcae106ae1e758061a91ee20f902fd>>
  * @flow strict
  * @noformat
  */
@@ -387,7 +387,7 @@ export const enableResizeObserverByDefault: Getter<boolean> = createNativeFlagGe
 /**
  * When enabled, RuntimeScheduler_Modern clears pending tasks and rendering updates before handling an error.
  */
-export const enableRuntimeSchedulerQueueClearingOnError: Getter<boolean> = createNativeFlagGetter('enableRuntimeSchedulerQueueClearingOnError', false);
+export const enableRuntimeSchedulerQueueClearingOnError: Getter<boolean> = createNativeFlagGetter('enableRuntimeSchedulerQueueClearingOnError', true);
 /**
  * Gates a defensive guard around Scheduler::uiManagerDidDispatchCommand and uiManagerDidFinishTransaction that prevents queued rendering-update lambdas from dereferencing the SchedulerDelegate after it has been destroyed (use-after-free).
  */

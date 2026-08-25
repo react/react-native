@@ -506,7 +506,7 @@ const definitions: FeatureFlagDefinitions = {
       ossReleaseStage: 'none',
     },
     enableRuntimeSchedulerQueueClearingOnError: {
-      defaultValue: false,
+      defaultValue: true,
       metadata: {
         dateAdded: '2026-05-19',
         description:
@@ -514,7 +514,7 @@ const definitions: FeatureFlagDefinitions = {
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
-      ossReleaseStage: 'experimental',
+      ossReleaseStage: 'none',
     },
     enableSchedulerDelegateInvalidation: {
       defaultValue: false,
