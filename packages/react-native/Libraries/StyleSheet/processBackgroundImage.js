@@ -18,11 +18,14 @@ import type {
   RadialGradientSize,
 } from './StyleSheetTypes';
 
+import processBackgroundPosition from './processBackgroundPosition';
+
 const processColor = require('./processColor').default;
 
 // Pre-compiled regex patterns for performance - avoids regex compilation on each call
 const NEWLINE_REGEX = /\n/g;
-const GRADIENT_REGEX = /^(linear|radial)-gradient\(((?:\([^)]*\)|[^()])*)\)/;
+const GRADIENT_REGEX =
+  /^(linear|radial|conic)-gradient\(((?:\([^)]*\)|[^()])*)\)/;
 const COMMA_SPLIT_REGEX = /,(?![^(]*\))/;
 const WHITESPACE_SPLIT_REGEX = /\s+/;
 const COLOR_STOP_PARTS_REGEX = /\S+\([^)]*\)|\S+/g;
@@ -70,13 +73,32 @@ type RadialGradientBackgroundImage = {
   }>,
 };
 
+// Conic Gradient
+const DEFAULT_CONIC_FROM = 0;
+const DEFAULT_CONIC_POSITION: RadialGradientPosition = {
+  top: '50%',
+  left: '50%',
+};
+
+type ConicGradientBackgroundImage = {
+  type: 'conic-gradient',
+  from: number,
+  position: RadialGradientPosition,
+  colorStops: ReadonlyArray<{
+    color: ColorStopColor,
+    position: ColorStopPosition,
+  }>,
+};
+
 // null color indicate that the transition hint syntax is used. e.g. red, 20%, blue
 type ColorStopColor = ProcessedColorValue | null;
 // percentage or pixel value
 type ColorStopPosition = number | string | null;
 
 type ParsedBackgroundImageValue =
-  LinearGradientBackgroundImage | RadialGradientBackgroundImage;
+  | LinearGradientBackgroundImage
+  | RadialGradientBackgroundImage
+  | ConicGradientBackgroundImage;
 
 export default function processBackgroundImage(
   backgroundImage: ?(ReadonlyArray<BackgroundImageValue> | string),
@@ -92,7 +114,10 @@ export default function processBackgroundImage(
     );
   } else if (Array.isArray(backgroundImage)) {
     for (const bgImage of backgroundImage) {
-      const processedColorStops = processColorStops(bgImage);
+      const processedColorStops = processColorStops(
+        bgImage,
+        bgImage.type === 'conic-gradient',
+      );
       if (processedColorStops == null) {
         // If a color stop is invalid, return an empty array and do not apply any gradient. Same as web.
         return [];
@@ -184,6 +209,29 @@ export default function processBackgroundImage(
           position,
           colorStops: processedColorStops,
         });
+      } else if (bgImage.type === 'conic-gradient') {
+        let from = DEFAULT_CONIC_FROM;
+        if (bgImage.from != null) {
+          const parsedFrom = getAngleInDegrees(bgImage.from, true);
+          if (parsedFrom == null) {
+            return [];
+          }
+          from = parsedFrom;
+        }
+
+        if (
+          processedColorStops.filter(colorStop => colorStop.color != null)
+            .length < 2
+        ) {
+          return [];
+        }
+
+        result = result.concat({
+          type: 'conic-gradient',
+          from,
+          position: bgImage.position ?? {...DEFAULT_CONIC_POSITION},
+          colorStops: processedColorStops,
+        });
       }
     }
   }
@@ -191,7 +239,10 @@ export default function processBackgroundImage(
   return result;
 }
 
-function processColorStops(bgImage: BackgroundImageValue): ReadonlyArray<{
+function processColorStops(
+  bgImage: BackgroundImageValue,
+  allowAngularPositions: boolean = false,
+): ReadonlyArray<{
   color: ColorStopColor,
   position: ColorStopPosition,
 }> | null {
@@ -209,19 +260,17 @@ function processColorStops(bgImage: BackgroundImageValue): ReadonlyArray<{
       Array.isArray(positions) &&
       positions.length === 1
     ) {
-      const position = positions[0];
-      if (
-        typeof position === 'number' ||
-        (typeof position === 'string' && position.endsWith('%'))
-      ) {
-        processedColorStops.push({
-          color: null,
-          position,
-        });
-      } else {
-        // If a position is invalid, return null and do not apply gradient. Same as web.
+      const position = parseColorStopPosition(
+        positions[0],
+        allowAngularPositions,
+      );
+      if (position == null) {
         return null;
       }
+      processedColorStops.push({
+        color: null,
+        position,
+      });
     } else {
       const processedColor = processColor(colorStop.color);
       if (processedColor == null) {
@@ -229,19 +278,18 @@ function processColorStops(bgImage: BackgroundImageValue): ReadonlyArray<{
         return null;
       }
       if (positions != null && positions.length > 0) {
-        for (const position of positions) {
-          if (
-            typeof position === 'number' ||
-            (typeof position === 'string' && position.endsWith('%'))
-          ) {
-            processedColorStops.push({
-              color: processedColor,
-              position,
-            });
-          } else {
-            // If a position is invalid, return null and do not apply gradient. Same as web.
+        for (const rawPosition of positions) {
+          const position = parseColorStopPosition(
+            rawPosition,
+            allowAngularPositions,
+          );
+          if (position == null) {
             return null;
           }
+          processedColorStops.push({
+            color: processedColor,
+            position,
+          });
         }
       } else {
         processedColorStops.push({
@@ -266,10 +314,12 @@ function parseBackgroundImageCSSString(
     const match = GRADIENT_REGEX.exec(bgImage);
     if (match) {
       const [, type, gradientContent] = match;
-      const isRadial = type.toLowerCase() === 'radial';
-      const gradient = isRadial
-        ? parseRadialGradientCSSString(gradientContent)
-        : parseLinearGradientCSSString(gradientContent);
+      const gradient =
+        type === 'radial'
+          ? parseRadialGradientCSSString(gradientContent)
+          : type === 'conic'
+            ? parseConicGradientCSSString(gradientContent)
+            : parseLinearGradientCSSString(gradientContent);
 
       if (gradient != null) {
         gradients.push(gradient);
@@ -593,6 +643,64 @@ function parseRadialGradientCSSString(
   };
 }
 
+function parseConicGradientCSSString(
+  gradientContent: string,
+): ConicGradientBackgroundImage | null {
+  const parts = gradientContent.split(COMMA_SPLIT_REGEX);
+  const firstPart = parts[0]?.trim() ?? '';
+  let from = DEFAULT_CONIC_FROM;
+  let position: RadialGradientPosition = {...DEFAULT_CONIC_POSITION};
+  let hasPrelude = false;
+
+  if (firstPart.startsWith('from ')) {
+    const match = /^from\s+(\S+)(?:\s+at\s+(.+))?$/.exec(firstPart);
+    if (match == null) {
+      return null;
+    }
+
+    const parsedFrom = getAngleInDegrees(match[1], true);
+    if (parsedFrom == null) {
+      return null;
+    }
+    from = parsedFrom;
+    hasPrelude = true;
+
+    if (match[2] != null) {
+      const parsedPositions = processBackgroundPosition(match[2]);
+      if (parsedPositions.length !== 1) {
+        return null;
+      }
+      position = parsedPositions[0];
+    }
+  } else if (firstPart.startsWith('at ')) {
+    const parsedPositions = processBackgroundPosition(firstPart.slice(3));
+    if (parsedPositions.length !== 1) {
+      return null;
+    }
+    position = parsedPositions[0];
+    hasPrelude = true;
+  }
+
+  if (hasPrelude) {
+    parts.shift();
+  }
+
+  const colorStops = parseColorStopsCSSString(parts, true);
+  if (
+    colorStops == null ||
+    colorStops.filter(colorStop => colorStop.color != null).length < 2
+  ) {
+    return null;
+  }
+
+  return {
+    type: 'conic-gradient',
+    from,
+    position,
+    colorStops,
+  };
+}
+
 function parseLinearGradientCSSString(
   gradientContent: string,
 ): LinearGradientBackgroundImage | null {
@@ -636,7 +744,10 @@ function parseLinearGradientCSSString(
   };
 }
 
-function parseColorStopsCSSString(parts: Array<string>): Array<{
+function parseColorStopsCSSString(
+  parts: Array<string>,
+  allowAngularPositions: boolean = false,
+): Array<{
   color: ColorStopColor,
   position: ColorStopPosition,
 }> | null {
@@ -660,8 +771,14 @@ function parseColorStopsCSSString(parts: Array<string>): Array<{
     // Case 1: [color, position, position]
     if (colorStopParts.length === 3) {
       const color = colorStopParts[0];
-      const position1 = getPositionFromCSSValue(colorStopParts[1]);
-      const position2 = getPositionFromCSSValue(colorStopParts[2]);
+      const position1 = parseColorStopPosition(
+        colorStopParts[1],
+        allowAngularPositions,
+      );
+      const position2 = parseColorStopPosition(
+        colorStopParts[2],
+        allowAngularPositions,
+      );
       const processedColor = processColor(color);
       if (processedColor == null) {
         // If a color is invalid, return null and do not apply any gradient. Same as web.
@@ -685,7 +802,10 @@ function parseColorStopsCSSString(parts: Array<string>): Array<{
     // Case 2: [color, position]
     else if (colorStopParts.length === 2) {
       const color = colorStopParts[0];
-      const position = getPositionFromCSSValue(colorStopParts[1]);
+      const position = parseColorStopPosition(
+        colorStopParts[1],
+        allowAngularPositions,
+      );
       const processedColor = processColor(color);
       if (processedColor == null) {
         // If a color is invalid, return null and do not apply any gradient. Same as web.
@@ -703,13 +823,17 @@ function parseColorStopsCSSString(parts: Array<string>): Array<{
     // Case 3: [color]
     // Case 4: [position] => transition hint syntax
     else if (colorStopParts.length === 1) {
-      const position = getPositionFromCSSValue(colorStopParts[0]);
+      const position = parseColorStopPosition(
+        colorStopParts[0],
+        allowAngularPositions,
+      );
       if (position != null) {
         // handle invalid transition hint syntax. transition hint syntax must have color before and after the position. e.g. red, 20%, blue
         if (
           (prevStop != null &&
             prevStop.length === 1 &&
-            getPositionFromCSSValue(prevStop[0]) != null) ||
+            parseColorStopPosition(prevStop[0], allowAngularPositions) !=
+              null) ||
           i === stops.length - 1 ||
           i === 0
         ) {
@@ -776,9 +900,15 @@ function getDirectionForKeyword(direction?: string): ?LinearGradientDirection {
   }
 }
 
-function getAngleInDegrees(angle?: string): ?number {
+function getAngleInDegrees(
+  angle?: string,
+  allowUnitlessZero: boolean = false,
+): ?number {
   if (angle == null) {
     return null;
+  }
+  if (allowUnitlessZero && angle.trim() === '0') {
+    return 0;
   }
   const match = angle.match(LINEAR_GRADIENT_ANGLE_UNIT_REGEX);
   if (!match) {
@@ -786,20 +916,36 @@ function getAngleInDegrees(angle?: string): ?number {
   }
 
   const [, value, unit] = match;
-
   const numericValue = parseFloat(value);
-  switch (unit) {
+  switch (unit.toLowerCase()) {
     case 'deg':
       return numericValue;
     case 'grad':
-      return numericValue * 0.9; // 1 grad = 0.9 degrees
+      return numericValue * 0.9;
     case 'rad':
       return (numericValue * 180) / Math.PI;
     case 'turn':
-      return numericValue * 360; // 1 turn = 360 degrees
+      return numericValue * 360;
     default:
       return null;
   }
+}
+
+function parseColorStopPosition(
+  position: string | number,
+  allowAngularPositions: boolean,
+): ColorStopPosition {
+  if (typeof position === 'number') {
+    return allowAngularPositions ? null : position;
+  }
+  if (position.endsWith('%')) {
+    return position;
+  }
+  if (allowAngularPositions) {
+    const angle = getAngleInDegrees(position, true);
+    return angle == null ? null : `${angle / 3.6}%`;
+  }
+  return getPositionFromCSSValue(position) ?? null;
 }
 
 function getPositionFromCSSValue(position: string) {

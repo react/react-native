@@ -19,6 +19,7 @@
 #include <react/renderer/css/CSSList.h>
 #include <react/renderer/css/CSSPercentage.h>
 #include <react/renderer/css/CSSValueParser.h>
+#include <react/renderer/css/CSSZero.h>
 #include <react/utils/TemplateStringLiteral.h>
 #include <react/utils/fnv1a.h>
 #include <react/utils/iequals.h>
@@ -39,6 +40,12 @@ enum class CSSGradientDirectionKeyword : std::underlying_type_t<CSSKeyword> {
 };
 
 static_assert(CSSDataType<CSSGradientDirectionKeyword>);
+
+enum class CSSGradientFromKeyword : std::underlying_type_t<CSSKeyword> {
+  From = to_underlying(CSSKeyword::From),
+};
+
+static_assert(CSSDataType<CSSGradientFromKeyword>);
 
 enum class CSSGradientAtKeyword : std::underlying_type_t<CSSKeyword> {
   At = to_underlying(CSSKeyword::At),
@@ -270,6 +277,82 @@ struct CSSDataTypeParser<CSSColorStop> {
 };
 
 static_assert(CSSDataType<CSSColorStop>);
+
+using CSSAngularPosition = std::variant<CSSAngle, CSSPercentage>;
+
+struct CSSConicColorHint {
+  CSSAngularPosition position{};
+
+  bool operator==(const CSSConicColorHint &rhs) const = default;
+};
+
+template <>
+struct CSSDataTypeParser<CSSConicColorHint> {
+  static constexpr auto consume(CSSValueParser &parser) -> std::optional<CSSConicColorHint>
+  {
+    auto angle = parser.parseNextValue<CSSAngle>();
+    if (std::holds_alternative<CSSAngle>(angle)) {
+      return CSSConicColorHint{std::get<CSSAngle>(angle)};
+    }
+    auto zero = parser.parseNextValue<CSSZero>();
+    if (std::holds_alternative<CSSZero>(zero)) {
+      return CSSConicColorHint{CSSAngle{0.0f}};
+    }
+    auto percentage = parser.parseNextValue<CSSPercentage>();
+    if (std::holds_alternative<CSSPercentage>(percentage)) {
+      return CSSConicColorHint{std::get<CSSPercentage>(percentage)};
+    }
+    return {};
+  }
+};
+
+static_assert(CSSDataType<CSSConicColorHint>);
+
+struct CSSConicColorStop {
+  CSSColor color{};
+  std::optional<CSSAngularPosition> startPosition{};
+  std::optional<CSSAngularPosition> endPosition{};
+
+  bool operator==(const CSSConicColorStop &rhs) const = default;
+};
+
+template <>
+struct CSSDataTypeParser<CSSConicColorStop> {
+  static constexpr auto consume(CSSValueParser &parser) -> std::optional<CSSConicColorStop>
+  {
+    auto color = parser.parseNextValue<CSSColor>();
+    if (!std::holds_alternative<CSSColor>(color)) {
+      return {};
+    }
+
+    CSSConicColorStop colorStop{.color = std::get<CSSColor>(color)};
+    colorStop.startPosition = parsePosition(parser, CSSDelimiter::Whitespace);
+    if (colorStop.startPosition.has_value()) {
+      colorStop.endPosition = parsePosition(parser, CSSDelimiter::Whitespace);
+    }
+    return colorStop;
+  }
+
+ private:
+  static constexpr std::optional<CSSAngularPosition> parsePosition(CSSValueParser &parser, CSSDelimiter delimiter)
+  {
+    auto angle = parser.parseNextValue<CSSAngle>(delimiter);
+    if (std::holds_alternative<CSSAngle>(angle)) {
+      return std::get<CSSAngle>(angle);
+    }
+    auto zero = parser.parseNextValue<CSSZero>(delimiter);
+    if (std::holds_alternative<CSSZero>(zero)) {
+      return CSSAngle{0.0f};
+    }
+    auto percentage = parser.parseNextValue<CSSPercentage>(delimiter);
+    if (std::holds_alternative<CSSPercentage>(percentage)) {
+      return std::get<CSSPercentage>(percentage);
+    }
+    return {};
+  }
+};
+
+static_assert(CSSDataType<CSSConicColorStop>);
 
 struct CSSLinearGradientFunction {
   std::optional<CSSLinearGradientDirection> direction{};
@@ -788,6 +871,252 @@ struct CSSDataTypeParser<CSSRadialGradientFunction> {
 
 static_assert(CSSDataType<CSSRadialGradientFunction>);
 
+struct CSSConicGradientFunction {
+  CSSAngle from{};
+  CSSRadialGradientPosition position{};
+  std::vector<std::variant<CSSConicColorStop, CSSConicColorHint>> items{};
+
+  bool operator==(const CSSConicGradientFunction &rhs) const = default;
+};
+
+template <>
+struct CSSDataTypeParser<CSSConicGradientFunction> {
+  static auto consumeFunctionBlock(const CSSFunctionBlock &func, CSSValueParser &parser)
+      -> std::optional<CSSConicGradientFunction>
+  {
+    if (!iequals(func.name, "conic-gradient")) {
+      return {};
+    }
+
+    CSSConicGradientFunction gradient;
+    gradient.position.top = CSSPercentage{50.0f};
+    gradient.position.left = CSSPercentage{50.0f};
+
+    auto fromKeyword = parser.parseNextValue<CSSGradientFromKeyword>();
+    if (std::holds_alternative<CSSGradientFromKeyword>(fromKeyword)) {
+      parser.syntaxParser().consumeWhitespace();
+      auto angle = parser.parseNextValue<CSSAngle>();
+      if (std::holds_alternative<CSSAngle>(angle)) {
+        gradient.from = std::get<CSSAngle>(angle);
+      } else {
+        auto zero = parser.parseNextValue<CSSZero>();
+        if (!std::holds_alternative<CSSZero>(zero)) {
+          return {};
+        }
+        gradient.from = CSSAngle{0.0f};
+      }
+      parser.syntaxParser().consumeWhitespace();
+    }
+
+    auto atKeyword = parser.parseNextValue<CSSGradientAtKeyword>();
+    if (std::holds_alternative<CSSGradientAtKeyword>(atKeyword)) {
+      parser.syntaxParser().consumeWhitespace();
+      auto first = parsePositionComponent(parser);
+      if (!first.has_value()) {
+        return {};
+      }
+      parser.syntaxParser().consumeWhitespace();
+      auto second = parsePositionComponent(parser);
+      std::optional<PositionComponent> third;
+      std::optional<PositionComponent> fourth;
+      if (second.has_value()) {
+        parser.syntaxParser().consumeWhitespace();
+        third = parsePositionComponent(parser);
+      }
+      if (third.has_value()) {
+        parser.syntaxParser().consumeWhitespace();
+        fourth = parsePositionComponent(parser);
+        if (!fourth.has_value()) {
+          return {};
+        }
+      }
+      auto position = resolvePosition(*first, second, third, fourth);
+      if (!position.has_value()) {
+        return {};
+      }
+      gradient.position = *position;
+    }
+
+    parser.syntaxParser().consumeDelimiter(CSSDelimiter::Comma);
+    int colorStopCount = 0;
+    std::optional<CSSConicColorStop> previousColorStop;
+    do {
+      auto colorStop = parser.parseNextValue<CSSConicColorStop>();
+      if (std::holds_alternative<CSSConicColorStop>(colorStop)) {
+        auto parsedColorStop = std::get<CSSConicColorStop>(colorStop);
+        gradient.items.emplace_back(parsedColorStop);
+        previousColorStop = parsedColorStop;
+        colorStopCount++;
+      } else {
+        auto colorHint = parser.parseNextValue<CSSConicColorHint>();
+        if (!std::holds_alternative<CSSConicColorHint>(colorHint) || !previousColorStop.has_value()) {
+          break;
+        }
+        auto nextColorStop = parser.peekNextValue<CSSConicColorStop>(CSSDelimiter::Comma);
+        if (!std::holds_alternative<CSSConicColorStop>(nextColorStop)) {
+          return {};
+        }
+        gradient.items.emplace_back(std::get<CSSConicColorHint>(colorHint));
+      }
+    } while (parser.syntaxParser().consumeDelimiter(CSSDelimiter::Comma));
+
+    if (colorStopCount < 2) {
+      return {};
+    }
+    return gradient;
+  }
+
+ private:
+  using PositionComponent = std::variant<CSSGradientPositionKeyword, CSSLength, CSSPercentage>;
+
+  static std::optional<PositionComponent> parsePositionComponent(CSSValueParser &parser)
+  {
+    auto keyword = parser.parseNextValue<CSSGradientPositionKeyword>();
+    if (std::holds_alternative<CSSGradientPositionKeyword>(keyword)) {
+      return std::get<CSSGradientPositionKeyword>(keyword);
+    }
+    auto value = parser.parseNextValue<CSSLengthPercentage>();
+    if (std::holds_alternative<CSSLength>(value)) {
+      return std::get<CSSLength>(value);
+    }
+    if (std::holds_alternative<CSSPercentage>(value)) {
+      return std::get<CSSPercentage>(value);
+    }
+    return {};
+  }
+
+  static std::variant<CSSLength, CSSPercentage> positionValue(const PositionComponent &component)
+  {
+    if (std::holds_alternative<CSSLength>(component)) {
+      return std::get<CSSLength>(component);
+    }
+    return std::get<CSSPercentage>(component);
+  }
+
+  static std::optional<CSSRadialGradientPosition> resolvePosition(
+      const PositionComponent &first,
+      const std::optional<PositionComponent> &second,
+      const std::optional<PositionComponent> &third,
+      const std::optional<PositionComponent> &fourth)
+  {
+    CSSRadialGradientPosition position;
+    if (third.has_value()) {
+      if (!second.has_value() || !fourth.has_value() || !std::holds_alternative<CSSGradientPositionKeyword>(first) ||
+          !std::holds_alternative<CSSGradientPositionKeyword>(*third) ||
+          std::holds_alternative<CSSGradientPositionKeyword>(*second) ||
+          std::holds_alternative<CSSGradientPositionKeyword>(*fourth)) {
+        return {};
+      }
+
+      bool hasHorizontal = false;
+      bool hasVertical = false;
+      auto setOffset = [&](CSSGradientPositionKeyword keyword, const PositionComponent &value) {
+        if (keyword == CSSGradientPositionKeyword::Left && !hasHorizontal) {
+          position.left = positionValue(value);
+          hasHorizontal = true;
+        } else if (keyword == CSSGradientPositionKeyword::Right && !hasHorizontal) {
+          position.right = positionValue(value);
+          hasHorizontal = true;
+        } else if (keyword == CSSGradientPositionKeyword::Top && !hasVertical) {
+          position.top = positionValue(value);
+          hasVertical = true;
+        } else if (keyword == CSSGradientPositionKeyword::Bottom && !hasVertical) {
+          position.bottom = positionValue(value);
+          hasVertical = true;
+        } else {
+          return false;
+        }
+        return true;
+      };
+
+      if (!setOffset(std::get<CSSGradientPositionKeyword>(first), *second) ||
+          !setOffset(std::get<CSSGradientPositionKeyword>(*third), *fourth)) {
+        return {};
+      }
+      return position;
+    }
+    if (!second.has_value()) {
+      if (std::holds_alternative<CSSGradientPositionKeyword>(first)) {
+        switch (std::get<CSSGradientPositionKeyword>(first)) {
+          case CSSGradientPositionKeyword::Left:
+            position.left = CSSPercentage{0.0f};
+            position.top = CSSPercentage{50.0f};
+            break;
+          case CSSGradientPositionKeyword::Right:
+            position.right = CSSPercentage{0.0f};
+            position.top = CSSPercentage{50.0f};
+            break;
+          case CSSGradientPositionKeyword::Top:
+            position.left = CSSPercentage{50.0f};
+            position.top = CSSPercentage{0.0f};
+            break;
+          case CSSGradientPositionKeyword::Bottom:
+            position.left = CSSPercentage{50.0f};
+            position.bottom = CSSPercentage{0.0f};
+            break;
+          case CSSGradientPositionKeyword::Center:
+            position.left = CSSPercentage{50.0f};
+            position.top = CSSPercentage{50.0f};
+            break;
+        }
+      } else {
+        position.left = positionValue(first);
+        position.top = CSSPercentage{50.0f};
+      }
+      return position;
+    }
+
+    auto setHorizontal = [&position](const PositionComponent &component) {
+      if (std::holds_alternative<CSSGradientPositionKeyword>(component)) {
+        auto keyword = std::get<CSSGradientPositionKeyword>(component);
+        if (keyword == CSSGradientPositionKeyword::Left) {
+          position.left = CSSPercentage{0.0f};
+        } else if (keyword == CSSGradientPositionKeyword::Right) {
+          position.right = CSSPercentage{0.0f};
+        } else if (keyword == CSSGradientPositionKeyword::Center) {
+          position.left = CSSPercentage{50.0f};
+        } else {
+          return false;
+        }
+      } else {
+        position.left = positionValue(component);
+      }
+      return true;
+    };
+    auto setVertical = [&position](const PositionComponent &component) {
+      if (std::holds_alternative<CSSGradientPositionKeyword>(component)) {
+        auto keyword = std::get<CSSGradientPositionKeyword>(component);
+        if (keyword == CSSGradientPositionKeyword::Top) {
+          position.top = CSSPercentage{0.0f};
+        } else if (keyword == CSSGradientPositionKeyword::Bottom) {
+          position.bottom = CSSPercentage{0.0f};
+        } else if (keyword == CSSGradientPositionKeyword::Center) {
+          position.top = CSSPercentage{50.0f};
+        } else {
+          return false;
+        }
+      } else {
+        position.top = positionValue(component);
+      }
+      return true;
+    };
+
+    bool firstIsVertical = std::holds_alternative<CSSGradientPositionKeyword>(first) &&
+        (std::get<CSSGradientPositionKeyword>(first) == CSSGradientPositionKeyword::Top ||
+         std::get<CSSGradientPositionKeyword>(first) == CSSGradientPositionKeyword::Bottom);
+    if (firstIsVertical) {
+      if (!setVertical(first) || !setHorizontal(*second)) {
+        return {};
+      }
+    } else if (!setHorizontal(first) || !setVertical(*second)) {
+      return {};
+    }
+    return position;
+  }
+};
+
+static_assert(CSSDataType<CSSConicGradientFunction>);
+
 template <>
 struct CSSDataTypeParser<CSSLinearGradientFunction> {
   static auto consumeFunctionBlock(const CSSFunctionBlock &func, CSSValueParser &parser)
@@ -826,7 +1155,8 @@ static_assert(CSSDataType<CSSLinearGradientFunction>);
  * Representation of <background-image>
  * https://www.w3.org/TR/css-backgrounds-3/#background-image
  */
-using CSSBackgroundImage = CSSCompoundDataType<CSSLinearGradientFunction, CSSRadialGradientFunction>;
+using CSSBackgroundImage =
+    CSSCompoundDataType<CSSConicGradientFunction, CSSLinearGradientFunction, CSSRadialGradientFunction>;
 
 /**
  * Representation of <background-image-list>

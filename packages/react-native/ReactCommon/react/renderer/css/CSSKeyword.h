@@ -45,6 +45,7 @@ enum class CSSKeyword : uint8_t {
   Flex,
   FlexEnd,
   FlexStart,
+  From,
   Grid,
   Groove,
   Hidden,
@@ -167,6 +168,7 @@ CSS_DEFINE_KEYWORD(Fixed, "fixed")
 CSS_DEFINE_KEYWORD(Flex, "flex")
 CSS_DEFINE_KEYWORD(FlexEnd, "flex-end")
 CSS_DEFINE_KEYWORD(FlexStart, "flex-start")
+CSS_DEFINE_KEYWORD(From, "from")
 CSS_DEFINE_KEYWORD(Grid, "grid")
 CSS_DEFINE_KEYWORD(Groove, "groove")
 CSS_DEFINE_KEYWORD(Hidden, "hidden")
@@ -280,6 +282,7 @@ constexpr std::optional<KeywordT> parseCSSKeyword(std::string_view ident)
     CSS_HANDLE_KEYWORD(Flex)
     CSS_HANDLE_KEYWORD(FlexEnd)
     CSS_HANDLE_KEYWORD(FlexStart)
+    CSS_HANDLE_KEYWORD(From)
     CSS_HANDLE_KEYWORD(Grid)
     CSS_HANDLE_KEYWORD(Groove)
     CSS_HANDLE_KEYWORD(Hidden)
