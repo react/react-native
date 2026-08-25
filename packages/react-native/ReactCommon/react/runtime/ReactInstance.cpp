@@ -18,6 +18,7 @@
 #include <jsi/instrumentation.h>
 #include <jsinspector-modern/HostTarget.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
+#include <react/performance/timeline/PerformanceEntryReporter.h>
 #include <react/renderer/runtimescheduler/RuntimeSchedulerBinding.h>
 #include <react/runtime/JSRuntimeBindings.h>
 #include <react/timing/primitives.h>

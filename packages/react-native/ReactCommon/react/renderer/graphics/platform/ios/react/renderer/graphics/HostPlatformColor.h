@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <react/renderer/graphics/ColorComponents.h>
 #include <react/utils/hash_combine.h>
 #include <cmath>

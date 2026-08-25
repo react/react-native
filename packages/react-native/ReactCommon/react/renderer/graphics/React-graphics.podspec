@@ -31,11 +31,18 @@ Pod::Spec.new do |s|
   s.platforms              = min_supported_versions
   s.source                 = source
   s.source_files           = podspec_sources(source_files, ["*.h", "platform/ios/**/*.h"])
+  s.exclude_files          = "React"
   s.header_dir             = "react/renderer/graphics"
   s.framework = "UIKit"
 
   if ENV['USE_FRAMEWORKS']
     header_search_paths = header_search_paths + ["\"$(PODS_TARGET_SRCROOT)/platform/ios\""]
+  end
+
+  s.subspec "GraphicsUmbrella" do |ss|
+    ss.source_files        = "React/*.h"
+    ss.header_dir          = "React"
+    ss.header_mappings_dir = "React"
   end
 
   resolve_use_frameworks(s, header_mappings_dir: "../../..", module_name: "React_graphics")
@@ -50,6 +57,7 @@ Pod::Spec.new do |s|
   s.dependency "React-featureflags"
   s.dependency "React-utils"
   s.dependency "React-rendererdebug"
+  s.dependency "React-cxxstableapi"
 
   depend_on_js_engine(s)
   add_rn_third_party_dependencies(s)

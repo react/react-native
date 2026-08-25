@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/PrivateGuard.h>
+
 #include "PerformanceEntryCircularBuffer.h"
 #include "PerformanceEntryKeyedBuffer.h"
 #include "PerformanceEntryReporterListeners.h"
