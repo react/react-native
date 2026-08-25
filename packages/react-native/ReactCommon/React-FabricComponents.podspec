@@ -101,13 +101,6 @@ Pod::Spec.new do |s|
       sss.header_mappings_dir  = "react/renderer/components/modal/React"
     end
 
-    ss.subspec "safeareaview" do |sss|
-      sss.source_files         = podspec_sources("react/renderer/components/safeareaview/**/*.{m,mm,cpp,h}", "react/renderer/components/safeareaview/**/*.h")
-      # Exclude tests to avoid conflicts with the react-native-safe-area-context package
-      sss.exclude_files        = "react/renderer/components/safeareaview/tests"
-      sss.header_dir           = "react/renderer/components/safeareaview"
-    end
-
     ss.subspec "text" do |sss|
       sss.source_files         = podspec_sources(["react/renderer/components/text/*.{m,mm,cpp,h}",
                                   "react/renderer/components/text/platform/cxx/**/*.{m,mm,cpp,h}"],

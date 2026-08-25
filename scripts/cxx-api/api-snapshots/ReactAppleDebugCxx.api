@@ -1707,9 +1707,6 @@ interface RCTRootViewFactoryConfiguration : public NSObject {
   public virtual instancetype initWithBundleURLBlock:newArchEnabled:turboModuleEnabled:bridgelessEnabled:(RCTBundleURLBlock bundleURLBlock, BOOL newArchEnabled, BOOL turboModuleEnabled, BOOL bridgelessEnabled);
 }
 
-interface RCTSafeAreaViewComponentView : public RCTViewComponentView {
-}
-
 interface RCTScheduler : public NSObject {
   public @property (assign, readonly) const std::shared_ptr<facebook::react::UIManager> uiManager;
   public @property (weak) id<RCTSchedulerDelegate> delegate;
@@ -3004,9 +3001,6 @@ protocol RCTRootViewDelegate : public NSObject {
   public virtual void rootViewDidChangeIntrinsicSize:(RCTRootView* rootView);
 }
 
-protocol RCTSafeAreaViewViewProtocol : public NSObject {
-}
-
 protocol RCTSchedulerDelegate {
   public virtual void schedulerDidDispatchCommand:commandName:args:(const facebook::react::ShadowView& shadowView, const std::string& commandName, const folly::dynamic& args);
   public virtual void schedulerDidFinishTransaction:(std::shared_ptr<const facebook::react::MountingCoordinator> mountingCoordinator);
@@ -3405,7 +3399,6 @@ const char facebook::react::ParagraphComponentName[];
 const char facebook::react::RawTextComponentName[];
 const char facebook::react::RootComponentName[];
 const char facebook::react::RuntimeSchedulerKey[];
-const char facebook::react::SafeAreaViewComponentName[];
 const char facebook::react::ScrollViewComponentName[];
 const char facebook::react::TextComponentName[];
 const char facebook::react::TextEffectComponentName[];
@@ -4245,6 +4238,8 @@ class facebook::react::AppRegistryBinding {
 class facebook::react::AppleEventBeat : public facebook::react::EventBeat, public facebook::react::RunLoopObserver::Delegate {
   public AppleEventBeat(std::shared_ptr<facebook::react::EventBeat::OwnerBox> ownerBox, std::unique_ptr<const facebook::react::RunLoopObserver> uiRunLoopObserver, facebook::react::RuntimeScheduler& RuntimeScheduler);
   public virtual void activityDidChange(const facebook::react::RunLoopObserver::Delegate* delegate, facebook::react::RunLoopObserver::Activity activity) const noexcept override;
+  public virtual void requestSynchronous() const override;
+  public ~AppleEventBeat() override;
 }
 
 class facebook::react::AsyncArrayBuffer {
@@ -4418,6 +4413,7 @@ class facebook::react::BaseViewEventEmitter : public facebook::react::TouchEvent
   public void onBlur() const;
   public void onFocus() const;
   public void onLayout(const facebook::react::LayoutMetrics& layoutMetrics) const;
+  public void onSafeAreaInsetsChange(const facebook::react::EdgeInsets& insets, const facebook::react::Rect& frame) const;
 }
 
 class facebook::react::BaseViewProps : public facebook::react::YogaStylableProps, public facebook::react::AccessibilityProps {
@@ -4427,6 +4423,7 @@ class facebook::react::BaseViewProps : public facebook::react::YogaStylableProps
   public bool collapsableChildren;
   public bool getClipsContentToBounds() const;
   public bool onLayout;
+  public bool onSafeAreaInsetsChange;
   public bool removeClippedSubviews;
   public bool shouldRasterize;
   public facebook::react::BackfaceVisibility backfaceVisibility;
@@ -4745,7 +4742,6 @@ class facebook::react::EventBeat {
   protected mutable std::atomic<bool> isEventBeatRequested_;
   protected std::function<void()> induceCallback_;
   protected std::shared_ptr<facebook::react::EventBeat::OwnerBox> ownerBox_;
-  protected void induce() const;
   public EventBeat(const facebook::react::EventBeat& other) = delete;
   public EventBeat(std::shared_ptr<facebook::react::EventBeat::OwnerBox> ownerBox, facebook::react::RuntimeScheduler& runtimeScheduler);
   public facebook::react::EventBeat& operator=(const facebook::react::EventBeat& other) = delete;
@@ -4754,6 +4750,7 @@ class facebook::react::EventBeat {
   public virtual void request() const;
   public virtual void requestSynchronous() const;
   public virtual ~EventBeat() = default;
+  public void induce() const;
   public void setBeatCallback(facebook::react::EventBeat::BeatCallback beatCallback);
 }
 
@@ -6761,24 +6758,6 @@ class facebook::react::RuntimeScheduler_Modern : public facebook::react::Runtime
   public virtual void setResizeObserverDelegate(facebook::react::RuntimeSchedulerResizeObserverDelegate* resizeObserverDelegate) override;
   public virtual void setShadowTreeRevisionConsistencyManager(facebook::react::ShadowTreeRevisionConsistencyManager* shadowTreeRevisionConsistencyManager) override;
   public virtual void unregisterTaskQueueSource(uint64_t sourceId) override;
-}
-
-class facebook::react::SafeAreaViewComponentDescriptor : public facebook::react::ConcreteComponentDescriptor<facebook::react::SafeAreaViewShadowNode> {
-}
-
-class facebook::react::SafeAreaViewEventEmitter : public facebook::react::BaseViewEventEmitter {
-}
-
-class facebook::react::SafeAreaViewProps : public facebook::react::HostPlatformViewProps {
-  public SafeAreaViewProps() = default;
-  public SafeAreaViewProps(const facebook::react::PropsParserContext& context, const facebook::react::SafeAreaViewProps& sourceProps, const facebook::react::RawProps& rawProps);
-}
-
-class facebook::react::SafeAreaViewShadowNode : public facebook::react::ConcreteViewShadowNode<facebook::react::SafeAreaViewComponentName, facebook::react::SafeAreaViewProps, facebook::react::ViewEventEmitter, facebook::react::SafeAreaViewState> {
-}
-
-class facebook::react::SafeAreaViewState {
-  public facebook::react::EdgeInsets padding;
 }
 
 class facebook::react::Scheduler : public facebook::react::UIManagerDelegate {
@@ -10546,6 +10525,15 @@ struct facebook::react::NativeResizeObserverNativeResizeObserverEntry {
 }
 
 template <typename P0, typename P1, typename P2, typename P3, typename P4>
+struct facebook::react::NativeDeviceInfoDisplayMetrics {
+  public P0 width;
+  public P1 height;
+  public P2 scale;
+  public P3 fontScale;
+  public bool operator==(const facebook::react::NativeDeviceInfoDisplayMetrics& other) const;
+}
+
+template <typename P0, typename P1, typename P2, typename P3, typename P4>
 struct facebook::react::NativeExceptionsManagerStackFrame {
   public P0 column;
   public P1 file;
@@ -10575,12 +10563,12 @@ struct facebook::react::NativeDeviceInfoDimensionsPayload {
 }
 
 template <typename P0, typename P1, typename P2, typename P3>
-struct facebook::react::NativeDeviceInfoDisplayMetrics {
-  public P0 width;
-  public P1 height;
-  public P2 scale;
-  public P3 fontScale;
-  public bool operator==(const facebook::react::NativeDeviceInfoDisplayMetrics& other) const;
+struct facebook::react::NativeDeviceInfoWindowSafeAreaInsets {
+  public P0 top;
+  public P1 right;
+  public P2 bottom;
+  public P3 left;
+  public bool operator==(const facebook::react::NativeDeviceInfoWindowSafeAreaInsets& other) const;
 }
 
 template <typename P0, typename P1, typename P2, typename P3>
@@ -11284,6 +11272,17 @@ struct facebook::react::NativeDeviceInfoDisplayMetricsBridging {
   public static double heightToJs(facebook::jsi::Runtime& rt, decltype(types.height) value);
   public static double scaleToJs(facebook::jsi::Runtime& rt, decltype(types.scale) value);
   public static double widthToJs(facebook::jsi::Runtime& rt, decltype(types.width) value);
+  public static facebook::jsi::Object toJs(facebook::jsi::Runtime& rt, const T& value, const std::shared_ptr<facebook::react::CallInvoker>& jsInvoker);
+}
+
+template <typename T>
+struct facebook::react::NativeDeviceInfoWindowSafeAreaInsetsBridging {
+  public static T fromJs(facebook::jsi::Runtime& rt, const facebook::jsi::Object& value, const std::shared_ptr<facebook::react::CallInvoker>& jsInvoker);
+  public static T types;
+  public static double bottomToJs(facebook::jsi::Runtime& rt, decltype(types.bottom) value);
+  public static double leftToJs(facebook::jsi::Runtime& rt, decltype(types.left) value);
+  public static double rightToJs(facebook::jsi::Runtime& rt, decltype(types.right) value);
+  public static double topToJs(facebook::jsi::Runtime& rt, decltype(types.top) value);
   public static facebook::jsi::Object toJs(facebook::jsi::Runtime& rt, const T& value, const std::shared_ptr<facebook::react::CallInvoker>& jsInvoker);
 }
 
@@ -15864,6 +15863,25 @@ struct JS::NativeDeviceInfo::DisplayMetrics::Builder::Input {
   protected RCTRequired<double> height;
   protected RCTRequired<double> scale;
   protected RCTRequired<double> width;
+}
+
+struct JS::NativeDeviceInfo::WindowSafeAreaInsets {
+  protected NSDictionary* unsafeRawValue() const;
+  protected static JS::NativeDeviceInfo::WindowSafeAreaInsets fromUnsafeRawValue(NSDictionary* const v);
+}
+
+struct JS::NativeDeviceInfo::WindowSafeAreaInsets::Builder {
+  protected Builder(JS::NativeDeviceInfo::WindowSafeAreaInsets i);
+  protected Builder(const JS::NativeDeviceInfo::WindowSafeAreaInsets::Builder::Input i);
+  protected NSDictionary* buildUnsafeRawValue() const;
+  protected using ResultT = JS::NativeDeviceInfo::WindowSafeAreaInsets;
+}
+
+struct JS::NativeDeviceInfo::WindowSafeAreaInsets::Builder::Input {
+  protected RCTRequired<double> bottom;
+  protected RCTRequired<double> left;
+  protected RCTRequired<double> right;
+  protected RCTRequired<double> top;
 }
 
 

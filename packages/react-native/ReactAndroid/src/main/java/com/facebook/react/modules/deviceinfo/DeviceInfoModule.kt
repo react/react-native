@@ -23,6 +23,7 @@ import com.facebook.react.bridge.WritableNativeMap
 import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.uimanager.DisplayMetricsHolder.getScreenDisplayMetrics
 import com.facebook.react.uimanager.DisplayMetricsHolder.initDisplayMetricsIfNotInitialized
+import com.facebook.react.uimanager.internal.SafeAreaInsetsObserver
 import com.facebook.react.views.view.isEdgeToEdgeFeatureFlagOn
 
 /** Module that exposes Android Constants to JS. */
@@ -83,13 +84,30 @@ internal class DeviceInfoModule(reactContext: ReactApplicationContext) :
       WritableNativeMap().apply {
         putMap(
             "windowPhysicalPixels",
-            getPhysicalPixelsWritableMap(getWindowDisplayMetrics()),
+            getPhysicalPixelsWritableMap(getWindowDisplayMetrics()).apply {
+              getWindowSafeAreaInsetsWritableMap()?.let { putMap("experimental_safeAreaInsets", it) }
+            },
         )
         putMap(
             "screenPhysicalPixels",
             getPhysicalPixelsWritableMap(getScreenDisplayMetrics()),
         )
       }
+
+  /**
+   * The part of the window that is covered by the system UI, in physical pixels. Uses the same
+   * computation as the `onSafeAreaInsetsChange` view prop, applied to the window's decor view.
+   */
+  private fun getWindowSafeAreaInsetsWritableMap(): WritableMap? {
+    val decorView = reactApplicationContext.currentActivity?.window?.decorView ?: return null
+    val insets = SafeAreaInsetsObserver.getSafeAreaInsets(decorView) ?: return null
+    return WritableNativeMap().apply {
+      putInt("top", insets.top)
+      putInt("right", insets.right)
+      putInt("bottom", insets.bottom)
+      putInt("left", insets.left)
+    }
+  }
 
   private fun getPhysicalPixelsWritableMap(
       displayMetrics: DisplayMetrics,

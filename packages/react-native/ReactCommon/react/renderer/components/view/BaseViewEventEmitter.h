@@ -14,6 +14,7 @@
 
 #include <react/renderer/core/LayoutMetrics.h>
 #include <react/renderer/core/ReactPrimitives.h>
+#include <react/renderer/graphics/RectangleEdges.h>
 
 #include "TouchEventEmitter.h"
 
@@ -33,6 +34,19 @@ class BaseViewEventEmitter : public TouchEventEmitter {
 #pragma mark - Layout
 
   void onLayout(const LayoutMetrics &layoutMetrics) const;
+
+#pragma mark - Safe area
+
+  /*
+   * Emits `onSafeAreaInsetsChange` with the portion of the view that is covered
+   * by the system UI (status bar, home indicator, display cutouts, ...) and the
+   * frame of the view at the time of the event.
+   *
+   * The event is dispatched synchronously, blocking the thread it is called
+   * from until React has re-rendered, so that the layout that depends on the
+   * insets is mounted in the same frame the insets changed in.
+   */
+  void onSafeAreaInsetsChange(const EdgeInsets &insets, const Rect &frame) const;
 
 #pragma mark - Focus
   void onFocus() const;

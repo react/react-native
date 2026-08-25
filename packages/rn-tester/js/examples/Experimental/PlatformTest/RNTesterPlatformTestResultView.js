@@ -17,6 +17,7 @@ import type {ViewStyleProp} from 'react-native/Libraries/StyleSheet/StyleSheet';
 
 import RNTesterPlatformTestMinimizedResultView from './RNTesterPlatformTestMinimizedResultView';
 import RNTesterPlatformTestResultsText from './RNTesterPlatformTestResultsText';
+import SafeAreaView from 'react-native/src/private/components/safeareaview/SafeAreaView';
 import * as React from 'react';
 import {memo, useCallback, useMemo, useState} from 'react';
 import {
@@ -25,7 +26,6 @@ import {
   KeyboardAvoidingView,
   Modal,
   Platform,
-  SafeAreaView,
   StyleSheet,
   Switch,
   Text,

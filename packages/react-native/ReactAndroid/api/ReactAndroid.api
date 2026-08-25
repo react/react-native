@@ -3258,6 +3258,7 @@ public abstract class com/facebook/react/uimanager/BaseViewManager : com/faceboo
 	public fun setMoveShouldSetResponder (Landroid/view/View;Z)V
 	public fun setMoveShouldSetResponderCapture (Landroid/view/View;Z)V
 	public fun setNativeId (Landroid/view/View;Ljava/lang/String;)V
+	public fun setOnSafeAreaInsetsChange (Landroid/view/View;Z)V
 	public fun setOpacity (Landroid/view/View;F)V
 	public fun setOutlineColor (Landroid/view/View;Ljava/lang/Integer;)V
 	public fun setOutlineOffset (Landroid/view/View;F)V
@@ -4598,6 +4599,7 @@ public final class com/facebook/react/uimanager/ViewProps {
 	public static final field NONE Ljava/lang/String;
 	public static final field NUMBER_OF_LINES Ljava/lang/String;
 	public static final field ON Ljava/lang/String;
+	public static final field ON_SAFE_AREA_INSETS_CHANGE Ljava/lang/String;
 	public static final field OPACITY Ljava/lang/String;
 	public static final field OUTLINE_COLOR Ljava/lang/String;
 	public static final field OUTLINE_OFFSET Ljava/lang/String;
@@ -5148,14 +5150,6 @@ public abstract interface class com/facebook/react/viewmanagers/ModalHostViewMan
 	public abstract fun setSupportedOrientations (Landroid/view/View;Lcom/facebook/react/bridge/ReadableArray;)V
 	public abstract fun setTransparent (Landroid/view/View;Z)V
 	public abstract fun setVisible (Landroid/view/View;Z)V
-}
-
-public class com/facebook/react/viewmanagers/SafeAreaViewManagerDelegate : com/facebook/react/uimanager/BaseViewManagerDelegate {
-	public fun <init> (Lcom/facebook/react/uimanager/BaseViewManager;)V
-	public fun setProperty (Landroid/view/View;Ljava/lang/String;Ljava/lang/Object;)V
-}
-
-public abstract interface class com/facebook/react/viewmanagers/SafeAreaViewManagerInterface : com/facebook/react/uimanager/ViewManagerWithGeneratedInterface {
 }
 
 public class com/facebook/react/viewmanagers/UnimplementedNativeViewManagerDelegate : com/facebook/react/uimanager/BaseViewManagerDelegate {

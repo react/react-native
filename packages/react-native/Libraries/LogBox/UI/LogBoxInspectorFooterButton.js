@@ -8,7 +8,7 @@
  * @format
  */
 
-import SafeAreaView from '../../Components/SafeAreaView/SafeAreaView';
+import SafeAreaView from '../../../src/private/components/safeareaview/SafeAreaView';
 import View from '../../Components/View/View';
 import StyleSheet from '../../StyleSheet/StyleSheet';
 import Text from '../../Text/Text';
