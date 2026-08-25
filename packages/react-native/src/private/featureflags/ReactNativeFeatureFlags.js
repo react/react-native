@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<2adcae106ae1e758061a91ee20f902fd>>
+ * @generated SignedSource<<9bdc0e5397839b38c408db16dd2fffdc>>
  * @flow strict
  * @noformat
  */
@@ -92,7 +92,6 @@ export type ReactNativeFeatureFlags = Readonly<{
   enablePreparedTextLayout: Getter<boolean>,
   enablePropsUpdateReconciliationAndroid: Getter<boolean>,
   enableResizeObserverByDefault: Getter<boolean>,
-  enableRuntimeSchedulerQueueClearingOnError: Getter<boolean>,
   enableSchedulerDelegateInvalidation: Getter<boolean>,
   enableSwiftUIBasedFilters: Getter<boolean>,
   enableViewCulling: Getter<boolean>,
@@ -384,10 +383,6 @@ export const enablePropsUpdateReconciliationAndroid: Getter<boolean> = createNat
  * Enables the ResizeObserver Web API in React Native.
  */
 export const enableResizeObserverByDefault: Getter<boolean> = createNativeFlagGetter('enableResizeObserverByDefault', false);
-/**
- * When enabled, RuntimeScheduler_Modern clears pending tasks and rendering updates before handling an error.
- */
-export const enableRuntimeSchedulerQueueClearingOnError: Getter<boolean> = createNativeFlagGetter('enableRuntimeSchedulerQueueClearingOnError', true);
 /**
  * Gates a defensive guard around Scheduler::uiManagerDidDispatchCommand and uiManagerDidFinishTransaction that prevents queued rendering-update lambdas from dereferencing the SchedulerDelegate after it has been destroyed (use-after-free).
  */

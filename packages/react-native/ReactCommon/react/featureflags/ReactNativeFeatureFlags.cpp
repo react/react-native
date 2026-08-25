@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<acec83211036df307dd8711e96fcb80c>>
+ * @generated SignedSource<<1e69bcd6066ac1a47c1b4a20eb4eedd4>>
  */
 
 /**
@@ -196,10 +196,6 @@ bool ReactNativeFeatureFlags::enablePropsUpdateReconciliationAndroid() {
 
 bool ReactNativeFeatureFlags::enableResizeObserverByDefault() {
   return getAccessor().enableResizeObserverByDefault();
-}
-
-bool ReactNativeFeatureFlags::enableRuntimeSchedulerQueueClearingOnError() {
-  return getAccessor().enableRuntimeSchedulerQueueClearingOnError();
 }
 
 bool ReactNativeFeatureFlags::enableSchedulerDelegateInvalidation() {

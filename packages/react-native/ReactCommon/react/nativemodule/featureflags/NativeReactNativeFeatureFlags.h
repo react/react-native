@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<40d25fafea07a23f9d4e146973c65cb5>>
+ * @generated SignedSource<<9e8d3d0a144ac859479d5ef5b1b12f2f>>
  */
 
 /**
@@ -123,8 +123,6 @@ class NativeReactNativeFeatureFlags
   bool enablePropsUpdateReconciliationAndroid(jsi::Runtime& runtime);
 
   bool enableResizeObserverByDefault(jsi::Runtime& runtime);
-
-  bool enableRuntimeSchedulerQueueClearingOnError(jsi::Runtime& runtime);
 
   bool enableSchedulerDelegateInvalidation(jsi::Runtime& runtime);
 

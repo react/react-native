@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<7513432f85b9832654814f381b13fe97>>
+ * @generated SignedSource<<7216125910d143e4f0ae9af350687336>>
  */
 
 /**
@@ -294,12 +294,6 @@ class ReactNativeFeatureFlagsJavaProvider
   bool enableResizeObserverByDefault() override {
     static const auto method =
         getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enableResizeObserverByDefault");
-    return method(javaProvider_);
-  }
-
-  bool enableRuntimeSchedulerQueueClearingOnError() override {
-    static const auto method =
-        getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enableRuntimeSchedulerQueueClearingOnError");
     return method(javaProvider_);
   }
 
@@ -780,11 +774,6 @@ bool JReactNativeFeatureFlagsCxxInterop::enableResizeObserverByDefault(
   return ReactNativeFeatureFlags::enableResizeObserverByDefault();
 }
 
-bool JReactNativeFeatureFlagsCxxInterop::enableRuntimeSchedulerQueueClearingOnError(
-    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
-  return ReactNativeFeatureFlags::enableRuntimeSchedulerQueueClearingOnError();
-}
-
 bool JReactNativeFeatureFlagsCxxInterop::enableSchedulerDelegateInvalidation(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
   return ReactNativeFeatureFlags::enableSchedulerDelegateInvalidation();
@@ -1160,9 +1149,6 @@ void JReactNativeFeatureFlagsCxxInterop::registerNatives() {
       makeNativeMethod(
         "enableResizeObserverByDefault",
         JReactNativeFeatureFlagsCxxInterop::enableResizeObserverByDefault),
-      makeNativeMethod(
-        "enableRuntimeSchedulerQueueClearingOnError",
-        JReactNativeFeatureFlagsCxxInterop::enableRuntimeSchedulerQueueClearingOnError),
       makeNativeMethod(
         "enableSchedulerDelegateInvalidation",
         JReactNativeFeatureFlagsCxxInterop::enableSchedulerDelegateInvalidation),

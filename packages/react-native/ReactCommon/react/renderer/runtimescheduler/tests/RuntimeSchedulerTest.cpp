@@ -34,24 +34,15 @@ using namespace std::chrono_literals;
 class RuntimeSchedulerTestFeatureFlags
     : public ReactNativeFeatureFlagsDefaults {
  public:
-  explicit RuntimeSchedulerTestFeatureFlags(
-      bool enableEventLoop,
-      bool enableRuntimeSchedulerQueueClearingOnError = false)
-      : enableEventLoop_(enableEventLoop),
-        enableRuntimeSchedulerQueueClearingOnError_(
-            enableRuntimeSchedulerQueueClearingOnError) {}
+  explicit RuntimeSchedulerTestFeatureFlags(bool enableEventLoop)
+      : enableEventLoop_(enableEventLoop) {}
 
   bool enableBridgelessArchitecture() override {
     return enableEventLoop_;
   }
 
-  bool enableRuntimeSchedulerQueueClearingOnError() override {
-    return enableRuntimeSchedulerQueueClearingOnError_;
-  }
-
  private:
   bool enableEventLoop_;
-  bool enableRuntimeSchedulerQueueClearingOnError_;
 };
 
 class RuntimeSchedulerTest : public testing::TestWithParam<bool> {
@@ -97,12 +88,10 @@ class RuntimeSchedulerTest : public testing::TestWithParam<bool> {
     ReactNativeFeatureFlags::dangerouslyReset();
   }
 
-  void setUpFeatureFlags(
-      bool enableRuntimeSchedulerQueueClearingOnError = false) {
+  void setUpFeatureFlags() {
     ReactNativeFeatureFlags::dangerouslyReset();
     ReactNativeFeatureFlags::override(
-        std::make_unique<RuntimeSchedulerTestFeatureFlags>(
-            GetParam(), enableRuntimeSchedulerQueueClearingOnError));
+        std::make_unique<RuntimeSchedulerTestFeatureFlags>(GetParam()));
   }
 
   jsi::Function createHostFunctionFromLambda(
@@ -924,8 +913,6 @@ TEST_P(RuntimeSchedulerTest, clearsQueuesOnError) {
   if (!GetParam()) {
     return;
   }
-
-  setUpFeatureFlags(/*enableRuntimeSchedulerQueueClearingOnError=*/true);
 
   bool didRunThrowingTask = false;
   bool didRunQueuedTask = false;
@@ -1825,8 +1812,6 @@ TEST_P(RuntimeSchedulerTest, errorInResizeObservationsDoesNotStopUpdate) {
   if (!GetParam()) {
     return;
   }
-
-  setUpFeatureFlags(/*enableRuntimeSchedulerQueueClearingOnError=*/true);
 
   StubResizeObserverDelegate resizeObserverDelegate;
   resizeObserverDelegate.onRunResizeObservations = [](jsi::Runtime& runtime) {

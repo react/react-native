@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<c08fb696ba1dc5b90155163ca690f218>>
+ * @generated SignedSource<<6bfe194529e322fc98e43f6fe87cebeb>>
  */
 
 /**
@@ -75,7 +75,6 @@ class ReactNativeFeatureFlagsAccessor {
   bool enablePreparedTextLayout();
   bool enablePropsUpdateReconciliationAndroid();
   bool enableResizeObserverByDefault();
-  bool enableRuntimeSchedulerQueueClearingOnError();
   bool enableSchedulerDelegateInvalidation();
   bool enableSwiftUIBasedFilters();
   bool enableViewCulling();
@@ -130,7 +129,7 @@ class ReactNativeFeatureFlagsAccessor {
   std::unique_ptr<ReactNativeFeatureFlagsProvider> currentProvider_;
   bool wasOverridden_;
 
-  std::array<std::atomic<const char*>, 87> accessedFeatureFlags_;
+  std::array<std::atomic<const char*>, 86> accessedFeatureFlags_;
 
   std::atomic<std::optional<bool>> commonTestFlag_;
   std::atomic<std::optional<bool>> cdpInteractionMetricsEnabled_;
@@ -175,7 +174,6 @@ class ReactNativeFeatureFlagsAccessor {
   std::atomic<std::optional<bool>> enablePreparedTextLayout_;
   std::atomic<std::optional<bool>> enablePropsUpdateReconciliationAndroid_;
   std::atomic<std::optional<bool>> enableResizeObserverByDefault_;
-  std::atomic<std::optional<bool>> enableRuntimeSchedulerQueueClearingOnError_;
   std::atomic<std::optional<bool>> enableSchedulerDelegateInvalidation_;
   std::atomic<std::optional<bool>> enableSwiftUIBasedFilters_;
   std::atomic<std::optional<bool>> enableViewCulling_;
