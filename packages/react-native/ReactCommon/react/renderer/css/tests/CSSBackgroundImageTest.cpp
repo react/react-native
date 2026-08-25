@@ -539,6 +539,45 @@ TEST_F(CSSBackgroundImageTest, RadialGradientMultipleColorStops) {
   ASSERT_EQ(result, expected);
 }
 
+TEST_F(CSSBackgroundImageTest, ConicGradientWithAngleAndPosition) {
+  auto result = parseCSSProperty<CSSBackgroundImage>(
+      "conic-gradient(from 45deg at 25% 75%, red 0deg, blue 180deg, red 100%)");
+  decltype(result) expected = CSSConicGradientFunction{
+      .from = CSSAngle{.degrees = 45.0f},
+      .position =
+          CSSRadialGradientPosition{
+              .top = CSSPercentage{.value = 75.0f},
+              .left = CSSPercentage{.value = 25.0f}},
+      .items = {
+          CSSConicColorStop{
+              .color = CSSColor{.r = 255, .g = 0, .b = 0, .a = 255},
+              .startPosition = CSSAngle{.degrees = 0.0f}},
+          CSSConicColorStop{
+              .color = CSSColor{.r = 0, .g = 0, .b = 255, .a = 255},
+              .startPosition = CSSAngle{.degrees = 180.0f}},
+          CSSConicColorStop{
+              .color = CSSColor{.r = 255, .g = 0, .b = 0, .a = 255},
+              .startPosition = CSSPercentage{.value = 100.0f}}}};
+  ASSERT_EQ(result, expected);
+}
+
+TEST_F(CSSBackgroundImageTest, ConicGradientWithFourValuePosition) {
+  auto result = parseCSSProperty<CSSBackgroundImage>(
+      "conic-gradient(at top 20px left 10px, red, blue)");
+  decltype(result) expected = CSSConicGradientFunction{
+      .from = CSSAngle{.degrees = 0.0f},
+      .position =
+          CSSRadialGradientPosition{
+              .top = CSSLength{.value = 20.0f, .unit = CSSLengthUnit::Px},
+              .left = CSSLength{.value = 10.0f, .unit = CSSLengthUnit::Px}},
+      .items = {
+          CSSConicColorStop{
+              .color = CSSColor{.r = 255, .g = 0, .b = 0, .a = 255}},
+          CSSConicColorStop{
+              .color = CSSColor{.r = 0, .g = 0, .b = 255, .a = 255}}}};
+  ASSERT_EQ(result, expected);
+}
+
 TEST_F(CSSBackgroundImageTest, InvalidGradientFunctionName) {
   const std::string input =
       "aoeusntial-gradient(red 0%, yellow 30%, green 60%, blue 100%)";
