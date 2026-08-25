@@ -13,7 +13,7 @@ import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 import RNTesterText from '../../components/RNTesterText';
 import * as React from 'react';
 import {useEffect, useState} from 'react';
-import {Dimensions, useWindowDimensions} from 'react-native';
+import {Button, Dimensions, View, useWindowDimensions} from 'react-native';
 
 type Props = {dim: string};
 
@@ -40,6 +40,22 @@ const DimensionsViaHook = () => {
   );
 };
 
+const DimensionsViaCall = ({dim}: Props) => {
+  const [info, setInfo] = useState(() => Dimensions.get(dim));
+  return (
+    <View>
+      <Button
+        onPress={() => setInfo(Dimensions.get(dim))}
+        title={`Invoke get('${dim}')`}
+      />
+
+      <RNTesterText variant="label">
+        {JSON.stringify(info, null, 2)}
+      </RNTesterText>
+    </View>
+  );
+};
+
 exports.title = 'Dimensions';
 exports.category = 'UI';
 exports.documentationURL = 'https://reactnative.dev/docs/dimensions';
@@ -52,15 +68,27 @@ exports.examples = [
     },
   },
   {
-    title: 'Non-component `get` API: window',
+    title: 'Non-component `get` API (subscription): window',
     render(): React.MixedElement {
       return <DimensionsSubscription dim="window" />;
     },
   },
   {
-    title: 'Non-component `get` API: screen',
+    title: 'Non-component `get` API (subscription): screen',
     render(): React.MixedElement {
       return <DimensionsSubscription dim="screen" />;
+    },
+  },
+  {
+    title: 'Non-component `get` API (manual call): window',
+    render(): React.MixedElement {
+      return <DimensionsViaCall dim="window" />;
+    },
+  },
+  {
+    title: 'Non-component `get` API (manual call): screen',
+    render(): React.MixedElement {
+      return <DimensionsViaCall dim="screen" />;
     },
   },
 ] as Array<RNTesterModuleExample>;
