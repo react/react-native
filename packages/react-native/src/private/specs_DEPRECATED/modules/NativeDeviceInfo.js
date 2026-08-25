@@ -45,15 +45,5 @@ export interface Spec extends TurboModule {
 }
 
 const NativeModule: Spec = TurboModuleRegistry.getEnforcing<Spec>('DeviceInfo');
-let constants: ?DeviceInfoConstants = null;
 
-const NativeDeviceInfo = {
-  getConstants(): DeviceInfoConstants {
-    if (constants == null) {
-      constants = NativeModule.getConstants();
-    }
-    return constants;
-  },
-};
-
-export default NativeDeviceInfo;
+export default NativeModule;
