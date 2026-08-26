@@ -29,9 +29,6 @@ private/helloworld/ios/Pods/**
 ; Ignore rn-tester Pods
 packages/rn-tester/Pods/**
 
-[untyped]
-.*/node_modules/@react-native-community/cli/.*/.*
-
 [include]
 
 [declarations]
