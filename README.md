@@ -102,4 +102,4 @@ React Native releases are discussed in [**reactwg/react-native-releases**](https
 
 ## License
 
-React Native is MIT licensed, as found in the [LICENSE](LICENSE) file.
+React Native is MIT licensed, as found in the [LICENSE](./LICENSE) file.
