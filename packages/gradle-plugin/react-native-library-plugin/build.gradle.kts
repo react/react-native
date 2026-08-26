@@ -33,7 +33,6 @@ gradlePlugin {
 group = "com.facebook.react"
 
 dependencies {
-  implementation(project(":react-native-gradle-plugin-shared"))
   implementation(project(":shared"))
 
   implementation(gradleApi())

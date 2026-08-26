@@ -30,7 +30,6 @@
     "gradlew",
     "gradlew.bat",
     "README.md",
-    "react-native-gradle-plugin-shared",
     "react-native-library-plugin",
     "!react-native-library-plugin/src/test",
     "react-native-gradle-plugin",

@@ -24,7 +24,8 @@ import com.facebook.react.utils.DependencyUtils.configureRepositories
 import com.facebook.react.utils.DependencyUtils.readVersionAndGroupStrings
 import com.facebook.react.utils.JdkConfiguratorUtils.configureJavaToolChains
 import com.facebook.react.utils.JsonUtils
-import com.facebook.react.utils.KotlinPluginUtils.applyKotlinAndroidPluginIfNeeded
+import com.facebook.react.internal.deprecated.DeprecatedKotlinPluginUtils.applyKotlinAndroidPluginIfNeeded
+import com.facebook.react.internal.deprecated.DeprecatedReactLibraryConfigurator
 import com.facebook.react.utils.NdkConfiguratorUtils.configureReactNativeNdk
 import com.facebook.react.utils.ProjectUtils.needsCodegenFromPackageJson
 import com.facebook.react.utils.PropertyUtils
@@ -99,11 +100,10 @@ class ReactPlugin : Plugin<Project> {
         }
       }
       configureAutolinking(project, extension, rootExtension)
-      ReactCodegenConfigurator.configureCodegen(
+      ReactAppCodegenConfigurator.configureCodegen(
           project = project,
           localExtension = extension,
           rootExtension = rootExtension,
-          isLibrary = false,
           needsCodegenFromPackageJson = { currentProject, privateExtension ->
             currentProject.needsCodegenFromPackageJson(privateExtension.root)
           },
@@ -120,7 +120,7 @@ class ReactPlugin : Plugin<Project> {
               "Please use the ${ReactPluginIds.REACT_LIBRARY_PLUGIN} plugin instead."
       )
       applyKotlinAndroidPluginIfNeeded(project)
-      ReactLibraryConfigurator.configure(project, extension, rootExtension)
+      DeprecatedReactLibraryConfigurator.configure(project, extension, rootExtension)
     }
   }
 
@@ -260,7 +260,7 @@ class ReactPlugin : Plugin<Project> {
       val generatedSrcDir = generatedPureCxxSourceDir.map { it.dir(libraryName) }
       val taskNameSuffix = taskNameSuffixForDependency(dependency)
 
-      ReactCodegenConfigurator.registerCodegenTasks(
+      ReactAppCodegenConfigurator.registerCodegenTasks(
           project = project,
           rootExtension = rootExtension,
           generatedSrcDir = generatedSrcDir,

@@ -5,11 +5,14 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-package com.facebook.react
+// Duplicated from react-native-library-plugin for backward compat; remove when
+// `com.facebook.react` library support is dropped.
 
-import com.android.build.api.variant.ApplicationAndroidComponentsExtension
+package com.facebook.react.internal.deprecated
+
 import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import com.android.build.gradle.internal.tasks.factory.dependsOn
+import com.facebook.react.ReactExtension
 import com.facebook.react.internal.PrivateReactExtension
 import com.facebook.react.tasks.GenerateCodegenArtifactsTask
 import com.facebook.react.tasks.GenerateCodegenSchemaTask
@@ -23,22 +26,16 @@ import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskProvider
 
 @Suppress("UnstableApiUsage")
-object ReactCodegenConfigurator {
+object DeprecatedReactLibraryCodegenConfigurator {
   fun configureCodegen(
       project: Project,
       localExtension: ReactExtension,
       rootExtension: PrivateReactExtension,
-      isLibrary: Boolean,
-      needsCodegenFromPackageJson: (Project, PrivateReactExtension) -> Boolean,
   ) {
     val generatedSrcDir: Provider<Directory> =
         project.layout.buildDirectory.dir("generated/source/codegen")
 
-    if (isLibrary) {
-      localExtension.jsRootDir.convention(project.layout.projectDirectory.dir("../"))
-    } else {
-      localExtension.jsRootDir.convention(localExtension.root)
-    }
+    localExtension.jsRootDir.convention(project.layout.projectDirectory.dir("../"))
 
     val generateCodegenArtifactsTask =
         registerCodegenTasks(
@@ -63,39 +60,26 @@ object ReactCodegenConfigurator {
               task.libraryName.set(localExtension.libraryName)
             },
             onlyIf = { packageJson ->
-              val needsCodegenFromPackageJson =
-                  needsCodegenFromPackageJson(project, rootExtension)
               val parsedPackageJson = packageJson?.let { JsonUtils.fromPackageJson(it) }
               val includesGeneratedCode =
                   parsedPackageJson?.codegenConfig?.includesGeneratedCode ?: false
-              (isLibrary || needsCodegenFromPackageJson) && !includesGeneratedCode
+              !includesGeneratedCode
             },
         )
 
-    if (isLibrary) {
-      project.extensions.getByType(LibraryAndroidComponentsExtension::class.java).finalizeDsl { ext
-        ->
-        ext.sourceSets
-            .getByName("main")
-            .java
-            .directories
-            .add(generatedSrcDir.get().dir("java").asFile.path)
-      }
-    } else {
-      project.extensions.getByType(ApplicationAndroidComponentsExtension::class.java).finalizeDsl {
-          ext ->
-        ext.sourceSets
-            .getByName("main")
-            .java
-            .directories
-            .add(generatedSrcDir.get().dir("java").asFile.path)
-      }
+    project.extensions.getByType(LibraryAndroidComponentsExtension::class.java).finalizeDsl { ext
+      ->
+      ext.sourceSets
+          .getByName("main")
+          .java
+          .directories
+          .add(generatedSrcDir.get().dir("java").asFile.path)
     }
 
     project.tasks.named("preBuild", Task::class.java).dependsOn(generateCodegenArtifactsTask)
   }
 
-  fun registerCodegenTasks(
+  private fun registerCodegenTasks(
       project: Project,
       rootExtension: PrivateReactExtension,
       generatedSrcDir: Provider<Directory>,

@@ -10,7 +10,6 @@ package com.facebook.react
 import com.facebook.react.internal.PrivateReactExtension
 import com.facebook.react.utils.LibraryAgpConfiguratorUtils.configureBuildConfigFieldsForLibraries
 import com.facebook.react.utils.LibraryAgpConfiguratorUtils.configureNamespaceForLibraries
-import com.facebook.react.utils.ProjectCodegenUtils.needsCodegenFromPackageJson
 import org.gradle.api.Project
 
 object ReactLibraryConfigurator {
@@ -21,14 +20,10 @@ object ReactLibraryConfigurator {
   ) {
     configureBuildConfigFieldsForLibraries(project)
     configureNamespaceForLibraries(project)
-    ReactCodegenConfigurator.configureCodegen(
+    ReactLibraryCodegenConfigurator.configureCodegen(
         project = project,
         localExtension = extension,
         rootExtension = rootExtension,
-        isLibrary = true,
-        needsCodegenFromPackageJson = { currentProject, privateExtension ->
-          currentProject.needsCodegenFromPackageJson(privateExtension.root)
-        },
     )
   }
 }

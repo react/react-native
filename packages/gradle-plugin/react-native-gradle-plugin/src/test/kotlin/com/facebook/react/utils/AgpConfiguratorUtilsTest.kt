@@ -7,6 +7,7 @@
 
 package com.facebook.react.utils
 
+import com.facebook.react.internal.deprecated.getPackageNameFromManifest
 import java.io.File
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Rule
