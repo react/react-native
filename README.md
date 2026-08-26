@@ -12,7 +12,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/react/react-native/blob/HEAD/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="React Native is released under the MIT license" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="React Native is released under the MIT license" /></a>
   <a href="https://www.npmjs.com/package/react-native"><img src="https://img.shields.io/npm/v/react-native.svg?color=blue" alt="Current npm package version" /></a>
   <a href="https://www.npmjs.com/package/react-native"><img src="https://img.shields.io/npm/dm/react-native.svg" alt="Monthly npm downloads" /></a>
   <a href="https://twitter.com/intent/follow?screen_name=reactnative"><img src="https://img.shields.io/badge/Follow_@reactnative-black?logo=x&logoColor=white" alt="Follow @reactnative on X" /></a>
@@ -29,7 +29,7 @@
   <span> · </span>
   <a href="https://reactnative.dev/help">Community</a>
   <span> · </span>
-  <a href="https://github.com/react/react-native/blob/HEAD/.github/SUPPORT.md">Support</a>
+  <a href=".github/SUPPORT.md">Support</a>
 </h4>
 
 # React Native
@@ -102,4 +102,4 @@ React Native releases are discussed in [**reactwg/react-native-releases**](https
 
 ## License
 
-React Native is MIT licensed, as found in the [LICENSE](https://github.com/react/react-native/blob/main/LICENSE) file.
+React Native is MIT licensed, as found in the [LICENSE](./LICENSE) file.
