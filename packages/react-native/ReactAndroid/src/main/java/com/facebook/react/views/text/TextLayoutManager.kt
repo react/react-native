@@ -123,6 +123,9 @@ internal object TextLayoutManager {
   // can arrive a fraction of a pixel short of it (e.g. 371.99997 instead of 372).
   private const val PIXEL_SIZE_TOLERANCE = 0.001f
 
+  // Large enough to avoid wrapping while leaving room for Android layout arithmetic.
+  private const val VISUAL_BOUNDS_PROBE_WIDTH = Int.MAX_VALUE / 2
+
   private val tagToSpannableCache = ConcurrentHashMap<Int, Spannable>()
 
   // These wrappers mirror Android 15 APIs but use reflection because some internal targets still
@@ -1090,7 +1093,7 @@ internal object TextLayoutManager {
     val visualBoundsLayout =
         buildLayout(
             text,
-            Int.MAX_VALUE / 2,
+            VISUAL_BOUNDS_PROBE_WIDTH,
             includeFontPadding,
             textBreakStrategy,
             hyphenationFrequency,
