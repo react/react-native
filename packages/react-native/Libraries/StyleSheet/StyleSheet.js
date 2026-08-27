@@ -136,8 +136,7 @@ export type TypeForStyleKey<
  * object of styles to pass to a View that can't be precomputed with
  * StyleSheet.create.
  */
-/** @build-types emit-as-interface react-native-web compatibility */
-export type ViewStyle = ____ViewStyle_Internal;
+export type {____ViewStyle_Internal as ViewStyle} from './StyleSheetTypes';
 
 /**
  * This type is an object of the different possible style
@@ -154,8 +153,7 @@ export type ViewStyle = ____ViewStyle_Internal;
  * object of styles to pass to a Text that can't be precomputed with
  * StyleSheet.create.
  */
-/** @build-types emit-as-interface react-native-web compatibility */
-export type TextStyle = ____TextStyle_Internal;
+export type {____TextStyle_Internal as TextStyle} from './StyleSheetTypes';
 
 /**
  * This type is an object of the different possible style
@@ -172,8 +170,7 @@ export type TextStyle = ____TextStyle_Internal;
  * object of styles to pass to an Image that can't be precomputed with
  * StyleSheet.create.
  */
-/** @build-types emit-as-interface react-native-web compatibility */
-export type ImageStyle = ____ImageStyle_Internal;
+export type {____ImageStyle_Internal as ImageStyle} from './StyleSheetTypes';
 
 /**
  * WARNING: You probably shouldn't be using this type. This type is an object

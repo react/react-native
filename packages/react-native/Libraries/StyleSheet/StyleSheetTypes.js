@@ -910,6 +910,7 @@ export type ____ViewStyle_InternalCore = Readonly<{
   ...____ViewStyle_InternalBase,
 }>;
 
+/** @build-types emit-as-interface react-native-web compatibility */
 export type ____ViewStyle_Internal = Readonly<{
   ...____ViewStyle_InternalCore,
   ...____ViewStyle_InternalOverrides,
@@ -1059,6 +1060,7 @@ export type ____TextStyle_InternalCore = Readonly<{
   ...____TextStyle_InternalBase,
 }>;
 
+/** @build-types emit-as-interface react-native-web compatibility */
 export type ____TextStyle_Internal = Readonly<{
   ...____TextStyle_InternalCore,
   ...____TextStyle_InternalOverrides,
@@ -1073,6 +1075,7 @@ export type ____ImageStyle_InternalCore = Readonly<{
   overflow?: 'visible' | 'hidden',
 }>;
 
+/** @build-types emit-as-interface react-native-web compatibility */
 export type ____ImageStyle_Internal = Readonly<{
   ...____ImageStyle_InternalCore,
   ...____ImageStyle_InternalOverrides,

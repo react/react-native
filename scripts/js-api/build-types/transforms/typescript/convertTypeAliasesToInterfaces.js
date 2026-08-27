@@ -44,59 +44,50 @@ function convertToInterface(path: $FlowFixMe): void {
     innerType = typeAnnotation.typeParameters.params[0];
   }
 
-  const extendsClauses: Array<t.TSExpressionWithTypeArguments> = [];
-  const bodyMembers: Array<t.TSTypeElement> = [];
+  let members: Array<t.TSType>;
 
   if (t.isTSIntersectionType(innerType)) {
-    const refMembers: Array<t.TSType> = [];
-    for (const member of innerType.types) {
-      if (t.isTSTypeLiteral(member)) {
-        const clonedMembers = t.cloneDeep(member).members;
-        if (isReadonly) {
-          makePropertiesReadonly(clonedMembers);
-        }
-        bodyMembers.push(...clonedMembers);
-      } else {
-        refMembers.push(t.cloneDeep(member));
-      }
-    }
-    if (refMembers.length > 0) {
-      const refsType =
-        refMembers.length === 1
-          ? refMembers[0]
-          : t.tsIntersectionType(refMembers);
-      if (isReadonly) {
-        extendsClauses.push(
-          t.tsExpressionWithTypeArguments(
-            t.identifier('Readonly'),
-            t.tsTypeParameterInstantiation([refsType]),
-          ),
-        );
-      } else {
-        extendsClauses.push(typeToExtendsClause(refsType, false));
-      }
-    }
-  } else if (t.isTSTypeLiteral(innerType)) {
-    const clonedMembers = t.cloneDeep(innerType).members;
-    if (isReadonly) {
-      makePropertiesReadonly(clonedMembers);
-    }
-    bodyMembers.push(...clonedMembers);
-  } else if (t.isTSTypeReference(innerType)) {
-    extendsClauses.push(typeToExtendsClause(innerType, isReadonly));
+    members = innerType.types.map(member => t.cloneDeep(member));
+  } else if (t.isTSTypeLiteral(innerType) || t.isTSTypeReference(innerType)) {
+    members = [t.cloneDeep(innerType)];
   } else {
     throw new Error(
       `Unsupported type structure for @build-types emit-as-interface on '${path.node.id.name}'. Only object literals, type references, and intersections of these are supported.`,
     );
   }
 
+  const combined =
+    members.length === 1 ? members[0] : t.tsIntersectionType(members);
+  const hasObjectLiteral = members.some(member => t.isTSTypeLiteral(member));
+
+  // Members declared in the body of an interface cannot be overridden by a
+  // module augmentation: a second declaration is a merge conflict, and the
+  // original wins. Keeping every member in the extends clause makes them all
+  // inherited, and so all overridable.
+  const extendsClauses = [
+    isReadonly
+      ? t.tsExpressionWithTypeArguments(
+          t.identifier('Readonly'),
+          t.tsTypeParameterInstantiation([combined]),
+        )
+      : hasObjectLiteral
+        ? // An object literal cannot appear in an extends clause on its own,
+          // and wrapping it in Readonly would add modifiers the source does
+          // not have. Omit<_, never> preserves them.
+          t.tsExpressionWithTypeArguments(
+            t.identifier('Omit'),
+            t.tsTypeParameterInstantiation([combined, t.tsNeverKeyword()]),
+          )
+        : typeToExtendsClause(combined, false),
+  ];
+
   const interfaceNode = t.tsInterfaceDeclaration(
     t.cloneDeep(path.node.id),
     path.node.typeParameters
       ? t.cloneDeep(path.node.typeParameters)
       : undefined,
-    extendsClauses.length > 0 ? extendsClauses : undefined,
-    t.tsInterfaceBody(bodyMembers),
+    extendsClauses,
+    t.tsInterfaceBody([]),
   );
   interfaceNode.declare = path.node.declare ?? false;
 
@@ -125,14 +116,6 @@ function typeToExtendsClause(
     t.identifier('Readonly'),
     t.tsTypeParameterInstantiation([t.cloneDeep(tsType)]),
   );
-}
-
-function makePropertiesReadonly(members: Array<t.TSTypeElement>): void {
-  for (const member of members) {
-    if (t.isTSPropertySignature(member)) {
-      member.readonly = true;
-    }
-  }
 }
 
 const visitor: PluginObj<unknown> = {
