@@ -138,6 +138,17 @@ using namespace facebook::react;
   _textView.state = std::static_pointer_cast<const ParagraphShadowNode::ConcreteState>(state);
   [_textView setNeedsDisplay];
   [self setNeedsLayout];
+
+  // If the attributed string has changed, we need to notify the accessibility system that something changed,
+  // otherwise it may hold on to stale values (this happens most often when an element is updated async)
+  // https://github.com/react/react-native/issues/58145
+  if (state && oldState) {
+    const auto &newData = std::static_pointer_cast<const ParagraphShadowNode::ConcreteState>(state)->getData();
+    const auto &oldData = std::static_pointer_cast<const ParagraphShadowNode::ConcreteState>(oldState)->getData();
+    if (!newData.attributedString.isContentEqual(oldData.attributedString)) {
+      UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification, nil);
+    }
+  }
 }
 
 - (void)updateLayoutMetrics:(const LayoutMetrics &)layoutMetrics
