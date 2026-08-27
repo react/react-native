@@ -259,7 +259,7 @@ describe('<Button>', () => {
             .getRenderedOutput({props: ['accessibilityLabelledBy']})
             .toJSX(),
         ).toEqual(
-          <rn-view accessibilityLabelledBy="formLabel">
+          <rn-view accessibilityLabelledBy="[formLabel]">
             <rn-paragraph>HELLO</rn-paragraph>
           </rn-view>,
         );
@@ -277,7 +277,7 @@ describe('<Button>', () => {
             .getRenderedOutput({props: ['accessibilityLabelledBy']})
             .toJSX(),
         ).toEqual(
-          <rn-view accessibilityLabelledBy={['formLabel']}>
+          <rn-view accessibilityLabelledBy="[formLabel]">
             <rn-paragraph>HELLO</rn-paragraph>
           </rn-view>,
         );
