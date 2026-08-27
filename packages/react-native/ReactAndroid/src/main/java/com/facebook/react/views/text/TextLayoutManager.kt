@@ -769,22 +769,10 @@ internal object TextLayoutManager {
     }
 
     val layoutWidth =
-        when (widthYogaMeasureMode) {
-          YogaMeasureMode.EXACTLY -> ceil(width).toInt()
-          YogaMeasureMode.AT_MOST ->
-              min(
-                  getDesiredWidth(
-                      text,
-                      includeFontPadding,
-                      textBreakStrategy,
-                      hyphenationFrequency,
-                      alignment,
-                      justificationMode,
-                      paint,
-                  ),
-                  floor(width).toInt(),
-              )
-          else ->
+        if (widthYogaMeasureMode == YogaMeasureMode.EXACTLY) {
+          ceil(width).toInt()
+        } else {
+          val desiredWidth =
               getDesiredWidth(
                   text,
                   includeFontPadding,
@@ -794,6 +782,11 @@ internal object TextLayoutManager {
                   justificationMode,
                   paint,
               )
+          if (widthYogaMeasureMode == YogaMeasureMode.AT_MOST) {
+            min(desiredWidth, floor(width).toInt())
+          } else {
+            desiredWidth
+          }
         }
     return buildLayout(
         text,
