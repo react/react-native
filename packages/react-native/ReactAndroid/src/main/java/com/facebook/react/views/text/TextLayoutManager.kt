@@ -744,30 +744,6 @@ internal object TextLayoutManager {
       maxNumberOfLines: Int,
       paint: TextPaint,
   ): Layout {
-    // If our text is boring, and fully fits in the available space, we can represent the text
-    // layout as a BoringLayout
-    if (
-        boring != null &&
-            (widthYogaMeasureMode == YogaMeasureMode.UNDEFINED || boring.width <= floor(width))
-    ) {
-      // Guard uses floor() but layout width below uses ceil() for EXACTLY mode intentionally:
-      // text that barely fails the floor-based guard falls through to StaticLayout, which also
-      // ceils for EXACTLY — no wrapping results, just a slightly less optimal layout class in a
-      // rare subpixel edge case.
-      val layoutWidth =
-          if (widthYogaMeasureMode == YogaMeasureMode.EXACTLY) ceil(width).toInt() else boring.width
-      return BoringLayout.make(
-          text,
-          paint,
-          layoutWidth,
-          alignment,
-          1f,
-          0f,
-          boring,
-          includeFontPadding,
-      )
-    }
-
     val layoutWidth =
         if (widthYogaMeasureMode == YogaMeasureMode.EXACTLY) {
           ceil(width).toInt()
@@ -775,6 +751,7 @@ internal object TextLayoutManager {
           val desiredWidth =
               getDesiredWidth(
                   text,
+                  boring,
                   includeFontPadding,
                   textBreakStrategy,
                   hyphenationFrequency,
@@ -788,6 +765,29 @@ internal object TextLayoutManager {
             desiredWidth
           }
         }
+
+    // If our text is boring, and fully fits in the available space, we can represent the text
+    // layout as a BoringLayout.
+    if (
+        boring != null &&
+            (widthYogaMeasureMode == YogaMeasureMode.UNDEFINED || boring.width <= floor(width))
+    ) {
+      // Guard uses floor() but layout width above uses ceil() for EXACTLY mode intentionally:
+      // text that barely fails the floor-based guard falls through to StaticLayout, which also
+      // ceils for EXACTLY — no wrapping results, just a slightly less optimal layout class in a
+      // rare subpixel edge case.
+      return BoringLayout.make(
+          text,
+          paint,
+          layoutWidth,
+          alignment,
+          1f,
+          0f,
+          boring,
+          includeFontPadding,
+      )
+    }
+
     return buildLayout(
         text,
         layoutWidth,
@@ -804,6 +804,7 @@ internal object TextLayoutManager {
 
   private fun getDesiredWidth(
       text: Spannable,
+      boring: BoringLayout.Metrics?,
       includeFontPadding: Boolean,
       textBreakStrategy: Int,
       hyphenationFrequency: Int,
@@ -811,7 +812,7 @@ internal object TextLayoutManager {
       justificationMode: Int,
       paint: TextPaint,
   ): Int {
-    val advanceWidth = ceil(Layout.getDesiredWidth(text, paint)).toInt()
+    val advanceWidth = boring?.width ?: ceil(Layout.getDesiredWidth(text, paint)).toInt()
 
     if (
         Build.VERSION.SDK_INT < VERSION_CODE_VANILLA_ICE_CREAM ||
