@@ -19,8 +19,8 @@ import kotlin.math.floor
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.robolectric.annotation.Config
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
 /**
  * Regression test for the "Keep watching" 1px text-wrap bug.
@@ -115,6 +115,29 @@ class TextLayoutManagerAbsoluteLayoutWithFractionalPixelTest {
     assertThat(layout.width).isGreaterThanOrEqualTo(advanceWidth)
   }
 
+  @Test
+  @Config(sdk = [35])
+  fun `Android 15 UNDEFINED boring layout uses the visual probe width`() {
+    val text = SpannableString("Prison Break")
+    val paint = TextPaint(TextPaint.ANTI_ALIAS_FLAG).apply { textSize = 16f }
+    val boring = requireNotNull(BoringLayout.isBoring(text, paint)).apply { width = 1 }
+    val visualProbeWidth = ceil(Layout.getDesiredWidth(text, paint)).toInt()
+
+    assertThat(visualProbeWidth).isGreaterThan(boring.width)
+
+    val layout =
+        invokeCreateLayout(
+            text,
+            0f,
+            paint,
+            YogaMeasureMode.UNDEFINED,
+            boring,
+        )
+
+    assertThat(layout).isInstanceOf(BoringLayout::class.java)
+    assertThat(layout.width).isGreaterThanOrEqualTo(visualProbeWidth)
+  }
+
   /**
    * Default values mirror what measureText() passes in the production path for a plain
    * single-paragraph label.
@@ -128,10 +151,11 @@ class TextLayoutManagerAbsoluteLayoutWithFractionalPixelTest {
       width: Float,
       paint: TextPaint,
       widthYogaMeasureMode: YogaMeasureMode = YogaMeasureMode.EXACTLY,
+      boring: BoringLayout.Metrics? = BoringLayout.isBoring(text, paint),
   ): Layout =
       TextLayoutManager.createLayout(
           text,
-          BoringLayout.isBoring(text, paint),
+          boring,
           width,
           widthYogaMeasureMode,
           /* includeFontPadding = */ false,

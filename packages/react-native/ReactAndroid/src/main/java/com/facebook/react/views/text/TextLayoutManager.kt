@@ -864,38 +864,17 @@ internal object TextLayoutManager {
       maxNumberOfLines: Int,
       paint: TextPaint,
   ): Layout {
-    // If our text is boring, and fully fits in the available space, we can represent the text
-    // layout as a BoringLayout
-    if (
-        boring != null &&
-            (widthYogaMeasureMode == YogaMeasureMode.UNDEFINED || boring.width <= floor(width))
-    ) {
-      // Guard uses floor() but layout width below uses ceil() for EXACTLY mode intentionally:
-      // text that barely fails the floor-based guard falls through to StaticLayout, which also
-      // ceils for EXACTLY — no wrapping results, just a slightly less optimal layout class in a
-      // rare subpixel edge case.
-      val layoutWidth =
-          if (widthYogaMeasureMode == YogaMeasureMode.EXACTLY) ceil(width).toInt() else boring.width
-      return BoringLayout.make(
-          text,
-          paint,
-          layoutWidth,
-          alignment,
-          1f,
-          0f,
-          boring,
-          includeFontPadding,
-      )
-    }
-
     val layoutWidth =
         when {
           widthYogaMeasureMode == YogaMeasureMode.EXACTLY -> ceil(width).toInt()
-          widthYogaMeasureMode == YogaMeasureMode.AT_MOST && boring != null -> floor(width).toInt()
+          widthYogaMeasureMode == YogaMeasureMode.AT_MOST &&
+              boring != null &&
+              boring.width > floor(width) -> floor(width).toInt()
           else -> {
             val desiredWidth =
                 getDesiredWidth(
                     text,
+                    boring,
                     includeFontPadding,
                     textBreakStrategy,
                     hyphenationFrequency,
@@ -912,6 +891,22 @@ internal object TextLayoutManager {
             }
           }
         }
+    if (
+        boring != null &&
+            (widthYogaMeasureMode == YogaMeasureMode.UNDEFINED || boring.width <= floor(width))
+    ) {
+      return BoringLayout.make(
+          text,
+          paint,
+          layoutWidth,
+          alignment,
+          1f,
+          0f,
+          boring,
+          includeFontPadding,
+      )
+    }
+
     // Bounds-based width is limited to text with RTL characters. An EXACTLY width usually comes
     // from an earlier advance-based AT_MOST measurement, and LTR glyph bounds that are wider than
     // their advances (some OEM fonts) would make a single line overflow that width and ellipsize.
@@ -1022,6 +1017,7 @@ internal object TextLayoutManager {
 
   private fun getDesiredWidth(
       text: Spannable,
+      boring: BoringLayout.Metrics?,
       includeFontPadding: Boolean,
       textBreakStrategy: Int,
       hyphenationFrequency: Int,
@@ -1031,11 +1027,10 @@ internal object TextLayoutManager {
       justificationMode: Int,
       paint: TextPaint,
   ): Int {
-    val advanceWidth = ceil(Layout.getDesiredWidth(text, paint)).toInt()
+    val advanceWidth = boring?.width ?: ceil(Layout.getDesiredWidth(text, paint)).toInt()
 
     if (
-        Build.VERSION.SDK_INT < VERSION_CODE_VANILLA_ICE_CREAM ||
-            setUseBoundsForWidthMethod == null
+        Build.VERSION.SDK_INT < VERSION_CODE_VANILLA_ICE_CREAM || setUseBoundsForWidthMethod == null
     ) {
       return advanceWidth
     }
