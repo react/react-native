@@ -911,7 +911,7 @@ export type ____ViewStyle_InternalCore = Readonly<{
 }>;
 
 /** @build-types emit-as-interface react-native-web compatibility */
-export type ____ViewStyle_Internal = Readonly<{
+export type ViewStyle = Readonly<{
   ...____ViewStyle_InternalCore,
   ...____ViewStyle_InternalOverrides,
 }>;
@@ -1056,18 +1056,18 @@ type ____TextStyle_InternalBase = Readonly<{
 }>;
 
 export type ____TextStyle_InternalCore = Readonly<{
-  ...$Exact<____ViewStyle_Internal>,
+  ...$Exact<ViewStyle>,
   ...____TextStyle_InternalBase,
 }>;
 
 /** @build-types emit-as-interface react-native-web compatibility */
-export type ____TextStyle_Internal = Readonly<{
+export type TextStyle = Readonly<{
   ...____TextStyle_InternalCore,
   ...____TextStyle_InternalOverrides,
 }>;
 
 export type ____ImageStyle_InternalCore = Readonly<{
-  ...$Exact<____ViewStyle_Internal>,
+  ...$Exact<ViewStyle>,
   resizeMode?: ImageResizeMode,
   objectFit?: 'cover' | 'contain' | 'fill' | 'scale-down' | 'none',
   tintColor?: ____ColorValue_Internal,
@@ -1076,13 +1076,13 @@ export type ____ImageStyle_InternalCore = Readonly<{
 }>;
 
 /** @build-types emit-as-interface react-native-web compatibility */
-export type ____ImageStyle_Internal = Readonly<{
+export type ImageStyle = Readonly<{
   ...____ImageStyle_InternalCore,
   ...____ImageStyle_InternalOverrides,
 }>;
 
 export type ____DangerouslyImpreciseStyle_InternalCore = Readonly<{
-  ...$Exact<____TextStyle_Internal>,
+  ...$Exact<TextStyle>,
   resizeMode?: ImageResizeMode,
   objectFit?: 'cover' | 'contain' | 'fill' | 'scale-down' | 'none',
   tintColor?: ____ColorValue_Internal,
@@ -1106,13 +1106,13 @@ export type ____DangerouslyImpreciseAnimatedStyleProp_Internal =
   WithAnimatedValue<StyleProp<Partial<____DangerouslyImpreciseStyle_Internal>>>;
 
 export type ____ViewStyleProp_Internal = StyleProp<
-  Readonly<Partial<____ViewStyle_Internal>>,
+  Readonly<Partial<ViewStyle>>,
 >;
 export type ____TextStyleProp_Internal = StyleProp<
-  Readonly<Partial<____TextStyle_Internal>>,
+  Readonly<Partial<TextStyle>>,
 >;
 export type ____ImageStyleProp_Internal = StyleProp<
-  Readonly<Partial<____ImageStyle_Internal>>,
+  Readonly<Partial<ImageStyle>>,
 >;
 
 export type ____Styles_Internal = {

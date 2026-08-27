@@ -133,7 +133,7 @@ export type TypeForStyleKey<
  * object of styles to pass to a View that can't be precomputed with
  * StyleSheet.create.
  */
-export type {____ViewStyle_Internal as ViewStyle} from './StyleSheetTypes';
+export type {ViewStyle} from './StyleSheetTypes';
 
 /**
  * This type is an object of the different possible style
@@ -150,7 +150,7 @@ export type {____ViewStyle_Internal as ViewStyle} from './StyleSheetTypes';
  * object of styles to pass to a Text that can't be precomputed with
  * StyleSheet.create.
  */
-export type {____TextStyle_Internal as TextStyle} from './StyleSheetTypes';
+export type {TextStyle} from './StyleSheetTypes';
 
 /**
  * This type is an object of the different possible style
@@ -167,7 +167,7 @@ export type {____TextStyle_Internal as TextStyle} from './StyleSheetTypes';
  * object of styles to pass to an Image that can't be precomputed with
  * StyleSheet.create.
  */
-export type {____ImageStyle_Internal as ImageStyle} from './StyleSheetTypes';
+export type {ImageStyle} from './StyleSheetTypes';
 
 /**
  * WARNING: You probably shouldn't be using this type. This type is an object

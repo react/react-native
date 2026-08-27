@@ -27,8 +27,7 @@ import View from './View/View';
 import invariant from 'invariant';
 import * as React from 'react';
 
-/** @build-types emit-as-interface Uniwind compatibility */
-export type ButtonProps = Readonly<{
+type ButtonPropsCore = Readonly<{
   /**
    * Text to display inside the button. On Android the given title will be
    * converted to the uppercased form.
@@ -166,6 +165,9 @@ export type ButtonProps = Readonly<{
    */
   accessibilityLanguage?: ?Stringish,
 }>;
+
+/** @build-types emit-as-interface Uniwind compatibility */
+export type ButtonProps = ButtonPropsCore;
 
 const NativeTouchable:
   typeof TouchableNativeFeedback | typeof TouchableOpacity =

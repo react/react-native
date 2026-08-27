@@ -46,10 +46,10 @@ declare type ViewProps = Readonly<A & B & C>`,
 declare type Props = Readonly<A & B & { x?: string; y: number }>`,
     );
     expect(result).toMatchInlineSnapshot(`
-"declare interface Props extends Readonly<A & B & {
-  x?: string;
-  y: number;
-}> {}"
+"declare interface Props extends Readonly<A & B> {
+  readonly x?: string;
+  readonly y: number;
+}"
 `);
   });
 
@@ -59,10 +59,10 @@ declare type Props = Readonly<A & B & { x?: string; y: number }>`,
 declare type Props = Readonly<{ a: string; b?: number }>`,
     );
     expect(result).toMatchInlineSnapshot(`
-"declare interface Props extends Readonly<{
-  a: string;
-  b?: number;
-}> {}"
+"declare interface Props {
+  readonly a: string;
+  readonly b?: number;
+}"
 `);
   });
 
@@ -72,10 +72,10 @@ declare type Props = Readonly<{ a: string; b?: number }>`,
 declare type Props = { readonly a: string; readonly b?: number }`,
     );
     expect(result).toMatchInlineSnapshot(`
-"declare interface Props extends Omit<{
+"declare interface Props {
   readonly a: string;
   readonly b?: number;
-}, never> {}"
+}"
 `);
   });
 
@@ -105,9 +105,9 @@ declare type FlatListProps<ItemT> = Omit<VLP, "data"> & BaseProps<ItemT>`,
 declare type Props = Readonly<Omit<ViewProps, "style"> & { alt?: string }>`,
     );
     expect(result).toMatchInlineSnapshot(`
-"declare interface Props extends Readonly<Omit<ViewProps, \\"style\\"> & {
-  alt?: string;
-}> {}"
+"declare interface Props extends Readonly<Omit<ViewProps, \\"style\\">> {
+  readonly alt?: string;
+}"
 `);
   });
 
