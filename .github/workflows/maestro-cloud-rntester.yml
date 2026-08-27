@@ -1,0 +1,77 @@
+name: Maestro Cloud RNTester
+
+permissions:
+  contents: read
+
+on:
+  workflow_call:
+    inputs:
+      platform:
+        description: 'Platform name shown in the Maestro Cloud run'
+        required: true
+        type: string
+      artifact-name:
+        description: 'Name of the RNTester build artifact'
+        required: true
+        type: string
+      download-path:
+        description: 'Directory where the build artifact is downloaded'
+        required: true
+        type: string
+      app-file:
+        description: 'Path to the app bundle or APK passed to Maestro Cloud'
+        required: true
+        type: string
+      app-id:
+        description: 'RNTester application identifier'
+        required: true
+        type: string
+      exclude-tags:
+        description: 'Maestro flow tags to exclude'
+        required: true
+        type: string
+    secrets:
+      MAESTRO_CLOUD_API_KEY:
+        required: true
+      MAESTRO_CLOUD_PROJECT_ID:
+        required: true
+
+jobs:
+  test:
+    name: Maestro Cloud ${{ inputs.platform }} RNTester
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Download RNTester app
+        uses: actions/download-artifact@v7
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: ${{ inputs.download-path }}
+      - name: Validate Maestro Cloud inputs
+        env:
+          MAESTRO_APP_FILE: ${{ inputs.app-file }}
+          MAESTRO_CLOUD_API_KEY: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
+          MAESTRO_CLOUD_PROJECT_ID: ${{ secrets.MAESTRO_CLOUD_PROJECT_ID }}
+        run: |
+          test -e "$MAESTRO_APP_FILE"
+          test -n "$MAESTRO_CLOUD_API_KEY"
+          test -n "$MAESTRO_CLOUD_PROJECT_ID"
+          test -z "$(find packages/rn-tester/.maestro -type l -print -quit)"
+      - name: Run flows on Maestro Cloud
+        uses: mobile-dev-inc/action-maestro-cloud@5759506b4ec7ee0a1ece4b7e6574bba2b282f241 # v3.0.1
+        with:
+          api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
+          project-id: ${{ secrets.MAESTRO_CLOUD_PROJECT_ID }}
+          app-file: ${{ inputs.app-file }}
+          workspace: packages/rn-tester/.maestro
+          branch: ${{ github.head_ref || github.ref_name }}
+          name: RNTester ${{ inputs.platform }} - ${{ github.event.pull_request.title || github.sha }}
+          exclude-tags: ${{ inputs.exclude-tags }}
+          env: |
+            APP_ID=${{ inputs.app-id }}
+          maestro-cli-version: 2.6.1
+          timeout: 60

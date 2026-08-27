@@ -163,6 +163,30 @@ jobs:
           use-prebuilds: true
           flavor: ${{ matrix.flavor }}
 
+  test_maestro_cloud_ios:
+    needs: test_ios_rntester
+    # test_ios_rntester is continue-on-error. If its Release artifact is missing,
+    # the reusable workflow fails explicitly while downloading or validating it.
+    if: |
+      needs.test_ios_rntester.result == 'success' &&
+      (
+        (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+        (
+          github.event_name == 'pull_request' &&
+          github.event.pull_request.head.repo.full_name == github.repository &&
+          github.actor != 'dependabot[bot]'
+        )
+      )
+    uses: ./.github/workflows/maestro-cloud-rntester.yml
+    with:
+      platform: iOS
+      artifact-name: RNTesterApp-NewArch-Release
+      download-path: /tmp/RNTesterBuild/RNTester.app
+      app-file: /tmp/RNTesterBuild/RNTester.app
+      app-id: com.meta.RNTester.localDevelopment
+      exclude-tags: android-only
+    secrets: inherit
+
   test_e2e_ios_rntester:
     needs: test_ios_rntester
     if: ${{ needs.test_ios_rntester.result == 'success' }}
@@ -328,6 +352,28 @@ jobs:
         with:
           release-type: ${{ needs.set_release_type.outputs.RELEASE_TYPE }}
           gradle-cache-encryption-key: ${{ secrets.GRADLE_CACHE_ENCRYPTION_KEY }}
+
+  test_maestro_cloud_android:
+    needs: build_android
+    if: |
+      needs.build_android.result == 'success' &&
+      (
+        (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+        (
+          github.event_name == 'pull_request' &&
+          github.event.pull_request.head.repo.full_name == github.repository &&
+          github.actor != 'dependabot[bot]'
+        )
+      )
+    uses: ./.github/workflows/maestro-cloud-rntester.yml
+    with:
+      platform: Android
+      artifact-name: rntester-release
+      download-path: /tmp/rntester-android
+      app-file: /tmp/rntester-android/app-arm64-v8a-release.apk
+      app-id: com.facebook.react.uiapp
+      exclude-tags: ios-only
+    secrets: inherit
 
   test_e2e_android_rntester:
     needs: build_android
