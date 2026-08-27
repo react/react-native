@@ -71,8 +71,3 @@ target_compile_options(folly_runtime PUBLIC ${folly_FLAGS})
 
 target_include_directories(folly_runtime PUBLIC .)
 target_link_libraries(folly_runtime glog double-conversion boost fmt fast_float)
-if(APPLE)
-  # Newer Apple ld does not pull c++abi into shared libs (e.g. libjsi.dylib)
-  # that link folly Exception.cpp (__cxa_*_exception_refcount).
-  target_link_libraries(folly_runtime c++abi)
-endif()
