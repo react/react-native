@@ -110,6 +110,9 @@ internal object TextLayoutManager {
 
   private const val DEFAULT_ADJUST_FONT_SIZE_TO_FIT = false
 
+  // Large enough to avoid wrapping while leaving room for Android layout arithmetic.
+  private const val VISUAL_BOUNDS_PROBE_WIDTH = Int.MAX_VALUE / 2
+
   private val tagToSpannableCache = ConcurrentHashMap<Int, Spannable>()
 
   // Lazily cached Method for StaticLayout.Builder.setUseBoundsForWidth (API 35+).
@@ -827,7 +830,7 @@ internal object TextLayoutManager {
     val visualBoundsLayout =
         buildLayout(
             text,
-            Int.MAX_VALUE / 2,
+            VISUAL_BOUNDS_PROBE_WIDTH,
             includeFontPadding,
             textBreakStrategy,
             hyphenationFrequency,
