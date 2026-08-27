@@ -372,7 +372,7 @@ jobs:
       download-path: /tmp/rntester-android
       app-file: /tmp/rntester-android/app-arm64-v8a-release.apk
       app-id: com.facebook.react.uiapp
-      exclude-tags: ios-only
+      exclude-tags: ios-only,local-screenshot-baseline
     secrets: inherit
 
   test_e2e_android_rntester:

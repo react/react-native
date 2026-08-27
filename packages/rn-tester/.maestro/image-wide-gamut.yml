@@ -1,6 +1,9 @@
 appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebook.react.uiapp
 tags:
   - android-only
+  # The screenshot baseline is captured on the local CI emulator and is
+  # intentionally not portable across Maestro Cloud device profiles.
+  - local-screenshot-baseline
 ---
 # Android-only: alpha transparency + sRGB vs Display-P3 wide-gamut. Color
 # fidelity is covered by a screenshot captured from the ARM64 APK on the API 35

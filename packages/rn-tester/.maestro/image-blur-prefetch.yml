@@ -1,6 +1,9 @@
 appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebook.react.uiapp
 tags:
   - android-only
+  # The screenshot baseline is captured on the local CI emulator and is
+  # intentionally not portable across Maestro Cloud device profiles.
+  - local-screenshot-baseline
 ---
 # Android-only: prefetch an image, then render the same URI with blurRadius so
 # the blur postprocessor applies to the already-decoded bitmap. Flaky on the iOS
