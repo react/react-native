@@ -16,12 +16,9 @@ import type {
   ____DangerouslyImpreciseStyle_Internal,
   ____DangerouslyImpreciseStyleProp_Internal,
   ____FontVariant_Internal,
-  ____ImageStyle_Internal,
   ____ImageStyleProp_Internal,
-  ____TextStyle_Internal,
   ____TextStyleProp_Internal,
   ____TransformStyle_Internal,
-  ____ViewStyle_Internal,
   ____ViewStyleProp_Internal,
   NativeColorValue,
 } from './StyleSheetTypes';
