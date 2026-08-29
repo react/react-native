@@ -121,6 +121,7 @@ export function getOverrides(
       config.flags[flagType],
     )) {
       if (flagValue !== DEFAULT_FEATURE_FLAGS[flagType][flagName]) {
+        // $FlowFixMe[cannot-write]
         flags[flagType][flagName] = flagValue;
       }
     }
@@ -356,6 +357,7 @@ export default function getFantomTestConfigs(
             flagConfig.defaultValue,
             rawValue,
           );
+          // $FlowFixMe[cannot-write]
           config.flags.common[name] = value;
         }
       } else if (ReactNativeFeatureFlags.jsOnly[name]) {
@@ -375,6 +377,7 @@ export default function getFantomTestConfigs(
             flagConfig.defaultValue,
             rawValue,
           );
+          // $FlowFixMe[cannot-write]
           config.flags.jsOnly[name] = value;
         }
       } else {

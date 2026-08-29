@@ -149,6 +149,7 @@ export default class EventEmitter<
       // $FlowFixMe[incompatible-type]
       this.#registry = {};
     } else {
+      // $FlowFixMe[cannot-write]
       delete this.#registry[eventType];
     }
   }
@@ -178,6 +179,7 @@ function allocate<
     registry[eventType];
   if (registrations == null) {
     registrations = new Set();
+    // $FlowFixMe[cannot-write]
     registry[eventType] = registrations;
   }
   return registrations;
