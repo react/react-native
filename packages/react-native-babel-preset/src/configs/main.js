@@ -94,10 +94,13 @@ const getPreset = (src, options, babel) => {
   // Preserve class syntax and related features for Hermes V1 profiles.
   const preserveClasses = isHermesProfile;
 
-  // Preserve private class fields and methods if the experiment is enabled.
-  const preserveClassPrivate = TRUE_VALS.has(
-    options?.customTransformOptions?.unstable_preserveClassPrivate,
-  );
+  // Private fields can only be preserved when the surrounding class syntax is
+  // also preserved. Babel's class transform requires the private transforms.
+  const preserveClassPrivate =
+    preserveClasses &&
+    TRUE_VALS.has(
+      options?.customTransformOptions?.unstable_preserveClassPrivate,
+    );
 
   // Preserve async/await syntax if the experiment is enabled.
   const preserveAsync = TRUE_VALS.has(

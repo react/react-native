@@ -444,6 +444,25 @@ describe('react-native-babel-preset transform snapshots', () => {
       expect(result).toContain('_classPrivateFieldLooseKey');
     });
 
+    it('transforms private class fields when the profile lowers classes', () => {
+      const code = `
+        class Counter {
+          #count = 0;
+          #privateMethod() { return this.#count; }
+        }
+      `;
+      const result = transformCode(code, {
+        dev: false,
+        unstable_transformProfile: 'hermes-legacy',
+        customTransformOptions: {
+          unstable_preserveClassPrivate: true,
+        },
+      });
+      expect(result).not.toContain('#count');
+      expect(result).not.toContain('#privateMethod');
+      expect(result).toContain('_classPrivateFieldLooseKey');
+    });
+
     it('preserves async/await with unstable_preserveAsync', () => {
       const code = `
         async function fetchData() {
