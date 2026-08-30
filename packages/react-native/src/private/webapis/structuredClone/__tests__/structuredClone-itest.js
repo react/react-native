@@ -215,6 +215,12 @@ describe('structuredClone', () => {
         throw new Error('The clone must use the ArrayBuffer intrinsic');
       },
     });
+    // $FlowExpectedError[cannot-write] this intentionally shadows the constructor.
+    Object.defineProperty(buffer, 'constructor', {
+      get() {
+        throw new Error('The clone must not consult ArrayBuffer species');
+      },
+    });
     const typedArray = new Uint8Array(buffer, 1, 3);
     // $FlowExpectedError[prop-missing] this intentionally shadows the constructor.
     Object.defineProperty(typedArray, 'constructor', {

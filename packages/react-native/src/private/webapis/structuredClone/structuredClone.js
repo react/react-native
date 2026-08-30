@@ -41,7 +41,15 @@ const TYPED_ARRAY_CONSTRUCTORS = [
 
 const ObjectPrototype = Object.prototype;
 // $FlowFixMe[method-unbinding] this is always called with an explicit receiver.
-const arrayBufferSlice = ArrayBuffer.prototype.slice;
+const uint8ArraySet = Uint8Array.prototype.set;
+const arrayBufferByteLengthDescriptor = Object.getOwnPropertyDescriptor(
+  ArrayBuffer.prototype,
+  'byteLength',
+);
+if (arrayBufferByteLengthDescriptor?.get == null) {
+  throw new Error('ArrayBuffer byteLength getter is required');
+}
+const arrayBufferByteLengthGetter = arrayBufferByteLengthDescriptor.get;
 
 // Technically the memory value should be a parameter in
 // `structuredCloneInternal` but as an optimization we can reuse the same map
@@ -111,7 +119,8 @@ function structuredCloneInternal<T>(value: T): T {
   // Handles complex types (typeof === 'object').
 
   if (value instanceof ArrayBuffer) {
-    const result = arrayBufferSlice.call(value, 0);
+    const result = new ArrayBuffer(arrayBufferByteLengthGetter.call(value));
+    uint8ArraySet.call(new Uint8Array(result), new Uint8Array(value));
     memory.set(value, result);
     // $FlowExpectedError[incompatible-type] we know result is T
     return result;
