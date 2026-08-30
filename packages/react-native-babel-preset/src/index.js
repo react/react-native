@@ -35,6 +35,7 @@ module.exports.getCacheKey = () => {
   const {readFileSync} = require('node:fs');
   const key = createHash('md5');
   [
+    readFileSync(require.resolve('../package.json')),
     readFileSync(__filename),
     readFileSync(require.resolve('./configs/main.js')),
     readFileSync(require.resolve('./configs/hmr.js')),
