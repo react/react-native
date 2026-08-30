@@ -42,7 +42,7 @@ const TYPED_ARRAY_CONSTRUCTORS = [
 const ObjectPrototype = Object.prototype;
 // $FlowFixMe[method-unbinding] this is always called with an explicit receiver.
 const uint8ArraySet = Uint8Array.prototype.set;
-const arrayBufferByteLengthDescriptor = Object.getOwnPropertyDescriptor(
+const arrayBufferByteLengthDescriptor = Object.getOwnPropertyDescriptor<number>(
   ArrayBuffer.prototype,
   'byteLength',
 );
