@@ -430,7 +430,9 @@ module.exports = function inlinePlatformPlugin(
     key /*: string */,
     fallback /*: () => Node */,
   ) /*: Node */ {
-    for (const property of objectExpression.properties) {
+    // Object literal evaluation keeps the last definition of a duplicate key.
+    for (let i = objectExpression.properties.length - 1; i >= 0; i--) {
+      const property = objectExpression.properties[i];
       if (!t.isObjectProperty(property) && !t.isObjectMethod(property)) {
         continue;
       }

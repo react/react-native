@@ -479,6 +479,10 @@ describe('Platform.select', () => {
     expect(select('{ios() { return 1; }}')).toContain('function');
   });
 
+  test('uses the last definition of a duplicate key', () => {
+    expect(select('{ios: 1, ios: 2}')).toContain('const value=2');
+  });
+
   test('does not inline computed keys', () => {
     expect(select('{[key]: 1, default: 2}')).toContain('Platform.select');
   });
