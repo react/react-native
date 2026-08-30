@@ -10,11 +10,13 @@
 
 'use strict';
 
+let mockDefaultEventTypes: {[string]: unknown} = {};
+
 jest.mock('../UIManager', () => ({
   __esModule: true,
   default: {
     getConstants: () => ({ViewManagerNames: []}),
-    getDefaultEventTypes: () => ({}),
+    getDefaultEventTypes: () => mockDefaultEventTypes,
     getViewManagerConfig: name =>
       name === 'TestView'
         ? {
@@ -33,6 +35,10 @@ const getNativeComponentAttributes =
   require('../getNativeComponentAttributes').default;
 
 describe('getNativeComponentAttributes', () => {
+  beforeEach(() => {
+    mockDefaultEventTypes = {};
+  });
+
   it('processes object font variation settings from native view configs', () => {
     const viewConfig = getNativeComponentAttributes('TestView');
 
@@ -45,5 +51,14 @@ describe('getNativeComponentAttributes', () => {
         opsz: 17.25,
       }),
     ).toBe("'opsz' 17.25, 'wght' 552.5");
+  });
+
+  it('merges event types that shadow Object prototype properties', () => {
+    const hasOwnPropertyEvent = {registrationName: 'onHasOwnProperty'};
+    mockDefaultEventTypes = {hasOwnProperty: hasOwnPropertyEvent};
+
+    const viewConfig = getNativeComponentAttributes('TestView');
+
+    expect(viewConfig.hasOwnProperty).toBe(hasOwnPropertyEvent);
   });
 });
