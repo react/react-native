@@ -244,6 +244,31 @@ describe('structuredClone', () => {
     expect(structuredClone(value).name).toBe('Error');
   });
 
+  it('clones error causes deeply', () => {
+    const cause = {reason: 'cause'};
+    const value = new Error('error message', {cause});
+    const clone = structuredClone(value);
+
+    const falsyCause = new Error('error message', {cause: false});
+    const falsyCauseClone = structuredClone(falsyCause);
+
+    const circularCause = new Error('error message');
+    circularCause.cause = circularCause;
+    const circularCauseClone = structuredClone(circularCause);
+
+    expect({
+      causeIsCloned: clone.cause !== cause,
+      causeValue: clone.cause,
+      falsyCause: falsyCauseClone.cause,
+      circularCauseIsCloned: circularCauseClone.cause === circularCauseClone,
+    }).toEqual({
+      causeIsCloned: true,
+      causeValue: cause,
+      falsyCause: false,
+      circularCauseIsCloned: true,
+    });
+  });
+
   it('clones values deeply', () => {
     const value = {
       obj: {
