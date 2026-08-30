@@ -57,7 +57,8 @@ class MessageQueue {
   __spy: ?(data: SpyData) => void;
 
   constructor() {
-    this._lazyCallableModules = {};
+    // $FlowFixMe[incompatible-type] Object.create(null) is used as a string-keyed map.
+    this._lazyCallableModules = Object.create(null);
     this._queue = [[], [], [], 0];
     this._successCallbacks = new Map();
     this._failureCallbacks = new Map();

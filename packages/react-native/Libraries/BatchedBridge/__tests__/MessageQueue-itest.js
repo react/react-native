@@ -137,6 +137,18 @@ describe('MessageQueue', () => {
     expect(queue.getCallableModule(name)).toEqual(dummyModule);
   });
 
+  it('should not return inherited Object properties as callable modules', () => {
+    expect(queue.getCallableModule('constructor')).toBeNull();
+    expect(queue.getCallableModule('__proto__')).toBeNull();
+  });
+
+  it('should register callable modules named __proto__', () => {
+    const dummyModule = {};
+    queue.registerCallableModule('__proto__', dummyModule);
+
+    expect(queue.getCallableModule('__proto__')).toBe(dummyModule);
+  });
+
   it('should not initialize lazily registered module before it was used for the first time', () => {
     const dummyModule = {},
       name = 'modulesName';
