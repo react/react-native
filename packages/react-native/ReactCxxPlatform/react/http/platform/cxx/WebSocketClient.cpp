@@ -53,6 +53,7 @@ struct WebSocketClient::Impl final : public std::enable_shared_from_this<Impl> {
   std::mutex mutexOut_;
   std::queue<std::string> messagesOut_;
   std::atomic<bool> isWriting_{false};
+  std::atomic<bool> isConnected_{false};
   std::atomic<bool> isClosing_{false};
 };
 
@@ -215,6 +216,7 @@ void WebSocketClient::Impl::onHandshakeCompleted(boost::system::error_code ec) {
     return;
   }
 
+  isConnected_ = true;
   onConnectCallback(true, "Connected");
 
   // Listen for any messages from the server
@@ -252,26 +254,22 @@ void WebSocketClient::Impl::listen() {
 }
 
 void WebSocketClient::Impl::write() {
-  if (isClosing_) {
+  if (isClosing_ || !isConnected_) {
     return;
   }
-  if (isWriting_) {
+  if (isWriting_.exchange(true)) {
     return;
   }
-  isWriting_ = true;
 
   std::shared_ptr<std::string> message;
   {
     std::lock_guard<std::mutex> lock(mutexOut_);
-    if (!messagesOut_.empty()) {
-      message = std::make_shared<std::string>(messagesOut_.front());
-      messagesOut_.pop();
+    if (messagesOut_.empty()) {
+      isWriting_ = false;
+      return;
     }
-  }
-
-  if (!message || message->empty()) {
-    isWriting_ = false;
-    return;
+    message = std::make_shared<std::string>(messagesOut_.front());
+    messagesOut_.pop();
   }
 
   auto ws = ws_.wlock();
@@ -281,14 +279,17 @@ void WebSocketClient::Impl::write() {
           boost::beast::error_code ec,
           std::size_t /*bytes_transferred*/) mutable {
         auto impl = weakImpl.lock();
-        if (!impl || impl->isClosing_) {
+        if (!impl) {
+          return;
+        }
+        impl->isWriting_ = false;
+        if (impl->isClosing_) {
           return;
         }
         if (ec) {
           LOG(ERROR) << "Error writing to websocket: " << ec.message();
           return;
         }
-        impl->isWriting_ = false;
         impl->write();
         message.reset(); // Release the message after it's been sent
       });
