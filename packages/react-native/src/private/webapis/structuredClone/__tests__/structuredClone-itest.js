@@ -92,6 +92,17 @@ describe('structuredClone', () => {
     expectDataCloneError(() => structuredClone(Promise.resolve(4)));
   });
 
+  it('does not coerce non-serializable values', () => {
+    const values: Array<$FlowFixMe> = [() => {}, new WeakMap()];
+    for (const value of values) {
+      value[Symbol.toPrimitive] = () => {
+        throw new Error('Unexpected coercion');
+      };
+
+      expectDataCloneError(() => structuredClone(value));
+    }
+  });
+
   it('clones simple objects', () => {
     const value = {foo: 'bar'};
     const clone = structuredClone(value);

@@ -35,6 +35,13 @@ const ObjectPrototype = Object.prototype;
 // any given point we only have one memory object alive anyway.
 const memory: Map<unknown, unknown> = new Map();
 
+function createDataCloneError(): DOMException {
+  return new DOMException(
+    "Failed to execute 'structuredClone' on 'Window': value could not be cloned.",
+    'DataCloneError',
+  );
+}
+
 function structuredCloneInternal<T>(value: T): T {
   // Handles `null` and `undefined`.
   if (value == null) {
@@ -52,11 +59,7 @@ function structuredCloneInternal<T>(value: T): T {
 
   // Handles unsupported types (symbols and functions).
   if (typeof value !== 'object') {
-    // value is symbol or function
-    throw new DOMException(
-      `Failed to execute 'structuredClone' on 'Window': ${String(value)} could not be cloned.`,
-      'DataCloneError',
-    );
+    throw createDataCloneError();
   }
 
   // Handles circular references.
@@ -168,10 +171,7 @@ function structuredCloneInternal<T>(value: T): T {
 
   // Known non-serializable objects.
   if (isNonSerializableObject(value) || isPlatformObject(value)) {
-    throw new DOMException(
-      `Failed to execute 'structuredClone' on 'Window': ${String(value)} could not be cloned.`,
-      'DataCloneError',
-    );
+    throw createDataCloneError();
   }
 
   // Arbitrary object slow path
