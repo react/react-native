@@ -23,6 +23,7 @@ import {createRef} from 'react';
 import {View} from 'react-native';
 import setUpMutationObserver from 'react-native/src/private/setup/setUpMutationObserver';
 import ReactNativeElement from 'react-native/src/private/webapis/dom/nodes/ReactNativeElement';
+import * as MutationObserverManager from 'react-native/src/private/webapis/mutationobserver/internals/MutationObserverManager';
 
 declare const MutationObserver: Class<MutationObserverType>;
 declare const MutationRecord: Class<MutationRecordType>;
@@ -657,6 +658,46 @@ describe('MutationObserver', () => {
         expect(observer2Records2.length).toBe(1);
         expect([...observer2Records2[0].addedNodes]).toEqual([]);
         expect([...observer2Records2[0].removedNodes]).toEqual([childNode111]);
+      });
+
+      it('should dispatch other observers after ignoring disconnected records', () => {
+        const nodeRef = createRef<HostInstance>();
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(<View ref={nodeRef} />);
+        });
+
+        const node = ensureReactNativeElement(nodeRef.current);
+        const activeCallback = jest.fn();
+        const activeObserver = new MutationObserver(activeCallback);
+        activeObserver.observe(node, {childList: true});
+        const disconnectedCallback = jest.fn();
+        const disconnectedObserver = new MutationObserver(disconnectedCallback);
+        disconnectedObserver.observe(node, {childList: true});
+
+        Fantom.runTask(() => {
+          root.render(
+            <View>
+              <View />
+            </View>,
+          );
+
+          Fantom.scheduleTask(() => {
+            const disconnectedObserverId =
+              disconnectedObserver.__getObserverID();
+            if (disconnectedObserverId == null) {
+              throw new Error(
+                'Expected the disconnected observer to be registered',
+              );
+            }
+            MutationObserverManager.unregisterObserver(disconnectedObserverId);
+          });
+        });
+
+        expect(disconnectedCallback).not.toHaveBeenCalled();
+        expect(activeCallback).toHaveBeenCalledTimes(1);
+        activeObserver.disconnect();
       });
     });
 
