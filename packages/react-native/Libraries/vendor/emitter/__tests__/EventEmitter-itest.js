@@ -57,6 +57,27 @@ describe('listeners', () => {
     expect(listenerB).toHaveBeenCalledTimes(1);
   });
 
+  it('supports event types that match Object prototype keys', () => {
+    const emitter = new EventEmitter<Readonly<Record<string, []>>>();
+
+    const constructorListener = jest.fn();
+    const protoListener = jest.fn();
+    emitter.addListener('constructor', constructorListener);
+    emitter.addListener('__proto__', protoListener);
+
+    emitter.emit('constructor');
+    emitter.emit('__proto__');
+
+    expect(constructorListener).toHaveBeenCalledTimes(1);
+    expect(protoListener).toHaveBeenCalledTimes(1);
+    expect(emitter.listenerCount('constructor')).toBe(1);
+    expect(emitter.listenerCount('__proto__')).toBe(1);
+
+    emitter.removeAllListeners();
+    expect(emitter.listenerCount('constructor')).toBe(0);
+    expect(emitter.listenerCount('__proto__')).toBe(0);
+  });
+
   it('invokes listeners in registration order', () => {
     const emitter = new EventEmitter<{A: []}>();
 
