@@ -178,6 +178,24 @@ describe('structuredClone', () => {
     expect(clone).toEqual(value);
   });
 
+  it('clones maps and sets without invoking custom iterators', () => {
+    const map = new Map([['key', {value: 1}]]);
+    const set = new Set([{value: 2}]);
+    const throwUnexpectedIteration = () => {
+      throw new Error('Unexpected custom iteration');
+    };
+    // $FlowExpectedError[cannot-write] this intentionally shadows the method.
+    map[Symbol.iterator] = throwUnexpectedIteration;
+    // $FlowExpectedError[cannot-write] this intentionally shadows the method.
+    set[Symbol.iterator] = throwUnexpectedIteration;
+
+    const mapClone = structuredClone(map);
+    const setClone = structuredClone(set);
+
+    expect(mapClone.get('key')).toEqual({value: 1});
+    expect(setClone.values().next().value).toEqual({value: 2});
+  });
+
   it('does NOT clone arbitrary keys in sets', () => {
     const value = new Set(['key1', 'key2', 'key3']);
     // $FlowExpectedError[prop-missing]
