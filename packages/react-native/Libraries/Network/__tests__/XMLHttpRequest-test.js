@@ -295,6 +295,20 @@ describe('XMLHttpRequest', function () {
     expect(xhr._headers['content-type']).toBe('application/json, text/plain');
   });
 
+  it('should support request headers that match Object prototype keys', function () {
+    xhr.open('GET', 'blabla');
+    xhr.setRequestHeader('Constructor', 'first');
+    xhr.setRequestHeader('constructor', 'second');
+    xhr.setRequestHeader('__proto__', 'value');
+
+    // $FlowFixMe[prop-missing]
+    const headers = xhr._headers;
+    expect(headers.constructor).toBe('first, second');
+    expect(Object.getOwnPropertyDescriptor(headers, '__proto__')?.value).toBe(
+      'value',
+    );
+  });
+
   it('should throw when setRequestHeader is called before open', function () {
     expect(() => {
       xhr.setRequestHeader('foo', 'bar');
@@ -317,5 +331,16 @@ describe('XMLHttpRequest', function () {
     expect(xhr.getAllResponseHeaders()).toBe(
       'also-here: Mr. PB\r\newok: lego\r\nfoo-test: 1, 2\r\n__custom: token\r\n',
     );
+  });
+
+  it('should support response headers that match Object prototype keys', function () {
+    xhr.setResponseHeaders({
+      Constructor: 'constructor-value',
+      ['__proto__']: 'proto-value',
+    });
+
+    expect(xhr.getResponseHeader('constructor')).toBe('constructor-value');
+    expect(xhr.getResponseHeader('__proto__')).toBe('proto-value');
+    expect(xhr.getResponseHeader('toString')).toBe(null);
   });
 });
