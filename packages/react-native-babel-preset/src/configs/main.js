@@ -230,6 +230,13 @@ const getPreset = (src, options, babel) => {
     ]);
   }
 
+  // transform-runtime replaces regenerator helpers, but does not lower
+  // generator syntax itself. Syntax preservation experiments take precedence;
+  // regenerator lowers async syntax and cannot hoist destructuring patterns.
+  if (enableRegenerator && !preserveAsync && !preserveDestructuring) {
+    extraPlugins.push([require('@babel/plugin-transform-regenerator')]);
+  }
+
   if (!options || options.enableBabelRuntime !== false) {
     // Allows configuring a specific runtime version to optimize output
     const isVersion = typeof options?.enableBabelRuntime === 'string';
@@ -242,8 +249,6 @@ const getPreset = (src, options, babel) => {
         ...(isVersion && {version: options.enableBabelRuntime}),
       },
     ]);
-  } else if (enableRegenerator) {
-    extraPlugins.push([require('@babel/plugin-transform-regenerator')]);
   }
 
   return {
