@@ -889,6 +889,43 @@ describe('<Text>', () => {
         .toJSONObject().props.fontVariant;
       expect(fontVariant).toContain('small-caps');
     });
+    it('propagates fontFeatureSettings to the mounting layer', () => {
+      const root = Fantom.createRoot();
+      Fantom.runTask(() => {
+        root.render(
+          <Text style={{fontFeatureSettings: "'ss01', 'zero'"}}>
+            {TEST_TEXT}
+          </Text>,
+        );
+      });
+      expect(
+        root.getRenderedOutput({props: ['fontFeatureSettings']}).toJSX(),
+      ).toEqual(
+        <rn-paragraph fontFeatureSettings="'ss01', 'zero'">
+          {TEST_TEXT}
+        </rn-paragraph>,
+      );
+    });
+
+    it('keeps fontFeatureSettings and fontVariant as separate props', () => {
+      const root = Fantom.createRoot();
+      Fantom.runTask(() => {
+        root.render(
+          <Text
+            style={{
+              fontVariant: ['small-caps'],
+              fontFeatureSettings: "'ss01'",
+            }}>
+            {TEST_TEXT}
+          </Text>,
+        );
+      });
+      const props = root
+        .getRenderedOutput({props: ['fontVariant', 'fontFeatureSettings']})
+        .toJSONObject().props;
+      expect(props.fontVariant).toContain('small-caps');
+      expect(props.fontFeatureSettings).toBe("'ss01'");
+    });
   });
 
   component TestComponent(testID?: ?string, ...props: AccessibilityProps) {

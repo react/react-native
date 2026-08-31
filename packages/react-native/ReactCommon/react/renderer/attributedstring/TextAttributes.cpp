@@ -43,6 +43,9 @@ void TextAttributes::apply(TextAttributes textAttributes) {
   fontVariant = textAttributes.fontVariant.has_value()
       ? textAttributes.fontVariant
       : fontVariant;
+  fontFeatureSettings = textAttributes.fontFeatureSettings.has_value()
+      ? textAttributes.fontFeatureSettings
+      : fontFeatureSettings;
   fontVariationSettings = textAttributes.fontVariationSettings.has_value()
       ? textAttributes.fontVariationSettings
       : fontVariationSettings;
@@ -124,63 +127,36 @@ void TextAttributes::apply(TextAttributes textAttributes) {
 #pragma mark - Operators
 
 bool TextAttributes::operator==(const TextAttributes& rhs) const {
-  return std::tie(
-             foregroundColor,
-             backgroundColor,
-             fontFamily,
-             fontWeight,
-             fontStyle,
-             fontVariant,
-             fontVariationSettings,
-             allowFontScaling,
-             dynamicTypeRamp,
-             alignment,
-             baseWritingDirection,
-             lineBreakStrategy,
-             textDecorationColor,
-             textDecorationLineType,
-             textDecorationStyle,
-             textShadowOffset,
-             textShadowColor,
-             isHighlighted,
-             isPressable,
-             layoutDirection,
-             accessibilityRole,
-             role,
-             textTransform,
-             textEffects) ==
-      std::tie(
-             rhs.foregroundColor,
-             rhs.backgroundColor,
-             rhs.fontFamily,
-             rhs.fontWeight,
-             rhs.fontStyle,
-             rhs.fontVariant,
-             rhs.fontVariationSettings,
-             rhs.allowFontScaling,
-             rhs.dynamicTypeRamp,
-             rhs.alignment,
-             rhs.baseWritingDirection,
-             rhs.lineBreakStrategy,
-             rhs.textDecorationColor,
-             rhs.textDecorationLineType,
-             rhs.textDecorationStyle,
-             rhs.textShadowOffset,
-             rhs.textShadowColor,
-             rhs.isHighlighted,
-             rhs.isPressable,
-             rhs.layoutDirection,
-             rhs.accessibilityRole,
-             rhs.role,
-             rhs.textTransform,
-             rhs.textEffects) &&
+  // A short-circuit chain rather than comparing two `std::tie`s, ordered
+  // cheapest first so that the fields most likely to differ are reached before
+  // `fontFamily` and `textEffects`, the only two that can reach memory.
+  return floatEquality(fontSize, rhs.fontSize) &&
+      fontWeight == rhs.fontWeight && fontStyle == rhs.fontStyle &&
+      floatEquality(lineHeight, rhs.lineHeight) &&
+      floatEquality(letterSpacing, rhs.letterSpacing) &&
+      floatEquality(fontSizeMultiplier, rhs.fontSizeMultiplier) &&
       floatEquality(maxFontSizeMultiplier, rhs.maxFontSizeMultiplier) &&
       floatEquality(opacity, rhs.opacity) &&
-      floatEquality(fontSize, rhs.fontSize) &&
-      floatEquality(fontSizeMultiplier, rhs.fontSizeMultiplier) &&
-      floatEquality(letterSpacing, rhs.letterSpacing) &&
-      floatEquality(lineHeight, rhs.lineHeight) &&
-      floatEquality(textShadowRadius, rhs.textShadowRadius);
+      floatEquality(textShadowRadius, rhs.textShadowRadius) &&
+      foregroundColor == rhs.foregroundColor &&
+      backgroundColor == rhs.backgroundColor &&
+      fontVariant == rhs.fontVariant &&
+      fontFeatureSettings == rhs.fontFeatureSettings &&
+      fontVariationSettings == rhs.fontVariationSettings &&
+      allowFontScaling == rhs.allowFontScaling &&
+      dynamicTypeRamp == rhs.dynamicTypeRamp && alignment == rhs.alignment &&
+      baseWritingDirection == rhs.baseWritingDirection &&
+      lineBreakStrategy == rhs.lineBreakStrategy &&
+      textDecorationColor == rhs.textDecorationColor &&
+      textDecorationLineType == rhs.textDecorationLineType &&
+      textDecorationStyle == rhs.textDecorationStyle &&
+      textShadowOffset == rhs.textShadowOffset &&
+      textShadowColor == rhs.textShadowColor &&
+      isHighlighted == rhs.isHighlighted && isPressable == rhs.isPressable &&
+      layoutDirection == rhs.layoutDirection &&
+      accessibilityRole == rhs.accessibilityRole && role == rhs.role &&
+      textTransform == rhs.textTransform && fontFamily == rhs.fontFamily &&
+      textEffects == rhs.textEffects;
 }
 
 TextAttributes TextAttributes::defaultTextAttributes() {
@@ -223,6 +199,10 @@ SharedDebugStringConvertibleList TextAttributes::getDebugProps() const {
           "fontStyle", fontStyle, textAttributes.fontStyle),
       debugStringConvertibleItem(
           "fontVariant", fontVariant, textAttributes.fontVariant),
+      debugStringConvertibleItem(
+          "fontFeatureSettings",
+          fontFeatureSettings,
+          textAttributes.fontFeatureSettings),
       debugStringConvertibleItem(
           "fontVariationSettings",
           fontVariationSettings,

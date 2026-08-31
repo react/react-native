@@ -58,6 +58,7 @@ class TextAttributes : public DebugStringConvertible {
   std::optional<FontWeight> fontWeight{};
   std::optional<FontStyle> fontStyle{};
   std::optional<FontVariant> fontVariant{};
+  std::optional<std::string> fontFeatureSettings{};
   std::optional<std::string> fontVariationSettings{};
   std::optional<bool> allowFontScaling{};
   Float maxFontSizeMultiplier{std::numeric_limits<Float>::quiet_NaN()};
@@ -156,6 +157,7 @@ struct hash<facebook::react::TextAttributes> {
         textAttributes.fontWeight,
         textAttributes.fontStyle,
         textAttributes.fontVariant,
+        textAttributes.fontFeatureSettings,
         textAttributes.fontVariationSettings,
         textAttributes.allowFontScaling,
         textAttributes.textTransform,

@@ -4560,6 +4560,7 @@ public final class com/facebook/react/uimanager/ViewProps {
 	public static final field FLEX_SHRINK Ljava/lang/String;
 	public static final field FLEX_WRAP Ljava/lang/String;
 	public static final field FONT_FAMILY Ljava/lang/String;
+	public static final field FONT_FEATURE_SETTINGS Ljava/lang/String;
 	public static final field FONT_SIZE Ljava/lang/String;
 	public static final field FONT_STYLE Ljava/lang/String;
 	public static final field FONT_VARIANT Ljava/lang/String;
@@ -6157,6 +6158,7 @@ public final class com/facebook/react/views/text/TextAttributeProps {
 	public static final field TA_KEY_BACKGROUND_COLOR I
 	public static final field TA_KEY_BEST_WRITING_DIRECTION I
 	public static final field TA_KEY_FONT_FAMILY I
+	public static final field TA_KEY_FONT_FEATURE_SETTINGS I
 	public static final field TA_KEY_FONT_SIZE I
 	public static final field TA_KEY_FONT_SIZE_MULTIPLIER I
 	public static final field TA_KEY_FONT_STYLE I

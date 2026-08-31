@@ -70,6 +70,27 @@ TEST(TextLayoutManagerTest, fontVariationSettingsAffectLayoutCacheHash) {
       textAttributesHashLayoutWise(lhs), textAttributesHashLayoutWise(rhs));
 }
 
+TEST(TextLayoutManagerTest, fontFeatureSettingsAffectLayoutCacheEquality) {
+  TextAttributes lhs;
+  TextAttributes rhs;
+
+  lhs.fontFeatureSettings = "'tnum'";
+  rhs.fontFeatureSettings = "'pnum'";
+
+  EXPECT_FALSE(areTextAttributesEquivalentLayoutWise(lhs, rhs));
+}
+
+TEST(TextLayoutManagerTest, fontFeatureSettingsAffectLayoutCacheHash) {
+  TextAttributes lhs;
+  TextAttributes rhs;
+
+  lhs.fontFeatureSettings = "'tnum'";
+  rhs.fontFeatureSettings = "'pnum'";
+
+  EXPECT_NE(
+      textAttributesHashLayoutWise(lhs), textAttributesHashLayoutWise(rhs));
+}
+
 TEST(TextLayoutManagerTest, emptyFontVariationSettingsClearInheritedSettings) {
   TextAttributes parent;
   TextAttributes child;

@@ -3807,9 +3807,11 @@ std::optional<facebook::react::Float> facebook::react::toRadians(const facebook:
 std::optional<facebook::react::FontVariant> facebook::react::fontVariantFromCSSFontVariant(facebook::react::CSSFontVariant cssVariant);
 std::optional<facebook::react::Isolation> facebook::react::isolationFromString(std::string_view isolationSetting);
 std::optional<facebook::react::TransformOperation> facebook::react::fromCSSTransformFunction(const facebook::react::CSSTransformFunction& cssTransform);
+std::optional<std::string> facebook::react::resolveFontFeatureSettings(const facebook::react::TextAttributes& textAttributes, bool includeFontVariant = true);
 std::pair<facebook::react::Float, facebook::react::Float> facebook::react::calculateAnimationProgress(uint64_t now, const facebook::react::LayoutAnimation& animation, const facebook::react::AnimationConfig& mutationConfig);
 std::string facebook::react::base64Encode(const std::string_view s);
 std::string facebook::react::componentNameByReactViewName(std::string viewName);
+std::string facebook::react::fontVariantToOpenTypeFeatures(const facebook::react::FontVariant& fontVariant);
 std::string facebook::react::generateRandomUuidString();
 std::string facebook::react::toString(const double& value);
 std::string facebook::react::toString(const facebook::react::AccessibilityRole& accessibilityRole);
@@ -7255,6 +7257,7 @@ class facebook::react::TextAttributes : public facebook::react::DebugStringConve
   public std::optional<facebook::react::TextDecorationStyle> textDecorationStyle;
   public std::optional<facebook::react::TextTransform> textTransform;
   public std::optional<facebook::react::WritingDirection> baseWritingDirection;
+  public std::optional<std::string> fontFeatureSettings;
   public std::optional<std::string> fontVariationSettings;
   public std::string fontFamily;
   public std::vector<facebook::react::TextEffectInfo> textEffects;

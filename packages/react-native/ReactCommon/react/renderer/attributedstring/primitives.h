@@ -10,6 +10,8 @@
 #include <functional>
 #include <limits>
 
+#include <react/renderer/graphics/Float.h>
+
 namespace facebook::react {
 
 enum class FontStyle { Normal, Italic, Oblique };
