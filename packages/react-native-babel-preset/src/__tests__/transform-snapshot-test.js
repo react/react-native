@@ -267,6 +267,33 @@ describe('react-native-babel-preset transform snapshots', () => {
   );
 
   describe('specific feature transformations', () => {
+    it('runs codegen when the type arguments are separated by trivia', () => {
+      const code = `
+        // @flow strict-local
+        import type {ViewProps} from 'react-native';
+        import type {HostComponent} from 'react-native';
+        import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
+
+        type NativeProps = Readonly<{
+          ...ViewProps,
+        }>;
+
+        export default codegenNativeComponent /* comment */ <NativeProps>(
+          'View',
+        ) as HostComponent<NativeProps>;
+      `;
+      const config = preset.getPreset(code, {});
+      const result = babel.transformSync(code, {
+        ...config,
+        babelrc: false,
+        configFile: false,
+        filename: MOCK_FILENAME,
+        sourceMaps: false,
+      });
+
+      expect(result?.code).toContain('__INTERNAL_VIEW_CONFIG');
+    });
+
     it('handles async generators', () => {
       const code = `
         async function* gen() {

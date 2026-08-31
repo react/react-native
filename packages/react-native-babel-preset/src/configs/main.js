@@ -139,7 +139,7 @@ const getPreset = (src, options, babel) => {
 
   if (
     !options.disableStaticViewConfigsCodegen &&
-    (src === null || /\bcodegenNativeComponent</.test(src))
+    (isNull || src.indexOf('codegenNativeComponent') !== -1)
   ) {
     extraPlugins.push([require('@react-native/babel-plugin-codegen')]);
   }
