@@ -190,7 +190,7 @@ const getPreset = (src, options, babel) => {
   }
   if (
     isNull ||
-    src.indexOf('React.createClass') !== -1 ||
+    src.indexOf('createClass') !== -1 ||
     src.indexOf('createReactClass') !== -1
   ) {
     extraPlugins.push([require('@babel/plugin-transform-react-display-name')]);

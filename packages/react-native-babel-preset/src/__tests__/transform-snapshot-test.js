@@ -171,6 +171,21 @@ function transformCode(
   return result?.code ?? null;
 }
 
+function transformCodeWithSourceOptimization(
+  code: string,
+  options: {[string]: unknown},
+): string | null {
+  const config = preset.getPreset(code, options);
+  const result = babel.transformSync(code, {
+    ...config,
+    babelrc: false,
+    configFile: false,
+    filename: MOCK_FILENAME,
+    sourceMaps: false,
+  });
+  return result?.code ?? null;
+}
+
 function getSnapshotPath(configName: string): string {
   return path.join(OUTPUT_DIR, `${configName}.js`);
 }
@@ -267,6 +282,16 @@ describe('react-native-babel-preset transform snapshots', () => {
   );
 
   describe('specific feature transformations', () => {
+    it('adds display names when React.createClass contains trivia', () => {
+      const code = `
+        const Component = React /* comment */ . createClass({
+          render() { return null; }
+        });
+      `;
+      const result = transformCodeWithSourceOptimization(code, {dev: false});
+      expect(result).toContain('displayName:"Component"');
+    });
+
     it('handles async generators', () => {
       const code = `
         async function* gen() {
