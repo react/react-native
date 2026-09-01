@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #ifdef WITH_PERFETTO
 
 #include <perfetto.h>

@@ -37,6 +37,8 @@ Pod::Spec.new do |s|
     "HEADER_SEARCH_PATHS" => header_search_paths.join(' '),
   }
 
+  s.dependency "React-cxxstableapi"
+
   add_rn_third_party_dependencies(s)
   add_rncore_dependency(s)
 
