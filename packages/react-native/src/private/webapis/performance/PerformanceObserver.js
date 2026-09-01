@@ -201,18 +201,30 @@ export class PerformanceObserver {
     return observerHandle;
   }
 
-  #validateObserveOptions(options: PerformanceObserverInit): void {
-    const {type, entryTypes, durationThreshold} = options;
+  #validateObserveOptions(options: ?PerformanceObserverInit): void {
+    if (options == null) {
+      throw new TypeError(
+        "Failed to execute 'observe' on 'PerformanceObserver': 1 argument required, but only 0 present.",
+      );
+    }
+
+    const {type, entryTypes, durationThreshold, buffered} = options;
 
     if (!type && !entryTypes) {
       throw new TypeError(
-        "Failed to execute 'observe' on 'PerformanceObserver': An observe() call must not include both entryTypes and type arguments.",
+        "Failed to execute 'observe' on 'PerformanceObserver': An observe() call must include either entryTypes or type arguments.",
       );
     }
 
     if (entryTypes && type) {
       throw new TypeError(
-        "Failed to execute 'observe' on 'PerformanceObserver': An observe() call must include either entryTypes or type arguments.",
+        "Failed to execute 'observe' on 'PerformanceObserver': An observe() call must not include both entryTypes and type arguments.",
+      );
+    }
+
+    if (entryTypes && buffered != null) {
+      throw new TypeError(
+        "Failed to execute 'observe' on 'PerformanceObserver': An observe() call must not include both entryTypes and buffered arguments.",
       );
     }
 
