@@ -84,6 +84,42 @@ class GeneratePackageListTaskTest {
   }
 
   @Test
+  fun composePackageInstance_withMultipleImportsInOneDependency_returnsFqcnForEachInstance() {
+    val task = createTestTask<GeneratePackageListTask>()
+    val packageName = "com.facebook.react"
+
+    val result =
+        task.composePackageInstance(
+            packageName,
+            mapOf(
+                "@react-native/appsflyer" to
+                    ModelAutolinkingDependenciesPlatformAndroidJson(
+                        sourceDir = "./appsflyer/directory",
+                        packageImportPath =
+                            """
+                            import com.appsflyer.reactnative.RNAppsFlyerPackage;
+                            import com.appsflyer.reactnative.PCAppsFlyerPackage;
+                            """
+                                .trimIndent(),
+                        packageInstance =
+                            """
+                            new RNAppsFlyerPackage(),
+                            new PCAppsFlyerPackage()
+                            """
+                                .trimIndent(),
+                        buildTypes = emptyList(),
+                    ),
+            ),
+        )
+
+    assertThat(result)
+        .contains("new com.appsflyer.reactnative.RNAppsFlyerPackage()")
+        .contains("new com.appsflyer.reactnative.PCAppsFlyerPackage()")
+        .doesNotContain("new RNAppsFlyerPackage()")
+        .doesNotContain("new PCAppsFlyerPackage()")
+  }
+
+  @Test
   fun interpolateDynamicValues_withNoBuildConfigOrROccurrencies_doesNothing() {
     val packageName = "com.facebook.react"
     val input = "com.facebook.react.aPackage"
