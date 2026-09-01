@@ -55,7 +55,9 @@ internal class ReactScrollViewAccessibilityDelegate : AccessibilityDelegateCompa
     val accessibilityCollection =
         view.getTag(R.id.accessibility_collection) as? ReadableMap ?: return
 
-    event.itemCount = accessibilityCollection.getInt("itemCount")
+    if (accessibilityCollection.hasKey("itemCount")) {
+      event.itemCount = accessibilityCollection.getInt("itemCount")
+    }
 
     val contentView = (view as? ViewGroup)?.getChildAt(0) as? ViewGroup ?: return
 
@@ -71,10 +73,10 @@ internal class ReactScrollViewAccessibilityDelegate : AccessibilityDelegateCompa
             return
           }
       var accessibilityCollectionItem: ReadableMap? =
-          nextChild.getTag(R.id.accessibility_collection_item) as ReadableMap
+          nextChild.getTag(R.id.accessibility_collection_item) as? ReadableMap
 
       if (nextChild !is ViewGroup) {
-        return
+        continue
       }
 
       // If this child's accessibilityCollectionItem is null, we'll check one more
@@ -93,10 +95,12 @@ internal class ReactScrollViewAccessibilityDelegate : AccessibilityDelegateCompa
       }
 
       if (isVisible && accessibilityCollectionItem != null) {
-        if (firstVisibleIndex == null) {
+        if (accessibilityCollectionItem.hasKey("itemIndex") && firstVisibleIndex == null) {
           firstVisibleIndex = accessibilityCollectionItem.getInt("itemIndex")
         }
-        lastVisibleIndex = accessibilityCollectionItem.getInt("itemIndex")
+        if (accessibilityCollectionItem.hasKey("itemIndex")) {
+          lastVisibleIndex = accessibilityCollectionItem.getInt("itemIndex")
+        }
       }
 
       if (firstVisibleIndex != null && lastVisibleIndex != null) {
@@ -121,7 +125,9 @@ internal class ReactScrollViewAccessibilityDelegate : AccessibilityDelegateCompa
     if (accessibilityCollection != null) {
       val rowCount = accessibilityCollection.getInt("rowCount")
       val columnCount = accessibilityCollection.getInt("columnCount")
-      val hierarchical = accessibilityCollection.getBoolean("hierarchical")
+      val hierarchical =
+          accessibilityCollection.hasKey("hierarchical") &&
+              accessibilityCollection.getBoolean("hierarchical")
 
       val collectionInfoCompat =
           AccessibilityNodeInfoCompat.CollectionInfoCompat.obtain(

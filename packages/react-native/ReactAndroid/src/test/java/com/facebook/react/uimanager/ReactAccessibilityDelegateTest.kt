@@ -10,6 +10,7 @@
 package com.facebook.react.uimanager
 
 import android.os.Bundle
+import androidx.core.view.ViewCompat
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
 import com.facebook.react.R
 import com.facebook.react.bridge.BridgeReactContext
@@ -121,6 +122,41 @@ class ReactAccessibilityDelegateTest {
     val result = accessibilityDelegate.performAccessibilityAction(view, customActionId, null)
 
     assertThat(result).isTrue()
+  }
+
+  @Test
+  fun testAccessibilityCollection_setsCollectionInfo() {
+    view.setTag(
+        R.id.accessibility_collection,
+        JavaOnlyMap().apply {
+          putInt("rowCount", 4)
+          putInt("columnCount", 2)
+          putBoolean("hierarchical", true)
+        },
+    )
+
+    val nodeInfo = AccessibilityNodeInfoCompat.obtain()
+    accessibilityDelegate.onInitializeAccessibilityNodeInfo(view, nodeInfo)
+
+    assertThat(nodeInfo.collectionInfo).isNotNull()
+    assertThat(nodeInfo.collectionInfo.rowCount).isEqualTo(4)
+    assertThat(nodeInfo.collectionInfo.columnCount).isEqualTo(2)
+    assertThat(nodeInfo.collectionInfo.isHierarchical).isTrue()
+  }
+
+  @Test
+  fun testSetDelegate_accessibilityCollection_installsAccessibilityDelegate() {
+    view.setTag(
+        R.id.accessibility_collection,
+        JavaOnlyMap().apply {
+          putInt("rowCount", 4)
+          putInt("columnCount", 2)
+        },
+    )
+
+    ReactAccessibilityDelegate.setDelegate(view, false, 0)
+
+    assertThat(ViewCompat.hasAccessibilityDelegate(view)).isTrue()
   }
 
   @Test

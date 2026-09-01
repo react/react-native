@@ -19,6 +19,7 @@ import android.widget.EditText
 import androidx.core.view.ViewCompat
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat.AccessibilityActionCompat
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat.CollectionInfoCompat
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat.CollectionItemInfoCompat
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat.RangeInfoCompat
 import androidx.core.view.accessibility.AccessibilityNodeProviderCompat
@@ -102,6 +103,18 @@ public open class ReactAccessibilityDelegate( // The View this delegate is attac
       setState(info, accessibilityState)
     }
     val accessibilityActions = host.getTag(R.id.accessibility_actions) as ReadableArray?
+
+    val accessibilityCollection = host.getTag(R.id.accessibility_collection) as ReadableMap?
+    if (accessibilityCollection != null) {
+      val rowCount = accessibilityCollection.getInt("rowCount")
+      val columnCount = accessibilityCollection.getInt("columnCount")
+      val hierarchical =
+          accessibilityCollection.hasKey("hierarchical") &&
+              accessibilityCollection.getBoolean("hierarchical")
+
+      val collectionInfoCompat = CollectionInfoCompat.obtain(rowCount, columnCount, hierarchical)
+      info.setCollectionInfo(collectionInfoCompat)
+    }
 
     val accessibilityCollectionItem =
         host.getTag(R.id.accessibility_collection_item) as ReadableMap?
@@ -598,6 +611,7 @@ public open class ReactAccessibilityDelegate( // The View this delegate is attac
                   view.getTag(R.id.accessibility_state) != null ||
                   view.getTag(R.id.accessibility_actions) != null ||
                   view.getTag(R.id.react_test_id) != null ||
+                  view.getTag(R.id.accessibility_collection) != null ||
                   view.getTag(R.id.accessibility_collection_item) != null ||
                   view.getTag(R.id.accessibility_links) != null ||
                   view.getTag(R.id.role) != null)
