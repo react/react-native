@@ -1009,7 +1009,16 @@ type ____TextStyle_InternalBase = Readonly<{
   color?: ____ColorValue_Internal,
   fontFamily?: string,
   fontSize?: number,
-  fontStyle?: 'normal' | 'italic',
+  /**
+   * `oblique` slants upright glyphs; `oblique <angle>` gives the slant an explicit CSS angle,
+   * for example `'oblique 20deg'`. An omitted angle is 14 degrees, the same slant this library
+   * has always used for synthetic italic. An explicit `'slnt'` in `fontVariationSettings` takes
+   * precedence over both.
+   *
+   * The `string` arm exists only to admit the `oblique <angle>` form, which neither Flow nor the
+   * generated types can spell more precisely; prefer one of the listed keywords.
+   */
+  fontStyle?: 'normal' | 'italic' | 'oblique' | string,
   /**
    * Specifies font weight. The values 'normal' and 'bold' are supported
    * for most fonts. Not all fonts have a variant for each of the numeric
@@ -1017,6 +1026,12 @@ type ____TextStyle_InternalBase = Readonly<{
    */
   fontWeight?: ____FontWeight_Internal,
   fontVariant?: ____FontVariantArray_Internal | string,
+  /**
+   * Specifies OpenType feature tags using CSS syntax. Combines with
+   * `fontVariant`; where both name the same tag, `fontFeatureSettings` wins.
+   * `normal` or an empty string contributes no features of its own.
+   */
+  fontFeatureSettings?: string,
   /**
    * Specifies OpenType font variation axis values using CSS syntax or an
    * object keyed by four-character axis tags. An empty string or object resets

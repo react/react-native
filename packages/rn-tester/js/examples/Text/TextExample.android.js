@@ -16,6 +16,7 @@ import hotdog from '../../assets/hotdog.jpg';
 import RNTesterText from '../../components/RNTesterText';
 import TextLegend from '../../components/TextLegend';
 import TextAdjustsDynamicLayoutExample from './TextAdjustsDynamicLayoutExample';
+import TextFontFeatureSettingsExample from './TextFontFeatureSettingsExample';
 import TextSharedExamples from './TextSharedExamples';
 
 const TextInlineView = require('../../components/TextInlineView');
@@ -358,6 +359,9 @@ function IncludeFontPaddingExample(props: {}): React.Node {
     </>
   );
 }
+
+// Shared by every font-property example below: a small muted caption naming what the row sets,
+// with the specimen underneath it, so the specimen carries only the glyphs being demonstrated.
 
 function FontVariantsExample(props: {}): React.Node {
   return (
@@ -1704,6 +1708,7 @@ const examples = [
       return <EllipsizeModeExample />;
     },
   },
+  TextFontFeatureSettingsExample,
   {
     title: 'Font variants',
     name: 'fontVariants',

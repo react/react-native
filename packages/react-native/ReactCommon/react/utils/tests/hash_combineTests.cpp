@@ -8,6 +8,12 @@
 #include <gtest/gtest.h>
 #include <react/utils/hash_combine.h>
 
+#include <array>
+#include <cstdint>
+#include <optional>
+#include <string>
+#include <utility>
+
 struct Person {
   std::string firstName;
   std::string lastName;
@@ -77,6 +83,103 @@ TEST(hash_combineTests, testCustomTypes) {
   EXPECT_EQ(hashedValue, seed);
 
   EXPECT_NE(hash_combine(person1), hash_combine(person2));
+}
+
+TEST(hash_combineTests, optionalsCombinePresenceBeforeEngagedValues) {
+  std::optional<int> first{17};
+  std::optional<std::string> second;
+  std::optional<bool> third{true};
+
+  std::size_t actual = 41;
+  hash_combine_optionals(actual, first, second, third);
+
+  std::size_t optionalsHash = std::uint32_t{0b101};
+  hash_combine(optionalsHash, *first, *third);
+  std::size_t expected = 41;
+  hash_combine(expected, optionalsHash);
+  EXPECT_EQ(actual, expected);
+}
+
+TEST(hash_combineTests, disengagedOptionalsOnlyCombinePresence) {
+  std::optional<int> first;
+  std::optional<std::string> second;
+
+  std::size_t actual = 41;
+  hash_combine_optionals(actual, first, second);
+
+  std::size_t expected = 41;
+  hash_combine(expected, std::uint32_t{0});
+  EXPECT_EQ(actual, expected);
+}
+
+TEST(hash_combineTests, optionalStringContentsAffectProvidedSeed) {
+  std::optional<std::string> react{"react"};
+  std::optional<std::string> reactNative{"react native"};
+
+  std::size_t reactHash = 41;
+  hash_combine_optionals(reactHash, react);
+
+  std::size_t optionalsHash = std::uint32_t{1};
+  hash_combine(optionalsHash, *react);
+  std::size_t expected = 41;
+  hash_combine(expected, optionalsHash);
+  EXPECT_EQ(reactHash, expected);
+
+  std::size_t reactNativeHash = 41;
+  hash_combine_optionals(reactNativeHash, reactNative);
+  EXPECT_NE(reactHash, reactNativeHash);
+}
+
+TEST(hash_combineTests, emptyOptionalStringDiffersFromDisengaged) {
+  std::optional<std::string> emptyString{""};
+  std::optional<std::string> disengaged;
+
+  std::size_t emptyStringHash = 41;
+  hash_combine_optionals(emptyStringHash, emptyString);
+
+  std::size_t disengagedHash = 41;
+  hash_combine_optionals(disengagedHash, disengaged);
+
+  EXPECT_NE(emptyStringHash, disengagedHash);
+}
+
+TEST(hash_combineTests, optionalPositionAffectsHash) {
+  std::optional<int> engaged{17};
+  std::optional<int> disengaged;
+
+  std::size_t firstPosition = 0;
+  hash_combine_optionals(firstPosition, engaged, disengaged);
+
+  std::size_t secondPosition = 0;
+  hash_combine_optionals(secondPosition, disengaged, engaged);
+
+  EXPECT_NE(firstPosition, secondPosition);
+}
+
+namespace {
+
+template <std::size_t... Indices>
+void combineArrayOptionals(
+    std::size_t& seed,
+    const std::array<std::optional<int>, 32>& optionals,
+    std::index_sequence<Indices...> /*unused*/) {
+  hash_combine_optionals(seed, optionals[Indices]...);
+}
+
+} // namespace
+
+TEST(hash_combineTests, supportsHighestPresenceBit) {
+  std::array<std::optional<int>, 32> optionals;
+  optionals.back() = 17;
+
+  std::size_t actual = 41;
+  combineArrayOptionals(actual, optionals, std::make_index_sequence<32>{});
+
+  std::size_t optionalsHash = std::uint32_t{1} << 31;
+  hash_combine(optionalsHash, 17);
+  std::size_t expected = 41;
+  hash_combine(expected, optionalsHash);
+  EXPECT_EQ(actual, expected);
 }
 
 } // namespace facebook::react

@@ -90,6 +90,7 @@ public object ViewProps {
   public const val FONT_WEIGHT: String = "fontWeight"
   public const val FONT_STYLE: String = "fontStyle"
   public const val FONT_VARIANT: String = "fontVariant"
+  public const val FONT_FEATURE_SETTINGS: String = "fontFeatureSettings"
   public const val FONT_VARIATION_SETTINGS: String = "fontVariationSettings"
   public const val FONT_FAMILY: String = "fontFamily"
   public const val LINE_HEIGHT: String = "lineHeight"

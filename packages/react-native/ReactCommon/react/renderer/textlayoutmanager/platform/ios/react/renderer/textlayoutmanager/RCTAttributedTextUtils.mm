@@ -8,6 +8,7 @@
 #import "RCTAttributedTextUtils.h"
 
 #include <react/featureflags/ReactNativeFeatureFlags.h>
+#include <react/renderer/attributedstring/conversions.h>
 #include <react/renderer/components/view/accessibilityPropsConversions.h>
 #include <react/renderer/core/LayoutableShadowNode.h>
 #include <react/renderer/textlayoutmanager/RCTFontProperties.h>
@@ -15,6 +16,7 @@
 #include <react/renderer/textlayoutmanager/RCTTextPrimitivesConversions.h>
 #include <react/utils/ManagedObjectWrapper.h>
 #include <array>
+#include <cmath>
 
 using namespace facebook::react;
 

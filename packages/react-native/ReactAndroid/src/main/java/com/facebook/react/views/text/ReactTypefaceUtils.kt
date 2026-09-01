@@ -106,6 +106,31 @@ public object ReactTypefaceUtils {
     return features.joinToString(", ")
   }
 
+  /**
+   * Normalizes a CSS `font-feature-settings` value. Per CSS, `normal` means "no author-specified
+   * features" rather than "clear everything", so it collapses to the empty string and leaves any
+   * `fontVariant` features intact. Anything else is forwarded unchanged — the shaper ignores tags
+   * it cannot parse, so narrowing the grammar here would only reject values the platform accepts.
+   */
+  internal fun parseFontFeatureSettings(fontFeatureSettings: String?): String? {
+    val trimmed = fontFeatureSettings?.trim() ?: return null
+    return if (trimmed.equals("normal", ignoreCase = true)) "" else trimmed
+  }
+
+  /**
+   * Combines the feature contributions of `fontVariant`, the high-level longhands and the author's
+   * raw `fontFeatureSettings`, which must be passed least- to most-specific so that a tag named
+   * more than once resolves last-wins.
+   *
+   * Mirrors `resolveFontFeatureSettings` in the shared C++ so the legacy [ReactStylesDiffMap] path,
+   * which never passes through C++, resolves identically to the Fabric path.
+   */
+  internal fun composeFontFeatureSettings(vararg contributions: String?): String? =
+      // Set but contributing nothing, such as a lone `normal`, is not the same as asking for an
+      // empty feature list: the platform default has to survive, and a run that names no feature
+      // must not pick up a span it has nothing to carry.
+      contributions.filterNot { it.isNullOrEmpty() }.joinToString(", ").ifEmpty { null }
+
   @JvmStatic
   public fun applyStyles(
       typeface: Typeface?,

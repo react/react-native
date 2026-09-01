@@ -125,6 +125,7 @@ inline bool areTextAttributesEquivalentLayoutWise(const TextAttributes &lhs, con
              lhs.fontWeight,
              lhs.fontStyle,
              lhs.fontVariant,
+             lhs.fontFeatureSettings,
              lhs.fontVariationSettings,
              lhs.allowFontScaling,
              lhs.dynamicTypeRamp,
@@ -134,6 +135,7 @@ inline bool areTextAttributesEquivalentLayoutWise(const TextAttributes &lhs, con
              rhs.fontWeight,
              rhs.fontStyle,
              rhs.fontVariant,
+             rhs.fontFeatureSettings,
              rhs.fontVariationSettings,
              rhs.allowFontScaling,
              rhs.dynamicTypeRamp,
@@ -147,20 +149,29 @@ inline size_t textAttributesHashLayoutWise(const TextAttributes &textAttributes)
 {
   // Taking into account the same props as
   // `areTextAttributesEquivalentLayoutWise` mentions.
-  return facebook::react::hash_combine(
+  // The optionals are folded into one presence mask rather than being chained individually, so
+  // that the properties a given text run does not set stay off the hash's dependency chain. This
+  // is the hot path: it runs on every measurement-cache probe.
+  size_t seed = 0;
+  facebook::react::hash_combine(
+      seed,
       textAttributes.fontFamily,
       textAttributes.fontSize,
       textAttributes.fontSizeMultiplier,
+      textAttributes.maxFontSizeMultiplier,
+      textAttributes.letterSpacing,
+      textAttributes.lineHeight);
+  facebook::react::hash_combine_optionals(
+      seed,
       textAttributes.fontWeight,
       textAttributes.fontStyle,
       textAttributes.fontVariant,
+      textAttributes.fontFeatureSettings,
       textAttributes.fontVariationSettings,
       textAttributes.allowFontScaling,
-      textAttributes.maxFontSizeMultiplier,
       textAttributes.dynamicTypeRamp,
-      textAttributes.letterSpacing,
-      textAttributes.lineHeight,
       textAttributes.alignment);
+  return seed;
 }
 
 inline bool areAttributedStringFragmentsEquivalentLayoutWise(

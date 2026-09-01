@@ -569,7 +569,16 @@ export interface TextStyle extends TextStyleIOS, TextStyleAndroid, ViewStyle {
   color?: ColorValue | undefined;
   fontFamily?: string | undefined;
   fontSize?: number | undefined;
-  fontStyle?: 'normal' | 'italic' | undefined;
+  /**
+   * `oblique` slants upright glyphs; `oblique <angle>` gives the slant an explicit CSS angle,
+   * for example `'oblique 20deg'`. An omitted angle is 14 degrees, the same slant this library
+   * has always used for synthetic italic. An explicit `'slnt'` in `fontVariationSettings` takes
+   * precedence over both.
+   *
+   * The `string` arm exists only to admit the `oblique <angle>` form, which neither Flow nor the
+   * generated types can spell more precisely; prefer one of the listed keywords.
+   */
+  fontStyle?: 'normal' | 'italic' | 'oblique' | string | undefined;
   /**
    * Specifies font weight. The values 'normal' and 'bold' are supported
    * for most fonts. Not all fonts have a variant for each of the numeric
@@ -607,6 +616,12 @@ export interface TextStyle extends TextStyleIOS, TextStyleAndroid, ViewStyle {
     | 'heavy'
     | 'black'
     | undefined;
+  /**
+   * Specifies OpenType feature tags using CSS syntax. Combines with
+   * `fontVariant`; where both name the same tag, `fontFeatureSettings` wins.
+   * `normal` or an empty string contributes no features of its own.
+   */
+  fontFeatureSettings?: string | undefined;
   /**
    * Specifies OpenType font variation axis values using CSS syntax or an
    * object keyed by four-character axis tags. An empty string or object resets

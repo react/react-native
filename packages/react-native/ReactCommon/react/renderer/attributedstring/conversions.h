@@ -21,9 +21,16 @@
 #include <react/renderer/core/conversions.h>
 #include <react/renderer/core/graphicsConversions.h>
 #include <react/renderer/core/propsConversions.h>
+#include <react/renderer/css/CSSAngle.h>
 #include <react/renderer/css/CSSFontVariant.h>
 #include <react/renderer/css/CSSValueParser.h>
+#include <algorithm>
+#include <array>
+#include <cctype>
+#include <sstream>
+#include <string_view>
 #include <unordered_map>
+#include <utility>
 
 #ifdef RN_SERIALIZABLE_STATE
 #include <folly/json.h>
@@ -568,6 +575,113 @@ inline std::string toString(const FontVariant &fontVariant)
 
   if (!result.empty()) {
     result.erase(result.length() - separator.length());
+  }
+
+  return result;
+}
+
+/*
+ * Bits are tested in the same order `toMapBuffer(const FontVariant &)`
+ * serializes them, so the composed list is byte-identical to what the platforms
+ * previously derived from that MapBuffer themselves.
+ *
+ * Only 25 of the 33 `fontVariant` values the JS types accept appear here,
+ * because `FontVariant` has no bits for the eight ligature and contextual
+ * values (see `fontVariantFromCSSFontVariant`). Those are dropped before
+ * reaching this point; widening the enum is tracked separately.
+ */
+inline std::string fontVariantToOpenTypeFeatures(const FontVariant &fontVariant)
+{
+  static constexpr std::array<std::pair<FontVariant, std::string_view>, 25> featureTags{{
+      {FontVariant::SmallCaps, "'smcp'"},         {FontVariant::OldstyleNums, "'onum'"},
+      {FontVariant::LiningNums, "'lnum'"},        {FontVariant::TabularNums, "'tnum'"},
+      {FontVariant::ProportionalNums, "'pnum'"},  {FontVariant::StylisticOne, "'ss01'"},
+      {FontVariant::StylisticTwo, "'ss02'"},      {FontVariant::StylisticThree, "'ss03'"},
+      {FontVariant::StylisticFour, "'ss04'"},     {FontVariant::StylisticFive, "'ss05'"},
+      {FontVariant::StylisticSix, "'ss06'"},      {FontVariant::StylisticSeven, "'ss07'"},
+      {FontVariant::StylisticEight, "'ss08'"},    {FontVariant::StylisticNine, "'ss09'"},
+      {FontVariant::StylisticTen, "'ss10'"},      {FontVariant::StylisticEleven, "'ss11'"},
+      {FontVariant::StylisticTwelve, "'ss12'"},   {FontVariant::StylisticThirteen, "'ss13'"},
+      {FontVariant::StylisticFourteen, "'ss14'"}, {FontVariant::StylisticFifteen, "'ss15'"},
+      {FontVariant::StylisticSixteen, "'ss16'"},  {FontVariant::StylisticSeventeen, "'ss17'"},
+      {FontVariant::StylisticEighteen, "'ss18'"}, {FontVariant::StylisticNineteen, "'ss19'"},
+      {FontVariant::StylisticTwenty, "'ss20'"},
+  }};
+
+  auto result = std::string{};
+  for (const auto &[bit, tag] : featureTags) {
+    if (((int)fontVariant & (int)bit) != 0) {
+      if (!result.empty()) {
+        result += ", ";
+      }
+      result += tag;
+    }
+  }
+
+  return result;
+}
+
+/*
+ * Resolves the OpenType feature list a text run renders with, combining the
+ * `fontVariant` shorthand and the high-level longhands with the author's raw
+ * `fontFeatureSettings`.
+ *
+ * Contributions are emitted least- to most-specific, so a tag named more than
+ * once resolves last-wins in the CSS grammar and in both platform shapers and
+ * no explicit conflict resolution is needed. `fontFeatureSettings` is last
+ * because CSS makes it the low-level escape hatch that overrides the
+ * high-level properties.
+ *
+ * Platforms that apply `fontVariant` themselves pass `std::nullopt` for it and
+ * still get everything else.
+ *
+ * Returns `std::nullopt` when nothing is set and equally when what is set
+ * contributes no feature, keeping the property absent from serialization so the
+ * platform falls through to its own default. Per CSS, `normal` contributes no
+ * features rather than clearing what came before it, and it is the initial
+ * value, so an explicit one has to resolve the same as never having set it.
+ */
+inline std::optional<std::string> resolveFontFeatureSettings(
+    const TextAttributes &textAttributes,
+    bool includeFontVariant = true)
+{
+  static const std::optional<FontVariant> noFontVariant{};
+  const auto &fontVariant = includeFontVariant ? textAttributes.fontVariant : noFontVariant;
+  const auto &fontFeatureSettings = textAttributes.fontFeatureSettings;
+
+  if (!fontVariant.has_value() && !fontFeatureSettings.has_value()) {
+    return std::nullopt;
+  }
+
+  auto result = fontVariant.has_value() ? fontVariantToOpenTypeFeatures(*fontVariant) : std::string{};
+
+  if (fontFeatureSettings.has_value()) {
+    auto value = std::string_view{*fontFeatureSettings};
+    auto begin = value.find_first_not_of(" \t\n\r\f\v");
+    if (begin != std::string_view::npos) {
+      value = value.substr(begin, value.find_last_not_of(" \t\n\r\f\v") - begin + 1);
+    } else {
+      value = {};
+    }
+
+    constexpr std::string_view kNormal{"normal"};
+    auto isNormal = value.size() == kNormal.size();
+    for (size_t i = 0; isNormal && i < kNormal.size(); i++) {
+      isNormal = (char)std::tolower((unsigned char)value[i]) == kNormal[i];
+    }
+
+    if (!value.empty() && !isNormal) {
+      if (!result.empty()) {
+        result += ", ";
+      }
+      result += value;
+    }
+  }
+
+  // Set but contributing nothing, such as a lone `normal`, is not the same as
+  // asking for an empty feature list: the platform default has to survive.
+  if (result.empty()) {
+    return std::nullopt;
   }
 
   return result;
@@ -1143,6 +1257,7 @@ constexpr static MapBuffer::Key TA_KEY_ALIGNMENT_VERTICAL = 28;
 constexpr static MapBuffer::Key TA_KEY_MAX_FONT_SIZE_MULTIPLIER = 29;
 constexpr static MapBuffer::Key TA_KEY_TEXT_EFFECTS = 30;
 constexpr static MapBuffer::Key TA_KEY_FONT_VARIATION_SETTINGS = 31;
+constexpr static MapBuffer::Key TA_KEY_FONT_FEATURE_SETTINGS = 32;
 
 // Keys within each text effect entry MapBuffer
 constexpr static MapBuffer::Key TE_KEY_NAME = 0;
@@ -1290,6 +1405,12 @@ inline MapBuffer toMapBuffer(const TextAttributes &textAttributes)
   if (textAttributes.fontVariant.has_value()) {
     auto fontVariantMap = toMapBuffer(*textAttributes.fontVariant);
     builder.putMapBuffer(TA_KEY_FONT_VARIANT, fontVariantMap);
+  }
+  // Composed here rather than on the platform so both renderers agree on how
+  // `fontVariant` and `fontFeatureSettings` combine. `TA_KEY_FONT_VARIANT` is
+  // still emitted for consumers that read the raw shorthand.
+  if (auto fontFeatureSettings = resolveFontFeatureSettings(textAttributes)) {
+    builder.putString(TA_KEY_FONT_FEATURE_SETTINGS, *fontFeatureSettings);
   }
   if (textAttributes.fontVariationSettings.has_value()) {
     builder.putString(TA_KEY_FONT_VARIATION_SETTINGS, *textAttributes.fontVariationSettings);

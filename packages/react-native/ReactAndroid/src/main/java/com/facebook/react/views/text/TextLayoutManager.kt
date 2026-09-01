@@ -315,6 +315,7 @@ internal object TextLayoutManager {
         if (
             textAttributes.fontStyle != ReactConstants.UNSET ||
                 textAttributes.fontWeight != ReactConstants.UNSET ||
+                textAttributes.fontFeatureSettings != null ||
                 textAttributes.fontVariationSettings != null ||
                 textAttributes.fontFamily != null
         ) {
@@ -551,6 +552,7 @@ internal object TextLayoutManager {
         if (
             fragment.props.fontStyle != ReactConstants.UNSET ||
                 fragment.props.fontWeight != ReactConstants.UNSET ||
+                fragment.props.fontFeatureSettings != null ||
                 fragment.props.fontVariationSettings != null ||
                 fragment.props.fontFamily != null
         ) {
@@ -893,6 +895,7 @@ internal object TextLayoutManager {
     if (
         baseTextAttributes.fontStyle != ReactConstants.UNSET ||
             baseTextAttributes.fontWeight != ReactConstants.UNSET ||
+            baseTextAttributes.fontFeatureSettings != null ||
             baseTextAttributes.fontVariationSettings != null ||
             baseTextAttributes.fontFamily != null
     ) {

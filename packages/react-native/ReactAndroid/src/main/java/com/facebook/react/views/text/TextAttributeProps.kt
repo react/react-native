@@ -23,6 +23,8 @@ import com.facebook.react.uimanager.ReactAccessibilityDelegate
 import com.facebook.react.uimanager.ReactAccessibilityDelegate.AccessibilityRole
 import com.facebook.react.uimanager.ReactStylesDiffMap
 import com.facebook.react.uimanager.ViewProps
+import com.facebook.react.views.text.ReactTypefaceUtils.composeFontFeatureSettings
+import com.facebook.react.views.text.ReactTypefaceUtils.parseFontFeatureSettings
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontStyle
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontVariant
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontVariationSettings
@@ -216,55 +218,6 @@ public class TextAttributeProps private constructor() {
       // }
     }
 
-  private fun setFontVariant(fontVariant: ReadableArray?) {
-    fontFeatureSettings = parseFontVariant(fontVariant)
-  }
-
-  private fun setFontVariant(fontVariant: MapBuffer?) {
-    if (fontVariant == null || fontVariant.count == 0) {
-      fontFeatureSettings = null
-      return
-    }
-
-    val features: MutableList<String?> = ArrayList()
-    val iterator = fontVariant.iterator()
-    while (iterator.hasNext()) {
-      val entry = iterator.next()
-      val value = entry.stringValue
-      @Suppress("SENSELESS_COMPARISON")
-      if (value != null) {
-        when (value) {
-          "small-caps" -> features.add("'smcp'")
-          "oldstyle-nums" -> features.add("'onum'")
-          "lining-nums" -> features.add("'lnum'")
-          "tabular-nums" -> features.add("'tnum'")
-          "proportional-nums" -> features.add("'pnum'")
-          "stylistic-one" -> features.add("'ss01'")
-          "stylistic-two" -> features.add("'ss02'")
-          "stylistic-three" -> features.add("'ss03'")
-          "stylistic-four" -> features.add("'ss04'")
-          "stylistic-five" -> features.add("'ss05'")
-          "stylistic-six" -> features.add("'ss06'")
-          "stylistic-seven" -> features.add("'ss07'")
-          "stylistic-eight" -> features.add("'ss08'")
-          "stylistic-nine" -> features.add("'ss09'")
-          "stylistic-ten" -> features.add("'ss10'")
-          "stylistic-eleven" -> features.add("'ss11'")
-          "stylistic-twelve" -> features.add("'ss12'")
-          "stylistic-thirteen" -> features.add("'ss13'")
-          "stylistic-fourteen" -> features.add("'ss14'")
-          "stylistic-fifteen" -> features.add("'ss15'")
-          "stylistic-sixteen" -> features.add("'ss16'")
-          "stylistic-seventeen" -> features.add("'ss17'")
-          "stylistic-eighteen" -> features.add("'ss18'")
-          "stylistic-nineteen" -> features.add("'ss19'")
-          "stylistic-twenty" -> features.add("'ss20'")
-        }
-      }
-    }
-    fontFeatureSettings = features.joinToString(", ")
-  }
-
   private fun setFontWeight(fontWeightString: String?) {
     fontWeight = parseFontWeight(fontWeightString)
   }
@@ -402,6 +355,7 @@ public class TextAttributeProps private constructor() {
     public const val TA_KEY_MAX_FONT_SIZE_MULTIPLIER: Int = 29
     public const val TA_KEY_TEXT_EFFECTS: Int = 30
     public const val TA_KEY_FONT_VARIATION_SETTINGS: Int = 31
+    public const val TA_KEY_FONT_FEATURE_SETTINGS: Int = 32
     private const val TE_KEY_NAME: Int = 0
     private const val TE_KEY_PROPS: Int = 1
 
@@ -438,7 +392,9 @@ public class TextAttributeProps private constructor() {
           TA_KEY_FONT_SIZE_MULTIPLIER -> {}
           TA_KEY_FONT_WEIGHT -> result.setFontWeight(entry.stringValue)
           TA_KEY_FONT_STYLE -> result.setFontStyle(entry.stringValue)
-          TA_KEY_FONT_VARIANT -> result.setFontVariant(entry.mapBufferValue)
+          // `fontVariant` is resolved into `TA_KEY_FONT_FEATURE_SETTINGS` by shared C++, so
+          // `TA_KEY_FONT_VARIANT` carries the unresolved shorthand and is intentionally unused.
+          TA_KEY_FONT_FEATURE_SETTINGS -> result.fontFeatureSettings = entry.stringValue
           TA_KEY_FONT_VARIATION_SETTINGS ->
               result.fontVariationSettings = parseFontVariationSettings(entry.stringValue)
           TA_KEY_ALLOW_FONT_SCALING -> result.allowFontScaling = entry.booleanValue
@@ -507,7 +463,11 @@ public class TextAttributeProps private constructor() {
       result.fontFamily = getStringProp(props, ViewProps.FONT_FAMILY)
       result.setFontWeight(getStringProp(props, ViewProps.FONT_WEIGHT))
       result.setFontStyle(getStringProp(props, ViewProps.FONT_STYLE))
-      result.setFontVariant(getArrayProp(props, ViewProps.FONT_VARIANT))
+      result.fontFeatureSettings =
+          composeFontFeatureSettings(
+              parseFontVariant(getArrayProp(props, ViewProps.FONT_VARIANT)),
+              parseFontFeatureSettings(getStringProp(props, ViewProps.FONT_FEATURE_SETTINGS)),
+          )
       result.fontVariationSettings =
           parseFontVariationSettings(getStringProp(props, ViewProps.FONT_VARIATION_SETTINGS))
       result.includeFontPadding = getBooleanProp(props, ViewProps.INCLUDE_FONT_PADDING, true)

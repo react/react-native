@@ -268,6 +268,7 @@ const ReactNativeStyleAttributes: {[string]: AnyAttributeType, ...} = {
   fontFamily: true,
   fontSize: true,
   fontStyle: true,
+  fontFeatureSettings: true,
   fontVariant: fontVariantAttribute,
   fontVariationSettings: fontVariationSettingsAttribute,
   fontWeight: true,

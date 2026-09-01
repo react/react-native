@@ -3807,9 +3807,11 @@ std::optional<facebook::react::Float> facebook::react::toRadians(const facebook:
 std::optional<facebook::react::FontVariant> facebook::react::fontVariantFromCSSFontVariant(facebook::react::CSSFontVariant cssVariant);
 std::optional<facebook::react::Isolation> facebook::react::isolationFromString(std::string_view isolationSetting);
 std::optional<facebook::react::TransformOperation> facebook::react::fromCSSTransformFunction(const facebook::react::CSSTransformFunction& cssTransform);
+std::optional<std::string> facebook::react::resolveFontFeatureSettings(const facebook::react::TextAttributes& textAttributes, bool includeFontVariant = true);
 std::pair<facebook::react::Float, facebook::react::Float> facebook::react::calculateAnimationProgress(uint64_t now, const facebook::react::LayoutAnimation& animation, const facebook::react::AnimationConfig& mutationConfig);
 std::string facebook::react::base64Encode(const std::string_view s);
 std::string facebook::react::componentNameByReactViewName(std::string viewName);
+std::string facebook::react::fontVariantToOpenTypeFeatures(const facebook::react::FontVariant& fontVariant);
 std::string facebook::react::generateRandomUuidString();
 std::string facebook::react::toString(const double& value);
 std::string facebook::react::toString(const facebook::react::AccessibilityRole& accessibilityRole);
@@ -3903,6 +3905,8 @@ template <typename T>
 void facebook::react::fromRawValue(const facebook::react::PropsParserContext&, const facebook::react::RawValue& rawValue, T& result);
 template <typename TManager>
 std::shared_ptr<TManager> facebook::react::getManagerByName(std::shared_ptr<const facebook::react::ContextContainer>& contextContainer, const char name[]);
+template <typename... Ts>
+void facebook::react::hash_combine_optionals(std::size_t& seed, const std::optional<Ts> &... optionals);
 uint8_t facebook::react::alphaFromColor(facebook::react::SharedColor color) noexcept;
 uint8_t facebook::react::blueFromColor(facebook::react::SharedColor color) noexcept;
 uint8_t facebook::react::greenFromColor(facebook::react::SharedColor color) noexcept;
@@ -7253,6 +7257,7 @@ class facebook::react::TextAttributes : public facebook::react::DebugStringConve
   public std::optional<facebook::react::TextDecorationStyle> textDecorationStyle;
   public std::optional<facebook::react::TextTransform> textTransform;
   public std::optional<facebook::react::WritingDirection> baseWritingDirection;
+  public std::optional<std::string> fontFeatureSettings;
   public std::optional<std::string> fontVariationSettings;
   public std::string fontFamily;
   public std::vector<facebook::react::TextEffectInfo> textEffects;

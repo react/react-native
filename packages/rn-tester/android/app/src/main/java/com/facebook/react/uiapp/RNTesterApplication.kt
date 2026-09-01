@@ -120,6 +120,11 @@ internal class RNTesterApplication : Application(), ReactApplication {
   override fun onCreate() {
     ReactFontManager.getInstance().addCustomFont(this, "Rubik", R.font.rubik)
     ReactFontManager.getInstance().addCustomFont(this, "FiraCode", R.font.firacode)
+    // A font under `res/font` is only reachable by name once it is registered here; without this
+    // the family resolves to the default face and the example demonstrates nothing. The name is
+    // the family name inside the binary rather than the resource id, so the shared Text examples
+    // can pass one `fontFamily` string that resolves on this platform and on iOS.
+    ReactFontManager.getInstance().addCustomFont(this, "EB Garamond", R.font.ebgaramond_regular)
     super.onCreate()
     loadReactNative(this)
   }

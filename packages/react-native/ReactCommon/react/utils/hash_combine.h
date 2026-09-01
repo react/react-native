@@ -7,7 +7,9 @@
 
 #pragma once
 
+#include <cstdint>
 #include <functional>
+#include <optional>
 #include <type_traits>
 
 namespace facebook::react {
@@ -30,6 +32,41 @@ std::size_t hash_combine(const T &v, const Args &...args)
   std::size_t seed = 0;
   hash_combine<T, Args...>(seed, v, args...);
   return seed;
+}
+
+/*
+ * Combines a run of optional fields into `seed` as a single presence bitmask followed by the
+ * engaged values only.
+ *
+ * Each `hash_combine` step mixes into the previous seed, so it forms a dependency chain the CPU
+ * cannot overlap and an unset field still costs a full link. The optionals are hashed into an
+ * independent seed and merged into the preceding seed once, allowing both chains to overlap.
+ * Folding presence into one word keeps unused fields off the optional chain: a further optional
+ * costs a bit in the mask rather than a link.
+ *
+ * The mask is what keeps this collision-free. Skipping disengaged fields on its own would make the
+ * same value in two different slots hash identically.
+ *
+ * Both packs are expanded from the same parameter pack, so the mask's bit order cannot drift out
+ * of sync with the order the values are combined.
+ */
+template <typename... Ts>
+void hash_combine_optionals(std::size_t &seed, const std::optional<Ts> &...optionals)
+{
+  static_assert(sizeof...(Ts) <= 32, "presence mask holds 32 fields");
+
+  std::uint32_t presence = 0;
+  std::uint32_t bit = 1;
+  ((presence |= optionals.has_value() ? bit : 0u, bit <<= 1), ...);
+  std::size_t optionalsSeed = presence;
+
+  auto combineIfEngaged = [&optionalsSeed](const auto &optional) {
+    if (optional.has_value()) {
+      hash_combine(optionalsSeed, *optional);
+    }
+  };
+  (combineIfEngaged(optionals), ...);
+  hash_combine(seed, optionalsSeed);
 }
 
 } // namespace facebook::react
