@@ -275,7 +275,7 @@ public class ReactModalHostView(context: ThemedReactContext) :
         }
 
     val currentActivity = getCurrentActivity()
-    val newDialog = ComponentDialog(currentActivity ?: context, theme)
+    val newDialog = ReactModalDialog(currentActivity ?: context, theme)
     dialog = newDialog
     val window = requireNotNull(newDialog.window)
     window.setFlags(
@@ -308,11 +308,14 @@ public class ReactModalHostView(context: ThemedReactContext) :
         object : DialogInterface.OnKeyListener {
           override fun onKey(dialog: DialogInterface, keyCode: Int, event: KeyEvent): Boolean {
             if (event.action == KeyEvent.ACTION_UP) {
-              // We need to stop the BACK button and ESCAPE key from closing the dialog by default
-              // so we capture that event and instead inform JS so that it can make the decision as
-              // to whether or not to allow the back/escape key to close the dialog. If it chooses
-              // to, it can just set visible to false on the Modal and the Modal will go away
-              if (keyCode == KeyEvent.KEYCODE_BACK || keyCode == KeyEvent.KEYCODE_ESCAPE) {
+              // We need to stop the BACK button from closing the dialog by default so we capture
+              // that event and instead inform JS so that it can make the decision as to whether or
+              // not to allow the back key to close the dialog. If it chooses to, it can just set
+              // visible to false on the Modal and the Modal will go away.
+              // ESCAPE is routed through ReactModalDialog.dispatchKeyEvent which forwards it to
+              // onBackPressedDispatcher, so it is intentionally not handled here to avoid
+              // double-dispatch.
+              if (keyCode == KeyEvent.KEYCODE_BACK) {
                 handleCloseAction()
                 return true
               } else {
@@ -491,6 +494,25 @@ public class ReactModalHostView(context: ThemedReactContext) :
 
   private companion object {
     private const val TAG = "ReactModalHost"
+  }
+
+  /**
+   * Subclass of [ComponentDialog] that explicitly routes the hardware ESCAPE key through the
+   * dialog's [onBackPressedDispatcher], mirroring how the platform routes the BACK key. This is
+   * required because some Android versions and external keyboards do not deliver KEYCODE_ESCAPE to
+   * [DialogInterface.OnKeyListener] in a way that allows the modal's onRequestClose callback to be
+   * invoked, so we intercept it here to guarantee a single, consistent dispatch path. Marked
+   * `internal` so a same-module Robolectric test can verify the ESC routing contract.
+   */
+  internal class ReactModalDialog(context: Context, themeResId: Int) :
+      ComponentDialog(context, themeResId) {
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+      if (event.keyCode == KeyEvent.KEYCODE_ESCAPE && event.action == KeyEvent.ACTION_UP) {
+        onBackPressedDispatcher.onBackPressed()
+        return true
+      }
+      return super.dispatchKeyEvent(event)
+    }
   }
 
   /**
