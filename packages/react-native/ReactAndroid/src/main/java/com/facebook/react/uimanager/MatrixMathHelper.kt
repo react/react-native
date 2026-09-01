@@ -8,7 +8,6 @@
 package com.facebook.react.uimanager
 
 import com.facebook.infer.annotation.Assertions
-import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
@@ -22,11 +21,7 @@ import kotlin.math.tan
 public object MatrixMathHelper {
   private const val EPSILON = .00001
 
-  private fun isZero(d: Double): Boolean {
-    return if (java.lang.Double.isNaN(d)) {
-      false
-    } else abs(d) < EPSILON
-  }
+  private fun isZero(d: Double): Boolean = d > -EPSILON && d < EPSILON
 
   @JvmStatic
   public fun multiplyInto(out: DoubleArray, a: DoubleArray, b: DoubleArray) {
@@ -92,17 +87,16 @@ public object MatrixMathHelper {
     val translation = ctx.translation
     val rotationDegrees = ctx.rotationDegrees
 
-    // create normalized, 2d array matrix
-    // and normalized 1d array perspectiveMatrix with redefined 4th column
     if (isZero(transformMatrix[15])) {
       return
     }
-    val matrix = Array(4) { DoubleArray(4) }
+
+    val normalizedMatrix = DoubleArray(16)
     val perspectiveMatrix = DoubleArray(16)
     for (i in 0..3) {
       for (j in 0..3) {
         val value = transformMatrix[i * 4 + j] / transformMatrix[15]
-        matrix[i][j] = value
+        normalizedMatrix[i * 4 + j] = value
         perspectiveMatrix[i * 4 + j] = if (j == 3) 0.0 else value
       }
     }
@@ -114,10 +108,19 @@ public object MatrixMathHelper {
     }
 
     // isolate perspective
-    if (!isZero(matrix[0][3]) || !isZero(matrix[1][3]) || !isZero(matrix[2][3])) {
+    if (
+        !isZero(normalizedMatrix[3]) ||
+            !isZero(normalizedMatrix[7]) ||
+            !isZero(normalizedMatrix[11])
+    ) {
       // rightHandSide is the right hand side of the equation.
       // rightHandSide is a vector, or point in 3d space relative to the origin.
-      val rightHandSide = doubleArrayOf(matrix[0][3], matrix[1][3], matrix[2][3], matrix[3][3])
+      val rightHandSide = doubleArrayOf(
+          normalizedMatrix[3],
+          normalizedMatrix[7],
+          normalizedMatrix[11],
+          normalizedMatrix[15],
+      )
 
       // Solve the equation by inverting perspectiveMatrix and multiplying
       // rightHandSide by the inverse.
@@ -126,50 +129,51 @@ public object MatrixMathHelper {
       multiplyVectorByMatrix(rightHandSide, transposedInversePerspectiveMatrix, perspective)
     } else {
       // no perspective
+      perspective[0] = 0.0
+      perspective[1] = 0.0
       perspective[2] = 0.0
-      perspective[1] = perspective[2]
-      perspective[0] = perspective[1]
       perspective[3] = 1.0
     }
 
-    // translation is simple
-    for (i in 0..2) {
-      translation[i] = matrix[3][i]
-    }
+    translation[0] = normalizedMatrix[12]
+    translation[1] = normalizedMatrix[13]
+    translation[2] = normalizedMatrix[14]
 
     // Now get scale and shear.
     // 'row' is a 3 element array of 3 component vectors
     val row = Array(3) { DoubleArray(3) }
     for (i in 0..2) {
-      row[i][0] = matrix[i][0]
-      row[i][1] = matrix[i][1]
-      row[i][2] = matrix[i][2]
+      row[i][0] = normalizedMatrix[i * 4]
+      row[i][1] = normalizedMatrix[i * 4 + 1]
+      row[i][2] = normalizedMatrix[i * 4 + 2]
     }
 
     // Compute X scale factor and normalize first row.
     scale[0] = v3Length(row[0])
-    row[0] = v3Normalize(row[0], scale[0])
+    v3NormalizeInPlace(row[0], scale[0])
 
     // Compute XY shear factor and make 2nd row orthogonal to 1st.
     skew[0] = v3Dot(row[0], row[1])
-    row[1] = v3Combine(row[1], row[0], 1.0, -skew[0])
+    v3CombineInPlace(row[1], row[0], 1.0, -skew[0])
 
     // Now, compute Y scale and normalize 2nd row.
-    scale[1] = v3Length(row[1])
-    row[1] = v3Normalize(row[1], scale[1])
-    skew[0] /= scale[1]
+    val scaleY = v3Length(row[1])
+    scale[1] = scaleY
+    v3NormalizeInPlace(row[1], scaleY)
+    skew[0] /= scaleY
 
     // Compute XZ and YZ shears, orthogonalize 3rd row
     skew[1] = v3Dot(row[0], row[2])
-    row[2] = v3Combine(row[2], row[0], 1.0, -skew[1])
+    v3CombineInPlace(row[2], row[0], 1.0, -skew[1])
     skew[2] = v3Dot(row[1], row[2])
-    row[2] = v3Combine(row[2], row[1], 1.0, -skew[2])
+    v3CombineInPlace(row[2], row[1], 1.0, -skew[2])
 
     // Next, get Z scale and normalize 3rd row.
-    scale[2] = v3Length(row[2])
-    row[2] = v3Normalize(row[2], scale[2])
-    skew[1] /= scale[2]
-    skew[2] /= scale[2]
+    val scaleZ = v3Length(row[2])
+    scale[2] = scaleZ
+    v3NormalizeInPlace(row[2], scaleZ)
+    skew[1] /= scaleZ
+    skew[2] /= scaleZ
 
     // At this point, the matrix (in rows) is orthonormal.
     // Check for a coordinate system flip.  If the determinant
@@ -340,6 +344,13 @@ public object MatrixMathHelper {
     return doubleArrayOf(vector[0] * im, vector[1] * im, vector[2] * im)
   }
 
+  private fun v3NormalizeInPlace(vector: DoubleArray, norm: Double) {
+    val inverseMagnitude = 1.0 / norm
+    vector[0] *= inverseMagnitude
+    vector[1] *= inverseMagnitude
+    vector[2] *= inverseMagnitude
+  }
+
   /**
    * The dot product of a and b, two 3-element vectors. From:
    * https://code.google.com/p/webgl-mjs/source/browse/mjs.js
@@ -365,6 +376,17 @@ public object MatrixMathHelper {
         aScale * a[1] + bScale * b[1],
         aScale * a[2] + bScale * b[2],
     )
+  }
+
+  private fun v3CombineInPlace(
+      a: DoubleArray,
+      b: DoubleArray,
+      aScale: Double,
+      bScale: Double,
+  ) {
+    a[0] = aScale * a[0] + bScale * b[0]
+    a[1] = aScale * a[1] + bScale * b[1]
+    a[2] = aScale * a[2] + bScale * b[2]
   }
 
   /**
