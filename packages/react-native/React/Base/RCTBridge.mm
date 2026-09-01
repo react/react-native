@@ -83,7 +83,6 @@ NSSet<NSString *> *getCoreModuleClasses(void)
       @"RCTStatusBarManager",
       @"RCTTiming",
       @"RCTWebSocketModule",
-      @"RCTNativeAnimatedModule",
       @"RCTNativeAnimatedTurboModule",
       @"RCTBlobManager",
       @"RCTFileReaderModule",

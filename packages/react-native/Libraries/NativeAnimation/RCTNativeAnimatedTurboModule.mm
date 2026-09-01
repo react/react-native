@@ -52,7 +52,7 @@ RCT_EXPORT_MODULE();
 - (void)initialize
 {
   // _surfacePresenter set in setSurfacePresenter:
-  _nodesManager = [[RCTNativeAnimatedNodesManager alloc] initWithBridge:nil surfacePresenter:_surfacePresenter];
+  _nodesManager = [[RCTNativeAnimatedNodesManager alloc] initWithSurfacePresenter:_surfacePresenter];
   [_surfacePresenter addObserver:self];
   [[self.moduleRegistry moduleForName:"EventDispatcher"] addDispatchObserver:self];
 }
@@ -163,8 +163,7 @@ RCT_EXPORT_MODULE();
 - (void)connectAnimatedNodeToView:(double)nodeTag viewTag:(double)viewTag
 {
   [self queueOperationBlock:^(RCTNativeAnimatedNodesManager *nodesManager) {
-    // viewName is not used when node is managed by Fabric, and nodes are always managed by Fabric in Bridgeless.
-    [nodesManager connectAnimatedNodeToView:@(nodeTag) viewTag:@(viewTag) viewName:nil];
+    [nodesManager connectAnimatedNodeToView:@(nodeTag) viewTag:@(viewTag)];
   }];
 }
 

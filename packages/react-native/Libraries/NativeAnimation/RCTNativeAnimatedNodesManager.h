@@ -9,7 +9,6 @@
 #import <React/RCTBridgeModule.h>
 #import <React/RCTEventDispatcherProtocol.h>
 #import <React/RCTSurfacePresenterStub.h>
-#import <React/RCTUIManager.h>
 
 @protocol RCTValueAnimatedNodeObserver;
 
@@ -17,8 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface RCTNativeAnimatedNodesManager : NSObject
 
-- (nonnull instancetype)initWithBridge:(nullable RCTBridge *)bridge
-                      surfacePresenter:(id<RCTSurfacePresenterStub>)surfacePresenter;
+- (nonnull instancetype)initWithSurfacePresenter:(id<RCTSurfacePresenterStub>)surfacePresenter;
 
 - (void)updateAnimations;
 
@@ -36,9 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)disconnectAnimatedNodes:(NSNumber *)parentTag childTag:(NSNumber *)childTag;
 
-- (void)connectAnimatedNodeToView:(NSNumber *)nodeTag
-                          viewTag:(NSNumber *)viewTag
-                         viewName:(nullable NSString *)viewName;
+- (void)connectAnimatedNodeToView:(NSNumber *)nodeTag viewTag:(NSNumber *)viewTag;
 
 - (void)restoreDefaultValues:(NSNumber *)nodeTag;
 

@@ -9,15 +9,11 @@
 
 #import <React/RCTSurfacePresenterStub.h>
 
-@class RCTBridge;
 @class RCTViewPropertyMapper;
 
 @interface RCTPropsAnimatedNode : RCTAnimatedNode
 
-- (void)connectToView:(NSNumber *)viewTag
-             viewName:(NSString *)viewName
-               bridge:(RCTBridge *)bridge
-     surfacePresenter:(id<RCTSurfacePresenterStub>)surfacePresenter;
+- (void)connectToView:(NSNumber *)viewTag surfacePresenter:(id<RCTSurfacePresenterStub>)surfacePresenter;
 
 - (void)disconnectFromView:(NSNumber *)viewTag;
 

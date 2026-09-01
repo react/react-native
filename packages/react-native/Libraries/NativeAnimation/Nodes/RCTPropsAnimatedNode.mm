@@ -11,13 +11,11 @@
 #import <React/RCTColorAnimatedNode.h>
 #import <React/RCTObjectAnimatedNode.h>
 #import <React/RCTStyleAnimatedNode.h>
-#import <React/RCTUIManager.h>
+#import <React/RCTUtils.h>
 #import <React/RCTValueAnimatedNode.h>
 
 @implementation RCTPropsAnimatedNode {
   NSNumber *_connectedViewTag;
-  NSString *_connectedViewName;
-  __weak RCTBridge *_bridge;
   __weak id<RCTSurfacePresenterStub> _surfacePresenter;
   NSMutableDictionary<NSString *, NSObject *> *_propsDictionary; // TODO: use RawProps or folly::dynamic directly
   BOOL _managedByFabric;
@@ -36,40 +34,23 @@
   return _managedByFabric;
 }
 
-- (void)connectToView:(NSNumber *)viewTag
-             viewName:(NSString *)viewName
-               bridge:(RCTBridge *)bridge
-     surfacePresenter:(id<RCTSurfacePresenterStub>)surfacePresenter
+- (void)connectToView:(NSNumber *)viewTag surfacePresenter:(id<RCTSurfacePresenterStub>)surfacePresenter
 {
-  _bridge = bridge;
   _surfacePresenter = surfacePresenter;
   _connectedViewTag = viewTag;
-  _connectedViewName = viewName;
   _managedByFabric = RCTUIManagerTypeForTagIsFabric(viewTag);
 }
 
 - (void)disconnectFromView:(NSNumber *)viewTag
 {
-  _bridge = nil;
   _surfacePresenter = nil;
   _connectedViewTag = nil;
-  _connectedViewName = nil;
   _managedByFabric = NO;
 }
 
 - (void)updateView
 {
-  if (_managedByFabric) {
-    if (_bridge.surfacePresenter) {
-      [_bridge.surfacePresenter synchronouslyUpdateViewOnUIThread:_connectedViewTag props:_propsDictionary];
-    } else {
-      [_surfacePresenter synchronouslyUpdateViewOnUIThread:_connectedViewTag props:_propsDictionary];
-    }
-  } else {
-    [_bridge.uiManager synchronouslyUpdateViewOnUIThread:_connectedViewTag
-                                                viewName:_connectedViewName
-                                                   props:_propsDictionary];
-  }
+  [_surfacePresenter synchronouslyUpdateViewOnUIThread:_connectedViewTag props:_propsDictionary];
 }
 
 - (void)restoreDefaultValues

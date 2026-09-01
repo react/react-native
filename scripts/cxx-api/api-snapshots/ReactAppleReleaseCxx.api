@@ -1486,15 +1486,12 @@ interface RCTMultipartStreamReader : public NSObject {
 interface RCTMultiplicationAnimatedNode : public RCTValueAnimatedNode {
 }
 
-interface RCTNativeAnimatedModule : public RCTEventEmitter <RCTBridgeModule, RCTValueAnimatedNodeObserver, RCTEventDispatcherObserver, RCTUIManagerObserver, RCTSurfacePresenterObserver> {
-}
-
 interface RCTNativeAnimatedNodesManager : public NSObject {
   public virtual BOOL isNodeManagedByFabric:(NSNumber* tag);
   public virtual NSSet<NSNumber*>* getTagsOfConnectedNodesFrom:andEvent:(NSNumber* tag, NSString* eventName);
-  public virtual _Nonnull instancetype initWithBridge:surfacePresenter:(_Nullable RCTBridge* bridge, id<RCTSurfacePresenterStub> surfacePresenter);
+  public virtual _Nonnull instancetype initWithSurfacePresenter:(id<RCTSurfacePresenterStub> surfacePresenter);
   public virtual void addAnimatedEventToView:eventName:eventMapping:(NSNumber* viewTag, NSString* eventName, NSDictionary<NSString*, id>* eventMapping);
-  public virtual void connectAnimatedNodeToView:viewTag:viewName:(NSNumber* nodeTag, NSNumber* viewTag, _Nullable NSString* viewName);
+  public virtual void connectAnimatedNodeToView:viewTag:(NSNumber* nodeTag, NSNumber* viewTag);
   public virtual void connectAnimatedNodes:childTag:(NSNumber* parentTag, NSNumber* childTag);
   public virtual void createAnimatedNode:config:(NSNumber* tag, NSDictionary<NSString*, id>* config);
   public virtual void disconnectAnimatedNodeFromView:viewTag:(NSNumber* nodeTag, NSNumber* viewTag);
@@ -1586,7 +1583,7 @@ interface RCTPlatform : public NSObject <RCTBridgeModule> {
 }
 
 interface RCTPropsAnimatedNode : public RCTAnimatedNode {
-  public virtual void connectToView:viewName:bridge:surfacePresenter:(NSNumber* viewTag, NSString* viewName, RCTBridge* bridge, id<RCTSurfacePresenterStub> surfacePresenter);
+  public virtual void connectToView:surfacePresenter:(NSNumber* viewTag, id<RCTSurfacePresenterStub> surfacePresenter);
   public virtual void disconnectFromView:(NSNumber* viewTag);
   public virtual void restoreDefaultValues();
 }
