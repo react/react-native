@@ -8,6 +8,7 @@
 package com.facebook.react.runtime
 
 import android.app.Activity
+import android.content.Intent
 import com.facebook.react.MemoryPressureRouter
 import com.facebook.react.bridge.UIManager
 import com.facebook.react.common.LifecycleState
@@ -31,6 +32,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.doNothing
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.spy
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -167,5 +169,30 @@ class ReactHostTest {
     assertThat(reactHost.lifecycleState).isEqualTo(LifecycleState.BEFORE_RESUME)
     reactHost.onHostDestroy(activityController.get())
     assertThat(reactHost.lifecycleState).isEqualTo(LifecycleState.BEFORE_CREATE)
+  }
+
+  @Test
+  fun onActivityResult_beforeContextIsReady_replaysAfterStart() {
+    val activity = activityController.get()
+    val data = Intent("test.intent")
+
+    reactHost.onActivityResult(activity, 100, Activity.RESULT_OK, data)
+    reactHost.start()
+
+    val reactContext = mockedBridgelessReactContextCtor.constructed().first()
+    verify(reactContext).onActivityResult(activity, 100, Activity.RESULT_OK, data)
+  }
+
+  @Test
+  fun onActivityResult_beforeContextIsReady_dropsOnHostDestroy() {
+    val activity = activityController.get()
+    val data = Intent("test.intent")
+
+    reactHost.onActivityResult(activity, 100, Activity.RESULT_OK, data)
+    reactHost.onHostDestroy()
+    reactHost.start()
+
+    val reactContext = mockedBridgelessReactContextCtor.constructed().first()
+    verify(reactContext, never()).onActivityResult(activity, 100, Activity.RESULT_OK, data)
   }
 }
