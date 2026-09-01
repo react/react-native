@@ -40,10 +40,16 @@ function isFirstParty(fileName) {
   );
 }
 
-// Called by Babel whenever caller information changes between transform calls
-// for a given config. If the return value changes, Babel re-evaluates
-// getPreset, which is otherwise cached based on `options`. This must be pure,
-// and should be cheap.
+/**
+ * BEGIN BABEL CALLER GETTERS
+ * Called by Babel whenever caller information changes between transform calls
+ * for a given config. If the return value changes, Babel re-evaluates
+ * getPreset, which is otherwise cached based on `options`.
+ *
+ * These functions must be pure and should be cheap.
+ **/
+
+// Target transform profile, influencing which plugins are active
 function getTransformProfile(caller) {
   return caller?.unstable_transformProfile ?? 'hermes-stable';
 }
@@ -59,6 +65,20 @@ function getPlatform(caller) {
 function getInlinePlatform(caller) {
   return caller?.inlinePlatform ?? false;
 }
+
+// A boolean to toggle @babel/plugin-transform-runtime, or a string to pin
+// a specific @babel/runtime version.
+function getEnableBabelRuntime(caller) {
+  return caller?.enableBabelRuntime;
+}
+
+// Reads the caller-provided @babel/runtime module name that helpers are imported
+// from.
+function getBabelRuntimeModuleName(caller) {
+  return caller?.babelRuntimeModuleName;
+}
+
+/* END BABEL CALLER GETTERS */
 
 // use `this.foo = bar` instead of `this.defineProperty('foo', ...)`
 const loose = true;
@@ -230,16 +250,31 @@ const getPreset = (src, options, babel) => {
     ]);
   }
 
-  if (!options || options.enableBabelRuntime !== false) {
-    // Allows configuring a specific runtime version to optimize output
-    const isVersion = typeof options?.enableBabelRuntime === 'string';
+  // `enableBabelRuntime` (a boolean toggle or a string @babel/runtime version to
+  // pin) and `babelRuntimeModuleName` (the module helpers are imported from) may
+  // be provided via options or, for programmatic callers such as Metro, via
+  // Babel caller data. Options take precedence over caller data, consistent with
+  // the other options resolved here.
+  const enableBabelRuntime =
+    options?.enableBabelRuntime ?? babel?.caller(getEnableBabelRuntime) ?? true;
+
+  if (enableBabelRuntime !== false) {
+    // A string value pins a specific runtime version to optimize output.
+    const isVersion = typeof enableBabelRuntime === 'string';
+
+    const babelRuntimeModuleName =
+      options?.babelRuntimeModuleName ??
+      babel?.caller(getBabelRuntimeModuleName);
 
     extraPlugins.push([
       require('@babel/plugin-transform-runtime'),
       {
         helpers: true,
         regenerator: enableRegenerator,
-        ...(isVersion && {version: options.enableBabelRuntime}),
+        ...(isVersion && {version: enableBabelRuntime}),
+        ...(babelRuntimeModuleName != null && {
+          moduleName: babelRuntimeModuleName,
+        }),
       },
     ]);
   } else if (enableRegenerator) {
