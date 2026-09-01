@@ -94,7 +94,7 @@ public constructor(
       ReactTextView(context)
 
   override fun updateExtraData(view: ReactTextView, extraData: Any) {
-    SystraceSection("ReactTextViewManager.updateExtraData").use { s ->
+    SystraceSection("ReactTextViewManager.updateExtraData").use { _ ->
       val update = extraData as ReactTextUpdate
       val spanned: Spanned = update.text
       view.setText(update)
@@ -135,7 +135,7 @@ public constructor(
       props: ReactStylesDiffMap,
       stateWrapper: StateWrapper,
   ): Any? {
-    SystraceSection("ReactTextViewManager.updateState").use { s ->
+    SystraceSection("ReactTextViewManager.updateState").use { _ ->
       val refState = (stateWrapper as? ReferenceStateWrapper)?.stateDataReference
       if (refState is PreparedLayout) {
         return getReactTextUpdateFromPreparedLayout(view, refState)
