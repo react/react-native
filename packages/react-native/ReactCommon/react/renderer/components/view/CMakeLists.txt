@@ -22,7 +22,10 @@ add_library(rrc_view OBJECT ${rrc_view_SRC})
 react_native_android_selector(platform_DIR
         ${CMAKE_CURRENT_SOURCE_DIR}/platform/android/
         ${CMAKE_CURRENT_SOURCE_DIR}/platform/cxx/)
-target_include_directories(rrc_view PUBLIC ${REACT_COMMON_DIR} ${platform_DIR})
+react_native_android_selector(imagemanager_platform_DIR
+        ${REACT_COMMON_DIR}/react/renderer/imagemanager/platform/android/
+        ${REACT_COMMON_DIR}/react/renderer/imagemanager/platform/cxx/)
+target_include_directories(rrc_view PUBLIC ${REACT_COMMON_DIR} ${platform_DIR} ${imagemanager_platform_DIR})
 
 target_link_libraries(rrc_view
         folly_runtime

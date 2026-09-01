@@ -122,6 +122,7 @@ static BOOL RCTViewIsInteractiveAccessibilityElement(UIView *view, const ViewPro
   NSMutableSet<NSString *> *_accessibilityOrderNativeIDs;
   RCTSwiftUIContainerViewWrapper *_swiftUIWrapper;
   BOOL _focusable;
+  RCTBackgroundImageURLLoader *_backgroundImageLoader;
 }
 
 #ifdef RCT_DYNAMIC_FRAMEWORKS
@@ -136,6 +137,8 @@ static BOOL RCTViewIsInteractiveAccessibilityElement(UIView *view, const ViewPro
   if (self = [super initWithFrame:frame]) {
     _props = ViewShadowNode::defaultSharedProps();
     _reactSubviews = [NSMutableArray new];
+    _backgroundImageLoader = [RCTBackgroundImageURLLoader new];
+    _backgroundImageLoader.delegate = self;
 #if !TARGET_OS_TV
     self.multipleTouchEnabled = YES;
 #endif
@@ -675,6 +678,13 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
   _eventEmitter = std::static_pointer_cast<const ViewEventEmitter>(eventEmitter);
 }
 
+- (void)updateState:(const State::Shared &)state oldState:(const State::Shared &)oldState
+{
+  auto newViewState = std::static_pointer_cast<const ViewShadowNode::ConcreteState>(state);
+  auto oldViewState = oldState ? std::static_pointer_cast<const ViewShadowNode::ConcreteState>(oldState) : nullptr;
+  [_backgroundImageLoader updateStateWithNewState:newViewState oldState:oldViewState];
+}
+
 - (void)updateLayoutMetrics:(const LayoutMetrics &)layoutMetrics
            oldLayoutMetrics:(const LayoutMetrics &)oldLayoutMetrics
 {
@@ -774,6 +784,9 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
   [_filterLayer removeFromSuperlayer];
   _filterLayer = nil;
   [self clearExistingBackgroundImageLayers];
+
+  // Clean up background image observers
+  [_backgroundImageLoader reset];
 
   _propKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN = nil;
   _eventEmitter.reset();
@@ -1310,29 +1323,49 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
         backgroundRepeat = _props->backgroundRepeat[imageIndex % _props->backgroundRepeat.size()];
       }
 
-      CGSize backgroundImageSize = [RCTBackgroundImageUtils calculateBackgroundImageSize:backgroundPositioningArea
-                                                                       itemIntrinsicSize:backgroundPositioningArea.size
-                                                                          backgroundSize:backgroundSize
-                                                                        backgroundRepeat:backgroundRepeat];
-
-      CALayer *gradientLayer;
+      CALayer *itemLayer = nil;
 
       if (std::holds_alternative<LinearGradient>(backgroundImage)) {
+        CGSize backgroundImageSize = [RCTBackgroundImageUtils calculateBackgroundImageSize:backgroundPositioningArea
+                                                                         itemIntrinsicSize:backgroundPositioningArea.size
+                                                                            backgroundSize:backgroundSize
+                                                                          backgroundRepeat:backgroundRepeat];
         const auto &linearGradient = std::get<LinearGradient>(backgroundImage);
-        gradientLayer = [RCTLinearGradient gradientLayerWithSize:backgroundImageSize gradient:linearGradient];
+        itemLayer = [RCTLinearGradient gradientLayerWithSize:backgroundImageSize gradient:linearGradient];
       } else if (std::holds_alternative<RadialGradient>(backgroundImage)) {
+        CGSize backgroundImageSize = [RCTBackgroundImageUtils calculateBackgroundImageSize:backgroundPositioningArea
+                                                                         itemIntrinsicSize:backgroundPositioningArea.size
+                                                                            backgroundSize:backgroundSize
+                                                                          backgroundRepeat:backgroundRepeat];
         const auto &radialGradient = std::get<RadialGradient>(backgroundImage);
-        gradientLayer = [RCTRadialGradient gradientLayerWithSize:backgroundImageSize gradient:radialGradient];
+        itemLayer = [RCTRadialGradient gradientLayerWithSize:backgroundImageSize gradient:radialGradient];
+      } else if (std::holds_alternative<URLBackgroundImage>(backgroundImage)) {
+        const auto &urlBgImage = std::get<URLBackgroundImage>(backgroundImage);
+        NSString *uri = [NSString stringWithUTF8String:urlBgImage.uri.c_str()];
+        UIImage *loadedImage = [_backgroundImageLoader loadedImageForUri:uri];
+        if (loadedImage != nil) {
+          CGSize intrinsicSize = loadedImage.size;
+          CGSize backgroundImageSize = [RCTBackgroundImageUtils calculateBackgroundImageSize:backgroundPositioningArea
+                                                                           itemIntrinsicSize:intrinsicSize
+                                                                              backgroundSize:backgroundSize
+                                                                            backgroundRepeat:backgroundRepeat];
+          CALayer *imageLayer = [CALayer layer];
+          imageLayer.frame = CGRectMake(0, 0, backgroundImageSize.width, backgroundImageSize.height);
+          imageLayer.contents = (__bridge id)loadedImage.CGImage;
+          imageLayer.contentsGravity = kCAGravityResizeAspectFill;
+          itemLayer = imageLayer;
+        }
       }
 
-      if (gradientLayer != nil) {
+      if (itemLayer != nil) {
+        CGSize itemSize = itemLayer.frame.size;
         CALayer *backgroundImageLayer =
             [RCTBackgroundImageUtils createBackgroundImageLayerWithSize:backgroundPositioningArea
                                                            paintingArea:backgroundPaintingArea
-                                                               itemSize:backgroundImageSize
+                                                               itemSize:itemSize
                                                      backgroundPosition:backgroundPosition
                                                        backgroundRepeat:backgroundRepeat
-                                                              itemLayer:gradientLayer];
+                                                              itemLayer:itemLayer];
         [self shapeLayerToMatchView:backgroundImageLayer borderMetrics:borderMetricsBI];
         backgroundImageLayer.masksToBounds = YES;
         backgroundImageLayer.zPosition = BACKGROUND_COLOR_ZPOSITION;
@@ -1444,6 +1477,13 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
     [backgroundImageLayer removeFromSuperlayer];
   }
   [_backgroundImageLayers removeAllObjects];
+}
+
+#pragma mark - RCTBackgroundImageURLLoaderDelegate
+
+- (void)backgroundImagesDidLoad
+{
+  [self invalidateLayer];
 }
 
 #pragma mark - Accessibility

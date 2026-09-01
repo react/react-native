@@ -18,6 +18,7 @@ import type {
   RadialGradientSize,
 } from './StyleSheetTypes';
 
+const resolveAssetSource = require('../Image/resolveAssetSource').default;
 const processColor = require('./processColor').default;
 
 // Pre-compiled regex patterns for performance - avoids regex compilation on each call
@@ -70,13 +71,20 @@ type RadialGradientBackgroundImage = {
   }>,
 };
 
+type URLBackgroundImage = {
+  type: 'url',
+  uri: string,
+};
+
 // null color indicate that the transition hint syntax is used. e.g. red, 20%, blue
 type ColorStopColor = ProcessedColorValue | null;
 // percentage or pixel value
 type ColorStopPosition = number | string | null;
 
 type ParsedBackgroundImageValue =
-  LinearGradientBackgroundImage | RadialGradientBackgroundImage;
+  | LinearGradientBackgroundImage
+  | RadialGradientBackgroundImage
+  | URLBackgroundImage;
 
 export default function processBackgroundImage(
   backgroundImage: ?(ReadonlyArray<BackgroundImageValue> | string),
@@ -92,6 +100,28 @@ export default function processBackgroundImage(
     );
   } else if (Array.isArray(backgroundImage)) {
     for (const bgImage of backgroundImage) {
+      if (bgImage.type === 'url') {
+        let uri: ?string = null;
+        if (typeof bgImage.uri === 'string') {
+          uri = bgImage.uri;
+        } else if (typeof bgImage.uri === 'number') {
+          const source = resolveAssetSource(bgImage.uri);
+          if (source != null && source.uri != null) {
+            uri = source.uri;
+          }
+        }
+        if (uri != null) {
+          result = result.concat({
+            type: 'url',
+            uri,
+          });
+          continue;
+        } else {
+          // If the URI is invalid, return an empty array. Same as web.
+          return [];
+        }
+      }
+
       const processedColorStops = processColorStops(bgImage);
       if (processedColorStops == null) {
         // If a color stop is invalid, return an empty array and do not apply any gradient. Same as web.
@@ -257,11 +287,28 @@ function processColorStops(bgImage: BackgroundImageValue): ReadonlyArray<{
 
 function parseBackgroundImageCSSString(
   cssString: string,
-): ReadonlyArray<ParsedBackgroundImageValue> {
-  const gradients = [];
+): ReadOnlyArray<ParsedBackgroundImageValue> {
+  const backgroundImages = [];
   const bgImageStrings = splitGradients(cssString);
 
   for (const bgImageString of bgImageStrings) {
+    const urlRegex = /^url\((.*)\)$/i;
+    const urlMatch = urlRegex.exec(bgImageString);
+    if (urlMatch) {
+      let uri = urlMatch[1].trim();
+      const first = uri[0];
+      if ((first === '"' || first === "'") && uri.endsWith(first)) {
+        uri = uri.slice(1, -1);
+      }
+      if (uri.length > 0) {
+        backgroundImages.push({
+          type: 'url',
+          uri,
+        });
+      }
+      continue;
+    }
+
     const bgImage = bgImageString.toLowerCase();
     const match = GRADIENT_REGEX.exec(bgImage);
     if (match) {
@@ -272,11 +319,11 @@ function parseBackgroundImageCSSString(
         : parseLinearGradientCSSString(gradientContent);
 
       if (gradient != null) {
-        gradients.push(gradient);
+        backgroundImages.push(gradient);
       }
     }
   }
-  return gradients;
+  return backgroundImages;
 }
 
 function parseRadialGradientCSSString(

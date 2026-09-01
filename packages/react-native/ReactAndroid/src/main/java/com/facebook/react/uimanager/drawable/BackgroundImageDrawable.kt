@@ -8,6 +8,7 @@
 package com.facebook.react.uimanager.drawable
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.ColorFilter
 import android.graphics.Paint
@@ -45,11 +46,13 @@ internal class BackgroundImageDrawable(
   private var backgroundImageClipPath: Path? = null
   private var backgroundPositioningArea: RectF? = null
   private var backgroundPaintingArea: RectF? = null
+  private val urlImageLoader = BackgroundImageURLLoader()
 
   var backgroundImageLayers: List<BackgroundImageLayer>? = null
     set(value) {
       if (field != value) {
         field = value
+        loadUrlImages(value)
         invalidateSelf()
       }
     }
@@ -111,7 +114,7 @@ internal class BackgroundImageDrawable(
   }
 
   override fun draw(canvas: Canvas) {
-    if (backgroundImageLayers == null || backgroundImageLayers?.isEmpty() == true) {
+    if (backgroundImageLayers.isNullOrEmpty()) {
       return
     }
 
@@ -140,13 +143,29 @@ internal class BackgroundImageDrawable(
         val position =
             backgroundPosition?.takeIf { it.isNotEmpty() }?.let { it.getOrNull(index % it.size) }
 
+        val urlBitmap: Bitmap?
+        val (intrinsicWidth, intrinsicHeight) = when (backgroundImageLayer) {
+          is BackgroundImageLayer.GradientLayer -> {
+            urlBitmap = null
+            backgroundPositioningArea.width() to backgroundPositioningArea.height()
+          }
+          is BackgroundImageLayer.URLImageLayer -> {
+            val bitmap = urlImageLoader.loadedBitmapForUri(backgroundImageLayer.uri)
+            if (bitmap == null) {
+              continue
+            }
+            urlBitmap = bitmap
+            bitmap.width.toFloat() to bitmap.height.toFloat()
+          }
+        }
+
         // 2. Calculate the size of a single tile.
         val (tileWidth, tileHeight) =
             calculateBackgroundImageSize(
                 backgroundPositioningArea.width(),
                 backgroundPositioningArea.height(),
-                backgroundPositioningArea.width(),
-                backgroundPositioningArea.height(),
+                intrinsicWidth,
+                intrinsicHeight,
                 size,
                 repeat,
             )
@@ -155,8 +174,12 @@ internal class BackgroundImageDrawable(
           continue
         }
 
-        // 3. Set paint shader
-        backgroundPaint.setShader(backgroundImageLayer.getShader(tileWidth, tileHeight))
+        // 3. Set paint shader for gradients (URL images don't use shaders)
+        if (backgroundImageLayer is BackgroundImageLayer.GradientLayer) {
+          backgroundPaint.setShader(backgroundImageLayer.getShader(tileWidth, tileHeight))
+        } else {
+          backgroundPaint.setShader(null)
+        }
 
         // 4. Calculate spacing, x and y tiles count and position for tiles
         var (initialX, initialY) = calculateBackgroundPosition(tileWidth, tileHeight, position)
@@ -255,7 +278,13 @@ internal class BackgroundImageDrawable(
           repeat(yTilesCount) {
             canvas.save()
             canvas.translate(translateX, translateY)
-            canvas.drawRect(0f, 0f, tileWidth, tileHeight, backgroundPaint)
+            if (urlBitmap != null) {
+              val srcRect = Rect(0, 0, urlBitmap.width, urlBitmap.height)
+              val dstRect = RectF(0f, 0f, tileWidth, tileHeight)
+              canvas.drawBitmap(urlBitmap, srcRect, dstRect, backgroundPaint)
+            } else {
+              canvas.drawRect(0f, 0f, tileWidth, tileHeight, backgroundPaint)
+            }
             canvas.restore()
             translateY += tileHeight + ySpacing
           }
@@ -413,5 +442,15 @@ internal class BackgroundImageDrawable(
         } + backgroundPositioningArea.top
 
     return translateX to translateY
+  }
+
+  private fun loadUrlImages(layers: List<BackgroundImageLayer>?) {
+    val uris = layers?.filterIsInstance<BackgroundImageLayer.URLImageLayer>()?.map { it.uri }
+    if (uris.isNullOrEmpty()) {
+      urlImageLoader.cancelAllRequests()
+      return
+    }
+
+    urlImageLoader.loadImages(uris) { invalidateSelf() }
   }
 }
