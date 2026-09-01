@@ -14,7 +14,7 @@ import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 import type {Node} from '../../../../../Libraries/Renderer/shims/ReactNativeTypes';
 import type {HostInstance} from 'react-native';
 
-import {getNodeFromPublicInstance} from '../../../../../Libraries/ReactPrivate/ReactNativePrivateInterface';
+import {getNodeFromPublicInstance} from '../../../../../Libraries/ReactNative/ReactFabricPublicInstance/ReactFabricPublicInstance';
 import isUnreachable from '../isUnreachable';
 import {
   createShadowNodeReferenceCounter,

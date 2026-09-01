@@ -14,10 +14,8 @@
 // react-native/react-private-interface
 //
 // This is a private entry point allowing React to require React Native
-// internals (previously, Libaries/ReactNativePrivateInterface.js).
-//
-// These APIs should ONLY be used by first party React internals and are not
-// part of our public API.
+// internals. These APIs should ONLY be used by first party React internals and
+// are not part of our public API.
 //
 // IMPORTANT: Keep this file in sync with react-private-interface.js.flow.
 // ----------------------------------------------------------------------------

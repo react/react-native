@@ -55,6 +55,8 @@ export function createPublicTextInstance(
   return new ReadOnlyText(internalInstanceHandle, ownerDocument);
 }
 
+export type PublicTextInstance = ReturnType<typeof createPublicTextInstance>;
+
 export function getNativeTagFromPublicInstance(
   publicInstance: ReactNativeElement,
 ): number {

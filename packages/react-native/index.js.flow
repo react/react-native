@@ -497,7 +497,7 @@ export type {ErrorUtils} from './Libraries/vendor/core/ErrorUtils';
 export type {
   PublicRootInstance,
   PublicTextInstance,
-} from './Libraries/ReactPrivate/ReactNativePrivateInterface';
+} from './Libraries/ReactNative/ReactFabricPublicInstance/ReactFabricPublicInstance';
 
 export type {
   EventSubscription,
