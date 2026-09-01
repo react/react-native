@@ -2633,22 +2633,6 @@ public final class com/facebook/react/modules/core/ReactChoreographer$Companion 
 	public final fun initialize (Lcom/facebook/react/internal/ChoreographerProvider;)V
 }
 
-public final class com/facebook/react/modules/core/TimingModule : com/facebook/fbreact/specs/NativeTimingSpec, com/facebook/react/modules/core/JavaScriptTimerExecutor {
-	public static final field Companion Lcom/facebook/react/modules/core/TimingModule$Companion;
-	public static final field NAME Ljava/lang/String;
-	public fun <init> (Lcom/facebook/react/bridge/ReactApplicationContext;Lcom/facebook/react/devsupport/interfaces/DevSupportManager;)V
-	public fun callIdleCallbacks (D)V
-	public fun callTimers (Lcom/facebook/react/bridge/WritableArray;)V
-	public fun createTimer (DDDZ)V
-	public fun deleteTimer (D)V
-	public fun emitTimeDriftWarning (Ljava/lang/String;)V
-	public fun invalidate ()V
-	public fun setSendIdleEvents (Z)V
-}
-
-public final class com/facebook/react/modules/core/TimingModule$Companion {
-}
-
 public final class com/facebook/react/modules/debug/DevSettingsModule : com/facebook/fbreact/specs/NativeDevSettingsSpec {
 	public static final field Companion Lcom/facebook/react/modules/debug/DevSettingsModule$Companion;
 	public static final field NAME Ljava/lang/String;

@@ -11,9 +11,7 @@
 #import <QuartzCore/CADisplayLink.h>
 
 #import "RCTAssert.h"
-#import "RCTBridgeModule.h"
 #import "RCTFrameUpdate.h"
-#import "RCTModuleData.h"
 #import "RCTProfile.h"
 
 #define RCTAssertRunLoop() \
@@ -21,7 +19,7 @@
 
 @implementation RCTDisplayLink {
   CADisplayLink *_jsDisplayLink;
-  NSMutableSet<id<RCTDisplayLinkModuleHolder>> *_frameUpdateObservers;
+  NSMutableSet<id<RCTFrameUpdateObserver>> *_frameUpdateObservers;
   NSRunLoop *_runLoop;
 }
 
@@ -35,18 +33,11 @@
   return self;
 }
 
-- (void)registerModuleForFrameUpdates:(id<RCTBridgeModule>)module
-                     withModuleHolder:(id<RCTDisplayLinkModuleHolder>)moduleHolder
+- (void)registerTimingForFrameUpdates:(id<RCTFrameUpdateObserver>)timing
 {
-  if (![moduleHolder.moduleClass conformsToProtocol:@protocol(RCTFrameUpdateObserver)] ||
-      [_frameUpdateObservers containsObject:moduleHolder]) {
-    return;
-  }
+  [_frameUpdateObservers addObject:timing];
 
-  [_frameUpdateObservers addObject:moduleHolder];
-
-  // Don't access the module instance via moduleHolder, as this will cause deadlock
-  id<RCTFrameUpdateObserver> observer = (id<RCTFrameUpdateObserver>)module;
+  id<RCTFrameUpdateObserver> observer = timing;
   __weak typeof(self) weakSelf = self;
   observer.pauseCallback = ^{
     typeof(self) strongSelf = weakSelf;
@@ -97,22 +88,12 @@
 - (void)invalidate
 {
   // ensure observer callbacks do not hold a reference to weak self via pauseCallback
-  for (id<RCTDisplayLinkModuleHolder> moduleHolder in _frameUpdateObservers) {
-    id<RCTFrameUpdateObserver> observer = (id<RCTFrameUpdateObserver>)moduleHolder.instance;
+  for (id<RCTFrameUpdateObserver> observer in _frameUpdateObservers) {
     [observer setPauseCallback:nil];
   }
   [_frameUpdateObservers removeAllObjects]; // just to be explicit
 
   [_jsDisplayLink invalidate];
-}
-
-- (void)dispatchBlock:(dispatch_block_t)block queue:(dispatch_queue_t)queue
-{
-  if (queue == RCTJSThread) {
-    block();
-  } else if (queue) {
-    dispatch_async(queue, block);
-  }
 }
 
 - (void)_jsThreadUpdate:(CADisplayLink *)displayLink
@@ -121,21 +102,12 @@
 
   RCT_PROFILE_BEGIN_EVENT(RCTProfileTagAlways, @"-[RCTDisplayLink _jsThreadUpdate:]", nil);
 
+  // This always runs on the JS thread run loop, which is the queue the frame
+  // update observers expect their callbacks on, so dispatch inline.
   RCTFrameUpdate *frameUpdate = [[RCTFrameUpdate alloc] initWithDisplayLink:displayLink];
-  for (id<RCTDisplayLinkModuleHolder> moduleHolder in _frameUpdateObservers) {
-    id<RCTFrameUpdateObserver> observer = (id<RCTFrameUpdateObserver>)moduleHolder.instance;
+  for (id<RCTFrameUpdateObserver> observer in _frameUpdateObservers) {
     if (!observer.paused) {
-      if (moduleHolder.methodQueue) {
-        RCTProfileBeginFlowEvent();
-        [self
-            dispatchBlock:^{
-              RCTProfileEndFlowEvent();
-              [observer didUpdateFrame:frameUpdate];
-            }
-                    queue:moduleHolder.methodQueue];
-      } else {
-        [observer didUpdateFrame:frameUpdate];
-      }
+      [observer didUpdateFrame:frameUpdate];
     }
   }
 
@@ -151,8 +123,7 @@
   RCTAssertRunLoop();
 
   BOOL pauseDisplayLink = YES;
-  for (id<RCTDisplayLinkModuleHolder> moduleHolder in _frameUpdateObservers) {
-    id<RCTFrameUpdateObserver> observer = (id<RCTFrameUpdateObserver>)moduleHolder.instance;
+  for (id<RCTFrameUpdateObserver> observer in _frameUpdateObservers) {
     if (!observer.paused) {
       pauseDisplayLink = NO;
       break;

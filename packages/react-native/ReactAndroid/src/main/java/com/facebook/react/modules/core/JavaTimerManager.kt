@@ -32,8 +32,6 @@ import kotlin.math.sign
 /**
  * This class is the native implementation for JS timer execution on Android. It schedules JS timers
  * to be invoked on frame boundaries using [ReactChoreographer].
- *
- * This is used by the NativeModule [TimingModule].
  */
 public open class JavaTimerManager(
     private val reactApplicationContext: ReactApplicationContext,

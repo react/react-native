@@ -1031,7 +1031,7 @@ interface RCTDisplayLink : public NSObject {
   public virtual instancetype init();
   public virtual void addToRunLoop:(NSRunLoop* runLoop);
   public virtual void invalidate();
-  public virtual void registerModuleForFrameUpdates:withModuleHolder:(id<RCTBridgeModule> module, id<RCTDisplayLinkModuleHolder> moduleHolder);
+  public virtual void registerTimingForFrameUpdates:(id<RCTFrameUpdateObserver> module);
 }
 
 interface RCTDisplayWeakRefreshable : public NSObject {
@@ -1975,7 +1975,7 @@ interface RCTThirdPartyComponentsProvider : public NSObject {
   public virtual static NSDictionary<NSString*, Class<RCTComponentViewProtocol>>* thirdPartyFabricComponents();
 }
 
-interface RCTTiming : public NSObject <RCTBridgeModule, RCTInvalidating, RCTFrameUpdateObserver, RCTInitializing> {
+interface RCTTiming : public NSObject <RCTInvalidating, RCTFrameUpdateObserver, RCTInitializing> {
   public virtual instancetype initWithDelegate:(id<RCTTimingDelegate> delegate);
   public virtual void createTimerForNextFrame:duration:jsSchedulingTime:repeats:(NSNumber* callbackID, NSTimeInterval jsDuration, _Nullable NSDate* jsSchedulingTime, BOOL repeats);
   public virtual void deleteTimer:(double timerID);
@@ -2763,12 +2763,6 @@ protocol RCTDevSettingsDataSource : public NSObject {
 
 protocol RCTDevSettingsInspectable : public NSObject {
   public @property (assign) BOOL isInspectable;
-}
-
-protocol RCTDisplayLinkModuleHolder {
-  public virtual Class moduleClass();
-  public virtual dispatch_queue_t methodQueue();
-  public virtual id<RCTBridgeModule> instance();
 }
 
 protocol RCTDisplayRefreshable {

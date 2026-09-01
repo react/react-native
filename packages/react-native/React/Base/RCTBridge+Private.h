@@ -87,12 +87,6 @@ RCT_EXTERN void RCTRegisterModule(Class);
 - (void)start;
 
 /**
- * Used by RCTModuleData to register the module for frame updates after it is
- * lazily initialized.
- */
-- (void)registerModuleForFrameUpdates:(id<RCTBridgeModule>)module withModuleData:(RCTModuleData *)moduleData;
-
-/**
  * Dispatch work to a module's queue - this is also supports the fake RCTJSThread
  * queue. Exposed for the RCTProfiler
  */
