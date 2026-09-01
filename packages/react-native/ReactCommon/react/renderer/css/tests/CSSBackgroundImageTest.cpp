@@ -557,4 +557,86 @@ TEST_F(CSSBackgroundImageTest, RadialGradientNegativeRadius) {
   }
 }
 
+TEST_F(CSSBackgroundImageTest, URLBasicUnquoted) {
+  auto result =
+      parseCSSProperty<CSSBackgroundImage>("url(https://example.com/image.png)");
+  decltype(result) expected = CSSURLFunction{.url = "https://example.com/image.png"};
+  ASSERT_EQ(result, expected);
+}
+
+TEST_F(CSSBackgroundImageTest, URLDoubleQuoted) {
+  auto result =
+      parseCSSProperty<CSSBackgroundImage>("url(\"https://example.com/image.png\")");
+  decltype(result) expected = CSSURLFunction{.url = "https://example.com/image.png"};
+  ASSERT_EQ(result, expected);
+}
+
+TEST_F(CSSBackgroundImageTest, URLSingleQuoted) {
+  auto result =
+      parseCSSProperty<CSSBackgroundImage>("url('https://example.com/image.png')");
+  decltype(result) expected = CSSURLFunction{.url = "https://example.com/image.png"};
+  ASSERT_EQ(result, expected);
+}
+
+TEST_F(CSSBackgroundImageTest, URLCaseInsensitive) {
+  auto result =
+      parseCSSProperty<CSSBackgroundImage>("UrL(https://example.com/image.png)");
+  decltype(result) expected = CSSURLFunction{.url = "https://example.com/image.png"};
+  ASSERT_EQ(result, expected);
+}
+
+TEST_F(CSSBackgroundImageTest, URLWithQueryParams) {
+  auto result =
+      parseCSSProperty<CSSBackgroundImage>("url(https://example.com/image.png?size=Large&format=webp)");
+  decltype(result) expected = CSSURLFunction{.url = "https://example.com/image.png?size=Large&format=webp"};
+  ASSERT_EQ(result, expected);
+}
+
+TEST_F(CSSBackgroundImageTest, URLWithWhitespace) {
+  auto result =
+      parseCSSProperty<CSSBackgroundImage>("url(  https://example.com/image.png  )");
+  decltype(result) expected = CSSURLFunction{.url = "https://example.com/image.png"};
+  ASSERT_EQ(result, expected);
+}
+
+TEST_F(CSSBackgroundImageTest, MultipleURLs) {
+  auto result = parseCSSProperty<CSSBackgroundImageList>(
+      "url(https://example.com/bg1.png), url(https://example.com/bg2.png)");
+  decltype(result) expected = CSSBackgroundImageList{
+      {CSSURLFunction{.url = "https://example.com/bg1.png"},
+       CSSURLFunction{.url = "https://example.com/bg2.png"}}};
+  ASSERT_EQ(result, expected);
+}
+
+TEST_F(CSSBackgroundImageTest, URLMixedWithGradients) {
+  auto result = parseCSSProperty<CSSBackgroundImageList>(
+      "radial-gradient(circle at top left, red, blue), url(https://example.com/image.png), linear-gradient(to bottom, green, yellow)");
+  decltype(result) expected = CSSBackgroundImageList{
+      {CSSRadialGradientFunction{
+           .shape = CSSRadialGradientShape::Circle,
+           .size = CSSRadialGradientSizeKeyword::FarthestCorner,
+           .position =
+               CSSRadialGradientPosition{
+                   .top = CSSPercentage{.value = 0.0f},
+                   .left = CSSPercentage{.value = 0.0f}},
+           .items = {makeCSSColorStop(255, 0, 0), makeCSSColorStop(0, 0, 255)}},
+       CSSURLFunction{.url = "https://example.com/image.png"},
+       CSSLinearGradientFunction{
+           .direction =
+               CSSLinearGradientDirection{.value = CSSAngle{.degrees = 180.0f}},
+           .items = {
+               makeCSSColorStop(0, 128, 0), makeCSSColorStop(255, 255, 0)}}}};
+  ASSERT_EQ(result, expected);
+}
+
+TEST_F(CSSBackgroundImageTest, URLEmpty) {
+  auto result = parseCSSProperty<CSSBackgroundImage>("url()");
+  ASSERT_TRUE(std::holds_alternative<std::monostate>(result));
+}
+
+TEST_F(CSSBackgroundImageTest, URLEmptyQuoted) {
+  auto result = parseCSSProperty<CSSBackgroundImage>("url(\"\")");
+  ASSERT_TRUE(std::holds_alternative<std::monostate>(result));
+}
+
 } // namespace facebook::react

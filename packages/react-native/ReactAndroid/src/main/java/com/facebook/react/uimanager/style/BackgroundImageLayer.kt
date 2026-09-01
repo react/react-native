@@ -22,12 +22,12 @@ import com.facebook.react.bridge.ReadableType
  * @see LinearGradient
  * @see RadialGradient
  */
-public class BackgroundImageLayer() {
-  private lateinit var gradient: Gradient
-
-  private constructor(gradient: Gradient) : this() {
-    this.gradient = gradient
+public sealed class BackgroundImageLayer {
+  public class GradientLayer internal constructor(private val gradient: Gradient) : BackgroundImageLayer() {
+    public fun getShader(width: Float, height: Float): Shader = gradient.getShader(width, height)
   }
+
+  public class URLImageLayer(public val uri: String) : BackgroundImageLayer()
 
   public companion object {
     /**
@@ -40,22 +40,28 @@ public class BackgroundImageLayer() {
      * @param context Android context for resource resolution
      * @return A BackgroundImageLayer instance, or null if parsing fails
      */
-    public fun parse(gradientMap: ReadableMap?, context: Context): BackgroundImageLayer? {
-      if (gradientMap == null) {
-        return null
-      }
-      val gradient = parseGradient(gradientMap, context) ?: return null
-      return BackgroundImageLayer(gradient)
-    }
-
-    private fun parseGradient(gradientMap: ReadableMap, context: Context): Gradient? {
-      if (!gradientMap.hasKey("type") || gradientMap.getType("type") != ReadableType.String) {
+    public fun parse(backgroundImageMap: ReadableMap?, context: Context): BackgroundImageLayer? {
+      if (backgroundImageMap == null) {
         return null
       }
 
-      return when (gradientMap.getString("type")) {
-        "linear-gradient" -> LinearGradient.parse(gradientMap, context)
-        "radial-gradient" -> RadialGradient.parse(gradientMap, context)
+      if (!backgroundImageMap.hasKey("type") || backgroundImageMap.getType("type") != ReadableType.String) {
+        return null
+      }
+
+      return when (backgroundImageMap.getString("type")) {
+        "linear-gradient" -> {
+          val gradient = LinearGradient.parse(backgroundImageMap, context) ?: return null
+          GradientLayer(gradient)
+        }
+        "radial-gradient" -> {
+          val gradient = RadialGradient.parse(backgroundImageMap, context) ?: return null
+          GradientLayer(gradient)
+        }
+        "url" -> {
+          val uri = backgroundImageMap.getString("uri") ?: return null
+          URLImageLayer(uri)
+        }
         else -> null
       }
     }

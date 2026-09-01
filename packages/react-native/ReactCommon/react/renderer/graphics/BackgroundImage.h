@@ -7,12 +7,34 @@
 
 #pragma once
 
+#include <string>
+
 #include <react/renderer/graphics/LinearGradient.h>
 #include <react/renderer/graphics/RadialGradient.h>
 
 namespace facebook::react {
 
-using BackgroundImage = std::variant<LinearGradient, RadialGradient>;
+class ImageSource;
+
+struct URLBackgroundImage {
+  std::string uri{};
+
+  bool operator==(const URLBackgroundImage& rhs) const {
+    return uri == rhs.uri;
+  }
+
+  bool operator!=(const URLBackgroundImage& rhs) const {
+    return !(*this == rhs);
+  }
+
+#if RN_DEBUG_STRING_CONVERTIBLE
+  void toString(std::stringstream& ss) const {
+    ss << "url(" << uri << ")";
+  }
+#endif
+};
+
+using BackgroundImage = std::variant<LinearGradient, RadialGradient, URLBackgroundImage>;
 
 #ifdef RN_SERIALIZABLE_STATE
 folly::dynamic toDynamic(const BackgroundImage &backgroundImage);
@@ -34,6 +56,8 @@ inline std::string toString(std::vector<BackgroundImage> &value)
       std::get<LinearGradient>(backgroundImage).toString(ss);
     } else if (std::holds_alternative<RadialGradient>(backgroundImage)) {
       std::get<RadialGradient>(backgroundImage).toString(ss);
+    } else if (std::holds_alternative<URLBackgroundImage>(backgroundImage)) {
+      std::get<URLBackgroundImage>(backgroundImage).toString(ss);
     }
   }
   ss << "]";

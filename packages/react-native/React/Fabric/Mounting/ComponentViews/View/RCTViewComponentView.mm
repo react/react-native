@@ -104,6 +104,18 @@ static BOOL RCTViewIsInteractiveAccessibilityElement(UIView *view, const ViewPro
 }
 #endif
 
+// Core Animation supports a single mask per layer, so the border-radius
+// clipping shape is nested as the mask of the `mask-image` layer. Nested masks
+// multiply, which is exactly the intersection we want.
+static CALayer *RCTIntersectMaskLayers(CALayer *maskImageLayer, CALayer *clippingLayer)
+{
+  if (maskImageLayer == nil) {
+    return clippingLayer;
+  }
+  maskImageLayer.mask = clippingLayer;
+  return maskImageLayer;
+}
+
 @implementation RCTViewComponentView {
   UIColor *_backgroundColor;
   CALayer *_backgroundColorLayer;
@@ -122,6 +134,7 @@ static BOOL RCTViewIsInteractiveAccessibilityElement(UIView *view, const ViewPro
   NSMutableSet<NSString *> *_accessibilityOrderNativeIDs;
   RCTSwiftUIContainerViewWrapper *_swiftUIWrapper;
   BOOL _focusable;
+  RCTBackgroundImageURLLoader *_backgroundImageLoader;
 }
 
 #ifdef RCT_DYNAMIC_FRAMEWORKS
@@ -136,6 +149,8 @@ static BOOL RCTViewIsInteractiveAccessibilityElement(UIView *view, const ViewPro
   if (self = [super initWithFrame:frame]) {
     _props = ViewShadowNode::defaultSharedProps();
     _reactSubviews = [NSMutableArray new];
+    _backgroundImageLoader = [RCTBackgroundImageURLLoader new];
+    _backgroundImageLoader.delegate = self;
 #if !TARGET_OS_TV
     self.multipleTouchEnabled = YES;
 #endif
@@ -659,6 +674,12 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
     needsInvalidateLayer = YES;
   }
 
+  // `mask`
+  if (oldViewProps.maskImage != newViewProps.maskImage || oldViewProps.maskSize != newViewProps.maskSize ||
+      oldViewProps.maskPosition != newViewProps.maskPosition || oldViewProps.maskRepeat != newViewProps.maskRepeat) {
+    needsInvalidateLayer = YES;
+  }
+
   // `boxShadow`
   if (oldViewProps.boxShadow != newViewProps.boxShadow) {
     needsInvalidateLayer = YES;
@@ -673,6 +694,13 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
 {
   assert(std::dynamic_pointer_cast<const ViewEventEmitter>(eventEmitter));
   _eventEmitter = std::static_pointer_cast<const ViewEventEmitter>(eventEmitter);
+}
+
+- (void)updateState:(const State::Shared &)state oldState:(const State::Shared &)oldState
+{
+  auto newViewState = std::static_pointer_cast<const ViewShadowNode::ConcreteState>(state);
+  auto oldViewState = oldState ? std::static_pointer_cast<const ViewShadowNode::ConcreteState>(oldState) : nullptr;
+  [_backgroundImageLoader updateStateWithNewState:newViewState oldState:oldViewState];
 }
 
 - (void)updateLayoutMetrics:(const LayoutMetrics &)layoutMetrics
@@ -774,6 +802,9 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
   [_filterLayer removeFromSuperlayer];
   _filterLayer = nil;
   [self clearExistingBackgroundImageLayers];
+
+  // Clean up background image observers
+  [_backgroundImageLoader reset];
 
   _propKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN = nil;
   _eventEmitter.reset();
@@ -1310,29 +1341,49 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
         backgroundRepeat = _props->backgroundRepeat[imageIndex % _props->backgroundRepeat.size()];
       }
 
-      CGSize backgroundImageSize = [RCTBackgroundImageUtils calculateBackgroundImageSize:backgroundPositioningArea
-                                                                       itemIntrinsicSize:backgroundPositioningArea.size
-                                                                          backgroundSize:backgroundSize
-                                                                        backgroundRepeat:backgroundRepeat];
-
-      CALayer *gradientLayer;
+      CALayer *itemLayer = nil;
 
       if (std::holds_alternative<LinearGradient>(backgroundImage)) {
+        CGSize backgroundImageSize = [RCTBackgroundImageUtils calculateBackgroundImageSize:backgroundPositioningArea
+                                                                         itemIntrinsicSize:backgroundPositioningArea.size
+                                                                            backgroundSize:backgroundSize
+                                                                          backgroundRepeat:backgroundRepeat];
         const auto &linearGradient = std::get<LinearGradient>(backgroundImage);
-        gradientLayer = [RCTLinearGradient gradientLayerWithSize:backgroundImageSize gradient:linearGradient];
+        itemLayer = [RCTLinearGradient gradientLayerWithSize:backgroundImageSize gradient:linearGradient];
       } else if (std::holds_alternative<RadialGradient>(backgroundImage)) {
+        CGSize backgroundImageSize = [RCTBackgroundImageUtils calculateBackgroundImageSize:backgroundPositioningArea
+                                                                         itemIntrinsicSize:backgroundPositioningArea.size
+                                                                            backgroundSize:backgroundSize
+                                                                          backgroundRepeat:backgroundRepeat];
         const auto &radialGradient = std::get<RadialGradient>(backgroundImage);
-        gradientLayer = [RCTRadialGradient gradientLayerWithSize:backgroundImageSize gradient:radialGradient];
+        itemLayer = [RCTRadialGradient gradientLayerWithSize:backgroundImageSize gradient:radialGradient];
+      } else if (std::holds_alternative<URLBackgroundImage>(backgroundImage)) {
+        const auto &urlBgImage = std::get<URLBackgroundImage>(backgroundImage);
+        NSString *uri = [NSString stringWithUTF8String:urlBgImage.uri.c_str()];
+        UIImage *loadedImage = [_backgroundImageLoader loadedImageForUri:uri];
+        if (loadedImage != nil) {
+          CGSize intrinsicSize = loadedImage.size;
+          CGSize backgroundImageSize = [RCTBackgroundImageUtils calculateBackgroundImageSize:backgroundPositioningArea
+                                                                           itemIntrinsicSize:intrinsicSize
+                                                                              backgroundSize:backgroundSize
+                                                                            backgroundRepeat:backgroundRepeat];
+          CALayer *imageLayer = [CALayer layer];
+          imageLayer.frame = CGRectMake(0, 0, backgroundImageSize.width, backgroundImageSize.height);
+          imageLayer.contents = (__bridge id)loadedImage.CGImage;
+          imageLayer.contentsGravity = kCAGravityResizeAspectFill;
+          itemLayer = imageLayer;
+        }
       }
 
-      if (gradientLayer != nil) {
+      if (itemLayer != nil) {
+        CGSize itemSize = itemLayer.frame.size;
         CALayer *backgroundImageLayer =
             [RCTBackgroundImageUtils createBackgroundImageLayerWithSize:backgroundPositioningArea
                                                            paintingArea:backgroundPaintingArea
-                                                               itemSize:backgroundImageSize
+                                                               itemSize:itemSize
                                                      backgroundPosition:backgroundPosition
                                                        backgroundRepeat:backgroundRepeat
-                                                              itemLayer:gradientLayer];
+                                                              itemLayer:itemLayer];
         [self shapeLayerToMatchView:backgroundImageLayer borderMetrics:borderMetricsBI];
         backgroundImageLayer.masksToBounds = YES;
         backgroundImageLayer.zPosition = BACKGROUND_COLOR_ZPOSITION;
@@ -1366,7 +1417,8 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
   }
 
   // clipping
-  self.currentContainerView.layer.mask = nil;
+  CALayer *maskImageLayer = [self createMaskImageLayer];
+  self.currentContainerView.layer.mask = maskImageLayer;
   if (self.currentContainerView.clipsToBounds) {
     BOOL clipToPaddingBox = ReactNativeFeatureFlags::enableIOSViewClipToPaddingBox();
     if (!clipToPaddingBox) {
@@ -1377,7 +1429,7 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
             [self createMaskLayer:self.bounds
                      cornerInsets:RCTGetCornerInsets(
                                       RCTCornerRadiiFromBorderRadii(borderMetrics.borderRadii), UIEdgeInsetsZero)];
-        self.currentContainerView.layer.mask = maskLayer;
+        self.currentContainerView.layer.mask = RCTIntersectMaskLayers(maskImageLayer, maskLayer);
       }
 
       for (UIView *subview in self.currentContainerView.subviews) {
@@ -1398,7 +1450,7 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
                                     cornerInsets:RCTGetCornerInsets(
                                                      RCTCornerRadiiFromBorderRadii(borderMetrics.borderRadii),
                                                      RCTUIEdgeInsetsFromEdgeInsets(borderMetrics.borderWidths))];
-      self.currentContainerView.layer.mask = maskLayer;
+      self.currentContainerView.layer.mask = RCTIntersectMaskLayers(maskImageLayer, maskLayer);
     } else {
       self.currentContainerView.layer.cornerRadius = borderMetrics.borderRadii.topLeft.horizontal;
     }
@@ -1434,6 +1486,98 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
   return maskLayer;
 }
 
+// Builds the layer used as `self.currentContainerView.layer.mask` for the
+// `mask-image` style, or nil when no mask is set. Each mask layer is painted
+// into a shared container so that multiple mask images composite together,
+// matching how `background-image` stacks its layers.
+// https://www.w3.org/TR/css-masking-1/#the-mask-image
+- (nullable CALayer *)createMaskImageLayer
+{
+  if (_props->maskImage.empty()) {
+    return nil;
+  }
+
+  // mask-origin: padding-box
+  CGRect positioningArea = RCTCGRectFromRect(_layoutMetrics.getPaddingFrame());
+  // mask-clip: border-box
+  CGRect paintingArea = self.layer.bounds;
+
+  CALayer *containerLayer = [CALayer layer];
+  containerLayer.frame = paintingArea;
+
+  size_t imageIndex = _props->maskImage.size() - 1;
+  // iterate in reverse to match CSS specification
+  for (const auto &maskImage : std::ranges::reverse_view(_props->maskImage)) {
+    BackgroundSize maskSize = BackgroundSizeLengthPercentage{};
+    if (!_props->maskSize.empty()) {
+      maskSize = _props->maskSize[imageIndex % _props->maskSize.size()];
+    }
+
+    BackgroundPosition maskPosition;
+    if (!_props->maskPosition.empty()) {
+      maskPosition = _props->maskPosition[imageIndex % _props->maskPosition.size()];
+    }
+
+    BackgroundRepeat maskRepeat;
+    if (!_props->maskRepeat.empty()) {
+      maskRepeat = _props->maskRepeat[imageIndex % _props->maskRepeat.size()];
+    }
+
+    CALayer *itemLayer = nil;
+
+    if (std::holds_alternative<LinearGradient>(maskImage)) {
+      CGSize itemSize = [RCTBackgroundImageUtils calculateBackgroundImageSize:positioningArea
+                                                            itemIntrinsicSize:positioningArea.size
+                                                               backgroundSize:maskSize
+                                                             backgroundRepeat:maskRepeat];
+      itemLayer = [RCTLinearGradient gradientLayerWithSize:itemSize gradient:std::get<LinearGradient>(maskImage)];
+    } else if (std::holds_alternative<RadialGradient>(maskImage)) {
+      CGSize itemSize = [RCTBackgroundImageUtils calculateBackgroundImageSize:positioningArea
+                                                            itemIntrinsicSize:positioningArea.size
+                                                               backgroundSize:maskSize
+                                                             backgroundRepeat:maskRepeat];
+      itemLayer = [RCTRadialGradient gradientLayerWithSize:itemSize gradient:std::get<RadialGradient>(maskImage)];
+    } else if (std::holds_alternative<URLBackgroundImage>(maskImage)) {
+      const auto &urlMaskImage = std::get<URLBackgroundImage>(maskImage);
+      NSString *uri = RCTNSStringFromString(urlMaskImage.uri);
+      // Loaded asynchronously by `RCTBackgroundImageURLLoader`, which triggers
+      // another `invalidateLayer` once the image is available.
+      UIImage *loadedImage = [_backgroundImageLoader loadedImageForUri:uri];
+      if (loadedImage != nil) {
+        CGSize itemSize = [RCTBackgroundImageUtils calculateBackgroundImageSize:positioningArea
+                                                              itemIntrinsicSize:loadedImage.size
+                                                                 backgroundSize:maskSize
+                                                               backgroundRepeat:maskRepeat];
+        CALayer *imageLayer = [CALayer layer];
+        imageLayer.frame = CGRectMake(0, 0, itemSize.width, itemSize.height);
+        imageLayer.contents = (__bridge id)loadedImage.CGImage;
+        // `itemSize` already resolves `mask-size`, so the image stretches to
+        // fill it rather than preserving its intrinsic aspect ratio.
+        imageLayer.contentsGravity = kCAGravityResize;
+        itemLayer = imageLayer;
+      }
+    }
+
+    if (itemLayer != nil) {
+      CALayer *maskImageLayer = [RCTBackgroundImageUtils createBackgroundImageLayerWithSize:positioningArea
+                                                                               paintingArea:paintingArea
+                                                                                   itemSize:itemLayer.frame.size
+                                                                         backgroundPosition:maskPosition
+                                                                           backgroundRepeat:maskRepeat
+                                                                                  itemLayer:itemLayer];
+      // The helper leaves the returned layer unpositioned; sizing it to the
+      // painting area is what applies `mask-clip: border-box`.
+      maskImageLayer.frame = paintingArea;
+      maskImageLayer.masksToBounds = YES;
+      [containerLayer addSublayer:maskImageLayer];
+    }
+
+    imageIndex--;
+  }
+
+  return containerLayer;
+}
+
 - (void)clearExistingBackgroundImageLayers
 {
   if (_backgroundImageLayers == nil) {
@@ -1444,6 +1588,13 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
     [backgroundImageLayer removeFromSuperlayer];
   }
   [_backgroundImageLayers removeAllObjects];
+}
+
+#pragma mark - RCTBackgroundImageURLLoaderDelegate
+
+- (void)backgroundImagesDidLoad
+{
+  [self invalidateLayer];
 }
 
 #pragma mark - Accessibility

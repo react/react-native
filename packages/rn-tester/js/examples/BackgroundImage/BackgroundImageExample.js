@@ -440,4 +440,44 @@ exports.examples = [
       );
     },
   },
+  {
+    title: 'URL Image',
+    name: 'url-image',
+    render(): React.Node {
+      return (
+        <BackgroundImageBox
+          style={{
+            width: 200,
+            height: 200,
+            experimental_backgroundImage:
+              'url(https://reactnative.dev/img/tiny_logo.png)',
+            experimental_backgroundRepeat: 'no-repeat',
+          }}
+          testID="background-image-url"
+        />
+      );
+    },
+  },
+  {
+    title: 'URL Image from local file',
+    name: 'local-image',
+    render(): React.Node {
+      return (
+        <BackgroundImageBox
+          style={{
+            width: 200,
+            height: 200,
+            experimental_backgroundImage: [
+              {
+                type: 'url',
+                uri: require('../../assets/bunny.png'),
+              },
+            ],
+            experimental_backgroundRepeat: 'no-repeat',
+          }}
+          testID="background-image-local"
+        />
+      );
+    },
+  },
 ] as Array<RNTesterModuleExample>;

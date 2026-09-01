@@ -149,6 +149,9 @@ Pod::Spec.new do |s|
       sss.dependency             "Yoga"
       sss.source_files         = podspec_sources(["react/renderer/components/view/*.{m,mm,cpp,h}", "react/renderer/components/view/platform/cxx/**/*.{m,mm,cpp,h}"], ["react/renderer/components/view/*.{h}", "react/renderer/components/view/platform/cxx/**/*.{h}"])
       sss.header_dir           = "react/renderer/components/view"
+      sss.pod_target_xcconfig  = {
+        "HEADER_SEARCH_PATHS" => "\"$(PODS_TARGET_SRCROOT)/react/renderer/imagemanager/platform/ios\""
+      }
     end
 
     ss.subspec "viewUmbrella" do |sss|

@@ -19,6 +19,10 @@ import {
   boxShadowAttribute,
   colorAttribute,
   filterAttribute,
+  maskImageAttribute,
+  maskPositionAttribute,
+  maskRepeatAttribute,
+  maskSizeAttribute,
 } from '../Components/View/ReactNativeStyleAttributes';
 import {DynamicallyInjectedByGestureHandler} from './ViewConfigIgnore';
 
@@ -219,6 +223,10 @@ const validAttributesForNonEventProps = {
   experimental_backgroundPosition: backgroundPositionAttribute,
   backgroundRepeat: backgroundRepeatAttribute,
   experimental_backgroundRepeat: backgroundRepeatAttribute,
+  maskImage: maskImageAttribute,
+  maskSize: maskSizeAttribute,
+  maskPosition: maskPositionAttribute,
+  maskRepeat: maskRepeatAttribute,
   boxShadow: boxShadowAttribute,
   filter: filterAttribute,
   mixBlendMode: true,
