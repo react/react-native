@@ -65,6 +65,7 @@ import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.roundToInt
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -1187,7 +1188,21 @@ internal object TextLayoutManager {
       paint: TextPaint,
   ): Unit {
     var boring = isBoring(text, paint)
-    var layout: Layout
+    var layout =
+        createLayout(
+            text,
+            boring,
+            width,
+            widthYogaMeasureMode,
+            includeFontPadding,
+            textBreakStrategy,
+            hyphenationFrequency,
+            alignment,
+            justificationMode,
+            null,
+            ReactConstants.UNSET,
+            paint,
+        )
 
     // Minimum font size is 4pts to match the iOS implementation.
     val minimumFontSize =
@@ -1198,6 +1213,13 @@ internal object TextLayoutManager {
     val spans = text.getSpans(0, text.length, ReactAbsoluteSizeSpan::class.java)
     for (span in spans) {
       currentFontSize = max(currentFontSize, span.size).toInt()
+    }
+
+    if (
+        !layoutExceedsFontSizeFitConstraints(
+            text, layout, width, height, heightYogaMeasureMode, maximumNumberOfLines)
+    ) {
+      return
     }
 
     var intervalStart = minimumFontSize
@@ -1214,12 +1236,14 @@ internal object TextLayoutManager {
       val currentFontSize = (intervalStart + intervalEnd + 1) / 2
 
       val ratio = currentFontSize.toFloat() / previousFontSize.toFloat()
-      paint.textSize = max((paint.textSize * ratio).toInt(), minimumFontSize).toFloat()
+      paint.textSize = scaleFontSizeForFontSizeFit(paint.textSize, ratio, minimumFontSize).toFloat()
 
       val sizeSpans = text.getSpans(0, text.length, ReactAbsoluteSizeSpan::class.java)
       for (span in sizeSpans) {
         text.setSpan(
-            ReactAbsoluteSizeSpan(max((span.size * ratio).toInt(), minimumFontSize)),
+            ReactAbsoluteSizeSpan(
+                scaleFontSizeForFontSizeFit(span.size.toFloat(), ratio, minimumFontSize)
+            ),
             text.getSpanStart(span),
             text.getSpanEnd(span),
             text.getSpanFlags(span),
@@ -1250,17 +1274,10 @@ internal object TextLayoutManager {
         break
       }
 
-      val singleLineTextExceedsWidth = text.length == 1 && layout.getLineWidth(0) > width
-      val exceedsHeight =
-          heightYogaMeasureMode != YogaMeasureMode.UNDEFINED && layout.height > height
-      val exceedsMaximumNumberOfLines =
-          maximumNumberOfLines != ReactConstants.UNSET &&
-              maximumNumberOfLines != 0 &&
-              layout.lineCount > maximumNumberOfLines
-
       if (
           currentFontSize > minimumFontSize &&
-              (exceedsMaximumNumberOfLines || exceedsHeight || singleLineTextExceedsWidth)
+              layoutExceedsFontSizeFitConstraints(
+                  text, layout, width, height, heightYogaMeasureMode, maximumNumberOfLines)
       ) {
         // Text doesn't fit the constraints. If intervalEnd - intervalStart == 1, it's known that
         // the correct font size is intervalStart. Set intervalEnd to match intervalStart and do one
@@ -1274,6 +1291,26 @@ internal object TextLayoutManager {
       previousFontSize = currentFontSize
     }
   }
+
+  private fun layoutExceedsFontSizeFitConstraints(
+      text: Spannable,
+      layout: Layout,
+      width: Float,
+      height: Float,
+      heightYogaMeasureMode: YogaMeasureMode,
+      maximumNumberOfLines: Int,
+  ): Boolean =
+      (maximumNumberOfLines != ReactConstants.UNSET &&
+          maximumNumberOfLines != 0 &&
+          layout.lineCount > maximumNumberOfLines) ||
+          (heightYogaMeasureMode != YogaMeasureMode.UNDEFINED && layout.height > height) ||
+          (text.length == 1 && layout.getLineWidth(0) > width)
+
+  internal fun scaleFontSizeForFontSizeFit(
+      fontSize: Float,
+      ratio: Float,
+      minimumFontSize: Int,
+  ): Int = max((fontSize * ratio).roundToInt(), minimumFontSize)
 
   @JvmStatic
   @OptIn(UnstableReactNativeAPI::class)
