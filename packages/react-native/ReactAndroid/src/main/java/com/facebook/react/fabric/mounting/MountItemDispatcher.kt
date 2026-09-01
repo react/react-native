@@ -35,6 +35,7 @@ internal class MountItemDispatcher(
   private val preMountItems: Queue<MountItem> = ConcurrentLinkedQueue()
 
   private var inDispatch: Boolean = false
+  private var followUpDispatchRequired: Boolean = false
   var batchedExecutionTime: Long = 0L
     private set
 
@@ -78,24 +79,27 @@ internal class MountItemDispatcher(
   @UiThread
   @ThreadConfined(UI)
   fun tryDispatchMountItems() {
-    // If we're already dispatching, don't reenter.
-    // Reentrance can potentially happen a lot on Android in Fabric because `updateState` from the
-    // mounting layer causes mount items to be dispatched synchronously. We want to 1) make sure we
-    // don't reenter in those cases, but 2) still execute those queued instructions synchronously.
-    // This is a pretty blunt tool, but we might not have better options since we really don't want
-    // to execute anything out-of-order.
+    // If we're already dispatching, don't reenter but signal that a follow-up dispatch is
+    // needed. This follows the same pattern as iOS's RCTMountingManager::initiateTransaction,
+    // which uses _followUpTransactionRequired flag to ensure mount items
+    // enqueued during dispatch (e.g., from synchronous state updates triggered by view layout)
+    // are processed in the same frame rather than deferred to the next one.
     if (inDispatch) {
+      followUpDispatchRequired = true
       return
     }
 
-    inDispatch = true
+    do {
+      followUpDispatchRequired = false
+      inDispatch = true
 
-    try {
-      dispatchMountItems()
-    } finally {
-      // Clean up after running dispatchMountItems - even if an exception was thrown
-      inDispatch = false
-    }
+      try {
+        dispatchMountItems()
+      } finally {
+        // Clean up after running dispatchMountItems - even if an exception was thrown
+        inDispatch = false
+      }
+    } while (followUpDispatchRequired)
 
     // We call didDispatchMountItems regardless of whether we actually dispatched anything, since
     // NativeAnimatedModule relies on this for executing any animations that may have been

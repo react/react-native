@@ -116,9 +116,11 @@ class ConcreteState : public State {
     return getData().getDynamic();
   }
 
-  void updateState(folly::dynamic &&data) const override
+  void updateState(
+      folly::dynamic &&data,
+      EventQueue::UpdateMode updateMode = EventQueue::UpdateMode::Asynchronous) const override
   {
-    updateState(Data(getData(), std::move(data)));
+    updateState(Data(getData(), std::move(data)), updateMode);
   }
 
   MapBuffer getMapBuffer() const override

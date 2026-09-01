@@ -16,6 +16,7 @@ import com.facebook.react.bridge.ReadableNativeMap
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.common.mapbuffer.ReadableMapBuffer
 import com.facebook.react.uimanager.ReferenceStateWrapper
+import com.facebook.react.uimanager.StateWrapper
 
 /**
  * This class holds reference to the C++ EventEmitter object. Instances of this class are created on
@@ -33,7 +34,7 @@ internal class StateWrapperImpl private constructor() : HybridClassBase(), Refer
 
   private external fun getStateDataReferenceImpl(): Any?
 
-  public external fun updateStateImpl(map: NativeMap)
+  public external fun updateStateImpl(map: NativeMap, updateMode: Int)
 
   public override val stateDataMapBuffer: ReadableMapBuffer?
     get() {
@@ -66,12 +67,12 @@ internal class StateWrapperImpl private constructor() : HybridClassBase(), Refer
     initHybrid()
   }
 
-  override fun updateState(map: WritableMap) {
+  override fun updateState(map: WritableMap, updateMode: StateWrapper.UpdateMode) {
     if (!isValid) {
       FLog.e(TAG, "Race between StateWrapperImpl destruction and updateState")
       return
     }
-    updateStateImpl(map as NativeMap)
+    updateStateImpl(map as NativeMap, updateMode.value)
   }
 
   override fun destroyState() {

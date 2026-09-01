@@ -9,6 +9,7 @@
 #include <fbjni/fbjni.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/jni/ReadableNativeMap.h>
+#include <react/renderer/core/EventQueue.h>
 #include <react/renderer/mapbuffer/MapBuffer.h>
 #include <react/renderer/mapbuffer/MapBufferBuilder.h>
 
@@ -50,12 +51,14 @@ jni::local_ref<jobject> StateWrapperImpl::getStateDataReferenceImpl() {
   return nullptr;
 }
 
-void StateWrapperImpl::updateStateImpl(NativeMap* map) {
+void StateWrapperImpl::updateStateImpl(NativeMap* map, jint updateMode) {
   if (state_) {
     // Get folly::dynamic from map
     auto dynamicMap = map->consume();
     // Set state
-    state_->updateState(std::move(dynamicMap));
+    state_->updateState(
+        std::move(dynamicMap),
+        static_cast<EventQueue::UpdateMode>(updateMode));
   }
 }
 
