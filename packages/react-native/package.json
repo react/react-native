@@ -169,7 +169,6 @@
     "metro-source-map": "^0.87.0",
     "nullthrows": "^1.1.1",
     "pretty-format": "^29.7.0",
-    "promise": "^8.3.0",
     "react-devtools-core": "^6.1.5",
     "react-refresh": "^0.14.0",
     "regenerator-runtime": "^0.13.2",
