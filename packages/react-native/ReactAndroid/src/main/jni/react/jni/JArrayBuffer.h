@@ -28,27 +28,22 @@ class JArrayBuffer : public jni::HybridClass<JArrayBuffer> {
 
   // JS ArrayBuffer with a native MutableBuffer (tryGetMutableBuffer). Retain
   // the owner so the bytes stay valid after the call.
-  static jni::local_ref<javaobject> createOwning(std::shared_ptr<jsi::MutableBuffer> buffer);
-
-  // JS-heap bytes passed to a synchronous call. Zero-copy for the call only;
-  // do not retain the result.
-  static jni::local_ref<javaobject> createUnowned(void *bytes, size_t size);
+  static jni::local_ref<javaobject> createWithOwnedBytes(std::shared_ptr<jsi::MutableBuffer> buffer);
 
   // Copy JS-heap bytes into a new owned buffer. Used for async/promise calls
   // and anywhere the module needs its own copy of the data.
-  static jni::local_ref<javaobject> createOwned(const void *bytes, size_t size);
+  static jni::local_ref<javaobject> createWithCopiedBytes(const void *bytes, size_t size);
+
+  // JS-heap bytes passed to a synchronous call. Zero-copy for the call only;
+  // do not retain the result. No Kotlin equivalent by design: only the
+  // TurboModule bridge may lend out JS-heap bytes.
+  static jni::local_ref<javaobject> createWithUnownedBytes(void *bytes, size_t size);
 
   // Convert a module return value for rt.createArrayBuffer. Owning buffers pass
   // through; borrowed ones are copied because createArrayBuffer needs its own
   // backing store. Raises a jsi::JSError if the buffer has no native peer or
   // its borrow has been revoked.
   static std::shared_ptr<jsi::MutableBuffer> toJSBuffer(jsi::Runtime &runtime, jni::alias_ref<javaobject> arrayBuffer);
-
-  // Revokes access to borrowed bytes. Called when the call frame that lent the
-  // bytes unwinds, so a module that retained a non-owning ArrayBuffer gets an
-  // exception instead of reading memory the JS heap has moved or freed. Owning
-  // buffers are unaffected.
-  void invalidate() noexcept;
 
   // The bytes this buffer was created over. Throws if a borrow has since been
   // revoked by invalidate().
@@ -65,6 +60,12 @@ class JArrayBuffer : public jni::HybridClass<JArrayBuffer> {
   {
     return owningBytes_;
   }
+
+  // Revokes access to borrowed bytes. Called when the call frame that lent the
+  // bytes unwinds, so a module that retained a non-owning ArrayBuffer gets an
+  // exception instead of reading memory the JS heap has moved or freed. Owning
+  // buffers are unaffected.
+  void invalidate() noexcept;
 
   JArrayBuffer(std::shared_ptr<jsi::MutableBuffer> buffer, bool owningBytes) noexcept
       : buffer_(std::move(buffer)), owningBytes_(owningBytes)

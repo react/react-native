@@ -11,6 +11,7 @@
 #import <ReactCommon/RCTTurboModule.h>
 #import <hermes/hermes.h>
 #import <jsi/decorator.h>
+#import <react/bridging/ArrayBuffer.h>
 #import <react/featureflags/ReactNativeFeatureFlags.h>
 
 #import <memory>
@@ -31,23 +32,6 @@ RCT_EXPORT_MODULE()
 RCT_EXPORT_METHOD(testMethodWhichTakesObject : (id)object) {}
 
 @end
-
-// Minimal concrete MutableBuffer that owns its bytes, used to observe lifetime.
-class TestMutableBuffer : public facebook::jsi::MutableBuffer {
- public:
-  explicit TestMutableBuffer(size_t size) : bytes_(size, 0) {}
-  size_t size() const override
-  {
-    return bytes_.size();
-  }
-  uint8_t *data() override
-  {
-    return bytes_.data();
-  }
-
- private:
-  std::vector<uint8_t> bytes_;
-};
 
 // `jsi::Runtime::tryGetMutableBuffer` is optional — the Hermes branch linked into apps returns
 // nullptr for every ArrayBuffer — so decorate the runtime to answer it for the buffers created
@@ -168,7 +152,7 @@ class StubNativeMethodCallInvoker : public NativeMethodCallInvoker {
   auto hermesRuntime = facebook::hermes::makeHermesRuntime();
   MutableBufferAwareRuntime runtime(*hermesRuntime);
 
-  auto buffer = std::make_shared<TestMutableBuffer>(kBufferSize);
+  auto buffer = std::make_shared<detail::OwnedBytesBuffer>(std::vector<uint8_t>(kBufferSize, 0));
   *buffer->data() = 0xAB;
   const uint8_t *sourceBytes = buffer->data();
 

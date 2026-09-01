@@ -979,7 +979,6 @@ class facebook::react::AsyncArrayBuffer {
   public static facebook::react::AsyncArrayBuffer copy(facebook::jsi::Runtime& rt, const facebook::jsi::ArrayBuffer& buffer);
   public static facebook::react::AsyncArrayBuffer wrap(std::shared_ptr<facebook::jsi::MutableBuffer> buffer) noexcept;
   public static facebook::react::AsyncArrayBuffer wrap(std::vector<uint8_t> bytes);
-  public static void throwIfDetached(facebook::jsi::Runtime& rt, const facebook::jsi::ArrayBuffer& buffer, const char* callerName);
   public std::shared_ptr<facebook::jsi::MutableBuffer> getMutableBuffer() const noexcept;
   public uint8_t* data() noexcept;
   public ~AsyncArrayBuffer() = default;
@@ -7090,6 +7089,7 @@ constexpr uint8_t facebook::react::detail::clampAlpha(std::optional<float> alpha
 constexpr uint8_t facebook::react::detail::hexToNumeric(std::string_view hex, facebook::react::detail::HexColorType hexType);
 float facebook::react::detail::normalizeHue(float hue);
 std::optional<float> facebook::react::detail::normalizeHueComponent(const std::variant<std::monostate, facebook::react::CSSNumber, facebook::react::CSSAngle>& component);
+std::shared_ptr<facebook::jsi::MutableBuffer> facebook::react::detail::copyToOwnedBuffer(const uint8_t* bytes, size_t size);
 std::tuple<uint8_t, uint8_t, uint8_t> facebook::react::detail::hslToRgb(float h, float s, float l);
 std::tuple<uint8_t, uint8_t, uint8_t> facebook::react::detail::hwbToRgb(float h, float w, float b);
 template <CSSDataType... FirstComponentAllowedTypesT>
@@ -7112,6 +7112,7 @@ template <typename T, typename C>
 C facebook::react::detail::memberFunctionClass(T C::*);
 template <typename... ComponentT>
 constexpr std::optional<float> facebook::react::detail::normalizeComponent(const std::variant<std::monostate, ComponentT...>& component, float baseValue);
+void facebook::react::detail::throwIfDetached(facebook::jsi::Runtime& rt, const facebook::jsi::ArrayBuffer& buffer, const char* callerName);
 
 class facebook::react::detail::OwnedBytesBuffer : public facebook::jsi::MutableBuffer {
   public OwnedBytesBuffer(std::vector<uint8_t> bytes) noexcept;

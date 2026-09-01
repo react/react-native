@@ -23,12 +23,13 @@
 @end
 
 @implementation RCTArrayBuffer {
-  void *_bytes;
-  NSUInteger _length;
-  BOOL _owningBytes;
   void (^_cleanup)(void);
   std::vector<uint8_t> _copiedBytes;
 }
+
+@synthesize mutableBytes = _bytes;
+@synthesize length = _length;
+@synthesize owningBytes = _owningBytes;
 
 #pragma mark - Initializers
 
@@ -38,12 +39,17 @@
                             cleanup:(void (^)(void))cleanup
 {
   if (bytes == NULL && length != 0) {
+    // Nothing else will ever release whatever `bytes` was meant to be once this fails.
+    if (cleanup != nil) {
+      cleanup();
+    }
     [NSException raise:NSInvalidArgumentException
                 format:@"RCTArrayBuffer: NULL bytes with length %lu", (unsigned long)length];
   }
 
-  if (self = [super init]) {
-    _bytes = bytes;
+  if ((self = [super init]) != nil) {
+    // `mutableBytes` is documented as NULL exactly when empty.
+    _bytes = length == 0 ? NULL : bytes;
     _length = length;
     _owningBytes = owningBytes;
     _cleanup = [cleanup copy];
@@ -63,7 +69,7 @@
   }
 
   // Moving a vector hands over its heap buffer, so `data()` stays valid in `_copiedBytes`.
-  if (self = [self initWithBytesNoCopy:copy.data() length:length owningBytes:YES cleanup:nil]) {
+  if ((self = [self initWithBytesNoCopy:copy.data() length:length owningBytes:YES cleanup:nil]) != nil) {
     _copiedBytes = std::move(copy);
   }
   return self;
@@ -93,21 +99,6 @@
 
 #pragma mark - Accessors
 
-- (void *)mutableBytes
-{
-  return _bytes;
-}
-
-- (NSUInteger)length
-{
-  return _length;
-}
-
-- (BOOL)isOwningBytes
-{
-  return _owningBytes;
-}
-
 - (NSString *)description
 {
   return [NSString stringWithFormat:@"<%@: %p; length = %lu; owningBytes = %@>",
@@ -119,6 +110,7 @@
 
 - (void)dealloc
 {
+  // Runs on whichever thread drops the last reference, so cleanup blocks must be thread-agnostic.
   if (_cleanup != nil) {
     _cleanup();
   }

@@ -8,6 +8,8 @@
 #include <cstring>
 #include <limits>
 #include <memory>
+#include <mutex>
+#include <stdexcept>
 #include <string>
 
 #include <cxxreact/TraceSection.h>
@@ -466,7 +468,7 @@ JNIArgs convertJSIArgsToJNIArgs(
       }
 
       auto arrayBuffer = arg->getObject(rt).getArrayBuffer(rt);
-      AsyncArrayBuffer::throwIfDetached(
+      detail::throwIfDetached(
           rt, arrayBuffer, "JavaTurboModule::convertJSIArgsToJNIArgs");
 
       auto size = arrayBuffer.size(rt);
@@ -476,16 +478,21 @@ JNIArgs convertJSIArgsToJNIArgs(
             "JavaTurboModule::convertJSIArgsToJNIArgs: ArrayBuffer exceeds maximum size.");
       }
 
-      // Runtimes without a native buffer for this ArrayBuffer return nullptr,
-      // but the Static Hermes tracing runtime throws instead, and argument
-      // conversion runs outside any std::exception handler. Treat a failed
-      // probe as "no native buffer" so a traced session copies the bytes rather
-      // than aborting the process.
+      // Runtimes without a native buffer return nullptr, but the Static Hermes
+      // tracing runtime signals that by throwing std::logic_error. Treat a
+      // failed probe as "no native buffer" so a traced session copies rather
+      // than aborting; anything else is a real failure and propagates.
       std::shared_ptr<jsi::MutableBuffer> mutableBuffer;
       try {
         mutableBuffer = arrayBuffer.tryGetMutableBuffer(rt);
-      } catch (const std::exception&) {
-        mutableBuffer = nullptr;
+      } catch (const std::logic_error& e) {
+        static std::once_flag warnOnce;
+        std::call_once(warnOnce, [&] {
+          LOG(WARNING)
+              << "JavaTurboModule::convertJSIArgsToJNIArgs: tryGetMutableBuffer is unsupported by this runtime ("
+              << e.what()
+              << "); ArrayBuffer arguments will be copied instead of aliased";
+        });
       }
 
       bool borrowsJSBytes = false;
@@ -493,18 +500,21 @@ JNIArgs convertJSIArgsToJNIArgs(
         // Backed by a native buffer: alias it and retain its owner, so the
         // bytes stay valid for as long as the module holds the ArrayBuffer.
         if (mutableBuffer) {
-          return JArrayBuffer::createOwning(std::move(mutableBuffer));
+          return JArrayBuffer::createWithOwnedBytes(std::move(mutableBuffer));
         }
 
         // JS heap bytes on a synchronous call: lend them for the duration of
-        // the call.
+        // the call. Unlike iOS, which copies whenever the method signature
+        // exposes a block, a module that retains the buffer here gets an
+        // IllegalStateException from the revocation below.
         if (isSyncInvocation) {
           borrowsJSBytes = true;
-          return JArrayBuffer::createUnowned(arrayBuffer.data(rt), size);
+          return JArrayBuffer::createWithUnownedBytes(
+              arrayBuffer.data(rt), size);
         }
 
         // JS heap bytes that outlive the call: copy.
-        return JArrayBuffer::createOwned(arrayBuffer.data(rt), size);
+        return JArrayBuffer::createWithCopiedBytes(arrayBuffer.data(rt), size);
       }();
 
       if (borrowsJSBytes) {

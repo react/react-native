@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include <span>
-#include <string>
+#include <memory>
+#include <vector>
 
 #include <react/bridging/Base.h>
 
@@ -39,6 +39,20 @@ class OwnedBytesBuffer final : public jsi::MutableBuffer {
  private:
   std::vector<uint8_t> bytes_;
 };
+
+/**
+ * Best-effort detached check. jsi::ArrayBuffer::detached relies on the JS-level
+ * `detached` property, which some runtimes (e.g. Hermes) don't implement and
+ * signal by throwing. In that case we silently skip the check rather than
+ * surfacing a confusing error from an unrelated method, and remember that the
+ * runtime rejected it so later calls skip it for free.
+ */
+void throwIfDetached(jsi::Runtime &rt, const jsi::ArrayBuffer &buffer, const char *callerName);
+
+/**
+ * Copies bytes into a new owning buffer. `bytes` may be null when `size` is 0.
+ */
+std::shared_ptr<jsi::MutableBuffer> copyToOwnedBuffer(const uint8_t *bytes, size_t size);
 
 } // namespace detail
 
@@ -77,7 +91,7 @@ class AsyncArrayBuffer {
   // Zero-copy if the input has a native MutableBuffer; copies otherwise.
   static AsyncArrayBuffer acquire(jsi::Runtime &rt, const jsi::ArrayBuffer &buffer)
   {
-    throwIfDetached(rt, buffer, "AsyncArrayBuffer::acquire");
+    detail::throwIfDetached(rt, buffer, "AsyncArrayBuffer::acquire");
     if (auto mutableBuf = buffer.tryGetMutableBuffer(rt)) {
       return AsyncArrayBuffer{std::move(mutableBuf)};
     }
@@ -87,7 +101,7 @@ class AsyncArrayBuffer {
   // Zero-copy. Throws if the input has no native MutableBuffer.
   static AsyncArrayBuffer borrow(jsi::Runtime &rt, const jsi::ArrayBuffer &buffer)
   {
-    throwIfDetached(rt, buffer, "AsyncArrayBuffer::borrow");
+    detail::throwIfDetached(rt, buffer, "AsyncArrayBuffer::borrow");
     auto mutableBuf = buffer.tryGetMutableBuffer(rt);
     if (!mutableBuf) {
       throw jsi::JSError(
@@ -101,7 +115,7 @@ class AsyncArrayBuffer {
   // Always copies.
   static AsyncArrayBuffer copy(jsi::Runtime &rt, const jsi::ArrayBuffer &buffer)
   {
-    throwIfDetached(rt, buffer, "AsyncArrayBuffer::copy");
+    detail::throwIfDetached(rt, buffer, "AsyncArrayBuffer::copy");
     return copyBytes(rt, buffer);
   }
 
@@ -140,30 +154,12 @@ class AsyncArrayBuffer {
     return buffer_;
   }
 
-  // Best-effort detached check. jsi::ArrayBuffer::detached relies on the JS-level
-  // `detached` property, which some runtimes (e.g. Hermes) don't implement and
-  // signal by throwing. In that case we silently skip the check rather than
-  // surfacing a confusing error from an unrelated method.
-  static void throwIfDetached(jsi::Runtime &rt, const jsi::ArrayBuffer &buffer, const char *callerName)
-  {
-    bool detached = false;
-    try {
-      detached = buffer.detached(rt);
-    } catch (const jsi::JSINativeException &) {
-      return;
-    }
-    if (detached) {
-      throw jsi::JSError(rt, std::string(callerName) + ": ArrayBuffer is detached");
-    }
-  }
-
  private:
   explicit AsyncArrayBuffer(std::shared_ptr<jsi::MutableBuffer> buffer) noexcept : buffer_{std::move(buffer)} {}
 
   static AsyncArrayBuffer copyBytes(jsi::Runtime &rt, const jsi::ArrayBuffer &buffer)
   {
-    auto bytes = std::span(buffer.data(rt), buffer.size(rt));
-    return wrap(std::vector<uint8_t>(bytes.begin(), bytes.end()));
+    return AsyncArrayBuffer{detail::copyToOwnedBuffer(buffer.data(rt), buffer.size(rt))};
   }
 
   std::shared_ptr<jsi::MutableBuffer> buffer_;

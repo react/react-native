@@ -8,10 +8,8 @@
 #include "JArrayBuffer.h"
 
 #include <cstring>
-#include <span>
 #include <stdexcept>
 #include <utility>
-#include <vector>
 
 #include <react/bridging/ArrayBuffer.h>
 
@@ -49,19 +47,6 @@ jboolean JArrayBuffer::isBytesValid() {
   return hasBytes() ? JNI_TRUE : JNI_FALSE;
 }
 
-void JArrayBuffer::invalidate() noexcept {
-  if (!owningBytes_) {
-    buffer_.reset();
-  }
-}
-
-const std::shared_ptr<jsi::MutableBuffer>& JArrayBuffer::mutableBuffer() const {
-  if (!hasBytes()) {
-    throw std::runtime_error(kRevokedBorrowMessage);
-  }
-  return buffer_;
-}
-
 jni::local_ref<JArrayBuffer::javaobject> JArrayBuffer::create(
     jni::local_ref<jni::JByteBuffer> byteBuffer,
     std::shared_ptr<jsi::MutableBuffer> buffer,
@@ -72,22 +57,13 @@ jni::local_ref<JArrayBuffer::javaobject> JArrayBuffer::create(
   return javaPart;
 }
 
-jni::local_ref<JArrayBuffer::javaobject> JArrayBuffer::createOwning(
+jni::local_ref<JArrayBuffer::javaobject> JArrayBuffer::createWithOwnedBytes(
     std::shared_ptr<jsi::MutableBuffer> buffer) {
   auto byteBuffer = jni::JByteBuffer::wrapBytes(buffer->data(), buffer->size());
   return create(std::move(byteBuffer), std::move(buffer), true);
 }
 
-jni::local_ref<JArrayBuffer::javaobject> JArrayBuffer::createUnowned(
-    void* bytes,
-    size_t size) {
-  auto byteBuffer =
-      jni::JByteBuffer::wrapBytes(static_cast<uint8_t*>(bytes), size);
-  auto buffer = std::make_shared<JByteBufferMutableBuffer>(byteBuffer);
-  return create(std::move(byteBuffer), std::move(buffer), false);
-}
-
-jni::local_ref<JArrayBuffer::javaobject> JArrayBuffer::createOwned(
+jni::local_ref<JArrayBuffer::javaobject> JArrayBuffer::createWithCopiedBytes(
     const void* bytes,
     size_t size) {
   auto byteBuffer = jni::JByteBuffer::allocateDirect(static_cast<jint>(size));
@@ -98,6 +74,15 @@ jni::local_ref<JArrayBuffer::javaobject> JArrayBuffer::createOwned(
 
   auto buffer = std::make_shared<JByteBufferMutableBuffer>(byteBuffer);
   return create(std::move(byteBuffer), std::move(buffer), true);
+}
+
+jni::local_ref<JArrayBuffer::javaobject> JArrayBuffer::createWithUnownedBytes(
+    void* bytes,
+    size_t size) {
+  auto byteBuffer =
+      jni::JByteBuffer::wrapBytes(static_cast<uint8_t*>(bytes), size);
+  auto buffer = std::make_shared<JByteBufferMutableBuffer>(byteBuffer);
+  return create(std::move(byteBuffer), std::move(buffer), false);
 }
 
 std::shared_ptr<jsi::MutableBuffer> JArrayBuffer::toJSBuffer(
@@ -115,15 +100,26 @@ std::shared_ptr<jsi::MutableBuffer> JArrayBuffer::toJSBuffer(
   }
 
   const auto& buffer = self->mutableBuffer();
-  if (self->owningBytes_) {
+  if (self->isOwningBytes()) {
     return buffer;
   }
 
   // Borrowed bytes still belong to the inbound JS ArrayBuffer; copy them before
   // handing a new buffer back to JS.
-  auto bytes = std::span<uint8_t>(buffer->data(), buffer->size());
-  return std::make_shared<detail::OwnedBytesBuffer>(
-      std::vector<uint8_t>(bytes.begin(), bytes.end()));
+  return detail::copyToOwnedBuffer(buffer->data(), buffer->size());
+}
+
+const std::shared_ptr<jsi::MutableBuffer>& JArrayBuffer::mutableBuffer() const {
+  if (!hasBytes()) {
+    throw std::runtime_error(kRevokedBorrowMessage);
+  }
+  return buffer_;
+}
+
+void JArrayBuffer::invalidate() noexcept {
+  if (!owningBytes_) {
+    buffer_.reset();
+  }
 }
 
 } // namespace facebook::react

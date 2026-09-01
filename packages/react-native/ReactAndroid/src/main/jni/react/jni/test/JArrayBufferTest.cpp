@@ -5,6 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#include <react/bridging/ArrayBuffer.h>
 #include <react/jni/JArrayBuffer.h>
 #include <react/jni/JByteBufferMutableBuffer.h>
 
@@ -19,22 +20,9 @@ namespace facebook::react {
 
 namespace {
 
-class TestBuffer final : public jsi::MutableBuffer {
- public:
-  explicit TestBuffer(std::vector<uint8_t> bytes) noexcept
-      : bytes_(std::move(bytes)) {}
-
-  size_t size() const override {
-    return bytes_.size();
-  }
-
-  uint8_t* data() override {
-    return bytes_.data();
-  }
-
- private:
-  std::vector<uint8_t> bytes_;
-};
+std::shared_ptr<jsi::MutableBuffer> makeBuffer(std::vector<uint8_t> bytes) {
+  return std::make_shared<detail::OwnedBytesBuffer>(std::move(bytes));
+}
 
 } // namespace
 
@@ -47,7 +35,7 @@ class TestBuffer final : public jsi::MutableBuffer {
  */
 
 TEST(JArrayBufferTest, owningBufferExposesItsBytes) {
-  auto buffer = std::make_shared<TestBuffer>(std::vector<uint8_t>{1, 2, 3});
+  auto buffer = makeBuffer({1, 2, 3});
   JArrayBuffer arrayBuffer{buffer, true};
 
   EXPECT_TRUE(arrayBuffer.isOwningBytes());
@@ -55,7 +43,7 @@ TEST(JArrayBufferTest, owningBufferExposesItsBytes) {
 }
 
 TEST(JArrayBufferTest, borrowedBufferExposesItsBytesBeforeInvalidation) {
-  auto buffer = std::make_shared<TestBuffer>(std::vector<uint8_t>{1, 2, 3});
+  auto buffer = makeBuffer({1, 2, 3});
   JArrayBuffer arrayBuffer{buffer, false};
 
   EXPECT_FALSE(arrayBuffer.isOwningBytes());
@@ -69,7 +57,7 @@ TEST(JArrayBufferTest, borrowedBufferExposesItsBytesBeforeInvalidation) {
  * occupies that memory.
  */
 TEST(JArrayBufferTest, invalidateRevokesABorrow) {
-  auto buffer = std::make_shared<TestBuffer>(std::vector<uint8_t>{1, 2, 3});
+  auto buffer = makeBuffer({1, 2, 3});
   JArrayBuffer arrayBuffer{buffer, false};
 
   arrayBuffer.invalidate();
@@ -78,7 +66,7 @@ TEST(JArrayBufferTest, invalidateRevokesABorrow) {
 }
 
 TEST(JArrayBufferTest, invalidateLeavesAnOwningBufferUsable) {
-  auto buffer = std::make_shared<TestBuffer>(std::vector<uint8_t>{1, 2, 3});
+  auto buffer = makeBuffer({1, 2, 3});
   JArrayBuffer arrayBuffer{buffer, true};
 
   arrayBuffer.invalidate();
@@ -87,7 +75,7 @@ TEST(JArrayBufferTest, invalidateLeavesAnOwningBufferUsable) {
 }
 
 TEST(JArrayBufferTest, invalidateIsIdempotent) {
-  auto buffer = std::make_shared<TestBuffer>(std::vector<uint8_t>{1, 2, 3});
+  auto buffer = makeBuffer({1, 2, 3});
   JArrayBuffer arrayBuffer{buffer, false};
 
   arrayBuffer.invalidate();
@@ -100,7 +88,7 @@ TEST(JArrayBufferTest, invalidateIsIdempotent) {
 // aliasing adapter (and the JNI global ref inside it) is torn down with the
 // call frame rather than at the whim of the Java GC.
 TEST(JArrayBufferTest, invalidateReleasesTheBorrowedBuffer) {
-  auto buffer = std::make_shared<TestBuffer>(std::vector<uint8_t>{1, 2, 3});
+  auto buffer = makeBuffer({1, 2, 3});
   std::weak_ptr<jsi::MutableBuffer> weakBuffer = buffer;
   JArrayBuffer arrayBuffer{std::move(buffer), false};
 

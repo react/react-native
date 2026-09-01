@@ -17,12 +17,17 @@ NS_ASSUME_NONNULL_BEGIN
  *  - `YES` — safe to retain and use from any thread (synchronize if aliasing JS
  *     memory).
  *  - `NO` — valid only during the synchronous call on the calling thread; copy with
- *    `arrayBufferWithCopiedBytes:length:` to keep the bytes.
+ *    `arrayBufferWithCopiedBytes:length:` to keep the bytes. Such a buffer must not be captured in
+ *    a block or handed to a callback or promise resolve block, which deliver after the call
+ *    returns. The TurboModule framework copies rather than aliases whenever the method signature
+ *    exposes a block parameter, and buffers nested inside `NSArray` or `NSDictionary` arguments
+ *    always own their bytes.
  */
 @interface RCTArrayBuffer : NSObject
 
 /**
- * NULL when `length` is 0, non-NULL otherwise, matching `NSData.bytes`.
+ * NULL when `length` is 0, non-NULL otherwise, matching `NSData.bytes`. Holds for every factory: a
+ * zero-length buffer normalizes its pointer to NULL.
  */
 @property (nonatomic, readonly, nullable) void *mutableBytes NS_RETURNS_INNER_POINTER;
 
