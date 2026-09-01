@@ -92,6 +92,11 @@ mock(
   'm#./mocks/AppState',
 );
 mock(
+  'm#react-native/Libraries/AppState/useAppState',
+  // $FlowFixMe[react-rule-hook-incompatible]
+  'm#./mocks/useAppState',
+);
+mock(
   'm#react-native/Libraries/BatchedBridge/NativeModules',
   'm#./mocks/NativeModules',
 );
