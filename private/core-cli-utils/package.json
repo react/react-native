@@ -4,6 +4,11 @@
   "version": "0.0.0",
   "description": "Reference implementation of React Native CLI tooling",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/react/react-native.git",
+    "directory": "private/core-cli-utils"
+  },
   "main": "./src/index.js",
   "exports": {
     ".": "./src/index.js",
