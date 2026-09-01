@@ -16,6 +16,7 @@
 #include <react/renderer/core/ShadowNode.h>
 #include <react/renderer/dom/DOM.h>
 #include <react/renderer/runtimescheduler/RuntimeSchedulerBinding.h>
+#include <react/renderer/uimanager/consistency/ShadowTreeRevisionProvider.h>
 #include <react/renderer/uimanager/primitives.h>
 
 #include <utility>

@@ -11,6 +11,7 @@
 #include <react/renderer/dom/DOM.h>
 #include <react/renderer/uimanager/PointerEventsProcessor.h>
 #include <react/renderer/uimanager/UIManagerBinding.h>
+#include <react/renderer/uimanager/consistency/ShadowTreeRevisionProvider.h>
 
 #ifdef RN_DISABLE_OSS_PLUGIN_HEADER
 #include "Plugins.h"

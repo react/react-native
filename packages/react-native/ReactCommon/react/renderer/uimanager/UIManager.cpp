@@ -11,6 +11,7 @@
 #include <cxxreact/TraceSection.h>
 #include <react/debug/react_native_assert.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
+#include <react/renderer/consistency/ShadowTreeRevisionConsistencyManager.h>
 #include <react/renderer/core/DynamicPropsUtilities.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/core/ShadowNodeFragment.h>
@@ -18,6 +19,8 @@
 #include <react/renderer/uimanager/UIManagerBinding.h>
 #include <react/renderer/uimanager/UIManagerCommitHook.h>
 #include <react/renderer/uimanager/UIManagerMountHook.h>
+#include <react/renderer/uimanager/consistency/LazyShadowTreeRevisionConsistencyManager.h>
+#include <react/renderer/uimanager/consistency/ShadowTreeRevisionProvider.h>
 
 #include <glog/logging.h>
 

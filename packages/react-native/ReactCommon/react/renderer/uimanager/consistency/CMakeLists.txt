@@ -16,6 +16,7 @@ target_include_directories(react_renderer_uimanager_consistency PUBLIC ${REACT_C
 target_link_libraries(react_renderer_uimanager_consistency
         glog
         rrc_root
+        react_cxxstableapi
         react_renderer_consistency
         react_renderer_mounting)
 target_compile_reactnative_options(react_renderer_uimanager_consistency PRIVATE)
