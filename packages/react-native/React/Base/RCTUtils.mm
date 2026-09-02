@@ -373,7 +373,14 @@ CGFloat RCTFontSizeMultiplier(void)
     };
   });
 
-  return mapping[RCTSharedApplication().preferredContentSizeCategory].floatValue;
+  UIApplication *application = RCTSharedApplication();
+  if (!application) {
+    return 1.0;
+  }
+
+  NSNumber *value = mapping[application.preferredContentSizeCategory];
+  CGFloat multiplier = value != nil ? value.floatValue : 1.0;
+  return multiplier > 0.0 ? multiplier : 1.0;
 }
 
 #if !TARGET_OS_TV
