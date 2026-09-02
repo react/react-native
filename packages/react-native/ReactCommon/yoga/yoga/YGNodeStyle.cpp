@@ -8,7 +8,7 @@
 #include <yoga/Yoga.h>
 #include <yoga/debug/AssertFatal.h>
 #include <yoga/node/Node.h>
-#include <yoga/style/GridTrack.h>
+#include <yoga/style/GridTrackSize.h>
 
 using namespace facebook;
 using namespace facebook::yoga;

@@ -11,17 +11,12 @@
 #include <vector>
 
 namespace facebook::yoga {
+// Represents a track size as defined in
 // https://www.w3.org/TR/css-grid-1/#typedef-track-size
+// and helper functions for creating common track sizes.
 struct GridTrackSize {
   StyleSizeLength minSizingFunction;
   StyleSizeLength maxSizingFunction;
-
-  // These are used in the grid layout algorithm when distributing spaces among
-  // tracks
-  // TODO: maybe move them to TrackSizing since these are track states
-  float baseSize = 0.0f;
-  float growthLimit = 0.0f;
-  bool infinitelyGrowable = false;
 
   // Static factory methods for common cases
   constexpr static GridTrackSize auto_() {

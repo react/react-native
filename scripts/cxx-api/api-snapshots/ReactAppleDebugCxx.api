@@ -14867,6 +14867,7 @@ struct facebook::jsi::detail::BeforeCaller<std::tuple<T...>> {
 }
 
 
+using facebook::yoga::BaselineItemGroups = std::map<size_t, std::vector<facebook::yoga::GridItem*>>;
 using facebook::yoga::GridTrackList = std::vector<facebook::yoga::GridTrackSize>;
 template <typename EnumT>
 concept facebook::yoga::Enumeration = std::is_enum_v<EnumT>;
@@ -14883,6 +14884,7 @@ bool facebook::yoga::inexactEquals(facebook::yoga::FloatOptional lhs, facebook::
 bool facebook::yoga::inexactEquals(float a, float b);
 bool facebook::yoga::isBaselineLayout(const facebook::yoga::Node* node);
 bool facebook::yoga::isColumn(const facebook::yoga::FlexDirection flexDirection);
+bool facebook::yoga::isDefiniteLine(const facebook::yoga::GridLine& line);
 bool facebook::yoga::isRow(const facebook::yoga::FlexDirection flexDirection);
 bool facebook::yoga::layoutAbsoluteDescendants(facebook::yoga::Node* containingNode, facebook::yoga::Node* currentNode, facebook::yoga::SizingMode widthSizingMode, facebook::yoga::Direction currentNodeDirection, facebook::yoga::LayoutData& layoutMarkerData, uint32_t currentDepth, uint32_t generationCount, float currentNodeMainOffsetFromContainingBlock, float currentNodeCrossOffsetFromContainingBlock, float containingNodeAvailableInnerWidth, float containingNodeAvailableInnerHeight);
 bool facebook::yoga::needsTrailingPosition(const facebook::yoga::FlexDirection axis);
@@ -14976,6 +14978,7 @@ facebook::yoga::FlexDirection facebook::yoga::resolveDirection(const facebook::y
 facebook::yoga::FlexLine facebook::yoga::calculateFlexLine(facebook::yoga::Node* node, facebook::yoga::Direction ownerDirection, float ownerWidth, float mainAxisOwnerSize, float availableInnerWidth, float availableInnerMainDim, facebook::yoga::Node::LayoutableChildren::Iterator& iterator, size_t lineCount);
 facebook::yoga::FloatOptional facebook::yoga::boundAxisWithinMinAndMax(const facebook::yoga::Node *const node, const facebook::yoga::Direction direction, const facebook::yoga::FlexDirection axis, const facebook::yoga::FloatOptional value, const float axisSize, const float widthSize);
 facebook::yoga::Justify facebook::yoga::resolveChildJustification(const facebook::yoga::Node* node, const facebook::yoga::Node* child);
+facebook::yoga::LinePlacement facebook::yoga::resolveLinePlacement(const facebook::yoga::GridLine& startLine, const facebook::yoga::GridLine& endLine, int32_t explicitLineCount);
 facebook::yoga::MeasureMode facebook::yoga::measureMode(facebook::yoga::SizingMode mode);
 facebook::yoga::Node* facebook::yoga::resolveRef(const YGNodeRef ref);
 facebook::yoga::PhysicalEdge facebook::yoga::flexEndEdge(facebook::yoga::FlexDirection flexDirection);
@@ -15500,6 +15503,23 @@ enum facebook::yoga::Wrap : uint8_t {
   WrapReverse,
 }
 
+struct facebook::yoga::AutoPlacement {
+  public int32_t maxColumnEnd;
+  public int32_t maxRowEnd;
+  public int32_t minColumnStart;
+  public int32_t minRowStart;
+  public static facebook::yoga::AutoPlacement performAutoPlacement(facebook::yoga::Node* node);
+  public std::vector<facebook::yoga::AutoPlacement::AutoPlacementItem> gridItems;
+}
+
+struct facebook::yoga::AutoPlacement::AutoPlacementItem {
+  public facebook::yoga::Node* node;
+  public int32_t columnEnd;
+  public int32_t columnStart;
+  public int32_t rowEnd;
+  public int32_t rowStart;
+}
+
 struct facebook::yoga::CachedMeasurement {
   public bool operator==(facebook::yoga::CachedMeasurement measurement) const;
   public facebook::yoga::SizingMode heightSizingMode;
@@ -15592,6 +15612,22 @@ struct facebook::yoga::FloatOptional {
   public constexpr float unwrapOrDefault(float defaultValue) const;
 }
 
+struct facebook::yoga::GridItem {
+  public GridItem(size_t columnStart, size_t columnEnd, size_t rowStart, size_t rowEnd, facebook::yoga::Node* node, float baselineShim = 0.0f);
+  public bool crossesFlexibleColumn;
+  public bool crossesFlexibleRow;
+  public bool crossesFlexibleTrack(facebook::yoga::Dimension dimension) const;
+  public bool crossesIntrinsicColumn;
+  public bool crossesIntrinsicRow;
+  public bool crossesIntrinsicTrack(facebook::yoga::Dimension dimension) const;
+  public facebook::yoga::Node* node;
+  public float baselineShim;
+  public size_t columnEnd;
+  public size_t columnStart;
+  public size_t rowEnd;
+  public size_t rowStart;
+}
+
 struct facebook::yoga::GridLine {
   public bool operator==(const facebook::yoga::GridLine& other) const = default;
   public constexpr bool isAuto() const;
@@ -15604,13 +15640,18 @@ struct facebook::yoga::GridLine {
   public static constexpr facebook::yoga::GridLine span(int32_t value);
 }
 
-struct facebook::yoga::GridTrackSize {
+struct facebook::yoga::GridTrack {
+  public GridTrack(const facebook::yoga::GridTrackSize& ts);
   public bool infinitelyGrowable;
+  public const facebook::yoga::GridTrackSize& trackSize() const;
+  public float baseSize;
+  public float growthLimit;
+}
+
+struct facebook::yoga::GridTrackSize {
   public bool operator==(const facebook::yoga::GridTrackSize& other) const = default;
   public facebook::yoga::StyleSizeLength maxSizingFunction;
   public facebook::yoga::StyleSizeLength minSizingFunction;
-  public float baseSize;
-  public float growthLimit;
   public static constexpr facebook::yoga::GridTrackSize auto_();
   public static constexpr facebook::yoga::GridTrackSize fr(float fraction);
   public static constexpr facebook::yoga::GridTrackSize length(float points);
@@ -15658,6 +15699,40 @@ struct facebook::yoga::LayoutResults {
   public void setPadding(facebook::yoga::PhysicalEdge physicalEdge, float dimension);
   public void setPosition(facebook::yoga::PhysicalEdge physicalEdge, float dimension);
   public void setRawDimension(facebook::yoga::Dimension axis, float dimension);
+}
+
+struct facebook::yoga::LinePlacement {
+  public int32_t end;
+  public int32_t span;
+  public int32_t start;
+}
+
+struct facebook::yoga::OccupancyGrid {
+  public const facebook::yoga::OccupancyGrid::Rect* hasOverlap(int32_t rowStart, int32_t rowEnd, int32_t columnStart, int32_t columnEnd) const;
+  public std::vector<facebook::yoga::OccupancyGrid::Rect> occupied;
+  public void markOccupied(int32_t rowStart, int32_t rowEnd, int32_t columnStart, int32_t columnEnd);
+}
+
+struct facebook::yoga::OccupancyGrid::Rect {
+  public int32_t columnEnd;
+  public int32_t columnStart;
+  public int32_t rowEnd;
+  public int32_t rowStart;
+}
+
+struct facebook::yoga::ResolvedAutoPlacement {
+  public ResolvedAutoPlacement() = default;
+  public ResolvedAutoPlacement(const facebook::yoga::ResolvedAutoPlacement&) = delete;
+  public ResolvedAutoPlacement(facebook::yoga::ResolvedAutoPlacement&&) = default;
+  public facebook::yoga::BaselineItemGroups baselineItemGroups;
+  public facebook::yoga::ResolvedAutoPlacement& operator=(const facebook::yoga::ResolvedAutoPlacement&) = delete;
+  public facebook::yoga::ResolvedAutoPlacement& operator=(facebook::yoga::ResolvedAutoPlacement&&) = default;
+  public int32_t maxColumnEnd;
+  public int32_t maxRowEnd;
+  public int32_t minColumnStart;
+  public int32_t minRowStart;
+  public static facebook::yoga::ResolvedAutoPlacement resolveGridItemPlacements(facebook::yoga::Node* node);
+  public std::vector<facebook::yoga::GridItem> gridItems;
 }
 
 template <size_t BufferSize>
