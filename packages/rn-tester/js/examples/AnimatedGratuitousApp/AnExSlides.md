@@ -42,7 +42,7 @@ ReactEurope 2015, Paris - Spencer Ahrens - Facebook
 
 <br /><br />
 
-## Gratuitous Animation Codez
+## Gratuitous Animation Code
 
 - Step 1: 2D tracking pan gesture
 - Step 2: Simple pop-out spring on select
