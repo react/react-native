@@ -1,0 +1,83 @@
+name: Backfill Release Assets
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "The version of React Native we want to backfill assets for. For example 0.75.0-rc.0"
+        required: true
+        type: string
+      dry-run:
+        description: "Whether the job should be executed in dry-run mode or not"
+        type: boolean
+        default: true
+      force:
+        description: "Whether to reupload assets even if they already exist"
+        type: boolean
+        default: false
+
+jobs:
+  backfill-release-assets:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - name: Check if on stable branch
+        id: check_stable_branch
+        run: |
+          BRANCH="$(git branch --show-current)"
+          PATTERN='^0\.[0-9]+-stable$'
+          if [[ $BRANCH =~ $PATTERN ]]; then
+            echo "On a stable branch"
+            echo "ON_STABLE_BRANCH=true" >> $GITHUB_OUTPUT
+          fi
+      - name: Install dependencies
+        uses: ./.github/actions/yarn-install
+      - name: Configure Git
+        shell: bash
+        run: |
+          git config --local user.email "bot@reactnative.dev"
+          git config --local user.name "React Native Bot"
+      - name: Resolve release ID
+        uses: actions/github-script@v6
+        env:
+          VERSION: ${{ inputs.version }}
+        id: resolve-release-id
+        with:
+          github-token: ${{ secrets.REACT_NATIVE_BOT_GITHUB_TOKEN }}
+          script: |
+            const tag = 'v' + process.env.VERSION;
+            const releaseId = await github.rest.repos.getReleaseByTag({
+              owner: 'facebook',
+              repo: 'react-native',
+              tag,
+            }).then(({data}) => data.id);
+            console.log(`Resolved release ID: ${releaseId}`);
+            return releaseId;
+          result-encoding: string
+      - name: Upload release assets for DotSlash
+        if: ${{ steps.check_stable_branch.outputs.ON_STABLE_BRANCH }}
+        uses: actions/github-script@v6
+        env:
+          RELEASE_ID: ${{ steps.resolve-release-id.outputs.result }}
+          REACT_NATIVE_VERSION: ${{ inputs.version }}
+          DRY_RUN: ${{ inputs.dry-run }}
+          FORCE: ${{ inputs.force }}
+        with:
+          github-token: ${{ secrets.REACT_NATIVE_BOT_GITHUB_TOKEN }}
+          script: |
+            const {uploadReleaseAssetsForDotSlashFiles} = require('./scripts/releases/upload-release-assets-for-dotslash.js');
+            await uploadReleaseAssetsForDotSlashFiles({
+              version: process.env.REACT_NATIVE_VERSION,
+              token: github.token,
+              releaseId: process.env.RELEASE_ID,
+              dryRun: process.env.DRY_RUN === 'true',
+              force: process.env.FORCE === 'true',
+            });
+
+  validate-dotslash-artifacts:
+    uses: ./.github/workflows/validate-dotslash-artifacts
+    needs: backfill-release-assets
