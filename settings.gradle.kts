@@ -21,6 +21,7 @@ include(
     ":packages:rn-tester:android:app",
     ":packages:rn-tester:android:app:benchmark",
     ":private:react-native-fantom",
+    ":private:react-native-tests",
 )
 
 includeBuild("packages/gradle-plugin/")
