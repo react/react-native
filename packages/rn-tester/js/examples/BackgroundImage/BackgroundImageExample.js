@@ -181,6 +181,40 @@ exports.examples = [
     },
   },
   {
+    title: 'Conic Gradient',
+    description:
+      'Conic gradients rotate color stops clockwise around a configurable center.',
+    name: 'conic',
+    render(): React.Node {
+      return (
+        <View>
+          <View style={styles.row}>
+            <View style={styles.col}>
+              <Text>Quadrants</Text>
+              <BackgroundImageBox
+                style={{
+                  backgroundImage:
+                    'conic-gradient(from 0deg, #ff6b6b 0deg 90deg, #4ecdc4 90deg 180deg, #45b7d1 180deg 270deg, #f9ca24 270deg 360deg)',
+                }}
+                testID="background-image-conic-quadrants"
+              />
+            </View>
+            <View style={styles.col}>
+              <Text>Rotated and off-center</Text>
+              <BackgroundImageBox
+                style={{
+                  backgroundImage:
+                    'conic-gradient(from 45deg at 30% 70%, #ff6b6b, #4ecdc4, #ff6b6b)',
+                }}
+                testID="background-image-conic-position"
+              />
+            </View>
+          </View>
+        </View>
+      );
+    },
+  },
+  {
     title: 'Gradient with Background Repeat',
     name: 'repeat',
     render(): React.Node {
