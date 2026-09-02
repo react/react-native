@@ -58,6 +58,48 @@ TEST(CSSTokenizer, ident_values) {
       CSSToken{CSSTokenType::WhiteSpace},
       CSSToken{CSSTokenType::Ident, "left"},
       CSSToken{CSSTokenType::EndOfFile});
+
+  EXPECT_TOKENS(
+      "-infinity",
+      CSSToken{CSSTokenType::Ident, "-infinity"},
+      CSSToken{CSSTokenType::EndOfFile});
+
+  EXPECT_TOKENS(
+      "--custom-ident",
+      CSSToken{CSSTokenType::Ident, "--custom-ident"},
+      CSSToken{CSSTokenType::EndOfFile});
+
+  EXPECT_TOKENS(
+      "e pi infinity NaN",
+      CSSToken{CSSTokenType::Ident, "e"},
+      CSSToken{CSSTokenType::WhiteSpace},
+      CSSToken{CSSTokenType::Ident, "pi"},
+      CSSToken{CSSTokenType::WhiteSpace},
+      CSSToken{CSSTokenType::Ident, "infinity"},
+      CSSToken{CSSTokenType::WhiteSpace},
+      CSSToken{CSSTokenType::Ident, "NaN"},
+      CSSToken{CSSTokenType::EndOfFile});
+
+  EXPECT_TOKENS(
+      "5 - 3",
+      CSSToken{CSSTokenType::Number, 5.0f},
+      CSSToken{CSSTokenType::WhiteSpace},
+      CSSToken{CSSTokenType::Delim, "-"},
+      CSSToken{CSSTokenType::WhiteSpace},
+      CSSToken{CSSTokenType::Number, 3.0f},
+      CSSToken{CSSTokenType::EndOfFile});
+
+  EXPECT_TOKENS(
+      "5 -3",
+      CSSToken{CSSTokenType::Number, 5.0f},
+      CSSToken{CSSTokenType::WhiteSpace},
+      CSSToken{CSSTokenType::Number, -3.0f},
+      CSSToken{CSSTokenType::EndOfFile});
+
+  EXPECT_TOKENS(
+      "-calc(",
+      CSSToken{CSSTokenType::Function, "-calc"},
+      CSSToken{CSSTokenType::EndOfFile});
 }
 
 TEST(CSSTokenizer, number_values) {
@@ -220,6 +262,17 @@ TEST(CSSTokenizer, invalid_values) {
       CSSToken{CSSTokenType::OpenParen},
       CSSToken{CSSTokenType::Delim, "%"},
       CSSToken{CSSTokenType::EndOfFile});
+
+  EXPECT_TOKENS(
+      "+ - * /",
+      CSSToken{CSSTokenType::Delim, "+"},
+      CSSToken{CSSTokenType::WhiteSpace},
+      CSSToken{CSSTokenType::Delim, "-"},
+      CSSToken{CSSTokenType::WhiteSpace},
+      CSSToken{CSSTokenType::Delim, "*"},
+      CSSToken{CSSTokenType::WhiteSpace},
+      CSSToken{CSSTokenType::Delim, "/"},
+      CSSToken{CSSTokenType::EndOfFile});
 }
 
 TEST(CSSTokenizer, hash_values) {
@@ -238,5 +291,24 @@ TEST(CSSTokenizer, hash_values) {
       CSSToken{CSSTokenType::Delim, "#"},
       CSSToken{CSSTokenType::Delim, "*"},
       CSSToken{CSSTokenType::EndOfFile});
+}
+TEST(CSSTokenizer, mathOperator) {
+  EXPECT_EQ(CSSTokenizer{"+"}.next().mathOperator(), CSSMathOperator::Add);
+  EXPECT_EQ(CSSTokenizer{"-"}.next().mathOperator(), CSSMathOperator::Subtract);
+  EXPECT_EQ(CSSTokenizer{"*"}.next().mathOperator(), CSSMathOperator::Multiply);
+  EXPECT_EQ(CSSTokenizer{"/"}.next().mathOperator(), CSSMathOperator::Divide);
+  EXPECT_EQ(CSSTokenizer{"%"}.next().mathOperator(), std::nullopt);
+}
+TEST(CSSTokenizer, math_constants) {
+  EXPECT_EQ(CSSTokenizer{"pi"}.next().mathConstant(), CSSMathConstant::Pi);
+  EXPECT_EQ(CSSTokenizer{"e"}.next().mathConstant(), CSSMathConstant::E);
+  EXPECT_EQ(
+      CSSTokenizer{"infinity"}.next().mathConstant(),
+      CSSMathConstant::Infinity);
+  EXPECT_EQ(
+      CSSTokenizer{"-infinity"}.next().mathConstant(),
+      CSSMathConstant::NegativeInfinity);
+  EXPECT_EQ(CSSTokenizer{"NaN"}.next().mathConstant(), CSSMathConstant::NaN);
+  EXPECT_EQ(CSSTokenizer{"abc"}.next().mathConstant(), std::nullopt);
 }
 } // namespace facebook::react

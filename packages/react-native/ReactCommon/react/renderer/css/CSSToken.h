@@ -7,7 +7,11 @@
 
 #pragma once
 
+#include <optional>
 #include <string_view>
+
+#include <react/renderer/css/CSSMathConstant.h>
+#include <react/renderer/css/CSSMathOperator.h>
 
 namespace facebook::react {
 
@@ -74,6 +78,33 @@ class CSSToken {
   constexpr std::string_view unit() const
   {
     return unit_;
+  }
+
+  /**
+   * If this token is a <delim-token> representing a math operator (+, -, *,
+   * /), return the corresponding CSSMathOperator.
+   * https://www.w3.org/TR/css-values-4/#calc-syntax
+   */
+  constexpr std::optional<CSSMathOperator> mathOperator() const
+  {
+    if (type_ != CSSTokenType::Delim || stringValue_.size() != 1) {
+      return std::nullopt;
+    }
+    return parseCSSMathOperator(stringValue_[0]);
+  }
+
+  /**
+   * If this token is an <ident-token> representing a CSS math constant
+   * (e, pi, infinity, -infinity, NaN), return the corresponding
+   * CSSMathConstant
+   * https://www.w3.org/TR/css-values-4/#calc-constants
+   */
+  constexpr std::optional<CSSMathConstant> mathConstant() const
+  {
+    if (type_ != CSSTokenType::Ident) {
+      return std::nullopt;
+    }
+    return parseCSSMathConstant(stringValue_);
   }
 
   constexpr bool operator==(const CSSToken &other) const = default;

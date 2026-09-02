@@ -54,10 +54,17 @@ class CSSTokenizer {
       case ',':
         return consumeCharacter(CSSTokenType::Comma);
       case '+':
-      case '-':
       case '.':
         if (wouldStartNumber()) {
           return consumeNumeric();
+        } else {
+          return consumeDelim();
+        }
+      case '-':
+        if (wouldStartNumber()) {
+          return consumeNumeric();
+        } else if (wouldStartIdentSequence()) {
+          return consumeIdentlikeToken();
         } else {
           return consumeDelim();
         }
@@ -138,6 +145,16 @@ class CSSTokenizer {
     }
 
     return false;
+  }
+
+  constexpr bool wouldStartIdentSequence() const
+  {
+    // https://www.w3.org/TR/css-syntax-3/#would-start-an-identifier
+    if (peek() == '-') {
+      return isIdentStart(peek(1)) || peek(1) == '-';
+    }
+
+    return isIdentStart(peek());
   }
 
   constexpr CSSToken consumeNumber()
