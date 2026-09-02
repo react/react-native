@@ -8,7 +8,7 @@
  * @format
  */
 
-import type {____ViewStyle_Internal} from '../../StyleSheet/StyleSheetTypes';
+import type {ViewStyle} from '../../StyleSheet/StyleSheetTypes';
 import type {
   AnimatedComponentType,
   AnimatedProps,
@@ -100,7 +100,7 @@ const AnimatedScrollViewWithInvertedRefreshControl =
 
     // Handle animated props on `refreshControl`.
     const [refreshControlAnimatedProps, refreshControlRef] = useAnimatedProps<
-      {style: ?____ViewStyle_Internal},
+      {style: ?ViewStyle},
       $FlowFixMe,
     >(intermediatePropsForRefreshControl);
     // NOTE: Assumes that refreshControl.ref` and `refreshControl.style` can be

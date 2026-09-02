@@ -10,7 +10,7 @@
 
 import type {HostInstance} from '../../src/private/types/HostInstance';
 import type {TextStyleProp} from '../StyleSheet/StyleSheet';
-import type {____TextStyle_Internal as TextStyleInternal} from '../StyleSheet/StyleSheetTypes';
+import type {TextStyle} from '../StyleSheet/StyleSheetTypes';
 import type {GestureResponderEvent} from '../Types/CoreEventTypes';
 import type {NativeTextProps} from './TextNativeComponent';
 import type {PressRetentionOffset, TextProps} from './TextProps';
@@ -191,22 +191,22 @@ const TextImpl: component(
 
   let processedStyle = flattenStyle<TextStyleProp>(_style);
   if (processedStyle != null) {
-    let overrides: ?{...TextStyleInternal} = null;
+    let overrides: ?{...TextStyle} = null;
     if (typeof processedStyle.fontWeight === 'number') {
-      overrides = overrides || ({} as {...TextStyleInternal});
+      overrides = overrides || ({} as {...TextStyle});
       overrides.fontWeight =
         // $FlowFixMe[incompatible-type]
-        String(processedStyle.fontWeight) as TextStyleInternal['fontWeight'];
+        String(processedStyle.fontWeight) as TextStyle['fontWeight'];
     }
 
     if (processedStyle.userSelect != null) {
       _selectable = userSelectToSelectableMap[processedStyle.userSelect];
-      overrides = overrides || ({} as {...TextStyleInternal});
+      overrides = overrides || ({} as {...TextStyle});
       overrides.userSelect = undefined;
     }
 
     if (processedStyle.verticalAlign != null) {
-      overrides = overrides || ({} as {...TextStyleInternal});
+      overrides = overrides || ({} as {...TextStyle});
       overrides.textAlignVertical =
         verticalAlignToTextAlignVerticalMap[processedStyle.verticalAlign];
       overrides.verticalAlign = undefined;

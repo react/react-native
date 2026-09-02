@@ -41,8 +41,7 @@ type OrientationChangeEvent = Readonly<{
   orientation: 'portrait' | 'landscape',
 }>;
 
-/** @build-types emit-as-interface Uniwind compatibility */
-export type ModalBaseProps = {
+type ModalBasePropsCore = {
   /**
    * Controls how the modal animates. `'slide'` slides in from the bottom,
    * `'fade'` fades into view, `'none'` appears without animation.
@@ -91,6 +90,9 @@ export type ModalBaseProps = {
    */
   modalRef?: React.RefSetter<ModalInstance>,
 };
+
+/** @build-types emit-as-interface Uniwind compatibility */
+export type ModalBaseProps = ModalBasePropsCore;
 
 export type ModalPropsIOS = {
   /**

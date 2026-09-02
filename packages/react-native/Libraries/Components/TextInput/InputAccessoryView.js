@@ -18,12 +18,7 @@ import useWindowDimensions from '../../Utilities/useWindowDimensions';
 import RCTInputAccessoryViewNativeComponent from './RCTInputAccessoryViewNativeComponent';
 import * as React from 'react';
 
-/**
- * InputAccessoryView is deprecated and will be removed in a future release.
- * @deprecated
- * @build-types emit-as-interface Expo compatibility
- */
-export type InputAccessoryViewProps = Readonly<{
+type InputAccessoryViewPropsCore = Readonly<{
   readonly children: React.Node,
   /**
    * An ID used to associate this `InputAccessoryView` to specified `TextInput`(s).
@@ -32,6 +27,13 @@ export type InputAccessoryViewProps = Readonly<{
   style?: ?ViewStyleProp,
   backgroundColor?: ?ColorValue,
 }>;
+
+/**
+ * InputAccessoryView is deprecated and will be removed in a future release.
+ * @deprecated
+ * @build-types emit-as-interface Expo compatibility
+ */
+export type InputAccessoryViewProps = InputAccessoryViewPropsCore;
 
 /**
  * A component which enables customization of the keyboard input accessory view on iOS. The input accessory view is displayed above the keyboard whenever a `TextInput` has focus. This component can be used to create custom toolbars.

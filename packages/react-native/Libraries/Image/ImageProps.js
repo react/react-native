@@ -147,10 +147,7 @@ export type ImagePropsAndroid = Readonly<{
   resizeMultiplier?: ?number,
 }>;
 
-/** @build-types emit-as-interface Expo compatibility */
-export type ImagePropsBase = Readonly<{
-  ...Omit<ViewProps, 'style'>,
-
+type ImagePropsBaseCore = Readonly<{
   /**
    * When `true`, indicates the image is an accessibility element.
    */
@@ -327,27 +324,38 @@ export type ImagePropsBase = Readonly<{
   children?: empty,
 }>;
 
-/** @build-types emit-as-interface react-native-web compatibility */
-export type ImageProps = Readonly<{
-  ...ImagePropsIOS,
-  ...ImagePropsAndroid,
-  ...ImagePropsBase,
+/** @build-types emit-as-interface Expo compatibility */
+export type ImagePropsBase = Readonly<{
+  ...Omit<
+    ViewProps,
+    | 'accessibilityLabel'
+    | 'accessible'
+    | 'aria-label'
+    | 'aria-labelledby'
+    | 'children'
+    | 'onLayout'
+    | 'style'
+    | 'testID',
+  >,
+  ...ImagePropsBaseCore,
+}>;
 
+type ImagePropsCore = Readonly<{
   /**
    * Style applied to the `Image` component.
    */
   style?: ?ImageStyleProp,
 }>;
 
-/**
- * ImageBackground is deprecated and will be removed in a future release.
- * Use a `View` with an absolutely positioned `Image` instead.
- * @see https://reactnative.dev/docs/imagebackground
- * @deprecated
- * @build-types emit-as-interface Uniwind compatibility
- */
-export type ImageBackgroundProps = Readonly<{
-  ...ImageProps,
+/** @build-types emit-as-interface react-native-web compatibility */
+export type ImageProps = Readonly<{
+  ...ImagePropsIOS,
+  ...ImagePropsAndroid,
+  ...ImagePropsBase,
+  ...ImagePropsCore,
+}>;
+
+type ImageBackgroundPropsCore = Readonly<{
   children?: React.Node,
 
   /**
@@ -366,4 +374,16 @@ export type ImageBackgroundProps = Readonly<{
    * when mounted.
    */
   imageRef?: React.RefSetter<React.ElementRef<ImageType>>,
+}>;
+
+/**
+ * ImageBackground is deprecated and will be removed in a future release.
+ * Use a `View` with an absolutely positioned `Image` instead.
+ * @see https://reactnative.dev/docs/imagebackground
+ * @deprecated
+ * @build-types emit-as-interface Uniwind compatibility
+ */
+export type ImageBackgroundProps = Readonly<{
+  ...Omit<ImageProps, 'children' | 'style'>,
+  ...ImageBackgroundPropsCore,
 }>;
