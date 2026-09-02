@@ -533,6 +533,18 @@ class VirtualizedList extends StateSafePureComponent<
       if (props.initialScrollIndex == null || props.initialScrollIndex <= 0) {
         const initialRegion = VirtualizedList._initialRenderRegion(props);
         renderMask.addCells(initialRegion);
+      } else {
+        // When initialScrollIndex is set but the entire list fits in viewport,
+        // we still need to apply the scroll-to-top optimization to render all items.
+        // Only apply this fix for small lists with getItemLayout to avoid breaking virtualization.
+        const initialNumToRender = initialNumToRenderOrDefault(props.initialNumToRender);
+        if (itemCount > 0 && 
+            itemCount <= Math.min(initialNumToRender, 10) &&
+            props.initialScrollIndex > 0 &&
+            props.getItemLayout != null) {
+          const initialRegion = VirtualizedList._initialRenderRegion(props);
+          renderMask.addCells(initialRegion);
+        }
       }
 
       // The layout coordinates of sticky headers may be off-screen while the
@@ -557,6 +569,28 @@ class VirtualizedList extends StateSafePureComponent<
     last: number,
   } {
     const itemCount = props.getItemCount(props.data);
+    const initialNumToRender = initialNumToRenderOrDefault(props.initialNumToRender);
+
+    // Handle empty list case
+    if (itemCount === 0) {
+      return {
+        first: 0,
+        last: -1,
+      };
+    }
+
+    // If initialScrollIndex is set and the total items fit within initialNumToRender,
+    // render all items to avoid missing items before initialScrollIndex.
+    // Only apply this fix for small lists with getItemLayout to avoid breaking virtualization.
+    if (props.initialScrollIndex != null && 
+        props.initialScrollIndex > 0 && 
+        props.getItemLayout != null &&
+        itemCount <= Math.min(initialNumToRender, 10)) {
+      return {
+        first: 0,
+        last: itemCount - 1,
+      };
+    }
 
     const firstCellIndex = Math.max(
       0,
@@ -566,7 +600,7 @@ class VirtualizedList extends StateSafePureComponent<
     const lastCellIndex =
       Math.min(
         itemCount,
-        firstCellIndex + initialNumToRenderOrDefault(props.initialNumToRender),
+        firstCellIndex + initialNumToRender,
       ) - 1;
 
     return {
