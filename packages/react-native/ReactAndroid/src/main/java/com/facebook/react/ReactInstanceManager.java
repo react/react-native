@@ -72,13 +72,16 @@ import com.facebook.react.devsupport.interfaces.DevSupportManager;
 import com.facebook.react.devsupport.interfaces.PackagerStatusCallback;
 import com.facebook.react.devsupport.interfaces.PausedInDebuggerOverlayManager;
 import com.facebook.react.devsupport.interfaces.RedBoxHandler;
+import com.facebook.react.fabric.FabricUIManager;
 import com.facebook.react.interfaces.TaskInterface;
 import com.facebook.react.internal.AndroidChoreographerProvider;
 import com.facebook.react.internal.ChoreographerProvider;
+import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags;
 import com.facebook.react.modules.appearance.AppearanceModule;
 import com.facebook.react.modules.core.DefaultHardwareBackBtnHandler;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.react.modules.core.ReactChoreographer;
+import com.facebook.react.modules.deviceinfo.DeviceInfoModule;
 import com.facebook.react.packagerconnection.RequestHandler;
 import com.facebook.react.uimanager.DisplayMetricsHolder;
 import com.facebook.react.uimanager.ReactRoot;
@@ -860,6 +863,29 @@ public class ReactInstanceManager {
 
     ReactContext currentReactContext = getCurrentReactContext();
     if (currentReactContext != null) {
+      if (ReactNativeFeatureFlags.enableFontScaleChangesUpdatingLayout()) {
+        boolean didDisplayMetricsChange =
+            DisplayMetricsHolder.updateDisplayMetricsIfChanged(updatedContext);
+        if (didDisplayMetricsChange) {
+          @Nullable UIManager uiManager = UIManagerHelper.getUIManager(currentReactContext, FABRIC);
+          if (uiManager instanceof FabricUIManager) {
+            ((FabricUIManager) uiManager).updateDisplayMetricDensity();
+          }
+
+          synchronized (mAttachedReactRoots) {
+            for (ReactRoot reactRoot : mAttachedReactRoots) {
+              reactRoot.getRootViewGroup().requestLayout();
+            }
+          }
+
+          DeviceInfoModule deviceInfoModule =
+              currentReactContext.getNativeModule(DeviceInfoModule.class);
+          if (deviceInfoModule != null) {
+            deviceInfoModule.emitUpdateDimensionsEvent();
+          }
+        }
+      }
+
       AppearanceModule appearanceModule =
           currentReactContext.getNativeModule(AppearanceModule.class);
 
