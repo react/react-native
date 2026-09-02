@@ -117,6 +117,12 @@ internal class PreparedLayoutTextView(context: Context) : ViewGroup(context), Re
     }
   }
 
+  override fun draw(canvas: Canvas) {
+    val maskSaveCount = BackgroundStyleApplicator.beginMaskedDraw(canvas, this)
+    super.draw(canvas)
+    BackgroundStyleApplicator.endMaskedDraw(canvas, this, maskSaveCount)
+  }
+
   @OptIn(UnstableReactNativeAPI::class)
   override fun onDraw(canvas: Canvas) {
     if (overflow != Overflow.VISIBLE) {

@@ -3196,8 +3196,10 @@ public abstract interface class com/facebook/react/turbomodule/core/interfaces/T
 
 public final class com/facebook/react/uimanager/BackgroundStyleApplicator {
 	public static final field INSTANCE Lcom/facebook/react/uimanager/BackgroundStyleApplicator;
+	public static final fun beginMaskedDraw (Landroid/graphics/Canvas;Landroid/view/View;)I
 	public static final fun clipToPaddingBox (Landroid/view/View;Landroid/graphics/Canvas;)V
 	public static final fun clipToPaddingBoxWithAntiAliasing (Landroid/view/View;Landroid/graphics/Canvas;Lkotlin/jvm/functions/Function0;)V
+	public static final fun endMaskedDraw (Landroid/graphics/Canvas;Landroid/view/View;I)V
 	public static final fun getBackgroundColor (Landroid/view/View;)Ljava/lang/Integer;
 	public static final fun getBorderColor (Landroid/view/View;Lcom/facebook/react/uimanager/style/LogicalEdge;)Ljava/lang/Integer;
 	public static final fun getBorderRadius (Landroid/view/View;Lcom/facebook/react/uimanager/style/BorderRadiusProp;)Lcom/facebook/react/uimanager/LengthPercentage;
@@ -3217,6 +3219,10 @@ public final class com/facebook/react/uimanager/BackgroundStyleApplicator {
 	public static final fun setBoxShadow (Landroid/view/View;Lcom/facebook/react/bridge/ReadableArray;)V
 	public static final fun setBoxShadow (Landroid/view/View;Ljava/util/List;)V
 	public static final fun setFeedbackUnderlay (Landroid/view/View;Landroid/graphics/drawable/Drawable;)V
+	public static final fun setMaskImage (Landroid/view/View;Lcom/facebook/react/bridge/ReadableArray;)V
+	public static final fun setMaskPosition (Landroid/view/View;Lcom/facebook/react/bridge/ReadableArray;)V
+	public static final fun setMaskRepeat (Landroid/view/View;Lcom/facebook/react/bridge/ReadableArray;)V
+	public static final fun setMaskSize (Landroid/view/View;Lcom/facebook/react/bridge/ReadableArray;)V
 	public static final fun setOutlineColor (Landroid/view/View;Ljava/lang/Integer;)V
 	public static final fun setOutlineOffset (Landroid/view/View;F)V
 	public static final fun setOutlineStyle (Landroid/view/View;Lcom/facebook/react/uimanager/style/OutlineStyle;)V
@@ -3254,6 +3260,10 @@ public abstract class com/facebook/react/uimanager/BaseViewManager : com/faceboo
 	public fun setElevation (Landroid/view/View;F)V
 	public fun setFilter (Landroid/view/View;Lcom/facebook/react/bridge/ReadableArray;)V
 	public fun setImportantForAccessibility (Landroid/view/View;Ljava/lang/String;)V
+	public fun setMaskImage (Landroid/view/View;Lcom/facebook/react/bridge/ReadableArray;)V
+	public fun setMaskPosition (Landroid/view/View;Lcom/facebook/react/bridge/ReadableArray;)V
+	public fun setMaskRepeat (Landroid/view/View;Lcom/facebook/react/bridge/ReadableArray;)V
+	public fun setMaskSize (Landroid/view/View;Lcom/facebook/react/bridge/ReadableArray;)V
 	public fun setMixBlendMode (Landroid/view/View;Ljava/lang/String;)V
 	public fun setMoveShouldSetResponder (Landroid/view/View;Z)V
 	public fun setMoveShouldSetResponderCapture (Landroid/view/View;Z)V
@@ -4586,6 +4596,10 @@ public final class com/facebook/react/uimanager/ViewProps {
 	public static final field MARGIN_START Ljava/lang/String;
 	public static final field MARGIN_TOP Ljava/lang/String;
 	public static final field MARGIN_VERTICAL Ljava/lang/String;
+	public static final field MASK_IMAGE Ljava/lang/String;
+	public static final field MASK_POSITION Ljava/lang/String;
+	public static final field MASK_REPEAT Ljava/lang/String;
+	public static final field MASK_SIZE Ljava/lang/String;
 	public static final field MAX_FONT_SIZE_MULTIPLIER Ljava/lang/String;
 	public static final field MAX_HEIGHT Ljava/lang/String;
 	public static final field MAX_WIDTH Ljava/lang/String;

@@ -56,6 +56,14 @@ import com.facebook.react.uimanager.style.OutlineStyle
 @OptIn(UnstableReactNativeAPI::class)
 public object BackgroundStyleApplicator {
 
+  private const val NO_MASK_SAVE_COUNT: Int = -1
+
+  private val maskPaint: Paint =
+      Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_IN)
+        isFilterBitmap = true
+      }
+
   /**
    * Sets the background color of the view.
    *
@@ -108,6 +116,137 @@ public object BackgroundStyleApplicator {
   }
 
   /**
+   * Sets the `mask-image` layers for the view.
+   *
+   * `mask-image` accepts the same values as `background-image`, but instead of being painted
+   * underneath the view it is composited over the view's own rendering with
+   * [PorterDuff.Mode.DST_IN]: the view is visible where the mask is opaque and hidden where it is
+   * transparent. Views that support masking call [beginMaskedDraw] and [endMaskedDraw] around their
+   * drawing.
+   *
+   * @param view The view to apply the mask to
+   * @param maskImage The processed `mask-image` value, or null to remove the mask
+   * @see <a href="https://www.w3.org/TR/css-masking-1/#the-mask-image">CSS Masking Level 1</a>
+   */
+  @JvmStatic
+  public fun setMaskImage(view: View, maskImage: ReadableArray?): Unit {
+    if (maskImage == null || maskImage.size() == 0) {
+      val composite = getCompositeBackgroundDrawable(view) ?: return
+      if (composite.mask != null) {
+        view.background = composite.withNewMask(null)
+      }
+      return
+    }
+
+    val layers = ArrayList<BackgroundImageLayer>(maskImage.size())
+    for (i in 0 until maskImage.size()) {
+      BackgroundImageLayer.parse(maskImage.getMap(i), view.context)?.let { layers.add(it) }
+    }
+    ensureMaskDrawable(view).backgroundImageLayers = layers.ifEmpty { null }
+  }
+
+  /**
+   * Sets the `mask-size` value for the view. Has no effect until a `mask-image` is set.
+   *
+   * @param view The view to apply the mask size to
+   * @param maskSize The processed `mask-size` value, or null to reset to `auto`
+   */
+  @JvmStatic
+  public fun setMaskSize(view: View, maskSize: ReadableArray?): Unit {
+    val sizes =
+        maskSize?.let { array ->
+          val parsed = ArrayList<BackgroundSize>(array.size())
+          for (i in 0 until array.size()) {
+            BackgroundSize.parse(array.getDynamic(i))?.let { parsed.add(it) }
+          }
+          parsed.ifEmpty { null }
+        }
+    ensureMaskDrawable(view).backgroundSize = sizes
+  }
+
+  /**
+   * Sets the `mask-position` value for the view. Has no effect until a `mask-image` is set.
+   *
+   * @param view The view to apply the mask position to
+   * @param maskPosition The processed `mask-position` value, or null to reset to `0% 0%`
+   */
+  @JvmStatic
+  public fun setMaskPosition(view: View, maskPosition: ReadableArray?): Unit {
+    val positions =
+        maskPosition?.let { array ->
+          val parsed = ArrayList<BackgroundPosition>(array.size())
+          for (i in 0 until array.size()) {
+            BackgroundPosition.parse(array.getMap(i))?.let { parsed.add(it) }
+          }
+          parsed.ifEmpty { null }
+        }
+    ensureMaskDrawable(view).backgroundPosition = positions
+  }
+
+  /**
+   * Sets the `mask-repeat` value for the view. Has no effect until a `mask-image` is set.
+   *
+   * @param view The view to apply the mask repeat to
+   * @param maskRepeat The processed `mask-repeat` value, or null to reset to `repeat`
+   */
+  @JvmStatic
+  public fun setMaskRepeat(view: View, maskRepeat: ReadableArray?): Unit {
+    val repeats =
+        maskRepeat?.let { array ->
+          val parsed = ArrayList<BackgroundRepeat>(array.size())
+          for (i in 0 until array.size()) {
+            BackgroundRepeat.parse(array.getMap(i))?.let { parsed.add(it) }
+          }
+          parsed.ifEmpty { null }
+        }
+    ensureMaskDrawable(view).backgroundRepeat = repeats
+  }
+
+  /**
+   * Starts an offscreen layer that the view's `mask-image` will later be composited into.
+   *
+   * Must be paired with [endMaskedDraw]:
+   * ```
+   * override fun draw(canvas: Canvas) {
+   *   val saveCount = BackgroundStyleApplicator.beginMaskedDraw(canvas, this)
+   *   super.draw(canvas)
+   *   BackgroundStyleApplicator.endMaskedDraw(canvas, this, saveCount)
+   * }
+   * ```
+   *
+   * @return the canvas save count to hand back to [endMaskedDraw], or -1 if the view has no mask
+   */
+  @JvmStatic
+  public fun beginMaskedDraw(canvas: Canvas, view: View): Int {
+    val mask = getMaskDrawable(view) ?: return NO_MASK_SAVE_COUNT
+    if (view.width <= 0 || view.height <= 0) {
+      return NO_MASK_SAVE_COUNT
+    }
+    mask.setBounds(0, 0, view.width, view.height)
+    return canvas.saveLayer(0f, 0f, view.width.toFloat(), view.height.toFloat(), null)
+  }
+
+  /**
+   * Paints the view's `mask-image` over the layer started by [beginMaskedDraw] and restores the
+   * canvas. A no-op when [saveCount] is the sentinel returned for an unmasked view.
+   */
+  @JvmStatic
+  public fun endMaskedDraw(canvas: Canvas, view: View, saveCount: Int): Unit {
+    if (saveCount == NO_MASK_SAVE_COUNT) {
+      return
+    }
+    // Painting the mask into a nested layer applies DST_IN when that layer is restored, which
+    // keeps the content drawn since `beginMaskedDraw` only where the mask is opaque.
+    getMaskDrawable(view)?.let { mask ->
+      val maskSaveCount =
+          canvas.saveLayer(0f, 0f, view.width.toFloat(), view.height.toFloat(), maskPaint)
+      mask.draw(canvas)
+      canvas.restoreToCount(maskSaveCount)
+    }
+    canvas.restoreToCount(saveCount)
+  }
+
+  /**
    * Gets the background color of the view.
    *
    * @param view The view to get the background color from
@@ -135,10 +274,12 @@ public object BackgroundStyleApplicator {
     ensureBorderDrawable(view).setBorderWidth(edge.toSpacingType(), width?.dpToPx() ?: Float.NaN)
     composite.background?.borderInsets = composite.borderInsets
     composite.backgroundImage?.borderInsets = composite.borderInsets
+    composite.mask?.borderInsets = composite.borderInsets
     composite.border?.borderInsets = composite.borderInsets
 
     composite.background?.invalidateSelf()
     composite.backgroundImage?.invalidateSelf()
+    composite.mask?.invalidateSelf()
     composite.border?.invalidateSelf()
 
     composite.borderInsets = composite.borderInsets ?: BorderInsets()
@@ -217,10 +358,12 @@ public object BackgroundStyleApplicator {
     compositeBackgroundDrawable.background?.borderRadius = compositeBackgroundDrawable.borderRadius
     compositeBackgroundDrawable.backgroundImage?.borderRadius =
         compositeBackgroundDrawable.borderRadius
+    compositeBackgroundDrawable.mask?.borderRadius = compositeBackgroundDrawable.borderRadius
     compositeBackgroundDrawable.border?.borderRadius = compositeBackgroundDrawable.borderRadius
 
     compositeBackgroundDrawable.background?.invalidateSelf()
     compositeBackgroundDrawable.backgroundImage?.invalidateSelf()
+    compositeBackgroundDrawable.mask?.invalidateSelf()
     compositeBackgroundDrawable.border?.invalidateSelf()
 
     if (Build.VERSION.SDK_INT >= MIN_OUTSET_BOX_SHADOW_SDK_VERSION) {
@@ -693,6 +836,27 @@ public object BackgroundStyleApplicator {
 
   private fun getBackgroundImage(view: View): BackgroundImageDrawable? =
       getCompositeBackgroundDrawable(view)?.backgroundImage
+
+  private fun ensureMaskDrawable(view: View): BackgroundImageDrawable {
+    val composite = ensureCompositeBackgroundDrawable(view)
+    composite.mask?.let {
+      return it
+    }
+
+    val mask =
+        BackgroundImageDrawable(view.context, composite.borderRadius, composite.borderInsets)
+    view.background = composite.withNewMask(mask)
+    return mask
+  }
+
+  /**
+   * The view's mask drawable, but only once it actually has something to paint. `mask-size` and
+   * friends can arrive before `mask-image`, and an empty mask must not hide the view.
+   */
+  private fun getMaskDrawable(view: View): BackgroundImageDrawable? =
+      getCompositeBackgroundDrawable(view)?.mask?.takeUnless {
+        it.backgroundImageLayers.isNullOrEmpty()
+      }
 
   private fun getBorder(view: View): BorderDrawable? = getCompositeBackgroundDrawable(view)?.border
 

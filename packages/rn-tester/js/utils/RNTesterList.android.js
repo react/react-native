@@ -347,6 +347,10 @@ const APIs: Array<RNTesterModuleInfo> = (
       module: require('../examples/RadialGradient/RadialGradientExample'),
     },
     {
+      key: 'MaskExample',
+      module: require('../examples/Mask/MaskExample'),
+    },
+    {
       key: 'BackgroundImageExample',
       category: 'UI',
       module: require('../examples/BackgroundImage/BackgroundImageExample'),

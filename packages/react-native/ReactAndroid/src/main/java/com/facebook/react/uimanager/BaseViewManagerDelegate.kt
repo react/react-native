@@ -88,6 +88,11 @@ public abstract class BaseViewManagerDelegate<
 
       ViewProps.MIX_BLEND_MODE -> mViewManager.setMixBlendMode(view, value as String?)
 
+      ViewProps.MASK_IMAGE -> mViewManager.setMaskImage(view, value as ReadableArray?)
+      ViewProps.MASK_SIZE -> mViewManager.setMaskSize(view, value as ReadableArray?)
+      ViewProps.MASK_POSITION -> mViewManager.setMaskPosition(view, value as ReadableArray?)
+      ViewProps.MASK_REPEAT -> mViewManager.setMaskRepeat(view, value as ReadableArray?)
+
       ViewProps.SHADOW_COLOR ->
           mViewManager.setShadowColor(view, ColorPropConverter.getColor(value, view.context, 0))
 

@@ -14,12 +14,17 @@
 
 namespace facebook::react {
 
-class ViewComponentDescriptor : public ConcreteComponentDescriptor<ViewShadowNode> {
+class ImageManager;
+
+class ViewComponentDescriptor
+    : public ConcreteComponentDescriptor<ViewShadowNode> {
  public:
-  ViewComponentDescriptor(const ComponentDescriptorParameters &parameters)
-      : ConcreteComponentDescriptor<ViewShadowNode>(parameters)
-  {
-  }
+  ViewComponentDescriptor(const ComponentDescriptorParameters &parameters);
+
+  void adopt(ShadowNode &shadowNode) const override;
+
+ private:
+  const std::shared_ptr<ImageManager> imageManager_;
 };
 
 } // namespace facebook::react

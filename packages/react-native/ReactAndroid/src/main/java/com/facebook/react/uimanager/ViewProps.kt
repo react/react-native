@@ -84,6 +84,10 @@ public object ViewProps {
   public const val BACKGROUND_REPEAT: String = "backgroundRepeat"
   // Backwards-compatible alias for the original experimental_ prefixed prop name.
   public const val EXPERIMENTAL_BACKGROUND_REPEAT: String = "experimental_backgroundRepeat"
+  public const val MASK_IMAGE: String = "maskImage"
+  public const val MASK_SIZE: String = "maskSize"
+  public const val MASK_POSITION: String = "maskPosition"
+  public const val MASK_REPEAT: String = "maskRepeat"
   public const val FOREGROUND_COLOR: String = "foregroundColor"
   public const val COLOR: String = "color"
   public const val FONT_SIZE: String = "fontSize"

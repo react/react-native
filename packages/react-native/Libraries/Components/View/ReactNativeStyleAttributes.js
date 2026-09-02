@@ -60,6 +60,15 @@ export const backgroundRepeatAttribute: AnyAttributeType = nativeCSSParsing
   ? true
   : {process: processBackgroundRepeat};
 
+// The `mask-*` longhands accept the same values as their `background-*`
+// counterparts, so they reuse the same processing.
+// https://www.w3.org/TR/css-masking-1/#the-mask-image
+export const maskImageAttribute: AnyAttributeType = backgroundImageAttribute;
+export const maskSizeAttribute: AnyAttributeType = backgroundSizeAttribute;
+export const maskPositionAttribute: AnyAttributeType =
+  backgroundPositionAttribute;
+export const maskRepeatAttribute: AnyAttributeType = backgroundRepeatAttribute;
+
 export const transformAttribute: AnyAttributeType = nativeCSSParsing
   ? true
   : {process: processTransform};
@@ -222,6 +231,14 @@ const ReactNativeStyleAttributes: {[string]: AnyAttributeType, ...} = {
   backgroundRepeat: backgroundRepeatAttribute,
   /** @deprecated Use `backgroundRepeat` instead. */
   experimental_backgroundRepeat: backgroundRepeatAttribute,
+
+  /**
+   * Mask
+   */
+  maskImage: maskImageAttribute,
+  maskSize: maskSizeAttribute,
+  maskPosition: maskPositionAttribute,
+  maskRepeat: maskRepeatAttribute,
 
   /**
    * View

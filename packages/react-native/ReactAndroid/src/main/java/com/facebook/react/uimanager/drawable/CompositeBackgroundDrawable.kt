@@ -58,6 +58,13 @@ internal class CompositeBackgroundDrawable(
 
     // Holder value for currently set border radius
     var borderRadius: BorderRadiusStyle? = null,
+
+    /**
+     * `mask-image` rendering layer. Unlike the layers above it is not part of the [LayerDrawable]
+     * stack: it is painted separately by [BackgroundStyleApplicator.beginMaskedDraw] to composite
+     * the view's own rendering, not to draw underneath it.
+     */
+    val mask: BackgroundImageDrawable? = null,
 ) :
     LayerDrawable(
         createLayersArray(
@@ -77,6 +84,12 @@ internal class CompositeBackgroundDrawable(
     // previous ones. E.g. an EditText style may set padding on a TextInput, but we don't want to
     // constrain background color to the area inside of the padding.
     setPaddingMode(LayerDrawable.PADDING_MODE_STACK)
+
+    // The mask is not one of our layers, so LayerDrawable does not adopt it. Routing its
+    // invalidations through us forwards them to the view, which lets asynchronously loaded
+    // `url()` masks repaint once they arrive. Re-parented on every copy so that the callback
+    // always points at the drawable the view actually holds.
+    mask?.callback = this
   }
 
   fun withNewBackgroundImage(
@@ -94,6 +107,7 @@ internal class CompositeBackgroundDrawable(
         outline,
         borderInsets,
         borderRadius,
+        mask,
     )
   }
 
@@ -110,6 +124,7 @@ internal class CompositeBackgroundDrawable(
         outline,
         borderInsets,
         borderRadius,
+        mask,
     )
   }
 
@@ -129,6 +144,7 @@ internal class CompositeBackgroundDrawable(
         outline,
         borderInsets,
         borderRadius,
+        mask,
     )
   }
 
@@ -145,6 +161,7 @@ internal class CompositeBackgroundDrawable(
         outline,
         borderInsets,
         borderRadius,
+        mask,
     )
   }
 
@@ -161,6 +178,24 @@ internal class CompositeBackgroundDrawable(
         outline,
         borderInsets,
         borderRadius,
+        mask,
+    )
+  }
+
+  fun withNewMask(mask: BackgroundImageDrawable?): CompositeBackgroundDrawable {
+    return CompositeBackgroundDrawable(
+        context,
+        originalBackground,
+        outerShadows,
+        background,
+        backgroundImage,
+        border,
+        feedbackUnderlay,
+        innerShadows,
+        outline,
+        borderInsets,
+        borderRadius,
+        mask,
     )
   }
 
@@ -177,6 +212,7 @@ internal class CompositeBackgroundDrawable(
         outline,
         borderInsets,
         borderRadius,
+        mask,
     )
   }
 

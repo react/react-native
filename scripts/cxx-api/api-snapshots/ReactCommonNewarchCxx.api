@@ -210,14 +210,14 @@ using facebook::react::ActivePointerRegistry = std::unordered_map<facebook::reac
 using facebook::react::AnimationEndCallback = facebook::react::AsyncCallback<facebook::react::EndResult>;
 using facebook::react::AnimationTimestamp = std::chrono::duration<double, std::milli>;
 using facebook::react::BackgroundExecutor = std::function<void(std::function<void()>&& callback)>;
-using facebook::react::BackgroundImage = std::variant<facebook::react::LinearGradient, facebook::react::RadialGradient>;
+using facebook::react::BackgroundImage = std::variant<facebook::react::LinearGradient, facebook::react::RadialGradient, facebook::react::URLBackgroundImage>;
 using facebook::react::BackgroundSize = std::variant<facebook::react::BackgroundSizeKeyword, facebook::react::BackgroundSizeLengthPercentage>;
 using facebook::react::BorderColors = facebook::react::RectangleEdges<facebook::react::SharedColor>;
 using facebook::react::BorderCurves = facebook::react::RectangleCorners<facebook::react::BorderCurve>;
 using facebook::react::BorderRadii = facebook::react::RectangleCorners<facebook::react::CornerRadii>;
 using facebook::react::BorderStyles = facebook::react::RectangleEdges<facebook::react::BorderStyle>;
 using facebook::react::BorderWidths = facebook::react::RectangleEdges<Float>;
-using facebook::react::CSSBackgroundImage = facebook::react::CSSCompoundDataType<facebook::react::CSSLinearGradientFunction, facebook::react::CSSRadialGradientFunction>;
+using facebook::react::CSSBackgroundImage = facebook::react::CSSCompoundDataType<facebook::react::CSSLinearGradientFunction, facebook::react::CSSRadialGradientFunction, facebook::react::CSSURLFunction>;
 using facebook::react::CSSBackgroundImageList = facebook::react::CSSCommaSeparatedList<facebook::react::CSSBackgroundImage>;
 using facebook::react::CSSFilterFunction = facebook::react::CSSCompoundDataType<facebook::react::CSSBlurFilter, facebook::react::CSSBrightnessFilter, facebook::react::CSSContrastFilter, facebook::react::CSSDropShadowFilter, facebook::react::CSSGrayscaleFilter, facebook::react::CSSHueRotateFilter, facebook::react::CSSInvertFilter, facebook::react::CSSOpacityFilter, facebook::react::CSSSaturateFilter, facebook::react::CSSSepiaFilter>;
 using facebook::react::CSSFilterList = facebook::react::CSSWhitespaceSeparatedList<facebook::react::CSSFilterFunction>;
@@ -1176,9 +1176,13 @@ class facebook::react::BaseViewProps : public facebook::react::YogaStylableProps
   public static facebook::react::Transform resolveTransform(const facebook::react::Size& frameSize, const facebook::react::Transform& transform, const facebook::react::TransformOrigin& transformOrigin);
   public std::optional<int> zIndex;
   public std::vector<facebook::react::BackgroundImage> backgroundImage;
+  public std::vector<facebook::react::BackgroundImage> maskImage;
   public std::vector<facebook::react::BackgroundPosition> backgroundPosition;
+  public std::vector<facebook::react::BackgroundPosition> maskPosition;
   public std::vector<facebook::react::BackgroundRepeat> backgroundRepeat;
+  public std::vector<facebook::react::BackgroundRepeat> maskRepeat;
   public std::vector<facebook::react::BackgroundSize> backgroundSize;
+  public std::vector<facebook::react::BackgroundSize> maskSize;
   public std::vector<facebook::react::BoxShadow> boxShadow;
   public std::vector<facebook::react::FilterFunction> filter;
   public void setProp(const facebook::react::PropsParserContext& context, facebook::react::RawPropsPropNameHash hash, const char* propName, const facebook::react::RawValue& value);
@@ -3798,11 +3802,19 @@ class facebook::react::ValueFactoryEventPayload : public facebook::react::EventP
 
 class facebook::react::ViewComponentDescriptor : public facebook::react::ConcreteComponentDescriptor<facebook::react::ViewShadowNode> {
   public ViewComponentDescriptor(const facebook::react::ComponentDescriptorParameters& parameters);
+  public virtual void adopt(facebook::react::ShadowNode& shadowNode) const override;
 }
 
-class facebook::react::ViewShadowNode : public facebook::react::ConcreteViewShadowNode<facebook::react::ViewComponentName, facebook::react::ViewProps, facebook::react::ViewEventEmitter> {
+class facebook::react::ViewShadowNode : public facebook::react::ConcreteViewShadowNode<facebook::react::ViewComponentName, facebook::react::ViewProps, facebook::react::ViewEventEmitter, facebook::react::ViewState> {
   public ViewShadowNode(const facebook::react::ShadowNode& sourceShadowNode, const facebook::react::ShadowNodeFragment& fragment);
   public ViewShadowNode(const facebook::react::ShadowNodeFragment& fragment, const facebook::react::ShadowNodeFamily::Shared& family, facebook::react::ShadowNodeTraits traits);
+  public void setImageManager(const std::shared_ptr<facebook::react::ImageManager>& imageManager);
+}
+
+class facebook::react::ViewState {
+  public ViewState() = default;
+  public ViewState(std::vector<facebook::react::BackgroundImageURLRequest> backgroundImageRequests);
+  public const std::vector<facebook::react::BackgroundImageURLRequest>& getBackgroundImageRequests() const;
 }
 
 class facebook::react::ViewTransitionModule : public facebook::react::UIManagerViewTransitionDelegate, public facebook::react::UIManagerCommitHook, public facebook::react::MountingOverrideDelegate {
@@ -5035,6 +5047,12 @@ struct facebook::react::AnimationMutations {
   public std::vector<facebook::react::AnimationMutation> batch;
 }
 
+struct facebook::react::BackgroundImageURLRequest {
+  public bool operator==(const facebook::react::BackgroundImageURLRequest& rhs) const;
+  public facebook::react::ImageSource imageSource;
+  public std::shared_ptr<facebook::react::ImageRequest> imageRequest;
+}
+
 struct facebook::react::BackgroundPosition {
   public BackgroundPosition();
   public bool operator==(const facebook::react::BackgroundPosition& other) const = default;
@@ -5382,6 +5400,11 @@ struct facebook::react::CSSTranslateX {
 struct facebook::react::CSSTranslateY {
   public constexpr bool operator==(const facebook::react::CSSTranslateY& rhs) const = default;
   public std::variant<facebook::react::CSSLength, facebook::react::CSSPercentage> value;
+}
+
+struct facebook::react::CSSURLFunction {
+  public bool operator==(const facebook::react::CSSURLFunction& rhs) const = default;
+  public std::string url;
 }
 
 struct facebook::react::CSSZero {
@@ -6129,6 +6152,12 @@ struct facebook::react::TransformOrigin {
   public std::array<facebook::react::ValueUnit, 2> xy;
 }
 
+struct facebook::react::URLBackgroundImage {
+  public bool operator!=(const facebook::react::URLBackgroundImage& rhs) const;
+  public bool operator==(const facebook::react::URLBackgroundImage& rhs) const;
+  public std::string uri;
+}
+
 struct facebook::react::ValueUnit {
   public constexpr ValueUnit() = default;
   public constexpr ValueUnit(float v, facebook::react::UnitType u);
@@ -6847,6 +6876,10 @@ struct facebook::react::CSSDataTypeParser<facebook::react::CSSTranslateX> : publ
 }
 
 struct facebook::react::CSSDataTypeParser<facebook::react::CSSTranslateY> : public facebook::react::detail::CSSVariantComponentTransformParser<facebook::react::CSSTranslateY, "translateY", facebook::react::CSSLength, facebook::react::CSSPercentage> {
+}
+
+struct facebook::react::CSSDataTypeParser<facebook::react::CSSURLFunction> {
+  public static std::optional<facebook::react::CSSURLFunction> consumeFunctionBlock(const facebook::react::CSSFunctionBlock& func, facebook::react::CSSValueParser& parser);
 }
 
 struct facebook::react::CSSDataTypeParser<facebook::react::CSSZero> {

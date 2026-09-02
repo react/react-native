@@ -368,6 +368,12 @@ public class ReactImageView(
   // or outline which may draw outside of bounds.
   public override fun hasOverlappingRendering(): Boolean = false
 
+  public override fun draw(canvas: Canvas) {
+    val maskSaveCount = BackgroundStyleApplicator.beginMaskedDraw(canvas, this)
+    super.draw(canvas)
+    BackgroundStyleApplicator.endMaskedDraw(canvas, this, maskSaveCount)
+  }
+
   public override fun onDraw(canvas: Canvas) {
     BackgroundStyleApplicator.clipToPaddingBoxWithAntiAliasing(this, canvas) {
       try {

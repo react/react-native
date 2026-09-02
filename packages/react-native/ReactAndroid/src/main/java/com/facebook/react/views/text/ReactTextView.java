@@ -185,6 +185,13 @@ public class ReactTextView extends AppCompatTextView implements ReactCompoundVie
   }
 
   @Override
+  public void draw(Canvas canvas) {
+    int maskSaveCount = BackgroundStyleApplicator.beginMaskedDraw(canvas, this);
+    super.draw(canvas);
+    BackgroundStyleApplicator.endMaskedDraw(canvas, this, maskSaveCount);
+  }
+
+  @Override
   protected void onDraw(Canvas canvas) {
     try (SystraceSection s = new SystraceSection("ReactTextView.onDraw")) {
       Spannable spanned = getSpanned();

@@ -208,6 +208,14 @@ void parseProcessedBackgroundImage(
       }
 
       backgroundImage.emplace_back(std::move(radialGradient));
+    } else if (type == "url") {
+      auto uriIt = rawBackgroundImageMap.find("uri");
+      if (uriIt != rawBackgroundImageMap.end() &&
+          uriIt->second.hasType<std::string>()) {
+        URLBackgroundImage urlBackgroundImage;
+        urlBackgroundImage.uri = (std::string)(uriIt->second);
+        backgroundImage.emplace_back(std::move(urlBackgroundImage));
+      }
     }
   }
 
@@ -409,6 +417,14 @@ void parseUnprocessedBackgroundImageList(
       }
 
       backgroundImage.emplace_back(std::move(radialGradient));
+    } else if (type == "url") {
+      auto uriIt = rawBackgroundImageMap.find("uri");
+      if (uriIt != rawBackgroundImageMap.end() &&
+          uriIt->second.hasType<std::string>()) {
+        URLBackgroundImage urlBackgroundImage;
+        urlBackgroundImage.uri = (std::string)(uriIt->second);
+        backgroundImage.emplace_back(std::move(urlBackgroundImage));
+      }
     }
   }
 
@@ -472,6 +488,13 @@ void fromCSSColorStop(
 
 std::optional<BackgroundImage> fromCSSBackgroundImage(
     const CSSBackgroundImage& cssBackgroundImage) {
+  if (std::holds_alternative<CSSURLFunction>(cssBackgroundImage)) {
+    const auto& urlFunc = std::get<CSSURLFunction>(cssBackgroundImage);
+    URLBackgroundImage urlBackgroundImage;
+    urlBackgroundImage.uri = urlFunc.url;
+    return BackgroundImage{urlBackgroundImage};
+  }
+
   if (std::holds_alternative<CSSLinearGradientFunction>(cssBackgroundImage)) {
     const auto& gradient =
         std::get<CSSLinearGradientFunction>(cssBackgroundImage);

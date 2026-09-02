@@ -755,6 +755,7 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
   }
 
   override fun draw(canvas: Canvas) {
+    val maskSaveCount = BackgroundStyleApplicator.beginMaskedDraw(canvas, this)
     if (endFillColor != Color.TRANSPARENT) {
       val cv = getContentView()
       val bg = endBackground
@@ -764,6 +765,7 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
       }
     }
     super.draw(canvas)
+    BackgroundStyleApplicator.endMaskedDraw(canvas, this, maskSaveCount)
   }
 
   public override fun onDraw(canvas: Canvas) {

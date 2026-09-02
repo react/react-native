@@ -8,6 +8,9 @@
 #include "ViewShadowNode.h"
 #include <react/renderer/components/view/HostPlatformViewTraitsInitializer.h>
 #include <react/renderer/components/view/primitives.h>
+#include <react/renderer/graphics/BackgroundImage.h>
+#include <react/renderer/imagemanager/ImageManager.h>
+#include <react/renderer/imagemanager/primitives.h>
 
 namespace facebook::react {
 
@@ -58,6 +61,7 @@ void ViewShadowNode::initialize() noexcept {
       !viewProps.filter.empty() ||
       viewProps.mixBlendMode != BlendMode::Normal ||
       viewProps.isolation == Isolation::Isolate ||
+      !viewProps.maskImage.empty() ||
       HostPlatformViewTraitsInitializer::formsStackingContext(viewProps) ||
       !viewProps.accessibilityOrder.empty();
 
@@ -85,6 +89,76 @@ void ViewShadowNode::initialize() noexcept {
   } else {
     traits_.unset(ShadowNodeTraits::Trait::ChildrenFormStackingContext);
   }
+}
+
+void ViewShadowNode::setImageManager(
+    const std::shared_ptr<ImageManager>& imageManager) {
+  ensureUnsealed();
+  imageManager_ = imageManager;
+  updateStateIfNeeded();
+}
+
+void ViewShadowNode::updateStateIfNeeded() {
+  if (!imageManager_) {
+    return;
+  }
+
+  ensureUnsealed();
+
+  const auto& viewProps = static_cast<const ViewProps&>(*props_);
+
+  std::vector<BackgroundImageURLRequest> newRequests;
+  auto collectRequests = [&](const std::vector<BackgroundImage>& images) {
+    for (const auto& image : images) {
+      if (!std::holds_alternative<URLBackgroundImage>(image)) {
+        continue;
+      }
+      const auto& urlImage = std::get<URLBackgroundImage>(image);
+      if (urlImage.uri.empty()) {
+        continue;
+      }
+      BackgroundImageURLRequest request;
+      request.imageSource.uri = urlImage.uri;
+      request.imageSource.type =
+          urlImage.uri.find("__packager_asset") != std::string::npos
+          ? ImageSource::Type::Local
+          : ImageSource::Type::Remote;
+      newRequests.push_back(std::move(request));
+    }
+  };
+
+  // `background-image` and `mask-image` share the same image loading pipeline.
+  collectRequests(viewProps.backgroundImage);
+  collectRequests(viewProps.maskImage);
+
+  if (newRequests.empty()) {
+    return;
+  }
+
+  const auto& savedState = getStateData();
+  const auto& oldRequests = savedState.getBackgroundImageRequests();
+
+  bool requestsChanged = newRequests.size() != oldRequests.size();
+  if (!requestsChanged) {
+    for (size_t i = 0; i < newRequests.size(); ++i) {
+      if (newRequests[i].imageSource != oldRequests[i].imageSource) {
+        requestsChanged = true;
+        break;
+      }
+    }
+  }
+
+  if (!requestsChanged) {
+    return;
+  }
+
+  for (auto& request : newRequests) {
+    request.imageRequest = std::make_shared<ImageRequest>(
+        imageManager_->requestImage(request.imageSource, getSurfaceId()));
+  }
+
+  ViewState state{std::move(newRequests)};
+  setStateData(std::move(state));
 }
 
 } // namespace facebook::react

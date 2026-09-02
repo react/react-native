@@ -38,6 +38,7 @@ import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import com.facebook.react.touch.OnInterceptTouchEventListener
 import com.facebook.react.touch.ReactHitSlopView
 import com.facebook.react.touch.ReactInterceptingViewGroup
+import com.facebook.react.uimanager.BackgroundStyleApplicator
 import com.facebook.react.uimanager.BackgroundStyleApplicator.clipToPaddingBox
 import com.facebook.react.uimanager.BackgroundStyleApplicator.getPaddingBoxRect
 import com.facebook.react.uimanager.BackgroundStyleApplicator.setBackgroundColor
@@ -888,6 +889,7 @@ public open class ReactViewGroup public constructor(context: Context?) :
   }
 
   override fun draw(canvas: Canvas) {
+    val maskSaveCount = BackgroundStyleApplicator.beginMaskedDraw(canvas, this)
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && needsIsolatedLayer(this)) {
       // Check if the view is a stacking context and has children, if it does, do the rendering
       // offscreen and then composite back. This follows the idea of group isolation on blending
@@ -906,6 +908,7 @@ public open class ReactViewGroup public constructor(context: Context?) :
     } else {
       super.draw(canvas)
     }
+    BackgroundStyleApplicator.endMaskedDraw(canvas, this, maskSaveCount)
   }
 
   override fun dispatchDraw(canvas: Canvas) {
