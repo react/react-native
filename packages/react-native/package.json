@@ -110,6 +110,7 @@
     "scripts/node-binary.sh",
     "scripts/packager-reporter.js",
     "scripts/packager.sh",
+    "scripts/performance",
     "scripts/react_native_pods_utils/script_phases.rb",
     "scripts/react_native_pods_utils/script_phases.sh",
     "scripts/react_native_pods.rb",
