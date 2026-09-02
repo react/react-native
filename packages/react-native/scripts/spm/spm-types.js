@@ -34,6 +34,42 @@ export type SetupArgs = {
   yes: boolean,
 };
 
+// How `disableAutomaticPodsInstallation` (setup-apple-spm.js) left
+// project.ios.automaticPodsInstallation in react-native.config.js, recorded
+// in the `.spm-injected.json` marker so `spm deinit`
+// (removeSpmInjection/generate-spm-xcodeproj.js) can undo exactly this and
+// nothing else.
+//
+// 'edited' carries a full before/after snapshot rather than just "flip
+// false back to true": the edit that produced `after` might have been
+// inserting `automaticPodsInstallation` where it was previously absent
+// (rather than flipping an existing `true`), and might have inserted a
+// wrapping `project`/`ios` object too — restoring by "set it back to
+// `true`" would leave a property (and possibly a whole object) behind that
+// never existed in the file to begin with. Reverting to the exact `before`
+// snapshot is correct regardless of which case produced `after`, as long as
+// nothing else has touched the file since (checked by comparing its current
+// contents to `after` before restoring — see restoreAutomaticPodsInstallation).
+export type AutomaticPodsInstallationResult =
+  | {kind: 'created', configPath: string}
+  | {kind: 'edited', configPath: string, before: string, after: string}
+  | {kind: 'already-disabled', configPath: string}
+  | {kind: 'unrecognized', configPath: string};
+
+// The dangling `Pods/Pods.xcodeproj` FileRef cleanupDanglingPodsWorkspaceRef
+// (setup-apple-spm.js) removed from a .xcworkspace's
+// contents.xcworkspacedata, recorded in the `.spm-injected.json` marker so
+// `spm deinit` (restoreDanglingPodsWorkspaceRef) can restore it byte-for-byte
+// — React Native needs a real Pods.xcodeproj reference again once CocoaPods
+// is reintegrated via `pod install`. Same before/after-snapshot approach as
+// AutomaticPodsInstallationResult's 'edited' case, for the same reason: only
+// restore when nothing else has touched the file since.
+export type DanglingPodsWorkspaceRefResult = {
+  dataPath: string,
+  before: string,
+  after: string,
+};
+
 export type DownloadArgs = {
   version: string | null,
   flavor: string,

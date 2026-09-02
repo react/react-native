@@ -1036,6 +1036,252 @@ describe('artifactsVersionOverride marker field', () => {
 });
 
 // ---------------------------------------------------------------------------
+// automaticPodsInstallation marker field — records what setup-apple-spm.js's
+// disableAutomaticPodsInstallation did to react-native.config.js on an `add
+// --deintegrate` run, so `deinit` can undo exactly that. Unlike the plain
+// set-or-preserve fields above (artifactsVersionOverride, configCommand), a
+// non-null result on a LATER run doesn't always mean "overwrite": a repeat
+// `--deintegrate` run finds automaticPodsInstallation already `false`
+// (because a prior run set it) and reports {kind: 'already-disabled'} — that
+// must NOT clobber the earlier {kind: 'created'}/{kind: 'edited'} record, or
+// `deinit` loses the rollback info and silently leaves the flag disabled.
+// ---------------------------------------------------------------------------
+describe('automaticPodsInstallation marker field', () => {
+  it('records a created/edited result from the first --deintegrate run', () => {
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp();
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+      automaticPodsInstallation: {
+        kind: 'created',
+        configPath: '/app/react-native.config.js',
+      },
+    });
+    expect(readMarker(xcodeprojPath).automaticPodsInstallation).toEqual({
+      kind: 'created',
+      configPath: '/app/react-native.config.js',
+    });
+  });
+
+  it('defaults to null when --deintegrate has never run', () => {
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp();
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+    });
+    expect(readMarker(xcodeprojPath).automaticPodsInstallation).toBeNull();
+  });
+
+  it('a repeat --deintegrate run (already-disabled) does NOT clobber a prior `created` record', () => {
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp();
+    const configPath = '/app/react-native.config.js';
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+      automaticPodsInstallation: {kind: 'created', configPath},
+    });
+    // Second `--deintegrate` run: the file is already `false` (this run
+    // created it), so disableAutomaticPodsInstallation now reports
+    // 'already-disabled' — the ORIGINAL 'created' record must survive so
+    // deinit still knows to delete the file it created.
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+      automaticPodsInstallation: {kind: 'already-disabled', configPath},
+    });
+    expect(readMarker(xcodeprojPath).automaticPodsInstallation).toEqual({
+      kind: 'created',
+      configPath,
+    });
+  });
+
+  it('a repeat --deintegrate run (already-disabled) does NOT clobber a prior `edited` record', () => {
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp();
+    const configPath = '/app/react-native.config.js';
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+      automaticPodsInstallation: {kind: 'edited', configPath},
+    });
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+      automaticPodsInstallation: {kind: 'already-disabled', configPath},
+    });
+    expect(readMarker(xcodeprojPath).automaticPodsInstallation).toEqual({
+      kind: 'edited',
+      configPath,
+    });
+  });
+
+  it('records already-disabled when there is no prior record to preserve', () => {
+    // First-ever --deintegrate run, and the file was ALREADY false before RN
+    // touched it (e.g. hand-authored) — there's nothing to roll back either
+    // way, so recording the current (non-mutating) result is fine.
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp();
+    const configPath = '/app/react-native.config.js';
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+      automaticPodsInstallation: {kind: 'already-disabled', configPath},
+    });
+    expect(readMarker(xcodeprojPath).automaticPodsInstallation).toEqual({
+      kind: 'already-disabled',
+      configPath,
+    });
+  });
+
+  it('a later `update` (no --deintegrate) preserves the prior record', () => {
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp();
+    const configPath = '/app/react-native.config.js';
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+      automaticPodsInstallation: {kind: 'created', configPath},
+    });
+    // `update` without --deintegrate never calls runDeintegrate, so it
+    // passes null/omits the field entirely.
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+    });
+    expect(readMarker(xcodeprojPath).automaticPodsInstallation).toEqual({
+      kind: 'created',
+      configPath,
+    });
+  });
+
+  it('deinit surfaces the preserved record after a repeat --deintegrate run', () => {
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp();
+    const configPath = '/app/react-native.config.js';
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+      automaticPodsInstallation: {kind: 'created', configPath},
+    });
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+      automaticPodsInstallation: {kind: 'already-disabled', configPath},
+    });
+    const removed = removeSpmInjection({appRoot, xcodeprojPath});
+    expect(removed.automaticPodsInstallation).toEqual({
+      kind: 'created',
+      configPath,
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// removedDanglingPodsWorkspaceRef marker field — same non-clobbering
+// set-or-preserve contract as automaticPodsInstallation above, and for the
+// same reason: a repeat `--deintegrate` run finds nothing left to remove
+// (the first run already removed it) and reports null, which must not erase
+// the earlier before/after snapshot `spm deinit` needs to restore the
+// reference.
+// ---------------------------------------------------------------------------
+describe('removedDanglingPodsWorkspaceRef marker field', () => {
+  const SNAPSHOT = {
+    dataPath: '/app/MyApp.xcworkspace/contents.xcworkspacedata',
+    before: '<Workspace>...Pods.xcodeproj...</Workspace>',
+    after: '<Workspace>...</Workspace>',
+  };
+
+  it('records a snapshot from the first --deintegrate run', () => {
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp();
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+      removedDanglingPodsWorkspaceRef: SNAPSHOT,
+    });
+    expect(readMarker(xcodeprojPath).removedDanglingPodsWorkspaceRef).toEqual(
+      SNAPSHOT,
+    );
+  });
+
+  it('defaults to null when --deintegrate has never run', () => {
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp();
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+    });
+    expect(
+      readMarker(xcodeprojPath).removedDanglingPodsWorkspaceRef,
+    ).toBeNull();
+  });
+
+  it('a repeat --deintegrate run (nothing left to remove) does NOT clobber the earlier snapshot', () => {
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp();
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+      removedDanglingPodsWorkspaceRef: SNAPSHOT,
+    });
+    // Second `--deintegrate` run: the reference is already gone (this run
+    // removed it), so cleanupDanglingPodsWorkspaceRef now returns null.
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+      removedDanglingPodsWorkspaceRef: null,
+    });
+    expect(readMarker(xcodeprojPath).removedDanglingPodsWorkspaceRef).toEqual(
+      SNAPSHOT,
+    );
+  });
+
+  it('a later `update` (no --deintegrate) preserves the prior snapshot', () => {
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp();
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+      removedDanglingPodsWorkspaceRef: SNAPSHOT,
+    });
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+    });
+    expect(readMarker(xcodeprojPath).removedDanglingPodsWorkspaceRef).toEqual(
+      SNAPSHOT,
+    );
+  });
+
+  it('deinit surfaces the preserved snapshot after a repeat --deintegrate run', () => {
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp();
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+      removedDanglingPodsWorkspaceRef: SNAPSHOT,
+    });
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+      removedDanglingPodsWorkspaceRef: null,
+    });
+    const removed = removeSpmInjection({appRoot, xcodeprojPath});
+    expect(removed.removedDanglingPodsWorkspaceRef).toEqual(SNAPSHOT);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // readArtifactsVersionOverride — pure fs read, used by setup-apple-spm.js's
 // determineVersion to prefer a pinned version over the one derived from
 // node_modules/react-native/package.json.
