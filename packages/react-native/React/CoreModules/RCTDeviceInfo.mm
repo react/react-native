@@ -140,6 +140,30 @@ RCT_EXPORT_MODULE()
     // Use <SafeAreaView> instead.
     @"isIPhoneX_deprecated" : @(RCTIsIPhoneNotched()),
   };
+
+  [self _observeKeyWindowIfNeeded];
+}
+
+- (void)_observeKeyWindowIfNeeded
+{
+  RCTAssertMainQueue();
+  if (_invalidated) {
+    return;
+  }
+
+  // The key window is looked up again instead of trusting the one captured in -init: when the host
+  // app creates its window after this module is built, that capture is nil, the KVO below is never
+  // installed, and app activation is left as the only trigger for a dimensions update.
+  // A nil key window means there is nothing to observe yet (backgrounded app, scene transition);
+  // keeping the current observer is better than dropping it until the next trigger comes along.
+  UIWindow *keyWindow = RCTKeyWindow();
+  if (keyWindow == nil || keyWindow == _applicationWindow) {
+    return;
+  }
+
+  [_applicationWindow removeObserver:self forKeyPath:kFrameKeyPath];
+  _applicationWindow = keyWindow;
+  [_applicationWindow addObserver:self forKeyPath:kFrameKeyPath options:NSKeyValueObservingOptionNew context:nil];
 }
 
 - (void)invalidate
@@ -253,16 +277,23 @@ static NSDictionary *RCTExportedDimensions(CGFloat fontScale)
 
 - (void)didReceiveNewContentSizeMultiplier
 {
-  [self invalidateCachedConstants];
-  NSDictionary *nextInterfaceDimensions = _constants[@"Dimensions"];
-
-  RCTModuleRegistry *moduleRegistry = _moduleRegistry;
+  // This notification can arrive off the main thread (RCTAccessibilityManager has no methodQueue,
+  // so a JS setAccessibilityContentSizeMultipliers call posts it synchronously on the module
+  // queue), while the possible key-window KVO registration must happen on main.
+  __weak __typeof(self) weakSelf = self;
   RCTExecuteOnMainQueue(^{
-  // Report the event across the bridge.
+    __typeof(self) strongSelf = weakSelf;
+    if (!strongSelf) {
+      return;
+    }
+    [strongSelf invalidateCachedConstants];
+    NSDictionary *nextInterfaceDimensions = strongSelf->_constants[@"Dimensions"];
+
+    // Report the event across the bridge.
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    [[moduleRegistry moduleForName:"EventDispatcher"] sendDeviceEventWithName:@"didUpdateDimensions"
-                                                                         body:nextInterfaceDimensions];
+    [[strongSelf->_moduleRegistry moduleForName:"EventDispatcher"] sendDeviceEventWithName:@"didUpdateDimensions"
+                                                                                      body:nextInterfaceDimensions];
 #pragma clang diagnostic pop
   });
 }
