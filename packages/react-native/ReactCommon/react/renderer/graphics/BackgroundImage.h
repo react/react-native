@@ -7,12 +7,45 @@
 
 #pragma once
 
+#include <string>
+
 #include <react/renderer/graphics/LinearGradient.h>
 #include <react/renderer/graphics/RadialGradient.h>
 
 namespace facebook::react {
 
-using BackgroundImage = std::variant<LinearGradient, RadialGradient>;
+class ImageSource;
+
+struct URLBackgroundImage {
+  std::string uri{};
+  // Natural size in layout units, supplied by the asset registry. Zero when the
+  // source is a plain url, in which case the decoded image's size is used.
+  Float intrinsicWidth{0};
+  Float intrinsicHeight{0};
+
+  bool operator==(const URLBackgroundImage &rhs) const
+  {
+    return uri == rhs.uri && intrinsicWidth == rhs.intrinsicWidth && intrinsicHeight == rhs.intrinsicHeight;
+  }
+
+  bool operator!=(const URLBackgroundImage &rhs) const
+  {
+    return !(*this == rhs);
+  }
+
+#ifdef RN_SERIALIZABLE_STATE
+  folly::dynamic toDynamic() const;
+#endif
+
+#if RN_DEBUG_STRING_CONVERTIBLE
+  void toString(std::stringstream &ss) const
+  {
+    ss << "url(" << uri << ")";
+  }
+#endif
+};
+
+using BackgroundImage = std::variant<LinearGradient, RadialGradient, URLBackgroundImage>;
 
 #ifdef RN_SERIALIZABLE_STATE
 folly::dynamic toDynamic(const BackgroundImage &backgroundImage);
@@ -34,6 +67,8 @@ inline std::string toString(std::vector<BackgroundImage> &value)
       std::get<LinearGradient>(backgroundImage).toString(ss);
     } else if (std::holds_alternative<RadialGradient>(backgroundImage)) {
       std::get<RadialGradient>(backgroundImage).toString(ss);
+    } else if (std::holds_alternative<URLBackgroundImage>(backgroundImage)) {
+      std::get<URLBackgroundImage>(backgroundImage).toString(ss);
     }
   }
   ss << "]";

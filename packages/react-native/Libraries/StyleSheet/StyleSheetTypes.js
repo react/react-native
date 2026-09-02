@@ -769,7 +769,16 @@ type RadialGradientValue = {
   }>,
 };
 
-export type BackgroundImageValue = LinearGradientValue | RadialGradientValue;
+type URLBackgroundImageValue = {
+  type: 'url',
+  uri: string | number,
+};
+
+export type GradientBackgroundImageValue =
+  LinearGradientValue | RadialGradientValue;
+
+export type BackgroundImageValue =
+  GradientBackgroundImageValue | URLBackgroundImageValue;
 
 export type BackgroundSizeValue = {
   x: string | number,

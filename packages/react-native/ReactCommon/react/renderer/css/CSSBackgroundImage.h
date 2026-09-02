@@ -822,11 +822,58 @@ struct CSSDataTypeParser<CSSLinearGradientFunction> {
 
 static_assert(CSSDataType<CSSLinearGradientFunction>);
 
+struct CSSURLFunction {
+  std::string url{};
+
+  bool operator==(const CSSURLFunction &rhs) const = default;
+};
+
+template <>
+struct CSSDataTypeParser<CSSURLFunction> {
+  static constexpr std::optional<CSSURLFunction> consumePreservedToken(const CSSPreservedToken &token)
+  {
+    if (token.type() != CSSTokenType::Url || token.stringValue().empty()) {
+      return {};
+    }
+
+    return CSSURLFunction{std::string(token.stringValue())};
+  }
+
+  /*
+   * A quoted url stays an ordinary function block holding a <string-token>.
+   */
+  static auto consumeFunctionBlock(const CSSFunctionBlock &func, CSSValueParser &parser) -> std::optional<CSSURLFunction>
+  {
+    if (!iequals(func.name, "url")) {
+      return {};
+    }
+
+    auto &syntaxParser = parser.syntaxParser();
+    syntaxParser.consumeWhitespace();
+
+    auto url = syntaxParser.consumeComponentValue<std::optional<std::string>>(
+        [](const CSSPreservedToken &token) -> std::optional<std::string> {
+          if (token.type() != CSSTokenType::String) {
+            return {};
+          }
+          return std::string(token.stringValue());
+        });
+
+    if (!url.has_value() || url->empty()) {
+      return {};
+    }
+
+    return CSSURLFunction{*url};
+  }
+};
+
+static_assert(CSSDataType<CSSURLFunction>);
+
 /**
  * Representation of <background-image>
  * https://www.w3.org/TR/css-backgrounds-3/#background-image
  */
-using CSSBackgroundImage = CSSCompoundDataType<CSSLinearGradientFunction, CSSRadialGradientFunction>;
+using CSSBackgroundImage = CSSCompoundDataType<CSSLinearGradientFunction, CSSRadialGradientFunction, CSSURLFunction>;
 
 /**
  * Representation of <background-image-list>

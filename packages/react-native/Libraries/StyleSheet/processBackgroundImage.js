@@ -13,16 +13,19 @@
 import type {ProcessedColorValue} from './processColor';
 import type {
   BackgroundImageValue,
+  GradientBackgroundImageValue,
   RadialGradientPosition,
   RadialGradientShape,
   RadialGradientSize,
 } from './StyleSheetTypes';
 
+const resolveAssetSource = require('../Image/resolveAssetSource').default;
 const processColor = require('./processColor').default;
 
 // Pre-compiled regex patterns for performance - avoids regex compilation on each call
 const NEWLINE_REGEX = /\n/g;
 const GRADIENT_REGEX = /^(linear|radial)-gradient\(((?:\([^)]*\)|[^()])*)\)/;
+const URL_REGEX = /^url\((.*)\)$/i;
 const COMMA_SPLIT_REGEX = /,(?![^(]*\))/;
 const WHITESPACE_SPLIT_REGEX = /\s+/;
 const COLOR_STOP_PARTS_REGEX = /\S+\([^)]*\)|\S+/g;
@@ -70,13 +73,24 @@ type RadialGradientBackgroundImage = {
   }>,
 };
 
+type URLBackgroundImage = {
+  type: 'url',
+  uri: string,
+  // Natural size in layout units, known only for bundled assets. Native falls
+  // back to the decoded image's own size when these are absent.
+  intrinsicWidth?: number,
+  intrinsicHeight?: number,
+};
+
 // null color indicate that the transition hint syntax is used. e.g. red, 20%, blue
 type ColorStopColor = ProcessedColorValue | null;
 // percentage or pixel value
 type ColorStopPosition = number | string | null;
 
 type ParsedBackgroundImageValue =
-  LinearGradientBackgroundImage | RadialGradientBackgroundImage;
+  | LinearGradientBackgroundImage
+  | RadialGradientBackgroundImage
+  | URLBackgroundImage;
 
 export default function processBackgroundImage(
   backgroundImage: ?(ReadonlyArray<BackgroundImageValue> | string),
@@ -92,6 +106,41 @@ export default function processBackgroundImage(
     );
   } else if (Array.isArray(backgroundImage)) {
     for (const bgImage of backgroundImage) {
+      if (bgImage.type === 'url') {
+        let uri: ?string = null;
+        let intrinsicWidth: ?number = null;
+        let intrinsicHeight: ?number = null;
+        if (typeof bgImage.uri === 'string') {
+          uri = bgImage.uri;
+        } else if (typeof bgImage.uri === 'number') {
+          const source = resolveAssetSource(bgImage.uri);
+          if (source != null && source.uri != null) {
+            uri = source.uri;
+            // The asset registry records these already divided by the asset's
+            // scale, so they are layout units and need no density maths native
+            // side. Matches how `Image` derives its default dimensions.
+            if (typeof source.width === 'number') {
+              intrinsicWidth = source.width;
+            }
+            if (typeof source.height === 'number') {
+              intrinsicHeight = source.height;
+            }
+          }
+        }
+        if (uri != null) {
+          // The registry reports both dimensions or neither.
+          result = result.concat(
+            intrinsicWidth != null && intrinsicHeight != null
+              ? {type: 'url', uri, intrinsicWidth, intrinsicHeight}
+              : {type: 'url', uri},
+          );
+          continue;
+        } else {
+          // If the URI is invalid, return an empty array. Same as web.
+          return [];
+        }
+      }
+
       const processedColorStops = processColorStops(bgImage);
       if (processedColorStops == null) {
         // If a color stop is invalid, return an empty array and do not apply any gradient. Same as web.
@@ -191,7 +240,9 @@ export default function processBackgroundImage(
   return result;
 }
 
-function processColorStops(bgImage: BackgroundImageValue): ReadonlyArray<{
+function processColorStops(
+  bgImage: GradientBackgroundImageValue,
+): ReadonlyArray<{
   color: ColorStopColor,
   position: ColorStopPosition,
 }> | null {
@@ -258,10 +309,28 @@ function processColorStops(bgImage: BackgroundImageValue): ReadonlyArray<{
 function parseBackgroundImageCSSString(
   cssString: string,
 ): ReadonlyArray<ParsedBackgroundImageValue> {
-  const gradients = [];
+  const backgroundImages: Array<ParsedBackgroundImageValue> = [];
   const bgImageStrings = splitGradients(cssString);
 
   for (const bgImageString of bgImageStrings) {
+    const urlMatch = URL_REGEX.exec(bgImageString);
+    if (urlMatch) {
+      let uri = urlMatch[1].trim();
+      const first = uri[0];
+      if ((first === '"' || first === "'") && uri.endsWith(first)) {
+        uri = uri.slice(1, -1);
+      }
+      if (uri.length > 0) {
+        // A url() in a css string is not an asset, so its natural size is only
+        // known once the image is decoded.
+        backgroundImages.push({
+          type: 'url',
+          uri,
+        });
+      }
+      continue;
+    }
+
     const bgImage = bgImageString.toLowerCase();
     const match = GRADIENT_REGEX.exec(bgImage);
     if (match) {
@@ -272,11 +341,11 @@ function parseBackgroundImageCSSString(
         : parseLinearGradientCSSString(gradientContent);
 
       if (gradient != null) {
-        gradients.push(gradient);
+        backgroundImages.push(gradient);
       }
     }
   }
-  return gradients;
+  return backgroundImages;
 }
 
 function parseRadialGradientCSSString(

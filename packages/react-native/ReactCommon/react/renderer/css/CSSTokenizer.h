@@ -12,6 +12,7 @@
 
 #include <fast_float/fast_float.h>
 #include <react/renderer/css/CSSToken.h>
+#include <react/utils/iequals.h>
 
 namespace facebook::react {
 
@@ -39,6 +40,9 @@ class CSSTokenizer {
     }
 
     switch (nextChar) {
+      case '"':
+      case '\'':
+        return consumeStringToken(nextChar);
       case '(':
         return consumeCharacter(CSSTokenType::OpenParen);
       case ')':
@@ -185,10 +189,122 @@ class CSSTokenizer {
     if (peek() == '(') {
       advance();
       consumeRunningValue();
+
+      // Handle <url-token> e.g. url(http://a.com/1.png)
+      if (iequals(ident.stringValue(), "url")) {
+        while (isWhitespace(peek())) {
+          advance();
+        }
+        consumeRunningValue();
+
+        // A quoted body is a <string-token> inside an ordinary function block.
+        // Everything else is a <url-token>
+        if (peek() != '"' && peek() != '\'') {
+          return consumeUrlToken();
+        }
+      }
+
       return {CSSTokenType::Function, ident.stringValue()};
     }
 
     return ident;
+  }
+
+  constexpr CSSToken consumeUrlToken()
+  {
+    // https://www.w3.org/TR/css-syntax-3/#consume-url-token
+    while (isWhitespace(peek())) {
+      advance();
+    }
+    consumeRunningValue();
+
+    while (true) {
+      char next = peek();
+
+      if (next == ')') {
+        auto value = consumeRunningValue();
+        advance();
+        consumeRunningValue();
+        return {CSSTokenType::Url, value};
+      }
+
+      if (next == '\0') {
+        return {CSSTokenType::Url, consumeRunningValue()};
+      }
+
+      if (isWhitespace(next)) {
+        auto value = consumeRunningValue();
+        while (isWhitespace(peek())) {
+          advance();
+        }
+        consumeRunningValue();
+        if (peek() == ')') {
+          advance();
+          consumeRunningValue();
+          return {CSSTokenType::Url, value};
+        }
+        if (peek() == '\0') {
+          return {CSSTokenType::Url, value};
+        }
+        // Whitespace inside an unquoted url is not allowed.
+        return consumeRemnantsOfBadUrl();
+      }
+
+      if (next == '"' || next == '\'' || next == '(' || isNonPrintable(next)) {
+        return consumeRemnantsOfBadUrl();
+      }
+
+      advance();
+    }
+  }
+
+  constexpr CSSToken consumeStringToken(char endingCodePoint)
+  {
+    // https://www.w3.org/TR/css-syntax-3/#consume-string-token
+    advance();
+    consumeRunningValue();
+
+    while (true) {
+      char next = peek();
+
+      if (next == endingCodePoint) {
+        auto value = consumeRunningValue();
+        advance();
+        consumeRunningValue();
+        return {CSSTokenType::String, value};
+      }
+
+      if (next == '\0') {
+        // Parse error, but the string is still returned.
+        return {CSSTokenType::String, consumeRunningValue()};
+      }
+
+      if (isNewline(next)) {
+        // Reconsume the newline so it tokenizes normally.
+        consumeRunningValue();
+        return CSSToken{CSSTokenType::BadString};
+      }
+
+      advance();
+    }
+  }
+
+  constexpr CSSToken consumeRemnantsOfBadUrl()
+  {
+    // https://www.w3.org/TR/css-syntax-3/#consume-remnants-of-bad-url
+    while (true) {
+      char next = peek();
+      if (next == ')') {
+        advance();
+        consumeRunningValue();
+        return CSSToken{CSSTokenType::BadUrl};
+      }
+      if (next == '\0') {
+        consumeRunningValue();
+        return CSSToken{CSSTokenType::BadUrl};
+      }
+      advance();
+    }
   }
 
   constexpr CSSToken consumeIdentSequence()
@@ -242,6 +358,18 @@ class CSSTokenizer {
   {
     // https://www.w3.org/TR/css-syntax-3/#whitespace
     return c == ' ' || c == '\t' || c == '\r' || c == '\n';
+  }
+
+  static constexpr bool isNewline(char c)
+  {
+    // https://www.w3.org/TR/css-syntax-3/#newline
+    return c == '\n' || c == '\r' || c == '\f';
+  }
+
+  static constexpr bool isNonPrintable(char c)
+  {
+    // https://www.w3.org/TR/css-syntax-3/#non-printable-code-point
+    return (c >= '\0' && c <= '\x08') || c == '\x0B' || (c >= '\x0E' && c <= '\x1F') || c == '\x7F';
   }
 
   std::string_view remainingCharacters_;

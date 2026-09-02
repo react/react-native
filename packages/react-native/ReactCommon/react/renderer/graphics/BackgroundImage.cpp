@@ -10,11 +10,20 @@
 namespace facebook::react {
 
 #ifdef RN_SERIALIZABLE_STATE
+folly::dynamic URLBackgroundImage::toDynamic() const {
+  folly::dynamic result = folly::dynamic::object();
+  result["type"] = "url";
+  result["uri"] = uri;
+  return result;
+}
+
 folly::dynamic toDynamic(const BackgroundImage& backgroundImage) {
   if (std::holds_alternative<LinearGradient>(backgroundImage)) {
     return std::get<LinearGradient>(backgroundImage).toDynamic();
   } else if (std::holds_alternative<RadialGradient>(backgroundImage)) {
     return std::get<RadialGradient>(backgroundImage).toDynamic();
+  } else if (std::holds_alternative<URLBackgroundImage>(backgroundImage)) {
+    return std::get<URLBackgroundImage>(backgroundImage).toDynamic();
   }
   return folly::dynamic(nullptr);
 }
