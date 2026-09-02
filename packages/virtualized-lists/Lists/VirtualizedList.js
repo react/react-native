@@ -641,7 +641,9 @@ class VirtualizedList extends StateSafePureComponent<
     } else {
       // If we have a pending scroll update, we should not adjust the render window as it
       // might override the correct window.
-      if (pendingScrollUpdateCount > 0) {
+      // We only block the update if the content is large enough to scroll, otherwise
+      // we might never receive a scroll event to clear the pending update.
+      if (pendingScrollUpdateCount > 0 && contentLength > visibleLength) {
         return cellsAroundViewport.last >= getItemCount(data)
           ? VirtualizedList._constrainToItemCount(cellsAroundViewport, props)
           : cellsAroundViewport;
