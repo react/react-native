@@ -39,6 +39,7 @@ exports.parseDate = parseDate;
 exports.processUser = processUser;
 exports.safeJsonParse = safeJsonParse;
 exports.sumPairs = sumPairs;
+var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 var _inherits2 = _interopRequireDefault(require("@babel/runtime/helpers/inherits"));
 var _setPrototypeOf2 = _interopRequireDefault(require("@babel/runtime/helpers/setPrototypeOf"));
 var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime/helpers/slicedToArray"));
@@ -93,25 +94,60 @@ function asyncNumberGenerator(_x) {
   return _asyncNumberGenerator.apply(this, arguments);
 }
 function _asyncNumberGenerator() {
-  _asyncNumberGenerator = (0, _wrapAsyncGenerator2.default)(function* (max) {
-    for (var i = 0; i < max; i++) {
-      yield (0, _awaitAsyncGenerator2.default)(new Promise(resolve => setTimeout(resolve, 100)));
-      yield i;
-    }
-  });
+  _asyncNumberGenerator = (0, _wrapAsyncGenerator2.default)(_regenerator.default.mark(function _callee(max) {
+    var i;
+    return _regenerator.default.wrap(function _callee$(_context) {
+      while (1) switch (_context.prev = _context.next) {
+        case 0:
+          i = 0;
+        case 1:
+          if (!(i < max)) {
+            _context.next = 9;
+            break;
+          }
+          _context.next = 4;
+          return (0, _awaitAsyncGenerator2.default)(new Promise(resolve => setTimeout(resolve, 100)));
+        case 4:
+          _context.next = 6;
+          return i;
+        case 6:
+          i++;
+          _context.next = 1;
+          break;
+        case 9:
+        case "end":
+          return _context.stop();
+      }
+    }, _callee);
+  }));
   return _asyncNumberGenerator.apply(this, arguments);
 }
 function fetchData(_x2) {
   return _fetchData.apply(this, arguments);
 }
 function _fetchData() {
-  _fetchData = (0, _asyncToGenerator2.default)(function* (url) {
-    var response = yield fetch(url);
-    var data = yield response.json();
-    return {
-      data
-    };
-  });
+  _fetchData = (0, _asyncToGenerator2.default)(_regenerator.default.mark(function _callee5(url) {
+    var response, data;
+    return _regenerator.default.wrap(function _callee5$(_context5) {
+      while (1) switch (_context5.prev = _context5.next) {
+        case 0:
+          _context5.next = 2;
+          return fetch(url);
+        case 2:
+          response = _context5.sent;
+          _context5.next = 5;
+          return response.json();
+        case 5:
+          data = _context5.sent;
+          return _context5.abrupt("return", {
+            data
+          });
+        case 7:
+        case "end":
+          return _context5.stop();
+      }
+    }, _callee5);
+  }));
   return _fetchData.apply(this, arguments);
 }
 function getNestedValue(obj) {
@@ -141,10 +177,20 @@ class Dog extends Animal {
     return `${this.name} barks!`;
   }
   fetchTreats() {
-    return (0, _asyncToGenerator2.default)(function* () {
-      yield new Promise(resolve => setTimeout(resolve, 100));
-      return ['bone', 'biscuit', 'toy'];
-    })();
+    return (0, _asyncToGenerator2.default)(_regenerator.default.mark(function _callee2() {
+      return _regenerator.default.wrap(function _callee2$(_context2) {
+        while (1) switch (_context2.prev = _context2.next) {
+          case 0:
+            _context2.next = 2;
+            return new Promise(resolve => setTimeout(resolve, 100));
+          case 2:
+            return _context2.abrupt("return", ['bone', 'biscuit', 'toy']);
+          case 3:
+          case "end":
+            return _context2.stop();
+        }
+      }, _callee2);
+    }))();
   }
 }
 exports.Dog = Dog;
@@ -214,10 +260,22 @@ function loadModule() {
   return _loadModule.apply(this, arguments);
 }
 function _loadModule() {
-  _loadModule = (0, _asyncToGenerator2.default)(function* () {
-    var module = yield import('./some-module');
-    return module.default;
-  });
+  _loadModule = (0, _asyncToGenerator2.default)(_regenerator.default.mark(function _callee6() {
+    var module;
+    return _regenerator.default.wrap(function _callee6$(_context6) {
+      while (1) switch (_context6.prev = _context6.next) {
+        case 0:
+          _context6.next = 2;
+          return import('./some-module');
+        case 2:
+          module = _context6.sent;
+          return _context6.abrupt("return", module.default);
+        case 4:
+        case "end":
+          return _context6.stop();
+      }
+    }, _callee6);
+  }));
   return _loadModule.apply(this, arguments);
 }
 var LegacyComponent = exports.LegacyComponent = React.createClass({
@@ -254,17 +312,39 @@ function ModernComponent({
     return _handleAsyncClick.apply(this, arguments);
   }
   function _handleAsyncClick() {
-    _handleAsyncClick = (0, _asyncToGenerator2.default)(function* () {
-      var data = yield fetchData('/api/data');
-      console.log(data);
-    });
+    _handleAsyncClick = (0, _asyncToGenerator2.default)(_regenerator.default.mark(function _callee4() {
+      var data;
+      return _regenerator.default.wrap(function _callee4$(_context4) {
+        while (1) switch (_context4.prev = _context4.next) {
+          case 0:
+            _context4.next = 2;
+            return fetchData('/api/data');
+          case 2:
+            data = _context4.sent;
+            console.log(data);
+          case 4:
+          case "end":
+            return _context4.stop();
+        }
+      }, _callee4);
+    }));
     return _handleAsyncClick.apply(this, arguments);
   }
   var handleClick = function () {
-    var _ref3 = (0, _asyncToGenerator2.default)(function* () {
-      yield handleAsyncClick();
-      setStatus(Status.Pending);
-    });
+    var _ref3 = (0, _asyncToGenerator2.default)(_regenerator.default.mark(function _callee3() {
+      return _regenerator.default.wrap(function _callee3$(_context3) {
+        while (1) switch (_context3.prev = _context3.next) {
+          case 0:
+            _context3.next = 2;
+            return handleAsyncClick();
+          case 2:
+            setStatus(Status.Pending);
+          case 3:
+          case "end":
+            return _context3.stop();
+        }
+      }, _callee3);
+    }));
     return function handleClick() {
       return _ref3.apply(this, arguments);
     };

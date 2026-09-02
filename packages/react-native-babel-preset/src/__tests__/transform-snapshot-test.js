@@ -304,6 +304,44 @@ describe('react-native-babel-preset transform snapshots', () => {
       expect(result).toContain('_wrapAsyncGenerator');
     });
 
+    it('lowers generators in Hermes development builds', () => {
+      const code = `function* gen() { yield 1; }`;
+      const result = transformCode(code, {
+        dev: true,
+        unstable_transformProfile: 'hermes-stable',
+      });
+      expect(result).not.toContain('function* gen');
+      expect(result).toContain('@babel/runtime/regenerator');
+    });
+
+    it('preserves destructuring without runtime helpers', () => {
+      const code = `function* gen() { const [value] = values; yield value; }`;
+      const result = transformCode(code, {
+        dev: true,
+        enableBabelRuntime: false,
+        unstable_transformProfile: 'hermes-stable',
+        customTransformOptions: {
+          unstable_preserveDestructuring: true,
+        },
+      });
+      expect(result).toContain('function* gen');
+      expect(result).toContain('[value]');
+    });
+
+    it('preserves async syntax without runtime helpers', () => {
+      const code = `async function load() { return await value; }`;
+      const result = transformCode(code, {
+        dev: true,
+        enableBabelRuntime: false,
+        unstable_transformProfile: 'hermes-stable',
+        customTransformOptions: {
+          unstable_preserveAsync: true,
+        },
+      });
+      expect(result).toContain('async function load');
+      expect(result).toContain('await value');
+    });
+
     it('handles optional chaining', () => {
       const code = `const x = obj?.a?.b?.c;`;
       const result = transformCode(code, {
