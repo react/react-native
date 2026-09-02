@@ -344,10 +344,7 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
                                            [layoutManager characterRangeForGlyphRange:truncatedRange
                                                                      actualGlyphRange:nil];
                                        if (characterRange.location > 0 && characterRange.length > 0) {
-                                         // Match the truncated range's color attributes to the character before
-                                         // the ellipsis. Skip the edit when the range already carries them:
-                                         // editing the storage invalidates the layout mid-draw and re-typesets
-                                         // the paragraph for nothing.
+                                         // Remove color attributes for truncated range
                                          for (NSAttributedStringKey key in
                                               @[ NSForegroundColorAttributeName, NSBackgroundColorAttributeName ]) {
                                            id attribute = [textStorage attribute:key
