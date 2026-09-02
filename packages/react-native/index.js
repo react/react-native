@@ -280,6 +280,9 @@ module.exports = {
   get findNodeHandle() {
     return require('./Libraries/ReactNative/RendererProxy').findNodeHandle;
   },
+  get getDevServer() {
+    return require('./Libraries/Core/Devtools/getDevServer').default;
+  },
   get I18nManager() {
     return require('./Libraries/ReactNative/I18nManager').default;
   },

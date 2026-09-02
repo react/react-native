@@ -315,6 +315,9 @@ export {default as Easing} from './Libraries/Animated/Easing';
 
 export {findNodeHandle} from './Libraries/ReactNative/RendererProxy';
 
+export type {DevServerInfo} from './Libraries/Core/Devtools/getDevServer';
+export {default as getDevServer} from './Libraries/Core/Devtools/getDevServer';
+
 export {default as I18nManager} from './Libraries/ReactNative/I18nManager';
 
 export type {
