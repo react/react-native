@@ -344,13 +344,31 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
                                            [layoutManager characterRangeForGlyphRange:truncatedRange
                                                                      actualGlyphRange:nil];
                                        if (characterRange.location > 0 && characterRange.length > 0) {
-                                         // Remove color attributes for truncated range
+                                         // Match the truncated range's color attributes to the character before
+                                         // the ellipsis. Skip the edit when the range already carries them:
+                                         // editing the storage invalidates the layout mid-draw and re-typesets
+                                         // the paragraph for nothing.
                                          for (NSAttributedStringKey key in
                                               @[ NSForegroundColorAttributeName, NSBackgroundColorAttributeName ]) {
-                                           [textStorage removeAttribute:key range:characterRange];
                                            id attribute = [textStorage attribute:key
                                                                          atIndex:characterRange.location - 1
                                                                   effectiveRange:nil];
+                                           __block BOOL rangeAlreadyMatches = YES;
+                                           [textStorage enumerateAttribute:key
+                                                                    inRange:characterRange
+                                                                    options:0
+                                                                 usingBlock:^(id value, NSRange range, BOOL *stopEnumerating) {
+                                                                   BOOL isEqual = value == attribute ||
+                                                                       (value != nil && attribute != nil && [value isEqual:attribute]);
+                                                                   if (!isEqual) {
+                                                                     rangeAlreadyMatches = NO;
+                                                                     *stopEnumerating = YES;
+                                                                   }
+                                                                 }];
+                                           if (rangeAlreadyMatches) {
+                                             continue;
+                                           }
+                                           [textStorage removeAttribute:key range:characterRange];
                                            if (attribute != nullptr) {
                                              [textStorage addAttribute:key value:attribute range:characterRange];
                                            }
