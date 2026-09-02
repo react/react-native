@@ -457,6 +457,7 @@ let reactFabric = RNTarget(
   path: "ReactCommon/react/renderer",
   excludedPaths: [
     "animated/tests",
+    "animationbackend/tests",
     "animations/tests",
     "attributedstring/tests",
     "core/tests",

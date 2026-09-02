@@ -73,6 +73,7 @@ Pod::Spec.new do |s|
 
   s.subspec "animationbackend" do |ss|
     ss.source_files         = podspec_sources("react/renderer/animationbackend/**/*.{m,mm,cpp,h}", "react/renderer/animationbackend/**/*.{h}")
+    ss.exclude_files        = "react/renderer/animationbackend/tests"
     ss.header_dir           = "react/renderer/animationbackend"
   end
 
