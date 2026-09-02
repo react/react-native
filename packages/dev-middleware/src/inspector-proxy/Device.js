@@ -500,6 +500,8 @@ export default class Device {
     // $FlowFixMe[cannot-write]
     socket.send = function (message: string) {
       cdpDebugLogging.log('ProxyToDebugger', message);
+      /* $FlowFixMe[invalid-this-arg] Error exposed after fixing this typing
+       * unsoundness in flow */
       return sendFunc.call(socket, message);
     };
   }

@@ -81,6 +81,8 @@ describe('AbortController', () => {
 
   it('should be stringified as [object AbortController]', () => {
     // $FlowExpectedError[method-unbinding]
+    /* $FlowFixMe[invalid-this-arg] Error exposed after fixing this typing
+     * unsoundness in flow */
     expect(Object.prototype.toString.call(controller)).toBe(
       '[object AbortController]',
     );
@@ -171,6 +173,8 @@ describe('AbortController', () => {
 
     it('should be stringified as [object AbortSignal]', () => {
       // $FlowExpectedError[method-unbinding]
+      /* $FlowFixMe[invalid-this-arg] Error exposed after fixing this typing
+       * unsoundness in flow */
       expect(Object.prototype.toString.call(signal)).toBe(
         '[object AbortSignal]',
       );
@@ -267,6 +271,8 @@ describe('AbortController', () => {
     it("should throw a TypeError if 'this' is not an AbortController object", () => {
       expect(() => {
         // $FlowExpectedError[method-unbinding]
+        /* $FlowFixMe[invalid-this-arg] Error exposed after fixing this typing
+         * unsoundness in flow */
         controller.abort.call({});
       }).toThrow(
         "Expected 'this' to be an 'AbortController' object, but got object",

@@ -545,6 +545,8 @@ describe('expect', () => {
     });
 
     it('tracks execution of methods with an implementation', () => {
+      /* $FlowFixMe[incompatible-type] Error exposed after fixing this typing
+       * unsoundness in flow */
       const fn = jest.fn(function (this: {prop: number}): number {
         return this.prop;
       });
@@ -569,6 +571,8 @@ describe('expect', () => {
     });
 
     it('tracks constructors with an implementation', () => {
+      /* $FlowFixMe[incompatible-type] Error exposed after fixing this typing
+       * unsoundness in flow */
       const fn = jest.fn(function (this: {prop: number}) {
         this.prop = 3;
       });

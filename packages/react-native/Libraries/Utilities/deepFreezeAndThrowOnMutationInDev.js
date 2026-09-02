@@ -49,6 +49,8 @@ function deepFreezeAndThrowOnMutationInDev<T extends {...} | Array<unknown>>(
 
     for (let i = 0; i < keys.length; i++) {
       const key = keys[i];
+      /* $FlowFixMe[invalid-this-arg] Error exposed after fixing this typing
+       * unsoundness in flow */
       if (hasOwnProperty.call(object, key)) {
         Object.defineProperty(object, key, {
           get: identity.bind(null, object[key]),
@@ -64,6 +66,8 @@ function deepFreezeAndThrowOnMutationInDev<T extends {...} | Array<unknown>>(
 
     for (let i = 0; i < keys.length; i++) {
       const key = keys[i];
+      /* $FlowFixMe[invalid-this-arg] Error exposed after fixing this typing
+       * unsoundness in flow */
       if (hasOwnProperty.call(object, key)) {
         deepFreezeAndThrowOnMutationInDev(object[key]);
       }

@@ -357,4 +357,6 @@ function areCompositeKeyComponentsEqual(
 const _hasOwnProp = Object.prototype.hasOwnProperty;
 const hasOwn: (obj: Readonly<{...}>, prop: string) => boolean =
   // $FlowFixMe[method-unbinding]
+  /* $FlowFixMe[invalid-this-arg] Error exposed after fixing this typing
+   * unsoundness in flow */
   Object.hasOwn ?? ((obj, prop) => _hasOwnProp.call(obj, prop));

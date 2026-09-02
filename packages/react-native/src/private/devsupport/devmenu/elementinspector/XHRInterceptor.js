@@ -122,6 +122,8 @@ const XHRInterceptor = {
       if (openCallback) {
         openCallback(method, url, this);
       }
+      /* $FlowFixMe[invalid-this-arg] Error exposed after fixing this typing
+       * unsoundness in flow */
       originalXHROpen.apply(this, arguments);
     };
 
@@ -136,6 +138,8 @@ const XHRInterceptor = {
       if (requestHeaderCallback) {
         requestHeaderCallback(header, value, this);
       }
+      /* $FlowFixMe[invalid-this-arg] Error exposed after fixing this typing
+       * unsoundness in flow */
       originalXHRSetRequestHeader.apply(this, arguments);
     };
 
@@ -190,6 +194,8 @@ const XHRInterceptor = {
           false,
         );
       }
+      /* $FlowFixMe[invalid-this-arg] Error exposed after fixing this typing
+       * unsoundness in flow */
       originalXHRSend.apply(this, arguments);
     };
     isInterceptorEnabled = true;

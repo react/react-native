@@ -339,6 +339,8 @@ class Modal extends React.Component<ModalProps, ModalState> {
         identifier={this._identifier}
         style={styles.modal}
         // $FlowFixMe[method-unbinding] added when improving typing for this parameters
+        /* $FlowFixMe[incompatible-type] Error exposed after fixing this typing
+         * unsoundness in flow */
         onStartShouldSetResponder={this._shouldSetResponder}
         supportedOrientations={this.props.supportedOrientations}
         onOrientationChange={this.props.onOrientationChange}

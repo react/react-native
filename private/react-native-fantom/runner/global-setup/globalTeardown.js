@@ -50,6 +50,8 @@ async function stopMetroServer(metroServer: MetroServer): Promise<void> {
 
   // $FlowFixMe[method-unbinding] Node 18.2+ API
   if (typeof metroServer.closeIdleConnections === 'function') {
+    /* $FlowFixMe[incompatible-type] Error exposed after fixing this typing
+     * unsoundness in flow */
     metroServer.closeIdleConnections();
   }
 
@@ -57,6 +59,8 @@ async function stopMetroServer(metroServer: MetroServer): Promise<void> {
     setTimeout(() => {
       // $FlowFixMe[method-unbinding] Node 18.2+ API
       if (typeof metroServer.closeAllConnections === 'function') {
+        /* $FlowFixMe[incompatible-type] Error exposed after fixing this typing
+         * unsoundness in flow */
         metroServer.closeAllConnections();
       }
       resolve();

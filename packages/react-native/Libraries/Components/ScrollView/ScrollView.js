@@ -1069,6 +1069,8 @@ class ScrollView extends React.Component<ScrollViewProps, ScrollViewState> {
           nodeHandle,
           nullthrows(findNodeHandle<$FlowFixMe>(this)),
           // $FlowFixMe[method-unbinding] added when improving typing for this parameters
+          /* $FlowFixMe[incompatible-type] Error exposed after fixing this
+           * typing unsoundness in flow */
           this._textInputFocusError,
           this._inputMeasureAndScrollToKeyboard,
         );
@@ -1077,6 +1079,8 @@ class ScrollView extends React.Component<ScrollViewProps, ScrollViewState> {
           this._innerView.nativeInstance,
           this._inputMeasureAndScrollToKeyboard,
           // $FlowFixMe[method-unbinding] added when improving typing for this parameters
+          /* $FlowFixMe[incompatible-type] Error exposed after fixing this
+           * typing unsoundness in flow */
           this._textInputFocusError,
         );
       }

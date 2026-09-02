@@ -99,45 +99,65 @@ class TimersTest extends React.Component<Props, State> {
 
   componentDidMount() {
     // $FlowFixMe[method-unbinding] added when improving typing for this parameters
+    /* $FlowFixMe[incompatible-type] Error exposed after fixing this typing
+     * unsoundness in flow */
     this.setTimeout(this.testSetTimeout0, 1000);
   }
 
   testSetTimeout0() {
     // $FlowFixMe[method-unbinding] added when improving typing for this parameters
+    /* $FlowFixMe[incompatible-type] Error exposed after fixing this typing
+     * unsoundness in flow */
     this.setTimeout(this.testSetTimeout1, 0);
   }
 
   testSetTimeout1() {
     // $FlowFixMe[method-unbinding] added when improving typing for this parameters
+    /* $FlowFixMe[incompatible-type] Error exposed after fixing this typing
+     * unsoundness in flow */
     this.setTimeout(this.testSetTimeout50, 1);
   }
 
   testSetTimeout50() {
     // $FlowFixMe[method-unbinding] added when improving typing for this parameters
+    /* $FlowFixMe[incompatible-type] Error exposed after fixing this typing
+     * unsoundness in flow */
     this.setTimeout(this.testRequestAnimationFrame, 50);
   }
 
   testRequestAnimationFrame() {
     // $FlowFixMe[method-unbinding] added when improving typing for this parameters
+    /* $FlowFixMe[incompatible-type] Error exposed after fixing this typing
+     * unsoundness in flow */
     this.requestAnimationFrame(this.testSetInterval0);
   }
 
   testSetInterval0() {
     // $FlowFixMe[method-unbinding] added when improving typing for this parameters
+    /* $FlowFixMe[incompatible-type] Error exposed after fixing this typing
+     * unsoundness in flow */
     this._nextTest = this.testSetInterval20;
     // $FlowFixMe[method-unbinding] added when improving typing for this parameters
+    /* $FlowFixMe[incompatible-type] Error exposed after fixing this typing
+     * unsoundness in flow */
     this._interval = this.setInterval(this._incrementInterval, 0);
   }
 
   testSetInterval20() {
     // $FlowFixMe[method-unbinding] added when improving typing for this parameters
+    /* $FlowFixMe[incompatible-type] Error exposed after fixing this typing
+     * unsoundness in flow */
     this._nextTest = this.testSetImmediate;
     // $FlowFixMe[method-unbinding] added when improving typing for this parameters
+    /* $FlowFixMe[incompatible-type] Error exposed after fixing this typing
+     * unsoundness in flow */
     this._interval = this.setInterval(this._incrementInterval, 20);
   }
 
   testSetImmediate() {
     // $FlowFixMe[method-unbinding] added when improving typing for this parameters
+    /* $FlowFixMe[incompatible-type] Error exposed after fixing this typing
+     * unsoundness in flow */
     this.setImmediate(this.testClearTimeout0);
   }
 
@@ -151,6 +171,8 @@ class TimersTest extends React.Component<Props, State> {
     const timeout = this.setTimeout(() => this._fail('testClearTimeout30'), 30);
     this.clearTimeout(timeout);
     // $FlowFixMe[method-unbinding] added when improving typing for this parameters
+    /* $FlowFixMe[incompatible-type] Error exposed after fixing this typing
+     * unsoundness in flow */
     this.setTimeout(this.testClearMulti, 50);
   }
 
@@ -169,6 +191,8 @@ class TimersTest extends React.Component<Props, State> {
     this.setTimeout(() => this.clearTimeout(delayClear), 20);
 
     // $FlowFixMe[method-unbinding] added when improving typing for this parameters
+    /* $FlowFixMe[incompatible-type] Error exposed after fixing this typing
+     * unsoundness in flow */
     this.setTimeout(this.testOrdering, 50);
   }
 
@@ -205,6 +229,8 @@ class TimersTest extends React.Component<Props, State> {
       25,
     );
     // $FlowFixMe[method-unbinding] added when improving typing for this parameters
+    /* $FlowFixMe[incompatible-type] Error exposed after fixing this typing
+     * unsoundness in flow */
     this.setTimeout(this.done, 50);
   }
 

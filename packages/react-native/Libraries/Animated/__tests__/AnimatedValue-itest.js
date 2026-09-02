@@ -237,6 +237,8 @@ describe('AnimatedValue', () => {
       // $FlowFixMe[method-unbinding]
       const original = node.__onAnimatedValueUpdateReceived;
       const spy = jest.fn((...args: Array<unknown>) =>
+        /* $FlowFixMe[invalid-this-arg] Error exposed after fixing this typing
+         * unsoundness in flow */
         original.apply(node, args),
       );
       // $FlowFixMe[cannot-write]
