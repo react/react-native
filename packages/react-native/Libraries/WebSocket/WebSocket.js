@@ -188,7 +188,9 @@ class WebSocket extends EventTarget {
 
   send(data: string | ArrayBuffer | ArrayBufferView | Blob): void {
     if (this.readyState === this.CONNECTING) {
-      throw new Error('INVALID_STATE_ERR');
+      throw new Error(
+        "Failed to execute 'send' on 'WebSocket': Still in CONNECTING state",
+      );
     }
 
     if (data instanceof Blob) {
@@ -215,7 +217,9 @@ class WebSocket extends EventTarget {
 
   ping(): void {
     if (this.readyState === this.CONNECTING) {
-      throw new Error('INVALID_STATE_ERR');
+      throw new Error(
+        "Failed to execute 'ping' on 'WebSocket': Still in CONNECTING state",
+      );
     }
 
     NativeWebSocketModule.ping(this._socketId);
