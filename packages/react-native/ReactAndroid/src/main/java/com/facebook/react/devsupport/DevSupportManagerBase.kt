@@ -197,6 +197,8 @@ public abstract class DevSupportManagerBase(
   private var isShakeDetectorStarted = false
   private var isDevSupportEnabled = false
   private var isPackagerConnected = false
+  private val packagerConnectionStatusNotifier =
+      PackagerConnectionStatusNotifier(devLoadingViewManagerProvider = { devLoadingViewManager })
   private val errorCustomizers: MutableList<ErrorCustomizer> = mutableListOf()
   private var packagerLocationCustomizer: PackagerLocationCustomizer? = null
   private val jSExecutorDescription: String?
@@ -965,12 +967,14 @@ public abstract class DevSupportManagerBase(
           javaClass.simpleName,
           object : PackagerCommandListener {
             override fun onPackagerConnected() {
+              packagerConnectionStatusNotifier.onPackagerConnected()
               isPackagerConnected = true
               perfMonitorOverlayManager?.enable()
               perfMonitorOverlayManager?.startBackgroundTrace()
             }
 
             override fun onPackagerDisconnected() {
+              packagerConnectionStatusNotifier.onPackagerDisconnected()
               isPackagerConnected = false
               perfMonitorOverlayManager?.disable()
               perfMonitorOverlayManager?.stopBackgroundTrace()
@@ -1013,6 +1017,7 @@ public abstract class DevSupportManagerBase(
       devLoadingViewManager?.hide()
       perfMonitorOverlayManager?.disable()
 
+      packagerConnectionStatusNotifier.onPackagerConnectionClosed()
       devServerHelper.closePackagerConnection()
     }
   }

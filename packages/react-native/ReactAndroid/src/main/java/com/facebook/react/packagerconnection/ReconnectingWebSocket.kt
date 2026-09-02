@@ -42,6 +42,7 @@ public class ReconnectingWebSocket(
   private val okHttpClient = DevSupportHttpClient.websocketClient
   private var closed = false
   private var suppressConnectionErrors = false
+  private var connected = false
   private var webSocket: WebSocket? = null
 
   public fun connect() {
@@ -95,6 +96,7 @@ public class ReconnectingWebSocket(
   @Synchronized
   override fun onOpen(webSocket: WebSocket, response: Response) {
     this.webSocket = webSocket
+    connected = true
     suppressConnectionErrors = false
 
     connectionCallback?.onConnected()
@@ -106,7 +108,7 @@ public class ReconnectingWebSocket(
       abort("Websocket exception", t)
     }
     if (!closed) {
-      connectionCallback?.onDisconnected()
+      notifyDisconnectedIfConnected()
       reconnect()
     }
   }
@@ -125,8 +127,15 @@ public class ReconnectingWebSocket(
   override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
     this.webSocket = null
     if (!closed) {
-      connectionCallback?.onDisconnected()
+      notifyDisconnectedIfConnected()
       reconnect()
+    }
+  }
+
+  private fun notifyDisconnectedIfConnected() {
+    if (connected) {
+      connected = false
+      connectionCallback?.onDisconnected()
     }
   }
 
