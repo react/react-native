@@ -4,14 +4,18 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
 'use strict';
 
+import type {ViewStyleProp} from '../../../../../Libraries/StyleSheet/StyleSheet';
+
 const I18nManager =
   require('../../../../../Libraries/ReactNative/I18nManager').default;
+const flattenStyle =
+  require('../../../../../Libraries/StyleSheet/flattenStyle').default;
 
 /**
  * Resolve a style property into its component parts.
@@ -25,15 +29,32 @@ const I18nManager =
  */
 function resolveBoxStyle(
   prefix: string,
-  style: Object,
+  style: ?ViewStyleProp,
 ): ?Readonly<{
-  bottom: number,
-  left: number,
-  right: number,
-  top: number,
+  bottom: number | string,
+  left: number | string,
+  right: number | string,
+  top: number | string,
 }> {
+  const flatStyle: ?Readonly<{[string]: unknown}> = flattenStyle(style);
+  if (flatStyle == null) {
+    return null;
+  }
+
+  const getStyleValue = (key: string): number | string | null => {
+    const value = flatStyle[key];
+    return typeof value === 'number' || typeof value === 'string'
+      ? value
+      : null;
+  };
+
   let hasParts = false;
-  const result = {
+  const result: {
+    bottom: number | string,
+    left: number | string,
+    right: number | string,
+    top: number | string,
+  } = {
     bottom: 0,
     left: 0,
     right: 0,
@@ -42,33 +63,34 @@ function resolveBoxStyle(
 
   // TODO: Fix issues with multiple properties affecting the same side.
 
-  const styleForAll = style[prefix];
+  const styleForAll = getStyleValue(prefix);
   if (styleForAll != null) {
-    for (const key of Object.keys(result)) {
-      result[key] = styleForAll;
-    }
+    result.bottom = styleForAll;
+    result.left = styleForAll;
+    result.right = styleForAll;
+    result.top = styleForAll;
     hasParts = true;
   }
 
-  const styleForHorizontal = style[prefix + 'Horizontal'];
+  const styleForHorizontal = getStyleValue(prefix + 'Horizontal');
   if (styleForHorizontal != null) {
     result.left = styleForHorizontal;
     result.right = styleForHorizontal;
     hasParts = true;
   } else {
-    const styleForLeft = style[prefix + 'Left'];
+    const styleForLeft = getStyleValue(prefix + 'Left');
     if (styleForLeft != null) {
       result.left = styleForLeft;
       hasParts = true;
     }
 
-    const styleForRight = style[prefix + 'Right'];
+    const styleForRight = getStyleValue(prefix + 'Right');
     if (styleForRight != null) {
       result.right = styleForRight;
       hasParts = true;
     }
 
-    const styleForEnd = style[prefix + 'End'];
+    const styleForEnd = getStyleValue(prefix + 'End');
     if (styleForEnd != null) {
       const constants = I18nManager.getConstants();
       if (constants.isRTL && constants.doLeftAndRightSwapInRTL) {
@@ -78,7 +100,7 @@ function resolveBoxStyle(
       }
       hasParts = true;
     }
-    const styleForStart = style[prefix + 'Start'];
+    const styleForStart = getStyleValue(prefix + 'Start');
     if (styleForStart != null) {
       const constants = I18nManager.getConstants();
       if (constants.isRTL && constants.doLeftAndRightSwapInRTL) {
@@ -90,19 +112,19 @@ function resolveBoxStyle(
     }
   }
 
-  const styleForVertical = style[prefix + 'Vertical'];
+  const styleForVertical = getStyleValue(prefix + 'Vertical');
   if (styleForVertical != null) {
     result.bottom = styleForVertical;
     result.top = styleForVertical;
     hasParts = true;
   } else {
-    const styleForBottom = style[prefix + 'Bottom'];
+    const styleForBottom = getStyleValue(prefix + 'Bottom');
     if (styleForBottom != null) {
       result.bottom = styleForBottom;
       hasParts = true;
     }
 
-    const styleForTop = style[prefix + 'Top'];
+    const styleForTop = getStyleValue(prefix + 'Top');
     if (styleForTop != null) {
       result.top = styleForTop;
       hasParts = true;

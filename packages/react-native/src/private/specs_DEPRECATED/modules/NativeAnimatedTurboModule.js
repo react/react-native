@@ -4,11 +4,12 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
 import type {TurboModule} from '../../../../Libraries/TurboModule/RCTExport';
+import type {UnsafeObject} from '../../../../Libraries/Types/CodegenTypes';
 
 import shouldUseTurboAnimatedModule from '../../../../Libraries/Animated/shouldUseTurboAnimatedModule';
 import * as TurboModuleRegistry from '../../../../Libraries/TurboModule/TurboModuleRegistry';
@@ -24,8 +25,8 @@ export type EventMapping = {
 
 // The config has different keys depending on the type of the Node
 // TODO(T54896888): Make these types strict
-export type AnimatedNodeConfig = Object;
-export type AnimatingNodeConfig = Object;
+export type AnimatedNodeConfig = UnsafeObject;
+export type AnimatingNodeConfig = UnsafeObject;
 
 export interface Spec extends TurboModule {
   readonly startOperationBatch: () => void;
@@ -87,7 +88,7 @@ export interface Spec extends TurboModule {
 
   // All of the above in a batched mode
   readonly queueAndExecuteBatchedOperations?: (
-    operationsAndArgs: Array<any>,
+    operationsAndArgs: Array<unknown>,
   ) => void;
 }
 

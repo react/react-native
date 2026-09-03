@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format strict-local
  */
 
@@ -51,13 +51,13 @@ export default function processFilter(
   }
 
   if (typeof filter === 'string') {
-    filter = filter.replace(NEWLINE_REGEX, ' ');
+    const normalizedFilter = filter.replace(NEWLINE_REGEX, ' ');
 
     // matches on functions with args and nested functions like "drop-shadow(10 10 10 rgba(0, 0, 0, 1))"
     FILTER_FUNCTION_REGEX.lastIndex = 0;
     let matches;
 
-    while ((matches = FILTER_FUNCTION_REGEX.exec(filter))) {
+    while ((matches = FILTER_FUNCTION_REGEX.exec(normalizedFilter))) {
       let filterName = matches[1].toLowerCase();
       if (filterName === 'drop-shadow') {
         const dropShadow = parseDropShadow(matches[2]);
@@ -159,7 +159,7 @@ function _getFilterAmount(filterName: string, filterArgs: unknown): ?number {
     // blur takes any positive CSS length that is not a percent. In RN
     // we currently only have DIPs, so we are not parsing units here.
     case 'blur':
-      if ((unit && unit !== 'px') || filterArgAsNumber < 0) {
+      if ((Boolean(unit) && unit !== 'px') || filterArgAsNumber < 0) {
         return undefined;
       }
       return filterArgAsNumber;
@@ -173,7 +173,10 @@ function _getFilterAmount(filterName: string, filterArgs: unknown): ?number {
     case 'opacity':
     case 'saturate':
     case 'sepia':
-      if ((unit && unit !== '%' && unit !== 'px') || filterArgAsNumber < 0) {
+      if (
+        (Boolean(unit) && unit !== '%' && unit !== 'px') ||
+        filterArgAsNumber < 0
+      ) {
         return undefined;
       }
       if (unit === '%') {
