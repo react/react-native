@@ -227,6 +227,21 @@ jobs:
       fail-on-error: true
     secrets: inherit
 
+  # The templateapp lane above pins RNCore to a local tarball, which removes the
+  # Debug/Release script phase from the podspec. This lane is the only one that
+  # runs it.
+  test_ios_prebuilt_config_switch:
+    needs:
+      [
+        build_npm_package,
+        prebuild_apple_dependencies,
+        prebuild_react_native_core,
+        check_code_changes,
+      ]
+    if: ${{ needs.prebuild_react_native_core.result == 'success' && needs.build_npm_package.result == 'success' && needs.check_code_changes.outputs.should_test_ios == 'true' }}
+    uses: ./.github/workflows/test-ios-prebuilt-config-switch.yml
+    secrets: inherit
+
   test_ios_spm_rntester:
     needs:
       [
