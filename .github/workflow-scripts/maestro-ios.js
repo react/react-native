@@ -76,9 +76,9 @@ function launchSimulator(simulator) {
   }
 }
 
-function installAppOnSimulator(appPath) {
+function installAppOnSimulator(appPath, udid) {
   console.log(`Installing app at path ${appPath}`);
-  childProcess.execSync(`xcrun simctl install booted "${appPath}"`);
+  childProcess.execSync(`xcrun simctl install "${udid}" "${appPath}"`);
 }
 
 function bringSimulatorInForeground() {
@@ -102,13 +102,13 @@ async function launchAppOnSimulator(appId, udid, isDebug) {
   }
 }
 
-function startVideoRecording(jsengine, currentAttempt) {
+function startVideoRecording(udid, currentAttempt) {
   console.log(
     `Start video record using pid: video_record_${currentAttempt}.pid`,
   );
 
   const recordingArgs =
-    `simctl io booted recordVideo --force video_record_${currentAttempt}.mov`.split(
+    `simctl io ${udid} recordVideo --force video_record_${currentAttempt}.mov`.split(
       ' ',
     );
   const recordingProcess = childProcess.spawn('xcrun', recordingArgs, {
@@ -119,19 +119,53 @@ function startVideoRecording(jsengine, currentAttempt) {
   return recordingProcess;
 }
 
+// The movie is only written after SIGINT, so returning early truncates it.
+const RECORDING_SHUTDOWN_TIMEOUT_MS = 30 * 1000;
+
 function stopVideoRecording(recordingProcess) {
   if (!recordingProcess) {
     console.log("Passed a null recording process. Can't kill it");
-    return;
+    return Promise.resolve();
   }
 
   console.log(`Stop video record using pid: ${recordingProcess.pid}`);
 
-  recordingProcess.kill('SIGINT');
+  if (
+    recordingProcess.exitCode != null ||
+    recordingProcess.signalCode != null
+  ) {
+    return Promise.resolve();
+  }
+
+  // Awaiting the exit is also what reaps the child: the flows run in a
+  // synchronous loop, so nothing else turns the event loop.
+  return new Promise(resolve => {
+    const done = () => {
+      clearTimeout(timer);
+      resolve();
+    };
+    const timer = setTimeout(() => {
+      console.log(
+        `Recorder ${recordingProcess.pid} did not exit in time, killing it`,
+      );
+      recordingProcess.kill('SIGKILL');
+    }, RECORDING_SHUTDOWN_TIMEOUT_MS);
+    timer.unref?.();
+
+    recordingProcess.once('exit', done);
+    recordingProcess.once('error', done);
+    recordingProcess.kill('SIGINT');
+  });
 }
 
-function executeFlowWithRetries(appId, udid, flow, jsengine, currentAttempt) {
-  const recProcess = startVideoRecording(jsengine, currentAttempt);
+async function executeFlowWithRetries(
+  appId,
+  udid,
+  flow,
+  jsengine,
+  currentAttempt,
+) {
+  const recProcess = startVideoRecording(udid, currentAttempt);
   try {
     const timeout = 1000 * 60 * 10; // 10 minutes
     const command = `$HOME/.maestro/bin/maestro --udid="${udid}" test "${flow}" --format junit -e APP_ID="${appId}"`;
@@ -142,13 +176,19 @@ function executeFlowWithRetries(appId, udid, flow, jsengine, currentAttempt) {
       timeout,
     });
 
-    stopVideoRecording(recProcess);
+    await stopVideoRecording(recProcess);
   } catch (error) {
-    stopVideoRecording(recProcess);
+    await stopVideoRecording(recProcess);
 
     if (currentAttempt < MAX_ATTEMPTS) {
       console.info(`Retrying flow: ${flow}`);
-      executeFlowWithRetries(appId, udid, flow, jsengine, currentAttempt + 1);
+      await executeFlowWithRetries(
+        appId,
+        udid,
+        flow,
+        jsengine,
+        currentAttempt + 1,
+      );
     } else {
       console.error(
         `Failed to execute flow ${flow} after ${MAX_ATTEMPTS} attempts.`,
@@ -158,18 +198,23 @@ function executeFlowWithRetries(appId, udid, flow, jsengine, currentAttempt) {
   }
 }
 
-function executeFlows(appId, udid, maestroFlow, jsengine) {
+async function executeFlows(appId, udid, maestroFlow, jsengine) {
   if (!fs.existsSync(maestroFlow) || !fs.lstatSync(maestroFlow).isDirectory()) {
-    executeFlowWithRetries(appId, udid, maestroFlow, jsengine, 1);
+    await executeFlowWithRetries(appId, udid, maestroFlow, jsengine, 1);
     return;
   }
 
   for (const file of fs.readdirSync(maestroFlow).sort()) {
     const filePath = `${maestroFlow.replace(/\/$/, '')}/${file}`;
     if (fs.lstatSync(filePath).isDirectory()) {
-      executeFlows(appId, udid, filePath, jsengine);
+      // Fragments pulled in via `runFlow`; they have no `launchApp` of their
+      // own and fail when run standalone.
+      if (file === 'helpers') {
+        continue;
+      }
+      await executeFlows(appId, udid, filePath, jsengine);
     } else if (file.endsWith('.yml') || file.endsWith('.yaml')) {
-      executeFlowWithRetries(appId, udid, filePath, jsengine, 1);
+      await executeFlowWithRetries(appId, udid, filePath, jsengine, 1);
     }
   }
 }
@@ -202,10 +247,10 @@ async function main(args = process.argv.slice(2)) {
 
   const simulator = findAvailableSimulator(deviceModel, deviceOS);
   launchSimulator(simulator);
-  installAppOnSimulator(appPath);
+  installAppOnSimulator(appPath, simulator.udid);
   bringSimulatorInForeground();
   await launchAppOnSimulator(appId, simulator.udid, isDebug);
-  executeFlows(appId, simulator.udid, maestroFlow, jsengine);
+  await executeFlows(appId, simulator.udid, maestroFlow, jsengine);
   console.log('Test finished');
 }
 
