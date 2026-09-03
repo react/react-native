@@ -142,6 +142,21 @@ describe('structuredClone', () => {
     expect(clone).toEqual(value);
   });
 
+  it('preserves holes in sparse arrays', () => {
+    const value = new Array<string>(3);
+    value[1] = 'foo';
+
+    const clone = structuredClone(value);
+
+    expect({
+      length: clone.length,
+      keys: Object.keys(clone),
+    }).toEqual({
+      length: 3,
+      keys: ['1'],
+    });
+  });
+
   it('clones maps', () => {
     const value = new Map([
       ['key1', 'value1'],
