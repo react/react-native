@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -13,6 +13,7 @@ import type {TextStyleProp} from '../../StyleSheet/StyleSheet';
 import View from '../../Components/View/View';
 import StyleSheet from '../../StyleSheet/StyleSheet';
 import Text from '../../Text/Text';
+// $FlowFixMe[untyped-import]
 import {ansiToJson} from 'anser';
 import * as React from 'react';
 

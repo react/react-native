@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -77,23 +77,31 @@ const virtualTextViewConfig = {
 // Additional note: Our long term plan is to reduce the overhead of the <Text>
 // and <View> wrappers so that we no longer have any reason to export these APIs.
 export const NativeText: HostComponent<NativeTextProps> =
-  createReactNativeComponentClass('RCTText', () =>
-    createViewConfig(textViewConfig),
+  createReactNativeComponentClass(
+    'RCTText',
+    () => createViewConfig(textViewConfig),
+    // $FlowFixMe[unclear-type]
   ) as any;
 
 export const NativeVirtualText: HostComponent<NativeTextProps> =
+  // $FlowFixMe[sketchy-null-bool]
   !global.RN$Bridgeless && !UIManager.hasViewManagerConfig('RCTVirtualText')
     ? NativeText
-    : (createReactNativeComponentClass('RCTVirtualText', () =>
-        createViewConfig(virtualTextViewConfig),
+    : (createReactNativeComponentClass(
+        'RCTVirtualText',
+        () => createViewConfig(virtualTextViewConfig),
+        // $FlowFixMe[unclear-type]
       ) as any);
 
 export const NativeSelectableText: HostComponent<NativeTextProps> =
   enablePreparedTextLayout()
-    ? (createReactNativeComponentClass('RCTSelectableText', () =>
-        createViewConfig({
-          ...textViewConfig,
-          uiViewClassName: 'RCTSelectableText',
-        }),
+    ? (createReactNativeComponentClass(
+        'RCTSelectableText',
+        () =>
+          createViewConfig({
+            ...textViewConfig,
+            uiViewClassName: 'RCTSelectableText',
+          }),
+        // $FlowFixMe[unclear-type]
       ) as any)
     : NativeText;

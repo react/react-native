@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -29,7 +29,9 @@ function unstable_setLogListeners(listeners: ?LogListeners) {
  * @returns {bool} true if different, false if equal
  */
 function deepDiffer(
+  // $FlowFixMe[unclear-type] - deepDiffer compares values of arbitrary shape
   one: any,
+  // $FlowFixMe[unclear-type] - deepDiffer compares values of arbitrary shape
   two: any,
   maxDepthOrOptions: Options | number = -1,
   maybeOptions?: Options,

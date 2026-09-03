@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -22,10 +22,13 @@ const invariant = require('invariant');
  * interface to native code.
  */
 function processTransform(
+  // $FlowFixMe[unclear-type]
   transform: Array<Object> | string,
+  // $FlowFixMe[unclear-type]
 ): Array<Object> | Array<number> {
   if (typeof transform === 'string') {
     const regex = new RegExp(/(\w+)\(([^)]+)\)/g);
+    // $FlowFixMe[unclear-type]
     const transformArray: Array<Object> = [];
     let matches;
 
@@ -39,13 +42,16 @@ function processTransform(
         transformArray.push({[key]: value});
       }
     }
+    // $FlowFixMe[reassign-const]
     transform = transformArray;
   }
 
   if (__DEV__) {
+    // $FlowFixMe[incompatible-type]
     _validateTransforms(transform);
   }
 
+  // $FlowFixMe[incompatible-type]
   return transform;
 }
 
@@ -138,6 +144,7 @@ const _getKeyAndValueFromCSSTransform: (
   }
 };
 
+// $FlowFixMe[unclear-type]
 function _validateTransforms(transform: Array<Object>): void {
   transform.forEach(transformation => {
     const keys = Object.keys(transformation);
@@ -160,10 +167,13 @@ function _validateTransforms(transform: Array<Object>): void {
 
 function _validateTransform(
   key: string,
+  // $FlowFixMe[unclear-type]
   value: any | number | string,
+  // $FlowFixMe[unclear-type]
   transformation: any,
 ) {
   invariant(
+    // $FlowFixMe[sketchy-null-mixed]
     !value.getValue,
     'You passed an Animated.Value to a normal component. ' +
       'You need to wrap that component in an Animated. For example, ' +

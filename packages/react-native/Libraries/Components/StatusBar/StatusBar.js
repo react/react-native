@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -101,13 +101,25 @@ export type StatusBarProps = Readonly<{
 
 type StackProps = {
   barStyle: ?{
-    value: StatusBarProps['barStyle'],
+    value: StatusBarStyle,
     animated: boolean,
   },
   hidden: ?{
     value: boolean,
     animated: boolean,
-    transition: StatusBarProps['showHideTransition'],
+    transition: StatusBarAnimation,
+  },
+};
+
+type ResolvedStackProps = {
+  barStyle: {
+    value: StatusBarStyle,
+    animated: boolean,
+  },
+  hidden: {
+    value: boolean,
+    animated: boolean,
+    transition: StatusBarAnimation,
   },
 };
 
@@ -126,13 +138,16 @@ function getAutoBarStyle(): 'light-content' | 'dark-content' {
  * barStyle to a concrete value.
  */
 function mergePropsStack(
-  propsStack: Array<Object>,
-  defaultValues: Object,
-): Object {
-  const merged: StackProps = propsStack.reduce(
+  propsStack: Array<StackProps>,
+  defaultValues: ResolvedStackProps,
+): ResolvedStackProps {
+  const merged: ResolvedStackProps = propsStack.reduce(
     (prev, cur) => {
       for (const prop in cur) {
+        // $FlowFixMe[invalid-computed-prop] dynamic merge over the known StackProps keys
         if (cur[prop] != null) {
+          // $FlowFixMe[invalid-computed-prop] dynamic merge over the known StackProps keys
+          // $FlowFixMe[prop-missing] dynamic merge over the known StackProps keys
           prev[prop] = cur[prop];
         }
       }
@@ -141,7 +156,7 @@ function mergePropsStack(
     {...defaultValues},
   );
 
-  if (merged.barStyle?.value === 'auto') {
+  if (merged.barStyle.value === 'auto') {
     merged.barStyle = {...merged.barStyle, value: getAutoBarStyle()};
   }
 
@@ -224,10 +239,10 @@ function createStackEntry(props: StatusBarProps): StackProps {
 class StatusBar extends React.Component<StatusBarProps> {
   static _propsStack: Array<StackProps> = [];
 
-  static _defaultProps: any = createStackEntry({
-    barStyle: 'default',
-    hidden: false,
-  });
+  static _defaultProps: ResolvedStackProps = {
+    barStyle: {value: 'default', animated: false},
+    hidden: {value: false, animated: false, transition: 'fade'},
+  };
 
   // Timer for updating the native module values at the end of the frame.
   static _updateImmediate: ?number = null;
@@ -235,7 +250,7 @@ class StatusBar extends React.Component<StatusBarProps> {
   // The current merged values from the props stack. `barStyle.value` is stored
   // in its resolved form (never `'auto'`), so diff comparisons reflect what
   // was actually sent to the native module.
-  static _currentValues: ?StackProps = null;
+  static _currentValues: ?ResolvedStackProps = null;
 
   // Number of mounted `StatusBar` instances. Used to lazily subscribe to color
   // scheme changes only while at least one instance is on screen.
@@ -264,10 +279,10 @@ class StatusBar extends React.Component<StatusBarProps> {
    *    changing the status bar hidden property.
    */
   static setHidden(hidden: boolean, animation?: StatusBarAnimation) {
-    animation = animation || 'none';
+    const resolvedAnimation = animation ?? 'none';
     StatusBar._defaultProps.hidden.value = hidden;
     if (Platform.OS === 'ios') {
-      NativeStatusBarManagerIOS.setHidden(hidden, animation);
+      NativeStatusBarManagerIOS.setHidden(hidden, resolvedAnimation);
     } else if (Platform.OS === 'android') {
       NativeStatusBarManagerAndroid.setHidden(hidden);
     }
@@ -279,11 +294,11 @@ class StatusBar extends React.Component<StatusBarProps> {
    * @param animated Animate the style change.
    */
   static setBarStyle(style: StatusBarStyle, animated?: boolean) {
-    animated = animated || false;
+    const resolvedAnimated = animated ?? false;
     StatusBar._defaultProps.barStyle.value = style;
     const resolvedStyle = style === 'auto' ? getAutoBarStyle() : style;
     if (Platform.OS === 'ios') {
-      NativeStatusBarManagerIOS.setStyle(resolvedStyle, animated);
+      NativeStatusBarManagerIOS.setStyle(resolvedStyle, resolvedAnimated);
     } else if (Platform.OS === 'android') {
       NativeStatusBarManagerAndroid.setStyle(resolvedStyle);
     }
