@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -78,10 +78,10 @@ type OptionalFlatListProps<ItemT> = {
    * any of your `renderItem`, Header, Footer, etc. functions depend on anything outside of the
    * `data` prop, stick it here and treat it immutably.
    */
-  extraData?: any,
+  extraData?: unknown,
   /**
    * `getItemLayout` is an optional optimizations that let us skip measurement of dynamic content if
-   * you know the height of items a priori. `getItemLayout` is the most efficient, and is easy to
+   * you know the height of items a priori.
    * use if you have fixed height items, for example:
    *
    *     getItemLayout={(data, index) => (
@@ -305,6 +305,7 @@ export type FlatListProps<ItemT> = Readonly<{
  *
  * Also inherits [ScrollView Props](docs/scrollview.html#props), unless it is nested in another FlatList of same orientation.
  */
+// flowlint-next-line unclear-type:off
 class FlatList<ItemT = any> extends React.PureComponent<FlatListProps<ItemT>> {
   /**
    * Scrolls to the end of the content. May be janky without `getItemLayout` prop.
@@ -404,6 +405,7 @@ class FlatList<ItemT = any> extends React.PureComponent<FlatListProps<ItemT>> {
     }
   }
 
+  // flowlint-next-line unclear-type:off
   getScrollableNode(): any {
     if (this._listRef) {
       return this._listRef.getScrollableNode();
@@ -499,7 +501,7 @@ class FlatList<ItemT = any> extends React.PureComponent<FlatListProps<ItemT>> {
       'FlatList does not support custom data formats.',
     );
     if (numColumns > 1) {
-      invariant(!horizontal, 'numColumns does not support horizontal.');
+      invariant(horizontal !== true, 'numColumns does not support horizontal.');
     } else {
       invariant(
         !columnWrapperStyle,
@@ -611,11 +613,13 @@ class FlatList<ItemT = any> extends React.PureComponent<FlatListProps<ItemT>> {
   }
 
   _renderer = (
-    ListItemComponent: ?(React.ComponentType<any> | React.MixedElement),
+    ListItemComponent: ?(
+      React.ComponentType<ListRenderItemInfo<ItemT>> | React.MixedElement
+    ),
     renderItem: ?ListRenderItem<ItemT>,
     columnWrapperStyle: ?ViewStyleProp,
     numColumns: ?number,
-    extraData: ?any,
+    extraData: ?unknown,
     // $FlowFixMe[missing-local-annot]
   ) => {
     const cols = numColumnsOrDefault(numColumns);

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -28,6 +28,7 @@ type PresentLocalNotificationDetails = {
   alertTitle?: string,
   soundName?: string,
   category?: string,
+  // $FlowFixMe[unclear-type]
   userInfo?: Object,
   applicationIconBadgeNumber?: number,
   fireDate?: number,
@@ -122,6 +123,7 @@ export interface PushNotification {
   /**
    * An alias for `getAlert` to get the notification's main message string
    */
+  // $FlowFixMe[unclear-type]
   getMessage(): ?string | ?Object;
 
   /**
@@ -137,6 +139,7 @@ export interface PushNotification {
   /**
    * Gets the notification's main message from the `aps` object
    */
+  // $FlowFixMe[unclear-type]
   getAlert(): ?string | ?Object;
 
   /**
@@ -152,6 +155,7 @@ export interface PushNotification {
   /**
    * Gets the data object on the notif
    */
+  // $FlowFixMe[unclear-type]
   getData(): ?Object;
 
   /**
@@ -174,7 +178,9 @@ export interface PushNotification {
  * @deprecated Use [@react-native-community/push-notification-ios](https://www.npmjs.com/package/@react-native-community/push-notification-ios) instead
  */
 class PushNotificationIOS {
+  // $FlowFixMe[unclear-type]
   _data: Object;
+  // $FlowFixMe[unclear-type]
   _alert: string | Object;
   _sound: string;
   _category: string;
@@ -276,6 +282,7 @@ class PushNotificationIOS {
    * See https://reactnative.dev/docs/pushnotificationios#getdeliverednotifications
    */
   static getDeliveredNotifications(
+    // $FlowFixMe[unclear-type]
     callback: (notifications: Array<Object>) => void,
   ): void {
     invariant(
@@ -316,6 +323,7 @@ class PushNotificationIOS {
    *
    * See https://reactnative.dev/docs/pushnotificationios#getapplicationiconbadgenumber
    */
+  // $FlowFixMe[unclear-type]
   static getApplicationIconBadgeNumber(callback: Function): void {
     invariant(
       NativePushNotificationManagerIOS,
@@ -330,6 +338,7 @@ class PushNotificationIOS {
    *
    * See https://reactnative.dev/docs/pushnotificationios#cancellocalnotification
    */
+  // $FlowFixMe[unclear-type]
   static cancelLocalNotifications(userInfo: Object): void {
     invariant(
       NativePushNotificationManagerIOS,
@@ -343,6 +352,7 @@ class PushNotificationIOS {
    *
    * See https://reactnative.dev/docs/pushnotificationios#getscheduledlocalnotifications
    */
+  // $FlowFixMe[unclear-type]
   static getScheduledLocalNotifications(callback: Function): void {
     invariant(
       NativePushNotificationManagerIOS,
@@ -359,6 +369,7 @@ class PushNotificationIOS {
    */
   static addEventListener(
     type: PushNotificationEventName,
+    // $FlowFixMe[unclear-type]
     handler: Function,
   ): void {
     invariant(
@@ -539,6 +550,7 @@ class PushNotificationIOS {
    * `getInitialNotification` is sufficient.
    *
    */
+  // $FlowFixMe[unclear-type]
   constructor(nativeNotif: Object) {
     this._data = {};
     this._remoteNotificationCompleteCallbackCalled = false;
@@ -603,6 +615,7 @@ class PushNotificationIOS {
   /**
    * An alias for `getAlert` to get the notification's main message string.
    */
+  // $FlowFixMe[unclear-type]
   getMessage(): ?string | ?Object {
     // alias because "alert" is an ambiguous name
     return this._alert;
@@ -633,6 +646,7 @@ class PushNotificationIOS {
    *
    * See https://reactnative.dev/docs/pushnotificationios#getalert
    */
+  // $FlowFixMe[unclear-type]
   getAlert(): ?string | ?Object {
     return this._alert;
   }
@@ -660,6 +674,7 @@ class PushNotificationIOS {
    *
    * See https://reactnative.dev/docs/pushnotificationios#getdata
    */
+  // $FlowFixMe[unclear-type]
   getData(): ?Object {
     return this._data;
   }

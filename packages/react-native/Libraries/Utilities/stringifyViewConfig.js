@@ -4,11 +4,12 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
-export default function stringifyViewConfig(viewConfig: any): string {
+export default function stringifyViewConfig(viewConfig: unknown): string {
+  // $FlowFixMe[incompatible-type] JSON.stringify can return void; preserves prior behavior (returns the result directly, not coerced to '')
   return JSON.stringify(
     viewConfig,
     (key, val) => {

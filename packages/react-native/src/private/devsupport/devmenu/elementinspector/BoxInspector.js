@@ -61,10 +61,10 @@ type BoxContainerProps = Readonly<{
   title: string,
   titleStyle?: TextStyleProp,
   box: Readonly<{
-    top: number,
-    left: number,
-    right: number,
-    bottom: number,
+    top: number | string,
+    left: number | string,
+    right: number | string,
+    bottom: number | string,
   }>,
   children: React.Node,
 }>;

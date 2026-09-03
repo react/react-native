@@ -32,7 +32,7 @@ const RCTNetworking = {
     trackingName: string | void,
     url: string,
     headers: {...},
-    data: RequestBody,
+    data: ?RequestBody,
     responseType: NativeResponseType,
     incrementalUpdates: boolean,
     timeout: number,

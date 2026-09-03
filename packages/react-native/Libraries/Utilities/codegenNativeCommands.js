@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -27,6 +27,7 @@ function codegenNativeCommands<T extends interface {}>(
     };
   });
 
+  // $FlowFixMe[unclear-type] - dynamic command object cannot be statically typed as the generic interface T
   return commandObj as any as T;
 }
 
