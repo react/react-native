@@ -689,6 +689,10 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
     val newTypeface = applyStyles(typeface, fontStyle, fontWeight, fontFamily, context.assets)
     typeface = newTypeface
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      // TextView skips unchanged settings even after a typeface change, so clear them first.
+      if (fontVariationSettings != null) {
+        super.setFontVariationSettings(null)
+      }
       super.setFontVariationSettings(parsedFontVariationSettings)
     }
 

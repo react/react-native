@@ -179,6 +179,10 @@ public object ReactTypefaceUtils {
     }
 
     try {
+      // Paint skips unchanged settings even after setTypeface, so clear them first.
+      if (paint.fontVariationSettings != null) {
+        paint.setFontVariationSettings(null)
+      }
       paint.setFontVariationSettings(fontVariationSettings)
     } catch (exception: IllegalArgumentException) {
       // Paint instances are reused, so explicitly clear axes from a previous layout.

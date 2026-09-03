@@ -24,6 +24,7 @@ import org.junit.runner.RunWith
 import org.mockito.kotlin.any
 import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.robolectric.RobolectricTestRunner
@@ -125,6 +126,55 @@ class TextLayoutManagerFontWeightAdjustmentTest {
     verify(paint).setFontVariationSettings("'wght' 700")
     verify(paint).setFontVariationSettings(invalidSettings)
     verify(paint).setFontVariationSettings(null)
+  }
+
+  @Test
+  fun `reused paint re-applies unchanged font variation settings to a new typeface`() {
+    val paint = mock<Paint>()
+    whenever(paint.fontVariationSettings).thenReturn("'wght' 600")
+
+    ReactTypefaceUtils.applyFontVariationSettings(paint, "'wght' 600")
+
+    inOrder(paint) {
+      verify(paint).setFontVariationSettings(null)
+      verify(paint).setFontVariationSettings("'wght' 600")
+    }
+  }
+
+  @Test
+  fun `fresh paint applies font variation settings without clearing first`() {
+    val paint = mock<Paint>()
+    whenever(paint.fontVariationSettings).thenReturn(null)
+
+    ReactTypefaceUtils.applyFontVariationSettings(paint, "'wght' 600")
+
+    verify(paint).setFontVariationSettings("'wght' 600")
+    verify(paint, never()).setFontVariationSettings(null)
+  }
+
+  @Test
+  fun `scratch text paint re-applies font variation settings on repeated measurement`() {
+    val paint = mock<TextPaint>()
+    whenever(paint.fontVariationSettings).thenReturn("'wght' 600")
+    val textAttributes =
+        TextAttributeProps.fromReadableMap(
+            ReactStylesDiffMap(
+                JavaOnlyMap.of("fontWeight", "600", "fontVariationSettings", "'wght' 600"),
+            ),
+        )
+
+    TextLayoutManager.updateTextPaint(
+        paint,
+        textAttributes,
+        RuntimeEnvironment.getApplication().assets,
+        0,
+    )
+
+    inOrder(paint) {
+      verify(paint).setTypeface(any())
+      verify(paint).setFontVariationSettings(null)
+      verify(paint).setFontVariationSettings("'wght' 600")
+    }
   }
 
   private companion object {
