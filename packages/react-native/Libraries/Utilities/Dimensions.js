@@ -16,10 +16,16 @@ import NativeDeviceInfo, {
   type DimensionsPayload,
   type DisplayMetrics,
   type DisplayMetricsAndroid,
+  type WindowSafeAreaInsets,
 } from './NativeDeviceInfo';
 import invariant from 'invariant';
 
-export type {DimensionsPayload, DisplayMetrics, DisplayMetricsAndroid};
+export type {
+  DimensionsPayload,
+  DisplayMetrics,
+  DisplayMetricsAndroid,
+  WindowSafeAreaInsets,
+};
 
 /** @deprecated Use DisplayMetrics */
 export type ScaledSize = DisplayMetrics;
@@ -72,11 +78,22 @@ class Dimensions {
     let {screen, window} = dims;
     const {windowPhysicalPixels} = dims;
     if (windowPhysicalPixels) {
+      const {scale, experimental_safeAreaInsets: safeAreaInsets} =
+        windowPhysicalPixels;
       window = {
-        width: windowPhysicalPixels.width / windowPhysicalPixels.scale,
-        height: windowPhysicalPixels.height / windowPhysicalPixels.scale,
-        scale: windowPhysicalPixels.scale,
+        width: windowPhysicalPixels.width / scale,
+        height: windowPhysicalPixels.height / scale,
+        scale,
         fontScale: windowPhysicalPixels.fontScale,
+        experimental_safeAreaInsets:
+          safeAreaInsets == null
+            ? undefined
+            : {
+                top: safeAreaInsets.top / scale,
+                right: safeAreaInsets.right / scale,
+                bottom: safeAreaInsets.bottom / scale,
+                left: safeAreaInsets.left / scale,
+              },
       };
     }
     const {screenPhysicalPixels} = dims;
