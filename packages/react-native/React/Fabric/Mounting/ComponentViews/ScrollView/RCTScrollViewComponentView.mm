@@ -1065,23 +1065,60 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   }
 
   BOOL horizontal = _scrollView.contentSize.width > self.frame.size.width;
-  int minIdx = props.maintainVisibleContentPosition.value().minIndexForVisible;
-  for (NSUInteger ii = minIdx; ii < _contentView.subviews.count; ++ii) {
-    // Find the first view that is partially or fully visible.
-    UIView *subview = _contentView.subviews[ii];
-    BOOL hasNewView = NO;
-    if (horizontal) {
-      hasNewView = subview.frame.origin.x + subview.frame.size.width > _scrollView.contentOffset.x;
-    } else {
-      hasNewView = subview.frame.origin.y + subview.frame.size.height > _scrollView.contentOffset.y;
-    }
-    if (hasNewView || ii == _contentView.subviews.count - 1) {
-      _prevFirstVisibleFrame = subview.frame;
-      _firstVisibleView = subview;
-      _firstVisibleViewTag = subview.tag;
-      break;
+  int minIndex = props.maintainVisibleContentPosition.value().minIndexForVisible;
+  NSArray<UIView *> *subviews =
+      minIndex > 0 ? [self _sortedContentSubviewsWithHorizontal:horizontal] : _contentView.subviews;
+  if ((NSUInteger)minIndex >= subviews.count) {
+    return;
+  }
+
+  CGFloat currentScroll = horizontal ? _scrollView.contentOffset.x : _scrollView.contentOffset.y;
+  UIView *firstVisibleView = nil;
+  // We cannot assume that the views will be in position order because of things like z-index
+  // which will change the order of views in their parent. This means we need to iterate through
+  // the full children array and find the view with the smallest position that is bigger than
+  // the scroll position.
+  CGFloat firstVisibleViewPosition = CGFLOAT_MAX;
+  for (NSUInteger index = minIndex; index < subviews.count; ++index) {
+    UIView *subview = subviews[index];
+
+    // Compute the position of the end of the child
+    CGFloat position = horizontal ? subview.frame.origin.x + subview.frame.size.width
+                                  : subview.frame.origin.y + subview.frame.size.height;
+
+    // If the child is partially visible or this is the last child, select it as the anchor.
+    if ((position > currentScroll && position < firstVisibleViewPosition) ||
+        (firstVisibleView == nil && index == subviews.count - 1)) {
+      firstVisibleView = subview;
+      firstVisibleViewPosition = position;
     }
   }
+
+  if (firstVisibleView == nil) {
+    return;
+  }
+
+  _prevFirstVisibleFrame = firstVisibleView.frame;
+  _firstVisibleView = firstVisibleView;
+  _firstVisibleViewTag = firstVisibleView.tag;
+}
+
+/// Returns scroll content subviews sorted by layout position along the scroll axis.
+///
+/// Call this only when minIndexForVisible > 0. In those cases, we need to skip in-order items, and
+/// sorting allows us to do that.
+- (NSArray<UIView *> *)_sortedContentSubviewsWithHorizontal:(BOOL)horizontal
+{
+  NSArray<UIView *> *subviews = _contentView.subviews;
+  return [subviews sortedArrayUsingComparator:^NSComparisonResult(UIView *a, UIView *b) {
+    CGFloat offsetA = horizontal ? CGRectGetMinX(a.frame) : CGRectGetMinY(a.frame);
+    CGFloat offsetB = horizontal ? CGRectGetMinX(b.frame) : CGRectGetMinY(b.frame);
+    if (offsetA != offsetB) {
+      return offsetA < offsetB ? NSOrderedAscending : NSOrderedDescending;
+    }
+    // Stable ordering for ties.
+    return [@([subviews indexOfObject:a]) compare:@([subviews indexOfObject:b])];
+  }];
 }
 
 - (void)_adjustForMaintainVisibleContentPosition
@@ -1116,7 +1153,6 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 
   std::optional<int> autoscrollThreshold = props.maintainVisibleContentPosition.value().autoscrollToTopThreshold;
   BOOL horizontal = _scrollView.contentSize.width > self.frame.size.width;
-  // TODO: detect and handle/ignore re-ordering
   if (horizontal) {
     CGFloat deltaX = _firstVisibleView.frame.origin.x - _prevFirstVisibleFrame.origin.x;
     if (ABS(deltaX) > 0.5) {
