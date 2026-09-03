@@ -306,6 +306,25 @@ describe('structuredClone', () => {
     expect([...clone.map.get('set')][0]).toBe(clone.map);
   });
 
+  it('handles circular references when a getter invokes structuredClone', () => {
+    let shouldReenter = true;
+    const value: {self?: unknown} = {};
+    Object.defineProperty(value, 'self', {
+      enumerable: true,
+      get() {
+        if (shouldReenter) {
+          shouldReenter = false;
+          structuredClone({});
+        }
+        return value;
+      },
+    });
+
+    const clone = structuredClone(value);
+
+    expect(clone.self).toBe(clone);
+  });
+
   describe('platform objects', () => {
     describe('serializable platform objects', () => {
       it('clones DOMRectReadOnly', () => {

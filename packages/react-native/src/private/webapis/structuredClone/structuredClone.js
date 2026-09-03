@@ -28,14 +28,13 @@ const BASIC_CONSTRUCTORS = [Number, String, Boolean, Date];
 
 const ObjectPrototype = Object.prototype;
 
-// Technically the memory value should be a parameter in
-// `structuredCloneInternal` but as an optimization we can reuse the same map
-// and avoid allocating a new one in every call to `structuredClone`.
-// This is safe because we don't invoke user code in `structuredClone`, so at
-// any given point we only have one memory object alive anyway.
-const memory: Map<unknown, unknown> = new Map();
+const reusableMemory: Map<unknown, unknown> = new Map();
+let cloneDepth = 0;
 
-function structuredCloneInternal<T>(value: T): T {
+function structuredCloneInternal<T>(
+  value: T,
+  memory: Map<unknown, unknown>,
+): T {
   // Handles `null` and `undefined`.
   if (value == null) {
     return value;
@@ -71,7 +70,7 @@ function structuredCloneInternal<T>(value: T): T {
     memory.set(value, result);
 
     for (const key of Object.keys(value)) {
-      result[key] = structuredCloneInternal(value[key]);
+      result[key] = structuredCloneInternal(value[key], memory);
     }
 
     // $FlowExpectedError[incompatible-type] we know result is T
@@ -86,7 +85,7 @@ function structuredCloneInternal<T>(value: T): T {
 
     for (const key of Object.keys(value)) {
       // $FlowExpectedError[prop-missing]
-      result[key] = structuredCloneInternal(value[key]);
+      result[key] = structuredCloneInternal(value[key], memory);
     }
 
     // $FlowExpectedError[incompatible-type] we know result is T
@@ -110,8 +109,8 @@ function structuredCloneInternal<T>(value: T): T {
 
     for (const [innerKey, innerValue] of value) {
       result.set(
-        structuredCloneInternal(innerKey),
-        structuredCloneInternal(innerValue),
+        structuredCloneInternal(innerKey, memory),
+        structuredCloneInternal(innerValue, memory),
       );
     }
 
@@ -124,7 +123,7 @@ function structuredCloneInternal<T>(value: T): T {
     memory.set(value, result);
 
     for (const innerValue of value) {
-      result.add(structuredCloneInternal(innerValue));
+      result.add(structuredCloneInternal(innerValue, memory));
     }
 
     // $FlowExpectedError[incompatible-type] we know result is T
@@ -182,7 +181,7 @@ function structuredCloneInternal<T>(value: T): T {
   // also need to copy arbitrary fields set in the array.
   for (const key of Object.keys(value)) {
     // $FlowExpectedError[prop-missing]
-    result[key] = structuredCloneInternal(value[key]);
+    result[key] = structuredCloneInternal(value[key], memory);
   }
 
   // $FlowExpectedError[incompatible-type] we know result is T
@@ -208,10 +207,13 @@ function structuredCloneInternal<T>(value: T): T {
  * - It does not support transferring values.
  */
 export default function structuredClone<T>(value: T): T {
+  const memory = cloneDepth === 0 ? reusableMemory : new Map();
+  cloneDepth++;
   try {
-    return structuredCloneInternal(value);
+    return structuredCloneInternal(value, memory);
   } finally {
     memory.clear();
+    cloneDepth--;
   }
 }
 
