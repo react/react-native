@@ -1812,6 +1812,7 @@ class facebook::react::BaseViewEventEmitter : public facebook::react::TouchEvent
   public void onBlur() const;
   public void onFocus() const;
   public void onLayout(const facebook::react::LayoutMetrics& layoutMetrics) const;
+  public void onSafeAreaInsetsChange(const facebook::react::EdgeInsets& insets, const facebook::react::Rect& frame) const;
 }
 
 class facebook::react::BaseViewProps : public facebook::react::YogaStylableProps, public facebook::react::AccessibilityProps {
@@ -1821,6 +1822,7 @@ class facebook::react::BaseViewProps : public facebook::react::YogaStylableProps
   public bool collapsableChildren;
   public bool getClipsContentToBounds() const;
   public bool onLayout;
+  public bool onSafeAreaInsetsChange;
   public bool removeClippedSubviews;
   public bool shouldRasterize;
   public facebook::react::BackfaceVisibility backfaceVisibility;
@@ -2201,7 +2203,6 @@ class facebook::react::EventBeat {
   protected mutable std::atomic<bool> isEventBeatRequested_;
   protected std::function<void()> induceCallback_;
   protected std::shared_ptr<facebook::react::EventBeat::OwnerBox> ownerBox_;
-  protected void induce() const;
   public EventBeat(const facebook::react::EventBeat& other) = delete;
   public EventBeat(std::shared_ptr<facebook::react::EventBeat::OwnerBox> ownerBox, facebook::react::RuntimeScheduler& runtimeScheduler);
   public facebook::react::EventBeat& operator=(const facebook::react::EventBeat& other) = delete;
@@ -2210,6 +2211,7 @@ class facebook::react::EventBeat {
   public virtual void request() const;
   public virtual void requestSynchronous() const;
   public virtual ~EventBeat() = default;
+  public void induce() const;
   public void setBeatCallback(facebook::react::EventBeat::BeatCallback beatCallback);
 }
 
