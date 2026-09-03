@@ -94,19 +94,23 @@ using namespace facebook::react;
   auto oldImageState = std::static_pointer_cast<const ImageShadowNode::ConcreteState>(_state);
   auto newImageState = std::static_pointer_cast<const ImageShadowNode::ConcreteState>(state);
 
-  [self _setStateAndResubscribeImageResponseObserver:newImageState];
-
   bool havePreviousData = oldImageState && oldImageState->getData().getImageSource() != ImageSource{};
 
   if (!havePreviousData ||
       (newImageState && newImageState->getData().getImageSource() != oldImageState->getData().getImageSource())) {
     // Loading actually starts a little before this, but this is the first time we know
-    // the image is loading and can fire an event from this component
+    // the image is loading and can fire an event from this component.
+    //
+    // This has to be emitted before subscribing below: the observer coordinator
+    // replays an already-`Completed` (or `Failed`) response synchronously, so
+    // subscribing first can deliver `onLoad`/`onLoadEnd` ahead of `onLoadStart`.
     static_cast<const ImageEventEmitter &>(*_eventEmitter).onLoadStart();
 
     // TODO (T58941612): Tracking for visibility should be done directly on this class.
     // For now, we consolidate instrumentation logic in the image loader, so that pre-Fabric gets the same treatment.
   }
+
+  [self _setStateAndResubscribeImageResponseObserver:newImageState];
 }
 
 - (void)_setStateAndResubscribeImageResponseObserver:(const ImageShadowNode::ConcreteState::Shared &)state
