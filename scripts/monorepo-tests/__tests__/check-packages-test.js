@@ -8,12 +8,17 @@
  * @format
  */
 
-import {PRIVATE_DIR, REPO_ROOT} from '../../shared/consts';
+import {
+  PRIVATE_DIR,
+  REACT_NATIVE_PACKAGE_DIR,
+  REPO_ROOT,
+} from '../../shared/consts';
 import {
   getPackages,
   getReactNativePackage,
   getWorkspaceRoot,
 } from '../../shared/monorepoUtils';
+import fs from 'node:fs/promises';
 import path from 'node:path';
 import {globSync} from 'tinyglobby';
 
@@ -26,6 +31,34 @@ describe('package manifests', () => {
   test('the react-native package must not declare devDependencies', async () => {
     const {packageJson} = await getReactNativePackage();
     expect(packageJson).not.toHaveProperty('devDependencies');
+  });
+
+  test('the react-native peer for react must exactly match the synced renderer version', async () => {
+    const {packageJson: rnPackageJson} = await getReactNativePackage();
+    const reactPeer = rnPackageJson.peerDependencies?.react;
+    expect(typeof reactPeer).toBe('string');
+
+    // The embedded renderer only supports the exact React version it was
+    // synced with (see #57079: a caret range lets package managers install a
+    // React that the renderer rejects at runtime), so the peer must be
+    // pinned to that exact version instead of a range.
+    expect(reactPeer).toMatch(/^\d+\.\d+\.\d+$/);
+
+    // The development pin in the workspace root must agree with the peer...
+    const {packageJson: rootPackageJson} = await getWorkspaceRoot();
+    expect(rootPackageJson.devDependencies?.react).toBe(reactPeer);
+
+    // ...as must the version embedded in the synced renderer bundle.
+    const rendererDev = await fs.readFile(
+      path.join(
+        REACT_NATIVE_PACKAGE_DIR,
+        'Libraries/Renderer/implementations/ReactFabric-dev.js',
+      ),
+      'utf-8',
+    );
+    const embeddedVersions = rendererDev.match(/version: "(\d+\.\d+\.\d+)"/g);
+    expect(embeddedVersions).toHaveLength(1);
+    expect(embeddedVersions?.[0]).toBe(`version: "${reactPeer}"`);
   });
 
   test('published packages must declare required fields', async () => {
