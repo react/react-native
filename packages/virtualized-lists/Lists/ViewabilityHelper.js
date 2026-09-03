@@ -226,6 +226,12 @@ class ViewabilityHelper {
     }
     this._viewableIndices = viewableIndices;
     if (this._config.minimumViewTime) {
+      this._timers.forEach(id => {
+        clearTimeout(id);
+        this._timers.delete(id)
+      });
+      this._timers.clear();
+
       const handle: TimeoutID = setTimeout(() => {
         /* $FlowFixMe[incompatible-type] (>=0.63.0 site=react_native_fb) This
          * comment suppresses an error found when Flow v0.63 was deployed. To
