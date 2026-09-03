@@ -1812,6 +1812,7 @@ class facebook::react::BaseViewEventEmitter : public facebook::react::TouchEvent
   public void onBlur() const;
   public void onFocus() const;
   public void onLayout(const facebook::react::LayoutMetrics& layoutMetrics) const;
+  public void onSafeAreaInsetsChange(const facebook::react::EdgeInsets& insets, const facebook::react::Rect& frame) const;
 }
 
 class facebook::react::BaseViewProps : public facebook::react::YogaStylableProps, public facebook::react::AccessibilityProps {
@@ -1821,6 +1822,7 @@ class facebook::react::BaseViewProps : public facebook::react::YogaStylableProps
   public bool collapsableChildren;
   public bool getClipsContentToBounds() const;
   public bool onLayout;
+  public bool onSafeAreaInsetsChange;
   public bool removeClippedSubviews;
   public bool shouldRasterize;
   public facebook::react::BackfaceVisibility backfaceVisibility;
@@ -2201,7 +2203,6 @@ class facebook::react::EventBeat {
   protected mutable std::atomic<bool> isEventBeatRequested_;
   protected std::function<void()> induceCallback_;
   protected std::shared_ptr<facebook::react::EventBeat::OwnerBox> ownerBox_;
-  protected void induce() const;
   public EventBeat(const facebook::react::EventBeat& other) = delete;
   public EventBeat(std::shared_ptr<facebook::react::EventBeat::OwnerBox> ownerBox, facebook::react::RuntimeScheduler& runtimeScheduler);
   public facebook::react::EventBeat& operator=(const facebook::react::EventBeat& other) = delete;
@@ -2210,6 +2211,7 @@ class facebook::react::EventBeat {
   public virtual void request() const;
   public virtual void requestSynchronous() const;
   public virtual ~EventBeat() = default;
+  public void induce() const;
   public void setBeatCallback(facebook::react::EventBeat::BeatCallback beatCallback);
 }
 
@@ -8312,6 +8314,16 @@ struct facebook::react::NativeIntersectionObserverNativeIntersectionObserverEntr
 }
 
 template <typename P0, typename P1, typename P2, typename P3, typename P4, typename P5>
+struct facebook::react::NativeDeviceInfoDisplayMetricsAndroid {
+  public P0 width;
+  public P1 height;
+  public P2 scale;
+  public P3 fontScale;
+  public P4 densityDpi;
+  public bool operator==(const facebook::react::NativeDeviceInfoDisplayMetricsAndroid& other) const;
+}
+
+template <typename P0, typename P1, typename P2, typename P3, typename P4, typename P5>
 struct facebook::react::NativeIntersectionObserverNativeIntersectionObserverObserveOptions {
   public P0 intersectionObserverId;
   public P1 rootShadowNode;
@@ -8334,13 +8346,12 @@ struct facebook::react::NativeResizeObserverNativeResizeObserverEntry {
 }
 
 template <typename P0, typename P1, typename P2, typename P3, typename P4>
-struct facebook::react::NativeDeviceInfoDisplayMetricsAndroid {
+struct facebook::react::NativeDeviceInfoDisplayMetrics {
   public P0 width;
   public P1 height;
   public P2 scale;
   public P3 fontScale;
-  public P4 densityDpi;
-  public bool operator==(const facebook::react::NativeDeviceInfoDisplayMetricsAndroid& other) const;
+  public bool operator==(const facebook::react::NativeDeviceInfoDisplayMetrics& other) const;
 }
 
 template <typename P0, typename P1, typename P2, typename P3, typename P4>
@@ -8373,12 +8384,12 @@ struct facebook::react::NativeDeviceInfoDimensionsPayload {
 }
 
 template <typename P0, typename P1, typename P2, typename P3>
-struct facebook::react::NativeDeviceInfoDisplayMetrics {
-  public P0 width;
-  public P1 height;
-  public P2 scale;
-  public P3 fontScale;
-  public bool operator==(const facebook::react::NativeDeviceInfoDisplayMetrics& other) const;
+struct facebook::react::NativeDeviceInfoWindowSafeAreaInsets {
+  public P0 top;
+  public P1 right;
+  public P2 bottom;
+  public P3 left;
+  public bool operator==(const facebook::react::NativeDeviceInfoWindowSafeAreaInsets& other) const;
 }
 
 template <typename P0, typename P1, typename P2, typename P3>
@@ -9096,6 +9107,13 @@ struct facebook::react::NativeDeviceInfoDisplayMetricsAndroidBridging {
 
 template <typename T>
 struct facebook::react::NativeDeviceInfoDisplayMetricsBridging {
+  public static T fromJs(facebook::jsi::Runtime& rt, const facebook::jsi::Object& value, const std::shared_ptr<facebook::react::CallInvoker>& jsInvoker);
+  public static T types;
+  public static facebook::jsi::Object toJs(facebook::jsi::Runtime& rt, const T& value, const std::shared_ptr<facebook::react::CallInvoker>& jsInvoker);
+}
+
+template <typename T>
+struct facebook::react::NativeDeviceInfoWindowSafeAreaInsetsBridging {
   public static T fromJs(facebook::jsi::Runtime& rt, const facebook::jsi::Object& value, const std::shared_ptr<facebook::react::CallInvoker>& jsInvoker);
   public static T types;
   public static facebook::jsi::Object toJs(facebook::jsi::Runtime& rt, const T& value, const std::shared_ptr<facebook::react::CallInvoker>& jsInvoker);

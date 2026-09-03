@@ -12,12 +12,26 @@ import type {TurboModule} from '../../../../Libraries/TurboModule/RCTExport';
 
 import * as TurboModuleRegistry from '../../../../Libraries/TurboModule/TurboModuleRegistry';
 
+export type WindowSafeAreaInsets = {
+  top: number,
+  right: number,
+  bottom: number,
+  left: number,
+};
+
 export type DisplayMetricsAndroid = {
   width: number,
   height: number,
   scale: number,
   fontScale: number,
   densityDpi: number,
+  /**
+   * The part of the window that is covered by the system UI, in physical
+   * pixels. Absent on platforms and versions that cannot report it.
+   *
+   * @experimental
+   */
+  readonly experimental_safeAreaInsets?: WindowSafeAreaInsets,
 };
 
 export type DisplayMetrics = {
@@ -25,6 +39,13 @@ export type DisplayMetrics = {
   height: number,
   scale: number,
   fontScale: number,
+  /**
+   * The part of the window that is covered by the system UI, in physical
+   * pixels. Absent on platforms and versions that cannot report it.
+   *
+   * @experimental
+   */
+  readonly experimental_safeAreaInsets?: WindowSafeAreaInsets,
 };
 
 export type DimensionsPayload = {

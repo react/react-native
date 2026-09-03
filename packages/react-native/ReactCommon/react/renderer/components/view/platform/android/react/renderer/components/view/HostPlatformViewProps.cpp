@@ -563,6 +563,10 @@ folly::dynamic HostPlatformViewProps::getDiffProps(
     result["onLayout"] = onLayout;
   }
 
+  if (onSafeAreaInsetsChange != oldProps->onSafeAreaInsetsChange) {
+    result["experimental_onSafeAreaInsetsChange"] = onSafeAreaInsetsChange;
+  }
+
   if (zIndex != oldProps->zIndex) {
     result["zIndex"] =
         zIndex.has_value() ? zIndex.value() : folly::dynamic(nullptr);

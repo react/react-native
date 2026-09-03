@@ -76,6 +76,29 @@ export type LayoutChangeEvent = NativeSyntheticEvent<
   }>,
 >;
 
+export type SafeAreaInsets = Readonly<{
+  top: number,
+  right: number,
+  bottom: number,
+  left: number,
+}>;
+
+export type SafeAreaInsetsChangeEvent = NativeSyntheticEvent<
+  Readonly<{
+    /**
+     * The part of the view that is covered by the system UI, in the view's own
+     * coordinate space.
+     */
+    insets: SafeAreaInsets,
+    /**
+     * The frame of the view at the time of the event. Relative to the
+     * enclosing view controller on iOS and to the window on Android; only
+     * updated when the insets change.
+     */
+    frame: LayoutRectangle,
+  }>,
+>;
+
 /**
  * @deprecated Use `TextLayoutEvent` instead.
  */
