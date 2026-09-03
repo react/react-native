@@ -13,6 +13,8 @@
 #include <cxxreact/TraceSection.h>
 #include <react/debug/react_native_assert.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
+#include <react/performance/cdpmetrics/CdpMetricsReporter.h>
+#include <react/performance/cdpmetrics/CdpPerfIssuesReporter.h>
 #include <react/renderer/animationbackend/AnimationBackend.h>
 #include <react/renderer/componentregistry/ComponentDescriptorRegistry.h>
 #include <react/renderer/core/EventQueueProcessor.h>
@@ -23,6 +25,7 @@
 #include <react/renderer/uimanager/LayoutEventEmitter.h>
 #include <react/renderer/uimanager/UIManager.h>
 #include <react/renderer/uimanager/UIManagerBinding.h>
+#include <react/renderer/viewtransition/ViewTransitionModule.h>
 #include <mutex>
 
 namespace facebook::react {
@@ -43,13 +46,15 @@ Scheduler::Scheduler(
 
   if (ReactNativeFeatureFlags::enableBridgelessArchitecture() &&
       ReactNativeFeatureFlags::cdpInteractionMetricsEnabled()) {
-    cdpMetricsReporter_.emplace(CdpMetricsReporter{runtimeExecutor_});
-    performanceEntryReporter_->addEventListener(&*cdpMetricsReporter_);
+    cdpMetricsReporter_ =
+        std::make_unique<CdpMetricsReporter>(runtimeExecutor_);
+    performanceEntryReporter_->addEventListener(cdpMetricsReporter_.get());
   }
 
   if (ReactNativeFeatureFlags::perfIssuesEnabled()) {
-    cdpPerfIssuesReporter_.emplace(CdpPerfIssuesReporter{runtimeExecutor_});
-    performanceEntryReporter_->addEventListener(&*cdpPerfIssuesReporter_);
+    cdpPerfIssuesReporter_ =
+        std::make_unique<CdpPerfIssuesReporter>(runtimeExecutor_);
+    performanceEntryReporter_->addEventListener(cdpPerfIssuesReporter_.get());
   }
 
   eventPerformanceLogger_ =
@@ -206,10 +211,11 @@ Scheduler::~Scheduler() {
   uiManager_->setViewTransitionDelegate(nullptr);
 
   if (cdpMetricsReporter_) {
-    performanceEntryReporter_->removeEventListener(&*cdpMetricsReporter_);
+    performanceEntryReporter_->removeEventListener(cdpMetricsReporter_.get());
   }
   if (cdpPerfIssuesReporter_) {
-    performanceEntryReporter_->removeEventListener(&*cdpPerfIssuesReporter_);
+    performanceEntryReporter_->removeEventListener(
+        cdpPerfIssuesReporter_.get());
   }
 
   // Then, let's verify that the requirement was satisfied.
