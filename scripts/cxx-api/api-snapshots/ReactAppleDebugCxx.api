@@ -4245,6 +4245,8 @@ class facebook::react::AppRegistryBinding {
 class facebook::react::AppleEventBeat : public facebook::react::EventBeat, public facebook::react::RunLoopObserver::Delegate {
   public AppleEventBeat(std::shared_ptr<facebook::react::EventBeat::OwnerBox> ownerBox, std::unique_ptr<const facebook::react::RunLoopObserver> uiRunLoopObserver, facebook::react::RuntimeScheduler& RuntimeScheduler);
   public virtual void activityDidChange(const facebook::react::RunLoopObserver::Delegate* delegate, facebook::react::RunLoopObserver::Activity activity) const noexcept override;
+  public virtual void requestSynchronous() const override;
+  public ~AppleEventBeat() override;
 }
 
 class facebook::react::AsyncArrayBuffer {
@@ -4745,7 +4747,6 @@ class facebook::react::EventBeat {
   protected mutable std::atomic<bool> isEventBeatRequested_;
   protected std::function<void()> induceCallback_;
   protected std::shared_ptr<facebook::react::EventBeat::OwnerBox> ownerBox_;
-  protected void induce() const;
   public EventBeat(const facebook::react::EventBeat& other) = delete;
   public EventBeat(std::shared_ptr<facebook::react::EventBeat::OwnerBox> ownerBox, facebook::react::RuntimeScheduler& runtimeScheduler);
   public facebook::react::EventBeat& operator=(const facebook::react::EventBeat& other) = delete;
@@ -4754,6 +4755,7 @@ class facebook::react::EventBeat {
   public virtual void request() const;
   public virtual void requestSynchronous() const;
   public virtual ~EventBeat() = default;
+  public void induce() const;
   public void setBeatCallback(facebook::react::EventBeat::BeatCallback beatCallback);
 }
 
