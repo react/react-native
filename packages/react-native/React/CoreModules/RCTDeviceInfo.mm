@@ -201,12 +201,19 @@ static NSDictionary *RCTExportedDimensions(CGFloat fontScale)
 
   // We fallback to screen size if a key window is not found.
   CGSize windowSize = mainWindow != nil ? mainWindow.bounds.size : screenSize;
+  UIEdgeInsets safeAreaInsets = mainWindow != nil ? mainWindow.safeAreaInsets : UIEdgeInsetsZero;
 
-  NSDictionary<NSString *, NSNumber *> *dimsWindow = @{
+  NSDictionary<NSString *, id> *dimsWindow = @{
     @"width" : @(windowSize.width),
     @"height" : @(windowSize.height),
     @"scale" : @(screen.scale),
-    @"fontScale" : @(fontScale)
+    @"fontScale" : @(fontScale),
+    @"experimental_safeAreaInsets" : @{
+      @"top" : @(safeAreaInsets.top),
+      @"right" : @(safeAreaInsets.right),
+      @"bottom" : @(safeAreaInsets.bottom),
+      @"left" : @(safeAreaInsets.left)
+    }
   };
 
   NSDictionary<NSString *, NSNumber *> *dimsScreen = @{

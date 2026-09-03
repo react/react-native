@@ -55,6 +55,8 @@ void ViewShadowNode::initialize() noexcept {
       viewProps.accessibilityViewIsModal ||
       viewProps.importantForAccessibility != ImportantForAccessibility::Auto ||
       viewProps.removeClippedSubviews || viewProps.cursor != Cursor::Auto ||
+      // Observing the safe area requires a host view to observe with.
+      viewProps.onSafeAreaInsetsChange ||
       !viewProps.filter.empty() ||
       viewProps.mixBlendMode != BlendMode::Normal ||
       viewProps.isolation == Isolation::Isolate ||
