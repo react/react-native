@@ -481,37 +481,44 @@ TEST_F(SchedulerDelegateInvalidationTest, JSThrowInitiatedTeardownIsSafe) {
 }
 
 // ---------------------------------------------------------------------------
-// Test 3 — The window that remains open: a delegate dropped and destroyed
-// with no error involved.
+// Test 3 — The window that remains open: a delegate detached with no error
+// involved.
 //
 // handleTaskError clears pendingRenderingUpdates_ before the host error
-// handler runs, so an error-driven teardown is safe (Test 3). A plain
+// handler runs, so an error-driven teardown is safe (Test 2). A plain
 // setDelegate swap never reaches handleTaskError, so the lambda enqueued in
-// (a) still holds a raw pointer to freed memory when the queue drains in (c).
+// (a) still calls through the raw pointer it captured when the queue drains
+// in (c). Had the host also destroyed the delegate — as an instance teardown
+// does — that call would be a use-after-free.
+//
+// The delegate is deliberately kept alive here rather than destroyed under an
+// EXPECT_DEATH. Asserting on the crash asks undefined behaviour to reliably
+// terminate the process, which it does not: the death-test form of this test
+// (and its two predecessors) passed on the fbcode host but flaked above 88%
+// on the Android instrumentation runner, reporting "failed to die" until
+// trunk auto-disabled them. Observing the stale call directly pins the same
+// open window deterministically.
 // ---------------------------------------------------------------------------
-#if GTEST_HAS_DEATH_TEST
 TEST_F(
     SchedulerDelegateInvalidationTest,
-    DelegateDestroyedWithoutError_PendingRenderingUpdateIsUAF) {
-  EXPECT_DEATH(
-      {
-        setUp();
+    DelegateDetachedWithoutError_PendingRenderingUpdateCallsStaleDelegate) {
+  setUp();
 
-        // (a) Enqueue a rendering-update lambda capturing delegate_ raw.
-        scheduler_->uiManagerDidFinishTransaction(
-            coordinator_, /*mountSynchronously=*/false);
+  // (a) Enqueue a rendering-update lambda capturing delegate_ raw.
+  scheduler_->uiManagerDidFinishTransaction(
+      coordinator_, /*mountSynchronously=*/false);
+  EXPECT_EQ(delegate_->shouldRenderTransactionsCount(), 0);
 
-        // (b) Host swaps the delegate out and destroys it. No JS throw, so
-        // nothing clears the rendering-update queue.
-        scheduler_->setDelegate(nullptr);
-        delegate_.reset();
+  // (b) Host swaps the delegate out. No JS throw, so nothing clears the
+  // rendering-update queue.
+  scheduler_->setDelegate(nullptr);
+  EXPECT_EQ(scheduler_->getDelegate(), nullptr);
 
-        // (c) Drain — the lambda dereferences the destroyed delegate.
-        runOneEventLoopTick();
-      },
-      "");
+  // (c) Drain — the lambda calls through its captured pointer even though the
+  // scheduler itself no longer has a delegate.
+  runOneEventLoopTick();
+  EXPECT_EQ(delegate_->shouldRenderTransactionsCount(), 1);
 }
-#endif
 
 // ---------------------------------------------------------------------------
 // Test 4 — Same race as Test 2, but enqueued via the second lambda site:
