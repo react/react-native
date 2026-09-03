@@ -4,9 +4,11 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
+
+// flowlint unsafe-getters-setters:off
 
 import type {
   MeasureInWindowOnSuccessCallback,
@@ -204,7 +206,7 @@ class DrawerLayoutAndroid
     );
   }
 
-  setNativeProps(nativeProps: Object) {
+  setNativeProps(nativeProps: {...}) {
     nullthrows(this._nativeRef.current).setNativeProps(nativeProps);
   }
 }

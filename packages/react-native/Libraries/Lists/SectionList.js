@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -26,6 +26,7 @@ import * as React from 'react';
 const VirtualizedSectionList = VirtualizedLists.VirtualizedSectionList;
 
 type DefaultSectionT = {
+  // flowlint-next-line unclear-type:off
   [key: string]: any,
 };
 
@@ -74,7 +75,7 @@ type OptionalSectionListProps<ItemT, SectionT = DefaultSectionT> = {
    * any of your `renderItem`, Header, Footer, etc. functions depend on anything outside of the
    * `data` prop, stick it here and treat it immutably.
    */
-  extraData?: any,
+  extraData?: unknown,
   /**
    * How many items to render in the initial batch. This should be enough to fill the screen but not
    * much more. Note these items will never be unmounted as part of the windowed rendering in order
@@ -172,6 +173,7 @@ export type SectionListProps<ItemT, SectionT = DefaultSectionT> = {
  * @see https://reactnative.dev/docs/sectionlist
  */
 export default class SectionList<
+  // flowlint-next-line unclear-type:off
   ItemT = any,
   SectionT = DefaultSectionT,
 > extends React.PureComponent<SectionListProps<ItemT, SectionT>> {
@@ -226,6 +228,7 @@ export default class SectionList<
   /**
    * Provides a handle to the underlying scroll node.
    */
+  // flowlint-next-line unclear-type:off
   getScrollableNode(): any {
     const listRef = this._wrapperListRef && this._wrapperListRef.getListRef();
     if (listRef) {
@@ -233,6 +236,7 @@ export default class SectionList<
     }
   }
 
+  // flowlint-next-line unclear-type:off
   setNativeProps(props: Object) {
     const listRef = this._wrapperListRef && this._wrapperListRef.getListRef();
     if (listRef) {
