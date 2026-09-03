@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  * @deprecated
  */
@@ -22,7 +22,10 @@ const clearedImmediates: Set<number> = new Set();
  * @param {function} func Callback to be invoked before the end of the
  * current JavaScript execution loop.
  */
-export function setImmediate(callback: Function, ...args: any): number {
+export function setImmediate<TArgs extends Array<unknown>>(
+  callback: (...args: TArgs) => unknown,
+  ...args: TArgs
+): number {
   if (arguments.length < 1) {
     throw new TypeError(
       'setImmediate must be called with at least one argument (a function to call)',
@@ -41,7 +44,6 @@ export function setImmediate(callback: Function, ...args: any): number {
     clearedImmediates.delete(id);
   }
 
-  // $FlowFixMe[incompatible-type]
   global.queueMicrotask(() => {
     if (!clearedImmediates.has(id)) {
       callback.apply(undefined, args);

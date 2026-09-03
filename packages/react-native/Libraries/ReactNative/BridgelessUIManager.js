@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -12,27 +12,35 @@
 
 import type {RootTag} from '../Types/RootTagTypes';
 import type {UIManagerJSInterface} from '../Types/UIManagerJSInterface';
+import type {UIManagerConstants, ViewManagerConfig} from './NativeUIManager';
 
+import ReactNativeElement from '../../src/private/webapis/dom/nodes/ReactNativeElement';
 import {unstable_hasComponent} from '../NativeComponent/NativeComponentRegistryUnstable';
 import defineLazyObjectProperty from '../Utilities/defineLazyObjectProperty';
 import Platform from '../Utilities/Platform';
 import {getFabricUIManager} from './FabricUIManager';
+import {getNativeTagFromPublicInstance} from './ReactFabricPublicInstance/ReactFabricPublicInstance';
+import {
+  getNodeFromInternalInstanceHandle,
+  getPublicInstanceFromInternalInstanceHandle,
+} from './RendererImplementation';
 import nullthrows from 'nullthrows';
 
 function raiseSoftError(methodName: string, details?: string): void {
   console.error(
     `[ReactNative Architecture][JS] '${methodName}' is not available in the new React Native architecture.` +
-      (details ? ` ${details}` : ''),
+      (details != null && details !== '' ? ` ${details}` : ''),
   );
 }
 
-const getUIManagerConstants: ?() => {[viewManagerName: string]: Object} =
-  global.RN$LegacyInterop_UIManager_getConstants;
+const getUIManagerConstants: ?() => {
+  [viewManagerName: string]: ViewManagerConfig,
+} = global.RN$LegacyInterop_UIManager_getConstants;
 
 const getUIManagerConstantsCached = (function () {
   let wasCalledOnce = false;
-  let result: {[viewManagerName: string]: Object} = {};
-  return (): {[viewManagerName: string]: Object} => {
+  let result: {[viewManagerName: string]: ViewManagerConfig} = {};
+  return (): {[viewManagerName: string]: ViewManagerConfig} => {
     if (!wasCalledOnce) {
       result = nullthrows(getUIManagerConstants)();
       wasCalledOnce = true;
@@ -41,16 +49,18 @@ const getUIManagerConstantsCached = (function () {
   };
 })();
 
-const getConstantsForViewManager: ?(viewManagerName: string) => ?Object =
+const getConstantsForViewManager: ?(
+  viewManagerName: string,
+) => ?ViewManagerConfig =
   global.RN$LegacyInterop_UIManager_getConstantsForViewManager;
 
-const getDefaultEventTypes: ?() => Object =
+const getDefaultEventTypes: ?() => ViewManagerConfig =
   global.RN$LegacyInterop_UIManager_getDefaultEventTypes;
 
 const getDefaultEventTypesCached = (function () {
   let wasCalledOnce = false;
   let result = null;
-  return (): Object => {
+  return (): ViewManagerConfig => {
     if (!wasCalledOnce) {
       result = nullthrows(getDefaultEventTypes)();
       wasCalledOnce = true;
@@ -63,7 +73,13 @@ const getDefaultEventTypesCached = (function () {
  * UIManager.js overrides these APIs.
  * Pull them out from the BridgelessUIManager implementation. So, we can ignore them.
  */
-const UIManagerJSOverridenAPIs = {
+const UIManagerJSOverridenAPIs: {
+  measure: UIManagerJSInterface['measure'],
+  measureInWindow: UIManagerJSInterface['measureInWindow'],
+  measureLayout: UIManagerJSInterface['measureLayout'],
+  measureLayoutRelativeToParent: UIManagerJSInterface['measureLayoutRelativeToParent'],
+  dispatchViewManagerCommand: UIManagerJSInterface['dispatchViewManagerCommand'],
+} = {
   measure: (
     reactTag: number,
     callback: (
@@ -86,7 +102,7 @@ const UIManagerJSOverridenAPIs = {
   measureLayout: (
     reactTag: number,
     ancestorReactTag: number,
-    errorCallback: (error: Object) => void,
+    errorCallback,
     callback: (
       left: number,
       top: number,
@@ -98,7 +114,7 @@ const UIManagerJSOverridenAPIs = {
   },
   measureLayoutRelativeToParent: (
     reactTag: number,
-    errorCallback: (error: Object) => void,
+    errorCallback,
     callback: (
       left: number,
       top: number,
@@ -111,7 +127,7 @@ const UIManagerJSOverridenAPIs = {
   dispatchViewManagerCommand: (
     reactTag: number,
     commandID: number,
-    commandArgs: ?Array<string | number | boolean>,
+    commandArgs,
   ): void => {
     raiseSoftError('dispatchViewManagerCommand');
   },
@@ -122,16 +138,23 @@ const UIManagerJSOverridenAPIs = {
  * In OSS, the New Architecture will just use the Fabric renderer, which uses
  * different APIs.
  */
-const UIManagerJSUnusedInNewArchAPIs = {
+const UIManagerJSUnusedInNewArchAPIs: {
+  createView: UIManagerJSInterface['createView'],
+  updateView: UIManagerJSInterface['updateView'],
+  setChildren: UIManagerJSInterface['setChildren'],
+  manageChildren: UIManagerJSInterface['manageChildren'],
+  setJSResponder: UIManagerJSInterface['setJSResponder'],
+  clearJSResponder: UIManagerJSInterface['clearJSResponder'],
+} = {
   createView: (
     reactTag: number,
     viewName: string,
     rootTag: RootTag,
-    props: Object,
+    props,
   ): void => {
     raiseSoftError('createView');
   },
-  updateView: (reactTag: number, viewName: string, props: Object): void => {
+  updateView: (reactTag: number, viewName: string, props): void => {
     raiseSoftError('updateView');
   },
   setChildren: (containerTag: number, reactTags: Array<number>): void => {
@@ -165,7 +188,9 @@ const UIManagerJSDeprecatedPlatformAPIs = Platform.select({
 
 const UIManagerJSPlatformAPIs = Platform.select({
   android: {
-    getConstantsForViewManager: (viewManagerName: string): ?Object => {
+    getConstantsForViewManager: (
+      viewManagerName: string,
+    ): ?ViewManagerConfig => {
       if (getConstantsForViewManager) {
         return getConstantsForViewManager(viewManagerName);
       }
@@ -217,7 +242,7 @@ const UIManagerJSPlatformAPIs = Platform.select({
       const FabricUIManager = nullthrows(getFabricUIManager());
       const shadowNode =
         FabricUIManager.findShadowNodeByTag_DEPRECATED(reactTag);
-      if (!shadowNode) {
+      if (shadowNode == null) {
         console.error(
           `sendAccessibilityEvent() dropping event: Cannot find view with tag #${reactTag}`,
         );
@@ -233,7 +258,7 @@ const UIManagerJSPlatformAPIs = Platform.select({
      *
      * Leave this unimplemented until we implement lazy loading of legacy modules and view managers in the new architecture.
      */
-    lazilyLoadView: (name: string): Object => {
+    lazilyLoadView: (name: string): ViewManagerConfig => {
       raiseSoftError('lazilyLoadView');
       return {};
     },
@@ -241,7 +266,7 @@ const UIManagerJSPlatformAPIs = Platform.select({
       const FabricUIManager = nullthrows(getFabricUIManager());
       const shadowNode =
         FabricUIManager.findShadowNodeByTag_DEPRECATED(reactTag);
-      if (!shadowNode) {
+      if (shadowNode == null) {
         console.error(`focus() noop: Cannot find view with tag #${reactTag}`);
         return;
       }
@@ -251,7 +276,7 @@ const UIManagerJSPlatformAPIs = Platform.select({
       const FabricUIManager = nullthrows(getFabricUIManager());
       const shadowNode =
         FabricUIManager.findShadowNodeByTag_DEPRECATED(reactTag);
-      if (!shadowNode) {
+      if (shadowNode == null) {
         console.error(`blur() noop: Cannot find view with tag #${reactTag}`);
         return;
       }
@@ -260,12 +285,12 @@ const UIManagerJSPlatformAPIs = Platform.select({
   },
 });
 
-const UIManagerJS: UIManagerJSInterface & {[string]: any} = {
+const UIManagerJS: UIManagerJSInterface & {[string]: ViewManagerConfig} = {
   ...UIManagerJSOverridenAPIs,
   ...UIManagerJSDeprecatedPlatformAPIs,
   ...UIManagerJSPlatformAPIs,
   ...UIManagerJSUnusedInNewArchAPIs,
-  getViewManagerConfig: (viewManagerName: string): unknown => {
+  getViewManagerConfig: (viewManagerName: string): ViewManagerConfig => {
     if (getUIManagerConstants) {
       const constants = getUIManagerConstantsCached();
       if (
@@ -287,7 +312,7 @@ const UIManagerJS: UIManagerJSInterface & {[string]: any} = {
   hasViewManagerConfig: (viewManagerName: string): boolean => {
     return unstable_hasComponent(viewManagerName);
   },
-  getConstants: (): Object => {
+  getConstants: (): UIManagerConstants => {
     if (getUIManagerConstants) {
       return getUIManagerConstantsCached();
     } else {
@@ -309,7 +334,7 @@ const UIManagerJS: UIManagerJSInterface & {[string]: any} = {
     const FabricUIManager = nullthrows(getFabricUIManager());
     const shadowNode = FabricUIManager.findShadowNodeByTag_DEPRECATED(reactTag);
 
-    if (!shadowNode) {
+    if (shadowNode == null) {
       console.error(
         `findSubviewIn() noop: Cannot find view with reactTag ${reactTag}`,
       );
@@ -326,16 +351,21 @@ const UIManagerJS: UIManagerJSInterface & {[string]: any} = {
           return;
         }
 
-        let instanceHandle: Object = internalInstanceHandle;
-        let node = instanceHandle.stateNode.node;
-
-        if (!node) {
+        const node = getNodeFromInternalInstanceHandle(internalInstanceHandle);
+        if (node == null) {
           console.error('findSubviewIn(): Cannot find node at point');
           return;
         }
 
-        let nativeViewTag: number =
-          instanceHandle.stateNode.canonical.nativeTag;
+        const publicInstance = getPublicInstanceFromInternalInstanceHandle(
+          internalInstanceHandle,
+        );
+        if (!(publicInstance instanceof ReactNativeElement)) {
+          console.error('findSubviewIn(): Cannot find node at point');
+          return;
+        }
+
+        const nativeViewTag = getNativeTagFromPublicInstance(publicInstance);
 
         FabricUIManager.measure(
           node,
@@ -353,7 +383,7 @@ const UIManagerJS: UIManagerJSInterface & {[string]: any} = {
   ): void => {
     const FabricUIManager = nullthrows(getFabricUIManager());
     const shadowNode = FabricUIManager.findShadowNodeByTag_DEPRECATED(reactTag);
-    if (!shadowNode) {
+    if (shadowNode == null) {
       console.error(
         `viewIsDescendantOf() noop: Cannot find view with reactTag ${reactTag}`,
       );
@@ -362,7 +392,7 @@ const UIManagerJS: UIManagerJSInterface & {[string]: any} = {
 
     const ancestorShadowNode =
       FabricUIManager.findShadowNodeByTag_DEPRECATED(ancestorReactTag);
-    if (!ancestorShadowNode) {
+    if (ancestorShadowNode == null) {
       console.error(
         `viewIsDescendantOf() noop: Cannot find view with ancestorReactTag ${ancestorReactTag}`,
       );
@@ -382,11 +412,7 @@ const UIManagerJS: UIManagerJSInterface & {[string]: any} = {
 
     callback([isAncestor]);
   },
-  configureNextLayoutAnimation: (
-    config: Object,
-    callback: () => void,
-    errorCallback: (error: Object) => void,
-  ): void => {
+  configureNextLayoutAnimation: (config, callback, errorCallback): void => {
     const FabricUIManager = nullthrows(getFabricUIManager());
     FabricUIManager.configureNextLayoutAnimation(
       config,

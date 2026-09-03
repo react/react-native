@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -127,7 +127,7 @@ export interface DrawerLayoutAndroidMethods {
     onSuccess: MeasureLayoutOnSuccessCallback,
     onFail?: () => void,
   ): void;
-  setNativeProps(nativeProps: Object): void;
+  setNativeProps(nativeProps: {...}): void;
 }
 
 export type DrawerLayoutAndroidInstance = DrawerLayoutAndroidMethods;

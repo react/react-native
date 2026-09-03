@@ -4,11 +4,12 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
 import type {TurboModule} from '../../../../Libraries/TurboModule/RCTExport';
+import type {UnsafeObject} from '../../../../Libraries/Types/CodegenTypes';
 
 import * as TurboModuleRegistry from '../../../../Libraries/TurboModule/TurboModuleRegistry';
 
@@ -19,8 +20,11 @@ export interface Spec extends TurboModule {
   readonly addNetworkingHandler: () => void;
   readonly addWebSocketHandler: (id: number) => void;
   readonly removeWebSocketHandler: (id: number) => void;
-  readonly sendOverSocket: (blob: Object, socketID: number) => void;
-  readonly createFromParts: (parts: Array<Object>, withId: string) => void;
+  readonly sendOverSocket: (blob: UnsafeObject, socketID: number) => void;
+  readonly createFromParts: (
+    parts: Array<UnsafeObject>,
+    withId: string,
+  ) => void;
   readonly release: (blobId: string) => void;
 }
 
@@ -46,10 +50,10 @@ if (NativeModule != null) {
     removeWebSocketHandler(id: number): void {
       NativeModule.removeWebSocketHandler(id);
     },
-    sendOverSocket(blob: Object, socketID: number): void {
+    sendOverSocket(blob: UnsafeObject, socketID: number): void {
       NativeModule.sendOverSocket(blob, socketID);
     },
-    createFromParts(parts: Array<Object>, withId: string): void {
+    createFromParts(parts: Array<UnsafeObject>, withId: string): void {
       NativeModule.createFromParts(parts, withId);
     },
     release(blobId: string): void {

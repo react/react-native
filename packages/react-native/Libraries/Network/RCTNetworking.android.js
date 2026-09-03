@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -21,10 +21,11 @@ import convertRequestBody from './convertRequestBody';
 import NativeNetworkingAndroid from './NativeNetworkingAndroid';
 
 type Header = [string, string];
+type HeadersMap = {[string]: string};
 
 // Convert FormData headers to arrays, which are easier to consume in
 // native on Android.
-function convertHeadersMapToArray(headers: Object): Array<Header> {
+function convertHeadersMapToArray(headers: HeadersMap): Array<Header> {
   const headerArray: Array<Header> = [];
   for (const name in headers) {
     headerArray.push([name, headers[name]]);
@@ -37,7 +38,7 @@ function generateRequestId(): number {
   return _requestId++;
 }
 
-const emitter = new NativeEventEmitter<$FlowFixMe>(
+const emitter = new NativeEventEmitter<RCTNetworkingEventDefinitions>(
   // T88715063: NativeEventEmitter only used this parameter on iOS. Now it uses it on all platforms, so this code was modified automatically to preserve its behavior
   // If you want to use the native module on other platforms, please remove this condition and test its behavior
   Platform.OS !== 'ios' ? null : NativeNetworkingAndroid,
@@ -53,7 +54,6 @@ const RCTNetworking = {
     listener: (...RCTNetworkingEventDefinitions[K]) => unknown,
     context?: unknown,
   ): EventSubscription {
-    // $FlowFixMe[incompatible-type]
     return emitter.addListener(eventType, listener, context);
   },
 
@@ -61,8 +61,8 @@ const RCTNetworking = {
     method: string,
     trackingName: string | void,
     url: string,
-    headers: Object,
-    data: RequestBody,
+    headers: HeadersMap,
+    data: ?RequestBody,
     responseType: NativeResponseType,
     incrementalUpdates: boolean,
     timeout: number,
@@ -70,12 +70,17 @@ const RCTNetworking = {
     withCredentials: boolean,
   ) {
     const body = convertRequestBody(data);
-    if (body && body.formData) {
-      body.formData = body.formData.map(part => ({
-        ...part,
-        headers: convertHeadersMapToArray(part.headers),
-      }));
-    }
+    const formData = body?.formData;
+    const nativeRequestBody =
+      formData != null
+        ? {
+            ...body,
+            formData: formData.map(part => ({
+              ...part,
+              headers: convertHeadersMapToArray(part.headers),
+            })),
+          }
+        : body;
     const requestId = generateRequestId();
     const devToolsRequestId =
       global.__NETWORK_REPORTER__?.createDevToolsRequestId();
@@ -84,7 +89,7 @@ const RCTNetworking = {
       url,
       requestId,
       convertHeadersMapToArray(headers),
-      {...body, trackingName, devToolsRequestId},
+      {...nativeRequestBody, trackingName, devToolsRequestId},
       responseType,
       incrementalUpdates,
       timeout,

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -46,21 +46,21 @@ export interface Spec extends TurboModule {
   readonly getEnum?: (arg: EnumInt) => EnumInt;
   readonly getNumber: (arg: number) => number;
   readonly getString: (arg: string) => string;
-  readonly getArray: (arg: Array<any>) => Array<any>;
-  readonly getObject: (arg: Object) => Object;
+  readonly getArray: (arg: Array<unknown>) => Array<unknown>;
+  readonly getObject: (arg: UnsafeObject) => UnsafeObject;
   readonly getUnsafeObject: (arg: UnsafeObject) => UnsafeObject;
   readonly getRootTag: (arg: RootTag) => RootTag;
-  readonly getValue: (x: number, y: string, z: Object) => Object;
+  readonly getValue: (x: number, y: string, z: UnsafeObject) => UnsafeObject;
   readonly getArrayBuffer: (buffer: ArrayBuffer) => ArrayBuffer;
   readonly createNativeBuffer: (size: number) => ArrayBuffer;
   readonly processAsyncBuffer: (payload: ArrayBuffer) => Promise<number>;
   readonly getValueWithCallback: (callback: (value: string) => void) => void;
   readonly getValueWithPromise: (error: boolean) => Promise<string>;
   readonly voidFuncThrows?: () => void;
-  readonly getObjectThrows?: (arg: Object) => Object;
+  readonly getObjectThrows?: (arg: UnsafeObject) => UnsafeObject;
   readonly promiseThrows?: () => Promise<void>;
   readonly voidFuncAssert?: () => void;
-  readonly getObjectAssert?: (arg: Object) => Object;
+  readonly getObjectAssert?: (arg: UnsafeObject) => UnsafeObject;
   readonly promiseAssert?: () => Promise<void>;
 
   // Android-only
