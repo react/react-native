@@ -76,17 +76,25 @@ id<RCTTurboModule> RCTAppSetupDefaultModuleFromClass(Class moduleClass, id<RCTDe
           return [@[ [RCTGIFImageDecoder new] ] arrayByAddingObjectsFromArray:imageDataDecoder];
         }];
   } else if (moduleClass == RCTNetworking.class) {
-    return [[moduleClass alloc]
-        initWithHandlersProvider:^NSArray<id<RCTURLRequestHandler>> *(RCTModuleRegistry *moduleRegistry) {
+      return [[moduleClass alloc]
+              initWithHandlersProvider:^NSArray<id<RCTURLRequestHandler>> *(RCTModuleRegistry *moduleRegistry) {
           NSArray *URLRequestHandlerModules =
-              extractModuleConformingToProtocol(moduleRegistry, @protocol(RCTURLRequestHandler));
-          return [@[
-            [RCTHTTPRequestHandler new],
-            [RCTDataRequestHandler new],
-            [RCTFileRequestHandler new],
-            [moduleRegistry moduleForName:"BlobModule"],
-          ] arrayByAddingObjectsFromArray:URLRequestHandlerModules];
-        }];
+          extractModuleConformingToProtocol(moduleRegistry, @protocol(RCTURLRequestHandler));
+
+          id blobModule = [moduleRegistry moduleForName:"BlobModule"];
+
+          NSMutableArray *handlers = [NSMutableArray arrayWithCapacity:4];
+          [handlers addObject:[RCTHTTPRequestHandler new]];
+          [handlers addObject:[RCTDataRequestHandler new]];
+          [handlers addObject:[RCTFileRequestHandler new]];
+
+          if (blobModule) {
+              [handlers addObject:blobModule];
+          }
+
+          [handlers addObjectsFromArray:URLRequestHandlerModules];
+          return handlers;
+      }];
   }
   // No custom initializer here.
   return [moduleClass new];
