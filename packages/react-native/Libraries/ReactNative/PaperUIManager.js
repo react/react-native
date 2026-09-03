@@ -4,12 +4,13 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
 import type {RootTag} from '../Types/RootTagTypes';
 import type {UIManagerJSInterface} from '../Types/UIManagerJSInterface';
+import type {UIManagerConstants, ViewManagerConfig} from './NativeUIManager';
 
 import NativeUIManager from './NativeUIManager';
 import nullthrows from 'nullthrows';
@@ -20,13 +21,13 @@ const defineLazyObjectProperty =
 const Platform = require('../Utilities/Platform').default;
 const UIManagerProperties = require('./UIManagerProperties').default;
 
-const viewManagerConfigs: {[string]: any | null} = {};
+const viewManagerConfigs: {[string]: ViewManagerConfig | null} = {};
 
 const triedLoadingConfig = new Set<string>();
 
 let NativeUIManagerConstants = {};
 let isNativeUIManagerConstantsSet = false;
-function getConstants(): Object {
+function getConstants(): UIManagerConstants {
   if (!isNativeUIManagerConstantsSet) {
     NativeUIManagerConstants = NativeUIManager.getConstants();
     isNativeUIManagerConstantsSet = true;
@@ -34,7 +35,7 @@ function getConstants(): Object {
   return NativeUIManagerConstants;
 }
 
-function getViewManagerConfig(viewManagerName: string): any {
+function getViewManagerConfig(viewManagerName: string): ViewManagerConfig {
   if (
     viewManagerConfigs[viewManagerName] === undefined &&
     NativeUIManager.getConstantsForViewManager
@@ -86,7 +87,7 @@ const UIManagerJS: UIManagerJSInterface = {
     reactTag: number,
     viewName: string,
     rootTag: RootTag,
-    props: Object,
+    props,
   ): void {
     if (Platform.OS === 'ios' && viewManagerConfigs[viewName] === undefined) {
       // This is necessary to force the initialization of native viewManager
@@ -96,10 +97,10 @@ const UIManagerJS: UIManagerJSInterface = {
 
     NativeUIManager.createView(reactTag, viewName, rootTag, props);
   },
-  getConstants(): Object {
+  getConstants(): UIManagerConstants {
     return getConstants();
   },
-  getViewManagerConfig(viewManagerName: string): any {
+  getViewManagerConfig(viewManagerName: string): ViewManagerConfig {
     return getViewManagerConfig(viewManagerName);
   },
   hasViewManagerConfig(viewManagerName: string): boolean {

@@ -4,9 +4,11 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
+
+// flowlint unsafe-getters-setters:off
 
 'use strict';
 
@@ -14,6 +16,7 @@ import type {
   EventCallback,
   EventListener,
 } from '../../src/private/webapis/dom/events/EventTarget';
+import type {RequestBody} from './convertRequestBody';
 
 import Event from '../../src/private/webapis/dom/events/Event';
 import {
@@ -30,20 +33,25 @@ const RCTNetworking = require('./RCTNetworking').default;
 const base64 = require('base64-js');
 const invariant = require('invariant');
 
-const DEBUG_NETWORK_SEND_DELAY: false = false; // Set to a number of milliseconds when debugging
+const DEBUG_NETWORK_SEND_DELAY: number = 0; // Set to a number of milliseconds when debugging
 
 export type NativeResponseType = 'base64' | 'blob' | 'text';
 export type ResponseType =
   '' | 'arraybuffer' | 'blob' | 'document' | 'json' | 'text';
-export type Response = ?Object | string;
+export type Response = unknown;
 
 type XHRInterceptor = interface {
-  requestSent(id: number, url: string, method: string, headers: Object): void,
+  requestSent(
+    id: number,
+    url: string,
+    method: string,
+    headers: {[string]: string},
+  ): void,
   responseReceived(
     id: number,
     url: string,
     status: number,
-    headers: Object,
+    headers: {[string]: string},
   ): void,
   dataReceived(id: number, data: string): void,
   loadingFinished(id: number, encodedDataLength: number): void,
@@ -145,7 +153,7 @@ class XMLHttpRequest extends EventTarget {
   DONE: number = DONE;
 
   readyState: number = UNSENT;
-  responseHeaders: ?Object;
+  responseHeaders: ?{[string]: string};
   status: number = 0;
   timeout: number = 0;
   responseURL: ?string;
@@ -159,8 +167,8 @@ class XMLHttpRequest extends EventTarget {
   _aborted: boolean = false;
   _cachedResponse: Response;
   _hasError: boolean = false;
-  _headers: Object;
-  _lowerCaseResponseHeaders: Object;
+  _headers: {[string]: string};
+  _lowerCaseResponseHeaders: {[string]: string};
   _method: ?string = null;
   _perfKey: ?string = null;
   _responseType: ResponseType;
@@ -305,7 +313,9 @@ class XMLHttpRequest extends EventTarget {
     XMLHttpRequest._interceptor &&
       XMLHttpRequest._interceptor.requestSent(
         requestId,
+        // $FlowFixMe[sketchy-null-string]
         this._url || '',
+        // $FlowFixMe[sketchy-null-string]
         this._method || 'GET',
         this._headers,
       );
@@ -332,7 +342,7 @@ class XMLHttpRequest extends EventTarget {
   __didReceiveResponse(
     requestId: number,
     status: number,
-    responseHeaders: ?Object,
+    responseHeaders: ?{[string]: string},
     responseURL: ?string,
   ): void {
     if (requestId === this._requestId) {
@@ -343,7 +353,7 @@ class XMLHttpRequest extends EventTarget {
       this.status = status;
       this.setResponseHeaders(responseHeaders);
       this.setReadyState(this.HEADERS_RECEIVED);
-      if (responseURL || responseURL === '') {
+      if (responseURL != null) {
         this.responseURL = responseURL;
       } else {
         delete this.responseURL;
@@ -352,6 +362,7 @@ class XMLHttpRequest extends EventTarget {
       XMLHttpRequest._interceptor &&
         XMLHttpRequest._interceptor.responseReceived(
           requestId,
+          // $FlowFixMe[sketchy-null-string]
           responseURL || this._url || '',
           status,
           responseHeaders || {},
@@ -509,7 +520,7 @@ class XMLHttpRequest extends EventTarget {
     return value !== undefined ? value : null;
   }
 
-  setRequestHeader(header: string, value: any): void {
+  setRequestHeader(header: string, value: string): void {
     if (this.readyState !== this.OPENED) {
       throw new Error('Request has not been opened');
     }
@@ -546,7 +557,7 @@ class XMLHttpRequest extends EventTarget {
     if (this.readyState !== this.UNSENT) {
       throw new Error('Cannot open, already sending');
     }
-    if (async !== undefined && !async) {
+    if (async !== undefined && async !== true) {
       // async is default
       throw new Error('Synchronous http requests are not supported');
     }
@@ -559,7 +570,7 @@ class XMLHttpRequest extends EventTarget {
     this.setReadyState(this.OPENED);
   }
 
-  send(data: any): void {
+  send(data: ?RequestBody): void {
     if (this.readyState !== this.OPENED) {
       throw new Error('Request has not been opened');
     }
@@ -617,11 +628,13 @@ class XMLHttpRequest extends EventTarget {
         performanceLogger.startTimespan(this._perfKey);
       }
       invariant(
+        // $FlowFixMe[sketchy-null-string]
         this._method,
         'XMLHttpRequest method needs to be defined (%s).',
         friendlyName,
       );
       invariant(
+        // $FlowFixMe[sketchy-null-string]
         this._url,
         'XMLHttpRequest URL needs to be defined (%s).',
         friendlyName,
@@ -635,13 +648,10 @@ class XMLHttpRequest extends EventTarget {
         nativeResponseType,
         incrementalEvents,
         this.timeout,
-        // $FlowFixMe[method-unbinding] added when improving typing for this parameters
-        this.__didCreateRequest.bind(this),
+        (requestId: number) => this.__didCreateRequest(requestId),
         this.withCredentials,
       );
     };
-    /* $FlowFixMe[constant-condition] Error discovered during Constant
-     * Condition roll out. See https://fburl.com/workplace/1v97vimq. */
     if (DEBUG_NETWORK_SEND_DELAY) {
       setTimeout(doSend, DEBUG_NETWORK_SEND_DELAY);
     } else {
@@ -651,6 +661,7 @@ class XMLHttpRequest extends EventTarget {
 
   abort(): void {
     this._aborted = true;
+    // $FlowFixMe[sketchy-null-number]
     if (this._requestId) {
       RCTNetworking.abortRequest(this._requestId);
     }
@@ -668,13 +679,12 @@ class XMLHttpRequest extends EventTarget {
     this._reset();
   }
 
-  setResponseHeaders(responseHeaders: ?Object): void {
+  setResponseHeaders(responseHeaders: ?{[string]: string}): void {
     this.responseHeaders = responseHeaders || null;
-    const headers = responseHeaders || {};
+    const headers: {[string]: string} = responseHeaders || {};
     this._lowerCaseResponseHeaders = Object.keys(headers).reduce<{
-      [string]: any,
+      [string]: string,
     }>((lcaseHeaders, headerName) => {
-      // $FlowFixMe[invalid-computed-prop]
       lcaseHeaders[headerName.toLowerCase()] = headers[headerName];
       return lcaseHeaders;
     }, {});
