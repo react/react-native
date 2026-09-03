@@ -133,7 +133,11 @@ struct hash<facebook::react::TextAttributes> {
     for (const auto &effect : textAttributes.textEffects) {
       facebook::react::hash_combine(textEffectsHash, effect);
     }
-    return facebook::react::hash_combine(
+    // The optionals are folded into one presence mask rather than being chained individually, so
+    // that the properties a given text run does not set stay off the hash's dependency chain.
+    size_t seed = 0;
+    facebook::react::hash_combine(
+        seed,
         textAttributes.foregroundColor,
         textAttributes.backgroundColor,
         textAttributes.opacity,
@@ -141,30 +145,33 @@ struct hash<facebook::react::TextAttributes> {
         textAttributes.fontSize,
         textAttributes.maxFontSizeMultiplier,
         textAttributes.fontSizeMultiplier,
+        textAttributes.letterSpacing,
+        textAttributes.lineHeight,
+        textAttributes.textShadowRadius,
+        textAttributes.textDecorationColor,
+        textAttributes.textShadowColor,
+        textEffectsHash);
+    facebook::react::hash_combine_optionals(
+        seed,
         textAttributes.fontWeight,
         textAttributes.fontStyle,
         textAttributes.fontVariant,
         textAttributes.fontVariationSettings,
         textAttributes.allowFontScaling,
-        textAttributes.letterSpacing,
         textAttributes.textTransform,
-        textAttributes.lineHeight,
         textAttributes.alignment,
         textAttributes.baseWritingDirection,
         textAttributes.lineBreakStrategy,
         textAttributes.lineBreakMode,
-        textAttributes.textDecorationColor,
         textAttributes.textDecorationLineType,
         textAttributes.textDecorationStyle,
         textAttributes.textShadowOffset,
-        textAttributes.textShadowRadius,
-        textAttributes.textShadowColor,
         textAttributes.isHighlighted,
         textAttributes.isPressable,
         textAttributes.layoutDirection,
         textAttributes.accessibilityRole,
-        textAttributes.role,
-        textEffectsHash);
+        textAttributes.role);
+    return seed;
   }
 };
 } // namespace std
