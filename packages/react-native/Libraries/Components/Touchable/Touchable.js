@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -331,7 +331,7 @@ const TouchableMixinImpl = {
    */
   /* $FlowFixMe[missing-this-annot] The 'this' type annotation(s) required by
    * Flow's LTI update could not be added via codemod */
-  touchableHandleResponderTerminationRequest: function (): any {
+  touchableHandleResponderTerminationRequest: function (): boolean {
     return !this.props.rejectResponderTermination;
   },
 
@@ -340,7 +340,7 @@ const TouchableMixinImpl = {
    */
   /* $FlowFixMe[missing-this-annot] The 'this' type annotation(s) required by
    * Flow's LTI update could not be added via codemod */
-  touchableHandleStartShouldSetResponder: function (): any {
+  touchableHandleStartShouldSetResponder: function (): boolean {
     return !this.props.disabled;
   },
 

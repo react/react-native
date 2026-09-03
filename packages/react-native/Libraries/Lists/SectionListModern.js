@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -26,6 +26,7 @@ import {useImperativeHandle, useRef} from 'react';
 const VirtualizedSectionList = VirtualizedLists.VirtualizedSectionList;
 
 type DefaultSectionT = {
+  // flowlint-next-line unclear-type:off
   [key: string]: any,
 };
 
@@ -60,6 +61,7 @@ type OptionalProps<ItemT, SectionT = DefaultSectionT> = {
     separators: {
       highlight: () => void,
       unhighlight: () => void,
+      // flowlint-next-line unclear-type:off
       updateProps: (select: 'leading' | 'trailing', newProps: Object) => void,
       ...
     },
@@ -70,6 +72,7 @@ type OptionalProps<ItemT, SectionT = DefaultSectionT> = {
    * any of your `renderItem`, Header, Footer, etc. functions depend on anything outside of the
    * `data` prop, stick it here and treat it immutably.
    */
+  // flowlint-next-line unclear-type:off
   extraData?: any,
   /**
    * How many items to render in the initial batch. This should be enough to fill the screen but not
@@ -109,6 +112,9 @@ export type Props<ItemT, SectionT = DefaultSectionT> = Readonly<{
   ...RequiredProps<ItemT, SectionT>,
   ...OptionalProps<ItemT, SectionT>,
 }>;
+
+// flowlint-next-line unclear-type:off
+type SectionListComponentProps = Props<any, DefaultSectionT>;
 
 /**
  * A performant interface for rendering sectioned lists, supporting the most handy features:
@@ -166,14 +172,16 @@ export type Props<ItemT, SectionT = DefaultSectionT> = Readonly<{
  *
  */
 const SectionList: component(
+  // flowlint-next-line unclear-type:off
   ref?: React.RefSetter<any>,
-  ...Props<any, DefaultSectionT>
+  ...SectionListComponentProps
 ) = ({
   ref,
   ...props
 }: {
+  // flowlint-next-line unclear-type:off
   ref?: React.RefSetter<any>,
-  ...Props<any, DefaultSectionT>,
+  ...SectionListComponentProps,
 }) => {
   const propsWithDefaults = {
     stickySectionHeadersEnabled: Platform.OS === 'ios',
@@ -224,11 +232,12 @@ const SectionList: component(
         wrapperRef.current?.getListRef()?.getScrollResponder();
       },
 
+      // flowlint-next-line unclear-type:off
       getScrollableNode(): any {
         wrapperRef.current?.getListRef()?.getScrollableNode();
       },
 
-      setNativeProps(nativeProps: Object) {
+      setNativeProps(nativeProps: {[string]: unknown}) {
         wrapperRef.current?.getListRef()?.setNativeProps(nativeProps);
       },
     }),

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -12,6 +12,7 @@
 
 import type {InspectorData} from '../../../../../Libraries/Renderer/shims/ReactNativeTypes';
 import type {ViewStyleProp} from '../../../../../Libraries/StyleSheet/StyleSheet';
+import type {InspectedElementFrame} from './Inspector';
 
 import * as React from 'react';
 
@@ -33,7 +34,7 @@ const StyleInspector = require('./StyleInspector').default;
 type Props = Readonly<{
   hierarchy: ?InspectorData['hierarchy'],
   style?: ?ViewStyleProp,
-  frame?: ?Object,
+  frame?: ?InspectedElementFrame,
   selection?: ?number,
   setSelection?: number => unknown,
 }>;

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -60,7 +60,7 @@ const UIManager: UIManagerJSInterface = {
       const FabricUIManager = nullthrows(getFabricUIManager());
       const shadowNode =
         FabricUIManager.findShadowNodeByTag_DEPRECATED(reactTag);
-      if (shadowNode) {
+      if (shadowNode != null) {
         FabricUIManager.measure(shadowNode, callback);
       } else {
         console.warn(`measure cannot find view with tag #${reactTag}`);
@@ -103,7 +103,7 @@ const UIManager: UIManagerJSInterface = {
       const FabricUIManager = nullthrows(getFabricUIManager());
       const shadowNode =
         FabricUIManager.findShadowNodeByTag_DEPRECATED(reactTag);
-      if (shadowNode) {
+      if (shadowNode != null) {
         FabricUIManager.measureInWindow(shadowNode, callback);
       } else {
         console.warn(`measure cannot find view with tag #${reactTag}`);
@@ -129,7 +129,7 @@ const UIManager: UIManagerJSInterface = {
   measureLayout(
     reactTag: number,
     ancestorReactTag: number,
-    errorCallback: (error: Object) => void,
+    errorCallback,
     callback: (
       left: number,
       top: number,
@@ -144,7 +144,7 @@ const UIManager: UIManagerJSInterface = {
       const ancestorShadowNode =
         FabricUIManager.findShadowNodeByTag_DEPRECATED(ancestorReactTag);
 
-      if (!shadowNode || !ancestorShadowNode) {
+      if (shadowNode == null || ancestorShadowNode == null) {
         return;
       }
 
@@ -167,7 +167,7 @@ const UIManager: UIManagerJSInterface = {
 
   measureLayoutRelativeToParent(
     reactTag: number,
-    errorCallback: (error: Object) => void,
+    errorCallback,
     callback: (
       left: number,
       top: number,
@@ -182,7 +182,7 @@ const UIManager: UIManagerJSInterface = {
       const FabricUIManager = nullthrows(getFabricUIManager());
       const shadowNode =
         FabricUIManager.findShadowNodeByTag_DEPRECATED(reactTag);
-      if (shadowNode) {
+      if (shadowNode != null) {
         FabricUIManager.measure(
           shadowNode,
           (left, top, width, height, pageX, pageY) => {
@@ -210,7 +210,7 @@ const UIManager: UIManagerJSInterface = {
   dispatchViewManagerCommand(
     reactTag: number,
     commandName: number | string,
-    commandArgs: any[],
+    commandArgs: Array<unknown>,
   ) {
     // Sometimes, libraries directly pass in the output of `findNodeHandle` to
     // this function without checking if it's null. This guards against that
@@ -224,12 +224,16 @@ const UIManager: UIManagerJSInterface = {
       const FabricUIManager = nullthrows(getFabricUIManager());
       const shadowNode =
         FabricUIManager.findShadowNodeByTag_DEPRECATED(reactTag);
-      if (shadowNode) {
+      if (shadowNode != null) {
         // Transform the accidental CommandID into a CommandName which is the stringified number.
         // The interop layer knows how to convert this number into the right method name.
         // Stringify a string is a no-op, so it's safe.
-        commandName = `${commandName}`;
-        FabricUIManager.dispatchCommand(shadowNode, commandName, commandArgs);
+        const resolvedCommandName = `${commandName}`;
+        FabricUIManager.dispatchCommand(
+          shadowNode,
+          resolvedCommandName,
+          commandArgs,
+        );
       }
     } else {
       UIManagerImpl.dispatchViewManagerCommand(
