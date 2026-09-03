@@ -226,22 +226,30 @@ describe('structuredClone', () => {
     // Valid error names
     value.name = 'Error';
     expect(structuredClone(value).name).toBe('Error');
+    expect(structuredClone(value)).toBeInstanceOf(Error);
     value.name = 'EvalError';
     expect(structuredClone(value).name).toBe('EvalError');
+    expect(structuredClone(value)).toBeInstanceOf(EvalError);
     value.name = 'RangeError';
     expect(structuredClone(value).name).toBe('RangeError');
+    expect(structuredClone(value)).toBeInstanceOf(RangeError);
     value.name = 'ReferenceError';
     expect(structuredClone(value).name).toBe('ReferenceError');
+    expect(structuredClone(value)).toBeInstanceOf(ReferenceError);
     value.name = 'SyntaxError';
     expect(structuredClone(value).name).toBe('SyntaxError');
+    expect(structuredClone(value)).toBeInstanceOf(SyntaxError);
     value.name = 'TypeError';
     expect(structuredClone(value).name).toBe('TypeError');
+    expect(structuredClone(value)).toBeInstanceOf(TypeError);
     value.name = 'URIError';
     expect(structuredClone(value).name).toBe('URIError');
+    expect(structuredClone(value)).toBeInstanceOf(URIError);
 
     // Invalid error names
     value.name = 'FooError';
     expect(structuredClone(value).name).toBe('Error');
+    expect(structuredClone(value)).toBeInstanceOf(Error);
   });
 
   it('clones values deeply', () => {
