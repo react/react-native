@@ -166,6 +166,13 @@ function structuredCloneInternal<T>(value: T): T {
     return result;
   }
 
+  if (value instanceof Symbol) {
+    throw new DOMException(
+      "Failed to execute 'structuredClone' on 'Window': Symbol object could not be cloned.",
+      'DataCloneError',
+    );
+  }
+
   // Known non-serializable objects.
   if (isNonSerializableObject(value) || isPlatformObject(value)) {
     throw new DOMException(
