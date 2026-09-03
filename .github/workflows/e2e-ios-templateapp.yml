@@ -15,10 +15,8 @@ on:
         value: ${{ jobs.report.outputs.status }}
 
 jobs:
-  test:
+  build:
     runs-on: macos-26-large
-    outputs:
-      status: ${{ steps.report-status.outputs.status }}
     strategy:
       fail-fast: false
       matrix:
@@ -62,7 +60,7 @@ jobs:
         run: |
           git config --global user.email "react-native-bot@meta.com"
           git config --global user.name "React Native Bot"
-      - name: Prepare artifacts
+      - name: Build the app
         run: |
           REACT_NATIVE_PKG=$(find /tmp/react-native-tmp -type f -name "*.tgz")
           echo "React Native tgs is $REACT_NATIVE_PKG"
@@ -92,12 +90,68 @@ jobs:
             -sdk "iphonesimulator" \
             -destination "generic/platform=iOS Simulator" \
             -derivedDataPath "/tmp/RNTestProject"
+      - name: Upload app
+        uses: actions/upload-artifact@v6
+        with:
+          name: RNTestProject-${{ matrix.flavor }}
+          path: /tmp/RNTestProject/Build/Products/${{ matrix.flavor }}-iphonesimulator/RNTestProject.app
+
+  test:
+    needs: build
+    runs-on: macos-26-large
+    outputs:
+      status: ${{ steps.report-status.outputs.status }}
+    strategy:
+      fail-fast: false
+      matrix:
+        flavor: [Debug, Release]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup node.js
+        uses: ./.github/actions/setup-node
+      - name: Run yarn
+        uses: ./.github/actions/yarn-install
+      - name: Download app
+        uses: actions/download-artifact@v7
+        with:
+          name: RNTestProject-${{ matrix.flavor }}
+          path: /tmp/RNTestProjectBuild/RNTestProject.app
+      - name: Check downloaded folder content
+        run: ls -l /tmp/RNTestProjectBuild/RNTestProject.app
+      - name: Download React Native Package
+        if: ${{ matrix.flavor == 'Debug' }}
+        uses: actions/download-artifact@v7
+        with:
+          name: react-native-package
+          path: /tmp/react-native-tmp
+      - name: Configure git
+        if: ${{ matrix.flavor == 'Debug' }}
+        shell: bash
+        run: |
+          git config --global user.email "react-native-bot@meta.com"
+          git config --global user.name "React Native Bot"
+      - name: Prepare project for Metro
+        if: ${{ matrix.flavor == 'Debug' }}
+        # In Debug the app loads its bundle from Metro, which must run from an
+        # initialized project. Re-initialize it here (JS only — no pods); the
+        # native app itself comes prebuilt from the `build` job.
+        run: |
+          REACT_NATIVE_PKG=$(find /tmp/react-native-tmp -type f -name "*.tgz")
+          echo "React Native tgs is $REACT_NATIVE_PKG"
+
+          BRANCH=${{ github.ref_name }}
+          if ! [[ $BRANCH == *-stable* ]]; then
+            BRANCH=main
+          fi
+
+          node ./scripts/e2e/init-project-e2e.js --projectName RNTestProject --currentBranch $BRANCH --directory /tmp/RNTestProject --pathToLocalReactNative $REACT_NATIVE_PKG
       - name: Run E2E Tests
         id: run-tests
         continue-on-error: true
         uses: ./.github/actions/maestro-ios
         with:
-          app-path: '/tmp/RNTestProject/Build/Products/${{ matrix.flavor }}-iphonesimulator/RNTestProject.app'
+          app-path: '/tmp/RNTestProjectBuild/RNTestProject.app'
           app-id: org.reactjs.native.example.RNTestProject
           maestro-flow: ./scripts/e2e/.maestro/
           flavor: ${{ matrix.flavor }}
