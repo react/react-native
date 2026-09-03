@@ -4,14 +4,31 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
 import type {RootTag} from '../../../../Libraries/TurboModule/RCTExport';
 import type {TurboModule} from '../../../../Libraries/TurboModule/RCTExport';
+import type {UnsafeObject} from '../../../../Libraries/Types/CodegenTypes';
 
 import * as TurboModuleRegistry from '../../../../Libraries/TurboModule/TurboModuleRegistry';
+
+/**
+ * The config object for a single native view manager. It is consumed
+ * dynamically (callers read arbitrary keys such as `Commands`, `Constants`,
+ * `NativeProps`, `bubblingEventTypes`, etc.), so it is intentionally left as an
+ * open object type. Keep this in sync with the shape produced by native.
+ */
+export type ViewManagerConfig = UnsafeObject;
+
+/**
+ * The constants object returned by `UIManager.getConstants()`. It is consumed
+ * dynamically (callers read arbitrary keys such as `ViewManagerNames`,
+ * `LazyViewManagersEnabled`, per-view-manager configs, etc.), so it is
+ * intentionally left as an open object type.
+ */
+export type UIManagerConstants = UnsafeObject;
 
 export type NativeMeasureOnSuccessCallback = (
   x: number,
@@ -37,17 +54,17 @@ export type NativeMeasureLayoutOnSuccessCallback = (
 ) => void;
 
 export interface Spec extends TurboModule {
-  readonly getConstants: () => Object;
+  readonly getConstants: () => UIManagerConstants;
   readonly createView: (
     reactTag: number,
     viewName: string,
     rootTag: RootTag,
-    props: Object,
+    props: UnsafeObject,
   ) => void;
   readonly updateView: (
     reactTag: number,
     viewName: string,
-    props: Object,
+    props: UnsafeObject,
   ) => void;
   readonly findSubviewIn: (
     reactTag: number,
@@ -70,7 +87,7 @@ export interface Spec extends TurboModule {
   readonly dispatchViewManagerCommand: (
     reactTag: number,
     commandID: number, // number || string
-    commandArgs?: Array<any>,
+    commandArgs?: Array<unknown>,
   ) => void;
   /**
    * Determines the location on screen, width, and height of the given view and
@@ -134,12 +151,12 @@ export interface Spec extends TurboModule {
   readonly measureLayout: (
     reactTag: number,
     ancestorReactTag: number,
-    errorCallback: (error: Object) => void,
+    errorCallback: (error: UnsafeObject) => void,
     callback: NativeMeasureLayoutOnSuccessCallback,
   ) => void;
   readonly measureLayoutRelativeToParent: (
     reactTag: number,
-    errorCallback: (error: Object) => void,
+    errorCallback: (error: UnsafeObject) => void,
     callback: (
       left: number,
       top: number,
@@ -153,9 +170,9 @@ export interface Spec extends TurboModule {
   ) => void;
   readonly clearJSResponder: () => void;
   readonly configureNextLayoutAnimation: (
-    config: Object,
+    config: UnsafeObject,
     callback: () => void, // check what is returned here
-    errorCallback: (error: Object) => void,
+    errorCallback: (error: UnsafeObject) => void,
   ) => void;
   readonly setChildren: (
     containerTag: number,
@@ -171,7 +188,9 @@ export interface Spec extends TurboModule {
   ) => void;
 
   // Android only
-  readonly getConstantsForViewManager?: (viewManagerName: string) => ?Object;
+  readonly getConstantsForViewManager?: (
+    viewManagerName: string,
+  ) => ?ViewManagerConfig;
   readonly getDefaultEventTypes?: () => Array<string>;
   /**
    * Automatically animates views to their new positions when the
@@ -192,7 +211,7 @@ export interface Spec extends TurboModule {
   ) => void;
 
   // ios only
-  readonly lazilyLoadView?: (name: string) => Object; // revisit return
+  readonly lazilyLoadView?: (name: string) => ViewManagerConfig; // revisit return
   readonly focus?: (reactTag: number) => void;
   readonly blur?: (reactTag: number) => void;
 }

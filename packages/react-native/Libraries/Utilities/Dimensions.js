@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -111,6 +111,7 @@ class Dimensions {
    */
   static addEventListener(
     type: 'change',
+    // $FlowFixMe[unclear-type]
     handler: Function,
   ): EventSubscription {
     invariant(

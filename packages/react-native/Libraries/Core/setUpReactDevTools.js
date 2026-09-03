@@ -4,13 +4,16 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
 'use strict';
 
-import type {Domain} from '../../src/private/devsupport/rndevtools/setUpFuseboxReactDevToolsDispatcher';
+import type {
+  Domain,
+  JSONValue,
+} from '../../src/private/devsupport/rndevtools/setUpFuseboxReactDevToolsDispatcher';
 import type {Spec as NativeReactDevToolsRuntimeSettingsModuleSpec} from '../../src/private/devsupport/rndevtools/specs/NativeReactDevToolsRuntimeSettingsModule';
 
 if (__DEV__) {
@@ -35,6 +38,7 @@ if (__DEV__) {
   const {
     initialize,
     connectWithCustomMessagingProtocol,
+    // $FlowFixMe[untyped-import]
   } = require('react-devtools-core');
 
   const reactDevToolsSettingsManager = require('../../src/private/devsupport/rndevtools/ReactDevToolsSettingsManager');
@@ -73,7 +77,7 @@ if (__DEV__) {
     require('../Components/View/ReactNativeStyleAttributes').default;
   const resolveRNStyle = require('../StyleSheet/flattenStyle').default;
 
-  function handleReactDevToolsSettingsUpdate(settings: Object) {
+  function handleReactDevToolsSettingsUpdate(settings: {[string]: unknown}) {
     reactDevToolsSettingsManager.setGlobalHookSettings(
       JSON.stringify(settings),
     );
@@ -97,13 +101,13 @@ if (__DEV__) {
       maybeReactDevToolsRuntimeSettingsModuleModule,
     );
     disconnect = connectWithCustomMessagingProtocol({
-      onSubscribe: listener => {
+      onSubscribe: (listener: (message: JSONValue) => void) => {
         domain.onMessage.addEventListener(listener);
       },
-      onUnsubscribe: listener => {
+      onUnsubscribe: (listener: (message: JSONValue) => void) => {
         domain.onMessage.removeEventListener(listener);
       },
-      onMessage: (event, payload) => {
+      onMessage: (event: string, payload: JSONValue) => {
         domain.sendMessage({event, payload});
       },
       nativeStyleEditorValidAttributes: Object.keys(ReactNativeStyleAttributes),

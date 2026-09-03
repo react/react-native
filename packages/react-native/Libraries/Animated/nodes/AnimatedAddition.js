@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -63,7 +63,11 @@ export default class AnimatedAddition extends AnimatedWithChildren {
     super.__detach();
   }
 
-  __getNativeConfig(): any {
+  __getNativeConfig(): {
+    type: string,
+    input: [number, number],
+    debugID: ?string,
+  } {
     return {
       type: 'addition',
       input: [this._a.__getNativeTag(), this._b.__getNativeTag()],

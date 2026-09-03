@@ -4,9 +4,11 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
+
+// flowlint unsafe-getters-setters:off
 
 import typeof AnimatedFlatList from './components/AnimatedFlatList';
 import typeof AnimatedImage from './components/AnimatedImage';
@@ -27,7 +29,7 @@ export default {
   /**
    * FlatList and SectionList infer generic Type defined under their `data` and `section` props.
    */
-  get FlatList(): AnimatedFlatList<any> {
+  get FlatList(): AnimatedFlatList<> {
     return require('./components/AnimatedFlatList').default;
   },
   /**
@@ -47,7 +49,7 @@ export default {
   /**
    * FlatList and SectionList infer generic Type defined under their `data` and `section` props.
    */
-  get SectionList(): AnimatedSectionList<any, any> {
+  get SectionList(): AnimatedSectionList<> {
     return require('./components/AnimatedSectionList').default;
   },
   /**

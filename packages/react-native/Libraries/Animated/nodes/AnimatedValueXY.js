@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -52,18 +52,23 @@ export default class AnimatedValueXY extends AnimatedWithChildren {
     config?: ?AnimatedValueXYConfig,
   ) {
     super(config);
-    const value: any = valueIn || {x: 0, y: 0}; // @flowfixme: shouldn't need `: any`
-    if (typeof value.x === 'number' && typeof value.y === 'number') {
-      this.x = new AnimatedValue(value.x);
-      this.y = new AnimatedValue(value.y);
+    const value: {
+      readonly x: number | AnimatedValue,
+      readonly y: number | AnimatedValue,
+      ...
+    } = valueIn || {x: 0, y: 0};
+    const {x, y} = value;
+    if (typeof x === 'number' && typeof y === 'number') {
+      this.x = new AnimatedValue(x);
+      this.y = new AnimatedValue(y);
     } else {
       invariant(
-        value.x instanceof AnimatedValue && value.y instanceof AnimatedValue,
+        x instanceof AnimatedValue && y instanceof AnimatedValue,
         'AnimatedValueXY must be initialized with an object of numbers or ' +
           'AnimatedValues.',
       );
-      this.x = value.x;
-      this.y = value.y;
+      this.x = x;
+      this.y = y;
     }
     this._listeners = {};
     if (config && config.useNativeDriver) {
@@ -164,7 +169,7 @@ export default class AnimatedValueXY extends AnimatedWithChildren {
    */
   addListener(callback: ValueXYListenerCallback): string {
     const id = String(_uniqueId++);
-    const jointCallback = ({value: number}: any) => {
+    const jointCallback = () => {
       callback(this.__getValue());
     };
     this._listeners[id] = {

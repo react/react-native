@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -26,6 +26,7 @@ export type AlertButtonStyle = 'default' | 'cancel' | 'destructive';
 
 export type AlertButton = {
   text?: string,
+  // $FlowFixMe[unclear-type]
   onPress?: ?((value?: string) => any) | ?Function,
   isPreferred?: boolean,
   style?: AlertButtonStyle,
@@ -121,6 +122,7 @@ class Alert {
         cancelable: false,
       };
 
+      // $FlowFixMe[sketchy-null-bool]
       if (options && options.cancelable) {
         config.cancelable = options.cancelable;
       }
@@ -141,6 +143,7 @@ class Alert {
         config.buttonNegative = buttonNegative.text || '';
       }
       if (buttonPositive) {
+        // $FlowFixMe[sketchy-null-string]
         config.buttonPositive = buttonPositive.text || defaultPositiveText;
       }
 
@@ -186,6 +189,7 @@ class Alert {
     options?: AlertOptions,
   ): void {
     if (Platform.OS === 'ios') {
+      // $FlowFixMe[unclear-type]
       let callbacks: Array<?any> = [];
       const buttons = [];
       let cancelButtonKey;
@@ -201,9 +205,11 @@ class Alert {
           } else if (btn.style === 'destructive') {
             destructiveButtonKey = String(index);
           }
+          // $FlowFixMe[sketchy-null-bool]
           if (btn.isPreferred) {
             preferredButtonKey = String(index);
           }
+          // $FlowFixMe[sketchy-null-string]
           if (btn.text || index < (callbackOrButtons || []).length - 1) {
             const btnDef: {[number]: string} = {};
             btnDef[index] = btn.text || '';
@@ -215,6 +221,7 @@ class Alert {
       alertWithArgs(
         {
           title: title || '',
+          // $FlowFixMe[sketchy-null-string]
           message: message || undefined,
           buttons,
           type: type || undefined,
