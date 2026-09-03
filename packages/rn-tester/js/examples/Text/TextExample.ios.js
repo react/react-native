@@ -1639,6 +1639,77 @@ const examples = [
       );
     },
   },
+  {
+    title: 'Text with Padding - Touch Area Test (Issue #54056)',
+    name: 'textPaddingTouchArea',
+    render: function (): React.Node {
+      const [count, setCount] = React.useState(0);
+      return (
+        <View testID="text-padding-touch-test">
+          <Text style={{marginBottom: 10, color: '#666', fontSize: 14}}>
+            Click on the BLUE padding area (not the text itself):
+          </Text>
+          <Text
+            onPress={() => {
+              setCount(count + 1);
+            }}
+            style={{
+              padding: 50,
+              backgroundColor: 'lightblue',
+              fontSize: 20,
+              marginBottom: 10,
+            }}>
+            Click me!
+          </Text>
+          <Text style={{fontSize: 16, fontWeight: 'bold'}}>
+            Touch count: {count}
+          </Text>
+          <Text style={{marginTop: 5, fontSize: 12, color: '#666'}}>
+            Expected: Both padding AND text should be clickable
+          </Text>
+        </View>
+      );
+    },
+  },
+  {
+    title: 'Text Padding Boundary Test (Issue #54056)',
+    name: 'textPaddingBoundaryTest',
+    render: function (): React.Node {
+      const [lastTouch, setLastTouch] = React.useState('None');
+      return (
+        <View testID="text-padding-boundary-test">
+          <Text style={{marginBottom: 10, color: '#666', fontSize: 14}}>
+            The blue text should only capture touches within its bounds:
+          </Text>
+          <View
+            style={{
+              width: 300,
+              height: 300,
+              backgroundColor: 'pink',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+            onTouchEnd={() => setLastTouch('Container')}>
+            <Text
+              onPress={() => setLastTouch('Text (including padding)')}
+              style={{
+                padding: 30,
+                backgroundColor: 'lightblue',
+                fontSize: 16,
+              }}>
+              Small text with padding
+            </Text>
+          </View>
+          <Text style={{marginTop: 10, fontSize: 16, fontWeight: 'bold'}}>
+            Last touch: {lastTouch}
+          </Text>
+          <Text style={{fontSize: 12, color: '#666', marginTop: 5}}>
+            Expected: Pink area outside blue text should show "Container"
+          </Text>
+        </View>
+      );
+    },
+  },
   ...TextSharedExamples,
 ];
 

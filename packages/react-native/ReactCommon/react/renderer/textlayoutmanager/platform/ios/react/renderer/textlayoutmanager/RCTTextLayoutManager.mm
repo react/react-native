@@ -455,18 +455,18 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
       _textStorageAndLayoutManagerWithAttributesString:[self _nsAttributedStringFromAttributedString:attributedString]
                                    paragraphAttributes:paragraphAttributes
                                                   size:frame.size];
+
   NSLayoutManager *layoutManager = textStorage.layoutManagers.firstObject;
   NSTextContainer *textContainer = layoutManager.textContainers.firstObject;
 
   CGFloat fraction;
   NSUInteger characterIndex = [layoutManager characterIndexForPoint:point
-                                                    inTextContainer:textContainer
-                           fractionOfDistanceBetweenInsertionPoints:&fraction];
+                                                     inTextContainer:textContainer
+                                            fractionOfDistanceBetweenInsertionPoints:&fraction];
 
-  // If the point is not before (fraction == 0.0) the first character and not
-  // after (fraction == 1.0) the last character, then the attribute is valid.
-  if (textStorage.length > 0 && (fraction > 0 || characterIndex > 0) &&
-      (fraction < 1 || characterIndex < textStorage.length - 1)) {
+  // Modified: Allow clicks anywhere in the text storage bounds, not just on characters
+  // This fixes the issue where padding areas are not clickable
+  if (textStorage.length > 0 && characterIndex < textStorage.length) {
     NSData *eventEmitterWrapper = (NSData *)[textStorage attribute:RCTAttributedStringEventEmitterKey
                                                            atIndex:characterIndex
                                                     effectiveRange:NULL];
