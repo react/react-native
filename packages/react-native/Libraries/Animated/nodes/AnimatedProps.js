@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -119,6 +119,7 @@ export default class AnimatedProps extends AnimatedNode {
     this._rootTag = rootTag;
   }
 
+  // $FlowFixMe[unclear-type]
   __getValue(): Object {
     const props: {[string]: unknown} = {};
 
@@ -144,6 +145,7 @@ export default class AnimatedProps extends AnimatedNode {
    * `staticProps` object, except with animated nodes for any props that were
    * created by this `AnimatedProps` instance.
    */
+  // $FlowFixMe[unclear-type]
   __getValueWithStaticProps(staticProps: Object): Object {
     const props: {[string]: unknown} = {...staticProps};
 
@@ -196,6 +198,7 @@ export default class AnimatedProps extends AnimatedNode {
     return tuples;
   }
 
+  // $FlowFixMe[unclear-type]
   __getAnimatedValue(): Object {
     const props: {[string]: unknown} = {};
 
@@ -356,6 +359,7 @@ export default class AnimatedProps extends AnimatedNode {
     }
   }
 
+  // $FlowFixMe[unclear-type]
   __getNativeConfig(): Object {
     const platformConfig = this.__getPlatformConfig();
     const propsConfig: {[string]: number} = {};

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -94,6 +94,7 @@ const spring = function (
   value: AnimatedValue | AnimatedValueXY | AnimatedColor,
   config: SpringAnimationConfig,
 ): CompositeAnimation {
+  // $FlowFixMe[unclear-type]
   const anyValue: any = value;
   return {
     ...emptyAnimation,
@@ -108,6 +109,7 @@ const timing = function (
   value: AnimatedValue | AnimatedValueXY | AnimatedColor,
   config: TimingAnimationConfig,
 ): CompositeAnimation {
+  // $FlowFixMe[unclear-type]
   const anyValue: any = value;
   return {
     ...emptyAnimation,

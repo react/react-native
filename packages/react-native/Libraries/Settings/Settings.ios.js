@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -14,6 +14,7 @@ import invariant from 'invariant';
 
 const subscriptions: Array<{
   keys: Array<string>,
+  // $FlowFixMe[unclear-type]
   callback: ?Function,
   ...
 }> = [];
@@ -27,6 +28,7 @@ const subscriptions: Array<{
  */
 const Settings = {
   _settings: (NativeSettingsManager &&
+    // $FlowFixMe[unclear-type]
     NativeSettingsManager.getConstants().settings) as any,
 
   /**
@@ -41,6 +43,7 @@ const Settings = {
    * Set one or more values by merging the provided object into the current
    * settings.
    */
+  // $FlowFixMe[unclear-type]
   set(settings: Object) {
     // $FlowFixMe[object-this-reference]
     // $FlowFixMe[unsafe-object-assign]
@@ -53,8 +56,10 @@ const Settings = {
    * whenever a watched key's value changes. Returns a `watchId` that can be
    * passed to `clearWatch` to unsubscribe.
    */
+  // $FlowFixMe[unclear-type]
   watchKeys(keys: string | Array<string>, callback: Function): number {
     if (typeof keys === 'string') {
+      // $FlowFixMe[reassign-const]
       keys = [keys];
     }
 
@@ -77,6 +82,7 @@ const Settings = {
     }
   },
 
+  // $FlowFixMe[unclear-type]
   _sendObservations(body: Object) {
     Object.keys(body).forEach(key => {
       const newValue = body[key];

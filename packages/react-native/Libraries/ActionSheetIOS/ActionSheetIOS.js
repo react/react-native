@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -49,6 +49,7 @@ export type ShareActionSheetIOSOptions = Readonly<{
 export type ShareActionSheetError = Readonly<{
   domain: string,
   code: string,
+  // $FlowFixMe[unclear-type]
   userInfo?: ?Object,
   message: string,
 }>;
@@ -155,7 +156,9 @@ const ActionSheetIOS = {
    */
   showShareActionSheetWithOptions(
     options: ShareActionSheetIOSOptions,
+    // $FlowFixMe[unclear-type]
     failureCallback: Function | ((error: ShareActionSheetError) => void),
+    // $FlowFixMe[unclear-type]
     successCallback: Function | ((success: boolean, method: ?string) => void),
   ) {
     invariant(

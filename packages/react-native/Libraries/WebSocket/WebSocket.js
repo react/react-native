@@ -4,9 +4,11 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
+
+// flowlint unsafe-getters-setters:off
 
 import type {EventCallback} from '../../src/private/webapis/dom/events/EventTarget';
 import type {BlobData} from '../Blob/BlobTypes';
@@ -98,29 +100,29 @@ class WebSocket extends EventTarget {
   constructor(
     url: string,
     protocols: ?string | ?Array<string>,
-    options: ?{headers?: {origin?: string, ...}, ...},
+    options: ?{headers?: {origin?: string, ...}, origin?: string, ...},
   ) {
     super();
     this.url = url;
-    if (typeof protocols === 'string') {
-      protocols = [protocols];
-    }
+    const protocolList: ?Array<string> =
+      typeof protocols === 'string'
+        ? [protocols]
+        : Array.isArray(protocols)
+          ? protocols
+          : null;
 
-    const {headers = {}, ...unrecognized} = options || {};
+    const {headers = {}, ...unrecognized} = (options ?? {}) as {
+      headers?: {origin?: string, ...},
+      origin?: string,
+      ...
+    };
 
     // Preserve deprecated backwards compatibility for the 'origin' option
-    // $FlowFixMe[prop-missing]
     if (unrecognized && typeof unrecognized.origin === 'string') {
       console.warn(
         'Specifying `origin` as a WebSocket connection option is deprecated. Include it under `headers` instead.',
       );
-      /* $FlowFixMe[prop-missing] (>=0.54.0 site=react_native_fb,react_native_
-       * oss) This comment suppresses an error found when Flow v0.54 was
-       * deployed. To see the error delete this comment and run Flow. */
       headers.origin = unrecognized.origin;
-      /* $FlowFixMe[prop-missing] (>=0.54.0 site=react_native_fb,react_native_
-       * oss) This comment suppresses an error found when Flow v0.54 was
-       * deployed. To see the error delete this comment and run Flow. */
       delete unrecognized.origin;
     }
 
@@ -134,10 +136,6 @@ class WebSocket extends EventTarget {
       );
     }
 
-    if (!Array.isArray(protocols)) {
-      protocols = null;
-    }
-
     this._eventEmitter = new NativeEventEmitter(
       // T88715063: NativeEventEmitter only used this parameter on iOS. Now it uses it on all platforms, so this code was modified automatically to preserve its behavior
       // If you want to use the native module on other platforms, please remove this condition and test its behavior
@@ -149,7 +147,7 @@ class WebSocket extends EventTarget {
       global.__NETWORK_REPORTER__?.createDevToolsRequestId();
     NativeWebSocketModule.connect(
       url,
-      protocols,
+      protocolList,
       {headers, unstable_devToolsRequestId: devToolsRequestId},
       this._socketId,
     );

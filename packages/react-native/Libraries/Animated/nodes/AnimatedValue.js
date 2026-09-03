@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -53,10 +53,12 @@ const NativeAnimatedAPI = NativeAnimatedHelper.API;
  * transform which can receive values from multiple parents.
  */
 export function flushValue(rootNode: AnimatedNode): void {
-  const leaves = new Set<{update: () => void, ...}>();
+  const leaves = new Set<interface {update: () => void}>();
   function findAnimatedStyles(node: AnimatedNode) {
-    // $FlowFixMe[prop-missing]
-    if (typeof node.update === 'function') {
+    if (
+      typeof (node as interface {update?: () => void}).update === 'function'
+    ) {
+      // $FlowFixMe[unclear-type] `update` is duck-typed on animated leaf nodes and not declared on AnimatedNode
       leaves.add(node as any);
     } else {
       node.__getChildren().forEach(findAnimatedStyles);
@@ -312,7 +314,12 @@ export default class AnimatedValue extends AnimatedWithChildren {
     this.__callListeners(this.__getValue());
   }
 
-  __getNativeConfig(): Object {
+  __getNativeConfig(): {
+    type: string,
+    value: number,
+    offset: number,
+    debugID: ?string,
+  } {
     return {
       type: 'value',
       value: this._value,

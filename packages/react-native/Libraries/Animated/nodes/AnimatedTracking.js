@@ -4,33 +4,40 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
 'use strict';
 
 import type {PlatformConfig} from '../AnimatedPlatformConfig';
-import type {EndCallback} from '../animations/Animation';
+import type Animation from '../animations/Animation';
+import type {AnimationConfig, EndCallback} from '../animations/Animation';
 import type {AnimatedNodeConfig} from './AnimatedNode';
 import type AnimatedValue from './AnimatedValue';
 
 import NativeAnimatedHelper from '../../../src/private/animated/NativeAnimatedHelper';
 import AnimatedNode from './AnimatedNode';
 
+type TrackingAnimationConfig = Readonly<{
+  ...AnimationConfig,
+  toValue: AnimatedNode,
+  ...
+}>;
+
 export default class AnimatedTracking extends AnimatedNode {
   _value: AnimatedValue;
   _parent: AnimatedNode;
   _callback: ?EndCallback;
-  _animationConfig: Object;
-  _animationClass: any;
+  _animationConfig: TrackingAnimationConfig;
+  _animationClass: Class<Animation>;
   _useNativeDriver: boolean;
 
   constructor(
     value: AnimatedValue,
     parent: AnimatedNode,
-    animationClass: any,
-    animationConfig: Object,
+    animationClass: Class<Animation>,
+    animationConfig: TrackingAnimationConfig,
     callback?: ?EndCallback,
     config?: ?AnimatedNodeConfig,
   ) {
@@ -52,7 +59,7 @@ export default class AnimatedTracking extends AnimatedNode {
     this._value.__makeNative(platformConfig);
   }
 
-  __getValue(): Object {
+  __getValue(): number {
     return this._parent.__getValue();
   }
 
@@ -79,13 +86,20 @@ export default class AnimatedTracking extends AnimatedNode {
     this._value.animate(
       new this._animationClass({
         ...this._animationConfig,
-        toValue: (this._animationConfig.toValue as any).__getValue(),
+        toValue: this._animationConfig.toValue.__getValue(),
       }),
       this._callback,
     );
   }
 
-  __getNativeConfig(): any {
+  __getNativeConfig(): {
+    type: string,
+    animationId: number,
+    animationConfig: Readonly<{platformConfig: ?PlatformConfig, ...}>,
+    toValue: number,
+    value: number,
+    debugID: ?string,
+  } {
     const animation = new this._animationClass({
       ...this._animationConfig,
       // remove toValue from the config as it's a ref to Animated.Value

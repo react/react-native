@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -127,7 +127,9 @@ const _combineCallbacks = function (
 
 const maybeVectorAnim = function (
   value: AnimatedValue | AnimatedValueXY | AnimatedColor,
+  // $FlowFixMe[unclear-type]
   config: Object,
+  // $FlowFixMe[unclear-type]
   anim: (value: AnimatedValue, config: Object) => CompositeAnimation,
 ): ?CompositeAnimation {
   if (value instanceof AnimatedValueXY) {
@@ -184,8 +186,11 @@ const springImpl = function (
     configuration: SpringAnimationConfig,
     callback?: ?EndCallback,
   ): void {
+    // $FlowFixMe[reassign-const]
     callback = _combineCallbacks(callback, configuration);
+    // $FlowFixMe[unclear-type]
     const singleValue: any = animatedValue;
+    // $FlowFixMe[unclear-type]
     const singleConfig: any = configuration;
     singleValue.stopTracking();
     if (configuration.toValue instanceof AnimatedNode) {
@@ -241,8 +246,11 @@ const timingImpl = function (
     configuration: TimingAnimationConfig,
     callback?: ?EndCallback,
   ): void {
+    // $FlowFixMe[reassign-const]
     callback = _combineCallbacks(callback, configuration);
+    // $FlowFixMe[unclear-type]
     const singleValue: any = animatedValue;
+    // $FlowFixMe[unclear-type]
     const singleConfig: any = configuration;
     singleValue.stopTracking();
     if (configuration.toValue instanceof AnimatedNode) {
@@ -299,8 +307,11 @@ const decayImpl = function (
     configuration: DecayAnimationConfig,
     callback?: ?EndCallback,
   ): void {
+    // $FlowFixMe[reassign-const]
     callback = _combineCallbacks(callback, configuration);
+    // $FlowFixMe[unclear-type]
     const singleValue: any = animatedValue;
+    // $FlowFixMe[unclear-type]
     const singleConfig: any = configuration;
     singleValue.stopTracking();
     singleValue.animate(new DecayAnimation(singleConfig), callback);
@@ -551,8 +562,11 @@ const loopImpl = function (
 };
 
 function forkEventImpl(
+  // $FlowFixMe[unclear-type]
   event: ?AnimatedEvent | ?Function,
+  // $FlowFixMe[unclear-type]
   listener: Function,
+  // $FlowFixMe[unclear-type]
 ): AnimatedEvent | Function {
   if (!event) {
     return listener;
@@ -568,7 +582,9 @@ function forkEventImpl(
 }
 
 function unforkEventImpl(
+  // $FlowFixMe[unclear-type]
   event: ?AnimatedEvent | ?Function,
+  // $FlowFixMe[unclear-type]
   listener: Function,
 ): void {
   if (event && event instanceof AnimatedEvent) {
@@ -583,6 +599,7 @@ function unforkEventImpl(
 const eventImpl: <T>(
   argMapping: ReadonlyArray<?Mapping>,
   config: EventConfig<T>,
+  // $FlowFixMe[unclear-type]
 ) => (...args: Array<any>) => void = function (argMapping, config): any {
   const animatedEvent = new AnimatedEvent(argMapping, config);
   if (animatedEvent.__isNative) {

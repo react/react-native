@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -49,7 +49,7 @@ export type InterpolationConfigType<
 function createNumericInterpolation(
   config: InterpolationConfigType<number>,
 ): (input: number) => number {
-  const outputRange: ReadonlyArray<number> = config.outputRange as any;
+  const outputRange: ReadonlyArray<number> = config.outputRange;
   const inputRange = config.inputRange;
 
   const easing = config.easing || Easing.linear;
@@ -84,6 +84,7 @@ function createNumericInterpolation(
       easing,
       extrapolateLeft,
       extrapolateRight,
+      // $FlowFixMe[unclear-type]
     ) as any;
   };
 }
@@ -203,6 +204,7 @@ function mapStringToNumericComponents(
     const components: Array<string | number> = [];
     let lastMatchEnd = 0;
     let match: RegExp$matchResult;
+    // $FlowFixMe[unclear-type]
     while ((match = numericComponentRegex.exec(input) as any) != null) {
       if (match.index > lastMatchEnd) {
         components.push(input.substring(lastMatchEnd, match.index));
@@ -468,12 +470,16 @@ export default class AnimatedInterpolation<
     if (!this._interpolation) {
       const config = this._config;
       if (config.outputRange && typeof config.outputRange[0] === 'string') {
+        // $FlowFixMe[unclear-type]
         this._interpolation = createStringInterpolation(config as any) as any;
       } else if (typeof config.outputRange[0] === 'object') {
         this._interpolation = createPlatformColorInterpolation(
+          // $FlowFixMe[unclear-type]
           config as any,
+          // $FlowFixMe[unclear-type]
         ) as any;
       } else {
+        // $FlowFixMe[unclear-type]
         this._interpolation = createNumericInterpolation(config as any) as any;
       }
     }
@@ -510,6 +516,7 @@ export default class AnimatedInterpolation<
     super.__detach();
   }
 
+  // $FlowFixMe[unclear-type]
   __getNativeConfig(): any {
     if (__DEV__) {
       validateInterpolation(this._config);
@@ -528,6 +535,7 @@ export default class AnimatedInterpolation<
         } else {
           return NativeAnimatedHelper.transformDataType(value);
         }
+        // $FlowFixMe[unclear-type]
       }) as any;
     } else if (typeof outputRange[0] === 'object') {
       outputType = 'platform_color';

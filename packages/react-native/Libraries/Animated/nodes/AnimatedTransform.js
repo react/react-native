@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -87,6 +87,7 @@ export default class AnimatedTransform extends AnimatedWithChildren {
     super.__makeNative(platformConfig);
   }
 
+  // $FlowFixMe[unclear-type]
   __getValue(): ReadonlyArray<Transform<any>> {
     return mapTransforms(this._transforms, animatedNode =>
       animatedNode.__getValue(),
@@ -94,7 +95,9 @@ export default class AnimatedTransform extends AnimatedWithChildren {
   }
 
   __getValueWithStaticTransforms(
+    // $FlowFixMe[unclear-type]
     staticTransforms: ReadonlyArray<Object>,
+    // $FlowFixMe[unclear-type]
   ): ReadonlyArray<Object> {
     const values = [];
     mapTransforms(this._transforms, node => {
@@ -105,6 +108,7 @@ export default class AnimatedTransform extends AnimatedWithChildren {
     return mapTransforms(staticTransforms, () => values.shift());
   }
 
+  // $FlowFixMe[unclear-type]
   __getAnimatedValue(): ReadonlyArray<Transform<any>> {
     return mapTransforms(this._transforms, animatedNode =>
       animatedNode.__getAnimatedValue(),
@@ -129,7 +133,9 @@ export default class AnimatedTransform extends AnimatedWithChildren {
     super.__detach();
   }
 
+  // $FlowFixMe[unclear-type]
   __getNativeConfig(): any {
+    // $FlowFixMe[unclear-type]
     const transformsConfig: Array<any> = [];
 
     const transforms = this._transforms;

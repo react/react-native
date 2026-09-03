@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -113,7 +113,7 @@ export function registerComponent(
       displayMode,
     });
   };
-  if (section) {
+  if (section === true) {
     sections[appKey] = runnables[appKey];
   }
   return appKey;
@@ -220,7 +220,7 @@ export function runApplication(
  */
 export function setSurfaceProps(
   appKey: string,
-  appParameters: Object,
+  appParameters: AppParameters,
   displayMode?: number,
 ): void {
   if (appKey !== 'LogBox') {
@@ -264,7 +264,6 @@ export function registerHeadlessTask(
   taskKey: string,
   taskProvider: TaskProvider,
 ): void {
-  // $FlowFixMe[object-this-reference]
   registerCancellableHeadlessTask(taskKey, taskProvider, () => () => {
     /* Cancel is no-op */
   });
@@ -300,7 +299,7 @@ export function registerCancellableHeadlessTask(
 export function startHeadlessTask(
   taskId: number,
   taskKey: string,
-  data: any,
+  data: unknown,
 ): void {
   const NativeHeadlessJsTaskSupport =
     require('./NativeHeadlessJsTaskSupport').default;
@@ -326,8 +325,7 @@ export function startHeadlessTask(
         NativeHeadlessJsTaskSupport &&
         reason instanceof HeadlessJsTaskError
       ) {
-        // $FlowFixMe[unused-promise]
-        NativeHeadlessJsTaskSupport.notifyTaskRetry(taskId).then(
+        void NativeHeadlessJsTaskSupport.notifyTaskRetry(taskId).then(
           retryPosted => {
             if (!retryPosted) {
               NativeHeadlessJsTaskSupport.notifyTaskFinished(taskId);

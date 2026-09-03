@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -64,7 +64,11 @@ function flatAnimatedNodes(
 }
 
 // Returns a copy of value with a transformation fn applied to any AnimatedNodes
-function mapAnimatedNodes(value: any, fn: any => any, depth: number = 0): any {
+function mapAnimatedNodes(
+  value: unknown,
+  fn: (node: AnimatedNode) => unknown,
+  depth: number = 0,
+): unknown {
   if (depth >= MAX_DEPTH) {
     return value;
   }
@@ -74,7 +78,7 @@ function mapAnimatedNodes(value: any, fn: any => any, depth: number = 0): any {
   } else if (Array.isArray(value)) {
     return value.map(element => mapAnimatedNodes(element, fn, depth + 1));
   } else if (isPlainObject(value)) {
-    const result: {[string]: any} = {};
+    const result: {[string]: unknown} = {};
     const keys = Object.keys(value);
     for (let ii = 0, length = keys.length; ii < length; ii++) {
       const key = keys[ii];
@@ -115,13 +119,13 @@ export default class AnimatedObject extends AnimatedWithChildren {
     this._value = value;
   }
 
-  __getValue(): any {
+  __getValue(): unknown {
     return mapAnimatedNodes(this._value, node => {
       return node.__getValue();
     });
   }
 
-  __getValueWithStaticObject(staticObject: unknown): any {
+  __getValueWithStaticObject(staticObject: unknown): unknown {
     const nodes = this._nodes;
     let index = 0;
     // NOTE: We can depend on `this._value` and `staticObject` sharing a
@@ -129,7 +133,7 @@ export default class AnimatedObject extends AnimatedWithChildren {
     return mapAnimatedNodes(staticObject, () => nodes[index++].__getValue());
   }
 
-  __getAnimatedValue(): any {
+  __getAnimatedValue(): unknown {
     return mapAnimatedNodes(this._value, node => {
       return node.__getAnimatedValue();
     });
@@ -162,7 +166,11 @@ export default class AnimatedObject extends AnimatedWithChildren {
     super.__makeNative(platformConfig);
   }
 
-  __getNativeConfig(): any {
+  __getNativeConfig(): {
+    type: string,
+    value: unknown,
+    debugID: ?string,
+  } {
     return {
       type: 'object',
       value: mapAnimatedNodes(this._value, node => {

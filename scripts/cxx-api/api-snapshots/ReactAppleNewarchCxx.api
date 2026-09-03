@@ -2499,7 +2499,7 @@ protocol NativeRedBoxSpec : public NSObjectRCTBridgeModule, public RCTTurboModul
 }
 
 protocol NativeSampleTurboModuleSpec : public NSObjectRCTBridgeModule, public RCTTurboModule {
-  public virtual NSArray<id<NSObject>>* getArray:(NSArray* arg);
+  public virtual NSArray<NSDictionary*>* getArray:(NSArray* arg);
   public virtual NSDictionary* getObject:(NSDictionary* arg);
   public virtual NSDictionary* getObjectAssert:(NSDictionary* arg);
   public virtual NSDictionary* getObjectThrows:(NSDictionary* arg);

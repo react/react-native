@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -90,9 +90,10 @@ function processColor(
   return null;
 }
 
-function isRgbaValue(value: any): boolean {
+function isRgbaValue(value: unknown): boolean {
   return (
-    value &&
+    value != null &&
+    typeof value === 'object' &&
     typeof value.r === 'number' &&
     typeof value.g === 'number' &&
     typeof value.b === 'number' &&
@@ -100,9 +101,10 @@ function isRgbaValue(value: any): boolean {
   );
 }
 
-function isRgbaAnimatedValue(value: any): boolean {
+function isRgbaAnimatedValue(value: unknown): boolean {
   return (
-    value &&
+    value != null &&
+    typeof value === 'object' &&
     value.r instanceof AnimatedValue &&
     value.g instanceof AnimatedValue &&
     value.b instanceof AnimatedValue &&
@@ -166,7 +168,7 @@ export default class AnimatedColor extends AnimatedWithChildren {
       this.a = new AnimatedValue(initColor.a);
     }
 
-    if (config?.useNativeDriver) {
+    if (config?.useNativeDriver === true) {
       this.__makeNative();
     }
   }
@@ -325,7 +327,15 @@ export default class AnimatedColor extends AnimatedWithChildren {
     super.__makeNative(platformConfig);
   }
 
-  __getNativeConfig(): {...} {
+  __getNativeConfig(): {
+    type: string,
+    r: number,
+    g: number,
+    b: number,
+    a: number,
+    nativeColor: ?NativeColorValue,
+    debugID: ?string,
+  } {
     return {
       type: 'color',
       r: this.r.__getNativeTag(),

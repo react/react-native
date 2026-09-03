@@ -4,13 +4,15 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
 'use strict';
 
 import typeof BlobT from '../Blob/Blob';
+import type {BlobData} from '../Blob/BlobTypes';
+import type {FormDataPart} from './FormData';
 import typeof FormDataT from './FormData';
 
 const Blob: BlobT = require('../Blob/Blob').default;
@@ -25,7 +27,16 @@ export type RequestBody =
   | ArrayBuffer
   | $ArrayBufferView;
 
-function convertRequestBody(body: RequestBody): Object {
+type RequestBodyResult = Readonly<{
+  string?: string,
+  blob?: BlobData,
+  formData?: Array<FormDataPart>,
+  base64?: string,
+  uri?: string,
+  ...
+}>;
+
+function convertRequestBody(body: ?RequestBody): ?RequestBodyResult {
   if (typeof body === 'string') {
     return {string: body};
   }
@@ -40,6 +51,12 @@ function convertRequestBody(body: RequestBody): Object {
      * an ArrayBufferView */
     return {base64: binaryToBase64(body)};
   }
+  // The only remaining runtime case is a `{uri: string, ...}` body, returned
+  // as-is (matching the previous behavior). `ArrayBuffer.isView` is not a Flow
+  // type guard, so Flow cannot refine the view types out of `body` here, and
+  // the inexact `{uri: ...}` object is not provably a `RequestBodyResult`.
+  // $FlowFixMe[class-object-subtyping]
+  // $FlowFixMe[incompatible-type]
   return body;
 }
 

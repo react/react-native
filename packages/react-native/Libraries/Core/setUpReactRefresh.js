@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -18,6 +18,7 @@ if (__DEV__) {
   }
 
   // This needs to run before the renderer initializes.
+  // $FlowFixMe[untyped-import]
   const ReactRefreshRuntime = require('react-refresh/runtime');
   ReactRefreshRuntime.injectIntoGlobalHook(global);
 

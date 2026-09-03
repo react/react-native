@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -15,7 +15,7 @@ import * as React from 'react';
 
 function takesHostComponentInstance(instance: HostInstance | null): void {}
 
-const MyHostComponent = 'Host' as any as HostComponent<{...}>;
+declare const MyHostComponent: HostComponent<{...}>;
 
 <MyHostComponent
   ref={hostComponentRef => {
