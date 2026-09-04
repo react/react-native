@@ -24,7 +24,6 @@
 #include <react/io/ResourceLoader.h>
 #include <react/logging/LogOnce.h>
 #include <react/renderer/componentregistry/native/NativeComponentRegistryBinding.h>
-#include <react/renderer/runtimescheduler/RuntimeSchedulerCallInvoker.h>
 #include <react/renderer/scheduler/SchedulerDelegate.h>
 #include <react/renderer/scheduler/SchedulerDelegateImpl.h>
 #include <react/renderer/scheduler/SurfaceDelegate.h>
@@ -248,8 +247,10 @@ void ReactHost::createReactInstance() {
 
   reactInstanceData_->mountingManager->setUIManager(scheduler_->getUIManager());
 
-  auto jsInvoker = std::make_shared<RuntimeSchedulerCallInvoker>(
-      reactInstance_->getRuntimeScheduler());
+  // Behind `enableBufferedCallInvoker` this shares the instance's buffered
+  // runtime executor, so async calls are ordered against callable module calls
+  // and cannot run before the bundle has evaluated.
+  auto jsInvoker = reactInstance_->createJSCallInvoker();
 
   if (inspector_ != nullptr) {
     inspector_->connectDebugger(devServerHelper_->getInspectorUrl());

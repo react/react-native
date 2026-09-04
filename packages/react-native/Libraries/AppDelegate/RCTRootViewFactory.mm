@@ -27,7 +27,6 @@
 #import <ReactCommon/RCTHost.h>
 #import <ReactCommon/RCTTurboModuleManager.h>
 #import <react/renderer/runtimescheduler/RuntimeScheduler.h>
-#import <react/renderer/runtimescheduler/RuntimeSchedulerCallInvoker.h>
 #import <react/runtime/JSRuntimeFactory.h>
 #import <react/runtime/JSRuntimeFactoryCAPI.h>
 

@@ -41,7 +41,6 @@
 #import <jsinspector-modern/ReactCdp.h>
 #import <jsireact/JSIExecutor.h>
 #import <react/featureflags/ReactNativeFeatureFlags.h>
-#import <react/renderer/runtimescheduler/RuntimeSchedulerCallInvoker.h>
 #import <react/utils/ContextContainer.h>
 #import <react/utils/FollyConvert.h>
 #import <react/utils/ManagedObjectWrapper.h>
@@ -333,7 +332,7 @@ __attribute__((deprecated(
   RuntimeExecutor bufferedRuntimeExecutor = _reactInstance->getBufferedRuntimeExecutor();
   timerManager->setRuntimeExecutor(bufferedRuntimeExecutor);
 
-  auto jsCallInvoker = make_shared<RuntimeSchedulerCallInvoker>(_reactInstance->getRuntimeScheduler());
+  auto jsCallInvoker = _reactInstance->createJSCallInvoker();
   RCTBridgeProxy *bridgeProxy =
       [[RCTBridgeProxy alloc] initWithViewRegistry:_bridgeModuleDecorator.viewRegistry_DEPRECATED
           moduleRegistry:_bridgeModuleDecorator.moduleRegistry

@@ -200,6 +200,16 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'stable',
     },
+    enableBufferedCallInvoker: {
+      defaultValue: true,
+      metadata: {
+        description:
+          'Route async CallInvoker work through the ReactInstance buffered runtime executor, so it is ordered against callable module calls and cannot run before the JS bundle has finished evaluating. invokeSync is unaffected.',
+        expectedReleaseValue: true,
+        purpose: 'release',
+      },
+      ossReleaseStage: 'none',
+    },
     enableCppPropsIteratorSetter: {
       defaultValue: false,
       metadata: {

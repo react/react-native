@@ -19,6 +19,7 @@
 #include <jsinspector-modern/HostTarget.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/renderer/runtimescheduler/RuntimeSchedulerBinding.h>
+#include <react/renderer/runtimescheduler/RuntimeSchedulerCallInvoker.h>
 #include <react/runtime/JSRuntimeBindings.h>
 #include <react/timing/primitives.h>
 #include <react/utils/jsi-utils.h>
@@ -42,7 +43,6 @@ std::shared_ptr<RuntimeScheduler> createRuntimeScheduler(
       // FIXME: Move creation of PerformanceEntryReporter to here and
       // guarantee that its lifetime is the same as the runtime.
       PerformanceEntryReporter::getInstance().get());
-
   return scheduler;
 }
 
@@ -112,34 +112,30 @@ ReactInstance::ReactInstance(
   if (parentInspectorTarget_ != nullptr) {
     auto executor = parentInspectorTarget_->executorFromThis();
 
+    // This buffer sits *below* the RuntimeScheduler — it is what feeds it — so
+    // there is nothing here that could act on a priority, and passing one
+    // through would have nowhere to go. Its only caller is
+    // `runtimeExecutorThatExecutesAfterInspectorSetup` below, a plain
+    // RuntimeExecutor, so in practice everything arrives at the default.
     auto bufferedRuntimeExecutorThatWaitsForInspectorSetup =
-        std::make_shared<BufferedRuntimeExecutor>(runtimeExecutor);
-    auto runtimeExecutorThatExecutesAfterInspectorSetup =
-        [bufferedRuntimeExecutorThatWaitsForInspectorSetup](
-            std::function<void(jsi::Runtime & runtime)>&& callback) {
-          bufferedRuntimeExecutorThatWaitsForInspectorSetup->execute(
-              std::move(callback));
-        };
+        std::make_shared<BufferedRuntimeExecutor>(
+            [runtimeExecutor](
+                SchedulerPriority /*priority*/,
+                std::function<void(jsi::Runtime & runtime)>&& callback) {
+              runtimeExecutor(std::move(callback));
+            });
 
     runtimeScheduler_ = createRuntimeScheduler(
-        runtimeExecutorThatExecutesAfterInspectorSetup,
+        bufferedRuntimeExecutorThatWaitsForInspectorSetup->asRuntimeExecutor(),
         [jsErrorHandler = jsErrorHandler_](
             jsi::Runtime& runtime, jsi::JSError& error) {
           jsErrorHandler->handleError(runtime, error, true);
         });
 
-    auto runtimeExecutorThatGoesThroughRuntimeScheduler =
-        [runtimeScheduler = runtimeScheduler_.get()](
-            std::function<void(jsi::Runtime & runtime)>&& callback) {
-          runtimeScheduler->scheduleWork(std::move(callback));
-        };
-
     // This code can execute from any thread, so we need to make sure we set up
     // the inspector logic in the right one. The callback executes immediately
     // if we are already in the right thread.
-    executor([this,
-              runtimeExecutorThatGoesThroughRuntimeScheduler,
-              bufferedRuntimeExecutorThatWaitsForInspectorSetup](
+    executor([this, bufferedRuntimeExecutorThatWaitsForInspectorSetup](
                  jsinspector_modern::HostTarget& hostTarget) {
       // Callbacks scheduled through the page target executor are generally
       // not guaranteed to run (e.g.: if the page target is destroyed)
@@ -150,8 +146,7 @@ ReactInstance::ReactInstance(
       //   creation task to finish before starting the destruction.
       inspectorTarget_ = &hostTarget.registerInstance(*this);
       runtimeInspectorTarget_ = &inspectorTarget_->registerRuntime(
-          runtime_->getRuntimeTargetDelegate(),
-          runtimeExecutorThatGoesThroughRuntimeScheduler);
+          runtime_->getRuntimeTargetDelegate(), getUnbufferedRuntimeExecutor());
       bufferedRuntimeExecutorThatWaitsForInspectorSetup->flush();
     });
   } else {
@@ -168,10 +163,14 @@ ReactInstance::ReactInstance(
         setHermesEventLoopControl(runtime, runtimeScheduler);
       });
 
+  // Note that bufferedRuntimeExecutor_ only has a raw pointer to
+  // RuntimeScheduler It should always be retained weakly, as it should be
+  // destroyed when the runtime is.
   bufferedRuntimeExecutor_ = std::make_shared<BufferedRuntimeExecutor>(
       [runtimeScheduler = runtimeScheduler_.get()](
+          SchedulerPriority priority,
           std::function<void(jsi::Runtime & runtime)>&& callback) {
-        runtimeScheduler->scheduleWork(std::move(callback));
+        runtimeScheduler->scheduleTask(priority, std::move(callback));
       });
 }
 ReactInstance::~ReactInstance() noexcept {
@@ -200,7 +199,8 @@ void ReactInstance::unregisterFromInspector() {
 RuntimeExecutor ReactInstance::getUnbufferedRuntimeExecutor() noexcept {
   return [runtimeScheduler = runtimeScheduler_.get()](
              std::function<void(jsi::Runtime & runtime)>&& callback) {
-    runtimeScheduler->scheduleWork(std::move(callback));
+    runtimeScheduler->scheduleTask(
+        SchedulerPriority::ImmediatePriority, std::move(callback));
   };
 }
 
@@ -209,14 +209,7 @@ RuntimeExecutor ReactInstance::getUnbufferedRuntimeExecutor() noexcept {
 // getUnbufferedRuntimeExecutor() instead if you do not need the main JS
 // bundle to have finished. e.g. setting global variables into JS runtime.
 RuntimeExecutor ReactInstance::getBufferedRuntimeExecutor() noexcept {
-  return [weakBufferedRuntimeExecutor_ =
-              std::weak_ptr<BufferedRuntimeExecutor>(bufferedRuntimeExecutor_)](
-             std::function<void(jsi::Runtime & runtime)>&& callback) {
-    if (auto strongBufferedRuntimeExecutor_ =
-            weakBufferedRuntimeExecutor_.lock()) {
-      strongBufferedRuntimeExecutor_->execute(std::move(callback));
-    }
-  };
+  return bufferedRuntimeExecutor_->asWeakRuntimeExecutor();
 }
 
 // TODO(T184010230): Should the RuntimeScheduler returned from this method be
@@ -224,6 +217,19 @@ RuntimeExecutor ReactInstance::getBufferedRuntimeExecutor() noexcept {
 std::shared_ptr<RuntimeScheduler>
 ReactInstance::getRuntimeScheduler() noexcept {
   return runtimeScheduler_;
+}
+
+std::shared_ptr<CallInvoker> ReactInstance::createJSCallInvoker() noexcept {
+  if (ReactNativeFeatureFlags::enableBufferedCallInvoker()) {
+    return std::make_shared<CallInvokerImpl>(
+        bufferedRuntimeExecutor_, runtimeScheduler_);
+  }
+  // The flag-off path, and the last use of the deprecated invoker. It goes when
+  // `enableBufferedCallInvoker` is cleaned up.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+  return std::make_shared<RuntimeSchedulerCallInvoker>(runtimeScheduler_);
+#pragma clang diagnostic pop
 }
 
 namespace {
@@ -319,12 +325,6 @@ void ReactInstance::callFunctionOnModule(
     const std::string& moduleName,
     const std::string& methodName,
     folly::dynamic&& args) {
-  if (bufferedRuntimeExecutor_ == nullptr) {
-    LOG(ERROR)
-        << "Calling callFunctionOnModule with null BufferedRuntimeExecutor";
-    return;
-  }
-
   bufferedRuntimeExecutor_->execute([this,
                                      moduleName = moduleName,
                                      methodName = methodName,

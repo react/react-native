@@ -1901,17 +1901,15 @@ class facebook::react::BridgelessNativeMethodCallInvoker : public facebook::reac
   public virtual void invokeSync(const std::string& methodName, facebook::react::NativeMethodCallFunc&& func) override;
 }
 
-class facebook::react::BufferedRuntimeExecutor {
-  public BufferedRuntimeExecutor(facebook::react::RuntimeExecutor runtimeExecutor);
+class facebook::react::BufferedRuntimeExecutor : public std::enable_shared_from_this<facebook::react::BufferedRuntimeExecutor> {
+  public BufferedRuntimeExecutor(facebook::react::BufferedRuntimeExecutor::Executor executor);
+  public facebook::react::RuntimeExecutor asRuntimeExecutor();
+  public facebook::react::RuntimeExecutor asWeakRuntimeExecutor();
+  public using Executor = std::function<void(facebook::react::SchedulerPriority, facebook::react::BufferedRuntimeExecutor::Work&&)>;
   public using Work = std::function<void(facebook::jsi::Runtime& runtime)>;
   public void execute(facebook::react::BufferedRuntimeExecutor::Work&& callback);
+  public void execute(facebook::react::SchedulerPriority priority, facebook::react::BufferedRuntimeExecutor::Work&& callback);
   public void flush();
-}
-
-struct facebook::react::BufferedRuntimeExecutor::BufferedWork {
-  public bool operator<(const facebook::react::BufferedRuntimeExecutor::BufferedWork& rhs) const;
-  public facebook::react::BufferedRuntimeExecutor::Work work_;
-  public uint64_t index_;
 }
 
 class facebook::react::CSSSyntaxParser {
@@ -1975,6 +1973,13 @@ class facebook::react::CallInvoker {
 class facebook::react::CallInvokerHolder : public jni::HybridClass<facebook::react::CallInvokerHolder> {
   public static constexpr auto kJavaDescriptor;
   public std::shared_ptr<facebook::react::CallInvoker> getCallInvoker();
+}
+
+class facebook::react::CallInvokerImpl : public facebook::react::CallInvoker {
+  public CallInvokerImpl(std::shared_ptr<facebook::react::BufferedRuntimeExecutor> bufferedRuntimeExecutor, std::weak_ptr<facebook::react::RuntimeScheduler> runtimeScheduler);
+  public virtual void invokeAsync(facebook::react::CallFunc&& func) noexcept override;
+  public virtual void invokeAsync(facebook::react::SchedulerPriority priority, facebook::react::CallFunc&& func) noexcept override;
+  public virtual void invokeSync(facebook::react::CallFunc&& func) override;
 }
 
 class facebook::react::CallbackWrapper : public facebook::react::LongLivedObject {
@@ -4317,6 +4322,7 @@ class facebook::react::ReactInstance {
   public facebook::react::ReactInstance& operator=(facebook::react::ReactInstance&&) = delete;
   public facebook::react::RuntimeExecutor getBufferedRuntimeExecutor() noexcept;
   public facebook::react::RuntimeExecutor getUnbufferedRuntimeExecutor() noexcept;
+  public std::shared_ptr<facebook::react::CallInvoker> createJSCallInvoker() noexcept;
   public std::shared_ptr<facebook::react::RuntimeScheduler> getRuntimeScheduler() noexcept;
   public using BindingsInstallFunc = std::function<void(facebook::jsi::Runtime& runtime)>;
   public void callFunctionOnModule(const std::string& moduleName, const std::string& methodName, folly::dynamic&& args);

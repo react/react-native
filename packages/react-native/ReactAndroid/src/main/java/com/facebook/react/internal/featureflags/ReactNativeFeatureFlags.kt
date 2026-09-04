@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<ffaf7abad8f9b217cc16e28ee9270b40>>
+ * @generated SignedSource<<b7ef80c2c39c734ae511fe6457b89ce7>>
  */
 
 /**
@@ -113,6 +113,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun enableBridgelessArchitecture(): Boolean = accessor.enableBridgelessArchitecture()
+
+  /**
+   * Route async CallInvoker work through the ReactInstance buffered runtime executor, so it is ordered against callable module calls and cannot run before the JS bundle has finished evaluating. invokeSync is unaffected.
+   */
+  @JvmStatic
+  public fun enableBufferedCallInvoker(): Boolean = accessor.enableBufferedCallInvoker()
 
   /**
    * Enable prop iterator setter-style construction of Props in C++ (this flag is not used in Java).

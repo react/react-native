@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<54cf6211f3dbfc379c6058cbc9d9af07>>
+ * @generated SignedSource<<7505981b27be5298787edef4d80527e8>>
  */
 
 /**
@@ -112,6 +112,11 @@ bool NativeReactNativeFeatureFlags::enableAndroidTextMeasurementOptimizations(
 bool NativeReactNativeFeatureFlags::enableBridgelessArchitecture(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::enableBridgelessArchitecture();
+}
+
+bool NativeReactNativeFeatureFlags::enableBufferedCallInvoker(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::enableBufferedCallInvoker();
 }
 
 bool NativeReactNativeFeatureFlags::enableCppPropsIteratorSetter(

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<145b12c4a208db86c7bfdfed56cf433f>>
+ * @generated SignedSource<<eab10e240a16c8ef3f659bd8ded290f0>>
  */
 
 /**
@@ -70,6 +70,9 @@ class JReactNativeFeatureFlagsCxxInterop
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool enableBridgelessArchitecture(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
+
+  static bool enableBufferedCallInvoker(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool enableCppPropsIteratorSetter(

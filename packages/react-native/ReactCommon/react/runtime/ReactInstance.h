@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <ReactCommon/CallInvoker.h>
 #include <ReactCommon/RuntimeExecutor.h>
 #include <cxxreact/JSBigString.h>
 #include <cxxreact/MessageQueueThread.h>
@@ -15,6 +16,7 @@
 #include <jsinspector-modern/ReactCdp.h>
 #include <react/renderer/runtimescheduler/RuntimeScheduler.h>
 #include <react/runtime/BufferedRuntimeExecutor.h>
+#include <react/runtime/CallInvokerImpl.h>
 #include <react/runtime/JSRuntimeFactory.h>
 #include <react/runtime/TimerManager.h>
 
@@ -41,6 +43,16 @@ class ReactInstance final : private jsinspector_modern::InstanceTargetDelegate {
   RuntimeExecutor getBufferedRuntimeExecutor() noexcept;
 
   std::shared_ptr<RuntimeScheduler> getRuntimeScheduler() noexcept;
+
+  /**
+   * The CallInvoker platforms should hand to TurboModules and other native
+   * callers. Behind `enableBufferedCallInvoker` this shares the instance's
+   * BufferedRuntimeExecutor, so async calls are ordered against
+   * `callFunctionOnModule` and do not run before the main bundle has finished
+   * evaluating; otherwise it is the unbuffered RuntimeScheduler-backed invoker.
+   * See CallInvokerImpl.
+   */
+  std::shared_ptr<CallInvoker> createJSCallInvoker() noexcept;
 
   struct JSRuntimeFlags {
     bool isProfiling = false;

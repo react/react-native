@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<b79fbf8335bf2b480743c3cd93d4e6bd>>
+ * @generated SignedSource<<247f721796621af8615014477518bcd9>>
  */
 
 /**
@@ -55,6 +55,8 @@ public object ReactNativeFeatureFlagsCxxInterop {
   @DoNotStrip @JvmStatic public external fun enableAndroidTextMeasurementOptimizations(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enableBridgelessArchitecture(): Boolean
+
+  @DoNotStrip @JvmStatic public external fun enableBufferedCallInvoker(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enableCppPropsIteratorSetter(): Boolean
 
