@@ -81,6 +81,8 @@ void BaseParagraphProps::setProp(
         textBreakStrategy,
         "textBreakStrategy");
     REBUILD_FIELD_SWITCH_CASE(
+        paDefaults, value, paragraphAttributes, textWidthMode, "textWidthMode");
+    REBUILD_FIELD_SWITCH_CASE(
         paDefaults,
         value,
         paragraphAttributes,

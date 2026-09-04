@@ -44,6 +44,7 @@ const textViewConfig = {
     adjustsFontSizeToFit: true,
     minimumFontScale: true,
     textBreakStrategy: true,
+    textWidthMode: true,
     onTextLayout: true,
     dataDetectorType: true,
     android_hyphenationFrequency: true,

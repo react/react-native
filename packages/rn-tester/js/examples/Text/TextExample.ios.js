@@ -16,6 +16,7 @@ import hotdog from '../../assets/hotdog.jpg';
 import RNTesterText from '../../components/RNTesterText';
 import TextLegend from '../../components/TextLegend';
 import TextSharedExamples from './TextSharedExamples';
+import TextWidthModeExample from './TextWidthModeExample';
 
 const TextInlineView = require('../../components/TextInlineView');
 const React = require('react');
@@ -571,6 +572,13 @@ class TextWithCapBaseBox extends React.Component<
 }
 
 const examples = [
+  {
+    title: 'Wrapped text width mode',
+    name: 'textWidthMode',
+    description:
+      'Compares default constrained text width with text sized to its longest rendered line.',
+    render: TextWidthModeExample,
+  },
   {
     title: 'iOS System Font Families (iOS only)',
     name: 'iOSSystemFontFamilies',
