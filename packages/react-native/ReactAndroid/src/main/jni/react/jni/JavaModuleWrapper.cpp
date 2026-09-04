@@ -20,6 +20,7 @@
 #include <fbsystrace.h>
 #endif
 
+#include "NativeMap.h"
 #include "ReadableNativeArray.h"
 
 #ifndef RCT_REMOVE_LEGACY_ARCH

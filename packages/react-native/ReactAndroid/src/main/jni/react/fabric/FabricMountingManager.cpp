@@ -13,6 +13,7 @@
 
 #include <cxxreact/TraceSection.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
+#include <react/jni/ReadableNativeArray.h>
 #include <react/jni/ReadableNativeMap.h>
 #include <react/renderer/components/scrollview/ScrollViewProps.h>
 #include <react/renderer/core/DynamicPropsUtilities.h>

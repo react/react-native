@@ -27,32 +27,32 @@ alias_ref<ReadableType> getTypeField(const char* fieldName) {
 
 } // namespace
 
-local_ref<ReadableType> ReadableType::getType(folly::dynamic::Type type) {
+alias_ref<ReadableType> ReadableType::getType(folly::dynamic::Type type) {
   switch (type) {
     case folly::dynamic::Type::NULLT: {
-      static alias_ref<ReadableType> val = getTypeField("Null");
-      return make_local(val);
+      static auto val = getTypeField("Null");
+      return val;
     }
     case folly::dynamic::Type::BOOL: {
-      static alias_ref<ReadableType> val = getTypeField("Boolean");
-      return make_local(val);
+      static auto val = getTypeField("Boolean");
+      return val;
     }
     case folly::dynamic::Type::DOUBLE:
     case folly::dynamic::Type::INT64: {
-      static alias_ref<ReadableType> val = getTypeField("Number");
-      return make_local(val);
+      static auto val = getTypeField("Number");
+      return val;
     }
     case folly::dynamic::Type::STRING: {
-      static alias_ref<ReadableType> val = getTypeField("String");
-      return make_local(val);
+      static auto val = getTypeField("String");
+      return val;
     }
     case folly::dynamic::Type::OBJECT: {
-      static alias_ref<ReadableType> val = getTypeField("Map");
-      return make_local(val);
+      static auto val = getTypeField("Map");
+      return val;
     }
     case folly::dynamic::Type::ARRAY: {
-      static alias_ref<ReadableType> val = getTypeField("Array");
-      return make_local(val);
+      static auto val = getTypeField("Array");
+      return val;
     }
     default:
       throwNewJavaException(

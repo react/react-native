@@ -17,7 +17,7 @@ jboolean JDynamicNative::isNullNative() {
   return static_cast<jboolean>(payload_.isNull());
 }
 
-jni::local_ref<ReadableType> JDynamicNative::getTypeNative() {
+jni::alias_ref<ReadableType> JDynamicNative::getTypeNative() {
   return ReadableType::getType(payload_.type());
 }
 

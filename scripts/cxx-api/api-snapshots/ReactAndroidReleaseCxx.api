@@ -1066,7 +1066,7 @@ uint8_t facebook::react::blueFromColor(facebook::react::SharedColor color) noexc
 uint8_t facebook::react::greenFromColor(facebook::react::SharedColor color) noexcept;
 uint8_t facebook::react::redFromColor(facebook::react::SharedColor color) noexcept;
 void facebook::react::FBReactNativeSpec_registerComponentDescriptorsFromCodegen(std::shared_ptr<const facebook::react::ComponentDescriptorProviderRegistry> registry);
-void facebook::react::addDynamicToJArray(jni::local_ref<jni::JArrayClass<jobject>> jarray, jint index, const folly::dynamic& dyn);
+void facebook::react::addDynamicToJArray(jni::alias_ref<jni::JArrayClass<jobject>> jarray, jint index, const folly::dynamic& dyn);
 void facebook::react::bindHasComponentProvider(facebook::jsi::Runtime& runtime, facebook::react::HasComponentProviderFunctionType&& provider);
 void facebook::react::bindNativeLogger(facebook::jsi::Runtime& runtime, facebook::react::Logger logger);
 void facebook::react::bindNativePerformanceNow(facebook::jsi::Runtime& runtime);
@@ -7870,12 +7870,11 @@ struct facebook::react::ReadableNativeMap : public jni::HybridClass<facebook::re
   public static jni::local_ref<jhybridobject> createWithContents(folly::dynamic&& map);
   public static void mapException(std::exception_ptr ex);
   public static void registerNatives();
-  public std::optional<folly::dynamic> keys_;
 }
 
 struct facebook::react::ReadableType : public facebook::jni::JavaClass<facebook::react::ReadableType> {
   public static constexpr auto kJavaDescriptor;
-  public static jni::local_ref<facebook::react::ReadableType> getType(folly::dynamic::Type type);
+  public static jni::alias_ref<facebook::react::ReadableType> getType(folly::dynamic::Type type);
 }
 
 struct facebook::react::RecoverableError : public std::exception {

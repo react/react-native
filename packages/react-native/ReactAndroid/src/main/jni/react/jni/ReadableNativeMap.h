@@ -11,10 +11,9 @@
 #include <folly/dynamic.h>
 #include <folly/json.h>
 #include <optional>
+#include <vector>
 
-#include "NativeCommon.h"
 #include "NativeMap.h"
-#include "ReadableNativeArray.h"
 
 namespace facebook::react {
 
@@ -24,7 +23,7 @@ struct ReadableMap : jni::JavaClass<ReadableMap> {
   static auto constexpr kJavaDescriptor = "Lcom/facebook/react/bridge/ReadableMap;";
 };
 
-void addDynamicToJArray(jni::local_ref<jni::JArrayClass<jobject>> jarray, jint index, const folly::dynamic &dyn);
+void addDynamicToJArray(jni::alias_ref<jni::JArrayClass<jobject>> jarray, jint index, const folly::dynamic &dyn);
 
 struct ReadableNativeMap : jni::HybridClass<ReadableNativeMap, NativeMap> {
   static auto constexpr kJavaDescriptor = "Lcom/facebook/react/bridge/ReadableNativeMap;";
@@ -32,7 +31,6 @@ struct ReadableNativeMap : jni::HybridClass<ReadableNativeMap, NativeMap> {
   jni::local_ref<jni::JArrayClass<jstring>> importKeys();
   jni::local_ref<jni::JArrayClass<jobject>> importValues();
   jni::local_ref<jni::JArrayClass<jobject>> importTypes();
-  std::optional<folly::dynamic> keys_;
   static jni::local_ref<jhybridobject> createWithContents(folly::dynamic &&map);
 
   static void mapException(std::exception_ptr ex);
@@ -41,6 +39,14 @@ struct ReadableNativeMap : jni::HybridClass<ReadableNativeMap, NativeMap> {
   using HybridBase::HybridBase;
   friend HybridBase;
   friend struct WritableNativeMap;
+
+ private:
+  void throwIfKeysNotImported() const;
+
+  // folly::dynamic stores object entries in an F14NodeMap, so these pointers
+  // remain valid across the insertions and replacements exposed by
+  // WritableNativeMap.
+  std::optional<std::vector<const folly::dynamic *>> values_;
 };
 
 } // namespace facebook::react

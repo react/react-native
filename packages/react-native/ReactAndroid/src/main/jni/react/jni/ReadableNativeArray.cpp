@@ -23,7 +23,7 @@ void ReadableNativeArray::mapException(std::exception_ptr ex) {
 }
 
 local_ref<JArrayClass<jobject>> ReadableNativeArray::importArray() {
-  auto size = static_cast<jint>(array_.size());
+  auto size = static_cast<jsize>(array_.size());
   auto jarray = JArrayClass<jobject>::newArray(size);
   for (jint ii = 0; ii < size; ii++) {
     addDynamicToJArray(jarray, ii, array_.at(ii));
@@ -32,10 +32,10 @@ local_ref<JArrayClass<jobject>> ReadableNativeArray::importArray() {
 }
 
 local_ref<JArrayClass<jobject>> ReadableNativeArray::importTypeArray() {
-  auto size = static_cast<jint>(array_.size());
+  auto size = static_cast<jsize>(array_.size());
   auto jarray = JArrayClass<jobject>::newArray(size);
   for (jint ii = 0; ii < size; ii++) {
-    (*jarray)[ii] = ReadableType::getType(array_.at(ii).type());
+    jarray->setElement(ii, ReadableType::getType(array_.at(ii).type()).get());
   }
   return jarray;
 }

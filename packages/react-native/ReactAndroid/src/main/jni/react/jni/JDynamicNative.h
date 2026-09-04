@@ -42,7 +42,7 @@ class JDynamicNative : public jni::HybridClass<JDynamicNative, JDynamic> {
  private:
   friend HybridBase;
 
-  jni::local_ref<ReadableType> getTypeNative();
+  jni::alias_ref<ReadableType> getTypeNative();
   jni::local_ref<jstring> asString();
   jboolean asBoolean();
   jdouble asDouble();
