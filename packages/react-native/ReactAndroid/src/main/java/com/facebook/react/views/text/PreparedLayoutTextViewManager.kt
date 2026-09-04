@@ -13,6 +13,7 @@ import android.text.Spannable
 import android.text.Spanned
 import android.view.View
 import com.facebook.react.R
+import com.facebook.react.bridge.Dynamic
 import com.facebook.react.internal.SystraceSection
 import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.uimanager.BackgroundStyleApplicator
@@ -20,7 +21,6 @@ import com.facebook.react.uimanager.BaseViewManager
 import com.facebook.react.uimanager.IViewGroupManager
 import com.facebook.react.uimanager.LayoutShadowNode
 import com.facebook.react.uimanager.LengthPercentage
-import com.facebook.react.uimanager.LengthPercentageType
 import com.facebook.react.uimanager.PointerEvents
 import com.facebook.react.uimanager.ReactStylesDiffMap
 import com.facebook.react.uimanager.ReferenceStateWrapper
@@ -149,13 +149,10 @@ internal class PreparedLayoutTextViewManager :
               ViewProps.BORDER_BOTTOM_RIGHT_RADIUS,
               ViewProps.BORDER_BOTTOM_LEFT_RADIUS,
           ],
-      defaultFloat = Float.NaN,
   )
-  fun setBorderRadius(view: PreparedLayoutTextView, index: Int, borderRadius: Float): Unit {
-    val radius =
-        if (borderRadius.isNaN()) null
-        else LengthPercentage(borderRadius, LengthPercentageType.POINT)
-    BackgroundStyleApplicator.setBorderRadius(view, BorderRadiusProp.values()[index], radius)
+  fun setBorderRadius(view: PreparedLayoutTextView, index: Int, rawBorderRadius: Dynamic): Unit {
+    val borderRadius = LengthPercentage.setFromDynamic(rawBorderRadius)
+    BackgroundStyleApplicator.setBorderRadius(view, BorderRadiusProp.values()[index], borderRadius)
   }
 
   @ReactProp(name = "borderStyle")

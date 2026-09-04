@@ -32,9 +32,13 @@ import com.facebook.react.bridge.CatalystInstance
 import com.facebook.react.bridge.JavaOnlyMap
 import com.facebook.react.bridge.ReactTestHelper.createMockCatalystInstance
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsForTests
+import com.facebook.react.uimanager.BackgroundStyleApplicator
 import com.facebook.react.uimanager.DisplayMetricsHolder
+import com.facebook.react.uimanager.LengthPercentage
+import com.facebook.react.uimanager.LengthPercentageType
 import com.facebook.react.uimanager.ReactStylesDiffMap
 import com.facebook.react.uimanager.ThemedReactContext
+import com.facebook.react.uimanager.style.BorderRadiusProp
 import com.facebook.react.views.text.DefaultStyleValuesUtil.getDefaultTextColorHint
 import com.facebook.react.views.text.ReactTextUpdate
 import com.facebook.react.views.text.internal.span.CustomStyleSpan
@@ -630,6 +634,22 @@ class ReactTextInputPropertyTest {
     )
 
     assertThat(checkNotNull(view.text).getSpans(0, view.length(), MarkerSpan::class.java)).isEmpty()
+  }
+
+  @Test
+  fun testBorderRadius() {
+    // Percentage border radii arrive as strings and must not crash the property updater
+    manager.updateProperties(view, buildStyles("borderRadius", "50%"))
+    assertThat(BackgroundStyleApplicator.getBorderRadius(view, BorderRadiusProp.BORDER_RADIUS))
+        .isEqualTo(LengthPercentage(50f, LengthPercentageType.PERCENT))
+
+    manager.updateProperties(view, buildStyles("borderRadius", 10.0))
+    assertThat(BackgroundStyleApplicator.getBorderRadius(view, BorderRadiusProp.BORDER_RADIUS))
+        .isEqualTo(LengthPercentage(10f, LengthPercentageType.POINT))
+
+    manager.updateProperties(view, buildStyles("borderRadius", null))
+    assertThat(BackgroundStyleApplicator.getBorderRadius(view, BorderRadiusProp.BORDER_RADIUS))
+        .isNull()
   }
 
   private fun buildStyles(vararg keysAndValues: Any?): ReactStylesDiffMap {

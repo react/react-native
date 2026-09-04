@@ -282,9 +282,24 @@ constructor(private val fpsListener: FpsListener? = null) :
               ViewProps.BORDER_BOTTOM_RIGHT_RADIUS,
               ViewProps.BORDER_BOTTOM_LEFT_RADIUS,
           ],
-      defaultFloat = Float.NaN,
+  )
+  public fun setBorderRadius(
+      view: ReactHorizontalScrollView?,
+      index: Int,
+      rawBorderRadius: Dynamic,
+  ) {
+    if (view != null) {
+      val borderRadius = LengthPercentage.setFromDynamic(rawBorderRadius)
+      setBorderRadius(view, BorderRadiusProp.entries[index], borderRadius)
+    }
+  }
+
+  @Deprecated(
+      "Don't use setBorderRadius(view, index, Float) as it was deprecated in React Native 0.88.0.",
   )
   public fun setBorderRadius(view: ReactHorizontalScrollView?, index: Int, borderRadius: Float) {
+    // Direct body: DynamicFromObject(Float).asDouble() throws, and setFromDynamic
+    // would not map NaN back to null like the original Float path did.
     if (view != null) {
       val radius =
           if (borderRadius.isNaN()) null
