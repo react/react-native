@@ -15043,6 +15043,17 @@ class facebook::yoga::Config : public YGConfig {
   public void* getContext() const;
 }
 
+class facebook::yoga::GridStyleStorage {
+  public GridStyleStorage() = default;
+  public GridStyleStorage(const facebook::yoga::GridStyleStorage& other);
+  public GridStyleStorage(facebook::yoga::GridStyleStorage&&) noexcept = default;
+  public bool operator==(const facebook::yoga::GridStyleStorage& other) const;
+  public const facebook::yoga::GridStyle& get() const;
+  public facebook::yoga::GridStyle& ensure();
+  public facebook::yoga::GridStyleStorage& operator=(const facebook::yoga::GridStyleStorage& other);
+  public facebook::yoga::GridStyleStorage& operator=(facebook::yoga::GridStyleStorage&&) noexcept = default;
+}
+
 class facebook::yoga::Node : public YGNode {
   public Node();
   public Node(const facebook::yoga::Config* config);
@@ -15604,6 +15615,18 @@ struct facebook::yoga::GridLine {
   public static constexpr facebook::yoga::GridLine auto_();
   public static constexpr facebook::yoga::GridLine fromInteger(int32_t value);
   public static constexpr facebook::yoga::GridLine span(int32_t value);
+}
+
+struct facebook::yoga::GridStyle {
+  public bool operator==(const facebook::yoga::GridStyle& other) const = default;
+  public facebook::yoga::GridLine columnEnd;
+  public facebook::yoga::GridLine columnStart;
+  public facebook::yoga::GridLine rowEnd;
+  public facebook::yoga::GridLine rowStart;
+  public facebook::yoga::GridTrackList autoColumns;
+  public facebook::yoga::GridTrackList autoRows;
+  public facebook::yoga::GridTrackList templateColumns;
+  public facebook::yoga::GridTrackList templateRows;
 }
 
 struct facebook::yoga::GridTrackSize {
