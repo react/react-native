@@ -497,6 +497,43 @@ describe('expandSpmDependencies (podspec-derived names)', () => {
     expect(worklets.swiftName).toBe('worklets');
   });
 
+  it.each([
+    ['header_dir', {name: 'React-Core', headerDir: 'React'}, 'React'],
+    [
+      'module_name',
+      {name: 'react-native-maps', moduleName: 'ReactNativeMaps'},
+      'ReactNativeMaps',
+    ],
+    ['name', {name: 'RNSVG'}, 'RNSVG'],
+  ])('reports %s as the podspec key the name came from', (key, facts, name) => {
+    // `spm scaffold` persists the winner as the library's name, so which key
+    // won is part of the decision it has to be able to report.
+    expect(resolveSwiftName('react-native-thing', null, facts)).toEqual({
+      name,
+      source: 'podspec',
+      podspecKey: key,
+    });
+  });
+
+  it('reports no podspec key for a declared or guessed name', () => {
+    expect(resolveSwiftName('react-native-foo', {name: 'RNFoo'}, null)).toEqual(
+      {name: 'RNFoo', source: 'config'},
+    );
+    expect(resolveSwiftName('react-native-foo', null, null)).toEqual({
+      name: 'ReactNativeFoo',
+      source: 'npm',
+    });
+  });
+
+  it('carries the podspec key onto every expanded dep', () => {
+    const [maps] = expand([dep('react-native-maps', '/maps')], {
+      podspecs: {
+        '/maps': {name: 'react-native-maps', moduleName: 'ReactNativeMaps'},
+      },
+    });
+    expect(maps.swiftNamePodspecKey).toBe('module_name');
+  });
+
   it('lets spm.name beat both', () => {
     const [svg] = expand([dep('react-native-svg', '/svg')], {
       configs: {'/svg': {spm: {name: 'MySvg'}}},

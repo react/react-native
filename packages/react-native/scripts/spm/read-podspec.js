@@ -181,6 +181,16 @@ function readPodspecSource(podspecPath /*: string */) /*: string */ {
     .join('\n');
 }
 
+// A subspec that re-binds a receiver the identity regexes trust: inside
+// `s.subspec "common" do |s|`, `s` is the CHILD, and no regex over flat text
+// can see that. Any other block variable (`do |ss|`) is unambiguous.
+const SHADOWING_SUBSPEC_RE =
+  /\.subspec\s+["'][^"']*["']\s+do\s*\|\s*(?:s|spec)\s*\|/;
+
+function hasShadowingSubspec(source /*: string */) /*: boolean */ {
+  return SHADOWING_SUBSPEC_RE.test(source);
+}
+
 /**
  * Best-effort Ruby podspec parser. Extracts the literal-string and
  * literal-array fields most RN libs use. Skips subspec blocks, Ruby helper
@@ -212,6 +222,14 @@ function regexPodspec(podspecPath /*: string */) /*: RawSpec */ {
     );
     const m = content.match(re);
     return m ? m[1] : null;
+  }
+
+  // The fields that identify the spec, and only when the receiver spelling
+  // still says which scope declared them: a subspec re-binding `s` puts its own
+  // `header_dir` exactly where the library's would be.
+  const shadowedIdentity = hasShadowingSubspec(content);
+  function getIdentityField(name /*: string */) /*: string | null */ {
+    return shadowedIdentity ? null : getSpecStringField(name);
   }
 
   // Matches:
@@ -315,6 +333,11 @@ function regexPodspec(podspecPath /*: string */) /*: RawSpec */ {
   }
 
   // Surface known unparseable constructs so the caller can warn the user.
+  if (shadowedIdentity) {
+    warnings.push(
+      "A subspec rebinds the spec variable (`do |s|`), so its `name`, `module_name` and `header_dir` cannot be told from the library's own — those are left unread. Install CocoaPods (`gem install cocoapods`) to enable full `pod ipc spec` parsing.",
+    );
+  }
   if (/(?:s|spec)\.subspec\s+["']/.test(content)) {
     warnings.push(
       'Subspecs detected — regex parser only extracts top-level fields. Install CocoaPods (`gem install cocoapods`) to enable full `pod ipc spec` parsing.',
@@ -332,15 +355,15 @@ function regexPodspec(podspecPath /*: string */) /*: RawSpec */ {
   }
 
   return {
-    name: getSpecStringField('name'),
-    module_name: getSpecStringField('module_name'),
+    name: getIdentityField('name'),
+    module_name: getIdentityField('module_name'),
     version: getSpecStringField('version'),
     source_files: getArrayField('source_files'),
     public_header_files: getArrayField('public_header_files'),
     private_header_files: getArrayField('private_header_files'),
     exclude_files: getArrayField('exclude_files'),
     header_mappings_dir: getStringField('header_mappings_dir'),
-    header_dir: getSpecStringField('header_dir'),
+    header_dir: getIdentityField('header_dir'),
     frameworks: getFrameworks(false),
     weak_frameworks: getFrameworks(true),
     libraries: getArrayField('libraries'),
@@ -751,7 +774,8 @@ function readPodspecCached(podspecPath /*: string */) /*: PodspecModel */ {
  * or a spec-level `header_dir`/`module_name` the regex could not read. Both
  * outrank the pod name, so a literal name alone is not enough — resolving
  * without them would pick the wrong prefix. A value only a subspec declares is
- * not the library's, so it neither answers nor defers.
+ * not the library's, so it neither answers nor defers — unless that subspec
+ * re-binds `s` (or `spec`), which makes every field's scope unreadable.
  */
 function readPodspecNames(
   podspecPath /*: string */,
@@ -767,6 +791,9 @@ function readPodspecNames(
       : null;
   };
   const source = readPodspecSource(podspecPath);
+  if (hasShadowingSubspec(source)) {
+    return null;
+  }
   const declaredUnread = (
     key /*: string */,
     value /*: ?string */,

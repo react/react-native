@@ -416,11 +416,13 @@ library sets when its import prefix differs from its pod name, then
 `@import` consumers write. But a `header_dir` only a **subspec** declares names
 that subspec's headers, not the library, so the pod name stands
 (react-native-svg is `RNSVG`, not `rnsvg`; its subspec prefix resolves through
-the header search paths instead). An unreadable podspec falls through rather
-than failing the build — with a warning, since a machine that can read it (one
-with CocoaPods installed) may resolve a different name. A prefix Swift cannot
-spell is normalized — `Some.Pod` becomes `Some_Pod`, what SwiftPM would compile
-it as anyway — with a warning naming `swiftpmConfig.name`.
+the header search paths instead) — unless the subspec reuses the parent's block
+variable (`do |s|`), which hides which scope declared what, so the podspec is
+read by CocoaPods or not at all. An unreadable podspec falls through rather than
+failing the build — with a warning, since a machine that can read it (one with
+CocoaPods installed) may resolve a different name. A prefix Swift cannot spell
+is normalized — `Some.Pod` becomes `Some_Pod`, what SwiftPM would compile it as
+anyway — with a warning naming `swiftpmConfig.name`.
 
 Two names are refused outright: one React Native reserves (`ReactNative`,
 `ReactHeaders`, `ReactNativeHeaders`, `ReactNativeDependenciesHeaders`,
@@ -505,7 +507,10 @@ follow it with `npx react-native spm`.)
 `scaffold` also records the name it derived from the podspec as
 `swiftpmConfig.name` in the library's package.json — the one step that lets the
 library be named without reading a podspec at all. It never overwrites a name
-the library already declares, and it says which packages it edited.
+the library already declares, and it says which packages it edited. Every
+library it scaffolds gets a line naming the SwiftPM name it chose and where that
+name came from, plus a note when a podspec's `header_dir` and `module_name`
+disagree about it and only one can win.
 
 Because `node_modules/` isn't committed, persist both so they survive the next
 install:

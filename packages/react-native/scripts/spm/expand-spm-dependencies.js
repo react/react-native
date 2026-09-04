@@ -60,8 +60,15 @@ type RnConfig = {...};
 type ReadConfig = (root: string) => ?RnConfig;
 type ResolveDep = (name: string, fromRoot: string) => ?string;
 // Where a resolved name came from: what the library declared, what its podspec
-// says, or the npm-name guess.
-type ResolvedSwiftName = {name: string, source: 'config' | 'podspec' | 'npm'};
+// says, or the npm-name guess. `podspecKey` narrows a podspec-sourced name to
+// the field it was read from — `header_dir` and `module_name` can name the same
+// library differently, and only one of them wins.
+type PodspecNameKey = 'header_dir' | 'module_name' | 'name';
+type ResolvedSwiftName = {
+  name: string,
+  source: 'config' | 'podspec' | 'npm',
+  podspecKey?: PodspecNameKey,
+};
 // The podspec fields that name a library. A PodspecModel satisfies it.
 type PodspecFacts = {
   readonly name?: ?string,
@@ -108,23 +115,25 @@ function reservedSwiftNames(
   );
 }
 
-// The prefix a podspec publishes its headers under, or null when it declares
-// none. A prefix Swift cannot spell is normalized rather than abandoned:
-// reverting to the npm name would silently produce a prefix nothing imports.
+// The prefix a podspec publishes its headers under, and the field it came from
+// — or null when the podspec declares none. A prefix Swift cannot spell is
+// normalized rather than abandoned: reverting to the npm name would silently
+// produce a prefix nothing imports.
 function podspecSwiftName(
   npmName /*: string */,
   podspec /*: ?PodspecFacts */,
-) /*: ?string */ {
+) /*: ?{name: string, key: PodspecNameKey} */ {
   // CocoaPods' own order is `module_name` first (specification.rb), but our
   // single name is the ObjC include prefix as well as the Swift module: a
   // declared `header_dir` IS the prefix a library's consumers write, so it keeps
   // winning. `module_name` comes next, being what Swift and `@import` consumers
   // spell, and the pod name — often dashed — is the last resort.
-  for (const candidate of [
-    podspec?.headerDir,
-    podspec?.moduleName,
-    podspec?.name,
-  ]) {
+  const candidates /*: ReadonlyArray<[PodspecNameKey, ?string]> */ = [
+    ['header_dir', podspec?.headerDir],
+    ['module_name', podspec?.moduleName],
+    ['name', podspec?.name],
+  ];
+  for (const [key, candidate] of candidates) {
     if (typeof candidate !== 'string' || candidate.length === 0) {
       continue;
     }
@@ -135,14 +144,14 @@ function podspecSwiftName(
       return null;
     }
     if (isValidSwiftName(candidate)) {
-      return candidate;
+      return {name: candidate, key};
     }
     const normalized = toC99Name(candidate);
     warn(
       `'${npmName}' declares the podspec prefix '${candidate}', which is not a valid Swift target name; using '${normalized}'. ` +
         `Set 'swiftpmConfig.name' in ${npmName}'s package.json to choose the prefix yourself.`,
     );
-    return normalized;
+    return {name: normalized, key};
   }
   return null;
 }
@@ -180,7 +189,11 @@ function resolveSwiftName(
 
   const fromPodspec = podspecSwiftName(npmName, podspec);
   if (fromPodspec != null) {
-    return {name: fromPodspec, source: 'podspec'};
+    return {
+      name: fromPodspec.name,
+      source: 'podspec',
+      podspecKey: fromPodspec.key,
+    };
   }
   const fromNpm = toSwiftName(npmName);
   if (podspec != null) {
@@ -321,6 +334,7 @@ function expandSpmDependencies(
       );
       current.swiftName = resolved.name;
       current.swiftNameSource = resolved.source;
+      current.swiftNamePodspecKey = resolved.podspecKey;
     }
     const transitives = stringList(spmConfig?.dependencies);
 
@@ -355,6 +369,7 @@ function expandSpmDependencies(
           platforms: {ios: iosPlatform},
           swiftName: resolved.name,
           swiftNameSource: resolved.source,
+          swiftNamePodspecKey: resolved.podspecKey,
           spmDependencies: [],
         });
         queue.push(transitiveName);

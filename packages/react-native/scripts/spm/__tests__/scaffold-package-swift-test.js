@@ -1139,6 +1139,144 @@ end
     });
   });
 
+  // The name is the header import prefix, and scaffold persists a derived one
+  // into the library's package.json — so the run has to say what it picked.
+  describe('name report', () => {
+    let logSpy;
+    let warnSpy;
+
+    beforeEach(() => {
+      logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+      warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      logSpy.mockRestore();
+      warnSpy.mockRestore();
+    });
+
+    const output = spy => spy.mock.calls.map(call => call.join(' ')).join('\n');
+
+    // A podspec whose identity fields are the test's subject.
+    function writePodspec(...identityLines) {
+      fs.writeFileSync(
+        path.join(depRoot, 'react-native-foo.podspec'),
+        [
+          'Pod::Spec.new do |s|',
+          '  s.name = "react-native-foo"',
+          '  s.version = "1.0"',
+          '  s.source_files = "ios/**/*.{h,m,mm}"',
+          ...identityLines.map(line => `  ${line}`),
+          'end',
+          '',
+        ].join('\n'),
+      );
+    }
+
+    it.each([
+      [
+        'a podspec header_dir',
+        {
+          swiftName: 'BareKit',
+          swiftNameSource: 'podspec',
+          swiftNamePodspecKey: 'header_dir',
+        },
+        "'header_dir'",
+      ],
+      [
+        'a podspec module_name',
+        {
+          swiftName: 'ReactNativeFoo',
+          swiftNameSource: 'podspec',
+          swiftNamePodspecKey: 'module_name',
+        },
+        "'module_name'",
+      ],
+      [
+        'the pod name',
+        {
+          swiftName: 'RNFoo',
+          swiftNameSource: 'podspec',
+          swiftNamePodspecKey: 'name',
+        },
+        'pod name',
+      ],
+      [
+        'a declared swiftpmConfig.name',
+        {swiftName: 'RNFoo', swiftNameSource: 'config'},
+        "'swiftpmConfig.name'",
+      ],
+      [
+        'the npm package name',
+        {swiftName: 'ReactNativeFoo', swiftNameSource: 'npm'},
+        'npm package name',
+      ],
+    ])('reports a name that came from %s', (_label, depOverrides, origin) => {
+      writePodspec('s.header_dir = "BareKit"');
+      const result = scaffoldPackageSwiftForDep(
+        makeDep(depOverrides),
+        makeCtx(),
+      );
+      expect(result.status).toBe('written');
+      const reported = output(logSpy);
+      expect(reported).toContain('react-native-foo');
+      expect(reported).toContain(`'${depOverrides.swiftName}'`);
+      expect(reported).toContain(origin);
+    });
+
+    it('reports the name it chose on a dry run too', () => {
+      writePodspec('s.header_dir = "BareKit"');
+      scaffoldPackageSwiftForDep(
+        makeDep({
+          swiftName: 'BareKit',
+          swiftNameSource: 'podspec',
+          swiftNamePodspecKey: 'header_dir',
+        }),
+        makeCtx({dryRun: true}),
+      );
+      expect(output(logSpy)).toContain("'BareKit'");
+    });
+
+    // react-native-bare-kit's shape: two namespaces declared, one used.
+    it('notes the module_name it dropped when the podspec declares both', () => {
+      writePodspec(
+        's.header_dir = "BareKit"',
+        's.module_name = "react_native_bare_kit"',
+      );
+      scaffoldPackageSwiftForDep(
+        makeDep({
+          swiftName: 'BareKit',
+          swiftNameSource: 'podspec',
+          swiftNamePodspecKey: 'header_dir',
+        }),
+        makeCtx(),
+      );
+      const noted = output(warnSpy);
+      expect(noted).toContain("'BareKit'");
+      expect(noted).toContain("'react_native_bare_kit'");
+      expect(noted).toContain("'swiftpmConfig.name'");
+    });
+
+    it.each([
+      ['only a header_dir is declared', ['s.header_dir = "BareKit"']],
+      [
+        'the two agree',
+        ['s.header_dir = "BareKit"', 's.module_name = "BareKit"'],
+      ],
+    ])('says nothing about a dropped namespace when %s', (_label, lines) => {
+      writePodspec(...lines);
+      scaffoldPackageSwiftForDep(
+        makeDep({
+          swiftName: 'BareKit',
+          swiftNameSource: 'podspec',
+          swiftNamePodspecKey: 'header_dir',
+        }),
+        makeCtx(),
+      );
+      expect(output(warnSpy)).not.toContain('module_name');
+    });
+  });
+
   it('returns skipped-is-react-native for `react-native` itself (handled by the xcframework path)', () => {
     const result = scaffoldPackageSwiftForDep(
       makeDep({name: 'react-native'}),
