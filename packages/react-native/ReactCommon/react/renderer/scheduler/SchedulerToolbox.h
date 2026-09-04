@@ -15,7 +15,6 @@
 #include <react/renderer/animationbackend/AnimationChoreographer.h>
 #include <react/renderer/componentregistry/ComponentDescriptorFactory.h>
 #include <react/renderer/core/EventBeat.h>
-#include <react/renderer/leakchecker/LeakChecker.h>
 #include <react/renderer/uimanager/UIManagerCommitHook.h>
 #include <react/renderer/uimanager/primitives.h>
 #include <react/utils/ContextContainer.h>
