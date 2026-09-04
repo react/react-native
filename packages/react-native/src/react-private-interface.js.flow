@@ -23,6 +23,7 @@ export {default as BatchedBridge} from '../Libraries/BatchedBridge/BatchedBridge
 export {default as ExceptionsManager} from '../Libraries/Core/ExceptionsManager';
 export {default as Platform} from '../Libraries/Utilities/Platform';
 export {default as RCTEventEmitter} from '../Libraries/EventEmitter/RCTEventEmitter';
+export * as ReactNativeFeatureFlags from './private/featureflags/ReactNativeFeatureFlags';
 export * as ReactNativeViewConfigRegistry from '../Libraries/Renderer/shims/ReactNativeViewConfigRegistry';
 export {default as TextInputState} from '../Libraries/Components/TextInput/TextInputState';
 export {default as UIManager} from '../Libraries/ReactNative/UIManager';
