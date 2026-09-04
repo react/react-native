@@ -12,7 +12,6 @@
 #include <ReactCommon/RuntimeExecutor.h>
 #include <jsi/hermes-interfaces.h>
 #include <react/performance/timeline/PerformanceEntryReporter.h>
-#include <react/renderer/consistency/ShadowTreeRevisionConsistencyManager.h>
 #include <react/renderer/runtimescheduler/SchedulerPriorityUtils.h>
 #include <react/renderer/runtimescheduler/Task.h>
 #include <react/timing/primitives.h>
@@ -21,6 +20,8 @@
 #include "RuntimeSchedulerResizeObserverDelegate.h"
 
 namespace facebook::react {
+
+class ShadowTreeRevisionConsistencyManager;
 
 using RuntimeSchedulerRenderingUpdate = std::function<void()>;
 using SurfaceId = int32_t;

@@ -16,7 +16,6 @@
 #include <shared_mutex>
 
 #include <react/renderer/componentregistry/ComponentDescriptorRegistry.h>
-#include <react/renderer/consistency/ShadowTreeRevisionConsistencyManager.h>
 #include <react/renderer/core/InstanceHandle.h>
 #include <react/renderer/core/RawValue.h>
 #include <react/renderer/core/ShadowNode.h>
@@ -30,13 +29,14 @@
 #include <react/renderer/uimanager/UIManagerDelegate.h>
 #include <react/renderer/uimanager/UIManagerNativeAnimatedDelegate.h>
 #include <react/renderer/uimanager/UIManagerViewTransitionDelegate.h>
-#include <react/renderer/uimanager/consistency/LazyShadowTreeRevisionConsistencyManager.h>
 #include <react/renderer/uimanager/consistency/ShadowTreeRevisionProvider.h>
 #include <react/renderer/uimanager/primitives.h>
 #include <react/utils/ContextContainer.h>
 
 namespace facebook::react {
 
+class LazyShadowTreeRevisionConsistencyManager;
+class ShadowTreeRevisionConsistencyManager;
 class UIManagerBinding;
 class UIManagerCommitHook;
 class UIManagerMountHook;
