@@ -27,7 +27,6 @@ import com.facebook.react.devsupport.interfaces.PackagerStatusCallback
 import com.facebook.react.modules.debug.interfaces.DeveloperSettings
 import com.facebook.react.modules.systeminfo.AndroidInfoHelpers.getFriendlyDeviceName
 import com.facebook.react.modules.systeminfo.AndroidInfoHelpers.getInspectorHostMetadata
-import com.facebook.react.packagerconnection.FileIoHandler
 import com.facebook.react.packagerconnection.JSPackagerClient
 import com.facebook.react.packagerconnection.NotificationOnlyHandler
 import com.facebook.react.packagerconnection.PackagerConnectionSettings
@@ -160,7 +159,6 @@ public open class DevServerHelper(
                   }
                 }
             commandListener.customCommandHandlers()?.let { handlers.putAll(it) }
-            handlers.putAll(FileIoHandler().handlers())
 
             val onPackagerConnectedCallback: ReconnectingWebSocket.ConnectionCallback =
                 object : ReconnectingWebSocket.ConnectionCallback {
