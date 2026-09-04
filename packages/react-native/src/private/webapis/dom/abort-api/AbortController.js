@@ -29,7 +29,7 @@
 
 // flowlint unsafe-getters-setters:off
 
-import {AbortSignal, abortSignal, createAbortSignal} from './AbortSignal';
+import type {AbortSignal} from './AbortSignal';
 
 const SIGNAL_KEY: symbol = Symbol('aborted');
 
@@ -47,7 +47,7 @@ export class AbortController {
 
   constructor() {
     // $FlowExpectedError[prop-missing]
-    this[SIGNAL_KEY] = createAbortSignal();
+    this[SIGNAL_KEY] = require('./AbortSignal').createAbortSignal();
   }
 
   /**
@@ -61,7 +61,7 @@ export class AbortController {
    * Abort and signal to any observers that the associated activity is to be aborted.
    */
   abort(reason: unknown): void {
-    abortSignal(reason, getSignal(this));
+    require('./AbortSignal').abortSignal(reason, getSignal(this));
   }
 }
 
