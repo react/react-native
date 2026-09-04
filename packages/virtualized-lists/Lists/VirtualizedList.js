@@ -910,7 +910,7 @@ class VirtualizedList extends StateSafePureComponent<
   }
 
   _renderEmptyComponent(
-    element: ExactReactElement_DEPRECATED<any>,
+    element: React.MixedElement,
     inversionStyle: StyleProp<ViewStyle>,
   ): React.Node {
     // $FlowFixMe[prop-missing] React.Element internal inspection
@@ -985,7 +985,7 @@ class VirtualizedList extends StateSafePureComponent<
     // 2a. Add a cell for ListEmptyComponent if applicable
     const itemCount = this.props.getItemCount(data);
     if (itemCount === 0 && ListEmptyComponent) {
-      const element: ExactReactElement_DEPRECATED<any> = (
+      const element: React.MixedElement = (
         isValidElement(ListEmptyComponent) ? (
           ListEmptyComponent
         ) : (
@@ -1154,7 +1154,7 @@ class VirtualizedList extends StateSafePureComponent<
           )(
             // $FlowExpectedError[incompatible-type] scrollProps is a superset of ScrollViewProps
             scrollProps,
-          ) as ExactReactElement_DEPRECATED<any>,
+          ) as React.JSX.Element,
           {
             ref: this._captureScrollRef,
           },

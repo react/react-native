@@ -14,7 +14,6 @@ import type {
   AnimatedProps,
 } from '../createAnimatedComponent';
 
-import RefreshControl from '../../Components/RefreshControl/RefreshControl';
 import ScrollView, {
   type ScrollViewProps,
 } from '../../Components/ScrollView/ScrollView';
@@ -83,7 +82,7 @@ const AnimatedScrollViewWithInvertedRefreshControl =
     ref?: React.RefSetter<AnimatedScrollViewInstance>,
     ...React.ElementConfig<typeof ScrollView>,
     // $FlowFixMe[unclear-type] Same Flow type as `refreshControl` in ScrollView
-    refreshControl: ExactReactElement_DEPRECATED<any>,
+    refreshControl: React.MixedElement,
   }) {
     // Split `props` into the animate-able props for the parent (RefreshControl)
     // and child (ScrollView).
@@ -105,11 +104,10 @@ const AnimatedScrollViewWithInvertedRefreshControl =
     >(intermediatePropsForRefreshControl);
     // NOTE: Assumes that refreshControl.ref` and `refreshControl.style` can be
     // safely clobbered.
-    const refreshControl: ExactReactElement_DEPRECATED<typeof RefreshControl> =
-      cloneElement(props.refreshControl, {
-        ...refreshControlAnimatedProps,
-        ref: refreshControlRef,
-      });
+    const refreshControl = cloneElement(props.refreshControl, {
+      ...refreshControlAnimatedProps,
+      ref: refreshControlRef,
+    });
 
     // Handle animated props on `NativeDirectionalScrollView`.
     const [scrollViewAnimatedProps, scrollViewRef] = useAnimatedProps<
