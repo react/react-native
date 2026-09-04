@@ -149,6 +149,15 @@ static UIColor *defaultPlaceholderColor(void)
   [self _invalidatePlaceholderVisibility];
 }
 
+- (void)setTextAlignVertical:(RCTUITextViewTextAlignmentVertical)textAlignVertical
+{
+  if (_textAlignVertical == textAlignVertical) {
+    return;
+  }
+  _textAlignVertical = textAlignVertical;
+  [self setNeedsLayout];
+}
+
 - (void)setDisableKeyboardShortcuts:(BOOL)disableKeyboardShortcuts
 {
   _disableKeyboardShortcuts = disableKeyboardShortcuts;
@@ -279,10 +288,48 @@ static UIColor *defaultPlaceholderColor(void)
 {
   [super layoutSubviews];
 
+  [self _applyVerticalAlignmentInset];
+
   CGRect textFrame = UIEdgeInsetsInsetRect(self.bounds, self.textContainerInset);
   CGFloat placeholderHeight = [_placeholderView sizeThatFits:textFrame.size].height;
   textFrame.size.height = MIN(placeholderHeight, textFrame.size.height);
   _placeholderView.frame = textFrame;
+}
+
+// Mirrors CSS Box Alignment Level 3 `align-content` on a block container
+// (https://drafts.csswg.org/css-align-3/#align-content-property): top is the
+// existing default, center vertically centers the content within the bounds,
+// bottom flushes it to the bottom. Overflow (content taller than bounds) falls
+// back to top so nothing gets clipped. UIScrollView's `contentInset.top` is
+// the right hook: it shifts the default scroll origin and is left untouched
+// by RN's existing wiring (only `textContainerInset` is set externally).
+- (void)_applyVerticalAlignmentInset
+{
+  // Fast path for apps that don't use the feature: skip the contentSize read.
+  if (_textAlignVertical == RCTUITextViewTextAlignmentVerticalAuto ||
+      _textAlignVertical == RCTUITextViewTextAlignmentVerticalTop) {
+    if (self.contentInset.top != 0) {
+      UIEdgeInsets contentInset = self.contentInset;
+      contentInset.top = 0;
+      self.contentInset = contentInset;
+    }
+    return;
+  }
+  CGFloat boundsHeight = CGRectGetHeight(self.bounds);
+  CGFloat contentHeight = self.contentSize.height;
+  CGFloat topInset = 0;
+  if (boundsHeight > contentHeight) {
+    if (_textAlignVertical == RCTUITextViewTextAlignmentVerticalCenter) {
+      topInset = (boundsHeight - contentHeight) / 2;
+    } else if (_textAlignVertical == RCTUITextViewTextAlignmentVerticalBottom) {
+      topInset = boundsHeight - contentHeight;
+    }
+  }
+  if (self.contentInset.top != topInset) {
+    UIEdgeInsets contentInset = self.contentInset;
+    contentInset.top = topInset;
+    self.contentInset = contentInset;
+  }
 }
 
 - (CGSize)intrinsicContentSize
