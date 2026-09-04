@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<ce8ba846a2e567547c4ba7370b9f4e89>>
+ * @generated SignedSource<<177c5cc7f6e970a2d4454c32d7f777ef>>
  */
 
 /**
@@ -120,6 +120,12 @@ class ReactNativeFeatureFlagsJavaProvider
   bool enableBridgelessArchitecture() override {
     static const auto method =
         getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enableBridgelessArchitecture");
+    return method(javaProvider_);
+  }
+
+  bool enableBufferedCallInvoker() override {
+    static const auto method =
+        getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enableBufferedCallInvoker");
     return method(javaProvider_);
   }
 
@@ -623,6 +629,11 @@ bool JReactNativeFeatureFlagsCxxInterop::enableBridgelessArchitecture(
   return ReactNativeFeatureFlags::enableBridgelessArchitecture();
 }
 
+bool JReactNativeFeatureFlagsCxxInterop::enableBufferedCallInvoker(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
+  return ReactNativeFeatureFlags::enableBufferedCallInvoker();
+}
+
 bool JReactNativeFeatureFlagsCxxInterop::enableCppPropsIteratorSetter(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
   return ReactNativeFeatureFlags::enableCppPropsIteratorSetter();
@@ -1051,6 +1062,9 @@ void JReactNativeFeatureFlagsCxxInterop::registerNatives() {
       makeNativeMethod(
         "enableBridgelessArchitecture",
         JReactNativeFeatureFlagsCxxInterop::enableBridgelessArchitecture),
+      makeNativeMethod(
+        "enableBufferedCallInvoker",
+        JReactNativeFeatureFlagsCxxInterop::enableBufferedCallInvoker),
       makeNativeMethod(
         "enableCppPropsIteratorSetter",
         JReactNativeFeatureFlagsCxxInterop::enableCppPropsIteratorSetter),

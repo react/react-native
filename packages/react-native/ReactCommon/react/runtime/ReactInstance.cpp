@@ -19,6 +19,7 @@
 #include <jsinspector-modern/HostTarget.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/renderer/runtimescheduler/RuntimeSchedulerBinding.h>
+#include <react/renderer/runtimescheduler/RuntimeSchedulerCallInvoker.h>
 #include <react/runtime/JSRuntimeBindings.h>
 #include <react/timing/primitives.h>
 #include <react/utils/jsi-utils.h>
@@ -42,7 +43,6 @@ std::shared_ptr<RuntimeScheduler> createRuntimeScheduler(
       // FIXME: Move creation of PerformanceEntryReporter to here and
       // guarantee that its lifetime is the same as the runtime.
       PerformanceEntryReporter::getInstance().get());
-
   return scheduler;
 }
 
@@ -112,8 +112,18 @@ ReactInstance::ReactInstance(
   if (parentInspectorTarget_ != nullptr) {
     auto executor = parentInspectorTarget_->executorFromThis();
 
+    // This buffer sits *below* the RuntimeScheduler — it is what feeds it — so
+    // there is nothing here that could act on a priority, and passing one
+    // through would have nowhere to go. Its only caller is
+    // `runtimeExecutorThatExecutesAfterInspectorSetup` below, a plain
+    // RuntimeExecutor, so in practice everything arrives at the default.
     auto bufferedRuntimeExecutorThatWaitsForInspectorSetup =
-        std::make_shared<BufferedRuntimeExecutor>(runtimeExecutor);
+        std::make_shared<BufferedRuntimeExecutor>(
+            [runtimeExecutor](
+                SchedulerPriority /*priority*/,
+                std::function<void(jsi::Runtime & runtime)>&& callback) {
+              runtimeExecutor(std::move(callback));
+            });
     auto runtimeExecutorThatExecutesAfterInspectorSetup =
         [bufferedRuntimeExecutorThatWaitsForInspectorSetup](
             std::function<void(jsi::Runtime & runtime)>&& callback) {
@@ -168,10 +178,14 @@ ReactInstance::ReactInstance(
         setHermesEventLoopControl(runtime, runtimeScheduler);
       });
 
+  // `scheduleWork` is `scheduleTask(ImmediatePriority)` on the modern
+  // scheduler, which is the only one bridgeless uses, so routing everything
+  // through `scheduleTask` leaves unprioritised callers where they were.
   bufferedRuntimeExecutor_ = std::make_shared<BufferedRuntimeExecutor>(
       [runtimeScheduler = runtimeScheduler_.get()](
+          SchedulerPriority priority,
           std::function<void(jsi::Runtime & runtime)>&& callback) {
-        runtimeScheduler->scheduleWork(std::move(callback));
+        runtimeScheduler->scheduleTask(priority, std::move(callback));
       });
 }
 ReactInstance::~ReactInstance() noexcept {
@@ -224,6 +238,19 @@ RuntimeExecutor ReactInstance::getBufferedRuntimeExecutor() noexcept {
 std::shared_ptr<RuntimeScheduler>
 ReactInstance::getRuntimeScheduler() noexcept {
   return runtimeScheduler_;
+}
+
+std::shared_ptr<CallInvoker> ReactInstance::createJSCallInvoker() noexcept {
+  if (ReactNativeFeatureFlags::enableBufferedCallInvoker()) {
+    return std::make_shared<CallInvokerImpl>(
+        bufferedRuntimeExecutor_, runtimeScheduler_);
+  }
+  // The flag-off path, and the last use of the deprecated invoker. It goes when
+  // `enableBufferedCallInvoker` is cleaned up.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+  return std::make_shared<RuntimeSchedulerCallInvoker>(runtimeScheduler_);
+#pragma clang diagnostic pop
 }
 
 namespace {
@@ -319,12 +346,6 @@ void ReactInstance::callFunctionOnModule(
     const std::string& moduleName,
     const std::string& methodName,
     folly::dynamic&& args) {
-  if (bufferedRuntimeExecutor_ == nullptr) {
-    LOG(ERROR)
-        << "Calling callFunctionOnModule with null BufferedRuntimeExecutor";
-    return;
-  }
-
   bufferedRuntimeExecutor_->execute([this,
                                      moduleName = moduleName,
                                      methodName = methodName,

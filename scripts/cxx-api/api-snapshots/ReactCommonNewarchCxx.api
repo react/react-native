@@ -1203,15 +1203,18 @@ class facebook::react::BridgelessNativeMethodCallInvoker : public facebook::reac
 }
 
 class facebook::react::BufferedRuntimeExecutor {
-  public BufferedRuntimeExecutor(facebook::react::RuntimeExecutor runtimeExecutor);
+  public BufferedRuntimeExecutor(facebook::react::BufferedRuntimeExecutor::Executor executor);
+  public using Executor = std::function<void(facebook::react::SchedulerPriority, facebook::react::BufferedRuntimeExecutor::Work&&)>;
   public using Work = std::function<void(facebook::jsi::Runtime& runtime)>;
   public void execute(facebook::react::BufferedRuntimeExecutor::Work&& callback);
+  public void execute(facebook::react::SchedulerPriority priority, facebook::react::BufferedRuntimeExecutor::Work&& callback);
   public void flush();
 }
 
 struct facebook::react::BufferedRuntimeExecutor::BufferedWork {
   public bool operator<(const facebook::react::BufferedRuntimeExecutor::BufferedWork& rhs) const;
   public facebook::react::BufferedRuntimeExecutor::Work work_;
+  public facebook::react::SchedulerPriority priority_;
   public uint64_t index_;
 }
 
@@ -1271,6 +1274,13 @@ class facebook::react::CallInvoker {
   public virtual void invokeSync(facebook::react::CallFunc&& func) = 0;
   public virtual void invokeSync(std::function<void()>&& func);
   public virtual ~CallInvoker() = default;
+}
+
+class facebook::react::CallInvokerImpl : public facebook::react::CallInvoker {
+  public CallInvokerImpl(std::shared_ptr<facebook::react::BufferedRuntimeExecutor> bufferedRuntimeExecutor, std::weak_ptr<facebook::react::RuntimeScheduler> runtimeScheduler);
+  public virtual void invokeAsync(facebook::react::CallFunc&& func) noexcept override;
+  public virtual void invokeAsync(facebook::react::SchedulerPriority priority, facebook::react::CallFunc&& func) noexcept override;
+  public virtual void invokeSync(facebook::react::CallFunc&& func) override;
 }
 
 class facebook::react::CallbackWrapper : public facebook::react::LongLivedObject {
@@ -2765,6 +2775,7 @@ class facebook::react::ReactInstance {
   public facebook::react::ReactInstance& operator=(facebook::react::ReactInstance&&) = delete;
   public facebook::react::RuntimeExecutor getBufferedRuntimeExecutor() noexcept;
   public facebook::react::RuntimeExecutor getUnbufferedRuntimeExecutor() noexcept;
+  public std::shared_ptr<facebook::react::CallInvoker> createJSCallInvoker() noexcept;
   public std::shared_ptr<facebook::react::RuntimeScheduler> getRuntimeScheduler() noexcept;
   public using BindingsInstallFunc = std::function<void(facebook::jsi::Runtime& runtime)>;
   public void callFunctionOnModule(const std::string& moduleName, const std::string& methodName, folly::dynamic&& args);
