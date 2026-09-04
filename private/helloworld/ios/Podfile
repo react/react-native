@@ -1,3 +1,11 @@
+# Ensure Yarn PnP is loaded when resolving RN scripts
+pnp_path = File.expand_path('../.pnp.cjs', __dir__)
+if File.exist?(pnp_path)
+  existing_opts = ENV['NODE_OPTIONS']
+  pnp_opt = "--require #{pnp_path}"
+  ENV['NODE_OPTIONS'] = [pnp_opt, existing_opts].compact.join(' ')
+end
+
 require "../../../packages/react-native/scripts/cocoapods/autolinking.rb"
 
 platform :ios, min_ios_version_supported
@@ -10,7 +18,25 @@ if linkage != nil
 end
 
 target 'HelloWorld' do
-  config = use_native_modules!(['sh', '../scripts/config.sh'])
+  require 'pathname'
+  config = nil
+
+  # Preflight the autolinking config command to avoid hard exit inside autolinking.rb
+  begin
+    _json, _err, status = Pod::Executable.capture_command('bash', ['../scripts/config.sh'], capture: :both)
+    if status.success?
+      config = use_native_modules!(['bash', '../scripts/config.sh'])
+    else
+      raise "config command failed with status #{status.exitstatus}"
+    end
+  rescue => e
+    Pod::UI.warn "Autolinking preflight failed: #{e}. Falling back to minimal config (no native module autolinking)."
+    rn_pkg_json = Pod::Executable.execute_command('node', ['-e', "process.stdout.write(require.resolve('react-native/package.json'))"]).strip
+    rn_dir = File.dirname(rn_pkg_json)
+    ios_project_root = Pod::Config.instance.installation_root
+    rn_rel = Pathname.new(rn_dir).relative_path_from(Pathname.new(ios_project_root)).to_s
+    config = { :reactNativePath => rn_rel }
+  end
 
   use_react_native!(
     :path => "../../../packages/react-native",
