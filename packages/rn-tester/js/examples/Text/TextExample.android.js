@@ -17,6 +17,7 @@ import RNTesterText from '../../components/RNTesterText';
 import TextLegend from '../../components/TextLegend';
 import TextAdjustsDynamicLayoutExample from './TextAdjustsDynamicLayoutExample';
 import TextSharedExamples from './TextSharedExamples';
+import TextWidthModeExample from './TextWidthModeExample';
 
 const TextInlineView = require('../../components/TextInlineView');
 const React = require('react');
@@ -1336,6 +1337,13 @@ function TextBaseLineLayoutExample(props: {}): React.Node {
 }
 
 const examples = [
+  {
+    title: 'Wrapped text width mode',
+    name: 'textWidthMode',
+    description:
+      'Compares default constrained text width with text sized to its longest rendered line.',
+    render: TextWidthModeExample,
+  },
   {
     title: 'Background Color and Border Width',
     name: 'background-border-width',

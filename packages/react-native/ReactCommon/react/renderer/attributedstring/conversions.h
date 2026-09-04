@@ -202,6 +202,42 @@ inline void fromRawValue(const PropsParserContext &context, const RawValue &valu
   result = TextBreakStrategy::HighQuality;
 }
 
+inline std::string toString(const TextWidthMode &textWidthMode)
+{
+  switch (textWidthMode) {
+    case TextWidthMode::Default:
+      return "default";
+    case TextWidthMode::LongestLine:
+      return "longest-line";
+  }
+
+  LOG(ERROR) << "Unsupported TextWidthMode value";
+  react_native_expect(false);
+  return "default";
+}
+
+inline void fromRawValue(const PropsParserContext & /*context*/, const RawValue &value, TextWidthMode &result)
+{
+  react_native_expect(value.hasType<std::string>());
+  if (value.hasType<std::string>()) {
+    auto string = (std::string)value;
+    if (string == "default") {
+      result = TextWidthMode::Default;
+    } else if (string == "longest-line") {
+      result = TextWidthMode::LongestLine;
+    } else {
+      LOG(ERROR) << "Unsupported TextWidthMode value: " << string;
+      react_native_expect(false);
+      result = TextWidthMode::Default;
+    }
+    return;
+  }
+
+  LOG(ERROR) << "Unsupported TextWidthMode type";
+  react_native_expect(false);
+  result = TextWidthMode::Default;
+}
+
 inline void fromRawValue(const PropsParserContext &context, const RawValue &value, FontWeight &result)
 {
   react_native_expect(value.hasType<std::string>() || value.hasType<int>());
@@ -1029,6 +1065,12 @@ inline ParagraphAttributes convertRawProp(
       "textBreakStrategy",
       sourceParagraphAttributes.textBreakStrategy,
       defaultParagraphAttributes.textBreakStrategy);
+  paragraphAttributes.textWidthMode = convertRawProp(
+      context,
+      rawProps,
+      "textWidthMode",
+      sourceParagraphAttributes.textWidthMode,
+      defaultParagraphAttributes.textWidthMode);
   paragraphAttributes.adjustsFontSizeToFit = convertRawProp(
       context,
       rawProps,
@@ -1158,6 +1200,7 @@ constexpr static MapBuffer::Key PA_KEY_HYPHENATION_FREQUENCY = 5;
 constexpr static MapBuffer::Key PA_KEY_MINIMUM_FONT_SIZE = 6;
 constexpr static MapBuffer::Key PA_KEY_MAXIMUM_FONT_SIZE = 7;
 constexpr static MapBuffer::Key PA_KEY_TEXT_ALIGN_VERTICAL = 8;
+constexpr static MapBuffer::Key PA_KEY_TEXT_WIDTH_MODE = 9;
 
 inline MapBuffer toMapBuffer(const ParagraphAttributes &paragraphAttributes)
 {
@@ -1165,6 +1208,7 @@ inline MapBuffer toMapBuffer(const ParagraphAttributes &paragraphAttributes)
   builder.putInt(PA_KEY_MAX_NUMBER_OF_LINES, paragraphAttributes.maximumNumberOfLines);
   builder.putString(PA_KEY_ELLIPSIZE_MODE, toString(paragraphAttributes.ellipsizeMode));
   builder.putString(PA_KEY_TEXT_BREAK_STRATEGY, toString(paragraphAttributes.textBreakStrategy));
+  builder.putString(PA_KEY_TEXT_WIDTH_MODE, toString(paragraphAttributes.textWidthMode));
   builder.putBool(PA_KEY_ADJUST_FONT_SIZE_TO_FIT, paragraphAttributes.adjustsFontSizeToFit);
   builder.putBool(PA_KEY_INCLUDE_FONT_PADDING, paragraphAttributes.includeFontPadding);
   builder.putString(PA_KEY_HYPHENATION_FREQUENCY, toString(paragraphAttributes.android_hyphenationFrequency));

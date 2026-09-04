@@ -19,6 +19,7 @@ bool ParagraphAttributes::operator==(const ParagraphAttributes& rhs) const {
              maximumNumberOfLines,
              ellipsizeMode,
              textBreakStrategy,
+             textWidthMode,
              adjustsFontSizeToFit,
              includeFontPadding,
              android_hyphenationFrequency,
@@ -27,6 +28,7 @@ bool ParagraphAttributes::operator==(const ParagraphAttributes& rhs) const {
              rhs.maximumNumberOfLines,
              rhs.ellipsizeMode,
              rhs.textBreakStrategy,
+             rhs.textWidthMode,
              rhs.adjustsFontSizeToFit,
              rhs.includeFontPadding,
              rhs.android_hyphenationFrequency,
@@ -52,6 +54,8 @@ SharedDebugStringConvertibleList ParagraphAttributes::getDebugProps() const {
           "textBreakStrategy",
           textBreakStrategy,
           paragraphAttributes.textBreakStrategy),
+      debugStringConvertibleItem(
+          "textWidthMode", textWidthMode, paragraphAttributes.textWidthMode),
       debugStringConvertibleItem(
           "adjustsFontSizeToFit",
           adjustsFontSizeToFit,

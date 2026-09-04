@@ -141,6 +141,11 @@ export interface TextProps
   numberOfLines?: number | undefined;
 
   /**
+   * Controls how wrapped text contributes its width to layout.
+   */
+  textWidthMode?: 'default' | 'longest-line' | undefined;
+
+  /**
    * Invoked on mount and layout changes with
    *
    * {nativeEvent: { layout: {x, y, width, height}}}.

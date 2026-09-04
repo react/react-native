@@ -568,7 +568,7 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
   CGRect usedBounds = [layoutManager usedRectForTextContainer:textContainer];
   CGSize size = usedBounds.size;
 
-  if (textDidWrap) {
+  if (textDidWrap && paragraphAttributes.textWidthMode == TextWidthMode::Default) {
     size.width = textContainer.size.width;
   }
 

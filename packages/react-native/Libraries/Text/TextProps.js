@@ -181,6 +181,15 @@ type TextBaseProps = Readonly<{
    */
   numberOfLines?: ?number,
 
+  /**
+   * Controls how wrapped text contributes its width to layout. `longest-line`
+   * uses the width of the longest rendered line instead of the wrapping
+   * constraint.
+   *
+   * @default `'default'`
+   */
+  textWidthMode?: ?('default' | 'longest-line'),
+
   onLayout?: ?(event: LayoutChangeEvent) => unknown,
 
   /** Called on long press. */

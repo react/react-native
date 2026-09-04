@@ -96,6 +96,7 @@ internal object TextLayoutManager {
   const val PA_KEY_MINIMUM_FONT_SIZE: Int = 6
   const val PA_KEY_MAXIMUM_FONT_SIZE: Int = 7
   const val PA_KEY_TEXT_ALIGN_VERTICAL: Int = 8
+  const val PA_KEY_TEXT_WIDTH_MODE: Int = 9
 
   private val TAG: String = TextLayoutManager::class.java.simpleName
 
@@ -109,6 +110,8 @@ internal object TextLayoutManager {
   private const val DEFAULT_INCLUDE_FONT_PADDING = true
 
   private const val DEFAULT_ADJUST_FONT_SIZE_TO_FIT = false
+
+  private const val TEXT_WIDTH_MODE_LONGEST_LINE = "longest-line"
 
   private val tagToSpannableCache = ConcurrentHashMap<Int, Spannable>()
 
@@ -1065,21 +1068,48 @@ internal object TextLayoutManager {
       )
     }
 
+    var layout = createLayout(
+        text,
+        boring,
+        width,
+        widthYogaMeasureMode,
+        includeFontPadding,
+        textBreakStrategy,
+        hyphenationFrequency,
+        alignment,
+        justificationMode,
+        ellipsizeMode,
+        maximumNumberOfLines,
+        paint,
+    )
+
+    if (
+        widthYogaMeasureMode == YogaMeasureMode.AT_MOST &&
+            paragraphAttributes.contains(PA_KEY_TEXT_WIDTH_MODE) &&
+            paragraphAttributes.getString(PA_KEY_TEXT_WIDTH_MODE) == TEXT_WIDTH_MODE_LONGEST_LINE
+    ) {
+      val lineCount = calculateLineCount(layout, maximumNumberOfLines)
+      val longestLineWidth = longestLineWidth(layout, lineCount)
+      val tightenedWidth = max(1, ceil(longestLineWidth).toInt())
+      if (tightenedWidth < layout.width) {
+        layout =
+            buildLayout(
+                text,
+                tightenedWidth,
+                includeFontPadding,
+                textBreakStrategy,
+                hyphenationFrequency,
+                alignment,
+                justificationMode,
+                ellipsizeMode,
+                maximumNumberOfLines,
+                paint,
+            )
+      }
+    }
+
     return CreateLayoutResult(
-        createLayout(
-            text,
-            boring,
-            width,
-            widthYogaMeasureMode,
-            includeFontPadding,
-            textBreakStrategy,
-            hyphenationFrequency,
-            alignment,
-            justificationMode,
-            ellipsizeMode,
-            maximumNumberOfLines,
-            paint,
-        ),
+        layout,
         textBreakStrategy,
         justificationMode,
     )
@@ -1470,6 +1500,18 @@ internal object TextLayoutManager {
       if (maximumNumberOfLines == ReactConstants.UNSET || maximumNumberOfLines == 0)
           layout.lineCount
       else min(maximumNumberOfLines, layout.lineCount)
+
+  @VisibleForTesting
+  internal fun longestLineWidth(layout: Layout, lineCount: Int): Float {
+    var longestLineWidth = 0f
+    for (line in 0 until lineCount) {
+      val lineEnd = layout.getLineEnd(line)
+      val endsWithNewLine = lineEnd > 0 && layout.text[lineEnd - 1] == '\n'
+      val lineWidth = if (endsWithNewLine) layout.getLineMax(line) else layout.getLineWidth(line)
+      longestLineWidth = max(longestLineWidth, lineWidth)
+    }
+    return longestLineWidth
+  }
 
   private fun calculateWidth(
       layout: Layout,

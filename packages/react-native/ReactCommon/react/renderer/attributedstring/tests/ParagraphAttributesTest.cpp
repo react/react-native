@@ -70,4 +70,12 @@ TEST(
   EXPECT_FALSE(unset == set);
 }
 
+TEST(ParagraphAttributesTest, testOperatorEqualsIncludesTextWidthMode) {
+  ParagraphAttributes defaultWidth{};
+  ParagraphAttributes longestLineWidth{};
+  longestLineWidth.textWidthMode = TextWidthMode::LongestLine;
+
+  EXPECT_FALSE(defaultWidth == longestLineWidth);
+}
+
 } // namespace facebook::react
