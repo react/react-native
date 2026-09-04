@@ -18,14 +18,14 @@
 #endif
 
 #import <ReactCommon/RCTTurboModuleManager.h>
-#import <jsireact/JSIExecutor.h>
 
 @protocol RCTDependencyProvider;
 
 // Forward declaration to decrease compilation coupling
 namespace facebook::react {
+class JSExecutorFactory;
 class RuntimeScheduler;
-}
+} // namespace facebook::react
 RCT_EXTERN NSArray<NSString *> *RCTAppSetupUnstableModulesRequiringMainQueueSetup(
     id<RCTDependencyProvider> dependencyProvider);
 

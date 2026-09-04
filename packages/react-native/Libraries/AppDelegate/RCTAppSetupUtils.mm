@@ -7,6 +7,7 @@
 
 #import "RCTAppSetupUtils.h"
 
+#import <cxxreact/JSExecutor.h>
 #import <react/renderer/runtimescheduler/RuntimeScheduler.h>
 #import <react/renderer/runtimescheduler/RuntimeSchedulerBinding.h>
 
