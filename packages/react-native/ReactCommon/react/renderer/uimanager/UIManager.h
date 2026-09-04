@@ -21,7 +21,6 @@
 #include <react/renderer/core/RawValue.h>
 #include <react/renderer/core/ShadowNode.h>
 #include <react/renderer/core/StateData.h>
-#include <react/renderer/leakchecker/LeakChecker.h>
 #include <react/renderer/mounting/ShadowTree.h>
 #include <react/renderer/mounting/ShadowTreeDelegate.h>
 #include <react/renderer/mounting/ShadowTreeRegistry.h>
@@ -37,6 +36,7 @@
 
 namespace facebook::react {
 
+class LeakChecker;
 class UIManagerBinding;
 class UIManagerCommitHook;
 class UIManagerMountHook;
