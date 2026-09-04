@@ -13,10 +13,6 @@
 
 #import <memory>
 
-#if USE_THIRD_PARTY_JSC != 1
-#import <reacthermes/HermesExecutorFactory.h>
-#endif
-
 #import <ReactCommon/RCTTurboModuleManager.h>
 #import <jsireact/JSIExecutor.h>
 
