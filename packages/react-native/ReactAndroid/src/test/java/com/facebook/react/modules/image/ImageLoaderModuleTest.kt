@@ -9,10 +9,15 @@ package com.facebook.react.modules.image
 
 import android.content.res.Resources
 import android.graphics.drawable.Drawable
+import com.facebook.common.references.CloseableReference
+import com.facebook.datasource.DataSource
+import com.facebook.imagepipeline.core.ImagePipeline
+import com.facebook.imagepipeline.image.CloseableImage
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactTestHelper
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.WritableMap
+import com.facebook.react.views.image.ReactCallerContextFactory
 import com.facebook.react.views.imagehelper.ResourceDrawableIdHelper
 import com.facebook.testutils.shadows.ShadowArguments
 import com.facebook.testutils.shadows.ShadowSoLoader
@@ -26,6 +31,8 @@ import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
@@ -178,6 +185,46 @@ class ImageLoaderModuleTest {
   }
 
   @Test
+  fun testGetSizeWithDataUriUsesDecodedImagePipeline() {
+    val imagePipeline = mock<ImagePipeline>()
+    val dataSource = mock<DataSource<CloseableReference<CloseableImage>>>()
+    whenever(imagePipeline.fetchDecodedImage(any(), any())).thenReturn(dataSource)
+    val module =
+        ImageLoaderModule(
+            ReactTestHelper.createCatalystContextForTest(),
+            imagePipeline,
+            ReactCallerContextFactory { _, _ -> null },
+        )
+
+    module.getSize(DATA_URI, SimplePromise())
+
+    verify(imagePipeline).fetchDecodedImage(any(), any())
+    verify(imagePipeline, never()).fetchEncodedImage(any(), any())
+  }
+
+  @Test
+  fun testGetSizeWithHeadersWithDataUriUsesDecodedImagePipeline() {
+    val imagePipeline = mock<ImagePipeline>()
+    val dataSource = mock<DataSource<CloseableReference<CloseableImage>>>()
+    whenever(imagePipeline.fetchDecodedImage(any(), any())).thenReturn(dataSource)
+    val module =
+        ImageLoaderModule(
+            ReactTestHelper.createCatalystContextForTest(),
+            imagePipeline,
+            ReactCallerContextFactory { _, _ -> null },
+        )
+
+    module.getSizeWithHeaders(
+        DATA_URI,
+        null,
+        SimplePromise(),
+    )
+
+    verify(imagePipeline).fetchDecodedImage(any(), any())
+    verify(imagePipeline, never()).fetchEncodedImage(any(), any())
+  }
+
+  @Test
   fun testGetSizeWithEmptyUri() {
     val promise = SimplePromise()
     imageLoaderModule.getSize("", promise)
@@ -270,5 +317,10 @@ class ImageLoaderModuleTest {
     override fun reject(message: String) {
       reject(null, message, null, null)
     }
+  }
+
+  companion object {
+    private const val DATA_URI =
+        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
   }
 }
