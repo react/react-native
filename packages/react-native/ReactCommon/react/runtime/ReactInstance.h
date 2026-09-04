@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include <ReactCommon/RuntimeExecutor.h>
 #include <cxxreact/JSBigString.h>
 #include <cxxreact/MessageQueueThread.h>

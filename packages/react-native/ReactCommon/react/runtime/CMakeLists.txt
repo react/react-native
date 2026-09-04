@@ -34,6 +34,7 @@ target_link_libraries(
         jsi
         jsitooling
         jsireact
+        react_cxxstableapi
         react_utils
         jsinspector
         react_featureflags

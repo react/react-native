@@ -11,16 +11,22 @@
 
 #include <ReactCommon/RuntimeExecutor.h>
 #include <jsi/hermes-interfaces.h>
-#include <react/performance/timeline/PerformanceEntryReporter.h>
-#include <react/renderer/consistency/ShadowTreeRevisionConsistencyManager.h>
 #include <react/renderer/runtimescheduler/SchedulerPriorityUtils.h>
 #include <react/renderer/runtimescheduler/Task.h>
 #include <react/timing/primitives.h>
+#include <cstdint>
 #include "RuntimeSchedulerEventTimingDelegate.h"
 #include "RuntimeSchedulerIntersectionObserverDelegate.h"
 #include "RuntimeSchedulerResizeObserverDelegate.h"
 
 namespace facebook::react {
+
+// Both live in private targets (react/performance/timeline,
+// react/renderer/consistency). This header is reachable from for-frameworks
+// headers, so they must stay forward-declared here — including them would
+// make every consumer of a for-frameworks header pull in a private one.
+class PerformanceEntryReporter;
+class ShadowTreeRevisionConsistencyManager;
 
 using RuntimeSchedulerRenderingUpdate = std::function<void()>;
 using SurfaceId = int32_t;
