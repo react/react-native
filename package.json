@@ -130,6 +130,8 @@
     "fast-xml-parser": "^4.5.6",
     "yaml": "^2.8.3",
     "fast-uri": "^3.1.2",
-    "shell-quote": "1.9.0"
+    "shell-quote": "1.9.0",
+    "@istanbuljs/load-nyc-config/js-yaml": "3.15.1",
+    "markdownlint-cli2/js-yaml": "4.3.1"
   }
 }
