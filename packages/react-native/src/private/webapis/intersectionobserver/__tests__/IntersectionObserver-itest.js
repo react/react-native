@@ -3871,7 +3871,7 @@ describe('IntersectionObserver', () => {
         x: 0,
         y: 50,
         width: 100,
-        height: 50,
+        height: 60,
       });
       expectRectEquals(entries[0].boundingClientRect, {
         x: 0,
@@ -3887,9 +3887,98 @@ describe('IntersectionObserver', () => {
       });
 
       expect(entries[0]).toBeInstanceOf(IntersectionObserverEntry);
-      expect(entries[0].intersectionRatio).toBe(0.5);
+      expect(entries[0].intersectionRatio).toBe(0.6);
       expect(entries[0].isIntersecting).toBe(true);
       expect(entries[0].target).toBe(node);
+    });
+
+    it('should apply rootMargin past a clipping ScrollView root', () => {
+      const nodeRef = React.createRef<HostInstance>();
+      const scrollNodeRef = React.createRef<HostInstance>();
+
+      const root = Fantom.createRoot({
+        viewportWidth: 1000,
+        viewportHeight: 1000,
+      });
+      Fantom.runTask(() => {
+        root.render(
+          <ScrollView style={{width: 100, height: 100}} ref={scrollNodeRef}>
+            <View
+              style={{width: 50, height: 50, marginTop: 150}}
+              ref={nodeRef}
+            />
+          </ScrollView>,
+        );
+      });
+      const node = ensureReactNativeElement(nodeRef.current);
+      const scrollNode = ensureReactNativeElement(scrollNodeRef.current);
+
+      const intersectionObserverCallback = jest.fn();
+
+      Fantom.runTask(() => {
+        observer = new IntersectionObserver(intersectionObserverCallback, {
+          root: scrollNode,
+          // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
+          rootMargin: '0px 0px 150px 0px',
+          threshold: [0.01],
+        });
+        observer.observe(node);
+      });
+
+      expect(intersectionObserverCallback).toHaveBeenCalledTimes(1);
+      const [entries] = intersectionObserverCallback.mock.lastCall;
+      expect(entries.length).toBe(1);
+      expect(entries[0].isIntersecting).toBe(true);
+      expect(entries[0].intersectionRatio).toBe(1);
+      expectRectEquals(entries[0].rootBounds, {
+        x: 0,
+        y: 0,
+        width: 100,
+        height: 250,
+      });
+      expectRectEquals(entries[0].intersectionRect, {
+        x: 0,
+        y: 150,
+        width: 50,
+        height: 50,
+      });
+    });
+
+    it('should still clip at an intermediate ScrollView when root is the viewport', () => {
+      const nodeRef = React.createRef<HostInstance>();
+
+      const root = Fantom.createRoot({
+        viewportWidth: 1000,
+        viewportHeight: 1000,
+      });
+      Fantom.runTask(() => {
+        root.render(
+          <ScrollView style={{width: 100, height: 100}}>
+            <View
+              style={{width: 50, height: 50, marginTop: 150}}
+              ref={nodeRef}
+            />
+          </ScrollView>,
+        );
+      });
+      const node = ensureReactNativeElement(nodeRef.current);
+
+      const intersectionObserverCallback = jest.fn();
+
+      Fantom.runTask(() => {
+        observer = new IntersectionObserver(intersectionObserverCallback, {
+          // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
+          rootMargin: '0px 0px 150px 0px',
+          threshold: [0.01],
+        });
+        observer.observe(node);
+      });
+
+      expect(intersectionObserverCallback).toHaveBeenCalledTimes(1);
+      const [entries] = intersectionObserverCallback.mock.lastCall;
+      expect(entries.length).toBe(1);
+      expect(entries[0].isIntersecting).toBe(false);
+      expect(entries[0].intersectionRatio).toBe(0);
     });
   });
 

@@ -41,6 +41,11 @@ class LayoutableShadowNode : public ShadowNode {
     bool includeTransform{true};
     bool includeViewportOffset{false};
     bool enableOverflowClipping{false};
+    // When enableOverflowClipping is true, also clip against the ancestor
+    // passed as the reference node. IntersectionObserver sets this false:
+    // the spec clips ancestors *until* the root, then intersects with the
+    // rootMargin-expanded root intersection rectangle.
+    bool clipSpecifiedAncestor{true};
   };
 
   using UnsharedList = std::vector<LayoutableShadowNode *>;
