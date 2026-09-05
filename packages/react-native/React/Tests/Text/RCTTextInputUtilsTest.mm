@@ -26,4 +26,15 @@
   XCTAssertEqualObjects(destination.tintColor, UIColor.redColor);
 }
 
+- (void)testCopyBackedTextInputPreservesReturnKeyType
+{
+  RCTUITextField *source = [RCTUITextField new];
+  RCTUITextView *destination = [RCTUITextView new];
+  source.returnKeyType = UIReturnKeyDone;
+
+  RCTCopyBackedTextInput(source, destination);
+
+  XCTAssertEqual(destination.returnKeyType, UIReturnKeyDone);
+}
+
 @end
