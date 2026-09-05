@@ -138,7 +138,7 @@ class VirtualizedSectionList<
   State,
 > {
   scrollToLocation(params: ScrollToLocationParamsType) {
-    let index = params.itemIndex;
+    let index = params.itemIndex + 1;
     for (let i = 0; i < params.sectionIndex; i++) {
       index += this.props.getItemCount(this.props.sections[i].data) + 2;
     }
@@ -147,10 +147,10 @@ class VirtualizedSectionList<
       return;
     }
     const listRef = this._listRef;
-    if (params.itemIndex > 0 && this.props.stickySectionHeadersEnabled) {
+    if (this.props.stickySectionHeadersEnabled) {
       const frame = listRef
         .__getListMetrics()
-        .getCellMetricsApprox(index - params.itemIndex, listRef.props);
+        .getCellMetricsApprox(index - params.itemIndex - 1, listRef.props);
       viewOffset += frame.length;
     }
     const toIndexParams: {
