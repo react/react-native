@@ -147,6 +147,7 @@ val preparePrefab by
                       Pair("../ReactCommon/react/debug/React/", "React/"),
                       // react_renderer_debug
                       Pair("../ReactCommon/react/renderer/debug/", "react/renderer/debug/"),
+                      Pair("../ReactCommon/react/renderer/debug/React/", "React/"),
                       // react_renderer_graphics
                       Pair("../ReactCommon/react/renderer/graphics/", "react/renderer/graphics/"),
                       Pair("../ReactCommon/react/renderer/graphics/platform/android/", ""),

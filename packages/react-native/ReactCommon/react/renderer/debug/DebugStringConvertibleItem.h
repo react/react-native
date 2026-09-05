@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <string>
 
 #include <react/renderer/debug/DebugStringConvertible.h>

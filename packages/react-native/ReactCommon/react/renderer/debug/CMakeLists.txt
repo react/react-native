@@ -12,7 +12,7 @@ file(GLOB react_renderer_debug_SRC CONFIGURE_DEPENDS *.cpp)
 add_library(react_renderer_debug OBJECT ${react_renderer_debug_SRC})
 
 target_include_directories(react_renderer_debug PUBLIC ${REACT_COMMON_DIR})
-target_link_libraries(react_renderer_debug folly_runtime react_debug)
+target_link_libraries(react_renderer_debug folly_runtime react_cxxstableapi react_debug)
 target_compile_reactnative_options(react_renderer_debug PRIVATE)
 target_compile_options(react_renderer_debug PRIVATE -Wpedantic)
 
