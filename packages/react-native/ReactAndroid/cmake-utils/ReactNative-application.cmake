@@ -89,12 +89,19 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
 add_library(common_flags INTERFACE)
 target_compile_options(common_flags INTERFACE ${folly_FLAGS})
 
+# Defines the `reactnative_pch` target and `target_reuse_reactnative_pch()`, so
+# the codegen targets below share a single precompiled header. Has to come after
+# `common_flags`, as the precompiled header is built with the same flags as its
+# consumers.
+include(${CMAKE_CURRENT_LIST_DIR}/ReactNative-precompiled-header.cmake)
+
 # If project is on RN CLI v9, then we can use the following lines to link against the autolinked 3rd party libraries.
 if(EXISTS ${PROJECT_BUILD_DIR}/generated/autolinking/src/main/jni/Android-autolinking.cmake)
         include(${PROJECT_BUILD_DIR}/generated/autolinking/src/main/jni/Android-autolinking.cmake)
         target_link_libraries(${CMAKE_PROJECT_NAME} ${AUTOLINKED_LIBRARIES})
         foreach(autolinked_library ${AUTOLINKED_LIBRARIES})
             target_link_libraries(${autolinked_library} common_flags)
+            target_reuse_reactnative_pch(${autolinked_library})
         endforeach()
 endif()
 
@@ -104,6 +111,7 @@ if(EXISTS ${PROJECT_BUILD_DIR}/generated/source/codegen/jni/CMakeLists.txt)
         get_property(APP_CODEGEN_TARGET DIRECTORY ${PROJECT_BUILD_DIR}/generated/source/codegen/jni/ PROPERTY BUILDSYSTEM_TARGETS)
         target_link_libraries(${CMAKE_PROJECT_NAME} ${APP_CODEGEN_TARGET})
         target_link_libraries(${APP_CODEGEN_TARGET} common_flags)
+        target_reuse_reactnative_pch(${APP_CODEGEN_TARGET})
 
         # We need to pass the generated header and module provider to the OnLoad.cpp file so
         # local app modules can properly be linked.
