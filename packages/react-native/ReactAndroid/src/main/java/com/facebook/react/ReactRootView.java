@@ -137,7 +137,7 @@ public class ReactRootView extends FrameLayout implements RootView, ReactRoot {
     setClipChildren(false);
 
     if (ReactNativeFeatureFlags.enableFontScaleChangesUpdatingLayout()) {
-      DisplayMetricsHolder.initDisplayMetrics(getContext().getApplicationContext());
+      DisplayMetricsHolder.initDisplayMetrics(getContext());
     }
   }
 
@@ -916,7 +916,7 @@ public class ReactRootView extends FrameLayout implements RootView, ReactRoot {
     private int mDeviceRotation = 0;
 
     /* package */ CustomGlobalLayoutListener() {
-      DisplayMetricsHolder.initDisplayMetricsIfNotInitialized(getContext().getApplicationContext());
+      DisplayMetricsHolder.initDisplayMetricsIfNotInitialized(getContext());
       mVisibleViewArea = new Rect();
     }
 
@@ -991,7 +991,7 @@ public class ReactRootView extends FrameLayout implements RootView, ReactRoot {
         return;
       }
       mDeviceRotation = rotation;
-      DisplayMetricsHolder.initDisplayMetrics(getContext().getApplicationContext());
+      DisplayMetricsHolder.initDisplayMetrics(getContext());
       emitOrientationChanged(rotation);
     }
 
