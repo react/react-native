@@ -23,6 +23,7 @@ import {ScrollView, View} from 'react-native';
 import setUpIntersectionObserver from 'react-native/src/private/setup/setUpIntersectionObserver';
 import ReactNativeElement from 'react-native/src/private/webapis/dom/nodes/ReactNativeElement';
 import DOMRectReadOnly from 'react-native/src/private/webapis/geometry/DOMRectReadOnly';
+import * as IntersectionObserverManager from 'react-native/src/private/webapis/intersectionobserver/internals/IntersectionObserverManager';
 
 declare const IntersectionObserver: Class<IntersectionObserverType>;
 declare const IntersectionObserverEntry: Class<IntersectionObserverEntryType>;
@@ -4283,6 +4284,45 @@ describe('IntersectionObserver', () => {
           expect(intersectionObserverCallback).toHaveBeenCalledTimes(0);
         });
       });
+    });
+
+    it('should dispatch other observers after ignoring disconnected entries', () => {
+      const root = Fantom.createRoot();
+      const firstNodeRef = createRef<HostInstance>();
+      const secondNodeRef = createRef<HostInstance>();
+
+      Fantom.runTask(() => {
+        root.render(
+          <>
+            <View ref={firstNodeRef} />
+            <View ref={secondNodeRef} />
+          </>,
+        );
+      });
+
+      const firstNode = ensureReactNativeElement(firstNodeRef.current);
+      const secondNode = ensureReactNativeElement(secondNodeRef.current);
+      const firstCallback = jest.fn();
+      const secondCallback = jest.fn();
+      let firstObserver: IntersectionObserver;
+
+      Fantom.runTask(() => {
+        firstObserver = new IntersectionObserver(firstCallback);
+        observer = new IntersectionObserver(secondCallback);
+        firstObserver.observe(firstNode);
+        observer.observe(secondNode);
+
+        Fantom.scheduleTask(() => {
+          const firstObserverId = firstObserver.__getObserverID();
+          if (firstObserverId == null) {
+            throw new Error('Expected the first observer to be registered');
+          }
+          IntersectionObserverManager.unregisterObserver(firstObserverId);
+        });
+      });
+
+      expect(firstCallback).not.toHaveBeenCalled();
+      expect(secondCallback).toHaveBeenCalledTimes(1);
     });
   });
 
