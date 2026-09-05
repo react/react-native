@@ -206,6 +206,75 @@ describe('structuredClone', () => {
     expect(clone).toEqual(value);
   });
 
+  it('clones ArrayBuffers and views while preserving shared buffers', () => {
+    const buffer = new ArrayBuffer(6);
+    new Uint8Array(buffer).set([0, 1, 2, 3, 4, 5]);
+    // $FlowExpectedError[cannot-write] this intentionally shadows the method.
+    Object.defineProperty(buffer, 'slice', {
+      value() {
+        throw new Error('The clone must use the ArrayBuffer intrinsic');
+      },
+    });
+    // $FlowExpectedError[cannot-write] this intentionally shadows the constructor.
+    Object.defineProperty(buffer, 'constructor', {
+      get() {
+        throw new Error('The clone must not consult ArrayBuffer species');
+      },
+    });
+    const typedArray = new Uint8Array(buffer, 1, 3);
+    // $FlowExpectedError[prop-missing] this intentionally shadows the constructor.
+    Object.defineProperty(typedArray, 'constructor', {
+      value() {
+        throw new Error('The clone must use a typed array intrinsic');
+      },
+    });
+    const value = {
+      buffer,
+      typedArray,
+      dataView: new DataView(buffer, 2, 2),
+    };
+
+    const clone = structuredClone(value);
+
+    expect(clone.buffer).not.toBe(buffer);
+    expect(clone.buffer).toBeInstanceOf(ArrayBuffer);
+    expect(clone.typedArray).toBeInstanceOf(Uint8Array);
+    expect(clone.dataView).toBeInstanceOf(DataView);
+    expect(clone.typedArray.buffer).toBe(clone.buffer);
+    expect(clone.dataView.buffer).toBe(clone.buffer);
+    expect(Array.from(new Uint8Array(clone.buffer))).toEqual([
+      0, 1, 2, 3, 4, 5,
+    ]);
+    expect(Array.from(clone.typedArray)).toEqual([1, 2, 3]);
+    expect(clone.typedArray.byteOffset).toBe(1);
+    expect(clone.dataView.byteOffset).toBe(2);
+    expect(clone.dataView.byteLength).toBe(2);
+  });
+
+  it('clones every typed array kind', () => {
+    const values: Array<$FlowFixMe> = [
+      new Int8Array([-1, 2]),
+      new Uint8Array([1, 2]),
+      new Uint8ClampedArray([-1, 300]),
+      new Int16Array([-300, 300]),
+      new Uint16Array([0, 65535]),
+      new Int32Array([-100000, 100000]),
+      new Uint32Array([0, 4000000000]),
+      new Float32Array([1.5, -2.25]),
+      new Float64Array([Math.PI, -Math.E]),
+      new BigInt64Array([-1n, 2n]),
+      new BigUint64Array([1n, 2n]),
+    ];
+
+    for (const value of values) {
+      const clone = structuredClone(value);
+
+      expect(clone).not.toBe(value);
+      expect(clone.constructor).toBe(value.constructor);
+      expect(Array.from(clone)).toEqual(Array.from(value));
+    }
+  });
+
   it('clones errors', () => {
     const cause = new Error('cause message');
     const value = new Error('error message', {cause});

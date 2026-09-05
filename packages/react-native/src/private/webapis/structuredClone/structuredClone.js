@@ -25,8 +25,31 @@ const VALID_ERROR_NAMES = new Set([
 ]);
 
 const BASIC_CONSTRUCTORS = [Number, String, Boolean, Date];
+const TYPED_ARRAY_CONSTRUCTORS = [
+  Int8Array,
+  Uint8Array,
+  Uint8ClampedArray,
+  Int16Array,
+  Uint16Array,
+  Int32Array,
+  Uint32Array,
+  Float32Array,
+  Float64Array,
+  BigInt64Array,
+  BigUint64Array,
+];
 
 const ObjectPrototype = Object.prototype;
+// $FlowFixMe[method-unbinding] this is always called with an explicit receiver.
+const uint8ArraySet = Uint8Array.prototype.set;
+const arrayBufferByteLengthDescriptor = Object.getOwnPropertyDescriptor<number>(
+  ArrayBuffer.prototype,
+  'byteLength',
+);
+if (arrayBufferByteLengthDescriptor?.get == null) {
+  throw new Error('ArrayBuffer byteLength getter is required');
+}
+const arrayBufferByteLengthGetter = arrayBufferByteLengthDescriptor.get;
 
 // Technically the memory value should be a parameter in
 // `structuredCloneInternal` but as an optimization we can reuse the same map
@@ -94,6 +117,39 @@ function structuredCloneInternal<T>(value: T): T {
   }
 
   // Handles complex types (typeof === 'object').
+
+  if (value instanceof ArrayBuffer) {
+    const result = new ArrayBuffer(arrayBufferByteLengthGetter.call(value));
+    uint8ArraySet.call(new Uint8Array(result), new Uint8Array(value));
+    memory.set(value, result);
+    // $FlowExpectedError[incompatible-type] we know result is T
+    return result;
+  }
+
+  if (ArrayBuffer.isView(value)) {
+    const view = value as $FlowFixMe;
+    const buffer = structuredCloneInternal(view.buffer);
+    let result;
+    if (view instanceof DataView) {
+      result = new DataView(buffer, view.byteOffset, view.byteLength);
+    } else {
+      for (const Cls of TYPED_ARRAY_CONSTRUCTORS) {
+        if (view instanceof Cls) {
+          result = new Cls(buffer, view.byteOffset, view.length);
+          break;
+        }
+      }
+      if (result == null) {
+        throw new DOMException(
+          "Failed to execute 'structuredClone' on 'Window': ArrayBuffer view could not be cloned.",
+          'DataCloneError',
+        );
+      }
+    }
+    memory.set(value, result);
+    // $FlowExpectedError[incompatible-type] we know result is T
+    return result;
+  }
 
   for (const Cls of BASIC_CONSTRUCTORS) {
     if (value instanceof Cls) {
