@@ -809,6 +809,22 @@ const smallImage = {
   uri: IMAGE1,
 };
 
+// 16x8 JPEG with no EXIF orientation, inline so the check needs no network.
+const GET_SIZE_JPEG_DATA_URI =
+  'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABQODxIPDRQSEBIXFRQYHjIhHhwcHj0sLiQySUBMS0dARkVQWnNiU' +
+  'FVtVkVGZIhlbXd7gYKBTmCNl4x9lnN+gXz/2wBDARUXFx4aHjshITt8U0ZTfHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8f' +
+  'Hx8fHx8fHx8fHx8fHz/wAARCAAIABADASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAT/xAAWEAEBAQAAAAAAAAAAAAAAAAAAFWL/x' +
+  'AAVAQEBAAAAAAAAAAAAAAAAAAAFBv/EABcRAAMBAAAAAAAAAAAAAAAAAAADFFH/2gAMAwEAAhEDEQA/AKYuSLkExQzRSpun/9k=';
+
+// The same 16x8 raster tagged EXIF orientation 6 (rotate 90 CW to display), so a
+// decoder that honours the tag reports 8x16 and one that ignores it reports 16x8.
+const GET_SIZE_EXIF_ROTATED_JPEG_DATA_URI =
+  'data:image/jpeg;base64,/9j/4QAiRXhpZgAASUkqAAgAAAABABIBAwABAAAABgAAAAAAAAD/4AAQSkZJRgABAQAAAQABAAD/2wBDABQOD' +
+  'xIPDRQSEBIXFRQYHjIhHhwcHj0sLiQySUBMS0dARkVQWnNiUFVtVkVGZIhlbXd7gYKBTmCNl4x9lnN+gXz/2wBDARUXFx4aHjshITt8U0ZTf' +
+  'Hx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHz/wAARCAAIABADASIAAhEBAxEB/8QAFQABAQAAAAAAA' +
+  'AAAAAAAAAAAAAT/xAAWEAEBAQAAAAAAAAAAAAAAAAAAFWL/xAAVAQEBAAAAAAAAAAAAAAAAAAAFBv/EABcRAAMBAAAAAAAAAAAAAAAAAAADF' +
+  'FH/2gAMAwEAAhEDEQA/AJYuSLkDVDNJqpun/9k=';
+
 const GET_SIZE_TEST_IMAGES: ReadonlyArray<{
   expectedHeight: number,
   expectedWidth: number,
@@ -833,6 +849,20 @@ const GET_SIZE_TEST_IMAGES: ReadonlyArray<{
     // Rotated 90 degrees counter-clockwise
     uri: 'https://www.facebook.com/assets/react_native_oss_tests/exif-6@1x.jpg',
     name: 'EXIF rotated JPEG',
+  },
+  {
+    expectedHeight: 8,
+    expectedWidth: 16,
+    uri: GET_SIZE_JPEG_DATA_URI,
+    name: 'data: URI JPEG',
+  },
+  {
+    // Transposed against the row above: the tag must be applied, so these are
+    // the visible dimensions rather than the 16x8 stored raster.
+    expectedHeight: 16,
+    expectedWidth: 8,
+    uri: GET_SIZE_EXIF_ROTATED_JPEG_DATA_URI,
+    name: 'EXIF rotated data: URI JPEG',
   },
 ];
 
@@ -897,7 +927,7 @@ function ImageGetSizePlatformTest(props: PlatformTestComponentBaseProps) {
 
   return (
     <RNTesterText>
-      Calling Image.getSize for {GET_SIZE_TEST_IMAGES.length} remote images.
+      Calling Image.getSize for {GET_SIZE_TEST_IMAGES.length} images.
     </RNTesterText>
   );
 }

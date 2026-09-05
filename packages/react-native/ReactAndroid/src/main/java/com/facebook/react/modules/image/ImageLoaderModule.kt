@@ -13,13 +13,16 @@ import android.util.SparseArray
 import com.facebook.common.executors.CallerThreadExecutor
 import com.facebook.common.memory.PooledByteBuffer
 import com.facebook.common.references.CloseableReference
+import com.facebook.common.util.UriUtil
 import com.facebook.datasource.BaseDataSubscriber
 import com.facebook.datasource.DataSource
 import com.facebook.datasource.DataSubscriber
 import com.facebook.drawee.backends.pipeline.Fresco
 import com.facebook.fbreact.specs.NativeImageLoaderAndroidSpec
 import com.facebook.imagepipeline.common.RotationOptions
+import com.facebook.imagepipeline.core.DownsampleMode
 import com.facebook.imagepipeline.core.ImagePipeline
+import com.facebook.imagepipeline.image.CloseableImage
 import com.facebook.imagepipeline.image.EncodedImage
 import com.facebook.imagepipeline.request.ImageRequest
 import com.facebook.imagepipeline.request.ImageRequestBuilder
@@ -93,6 +96,11 @@ internal class ImageLoaderModule : NativeImageLoaderAndroidSpec, LifecycleEventL
       resolveResourceSize(uriString, promise)
       return
     }
+    // Fast path: data: URIs are served by the decoded pipeline; see resolveDataUriSize.
+    if (UriUtil.isDataUri(source.uri)) {
+      resolveDataUriSize(source.uri, promise)
+      return
+    }
     val request: ImageRequest =
         ImageRequestBuilder.newBuilderWithSource(source.uri)
             .setRotationOptions(RotationOptions.disableRotation())
@@ -120,6 +128,11 @@ internal class ImageLoaderModule : NativeImageLoaderAndroidSpec, LifecycleEventL
     // Fast path: resource drawables are resolved locally; headers are not applicable.
     if (source.isResource) {
       resolveResourceSize(uriString, promise)
+      return
+    }
+    // Fast path: a data: URI carries its own bytes, so headers are not applicable.
+    if (UriUtil.isDataUri(source.uri)) {
+      resolveDataUriSize(source.uri, promise)
       return
     }
     val imageRequestBuilder: ImageRequestBuilder =
@@ -176,6 +189,67 @@ internal class ImageLoaderModule : NativeImageLoaderAndroidSpec, LifecycleEventL
         }
 
         override fun onFailureImpl(dataSource: DataSource<CloseableReference<PooledByteBuffer>>) {
+          promise.reject(ERROR_GET_SIZE_FAILURE, dataSource.failureCause)
+        }
+      }
+
+  /**
+   * Resolve the intrinsic size of a `data:` URI: Fresco's encoded-image pipeline has no producer
+   * sequence for the scheme and throws, while its decoded pipeline has one.
+   *
+   * Both request options are load-bearing. `autoRotate` matches
+   * [com.facebook.react.views.image.ReactImageView], so the decode warms the bitmap cache under the
+   * key that view later reads — `disableRotation` would warm a dead one. `DownsampleMode.NEVER`
+   * keeps the reported size intrinsic, at the cost of caching a larger bitmap than that view alone
+   * would decode above `maxBitmapDimension`.
+   */
+  private fun resolveDataUriSize(uri: Uri, promise: Promise) {
+    val request =
+        ImageRequestBuilder.newBuilderWithSource(uri)
+            .setRotationOptions(RotationOptions.autoRotate())
+            .setDownsampleOverride(DownsampleMode.NEVER)
+            .build()
+    val dataSource = imagePipeline.fetchDecodedImage(request, callerContext)
+    dataSource.subscribe(createDecodedSizeSubscriber(promise), CallerThreadExecutor.getInstance())
+  }
+
+  private fun createDecodedSizeSubscriber(
+      promise: Promise,
+  ): DataSubscriber<CloseableReference<CloseableImage>> =
+      object : BaseDataSubscriber<CloseableReference<CloseableImage>>() {
+        override fun onNewResultImpl(dataSource: DataSource<CloseableReference<CloseableImage>>) {
+          if (!dataSource.isFinished) {
+            return
+          }
+          val ref = dataSource.result
+          if (ref == null) {
+            promise.reject(ERROR_GET_SIZE_FAILURE, "Failed to get the size of the image")
+            return
+          }
+          try {
+            // Already the visible dimensions: the decode applied the EXIF rotation, which is why
+            // this does not repeat the axis swap the encoded subscriber has to do by hand.
+            val image = ref.get()
+            val width = image.width
+            val height = image.height
+            if (width < 0 || height < 0) {
+              promise.reject(ERROR_GET_SIZE_FAILURE, "Failed to get the size of the image")
+              return
+            }
+            promise.resolve(
+                buildReadableMap {
+                  put("width", width)
+                  put("height", height)
+                },
+            )
+          } catch (e: Exception) {
+            promise.reject(ERROR_GET_SIZE_FAILURE, e)
+          } finally {
+            CloseableReference.closeSafely(ref)
+          }
+        }
+
+        override fun onFailureImpl(dataSource: DataSource<CloseableReference<CloseableImage>>) {
           promise.reject(ERROR_GET_SIZE_FAILURE, dataSource.failureCause)
         }
       }
