@@ -32,7 +32,7 @@ Pod::Spec.new do |s|
   s.source                 = source
   s.source_files           = podspec_sources(source_files, ["*.h", "platform/ios/**/*.h"])
   s.header_dir             = "react/utils"
-  s.exclude_files          = "tests"
+  s.exclude_files          = ["tests", "React"]
 
   if ENV['USE_FRAMEWORKS']
     header_search_paths = header_search_paths + ["\"$(PODS_TARGET_SRCROOT)/platform/ios\""]
@@ -46,6 +46,7 @@ Pod::Spec.new do |s|
                                "DEFINES_MODULE" => "YES" }
 
   s.dependency "React-jsi", version
+  s.dependency "React-cxxstableapi"
 
   if use_hermes()
     s.dependency "hermes-engine"
@@ -54,6 +55,12 @@ Pod::Spec.new do |s|
   add_rncore_dependency(s)
 
   add_dependency(s, "React-debug")
+
+  s.subspec "utilsUmbrella" do |ss|
+    ss.source_files        = "React/*.h"
+    ss.header_dir          = ""
+    ss.header_mappings_dir = "."
+  end
 
   mark_as_react_native_build(s)
 end

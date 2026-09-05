@@ -164,6 +164,7 @@ val preparePrefab by
                       Pair("../ReactCommon/react/renderer/uimanager/", "react/renderer/uimanager/"),
                       // react_utils
                       Pair("../ReactCommon/react/utils/", "react/utils/"),
+                      Pair("../ReactCommon/react/utils/React/", "React/"),
                       // rrc_image
                       Pair(
                           "../ReactCommon/react/renderer/components/image/",

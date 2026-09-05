@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 namespace facebook::react::LowPriorityExecutor {
 
 void execute(std::function<void()> &&workItem);

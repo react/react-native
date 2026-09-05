@@ -31,6 +31,7 @@ target_link_libraries(react_utils
         glog
         glog_init
         jsi
+        react_cxxstableapi
         react_debug)
 target_compile_reactnative_options(react_utils PRIVATE)
 target_compile_options(react_utils PRIVATE -Wpedantic)
