@@ -171,11 +171,15 @@ const createMockPressEvent = (
         registrationName: string,
         pageX: number,
         pageY: number,
+        locationX?: number,
+        locationY?: number,
       }>,
 ): GestureResponderEvent => {
   let registrationName = '';
   let pageX = 0;
   let pageY = 0;
+  let locationX = 0;
+  let locationY = 0;
 
   if (typeof nameOrOverrides === 'string') {
     registrationName = nameOrOverrides;
@@ -183,14 +187,19 @@ const createMockPressEvent = (
     registrationName = nameOrOverrides.registrationName;
     pageX = nameOrOverrides.pageX;
     pageY = nameOrOverrides.pageY;
+    locationX = nameOrOverrides.locationX ?? pageX;
+    locationY = nameOrOverrides.locationY ?? pageY;
+  } else {
+    locationX = pageX;
+    locationY = pageY;
   }
 
   const nativeEvent = {
     changedTouches: [] as Array<GestureResponderEvent['nativeEvent']>,
     force: 1,
     identifier: 42,
-    locationX: pageX,
-    locationY: pageY,
+    locationX,
+    locationY,
     pageX,
     pageY,
     target: 42,
@@ -979,6 +988,42 @@ describe('Pressability', () => {
         expect(config.onPress).toBeCalled();
         jest.advanceTimersByTime(630); // 1000 - 500 (onPressIn activation, already advanced before) + DEFAULT_MIN_PRESS_DURATION
         expect(config.onPressOut).toBeCalled();
+      });
+
+      it('uses touch location when measured region is shifted from visual position', () => {
+        getMock(UIManager.measure).mockImplementation((id, fn) => {
+          fn(0, 500, mockRegion.width, mockRegion.height, 0, 500);
+        });
+        const {config, handlers} = createMockPressability({
+          delayPressIn: 0,
+        });
+
+        handlers.onStartShouldSetResponder();
+        handlers.onResponderGrant(
+          createMockPressEvent({
+            registrationName: 'onResponderGrant',
+            pageX: 25,
+            pageY: 25,
+            locationX: 25,
+            locationY: 25,
+          }),
+        );
+
+        expect(UIManager.measure).toBeCalled();
+
+        handlers.onResponderMove(
+          createMockPressEvent({
+            registrationName: 'onResponderMove',
+            pageX: 25,
+            pageY: 25,
+            locationX: 25,
+            locationY: 25,
+          }),
+        );
+        handlers.onResponderRelease(createMockPressEvent('onResponderRelease'));
+
+        expect(config.onPressIn).toBeCalled();
+        expect(config.onPress).toBeCalled();
       });
     });
   });
