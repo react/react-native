@@ -39,6 +39,27 @@ export default function mockNativeComponent<TProps extends {...}>(
     measureInWindow: () => void = jest.fn();
     measureLayout: () => void = jest.fn();
     setNativeProps: () => void = jest.fn();
+    getBoundingClientRect: () => {
+      x: number,
+      y: number,
+      width: number,
+      height: number,
+      top: number,
+      left: number,
+      right: number,
+      bottom: number,
+    } = jest.fn(function () {
+      return {
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0,
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+      };
+    });
   };
 
   if (viewName === 'RCTView') {
