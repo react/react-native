@@ -133,6 +133,7 @@ val preparePrefab by
                           "../ReactCommon/react/renderer/componentregistry/",
                           "react/renderer/componentregistry/",
                       ),
+                      Pair("../ReactCommon/react/renderer/componentregistry/React/", "React/"),
                       // react_renderer_consistency
                       Pair(
                           "../ReactCommon/react/renderer/consistency/",

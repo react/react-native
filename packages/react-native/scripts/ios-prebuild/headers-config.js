@@ -88,6 +88,12 @@ const PodspecExceptions /*: {[key: string]: PodSpecConfiguration} */ = {
       },
 
       {
+        name: 'componentregistryUmbrella',
+        headerPatterns: ['react/renderer/componentregistry/React/*.h'],
+        headerDir: 'React',
+      },
+
+      {
         name: 'componentregistrynative',
         headerPatterns: ['react/renderer/componentregistry/native/**/*.h'],
         headerDir: 'react/renderer/componentregistry/native',

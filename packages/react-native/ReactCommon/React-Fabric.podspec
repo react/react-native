@@ -120,6 +120,12 @@ Pod::Spec.new do |s|
     ss.header_dir           = "react/renderer/componentregistry"
   end
 
+  s.subspec "componentregistryUmbrella" do |ss|
+    ss.source_files         = "react/renderer/componentregistry/React/*.h"
+    ss.header_dir           = ""
+    ss.header_mappings_dir  = "react/renderer/componentregistry"
+  end
+
   s.subspec "componentregistrynative" do |ss|
     ss.source_files         = podspec_sources("react/renderer/componentregistry/native/**/*.{m,mm,cpp,h}", "react/renderer/componentregistry/native/**/*.{h}")
     ss.header_dir           = "react/renderer/componentregistry/native"
