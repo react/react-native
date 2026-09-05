@@ -520,13 +520,23 @@ module.exports = function inlinePlatformPlugin(
           return;
         }
 
-        path.replaceWith(
-          findProperty(spec, platform, () =>
-            findProperty(spec, 'native', () =>
-              findProperty(spec, 'default', () => t.identifier('undefined')),
-            ),
+        const replacement = findProperty(spec, platform, () =>
+          findProperty(spec, 'native', () =>
+            findProperty(spec, 'default', () => t.identifier('undefined')),
           ),
         );
+        // Inlining must not drop side effects from discarded property values.
+        if (
+          spec.properties.some(
+            property =>
+              t.isObjectProperty(property) &&
+              property.value !== replacement &&
+              !path.scope.isPure(property.value),
+          )
+        ) {
+          return;
+        }
+        path.replaceWith(replacement);
       },
     },
   };
