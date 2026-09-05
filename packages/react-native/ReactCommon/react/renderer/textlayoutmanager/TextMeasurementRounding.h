@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include <cmath>
 
 #include <react/renderer/graphics/Size.h>

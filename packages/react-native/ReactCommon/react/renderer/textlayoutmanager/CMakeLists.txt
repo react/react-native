@@ -38,6 +38,7 @@ target_link_libraries(react_renderer_textlayoutmanager
         ${fbjni}
         folly_runtime
         ${mapbufferjni}
+        react_cxxstableapi
         react_debug
         react_renderer_attributedstring
         react_renderer_componentregistry

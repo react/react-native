@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #import <React/RCTDefines.h>
 #import <UIKit/UIKit.h>
 #import <react/renderer/textlayoutmanager/RCTFontProperties.h>
