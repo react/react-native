@@ -97,6 +97,8 @@ public class ReactTextView extends AppCompatTextView implements ReactCompoundVie
     mOverflow = Overflow.VISIBLE;
     mSpanned = null;
     mPreparedLayout = null;
+    // Paper TextView builds its own Layout; apply the API 35 start-overhang draw shift here too.
+    AndroidTextStartOverhangCompat.applyToTextView(this);
   }
 
   /* package */ void recycleView() {
