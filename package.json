@@ -35,9 +35,12 @@
     "test-ios": "./scripts/objc-test.sh test",
     "test-typescript-legacy": "tsc -p packages/react-native/__typetests__/tsconfig.legacy.json",
     "test-generated-typescript": "tsc -p packages/react-native/__typetests__/tsconfig.json",
+    "test-wpt": "yarn fantom 'WPT(Fetch|Streams)-itest'",
     "test": "jest",
     "fantom": "./scripts/fantom.sh",
     "fantom-cli": "./scripts/fantom-cli.sh",
+    "sync-wpt": "node ./scripts/web-platform-tests/sync.js",
+    "update-wpt-baseline": "node ./scripts/web-platform-tests/update-baseline.js",
     "trigger-react-native-release": "node ./scripts/releases-local/trigger-react-native-release.js",
     "update-lock": "npx yarn-deduplicate"
   },
