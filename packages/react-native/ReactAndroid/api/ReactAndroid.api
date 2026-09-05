@@ -4834,15 +4834,26 @@ public final class com/facebook/react/uimanager/events/TouchEventType$Companion 
 	public final fun getJSEventName (Lcom/facebook/react/uimanager/events/TouchEventType;)Ljava/lang/String;
 }
 
-public final class com/facebook/react/uimanager/style/BackgroundImageLayer {
+public abstract class com/facebook/react/uimanager/style/BackgroundImageLayer {
 	public static final field Companion Lcom/facebook/react/uimanager/style/BackgroundImageLayer$Companion;
-	public fun <init> ()V
-	public synthetic fun <init> (Lcom/facebook/react/uimanager/style/Gradient;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun getShader (FF)Landroid/graphics/Shader;
+	public synthetic fun <init> (Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 }
 
 public final class com/facebook/react/uimanager/style/BackgroundImageLayer$Companion {
 	public final fun parse (Lcom/facebook/react/bridge/ReadableMap;Landroid/content/Context;)Lcom/facebook/react/uimanager/style/BackgroundImageLayer;
+}
+
+public final class com/facebook/react/uimanager/style/BackgroundImageLayer$GradientLayer : com/facebook/react/uimanager/style/BackgroundImageLayer {
+	public final fun getShader (FF)Landroid/graphics/Shader;
+}
+
+public final class com/facebook/react/uimanager/style/BackgroundImageLayer$URLImageLayer : com/facebook/react/uimanager/style/BackgroundImageLayer {
+	public fun <init> (Ljava/lang/String;Ljava/lang/Float;Ljava/lang/Float;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/Float;Ljava/lang/Float;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getIntrinsicHeight ()Ljava/lang/Float;
+	public final fun getIntrinsicWidth ()Ljava/lang/Float;
+	public final fun getUri ()Ljava/lang/String;
 }
 
 public final class com/facebook/react/uimanager/style/BorderRadiusProp : java/lang/Enum {
