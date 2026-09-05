@@ -17,6 +17,7 @@ target_link_libraries(react_renderer_attributedstring
         folly_runtime
         glog
         glog_init
+        react_cxxstableapi
         react_debug
         rrc_view
         react_renderer_core

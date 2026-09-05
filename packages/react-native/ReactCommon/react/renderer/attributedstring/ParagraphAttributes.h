@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include <limits>
 
 #include <react/renderer/attributedstring/primitives.h>
