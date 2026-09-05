@@ -26,7 +26,7 @@ export interface DOMRectInit {
 }
 
 function castToNumber(value: unknown): number {
-  return value ? Number(value) : 0;
+  return value == null ? 0 : Number(value);
 }
 
 /**
