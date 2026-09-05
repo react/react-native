@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include "HostAgent.h"
 #include "HostTarget.h"
 #include "InstanceTarget.h"

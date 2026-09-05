@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include "ConsoleMessage.h"
 #include "EnumArray.h"
 #include "ExecutionContext.h"

@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include "ExecutionContext.h"
 #include "RuntimeAgent.h"
 

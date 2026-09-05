@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/FrameworksGuard.h>
+
 #include <jsinspector-modern/cdp/CdpJson.h>
 
 namespace facebook::react::jsinspector_modern {

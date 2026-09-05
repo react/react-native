@@ -54,6 +54,7 @@ Pod::Spec.new do |s|
   add_dependency(s, "React-jsinspectornetwork", :framework_name => 'jsinspector_modernnetwork')
   add_dependency(s, "React-jsinspectortracing", :framework_name => 'jsinspector_moderntracing')
   s.dependency "React-perflogger", version
+  s.dependency "React-cxxstableapi"
   add_dependency(s, "React-oscompat")
   add_dependency(s, "React-utils", :additional_framework_paths => ["react/utils/platform/ios"])
   if use_hermes()
