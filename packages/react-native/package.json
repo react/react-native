@@ -117,8 +117,6 @@
     "scripts/setup-apple-spm.js",
     "scripts/spm",
     "scripts/xcode/asset-catalog.sh",
-    "scripts/xcode/ccache-clang.sh",
-    "scripts/xcode/ccache-clang++.sh",
     "scripts/xcode/ccache.conf",
     "scripts/xcode/with-environment.sh",
     "sdks/.hermesv1version",

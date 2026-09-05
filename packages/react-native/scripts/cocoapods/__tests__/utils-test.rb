@@ -1155,6 +1155,56 @@ class UtilsTests < Test::Unit::TestCase
         assert_equal("$(inherited) -DNDEBUG", custom_release_config2.build_settings["OTHER_CPLUSPLUSFLAGS"])
         assert_equal("$(inherited) -DNDEBUG", custom_release_config3.build_settings["OTHER_CPLUSPLUSFLAGS"])
     end
+
+    # ================================ #
+    # Test - ccache launcher env       #
+    # ================================ #
+
+    def test_ccacheLauncherEnv_exportsResolvedPaths
+        # Act
+        env = ReactNativePodsUtils.ccache_launcher_env("/opt/homebrew/bin/ccache", "/app/rn/scripts/xcode/ccache.conf")
+
+        # Assert
+        assert(env.include?("REACT_NATIVE_CCACHE_BINARY=/opt/homebrew/bin/ccache\n"))
+        assert(env.include?("REACT_NATIVE_CCACHE_CONFIGPATH=/app/rn/scripts/xcode/ccache.conf\n"))
+    end
+
+    def test_ccacheLauncherEnv_escapesPathsWithSpaces
+        # Act
+        env = ReactNativePodsUtils.ccache_launcher_env("/opt/homebrew/bin/ccache", "/Users/me/My App/rn/ccache.conf")
+
+        # Assert
+        assert(env.include?("REACT_NATIVE_CCACHE_CONFIGPATH=/Users/me/My\\ App/rn/ccache.conf\n"))
+    end
+
+    # ================================ #
+    # Test - remove ccache launcher    #
+    # ================================ #
+
+    def test_removeCcacheLauncher_removesCurrentLauncher
+        # Act
+        value = ReactNativePodsUtils.remove_ccache_launcher("$(PODS_ROOT)/ccache-clang.sh", "ccache-clang.sh")
+
+        # Assert
+        assert_equal("", value)
+    end
+
+    def test_removeCcacheLauncher_removesLauncherFromOlderReactNative
+        # Act
+        value = ReactNativePodsUtils.remove_ccache_launcher("$(REACT_NATIVE_PATH)/scripts/xcode/ccache-clang++.sh", "ccache-clang++.sh")
+
+        # Assert
+        assert_equal("", value)
+    end
+
+    def test_removeCcacheLauncher_keepsOtherCompilers
+        # Act
+        value = ReactNativePodsUtils.remove_ccache_launcher("/usr/bin/clang", "ccache-clang.sh")
+
+        # Assert
+        assert_equal("/usr/bin/clang", value)
+    end
+
 end
 
 # ===== #
