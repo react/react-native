@@ -82,6 +82,18 @@ describe('structuredClone', () => {
     expect(booleanClone).not.toBe(booleanValue);
     expect(booleanClone).toBeInstanceOf(Boolean);
     expect(booleanClone.valueOf()).toBe(true);
+
+    const bigintValue = Object(1n);
+    // $FlowExpectedError[incompatible-use] this intentionally shadows the method.
+    Object.defineProperty(bigintValue, 'valueOf', {
+      value() {
+        throw new Error('Unexpected coercion');
+      },
+    });
+    const bigintClone = structuredClone(bigintValue);
+    expect(bigintClone).not.toBe(bigintValue);
+    expect(bigintClone).toBeInstanceOf(BigInt);
+    expect(bigintClone.valueOf()).toBe(1n);
   });
 
   it('throws with symbols, functions, WeakMap, WeakSet, Promise', () => {
