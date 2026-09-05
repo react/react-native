@@ -11,7 +11,7 @@
 // wraps each autolinked dep as a Foo.framework under PackageFrameworks/. That
 // gives angle-bracket imports the standard <Module/Header.h> resolution path,
 // matching how most React Native libraries already organize their headers.
-#import <ReactNativeTestLibraryCommon/TestLibraryCommon.h>
+#import <TestLibraryCommon/TestLibraryCommon.h>
 
 @implementation TestLibraryApple
 

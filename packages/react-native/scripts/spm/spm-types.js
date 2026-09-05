@@ -9,6 +9,7 @@
  */
 
 /*::
+import type {SwiftpmNameOutcome} from './swiftpm-config';
 export type SetupArgs = {
   action: 'add' | 'update' | 'deinit' | 'sync' | 'codegen' | 'download' | 'scaffold' | null,
   version: string | null,
@@ -143,13 +144,19 @@ export type AutolinkedDep = {
   name: string,
   root: string,
   platforms: {ios: AutolinkingIosPlatform, ...},
-  // Resolved Swift target / module / headers-subdir name. Defaults to
-  // toSwiftName(name) and is overridden by the dep's react-native.config.js
-  // `spm.name`. Populated by expandSpmDependencies — always present after
-  // expansion; optional in the type so caller-side construction stays simple.
+  // Resolved Swift target / module / headers-subdir name — the name the library
+  // declares in `swiftpmConfig`, else its podspec's (see resolveSwiftName).
+  // Populated by expandSpmDependencies — always present after expansion;
+  // optional in the type so caller-side construction stays simple.
   swiftName?: string,
-  // Populated by expandSpmDependencies from each dep's
-  // react-native.config.js `spm.dependencies` array.
+  // Where swiftName came from. Only a podspec-derived name is safe for the
+  // scaffolder to record in the library's package.json.
+  swiftNameSource?: 'config' | 'podspec' | 'npm',
+  // Which podspec field named it ('podspec' source only), so `spm scaffold` can
+  // report the choice it made between `header_dir` and `module_name`.
+  swiftNamePodspecKey?: 'header_dir' | 'module_name' | 'name',
+  // Populated by expandSpmDependencies from each dep's declared
+  // `dependencies` array.
   spmDependencies?: Array<string>,
   ...
 };
@@ -422,6 +429,10 @@ export type PodspecModel = {
   // physical source tree (SPM has no header_mappings_dir copy step).
   headerMappingsDirs: Array<string>,
   headerDir: ?string,
+  // What CocoaPods compiles the module as, and so what Swift and `@import`
+  // consumers spell (`s.module_name`). Defaults to the pod name in CocoaPods;
+  // null here when the podspec does not declare it.
+  moduleName: ?string,
   frameworks: Array<string>,
   weakFrameworks: Array<string>,
   libraries: Array<string>,
@@ -462,8 +473,7 @@ export type PodspecModel = {
 // Decouples podspec reading from SPM-specific shaping so each side can be
 // tested in isolation.
 export type SpmScaffoldSpec = {
-  // Swift target / module name. Default: toSwiftName(podspec.name); overridden
-  // by `header_dir` when present.
+  // Swift target / module name, as resolved by expandSpmDependencies.
   swiftName: string,
   // Source file paths relative to the dep root, ready for `sources: [...]`
   // emission after the `root/` wrapper-dir prefix is applied at emit time.
@@ -522,6 +532,9 @@ export type ScaffoldResult =
       // changed, --force, etc.); false on first-time scaffolds. The CLI
       // orchestrator prompts only for first-time scaffolds.
       previouslyExisted: boolean,
+      // What became of `swiftpmConfig.name` in the library's package.json.
+      // Absent when the name was not podspec-derived, so nothing was attempted.
+      swiftpmName?: SwiftpmNameOutcome,
     }
   | {
       depName: string,

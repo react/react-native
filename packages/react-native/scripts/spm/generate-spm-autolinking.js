@@ -10,7 +10,8 @@
 
 'use strict';
 
-/*:: import type {
+/*:: import type {SwiftpmConfig} from './swiftpm-config';
+import type {
   AggregatorInput,
   AutolinkedDep,
   AutolinkingArgs,
@@ -62,11 +63,11 @@ const {
   SpmNameCollisionError,
   assertSwiftNameNotReserved,
   defaultReadConfig,
+  defaultReadPodspec,
   defaultResolveDep,
   expandSpmDependencies,
-  isValidSwiftName,
 } = require('./expand-spm-dependencies');
-const {readPodspec} = require('./read-podspec');
+const {findPodspecs, readPodspecCached} = require('./read-podspec');
 const {
   AUTOLINKED_PACKAGE_NAME,
   REACT_CODEGEN_PACKAGE_NAME,
@@ -74,10 +75,14 @@ const {
   REACT_NATIVE_PACKAGE_NAME,
   REACT_NATIVE_PRODUCTS,
   RemoteVersionError,
+  displayPath,
   findProjectRoot,
+  isValidSwiftName,
   makeLogger,
   remotePackageConfig,
+  swiftNameKey,
 } = require('./spm-utils');
+const {readSwiftpmConfig, stringList} = require('./swiftpm-config');
 const fs = require('node:fs');
 const path = require('node:path');
 const yargs = require('yargs');
@@ -233,92 +238,116 @@ function readAutolinkingJson(
 }
 
 /**
- * Attempts to read react-native.config.js to find spm.modules entries.
- * These are extra modules not discoverable via autolinking.json.
+ * One of the app's settings, and the root that declared it. Looked up field by
+ * field so a project-root `swiftpmConfig` cannot hide a field the Xcode dir
+ * still declares: the directory holding the app's package.json wins (where
+ * codegen reads `codegenConfig` from), and `appRoot` — the Xcode project dir,
+ * the settings' old home — fills the gaps.
+ */
+function appConfigField(
+  appRoot /*: string */,
+  field /*: 'modules' | 'denyPlugins' */,
+) /*: ?{root: string, value: unknown} */ {
+  const projectRoot = findProjectRoot(appRoot);
+  const roots = projectRoot === appRoot ? [appRoot] : [projectRoot, appRoot];
+  for (const root of roots) {
+    const value = readSwiftpmConfig(root, defaultReadConfig(root))?.[field];
+    if (value === undefined) {
+      continue;
+    }
+    if (root !== projectRoot) {
+      warn(
+        `Read '${field}' from ${displayPath(root)}. Move it to 'swiftpmConfig' in ${displayPath(path.join(projectRoot, 'package.json'))} — an app's SwiftPM settings belong with its package.json.`,
+      );
+    }
+    return {root, value};
+  }
+  return null;
+}
+
+/**
+ * The app's own native modules — the ones autolinking.json cannot discover —
+ * with the root that declared them, since each `path` is relative to the file
+ * it is written in:
  *
- * Expected structure in react-native.config.js:
- * module.exports = {
- *   ...
- *   spm: {
- *     modules: [
+ *   // <project root>/package.json
+ *   "swiftpmConfig": {
+ *     "modules": [
  *       {
- *         name: "MyNativeModule",
- *         path: "ios/MyNativeModule",            // relative to appRoot
- *         exclude: ["*.js", "*.podspec"],        // optional
+ *         "name": "MyNativeModule",
+ *         "path": "ios/MyNativeModule",
+ *         "exclude": ["*.js", "*.podspec"]
  *       }
  *     ]
  *   }
- * }
  */
 function readSpmModulesFromConfig(
   appRoot /*: string */,
-) /*: Array<SpmModuleConfig> */ {
-  const configPath = path.join(appRoot, 'react-native.config.js');
-  if (!fs.existsSync(configPath)) {
-    return [];
+) /*: {modules: Array<SpmModuleConfig>, root: string} */ {
+  const declared = appConfigField(appRoot, 'modules');
+  if (declared == null || !Array.isArray(declared.value)) {
+    return {modules: [], root: appRoot};
   }
-  try {
-    // $FlowFixMe[unsupported-syntax] dynamic require by computed path
-    const config = require(configPath);
-    return config.spm?.modules ?? [];
-  } catch (e) {
-    // Config might use Ruby interop or other patterns – skip
-    return [];
+  // Entries stay unvalidated here: assertSpmModuleName checks each name, and
+  // the emission loop reads the rest defensively.
+  // $FlowFixMe[incompatible-type] user-authored entries
+  const modules /*: ReadonlyArray<SpmModuleConfig> */ = declared.value;
+  return {modules: [...modules], root: declared.root};
+}
+
+function moduleClashDiagnosis(
+  moduleName /*: string */,
+  clash /*: string */,
+) /*: string */ {
+  if (clash === moduleName) {
+    return `is already the name of another autolinked target.`;
   }
+  if (clash.toLowerCase() === moduleName.toLowerCase()) {
+    return `differs from the existing target '${clash}' only in case, which collides on case-insensitive filesystems.`;
+  }
+  return `compiles as the same module as the existing target '${clash}'.`;
 }
 
 /**
  * Validates one app-local `spm.modules` name against the same rules a library's
  * `spm.name` gets: a usable Swift identifier, not a name React Native reserves,
  * and not one already taken by another module or an autolinked dep.
- * `taken` maps lower-cased name → the name as written.
+ * `taken` is keyed by swiftNameKey, valued with the name as written.
  */
 function assertSpmModuleName(
   name /*: unknown */,
   taken /*: Map<string, string> */,
 ) /*: void */ {
   const remedy =
-    "Rename it in this app's react-native.config.js 'spm.modules'.";
+    "Rename it in this app's package.json 'swiftpmConfig.modules'.";
   if (typeof name !== 'string' || !isValidSwiftName(name)) {
     throw new Error(
-      `react-native autolinking: invalid 'spm.modules' name ${JSON.stringify(name) ?? 'undefined'}: must start with a letter or underscore and contain only letters, digits, underscores, or hyphens.`,
+      `react-native autolinking: invalid 'swiftpmConfig.modules' name ${JSON.stringify(name) ?? 'undefined'}: must start with a letter or underscore and contain only letters, digits, underscores, or hyphens.`,
     );
   }
   const moduleName = name;
   assertSwiftNameNotReserved(moduleName, {
-    label: `the 'spm.modules' entry '${moduleName}'`,
+    label: `the 'swiftpmConfig.modules' entry '${moduleName}'`,
     remedy,
     extraReservedNames: reservedNamesForRun(),
   });
-  const clash = taken.get(moduleName.toLowerCase());
+  const clash = taken.get(swiftNameKey(moduleName));
   if (clash != null) {
     throw new SpmNameCollisionError(
-      `react-native autolinking: SPM Swift name collision: the 'spm.modules' entry '${moduleName}' ` +
-        (clash === moduleName
-          ? `is already the name of another autolinked target.`
-          : `differs from the existing target '${clash}' only in case, which collides on case-insensitive filesystems.`) +
+      `react-native autolinking: SPM Swift name collision: the 'swiftpmConfig.modules' entry '${moduleName}' ` +
+        moduleClashDiagnosis(moduleName, clash) +
         ` ${remedy}`,
     );
   }
 }
 
 /**
- * Reads the app's `spm.denyPlugins` — npm names of autolinking plugins to
- * skip. The escape hatch for the transitive plugin discovery (an app opts a
- * framework's plugin OUT); no allowlist is required.
+ * The app's `denyPlugins` — npm names of autolinking plugins to skip. The
+ * escape hatch for transitive plugin discovery (an app opts a framework's
+ * plugin OUT); no allowlist is required.
  */
 function readDenyPluginsFromConfig(appRoot /*: string */) /*: Array<string> */ {
-  const configPath = path.join(appRoot, 'react-native.config.js');
-  if (!fs.existsSync(configPath)) {
-    return [];
-  }
-  try {
-    // $FlowFixMe[unsupported-syntax] dynamic require by computed path
-    const config = require(configPath);
-    return config.spm?.denyPlugins ?? [];
-  } catch (e) {
-    return [];
-  }
+  return stringList(appConfigField(appRoot, 'denyPlugins')?.value);
 }
 
 /**
@@ -433,21 +462,9 @@ function findSelfManagedPackageDir(absSource /*: string */) /*: ?string */ {
  * the scaffolder translates the podspec into a Package.swift.
  */
 function hasPodspec(absSource /*: string */) /*: boolean */ {
-  for (const sub of ['', 'ios']) {
-    const dir = sub === '' ? absSource : path.join(absSource, sub);
-    try {
-      if (
-        fs
-          .readdirSync(dir)
-          .some(e => e.endsWith('.podspec') && !e.startsWith('.spm-scaffold-'))
-      ) {
-        return true;
-      }
-    } catch {
-      // dir does not exist; try the next candidate
-    }
-  }
-  return false;
+  return [absSource, path.join(absSource, 'ios')].some(
+    dir => findPodspecs(dir).length > 0,
+  );
 }
 
 /**
@@ -778,9 +795,9 @@ function expandSpmSourceGlobs(
  * Returns null if the dependency doesn't have iOS support.
  *
  * `swiftNameByNpm` maps each autolinked dep's npm name to its resolved Swift
- * name (populated by expandSpmDependencies, honoring the dep's `spm.name`
- * config and scope disambiguation). Every name this function emits comes from
- * there — see requireSwiftName.
+ * name (populated by expandSpmDependencies from the dep's podspec and
+ * `spm.name`). Every name this function emits comes from there — see
+ * requireSwiftName.
  */
 /**
  * Read the dep's podspec (if any) and extract its declared
@@ -799,24 +816,12 @@ function expandSpmSourceGlobs(
 function extractPodspecHeaderSearchPaths(
   sourceDir /*: string */,
 ) /*: Array<string> */ {
-  let podspecPath /*: ?string */ = null;
-  try {
-    const entries = fs.readdirSync(sourceDir);
-    // Skip a crashed run's leftover `.spm-scaffold-<pid>-<name>.podspec` copy.
-    const candidate = entries.find(
-      e => e.endsWith('.podspec') && !e.startsWith('.spm-scaffold-'),
-    );
-    if (candidate != null) {
-      podspecPath = path.join(sourceDir, candidate);
-    }
-  } catch {
-    return [];
-  }
+  const podspecPath /*: ?string */ = findPodspecs(sourceDir)[0];
   if (podspecPath == null) return [];
 
   let model;
   try {
-    model = readPodspec(podspecPath);
+    model = readPodspecCached(podspecPath);
   } catch {
     return [];
   }
@@ -1312,8 +1317,8 @@ function main(argv /*:: ?: Array<string> */) /*: void */ {
     const allDeps = expandSpmDependencies(directDeps, {
       readConfig: defaultReadConfig,
       resolveDep: defaultResolveDep,
+      readPodspec: defaultReadPodspec,
       extraReservedNames: reservedNamesForRun(),
-      log,
     });
 
     // Map every autolinked npm name to its resolved Swift name so transitive
@@ -1380,7 +1385,7 @@ function main(argv /*:: ?: Array<string> */) /*: void */ {
         const dependents = pluginHostDependents.get(dep.name);
         if (dependents != null) {
           throw new Error(
-            `react-native autolinking: '${dep.name}' ships an SPM autolinking plugin, which owns its native contribution — so React Native does not build it as a sibling target for anything to depend on. It is declared in 'spm.dependencies' by ${dependents.map(name => `'${name}'`).join(', ')}. Remove it there; nothing is lost. Its plugin links its products into the app and resolves its own ecosystem's dependencies, so a library that builds against it does not declare it here.`,
+            `react-native autolinking: '${dep.name}' ships an SPM autolinking plugin, which owns its native contribution — so React Native does not build it as a sibling target for anything to depend on. It is declared as a SwiftPM dependency by ${dependents.map(name => `'${name}'`).join(', ')}. Remove it there; nothing is lost. Its plugin links its products into the app and resolves its own ecosystem's dependencies, so a library that builds against it does not declare it here.`,
           );
         }
         log(
@@ -1414,17 +1419,20 @@ function main(argv /*:: ?: Array<string> */) /*: void */ {
   // If the module declares `sources: [glob, ...]` (CocoaPods-style), expand
   // the globs now relative to its dir and attach the file list to the target
   // so the emission loop below renders `sources: [...]` literally.
-  const configModules = readSpmModulesFromConfig(appRoot);
+  const {modules: configModules, root: configModulesRoot} =
+    readSpmModulesFromConfig(appRoot);
   // Module names land in the manifest exactly as written, so they get the same
   // checks a dep's Swift name gets. Seeded with the dep target names already
   // emitted so a module can't shadow an autolinked library either.
   const takenSwiftNames /*: Map<string, string> */ = new Map(
-    entries.map(entry => [entry.target.name.toLowerCase(), entry.target.name]),
+    entries.map(entry => [swiftNameKey(entry.target.name), entry.target.name]),
   );
   for (const mod of configModules) {
     assertSpmModuleName(mod.name, takenSwiftNames);
-    takenSwiftNames.set(mod.name.toLowerCase(), mod.name);
-    const absPath = path.resolve(appRoot, mod.path);
+    takenSwiftNames.set(swiftNameKey(mod.name), mod.name);
+    // Relative to the package.json (or config file) that declared it, so a
+    // path reads correctly from where it is written.
+    const absPath = path.resolve(configModulesRoot, mod.path);
     const relPath = path.relative(outputDir, absPath);
     const userSources =
       Array.isArray(mod.sources) && mod.sources.length > 0
@@ -1999,6 +2007,7 @@ module.exports = {
   findSelfManagedPackageDir,
   hasPodspec,
   hasMixedLanguageSources,
+  readDenyPluginsFromConfig,
   MissingManifestError,
   reportMissingManifests,
   AUTOGEN_MARKER,

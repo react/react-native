@@ -331,49 +331,126 @@ build phase calls — a fine trade for not having to remember a command.
 
 ## Local Native Modules
 
-Modules not discovered via autolinking can be declared in
-`react-native.config.js`:
+Modules not discovered via autolinking are declared in the app's package.json.
+Each `path` is relative to the file that declares it — the project root for a
+package.json there, the Xcode project directory for a config kept there:
 
-```js
-module.exports = {
-  spm: {
-    modules: [
+```json
+{
+  "swiftpmConfig": {
+    "modules": [
       {
-        name: 'MyNativeModule',
-        path: 'ios/MyNativeModule', // relative to app root
-        exclude: ['*.podspec'], // optional
-      },
-    ],
-  },
-};
+        "name": "MyNativeModule",
+        "path": "ios/MyNativeModule",
+        "exclude": ["*.podspec"]
+      }
+    ]
+  }
+}
 ```
 
 Each entry becomes a target in `build/generated/autolinking/Package.swift`.
 Sources outside `build/generated/autolinking/` are automatically mirrored with
 file-level symlinks.
 
+## Where SwiftPM settings live
+
+A package's SwiftPM settings live under `swiftpmConfig` in its **package.json**,
+alongside `codegenConfig`.
+
+| Field               | Set by  | What it does                                                |
+| ------------------- | ------- | ----------------------------------------------------------- |
+| `name`              | library | Its SwiftPM target name, and so its header import prefix    |
+| `dependencies`      | library | npm names of native libraries it builds against             |
+| `autolinkingPlugin` | library | Path to an [autolinking plugin](spm-autolinking-plugins.md) |
+| `scaffold`          | library | `false` opts the library out of `spm scaffold`              |
+| `modules`           | app     | [Local native modules](#local-native-modules) to build      |
+| `denyPlugins`       | app     | npm names whose autolinking plugin to skip                  |
+
+```json
+{
+  "swiftpmConfig": {
+    "name": "RNSVG",
+    "dependencies": ["react-native-worklets"]
+  }
+}
+```
+
+A library's settings come from its own package.json. An **app's** are resolved
+field by field, each from the directory holding its package.json — the JS root,
+where codegen reads `codegenConfig` — falling back to the Xcode project
+directory. An unrecognised field is ignored with a warning naming it, so a typo
+does not pass silently.
+
+These settings used to live in an `spm` block in `react-native.config.js`. That
+block is **deprecated** but still read, with the same field names, so nothing
+breaks: move the keys across as they are, and package.json wins field by field.
+`npx react-native spm scaffold` writes the `name` for you — see
+[Community packages without a Package.swift](#community-packages-without-a-packageswift).
+
+## Library names
+
+An autolinked library's SwiftPM target name is also the prefix its headers are
+imported under (`#import <RNSVG/…>`), so it is not cosmetic: it has to be the
+prefix the library's own sources and its dependents already use.
+
+It is resolved in this order:
+
+1. `swiftpmConfig.name` in the library's package.json
+2. `spm.name` in `react-native.config.js` (deprecated)
+3. podspec `header_dir` — `React-Core` → `React`
+4. podspec `module_name` — `react-native-maps` → `ReactNativeMaps`
+5. podspec name — `react-native-svg` → `RNSVG`
+6. npm package name — `react-native-svg` → `ReactNativeSvg`
+
+Steps 3–5 are a **migration path, not the destination**. They exist so that
+libraries work unchanged today, a podspec being what they already ship, and
+`npx react-native spm scaffold` closes them out: it records the name it derived
+as `swiftpmConfig.name` in the library's package.json, after which the podspec
+is never consulted for naming again. A library that declares its own name needs
+no podspec for SwiftPM at all.
+
+Within those three steps, `header_dir` comes first because that is what a
+library sets when its import prefix differs from its pod name, then
+`module_name`, what CocoaPods compiles the module as and so what Swift and
+`@import` consumers write. But a `header_dir` only a **subspec** declares names
+that subspec's headers, not the library, so the pod name stands
+(react-native-svg is `RNSVG`, not `rnsvg`; its subspec prefix resolves through
+the header search paths instead) — unless the subspec reuses the parent's block
+variable (`do |s|`), which hides which scope declared what, so the podspec is
+read by CocoaPods or not at all. An unreadable podspec falls through rather than
+failing the build — with a warning, since a machine that can read it (one with
+CocoaPods installed) may resolve a different name. A prefix Swift cannot spell
+is normalized — `Some.Pod` becomes `Some_Pod`, what SwiftPM would compile it as
+anyway — with a warning naming `swiftpmConfig.name`.
+
+Two names are refused outright: one React Native reserves (`ReactNative`,
+`ReactHeaders`, `ReactNativeHeaders`, `ReactNativeDependenciesHeaders`,
+`ReactAppHeaders`, `React-GeneratedCode`, `ReactCodegen`,
+`ReactAppDependencyProvider`, `Autolinked`), and one another library already
+took. Both are **hard errors** naming `swiftpmConfig.name` — nothing is renamed
+automatically, because a name the build invented is one no `#import` in your
+sources can predict. Two names must differ by more than case or punctuation to
+be two targets: `worklets` and `Worklets` share a headers directory, and
+`foo-bar` and `foo_bar` are one module, since SwiftPM replaces every character
+C99 rejects with `_`.
+
 ## Dependencies between libraries
 
 SwiftPM has no equivalent of a podspec's `s.dependency`, so a library that needs
-another native library declares it explicitly with `spm.dependencies` in its
-**own** `react-native.config.js` — a list of npm names:
+another native library declares it explicitly in its **own** package.json — a
+list of npm names:
 
-```js
-// react-native-reanimated/react-native.config.js
-module.exports = {
-  dependency: {platforms: {ios: {}}},
-  spm: {dependencies: ['react-native-worklets']},
-};
+```json
+// react-native-reanimated/package.json
+{
+  "swiftpmConfig": {"dependencies": ["react-native-worklets"]}
+}
 ```
 
-The autolinker starts from the directly-autolinked deps, follows each one's
-`spm.dependencies` **recursively**, and dedupes the result, so a transitive
-dependency is pulled into the package graph even when the app never depends on
-it directly. Declared names are mapped to Swift target names, so the dependent
-library's target can import it.
-
-This is a **library-author** surface, like the podspec dependency it replaces —
-apps don't normally set it.
+The autolinker follows these **recursively** from the directly-autolinked deps
+and dedupes, so a transitive dependency joins the package graph even when the
+app never depends on it directly.
 
 ### Config module format
 
@@ -385,11 +462,11 @@ an async one that takes only the default export. For maximum compatibility,
 prefer the one-line CommonJS form:
 
 ```js
-module.exports = {dependency: {platforms: {ios: {}}}, spm: {name: 'worklets'}};
+module.exports = {dependency: {platforms: {ios: {}}}};
 ```
 
-If the config fails to load, a warning names the file and the reason — the `spm`
-settings in it are ignored rather than silently applied.
+If the config fails to load, a warning names the file and the reason — any
+deprecated `spm` settings in it are ignored rather than silently applied.
 
 ## Self-managed community packages
 
@@ -427,7 +504,15 @@ npx react-native spm               # then inject/update as usual
 does not inject into the `.xcodeproj` — so on a first-time setup you still
 follow it with `npx react-native spm`.)
 
-Because `node_modules/` isn't committed, persist it so it survives the next
+`scaffold` also records the name it derived from the podspec as
+`swiftpmConfig.name` in the library's package.json — the one step that lets the
+library be named without reading a podspec at all. It never overwrites a name
+the library already declares, and it says which packages it edited. Every
+library it scaffolds gets a line naming the SwiftPM name it chose and where that
+name came from, plus a note when a podspec's `header_dir` and `module_name`
+disagree about it and only one can win.
+
+Because `node_modules/` isn't committed, persist both so they survive the next
 install:
 
 ```bash
@@ -445,7 +530,9 @@ workaround keeps your app building.
 > A library whose sources mix Swift **and** Objective-C/C++ in one target, or
 > that ships neither a `Package.swift` nor a podspec, can't be scaffolded
 > automatically — the error says so. Opt it out via `react-native.config.js`
-> (`platforms.ios = null`) or ask the maintainer for a prebuilt xcframework.
+> (`platforms.ios = null`) or ask the maintainer for a prebuilt xcframework. A
+> library can also opt out of scaffolding alone with
+> `"swiftpmConfig": {"scaffold": false}`.
 
 ## Framework plugins (Preview)
 
@@ -490,6 +577,7 @@ across apps; refresh it with `react-native spm update --download force`.
 | `spm add` fails: "no .xcodeproj found"                                                                                 | Create an app first (`npx @react-native-community/cli init`) or make a project in Xcode, then `spm add`.                                                                                                                                                                                                                                                    |
 | `spm add` fails: "multiple .xcodeproj found"                                                                           | Pass `--xcodeproj <path>` (and `--product-name <target>` if multiple app targets).                                                                                                                                                                                                                                                                          |
 | `Package.swift is missing for library "<name>"` (exit 2)                                                               | The dep ships no SwiftPM support. `npx react-native spm scaffold`, then re-run setup; persist with `patch-package`. See [Community packages without a Package.swift](#community-packages-without-a-packageswift)                                                                                                                                            |
+| `SPM Swift name collision`                                                                                             | Two libraries resolved to one Swift name, or one took a name React Native reserves. Set `swiftpmConfig.name` in the library's package.json — see [Library names](#library-names)                                                                                                                                                                            |
 | Missing headers                                                                                                        | Re-run `react-native spm`                                                                                                                                                                                                                                                                                                                                   |
 | "not contained in target"                                                                                              | Re-run setup (regenerates file-level symlinks)                                                                                                                                                                                                                                                                                                              |
 | Codegen fails                                                                                                          | Use `--skipCodegen` to iterate on other parts                                                                                                                                                                                                                                                                                                               |
@@ -596,7 +684,7 @@ _existing_ set of generated packages current; they do not create the first one.
 1. Compares timestamps of staleness inputs against
    `build/generated/autolinking/.spm-sync-stamp`:
    - `package.json` — dependency declarations
-   - `react-native.config.js` — `spm.modules` config
+   - `react-native.config.js` — autolinking config
    - `node_modules/` directory mtime — updated by any package manager (npm,
      yarn, pnpm, bun); also checks parent `node_modules` for monorepo setups
    - a missing `build/xcframeworks/` (e.g. after a manual clean) also marks

@@ -20,5 +20,8 @@
     "autolinking",
     "ios",
     "macos"
-  ]
+  ],
+  "swiftpmConfig": {
+    "name": "TestLibraryCommon"
+  }
 }

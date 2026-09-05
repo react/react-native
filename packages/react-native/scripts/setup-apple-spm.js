@@ -490,15 +490,27 @@ async function runScaffold(
 
   if (written.length > 0) {
     log(`Scaffolded Package.swift for ${written.length} dep(s):`);
+    // Silent for the outcomes that changed nothing ('already-set', 'skipped').
+    const nameOutcome = (outcome /*: ?string */) /*: string */ => {
+      if (outcome === 'created' || outcome === 'inserted') {
+        return " — also recorded 'swiftpmConfig.name' in its package.json";
+      }
+      if (outcome === 'failed') {
+        return " — could NOT record 'swiftpmConfig.name'; the manifest is written, the name is not";
+      }
+      return '';
+    };
     for (const r of written) {
-      log(`  • ${r.depName}`);
+      log(`  • ${r.depName}${nameOutcome(r.swiftpmName)}`);
     }
     log('');
     log(
       'node_modules is NOT committed and is wiped by `npm install`. To keep\n' +
         'these manifests, create and commit a patch with a tool like patch-package:\n' +
         '  • `npx patch-package <dep>` for each scaffolded dep, then commit the patch.\n' +
-        'Also consider asking the maintainer to ship a Package.swift upstream.\n' +
+        'The patch also captures any recorded `swiftpmConfig.name`, which is what\n' +
+        'lets the library be named without reading its podspec. Better still, ask the\n' +
+        'maintainer to ship both upstream.\n' +
         'Without a committed patch the build will hard-error again after a fresh install.',
     );
     log('');

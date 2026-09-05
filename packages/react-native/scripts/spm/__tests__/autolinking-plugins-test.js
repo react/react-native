@@ -34,18 +34,43 @@ describe('discoverPlugins', () => {
     return {name, root};
   }
 
-  // readConfig fake: a dep opts in when opted[name] is truthy.
+  // A dep opts in through its package.json; `noConfig` stands in for the
+  // react-native.config.js the caller loads (absent for these cases).
+  const declarePlugin = dep =>
+    fs.writeFileSync(
+      path.join(dep.root, 'package.json'),
+      JSON.stringify({
+        name: dep.name,
+        swiftpmConfig: {autolinkingPlugin: './plugin.js'},
+      }),
+    );
+  const noConfig = () => null;
+
+  // The deprecated home, which Expo still ships.
   const readConfigFor = opted => root => {
     const name = path.basename(root);
     return opted[name] ? {spm: {autolinkingPlugin: './plugin.js'}} : null;
   };
 
-  it('discovers a plugin declared via react-native.config.js', () => {
+  it('discovers a plugin declared in package.json', () => {
     const dep = makeDep('expo', 'module.exports = () => ({});');
-    const found = discoverPlugins([dep], readConfigFor({expo: true}));
+    declarePlugin(dep);
+    const found = discoverPlugins([dep], noConfig);
     expect(found).toHaveLength(1);
     expect(found[0].depName).toBe('expo');
     expect(typeof found[0].plugin).toBe('function');
+  });
+
+  it('still discovers a plugin declared the deprecated way', () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const dep = makeDep('expo', 'module.exports = () => ({});');
+      const found = discoverPlugins([dep], readConfigFor({expo: true}));
+      expect(found).toHaveLength(1);
+      expect(warnSpy).toHaveBeenCalled();
+    } finally {
+      warnSpy.mockRestore();
+    }
   });
 
   it('skips deps that do not declare a plugin', () => {
@@ -55,27 +80,31 @@ describe('discoverPlugins', () => {
 
   it('honors the app deny-list (opt-out, no allowlist needed)', () => {
     const dep = makeDep('expo', 'module.exports = () => ({});');
-    const found = discoverPlugins([dep], readConfigFor({expo: true}), ['expo']);
-    expect(found).toHaveLength(0);
+    declarePlugin(dep);
+    expect(discoverPlugins([dep], noConfig, ['expo'])).toHaveLength(0);
   });
 
   it('accepts default/plugin export interop', () => {
     const a = makeDep('a', 'module.exports.default = () => ({});');
     const b = makeDep('b', 'module.exports.plugin = () => ({});');
-    const found = discoverPlugins([a, b], readConfigFor({a: true, b: true}));
+    declarePlugin(a);
+    declarePlugin(b);
+    const found = discoverPlugins([a, b], noConfig);
     expect(found.map(f => f.depName).sort()).toEqual(['a', 'b']);
   });
 
   it('fails closed when the plugin module is missing', () => {
     const dep = makeDep('expo', null); // opted in below but no plugin.js
-    expect(() => discoverPlugins([dep], readConfigFor({expo: true}))).toThrow(
+    declarePlugin(dep);
+    expect(() => discoverPlugins([dep], noConfig)).toThrow(
       /failed to load the autolinking plugin for 'expo'/,
     );
   });
 
   it('fails closed when the module does not export a function', () => {
     const dep = makeDep('expo', 'module.exports = {nope: 1};');
-    expect(() => discoverPlugins([dep], readConfigFor({expo: true}))).toThrow(
+    declarePlugin(dep);
+    expect(() => discoverPlugins([dep], noConfig)).toThrow(
       /does not export a function/,
     );
   });

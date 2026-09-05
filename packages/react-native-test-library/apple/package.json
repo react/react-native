@@ -27,5 +27,11 @@
   "peerDependencies": {
     "react": "*",
     "react-native": "1000.0.0"
+  },
+  "swiftpmConfig": {
+    "name": "TestLibraryApple",
+    "dependencies": [
+      "react-native-test-library-common"
+    ]
   }
 }

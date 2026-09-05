@@ -10,7 +10,12 @@
 
 'use strict';
 
-const {flattenSubspecs, readPodspec, regexPodspec} = require('../read-podspec');
+const {
+  flattenSubspecs,
+  readPodspec,
+  readPodspecNames,
+  regexPodspec,
+} = require('../read-podspec');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
@@ -51,6 +56,33 @@ Pod::Spec.new do |s|
 end
 `;
 
+const SCREENS_LIKE_PODSPEC = `
+Pod::Spec.new do |s|
+  s.name         = "RNScreens"
+  s.version      = "4.0.0"
+  s.source_files = ["ios/**/*.{h,m,mm}"]
+
+  s.subspec "common" do |ss|
+    ss.source_files        = ["common/cpp/**/*.{cpp,h}"]
+    ss.header_mappings_dir = "common/cpp"
+    ss.header_dir          = "rnscreens"
+  end
+end
+`;
+
+const SVG_LIKE_PODSPEC = `
+Pod::Spec.new do |s|
+  s.name = "RNSVG"
+  s.version = "15.0.0"
+  s.source_files = "apple/**/*.{h,m,mm}"
+
+  s.subspec "common" do |ss|
+    ss.source_files = "common/cpp/**/*.{cpp,h}"
+    ss.header_dir   = "rnsvg"
+  end
+end
+`;
+
 const REANIMATED_LIKE_PODSPEC = `
 Pod::Spec.new do |s|
   s.name = "RNReanimated"
@@ -65,6 +97,50 @@ Pod::Spec.new do |s|
   s.subspec "apple" do |ss|
     ss.source_files = "apple/reanimated/**/*.{mm,h,m}"
     ss.header_mappings_dir = "apple/reanimated"
+  end
+end
+`;
+
+const MAPS_LIKE_PODSPEC = `
+Pod::Spec.new do |s|
+  s.name        = "react-native-maps"
+  s.module_name = 'ReactNativeMaps'
+  s.version     = "1.20.0"
+  s.source_files = "ios/**/*.{h,m,mm}"
+end
+`;
+
+// A subspec that reuses the parent's block variable instead of taking its own:
+// inside the block, `s` is the CHILD, so a regex anchored on the receiver
+// spelling reads the child's fields as the library's.
+const SHADOWING_SUBSPEC_PODSPEC = `
+Pod::Spec.new do |s|
+  s.name = "ParentPod"
+  s.module_name = "ParentModule"
+  s.version = "1.0.0"
+  s.source_files = "ios/**/*.{h,m,mm}"
+
+  s.subspec "common" do |s|
+    s.source_files = "common/cpp/**/*.{cpp,h}"
+    s.header_mappings_dir = "common/cpp"
+    s.header_dir = "child_prefix"
+  end
+end
+`;
+
+// The same library with the subspec taking its own variable — the unambiguous
+// shape, which must keep naming the parent.
+const OWN_VARIABLE_SUBSPEC_PODSPEC = `
+Pod::Spec.new do |s|
+  s.name = "ParentPod"
+  s.module_name = "ParentModule"
+  s.version = "1.0.0"
+  s.source_files = "ios/**/*.{h,m,mm}"
+
+  s.subspec "common" do |ss|
+    ss.source_files = "common/cpp/**/*.{cpp,h}"
+    ss.header_mappings_dir = "common/cpp"
+    ss.header_dir = "child_prefix"
   end
 end
 `;
@@ -95,6 +171,153 @@ function writeFixture(name, content) {
 // ---------------------------------------------------------------------------
 
 describe('regexPodspec', () => {
+  it('reads past comments: a commented-out field never wins, a `#` in a string is not one', () => {
+    const {file, dir} = writeFixture(
+      'commented.podspec',
+      [
+        'Pod::Spec.new do |s|',
+        '  s.name = "RNSVG" # the pod everyone imports',
+        '  s.summary = "# not a comment"',
+        '  # s.header_dir = "OldPrefix"',
+        '  s.header_dir = "rnsvg"',
+        '  # s.header_mappings_dir = "Old/Mappings"',
+        'end',
+        '',
+      ].join('\n'),
+    );
+    try {
+      const raw = regexPodspec(file);
+      expect(raw.name).toBe('RNSVG');
+      expect(raw.header_dir).toBe('rnsvg');
+      // Commented out with no live counterpart: absent, not "Old/Mappings".
+      expect(raw.header_mappings_dir).toBeNull();
+    } finally {
+      fs.rmSync(dir, {recursive: true, force: true});
+    }
+  });
+
+  it.each([
+    ['RNScreens', () => SCREENS_LIKE_PODSPEC],
+    ['RNSVG', () => SVG_LIKE_PODSPEC],
+  ])(
+    'reads no spec-level header_dir when only a subspec declares one (%s)',
+    (podName, source) => {
+      const {file, dir} = writeFixture(`${podName}.podspec`, source());
+      try {
+        const raw = regexPodspec(file);
+        expect(raw.name).toBe(podName);
+        // `ss.header_dir` belongs to that subspec, not to the library.
+        expect(raw.header_dir).toBeNull();
+      } finally {
+        fs.rmSync(dir, {recursive: true, force: true});
+      }
+    },
+  );
+
+  it('reports no identity fields when a subspec rebinds the spec variable', () => {
+    const {file, dir} = writeFixture(
+      'shadowing.podspec',
+      SHADOWING_SUBSPEC_PODSPEC,
+    );
+    try {
+      const raw = regexPodspec(file);
+      // The child's `header_dir` is what a receiver-anchored regex would read
+      // as the library's own — and the parent's literal fields are no more
+      // trustworthy, since the same shadowing hides which scope declared them.
+      expect(raw.header_dir).toBeNull();
+      expect(raw.module_name).toBeNull();
+      expect(raw.name).toBeNull();
+      // The fields subspecs are MEANT to contribute to still merge.
+      expect(raw.source_files).toEqual(['ios/**/*.{h,m,mm}']);
+      expect(raw.header_mappings_dir).toBe('common/cpp');
+      expect(raw.__warnings__.join('\n')).toMatch(
+        /subspec rebinds the spec variable/,
+      );
+    } finally {
+      fs.rmSync(dir, {recursive: true, force: true});
+    }
+  });
+
+  it('leaves the flattened model without an identity to name the library by', () => {
+    // The pod-unavailable path: these three fields are what the name resolver
+    // reads, so nulling them is what makes it fall back to the npm name.
+    const {file, dir} = writeFixture(
+      'shadowing.podspec',
+      SHADOWING_SUBSPEC_PODSPEC,
+    );
+    try {
+      const model = flattenSubspecs(regexPodspec(file));
+      expect(model.name).toBe('');
+      expect(model.moduleName).toBeNull();
+      expect(model.headerDir).toBeNull();
+      expect(model.sourceFiles).toEqual(['ios/**/*.{h,m,mm}']);
+      expect(model.headerMappingsDirs).toEqual(['common/cpp']);
+    } finally {
+      fs.rmSync(dir, {recursive: true, force: true});
+    }
+  });
+
+  it('reads the parent identity when a subspec takes its own variable', () => {
+    const {file, dir} = writeFixture(
+      'own-variable.podspec',
+      OWN_VARIABLE_SUBSPEC_PODSPEC,
+    );
+    try {
+      const raw = regexPodspec(file);
+      expect(raw.name).toBe('ParentPod');
+      expect(raw.module_name).toBe('ParentModule');
+      expect(raw.header_dir).toBeNull();
+    } finally {
+      fs.rmSync(dir, {recursive: true, force: true});
+    }
+  });
+
+  it("still reads a subspec's header_mappings_dir, which feeds the search paths", () => {
+    const {file, dir} = writeFixture('RNScreens.podspec', SCREENS_LIKE_PODSPEC);
+    try {
+      const raw = regexPodspec(file);
+      expect(raw.header_mappings_dir).toBe('common/cpp');
+      expect(raw.source_files).toEqual(['ios/**/*.{h,m,mm}']);
+    } finally {
+      fs.rmSync(dir, {recursive: true, force: true});
+    }
+  });
+
+  it('reads a spec-level header_dir even when a subspec declares its own', () => {
+    const {file, dir} = writeFixture(
+      'core.podspec',
+      [
+        'Pod::Spec.new do |s|',
+        '  s.name = "React-Core"',
+        '  s.header_dir = "React"',
+        '  s.subspec "cxx" do |ss|',
+        '    ss.header_dir = "reactcxx"',
+        '  end',
+        'end',
+        '',
+      ].join('\n'),
+    );
+    try {
+      expect(regexPodspec(file).header_dir).toBe('React');
+    } finally {
+      fs.rmSync(dir, {recursive: true, force: true});
+    }
+  });
+
+  it('reads a spec-level field written on the block-argument line', () => {
+    const {file, dir} = writeFixture(
+      'oneline.podspec',
+      'Pod::Spec.new do |spec| spec.name = "OneLine"\n  spec.header_dir = "oneline"\nend\n',
+    );
+    try {
+      const raw = regexPodspec(file);
+      expect(raw.name).toBe('OneLine');
+      expect(raw.header_dir).toBe('oneline');
+    } finally {
+      fs.rmSync(dir, {recursive: true, force: true});
+    }
+  });
+
   it('extracts name, version, source_files, dependency from a real-world simple podspec', () => {
     const {file, dir} = writeFixture(
       'react-native-safe-area-context.podspec',
@@ -459,6 +682,251 @@ describe('flattenSubspecs', () => {
 // mocking), so we exercise the fallback path: when `pod` isn't on PATH, the
 // regex parser kicks in transparently.
 // ---------------------------------------------------------------------------
+
+describe('flattenSubspecs (spec-level identity)', () => {
+  it("does not take a subspec's header_dir as the library's", () => {
+    const model = flattenSubspecs({
+      name: 'RNScreens',
+      version: '4.0.0',
+      subspecs: [
+        {
+          name: 'RNScreens/common',
+          header_dir: 'rnscreens',
+          header_mappings_dir: 'common/cpp',
+          source_files: ['common/cpp/**/*.{cpp,h}'],
+        },
+      ],
+    });
+    expect(model.name).toBe('RNScreens');
+    expect(model.headerDir).toBeNull();
+    // Still merged: these drive the header search paths, not the target name.
+    expect(model.headerMappingsDirs).toEqual(['common/cpp']);
+    expect(model.sourceFiles).toEqual(['common/cpp/**/*.{cpp,h}']);
+  });
+
+  it("keeps the spec's own module_name, not a subspec's", () => {
+    const model = flattenSubspecs({
+      name: 'react-native-maps',
+      version: '1.20.0',
+      module_name: 'ReactNativeMaps',
+      subspecs: [{name: 'react-native-maps/cxx', module_name: 'MapsCxx'}],
+    });
+    expect(model.moduleName).toBe('ReactNativeMaps');
+  });
+
+  it('reports a missing module_name as null', () => {
+    const model = flattenSubspecs({name: 'RNSVG', version: '15.0.0'});
+    expect(model.moduleName).toBeNull();
+  });
+
+  it('keeps a spec-level header_dir', () => {
+    const model = flattenSubspecs({
+      name: 'React-Core',
+      version: '1000.0.0',
+      header_dir: 'React',
+      subspecs: [{name: 'React-Core/cxx', header_dir: 'reactcxx'}],
+    });
+    expect(model.headerDir).toBe('React');
+  });
+});
+
+describe('readPodspecNames', () => {
+  it('reads the pod name, and no header_dir the subspecs kept to themselves', () => {
+    const {file, dir} = writeFixture(
+      'reanimated.podspec',
+      REANIMATED_LIKE_PODSPEC,
+    );
+    try {
+      expect(readPodspecNames(file)).toEqual({
+        name: 'RNReanimated',
+        moduleName: null,
+        headerDir: null,
+      });
+    } finally {
+      fs.rmSync(dir, {recursive: true, force: true});
+    }
+  });
+
+  it.each([
+    ['RNScreens', () => SCREENS_LIKE_PODSPEC],
+    ['RNSVG', () => SVG_LIKE_PODSPEC],
+  ])(
+    'names %s from its pod name when only a subspec declares a header_dir',
+    (podName, source) => {
+      const {file, dir} = writeFixture(`${podName}.podspec`, source());
+      try {
+        expect(readPodspecNames(file)).toEqual({
+          name: podName,
+          moduleName: null,
+          headerDir: null,
+        });
+      } finally {
+        fs.rmSync(dir, {recursive: true, force: true});
+      }
+    },
+  );
+
+  it('declines when a subspec rebinds the spec variable', () => {
+    // `do |s|` puts the child's `header_dir` where the parent's would be, and a
+    // regex over flat text cannot see the block scope — so `pod ipc spec`, which
+    // evaluates the real Ruby, has to answer instead.
+    const {file, dir} = writeFixture(
+      'shadowing.podspec',
+      SHADOWING_SUBSPEC_PODSPEC,
+    );
+    try {
+      expect(readPodspecNames(file)).toBeNull();
+    } finally {
+      fs.rmSync(dir, {recursive: true, force: true});
+    }
+  });
+
+  it('names the parent when a subspec takes its own variable', () => {
+    const {file, dir} = writeFixture(
+      'own-variable.podspec',
+      OWN_VARIABLE_SUBSPEC_PODSPEC,
+    );
+    try {
+      expect(readPodspecNames(file)).toEqual({
+        name: 'ParentPod',
+        moduleName: 'ParentModule',
+        headerDir: null,
+      });
+    } finally {
+      fs.rmSync(dir, {recursive: true, force: true});
+    }
+  });
+
+  it('reports a missing header_dir as null', () => {
+    const {file, dir} = writeFixture('simple.podspec', SIMPLE_LIB_PODSPEC);
+    try {
+      expect(readPodspecNames(file)).toEqual({
+        name: 'react-native-foo',
+        moduleName: null,
+        headerDir: null,
+      });
+    } finally {
+      fs.rmSync(dir, {recursive: true, force: true});
+    }
+  });
+
+  it('reads a module_name the pod name alone would lose (react-native-maps)', () => {
+    // Without this field the fast path answers with the dashed pod name and
+    // `pod ipc spec` never runs, so nothing downstream can see `module_name`.
+    const {file, dir} = writeFixture('rnmaps.podspec', MAPS_LIKE_PODSPEC);
+    try {
+      expect(readPodspecNames(file)).toEqual({
+        name: 'react-native-maps',
+        moduleName: 'ReactNativeMaps',
+        headerDir: null,
+      });
+    } finally {
+      fs.rmSync(dir, {recursive: true, force: true});
+    }
+  });
+
+  it.each([
+    ['interpolation', 's.module_name = "#{package[\'name\']}"'],
+    ['a Ruby call', 's.module_name = File.basename(__dir__)'],
+  ])(
+    'reports nothing when the podspec computes its module_name with %s',
+    (_label, declaration) => {
+      // Same trap as a computed header_dir: the pod name is literal, but naming
+      // from it would ignore the module_name only Ruby can produce.
+      const {file, dir} = writeFixture(
+        'computed-module-name.podspec',
+        [
+          'Pod::Spec.new do |s|',
+          '  s.name = "react-native-maps"',
+          `  ${declaration}`,
+          'end',
+          '',
+        ].join('\n'),
+      );
+      try {
+        expect(readPodspecNames(file)).toBeNull();
+      } finally {
+        fs.rmSync(dir, {recursive: true, force: true});
+      }
+    },
+  );
+
+  it('reports nothing when the podspec computes its header_dir in Ruby', () => {
+    // The literal name must not satisfy the fast path: `header_dir` outranks it,
+    // so resolving without it would pick the wrong prefix — and the scaffolder
+    // would then write that wrong name into the library's package.json.
+    const {file, dir} = writeFixture(
+      'computed-header-dir.podspec',
+      [
+        'Pod::Spec.new do |s|',
+        '  s.name = "RNSVG"',
+        '  s.version = "1.0"',
+        '  s.header_dir = "#{s.name}Headers"',
+        'end',
+        '',
+      ].join('\n'),
+    );
+    try {
+      expect(readPodspecNames(file)).toBeNull();
+    } finally {
+      fs.rmSync(dir, {recursive: true, force: true});
+    }
+  });
+
+  it('reports nothing when header_dir is computed by a Ruby call', () => {
+    const {file, dir} = writeFixture(
+      'ruby-header-dir.podspec',
+      [
+        'Pod::Spec.new do |s|',
+        '  s.name = "RNSVG"',
+        '  s.header_dir = File.basename(__dir__)',
+        'end',
+        '',
+      ].join('\n'),
+    );
+    try {
+      expect(readPodspecNames(file)).toBeNull();
+    } finally {
+      fs.rmSync(dir, {recursive: true, force: true});
+    }
+  });
+
+  it('treats an interpolated name as unparsed', () => {
+    const {file, dir} = writeFixture(
+      'interpolated-name.podspec',
+      [
+        'Pod::Spec.new do |s|',
+        '  s.name = "#{package[\'name\']}"',
+        '  s.version = "1.0"',
+        'end',
+        '',
+      ].join('\n'),
+    );
+    try {
+      expect(readPodspecNames(file)).toBeNull();
+    } finally {
+      fs.rmSync(dir, {recursive: true, force: true});
+    }
+  });
+
+  it('reports nothing when the podspec computes its name in Ruby', () => {
+    const {file, dir} = writeFixture(
+      'interpolated.podspec',
+      [
+        'Pod::Spec.new do |s|',
+        '  s.name = package["name"]',
+        '  s.version = "1.0"',
+        'end',
+        '',
+      ].join('\n'),
+    );
+    try {
+      expect(readPodspecNames(file)).toBeNull();
+    } finally {
+      fs.rmSync(dir, {recursive: true, force: true});
+    }
+  });
+});
 
 describe('readPodspec', () => {
   it('throws a clear error when the file does not exist', () => {

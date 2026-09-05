@@ -16,7 +16,4 @@ module.exports = {
       ios: {},
     },
   },
-  spm: {
-    dependencies: ['react-native-test-library-common'],
-  },
 };

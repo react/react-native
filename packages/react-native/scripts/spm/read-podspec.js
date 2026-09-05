@@ -170,6 +170,27 @@ function cleanupPatchedPodspec(patchedPath /*: ?string */) /*: void */ {
 // Regex fallback
 // ---------------------------------------------------------------------------
 
+// Comment-only lines are dropped so a commented-out `# s.header_dir` cannot win
+// over the live one. A trailing `#` and a `#` inside a string survive: only the
+// first non-whitespace character counts.
+function readPodspecSource(podspecPath /*: string */) /*: string */ {
+  return fs
+    .readFileSync(podspecPath, 'utf8')
+    .split('\n')
+    .filter(line => !/^\s*#/.test(line))
+    .join('\n');
+}
+
+// A subspec that re-binds a receiver the identity regexes trust: inside
+// `s.subspec "common" do |s|`, `s` is the CHILD, and no regex over flat text
+// can see that. Any other block variable (`do |ss|`) is unambiguous.
+const SHADOWING_SUBSPEC_RE =
+  /\.subspec\s+["'][^"']*["']\s+do\s*\|\s*(?:s|spec)\s*\|/;
+
+function hasShadowingSubspec(source /*: string */) /*: boolean */ {
+  return SHADOWING_SUBSPEC_RE.test(source);
+}
+
 /**
  * Best-effort Ruby podspec parser. Extracts the literal-string and
  * literal-array fields most RN libs use. Skips subspec blocks, Ruby helper
@@ -178,14 +199,37 @@ function cleanupPatchedPodspec(patchedPath /*: ?string */) /*: void */ {
  * user. Always returns a RawSpec; pure-JS, no Ruby dep required.
  */
 function regexPodspec(podspecPath /*: string */) /*: RawSpec */ {
-  const content = fs.readFileSync(podspecPath, 'utf8');
+  const content = readPodspecSource(podspecPath);
   const warnings /*: Array<string> */ = [];
 
-  // Matches:  s.<field> = "value"   or   s.<field> = 'value'
+  // Matches:  s.<field> = "value"   or   s.<field> = 'value'  — at ANY scope,
+  // so a subspec's value counts. Right for the fields flattenSubspecs merges
+  // (source globs, header mappings); wrong for the fields that identify the
+  // spec, which use getSpecStringField.
   function getStringField(name /*: string */) /*: string | null */ {
     const re = new RegExp(`(?:s|spec)\\.${name}\\s*=\\s*["']([^"']+)["']`);
     const m = content.match(re);
     return m ? m[1] : null;
+  }
+
+  // The same, but only where the receiver starts the statement — so a subspec's
+  // block variable (`ss.header_dir`, the shape react-native-screens and
+  // react-native-svg ship) cannot answer for the spec itself.
+  function getSpecStringField(name /*: string */) /*: string | null */ {
+    const re = new RegExp(
+      `(?:^|[;|])\\s*(?:s|spec)\\.${name}\\s*=\\s*["']([^"']+)["']`,
+      'm',
+    );
+    const m = content.match(re);
+    return m ? m[1] : null;
+  }
+
+  // The fields that identify the spec, and only when the receiver spelling
+  // still says which scope declared them: a subspec re-binding `s` puts its own
+  // `header_dir` exactly where the library's would be.
+  const shadowedIdentity = hasShadowingSubspec(content);
+  function getIdentityField(name /*: string */) /*: string | null */ {
+    return shadowedIdentity ? null : getSpecStringField(name);
   }
 
   // Matches:
@@ -289,6 +333,11 @@ function regexPodspec(podspecPath /*: string */) /*: RawSpec */ {
   }
 
   // Surface known unparseable constructs so the caller can warn the user.
+  if (shadowedIdentity) {
+    warnings.push(
+      "A subspec rebinds the spec variable (`do |s|`), so its `name`, `module_name` and `header_dir` cannot be told from the library's own — those are left unread. Install CocoaPods (`gem install cocoapods`) to enable full `pod ipc spec` parsing.",
+    );
+  }
   if (/(?:s|spec)\.subspec\s+["']/.test(content)) {
     warnings.push(
       'Subspecs detected — regex parser only extracts top-level fields. Install CocoaPods (`gem install cocoapods`) to enable full `pod ipc spec` parsing.',
@@ -306,14 +355,15 @@ function regexPodspec(podspecPath /*: string */) /*: RawSpec */ {
   }
 
   return {
-    name: getStringField('name'),
-    version: getStringField('version'),
+    name: getIdentityField('name'),
+    module_name: getIdentityField('module_name'),
+    version: getSpecStringField('version'),
     source_files: getArrayField('source_files'),
     public_header_files: getArrayField('public_header_files'),
     private_header_files: getArrayField('private_header_files'),
     exclude_files: getArrayField('exclude_files'),
     header_mappings_dir: getStringField('header_mappings_dir'),
-    header_dir: getStringField('header_dir'),
+    header_dir: getIdentityField('header_dir'),
     frameworks: getFrameworks(false),
     weak_frameworks: getFrameworks(true),
     libraries: getArrayField('libraries'),
@@ -430,6 +480,14 @@ function flattenSubspecs(rawSpec /*: RawSpec */) /*: PodspecModel */ {
       }
     }
     return Array.from(new Set(out));
+  }
+
+  // Only the spec's own value: a subspec's `header_dir` names that subspec's
+  // headers, and several subspecs can disagree.
+  function specStringField(key /*: string */) /*: string | null */ {
+    // $FlowFixMe[incompatible-use] dynamic shape
+    const value = rawSpec[key];
+    return typeof value === 'string' && value.length > 0 ? value : null;
   }
 
   function mergeStringField(key /*: string */) /*: string | null */ {
@@ -620,8 +678,8 @@ function flattenSubspecs(rawSpec /*: RawSpec */) /*: PodspecModel */ {
       : true; // RN ecosystem default
 
   return {
-    name: mergeStringField('name') ?? '',
-    version: mergeStringField('version') ?? '',
+    name: specStringField('name') ?? '',
+    version: specStringField('version') ?? '',
     sourceFiles: mergeArrayField('source_files'),
     publicHeaderFiles: mergeArrayField('public_header_files'),
     privateHeaderFiles: mergeArrayField('private_header_files'),
@@ -634,7 +692,8 @@ function flattenSubspecs(rawSpec /*: RawSpec */) /*: PodspecModel */ {
     // resolve from the physical tree — CocoaPods does this via the
     // header_mappings_dir copy step, which SPM has no equivalent for.
     headerMappingsDirs: mergeArrayField('header_mappings_dir'),
-    headerDir: mergeStringField('header_dir'),
+    headerDir: specStringField('header_dir'),
+    moduleName: specStringField('module_name'),
     frameworks: mergeArrayField('frameworks'),
     weakFrameworks: mergeArrayField('weak_frameworks'),
     libraries: mergeArrayField('libraries'),
@@ -687,8 +746,97 @@ function readPodspec(podspecPath /*: string */) /*: PodspecModel */ {
   return model;
 }
 
+const podspecModels /*: Map<string, PodspecModel> */ = new Map();
+
+/**
+ * readPodspec memoized on the resolved path. `pod ipc spec` costs a process
+ * spawn, and one autolinking run reads the same podspec from several sites
+ * (name resolution, header search paths, scaffolding). The model is shared, so
+ * callers must treat it as read-only.
+ */
+function readPodspecCached(podspecPath /*: string */) /*: PodspecModel */ {
+  const key = path.resolve(podspecPath);
+  const cached = podspecModels.get(key);
+  if (cached != null) {
+    return cached;
+  }
+  const model = readPodspec(podspecPath);
+  podspecModels.set(key, model);
+  return model;
+}
+
+/**
+ * The three fields that name a library, read WITHOUT `pod ipc spec`'s process
+ * spawn — name resolution runs for every dep, including self-managed ones that
+ * need nothing else from the podspec.
+ *
+ * Null when the answer cannot be trusted without Ruby: an interpolated value,
+ * or a spec-level `header_dir`/`module_name` the regex could not read. Both
+ * outrank the pod name, so a literal name alone is not enough — resolving
+ * without them would pick the wrong prefix. A value only a subspec declares is
+ * not the library's, so it neither answers nor defers — unless that subspec
+ * re-binds `s` (or `spec`), which makes every field's scope unreadable.
+ */
+function readPodspecNames(
+  podspecPath /*: string */,
+) /*: ?{name: ?string, moduleName: ?string, headerDir: ?string} */ {
+  const raw = regexPodspec(podspecPath);
+  const field = (key /*: string */) /*: ?string */ => {
+    // $FlowFixMe[prop-missing] RawSpec is dynamically shaped
+    const value = raw[key];
+    return typeof value === 'string' &&
+      value.length > 0 &&
+      !value.includes('#{')
+      ? value
+      : null;
+  };
+  const source = readPodspecSource(podspecPath);
+  if (hasShadowingSubspec(source)) {
+    return null;
+  }
+  const declaredUnread = (
+    key /*: string */,
+    value /*: ?string */,
+  ) /*: boolean */ =>
+    value == null &&
+    new RegExp(`(?:^|[;|])\\s*(?:s|spec)\\.${key}\\s*=`, 'm').test(source);
+
+  const name = field('name');
+  const moduleName = field('module_name');
+  const headerDir = field('header_dir');
+  if (
+    declaredUnread('header_dir', headerDir) ||
+    declaredUnread('module_name', moduleName)
+  ) {
+    return null;
+  }
+  return name == null && moduleName == null && headerDir == null
+    ? null
+    : {name, moduleName, headerDir};
+}
+
+/**
+ * Every podspec in `dir`, sorted so two of them name a target the same way on
+ * every machine (readdir order is unspecified). Skips a crashed run's leftover
+ * `.spm-scaffold-<pid>-<name>.podspec` copy.
+ */
+function findPodspecs(dir /*: string */) /*: Array<string> */ {
+  try {
+    return fs
+      .readdirSync(dir)
+      .filter(e => e.endsWith('.podspec') && !e.startsWith('.spm-scaffold-'))
+      .sort()
+      .map(e => path.join(dir, e));
+  } catch {
+    return [];
+  }
+}
+
 module.exports = {
+  findPodspecs,
   readPodspec,
+  readPodspecCached,
+  readPodspecNames,
   runPodIpcSpec,
   regexPodspec,
   flattenSubspecs,

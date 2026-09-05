@@ -12,8 +12,8 @@ generates. See [spm-scripts.md](./spm-scripts.md) for the base tool.
 
 The documented extension points don't cover a framework:
 
-- `spm.modules` in `react-native.config.js` is a **static** list of simple
-  source modules. A framework discovers its modules **dynamically** (scanning
+- `swiftpmConfig.modules` in package.json is a **static** list of simple source
+  modules. A framework discovers its modules **dynamically** (scanning
   `node_modules`), generates a **module registry**, and ships mixed
   Swift/ObjC/C++ modules (e.g. `ExpoModulesCore`) that `spm scaffold` can't
   handle.
@@ -32,28 +32,28 @@ stale.
 
 ## Discovery — transitive, zero app config
 
-A dependency opts in from its **own** `react-native.config.js`, so installing
-the framework is enough (mirrors how CocoaPods pulls in `use_expo_modules!`
-transitively):
+A dependency opts in from its **own** package.json, so installing the framework
+is enough (mirrors how CocoaPods pulls in `use_expo_modules!` transitively):
 
-```js
-// node_modules/expo/react-native.config.js
-module.exports = {
-  spm: {autolinkingPlugin: './spm/autolinking-plugin.js'},
-};
+```json
+// node_modules/expo/package.json
+{
+  "swiftpmConfig": {"autolinkingPlugin": "./spm/autolinking-plugin.js"}
+}
 ```
 
-The autolinker already walks every dependency's `react-native.config.js`; any
-that declares `spm.autolinkingPlugin` is `require`d and invoked. No app-level
-registration or allowlist is required.
+The autolinker reads every dependency's SwiftPM settings; any that declares
+`autolinkingPlugin` is `require`d and invoked. No app-level registration or
+allowlist is required. The deprecated `spm.autolinkingPlugin` in
+`react-native.config.js` is still read — see
+[Migrating from react-native.config.js](spm-scripts.md#where-swiftpm-settings-live).
 
-**Opt-out escape hatch.** An app can exclude a plugin from its own
-`react-native.config.js`:
+**Opt-out escape hatch.** An app can exclude a plugin from its own package.json:
 
-```js
-module.exports = {
-  spm: {denyPlugins: ['some-framework']}, // npm names to skip
-};
+```json
+{
+  "swiftpmConfig": {"denyPlugins": ["some-framework"]}
+}
 ```
 
 ## The contract

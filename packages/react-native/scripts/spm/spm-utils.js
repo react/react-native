@@ -171,6 +171,29 @@ function toSwiftName(name /*: string */) /*: string */ {
     .join('');
 }
 
+// The charset a declared SwiftPM name must satisfy — permissive on purpose,
+// since it has to admit header-dir style (lowercase with hyphens) as well as
+// Swift identifiers.
+function isValidSwiftName(name /*: unknown */) /*: boolean */ {
+  return typeof name === 'string' && /^[A-Za-z_][A-Za-z0-9_-]*$/.test(name);
+}
+
+/**
+ * SwiftPM's `c99name` — the identifier a target's module is compiled under,
+ * with every character C99 rejects replaced by `_`. `react-native-svg` and
+ * `react_native_svg` share one, so they cannot both be targets.
+ */
+function toC99Name(name /*: string */) /*: string */ {
+  const mangled = name.replace(/[^A-Za-z0-9_]/g, '_');
+  return /^[0-9]/.test(mangled) ? `_${mangled}` : mangled;
+}
+
+// Collision key for a Swift target name: two names that share one collide, as a
+// module (punctuation) or as a headers directory (case).
+function swiftNameKey(name /*: string */) /*: string */ {
+  return toC99Name(name).toLowerCase();
+}
+
 /**
  * Derive a default app name from the raw package name and source path.
  * Prefers the source directory name when it's meaningful (e.g. "RNTester"),
@@ -743,6 +766,9 @@ module.exports = {
   sharedCacheDir,
   defaultCacheDir,
   toSwiftName,
+  toC99Name,
+  swiftNameKey,
+  isValidSwiftName,
   deriveAppName,
   readPackageJson,
   findProjectRoot,

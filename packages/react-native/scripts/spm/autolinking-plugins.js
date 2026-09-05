@@ -85,6 +85,7 @@
  */
 
 const {isValidScriptPhaseId, isValidScriptPhaseName} = require('./spm-utils');
+const {readSwiftpmConfig} = require('./swiftpm-config');
 const path = require('node:path');
 
 /*:: import type {
@@ -98,8 +99,8 @@ const path = require('node:path');
 
 /**
  * Discover plugins declared by autolinked deps. `readConfig(root)` returns the
- * dep's parsed react-native.config.js (or null). `denyList` is the app's
- * `spm.denyPlugins` (npm names to skip). Fail-closed: a declared-but-missing
+ * dep's parsed react-native.config.js (or null), which is one of the two homes
+ * the plugin may be declared in. `denyList` is the app's `denyPlugins`. Fail-closed: a declared-but-missing
  * or unloadable plugin throws, naming the dep — a framework silently dropping
  * its modules is worse than a loud stop.
  */
@@ -114,15 +115,17 @@ function discoverPlugins(
     if (denied.has(dep.name)) {
       continue;
     }
-    const config = readConfig(dep.root);
     // $FlowFixMe[incompatible-use] config has a dynamic shape
-    const rel = config?.spm?.autolinkingPlugin;
+    const rel = readSwiftpmConfig(
+      dep.root,
+      readConfig(dep.root),
+    )?.autolinkingPlugin;
     if (rel == null) {
       continue;
     }
     if (typeof rel !== 'string' || rel.length === 0) {
       throw new Error(
-        `react-native spm: '${dep.name}' declares an invalid spm.autolinkingPlugin ` +
+        `react-native spm: '${dep.name}' declares an invalid 'swiftpmConfig.autolinkingPlugin' ` +
           `(expected a module path string).`,
       );
     }

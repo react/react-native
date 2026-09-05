@@ -19,10 +19,10 @@ Pod::Spec.new do |s|
   s.source_files    = "*.{h,m,mm,swift}"
   s.requires_arc    = true
 
-  # TestLibraryApple.mm imports <ReactNativeTestLibraryCommon/TestLibraryCommon.h>.
-  # CocoaPods resolves it leniently through the shared Public headers dir, but the
-  # dependency edge must be declared for SwiftPM (the scaffolder wires sibling
-  # packages from podspec dependencies).
+  # TestLibraryApple.mm imports <TestLibraryCommon/TestLibraryCommon.h> — the
+  # prefix the pod name gives it under CocoaPods and SwiftPM alike. CocoaPods
+  # resolves it leniently through the shared Public headers dir; SwiftPM needs
+  # the dependency edge declared (the scaffolder wires siblings from it).
   s.dependency "TestLibraryCommon"
 
   install_modules_dependencies(s)

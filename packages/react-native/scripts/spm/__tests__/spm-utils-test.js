@@ -27,6 +27,7 @@ const {
   defaultCacheDir,
   displayPath,
   isPublishableVersion,
+  isValidSwiftName,
   makeLogger,
   readPackageJson,
   remotePackageConfig,
@@ -34,6 +35,8 @@ const {
   resolveReactNativeRoot,
   runCodegenAndInstallTemplate,
   sharedCacheDir,
+  swiftNameKey,
+  toC99Name,
   toSwiftName,
 } = require('../spm-utils');
 const fs = require('node:fs');
@@ -54,6 +57,58 @@ describe('toSwiftName', () => {
     ['my_great_app', 'MyGreatApp'],
   ])('toSwiftName(%j) => %j', (input, expected) => {
     expect(toSwiftName(input)).toBe(expected);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// isValidSwiftName — the charset rule `spm.name` enforces.
+// ---------------------------------------------------------------------------
+
+describe('isValidSwiftName', () => {
+  it.each(['worklets', 'ReactNativeFoo', 'hermes-engine', 'react_native_foo'])(
+    'accepts %j',
+    name => {
+      expect(isValidSwiftName(name)).toBe(true);
+    },
+  );
+
+  it.each(['', 'foo bar', 'foo/bar', 'foo.bar', '9lives', 42, null])(
+    'rejects %j',
+    name => {
+      expect(isValidSwiftName(name)).toBe(false);
+    },
+  );
+});
+
+// ---------------------------------------------------------------------------
+// toC99Name / swiftNameKey — what SwiftPM compiles a target name as, and the
+// key two target names have to differ in to be two targets.
+// ---------------------------------------------------------------------------
+
+describe('toC99Name', () => {
+  it.each([
+    ['RNSVG', 'RNSVG'],
+    ['react-native-svg', 'react_native_svg'],
+    ['react_native_svg', 'react_native_svg'],
+    ['Some.Pod', 'Some_Pod'],
+    ['React-Core', 'React_Core'],
+    ['3d-lib', '_3d_lib'],
+  ])('toC99Name(%j) => %j', (input, expected) => {
+    expect(toC99Name(input)).toBe(expected);
+  });
+});
+
+describe('swiftNameKey', () => {
+  it('collapses names that differ only in punctuation', () => {
+    expect(swiftNameKey('foo-bar')).toBe(swiftNameKey('foo_bar'));
+  });
+
+  it('collapses names that differ only in case', () => {
+    expect(swiftNameKey('worklets')).toBe(swiftNameKey('Worklets'));
+  });
+
+  it('keeps genuinely different names apart', () => {
+    expect(swiftNameKey('RNSVG')).not.toBe(swiftNameKey('RNScreens'));
   });
 });
 

@@ -61,5 +61,32 @@
     "commander": "^12.0.0",
     "listr2": "^6.4.1",
     "rxjs": "npm:@react-native-community/rxjs@6.5.4-custom"
+  },
+  "swiftpmConfig": {
+    "modules": [
+      {
+        "name": "ReactCommonSamples",
+        "path": "../react-native/ReactCommon/react/nativemodule/samples/platform/ios"
+      },
+      {
+        "name": "ReactRCTPushNotification",
+        "path": "../react-native/Libraries/PushNotificationIOS",
+        "exclude": [
+          "React-RCTPushNotification.podspec"
+        ]
+      },
+      {
+        "name": "ScreenshotManager",
+        "path": "NativeModuleExample"
+      },
+      {
+        "name": "MyNativeView",
+        "path": "NativeComponentExample/ios"
+      },
+      {
+        "name": "NativeCxxModuleExample",
+        "path": "NativeCxxModuleExample"
+      }
+    ]
   }
 }
