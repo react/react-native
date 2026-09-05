@@ -210,11 +210,29 @@ convertJSIFunctionToCallback(jsi::Runtime &rt, jsi::Function &&function, const s
   };
 }
 
+// A block parameter means the module can hand an argument to a callback it invokes after the call
+// returns, so nothing passed to such a method may alias the JS heap.
+static BOOL methodSignatureTakesBlock(NSMethodSignature *methodSignature)
+{
+  const char *BLOCK_TYPE = @encode(
+      __typeof__(^{
+      }));
+
+  for (NSUInteger i = 2; i < methodSignature.numberOfArguments; i++) {
+    const std::string objCArgType = [methodSignature getArgumentTypeAtIndex:i];
+    if (objCArgType == BLOCK_TYPE) {
+      return YES;
+    }
+  }
+  return NO;
+}
+
 // Native-backed buffers are aliased and keep their backing store alive, so they stay valid for
 // as long as the module holds them. JS-heap buffers have nothing to retain — their bytes are
 // freed when the ArrayBuffer is collected or detached — so `mustCopyBytes` is set whenever the
-// invocation may outlive the JS call, and they are aliased only when it cannot. Engines that
-// don't hand out the backing MutableBuffer fall back to those JS-heap rules for every buffer.
+// invocation may outlive the JS call (an async return kind, or a block parameter the module can
+// call later), and they are aliased only when it cannot. Engines that don't hand out the backing
+// MutableBuffer fall back to those JS-heap rules for every buffer.
 static RCTArrayBuffer *
 convertJSIArrayBufferToRCTArrayBuffer(jsi::Runtime &rt, const jsi::ArrayBuffer &arrayBuffer, BOOL mustCopyBytes)
 {
@@ -849,10 +867,15 @@ NSInvocation *ObjCTurboModule::createMethodInvocation(
   NSInvocation *inv = [NSInvocation invocationWithMethodSignature:methodSignature];
   [inv setSelector:selector];
 
+  // A block argument can outlive the call, and JS drains it asynchronously, so an ArrayBuffer the
+  // module hands to it must own its bytes even when the method itself returns synchronously.
+  BOOL mustCopyArrayBufferBytes = mustCopyBytes || methodSignatureTakesBlock(methodSignature);
+
   for (size_t i = 0; i < count; i++) {
     const jsi::Value &arg = args[i];
     const std::string objCArgType = [methodSignature getArgumentTypeAtIndex:i + 2];
-    setInvocationArg(runtime, methodName, objCArgType, arg, i, inv, retainedObjectsForInvocation, mustCopyBytes);
+    setInvocationArg(
+        runtime, methodName, objCArgType, arg, i, inv, retainedObjectsForInvocation, mustCopyArrayBufferBytes);
   }
 
   if (isSync) {

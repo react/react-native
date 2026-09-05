@@ -14,6 +14,7 @@
 #import <hermes/hermes.h>
 #import <react/bridging/ArrayBuffer.h>
 
+#import <array>
 #import <list>
 #import <vector>
 
@@ -140,6 +141,15 @@ RCT_EXPORT_MODULE()
 - (void)testMethodWhichStoresArrayBuffer:(RCTArrayBuffer *)payload
 {
   self.lastReceivedPayload = [NSData dataWithBytes:payload.mutableBytes length:payload.length];
+}
+
+- (NSNumber *)testMethodWhichPassesArrayBufferToCallback:(RCTArrayBuffer *)buffer
+                                                callback:(RCTResponseSenderBlock)callback
+{
+  // The buffer escapes into a callback JS drains after this method returns, so the framework must
+  // have handed us a copy rather than an alias of the JS heap.
+  callback(@[ buffer ]);
+  return @(buffer.isOwningBytes);
 }
 
 - (void)testMethodWhichCallsBackWithArrayBuffer:(double)size callback:(RCTResponseSenderBlock)callback
@@ -442,6 +452,69 @@ RCT_EXPORT_MODULE()
   XCTAssertEqual(callbackBytes[0], 0);
   XCTAssertEqual(callbackBytes[1], 1);
   XCTAssertEqual(callbackBytes[2], 2);
+}
+
+// A sync method that hands its argument to a callback lets the buffer escape the call, so the
+// argument must be copied even though the return kind would otherwise allow aliasing.
+- (void)testArrayBufferIsCopiedWhenAMethodTakesACallback
+{
+  auto hermesRuntime = createHermesRuntime();
+  facebook::jsi::Runtime *rt = hermesRuntime.get();
+  auto jsInvoker = std::make_shared<TestCallInvoker>(*rt);
+  auto *instance = [RCTTestArrayBufferTurboModule new];
+
+  ObjCTurboModule::InitParams params = {
+      .moduleName = "TestModule",
+      .instance = instance,
+      .jsInvoker = jsInvoker,
+      .nativeMethodCallInvoker = std::make_shared<ImmediateNativeMethodCallInvoker>(),
+      .isSyncModule = false,
+  };
+  ObjCTurboModule module(params);
+
+  auto sourceBuffer = rt->global()
+                          .getPropertyAsFunction(*rt, "eval")
+                          .call(*rt, "new Uint8Array([1, 2, 3]).buffer")
+                          .asObject(*rt)
+                          .getArrayBuffer(*rt);
+
+  std::vector<uint8_t> callbackBytes;
+  auto onCallback = facebook::jsi::Function::createFromHostFunction(
+      *rt,
+      facebook::jsi::PropNameID::forAscii(*rt, "onCallback"),
+      1,
+      [&callbackBytes](
+          facebook::jsi::Runtime &runtime,
+          const facebook::jsi::Value &,
+          const facebook::jsi::Value *callbackArgs,
+          size_t count) -> facebook::jsi::Value {
+        if (count == 1) {
+          const auto &callbackArg = *callbackArgs;
+          if (callbackArg.isObject() && callbackArg.asObject(runtime).isArrayBuffer(runtime)) {
+            callbackBytes = bytesFromArrayBuffer(runtime, callbackArg.asObject(runtime).getArrayBuffer(runtime));
+          }
+        }
+        return facebook::jsi::Value::undefined();
+      });
+  std::array<facebook::jsi::Value, 2> args = {
+      facebook::jsi::Value(*rt, sourceBuffer), facebook::jsi::Value(*rt, onCallback)};
+
+  auto result = module.invokeObjCMethod(
+      *rt,
+      BooleanKind,
+      "testMethodWhichPassesArrayBufferToCallback",
+      @selector(testMethodWhichPassesArrayBufferToCallback:callback:),
+      args.data(),
+      2);
+
+  XCTAssertTrue(result.getBool(), @"A buffer that can escape into a callback must own its bytes");
+
+  jsInvoker->flushQueue();
+
+  XCTAssertEqual(callbackBytes.size(), 3u);
+  XCTAssertEqual(callbackBytes[0], 1);
+  XCTAssertEqual(callbackBytes[1], 2);
+  XCTAssertEqual(callbackBytes[2], 3);
 }
 
 - (void)testPromiseResolvesArrayBuffer
