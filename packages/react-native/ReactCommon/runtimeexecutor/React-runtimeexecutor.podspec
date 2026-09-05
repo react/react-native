@@ -31,10 +31,14 @@ Pod::Spec.new do |s|
   s.platforms              = min_supported_versions
   s.source                 = source
   s.source_files           = podspec_sources(["ReactCommon/*.{m,mm,cpp,h}", "platform/ios/**/*.{m,mm,cpp,h}"], ["ReactCommon/*.h", "platform/ios/**/*.h"])
+  s.exclude_files          = ["React"]
   s.header_dir             = "ReactCommon"
 
   if ENV['USE_FRAMEWORKS']
-    header_search_paths = header_search_paths + ["\"$(PODS_TARGET_SRCROOT)/platform/ios\""]
+    header_search_paths = header_search_paths + [
+      "\"$(PODS_TARGET_SRCROOT)/platform/ios\"",
+      "\"$(PODS_TARGET_SRCROOT)/..\"", # ReactCommon, for <react/cxxstableapi/...>
+    ]
   end
 
   resolve_use_frameworks(s, header_mappings_dir: ".")
@@ -48,10 +52,17 @@ Pod::Spec.new do |s|
   add_rncore_dependency(s)
 
   s.dependency "React-jsi", version
+  s.dependency "React-cxxstableapi"
   add_dependency(s, "React-featureflags")
   add_dependency(s, "React-debug")
   add_dependency(s, "React-utils", :additional_framework_paths => ["react/utils/platform/ios"])
 
+
+  s.subspec "runtimeexecutorUmbrella" do |ss|
+    ss.source_files        = "React/*.h"
+    ss.header_dir          = ""
+    ss.header_mappings_dir = "."
+  end
 
   mark_as_react_native_build(s)
 end

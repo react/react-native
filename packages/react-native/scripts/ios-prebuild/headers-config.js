@@ -585,6 +585,24 @@ const PodspecExceptions /*: {[key: string]: PodSpecConfiguration} */ = {
   'Libraries/PushNotificationIOS/React-RCTPushNotification.podspec': {
     disabled: true,
   },
+  'ReactCommon/runtimeexecutor/React-runtimeexecutor.podspec': {
+    name: 'React-runtimeexecutor',
+    headerPatterns: [],
+    headerDir: '',
+    subSpecs: [
+      {
+        name: 'runtimeexecutor',
+        headerPatterns: ['ReactCommon/*.h', 'platform/ios/**/*.h'],
+        excludePatterns: ['React'],
+        headerDir: 'ReactCommon',
+      },
+      {
+        name: 'runtimeexecutorUmbrella',
+        headerPatterns: ['React/*.h'],
+        headerDir: 'React',
+      },
+    ],
+  },
 };
 
 module.exports = {PodspecExceptions};

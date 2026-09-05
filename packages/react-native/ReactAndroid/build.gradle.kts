@@ -186,6 +186,7 @@ val preparePrefab by
                       ),
                       // runtimeexecutor
                       Pair("../ReactCommon/runtimeexecutor/", ""),
+                      Pair("../ReactCommon/runtimeexecutor/platform/cxx/", ""),
                       // react_renderer_textlayoutmanager
                       Pair(
                           "../ReactCommon/react/renderer/textlayoutmanager/",
