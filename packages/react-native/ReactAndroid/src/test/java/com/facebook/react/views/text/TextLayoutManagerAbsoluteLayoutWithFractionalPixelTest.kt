@@ -15,9 +15,11 @@ import android.text.TextPaint
 import android.text.TextUtils
 import com.facebook.yoga.YogaMeasureMode
 import kotlin.math.ceil
+import kotlin.math.floor
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.annotation.Config
 import org.robolectric.RobolectricTestRunner
 
 /**
@@ -77,6 +79,65 @@ class TextLayoutManagerAbsoluteLayoutWithFractionalPixelTest {
         .isGreaterThanOrEqualTo(renderedLineWidth)
   }
 
+  @Test
+  @Config(sdk = [35])
+  fun `Android 15 EXACTLY mode keeps the width provided by Yoga`() {
+    val text = SpannableString("First line\nSecond line")
+    val paint = TextPaint(TextPaint.ANTI_ALIAS_FLAG).apply { textSize = 16f }
+    val exactWidth = 48.5f
+
+    val layout = invokeCreateLayout(text, exactWidth, paint)
+
+    assertThat(layout.width).isEqualTo(ceil(exactWidth).toInt())
+  }
+
+  @Test
+  @Config(sdk = [35])
+  fun `Android 15 AT_MOST mode does not exceed the width provided by Yoga`() {
+    val text = SpannableString("Prison Break")
+    val paint = TextPaint(TextPaint.ANTI_ALIAS_FLAG).apply { textSize = 16f }
+    val maxWidth = 8.5f
+
+    val layout = invokeCreateLayout(text, maxWidth, paint, YogaMeasureMode.AT_MOST)
+
+    assertThat(layout.width).isLessThanOrEqualTo(floor(maxWidth).toInt())
+  }
+
+  @Test
+  @Config(sdk = [35])
+  fun `Android 15 UNDEFINED mode does not shrink below advance width`() {
+    val text = SpannableString("Prison Break")
+    val paint = TextPaint(TextPaint.ANTI_ALIAS_FLAG).apply { textSize = 16f }
+    val advanceWidth = ceil(Layout.getDesiredWidth(text, paint)).toInt()
+
+    val layout = invokeCreateLayout(text, 0f, paint, YogaMeasureMode.UNDEFINED)
+
+    assertThat(layout.width).isGreaterThanOrEqualTo(advanceWidth)
+  }
+
+  @Test
+  @Config(sdk = [35])
+  fun `Android 15 UNDEFINED boring layout uses the visual probe width`() {
+    val text = SpannableString("Prison Break")
+    val paint = TextPaint(TextPaint.ANTI_ALIAS_FLAG).apply { textSize = 16f }
+    val boring = requireNotNull(BoringLayout.isBoring(text, paint)).apply { width = 1 }
+    val visualProbeWidth = ceil(Layout.getDesiredWidth(text, paint)).toInt()
+
+    assertThat(visualProbeWidth).isGreaterThan(boring.width)
+
+    val layout =
+        invokeCreateLayout(
+            text,
+            0f,
+            paint,
+            YogaMeasureMode.UNDEFINED,
+            boring,
+        )
+
+    assertThat(layout).isInstanceOf(BoringLayout::class.java)
+    assertThat(layout.width).isGreaterThanOrEqualTo(visualProbeWidth)
+  }
+
   /**
    * Invokes the private TextLayoutManager.createLayout via reflection. We can't call it directly
    * because it's `private` (friend_paths only opens up `internal`). Default values mirror what
@@ -90,8 +151,9 @@ class TextLayoutManagerAbsoluteLayoutWithFractionalPixelTest {
       text: SpannableString,
       width: Float,
       paint: TextPaint,
+      widthYogaMeasureMode: YogaMeasureMode = YogaMeasureMode.EXACTLY,
+      boring: BoringLayout.Metrics? = BoringLayout.isBoring(text, paint),
   ): Layout {
-    val boring: BoringLayout.Metrics? = BoringLayout.isBoring(text, paint)
     val method =
         TextLayoutManager::class
             .java
@@ -117,7 +179,7 @@ class TextLayoutManagerAbsoluteLayoutWithFractionalPixelTest {
         text,
         boring,
         width,
-        YogaMeasureMode.EXACTLY,
+        widthYogaMeasureMode,
         /* includeFontPadding = */ false,
         /* textBreakStrategy = */ Layout.BREAK_STRATEGY_HIGH_QUALITY,
         /* hyphenationFrequency = */ Layout.HYPHENATION_FREQUENCY_NONE,
