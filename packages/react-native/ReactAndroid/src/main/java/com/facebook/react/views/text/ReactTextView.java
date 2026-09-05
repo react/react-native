@@ -24,6 +24,7 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatTextView;
 import androidx.core.view.AccessibilityDelegateCompat;
@@ -46,10 +47,12 @@ import com.facebook.react.uimanager.style.BorderRadiusProp;
 import com.facebook.react.uimanager.style.BorderStyle;
 import com.facebook.react.uimanager.style.LogicalEdge;
 import com.facebook.react.uimanager.style.Overflow;
+import com.facebook.react.util.AndroidVersion;
 import com.facebook.react.views.text.internal.span.CanvasEffectSpan;
 import com.facebook.react.views.text.internal.span.ReactFragmentIndexSpan;
 import com.facebook.react.views.text.internal.span.ReactTagSpan;
 import com.facebook.yoga.YogaMeasureMode;
+import java.lang.reflect.Method;
 
 @Nullsafe(Nullsafe.Mode.LOCAL)
 public class ReactTextView extends AppCompatTextView implements ReactCompoundView {
@@ -59,6 +62,10 @@ public class ReactTextView extends AppCompatTextView implements ReactCompoundVie
 
   // https://github.com/aosp-mirror/platform_frameworks_base/blob/master/core/java/android/widget/TextView.java#L854
   private static final int DEFAULT_GRAVITY = Gravity.TOP | Gravity.START;
+
+  // TextView.setUseBoundsForWidth (API 35+). Looked up reflectively because some internal targets
+  // compile against an SDK older than 35 (see AndroidVersion).
+  private static final @Nullable Method SET_USE_BOUNDS_FOR_WIDTH = resolveSetUseBoundsForWidth();
 
   private int mNumberOfLines;
   private @Nullable TextUtils.TruncateAt mEllipsizeLocation;
@@ -76,7 +83,40 @@ public class ReactTextView extends AppCompatTextView implements ReactCompoundVie
 
   public ReactTextView(Context context) {
     super(context);
+    matchLineBreakingToMeasurement();
     initView();
+  }
+
+  private static @Nullable Method resolveSetUseBoundsForWidth() {
+    if (Build.VERSION.SDK_INT < AndroidVersion.VERSION_CODE_VANILLA_ICE_CREAM) {
+      return null;
+    }
+    try {
+      return TextView.class.getMethod("setUseBoundsForWidth", boolean.class);
+    } catch (NoSuchMethodException e) {
+      return null;
+    }
+  }
+
+  /**
+   * Keeps this view's line breaking on the same basis as TextLayoutManager's measurement.
+   *
+   * <p>On Android 15+ a TextView in an app targeting API 35+ breaks lines on glyph bounds
+   * (TextView#USE_BOUNDS_FOR_WIDTH), while TextLayoutManager measures with a StaticLayout that
+   * breaks on glyph advances. For a font whose ink overhangs its advance, a line that fit at
+   * measure time can wrap at draw time; the extra line lands outside the measured height and is
+   * never seen. Drawing with advance-based breaking makes the painted line count match the
+   * measured one.
+   */
+  private void matchLineBreakingToMeasurement() {
+    if (SET_USE_BOUNDS_FOR_WIDTH == null) {
+      return;
+    }
+    try {
+      SET_USE_BOUNDS_FOR_WIDTH.invoke(this, false);
+    } catch (ReflectiveOperationException e) {
+      FLog.w(ReactConstants.TAG, "Could not disable useBoundsForWidth on ReactTextView", e);
+    }
   }
 
   /**
@@ -151,6 +191,7 @@ public class ReactTextView extends AppCompatTextView implements ReactCompoundVie
     }
 
     setHyphenationFrequency(Layout.HYPHENATION_FREQUENCY_NONE);
+    matchLineBreakingToMeasurement();
     updateView(); // call after changing ellipsizeLocation in particular
   }
 
