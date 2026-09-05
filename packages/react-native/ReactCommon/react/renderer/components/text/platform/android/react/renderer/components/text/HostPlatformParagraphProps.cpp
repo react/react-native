@@ -167,7 +167,7 @@ folly::dynamic HostPlatformParagraphProps::getDiffProps(
 
   if (selectionColor != oldProps->selectionColor) {
     if (selectionColor.has_value()) {
-      result["selectionColor"] = *selectionColor.value();
+      result["selectionColor"] = static_cast<int32_t>(*selectionColor.value());
     } else {
       result["selectionColor"] = folly::dynamic(nullptr);
     }

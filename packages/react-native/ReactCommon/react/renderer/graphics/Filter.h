@@ -100,7 +100,7 @@ struct DropShadowParams {
     result["offsetX"] = offsetX;
     result["offsetY"] = offsetY;
     result["standardDeviation"] = standardDeviation;
-    result["color"] = *color;
+    result["color"] = static_cast<int32_t>(*color);
     return result;
   }
 #endif

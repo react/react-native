@@ -81,7 +81,7 @@ SharedColor whiteColor();
 #ifdef RN_SERIALIZABLE_STATE
 inline folly::dynamic toDynamic(const SharedColor &sharedColor)
 {
-  return *sharedColor;
+  return static_cast<int32_t>(*sharedColor);
 }
 #endif
 

@@ -165,7 +165,7 @@ function generatePropsDiffString(
                 return `
   if (${prop.name} != oldProps->${prop.name}) {
     if (${prop.name}.has_value()) {
-      result["${prop.name}"] = *${prop.name}.value();
+      result["${prop.name}"] = static_cast<int32_t>(*${prop.name}.value());
     } else {
       result["${prop.name}"] = folly::dynamic(nullptr);
     }
@@ -173,7 +173,7 @@ function generatePropsDiffString(
               } else {
                 return `
   if (${prop.name} != oldProps->${prop.name}) {
-    result["${prop.name}"] = *${prop.name};
+    result["${prop.name}"] = static_cast<int32_t>(*${prop.name});
   }`;
               }
             case 'ImageSourcePrimitive':

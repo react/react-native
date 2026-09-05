@@ -610,7 +610,6 @@ using facebook::react::CascadedBorderCurves = facebook::react::CascadedRectangle
 using facebook::react::CascadedBorderRadii = facebook::react::CascadedRectangleCorners<facebook::react::ValueUnit>;
 using facebook::react::CascadedBorderStyles = facebook::react::CascadedRectangleEdges<facebook::react::BorderStyle>;
 using facebook::react::CascadedBorderWidths = facebook::react::CascadedRectangleEdges<facebook::react::Float>;
-using facebook::react::Color = int32_t;
 using facebook::react::ComponentDescriptorConstructor = facebook::react::ComponentDescriptor::Unique(const facebook::react::ComponentDescriptorParameters& parameters);
 using facebook::react::ComponentDescriptorProviderRequest = std::function<void(facebook::react::ComponentName componentName)>;
 using facebook::react::ComponentHandle = int64_t;
@@ -932,6 +931,7 @@ folly::dynamic facebook::react::toDynamic(const std::vector<facebook::react::Flo
 folly::dynamic facebook::react::toDynamic(const std::vector<folly::dynamic>& arrayValue);
 folly::dynamic facebook::react::toDynamic(const std::vector<int>& arrayValue);
 folly::dynamic facebook::react::toDynamic(const std::vector<std::string>& arrayValue);
+folly::dynamic facebook::react::toDynamic(uint32_t value);
 int facebook::react::toAndroidRepr(const facebook::react::SharedColor& color);
 int facebook::react::toInt(const facebook::react::DisplayType& displayType);
 int facebook::react::toInt(const facebook::react::LayoutDirection& layoutDirection);
@@ -7261,6 +7261,16 @@ struct facebook::react::CascadedRectangleEdgesNames {
   public const char* start;
   public const char* top;
   public const char* vertical;
+}
+
+struct facebook::react::Color {
+  public bool isDefined;
+  public constexpr Color() = default;
+  public constexpr Color(int32_t colorValue);
+  public constexpr bool operator!=(const facebook::react::Color& otherColor) const;
+  public constexpr bool operator==(const facebook::react::Color& otherColor) const;
+  public constexpr operator int32_t() const;
+  public int32_t value;
 }
 
 struct facebook::react::ColorComponents {
@@ -13852,6 +13862,10 @@ struct std::hash<facebook::react::AttributedString> {
 
 struct std::hash<facebook::react::AttributedStringBox> {
   public size_t operator()(const facebook::react::AttributedStringBox& attributedStringBox) const;
+}
+
+struct std::hash<facebook::react::Color> {
+  public size_t operator()(const facebook::react::Color& color) const;
 }
 
 struct std::hash<facebook::react::EventAnimationDriverKey> {
