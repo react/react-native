@@ -20,6 +20,7 @@
 		832F45BB2A8A6E1F0097B4E6 /* SwiftTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832F45BA2A8A6E1F0097B4E6 /* SwiftTest.swift */; };
 		A975CA6C2C05EADF0043F72A /* RCTNetworkTaskTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A975CA6B2C05EADE0043F72A /* RCTNetworkTaskTests.m */; };
 		C175B6D9ED9336FB66637943 /* libPods-RNTester.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C706D402EE4AF9BE838CBA9 /* libPods-RNTester.a */; };
+		5C175C1C2966CE7C263BDE88 /* RCTTextInputComponentViewIMETests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 8D48EA169B37CE411049B4C1 /* RCTTextInputComponentViewIMETests.mm */; };
 		CD10C7A5290BD4EB0033E1ED /* RCTEventEmitterTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD10C7A4290BD4EB0033E1ED /* RCTEventEmitterTests.m */; };
 		E62F11832A5C6580000BF1C8 /* FlexibleSizeExampleView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 27F441E81BEBE5030039B79C /* FlexibleSizeExampleView.mm */; };
 		E62F11842A5C6584000BF1C8 /* UpdatePropertiesExampleView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 272E6B3C1BEA849E001FCF37 /* UpdatePropertiesExampleView.mm */; };
@@ -102,6 +103,7 @@
 		AC474BFB29BBD4A1002BDAED /* RNTester.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = RNTester.xctestplan; path = RNTester/RNTester.xctestplan; sourceTree = "<group>"; };
 		B0E70A8A05E03E868F8703FE /* Pods-RNTesterIntegrationTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RNTesterIntegrationTests.release.xcconfig"; path = "Target Support Files/Pods-RNTesterIntegrationTests/Pods-RNTesterIntegrationTests.release.xcconfig"; sourceTree = "<group>"; };
 		CA59C9994B1822826D8983F0 /* Pods-RNTester.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RNTester.debug.xcconfig"; path = "Target Support Files/Pods-RNTester/Pods-RNTester.debug.xcconfig"; sourceTree = "<group>"; };
+		8D48EA169B37CE411049B4C1 /* RCTTextInputComponentViewIMETests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = RCTTextInputComponentViewIMETests.mm; sourceTree = "<group>"; };
 		CD10C7A4290BD4EB0033E1ED /* RCTEventEmitterTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCTEventEmitterTests.m; sourceTree = "<group>"; };
 		D134EB89DD98253FCF879A47 /* Pods-RNTesterUnitTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RNTesterUnitTests.debug.xcconfig"; path = "Target Support Files/Pods-RNTesterUnitTests/Pods-RNTesterUnitTests.debug.xcconfig"; sourceTree = "<group>"; };
 		E771AEEA22B44E3100EA1189 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = RNTester/Info.plist; sourceTree = "<group>"; };
@@ -344,6 +346,7 @@
 				A975CA6B2C05EADE0043F72A /* RCTNetworkTaskTests.m */,
 				E7DB20BE22B2BAA4005AC45F /* RCTNativeAnimatedNodesManagerTests.m */,
 				E7DB20AD22B2BAA3005AC45F /* RCTPerformanceLoggerTests.m */,
+				8D48EA169B37CE411049B4C1 /* RCTTextInputComponentViewIMETests.mm */,
 				E7DB20C122B2BAA4005AC45F /* RCTUnicodeDecodeTests.m */,
 				E7DB20D022B2BAA5005AC45F /* RCTURLUtilsTests.m */,
 				E7DB20B322B2BAA4005AC45F /* RNTesterUnitTestsBundle.js */,
@@ -774,6 +777,7 @@
 				E7DB20EB22B2BAA6005AC45F /* RCTConvert_YGValueTests.m in Sources */,
 				E7DB20E922B2BAA6005AC45F /* RCTComponentPropsTests.m in Sources */,
 				E7DB20D822B2BAA6005AC45F /* RCTJSONTests.m in Sources */,
+				5C175C1C2966CE7C263BDE88 /* RCTTextInputComponentViewIMETests.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

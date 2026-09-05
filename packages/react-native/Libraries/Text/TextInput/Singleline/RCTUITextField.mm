@@ -11,6 +11,10 @@
 #import <React/RCTUtils.h>
 #import <React/UIView+React.h>
 
+// Must match RCTAttributedStringEventEmitterKey in RCTAttributedTextUtils.h
+// (cannot import directly — Libraries/Text must not depend on ReactCommon).
+static NSString *const kRCTEventEmitterAttributeKey = @"EventEmitter";
+
 @implementation RCTUITextField {
   RCTBackedTextFieldDelegateAdapter *_textInputDelegateAdapter;
   NSDictionary<NSAttributedStringKey, id> *_defaultTextAttributes;
@@ -92,7 +96,22 @@
   }
 
   _defaultTextAttributes = defaultTextAttributes;
-  [super setDefaultTextAttributes:defaultTextAttributes];
+  // Strip attributes that interfere with UIKit's IME composition underline rendering.
+  // NSShadow and NSBackgroundColor prevent UIKit from drawing the composition underline
+  // on marked text, but only remove them when they are no-op defaults (empty shadow,
+  // clear background) — preserve user-specified values.
+  // EventEmitter is a React-internal attribute (NSData wrapping C++ weak_ptr).
+  NSMutableDictionary *uikitAttrs = [defaultTextAttributes mutableCopy];
+  [uikitAttrs removeObjectForKey:kRCTEventEmitterAttributeKey];
+  NSShadow *shadow = uikitAttrs[NSShadowAttributeName];
+  if (shadow && CGSizeEqualToSize(shadow.shadowOffset, CGSizeZero) && shadow.shadowBlurRadius == 0) {
+    [uikitAttrs removeObjectForKey:NSShadowAttributeName];
+  }
+  UIColor *bgColor = uikitAttrs[NSBackgroundColorAttributeName];
+  if (bgColor && CGColorGetAlpha(bgColor.CGColor) == 0) {
+    [uikitAttrs removeObjectForKey:NSBackgroundColorAttributeName];
+  }
+  [super setDefaultTextAttributes:uikitAttrs];
   [self _updatePlaceholder];
 }
 
