@@ -191,11 +191,11 @@ class XMLHttpRequest extends EventTarget {
 
     this._cachedResponse = undefined;
     this._hasError = false;
-    this._headers = {};
+    this._headers = Object.create(null);
     this._response = '';
     this._responseType = '';
     this._sent = false;
-    this._lowerCaseResponseHeaders = {};
+    this._lowerCaseResponseHeaders = Object.create(null);
 
     this._clearSubscriptions();
     this._timedOut = false;
@@ -671,13 +671,12 @@ class XMLHttpRequest extends EventTarget {
   setResponseHeaders(responseHeaders: ?Object): void {
     this.responseHeaders = responseHeaders || null;
     const headers = responseHeaders || {};
-    this._lowerCaseResponseHeaders = Object.keys(headers).reduce<{
-      [string]: any,
-    }>((lcaseHeaders, headerName) => {
+    const lowerCaseResponseHeaders: Object = Object.create(null);
+    for (const headerName of Object.keys(headers)) {
       // $FlowFixMe[invalid-computed-prop]
-      lcaseHeaders[headerName.toLowerCase()] = headers[headerName];
-      return lcaseHeaders;
-    }, {});
+      lowerCaseResponseHeaders[headerName.toLowerCase()] = headers[headerName];
+    }
+    this._lowerCaseResponseHeaders = lowerCaseResponseHeaders;
   }
 
   setReadyState(newState: number): void {
