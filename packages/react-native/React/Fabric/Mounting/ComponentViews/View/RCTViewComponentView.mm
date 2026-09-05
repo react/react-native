@@ -1746,7 +1746,13 @@ static NSString *RCTRecursiveAccessibilityLabel(UIView *view)
 
 - (BOOL)styleNeedsSwiftUIContainer
 {
-  if (!_props->filter.empty()) {
+  if (_props->filter.empty()) {
+    return NO;
+  }
+
+  // A filter must not affect layout, but UIHostingController insets its content by the safe area.
+  // To disable the insets we use `safeAreaRegions` which is only available in iOS 16.4 and tvOS 16.4.
+  if (@available(iOS 16.4, tvOS 16.4, *)) {
     for (const auto &primitive : _props->filter) {
       if (primitive.type == FilterType::Blur || primitive.type == FilterType::Grayscale ||
           primitive.type == FilterType::DropShadow || primitive.type == FilterType::Saturate ||
@@ -1755,6 +1761,7 @@ static NSString *RCTRecursiveAccessibilityLabel(UIView *view)
       }
     }
   }
+
   return NO;
 }
 

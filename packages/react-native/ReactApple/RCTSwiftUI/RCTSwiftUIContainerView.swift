@@ -14,8 +14,13 @@ import UIKit
 
   @objc public override init() {
     super.init()
-    hostingController = UIHostingController(rootView: SwiftUIContainerView(viewModel: containerViewModel))
-    guard let view = hostingController?.view else {
+    let controller = UIHostingController(rootView: SwiftUIContainerView(viewModel: containerViewModel))
+    if #available(iOS 16.4, tvOS 16.4, *) {
+      // Disable implicit safe area insets or else the view is shifted by the safe area insets
+      controller.safeAreaRegions = []
+    }
+    hostingController = controller
+    guard let view = controller.view else {
       return
     }
     view.backgroundColor = .clear
