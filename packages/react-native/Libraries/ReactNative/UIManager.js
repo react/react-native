@@ -23,9 +23,7 @@ const UIManagerImpl: UIManagerJSInterface =
     ? require('./BridgelessUIManager').default
     : require('./PaperUIManager').default;
 
-// $FlowFixMe[cannot-spread-interface]
-const UIManager: UIManagerJSInterface = {
-  ...UIManagerImpl,
+const UIManagerOverrides = {
   /**
    * Determines the location on screen, width, and height of the given view and
    * returns the values via an async callback. If successful, the callback will
@@ -242,5 +240,20 @@ const UIManager: UIManagerJSInterface = {
     }
   },
 };
+
+// Copy property descriptors instead of spreading UIManagerImpl. In Bridgeless
+// mode, UIManagerImpl may define enumerable lazy ViewManager getters. Spreading
+// the object would invoke every getter during module initialization.
+// $FlowFixMe[incompatible-type] Flow cannot infer properties from descriptors.
+const UIManager: UIManagerJSInterface = Object.create(
+  Object.getPrototypeOf(UIManagerImpl),
+  {
+    ...Object.getOwnPropertyDescriptors(
+      // $FlowFixMe[class-object-subtyping] UIManagerImpl is a runtime object.
+      UIManagerImpl,
+    ),
+    ...Object.getOwnPropertyDescriptors(UIManagerOverrides),
+  },
+);
 
 export default UIManager;
