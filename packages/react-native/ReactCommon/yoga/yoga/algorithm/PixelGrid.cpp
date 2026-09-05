@@ -106,15 +106,37 @@ void roundLayoutResultsToPixelGrid(
     const bool hasFractionalHeight =
         !yoga::inexactEquals(round(scaledNodeHeight), scaledNodeHeight);
 
-    node->getLayout().setDimension(
-        Dimension::Width,
-        roundValueToPixelGrid(
-            absoluteNodeRight,
-            pointScaleFactor,
-            (textRounding && hasFractionalWidth),
-            (textRounding && !hasFractionalWidth)) -
-            roundValueToPixelGrid(
-                absoluteNodeLeft, pointScaleFactor, false, textRounding));
+    const float roundedNodeLeft = roundValueToPixelGrid(
+        absoluteNodeLeft, pointScaleFactor, false, textRounding);
+
+    float roundedNodeWidth = roundValueToPixelGrid(
+                                 absoluteNodeRight,
+                                 pointScaleFactor,
+                                 (textRounding && hasFractionalWidth),
+                                 (textRounding && !hasFractionalWidth)) -
+        roundedNodeLeft;
+
+    // Rounding the two edges independently can still narrow a node below the
+    // size it measured, which is what the comment above means to prevent. The
+    // left and right edge can fall on opposite sides of `inexactEquals`'
+    // tolerance: for text measured as 23 physical pixels on a 2.75 density
+    // screen the left edge lands on 103.9999008 scaled units and is snapped up
+    // to 104, while the right edge lands on 126.9998999, misses the tolerance,
+    // and is floored to 126 - a 22 pixel wide box for 23 pixels of text.
+    //
+    // Recompute the right edge with `forceCeil` in exactly those cases. Nodes
+    // that already round to at least the size they measured keep the width
+    // computed above.
+    const double scaledRoundedNodeWidth =
+        static_cast<double>(roundedNodeWidth) * pointScaleFactor;
+    if (textRounding && scaledRoundedNodeWidth < scaledNodeWith &&
+        !yoga::inexactEquals(scaledRoundedNodeWidth, scaledNodeWith)) {
+      roundedNodeWidth = roundValueToPixelGrid(
+                             absoluteNodeRight, pointScaleFactor, true, false) -
+          roundedNodeLeft;
+    }
+
+    node->getLayout().setDimension(Dimension::Width, roundedNodeWidth);
 
     node->getLayout().setDimension(
         Dimension::Height,
