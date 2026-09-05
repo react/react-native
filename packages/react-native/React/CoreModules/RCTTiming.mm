@@ -7,16 +7,10 @@
 
 #import "RCTTiming.h"
 
-#import <FBReactNativeSpec/FBReactNativeSpec.h>
-
 #import <React/RCTAssert.h>
-#import <React/RCTBridge+Private.h>
-#import <React/RCTBridge.h>
 #import <React/RCTConvert.h>
 #import <React/RCTLog.h>
 #import <React/RCTUtils.h>
-
-#import "CoreModulesPlugins.h"
 
 static const NSTimeInterval kMinimumSleepInterval = 1;
 
@@ -82,7 +76,7 @@ static const NSTimeInterval kIdleCallbackFrameDeadline = 0.001;
 + (instancetype)proxyWithTarget:(id)target
 {
   _RCTTimingProxy *proxy = [self new];
-  if (proxy) {
+  if (proxy != nullptr) {
     proxy->_target = target;
   }
   return proxy;
@@ -103,11 +97,8 @@ static const NSTimeInterval kIdleCallbackFrameDeadline = 0.001;
   id<RCTTimingDelegate> _timingDelegate;
 }
 
-@synthesize bridge = _bridge;
 @synthesize paused = _paused;
 @synthesize pauseCallback = _pauseCallback;
-
-RCT_EXPORT_MODULE()
 
 - (instancetype)initWithDelegate:(id<RCTTimingDelegate>)delegate
 {
@@ -165,15 +156,9 @@ RCT_EXPORT_MODULE()
   [_sleepTimer invalidate];
 }
 
-- (dispatch_queue_t)methodQueue
-{
-  return RCTJSThread;
-}
-
 - (void)invalidate
 {
   [self stopTimers];
-  _bridge = nil;
   _timingDelegate = nil;
 }
 
@@ -220,7 +205,7 @@ RCT_EXPORT_MODULE()
 
 - (void)startTimers
 {
-  if ((!_bridge && !_timingDelegate) || _inBackground || ![self hasPendingTimers]) {
+  if ((!_timingDelegate) || _inBackground || ![self hasPendingTimers]) {
     return;
   }
 
@@ -259,11 +244,7 @@ RCT_EXPORT_MODULE()
     NSArray<NSNumber *> *sortedTimers = [[timersToCall sortedArrayUsingComparator:^(_RCTTimer *a, _RCTTimer *b) {
       return [a.target compare:b.target];
     }] valueForKey:@"callbackID"];
-    if (_bridge) {
-      [_bridge enqueueJSCall:@"JSTimers" method:@"callTimers" args:@[ sortedTimers ] completion:NULL];
-    } else {
-      [_timingDelegate callTimers:sortedTimers];
-    }
+    [_timingDelegate callTimers:sortedTimers];
   }
 
   for (_RCTTimer *timer in timersToCall) {
@@ -282,23 +263,19 @@ RCT_EXPORT_MODULE()
     if (kFrameDuration - frameElapsed >= kIdleCallbackFrameDeadline) {
       NSTimeInterval currentTimestamp = [[NSDate date] timeIntervalSince1970];
       NSNumber *absoluteFrameStartMS = @((currentTimestamp - frameElapsed) * 1000);
-      if (_bridge) {
-        [_bridge enqueueJSCall:@"JSTimers" method:@"callIdleCallbacks" args:@[ absoluteFrameStartMS ] completion:NULL];
-      } else {
-        [_timingDelegate callIdleCallbacks:absoluteFrameStartMS];
-      }
+      [_timingDelegate callIdleCallbacks:absoluteFrameStartMS];
     }
   }
 
   // Switch to a paused state only if we didn't call any timer this frame, so if
   // in response to this timer another timer is scheduled, we don't pause and unpause
   // the displaylink frivolously.
-  NSUInteger timerCount;
+  NSUInteger timerCount = 0;
   @synchronized(_timers) {
     timerCount = _timers.count;
   }
   if (_inBackground) {
-    if (timerCount) {
+    if (timerCount != 0u) {
       [self scheduleSleepTimer:nextScheduledTarget];
     }
   } else if (!_sendIdleEvents && timersToCall.count == 0) {
@@ -318,7 +295,7 @@ RCT_EXPORT_MODULE()
 - (void)scheduleSleepTimer:(NSDate *)sleepTarget
 {
   @synchronized(self) {
-    if (!_sleepTimer || !_sleepTimer.valid) {
+    if ((_sleepTimer == nullptr) || !_sleepTimer.valid) {
       _sleepTimer = [[NSTimer alloc] initWithFireDate:sleepTarget
                                              interval:0
                                                target:[_RCTTimingProxy proxyWithTarget:self]
@@ -341,35 +318,6 @@ RCT_EXPORT_MODULE()
     // Immediately dispatch frame, so we don't have to wait on the displaylink.
     [self didUpdateFrame:nil];
   }
-}
-
-/**
- * A method used for asynchronously creating a timer. If the timer has already expired,
- * (based on the provided jsSchedulingTime) then it will be immediately invoked.
- *
- * There's a small difference between the time when we call
- * setTimeout/setInterval/requestAnimation frame and the time it actually makes
- * it here. This is important and needs to be taken into account when
- * calculating the timer's target time. We calculate this by passing in
- * Date.now() from JS and then subtracting that from the current time here.
- */
-RCT_EXPORT_METHOD(
-    createTimer : (double)callbackID duration : (NSTimeInterval)jsDuration jsSchedulingTime : (double)
-        jsSchedulingTime repeats : (BOOL)repeats)
-{
-  NSNumber *callbackIdObjc = [NSNumber numberWithDouble:callbackID];
-  NSDate *schedulingTime = [RCTConvert NSDate:[NSNumber numberWithDouble:jsSchedulingTime]];
-  if (jsDuration == 0 && repeats == NO) {
-    // For super fast, one-off timers, just enqueue them immediately rather than waiting a frame.
-    if (_bridge) {
-      [_bridge _immediatelyCallTimer:callbackIdObjc];
-    } else {
-      [_timingDelegate immediatelyCallTimer:callbackIdObjc];
-    }
-    return;
-  }
-
-  [self createTimerForNextFrame:callbackIdObjc duration:jsDuration jsSchedulingTime:schedulingTime repeats:repeats];
 }
 
 /**
@@ -407,22 +355,12 @@ RCT_EXPORT_METHOD(
   }
 }
 
-RCT_EXPORT_METHOD(deleteTimer : (double)timerID)
+- (void)deleteTimer:(double)timerID
 {
   @synchronized(_timers) {
-    [_timers removeObjectForKey:[NSNumber numberWithDouble:timerID]];
+    [_timers removeObjectForKey:@(timerID)];
   }
   if (![self hasPendingTimers]) {
-    [self stopTimers];
-  }
-}
-
-RCT_EXPORT_METHOD(setSendIdleEvents : (BOOL)sendIdleEvents)
-{
-  _sendIdleEvents = sendIdleEvents;
-  if (sendIdleEvents) {
-    [self startTimers];
-  } else if (![self hasPendingTimers]) {
     [self stopTimers];
   }
 }
