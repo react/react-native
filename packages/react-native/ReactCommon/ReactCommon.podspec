@@ -51,14 +51,22 @@ Pod::Spec.new do |s|
 
     ss.subspec "core" do |sss|
       sss.source_files = podspec_sources("react/nativemodule/core/ReactCommon/**/*.{cpp,h}", "react/nativemodule/core/ReactCommon/**/*.h")
-      sss.pod_target_xcconfig  = { "HEADER_SEARCH_PATHS" => "\"$(PODS_TARGET_SRCROOT)/ReactCommon\" \"$(PODS_CONFIGURATION_BUILD_DIR)/React-debug/React_debug.framework/Headers\" \"$(PODS_CONFIGURATION_BUILD_DIR)/React-debug/React_featureflags.framework/Headers\" \"$(PODS_CONFIGURATION_BUILD_DIR)/React-utils/React_utils.framework/Headers\"" }
+      sss.pod_target_xcconfig  = { "HEADER_SEARCH_PATHS" => "\"$(PODS_TARGET_SRCROOT)\" \"$(PODS_TARGET_SRCROOT)/ReactCommon\" \"$(PODS_CONFIGURATION_BUILD_DIR)/React-debug/React_debug.framework/Headers\" \"$(PODS_CONFIGURATION_BUILD_DIR)/React-debug/React_featureflags.framework/Headers\" \"$(PODS_CONFIGURATION_BUILD_DIR)/React-utils/React_utils.framework/Headers\"" }
       sss.dependency "React-bridging"
       sss.dependency "React-cxxreact", version
       sss.dependency "React-debug", version
       sss.dependency "React-featureflags", version
       sss.dependency "React-utils", version
     end
+
+    ss.subspec "coreUmbrella" do |sss|
+      sss.source_files         = "react/nativemodule/core/React/*.h"
+      sss.header_dir           = ""
+      sss.header_mappings_dir  = "react/nativemodule/core"
+    end
   end
+
+  s.dependency "React-cxxstableapi"
 
   mark_as_react_native_build(s)
 end

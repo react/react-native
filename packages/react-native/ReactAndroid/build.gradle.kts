@@ -227,6 +227,7 @@ val preparePrefab by
                       Pair("../ReactCommon/jserrorhandler/", "jserrorhandler/"),
                       Pair("../ReactCommon/react/bridging/", "react/bridging/"),
                       Pair("../ReactCommon/react/nativemodule/core/", ""),
+                      Pair("../ReactCommon/react/nativemodule/core/React/", "React/"),
                       Pair("../ReactCommon/react/nativemodule/core/platform/android/", ""),
                       Pair(
                           "../ReactCommon/react/renderer/componentregistry/",

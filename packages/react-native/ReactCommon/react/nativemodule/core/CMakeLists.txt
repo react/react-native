@@ -22,6 +22,7 @@ target_include_directories(react_nativemodule_core
           ${CMAKE_CURRENT_SOURCE_DIR}
           ${platform_DIR}
         )
+target_include_directories(react_nativemodule_core INTERFACE ${REACT_COMMON_DIR}/react/nativemodule/core)
 
 react_native_android_selector(fbjni fbjni "")
 react_native_android_selector(reactnativejni reactnativejni "")
@@ -31,6 +32,7 @@ target_link_libraries(react_nativemodule_core
         glog
         jsi
         react_bridging
+        react_cxxstableapi
         react_debug
         react_utils
         react_featureflags

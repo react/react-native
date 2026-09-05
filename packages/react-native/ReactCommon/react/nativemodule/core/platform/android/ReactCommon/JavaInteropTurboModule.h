@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #ifndef RCT_REMOVE_LEGACY_MODULE_INTEROP
 
 #include <string>
