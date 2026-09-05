@@ -346,9 +346,9 @@ std::string JSStringToSTLString(JSStringRef str) {
     // slower than if we knew the length (like below) but better than crashing.
     // TODO(T62295565): Perform a non-strict, best effort conversion of the
     // full string instead, like we did before the JSI migration.
-    return std::string(buffer);
+    return {buffer};
   }
-  return std::string(buffer, actualBytes - 1);
+  return {buffer, actualBytes - 1};
 }
 
 JSStringRef getLengthString() {
@@ -1126,7 +1126,7 @@ jsi::WeakObject JSCRuntime::createWeakObject(const jsi::Object& obj) {
 jsi::Value JSCRuntime::lockWeakObject(const jsi::WeakObject& obj) {
   // TODO: revisit this implementation
   JSObjectRef objRef = objectRef(obj);
-  return jsi::Value(createObject(objRef));
+  return {createObject(objRef)};
 }
 
 jsi::Array JSCRuntime::createArray(size_t length) {
@@ -1513,13 +1513,13 @@ jsi::Value JSCRuntime::createValue(JSValueRef value) const {
 
   switch (type) {
     case kJSTypeNumber:
-      return jsi::Value(JSValueToNumber(ctx_, value, nullptr));
+      return {JSValueToNumber(ctx_, value, nullptr)};
     case kJSTypeBoolean:
-      return jsi::Value(JSValueToBoolean(ctx_, value));
+      return {JSValueToBoolean(ctx_, value)};
     case kJSTypeNull:
-      return jsi::Value(nullptr);
+      return {nullptr};
     case kJSTypeUndefined:
-      return jsi::Value();
+      return {};
     case kJSTypeString: {
       JSStringRef str = JSValueToStringCopy(ctx_, value, nullptr);
       auto result = jsi::Value(createString(str));
@@ -1528,10 +1528,10 @@ jsi::Value JSCRuntime::createValue(JSValueRef value) const {
     }
     case kJSTypeObject: {
       JSObjectRef objRef = JSValueToObject(ctx_, value, nullptr);
-      return jsi::Value(createObject(objRef));
+      return {createObject(objRef)};
     }
     case kJSTypeSymbol:
-      return jsi::Value(createSymbol(value));
+      return {createSymbol(value)};
     case kJSTypeBigInt:
     default:
       // WHAT ARE YOU
