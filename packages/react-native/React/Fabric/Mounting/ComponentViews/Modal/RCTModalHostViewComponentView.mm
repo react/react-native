@@ -255,7 +255,16 @@ static ModalHostViewEventEmitter::OnOrientationChange onOrientationChangeStruct(
   }
 
   if (_state != nullptr) {
-    auto newState = ModalHostViewState{RCTSizeFromCGSize(newBounds.size)};
+    CGPoint viewportOffset = CGPointZero;
+    UIView *modalView = _viewController.view;
+    if (modalView && modalView.window) {
+      CGRect frameInWindow = [modalView convertRect:modalView.bounds toView:nil];
+      viewportOffset = frameInWindow.origin;
+    }
+    auto newState = ModalHostViewState{
+      RCTSizeFromCGSize(newBounds.size),
+      facebook::react::Point{(Float)viewportOffset.x, (Float)viewportOffset.y}
+    };
     _state->updateState(std::move(newState));
   }
 }
