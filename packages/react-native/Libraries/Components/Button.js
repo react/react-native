@@ -159,6 +159,21 @@ export type ButtonProps = Readonly<{
   accessibilityHint?: ?string,
 
   /**
+   * Identifies the element that labels this button. The value should match
+   * the `nativeID` of the related element.
+   *
+   * @platform android
+   */
+  accessibilityLabelledBy?: ?string | ?Array<string>,
+
+  /**
+   * Alias for `accessibilityLabelledBy`.
+   *
+   * @platform android
+   */
+  'aria-labelledby'?: ?string,
+
+  /**
    * A BCP 47 language tag for the screen reader to use when reading text
    * content.
    *
@@ -211,8 +226,10 @@ const Button: component(
     'aria-disabled': ariaDisabled,
     'aria-expanded': ariaExpanded,
     'aria-label': ariaLabel,
+    'aria-labelledby': ariaLabelledBy,
     'aria-selected': ariaSelected,
     importantForAccessibility,
+    accessibilityLabelledBy,
     color,
     onPress,
     touchSoundDisabled,
@@ -269,10 +286,13 @@ const Button: component(
     Platform.OS === 'android' ? title.toUpperCase() : title;
 
   // If `no` is specified for `importantForAccessibility`, it will be changed to `no-hide-descendants` because the text inside should not be focused.
-  const _importantForAccessibility =
+  let _importantForAccessibility =
     importantForAccessibility === 'no'
       ? 'no-hide-descendants'
       : importantForAccessibility;
+
+  const _accessibilityLabelledBy =
+    ariaLabelledBy?.split(/\s*,\s*/g) ?? accessibilityLabelledBy;
 
   return (
     <NativeTouchable
@@ -285,6 +305,7 @@ const Button: component(
       }
       accessibilityHint={accessibilityHint}
       accessibilityLanguage={accessibilityLanguage}
+      accessibilityLabelledBy={_accessibilityLabelledBy}
       accessibilityRole="button"
       accessibilityState={_accessibilityState}
       importantForAccessibility={_importantForAccessibility}

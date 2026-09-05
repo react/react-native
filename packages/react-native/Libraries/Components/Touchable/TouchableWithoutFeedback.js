@@ -133,6 +133,8 @@ const PASSTHROUGH_PROPS = [
   'accessibilityLanguage',
   'accessibilityIgnoresInvertColors',
   'accessibilityLabel',
+  'accessibilityLabelledBy',
+  'aria-labelledby',
   'accessibilityLiveRegion',
   'accessibilityRole',
   'accessibilityValue',
