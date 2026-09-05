@@ -28,6 +28,57 @@ const BASIC_CONSTRUCTORS = [Number, String, Boolean, Date];
 
 const ObjectPrototype = Object.prototype;
 
+function getRegExpGetter<T>(property: string): ?() => T {
+  return Object.getOwnPropertyDescriptor<T>(RegExp.prototype, property)?.get;
+}
+
+function requireRegExpGetter<T>(property: string): () => T {
+  const getter = getRegExpGetter<T>(property);
+  if (getter == null) {
+    throw new Error(`RegExp ${property} getter is required`);
+  }
+  return getter;
+}
+
+const regExpSourceGetter = requireRegExpGetter<string>('source');
+const regExpHasIndicesGetter = getRegExpGetter<boolean>('hasIndices');
+const regExpGlobalGetter = requireRegExpGetter<boolean>('global');
+const regExpIgnoreCaseGetter = requireRegExpGetter<boolean>('ignoreCase');
+const regExpMultilineGetter = requireRegExpGetter<boolean>('multiline');
+const regExpDotAllGetter = requireRegExpGetter<boolean>('dotAll');
+const regExpUnicodeGetter = requireRegExpGetter<boolean>('unicode');
+const regExpUnicodeSetsGetter = getRegExpGetter<boolean>('unicodeSets');
+const regExpStickyGetter = requireRegExpGetter<boolean>('sticky');
+
+function getRegExpFlags(value: RegExp): string {
+  let flags = '';
+  if (regExpHasIndicesGetter?.call(value)) {
+    flags += 'd';
+  }
+  if (regExpGlobalGetter.call(value)) {
+    flags += 'g';
+  }
+  if (regExpIgnoreCaseGetter.call(value)) {
+    flags += 'i';
+  }
+  if (regExpMultilineGetter.call(value)) {
+    flags += 'm';
+  }
+  if (regExpDotAllGetter.call(value)) {
+    flags += 's';
+  }
+  if (regExpUnicodeGetter.call(value)) {
+    flags += 'u';
+  }
+  if (regExpUnicodeSetsGetter?.call(value)) {
+    flags += 'v';
+  }
+  if (regExpStickyGetter.call(value)) {
+    flags += 'y';
+  }
+  return flags;
+}
+
 // Technically the memory value should be a parameter in
 // `structuredCloneInternal` but as an optimization we can reuse the same map
 // and avoid allocating a new one in every call to `structuredClone`.
@@ -132,7 +183,9 @@ function structuredCloneInternal<T>(value: T): T {
   }
 
   if (value instanceof RegExp) {
-    const result = new RegExp(value.source, value.flags);
+    const source = regExpSourceGetter.call(value);
+    const flags = getRegExpFlags(value);
+    const result = new RegExp(source, flags);
     memory.set(value, result);
 
     // $FlowExpectedError[incompatible-type] we know result is T

@@ -192,10 +192,24 @@ describe('structuredClone', () => {
 
   it('clones regular expressions', () => {
     const value = new RegExp('foo', 'g');
+    // $FlowExpectedError[prop-missing] these flags are feature-detected at runtime.
+    Object.defineProperties(value, {
+      source: {value: 'bar'},
+      flags: {value: ''},
+      hasIndices: {value: true},
+      global: {value: false},
+      ignoreCase: {value: false},
+      multiline: {value: true},
+      dotAll: {value: true},
+      unicode: {value: true},
+      unicodeSets: {value: true},
+      sticky: {value: true},
+    });
     const clone = structuredClone(value);
     expect(clone).not.toBe(value);
     expect(clone).toBeInstanceOf(RegExp);
-    expect(clone).toEqual(value);
+    expect(clone.source).toBe('foo');
+    expect(clone.flags).toBe('g');
   });
 
   it('clones dates', () => {
