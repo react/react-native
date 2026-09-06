@@ -53,6 +53,16 @@ using RCTTextLayoutFragmentEnumerationBlock =
                                  frame:(CGRect)frame
                                atPoint:(CGPoint)point;
 
+/**
+ * Returns a TextKit stack (an `NSTextStorage` with an attached `NSLayoutManager`
+ * and `NSTextContainer`) configured exactly as the one used to measure and draw
+ * the paragraph. Handing the returned container to a `UITextView` makes that
+ * text view lay the text out identically to `drawAttributedString:`.
+ */
+- (NSTextStorage *)textStorageForNSAttributedString:(NSAttributedString *)attributedString
+                                paragraphAttributes:(facebook::react::ParagraphAttributes)paragraphAttributes
+                                               size:(CGSize)size;
+
 - (void)getRectWithAttributedString:(facebook::react::AttributedString)attributedString
                 paragraphAttributes:(facebook::react::ParagraphAttributes)paragraphAttributes
                  enumerateAttribute:(NSString *)enumerateAttribute
