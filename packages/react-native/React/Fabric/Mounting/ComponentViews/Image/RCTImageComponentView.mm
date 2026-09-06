@@ -117,6 +117,12 @@ using namespace facebook::react;
     observerCoordinator.removeObserver(_imageResponseObserverProxy);
   }
 
+  // Release the previous image to prevent memory accumulation
+  // when the source prop changes rapidly (e.g., in animations/slideshows).
+  // The UIImageView retains the UIImage, preventing deallocation until
+  // the next image arrives, which can cause significant memory growth.
+  _imageView.image = nil;
+
   _state = state;
 
   if (_state) {
