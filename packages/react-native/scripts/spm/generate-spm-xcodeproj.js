@@ -319,7 +319,11 @@ function shellScriptPhase(
       outputFileListPaths: empty,
       outputPaths: pathList(options.outputPaths),
       runOnlyForDeploymentPostprocessing: '0',
-      shellPath: '/bin/sh',
+      // React Native's own bodies here start with `set -euo pipefail`, which
+      // /bin/sh rejects on a host where it isn't bash (e.g. dash's `set -o
+      // pipefail: Illegal option`). Run every phase under bash, including
+      // plugin-contributed ones, so a plugin's body can rely on it too.
+      shellPath: '/bin/bash',
       shellScript: quoteIfNeeded(script),
     },
   };
@@ -899,7 +903,8 @@ function generateXcscheme(
             ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
             <ActionContent
                title = "Sync SPM Autolinking"
-               scriptText = "${escapedSync}">
+               scriptText = "${escapedSync}"
+               shellToInvoke = "/bin/bash">
                <EnvironmentBuildable>
                   <BuildableReference
                      BuildableIdentifier = "primary"
@@ -1361,27 +1366,29 @@ function injectSpmIntoPbxproj(
   //    bundles JS via its own phase.
   const syncScript = buildSyncAutolinkingScript(reactNativePath);
   const syncPhaseUuid = mkUuid('PBXShellScriptBuildPhase', 'SyncAutolinking');
+  const syncEntry = shellScriptPhase(
+    syncPhaseUuid,
+    'Sync SPM Autolinking',
+    syncScript,
+  );
   if (!text.includes(syncPhaseUuid)) {
     text = insertObjectsIntoSection(
       text,
       'PBXShellScriptBuildPhase',
-      serializeEntry(
-        shellScriptPhase(syncPhaseUuid, 'Sync SPM Autolinking', syncScript),
-      ),
+      serializeEntry(syncEntry),
     );
   } else {
-    // Already injected on a prior run — the phase object owns its
-    // shellScript, so refresh it in place (same quoting used at creation) in
-    // case the generated script changed since. Byte-identical when it
-    // didn't; field order and every other byte of the phase are untouched.
-    const existingPhase = findObjectByUuid(text, syncPhaseUuid);
-    if (existingPhase != null) {
-      text = setScalarField(
-        text,
-        existingPhase,
-        'shellScript',
-        quoteIfNeeded(syncScript),
-      );
+    // Already injected on a prior run — the phase object owns these fields,
+    // so refresh them in place (same quoting used at creation) in case the
+    // generated script changed, or a project injected before shellPath moved
+    // to bash (see shellScriptPhase) still has the stale value. Byte-identical
+    // when neither did; field order and every other byte of the phase are
+    // untouched.
+    for (const key of ['shellScript', 'shellPath']) {
+      const current = findObjectByUuid(text, syncPhaseUuid);
+      if (current != null) {
+        text = setScalarField(text, current, key, syncEntry.fields[key]);
+      }
     }
   }
   injectedUuids.push(syncPhaseUuid);
@@ -1429,7 +1436,12 @@ function injectSpmIntoPbxproj(
   } else {
     const existingPhase = findObjectByUuid(text, embedPhaseUuid);
     if (existingPhase != null) {
-      for (const key of ['shellScript', 'inputPaths', 'outputPaths']) {
+      for (const key of [
+        'shellScript',
+        'inputPaths',
+        'outputPaths',
+        'shellPath',
+      ]) {
         const current = findObjectByUuid(text, embedPhaseUuid);
         if (current != null) {
           text = setScalarField(text, current, key, embedEntry.fields[key]);
@@ -1606,6 +1618,7 @@ function injectSpmIntoPbxproj(
           'shellScript',
           'inputPaths',
           'outputPaths',
+          'shellPath',
         ]) {
           const current = findObjectByUuid(text, uuid);
           if (current != null) {
@@ -1876,11 +1889,33 @@ function addPreActionToScheme(
     // value itself never contains one — the next `"` is always the closing
     // delimiter.
     const valueEnd = xml.indexOf('"', valueStart);
-    return (
+    let xmlWithScript =
       xml.slice(0, valueStart) +
       escapeXmlAttribute(syncScript) +
-      xml.slice(valueEnd)
-    );
+      xml.slice(valueEnd);
+
+    // Xcode always runs a scheme pre-action's scriptText under the shell this
+    // attribute names (default /bin/sh), independent of a
+    // PBXShellScriptBuildPhase's own shellPath (see shellScriptPhase) — pin
+    // it to bash too. `>` can't appear unescaped inside either attribute
+    // value, so it reliably closes the ActionContent open tag.
+    const contentCloseIdx = xmlWithScript.indexOf('>', stIdx);
+    const shellToInvokeMarker = 'shellToInvoke = "';
+    const stiIdx = xmlWithScript.indexOf(shellToInvokeMarker, valueStart);
+    if (stiIdx >= 0 && stiIdx < contentCloseIdx) {
+      const stiValueStart = stiIdx + shellToInvokeMarker.length;
+      const stiValueEnd = xmlWithScript.indexOf('"', stiValueStart);
+      xmlWithScript =
+        xmlWithScript.slice(0, stiValueStart) +
+        '/bin/bash' +
+        xmlWithScript.slice(stiValueEnd);
+    } else {
+      xmlWithScript =
+        xmlWithScript.slice(0, contentCloseIdx) +
+        '\n               shellToInvoke = "/bin/bash"' +
+        xmlWithScript.slice(contentCloseIdx);
+    }
+    return xmlWithScript;
   }
   const refMatch = xml.match(
     new RegExp(
@@ -1907,7 +1942,8 @@ function addPreActionToScheme(
     `            ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">\n` +
     `            <ActionContent\n` +
     `               title = "Sync SPM Autolinking"\n` +
-    `               scriptText = "${escapeXmlAttribute(syncScript)}">\n` +
+    `               scriptText = "${escapeXmlAttribute(syncScript)}"\n` +
+    `               shellToInvoke = "/bin/bash">\n` +
     `               <EnvironmentBuildable>\n` +
     `                  ${cleanRef}\n` +
     `               </EnvironmentBuildable>\n` +

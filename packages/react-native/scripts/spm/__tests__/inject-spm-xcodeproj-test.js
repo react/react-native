@@ -297,6 +297,35 @@ describe('injectSpmIntoPbxproj — Tier 2 (build settings + phase)', () => {
     expect(syncIdx).toBeLessThan(sourcesIdx);
   });
 
+  it('runs every injected shell-script build phase under bash, not /bin/sh', () => {
+    // Their bodies start with `set -euo pipefail`, which a non-bash /bin/sh
+    // (e.g. dash) rejects at runtime.
+    const {text} = inject(PLAIN);
+    const phaseCount = text.match(/isa = PBXShellScriptBuildPhase;/g)?.length;
+    const bashCount = text.match(/shellPath = \/bin\/bash;/g)?.length;
+    expect(phaseCount).toBeGreaterThan(0);
+    expect(bashCount).toBe(phaseCount);
+  });
+
+  it('upgrades an already-injected phase from /bin/sh to bash on re-run', () => {
+    // A project injected before this fix recorded `shellPath = /bin/sh;` on
+    // the Sync SPM Autolinking phase. Re-running inject (e.g. `spm update`)
+    // must refresh it in place, not just apply bash to newly-created phases.
+    const {text: firstText} = inject(PLAIN);
+    const downgraded = firstText.replace(
+      /shellPath = \/bin\/bash;/g,
+      'shellPath = /bin/sh;',
+    );
+    const {text: secondText} = inject(downgraded);
+    expect(secondText).not.toContain('shellPath = /bin/sh;');
+    const phaseCount = secondText.match(
+      /isa = PBXShellScriptBuildPhase;/g,
+    )?.length;
+    expect(secondText.match(/shellPath = \/bin\/bash;/g)?.length).toBe(
+      phaseCount,
+    );
+  });
+
   it.each([
     [
       '"$(inherited)"',
