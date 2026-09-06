@@ -100,6 +100,39 @@ describe('structuredClone', () => {
     expect(clone).toEqual(value);
   });
 
+  it('clones __proto__ as an own data property', () => {
+    const propertyValue = {key: 'value'};
+    const objectValue = {['__proto__']: propertyValue};
+    const arrayValue: Array<unknown> = [];
+    // $FlowExpectedError[cannot-write] the property is defined, not the prototype.
+    Object.defineProperty(arrayValue, '__proto__', {
+      configurable: true,
+      enumerable: true,
+      value: propertyValue,
+      writable: true,
+    });
+
+    function expectClonedDataProperty(
+      value: interface {},
+      expectedPrototype: interface {},
+    ) {
+      const clone = structuredClone(value);
+      const property = Object.getOwnPropertyDescriptor(clone, '__proto__');
+
+      expect(Object.getPrototypeOf(clone)).toBe(expectedPrototype);
+      expect(property).toEqual({
+        configurable: true,
+        enumerable: true,
+        value: propertyValue,
+        writable: true,
+      });
+      expect(property?.value).not.toBe(propertyValue);
+    }
+
+    expectClonedDataProperty(objectValue, Object.prototype);
+    expectClonedDataProperty(arrayValue, Array.prototype);
+  });
+
   it('does NOT clone non-enumerable properties', () => {
     const value = {foo: 'bar'};
     // $FlowExpectedError[prop-missing]
