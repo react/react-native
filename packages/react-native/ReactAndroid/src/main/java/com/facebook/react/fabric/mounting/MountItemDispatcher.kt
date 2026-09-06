@@ -34,6 +34,10 @@ internal class MountItemDispatcher(
   private val mountItems: Queue<MountItem> = ConcurrentLinkedQueue()
   private val preMountItems: Queue<MountItem> = ConcurrentLinkedQueue()
 
+  /** @return true if any mount items, pre-mount items or view commands are still pending */
+  fun hasPendingItems(): Boolean =
+      !viewCommandMountItems.isEmpty() || !mountItems.isEmpty() || !preMountItems.isEmpty()
+
   private var inDispatch: Boolean = false
   var batchedExecutionTime: Long = 0L
     private set
