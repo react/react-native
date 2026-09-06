@@ -299,6 +299,11 @@ public class NativeAnimatedModule(reactContext: ReactApplicationContext) :
 
     preOperations.executeBatch(batchNumber, nodesManager)
     operations.executeBatch(batchNumber, nodesManager)
+
+    // Operations executed above may have started animations (e.g. startAnimatingNode); the
+    // frame callback disarms itself when no animations are active, so re-arm it here.
+    // didDispatchMountItems is UI-confined, like enqueueFrameCallback.
+    enqueueFrameCallback()
   }
 
   // For non-FabricUIManager only (no-op since Fabric is the only supported UIManager)
@@ -348,9 +353,11 @@ public class NativeAnimatedModule(reactContext: ReactApplicationContext) :
             val nodesManager = nodesManager ?: return
             if (nodesManager.hasActiveAnimations()) {
               nodesManager.runUpdates(frameTimeNanos)
+              // Only keep the Choreographer armed while animations are actually running.
+              // didDispatchMountItems re-arms this callback when new animation operations
+              // (e.g. startAnimatingNode) execute.
+              enqueueFrameCallback()
             }
-
-            enqueueFrameCallback()
           } catch (ex: Exception) {
             throw RuntimeException(ex)
           }

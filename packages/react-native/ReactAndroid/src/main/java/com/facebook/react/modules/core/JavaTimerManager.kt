@@ -185,6 +185,14 @@ public open class JavaTimerManager(
     synchronized(timerGuard) {
       timers.add(timer)
       timerIdsToTimers.put(timerId, timer)
+      if (!frameCallbackPosted && !isPaused.get()) {
+        // Re-arm the timers frame callback lazily: it disarms itself whenever the queue drains.
+        reactChoreographer.postFrameCallback(
+            ReactChoreographer.CallbackType.TIMERS_EVENTS,
+            timerFrameCallback,
+        )
+        frameCallbackPosted = true
+      }
     }
   }
 
@@ -292,6 +300,7 @@ public open class JavaTimerManager(
         return
       }
       val frameTimeMillis = frameTimeNanos / 1000000
+      var shouldRepost: Boolean
       synchronized(timerGuard) {
         while (!timers.isEmpty() && timers.peek()!!.targetTime < frameTimeMillis) {
           var timer = timers.poll()
@@ -309,12 +318,20 @@ public open class JavaTimerManager(
             timerIdsToTimers.remove(timer.timerId)
           }
         }
+        shouldRepost = timers.isNotEmpty()
+        if (!shouldRepost) {
+          // The timer queue is empty: disarm instead of re-posting this callback at vsync rate.
+          // createTimer re-arms the callback when a new timer arrives.
+          frameCallbackPosted = false
+        }
       }
       timersToCall?.let { timers ->
         javaScriptTimerExecutor.callTimers(timers)
         timersToCall = null
       }
-      reactChoreographer.postFrameCallback(ReactChoreographer.CallbackType.TIMERS_EVENTS, this)
+      if (shouldRepost) {
+        reactChoreographer.postFrameCallback(ReactChoreographer.CallbackType.TIMERS_EVENTS, this)
+      }
     }
   }
 

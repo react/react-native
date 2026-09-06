@@ -1663,7 +1663,12 @@ public class FabricUIManager
         mIsMountingEnabled = false;
         throw ex;
       } finally {
-        schedule();
+        // Keep the Choreographer armed only while items remain pending; posting new items
+        // calls schedule() directly. An unconditional re-schedule here kept the Choreographer
+        // running at vsync rate while idle.
+        if (mMountItemDispatcher.hasPendingItems()) {
+          schedule();
+        }
       }
 
       if (ReactNativeFeatureFlags.useSharedAnimatedBackend() && mBinding != null) {
