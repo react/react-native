@@ -427,7 +427,7 @@ public class WebSocketModule(context: ReactApplicationContext) :
    */
   private fun getCookie(uri: String): String? {
     try {
-      val origin = URI(getDefaultOrigin(uri))
+      val origin = getCookieLookupUri(uri)
       val cookieMap = cookieHandler.get(origin, HashMap<String, List<String>>())
       val cookieList = cookieMap["Cookie"]
       if (cookieList.isNullOrEmpty()) {
@@ -459,6 +459,16 @@ public class WebSocketModule(context: ReactApplicationContext) :
       customClientBuilder?.apply(builder)
     }
 
+    /** Map a WebSocket URI's scheme to its HTTP(S) equivalent, e.g. "wss" -> "https". */
+    private fun httpSchemeFor(requestURI: URI): String =
+        when (requestURI.scheme) {
+          "wss" -> "https"
+          "ws" -> "http"
+          "http",
+          "https" -> requestURI.scheme
+          else -> ""
+        }
+
     /**
      * Get the default HTTP(S) origin for a specific WebSocket URI
      *
@@ -468,14 +478,7 @@ public class WebSocketModule(context: ReactApplicationContext) :
     private fun getDefaultOrigin(uri: String): String {
       try {
         val requestURI = URI(uri)
-        val scheme =
-            when (requestURI.scheme) {
-              "wss" -> "https"
-              "ws" -> "http"
-              "http",
-              "https" -> requestURI.scheme
-              else -> ""
-            }
+        val scheme = httpSchemeFor(requestURI)
 
         val defaultOrigin =
             if (requestURI.port != -1) {
@@ -487,6 +490,30 @@ public class WebSocketModule(context: ReactApplicationContext) :
         return defaultOrigin
       } catch (e: URISyntaxException) {
         throw IllegalArgumentException("Unable to set $uri as default origin header")
+      }
+    }
+
+    /**
+     * Get the URI used to look up cookies for a specific WebSocket URI, keeping its path so that
+     * path-scoped cookies are matched correctly
+     *
+     * @param uri
+     * @return A URI with the endpoint converted to HTTP protocol (http[s]://host[:port]/path)
+     */
+    private fun getCookieLookupUri(uri: String): URI {
+      try {
+        val requestURI = URI(uri)
+        return URI(
+            httpSchemeFor(requestURI),
+            null,
+            requestURI.host,
+            requestURI.port,
+            requestURI.path,
+            requestURI.query,
+            requestURI.fragment,
+        )
+      } catch (e: URISyntaxException) {
+        throw IllegalArgumentException("Unable to get cookie lookup URI from $uri")
       }
     }
   }
