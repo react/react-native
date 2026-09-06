@@ -415,6 +415,15 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
   return paragraphLines;
 }
 
+- (NSTextStorage *)textStorageForNSAttributedString:(NSAttributedString *)attributedString
+                                paragraphAttributes:(ParagraphAttributes)paragraphAttributes
+                                               size:(CGSize)size
+{
+  return [self _textStorageAndLayoutManagerWithAttributesString:attributedString
+                                            paragraphAttributes:paragraphAttributes
+                                                           size:size];
+}
+
 - (NSTextStorage *)_textStorageAndLayoutManagerWithAttributesString:(NSAttributedString *)attributedString
                                                 paragraphAttributes:(ParagraphAttributes)paragraphAttributes
                                                                size:(CGSize)size

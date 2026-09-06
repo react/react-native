@@ -46,22 +46,60 @@ using namespace facebook::react;
 @end
 
 #if !TARGET_OS_TV
-@interface RCTParagraphComponentView () <UIEditMenuInteractionDelegate>
+/*
+ * A non-editable `UITextView` used to render a selectable paragraph.
+ *
+ * It is created with the very `NSTextContainer` that `RCTTextLayoutManager`
+ * measured the paragraph with, so its layout matches the measurement by
+ * construction rather than by coincidence. UIKit performs the selection; it
+ * never performs the layout.
+ */
+@interface RCTSelectableTextView : UITextView
+@end
 
-@property (nonatomic, nullable) UIEditMenuInteraction *editMenuInteraction API_AVAILABLE(ios(16.0));
+@implementation RCTSelectableTextView
+
+- (instancetype)initWithFrame:(CGRect)frame textContainer:(NSTextContainer *)textContainer
+{
+  if (self = [super initWithFrame:frame textContainer:textContainer]) {
+    self.backgroundColor = UIColor.clearColor;
+    self.editable = NO;
+    self.selectable = YES;
+    self.scrollEnabled = NO;
+    self.contentInset = UIEdgeInsetsZero;
+    self.textContainerInset = UIEdgeInsetsZero;
+    self.adjustsFontForContentSizeCategory = NO;
+    // `RCTTextLayoutManager` already applies the padding it wants.
+    self.textContainer.lineFragmentPadding = 0.0;
+    // The paragraph owns its layout; the text view must never reflow it.
+    self.textContainer.widthTracksTextView = NO;
+    self.textContainer.heightTracksTextView = NO;
+    // <Paragraph> publishes its own accessibility elements, one per link, through
+    // `RCTParagraphComponentAccessibilityProvider`. Keeping the text view out of
+    // the accessibility tree leaves that contract exactly as it was.
+    self.accessibilityElementsHidden = YES;
+  }
+  return self;
+}
 
 @end
-#else
+#endif // !TARGET_OS_TV
+
 @interface RCTParagraphComponentView ()
 @end
-#endif
 
 @implementation RCTParagraphComponentView {
   ParagraphAttributes _paragraphAttributes;
   RCTParagraphComponentAccessibilityProvider *_accessibilityProvider;
-  UILongPressGestureRecognizer *_longPressGestureRecognizer;
   RCTParagraphTextView *_textView;
   CGRect _textLayoutFrame;
+#if !TARGET_OS_TV
+  // Selection state. `_selectableTextView` is non-nil only while `selectable` is set.
+  RCTSelectableTextView *_selectableTextView;
+  RCTTextLayoutManager *_selectionLayoutManager;
+  NSAttributedString *_selectionRenderedText;
+  CGSize _selectionRenderedSize;
+#endif
 }
 
 - (instancetype)initWithFrame:(CGRect)frame
@@ -137,6 +175,9 @@ using namespace facebook::react;
 {
   _textView.state = std::static_pointer_cast<const ParagraphShadowNode::ConcreteState>(state);
   [_textView setNeedsDisplay];
+#if !TARGET_OS_TV
+  _selectionRenderedText = nil;
+#endif
   [self setNeedsLayout];
 
   // If the attributed string has changed, we need to notify the accessibility system that something changed,
@@ -168,6 +209,9 @@ using namespace facebook::react;
   [super prepareForRecycle];
   _textView.state = nullptr;
   _accessibilityProvider = nil;
+#if !TARGET_OS_TV
+  [self disableContextMenu];
+#endif
 }
 
 - (void)layoutSubviews
@@ -196,6 +240,13 @@ using namespace facebook::react;
   _textLayoutFrame = drawingFrame;
   _textView.frame = textViewFrame;
   _textView.drawingFrame = CGRectOffset(drawingFrame, -textViewFrame.origin.x, -textViewFrame.origin.y);
+
+#if !TARGET_OS_TV
+  const auto &paragraphProps = static_cast<const ParagraphProps &>(*_props);
+  if (paragraphProps.isSelectable) {
+    [self updateSelectableTextViewWithFrame:RCTCGRectFromRect(_layoutMetrics.getContentFrame())];
+  }
+#endif
 }
 
 #pragma mark - Accessibility
@@ -332,83 +383,75 @@ using namespace facebook::react;
 #pragma mark - Context Menu
 
 #if !TARGET_OS_TV
+/*
+ * Selection is provided by a `UITextView` laid out with the paragraph's own
+ * TextKit stack, which gives the platform behaviour users expect: long press to
+ * select a word, drag handles to extend the range and an edit menu that copies
+ * only what is selected.
+ */
 - (void)enableContextMenu
 {
-  _longPressGestureRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self
-                                                                              action:@selector(handleLongPress:)];
-
-  if (@available(iOS 16.0, *)) {
-    _editMenuInteraction = [[UIEditMenuInteraction alloc] initWithDelegate:self];
-    [self addInteraction:_editMenuInteraction];
+  if (_selectionLayoutManager == nil) {
+    _selectionLayoutManager = [RCTTextLayoutManager new];
   }
-  [self addGestureRecognizer:_longPressGestureRecognizer];
+  _selectionRenderedText = nil;
+  [self setNeedsLayout];
 }
 
 - (void)disableContextMenu
 {
-  [self removeGestureRecognizer:_longPressGestureRecognizer];
-  if (@available(iOS 16.0, *)) {
-    [self removeInteraction:_editMenuInteraction];
-    _editMenuInteraction = nil;
-  }
-  _longPressGestureRecognizer = nil;
+  [_selectableTextView removeFromSuperview];
+  _selectableTextView = nil;
+  _selectionRenderedText = nil;
+  _selectionRenderedSize = CGSizeZero;
+  _textView.hidden = NO;
 }
 
-- (void)handleLongPress:(UILongPressGestureRecognizer *)gesture
+/*
+ * Builds or repositions the selectable text view. A `UITextView` binds its text
+ * container at initialisation, so it is rebuilt only when the text or the
+ * available size actually changes.
+ */
+- (void)updateSelectableTextViewWithFrame:(CGRect)contentFrame
 {
-  if (@available(iOS 16.0, macCatalyst 16.0, *)) {
-    CGPoint location = [gesture locationInView:self];
-    UIEditMenuConfiguration *config = [UIEditMenuConfiguration configurationWithIdentifier:nil sourcePoint:location];
-    if (_editMenuInteraction) {
-      [_editMenuInteraction presentEditMenuWithConfiguration:config];
-    }
-  } else {
-    UIMenuController *menuController = [UIMenuController sharedMenuController];
-
-    if (menuController.isMenuVisible) {
-      return;
-    }
-
-    [menuController showMenuFromView:self rect:self.bounds];
+  NSAttributedString *attributedText = self.attributedText;
+  if (attributedText == nil || CGRectIsEmpty(contentFrame)) {
+    [_selectableTextView removeFromSuperview];
+    _selectableTextView = nil;
+    _selectionRenderedText = nil;
+    _textView.hidden = NO;
+    return;
   }
+
+  BOOL needsRebuild = _selectableTextView == nil ||
+      ![attributedText isEqualToAttributedString:_selectionRenderedText] ||
+      !CGSizeEqualToSize(contentFrame.size, _selectionRenderedSize);
+
+  if (needsRebuild) {
+    NSTextStorage *textStorage = [_selectionLayoutManager textStorageForNSAttributedString:attributedText
+                                                                       paragraphAttributes:_paragraphAttributes
+                                                                                      size:contentFrame.size];
+    NSTextContainer *textContainer = textStorage.layoutManagers.firstObject.textContainers.firstObject;
+
+    [_selectableTextView removeFromSuperview];
+    _selectableTextView = [[RCTSelectableTextView alloc] initWithFrame:contentFrame textContainer:textContainer];
+    [self addSubview:_selectableTextView];
+
+    _selectionRenderedText = [attributedText copy];
+    _selectionRenderedSize = contentFrame.size;
+  }
+
+  _selectableTextView.frame = contentFrame;
+  // The text view renders the paragraph, so the drawn copy must stay hidden.
+  _textView.hidden = YES;
 }
 
 - (BOOL)canBecomeFirstResponder
 {
-  const auto &paragraphProps = static_cast<const ParagraphProps &>(*_props);
-  return paragraphProps.isSelectable;
+  // While selectable, `_selectableTextView` is the responder that owns the selection.
+  return NO;
 }
 
-- (BOOL)canPerformAction:(SEL)action withSender:(id)sender
-{
-  const auto &paragraphProps = static_cast<const ParagraphProps &>(*_props);
-
-  if (paragraphProps.isSelectable && action == @selector(copy:)) {
-    return YES;
-  }
-
-  return [self.nextResponder canPerformAction:action withSender:sender];
-}
-
-- (void)copy:(id)sender
-{
-  NSAttributedString *attributedText = self.attributedText;
-
-  NSMutableDictionary *item = [NSMutableDictionary new];
-
-  NSData *rtf = [attributedText dataFromRange:NSMakeRange(0, attributedText.length)
-                           documentAttributes:@{NSDocumentTypeDocumentAttribute : NSRTFDTextDocumentType}
-                                        error:nil];
-
-  if (rtf) {
-    [item setObject:rtf forKey:(id)kUTTypeFlatRTFD];
-  }
-
-  [item setObject:attributedText.string forKey:(id)kUTTypeUTF8PlainText];
-
-  UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
-  pasteboard.items = @[ item ];
-}
 #else
 - (void)enableContextMenu
 {
