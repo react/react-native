@@ -12,6 +12,7 @@
 package com.facebook.react.views.textinput
 
 import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.text.InputFilter
 import android.text.InputFilter.AllCaps
@@ -94,6 +95,20 @@ class ReactTextInputPropertyTest {
     manager.updateProperties(view, buildStyles("autoCorrect", null))
     assertThat(view.inputType and InputType.TYPE_TEXT_FLAG_AUTO_CORRECT).isZero
     assertThat(view.inputType and InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS).isZero
+  }
+
+  @Test
+  fun testUnderlineColorAppliedWhenBackgroundBecomesAvailable() {
+    view.background = null
+
+    manager.setUnderlineColor(view, Color.RED)
+
+    val background = ColorDrawable(Color.WHITE)
+    view.background = background
+    assertThat(background.colorFilter).isNotNull()
+
+    manager.setUnderlineColor(view, null)
+    assertThat(background.colorFilter).isNull()
   }
 
   @Test

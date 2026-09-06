@@ -13,8 +13,10 @@ import android.content.res.Configuration
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.PorterDuff
 import android.graphics.Rect
 import android.graphics.Typeface
+import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
 import android.text.Editable
@@ -66,6 +68,7 @@ import com.facebook.react.uimanager.PixelUtil.toDIPFromPixel
 import com.facebook.react.uimanager.ReactAccessibilityDelegate
 import com.facebook.react.uimanager.StateWrapper
 import com.facebook.react.uimanager.UIManagerHelper
+import com.facebook.react.uimanager.drawable.CompositeBackgroundDrawable
 import com.facebook.react.uimanager.events.EventDispatcher
 import com.facebook.react.uimanager.style.BorderRadiusProp
 import com.facebook.react.uimanager.style.BorderStyle
@@ -138,6 +141,8 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
   private var fontFamily: String? = null
   private var fontWeight = ReactConstants.UNSET
   private var fontStyle = ReactConstants.UNSET
+  private var hasUnderlineColor = false
+  private var underlineColor: Int? = null
   internal var parsedFontVariationSettings: String? = null
     private set
 
@@ -1056,6 +1061,39 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
 
   override fun setBackgroundColor(color: Int) {
     setBackgroundColor(this, color)
+  }
+
+  internal fun setUnderlineColor(color: Int?) {
+    hasUnderlineColor = true
+    underlineColor = color
+    applyUnderlineColor()
+  }
+
+  override fun setBackgroundDrawable(background: Drawable?) {
+    super.setBackgroundDrawable(background)
+    if (hasUnderlineColor) {
+      applyUnderlineColor()
+    }
+  }
+
+  private fun applyUnderlineColor() {
+    var drawableToMutate =
+        (background as? CompositeBackgroundDrawable)?.originalBackground ?: background ?: return
+
+    if (drawableToMutate.constantState != null) {
+      try {
+        drawableToMutate = checkNotNull(drawableToMutate.mutate())
+      } catch (e: NullPointerException) {
+        FLog.e(TAG, "NullPointerException when setting underlineColorAndroid for TextInput", e)
+      }
+    }
+
+    if (underlineColor == null) {
+      drawableToMutate.clearColorFilter()
+    } else {
+      @Suppress("DEPRECATION")
+      drawableToMutate.setColorFilter(checkNotNull(underlineColor), PorterDuff.Mode.SRC_IN)
+    }
   }
 
   public fun setBorderWidth(position: Int, width: Float) {

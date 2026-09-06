@@ -524,29 +524,7 @@ public open class ReactTextInputManager public constructor() :
 
   @ReactProp(name = "underlineColorAndroid", customType = "Color")
   public fun setUnderlineColor(view: ReactEditText, underlineColor: Int?) {
-    // Drawable.mutate() can sometimes crash due to an AOSP bug:
-    // See https://code.google.com/p/android/issues/detail?id=191754 for more info
-    val background = view.background
-    var drawableToMutate = background
-
-    if (background == null) {
-      return
-    }
-
-    if (background.constantState != null) {
-      try {
-        drawableToMutate = checkNotNull(background.mutate())
-      } catch (e: NullPointerException) {
-        FLog.e(TAG, "NullPointerException when setting underlineColorAndroid for TextInput", e)
-      }
-    }
-
-    if (underlineColor == null) {
-      drawableToMutate.clearColorFilter()
-    } else {
-      @Suppress("DEPRECATION")
-      drawableToMutate.setColorFilter(underlineColor, PorterDuff.Mode.SRC_IN)
-    }
+    view.setUnderlineColor(underlineColor)
   }
 
   @SuppressLint("WrongConstant")
