@@ -33,6 +33,16 @@
   return [self.swiftContainerView hostingView];
 }
 
+- (void)attachToParentViewController:(UIViewController *)parentViewController inContainerView:(UIView *)containerView
+{
+  [self.swiftContainerView attachTo:parentViewController in:containerView];
+}
+
+- (void)detachFromParentViewController
+{
+  [self.swiftContainerView detachFromParentViewController];
+}
+
 - (void)resetStyles
 {
   [self.swiftContainerView resetStyles];
