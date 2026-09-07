@@ -147,10 +147,13 @@ internal class FabricEventDispatcher(
     override fun doFrame(frameTimeNanos: Long) {
       UiThreadUtil.assertOnUiThread()
 
+      // This callback is one-shot per schedule request (see maybeDispatchBatchedEvents): events
+      // are dispatched synchronously in dispatchEvent, so there is nothing to re-post here.
+      // Re-posting unconditionally kept the Choreographer armed at vsync rate while idle.
+      isFrameCallbackDispatchScheduled = false
+
       if (shouldStop) {
-        isFrameCallbackDispatchScheduled = false
-      } else {
-        dispatchBatchedEvents()
+        return
       }
 
       Systrace.beginSection(Systrace.TRACE_TAG_REACT, "BatchEventDispatchedListeners")
