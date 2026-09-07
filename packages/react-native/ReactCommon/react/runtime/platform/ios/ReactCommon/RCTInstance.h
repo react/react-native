@@ -19,14 +19,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/**
- * A utility to enable diagnostics mode at runtime. Useful for test runs.
- * The flags are comma-separated string tokens, or an empty string when
- * nothing is enabled.
- */
-RCT_EXTERN NSString *RCTInstanceRuntimeDiagnosticFlags(void);
-RCT_EXTERN void RCTInstanceSetRuntimeDiagnosticFlags(NSString *_Nullable flags);
-
 @class RCTBundleManager;
 @class RCTInstance;
 @class RCTJSThreadManager;

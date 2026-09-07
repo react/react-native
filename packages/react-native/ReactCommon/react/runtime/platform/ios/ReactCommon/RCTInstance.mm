@@ -59,20 +59,6 @@
 using namespace facebook;
 using namespace facebook::react;
 
-static NSString *sRuntimeDiagnosticFlags = nil;
-NSString *RCTInstanceRuntimeDiagnosticFlags(void)
-{
-  return sRuntimeDiagnosticFlags ? [sRuntimeDiagnosticFlags copy] : [NSString new];
-}
-
-void RCTInstanceSetRuntimeDiagnosticFlags(NSString *flags)
-{
-  if (!flags) {
-    return;
-  }
-  sRuntimeDiagnosticFlags = [flags copy];
-}
-
 __attribute__((deprecated(
     "RCTBridgelessDisplayLinkModuleHolder is part of the legacy architecture and will be removed in a future React Native release.")))
 @interface RCTBridgelessDisplayLinkModuleHolder : NSObject<RCTDisplayLinkModuleHolder>
@@ -438,9 +424,7 @@ __attribute__((deprecated(
   _displayLink = [RCTDisplayLink new];
 
   auto &inspectorFlags = jsinspector_modern::InspectorFlags::getInstance();
-  ReactInstance::JSRuntimeFlags options = {
-      .isProfiling = inspectorFlags.getIsProfilingBuild(),
-      .runtimeDiagnosticFlags = [RCTInstanceRuntimeDiagnosticFlags() UTF8String]};
+  ReactInstance::JSRuntimeFlags options = {.isProfiling = inspectorFlags.getIsProfilingBuild()};
   _reactInstance->initializeRuntime(options, [=](jsi::Runtime &runtime) {
     __strong __typeof(self) strongSelf = weakSelf;
     if (!strongSelf) {
