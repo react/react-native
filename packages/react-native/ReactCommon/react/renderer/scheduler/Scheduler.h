@@ -11,11 +11,11 @@
 
 #include <atomic>
 #include <memory>
+#include <optional>
+#include <shared_mutex>
 #include <vector>
 
 #include <ReactCommon/RuntimeExecutor.h>
-#include <react/performance/cdpmetrics/CdpMetricsReporter.h>
-#include <react/performance/cdpmetrics/CdpPerfIssuesReporter.h>
 #include <react/performance/timeline/PerformanceEntryReporter.h>
 #include <react/renderer/componentregistry/ComponentDescriptorFactory.h>
 #include <react/renderer/core/ComponentDescriptor.h>
@@ -31,10 +31,13 @@
 #include <react/renderer/uimanager/UIManagerAnimationDelegate.h>
 #include <react/renderer/uimanager/UIManagerBinding.h>
 #include <react/renderer/uimanager/UIManagerDelegate.h>
-#include <react/renderer/viewtransition/ViewTransitionModule.h>
 #include <react/utils/ContextContainer.h>
 
 namespace facebook::react {
+
+class CdpMetricsReporter;
+class CdpPerfIssuesReporter;
+class ViewTransitionModule;
 
 /*
  * Scheduler coordinates Shadow Tree updates and event flows.
@@ -142,8 +145,8 @@ class Scheduler final : public UIManagerDelegate {
   std::shared_ptr<std::optional<const EventDispatcher>> eventDispatcher_;
 
   std::shared_ptr<PerformanceEntryReporter> performanceEntryReporter_;
-  std::optional<CdpMetricsReporter> cdpMetricsReporter_;
-  std::optional<CdpPerfIssuesReporter> cdpPerfIssuesReporter_;
+  std::unique_ptr<CdpMetricsReporter> cdpMetricsReporter_;
+  std::unique_ptr<CdpPerfIssuesReporter> cdpPerfIssuesReporter_;
   std::shared_ptr<EventPerformanceLogger> eventPerformanceLogger_;
 
   /**
