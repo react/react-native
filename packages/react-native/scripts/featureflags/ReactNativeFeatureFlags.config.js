@@ -103,6 +103,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    disableIdleTimersFrameCallbackRearmAndroid: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-09-07',
+        description:
+          'Stop re-arming the TIMERS_EVENTS Choreographer frame callback at vsync rate while the timer queue is empty on Android; createTimer re-arms it lazily',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'experimental',
+    },
     disableImageViewPreallocationAndroid: {
       defaultValue: false,
       metadata: {

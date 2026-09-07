@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<efe20af949bcd1f716b8f620279899ae>>
+ * @generated SignedSource<<997c727220f989a17c2f2e0473ea0cb9>>
  * @flow strict
  * @noformat
  */
@@ -30,6 +30,7 @@ export interface Spec extends TurboModule {
   readonly cxxNativeAnimatedEnabled?: () => boolean;
   readonly defaultTextToOverflowHidden?: () => boolean;
   readonly disableEarlyViewCommandExecution?: () => boolean;
+  readonly disableIdleTimersFrameCallbackRearmAndroid?: () => boolean;
   readonly disableImageViewPreallocationAndroid?: () => boolean;
   readonly disableMountItemReorderingAndroid?: () => boolean;
   readonly disableSubviewClippingAndroid?: () => boolean;

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<d9d665005b8706625e48e615f44af4b8>>
+ * @generated SignedSource<<a42a6adda08adec8d6585347d8359b54>>
  * @flow strict
  * @noformat
  */
@@ -54,6 +54,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   cxxNativeAnimatedEnabled: Getter<boolean>,
   defaultTextToOverflowHidden: Getter<boolean>,
   disableEarlyViewCommandExecution: Getter<boolean>,
+  disableIdleTimersFrameCallbackRearmAndroid: Getter<boolean>,
   disableImageViewPreallocationAndroid: Getter<boolean>,
   disableMountItemReorderingAndroid: Getter<boolean>,
   disableSubviewClippingAndroid: Getter<boolean>,
@@ -231,6 +232,10 @@ export const defaultTextToOverflowHidden: Getter<boolean> = createNativeFlagGett
  * Dispatch view commands in mount item order.
  */
 export const disableEarlyViewCommandExecution: Getter<boolean> = createNativeFlagGetter('disableEarlyViewCommandExecution', false);
+/**
+ * Stop re-arming the TIMERS_EVENTS Choreographer frame callback at vsync rate while the timer queue is empty on Android; createTimer re-arms it lazily
+ */
+export const disableIdleTimersFrameCallbackRearmAndroid: Getter<boolean> = createNativeFlagGetter('disableIdleTimersFrameCallbackRearmAndroid', false);
 /**
  * Force disable view preallocation for images triggered from createNode off the main thread on Android
  */

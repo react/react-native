@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<1e9009301b79f977132c4fa5599aebdd>>
+ * @generated SignedSource<<4850b4600168e52a55b10165de7dca48>>
  */
 
 /**
@@ -65,6 +65,11 @@ class ReactNativeFeatureFlags {
    * Dispatch view commands in mount item order.
    */
   RN_EXPORT static bool disableEarlyViewCommandExecution();
+
+  /**
+   * Stop re-arming the TIMERS_EVENTS Choreographer frame callback at vsync rate while the timer queue is empty on Android; createTimer re-arms it lazily
+   */
+  RN_EXPORT static bool disableIdleTimersFrameCallbackRearmAndroid();
 
   /**
    * Force disable view preallocation for images triggered from createNode off the main thread on Android
