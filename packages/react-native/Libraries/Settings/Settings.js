@@ -8,9 +8,7 @@
  * @format
  */
 
-import Platform from '../Utilities/Platform';
-
-let Settings: {
+type SettingsStatic = {
   get(key: string): any,
   set(settings: Object): void,
   watchKeys(keys: string | Array<string>, callback: () => void): number,
@@ -18,10 +16,37 @@ let Settings: {
   ...
 };
 
-if (Platform.OS === 'ios') {
-  Settings = require('./Settings').default;
-} else {
-  Settings = require('./SettingsFallback').default;
+let SettingsImpl: ?SettingsStatic = null;
+
+function getSettings(): SettingsStatic {
+  if (SettingsImpl != null) {
+    return SettingsImpl;
+  }
+  const Platform = require('../Utilities/Platform').default;
+  if (Platform.OS === 'ios') {
+    SettingsImpl = require('./Settings').default;
+  } else {
+    SettingsImpl = require('./SettingsFallback').default;
+  }
+  return (SettingsImpl: SettingsStatic);
 }
+
+const Settings: SettingsStatic = {
+  get(key: string): any {
+    return getSettings().get(key);
+  },
+
+  set(settings: Object): void {
+    getSettings().set(settings);
+  },
+
+  watchKeys(keys: string | Array<string>, callback: () => void): number {
+    return getSettings().watchKeys(keys, callback);
+  },
+
+  clearWatch(watchId: number): void {
+    getSettings().clearWatch(watchId);
+  },
+};
 
 export default Settings;
