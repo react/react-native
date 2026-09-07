@@ -178,7 +178,7 @@
     "stacktrace-parser": "^0.1.10",
     "tinyglobby": "^0.2.15",
     "whatwg-fetch": "^3.0.0",
-    "ws": "^7.5.10",
+    "ws": "^7.5.13",
     "yargs": "^17.6.2"
   },
   "codegenConfig": {
