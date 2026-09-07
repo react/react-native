@@ -186,18 +186,16 @@ public open class JavaTimerManager(
     synchronized(timerGuard) {
       timers.add(timer)
       timerIdsToTimers.put(timerId, timer)
-      if (ReactNativeFeatureFlags.disableIdleTimersFrameCallbackRearmAndroid() &&
-          !frameCallbackPosted &&
-          (!isPaused.get() || isRunningTasks.get())) {
-        // The timers frame callback disarms itself once the queue drains (see TimerFrameCallback);
-        // re-arm it lazily when a new timer arrives. While the host is paused, only headless JS
-        // task execution may run timers — mirroring the guard in clearFrameCallback.
-        reactChoreographer.postFrameCallback(
-            ReactChoreographer.CallbackType.TIMERS_EVENTS,
-            timerFrameCallback,
-        )
-        frameCallbackPosted = true
-      }
+    }
+    if (ReactNativeFeatureFlags.disableIdleTimersFrameCallbackRearmAndroid() &&
+        !frameCallbackPosted &&
+        (!isPaused.get() || isRunningTasks.get())) {
+      // The timers frame callback disarms itself once the queue drains (see TimerFrameCallback);
+      // re-arm it lazily when a new timer arrives. setChoreographerCallback is UI-confined
+      // (ReactChoreographer must be driven from the UI looper) and idempotent, so hop to the UI
+      // thread. While the host is paused, only headless JS task execution may run timers —
+      // mirroring the guard in clearFrameCallback.
+      UiThreadUtil.runOnUiThread { setChoreographerCallback() }
     }
   }
 
