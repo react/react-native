@@ -1462,6 +1462,12 @@ public class FabricUIManager
   @AnyThread
   public void onAnimationStarted() {
     mDriveCxxAnimations = true;
+    if (ReactNativeFeatureFlags.disableIdleMountItemFrameCallbackRearmAndroid()) {
+      // A C++ animation session may begin while the DISPATCH_UI frame callback is disarmed at
+      // idle and no mount items are pending yet; re-arm it for the first tick. schedule is
+      // UI-confined and idempotent.
+      UiThreadUtil.runOnUiThread(() -> mDispatchUIFrameCallback.schedule());
+    }
   }
 
   // Called from Binding.cpp
@@ -1672,12 +1678,17 @@ public class FabricUIManager
         mIsMountingEnabled = false;
         throw ex;
       } finally {
+        // Keep the Choreographer armed while items remain pending or a C++ animation driver
+        // needs per-frame ticks from this callback (driveCxxAnimations and
+        // driveAnimationBackend run here). Queueing new items re-arms it via
+        // MountItemDispatcher.onItemsQueued, and onAnimationStarted re-arms it when the C++
+        // side begins an animation session. The two flags below drive animations from this
+        // callback unconditionally, so they disable the idle optimization entirely.
         if (!ReactNativeFeatureFlags.disableIdleMountItemFrameCallbackRearmAndroid()
-            || mMountItemDispatcher.hasPendingItems()) {
-          // Keep the Choreographer armed only while items remain pending; queueing new items
-          // re-arms it via MountItemDispatcher.onItemsQueued (covering items queued from
-          // non-UI threads, e.g. view commands). An unconditional re-schedule here kept the
-          // Choreographer running at vsync rate while idle.
+            || mMountItemDispatcher.hasPendingItems()
+            || mDriveCxxAnimations
+            || ReactNativeFeatureFlags.cxxNativeAnimatedEnabled()
+            || ReactNativeFeatureFlags.useSharedAnimatedBackend()) {
           schedule();
         }
       }
