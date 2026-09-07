@@ -21,6 +21,7 @@ import com.facebook.react.bridge.ScrollEndedListener
 import com.facebook.react.bridge.UIManager
 import com.facebook.react.bridge.UIManagerListener
 import com.facebook.react.bridge.buildReadableMap
+import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import com.facebook.react.common.annotations.UnstableReactNativeAPI
 import com.facebook.react.common.annotations.VisibleForTesting
 import com.facebook.react.module.annotations.ReactModule
@@ -249,16 +250,28 @@ public class NativeAnimatedModule(reactContext: ReactApplicationContext) :
   private fun addOperation(operation: UIThreadOperation) {
     operation.batchNumber = currentBatchNumber
     operations.add(operation)
+    armFrameCallbackForQueuedOperations()
   }
 
   private fun addUnbatchedOperation(operation: UIThreadOperation) {
     operation.batchNumber = -1
     operations.add(operation)
+    armFrameCallbackForQueuedOperations()
   }
 
   private fun addPreOperation(operation: UIThreadOperation) {
     operation.batchNumber = currentBatchNumber
     preOperations.add(operation)
+    armFrameCallbackForQueuedOperations()
+  }
+
+  // With demand-gated re-arm, operations queued from the native module thread must re-arm the
+  // frame callback themselves: they normally execute (and re-arm it) in didDispatchMountItems,
+  // but imperative JS animation calls can arrive when no mount items are pending at all.
+  private fun armFrameCallbackForQueuedOperations() {
+    if (ReactNativeFeatureFlags.disableIdleNativeAnimatedFrameCallbackRearmAndroid()) {
+      enqueueFrameCallback()
+    }
   }
 
   // For FabricUIManager only
@@ -299,6 +312,13 @@ public class NativeAnimatedModule(reactContext: ReactApplicationContext) :
 
     preOperations.executeBatch(batchNumber, nodesManager)
     operations.executeBatch(batchNumber, nodesManager)
+
+    if (ReactNativeFeatureFlags.disableIdleNativeAnimatedFrameCallbackRearmAndroid()) {
+      // Operations executed above may have started animations (e.g. startAnimatingNode); the
+      // frame callback disarms itself when no animations are active, so re-arm it here.
+      // didDispatchMountItems is UI-confined, like enqueueFrameCallback.
+      enqueueFrameCallback()
+    }
   }
 
   // For non-FabricUIManager only (no-op since Fabric is the only supported UIManager)
@@ -339,7 +359,7 @@ public class NativeAnimatedModule(reactContext: ReactApplicationContext) :
       nodesManagerRef.set(nodesManager)
     }
 
-  private var enqueuedAnimationOnFrame = false
+  @Volatile private var enqueuedAnimationOnFrame = false
   private val animatedFrameCallback =
       object : GuardedFrameCallback(reactContext) {
         override fun doFrameGuarded(frameTimeNanos: Long) {
@@ -348,9 +368,12 @@ public class NativeAnimatedModule(reactContext: ReactApplicationContext) :
             val nodesManager = nodesManager ?: return
             if (nodesManager.hasActiveAnimations()) {
               nodesManager.runUpdates(frameTimeNanos)
+              enqueueFrameCallback()
+            } else if (!ReactNativeFeatureFlags.disableIdleNativeAnimatedFrameCallbackRearmAndroid()) {
+              // Only keep the Choreographer armed while animations are actually running; the
+              // re-arm points above cover operations that may start new animations.
+              enqueueFrameCallback()
             }
-
-            enqueueFrameCallback()
           } catch (ex: Exception) {
             throw RuntimeException(ex)
           }

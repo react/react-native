@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<f218220c66b8367211cae49adba46afc>>
+ * @generated SignedSource<<37d43af00cb238b2e28108c2a98d6c8e>>
  */
 
 /**
@@ -29,6 +29,7 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
   private var cxxNativeAnimatedEnabledCache: Boolean? = null
   private var defaultTextToOverflowHiddenCache: Boolean? = null
   private var disableEarlyViewCommandExecutionCache: Boolean? = null
+  private var disableIdleNativeAnimatedFrameCallbackRearmAndroidCache: Boolean? = null
   private var disableImageViewPreallocationAndroidCache: Boolean? = null
   private var disableMountItemReorderingAndroidCache: Boolean? = null
   private var disableSubviewClippingAndroidCache: Boolean? = null
@@ -157,6 +158,16 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
       cached = currentProvider.disableEarlyViewCommandExecution()
       accessedFeatureFlags.add("disableEarlyViewCommandExecution")
       disableEarlyViewCommandExecutionCache = cached
+    }
+    return cached
+  }
+
+  override fun disableIdleNativeAnimatedFrameCallbackRearmAndroid(): Boolean {
+    var cached = disableIdleNativeAnimatedFrameCallbackRearmAndroidCache
+    if (cached == null) {
+      cached = currentProvider.disableIdleNativeAnimatedFrameCallbackRearmAndroid()
+      accessedFeatureFlags.add("disableIdleNativeAnimatedFrameCallbackRearmAndroid")
+      disableIdleNativeAnimatedFrameCallbackRearmAndroidCache = cached
     }
     return cached
   }

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<1e9009301b79f977132c4fa5599aebdd>>
+ * @generated SignedSource<<b41faab74fc924c5729d73abc69d4bcd>>
  */
 
 /**
@@ -65,6 +65,11 @@ class ReactNativeFeatureFlags {
    * Dispatch view commands in mount item order.
    */
   RN_EXPORT static bool disableEarlyViewCommandExecution();
+
+  /**
+   * Stop re-arming the NATIVE_ANIMATED_MODULE Choreographer frame callback at vsync rate while no animations are active on Android
+   */
+  RN_EXPORT static bool disableIdleNativeAnimatedFrameCallbackRearmAndroid();
 
   /**
    * Force disable view preallocation for images triggered from createNode off the main thread on Android
