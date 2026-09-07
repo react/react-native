@@ -44,6 +44,7 @@ const {
   resolveSwiftName,
 } = require('./expand-spm-dependencies');
 const {expandSpmSourceGlobs} = require('./generate-spm-autolinking');
+const {MIN_IOS_VERSION_SUPPORTED} = require('./ios-deployment-target');
 const {findPodspecs, readPodspecCached} = require('./read-podspec');
 const {
   REACT_CODEGEN_PACKAGE_NAME,
@@ -107,7 +108,9 @@ const {log, warn} = makeLogger('scaffold-package-swift');
 // v19: scaffolded C++ targets carry DEBUG/NDEBUG config defines so their Fabric
 // ABI matches the prebuilt React.framework (Release strips DebugStringConvertible
 // under NDEBUG). Bumped so existing scaffolds regenerate with the defines.
-const SCAFFOLDER_VERSION = 19;
+// v20: the platform floor is the app's iOS deployment target in string form
+// (the `.v15` enum cannot express a dependency minimum like 16.4).
+const SCAFFOLDER_VERSION = 20;
 const SCAFFOLDER_VERSION_LINE_RE = /^\/\/ AUTO-SCAFFOLDED-VERSION: (\d+)$/m;
 
 const AUTOGEN_MARKER =
@@ -562,6 +565,7 @@ type EmitContext = {
   // Relative path to the app's local xcframeworks package
   // (<appRoot>/build/xcframeworks). Only referenced when remote == null.
   localXcfwPackageDir?: ?string,
+  iosDeploymentTarget?: ?string,
 };
 */
 
@@ -578,6 +582,8 @@ function emitScaffoldedPackageSwift(
 ) /*: string */ {
   const slotComment =
     ctx.cacheSlotLabel != null ? `\n// Cache slot: ${ctx.cacheSlotLabel}` : '';
+  const iosDeploymentTarget /*: string */ =
+    ctx.iosDeploymentTarget ?? MIN_IOS_VERSION_SUPPORTED;
 
   // React headers need NO search paths — they come from the React /
   // ReactNativeHeaders binaryTargets and the ReactAppHeaders product (see
@@ -765,7 +771,7 @@ import PackageDescription
 
 let package = Package(
     name: "${spec.swiftName}",
-    platforms: [.iOS(.v15)],
+    platforms: [.iOS("${iosDeploymentTarget}")],
     products: [
         .library(name: "${spec.swiftName}", targets: ["${spec.swiftName}"]),
     ],
@@ -863,6 +869,7 @@ type ScaffoldContext = {
   // references honor each sibling's declared name.
   swiftNameByNpm?: Map<string, string>,
   remote: ?{url: string, version: string, identity: string},
+  iosDeploymentTarget?: ?string,
 };
 */
 
@@ -1062,6 +1069,7 @@ function scaffoldPackageSwiftForDep(
   const content = emitScaffoldedPackageSwift(spec, {
     cacheSlotLabel: ctx.cacheSlotLabel,
     remote: ctx.remote,
+    iosDeploymentTarget: ctx.iosDeploymentTarget,
     codegenPackageDir: relFromManifest('build', 'generated', 'ios'),
     localXcfwPackageDir: relFromManifest('build', 'xcframeworks'),
   });
@@ -1136,6 +1144,7 @@ type ScaffoldAllOptions = {
   dryRun?: boolean,
   cacheSlotLabel?: ?string,
   autolinkingJsonPath?: string,
+  iosDeploymentTarget?: ?string,
   // npm dep names to skip entirely — used when the user declined the
   // confirmation prompt for first-time scaffolds. Skipped deps still
   // appear in the returned results array with status='skipped-opt-out'.
@@ -1271,6 +1280,7 @@ function scaffoldAll(
     force: opts.force === true,
     dryRun: opts.dryRun === true,
     cacheSlotLabel: opts.cacheSlotLabel ?? null,
+    iosDeploymentTarget: opts.iosDeploymentTarget ?? null,
     podToNpm,
     swiftNameByNpm,
     remote,

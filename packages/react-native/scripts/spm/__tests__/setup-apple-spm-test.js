@@ -18,6 +18,7 @@ const {
   generateAutolinkingConfigOrFailClosed,
   parseArgs,
   resolveAction,
+  resolveAppIosDeploymentTarget,
   resolveConfigCommandToPin,
   resolveExplicitConfigCommand,
   shouldAutoDeintegrate,
@@ -647,6 +648,86 @@ describe('determineVersion', () => {
 
     expect(determineVersion({version: null}, reactNativeRoot, appRoot)).toBe(
       '1000.0.0',
+    );
+  });
+});
+
+describe('resolveAppIosDeploymentTarget', () => {
+  let appRoot;
+  let logSpy;
+
+  beforeEach(() => {
+    appRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'spm-setup-iosdt-'));
+    logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    logSpy.mockRestore();
+    fs.rmSync(appRoot, {recursive: true, force: true});
+  });
+
+  function logged() {
+    return logSpy.mock.calls.map(call => call.join(' ')).join('\n');
+  }
+
+  // MyApp declares 16.4; Second has no configurations of its own and inherits
+  // the project's 15.1. No marker — the first `spm add`, where only
+  // --product-name identifies the target.
+  function mkTwoTargetProject() {
+    const dir = path.join(appRoot, 'MyApp.xcodeproj');
+    fs.mkdirSync(dir, {recursive: true});
+    let pbxproj = fs.readFileSync(
+      path.join(__dirname, '__fixtures__', 'plain-app.pbxproj'),
+      'utf8',
+    );
+    for (const config of [
+      'AA0000000000000000000901 /*',
+      'AA00000000000000000000A2 /*',
+    ]) {
+      const settingsAt = pbxproj.indexOf(
+        'buildSettings = {',
+        pbxproj.indexOf(config),
+      );
+      const lineEnd = pbxproj.indexOf('\n', settingsAt) + 1;
+      pbxproj =
+        pbxproj.slice(0, lineEnd) +
+        '\t\t\t\tIPHONEOS_DEPLOYMENT_TARGET = 16.4;\n' +
+        pbxproj.slice(lineEnd);
+    }
+    fs.writeFileSync(
+      path.join(dir, 'project.pbxproj'),
+      pbxproj.replace(
+        '/* End PBXNativeTarget section */',
+        `\t\tBB0000000000000000000101 /* Second */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AA0000000000000000000601 /* project configs */;
+			name = Second;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */`,
+      ),
+      'utf8',
+    );
+  }
+
+  it('reads the app target --product-name selects, not the lowest one', () => {
+    mkTwoTargetProject();
+    expect(resolveAppIosDeploymentTarget({productName: 'MyApp'}, appRoot)).toBe(
+      '16.4',
+    );
+    expect(logged()).toContain(
+      'iOS deployment target: 16.4 (from MyApp.xcodeproj)',
+    );
+    // Without a name no target is singled out, so the floor must hold for all.
+    expect(resolveAppIosDeploymentTarget({productName: null}, appRoot)).toBe(
+      '15.1',
+    );
+  });
+
+  it('names the reason alongside the default when no project could be picked', () => {
+    expect(resolveAppIosDeploymentTarget({}, appRoot)).toBe('15.1');
+    expect(logged()).toContain(
+      'iOS deployment target: 15.1 (react-native default; no .xcodeproj found',
     );
   });
 });

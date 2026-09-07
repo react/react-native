@@ -2181,7 +2181,7 @@ function readScriptPhasesManifest(
  */
 function readMarker(
   xcodeprojPath /*: string */,
-) /*: ?{generatedSources?: {[string]: Array<string>}, scriptPhases?: {[string]: string}, artifactsVersionOverride?: ?string, configCommand?: ?Array<string>, buildSettingChanges?: Array<BuildSettingChange>, createdArrayFields?: Array<CreatedArrayField>, scheme?: {file?: ?string, created?: ?boolean}, ...} */ {
+) /*: ?{targetUuid?: ?string, generatedSources?: {[string]: Array<string>}, scriptPhases?: {[string]: string}, artifactsVersionOverride?: ?string, configCommand?: ?Array<string>, buildSettingChanges?: Array<BuildSettingChange>, createdArrayFields?: Array<CreatedArrayField>, scheme?: {file?: ?string, created?: ?boolean}, ...} */ {
   const markerPath = path.join(xcodeprojPath, SPM_INJECTED_MARKER);
   try {
     // $FlowFixMe[incompatible-return] JSON.parse returns any
@@ -2718,6 +2718,7 @@ module.exports = {
   buildSchemePreActionScript,
   buildEmbedFrameworksScript,
   flavorForBuildConfiguration,
+  targetBuildConfigUuids,
   frameworkConditionalSettings,
   ensureStubPackages,
   buildSpmDependencyGraph,
@@ -2732,6 +2733,7 @@ module.exports = {
   addPreActionToScheme,
   removePreActionFromScheme,
   findInjectedXcodeproj,
+  readMarker,
   readArtifactsVersionOverride,
   readPinnedConfigCommand,
   readScriptPhasesManifest,

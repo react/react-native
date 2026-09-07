@@ -99,9 +99,14 @@ const {
   findInjectedXcodeproj,
   injectSpmIntoExistingXcodeproj,
   readArtifactsVersionOverride,
+  readMarker,
   readPinnedConfigCommand,
   removeSpmInjection,
 } = require('./spm/generate-spm-xcodeproj');
+const {
+  MIN_IOS_VERSION_SUPPORTED,
+  resolveIosDeploymentTarget,
+} = require('./spm/ios-deployment-target');
 const {scaffoldAll} = require('./spm/scaffold-package-swift');
 const {
   RemoteVersionError,
@@ -452,6 +457,7 @@ async function runScaffold(
   appRoot /*: string */,
   projectRoot /*: string */,
   reactNativeRoot /*: string */,
+  iosDeploymentTarget /*: string */,
 ) /*: Promise<void> */ {
   // Resolve the cache slot identifier so the scaffolded files carry it as
   // a comment — that's how SPM's manifest hash bumps on slot transitions.
@@ -472,6 +478,7 @@ async function runScaffold(
       projectRoot,
       reactNativeRoot,
       cacheSlotLabel,
+      iosDeploymentTarget,
       // Always force a re-render so re-running after editing a podspec picks
       // up the new content.
       force: true,
@@ -786,6 +793,29 @@ function resolveInjectionTarget(
     };
   }
   return {path: path.join(appRoot, names[0])};
+}
+
+/** The app's own floor for every manifest this run generates, logged once. */
+function resolveAppIosDeploymentTarget(
+  args /*: SetupArgs */,
+  appRoot /*: string */,
+) /*: string */ {
+  const target = resolveInjectionTarget(args, appRoot);
+  const xcodeprojPath = target.path ?? null;
+  const read = resolveIosDeploymentTarget({
+    xcodeprojPath,
+    targetUuid:
+      xcodeprojPath != null ? readMarker(xcodeprojPath)?.targetUuid : null,
+    targetName: args.productName,
+  });
+  const value = read ?? MIN_IOS_VERSION_SUPPORTED;
+  const origin =
+    read != null && xcodeprojPath != null
+      ? `from ${path.basename(xcodeprojPath)}`
+      : // `sync` and `scaffold` don't otherwise surface why no project was picked.
+        `react-native default${target.error != null ? `; ${target.error}` : ''}`;
+  log(`iOS deployment target: ${value} (${origin})`);
+  return value;
 }
 
 /**
@@ -1117,6 +1147,9 @@ async function main(argv /*:: ?: Array<string> */) /*: Promise<void> */ {
     }
     log(`Wrote ${path.relative(appRoot, autolinkingConfigResult.outputPath)}`);
   }
+  const iosDeploymentTarget /*: string */ = needsCliConfig
+    ? resolveAppIosDeploymentTarget(args, appRoot)
+    : MIN_IOS_VERSION_SUPPORTED;
   const reactNativeRoot = resolveReactNativeRoot(
     autolinkingConfigResult,
     projectRoot,
@@ -1160,6 +1193,8 @@ async function main(argv /*:: ?: Array<string> */) /*: Promise<void> */ {
         appRoot,
         '--react-native-root',
         reactNativeRoot,
+        '--ios-deployment-target',
+        iosDeploymentTarget,
       ]);
     } catch (e) {
       if (e instanceof MissingManifestError) {
@@ -1193,7 +1228,13 @@ async function main(argv /*:: ?: Array<string> */) /*: Promise<void> */ {
   // visible and fixed deliberately (scaffold + patch-package, or upstream).
   // Auto-scaffolding would silently hide that real error.
   if (action === 'scaffold') {
-    await runScaffold(args, appRoot, projectRoot, reactNativeRoot);
+    await runScaffold(
+      args,
+      appRoot,
+      projectRoot,
+      reactNativeRoot,
+      iosDeploymentTarget,
+    );
   }
 
   runCodegenStep(projectRoot, appRoot, reactNativeRoot, args.skipCodegen);
@@ -1204,6 +1245,8 @@ async function main(argv /*:: ?: Array<string> */) /*: Promise<void> */ {
       appRoot,
       '--react-native-root',
       reactNativeRoot,
+      '--ios-deployment-target',
+      iosDeploymentTarget,
     ]);
   } catch (e) {
     if (e instanceof MissingManifestError) {
@@ -1288,6 +1331,7 @@ module.exports = {
   generateAutolinkingConfigOrFailClosed,
   parseArgs,
   resolveAction,
+  resolveAppIosDeploymentTarget,
   resolveConfigCommandToPin,
   resolveExplicitConfigCommand,
   shouldAutoDeintegrate,

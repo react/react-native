@@ -562,6 +562,21 @@ describe('emitScaffoldedPackageSwift', () => {
     expect(out).toContain('// Cache slot: 0.87.0-nightly-20260513-abc/debug');
   });
 
+  it('floors the platform at the React Native minimum by default, in string form', () => {
+    const out = emitScaffoldedPackageSwift(baseSpec());
+    expect(out).toContain('platforms: [.iOS("15.1")]');
+    // The enum form cannot express a patch-level floor like 16.4.
+    expect(out).not.toContain('.v15');
+  });
+
+  it('raises the platform floor to the app deployment target', () => {
+    const out = emitScaffoldedPackageSwift(baseSpec(), {
+      cacheSlotLabel: null,
+      iosDeploymentTarget: '16.4',
+    });
+    expect(out).toContain('platforms: [.iOS("16.4")]');
+  });
+
   it('emits DEBUG/NDEBUG config-gated cxxSettings so Fabric C++ matches the prebuilt React.framework ABI', () => {
     const out = emitScaffoldedPackageSwift(baseSpec());
     expect(out).toContain('.define("DEBUG", .when(configuration: .debug))');
@@ -1525,6 +1540,10 @@ describe('SCAFFOLDER_VERSION', () => {
   it('is a positive integer', () => {
     expect(Number.isInteger(SCAFFOLDER_VERSION)).toBe(true);
     expect(SCAFFOLDER_VERSION).toBeGreaterThanOrEqual(1);
+  });
+
+  it('is at the version the current emitter output requires', () => {
+    expect(SCAFFOLDER_VERSION).toBe(20);
   });
 
   it('emitter writes the current version to the file', () => {

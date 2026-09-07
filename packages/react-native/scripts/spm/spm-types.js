@@ -67,6 +67,8 @@ export type AutolinkingArgs = {
   autolinkingJson: string | null,
   output: string | null,
   xcframeworksPath: string | null,
+  // Platform floor of every manifest this run writes; sanitized by parseArgs.
+  iosDeploymentTarget: string,
 };
 
 export type SpmTarget = {
@@ -206,6 +208,7 @@ export type AggregatorInput = {
   // the aggregator's package deps + the AutolinkedAggregate target deps.
   pluginPackageDeps?: ReadonlyArray<PluginPackageDep>,
   pluginProductDeps?: ReadonlyArray<PluginProductDep>,
+  iosDeploymentTarget?: ?string,
 };
 
 // --- Autolinking plugins (PREVIEW / unstable contract) ---
@@ -377,6 +380,7 @@ export type SynthPackageSpec = {
   // `<react/renderer/components/safeareacontext/X.h>` resolve through the
   // dep's own `common/cpp/` subtree.
   headerSearchPaths?: ?Array<string>,
+  iosDeploymentTarget?: ?string,
 };
 
 

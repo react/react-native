@@ -216,6 +216,18 @@ load from Metro instead of a bundled `main.jsbundle`. CocoaPods injects it at
 `pod install` time, so this keeps SwiftPM apps at parity. An existing value is
 left alone.
 
+### iOS deployment target
+
+Every manifest React Native generates — the `Autolinked` aggregate, the synth
+package per dependency, and each scaffolded community package — declares the
+same platform floor: your app's `IPHONEOS_DEPLOYMENT_TARGET`, never below React
+Native's own minimum (15.1). SwiftPM refuses to link a product whose minimum is
+higher than the target depending on it, so a dependency that needs more (Expo's
+packages need iOS 16.4) only resolves once the app asks for at least as much:
+raise the deployment target in Xcode and re-run `react-native spm update`.
+Scaffolded packages keep the floor they were scaffolded with until you re-run
+`react-native spm scaffold`.
+
 ## Files the tool touches
 
 Paths are relative to the Xcode project directory (`ios/`) unless noted.
