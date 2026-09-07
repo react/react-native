@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<177c5cc7f6e970a2d4454c32d7f777ef>>
+ * @generated SignedSource<<2766e7e4ae9175ce3c44ce64f613dce3>>
  */
 
 /**
@@ -66,6 +66,12 @@ class ReactNativeFeatureFlagsJavaProvider
   bool disableEarlyViewCommandExecution() override {
     static const auto method =
         getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("disableEarlyViewCommandExecution");
+    return method(javaProvider_);
+  }
+
+  bool disableIdleEventDispatchFrameCallbackRearmAndroid() override {
+    static const auto method =
+        getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("disableIdleEventDispatchFrameCallbackRearmAndroid");
     return method(javaProvider_);
   }
 
@@ -584,6 +590,11 @@ bool JReactNativeFeatureFlagsCxxInterop::disableEarlyViewCommandExecution(
   return ReactNativeFeatureFlags::disableEarlyViewCommandExecution();
 }
 
+bool JReactNativeFeatureFlagsCxxInterop::disableIdleEventDispatchFrameCallbackRearmAndroid(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
+  return ReactNativeFeatureFlags::disableIdleEventDispatchFrameCallbackRearmAndroid();
+}
+
 bool JReactNativeFeatureFlagsCxxInterop::disableImageViewPreallocationAndroid(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
   return ReactNativeFeatureFlags::disableImageViewPreallocationAndroid();
@@ -1035,6 +1046,9 @@ void JReactNativeFeatureFlagsCxxInterop::registerNatives() {
       makeNativeMethod(
         "disableEarlyViewCommandExecution",
         JReactNativeFeatureFlagsCxxInterop::disableEarlyViewCommandExecution),
+      makeNativeMethod(
+        "disableIdleEventDispatchFrameCallbackRearmAndroid",
+        JReactNativeFeatureFlagsCxxInterop::disableIdleEventDispatchFrameCallbackRearmAndroid),
       makeNativeMethod(
         "disableImageViewPreallocationAndroid",
         JReactNativeFeatureFlagsCxxInterop::disableImageViewPreallocationAndroid),

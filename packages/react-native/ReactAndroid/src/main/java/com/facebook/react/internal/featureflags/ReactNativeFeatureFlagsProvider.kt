@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<915bf918212b9898319de61d4cadaa13>>
+ * @generated SignedSource<<08a63133bb8e8f4bbd7826f425220292>>
  */
 
 /**
@@ -32,6 +32,8 @@ public interface ReactNativeFeatureFlagsProvider {
   @DoNotStrip public fun defaultTextToOverflowHidden(): Boolean
 
   @DoNotStrip public fun disableEarlyViewCommandExecution(): Boolean
+
+  @DoNotStrip public fun disableIdleEventDispatchFrameCallbackRearmAndroid(): Boolean
 
   @DoNotStrip public fun disableImageViewPreallocationAndroid(): Boolean
 

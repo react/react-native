@@ -13,6 +13,7 @@ import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactSoftExceptionLogger
 import com.facebook.react.bridge.UiThreadUtil
 import com.facebook.react.common.annotations.UnstableReactNativeAPI
+import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import com.facebook.react.modules.core.ReactChoreographer
 import com.facebook.react.uimanager.UIManagerHelper
 import com.facebook.react.uimanager.common.UIManagerType
@@ -147,10 +148,18 @@ internal class FabricEventDispatcher(
     override fun doFrame(frameTimeNanos: Long) {
       UiThreadUtil.assertOnUiThread()
 
-      if (shouldStop) {
-        isFrameCallbackDispatchScheduled = false
+      if (!ReactNativeFeatureFlags.disableIdleEventDispatchFrameCallbackRearmAndroid()) {
+        if (shouldStop) {
+          isFrameCallbackDispatchScheduled = false
+        } else {
+          dispatchBatchedEvents()
+        }
       } else {
-        dispatchBatchedEvents()
+        // One-shot semantics: events are dispatched synchronously as they are emitted, so a
+        // posted callback only needs to fire the batch-dispatched listeners once. Re-posting
+        // here kept the Choreographer armed at vsync rate while idle; new events re-post via
+        // maybeDispatchBatchedEvents (see scheduleDispatchOfBatchedEvents/dispatchEvent).
+        isFrameCallbackDispatchScheduled = false
       }
 
       Systrace.beginSection(Systrace.TRACE_TAG_REACT, "BatchEventDispatchedListeners")

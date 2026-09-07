@@ -103,6 +103,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    disableIdleEventDispatchFrameCallbackRearmAndroid: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-09-07',
+        description:
+          'Make the batched-event-dispatch Choreographer frame callback one-shot on Android instead of re-posting itself every frame',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'experimental',
+    },
     disableImageViewPreallocationAndroid: {
       defaultValue: false,
       metadata: {

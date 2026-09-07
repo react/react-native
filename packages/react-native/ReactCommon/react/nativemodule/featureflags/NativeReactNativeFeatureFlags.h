@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<be495e72a7b96977ec6d029710d669a3>>
+ * @generated SignedSource<<7808f524fb79f2365c1076e84608d72e>>
  */
 
 /**
@@ -47,6 +47,8 @@ class NativeReactNativeFeatureFlags
   bool defaultTextToOverflowHidden(jsi::Runtime& runtime);
 
   bool disableEarlyViewCommandExecution(jsi::Runtime& runtime);
+
+  bool disableIdleEventDispatchFrameCallbackRearmAndroid(jsi::Runtime& runtime);
 
   bool disableImageViewPreallocationAndroid(jsi::Runtime& runtime);
 
