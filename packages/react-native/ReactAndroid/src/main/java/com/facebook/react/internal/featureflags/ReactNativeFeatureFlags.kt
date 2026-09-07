@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<b7ef80c2c39c734ae511fe6457b89ce7>>
+ * @generated SignedSource<<b3fcbc04495cad1b7a7cdc32511b048b>>
  */
 
 /**
@@ -59,6 +59,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun disableEarlyViewCommandExecution(): Boolean = accessor.disableEarlyViewCommandExecution()
+
+  /**
+   * Stop re-arming the DISPATCH_UI Choreographer frame callback at vsync rate while no mount items are pending on Android; queueing new items re-arms it
+   */
+  @JvmStatic
+  public fun disableIdleMountItemFrameCallbackRearmAndroid(): Boolean = accessor.disableIdleMountItemFrameCallbackRearmAndroid()
 
   /**
    * Force disable view preallocation for images triggered from createNode off the main thread on Android

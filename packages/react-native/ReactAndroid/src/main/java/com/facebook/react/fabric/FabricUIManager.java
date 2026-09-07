@@ -1547,6 +1547,15 @@ public class FabricUIManager
         listener.didDispatchMountItems(FabricUIManager.this);
       }
     }
+
+    @Override
+    public void onItemsQueued() {
+      // Items may be queued from any thread while the DISPATCH_UI frame callback is disarmed at
+      // idle; re-arm it. schedule() is idempotent and UI-confined, so hop through the UI queue
+      // when called off the UI thread (with the flag off this is never invoked and the callback
+      // stays armed via doFrameGuarded's re-schedule).
+      UiThreadUtil.runOnUiThread(() -> mDispatchUIFrameCallback.schedule());
+    }
   }
 
   /**
@@ -1585,7 +1594,7 @@ public class FabricUIManager
 
     @UiThread
     @ThreadConfined(UI)
-    private void schedule() {
+    void schedule() {
       if (!mIsScheduled && mShouldSchedule) {
         mIsScheduled = true;
         ReactChoreographer.getInstance()
@@ -1663,7 +1672,14 @@ public class FabricUIManager
         mIsMountingEnabled = false;
         throw ex;
       } finally {
-        schedule();
+        if (!ReactNativeFeatureFlags.disableIdleMountItemFrameCallbackRearmAndroid()
+            || mMountItemDispatcher.hasPendingItems()) {
+          // Keep the Choreographer armed only while items remain pending; queueing new items
+          // re-arms it via MountItemDispatcher.onItemsQueued (covering items queued from
+          // non-UI threads, e.g. view commands). An unconditional re-schedule here kept the
+          // Choreographer running at vsync rate while idle.
+          schedule();
+        }
       }
 
       if (ReactNativeFeatureFlags.useSharedAnimatedBackend() && mBinding != null) {
