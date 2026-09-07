@@ -25,8 +25,8 @@
     "utils.js"
   ],
   "devDependencies": {
-    "flow-parser": "0.327.0",
-    "flow-eslint": "0.327.0"
+    "flow-parser": "0.331.0",
+    "flow-eslint": "0.331.0"
   },
   "engines": {
     "node": "^22.13.0 || ^24.3.0 || >= 26.0.0"

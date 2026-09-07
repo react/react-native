@@ -159,7 +159,7 @@
     "@react-native/virtualized-lists": "0.87.0-main",
     "anser": "^1.4.9",
     "ansi-regex": "^5.0.0",
-    "flow-parser": "0.327.0",
+    "flow-parser": "0.331.0",
     "base64-js": "^1.5.1",
     "flow-enums-runtime": "^0.0.6",
     "hermes-compiler": "0.0.0",

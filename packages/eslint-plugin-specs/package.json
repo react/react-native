@@ -35,11 +35,11 @@
     "@react-native/codegen": "0.87.0-main",
     "make-dir": "^2.1.0",
     "pirates": "^4.0.1",
-    "flow-parser": "0.327.0",
+    "flow-parser": "0.331.0",
     "source-map-support": "0.5.0"
   },
   "devDependencies": {
-    "flow-eslint": "0.327.0"
+    "flow-eslint": "0.331.0"
   },
   "engines": {
     "node": "^22.13.0 || ^24.3.0 || >= 26.0.0"
