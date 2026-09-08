@@ -13,39 +13,26 @@
 #include <ReactCommon/SchedulerPriority.h>
 #include <jsi/jsi.h>
 #include <atomic>
+#include <memory>
 #include <mutex>
-#include <queue>
+#include <vector>
 
 namespace facebook::react {
 
-class BufferedRuntimeExecutor {
+class BufferedRuntimeExecutor : public std::enable_shared_from_this<BufferedRuntimeExecutor> {
  public:
   using Work = std::function<void(jsi::Runtime &runtime)>;
 
-  /**
-   * Drains one piece of buffered work. Always given a priority; an executor
-   * that sits below the RuntimeScheduler, and so has no notion of one, ignores
-   * it.
-   */
+  // Drains one piece of buffered work, priority may be ignored
   using Executor = std::function<void(SchedulerPriority, Work &&)>;
 
-  // A utility structure to track pending work in the order of when they arrive.
-  struct BufferedWork {
-    uint64_t index_;
-    Work work_;
-    SchedulerPriority priority_;
-    bool operator<(const BufferedWork &rhs) const
-    {
-      // Higher index has lower priority, so this inverted comparison puts
-      // the smaller index on top of the queue.
-      return index_ > rhs.index_;
-    }
-  };
-
+  // Must be constructed as a shared_ptr, or as(Weak)RuntimeExecutor will not work correctly
   BufferedRuntimeExecutor(Executor executor);
 
-  /** Equivalent to `execute(SchedulerPriority::ImmediatePriority, ...)`. */
-  void execute(Work &&callback);
+  void execute(Work &&callback)
+  {
+    execute(SchedulerPriority::ImmediatePriority, std::move(callback));
+  }
 
   /**
    * Buffers [callback] alongside work submitted through the other overload,
@@ -54,6 +41,18 @@ class BufferedRuntimeExecutor {
    */
   void execute(SchedulerPriority priority, Work &&callback);
 
+  /**
+   * RuntimeExecutor, keeping this class alive for as long as the result is
+   * held.
+   */
+  RuntimeExecutor asRuntimeExecutor();
+
+  /**
+   * RuntimeExecutor, keeping a weak reference to this class, so it does not
+   * keep the runtime alive unnecessarily.
+   */
+  RuntimeExecutor asWeakRuntimeExecutor();
+
   // Flush buffered JS calls and then diable JS buffering
   void flush();
 
@@ -61,11 +60,18 @@ class BufferedRuntimeExecutor {
   // Perform flushing without locking mechanism
   void unsafeFlush();
 
+  // A utility structure to track pending work in the order of when they arrive.
+  struct BufferedWork {
+    uint64_t index_;
+    Work work_;
+    SchedulerPriority priority_;
+  };
+
   Executor executor_;
   std::atomic<bool> isBufferingEnabled_;
   std::mutex lock_;
   std::atomic<uint64_t> lastIndex_;
-  std::priority_queue<BufferedWork> queue_;
+  std::vector<BufferedWork> queue_;
 };
 
 } // namespace facebook::react

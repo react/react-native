@@ -115,8 +115,8 @@ ReactInstance::ReactInstance(
     // This buffer sits *below* the RuntimeScheduler — it is what feeds it — so
     // there is nothing here that could act on a priority, and passing one
     // through would have nowhere to go. Its only caller is
-    // `runtimeExecutorThatExecutesAfterInspectorSetup` below, a plain
-    // RuntimeExecutor, so in practice everything arrives at the default.
+    // `runtimeScheduler` below, a plain RuntimeExecutor, so in practice
+    // everything arrives at the default priority.
     auto bufferedRuntimeExecutorThatWaitsForInspectorSetup =
         std::make_shared<BufferedRuntimeExecutor>(
             [runtimeExecutor](
@@ -124,32 +124,18 @@ ReactInstance::ReactInstance(
                 std::function<void(jsi::Runtime & runtime)>&& callback) {
               runtimeExecutor(std::move(callback));
             });
-    auto runtimeExecutorThatExecutesAfterInspectorSetup =
-        [bufferedRuntimeExecutorThatWaitsForInspectorSetup](
-            std::function<void(jsi::Runtime & runtime)>&& callback) {
-          bufferedRuntimeExecutorThatWaitsForInspectorSetup->execute(
-              std::move(callback));
-        };
 
     runtimeScheduler_ = createRuntimeScheduler(
-        runtimeExecutorThatExecutesAfterInspectorSetup,
+        bufferedRuntimeExecutorThatWaitsForInspectorSetup->asRuntimeExecutor(),
         [jsErrorHandler = jsErrorHandler_](
             jsi::Runtime& runtime, jsi::JSError& error) {
           jsErrorHandler->handleError(runtime, error, true);
         });
 
-    auto runtimeExecutorThatGoesThroughRuntimeScheduler =
-        [runtimeScheduler = runtimeScheduler_.get()](
-            std::function<void(jsi::Runtime & runtime)>&& callback) {
-          runtimeScheduler->scheduleWork(std::move(callback));
-        };
-
     // This code can execute from any thread, so we need to make sure we set up
     // the inspector logic in the right one. The callback executes immediately
     // if we are already in the right thread.
-    executor([this,
-              runtimeExecutorThatGoesThroughRuntimeScheduler,
-              bufferedRuntimeExecutorThatWaitsForInspectorSetup](
+    executor([this, bufferedRuntimeExecutorThatWaitsForInspectorSetup](
                  jsinspector_modern::HostTarget& hostTarget) {
       // Callbacks scheduled through the page target executor are generally
       // not guaranteed to run (e.g.: if the page target is destroyed)
@@ -160,8 +146,7 @@ ReactInstance::ReactInstance(
       //   creation task to finish before starting the destruction.
       inspectorTarget_ = &hostTarget.registerInstance(*this);
       runtimeInspectorTarget_ = &inspectorTarget_->registerRuntime(
-          runtime_->getRuntimeTargetDelegate(),
-          runtimeExecutorThatGoesThroughRuntimeScheduler);
+          runtime_->getRuntimeTargetDelegate(), getUnbufferedRuntimeExecutor());
       bufferedRuntimeExecutorThatWaitsForInspectorSetup->flush();
     });
   } else {
@@ -178,9 +163,9 @@ ReactInstance::ReactInstance(
         setHermesEventLoopControl(runtime, runtimeScheduler);
       });
 
-  // `scheduleWork` is `scheduleTask(ImmediatePriority)` on the modern
-  // scheduler, which is the only one bridgeless uses, so routing everything
-  // through `scheduleTask` leaves unprioritised callers where they were.
+  // Note that bufferedRuntimeExecutor_ only has a raw pointer to
+  // RuntimeScheduler It should always be retained weakly, as it should be
+  // destroyed when the runtime is.
   bufferedRuntimeExecutor_ = std::make_shared<BufferedRuntimeExecutor>(
       [runtimeScheduler = runtimeScheduler_.get()](
           SchedulerPriority priority,
@@ -214,7 +199,8 @@ void ReactInstance::unregisterFromInspector() {
 RuntimeExecutor ReactInstance::getUnbufferedRuntimeExecutor() noexcept {
   return [runtimeScheduler = runtimeScheduler_.get()](
              std::function<void(jsi::Runtime & runtime)>&& callback) {
-    runtimeScheduler->scheduleWork(std::move(callback));
+    runtimeScheduler->scheduleTask(
+        SchedulerPriority::ImmediatePriority, std::move(callback));
   };
 }
 
@@ -223,14 +209,7 @@ RuntimeExecutor ReactInstance::getUnbufferedRuntimeExecutor() noexcept {
 // getUnbufferedRuntimeExecutor() instead if you do not need the main JS
 // bundle to have finished. e.g. setting global variables into JS runtime.
 RuntimeExecutor ReactInstance::getBufferedRuntimeExecutor() noexcept {
-  return [weakBufferedRuntimeExecutor_ =
-              std::weak_ptr<BufferedRuntimeExecutor>(bufferedRuntimeExecutor_)](
-             std::function<void(jsi::Runtime & runtime)>&& callback) {
-    if (auto strongBufferedRuntimeExecutor_ =
-            weakBufferedRuntimeExecutor_.lock()) {
-      strongBufferedRuntimeExecutor_->execute(std::move(callback));
-    }
-  };
+  return bufferedRuntimeExecutor_->asWeakRuntimeExecutor();
 }
 
 // TODO(T184010230): Should the RuntimeScheduler returned from this method be
