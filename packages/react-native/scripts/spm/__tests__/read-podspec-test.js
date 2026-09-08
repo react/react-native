@@ -101,10 +101,10 @@ Pod::Spec.new do |s|
 end
 `;
 
-const MAPS_LIKE_PODSPEC = `
+const DISTINCT_MODULE_NAME_PODSPEC = `
 Pod::Spec.new do |s|
-  s.name        = "react-native-maps"
-  s.module_name = 'ReactNativeMaps'
+  s.name        = "react-native-foo-bar"
+  s.module_name = 'RNFooBar'
   s.version     = "1.20.0"
   s.source_files = "ios/**/*.{h,m,mm}"
 end
@@ -706,12 +706,12 @@ describe('flattenSubspecs (spec-level identity)', () => {
 
   it("keeps the spec's own module_name, not a subspec's", () => {
     const model = flattenSubspecs({
-      name: 'react-native-maps',
+      name: 'react-native-foo-bar',
       version: '1.20.0',
-      module_name: 'ReactNativeMaps',
-      subspecs: [{name: 'react-native-maps/cxx', module_name: 'MapsCxx'}],
+      module_name: 'RNFooBar',
+      subspecs: [{name: 'react-native-foo-bar/cxx', module_name: 'FooBarCxx'}],
     });
-    expect(model.moduleName).toBe('ReactNativeMaps');
+    expect(model.moduleName).toBe('RNFooBar');
   });
 
   it('reports a missing module_name as null', () => {
@@ -810,14 +810,17 @@ describe('readPodspecNames', () => {
     }
   });
 
-  it('reads a module_name the pod name alone would lose (react-native-maps)', () => {
+  it('reads a module_name that differs from the pod name', () => {
     // Without this field the fast path answers with the dashed pod name and
     // `pod ipc spec` never runs, so nothing downstream can see `module_name`.
-    const {file, dir} = writeFixture('rnmaps.podspec', MAPS_LIKE_PODSPEC);
+    const {file, dir} = writeFixture(
+      'distinct-module-name.podspec',
+      DISTINCT_MODULE_NAME_PODSPEC,
+    );
     try {
       expect(readPodspecNames(file)).toEqual({
-        name: 'react-native-maps',
-        moduleName: 'ReactNativeMaps',
+        name: 'react-native-foo-bar',
+        moduleName: 'RNFooBar',
         headerDir: null,
       });
     } finally {
@@ -837,7 +840,7 @@ describe('readPodspecNames', () => {
         'computed-module-name.podspec',
         [
           'Pod::Spec.new do |s|',
-          '  s.name = "react-native-maps"',
+          '  s.name = "react-native-foo-bar"',
           `  ${declaration}`,
           'end',
           '',

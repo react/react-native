@@ -399,7 +399,8 @@ It is resolved in this order:
 1. `swiftpmConfig.name` in the library's package.json
 2. `spm.name` in `react-native.config.js` (deprecated)
 3. podspec `header_dir` — `React-Core` → `React`
-4. podspec `module_name` — `react-native-maps` → `ReactNativeMaps`
+4. podspec `module_name` — a distinct declared module (`react-native-foo-bar` →
+   `RNFooBar`)
 5. podspec name — `react-native-svg` → `RNSVG`
 6. npm package name — `react-native-svg` → `ReactNativeSvg`
 

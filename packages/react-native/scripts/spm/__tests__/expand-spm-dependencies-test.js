@@ -459,22 +459,20 @@ describe('expandSpmDependencies (podspec-derived names)', () => {
     expect(svg.swiftName).toBe('RNSVG');
   });
 
-  it("uses the podspec's module_name over its pod name (react-native-maps)", () => {
-    // `s.name = "react-native-maps"` with `s.module_name = 'ReactNativeMaps'`:
-    // the pod name is a legal SwiftPM target name, so nothing normalizes it —
-    // but every `import ReactNativeMaps` in the ecosystem is written against
-    // the module name.
-    const [maps] = expand([dep('react-native-maps', '/maps')], {
+  it("uses the podspec's module_name when it differs from its pod name", () => {
+    // A podspec whose module_name differs from its pod name must resolve to the
+    // module_name even though the pod name is already a legal SwiftPM name.
+    const [fooBar] = expand([dep('react-native-foo-bar', '/foo-bar')], {
       podspecs: {
-        '/maps': {
-          name: 'react-native-maps',
-          moduleName: 'ReactNativeMaps',
+        '/foo-bar': {
+          name: 'react-native-foo-bar',
+          moduleName: 'RNFooBar',
           headerDir: null,
         },
       },
     });
-    expect(maps.swiftName).toBe('ReactNativeMaps');
-    expect(maps.swiftNameSource).toBe('podspec');
+    expect(fooBar.swiftName).toBe('RNFooBar');
+    expect(fooBar.swiftNameSource).toBe('podspec');
   });
 
   it("prefers the podspec's header_dir over its module_name", () => {
@@ -501,8 +499,8 @@ describe('expandSpmDependencies (podspec-derived names)', () => {
     ['header_dir', {name: 'React-Core', headerDir: 'React'}, 'React'],
     [
       'module_name',
-      {name: 'react-native-maps', moduleName: 'ReactNativeMaps'},
-      'ReactNativeMaps',
+      {name: 'react-native-foo-bar', moduleName: 'RNFooBar'},
+      'RNFooBar',
     ],
     ['name', {name: 'RNSVG'}, 'RNSVG'],
   ])('reports %s as the podspec key the name came from', (key, facts, name) => {
@@ -526,12 +524,12 @@ describe('expandSpmDependencies (podspec-derived names)', () => {
   });
 
   it('carries the podspec key onto every expanded dep', () => {
-    const [maps] = expand([dep('react-native-maps', '/maps')], {
+    const [fooBar] = expand([dep('react-native-foo-bar', '/foo-bar')], {
       podspecs: {
-        '/maps': {name: 'react-native-maps', moduleName: 'ReactNativeMaps'},
+        '/foo-bar': {name: 'react-native-foo-bar', moduleName: 'RNFooBar'},
       },
     });
-    expect(maps.swiftNamePodspecKey).toBe('module_name');
+    expect(fooBar.swiftNamePodspecKey).toBe('module_name');
   });
 
   it('lets spm.name beat both', () => {
@@ -948,12 +946,12 @@ describe('expandSpmDependencies (swiftpmConfig)', () => {
       swiftpmConfig: {name: 'MySvg'},
     });
     const derived = makeRoot({name: 'react-native-screens'});
-    const guessed = makeRoot({name: 'react-native-blur'});
+    const guessed = makeRoot({name: 'react-native-fizz-buzz'});
     const result = expand(
       [
         {name: 'react-native-svg', root: declared, platforms: {ios: {}}},
         {name: 'react-native-screens', root: derived, platforms: {ios: {}}},
-        {name: 'react-native-blur', root: guessed, platforms: {ios: {}}},
+        {name: 'react-native-fizz-buzz', root: guessed, platforms: {ios: {}}},
       ],
       {podspecs: {[derived]: {name: 'RNScreens'}}},
     );

@@ -1177,7 +1177,7 @@ end
       [
         'a podspec header_dir',
         {
-          swiftName: 'BareKit',
+          swiftName: 'RNThing',
           swiftNameSource: 'podspec',
           swiftNamePodspecKey: 'header_dir',
         },
@@ -1212,7 +1212,7 @@ end
         'npm package name',
       ],
     ])('reports a name that came from %s', (_label, depOverrides, origin) => {
-      writePodspec('s.header_dir = "BareKit"');
+      writePodspec('s.header_dir = "RNThing"');
       const result = scaffoldPackageSwiftForDep(
         makeDep(depOverrides),
         makeCtx(),
@@ -1225,49 +1225,49 @@ end
     });
 
     it('reports the name it chose on a dry run too', () => {
-      writePodspec('s.header_dir = "BareKit"');
+      writePodspec('s.header_dir = "RNThing"');
       scaffoldPackageSwiftForDep(
         makeDep({
-          swiftName: 'BareKit',
+          swiftName: 'RNThing',
           swiftNameSource: 'podspec',
           swiftNamePodspecKey: 'header_dir',
         }),
         makeCtx({dryRun: true}),
       );
-      expect(output(logSpy)).toContain("'BareKit'");
+      expect(output(logSpy)).toContain("'RNThing'");
     });
 
-    // react-native-bare-kit's shape: two namespaces declared, one used.
+    // A podspec with two distinct namespaces declared, only one of them used.
     it('notes the module_name it dropped when the podspec declares both', () => {
       writePodspec(
-        's.header_dir = "BareKit"',
-        's.module_name = "react_native_bare_kit"',
+        's.header_dir = "RNThing"',
+        's.module_name = "react_native_thing"',
       );
       scaffoldPackageSwiftForDep(
         makeDep({
-          swiftName: 'BareKit',
+          swiftName: 'RNThing',
           swiftNameSource: 'podspec',
           swiftNamePodspecKey: 'header_dir',
         }),
         makeCtx(),
       );
       const noted = output(warnSpy);
-      expect(noted).toContain("'BareKit'");
-      expect(noted).toContain("'react_native_bare_kit'");
+      expect(noted).toContain("'RNThing'");
+      expect(noted).toContain("'react_native_thing'");
       expect(noted).toContain("'swiftpmConfig.name'");
     });
 
     it.each([
-      ['only a header_dir is declared', ['s.header_dir = "BareKit"']],
+      ['only a header_dir is declared', ['s.header_dir = "RNThing"']],
       [
         'the two agree',
-        ['s.header_dir = "BareKit"', 's.module_name = "BareKit"'],
+        ['s.header_dir = "RNThing"', 's.module_name = "RNThing"'],
       ],
     ])('says nothing about a dropped namespace when %s', (_label, lines) => {
       writePodspec(...lines);
       scaffoldPackageSwiftForDep(
         makeDep({
-          swiftName: 'BareKit',
+          swiftName: 'RNThing',
           swiftNameSource: 'podspec',
           swiftNamePodspecKey: 'header_dir',
         }),
