@@ -535,7 +535,8 @@ __attribute__((deprecated(
 
 - (void)_loadJSBundle:(NSURL *)sourceURL
 {
-  // Initialize DevSettings before the request so Metro can reload after an initial bundle failure.
+  // DevSettings is needed by _loadScriptFromSource's callback, so it must be initialized first. Doing it before
+  // the request, not after a successful load, also lets Metro reload when the initial bundle request fails.
   [_turboModuleManager moduleForName:"DevSettings"];
 
 #if RCT_DEV_MENU && __has_include(<React/RCTDevLoadingViewProtocol.h>)
