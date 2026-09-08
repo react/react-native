@@ -12,7 +12,10 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
 import android.view.KeyEvent
+import androidx.activity.ComponentActivity
 import com.facebook.react.bridge.ReactContext
+import com.facebook.react.bridge.ReactMarker
+import com.facebook.react.bridge.ReactMarkerConstants
 import com.facebook.react.bridge.UiThreadUtil.runOnUiThread
 import com.facebook.react.devsupport.DoubleTapReloadRecognizer
 import com.facebook.react.devsupport.ReleaseDevSupportManager
@@ -50,6 +53,27 @@ public open class ReactDelegate {
    * @return true if Fabric is enabled for this Activity, false otherwise.
    */
   protected val isFabricEnabled: Boolean = true
+
+  /**
+   * Controls whether this delegate reports the host [Activity] as fully drawn once the initial
+   * content of the React surface has appeared.
+   *
+   * When enabled (the default) and the host [Activity] is a [ComponentActivity], a reporter is
+   * added to the activity's [androidx.activity.FullyDrawnReporter] when the surface starts loading
+   * and removed once the first view of the surface is mounted, which calls
+   * [Activity.reportFullyDrawn] after the next frame is drawn. Android uses this signal to bound
+   * the startup window for profile guided compilation (Android 12+) and to report
+   * time-to-fully-drawn in Android vitals.
+   *
+   * Apps that consider themselves fully drawn only later (e.g. once their initial data has been
+   * rendered) can keep this enabled and additionally register their own reporter on the activity's
+   * [androidx.activity.FullyDrawnReporter] before the content appears.
+   *
+   * Must be set before [loadApp] to take effect.
+   */
+  public var isFullyDrawnReportingEnabled: Boolean = true
+
+  private var fullyDrawnMarkerListener: ReactMarker.MarkerListener? = null
 
   /**
    * Do not use this constructor as it's not accounting for New Architecture at all. You should use
@@ -318,6 +342,9 @@ public open class ReactDelegate {
    * @param appKey The ID of the app to load into the surface.
    */
   public fun loadApp(appKey: String) {
+    if (isFullyDrawnReportingEnabled) {
+      reportFullyDrawnWhenContentAppears(appKey)
+    }
     // With Bridgeless enabled, create and start the surface
     if (ReactNativeNewArchitectureFeatureFlags.enableBridgelessArchitecture()) {
       val reactHost = reactHost
@@ -340,6 +367,7 @@ public open class ReactDelegate {
 
   /** Stop the React surface started with [ReactDelegate.loadApp]. */
   public fun unloadApp() {
+    cancelFullyDrawnReporting()
     if (ReactNativeNewArchitectureFeatureFlags.enableBridgelessArchitecture()) {
       reactSurface?.stop()
       reactSurface = null
@@ -349,6 +377,41 @@ public open class ReactDelegate {
         internalReactRootView = null
       }
     }
+  }
+
+  private fun reportFullyDrawnWhenContentAppears(appKey: String) {
+    if (fullyDrawnMarkerListener != null) {
+      return
+    }
+    val fullyDrawnReporter = (activity as? ComponentActivity)?.fullyDrawnReporter ?: return
+    if (fullyDrawnReporter.isFullyDrawnReported) {
+      return
+    }
+    fullyDrawnReporter.addReporter()
+    val listener =
+        object : ReactMarker.MarkerListener {
+          override fun logMarker(name: ReactMarkerConstants, tag: String?, instanceKey: Int) {
+            if (name == ReactMarkerConstants.CONTENT_APPEARED && tag == appKey) {
+              // CONTENT_APPEARED is logged on the UI thread, so this cannot race with
+              // cancelFullyDrawnReporting or a second loadApp.
+              if (fullyDrawnMarkerListener !== this) {
+                return
+              }
+              fullyDrawnMarkerListener = null
+              ReactMarker.removeListener(this)
+              fullyDrawnReporter.removeReporter()
+            }
+          }
+        }
+    fullyDrawnMarkerListener = listener
+    ReactMarker.addListener(listener)
+  }
+
+  private fun cancelFullyDrawnReporting() {
+    val listener = fullyDrawnMarkerListener ?: return
+    fullyDrawnMarkerListener = null
+    ReactMarker.removeListener(listener)
+    (activity as? ComponentActivity)?.fullyDrawnReporter?.removeReporter()
   }
 
   public fun setReactSurface(reactSurface: ReactSurface?) {
