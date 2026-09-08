@@ -168,9 +168,9 @@ public constructor(
         )
     view.setSpanned(spanned)
 
-    val minimumFontSize: Float =
-        paragraphAttributes.getDouble(TextLayoutManager.PA_KEY_MINIMUM_FONT_SIZE).toFloat()
-    view.setMinimumFontSize(minimumFontSize)
+    val minimumFontScale: Float =
+        paragraphAttributes.getDouble(TextLayoutManager.PA_KEY_MINIMUM_FONT_SCALE).toFloat()
+    view.setMinimumFontScale(minimumFontScale)
 
     // Clear any stale PreparedLayout from a previous update
     view.setPreparedLayout(null)
