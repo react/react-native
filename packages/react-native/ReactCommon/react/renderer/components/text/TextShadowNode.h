@@ -44,6 +44,23 @@ class TextShadowNode : public ConcreteShadowNode<TextComponentName, ShadowNode, 
   {
     orderIndex_ = std::numeric_limits<decltype(orderIndex_)>::max();
   }
+#else
+  using BaseShadowNode = ConcreteShadowNode<TextComponentName, ShadowNode, TextProps, TextEventEmitter>;
+
+  TextShadowNode(const ShadowNodeFragment &fragment, const ShadowNodeFamily::Shared &family, ShadowNodeTraits traits)
+      : BaseShadowNode(
+            fragment,
+            family,
+            [&] {
+              auto textProps = std::static_pointer_cast<const TextProps>(fragment.props);
+              if (textProps && !textProps->transform.operations.empty()) {
+                traits.set(ShadowNodeTraits::Trait::FormsView);
+              }
+              return traits;
+            }()),
+        BaseTextShadowNode()
+  {
+  }
 #endif
 };
 
