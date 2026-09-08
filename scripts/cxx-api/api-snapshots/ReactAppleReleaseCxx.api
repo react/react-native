@@ -2065,6 +2065,7 @@ interface RCTUITextView : public UITextView <RCTBackedTextInputViewProtocol> {
   public @property (assign) BOOL contextMenuHidden;
   public @property (assign) BOOL disableKeyboardShortcuts;
   public @property (assign) CGFloat preferredMaxLayoutWidth;
+  public @property (assign) RCTUITextViewTextAlignmentVertical textAlignVertical;
   public @property (assign) UITextFieldViewMode clearButtonMode;
   public @property (assign, readonly) BOOL dictationRecognizing;
   public @property (assign, readonly) BOOL textWasPasted;
