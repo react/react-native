@@ -64,7 +64,7 @@ import {
   View,
   findNodeHandle,
 } from 'react-native';
-import * as ReactNativeFeatureFlags from 'react-native/src/private/featureflags/ReactNativeFeatureFlags';
+import {ReactNativeFeatureFlags} from 'react-native/react-private-interface';
 
 export type {ListRenderItemInfo, ListRenderItem, Separators};
 

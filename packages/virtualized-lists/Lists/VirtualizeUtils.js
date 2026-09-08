@@ -13,7 +13,7 @@
 import type ListMetricsAggregator from './ListMetricsAggregator';
 import type {CellMetricProps} from './ListMetricsAggregator';
 
-import * as ReactNativeFeatureFlags from 'react-native/src/private/featureflags/ReactNativeFeatureFlags';
+import {ReactNativeFeatureFlags} from 'react-native/react-private-interface';
 
 /**
  * Used to find the indices of the frames that overlap the given offsets. Useful for finding the
