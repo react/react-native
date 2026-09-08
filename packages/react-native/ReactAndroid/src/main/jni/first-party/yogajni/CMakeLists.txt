@@ -23,4 +23,4 @@ target_link_libraries(yoga
 )
 
 target_compile_reactnative_options(yoga PRIVATE)
-target_compile_options(yoga PRIVATE -fvisibility=hidden -O3)
+target_compile_options(yoga PRIVATE -fvisibility=hidden -O3 -flto)
