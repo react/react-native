@@ -5293,12 +5293,21 @@ exports[`renders new items when data is updated with non-zero initialScrollIndex
       />
     </View>
     <View
-      style={
-        Object {
-          "height": 20,
-        }
-      }
-    />
+      onFocusCapture={[Function]}
+      style={null}
+    >
+      <MockCellItem
+        value={2}
+      />
+    </View>
+    <View
+      onFocusCapture={[Function]}
+      style={null}
+    >
+      <MockCellItem
+        value={3}
+      />
+    </View>
   </View>
 </RCTScrollView>
 `;
