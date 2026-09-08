@@ -38,6 +38,12 @@ Pod::Spec.new do |s|
     header_search_paths = header_search_paths + ["\"$(PODS_TARGET_SRCROOT)/platform/ios\""]
   end
 
+  s.subspec "graphicsUmbrella" do |ss|
+    ss.source_files        = "React/*.h"
+    ss.header_dir          = ""
+    ss.header_mappings_dir = "."
+  end
+
   resolve_use_frameworks(s, header_mappings_dir: "../../..", module_name: "React_graphics")
 
   s.pod_target_xcconfig  = { "USE_HEADERMAP" => "NO",
@@ -50,6 +56,7 @@ Pod::Spec.new do |s|
   s.dependency "React-featureflags"
   s.dependency "React-utils"
   s.dependency "React-rendererdebug"
+  s.dependency "React-cxxstableapi"
 
   depend_on_js_engine(s)
   add_rn_third_party_dependencies(s)

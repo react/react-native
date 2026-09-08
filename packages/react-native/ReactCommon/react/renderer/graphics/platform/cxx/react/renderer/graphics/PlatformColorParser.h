@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <react/debug/react_native_expect.h>
 #include <react/renderer/core/RawValue.h>
 #include <react/renderer/graphics/Color.h>

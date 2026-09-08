@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <react/renderer/graphics/LinearGradient.h>
 #include <react/renderer/graphics/RadialGradient.h>
 

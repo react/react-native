@@ -23,12 +23,14 @@ target_include_directories(react_renderer_graphics
           ${REACT_COMMON_DIR}
           ${platform_DIR}
         )
+target_include_directories(react_renderer_graphics INTERFACE ${REACT_COMMON_DIR}/react/renderer/graphics)
 
 react_native_android_selector(fbjni fbjni "")
 target_link_libraries(react_renderer_graphics
         glog
         ${fbjni}
         folly_runtime
+        react_cxxstableapi
         react_debug
         react_renderer_debug
         react_utils

@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include "configurePlatformColorCacheInvalidationHook.h"
 
 #include <fbjni/fbjni.h>

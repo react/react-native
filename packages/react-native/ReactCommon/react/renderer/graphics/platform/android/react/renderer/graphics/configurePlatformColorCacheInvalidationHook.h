@@ -5,6 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <functional>
 
 namespace facebook::react {
