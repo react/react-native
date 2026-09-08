@@ -62,8 +62,18 @@ describe('structuredClone', () => {
   });
 
   it('clones primitive value wrappers', () => {
+    const throwUnexpectedCoercion = () => {
+      throw new Error('Unexpected coercion');
+    };
+    const preventCoercion = (value: interface {}) => {
+      Object.defineProperty(value, Symbol.toPrimitive, {
+        value: throwUnexpectedCoercion,
+      });
+    };
+
     // eslint-disable-next-line no-new-wrappers
     const numberValue = new Number(1);
+    preventCoercion(numberValue);
     const numberClone = structuredClone(numberValue);
     expect(numberClone).not.toBe(numberValue);
     expect(numberClone).toBeInstanceOf(Number);
@@ -71,17 +81,18 @@ describe('structuredClone', () => {
 
     // eslint-disable-next-line no-new-wrappers
     const stringValue = new String('foo');
+    preventCoercion(stringValue);
     const stringClone = structuredClone(stringValue);
     expect(stringClone).not.toBe(stringValue);
     expect(stringClone).toBeInstanceOf(String);
     expect(stringClone.valueOf()).toBe('foo');
 
     // eslint-disable-next-line no-new-wrappers
-    const booleanValue = new Boolean(true);
+    const booleanValue = new Boolean(false);
     const booleanClone = structuredClone(booleanValue);
     expect(booleanClone).not.toBe(booleanValue);
     expect(booleanClone).toBeInstanceOf(Boolean);
-    expect(booleanClone.valueOf()).toBe(true);
+    expect(booleanClone.valueOf()).toBe(false);
   });
 
   it('throws with symbols, functions, WeakMap, WeakSet, Promise', () => {
@@ -200,6 +211,11 @@ describe('structuredClone', () => {
 
   it('clones dates', () => {
     const value = new Date('1993-06-11T14:30:45.123Z');
+    Object.defineProperty(value, Symbol.toPrimitive, {
+      value() {
+        throw new Error('Unexpected coercion');
+      },
+    });
     const clone = structuredClone(value);
     expect(clone).not.toBe(value);
     expect(clone).toBeInstanceOf(Date);
