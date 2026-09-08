@@ -585,9 +585,7 @@ public class ReactTextView extends AppCompatTextView implements ReactCompoundVie
   public void updateView() {
     @Nullable
     TextUtils.TruncateAt ellipsizeLocation =
-        mNumberOfLines == ViewDefaults.NUMBER_OF_LINES || mAdjustsFontSizeToFit
-            ? null
-            : mEllipsizeLocation;
+        mNumberOfLines == ViewDefaults.NUMBER_OF_LINES ? null : mEllipsizeLocation;
     setEllipsize(ellipsizeLocation);
   }
 

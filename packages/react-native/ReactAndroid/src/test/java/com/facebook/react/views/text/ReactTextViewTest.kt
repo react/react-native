@@ -14,6 +14,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.text.SpannableString
 import android.text.Spanned
+import android.text.TextUtils
 import android.text.style.ReplacementSpan
 import android.util.TypedValue
 import android.view.Gravity
@@ -120,6 +121,18 @@ class ReactTextViewTest {
     view.recycleView()
 
     assertThat(view.useBoundsForWidth).isFalse()
+  }
+
+  @Test
+  fun adjustsFontSizeToFitKeepsEllipsizeLocation() {
+    val view = TestReactTextView(RuntimeEnvironment.getApplication())
+    view.setNumberOfLines(1)
+    view.setEllipsizeLocation(TextUtils.TruncateAt.END)
+    view.setAdjustFontSizeToFit(true)
+
+    view.updateView()
+
+    assertThat(view.ellipsize).isEqualTo(TextUtils.TruncateAt.END)
   }
 
   private fun layoutAndDraw(view: TestReactTextView, width: Int, height: Int) {
