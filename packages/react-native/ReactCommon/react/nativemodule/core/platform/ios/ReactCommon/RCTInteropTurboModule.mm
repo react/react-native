@@ -363,8 +363,7 @@ void ObjCInteropTurboModule::setInvocationArg(
     const jsi::Value &jsiArg,
     size_t index,
     NSInvocation *inv,
-    NSMutableArray *retainedObjectsForInvocation,
-    [[maybe_unused]] bool mustCopyBytes)
+    NSMutableArray *retainedObjectsForInvocation)
 {
   NSString *methodName = @(methodNameCStr);
   std::string methodJsSignature = name_ + "." + methodNameCStr + "()";
@@ -595,6 +594,19 @@ void ObjCInteropTurboModule::setInvocationArg(
     [retainedObjectsForInvocation addObject:box];
     return;
   }
+}
+
+void ObjCInteropTurboModule::setInvocationArg(
+    jsi::Runtime &runtime,
+    const char *methodNameCStr,
+    const std::string &objCArgType,
+    const jsi::Value &jsiArg,
+    size_t index,
+    NSInvocation *inv,
+    NSMutableArray *retainedObjectsForInvocation,
+    [[maybe_unused]] bool mustCopyBytes)
+{
+  setInvocationArg(runtime, methodNameCStr, objCArgType, jsiArg, index, inv, retainedObjectsForInvocation);
 }
 
 jsi::Value ObjCInteropTurboModule::convertReturnIdToJSIValue(

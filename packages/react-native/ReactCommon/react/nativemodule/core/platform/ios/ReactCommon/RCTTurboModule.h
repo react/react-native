@@ -35,8 +35,13 @@ id convertJSIValueToObjCObject(
     jsi::Runtime &runtime,
     const jsi::Value &value,
     const std::shared_ptr<CallInvoker> &jsInvoker,
-    BOOL useNSNull = NO,
-    BOOL mustCopyBytes = YES);
+    BOOL useNSNull = NO);
+id convertJSIValueToObjCObject(
+    jsi::Runtime &runtime,
+    const jsi::Value &value,
+    const std::shared_ptr<CallInvoker> &jsInvoker,
+    BOOL useNSNull,
+    BOOL mustCopyBytes);
 } // namespace TurboModuleConvertUtils
 
 template <>
@@ -68,6 +73,15 @@ class JSI_EXPORT ObjCTurboModule : public TurboModule {
       TurboModuleMethodValueKind returnType,
       const std::string &methodName,
       SEL selector,
+      const jsi::Value *args,
+      size_t count);
+
+  jsi::Value invokeObjCMethod(
+      jsi::Runtime &runtime,
+      TurboModuleMethodValueKind returnType,
+      const std::string &methodName,
+      SEL rctArrayBufferSelector,
+      SEL legacySelector,
       const jsi::Value *args,
       size_t count);
 
@@ -115,9 +129,16 @@ class JSI_EXPORT ObjCTurboModule : public TurboModule {
    * values. ObjCTurboModule tries to minimize reliance on RCTConvert: RCTConvert uses the RCT_EXPORT_METHOD macros,
    * which we want to remove long term from React Native.
    *
-   * mustCopyBytes says whether the invocation may outlive the JS call, in which case ArrayBuffer arguments must be
-   * copied rather than aliased.
    */
+  virtual void setInvocationArg(
+      jsi::Runtime &runtime,
+      const char *methodName,
+      const std::string &objCArgType,
+      const jsi::Value &arg,
+      size_t i,
+      NSInvocation *inv,
+      NSMutableArray *retainedObjectsForInvocation);
+
   virtual void setInvocationArg(
       jsi::Runtime &runtime,
       const char *methodName,
@@ -148,12 +169,23 @@ class JSI_EXPORT ObjCTurboModule : public TurboModule {
   NSInvocation *createMethodInvocation(
       jsi::Runtime &runtime,
       bool isSync,
+      bool useRCTArrayBuffer,
       bool mustCopyBytes,
       const char *methodName,
       SEL selector,
       const jsi::Value *args,
       size_t count,
       NSMutableArray *retainedObjectsForInvocation);
+  void setInvocationArgImpl(
+      jsi::Runtime &runtime,
+      const char *methodName,
+      const std::string &objCArgType,
+      const jsi::Value &arg,
+      size_t i,
+      NSInvocation *inv,
+      NSMutableArray *retainedObjectsForInvocation,
+      bool useRCTArrayBuffer,
+      bool mustCopyBytes);
   id performMethodInvocation(
       jsi::Runtime &runtime,
       bool isSync,

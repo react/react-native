@@ -20,6 +20,16 @@
 
 using namespace facebook::react;
 
+static RCTArrayBuffer *RCTArrayBufferFromNSData(NSData *data)
+{
+  return [RCTArrayBuffer arrayBufferWithCopiedBytes:data.bytes length:data.length];
+}
+
+static NSMutableData *NSMutableDataFromRCTArrayBuffer(RCTArrayBuffer *arrayBuffer)
+{
+  return [NSMutableData dataWithBytes:arrayBuffer.mutableBytes length:arrayBuffer.length];
+}
+
 @interface RCTSampleTurboModule () <RCTTurboModuleWithJSIBindings, RCTInitializing>
 @end
 
@@ -149,8 +159,13 @@ RCT_EXPORT_MODULE()
   };
 }
 
-// The argument aliases the JS ArrayBuffer's bytes, so mutating in place is visible to JS.
-- (RCTArrayBuffer *)getArrayBuffer:(RCTArrayBuffer *)buffer
+- (NSMutableData *)getArrayBuffer:(NSData *)buffer
+{
+  return NSMutableDataFromRCTArrayBuffer([self getArrayBufferWithRCTArrayBuffer:RCTArrayBufferFromNSData(buffer)]);
+}
+
+// Mutate the native buffer and return it without an additional native-to-JS copy.
+- (RCTArrayBuffer *)getArrayBufferWithRCTArrayBuffer:(RCTArrayBuffer *)buffer
 {
   auto *bytes = static_cast<uint8_t *>(buffer.mutableBytes);
   if (bytes == nullptr) {
@@ -164,14 +179,26 @@ RCT_EXPORT_MODULE()
   return buffer;
 }
 
-- (RCTArrayBuffer *)createNativeBuffer:(double)size
+- (NSMutableData *)createNativeBuffer:(double)size
+{
+  return NSMutableDataFromRCTArrayBuffer([self createNativeBufferWithRCTArrayBuffer:size]);
+}
+
+- (RCTArrayBuffer *)createNativeBufferWithRCTArrayBuffer:(double)size
 {
   return [RCTArrayBuffer arrayBufferWithLength:(NSUInteger)size];
 }
 
-- (void)processAsyncBuffer:(RCTArrayBuffer *)payload
+- (void)processAsyncBuffer:(NSData *)payload
                    resolve:(RCTPromiseResolveBlock)resolve
                     reject:(RCTPromiseRejectBlock)reject
+{
+  [self processAsyncBufferWithRCTArrayBuffer:RCTArrayBufferFromNSData(payload) resolve:resolve reject:reject];
+}
+
+- (void)processAsyncBufferWithRCTArrayBuffer:(RCTArrayBuffer *)payload
+                                     resolve:(RCTPromiseResolveBlock)resolve
+                                      reject:(RCTPromiseRejectBlock)reject
 {
   resolve(@(payload.length));
 }

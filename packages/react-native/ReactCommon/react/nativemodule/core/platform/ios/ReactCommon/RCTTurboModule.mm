@@ -129,6 +129,21 @@ static jsi::ArrayBuffer convertRCTArrayBufferToJSIArrayBuffer(jsi::Runtime &runt
   return {runtime, std::make_shared<RCTArrayBufferMutableBuffer>(value)};
 }
 
+static jsi::ArrayBuffer convertNSMutableDataToJSIArrayBuffer(jsi::Runtime &runtime, NSMutableData *value)
+{
+  if (value == nil) {
+    RCTLogWarn(@"convertNSMutableDataToJSIArrayBuffer: received nil NSMutableData; returning empty ArrayBuffer");
+    value = [NSMutableData data];
+  }
+
+  RCTArrayBuffer *arrayBuffer = [RCTArrayBuffer arrayBufferWithOwnedBytes:value.mutableBytes
+                                                                   length:value.length
+                                                                  cleanup:^{
+                                                                    (void)value;
+                                                                  }];
+  return convertRCTArrayBufferToJSIArrayBuffer(runtime, arrayBuffer);
+}
+
 jsi::Value convertObjCObjectToJSIValue(jsi::Runtime &runtime, id value)
 {
   if ([value isKindOfClass:[NSString class]]) {
@@ -144,6 +159,8 @@ jsi::Value convertObjCObjectToJSIValue(jsi::Runtime &runtime, id value)
     return convertNSArrayToJSIArray(runtime, (NSArray *)value);
   } else if ([value isKindOfClass:[RCTArrayBuffer class]]) {
     return convertRCTArrayBufferToJSIArrayBuffer(runtime, (RCTArrayBuffer *)value);
+  } else if ([value isKindOfClass:[NSMutableData class]]) {
+    return convertNSMutableDataToJSIArrayBuffer(runtime, (NSMutableData *)value);
   } else if (value == (id)kCFNull) {
     return jsi::Value::null();
   }
@@ -157,17 +174,30 @@ static NSString *convertJSIStringToNSString(jsi::Runtime &runtime, const jsi::St
   return result != nil ? result : @"";
 }
 
+enum class ArrayBufferConversionMode { LegacyNSData, RCTArrayBuffer };
+
+static id convertJSIValueToObjCObjectImpl(
+    jsi::Runtime &runtime,
+    const jsi::Value &value,
+    const std::shared_ptr<CallInvoker> &jsInvoker,
+    BOOL useNSNull,
+    ArrayBufferConversionMode arrayBufferConversionMode,
+    BOOL mustCopyBytes);
+
 static NSArray *convertJSIArrayToNSArray(
     jsi::Runtime &runtime,
     const jsi::Array &value,
     const std::shared_ptr<CallInvoker> &jsInvoker,
-    BOOL useNSNull)
+    BOOL useNSNull,
+    ArrayBufferConversionMode arrayBufferConversionMode,
+    BOOL mustCopyBytes)
 {
   size_t size = value.size(runtime);
   NSMutableArray *result = [NSMutableArray new];
   for (size_t i = 0; i < size; i++) {
     // Insert kCFNull when it's `undefined` value to preserve the indices.
-    id convertedObject = convertJSIValueToObjCObject(runtime, value.getValueAtIndex(runtime, i), jsInvoker, useNSNull);
+    id convertedObject = convertJSIValueToObjCObjectImpl(
+        runtime, value.getValueAtIndex(runtime, i), jsInvoker, useNSNull, arrayBufferConversionMode, mustCopyBytes);
     [result addObject:(convertedObject != nullptr) ? convertedObject : (id)kCFNull];
   }
   return result;
@@ -177,7 +207,9 @@ static NSDictionary *convertJSIObjectToNSDictionary(
     jsi::Runtime &runtime,
     const jsi::Object &value,
     const std::shared_ptr<CallInvoker> &jsInvoker,
-    BOOL useNSNull)
+    BOOL useNSNull,
+    ArrayBufferConversionMode arrayBufferConversionMode,
+    BOOL mustCopyBytes)
 {
   jsi::Array propertyNames = value.getPropertyNames(runtime);
   size_t size = propertyNames.size(runtime);
@@ -185,7 +217,8 @@ static NSDictionary *convertJSIObjectToNSDictionary(
   for (size_t i = 0; i < size; i++) {
     jsi::String name = propertyNames.getValueAtIndex(runtime, i).getString(runtime);
     NSString *k = convertJSIStringToNSString(runtime, name);
-    id v = convertJSIValueToObjCObject(runtime, value.getProperty(runtime, name), jsInvoker, useNSNull);
+    id v = convertJSIValueToObjCObjectImpl(
+        runtime, value.getProperty(runtime, name), jsInvoker, useNSNull, arrayBufferConversionMode, mustCopyBytes);
     if (v != nullptr) {
       result[k] = v;
     }
@@ -230,20 +263,29 @@ convertJSIArrayBufferToRCTArrayBuffer(jsi::Runtime &rt, const jsi::ArrayBuffer &
   void *bytes = arrayBuffer.data(rt);
   size_t size = arrayBuffer.size(rt);
 
-  // The bytes belong to the JS heap -> async call.
   if (mustCopyBytes) {
     return [RCTArrayBuffer arrayBufferWithCopiedBytes:bytes length:size];
   }
 
-  // The bytes belong to the JS heap -> sync call.
   return [RCTArrayBuffer arrayBufferWithUnownedBytes:bytes length:size];
 }
 
-id convertJSIValueToObjCObject(
+static NSData *convertJSIArrayBufferToNSData(jsi::Runtime &rt, const jsi::ArrayBuffer &arrayBuffer)
+{
+  RCTArrayBuffer *buffer = convertJSIArrayBufferToRCTArrayBuffer(rt, arrayBuffer, YES);
+  return [NSData dataWithBytesNoCopy:buffer.mutableBytes
+                              length:buffer.length
+                         deallocator:^(__unused void *bytes, __unused NSUInteger length) {
+                           (void)buffer;
+                         }];
+}
+
+static id convertJSIValueToObjCObjectImpl(
     jsi::Runtime &runtime,
     const jsi::Value &value,
     const std::shared_ptr<CallInvoker> &jsInvoker,
     BOOL useNSNull,
+    ArrayBufferConversionMode arrayBufferConversionMode,
     BOOL mustCopyBytes)
 {
   if (value.isUndefined() || (value.isNull() && !useNSNull)) {
@@ -264,18 +306,42 @@ id convertJSIValueToObjCObject(
   if (value.isObject()) {
     jsi::Object o = value.getObject(runtime);
     if (o.isArray(runtime)) {
-      return convertJSIArrayToNSArray(runtime, o.getArray(runtime), jsInvoker, useNSNull);
+      return convertJSIArrayToNSArray(
+          runtime, o.getArray(runtime), jsInvoker, useNSNull, arrayBufferConversionMode, mustCopyBytes);
     }
     if (o.isFunction(runtime)) {
       return convertJSIFunctionToCallback(runtime, o.getFunction(runtime), jsInvoker);
     }
     if (o.isArrayBuffer(runtime)) {
-      return convertJSIArrayBufferToRCTArrayBuffer(runtime, o.getArrayBuffer(runtime), mustCopyBytes);
+      return arrayBufferConversionMode == ArrayBufferConversionMode::RCTArrayBuffer
+          ? convertJSIArrayBufferToRCTArrayBuffer(runtime, o.getArrayBuffer(runtime), mustCopyBytes)
+          : convertJSIArrayBufferToNSData(runtime, o.getArrayBuffer(runtime));
     }
-    return convertJSIObjectToNSDictionary(runtime, o, jsInvoker, useNSNull);
+    return convertJSIObjectToNSDictionary(runtime, o, jsInvoker, useNSNull, arrayBufferConversionMode, mustCopyBytes);
   }
 
   throw jsi::JSError(runtime, "Unsupported jsi::Value kind");
+}
+
+id convertJSIValueToObjCObject(
+    jsi::Runtime &runtime,
+    const jsi::Value &value,
+    const std::shared_ptr<CallInvoker> &jsInvoker,
+    BOOL useNSNull)
+{
+  return convertJSIValueToObjCObjectImpl(
+      runtime, value, jsInvoker, useNSNull, ArrayBufferConversionMode::LegacyNSData, YES);
+}
+
+id convertJSIValueToObjCObject(
+    jsi::Runtime &runtime,
+    const jsi::Value &value,
+    const std::shared_ptr<CallInvoker> &jsInvoker,
+    BOOL useNSNull,
+    BOOL mustCopyBytes)
+{
+  return convertJSIValueToObjCObjectImpl(
+      runtime, value, jsInvoker, useNSNull, ArrayBufferConversionMode::RCTArrayBuffer, mustCopyBytes);
 }
 
 static jsi::Value createJSRuntimeError(jsi::Runtime &runtime, const std::string &message)
@@ -629,11 +695,16 @@ jsi::Value ObjCTurboModule::convertReturnIdToJSIValue(
       break;
     }
     case ArrayBufferKind: {
-      if (result != nil && ![result isKindOfClass:[RCTArrayBuffer class]]) {
-        RCTLogError(@"convertReturnIdToJSIValue: expected RCTArrayBuffer for ArrayBufferKind, got %@", [result class]);
+      if ([result isKindOfClass:[RCTArrayBuffer class]]) {
+        returnValue = convertRCTArrayBufferToJSIArrayBuffer(runtime, (RCTArrayBuffer *)result);
+      } else if ([result isKindOfClass:[NSMutableData class]]) {
+        returnValue = convertNSMutableDataToJSIArrayBuffer(runtime, (NSMutableData *)result);
+      } else {
+        RCTLogError(
+            @"convertReturnIdToJSIValue: expected RCTArrayBuffer or NSMutableData for ArrayBufferKind, got %@",
+            [result class]);
         break;
       }
-      returnValue = convertRCTArrayBufferToJSIArrayBuffer(runtime, (RCTArrayBuffer *)result);
       break;
     }
     case FunctionKind:
@@ -710,7 +781,34 @@ void ObjCTurboModule::setInvocationArg(
     const jsi::Value &arg,
     size_t i,
     NSInvocation *inv,
+    NSMutableArray *retainedObjectsForInvocation)
+{
+  setInvocationArgImpl(runtime, methodName, objCArgType, arg, i, inv, retainedObjectsForInvocation, false, true);
+}
+
+void ObjCTurboModule::setInvocationArg(
+    jsi::Runtime &runtime,
+    const char *methodName,
+    const std::string &objCArgType,
+    const jsi::Value &arg,
+    size_t i,
+    NSInvocation *inv,
     NSMutableArray *retainedObjectsForInvocation,
+    bool mustCopyBytes)
+{
+  setInvocationArgImpl(
+      runtime, methodName, objCArgType, arg, i, inv, retainedObjectsForInvocation, true, mustCopyBytes);
+}
+
+void ObjCTurboModule::setInvocationArgImpl(
+    jsi::Runtime &runtime,
+    const char *methodName,
+    const std::string &objCArgType,
+    const jsi::Value &arg,
+    size_t i,
+    NSInvocation *inv,
+    NSMutableArray *retainedObjectsForInvocation,
+    bool useRCTArrayBuffer,
     bool mustCopyBytes)
 {
   if (arg.isBool()) {
@@ -754,8 +852,9 @@ void ObjCTurboModule::setInvocationArg(
    * Convert arg to ObjC objects.
    */
   BOOL enableModuleArgumentNSNullConversionIOS = ReactNativeFeatureFlags::enableModuleArgumentNSNullConversionIOS();
-  id objCArg =
-      convertJSIValueToObjCObject(runtime, arg, jsInvoker_, enableModuleArgumentNSNullConversionIOS, mustCopyBytes);
+  id objCArg = useRCTArrayBuffer
+      ? convertJSIValueToObjCObject(runtime, arg, jsInvoker_, enableModuleArgumentNSNullConversionIOS, mustCopyBytes)
+      : convertJSIValueToObjCObject(runtime, arg, jsInvoker_, enableModuleArgumentNSNullConversionIOS);
 
   // A JS `null` in argument position must reach ObjC as `nil`; only nulls nested inside arrays and
   // dictionaries are preserved as `kCFNull`. Skipping `setArgument:` leaves the slot zeroed.
@@ -823,6 +922,7 @@ void ObjCTurboModule::setInvocationArg(
 NSInvocation *ObjCTurboModule::createMethodInvocation(
     jsi::Runtime &runtime,
     bool isSync,
+    bool useRCTArrayBuffer,
     bool mustCopyBytes,
     const char *methodName,
     SEL selector,
@@ -852,7 +952,11 @@ NSInvocation *ObjCTurboModule::createMethodInvocation(
   for (size_t i = 0; i < count; i++) {
     const jsi::Value &arg = args[i];
     const std::string objCArgType = [methodSignature getArgumentTypeAtIndex:i + 2];
-    setInvocationArg(runtime, methodName, objCArgType, arg, i, inv, retainedObjectsForInvocation, mustCopyBytes);
+    if (useRCTArrayBuffer) {
+      setInvocationArg(runtime, methodName, objCArgType, arg, i, inv, retainedObjectsForInvocation, mustCopyBytes);
+    } else {
+      setInvocationArg(runtime, methodName, objCArgType, arg, i, inv, retainedObjectsForInvocation);
+    }
   }
 
   if (isSync) {
@@ -895,11 +999,26 @@ jsi::Value ObjCTurboModule::invokeObjCMethod(
     const jsi::Value *args,
     size_t count)
 {
+  return invokeObjCMethod(runtime, returnType, methodNameStr, selector, nullptr, args, count);
+}
+
+jsi::Value ObjCTurboModule::invokeObjCMethod(
+    jsi::Runtime &runtime,
+    TurboModuleMethodValueKind returnType,
+    const std::string &methodNameStr,
+    SEL rctArrayBufferSelector,
+    SEL legacySelector,
+    const jsi::Value *args,
+    size_t count)
+{
   const char *moduleName = name_.c_str();
   const char *methodName = methodNameStr.c_str();
 
   bool isSyncInvocation = isMethodSync(returnType);
-  bool mustCopyBytes = mustCopyJSHeapArrayBufferBytes(returnType);
+  bool useRCTArrayBuffer = legacySelector != nullptr && [instance_ respondsToSelector:rctArrayBufferSelector];
+  bool mustCopyBytes = !useRCTArrayBuffer || mustCopyJSHeapArrayBufferBytes(returnType);
+  SEL selector = useRCTArrayBuffer ? rctArrayBufferSelector
+                                   : (legacySelector != nullptr ? legacySelector : rctArrayBufferSelector);
 
   if (isSyncInvocation) {
     TurboModulePerfLogger::syncMethodCallStart(moduleName, methodName);
@@ -909,7 +1028,15 @@ jsi::Value ObjCTurboModule::invokeObjCMethod(
 
   NSMutableArray *retainedObjectsForInvocation = [NSMutableArray arrayWithCapacity:count + 2];
   NSInvocation *inv = createMethodInvocation(
-      runtime, isSyncInvocation, mustCopyBytes, methodName, selector, args, count, retainedObjectsForInvocation);
+      runtime,
+      isSyncInvocation,
+      useRCTArrayBuffer,
+      mustCopyBytes,
+      methodName,
+      selector,
+      args,
+      count,
+      retainedObjectsForInvocation);
 
   jsi::Value returnValue = jsi::Value::undefined();
 
