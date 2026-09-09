@@ -262,13 +262,29 @@ static BOOL isSupportedVersion(NSNumber *version)
 
 - (void)reconnectingWebSocket:(RCTReconnectingWebSocket *)webSocket didReceiveMessage:(id)message
 {
-  NSError *error = nil;
-  NSDictionary<NSString *, id> *msg = RCTJSONParse(message, &error);
-
-  if (error) {
-    RCTLogError(@"%@ failed to parse message with error %@\n<message>\n%@\n</message>", [self class], error, msg);
+  if (![message isKindOfClass:[NSString class]]) {
+    RCTLogError(@"%@ received a packager message with an unsupported type %@", [self class], [message class]);
     return;
   }
+
+  NSError *error = nil;
+  id parsedMessage = RCTJSONParse((NSString *)message, &error);
+
+  if (error) {
+    RCTLogError(
+        @"%@ failed to parse message with error %@\n<message>\n%@\n</message>", [self class], error, message);
+    return;
+  }
+
+  if (![parsedMessage isKindOfClass:[NSDictionary class]]) {
+    RCTLogError(
+        @"%@ received a packager message that was not a JSON object\n<message>\n%@\n</message>",
+        [self class],
+        message);
+    return;
+  }
+
+  NSDictionary<NSString *, id> *msg = parsedMessage;
 
   if (!isSupportedVersion(msg[@"version"])) {
     RCTLogError(@"%@ received message with not supported version %@", [self class], msg[@"version"]);
