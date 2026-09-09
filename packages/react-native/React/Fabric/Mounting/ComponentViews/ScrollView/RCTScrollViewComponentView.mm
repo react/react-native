@@ -769,6 +769,13 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 - (BOOL)scrollViewShouldScrollToTop:(UIScrollView *)scrollView
 {
   _isUserTriggeredScrolling = YES;
+
+  if ([self isInverted]) {
+    _isUserTriggeredScrolling = NO;
+    [self scrollToEnd:YES];
+    return NO;
+  }
+
   return YES;
 }
 
