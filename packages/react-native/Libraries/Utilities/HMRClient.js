@@ -162,6 +162,18 @@ const HMRClient: HMRClientNativeInterface = {
     invariant(host, 'Missing required parameter `host`');
     invariant(!hmrClient, 'Cannot initialize hmrClient twice');
 
+    // HMR requires a Metro-served bundle so the server can map source edits back
+    // to the running module set. When the bundle was loaded from a local file
+    // there's nothing to hot-reload — registering with the server would just log
+    // spurious "Unable to resolve module" errors.
+    if (!getDevServer().bundleLoadedFromServer) {
+      console.warn(
+        'Not enabling Hot Module Reloading: the JS bundle was loaded from a local ' +
+          'file, not from Metro. To use HMR, load the bundle from the packager.',
+      );
+      return;
+    }
+
     // Moving to top gives errors due to NativeModules not being initialized
     const DevLoadingView = require('./DevLoadingView').default;
 
