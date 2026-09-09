@@ -72,6 +72,7 @@ import com.facebook.react.uimanager.events.BlackHoleEventDispatcher
 import com.facebook.react.uimanager.events.EventDispatcher
 import com.facebook.react.views.imagehelper.ResourceDrawableIdHelper
 import java.lang.ref.WeakReference
+import java.util.WeakHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
@@ -138,6 +139,7 @@ public class ReactHostImpl(
   private val reactLifecycleStateManager = ReactLifecycleStateManager(stateTracker)
   private var memoryPressureListener: MemoryPressureListener? = null
   private var defaultHardwareBackBtnHandler: DefaultHardwareBackBtnHandler? = null
+  private val activeActivitiesMap = WeakHashMap<Activity, Boolean>();
 
   private val reactInstanceEventListeners: MutableList<ReactInstanceEventListener> =
       CopyOnWriteArrayList()
@@ -246,6 +248,10 @@ public class ReactHostImpl(
   override fun onHostResume(activity: Activity?) {
     stateTracker.enterState("onHostResume(activity)")
 
+    if (activity != null) {
+      activeActivitiesMap[activity] = true
+    }
+
     currentActivity = activity
     frameTimingsObserver?.setCurrentWindow(activity?.window)
 
@@ -265,25 +271,17 @@ public class ReactHostImpl(
     val method = "onHostPause(activity)"
     stateTracker.enterState(method)
 
-    val currentActivity = this.currentActivity
-    if (currentActivity != null) {
-      val isSameActivity = activity === currentActivity
-      if (!isSameActivity) {
-        val currentActivityClass = currentActivity.javaClass.simpleName
-        val activityClass = if (activity == null) "null" else activity.javaClass.simpleName
-        val isNotSameActivityMessage =
-            "Pausing an activity that is not the current activity, this is incorrect! Current activity: $currentActivityClass Paused activity: $activityClass"
-        if (ReactNativeFeatureFlags.skipActivityIdentityAssertionOnHostPause()) {
-          FLog.w(TAG, method, isNotSameActivityMessage)
-        } else {
-          Assertions.assertCondition(isSameActivity, isNotSameActivityMessage)
-        }
+    if (activity != null) {
+      activeActivitiesMap.remove(activity)
+      if (activeActivitiesMap.size > 0) {
+        FLog.w(TAG, "Called $method by activity $activity but there are still active activities, not pausing yet.")
+        return
       }
     }
 
     maybeEnableDevSupport(false)
     defaultHardwareBackBtnHandler = null
-    reactLifecycleStateManager.moveToOnHostPause(currentReactContext, currentActivity)
+    reactLifecycleStateManager.moveToOnHostPause(currentReactContext, activity)
   }
 
   /** To be called when the host activity is paused. */
