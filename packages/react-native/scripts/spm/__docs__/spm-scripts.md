@@ -228,9 +228,10 @@ raise the deployment target in Xcode and re-run `react-native spm update`.
 
 A floor set in an `.xcconfig` your configuration is based on is honored,
 `#include` chains included; one set through a build-setting variable
-(`$(MY_FLOOR)`) is not, and falls back to React Native's minimum. Scaffolded
-packages keep the floor they were scaffolded with until you re-run
-`react-native spm scaffold`.
+(`$(MY_FLOOR)`) is not, and falls back to React Native's minimum. `spm add` and
+`spm update` also refresh the platform-floor line of existing scaffolded
+manifests (they never create new ones) — if you persisted a scaffold with
+`patch-package`, re-run `npx patch-package <dep>` afterwards.
 
 ## Files the tool touches
 

@@ -1131,6 +1131,81 @@ function scaffoldPackageSwiftForDep(
   };
 }
 
+// The `.iOS(...)` element of the emitted platforms array — the `.v15` enum form
+// pre-v20 scaffolds carry included, and without the array's closing bracket so
+// a user-extended array (`[.iOS(…), .macOS(…)]`) is still matched.
+const PLATFORM_FLOOR_RE = /platforms: \[\.iOS\((\.v\d+|"[^"]*")\)/;
+
+/**
+ * Bring the platform floor of already-scaffolded manifests up to the app's
+ * deployment target — `spm add`/`update` must not leave a dep pinned below the
+ * app (SwiftPM would refuse to link it), and re-scaffolding is the user's call.
+ * Only the platform line of a file carrying our own marker is rewritten; no
+ * file is created. `from` is the previous token, verbatim (`15.1` or `.v15`).
+ */
+function refreshScaffoldedPlatformFloors(
+  opts /*: {appRoot: string, autolinkingJsonPath?: string, iosDeploymentTarget: string} */,
+) /*: Array<{depName: string, path: string, from: string, to: string}> */ {
+  const {appRoot, iosDeploymentTarget} = opts;
+  const autolinkingJsonPath =
+    opts.autolinkingJsonPath ??
+    path.join(appRoot, 'build', 'generated', 'autolinking', 'autolinking.json');
+  const refreshed = [];
+
+  let deps;
+  try {
+    // $FlowFixMe[incompatible-type] JSON.parse returns any
+    deps = JSON.parse(
+      fs.readFileSync(autolinkingJsonPath, 'utf8'),
+    ).dependencies;
+  } catch {
+    return refreshed;
+  }
+  if (deps == null) {
+    return refreshed;
+  }
+
+  for (const depName of Object.keys(deps)) {
+    const root = deps[depName]?.root;
+    if (typeof root !== 'string') {
+      continue;
+    }
+    const manifestPath = path.join(root, 'Package.swift');
+    let content;
+    try {
+      content = fs.readFileSync(manifestPath, 'utf8');
+    } catch {
+      continue;
+    }
+    if (
+      !content.includes(SCAFFOLDER_MARKER) ||
+      content.includes(AUTOGEN_MARKER)
+    ) {
+      continue;
+    }
+    const match = content.match(PLATFORM_FLOOR_RE);
+    if (match == null) {
+      continue;
+    }
+    const from = match[1].replace(/"/g, '');
+    if (from === iosDeploymentTarget) {
+      continue;
+    }
+    fs.writeFileSync(
+      manifestPath,
+      content.replace(match[0], `platforms: [.iOS("${iosDeploymentTarget}")`),
+      'utf8',
+    );
+    refreshed.push({
+      depName,
+      path: manifestPath,
+      from,
+      to: iosDeploymentTarget,
+    });
+  }
+  return refreshed;
+}
+
 // ---------------------------------------------------------------------------
 // Multi-dep orchestrator
 // ---------------------------------------------------------------------------
@@ -1306,6 +1381,7 @@ function scaffoldAll(
 }
 
 module.exports = {
+  refreshScaffoldedPlatformFloors,
   scaffoldAll,
   scaffoldPackageSwiftForDep,
   translatePodspecToSpmTarget,

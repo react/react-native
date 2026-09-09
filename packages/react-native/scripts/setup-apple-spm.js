@@ -107,7 +107,10 @@ const {
   MIN_IOS_VERSION_SUPPORTED,
   resolveIosDeploymentTarget,
 } = require('./spm/ios-deployment-target');
-const {scaffoldAll} = require('./spm/scaffold-package-swift');
+const {
+  refreshScaffoldedPlatformFloors,
+  scaffoldAll,
+} = require('./spm/scaffold-package-swift');
 const {
   RemoteVersionError,
   buildPerAppHeaderTree,
@@ -1238,6 +1241,25 @@ async function main(argv /*:: ?: Array<string> */) /*: Promise<void> */ {
   }
 
   runCodegenStep(projectRoot, appRoot, reactNativeRoot, args.skipCodegen);
+
+  // A manifest scaffolded before the app's deployment target changed (or by a
+  // pre-v20 scaffolder) would pin a floor SwiftPM then refuses to link against.
+  if (
+    (action === 'add' || action === 'update') &&
+    autolinkingConfigResult != null
+  ) {
+    for (const refreshed of refreshScaffoldedPlatformFloors({
+      appRoot,
+      autolinkingJsonPath: autolinkingConfigResult.outputPath,
+      iosDeploymentTarget,
+    })) {
+      log(
+        `Refreshed platform floor in ${path.relative(appRoot, refreshed.path)}: ` +
+          `${refreshed.from} → ${refreshed.to}`,
+      );
+    }
+  }
+
   log('Generating build/generated/autolinking/Package.swift...');
   try {
     generateAutolinking([
