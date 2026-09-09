@@ -996,7 +996,7 @@ __DEV__ &&
     }
     function getListener$1(inst, registrationName) {
       inst = inst.stateNode;
-      if (null === inst) return null;
+      if (null == inst) return null;
       inst = getFiberCurrentPropsFromNode$1(inst);
       if (null === inst) return null;
       if ((inst = inst[registrationName]) && "function" !== typeof inst)
@@ -1136,7 +1136,7 @@ __DEV__ &&
     }
     function getListener(inst, registrationName) {
       inst = inst.stateNode;
-      if (null === inst) return null;
+      if (null == inst) return null;
       inst = getFiberCurrentPropsFromNode$1(inst);
       if (null === inst) return null;
       if ((inst = inst[registrationName]) && "function" !== typeof inst)
