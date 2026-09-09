@@ -104,9 +104,18 @@ Map {
 
 @protocol NativeSampleTurboModuleSpec <RCTBridgeModule, RCTTurboModule>
 
-- (RCTArrayBuffer *)getArrayBuffer;
-- (void)voidArrayBuffer:(RCTArrayBuffer *)arg;
-- (void)voidNullableArrayBuffer:(RCTArrayBuffer * _Nullable)arg;
+- (NSMutableData *)getArrayBuffer;
+@optional
+- (RCTArrayBuffer *)getArrayBufferWithRCTArrayBuffer;
+@required
+- (void)voidArrayBuffer:(NSData *)arg;
+@optional
+- (void)voidArrayBufferWithRCTArrayBuffer:(RCTArrayBuffer *)arg;
+@required
+- (void)voidNullableArrayBuffer:(NSData * _Nullable)arg;
+@optional
+- (void)voidNullableArrayBufferWithRCTArrayBuffer:(RCTArrayBuffer * _Nullable)arg;
+@required
 
 @end
 

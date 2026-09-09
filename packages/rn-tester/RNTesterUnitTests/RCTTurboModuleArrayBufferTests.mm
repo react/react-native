@@ -40,6 +40,16 @@ RCTArrayBuffer *createIntegerSequenceBuffer(NSUInteger size)
   return buffer;
 }
 
+RCTArrayBuffer *arrayBufferFromData(NSData *data)
+{
+  return [RCTArrayBuffer arrayBufferWithCopiedBytes:data.bytes length:data.length];
+}
+
+NSMutableData *mutableDataFromArrayBuffer(RCTArrayBuffer *arrayBuffer)
+{
+  return [NSMutableData dataWithBytes:arrayBuffer.mutableBytes length:arrayBuffer.length];
+}
+
 std::vector<uint8_t> bytesFromData(NSData *data)
 {
   if (data == nil) {
@@ -99,8 +109,9 @@ class QueueingNativeMethodCallInvoker final : public NativeMethodCallInvoker {
 @interface RCTTestArrayBufferTurboModule : NSObject <RCTBridgeModule>
 
 @property (nonatomic, copy) NSData *lastReceivedPayload;
-@property (nonatomic, assign) BOOL sawAliasedBytes;
-@property (nonatomic, assign) BOOL sawUnownedBytes;
+@property (nonatomic, assign) BOOL sawLegacyNSData;
+@property (nonatomic, assign) BOOL sawWritableBytes;
+@property (nonatomic, assign) BOOL sawOwningBytes;
 
 @end
 
@@ -108,7 +119,13 @@ class QueueingNativeMethodCallInvoker final : public NativeMethodCallInvoker {
 
 RCT_EXPORT_MODULE()
 
-- (RCTArrayBuffer *)testMethodWhichTransformsArrayBuffer:(RCTArrayBuffer *)buffer
+- (NSMutableData *)testMethodWhichTransformsArrayBuffer:(NSData *)buffer
+{
+  return mutableDataFromArrayBuffer(
+      [self testMethodWhichTransformsArrayBufferWithRCTArrayBuffer:arrayBufferFromData(buffer)]);
+}
+
+- (RCTArrayBuffer *)testMethodWhichTransformsArrayBufferWithRCTArrayBuffer:(RCTArrayBuffer *)buffer
 {
   RCTArrayBuffer *result = [RCTArrayBuffer arrayBufferWithLength:buffer.length];
   auto *destinationBytes = static_cast<uint8_t *>(result.mutableBytes);
@@ -118,7 +135,13 @@ RCT_EXPORT_MODULE()
   return result;
 }
 
-- (RCTArrayBuffer *)testMethodWhichReturnsItsArgument:(RCTArrayBuffer *)buffer
+- (NSMutableData *)testMethodWhichReturnsItsArgument:(NSData *)buffer
+{
+  return mutableDataFromArrayBuffer(
+      [self testMethodWhichReturnsItsArgumentWithRCTArrayBuffer:arrayBufferFromData(buffer)]);
+}
+
+- (RCTArrayBuffer *)testMethodWhichReturnsItsArgumentWithRCTArrayBuffer:(RCTArrayBuffer *)buffer
 {
   auto *bytes = static_cast<uint8_t *>(buffer.mutableBytes);
   for (NSUInteger i = 0; i < buffer.length && i < 3; ++i) {
@@ -127,17 +150,38 @@ RCT_EXPORT_MODULE()
   return buffer;
 }
 
-- (NSNumber *)testMethodWhichChecksArrayBufferAliasing:(RCTArrayBuffer *)buffer
+- (NSMutableData *)testLegacyMethodWhichTransformsArrayBuffer:(NSData *)buffer
 {
-  // An observable in-place write proves the bytes were aliased, not copied on the way in.
+  self.sawLegacyNSData = [buffer isKindOfClass:[NSData class]];
+  NSMutableData *result = [NSMutableData dataWithData:buffer];
+  auto *bytes = static_cast<uint8_t *>(result.mutableBytes);
+  for (NSUInteger i = 0; i < result.length; ++i) {
+    bytes[i] += 1;
+  }
+  return result;
+}
+
+- (NSNumber *)testMethodWhichChecksArrayBufferOwnership:(NSData *)buffer
+{
+  return [self testMethodWhichChecksArrayBufferOwnershipWithRCTArrayBuffer:arrayBufferFromData(buffer)];
+}
+
+- (NSNumber *)testMethodWhichChecksArrayBufferOwnershipWithRCTArrayBuffer:(RCTArrayBuffer *)buffer
+{
+  // An observable in-place write verifies that RCTArrayBuffer still exposes mutable storage.
   auto *bytes = static_cast<uint8_t *>(buffer.mutableBytes);
   bytes[0] = 77;
-  self.sawAliasedBytes = buffer.length == 3 && bytes[0] == 77;
-  self.sawUnownedBytes = !buffer.isOwningBytes;
+  self.sawWritableBytes = buffer.length == 3 && bytes[0] == 77;
+  self.sawOwningBytes = buffer.isOwningBytes;
   return @(YES);
 }
 
-- (void)testMethodWhichStoresArrayBuffer:(RCTArrayBuffer *)payload
+- (void)testMethodWhichStoresArrayBuffer:(NSData *)payload
+{
+  [self testMethodWhichStoresArrayBufferWithRCTArrayBuffer:arrayBufferFromData(payload)];
+}
+
+- (void)testMethodWhichStoresArrayBufferWithRCTArrayBuffer:(RCTArrayBuffer *)payload
 {
   self.lastReceivedPayload = [NSData dataWithBytes:payload.mutableBytes length:payload.length];
 }
@@ -192,6 +236,7 @@ RCT_EXPORT_MODULE()
       *rt,
       ArrayBufferKind,
       "testMethodWhichTransformsArrayBuffer",
+      @selector(testMethodWhichTransformsArrayBufferWithRCTArrayBuffer:),
       @selector(testMethodWhichTransformsArrayBuffer:),
       args,
       1);
@@ -207,8 +252,8 @@ RCT_EXPORT_MODULE()
   XCTAssertEqual(returnedBytes[2], 30);
 }
 
-// The sync argument is a live alias: an in-place write lands on the JS ArrayBuffer itself.
-- (void)testJSBackedArrayBufferIsNotCopiedDuringTheCall
+// The new sync entry point receives a live alias, so an in-place write reaches the JS ArrayBuffer.
+- (void)testJSBackedArrayBufferIsNotCopiedDuringTheNewCall
 {
   auto hermesRuntime = createHermesRuntime();
   facebook::jsi::Runtime *rt = hermesRuntime.get();
@@ -233,14 +278,55 @@ RCT_EXPORT_MODULE()
   module.invokeObjCMethod(
       *rt,
       BooleanKind,
-      "testMethodWhichChecksArrayBufferAliasing",
-      @selector(testMethodWhichChecksArrayBufferAliasing:),
+      "testMethodWhichChecksArrayBufferOwnership",
+      @selector(testMethodWhichChecksArrayBufferOwnershipWithRCTArrayBuffer:),
+      @selector(testMethodWhichChecksArrayBufferOwnership:),
       args,
       1);
 
-  XCTAssertTrue(instance.sawAliasedBytes, @"The argument must alias the JS ArrayBuffer's bytes");
-  XCTAssertTrue(instance.sawUnownedBytes, @"A JS-heap argument to a sync method must not own its bytes");
-  XCTAssertEqual(bytesFromArrayBuffer(*rt, sourceBuffer)[0], 77, @"The native write must land on the JS ArrayBuffer");
+  XCTAssertTrue(instance.sawWritableBytes);
+  XCTAssertFalse(instance.sawOwningBytes);
+  XCTAssertEqual(bytesFromArrayBuffer(*rt, sourceBuffer)[0], 77);
+}
+
+- (void)testLegacyNSDataSignatureRoundTrip
+{
+  auto hermesRuntime = createHermesRuntime();
+  facebook::jsi::Runtime *rt = hermesRuntime.get();
+  auto *instance = [RCTTestArrayBufferTurboModule new];
+
+  ObjCTurboModule::InitParams params = {
+      .moduleName = "TestModule",
+      .instance = instance,
+      .jsInvoker = nullptr,
+      .nativeMethodCallInvoker = std::make_shared<ImmediateNativeMethodCallInvoker>(),
+      .isSyncModule = false,
+  };
+  ObjCTurboModule module(params);
+
+  auto sourceBuffer = rt->global()
+                          .getPropertyAsFunction(*rt, "eval")
+                          .call(*rt, "new Uint8Array([1, 2, 3]).buffer")
+                          .asObject(*rt)
+                          .getArrayBuffer(*rt);
+  facebook::jsi::Value args[1] = {facebook::jsi::Value(*rt, sourceBuffer)};
+
+  auto result = module.invokeObjCMethod(
+      *rt,
+      ArrayBufferKind,
+      "testLegacyMethodWhichTransformsArrayBuffer",
+      NSSelectorFromString(@"testLegacyMethodWhichTransformsArrayBufferWithRCTArrayBuffer:"),
+      @selector(testLegacyMethodWhichTransformsArrayBuffer:),
+      args,
+      1);
+
+  auto returnedBytes = bytesFromArrayBuffer(*rt, result.asObject(*rt).getArrayBuffer(*rt));
+  XCTAssertTrue(instance.sawLegacyNSData);
+  XCTAssertEqual(returnedBytes.size(), 3u);
+  XCTAssertEqual(returnedBytes[0], 2);
+  XCTAssertEqual(returnedBytes[1], 3);
+  XCTAssertEqual(returnedBytes[2], 4);
+  XCTAssertEqual(bytesFromArrayBuffer(*rt, sourceBuffer)[0], 1, @"The legacy argument must be an owning copy");
 }
 
 // Returning the argument must hand JS the mutated bytes: it has to stay valid through the
@@ -271,6 +357,7 @@ RCT_EXPORT_MODULE()
       *rt,
       ArrayBufferKind,
       "testMethodWhichReturnsItsArgument",
+      @selector(testMethodWhichReturnsItsArgumentWithRCTArrayBuffer:),
       @selector(testMethodWhichReturnsItsArgument:),
       args,
       1);
@@ -308,6 +395,7 @@ RCT_EXPORT_MODULE()
       *rt,
       ArrayBufferKind,
       "testMethodWhichTransformsArrayBuffer",
+      @selector(testMethodWhichTransformsArrayBufferWithRCTArrayBuffer:),
       @selector(testMethodWhichTransformsArrayBuffer:),
       args,
       1);
@@ -341,7 +429,13 @@ RCT_EXPORT_MODULE()
   facebook::jsi::Value args[1] = {facebook::jsi::Value(*rt, sourceBuffer)};
 
   module.invokeObjCMethod(
-      *rt, VoidKind, "testMethodWhichStoresArrayBuffer", @selector(testMethodWhichStoresArrayBuffer:), args, 1);
+      *rt,
+      VoidKind,
+      "testMethodWhichStoresArrayBuffer",
+      @selector(testMethodWhichStoresArrayBufferWithRCTArrayBuffer:),
+      @selector(testMethodWhichStoresArrayBuffer:),
+      args,
+      1);
 
   auto *sourceBytes = sourceBuffer.data(*rt);
   sourceBytes[0] = 9;
@@ -381,7 +475,13 @@ RCT_EXPORT_MODULE()
   }
 
   module.invokeObjCMethod(
-      *rt, VoidKind, "testMethodWhichStoresArrayBuffer", @selector(testMethodWhichStoresArrayBuffer:), args, 1);
+      *rt,
+      VoidKind,
+      "testMethodWhichStoresArrayBuffer",
+      @selector(testMethodWhichStoresArrayBufferWithRCTArrayBuffer:),
+      @selector(testMethodWhichStoresArrayBuffer:),
+      args,
+      1);
   args[0] = facebook::jsi::Value::undefined();
 
   nativeInvoker->flushQueue();
