@@ -225,7 +225,11 @@ Native's own minimum (15.1). SwiftPM refuses to link a product whose minimum is
 higher than the target depending on it, so a dependency that needs more (Expo's
 packages need iOS 16.4) only resolves once the app asks for at least as much:
 raise the deployment target in Xcode and re-run `react-native spm update`.
-Scaffolded packages keep the floor they were scaffolded with until you re-run
+
+A floor set in an `.xcconfig` your configuration is based on is honored,
+`#include` chains included; one set through a build-setting variable
+(`$(MY_FLOOR)`) is not, and falls back to React Native's minimum. Scaffolded
+packages keep the floor they were scaffolded with until you re-run
 `react-native spm scaffold`.
 
 ## Files the tool touches

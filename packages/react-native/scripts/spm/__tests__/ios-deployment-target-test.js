@@ -26,6 +26,7 @@ const {
   withoutProjectSetting,
   withProjectSetting,
   withSetting,
+  withXcconfigRef,
 } = require('./pbxproj-variants');
 const fs = require('node:fs');
 const os = require('node:os');
@@ -76,6 +77,121 @@ describe('readIosDeploymentTargetFromPbxproj', () => {
   });
 });
 
+describe('readIosDeploymentTargetFromPbxproj — xcconfig chain', () => {
+  const SRC_ROOT = '/app';
+  const APP_XCCONFIG = `${SRC_ROOT}/Config/App.xcconfig`;
+  const BASE_XCCONFIG = `${SRC_ROOT}/Config/Base.xcconfig`;
+  // Both target configurations point at the xcconfig, and the project level
+  // declares nothing — so the xcconfig alone decides the floor.
+  const XCCONFIG_ONLY = withXcconfigRef(withoutProjectSetting(PLAIN_APP), [
+    TARGET_DEBUG,
+    TARGET_RELEASE,
+  ]);
+
+  function read(text, files, opts) {
+    const readFile = jest.fn(absPath => files[absPath] ?? null);
+    const value = readIosDeploymentTargetFromPbxproj(text, {
+      srcRoot: SRC_ROOT,
+      readFile,
+      ...opts,
+    });
+    return {value, readFile};
+  }
+
+  it('falls back to the xcconfig the configuration references', () => {
+    expect(
+      read(XCCONFIG_ONLY, {
+        [APP_XCCONFIG]: 'IPHONEOS_DEPLOYMENT_TARGET = 16.4\n',
+      }).value,
+    ).toBe('16.4');
+  });
+
+  it('prefers a literal in the configuration over its xcconfig', () => {
+    const text = withSetting(
+      withSetting(XCCONFIG_ONLY, TARGET_DEBUG, '17.0'),
+      TARGET_RELEASE,
+      '17.0',
+    );
+    expect(
+      read(text, {[APP_XCCONFIG]: 'IPHONEOS_DEPLOYMENT_TARGET = 16.4\n'}).value,
+    ).toBe('17.0');
+  });
+
+  it('follows an #include chain', () => {
+    expect(
+      read(XCCONFIG_ONLY, {
+        [APP_XCCONFIG]: '#include "Base.xcconfig"\n',
+        [BASE_XCCONFIG]: 'IPHONEOS_DEPLOYMENT_TARGET = 16.4\n',
+      }).value,
+    ).toBe('16.4');
+  });
+
+  it('lets an assignment after the #include win', () => {
+    expect(
+      read(XCCONFIG_ONLY, {
+        [APP_XCCONFIG]:
+          '#include? "Base.xcconfig"\nIPHONEOS_DEPLOYMENT_TARGET = 17.0;\n',
+        [BASE_XCCONFIG]: 'IPHONEOS_DEPLOYMENT_TARGET = 16.4\n',
+      }).value,
+    ).toBe('17.0');
+  });
+
+  it('ignores comments and conditional assignments', () => {
+    expect(
+      read(XCCONFIG_ONLY, {
+        [APP_XCCONFIG]:
+          '// IPHONEOS_DEPLOYMENT_TARGET = 18.0\n' +
+          'IPHONEOS_DEPLOYMENT_TARGET[sdk=iphonesimulator*] = 16.4\n',
+      }).value,
+    ).toBeNull();
+  });
+
+  it('ignores a value that is not a plain version', () => {
+    expect(
+      read(XCCONFIG_ONLY, {
+        [APP_XCCONFIG]: 'IPHONEOS_DEPLOYMENT_TARGET = $(inherited)\n',
+      }).value,
+    ).toBeNull();
+  });
+
+  it('resolves a "<group>" reference through the group path', () => {
+    const text = withXcconfigRef(
+      withoutProjectSetting(PLAIN_APP),
+      [TARGET_DEBUG, TARGET_RELEASE],
+      {filePath: 'App.xcconfig', groupPath: 'Config'},
+    );
+    const {value, readFile} = read(text, {
+      [APP_XCCONFIG]: 'IPHONEOS_DEPLOYMENT_TARGET = 16.4\n',
+    });
+    expect(value).toBe('16.4');
+    expect(readFile).toHaveBeenCalledWith(APP_XCCONFIG);
+  });
+
+  it('reports nothing when the xcconfig is missing', () => {
+    expect(read(XCCONFIG_ONLY, {}).value).toBeNull();
+  });
+
+  it('terminates on an #include cycle', () => {
+    expect(
+      read(XCCONFIG_ONLY, {
+        [APP_XCCONFIG]:
+          'IPHONEOS_DEPLOYMENT_TARGET = 16.4\n#include "Base.xcconfig"\n',
+        [BASE_XCCONFIG]: '#include "App.xcconfig"\n',
+      }).value,
+    ).toBe('16.4');
+  });
+
+  it('skips the xcconfig step without a srcRoot', () => {
+    const {value, readFile} = read(
+      XCCONFIG_ONLY,
+      {[APP_XCCONFIG]: 'IPHONEOS_DEPLOYMENT_TARGET = 16.4\n'},
+      {srcRoot: null},
+    );
+    expect(value).toBeNull();
+    expect(readFile).not.toHaveBeenCalled();
+  });
+});
+
 describe('resolveIosDeploymentTarget', () => {
   const dirs = [];
 
@@ -115,6 +231,23 @@ describe('resolveIosDeploymentTarget', () => {
     expect(
       resolveIosDeploymentTarget({xcodeprojPath: '/no/such/App.xcodeproj'}),
     ).toBeNull();
+  });
+
+  it('reads a floor that only an xcconfig on disk declares', () => {
+    const xcodeprojPath = write(
+      withXcconfigRef(withoutProjectSetting(PLAIN_APP), [
+        TARGET_DEBUG,
+        TARGET_RELEASE,
+      ]),
+    );
+    const configDir = path.join(path.dirname(xcodeprojPath), 'Config');
+    fs.mkdirSync(configDir);
+    fs.writeFileSync(
+      path.join(configDir, 'App.xcconfig'),
+      'IPHONEOS_DEPLOYMENT_TARGET = 16.4\n',
+      'utf8',
+    );
+    expect(resolveIosDeploymentTarget({xcodeprojPath})).toBe('16.4');
   });
 
   it('matches min_ios_version_supported in helpers.rb', () => {

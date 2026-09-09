@@ -267,6 +267,30 @@ function findProjectObject(text /*: string */) /*: ObjectRange | null */ {
   return findObjectByUuid(text, m[1]);
 }
 
+/** Visit every top-level object of a section, in file order. */
+function forEachObjectInSection(
+  text /*: string */,
+  name /*: string */,
+  fn /*: (obj: {uuid: string, comment: ?string, bodyOpen: number, bodyClose: number}) => void */,
+) /*: void */ {
+  const section = findSection(text, name);
+  if (section == null) {
+    return;
+  }
+  const re = /\n\t\t([0-9A-Fa-f]{24})(?: \/\* (.*?) \*\/)? = \{/g;
+  re.lastIndex = section.contentStart;
+  for (;;) {
+    const m = re.exec(text);
+    if (m == null || m.index >= section.end) {
+      break;
+    }
+    const bodyOpen = text.indexOf('{', m.index);
+    const bodyClose = scanToClose(text, bodyOpen);
+    fn({uuid: m[1], comment: m[2], bodyOpen, bodyClose});
+    re.lastIndex = bodyClose;
+  }
+}
+
 /**
  * Every PBXNativeTarget whose productType is an application. Returns uuid +
  * name + body range for each. Used to pick the app target to inject into
@@ -275,37 +299,27 @@ function findProjectObject(text /*: string */) /*: ObjectRange | null */ {
 function findApplicationTargets(
   text /*: string */,
 ) /*: Array<{uuid: string, name: string, bodyOpen: number, bodyClose: number}> */ {
-  const section = findSection(text, 'PBXNativeTarget');
-  if (section == null) {
-    return [];
-  }
   const out = [];
-  const re = /\n\t\t([0-9A-Fa-f]{24})(?: \/\* (.*?) \*\/)? = \{/g;
-  re.lastIndex = section.contentStart;
-  for (;;) {
-    const m = re.exec(text);
-    if (m == null || m.index >= section.end) {
-      break;
-    }
-    const uuid = m[1];
-    const comment = m[2];
-    const bodyOpen = text.indexOf('{', m.index);
-    const bodyClose = scanToClose(text, bodyOpen);
-    const obj = {uuid, bodyOpen, bodyClose};
-    const productType = findField(text, obj, 'productType');
-    if (
-      productType != null &&
-      /com\.apple\.product-type\.application/.test(productType.value)
-    ) {
+  forEachObjectInSection(
+    text,
+    'PBXNativeTarget',
+    ({uuid, comment, bodyOpen, bodyClose}) => {
+      const obj = {uuid, bodyOpen, bodyClose};
+      const productType = findField(text, obj, 'productType');
+      if (
+        productType == null ||
+        !/com\.apple\.product-type\.application/.test(productType.value)
+      ) {
+        return;
+      }
       const nameField = findField(text, obj, 'name');
       const name =
         nameField != null
           ? nameField.value.replace(/^"|"$/g, '')
           : (comment ?? uuid);
       out.push({uuid, name, bodyOpen, bodyClose});
-    }
-    re.lastIndex = bodyClose;
-  }
+    },
+  );
   return out;
 }
 
@@ -766,6 +780,7 @@ module.exports = {
   findSection,
   findProjectObject,
   findApplicationTargets,
+  forEachObjectInSection,
   uuidsInArray,
   detectFieldIndent,
   insertObjectsIntoSection,

@@ -76,6 +76,62 @@ function twoAppTargets(version) {
   );
 }
 
+const XCCONFIG_REF = 'DD0000000000000000000101';
+const XCCONFIG_GROUP = 'DD0000000000000000000201';
+
+function insertIntoObject(text, uuid, line) {
+  const lineEnd =
+    text.indexOf('\n', text.indexOf('= {', text.indexOf(uuid + ' /*'))) + 1;
+  return text.slice(0, lineEnd) + `\t\t\t${line}\n` + text.slice(lineEnd);
+}
+
+/**
+ * Point the given configurations at one `.xcconfig` file reference.
+ * `sourceTree` defaults to SOURCE_ROOT; pass `groupPath` to place the
+ * reference in a `"<group>"` PBXGroup carrying that path instead.
+ */
+function withXcconfigRef(text, configUuids, opts = {}) {
+  const filePath = opts.filePath ?? 'Config/App.xcconfig';
+  const groupPath = opts.groupPath ?? null;
+  const sourceTree =
+    groupPath != null ? '"<group>"' : (opts.sourceTree ?? 'SOURCE_ROOT');
+  const name = path.basename(filePath);
+
+  let out = text;
+  for (const configUuid of configUuids) {
+    out = insertIntoObject(
+      out,
+      configUuid,
+      `baseConfigurationReference = ${XCCONFIG_REF} /* ${name} */;`,
+    );
+  }
+  out = out.replace(
+    '/* End PBXFileReference section */',
+    `\t\t${XCCONFIG_REF} /* ${name} */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = text.xcconfig;
+			path = ${filePath};
+			sourceTree = ${sourceTree};
+		};
+/* End PBXFileReference section */`,
+  );
+  if (groupPath != null) {
+    out = out.replace(
+      '/* End PBXGroup section */',
+      `\t\t${XCCONFIG_GROUP} /* ${groupPath} */ = {
+			isa = PBXGroup;
+			children = (
+				${XCCONFIG_REF} /* ${name} */,
+			);
+			path = ${groupPath};
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */`,
+    );
+  }
+  return out;
+}
+
 module.exports = {
   PLAIN_APP,
   SECOND_TARGET,
@@ -85,5 +141,6 @@ module.exports = {
   twoAppTargets,
   withProjectSetting,
   withSetting,
+  withXcconfigRef,
   withoutProjectSetting,
 };
