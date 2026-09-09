@@ -100,7 +100,7 @@ function configDeploymentTarget(
     return null;
   }
   const raw = unquote(field.value);
-  return IOS_VERSION_RE.test(raw) ? normalizeIosVersion(raw) : null;
+  return IOS_VERSION_RE.test(raw) ? raw : null;
 }
 
 /**
@@ -115,14 +115,7 @@ function readIosDeploymentTargetFromPbxproj(
   opts /*:: ?: {targetUuid?: ?string, targetName?: ?string} */,
 ) /*: ?string */ {
   const targetUuid = opts?.targetUuid;
-  const markedObj =
-    targetUuid != null ? findObjectByUuid(text, targetUuid) : null;
-  // A hand-edited marker can name a uuid that is not (or no longer) a target.
-  const marked =
-    markedObj != null &&
-    findField(text, markedObj, 'isa')?.value === 'PBXNativeTarget'
-      ? markedObj
-      : null;
+  const marked = targetUuid != null ? findObjectByUuid(text, targetUuid) : null;
   const apps = findApplicationTargets(text);
   const named =
     opts?.targetName != null

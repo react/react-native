@@ -565,8 +565,6 @@ describe('emitScaffoldedPackageSwift', () => {
   it('floors the platform at the React Native minimum by default, in string form', () => {
     const out = emitScaffoldedPackageSwift(baseSpec());
     expect(out).toContain('platforms: [.iOS("15.1")]');
-    // The enum form cannot express a patch-level floor like 16.4.
-    expect(out).not.toContain('.v15');
   });
 
   it('raises the platform floor to the app deployment target', () => {

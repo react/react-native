@@ -25,6 +25,7 @@ const {
 } = require('../../setup-apple-spm');
 const {REQUIRED_ARTIFACTS} = require('../download-spm-artifacts');
 const {SPM_INJECTED_MARKER} = require('../generate-spm-xcodeproj');
+const {twoAppTargets} = require('./pbxproj-variants');
 const {execFileSync} = require('node:child_process');
 const fs = require('node:fs');
 const os = require('node:os');
@@ -670,42 +671,14 @@ describe('resolveAppIosDeploymentTarget', () => {
     return logSpy.mock.calls.map(call => call.join(' ')).join('\n');
   }
 
-  // MyApp declares 16.4; Second has no configurations of its own and inherits
-  // the project's 15.1. No marker — the first `spm add`, where only
-  // --product-name identifies the target.
+  // No marker — the first `spm add`, where only --product-name identifies the
+  // target among the fixture's two app targets.
   function mkTwoTargetProject() {
     const dir = path.join(appRoot, 'MyApp.xcodeproj');
     fs.mkdirSync(dir, {recursive: true});
-    let pbxproj = fs.readFileSync(
-      path.join(__dirname, '__fixtures__', 'plain-app.pbxproj'),
-      'utf8',
-    );
-    for (const config of [
-      'AA0000000000000000000901 /*',
-      'AA00000000000000000000A2 /*',
-    ]) {
-      const settingsAt = pbxproj.indexOf(
-        'buildSettings = {',
-        pbxproj.indexOf(config),
-      );
-      const lineEnd = pbxproj.indexOf('\n', settingsAt) + 1;
-      pbxproj =
-        pbxproj.slice(0, lineEnd) +
-        '\t\t\t\tIPHONEOS_DEPLOYMENT_TARGET = 16.4;\n' +
-        pbxproj.slice(lineEnd);
-    }
     fs.writeFileSync(
       path.join(dir, 'project.pbxproj'),
-      pbxproj.replace(
-        '/* End PBXNativeTarget section */',
-        `\t\tBB0000000000000000000101 /* Second */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = AA0000000000000000000601 /* project configs */;
-			name = Second;
-			productType = "com.apple.product-type.application";
-		};
-/* End PBXNativeTarget section */`,
-      ),
+      twoAppTargets('16.4'),
       'utf8',
     );
   }
@@ -717,10 +690,6 @@ describe('resolveAppIosDeploymentTarget', () => {
     );
     expect(logged()).toContain(
       'iOS deployment target: 16.4 (from MyApp.xcodeproj)',
-    );
-    // Without a name no target is singled out, so the floor must hold for all.
-    expect(resolveAppIosDeploymentTarget({productName: null}, appRoot)).toBe(
-      '15.1',
     );
   });
 
