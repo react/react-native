@@ -483,6 +483,16 @@ describe('Platform.select', () => {
     expect(select('{ios: 1, ios: 2}')).toContain('const value=2');
   });
 
+  test('does not discard impure initializers', () => {
+    expectUnchanged(`
+      const value = require('react-native').Platform.select({
+        ios: first(),
+        android: android(),
+        ios: last(),
+      });
+    `);
+  });
+
   test('does not inline computed keys', () => {
     expect(select('{[key]: 1, default: 2}')).toContain('Platform.select');
   });
