@@ -493,6 +493,15 @@ describe('Platform.select', () => {
     `);
   });
 
+  test('does not mutate object methods when bailing out on impure initializers', () => {
+    expectUnchanged(`
+      const value = require('react-native').Platform.select({
+        ios() { return 1; },
+        android: sideEffect(),
+      });
+    `);
+  });
+
   test('does not inline computed keys', () => {
     expect(select('{[key]: 1, default: 2}')).toContain('Platform.select');
   });

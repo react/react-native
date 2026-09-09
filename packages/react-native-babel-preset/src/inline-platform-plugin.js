@@ -443,7 +443,9 @@ module.exports = function inlinePlatformPlugin(
         if (t.isObjectProperty(property)) {
           return property.value;
         }
-        return t.toExpression(property);
+        // Clone: toExpression mutates in place, e.g. `ios() {}` would be
+        // left mutated if the purity check below bails out.
+        return t.toExpression(t.cloneNode(property));
       }
     }
     return fallback();
