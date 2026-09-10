@@ -5,9 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-plugins {
-  alias(libs.plugins.kotlin.jvm).apply(false)
-}
+plugins { alias(libs.plugins.kotlin.jvm).apply(false) }
 
 tasks.register("build") {
   dependsOn(

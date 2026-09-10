@@ -28,11 +28,12 @@ import org.gradle.api.file.DirectoryProperty
 internal fun detectedEntryFile(
     config: ReactExtension,
     envVariableOverride: String? = null,
-): File = detectEntryFile(
-    entryFile = config.entryFile.orNull?.asFile,
-    reactRoot = config.root.get().asFile,
-    envVariableOverride = envVariableOverride,
-)
+): File =
+    detectEntryFile(
+        entryFile = config.entryFile.orNull?.asFile,
+        reactRoot = config.root.get().asFile,
+        envVariableOverride = envVariableOverride,
+    )
 
 /**
  * Computes the CLI file for React Native. The Algo follows this order:
@@ -41,11 +42,12 @@ internal fun detectedEntryFile(
  * 3. The `node_modules/react-native/cli.js` file if exists
  * 4. Fails otherwise
  */
-internal fun detectedCliFile(config: ReactExtension): File = detectCliFile(
-    project = config.project,
-    reactNativeRoot = config.root.get().asFile,
-    preconfiguredCliFile = config.cliFile.asFile.orNull,
-)
+internal fun detectedCliFile(config: ReactExtension): File =
+    detectCliFile(
+        project = config.project,
+        reactNativeRoot = config.root.get().asFile,
+        preconfiguredCliFile = config.cliFile.asFile.orNull,
+    )
 
 /**
  * Computes the `hermesc` command location. The Algo follows this order:

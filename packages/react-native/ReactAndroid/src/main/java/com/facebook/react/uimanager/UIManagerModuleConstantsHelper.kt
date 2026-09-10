@@ -41,10 +41,11 @@ internal object UIManagerModuleConstantsHelper {
 
   @JvmStatic
   val defaultExportableEventTypes: Map<String, Any>
-    get() = mapOf(
-        BUBBLING_EVENTS_KEY to UIManagerModuleConstants.bubblingEventTypeConstants,
-        DIRECT_EVENTS_KEY to UIManagerModuleConstants.directEventTypeConstants,
-    )
+    get() =
+        mapOf(
+            BUBBLING_EVENTS_KEY to UIManagerModuleConstants.bubblingEventTypeConstants,
+            DIRECT_EVENTS_KEY to UIManagerModuleConstants.directEventTypeConstants,
+        )
 
   private fun validateDirectEventNames(
       viewManagerName: String,
@@ -110,13 +111,14 @@ internal object UIManagerModuleConstantsHelper {
     for (viewManager in viewManagers) {
       val viewManagerName = viewManager.getName()
 
-      val viewManagerConstants: MutableMap<*, *> = createConstantsForViewManager(
-          viewManager,
-          null,
-          null,
-          allBubblingEventTypes,
-          allDirectEventTypes,
-      )
+      val viewManagerConstants: MutableMap<*, *> =
+          createConstantsForViewManager(
+              viewManager,
+              null,
+              null,
+              allBubblingEventTypes,
+              allDirectEventTypes,
+          )
       if (!viewManagerConstants.isEmpty()) {
         constants[viewManagerName] = viewManagerConstants
       }
