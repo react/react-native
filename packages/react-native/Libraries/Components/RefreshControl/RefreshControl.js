@@ -11,6 +11,7 @@
 import type {ColorValue} from '../../StyleSheet/StyleSheet';
 import type {ViewProps} from '../View/ViewPropTypes';
 
+import useMergeRefs from '../../Utilities/useMergeRefs';
 import AndroidSwipeRefreshLayoutNativeComponent, {
   Commands as AndroidSwipeRefreshLayoutCommands,
 } from './AndroidSwipeRefreshLayoutNativeComponent';
@@ -18,6 +19,7 @@ import PullToRefreshViewNativeComponent, {
   Commands as PullToRefreshCommands,
 } from './PullToRefreshViewNativeComponent';
 import * as React from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 
 const Platform = require('../../Utilities/Platform').default;
 
@@ -94,13 +96,17 @@ type RefreshControlBaseProps = Readonly<{
   progressViewOffset?: ?number,
 }>;
 
-/** @build-types emit-as-interface Uniwind compatibility */
 export type RefreshControlProps = Readonly<{
   ...ViewProps,
   ...RefreshControlPropsIOS,
   ...RefreshControlPropsAndroid,
   ...RefreshControlBaseProps,
 }>;
+
+export type RefreshControlInstance = React.ElementRef<
+  | typeof PullToRefreshViewNativeComponent
+  | typeof AndroidSwipeRefreshLayoutNativeComponent,
+>;
 
 /**
  * Used inside a `ScrollView` to add pull to refresh functionality. When the
@@ -112,86 +118,100 @@ export type RefreshControlProps = Readonly<{
  *
  * @see https://reactnative.dev/docs/refreshcontrol
  */
-class RefreshControl extends React.Component<RefreshControlProps> {
-  _nativeRef: ?React.ElementRef<
-    | typeof PullToRefreshViewNativeComponent
-    | typeof AndroidSwipeRefreshLayoutNativeComponent,
-  >;
-  _lastNativeRefreshing: boolean = false;
+const RefreshControl: component(
+  ref?: React.RefSetter<RefreshControlInstance>,
+  ...props: RefreshControlProps
+) = ({
+  // Android only props
+  enabled,
+  colors,
+  progressBackgroundColor,
+  size,
+  // iOS only props
+  tintColor,
+  titleColor,
+  title,
+  // Common props
+  onRefresh,
+  refreshing,
+  ref: forwardedRef,
+  ...viewProps
+}: {
+  ref?: React.RefSetter<RefreshControlInstance>,
+  ...RefreshControlProps,
+}): React.Node => {
+  const localRef = useRef<RefreshControlInstance | null>(null);
+  const ref = useMergeRefs(localRef, forwardedRef);
 
-  componentDidMount() {
-    this._lastNativeRefreshing = this.props.refreshing;
-  }
+  const [rerender, forceRerender] = useState(0);
+  const nativeRefreshingState = useRef(refreshing);
 
-  componentDidUpdate(prevProps: RefreshControlProps) {
-    // RefreshControl is a controlled component so if the native refreshing
-    // value doesn't match the current js refreshing prop update it to
-    // the js value.
-    if (this.props.refreshing !== prevProps.refreshing) {
-      this._lastNativeRefreshing = this.props.refreshing;
-    } else if (
-      this.props.refreshing !== this._lastNativeRefreshing &&
-      this._nativeRef
-    ) {
-      if (Platform.OS === 'android') {
-        AndroidSwipeRefreshLayoutCommands.setNativeRefreshing(
-          this._nativeRef,
-          this.props.refreshing,
-        );
-      } else {
-        PullToRefreshCommands.setNativeRefreshing(
-          this._nativeRef,
-          this.props.refreshing,
-        );
-      }
-      this._lastNativeRefreshing = this.props.refreshing;
-    }
-  }
-
-  render(): React.Node {
-    if (Platform.OS === 'ios') {
-      const {enabled, colors, progressBackgroundColor, size, ...props} =
-        this.props;
-      return (
-        <PullToRefreshViewNativeComponent
-          {...props}
-          ref={this._setNativeRef}
-          onRefresh={this._onRefresh}
-        />
-      );
-    } else {
-      const {tintColor, titleColor, title, ...props} = this.props;
-      return (
-        <AndroidSwipeRefreshLayoutNativeComponent
-          {...props}
-          ref={this._setNativeRef}
-          onRefresh={this._onRefresh}
-        />
-      );
-    }
-  }
-
-  _onRefresh = () => {
-    this._lastNativeRefreshing = true;
+  const handleRefresh = useCallback(() => {
+    nativeRefreshingState.current = true; // Native state has changed to `true` on `onRefresh` callback.
 
     // $FlowFixMe[unused-promise]
-    this.props.onRefresh && this.props.onRefresh();
+    onRefresh?.();
 
     // The native component will start refreshing so force an update to
     // make sure it stays in sync with the js component.
-    this.forceUpdate();
-  };
+    forceRerender(val => val + 1);
+  }, [onRefresh]);
 
-  _setNativeRef = (
-    ref: ?React.ElementRef<
-      | typeof PullToRefreshViewNativeComponent
-      | typeof AndroidSwipeRefreshLayoutNativeComponent,
-    >,
-  ) => {
-    this._nativeRef = ref;
-  };
-}
+  // RefreshControl is a controlled component so if the native refreshing
+  // value doesn't match the current js refreshing prop update it to
+  // the js value.
+  useEffect(() => {
+    const viewRef = localRef.current;
+    if (!viewRef) {
+      return;
+    }
 
-export type RefreshControlInstance = RefreshControl;
+    //  Do nothing when a native state is the same as a `refreshing` prop
+    if (nativeRefreshingState.current === refreshing) {
+      return;
+    }
+
+    // Otherwise a JS component has to sync a native state with an actual `refreshing` value
+    if (Platform.OS === 'android') {
+      AndroidSwipeRefreshLayoutCommands.setNativeRefreshing(
+        viewRef,
+        refreshing,
+      );
+    } else {
+      PullToRefreshCommands.setNativeRefreshing(viewRef, refreshing);
+    }
+
+    nativeRefreshingState.current = refreshing;
+  }, [refreshing, rerender]);
+
+  if (Platform.OS === 'ios') {
+    return (
+      <PullToRefreshViewNativeComponent
+        {...viewProps}
+        refreshing={refreshing}
+        tintColor={tintColor}
+        titleColor={titleColor}
+        title={title}
+        ref={ref}
+        onRefresh={handleRefresh}
+      />
+    );
+  }
+
+  return (
+    <AndroidSwipeRefreshLayoutNativeComponent
+      {...viewProps}
+      refreshing={refreshing}
+      enabled={enabled}
+      colors={colors}
+      progressBackgroundColor={progressBackgroundColor}
+      size={size}
+      ref={ref}
+      onRefresh={handleRefresh}
+    />
+  );
+};
+
+RefreshControl.displayName = 'RefreshControl';
 
 export default RefreshControl;
