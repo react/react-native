@@ -8,6 +8,8 @@
  * @format
  */
 
+import stringifySafe from '../../../../Libraries/Utilities/stringifySafe';
+
 type JSONValue =
   | string
   | number
@@ -53,7 +55,7 @@ export class Domain {
 
   sendMessage(message: JSONValue) {
     const messageWithDomain = {domain: this.name, message};
-    const serializedMessageWithDomain = JSON.stringify(messageWithDomain);
+    const serializedMessageWithDomain = stringifySafe(messageWithDomain);
 
     global[FuseboxReactDevToolsDispatcher.BINDING_NAME](
       serializedMessageWithDomain,
