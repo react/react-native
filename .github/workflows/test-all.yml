@@ -327,6 +327,37 @@ jobs:
       fail-on-error: true
     secrets: inherit
 
+  test_cxx:
+    runs-on: 8-core-ubuntu
+    needs: [check_code_changes, lint]
+    if: needs.check_code_changes.outputs.any_code_change == 'true'
+    # Bound this advisory build+network job so a hang can't tie up a runner.
+    timeout-minutes: 60
+    # Advisory during rollout: a harness issue must not block merges. Once this
+    # job is consistently green, drop continue-on-error and add it to branch
+    # protection so it becomes a required merge gate.
+    continue-on-error: true
+    container:
+      # `:latest` matches every other job in this workflow (repo convention). The
+      # harness is kept resilient to image drift instead of pinning one job out of
+      # step: ccache is installed explicitly and the SDK CMake version is pinned in
+      # build.gradle.kts, so it does not rely on whatever the image happens to ship.
+      image: reactnativecommunity/react-native-android:latest
+      env:
+        # Set the encoding to resolve a known character encoding issue with decompressing tar.gz files in containers
+        # via Gradle: https://github.com/gradle/gradle/issues/23391#issuecomment-1878979127
+        LC_ALL: C.UTF8
+        TERM: 'dumb'
+        GRADLE_OPTS: '-Dorg.gradle.daemon=false'
+        REACT_NATIVE_DOWNLOADS_DIR: /opt/react-native-downloads
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Run C++ Tests
+        uses: ./.github/actions/run-cxx-tests
+        with:
+          gradle-cache-encryption-key: ${{ secrets.GRADLE_CACHE_ENCRYPTION_KEY }}
+
   build_android:
     runs-on: 8-core-ubuntu
     needs: [set_release_type, check_code_changes]
