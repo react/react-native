@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<d9d665005b8706625e48e615f44af4b8>>
+ * @generated SignedSource<<e234e314f0b3815be266dfd23a06484f>>
  * @flow strict
  * @noformat
  */
@@ -54,6 +54,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   cxxNativeAnimatedEnabled: Getter<boolean>,
   defaultTextToOverflowHidden: Getter<boolean>,
   disableEarlyViewCommandExecution: Getter<boolean>,
+  disableIdleEventDispatchFrameCallbackRearmAndroid: Getter<boolean>,
   disableImageViewPreallocationAndroid: Getter<boolean>,
   disableMountItemReorderingAndroid: Getter<boolean>,
   disableSubviewClippingAndroid: Getter<boolean>,
@@ -231,6 +232,10 @@ export const defaultTextToOverflowHidden: Getter<boolean> = createNativeFlagGett
  * Dispatch view commands in mount item order.
  */
 export const disableEarlyViewCommandExecution: Getter<boolean> = createNativeFlagGetter('disableEarlyViewCommandExecution', false);
+/**
+ * Make the batched-event-dispatch Choreographer frame callback one-shot on Android instead of re-posting itself every frame
+ */
+export const disableIdleEventDispatchFrameCallbackRearmAndroid: Getter<boolean> = createNativeFlagGetter('disableIdleEventDispatchFrameCallbackRearmAndroid', false);
 /**
  * Force disable view preallocation for images triggered from createNode off the main thread on Android
  */

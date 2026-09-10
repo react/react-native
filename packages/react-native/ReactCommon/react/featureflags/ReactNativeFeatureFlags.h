@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<1e9009301b79f977132c4fa5599aebdd>>
+ * @generated SignedSource<<0e3a9c187cdb83b596e45b3ead29d5a7>>
  */
 
 /**
@@ -65,6 +65,11 @@ class ReactNativeFeatureFlags {
    * Dispatch view commands in mount item order.
    */
   RN_EXPORT static bool disableEarlyViewCommandExecution();
+
+  /**
+   * Make the batched-event-dispatch Choreographer frame callback one-shot on Android instead of re-posting itself every frame
+   */
+  RN_EXPORT static bool disableIdleEventDispatchFrameCallbackRearmAndroid();
 
   /**
    * Force disable view preallocation for images triggered from createNode off the main thread on Android
