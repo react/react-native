@@ -664,14 +664,15 @@ public open class LayoutShadowNode : ReactShadowNodeImpl() {
       return
     }
 
-    val positionSpacingTypes = intArrayOf(
-        Spacing.START,
-        Spacing.END,
-        Spacing.LEFT,
-        Spacing.RIGHT,
-        Spacing.TOP,
-        Spacing.BOTTOM,
-    )
+    val positionSpacingTypes =
+        intArrayOf(
+            Spacing.START,
+            Spacing.END,
+            Spacing.LEFT,
+            Spacing.RIGHT,
+            Spacing.TOP,
+            Spacing.BOTTOM,
+        )
 
     val spacingType = maybeTransformLeftRightToStartEnd(positionSpacingTypes[index])
 

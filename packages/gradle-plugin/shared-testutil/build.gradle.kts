@@ -10,10 +10,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-plugins {
-  alias(libs.plugins.kotlin.jvm)
-  alias(libs.plugins.ktfmt)
-}
+plugins { alias(libs.plugins.kotlin.jvm) }
 
 repositories { mavenCentral() }
 
