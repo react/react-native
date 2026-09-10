@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<7b726d7483bb35062b79e582323f0d7e>>
+ * @generated SignedSource<<27db13f91b9672274086048a7a970362>>
  */
 
 /**
@@ -44,6 +44,10 @@ bool ReactNativeFeatureFlags::defaultTextToOverflowHidden() {
 
 bool ReactNativeFeatureFlags::disableEarlyViewCommandExecution() {
   return getAccessor().disableEarlyViewCommandExecution();
+}
+
+bool ReactNativeFeatureFlags::disableIdleTimersFrameCallbackRearmAndroid() {
+  return getAccessor().disableIdleTimersFrameCallbackRearmAndroid();
 }
 
 bool ReactNativeFeatureFlags::disableImageViewPreallocationAndroid() {

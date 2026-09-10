@@ -20,6 +20,7 @@ import com.facebook.react.common.SystemClock.nanoTime
 import com.facebook.react.common.SystemClock.uptimeMillis
 import com.facebook.react.common.annotations.internal.LegacyArchitecture
 import com.facebook.react.devsupport.interfaces.DevSupportManager
+import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import com.facebook.react.jstasks.HeadlessJsTaskContext
 import com.facebook.react.jstasks.HeadlessJsTaskEventListener
 import java.util.PriorityQueue
@@ -186,6 +187,16 @@ public open class JavaTimerManager(
       timers.add(timer)
       timerIdsToTimers.put(timerId, timer)
     }
+    if (ReactNativeFeatureFlags.disableIdleTimersFrameCallbackRearmAndroid() &&
+        !frameCallbackPosted &&
+        (!isPaused.get() || isRunningTasks.get())) {
+      // The timers frame callback disarms itself once the queue drains (see TimerFrameCallback);
+      // re-arm it lazily when a new timer arrives. setChoreographerCallback is UI-confined
+      // (ReactChoreographer must be driven from the UI looper) and idempotent, so hop to the UI
+      // thread. While the host is paused, only headless JS task execution may run timers —
+      // mirroring the guard in clearFrameCallback.
+      UiThreadUtil.runOnUiThread { setChoreographerCallback() }
+    }
   }
 
   /**
@@ -292,6 +303,7 @@ public open class JavaTimerManager(
         return
       }
       val frameTimeMillis = frameTimeNanos / 1000000
+      var shouldRepost = true
       synchronized(timerGuard) {
         while (!timers.isEmpty() && timers.peek()!!.targetTime < frameTimeMillis) {
           val timer = timers.poll()
@@ -309,12 +321,22 @@ public open class JavaTimerManager(
             timerIdsToTimers.remove(timer.timerId)
           }
         }
+        if (ReactNativeFeatureFlags.disableIdleTimersFrameCallbackRearmAndroid()) {
+          // The timer queue is empty: disarm instead of re-posting this callback at vsync rate.
+          // createTimer re-arms the callback when a new timer arrives.
+          shouldRepost = timers.isNotEmpty()
+          if (!shouldRepost) {
+            frameCallbackPosted = false
+          }
+        }
       }
       timersToCall?.let { timers ->
         javaScriptTimerExecutor.callTimers(timers)
         timersToCall = null
       }
-      reactChoreographer.postFrameCallback(ReactChoreographer.CallbackType.TIMERS_EVENTS, this)
+      if (shouldRepost) {
+        reactChoreographer.postFrameCallback(ReactChoreographer.CallbackType.TIMERS_EVENTS, this)
+      }
     }
   }
 

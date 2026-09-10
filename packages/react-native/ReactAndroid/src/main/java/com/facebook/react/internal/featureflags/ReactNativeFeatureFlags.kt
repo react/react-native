@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<b7ef80c2c39c734ae511fe6457b89ce7>>
+ * @generated SignedSource<<d2d65cecfe7e05e7d4d04fc54c904e60>>
  */
 
 /**
@@ -59,6 +59,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun disableEarlyViewCommandExecution(): Boolean = accessor.disableEarlyViewCommandExecution()
+
+  /**
+   * Stop re-arming the TIMERS_EVENTS Choreographer frame callback at vsync rate while the timer queue is empty on Android; createTimer re-arms it lazily
+   */
+  @JvmStatic
+  public fun disableIdleTimersFrameCallbackRearmAndroid(): Boolean = accessor.disableIdleTimersFrameCallbackRearmAndroid()
 
   /**
    * Force disable view preallocation for images triggered from createNode off the main thread on Android
