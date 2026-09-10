@@ -1773,6 +1773,45 @@ describe('refreshScaffoldedPlatformFloors', () => {
     expect(read('react-native-autogen')).toBe(autogen);
   });
 
+  it('refreshes a transitive spm.dependency that autolinking.json never lists', () => {
+    writeApp({'react-native-a': manifest('platforms: [.iOS("15.1")],')});
+    fs.writeFileSync(
+      path.join(appRoot, 'node_modules/react-native-a/package.json'),
+      JSON.stringify({
+        name: 'react-native-a',
+        swiftpmConfig: {dependencies: ['react-native-transitive']},
+      }),
+    );
+    const transitiveRoot = path.join(
+      appRoot,
+      'node_modules',
+      'react-native-transitive',
+    );
+    fs.mkdirSync(transitiveRoot, {recursive: true});
+    fs.writeFileSync(
+      path.join(transitiveRoot, 'package.json'),
+      JSON.stringify({name: 'react-native-transitive', version: '1.0.0'}),
+    );
+    fs.writeFileSync(
+      path.join(transitiveRoot, 'react-native.config.js'),
+      'module.exports = {dependency: {platforms: {ios: {}}}};\n',
+    );
+    fs.writeFileSync(
+      path.join(transitiveRoot, 'Package.swift'),
+      manifest('platforms: [.iOS("15.1")],'),
+      'utf8',
+    );
+
+    expect(
+      refresh()
+        .map(entry => entry.depName)
+        .sort(),
+    ).toEqual(['react-native-a', 'react-native-transitive']);
+    expect(read('react-native-transitive')).toContain(
+      'platforms: [.iOS("16.4")]',
+    );
+  });
+
   it('returns nothing when there is no autolinking.json', () => {
     expect(refresh()).toEqual([]);
   });

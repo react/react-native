@@ -1131,6 +1131,77 @@ function scaffoldPackageSwiftForDep(
   };
 }
 
+/**
+ * The dependency set the autolinker considers: the iOS entries of
+ * autolinking.json plus their transitive SwiftPM dependencies. Null when the
+ * file declares none; throws when it cannot be read or parsed. `onSkipped`
+ * reports the entries dropped for having no iOS platform.
+ */
+function collectAutolinkedDeps(
+  opts /*: {
+    autolinkingJsonPath: string,
+    remote: ?{url: string, version: string, identity: string},
+    onSkipped?: (name: string) => void,
+  } */,
+) /*: ?Array<AutolinkedDep> */ {
+  const {autolinkingJsonPath, remote, onSkipped} = opts;
+  /*:: type AutolinkingJson = {dependencies?: ?{[string]: {root?: string, platforms?: {ios?: ?{...}, ...}, ...}}, ...}; */
+  // $FlowFixMe[incompatible-type] JSON.parse returns any
+  const data /*: AutolinkingJson */ = JSON.parse(
+    fs.readFileSync(autolinkingJsonPath, 'utf8'),
+  );
+  const deps = data.dependencies;
+  if (deps == null) {
+    return null;
+  }
+
+  const directDeps /*: Array<AutolinkedDep> */ = [];
+  for (const name of Object.keys(deps)) {
+    const raw = deps[name];
+    if (raw == null) continue;
+    const root = raw.root;
+    const ios = raw.platforms?.ios;
+    if (typeof root !== 'string' || ios == null) {
+      onSkipped?.(name);
+      continue;
+    }
+    // $FlowFixMe[incompatible-type] `ios` shape is runtime-validated above
+    const iosPlatform /*: AutolinkingIosPlatform */ = ios;
+    directDeps.push({name, root, platforms: {ios: iosPlatform}});
+  }
+
+  try {
+    return expandSpmDependencies(directDeps, {
+      readConfig: defaultReadConfig,
+      resolveDep: defaultResolveDep,
+      readPodspec: defaultReadPodspec,
+      extraReservedNames: remote != null ? [remote.identity] : undefined,
+    });
+  } catch (e) {
+    if (e instanceof SpmNameCollisionError) {
+      throw e;
+    }
+    // A transitive-resolution failure shouldn't abort the whole pass; fall back
+    // to the direct deps so at least those are covered. They are named the way
+    // the autolinker names them — a manifest written under any other name
+    // outlives this error on disk and then fails to resolve.
+    log(`Transitive dependency expansion failed: ${e.message}`);
+    return directDeps.map(dep => {
+      const resolved = resolveSwiftName(
+        dep.name,
+        readSwiftpmConfig(dep.root, defaultReadConfig(dep.root)),
+        defaultReadPodspec(dep.root, dep.platforms.ios.podspecPath),
+      );
+      return {
+        ...dep,
+        swiftName: resolved.name,
+        swiftNameSource: resolved.source,
+        swiftNamePodspecKey: resolved.podspecKey,
+      };
+    });
+  }
+}
+
 // The `.iOS(...)` element of the emitted platforms array — the `.v15` enum form
 // pre-v20 scaffolds carry included, and without the array's closing bracket so
 // a user-extended array (`[.iOS(…), .macOS(…)]`) is still matched.
@@ -1152,12 +1223,15 @@ function refreshScaffoldedPlatformFloors(
     path.join(appRoot, 'build', 'generated', 'autolinking', 'autolinking.json');
   const refreshed = [];
 
-  let deps;
+  // Best-effort: an unreadable autolinking.json, a name collision or a
+  // malformed remote config is the autolinker's error to report a moment
+  // later, not this pass's.
+  let deps /*: ?Array<AutolinkedDep> */ = null;
   try {
-    // $FlowFixMe[incompatible-type] JSON.parse returns any
-    deps = JSON.parse(
-      fs.readFileSync(autolinkingJsonPath, 'utf8'),
-    ).dependencies;
+    deps = collectAutolinkedDeps({
+      autolinkingJsonPath,
+      remote: remotePackageConfig(appRoot),
+    });
   } catch {
     return refreshed;
   }
@@ -1165,11 +1239,7 @@ function refreshScaffoldedPlatformFloors(
     return refreshed;
   }
 
-  for (const depName of Object.keys(deps)) {
-    const root = deps[depName]?.root;
-    if (typeof root !== 'string') {
-      continue;
-    }
+  for (const {name: depName, root} of deps) {
     const manifestPath = path.join(root, 'Package.swift');
     let content;
     try {
@@ -1247,76 +1317,29 @@ function scaffoldAll(
     return [];
   }
 
-  /*:: type AutolinkingJson = {dependencies?: ?{[string]: {root?: string, platforms?: {ios?: ?{...}, ...}, ...}}, ...}; */
-  // $FlowFixMe[incompatible-type] JSON.parse returns any
-  const data /*: AutolinkingJson */ = JSON.parse(
-    fs.readFileSync(autolinkingJsonPath, 'utf8'),
-  );
-  const deps = data.dependencies;
-  if (deps == null) {
-    return [];
-  }
-
-  // Narrow the direct autolinking.json entries with an iOS platform, then
-  // expand transitive `spm.dependencies` so the scaffolder covers EXACTLY the
-  // set the autolinker considers. Without this, a transitive native dep that
+  // The scaffolder covers EXACTLY the set the autolinker considers, transitive
+  // `spm.dependencies` included. Without them, a transitive native dep that
   // ships no Package.swift would be flagged by the autolinker but never
   // scaffolded here — leaving `react-native spm scaffold` unable to clear the
   // autolinker's missing-manifest error.
   const results /*: Array<ScaffoldResult> */ = [];
-  const directDeps /*: Array<AutolinkedDep> */ = [];
-  for (const name of Object.keys(deps)) {
-    const raw = deps[name];
-    if (raw == null) continue;
-    const root = raw.root;
-    const ios = raw.platforms?.ios;
-    if (typeof root !== 'string' || ios == null) {
+  // Outside collectAutolinkedDeps' own try: a malformed remote config
+  // (RemoteVersionError) is a misconfiguration to surface, not an expansion
+  // failure to degrade past.
+  const remote = remotePackageConfig(appRoot);
+  const allDeps = collectAutolinkedDeps({
+    autolinkingJsonPath,
+    remote,
+    onSkipped: name => {
       results.push({
         depName: name,
         status: 'skipped-no-ios',
         reason: 'no iOS platform in autolinking.json',
       });
-      continue;
-    }
-    // $FlowFixMe[incompatible-type] `ios` shape is runtime-validated above
-    const iosPlatform /*: AutolinkingIosPlatform */ = ios;
-    directDeps.push({name, root, platforms: {ios: iosPlatform}});
-  }
-
-  // Outside the try: a malformed remote config (RemoteVersionError) is a
-  // misconfiguration to surface, not an expansion failure to degrade past.
-  const remote = remotePackageConfig(appRoot);
-
-  let allDeps /*: Array<AutolinkedDep> */ = [];
-  try {
-    allDeps = expandSpmDependencies(directDeps, {
-      readConfig: defaultReadConfig,
-      resolveDep: defaultResolveDep,
-      readPodspec: defaultReadPodspec,
-      extraReservedNames: remote != null ? [remote.identity] : undefined,
-    });
-  } catch (e) {
-    if (e instanceof SpmNameCollisionError) {
-      throw e;
-    }
-    // A transitive-resolution failure shouldn't abort the whole scaffold pass;
-    // fall back to the direct deps so at least those get manifests. They are
-    // named the same way the autolinker names them — a manifest written under
-    // any other name outlives this error on disk and then fails to resolve.
-    log(`Transitive dependency expansion failed: ${e.message}`);
-    allDeps = directDeps.map(dep => {
-      const resolved = resolveSwiftName(
-        dep.name,
-        readSwiftpmConfig(dep.root, defaultReadConfig(dep.root)),
-        defaultReadPodspec(dep.root, dep.platforms.ios.podspecPath),
-      );
-      return {
-        ...dep,
-        swiftName: resolved.name,
-        swiftNameSource: resolved.source,
-        swiftNamePodspecKey: resolved.podspecKey,
-      };
-    });
+    },
+  });
+  if (allDeps == null) {
+    return results;
   }
 
   // Index every autolinked dep's podspec name → its npm name, so a dep that
