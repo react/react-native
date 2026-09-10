@@ -213,6 +213,25 @@ static UIColor *defaultPlaceholderColor(void)
   [super scrollRangeToVisible:range];
 }
 
+// Since UITextView is a UIScrollView, UIKit only scrolls this view to reveal the cursor. If UITextView is obscured when
+// enclosed in a ScrollView, the cursor is never revealed. Therefore we forward the reveal upward to the nearest
+// scrollable ancestor.
+- (void)scrollRectToVisible:(CGRect)rect animated:(BOOL)animated
+{
+  [super scrollRectToVisible:rect animated:animated];
+
+  if (!self.isFirstResponder) {
+    return;
+  }
+
+  UIScrollView *scrollableAncestor = [self nearestScrollableAncestor];
+  if (scrollableAncestor == nil) {
+    return;
+  }
+
+  [scrollableAncestor scrollRectToVisible:[scrollableAncestor convertRect:rect fromView:self] animated:animated];
+}
+
 - (void)paste:(id)sender
 {
   _textWasPasted = YES;
@@ -378,5 +397,15 @@ static UIColor *defaultPlaceholderColor(void)
 }
 
 #pragma mark - Utility Methods
+
+- (nullable UIScrollView *)nearestScrollableAncestor
+{
+  for (UIView *superview = self.superview; superview != nil; superview = superview.superview) {
+    if ([superview isKindOfClass:[UIScrollView class]] && ((UIScrollView *)superview).isScrollEnabled) {
+      return (UIScrollView *)superview;
+    }
+  }
+  return nil;
+}
 
 @end
