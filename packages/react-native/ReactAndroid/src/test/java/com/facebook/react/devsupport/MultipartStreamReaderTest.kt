@@ -10,6 +10,8 @@ package com.facebook.react.devsupport
 import okio.Buffer
 import okio.BufferedSource
 import okio.ByteString
+import okio.ForwardingSource
+import okio.Okio
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
@@ -210,6 +212,42 @@ class MultipartStreamReaderTest {
 
     assertThat(success).isTrue()
     assertThat(callback.callCount).isEqualTo(1)
+  }
+
+  @Test
+  fun testDelimitersAcrossEveryReadBoundary() {
+    // The trailing CRLF must not become a header separator spanning the next boundary.
+    val body = "binary\u0000\r\n--samplX\r\n--sample-\r\n"
+    val response = "preamble\r\n--sample\r\n${body}\r\n--sample\r\nsecond\r\n--sample--\r\nepilogue"
+    for (readSize in 1..response.length) {
+      val upstream = Buffer().writeUtf8(response)
+      val source =
+          Okio.buffer(
+              object : ForwardingSource(upstream) {
+                override fun read(sink: Buffer, byteCount: Long): Long =
+                    super.read(sink, minOf(byteCount, readSize.toLong()))
+              }
+          )
+      val parts = mutableListOf<String>()
+      val last = mutableListOf<Boolean>()
+      val success =
+          MultipartStreamReader(source, "sample")
+              .readAllParts(
+                  object : CallCountTrackingChunkCallback() {
+                    override fun onChunkComplete(
+                        headers: Map<String, String>,
+                        body: BufferedSource,
+                        isLastChunk: Boolean,
+                    ) {
+                      parts.add(body.readUtf8())
+                      last.add(isLastChunk)
+                    }
+                  }
+              )
+      assertThat(success).describedAs("read size %s", readSize).isTrue()
+      assertThat(parts).containsExactly(body, "second")
+      assertThat(last).containsExactly(false, true)
+    }
   }
 
   internal open class CallCountTrackingChunkCallback : MultipartStreamReader.ChunkListener {
