@@ -45,6 +45,28 @@ JNI interface to this currently Kotlin/Objective-C utility. Neither approach
 removes platform I/O or Catalyst fallback. Measure application memory and real
 bundle-download behavior before broadening adoption.
 
+## Explicit scroll offsets
+
+`ScrollSnapOffsets` selects a target from explicit offsets for three Android views
+and Apple's enhanced scroll view. Target prediction, axis/RTL handling, density,
+velocity adjustment, interval snapping and native physics remain in the views.
+Android retains its caller-owned integer list and pixel arithmetic. Apple caches
+a primitive offset array when the property changes, then calls the selector once
+per fling. It does not call Kotlin on every animation frame.
+
+`python3 scripts/test-apple-scroll-snap.py --benchmark-repeats 0` compiles the
+actual Apple view with native and KMP paths, checks their target outputs, and
+checks Catalyst fallback. The runner also compiles a test-only cached native
+control to separate storage/caching benefits from Kotlin's contribution.
+Omit that option to collect timing samples; the framework includes all use cases
+present in the checkout. The Android core test suite includes
+`ReactScrollSnapOffsetsTest`, which exercises all three views' actual fling code.
+
+This is a Kotlin-first consumer with a small target/direction result on Apple. A shared
+C++ selector or caching the native Apple offsets are both alternatives; faster
+results against the original NSNumber loop alone would not establish a KMP
+advantage. Evaluate first-use cost, offset updates and repeated calls separately.
+
 ## Build and test
 
 The standalone build uses its own Gradle wrapper and Kotlin plugin so that it
@@ -159,7 +181,7 @@ python3 scripts/benchmark-kmp-build.py
 ```
 
 The app script copies RNTester into an isolated sibling directory, enables KMP,
-and verifies the actual compiled gradient and multipart adapters. Simulator runs
+and verifies the actual compiled gradient, multipart and scroll adapters. Simulator runs
 execute the RNTester test plan and launch the app; device and Catalyst runs are unsigned
 build checks. Catalyst is enabled in the copied Podfile and application project.
 Each run requires fresh build outputs. It preserves RNTester's existing hosted-test topology and removes

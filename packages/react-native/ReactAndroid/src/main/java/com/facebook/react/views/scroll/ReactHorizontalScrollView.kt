@@ -35,6 +35,8 @@ import com.facebook.react.R
 import com.facebook.react.common.ReactConstants
 import com.facebook.react.common.build.ReactBuildConfig
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
+import com.facebook.react.shared.ScrollSnapDirection
+import com.facebook.react.shared.ScrollSnapOffsets
 import com.facebook.react.uimanager.BackgroundStyleApplicator
 import com.facebook.react.uimanager.HasChildPressedStateDelay
 import com.facebook.react.uimanager.LengthPercentage
@@ -169,6 +171,7 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
   private var disableIntervalMomentum = false
   private var snapInterval = 0
   private var snapOffsets: List<Int>? = null
+  private var sharedSnapOffsets: ScrollSnapOffsets? = null
   private var snapToStart = true
   private var snapToEnd = true
   private var snapToAlignment = SNAP_ALIGNMENT_DISABLED
@@ -277,6 +280,7 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
     disableIntervalMomentum = false
     snapInterval = 0
     snapOffsets = null
+    sharedSnapOffsets = null
     snapToStart = true
     snapToEnd = true
     snapToAlignment = SNAP_ALIGNMENT_DISABLED
@@ -388,6 +392,7 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
 
   public open fun setSnapOffsets(snapOffsets: List<Int>?) {
     this.snapOffsets = snapOffsets
+    sharedSnapOffsets = snapOffsets?.let { ScrollSnapOffsets.fromIntegerOffsets(it) }
   }
 
   public open fun setSnapToStart(snapToStart: Boolean) {
@@ -1223,8 +1228,8 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
 
     var smallerOffset = 0
     var largerOffset = maximumOffset
-    var firstOffset = 0
-    var lastOffset = maximumOffset
+    val firstOffset = 0
+    val lastOffset = maximumOffset
     val viewportWidth = width - paddingStart - paddingEnd
 
     // offsets are from the right edge in RTL layouts
@@ -1233,26 +1238,21 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
       velocityX = -velocityX
     }
 
-    // get the nearest snap points to the target offset
-    val offsets = snapOffsets
-    if (!offsets.isNullOrEmpty()) {
-      firstOffset = offsets[0]
-      lastOffset = offsets[offsets.size - 1]
-
-      for (i in offsets.indices) {
-        val offset = offsets[i]
-        if (offset <= targetOffset) {
-          if (targetOffset - offset < targetOffset - smallerOffset) {
-            smallerOffset = offset
-          }
-        }
-        if (offset >= targetOffset) {
-          if (offset - targetOffset < largerOffset - targetOffset) {
-            largerOffset = offset
-          }
-        }
-      }
-    } else if (snapToAlignment != SNAP_ALIGNMENT_DISABLED) {
+    val snapResult =
+        sharedSnapOffsets
+            ?.takeIf { !snapOffsets.isNullOrEmpty() }
+            ?.resolve(
+                currentOffset =
+                    (if (layoutDirection == LAYOUT_DIRECTION_RTL) maximumOffset - scrollX
+                        else scrollX)
+                        .toDouble(),
+                targetOffset = targetOffset.toDouble(),
+                maximumOffset = maximumOffset.toDouble(),
+                velocity = velocityX.toDouble(),
+                snapToStart = snapToStart,
+                snapToEnd = snapToEnd,
+            )
+    if (snapResult == null && snapToAlignment != SNAP_ALIGNMENT_DISABLED) {
       if (snapInterval > 0) {
         val ratio = targetOffset.toDouble() / snapInterval
         smallerOffset =
@@ -1303,7 +1303,7 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
         smallerOffset = max(smallerOffset, smallerChildOffset)
         largerOffset = kotlin.math.min(largerOffset, largerChildOffset)
       }
-    } else {
+    } else if (snapResult == null) {
       val interval = getSnapInterval().toDouble()
       val ratio = targetOffset.toDouble() / interval
       smallerOffset = (floor(ratio) * interval).toInt()
@@ -1321,7 +1321,18 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
     if (layoutDirection == LAYOUT_DIRECTION_RTL) {
       currentOffset = maximumOffset - currentOffset
     }
-    if (!snapToEnd && targetOffset >= lastOffset) {
+    if (snapResult != null) {
+      if (!hasCustomizedFlingAnimator) {
+        when (snapResult.direction) {
+          ScrollSnapDirection.FORWARD ->
+              velocityX += ((snapResult.selectedOffset.toInt() - targetOffset) * 10.0).toInt()
+          ScrollSnapDirection.BACKWARD ->
+              velocityX -= ((targetOffset - snapResult.selectedOffset.toInt()) * 10.0).toInt()
+          ScrollSnapDirection.NONE -> {}
+        }
+      }
+      targetOffset = snapResult.targetOffset.toInt()
+    } else if (!snapToEnd && targetOffset >= lastOffset) {
       if (currentOffset >= lastOffset) {
         // free scrolling
       } else {

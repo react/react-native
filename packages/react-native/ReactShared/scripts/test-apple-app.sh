@@ -207,6 +207,7 @@ expected_kmp = sys.argv[2] != 'catalyst'
 reports = []
 for filename, classes in (
     ('RCTGradientUtils.o', ('RNSGradientStops',)),
+    ('RCTEnhancedScrollView.o', ('RNSScrollSnapOffsets',)),
     ('RCTMultipartStreamReader.o', ('RNSMultipartFraming', 'RNSMultipartHeaders')),
 ):
     objects = list(pathlib.Path(sys.argv[1]).rglob(filename))

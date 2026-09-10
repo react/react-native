@@ -93,7 +93,8 @@ def inspect_aar(aar):
                                    and name.endswith(".class"))
     required = {f"com/facebook/react/shared/{name}.class"
                 for name in ["GradientStops", "GradientStopInput", "ResolvedGradientStop",
-                             "MultipartFraming", "MultipartChunk", "MultipartHeaders", "MultipartHeader"]}
+                             "MultipartFraming", "MultipartChunk", "MultipartHeaders", "MultipartHeader",
+                             "ScrollSnapOffsets", "ScrollSnapDirection", "ScrollSnapResult"]}
     if not required.issubset(classes) or any(count != 1 for count in classes.values()):
         raise AssertionError(f"Missing or duplicated shared classes in {aar}: {classes}")
     with tempfile.TemporaryDirectory(prefix="react-native-kmp-bytecode-") as directory:
@@ -105,6 +106,8 @@ def inspect_aar(aar):
             "com.facebook.react.devsupport.MultipartStreamReader": (
                 "MultipartFraming.nextChunk", "MultipartHeaders.parse"),
         }
+        for view in ("ReactScrollView", "ReactHorizontalScrollView", "ReactNestedScrollView"):
+            adapters[f"com.facebook.react.views.scroll.{view}"] = ("ScrollSnapOffsets.resolve",)
         for adapter, methods in adapters.items():
             bytecode = subprocess.check_output(
                 ["javap", "-c", "-p", "-classpath", str(jar), adapter], text=True)
