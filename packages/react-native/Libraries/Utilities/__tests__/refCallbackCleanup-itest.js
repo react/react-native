@@ -13,24 +13,23 @@ import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 import type {HostInstance} from '../../../src/private/types/HostInstance';
 
 import View from '../../Components/View/View';
-import useRefEffect from '../useRefEffect';
+import useMergeRefs from '../useMergeRefs';
 import * as Fantom from '@react-native/fantom';
 import * as React from 'react';
 
 type RegistryEntry = {kind: 'effect' | 'cleanup', name: string, key: ?string};
 
 /**
- * TestView provide a component execution environment to test hooks.
+ * TestView provide a component execution environment to test ref lifecycle.
  */
 function TestView({
   childKey = null,
   effect,
 }: {
   childKey: ?string,
-  effect: (?HostInstance) => (() => void) | void,
+  effect: React.RefSetter<HostInstance>,
 }) {
-  const ref = useRefEffect<?HostInstance>(effect);
-  return <View key={childKey} ref={ref} id={childKey ?? undefined} />;
+  return <View key={childKey} ref={effect} id={childKey ?? undefined} />;
 }
 
 function keyOf(instance: ?HostInstance): ?string {
@@ -49,8 +48,9 @@ function cleanupEntry(name: string, key: ?string): RegistryEntry {
 }
 
 function mockEffectRegistry(): {
-  mockEffect: string => (?HostInstance) => () => void,
-  mockEffectWithoutCleanup: string => (?HostInstance) => void,
+  mockEffect: string => React.RefSetter<HostInstance>,
+  mockEffectThatThrows: string => React.RefSetter<HostInstance>,
+  mockEffectWithoutCleanup: string => React.RefSetter<HostInstance>,
   registry: Array<RegistryEntry>,
 } {
   const registry: Array<RegistryEntry> = [];
@@ -62,6 +62,15 @@ function mockEffectRegistry(): {
         return () => {
           registry.push(cleanupEntry(name, key));
         };
+      };
+    },
+    mockEffectThatThrows(name: string): (?HostInstance) => void {
+      return instance => {
+        const key = keyOf(instance);
+        registry.push(effectEntry(name, key));
+        if (instance != null) {
+          throw new Error(`${name} failed`);
+        }
       };
     },
     mockEffectWithoutCleanup(name: string): (?HostInstance) => void {
@@ -90,7 +99,22 @@ test('calls effect without cleanup', () => {
     root.render(<></>);
   });
 
-  expect(registry).toEqual([effectEntry('A', 'foo')]);
+  expect(registry).toEqual([effectEntry('A', 'foo'), effectEntry('A', null)]);
+});
+
+test('calls effect with null when it throws', () => {
+  const root = Fantom.createRoot();
+
+  const {mockEffectThatThrows, registry} = mockEffectRegistry();
+  const effectA = mockEffectThatThrows('A');
+
+  Fantom.runTask(() => {
+    root.render(<TestView childKey="foo" effect={effectA} />);
+  });
+
+  // A cleanup is only adopted from an effect that returns normally, so React
+  // detaches by invoking the effect again with null.
+  expect(registry).toEqual([effectEntry('A', 'foo'), effectEntry('A', null)]);
 });
 
 test('calls effect and cleanup', () => {
@@ -174,6 +198,36 @@ test('calls cleanup and effect on new instance', () => {
     cleanupEntry('A', 'foo'),
     effectEntry('A', 'bar'),
     cleanupEntry('A', 'bar'),
+  ]);
+});
+
+test('useMergeRefs correctly combines different ref handler types', () => {
+  const root = Fantom.createRoot();
+
+  const {mockEffect, mockEffectWithoutCleanup, registry} = mockEffectRegistry();
+  const effectA = mockEffect('A');
+  const effectB = mockEffectWithoutCleanup('B');
+
+  function ComponentUsingMergeRefs() {
+    const mergedRef = useMergeRefs(effectA, effectB);
+    return <TestView childKey="foo" effect={mergedRef} />;
+  }
+
+  Fantom.runTask(() => {
+    root.render(<ComponentUsingMergeRefs />);
+  });
+
+  expect(registry).toEqual([effectEntry('A', 'foo'), effectEntry('B', 'foo')]);
+
+  Fantom.runTask(() => {
+    root.render(<></>);
+  });
+
+  expect(registry).toEqual([
+    effectEntry('A', 'foo'),
+    effectEntry('B', 'foo'),
+    cleanupEntry('A', 'foo'),
+    effectEntry('B', null),
   ]);
 });
 

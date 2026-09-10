@@ -16,7 +16,6 @@ import AnimatedProps from '../../../Libraries/Animated/nodes/AnimatedProps';
 import AnimatedValue from '../../../Libraries/Animated/nodes/AnimatedValue';
 import {isPublicInstance as isFabricPublicInstance} from '../../../Libraries/ReactNative/ReactFabricPublicInstance/ReactFabricPublicInstanceUtils';
 import {RootTagContext} from '../../../Libraries/ReactNative/RootTag';
-import useRefEffect from '../../../Libraries/Utilities/useRefEffect';
 import warnOnce from '../../../Libraries/Utilities/warnOnce';
 import * as ReactNativeFeatureFlags from '../featureflags/ReactNativeFeatureFlags';
 import {createAnimatedPropsMemoHook} from './createAnimatedPropsMemoHook';
@@ -112,7 +111,14 @@ export default function createAnimatedPropsHook(
     // But there is no way to transparently compose three separate callback refs,
     // so we just combine them all into one for now.
     const refEffect = useCallback(
-      (instance: TInstance) => {
+      (instance: TInstance | null) => {
+        // React only adopts the returned cleanup if this callback returns
+        // normally, so it falls back to re-invoking it with null to detach if a
+        // previous call threw.
+        if (instance == null) {
+          return;
+        }
+
         // NOTE: This may be called more often than necessary (e.g. when `props`
         // changes), but `setNativeView` already optimizes for that.
         // $FlowFixMe[incompatible-type]
@@ -224,9 +230,8 @@ export default function createAnimatedPropsHook(
       },
       [node],
     );
-    const callbackRef = useRefEffect<TInstance>(refEffect);
 
-    return [reduceAnimatedProps<TProps>(node, props), callbackRef];
+    return [reduceAnimatedProps<TProps>(node, props), refEffect];
   };
 }
 

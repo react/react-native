@@ -13,7 +13,7 @@ import type {AbstractImageAndroid, AbstractImageIOS} from './ImageTypes.flow';
 
 import useMergeRefs from '../Utilities/useMergeRefs';
 import * as React from 'react';
-import {useRef} from 'react';
+import {useCallback} from 'react';
 
 type ImageComponentDecorator = (AbstractImageAndroid => AbstractImageAndroid) &
   (AbstractImageIOS => AbstractImageIOS);
@@ -53,32 +53,21 @@ export function unstable_unregisterImageAttachedCallback(
 export function useWrapRefWithImageAttachedCallbacks(
   forwardedRef: React.RefSetter<ImageInstance>,
 ): React.RefSetter<ImageInstance> {
-  const pendingCleanupCallbacks = useRef<Array<() => void>>([]);
-
-  const imageAttachedCallbacksRef =
-    useRef<?(node: ImageInstance | null) => void>(null);
-
-  if (imageAttachedCallbacksRef.current == null) {
-    imageAttachedCallbacksRef.current = (node: ImageInstance | null): void => {
-      if (node == null) {
-        if (pendingCleanupCallbacks.current.length > 0) {
-          pendingCleanupCallbacks.current.forEach(cb => cb());
-          pendingCleanupCallbacks.current = [];
-        }
-      } else {
-        imageAttachedCallbacks.forEach(imageAttachedCallback => {
-          const maybeCleanupCallback = imageAttachedCallback(node);
-          if (maybeCleanupCallback != null) {
-            pendingCleanupCallbacks.current.push(maybeCleanupCallback);
-          }
-        });
+  const attachCallback = useCallback((node: ImageInstance) => {
+    const pendingCleanup = [];
+    imageAttachedCallbacks.forEach(imageAttachedCallback => {
+      const maybeCleanupCallback = imageAttachedCallback(node);
+      if (maybeCleanupCallback != null) {
+        pendingCleanup.push(maybeCleanupCallback);
       }
-    };
-  }
+    });
+    return () => pendingCleanup.forEach(cb => cb());
+  }, []);
 
   // `useMergeRefs` returns a stable ref if its arguments don't change.
   return useMergeRefs<ImageInstance>(
     forwardedRef,
-    imageAttachedCallbacksRef.current,
+    // $FlowFixMe[incompatible-type] - blocked on refined refsetter types
+    attachCallback as React.RefSetter<ImageInstance>,
   );
 }
