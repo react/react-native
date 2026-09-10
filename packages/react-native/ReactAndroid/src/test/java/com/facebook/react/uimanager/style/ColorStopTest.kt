@@ -176,4 +176,90 @@ class ColorStopTest {
     assertThat(processed[4].color).isEqualTo(Color.MAGENTA)
     assertThat(processed[4].position).isEqualTo(1f)
   }
+
+  @Test
+  fun testPointPositionsUseAndroidDisplayDensityBeforeSharedFixup() {
+    val metrics = DisplayMetrics()
+    metrics.density = 2f
+    DisplayMetricsHolder.setScreenDisplayMetrics(metrics)
+    val colorStops =
+        listOf(
+            ColorStop(Color.RED, LengthPercentage(25f, LengthPercentageType.POINT)),
+            ColorStop(Color.BLUE, LengthPercentage(100f, LengthPercentageType.PERCENT)),
+        )
+
+    val processed = ColorStopUtils.getFixedColorStops(colorStops, 200f)
+
+    assertThat(processed[0].position).isEqualTo(.25f)
+    assertThat(processed[1].position).isEqualTo(1f)
+  }
+
+  @Test
+  fun testTransitionHintKeepsAndroidColorAndAlphaRounding() {
+    val colorStops =
+        listOf(
+            ColorStop(Color.argb(128, 255, 0, 0)),
+            ColorStop(null, LengthPercentage(25f, LengthPercentageType.PERCENT)),
+            ColorStop(Color.BLUE),
+        )
+
+    val processed = ColorStopUtils.getFixedColorStops(colorStops, 100f)
+
+    assertThat(processed).hasSize(11)
+    assertThat(processed[3].position).isEqualTo(.25f)
+    assertThat(processed[3].color).isEqualTo(Color.argb(191, 127, 0, 127))
+    assertThat(processed.first().color).isEqualTo(Color.argb(128, 255, 0, 0))
+    assertThat(processed.last().color).isEqualTo(Color.BLUE)
+  }
+
+  @Test
+  fun testEndpointHintsReuseTheOppositeColorWithoutBlending() {
+    for ((hintPosition, expectedColor) in listOf(0f to Color.BLUE, 100f to Color.RED)) {
+      val colorStops =
+          listOf(
+              ColorStop(Color.RED),
+              ColorStop(null, LengthPercentage(hintPosition, LengthPercentageType.PERCENT)),
+              ColorStop(Color.BLUE),
+          )
+
+      val processed = ColorStopUtils.getFixedColorStops(colorStops, 100f)
+
+      assertThat(processed).hasSize(3)
+      assertThat(processed[1].color).isEqualTo(expectedColor)
+      assertThat(processed[1].position).isEqualTo(hintPosition / 100f)
+    }
+  }
+
+  @Test
+  fun testCenteredHintDoesNotChangeTheColors() {
+    val colorStops =
+        listOf(
+            ColorStop(Color.RED),
+            ColorStop(null, LengthPercentage(50f, LengthPercentageType.PERCENT)),
+            ColorStop(Color.BLUE),
+        )
+
+    val processed = ColorStopUtils.getFixedColorStops(colorStops, 100f)
+
+    assertThat(processed).hasSize(2)
+    assertThat(processed[0].color).isEqualTo(Color.RED)
+    assertThat(processed[1].color).isEqualTo(Color.BLUE)
+  }
+
+  @Test
+  fun testZeroLengthGradientKeepsNonFiniteSamplesUncolored() {
+    val colorStops =
+        listOf(
+            ColorStop(Color.RED),
+            ColorStop(null, LengthPercentage(10f, LengthPercentageType.POINT)),
+            ColorStop(Color.BLUE, LengthPercentage(20f, LengthPercentageType.POINT)),
+        )
+
+    val processed = ColorStopUtils.getFixedColorStops(colorStops, 0f)
+
+    assertThat(processed).hasSize(11)
+    assertThat(processed.first().color).isEqualTo(Color.RED)
+    assertThat(processed.last().color).isEqualTo(Color.BLUE)
+    assertThat(processed.subList(1, 10).all { it.color == null }).isTrue()
+  }
 }

@@ -41,8 +41,8 @@ jobs:
     if: github.repository == 'react/react-native'
     outputs:
       any_code_change: ${{ steps.filter_exclusions.outputs.any_code_change == 'true' || github.event_name != 'pull_request' }}
-      should_test_android: ${{ steps.filter_exclusions.outputs.should_test_android == 'true' || github.event_name != 'pull_request' }}
-      should_test_ios: ${{ steps.filter_exclusions.outputs.should_test_ios == 'true' || github.event_name != 'pull_request' }}
+      should_test_android: ${{ steps.filter_exclusions.outputs.should_test_android == 'true' || steps.filter_inclusions.outputs.react_shared == 'true' || github.event_name != 'pull_request' }}
+      should_test_ios: ${{ steps.filter_exclusions.outputs.should_test_ios == 'true' || steps.filter_inclusions.outputs.react_shared == 'true' || github.event_name != 'pull_request' }}
       debugger_shell: ${{ steps.filter_inclusions.outputs.debugger_shell }}
     steps:
       - name: Checkout
@@ -85,6 +85,9 @@ jobs:
         id: filter_inclusions
         with:
           filters: |
+            # Shared Kotlin and its build configuration affect both platforms.
+            react_shared:
+              - 'packages/react-native/ReactShared/**'
             debugger_shell:
               - 'packages/debugger-shell/**'
               - 'scripts/debugger-shell/**'

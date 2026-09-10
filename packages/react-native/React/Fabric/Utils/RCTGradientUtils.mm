@@ -8,9 +8,17 @@
 #import "RCTGradientUtils.h"
 #import <React/RCTAnimationUtils.h>
 #import <React/RCTConversions.h>
+#import <TargetConditionals.h>
 #import <react/utils/FloatComparison.h>
 #include <optional>
 #import <vector>
+
+#if RCT_USE_KMP && TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+#define RCT_GRADIENT_USE_KMP 1
+#import <ReactNativeShared/ReactNativeShared.h>
+#else
+#define RCT_GRADIENT_USE_KMP 0
+#endif
 
 using namespace facebook::react;
 
@@ -156,6 +164,45 @@ static std::optional<Float> resolveColorStopPosition(ValueUnit position, CGFloat
   return std::nullopt;
 }
 
+#if RCT_GRADIENT_USE_KMP
+static std::vector<ProcessedColorStop> resolveSharedColorStops(
+    const std::vector<ColorStop> &colorStops,
+    CGFloat gradientLineLength)
+{
+  NSMutableArray<RNSGradientStopInput *> *inputs = [NSMutableArray arrayWithCapacity:colorStops.size()];
+  for (const auto &stop : colorStops) {
+    auto position = resolveColorStopPosition(stop.position, gradientLineLength);
+    RNSDouble *boxedPosition = position.has_value() ? [RNSDouble numberWithDouble:position.value()] : nil;
+    auto input = [[RNSGradientStopInput alloc] initWithPosition:boxedPosition hasColor:static_cast<bool>(stop.color)];
+    [inputs addObject:input];
+  }
+
+  auto resolved = [RNSGradientStops.shared resolveStops:inputs epsilon:kDefaultEpsilon useDoublePrecision:YES];
+  std::vector<ProcessedColorStop> result;
+  result.reserve(resolved.count);
+  NSArray<NSNumber *> *inputRange = @[ @0.0, @1.0 ];
+  for (RNSResolvedGradientStop *stop in resolved) {
+    const auto &leftColor = colorStops[stop.leftColorIndex].color;
+    SharedColor color;
+    if (stop.leftColorIndex == stop.rightColorIndex) {
+      // Preserve the original native color, including dynamic UIColor behavior.
+      color = leftColor;
+    } else if (std::isfinite(stop.weight)) {
+      const auto &rightColor = colorStops[stop.rightColorIndex].color;
+      NSArray<UIColor *> *outputRange =
+          @[ RCTUIColorFromSharedColor(leftColor), RCTUIColorFromSharedColor(rightColor) ];
+      auto interpolatedColor = RCTInterpolateColorInRange(stop.weight, inputRange, outputRange);
+      auto alpha = (interpolatedColor >> 24) & 0xFF;
+      auto red = (interpolatedColor >> 16) & 0xFF;
+      auto green = (interpolatedColor >> 8) & 0xFF;
+      auto blue = interpolatedColor & 0xFF;
+      color = colorFromRGBA(red, green, blue, alpha);
+    }
+    result.push_back({.color = color, .position = stop.position});
+  }
+  return result;
+}
+#else
 // Spec: https://drafts.csswg.org/css-images-4/#coloring-gradient-line (Refer transition hint section)
 // Browsers add 9 intermediate color stops when a transition hint is present
 // Algorithm is referred from Blink engine
@@ -261,12 +308,16 @@ static std::vector<ProcessedColorStop> processColorTransitionHints(const std::ve
 
   return colorStops;
 }
+#endif
 
 @implementation RCTGradientUtils
 // https://drafts.csswg.org/css-images-4/#color-stop-fixup
 + (std::vector<ProcessedColorStop>)getFixedColorStops:(const std::vector<ColorStop> &)colorStops
                                    gradientLineLength:(CGFloat)gradientLineLength
 {
+#if RCT_GRADIENT_USE_KMP
+  return resolveSharedColorStops(colorStops, gradientLineLength);
+#else
   if (colorStops.empty()) {
     return {};
   }
@@ -334,6 +385,7 @@ static std::vector<ProcessedColorStop> processColorTransitionHints(const std::ve
     }
   }
   return processColorTransitionHints(fixedColorStops);
+#endif
 }
 
 // CAGradientLayer linear gradient squishes the non-square gradient to square gradient.

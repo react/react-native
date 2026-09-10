@@ -717,6 +717,12 @@ tasks.withType<KotlinCompile>().configureEach {
 }
 
 dependencies {
+  // Embed the common Kotlin implementation in react-android's AAR. This keeps published
+  // consumers on the existing artifact instead of requiring a separate KMP publication.
+  implementation(
+      files("$reactNativeRootDir/ReactShared/build/android/react-native-shared.jar")
+          .builtBy(gradle.includedBuild("react-native-shared").task(":exportAndroidJar"))
+  )
   api(libs.androidx.appcompat)
   api(libs.androidx.appcompat.resources)
   api(libs.androidx.autofill)

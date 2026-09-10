@@ -25,6 +25,8 @@ include(
 
 includeBuild("packages/gradle-plugin/")
 
+includeBuild("packages/react-native/ReactShared") { name = "react-native-shared" }
+
 dependencyResolutionManagement {
   versionCatalogs {
     create("libs") { from(files("packages/react-native/gradle/libs.versions.toml")) }
