@@ -31,7 +31,6 @@ jsc-android = "2026004.0.1"
 jsr305 = "3.0.2"
 junit = "4.13.2"
 kotlin = "2.2.0"
-ktfmt = "0.22.0"
 mockito = "3.12.4"
 mockito-kotlin = "3.2.0"
 nexus-publish = "2.0.0"
@@ -97,7 +96,6 @@ thoughtworks = {module = "com.thoughtworks.xstream:xstream", version.ref = "xstr
 android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 download = { id = "de.undercouch.download", version.ref = "download" }
-ktfmt = { id = "com.ncorti.ktfmt.gradle", version.ref = "ktfmt" }
 nexus-publish = { id = "io.github.gradle-nexus.publish-plugin", version.ref = "nexus-publish" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 binary-compatibility-validator = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "binary-compatibility-validator" }
