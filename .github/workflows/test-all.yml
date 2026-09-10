@@ -184,7 +184,7 @@ jobs:
       download-path: /tmp/RNTesterBuild/RNTester.app
       app-file: /tmp/RNTesterBuild/RNTester.app
       app-id: com.meta.RNTester.localDevelopment
-      exclude-tags: android-only
+      exclude-tags: android-only,local-screenshot-baseline
     secrets: inherit
 
   test_e2e_ios_rntester:
