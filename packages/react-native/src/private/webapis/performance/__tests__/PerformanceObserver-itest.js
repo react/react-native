@@ -96,6 +96,31 @@ describe('PerformanceObserver', () => {
     expect(entries2.getEntries()[1]).toBe(measure);
   });
 
+  describe('observe()', () => {
+    it('rejects invalid entry type option combinations before registering with native', () => {
+      const callback = jest.fn();
+      const observer = new PerformanceObserver(callback);
+
+      // $FlowExpectedError[incompatible-call]
+      expect(() => observer.observe()).toThrow(
+        "Failed to execute 'observe' on 'PerformanceObserver': 1 argument required, but only 0 present.",
+      );
+      expect(() => observer.observe({})).toThrow(
+        "Failed to execute 'observe' on 'PerformanceObserver': An observe() call must include either entryTypes or type arguments.",
+      );
+      expect(() =>
+        observer.observe({entryTypes: ['mark'], type: 'measure'}),
+      ).toThrow(
+        "Failed to execute 'observe' on 'PerformanceObserver': An observe() call must not include both entryTypes and type arguments.",
+      );
+      expect(() =>
+        observer.observe({entryTypes: ['mark'], buffered: true}),
+      ).toThrow(
+        "Failed to execute 'observe' on 'PerformanceObserver': An observe() call must not include both entryTypes and buffered arguments.",
+      );
+    });
+  });
+
   describe('takeRecords()', () => {
     it('provides all buffered events and clears the buffer', () => {
       const callback = jest.fn();
