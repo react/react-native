@@ -11,10 +11,9 @@
 import type {DialogOptions} from '../../src/private/specs_DEPRECATED/modules/NativeDialogManagerAndroid';
 
 import NativeDialogManagerAndroid from '../NativeModules/specs/NativeDialogManagerAndroid';
+import Platform from '../Utilities/Platform';
 import NativePermissionsAndroid from './NativePermissionsAndroid';
 import invariant from 'invariant';
-
-const Platform = require('../Utilities/Platform').default;
 
 export type Rationale = {
   title: string,

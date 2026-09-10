@@ -11,6 +11,7 @@
 import type {ColorValue} from '../../StyleSheet/StyleSheet';
 import type {ViewProps} from '../View/ViewPropTypes';
 
+import Platform from '../../Utilities/Platform';
 import AndroidSwipeRefreshLayoutNativeComponent, {
   Commands as AndroidSwipeRefreshLayoutCommands,
 } from './AndroidSwipeRefreshLayoutNativeComponent';
@@ -18,8 +19,6 @@ import PullToRefreshViewNativeComponent, {
   Commands as PullToRefreshCommands,
 } from './PullToRefreshViewNativeComponent';
 import * as React from 'react';
-
-const Platform = require('../../Utilities/Platform').default;
 
 export type RefreshControlPropsIOS = Readonly<{
   /**

@@ -11,13 +11,13 @@
 import type {RootTag} from '../Types/RootTagTypes';
 import type {UIManagerJSInterface} from '../Types/UIManagerJSInterface';
 
+import Platform from '../Utilities/Platform';
 import NativeUIManager from './NativeUIManager';
 import nullthrows from 'nullthrows';
 
 const NativeModules = require('../BatchedBridge/NativeModules').default;
 const defineLazyObjectProperty =
   require('../Utilities/defineLazyObjectProperty').default;
-const Platform = require('../Utilities/Platform').default;
 const UIManagerProperties = require('./UIManagerProperties').default;
 
 const viewManagerConfigs: {[string]: any | null} = {};

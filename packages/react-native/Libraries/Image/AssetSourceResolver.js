@@ -15,8 +15,9 @@ import type {
   PackagerAsset,
 } from '../../src/private/assets/AssetRegistry';
 
+import Platform from '../Utilities/Platform';
+
 const PixelRatio = require('../Utilities/PixelRatio').default;
-const Platform = require('../Utilities/Platform').default;
 const {pickScale} = require('./AssetUtils');
 const {
   getAndroidResourceFolderName,

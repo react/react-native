@@ -21,13 +21,13 @@ import type {
 import * as ReactNativeFeatureFlags from '../../src/private/featureflags/ReactNativeFeatureFlags';
 import {type ScrollResponderType} from '../Components/ScrollView/ScrollView';
 import View from '../Components/View/View';
+import Platform from '../Utilities/Platform';
 import VirtualizedLists from '@react-native/virtualized-lists';
 import memoizeOne from 'memoize-one';
 import * as React from 'react';
 
 const StyleSheet = require('../StyleSheet/StyleSheet').default;
 const deepDiffer = require('../Utilities/differ/deepDiffer').default;
-const Platform = require('../Utilities/Platform').default;
 const invariant = require('invariant');
 
 const VirtualizedList = VirtualizedLists.VirtualizedList;
