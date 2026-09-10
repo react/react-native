@@ -7,6 +7,7 @@
 
 package com.facebook.react
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.content.res.Configuration
@@ -420,21 +421,27 @@ public open class ReactDelegate {
   }
 
   /**
-   * Get the current [ReactContext] from [ReactHost] or [ReactInstanceManager]
+   * Get the current [ReactContext] from the host captured when this delegate was constructed.
+   *
+   * A [ReactHost] always takes precedence, regardless of the process-wide architecture flag. When
+   * only a [ReactNativeHost] is present, its context is returned if the host is already
+   * initialized; otherwise this returns `null` without creating a [ReactInstanceManager].
    *
    * Do not store a reference to this, if the React instance is reloaded or destroyed, this context
    * will no longer be valid.
    */
+  @get:SuppressLint("DeprecatedClass")
   public val currentReactContext: ReactContext?
     get() {
-      return if (ReactNativeNewArchitectureFeatureFlags.enableBridgelessArchitecture()) {
-        if (reactHost != null) {
-          reactHost?.currentReactContext
-        } else {
-          null
-        }
+      reactHost?.let {
+        return it.currentReactContext
+      }
+
+      val reactNativeHost = reactNativeHost ?: return null
+      return if (reactNativeHost.hasInstance()) {
+        reactNativeHost.reactInstanceManager.currentReactContext
       } else {
-        getReactInstanceManager().currentReactContext
+        null
       }
     }
 }
