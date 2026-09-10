@@ -215,7 +215,22 @@ static NSDictionary *RCTExportedDimensions(CGFloat fontScale)
     @"scale" : @(screen.scale),
     @"fontScale" : @(fontScale)
   };
-  return @{@"window" : dimsWindow, @"screen" : dimsScreen};
+  // Reserved regions (hinge, camera cutouts) that content should avoid, such
+  // as on iPhone Duo - see the "Designing for iPhone Duo" Human Interface
+  // Guidelines and Apple Tech Talk 111463, "Strike a pose with adaptive
+  // layouts on iPhone Duo". The underlying UIView.reservedRegions(kind:) API
+  // ships with the iOS 27.1 SDK, which is not part of any Xcode release
+  // publicly available as of 2026-09-10 (Apple lists Xcode 27.1 beta as
+  // "coming later this month"). RCTDeviceInfo.mm is plain Objective-C++ with
+  // no Swift compilation set up in this podspec target, so there is no safe
+  // way to reference that (Swift-only, not-yet-shipping) symbol from here
+  // yet without risking a build break for everyone. This always reports an
+  // empty array until that SDK is available and a proper native bridge (most
+  // likely a small Swift helper, once Swift sources are wired into this
+  // target's podspec, mirroring how other iPhone Duo-aware codebases in this
+  // ecosystem add a dedicated Swift provider file) can be added.
+  NSArray<NSDictionary *> *displayFeatures = @[];
+  return @{@"window" : dimsWindow, @"screen" : dimsScreen, @"displayFeatures" : displayFeatures};
 }
 
 - (NSDictionary *)_exportedDimensions
