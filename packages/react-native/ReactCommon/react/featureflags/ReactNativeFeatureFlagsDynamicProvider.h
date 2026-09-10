@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<570eb4a5cab112e5f8ea0b4fb1fa205c>>
+ * @generated SignedSource<<0c553a09c2799b15b9c84ebc0a3a42be>>
  */
 
 /**
@@ -90,6 +90,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::disableEarlyViewCommandExecution();
+  }
+
+  bool disableIdleMountItemFrameCallbackRearmAndroid() override {
+    auto value = values_["disableIdleMountItemFrameCallbackRearmAndroid"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::disableIdleMountItemFrameCallbackRearmAndroid();
   }
 
   bool disableImageViewPreallocationAndroid() override {
