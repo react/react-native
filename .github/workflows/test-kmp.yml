@@ -102,6 +102,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - name: Set up JDK 17
         uses: actions/setup-java@v5
         with:
