@@ -1,0 +1,89 @@
+name: Test Kotlin Multiplatform foundation
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/test-kmp.yml'
+      - '.github/actions/setup-gradle/**'
+      - '.github/actions/setup-xcode/**'
+      - 'packages/react-native/ReactShared/**'
+  push:
+    branches:
+      - main
+      - '*-stable'
+    paths:
+      - '.github/workflows/test-kmp.yml'
+      - '.github/actions/setup-gradle/**'
+      - '.github/actions/setup-xcode/**'
+      - 'packages/react-native/ReactShared/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kmp-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'zulu'
+      - name: Set up Xcode
+        uses: ./.github/actions/setup-xcode
+        with:
+          xcode-version: '26.4.1'
+      - name: Set up Gradle
+        uses: ./.github/actions/setup-gradle
+      - name: Cache Kotlin Native toolchain
+        uses: actions/cache@v5
+        with:
+          path: ~/.konan
+          key: kmp-foundation-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('packages/react-native/ReactShared/*.gradle.kts', 'packages/react-native/ReactShared/gradle.properties', 'packages/react-native/ReactShared/gradle/wrapper/gradle-wrapper.properties') }}
+      - name: Test common code and build Apple frameworks
+        working-directory: packages/react-native/ReactShared
+        run: >-
+          ./gradlew -PreactNativeSharedSmoke=true
+          jvmTest iosSimulatorArm64Test
+          linkDebugFrameworkIosArm64 linkReleaseFrameworkIosArm64
+          linkDebugFrameworkIosSimulatorArm64 linkReleaseFrameworkIosSimulatorArm64
+          linkDebugFrameworkIosX64 linkReleaseFrameworkIosX64
+          --max-workers=2 --stacktrace --console=plain
+      - name: Test Objective-C consumption
+        working-directory: packages/react-native/ReactShared
+        run: ./scripts/test-apple-smoke.sh
+      - name: Verify nonempty tests and fixture isolation
+        working-directory: packages/react-native/ReactShared
+        run: |
+          ./gradlew jvmJar --max-workers=2 --console=plain
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          import zipfile
+          for target in ('jvmTest', 'iosSimulatorArm64Test'):
+              suites = [ET.parse(p).getroot() for p in Path('build/smoke/test-results', target).glob('TEST-*.xml')]
+              assert suites and sum(int(s.get('tests', 0)) for s in suites) > 0, target
+              assert all(not int(s.get(k, 0)) for s in suites for k in ('failures', 'errors', 'skipped')), target
+          jars = list(Path('build/libs').glob('*.jar'))
+          assert len(jars) == 1, jars
+          with zipfile.ZipFile(jars[0]) as jar:
+              assert not any('/smoke/' in name for name in jar.namelist()), 'Test fixture leaked into default output'
+          PY
+      - name: Upload smoke reports
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: kotlin-multiplatform-smoke-results
+          path: |
+            packages/react-native/ReactShared/build/smoke/reports/tests
+            packages/react-native/ReactShared/build/smoke/test-results
+            packages/react-native/ReactShared/build/smoke/apple-interop/*.log
+          if-no-files-found: warn
