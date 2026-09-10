@@ -10,6 +10,7 @@
 
 import type {CellMetricProps} from '../ListMetricsAggregator';
 
+import ListMetricsAggregator from '../ListMetricsAggregator';
 import ViewabilityHelper from '../ViewabilityHelper';
 
 let rowFrames: ?{
@@ -32,6 +33,26 @@ function getCellMetrics(index: number) {
 }
 function createViewToken(index: number, isViewable: boolean): $FlowFixMe {
   return {key: data[index].key, isViewable};
+}
+
+function createMeasuredListMetrics(): ListMetricsAggregator {
+  if (rowFrames == null) {
+    throw new Error('Expected `rowFrames` to have been initialized.');
+  }
+  const listMetrics = new ListMetricsAggregator();
+  data.forEach((item, index) => {
+    const frame = rowFrames?.[item.key];
+    if (frame == null) {
+      throw new Error(`Expected metrics for ${item.key}.`);
+    }
+    listMetrics.notifyCellLayout({
+      cellIndex: index,
+      cellKey: item.key,
+      layout: {height: frame.height, width: 100, x: 0, y: frame.y},
+      orientation: {horizontal: false, rtl: false},
+    });
+  });
+  return listMetrics;
 }
 
 describe('computeViewableItems', function () {
@@ -199,6 +220,315 @@ describe('computeViewableItems', function () {
 });
 
 describe('onUpdate', function () {
+  it.each([
+    ['view area coverage', {viewAreaCoveragePercentThreshold: 0}],
+    ['item visibility', {itemVisiblePercentThreshold: 0}],
+  ])(
+    'suppresses previously published items with %s even without current cell metrics',
+    (_name, config) => {
+      const helper = new ViewabilityHelper(config);
+      rowFrames = {a: {y: 0, height: 50}};
+      data = [{key: 'a'}];
+      const measuredProps: CellMetricProps = {
+        ...props,
+        data,
+        getItem: (items, index) => items[index],
+      };
+      const onViewableItemsChanged = jest.fn();
+      helper.onUpdate(
+        measuredProps,
+        0,
+        50,
+        createMeasuredListMetrics(),
+        createViewToken,
+        onViewableItemsChanged,
+      );
+
+      helper.resetViewableIndices();
+      helper.onUpdate(
+        measuredProps,
+        0,
+        50,
+        new ListMetricsAggregator(),
+        createViewToken,
+        onViewableItemsChanged,
+        undefined,
+        true,
+      );
+
+      expect(onViewableItemsChanged).toHaveBeenLastCalledWith({
+        changed: [{isViewable: false, key: 'a'}],
+        viewabilityConfig: config,
+        viewableItems: [],
+      });
+    },
+  );
+
+  it('invalidates pending minimum-view-time updates when suppressed', function () {
+    const helper = new ViewabilityHelper({
+      minimumViewTime: 350,
+      viewAreaCoveragePercentThreshold: 0,
+    });
+    rowFrames = {a: {y: 0, height: 50}};
+    data = [{key: 'a'}];
+    const measuredProps: CellMetricProps = {
+      ...props,
+      data,
+      getItem: (items, index) => items[index],
+    };
+    const onViewableItemsChanged = jest.fn();
+    helper.onUpdate(
+      measuredProps,
+      0,
+      50,
+      createMeasuredListMetrics(),
+      createViewToken,
+      onViewableItemsChanged,
+    );
+    helper.onUpdate(
+      measuredProps,
+      0,
+      50,
+      new ListMetricsAggregator(),
+      createViewToken,
+      onViewableItemsChanged,
+      undefined,
+      true,
+    );
+
+    jest.runAllTimers();
+
+    expect(onViewableItemsChanged).not.toHaveBeenCalled();
+  });
+
+  it('invalidates pending minimum-view-time updates without metrics', function () {
+    const helper = new ViewabilityHelper({
+      minimumViewTime: 350,
+      viewAreaCoveragePercentThreshold: 0,
+    });
+    rowFrames = {a: {y: 0, height: 50}};
+    data = [{key: 'a'}];
+    const measuredProps: CellMetricProps = {
+      ...props,
+      data,
+      getItem: (items, index) => items[index],
+    };
+    const onViewableItemsChanged = jest.fn();
+    helper.onUpdate(
+      measuredProps,
+      0,
+      50,
+      createMeasuredListMetrics(),
+      createViewToken,
+      onViewableItemsChanged,
+    );
+    helper.onUpdate(
+      measuredProps,
+      0,
+      50,
+      new ListMetricsAggregator(),
+      createViewToken,
+      onViewableItemsChanged,
+    );
+
+    jest.runAllTimers();
+
+    expect(onViewableItemsChanged).not.toHaveBeenCalled();
+  });
+
+  it('retries a pending visible update after metrics return', function () {
+    const helper = new ViewabilityHelper({
+      minimumViewTime: 350,
+      viewAreaCoveragePercentThreshold: 0,
+    });
+    rowFrames = {a: {y: 0, height: 50}};
+    data = [{key: 'a'}];
+    const measuredProps: CellMetricProps = {
+      ...props,
+      data,
+      getItem: (items, index) => items[index],
+    };
+    const onViewableItemsChanged = jest.fn();
+    helper.onUpdate(
+      measuredProps,
+      0,
+      50,
+      createMeasuredListMetrics(),
+      createViewToken,
+      onViewableItemsChanged,
+    );
+    helper.onUpdate(
+      measuredProps,
+      0,
+      50,
+      new ListMetricsAggregator(),
+      createViewToken,
+      onViewableItemsChanged,
+    );
+    helper.onUpdate(
+      measuredProps,
+      0,
+      50,
+      createMeasuredListMetrics(),
+      createViewToken,
+      onViewableItemsChanged,
+    );
+
+    jest.runAllTimers();
+
+    expect(onViewableItemsChanged).toHaveBeenCalledTimes(1);
+    expect(onViewableItemsChanged).toHaveBeenCalledWith({
+      changed: [{isViewable: true, key: 'a'}],
+      viewabilityConfig: {
+        minimumViewTime: 350,
+        viewAreaCoveragePercentThreshold: 0,
+      },
+      viewableItems: [{isViewable: true, key: 'a'}],
+    });
+  });
+
+  it('clears published items when suppression overrides interaction', function () {
+    const config = {
+      waitForInteraction: false,
+      viewAreaCoveragePercentThreshold: 0,
+    };
+    const helper = new ViewabilityHelper(config);
+    rowFrames = {a: {y: 0, height: 50}};
+    data = [{key: 'a'}];
+    const measuredProps: CellMetricProps = {
+      ...props,
+      data,
+      getItem: (items, index) => items[index],
+    };
+    const onViewableItemsChanged = jest.fn();
+    helper.onUpdate(
+      measuredProps,
+      0,
+      50,
+      createMeasuredListMetrics(),
+      createViewToken,
+      onViewableItemsChanged,
+    );
+    config.waitForInteraction = true;
+
+    helper.onUpdate(
+      measuredProps,
+      0,
+      50,
+      new ListMetricsAggregator(),
+      createViewToken,
+      onViewableItemsChanged,
+      undefined,
+      true,
+    );
+
+    expect(onViewableItemsChanged).toHaveBeenLastCalledWith({
+      changed: [{isViewable: false, key: 'a'}],
+      viewabilityConfig: config,
+      viewableItems: [],
+    });
+  });
+
+  it('publishes removals after minimum view time when suppressed', function () {
+    const config = {
+      minimumViewTime: 350,
+      viewAreaCoveragePercentThreshold: 0,
+    };
+    const helper = new ViewabilityHelper(config);
+    rowFrames = {a: {y: 0, height: 50}};
+    data = [{key: 'a'}];
+    const measuredProps: CellMetricProps = {
+      ...props,
+      data,
+      getItem: (items, index) => items[index],
+    };
+    const onViewableItemsChanged = jest.fn();
+    helper.onUpdate(
+      measuredProps,
+      0,
+      50,
+      createMeasuredListMetrics(),
+      createViewToken,
+      onViewableItemsChanged,
+    );
+    jest.runAllTimers();
+    onViewableItemsChanged.mockClear();
+
+    helper.onUpdate(
+      measuredProps,
+      0,
+      50,
+      new ListMetricsAggregator(),
+      createViewToken,
+      onViewableItemsChanged,
+      undefined,
+      true,
+    );
+    jest.runAllTimers();
+
+    expect(onViewableItemsChanged).toHaveBeenCalledWith({
+      changed: [{isViewable: false, key: 'a'}],
+      viewabilityConfig: config,
+      viewableItems: [],
+    });
+  });
+
+  it('does not postpone a pending suppression update', function () {
+    const config = {
+      minimumViewTime: 350,
+      viewAreaCoveragePercentThreshold: 0,
+    };
+    const helper = new ViewabilityHelper(config);
+    rowFrames = {a: {y: 0, height: 50}};
+    data = [{key: 'a'}];
+    const measuredProps: CellMetricProps = {
+      ...props,
+      data,
+      getItem: (items, index) => items[index],
+    };
+    const onViewableItemsChanged = jest.fn();
+    helper.onUpdate(
+      measuredProps,
+      0,
+      50,
+      createMeasuredListMetrics(),
+      createViewToken,
+      onViewableItemsChanged,
+    );
+    jest.runAllTimers();
+    onViewableItemsChanged.mockClear();
+
+    helper.onUpdate(
+      measuredProps,
+      0,
+      50,
+      new ListMetricsAggregator(),
+      createViewToken,
+      onViewableItemsChanged,
+      undefined,
+      true,
+    );
+    jest.advanceTimersByTime(200);
+    helper.onUpdate(
+      measuredProps,
+      0,
+      50,
+      new ListMetricsAggregator(),
+      createViewToken,
+      onViewableItemsChanged,
+      undefined,
+      true,
+    );
+    jest.advanceTimersByTime(150);
+
+    expect(onViewableItemsChanged).toHaveBeenCalledTimes(1);
+    expect(onViewableItemsChanged).toHaveBeenCalledWith({
+      changed: [{isViewable: false, key: 'a'}],
+      viewabilityConfig: config,
+      viewableItems: [],
+    });
+  });
+
   it('returns 1 visible row as viewable then scrolls away', function () {
     const helper = new ViewabilityHelper();
     rowFrames = {
