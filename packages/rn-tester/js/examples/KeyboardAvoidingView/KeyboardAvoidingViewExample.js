@@ -47,22 +47,13 @@ const TextInputForm = () => {
   );
 };
 
-const CloseButton = (
-  props:
-    {behavior: any, setModalOpen: any} | {behavior: string, setModalOpen: any},
-) => {
+const CloseButton = (props: {setModalOpen: boolean => void}) => {
   return (
-    <View
-      style={[
-        styles.closeView,
-        {marginHorizontal: props.behavior === 'position' ? 0 : 25},
-      ]}>
-      <Pressable
-        onPress={() => props.setModalOpen(false)}
-        style={styles.closeButton}>
-        <Text style={styles.touchableText}>Close</Text>
-      </Pressable>
-    </View>
+    <Pressable
+      onPress={() => props.setModalOpen(false)}
+      style={styles.closeButton}>
+      <Text style={styles.touchableText}>Close</Text>
+    </Pressable>
   );
 };
 
@@ -114,7 +105,7 @@ const KeyboardAvoidingViewBehaviour = () => {
               </Text>
             </TouchableOpacity>
           </View>
-          <CloseButton behavior={behavior} setModalOpen={setModalOpen} />
+          <CloseButton setModalOpen={setModalOpen} />
           <TextInputForm />
         </KeyboardAvoidingView>
       </Modal>
@@ -140,7 +131,7 @@ const KeyboardAvoidingDisabled = () => {
           enabled={false}
           behavior={'height'}
           style={styles.container}>
-          <CloseButton behavior={'height'} setModalOpen={setModalOpen} />
+          <CloseButton setModalOpen={setModalOpen} />
           <TextInputForm />
         </KeyboardAvoidingView>
       </Modal>
@@ -162,7 +153,7 @@ const KeyboardAvoidingVerticalOffset = () => {
           keyboardVerticalOffset={20}
           behavior={'padding'}
           style={styles.container}>
-          <CloseButton behavior={'height'} setModalOpen={setModalOpen} />
+          <CloseButton setModalOpen={setModalOpen} />
           <TextInputForm />
         </KeyboardAvoidingView>
       </Modal>
@@ -185,7 +176,7 @@ const KeyboardAvoidingContentContainerStyle = () => {
           behavior={'position'}
           style={styles.container}
           contentContainerStyle={styles.contentContainer}>
-          <CloseButton behavior={'height'} setModalOpen={setModalOpen} />
+          <CloseButton setModalOpen={setModalOpen} />
           <TextInputForm />
         </KeyboardAvoidingView>
       </Modal>
@@ -205,9 +196,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
+    alignSelf: 'center',
     paddingHorizontal: 20,
     paddingTop: 20,
+    width: '100%',
+    maxWidth: 340,
   },
   contentContainer: {
     paddingTop: 20,
@@ -217,12 +210,8 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     borderWidth: 1,
     height: 44,
-    width: 300,
     marginBottom: 20,
     paddingHorizontal: 10,
-  },
-  closeView: {
-    alignSelf: 'stretch',
   },
   pillStyle: {
     padding: 10,
@@ -233,8 +222,7 @@ const styles = StyleSheet.create({
     borderColor: 'blue',
   },
   closeButton: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
+    alignSelf: 'flex-end',
     marginVertical: 10,
     padding: 10,
   },
