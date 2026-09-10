@@ -11,6 +11,7 @@ import java.lang.management.ManagementFactory
 import okio.Buffer
 import okio.BufferedSource
 import okio.ByteString
+import okio.ByteString.Companion.toByteString
 
 // Compiled with the actual adapter and the explicitly selected, renamed Git baseline.
 private fun read(native: Boolean, source: BufferedSource, capture: Boolean): Any {
@@ -25,7 +26,7 @@ private fun read(native: Boolean, source: BufferedSource, capture: Boolean): Any
     } else {
       val scratch = Buffer()
       while (body.read(scratch, 8192) != -1L) {
-        bytes += scratch.size()
+        bytes += scratch.size
         scratch.clear()
       }
     }
@@ -88,7 +89,7 @@ fun main() {
             .readByteArray()
     val nativeBody = read(true, Buffer().write(response), true)
     val sharedBody = read(false, Buffer().write(response), true)
-    check(nativeBody == sharedBody && sharedBody == ByteString.of(*body))
+    check(nativeBody == sharedBody && sharedBody == body.toByteString())
 
     fun measure(native: Boolean): Pair<Double, Long> {
       val source = Buffer().write(response)

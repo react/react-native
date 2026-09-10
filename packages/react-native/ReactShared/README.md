@@ -27,7 +27,11 @@ and body ownership, callbacks and progress timing. Body bytes never cross the
 Kotlin/Objective-C boundary.
 
 Run `./scripts/test-apple-multipart.sh` and
-`python3 scripts/test-android-multipart.py` for the actual adapters' tests.
+`python3 scripts/test-android-multipart.py` for the actual adapters' tests from a
+repository checkout; their Android and RNTester test sources are not distributed
+in the npm package. The Android runner requires Python 3.11 or later and uses the
+repository's Okio, AssertJ, JUnit and Kotlin standard-library versions. Its newer
+standalone compiler retains ReactAndroid's Kotlin language and API level.
 The Apple runner also compares exact callbacks/body bytes against the native
 fallback and checks Catalyst. Set `RCT_KMP_BENCHMARK=1` for its optional 2–20 MiB
 parser benchmark. The Android runner supports `--baseline-ref` with an explicit
@@ -94,7 +98,7 @@ repository, packs the npm sources, and builds a fresh Android application for
 each dependency route. It checks dependency resolution, shared-class uniqueness,
 Debug packaging and Release shrinking. See `--help` for emulator execution and
 fixture preparation options. These small consumers exercise the real Android
-gradient adapter; they do not replace RNTester coverage.
+gradient and multipart adapters; they do not replace RNTester coverage.
 
 ## Apple opt-in
 
@@ -155,8 +159,8 @@ python3 scripts/benchmark-kmp-build.py
 ```
 
 The app script copies RNTester into an isolated sibling directory, enables KMP,
-and verifies the actual compiled gradient adapter. Simulator runs execute the
-RNTester test plan and launch the app; device and Catalyst runs are unsigned
+and verifies the actual compiled gradient and multipart adapters. Simulator runs
+execute the RNTester test plan and launch the app; device and Catalyst runs are unsigned
 build checks. Catalyst is enabled in the copied Podfile and application project.
 Each run requires fresh build outputs. It preserves RNTester's existing hosted-test topology and removes
 the temporary app and any test-owned servers and simulator when it finishes.

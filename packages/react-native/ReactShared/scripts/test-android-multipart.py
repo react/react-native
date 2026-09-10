@@ -16,6 +16,7 @@ import pathlib
 import re
 import shutil
 import subprocess
+import tomllib
 
 
 def main():
@@ -32,6 +33,12 @@ def main():
     shared = pathlib.Path(__file__).resolve().parents[1]
     react_native = shared.parent
     repo = react_native.parents[1]
+    adapter = react_native / "ReactAndroid/src/main/java/com/facebook/react/devsupport/MultipartStreamReader.kt"
+    tests = react_native / "ReactAndroid/src/test/java/com/facebook/react/devsupport/MultipartStreamReaderTest.kt"
+    if not tests.is_file():
+        parser.error("This fixture requires a React Native repository checkout; Android test sources are not included in the npm package.")
+    versions = tomllib.loads((react_native / "gradle/libs.versions.toml").read_text())["versions"]
+    language_version = ".".join(versions["kotlin"].split(".")[:2])
     output = (args.output or shared / "build/android-multipart-test").resolve()
     output.mkdir(parents=True, exist_ok=True)
     gradle = [str(shared / "gradlew"), "--console=plain", f"--max-workers={args.max_workers}"]
@@ -53,25 +60,39 @@ pluginManagement {
 dependencyResolutionManagement { repositories { mavenCentral() } }
 rootProject.name = "multipart-adapter-tests"
 ''')
+    # Keep the standalone compiler compatible with its Gradle wrapper while
+    # matching ReactAndroid's language/API level and runtime dependencies.
+    (output / "gradle.properties").write_text("kotlin.stdlib.default.dependency=false\n")
     (output / "build.gradle.kts").write_text('''
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+
 plugins { kotlin("jvm") version %s }
-kotlin { jvmToolchain(17) }
+kotlin {
+  jvmToolchain(17)
+  compilerOptions {
+    languageVersion.set(KotlinVersion.fromVersion(%s))
+    apiVersion.set(KotlinVersion.fromVersion(%s))
+  }
+}
 sourceSets {
   main { kotlin.srcDir("main") }
   test { kotlin.srcDir("test") }
 }
 dependencies {
   implementation(files(%s))
-  implementation("com.squareup.okio:okio:1.17.2")
-  testImplementation("junit:junit:4.13.2")
-  testImplementation("org.assertj:assertj-core:3.25.1")
+  implementation("org.jetbrains.kotlin:kotlin-stdlib:%s")
+  implementation("com.squareup.okio:okio:%s")
+  testImplementation("junit:junit:%s")
+  testImplementation("org.assertj:assertj-core:%s")
 }
 tasks.test { testLogging { events("passed", "failed", "skipped") } }
 tasks.register<JavaExec>("benchmark") {
   classpath = sourceSets.main.get().runtimeClasspath
   mainClass.set("com.facebook.react.devsupport.AndroidMultipartBenchmarkKt")
 }
-''' % (json.dumps(version[1]), json.dumps(str(shared / "build/android/react-native-shared.jar"))))
+''' % (json.dumps(version[1]), json.dumps(language_version), json.dumps(language_version),
+       json.dumps(str(shared / "build/android/react-native-shared.jar")),
+       versions["kotlin"], versions["okio"], versions["junit"], versions["assertj"]))
 
     # Keep only this runner's generated fixture inputs when reusing an output path.
     generated = {
@@ -83,8 +104,6 @@ tasks.register<JavaExec>("benchmark") {
         directory.mkdir(exist_ok=True)
         for source in files:
             (directory / source).unlink(missing_ok=True)
-    adapter = react_native / "ReactAndroid/src/main/java/com/facebook/react/devsupport/MultipartStreamReader.kt"
-    tests = react_native / "ReactAndroid/src/test/java/com/facebook/react/devsupport/MultipartStreamReaderTest.kt"
     shutil.copyfile(adapter, output / "main" / adapter.name)
     shutil.copyfile(tests, output / "test" / tests.name)
     if args.baseline_ref:

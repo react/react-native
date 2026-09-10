@@ -9,6 +9,11 @@ set -euo pipefail
 shared_root="$(cd "$(dirname "$0")/.." && pwd)"
 react_native_root="$(cd "$shared_root/.." && pwd)"
 repo_root="$(cd "$react_native_root/../.." && pwd)"
+tests="$repo_root/packages/rn-tester/RNTesterUnitTests/RCTMultipartStreamReaderTests.m"
+if [[ ! -f "$tests" ]]; then
+  echo 'error: This fixture requires a React Native repository checkout with RNTester test sources.' >&2
+  exit 1
+fi
 test_root="${RCT_KMP_TEST_OUTPUT_DIR:-$shared_root/build/apple-multipart-test}"
 architecture="$(uname -m)"
 sdk_root="$(xcrun --sdk iphonesimulator --show-sdk-path)"
@@ -45,7 +50,7 @@ for mode in native kmp; do
   xcrun clang "${flags[@]}" -DRCT_USE_KMP="$use_kmp" -bundle \
     -F "$developer/Library/Frameworks" -framework XCTest \
     -Wl,-rpath,"$developer/Library/Frameworks" \
-    "$adapter" "$repo_root/packages/rn-tester/RNTesterUnitTests/RCTMultipartStreamReaderTests.m" \
+    "$adapter" "$tests" \
     -framework Foundation -framework QuartzCore -framework ReactNativeShared -o "$bundle/MultipartTests"
   /usr/libexec/PlistBuddy -c Clear "$bundle/Info.plist" >/dev/null
   /usr/libexec/PlistBuddy -c 'Add :CFBundleExecutable string MultipartTests' "$bundle/Info.plist"
