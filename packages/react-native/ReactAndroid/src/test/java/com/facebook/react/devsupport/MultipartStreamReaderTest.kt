@@ -215,6 +215,7 @@ class MultipartStreamReaderTest {
   }
 
   @Test
+  @Suppress("DEPRECATION_ERROR") // Match the reader's compatibility with legacy Okio.
   fun testDelimitersAcrossEveryReadBoundary() {
     // The trailing CRLF must not become a header separator spanning the next boundary.
     val body = "binary\u0000\r\n--samplX\r\n--sample-\r\n"
