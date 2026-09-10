@@ -443,7 +443,9 @@ module.exports = function inlinePlatformPlugin(
         if (t.isObjectProperty(property)) {
           return property.value;
         }
-        return t.toExpression(property);
+        // Clone: toExpression mutates in place, e.g. `ios() {}` would be
+        // left mutated if the purity check below bails out.
+        return t.toExpression(t.cloneNode(property));
       }
     }
     return fallback();
@@ -520,13 +522,25 @@ module.exports = function inlinePlatformPlugin(
           return;
         }
 
-        path.replaceWith(
-          findProperty(spec, platform, () =>
-            findProperty(spec, 'native', () =>
-              findProperty(spec, 'default', () => t.identifier('undefined')),
-            ),
+        const replacement = findProperty(spec, platform, () =>
+          findProperty(spec, 'native', () =>
+            findProperty(spec, 'default', () => t.identifier('undefined')),
           ),
         );
+        // Inlining must not drop side effects from discarded property values.
+        // Assess the property itself: an ObjectMethod has no `.value`, so
+        // checking `property.value` would wrongly treat every method as
+        // impure and skip inlining.
+        if (
+          spec.properties.every(
+            property =>
+              (t.isObjectProperty(property) &&
+                property.value === replacement) ||
+              path.scope.isPure(property),
+          )
+        ) {
+          path.replaceWith(replacement);
+        }
       },
     },
   };
