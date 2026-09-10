@@ -69,8 +69,6 @@ Pod::Spec.new do |s|
       'GCC_PREPROCESSOR_DEFINITIONS[sdk=iphonesimulator*]' => '$(inherited) RCT_USE_KMP=1',
       'FRAMEWORK_SEARCH_PATHS[sdk=iphoneos*]' => '$(inherited) "$(PODS_CONFIGURATION_BUILD_DIR)/ReactNativeSharedKMP"',
       'FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]' => '$(inherited) "$(PODS_CONFIGURATION_BUILD_DIR)/ReactNativeSharedKMP"',
-      'OTHER_LDFLAGS[sdk=iphoneos*]' => '$(inherited) -framework ReactNativeShared',
-      'OTHER_LDFLAGS[sdk=iphonesimulator*]' => '$(inherited) -framework ReactNativeShared',
     })
   end
   s.pod_target_xcconfig = pod_target_xcconfig

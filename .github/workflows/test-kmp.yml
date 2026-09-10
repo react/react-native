@@ -33,6 +33,11 @@ on:
       - 'packages/react-native/ReactCommon/react/utils/FloatComparison.h'
       - 'packages/react-native/ReactCommon/react/utils/ManagedObjectWrapper.*'
       - 'packages/react-native/React/React-RCTFabric.podspec'
+      - 'packages/react-native/React-Core.podspec'
+      - 'packages/react-native/React/Base/RCTMultipartStreamReader.*'
+      - 'packages/react-native/ReactAndroid/src/main/java/com/facebook/react/devsupport/MultipartStreamReader.kt'
+      - 'packages/react-native/ReactAndroid/src/test/java/com/facebook/react/devsupport/MultipartStreamReaderTest.kt'
+      - 'packages/rn-tester/RNTesterUnitTests/RCTMultipartStreamReaderTests.m'
       - 'packages/react-native/scripts/react_native_pods.rb'
       - 'packages/react-native/scripts/cocoapods/kmp.rb'
       - 'packages/react-native/Package.swift'
@@ -72,6 +77,11 @@ on:
       - 'packages/react-native/ReactCommon/react/utils/FloatComparison.h'
       - 'packages/react-native/ReactCommon/react/utils/ManagedObjectWrapper.*'
       - 'packages/react-native/React/React-RCTFabric.podspec'
+      - 'packages/react-native/React-Core.podspec'
+      - 'packages/react-native/React/Base/RCTMultipartStreamReader.*'
+      - 'packages/react-native/ReactAndroid/src/main/java/com/facebook/react/devsupport/MultipartStreamReader.kt'
+      - 'packages/react-native/ReactAndroid/src/test/java/com/facebook/react/devsupport/MultipartStreamReaderTest.kt'
+      - 'packages/rn-tester/RNTesterUnitTests/RCTMultipartStreamReaderTests.m'
       - 'packages/react-native/scripts/react_native_pods.rb'
       - 'packages/react-native/scripts/cocoapods/kmp.rb'
       - 'packages/react-native/Package.swift'
@@ -135,6 +145,12 @@ jobs:
         env:
           RCT_KMP_BUILD_TYPE: Release
         run: ./scripts/test-apple-gradient.sh
+      - name: Compare native and shared multipart adapters
+        if: ${{ !cancelled() && steps.shared.outcome == 'success' }}
+        working-directory: packages/react-native/ReactShared
+        run: |
+          ./scripts/test-apple-multipart.sh
+          python3 scripts/test-android-multipart.py --max-workers 2
       - name: Test packaged XCFramework consumption
         if: ${{ !cancelled() && steps.shared.outcome == 'success' }}
         working-directory: packages/react-native/ReactShared
@@ -159,6 +175,8 @@ jobs:
           path: |
             packages/react-native/ReactShared/build/reports/tests
             packages/react-native/ReactShared/build/test-results
+            packages/react-native/ReactShared/build/apple-multipart-test/**/*.log
+            packages/react-native/ReactShared/build/android-multipart-test/build/test-results
             packages/react-native/ReactShared/build/apple-distribution/**/*.json
             packages/react-native/ReactShared/build/apple-distribution/**/*.log
             packages/react-native/ReactShared/build/apple-distribution/**/consumer.xcresult

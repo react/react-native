@@ -10,7 +10,7 @@ package = JSON.parse(File.read(File.join(__dir__, '..', 'package.json')))
 Pod::Spec.new do |s|
   s.name = 'React-KMP'
   s.version = package['version']
-  s.summary = 'Opt-in shared Kotlin gradient algorithms for React Native.'
+  s.summary = 'Opt-in shared Kotlin algorithms for React Native.'
   s.homepage = 'https://reactnative.dev/'
   s.license = package['license']
   s.author = 'Meta Platforms, Inc. and its affiliates'
@@ -28,7 +28,7 @@ Pod::Spec.new do |s|
   # Link flags are added to direct consumers in react_native_post_install.
   # user_target_xcconfig also reaches tests that inherit only search paths.
   s.script_phase = {
-    :name => 'Build shared Kotlin gradient framework',
+    :name => 'Build shared Kotlin framework',
     :execution_position => :before_compile,
     :always_out_of_date => '1',
     :script => '"${PODS_TARGET_SRCROOT}/scripts/build-apple-framework.sh"',

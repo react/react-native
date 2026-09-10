@@ -92,23 +92,31 @@ def inspect_aar(aar):
                                    if name.startswith("com/facebook/react/shared/")
                                    and name.endswith(".class"))
     required = {f"com/facebook/react/shared/{name}.class"
-                for name in ["GradientStops", "GradientStopInput", "ResolvedGradientStop"]}
+                for name in ["GradientStops", "GradientStopInput", "ResolvedGradientStop",
+                             "MultipartFraming", "MultipartChunk", "MultipartHeaders", "MultipartHeader"]}
     if not required.issubset(classes) or any(count != 1 for count in classes.values()):
         raise AssertionError(f"Missing or duplicated shared classes in {aar}: {classes}")
     with tempfile.TemporaryDirectory(prefix="react-native-kmp-bytecode-") as directory:
         jar = Path(directory) / "classes.jar"
         with zipfile.ZipFile(aar) as archive:
             jar.write_bytes(archive.read("classes.jar"))
-        bytecode = subprocess.check_output(
-            ["javap", "-c", "-p", "-classpath", str(jar),
-             "com.facebook.react.uimanager.style.ColorStopUtils"], text=True)
-    if not re.search(r"invoke(?:static|virtual)\s+.*// Method com/facebook/react/shared/GradientStops\.resolve(?:\$default)?:", bytecode):
-        raise AssertionError(f"The Android adapter does not invoke shared GradientStops in {aar}")
+        adapters = {
+            "com.facebook.react.uimanager.style.ColorStopUtils": ("GradientStops.resolve",),
+            "com.facebook.react.devsupport.MultipartStreamReader": (
+                "MultipartFraming.nextChunk", "MultipartHeaders.parse"),
+        }
+        for adapter, methods in adapters.items():
+            bytecode = subprocess.check_output(
+                ["javap", "-c", "-p", "-classpath", str(jar), adapter], text=True)
+            for method in methods:
+                pattern = r"invoke(?:static|virtual)\s+.*// Method com/facebook/react/shared/" + re.escape(method) + r"(?:\$default)?:"
+                if not re.search(pattern, bytecode):
+                    raise AssertionError(f"{adapter} does not invoke shared {method} in {aar}")
     return {"path": str(aar), "sha256": hashlib.sha256(aar.read_bytes()).hexdigest(),
             "shared_class_counts": dict(classes), "adapter_invokes_shared_resolver": True}
 
 
-ACTIVITY = """
+ACTIVITY = r"""
 package com.facebook.react.kmp.consumer;
 
 import android.app.Activity;
@@ -117,6 +125,7 @@ import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.widget.TextView;
+import com.facebook.react.devsupport.MultipartStreamReader;
 import com.facebook.react.uimanager.DisplayMetricsHolder;
 import com.facebook.react.uimanager.LengthPercentage;
 import com.facebook.react.uimanager.LengthPercentageType;
@@ -125,6 +134,10 @@ import com.facebook.react.uimanager.style.ColorStopUtils;
 import com.facebook.react.uimanager.style.ProcessedColorStop;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.io.IOException;
+import okio.Buffer;
+import okio.BufferedSource;
 
 // Java deliberately exercises the packaged Android adapter through its JVM API.
 // No shared source files or replacement implementation are compiled into this app.
@@ -148,12 +161,43 @@ public final class MainActivity extends Activity {
         || hint.get(3).getColor() != Color.argb(191, 127, 0, 127)) {
       throw new AssertionError("Shared hint expansion or Android alpha rounding");
     }
+    checkMultipart();
     String result = "KMP consumer PASS " + BuildConfig.CONSUMER_MODE
         + " " + getIntent().getStringExtra("validationToken");
     TextView text = new TextView(this);
     text.setText(result);
     setContentView(text);
     Log.i("KmpConsumer", result);
+  }
+
+  private static void checkMultipart() {
+    // The first body ends in CRLF, so a header marker can straddle the boundary.
+    Buffer input = new Buffer().writeUtf8(
+        "\r\n--sample\r\nfirst\r\n\r\n--sample\r\n"
+        + "content-type: text/plain\r\n\r\nsecond\r\n--sample--\r\n");
+    int[] parts = {0};
+    try {
+      boolean complete = new MultipartStreamReader(input, "sample").readAllParts(
+          new MultipartStreamReader.ChunkListener() {
+            @Override public void onChunkComplete(
+                Map<String, String> headers, BufferedSource body, boolean last) throws IOException {
+              int index = parts[0]++;
+              String expected = index == 0 ? "first\r\n" : "second";
+              if (index > 1 || !expected.equals(body.readUtf8()) || last != (index == 1)) {
+                throw new AssertionError("Shared multipart body or completion");
+              }
+              if (index == 0 ? !headers.isEmpty()
+                  : !"text/plain".equals(headers.get("CONTENT-TYPE"))) {
+                throw new AssertionError("Android multipart header policy");
+              }
+            }
+            @Override public void onChunkProgress(
+                Map<String, String> headers, long loaded, long total) {}
+          });
+      if (!complete || parts[0] != 2) throw new AssertionError("Shared multipart framing");
+    } catch (IOException error) {
+      throw new AssertionError(error);
+    }
   }
 }
 """

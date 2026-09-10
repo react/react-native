@@ -250,6 +250,56 @@ class MultipartStreamReaderTest {
     }
   }
 
+  @Test
+  fun testHeaderWhitespaceDuplicatesAndColonValues() {
+    val source =
+        Buffer()
+            .writeUtf8(
+                "\r\n--sample\r\n X-Name : first\r\nx-name: second:extra \r\ninvalid\r\n\r\nbody\r\n--sample--\r\n"
+            )
+    var calls = 0
+    assertThat(
+            MultipartStreamReader(source, "sample")
+                .readAllParts(
+                    object : CallCountTrackingChunkCallback() {
+                      override fun onChunkComplete(
+                          headers: Map<String, String>,
+                          body: BufferedSource,
+                          isLastChunk: Boolean,
+                      ) {
+                        calls++
+                        assertThat(headers).hasSize(1)
+                        assertThat(headers["X-Name"]).isEqualTo("second:extra")
+                        assertThat(body.readUtf8()).isEqualTo("body")
+                        assertThat(isLastChunk).isTrue()
+                      }
+                    }
+                )
+        )
+        .isTrue()
+    assertThat(calls).isEqualTo(1)
+  }
+
+  @Test
+  fun testFinalProgressForFragmentedBody() {
+    val body = "x".repeat(64 * 1024)
+    val source =
+        Buffer()
+            .writeUtf8(
+                "\r\n--sample\r\nContent-Length: ${body.length}\r\n\r\n$body\r\n--sample--\r\n"
+            )
+    val progress = mutableListOf<Pair<Long, Long>>()
+    val callback =
+        object : CallCountTrackingChunkCallback() {
+          override fun onChunkProgress(headers: Map<String, String>, loaded: Long, total: Long) {
+            progress.add(loaded to total)
+          }
+        }
+    assertThat(MultipartStreamReader(source, "sample").readAllParts(callback)).isTrue()
+    assertThat(callback.callCount).isEqualTo(1)
+    assertThat(progress.last()).isEqualTo(body.length.toLong() to body.length.toLong())
+  }
+
   internal open class CallCountTrackingChunkCallback : MultipartStreamReader.ChunkListener {
     var callCount = 0
       private set

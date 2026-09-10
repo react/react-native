@@ -9,6 +9,8 @@
 
 package com.facebook.react.devsupport
 
+import com.facebook.react.shared.MultipartFraming
+import com.facebook.react.shared.MultipartHeaders
 import java.io.IOException
 import java.util.TreeMap
 import kotlin.math.max
@@ -52,30 +54,22 @@ internal class MultipartStreamReader(
     // throughput and fewer syscalls. For a 2MB bundle: ~128 reads instead of ~512.
     // Memory impact is negligible (12KB increase) while I/O overhead is significantly reduced.
     val bufferLen = 16 * 1024
-    var chunkStart: Long = 0
-    var bytesSeen: Long = 0
+    val framing = MultipartFraming(delimiter.size(), closeDelimiter.size())
+    var bufferOffset = 0L
     val content = Buffer()
 
     var currentHeaders: Map<String, String>? = null
     var currentBodyStartIndexInContent: Long = -1
 
     while (true) {
-      var isCloseDelimiter = false
+      val searchStart = framing.searchStart(bufferOffset)
+      val indexOfDelimiter = content.indexOf(delimiter, searchStart)
+      val indexOfCloseDelimiter =
+          if (indexOfDelimiter < 0) content.indexOf(closeDelimiter, searchStart) else -1L
+      val chunk =
+          framing.nextChunk(content.size(), bufferOffset, indexOfDelimiter, indexOfCloseDelimiter)
 
-      // Search only a subset of chunk that we haven't seen before + few bytes
-      // to allow for the edge case when the delimiter is cut by read call.
-      val searchStart =
-          max((bytesSeen - closeDelimiter.size()).toDouble(), chunkStart.toDouble()).toLong()
-
-      var indexOfDelimiter = content.indexOf(delimiter, searchStart)
-      if (indexOfDelimiter == -1L) {
-        isCloseDelimiter = true
-        indexOfDelimiter = content.indexOf(closeDelimiter, searchStart)
-      }
-
-      if (indexOfDelimiter == -1L) {
-        bytesSeen = content.size()
-
+      if (chunk == null) {
         if (currentHeaders == null) {
           val indexOfHeadersDelimiter = content.indexOf(headersDelimiter, searchStart)
           if (indexOfHeadersDelimiter >= 0) {
@@ -97,29 +91,27 @@ internal class MultipartStreamReader(
         continue
       }
 
-      val chunkEnd = indexOfDelimiter
-      val length = chunkEnd - chunkStart
+      val chunkEnd = chunk.end
+      val length = chunkEnd - chunk.start
 
       // Ignore preamble
-      if (chunkStart > 0) {
+      if (chunk.isPart) {
         if (currentHeaders != null && currentBodyStartIndexInContent >= 0) {
           val loadedFinal = max(0L, chunkEnd - currentBodyStartIndexInContent)
           emitProgress(currentHeaders, loadedFinal, true, listener)
         }
-        content.skip(chunkStart)
-        emitChunk(content, length, isCloseDelimiter, listener)
+        content.skip(chunk.start)
+        emitChunk(content, length, chunk.isLast, listener)
 
         currentHeaders = null
         currentBodyStartIndexInContent = -1
       } else {
         content.skip(chunkEnd)
       }
-      if (isCloseDelimiter) {
+      if (chunk.isLast) {
         return true
       }
-
-      chunkStart = delimiter.size().toLong()
-      bytesSeen = chunkStart
+      bufferOffset += chunkEnd
     }
   }
 
@@ -127,14 +119,9 @@ internal class MultipartStreamReader(
     // Header names are case-insensitive
     val headers: MutableMap<String, String> = TreeMap(String.CASE_INSENSITIVE_ORDER)
     val text = data.readUtf8()
-    val lines = text.split(CRLF.toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-    for (line in lines) {
-      val indexOfSeparator = line.indexOf(":")
-      if (indexOfSeparator == -1) {
-        continue
-      }
-      val key = line.substring(0, indexOfSeparator).trim { it <= ' ' }
-      val value = line.substring(indexOfSeparator + 1).trim { it <= ' ' }
+    for (header in MultipartHeaders.parse(text)) {
+      val key = header.name.trim { it <= ' ' }
+      val value = header.value.trim { it <= ' ' }
       headers[key] = value
     }
     return headers

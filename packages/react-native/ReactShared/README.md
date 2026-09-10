@@ -1,11 +1,11 @@
-# React Native shared Kotlin gradient pilot
+# React Native shared Kotlin experiments
 
-This is the gradient use case layered on the standalone KMP foundation. The
+These use cases build on the standalone KMP foundation. The
 foundation's unpublished compiler/interop fixture remains available with
 `-PreactNativeSharedSmoke=true`; its classes and reports stay under
 `build/smoke` and are excluded from normal shared outputs. Run
 `./scripts/test-apple-smoke.sh` to check that fixture through Objective-C.
-The gradient implementation is the only production use case in this change.
+Each use case has a separate behavior and performance review.
 
 This module shares CSS gradient stop position and transition-hint calculations
 between Android and iOS using Kotlin Multiplatform. It has no Compose dependency.
@@ -16,6 +16,30 @@ existing platform implementations.
 source color indices, and interpolation weights. Platform adapters retain their
 existing tolerance, logarithm precision, and color-space behavior. The module does
 not depend on ReactAndroid, React-Core, UIKit, JNI, or the C++ renderer.
+
+## Multipart framing
+
+`MultipartFraming` shares delimiter overlap, preamble and completed-part state
+between Android's sliding Okio buffer and Apple's retained NSData buffer.
+`MultipartHeaders` splits raw header fields; each platform keeps its existing
+whitespace and key-comparison rules. Native code retains buffer searches, stream
+and body ownership, callbacks and progress timing. Body bytes never cross the
+Kotlin/Objective-C boundary.
+
+Run `./scripts/test-apple-multipart.sh` and
+`python3 scripts/test-android-multipart.py` for the actual adapters' tests.
+The Apple runner also compares exact callbacks/body bytes against the native
+fallback and checks Catalyst. Set `RCT_KMP_BENCHMARK=1` for its optional 2–20 MiB
+parser benchmark. The Android runner supports `--baseline-ref` with an explicit
+native parser revision and `--benchmark`; see `--help`. Its timings and allocation
+counters describe a host JVM, not Android ART or network download throughput.
+Both probes exclude constructing their known input payloads.
+
+This use case can amortize interop over buffer reads. A C++ implementation could
+also share decisions and directly search native buffers, but would add an Android
+JNI interface to this currently Kotlin/Objective-C utility. Neither approach
+removes platform I/O or Catalyst fallback. Measure application memory and real
+bundle-download behavior before broadening adoption.
 
 ## Build and test
 
@@ -85,6 +109,14 @@ This enables the `React-KMP` support pod and selects React Native core source
 builds. During the Xcode build, the support pod builds the shared static framework
 for the current SDK, architecture, and configuration. The application still uses
 its existing Objective-C++ and UIKit rendering code.
+
+All Apple consumers use one shared Kotlin runtime. With dynamic CocoaPods
+frameworks, `React-Core` owns the static Kotlin archive and exports its Objective-C
+classes to dependent pods such as Fabric. The archive is explicitly loaded so the
+owner does not depend on which shared algorithm it happens to call. With static
+libraries or static frameworks, the application owns the archive instead. Hosted
+tests inherit their host's runtime. Adding an algorithm must not add another
+framework link to its consuming pod.
 
 For a custom Xcode configuration name that does not contain `Debug` or `Release`,
 set the `RCT_KMP_BUILD_TYPE` build setting to `Debug` or `Release`.

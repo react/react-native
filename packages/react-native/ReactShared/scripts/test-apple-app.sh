@@ -197,20 +197,27 @@ else
 fi
 
 # Check the actual object compiled by the pod target: just finding Kotlin in the
-# app would not prove that RCTGradientUtils selected the shared implementation.
-python3 - "$output/DerivedData" "$platform" "$output/gradient-symbols.txt" <<'PY'
+# app would not prove that each adapter selected the shared implementation.
+python3 - "$output/DerivedData" "$platform" "$output/shared-adapter-symbols.txt" <<'PY'
 import pathlib
 import subprocess
 import sys
 
-objects = list(pathlib.Path(sys.argv[1]).rglob('RCTGradientUtils.o'))
-if not objects:
-    sys.exit('error: The RNTester build did not compile the gradient adapter from source.')
-symbols = [subprocess.check_output(['xcrun', 'nm', '-u', str(item)], text=True) for item in objects]
-pathlib.Path(sys.argv[3]).write_text('\n'.join(symbols))
 expected_kmp = sys.argv[2] != 'catalyst'
-if any(('OBJC_CLASS_$_RNSGradientStops' in item) != expected_kmp for item in symbols):
-    sys.exit('error: Compiled gradient adapter selected an unexpected KMP/native implementation.')
+reports = []
+for filename, classes in (
+    ('RCTGradientUtils.o', ('RNSGradientStops',)),
+    ('RCTMultipartStreamReader.o', ('RNSMultipartFraming', 'RNSMultipartHeaders')),
+):
+    objects = list(pathlib.Path(sys.argv[1]).rglob(filename))
+    if not objects:
+        sys.exit(f'error: RNTester did not compile {filename} from source.')
+    symbols = [subprocess.check_output(['xcrun', 'nm', '-u', str(item)], text=True) for item in objects]
+    reports.extend([filename, *symbols])
+    for class_name in classes:
+        if any((f'OBJC_CLASS_$_{class_name}' in item) != expected_kmp for item in symbols):
+            sys.exit(f'error: {filename} selected an unexpected implementation for {class_name}.')
+pathlib.Path(sys.argv[3]).write_text('\n'.join(reports))
 PY
 if [[ "$platform" == simulator ]]; then
   # Hosted test bundles must resolve Kotlin classes through their app, even when

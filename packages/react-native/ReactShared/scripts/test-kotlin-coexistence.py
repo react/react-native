@@ -65,6 +65,15 @@ def main():
     sdk = subprocess.check_output(["xcrun", "--sdk", "iphonesimulator", "--show-sdk-path"], text=True).strip()
     flags = ["-std=c++20", "-fobjc-arc", "-O2", "-target", f"{architecture}-apple-ios15.1-simulator", "-isysroot", sdk,
              "-F", str(shared_frameworks), "-F", str(output / "static")]
+    # React-Core must export the shared classes even when only dependent pods
+    # call them. Exercise its linker flags without any algorithm references.
+    empty_owner = output / "libReactNativeRuntimeOnly.dylib"
+    run(["xcrun", "clang++", *flags, "-dynamiclib", "-ObjC", "-framework", "ReactNativeShared",
+         "-framework", "Foundation", "-Wl,-dead_strip", "-o", empty_owner], output / "empty-owner-link.log")
+    empty_symbols = run(["xcrun", "nm", "-gU", empty_owner], output / "empty-owner-symbols.log").stdout
+    for class_name in ("RNSBase", "RNSGradientStops"):
+        if f"_OBJC_CLASS_$_{class_name}" not in empty_symbols:
+            raise RuntimeError(f"An owner without algorithm references did not retain {class_name}.")
     run(["xcrun", "clang++", *flags, "-c", fixture / "ReactNativeRuntimeOwner.mm", "-o", output / "owner.o"], output / "owner-compile.log")
     run(["xcrun", "clang++", *flags, "-c", fixture / "AppleKotlinCoexistence.mm", "-o", output / "host.o"], output / "host-compile.log")
     run(["xcrun", "clang++", *flags, "-dynamiclib", output / "owner.o", "-framework", "ReactNativeShared", "-framework", "Foundation",

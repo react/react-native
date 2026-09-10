@@ -23,6 +23,7 @@ results = []
   FileUtils.mkdir_p(fixture)
   project = Xcodeproj::Project.new(File.join(fixture, 'Fixture.xcodeproj'))
   host = project.new_target(:application, 'Host', :ios, '15.1')
+  project.new_target(:application, 'CoreOnly', :ios, '15.1')
   hosted = project.new_target(:unit_test_bundle, 'HostedTests', :ios, '15.1')
   sibling = project.new_target(:unit_test_bundle, 'SiblingHostedTests', :ios, '15.1')
   without_metadata = project.new_target(:unit_test_bundle, 'SiblingWithoutMetadata', :ios, '15.1')
@@ -82,7 +83,7 @@ results = []
   end
   project.save
 
-  %w[React-RCTFabric TestSupport].each do |pod_name|
+  %w[React-Core React-RCTFabric TestSupport].each do |pod_name|
     pod_dir = File.join(fixture, pod_name)
     FileUtils.mkdir_p(pod_dir)
     File.write(File.join(pod_dir, 'Fixture.m'), "#import <Foundation/Foundation.h>\n")
@@ -97,7 +98,8 @@ results = []
         s.source = { :git => 'https://example.invalid/fixture.git' }
         s.platform = :ios, '15.1'
         s.source_files = 'Fixture.m'
-        #{"s.dependency 'React-KMP'" if pod_name == 'React-RCTFabric'}
+        #{"s.dependency 'React-KMP'" if pod_name == 'React-Core'}
+        #{"s.dependency 'React-Core'" if pod_name == 'React-RCTFabric'}
       end
     PODSPEC
   end
@@ -117,6 +119,7 @@ results = []
     target 'Host' do
       #{"use_frameworks! :linkage => :dynamic" if linkage == 'mixed'}
       pod 'React-KMP', :path => #{shared_root.dump}
+      pod 'React-Core', :path => './React-Core'
       pod 'React-RCTFabric', :path => './React-RCTFabric'
       target 'HostedTests' do
         inherit! :search_paths
@@ -129,10 +132,16 @@ results = []
         target #{target.dump} do
           #{'use_frameworks! :linkage => :static' if linkage == 'mixed'}
           pod 'React-KMP', :path => #{shared_root.dump}
+          pod 'React-Core', :path => './React-Core'
           pod 'React-RCTFabric', :path => './React-RCTFabric'
         end
       TARGET
     end.join}
+    target 'CoreOnly' do
+      #{'use_frameworks! :linkage => :static' if linkage == 'mixed'}
+      pod 'React-KMP', :path => #{shared_root.dump}
+      pod 'React-Core', :path => './React-Core'
+    end
     target 'PlainHost' do
       pod 'TestSupport', :path => './TestSupport'
     end
@@ -161,7 +170,7 @@ results = []
   raise "CocoaPods #{name} fixture failed: #{output}" unless status.success?
 
   ['Host', 'HostedTests', 'SiblingHostedTests', 'SiblingWithoutMetadata', 'Renamed Host', 'RenamedHostTests',
-   'StandaloneTests', 'TestsWithNonKMPHost', 'StaleHostMetadataTests', 'MismatchedLoaderTests', 'SDKHostedTests', 'UnresolvedHostTests', 'PlainHost'].each do |target|
+   'CoreOnly', 'StandaloneTests', 'TestsWithNonKMPHost', 'StaleHostMetadataTests', 'MismatchedLoaderTests', 'SDKHostedTests', 'UnresolvedHostTests', 'PlainHost'].each do |target|
     %w[debug release].each do |configuration|
       config_path = File.join(fixture, 'Pods', 'Target Support Files', "Pods-#{target}", "Pods-#{target}.#{configuration}.xcconfig")
       config = Xcodeproj::Config.new(Pathname.new(config_path)).attributes

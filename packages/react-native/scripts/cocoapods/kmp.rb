@@ -12,8 +12,9 @@ class ReactNativeKMPUtils
         linked_pods = aggregate_target.build_settings(config_name).pod_targets_to_link
         next unless linked_pods.any? { |pod| pod.pod_name == 'React-KMP' }
 
-        # Dynamic RCTFabric already contains the static Kotlin runtime.
-        next if linked_pods.any? { |pod| pod.pod_name == 'React-RCTFabric' && pod.build_as_dynamic? }
+        # Dynamic React-Core already contains the static Kotlin runtime. Other
+        # consumers use their existing React-Core dependency to share that owner.
+        next if linked_pods.any? { |pod| pod.pod_name == 'React-Core' && pod.build_as_dynamic? }
         %w[iphoneos iphonesimulator].each do |sdk|
           # Full-pod sibling tests also reuse their host's runtime. Resolve each
           # SDK separately because TEST_HOST and product settings can be conditional.
