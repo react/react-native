@@ -82,7 +82,9 @@ export type ViewabilityConfig = Readonly<{
 class ViewabilityHelper {
   _config: ViewabilityConfig;
   _hasInteracted: boolean = false;
-  _timers: Set<number> = new Set();
+  _pendingSuppressedUpdate: boolean = false;
+  _timers: Set<TimeoutID> = new Set();
+  _updateGeneration: number = 0;
   _viewableIndices: Array<number> = [];
   _viewableItems: Map<string, ViewToken> = new Map();
 
@@ -96,9 +98,6 @@ class ViewabilityHelper {
    * Cleanup, e.g. on unmount. Clears any pending timers.
    */
   dispose() {
-    /* $FlowFixMe[incompatible-type] (>=0.63.0 site=react_native_fb) This
-     * comment suppresses an error found when Flow v0.63 was deployed. To see
-     * the error delete this comment and run Flow. */
     this._timers.forEach(clearTimeout);
   }
 
@@ -197,17 +196,33 @@ class ViewabilityHelper {
       last: number,
       ...
     },
+    // Suppression bypasses the normal early returns so an empty result clears
+    // items reported before an ancestor moved off screen.
+    suppressViewableItems?: boolean,
   ): void {
+    const updateGeneration = this._updateGeneration + 1;
     const itemCount = props.getItemCount(props.data);
     if (
-      (this._config.waitForInteraction && !this._hasInteracted) ||
-      itemCount === 0 ||
-      !listMetrics.getCellMetrics(0, props)
+      suppressViewableItems !== true &&
+      this._config.waitForInteraction &&
+      !this._hasInteracted
     ) {
+      this._updateGeneration = updateGeneration;
+      this._pendingSuppressedUpdate = false;
+      this._viewableIndices = [];
+      return;
+    }
+    if (
+      suppressViewableItems !== true &&
+      (itemCount === 0 || !listMetrics.getCellMetrics(0, props))
+    ) {
+      this._updateGeneration = updateGeneration;
+      this._pendingSuppressedUpdate = false;
+      this._viewableIndices = [];
       return;
     }
     let viewableIndices: Array<number> = [];
-    if (itemCount) {
+    if (itemCount && suppressViewableItems !== true) {
       viewableIndices = this.computeViewableItems(
         props,
         scrollOffset,
@@ -218,23 +233,25 @@ class ViewabilityHelper {
     }
     if (
       this._viewableIndices.length === viewableIndices.length &&
-      this._viewableIndices.every((v, ii) => v === viewableIndices[ii])
+      this._viewableIndices.every((v, ii) => v === viewableIndices[ii]) &&
+      (suppressViewableItems !== true ||
+        this._viewableItems.size === 0 ||
+        this._pendingSuppressedUpdate)
     ) {
       // We might get a lot of scroll events where visibility doesn't change and we don't want to do
       // extra work in those cases.
       return;
     }
     this._viewableIndices = viewableIndices;
+    this._updateGeneration = updateGeneration;
     if (this._config.minimumViewTime) {
+      this._pendingSuppressedUpdate = suppressViewableItems === true;
       const handle: TimeoutID = setTimeout(() => {
-        /* $FlowFixMe[incompatible-type] (>=0.63.0 site=react_native_fb) This
-         * comment suppresses an error found when Flow v0.63 was deployed. To
-         * see the error delete this comment and run Flow. */
         this._timers.delete(handle);
-        // `onUpdate` replaces the array whenever the visible set changes.
-        if (this._viewableIndices !== viewableIndices) {
+        if (this._updateGeneration !== updateGeneration) {
           return;
         }
+        this._pendingSuppressedUpdate = false;
         this._onUpdateSync(
           props,
           viewableIndices,
@@ -242,11 +259,9 @@ class ViewabilityHelper {
           createViewToken,
         );
       }, this._config.minimumViewTime);
-      /* $FlowFixMe[incompatible-type] (>=0.63.0 site=react_native_fb) This
-       * comment suppresses an error found when Flow v0.63 was deployed. To see
-       * the error delete this comment and run Flow. */
       this._timers.add(handle);
     } else {
+      this._pendingSuppressedUpdate = false;
       this._onUpdateSync(
         props,
         viewableIndices,
@@ -261,6 +276,8 @@ class ViewabilityHelper {
    */
   resetViewableIndices() {
     this._viewableIndices = [];
+    this._pendingSuppressedUpdate = false;
+    this._updateGeneration++;
   }
 
   /**

@@ -27,8 +27,14 @@ type Context = Readonly<{
   },
   horizontal: ?boolean,
   getOutermostParentListRef: () => VirtualizedList,
-  registerAsNestedChild: ({cellKey: string, ref: VirtualizedList}) => void,
+  registerAsNestedChild: ({
+    cellKey: string,
+    horizontal?: boolean,
+    ref: VirtualizedList,
+  }) => void,
   unregisterAsNestedChild: ({ref: VirtualizedList}) => void,
+  getCellVisibilityByKey?: (cellKey: string) => ?boolean,
+  ...
 }>;
 
 export const VirtualizedListContext: React.Context<?Context> =
@@ -71,6 +77,7 @@ export function VirtualizedListContextProvider({
       getOutermostParentListRef: value.getOutermostParentListRef,
       registerAsNestedChild: value.registerAsNestedChild,
       unregisterAsNestedChild: value.unregisterAsNestedChild,
+      getCellVisibilityByKey: value.getCellVisibilityByKey,
     }),
     [
       value.getScrollMetrics,
@@ -78,6 +85,7 @@ export function VirtualizedListContextProvider({
       value.getOutermostParentListRef,
       value.registerAsNestedChild,
       value.unregisterAsNestedChild,
+      value.getCellVisibilityByKey,
     ],
   );
   return (
