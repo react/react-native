@@ -20,6 +20,7 @@ import android.text.InputFilter.LengthFilter
 import android.text.InputType
 import android.text.Layout
 import android.text.SpannableStringBuilder
+import android.text.TextUtils
 import android.view.Gravity
 import android.view.KeyEvent
 import android.view.View
@@ -347,6 +348,9 @@ public open class ReactTextInputManager public constructor() :
   @ReactProp(name = "placeholder")
   public fun setPlaceholder(view: ReactEditText, placeholder: String?) {
     view.setPlaceholder(placeholder)
+    if (view.stagedInputType != InputType.TYPE_TEXT_FLAG_MULTI_LINE) {
+      view.setEllipsize(TextUtils.TruncateAt.END);
+    }
   }
 
   @ReactProp(name = "placeholderTextColor", customType = "Color")
