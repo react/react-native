@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<5c7271fe5fcdd90f61a5a07772b820e5>>
+ * @generated SignedSource<<8e36bd4910f1de537b517f2dc3b634bd>>
  */
 
 /**
@@ -28,6 +28,10 @@ namespace facebook::react {
 class ReactNativeFeatureFlagsOverridesOSSExperimental : public ReactNativeFeatureFlagsOverridesOSSCanary {
  public:
     ReactNativeFeatureFlagsOverridesOSSExperimental() = default;
+
+  bool disableIdleNativeAnimatedFrameCallbackRearmAndroid() override {
+    return true;
+  }
 
   bool enableFlexboxAutoMinSizeInStrictMode() override {
     return true;

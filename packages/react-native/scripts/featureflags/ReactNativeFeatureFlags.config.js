@@ -103,6 +103,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    disableIdleNativeAnimatedFrameCallbackRearmAndroid: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-09-07',
+        description:
+          'Stop re-arming the NATIVE_ANIMATED_MODULE Choreographer frame callback at vsync rate while no animations are active on Android',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'experimental',
+    },
     disableImageViewPreallocationAndroid: {
       defaultValue: false,
       metadata: {

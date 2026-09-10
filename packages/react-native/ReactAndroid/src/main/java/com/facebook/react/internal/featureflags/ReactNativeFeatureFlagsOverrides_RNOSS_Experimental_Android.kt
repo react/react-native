@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<bad3dbaf92a0a869dfb91523ef4904f9>>
+ * @generated SignedSource<<adde664babf1cfe0543c67229761825c>>
  */
 
 /**
@@ -22,6 +22,8 @@ package com.facebook.react.internal.featureflags
 public open class ReactNativeFeatureFlagsOverrides_RNOSS_Experimental_Android : ReactNativeFeatureFlagsOverrides_RNOSS_Canary_Android() {
   // We could use JNI to get the defaults from C++,
   // but that is more expensive than just duplicating the defaults here.
+
+  override fun disableIdleNativeAnimatedFrameCallbackRearmAndroid(): Boolean = true
 
   override fun enableFlexboxAutoMinSizeInStrictMode(): Boolean = true
 
