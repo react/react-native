@@ -213,6 +213,47 @@ if any(('OBJC_CLASS_$_RNSGradientStops' in item) != expected_kmp for item in sym
     sys.exit('error: Compiled gradient adapter selected an unexpected KMP/native implementation.')
 PY
 if [[ "$platform" == simulator ]]; then
+  # Hosted test bundles must resolve Kotlin classes through their app, even when
+  # their Podfile target independently declares the same pods. Standalone tests
+  # run in a different process and may link their own runtime.
+  python3 - "$product" "$output/shared-runtime-ownership.json" <<'PY'
+import json
+import pathlib
+import plistlib
+import subprocess
+import sys
+
+app = pathlib.Path(sys.argv[1])
+def executable(bundle):
+    with (bundle / 'Info.plist').open('rb') as info:
+        return bundle / plistlib.load(info)['CFBundleExecutable']
+
+def owns_runtime(binary):
+    symbols = subprocess.check_output(['xcrun', 'nm', '-gU', str(binary)], text=True)
+    return any(line.endswith(' _OBJC_CLASS_$_RNSBase') for line in symbols.splitlines())
+
+main = executable(app)
+candidates = [main, app / (main.name + '.debug.dylib')]
+candidates.extend(executable(bundle) for bundle in (app / 'Frameworks').glob('*.framework'))
+owners = [binary for binary in candidates if binary.exists() and owns_runtime(binary)]
+if len(owners) != 1:
+    sys.exit(f'error: Expected one shared runtime owner in RNTester, found {owners}')
+owner = owners[0]
+hosted = []
+for bundle in (app / 'PlugIns').glob('*.xctest'):
+    if owns_runtime(executable(bundle)):
+        sys.exit(f'error: Hosted test bundle duplicates the app shared runtime: {bundle}')
+    # CocoaPods may also package an identical dynamic framework for XCTest.
+    for framework in (bundle / 'Frameworks').glob('*.framework'):
+        copy = executable(framework)
+        if owns_runtime(copy) and (framework.name != owner.parent.name or copy.read_bytes() != owner.read_bytes()):
+            sys.exit(f'error: Hosted test bundle has a different shared runtime framework: {copy}')
+    hosted.append(str(bundle.relative_to(app)))
+pathlib.Path(sys.argv[2]).write_text(json.dumps({
+    'runtimeOwner': str(owner.relative_to(app)),
+    'hostedBundlesWithoutOwnRuntime': hosted,
+}, indent=2) + '\n')
+PY
   echo "RNTester tests and simulator launch passed (${USE_FRAMEWORKS:-static libraries}); reports: $output"
 else
   echo "RNTester $platform unsigned build passed; no device tests were run. Reports: $output"

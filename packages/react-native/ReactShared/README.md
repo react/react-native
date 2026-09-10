@@ -44,9 +44,14 @@ Objective-C++ adapter with the existing native gradient implementation.
 
 With CocoaPods installed, `bundle exec ruby scripts/test-cocoapods-linking.rb`
 checks generated host and test configurations for static, dynamic, and mixed
-per-target linkage. It installs local fixture pods without compiling native code
-and verifies that hosted tests inherit search paths without another static Kotlin
-runtime. It prints the directory containing the generated configurations.
+per-target linkage. Local fixture pods cover inherited and full-pod sibling hosted
+tests, with and without `TestTargetID`, including renamed and SDK-specific app products. Negative
+controls cover standalone tests and non-KMP hosts with unrelated KMP app dependencies.
+No native code is compiled; the check verifies framework search paths and expected
+Kotlin archive links, then prints the generated configuration directory.
+Host paths with unresolved architecture or SDK-version conditions are not treated
+as proof that the app provides the Kotlin runtime; those configurations need explicit
+validation before relying on hosted-test suppression.
 
 ## Android integration
 
