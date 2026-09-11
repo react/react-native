@@ -368,6 +368,51 @@ class JsonUtilsTest {
             .isPureCxxDependency!!,
     )
         .isFalse()
+    assertThat(
+            parsed.dependencies!!["@react-native/oss-library-example"]!!
+                .platforms!!
+                .android!!
+                .packageImportPaths
+        )
+        .isNull()
+  }
+
+  @Test
+  fun fromAutolinkingConfigJson_withPackageImportPaths_canParseIt() {
+    val validJson =
+        createJsonFile(
+            """
+            {
+              "reactNativeVersion": "1000.0.0",
+              "dependencies": {
+                "@react-native/oss-library-example": {
+                  "root": "./node_modules/@react-native/oss-library-example",
+                  "name": "@react-native/oss-library-example",
+                  "platforms": {
+                    "android": {
+                      "sourceDir": "./node_modules/@react-native/oss-library-example/android",
+                      "packageImportPath": "import com.facebook.react.osslibraryexample.OSSLibraryExamplePackage;",
+                      "packageImportPaths": [
+                        "com.facebook.react.osslibraryexample.OSSLibraryExamplePackage"
+                      ],
+                      "packageInstance": "new OSSLibraryExamplePackage()",
+                      "buildTypes": ["debug", "release"]
+                    }
+                  }
+                }
+              }
+            }
+            """
+                .trimIndent()
+        )
+    val parsed = JsonUtils.fromAutolinkingConfigJson(validJson)!!
+
+    val android =
+        parsed.dependencies!!["@react-native/oss-library-example"]!!.platforms!!.android!!
+    assertThat(android.packageImportPaths)
+        .containsExactly("com.facebook.react.osslibraryexample.OSSLibraryExamplePackage")
+    assertThat(android.packageImportPath)
+        .isEqualTo("import com.facebook.react.osslibraryexample.OSSLibraryExamplePackage;")
   }
 
   private fun createJsonFile(@Language("JSON") input: String) =
