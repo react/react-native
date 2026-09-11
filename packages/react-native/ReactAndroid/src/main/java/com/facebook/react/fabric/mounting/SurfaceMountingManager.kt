@@ -374,10 +374,18 @@ internal constructor(
           e,
       )
     } catch (e: IndexOutOfBoundsException) {
-      throw IllegalStateException(
-          ("addViewAt: failed to insert view [$tag] into parent [$parentTag] at index $index"),
-          e,
+      // The parent's child count is out of sync with the expected index from
+      // the mount instruction buffer. This can happen due to timing races between
+      // view mutations and mount instructions. Rather than crashing, clamp to the
+      // end of the parent's children and log for diagnostics.
+      ReactSoftExceptionLogger.logSoftException(
+          TAG,
+          IllegalStateException(
+              "addViewAt: index out of bounds inserting view [$tag] into parent [$parentTag] at index $index (parent childCount: ${parentView.childCount}). Clamping to childCount.",
+              e,
+          ),
       )
+      getViewGroupManager(parentViewState).addView(parentView, view, parentView.childCount)
     }
 
     // Display children after inserting
