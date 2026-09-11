@@ -2779,6 +2779,7 @@ public class com/facebook/react/modules/intent/IntentModule : com/facebook/fbrea
 	public fun canOpenURL (Ljava/lang/String;Lcom/facebook/react/bridge/Promise;)V
 	public fun getInitialURL (Lcom/facebook/react/bridge/Promise;)V
 	public fun invalidate ()V
+	public fun openNotificationSettings (Lcom/facebook/react/bridge/Promise;)V
 	public fun openSettings (Lcom/facebook/react/bridge/Promise;)V
 	public fun openURL (Ljava/lang/String;Lcom/facebook/react/bridge/Promise;)V
 	public fun sendIntent (Ljava/lang/String;Lcom/facebook/react/bridge/ReadableArray;Lcom/facebook/react/bridge/Promise;)V

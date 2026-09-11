@@ -15,6 +15,7 @@ const Linking = {
     $FlowFixMe,
   >,
   openSettings: jest.fn() as JestMockFn<$FlowFixMe, $FlowFixMe>,
+  openNotificationSettings: jest.fn() as JestMockFn<$FlowFixMe, $FlowFixMe>,
   addEventListener: jest.fn(() => ({
     remove: jest.fn(),
   })) as JestMockFn<$FlowFixMe, $FlowFixMe>,
