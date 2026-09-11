@@ -13,9 +13,9 @@ import type {ExtendedError} from '../Core/ExtendedError';
 import getDevServer from '../Core/Devtools/getDevServer';
 import LogBox from '../LogBox/LogBox';
 import NativeRedBox from '../NativeModules/specs/NativeRedBox';
+import Platform from './Platform';
 
 const DevSettings = require('./DevSettings').default;
-const Platform = require('./Platform').default;
 const invariant = require('invariant');
 const MetroHMRClient = require('metro-runtime/src/modules/HMRClient');
 const prettyFormat = require('pretty-format');

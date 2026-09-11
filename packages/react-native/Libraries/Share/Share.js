@@ -11,10 +11,10 @@
 import type {ColorValue} from '../StyleSheet/StyleSheet';
 
 import NativeActionSheetManager from '../ActionSheetIOS/NativeActionSheetManager';
+import Platform from '../Utilities/Platform';
 import NativeShareModule from './NativeShareModule';
 
 const processColor = require('../StyleSheet/processColor').default;
-const Platform = require('../Utilities/Platform').default;
 const invariant = require('invariant');
 
 export type ShareContent =
