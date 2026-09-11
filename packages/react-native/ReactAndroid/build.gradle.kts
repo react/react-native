@@ -141,6 +141,7 @@ val preparePrefab by
                       ),
                       // react_renderer_core
                       Pair("../ReactCommon/react/renderer/core/", "react/renderer/core/"),
+                      Pair("../ReactCommon/react/renderer/core/React/", "React/"),
                       // react_renderer_css
                       Pair("../ReactCommon/react/renderer/css/", "react/renderer/css/"),
                       Pair("../ReactCommon/react/renderer/css/React/", "React/"),

@@ -108,11 +108,17 @@ Pod::Spec.new do |s|
     end
 
     ss.source_files         = podspec_sources("react/renderer/core/**/*.{m,mm,cpp,h}", "react/renderer/core/**/*.{h}")
-    ss.exclude_files        = "react/renderer/core/tests"
+    ss.exclude_files        = ["react/renderer/core/tests", "react/renderer/core/React"]
     ss.header_dir           = "react/renderer/core"
     ss.pod_target_xcconfig  = {
       "HEADER_SEARCH_PATHS" => header_search_path.join(" ")
     }
+  end
+
+  s.subspec "coreUmbrella" do |ss|
+    ss.source_files         = "react/renderer/core/React/*.h"
+    ss.header_dir           = ""
+    ss.header_mappings_dir  = "react/renderer/core"
   end
 
   s.subspec "componentregistry" do |ss|

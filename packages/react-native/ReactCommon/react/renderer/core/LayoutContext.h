@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <vector>
 
 #include <react/renderer/core/LayoutableShadowNode.h>

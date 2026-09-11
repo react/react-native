@@ -77,8 +77,17 @@ const PodspecExceptions /*: {[key: string]: PodSpecConfiguration} */ = {
       {
         name: 'core',
         headerPatterns: ['react/renderer/core/**/*.h'],
-        excludePatterns: ['react/renderer/core/tests'],
+        excludePatterns: [
+          'react/renderer/core/tests',
+          'react/renderer/core/React',
+        ],
         headerDir: 'react/renderer/core',
+      },
+
+      {
+        name: 'coreUmbrella',
+        headerPatterns: ['react/renderer/core/React/*.h'],
+        headerDir: 'React',
       },
 
       {

@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <optional>
 
 #include <react/renderer/core/PropsParserContext.h>

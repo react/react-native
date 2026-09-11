@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <react/renderer/core/RawPropsPrimitives.h>
 #include <string_view>
 #include <vector>

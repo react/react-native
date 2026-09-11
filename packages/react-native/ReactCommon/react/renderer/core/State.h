@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #ifdef RN_SERIALIZABLE_STATE
 #include <fbjni/fbjni.h>
 #include <folly/dynamic.h>
