@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <ReactCommon/RuntimeExecutor.h>
 
 #include <jsi/jsi.h>
