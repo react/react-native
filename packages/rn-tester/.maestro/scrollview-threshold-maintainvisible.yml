@@ -14,7 +14,6 @@ appId: ${APP_ID}
       id: 'ScrollViewMaintainVisibleContentPositionExample'
     direction: DOWN
     speed: 80
-    timeout: 90000
 - tapOn:
     id: 'ScrollViewMaintainVisibleContentPositionExample'
 - waitForAnimationToEnd:
