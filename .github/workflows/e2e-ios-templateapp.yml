@@ -94,6 +94,7 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: RNTestProject-${{ matrix.flavor }}
+          overwrite: true
           path: /tmp/RNTestProject/Build/Products/${{ matrix.flavor }}-iphonesimulator/RNTestProject.app
 
   test:
