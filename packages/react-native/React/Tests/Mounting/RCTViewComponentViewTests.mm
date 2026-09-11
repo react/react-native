@@ -7,6 +7,8 @@
 
 #import <React/RCTViewComponentView.h>
 #import <XCTest/XCTest.h>
+#import <react/featureflags/ReactNativeFeatureFlags.h>
+#import <react/featureflags/ReactNativeFeatureFlagsDefaults.h>
 #import <react/renderer/components/view/ViewProps.h>
 #import <react/renderer/components/view/ViewShadowNode.h>
 #import <react/renderer/graphics/Color.h>
@@ -236,6 +238,197 @@ static RCTViewComponentView *makeViewWithRole(bool accessible, const std::string
 {
   RCTViewComponentView *view = makeViewWithRole(true, "");
   XCTAssertFalse(view.canBecomeFocused);
+}
+
+#pragma mark - overflow clipping with border radii
+
+class ViewClippingFeatureFlags final : public ReactNativeFeatureFlagsDefaults {
+ public:
+  explicit ViewClippingFeatureFlags(bool clipToPaddingBox) : clipToPaddingBox_(clipToPaddingBox) {}
+
+  bool enableIOSViewClipToPaddingBox() override
+  {
+    return clipToPaddingBox_;
+  }
+
+ private:
+  bool clipToPaddingBox_;
+};
+
+class ViewClippingFeatureFlagScope final {
+ public:
+  explicit ViewClippingFeatureFlagScope(bool clipToPaddingBox)
+  {
+    ReactNativeFeatureFlags::dangerouslyForceOverride(std::make_unique<ViewClippingFeatureFlags>(clipToPaddingBox));
+  }
+
+  ~ViewClippingFeatureFlagScope()
+  {
+    ReactNativeFeatureFlags::dangerouslyReset();
+  }
+};
+
+static std::shared_ptr<ViewProps> makeClippingProps(bool useNonUniformRadii, Float outlineWidth = 0)
+{
+  auto props = std::make_shared<ViewProps>();
+  props->yogaStyle.setBorder(facebook::yoga::Edge::All, facebook::yoga::StyleLength::points(2));
+  props->yogaStyle.setOverflow(facebook::yoga::Overflow::Hidden);
+  props->outlineWidth = outlineWidth;
+
+  const ValueUnit radius{36, UnitType::Point};
+  if (useNonUniformRadii) {
+    props->borderRadii.topLeft = radius;
+    props->borderRadii.topRight = radius;
+    props->borderRadii.bottomLeft = radius;
+  } else {
+    props->borderRadii.all = radius;
+  }
+
+  return props;
+}
+
+static LayoutMetrics makeClippingLayoutMetrics()
+{
+  LayoutMetrics layoutMetrics;
+  layoutMetrics.frame = {.origin = {.x = 0, .y = 0}, .size = {.width = 100, .height = 100}};
+  layoutMetrics.borderWidth = {.left = 2, .top = 2, .right = 2, .bottom = 2};
+  layoutMetrics.contentInsets = layoutMetrics.borderWidth;
+  return layoutMetrics;
+}
+
+static RCTViewComponentView *makeClippingView(bool useNonUniformRadii, UIView *contentView = nil)
+{
+  RCTViewComponentView *view = [RCTViewComponentView new];
+  view.contentView = contentView;
+
+  auto props = makeClippingProps(useNonUniformRadii);
+  LayoutMetrics layoutMetrics = makeClippingLayoutMetrics();
+
+  [view updateProps:props oldProps:ViewShadowNode::defaultSharedProps()];
+  [view updateLayoutMetrics:layoutMetrics oldLayoutMetrics:EmptyLayoutMetrics];
+  [view finalizeUpdates:RNComponentViewUpdateMaskAll];
+
+  return view;
+}
+
+- (void)testNonUniformBorderRadiiClipContentInsideBorder
+{
+  ViewClippingFeatureFlagScope featureFlags(false);
+  RCTViewComponentView *view = makeClippingView(true);
+  UIView *containerView = [view valueForKey:@"_containerView"];
+
+  XCTAssertNotNil(containerView);
+  XCTAssertTrue(containerView.clipsToBounds);
+  XCTAssertNotNil(containerView.layer.mask);
+
+  CGPathRef maskPath = ((CAShapeLayer *)containerView.layer.mask).path;
+  XCTAssertFalse(CGPathContainsPoint(maskPath, nil, CGPointMake(1, 50), NO));
+  XCTAssertTrue(CGPathContainsPoint(maskPath, nil, CGPointMake(3, 50), NO));
+}
+
+- (void)testUniformBorderRadiiKeepCoreAnimationClipping
+{
+  ViewClippingFeatureFlagScope featureFlags(false);
+  RCTViewComponentView *view = makeClippingView(false);
+
+  XCTAssertNil([view valueForKey:@"_containerView"]);
+  XCTAssertTrue(view.clipsToBounds);
+  XCTAssertNil(view.layer.mask);
+  XCTAssertEqualWithAccuracy(view.layer.cornerRadius, 36, 0.001);
+}
+
+- (void)testUniformEllipticalBorderRadiiClipContentInsideBorder
+{
+  ViewClippingFeatureFlagScope featureFlags(false);
+  RCTViewComponentView *view = [RCTViewComponentView new];
+  auto props = makeClippingProps(false);
+  props->borderRadii.all = ValueUnit{50, UnitType::Percent};
+  LayoutMetrics layoutMetrics = makeClippingLayoutMetrics();
+  layoutMetrics.frame.size.height = 50;
+
+  [view updateProps:props oldProps:ViewShadowNode::defaultSharedProps()];
+  [view updateLayoutMetrics:layoutMetrics oldLayoutMetrics:EmptyLayoutMetrics];
+  [view finalizeUpdates:RNComponentViewUpdateMaskAll];
+
+  UIView *containerView = [view valueForKey:@"_containerView"];
+  XCTAssertNotNil(containerView);
+  XCTAssertNotNil(containerView.layer.mask);
+}
+
+- (void)testSwitchingToNonUniformRadiiUpdatesDirectImageMask
+{
+  ViewClippingFeatureFlagScope featureFlags(false);
+  UIImageView *imageView = [UIImageView new];
+  RCTViewComponentView *view = makeClippingView(false, imageView);
+
+  CGPathRef uniformMaskPath = ((CAShapeLayer *)imageView.layer.mask).path;
+  XCTAssertNotNil(imageView.layer.mask);
+  XCTAssertFalse(CGPathContainsPoint(uniformMaskPath, nil, CGPointMake(95, 95), NO));
+
+  auto oldProps = makeClippingProps(false);
+  auto newProps = makeClippingProps(true);
+  [view updateProps:newProps oldProps:oldProps];
+  [view finalizeUpdates:RNComponentViewUpdateMaskProps];
+
+  UIView *containerView = [view valueForKey:@"_containerView"];
+  CGPathRef nonUniformMaskPath = ((CAShapeLayer *)imageView.layer.mask).path;
+  XCTAssertNotNil(containerView.layer.mask);
+  XCTAssertNotNil(imageView.layer.mask);
+  XCTAssertTrue(CGPathContainsPoint(nonUniformMaskPath, nil, CGPointMake(95, 95), NO));
+}
+
+- (void)testRecycledCustomContainerDoesNotKeepUniformCornerRadius
+{
+  ViewClippingFeatureFlagScope featureFlags(false);
+  RCTViewComponentView *view = [RCTViewComponentView new];
+  auto oldProps = makeClippingProps(false, 1);
+  LayoutMetrics layoutMetrics = makeClippingLayoutMetrics();
+
+  [view updateProps:oldProps oldProps:ViewShadowNode::defaultSharedProps()];
+  [view updateLayoutMetrics:layoutMetrics oldLayoutMetrics:EmptyLayoutMetrics];
+  [view finalizeUpdates:RNComponentViewUpdateMaskAll];
+
+  UIView *containerView = [view valueForKey:@"_containerView"];
+  XCTAssertNotNil(containerView);
+  XCTAssertEqualWithAccuracy(containerView.layer.cornerRadius, 36, 0.001);
+
+  [view prepareForRecycle];
+
+  auto newProps = makeClippingProps(true);
+  [view updateProps:newProps oldProps:oldProps];
+  [view updateLayoutMetrics:layoutMetrics oldLayoutMetrics:EmptyLayoutMetrics];
+  [view finalizeUpdates:RNComponentViewUpdateMaskAll];
+
+  XCTAssertEqual(containerView, [view valueForKey:@"_containerView"]);
+  XCTAssertEqualWithAccuracy(containerView.layer.cornerRadius, 0, 0.001);
+  XCTAssertNotNil(containerView.layer.mask);
+}
+
+- (void)testRecycleClearsDirectImageMask
+{
+  ViewClippingFeatureFlagScope featureFlags(false);
+  UIImageView *imageView = [UIImageView new];
+  RCTViewComponentView *view = makeClippingView(false, imageView);
+
+  XCTAssertNotNil(imageView.layer.mask);
+
+  [view prepareForRecycle];
+
+  XCTAssertNil(imageView.layer.mask);
+}
+
+// A view with no custom container carries its own rounding on `self.layer`, so recycle has to clear it there too.
+- (void)testRecycleClearsCornerRadiusFromViewWithoutCustomContainer
+{
+  ViewClippingFeatureFlagScope featureFlags(false);
+  RCTViewComponentView *view = makeClippingView(false);
+
+  XCTAssertNil([view valueForKey:@"_containerView"]);
+  XCTAssertEqualWithAccuracy(view.layer.cornerRadius, 36, 0.001);
+
+  [view prepareForRecycle];
+
+  XCTAssertEqualWithAccuracy(view.layer.cornerRadius, 0, 0.001);
 }
 
 #pragma mark - outline style on square corners (#57841)
