@@ -122,6 +122,9 @@ describe('Maestro iOS runner', () => {
   });
 
   it('rejects after exhausting retries and stops every recorder', async () => {
+    const consoleError = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
     fs.existsSync.mockReturnValue(false);
     const error = new Error('Maestro driver failed');
     childProcess.execSync.mockImplementation(() => {
@@ -137,6 +140,9 @@ describe('Maestro iOS runner', () => {
     for (const {value: recordingProcess} of childProcess.spawn.mock.results) {
       expect(recordingProcess.kill).toHaveBeenCalledWith('SIGINT');
     }
+    expect(consoleError).toHaveBeenCalledWith(
+      'Failed to execute flow flow.yml after 5 attempts.',
+    );
   });
 
   it('selects an iPhone Pro simulator from the latest runtime', () => {
