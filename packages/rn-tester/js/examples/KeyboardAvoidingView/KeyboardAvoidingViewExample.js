@@ -20,6 +20,7 @@ import {
   KeyboardAvoidingView,
   Modal,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -47,74 +48,78 @@ const TextInputForm = () => {
   );
 };
 
-const CloseButton = (
-  props:
-    {behavior: any, setModalOpen: any} | {behavior: string, setModalOpen: any},
-) => {
+const CloseButton = (props: {setModalOpen: boolean => void}) => {
   return (
-    <View
-      style={[
-        styles.closeView,
-        {marginHorizontal: props.behavior === 'position' ? 0 : 25},
-      ]}>
-      <Pressable
-        onPress={() => props.setModalOpen(false)}
-        style={styles.closeButton}>
-        <Text style={styles.touchableText}>Close</Text>
-      </Pressable>
+    <Pressable
+      onPress={() => props.setModalOpen(false)}
+      style={styles.closeButton}>
+      <Text style={styles.touchableText}>Close</Text>
+    </Pressable>
+  );
+};
+
+type KeyboardAvoidingBehavior = 'padding' | 'position' | 'height';
+
+const BEHAVIORS: Array<KeyboardAvoidingBehavior> = [
+  'padding',
+  'position',
+  'height',
+];
+
+const BEHAVIOR_DESCRIPTIONS: {[KeyboardAvoidingBehavior]: string} = {
+  padding: 'Sets bottom padding equal to the keyboard overlap.',
+  position: 'Offsets the content container up by the keyboard overlap.',
+  height: 'Shrinks the view height by the keyboard overlap.',
+};
+
+const BehaviorPicker = (props: {
+  behavior: KeyboardAvoidingBehavior,
+  setBehavior: KeyboardAvoidingBehavior => void,
+}) => {
+  return (
+    <View>
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'center',
+        }}>
+        {BEHAVIORS.map(behavior => {
+          const selected = props.behavior === behavior;
+          return (
+            <TouchableOpacity
+              key={behavior}
+              onPress={() => props.setBehavior(behavior)}
+              style={[
+                styles.pillStyle,
+                {backgroundColor: selected ? 'blue' : 'white'},
+              ]}>
+              <Text
+                style={{
+                  textTransform: 'capitalize',
+                  color: selected ? 'white' : 'blue',
+                }}>
+                {behavior}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+      <Text style={styles.behaviorDescription}>
+        {BEHAVIOR_DESCRIPTIONS[props.behavior]}
+      </Text>
     </View>
   );
 };
 
 const KeyboardAvoidingViewBehaviour = () => {
   const [modalOpen, setModalOpen] = useState(false);
-  const [behavior, setBehavior] = useState('padding');
+  const [behavior, setBehavior] = useState<KeyboardAvoidingBehavior>('padding');
   return (
     <View style={styles.outerContainer}>
       <Modal animationType="fade" visible={modalOpen}>
-        {/* $FlowFixMe[incompatible-type] Natural Inference rollout. See
-         * https://fburl.com/workplace/6291gfvu */}
         <KeyboardAvoidingView behavior={behavior} style={styles.container}>
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'center',
-            }}>
-            <TouchableOpacity
-              onPress={() => setBehavior('padding')}
-              style={[
-                styles.pillStyle,
-                {backgroundColor: behavior === 'padding' ? 'blue' : 'white'},
-              ]}>
-              <Text style={{color: behavior === 'padding' ? 'white' : 'blue'}}>
-                Padding
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => setBehavior('position')}
-              style={[
-                styles.pillStyle,
-                {backgroundColor: behavior === 'position' ? 'blue' : 'white'},
-              ]}>
-              <Text style={{color: behavior === 'position' ? 'white' : 'blue'}}>
-                Position
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => setBehavior('height')}
-              style={[
-                styles.pillStyle,
-                {backgroundColor: behavior === 'height' ? 'blue' : 'white'},
-              ]}>
-              <Text
-                style={{
-                  color: behavior === 'height' ? 'white' : 'blue',
-                }}>
-                Height
-              </Text>
-            </TouchableOpacity>
-          </View>
-          <CloseButton behavior={behavior} setModalOpen={setModalOpen} />
+          <BehaviorPicker behavior={behavior} setBehavior={setBehavior} />
+          <CloseButton setModalOpen={setModalOpen} />
           <TextInputForm />
         </KeyboardAvoidingView>
       </Modal>
@@ -140,7 +145,7 @@ const KeyboardAvoidingDisabled = () => {
           enabled={false}
           behavior={'height'}
           style={styles.container}>
-          <CloseButton behavior={'height'} setModalOpen={setModalOpen} />
+          <CloseButton setModalOpen={setModalOpen} />
           <TextInputForm />
         </KeyboardAvoidingView>
       </Modal>
@@ -162,7 +167,7 @@ const KeyboardAvoidingVerticalOffset = () => {
           keyboardVerticalOffset={20}
           behavior={'padding'}
           style={styles.container}>
-          <CloseButton behavior={'height'} setModalOpen={setModalOpen} />
+          <CloseButton setModalOpen={setModalOpen} />
           <TextInputForm />
         </KeyboardAvoidingView>
       </Modal>
@@ -185,8 +190,48 @@ const KeyboardAvoidingContentContainerStyle = () => {
           behavior={'position'}
           style={styles.container}
           contentContainerStyle={styles.contentContainer}>
-          <CloseButton behavior={'height'} setModalOpen={setModalOpen} />
+          <CloseButton setModalOpen={setModalOpen} />
           <TextInputForm />
+        </KeyboardAvoidingView>
+      </Modal>
+      <View>
+        <Pressable onPress={() => setModalOpen(true)}>
+          <Text style={styles.touchableText}>Open Example</Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+};
+
+const KeyboardAvoidingScrollView = () => {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [behavior, setBehavior] = useState<KeyboardAvoidingBehavior>('padding');
+  return (
+    <View>
+      <Modal animationType="fade" visible={modalOpen}>
+        <KeyboardAvoidingView
+          behavior={behavior}
+          style={styles.scrollViewContainer}
+          contentContainerStyle={{flex: 1}}>
+          <View style={{paddingHorizontal: 20}}>
+            <BehaviorPicker behavior={behavior} setBehavior={setBehavior} />
+            <CloseButton setModalOpen={setModalOpen} />
+          </View>
+          <ScrollView
+            style={{flex: 1}}
+            contentContainerStyle={styles.scrollViewContent}>
+            {Array.from({length: 10}, (_, index) => (
+              <View key={index} style={styles.fillerItem}>
+                <Text style={{fontSize: 16}}>Item {index + 1}</Text>
+              </View>
+            ))}
+            <TextInput placeholder="Name" style={styles.textInput} />
+            <TextInput
+              placeholder="Message"
+              multiline
+              style={[styles.textInput, styles.multilineTextInput]}
+            />
+          </ScrollView>
         </KeyboardAvoidingView>
       </Modal>
       <View>
@@ -205,24 +250,43 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
+    alignSelf: 'center',
     paddingHorizontal: 20,
     paddingTop: 20,
+    width: '100%',
+    maxWidth: 340,
   },
   contentContainer: {
     paddingTop: 20,
     backgroundColor: '#abdebf',
   },
+  scrollViewContainer: {
+    flex: 1,
+    paddingTop: 100,
+  },
+  scrollViewContent: {
+    paddingBottom: 60,
+    paddingHorizontal: 20,
+  },
+  fillerItem: {
+    backgroundColor: '#eeeeee',
+    borderRadius: 8,
+    paddingVertical: 16,
+    paddingHorizontal: 12,
+    marginBottom: 20,
+    alignItems: 'center',
+  },
   textInput: {
     borderRadius: 5,
     borderWidth: 1,
-    height: 44,
-    width: 300,
+    minHeight: 44,
     marginBottom: 20,
     paddingHorizontal: 10,
   },
-  closeView: {
-    alignSelf: 'stretch',
+  multilineTextInput: {
+    minHeight: 88,
+    paddingVertical: 10,
+    textAlignVertical: 'top',
   },
   pillStyle: {
     padding: 10,
@@ -233,14 +297,18 @@ const styles = StyleSheet.create({
     borderColor: 'blue',
   },
   closeButton: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
+    alignSelf: 'flex-end',
     marginVertical: 10,
     padding: 10,
   },
   touchableText: {
     fontWeight: '500',
     color: 'blue',
+  },
+  behaviorDescription: {
+    textAlign: 'center',
+    alignSelf: 'center',
+    width: 200,
   },
 });
 
@@ -251,7 +319,7 @@ exports.examples = [
   {
     title: 'Keyboard Avoiding View with different behaviors',
     description:
-      ('Specify how to react to the presence of the keyboard. Android and iOS both interact' +
+      ('Specify how to react to the presence of the keyboard. Android and iOS both interact ' +
         'with this prop differently. On both iOS and Android, setting behavior is recommended.') as string,
     render(): React.Node {
       return <KeyboardAvoidingViewBehaviour />;
@@ -260,7 +328,7 @@ exports.examples = [
   {
     title: 'Keyboard Avoiding View with keyboardVerticalOffset={distance}',
     description:
-      ('This is the distance between the top of the user screen and the react native' +
+      ('This is the distance between the top of the user screen and the React Native ' +
         'view, may be non-zero in some use cases. Defaults to 0.') as string,
     render(): React.Node {
       return <KeyboardAvoidingVerticalOffset />;
@@ -268,14 +336,26 @@ exports.examples = [
   },
   {
     title: 'Keyboard Avoiding View with enabled={false}',
+    description: 'Disable the KeyboardAvoidingView.' as string,
     render(): React.Node {
       return <KeyboardAvoidingDisabled />;
     },
   },
   {
     title: 'Keyboard Avoiding View with contentContainerStyle',
+    description:
+      'Specify the style of the content container View when behavior is set to position.' as string,
     render(): React.Node {
       return <KeyboardAvoidingContentContainerStyle />;
+    },
+  },
+  {
+    title: 'Keyboard Avoiding View with ScrollView',
+    description:
+      ('A ScrollView with filler content and TextInputs at the bottom inside the scrollable content. ' +
+        'TextInputs should still be visible when focused.') as string,
+    render(): React.Node {
+      return <KeyboardAvoidingScrollView />;
     },
   },
 ] as Array<RNTesterModuleExample>;
