@@ -186,7 +186,7 @@ jobs:
       app-id: com.meta.RNTester.localDevelopment
       device-model: iPhone-17-Pro
       device-os: iOS-26-2
-      exclude-tags: android-only
+      exclude-tags: android-only,local-screenshot-baseline
     secrets: inherit
 
   test_e2e_ios_rntester:

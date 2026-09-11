@@ -46,7 +46,7 @@ jobs:
   test:
     name: Maestro Cloud ${{ inputs.platform }} RNTester
     runs-on: ubuntu-latest
-    timeout-minutes: 75
+    timeout-minutes: 105
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -84,7 +84,7 @@ jobs:
           env: |
             APP_ID=${{ inputs.app-id }}
           maestro-cli-version: 2.6.1
-          timeout: 60
+          timeout: 90
       - name: Check Maestro Cloud result
         if: always()
         env:

@@ -1,0 +1,65 @@
+appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebook.react.uiapp
+---
+- stopApp
+- openLink: rntester://example/SectionList/onEndReached
+- runFlow: ./helpers/confirm-open-link.yml
+- extendedWaitUntil:
+    visible:
+      id: 'start_test'
+    timeout: 120000
+- tapOn:
+    id: 'start_test'
+- assertVisible:
+    id: 'output'
+    text: 'onEndReached'
+- openLink: rntester://example/SectionList/onViewableItemsChanged-horizontal-noWaitForInteraction
+- runFlow: ./helpers/confirm-open-link.yml
+- extendedWaitUntil:
+    visible:
+      id: 'section-list-viewability-horizontal-no-wait'
+    timeout: 30000
+- assertVisible:
+    id: 'output'
+    text: '.*Pizza.*'
+- openLink: rntester://example/SectionList/onViewableItemsChanged-horizontal-waitForInteraction
+- runFlow: ./helpers/confirm-open-link.yml
+- extendedWaitUntil:
+    visible:
+      id: 'section-list-viewability-horizontal-wait'
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: 'Cheesecake'
+    direction: RIGHT
+    speed: 40
+    visibilityPercentage: 100
+    centerElement: true
+    timeout: 30000
+- extendedWaitUntil:
+    visible:
+      id: 'output'
+      text: '.*Cheesecake.*'
+    timeout: 10000
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - openLink: rntester://example/SectionList/onViewableItemsChanged-waitForInteraction
+      - runFlow: ./helpers/confirm-open-link.yml
+      - extendedWaitUntil:
+          visible:
+            id: 'section-list-viewability-vertical-wait'
+          timeout: 30000
+      - scrollUntilVisible:
+          element:
+            id: 'Cheesecake'
+          direction: DOWN
+          speed: 40
+          visibilityPercentage: 100
+          centerElement: true
+          timeout: 30000
+      - extendedWaitUntil:
+          visible:
+            id: 'output'
+            text: '.*Cheesecake.*'
+          timeout: 10000

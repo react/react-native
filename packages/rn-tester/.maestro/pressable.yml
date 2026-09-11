@@ -1,37 +1,30 @@
 appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebook.react.uiapp
 ---
-- runFlow: ./helpers/launch-app-and-search.yml
-- inputText:
-    text: 'Pressable'
-- assertVisible:
-    id: 'Pressable'
-- tapOn:
-    id: 'Pressable'
-- assertVisible:
-    text: 'Change content based on Press'
-- assertVisible:
-    text: 'Change style based on Press'
+- stopApp
+- openLink: rntester://example/PressableExample/content-press
+- runFlow: ./helpers/confirm-open-link.yml
+- extendedWaitUntil:
+    visible:
+      id: 'one_press_me_button'
+    timeout: 120000
 - tapOn:
     id: 'one_press_me_button'
 - assertVisible:
+    id: 'pressable_press_console'
     text: 'onPress'
 - tapOn:
     id: 'one_press_me_button'
 - assertVisible:
+    id: 'pressable_press_console'
     text: '2x onPress'
-- scrollUntilVisible:
-    element:
-      id: 'pressable_feedback_events'
-    direction: DOWN
-    speed: 10
-    visibilityPercentage: 100
+- openLink: rntester://example/PressableExample/feedback-events
+- runFlow: ./helpers/confirm-open-link.yml
+- extendedWaitUntil:
+    visible:
+      id: 'pressable_feedback_events_button'
+    timeout: 30000
 - tapOn:
     id: 'pressable_feedback_events_button'
-- scrollUntilVisible:
-    element:
-      text: 'pressIn'
-    direction: DOWN
-    speed: 10
 - assertVisible:
     text: 'press'
 - assertVisible:
@@ -44,3 +37,24 @@ appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebo
     text: 'longPress'
 - assertVisible:
     text: 'pressOut'
+- openLink: rntester://example/PressableExample/hit-slop
+- runFlow: ./helpers/confirm-open-link.yml
+- extendedWaitUntil:
+    visible:
+      id: 'pressable_hit_slop_button'
+    timeout: 30000
+- tapOn:
+    id: 'pressable_hit_slop_button'
+- assertVisible:
+    id: 'pressable_hit_slop'
+- openLink: rntester://example/PressableExample/text-press
+- runFlow: ./helpers/confirm-open-link.yml
+- extendedWaitUntil:
+    visible:
+      id: 'tappable_text'
+    timeout: 30000
+- tapOn:
+    id: 'tappable_text'
+- assertVisible:
+    id: 'tappable_text_console'
+    text: 'text onPress'

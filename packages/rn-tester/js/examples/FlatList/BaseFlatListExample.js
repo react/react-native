@@ -61,6 +61,7 @@ const Item = ({item, separators}: ListRenderItemInfo<string>) => {
 
 type Props = Readonly<{
   exampleProps: Partial<React.ElementConfig<typeof FlatList>>,
+  exampleTestID?: ?string,
   onTest?: ?() => void,
   testLabel?: ?string,
   testOutput?: ?string,
@@ -72,7 +73,7 @@ const BaseFlatListExample: component(
   ...props: Props
 ) = ({ref, ...props}: {ref: React.RefSetter<FlatList<string>>, ...Props}) => {
   return (
-    <View style={styles.container}>
+    <View style={styles.container} testID={props.exampleTestID}>
       {props.testOutput != null ? (
         <View testID="test_container" style={styles.testContainer}>
           <Text style={styles.output} numberOfLines={1} testID="output">
