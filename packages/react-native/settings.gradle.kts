@@ -21,6 +21,8 @@ pluginManagement {
 
 rootProject.name = "react-native-build-from-source"
 
+includeBuild("ReactShared") { name = "react-native-shared" }
+
 include(":packages:react-native:ReactAndroid")
 
 project(":packages:react-native:ReactAndroid").projectDir = file("ReactAndroid/")

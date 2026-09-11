@@ -9,6 +9,10 @@
 import Foundation
 import PackageDescription
 
+if ProcessInfo.processInfo.environment["RCT_USE_KMP"] == "1" {
+  fatalError("RCT_USE_KMP=1 currently supports CocoaPods source builds only. Run RCT_USE_KMP=1 pod install in the iOS app; the SwiftPM prebuild does not include ReactNativeShared.")
+}
+
 let BUILD_FROM_SOURCE = false
 
 // Removing the legacy TurboModule and component interop layers is opt-in while those
