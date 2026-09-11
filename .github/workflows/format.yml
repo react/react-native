@@ -1,0 +1,78 @@
+name: Format
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
+      - '*-stable'
+
+permissions:
+  contents: read
+
+jobs:
+  format:
+    runs-on: macos-15
+    if: github.repository == 'react/react-native'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Setup Node.js
+        uses: ./.github/actions/setup-node
+      - name: Initialize report
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number || '' }}
+        run: |
+          mkdir -p .format-results
+          node -e "const {EVENT_NAME, HEAD_SHA, PR_NUMBER} = process.env; require('fs').writeFileSync('.format-results/metadata.json', JSON.stringify({EVENT_NAME, HEAD_SHA, PR_NUMBER}))"
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        uses: ./.github/actions/yarn-install
+      - name: Check formatting
+        id: format
+        continue-on-error: true
+        shell: bash
+        run: |
+          set +e
+          {
+            status=0
+            for formatter in javascript cpp kotlin java python swift; do
+              yarn "format-$formatter" || status=1
+            done
+            exit "$status"
+          } 2>&1 | tee .format-results/output.txt
+          format_status=${PIPESTATUS[0]}
+          set -e
+          git diff --no-ext-diff --no-color --unified=3 -- . \
+            ':(exclude)packages/react-native/package.json' \
+            ':(exclude)yarn.lock' > .format-results/format.patch
+          if [[ $format_status -ne 0 || -s .format-results/format.patch ]]; then
+            exit 1
+          fi
+      - name: Upload formatting report
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v6
+        with:
+          name: format-results
+          path: .format-results/
+          retention-days: 1
+      - name: Report formatting failure
+        if: steps.format.outcome == 'failure'
+        shell: bash
+        run: |
+          echo '::error::Formatting is invalid. Run `yarn format` and commit the result.'
+          exit 1
