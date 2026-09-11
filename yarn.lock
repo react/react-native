@@ -6373,6 +6373,11 @@ kleur@^3.0.3:
   resolved "https://registry.yarnpkg.com/kleur/-/kleur-3.0.3.tgz#a79c9ecc86ee1ce3fa6206d1216c501f147fc07e"
   integrity sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w==
 
+ktfmt@0.59.0:
+  version "0.59.0"
+  resolved "https://registry.yarnpkg.com/ktfmt/-/ktfmt-0.59.0.tgz#99f98b81dbdc7f1487dfbc9850eb17b3780cf6d5"
+  integrity sha512-lOEn/7y2Ez2/nxDTn5EwJv6BSugB8BtzY2Gn6GvyLIAjdUf3xgKzirIxD57t/vu5I6eybivmVtONI3WGXyZ3lw==
+
 language-subtag-registry@^0.3.20:
   version "0.3.23"
   resolved "https://registry.yarnpkg.com/language-subtag-registry/-/language-subtag-registry-0.3.23.tgz#23529e04d9e3b74679d70142df3fd2eb6ec572e7"
