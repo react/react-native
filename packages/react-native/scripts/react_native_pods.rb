@@ -11,6 +11,7 @@ require_relative './cocoapods/jsengine.rb'
 require_relative './cocoapods/rndependencies.rb'
 require_relative './cocoapods/rncore.rb'
 require_relative './cocoapods/fabric.rb'
+require_relative './cocoapods/kmp.rb'
 require_relative './cocoapods/codegen.rb'
 require_relative './cocoapods/codegen_utils.rb'
 require_relative './cocoapods/utils.rb'
@@ -115,6 +116,11 @@ def use_react_native! (
   # Users can still turn them off and build from source by setting the environment variable to 0.
   ENV['RCT_USE_RN_DEP'] = ENV['RCT_USE_RN_DEP'] == '0' ? '0' : '1'
   ENV['RCT_USE_PREBUILT_RNCORE'] = ENV['RCT_USE_PREBUILT_RNCORE'] == '0' ? '0' : '1'
+  if ENV['RCT_USE_KMP'] == '1'
+    # The published core binaries do not contain the opt-in shared gradient adapter.
+    ENV['RCT_USE_PREBUILT_RNCORE'] = '0'
+    Pod::UI.puts 'React Native KMP pilot: building React Native core from source.'
+  end
   # Make `REMOVE_LEGACY_ARCH` enabled by default. This will build React Native
   # excluding the legacy arch unless the user turns this flag off explicitly.
   ENV['RCT_REMOVE_LEGACY_ARCH'] = ENV['RCT_REMOVE_LEGACY_ARCH'] == '0' ? '0' : '1'
@@ -164,6 +170,9 @@ def use_react_native! (
   rncore_pod 'RCTRequired', :path => "#{prefix}/Libraries/Required"
   pod 'RCTTypeSafety', :path => "#{prefix}/Libraries/TypeSafety", :modular_headers => true
   pod 'React', :path => "#{prefix}/"
+  if ENV['RCT_USE_KMP'] == '1'
+    pod 'React-KMP', :path => "#{prefix}/ReactShared"
+  end
   if !ReactNativeCoreUtils.build_rncore_from_source()
     pod 'React-Core-prebuilt', :podspec => "#{prefix}/React-Core-prebuilt.podspec", :modular_headers => true
   end
@@ -632,6 +641,7 @@ def react_native_post_install(
   ReactNativePodsUtils.updateOSDeploymentTarget(installer)
   ReactNativePodsUtils.set_dynamic_frameworks_flags(installer)
   ReactNativePodsUtils.add_ndebug_flag_to_pods_in_release(installer)
+  ReactNativeKMPUtils.configure_aggregate_xcconfig(installer)
 
   if !ReactNativeCoreUtils.build_rncore_from_source()
     # The Xcode-26 SWIFT_ENABLE_EXPLICIT_MODULES=NO workaround (#53457) is removed:

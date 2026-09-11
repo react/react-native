@@ -72,6 +72,7 @@ nexusPublishing {
 tasks.register("clean", Delete::class.java) {
   description = "Remove all the build files and intermediate build outputs"
   dependsOn(gradle.includedBuild("gradle-plugin").task(":clean"))
+  dependsOn(gradle.includedBuild("react-native-shared").task(":clean"))
   subprojects.forEach {
     if (
         it.project.plugins.hasPlugin("com.android.library") ||
@@ -103,6 +104,7 @@ tasks.register("clean", Delete::class.java) {
 tasks.register("build") {
   description = "Build and test all the React Native relevant projects."
   dependsOn(gradle.includedBuild("gradle-plugin").task(":build"))
+  dependsOn(gradle.includedBuild("react-native-shared").task(":jvmTest"))
 }
 
 tasks.register("publishAllToMavenTempLocal") {
