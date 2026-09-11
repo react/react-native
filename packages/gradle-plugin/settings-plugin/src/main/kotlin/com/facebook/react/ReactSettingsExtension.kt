@@ -51,7 +51,13 @@ abstract class ReactSettingsExtension @Inject constructor(val settings: Settings
       lockFiles: FileCollection =
           settings.layout.rootDirectory
               .dir("../")
-              .files("yarn.lock", "package-lock.json", "package.json", "react-native.config.js"),
+              .files(
+                "yarn.lock",
+                "package-lock.json",
+                "package.json",
+                "react-native.config.js",
+                "pnpm-lock.yaml"
+              ),
   ) {
     outputFile.parentFile.mkdirs()
 
