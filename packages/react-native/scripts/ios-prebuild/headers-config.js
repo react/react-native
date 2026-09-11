@@ -653,6 +653,23 @@ const PodspecExceptions /*: {[key: string]: PodSpecConfiguration} */ = {
       },
     ],
   },
+  'ReactCommon/react/renderer/debug/React-rendererdebug.podspec': {
+    name: 'React-rendererdebug',
+    headerPatterns: [],
+    headerDir: '',
+    subSpecs: [
+      {
+        name: 'debug',
+        headerPatterns: ['*.h'],
+        headerDir: 'react/renderer/debug',
+      },
+      {
+        name: 'debugUmbrella',
+        headerPatterns: ['React/*.h'],
+        headerDir: 'React',
+      },
+    ],
+  },
 };
 
 module.exports = {PodspecExceptions};
