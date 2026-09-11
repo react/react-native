@@ -14,14 +14,36 @@ import type {RNTesterModule} from '../../types/RNTesterTypes';
 
 import hotdog from '../../assets/hotdog.jpg';
 import * as React from 'react';
+import {useState} from 'react';
 import {
+  Button,
   DynamicColorIOS,
   Image,
   Platform,
   PlatformColor,
   StyleSheet,
+  Text,
   View,
 } from 'react-native';
+
+component NonUniformRadiusClippingImageExample() {
+  const [useNonUniformRadii, setUseNonUniformRadii] = useState(false);
+  const radiusStyle = useNonUniformRadii
+    ? styles.nonUniformRadiusClippingPartial
+    : styles.nonUniformRadiusClippingFull;
+  return (
+    <View style={styles.nonUniformRadiusClippingImageContainer}>
+      <Image
+        source={hotdog}
+        style={[styles.nonUniformRadiusClippingImage, radiusStyle]}
+      />
+      <Button
+        title="Toggle image border radii"
+        onPress={() => setUseNonUniformRadii(value => !value)}
+      />
+    </View>
+  );
+}
 
 const styles = StyleSheet.create({
   box: {
@@ -256,6 +278,40 @@ const styles = StyleSheet.create({
     left: -10,
     top: -10,
     backgroundColor: 'blue',
+  },
+  nonUniformRadiusClippingContainer: {
+    rowGap: 20,
+  },
+  nonUniformRadiusClippingItem: {
+    borderColor: 'black',
+    borderWidth: 2,
+    overflow: 'hidden',
+  },
+  nonUniformRadiusClippingFull: {
+    borderRadius: 36,
+  },
+  nonUniformRadiusClippingPartial: {
+    borderTopLeftRadius: 36,
+    borderTopRightRadius: 36,
+    borderBottomLeftRadius: 36,
+  },
+  nonUniformRadiusClippingText: {
+    fontSize: 16,
+    padding: 20,
+  },
+  nonUniformRadiusClippingBackground: {
+    backgroundColor: 'lightblue',
+  },
+  nonUniformRadiusClippingImage: {
+    borderColor: 'black',
+    borderWidth: 8,
+    height: 140,
+    overflow: 'hidden',
+    width: 280,
+  },
+  nonUniformRadiusClippingImageContainer: {
+    alignItems: 'center',
+    rowGap: 12,
   },
 });
 
@@ -596,6 +652,63 @@ export default {
               ]}>
               <View style={[styles.childOfBorder, {left: -15, top: 0}]} />
             </View>
+          </View>
+        );
+      },
+    },
+    {
+      title: 'Child clipping with non-uniform radii',
+      name: 'non-uniform-radius-clipping',
+      description:
+        'Non-uniform border radii clip overflowing child content at every corner.',
+      render: function (): React.Node {
+        return (
+          <View style={styles.nonUniformRadiusClippingContainer}>
+            <View
+              style={[
+                styles.nonUniformRadiusClippingItem,
+                styles.nonUniformRadiusClippingFull,
+              ]}>
+              <Text
+                style={[
+                  styles.nonUniformRadiusClippingText,
+                  styles.nonUniformRadiusClippingBackground,
+                ]}>
+                Full Border - Background
+              </Text>
+            </View>
+            <View
+              style={[
+                styles.nonUniformRadiusClippingItem,
+                styles.nonUniformRadiusClippingPartial,
+              ]}>
+              <Text
+                style={[
+                  styles.nonUniformRadiusClippingText,
+                  styles.nonUniformRadiusClippingBackground,
+                ]}>
+                Partial Border - Background
+              </Text>
+            </View>
+            <View
+              style={[
+                styles.nonUniformRadiusClippingItem,
+                styles.nonUniformRadiusClippingFull,
+              ]}>
+              <Text style={styles.nonUniformRadiusClippingText}>
+                Full Border - No background
+              </Text>
+            </View>
+            <View
+              style={[
+                styles.nonUniformRadiusClippingItem,
+                styles.nonUniformRadiusClippingPartial,
+              ]}>
+              <Text style={styles.nonUniformRadiusClippingText}>
+                Partial Border - No background
+              </Text>
+            </View>
+            <NonUniformRadiusClippingImageExample />
           </View>
         );
       },

@@ -39,6 +39,19 @@
 using namespace facebook::react;
 
 const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
+static NSString *const RCTViewComponentViewClippingMaskName = @"RCTViewComponentViewClippingMask";
+
+static void resetClippingMasksForImageSubviews(UIView *containerView)
+{
+  NSArray<UIView *> *subviews = containerView.subviews;
+  for (NSUInteger index = 0; index < subviews.count; index++) {
+    UIView *const subview = subviews[index];
+    if ([subview isKindOfClass:[UIImageView class]] &&
+        [subview.layer.mask.name isEqualToString:RCTViewComponentViewClippingMaskName]) {
+      [subview.layer setMask:nil];
+    }
+  }
+}
 
 #if !TARGET_OS_TV
 // iOS Full Keyboard Access only focuses a view when it is an accessibility
@@ -775,6 +788,23 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
   _filterLayer = nil;
   [self clearExistingBackgroundImageLayers];
 
+  // Resolved from the ivars rather than through `currentContainerView`, because that accessor and
+  // `effectiveContentView` behind it are side-effecting: they create or tear down the container view. Teardown
+  // must not reshape the view hierarchy on its way out of the pool.
+  UIView *containerView = self;
+  if (_containerView != nil) {
+    containerView = _containerView;
+  } else if (_swiftUIWrapper != nullptr) {
+    containerView = _swiftUIWrapper.contentView;
+  }
+  // The masks below are the load-bearing part: `invalidateLayer` installs image-subview masks but never removes
+  // them, so a recycled view remounted with `overflow: visible` would keep clipping its image child. The layer's
+  // own mask and corner radius are rewritten on every `invalidateLayer`, so clearing them here is belt-and-braces
+  // that keeps a pooled view from holding a reference to a mask it no longer uses.
+  resetClippingMasksForImageSubviews(containerView);
+  containerView.layer.mask = nil;
+  containerView.layer.cornerRadius = 0;
+
   _propKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN = nil;
   _eventEmitter.reset();
   _isJSResponder = NO;
@@ -949,11 +979,18 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
   }
 }
 
+// Radii that cannot be represented by one circular CALayer corner radius require a custom-rendered border behind
+// content, so border-box clipping would let content cover that border.
+static bool shouldClipToPaddingBox(const BorderMetrics &borderMetrics)
+{
+  return ReactNativeFeatureFlags::enableIOSViewClipToPaddingBox() || !areBorderRadiiCircular(borderMetrics.borderRadii);
+}
+
 - (BOOL)styleWouldClipOverflowInk
 {
   const auto borderMetrics = _props->resolveBorderMetrics(_layoutMetrics);
   BOOL nonZeroBorderWidth = !(borderMetrics.borderWidths.isUniform() && borderMetrics.borderWidths.left == 0);
-  BOOL clipToPaddingBox = ReactNativeFeatureFlags::enableIOSViewClipToPaddingBox();
+  BOOL clipToPaddingBox = shouldClipToPaddingBox(borderMetrics);
   return _props->getClipsContentToBounds() &&
       ((!_props->boxShadow.empty() || (clipToPaddingBox && nonZeroBorderWidth)) || _props->outlineWidth != 0);
 }
@@ -1366,30 +1403,23 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
   }
 
   // clipping
-  self.currentContainerView.layer.mask = nil;
-  if (self.currentContainerView.clipsToBounds) {
-    BOOL clipToPaddingBox = ReactNativeFeatureFlags::enableIOSViewClipToPaddingBox();
+  UIView *containerView = self.currentContainerView;
+  containerView.layer.mask = nil;
+  if (_containerView != nil) {
+    containerView.layer.cornerRadius = 0;
+  }
+  resetClippingMasksForImageSubviews(containerView);
+  if (containerView.clipsToBounds) {
+    BOOL clipToPaddingBox = shouldClipToPaddingBox(borderMetrics);
     if (!clipToPaddingBox) {
       if (areBorderRadiiCircular(borderMetrics.borderRadii)) {
-        self.currentContainerView.layer.cornerRadius = borderMetrics.borderRadii.topLeft.horizontal;
+        containerView.layer.cornerRadius = borderMetrics.borderRadii.topLeft.horizontal;
       } else {
         CALayer *maskLayer =
             [self createMaskLayer:self.bounds
                      cornerInsets:RCTGetCornerInsets(
                                       RCTCornerRadiiFromBorderRadii(borderMetrics.borderRadii), UIEdgeInsetsZero)];
-        self.currentContainerView.layer.mask = maskLayer;
-      }
-
-      for (UIView *subview in self.currentContainerView.subviews) {
-        if ([subview isKindOfClass:[UIImageView class]]) {
-          RCTCornerInsets cornerInsets = RCTGetCornerInsets(
-              RCTCornerRadiiFromBorderRadii(borderMetrics.borderRadii),
-              RCTUIEdgeInsetsFromEdgeInsets(borderMetrics.borderWidths));
-
-          // If the subview is an image view, we have to apply the mask directly to the image view's layer,
-          // otherwise the image might overflow with the border radius.
-          subview.layer.mask = [self createMaskLayer:subview.bounds cornerInsets:cornerInsets];
-        }
+        containerView.layer.mask = maskLayer;
       }
     } else if (
         !borderMetrics.borderWidths.isUniform() || borderMetrics.borderWidths.left != 0 ||
@@ -1398,9 +1428,30 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
                                     cornerInsets:RCTGetCornerInsets(
                                                      RCTCornerRadiiFromBorderRadii(borderMetrics.borderRadii),
                                                      RCTUIEdgeInsetsFromEdgeInsets(borderMetrics.borderWidths))];
-      self.currentContainerView.layer.mask = maskLayer;
+      containerView.layer.mask = maskLayer;
     } else {
-      self.currentContainerView.layer.cornerRadius = borderMetrics.borderRadii.topLeft.horizontal;
+      containerView.layer.cornerRadius = borderMetrics.borderRadii.topLeft.horizontal;
+    }
+
+    // Deliberately the raw flag, not `shouldClipToPaddingBox`. This loop used to live inside the
+    // `if (!clipToPaddingBox)` branch above, where `clipToPaddingBox` was the flag alone. Now that the predicate
+    // also turns on for non-circular radii, keeping the loop nested would stop applying image masks in exactly
+    // the case this diff is about. Gating on the flag preserves the previous behaviour everywhere the geometry
+    // did not change.
+    if (!ReactNativeFeatureFlags::enableIOSViewClipToPaddingBox()) {
+      for (UIView *subview in containerView.subviews) {
+        if ([subview isKindOfClass:[UIImageView class]]) {
+          RCTCornerInsets cornerInsets = RCTGetCornerInsets(
+              RCTCornerRadiiFromBorderRadii(borderMetrics.borderRadii),
+              RCTUIEdgeInsetsFromEdgeInsets(borderMetrics.borderWidths));
+
+          // If the subview is an image view, we have to apply the mask directly to the image view's layer,
+          // otherwise the image might overflow with the border radius.
+          CAShapeLayer *maskLayer = [self createMaskLayer:subview.bounds cornerInsets:cornerInsets];
+          maskLayer.name = RCTViewComponentViewClippingMaskName;
+          subview.layer.mask = maskLayer;
+        }
+      }
     }
   }
 }
