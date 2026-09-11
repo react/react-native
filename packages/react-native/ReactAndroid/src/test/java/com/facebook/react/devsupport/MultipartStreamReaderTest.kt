@@ -10,6 +10,8 @@ package com.facebook.react.devsupport
 import okio.Buffer
 import okio.BufferedSource
 import okio.ByteString
+import okio.ForwardingSource
+import okio.Okio
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
@@ -210,6 +212,93 @@ class MultipartStreamReaderTest {
 
     assertThat(success).isTrue()
     assertThat(callback.callCount).isEqualTo(1)
+  }
+
+  @Test
+  @Suppress("DEPRECATION_ERROR") // Match the reader's compatibility with legacy Okio.
+  fun testDelimitersAcrossEveryReadBoundary() {
+    // The trailing CRLF must not become a header separator spanning the next boundary.
+    val body = "binary\u0000\r\n--samplX\r\n--sample-\r\n"
+    val response = "preamble\r\n--sample\r\n${body}\r\n--sample\r\nsecond\r\n--sample--\r\nepilogue"
+    for (readSize in 1..response.length) {
+      val upstream = Buffer().writeUtf8(response)
+      val source =
+          Okio.buffer(
+              object : ForwardingSource(upstream) {
+                override fun read(sink: Buffer, byteCount: Long): Long =
+                    super.read(sink, minOf(byteCount, readSize.toLong()))
+              }
+          )
+      val parts = mutableListOf<String>()
+      val last = mutableListOf<Boolean>()
+      val success =
+          MultipartStreamReader(source, "sample")
+              .readAllParts(
+                  object : CallCountTrackingChunkCallback() {
+                    override fun onChunkComplete(
+                        headers: Map<String, String>,
+                        body: BufferedSource,
+                        isLastChunk: Boolean,
+                    ) {
+                      parts.add(body.readUtf8())
+                      last.add(isLastChunk)
+                    }
+                  }
+              )
+      assertThat(success).describedAs("read size %s", readSize).isTrue()
+      assertThat(parts).containsExactly(body, "second")
+      assertThat(last).containsExactly(false, true)
+    }
+  }
+
+  @Test
+  fun testHeaderWhitespaceDuplicatesAndColonValues() {
+    val source =
+        Buffer()
+            .writeUtf8(
+                "\r\n--sample\r\n X-Name : first\r\nx-name: second:extra \r\ninvalid\r\n\r\nbody\r\n--sample--\r\n"
+            )
+    var calls = 0
+    assertThat(
+            MultipartStreamReader(source, "sample")
+                .readAllParts(
+                    object : CallCountTrackingChunkCallback() {
+                      override fun onChunkComplete(
+                          headers: Map<String, String>,
+                          body: BufferedSource,
+                          isLastChunk: Boolean,
+                      ) {
+                        calls++
+                        assertThat(headers).hasSize(1)
+                        assertThat(headers["X-Name"]).isEqualTo("second:extra")
+                        assertThat(body.readUtf8()).isEqualTo("body")
+                        assertThat(isLastChunk).isTrue()
+                      }
+                    }
+                )
+        )
+        .isTrue()
+    assertThat(calls).isEqualTo(1)
+  }
+
+  @Test
+  fun testFinalProgressForFragmentedBody() {
+    val body = "x".repeat(64 * 1024)
+    val source =
+        Buffer()
+            .writeUtf8(
+                "\r\n--sample\r\nContent-Length: ${body.length}\r\n\r\n$body\r\n--sample--\r\n"
+            )
+    val progress = mutableListOf<Pair<Long, Long>>()
+    val callback =
+        object : CallCountTrackingChunkCallback() {
+          override fun onChunkProgress(headers: Map<String, String>, loaded: Long, total: Long) {
+            progress.add(loaded to total)
+          }
+        }
+    assertThat(MultipartStreamReader(source, "sample").readAllParts(callback)).isTrue()
+    assertThat(callback.callCount).isEqualTo(1)
+    assertThat(progress.last()).isEqualTo(body.length.toLong() to body.length.toLong())
   }
 
   internal open class CallCountTrackingChunkCallback : MultipartStreamReader.ChunkListener {
