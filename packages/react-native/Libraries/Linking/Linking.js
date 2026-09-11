@@ -83,6 +83,22 @@ class LinkingImpl extends NativeEventEmitter<LinkingEventDefinitions> {
   }
 
   /**
+   * Open the device Settings app and display the app’s notification settings.
+   *
+   * Uses `UIApplicationOpenNotificationSettingsURLString` on iOS 15.4 and
+   * later, and `Settings.ACTION_APP_NOTIFICATION_SETTINGS` on Android 8.0
+   * (API 26) and later. On older OS versions it falls back to the app’s
+   * general settings page, the same screen that `openSettings()` opens.
+   */
+  openNotificationSettings(): Promise<void> {
+    if (Platform.OS === 'android') {
+      return nullthrows(NativeIntentAndroid).openNotificationSettings();
+    } else {
+      return nullthrows(NativeLinkingManager).openNotificationSettings();
+    }
+  }
+
+  /**
    * Get the URL that launched the app, or `null` if it was not launched from
    * a link. To support deep linking on Android, see
    * https://developer.android.com/training/app-indexing/deep-linking.html#handling-intents.

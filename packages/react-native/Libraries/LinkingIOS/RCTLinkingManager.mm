@@ -219,16 +219,41 @@ RCT_EXPORT_MODULE()
   resolve(RCTNullIfNil(initialURL.absoluteString));
 }
 
-- (void)openSettings:(RCTPromiseResolveBlock)resolve reject:(__unused RCTPromiseRejectBlock)reject
+- (void)openSettings:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
 {
-  NSURL *url = [NSURL URLWithString:UIApplicationOpenSettingsURLString];
+  [self openSettingsURLString:UIApplicationOpenSettingsURLString
+                 errorMessage:@"Unable to open app settings"
+                      resolve:resolve
+                       reject:reject];
+}
+
+- (void)openNotificationSettings:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
+{
+  // UIApplicationOpenNotificationSettingsURLString is available from iOS 15.4.
+  // On older versions fall back to the app's general settings page.
+  NSString *urlString = UIApplicationOpenSettingsURLString;
+  if (@available(iOS 15.4, *)) {
+    urlString = UIApplicationOpenNotificationSettingsURLString;
+  }
+  [self openSettingsURLString:urlString
+                 errorMessage:@"Unable to open app notification settings"
+                      resolve:resolve
+                       reject:reject];
+}
+
+- (void)openSettingsURLString:(NSString *)urlString
+                 errorMessage:(NSString *)errorMessage
+                      resolve:(RCTPromiseResolveBlock)resolve
+                       reject:(RCTPromiseRejectBlock)reject
+{
+  NSURL *url = [NSURL URLWithString:urlString];
   [RCTSharedApplication() openURL:url
                           options:@{}
                 completionHandler:^(BOOL success) {
                   if (success) {
                     resolve(nil);
                   } else {
-                    reject(RCTErrorUnspecified, @"Unable to open app settings", nil);
+                    reject(RCTErrorUnspecified, errorMessage, nil);
                   }
                 }];
 }
