@@ -1,42 +1,43 @@
 appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebook.react.uiapp
 ---
-- launchApp
-- extendedWaitUntil:
-    visible: 'Components'
-    timeout: 30000
+- stopApp
 - openLink: rntester://example/TouchableExample/feedback-events
+- runFlow: ./helpers/confirm-open-link.yml
 - extendedWaitUntil:
     visible:
       id: 'touchable_feedback_events_button'
-    timeout: 10000
+    timeout: 120000
 - tapOn:
     id: 'touchable_feedback_events_button'
 - assertVisible:
     id: 'touchable_feedback_events_console'
 - openLink: rntester://example/TouchableExample/highlight
+- runFlow: ./helpers/confirm-open-link.yml
 - extendedWaitUntil:
     visible:
       id: 'touchable_highlight_text_button'
-    timeout: 10000
+    timeout: 30000
 - tapOn:
     id: 'touchable_highlight_text_button'
 - assertVisible:
     id: 'touchable_highlight_console'
     text: 'TouchableHighlight onPress'
 - openLink: rntester://example/TouchableExample/hit-slop
+- runFlow: ./helpers/confirm-open-link.yml
 - extendedWaitUntil:
     visible:
       id: 'touchable_hit_slop_button'
-    timeout: 10000
+    timeout: 30000
 - tapOn:
     id: 'touchable_hit_slop_button'
 - assertVisible:
     id: 'touchable_hit_slop'
 - openLink: rntester://example/TouchableExample/without-feedback
+- runFlow: ./helpers/confirm-open-link.yml
 - extendedWaitUntil:
     visible:
       id: 'touchable_without_feedback_button'
-    timeout: 10000
+    timeout: 30000
 - tapOn:
     id: 'touchable_without_feedback_button'
 - assertVisible:

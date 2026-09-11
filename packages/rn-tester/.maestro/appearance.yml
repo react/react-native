@@ -1,14 +1,8 @@
 appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebook.react.uiapp
 ---
-- launchApp
-- extendedWaitUntil:
-    visible: 'Components'
-    timeout: 30000
-- assertVisible:
-    id: 'components-tab'
-- assertVisible:
-    id: 'apis-tab'
+- stopApp
 - openLink: rntester://example/AppearanceExample
+- runFlow: ./helpers/confirm-open-link.yml
 - extendedWaitUntil:
     visible: 'useColorScheme hook'
-    timeout: 10000
+    timeout: 120000

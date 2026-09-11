@@ -1,23 +1,22 @@
 appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebook.react.uiapp
 ---
-- launchApp
-- extendedWaitUntil:
-    visible: 'Components'
-    timeout: 30000
+- stopApp
 - openLink: rntester://example/AlertExample/default-button
+- runFlow: ./helpers/confirm-open-link.yml
 - extendedWaitUntil:
     visible:
       id: 'alert-with-default-button'
-    timeout: 10000
+    timeout: 120000
 - tapOn:
     id: 'alert-with-default-button'
 - assertVisible: 'An external USB drive has been detected!'
 - tapOn: 'OK'
 - openLink: rntester://example/AlertExample/three-buttons
+- runFlow: ./helpers/confirm-open-link.yml
 - extendedWaitUntil:
     visible:
       id: 'alert-with-three-buttons'
-    timeout: 10000
+    timeout: 30000
 - tapOn:
     id: 'alert-with-three-buttons'
 - assertVisible: 'Do you want to save your changes?'

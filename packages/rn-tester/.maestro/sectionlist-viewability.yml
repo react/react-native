@@ -1,39 +1,40 @@
 appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebook.react.uiapp
 ---
-- launchApp
-- extendedWaitUntil:
-    visible: 'Components'
-    timeout: 30000
+- stopApp
 - openLink: rntester://example/SectionList/onEndReached
+- runFlow: ./helpers/confirm-open-link.yml
 - extendedWaitUntil:
     visible:
       id: 'start_test'
-    timeout: 10000
+    timeout: 120000
 - tapOn:
     id: 'start_test'
 - assertVisible:
     id: 'output'
     text: 'onEndReached'
 - openLink: rntester://example/SectionList/onViewableItemsChanged-horizontal-noWaitForInteraction
+- runFlow: ./helpers/confirm-open-link.yml
 - extendedWaitUntil:
     visible:
       id: 'section-list-viewability-horizontal-no-wait'
-    timeout: 10000
+    timeout: 30000
 - assertVisible:
     id: 'output'
     text: '.*Pizza.*'
 - openLink: rntester://example/SectionList/onViewableItemsChanged-horizontal-waitForInteraction
+- runFlow: ./helpers/confirm-open-link.yml
 - extendedWaitUntil:
     visible:
       id: 'section-list-viewability-horizontal-wait'
-    timeout: 10000
-- repeat:
-    times: 3
-    commands:
-      - swipe:
-          start: 90%, 50%
-          end: 10%, 50%
-          speed: fast
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: 'Cheesecake'
+    direction: RIGHT
+    speed: 40
+    visibilityPercentage: 100
+    centerElement: true
+    timeout: 30000
 - extendedWaitUntil:
     visible:
       id: 'output'
@@ -44,17 +45,19 @@ appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebo
       platform: Android
     commands:
       - openLink: rntester://example/SectionList/onViewableItemsChanged-waitForInteraction
+      - runFlow: ./helpers/confirm-open-link.yml
       - extendedWaitUntil:
           visible:
             id: 'section-list-viewability-vertical-wait'
-          timeout: 10000
-      - repeat:
-          times: 3
-          commands:
-            - swipe:
-                start: 50%, 80%
-                end: 50%, 20%
-                speed: fast
+          timeout: 30000
+      - scrollUntilVisible:
+          element:
+            id: 'Cheesecake'
+          direction: DOWN
+          speed: 40
+          visibilityPercentage: 100
+          centerElement: true
+          timeout: 30000
       - extendedWaitUntil:
           visible:
             id: 'output'

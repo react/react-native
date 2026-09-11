@@ -1,0 +1,29 @@
+appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebook.react.uiapp
+---
+- stopApp
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - openLink: rntester://example/FabricInteropLayer/add-children
+      - runFlow: ./helpers/confirm-open-link.yml
+      - extendedWaitUntil:
+          visible:
+            id: 'add-marker-btn'
+          timeout: 120000
+      - assertVisible:
+          id: 'marker_0'
+      - assertVisible:
+          id: 'marker_1'
+      - assertVisible:
+          id: 'marker_2'
+      - assertVisible:
+          id: 'marker_3'
+      - assertVisible:
+          id: 'marker_4'
+      - assertNotVisible:
+          id: 'marker_5'
+      - tapOn:
+          id: 'add-marker-btn'
+      - assertVisible:
+          id: 'marker_5'

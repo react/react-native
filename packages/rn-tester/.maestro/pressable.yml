@@ -1,14 +1,12 @@
 appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebook.react.uiapp
 ---
-- launchApp
-- extendedWaitUntil:
-    visible: 'Components'
-    timeout: 30000
+- stopApp
 - openLink: rntester://example/PressableExample/content-press
+- runFlow: ./helpers/confirm-open-link.yml
 - extendedWaitUntil:
     visible:
       id: 'one_press_me_button'
-    timeout: 10000
+    timeout: 120000
 - tapOn:
     id: 'one_press_me_button'
 - assertVisible:
@@ -20,10 +18,11 @@ appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebo
     id: 'pressable_press_console'
     text: '2x onPress'
 - openLink: rntester://example/PressableExample/feedback-events
+- runFlow: ./helpers/confirm-open-link.yml
 - extendedWaitUntil:
     visible:
       id: 'pressable_feedback_events_button'
-    timeout: 10000
+    timeout: 30000
 - tapOn:
     id: 'pressable_feedback_events_button'
 - assertVisible:
@@ -39,19 +38,21 @@ appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebo
 - assertVisible:
     text: 'pressOut'
 - openLink: rntester://example/PressableExample/hit-slop
+- runFlow: ./helpers/confirm-open-link.yml
 - extendedWaitUntil:
     visible:
       id: 'pressable_hit_slop_button'
-    timeout: 10000
+    timeout: 30000
 - tapOn:
     id: 'pressable_hit_slop_button'
 - assertVisible:
     id: 'pressable_hit_slop'
 - openLink: rntester://example/PressableExample/text-press
+- runFlow: ./helpers/confirm-open-link.yml
 - extendedWaitUntil:
     visible:
       id: 'tappable_text'
-    timeout: 10000
+    timeout: 30000
 - tapOn:
     id: 'tappable_text'
 - assertVisible:

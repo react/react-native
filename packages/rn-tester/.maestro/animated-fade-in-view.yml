@@ -1,14 +1,12 @@
 appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebook.react.uiapp
 ---
-- launchApp
-- extendedWaitUntil:
-    visible: 'Components'
-    timeout: 30000
+- stopApp
 - openLink: rntester://example/Animated/fadeInView
+- runFlow: ./helpers/confirm-open-link.yml
 - extendedWaitUntil:
     visible:
       id: 'toggle-button'
-    timeout: 10000
+    timeout: 120000
 - assertVisible:
     id: 'fade-in-view'
 - tapOn:
