@@ -68,17 +68,10 @@ class ParagraphAttributes : public DebugStringConvertible {
   HyphenationFrequency android_hyphenationFrequency{};
 
   /*
-   * In case of font size adjustment enabled, defines minimum and maximum
-   * font sizes.
-   */
-  Float minimumFontSize{std::numeric_limits<Float>::quiet_NaN()};
-  Float maximumFontSize{std::numeric_limits<Float>::quiet_NaN()};
-
-  /*
    * Specifies the smallest possible scale a font can reach when
    * adjustsFontSizeToFit is enabled. (values 0.01-1.0).
    */
-  Float minimumFontScale{std::numeric_limits<Float>::quiet_NaN()};
+  Float minimumFontScale{0.0};
 
   /*
    * The vertical alignment of the text, causing the glyphs to be vertically
@@ -109,8 +102,6 @@ struct hash<facebook::react::ParagraphAttributes> {
         attributes.textBreakStrategy,
         attributes.textWidthMode,
         attributes.adjustsFontSizeToFit,
-        attributes.minimumFontSize,
-        attributes.maximumFontSize,
         attributes.includeFontPadding,
         attributes.android_hyphenationFrequency,
         attributes.minimumFontScale,

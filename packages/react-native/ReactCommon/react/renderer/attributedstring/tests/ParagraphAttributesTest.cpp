@@ -9,11 +9,11 @@
 #include <react/renderer/attributedstring/ParagraphAttributes.h>
 #include <react/renderer/attributedstring/conversions.h>
 
+#include <limits>
+
 namespace facebook::react {
 
-// The three Float fields default to NaN, and NaN != NaN under IEEE-754.
-// operator== must special-case NaN via floatEquality so two freshly
-// default-constructed ParagraphAttributes compare equal.
+// Two freshly default-constructed ParagraphAttributes must compare equal.
 TEST(
     ParagraphAttributesTest,
     testOperatorEqualsDefaultConstructedInstancesAreEqual) {
@@ -23,38 +23,36 @@ TEST(
   EXPECT_TRUE(a == b);
 }
 
-// operator== compares Float fields with an epsilon tolerance (0.005) rather
-// than an exact ==. Differences below the epsilon must still compare equal;
-// differences well above the epsilon must compare unequal.
+// operator== compares minimumFontScale with an epsilon tolerance (0.005)
+// rather than an exact ==. Differences below the epsilon must still compare
+// equal; differences well above the epsilon must compare unequal.
 TEST(
     ParagraphAttributesTest,
     testOperatorEqualsFloatFieldsUseEpsilonComparison) {
   ParagraphAttributes a{};
-  a.minimumFontSize = 12.0f;
-  a.maximumFontSize = 48.0f;
   a.minimumFontScale = 0.5f;
   auto b = a;
 
-  b.minimumFontSize = a.minimumFontSize + 0.001f;
-  b.maximumFontSize = a.maximumFontSize + 0.001f;
   b.minimumFontScale = a.minimumFontScale + 0.001f;
   EXPECT_TRUE(a == b);
 
   b = a;
-  b.minimumFontSize = a.minimumFontSize + 1.0f;
+  b.minimumFontScale = a.minimumFontScale + 0.1f;
   EXPECT_FALSE(a == b);
 }
 
 // floatEquality returns true only when *both* operands are NaN or when
-// *neither* is. A NaN-vs-finite mismatch in any of the three float fields
-// must therefore make the instances unequal, even though both operands are
-// "invalid" font sizes.
-TEST(
-    ParagraphAttributesTest,
-    testOperatorEqualsNaNVsFiniteFloatComparesUnequal) {
+// *neither* is. Two NaN minimumFontScale values must compare equal, and a
+// NaN-vs-finite mismatch must compare unequal.
+TEST(ParagraphAttributesTest, testOperatorEqualsHandlesNaNMinimumFontScale) {
   ParagraphAttributes withNaN{};
+  withNaN.minimumFontScale = std::numeric_limits<Float>::quiet_NaN();
+  auto otherWithNaN = withNaN;
+
+  EXPECT_TRUE(withNaN == otherWithNaN);
+
   ParagraphAttributes withFinite{};
-  withFinite.minimumFontSize = 12.0f;
+  withFinite.minimumFontScale = 0.5f;
 
   EXPECT_FALSE(withNaN == withFinite);
 }

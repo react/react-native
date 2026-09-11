@@ -1085,18 +1085,6 @@ inline ParagraphAttributes convertRawProp(
       "minimumFontScale",
       sourceParagraphAttributes.minimumFontScale,
       defaultParagraphAttributes.minimumFontScale);
-  paragraphAttributes.minimumFontSize = convertRawProp(
-      context,
-      rawProps,
-      "minimumFontSize",
-      sourceParagraphAttributes.minimumFontSize,
-      defaultParagraphAttributes.minimumFontSize);
-  paragraphAttributes.maximumFontSize = convertRawProp(
-      context,
-      rawProps,
-      "maximumFontSize",
-      sourceParagraphAttributes.maximumFontSize,
-      defaultParagraphAttributes.maximumFontSize);
   paragraphAttributes.includeFontPadding = convertRawProp(
       context,
       rawProps,
@@ -1199,8 +1187,7 @@ constexpr static MapBuffer::Key PA_KEY_TEXT_BREAK_STRATEGY = 2;
 constexpr static MapBuffer::Key PA_KEY_ADJUST_FONT_SIZE_TO_FIT = 3;
 constexpr static MapBuffer::Key PA_KEY_INCLUDE_FONT_PADDING = 4;
 constexpr static MapBuffer::Key PA_KEY_HYPHENATION_FREQUENCY = 5;
-constexpr static MapBuffer::Key PA_KEY_MINIMUM_FONT_SIZE = 6;
-constexpr static MapBuffer::Key PA_KEY_MAXIMUM_FONT_SIZE = 7;
+constexpr static MapBuffer::Key PA_KEY_MINIMUM_FONT_SCALE = 6;
 constexpr static MapBuffer::Key PA_KEY_TEXT_ALIGN_VERTICAL = 8;
 constexpr static MapBuffer::Key PA_KEY_TEXT_WIDTH_MODE = 9;
 
@@ -1217,8 +1204,7 @@ inline MapBuffer toMapBuffer(const ParagraphAttributes &paragraphAttributes)
   if (paragraphAttributes.textAlignVertical.has_value()) {
     builder.putString(PA_KEY_TEXT_ALIGN_VERTICAL, toString(*paragraphAttributes.textAlignVertical));
   }
-  builder.putDouble(PA_KEY_MINIMUM_FONT_SIZE, paragraphAttributes.minimumFontSize);
-  builder.putDouble(PA_KEY_MAXIMUM_FONT_SIZE, paragraphAttributes.maximumFontSize);
+  builder.putDouble(PA_KEY_MINIMUM_FONT_SCALE, paragraphAttributes.minimumFontScale);
 
   return builder.build();
 }

@@ -93,8 +93,7 @@ internal object TextLayoutManager {
   const val PA_KEY_ADJUST_FONT_SIZE_TO_FIT: Int = 3
   const val PA_KEY_INCLUDE_FONT_PADDING: Int = 4
   const val PA_KEY_HYPHENATION_FREQUENCY: Int = 5
-  const val PA_KEY_MINIMUM_FONT_SIZE: Int = 6
-  const val PA_KEY_MAXIMUM_FONT_SIZE: Int = 7
+  const val PA_KEY_MINIMUM_FONT_SCALE: Int = 6
   const val PA_KEY_TEXT_ALIGN_VERTICAL: Int = 8
   const val PA_KEY_TEXT_WIDTH_MODE: Int = 9
 
@@ -1046,9 +1045,9 @@ internal object TextLayoutManager {
     val justificationMode = getTextJustificationMode(alignmentAttr)
 
     if (adjustFontSizeToFit) {
-      val minimumFontSize =
-          if (paragraphAttributes.contains(PA_KEY_MINIMUM_FONT_SIZE))
-              paragraphAttributes.getDouble(PA_KEY_MINIMUM_FONT_SIZE).toFloat()
+      val minimumFontScale =
+          if (paragraphAttributes.contains(PA_KEY_MINIMUM_FONT_SCALE))
+              paragraphAttributes.getDouble(PA_KEY_MINIMUM_FONT_SCALE).toFloat()
           else Float.NaN
 
       adjustSpannableFontToFit(
@@ -1057,7 +1056,7 @@ internal object TextLayoutManager {
           YogaMeasureMode.EXACTLY,
           height,
           heightYogaMeasureMode,
-          minimumFontSize,
+          minimumFontScale,
           maximumNumberOfLines,
           includeFontPadding,
           textBreakStrategy,
@@ -1209,7 +1208,7 @@ internal object TextLayoutManager {
       widthYogaMeasureMode: YogaMeasureMode,
       height: Float,
       heightYogaMeasureMode: YogaMeasureMode,
-      minimumFontSizeAttr: Float,
+      minimumFontScale: Float,
       maximumNumberOfLines: Int,
       includeFontPadding: Boolean,
       textBreakStrategy: Int,
@@ -1221,16 +1220,20 @@ internal object TextLayoutManager {
     var boring = isBoring(text, paint)
     var layout: Layout
 
-    // Minimum font size is 4pts to match the iOS implementation.
-    val minimumFontSize =
-        (if (minimumFontSizeAttr.isNaN()) 4.dpToPx() else minimumFontSizeAttr).toInt()
-
     // Find the largest font size used in the spannable to use as a starting point.
-    var currentFontSize = minimumFontSize
+    var currentFontSize = 0
     val spans = text.getSpans(0, text.length, ReactAbsoluteSizeSpan::class.java)
     for (span in spans) {
       currentFontSize = max(currentFontSize, span.size)
     }
+
+    // The smallest font size is the largest font size scaled by minimumFontScale, floored at 4dp
+    // to match the iOS implementation.
+    val absoluteMinimumFontSize = 4.dpToPx().toInt()
+    val minimumFontSize =
+        if (minimumFontScale.isNaN() || minimumFontScale <= 0f) absoluteMinimumFontSize
+        else max((minimumFontScale * currentFontSize).toInt(), absoluteMinimumFontSize)
+    currentFontSize = max(currentFontSize, minimumFontSize)
 
     var intervalStart = minimumFontSize
     var intervalEnd = currentFontSize
