@@ -167,7 +167,7 @@ const HMRClient: HMRClientNativeInterface = {
     // there's nothing to hot-reload — registering with the server would just log
     // spurious "Unable to resolve module" errors.
     if (!getDevServer().bundleLoadedFromServer) {
-      console.warn(
+      console.log(
         'Not enabling Hot Module Reloading: the JS bundle was loaded from a local ' +
           'file, not from Metro. To use HMR, load the bundle from the packager.',
       );
