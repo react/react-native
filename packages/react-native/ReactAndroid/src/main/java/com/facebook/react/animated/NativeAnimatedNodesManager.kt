@@ -756,9 +756,10 @@ public class NativeAnimatedNodesManager(
       // or disconnected regions, indicating a partially-set-up animation graph, which is not
       // fatal and can stay a warning.
       val reason = if (cyclesDetected > 0) ("cycles ($cyclesDetected)") else "disconnected regions"
-      val ex = IllegalStateException(
-          ("Looks like animated nodes graph has ${reason}, there are $activeNodesCount but toposort visited only $updatedNodesCount"),
-      )
+      val ex =
+          IllegalStateException(
+              ("Looks like animated nodes graph has ${reason}, there are $activeNodesCount but toposort visited only $updatedNodesCount"),
+          )
       // TODO T71377544: investigate these SoftExceptions and see if we can remove entirely
       // or fix the root cause
       ReactSoftExceptionLogger.logSoftException(TAG, ReactNoCrashSoftException(ex))

@@ -63,11 +63,12 @@ val testerBuildOutputFileTree =
     fileTree(testerBuildDir.toString())
         .include("**/*.cmake", "**/*.marks", "**/compiler_depends.ts", "**/Makefile", "**/link.txt")
 
-val createNativeDepsDirectories by tasks.registering {
-  downloadsDir.mkdirs()
-  thirdParty.mkdirs()
-  reportsDir.mkdirs()
-}
+val createNativeDepsDirectories by
+    tasks.registering {
+      downloadsDir.mkdirs()
+      thirdParty.mkdirs()
+      reportsDir.mkdirs()
+    }
 
 val downloadFollyDest = File(reactAndroidDownloadsDir, "folly-${FOLLY_VERSION}.tar.gz")
 
@@ -143,36 +144,40 @@ val prepareRNCodegen by
       into(codegenOutDir)
     }
 
-val enableHermesBuild by tasks.registering {
-  project(":packages:react-native:ReactAndroid:hermes-engine") {
-    tasks.configureEach { enabled = true }
-  }
-}
+val enableHermesBuild by
+    tasks.registering {
+      project(":packages:react-native:ReactAndroid:hermes-engine") {
+        tasks.configureEach { enabled = true }
+      }
+    }
 
-val prepareHermesDependencies by tasks.registering {
-  dependsOn(
-      enableHermesBuild,
-      ":packages:react-native:ReactAndroid:hermes-engine:buildHermesLibWithDebugger",
-      ":packages:react-native:ReactAndroid:hermes-engine:prepareHeadersForPrefabWithDebugger",
-  )
-}
+val prepareHermesDependencies by
+    tasks.registering {
+      dependsOn(
+          enableHermesBuild,
+          ":packages:react-native:ReactAndroid:hermes-engine:buildHermesLibWithDebugger",
+          ":packages:react-native:ReactAndroid:hermes-engine:prepareHeadersForPrefabWithDebugger",
+      )
+    }
 
-val prepareNative3pDependencies by tasks.registering {
-  dependsOn(
-      prepareGflags,
-      prepareNlohmannJson,
-      prepareFolly,
-      ":packages:react-native:ReactAndroid:prepareBoost",
-      ":packages:react-native:ReactAndroid:prepareDoubleConversion",
-      ":packages:react-native:ReactAndroid:prepareFastFloat",
-      ":packages:react-native:ReactAndroid:prepareFmt",
-      ":packages:react-native:ReactAndroid:prepareGlog",
-  )
-}
+val prepareNative3pDependencies by
+    tasks.registering {
+      dependsOn(
+          prepareGflags,
+          prepareNlohmannJson,
+          prepareFolly,
+          ":packages:react-native:ReactAndroid:prepareBoost",
+          ":packages:react-native:ReactAndroid:prepareDoubleConversion",
+          ":packages:react-native:ReactAndroid:prepareFastFloat",
+          ":packages:react-native:ReactAndroid:prepareFmt",
+          ":packages:react-native:ReactAndroid:prepareGlog",
+      )
+    }
 
-val prepareAllDependencies by tasks.registering {
-  dependsOn(prepareRNCodegen, prepareHermesDependencies, prepareNative3pDependencies)
-}
+val prepareAllDependencies by
+    tasks.registering {
+      dependsOn(prepareRNCodegen, prepareHermesDependencies, prepareNative3pDependencies)
+    }
 
 val configureFantomTester by
     tasks.registering(CustomExecTask::class) {
@@ -180,23 +185,24 @@ val configureFantomTester by
       workingDir(testerDir)
       inputs.dir(testerDir)
       outputs.files(testerBuildOutputFileTree)
-      val cmdArgs = mutableListOf(
-          cmakeBinaryPath,
-          // Suppress all warnings as this is the Hermes build and we can't fix them.
-          "--log-level=ERROR",
-          "-S",
-          ".",
-          "-B",
-          testerBuildDir.toString(),
-          "-DCMAKE_BUILD_TYPE=Debug",
-          "-DFANTOM_CODEGEN_DIR=$buildDir/codegen",
-          "-DFANTOM_THIRD_PARTY_DIR=$buildDir/third-party",
-          "-DREACT_ANDROID_DIR=$reactAndroidDir",
-          "-DREACT_COMMON_DIR=$reactNativeDir/ReactCommon",
-          "-DREACT_CXX_PLATFORM_DIR=$reactNativeDir/ReactCxxPlatform",
-          "-DREACT_THIRD_PARTY_NDK_DIR=$reactAndroidBuildDir/third-party-ndk",
-          "-DRN_ENABLE_DEBUG_STRING_CONVERTIBLE=ON",
-      )
+      val cmdArgs =
+          mutableListOf(
+              cmakeBinaryPath,
+              // Suppress all warnings as this is the Hermes build and we can't fix them.
+              "--log-level=ERROR",
+              "-S",
+              ".",
+              "-B",
+              testerBuildDir.toString(),
+              "-DCMAKE_BUILD_TYPE=Debug",
+              "-DFANTOM_CODEGEN_DIR=$buildDir/codegen",
+              "-DFANTOM_THIRD_PARTY_DIR=$buildDir/third-party",
+              "-DREACT_ANDROID_DIR=$reactAndroidDir",
+              "-DREACT_COMMON_DIR=$reactNativeDir/ReactCommon",
+              "-DREACT_CXX_PLATFORM_DIR=$reactNativeDir/ReactCxxPlatform",
+              "-DREACT_THIRD_PARTY_NDK_DIR=$reactAndroidBuildDir/third-party-ndk",
+              "-DRN_ENABLE_DEBUG_STRING_CONVERTIBLE=ON",
+          )
 
       cmdArgs.add("-DHERMES_V1_ENABLED=1")
 

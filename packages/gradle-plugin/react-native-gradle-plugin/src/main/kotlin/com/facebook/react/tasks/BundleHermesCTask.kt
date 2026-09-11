@@ -109,12 +109,13 @@ abstract class BundleHermesCTask : DefaultTask() {
 
         val reactNativeDir = reactNativeDir.get().asFile
         val composeScriptFile = File(reactNativeDir, "scripts/compose-source-maps.js")
-        val composeSourceMapsCommand = getComposeSourceMapsCommand(
-            composeScriptFile,
-            packagerSourceMap,
-            compilerSourceMap,
-            outputSourceMap,
-        )
+        val composeSourceMapsCommand =
+            getComposeSourceMapsCommand(
+                composeScriptFile,
+                packagerSourceMap,
+                compilerSourceMap,
+                outputSourceMap,
+            )
         runCommand(composeSourceMapsCommand)
       }
     }

@@ -27,8 +27,9 @@ class ReactPluginTest {
     val withoutCodegenConfig = createPackageWithoutCodegenConfig("without-codegen-config")
     val missingNonPureCxxPackage = File(tempFolder.root, "missing-non-pure-cxx-package")
 
-    val autolinkingFile = createAutolinkingFile(
-        """
+    val autolinkingFile =
+        createAutolinkingFile(
+            """
             {
               "reactNativeVersion": "1000.0.0",
               "dependencies": {
@@ -105,8 +106,8 @@ class ReactPluginTest {
               }
             }
             """
-            .trimIndent(),
-    )
+                .trimIndent(),
+        )
 
     val result = ReactPlugin().getPureCxxCodegenDependencies(autolinkingFile)
 
@@ -126,11 +127,12 @@ class ReactPluginTest {
 
   @Test
   fun taskNameSuffixForDependency_withNonAlphanumericCharacters_encodesThem() {
-    val dependency = ModelAutolinkingDependenciesJson(
-        root = "./node_modules/@foo/bar-baz",
-        name = "@foo/bar-baz",
-        platforms = null,
-    )
+    val dependency =
+        ModelAutolinkingDependenciesJson(
+            root = "./node_modules/@foo/bar-baz",
+            name = "@foo/bar-baz",
+            platforms = null,
+        )
 
     val result = ReactPlugin().taskNameSuffixForDependency(dependency)
 
@@ -142,11 +144,12 @@ class ReactPluginTest {
     val plugin = ReactPlugin()
     val suffixes =
         listOf("@foo/bar", "foo.bar", "foo-bar", "foo_bar", "foo_45_bar").map { name ->
-          val dependency = ModelAutolinkingDependenciesJson(
-              root = "./node_modules/$name",
-              name = name,
-              platforms = null,
-          )
+          val dependency =
+              ModelAutolinkingDependenciesJson(
+                  root = "./node_modules/$name",
+                  name = name,
+                  platforms = null,
+              )
 
           plugin.taskNameSuffixForDependency(dependency)
         }
@@ -156,11 +159,12 @@ class ReactPluginTest {
 
   @Test
   fun taskNameSuffixForDependency_withLocalModuleRoot_usesPackageName() {
-    val dependency = ModelAutolinkingDependenciesJson(
-        root = "./modules/local-module",
-        name = "local-module",
-        platforms = null,
-    )
+    val dependency =
+        ModelAutolinkingDependenciesJson(
+            root = "./modules/local-module",
+            name = "local-module",
+            platforms = null,
+        )
 
     val result = ReactPlugin().taskNameSuffixForDependency(dependency)
 

@@ -122,9 +122,7 @@ internal object AgpConfiguratorUtils {
         manifestFile
             .takeIf { it.exists() }
             ?.let { file ->
-              getPackageNameFromManifest(file)?.let { packageName ->
-                ext.namespace = packageName
-              }
+              getPackageNameFromManifest(file)?.let { packageName -> ext.namespace = packageName }
             }
       }
     }
