@@ -58,6 +58,41 @@ static UIScrollViewIndicatorStyle RCTUIScrollViewIndicatorStyleFromProps(const S
   }
 }
 
+// Child clipping only depends on which descendants exist and their layout frames.
+// A mounting transaction that contains only prop updates with unchanged layout
+// metrics (e.g. opacity/transform commits from Reanimated, which fire every
+// animation frame) cannot change clipping, so re-clipping can be skipped.
+static BOOL RCTMountingTransactionAffectsClipping(const facebook::react::MountingTransaction &transaction)
+{
+  for (const auto &mutation : transaction.getMutations()) {
+    switch (mutation.type) {
+      case facebook::react::ShadowViewMutation::Insert:
+      case facebook::react::ShadowViewMutation::Remove:
+        return YES;
+      case facebook::react::ShadowViewMutation::Update: {
+        const auto &oldChild = mutation.oldChildShadowView;
+        const auto &newChild = mutation.newChildShadowView;
+        if (oldChild.layoutMetrics != newChild.layoutMetrics) {
+          return YES;
+        }
+        // A `removeClippedSubviews` toggle changes clipping without changing
+        // layout, so it must also force a re-clip.
+        if (oldChild.props && newChild.props) {
+          const auto &oldProps = static_cast<const facebook::react::ViewProps &>(*oldChild.props);
+          const auto &newProps = static_cast<const facebook::react::ViewProps &>(*newChild.props);
+          if (oldProps.removeClippedSubviews != newProps.removeClippedSubviews) {
+            return YES;
+          }
+        }
+        break;
+      }
+      default:
+        break;
+    }
+  }
+  return NO;
+}
+
 // Once Fabric implements proper NativeAnimationDriver, this should be removed.
 // This is just a workaround to allow animations based on onScroll event.
 // This is only used to animate sticky headers in ScrollViews, and only the contentOffset and tag is used.
@@ -292,7 +327,9 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 - (void)mountingTransactionDidMount:(const MountingTransaction &)transaction
                withSurfaceTelemetry:(const facebook::react::SurfaceTelemetry &)surfaceTelemetry
 {
-  [self _remountChildren];
+  if (RCTMountingTransactionAffectsClipping(transaction)) {
+    [self _remountChildren];
+  }
   [self _adjustForMaintainVisibleContentPosition];
 }
 
