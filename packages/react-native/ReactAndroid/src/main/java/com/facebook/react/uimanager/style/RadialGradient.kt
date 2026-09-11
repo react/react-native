@@ -327,18 +327,20 @@ internal class RadialGradient(
       height: Float,
       sizeKeyword: GradientSize.KeywordType,
   ): Pair<Float, Float> {
-    val corners = arrayOf(
-        Pair(0f, 0f), // top-left
-        Pair(width, 0f), // top-right
-        Pair(width, height), // bottom-right
-        Pair(0f, height), // bottom-left
-    )
+    val corners =
+        arrayOf(
+            Pair(0f, 0f), // top-left
+            Pair(width, 0f), // top-right
+            Pair(width, height), // bottom-right
+            Pair(0f, height), // bottom-left
+        )
 
     var cornerIndex = 0
-    var distance = sqrt(
-        (centerX - corners[cornerIndex].first).pow(2) +
-            (centerY - corners[cornerIndex].second).pow(2),
-    )
+    var distance =
+        sqrt(
+            (centerX - corners[cornerIndex].first).pow(2) +
+                (centerY - corners[cornerIndex].second).pow(2),
+        )
     val isClosestCorner = sizeKeyword == GradientSize.KeywordType.CLOSEST_CORNER
 
     for (i in 1 until corners.size) {

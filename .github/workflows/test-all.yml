@@ -555,7 +555,7 @@ jobs:
         run: ./.github/workflow-scripts/analyze_scripts.sh
       - name: Prettier
         shell: bash
-        run: yarn run format-check
+        run: yarn format-check-javascript
       - name: markdownlint
         shell: bash
         run: yarn run lint-markdown
