@@ -14,6 +14,6 @@ add_library(react_bridging OBJECT ${react_bridging_SRC})
 
 target_include_directories(react_bridging PUBLIC ${REACT_COMMON_DIR})
 
-target_link_libraries(react_bridging jsi callinvoker react_timing)
+target_link_libraries(react_bridging jsi callinvoker react_cxxstableapi react_timing)
 target_compile_reactnative_options(react_bridging PRIVATE)
 target_compile_options(react_bridging PRIVATE -Wpedantic)

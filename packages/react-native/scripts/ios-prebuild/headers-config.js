@@ -26,6 +26,19 @@ const PodspecExceptions /*: {[key: string]: PodSpecConfiguration} */ = {
     headerDir: 'jsi',
     excludePatterns: ['**/test/*'],
   },
+  'ReactCommon/react/bridging/React-bridging.podspec': {
+    name: 'React-bridging',
+    headerPatterns: ['**/*.h'],
+    excludePatterns: ['React/**'],
+    headerDir: 'react/bridging',
+    subSpecs: [
+      {
+        name: 'bridgingUmbrella',
+        headerPatterns: ['React/*.h'],
+        headerDir: 'React',
+      },
+    ],
+  },
   'ReactCommon/hermes/React-hermes.podspec': {
     name: 'React-hermes',
     headerPatterns: [
@@ -259,8 +272,15 @@ const PodspecExceptions /*: {[key: string]: PodSpecConfiguration} */ = {
       {
         name: 'bridging',
         headerPatterns: ['react/bridging/**/*.h'],
-        excludePatterns: ['react/bridging/tests/**'],
+        excludePatterns: ['react/bridging/React/**', 'react/bridging/tests/**'],
         headerDir: 'react/bridging',
+        subSpecs: [
+          {
+            name: 'bridgingUmbrella',
+            headerPatterns: ['react/bridging/React/*.h'],
+            headerDir: 'React',
+          },
+        ],
       },
       {
         name: 'core',
