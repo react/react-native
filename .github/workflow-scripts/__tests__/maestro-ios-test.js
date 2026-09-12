@@ -18,24 +18,33 @@ jest.mock('fs', () => ({
 }));
 
 const childProcess = require('child_process');
+const {EventEmitter} = require('events');
 const fs = require('fs');
 
 const {executeFlows, findAvailableSimulator} = require('../maestro-ios');
 
 describe('Maestro iOS runner', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-    childProcess.spawn.mockReturnValue({pid: 1, kill: jest.fn()});
+    jest.resetAllMocks();
+    childProcess.spawn.mockImplementation(() => {
+      const recordingProcess = new EventEmitter();
+      recordingProcess.pid = 1;
+      recordingProcess.kill = jest.fn(() => {
+        recordingProcess.emit('exit', 0, null);
+        return true;
+      });
+      return recordingProcess;
+    });
   });
 
-  it('executes each YAML flow separately and skips other files', () => {
+  it('executes each YAML flow separately and skips other files', async () => {
     fs.existsSync.mockReturnValue(true);
     fs.lstatSync.mockImplementation(path => ({
       isDirectory: () => path === 'flows/',
     }));
     fs.readdirSync.mockReturnValue(['second.yaml', 'image.png', 'first.yml']);
 
-    executeFlows('com.example', 'device-id', 'flows/', 'Hermes');
+    await executeFlows('com.example', 'device-id', 'flows/', 'Hermes');
 
     expect(childProcess.execSync).toHaveBeenCalledTimes(2);
     expect(childProcess.execSync.mock.calls[0][0]).toContain(
@@ -46,18 +55,94 @@ describe('Maestro iOS runner', () => {
     );
   });
 
-  it('retries only the failing flow', () => {
+  it('retries only the failing flow', async () => {
     fs.existsSync.mockReturnValue(false);
     childProcess.execSync.mockImplementationOnce(() => {
       throw new Error('Maestro driver failed');
     });
 
-    executeFlows('com.example', 'device-id', 'flow.yml', 'Hermes');
+    await executeFlows('com.example', 'device-id', 'flow.yml', 'Hermes');
 
     expect(childProcess.execSync).toHaveBeenCalledTimes(2);
     for (const call of childProcess.execSync.mock.calls) {
       expect(call[0]).toContain('test "flow.yml"');
     }
+  });
+
+  it('waits for the recorder to exit before starting the next flow', async () => {
+    fs.existsSync.mockReturnValue(true);
+    fs.lstatSync.mockImplementation(path => ({
+      isDirectory: () => path === 'flows/',
+    }));
+    fs.readdirSync.mockReturnValue(['first.yml', 'second.yml']);
+
+    const recordingProcess = new EventEmitter();
+    recordingProcess.pid = 1;
+    recordingProcess.kill = jest.fn(() => true);
+    childProcess.spawn.mockReturnValueOnce(recordingProcess);
+
+    const execution = executeFlows(
+      'com.example',
+      'device-id',
+      'flows/',
+      'Hermes',
+    );
+
+    await new Promise(resolve =>
+      jest.requireActual('timers').setImmediate(resolve),
+    );
+
+    expect(recordingProcess.kill).toHaveBeenCalledWith('SIGINT');
+    expect(childProcess.execSync).toHaveBeenCalledTimes(1);
+    expect(childProcess.spawn).toHaveBeenCalledTimes(1);
+
+    recordingProcess.emit('exit', 0, null);
+    await execution;
+
+    expect(childProcess.execSync).toHaveBeenCalledTimes(2);
+    expect(childProcess.spawn).toHaveBeenCalledTimes(2);
+  });
+
+  it('skips helper directories while recursing into flow directories', async () => {
+    fs.existsSync.mockReturnValue(true);
+    fs.lstatSync.mockImplementation(path => ({
+      isDirectory: () => !path.endsWith('.yml'),
+    }));
+    fs.readdirSync.mockImplementation(path =>
+      path === 'flows/' ? ['helpers', 'nested'] : ['flow.yml'],
+    );
+
+    await executeFlows('com.example', 'device-id', 'flows/', 'Hermes');
+
+    expect(fs.readdirSync).not.toHaveBeenCalledWith('flows/helpers');
+    expect(childProcess.execSync).toHaveBeenCalledTimes(1);
+    expect(childProcess.execSync.mock.calls[0][0]).toContain(
+      'test "flows/nested/flow.yml"',
+    );
+  });
+
+  it('rejects after exhausting retries and stops every recorder', async () => {
+    const consoleError = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+    fs.existsSync.mockReturnValue(false);
+    const error = new Error('Maestro driver failed');
+    childProcess.execSync.mockImplementation(() => {
+      throw error;
+    });
+
+    await expect(
+      executeFlows('com.example', 'device-id', 'flow.yml', 'Hermes'),
+    ).rejects.toBe(error);
+
+    expect(childProcess.execSync).toHaveBeenCalledTimes(5);
+    expect(childProcess.spawn).toHaveBeenCalledTimes(5);
+    for (const {value: recordingProcess} of childProcess.spawn.mock.results) {
+      expect(recordingProcess.kill).toHaveBeenCalledWith('SIGINT');
+    }
+    expect(consoleError).toHaveBeenCalledWith(
+      'Failed to execute flow flow.yml after 5 attempts.',
+    );
   });
 
   it('selects an iPhone Pro simulator from the latest runtime', () => {
