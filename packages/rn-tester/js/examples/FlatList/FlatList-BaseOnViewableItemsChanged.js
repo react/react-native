@@ -32,6 +32,9 @@ export function FlatList_BaseOnViewableItemsChanged(props: {
   waitForInteraction?: ?boolean,
 }): React.Node {
   const {offScreen, horizontal, useScrollRefScroll, waitForInteraction} = props;
+  const exampleTestID = `flat-list-viewability-${
+    horizontal === true ? 'horizontal' : 'vertical'
+  }-${waitForInteraction === true ? 'wait' : 'no-wait'}`;
   const [output, setOutput] = useState('');
   const onViewableItemsChanged = useCallback(
     (info: {changed: Array<ViewToken>, viewableItems: Array<ViewToken>, ...}) =>
@@ -65,6 +68,7 @@ export function FlatList_BaseOnViewableItemsChanged(props: {
     <BaseFlatListExample
       ref={ref}
       exampleProps={exampleProps}
+      exampleTestID={exampleTestID}
       onTest={onTest}
       testOutput={output}>
       {offScreen === true ? <View style={styles.offScreen} /> : null}
