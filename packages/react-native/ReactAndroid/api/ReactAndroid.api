@@ -6434,7 +6434,7 @@ public final class com/facebook/react/views/view/ReactDrawableHelper {
 	public static final fun createDrawableFromJSDescription (Landroid/content/Context;Lcom/facebook/react/bridge/ReadableMap;)Landroid/graphics/drawable/Drawable;
 }
 
-public class com/facebook/react/views/view/ReactViewGroup : android/view/ViewGroup, com/facebook/react/touch/ReactHitSlopView, com/facebook/react/touch/ReactInterceptingViewGroup, com/facebook/react/uimanager/ReactClippingViewGroup, com/facebook/react/uimanager/ReactOverflowViewWithInset, com/facebook/react/uimanager/ReactPointerEventsView {
+public class com/facebook/react/views/view/ReactViewGroup : android/view/ViewGroup, com/facebook/react/touch/ReactHitSlopView, com/facebook/react/touch/ReactInterceptingViewGroup, com/facebook/react/uimanager/HasElevatedDescendantCache, com/facebook/react/uimanager/ReactClippingViewGroup, com/facebook/react/uimanager/ReactOverflowViewWithInset, com/facebook/react/uimanager/ReactPointerEventsView {
 	public fun <init> (Landroid/content/Context;)V
 	public fun addChildrenForAccessibility (Ljava/util/ArrayList;)V
 	public final fun cleanUpAxOrderListener ()V
@@ -6455,6 +6455,7 @@ public class com/facebook/react/views/view/ReactViewGroup : android/view/ViewGro
 	public fun getPointerEvents ()Lcom/facebook/react/uimanager/PointerEvents;
 	public fun getRemoveClippedSubviews ()Z
 	public fun hasOverlappingRendering ()Z
+	public fun invalidateElevatedDescendantCache ()Z
 	protected fun onAttachedToWindow ()V
 	protected fun onConfigurationChanged (Landroid/content/res/Configuration;)V
 	public fun onHoverEvent (Landroid/view/MotionEvent;)Z
