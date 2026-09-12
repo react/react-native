@@ -13,6 +13,7 @@ file(GLOB react_debug_redbox_SRC CONFIGURE_DEPENDS redbox/*.cpp)
 add_library(react_debug OBJECT ${react_debug_SRC} ${react_debug_redbox_SRC})
 
 target_include_directories(react_debug PUBLIC ${REACT_COMMON_DIR})
+target_include_directories(react_debug INTERFACE ${REACT_COMMON_DIR}/react/debug)
 
 target_link_libraries(react_debug folly_runtime react_cxxstableapi)
 

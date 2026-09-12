@@ -23,6 +23,7 @@ react_native_android_selector(platform_DIR
         ${CMAKE_CURRENT_SOURCE_DIR}/platform/android/
         ${CMAKE_CURRENT_SOURCE_DIR}/platform/cxx/)
 target_include_directories(rrc_view PUBLIC ${REACT_COMMON_DIR} ${platform_DIR})
+target_include_directories(rrc_view INTERFACE ${REACT_COMMON_DIR}/react/renderer/components/view)
 
 target_link_libraries(rrc_view
         folly_runtime
