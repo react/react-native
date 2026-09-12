@@ -47,6 +47,7 @@ import com.facebook.react.uimanager.BackgroundStyleApplicator.setBorderStyle
 import com.facebook.react.uimanager.BackgroundStyleApplicator.setBorderWidth
 import com.facebook.react.uimanager.BackgroundStyleApplicator.setFeedbackUnderlay
 import com.facebook.react.uimanager.BlendModeHelper.needsIsolatedLayer
+import com.facebook.react.uimanager.HasElevatedDescendantCache
 import com.facebook.react.uimanager.LengthPercentage
 import com.facebook.react.uimanager.LengthPercentageType
 import com.facebook.react.uimanager.MeasureSpecAssertions.assertExplicitMeasureSpec
@@ -82,7 +83,8 @@ public open class ReactViewGroup public constructor(context: Context?) :
     ReactClippingViewGroup,
     ReactPointerEventsView,
     ReactHitSlopView,
-    ReactOverflowViewWithInset {
+    ReactOverflowViewWithInset,
+    HasElevatedDescendantCache {
 
   public override val overflowInset: Rect = Rect()
 
@@ -161,6 +163,14 @@ public open class ReactViewGroup public constructor(context: Context?) :
   internal var nativeBackgroundMap: ReadableMap? = null
   internal var nativeForegroundMap: ReadableMap? = null
 
+  // Cached result of the descendant-elevation scan so the per-draw [hasOverlappingRendering]
+  // callback reads an O(1) value instead of walking the subtree each time. null means invalid
+  // (recomputed lazily on the next query); true/false is the memoized answer. Marked stale from the
+  // logical mount/unmount and elevation hooks via [HasElevatedDescendantCache.invalidateAncestors]
+  // -- never from the subview-clipping/scroll path. Declared before init { initView() } so
+  // initView()'s reset is not overwritten by the field initializer.
+  private var hasElevatedDescendantCache: Boolean? = null
+
   init {
     initView()
   }
@@ -185,6 +195,7 @@ public open class ReactViewGroup public constructor(context: Context?) :
     childrenLayoutChangeListener = null
     onInterceptTouchEventListener = null
     needsOffscreenAlphaCompositing = false
+    hasElevatedDescendantCache = null
     backfaceOpacity = 1f
     backfaceVisible = true
     childrenRemovedWhileTransitioning = null
@@ -214,6 +225,9 @@ public open class ReactViewGroup public constructor(context: Context?) :
     // If the view is still attached to a parent, we need to remove it from the parent
     // before we can recycle it.
     if (parent != null) {
+      // Detaching via ViewGroup.removeView bypasses the ViewManager hooks, so invalidate the
+      // ancestor caches here.
+      HasElevatedDescendantCache.invalidateAncestors(parent)
       (parent as ViewGroup).removeView(this)
     }
 
@@ -314,8 +328,74 @@ public open class ReactViewGroup public constructor(context: Context?) :
   /**
    * We override this to allow developers to determine whether they need offscreen alpha compositing
    * or not. See the documentation of needsOffscreenAlphaCompositing in View.js.
+   *
+   * When [ReactNativeFeatureFlags.enableAndroidAutoOffscreenCompositingForElevation] is enabled we
+   * also report overlapping rendering for a view drawn with reduced alpha that contains a
+   * descendant with elevation, so the framework composites the subtree offscreen before applying
+   * the alpha and the elevation shadow fades uniformly instead of rendering as banded per-primitive
+   * alpha (see https://github.com/facebook/react-native/issues/23090). We report this whenever an
+   * elevated descendant is present -- not only while currently faded -- so the decision is baked
+   * into the RenderNode at record time; alpha applied later (static, JS-driven, or a native-driver
+   * opacity animation that sets alpha directly on the RenderNode) then composites through the layer
+   * uniformly. A layer is only allocated when alpha < 1, so full opacity is unaffected.
    */
-  override fun hasOverlappingRendering(): Boolean = needsOffscreenAlphaCompositing
+  override fun hasOverlappingRendering(): Boolean {
+    if (needsOffscreenAlphaCompositing) {
+      return true
+    }
+    // Report overlapping rendering whenever an elevated descendant is present -- not only while
+    // currently faded -- so the decision is baked into the RenderNode at record time. Alpha applied
+    // later, including native-driver opacity animations that set alpha directly on the RenderNode
+    // without re-recording, then composites through that layer and the shadow fades uniformly. A
+    // layer is only actually allocated when alpha < 1, so this costs nothing at full opacity.
+    return ReactNativeFeatureFlags.enableAndroidAutoOffscreenCompositingForElevation() &&
+        hasElevatedDescendant()
+  }
+
+  internal fun hasElevatedDescendant(): Boolean =
+      hasElevatedDescendantCache
+          ?: anyDescendantHasElevation(this).also { hasElevatedDescendantCache = it }
+
+  private fun anyDescendantHasElevation(parent: ViewGroup): Boolean {
+    // For a clipping ReactViewGroup, scan the logical child list (allChildren) so an elevated
+    // descendant that is currently clipped out -- detached, present only in allChildren -- is still
+    // counted; otherwise re-attaching it during scroll would not refresh the cache and it would
+    // band.
+    val clipped = (parent as? ReactViewGroup)?.takeIf { it.removeClippedSubviews }
+    val count = clipped?.allChildrenCount ?: parent.childCount
+    for (i in 0 until count) {
+      val child =
+          (if (clipped != null) clipped.getChildAtWithSubviewClippingEnabled(i)
+          else parent.getChildAt(i)) ?: continue
+      if (child.elevation > 0f) {
+        return true
+      }
+      // Reuse a child ReactViewGroup's own memoized result instead of re-descending its subtree, so
+      // the scan is bounded at cached boundaries rather than O(subtree) on every recompute. A
+      // cached
+      // child that reports false must NOT fall through to a full re-descent below.
+      val cachedChild = child as? ReactViewGroup
+      if (cachedChild != null) {
+        if (cachedChild.hasElevatedDescendant()) {
+          return true
+        }
+      } else if (child is ViewGroup && anyDescendantHasElevation(child)) {
+        return true
+      }
+    }
+    return false
+  }
+
+  override fun invalidateElevatedDescendantCache(): Boolean {
+    // Already stale: report so an ancestor walk can stop -- its ancestors were invalidated already.
+    if (hasElevatedDescendantCache == null) {
+      return false
+    }
+    // Only clear the value; the subtree is rescanned lazily on the next [hasElevatedDescendant]
+    // query, keeping mount/unmount O(1) instead of rescanning on every child change.
+    hasElevatedDescendantCache = null
+    return true
+  }
 
   /** See the documentation of needsOffscreenAlphaCompositing in View.js. */
   public fun setNeedsOffscreenAlphaCompositing(needsOffscreenAlphaCompositing: Boolean) {

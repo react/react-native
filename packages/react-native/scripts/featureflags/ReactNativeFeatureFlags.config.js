@@ -180,6 +180,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    enableAndroidAutoOffscreenCompositingForElevation: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-08-31',
+        description:
+          'When enabled, a View with reduced opacity that contains an elevated descendant is composited offscreen so the elevation shadow fades uniformly instead of rendering as banded per-primitive alpha.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
     enableAndroidTextMeasurementOptimizations: {
       defaultValue: false,
       metadata: {

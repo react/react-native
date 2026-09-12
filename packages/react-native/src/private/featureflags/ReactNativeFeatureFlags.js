@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<52d39a196023796eed43d419c5a0b855>>
+ * @generated SignedSource<<6ad9c99b513e5482b907ff75f6784818>>
  * @flow strict
  * @noformat
  */
@@ -61,6 +61,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   disableViewPreallocationAndroid: Getter<boolean>,
   enableAccessibilityOrder: Getter<boolean>,
   enableAccumulatedUpdatesInRawPropsAndroid: Getter<boolean>,
+  enableAndroidAutoOffscreenCompositingForElevation: Getter<boolean>,
   enableAndroidTextMeasurementOptimizations: Getter<boolean>,
   enableBridgelessArchitecture: Getter<boolean>,
   enableBufferedCallInvoker: Getter<boolean>,
@@ -260,6 +261,10 @@ export const enableAccessibilityOrder: Getter<boolean> = createNativeFlagGetter(
  * When enabled, Android will accumulate updates in rawProps to reduce the number of mounting instructions for cascading re-renders.
  */
 export const enableAccumulatedUpdatesInRawPropsAndroid: Getter<boolean> = createNativeFlagGetter('enableAccumulatedUpdatesInRawPropsAndroid', false);
+/**
+ * When enabled, a View with reduced opacity that contains an elevated descendant is composited offscreen so the elevation shadow fades uniformly instead of rendering as banded per-primitive alpha.
+ */
+export const enableAndroidAutoOffscreenCompositingForElevation: Getter<boolean> = createNativeFlagGetter('enableAndroidAutoOffscreenCompositingForElevation', false);
 /**
  * Enables various optimizations throughout the path of measuring text on Android.
  */

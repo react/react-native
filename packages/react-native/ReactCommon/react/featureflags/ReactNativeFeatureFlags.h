@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<0537b7ab2bf0250ddd0cfaec6c52111b>>
+ * @generated SignedSource<<d3937c47ffa5234a2b7632aa92387ee3>>
  */
 
 /**
@@ -100,6 +100,11 @@ class ReactNativeFeatureFlags {
    * When enabled, Android will accumulate updates in rawProps to reduce the number of mounting instructions for cascading re-renders.
    */
   RN_EXPORT static bool enableAccumulatedUpdatesInRawPropsAndroid();
+
+  /**
+   * When enabled, a View with reduced opacity that contains an elevated descendant is composited offscreen so the elevation shadow fades uniformly instead of rendering as banded per-primitive alpha.
+   */
+  RN_EXPORT static bool enableAndroidAutoOffscreenCompositingForElevation();
 
   /**
    * Enables various optimizations throughout the path of measuring text on Android.

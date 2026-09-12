@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<c17b71e1b754ff1773bb370681de06e4>>
+ * @generated SignedSource<<a19681d4edcac5523ea8978c2fbc52ab>>
  */
 
 /**
@@ -64,6 +64,9 @@ class JReactNativeFeatureFlagsCxxInterop
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool enableAccumulatedUpdatesInRawPropsAndroid(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
+
+  static bool enableAndroidAutoOffscreenCompositingForElevation(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool enableAndroidTextMeasurementOptimizations(

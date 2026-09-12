@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<dc98fadf7aac306d7cdb4f5ab511f690>>
+ * @generated SignedSource<<ebc2ba98faa638c89c86c45d35e93c3d>>
  */
 
 /**
@@ -108,6 +108,12 @@ class ReactNativeFeatureFlagsJavaProvider
   bool enableAccumulatedUpdatesInRawPropsAndroid() override {
     static const auto method =
         getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enableAccumulatedUpdatesInRawPropsAndroid");
+    return method(javaProvider_);
+  }
+
+  bool enableAndroidAutoOffscreenCompositingForElevation() override {
+    static const auto method =
+        getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enableAndroidAutoOffscreenCompositingForElevation");
     return method(javaProvider_);
   }
 
@@ -625,6 +631,11 @@ bool JReactNativeFeatureFlagsCxxInterop::enableAccumulatedUpdatesInRawPropsAndro
   return ReactNativeFeatureFlags::enableAccumulatedUpdatesInRawPropsAndroid();
 }
 
+bool JReactNativeFeatureFlagsCxxInterop::enableAndroidAutoOffscreenCompositingForElevation(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
+  return ReactNativeFeatureFlags::enableAndroidAutoOffscreenCompositingForElevation();
+}
+
 bool JReactNativeFeatureFlagsCxxInterop::enableAndroidTextMeasurementOptimizations(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
   return ReactNativeFeatureFlags::enableAndroidTextMeasurementOptimizations();
@@ -1067,6 +1078,9 @@ void JReactNativeFeatureFlagsCxxInterop::registerNatives() {
       makeNativeMethod(
         "enableAccumulatedUpdatesInRawPropsAndroid",
         JReactNativeFeatureFlagsCxxInterop::enableAccumulatedUpdatesInRawPropsAndroid),
+      makeNativeMethod(
+        "enableAndroidAutoOffscreenCompositingForElevation",
+        JReactNativeFeatureFlagsCxxInterop::enableAndroidAutoOffscreenCompositingForElevation),
       makeNativeMethod(
         "enableAndroidTextMeasurementOptimizations",
         JReactNativeFeatureFlagsCxxInterop::enableAndroidTextMeasurementOptimizations),
