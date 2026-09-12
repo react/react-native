@@ -267,6 +267,11 @@ const PodspecExceptions /*: {[key: string]: PodSpecConfiguration} */ = {
         headerPatterns: ['react/nativemodule/core/ReactCommon/**/*.h'],
         headerDir: 'ReactCommon',
       },
+      {
+        name: 'coreUmbrella',
+        headerPatterns: ['react/nativemodule/core/React/*.h'],
+        headerDir: 'React',
+      },
     ],
   },
 
