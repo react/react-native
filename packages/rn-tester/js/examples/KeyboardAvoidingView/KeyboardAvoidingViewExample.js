@@ -251,7 +251,7 @@ exports.examples = [
   {
     title: 'Keyboard Avoiding View with different behaviors',
     description:
-      ('Specify how to react to the presence of the keyboard. Android and iOS both interact' +
+      ('Specify how to react to the presence of the keyboard. Android and iOS both interact ' +
         'with this prop differently. On both iOS and Android, setting behavior is recommended.') as string,
     render(): React.Node {
       return <KeyboardAvoidingViewBehaviour />;
@@ -260,7 +260,7 @@ exports.examples = [
   {
     title: 'Keyboard Avoiding View with keyboardVerticalOffset={distance}',
     description:
-      ('This is the distance between the top of the user screen and the react native' +
+      ('This is the distance between the top of the user screen and the React Native ' +
         'view, may be non-zero in some use cases. Defaults to 0.') as string,
     render(): React.Node {
       return <KeyboardAvoidingVerticalOffset />;
@@ -268,12 +268,15 @@ exports.examples = [
   },
   {
     title: 'Keyboard Avoiding View with enabled={false}',
+    description: 'Disable the KeyboardAvoidingView.' as string,
     render(): React.Node {
       return <KeyboardAvoidingDisabled />;
     },
   },
   {
     title: 'Keyboard Avoiding View with contentContainerStyle',
+    description:
+      'Specify the style of the content container View when behavior is set to position.' as string,
     render(): React.Node {
       return <KeyboardAvoidingContentContainerStyle />;
     },
