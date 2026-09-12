@@ -1,0 +1,24 @@
+appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebook.react.uiapp
+---
+- launchApp
+- extendedWaitUntil:
+    visible: 'Components'
+    timeout: 30000
+- openLink: rntester://example/AlertExample/default-button
+- extendedWaitUntil:
+    visible:
+      id: 'alert-with-default-button'
+    timeout: 10000
+- tapOn:
+    id: 'alert-with-default-button'
+- assertVisible: 'An external USB drive has been detected!'
+- tapOn: 'OK'
+- openLink: rntester://example/AlertExample/three-buttons
+- extendedWaitUntil:
+    visible:
+      id: 'alert-with-three-buttons'
+    timeout: 10000
+- tapOn:
+    id: 'alert-with-three-buttons'
+- assertVisible: 'Do you want to save your changes?'
+- tapOn: 'Cancel'
