@@ -495,10 +495,19 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   }
 
   _contentSize = contentSize;
-  _containerView.frame = CGRect{RCTCGPointFromPoint(data.contentBoundingRect.origin), contentSize};
+
+  // `_containerView` is the scroll view's zooming view (see `viewForZoomingInScrollView:`), so while the user is
+  // pinch-zoomed in it carries a scale transform. Setting `frame` on a view whose `transform` is not the identity is
+  // undefined behavior, so lay it out through `bounds` and `center` instead. The scroll view must get the *zoomed*
+  // size, which is what UIScrollView itself keeps `contentSize` at while zooming.
+  CGPoint contentOrigin = RCTCGPointFromPoint(data.contentBoundingRect.origin);
+  _containerView.bounds = CGRect{CGPointZero, contentSize};
+  CGSize zoomedContentSize = _containerView.frame.size;
+  _containerView.center =
+      CGPoint{contentOrigin.x + zoomedContentSize.width / 2, contentOrigin.y + zoomedContentSize.height / 2};
 
   [self _preserveContentOffsetIfNeededWithBlock:^{
-    self->_scrollView.contentSize = contentSize;
+    self->_scrollView.contentSize = zoomedContentSize;
   }];
 }
 
