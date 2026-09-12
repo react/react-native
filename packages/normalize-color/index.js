@@ -276,23 +276,25 @@ function getMatchers() {
       '|' +
       callWithSlashSeparator(NUMBER, NUMBER, NUMBER, NUMBER);
 
+    // Anchor functional forms the same way as hex* so leading/trailing
+    // junk (e.g. "xxrgb(1, 2, 3)yy") cannot partially match.
     cachedMatchers = {
-      rgb: new RegExp('rgb(' + rgbRegexPattern + ')'),
-      rgba: new RegExp('rgba(' + rgbRegexPattern + ')'),
-      hsl: new RegExp('hsl' + call(NUMBER, PERCENTAGE, PERCENTAGE)),
+      rgb: new RegExp('^rgb(' + rgbRegexPattern + ')$'),
+      rgba: new RegExp('^rgba(' + rgbRegexPattern + ')$'),
+      hsl: new RegExp('^hsl' + call(NUMBER, PERCENTAGE, PERCENTAGE) + '$'),
       hsla: new RegExp(
-        'hsla(' +
+        '^hsla(' +
           commaSeparatedCall(NUMBER, PERCENTAGE, PERCENTAGE, NUMBER) +
           '|' +
           callWithSlashSeparator(NUMBER, PERCENTAGE, PERCENTAGE, NUMBER) +
-          ')',
+          ')$',
       ),
       hwb: new RegExp(
-        'hwb(' +
+        '^hwb(' +
           callModern(NUMBER, PERCENTAGE, PERCENTAGE) +
           '|' +
           callWithSlashSeparator(NUMBER, PERCENTAGE, PERCENTAGE, NUMBER) +
-          ')',
+          ')$',
       ),
       hex3: /^#([0-9a-fA-F]{1})([0-9a-fA-F]{1})([0-9a-fA-F]{1})$/,
       hex4: /^#([0-9a-fA-F]{1})([0-9a-fA-F]{1})([0-9a-fA-F]{1})([0-9a-fA-F]{1})$/,
