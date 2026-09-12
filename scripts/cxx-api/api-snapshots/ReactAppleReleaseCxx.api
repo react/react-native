@@ -1693,11 +1693,9 @@ interface RCTRootViewFactoryConfiguration : public NSObject {
   public @property (assign) RCTLoadSourceForBridgeBlock loadSourceForBridge;
   public @property (assign) RCTLoadSourceForBridgeWithProgressBlock loadSourceForBridgeWithProgress;
   public @property (assign) RCTSourceURLForBridgeBlock sourceURLForBridge;
-  public @property (assign, readonly) BOOL fabricEnabled;
-  public @property (assign, readonly) BOOL turboModuleEnabled;
   public @property (weak) id<RCTJSRuntimeConfiguratorProtocol> jsRuntimeConfiguratorDelegate;
-  public virtual instancetype initWithBundleURL:newArchEnabled:(NSURL* bundleURL, BOOL newArchEnabled);
-  public virtual instancetype initWithBundleURLBlock:newArchEnabled:(RCTBundleURLBlock bundleURLBlock, BOOL newArchEnabled);
+  public virtual instancetype initWithBundleURL:(NSURL* bundleURL);
+  public virtual instancetype initWithBundleURLBlock:(RCTBundleURLBlock bundleURLBlock);
 }
 
 interface RCTSafeAreaViewComponentView : public RCTViewComponentView {

@@ -32,22 +32,10 @@
 
 @implementation RCTRootViewFactoryConfiguration
 
-- (instancetype)initWithBundleURL:(NSURL *)bundleURL newArchEnabled:(BOOL)newArchEnabled
-{
-  return [self initWithBundleURL:bundleURL];
-}
-
-- (instancetype)initWithBundleURLBlock:(RCTBundleURLBlock)bundleURLBlock newArchEnabled:(BOOL)newArchEnabled
-{
-  return [self initWithBundleURLBlock:bundleURLBlock];
-}
-
 - (instancetype)initWithBundleURLBlock:(RCTBundleURLBlock)bundleURLBlock
 {
   if (self = [super init]) {
     _bundleURLBlock = bundleURLBlock;
-    _fabricEnabled = YES;
-    _turboModuleEnabled = YES;
   }
   return self;
 }
