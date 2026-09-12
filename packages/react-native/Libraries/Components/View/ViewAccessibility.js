@@ -44,6 +44,7 @@ export type AccessibilityRole =
   | 'tablist'
   | 'timer'
   | 'list'
+  | 'listitem'
   | 'toolbar'
   | 'grid'
   | 'pager'
@@ -209,6 +210,20 @@ export type AccessibilityValue = Readonly<{
    * A textual description of this component's value. (will override minimum, current, and maximum if set)
    */
   text?: Stringish,
+}>;
+
+export type AccessibilityCollection = Readonly<{
+  rowCount: number,
+  columnCount: number,
+  hierarchical: boolean,
+}>;
+
+export type AccessibilityCollectionItem = Readonly<{
+  rowIndex: number,
+  columnIndex: number,
+  rowSpan: number,
+  columnSpan: number,
+  heading?: boolean,
 }>;
 
 export type AccessibilityPropsAndroid = Readonly<{
@@ -433,4 +448,12 @@ export type AccessibilityProps = Readonly<{
    * See https://reactnative.dev/docs/view#aria-hidden
    */
   'aria-hidden'?: ?boolean,
+  accessibilityCollection?: ?AccessibilityCollection,
+  accessibilityCollectionItem?: ?AccessibilityCollectionItem,
+  'aria-colcount'?: ?number,
+  'aria-colindex'?: ?number,
+  'aria-rowcount'?: ?number,
+  'aria-rowindex'?: ?number,
+  'aria-setsize'?: ?number,
+  'aria-posinset'?: ?number,
 }>;

@@ -828,6 +828,9 @@ class VirtualizedList extends StateSafePureComponent<
           cellKey={key}
           horizontal={horizontal}
           index={ii}
+          itemCount={itemCount}
+          numColumns={this.props.numColumns}
+          accessibilityCollectionEnabled={this.props.accessibilityCollectionEnabled}
           inversionStyle={inversionStyle}
           item={item}
           key={key}
@@ -1102,7 +1105,27 @@ class VirtualizedList extends StateSafePureComponent<
     }
 
     // 4. Render the ScrollView
+    const a11yEnabled = this.props.accessibilityCollectionEnabled ?? true;
+    const numCols = this.props.numColumns ?? 1;
+    const isGrid = numCols > 1;
+    const rowCount = isGrid ? Math.ceil(itemCount / numCols) : itemCount;
+    const defaultRole = isGrid ? 'grid' : 'list';
+    
+    const a11yScrollProps = a11yEnabled
+      ? {
+          accessibilityRole: this.props.accessibilityRole ?? defaultRole,
+          'aria-rowcount': rowCount,
+          ...(isGrid && {'aria-colcount': numCols}),
+          accessibilityCollection: {
+            rowCount,
+            columnCount: numCols,
+            hierarchical: false,
+          },
+        }
+      : {};
+
     const scrollProps = {
+      ...a11yScrollProps,
       ...this.props,
       onContentSizeChange: this._onContentSizeChange,
       onLayout: this._onLayout,

@@ -32,6 +32,9 @@ export type Props<ItemT> = {
   cellKey: string,
   horizontal: ?boolean,
   index: number,
+  itemCount?: number,
+  numColumns?: ?number,
+  accessibilityCollectionEnabled?: ?boolean,
   inversionStyle: StyleProp<ViewStyle>,
   item: ItemT,
   onCellLayout?: (
@@ -182,6 +185,9 @@ export default class CellRenderer<ItemT> extends React.PureComponent<
       horizontal,
       item,
       index,
+      itemCount,
+      numColumns,
+      accessibilityCollectionEnabled,
       inversionStyle,
       onCellLayout,
       renderItem,
@@ -211,9 +217,34 @@ export default class CellRenderer<ItemT> extends React.PureComponent<
       : horizontal
         ? [styles.row, inversionStyle]
         : inversionStyle;
+
+    const a11yEnabled = accessibilityCollectionEnabled ?? true;
+    const numCols = numColumns ?? 1;
+    const isGrid = numCols > 1;
+    const rowIndex = isGrid ? Math.floor(index / numCols) : index;
+    const columnIndex = isGrid ? index % numCols : 0;
+
+    const collectionItem = {
+      rowIndex,
+      columnIndex,
+      rowSpan: 1,
+      columnSpan: 1,
+      heading: false,
+    };
+
+    const cellA11yProps = a11yEnabled
+      ? {
+          accessibilityRole: 'listitem',
+          'aria-setsize': itemCount,
+          'aria-posinset': index + 1,
+          accessibilityCollectionItem: collectionItem,
+        }
+      : {};
+
     const result = !CellRendererComponent ? (
       <View
         style={cellStyle}
+        {...cellA11yProps}
         onFocusCapture={this._onCellFocusCapture}
         {...(onCellLayout && {onLayout: this._onLayout})}>
         {element}
@@ -224,7 +255,9 @@ export default class CellRenderer<ItemT> extends React.PureComponent<
         cellKey={cellKey}
         index={index}
         item={item}
+        itemCount={itemCount}
         style={cellStyle}
+        {...cellA11yProps}
         onFocusCapture={this._onCellFocusCapture}
         {...(onCellLayout && {onLayout: this._onLayout})}>
         {element}
