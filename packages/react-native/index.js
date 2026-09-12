@@ -384,6 +384,9 @@ module.exports = {
   get useAnimatedColor() {
     return require('./Libraries/Animated/useAnimatedColor').default;
   },
+  get useAppState() {
+    return require('./Libraries/AppState/useAppState').default;
+  },
   get useColorScheme() {
     return require('./Libraries/Utilities/useColorScheme').default;
   },
