@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <react/bridging/AString.h>
 #include <react/bridging/Base.h>
 
