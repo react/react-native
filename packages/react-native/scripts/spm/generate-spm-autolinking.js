@@ -67,6 +67,10 @@ const {
   defaultResolveDep,
   expandSpmDependencies,
 } = require('./expand-spm-dependencies');
+const {
+  MIN_IOS_VERSION_SUPPORTED,
+  sanitizeIosDeploymentTarget,
+} = require('./ios-deployment-target');
 const {findPodspecs, readPodspecCached} = require('./read-podspec');
 const {
   AUTOLINKED_PACKAGE_NAME,
@@ -210,6 +214,10 @@ function parseArgs(argv /*: Array<string> */) /*: AutolinkingArgs */ {
       describe:
         'Path to the xcframeworks sub-package (absolute or relative to appRoot)',
     })
+    .option('ios-deployment-target', {
+      type: 'string',
+      describe: `Platform floor of the generated manifests (default: ${MIN_IOS_VERSION_SUPPORTED})`,
+    })
     .usage(
       'Usage: $0 [options]\n\nGenerates autolinked/Package.swift for SPM autolinking.',
     )
@@ -222,6 +230,9 @@ function parseArgs(argv /*: Array<string> */) /*: AutolinkingArgs */ {
     autolinkingJson: parsed['autolinking-json'] ?? null,
     output: parsed.output ?? null,
     xcframeworksPath: parsed['xcframeworks-path'] ?? null,
+    iosDeploymentTarget: sanitizeIosDeploymentTarget(
+      parsed['ios-deployment-target'],
+    ),
   };
 }
 
@@ -941,6 +952,8 @@ function generateAutolinkedPackageSwift(
     input.pluginPackageDeps ?? [];
   const pluginProductDeps /*: ReadonlyArray<PluginProductDep> */ =
     input.pluginProductDeps ?? [];
+  const iosDeploymentTarget /*: string */ =
+    input.iosDeploymentTarget ?? MIN_IOS_VERSION_SUPPORTED;
 
   // Package-level dependencies: one .package(path:) per autolinked dep,
   // plus ReactNative if any inline target needs to import React headers.
@@ -1074,7 +1087,7 @@ import Foundation
 
 ${guardBlock}let package = Package(
     name: "${AUTOLINKED_PACKAGE_NAME}",
-    platforms: [.iOS(.v15)],
+    platforms: [.iOS("${iosDeploymentTarget}")],
     products: [
         .library(name: "${AUTOLINKED_PACKAGE_NAME}", targets: ["AutolinkedAggregate"]),
     ],
@@ -1124,6 +1137,8 @@ function generateSynthPackageSwift(spec /*: SynthPackageSpec */) /*: string */ {
   const targetPath /*: string */ = spec.targetPath ?? `Sources/${swiftName}`;
   const siblingSynthAbsolutePaths /*: {[string]: string} */ =
     spec.siblingSynthAbsolutePaths ?? {};
+  const iosDeploymentTarget /*: string */ =
+    spec.iosDeploymentTarget ?? MIN_IOS_VERSION_SUPPORTED;
 
   // Package dependencies — ReactNative + each spm sibling synth package.
   // The React + codegen package paths are plain relative strings computed by
@@ -1222,7 +1237,7 @@ import PackageDescription
 
 let package = Package(
     name: "${swiftName}",
-    platforms: [.iOS(.v15)],
+    platforms: [.iOS("${iosDeploymentTarget}")],
     products: [
         .library(name: "${swiftName}"${isDynamic ? ', type: .dynamic' : ''}, targets: ["${swiftName}"]),
     ],
@@ -1697,6 +1712,7 @@ function main(argv /*:: ?: Array<string> */) /*: void */ {
 
     const synthContent = generateSynthPackageSwift({
       swiftName: target.name,
+      iosDeploymentTarget: args.iosDeploymentTarget,
       exclude: prefixedExclude,
       sources: prefixedSources,
       // Stub include/ subdir lives in the wrapper dir; satisfies SPM's
@@ -1871,6 +1887,7 @@ function main(argv /*:: ?: Array<string> */) /*: void */ {
   // autolinked dep is a real SPM package in its own source dir.
   const aggregatorContent = generateAutolinkedPackageSwift({
     npmDeps: aggregatorPackageDeps,
+    iosDeploymentTarget: args.iosDeploymentTarget,
     hasReactDep,
     xcframeworksRelPath,
     pluginPackageDeps,

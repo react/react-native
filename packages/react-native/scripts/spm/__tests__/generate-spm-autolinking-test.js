@@ -467,6 +467,99 @@ describe('generateSynthPackageSwift', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Platform floor — a manifest must not sit below the app's own iOS deployment
+// target: SwiftPM refuses a product whose minimum is higher than the depending
+// target's, so a self-managed dep at iOS 16.4 (Expo) would fail to link.
+// ---------------------------------------------------------------------------
+
+describe('iOS platform floor', () => {
+  it('defaults the aggregator to the React Native minimum, and raises it on request', () => {
+    expect(generateAutolinkedPackageSwift({})).toContain(
+      'platforms: [.iOS("15.1")]',
+    );
+    expect(
+      generateAutolinkedPackageSwift({iosDeploymentTarget: '16.4'}),
+    ).toContain('platforms: [.iOS("16.4")]');
+  });
+
+  it('defaults each synth package to the React Native minimum, and raises it on request', () => {
+    const spec = {swiftName: 'MyDep'};
+    expect(generateSynthPackageSwift(spec)).toContain(
+      'platforms: [.iOS("15.1")]',
+    );
+    expect(
+      generateSynthPackageSwift({...spec, iosDeploymentTarget: '16.4'}),
+    ).toContain('platforms: [.iOS("16.4")]');
+  });
+});
+
+describe('main() — --ios-deployment-target', () => {
+  let created = [];
+  let spies = [];
+
+  beforeEach(() => {
+    for (const m of ['log', 'warn', 'error']) {
+      spies.push(jest.spyOn(console, m).mockImplementation(() => {}));
+    }
+  });
+  afterEach(() => {
+    for (const s of spies) s.mockRestore();
+    spies = [];
+    for (const d of created) fs.rmSync(d, {recursive: true, force: true});
+    created = [];
+  });
+
+  // An app-local spm.module is the only route that produces BOTH the
+  // aggregator and a synth manifest without a community dep on disk.
+  function buildApp() {
+    const appRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'spm-platform-'));
+    created.push(appRoot);
+    const rnRoot = path.join(appRoot, 'rn');
+    fs.mkdirSync(rnRoot, {recursive: true});
+    fs.writeFileSync(
+      path.join(appRoot, 'package.json'),
+      JSON.stringify({name: 'app'}),
+    );
+    const modDir = path.join(appRoot, 'ios', 'MyNativeModule');
+    fs.mkdirSync(modDir, {recursive: true});
+    fs.writeFileSync(path.join(modDir, 'Module.mm'), '// native source\n');
+    fs.writeFileSync(
+      path.join(appRoot, 'react-native.config.js'),
+      `module.exports = ${JSON.stringify({
+        spm: {modules: [{name: 'MyNativeModule', path: 'ios/MyNativeModule'}]},
+      })};\n`,
+    );
+    const autolinkDir = path.join(appRoot, 'build', 'generated', 'autolinking');
+    fs.mkdirSync(autolinkDir, {recursive: true});
+    fs.writeFileSync(
+      path.join(autolinkDir, 'autolinking.json'),
+      JSON.stringify({dependencies: {}}),
+    );
+    return {appRoot, rnRoot, autolinkDir};
+  }
+
+  it('sanitizes the flag into both the aggregator and the synth manifest', () => {
+    const {appRoot, rnRoot, autolinkDir} = buildApp();
+    main([
+      '--app-root',
+      appRoot,
+      '--react-native-root',
+      rnRoot,
+      '--ios-deployment-target',
+      '16',
+    ]);
+    for (const manifest of [
+      path.join(autolinkDir, 'Package.swift'),
+      path.join(autolinkDir, 'packages', 'MyNativeModule', 'Package.swift'),
+    ]) {
+      expect(fs.readFileSync(manifest, 'utf8')).toContain(
+        'platforms: [.iOS("16.0")]',
+      );
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
 // linkHeaderTree
 //
 // Mirrors header files from srcDir into a separate destDir via relative

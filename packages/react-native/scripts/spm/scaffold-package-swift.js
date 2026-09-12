@@ -44,6 +44,7 @@ const {
   resolveSwiftName,
 } = require('./expand-spm-dependencies');
 const {expandSpmSourceGlobs} = require('./generate-spm-autolinking');
+const {MIN_IOS_VERSION_SUPPORTED} = require('./ios-deployment-target');
 const {findPodspecs, readPodspecCached} = require('./read-podspec');
 const {
   REACT_CODEGEN_PACKAGE_NAME,
@@ -107,7 +108,9 @@ const {log, warn} = makeLogger('scaffold-package-swift');
 // v19: scaffolded C++ targets carry DEBUG/NDEBUG config defines so their Fabric
 // ABI matches the prebuilt React.framework (Release strips DebugStringConvertible
 // under NDEBUG). Bumped so existing scaffolds regenerate with the defines.
-const SCAFFOLDER_VERSION = 19;
+// v20: the platform floor is the app's iOS deployment target in string form
+// (the `.v15` enum cannot express a dependency minimum like 16.4).
+const SCAFFOLDER_VERSION = 20;
 const SCAFFOLDER_VERSION_LINE_RE = /^\/\/ AUTO-SCAFFOLDED-VERSION: (\d+)$/m;
 
 const AUTOGEN_MARKER =
@@ -562,6 +565,7 @@ type EmitContext = {
   // Relative path to the app's local xcframeworks package
   // (<appRoot>/build/xcframeworks). Only referenced when remote == null.
   localXcfwPackageDir?: ?string,
+  iosDeploymentTarget?: ?string,
 };
 */
 
@@ -578,6 +582,8 @@ function emitScaffoldedPackageSwift(
 ) /*: string */ {
   const slotComment =
     ctx.cacheSlotLabel != null ? `\n// Cache slot: ${ctx.cacheSlotLabel}` : '';
+  const iosDeploymentTarget /*: string */ =
+    ctx.iosDeploymentTarget ?? MIN_IOS_VERSION_SUPPORTED;
 
   // React headers need NO search paths — they come from the React /
   // ReactNativeHeaders binaryTargets and the ReactAppHeaders product (see
@@ -765,7 +771,7 @@ import PackageDescription
 
 let package = Package(
     name: "${spec.swiftName}",
-    platforms: [.iOS(.v15)],
+    platforms: [.iOS("${iosDeploymentTarget}")],
     products: [
         .library(name: "${spec.swiftName}", targets: ["${spec.swiftName}"]),
     ],
@@ -863,6 +869,7 @@ type ScaffoldContext = {
   // references honor each sibling's declared name.
   swiftNameByNpm?: Map<string, string>,
   remote: ?{url: string, version: string, identity: string},
+  iosDeploymentTarget?: ?string,
 };
 */
 
@@ -1062,6 +1069,7 @@ function scaffoldPackageSwiftForDep(
   const content = emitScaffoldedPackageSwift(spec, {
     cacheSlotLabel: ctx.cacheSlotLabel,
     remote: ctx.remote,
+    iosDeploymentTarget: ctx.iosDeploymentTarget,
     codegenPackageDir: relFromManifest('build', 'generated', 'ios'),
     localXcfwPackageDir: relFromManifest('build', 'xcframeworks'),
   });
@@ -1123,6 +1131,151 @@ function scaffoldPackageSwiftForDep(
   };
 }
 
+/**
+ * The dependency set the autolinker considers: the iOS entries of
+ * autolinking.json plus their transitive SwiftPM dependencies. Null when the
+ * file declares none; throws when it cannot be read or parsed. `onSkipped`
+ * reports the entries dropped for having no iOS platform.
+ */
+function collectAutolinkedDeps(
+  opts /*: {
+    autolinkingJsonPath: string,
+    remote: ?{url: string, version: string, identity: string},
+    onSkipped?: (name: string) => void,
+  } */,
+) /*: ?Array<AutolinkedDep> */ {
+  const {autolinkingJsonPath, remote, onSkipped} = opts;
+  /*:: type AutolinkingJson = {dependencies?: ?{[string]: {root?: string, platforms?: {ios?: ?{...}, ...}, ...}}, ...}; */
+  // $FlowFixMe[incompatible-type] JSON.parse returns any
+  const data /*: AutolinkingJson */ = JSON.parse(
+    fs.readFileSync(autolinkingJsonPath, 'utf8'),
+  );
+  const deps = data.dependencies;
+  if (deps == null) {
+    return null;
+  }
+
+  const directDeps /*: Array<AutolinkedDep> */ = [];
+  for (const name of Object.keys(deps)) {
+    const raw = deps[name];
+    if (raw == null) continue;
+    const root = raw.root;
+    const ios = raw.platforms?.ios;
+    if (typeof root !== 'string' || ios == null) {
+      onSkipped?.(name);
+      continue;
+    }
+    // $FlowFixMe[incompatible-type] `ios` shape is runtime-validated above
+    const iosPlatform /*: AutolinkingIosPlatform */ = ios;
+    directDeps.push({name, root, platforms: {ios: iosPlatform}});
+  }
+
+  try {
+    return expandSpmDependencies(directDeps, {
+      readConfig: defaultReadConfig,
+      resolveDep: defaultResolveDep,
+      readPodspec: defaultReadPodspec,
+      extraReservedNames: remote != null ? [remote.identity] : undefined,
+    });
+  } catch (e) {
+    if (e instanceof SpmNameCollisionError) {
+      throw e;
+    }
+    // A transitive-resolution failure shouldn't abort the whole pass; fall back
+    // to the direct deps so at least those are covered. They are named the way
+    // the autolinker names them — a manifest written under any other name
+    // outlives this error on disk and then fails to resolve.
+    log(`Transitive dependency expansion failed: ${e.message}`);
+    return directDeps.map(dep => {
+      const resolved = resolveSwiftName(
+        dep.name,
+        readSwiftpmConfig(dep.root, defaultReadConfig(dep.root)),
+        defaultReadPodspec(dep.root, dep.platforms.ios.podspecPath),
+      );
+      return {
+        ...dep,
+        swiftName: resolved.name,
+        swiftNameSource: resolved.source,
+        swiftNamePodspecKey: resolved.podspecKey,
+      };
+    });
+  }
+}
+
+// The `.iOS(...)` element of the emitted platforms array — the `.v15` enum form
+// pre-v20 scaffolds carry included, and without the array's closing bracket so
+// a user-extended array (`[.iOS(…), .macOS(…)]`) is still matched.
+const PLATFORM_FLOOR_RE = /platforms: \[\.iOS\((\.v\d+|"[^"]*")\)/;
+
+/**
+ * Bring the platform floor of already-scaffolded manifests up to the app's
+ * deployment target — `spm add`/`update` must not leave a dep pinned below the
+ * app (SwiftPM would refuse to link it), and re-scaffolding is the user's call.
+ * Only the platform line of a file carrying our own marker is rewritten; no
+ * file is created. `from` is the previous token, verbatim (`15.1` or `.v15`).
+ */
+function refreshScaffoldedPlatformFloors(
+  opts /*: {appRoot: string, autolinkingJsonPath?: string, iosDeploymentTarget: string} */,
+) /*: Array<{depName: string, path: string, from: string, to: string}> */ {
+  const {appRoot, iosDeploymentTarget} = opts;
+  const autolinkingJsonPath =
+    opts.autolinkingJsonPath ??
+    path.join(appRoot, 'build', 'generated', 'autolinking', 'autolinking.json');
+  const refreshed = [];
+
+  // Best-effort: an unreadable autolinking.json, a name collision or a
+  // malformed remote config is the autolinker's error to report a moment
+  // later, not this pass's.
+  let deps /*: ?Array<AutolinkedDep> */ = null;
+  try {
+    deps = collectAutolinkedDeps({
+      autolinkingJsonPath,
+      remote: remotePackageConfig(appRoot),
+    });
+  } catch {
+    return refreshed;
+  }
+  if (deps == null) {
+    return refreshed;
+  }
+
+  for (const {name: depName, root} of deps) {
+    const manifestPath = path.join(root, 'Package.swift');
+    let content;
+    try {
+      content = fs.readFileSync(manifestPath, 'utf8');
+    } catch {
+      continue;
+    }
+    if (
+      !content.includes(SCAFFOLDER_MARKER) ||
+      content.includes(AUTOGEN_MARKER)
+    ) {
+      continue;
+    }
+    const match = content.match(PLATFORM_FLOOR_RE);
+    if (match == null) {
+      continue;
+    }
+    const from = match[1].replace(/"/g, '');
+    if (from === iosDeploymentTarget) {
+      continue;
+    }
+    fs.writeFileSync(
+      manifestPath,
+      content.replace(match[0], `platforms: [.iOS("${iosDeploymentTarget}")`),
+      'utf8',
+    );
+    refreshed.push({
+      depName,
+      path: manifestPath,
+      from,
+      to: iosDeploymentTarget,
+    });
+  }
+  return refreshed;
+}
+
 // ---------------------------------------------------------------------------
 // Multi-dep orchestrator
 // ---------------------------------------------------------------------------
@@ -1136,6 +1289,7 @@ type ScaffoldAllOptions = {
   dryRun?: boolean,
   cacheSlotLabel?: ?string,
   autolinkingJsonPath?: string,
+  iosDeploymentTarget?: ?string,
   // npm dep names to skip entirely — used when the user declined the
   // confirmation prompt for first-time scaffolds. Skipped deps still
   // appear in the returned results array with status='skipped-opt-out'.
@@ -1163,76 +1317,29 @@ function scaffoldAll(
     return [];
   }
 
-  /*:: type AutolinkingJson = {dependencies?: ?{[string]: {root?: string, platforms?: {ios?: ?{...}, ...}, ...}}, ...}; */
-  // $FlowFixMe[incompatible-type] JSON.parse returns any
-  const data /*: AutolinkingJson */ = JSON.parse(
-    fs.readFileSync(autolinkingJsonPath, 'utf8'),
-  );
-  const deps = data.dependencies;
-  if (deps == null) {
-    return [];
-  }
-
-  // Narrow the direct autolinking.json entries with an iOS platform, then
-  // expand transitive `spm.dependencies` so the scaffolder covers EXACTLY the
-  // set the autolinker considers. Without this, a transitive native dep that
+  // The scaffolder covers EXACTLY the set the autolinker considers, transitive
+  // `spm.dependencies` included. Without them, a transitive native dep that
   // ships no Package.swift would be flagged by the autolinker but never
   // scaffolded here — leaving `react-native spm scaffold` unable to clear the
   // autolinker's missing-manifest error.
   const results /*: Array<ScaffoldResult> */ = [];
-  const directDeps /*: Array<AutolinkedDep> */ = [];
-  for (const name of Object.keys(deps)) {
-    const raw = deps[name];
-    if (raw == null) continue;
-    const root = raw.root;
-    const ios = raw.platforms?.ios;
-    if (typeof root !== 'string' || ios == null) {
+  // Outside collectAutolinkedDeps' own try: a malformed remote config
+  // (RemoteVersionError) is a misconfiguration to surface, not an expansion
+  // failure to degrade past.
+  const remote = remotePackageConfig(appRoot);
+  const allDeps = collectAutolinkedDeps({
+    autolinkingJsonPath,
+    remote,
+    onSkipped: name => {
       results.push({
         depName: name,
         status: 'skipped-no-ios',
         reason: 'no iOS platform in autolinking.json',
       });
-      continue;
-    }
-    // $FlowFixMe[incompatible-type] `ios` shape is runtime-validated above
-    const iosPlatform /*: AutolinkingIosPlatform */ = ios;
-    directDeps.push({name, root, platforms: {ios: iosPlatform}});
-  }
-
-  // Outside the try: a malformed remote config (RemoteVersionError) is a
-  // misconfiguration to surface, not an expansion failure to degrade past.
-  const remote = remotePackageConfig(appRoot);
-
-  let allDeps /*: Array<AutolinkedDep> */ = [];
-  try {
-    allDeps = expandSpmDependencies(directDeps, {
-      readConfig: defaultReadConfig,
-      resolveDep: defaultResolveDep,
-      readPodspec: defaultReadPodspec,
-      extraReservedNames: remote != null ? [remote.identity] : undefined,
-    });
-  } catch (e) {
-    if (e instanceof SpmNameCollisionError) {
-      throw e;
-    }
-    // A transitive-resolution failure shouldn't abort the whole scaffold pass;
-    // fall back to the direct deps so at least those get manifests. They are
-    // named the same way the autolinker names them — a manifest written under
-    // any other name outlives this error on disk and then fails to resolve.
-    log(`Transitive dependency expansion failed: ${e.message}`);
-    allDeps = directDeps.map(dep => {
-      const resolved = resolveSwiftName(
-        dep.name,
-        readSwiftpmConfig(dep.root, defaultReadConfig(dep.root)),
-        defaultReadPodspec(dep.root, dep.platforms.ios.podspecPath),
-      );
-      return {
-        ...dep,
-        swiftName: resolved.name,
-        swiftNameSource: resolved.source,
-        swiftNamePodspecKey: resolved.podspecKey,
-      };
-    });
+    },
+  });
+  if (allDeps == null) {
+    return results;
   }
 
   // Index every autolinked dep's podspec name → its npm name, so a dep that
@@ -1271,6 +1378,7 @@ function scaffoldAll(
     force: opts.force === true,
     dryRun: opts.dryRun === true,
     cacheSlotLabel: opts.cacheSlotLabel ?? null,
+    iosDeploymentTarget: opts.iosDeploymentTarget ?? null,
     podToNpm,
     swiftNameByNpm,
     remote,
@@ -1296,6 +1404,7 @@ function scaffoldAll(
 }
 
 module.exports = {
+  refreshScaffoldedPlatformFloors,
   scaffoldAll,
   scaffoldPackageSwiftForDep,
   translatePodspecToSpmTarget,

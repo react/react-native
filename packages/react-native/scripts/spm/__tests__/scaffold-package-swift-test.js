@@ -14,6 +14,7 @@ const {
   SCAFFOLDER_MARKER,
   SCAFFOLDER_VERSION,
   emitScaffoldedPackageSwift,
+  refreshScaffoldedPlatformFloors,
   scaffoldAll,
   scaffoldPackageSwiftForDep,
   translatePodspecToSpmTarget,
@@ -560,6 +561,19 @@ describe('emitScaffoldedPackageSwift', () => {
       cacheSlotLabel: '0.87.0-nightly-20260513-abc/debug',
     });
     expect(out).toContain('// Cache slot: 0.87.0-nightly-20260513-abc/debug');
+  });
+
+  it('floors the platform at the React Native minimum by default, in string form', () => {
+    const out = emitScaffoldedPackageSwift(baseSpec());
+    expect(out).toContain('platforms: [.iOS("15.1")]');
+  });
+
+  it('raises the platform floor to the app deployment target', () => {
+    const out = emitScaffoldedPackageSwift(baseSpec(), {
+      cacheSlotLabel: null,
+      iosDeploymentTarget: '16.4',
+    });
+    expect(out).toContain('platforms: [.iOS("16.4")]');
   });
 
   it('emits DEBUG/NDEBUG config-gated cxxSettings so Fabric C++ matches the prebuilt React.framework ABI', () => {
@@ -1527,6 +1541,10 @@ describe('SCAFFOLDER_VERSION', () => {
     expect(SCAFFOLDER_VERSION).toBeGreaterThanOrEqual(1);
   });
 
+  it('is at the version the current emitter output requires', () => {
+    expect(SCAFFOLDER_VERSION).toBe(20);
+  });
+
   it('emitter writes the current version to the file', () => {
     const out = emitScaffoldedPackageSwift({
       swiftName: 'foo',
@@ -1627,5 +1645,193 @@ describe('scaffoldPackageSwiftForDep — version-based regen', () => {
     );
     const result = scaffoldPackageSwiftForDep(makeDep(), makeCtx());
     expect(result.status).toBe('skipped-scaffolder-marker');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// refreshScaffoldedPlatformFloors — `spm add`/`update` bring the floor of
+// manifests scaffolded earlier (possibly by an older generator) up to the
+// app's current deployment target, without regenerating them.
+// ---------------------------------------------------------------------------
+
+describe('refreshScaffoldedPlatformFloors', () => {
+  let appRoot;
+
+  beforeEach(() => {
+    appRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'spm-refresh-floor-'));
+  });
+
+  afterEach(() => {
+    fs.rmSync(appRoot, {recursive: true, force: true});
+  });
+
+  function manifest(floorLine) {
+    return (
+      `// swift-tools-version: 6.0\n${SCAFFOLDER_MARKER}\n` +
+      '// AUTO-SCAFFOLDED-VERSION: 19\n\nlet package = Package(\n' +
+      '    name: "foo",\n' +
+      `    ${floorLine}\n` +
+      '    products: [],\n)\n'
+    );
+  }
+
+  // One dep per entry: `content` is written to <root>/Package.swift unless null.
+  function writeApp(deps) {
+    const autolinkingDir = path.join(appRoot, 'build/generated/autolinking');
+    fs.mkdirSync(autolinkingDir, {recursive: true});
+    const dependencies = {};
+    for (const [name, content] of Object.entries(deps)) {
+      const root = path.join(appRoot, 'node_modules', name);
+      fs.mkdirSync(root, {recursive: true});
+      if (content != null) {
+        fs.writeFileSync(path.join(root, 'Package.swift'), content, 'utf8');
+      }
+      dependencies[name] = {root, platforms: {ios: {}}};
+    }
+    fs.writeFileSync(
+      path.join(autolinkingDir, 'autolinking.json'),
+      JSON.stringify({dependencies}),
+    );
+  }
+
+  function refresh() {
+    return refreshScaffoldedPlatformFloors({
+      appRoot,
+      iosDeploymentTarget: '16.4',
+    });
+  }
+
+  function read(depName) {
+    return fs.readFileSync(
+      path.join(appRoot, 'node_modules', depName, 'Package.swift'),
+      'utf8',
+    );
+  }
+
+  it('rewrites only the platform line of a scaffolded manifest', () => {
+    const before = manifest('platforms: [.iOS("15.1")],');
+    writeApp({'react-native-foo': before});
+
+    expect(refresh()).toEqual([
+      {
+        depName: 'react-native-foo',
+        path: path.join(appRoot, 'node_modules/react-native-foo/Package.swift'),
+        from: '15.1',
+        to: '16.4',
+      },
+    ]);
+    expect(read('react-native-foo')).toBe(
+      before.replace('.iOS("15.1")', '.iOS("16.4")'),
+    );
+  });
+
+  it('rewrites the enum form an older scaffolder emitted', () => {
+    writeApp({'react-native-foo': manifest('platforms: [.iOS(.v15)],')});
+
+    expect(refresh()).toEqual([
+      expect.objectContaining({from: '.v15', to: '16.4'}),
+    ]);
+    expect(read('react-native-foo')).toContain('platforms: [.iOS("16.4")]');
+  });
+
+  it('rewrites only the .iOS element of an extended platforms array', () => {
+    writeApp({
+      'react-native-foo': manifest(
+        'platforms: [.iOS("15.1"), .macOS(.v13), .tvOS("16.0")],',
+      ),
+    });
+
+    expect(refresh()).toEqual([expect.objectContaining({from: '15.1'})]);
+    expect(read('react-native-foo')).toContain(
+      'platforms: [.iOS("16.4"), .macOS(.v13), .tvOS("16.0")],',
+    );
+  });
+
+  it('leaves a manifest already on the floor untouched', () => {
+    writeApp({'react-native-foo': manifest('platforms: [.iOS("16.4")],')});
+    const manifestPath = path.join(
+      appRoot,
+      'node_modules/react-native-foo/Package.swift',
+    );
+    const before = fs.statSync(manifestPath).mtimeMs;
+
+    expect(refresh()).toEqual([]);
+    expect(fs.statSync(manifestPath).mtimeMs).toBe(before);
+  });
+
+  it('ignores manifests it does not own, and deps with none', () => {
+    const upstream = '// hand-authored\nplatforms: [.iOS("15.1")],\n';
+    const autogen = `// AUTO-GENERATED by scripts/generate-spm-autolinking.js\n${SCAFFOLDER_MARKER}\nplatforms: [.iOS("15.1")],\n`;
+    writeApp({
+      'react-native-upstream': upstream,
+      'react-native-autogen': autogen,
+      'react-native-none': null,
+    });
+
+    expect(refresh()).toEqual([]);
+    expect(read('react-native-upstream')).toBe(upstream);
+    expect(read('react-native-autogen')).toBe(autogen);
+  });
+
+  it('refreshes a transitive spm.dependency that autolinking.json never lists', () => {
+    writeApp({'react-native-a': manifest('platforms: [.iOS("15.1")],')});
+    fs.writeFileSync(
+      path.join(appRoot, 'node_modules/react-native-a/package.json'),
+      JSON.stringify({
+        name: 'react-native-a',
+        swiftpmConfig: {dependencies: ['react-native-transitive']},
+      }),
+    );
+    const transitiveRoot = path.join(
+      appRoot,
+      'node_modules',
+      'react-native-transitive',
+    );
+    fs.mkdirSync(transitiveRoot, {recursive: true});
+    fs.writeFileSync(
+      path.join(transitiveRoot, 'package.json'),
+      JSON.stringify({name: 'react-native-transitive', version: '1.0.0'}),
+    );
+    fs.writeFileSync(
+      path.join(transitiveRoot, 'react-native.config.js'),
+      'module.exports = {dependency: {platforms: {ios: {}}}};\n',
+    );
+    fs.writeFileSync(
+      path.join(transitiveRoot, 'Package.swift'),
+      manifest('platforms: [.iOS("15.1")],'),
+      'utf8',
+    );
+
+    expect(
+      refresh()
+        .map(entry => entry.depName)
+        .sort(),
+    ).toEqual(['react-native-a', 'react-native-transitive']);
+    expect(read('react-native-transitive')).toContain(
+      'platforms: [.iOS("16.4")]',
+    );
+  });
+
+  it('returns nothing when there is no autolinking.json', () => {
+    expect(refresh()).toEqual([]);
+  });
+
+  it('honors an autolinking.json written outside the default location', () => {
+    writeApp({'react-native-foo': manifest('platforms: [.iOS("15.1")],')});
+    const moved = path.join(appRoot, 'elsewhere', 'autolinking.json');
+    fs.mkdirSync(path.dirname(moved));
+    fs.renameSync(
+      path.join(appRoot, 'build/generated/autolinking/autolinking.json'),
+      moved,
+    );
+
+    expect(refresh()).toEqual([]);
+    expect(
+      refreshScaffoldedPlatformFloors({
+        appRoot,
+        autolinkingJsonPath: moved,
+        iosDeploymentTarget: '16.4',
+      }),
+    ).toEqual([expect.objectContaining({depName: 'react-native-foo'})]);
   });
 });

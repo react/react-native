@@ -47,8 +47,12 @@ describe('sync-spm-autolinking main', () => {
     };
   }
 
+  function baseArgv() {
+    return ['--app-root', appRoot, '--react-native-root', rnRoot];
+  }
+
   function run(deps) {
-    return main(['--app-root', appRoot, '--react-native-root', rnRoot], deps);
+    return main(baseArgv(), deps);
   }
 
   function stampPath() {
@@ -90,6 +94,20 @@ describe('sync-spm-autolinking main', () => {
     expect(deps.downloadArtifacts).not.toHaveBeenCalled();
     expect(deps.generatePackage).not.toHaveBeenCalled();
     expect(fs.existsSync(stampPath())).toBe(true);
+  });
+
+  it('forwards --ios-deployment-target to the autolinker only when given', async () => {
+    const withFlag = makeDeps();
+    await main([...baseArgv(), '--ios-deployment-target', '16.4'], withFlag);
+    expect(withFlag.generateAutolinking).toHaveBeenCalledWith([
+      ...baseArgv(),
+      '--ios-deployment-target',
+      '16.4',
+    ]);
+
+    const withoutFlag = makeDeps();
+    await run(withoutFlag);
+    expect(withoutFlag.generateAutolinking).toHaveBeenCalledWith(baseArgv());
   });
 
   it('continues with existing output when codegen fails', async () => {

@@ -18,12 +18,14 @@ const {
   generateAutolinkingConfigOrFailClosed,
   parseArgs,
   resolveAction,
+  resolveAppIosDeploymentTarget,
   resolveConfigCommandToPin,
   resolveExplicitConfigCommand,
   shouldAutoDeintegrate,
 } = require('../../setup-apple-spm');
 const {REQUIRED_ARTIFACTS} = require('../download-spm-artifacts');
 const {SPM_INJECTED_MARKER} = require('../generate-spm-xcodeproj');
+const {twoAppTargets} = require('./pbxproj-variants');
 const {execFileSync} = require('node:child_process');
 const fs = require('node:fs');
 const os = require('node:os');
@@ -647,6 +649,54 @@ describe('determineVersion', () => {
 
     expect(determineVersion({version: null}, reactNativeRoot, appRoot)).toBe(
       '1000.0.0',
+    );
+  });
+});
+
+describe('resolveAppIosDeploymentTarget', () => {
+  let appRoot;
+  let logSpy;
+
+  beforeEach(() => {
+    appRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'spm-setup-iosdt-'));
+    logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    logSpy.mockRestore();
+    fs.rmSync(appRoot, {recursive: true, force: true});
+  });
+
+  function logged() {
+    return logSpy.mock.calls.map(call => call.join(' ')).join('\n');
+  }
+
+  // No marker — the first `spm add`, where only --product-name identifies the
+  // target among the fixture's two app targets.
+  function mkTwoTargetProject() {
+    const dir = path.join(appRoot, 'MyApp.xcodeproj');
+    fs.mkdirSync(dir, {recursive: true});
+    fs.writeFileSync(
+      path.join(dir, 'project.pbxproj'),
+      twoAppTargets('16.4'),
+      'utf8',
+    );
+  }
+
+  it('reads the app target --product-name selects, not the lowest one', () => {
+    mkTwoTargetProject();
+    expect(resolveAppIosDeploymentTarget({productName: 'MyApp'}, appRoot)).toBe(
+      '16.4',
+    );
+    expect(logged()).toContain(
+      'iOS deployment target: 16.4 (from MyApp.xcodeproj)',
+    );
+  });
+
+  it('names the reason alongside the default when no project could be picked', () => {
+    expect(resolveAppIosDeploymentTarget({}, appRoot)).toBe('15.1');
+    expect(logged()).toContain(
+      'iOS deployment target: 15.1 (react-native default; no .xcodeproj found',
     );
   });
 });
