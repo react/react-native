@@ -959,12 +959,13 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 - (void)scrollToEnd:(BOOL)animated
 {
   BOOL isHorizontal = _scrollView.contentSize.width > self.frame.size.width;
+  UIEdgeInsets contentInset = _scrollView.adjustedContentInset;
   CGPoint offset;
   if (isHorizontal) {
-    CGFloat offsetX = _scrollView.contentSize.width - _scrollView.bounds.size.width + _scrollView.contentInset.right;
+    CGFloat offsetX = _scrollView.contentSize.width - _scrollView.bounds.size.width + contentInset.right;
     offset = CGPointMake(fmax(offsetX, 0), 0);
   } else {
-    CGFloat offsetY = _scrollView.contentSize.height - _scrollView.bounds.size.height + _scrollView.contentInset.bottom;
+    CGFloat offsetY = _scrollView.contentSize.height - _scrollView.bounds.size.height + contentInset.bottom;
     offset = CGPointMake(0, fmax(offsetY, 0));
   }
 
