@@ -7,6 +7,8 @@
 
 #import "RCTGenericDelegateSplitter.h"
 
+#import <objc/runtime.h>
+
 @implementation RCTGenericDelegateSplitter {
   NSHashTable *_delegates;
 }
@@ -73,7 +75,17 @@
       return [delegate methodSignatureForSelector:selector];
     }
   }
-  return nil;
+  // Fallback: prevent `unrecognized selector` crash when UIKit invokes a cached
+  // delegate selector after all weak delegates have been released (e.g. background
+  // suspension with in-flight UIScrollViewScrollAnimation). Resolve the signature
+  // from UIScrollViewDelegate's optional methods first; otherwise use a permissive
+  // `v@:@` signature so forwardInvocation: can safely no-op.
+  struct objc_method_description desc =
+      protocol_getMethodDescription(@protocol(UIScrollViewDelegate), selector, NO, YES);
+  if (desc.types != NULL) {
+    return [NSMethodSignature signatureWithObjCTypes:desc.types];
+  }
+  return [NSMethodSignature signatureWithObjCTypes:"v@:@"];
 }
 
 - (void)forwardInvocation:(NSInvocation *)invocation
