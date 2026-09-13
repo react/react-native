@@ -7,7 +7,9 @@
 
 package com.facebook.react.views.text
 
+import android.content.Context
 import android.content.res.AssetManager
+import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Build
@@ -24,6 +26,7 @@ import android.text.TextUtils
 import android.util.LayoutDirection
 import android.view.Gravity
 import android.view.View
+import android.widget.TextView
 import androidx.annotation.VisibleForTesting
 import com.facebook.common.logging.FLog
 import com.facebook.infer.annotation.Assertions
@@ -888,6 +891,7 @@ internal object TextLayoutManager {
       baseTextAttributes: TextAttributeProps,
       assets: AssetManager,
       fontWeightAdjustment: Int,
+      context: Context,
   ) {
     if (baseTextAttributes.fontSize != ReactConstants.UNSET) {
       paint.textSize = baseTextAttributes.fontSize.toFloat()
@@ -924,10 +928,38 @@ internal object TextLayoutManager {
       val typeface = ReactTypefaceUtils.applyFontWeightAdjustment(null, fontWeightAdjustment)
       if (typeface != null) {
         paint.setTypeface(typeface)
+      } else {
+        // ReactTextView renders text with a plain TextView, whose default typeface
+        // inherits the system/theme font configuration (e.g. a bold system font or a
+        // font-replacement app). Measurement uses a bare TextPaint whose default
+        // typeface is Typeface.DEFAULT; when these diverge, auto-width <Text> is
+        // measured narrower than it renders, clipping the last glyphs. Use the same
+        // default typeface the rendering TextView uses.
+        paint.setTypeface(getSystemDefaultTypeface(context))
       }
     }
 
     ReactTypefaceUtils.applyFontVariationSettings(paint, baseTextAttributes.fontVariationSettings)
+  }
+
+  private var sSystemDefaultTypeface: Typeface? = null
+  private var sSystemDefaultTypefaceConfiguration: Configuration? = null
+
+  @Synchronized
+  private fun getSystemDefaultTypeface(context: Context): Typeface {
+    val config = context.resources.configuration
+    if (
+        sSystemDefaultTypeface == null ||
+            sSystemDefaultTypefaceConfiguration?.equals(config) != true
+    ) {
+      // Create a single TextView (no per-measure allocation) from the application
+      // context so we read the same default typeface the rendering TextView uses,
+      // including system/theme-level font replacements. Re-resolve whenever the
+      // Configuration (fontScale, fontWeightAdjustment, locale, ...) changes.
+      sSystemDefaultTypeface = TextView(context.applicationContext).typeface
+      sSystemDefaultTypefaceConfiguration = Configuration(config)
+    }
+    return checkNotNull(sSystemDefaultTypeface)
   }
 
   /**
@@ -938,13 +970,14 @@ internal object TextLayoutManager {
       baseTextAttributes: TextAttributeProps,
       assets: AssetManager,
       fontWeightAdjustment: Int,
+      context: Context,
   ): TextPaint {
     val paint = checkNotNull(textPaintInstance.get())
     paint.setTypeface(null)
     paint.textSize = 12f
     paint.isFakeBoldText = false
     paint.textSkewX = 0f
-    updateTextPaint(paint, baseTextAttributes, assets, fontWeightAdjustment)
+    updateTextPaint(paint, baseTextAttributes, assets, fontWeightAdjustment, context)
     return paint
   }
 
@@ -952,9 +985,10 @@ internal object TextLayoutManager {
       baseTextAttributes: TextAttributeProps,
       assets: AssetManager,
       fontWeightAdjustment: Int,
+      context: Context,
   ): TextPaint {
     val paint = TextPaint(TextPaint.ANTI_ALIAS_FLAG)
-    updateTextPaint(paint, baseTextAttributes, assets, fontWeightAdjustment)
+    updateTextPaint(paint, baseTextAttributes, assets, fontWeightAdjustment, context)
     return paint
   }
 
@@ -962,6 +996,7 @@ internal object TextLayoutManager {
   private fun createLayoutForMeasurement(
       assets: AssetManager,
       fontWeightAdjustment: Int,
+      context: Context,
       attributedString: MapBuffer,
       paragraphAttributes: MapBuffer,
       width: Float,
@@ -985,7 +1020,8 @@ internal object TextLayoutManager {
     } else {
       val baseTextAttributes =
           TextAttributeProps.fromMapBuffer(attributedString.getMapBuffer(AS_KEY_BASE_ATTRIBUTES))
-      paint = scratchPaintWithAttributes(baseTextAttributes, assets, fontWeightAdjustment)
+      paint =
+          scratchPaintWithAttributes(baseTextAttributes, assets, fontWeightAdjustment, context)
     }
 
     return createLayout(
@@ -1121,6 +1157,7 @@ internal object TextLayoutManager {
   @OptIn(UnstableReactNativeAPI::class)
   fun createPreparedLayout(
       assets: AssetManager,
+      context: Context,
       attributedString: ReadableMapBuffer,
       paragraphAttributes: ReadableMapBuffer,
       width: Float,
@@ -1132,6 +1169,7 @@ internal object TextLayoutManager {
   ): PreparedLayout = createPreparedLayout(
       assets,
       0,
+      context,
       attributedString,
       paragraphAttributes,
       width,
@@ -1147,6 +1185,7 @@ internal object TextLayoutManager {
   fun createPreparedLayout(
       assets: AssetManager,
       fontWeightAdjustment: Int,
+      context: Context,
       attributedString: ReadableMapBuffer,
       paragraphAttributes: ReadableMapBuffer,
       width: Float,
@@ -1170,7 +1209,7 @@ internal object TextLayoutManager {
         TextAttributeProps.fromMapBuffer(attributedString.getMapBuffer(AS_KEY_BASE_ATTRIBUTES))
     val result = createLayout(
         text,
-        newPaintWithAttributes(baseTextAttributes, assets, fontWeightAdjustment),
+        newPaintWithAttributes(baseTextAttributes, assets, fontWeightAdjustment, context),
         attributedString,
         paragraphAttributes,
         width,
@@ -1311,6 +1350,7 @@ internal object TextLayoutManager {
   @OptIn(UnstableReactNativeAPI::class)
   fun measureText(
       assets: AssetManager,
+      context: Context,
       attributedString: MapBuffer,
       paragraphAttributes: MapBuffer,
       width: Float,
@@ -1323,6 +1363,7 @@ internal object TextLayoutManager {
   ): Long = measureText(
       assets,
       0,
+      context,
       attributedString,
       paragraphAttributes,
       width,
@@ -1339,6 +1380,7 @@ internal object TextLayoutManager {
   fun measureText(
       assets: AssetManager,
       fontWeightAdjustment: Int,
+      context: Context,
       attributedString: MapBuffer,
       paragraphAttributes: MapBuffer,
       width: Float,
@@ -1353,6 +1395,7 @@ internal object TextLayoutManager {
     val layout = createLayoutForMeasurement(
         assets,
         fontWeightAdjustment,
+        context,
         attributedString,
         paragraphAttributes,
         width,
@@ -1624,6 +1667,7 @@ internal object TextLayoutManager {
   @OptIn(UnstableReactNativeAPI::class)
   fun measureLines(
       assetManager: AssetManager,
+      context: Context,
       attributedString: MapBuffer,
       paragraphAttributes: MapBuffer,
       width: Float,
@@ -1633,6 +1677,7 @@ internal object TextLayoutManager {
   ): WritableArray = measureLines(
       assetManager,
       0,
+      context,
       attributedString,
       paragraphAttributes,
       width,
@@ -1646,6 +1691,7 @@ internal object TextLayoutManager {
   fun measureLines(
       assetManager: AssetManager,
       fontWeightAdjustment: Int,
+      context: Context,
       attributedString: MapBuffer,
       paragraphAttributes: MapBuffer,
       width: Float,
@@ -1656,6 +1702,7 @@ internal object TextLayoutManager {
     val layout = createLayoutForMeasurement(
         assetManager,
         fontWeightAdjustment,
+        context,
         attributedString,
         paragraphAttributes,
         width,
