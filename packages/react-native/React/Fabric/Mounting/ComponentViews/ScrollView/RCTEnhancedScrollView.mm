@@ -15,6 +15,7 @@
 @implementation RCTEnhancedScrollView {
   __weak id<UIScrollViewDelegate> _publicDelegate;
   BOOL _isSetContentOffsetDisabled;
+  CGPoint _foregroundContentOffset;
 }
 
 + (BOOL)automaticallyNotifiesObserversForKey:(NSString *)key
@@ -97,6 +98,28 @@
   if (_isSetContentOffsetDisabled) {
     return;
   }
+
+#if TARGET_OS_IOS
+  UIWindowScene *scene = self.window.windowScene;
+  if (scene && scene.activationState == UISceneActivationStateBackground) {
+    if (!CGPointEqualToPoint(_foregroundContentOffset, CGPointZero)) {
+      BOOL isHorizontal = [self isHorizontal:self];
+      CGSize viewportSize = self.bounds.size;
+      if (isHorizontal) {
+        contentOffset.x =
+            fmin(_foregroundContentOffset.x,
+                 fmax(0, self.contentSize.width - viewportSize.width));
+      } else {
+        contentOffset.y =
+            fmin(_foregroundContentOffset.y,
+                 fmax(0, self.contentSize.height - viewportSize.height));
+      }
+    }
+  } else {
+    _foregroundContentOffset = contentOffset;
+  }
+#endif
+
   super.contentOffset = CGPointMake(
       RCTSanitizeNaNValue(contentOffset.x, @"scrollView.contentOffset.x"),
       RCTSanitizeNaNValue(contentOffset.y, @"scrollView.contentOffset.y"));

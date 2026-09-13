@@ -660,6 +660,13 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 
   _avoidAdjustmentForMaintainVisibleContentPosition = enableImmediateUpdateModeForContentOffsetChanges;
 
+#if TARGET_OS_IOS
+  UIWindowScene *scene = self.window.windowScene;
+  if (scene && scene.activationState == UISceneActivationStateBackground) {
+    return;
+  }
+#endif
+
   auto contentOffset = RCTPointFromCGPoint(_scrollView.contentOffset);
   BOOL isAccessibilityAPIUsed = _isAccessibilityAPIUsed;
   _state->updateState(
