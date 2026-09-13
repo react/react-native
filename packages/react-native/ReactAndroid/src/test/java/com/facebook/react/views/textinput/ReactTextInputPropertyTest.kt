@@ -376,7 +376,7 @@ class ReactTextInputPropertyTest {
   fun testKeyboardTypeUrl() {
     manager.updateProperties(view, buildStyles("keyboardType", "url"))
     assertThat(view.inputType and generalKeyboardTypeFlags)
-        .isEqualTo(InputType.TYPE_TEXT_VARIATION_URI)
+        .isEqualTo(InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_URI)
   }
 
   @Test
