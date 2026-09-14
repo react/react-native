@@ -37,6 +37,13 @@ it('refuses non-spec compliant colors', () => {
   expect(normalizeColor('#00gg00')).toBe(null);
   expect(normalizeColor('rgb(1, 2, 3,)')).toBe(null);
   expect(normalizeColor('rgb(1, 2, 3')).toBe(null);
+  // Functional forms must match the whole string (hex already did).
+  expect(normalizeColor('xxrgb(1, 2, 3)yy')).toBe(null);
+  expect(normalizeColor('rgb(1, 2, 3)yy')).toBe(null);
+  expect(normalizeColor('xxrgb(1, 2, 3)')).toBe(null);
+  expect(normalizeColor('rgba(1,2,3,0.5)extra')).toBe(null);
+  expect(normalizeColor('prefixhsl(0, 0%, 0%)')).toBe(null);
+  expect(normalizeColor('hwb(0 0% 0%)suffix')).toBe(null);
 
   // Used to be accepted by normalizeColor
   expect(normalizeColor('abc')).toBe(null);
