@@ -43,12 +43,6 @@ typedef void (^RCTLoadSourceForBridgeBlock)(RCTBridge *bridge, RCTSourceLoadBloc
 #pragma mark - RCTRootViewFactory Configuration
 @interface RCTRootViewFactoryConfiguration : NSObject
 
-/// This property controls whether the App will use the Fabric renderer of the New Architecture or not.
-@property (nonatomic, assign, readonly) BOOL fabricEnabled;
-
-/// This method controls whether the `turboModules` feature of the New Architecture is turned on or off
-@property (nonatomic, assign, readonly) BOOL turboModuleEnabled;
-
 /// Return the bundle URL for the main bundle.
 @property (nonatomic, nonnull) RCTBundleURLBlock bundleURLBlock;
 
@@ -61,10 +55,9 @@ typedef void (^RCTLoadSourceForBridgeBlock)(RCTBridge *bridge, RCTSourceLoadBloc
  * pointing to a path inside the app resources, e.g. `file://.../main.jsbundle`.
  *
  */
-- (instancetype)initWithBundleURLBlock:(RCTBundleURLBlock)bundleURLBlock
-                        newArchEnabled:(BOOL)newArchEnabled NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithBundleURLBlock:(RCTBundleURLBlock)bundleURLBlock NS_DESIGNATED_INITIALIZER;
 
-- (instancetype)initWithBundleURL:(NSURL *)bundleURL newArchEnabled:(BOOL)newArchEnabled;
+- (instancetype)initWithBundleURL:(NSURL *)bundleURL;
 
 /**
  * Block that allows to override logic of creating root view instance.
