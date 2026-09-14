@@ -11,15 +11,7 @@
 #include <react/renderer/core/RawValue.h>
 #include <react/renderer/graphics/Color.h>
 #include <react/utils/ContextContainer.h>
-#include <cstddef>
-#include <string>
-#include <vector>
-
 namespace facebook::react {
-
-size_t hashGetColourArguments(int32_t surfaceId, const std::vector<std::string> &resourcePaths);
-
-SharedColor parsePlatformColor(const ContextContainer &contextContainer, int32_t surfaceId, const RawValue &value);
 
 void fromRawValue(
     const ContextContainer &contextContainer,

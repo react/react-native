@@ -5,22 +5,33 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include <react/renderer/graphics/fromRawValueShared.h>
-
 #include <react/debug/react_native_expect.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
+#include <react/renderer/core/RawValue.h>
 #include <react/renderer/css/CSSColor.h>
 #include <react/renderer/css/CSSValueParser.h>
+#include <react/renderer/graphics/Color.h>
 #include <react/renderer/graphics/PlatformColorParser.h>
+#include <react/utils/ContextContainer.h>
 
 namespace facebook::react {
+
+SharedColor parsePlatformColor(
+    const ContextContainer& contextContainer,
+    int32_t surfaceId,
+    const RawValue& value);
+
+namespace {
+
+using ParsePlatformColor =
+    SharedColor (*)(const ContextContainer&, int32_t, const RawValue&);
 
 void fromRawValueShared(
     const ContextContainer& contextContainer,
     int32_t surfaceId,
     const RawValue& value,
     SharedColor& result,
-    parsePlatformColorFn parsePlatformColor) {
+    ParsePlatformColor parsePlatformColor) {
   ColorComponents colorComponents = {
       .red = 0, .green = 0, .blue = 0, .alpha = 0};
 
@@ -75,6 +86,8 @@ void fromRawValueShared(
     result = parsePlatformColor(contextContainer, surfaceId, value);
   }
 }
+
+} // namespace
 
 void fromRawValue(
     const ContextContainer& contextContainer,

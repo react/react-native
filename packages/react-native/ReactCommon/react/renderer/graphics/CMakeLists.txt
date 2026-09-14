@@ -27,14 +27,17 @@ target_include_directories(react_renderer_graphics INTERFACE ${REACT_COMMON_DIR}
 
 react_native_android_selector(fbjni fbjni "")
 target_link_libraries(react_renderer_graphics
-        glog
-        ${fbjni}
-        folly_runtime
-        react_cxxstableapi
-        react_debug
-        react_renderer_css
-        react_renderer_debug
-        react_utils
+        PUBLIC
+          ${fbjni}
+          folly_runtime
+          react_cxxstableapi
+          react_renderer_debug
+          react_utils
+        PRIVATE
+          glog
+          react_debug
+          react_featureflags
+          react_renderer_css
 )
 target_compile_reactnative_options(react_renderer_graphics PRIVATE)
 target_compile_options(react_renderer_graphics PRIVATE -Wpedantic)

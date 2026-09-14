@@ -7,8 +7,6 @@
 
 #include <react/renderer/graphics/PlatformColorParser.h>
 
-#include "configurePlatformColorCacheInvalidationHook.h"
-
 #include <fbjni/fbjni.h>
 #include <folly/container/EvictingCacheMap.h>
 #include <react/renderer/css/CSSColor.h>
@@ -20,6 +18,15 @@
 
 namespace facebook::react {
 
+SharedColor parsePlatformColor(
+    const ContextContainer& contextContainer,
+    int32_t surfaceId,
+    const RawValue& value);
+
+void configurePlatformColorCacheInvalidationHook(std::function<void()>&& hook);
+
+namespace {
+
 size_t hashGetColourArguments(
     int32_t surfaceId,
     const std::vector<std::string>& resourcePaths) {
@@ -30,6 +37,8 @@ size_t hashGetColourArguments(
   }
   return seed;
 }
+
+} // namespace
 
 SharedColor parsePlatformColor(
     const ContextContainer& contextContainer,

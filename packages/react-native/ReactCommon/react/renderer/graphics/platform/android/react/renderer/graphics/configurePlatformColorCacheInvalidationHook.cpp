@@ -5,10 +5,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "configurePlatformColorCacheInvalidationHook.h"
-
 #include <fbjni/NativeRunnable.h>
 #include <fbjni/fbjni.h>
+#include <functional>
 
 namespace facebook::react {
 void configurePlatformColorCacheInvalidationHook(std::function<void()>&& hook) {

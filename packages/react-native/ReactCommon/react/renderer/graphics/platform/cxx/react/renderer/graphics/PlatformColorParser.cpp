@@ -10,6 +10,11 @@
 namespace facebook::react {
 
 SharedColor parsePlatformColor(
+    const ContextContainer& contextContainer,
+    int32_t surfaceId,
+    const RawValue& value);
+
+SharedColor parsePlatformColor(
     const ContextContainer& /*contextContainer*/,
     int32_t /*surfaceId*/,
     const RawValue& /*value*/) {
