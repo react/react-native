@@ -1,0 +1,392 @@
+name: Test Kotlin Multiplatform pilot
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/test-kmp.yml'
+      - '.github/actions/setup-gradle/**'
+      - '.github/actions/setup-xcode/**'
+      - '.github/actions/setup-node/**'
+      - '.github/actions/yarn-install/**'
+      - 'Gemfile'
+      - 'Gemfile.lock'
+      - 'build.gradle.kts'
+      - 'gradle.properties'
+      - 'gradle/wrapper/**'
+      - 'settings.gradle.kts'
+      - 'yarn.lock'
+      - 'packages/rn-tester/Podfile'
+      - 'packages/rn-tester/RCTTest/**'
+      - 'packages/rn-tester/RNTesterPods.xcodeproj/**'
+      - 'packages/rn-tester/RNTester/RNTester.xctestplan'
+      - 'packages/react-native/ReactShared/**'
+      - 'packages/react-native/ReactAndroid/build.gradle.kts'
+      - 'packages/react-native/ReactAndroid/gradle.properties'
+      - 'packages/react-native/gradle/libs.versions.toml'
+      - 'packages/react-native/ReactAndroid/src/main/java/com/facebook/react/uimanager/style/ColorStop.kt'
+      - 'packages/react-native/ReactAndroid/src/test/java/com/facebook/react/uimanager/style/ColorStopTest.kt'
+      - 'packages/react-native/React/Fabric/Utils/RCTGradientUtils.*'
+      - 'packages/react-native/React/Fabric/RCTConversions.h'
+      - 'packages/react-native/Libraries/NativeAnimation/RCTAnimationUtils.*'
+      - 'packages/react-native/ReactCommon/react/renderer/graphics/**'
+      - 'packages/react-native/ReactCommon/react/utils/FloatComparison.h'
+      - 'packages/react-native/ReactCommon/react/utils/ManagedObjectWrapper.*'
+      - 'packages/react-native/React/React-RCTFabric.podspec'
+      - 'packages/react-native/React-Core.podspec'
+      - 'packages/react-native/React/Base/RCTMultipartStreamReader.*'
+      - 'packages/react-native/ReactAndroid/src/main/java/com/facebook/react/devsupport/MultipartStreamReader.kt'
+      - 'packages/react-native/ReactAndroid/src/test/java/com/facebook/react/devsupport/MultipartStreamReaderTest.kt'
+      - 'packages/rn-tester/RNTesterUnitTests/RCTMultipartStreamReaderTests.m'
+      - 'packages/react-native/scripts/react_native_pods.rb'
+      - 'packages/react-native/scripts/cocoapods/kmp.rb'
+      - 'packages/react-native/Package.swift'
+      - 'packages/react-native/package.json'
+      - 'packages/react-native/settings.gradle.kts'
+  push:
+    branches:
+      - main
+      - '*-stable'
+    paths:
+      - '.github/workflows/test-kmp.yml'
+      - '.github/actions/setup-gradle/**'
+      - '.github/actions/setup-xcode/**'
+      - '.github/actions/setup-node/**'
+      - '.github/actions/yarn-install/**'
+      - 'Gemfile'
+      - 'Gemfile.lock'
+      - 'build.gradle.kts'
+      - 'gradle.properties'
+      - 'gradle/wrapper/**'
+      - 'settings.gradle.kts'
+      - 'yarn.lock'
+      - 'packages/rn-tester/Podfile'
+      - 'packages/rn-tester/RCTTest/**'
+      - 'packages/rn-tester/RNTesterPods.xcodeproj/**'
+      - 'packages/rn-tester/RNTester/RNTester.xctestplan'
+      - 'packages/react-native/ReactShared/**'
+      - 'packages/react-native/ReactAndroid/build.gradle.kts'
+      - 'packages/react-native/ReactAndroid/gradle.properties'
+      - 'packages/react-native/gradle/libs.versions.toml'
+      - 'packages/react-native/ReactAndroid/src/main/java/com/facebook/react/uimanager/style/ColorStop.kt'
+      - 'packages/react-native/ReactAndroid/src/test/java/com/facebook/react/uimanager/style/ColorStopTest.kt'
+      - 'packages/react-native/React/Fabric/Utils/RCTGradientUtils.*'
+      - 'packages/react-native/React/Fabric/RCTConversions.h'
+      - 'packages/react-native/Libraries/NativeAnimation/RCTAnimationUtils.*'
+      - 'packages/react-native/ReactCommon/react/renderer/graphics/**'
+      - 'packages/react-native/ReactCommon/react/utils/FloatComparison.h'
+      - 'packages/react-native/ReactCommon/react/utils/ManagedObjectWrapper.*'
+      - 'packages/react-native/React/React-RCTFabric.podspec'
+      - 'packages/react-native/React-Core.podspec'
+      - 'packages/react-native/React/Base/RCTMultipartStreamReader.*'
+      - 'packages/react-native/ReactAndroid/src/main/java/com/facebook/react/devsupport/MultipartStreamReader.kt'
+      - 'packages/react-native/ReactAndroid/src/test/java/com/facebook/react/devsupport/MultipartStreamReaderTest.kt'
+      - 'packages/rn-tester/RNTesterUnitTests/RCTMultipartStreamReaderTests.m'
+      - 'packages/react-native/scripts/react_native_pods.rb'
+      - 'packages/react-native/scripts/cocoapods/kmp.rb'
+      - 'packages/react-native/Package.swift'
+      - 'packages/react-native/package.json'
+      - 'packages/react-native/settings.gradle.kts'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kmp-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-shared:
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'zulu'
+      - name: Set up Xcode for Kotlin Native
+        uses: ./.github/actions/setup-xcode
+        with:
+          xcode-version: '26.4.1'
+      - name: Set up Gradle
+        uses: ./.github/actions/setup-gradle
+      - name: Set up Ruby and CocoaPods
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2.0'
+          bundler-cache: true
+      - name: Check CocoaPods linking configurations
+        run: bundle exec ruby packages/react-native/ReactShared/scripts/test-cocoapods-linking.rb
+      - name: Cache Kotlin Native toolchain
+        uses: actions/cache@v5
+        with:
+          path: ~/.konan
+          key: kmp-native-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('packages/react-native/ReactShared/*.gradle.kts', 'packages/react-native/ReactShared/gradle.properties', 'packages/react-native/ReactShared/gradle/wrapper/gradle-wrapper.properties') }}
+      - name: Test shared code on JVM and iOS
+        id: shared
+        working-directory: packages/react-native/ReactShared
+        run: >-
+          ./gradlew
+          jvmTest iosSimulatorArm64Test
+          linkDebugFrameworkIosArm64 linkReleaseFrameworkIosArm64
+          linkDebugFrameworkIosSimulatorArm64 linkReleaseFrameworkIosSimulatorArm64
+          linkDebugFrameworkIosX64 linkReleaseFrameworkIosX64
+          --stacktrace --console=plain
+      - name: Compare the Apple adapter with native gradients
+        if: ${{ !cancelled() && steps.shared.outcome == 'success' }}
+        working-directory: packages/react-native/ReactShared
+        run: ./scripts/test-apple-gradient.sh
+      - name: Compare optimized Apple gradients
+        if: ${{ !cancelled() && steps.shared.outcome == 'success' }}
+        working-directory: packages/react-native/ReactShared
+        env:
+          RCT_KMP_BUILD_TYPE: Release
+        run: ./scripts/test-apple-gradient.sh
+      - name: Compare native and shared multipart adapters
+        if: ${{ !cancelled() && steps.shared.outcome == 'success' }}
+        working-directory: packages/react-native/ReactShared
+        run: |
+          ./scripts/test-apple-multipart.sh
+          python3 scripts/test-android-multipart.py --max-workers 2
+      - name: Test packaged XCFramework consumption
+        if: ${{ !cancelled() && steps.shared.outcome == 'success' }}
+        working-directory: packages/react-native/ReactShared
+        run: ./scripts/test-apple-distribution.sh
+      - name: Test independent Kotlin runtime coexistence
+        if: ${{ !cancelled() && steps.shared.outcome == 'success' }}
+        working-directory: packages/react-native/ReactShared
+        run: python3 scripts/test-kotlin-coexistence.py
+      - name: Measure native gradient costs
+        if: ${{ !cancelled() && steps.shared.outcome == 'success' }}
+        working-directory: packages/react-native/ReactShared
+        run: python3 scripts/benchmark-apple-gradient.py
+      - name: Measure clean and incremental shared builds
+        if: ${{ !cancelled() && steps.shared.outcome == 'success' }}
+        working-directory: packages/react-native/ReactShared
+        run: python3 scripts/benchmark-kmp-build.py
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: kotlin-multiplatform-test-results
+          path: |
+            packages/react-native/ReactShared/build/reports/tests
+            packages/react-native/ReactShared/build/test-results
+            packages/react-native/ReactShared/build/apple-multipart-test/**/*.log
+            packages/react-native/ReactShared/build/android-multipart-test/build/test-results
+            packages/react-native/ReactShared/build/apple-distribution/**/*.json
+            packages/react-native/ReactShared/build/apple-distribution/**/*.log
+            packages/react-native/ReactShared/build/apple-distribution/**/consumer.xcresult
+            packages/react-native/ReactShared/build/kotlin-coexistence/**/*.json
+            packages/react-native/ReactShared/build/kotlin-coexistence/**/*.log
+            packages/react-native/ReactShared/build/apple-gradient-benchmark/**/*.json
+            packages/react-native/ReactShared/build/apple-gradient-benchmark/**/*.log
+            packages/react-native/ReactShared/build/kmp-build-benchmark/**/*.json
+            packages/react-native/ReactShared/build/kmp-build-benchmark/**/*.log
+          if-no-files-found: warn
+
+  test-android-consumers:
+    name: Android Maven and npm source consumers
+    runs-on: 8-core-ubuntu
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Set up Node
+        uses: ./.github/actions/setup-node
+      - name: Install JavaScript dependencies
+        uses: ./.github/actions/yarn-install
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'zulu'
+      - name: Set up Gradle
+        uses: ./.github/actions/setup-gradle
+      - name: Install Android build SDK
+        id: android-sdk
+        run: |
+          python3 - <<'PY'
+          import os, pathlib, re, shutil, subprocess, tomllib
+          versions = tomllib.loads(pathlib.Path('packages/react-native/gradle/libs.versions.toml').read_text())['versions']
+          sdkmanager = shutil.which('sdkmanager') or str(pathlib.Path(os.environ['ANDROID_HOME']) / 'cmdline-tools/latest/bin/sdkmanager')
+          packages = subprocess.check_output([sdkmanager, '--list'], text=True)
+          base = 'platforms;android-' + versions['compileSdk']
+          # Recent SDKs use a minor version in their package ID (for example android-37.0).
+          platform = next((name for name in [base + '.0', base] if re.search(r'^\s*' + re.escape(name) + r'\s*\|', packages, re.M)), None)
+          if platform is None:
+              raise SystemExit('No Android SDK package matches compileSdk ' + versions['compileSdk'])
+          subprocess.run([sdkmanager, platform, 'build-tools;' + versions['buildTools']], check=True)
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write('ndk=' + versions['ndkVersion'] + '\n')
+          PY
+      - name: Enable emulator hardware acceleration
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Build and run packaged Android consumers
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          ndk: ${{ steps.android-sdk.outputs.ndk }}
+          cmake: 3.30.5
+          cores: 4
+          disable-animations: true
+          script: python3 packages/react-native/ReactShared/scripts/test-android-consumers.py --output-dir "$RUNNER_TEMP/kmp-android-consumers" --abi x86_64 --device emulator-5554
+      - name: Upload consumer reports
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: kmp-android-consumers
+          path: |
+            ${{ runner.temp }}/kmp-android-consumers/*.log
+            ${{ runner.temp }}/kmp-android-consumers/*.json
+          if-no-files-found: warn
+
+  test-apple-app:
+    name: RNTester KMP ${{ matrix.platform }} (${{ matrix.linkage }})
+    runs-on: macos-26
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: simulator
+            linkage: libraries
+          - platform: simulator
+            linkage: static
+          - platform: simulator
+            linkage: dynamic
+          - platform: device
+            linkage: libraries
+          - platform: catalyst
+            linkage: libraries
+    env:
+      RCT_KMP_APP_OUTPUT_DIR: ${{ github.workspace }}/packages/react-native/ReactShared/build/apple-app-results
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Set up Node
+        uses: ./.github/actions/setup-node
+      - name: Install JavaScript dependencies
+        uses: ./.github/actions/yarn-install
+      - name: Select the Hermes compiler package
+        run: node scripts/releases/use-hermes-prebuilt.js
+      - name: Install the selected Hermes compiler
+        uses: ./.github/actions/yarn-install
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'zulu'
+      - name: Set up Xcode for Kotlin Native
+        uses: ./.github/actions/setup-xcode
+        with:
+          xcode-version: '26.4.1'
+      - name: Set up Gradle
+        uses: ./.github/actions/setup-gradle
+      - name: Set up Ruby and CocoaPods
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2.0'
+          bundler-cache: true
+      - name: Cache Kotlin Native toolchain
+        uses: actions/cache@v5
+        with:
+          path: ~/.konan
+          key: kmp-native-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('packages/react-native/ReactShared/*.gradle.kts', 'packages/react-native/ReactShared/gradle.properties', 'packages/react-native/ReactShared/gradle/wrapper/gradle-wrapper.properties') }}
+      - name: Build and validate the KMP source application
+        run: |
+          if [[ '${{ matrix.linkage }}' != libraries ]]; then
+            export USE_FRAMEWORKS='${{ matrix.linkage }}'
+          fi
+          ./packages/react-native/ReactShared/scripts/test-apple-app.sh '${{ matrix.platform }}'
+      - name: Upload application test reports
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: kmp-app-${{ matrix.platform }}-${{ matrix.linkage }}
+          path: |
+            ${{ env.RCT_KMP_APP_OUTPUT_DIR }}/*.log
+            ${{ env.RCT_KMP_APP_OUTPUT_DIR }}/*.json
+            ${{ env.RCT_KMP_APP_OUTPUT_DIR }}/*.txt
+            ${{ env.RCT_KMP_APP_OUTPUT_DIR }}/*.xcresult
+            ${{ env.RCT_KMP_APP_OUTPUT_DIR }}/Podfile*
+            ${{ env.RCT_KMP_APP_OUTPUT_DIR }}/project.pbxproj
+          if-no-files-found: warn
+
+  smoke:
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'zulu'
+      - name: Set up Xcode
+        uses: ./.github/actions/setup-xcode
+        with:
+          xcode-version: '26.4.1'
+      - name: Set up Gradle
+        uses: ./.github/actions/setup-gradle
+      - name: Cache Kotlin Native toolchain
+        uses: actions/cache@v5
+        with:
+          path: ~/.konan
+          key: kmp-foundation-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('packages/react-native/ReactShared/*.gradle.kts', 'packages/react-native/ReactShared/gradle.properties', 'packages/react-native/ReactShared/gradle/wrapper/gradle-wrapper.properties') }}
+      - name: Test common code and build Apple frameworks
+        working-directory: packages/react-native/ReactShared
+        run: >-
+          ./gradlew -PreactNativeSharedSmoke=true
+          jvmTest iosSimulatorArm64Test
+          linkDebugFrameworkIosArm64 linkReleaseFrameworkIosArm64
+          linkDebugFrameworkIosSimulatorArm64 linkReleaseFrameworkIosSimulatorArm64
+          linkDebugFrameworkIosX64 linkReleaseFrameworkIosX64
+          --max-workers=2 --stacktrace --console=plain
+      - name: Test Objective-C consumption
+        working-directory: packages/react-native/ReactShared
+        run: ./scripts/test-apple-smoke.sh
+      - name: Verify nonempty tests and fixture isolation
+        working-directory: packages/react-native/ReactShared
+        run: |
+          ./gradlew jvmJar --max-workers=2 --console=plain
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          import zipfile
+          for target in ('jvmTest', 'iosSimulatorArm64Test'):
+              suites = [ET.parse(p).getroot() for p in Path('build/smoke/test-results', target).glob('TEST-*.xml')]
+              assert suites and sum(int(s.get('tests', 0)) for s in suites) > 0, target
+              assert all(not int(s.get(k, 0)) for s in suites for k in ('failures', 'errors', 'skipped')), target
+          jars = list(Path('build/libs').glob('*.jar'))
+          assert len(jars) == 1, jars
+          with zipfile.ZipFile(jars[0]) as jar:
+              assert not any('/smoke/' in name for name in jar.namelist()), 'Test fixture leaked into default output'
+          PY
+      - name: Upload smoke reports
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: kotlin-multiplatform-smoke-results
+          path: |
+            packages/react-native/ReactShared/build/smoke/reports/tests
+            packages/react-native/ReactShared/build/smoke/test-results
+            packages/react-native/ReactShared/build/smoke/apple-interop/*.log
+          if-no-files-found: warn
