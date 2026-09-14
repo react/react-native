@@ -90,6 +90,24 @@ class TextLayoutManagerMinimumFontScaleTest {
   }
 
   @Test
+  fun `explicit minimumFontSize is used as the floor`() {
+    val text = spannableWithFontSize(LARGE_FONT_SIZE)
+
+    adjustToUnsatisfiableHeight(text, minimumFontSize = 12f, minimumFontScale = Float.NaN)
+
+    assertThat(largestFontSize(text)).isEqualTo(12)
+  }
+
+  @Test
+  fun `explicit minimumFontSize takes precedence over minimumFontScale`() {
+    val text = spannableWithFontSize(LARGE_FONT_SIZE)
+
+    adjustToUnsatisfiableHeight(text, minimumFontSize = 12f, minimumFontScale = 0.5f)
+
+    assertThat(largestFontSize(text)).isEqualTo(12)
+  }
+
+  @Test
   fun `text that already fits is not shrunk`() {
     val text = spannableWithFontSize(LARGE_FONT_SIZE)
 
@@ -99,6 +117,7 @@ class TextLayoutManagerMinimumFontScaleTest {
         YogaMeasureMode.EXACTLY,
         10_000f,
         YogaMeasureMode.EXACTLY,
+        Float.NaN,
         0.5f,
         ReactConstants.UNSET,
         true,
@@ -113,13 +132,18 @@ class TextLayoutManagerMinimumFontScaleTest {
   }
 
   // Uses a height no font size can satisfy so the text is shrunk all the way to the minimum.
-  private fun adjustToUnsatisfiableHeight(text: SpannableString, minimumFontScale: Float) {
+  private fun adjustToUnsatisfiableHeight(
+      text: SpannableString,
+      minimumFontScale: Float,
+      minimumFontSize: Float = Float.NaN,
+  ) {
     TextLayoutManager.adjustSpannableFontToFit(
         text,
         10_000f,
         YogaMeasureMode.EXACTLY,
         1f,
         YogaMeasureMode.EXACTLY,
+        minimumFontSize,
         minimumFontScale,
         ReactConstants.UNSET,
         true,

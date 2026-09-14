@@ -6045,6 +6045,7 @@ public class com/facebook/react/views/text/ReactTextView : androidx/appcompat/wi
 	public fun setLetterSpacing (F)V
 	public fun setLinkifyMask (I)V
 	public fun setMinimumFontScale (F)V
+	public fun setMinimumFontSize (F)V
 	public fun setNumberOfLines (I)V
 	public fun setOverflow (Ljava/lang/String;)V
 	public fun setSpanned (Landroid/text/Spannable;)V
