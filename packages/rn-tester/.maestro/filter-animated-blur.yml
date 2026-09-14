@@ -1,0 +1,15 @@
+appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebook.react.uiapp
+---
+- launchApp
+- extendedWaitUntil:
+    visible: 'Components'
+    timeout: 30000
+- openLink: rntester://example/Filter/animated-blur
+- extendedWaitUntil:
+    visible:
+      id: 'animated-blur-button'
+    timeout: 10000
+- tapOn:
+    id: 'animated-blur-button'
+- assertVisible:
+    id: 'animated-blur-view'

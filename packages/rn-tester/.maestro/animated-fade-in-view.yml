@@ -1,0 +1,21 @@
+appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebook.react.uiapp
+---
+- launchApp
+- extendedWaitUntil:
+    visible: 'Components'
+    timeout: 30000
+- openLink: rntester://example/Animated/fadeInView
+- extendedWaitUntil:
+    visible:
+      id: 'toggle-button'
+    timeout: 10000
+- assertVisible:
+    id: 'fade-in-view'
+- tapOn:
+    id: 'toggle-button'
+- assertNotVisible:
+    id: 'fade-in-view'
+- tapOn:
+    id: 'toggle-button'
+- assertVisible:
+    id: 'fade-in-view'

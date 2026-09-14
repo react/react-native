@@ -1,0 +1,19 @@
+appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebook.react.uiapp
+---
+- launchApp
+- extendedWaitUntil:
+    visible: 'Components'
+    timeout: 30000
+- openLink: rntester://example/TextInput/uncontrolledComponent
+- extendedWaitUntil:
+    visible:
+      id: 'uncontrolled-textinput'
+    timeout: 10000
+- tapOn:
+    id: 'uncontrolled-textinput'
+- eraseText
+- inputText: 'New value'
+- hideKeyboard
+- assertVisible:
+    id: 'uncontrolled-textinput'
+    text: 'New value'
