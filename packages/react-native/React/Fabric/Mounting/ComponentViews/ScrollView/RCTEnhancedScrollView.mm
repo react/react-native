@@ -7,7 +7,15 @@
 
 #import "RCTEnhancedScrollView.h"
 #import <React/RCTUtils.h>
+#import <TargetConditionals.h>
 #import <react/utils/FloatComparison.h>
+
+#if RCT_USE_KMP && TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+#define RCT_SCROLL_SNAP_USE_KMP 1
+#import <ReactNativeShared/ReactNativeShared.h>
+#else
+#define RCT_SCROLL_SNAP_USE_KMP 0
+#endif
 
 @interface RCTEnhancedScrollView () <UIScrollViewDelegate>
 @end
@@ -15,7 +23,28 @@
 @implementation RCTEnhancedScrollView {
   __weak id<UIScrollViewDelegate> _publicDelegate;
   BOOL _isSetContentOffsetDisabled;
+#if RCT_SCROLL_SNAP_USE_KMP
+  RNSScrollSnapOffsets *_sharedSnapOffsets;
+#endif
 }
+
+#if RCT_SCROLL_SNAP_USE_KMP
+@synthesize snapToOffsets = _snapToOffsets;
+
+- (void)setSnapToOffsets:(NSArray<NSNumber *> *)snapToOffsets
+{
+  _snapToOffsets = [snapToOffsets copy];
+  _sharedSnapOffsets = nil;
+  if (_snapToOffsets.count > 0) {
+    // Convert once per property update, retaining the existing floatValue precision.
+    RNSKotlinDoubleArray *offsets = [RNSKotlinDoubleArray arrayWithSize:(int32_t)_snapToOffsets.count];
+    for (NSUInteger i = 0; i < _snapToOffsets.count; i++) {
+      [offsets setIndex:(int32_t)i value:_snapToOffsets[i].floatValue];
+    }
+    _sharedSnapOffsets = [[RNSScrollSnapOffsets alloc] initWithOffsets:offsets];
+  }
+}
+#endif
 
 + (BOOL)automaticallyNotifiesObserversForKey:(NSString *)key
 {
@@ -199,6 +228,15 @@
 
     // Calculate the snap offsets adjacent to the initial offset target
     CGFloat targetOffset = isHorizontal ? targetContentOffset->x : targetContentOffset->y;
+#if RCT_SCROLL_SNAP_USE_KMP
+    targetOffset = [_sharedSnapOffsets resolveCurrentOffset:offsetAlongAxis
+                                               targetOffset:targetOffset
+                                              maximumOffset:maximumOffset
+                                                   velocity:velocityAlongAxis
+                                                snapToStart:self.snapToStart
+                                                  snapToEnd:self.snapToEnd]
+                       .targetOffset;
+#else
     CGFloat smallerOffset = 0.0;
     CGFloat largerOffset = maximumOffset;
 
@@ -250,6 +288,7 @@
 
     // Make sure the new offset isn't out of bounds
     targetOffset = MIN(MAX(0, targetOffset), maximumOffset);
+#endif
 
     // Set new targetContentOffset
     if (isHorizontal) {
