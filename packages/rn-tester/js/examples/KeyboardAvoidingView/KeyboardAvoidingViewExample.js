@@ -20,6 +20,7 @@ import {
   KeyboardAvoidingView,
   Modal,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -198,6 +199,34 @@ const KeyboardAvoidingContentContainerStyle = () => {
   );
 };
 
+const KeyboardAvoidingMultilineTextInput = () => {
+  const [message, setMessage] = useState('');
+
+  return (
+    <KeyboardAvoidingView
+      behavior="padding"
+      keyboardVerticalOffset={64}
+      style={styles.multilineContainer}>
+      <ScrollView
+        contentContainerStyle={styles.multilineContent}
+        keyboardShouldPersistTaps="handled">
+        {Array.from({length: 10}, (_, index) => (
+          <Text key={index} style={styles.messageText}>
+            Message {index + 1}
+          </Text>
+        ))}
+        <TextInput
+          multiline
+          onChangeText={setMessage}
+          placeholder="Type something here..."
+          style={styles.multilineTextInput}
+          value={message}
+        />
+      </ScrollView>
+    </KeyboardAvoidingView>
+  );
+};
+
 const styles = StyleSheet.create({
   outerContainer: {
     flex: 1,
@@ -242,6 +271,22 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: 'blue',
   },
+  multilineContainer: {
+    flex: 1,
+  },
+  multilineContent: {
+    padding: 12,
+  },
+  messageText: {
+    fontSize: 20,
+    padding: 40,
+  },
+  multilineTextInput: {
+    borderRadius: 5,
+    borderWidth: 1,
+    minHeight: 96,
+    padding: 8,
+  },
 });
 
 exports.title = 'KeyboardAvoidingView';
@@ -276,6 +321,15 @@ exports.examples = [
     title: 'Keyboard Avoiding View with contentContainerStyle',
     render(): React.Node {
       return <KeyboardAvoidingContentContainerStyle />;
+    },
+  },
+  {
+    title: 'Keyboard Avoiding View with multiline TextInput in ScrollView',
+    // Regression coverage for https://github.com/facebook/react-native/issues/16826.
+    description:
+      'Keeps a multiline TextInput visible when it grows inside a nested ScrollView.',
+    render(): React.Node {
+      return <KeyboardAvoidingMultilineTextInput />;
     },
   },
 ] as Array<RNTesterModuleExample>;
