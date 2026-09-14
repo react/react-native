@@ -1,0 +1,50 @@
+appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebook.react.uiapp
+---
+- stopApp
+- openLink: rntester://example/FlatListExample/onViewableItemsChanged-horizontal-noWaitForInteraction
+- runFlow: ./helpers/confirm-open-link.yml
+- extendedWaitUntil:
+    visible:
+      id: 'flat-list-viewability-horizontal-no-wait'
+    timeout: 120000
+- assertVisible:
+    id: 'output'
+    text: '.*Pizza, Burger.*'
+- openLink: rntester://example/FlatListExample/onViewableItemsChanged-horizontal-waitForInteraction
+- runFlow: ./helpers/confirm-open-link.yml
+- extendedWaitUntil:
+    visible:
+      id: 'flat-list-viewability-horizontal-wait'
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: 'Cheesecake'
+    direction: RIGHT
+    speed: 40
+    visibilityPercentage: 100
+    centerElement: true
+    timeout: 30000
+- extendedWaitUntil:
+    visible:
+      id: 'output'
+      text: '.*Cheesecake.*'
+    timeout: 10000
+- openLink: rntester://example/FlatListExample/onViewableItemsChanged-waitForInteraction
+- runFlow: ./helpers/confirm-open-link.yml
+- extendedWaitUntil:
+    visible:
+      id: 'flat-list-viewability-vertical-wait'
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: 'Cheesecake'
+    direction: DOWN
+    speed: 40
+    visibilityPercentage: 100
+    centerElement: true
+    timeout: 30000
+- extendedWaitUntil:
+    visible:
+      id: 'output'
+      text: '.*Cheesecake, Brownie.*'
+    timeout: 10000

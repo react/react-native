@@ -1,0 +1,13 @@
+appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebook.react.uiapp
+---
+- stopApp
+- openLink: rntester://example/Filter/animated-blur
+- runFlow: ./helpers/confirm-open-link.yml
+- extendedWaitUntil:
+    visible:
+      id: 'animated-blur-button'
+    timeout: 120000
+- tapOn:
+    id: 'animated-blur-button'
+- assertVisible:
+    id: 'animated-blur-view'

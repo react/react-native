@@ -1,25 +1,23 @@
 appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebook.react.uiapp
 ---
-- launchApp
-# Wait for the JS bundle to render the landing screen instead of asserting
-# immediately, which races app cold start on CI.
+- stopApp
+- openLink: rntester://example/Modal/onShow
+- runFlow: ./helpers/confirm-open-link.yml
 - extendedWaitUntil:
-    visible: 'Components'
-    timeout: 30000
-- scrollUntilVisible:
-    element:
-      id: 'Modal'
-    direction: DOWN
-    speed: 60
+    visible:
+      id: 'open-modal'
+    timeout: 120000
 - tapOn:
-    id: 'Modal'
+    id: 'open-modal'
 - assertVisible:
-    text: 'Show Modal'
+    id: 'dismiss-modal'
+- assertVisible:
+    id: 'modal-on-show-count'
+    text: 'onShow is called 1 times'
 - tapOn:
-    text: 'Show Modal'
+    id: 'dismiss-modal'
+- assertNotVisible:
+    id: 'dismiss-modal'
 - assertVisible:
-    text: 'Close'
-- tapOn:
-    text: 'Close'
-- assertVisible:
-    text: 'Show Modal'
+    id: 'on-show-count'
+    text: 'onShow is called 1 times'
