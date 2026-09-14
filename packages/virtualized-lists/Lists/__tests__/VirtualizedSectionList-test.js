@@ -215,6 +215,101 @@ describe('VirtualizedSectionList', () => {
     expect(component).toMatchSnapshot();
   });
 
+  describe('onViewableItemsChanged', () => {
+    const ITEM_HEIGHT = 100;
+
+    type Item = {nested: {id: string}};
+
+    // Six of the eight rows (2 headers, 4 items, 2 footers) fit in the
+    // viewport, so both section headers, one section footer and three items
+    // become viewable.
+    const nativeEvent = {
+      contentInset: {bottom: 0, left: 0, right: 0, top: 0},
+      contentOffset: {x: 0, y: 0},
+      contentSize: {height: 8 * ITEM_HEIGHT, width: 300},
+      layoutMeasurement: {height: 6 * ITEM_HEIGHT, width: 300},
+      zoomScale: 1,
+    };
+
+    it('reports section headers and footers without running them through the section keyExtractor', async () => {
+      // A key extractor written for items, the way a section defines one. It
+      // throws if it is handed anything other than an item.
+      const extractorArgs: Array<Item> = [];
+      const keyExtractor = (item: ?Item) => {
+        const arg = nullthrows(item);
+        extractorArgs.push(arg);
+        return arg.nested.id;
+      };
+      const sections = [
+        // $FlowFixMe[incompatible-type]
+        {
+          title: 's1',
+          keyExtractor,
+          data: [{nested: {id: 'i1.1'}}, {nested: {id: 'i1.2'}}],
+        },
+        // $FlowFixMe[incompatible-type]
+        {
+          title: 's2',
+          keyExtractor,
+          data: [{nested: {id: 'i2.1'}}, {nested: {id: 'i2.2'}}],
+        },
+      ] as Array<SectionBase<Item>>;
+      const onViewableItemsChanged = jest.fn();
+
+      let component;
+      await ReactTestRenderer.act(() => {
+        component = ReactTestRenderer.create(
+          <VirtualizedSectionList
+            sections={sections}
+            renderItem={({item}) => <item value={item.nested.id} />}
+            renderSectionHeader={({section}) => (
+              <header value={section.title} />
+            )}
+            renderSectionFooter={({section}) => (
+              <footer value={section.title} />
+            )}
+            getItem={(data, index) => data[index]}
+            getItemCount={data => data.length}
+            getItemLayout={(data, index) => ({
+              length: ITEM_HEIGHT,
+              offset: ITEM_HEIGHT * index,
+              index,
+            })}
+            onViewableItemsChanged={onViewableItemsChanged}
+          />,
+        );
+      });
+
+      const instance = nullthrows(component).getInstance();
+      // $FlowFixMe[incompatible-use] wrong types
+      // $FlowFixMe[prop-missing] wrong types
+      instance._listRef._onScrollBeginDrag({nativeEvent});
+      // $FlowFixMe[incompatible-use] wrong types
+      // $FlowFixMe[prop-missing] wrong types
+      instance._listRef._onScroll({timeStamp: 1000, nativeEvent});
+
+      // The section's keyExtractor is only ever given items from
+      // `section.data`, never the section itself.
+      const items = sections.flatMap(section => section.data);
+      expect(extractorArgs.filter(arg => !items.includes(arg))).toEqual([]);
+
+      // Header and footer rows are still reported, keyed by their section, and
+      // item rows are still keyed by the section's keyExtractor.
+      expect(onViewableItemsChanged).toHaveBeenCalledTimes(1);
+      const {viewableItems} = onViewableItemsChanged.mock.calls[0][0];
+      expect(
+        viewableItems.map(token => ({key: token.key, index: token.index})),
+      ).toEqual([
+        {key: '0:header', index: null},
+        {key: 'i1.1', index: 0},
+        {key: 'i1.2', index: 1},
+        {key: '0:footer', index: null},
+        {key: '1:header', index: null},
+        {key: 'i2.1', index: 0},
+      ]);
+    });
+  });
+
   describe('scrollToLocation', () => {
     const ITEM_HEIGHT = 100;
 
