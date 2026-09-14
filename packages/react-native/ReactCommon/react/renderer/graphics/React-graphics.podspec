@@ -57,6 +57,7 @@ Pod::Spec.new do |s|
   s.dependency "React-utils"
   s.dependency "React-rendererdebug"
   s.dependency "React-cxxstableapi"
+  s.dependency "React-renderercss"
 
   depend_on_js_engine(s)
   add_rn_third_party_dependencies(s)
