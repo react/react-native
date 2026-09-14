@@ -281,4 +281,44 @@ static RCTViewComponentView *makeViewWithOutlineStyle(OutlineStyle outlineStyle)
   }
 }
 
+#pragma mark - dynamic border and outline colors
+
+- (void)testDynamicBorderAndOutlineColorsResolveAgainstViewTraitCollection
+{
+  auto dynamicColor = SharedColor(Color(
+      DynamicColor{
+          .lightColor = static_cast<int32_t>(0xFFFF0000u),
+          .darkColor = static_cast<int32_t>(0xFF00FF00u),
+      }));
+  UITraitCollection *lightTraits = [UITraitCollection traitCollectionWithUserInterfaceStyle:UIUserInterfaceStyleLight];
+
+  [lightTraits performAsCurrentTraitCollection:^{
+    RCTViewComponentView *view = [RCTViewComponentView new];
+    view.frame = CGRectMake(0, 0, 100, 100);
+    view.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
+    view.clipsToBounds = YES;
+
+    XCTAssertEqual([UITraitCollection currentTraitCollection].userInterfaceStyle, UIUserInterfaceStyleLight);
+    XCTAssertEqual(view.traitCollection.userInterfaceStyle, UIUserInterfaceStyleDark);
+
+    auto props = std::make_shared<ViewProps>();
+    props->yogaStyle.setBorder(facebook::yoga::Edge::All, facebook::yoga::StyleLength::points(4));
+    props->borderColors.all = dynamicColor;
+    props->borderStyles.all = BorderStyle::Solid;
+    props->outlineWidth = 4;
+    props->outlineColor = dynamicColor;
+    props->outlineStyle = OutlineStyle::Solid;
+
+    [view updateProps:props oldProps:ViewShadowNode::defaultSharedProps()];
+    [view finalizeUpdates:RNComponentViewUpdateMaskProps];
+
+    CALayer *outlineLayer = [view valueForKey:@"_outlineLayer"];
+    XCTAssertNotNil(outlineLayer);
+    XCTAssertNotNil((__bridge id)view.layer.borderColor);
+    XCTAssertNotNil((__bridge id)outlineLayer.borderColor);
+    XCTAssertTrue(CGColorEqualToColor(view.layer.borderColor, UIColor.greenColor.CGColor));
+    XCTAssertTrue(CGColorEqualToColor(outlineLayer.borderColor, UIColor.greenColor.CGColor));
+  }];
+}
+
 @end
