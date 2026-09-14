@@ -283,6 +283,9 @@ target_link_libraries(reactnative
             yogacore
 )
 
+# Enable aggressive compiler optimizations and link-time-optimizations
+target_compile_options(reactnative PRIVATE -O3 -flto)
+
 target_compile_reactnative_options(reactnative PRIVATE)
 
 target_include_directories(reactnative
