@@ -390,9 +390,15 @@ folly::dynamic AndroidTextInputProps::getDiffProps(
   }
 
   if (!floatEquality(
-          paragraphAttributes.minimumFontScale,
-          oldProps->paragraphAttributes.minimumFontScale)) {
-    result["minimumFontScale"] = paragraphAttributes.minimumFontScale;
+          paragraphAttributes.minimumFontSize,
+          oldProps->paragraphAttributes.minimumFontSize)) {
+    result["minimumFontSize"] = paragraphAttributes.minimumFontSize;
+  }
+
+  if (!floatEquality(
+          paragraphAttributes.maximumFontSize,
+          oldProps->paragraphAttributes.maximumFontSize)) {
+    result["maximumFontSize"] = paragraphAttributes.maximumFontSize;
   }
 
   if (paragraphAttributes.includeFontPadding !=

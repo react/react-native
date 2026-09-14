@@ -177,8 +177,14 @@ void BaseTextInputProps::setProp(
         paDefaults,
         value,
         paragraphAttributes,
-        minimumFontScale,
-        "minimumFontScale");
+        minimumFontSize,
+        "minimumFontSize");
+    REBUILD_FIELD_SWITCH_CASE(
+        paDefaults,
+        value,
+        paragraphAttributes,
+        maximumFontSize,
+        "maximumFontSize");
     REBUILD_FIELD_SWITCH_CASE(
         paDefaults,
         value,
