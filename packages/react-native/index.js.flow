@@ -451,6 +451,7 @@ export type {
   EventHandlers as PressabilityEventHandlers,
 } from './Libraries/Pressability/Pressability';
 export {default as usePressability} from './Libraries/Pressability/usePressability';
+export {default as useAppState} from './Libraries/AppState/useAppState';
 export {default as useColorScheme} from './Libraries/Utilities/useColorScheme';
 export {default as useWindowDimensions} from './Libraries/Utilities/useWindowDimensions';
 export {default as UTFSequence} from './Libraries/UTFSequence';
