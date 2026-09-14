@@ -10,6 +10,7 @@ package com.facebook.react.tasks
 import com.google.gson.Gson
 import com.google.gson.JsonArray
 import java.io.File
+import org.apache.tools.ant.types.Commandline
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.file.DirectoryProperty
@@ -86,19 +87,20 @@ abstract class GenerateStubPchTask : DefaultTask() {
   }
 
   internal fun stubCompilerArguments(
-    command: String,
-    pchFile: File,
-    stubHeader: File,
+      command: String,
+      pchFile: File,
+      stubHeader: File,
   ): List<String> {
-    val target =
-        TARGET_FLAG.find(command)?.value
-            ?: throw GradleException("RNGP - Could not find --target in: $command")
-    val sysroot =
-        SYSROOT_FLAG.find(command)?.value
-            ?: throw GradleException("RNGP - Could not find --sysroot in: $command")
+    val arguments = Commandline.translateCommandline(command).toList()
+    val compiler = arguments.firstOrNull()
+      ?: throw GradleException("RNGP - Could not find the compiler in: $command")
+    val target = arguments.firstOrNull { it.startsWith(TARGET_FLAG) }
+      ?: throw GradleException("RNGP - Could not find $TARGET_FLAG in: $command")
+    val sysroot = arguments.firstOrNull { it.startsWith(SYSROOT_FLAG) }
+      ?: throw GradleException("RNGP - Could not find $SYSROOT_FLAG in: $command")
 
     return listOf(
-        command.substringBefore(' '),
+        compiler,
         target,
         sysroot,
         "-x",
@@ -115,7 +117,7 @@ abstract class GenerateStubPchTask : DefaultTask() {
     private const val SOURCE_EXTENSION = ".cxx"
     private const val PCH_EXTENSION = ".pch"
     private const val STUB_HEADER_FILENAME = "stub_pch.hxx"
-    private val TARGET_FLAG = Regex("""--target=\S+""")
-    private val SYSROOT_FLAG = Regex("""--sysroot=\S+""")
+    private const val TARGET_FLAG = "--target="
+    private const val SYSROOT_FLAG = "--sysroot="
   }
 }

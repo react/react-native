@@ -101,6 +101,9 @@ if(EXISTS ${PROJECT_BUILD_DIR}/generated/autolinking/src/main/jni/Android-autoli
         target_link_libraries(${CMAKE_PROJECT_NAME} ${AUTOLINKED_LIBRARIES})
         foreach(autolinked_library ${AUTOLINKED_LIBRARIES})
             target_link_libraries(${autolinked_library} common_flags)
+        endforeach()
+
+        foreach(autolinked_library ${AUTOLINKED_CODEGEN_LIBRARIES})
             target_reuse_reactnative_pch(${autolinked_library})
         endforeach()
 endif()

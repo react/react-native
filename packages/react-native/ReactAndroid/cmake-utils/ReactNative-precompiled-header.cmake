@@ -41,6 +41,12 @@ function(target_reuse_reactnative_pch target)
                 return()
         endif ()
 
+        get_target_property(own_pch ${target} PRECOMPILE_HEADERS)
+        get_target_property(reused_pch ${target} PRECOMPILE_HEADERS_REUSE_FROM)
+        if (own_pch OR reused_pch)
+                return()
+        endif ()
+
         # See the note on REACT_NATIVE_PCH_FLAGS above: the flag has to be on both
         # sides of the reuse.
         target_compile_options(${target} PRIVATE ${REACT_NATIVE_PCH_FLAGS})

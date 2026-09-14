@@ -54,6 +54,32 @@ class GenerateStubPchTaskTest {
   }
 
   @Test
+  fun stubCompilerArguments_withQuotedWindowsPaths_keepsSpaces() {
+    val task = createTestTask<GenerateStubPchTask>()
+    val pchFile = tempFolder.newFile("cmake_pch.hxx.pch")
+    val stubHeader = tempFolder.newFile("stub_pch.hxx")
+
+    val arguments =
+        task.stubCompilerArguments(
+            """"C:\Program Files\Android\ndk\clang++.exe" --target=aarch64-none-linux-android24 "--sysroot=C:\Program Files\Android\ndk\sysroot" -Wall -c x.cxx""",
+            pchFile,
+            stubHeader,
+        )
+
+    assertThat(arguments)
+        .containsExactly(
+            """C:\Program Files\Android\ndk\clang++.exe""",
+            "--target=aarch64-none-linux-android24",
+            """--sysroot=C:\Program Files\Android\ndk\sysroot""",
+            "-x",
+            "c++-header",
+            "-o",
+            pchFile.absolutePath,
+            stubHeader.absolutePath,
+        )
+  }
+
+  @Test
   fun stubCompilerArguments_withoutTarget_fails() {
     val task = createTestTask<GenerateStubPchTask>()
 
