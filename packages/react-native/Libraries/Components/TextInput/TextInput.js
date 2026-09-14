@@ -161,7 +161,10 @@ type LastNativeSelection = {
   mostRecentEventCount: number,
 };
 
-const emptyFunctionThatReturnsTrue = () => true;
+// Claiming the responder on a selection change with no active touch leaves the
+// input holding it with no matching touch event to release it.
+const hasActiveTouch = (event: GestureResponderEvent) =>
+  event.touchHistory.numberActiveTouches > 0;
 
 /**
  * This hook handles the synchronization between the state of the text input
@@ -604,7 +607,7 @@ function InternalTextInput(props: TextInputProps): React.Node {
         onFocus={_onFocus}
         onScroll={_onScroll}
         onSelectionChange={_onSelectionChange}
-        onSelectionChangeShouldSetResponder={emptyFunctionThatReturnsTrue}
+        onSelectionChangeShouldSetResponder={hasActiveTouch}
         selection={selection}
         selectionColor={selectionColor}
         style={StyleSheet.compose(
