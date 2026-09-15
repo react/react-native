@@ -101,6 +101,7 @@ internal class MaintainVisibleScrollPositionHelper<ScrollViewT>(
       if (deltaX != 0) {
         val scrollX = scrollView.scrollX
         scrollView.scrollToPreservingMomentum(scrollX + deltaX, scrollView.scrollY)
+        scrollView.invalidate()
         this.prevFirstVisibleFrame = newFrame
         if (config.autoScrollToTopThreshold != null && scrollX <= config.autoScrollToTopThreshold) {
           scrollView.reactSmoothScrollTo(0, scrollView.scrollY)
@@ -111,6 +112,7 @@ internal class MaintainVisibleScrollPositionHelper<ScrollViewT>(
       if (deltaY != 0) {
         val scrollY = scrollView.scrollY
         scrollView.scrollToPreservingMomentum(scrollView.scrollX, scrollY + deltaY)
+        scrollView.invalidate()
         this.prevFirstVisibleFrame = newFrame
         if (config.autoScrollToTopThreshold != null && scrollY <= config.autoScrollToTopThreshold) {
           scrollView.reactSmoothScrollTo(scrollView.scrollX, 0)
