@@ -569,9 +569,7 @@ function getExtendsImports(
       case 'ReactNativeBuiltInType':
         switch (extendProps.knownTypeName) {
           case 'ReactNativeCoreViewProps':
-            imports.add(
-              '#include <react/renderer/components/view/ViewProps.h>',
-            );
+            imports.add('#include <React/View.h>');
             return;
           default:
             extendProps.knownTypeName as empty;

@@ -31,10 +31,6 @@
 #undef RN_UMBRELLA_CONTEXT
 #define RN_UMBRELLA_CONTEXT 1
 
-#if defined(__APPLE__)
-#include <TargetConditionals.h>
-#endif
-
 #include <react/renderer/components/view/AccessibilityPrimitives.h>
 #include <react/renderer/components/view/AccessibilityProps.h>
 #include <react/renderer/components/view/BackgroundImagePropsConversions.h>
@@ -67,21 +63,6 @@
 #include <react/renderer/components/view/conversions.h>
 #include <react/renderer/components/view/primitives.h>
 #include <react/renderer/components/view/propsConversions.h>
-
-#ifdef ANDROID
-#include <react/renderer/components/view/NativeDrawable.h>
-#endif
-
-#if defined(TARGET_OS_OSX) && TARGET_OS_OSX
-#include <react/renderer/components/view/HostPlatformViewEvents.h>
-#include <react/renderer/components/view/KeyEvent.h>
-#include <react/renderer/components/view/MouseEvent.h>
-#endif
-
-#ifdef USE_WINUI_FABRIC
-#include <react/renderer/components/view/KeyEvent.h>
-#include <react/renderer/components/view/WindowsViewEvents.h>
-#endif
 
 #undef RN_UMBRELLA_CONTEXT
 #pragma pop_macro("RN_UMBRELLA_CONTEXT")

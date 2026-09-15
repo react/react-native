@@ -114,9 +114,7 @@ const RESERVED_TYPES: {readonly [ReservedPrimitiveName]: ReservedTypeMapping} =
           '#include <yoga/Yoga.h>',
           '#include <react/renderer/core/graphicsConversions.h>',
         ],
-        conversionIncludes: [
-          '#include <react/renderer/components/view/conversions.h>',
-        ],
+        conversionIncludes: ['#include <React/View.h>'],
       },
       java: {
         interfaceImports: ['import com.facebook.yoga.YogaValue;'],

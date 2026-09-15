@@ -17,7 +17,7 @@ Map {
 #include <react/renderer/components/ALL_PROP/EventEmitters.h>
 #include <react/renderer/components/ALL_PROP/Props.h>
 #include <react/renderer/components/ALL_PROP/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -55,7 +55,7 @@ Map {
 #include <react/renderer/components/ALL_PROP_WITH_OPTIONAL_GEN/EventEmitters.h>
 #include <react/renderer/components/ALL_PROP_WITH_OPTIONAL_GEN/Props.h>
 #include <react/renderer/components/ALL_PROP_WITH_OPTIONAL_GEN/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -93,7 +93,7 @@ Map {
 #include <react/renderer/components/ALL_PROP_WITH_OPTIONAL_OBJECT_GEN/EventEmitters.h>
 #include <react/renderer/components/ALL_PROP_WITH_OPTIONAL_OBJECT_GEN/Props.h>
 #include <react/renderer/components/ALL_PROP_WITH_OPTIONAL_OBJECT_GEN/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -131,7 +131,7 @@ Map {
 #include <react/renderer/components/ARRAY_PROPS/EventEmitters.h>
 #include <react/renderer/components/ARRAY_PROPS/Props.h>
 #include <react/renderer/components/ARRAY_PROPS/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -169,7 +169,7 @@ Map {
 #include <react/renderer/components/ARRAY_PROPS_WITH_NESTED_OBJECT/EventEmitters.h>
 #include <react/renderer/components/ARRAY_PROPS_WITH_NESTED_OBJECT/Props.h>
 #include <react/renderer/components/ARRAY_PROPS_WITH_NESTED_OBJECT/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -207,7 +207,7 @@ Map {
 #include <react/renderer/components/ARRAY_PROPS_WITH_NESTED_OBJECT_WITH_OPTIONAL_GEN/EventEmitters.h>
 #include <react/renderer/components/ARRAY_PROPS_WITH_NESTED_OBJECT_WITH_OPTIONAL_GEN/Props.h>
 #include <react/renderer/components/ARRAY_PROPS_WITH_NESTED_OBJECT_WITH_OPTIONAL_GEN/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -245,7 +245,7 @@ Map {
 #include <react/renderer/components/ARRAY_PROPS_WITH_NESTED_OBJECT_WITH_OPTIONAL_OBJECT_GEN/EventEmitters.h>
 #include <react/renderer/components/ARRAY_PROPS_WITH_NESTED_OBJECT_WITH_OPTIONAL_OBJECT_GEN/Props.h>
 #include <react/renderer/components/ARRAY_PROPS_WITH_NESTED_OBJECT_WITH_OPTIONAL_OBJECT_GEN/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -283,7 +283,7 @@ Map {
 #include <react/renderer/components/ARRAY_PROPS_WITH_OPTIONAL_GEN/EventEmitters.h>
 #include <react/renderer/components/ARRAY_PROPS_WITH_OPTIONAL_GEN/Props.h>
 #include <react/renderer/components/ARRAY_PROPS_WITH_OPTIONAL_GEN/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -321,7 +321,7 @@ Map {
 #include <react/renderer/components/ARRAY_PROPS_WITH_OPTIONAL_OBJECT_GEN/EventEmitters.h>
 #include <react/renderer/components/ARRAY_PROPS_WITH_OPTIONAL_OBJECT_GEN/Props.h>
 #include <react/renderer/components/ARRAY_PROPS_WITH_OPTIONAL_OBJECT_GEN/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -359,7 +359,7 @@ Map {
 #include <react/renderer/components/BOOLEAN_PROP/EventEmitters.h>
 #include <react/renderer/components/BOOLEAN_PROP/Props.h>
 #include <react/renderer/components/BOOLEAN_PROP/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -397,7 +397,7 @@ Map {
 #include <react/renderer/components/COLOR_PROP/EventEmitters.h>
 #include <react/renderer/components/COLOR_PROP/Props.h>
 #include <react/renderer/components/COLOR_PROP/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -435,7 +435,7 @@ Map {
 #include <react/renderer/components/COMMANDS/EventEmitters.h>
 #include <react/renderer/components/COMMANDS/Props.h>
 #include <react/renderer/components/COMMANDS/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -473,7 +473,7 @@ Map {
 #include <react/renderer/components/COMMANDS_AND_PROPS/EventEmitters.h>
 #include <react/renderer/components/COMMANDS_AND_PROPS/Props.h>
 #include <react/renderer/components/COMMANDS_AND_PROPS/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -511,7 +511,7 @@ Map {
 #include <react/renderer/components/DIMENSION_PROP/EventEmitters.h>
 #include <react/renderer/components/DIMENSION_PROP/Props.h>
 #include <react/renderer/components/DIMENSION_PROP/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -549,7 +549,7 @@ Map {
 #include <react/renderer/components/DOUBLE_PROPS/EventEmitters.h>
 #include <react/renderer/components/DOUBLE_PROPS/Props.h>
 #include <react/renderer/components/DOUBLE_PROPS/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -587,7 +587,7 @@ Map {
 #include <react/renderer/components/EVENT_NESTED_OBJECT_PROPS/EventEmitters.h>
 #include <react/renderer/components/EVENT_NESTED_OBJECT_PROPS/Props.h>
 #include <react/renderer/components/EVENT_NESTED_OBJECT_PROPS/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -625,7 +625,7 @@ Map {
 #include <react/renderer/components/EVENT_PROPS/EventEmitters.h>
 #include <react/renderer/components/EVENT_PROPS/Props.h>
 #include <react/renderer/components/EVENT_PROPS/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -663,7 +663,7 @@ Map {
 #include <react/renderer/components/EVENTS_WITH_PAPER_NAME/EventEmitters.h>
 #include <react/renderer/components/EVENTS_WITH_PAPER_NAME/Props.h>
 #include <react/renderer/components/EVENTS_WITH_PAPER_NAME/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -692,7 +692,7 @@ Map {
 #include <react/renderer/components/EXCLUDE_ANDROID/EventEmitters.h>
 #include <react/renderer/components/EXCLUDE_ANDROID/Props.h>
 #include <react/renderer/components/EXCLUDE_ANDROID/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -730,7 +730,7 @@ Map {
 #include <react/renderer/components/EXCLUDE_ANDROID_IOS/EventEmitters.h>
 #include <react/renderer/components/EXCLUDE_ANDROID_IOS/Props.h>
 #include <react/renderer/components/EXCLUDE_ANDROID_IOS/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -768,7 +768,7 @@ Map {
 #include <react/renderer/components/EXCLUDE_IOS_TWO_COMPONENTS_DIFFERENT_FILES/EventEmitters.h>
 #include <react/renderer/components/EXCLUDE_IOS_TWO_COMPONENTS_DIFFERENT_FILES/Props.h>
 #include <react/renderer/components/EXCLUDE_IOS_TWO_COMPONENTS_DIFFERENT_FILES/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -817,7 +817,7 @@ Map {
 #include <react/renderer/components/FLOAT_PROPS/EventEmitters.h>
 #include <react/renderer/components/FLOAT_PROPS/Props.h>
 #include <react/renderer/components/FLOAT_PROPS/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -855,7 +855,7 @@ Map {
 #include <react/renderer/components/IMAGE_PROP/EventEmitters.h>
 #include <react/renderer/components/IMAGE_PROP/Props.h>
 #include <react/renderer/components/IMAGE_PROP/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -893,7 +893,7 @@ Map {
 #include <react/renderer/components/INSETS_PROP/EventEmitters.h>
 #include <react/renderer/components/INSETS_PROP/Props.h>
 #include <react/renderer/components/INSETS_PROP/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -931,7 +931,7 @@ Map {
 #include <react/renderer/components/INT32_ENUM_PROP/EventEmitters.h>
 #include <react/renderer/components/INT32_ENUM_PROP/Props.h>
 #include <react/renderer/components/INT32_ENUM_PROP/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -969,7 +969,7 @@ Map {
 #include <react/renderer/components/INTEGER_PROPS/EventEmitters.h>
 #include <react/renderer/components/INTEGER_PROPS/Props.h>
 #include <react/renderer/components/INTEGER_PROPS/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -1007,7 +1007,7 @@ Map {
 #include <react/renderer/components/INTERFACE_ONLY/EventEmitters.h>
 #include <react/renderer/components/INTERFACE_ONLY/Props.h>
 #include <react/renderer/components/INTERFACE_ONLY/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -1036,7 +1036,7 @@ Map {
 #include <react/renderer/components/MIXED_PROP/EventEmitters.h>
 #include <react/renderer/components/MIXED_PROP/Props.h>
 #include <react/renderer/components/MIXED_PROP/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -1074,7 +1074,7 @@ Map {
 #include <react/renderer/components/MULTI_NATIVE_PROP/EventEmitters.h>
 #include <react/renderer/components/MULTI_NATIVE_PROP/Props.h>
 #include <react/renderer/components/MULTI_NATIVE_PROP/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -1112,7 +1112,7 @@ Map {
 #include <react/renderer/components/NO_PROPS_NO_EVENTS/EventEmitters.h>
 #include <react/renderer/components/NO_PROPS_NO_EVENTS/Props.h>
 #include <react/renderer/components/NO_PROPS_NO_EVENTS/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -1150,7 +1150,7 @@ Map {
 #include <react/renderer/components/OBJECT_PROPS/EventEmitters.h>
 #include <react/renderer/components/OBJECT_PROPS/Props.h>
 #include <react/renderer/components/OBJECT_PROPS/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -1188,7 +1188,7 @@ Map {
 #include <react/renderer/components/OBJECT_PROPS_WITH_OPTIONAL_GEN/EventEmitters.h>
 #include <react/renderer/components/OBJECT_PROPS_WITH_OPTIONAL_GEN/Props.h>
 #include <react/renderer/components/OBJECT_PROPS_WITH_OPTIONAL_GEN/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -1226,7 +1226,7 @@ Map {
 #include <react/renderer/components/OBJECT_PROPS_WITH_OPTIONAL_OBJECT_GEN/EventEmitters.h>
 #include <react/renderer/components/OBJECT_PROPS_WITH_OPTIONAL_OBJECT_GEN/Props.h>
 #include <react/renderer/components/OBJECT_PROPS_WITH_OPTIONAL_OBJECT_GEN/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -1264,7 +1264,7 @@ Map {
 #include <react/renderer/components/POINT_PROP/EventEmitters.h>
 #include <react/renderer/components/POINT_PROP/Props.h>
 #include <react/renderer/components/POINT_PROP/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -1302,7 +1302,7 @@ Map {
 #include <react/renderer/components/STRING_ENUM_PROP/EventEmitters.h>
 #include <react/renderer/components/STRING_ENUM_PROP/Props.h>
 #include <react/renderer/components/STRING_ENUM_PROP/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -1340,7 +1340,7 @@ Map {
 #include <react/renderer/components/STRING_PROP/EventEmitters.h>
 #include <react/renderer/components/STRING_PROP/Props.h>
 #include <react/renderer/components/STRING_PROP/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -1378,7 +1378,7 @@ Map {
 #include <react/renderer/components/TWO_COMPONENTS_DIFFERENT_FILES/EventEmitters.h>
 #include <react/renderer/components/TWO_COMPONENTS_DIFFERENT_FILES/Props.h>
 #include <react/renderer/components/TWO_COMPONENTS_DIFFERENT_FILES/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
@@ -1427,7 +1427,7 @@ Map {
 #include <react/renderer/components/TWO_COMPONENTS_SAME_FILE/EventEmitters.h>
 #include <react/renderer/components/TWO_COMPONENTS_SAME_FILE/Props.h>
 #include <react/renderer/components/TWO_COMPONENTS_SAME_FILE/States.h>
-#include <react/renderer/components/view/ConcreteViewShadowNode.h>
+#include <React/View.h>
 #include <jsi/jsi.h>
 
 namespace facebook::react {
