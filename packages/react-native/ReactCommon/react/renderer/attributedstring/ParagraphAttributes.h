@@ -69,7 +69,7 @@ class ParagraphAttributes : public DebugStringConvertible {
 
   /*
    * In case of font size adjustment enabled, defines minimum and maximum
-   * font sizes.
+   * font sizes. minimumFontSize is deprecated in favor of minimumFontScale.
    */
   Float minimumFontSize{std::numeric_limits<Float>::quiet_NaN()};
   Float maximumFontSize{std::numeric_limits<Float>::quiet_NaN()};

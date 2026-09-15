@@ -170,7 +170,12 @@ public constructor(
 
     val minimumFontSize: Float =
         paragraphAttributes.getDouble(TextLayoutManager.PA_KEY_MINIMUM_FONT_SIZE).toFloat()
-    view.setMinimumFontSize(minimumFontSize)
+    @Suppress("DEPRECATION") view.setMinimumFontSize(minimumFontSize)
+    val minimumFontScale: Float =
+        if (paragraphAttributes.contains(TextLayoutManager.PA_KEY_MINIMUM_FONT_SCALE))
+            paragraphAttributes.getDouble(TextLayoutManager.PA_KEY_MINIMUM_FONT_SCALE).toFloat()
+        else Float.NaN
+    view.setMinimumFontScale(minimumFontScale)
 
     // Clear any stale PreparedLayout from a previous update
     view.setPreparedLayout(null)

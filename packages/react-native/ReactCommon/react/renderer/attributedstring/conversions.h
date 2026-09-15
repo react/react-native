@@ -1203,6 +1203,7 @@ constexpr static MapBuffer::Key PA_KEY_MINIMUM_FONT_SIZE = 6;
 constexpr static MapBuffer::Key PA_KEY_MAXIMUM_FONT_SIZE = 7;
 constexpr static MapBuffer::Key PA_KEY_TEXT_ALIGN_VERTICAL = 8;
 constexpr static MapBuffer::Key PA_KEY_TEXT_WIDTH_MODE = 9;
+constexpr static MapBuffer::Key PA_KEY_MINIMUM_FONT_SCALE = 10;
 
 inline MapBuffer toMapBuffer(const ParagraphAttributes &paragraphAttributes)
 {
@@ -1219,6 +1220,7 @@ inline MapBuffer toMapBuffer(const ParagraphAttributes &paragraphAttributes)
   }
   builder.putDouble(PA_KEY_MINIMUM_FONT_SIZE, paragraphAttributes.minimumFontSize);
   builder.putDouble(PA_KEY_MAXIMUM_FONT_SIZE, paragraphAttributes.maximumFontSize);
+  builder.putDouble(PA_KEY_MINIMUM_FONT_SCALE, paragraphAttributes.minimumFontScale);
 
   return builder.build();
 }

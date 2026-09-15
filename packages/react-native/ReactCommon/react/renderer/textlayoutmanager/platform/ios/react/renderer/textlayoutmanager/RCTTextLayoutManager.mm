@@ -415,6 +415,22 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
   return paragraphLines;
 }
 
+- (CGFloat)_maximumFontSizeInAttributedString:(NSAttributedString *)attributedString
+{
+  __block CGFloat maximumFontSize = 0.0;
+  [attributedString enumerateAttribute:NSFontAttributeName
+                               inRange:NSMakeRange(0, attributedString.length)
+                               options:NSAttributedStringEnumerationLongestEffectiveRangeNotRequired
+                            usingBlock:^(id _Nullable value, NSRange range, BOOL *_Nonnull stop) {
+                              CGFloat fontSize = ((UIFont *)value).pointSize;
+                              if (fontSize > maximumFontSize) {
+                                maximumFontSize = fontSize;
+                              }
+                            }];
+
+  return maximumFontSize;
+}
+
 - (NSTextStorage *)_textStorageAndLayoutManagerWithAttributesString:(NSAttributedString *)attributedString
                                                 paragraphAttributes:(ParagraphAttributes)paragraphAttributes
                                                                size:(CGSize)size
@@ -438,7 +454,13 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
   [textStorage addLayoutManager:layoutManager];
 
   if (paragraphAttributes.adjustsFontSizeToFit) {
-    CGFloat minimumFontSize = !isnan(paragraphAttributes.minimumFontSize) ? paragraphAttributes.minimumFontSize : 4.0;
+    CGFloat minimumFontSize = 4.0;
+    if (!isnan(paragraphAttributes.minimumFontSize)) {
+      minimumFontSize = paragraphAttributes.minimumFontSize;
+    } else if (!isnan(paragraphAttributes.minimumFontScale)) {
+      CGFloat largestFontSize = [self _maximumFontSizeInAttributedString:attributedString];
+      minimumFontSize = MAX(paragraphAttributes.minimumFontScale * largestFontSize, 4.0);
+    }
     CGFloat maximumFontSize = !isnan(paragraphAttributes.maximumFontSize) ? paragraphAttributes.maximumFontSize : 96.0;
     [textStorage scaleFontSizeToFitSize:size minimumFontSize:minimumFontSize maximumFontSize:maximumFontSize];
   }
