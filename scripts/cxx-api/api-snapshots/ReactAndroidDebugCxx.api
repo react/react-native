@@ -507,7 +507,6 @@ static constexpr facebook::react::MapBuffer::Key facebook::react::PA_KEY_ADJUST_
 static constexpr facebook::react::MapBuffer::Key facebook::react::PA_KEY_ELLIPSIZE_MODE;
 static constexpr facebook::react::MapBuffer::Key facebook::react::PA_KEY_HYPHENATION_FREQUENCY;
 static constexpr facebook::react::MapBuffer::Key facebook::react::PA_KEY_INCLUDE_FONT_PADDING;
-static constexpr facebook::react::MapBuffer::Key facebook::react::PA_KEY_MAXIMUM_FONT_SIZE;
 static constexpr facebook::react::MapBuffer::Key facebook::react::PA_KEY_MAX_NUMBER_OF_LINES;
 static constexpr facebook::react::MapBuffer::Key facebook::react::PA_KEY_MINIMUM_FONT_SIZE;
 static constexpr facebook::react::MapBuffer::Key facebook::react::PA_KEY_TEXT_ALIGN_VERTICAL;
@@ -4016,7 +4015,6 @@ class facebook::react::ParagraphAttributes : public facebook::react::DebugString
   public bool includeFontPadding;
   public bool operator==(const facebook::react::ParagraphAttributes& rhs) const;
   public facebook::react::EllipsizeMode ellipsizeMode;
-  public facebook::react::Float maximumFontSize;
   public facebook::react::Float minimumFontScale;
   public facebook::react::Float minimumFontSize;
   public facebook::react::HyphenationFrequency android_hyphenationFrequency;

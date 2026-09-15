@@ -11,7 +11,7 @@
 
 namespace facebook::react {
 
-// The three Float fields default to NaN, and NaN != NaN under IEEE-754.
+// The two Float fields default to NaN, and NaN != NaN under IEEE-754.
 // operator== must special-case NaN via floatEquality so two freshly
 // default-constructed ParagraphAttributes compare equal.
 TEST(
@@ -31,12 +31,10 @@ TEST(
     testOperatorEqualsFloatFieldsUseEpsilonComparison) {
   ParagraphAttributes a{};
   a.minimumFontSize = 12.0f;
-  a.maximumFontSize = 48.0f;
   a.minimumFontScale = 0.5f;
   auto b = a;
 
   b.minimumFontSize = a.minimumFontSize + 0.001f;
-  b.maximumFontSize = a.maximumFontSize + 0.001f;
   b.minimumFontScale = a.minimumFontScale + 0.001f;
   EXPECT_TRUE(a == b);
 
@@ -46,8 +44,8 @@ TEST(
 }
 
 // floatEquality returns true only when *both* operands are NaN or when
-// *neither* is. A NaN-vs-finite mismatch in any of the three float fields
-// must therefore make the instances unequal, even though both operands are
+// *neither* is. A NaN-vs-finite mismatch in either float field must
+// therefore make the instances unequal, even though both operands are
 // "invalid" font sizes.
 TEST(
     ParagraphAttributesTest,

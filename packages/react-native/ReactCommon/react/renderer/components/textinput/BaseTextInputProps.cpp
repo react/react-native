@@ -183,12 +183,6 @@ void BaseTextInputProps::setProp(
         paDefaults,
         value,
         paragraphAttributes,
-        maximumFontSize,
-        "maximumFontSize");
-    REBUILD_FIELD_SWITCH_CASE(
-        paDefaults,
-        value,
-        paragraphAttributes,
         includeFontPadding,
         "includeFontPadding");
     REBUILD_FIELD_SWITCH_CASE(

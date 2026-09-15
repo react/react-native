@@ -6198,7 +6198,6 @@ class facebook::react::ParagraphAttributes : public facebook::react::DebugString
   public bool includeFontPadding;
   public bool operator==(const facebook::react::ParagraphAttributes& rhs) const;
   public facebook::react::EllipsizeMode ellipsizeMode;
-  public facebook::react::Float maximumFontSize;
   public facebook::react::Float minimumFontScale;
   public facebook::react::Float minimumFontSize;
   public facebook::react::HyphenationFrequency android_hyphenationFrequency;

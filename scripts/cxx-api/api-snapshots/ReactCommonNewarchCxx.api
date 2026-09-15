@@ -2519,7 +2519,6 @@ class facebook::react::OperatorAnimatedNode : public facebook::react::ValueAnima
 }
 
 class facebook::react::ParagraphAttributes : public facebook::react::DebugStringConvertible {
-  public Float maximumFontSize;
   public Float minimumFontScale;
   public Float minimumFontSize;
   public bool adjustsFontSizeToFit;

@@ -68,11 +68,9 @@ class ParagraphAttributes : public DebugStringConvertible {
   HyphenationFrequency android_hyphenationFrequency{};
 
   /*
-   * In case of font size adjustment enabled, defines minimum and maximum
-   * font sizes.
+   * In case of font size adjustment enabled, defines the minimum font size.
    */
   Float minimumFontSize{std::numeric_limits<Float>::quiet_NaN()};
-  Float maximumFontSize{std::numeric_limits<Float>::quiet_NaN()};
 
   /*
    * Specifies the smallest possible scale a font can reach when
@@ -110,7 +108,6 @@ struct hash<facebook::react::ParagraphAttributes> {
         attributes.textWidthMode,
         attributes.adjustsFontSizeToFit,
         attributes.minimumFontSize,
-        attributes.maximumFontSize,
         attributes.includeFontPadding,
         attributes.android_hyphenationFrequency,
         attributes.minimumFontScale,

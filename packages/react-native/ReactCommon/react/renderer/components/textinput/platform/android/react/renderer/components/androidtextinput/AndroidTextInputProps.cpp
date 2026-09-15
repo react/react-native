@@ -395,12 +395,6 @@ folly::dynamic AndroidTextInputProps::getDiffProps(
     result["minimumFontSize"] = paragraphAttributes.minimumFontSize;
   }
 
-  if (!floatEquality(
-          paragraphAttributes.maximumFontSize,
-          oldProps->paragraphAttributes.maximumFontSize)) {
-    result["maximumFontSize"] = paragraphAttributes.maximumFontSize;
-  }
-
   if (paragraphAttributes.includeFontPadding !=
       oldProps->paragraphAttributes.includeFontPadding) {
     result["includeFontPadding"] = paragraphAttributes.includeFontPadding;

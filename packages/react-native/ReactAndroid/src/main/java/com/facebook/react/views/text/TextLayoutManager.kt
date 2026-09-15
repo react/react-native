@@ -94,7 +94,6 @@ internal object TextLayoutManager {
   const val PA_KEY_INCLUDE_FONT_PADDING: Int = 4
   const val PA_KEY_HYPHENATION_FREQUENCY: Int = 5
   const val PA_KEY_MINIMUM_FONT_SIZE: Int = 6
-  const val PA_KEY_MAXIMUM_FONT_SIZE: Int = 7
   const val PA_KEY_TEXT_ALIGN_VERTICAL: Int = 8
   const val PA_KEY_TEXT_WIDTH_MODE: Int = 9
 
