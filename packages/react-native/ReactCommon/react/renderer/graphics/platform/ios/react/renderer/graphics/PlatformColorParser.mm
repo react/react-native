@@ -24,6 +24,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 namespace facebook::react {
 
+SharedColor parsePlatformColor(const ContextContainer &contextContainer, int32_t surfaceId, const RawValue &value);
+
 inline facebook::react::SharedColor RCTPlatformColorComponentsFromDynamicItems(
     const facebook::react::ContextContainer &contextContainer,
     int32_t surfaceId,

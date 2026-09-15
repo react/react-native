@@ -355,7 +355,6 @@ using facebook::react::ViewNodePairScope = std::deque<facebook::react::ShadowVie
 using facebook::react::ViewProps = facebook::react::HostPlatformViewProps;
 using facebook::react::ViewShadowNodeProps = facebook::react::ViewProps;
 using facebook::react::VirtualViewComponentDescriptor = facebook::react::ConcreteComponentDescriptor<facebook::react::VirtualViewShadowNode>;
-using facebook::react::parsePlatformColorFn = facebook::react::SharedColor(*)(const facebook::react::ContextContainer&, int32_t, const facebook::react::RawValue&);
 template <typename GeneratorT, typename ValueT>
 concept facebook::react::CacheGeneratorFunction = std::invocable<GeneratorT> && std::same_as<std::invoke_result_t<GeneratorT>, ValueT>;
 template <typename ReturnT, typename... VisitorsT>
@@ -703,7 +702,6 @@ void facebook::react::fromRawValue(const facebook::react::PropsParserContext&, c
 void facebook::react::fromRawValue(const facebook::react::PropsParserContext&, const facebook::react::RawValue& value, std::vector<facebook::react::BackgroundPosition>& result);
 void facebook::react::fromRawValue(const facebook::react::PropsParserContext&, const facebook::react::RawValue& value, std::vector<facebook::react::BackgroundRepeat>& result);
 void facebook::react::fromRawValue(const facebook::react::PropsParserContext&, const facebook::react::RawValue& value, std::vector<facebook::react::BackgroundSize>& result);
-void facebook::react::fromRawValueShared(const facebook::react::ContextContainer& contextContainer, int32_t surfaceId, const facebook::react::RawValue& value, facebook::react::SharedColor& result, facebook::react::parsePlatformColorFn parsePlatformColor);
 void facebook::react::fromString(const std::string& string, facebook::react::AccessibilityTraits& result);
 void facebook::react::g_setNativeAnimatedNowTimestampFunction(facebook::react::TimePointFunction nowFunction);
 void facebook::react::handleJSError(facebook::jsi::Runtime& runtime, const facebook::jsi::JSError& error, bool isFatal);
