@@ -19,6 +19,11 @@ namespace facebook::react {
 using Tag = int32_t;
 
 /*
+ * Value representing an unset tag.
+ */
+constexpr Tag kNoTag = -1;
+
+/*
  * An id of a running Surface instance that is used to refer to the instance.
  */
 using SurfaceId = int32_t;

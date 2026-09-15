@@ -52,7 +52,7 @@ class UIManagerViewTransitionDelegate {
     Float y{0};
     Float width{0};
     Float height{0};
-    Tag nativeTag{-1};
+    Tag nativeTag{kNoTag};
   };
 
   virtual std::optional<ViewTransitionInstance> getViewTransitionInstance(

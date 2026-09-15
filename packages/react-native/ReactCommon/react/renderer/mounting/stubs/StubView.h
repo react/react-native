@@ -19,8 +19,6 @@
 
 namespace facebook::react {
 
-static const int NO_VIEW_TAG = -1;
-
 class StubView final {
  public:
   using Shared = std::shared_ptr<StubView>;
@@ -42,7 +40,7 @@ class StubView final {
   LayoutMetrics layoutMetrics;
   State::Shared state;
   std::vector<StubView::Shared> children;
-  Tag parentTag{NO_VIEW_TAG};
+  Tag parentTag{kNoTag};
 };
 
 bool operator==(const StubView &lhs, const StubView &rhs);

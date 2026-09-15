@@ -389,8 +389,9 @@ void PointerEventsProcessor::processPendingPointerCapture(
   }
 
   auto pendingOverrideTag =
-      (hasPendingOverride) ? pendingOverride->getTag() : -1;
-  auto activeOverrideTag = (hasActiveOverride) ? activeOverride->getTag() : -1;
+      (hasPendingOverride) ? pendingOverride->getTag() : kNoTag;
+  auto activeOverrideTag =
+      (hasActiveOverride) ? activeOverride->getTag() : kNoTag;
 
   if (hasActiveOverride && activeOverrideTag != pendingOverrideTag) {
     auto retargeted = retargetPointerEvent(event, *activeOverride, uiManager);

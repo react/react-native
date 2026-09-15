@@ -94,7 +94,7 @@ struct ShadowViewMutation final {
 #pragma mark - Fields
 
   Type type = {Create};
-  Tag parentTag = -1;
+  Tag parentTag = kNoTag;
   ShadowView oldChildShadowView = {};
   ShadowView newChildShadowView = {};
   int index = -1;

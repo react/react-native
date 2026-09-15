@@ -51,7 +51,7 @@ void StubViewTree::mutate(const ShadowViewMutationList& mutations) {
   for (const auto& mutation : mutations) {
     switch (mutation.type) {
       case ShadowViewMutation::Create: {
-        react_native_assert(mutation.parentTag == -1);
+        react_native_assert(mutation.parentTag == kNoTag);
         react_native_assert(mutation.oldChildShadowView == ShadowView{});
         react_native_assert(mutation.newChildShadowView.props);
         auto stubView = std::make_shared<StubView>();
@@ -81,7 +81,7 @@ void StubViewTree::mutate(const ShadowViewMutationList& mutations) {
                      << "] ##"
                      << std::hash<ShadowView>{}(mutation.oldChildShadowView);
         });
-        react_native_assert(mutation.parentTag == -1);
+        react_native_assert(mutation.parentTag == kNoTag);
         react_native_assert(mutation.newChildShadowView == ShadowView{});
         auto tag = mutation.oldChildShadowView.tag;
         react_native_assert(hasTag(tag));
@@ -118,7 +118,7 @@ void StubViewTree::mutate(const ShadowViewMutationList& mutations) {
                        << parentTag << "] @" << mutation.index << "("
                        << parentStubView->children.size() << " children)";
           });
-          react_native_assert(childStubView->parentTag == NO_VIEW_TAG);
+          react_native_assert(childStubView->parentTag == kNoTag);
           react_native_assert(
               mutation.index >= 0 &&
               parentStubView->children.size() >=
@@ -182,7 +182,7 @@ void StubViewTree::mutate(const ShadowViewMutationList& mutations) {
                   static_cast<size_t>(mutation.index) &&
               parentStubView->children[mutation.index]->tag ==
                   childStubView->tag);
-          childStubView->parentTag = NO_VIEW_TAG;
+          childStubView->parentTag = kNoTag;
           parentStubView->children.erase(
               parentStubView->children.begin() + mutation.index);
         }

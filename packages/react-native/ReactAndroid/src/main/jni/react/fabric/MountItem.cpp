@@ -79,7 +79,7 @@ CppMountItem CppMountItem::UpdateEventEmitterMountItem(
     const ShadowView& shadowView) {
   return {
       .type = CppMountItem::Type::UpdateEventEmitter,
-      .parentTag = -1,
+      .parentTag = kNoTag,
       .oldChildShadowView = {},
       .newChildShadowView = shadowView,
       .index = -1};
@@ -88,7 +88,7 @@ CppMountItem CppMountItem::UpdatePaddingMountItem(
     const ShadowView& shadowView) {
   return {
       .type = CppMountItem::Type::UpdatePadding,
-      .parentTag = -1,
+      .parentTag = kNoTag,
       .oldChildShadowView = {},
       .newChildShadowView = shadowView,
       .index = -1};
@@ -97,7 +97,7 @@ CppMountItem CppMountItem::UpdateOverflowInsetMountItem(
     const ShadowView& shadowView) {
   return {
       .type = CppMountItem::Type::UpdateOverflowInset,
-      .parentTag = -1,
+      .parentTag = kNoTag,
       .oldChildShadowView = {},
       .newChildShadowView = shadowView,
       .index = -1};

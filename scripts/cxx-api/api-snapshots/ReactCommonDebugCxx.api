@@ -178,6 +178,7 @@ constexpr char* const facebook::react::TextLayoutManagerKey;
 constexpr facebook::react::HighResDuration facebook::react::DEFAULT_DURATION_THRESHOLD;
 constexpr facebook::react::HighResDuration facebook::react::LONG_TASK_DURATION_THRESHOLD;
 constexpr facebook::react::ReactNativeVersionType facebook::react::ReactNativeVersion;
+constexpr facebook::react::Tag facebook::react::kNoTag;
 constexpr float facebook::react::kDefaultEpsilon;
 constexpr size_t facebook::react::EVENT_BUFFER_SIZE;
 constexpr size_t facebook::react::LONG_TASK_BUFFER_SIZE;

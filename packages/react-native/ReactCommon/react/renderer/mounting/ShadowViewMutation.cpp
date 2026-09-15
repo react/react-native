@@ -14,7 +14,7 @@ namespace facebook::react {
 ShadowViewMutation ShadowViewMutation::CreateMutation(ShadowView shadowView) {
   return {
       /* .type = */ Create,
-      /* .parentTag = */ -1,
+      /* .parentTag = */ kNoTag,
       /* .oldChildShadowView = */ {},
       /* .newChildShadowView = */ std::move(shadowView),
       /* .index = */ -1,
@@ -24,7 +24,7 @@ ShadowViewMutation ShadowViewMutation::CreateMutation(ShadowView shadowView) {
 ShadowViewMutation ShadowViewMutation::DeleteMutation(ShadowView shadowView) {
   return {
       /* .type = */ Delete,
-      /* .parentTag = */ -1,
+      /* .parentTag = */ kNoTag,
       /* .oldChildShadowView = */ std::move(shadowView),
       /* .newChildShadowView = */ {},
       /* .index = */ -1,
@@ -131,7 +131,7 @@ std::vector<DebugStringConvertibleObject> getDebugProps(
                                              mutation.newChildShadowView,
                                              options)}
           : DebugStringConvertibleObject{},
-      mutation.parentTag != -1
+      mutation.parentTag != kNoTag
           ? DebugStringConvertibleObject{"parent",
                                          getDebugDescription(
                                              mutation.parentTag,
