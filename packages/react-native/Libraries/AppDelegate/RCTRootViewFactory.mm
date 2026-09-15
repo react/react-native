@@ -46,8 +46,6 @@
 {
   if (self = [super init]) {
     _bundleURLBlock = bundleURLBlock;
-    _fabricEnabled = YES;
-    _turboModuleEnabled = YES;
   }
   return self;
 }

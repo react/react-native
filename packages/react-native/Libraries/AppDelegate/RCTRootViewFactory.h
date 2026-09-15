@@ -43,12 +43,6 @@ typedef void (^RCTLoadSourceForBridgeBlock)(RCTBridge *bridge, RCTSourceLoadBloc
 #pragma mark - RCTRootViewFactory Configuration
 @interface RCTRootViewFactoryConfiguration : NSObject
 
-/// This property controls whether the App will use the Fabric renderer of the New Architecture or not.
-@property (nonatomic, assign, readonly) BOOL fabricEnabled;
-
-/// This method controls whether the `turboModules` feature of the New Architecture is turned on or off
-@property (nonatomic, assign, readonly) BOOL turboModuleEnabled;
-
 /// Return the bundle URL for the main bundle.
 @property (nonatomic, nonnull) RCTBundleURLBlock bundleURLBlock;
 
