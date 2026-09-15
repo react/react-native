@@ -570,8 +570,24 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
  * Returns whether or not the scroll view interaction should be blocked because
  * JavaScript was found to be the responder.
  */
-- (BOOL)_shouldDisableScrollInteraction
+- (BOOL)_shouldDisableScrollInteractionForContentView:(UIView *)contentView
 {
+  UIView *view = contentView;
+  while (view) {
+    if ([view respondsToSelector:@selector(isJSResponder)]) {
+      BOOL isJSResponder = ((UIView<RCTComponentViewProtocol> *)view).isJSResponder;
+      if (isJSResponder) {
+        return YES;
+      }
+    }
+
+    if (view == self) {
+      break;
+    }
+
+    view = view.superview;
+  }
+
   UIView *ancestorView = self.superview;
 
   while (ancestorView) {
@@ -735,11 +751,11 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   static_cast<const ScrollViewEventEmitter &>(*_eventEmitter).onScrollEndDrag(metrics);
 }
 
-- (BOOL)touchesShouldCancelInContentView:(__unused UIView *)view
+- (BOOL)touchesShouldCancelInContentView:(UIView *)view
 {
   // Historically, `UIScrollView`s in React Native do not cancel touches
   // started on `UIControl`-based views (as normal iOS `UIScrollView`s do).
-  return ![self _shouldDisableScrollInteraction];
+  return ![self _shouldDisableScrollInteractionForContentView:view];
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
