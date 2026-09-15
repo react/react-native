@@ -6425,6 +6425,7 @@ class facebook::react::RawProps {
   public bool isEmpty() const noexcept;
   public const facebook::react::RawValue* at(const char* name) const noexcept;
   public const facebook::react::RawValue* at(const char* name, const char* prefix, const char* suffix) const noexcept;
+  public const folly::dynamic* getDynamic() const noexcept;
   public facebook::react::RawProps& operator=(const facebook::react::RawProps& other) noexcept = delete;
   public facebook::react::RawProps& operator=(facebook::react::RawProps&& other) noexcept = delete;
   public folly::dynamic toDynamic(const std::function<bool(const std::string&)>& filterObjectKeys = nullptr) const;
