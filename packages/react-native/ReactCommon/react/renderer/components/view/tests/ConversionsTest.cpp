@@ -11,6 +11,7 @@
 
 #include <react/renderer/attributedstring/conversions.h>
 #include <react/renderer/components/view/BoxShadowPropsConversions.h>
+#include <react/renderer/components/view/ClipPathPropsConversions.h>
 #include <react/renderer/components/view/FilterPropsConversions.h>
 #include <react/renderer/components/view/accessibilityPropsConversions.h>
 #include <react/renderer/components/view/conversions.h>
@@ -646,6 +647,311 @@ TEST(ConversionsTest, float_optional_undefined_for_string) {
   fromRawValue(PropsParserContext{-1, ContextContainer{}}, value, result);
 
   EXPECT_TRUE(result.isUndefined());
+}
+
+TEST(ConversionsTest, unprocessed_clip_path_string_inset) {
+  std::optional<ClipPath> clipPath;
+  parseUnprocessedClipPath("inset(10px 20% 30px 5%)", clipPath);
+
+  ASSERT_TRUE(clipPath.has_value());
+  ASSERT_TRUE(clipPath->shape.has_value());
+  ASSERT_TRUE(std::holds_alternative<InsetShape>(*clipPath->shape));
+
+  auto inset = std::get<InsetShape>(*clipPath->shape);
+  EXPECT_EQ(inset.top.value, 10);
+  EXPECT_EQ(inset.top.unit, UnitType::Point);
+  EXPECT_EQ(inset.right.value, 20);
+  EXPECT_EQ(inset.right.unit, UnitType::Percent);
+  EXPECT_EQ(inset.bottom.value, 30);
+  EXPECT_EQ(inset.bottom.unit, UnitType::Point);
+  EXPECT_EQ(inset.left.value, 5);
+  EXPECT_EQ(inset.left.unit, UnitType::Percent);
+  EXPECT_FALSE(inset.borderRadius.has_value());
+}
+
+TEST(ConversionsTest, unprocessed_clip_path_string_circle) {
+  std::optional<ClipPath> clipPath;
+  parseUnprocessedClipPath("circle(50% at 25% 75%)", clipPath);
+
+  ASSERT_TRUE(clipPath.has_value());
+  ASSERT_TRUE(clipPath->shape.has_value());
+  ASSERT_TRUE(std::holds_alternative<CircleShape>(*clipPath->shape));
+
+  auto circle = std::get<CircleShape>(*clipPath->shape);
+  EXPECT_EQ(circle.r->value, 50);
+  EXPECT_EQ(circle.r->unit, UnitType::Percent);
+  ASSERT_TRUE(circle.cx.has_value());
+  EXPECT_EQ(circle.cx->value, 25);
+  EXPECT_EQ(circle.cx->unit, UnitType::Percent);
+  ASSERT_TRUE(circle.cy.has_value());
+  EXPECT_EQ(circle.cy->value, 75);
+  EXPECT_EQ(circle.cy->unit, UnitType::Percent);
+}
+
+TEST(ConversionsTest, unprocessed_clip_path_string_ellipse) {
+  std::optional<ClipPath> clipPath;
+  parseUnprocessedClipPath("ellipse(100px 50px at 10% 20%)", clipPath);
+
+  ASSERT_TRUE(clipPath.has_value());
+  ASSERT_TRUE(clipPath->shape.has_value());
+  ASSERT_TRUE(std::holds_alternative<EllipseShape>(*clipPath->shape));
+
+  auto ellipse = std::get<EllipseShape>(*clipPath->shape);
+  EXPECT_EQ(ellipse.rx->value, 100);
+  EXPECT_EQ(ellipse.rx->unit, UnitType::Point);
+  EXPECT_EQ(ellipse.ry->value, 50);
+  EXPECT_EQ(ellipse.ry->unit, UnitType::Point);
+  ASSERT_TRUE(ellipse.cx.has_value());
+  EXPECT_EQ(ellipse.cx->value, 10);
+  EXPECT_EQ(ellipse.cx->unit, UnitType::Percent);
+  ASSERT_TRUE(ellipse.cy.has_value());
+  EXPECT_EQ(ellipse.cy->value, 20);
+  EXPECT_EQ(ellipse.cy->unit, UnitType::Percent);
+}
+
+TEST(ConversionsTest, unprocessed_clip_path_string_polygon) {
+  std::optional<ClipPath> clipPath;
+  parseUnprocessedClipPath("polygon(0 0, 100% 0, 50% 100%)", clipPath);
+
+  ASSERT_TRUE(clipPath.has_value());
+  ASSERT_TRUE(clipPath->shape.has_value());
+  ASSERT_TRUE(std::holds_alternative<PolygonShape>(*clipPath->shape));
+
+  auto polygon = std::get<PolygonShape>(*clipPath->shape);
+  ASSERT_EQ(polygon.points.size(), 3);
+
+  EXPECT_EQ(polygon.points[0].first.value, 0);
+  EXPECT_EQ(polygon.points[0].first.unit, UnitType::Point);
+  EXPECT_EQ(polygon.points[0].second.value, 0);
+  EXPECT_EQ(polygon.points[0].second.unit, UnitType::Point);
+
+  EXPECT_EQ(polygon.points[1].first.value, 100);
+  EXPECT_EQ(polygon.points[1].first.unit, UnitType::Percent);
+  EXPECT_EQ(polygon.points[1].second.value, 0);
+  EXPECT_EQ(polygon.points[1].second.unit, UnitType::Point);
+
+  EXPECT_EQ(polygon.points[2].first.value, 50);
+  EXPECT_EQ(polygon.points[2].first.unit, UnitType::Percent);
+  EXPECT_EQ(polygon.points[2].second.value, 100);
+  EXPECT_EQ(polygon.points[2].second.unit, UnitType::Percent);
+}
+
+TEST(ConversionsTest, unprocessed_clip_path_string_with_geometry_box) {
+  std::optional<ClipPath> clipPath;
+  parseUnprocessedClipPath("inset(10px) border-box", clipPath);
+
+  ASSERT_TRUE(clipPath.has_value());
+  ASSERT_TRUE(clipPath->shape.has_value());
+  ASSERT_TRUE(clipPath->geometryBox.has_value());
+  EXPECT_EQ(*clipPath->geometryBox, GeometryBox::BorderBox);
+}
+
+TEST(ConversionsTest, processed_clip_path_inset) {
+  RawValue value{folly::dynamic::object(
+      "shape",
+      folly::dynamic::object("type", "inset")("top", 10)("right", "20%")(
+          "bottom", 30)("left", "5%"))};
+
+  std::optional<ClipPath> clipPath;
+  parseProcessedClipPath(
+      PropsParserContext{-1, ContextContainer{}}, value, clipPath);
+
+  ASSERT_TRUE(clipPath.has_value());
+  ASSERT_TRUE(clipPath->shape.has_value());
+  ASSERT_TRUE(std::holds_alternative<InsetShape>(*clipPath->shape));
+
+  auto inset = std::get<InsetShape>(*clipPath->shape);
+  EXPECT_EQ(inset.top.value, 10);
+  EXPECT_EQ(inset.top.unit, UnitType::Point);
+  EXPECT_EQ(inset.right.value, 20);
+  EXPECT_EQ(inset.right.unit, UnitType::Percent);
+  EXPECT_EQ(inset.bottom.value, 30);
+  EXPECT_EQ(inset.bottom.unit, UnitType::Point);
+  EXPECT_EQ(inset.left.value, 5);
+  EXPECT_EQ(inset.left.unit, UnitType::Percent);
+}
+
+TEST(ConversionsTest, processed_clip_path_circle) {
+  RawValue value{folly::dynamic::object(
+      "shape",
+      folly::dynamic::object("type", "circle")("r", "50%")("cx", "25%")(
+          "cy", "75%"))};
+
+  std::optional<ClipPath> clipPath;
+  parseProcessedClipPath(
+      PropsParserContext{-1, ContextContainer{}}, value, clipPath);
+
+  ASSERT_TRUE(clipPath.has_value());
+  ASSERT_TRUE(clipPath->shape.has_value());
+  ASSERT_TRUE(std::holds_alternative<CircleShape>(*clipPath->shape));
+
+  auto circle = std::get<CircleShape>(*clipPath->shape);
+  EXPECT_EQ(circle.r->value, 50);
+  EXPECT_EQ(circle.r->unit, UnitType::Percent);
+  ASSERT_TRUE(circle.cx.has_value());
+  EXPECT_EQ(circle.cx->value, 25);
+  EXPECT_EQ(circle.cx->unit, UnitType::Percent);
+  ASSERT_TRUE(circle.cy.has_value());
+  EXPECT_EQ(circle.cy->value, 75);
+  EXPECT_EQ(circle.cy->unit, UnitType::Percent);
+}
+
+TEST(ConversionsTest, processed_clip_path_ellipse) {
+  RawValue value{folly::dynamic::object(
+      "shape",
+      folly::dynamic::object("type", "ellipse")("rx", 100)("ry", 50)(
+          "cx", "10%")("cy", "20%"))};
+
+  std::optional<ClipPath> clipPath;
+  parseProcessedClipPath(
+      PropsParserContext{-1, ContextContainer{}}, value, clipPath);
+
+  ASSERT_TRUE(clipPath.has_value());
+  ASSERT_TRUE(clipPath->shape.has_value());
+  ASSERT_TRUE(std::holds_alternative<EllipseShape>(*clipPath->shape));
+
+  auto ellipse = std::get<EllipseShape>(*clipPath->shape);
+  EXPECT_EQ(ellipse.rx->value, 100);
+  EXPECT_EQ(ellipse.rx->unit, UnitType::Point);
+  EXPECT_EQ(ellipse.ry->value, 50);
+  EXPECT_EQ(ellipse.ry->unit, UnitType::Point);
+  ASSERT_TRUE(ellipse.cx.has_value());
+  EXPECT_EQ(ellipse.cx->value, 10);
+  EXPECT_EQ(ellipse.cx->unit, UnitType::Percent);
+  ASSERT_TRUE(ellipse.cy.has_value());
+  EXPECT_EQ(ellipse.cy->value, 20);
+  EXPECT_EQ(ellipse.cy->unit, UnitType::Percent);
+}
+
+TEST(ConversionsTest, processed_clip_path_polygon) {
+  RawValue value{folly::dynamic::object(
+      "shape",
+      folly::dynamic::object("type", "polygon")(
+          "points",
+          folly::dynamic::array(
+              folly::dynamic::object("x", 0)("y", 0),
+              folly::dynamic::object("x", "100%")("y", 0),
+              folly::dynamic::object("x", "50%")("y", "100%")))(
+          "fillRule", "evenodd"))};
+
+  std::optional<ClipPath> clipPath;
+  parseProcessedClipPath(
+      PropsParserContext{-1, ContextContainer{}}, value, clipPath);
+
+  ASSERT_TRUE(clipPath.has_value());
+  ASSERT_TRUE(clipPath->shape.has_value());
+  ASSERT_TRUE(std::holds_alternative<PolygonShape>(*clipPath->shape));
+
+  auto polygon = std::get<PolygonShape>(*clipPath->shape);
+  ASSERT_EQ(polygon.points.size(), 3);
+
+  EXPECT_EQ(polygon.points[0].first.value, 0);
+  EXPECT_EQ(polygon.points[0].first.unit, UnitType::Point);
+  EXPECT_EQ(polygon.points[0].second.value, 0);
+  EXPECT_EQ(polygon.points[0].second.unit, UnitType::Point);
+
+  EXPECT_EQ(polygon.points[1].first.value, 100);
+  EXPECT_EQ(polygon.points[1].first.unit, UnitType::Percent);
+  EXPECT_EQ(polygon.points[1].second.value, 0);
+  EXPECT_EQ(polygon.points[1].second.unit, UnitType::Point);
+
+  EXPECT_EQ(polygon.points[2].first.value, 50);
+  EXPECT_EQ(polygon.points[2].first.unit, UnitType::Percent);
+  EXPECT_EQ(polygon.points[2].second.value, 100);
+  EXPECT_EQ(polygon.points[2].second.unit, UnitType::Percent);
+
+  ASSERT_TRUE(polygon.fillRule.has_value());
+  EXPECT_EQ(*polygon.fillRule, FillRule::EvenOdd);
+}
+
+TEST(ConversionsTest, processed_clip_path_rect) {
+  RawValue value{folly::dynamic::object(
+      "shape",
+      folly::dynamic::object("type", "rect")("top", 10)("right", "90%")(
+          "bottom", "80%")("left", 5))};
+
+  std::optional<ClipPath> clipPath;
+  parseProcessedClipPath(
+      PropsParserContext{-1, ContextContainer{}}, value, clipPath);
+
+  ASSERT_TRUE(clipPath.has_value());
+  ASSERT_TRUE(clipPath->shape.has_value());
+  ASSERT_TRUE(std::holds_alternative<RectShape>(*clipPath->shape));
+
+  auto rect = std::get<RectShape>(*clipPath->shape);
+  EXPECT_EQ(rect.top.value, 10);
+  EXPECT_EQ(rect.top.unit, UnitType::Point);
+  EXPECT_EQ(rect.right.value, 90);
+  EXPECT_EQ(rect.right.unit, UnitType::Percent);
+  EXPECT_EQ(rect.bottom.value, 80);
+  EXPECT_EQ(rect.bottom.unit, UnitType::Percent);
+  EXPECT_EQ(rect.left.value, 5);
+  EXPECT_EQ(rect.left.unit, UnitType::Point);
+}
+
+TEST(ConversionsTest, processed_clip_path_xywh) {
+  RawValue value{folly::dynamic::object(
+      "shape",
+      folly::dynamic::object("type", "xywh")("x", 10)("y", "20%")("width", 100)(
+          "height", "50%")("borderRadius", 5))};
+
+  std::optional<ClipPath> clipPath;
+  parseProcessedClipPath(
+      PropsParserContext{-1, ContextContainer{}}, value, clipPath);
+
+  ASSERT_TRUE(clipPath.has_value());
+  ASSERT_TRUE(clipPath->shape.has_value());
+  ASSERT_TRUE(std::holds_alternative<XywhShape>(*clipPath->shape));
+
+  auto xywh = std::get<XywhShape>(*clipPath->shape);
+  EXPECT_EQ(xywh.x.value, 10);
+  EXPECT_EQ(xywh.x.unit, UnitType::Point);
+  EXPECT_EQ(xywh.y.value, 20);
+  EXPECT_EQ(xywh.y.unit, UnitType::Percent);
+  EXPECT_EQ(xywh.width.value, 100);
+  EXPECT_EQ(xywh.width.unit, UnitType::Point);
+  EXPECT_EQ(xywh.height.value, 50);
+  EXPECT_EQ(xywh.height.unit, UnitType::Percent);
+  ASSERT_TRUE(xywh.borderRadius.has_value());
+  EXPECT_EQ(xywh.borderRadius->value, 5);
+  EXPECT_EQ(xywh.borderRadius->unit, UnitType::Point);
+}
+
+TEST(ConversionsTest, processed_clip_path_with_geometry_box) {
+  RawValue value{folly::dynamic::object(
+      "shape", folly::dynamic::object("type", "inset")("top", 10))(
+      "geometryBox", "padding-box")};
+
+  std::optional<ClipPath> clipPath;
+  parseProcessedClipPath(
+      PropsParserContext{-1, ContextContainer{}}, value, clipPath);
+
+  ASSERT_TRUE(clipPath.has_value());
+  ASSERT_TRUE(clipPath->shape.has_value());
+  ASSERT_TRUE(clipPath->geometryBox.has_value());
+  EXPECT_EQ(*clipPath->geometryBox, GeometryBox::PaddingBox);
+}
+
+TEST(ConversionsTest, processed_clip_path_invalid_type) {
+  RawValue value{folly::dynamic::object(
+      "shape", folly::dynamic::object("type", "invalid"))};
+
+  std::optional<ClipPath> clipPath;
+  parseProcessedClipPath(
+      PropsParserContext{-1, ContextContainer{}}, value, clipPath);
+
+  EXPECT_FALSE(clipPath.has_value());
+}
+
+TEST(ConversionsTest, processed_clip_path_missing_shape_type) {
+  RawValue value{
+      folly::dynamic::object("shape", folly::dynamic::object("top", 10))};
+
+  std::optional<ClipPath> clipPath;
+  parseProcessedClipPath(
+      PropsParserContext{-1, ContextContainer{}}, value, clipPath);
+
+  EXPECT_FALSE(clipPath.has_value());
 }
 
 } // namespace facebook::react

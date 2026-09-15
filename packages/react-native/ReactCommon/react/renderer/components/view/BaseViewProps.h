@@ -21,6 +21,7 @@
 #include <react/renderer/graphics/BackgroundSize.h>
 #include <react/renderer/graphics/BlendMode.h>
 #include <react/renderer/graphics/BoxShadow.h>
+#include <react/renderer/graphics/ClipPath.h>
 #include <react/renderer/graphics/Color.h>
 #include <react/renderer/graphics/Filter.h>
 #include <react/renderer/graphics/Isolation.h>
@@ -110,6 +111,8 @@ class BaseViewProps : public YogaStylableProps, public AccessibilityProps {
   bool collapsableChildren{true};
 
   bool removeClippedSubviews{false};
+
+  std::optional<ClipPath> clipPath{};
 
 #pragma mark - Convenience Methods
 
