@@ -97,7 +97,15 @@ internal class MaintainVisibleScrollPositionHelper<ScrollViewT>(
     firstVisibleView.getHitRect(newFrame)
 
     if (horizontal) {
-      val deltaX = newFrame.left - prevFirstVisibleFrame.left
+      var deltaX = newFrame.left - prevFirstVisibleFrame.left
+      // If the first visible view didn't move but grew in width,
+      // content after it still shifted. Use width change as delta.
+      if (deltaX == 0) {
+        val widthDelta = newFrame.width() - prevFirstVisibleFrame.width()
+        if (widthDelta > 0) {
+          deltaX = widthDelta
+        }
+      }
       if (deltaX != 0) {
         val scrollX = scrollView.scrollX
         scrollView.scrollToPreservingMomentum(scrollX + deltaX, scrollView.scrollY)
@@ -107,7 +115,15 @@ internal class MaintainVisibleScrollPositionHelper<ScrollViewT>(
         }
       }
     } else {
-      val deltaY = newFrame.top - prevFirstVisibleFrame.top
+      var deltaY = newFrame.top - prevFirstVisibleFrame.top
+      // If the first visible view didn't move but grew in height,
+      // content below it still shifted. Use height change as delta.
+      if (deltaY == 0) {
+        val heightDelta = newFrame.height() - prevFirstVisibleFrame.height()
+        if (heightDelta > 0) {
+          deltaY = heightDelta
+        }
+      }
       if (deltaY != 0) {
         val scrollY = scrollView.scrollY
         scrollView.scrollToPreservingMomentum(scrollView.scrollX, scrollY + deltaY)
