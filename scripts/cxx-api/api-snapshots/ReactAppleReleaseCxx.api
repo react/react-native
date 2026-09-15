@@ -4234,6 +4234,8 @@ class facebook::react::AppRegistryBinding {
 class facebook::react::AppleEventBeat : public facebook::react::EventBeat, public facebook::react::RunLoopObserver::Delegate {
   public AppleEventBeat(std::shared_ptr<facebook::react::EventBeat::OwnerBox> ownerBox, std::unique_ptr<const facebook::react::RunLoopObserver> uiRunLoopObserver, facebook::react::RuntimeScheduler& RuntimeScheduler);
   public virtual void activityDidChange(const facebook::react::RunLoopObserver::Delegate* delegate, facebook::react::RunLoopObserver::Activity activity) const noexcept override;
+  public virtual void requestSynchronous() const override;
+  public ~AppleEventBeat() override;
 }
 
 class facebook::react::AsyncArrayBuffer {
@@ -4407,6 +4409,7 @@ class facebook::react::BaseViewEventEmitter : public facebook::react::TouchEvent
   public void onBlur() const;
   public void onFocus() const;
   public void onLayout(const facebook::react::LayoutMetrics& layoutMetrics) const;
+  public void onSafeAreaInsetsChange(const facebook::react::EdgeInsets& insets, const facebook::react::Rect& frame) const;
 }
 
 class facebook::react::BaseViewProps : public facebook::react::YogaStylableProps, public facebook::react::AccessibilityProps {
@@ -4416,6 +4419,7 @@ class facebook::react::BaseViewProps : public facebook::react::YogaStylableProps
   public bool collapsableChildren;
   public bool getClipsContentToBounds() const;
   public bool onLayout;
+  public bool onSafeAreaInsetsChange;
   public bool removeClippedSubviews;
   public bool shouldRasterize;
   public facebook::react::BackfaceVisibility backfaceVisibility;
