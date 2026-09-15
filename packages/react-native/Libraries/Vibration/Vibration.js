@@ -8,9 +8,8 @@
  * @format
  */
 
+import Platform from '../Utilities/Platform';
 import NativeVibration from './NativeVibration';
-
-const Platform = require('../Utilities/Platform').default;
 
 let _vibrating: boolean = false;
 let _id: number = 0; // _id is necessary to prevent race condition.

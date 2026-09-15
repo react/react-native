@@ -14,6 +14,7 @@ import type {RootTag} from '../ReactNative/RootTag';
 import type {DirectEventHandler} from '../Types/CodegenTypes';
 
 import {type ColorValue} from '../StyleSheet/StyleSheet';
+import Platform from '../Utilities/Platform';
 import RCTModalHostView from './RCTModalHostViewNativeComponent';
 import VirtualizedLists from '@react-native/virtualized-lists';
 import * as React from 'react';
@@ -24,7 +25,6 @@ const AppContainer = require('../ReactNative/AppContainer').default;
 const I18nManager = require('../ReactNative/I18nManager').default;
 const {RootTagContext} = require('../ReactNative/RootTag');
 const StyleSheet = require('../StyleSheet/StyleSheet').default;
-const Platform = require('../Utilities/Platform').default;
 
 const VirtualizedListContextResetter =
   VirtualizedLists.VirtualizedListContextResetter;

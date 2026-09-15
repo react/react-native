@@ -16,9 +16,9 @@ import type {HostInstance} from '../../../src/private/types/HostInstance';
 
 import {Commands as AndroidTextInputCommands} from '../../Components/TextInput/AndroidTextInputNativeComponent';
 import {Commands as iOSTextInputCommands} from '../../Components/TextInput/RCTSingelineTextInputNativeComponent';
+import Platform from '../../Utilities/Platform';
 
 const {findNodeHandle} = require('../../ReactNative/RendererProxy');
-const Platform = require('../../Utilities/Platform').default;
 
 let currentlyFocusedInputRef: ?HostInstance = null;
 const inputs = new Set<HostInstance>();
