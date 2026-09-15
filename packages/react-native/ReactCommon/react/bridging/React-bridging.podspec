@@ -26,6 +26,7 @@ Pod::Spec.new do |s|
   s.platforms              = min_supported_versions
   s.source                 = source
   s.source_files           = podspec_sources("*.{cpp,h}", "*.h")
+  s.exclude_files          = "React"
   s.header_dir             = "react/bridging"
   s.pod_target_xcconfig    = {
     "USE_HEADERMAP" => "YES",
@@ -35,8 +36,15 @@ Pod::Spec.new do |s|
 
   resolve_use_frameworks(s, header_mappings_dir: "../..", module_name: "React_bridging")
 
+  s.subspec "bridgingUmbrella" do |ss|
+    ss.source_files        = "React/*.h"
+    ss.header_dir          = ""
+    ss.header_mappings_dir = "."
+  end
+
   s.dependency "React-jsi"
   s.dependency "React-callinvoker"
+  s.dependency "React-cxxstableapi"
   s.dependency "React-timing"
 
   add_rn_third_party_dependencies(s)

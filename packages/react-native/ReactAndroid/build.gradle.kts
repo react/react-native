@@ -235,6 +235,7 @@ val preparePrefab by
                       // Exported because the public cxxreact/ErrorUtils.h includes it
                       Pair("../ReactCommon/jserrorhandler/", "jserrorhandler/"),
                       Pair("../ReactCommon/react/bridging/", "react/bridging/"),
+                      Pair("../ReactCommon/react/bridging/React/", "React/"),
                       Pair("../ReactCommon/react/nativemodule/core/", ""),
                       Pair("../ReactCommon/react/nativemodule/core/React/", "React/"),
                       Pair("../ReactCommon/react/nativemodule/core/platform/android/", ""),

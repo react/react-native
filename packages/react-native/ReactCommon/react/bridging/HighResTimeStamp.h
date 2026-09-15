@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <react/bridging/Base.h>
 #include <react/timing/primitives.h>
 
