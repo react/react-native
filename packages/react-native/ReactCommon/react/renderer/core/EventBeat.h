@@ -111,6 +111,7 @@ class EventBeat {
    */
   virtual void requestSynchronous() const;
 
+
   /*
    * The callback will be executed once a consumer (for example EventQueue)
    * calls either `EventBeat::request` or `EventBeat::requestSynchronous`. The
