@@ -10,6 +10,7 @@ package com.facebook.react.utils
 import com.android.build.api.variant.ApplicationAndroidComponentsExtension
 import com.android.build.api.variant.Variant
 import com.facebook.react.ReactExtension
+import com.facebook.react.tasks.GenerateStubPchTask
 import com.facebook.react.utils.ProjectUtils.getReactNativeArchitectures
 import java.io.File
 import org.gradle.api.Project
@@ -63,6 +64,20 @@ internal object NdkConfiguratorUtils {
         }
       }
     }
+  }
+
+  /**
+   * The codegen targets share a precompiled header, which only a real build produces. Android
+   * Studio's C++ engine needs one at sync time, so we hook a task that writes stubs into the sync
+   * itself. See [GenerateStubPchTask].
+   */
+  fun configureStubPchGeneration(project: Project) {
+    val generateStubPchTask = project.tasks.register("generateStubPch", GenerateStubPchTask::class.java) { task ->
+      task.cxxDirectory.set(project.layout.projectDirectory.dir(".cxx"))
+      task.dependsOn(project.tasks.matching { it.name.startsWith("configureCMakeDebug") })
+    }
+
+    project.tasks.maybeCreate("prepareKotlinBuildScriptModel").dependsOn(generateStubPchTask)
   }
 
   /**
