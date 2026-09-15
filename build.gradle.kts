@@ -13,7 +13,6 @@ plugins {
   alias(libs.plugins.kotlin.android) apply false
   alias(libs.plugins.binary.compatibility.validator) apply true
   alias(libs.plugins.android.test) apply false
-  alias(libs.plugins.ktfmt) apply true
 }
 
 val reactAndroidProperties = java.util.Properties()
@@ -176,42 +175,3 @@ if (hermesSubstitution != null) {
     }
   }
 }
-
-ktfmt {
-  blockIndent.set(2)
-  continuationIndent.set(4)
-  maxWidth.set(100)
-  removeUnusedImports.set(false)
-  manageTrailingCommas.set(false)
-}
-
-// Configure ktfmt tasks to include gradle-plugin
-listOf("ktfmtCheck", "ktfmtFormat").forEach { taskName ->
-  tasks.named(taskName) { dependsOn(gradle.includedBuild("gradle-plugin").task(":$taskName")) }
-}
-
-allprojects {
-  // Apply exclusions for specific files that should not be formatted
-  val excludePatterns = listOf(
-      "**/build/**",
-      "**/hermes-engine/**",
-      "**/internal/featureflags/**",
-      "**/systeminfo/ReactNativeVersion.kt",
-  )
-  listOf(
-      com.ncorti.ktfmt.gradle.tasks.KtfmtCheckTask::class,
-      com.ncorti.ktfmt.gradle.tasks.KtfmtFormatTask::class,
-  )
-      .forEach { tasks.withType(it) { exclude(excludePatterns) } }
-
-  // Disable the problematic ktfmt script tasks due to symbolic link issues in subprojects
-  afterEvaluate {
-    listOf("ktfmtCheckScripts", "ktfmtFormatScripts").forEach {
-      tasks.findByName(it)?.enabled = false
-    }
-  }
-}
-
-// We intentionally disable the `ktfmtCheck` tasks as the formatting is primarly handled inside
-// fbsource
-allprojects { tasks.withType<com.ncorti.ktfmt.gradle.tasks.KtfmtCheckTask>() { enabled = false } }

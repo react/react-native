@@ -5,9 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-plugins {
-  alias(libs.plugins.android.test)
-}
+plugins { alias(libs.plugins.android.test) }
 
 android {
   namespace = "com.example.benchmark"

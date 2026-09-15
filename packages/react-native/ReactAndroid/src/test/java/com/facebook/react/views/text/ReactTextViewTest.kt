@@ -157,9 +157,7 @@ class ReactTextViewTest {
     )
     view.layout(0, 0, width, viewHeight)
 
-    return createBitmap(width, bitmapHeight).also {
-      view.drawTextForTest(Canvas(it))
-    }
+    return createBitmap(width, bitmapHeight).also { view.drawTextForTest(Canvas(it)) }
   }
 
   private fun hasVisiblePixelBelowViewBounds(bitmap: Bitmap): Boolean {

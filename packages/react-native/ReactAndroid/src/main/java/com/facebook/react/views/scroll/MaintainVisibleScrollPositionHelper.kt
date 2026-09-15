@@ -47,12 +47,13 @@ internal class MaintainVisibleScrollPositionHelper<ScrollViewT>(
     get() = scrollView?.getChildAt(0) as ReactViewGroup?
 
   private val uIManager: UIManager
-    get() = checkNotNull(
-        UIManagerHelper.getUIManager(
-            checkNotNull(scrollView?.context as ReactContext?),
-            UIManagerType.FABRIC,
-        ),
-    )
+    get() =
+        checkNotNull(
+            UIManagerHelper.getUIManager(
+                checkNotNull(scrollView?.context as ReactContext?),
+                UIManagerType.FABRIC,
+            ),
+        )
 
   class Config
   internal constructor(val minIndexForVisible: Int, val autoScrollToTopThreshold: Int?) {

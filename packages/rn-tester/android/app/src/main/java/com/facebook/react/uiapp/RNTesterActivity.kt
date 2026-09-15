@@ -67,11 +67,12 @@ internal class RNTesterActivity : ReactActivity() {
     maybeUpdateBackgroundColor()
 
     reactDelegate?.reactHost?.let { reactHost ->
-      val devMenuConfiguration = DevMenuConfiguration(
-          devMenuEnabled = true,
-          shakeGestureEnabled = true,
-          keyboardShortcutsEnabled = true,
-      )
+      val devMenuConfiguration =
+          DevMenuConfiguration(
+              devMenuEnabled = true,
+              shakeGestureEnabled = true,
+              keyboardShortcutsEnabled = true,
+          )
       reactHost.setDevMenuConfiguration(devMenuConfiguration)
     }
 

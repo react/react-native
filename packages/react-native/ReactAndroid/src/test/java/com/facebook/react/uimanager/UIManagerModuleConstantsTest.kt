@@ -42,13 +42,14 @@ class UIManagerModuleConstantsTest {
     override fun getExportedCustomBubblingEventTypeConstants(): MutableMap<String, Any> =
         mutableMapOf("onTwirl" to TWIRL_BUBBLING_EVENT_MAP)
 
-    override fun getExportedViewConstants(): MutableMap<String, Any> = mutableMapOf(
-        "PhotoSizeType" to
-            mutableMapOf(
-                "Small" to 1,
-                "Large" to 2,
-            ),
-    )
+    override fun getExportedViewConstants(): MutableMap<String, Any> =
+        mutableMapOf(
+            "PhotoSizeType" to
+                mutableMapOf(
+                    "Small" to 1,
+                    "Large" to 2,
+                ),
+        )
 
     override fun getNativeProps(): MutableMap<String, String> = mutableMapOf("fooProp" to "number")
   }
@@ -201,13 +202,14 @@ class UIManagerModuleConstantsTest {
 
   companion object {
 
-    private val TWIRL_BUBBLING_EVENT_MAP: Map<*, *> = mapOf(
-        "phasedRegistrationNames" to
-            mapOf(
-                "bubbled" to "onTwirl",
-                "captured" to "onTwirlCaptured",
-            ),
-    )
+    private val TWIRL_BUBBLING_EVENT_MAP: Map<*, *> =
+        mapOf(
+            "phasedRegistrationNames" to
+                mapOf(
+                    "bubbled" to "onTwirl",
+                    "captured" to "onTwirlCaptured",
+                ),
+        )
 
     private val TWIRL_DIRECT_EVENT_MAP: Map<String, Any> = mapOf("registrationName" to "onTwirl")
 

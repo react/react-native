@@ -977,9 +977,8 @@ internal constructor(
 
     // TODO T62717437 - Use a flag to determine that these event emitters belong to virtual nodes
     // only.
-    val viewState: ViewState = registryLock.write {
-      tagToViewState.getOrPut(reactTag) { ViewState(reactTag) }
-    }
+    val viewState: ViewState =
+        registryLock.write { tagToViewState.getOrPut(reactTag) { ViewState(reactTag) } }
 
     val previousEventEmitterWrapper = viewState.eventEmitter
     synchronized(viewState) {
@@ -1140,9 +1139,8 @@ internal constructor(
         )
   }
 
-  private fun getNullableViewState(reactTag: Int): ViewState? = registryLock.read {
-    tagToViewState[reactTag]
-  }
+  private fun getNullableViewState(reactTag: Int): ViewState? =
+      registryLock.read { tagToViewState[reactTag] }
 
   /** Applies a bitmap as the background of the view with the given tag, if it exists. */
   @UiThread

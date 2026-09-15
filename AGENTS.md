@@ -34,9 +34,14 @@ Architecture notes live in `__docs__` directories beside the code they describe,
 | `yarn fantom <path>` | [Fantom](private/react-native-fantom/__docs__/README.md) integration tests, named `*-itest.js` — builds a native tester on first run |
 | `yarn lint` | ESLint (`--max-warnings 0`) |
 | `yarn flow-check` | Flow |
-| `yarn format` | Prettier and clang-format (`yarn format-check` for Prettier only) |
+| `yarn format` | Format JavaScript/TypeScript, C/C++/Objective-C/protobuf, Kotlin, Java, Python, and Swift sources |
+| `yarn format-check` | Check all repository formatting without changing files |
+| `yarn format-<language>` | Format one language: `javascript`, `cpp`, `kotlin`, `java`, `python`, or `swift` |
+| `yarn format-check-<language>` | Check one language without changing files |
 
 JavaScript CI is the `lint`, `test_js`, and `build_js_types` jobs in [`.github/workflows/test-all.yml`](.github/workflows/test-all.yml); Fantom and the native platforms have their own jobs.
+
+The formatting command uses pinned npm packages for Kotlin and Java and installs pinned Ruff through Python. To format every language, install a JDK with Java 17 or newer, Python 3 with pip, and a Swift 6.3 or newer toolchain in addition to Node and Yarn. Each language wrapper checks its own requirements and prints installation guidance when something is missing; `yarn format` then skips that language and continues formatting the others. Swift formatting accepts either `swift-format` or `swift format` from the installed toolchain.
 
 ### Verification: Running RNTester
 

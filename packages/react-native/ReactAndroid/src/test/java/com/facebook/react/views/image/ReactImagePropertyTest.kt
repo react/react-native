@@ -162,8 +162,11 @@ class ReactImagePropertyTest {
 
     viewManager.updateProperties(view, buildStyles("borderTopLeftRadius", "25%"))
     assertThat(
-        BackgroundStyleApplicator.getBorderRadius(view, BorderRadiusProp.BORDER_TOP_LEFT_RADIUS),
-    )
+            BackgroundStyleApplicator.getBorderRadius(
+                view,
+                BorderRadiusProp.BORDER_TOP_LEFT_RADIUS,
+            ),
+        )
         .isEqualTo(LengthPercentage(25f, LengthPercentageType.PERCENT))
 
     viewManager.updateProperties(view, buildStyles("borderRadius", null))

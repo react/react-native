@@ -170,18 +170,19 @@ public class ScrollEvent private constructor() : Event<ScrollEvent>() {
         contentHeight: Int,
         scrollViewWidth: Int,
         scrollViewHeight: Int,
-    ): ScrollEvent = obtain(
-        ViewUtil.NO_SURFACE_ID,
-        viewTag,
-        scrollEventType,
-        scrollX,
-        scrollY,
-        xVelocity,
-        yVelocity,
-        contentWidth,
-        contentHeight,
-        scrollViewWidth,
-        scrollViewHeight,
-    )
+    ): ScrollEvent =
+        obtain(
+            ViewUtil.NO_SURFACE_ID,
+            viewTag,
+            scrollEventType,
+            scrollX,
+            scrollY,
+            xVelocity,
+            yVelocity,
+            contentWidth,
+            contentHeight,
+            scrollViewWidth,
+            scrollViewHeight,
+        )
   }
 }

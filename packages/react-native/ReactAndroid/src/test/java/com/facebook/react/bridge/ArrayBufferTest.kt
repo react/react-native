@@ -159,9 +159,7 @@ class ArrayBufferTest {
 
   @Test
   fun arrayBufferWithOwnedBytesRejectsNonDirectByteBuffer() {
-    assertThatThrownBy {
-          ArrayBuffer.arrayBufferWithOwnedBytes(ByteBuffer.wrap(byteArrayOf(1, 2)))
-        }
+    assertThatThrownBy { ArrayBuffer.arrayBufferWithOwnedBytes(ByteBuffer.wrap(byteArrayOf(1, 2))) }
         .isInstanceOf(IllegalArgumentException::class.java)
         .hasMessageContaining("requires a direct ByteBuffer")
   }

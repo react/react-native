@@ -97,14 +97,15 @@ class TextLayoutManagerFontWeightAdjustmentTest {
   @Test
   fun `custom style applies font variation settings after high level font properties`() {
     val paint = mock<TextPaint>()
-    val span = CustomStyleSpan(
-        Typeface.NORMAL,
-        700,
-        null,
-        "'wght' 450",
-        "sans-serif",
-        RuntimeEnvironment.getApplication().assets,
-    )
+    val span =
+        CustomStyleSpan(
+            Typeface.NORMAL,
+            700,
+            null,
+            "'wght' 450",
+            "sans-serif",
+            RuntimeEnvironment.getApplication().assets,
+        )
 
     span.updateMeasureState(paint)
 

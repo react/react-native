@@ -1028,22 +1028,24 @@ public class ReactHostImpl(
           jsBundleLoader.onSuccess(
               { task ->
                 val bundleLoader = checkNotNull(task.getResult())
-                val reactContext = bridgelessReactContextRef.getOrCreate {
-                  stateTracker.enterState(method, "Creating BridgelessReactContext")
-                  BridgelessReactContext(context, this)
-                }
+                val reactContext =
+                    bridgelessReactContextRef.getOrCreate {
+                      stateTracker.enterState(method, "Creating BridgelessReactContext")
+                      BridgelessReactContext(context, this)
+                    }
                 reactContext.jsExceptionHandler = devSupportManager
 
                 stateTracker.enterState(method, "Creating ReactInstance")
-                val instance = ReactInstance(
-                    reactContext,
-                    reactHostDelegate,
-                    componentFactory,
-                    devSupportManager,
-                    { e: Exception -> this.handleHostException(e) },
-                    useDevSupport,
-                    getOrCreateReactHostInspectorTarget(),
-                )
+                val instance =
+                    ReactInstance(
+                        reactContext,
+                        reactHostDelegate,
+                        componentFactory,
+                        devSupportManager,
+                        { e: Exception -> this.handleHostException(e) },
+                        useDevSupport,
+                        getOrCreateReactHostInspectorTarget(),
+                    )
                 reactInstance = instance
 
                 val memoryPressureListener = createMemoryPressureListener(instance)
@@ -1605,12 +1607,13 @@ public class ReactHostImpl(
             TracingState.ENABLED_IN_BACKGROUND_MODE,
             TracingState.ENABLED_IN_CDP_MODE -> {
               if (InspectorFlags.getFrameRecordingEnabled()) {
-                val observer = FrameTimingsObserver(
-                    _screenshotsEnabled,
-                    { frameTimingsSequence ->
-                      inspectorTarget.recordFrameTimings(frameTimingsSequence)
-                    },
-                )
+                val observer =
+                    FrameTimingsObserver(
+                        _screenshotsEnabled,
+                        { frameTimingsSequence ->
+                          inspectorTarget.recordFrameTimings(frameTimingsSequence)
+                        },
+                    )
                 observer.setCurrentWindow(currentActivity?.window)
                 observer.start()
                 frameTimingsObserver = observer

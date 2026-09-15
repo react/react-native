@@ -115,12 +115,13 @@ public object MatrixMathHelper {
     ) {
       // rightHandSide is the right hand side of the equation.
       // rightHandSide is a vector, or point in 3d space relative to the origin.
-      val rightHandSide = doubleArrayOf(
-          normalizedMatrix[3],
-          normalizedMatrix[7],
-          normalizedMatrix[11],
-          normalizedMatrix[15],
-      )
+      val rightHandSide =
+          doubleArrayOf(
+              normalizedMatrix[3],
+              normalizedMatrix[7],
+              normalizedMatrix[11],
+              normalizedMatrix[15],
+          )
 
       // Solve the equation by inverting perspectiveMatrix and multiplying
       // rightHandSide by the inverse.

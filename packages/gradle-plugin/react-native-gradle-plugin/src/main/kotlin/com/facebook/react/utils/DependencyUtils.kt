@@ -145,10 +145,10 @@ internal object DependencyUtils {
             }
             if (!coordinates.hermesVersionString.isMavenArtifactVersionPublished()) {
               setOf(
-                  DEFAULT_INTERNAL_REACT_PUBLISHING_GROUP,
-                  DEFAULT_INTERNAL_HERMES_PUBLISHING_GROUP,
-                  coordinates.hermesGroupString,
-              )
+                      DEFAULT_INTERNAL_REACT_PUBLISHING_GROUP,
+                      DEFAULT_INTERNAL_HERMES_PUBLISHING_GROUP,
+                      coordinates.hermesGroupString,
+                  )
                   .forEach { group ->
                     content.excludeVersion(group, "hermes-engine", UNPUBLISHED_MAVEN_VERSION)
                     content.excludeVersion(group, "hermes-android", UNPUBLISHED_MAVEN_VERSION)

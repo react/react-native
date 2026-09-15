@@ -16,14 +16,15 @@ class ReactModuleInfoTest {
 
   @Test
   fun testCreateReactModuleInfo() {
-    val reactModuleInfo = ReactModuleInfo(
-        /* name = */ "name",
-        /* className = */ "class",
-        /* canOverrideExistingModule = */ false,
-        /* needsEagerInit = */ false,
-        /* isCxxModule = */ false,
-        /* isTurboModule = */ false,
-    )
+    val reactModuleInfo =
+        ReactModuleInfo(
+            /* name = */ "name",
+            /* className = */ "class",
+            /* canOverrideExistingModule = */ false,
+            /* needsEagerInit = */ false,
+            /* isCxxModule = */ false,
+            /* isTurboModule = */ false,
+        )
     assertThat(reactModuleInfo.name).isEqualTo("name")
     assertThat(reactModuleInfo.canOverrideExistingModule).isFalse()
     assertThat(reactModuleInfo.needsEagerInit).isFalse()
