@@ -1,5 +1,116 @@
 # Changelog
 
+## v0.88.0-rc.1
+
+### Breaking
+
+
+
+#### Android specific
+
+
+
+#### iOS specific
+
+
+
+### Added
+
+- Enable the imperative EventTarget API (`addEventListener`, `removeEventListener`, `dispatchEvent`) on native view refs in canary ([8480b86820](https://github.com/react/react-native/commit/8480b86820b4535c9bec2967a0f16afed5292a0e) by [@rubennorte](https://github.com/rubennorte))
+
+#### Android specific
+
+
+
+#### iOS specific
+
+
+
+### Changed
+
+- Enabled Web-based event dispatching refactor ([31d33ce91b](https://github.com/react/react-native/commit/31d33ce91b127b434228c8d912810563afdede54) by [@rubennorte](https://github.com/rubennorte))
+- Sync React 19.3.0 into React Native ([b0b71421c1](https://github.com/react/react-native/commit/b0b71421c1964e046ba2ad156669c7d32e4c538f) by [@rubennorte](https://github.com/rubennorte))
+
+#### Android specific
+
+
+
+#### iOS specific
+
+
+
+### Deprecated
+
+
+
+#### Android specific
+
+
+
+#### iOS specific
+
+
+
+### Removed
+
+
+
+#### Android specific
+
+
+
+#### iOS specific
+
+
+
+### Fixed
+
+
+
+#### Android specific
+
+
+
+#### iOS specific
+
+- SwiftPM: generated manifests derive their iOS platform floor from the app's `IPHONEOS_DEPLOYMENT_TARGET` instead of hardcoding iOS 15, so dependencies with a higher minimum (e.g. Expo, 16.4) can be autolinked ([92564f33fd](https://github.com/react/react-native/commit/92564f33fdaa8f0e9968712863e7e00f7073cdf7) by [@chrfalch](https://github.com/chrfalch))
+- SwiftPM: run generated build scripts under bash instead of /bin/sh, so they don't break on a host where /bin/sh isn't bash ([25f48bd72f](https://github.com/react/react-native/commit/25f48bd72fd47799fe81689d58f4cbd1b9ddd21c) by [@lazerg](https://github.com/lazerg))
+- Read SwiftPM name from podspec and store in package.json when scaffolding ([1cfc5f29a0](https://github.com/react/react-native/commit/1cfc5f29a00f7a2c5d7f842f4e99eae170e06422) by [@chrfalch](https://github.com/chrfalch))
+- Codegen no longer crawls `node_modules` or follows symlinks when discovering components ([39751d864d](https://github.com/react/react-native/commit/39751d864dd340bbdaf59d7999ba4d787fba6dbc) by [@gabrieldonadel](https://github.com/gabrieldonadel))
+
+### Security
+
+
+
+#### Android specific
+
+
+
+#### iOS specific
+
+
+
+### Unknown
+
+- Release 0.88.0-rc.1 ([05a41cdc67](https://github.com/react/react-native/commit/05a41cdc674b1a51a67bfce9be4b79ae3395f795) by [@react-native-bot](https://github.com/react-native-bot))
+- Fix cache-key test on release branches ([ad7b17d8ee](https://github.com/react/react-native/commit/ad7b17d8eef55add5392db81d326430f26829646) by [@fabriziocucci](https://github.com/fabriziocucci))
+- Bump Hermes to 260318099.0.3 ([79024f7c59](https://github.com/react/react-native/commit/79024f7c590446d3ef13bc1288faedb736957654) by [@fabriziocucci](https://github.com/fabriziocucci))
+- Bump Podfile.lock ([ab7dde8242](https://github.com/react/react-native/commit/ab7dde8242abc4a7c736529e0db379db71439791) by [@react-native-bot](https://github.com/react-native-bot))
+- Release 0.88.0-rc.0 ([f065722abe](https://github.com/react/react-native/commit/f065722abe7851175eeafebedc7b55d9dee78c7d) by [@react-native-bot](https://github.com/react-native-bot))
+
+#### Android Unknown
+
+
+
+#### iOS Unknown
+
+
+
+#### Failed to parse
+
+
+
+
 ## v0.88.0-rc.0
 
 ### Breaking
