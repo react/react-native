@@ -22,8 +22,19 @@ function getCacheKey(packageContents) {
   return require('../index').getCacheKey();
 }
 
-test('cache key includes package metadata for main builds', () => {
-  expect(getCacheKey('{"dependency":"1.0.0"}')).not.toBe(
-    getCacheKey('{"dependency":"2.0.0"}'),
-  );
-});
+const {version: packageVersion} = require('../../package.json');
+
+// Only `-main` versions hash package contents; published releases short-circuit
+// to the version string, so each build asserts a different property.
+if (packageVersion.endsWith('-main')) {
+  test('cache key includes package metadata for main builds', () => {
+    expect(getCacheKey('{"dependency":"1.0.0"}')).not.toBe(
+      getCacheKey('{"dependency":"2.0.0"}'),
+    );
+  });
+} else {
+  test('cache key is the package version for published releases', () => {
+    expect(getCacheKey('{"dependency":"1.0.0"}')).toBe(packageVersion);
+    expect(getCacheKey('{"dependency":"2.0.0"}')).toBe(packageVersion);
+  });
+}
