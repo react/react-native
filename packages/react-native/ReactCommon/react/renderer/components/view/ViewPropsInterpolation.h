@@ -12,7 +12,7 @@
 #include <react/renderer/components/view/ViewProps.h>
 #include <react/renderer/graphics/Transform.h>
 
-#ifdef ANDROID
+#if defined(ANDROID) && defined(RN_SERIALIZABLE_STATE)
 #include <folly/dynamic.h>
 #endif
 
@@ -46,7 +46,7 @@ static inline void interpolateViewProps(
   // that use RawProps/folly::dynamic instead of concrete props on the
   // mounting layer. Once we can remove this, we should change `rawProps` to
   // be const again.
-#ifdef ANDROID
+#if defined(ANDROID) && defined(RN_SERIALIZABLE_STATE)
   if (!interpolatedProps->rawProps.isNull()) {
     interpolatedProps->rawProps["opacity"] = interpolatedProps->opacity;
 

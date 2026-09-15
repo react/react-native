@@ -9,7 +9,7 @@
  */
 #pragma once
 
-#include <react/renderer/components/view/ViewEventEmitter.h>
+#include <React/View.h>
 
 
 namespace facebook::react {

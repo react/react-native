@@ -13,8 +13,8 @@ Map {
  */
 #pragma once
 
+#include <React/View.h>
 #include <react/renderer/components/image/conversions.h>
-#include <react/renderer/components/view/ViewProps.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/core/propsConversions.h>
 #include <react/renderer/debug/DebugStringConvertible.h>
@@ -390,8 +390,8 @@ Map {
  */
 #pragma once
 
+#include <React/View.h>
 #include <react/renderer/components/image/conversions.h>
-#include <react/renderer/components/view/ViewProps.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/core/propsConversions.h>
 #include <react/renderer/debug/DebugStringConvertible.h>
@@ -767,8 +767,8 @@ Map {
  */
 #pragma once
 
+#include <React/View.h>
 #include <react/renderer/components/image/conversions.h>
-#include <react/renderer/components/view/ViewProps.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/core/propsConversions.h>
 #include <react/renderer/debug/DebugStringConvertible.h>
@@ -1158,8 +1158,8 @@ Map {
  */
 #pragma once
 
+#include <React/View.h>
 #include <cinttypes>
-#include <react/renderer/components/view/ViewProps.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/core/graphicsConversions.h>
 #include <react/renderer/core/propsConversions.h>
@@ -1458,8 +1458,8 @@ Map {
  */
 #pragma once
 
+#include <React/View.h>
 #include <react/renderer/components/image/conversions.h>
-#include <react/renderer/components/view/ViewProps.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/core/propsConversions.h>
 #include <react/renderer/debug/DebugStringConvertible.h>
@@ -1561,8 +1561,8 @@ Map {
  */
 #pragma once
 
+#include <React/View.h>
 #include <react/renderer/components/image/conversions.h>
-#include <react/renderer/components/view/ViewProps.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/core/propsConversions.h>
 #include <react/renderer/debug/DebugStringConvertible.h>
@@ -1664,8 +1664,8 @@ Map {
  */
 #pragma once
 
+#include <React/View.h>
 #include <react/renderer/components/image/conversions.h>
-#include <react/renderer/components/view/ViewProps.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/core/propsConversions.h>
 #include <react/renderer/debug/DebugStringConvertible.h>
@@ -1773,8 +1773,8 @@ Map {
  */
 #pragma once
 
+#include <React/View.h>
 #include <cinttypes>
-#include <react/renderer/components/view/ViewProps.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/core/graphicsConversions.h>
 #include <react/renderer/core/propsConversions.h>
@@ -2073,8 +2073,8 @@ Map {
  */
 #pragma once
 
+#include <React/View.h>
 #include <cinttypes>
-#include <react/renderer/components/view/ViewProps.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/core/graphicsConversions.h>
 #include <react/renderer/core/propsConversions.h>
@@ -2375,7 +2375,7 @@ Map {
  */
 #pragma once
 
-#include <react/renderer/components/view/ViewProps.h>
+#include <React/View.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/debug/DebugStringConvertible.h>
 
@@ -2417,7 +2417,7 @@ Map {
  */
 #pragma once
 
-#include <react/renderer/components/view/ViewProps.h>
+#include <React/View.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/debug/DebugStringConvertible.h>
 #include <react/renderer/graphics/Color.h>
@@ -2460,7 +2460,7 @@ Map {
  */
 #pragma once
 
-#include <react/renderer/components/view/ViewProps.h>
+#include <React/View.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/debug/DebugStringConvertible.h>
 
@@ -2502,7 +2502,7 @@ Map {
  */
 #pragma once
 
-#include <react/renderer/components/view/ViewProps.h>
+#include <React/View.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/debug/DebugStringConvertible.h>
 
@@ -2544,7 +2544,7 @@ Map {
  */
 #pragma once
 
-#include <react/renderer/components/view/ViewProps.h>
+#include <React/View.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/core/graphicsConversions.h>
 #include <react/renderer/debug/DebugStringConvertible.h>
@@ -2588,7 +2588,7 @@ Map {
  */
 #pragma once
 
-#include <react/renderer/components/view/ViewProps.h>
+#include <React/View.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/debug/DebugStringConvertible.h>
 
@@ -2635,7 +2635,7 @@ Map {
  */
 #pragma once
 
-#include <react/renderer/components/view/ViewProps.h>
+#include <React/View.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/debug/DebugStringConvertible.h>
 
@@ -2677,7 +2677,7 @@ Map {
  */
 #pragma once
 
-#include <react/renderer/components/view/ViewProps.h>
+#include <React/View.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/debug/DebugStringConvertible.h>
 
@@ -2719,7 +2719,7 @@ Map {
  */
 #pragma once
 
-#include <react/renderer/components/view/ViewProps.h>
+#include <React/View.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/debug/DebugStringConvertible.h>
 
@@ -2761,7 +2761,7 @@ Map {
  */
 #pragma once
 
-#include <react/renderer/components/view/ViewProps.h>
+#include <React/View.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/debug/DebugStringConvertible.h>
 
@@ -2803,7 +2803,7 @@ Map {
  */
 #pragma once
 
-#include <react/renderer/components/view/ViewProps.h>
+#include <React/View.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/debug/DebugStringConvertible.h>
 
@@ -2845,7 +2845,7 @@ Map {
  */
 #pragma once
 
-#include <react/renderer/components/view/ViewProps.h>
+#include <React/View.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/debug/DebugStringConvertible.h>
 
@@ -2905,7 +2905,7 @@ Map {
  */
 #pragma once
 
-#include <react/renderer/components/view/ViewProps.h>
+#include <React/View.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/debug/DebugStringConvertible.h>
 
@@ -2952,7 +2952,7 @@ Map {
  */
 #pragma once
 
-#include <react/renderer/components/view/ViewProps.h>
+#include <React/View.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/debug/DebugStringConvertible.h>
 #include <react/renderer/imagemanager/primitives.h>
@@ -2995,7 +2995,7 @@ Map {
  */
 #pragma once
 
-#include <react/renderer/components/view/ViewProps.h>
+#include <React/View.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/debug/DebugStringConvertible.h>
 #include <react/renderer/graphics/RectangleEdges.h>
@@ -3038,7 +3038,7 @@ Map {
  */
 #pragma once
 
-#include <react/renderer/components/view/ViewProps.h>
+#include <React/View.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/debug/DebugStringConvertible.h>
 
@@ -3122,7 +3122,7 @@ Map {
  */
 #pragma once
 
-#include <react/renderer/components/view/ViewProps.h>
+#include <React/View.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/debug/DebugStringConvertible.h>
 
@@ -3166,7 +3166,7 @@ Map {
  */
 #pragma once
 
-#include <react/renderer/components/view/ViewProps.h>
+#include <React/View.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/debug/DebugStringConvertible.h>
 
@@ -3208,7 +3208,7 @@ Map {
  */
 #pragma once
 
-#include <react/renderer/components/view/ViewProps.h>
+#include <React/View.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/debug/DebugStringConvertible.h>
 
@@ -3250,7 +3250,7 @@ Map {
  */
 #pragma once
 
-#include <react/renderer/components/view/ViewProps.h>
+#include <React/View.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/debug/DebugStringConvertible.h>
 #include <react/renderer/graphics/Color.h>
@@ -3298,7 +3298,7 @@ Map {
  */
 #pragma once
 
-#include <react/renderer/components/view/ViewProps.h>
+#include <React/View.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/debug/DebugStringConvertible.h>
 
@@ -3340,8 +3340,8 @@ Map {
  */
 #pragma once
 
+#include <React/View.h>
 #include <react/renderer/components/image/conversions.h>
-#include <react/renderer/components/view/ViewProps.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/core/propsConversions.h>
 #include <react/renderer/debug/DebugStringConvertible.h>
@@ -3777,8 +3777,8 @@ Map {
  */
 #pragma once
 
+#include <React/View.h>
 #include <react/renderer/components/image/conversions.h>
-#include <react/renderer/components/view/ViewProps.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/core/propsConversions.h>
 #include <react/renderer/debug/DebugStringConvertible.h>
@@ -4214,8 +4214,8 @@ Map {
  */
 #pragma once
 
+#include <React/View.h>
 #include <react/renderer/components/image/conversions.h>
-#include <react/renderer/components/view/ViewProps.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/core/propsConversions.h>
 #include <react/renderer/debug/DebugStringConvertible.h>
@@ -4659,7 +4659,7 @@ Map {
  */
 #pragma once
 
-#include <react/renderer/components/view/ViewProps.h>
+#include <React/View.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/debug/DebugStringConvertible.h>
 #include <react/renderer/graphics/Point.h>
@@ -4702,7 +4702,7 @@ Map {
  */
 #pragma once
 
-#include <react/renderer/components/view/ViewProps.h>
+#include <React/View.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/debug/DebugStringConvertible.h>
 
@@ -4770,7 +4770,7 @@ Map {
  */
 #pragma once
 
-#include <react/renderer/components/view/ViewProps.h>
+#include <React/View.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/debug/DebugStringConvertible.h>
 
@@ -4813,7 +4813,7 @@ Map {
  */
 #pragma once
 
-#include <react/renderer/components/view/ViewProps.h>
+#include <React/View.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/debug/DebugStringConvertible.h>
 
@@ -4873,7 +4873,7 @@ Map {
  */
 #pragma once
 
-#include <react/renderer/components/view/ViewProps.h>
+#include <React/View.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/debug/DebugStringConvertible.h>
 
