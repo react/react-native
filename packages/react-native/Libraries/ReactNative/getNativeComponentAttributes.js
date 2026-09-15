@@ -138,6 +138,9 @@ function attachDefaultEventTypes(
   }
 }
 
+// $FlowFixMe[method-unbinding]
+const hasOwnProperty = Object.prototype.hasOwnProperty;
+
 // TODO: Figure out how to avoid all this runtime initialization cost.
 function merge(
   destination: ?ViewManagerConfig,
@@ -151,12 +154,12 @@ function merge(
   }
 
   for (const key in source) {
-    if (!source.hasOwnProperty(key)) {
+    if (!hasOwnProperty.call(source, key)) {
       continue;
     }
 
     let sourceValue = source[key];
-    if (destination.hasOwnProperty(key)) {
+    if (hasOwnProperty.call(destination, key)) {
       const destinationValue = destination[key];
       if (
         typeof sourceValue === 'object' &&
