@@ -60,6 +60,12 @@ function getInlinePlatform(caller) {
   return caller?.inlinePlatform ?? false;
 }
 
+// Boolean, whether the caller lowers `import`/`export` itself (Metro's
+// `experimentalImportSupport`). When it does, the preset must leave ESM intact.
+function getExperimentalImportSupport(caller) {
+  return caller?.experimentalImportSupport ?? false;
+}
+
 // use `this.foo = bar` instead of `this.defineProperty('foo', ...)`
 const loose = true;
 
@@ -77,6 +83,11 @@ const getPreset = (src, options, babel) => {
 
   const inlinePlatform =
     options.inlinePlatform ?? babel?.caller(getInlinePlatform) ?? false;
+
+  const disableImportExportTransform =
+    options.disableImportExportTransform ??
+    babel?.caller(getExperimentalImportSupport) ??
+    false;
 
   // Hermes V1 uses more optimised transform profiles. There is currently no
   // difference between stable and canary, but canary may in future be used to
@@ -151,7 +162,7 @@ const getPreset = (src, options, babel) => {
     extraPlugins.push([require('@react-native/babel-plugin-codegen')]);
   }
 
-  if (!options.disableImportExportTransform) {
+  if (!disableImportExportTransform) {
     extraPlugins.push(
       [require('@babel/plugin-proposal-export-default-from')],
       [
