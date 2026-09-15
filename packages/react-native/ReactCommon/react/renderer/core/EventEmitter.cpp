@@ -7,6 +7,8 @@
 
 #include "EventEmitter.h"
 
+#include <react/renderer/core/ShadowNodeFamily.h>
+
 #include <cxxreact/TraceSection.h>
 #include <folly/dynamic.h>
 #include <jsi/jsi.h>
@@ -229,8 +231,15 @@ void EventEmitter::setEnabled(bool enabled) {
   }
 }
 
+Tag EventEmitter::getTag() const {
+  return tag_;
+}
+
 void EventEmitter::setShadowNodeFamily(
     std::weak_ptr<const ShadowNodeFamily> shadowNodeFamily) {
+  if (auto family = shadowNodeFamily.lock()) {
+    tag_ = family->getTag();
+  }
   shadowNodeFamily_ = std::move(shadowNodeFamily);
 }
 

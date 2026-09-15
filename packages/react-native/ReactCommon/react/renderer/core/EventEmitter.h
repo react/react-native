@@ -66,6 +66,12 @@ class EventEmitter {
   const SharedEventTarget &getEventTarget() const;
 
   /*
+   * The tag of the view this emitter belongs to, or `kNoTag` when none is
+   * attached.
+   */
+  Tag getTag() const;
+
+  /*
    * Experimental API that will change in the future.
    */
   template <typename Lambda>
@@ -77,7 +83,7 @@ class EventEmitter {
     }
 
     syncFunc();
-    eventDispatcher->experimental_flushSync();
+    eventDispatcher->experimental_flushSync(getTag());
   }
 
   /*
@@ -134,6 +140,7 @@ class EventEmitter {
   friend class UIManagerBinding;
 
   SharedEventTarget eventTarget_;
+  Tag tag_{kNoTag};
   std::weak_ptr<const ShadowNodeFamily> shadowNodeFamily_;
 
   EventDispatcher::Weak eventDispatcher_;
