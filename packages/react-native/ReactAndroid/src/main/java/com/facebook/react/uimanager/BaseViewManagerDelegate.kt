@@ -164,6 +164,8 @@ public abstract class BaseViewManagerDelegate<
           mViewManager.setPointerMoveCapture(view, value as Boolean? ?: false)
       ViewProps.ON_CLICK -> mViewManager.setClick(view, value as Boolean? ?: false)
       ViewProps.ON_CLICK_CAPTURE -> mViewManager.setClickCapture(view, value as Boolean? ?: false)
+      ViewProps.ON_SAFE_AREA_INSETS_CHANGE ->
+          mViewManager.setOnSafeAreaInsetsChange(view, value as Boolean? ?: false)
     }
   }
 
