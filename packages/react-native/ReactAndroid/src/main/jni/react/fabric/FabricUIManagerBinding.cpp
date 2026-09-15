@@ -863,6 +863,13 @@ void FabricUIManagerBinding::schedulerShouldSynchronouslyUpdateViewOnUIThread(
   }
 }
 
+void FabricUIManagerBinding::schedulerShouldSynchronouslyUpdateAnimatedProps(
+    const std::unordered_map<Tag, AnimatedProps>& updates) {
+  if (ReactNativeFeatureFlags::cxxNativeAnimatedEnabled() && mountingManager_) {
+    mountingManager_->synchronouslyUpdateAnimatedProps(updates);
+  }
+}
+
 void FabricUIManagerBinding::schedulerDidUpdateShadowTree(
     const std::unordered_map<Tag, folly::dynamic>& /*tagToProps*/) {
   // no-op
