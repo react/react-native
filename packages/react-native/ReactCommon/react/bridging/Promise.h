@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <react/cxxstableapi/UmbrellaGuard.h>
+
 #include <react/bridging/Error.h>
 #include <react/bridging/Function.h>
 #include <react/bridging/LongLivedObject.h>
