@@ -195,9 +195,9 @@ struct CSSDataTypeParser<CSSTransformOrigin> {
         return CSSPercentage{100.0f};
       case CSSTransformOriginKeyword::Bottom:
         return CSSPercentage{100.0f};
+      default:
+        return {};
     }
-
-    return {};
   }
 };
 
