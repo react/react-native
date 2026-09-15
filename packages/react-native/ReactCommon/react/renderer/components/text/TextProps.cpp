@@ -7,6 +7,8 @@
 
 #include "TextProps.h"
 
+#include <react/renderer/core/propsConversions.h>
+
 namespace facebook::react {
 
 TextProps::TextProps(
@@ -14,7 +16,19 @@ TextProps::TextProps(
     const TextProps& sourceProps,
     const RawProps& rawProps)
     : Props(context, sourceProps, rawProps),
-      BaseTextProps::BaseTextProps(context, sourceProps, rawProps) {};
+      BaseTextProps::BaseTextProps(context, sourceProps, rawProps),
+      transform(convertRawProp(
+          context,
+          rawProps,
+          "transform",
+          sourceProps.transform,
+          {})),
+      transformOrigin(convertRawProp(
+          context,
+          rawProps,
+          "transformOrigin",
+          sourceProps.transformOrigin,
+          {})) {};
 
 void TextProps::setProp(
     const PropsParserContext& context,
@@ -23,6 +37,12 @@ void TextProps::setProp(
     const RawValue& value) {
   BaseTextProps::setProp(context, hash, propName, value);
   Props::setProp(context, hash, propName, value);
+
+  static auto defaults = TextProps{};
+  switch (hash) {
+    RAW_SET_PROP_SWITCH_CASE_BASIC(transform);
+    RAW_SET_PROP_SWITCH_CASE_BASIC(transformOrigin);
+  }
 }
 
 #pragma mark - DebugStringConvertible
