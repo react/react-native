@@ -203,9 +203,6 @@
             "PlatformConstants": {
               "unstableRequiresMainQueueSetup": true
             },
-            "SampleTurboModule": {
-              "unstableRequiresMainQueueSetup": true
-            },
             "StatusBarManager": {
               "unstableRequiresMainQueueSetup": true
             }
