@@ -32,23 +32,27 @@ void AnimatedPropsRegistry::update(
                  .first;
       }
       auto& snapshot = it->second;
-      auto& viewProps = snapshot->props;
-
       if (animatedProps.rawProps) {
         const auto& newRawProps = *animatedProps.rawProps;
         auto& currentRawProps = snapshot->rawProps;
 
         if (currentRawProps) {
-          auto newRawPropsDynamic = newRawProps.toDynamic();
-          currentRawProps->merge_patch(newRawPropsDynamic);
+          if (const auto* dynamic = newRawProps.getDynamic()) {
+            currentRawProps->merge_patch(*dynamic);
+          } else {
+            currentRawProps->merge_patch(newRawProps.toDynamic());
+          }
         } else {
           currentRawProps =
               std::make_unique<folly::dynamic>(newRawProps.toDynamic());
         }
       }
+      if (!animatedProps.props.empty() && !snapshot->props) {
+        snapshot->props = std::make_unique<BaseViewProps>();
+      }
       for (const auto& animatedProp : animatedProps.props) {
         snapshot->propNames.insert(animatedProp->propName);
-        cloneProp(viewProps, *animatedProp);
+        cloneProp(*snapshot->props, *animatedProp);
       }
     }
   }
@@ -83,9 +87,14 @@ AnimatedPropsRegistry::getMap(SurfaceId surfaceId) {
           currentSnapshot->rawProps = std::move(propsSnapshot->rawProps);
         }
       }
-      for (auto& propName : propsSnapshot->propNames) {
-        currentSnapshot->propNames.insert(propName);
-        updateProp(propName, currentSnapshot->props, *propsSnapshot);
+      if (!currentSnapshot->props) {
+        currentSnapshot->props = std::move(propsSnapshot->props);
+        currentSnapshot->propNames = std::move(propsSnapshot->propNames);
+      } else {
+        for (auto& propName : propsSnapshot->propNames) {
+          currentSnapshot->propNames.insert(propName);
+          updateProp(propName, *currentSnapshot->props, *propsSnapshot);
+        }
       }
     }
   }
