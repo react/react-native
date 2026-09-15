@@ -287,13 +287,21 @@ let reactJsErrorHandler = RNTarget(
   dependencies: [.reactNativeDependencies, .jsi, .reactFeatureFlags, .reactDebug, .reactTurboModuleBridging]
 )
 
+/// React-renderercss.podspec
+let reactRendererCss = RNTarget(
+  name: .reactRendererCss,
+  path: "ReactCommon/react/renderer/css",
+  excludedPaths: ["tests"],
+  dependencies: [.reactNativeDependencies, .reactDebug, .reactUtils]
+)
+
 /// React-graphicsApple
 /// This represents the React-graphicsApple BUCK module
 let reactGraphicsApple = RNTarget(
   name: .reactGraphicsApple,
   path: "ReactCommon/react/renderer/graphics/platform/ios",
   linkedFrameworks: ["UIKit", "CoreGraphics"],
-  dependencies: [.reactDebug, .jsi, .reactUtils, .reactNativeDependencies]
+  dependencies: [.reactDebug, .jsi, .reactUtils, .reactNativeDependencies, .reactRendererCss]
 )
 
 /// React-graphics.podspec
@@ -301,7 +309,7 @@ let reactGraphics = RNTarget(
   name: .reactGraphics,
   path: "ReactCommon/react/renderer/graphics",
   excludedPaths: ["platform", "tests"],
-  dependencies: [.reactNativeDependencies, .jsi, .reactJsiExecutor, .reactRendererDebug, .reactUtils, .reactGraphicsApple]
+  dependencies: [.reactNativeDependencies, .jsi, .reactJsiExecutor, .reactRendererDebug, .reactUtils, .reactGraphicsApple, .reactRendererCss]
 )
 
 /// ReactCommon.podspec
@@ -491,7 +499,7 @@ let reactFabric = RNTarget(
     "observers/resize/tests",
     "scheduler/tests",
   ],
-  dependencies: [.reactNativeDependencies, .reactJsiExecutor, .rctTypesafety, .reactTurboModuleCore, .jsi, .logger, .reactDebug, .reactFeatureFlags, .reactUtils, .reactRuntimeScheduler, .reactCxxReact, .reactRendererDebug, .reactGraphics, .yoga, .reactJsInspectorTracing],
+  dependencies: [.reactNativeDependencies, .reactJsiExecutor, .rctTypesafety, .reactTurboModuleCore, .jsi, .logger, .reactDebug, .reactFeatureFlags, .reactUtils, .reactRuntimeScheduler, .reactCxxReact, .reactRendererDebug, .reactGraphics, .reactRendererCss, .yoga, .reactJsInspectorTracing],
   sources: ["animated", "animationbackend", "animations", "attributedstring", "core", "componentregistry", "componentregistry/native", "components/root", "components/view", "components/view/platform/cxx", "components/scrollview", "components/scrollview/platform/cxx", "components/scrollview/platform/ios", "components/legacyviewmanagerinterop", "components/legacyviewmanagerinterop/platform/ios", "dom", "scheduler", "mounting", "observers/events", "observers/intersection", "observers/mutation", "observers/resize", "telemetry", "consistency", "leakchecker", "uimanager", "uimanager/consistency", "viewtransition"]
 )
 
@@ -713,6 +721,7 @@ let targets = [
   reactPerformanceTimeline,
   reactRuntimeScheduler,
   rctTypesafety,
+  reactRendererCss,
   reactGraphics,
   reactGraphicsApple,
   reactImageManager,

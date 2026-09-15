@@ -7,20 +7,19 @@
 
 #pragma once
 
-#include <react/debug/react_native_expect.h>
+#include <react/cxxstableapi/UmbrellaGuard.h>
 #include <react/renderer/core/RawValue.h>
 #include <react/renderer/graphics/Color.h>
-#include <react/renderer/graphics/fromRawValueShared.h>
 #include <react/utils/ContextContainer.h>
 
 namespace facebook::react {
 
 SharedColor parsePlatformColor(const ContextContainer &contextContainer, int32_t surfaceId, const RawValue &value);
 
-inline void
-fromRawValue(const ContextContainer &contextContainer, int32_t surfaceId, const RawValue &value, SharedColor &result)
-{
-  fromRawValueShared(contextContainer, surfaceId, value, result, parsePlatformColor);
-}
+void fromRawValue(
+    const ContextContainer &contextContainer,
+    int32_t surfaceId,
+    const RawValue &value,
+    SharedColor &result);
 
 } // namespace facebook::react
