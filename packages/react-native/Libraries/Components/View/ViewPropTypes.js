@@ -512,6 +512,13 @@ type ViewBaseProps = Readonly<{
    * expensive and hard to debug for non-native developers, which is why it is
    * not turned on by default.
    *
+   * On Android, enable this on a view that sets `opacity` < 1 (directly or via
+   * an animation) and contains a descendant with `elevation`. Without it, the
+   * descendant's elevation shadow is composited per-primitive at reduced alpha,
+   * which renders the shadow as concentric bands with an over-opaque center
+   * instead of fading uniformly. Enabling this composites the subtree once, so
+   * the shadow fades correctly.
+   *
    * @default `false`
    */
   needsOffscreenAlphaCompositing?: ?boolean,
