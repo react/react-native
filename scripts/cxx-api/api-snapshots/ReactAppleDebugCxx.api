@@ -4235,8 +4235,12 @@ class facebook::react::AppRegistryBinding {
 }
 
 class facebook::react::AppleEventBeat : public facebook::react::EventBeat, public facebook::react::RunLoopObserver::Delegate {
-  public AppleEventBeat(std::shared_ptr<facebook::react::EventBeat::OwnerBox> ownerBox, std::unique_ptr<const facebook::react::RunLoopObserver> uiRunLoopObserver, facebook::react::RuntimeScheduler& RuntimeScheduler);
+  public AppleEventBeat(std::shared_ptr<facebook::react::EventBeat::OwnerBox> ownerBox, std::unique_ptr<const facebook::react::RunLoopObserver> uiRunLoopObserver, facebook::react::RuntimeScheduler& RuntimeScheduler, facebook::react::AppleEventBeat::WindowLayerResolver windowLayerResolver);
+  public using WindowLayerResolver = std::function<CALayer*(facebook::react::Tag)>;
   public virtual void activityDidChange(const facebook::react::RunLoopObserver::Delegate* delegate, facebook::react::RunLoopObserver::Activity activity) const noexcept override;
+  public virtual void requestSynchronous(facebook::react::Tag tag) const override;
+  public void requestSynchronous() const;
+  public ~AppleEventBeat() override;
 }
 
 class facebook::react::AsyncArrayBuffer {
@@ -4749,8 +4753,9 @@ class facebook::react::EventBeat {
   public using BeatCallback = std::function<void(facebook::jsi::Runtime& runtime)>;
   public using Factory = std::function<std::unique_ptr<facebook::react::EventBeat>(std::shared_ptr<facebook::react::EventBeat::OwnerBox> ownerBox)>;
   public virtual void request() const;
-  public virtual void requestSynchronous() const;
+  public virtual void requestSynchronous(facebook::react::Tag tag) const;
   public virtual ~EventBeat() = default;
+  public void requestSynchronous() const;
   public void setBeatCallback(facebook::react::EventBeat::BeatCallback beatCallback);
 }
 
@@ -4772,6 +4777,7 @@ class facebook::react::EventDispatcher {
 class facebook::react::EventEmitter {
   public EventEmitter(facebook::react::SharedEventTarget eventTarget, facebook::react::EventDispatcher::Weak eventDispatcher);
   public const facebook::react::SharedEventTarget& getEventTarget() const;
+  public facebook::react::Tag getTag() const;
   public static facebook::react::ValueFactory defaultPayloadFactory();
   public static std::mutex& DispatchMutex();
   public static std::string normalizeEventType(std::string type);

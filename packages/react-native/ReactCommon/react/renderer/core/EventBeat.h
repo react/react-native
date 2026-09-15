@@ -9,6 +9,7 @@
 
 #include <react/cxxstableapi/UmbrellaGuard.h>
 
+#include <react/renderer/core/ReactPrimitives.h>
 #include <atomic>
 #include <functional>
 #include <memory>
@@ -110,8 +111,17 @@ class EventBeat {
    * thread────────────────────┴─────────────────────────┴▶
    *                            Both JS and UI thread are
    *                            blocked.
+   *
+   * `tag` is the view the request originates from, or `kNoTag` when unknown.
+   * Platform implementations use it to schedule an induce where that view
+   * renders, and fall back to their ordinary beat timing without it.
    */
-  virtual void requestSynchronous() const;
+  virtual void requestSynchronous(Tag tag) const;
+
+  /*
+   * Convenience for requesters with no view attribution.
+   */
+  void requestSynchronous() const;
 
   /*
    * The callback will be executed once a consumer (for example EventQueue)
