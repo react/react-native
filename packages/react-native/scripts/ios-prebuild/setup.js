@@ -168,6 +168,7 @@ async function setup(
   link('ReactCommon/react/renderer/core');
   link('ReactCommon/react/bridging');
   link('ReactCommon/react/timing');
+  link('ReactCommon/react/timing/React', 'React');
   link('ReactCommon/react/utils');
   link('ReactCommon/react/debug');
   link('ReactCommon/react/renderer/debug');

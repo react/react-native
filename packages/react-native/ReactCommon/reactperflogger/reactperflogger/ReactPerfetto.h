@@ -11,8 +11,8 @@
 
 #ifdef WITH_PERFETTO
 
+#include <React/Timing.h>
 #include <perfetto.h>
-#include <react/timing/primitives.h>
 #include <reactperflogger/ReactPerfettoCategories.h>
 #include <string>
 
