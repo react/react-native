@@ -84,6 +84,83 @@ class GeneratePackageListTaskTest {
   }
 
   @Test
+  fun composePackageInstance_withPackageImportPaths_usesArrayDirectly() {
+    val task = createTestTask<GeneratePackageListTask>()
+    val packageName = "com.example.app"
+
+    val deps =
+        mapOf(
+            "react-native-appsflyer" to
+                ModelAutolinkingDependenciesPlatformAndroidJson(
+                    sourceDir = "./node_modules/react-native-appsflyer/android",
+                    packageImportPath = "",
+                    packageImportPaths =
+                        listOf(
+                            "com.appsflyer.reactnative.RNAppsFlyerPackage",
+                            "com.appsflyer.reactnative.PCAppsFlyerPackage",
+                        ),
+                    packageInstance = "new RNAppsFlyerPackage(),\nnew PCAppsFlyerPackage()",
+                    buildTypes = emptyList(),
+                ),
+        )
+
+    val result = task.composePackageInstance(packageName, deps)
+    assertThat(result)
+        .isEqualTo(
+            """
+            ,
+                  // react-native-appsflyer
+                  new com.appsflyer.reactnative.RNAppsFlyerPackage(),
+            new com.appsflyer.reactnative.PCAppsFlyerPackage()
+            """
+                .trimIndent()
+        )
+  }
+
+  @Test
+  fun composePackageInstance_withBothFields_prefersPackageImportPaths() {
+    val task = createTestTask<GeneratePackageListTask>()
+    val packageName = "com.example.app"
+
+    val deps =
+        mapOf(
+            "my-library" to
+                ModelAutolinkingDependenciesPlatformAndroidJson(
+                    sourceDir = "./node_modules/my-library/android",
+                    packageImportPath = "import com.wrong.WrongPackage;",
+                    packageImportPaths = listOf("com.correct.CorrectPackage"),
+                    packageInstance = "new CorrectPackage()",
+                    buildTypes = emptyList(),
+                ),
+        )
+
+    val result = task.composePackageInstance(packageName, deps)
+    assertThat(result).contains("com.correct.CorrectPackage")
+    assertThat(result).doesNotContain("com.wrong.WrongPackage")
+  }
+
+  @Test
+  fun composePackageInstance_withNullPackageImportPaths_fallsBackToSingleFqcn() {
+    val task = createTestTask<GeneratePackageListTask>()
+    val packageName = "com.example.app"
+
+    val deps =
+        mapOf(
+            "my-library" to
+                ModelAutolinkingDependenciesPlatformAndroidJson(
+                    sourceDir = "./node_modules/my-library/android",
+                    packageImportPath = "import com.legacy.LegacyPackage;",
+                    packageImportPaths = null,
+                    packageInstance = "new LegacyPackage()",
+                    buildTypes = emptyList(),
+                ),
+        )
+
+    val result = task.composePackageInstance(packageName, deps)
+    assertThat(result).contains("com.legacy.LegacyPackage")
+  }
+
+  @Test
   fun interpolateDynamicValues_withNoBuildConfigOrROccurrencies_doesNothing() {
     val packageName = "com.facebook.react"
     val input = "com.facebook.react.aPackage"
