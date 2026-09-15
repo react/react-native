@@ -190,8 +190,8 @@ export interface VirtualizedListWithoutRenderItemProps<
 
   /**
    * Each data item is rendered using this element, as an alternative to `renderItem`.
-   * Can be a React Component Class or a render function. In addition to the data provided
-   * to `renderItem`, this receives `index` and `separators` metadata.
+   * It receives the same `item`, `index` and `separators` that `renderItem` gets. If both
+   * are provided, `ListItemComponent` takes precedence and a warning is logged.
    */
   ListItemComponent?:
     React.ComponentType<any> | React.ReactElement | null | undefined;
