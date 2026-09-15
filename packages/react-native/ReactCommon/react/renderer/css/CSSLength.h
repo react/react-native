@@ -31,7 +31,14 @@ template <>
 struct CSSDataTypeParser<CSSLength> {
   static constexpr auto consumePreservedToken(const CSSPreservedToken &token) -> std::optional<CSSLength>
   {
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wswitch-enum"
+#endif
     switch (token.type()) {
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
       case CSSTokenType::Dimension:
         if (auto unit = parseCSSLengthUnit(token.unit())) {
           return CSSLength{.value = token.numericValue(), .unit = *unit};
