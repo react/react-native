@@ -100,6 +100,7 @@ class Scheduler final : public UIManagerDelegate {
       bool isJSResponder,
       bool blockNativeResponder) override;
   void uiManagerShouldSynchronouslyUpdateViewOnUIThread(Tag tag, const folly::dynamic &props) override;
+  void uiManagerShouldSynchronouslyUpdateAnimatedProps(const std::unordered_map<Tag, AnimatedProps> &updates) override;
   void uiManagerDidUpdateShadowTree(const std::unordered_map<Tag, folly::dynamic> &tagToProps) override;
   void uiManagerDidCaptureViewSnapshot(Tag tag, SurfaceId surfaceId) override;
   void uiManagerDidSetViewSnapshot(Tag sourceTag, Tag targetTag, SurfaceId surfaceId) override;

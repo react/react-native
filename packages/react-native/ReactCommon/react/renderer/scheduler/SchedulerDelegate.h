@@ -11,6 +11,7 @@
 
 #include <memory>
 
+#include <react/renderer/animationbackend/AnimatedPropsSerializer.h>
 #include <react/renderer/core/ReactPrimitives.h>
 #include <react/renderer/mounting/MountingCoordinator.h>
 #include <react/renderer/mounting/ShadowView.h>
@@ -65,6 +66,13 @@ class SchedulerDelegate {
   schedulerDidSetIsJSResponder(const ShadowView &shadowView, bool isJSResponder, bool blockNativeResponder) = 0;
 
   virtual void schedulerShouldSynchronouslyUpdateViewOnUIThread(Tag tag, const folly::dynamic &props) = 0;
+
+  virtual void schedulerShouldSynchronouslyUpdateAnimatedProps(const std::unordered_map<Tag, AnimatedProps> &updates)
+  {
+    for (const auto &[tag, props] : updates) {
+      schedulerShouldSynchronouslyUpdateViewOnUIThread(tag, animationbackend::packAnimatedProps(props));
+    }
+  }
 
   virtual void schedulerDidUpdateShadowTree(const std::unordered_map<Tag, folly::dynamic> &tagToProps) = 0;
 
