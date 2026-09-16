@@ -156,7 +156,7 @@ internal class MultipartStreamReader(
     val marker: ByteString = ByteString.encodeUtf8(CRLF + CRLF)
     val indexOfMarker = content.indexOf(marker, 0)
 
-    if (indexOfMarker == -1L || indexOfMarker >= chunkLength) {
+    if (indexOfMarker == -1L || indexOfMarker > chunkLength - marker.size()) {
       // No headers marker found inside the chunk. Treat the entire chunk as body.
       val bodyLength = chunkLength
       val body = Okio.buffer(FixedLengthSource(content, bodyLength))
