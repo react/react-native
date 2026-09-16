@@ -23,6 +23,7 @@ import {
   StyleSheet,
   TextInput,
   View,
+  useWindowDimensions,
 } from 'react-native';
 
 type Insets = SafeAreaInsetsChangeEvent['nativeEvent']['insets'];
@@ -221,6 +222,25 @@ function ScrollBenchmark(): React.Node {
   );
 }
 
+function WindowInsetsExample(): React.Node {
+  const {
+    width,
+    height,
+    experimental_safeAreaInsets: safeAreaInsets,
+  } = useWindowDimensions();
+
+  return (
+    <View style={styles.readout}>
+      <RNTesterText>{`window: {width: ${width}, height: ${height}}`}</RNTesterText>
+      <RNTesterText>
+        {safeAreaInsets == null
+          ? 'safeAreaInsets: not available'
+          : `safeAreaInsets: {top: ${safeAreaInsets.top}, right: ${safeAreaInsets.right}, bottom: ${safeAreaInsets.bottom}, left: ${safeAreaInsets.left}}`}
+      </RNTesterText>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   readout: {
     backgroundColor: '#ffaaaa',
@@ -292,5 +312,11 @@ exports.examples = [
     description:
       'Rows observing their own insets inside a scroll view. Scrolling moves the rows, so observing rows may emit inset events while crossing safe area boundaries.',
     render: (): React.Node => <ScrollBenchmark />,
+  },
+  {
+    title: 'Window safe area insets from Dimensions',
+    description:
+      'The `Dimensions` module reports the safe area insets of the window, available synchronously at startup.',
+    render: (): React.Node => <WindowInsetsExample />,
   },
 ] as Array<RNTesterModuleExample>;

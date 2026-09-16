@@ -10374,6 +10374,15 @@ struct facebook::react::NativeResizeObserverNativeResizeObserverEntry {
 }
 
 template <typename P0, typename P1, typename P2, typename P3, typename P4>
+struct facebook::react::NativeDeviceInfoDisplayMetrics {
+  public P0 width;
+  public P1 height;
+  public P2 scale;
+  public P3 fontScale;
+  public bool operator==(const facebook::react::NativeDeviceInfoDisplayMetrics& other) const;
+}
+
+template <typename P0, typename P1, typename P2, typename P3, typename P4>
 struct facebook::react::NativeExceptionsManagerStackFrame {
   public P0 column;
   public P1 file;
@@ -10403,12 +10412,12 @@ struct facebook::react::NativeDeviceInfoDimensionsPayload {
 }
 
 template <typename P0, typename P1, typename P2, typename P3>
-struct facebook::react::NativeDeviceInfoDisplayMetrics {
-  public P0 width;
-  public P1 height;
-  public P2 scale;
-  public P3 fontScale;
-  public bool operator==(const facebook::react::NativeDeviceInfoDisplayMetrics& other) const;
+struct facebook::react::NativeDeviceInfoWindowSafeAreaInsets {
+  public P0 top;
+  public P1 right;
+  public P2 bottom;
+  public P3 left;
+  public bool operator==(const facebook::react::NativeDeviceInfoWindowSafeAreaInsets& other) const;
 }
 
 template <typename P0, typename P1, typename P2, typename P3>
@@ -11075,6 +11084,13 @@ struct facebook::react::NativeDeviceInfoDimensionsPayloadBridging {
 
 template <typename T>
 struct facebook::react::NativeDeviceInfoDisplayMetricsBridging {
+  public static T fromJs(facebook::jsi::Runtime& rt, const facebook::jsi::Object& value, const std::shared_ptr<facebook::react::CallInvoker>& jsInvoker);
+  public static T types;
+  public static facebook::jsi::Object toJs(facebook::jsi::Runtime& rt, const T& value, const std::shared_ptr<facebook::react::CallInvoker>& jsInvoker);
+}
+
+template <typename T>
+struct facebook::react::NativeDeviceInfoWindowSafeAreaInsetsBridging {
   public static T fromJs(facebook::jsi::Runtime& rt, const facebook::jsi::Object& value, const std::shared_ptr<facebook::react::CallInvoker>& jsInvoker);
   public static T types;
   public static facebook::jsi::Object toJs(facebook::jsi::Runtime& rt, const T& value, const std::shared_ptr<facebook::react::CallInvoker>& jsInvoker);
@@ -15579,6 +15595,25 @@ struct JS::NativeDeviceInfo::DisplayMetrics::Builder::Input {
   protected RCTRequired<double> height;
   protected RCTRequired<double> scale;
   protected RCTRequired<double> width;
+}
+
+struct JS::NativeDeviceInfo::WindowSafeAreaInsets {
+  protected NSDictionary* unsafeRawValue() const;
+  protected static JS::NativeDeviceInfo::WindowSafeAreaInsets fromUnsafeRawValue(NSDictionary* const v);
+}
+
+struct JS::NativeDeviceInfo::WindowSafeAreaInsets::Builder {
+  protected Builder(JS::NativeDeviceInfo::WindowSafeAreaInsets i);
+  protected Builder(const JS::NativeDeviceInfo::WindowSafeAreaInsets::Builder::Input i);
+  protected NSDictionary* buildUnsafeRawValue() const;
+  protected using ResultT = JS::NativeDeviceInfo::WindowSafeAreaInsets;
+}
+
+struct JS::NativeDeviceInfo::WindowSafeAreaInsets::Builder::Input {
+  protected RCTRequired<double> bottom;
+  protected RCTRequired<double> left;
+  protected RCTRequired<double> right;
+  protected RCTRequired<double> top;
 }
 
 

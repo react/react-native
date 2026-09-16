@@ -12,9 +12,18 @@
 
 namespace facebook::react {
 
-using DisplayMetrics = NativeDeviceInfoDisplayMetrics<double, double, double, double>;
+using WindowSafeAreaInsets = NativeDeviceInfoWindowSafeAreaInsets<double, double, double, double>;
 
-using DisplayMetricsAndroid = NativeDeviceInfoDisplayMetricsAndroid<double, double, double, double, double>;
+using DisplayMetrics =
+    NativeDeviceInfoDisplayMetrics<double, double, double, double, std::optional<WindowSafeAreaInsets>>;
+
+using DisplayMetricsAndroid = NativeDeviceInfoDisplayMetricsAndroid<
+    double,
+    double,
+    double,
+    double,
+    double,
+    std::optional<WindowSafeAreaInsets>>;
 
 using DimensionsPayload = NativeDeviceInfoDimensionsPayload<
     std::optional<DisplayMetrics>,
@@ -24,6 +33,9 @@ using DimensionsPayload = NativeDeviceInfoDimensionsPayload<
 
 using DeviceInfoConstants =
     NativeDeviceInfoDeviceInfoConstants<DimensionsPayload, std::optional<bool>, std::optional<bool>>;
+
+template <>
+struct Bridging<WindowSafeAreaInsets> : NativeDeviceInfoWindowSafeAreaInsetsBridging<WindowSafeAreaInsets> {};
 
 template <>
 struct Bridging<DisplayMetrics> : NativeDeviceInfoDisplayMetricsBridging<DisplayMetrics> {};
